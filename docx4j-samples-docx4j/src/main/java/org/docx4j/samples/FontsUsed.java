@@ -21,6 +21,9 @@
 package org.docx4j.samples;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.docx4j.fonts.BestMatchingMapper;
@@ -51,6 +54,8 @@ public class FontsUsed {
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.docx";
 //		String inputfilepath = System.getProperty("user.dir") + "/Liberation Sans.docx";
 
+		boolean listDiscoveredFonts = false;
+		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
@@ -58,8 +63,8 @@ public class FontsUsed {
 		// Specify your font mapper
 		// Note, you can turn on DEBUG level logging for org.docx4j.fonts.PhysicalFonts
 		// to see the fonts discovered and their names
-//		Mapper fontMapper = new IdentityPlusMapper();  // Only for Windows, unless you have Microsoft's fonts installed
-		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+		Mapper fontMapper = new IdentityPlusMapper();  // Only for Windows, unless you have Microsoft's fonts installed
+//		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
 		
 		wordMLPackage.setFontMapper(fontMapper);
 		
@@ -88,6 +93,21 @@ public class FontsUsed {
 				}
 			}
 				
+		}
+		
+		if (listDiscoveredFonts) {
+			System.out.println("PhysicalFonts discovered: ");
+			Set<String> keySet = PhysicalFonts.getPhysicalFonts().keySet();
+			List<String> sortedKeys = new ArrayList<>(keySet);
+			Collections.sort(sortedKeys);
+			for(String key : sortedKeys ) {
+				if (key.endsWith("bold") || key.endsWith("italic")) {
+					// skip
+				} else {
+					System.out.println("\t"+key);
+				}
+			}
+			
 		}
 				
 	}
