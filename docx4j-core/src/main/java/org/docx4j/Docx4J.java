@@ -49,6 +49,7 @@ import org.docx4j.events.PackageIdentifier;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownJobTypes;
 import org.docx4j.events.WellKnownProcessSteps;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
 import org.docx4j.model.datastorage.DocxFetcher;
@@ -706,6 +707,10 @@ public class Docx4J {
 	 *  Convert the document via xsl-fo
 	 */	
 	public static void toFO(FOSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
+		
+		if (log.isDebugEnabled()) {
+	    	log.debug(XmlUtils.marshaltoString(settings.getFopConfig(), Context.getFopConfigContext()));			
+		}
 		
 		Exporter<FOSettings> exporter = getFOExporter(flags);
 		exporter.export(settings, outputStream);
