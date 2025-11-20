@@ -152,7 +152,7 @@ public class FopConfigUtil {
 
 		Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries = new HashMap<String, org.docx4j.convert.out.fopconf.Fonts.Font>(); 
 		
-		if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {
+		if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", true)) {
 		// <font simulate-style="true"	
 			for (String fontName : fontsInUse) {		    
 			    
