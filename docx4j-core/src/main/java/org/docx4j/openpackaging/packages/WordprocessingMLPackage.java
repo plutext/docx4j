@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
@@ -306,18 +307,19 @@ public class WordprocessingMLPackage extends OpcPackage {
  * obfuscated font part is read)
  */
 
-    public void setFontMapper(Mapper fm) throws Exception {
+    public void setFontMapper(Mapper fm) throws Docx4JException {
     	setFontMapper( fm,  true);
     }
     
     /**
      * @param fm
      * @param populate
+     * @throws JAXBException 
      * @throws Exception
      * 
      * @since 3.0.1
      */
-    public void setFontMapper(Mapper fm, boolean populate) throws Exception {
+    public void setFontMapper(Mapper fm, boolean populate) throws Docx4JException {
     	log.debug("setFontMapper invoked");
     	
     	/* The two font mappers included in docx4j (IdentityPlusMapper
@@ -339,7 +341,7 @@ public class WordprocessingMLPackage extends OpcPackage {
     	 */
     	
     	if (fm == null) {
-    		throw new IllegalArgumentException("Font Substituter cannot be null.");
+    		throw new Docx4JException("Font Substituter cannot be null.");
     	}
 		fontMapper = fm;
 		org.docx4j.wml.Fonts fonts = null;
@@ -356,7 +358,11 @@ public class WordprocessingMLPackage extends OpcPackage {
 				log.warn("FontTable missing; creating default part.");
 				fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
 				fontTablePart.setPackage(this);
-				fontTablePart.unmarshalDefaultFonts();
+				try {
+					fontTablePart.unmarshalDefaultFonts();
+				} catch (JAXBException e) {
+					throw new Docx4JException(e.getMessage(),e);
+				}
 			}
 			
 			fontTablePart.processEmbeddings(fontMapper);
@@ -365,7 +371,11 @@ public class WordprocessingMLPackage extends OpcPackage {
 //		}
 		
 		if (populate) {
-			fontMapper.populateFontMappings(fontsInUse, fonts);
+			try {
+				fontMapper.populateFontMappings(fontsInUse, fonts);
+			} catch (Exception e) {
+				throw new Docx4JException(e.getMessage(),e);
+			}
 		}
     	
     }
