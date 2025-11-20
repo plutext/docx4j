@@ -245,6 +245,17 @@ public class PhysicalFonts {
 
 		List<PhysicalFont> physicalFonts = getPhysicalFont( nameAsInFontTablePart,  fontUrl);
 		if (physicalFonts==null) return;
+		putPhysicalFonts(nameAsInFontTablePart, physicalFonts);
+		
+	}
+
+	/**
+	 * @param nameAsInFontTablePart
+	 * @param physicalFonts
+	 * @since 11.5.8
+	 */
+	public static void putPhysicalFonts(String nameAsInFontTablePart, List<PhysicalFont> physicalFonts) {
+		
 		for (PhysicalFont pf : physicalFonts) {
 			
 	        if (pf!=null) {
@@ -289,8 +300,10 @@ public class PhysicalFonts {
 	        	
 	        }			
 		}
-		
 	}
+	
+	//InternalResourceResolver fontResolver;
+
 	
 	/**
 	 * Get a physical font's EmbedFontInfo object.
@@ -299,10 +312,24 @@ public class PhysicalFonts {
 	 */
 	public static List<PhysicalFont> getPhysicalFont(String nameAsInFontTablePart, URI fontUrl) {
 
+		return getPhysicalFont(nameAsInFontTablePart, fontUrl, fontResolver);
+	}
+	
+	
+	/**
+	 * Get a physical font's EmbedFontInfo object.
+	 * 
+	 * @param fontUrl eg new java.net.URL("file:" + path)
+	 * 
+	 * @since 11.5.8
+	 */
+	public static List<PhysicalFont> getPhysicalFont(String nameAsInFontTablePart, URI fontUrl, InternalResourceResolver fontResolver) {
+
 		List<PhysicalFont> pfList = new ArrayList<PhysicalFont>();
 		
-		log.debug(nameAsInFontTablePart);
-
+		if (log.isDebugEnabled() ) {
+			log.debug("nameAsInFontTablePart: " + nameAsInFontTablePart);
+		}
 		
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
 		
