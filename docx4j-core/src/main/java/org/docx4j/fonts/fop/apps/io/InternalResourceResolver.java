@@ -24,11 +24,19 @@
 
 package org.docx4j.fonts.fop.apps.io;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -37,6 +45,8 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.xmlgraphics.io.Resource;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.apache.xmlgraphics.util.uri.DataURIResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This object holds the base URI from which to resolve URIs against as well as the resolver for
@@ -45,10 +55,13 @@ import org.apache.xmlgraphics.util.uri.DataURIResolver;
  * URIs to it.
  */
 public class InternalResourceResolver {
+	
+	protected static Logger log = LoggerFactory.getLogger(InternalResourceResolver.class);		
+	
     private final URI baseUri;
     private final ResourceResolver resourceResolver;
     private final DataURIResolver dataSchemeResolver = new DataURIResolver();
-
+    
     /**
      * @param baseUri the base URI from which to resolve relative URIs
      * @param resourceResolver the resolver to delegate to
@@ -57,7 +70,11 @@ public class InternalResourceResolver {
         this.baseUri = baseUri;
         this.resourceResolver = resourceResolver;
     }
-
+    
+    public InternalResourceResolver(URI baseUri) {
+    	this(baseUri, ResourceResolverFactory.createDefaultResourceResolver());
+	}
+        
     /**
      * Returns the base URI from which to resolve all URIs against.
      *
@@ -91,10 +108,34 @@ public class InternalResourceResolver {
      * @throws IOException if an I/O error occurred
      */
     public Resource getResource(URI uri) throws IOException {
-        if (uri.getScheme() != null && uri.getScheme().startsWith("data")) {
+    	
+        if ("jar".equalsIgnoreCase(uri.getScheme())) {
+            return getFromJarURI(uri);
+        }
+
+        if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return new Resource(Files.newInputStream(Paths.get(uri)));
+        }
+
+        if ("data".equalsIgnoreCase(uri.getScheme())) {
             return new Resource(resolveDataURI(uri.toASCIIString()));
         }
+        
+        // ---- Handle classpath lookups (relative or logical paths) ----
         return resourceResolver.getResource(resolveFromBase(uri));
+        
+//        String path = uri.getPath();
+//        if (path.startsWith("/"))
+//            path = path.substring(1);
+//
+//        InputStream in = cl.getResourceAsStream(path);
+//        if (in != null) {
+//            return new Resource(in);
+//        }
+//
+//        throw new FileNotFoundException("Cannot resolve resource: " + uri);
+//
+        
     }
 
     /**
@@ -126,6 +167,9 @@ public class InternalResourceResolver {
      * @throws URISyntaxException if the given String was too erroneous to validate
      */
     public static URI cleanURI(String uriStr) throws URISyntaxException {
+    	
+    	log.debug("Incoming " + uriStr);
+    	
         // replace back slash with forward slash to ensure windows file:/// URLS are supported
         if (uriStr == null) {
             return null;
@@ -157,4 +201,31 @@ public class InternalResourceResolver {
             throw new RuntimeException(e);
         }
     }
+    
+    private Resource getFromJarURI(URI jarUri) throws IOException {
+
+        // jar:file:///home/jharrop/fonts.jar!/fonts/FRAMDCN.TTF
+
+        URL url = jarUri.toURL();
+        URLConnection conn = url.openConnection();
+
+        if (!(conn instanceof JarURLConnection)) {
+            throw new IOException("Not a JarURLConnection: " + jarUri);
+        }
+
+        JarURLConnection juc = (JarURLConnection) conn;
+
+//        JarEntry entry = juc.getJarEntry();
+//        if (entry == null) {
+//            throw new FileNotFoundException("No such entry in jar: " + jarUri);
+//        }
+
+        InputStream in = juc.getInputStream();
+        if (in == null) {
+            throw new FileNotFoundException("Unable to open entry: " + jarUri);
+        }
+
+        return new Resource(in);
+    }
+      
 }

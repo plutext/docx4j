@@ -1,21 +1,34 @@
 package org.docx4j.fonts;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.xmlgraphics.io.ResourceResolver;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.apps.io.ResourceResolverFactory;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
 import org.docx4j.fonts.fop.fonts.FontCache;
 import org.docx4j.fonts.fop.fonts.FontEventAdapter;
-//import org.docx4j.fonts.fop.fonts.FontResolver;
-import org.docx4j.fonts.fop.fonts.FontSetup;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.fonts.fop.fonts.autodetect.FontFileFinder;
 import org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder;
@@ -23,8 +36,9 @@ import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.org.apache.fop.events.DefaultEventBroadcaster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //import com.lowagie.text.pdf.BaseFont;
 
@@ -34,9 +48,12 @@ import org.docx4j.org.apache.fop.events.DefaultEventBroadcaster;
  * They can be discovered automatically, or you can
  * just add specific fonts.
  * 
+ * Since 11.5.8 you can discover fonts in jars on your classpath
+ * using method discoverJarFonts
+ * 
  * Do NOT add fonts embedded in a docx to physicalFontMap!
  * 
- * @author dev
+ * @author jharrop
  *
  */
 public class PhysicalFonts {
@@ -730,6 +747,108 @@ public class PhysicalFonts {
 		discoverPhysicalFonts();
 		System.out.println("That should have listed your physical fonts (provided you have logging enabled).");
 	}
+
+	/**
+	 * Detect fonts available in jars on classpath.  You need to invoke this specifically
+	 * if you want to do this.
+	 * 
+	 * @since 11.5.8
+	 */ 
+	public final static void discoverJarFonts() throws URISyntaxException, IOException {
+		
+		String pathPrefix = Docx4jProperties.getProperty("docx4j.fonts.PhysicalFonts.Jars.PathPrefix", "fonts");
+		discoverJarFonts(pathPrefix);
+	}
+	/**
+	 * Detect fonts available in jars on classpath.  You need to invoke this specifically
+	 * if you want to do this.
+	 * 
+	 * @since 11.5.8
+	 */ 
+	public final static void discoverJarFonts(String pathPrefix) throws URISyntaxException, IOException {
+		
+		// This method sets us up to be able to distribte a symbol fonts jar,
+		// with fonts in say /symbolfonts, 
+		// so invoking it does not load other fonts at say /fonts
+		
+		// First, discover all fonts in that path
+		List<URL> list = getFontUrls(pathPrefix); 
+		for (URL u : list) {
+			if (log.isDebugEnabled()) {
+				log.debug(u.toString());
+			}
+			
+			List<PhysicalFont>  pfList = PhysicalFonts.getPhysicalFont(null, u.toURI() );
+			PhysicalFonts.putPhysicalFonts(null, pfList);
+		}
+		
+	}
+
+    private static ClassLoader safeGetClassLoader() {
+        return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> {
+            try {
+                return InternalResourceResolver.class.getClassLoader();
+            } catch (SecurityException ex) {
+            	log.error(ex.getLocalizedMessage(), ex);
+                return null;
+            }
+        });
+    }    
+	
+	private static List<URL> getFontUrls(String pathPrefix) throws URISyntaxException, IOException {
+
+		ClassLoader cl = safeGetClassLoader();
+		if (cl==null) {
+            return Collections.emptyList();
+		}
+		
+		// 1. Get the URL to the root folder (e.g., src/main/resources/fonts)		
+        URL rootUrl = cl.getResource(pathPrefix);
+
+        if (rootUrl == null) {
+            return Collections.emptyList();
+        }
+
+        URI rootUri = rootUrl.toURI();
+        List<URL> fontUrls;
+
+        // 2. Switch based on whether we are in a JAR or IDE
+        if ("jar".equals(rootUri.getScheme())) {
+            // JAR MODE: Create a FileSystem for the JAR structure
+            try (FileSystem fileSystem = FileSystems.newFileSystem(rootUri, Collections.emptyMap())) {
+                Path path = fileSystem.getPath("fonts");
+                fontUrls = walkPathAndGetUrls(path);
+            }
+        } else {
+            // IDE MODE: Standard file system
+            Path path = Paths.get(rootUri);
+            fontUrls = walkPathAndGetUrls(path);
+        }
+        
+        return fontUrls;
+    }
+
+    private static List<URL> walkPathAndGetUrls(Path path) throws IOException {
+        try (Stream<Path> stream = Files.walk(path, 1)) { 
+            return stream
+                .filter(p -> !Files.isDirectory(p)) // Skip the folder itself
+                .filter(p -> {
+                    // Check extension (Case Insensitive)
+                    String name = p.getFileName().toString().toLowerCase();
+                    return name.endsWith(".ttf") || name.endsWith(".otf");
+                })
+                .map(p -> {
+                    // Convert Path -> URI -> URL
+                    // This automatically handles "file:..." vs "jar:file:..."
+                    try {
+                        return p.toUri().toURL();
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException("Failed to convert path to URL", e);
+                    }
+                })
+                .collect(Collectors.toList());
+        }
+    }	
 	
 
 }
