@@ -23,8 +23,51 @@
 
 <!-- 
 
-For docx4j PDF output, entries in here feed into the generated fop config.
+For docx4j PDF output via export-fo, entries in here feed into the generated fop config.
 For example:
+
+<fop version="1.0">
+    <strict-configuration>true</strict-configuration>
+    <renderers>
+        <renderer mime="application/pdf">
+            <fonts>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/FRADMIT.TTF">
+                    <font-triplet name="Franklin Gothic Demi" style="italic" weight="normal"/>
+                </font>
+                <font simulate-style="true" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/FRABK.TTF">
+                    <font-triplet name="Franklin Gothic Book" style="normal" weight="normal"/>
+                    <font-triplet name="Franklin Gothic Book" style="italic" weight="normal"/>
+                    <font-triplet name="Franklin Gothic Book" style="normal" weight="bold"/>
+                    <font-triplet name="Franklin Gothic Book" style="italic" weight="bold"/>
+                </font>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/ROCKBI.TTF">
+                    <font-triplet name="Rockwell" style="italic" weight="bold"/>
+                </font>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/FRAHV.TTF">
+                    <font-triplet name="Franklin Gothic Demi" style="normal" weight="bold"/>
+                </font>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/FRAHVIT.TTF">
+                    <font-triplet name="Franklin Gothic Demi" style="italic" weight="bold"/>
+                </font>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/ROCKB.TTF">
+                    <font-triplet name="Rockwell" style="normal" weight="bold"/>
+                </font>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/ROCK.TTF">
+                    <font-triplet name="Rockwell" style="normal" weight="normal"/>
+                </font>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/ROCKI.TTF">
+                    <font-triplet name="Rockwell" style="italic" weight="normal"/>
+                </font>
+                <font simulate-style="false" embed-url="jar:file:///workspace/font-test-0.0.1-SNAPSHOT-shaded.jar!/fonts/FRADM.TTF">
+                    <font-triplet name="Franklin Gothic Demi" style="normal" weight="normal"/>
+                </font>
+            </fonts>
+        </renderer>
+    </renderers>
+</fop>
+
+
+or 
 
 <fop version="1.0">
   <strict-configuration>true</strict-configuration>
@@ -41,13 +84,17 @@ For example:
           <font-triplet name="Calibri" style="italic" weight="bold"/>
         </font>
 
+Note attribute @simulate-style, which if true to generates bold and oblique looking glyphs for PDF output.
+This is helpful where those font variations are not available to be specified in this file. 
+
+If you have entries to add to this file, you can override it by
+pointing at your own copy using property docx4j.fonts.microsoft.MicrosoftFonts
+in your docx4j.properties file.  Please also  make a PR so we can add your entries here.
 
 
 
-
-
-
-On Linux and OSX, we want to offer Windows Word 2007 fonts,
+	 Old docx4all Swing editor note:-
+	 On Linux and OSX, we want to offer Windows Word 2007 fonts,
      rather than the fonts installed on the platform.
 
 	 see http://support.microsoft.com/kb/924623 for a list of these.
@@ -630,9 +677,9 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 	</font>
 
 <font name="Franklin Gothic Book" filename="FRABK.ttf">
-		<!-- no bold -->
+		<!-- no bold; to simulate, you need to see docx4j.fonts.fop.util.FopConfigUtil.simulate-style=true -->
 		<italic filename="FRABKIT.ttf"/>
-		<!-- no bold italic -->
+		<!-- no bold italic; see comment above -->
 	</font>
 
 <font name="Franklin Gothic Demi" filename="FRADM.ttf">
