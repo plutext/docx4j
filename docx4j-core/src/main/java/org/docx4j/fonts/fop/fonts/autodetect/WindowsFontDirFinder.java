@@ -31,12 +31,16 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * FontFinder for native Windows platforms
  */
 public class WindowsFontDirFinder implements FontDirFinder {
 
+	protected static Logger log = LoggerFactory.getLogger(WindowsFontDirFinder.class);
+	
     /**
      * Attempts to read windir environment variable on windows
      * (disclaimer: This is a bit dirty but seems to work nicely)
@@ -85,41 +89,83 @@ public class WindowsFontDirFinder implements FontDirFinder {
         }
         File osFontsDir = null;
         File psFontsDir = null;
-        if (windir != null) {
-            // remove any trailing '/'
-            if (windir.endsWith("/")) {
-                windir = windir.substring(0, windir.length() - 1);
-            }
-            osFontsDir = new File(windir + File.separator + "FONTS");
-            if (osFontsDir.exists() && osFontsDir.canRead()) {
-                fontDirList.add(osFontsDir);
-            }
-            psFontsDir = new File(windir.substring(0, 2) + File.separator + "PSFONTS");
-            if (psFontsDir.exists() && psFontsDir.canRead()) {
-                fontDirList.add(psFontsDir);
-            }
+		if (windir != null) {
+			// remove any trailing '/'
+			if (windir.endsWith("/")) {
+				windir = windir.substring(0, windir.length() - 1);
+			}
+			// 1. Standard System Fonts (e.g., C:\Windows\Fonts)
+			osFontsDir = new File(windir + File.separator + "FONTS");
+			if (osFontsDir.exists() && osFontsDir.canRead()) {
+				fontDirList.add(osFontsDir);
+			}
+			// 2. PostScript Fonts (e.g., C:\PSFONTS)
+			psFontsDir = new File(windir.substring(0, 2) + File.separator + "PSFONTS");
+			if (psFontsDir.exists() && psFontsDir.canRead()) {
+				fontDirList.add(psFontsDir);
+			}
+		} else {
+			String windowsDirName = osName.endsWith("NT") ? "WINNT" : "WINDOWS";
+			// 1. Standard System Fonts (e.g., C:\Windows\Fonts)
+			// look for true type font folder
+			for (char driveLetter = 'C'; driveLetter <= 'E'; driveLetter++) {
+				osFontsDir = new File(driveLetter + ":" + File.separator + windowsDirName + File.separator + "FONTS");
+				if (osFontsDir.exists() && osFontsDir.canRead()) {
+					fontDirList.add(osFontsDir);
+					break;
+				}
+			}
+			// 2. PostScript Fonts (e.g., C:\PSFONTS)
+			// look for type 1 font folder
+			for (char driveLetter = 'C'; driveLetter <= 'E'; driveLetter++) {
+				psFontsDir = new File(driveLetter + ":" + File.separator + "PSFONTS");
+				if (psFontsDir.exists() && psFontsDir.canRead()) {
+					fontDirList.add(psFontsDir);
+					break;
+				}
+			}
+		}
+        
+     // 3. User-Specific Fonts (AppData\Local\Microsoft\Windows\Fonts)
+        // Added to support per-user font installations (common in Win 10/11)
+        // https://github.com/harawata/appdirs may be interesting
+		
+        String localAppData = System.getenv("LOCALAPPDATA");
+        File userFontsDir = null;
+        if (localAppData == null) {
+        	log.debug("env missing LOCALAPPDATA" );
         } else {
-            String windowsDirName = osName.endsWith("NT") ? "WINNT" : "WINDOWS";
-            // look for true type font folder
-            for (char driveLetter = 'C'; driveLetter <= 'E'; driveLetter++) {
-                osFontsDir = new File(
-                        driveLetter + ":"
-                        + File.separator + windowsDirName
-                        + File.separator + "FONTS");
-                if (osFontsDir.exists() && osFontsDir.canRead()) {
-                    fontDirList.add(osFontsDir);
-                    break;
-                }
-            }
-            // look for type 1 font folder
-            for (char driveLetter = 'C'; driveLetter <= 'E'; driveLetter++) {
-                psFontsDir = new File(driveLetter + ":" + File.separator + "PSFONTS");
-                if (psFontsDir.exists() && psFontsDir.canRead()) {
-                    fontDirList.add(psFontsDir);
-                    break;
-                }
+            userFontsDir = new File(localAppData + File.separator + "Microsoft"
+                    + File.separator + "Windows" + File.separator + "Fonts");
+            if (userFontsDir.exists()  && userFontsDir.canRead()) {
+                fontDirList.add(userFontsDir);
+            	log.info("Adding: " + userFontsDir.getPath());
+            } else {
+            	log.info("Missing or can't read: " + userFontsDir.getPath());            	
             }
         }
+        
+        if (userFontsDir==null) {
+	        String userHome = System.getProperty("user.home");
+	        if (userHome == null) {
+	        	log.debug("null user.home" );
+	        } else {
+	            userFontsDir = new File(userHome, 
+	                    "AppData" + File.separator + 
+	                    "Local" + File.separator + 
+	                    "Microsoft" + File.separator + 
+	                    "Windows" + File.separator + 
+	                    "Fonts");
+	            
+	            if (userFontsDir.exists() && userFontsDir.canRead()) {
+	                fontDirList.add(userFontsDir);
+	            	log.info("Adding: " + userFontsDir.getPath());
+	            } else {
+	            	log.info("Missing or can't read: " + userFontsDir.getPath());            	
+	            }
+	        }        
+        }
+        
         return fontDirList;
     }
 }
