@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.apps.io.ResourceResolverFactory;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
@@ -751,10 +752,11 @@ public class PhysicalFonts {
 	/**
 	 * Detect fonts available in jars on classpath.  You need to invoke this specifically
 	 * if you want to do this.
+	 * @throws FOPException 
 	 * 
 	 * @since 11.5.8
 	 */ 
-	public final static void discoverJarFonts() throws URISyntaxException, IOException {
+	public final static void discoverJarFonts() throws URISyntaxException, IOException, FOPException {
 		
 		String pathPrefix = Docx4jProperties.getProperty("docx4j.fonts.PhysicalFonts.Jars.PathPrefix", "fonts");
 		discoverJarFonts(pathPrefix);
@@ -762,10 +764,11 @@ public class PhysicalFonts {
 	/**
 	 * Detect fonts available in jars on classpath.  You need to invoke this specifically
 	 * if you want to do this.
+	 * @throws FOPException 
 	 * 
 	 * @since 11.5.8
 	 */ 
-	public final static void discoverJarFonts(String pathPrefix) throws URISyntaxException, IOException {
+	public final static void discoverJarFonts(String pathPrefix) throws URISyntaxException, IOException, FOPException {
 		
 		// This method sets us up to be able to distribte a symbol fonts jar,
 		// with fonts in say /symbolfonts, 
@@ -782,6 +785,8 @@ public class PhysicalFonts {
 			PhysicalFonts.putPhysicalFonts(null, pfList);
 		}
 		
+        fontCache.save();
+
 	}
 
     private static ClassLoader safeGetClassLoader() {

@@ -207,7 +207,6 @@ public final class FontCache implements Serializable {
      * Writes the font cache to disk.
      *
      * @throws FOPException fop exception
-     * @deprecated use {@link #saveTo(File)} instead
      */
     public void save() throws FOPException {
         saveTo(getDefaultCacheFile(true));

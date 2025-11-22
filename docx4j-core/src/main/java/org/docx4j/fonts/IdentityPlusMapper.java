@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 
@@ -71,7 +72,13 @@ public class IdentityPlusMapper extends Mapper {
 		
 		try {
 			
-			PhysicalFonts.discoverPhysicalFonts();
+			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverJarFonts.enabled", true)) {
+				PhysicalFonts.discoverJarFonts();
+			}
+
+			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverPhysicalFonts.enabled", true)) {
+				PhysicalFonts.discoverPhysicalFonts();
+			}
 			
 		} catch (Exception exc) {
 			throw new RuntimeException(exc);

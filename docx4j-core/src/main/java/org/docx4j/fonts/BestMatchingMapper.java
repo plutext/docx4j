@@ -31,6 +31,7 @@ import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.substitutions.FontSubstitutions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -102,8 +103,14 @@ public class BestMatchingMapper extends Mapper {
 			// 2. docx4all - all platforms - to populate font dropdown list
 			msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
 			setupMicrosoftFontFilenames();
+			
+			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverJarFonts.enabled", true)) {
+				PhysicalFonts.discoverJarFonts();
+			}
 
-			PhysicalFonts.discoverPhysicalFonts();
+			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverPhysicalFonts.enabled", true)) {
+				PhysicalFonts.discoverPhysicalFonts();
+			}
 
             physicalFontsByKey = new HashMap<String, PhysicalFont>();
             generateKeysForPhysicalFonts();
