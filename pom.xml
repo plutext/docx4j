@@ -35,6 +35,7 @@
         <module>docx4j-docx-anon</module> 
         
         <module>docx4j-export-fo</module>        
+        <module>docx4j-export-fo-fonts-symbol</module>        
         <module>docx4j-conversion-via-microsoft-graph</module>
         <module>docx4j-documents4j-remote</module>                
         <module>docx4j-documents4j-local</module>        
@@ -97,7 +98,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-11.5.7</tag>
+      <tag>docx4j-11.5.8</tag>
       <url>https://github.com/plutext/docx4j</url>
   </scm>
 	<inceptionYear>2007</inceptionYear>
