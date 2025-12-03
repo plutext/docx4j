@@ -655,6 +655,12 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <!-- Symbol fonts @since 11.5.6-->
 
+<!-- Note: if you try to use this font for normal text in Word, it inserts 
+
+        <w:rFonts w:ascii="Noto Sans Symbols"  
+        
+        ie the 'Regular' is omitted.  Understanding/addressing this is a TODO.
+-->
 <font name="Noto Sans Symbols Regular" filename="NotoSansSymbols-Regular.ttf">
 		<bold filename="NotoSansSymbols-Bold.ttf"/>
 		<!-- no italic -->
