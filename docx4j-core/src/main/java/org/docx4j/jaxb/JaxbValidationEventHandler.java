@@ -38,12 +38,15 @@ import org.docx4j.XmlUtils;
 import org.docx4j.utils.ResourceUtils;
 
 
-public class JaxbValidationEventHandler implements 
-ValidationEventHandler{
+public class JaxbValidationEventHandler implements ValidationEventHandler {
     
 	private static Logger log = LoggerFactory.getLogger(JaxbValidationEventHandler.class);		
 	
-	private boolean shouldContinue = false; // fail by default
+	private boolean shouldContinue = false; // fail by default, but this is often changed!
+	/**
+	 * Note that docx4j manipulates this setting in various places. 
+	 * @param val
+	 */
 	public void setContinue(boolean val) {
 		shouldContinue = val;
 	}
@@ -104,6 +107,9 @@ ValidationEventHandler{
 		          log.warn("Column is " + 
 		                locator.getColumnNumber() + 
 		                " at line number " + locator.getLineNumber());
+	          } else if (locator.getLineNumber() > -1) {
+	        	  // Doesn't currently happen in practice
+		          log.warn("Line number " + locator.getLineNumber());	        	  
 	          }
 	          
 	          // We get good results from XmlUtils.unmarshal(node)  :-)
