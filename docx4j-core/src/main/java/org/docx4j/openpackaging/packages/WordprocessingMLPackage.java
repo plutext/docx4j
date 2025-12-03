@@ -380,6 +380,10 @@ public class WordprocessingMLPackage extends OpcPackage {
     	
     }
 
+    /**
+     * Defaults to IdentityPlusMapper
+     * @return
+     */
     public Mapper getFontMapper() {
     	if (fontMapper==null) {
     		fontMapper = new IdentityPlusMapper();
@@ -387,8 +391,7 @@ public class WordprocessingMLPackage extends OpcPackage {
     		try {
 				setFontMapper(fontMapper);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.error(e.getMessage(),e);
 			}
     	}
 		return fontMapper;
