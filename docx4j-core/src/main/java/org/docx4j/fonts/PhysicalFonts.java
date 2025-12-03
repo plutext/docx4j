@@ -225,9 +225,7 @@ public class PhysicalFonts {
 //            URL fontUrl = getURL(iter.next());
 //            addPhysicalFont( fontUrl);
 //        }
-        
-        fontCache.save();
-        
+                
 	}
 	
 	private static URI getURI(Object o) throws Exception {
@@ -756,10 +754,10 @@ public class PhysicalFonts {
 	 * 
 	 * @since 11.5.8
 	 */ 
-	public final static void discoverJarFonts() throws URISyntaxException, IOException, FOPException {
+	public final static int discoverJarFonts() throws URISyntaxException, IOException, FOPException {
 		
 		String pathPrefix = Docx4jProperties.getProperty("docx4j.fonts.PhysicalFonts.Jars.PathPrefix", "fonts");
-		discoverJarFonts(pathPrefix);
+		return discoverJarFonts(pathPrefix);
 	}
 	/**
 	 * Detect fonts available in jars on classpath.  You need to invoke this specifically
@@ -768,9 +766,9 @@ public class PhysicalFonts {
 	 * 
 	 * @since 11.5.8
 	 */ 
-	public final static void discoverJarFonts(String pathPrefix) throws URISyntaxException, IOException, FOPException {
+	public final static int discoverJarFonts(String pathPrefix) throws URISyntaxException, IOException, FOPException {
 		
-		// This method sets us up to be able to distribte a symbol fonts jar,
+		// This method sets us up to be able to distribute a symbol fonts jar,
 		// with fonts in say /symbolfonts, 
 		// so invoking it does not load other fonts at say /fonts
 		
@@ -785,8 +783,8 @@ public class PhysicalFonts {
 			PhysicalFonts.putPhysicalFonts(null, pfList);
 		}
 		
-        fontCache.save();
-
+		return list.size();
+		
 	}
 
     private static ClassLoader safeGetClassLoader() {
@@ -834,7 +832,7 @@ public class PhysicalFonts {
     }
 
     private static List<URL> walkPathAndGetUrls(Path path) throws IOException {
-        try (Stream<Path> stream = Files.walk(path, 1)) { 
+        try (Stream<Path> stream = Files.walk(path, 4 /* 1 wouldn't look in subfolders */ )) { 
             return stream
                 .filter(p -> !Files.isDirectory(p)) // Skip the folder itself
                 .filter(p -> {

@@ -103,6 +103,10 @@ public class BestMatchingMapper extends Mapper {
 			// 2. docx4all - all platforms - to populate font dropdown list
 			msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
 			setupMicrosoftFontFilenames();
+
+			// @since 11.5.8 symbol fonts from docx4j-export-fo-fonts-symbol jar
+			int count = PhysicalFonts.discoverJarFonts("fonts-symbol");
+			log.info("Found " + count + " docx4j symbol fonts.");
 			
 			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverJarFonts.enabled", true)) {
 				PhysicalFonts.discoverJarFonts();
@@ -111,6 +115,8 @@ public class BestMatchingMapper extends Mapper {
 			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverPhysicalFonts.enabled", true)) {
 				PhysicalFonts.discoverPhysicalFonts();
 			}
+			
+			PhysicalFonts.fontCache.save();			
 
             physicalFontsByKey = new HashMap<String, PhysicalFont>();
             generateKeysForPhysicalFonts();

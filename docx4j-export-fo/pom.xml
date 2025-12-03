@@ -105,6 +105,12 @@
 			<scope>test</scope>
 		</dependency>
 		
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-symbol</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 <!--	    
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
