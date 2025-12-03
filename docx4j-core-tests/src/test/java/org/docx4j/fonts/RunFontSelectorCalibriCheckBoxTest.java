@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.Map.Entry;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.Theme;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
@@ -34,6 +35,10 @@ public class RunFontSelectorCalibriCheckBoxTest {
 		
 	@Test
 	public  void testFont() throws Exception {
+		
+		// For this test to succeed, you should have "dejavu sans" installed
+		// or from 11.5.8, docx4j-export-fo-fonts-symbol jar on your classpath
+		Docx4jProperties.setProperty("org.docx4j.fonts.discoverPhysicalFonts.enabled", true);
 		
 		boolean save = false;
 		
