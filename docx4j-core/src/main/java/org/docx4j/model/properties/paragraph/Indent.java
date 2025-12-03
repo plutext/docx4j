@@ -298,7 +298,7 @@ public class Indent extends AbstractParagraphProperty {
 			}
 			
 			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(pdbs));
-			System.out.println("Using pdbs " + pdbs + "=" + UnitsOfMeasurement.twipToBest(pdbs));
+			log.debug("Using pdbs " + pdbs + "=" + UnitsOfMeasurement.twipToBest(pdbs));
 			
 			// start = left - pdbs
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-pdbs) );	
