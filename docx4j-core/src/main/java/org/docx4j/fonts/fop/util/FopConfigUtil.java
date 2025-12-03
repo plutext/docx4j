@@ -167,7 +167,8 @@ public class FopConfigUtil {
 					pf2 = PhysicalFonts.getWDingsFont2();
 				} else if (fontName.equals("Symbol")) {
 					pf = PhysicalFonts.getSymbolFont();
-				} else {				
+				} else {
+					// Usual case
 					pf = fontMapper.get(fontName);
 				}
 
@@ -177,9 +178,9 @@ public class FopConfigUtil {
 			    	// We may still have eg Cambria-bold embedded, but ignore this for now
 			    } else {
 			    	
-			    	createFontEntrySimulateStyles( fontMapper,  fontEntries, fontName, pf);
+			    	createFontEntrySimulateStyles( fontMapper,  fontEntries, pf.getName(), pf); // using pf.getName() ensures we use the symbol font substitute name
 			    	if (pf2!=null) {
-			    		createFontEntrySimulateStyles( fontMapper,  fontEntries, fontName, pf2);			    		
+			    		createFontEntrySimulateStyles( fontMapper,  fontEntries, pf2.getName(), pf2);			    		
 			    	}
 			    }
 			}
@@ -210,9 +211,9 @@ public class FopConfigUtil {
 			    	// We may still have eg Cambria-bold embedded
 			    } else {
 
-			    	createFontEntry( fontMapper,  fontEntries, fontName, pf);
+			    	createFontEntry( fontMapper,  fontEntries, pf.getName(), pf);
 			    	if (pf2!=null) {
-				    	createFontEntry( fontMapper,  fontEntries, fontName, pf2);			    		
+				    	createFontEntry( fontMapper,  fontEntries, pf2.getName(), pf2);			    		
 			    	}
 			    }
 			}
@@ -245,9 +246,41 @@ public class FopConfigUtil {
     		rendererFont.setSimulateStyle(true);
     		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
     		
-    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "normal"));
-    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "normal"));
-    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "bold"));
+    		rendererFont.getFontTriplet().add(createFontTriplet(fontName, "normal", "normal"));
+    		rendererFont.getFontTriplet().add(createFontTriplet(fontName, "italic", "normal"));
+
+    		// Italics
+			PhysicalFont pfVariation = fontMapper.getItalicForm(fontName, pf);
+    		if (pfVariation==null) {
+    			rendererFont.getFontTriplet().add(createFontTriplet(fontName, "italic", "normal"));
+    			if (log.isDebugEnabled()) {
+    				log.debug(fontName + " - no italic form");
+    			}
+    		} else {    			
+    			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, "italic", "italic", "normal");    			
+        		fontEntries.put(variant.getEmbedUrl(), variant);    			
+    			if (log.isDebugEnabled()) {
+    				log.debug(fontName + " - added italic form");
+    			}
+    		}
+    		
+    		
+    		// Bold
+			pfVariation = fontMapper.getBoldForm(fontName, pf);
+    		if (pfVariation==null) {
+    			rendererFont.getFontTriplet().add(createFontTriplet(fontName, "normal", "bold"));
+    			if (log.isDebugEnabled()) {
+    				log.debug(fontName + " - no bold form");
+    			}
+    		} else {    			
+    			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, "bold", "normal", "bold");
+        		fontEntries.put(variant.getEmbedUrl(), variant);    			
+    			if (log.isDebugEnabled()) {
+    				log.debug(fontName + " - added bold form");
+    			}
+    		}
+    		
+    		
     		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
     		
     	} else {
