@@ -715,11 +715,19 @@ public class Docx4J {
 		Exporter<FOSettings> exporter = getFOExporter(flags);
 		exporter.export(settings, outputStream);
 	}
-	
+
 	/**
 	 *  Convenience method to convert the document to PDF
 	 */	
 	public static void toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream) throws Docx4JException {
+		toPDF( wmlPackage,  outputStream, FLAG_NONE);
+	}
+	
+	/**
+	 *  Convenience method to convert the document to PDF
+	 *  @since 11.5.8
+	 */	
+	public static void toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream, int flags) throws Docx4JException {
 				
 		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
 		startEvent.publish();
@@ -746,7 +754,7 @@ public class Docx4J {
 			try {
 
 				FopReflective.invokeFORendererApacheFOP(settings);
-				toFO(settings, outputStream, FLAG_NONE);
+				toFO(settings, outputStream, flags);
 				
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
