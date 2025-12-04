@@ -135,6 +135,30 @@ public class IdentityPlusMapper extends Mapper {
         		put(documentFontname,         				 
         				mappedTo );	
         			log.debug(".. mapped to " + mappedTo.getName() );
+	        } else if (PhysicalFonts.get(documentFontname + " italic")!=null) {
+	        	/*
+					Brush Script MT vs brush script mt italic
+					Lucida Calligraphy vs lucida calligraphy italic
+					Lucida Handwriting vs lucida handwriting italic
+					Vivaldi vs vivaldi italic
+	        	 */
+        		put(documentFontname,         				 
+        				PhysicalFonts.get(documentFontname + " italic") );	
+        			log.debug(".. mismatch mapped to " + documentFontname + " italic" );
+	        } else if (PhysicalFonts.get(documentFontname + " bold")!=null) {
+	        	/* Magneto vs magneto bold
+	        	 * Berlin Sans FB Demi vs Berlin Sans FB Demi Bold	        	
+	        	 */
+        		put(documentFontname,         				 
+        				PhysicalFonts.get(documentFontname + " bold") );	
+        			log.debug(".. mismatch mapped to " + documentFontname + " bold" );
+	        } else if (PhysicalFonts.get(documentFontname + " regular")!=null) {
+	        	/*
+	        	 * Noto Sans Symbols vs Noto Sans Symbols Regular
+	        	 */
+        		put(documentFontname,         				 
+        				PhysicalFonts.get(documentFontname + " regular") );	
+        			log.debug(".. mismatch mapped to " + documentFontname + " regular" );
 	        } else if (regularForms.get(documentFontname)!=null) {
         		put(documentFontname,         				 
         				regularForms.get(documentFontname) );	
