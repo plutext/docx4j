@@ -191,9 +191,6 @@ public class ConvertOutPDFviaXSLFO {
 		// Config - step 2
 		// Get FopFactoryBuilder, then its standard FOP config stuff
 		FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettings) ;
-		// or specify your own resolver.
-		// FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettings, new ClasspathResolverURIAdapter()) ;
-		// Either way, defaultBaseURI can be set at property "docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI"
 		
 		// You can specify a HyphenBaseResourceResolver, but its probably not necessary if your specify your own resolver above
 //		fopFactoryBuilder.setHyphenBaseResourceResolver( 
