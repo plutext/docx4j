@@ -271,6 +271,9 @@ public class FontInfoFinder {
                     customFont.setEventListener(this.eventListener);
                 }
             } catch (Exception e) {
+            	if (log.isDebugEnabled()) {
+            		log.debug(fontURI.toASCIIString() + " caused ", e);
+            	}
                 if (fontCache != null) {
                     fontCache.registerFailedFont(embedUri.toASCIIString(), fileLastModified);
                 }

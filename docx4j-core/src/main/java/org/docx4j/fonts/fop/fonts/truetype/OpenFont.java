@@ -1501,7 +1501,12 @@ public abstract class OpenFont {
 			for (int i = 0; i < panoseArray.length; i++) {
 				panoseArray[i] = fontFile.read();
 			}
-			this.panose = Panose.makeInstance(panoseArray);
+			try {
+				this.panose = Panose.makeInstance(panoseArray);
+			} catch (java.lang.IllegalArgumentException p) {
+				log.warn("Panose.makeInstance failed for this font." );
+				log.info(p.getMessage(), p);
+			}
 			
 			fontFile.skip(4 * 4); //unicode ranges
             fontFile.skip(4);
