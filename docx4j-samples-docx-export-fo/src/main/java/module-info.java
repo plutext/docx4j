@@ -18,5 +18,5 @@ module docx4j_samples_docx4_export_fo {
 //	requires org.eclipse.persistence.moxy;
 //	requires org.eclipse.persistence.core;
 	
-	
+	// requires jdk.management; //temp	
 }
