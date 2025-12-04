@@ -766,14 +766,22 @@ public class PhysicalFonts {
 	 * 
 	 * @since 11.5.8
 	 */ 
-	public final static int discoverJarFonts(String pathPrefix) throws URISyntaxException, IOException, FOPException {
+	public final static int discoverJarFonts(String pathPrefix) throws URISyntaxException, FOPException {
 		
 		// This method sets us up to be able to distribute a symbol fonts jar,
 		// with fonts in say /symbolfonts, 
 		// so invoking it does not load other fonts at say /fonts
 		
 		// First, discover all fonts in that path
-		List<URL> list = getFontUrls(pathPrefix); 
+		List<URL> list;
+		try {
+			
+			list = getFontUrls(pathPrefix);
+		} catch (IOException e) {
+			//  java.nio.file.NoSuchFileException: fonts
+			log.error(e.getMessage(), e);
+			return 0;
+		}
 		for (URL u : list) {
 			if (log.isDebugEnabled()) {
 				log.debug(u.toString());
@@ -819,7 +827,7 @@ public class PhysicalFonts {
         if ("jar".equals(rootUri.getScheme())) {
             // JAR MODE: Create a FileSystem for the JAR structure
             try (FileSystem fileSystem = FileSystems.newFileSystem(rootUri, Collections.emptyMap())) {
-                Path path = fileSystem.getPath("fonts");
+                Path path = fileSystem.getPath(pathPrefix);
                 fontUrls = walkPathAndGetUrls(path);
             }
         } else {
