@@ -2,6 +2,30 @@ CHANGELOG
 =========
 
 
+Version 11.5.8  (export-fo font enhancements) 
+===============
+
+Release date
+------------
+
+5 December 2025
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 11.5.8
+--------------------------
+
+PDF via XSL FO output: 
+- discover fonts in jars in /fonts dir (configurable)
+- distribute symbol substitute fonts in a docx4j-export-fo-fonts-symbol jar
+- Windows: discover user-specific fonts (AppData\Local\Microsoft\Windows\Fonts)
+- change default for docx4j.fonts.fop.util.FopConfigUtil.simulate-style to true, to make font config easier
+
+
 Version 11.5.7  (minor release) 
 ===============
 
