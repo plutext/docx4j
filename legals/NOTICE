@@ -1,5 +1,5 @@
 docx4j
-Copyright 2007-2022 Plutext Pty Ltd
+Copyright 2007-2025 Plutext Pty Ltd
 
 Unless otherwise mentioned, the sources below are used in docx4j-core.
    
@@ -76,3 +76,13 @@ http://www.ecma-international.org/publications/standards/Ecma-376.htm says
 Open Specifications documents, which says you can "distribute in your implementation, 
 with or without modification, any schemas .. that are included in the documentation".
 See also the Microsoft Open Specifications Promise. 
+
+From version 11.5.8 of 5 Dec 2025, certain fonts are distributed in module docx4j-export-fo-fonts-symbol.
+
+These are as follows:
+- noto sans symbols and noto sans symbols 2, which are licensed by The Noto Project Authors under SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007; 
+see further https://github.com/plutext/docx4j/blob/VERSION_11_5_9/docx4j-export-fo-fonts-symbol/src/main/resources/fonts-symbol/Noto_Sans_Symbols/OFL.txt
+- certain DejaVu fonts; see the license at https://github.com/plutext/docx4j/blob/VERSION_11_5_9/docx4j-export-fo-fonts-symbol/src/main/resources/fonts-symbol/dejavu-fonts-ttf-2.37/LICENSE 
+
+
+
