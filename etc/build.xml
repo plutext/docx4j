@@ -100,6 +100,7 @@
 	<path id="docx4j-export-fo.classpath">
 
 		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/${version}/docx4j-export-fo-${version}.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo-fonts-symbol/${version}/docx4j-export-fo-fonts-symbol-${version}.jar"/>
 
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/11.4.0/jaxb-xslfo-11.4.0.jar"/>
 
