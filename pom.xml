@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.5.8</revision>
+		<revision>11.5.9-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 		
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -98,7 +98,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-11.5.8</tag>
+      <tag>docx4j-11.5.9</tag>
       <url>https://github.com/plutext/docx4j</url>
   </scm>
 	<inceptionYear>2007</inceptionYear>
