@@ -1066,7 +1066,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
 
 		String transformParts = Docx4jProperties.getProperty("docx4j.jaxb.preprocess.always");
-		boolean transformFirst = (transformParts!=null 
+		boolean transformFirst = this.getPackage().isWasStrict() || 
+				(transformParts!=null 
 				&& transformParts.contains(this.getClass().getSimpleName()));
     	
 		try {
@@ -1168,6 +1169,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			XmlUtils.transform(new StAXSource(xsr), 
 					mcPreprocessorXslt, null, result);
 			doc = (org.w3c.dom.Document) result.getNode();
+			if (log.isDebugEnabled()) {
+				log.debug("Transformation result:");
+				log.debug(XmlUtils.w3CDomNodeToString(doc));
+			}
 		} catch (Exception e) {
 			throw new JAXBException("Preprocessing exception", e);
 		}

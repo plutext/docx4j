@@ -188,6 +188,13 @@ public class Load3 extends Load {
 		p.setRelationships(rp);
 		rp.setSourceP(p); //
 		
+		// @since 11.5.9
+		if (PackageRelsUtil.isStrict(rp)) {
+			log.info("Loading Strict pkg");
+			p.setWasStrict(true);
+			rp.importStrict();
+		}
+		
 		// 5. Now recursively 
 //		(i) create new Parts for each thing listed
 //		in the relationships
@@ -396,6 +403,12 @@ public class Load3 extends Load {
 		
 		RelationshipsPart rrp = getRelationshipsPart(part);
 		if (rrp!=null) {
+			
+			// @since 11.5.9
+			if (pkg.isWasStrict()) {
+				rrp.importStrict();
+			}
+			
 			// recurse via this parts relationships, if it has any
 			addPartsFromRelationships(part, rrp, ctm );
 //			String relPart = PartName.getRelationshipsPartName(

@@ -85,6 +85,20 @@ import jakarta.xml.bind.JAXBElement;
 public abstract class OpcPackage extends Base implements PackageIdentifier {
 
 	private static Logger log = LoggerFactory.getLogger(OpcPackage.class);
+	
+	protected boolean strict = false;
+	
+	public void setWasStrict(boolean strict) {
+		this.strict = strict;
+	}
+
+	/**
+	 * @return
+	 * @since 11.5.9
+	 */
+	public boolean isWasStrict() {
+		return strict;
+	}
 
 	/**
 	 * This HashMap is intended to prevent loops during the loading 

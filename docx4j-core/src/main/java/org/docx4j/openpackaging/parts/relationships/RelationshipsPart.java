@@ -1178,10 +1178,70 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		    }
 	  } 	
 	
+	  
+	 /**
+	 * Import rels from a Strict docx  (ttp://purl.oclc.org/)
+	 * @throws Docx4JException
+	 * @since 11.5.9
+	 */
+	public void importStrict() throws Docx4JException {
+		  
+		  /*  Curiously, it is only @type which needs changing:
+		   * 
+				<Relationships
+					xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+					<Relationship Id="rId3"
+						Type="http://purl.oclc.org/ooxml/officeDocument/relationships/extendedProperties"
+						Target="docProps/app.xml" />
+					<Relationship Id="rId2"
+						Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"
+						Target="docProps/core.xml" />
+					<Relationship Id="rId1"
+						Type="http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument"
+						Target="word/document.xml" />
+				</Relationships>
+				
+				should become:
+				
+				<Relationships
+					xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+					<Relationship Id="rId3"
+						Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties"
+						Target="docProps/app.xml" />
+					<Relationship Id="rId2"
+						Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"
+						Target="docProps/core.xml" />
+					<Relationship Id="rId1"
+						Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+						Target="word/document.xml" />
+				</Relationships>				
+		   */
+			if (log.isDebugEnabled()) {
+				log.debug("Converting Strict to Transitional: " + this.getPartName().getName());
+			}
+		
+			String relationshipType;
+			for (Relationship r : this.getContents().getRelationship()) {
+
+				relationshipType = r.getType();
+				if (relationshipType.equals("http://purl.oclc.org/ooxml/officeDocument/relationships/extendedProperties")) {
+					// note extendedProperties vs extended-properties
+					r.setType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties");
+				} else if (relationshipType.startsWith(Namespaces.NAMESPACE_PREFIX_STRICT)) {
+					// int i = "http://purl.oclc.org/ooxml/officeDocument".length(); // 41
+					r.setType(Namespaces.NAMESPACE_PREFIX_TRANSITIONAL + relationshipType.substring(41));
+				}
+
+			}
+		  
+	  }
+	  
 //	public static void main(String[] args) throws Exception {
 //		
 //		System.out.println(inferSourcePartName("word/_rels/document.xml.rels"));
 //		System.out.println(inferSourcePartName("/_rels/.rels"));
 //	}
 	
+	  
+	  
 }

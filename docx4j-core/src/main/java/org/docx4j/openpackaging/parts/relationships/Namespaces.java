@@ -22,6 +22,12 @@ package org.docx4j.openpackaging.parts.relationships;
 
 public class Namespaces {
 
+	/* usual case */
+	public static final String NAMESPACE_PREFIX_TRANSITIONAL = "http://schemas.openxmlformats.org/officeDocument/2006";
+	
+	/* "strict" case - since 11.5.9, we can detect and import this */
+	public static final String NAMESPACE_PREFIX_STRICT = "http://purl.oclc.org/ooxml/officeDocument";
+
 //	public static final String MARKUP_COMPATIBILITY = "http://schemas.openxmlformats.org/markup-compatibility/2006";	
 
 	public static final String CONTENT_TYPES = 

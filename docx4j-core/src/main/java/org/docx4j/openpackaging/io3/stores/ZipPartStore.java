@@ -345,6 +345,13 @@ public class ZipPartStore implements PartStore {
 
 	        if (part.isUnmarshalled() ) {
 	        	log.debug("marshalling " + part.getPartName() );
+	        	part.marshal( zos );	        	
+	        } else if (part.getPackage().isWasStrict() ) {
+	        	// import strict, save as transitional
+	        	// we need to unmarshall to import.
+	        	log.debug("unmarshalling " + part.getPartName() );
+	        	part.getContents();
+	        	log.debug("marshalling " + part.getPartName() );
 	        	part.marshal( zos );
 	        } else {
 
