@@ -135,6 +135,13 @@ public class IdentityPlusMapper extends Mapper {
         		put(documentFontname,         				 
         				mappedTo );	
         			log.debug(".. mapped to " + mappedTo.getName() );
+	        } else if (PhysicalFonts.get(documentFontname + " regular")!=null) {
+	        	/*
+	        	 * Noto Sans Symbols vs Noto Sans Symbols Regular
+	        	 */
+        		put(documentFontname,         				 
+        				PhysicalFonts.get(documentFontname + " regular") );	
+        			log.debug(".. mismatch mapped to " + documentFontname + " regular" );
 	        } else if (PhysicalFonts.get(documentFontname + " italic")!=null) {
 	        	/*
 					Brush Script MT vs brush script mt italic
@@ -152,13 +159,6 @@ public class IdentityPlusMapper extends Mapper {
         		put(documentFontname,         				 
         				PhysicalFonts.get(documentFontname + " bold") );	
         			log.debug(".. mismatch mapped to " + documentFontname + " bold" );
-	        } else if (PhysicalFonts.get(documentFontname + " regular")!=null) {
-	        	/*
-	        	 * Noto Sans Symbols vs Noto Sans Symbols Regular
-	        	 */
-        		put(documentFontname,         				 
-        				PhysicalFonts.get(documentFontname + " regular") );	
-        			log.debug(".. mismatch mapped to " + documentFontname + " regular" );
 	        } else if (regularForms.get(documentFontname)!=null) {
         		put(documentFontname,         				 
         				regularForms.get(documentFontname) );	
@@ -177,8 +177,8 @@ public class IdentityPlusMapper extends Mapper {
         			log.debug(".. mapped to embedded bold italic form " );
 	        	
 	        } else {
-	        	
-	        	log.warn("- - No physical font for: " + documentFontname);
+	        	log.warn("- - No physical font for: " + documentFontname + " so ensure it is mapped. ");
+	        	// user should configure a mapping for this
 	        }
 	    }	        	
 		
