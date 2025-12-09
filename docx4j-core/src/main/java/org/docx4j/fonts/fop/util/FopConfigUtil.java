@@ -247,7 +247,6 @@ public class FopConfigUtil {
     		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
     		
     		rendererFont.getFontTriplet().add(createFontTriplet(fontName, "normal", "normal"));
-    		rendererFont.getFontTriplet().add(createFontTriplet(fontName, "italic", "normal"));
 
     		// Italics
 			PhysicalFont pfVariation = fontMapper.getItalicForm(fontName, pf);
