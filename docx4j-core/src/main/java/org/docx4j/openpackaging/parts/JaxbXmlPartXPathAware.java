@@ -361,6 +361,16 @@ implements XPathEnabled<E> {
 		return unmarshal(is, false);
 	}
 	
+	protected boolean isWasStrict() {
+		
+		if (this.getPackage() == null) {
+			// backwards compatibility for certain tests 
+			return false;
+		} else {
+			return this.getPackage().isWasStrict();
+		}
+	}
+	
 	/**
 	 * Unmarshalling via DOM document can be 4x slower than unmarshalling
 	 * the inputstream using XMLStreamReader, so we avoid doing that where possible.
@@ -374,8 +384,12 @@ implements XPathEnabled<E> {
 		
 //		long start = System.currentTimeMillis();
 		String transformParts = Docx4jProperties.getProperty("docx4j.jaxb.preprocess.always");
-		boolean transformFirst = (transformParts!=null 
+		boolean transformFirst = isWasStrict() ||
+				(transformParts!=null 
 				&& transformParts.contains(this.getClass().getSimpleName()));
+		if (log.isDebugEnabled()) {
+			log.debug("transformFirst=" + transformFirst);
+		}
 		
 		try {
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
@@ -511,8 +525,10 @@ implements XPathEnabled<E> {
 					if (((UnmarshalException)ue).getLinkedException()!=null) {
 
 						log.warn(((UnmarshalException)ue).getLinkedException().getMessage());	
-						
-						if (((UnmarshalException)ue).getLinkedException().getMessage().contains("entity")) {
+
+						if (((UnmarshalException)ue).getLinkedException().getMessage().contains("http://purl.oclc.org/")) {
+							log.debug("http://purl.oclc.org/ namespace, which will need to be transformed.");
+						} else if (((UnmarshalException)ue).getLinkedException().getMessage().contains("entity")) {
 						
 							/*
 								Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
