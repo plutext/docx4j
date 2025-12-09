@@ -788,6 +788,9 @@ public class PhysicalFonts {
 			}
 			
 			List<PhysicalFont>  pfList = PhysicalFonts.getPhysicalFont(null, u.toURI() );
+			if (pfList==null) {
+				continue; // problems....
+			}
 			PhysicalFonts.putPhysicalFonts(null, pfList);
 		}
 		
