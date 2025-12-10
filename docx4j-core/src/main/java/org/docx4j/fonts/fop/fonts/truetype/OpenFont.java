@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -228,6 +229,7 @@ public abstract class OpenFont {
 
     private int[] ansiWidth;
     private Map<Integer, List<Integer>> ansiIndex;
+    protected Map<Integer, SVGGlyphData> svgs;
 
     // internal mapping of glyph indexes to unicode indexes
     // used for quick mappings in this class
@@ -564,18 +566,8 @@ public abstract class OpenFont {
                             unicodeMappings.add(new UnicodeMapping(this, glyphIdx, j));
                             mtxTab[glyphIdx].getUnicodeIndex().add(j);
 
-                            if (encodingID == 0 && j >= 0xF020 && j <= 0xF0FF) {
-                                //Experimental: Mapping 0xF020-0xF0FF to 0x0020-0x00FF
-                                //Tested with Wingdings and Symbol TTF fonts which map their
-                                //glyphs in the region 0xF020-0xF0FF.
-                                int mapped = j - 0xF000;
-                                if (!eightBitGlyphs.get(mapped)) {
-                                    //Only map if Unicode code point hasn't been mapped before
-                                    unicodeMappings.add(new UnicodeMapping(this, glyphIdx, mapped));
-                                    mtxTab[glyphIdx].getUnicodeIndex().add(mapped);
-                                }
-                            }
-
+                            mapSymbol(encodingID, j, eightBitGlyphs, glyphIdx);
+                            
                             // Also add winAnsiWidth
                             List<Integer> v = ansiIndex.get(j);
                             if (v != null) {
@@ -733,6 +725,20 @@ public abstract class OpenFont {
         }
         return true;
     }
+    
+    private void mapSymbol(int encodingID, int unicodeIndex, BitSet eightBitGlyphs, int glyphIdx) {
+        if (encodingID == 0 && unicodeIndex >= 0xF020 && unicodeIndex <= 0xF0FF) {
+            /* Experimental: Mapping 0xF020-0xF0FF to 0x0020-0x00FF
+            Tested with Wingdings and Symbol TTF fonts which map their
+            glyphs in the region 0xF020-0xF0FF. */
+            int mapped = unicodeIndex - 0xF000;
+            if (!eightBitGlyphs.get(mapped)) {
+                //Only map if Unicode code point hasn't been mapped before
+                unicodeMappings.add(new UnicodeMapping(this, glyphIdx, mapped));
+                mtxTab[glyphIdx].getUnicodeIndex().add(mapped);
+            }
+        }
+    }    
 
     private boolean isInPrivateUseArea(int start, int end) {
         return (isInPrivateUseArea(start) || isInPrivateUseArea(end));
@@ -848,6 +854,7 @@ public abstract class OpenFont {
         readPostScript();
         readOS2();
         determineAscDesc();
+        readSVG();
 
         readName();
         boolean pcltFound = readPCLT();
@@ -1338,6 +1345,33 @@ public abstract class OpenFont {
         }
     }
 
+    private void readSVG() throws IOException {
+        OFDirTabEntry dirTab = dirTabs.get(OFTableName.SVG);
+        if (dirTab != null) {
+            svgs = new LinkedHashMap<>();
+            fontFile.seekSet(dirTab.getOffset());
+            fontFile.readTTFUShort(); //version
+            fontFile.readTTFULong(); //svgDocumentListOffset
+            fontFile.readTTFULong(); //reserved
+            int numEntries = fontFile.readTTFUShort();
+            for (int i = 0; i < numEntries; i++) {
+                int startGlyphID = fontFile.readTTFUShort();
+                fontFile.readTTFUShort(); //endGlyphID
+                SVGGlyphData svgGlyph = new SVGGlyphData();
+                svgGlyph.svgDocOffset = fontFile.readTTFULong();
+                svgGlyph.svgDocLength = fontFile.readTTFULong();
+                svgs.put(startGlyphID, svgGlyph);
+            }
+            for (SVGGlyphData entry : svgs.values()) {
+                seekTab(fontFile, OFTableName.SVG, entry.svgDocOffset);
+                fontFile.readTTFUShort(); //version
+                fontFile.readTTFULong(); //svgDocumentListOffset
+                fontFile.readTTFULong(); //reserved
+                entry.setSVG(fontFile.readTTFString((int) entry.svgDocLength));
+            }
+        }
+    }
+    
     /**
      * Read "hmtx" table and put the horizontal metrics
      * in the mtxTab array. If the number of metrics is less

@@ -55,7 +55,9 @@ public class EmbedFontInfo implements Serializable {
     /** simulates bold or italic on a regular font */
     private final boolean simulateStyle;
     private final boolean embedAsType1;
-
+    private final boolean useSVG;
+    private final boolean lazyLoad;
+    
     protected Set familyNames;
     
     /** the PostScript name of the font */
@@ -99,9 +101,9 @@ public class EmbedFontInfo implements Serializable {
      * @param subFontName the sub-fontname used for TrueType Collections (null otherwise)
      * @param encodingMode the encoding mode to use for this font
      */
-    public EmbedFontInfo(FontUris fontUris, boolean kerning, boolean advanced,
-            List<FontTriplet> fontTriplets, String subFontName, EncodingMode encodingMode,
-            EmbeddingMode embeddingMode, boolean simulateStyle, boolean embedAsType1) {
+    public EmbedFontInfo(FontUris fontUris, boolean kerning, boolean advanced, List<FontTriplet> fontTriplets,
+            String subFontName, EncodingMode encodingMode, EmbeddingMode embeddingMode,
+            boolean simulateStyle, boolean embedAsType1, boolean useSVG, boolean lazyLoad) {
     	
         this.kerning = kerning;
         this.advanced = advanced;
@@ -112,6 +114,8 @@ public class EmbedFontInfo implements Serializable {
         this.fontUris = fontUris;
         this.simulateStyle = simulateStyle;
         this.embedAsType1 = embedAsType1;
+        this.useSVG = useSVG;
+        this.lazyLoad = lazyLoad;        
     }
 
     /**
@@ -125,7 +129,7 @@ public class EmbedFontInfo implements Serializable {
             List<FontTriplet> fontTriplets, String subFontName) {
     	
         this(fontUris, kerning, advanced, fontTriplets, subFontName, EncodingMode.AUTO,
-                EmbeddingMode.AUTO, false, false);
+                EmbeddingMode.AUTO, false, false, true, false);
     }
 
     /**
@@ -243,6 +247,14 @@ public class EmbedFontInfo implements Serializable {
         return embedAsType1;
     }
 
+    public boolean getUseSVG() {
+        return useSVG;
+    }
+
+    public boolean isLazyLoad() {
+        return lazyLoad;
+    }
+    
 	public Set getFamilyNames() {
 		return familyNames;
 	}

@@ -123,6 +123,8 @@ public final class OFTableName {
 
     /** Vertical Metrics. */
     public static final OFTableName VMTX = new OFTableName("vmtx");
+    
+    public static final OFTableName SVG = new OFTableName("SVG ");    
 
     private final String name;
 

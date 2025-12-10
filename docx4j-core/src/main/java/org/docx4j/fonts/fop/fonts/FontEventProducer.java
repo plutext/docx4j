@@ -65,7 +65,7 @@ public interface FontEventProducer extends EventProducer {
      * @param e the original exception
      * @event.severity WARN
      */
-    void fontLoadingErrorAtAutoDetection(Object source, String fontURL, Exception e);
+    void fontLoadingErrorAtAutoDetection(Object source, String fontURL, Throwable e);
 
     /**
      * A glyph has been requested that is not available in the font.

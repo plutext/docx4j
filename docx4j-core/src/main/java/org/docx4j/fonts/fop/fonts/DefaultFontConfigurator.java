@@ -24,6 +24,7 @@
 
 package org.docx4j.fonts.fop.fonts;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -122,7 +123,7 @@ public class DefaultFontConfigurator implements FontConfigurator<EmbedFontInfo> 
             FontFileFinder fontFileFinder = new FontFileFinder(directory.isRecursive() ? -1 : 1, listener);
             List<URL> fontURLList;
             try {
-                fontURLList = fontFileFinder.find(directory.getDirectory());
+            	fontURLList = fontFileFinder.find(new File(directory.getDirectory()));
                 fontAdder.add(fontURLList, fontInfoList);
             } catch (IOException e) {
                 LogUtil.handleException(log, e, strict);
@@ -172,7 +173,7 @@ public class DefaultFontConfigurator implements FontConfigurator<EmbedFontInfo> 
         EmbeddingMode embeddingMode = EmbeddingMode.getValue(font.getEmbeddingMode());
         EmbedFontInfo embedFontInfo = new EmbedFontInfo(fontUris, font.isKerning(),
                 font.isAdvanced(), tripletList, subFont, encodingMode, embeddingMode,
-                font.getSimulateStyle(), font.getEmbedAsType1());
+                font.getSimulateStyle(), font.getEmbedAsType1(), font.getUseSVG(), font.isLazyLoad());
         if (fontCache != null) {
             if (!fontCache.containsFont(embedFontInfo)) {
                 fontCache.addFont(embedFontInfo, resourceResolver);

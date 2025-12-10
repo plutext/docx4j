@@ -26,6 +26,7 @@ package org.docx4j.fonts.fop.fonts.truetype;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets; 
 
 import org.apache.commons.io.IOUtils;
 
@@ -297,9 +298,8 @@ public class FontFileReader {
         byte[] tmp = new byte[len];
         System.arraycopy(file, current, tmp, 0, len);
         current += len;
-        final String encoding;
-        encoding = "UTF-16BE"; //Use this for all known encoding IDs for now
-        return new String(tmp, encoding);
+        //Use this for all known encoding IDs for now
+        return new String(tmp, StandardCharsets.UTF_16BE);
     }
 
     /**

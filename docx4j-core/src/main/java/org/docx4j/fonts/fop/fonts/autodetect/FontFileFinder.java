@@ -25,11 +25,16 @@
 package org.docx4j.fonts.fop.fonts.autodetect;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.io.DirectoryWalker;
 import org.apache.commons.io.IOCase;
@@ -75,7 +80,7 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
      * @return IOFileFilter font directory filter
      */
     protected static IOFileFilter getDirectoryFilter() {
-        return FileFilterUtils.andFileFilter(
+        return FileFilterUtils.and(
                 FileFilterUtils.directoryFileFilter(),
                 FileFilterUtils.notFileFilter(FileFilterUtils.prefixFileFilter("."))
         );
@@ -86,13 +91,12 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
      * @return IOFileFilter font file filter
      */
     protected static IOFileFilter getFileFilter() {
-        return FileFilterUtils.andFileFilter(
+        return FileFilterUtils.and(
                 FileFilterUtils.fileFileFilter(),
-                new WildcardFileFilter(
-                        new String[] {"*.ttf", "*.otf", "*.pfb", "*.ttc"},
-                        IOCase.INSENSITIVE)
-        );
+                WildcardFileFilter.builder().setIoCase(IOCase.INSENSITIVE)
+                        .setWildcards("*.ttf", "*.otf", "*.pfb", "*.ttc").get());
     }
+    
 
     /**
      * @param directory directory to handle
@@ -156,9 +160,9 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
             }
         }
         List<File> fontDirs = fontDirFinder.find();
-        List<URL> results = new java.util.ArrayList<URL>();
+        List<URL> results = new java.util.ArrayList<>();
         for (File dir : fontDirs) {
-            super.walk(dir, results);
+            walkDirectory(dir, results);
         }
         return results;
     }
@@ -166,18 +170,83 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
     /**
      * Searches a given directory for font files
      *
-     * @param dir directory to search
+     * @param directory directory to search
      * @return list of font files
      * @throws IOException thrown if an I/O exception of some sort has occurred
      */
-    public List<URL> find(String dir) throws IOException {
-        List<URL> results = new java.util.ArrayList<URL>();
-        File directory = new File(dir);
+    public List<URL> find(File directory) throws IOException {
+        List<URL> results = new java.util.ArrayList<>();
         if (!directory.isDirectory()) {
-            eventListener.fontDirectoryNotFound(this, dir);
+            if (eventListener != null) {
+                eventListener.fontDirectoryNotFound(this, directory.getAbsolutePath());
+            } else {
+                log.warn("Font directory not found: " + directory.getAbsolutePath());
+            }
         } else {
-            super.walk(directory, results);
+            walkDirectory(directory, results);
         }
         return results;
+    }
+
+    private void walkDirectory(File startDirectory, Collection<URL> results) throws IOException {
+        Objects.requireNonNull(startDirectory, "startDirectory");
+
+        try {
+            walk(startDirectory, 0, results, new HashMap<>());
+        } catch (CancelException cancel) {
+            handleCancelled(startDirectory, results, cancel);
+        }
+
+    }
+
+    private void walk(File directory, int depth, Collection<URL> results,
+                      Map<String, String> visitedSymlinks) throws IOException {
+        IOFileFilter fileFilter = FileFilterUtils.makeFileOnly(getFileFilter());
+        IOFileFilter directoryFilter = FileFilterUtils.makeDirectoryOnly(getDirectoryFilter());
+        FileFilter filter = directoryFilter.or(fileFilter);
+
+        checkIfCancelled(directory, depth, results);
+
+        int childDepth = depth + 1;
+
+        File[] childFiles = directory.listFiles(filter);
+        if (childFiles != null) {
+            for (File childFile : childFiles) {
+                if (childFile.isDirectory()) {
+                    if (Files.isSymbolicLink(childFile.toPath()) && hasSymlinkBeenWalked(childFile, visitedSymlinks)) {
+                        continue;
+                    }
+                    walk(childFile, childDepth, results, visitedSymlinks);
+                } else {
+                    checkIfCancelled(childFile, childDepth, results);
+                    handleFile(childFile, childDepth, results);
+                    checkIfCancelled(childFile, childDepth, results);
+                }
+            }
+        }
+
+        handleDirectoryEnd(directory, depth, results);
+        checkIfCancelled(directory, depth, results);
+    }
+
+    private boolean hasSymlinkBeenWalked(File symlink, Map<String, String> visitedSymlinks) {
+        String symlinkPath;
+        try {
+            symlinkPath = symlink.toPath().toRealPath().toString();
+        } catch (IOException e) {
+            log.warn("Failed to get symlink path: " + e.getMessage());
+            symlinkPath = symlink.getAbsolutePath();
+        }
+        for (Map.Entry<String, String> entry : visitedSymlinks.entrySet()) {
+            //startsWith being used in the event there's an exception in the call above
+            //if there's no exception, startsWith will work as an equals
+            if (symlinkPath.startsWith(entry.getKey()) && entry.getValue().equals(symlink.getName())) {
+                return true;
+            }
+        }
+
+        visitedSymlinks.put(symlinkPath, symlink.getName());
+
+        return false;
     }
 }

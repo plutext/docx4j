@@ -218,7 +218,7 @@ public class FontInfoFinder {
                 	return null;
                 }
                 
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (this.eventListener != null) {
                     this.eventListener.fontLoadingErrorAtAutoDetection(this,
                             fontURI.toASCIIString(), e);
@@ -238,12 +238,12 @@ public class FontInfoFinder {
                 try {
                     OFFontLoader ttfLoader = new OFFontLoader(fontURI, fontName, true,
                             EmbeddingMode.AUTO, EncodingMode.AUTO, useKerning, useAdvanced,
-                            resourceResolver, false, false);
+                            resourceResolver, false, false, true);
                     customFont = ttfLoader.getFont();
                     if (this.eventListener != null) {
                         customFont.setEventListener(this.eventListener);
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     if (fontCache != null) {
                         fontCache.registerFailedFont(embedUri.toASCIIString(), fileLastModified);
                     }
@@ -266,7 +266,7 @@ public class FontInfoFinder {
             try {
                 FontUris fontUris = new FontUris(fontURI, null);
                 customFont = FontLoader.loadFont(fontUris, null, true, EmbeddingMode.AUTO, EncodingMode.AUTO,
-                        useKerning, useAdvanced, resourceResolver, false, false);
+                        useKerning, useAdvanced, resourceResolver, false, false, true);
                 if (this.eventListener != null) {
                     customFont.setEventListener(this.eventListener);
                 }

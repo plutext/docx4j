@@ -97,7 +97,7 @@ public final class FontDetectorFactory {
                 URI fontBaseURI = fontManager.getResourceResolver().getBaseURI();
                 File fontBase = FileUtils.toFile(fontBaseURI.toURL());
                 if (fontBase != null) {
-                    List<URL> fontURLList = fontFileFinder.find(fontBase.getAbsolutePath());
+                    List<URL> fontURLList = fontFileFinder.find(fontBase);
                     fontAdder.add(fontURLList, fontInfoList);
 
                     //Can only use the font base URL if it's a file URL

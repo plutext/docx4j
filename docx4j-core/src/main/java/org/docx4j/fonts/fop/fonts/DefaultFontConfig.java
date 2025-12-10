@@ -120,6 +120,7 @@ public final class DefaultFontConfig implements FontConfig {
         }
 
         private void parseFonts() throws FOPException {
+            boolean lazyLoad = fontInfoCfg.getAttributeAsBoolean("lazy-load", false);        	
             for (Configuration fontCfg : fontInfoCfg.getChildren("font")) {
                 String embed = fontCfg.getAttribute("embed-url", null);
                 if (embed == null) {
@@ -127,16 +128,20 @@ public final class DefaultFontConfig implements FontConfig {
                             strict);
                     continue;
                 }
+                String subFont = fontCfg.getAttribute("sub-font", null);
                 Font font = new Font(fontCfg.getAttribute("metrics-url", null), embed,
                         fontCfg.getAttribute("embed-url-afm", null),
                         fontCfg.getAttribute("embed-url-pfm", null),
-                        fontCfg.getAttribute("sub-font", null),
+                        subFont,
                         fontCfg.getAttributeAsBoolean("kerning", true),
                         fontCfg.getAttributeAsBoolean("advanced", true),
                         fontCfg.getAttribute("encoding-mode", EncodingMode.AUTO.getName()),
                         fontCfg.getAttribute("embedding-mode", EncodingMode.AUTO.getName()),
                         fontCfg.getAttributeAsBoolean("simulate-style", false),
-                        fontCfg.getAttributeAsBoolean("embed-as-type1", false));
+                        fontCfg.getAttributeAsBoolean("embed-as-type1", false),
+                        fontCfg.getAttributeAsBoolean("svg", true),
+                        lazyLoad);
+                
                 instance.fonts.add(font);
                 boolean hasTriplets = false;
                 for (Configuration tripletCfg : fontCfg.getChildren("font-triplet")) {
@@ -319,12 +324,11 @@ public final class DefaultFontConfig implements FontConfig {
 
         private final String embeddingMode;
 
-        public String getEncodingMode() {
-            return encodingMode;
-        }
-
         private final boolean embedAsType1;
         private final boolean simulateStyle;
+        
+        private final boolean useSVG;
+        private final boolean lazyLoad;
 
         private final List<FontTriplet> tripletList = new ArrayList<FontTriplet>();
 
@@ -333,8 +337,8 @@ public final class DefaultFontConfig implements FontConfig {
         }
 
         private Font(String metrics, String embed, String afm, String pfm, String subFont, boolean kerning,
-                     boolean advanced, String encodingMode, String embeddingMode, boolean simulateStyle,
-                     boolean embedAsType1) {
+                boolean advanced, String encodingMode, String embeddingMode, boolean simulateStyle,
+                boolean embedAsType1, boolean useSVG, boolean lazyLoad) {
             this.metrics = metrics;
             this.embedUri = embed;
             this.afm = afm;
@@ -346,6 +350,8 @@ public final class DefaultFontConfig implements FontConfig {
             this.embeddingMode = embeddingMode;
             this.simulateStyle = simulateStyle;
             this.embedAsType1 = embedAsType1;
+            this.useSVG = useSVG;
+            this.lazyLoad = lazyLoad;            
         }
 
         /**
@@ -384,6 +390,10 @@ public final class DefaultFontConfig implements FontConfig {
             return subFont;
         }
 
+        public String getEncodingMode() {
+            return encodingMode;
+        }
+        
         public String getEmbeddingMode() {
             return embeddingMode;
         }
@@ -403,5 +413,13 @@ public final class DefaultFontConfig implements FontConfig {
         public boolean getEmbedAsType1() {
             return embedAsType1;
         }
+        
+        public boolean getUseSVG() {
+            return useSVG;
+        }
+
+        public boolean isLazyLoad() {
+            return lazyLoad;
+        }        
     }
 }

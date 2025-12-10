@@ -34,10 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.complexscripts.fonts.Positionable;
 import org.docx4j.fonts.fop.complexscripts.fonts.Substitutable;
 import org.docx4j.fonts.fop.fonts.CustomFont;
+import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
 import org.docx4j.fonts.fop.fonts.FontType;
+import org.docx4j.fonts.fop.fonts.FontUris;
 import org.docx4j.fonts.fop.fonts.LazyFont;
 import org.docx4j.fonts.fop.fonts.Typeface;
 
@@ -54,6 +57,9 @@ public class CustomFontMetricsMapper extends Typeface implements FontMetricsMapp
      * Font metrics for the font this class models.
      */
     private Typeface typeface;
+    private FontUris fontUris;
+    private EmbedFontInfo configFontInfo;
+    private InternalResourceResolver resourceResolver;
 
     /**
      * The font required by the Java2D renderer.
@@ -91,6 +97,13 @@ public class CustomFontMetricsMapper extends Typeface implements FontMetricsMapp
         this.typeface = fontMetrics;
         initialize(fontSource);
     }
+
+	public CustomFontMetricsMapper(FontUris fontUris, EmbedFontInfo configFontInfo,
+			InternalResourceResolver resourceResolver) {
+		this.fontUris = fontUris;
+		this.configFontInfo = configFontInfo;
+		this.resourceResolver = resourceResolver;
+	}
 
     private static final int TYPE1_FONT = 1; //Defined in Java 1.5
 

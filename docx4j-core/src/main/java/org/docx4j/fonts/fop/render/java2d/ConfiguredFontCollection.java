@@ -77,7 +77,7 @@ public class ConfiguredFontCollection implements FontCollection {
             internalName = "F" + num++;
             try {
                 URI fontURI = configFontInfo.getEmbedURI();
-                FontMetricsMapper font;
+                CustomFontMetricsMapper font;
                 URI metricsURI = configFontInfo.getMetricsURI();
                 // If the user specified an XML-based metrics file, we'll use it
                 // Otherwise, calculate metrics directly from the font file.
@@ -87,12 +87,10 @@ public class ConfiguredFontCollection implements FontCollection {
                     font = new CustomFontMetricsMapper(fontMetrics, fontSource);
                 } else {
                     FontUris fontUris = configFontInfo.getFontUris();
-                    CustomFont fontMetrics = FontLoader.loadFont(fontUris,
-                            configFontInfo.getSubFontName(), true,
-                            configFontInfo.getEmbeddingMode(), configFontInfo.getEncodingMode(),
-                            configFontInfo.getKerning(), configFontInfo.getAdvanced(), resourceResolver,
-                            configFontInfo.getSimulateStyle(), configFontInfo.getEmbedAsType1());
-                    font = new CustomFontMetricsMapper(fontMetrics);
+                    font = new CustomFontMetricsMapper(fontUris, configFontInfo, resourceResolver);
+                    if (!configFontInfo.isLazyLoad()) {
+                        font.getRealFont();
+                    }
                 }
 
                 fontInfo.addMetrics(internalName, font);

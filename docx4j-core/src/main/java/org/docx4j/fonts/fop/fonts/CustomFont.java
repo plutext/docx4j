@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
+import org.docx4j.fonts.fop.fonts.truetype.SVGGlyphData;
 import org.docx4j.fonts.foray.font.format.Panose;
 
 
@@ -86,6 +87,7 @@ public abstract class CustomFont extends Typeface
     private boolean useKerning = true;
     /** the character map, mapping Unicode ranges to glyph indices. */
     protected List<CMapSegment> cmap = new ArrayList<CMapSegment>();
+    protected Map<Integer, SVGGlyphData> svgs; 
     private boolean useAdvanced = true;
     private boolean simulateStyle;
     protected List<SimpleSingleByteEncoding> additionalEncodings;
@@ -698,4 +700,12 @@ public abstract class CustomFont extends Typeface
         }
         return 0;
     }
+    
+    public boolean hasSVG() {
+        return svgs != null;
+    }
+
+    public void setSVG(Map<Integer, SVGGlyphData> svgs) {
+        this.svgs = svgs;
+    }    
 }

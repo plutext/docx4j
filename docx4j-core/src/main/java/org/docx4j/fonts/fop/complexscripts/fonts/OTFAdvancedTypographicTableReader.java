@@ -39,6 +39,7 @@ import org.docx4j.fonts.fop.fonts.truetype.OFTableName;
 import org.docx4j.fonts.fop.fonts.truetype.OpenFont;
 
 // CSOFF: LineLengthCheck
+// CSOFF: InnerAssignment
 
 /**
  * <p>OpenType Font (OTF) advanced typographic table reader. Used by @{Link org.docx4j.fonts.fop.fonts.truetype.TTFFile}
@@ -219,7 +220,9 @@ public final class OTFAdvancedTypographicTableReader {
                 log.debug(tableTag + " lang sys default: " + dt);
             }
         }
-        seScripts.put(scriptTag, new Object[] { dt, ll, seLanguages });
+        if (seLanguages != null) {
+            seScripts.put(scriptTag, new Object[]{dt, ll, seLanguages});
+        }
         seLanguages = null;
     }
 

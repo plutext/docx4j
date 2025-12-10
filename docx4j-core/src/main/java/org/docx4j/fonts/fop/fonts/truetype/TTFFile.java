@@ -149,6 +149,9 @@ public class TTFFile extends OpenFont {
         for (int i = 0; i < numberOfGlyphs; i++) {
             if ((i + 1) >= mtxTab.length
                     || mtxTab[i].getOffset() != mtxTab[i + 1].getOffset()) {
+                if (lastLoca != 0 && lastLoca == mtxTab[i].getOffset()) {
+                    break;
+                }
                 fontFile.seekSet(n + mtxTab[i].getOffset());
                 fontFile.skip(2);
                 final int[] bbox = {
@@ -158,15 +161,9 @@ public class TTFFile extends OpenFont {
                     fontFile.readTTFShort()};
                 mtxTab[i].setBoundingBox(bbox);
             } else {
-                /**@todo Verify that this is correct, looks like a copy/paste bug (jm)*/
                 final int bbox0 = mtxTab[0].getBoundingBox()[0];
                 final int[] bbox = {bbox0, bbox0, bbox0, bbox0};
                 mtxTab[i].setBoundingBox(bbox);
-                /* Original code
-                mtxTab[i].bbox[0] = mtxTab[0].bbox[0];
-                mtxTab[i].bbox[1] = mtxTab[0].bbox[0];
-                mtxTab[i].bbox[2] = mtxTab[0].bbox[0];
-                mtxTab[i].bbox[3] = mtxTab[0].bbox[0]; */
             }
             if (log.isTraceEnabled()) {
                 log.trace(mtxTab[i].toString(this));

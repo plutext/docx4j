@@ -57,7 +57,7 @@ public class FontEventAdapter implements FontEventListener {
     }
 
     /** {@inheritDoc} */
-    public void fontLoadingErrorAtAutoDetection(Object source, String fontURL, Exception e) {
+    public void fontLoadingErrorAtAutoDetection(Object source, String fontURL, Throwable e) {
         getEventProducer().fontLoadingErrorAtAutoDetection(source, fontURL, e);
     }
 
