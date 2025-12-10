@@ -84,5 +84,11 @@ These are as follows:
 see further https://github.com/plutext/docx4j/blob/VERSION_11_5_9/docx4j-export-fo-fonts-symbol/src/main/resources/fonts-symbol/Noto_Sans_Symbols/OFL.txt
 - certain DejaVu fonts; see the license at https://github.com/plutext/docx4j/blob/VERSION_11_5_9/docx4j-export-fo-fonts-symbol/src/main/resources/fonts-symbol/dejavu-fonts-ttf-2.37/LICENSE 
 
+From version 11.5.9 of Dec 2025, certain fonts are distributed in module docx4j-export-fo-fonts-croscore.  These are licensed to us under ASLv2; see the LICENSE.txt files in the module
+ 
+From version 11.5.9 of Dec 2025, certain fonts are distributed in module docx4j-export-fo-fonts-crosextra.  These are licensed to us under SIL OPEN FONT LICENSE Version 1.1; see the LICENSE.txt files in the module
 
+From version 11.5.9 of Dec 2025, certain fonts are distributed in module docx4j-export-fo-fonts-liberation.  
+For these: Digitized data copyright (c) 2010 Google Corporation with Reserved Font Arimo, Tinos and Cousine.  Copyright (c) 2012 Red Hat, Inc. with Reserved Font Name Liberation.
+These are licensed to us under SIL OPEN FONT LICENSE Version 1.1; see the LICENSE file in the module
 
