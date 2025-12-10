@@ -36,6 +36,10 @@
         
         <module>docx4j-export-fo</module>        
         <module>docx4j-export-fo-fonts-symbol</module>        
+        <module>docx4j-export-fo-fonts-croscore</module>  
+        <module>docx4j-export-fo-fonts-crosextra</module>   
+        <module>docx4j-export-fo-fonts-liberation</module>   
+             
         <module>docx4j-conversion-via-microsoft-graph</module>
         <module>docx4j-documents4j-remote</module>                
         <module>docx4j-documents4j-local</module>        
