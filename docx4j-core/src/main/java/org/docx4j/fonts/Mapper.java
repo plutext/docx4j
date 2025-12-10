@@ -294,4 +294,46 @@ public abstract class Mapper {
 		final PhysicalFont pfBoldItalic = PhysicalFonts.getBoldItalicForm(pf);
 		return (pfBoldItalic != null) ? pfBoldItalic : boldItalicForms.get(fontNameAsInFontTablePart);
 	}
+	
+    /**
+     * Auto-add mappings for Calibri, Cambria etc where possible and useful
+     * @since 11.5.9
+     */
+    public void addMetricallyCompatibleSubstitutes() {
+		
+		// Croscore or Liberation
+    	addMetricallyCompatibleSubstitute("Times New Roman", "Tinos Regular", "Liberation Sans");
+    	addMetricallyCompatibleSubstitute("Arial", "Arimo Regular", "Liberation Serif");
+    	addMetricallyCompatibleSubstitute("Courier New", "Cousine Regular", "Liberation Mono");
+
+		// Crosextra
+    	addMetricallyCompatibleSubstitute("Calibri", "Carlito Regular", null);
+    	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", null);
+    	
+    }
+    
+    /**
+     * @param proprietaryFont
+     * @param openSubstitute
+     * @param openSubstitute2
+     * @since 11.5.9
+     */
+    protected void addMetricallyCompatibleSubstitute(String proprietaryFont, String openSubstitute, String openSubstitute2) {
+    	
+    	if (PhysicalFonts.get(proprietaryFont)==null) {
+    		if (PhysicalFonts.get(openSubstitute)!=null) {
+	    		if (log.isDebugEnabled()) {
+	    			log.debug("Mapping " + proprietaryFont + " to " + openSubstitute);
+	    		}
+	    		put(proprietaryFont, PhysicalFonts.get(openSubstitute));
+    		} else if (openSubstitute2 !=null && PhysicalFonts.get(openSubstitute2)!=null) {
+	    		if (log.isDebugEnabled()) {
+	    			log.debug("Mapping " + proprietaryFont + " to " + openSubstitute2);
+	    		}
+	    		put(proprietaryFont, PhysicalFonts.get(openSubstitute2));
+    		} 
+    	}
+    	
+    }
+	
 }

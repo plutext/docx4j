@@ -186,8 +186,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
 		
-//		log.info("setPartShortcut for part " + part.getClass().getName() );
-		
 		if (relationshipType.equals(Namespaces.PROPERTIES_CORE)) {
 			docPropsCorePart = (DocPropsCorePart)part;
 			log.debug("Set shortcut for docPropsCorePart");
@@ -204,7 +202,8 @@ public class WordprocessingMLPackage extends OpcPackage {
 			mainDoc = (MainDocumentPart)part;
 			log.debug("Set shortcut for mainDoc");
 			return true;
-		} else {	
+		} else {
+			log.warn("Unknown relType: " + relationshipType);
 			return false;
 		}
 	}
@@ -376,6 +375,12 @@ public class WordprocessingMLPackage extends OpcPackage {
 			} catch (Exception e) {
 				throw new Docx4JException(e.getMessage(),e);
 			}
+		}
+		
+		if (Docx4jProperties.getProperty("docx4j.fonts.automap.enabled", true)) {
+			// Auto-add mappings for Calibri, Cambria etc if those fonts aren't available
+			// but the substitutes are 
+			fontMapper.addMetricallyCompatibleSubstitutes();
 		}
     	
     }

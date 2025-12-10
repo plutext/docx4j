@@ -153,19 +153,27 @@ public class ConvertOutPDFviaXSLFO {
 //		Mapper fontMapper = new IdentityPlusMapper();  // Only for Windows, unless you have Microsoft's fonts installed
 		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
 		wordMLPackage.setFontMapper(fontMapper);
+
+/* Not required from 11.5.9, since this is done automatically		
+ * 
+		// Crosextra
+		fontMapper.put("Calibri", PhysicalFonts.get("Carlito Regular"));
+		fontMapper.put("Cambria", PhysicalFonts.get("Caladea Regular"));
+
 		
-		// .. example of mapping font Times New Roman which doesn't have certain Arabic glyphs
-		// eg Glyph "ي" (0x64a, afii57450) not available in font "TimesNewRomanPS-ItalicMT".
-		// eg Glyph "ج" (0x62c, afii57420) not available in font "TimesNewRomanPS-ItalicMT".
-		// to a font which does
-		PhysicalFont font 
-				= PhysicalFonts.get("Arial Unicode MS"); 
-			// make sure this is in your regex (if any)!!!
-//		if (font!=null) {
-//			fontMapper.put("Times New Roman", font);
-//			fontMapper.put("Arial", font);
-//		}
-//		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
+		// Croscore
+		fontMapper.put("Times New Roman", PhysicalFonts.get("Tinos"));
+		fontMapper.put("Arial", PhysicalFonts.get("Arimo-Regular"));
+		fontMapper.put("Courier New", PhysicalFonts.get("Cousine-Regular"));
+
+		// OR
+		
+		// Liberation
+//		fontMapper.put("Times New Roman", PhysicalFonts.get("Liberation Sans"));
+//		fontMapper.put("Arial", PhysicalFonts.get("Liberation Serif"));
+//		fontMapper.put("Courier New", PhysicalFonts.get("Liberation Mono"));
+
+ */
 		
 		// Alternatively, use https://xmlgraphics.apache.org/fop/2.1/fonts.html#font_substitution
 		// Use docx4j property docx4j.fonts.fop.util.FopConfigUtil.substitutions to provide
