@@ -108,11 +108,11 @@ public class BestMatchingMapper extends Mapper {
 			int count = PhysicalFonts.discoverJarFonts("fonts-symbol");
 			log.info("Found " + count + " docx4j symbol fonts.");
 			
-			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverJarFonts.enabled", true)) {
+			if (Docx4jProperties.getProperty("docx4j.fonts.discoverJarFonts.enabled", true)) {
 				PhysicalFonts.discoverJarFonts();
 			}
 
-			if (Docx4jProperties.getProperty("org.docx4j.fonts.discoverPhysicalFonts.enabled", true)) {
+			if (Docx4jProperties.getProperty("docx4j.fonts.discoverPhysicalFonts.enabled", true)) {
 				PhysicalFonts.discoverPhysicalFonts();
 			}
 			
