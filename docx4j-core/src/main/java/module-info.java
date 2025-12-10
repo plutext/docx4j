@@ -179,6 +179,9 @@ module org.docx4j.core {
 
     // Resource folders must be open! See https://stackoverflow.com/questions/45166757/loading-classes-and-resources-in-java-9/45173837#45173837  
 	opens org.pptx4j.convert.out.svginhtml;
+	opens org.pptx4j.jaxb;
+	opens org.xlsx4j.jaxb;
+	
 	opens org.docx4j.toc;
 	//opens org.docx4j.org.apache.xml.security.resource;
 	opens org.docx4j.openpackaging.parts.WordprocessingML;

@@ -1163,11 +1163,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		
 		org.w3c.dom.Document doc = null;
 		try {
-			Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+			
+			Templates preprocessorXslt = JaxbValidationEventHandler.getPreprocessor(this.getPackage());
 			DOMResult result = new DOMResult();
 			
 			XmlUtils.transform(new StAXSource(xsr), 
-					mcPreprocessorXslt, null, result);
+					preprocessorXslt, null, result);
 			doc = (org.w3c.dom.Document) result.getNode();
 			if (log.isDebugEnabled()) {
 				log.debug("Transformation result:");

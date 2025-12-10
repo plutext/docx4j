@@ -35,6 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.PresentationMLPackage;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.ResourceUtils;
 
 
@@ -54,6 +58,51 @@ public class JaxbValidationEventHandler implements ValidationEventHandler {
 	public final static String UNEXPECTED_MC_ALTERNATE_CONTENT = "unexpected element (uri:\"http://schemas.openxmlformats.org/markup-compatibility/2006\", local:\"AlternateContent\")";
 	
 	static Templates mcPreprocessorXslt;	
+	static Templates pptxPreprocessorXslt;	
+	static Templates xlsxPreprocessorXslt;	
+
+	
+	/**
+	 * @param pkg
+	 * @return
+	 * @throws IOException
+	 * @throws TransformerConfigurationException
+	 * @since 11.5.9
+	 */
+	public static Templates getPreprocessor(OpcPackage pkg) throws IOException, TransformerConfigurationException {
+		
+		if (pkg instanceof WordprocessingMLPackage) {
+			return getMcPreprocessor();
+		}
+		
+		if (pkg instanceof PresentationMLPackage) {
+				
+			if (pptxPreprocessorXslt==null) {
+				
+				Source xsltSource  = new StreamSource(
+						ResourceUtils.getResourceViaProperty("pptx4j.jaxb.JaxbValidationEventHandler.pptx", 
+								"org/pptx4j/jaxb/pptx-preprocessor.xslt")
+						);
+				pptxPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
+			}			
+			return pptxPreprocessorXslt;
+		}
+		
+		if (pkg instanceof SpreadsheetMLPackage) {
+			
+			if (xlsxPreprocessorXslt==null) {
+				
+				Source xsltSource  = new StreamSource(
+						ResourceUtils.getResourceViaProperty("xlsx4j.jaxb.JaxbValidationEventHandler.xlsx", 
+								"org/xlsx4j/jaxb/xlsx-preprocessor.xslt")
+						);
+				xlsxPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
+			}
+			return xlsxPreprocessorXslt;
+		}
+		log.warn("Unexpected package " + pkg.getClass().getName());
+		return null;
+	}
 	
 	public static Templates getMcPreprocessor() throws IOException, TransformerConfigurationException {
 		
