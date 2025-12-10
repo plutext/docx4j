@@ -111,6 +111,30 @@
 			<version>${project.version}</version>
 		</dependency>
 		
+	 	<!-- you can exclude the below font jars if you are on Windows 
+	 		 (and so don't need these substitute fonts),
+	 	     or on Linux and want to use system fonts. -->
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-crosextra</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	 	     
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-croscore</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- choose one of docx4j-export-fo-fonts-croscore and docx4j-export-fo-fonts-liberation;
+			 here we choose croscore. 
+	 	<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-liberation</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		-->
+		
 <!--	    
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
