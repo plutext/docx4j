@@ -643,14 +643,11 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 		<italic filename="LiberationSans-Italic.ttf"/>
 		<bolditalic filename="LiberationSans-BoldItalic.ttf"/>
 	</font>
-
-<font name="Liberation Sans Bold" filename="LiberationSans-Bold.ttf" >
-		<italic filename="LiberationSans-BoldItalic.ttf"/>
-	</font>
 	
 <font name="Liberation Mono" filename="LiberationMono-Regular.ttf">
 		<bold filename="LiberationMono-Bold.ttf"/>
 		<italic filename="LiberationMono-Italic.ttf"/>
+		<bolditalic filename="LiberationMono-BoldItalic.ttf"/>
 	</font>
 
 <!-- Symbol fonts @since 11.5.6-->
