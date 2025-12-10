@@ -367,9 +367,15 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			
 			String englishFromCJK = CJKToEnglish.toEnglish( fontname);
 			if (englishFromCJK==null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Adding " + fontname);
+				}
 				fontsDiscovered.add(fontname); 
 			} else {
 				fontsDiscovered.add(englishFromCJK);
+				if (log.isDebugEnabled()) {
+					log.debug("Adding " + englishFromCJK);
+				}
 				// No point adding the original CJK name
 			}
 			
