@@ -137,13 +137,14 @@ public class TrueTypeFontPart extends AbstractFontPart {
 	        	boolean useAdvanced = false;
 	        	boolean simulateStyle = false;
 	        	boolean embedAsType1 = false;
+	        	boolean useSVG = false;
 	        	
 	        	FontUris fontUris = new FontUris(getF().toURI(), null);
 	        	
 	            customFont = FontLoader.loadFont(fontUris, 
 	            		subFontName, embedded, EmbeddingMode.AUTO, EncodingMode.AUTO, 
 	            		useKerning, useAdvanced, fontResolver,
-	            		simulateStyle, embedAsType1);
+	            		simulateStyle, embedAsType1, useSVG);
 	        } catch (Exception e) {
 				e.printStackTrace();
 	        }
