@@ -691,4 +691,35 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 		<bolditalic filename="ROCKBI.ttf"/>
 	</font>
 
+<font name="Carlito Regular" filename="carlito-regular.ttf">
+		<bold filename="carlito-bold.ttf"/>
+		<italic filename="carlito-italic.ttf"/>
+		<bolditalic filename="carlito-bolditalic.ttf"/>
+	</font>
+	
+<font name="Caladea Regular" filename="caladea-regular.ttf">
+		<bold filename="caladea-bold.ttf"/>
+		<italic filename="caladea-italic.ttf"/>
+		<bolditalic filename="caladea-bolditalic.ttf"/>
+	</font>
+
+<font name="Cousine Regular" filename="Cousine-Regular.ttf">
+		<bold filename="Cousine-Bold.ttf"/>
+		<italic filename="Cousine-Italic.ttf"/>
+		<bolditalic filename="Cousine-BoldItalic.ttf"/>
+	</font>
+
+<!-- Match the actual font name, not "Arimo" as used in the docx -->
+<font name="Arimo Regular" filename="Arimo-Regular.ttf">
+		<bold filename="Arimo-Bold.ttf"/>
+		<italic filename="Arimo-Italic.ttf"/>
+		<bolditalic filename="Arimo-BoldItalic.ttf"/>
+	</font>
+
+<font name="Tinos Regular" filename="tinos-regular.ttf">
+		<bold filename="tinos-bold.ttf"/>
+		<italic filename="tinos-italic.ttf"/>
+		<bolditalic filename="tinos-bolditalic.ttf"/>
+	</font>
+	
 </MicrosoftFonts>			
