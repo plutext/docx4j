@@ -107,58 +107,6 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 
 	}
 
-    /**
-     * Unmarshal XML data from the specified InputStream and return the 
-     * resulting content tree.  Validation event location information may
-     * be incomplete when using this form of the unmarshal API.
-     *
-     * <p>
-     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
-     * 
-     * @param is the InputStream to unmarshal XML data from
-     * @return the newly created root object of the java content tree 
-     *
-     * @throws JAXBException 
-     *     If any unexpected errors occur while unmarshalling
-     */
-	@Override
-    public Properties unmarshal( java.io.InputStream is ) throws JAXBException {
-    	
-		// TODO: delete this method?
-		
-		try {
-
-	        XMLInputFactory xif = XMLInputFactory.newInstance();
-	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-	        XMLStreamReader xsr = xif.createXMLStreamReader(is);									
-			
-//			if (jc==null) {
-//				setJAXBContext(Context.jc);				
-//			}
-		    		    
-			setJAXBContext(org.docx4j.jaxb.Context.jcDocPropsCustom);
-			Unmarshaller u = jc.createUnmarshaller();
-			
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			log.info("unmarshalling " + this.getClass().getName() );									
-						
-			jaxbElement = (Properties) u.unmarshal( xsr );
-			
-			
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
-
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}
-    	
-		return jaxbElement;
-    	
-    }
-	
-    
     public Property getProperty(String propName) {
     	
 		for (org.docx4j.docProps.custom.Properties.Property prop: getJaxbElement().getProperty() ) {

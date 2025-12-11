@@ -343,8 +343,11 @@ public class Load {
 								continue;
 							}
 						}
-					} else {
+					} else if (customXmlProps.getItemId()!=null){
 						itemId = customXmlProps.getItemId().toLowerCase();
+					} else {
+						log.warn("itemId missing");
+						return;
 					}
 				}
 				log.debug("Identified/registered ds:itemId " + itemId);
