@@ -18,14 +18,21 @@
  
 	xmlns:purlep="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"
 	xmlns:ep="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
-	version="1.0" exclude-result-prefixes="java purlw">	
+	version="1.0" exclude-result-prefixes="java purlw purla purlwp purlpic purlr purlep">	
         
-<!--  This is a mc:AlternateContent pre-processor.
-      It selects the mc:Fallback content, which 
-      docx4j 2.7.0 ought to be able to handle.  
+<!--  This preprocessor does 3 things:
+
+		1. for mc:AlternateContent, it selects the mc:Fallback content
+		
+		2. it corrects common validity issues with docx from various sources (eg Google Docs)
+		
+		3. it can import Strict docx files
       
       See MainDocumentPart's unmarshall method 
-      for an example of how it is invoked. 
+      for an example of how it is invoked.
+      
+      You can override this with your own version.  Point at yours via
+      docx4j property  docx4j.jaxb.JaxbValidationEventHandler
       
       NB, we do retain mc:AlternateContent in
       some places.  For example, 3.3.8 will retain
@@ -131,50 +138,74 @@
 
 	</xsl:template>
 
-	<xsl:template match="*">
+<!--
+	<xsl:template match="purlw:*">
+		<xsl:element name="{name(.)}"
+			namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:element>
+	</xsl:template>
+-->
+
+	<xsl:template match="node()">
+	
 		<xsl:choose>
-
-			<xsl:when
-				test="namespace-uri() = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
+		
+			<xsl:when test="self::*"><!-- elements -->
+				
+				<xsl:choose>
+		
+					<xsl:when
+						test="namespace-uri() = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'">
+						<xsl:element name="{local-name(.)}"
+							namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+						      <xsl:apply-templates select="@*|node()"/>
+						</xsl:element>
+					</xsl:when>
+		
+					<xsl:when
+						test="namespace-uri() = 'http://purl.oclc.org/ooxml/wordprocessingml/main'">
+						<xsl:element name="{local-name(.)}"
+							namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+						      <xsl:apply-templates select="@*|node()"/>
+						</xsl:element>
+					</xsl:when>
+		
+					<xsl:when
+						test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/main'">
+						<xsl:element name="{local-name(.)}"
+							namespace="http://schemas.openxmlformats.org/drawingml/2006/main">
+						      <xsl:apply-templates select="@*|node()"/>
+						</xsl:element>
+					</xsl:when>
+		
+					<xsl:when
+						test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing'">
+						<xsl:element name="{local-name(.)}"
+							namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+						      <xsl:apply-templates select="@*|node()"/>
+						</xsl:element>
+					</xsl:when>
+		
+					<xsl:when
+						test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/picture'">
+						<xsl:element name="{local-name(.)}"
+							namespace="http://schemas.openxmlformats.org/drawingml/2006/picture">
+						      <xsl:apply-templates select="@*|node()"/>
+						</xsl:element>
+					</xsl:when>
+		
+					<xsl:otherwise>
+						<xsl:copy>
+							<xsl:apply-templates select="@*|node()" />
+						</xsl:copy>
+					</xsl:otherwise>
+		
+				</xsl:choose>
+				
+			
 			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/wordprocessingml/main'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/main'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/drawingml/2006/main">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/picture'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/drawingml/2006/picture">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:otherwise>
+			<xsl:otherwise> <!-- text nodes, comment nodes, and processing instruction nodes -->
 				<xsl:copy>
 					<xsl:apply-templates select="@*|node()" />
 				</xsl:copy>
@@ -279,13 +310,6 @@
 	</xsl:template>
 
 	<xsl:template match="purlw:document/@purlw:conformance" />
-
-	<xsl:template match="purlw:*">
-		<xsl:element name="{name(.)}"
-			namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-			<xsl:apply-templates select="@*|node()" />
-		</xsl:element>
-	</xsl:template>
 	
 	<!-- <w:zoom w:percent="228%"/>-->
 	<xsl:template match="purlw:zoom"/>
@@ -300,6 +324,8 @@
   <xsl:template match="@uri">
 	<xsl:attribute name="uri">http://schemas.openxmlformats.org/drawingml/2006/picture</xsl:attribute>
   </xsl:template>
+  
+  <!-- end of purl (strict) importing --> 
   
   <xsl:template match="mc:AlternateContent">  
   
