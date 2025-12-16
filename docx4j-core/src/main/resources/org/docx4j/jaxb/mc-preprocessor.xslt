@@ -42,14 +42,90 @@
 
 
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
+	
+	<xsl:variable name="strict-prefix" select="'http://purl.oclc.org/ooxml/'"/>
+    <xsl:variable name="usual-prefix" select="'http://schemas.openxmlformats.org/'"/>
+    <xsl:variable name="add2006" select="'2006'"/>
 
-  <xsl:template match="/">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:copy>
-  </xsl:template>
+    <xsl:template name="calculate-new-namespace">
+        <xsl:param name="old-uri"/>
+        <xsl:variable name="uri-stripped-prefix" 
+            select="substring-after($old-uri, $strict-prefix)"/>
+            
+        <xsl:variable name="X" 
+            select="substring-before($uri-stripped-prefix, 
+                                     substring-after($uri-stripped-prefix, '/'))"/>
+                                     
+        <xsl:variable name="Y" 
+            select="substring-after($uri-stripped-prefix, 
+                                    substring-before($uri-stripped-prefix, '/'))"/>
+
+        <xsl:value-of select="concat($usual-prefix, $X, $add2006, $Y)"/>
+    </xsl:template>	
+
+	<xsl:template match="node()|/">
+		<xsl:param name="old-uri" select="namespace-uri()"/>
+	
+		<xsl:choose>
+		
+			<xsl:when test="self::*|/"><!-- elements -->
+				
+				<xsl:choose>
+		
+					<xsl:when test="starts-with(namespace-uri(), $usual-prefix)">
+						<!-- leavie it alone-->
+						<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
+						      <xsl:apply-templates select="@*|node()"/>
+						</xsl:element>
+					</xsl:when>
+		
+					<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
+				        <xsl:variable name="new-namespace">
+				            <xsl:call-template name="calculate-new-namespace">
+				                <xsl:with-param name="old-uri" select="$old-uri"/>
+				            </xsl:call-template>
+				        </xsl:variable>
+				
+				        <xsl:element name="{local-name()}" namespace="{$new-namespace}">
+				            <xsl:apply-templates select="@*|node()"/>
+				        </xsl:element>
+        			</xsl:when>
+        			
+					<xsl:otherwise>
+						<xsl:copy>
+							<xsl:apply-templates select="@*|node()" />
+						</xsl:copy>
+					</xsl:otherwise>
+		
+				</xsl:choose>
+			
+			</xsl:when>
+			<xsl:otherwise> <!-- text nodes, comment nodes, and processing instruction nodes -->
+				<xsl:copy>
+					<xsl:apply-templates select="@*|node()" />
+				</xsl:copy>
+			</xsl:otherwise>
+
+		</xsl:choose>
+
+	</xsl:template>
+
+	<!-- special case, because extendedProperties becomes extended-properties!	-->
+	<xsl:template match="purlep:Properties">
+		<ep:Properties>
+			<xsl:apply-templates select="@*|node()" />
+		</ep:Properties>
+	</xsl:template>
+
+	<!-- this is only here to replace some of the purl namespaces-->
+	<xsl:template match="w15:people">
+		<w15:people xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml">
+			<xsl:apply-templates select="@*|node()" />
+		</w15:people>
+	</xsl:template>
 
 	<xsl:template match="@*">
+		<xsl:param name="old-uri" select="namespace-uri()"/>
 		<xsl:choose>
 
 			<xsl:when
@@ -109,6 +185,18 @@
 			</xsl:when>
 -->
 
+			<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
+		        <xsl:variable name="new-namespace">
+		            <xsl:call-template name="calculate-new-namespace">
+		                <xsl:with-param name="old-uri" select="$old-uri"/>
+		            </xsl:call-template>
+		        </xsl:variable>
+		
+		        <xsl:attribute name="{local-name()}" namespace="{$new-namespace}">
+					<xsl:apply-templates select="@*" />
+		        </xsl:attribute>
+			</xsl:when>
+
 			<xsl:when
 				test="namespace-uri() = ''">
 				<xsl:attribute name="{local-name(.)}">
@@ -139,166 +227,6 @@
 
 	</xsl:template>
 	
-	<xsl:variable name="strict-prefix" select="'http://purl.oclc.org/ooxml/'"/>
-    <xsl:variable name="usual-prefix" select="'http://schemas.openxmlformats.org/'"/>
-    <xsl:variable name="add2006" select="'2006'"/>
-
-    <xsl:template name="calculate-new-namespace">
-        <xsl:param name="old-uri"/>
-        <xsl:variable name="uri-stripped-prefix" 
-            select="substring-after($old-uri, $strict-prefix)"/>
-            
-        <xsl:variable name="X" 
-            select="substring-before($uri-stripped-prefix, 
-                                     substring-after($uri-stripped-prefix, '/'))"/>
-                                     
-        <xsl:variable name="Y" 
-            select="substring-after($uri-stripped-prefix, 
-                                    substring-before($uri-stripped-prefix, '/'))"/>
-
-        <xsl:value-of select="concat($usual-prefix, $X, $add2006, $Y)"/>
-    </xsl:template>	
-
-	<xsl:template match="node()">
-		<xsl:param name="old-uri" select="namespace-uri()"/>
-	
-		<xsl:choose>
-		
-			<xsl:when test="self::*"><!-- elements -->
-				
-				<xsl:choose>
-		
-					<xsl:when test="starts-with(namespace-uri(), $usual-prefix)">
-						<!-- leavie it alone-->
-						<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
-						      <xsl:apply-templates select="@*|node()"/>
-						</xsl:element>
-					</xsl:when>
-		
-					<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
-				        <xsl:variable name="new-namespace">
-				            <xsl:call-template name="calculate-new-namespace">
-				                <xsl:with-param name="old-uri" select="$old-uri"/>
-				            </xsl:call-template>
-				        </xsl:variable>
-				
-				        <xsl:element name="{local-name()}" namespace="{$new-namespace}">
-				            <xsl:apply-templates select="@*|node()"/>
-				        </xsl:element>
-        			</xsl:when>
-        			
-					<xsl:otherwise>
-						<xsl:copy>
-							<xsl:apply-templates select="@*|node()" />
-						</xsl:copy>
-					</xsl:otherwise>
-		
-				</xsl:choose>
-			
-			</xsl:when>
-			<xsl:otherwise> <!-- text nodes, comment nodes, and processing instruction nodes -->
-				<xsl:copy>
-					<xsl:apply-templates select="@*|node()" />
-				</xsl:copy>
-			</xsl:otherwise>
-
-		</xsl:choose>
-
-	</xsl:template>
-
-
-	<xsl:template match="purlep:Properties">
-		<ep:Properties>
-			<xsl:apply-templates select="@*|node()" />
-		</ep:Properties>
-	</xsl:template>
-
-
-	<xsl:template match="purlw:document">
-		<w:document
-			xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-			xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink"
-			xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d"
-			xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"
-			xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex"
-			xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex"
-			xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex"
-			xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex"
-			xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex"
-			xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex"
-			xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex"
-			xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex"
-			xmlns:o="urn:schemas-microsoft-com:office:office"
-			xmlns:oel="http://schemas.microsoft.com/office/2019/extlst"
-			xmlns:v="urn:schemas-microsoft-com:vml"
-			xmlns:w10="urn:schemas-microsoft-com:office:word"
-			xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
-			xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
-			xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml"
-			xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"
-			xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"
-			xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
-			xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash"
-			xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock"
-			xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex"
-			xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
-			xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-			xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
-			xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"		
-			xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"				
-			>
-			<!-- TODO: fix xmlns:m="http://purl.oclc.org/ooxml/officeDocument/math"
-						
- -->
-			<xsl:apply-templates select="@*|node()" />
-		</w:document>
-	</xsl:template>
-
-	<!-- this is only here to replace some of the purl namespaces-->
-	<xsl:template match="w15:people">
-		<w15:people
-			xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-			xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink"
-			xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d"
-			xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"
-			xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex"
-			xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex"
-			xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex"
-			xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex"
-			xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex"
-			xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex"
-			xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex"
-			xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex"
-			xmlns:o="urn:schemas-microsoft-com:office:office"
-			xmlns:oel="http://schemas.microsoft.com/office/2019/extlst"
-			xmlns:v="urn:schemas-microsoft-com:vml"
-			xmlns:w10="urn:schemas-microsoft-com:office:word"
-			xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
-			xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
-			xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml"
-			xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"
-			xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"
-			xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
-			xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash"
-			xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock"
-			xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex"
-			xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
-			xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
-			xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"			
-			>
-			<!-- TODO: fix xmlns:m="http://purl.oclc.org/ooxml/officeDocument/math"
-						xmlns:r="http://purl.oclc.org/ooxml/officeDocument/relationships"
-			xmlns:wp="http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing"
- -->
-			<xsl:apply-templates select="@*|node()" />
-		</w15:people>
-	</xsl:template>
-
-	<xsl:template match="purla:theme">
-		<a:theme>
-			<xsl:apply-templates select="@*|node()" />
-		</a:theme>
-	</xsl:template>
 
 	<xsl:template match="purlw:document/@purlw:conformance" />
 	
