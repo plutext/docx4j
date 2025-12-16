@@ -11,14 +11,11 @@
 	xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
 
 	xmlns:purlw="http://purl.oclc.org/ooxml/wordprocessingml/main"
- 	xmlns:purla="http://purl.oclc.org/ooxml/drawingml/main"
-	xmlns:purlwp="http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing" 	
-	xmlns:purlpic="http://purl.oclc.org/ooxml/drawingml/picture"
-	xmlns:purlr="http://purl.oclc.org/ooxml/officeDocument/relationships"
  
 	xmlns:purlep="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"
 	xmlns:ep="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
-	version="1.0" exclude-result-prefixes="java purlw purla purlwp purlpic purlr purlep">	
+	
+	version="1.0" exclude-result-prefixes="java purlw purlep">	
         
 <!--  This preprocessor does 3 things:
 
