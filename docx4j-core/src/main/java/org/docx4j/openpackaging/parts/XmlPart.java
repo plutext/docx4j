@@ -398,7 +398,7 @@ public abstract class XmlPart extends Part {
 	 * XPath's define useful behaviour for node-set and number.  Note that this changes behaviour 
 	 * for string, since XPath only returns false if the string is zero length.
 	 *   
-	 * Whether this is used is controlled by property org.opendope.conditions.Xpathref.XPathBoolean
+	 * Whether this is used is controlled by property opendope.conditions.Xpathref.XPathBoolean
 	 * which defaults to false (to preserve existing behaviour).
 	 * 
 	 * (Unless you are using Saxon as your XPath implementation (XPathFactoryUtil.setxPathFactory))
@@ -420,7 +420,11 @@ public abstract class XmlPart extends Part {
 	 */
 	public boolean cachedXPathGetBoolean(String xpath, String prefixMappings) throws Docx4JException {
 
-		String approach = Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", "false");
+		// @since 11.5.9, standardise on property names starting with docx4j, not org.docx4j
+		String approach = Docx4jProperties.getProperty("opendope.conditions.Xpathref.XPathBoolean");
+		if (approach==null) {
+			approach = Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", "false");
+		}
 		String booleanXPath = xpath;
 		if (approach.equals("cast1")
 				|| approach.equals("true") ) {
@@ -500,7 +504,12 @@ public abstract class XmlPart extends Part {
 				if (e.getMessage().toLowerCase().contains("cannot compare xs:boolean to xs:string")
 						&& pos>0) {
 
-					String setting = Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.XmlPart.xpath2.typechecking", "strict");
+					
+			    	 // @since 11.5.9, standardise on property names starting with docx4j, not org.docx4j
+					String setting = Docx4jProperties.getProperty("docx4j.openpackaging.parts.XmlPart.xpath2.typechecking");
+					if (setting ==null) {
+						setting = Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.XmlPart.xpath2.typechecking", "strict");
+					}
 					
 					if (setting.equals("strict")) {
 						// usual Saxon behaviour

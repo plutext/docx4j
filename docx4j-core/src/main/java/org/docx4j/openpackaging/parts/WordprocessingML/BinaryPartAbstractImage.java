@@ -1368,8 +1368,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		 * (in this case png) as standard output"
 		 * 
 		 */
-			
-		 String executableName = Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable", "imconvert");		 
+		 
+    	 // @since 11.5.9, standardise on property names starting with docx4j, not org.docx4j
+		 String executableName = Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable");	
+		 if (executableName==null) {
+			 executableName = Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable", "imconvert");
+		 }
 		 log.info("Start ImageMagick..." + executableName);
 		 Process p = Runtime.getRuntime().exec(executableName + " -density " + density + " -units PixelsPerInch - png:-");  
 		 

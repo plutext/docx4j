@@ -91,7 +91,11 @@ public class Xpathref implements Evaluable {
 			log.debug("Evaluating " + xpath.getDataBinding().getXpath());
 		}
 		
-		String approach = Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", "false");
+		// @since 11.5.9, standardise on property names starting with docx4j, not org.docx4j
+		String approach = Docx4jProperties.getProperty("opendope.conditions.Xpathref.XPathBoolean");
+		if (approach==null) {
+			approach = Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", "false");
+		}
 		if (approach.equals("cast1")
 				|| approach.equals("true")
 				|| approach.equals("cast2") ) {
