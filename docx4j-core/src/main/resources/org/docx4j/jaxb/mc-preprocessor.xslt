@@ -54,6 +54,7 @@
 
 			<xsl:when
 				test="namespace-uri() = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'">
+				<!-- don't alter-->
 				<xsl:attribute name="{local-name(.)}"
 					namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
 					<xsl:value-of select="." />
@@ -137,17 +138,29 @@
 		</xsl:choose>
 
 	</xsl:template>
+	
+	<xsl:variable name="strict-prefix" select="'http://purl.oclc.org/ooxml/'"/>
+    <xsl:variable name="usual-prefix" select="'http://schemas.openxmlformats.org/'"/>
+    <xsl:variable name="add2006" select="'2006'"/>
 
-<!--
-	<xsl:template match="purlw:*">
-		<xsl:element name="{name(.)}"
-			namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-			<xsl:apply-templates select="@*|node()" />
-		</xsl:element>
-	</xsl:template>
--->
+    <xsl:template name="calculate-new-namespace">
+        <xsl:param name="old-uri"/>
+        <xsl:variable name="uri-stripped-prefix" 
+            select="substring-after($old-uri, $strict-prefix)"/>
+            
+        <xsl:variable name="X" 
+            select="substring-before($uri-stripped-prefix, 
+                                     substring-after($uri-stripped-prefix, '/'))"/>
+                                     
+        <xsl:variable name="Y" 
+            select="substring-after($uri-stripped-prefix, 
+                                    substring-before($uri-stripped-prefix, '/'))"/>
+
+        <xsl:value-of select="concat($usual-prefix, $X, $add2006, $Y)"/>
+    </xsl:template>	
 
 	<xsl:template match="node()">
+		<xsl:param name="old-uri" select="namespace-uri()"/>
 	
 		<xsl:choose>
 		
@@ -155,46 +168,25 @@
 				
 				<xsl:choose>
 		
-					<xsl:when
-						test="namespace-uri() = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'">
-						<xsl:element name="{local-name(.)}"
-							namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+					<xsl:when test="starts-with(namespace-uri(), $usual-prefix)">
+						<!-- leavie it alone-->
+						<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
 						      <xsl:apply-templates select="@*|node()"/>
 						</xsl:element>
 					</xsl:when>
 		
-					<xsl:when
-						test="namespace-uri() = 'http://purl.oclc.org/ooxml/wordprocessingml/main'">
-						<xsl:element name="{local-name(.)}"
-							namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-						      <xsl:apply-templates select="@*|node()"/>
-						</xsl:element>
-					</xsl:when>
-		
-					<xsl:when
-						test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/main'">
-						<xsl:element name="{local-name(.)}"
-							namespace="http://schemas.openxmlformats.org/drawingml/2006/main">
-						      <xsl:apply-templates select="@*|node()"/>
-						</xsl:element>
-					</xsl:when>
-		
-					<xsl:when
-						test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing'">
-						<xsl:element name="{local-name(.)}"
-							namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
-						      <xsl:apply-templates select="@*|node()"/>
-						</xsl:element>
-					</xsl:when>
-		
-					<xsl:when
-						test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/picture'">
-						<xsl:element name="{local-name(.)}"
-							namespace="http://schemas.openxmlformats.org/drawingml/2006/picture">
-						      <xsl:apply-templates select="@*|node()"/>
-						</xsl:element>
-					</xsl:when>
-		
+					<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
+				        <xsl:variable name="new-namespace">
+				            <xsl:call-template name="calculate-new-namespace">
+				                <xsl:with-param name="old-uri" select="$old-uri"/>
+				            </xsl:call-template>
+				        </xsl:variable>
+				
+				        <xsl:element name="{local-name()}" namespace="{$new-namespace}">
+				            <xsl:apply-templates select="@*|node()"/>
+				        </xsl:element>
+        			</xsl:when>
+        			
 					<xsl:otherwise>
 						<xsl:copy>
 							<xsl:apply-templates select="@*|node()" />
@@ -202,7 +194,6 @@
 					</xsl:otherwise>
 		
 				</xsl:choose>
-				
 			
 			</xsl:when>
 			<xsl:otherwise> <!-- text nodes, comment nodes, and processing instruction nodes -->
