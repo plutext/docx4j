@@ -13,8 +13,8 @@
 	xmlns:purlw="http://purl.oclc.org/ooxml/wordprocessingml/main"
  	xmlns:purla="http://purl.oclc.org/ooxml/drawingml/main"
  
+	xmlns:purlcp="http://purl.oclc.org/ooxml/officeDocument/customProperties"
 	xmlns:purlep="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"
-	xmlns:ep="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
 	
 	version="1.0" exclude-result-prefixes="java purlw purlep">	
         
@@ -106,6 +106,14 @@
 
 		</xsl:choose>
 
+	</xsl:template>
+
+	<!-- special case, because customProperties becomes custom-properties!	-->
+	<xsl:template match="purlcp:*">
+		<xsl:element name="{local-name(.)}"
+			namespace="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
+		      <xsl:apply-templates select="@*|node()"/>
+		</xsl:element>
 	</xsl:template>
 
 	<!-- special case, because extendedProperties becomes extended-properties!	-->
