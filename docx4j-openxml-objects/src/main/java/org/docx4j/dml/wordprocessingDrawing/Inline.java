@@ -28,6 +28,9 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.adapters.HexBinaryAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
 import org.docx4j.dml.CTPositiveSize2D;
@@ -89,6 +92,12 @@ public class Inline implements Child
     protected Long distL;
     @XmlAttribute(name = "distR")
     protected Long distR;
+    @XmlAttribute(name = "anchorId", namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")
+    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+    protected byte[] anchorId;
+    @XmlAttribute(name = "editId", namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")
+    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+    protected byte[] editId;    
     @XmlTransient
     private Object parent;
 
@@ -308,6 +317,54 @@ public class Inline implements Child
         this.distR = value;
     }
 
+    /**
+     * Gets the value of the anchorId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public byte[] getAnchorId() {
+        return anchorId;
+    }
+
+    /**
+     * Sets the value of the anchorId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAnchorId(byte[] value) {
+        this.anchorId = value;
+    }
+
+    /**
+     * Gets the value of the editId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public byte[] getEditId() {
+        return editId;
+    }
+
+    /**
+     * Sets the value of the editId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setEditId(byte[] value) {
+        this.editId = value;
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
