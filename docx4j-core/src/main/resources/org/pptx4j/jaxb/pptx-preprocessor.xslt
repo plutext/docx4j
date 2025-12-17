@@ -17,33 +17,106 @@
 	xmlns:ep="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
 	version="1.0" exclude-result-prefixes="java">	
       
-<!--     
+<!--    
+	
+  This preprocessor does 2 things:
+				
+		1. it can import Strict docx files
+	
+		2. it could correct common validity issues with docx from various sources (eg Google Docs)
+	
+	For mc:AlternateContent, it could also select the mc:Fallback content.  But it doesn't right now.
+	
+	 
 <p:sld xmlns:v="urn:schemas-microsoft-com:vml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:ns12="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:ns6="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:ns11="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram">
 -->
 
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 
-  <xsl:template match="/">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:copy>
-  </xsl:template>
+	<xsl:variable name="strict-prefix" select="'http://purl.oclc.org/ooxml/'"/>
+    <xsl:variable name="usual-prefix" select="'http://schemas.openxmlformats.org/'"/>
+    <xsl:variable name="add2006" select="'2006'"/>
+
+    <xsl:template name="calculate-new-namespace">
+        <xsl:param name="old-uri"/>
+        <xsl:variable name="uri-stripped-prefix" 
+            select="substring-after($old-uri, $strict-prefix)"/>
+            
+        <xsl:variable name="X" 
+            select="substring-before($uri-stripped-prefix, 
+                                     substring-after($uri-stripped-prefix, '/'))"/>
+                                     
+        <xsl:variable name="Y" 
+            select="substring-after($uri-stripped-prefix, 
+                                    substring-before($uri-stripped-prefix, '/'))"/>
+
+        <xsl:value-of select="concat($usual-prefix, $X, $add2006, $Y)"/>
+    </xsl:template>	
+
+	<xsl:template match="node()|/">
+		<xsl:param name="old-uri" select="namespace-uri()"/>
+	
+		<xsl:choose>
+		
+			<xsl:when test="self::*|/"><!-- elements -->
+				
+				<xsl:choose>
+		
+					<xsl:when test="starts-with(namespace-uri(), $usual-prefix)">
+						<!-- leavie it alone-->
+						<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
+						      <xsl:apply-templates select="@*|node()"/>
+						</xsl:element>
+					</xsl:when>
+		
+					<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
+				        <xsl:variable name="new-namespace">
+				            <xsl:call-template name="calculate-new-namespace">
+				                <xsl:with-param name="old-uri" select="$old-uri"/>
+				            </xsl:call-template>
+				        </xsl:variable>
+				
+				        <xsl:element name="{local-name()}" namespace="{$new-namespace}">
+				            <xsl:apply-templates select="@*|node()"/>
+				        </xsl:element>
+        			</xsl:when>
+        			
+					<xsl:otherwise>
+						<xsl:copy>
+							<xsl:apply-templates select="@*|node()" />
+						</xsl:copy>
+					</xsl:otherwise>
+		
+				</xsl:choose>
+			
+			</xsl:when>
+			<xsl:otherwise> <!-- text nodes, comment nodes, and processing instruction nodes -->
+				<xsl:copy>
+					<xsl:apply-templates select="@*|node()" />
+				</xsl:copy>
+			</xsl:otherwise>
+
+		</xsl:choose>
+
+	</xsl:template>
+
+	<!-- special case, because extendedProperties becomes extended-properties!	-->
+	<xsl:template match="purlep:*">
+		<xsl:element name="{local-name(.)}"
+			namespace="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
+		      <xsl:apply-templates select="@*|node()"/>
+		</xsl:element>
+	</xsl:template>
+
 
 	<xsl:template match="@*">
+		<xsl:param name="old-uri" select="namespace-uri()"/>	
 		<xsl:choose>
 
 			<xsl:when
 				test="namespace-uri() = 'http://schemas.openxmlformats.org/presentationml/2006/main'">
 				<xsl:attribute name="{local-name(.)}"
 					namespace="http://schemas.openxmlformats.org/presentationml/2006/main">
-					<xsl:value-of select="." />
-				</xsl:attribute>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/officeDocument/relationships'">
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
 					<xsl:value-of select="." />
 				</xsl:attribute>
 			</xsl:when>
@@ -70,17 +143,17 @@
 				</xsl:attribute>
 			</xsl:when>
 
-<!-- drawingml attributes ahave no prefix and are in no namespace at all 
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/main'">
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/drawingml/2006/main">
-					
+			<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
+		        <xsl:variable name="new-namespace">
+		            <xsl:call-template name="calculate-new-namespace">
+		                <xsl:with-param name="old-uri" select="$old-uri"/>
+		            </xsl:call-template>
+		        </xsl:variable>
+		
+		        <xsl:attribute name="{local-name()}" namespace="{$new-namespace}">
 					<xsl:value-of select="." />
-
-				</xsl:attribute>
+		        </xsl:attribute>
 			</xsl:when>
--->
 
 			<xsl:when
 				test="namespace-uri() = ''">
@@ -103,83 +176,12 @@
 			</xsl:when>
 
 			<xsl:otherwise>
-				<xsl:copy>
-					<xsl:apply-templates select="@*" />
-				</xsl:copy>
+				<xsl:copy-of select="."/>
 			</xsl:otherwise>
 
 		</xsl:choose>
 
 	</xsl:template>
-
-	<xsl:template match="*">
-		<xsl:choose>
-
-			<xsl:when
-				test="namespace-uri() = 'http://schemas.openxmlformats.org/presentationml/2006/main'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/presentationml/2006/main">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/presentationml/main'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/presentationml/2006/main">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/officeDocument/extendedProperties'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/officeDocument/docPropsVTypes'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/main'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/drawingml/2006/main">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/picture'">
-				<xsl:element name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/drawingml/2006/picture">
-				      <xsl:apply-templates select="@*|node()"/>
-				</xsl:element>
-			</xsl:when>
-
-			<xsl:otherwise>
-				<xsl:copy>
-					<xsl:apply-templates select="@*|node()" />
-				</xsl:copy>
-			</xsl:otherwise>
-
-		</xsl:choose>
-
-	</xsl:template>
-
-
-	<xsl:template match="purlep:Properties">
-		<ep:Properties>
-			<xsl:apply-templates select="@*|node()" />
-		</ep:Properties>
-	</xsl:template>
-
 
 	<xsl:template match="purlp:sld">
 		<p:sld
@@ -192,33 +194,34 @@
 		</p:sld>
 	</xsl:template>
 
-	<xsl:template match="purla:theme">
-		<a:theme>
-			<xsl:apply-templates select="@*|node()" />
-		</a:theme>
-	</xsl:template>
-
-<!--
-	<xsl:template match="purlw:*">
-		<xsl:element name="{name(.)}"
-			namespace="http://schemas.openxmlformats.org/presentationml/2006/main">
-			<xsl:apply-templates select="@*|node()" />
-		</xsl:element>
-	</xsl:template>
--->
-	
-  
   <!--
 	<a:graphicData uri="http://purl.oclc.org/ooxml/drawingml/picture">
 	should be uri="http://schemas.openxmlformats.org/drawingml/2006/picture"
 	
-	a:blip r:embed="rId8"
-
-  <xsl:template match="@uri">
-	<xsl:attribute name="uri">http://schemas.openxmlformats.org/drawingml/2006/picture</xsl:attribute>
-  </xsl:template>
-	
+	etc
   -->
-  
-   
+  <xsl:template match="purla:graphicData/@uri">
+	
+	<xsl:choose>
+	
+		<xsl:when test="starts-with(., $strict-prefix)">		
+						
+	        <xsl:variable name="new-namespace">
+	            <xsl:call-template name="calculate-new-namespace">
+	                <xsl:with-param name="old-uri" select="."/>
+	            </xsl:call-template>
+	        </xsl:variable>
+	
+	        <xsl:attribute name="uri" >
+				<xsl:value-of select="$new-namespace" />
+	        </xsl:attribute>
+		</xsl:when>
+		
+		<xsl:otherwise>
+			<xsl:copy-of select="."/>
+		</xsl:otherwise>
+	
+	</xsl:choose>
+  </xsl:template> 
+    
 </xsl:stylesheet>
