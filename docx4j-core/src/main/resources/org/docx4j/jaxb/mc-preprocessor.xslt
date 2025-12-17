@@ -11,6 +11,7 @@
 	xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
 
 	xmlns:purlw="http://purl.oclc.org/ooxml/wordprocessingml/main"
+ 	xmlns:purla="http://purl.oclc.org/ooxml/drawingml/main"
  
 	xmlns:purlep="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"
 	xmlns:ep="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
@@ -108,10 +109,11 @@
 	</xsl:template>
 
 	<!-- special case, because extendedProperties becomes extended-properties!	-->
-	<xsl:template match="purlep:Properties">
-		<ep:Properties>
-			<xsl:apply-templates select="@*|node()" />
-		</ep:Properties>
+	<xsl:template match="purlep:*">
+		<xsl:element name="{local-name(.)}"
+			namespace="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
+		      <xsl:apply-templates select="@*|node()"/>
+		</xsl:element>
 	</xsl:template>
 
 	<!-- this is only here to replace some of the purl namespaces-->
@@ -190,7 +192,7 @@
 		        </xsl:variable>
 		
 		        <xsl:attribute name="{local-name()}" namespace="{$new-namespace}">
-					<xsl:apply-templates select="@*" />
+					<xsl:value-of select="." />
 		        </xsl:attribute>
 			</xsl:when>
 
@@ -215,9 +217,7 @@
 			</xsl:when>
 
 			<xsl:otherwise>
-				<xsl:copy>
-					<xsl:apply-templates select="@*" />
-				</xsl:copy>
+				<xsl:copy-of select="."/>
 			</xsl:otherwise>
 
 		</xsl:choose>
@@ -234,11 +234,31 @@
 	<a:graphicData uri="http://purl.oclc.org/ooxml/drawingml/picture">
 	should be uri="http://schemas.openxmlformats.org/drawingml/2006/picture"
 	
-	a:blip r:embed="rId8"
-	
+	etc
   -->
-  <xsl:template match="@uri">
-	<xsl:attribute name="uri">http://schemas.openxmlformats.org/drawingml/2006/picture</xsl:attribute>
+  <xsl:template match="purla:graphicData/@uri">
+	
+	<xsl:choose>
+	
+		<xsl:when test="starts-with(., $strict-prefix)">		
+						
+	        <xsl:variable name="new-namespace">
+	            <xsl:call-template name="calculate-new-namespace">
+	                <xsl:with-param name="old-uri" select="."/>
+	            </xsl:call-template>
+	        </xsl:variable>
+	
+	        <xsl:attribute name="uri" >
+				<xsl:value-of select="$new-namespace" />
+	        </xsl:attribute>
+		</xsl:when>
+		
+		<xsl:otherwise>
+			<xsl:copy-of select="."/>
+		</xsl:otherwise>
+	
+	</xsl:choose>
+	
   </xsl:template>
   
   <!-- end of purl (strict) importing --> 
