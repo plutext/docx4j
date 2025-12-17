@@ -137,14 +137,6 @@
 			</xsl:when>
 
 			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/officeDocument/relationships'">
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-					<xsl:value-of select="." />
-				</xsl:attribute>
-			</xsl:when>
-
-			<xsl:when
 				test="namespace-uri() = 'http://purl.oclc.org/ooxml/wordprocessingml/main'">
 				<xsl:attribute name="{local-name(.)}"
 					namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -171,18 +163,6 @@
 
 				</xsl:attribute>
 			</xsl:when>
-
-<!-- drawingml attributes ahave no prefix and are in no namespace at all 
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/drawingml/main'">
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/drawingml/2006/main">
-					
-					<xsl:value-of select="." />
-
-				</xsl:attribute>
-			</xsl:when>
--->
 
 			<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
 		        <xsl:variable name="new-namespace">
