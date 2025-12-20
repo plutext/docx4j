@@ -183,7 +183,7 @@
 		        </xsl:attribute>
 			</xsl:when>
 
-			<xsl:when test="false and namespace-uri() = ''"> <!-- unnecessary -->
+			<xsl:when test="namespace-uri() = ''"> <!-- eg theme part percentages -->
 				<xsl:attribute name="{local-name(.)}">
 					
 					<xsl:choose>
