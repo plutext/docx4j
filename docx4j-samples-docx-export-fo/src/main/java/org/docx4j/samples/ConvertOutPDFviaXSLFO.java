@@ -30,6 +30,7 @@ import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.io.InternalResourceResolver;
 import org.apache.fop.apps.io.ResourceResolverFactory;
 import org.docx4j.Docx4J;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
@@ -150,11 +151,15 @@ public class ConvertOutPDFviaXSLFO {
 //		updater.update(true);
 		
 		// Set up font mapper (optional)
-//		Mapper fontMapper = new IdentityPlusMapper();  // Only for Windows, unless you have Microsoft's fonts installed
-		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+		Mapper fontMapper = new IdentityPlusMapper();  // Best where the fonts in the docx are installed, 
+													   // though we do have metrically compatible substitutes for
+													   // the automapped fonts described below.
+//		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
 		wordMLPackage.setFontMapper(fontMapper);
-
-/* Not required from 11.5.9, since this is done automatically		
+		
+		
+/* Not required from 11.5.9, since this is done automatically
+ * unless property docx4j.fonts.automap.enabled=false		
  * 
 		// Crosextra
 		fontMapper.put("Calibri", PhysicalFonts.get("Carlito Regular"));
