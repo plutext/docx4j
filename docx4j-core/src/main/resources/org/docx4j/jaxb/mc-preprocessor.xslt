@@ -2,9 +2,13 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 
 	xmlns:java="http://xml.apache.org/xalan/java"
+	xmlns:xalan="http://xml.apache.org/xalan"
+	
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	
 	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+	
  	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
  		
 	xmlns:wordml201011="http://schemas.microsoft.com/office/word/2010/11/wordml"
@@ -15,8 +19,8 @@
  
 	xmlns:purlcp="http://purl.oclc.org/ooxml/officeDocument/customProperties"
 	xmlns:purlep="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"
-	
-	version="1.0" exclude-result-prefixes="java purlw purlep">	
+		
+	version="1.0" exclude-result-prefixes="java purlw purlep purla purlcp xalan">	
         
 <!--  This preprocessor does 3 things:
 
@@ -24,7 +28,7 @@
 		
 		2. it corrects common validity issues with docx from various sources (eg Google Docs)
 		
-		3. it can import Strict docx files
+		3. it can import Strict docx files.  But see https://github.com/plutext/docx4j/issues/655
       
       See MainDocumentPart's unmarshall method 
       for an example of how it is invoked.
@@ -50,12 +54,10 @@
         <xsl:variable name="uri-stripped-prefix" 
             select="substring-after($old-uri, $strict-prefix)"/>
             
-        <xsl:variable name="X" 
-            select="substring-before($uri-stripped-prefix, 
+        <xsl:variable name="X" select="substring-before($uri-stripped-prefix, 
                                      substring-after($uri-stripped-prefix, '/'))"/>
                                      
-        <xsl:variable name="Y" 
-            select="substring-after($uri-stripped-prefix, 
+        <xsl:variable name="Y" select="substring-after($uri-stripped-prefix, 
                                     substring-before($uri-stripped-prefix, '/'))"/>
 
         <xsl:value-of select="concat($usual-prefix, $X, $add2006, $Y)"/>
@@ -69,9 +71,9 @@
 			<xsl:when test="self::*|/"><!-- elements -->
 				
 				<xsl:choose>
-		
+							
 					<xsl:when test="starts-with(namespace-uri(), $usual-prefix)">
-						<!-- leavie it alone-->
+						<!-- leave it alone-->
 						<xsl:element namespace="{namespace-uri()}" name="{local-name(.)}">
 						      <xsl:apply-templates select="@*|node()"/>
 						</xsl:element>
@@ -124,6 +126,14 @@
 		</xsl:element>
 	</xsl:template>
 
+	<!-- soecial case, http://schemas.microsoft.com/office/word/2006/wordml to w:  --> 
+	<xsl:template match="wne:txbxContent" >
+		<w:txbxContent>
+		      <xsl:apply-templates select="@*|node()"/>		
+		</w:txbxContent>	
+	</xsl:template>
+
+
 	<!-- this is only here to replace some of the purl namespaces-->
 	<xsl:template match="w15:people">
 		<w15:people xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml">
@@ -135,43 +145,6 @@
 		<xsl:param name="old-uri" select="namespace-uri()"/>
 		<xsl:choose>
 
-			<xsl:when
-				test="namespace-uri() = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'">
-				<!-- don't alter-->
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-					<xsl:value-of select="." />
-				</xsl:attribute>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/wordprocessingml/main'">
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-
-					<xsl:choose>
-						<!-- TODO convert "175.8pt" 
-						<xsl:when
-							test="contains(., '.')">
-							<xsl:value-of
-								select="substring-before(., '.')" />
-						</xsl:when>-->
-						<!-- TODO convert "175pt" -->
-						<xsl:when
-							test="substring(., string-length(.) - 1) = 'pt'">
-<!--							<xsl:value-of
-								select="substring(., 1, string-length(.) - 2)" /> -->
-								<xsl:value-of select="round(substring-before(., 'pt') * 20)"/>
-						</xsl:when>
-
-						<xsl:otherwise>
-							<xsl:value-of select="." />
-						</xsl:otherwise>
-					</xsl:choose>
-
-				</xsl:attribute>
-			</xsl:when>
-
 			<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
 		        <xsl:variable name="new-namespace">
 		            <xsl:call-template name="calculate-new-namespace">
@@ -180,22 +153,61 @@
 		        </xsl:variable>
 		
 		        <xsl:attribute name="{local-name()}" namespace="{$new-namespace}">
-					<xsl:value-of select="." />
+					<xsl:choose>
+					
+						<!-- points to twips-->
+						<xsl:when test="substring(., string-length(.) - 1) = 'pt'">	
+													
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+								
+							<!--xsl:value-of select="round(substring-before(., 'pt') * 20)"/-->
+							<xsl:value-of select="." />
+							
+						</xsl:when>
+						
+						<!-- % to thousands of a percent -->						
+						<xsl:when test="substring(., string-length(.) ) = '%'">
+		
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+							
+							<xsl:variable name="cleanValue" select="translate(., '%', '')"/>
+   						    <!--xsl:value-of select="$cleanValue * 1000"/-->
+							<xsl:value-of select="." />
+   						    							
+						</xsl:when>
+						
+						<xsl:otherwise>
+							<xsl:value-of select="." />
+						</xsl:otherwise>
+					</xsl:choose>
 		        </xsl:attribute>
 			</xsl:when>
 
-			<xsl:when
-				test="namespace-uri() = ''">
+			<xsl:when test="false and namespace-uri() = ''"> <!-- unnecessary -->
 				<xsl:attribute name="{local-name(.)}">
 					
 					<xsl:choose>
-						<!-- TODO convert "%" to thousandths of a percent --> 
-						<xsl:when
-							test="substring(., string-length(.) ) = '%'">
-								<xsl:variable name="cleanValue" select="translate(., '%', '')"/>
-   						        <xsl:value-of select="$cleanValue * 1000"/>							
+					
+						<!-- points to twips-->
+						<xsl:when test="substring(., string-length(.) - 1) = 'pt'">	
+													
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+								
+							<!--xsl:value-of select="round(substring-before(., 'pt') * 20)"/-->
+							<xsl:value-of select="." />
+							
 						</xsl:when>
-
+						
+						<!-- % to thousands of a percent -->						
+						<xsl:when test="substring(., string-length(.) ) = '%'">
+		
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+							
+							<xsl:variable name="cleanValue" select="translate(., '%', '')"/>
+   						    <xsl:value-of select="$cleanValue * 1000"/>
+   						    							
+						</xsl:when>
+						
 						<xsl:otherwise>
 							<xsl:value-of select="." />
 						</xsl:otherwise>
@@ -205,6 +217,13 @@
 			</xsl:when>
 
 			<xsl:otherwise>
+				<!-- for example: 
+						http://schemas.microsoft.com/office/word/2010/wordml,  
+						http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing
+						
+				<xsl:variable name="dummy" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.log(concat('Not altering ', namespace-uri() ))" />			
+						
+						-->
 				<xsl:copy-of select="."/>
 			</xsl:otherwise>
 

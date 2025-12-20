@@ -34,11 +34,13 @@ import javax.xml.transform.stream.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.org.apache.xalan.extensions.ExpressionContext;
 import org.docx4j.utils.ResourceUtils;
 
 
@@ -276,5 +278,21 @@ public class JaxbValidationEventHandler implements ValidationEventHandler {
     	return "[" + errorLevel + "] ";
     	
     }
+    
+	public static void log(ExpressionContext expressionContext, String message ) {
+		
+		//log.info( com.sun.org.apache.xalan.internal.lib.NodeInfo.lineNumber(expressionContext ) + "  " +  message);
+			// com.sun.org.apache hell 
+		// but that only gives line number of input XML anyway, whereas more useful is
+		// currently executing line number of XSLT.  ErrorListener seems to know this?  Explore some time...
+		
+		log.info( "[String] " + message);
+	}
+	
+	public static void logXml(NodeIterator nodeIterator ) {
+		// Has different method, to prevent Xalan preferring the String log method
+		Node n = nodeIterator.nextNode();		
+		log.info(XmlUtils.w3CDomNodeToString(n));
+	}    
   
  }

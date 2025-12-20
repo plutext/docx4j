@@ -43,12 +43,10 @@
         <xsl:variable name="uri-stripped-prefix" 
             select="substring-after($old-uri, $strict-prefix)"/>
             
-        <xsl:variable name="X" 
-            select="substring-before($uri-stripped-prefix, 
+        <xsl:variable name="X" select="substring-before($uri-stripped-prefix, 
                                      substring-after($uri-stripped-prefix, '/'))"/>
                                      
-        <xsl:variable name="Y" 
-            select="substring-after($uri-stripped-prefix, 
+        <xsl:variable name="Y" select="substring-after($uri-stripped-prefix, 
                                     substring-before($uri-stripped-prefix, '/'))"/>
 
         <xsl:value-of select="concat($usual-prefix, $X, $add2006, $Y)"/>
@@ -120,37 +118,8 @@
 
 	<xsl:template match="@*">
 		<xsl:param name="old-uri" select="namespace-uri()"/>	
+		
 		<xsl:choose>
-
-			<xsl:when
-				test="namespace-uri() = 'http://schemas.openxmlformats.org/presentationml/2006/main'">
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/presentationml/2006/main">
-					<xsl:value-of select="." />
-				</xsl:attribute>
-			</xsl:when>
-
-			<xsl:when
-				test="namespace-uri() = 'http://purl.oclc.org/ooxml/presentationml/main'">
-				<xsl:attribute name="{local-name(.)}"
-					namespace="http://schemas.openxmlformats.org/presentationml/2006/main">
-
-					<xsl:choose>
-						<!-- TODO convert "175pt" -->
-						<xsl:when
-							test="substring(., string-length(.) - 1) = 'pt'">
-<!--							<xsl:value-of
-								select="substring(., 1, string-length(.) - 2)" /> -->
-								<xsl:value-of select="round(substring-before(., 'pt') * 20)"/>
-						</xsl:when>
-
-						<xsl:otherwise>
-							<xsl:value-of select="." />
-						</xsl:otherwise>
-					</xsl:choose>
-
-				</xsl:attribute>
-			</xsl:when>
 
 			<xsl:when test="starts-with(namespace-uri(), $strict-prefix)">						
 		        <xsl:variable name="new-namespace">
@@ -160,12 +129,35 @@
 		        </xsl:variable>
 		
 		        <xsl:attribute name="{local-name()}" namespace="{$new-namespace}">
-					<xsl:value-of select="." />
+					<xsl:choose>
+					
+						<!-- points to twips-->
+						<xsl:when test="substring(., string-length(.) - 1) = 'pt'">	
+													
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+								
+							<xsl:value-of select="round(substring-before(., 'pt') * 20)"/>
+							
+						</xsl:when>
+						
+						<!-- % to thousands of a percent -->						
+						<xsl:when test="substring(., string-length(.) ) = '%'">
+		
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+							
+							<xsl:variable name="cleanValue" select="translate(., '%', '')"/>
+   						    <xsl:value-of select="$cleanValue * 1000"/>
+   						    							
+						</xsl:when>
+						
+						<xsl:otherwise>
+							<xsl:value-of select="." />
+						</xsl:otherwise>
+					</xsl:choose>
 		        </xsl:attribute>
 			</xsl:when>
 
-			<xsl:when
-				test="namespace-uri() = ''">
+			<xsl:when test="namespace-uri() = ''">  <!-- this is necessary for strict pptx; compare docx. -->
 				<xsl:attribute name="{local-name(.)}">
 					
 					<xsl:choose>
@@ -184,7 +176,7 @@
 				</xsl:attribute>
 			</xsl:when>
 
-			<xsl:otherwise>
+			<xsl:otherwise> <!-- eg http://schemas.openxmlformats.org/presentationml/2006/main -->>
 				<xsl:copy-of select="."/>
 			</xsl:otherwise>
 
