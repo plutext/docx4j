@@ -63,6 +63,8 @@ Check jar versions in pom.xml, build.xml
 though in the end flatten-maven-plugin specifies actual version of all dependencies specifically
 (so manually satisfying dependencyConvergence for each module is not necessary ).
 
+Review dependency-check-reports
+
 Check everything is committed (though nexus-staging-maven-plugin doesn't seem to care)
 
 Update Getting Started as necessary (inc HTML and PDF versions)
@@ -212,7 +214,8 @@ Put in /docx4j dir, for example
 
 	scp *2.1.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.2.1/
 
-
+Wait for it to appear in Maven Central...
+		
 Update downloads.html
 Announce release in docx4j forum
 Update news  (includes link to release announcement)

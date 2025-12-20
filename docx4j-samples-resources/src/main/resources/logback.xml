@@ -69,15 +69,19 @@
 
 	<logger name="com.topologi" level="DEBUG" />
 
-	<logger name="org.docx4j.fonts" level="ERROR" />
+	<logger name="org.docx4j.fonts" level="WARN" />
 <!--	
 	<logger name="org.docx4j.fonts.fop.complexscripts.fonts.OTFAdvancedTypographicTableReader" level="WARN" />  
-	<logger name="org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder" level="WARN" /> 
+	<logger name="org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder" level="DEBUG" /> 
+	<logger name="org.docx4j.fonts.Mapper" level="DEBUG" />
 	<logger name="org.docx4j.fonts.BestMatchingMapper" level="WARN" />
+	<logger name="org.docx4j.fonts.IdentityPlusMapper" level="DEBUG" />
 	<logger name="org.docx4j.fonts.GlyphCheck" level="DEBUG" />
 	<logger name="org.docx4j.fonts.PhysicalFonts" level="DEBUG" />
 	<logger name="org.docx4j.fonts.RunFontSelector" level="WARN" />
 	<logger name="org.docx4j.fonts.fop.fonts.FontCache" level="WARN" /> 
+	<logger name="org.docx4j.fonts.fop.util.FopConfigUtil" level="DEBUG" /> 
+	<logger name="org.docx4j.fonts.fop.complexscripts" level="WARN" /> 
 -->
 
 	<logger name="org.docx4j.jaxb" level="INFO" />
@@ -102,10 +106,11 @@
 	<logger name="org.docx4j.model.table" level="INFO" />
 
 	<logger name="org.docx4j.openpackaging" level="WARN" />
+
+<!--
 	<logger name="org.docx4j.openpackaging.contenttype" level="WARN" />
 	
 	<logger name="org.docx4j.openpackaging.URIHelper" level="WARN" />
-
 	<logger name="org.docx4j.openpackaging.io3" level="ERROR" />
 	<logger name="org.docx4j.openpackaging.io3.stores.ZipPartStore" level="ERROR" />
 	<logger name="org.docx4j.openpackaging.io3.LoadFromZipNG" level="ERROR" />
@@ -131,6 +136,7 @@
 	<logger name="org.docx4j.openpackaging.parts.AbstractFontPart" level="WARN" />
 	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="INFO" />
 	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart" level="WARN" />
+-->	
 
 	<!--  to see the fop config  -->
 	<logger name="org.docx4j.convert.out.fo.renderers" level="INFO" />

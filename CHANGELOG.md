@@ -2,6 +2,34 @@ CHANGELOG
 =========
 
 
+Version 11.5.9  
+===============
+
+Release date
+------------
+
+21 December 2025
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 11.5.9
+--------------------------
+
+Import "Strict" docx|pptx|xlsx
+
+PDF via XSL FO output, more font enhancements:
+- distribute metrically compatible substitute fonts for Calibri, Cambria, Times New Roman etc
+  (Windows users may wish to exclude these) and map them automatically
+- update font file ingestion code from Apache Fop
+- miscellaneous fixes
+
+Bump deps to address CVEs in documents4j, MOXy deps
+
+
 Version 11.5.8  (export-fo font enhancements) 
 ===============
 
