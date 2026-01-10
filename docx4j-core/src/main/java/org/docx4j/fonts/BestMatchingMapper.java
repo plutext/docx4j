@@ -67,13 +67,7 @@ public class BestMatchingMapper extends Mapper {
 	public BestMatchingMapper() {
 		super();
 	}
-	
-	
-	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
-	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
-		return msFontsFilenames;
-	}		
-	
+		
 	/** The substitutions listed in FontSubstitutions.xml
 	 * Will be used only if there is no panose match.  */
 	private final static Map<String, FontSubstitutions.Replace> explicitSubstitutionsMap;
@@ -98,12 +92,6 @@ public class BestMatchingMapper extends Mapper {
 		
 		try {
 			
-			// Microsoft Fonts
-			// 1. On Microsoft platform, to embed in PDF output
-			// 2. docx4all - all platforms - to populate font dropdown list
-			msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
-			setupMicrosoftFontFilenames();
-
 			// @since 11.5.8 symbol fonts from docx4j-export-fo-fonts-symbol jar
 			int count = PhysicalFonts.discoverJarFonts("fonts-symbol");
 			log.info("Found " + count + " docx4j symbol fonts.");
@@ -135,37 +123,7 @@ public class BestMatchingMapper extends Mapper {
 			throw new RuntimeException(exc);
 		}
 	}
-	
-	/**
-	 * Get Microsoft fonts
-	 * We need these:
-	 * 1. On Microsoft platform, to embed in PDF output
-	 * 2. docx4all - all platforms - to populate font dropdown list */	
-	private final static void setupMicrosoftFontFilenames() throws Exception {
-
-		java.lang.ClassLoader classLoader = BestMatchingMapper.class.getClassLoader();				
-		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft", classLoader);
 		
-		Unmarshaller u = msFontsContext.createUnmarshaller();		
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-		log.info("unmarshalling fonts.microsoft \n\n" );									
-		// Get the xml file
-		java.io.InputStream is = null;
-		// Works in Eclipse - note absence of leading '/'
-		is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/fonts/microsoft/MicrosoftFonts.xml");
-					
-		org.docx4j.fonts.microsoft.MicrosoftFonts msFonts = (org.docx4j.fonts.microsoft.MicrosoftFonts)u.unmarshal( is );
-		
-		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
-		
-		for (MicrosoftFonts.Font font : msFontsList ) {			
-			msFontsFilenames.put( (font.getName()), font); // 20080318 - normalised
-			//log.debug( "put msFontsFilenames: " + normalise(font.getName()) );
-		}
-		
-	}
-	
     private static void generateKeysForPhysicalFonts() {
         for (Map.Entry<String, PhysicalFont> entry : PhysicalFonts.getPhysicalFonts().entrySet()) {
             physicalFontsByKey.put(generateFontKey(entry.getKey()), entry.getValue());
