@@ -73,10 +73,9 @@
 
   </xs:annotation>
 
-
-  <xs:import namespace="http://www.w3.org/XML/1998/namespace"
-             schemaLocation="http://www.w3.org/2001/03/xml.xsd">
-  </xs:import>
+   <xs:import id="xml" namespace="http://www.w3.org/XML/1998/namespace" 
+		schemaLocation="../wml/xml.xsd" />
+  
 
    <xs:import namespace="http://purl.org/dc/elements/1.1/"
               schemaLocation="dc.xsd"/>
