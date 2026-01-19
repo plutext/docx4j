@@ -21,6 +21,7 @@ because this generates classes in org.docx4j.customxml|dml|math|vml|wml, but its
 -->
 	
 <xsd:schema  
+targetNamespace="foo"
 xmlns:p="urn:schemas-microsoft-com:office:powerpoint" 
 xmlns:o="urn:schemas-microsoft-com:office:office" 
 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 

@@ -1,5 +1,6 @@
 <!--  from https://msdn.microsoft.com/en-us/library/mt459326(v=office.12).aspx -->
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main" elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all" xmlns="http://schemas.microsoft.com/office/word/2015/wordml/symex" targetNamespace="http://schemas.microsoft.com/office/word/2015/wordml/symex"
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main" elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all" 
+xmlns="http://schemas.microsoft.com/office/word/2015/wordml/symex" targetNamespace="http://schemas.microsoft.com/office/word/2015/wordml/symex"
     xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
     xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
     

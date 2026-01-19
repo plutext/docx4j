@@ -25,11 +25,11 @@
 		 
 	-->	
 
-  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" 
-  	schemaLocation="office-excel-2006-DUMMY.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" schemaLocation="office-excel-2006-main.xsd" />
+  	
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml__ROOT.xsd" />
   <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="../sml/sml_ECMA376_4ed_transitional.xsd" />
-	<xsd:import id="rel"
+  <xsd:import id="rel"
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 		schemaLocation="../shared/shared-relationshipReference.xsd" />
   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
