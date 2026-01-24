@@ -126,7 +126,11 @@ public class TocStyles {
 		
 		for (Style s : stylesPartStyles.getStyle()) {
 			
-			if (s.getName().getVal().startsWith("toc")
+			if (s.getName()==null) {
+				if (log.isInfoEnabled()) {
+					log.info(s.getStyleId() +  " has no name.");
+				}
+			} else if (s.getName().getVal().startsWith("toc")
 					|| s.getName().getVal().equals(defaultPStyleName)
 					|| s.getName().getVal().equals(TOC_HEADING)
 					|| s.getName().getVal().equals(HEADING_1) // in order to create a TOC Heading, if necessary
