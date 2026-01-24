@@ -387,7 +387,18 @@ public class Containerization {
 	private static boolean borderChanged(CTBorder currentBorder, CTBorder lastBorder) {
 		if (currentBorder != lastBorder) { 
 			if ((currentBorder != null) && (lastBorder != null)) {
-				return !currentBorder.getVal().equals(lastBorder.getVal());
+				
+				if (currentBorder.getVal()!=null && lastBorder.getVal()!=null) {
+					// neither null, so safe to test
+					return !currentBorder.getVal().equals(lastBorder.getVal());					
+				} else if (currentBorder.getVal()==null && lastBorder.getVal()==null) {
+					// both null
+					return false;
+				} else {
+					//one was null
+					return true;					
+				}
+				
 			}
 			//one was null
 			return true;
