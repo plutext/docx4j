@@ -247,10 +247,17 @@ public class ParagraphStylesInTableFix {
 			// Font size and jc for the style (which could be the default style), 
 			// without following its based on values
 			Style expressStyle = allStyles.get(styleVal);
-			Jc expressStyleJc = expressStyle.getPPr()==null ? null : expressStyle.getPPr().getJc();
+			Jc expressStyleJc = null;
 			HpsMeasure expressStyleFontSize = null;
-			if (expressStyle.getRPr()!=null) {
-				expressStyleFontSize=expressStyle.getRPr().getSz();
+			if (expressStyle ==null) {
+				log.warn("No default paragraph style.");
+			} else {
+				if (expressStyle.getPPr()!=null) {
+					expressStyleJc = expressStyle.getPPr().getJc();
+				}
+				if (expressStyle.getRPr()!=null) {
+					expressStyleFontSize=expressStyle.getRPr().getSz();
+				}
 			}
 			// Font size and jc for the style following its based on values
 			PPr effectivePPr = propertyResolver.getEffectivePPr(styleVal);
