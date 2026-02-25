@@ -64,7 +64,9 @@ public class TSwitch extends SelectorSwitch {
         TocEntry te = sp.getEntry();
         Map<String, Integer> styleLevelMap = getStyleLevelMap();
         for(String styleMapValue: styleLevelMap.keySet()){
-//        	log.debug("testing against" + styleMapValue);
+        	if (log.isDebugEnabled()) {
+        		log.debug("testing " + s.getStyleId() + " against " + styleMapValue);
+        	}
             if( sp.getStyleBasedOnHelper().isBasedOn(s, styleMapValue)){
                 te.setEntryLevel(styleLevelMap.get(styleMapValue));
                 if (log.isDebugEnabled()) {

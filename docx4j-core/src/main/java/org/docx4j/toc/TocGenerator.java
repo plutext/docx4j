@@ -507,16 +507,24 @@ public class TocGenerator {
         SdtBlock sdt = finder.tocSDT;
         sectPr = finder.sectPr;
         
+        String instruction;
         if(sdt == null){
         	
             TocIntoSdt tocIntoSdt = new TocIntoSdt();
             sdt = tocIntoSdt.process(wordMLPackage);
             // throws TocException if not found
+            instruction = tocIntoSdt.getInstruction();
+            
+        } else {
+        	instruction = finder.tocInstruction;	
         }
-
-        String instruction = finder.tocInstruction;
+        
         if(instruction.isEmpty()){
             throw new TocException("TOC instruction text missing");
+        }
+
+        if (log.isDebugEnabled()) {
+        	log.debug("found instruction:" + instruction);
         }
         
         if (leader==null) {

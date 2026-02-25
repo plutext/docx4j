@@ -99,6 +99,8 @@ public class TocIntoSdt  {
 			throw new TocException("Couldn't find TOC field");
 		}
 		
+		this.tocInstruction = finder.tocInstruction;
+		
         // Create new list containing the range
         List<Object> rangeList = new ArrayList<Object>(topLevelContent.subList(fromIndex, toIndex+1));
 		
@@ -117,8 +119,12 @@ public class TocIntoSdt  {
         
         return sdtBlock;
     }
-    
 
+	private String tocInstruction = null;
+	
+	protected String getInstruction() {
+		return tocInstruction;
+	}
     
     static class TocFinder  extends CallbackImpl {
         	        	
