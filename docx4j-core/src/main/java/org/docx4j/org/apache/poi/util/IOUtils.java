@@ -34,6 +34,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.docx4j.org.apache.poi.EmptyFileException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,29 +52,44 @@ public final class IOUtils {
     /**
      * Peeks at the first 8 bytes of the stream. Returns those bytes, but
      *  with the stream unaffected. Requires a stream that supports mark/reset,
-     *  or a PushbackInputStream. If the stream has &gt;0 but &lt;8 bytes, 
+     *  or a PushbackInputStream. If the stream has &gt;0 but &lt;8 bytes,
      *  remaining bytes will be zero.
      * @throws EmptyFileException if the stream is empty
      */
     public static byte[] peekFirst8Bytes(InputStream stream) throws IOException, EmptyFileException {
-        // We want to peek at the first 8 bytes
-        stream.mark(8);
+        return peekFirstNBytes(stream, 8);
+    }
+    
+    /**
+     * Peeks at the first N bytes of the stream. Returns those bytes, but
+     *  with the stream unaffected. Requires a stream that supports mark/reset,
+     *  or a PushbackInputStream. If the stream has &gt;0 but &lt;N bytes,
+     *  remaining bytes will be zero.
+     * @throws EmptyFileException if the stream is empty
+     */
+    public static byte[] peekFirstNBytes(InputStream stream, int limit) throws IOException, EmptyFileException {
 
-        byte[] header = new byte[8];
-        int read = IOUtils.readFully(stream, header);
+        stream.mark(limit);
+        try (UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().setBufferSize(limit).get()) {
+            copy(BoundedInputStream.builder().setInputStream(stream).setMaxCount(limit).get(), bos);
 
-        if (read < 1)
-            throw new EmptyFileException();
+            int readBytes = bos.size();
+            if (readBytes == 0) {
+                throw new EmptyFileException();
+            }
 
-        // Wind back those 8 bytes
-        if(stream instanceof PushbackInputStream) {
-            PushbackInputStream pin = (PushbackInputStream)stream;
-            pin.unread(header);
-        } else {
-            stream.reset();
+            if (readBytes < limit) {
+                bos.write(new byte[limit-readBytes]);
+            }
+            byte[] peekedBytes = bos.toByteArray();
+            if(stream instanceof PushbackInputStream) {
+                PushbackInputStream pin = (PushbackInputStream)stream;
+                pin.unread(peekedBytes, 0, readBytes);
+            } else {
+                stream.reset();
+            }
+            return peekedBytes;
         }
-
-        return header;
     }
 
     /**

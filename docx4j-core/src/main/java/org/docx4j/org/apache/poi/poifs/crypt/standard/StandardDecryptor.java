@@ -35,9 +35,7 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-
-
-
+import org.apache.commons.io.input.BoundedInputStream;
 //import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.ChainingMode;
@@ -49,7 +47,6 @@ import org.docx4j.org.apache.poi.poifs.crypt.EncryptionVerifier;
 import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
 import org.docx4j.org.apache.poi.poifs.filesystem.DirectoryNode;
 import org.docx4j.org.apache.poi.poifs.filesystem.DocumentInputStream;
-import org.docx4j.org.apache.poi.util.BoundedInputStream;
 import org.docx4j.org.apache.poi.util.LittleEndian;
 
 /**

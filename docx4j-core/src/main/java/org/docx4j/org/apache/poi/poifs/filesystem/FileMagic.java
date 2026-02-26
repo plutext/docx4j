@@ -1,4 +1,10 @@
-/* ====================================================================
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+ 
+ /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -15,7 +21,7 @@
    limitations under the License.
 ==================================================================== */
 
-package org.apache.poi.poifs.filesystem;
+package org.docx4j.org.apache.poi.poifs.filesystem;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -24,10 +30,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 
-import org.apache.poi.poifs.storage.HeaderBlockConstants;
-import org.apache.poi.util.IOUtils;
-import org.apache.poi.util.LittleEndian;
-import org.apache.poi.util.LocaleUtil;
+import org.docx4j.org.apache.poi.poifs.storage.HeaderBlockConstants;
+import org.docx4j.org.apache.poi.util.IOUtils;
+import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LocaleUtil;
 
 /**
  * The file magic number, i.e. the file identification based on the first bytes

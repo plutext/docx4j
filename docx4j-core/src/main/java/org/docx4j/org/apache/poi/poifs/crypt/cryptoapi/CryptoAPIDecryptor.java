@@ -36,6 +36,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.io.input.BoundedInputStream;
+
 //import org.docx4j.org.apache.poi.EncryptedDocumentException;
 
 
@@ -52,7 +54,6 @@ import org.docx4j.org.apache.poi.poifs.filesystem.DocumentNode;
 import org.docx4j.org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.docx4j.org.apache.poi.util.BitField;
 import org.docx4j.org.apache.poi.util.BitFieldFactory;
-import org.docx4j.org.apache.poi.util.BoundedInputStream;
 import org.docx4j.org.apache.poi.util.IOUtils;
 import org.docx4j.org.apache.poi.util.LittleEndian;
 import org.docx4j.org.apache.poi.util.LittleEndianInputStream;
