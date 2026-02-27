@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -21,138 +15,127 @@
    limitations under the License.
 ==================================================================== */
 
-package org.docx4j.org.apache.poi.hpsf;
+package org.apache.poi.hpsf;
 
-import org.docx4j.org.apache.poi.util.HexDump;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Supplier;
+
+import org.apache.poi.common.Duplicatable;
+import org.apache.poi.common.usermodel.GenericRecord;
+import org.apache.poi.util.GenericRecordUtil;
+import org.apache.poi.util.LittleEndianInput;
+import org.apache.poi.util.LittleEndianOutput;
 
 /**
- *  <p>Represents a class ID (16 bytes). Unlike other little-endian
- *  type the {@link ClassID} is not just 16 bytes stored in the wrong
- *  order. Instead, it is a double word (4 bytes) followed by two
- *  words (2 bytes each) followed by 8 bytes.</p>
+ * Represents a class ID (16 bytes). Unlike other little-endian
+ * type the {@link ClassID} is not just 16 bytes stored in the wrong
+ * order. Instead, it is a double word (4 bytes) followed by two
+ * words (2 bytes each) followed by 8 bytes.<p>
  *
- * @author Rainer Klute <a
- * href="mailto:klute@rainer-klute.de">&lt;klute@rainer-klute.de&gt;</a>
+ * The ClassID (or CLSID) is a UUID - see RFC 4122
  */
-public class ClassID
-{
-    public static final ClassID OLE10_PACKAGE = new ClassID("{0003000C-0000-0000-C000-000000000046}");
-    public static final ClassID PPT_SHOW = new ClassID("{64818D10-4F9B-11CF-86EA-00AA00B929E8}");
-    public static final ClassID XLS_WORKBOOK = new ClassID("{00020841-0000-0000-C000-000000000046}");
-    public static final ClassID TXT_ONLY = new ClassID("{5e941d80-bf96-11cd-b579-08002b30bfeb}"); // ???
-    public static final ClassID EXCEL97      = new ClassID("{00020820-0000-0000-C000-000000000046}");
-    public static final ClassID EXCEL95      = new ClassID("{00020810-0000-0000-C000-000000000046}");
-    public static final ClassID WORD97       = new ClassID("{00020906-0000-0000-C000-000000000046}");
-    public static final ClassID WORD95       = new ClassID("{00020900-0000-0000-C000-000000000046}");
-    public static final ClassID POWERPOINT97 = new ClassID("{64818D10-4F9B-11CF-86EA-00AA00B929E8}");
-    public static final ClassID POWERPOINT95 = new ClassID("{EA7BAE70-FB3B-11CD-A903-00AA00510EA3}");
-    public static final ClassID EQUATION30   = new ClassID("{0002CE02-0000-0000-C000-000000000046}");
-	
-	
+public class ClassID implements Duplicatable, GenericRecord {
+
+    /** The number of bytes occupied by this object in the byte stream. */
+    public static final int LENGTH = 16;
+
     /**
-     * <p>The bytes making out the class ID in correct order,
-     * i.e. big-endian.</p>
+     * The bytes making out the class ID in correct order, i.e. big-endian.
      */
-    protected byte[] bytes;
-
-
+    private final byte[] bytes = new byte[LENGTH];
 
     /**
-     *  <p>Creates a {@link ClassID} and reads its value from a byte
-     *  array.</p>
+     * Creates a ClassID and reads its value from a byte array.
      *
      * @param src The byte array to read from.
      * @param offset The offset of the first byte to read.
      */
-    public ClassID(final byte[] src, final int offset)
-    {
+    public ClassID(final byte[] src, final int offset) {
         read(src, offset);
     }
 
 
     /**
-     *  <p>Creates a {@link ClassID} and initializes its value with
-     *  0x00 bytes.</p>
+     * Creates a ClassID and initializes its value with 0x00 bytes.
      */
-    public ClassID()
-    {
-        bytes = new byte[LENGTH];
-        for (int i = 0; i < LENGTH; i++)
-            bytes[i] = 0x00;
+    public ClassID() {
+        Arrays.fill(bytes, (byte)0);
+    }
+
+    /**
+     * Clones the given ClassID
+     *
+     * @param other The ClassID to use a base for creating this one
+     */
+    public ClassID(ClassID other) {
+        System.arraycopy(other.bytes, 0, bytes, 0, bytes.length);
     }
 
 
     /**
-     * <p>Creates a {@link ClassID} from a human-readable representation of the Class ID in standard 
-     * format <code>"{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"</code>.</p>
-     * 
+     * Creates a ClassID from a human-readable representation of the Class ID in standard
+     * format {@code "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"}.
+     *
      * @param externalForm representation of the Class ID represented by this object.
      */
     public ClassID(String externalForm) {
-    	bytes = new byte[LENGTH];
         String clsStr = externalForm.replaceAll("[{}-]", "");
         for (int i=0; i<clsStr.length(); i+=2) {
-        	bytes[i/2] = (byte)Integer.parseInt(clsStr.substring(i, i+2), 16);
+            bytes[i/2] = (byte)Integer.parseInt(clsStr.substring(i, i+2), 16);
         }
     }
-    
-
-    /** <p>The number of bytes occupied by this object in the byte
-     * stream.</p> */
-    public static final int LENGTH = 16;
 
     /**
-     * @return The number of bytes occupied by this object in the byte
-     * stream.
+     * Reads the ClassID from the input
+     * @param lei the input (stream)
      */
-    public int length()
-    {
+    public ClassID(LittleEndianInput lei) {
+        byte[] buf = bytes.clone();
+        lei.readFully(buf);
+        read(buf, 0);
+    }
+
+    /**
+     * @return The number of bytes occupied by this object in the byte stream.
+     */
+    @SuppressWarnings("java:S1845")
+    public int length() {
         return LENGTH;
     }
 
-
-
     /**
-     * <p>Gets the bytes making out the class ID. They are returned in
-     * correct order, i.e. big-endian.</p>
+     * Gets the bytes making out the class ID. They are returned in correct order, i.e. big-endian.
+     * This no longer returns a reference to the internal byte array, but a copy of it.
      *
      * @return the bytes making out the class ID.
      */
-    public byte[] getBytes()
-    {
-        return bytes;
+    public byte[] getBytes() {
+        return bytes.clone();
     }
 
-
-
     /**
-     * <p>Sets the bytes making out the class ID.</p>
+     * Sets the bytes making out the class ID.
      *
      * @param bytes The bytes making out the class ID in big-endian format. They
      * are copied without their order being changed.
      */
-    public void setBytes(final byte[] bytes)
-    {
-        for (int i = 0; i < this.bytes.length; i++)
-            this.bytes[i] = bytes[i];
+    public void setBytes(final byte[] bytes) {
+        System.arraycopy(bytes, 0, this.bytes, 0, LENGTH);
     }
 
-
-
     /**
-     * <p>Reads the class ID's value from a byte array by turning
-     * little-endian into big-endian.</p>
+     * Reads the class ID's value from a byte array by turning little-endian into big-endian.
      *
      * @param src The byte array to read from
-     *
-     * @param offset The offset within the <var>src</var> byte array
-     *
+     * @param offset The offset within the {@code src} byte array
      * @return A byte array containing the class ID.
      */
-    public byte[] read(final byte[] src, final int offset)
-    {
-        bytes = new byte[16];
-
+    @SuppressWarnings("PointlessArithmeticExpression")
+    public byte[] read(final byte[] src, final int offset) {
         /* Read double word. */
         bytes[0] = src[3 + offset];
         bytes[1] = src[2 + offset];
@@ -168,33 +151,31 @@ public class ClassID
         bytes[7] = src[6 + offset];
 
         /* Read 8 bytes. */
-        for (int i = 8; i < 16; i++)
-            bytes[i] = src[i + offset];
+        System.arraycopy(src, 8 + offset, bytes, 8, 8);
 
-        return bytes;
+        return bytes.clone();
     }
 
-
-
     /**
-     * <p>Writes the class ID to a byte array in the
-     * little-endian format.</p>
+     * Writes the class ID to a byte array in the little-endian format.
      *
      * @param dst The byte array to write to.
      *
-     * @param offset The offset within the <var>dst</var> byte array.
+     * @param offset The offset within the {@code dst} byte array.
      *
-     * @exception ArrayStoreException if there is not enough room for the class
-     * ID 16 bytes in the byte array after the <var>offset</var> position.
+     * @throws ArrayStoreException if there is not enough room for the class
+     * ID 16 bytes in the byte array after the {@code offset} position.
      */
+    @SuppressWarnings("PointlessArithmeticExpression")
     public void write(final byte[] dst, final int offset)
-    throws ArrayStoreException
-    {
+    throws ArrayStoreException {
         /* Check array size: */
-        if (dst.length < 16)
+        if (dst.length < LENGTH) {
             throw new ArrayStoreException
                 ("Destination byte[] must have room for at least 16 bytes, " +
                  "but has a length of only " + dst.length + ".");
+        }
+
         /* Write double word. */
         dst[0 + offset] = bytes[3];
         dst[1 + offset] = bytes[2];
@@ -210,63 +191,106 @@ public class ClassID
         dst[7 + offset] = bytes[6];
 
         /* Write 8 bytes. */
-        for (int i = 8; i < 16; i++)
-            dst[i + offset] = bytes[i];
+        System.arraycopy(bytes, 8, dst, 8 + offset, 8);
     }
 
-
-
     /**
-     * <p>Checks whether this <code>ClassID</code> is equal to another
-     * object.</p>
+     * Write the class ID to a LittleEndianOutput (stream)
      *
-     * @param o the object to compare this <code>PropertySet</code> with
-     * @return <code>true</code> if the objects are equal, else
-     * <code>false</code>.</p>
+     * @param leo the output
      */
-    public boolean equals(final Object o)
-    {
-        if (o == null || !(o instanceof ClassID))
-            return false;
-        final ClassID cid = (ClassID) o;
-        if (bytes.length != cid.bytes.length)
-            return false;
-        for (int i = 0; i < bytes.length; i++)
-            if (bytes[i] != cid.bytes[i])
-                return false;
-        return true;
+    public void write(LittleEndianOutput leo) {
+        byte[] buf = bytes.clone();
+        write(buf, 0);
+        leo.write(buf);
     }
 
-
-
     /**
-     * @see Object#hashCode()
+     * Checks whether this {@code ClassID} is equal to another object.
+     *
+     * @param o the object to compare this {@code ClassID} with
+     * @return {@code true} if the objects are equal, else {@code false}.
      */
-    public int hashCode()
-    {
-        return new String(bytes).hashCode();
+    @Override
+    public boolean equals(final Object o) {
+        return (o instanceof ClassID) && Arrays.equals(bytes, ((ClassID)o).bytes);
     }
 
+    /**
+     * Checks whether this {@code ClassID} is equal to another ClassID with inverted endianess,
+     * because there are apparently not only version 1 GUIDs (aka "network" with big-endian encoding),
+     * but also version 2 GUIDs (aka "native" with little-endian encoding) out there.
+     *
+     * @param o the object to compare this {@code ClassID} with
+     * @return {@code true} if the objects are equal, else {@code false}.
+     */
+    public boolean equalsInverted(ClassID o) {
+        return
+            o.bytes[0] == bytes[3] &&
+            o.bytes[1] == bytes[2] &&
+            o.bytes[2] == bytes[1] &&
+            o.bytes[3] == bytes[0] &&
+            o.bytes[4] == bytes[5] &&
+            o.bytes[5] == bytes[4] &&
+            o.bytes[6] == bytes[7] &&
+            o.bytes[7] == bytes[6] &&
+            o.bytes[8] == bytes[8] &&
+            o.bytes[9] == bytes[9] &&
+            o.bytes[10] == bytes[10] &&
+            o.bytes[11] == bytes[11] &&
+            o.bytes[12] == bytes[12] &&
+            o.bytes[13] == bytes[13] &&
+            o.bytes[14] == bytes[14] &&
+            o.bytes[15] == bytes[15]
+        ;
+    }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
 
     /**
-     * <p>Returns a human-readable representation of the Class ID in standard 
-     * format <code>"{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"</code>.</p>
-     * 
+     * Returns a human-readable representation of the Class ID in standard
+     * format {@code "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"}.
+     *
      * @return String representation of the Class ID represented by this object.
      */
-    public String toString()
-    {
-        StringBuffer sbClassId = new StringBuffer(38);
-        sbClassId.append('{');
-        for (int i = 0; i < 16; i++)
-        {
-            sbClassId.append(HexDump.toHex(bytes[i]));
-            if (i == 3 || i == 5 || i == 7 || i == 9)
-                sbClassId.append('-');
-        }
-        sbClassId.append('}');
-        return sbClassId.toString();
+    @Override
+    public String toString() {
+        return "{" + toUUIDString() + "}";
     }
 
+    /**
+     * Returns a human-readable representation of the Class ID in UUID
+     * format {@code "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}.
+     *
+     * @return UUID String representation of the Class ID represented by this object.
+     */
+    public String toUUIDString() {
+        return toUUID().toString().toUpperCase(Locale.ROOT);
+    }
+
+    /**
+     * Converts the ClassID to an UUID
+     * @return the ClassID as UUID
+     *
+     * @since 5.0.0
+     */
+    public UUID toUUID() {
+        final long mostSigBits = ByteBuffer.wrap(bytes, 0, 8).getLong();
+        final long leastSigBits = ByteBuffer.wrap(bytes, 8, 8).getLong();
+        return new UUID(mostSigBits, leastSigBits);
+    }
+
+
+    @Override
+    public ClassID copy() {
+        return new ClassID(this);
+    }
+
+    @Override
+    public Map<String, Supplier<?>> getGenericProperties() {
+        return GenericRecordUtil.getGenericProperties("uuid", this::toString);
+    }
 }
