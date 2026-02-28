@@ -39,6 +39,8 @@ module org.docx4j.core {
 	requires jakarta.xml.bind;
 	
 	requires org.apache.pdfbox.io;
+	requires org.apache.commons.collections4;
+	requires com.zaxxer.sparsebitset;
     
     exports org.docx4j;
     exports org.docx4j.convert.in;
