@@ -32,7 +32,7 @@ package org.docx4j.org.apache.poi.hpsf;
  * @author Rainer Klute <a
  *         href="mailto:klute@rainer-klute.de">&lt;klute@rainer-klute.de&gt;</a>
  */
-public class CustomProperty extends MutableProperty
+public class CustomProperty extends Property
 {
 
     private String name;

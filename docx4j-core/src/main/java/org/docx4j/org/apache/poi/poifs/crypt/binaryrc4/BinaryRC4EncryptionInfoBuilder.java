@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -24,61 +18,42 @@
 package org.docx4j.org.apache.poi.poifs.crypt.binaryrc4;
 
 import java.io.IOException;
-
 import org.docx4j.org.apache.poi.poifs.crypt.*;
 import org.docx4j.org.apache.poi.util.LittleEndianInput;
 
 public class BinaryRC4EncryptionInfoBuilder implements EncryptionInfoBuilder {
 
-    EncryptionInfo info;
-    BinaryRC4EncryptionHeader header;
-    BinaryRC4EncryptionVerifier verifier;
-    BinaryRC4Decryptor decryptor;
-    BinaryRC4Encryptor encryptor;
-
     public BinaryRC4EncryptionInfoBuilder() {
     }
 
+    @Override
     public void initialize(EncryptionInfo info, LittleEndianInput dis)
     throws IOException {
-        this.info = info;
         int vMajor = info.getVersionMajor();
         int vMinor = info.getVersionMinor();
         assert (vMajor == 1 && vMinor == 1);
 
-        header = new BinaryRC4EncryptionHeader();
-        verifier = new BinaryRC4EncryptionVerifier(dis);
-        decryptor = new BinaryRC4Decryptor(this);
-        encryptor = new BinaryRC4Encryptor(this);
+        info.setHeader(new BinaryRC4EncryptionHeader());
+        info.setVerifier(new BinaryRC4EncryptionVerifier(dis));
+        Decryptor dec = new BinaryRC4Decryptor();
+        dec.setEncryptionInfo(info);
+        info.setDecryptor(dec);
+        Encryptor enc = new BinaryRC4Encryptor();
+        enc.setEncryptionInfo(info);
+        info.setEncryptor(enc);
     }
 
+    @Override
     public void initialize(EncryptionInfo info,
         CipherAlgorithm cipherAlgorithm, HashAlgorithm hashAlgorithm,
         int keyBits, int blockSize, ChainingMode chainingMode) {
-        this.info = info;
-        header = new BinaryRC4EncryptionHeader();
-        verifier = new BinaryRC4EncryptionVerifier();
-        decryptor = new BinaryRC4Decryptor(this);
-        encryptor = new BinaryRC4Encryptor(this);
-    }
-
-    public BinaryRC4EncryptionHeader getHeader() {
-        return header;
-    }
-
-    public BinaryRC4EncryptionVerifier getVerifier() {
-        return verifier;
-    }
-
-    public BinaryRC4Decryptor getDecryptor() {
-        return decryptor;
-    }
-
-    public BinaryRC4Encryptor getEncryptor() {
-        return encryptor;
-    }
-
-    public EncryptionInfo getEncryptionInfo() {
-        return info;
+        info.setHeader(new BinaryRC4EncryptionHeader());
+        info.setVerifier(new BinaryRC4EncryptionVerifier());
+        Decryptor dec = new BinaryRC4Decryptor();
+        dec.setEncryptionInfo(info);
+        info.setDecryptor(dec);
+        Encryptor enc = new BinaryRC4Encryptor();
+        enc.setEncryptionInfo(info);
+        info.setEncryptor(enc);
     }
 }

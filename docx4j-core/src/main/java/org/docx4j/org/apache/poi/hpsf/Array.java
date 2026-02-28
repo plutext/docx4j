@@ -22,122 +22,102 @@
 ==================================================================== */
 package org.docx4j.org.apache.poi.hpsf;
 
+import org.docx4j.org.apache.poi.util.IOUtils;
 import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianByteArrayInputStream;
 
 @Internal
-class Array
-{
-    static class ArrayDimension
-    {
-        static final int SIZE = 8;
+public class Array {
+    private static final int DEFAULT_MAX_NUMBER_OF_ARRAY_SCALARS = 100_000;
+    private static int MAX_NUMBER_OF_ARRAY_SCALARS = DEFAULT_MAX_NUMBER_OF_ARRAY_SCALARS;
 
-        private int _indexOffset;
+    public static int getMaxNumberOfArrayScalars() {
+        return MAX_NUMBER_OF_ARRAY_SCALARS;
+    }
+
+    public static void setMaxNumberOfArrayScalars(final int maxNumberOfArrayScalars) {
+        MAX_NUMBER_OF_ARRAY_SCALARS = maxNumberOfArrayScalars;
+    }
+
+    static class ArrayDimension {
         private long _size;
+        @SuppressWarnings("unused")
+        private int _indexOffset;
 
-        ArrayDimension( byte[] data, int offset )
-        {
-            _size = LittleEndian.getUInt( data, offset );
-            _indexOffset = LittleEndian.getInt( data, offset
-                    + LittleEndian.INT_SIZE );
+        void read( LittleEndianByteArrayInputStream lei ) {
+            _size = lei.readUInt();
+            _indexOffset = lei.readInt();
         }
     }
 
-    static class ArrayHeader
-    {
+    static class ArrayHeader {
         private ArrayDimension[] _dimensions;
         private int _type;
 
-        ArrayHeader( byte[] data, int startOffset )
-        {
-            int offset = startOffset;
+        void read( LittleEndianByteArrayInputStream lei ) {
+            _type = lei.readInt();
 
-            _type = LittleEndian.getInt( data, offset );
-            offset += LittleEndian.INT_SIZE;
+            long numDimensionsUnsigned = lei.readUInt();
 
-            long numDimensionsUnsigned = LittleEndian.getUInt( data, offset );
-            offset += LittleEndian.INT_SIZE;
+            if ( !( 1 <= numDimensionsUnsigned && numDimensionsUnsigned <= 31 ) ) {
+                String msg = "Array dimension number "+numDimensionsUnsigned+" is not in [1; 31] range";
+                throw new IllegalPropertySetDataException(msg);
+            }
 
-            if ( !( 1 <= numDimensionsUnsigned && numDimensionsUnsigned <= 31 ) )
-                throw new IllegalPropertySetDataException(
-                        "Array dimension number " + numDimensionsUnsigned
-                                + " is not in [1; 31] range" );
             int numDimensions = (int) numDimensionsUnsigned;
 
             _dimensions = new ArrayDimension[numDimensions];
-            for ( int i = 0; i < numDimensions; i++ )
-            {
-                _dimensions[i] = new ArrayDimension( data, offset );
-                offset += ArrayDimension.SIZE;
+            for ( int i = 0; i < numDimensions; i++ ) {
+                ArrayDimension ad = new ArrayDimension();
+                ad.read(lei);
+                _dimensions[i] = ad;
             }
         }
 
-        long getNumberOfScalarValues()
-        {
+        long getNumberOfScalarValues() {
             long result = 1;
-            for ( ArrayDimension dimension : _dimensions )
+            for ( ArrayDimension dimension : _dimensions ) {
                 result *= dimension._size;
+            }
             return result;
         }
 
-        int getSize()
-        {
-            return LittleEndian.INT_SIZE * 2 + _dimensions.length
-                    * ArrayDimension.SIZE;
-        }
-
-        int getType()
-        {
+        int getType() {
             return _type;
         }
     }
 
-    private ArrayHeader _header;
+    private final ArrayHeader _header = new ArrayHeader();
     private TypedPropertyValue[] _values;
 
-    Array()
-    {
-    }
-
-    Array( final byte[] data, final int offset )
-    {
-        read( data, offset );
-    }
-
-    int read( final byte[] data, final int startOffset )
-    {
-        int offset = startOffset;
-
-        _header = new ArrayHeader( data, offset );
-        offset += _header.getSize();
+    public void read( LittleEndianByteArrayInputStream lei ) {
+        _header.read(lei);
 
         long numberOfScalarsLong = _header.getNumberOfScalarValues();
-        if ( numberOfScalarsLong > Integer.MAX_VALUE )
-            throw new UnsupportedOperationException(
-                    "Sorry, but POI can't store array of properties with size of "
-                            + numberOfScalarsLong + " in memory" );
+        if ( numberOfScalarsLong > Integer.MAX_VALUE ) {
+            String msg =
+                "Sorry, but POI can't store array of properties with size of " +
+                numberOfScalarsLong + " in memory";
+            throw new UnsupportedOperationException(msg);
+        }
         int numberOfScalars = (int) numberOfScalarsLong;
 
-        _values = new TypedPropertyValue[numberOfScalars];
-        final int type = _header._type;
-        if ( type == Variant.VT_VARIANT )
-        {
-            for ( int i = 0; i < numberOfScalars; i++ )
-            {
-                TypedPropertyValue typedPropertyValue = new TypedPropertyValue();
-                offset += typedPropertyValue.read( data, offset );
-            }
-        }
-        else
-        {
-            for ( int i = 0; i < numberOfScalars; i++ )
-            {
-                TypedPropertyValue typedPropertyValue = new TypedPropertyValue(
-                        type, null );
-                offset += typedPropertyValue.readValuePadded( data, offset );
-            }
-        }
+        IOUtils.safelyAllocateCheck(numberOfScalars, getMaxNumberOfArrayScalars());
 
-        return offset - startOffset;
+        _values = new TypedPropertyValue[numberOfScalars];
+        int paddedType = (_header._type == Variant.VT_VARIANT) ? 0 : _header._type;
+        for ( int i = 0; i < numberOfScalars; i++ ) {
+            TypedPropertyValue typedPropertyValue = new TypedPropertyValue(paddedType, null);
+            typedPropertyValue.read(lei);
+            _values[i] = typedPropertyValue;
+            if (paddedType != 0) {
+                TypedPropertyValue.skipPadding(lei);
+            }
+        }
+    }
+
+    public TypedPropertyValue[] getValues(){
+        return _values;
     }
 }

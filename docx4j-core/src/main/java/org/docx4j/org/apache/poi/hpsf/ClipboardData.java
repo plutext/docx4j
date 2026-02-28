@@ -22,49 +22,54 @@
 ==================================================================== */
 package org.docx4j.org.apache.poi.hpsf;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
+import org.docx4j.org.apache.poi.util.IOUtils;
 import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
-//import org.docx4j.org.apache.poi.util.POILogFactory;
-//import org.docx4j.org.apache.poi.util.POILogger;
+import org.docx4j.org.apache.poi.util.LittleEndianByteArrayInputStream;
+import org.docx4j.org.apache.poi.util.LittleEndianConsts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Internal
-class ClipboardData
-{
-//    private static final POILogger logger = POILogFactory
-//            .getLogger( ClipboardData.class );
+class ClipboardData {
+	//arbitrarily selected; may need to increase
+	private static final int DEFAULT_MAX_RECORD_LENGTH = 100_000_000;
+	private static int MAX_RECORD_LENGTH = DEFAULT_MAX_RECORD_LENGTH;
+
 	private static Logger logger = LoggerFactory.getLogger(ClipboardData.class);
 
     private int _format;
     private byte[] _value;
 
-    ClipboardData( byte[] data, int offset )
-    {
-        int size = LittleEndian.getInt( data, offset );
+    /**
+     * @param length the max record length allowed for ClipboardData
+     */
+    public static void setMaxRecordLength(int length) {
+        MAX_RECORD_LENGTH = length;
+    }
 
-        if ( size < 4 )
-        {
-            logger.warn( "ClipboardData at offset ",
-                    Integer.valueOf( offset ), " size less than 4 bytes "
-                            + "(doesn't even have format field!). "
-                            + "Setting to format == 0 and hope for the best" );
+    /**
+     * @return the max record length allowed for ClipboardData
+     */
+    public static int getMaxRecordLength() {
+        return MAX_RECORD_LENGTH;
+    }
+
+    public void read( LittleEndianByteArrayInputStream lei ) {
+        int offset = lei.getReadIndex();
+        long size = lei.readInt();
+
+        if ( size < 4 ) {
+            logger.warn("ClipboardData at offset {} size less than 4 bytes (doesn't even have format " +
+                    "field!). Setting to format == 0 and hope for the best", offset);
             _format = 0;
             _value = new byte[0];
             return;
         }
 
-        _format = LittleEndian.getInt( data, offset + LittleEndian.INT_SIZE );
-        _value = LittleEndian.getByteArray( data, offset
-                + LittleEndian.INT_SIZE * 2, size - LittleEndian.INT_SIZE );
-    }
-
-    int getSize()
-    {
-        return LittleEndian.INT_SIZE * 2 + _value.length;
+        _format = lei.readInt();
+        _value = IOUtils.safelyAllocate(size - LittleEndianConsts.INT_SIZE, MAX_RECORD_LENGTH);
+        lei.readFully(_value);
     }
 
     byte[] getValue()
@@ -72,22 +77,15 @@ class ClipboardData
         return _value;
     }
 
-    byte[] toByteArray()
-    {
-        byte[] result = new byte[getSize()];
-        LittleEndian.putInt( result, 0 * LittleEndian.INT_SIZE,
-                LittleEndian.INT_SIZE + _value.length );
-        LittleEndian.putInt( result, 1 * LittleEndian.INT_SIZE, _format );
-        System.arraycopy( _value, 0, result, LittleEndian.INT_SIZE
-                + LittleEndian.INT_SIZE, _value.length );
+    public byte[] toByteArray() {
+        byte[] result = new byte[LittleEndianConsts.INT_SIZE*2+_value.length];
+        LittleEndian.putInt(result, 0, LittleEndianConsts.INT_SIZE + _value.length);
+        LittleEndian.putInt(result, 4, _format);
+        System.arraycopy(_value, 0, result, 8, _value.length);
         return result;
     }
 
-    int write( OutputStream out ) throws IOException
-    {
-        LittleEndian.putInt( LittleEndian.INT_SIZE + _value.length, out );
-        LittleEndian.putInt( _format, out );
-        out.write( _value );
-        return 2 * LittleEndian.INT_SIZE + _value.length;
+    public void setValue( byte[] value ) {
+        _value = value.clone();
     }
 }

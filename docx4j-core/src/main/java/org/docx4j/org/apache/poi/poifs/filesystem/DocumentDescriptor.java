@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,22 +15,19 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.poifs.filesystem;
 
 /**
  * Class DocumentDescriptor
- *
- * @author Marc Johnson (mjohnson at apache dot org)
- * @version %I%, %G%
  */
 
 public class DocumentDescriptor
 {
     private POIFSDocumentPath path;
     private String            name;
-    private int               hashcode = 0;
+    private int               hashcode;
 
     /**
      * Trivial constructor
@@ -55,7 +46,7 @@ public class DocumentDescriptor
         {
             throw new NullPointerException("name must not be null");
         }
-        if (name.length() == 0)
+        if (name.isEmpty())
         {
             throw new IllegalArgumentException("name cannot be empty");
         }
@@ -110,7 +101,7 @@ public class DocumentDescriptor
 
     public String toString()
     {
-        StringBuffer buffer = new StringBuffer(40 * (path.length() + 1));
+        StringBuilder buffer = new StringBuilder(40 * (path.length() + 1));
 
         for (int j = 0; j < path.length(); j++)
         {

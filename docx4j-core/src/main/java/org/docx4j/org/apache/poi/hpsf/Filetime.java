@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -22,55 +16,109 @@
 ==================================================================== */
 package org.docx4j.org.apache.poi.hpsf;
 
+import static org.docx4j.org.apache.poi.util.LittleEndianConsts.LONG_SIZE;
+
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
+import java.util.Date;
 
+import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianByteArrayInputStream;
 
-class Filetime
-{
-    static final int SIZE = LittleEndian.INT_SIZE * 2;
+/**
+ * The Windows FILETIME structure holds a date and time associated with a
+ * file. The structure identifies a 64-bit integer specifying the
+ * number of 100-nanosecond intervals which have passed since
+ * January 1, 1601, Coordinated Universal Time (UTC).
+ */
+@Internal
+public class Filetime {
+    /**
+     * The difference between the Windows epoch (1601-01-01
+     * 00:00:00) and the Unix epoch (1970-01-01 00:00:00) in
+     * milliseconds.
+     */
+    private static final BigInteger EPOCH_DIFF = BigInteger.valueOf(-11_644_473_600_000L);
 
-    private int _dwHighDateTime;
-    private int _dwLowDateTime;
+    /** Factor between filetime long and date milliseconds */
+    private static final BigInteger NANO_100 = BigInteger.valueOf(10_000L);
+    
+    private long fileTime;
 
-    Filetime( byte[] data, int offset )
-    {
-        _dwLowDateTime = LittleEndian.getInt( data, offset + 0
-                * LittleEndian.INT_SIZE );
-        _dwHighDateTime = LittleEndian.getInt( data, offset + 1
-                * LittleEndian.INT_SIZE );
+    public Filetime() {}
+
+    public Filetime( Date date ) {
+        fileTime = dateToFileTime(date);
     }
 
-    Filetime( int low, int high )
-    {
-        _dwLowDateTime = low;
-        _dwHighDateTime = high;
+    public void read( LittleEndianByteArrayInputStream lei ) {
+        fileTime = lei.readLong();
     }
 
-    long getHigh()
-    {
-        return _dwHighDateTime;
-    }
-
-    long getLow()
-    {
-        return _dwLowDateTime;
-    }
-
-    byte[] toByteArray()
-    {
-        byte[] result = new byte[SIZE];
-        LittleEndian.putInt( result, 0 * LittleEndian.INT_SIZE, _dwLowDateTime );
-        LittleEndian
-                .putInt( result, 1 * LittleEndian.INT_SIZE, _dwHighDateTime );
+    public byte[] toByteArray() {
+        byte[] result = new byte[LONG_SIZE];
+        LittleEndian.putLong( result, 0, fileTime);
         return result;
     }
 
-    int write( OutputStream out ) throws IOException
-    {
-        LittleEndian.putInt( _dwLowDateTime, out );
-        LittleEndian.putInt( _dwHighDateTime, out );
-        return SIZE;
+    public int write( OutputStream out ) throws IOException {
+        out.write(toByteArray());
+        return LONG_SIZE;
+    }
+
+    public Date getJavaValue() {
+        return filetimeToDate( fileTime );
+    }
+    
+    /**
+     * Converts a Windows FILETIME (in UTC) into a {@link Date} (in UTC).
+     *
+     * @param filetime The filetime to convert.
+     * @return The Windows FILETIME as a {@link Date}.
+     */
+    public static Date filetimeToDate(final long filetime) {
+        final BigInteger bi = (filetime < 0) ? twoComplement(filetime) : BigInteger.valueOf(filetime);
+        return new Date(bi.divide(NANO_100).add(EPOCH_DIFF).longValue());
+    }
+
+    /**
+     * Converts a {@link Date} into a filetime.
+     *
+     * @param date The date to be converted
+     * @return The filetime
+     *
+     * @see #filetimeToDate(long)
+     */
+    public static long dateToFileTime(final Date date) {
+        return BigInteger.valueOf(date.getTime()).subtract(EPOCH_DIFF).multiply(NANO_100).longValue();
+    }
+    
+    /**
+     * Return {@code true} if the date is undefined
+     *
+     * @param date the date
+     * @return {@code true} if the date is undefined
+     */
+    public static boolean isUndefined(Date date) {
+        return (date == null || dateToFileTime(date) == 0);
+    }
+
+    private static BigInteger twoComplement(final long val) {
+        // for negative BigInteger, top byte is negative
+        final byte[] contents = {
+                (byte)(val < 0 ? 0 : -1),
+                (byte)((val >> 56) & 0xFF),
+                (byte)((val >> 48) & 0xFF),
+                (byte)((val >> 40) & 0xFF),
+                (byte)((val >> 32) & 0xFF),
+                (byte)((val >> 24) & 0xFF),
+                (byte)((val >> 16) & 0xFF),
+                (byte)((val >> 8) & 0xFF),
+                (byte)(val & 0xFF),
+        };
+
+        return new BigInteger(contents);
     }
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -25,16 +19,6 @@ package org.docx4j.org.apache.poi.poifs.crypt.agile;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.xml.bind.JAXBException;
-
-//import org.apache.xmlbeans.XmlException;
-
-
-
-import org.apache.commons.io.IOUtils;
-import org.docx4j.XmlUtils;
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTEncryption;
-import org.docx4j.jaxb.Context;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.ChainingMode;
 import org.docx4j.org.apache.poi.poifs.crypt.CipherAlgorithm;
@@ -43,37 +27,35 @@ import org.docx4j.org.apache.poi.poifs.crypt.EncryptionInfoBuilder;
 import org.docx4j.org.apache.poi.poifs.crypt.EncryptionMode;
 import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
 import org.docx4j.org.apache.poi.util.LittleEndianInput;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.docx4j.org.apache.poi.util.XMLHelper;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class AgileEncryptionInfoBuilder implements EncryptionInfoBuilder {
-	
-	private static Logger log = LoggerFactory.getLogger(AgileEncryptionInfoBuilder.class);
-	
-    
-    EncryptionInfo info;
-    AgileEncryptionHeader header;
-    AgileEncryptionVerifier verifier;
-    AgileDecryptor decryptor;
-    AgileEncryptor encryptor;
 
+    @Override
     public void initialize(EncryptionInfo info, LittleEndianInput dis) throws IOException {
-        this.info = info;
-        
-        CTEncryption ed = parseDescriptor((InputStream)dis);
-        header = new AgileEncryptionHeader(ed);
-        verifier = new AgileEncryptionVerifier(ed);
+        if (!(dis instanceof InputStream)) {
+            throw new IllegalArgumentException("Had unexpected type of input: " + (dis == null ? "<null>" : dis.getClass()));
+        }
+
+        EncryptionDocument ed = parseDescriptor((InputStream)dis);
+        info.setHeader(new AgileEncryptionHeader(ed));
+        info.setVerifier(new AgileEncryptionVerifier(ed));
         if (info.getVersionMajor() == EncryptionMode.agile.versionMajor
             && info.getVersionMinor() == EncryptionMode.agile.versionMinor) {
-            decryptor = new AgileDecryptor(this);
-            encryptor = new AgileEncryptor(this);
+            AgileDecryptor dec = new AgileDecryptor();
+            dec.setEncryptionInfo(info);
+            info.setDecryptor(dec);
+            AgileEncryptor enc = new AgileEncryptor();
+            enc.setEncryptionInfo(info);
+            info.setEncryptor(enc);
         }
     }
 
+    @Override
     public void initialize(EncryptionInfo info, CipherAlgorithm cipherAlgorithm, HashAlgorithm hashAlgorithm, int keyBits, int blockSize, ChainingMode chainingMode) {
-        this.info = info;
-
         if (cipherAlgorithm == null) {
             cipherAlgorithm = CipherAlgorithm.aes128;
         }
@@ -100,78 +82,34 @@ public class AgileEncryptionInfoBuilder implements EncryptionInfoBuilder {
             found |= (ks == keyBits);
         }
         if (!found) {
-            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+cipherAlgorithm.toString());
+            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+ cipherAlgorithm);
         }
-        header = new AgileEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
-        verifier = new AgileEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
-        decryptor = new AgileDecryptor(this);
-        encryptor = new AgileEncryptor(this);
-    }
-    
-    public AgileEncryptionHeader getHeader() {
-        return header;
-    }
-
-    public AgileEncryptionVerifier getVerifier() {
-        return verifier;
+        info.setHeader(new AgileEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode));
+        info.setVerifier(new AgileEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode));
+        AgileDecryptor dec = new AgileDecryptor();
+        dec.setEncryptionInfo(info);
+        info.setDecryptor(dec);
+        AgileEncryptor enc = new AgileEncryptor();
+        enc.setEncryptionInfo(info);
+        info.setEncryptor(enc);
     }
 
-    public AgileDecryptor getDecryptor() {
-        return decryptor;
+    protected static EncryptionDocument parseDescriptor(String descriptor) {
+        return parseDescriptor(new InputSource(descriptor));
     }
 
-    public AgileEncryptor getEncryptor() {
-        return encryptor;
+    protected static EncryptionDocument parseDescriptor(InputStream descriptor) {
+        return parseDescriptor(new InputSource(descriptor));
     }
 
-    protected EncryptionInfo getInfo() {
-        return info;
-    }
-    
-    protected static CTEncryption parseDescriptor(String descriptor) {
-//        try {
-//            return EncryptionDocument.Factory.parse(descriptor);
-//        } catch (XmlException e) {
-//            throw new EncryptedDocumentException("Unable to parse encryption descriptor", e);
-//        }
-    	
-    	log.error(descriptor);
-        
-        CTEncryption encryption = null;
-		try {
-			encryption = (CTEncryption)XmlUtils.unmarshalString(descriptor, Context.jcEncryption, CTEncryption.class);
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        return encryption;
-        
-    }
-
-    protected static CTEncryption parseDescriptor(InputStream descriptor) {
-//        try {
-//            return EncryptionDocument.Factory.parse(descriptor);
-//        } catch (Exception e) {
-//            throw new EncryptedDocumentException("Unable to parse encryption descriptor", e);
-//        }
-    	
-//    	try {
-//        	descriptor.mark(0);
-//        	System.out.println(IOUtils.toString(descriptor, "UTF-8") );
-//			descriptor.reset();
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
-        
-        CTEncryption encryption = null;
-		try {
-			encryption = (CTEncryption)XmlUtils.unwrap(
-					XmlUtils.unmarshal(descriptor, Context.jcEncryption));
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        return encryption;
-        
+    private static EncryptionDocument parseDescriptor(InputSource descriptor) {
+        try {
+            Document doc = XMLHelper.newDocumentBuilder().parse(descriptor);
+            EncryptionDocument ed = new EncryptionDocument();
+            ed.parse(doc);
+            return ed;
+        } catch (SAXException|IOException e) {
+            throw new EncryptedDocumentException("Unable to parse encryption descriptor", e);
+        }
     }
 }

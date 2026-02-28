@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -25,10 +19,6 @@ package org.docx4j.org.apache.poi.poifs.crypt.cryptoapi;
 
 import java.io.IOException;
 
-
-
-
-//import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.ChainingMode;
 import org.docx4j.org.apache.poi.poifs.crypt.CipherAlgorithm;
@@ -43,12 +33,17 @@ public class CryptoAPIEncryptionHeader extends StandardEncryptionHeader {
         super(is);
     }
 
+    protected CryptoAPIEncryptionHeader(CryptoAPIEncryptionHeader other) {
+        super(other);
+    }
+
     protected CryptoAPIEncryptionHeader(CipherAlgorithm cipherAlgorithm,
             HashAlgorithm hashAlgorithm, int keyBits, int blockSize,
             ChainingMode chainingMode) {
         super(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
     }
 
+    @Override
     public void setKeySize(int keyBits) {
         // Microsoft Base Cryptographic Provider is limited up to 40 bits
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375599(v=vs.85).aspx
@@ -68,5 +63,10 @@ public class CryptoAPIEncryptionHeader extends StandardEncryptionHeader {
         } else {
             setCspName(CipherProvider.rc4.cipherProviderName);
         }
+    }
+
+    @Override
+    public CryptoAPIEncryptionHeader copy() {
+        return new CryptoAPIEncryptionHeader(this);
     }
 }

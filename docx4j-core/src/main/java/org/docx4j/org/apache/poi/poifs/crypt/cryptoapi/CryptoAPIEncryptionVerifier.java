@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -42,15 +36,27 @@ public class CryptoAPIEncryptionVerifier extends StandardEncryptionVerifier {
         super(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
     }
 
-    protected void setSalt(byte salt[]) {
+    protected CryptoAPIEncryptionVerifier(CryptoAPIEncryptionVerifier other) {
+        super(other);
+    }
+
+    @Override
+    public void setSalt(byte[] salt) {
         super.setSalt(salt);
     }
 
-    protected void setEncryptedVerifier(byte encryptedVerifier[]) {
+    @Override
+    public void setEncryptedVerifier(byte[] encryptedVerifier) {
         super.setEncryptedVerifier(encryptedVerifier);
     }
 
-    protected void setEncryptedVerifierHash(byte encryptedVerifierHash[]) {
+    @Override
+    public void setEncryptedVerifierHash(byte[] encryptedVerifierHash) {
         super.setEncryptedVerifierHash(encryptedVerifierHash);
+    }
+
+    @Override
+    public CryptoAPIEncryptionVerifier copy() {
+        return new CryptoAPIEncryptionVerifier(this);
     }
 }

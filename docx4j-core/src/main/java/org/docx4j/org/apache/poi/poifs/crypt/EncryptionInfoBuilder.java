@@ -36,24 +36,4 @@ public interface EncryptionInfoBuilder {
      * initialize the builder from scratch
      */
     void initialize(EncryptionInfo ei, CipherAlgorithm cipherAlgorithm, HashAlgorithm hashAlgorithm, int keyBits, int blockSize, ChainingMode chainingMode);
-
-    /**
-     * @return the header data
-     */
-    EncryptionHeader getHeader();
-
-    /**
-     * @return the verifier data
-     */
-    EncryptionVerifier getVerifier();
-
-    /**
-     * @return the decryptor
-     */
-    Decryptor getDecryptor();
-
-    /**
-     * @return the encryptor
-     */
-    Encryptor getEncryptor();
 }

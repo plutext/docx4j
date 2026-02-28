@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -24,10 +18,6 @@ package org.docx4j.org.apache.poi.poifs.crypt.standard;
 
 import java.io.IOException;
 
-
-
-
-//import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.ChainingMode;
 import org.docx4j.org.apache.poi.poifs.crypt.CipherAlgorithm;
@@ -37,35 +27,29 @@ import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
 import org.docx4j.org.apache.poi.util.LittleEndianInput;
 
 public class StandardEncryptionInfoBuilder implements EncryptionInfoBuilder {
-    
-    EncryptionInfo info;
-    StandardEncryptionHeader header;
-    StandardEncryptionVerifier verifier;
-    StandardDecryptor decryptor;
-    StandardEncryptor encryptor;
 
     /**
      * initialize the builder from a stream
      */
+    @Override
     public void initialize(EncryptionInfo info, LittleEndianInput dis) throws IOException {
-        this.info = info;
-        
-        @SuppressWarnings("unused")
-        int hSize = dis.readInt();
-        header = new StandardEncryptionHeader(dis);
-        verifier = new StandardEncryptionVerifier(dis, header);
+        /* int hSize = */ dis.readInt();
+        StandardEncryptionHeader header = new StandardEncryptionHeader(dis);
+        info.setHeader(header);
+        info.setVerifier(new StandardEncryptionVerifier(dis, header));
 
         if (info.getVersionMinor() == 2 && (info.getVersionMajor() == 3 || info.getVersionMajor() == 4)) {
-            decryptor = new StandardDecryptor(this);
+            StandardDecryptor dec = new StandardDecryptor();
+            dec.setEncryptionInfo(info);
+            info.setDecryptor(dec);
         }
     }
     
     /**
      * initialize the builder from scratch
      */
+    @Override
     public void initialize(EncryptionInfo info, CipherAlgorithm cipherAlgorithm, HashAlgorithm hashAlgorithm, int keyBits, int blockSize, ChainingMode chainingMode) {
-        this.info = info;
-
         if (cipherAlgorithm == null) {
             cipherAlgorithm = CipherAlgorithm.aes128;
         }
@@ -98,31 +82,15 @@ public class StandardEncryptionInfoBuilder implements EncryptionInfoBuilder {
             found |= (ks == keyBits);
         }
         if (!found) {
-            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+cipherAlgorithm.toString());
+            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+ cipherAlgorithm);
         }
-        header = new StandardEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
-        verifier = new StandardEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
-        decryptor = new StandardDecryptor(this);
-        encryptor = new StandardEncryptor(this);
-    }
-
-    public StandardEncryptionHeader getHeader() {
-        return header;
-    }
-
-    public StandardEncryptionVerifier getVerifier() {
-        return verifier;
-    }
-
-    public StandardDecryptor getDecryptor() {
-        return decryptor;
-    }
-
-    public StandardEncryptor getEncryptor() {
-        return encryptor;
-    }
-    
-    public EncryptionInfo getEncryptionInfo() {
-        return info;
+        info.setHeader(new StandardEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode));
+        info.setVerifier(new StandardEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode));
+        StandardDecryptor dec = new StandardDecryptor();
+        dec.setEncryptionInfo(info);
+        info.setDecryptor(dec);
+        StandardEncryptor enc = new StandardEncryptor();
+        enc.setEncryptionInfo(info);
+        info.setEncryptor(enc);
     }
 }

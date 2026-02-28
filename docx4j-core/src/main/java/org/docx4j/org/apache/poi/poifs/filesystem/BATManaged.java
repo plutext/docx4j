@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,15 +15,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.poifs.filesystem;
 
 /**
  * This interface defines behaviors for objects managed by the Block
  * Allocation Table (BAT).
- *
- * @author Marc Johnson (mjohnson at apache dot org)
  */
 
 public interface BATManaged
@@ -41,15 +33,15 @@ public interface BATManaged
      * @return count of BigBlock instances
      */
 
-    public int countBlocks();
+    int countBlocks();
 
     /**
      * Set the start block for this instance
      *
      * @param index index into the array of BigBlock instances making
-     *              up the the filesystem
+     *              up the filesystem
      */
 
-    public void setStartBlock(final int index);
+    void setStartBlock(final int index);
 }   // end public interface BATManaged
 

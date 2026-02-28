@@ -22,30 +22,39 @@
 ==================================================================== */
 package org.docx4j.org.apache.poi.hpsf;
 
+import org.docx4j.org.apache.poi.util.IOUtils;
 import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianInput;
 
 @Internal
-class Blob
-{
+public class Blob {
+
+    //arbitrarily selected; may need to increase
+    private static final int DEFAULT_MAX_RECORD_LENGTH = 10_000_000;
+    private static int MAX_RECORD_LENGTH = DEFAULT_MAX_RECORD_LENGTH;
+
     private byte[] _value;
 
-    Blob( byte[] data, int offset )
-    {
-        int size = LittleEndian.getInt( data, offset );
-
-        if ( size == 0 )
-        {
-            _value = new byte[0];
-            return;
-        }
-
-        _value = LittleEndian.getByteArray( data, offset
-                + LittleEndian.INT_SIZE, size );
+    /**
+     * @param length the max record length allowed for Blob
+     */
+    public static void setMaxRecordLength(int length) {
+        MAX_RECORD_LENGTH = length;
     }
 
-    int getSize()
-    {
-        return LittleEndian.INT_SIZE + _value.length;
+    /**
+     * @return the max record length allowed for Blob
+     */
+    public static int getMaxRecordLength() {
+        return MAX_RECORD_LENGTH;
+    }
+
+    public void read( LittleEndianInput lei ) {
+        int size = lei.readInt();
+        _value = IOUtils.safelyAllocate(size, MAX_RECORD_LENGTH);
+        if ( size > 0 ) {
+            lei.readFully(_value);
+        }
     }
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -23,474 +17,451 @@
 
 package org.docx4j.org.apache.poi.hpsf;
 
+import static org.docx4j.org.apache.poi.hpsf.ClassIDPredefined.SUMMARY_PROPERTIES;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 import org.docx4j.org.apache.poi.hpsf.wellknown.PropertyIDMap;
 
 /**
- * <p>Convenience class representing a Summary Information stream in a
- * Microsoft Office document.</p>
+ * Convenience class representing a Summary Information stream in a
+ * Microsoft Office document.
  *
  * @see DocumentSummaryInformation
  */
-public final class SummaryInformation extends SpecialPropertySet {
+public final class SummaryInformation extends PropertySet {
 
     /**
-     * <p>The document name a summary information stream usually has in a POIFS
-     * filesystem.</p>
+     * The document name a summary information stream usually has in a POIFS filesystem.
      */
     public static final String DEFAULT_STREAM_NAME = "\005SummaryInformation";
 
+    /**
+     * The SummaryInformation's section's format ID.
+     */
+    public static final ClassID FORMAT_ID = SUMMARY_PROPERTIES.getClassID();
+
+    @Override
     public PropertyIDMap getPropertySetIDMap() {
-    	return PropertyIDMap.getSummaryInformationProperties();
+        return PropertyIDMap.getSummaryInformationProperties();
     }
 
+    /**
+     * Creates an empty SummaryInformation.
+     */
+    public SummaryInformation() {
+        getFirstSection().setFormatID(FORMAT_ID);
+    }
 
     /**
-     * <p>Creates a {@link SummaryInformation} from a given {@link
-     * PropertySet}.</p>
+     * Creates a SummaryInformation from a given {@link
+     * PropertySet}.
      *
      * @param ps A property set which should be created from a summary
      *        information stream.
-     * @throws UnexpectedPropertySetTypeException if <var>ps</var> does not
+     * @throws UnexpectedPropertySetTypeException if {@code ps} does not
      *         contain a summary information stream.
      */
-    public SummaryInformation(final PropertySet ps)
-            throws UnexpectedPropertySetTypeException
-    {
+    public SummaryInformation(final PropertySet ps) throws UnexpectedPropertySetTypeException {
         super(ps);
-        if (!isSummaryInformation())
-            throw new UnexpectedPropertySetTypeException("Not a "
-                    + getClass().getName());
+        if (!isSummaryInformation()) {
+            throw new UnexpectedPropertySetTypeException("Not a " + getClass().getName());
+        }
+    }
+
+    /**
+     * Creates a SummaryInformation instance from an {@link
+     * InputStream} in the Horrible Property Set Format.<p>
+     *
+     * The constructor reads the first few bytes from the stream
+     * and determines whether it is really a property set stream. If
+     * it is, it parses the rest of the stream. If it is not, it
+     * resets the stream to its beginning in order to let other
+     * components mess around with the data and throws an
+     * exception.
+     *
+     * @param stream Holds the data making out the property set
+     * stream.
+     * @throws IOException
+     *    if the {@link InputStream} cannot be accessed as needed.
+     * @throws NoPropertySetStreamException
+     *    if the input stream does not contain a property set.
+     * @throws UnsupportedEncodingException
+     *    if a character encoding is not supported.
+     */
+    public SummaryInformation(final InputStream stream)
+    throws NoPropertySetStreamException, IOException {
+        super(stream);
     }
 
 
-
     /**
-     * <p>Returns the title (or <code>null</code>).</p>
-     *
-     * @return The title or <code>null</code>
+     * @return The title or {@code null}
      */
-    public String getTitle()
-    {
+    public String getTitle() {
         return getPropertyStringValue(PropertyIDMap.PID_TITLE);
     }
 
 
 
     /**
-     * <p>Sets the title.</p>
+     * Sets the title.
      *
      * @param title The title to set.
      */
-    public void setTitle(final String title)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_TITLE, title);
+    public void setTitle(final String title) {
+        set1stProperty(PropertyIDMap.PID_TITLE, title);
     }
 
 
 
     /**
-     * <p>Removes the title.</p>
+     * Removes the title.
      */
-    public void removeTitle()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_TITLE);
+    public void removeTitle() {
+        remove1stProperty(PropertyIDMap.PID_TITLE);
     }
 
 
 
     /**
-     * <p>Returns the subject (or <code>null</code>).</p>
+     * Returns the subject (or {@code null}).
      *
-     * @return The subject or <code>null</code>
+     * @return The subject or {@code null}
      */
-    public String getSubject()
-    {
+    public String getSubject() {
         return getPropertyStringValue(PropertyIDMap.PID_SUBJECT);
     }
 
 
 
     /**
-     * <p>Sets the subject.</p>
+     * Sets the subject.
      *
      * @param subject The subject to set.
      */
-    public void setSubject(final String subject)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_SUBJECT, subject);
+    public void setSubject(final String subject) {
+        set1stProperty(PropertyIDMap.PID_SUBJECT, subject);
     }
 
 
 
     /**
-     * <p>Removes the subject.</p>
+     * Removes the subject.
      */
-    public void removeSubject()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_SUBJECT);
+    public void removeSubject() {
+        remove1stProperty(PropertyIDMap.PID_SUBJECT);
     }
 
 
 
     /**
-     * <p>Returns the author (or <code>null</code>).</p>
+     * Returns the author (or {@code null}).
      *
-     * @return The author or <code>null</code>
+     * @return The author or {@code null}
      */
-    public String getAuthor()
-    {
+    public String getAuthor() {
         return getPropertyStringValue(PropertyIDMap.PID_AUTHOR);
     }
 
 
 
     /**
-     * <p>Sets the author.</p>
+     * Sets the author.
      *
      * @param author The author to set.
      */
-    public void setAuthor(final String author)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_AUTHOR, author);
+    public void setAuthor(final String author) {
+        set1stProperty(PropertyIDMap.PID_AUTHOR, author);
     }
 
 
 
     /**
-     * <p>Removes the author.</p>
+     * Removes the author.
      */
-    public void removeAuthor()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_AUTHOR);
+    public void removeAuthor() {
+        remove1stProperty(PropertyIDMap.PID_AUTHOR);
     }
 
 
 
     /**
-     * <p>Returns the keywords (or <code>null</code>).</p>
+     * Returns the keywords (or {@code null}).
      *
-     * @return The keywords or <code>null</code>
+     * @return The keywords or {@code null}
      */
-    public String getKeywords()
-    {
+    public String getKeywords() {
         return getPropertyStringValue(PropertyIDMap.PID_KEYWORDS);
     }
 
 
 
     /**
-     * <p>Sets the keywords.</p>
+     * Sets the keywords.
      *
      * @param keywords The keywords to set.
      */
-    public void setKeywords(final String keywords)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_KEYWORDS, keywords);
+    public void setKeywords(final String keywords) {
+        set1stProperty(PropertyIDMap.PID_KEYWORDS, keywords);
     }
 
 
 
     /**
-     * <p>Removes the keywords.</p>
+     * Removes the keywords.
      */
-    public void removeKeywords()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_KEYWORDS);
+    public void removeKeywords() {
+        remove1stProperty(PropertyIDMap.PID_KEYWORDS);
     }
 
 
 
     /**
-     * <p>Returns the comments (or <code>null</code>).</p>
+     * Returns the comments (or {@code null}).
      *
-     * @return The comments or <code>null</code>
+     * @return The comments or {@code null}
      */
-    public String getComments()
-    {
+    public String getComments() {
         return getPropertyStringValue(PropertyIDMap.PID_COMMENTS);
     }
 
 
 
     /**
-     * <p>Sets the comments.</p>
+     * Sets the comments.
      *
      * @param comments The comments to set.
      */
-    public void setComments(final String comments)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_COMMENTS, comments);
+    public void setComments(final String comments) {
+        set1stProperty(PropertyIDMap.PID_COMMENTS, comments);
     }
 
 
 
     /**
-     * <p>Removes the comments.</p>
+     * Removes the comments.
      */
-    public void removeComments()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_COMMENTS);
+    public void removeComments() {
+        remove1stProperty(PropertyIDMap.PID_COMMENTS);
     }
 
 
 
     /**
-     * <p>Returns the template (or <code>null</code>).</p>
+     * Returns the template (or {@code null}).
      *
-     * @return The template or <code>null</code>
+     * @return The template or {@code null}
      */
-    public String getTemplate()
-    {
+    public String getTemplate() {
         return getPropertyStringValue(PropertyIDMap.PID_TEMPLATE);
     }
 
 
 
     /**
-     * <p>Sets the template.</p>
+     * Sets the template.
      *
      * @param template The template to set.
      */
-    public void setTemplate(final String template)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_TEMPLATE, template);
+    public void setTemplate(final String template) {
+        set1stProperty(PropertyIDMap.PID_TEMPLATE, template);
     }
 
 
 
     /**
-     * <p>Removes the template.</p>
+     * Removes the template.
      */
-    public void removeTemplate()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_TEMPLATE);
+    public void removeTemplate() {
+        remove1stProperty(PropertyIDMap.PID_TEMPLATE);
     }
 
 
 
     /**
-     * <p>Returns the last author (or <code>null</code>).</p>
+     * Returns the last author (or {@code null}).
      *
-     * @return The last author or <code>null</code>
+     * @return The last author or {@code null}
      */
-    public String getLastAuthor()
-    {
+    public String getLastAuthor() {
         return getPropertyStringValue(PropertyIDMap.PID_LASTAUTHOR);
     }
 
 
 
     /**
-     * <p>Sets the last author.</p>
+     * Sets the last author.
      *
      * @param lastAuthor The last author to set.
      */
-    public void setLastAuthor(final String lastAuthor)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_LASTAUTHOR, lastAuthor);
+    public void setLastAuthor(final String lastAuthor) {
+        set1stProperty(PropertyIDMap.PID_LASTAUTHOR, lastAuthor);
     }
 
 
 
     /**
-     * <p>Removes the last author.</p>
+     * Removes the last author.
      */
-    public void removeLastAuthor()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_LASTAUTHOR);
+    public void removeLastAuthor() {
+        remove1stProperty(PropertyIDMap.PID_LASTAUTHOR);
     }
 
 
 
     /**
-     * <p>Returns the revision number (or <code>null</code>). </p>
+     * Returns the revision number (or {@code null}).
      *
-     * @return The revision number or <code>null</code>
+     * @return The revision number or {@code null}
      */
-    public String getRevNumber()
-    {
+    public String getRevNumber() {
         return getPropertyStringValue(PropertyIDMap.PID_REVNUMBER);
     }
 
 
 
     /**
-     * <p>Sets the revision number.</p>
+     * Sets the revision number.
      *
      * @param revNumber The revision number to set.
      */
-    public void setRevNumber(final String revNumber)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_REVNUMBER, revNumber);
+    public void setRevNumber(final String revNumber) {
+        set1stProperty(PropertyIDMap.PID_REVNUMBER, revNumber);
     }
 
 
 
     /**
-     * <p>Removes the revision number.</p>
+     * Removes the revision number.
      */
-    public void removeRevNumber()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_REVNUMBER);
+    public void removeRevNumber() {
+        remove1stProperty(PropertyIDMap.PID_REVNUMBER);
     }
 
 
 
     /**
-     * <p>Returns the total time spent in editing the document (or
-     * <code>0</code>).</p>
+     * Returns the total time spent in editing the document (or
+     * {@code 0}).
      *
      * @return The total time spent in editing the document or 0 if the {@link
      *         SummaryInformation} does not contain this information.
      */
-    public long getEditTime()
-    {
+    public long getEditTime() {
         final Date d = (Date) getProperty(PropertyIDMap.PID_EDITTIME);
         if (d == null) {
             return 0;
         }
-        return Util.dateToFileTime(d);
+        return Filetime.dateToFileTime(d);
     }
 
 
 
     /**
-     * <p>Sets the total time spent in editing the document.</p>
+     * Sets the total time spent in editing the document.
      *
      * @param time The time to set.
      */
-    public void setEditTime(final long time)
-    {
-        final Date d = Util.filetimeToDate(time);
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_EDITTIME, Variant.VT_FILETIME, d);
+    public void setEditTime(final long time) {
+        final Date d = Filetime.filetimeToDate(time);
+        getFirstSection().setProperty(PropertyIDMap.PID_EDITTIME, Variant.VT_FILETIME, d);
     }
 
 
 
     /**
-     * <p>Remove the total time spent in editing the document.</p>
+     * Remove the total time spent in editing the document.
      */
-    public void removeEditTime()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_EDITTIME);
+    public void removeEditTime() {
+        remove1stProperty(PropertyIDMap.PID_EDITTIME);
     }
 
 
 
     /**
-     * <p>Returns the last printed time (or <code>null</code>).</p>
+     * Returns the last printed time (or {@code null}).
      *
-     * @return The last printed time or <code>null</code>
+     * @return The last printed time or {@code null}
      */
-    public Date getLastPrinted()
-    {
+    public Date getLastPrinted() {
         return (Date) getProperty(PropertyIDMap.PID_LASTPRINTED);
     }
 
 
 
     /**
-     * <p>Sets the lastPrinted.</p>
+     * Sets the lastPrinted.
      *
      * @param lastPrinted The lastPrinted to set.
      */
-    public void setLastPrinted(final Date lastPrinted)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_LASTPRINTED, Variant.VT_FILETIME,
-                lastPrinted);
+    public void setLastPrinted(final Date lastPrinted) {
+        getFirstSection().setProperty(PropertyIDMap.PID_LASTPRINTED, Variant.VT_FILETIME, lastPrinted);
     }
 
 
 
     /**
-     * <p>Removes the lastPrinted.</p>
+     * Removes the lastPrinted.
      */
-    public void removeLastPrinted()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_LASTPRINTED);
+    public void removeLastPrinted() {
+        remove1stProperty(PropertyIDMap.PID_LASTPRINTED);
     }
 
 
 
     /**
-     * <p>Returns the creation time (or <code>null</code>).</p>
+     * Returns the creation time (or {@code null}).
      *
-     * @return The creation time or <code>null</code>
+     * @return The creation time or {@code null}
      */
-    public Date getCreateDateTime()
-    {
+    public Date getCreateDateTime() {
         return (Date) getProperty(PropertyIDMap.PID_CREATE_DTM);
     }
 
 
 
     /**
-     * <p>Sets the creation time.</p>
+     * Sets the creation time.
      *
      * @param createDateTime The creation time to set.
      */
-    public void setCreateDateTime(final Date createDateTime)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_CREATE_DTM, Variant.VT_FILETIME,
-                createDateTime);
+    public void setCreateDateTime(final Date createDateTime) {
+        getFirstSection().setProperty(PropertyIDMap.PID_CREATE_DTM, Variant.VT_FILETIME, createDateTime);
     }
 
 
 
     /**
-     * <p>Removes the creation time.</p>
+     * Removes the creation time.
      */
-    public void removeCreateDateTime()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_CREATE_DTM);
+    public void removeCreateDateTime() {
+        remove1stProperty(PropertyIDMap.PID_CREATE_DTM);
     }
 
 
 
     /**
-     * <p>Returns the last save time (or <code>null</code>).</p>
+     * Returns the last save time (or {@code null}).
      *
-     * @return The last save time or <code>null</code>
+     * @return The last save time or {@code null}
      */
-    public Date getLastSaveDateTime()
-    {
+    public Date getLastSaveDateTime() {
         return (Date) getProperty(PropertyIDMap.PID_LASTSAVE_DTM);
     }
 
 
 
     /**
-     * <p>Sets the total time spent in editing the document.</p>
+     * Sets the total time spent in editing the document.
      *
      * @param time The time to set.
      */
-    public void setLastSaveDateTime(final Date time)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
+    public void setLastSaveDateTime(final Date time) {
+        final Section s = getFirstSection();
         s
                 .setProperty(PropertyIDMap.PID_LASTSAVE_DTM,
                         Variant.VT_FILETIME, time);
@@ -499,257 +470,238 @@ public final class SummaryInformation extends SpecialPropertySet {
 
 
     /**
-     * <p>Remove the total time spent in editing the document.</p>
+     * Remove the total time spent in editing the document.
      */
-    public void removeLastSaveDateTime()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_LASTSAVE_DTM);
+    public void removeLastSaveDateTime() {
+        remove1stProperty(PropertyIDMap.PID_LASTSAVE_DTM);
     }
 
 
 
     /**
-     * <p>Returns the page count or 0 if the {@link SummaryInformation} does
-     * not contain a page count.</p>
+     * Returns the page count or 0 if the SummaryInformation does
+     * not contain a page count.
      *
-     * @return The page count or 0 if the {@link SummaryInformation} does not
+     * @return The page count or 0 if the SummaryInformation does not
      *         contain a page count.
      */
-    public int getPageCount()
-    {
+    public int getPageCount() {
         return getPropertyIntValue(PropertyIDMap.PID_PAGECOUNT);
     }
 
 
 
     /**
-     * <p>Sets the page count.</p>
+     * Sets the page count.
      *
      * @param pageCount The page count to set.
      */
-    public void setPageCount(final int pageCount)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_PAGECOUNT, pageCount);
+    public void setPageCount(final int pageCount) {
+        set1stProperty(PropertyIDMap.PID_PAGECOUNT, pageCount);
     }
 
 
 
     /**
-     * <p>Removes the page count.</p>
+     * Removes the page count.
      */
-    public void removePageCount()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_PAGECOUNT);
+    public void removePageCount() {
+        remove1stProperty(PropertyIDMap.PID_PAGECOUNT);
     }
 
 
 
     /**
-     * <p>Returns the word count or 0 if the {@link SummaryInformation} does
-     * not contain a word count.</p>
+     * Returns the word count or 0 if the SummaryInformation does
+     * not contain a word count.
      *
-     * @return The word count or <code>null</code>
+     * @return The word count or {@code null}
      */
-    public int getWordCount()
-    {
+    public int getWordCount() {
         return getPropertyIntValue(PropertyIDMap.PID_WORDCOUNT);
     }
 
 
 
     /**
-     * <p>Sets the word count.</p>
+     * Sets the word count.
      *
      * @param wordCount The word count to set.
      */
-    public void setWordCount(final int wordCount)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_WORDCOUNT, wordCount);
+    public void setWordCount(final int wordCount) {
+        set1stProperty(PropertyIDMap.PID_WORDCOUNT, wordCount);
     }
 
 
 
     /**
-     * <p>Removes the word count.</p>
+     * Removes the word count.
      */
-    public void removeWordCount()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_WORDCOUNT);
+    public void removeWordCount() {
+        remove1stProperty(PropertyIDMap.PID_WORDCOUNT);
     }
 
 
 
     /**
-     * <p>Returns the character count or 0 if the {@link SummaryInformation}
-     * does not contain a char count.</p>
+     * Returns the character count or 0 if the SummaryInformation
+     * does not contain a char count.
      *
-     * @return The character count or <code>null</code>
+     * @return The character count or {@code null}
      */
-    public int getCharCount()
-    {
+    public int getCharCount() {
         return getPropertyIntValue(PropertyIDMap.PID_CHARCOUNT);
     }
 
 
 
     /**
-     * <p>Sets the character count.</p>
+     * Sets the character count.
      *
      * @param charCount The character count to set.
      */
-    public void setCharCount(final int charCount)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_CHARCOUNT, charCount);
+    public void setCharCount(final int charCount) {
+        set1stProperty(PropertyIDMap.PID_CHARCOUNT, charCount);
     }
 
 
 
     /**
-     * <p>Removes the character count.</p>
+     * Removes the character count.
      */
-    public void removeCharCount()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_CHARCOUNT);
+    public void removeCharCount() {
+        remove1stProperty(PropertyIDMap.PID_CHARCOUNT);
     }
 
 
 
     /**
-     * <p>Returns the thumbnail (or <code>null</code>) <strong>when this
+     * Returns the thumbnail (or {@code null}) <strong>when this
      * method is implemented. Please note that the return type is likely to
-     * change!</strong></p>
+     * change!</strong><p>
      *
-     * <p><strong>Hint to developers:</strong> Drew Varner &lt;Drew.Varner
-     * -at- sc.edu&gt; said that this is an image in WMF or Clipboard (BMP?)
-     * format. However, we won't do any conversion into any image type but
-     * instead just return a byte array.</p>
+     * To process this data, you may wish to make use of the
+     *  {@link Thumbnail} class. The raw data is generally
+     *  an image in WMF or Clipboard (BMP?) format
      *
-     * @return The thumbnail or <code>null</code>
+     * @return The thumbnail or {@code null}
      */
-    public byte[] getThumbnail()
-    {
+    public byte[] getThumbnail() {
         return (byte[]) getProperty(PropertyIDMap.PID_THUMBNAIL);
     }
 
+    /**
+     * Returns the thumbnail (or {@code null}), processed
+     *  as an object which is (largely) able to unpack the thumbnail
+     *  image data.
+     *
+     * @return The thumbnail or {@code null}
+     */
+    public Thumbnail getThumbnailThumbnail() {
+        byte[] data = getThumbnail();
+        if (data == null) {
+            return null;
+        }
+        return new Thumbnail(data);
+    }
+
 
 
     /**
-     * <p>Sets the thumbnail.</p>
+     * Sets the thumbnail.
      *
      * @param thumbnail The thumbnail to set.
      */
-    public void setThumbnail(final byte[] thumbnail)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_THUMBNAIL, /* FIXME: */
-                Variant.VT_LPSTR, thumbnail);
+    public void setThumbnail(final byte[] thumbnail) {
+        getFirstSection().setProperty(PropertyIDMap.PID_THUMBNAIL, /* FIXME: */ Variant.VT_LPSTR, thumbnail);
     }
 
 
 
     /**
-     * <p>Removes the thumbnail.</p>
+     * Removes the thumbnail.
      */
-    public void removeThumbnail()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_THUMBNAIL);
+    public void removeThumbnail() {
+        remove1stProperty(PropertyIDMap.PID_THUMBNAIL);
     }
 
 
 
     /**
-     * <p>Returns the application name (or <code>null</code>).</p>
+     * Returns the application name (or {@code null}).
      *
-     * @return The application name or <code>null</code>
+     * @return The application name or {@code null}
      */
-    public String getApplicationName()
-    {
+    public String getApplicationName() {
         return getPropertyStringValue(PropertyIDMap.PID_APPNAME);
     }
 
 
 
     /**
-     * <p>Sets the application name.</p>
+     * Sets the application name.
      *
      * @param applicationName The application name to set.
      */
-    public void setApplicationName(final String applicationName)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_APPNAME, applicationName);
+    public void setApplicationName(final String applicationName) {
+        set1stProperty(PropertyIDMap.PID_APPNAME, applicationName);
     }
 
 
 
     /**
-     * <p>Removes the application name.</p>
+     * Removes the application name.
      */
-    public void removeApplicationName()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_APPNAME);
+    public void removeApplicationName() {
+        remove1stProperty(PropertyIDMap.PID_APPNAME);
     }
 
 
 
     /**
-     * <p>Returns a security code which is one of the following values:</p>
+     * Returns a security code which is one of the following values:
      *
      * <ul>
      *
-     * <li><p>0 if the {@link SummaryInformation} does not contain a
+     * <li>0 if the SummaryInformation does not contain a
      * security field or if there is no security on the document. Use
      * {@link PropertySet#wasNull()} to distinguish between the two
-     * cases!</p></li>
+     * cases!
      *
-     * <li><p>1 if the document is password protected</p></li>
+     * <li>1 if the document is password protected
      *
-     * <li><p>2 if the document is read-only recommended</p></li>
+     * <li>2 if the document is read-only recommended
      *
-     * <li><p>4 if the document is read-only enforced</p></li>
+     * <li>4 if the document is read-only enforced
      *
-     * <li><p>8 if the document is locked for annotations</p></li>
+     * <li>8 if the document is locked for annotations
      *
      * </ul>
      *
-     * @return The security code or <code>null</code>
+     * @return The security code or {@code null}
      */
-    public int getSecurity()
-    {
+    public int getSecurity() {
         return getPropertyIntValue(PropertyIDMap.PID_SECURITY);
     }
 
 
 
     /**
-     * <p>Sets the security code.</p>
+     * Sets the security code.
      *
      * @param security The security code to set.
      */
-    public void setSecurity(final int security)
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.setProperty(PropertyIDMap.PID_SECURITY, security);
+    public void setSecurity(final int security) {
+        set1stProperty(PropertyIDMap.PID_SECURITY, security);
     }
 
 
 
     /**
-     * <p>Removes the security code.</p>
+     * Removes the security code.
      */
-    public void removeSecurity()
-    {
-        final MutableSection s = (MutableSection) getFirstSection();
-        s.removeProperty(PropertyIDMap.PID_SECURITY);
+    public void removeSecurity() {
+        remove1stProperty(PropertyIDMap.PID_SECURITY);
     }
 
 }

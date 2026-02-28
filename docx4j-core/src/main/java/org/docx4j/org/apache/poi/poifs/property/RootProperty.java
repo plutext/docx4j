@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -24,7 +18,6 @@
 package org.docx4j.org.apache.poi.poifs.property;
 
 import org.docx4j.org.apache.poi.poifs.common.POIFSConstants;
-import org.docx4j.org.apache.poi.poifs.storage.SmallDocumentBlock;
 
 /**
  * Root property
@@ -49,9 +42,7 @@ public final class RootProperty extends DirectoryProperty {
      * @param array byte data
      * @param offset offset into byte data
      */
-    protected RootProperty(final int index, final byte [] array,
-                           final int offset)
-    {
+    RootProperty(final int index, final byte [] array, final int offset) {
         super(index, array, offset);
     }
 
@@ -62,7 +53,9 @@ public final class RootProperty extends DirectoryProperty {
      */
     public void setSize(int size)
     {
-        super.setSize(SmallDocumentBlock.calcSize(size));
+        final int BLOCK_SHIFT = 6;
+        final int _block_size = 1 << BLOCK_SHIFT;
+        super.setSize(Math.multiplyExact(size, _block_size));
     }
 
     /**

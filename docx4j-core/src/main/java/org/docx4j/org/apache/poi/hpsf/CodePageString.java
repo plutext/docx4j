@@ -27,8 +27,10 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
 import org.docx4j.org.apache.poi.util.CodePageUtil;
+import org.docx4j.org.apache.poi.util.IOUtils;
 import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianByteArrayInputStream;
 //import org.docx4j.org.apache.poi.util.POILogFactory;
 //import org.docx4j.org.apache.poi.util.POILogger;
 import org.slf4j.Logger;
@@ -37,36 +39,54 @@ import org.slf4j.LoggerFactory;
 @Internal
 class CodePageString
 {
-//    private final static POILogger logger = POILogFactory
-//            .getLogger( CodePageString.class );
-	private static Logger logger = LoggerFactory.getLogger(CodePageString.class);
+    //arbitrarily selected; may need to increase
+    private static final int DEFAULT_MAX_RECORD_LENGTH = 100_000;
+    private static int MAX_RECORD_LENGTH = DEFAULT_MAX_RECORD_LENGTH;
+    
+    private static Logger logger = LoggerFactory.getLogger(CodePageString.class);
 
     private byte[] _value;
 
-    CodePageString( final byte[] data, final int startOffset )
-    {
-        int offset = startOffset;
-
-        int size = LittleEndian.getInt( data, offset );
-        offset += LittleEndian.INT_SIZE;
-
-        _value = LittleEndian.getByteArray( data, offset, size );
-        if ( size != 0 && _value[size - 1] != 0 ) {
-            // TODO Some files, such as TestVisioWithCodepage.vsd, are currently
-            //  triggering this for values that don't look like codepages
-            // See Bug #52258 for details
-            logger.warn("CodePageString started at offset #" + offset
-                        + " is not NULL-terminated" );
-//            throw new IllegalPropertySetDataException(
-//                    "CodePageString started at offset #" + offset
-//                            + " is not NULL-terminated" );
-        }
+    /**
+     * @param length the max record length allowed for CodePageString
+     */
+    public static void setMaxRecordLength(int length) {
+        MAX_RECORD_LENGTH = length;
     }
 
-    CodePageString( String string, int codepage )
-            throws UnsupportedEncodingException
-    {
-        setJavaValue( string, codepage );
+    /**
+     * @return the max record length allowed for CodePageString
+     */
+    public static int getMaxRecordLength() {
+        return MAX_RECORD_LENGTH;
+    }
+
+    public void read( LittleEndianByteArrayInputStream lei ) {
+        int offset = lei.getReadIndex();
+        int size = lei.readInt();
+        _value = IOUtils.safelyAllocate(size, MAX_RECORD_LENGTH);
+        if (size == 0) {
+            return;
+        }
+
+        // If Size is zero, this field MUST be zero bytes in length. If Size is
+        // nonzero and the CodePage property set's CodePage property has the value CP_WINUNICODE
+        // (0x04B0), then the value MUST be a null-terminated array of 16-bit Unicode characters,
+        // followed by zero padding to a multiple of 4 bytes. If Size is nonzero and the property set's
+        // CodePage property has any other value, it MUST be a null-terminated array of 8-bit characters
+        // from the code page identified by the CodePage property, followed by zero padding to a
+        // multiple of 4 bytes. The string represented by this field MAY contain embedded or additional
+        // trailing null characters and an OLEPS implementation MUST be able to handle such strings.
+
+        lei.readFully(_value);
+        if (_value[size - 1] != 0 ) {
+            // TODO Some files, such as TestVisioWithCodepage.vsd, are currently
+            // triggering this for values that don't look like codepages
+            // See Bug #52258 for details
+            logger.warn("CodePageString started at offset #{} is not NULL-terminated", offset);
+        }
+
+        TypedPropertyValue.skipPadding(lei);
     }
 
     String getJavaValue( int codepage ) throws UnsupportedEncodingException

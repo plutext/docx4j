@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,17 +15,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.util;
 
 /**
  * Manage operations dealing with bit-mapped fields.
- *
- * @author Marc Johnson (mjohnson at apache dot org)
- * @author Andrew C. Oliver (acoliver at apache dot org)
  */
-
+@Internal
 public class BitField
 {
     private final int _mask;
@@ -132,8 +123,7 @@ public class BitField
      * value; the results of using it for a multi-bit field is to
      * determine whether *any* of its bits are set
      *
-     * @param holder the int data containing the bits we're interested
-     *               in
+     * @param holder the int data containing the bits we're interested in
      *
      * @return true if any of the bits are set, else false
      */
@@ -148,8 +138,7 @@ public class BitField
      * isSet, in that all of the bits in a multi-bit set must be set
      * for this method to return true
      *
-     * @param holder the int data containing the bits we're interested
-     *               in
+     * @param holder the int data containing the bits we're interested in
      *
      * @return true if all of the bits are set, else false
      */
@@ -162,8 +151,7 @@ public class BitField
     /**
      * Replace the bits with new values.
      *
-     * @param holder the int data containint the bits we're interested
-     *               in
+     * @param holder the int data containing the bits we're interested in
      * @param value the new value for the specified bits
      *
      * @return the value of holder with the bits from the value
@@ -178,8 +166,7 @@ public class BitField
     /**
      * Replace the bits with new values.
      *
-     * @param holder the short data containing the bits we're
-     *               interested in
+     * @param holder the short data containing the bits we're interested in
      * @param value the new value for the specified bits
      *
      * @return the value of holder with the bits from the value
@@ -194,8 +181,7 @@ public class BitField
     /**
      * Clear the bits.
      *
-     * @param holder the int data containing the bits we're interested
-     *               in
+     * @param holder the int data containing the bits we're interested in
      *
      * @return the value of holder with the specified bits cleared
      *         (set to 0)
@@ -328,5 +314,10 @@ public class BitField
         return flag ? setByte(holder)
                     : clearByte(holder);
     }
-}   // end public class BitField
+
+
+    public int getMask() {
+        return _mask;
+    }
+}
 

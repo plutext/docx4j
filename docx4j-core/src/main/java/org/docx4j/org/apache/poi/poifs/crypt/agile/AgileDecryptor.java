@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -31,30 +25,27 @@ import static org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions.hashPassword
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
-import java.security.KeyPair;
 import java.security.MessageDigest;
-import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
-import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.RC2ParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
+import org.docx4j.org.apache.poi.poifs.crypt.ChainingMode;
 import org.docx4j.org.apache.poi.poifs.crypt.ChunkedCipherInputStream;
 import org.docx4j.org.apache.poi.poifs.crypt.CipherAlgorithm;
 import org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions;
 import org.docx4j.org.apache.poi.poifs.crypt.Decryptor;
 import org.docx4j.org.apache.poi.poifs.crypt.EncryptionHeader;
-import org.docx4j.org.apache.poi.poifs.crypt.EncryptionInfoBuilder;
-import org.docx4j.org.apache.poi.poifs.crypt.EncryptionVerifier;
+import org.docx4j.org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
-import org.docx4j.org.apache.poi.poifs.crypt.agile.AgileEncryptionVerifier.AgileCertificateEntry;
 import org.docx4j.org.apache.poi.poifs.filesystem.DirectoryNode;
 import org.docx4j.org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.docx4j.org.apache.poi.util.LittleEndian;
@@ -63,50 +54,39 @@ import org.docx4j.org.apache.poi.util.LittleEndian;
  * Decryptor implementation for Agile Encryption
  */
 public class AgileDecryptor extends Decryptor {
+    static final byte[] kVerifierInputBlock = longToBytes(0xfea7d2763b4b9e79L);
+    static final byte[] kHashedVerifierBlock = longToBytes(0xd7aa0f6d3061344eL);
+    static final byte[] kCryptoKeyBlock = longToBytes(0x146e0be7abacd0d6L);
+    static final byte[] kIntegrityKeyBlock = longToBytes(0x5fb2ad010cb9e1f6L);
+    static final byte[] kIntegrityValueBlock = longToBytes(0xa0677f02b22c8433L);
+
     private long _length = -1;
 
-    protected static final byte[] kVerifierInputBlock;
-    protected static final byte[] kHashedVerifierBlock;
-    protected static final byte[] kCryptoKeyBlock;
-    protected static final byte[] kIntegrityKeyBlock;
-    protected static final byte[] kIntegrityValueBlock;
-
-    static {
-        kVerifierInputBlock =
-            new byte[] { (byte)0xfe, (byte)0xa7, (byte)0xd2, (byte)0x76,
-                         (byte)0x3b, (byte)0x4b, (byte)0x9e, (byte)0x79 };
-        kHashedVerifierBlock =
-            new byte[] { (byte)0xd7, (byte)0xaa, (byte)0x0f, (byte)0x6d,
-                         (byte)0x30, (byte)0x61, (byte)0x34, (byte)0x4e };
-        kCryptoKeyBlock =
-            new byte[] { (byte)0x14, (byte)0x6e, (byte)0x0b, (byte)0xe7,
-                         (byte)0xab, (byte)0xac, (byte)0xd0, (byte)0xd6 };
-        kIntegrityKeyBlock =
-            new byte[] { (byte)0x5f, (byte)0xb2, (byte)0xad, (byte)0x01, 
-                         (byte)0x0c, (byte)0xb9, (byte)0xe1, (byte)0xf6 };
-        kIntegrityValueBlock =
-            new byte[] { (byte)0xa0, (byte)0x67, (byte)0x7f, (byte)0x02,
-                         (byte)0xb2, (byte)0x2c, (byte)0x84, (byte)0x33 };
+    protected AgileDecryptor() {
     }
 
-    protected AgileDecryptor(AgileEncryptionInfoBuilder builder) {
-        super(builder);
+    protected AgileDecryptor(AgileDecryptor other) {
+        super(other);
+        _length = other._length;
     }
-    
+
+    private static byte[] longToBytes(long l) {
+        return ByteBuffer.allocate(Long.BYTES).putLong(l).array();
+    }
+
     /**
      * set decryption password
      */
+    @Override
     public boolean verifyPassword(String password) throws GeneralSecurityException {
-        AgileEncryptionVerifier ver = (AgileEncryptionVerifier)builder.getVerifier();
-        AgileEncryptionHeader header = (AgileEncryptionHeader)builder.getHeader(); 
-        HashAlgorithm hashAlgo = header.getHashAlgorithmEx();
-        CipherAlgorithm cipherAlgo = header.getCipherAlgorithm();
+        AgileEncryptionVerifier ver = (AgileEncryptionVerifier)getEncryptionInfo().getVerifier();
+        AgileEncryptionHeader header = (AgileEncryptionHeader)getEncryptionInfo().getHeader();
+
         int blockSize = header.getBlockSize();
-        int keySize = header.getKeySize()/8;
 
         byte[] pwHash = hashPassword(password, ver.getHashAlgorithm(), ver.getSalt(), ver.getSpinCount());
 
-        /**
+        /*
          * encryptedVerifierHashInput: This attribute MUST be generated by using the following steps:
          * 1. Generate a random array of bytes with the number of bytes used specified by the saltSize
          *    attribute.
@@ -119,12 +99,12 @@ public class AgileDecryptor extends Decryptor {
          *    blockSize bytes.
          * 4. Use base64 to encode the result of step 3.
          */
-        byte verfierInputEnc[] = hashInput(builder, pwHash, kVerifierInputBlock, ver.getEncryptedVerifier(), Cipher.DECRYPT_MODE);
+        byte[] verfierInputEnc = hashInput(ver, pwHash, kVerifierInputBlock, ver.getEncryptedVerifier(), Cipher.DECRYPT_MODE);
         setVerifier(verfierInputEnc);
-        MessageDigest hashMD = getMessageDigest(hashAlgo);
+        MessageDigest hashMD = getMessageDigest(ver.getHashAlgorithm());
         byte[] verifierHash = hashMD.digest(verfierInputEnc);
 
-        /**
+        /*
          * encryptedVerifierHashValue: This attribute MUST be generated by using the following steps:
          * 1. Obtain the hash value of the random array of bytes generated in step 1 of the steps for
          *    encryptedVerifierHashInput.
@@ -136,10 +116,10 @@ public class AgileDecryptor extends Decryptor {
          *    blockSize bytes, pad the hash value with 0x00 to an integral multiple of blockSize bytes.
          * 4. Use base64 to encode the result of step 3.
          */
-        byte verifierHashDec[] = hashInput(builder, pwHash, kHashedVerifierBlock, ver.getEncryptedVerifierHash(), Cipher.DECRYPT_MODE);
-        verifierHashDec = getBlock0(verifierHashDec, hashAlgo.hashSize);
-        
-        /**
+        byte[] verifierHashDec = hashInput(ver, pwHash, kHashedVerifierBlock, ver.getEncryptedVerifierHash(), Cipher.DECRYPT_MODE);
+        verifierHashDec = getBlock0(verifierHashDec, ver.getHashAlgorithm().hashSize);
+
+        /*
          * encryptedKeyValue: This attribute MUST be generated by using the following steps:
          * 1. Generate a random array of bytes that is the same size as specified by the
          *    Encryptor.KeyData.keyBits attribute of the parent element.
@@ -152,11 +132,11 @@ public class AgileDecryptor extends Decryptor {
          *    blockSize bytes.
          * 4. Use base64 to encode the result of step 3.
          */
-        byte keyspec[] = hashInput(builder, pwHash, kCryptoKeyBlock, ver.getEncryptedKey(), Cipher.DECRYPT_MODE);
-        keyspec = getBlock0(keyspec, keySize);
-        SecretKeySpec secretKey = new SecretKeySpec(keyspec, ver.getCipherAlgorithm().jceId);
+        byte[] keyspec = hashInput(ver, pwHash, kCryptoKeyBlock, ver.getEncryptedKey(), Cipher.DECRYPT_MODE);
+        keyspec = getBlock0(keyspec, header.getKeySize()/8);
+        SecretKeySpec secretKey = new SecretKeySpec(keyspec, header.getCipherAlgorithm().jceId);
 
-        /**
+        /*
          * 1. Obtain the intermediate key by decrypting the encryptedKeyValue from a KeyEncryptor
          *    contained within the KeyEncryptors sequence. Use this key for encryption operations in the
          *    remaining steps of this section.
@@ -169,13 +149,13 @@ public class AgileDecryptor extends Decryptor {
          *    array with 0x00 to the next integral multiple of blockSize bytes.
          * 4. Assign the encryptedHmacKey attribute to the base64-encoded form of the result of step 3.
          */
-        byte vec[] = CryptoFunctions.generateIv(hashAlgo, header.getKeySalt(), kIntegrityKeyBlock, blockSize); 
-        Cipher cipher = getCipher(secretKey, cipherAlgo, ver.getChainingMode(), vec, Cipher.DECRYPT_MODE);
-        
-        byte hmacKey[] = cipher.doFinal(header.getEncryptedHmacKey());
-        hmacKey = getBlock0(hmacKey, hashAlgo.hashSize);
+        byte[] vec = CryptoFunctions.generateIv(header.getHashAlgorithm(), header.getKeySalt(), kIntegrityKeyBlock, blockSize);
+        CipherAlgorithm cipherAlgo = header.getCipherAlgorithm();
+        Cipher cipher = getCipher(secretKey, cipherAlgo, header.getChainingMode(), vec, Cipher.DECRYPT_MODE);
+        byte[] hmacKey = cipher.doFinal(header.getEncryptedHmacKey());
+        hmacKey = getBlock0(hmacKey, header.getHashAlgorithm().hashSize);
 
-        /**
+        /*
          * 5. Generate an HMAC, as specified in [RFC2104], of the encrypted form of the data (message),
          *    which the DataIntegrity element will verify by using the Salt generated in step 2 as the key.
          *    Note that the entire EncryptedPackage stream (1), including the StreamSize field, MUST be
@@ -184,12 +164,11 @@ public class AgileDecryptor extends Decryptor {
          *    0xa0, 0x67, 0x7f, 0x02, 0xb2, 0x2c, 0x84, and 0x33.
          * 7. Assign the encryptedHmacValue attribute to the base64-encoded form of the result of step 6.
          */
-        vec = CryptoFunctions.generateIv(hashAlgo, header.getKeySalt(), kIntegrityValueBlock, blockSize);
-        
+        vec = CryptoFunctions.generateIv(header.getHashAlgorithm(), header.getKeySalt(), kIntegrityValueBlock, blockSize);
         cipher = getCipher(secretKey, cipherAlgo, ver.getChainingMode(), vec, Cipher.DECRYPT_MODE);
-        byte hmacValue[] = cipher.doFinal(header.getEncryptedHmacValue());
-        hmacValue = getBlock0(hmacValue, hashAlgo.hashSize);
-        
+        byte[] hmacValue = cipher.doFinal(header.getEncryptedHmacValue());
+        hmacValue = getBlock0(hmacValue, header.getHashAlgorithm().hashSize);
+
         if (Arrays.equals(verifierHashDec, verifierHash)) {
             setSecretKey(secretKey);
             setIntegrityHmacKey(hmacKey);
@@ -200,83 +179,27 @@ public class AgileDecryptor extends Decryptor {
         }
     }
 
-    /**
-     * instead of a password, it's also possible to decrypt via certificate.
-     * Warning: this code is experimental and hasn't been validated
-     * 
-     * @see <a href="http://social.msdn.microsoft.com/Forums/en-US/cc9092bb-0c82-4b5b-ae21-abf643bdb37c/agile-encryption-with-certificates">Agile encryption with certificates</a>
-     *
-     * @param keyPair
-     * @param x509
-     * @return true, when the data can be successfully decrypted with the given private key
-     * @throws GeneralSecurityException
-     */
-    public boolean verifyPassword(KeyPair keyPair, X509Certificate x509) throws GeneralSecurityException {
-        AgileEncryptionVerifier ver = (AgileEncryptionVerifier)builder.getVerifier();
-        AgileEncryptionHeader header = (AgileEncryptionHeader)builder.getHeader();
-        HashAlgorithm hashAlgo = header.getHashAlgorithmEx();
-        CipherAlgorithm cipherAlgo = header.getCipherAlgorithm();
-        int blockSize = header.getBlockSize();
-        
-        AgileCertificateEntry ace = null;
-        for (AgileCertificateEntry aceEntry : ver.getCertificates()) {
-            if (x509.equals(aceEntry.x509)) {
-                ace = aceEntry;
-                break;
-            }
-        }
-        if (ace == null) return false;
-        
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
-        byte keyspec[] = cipher.doFinal(ace.encryptedKey);
-        SecretKeySpec secretKey = new SecretKeySpec(keyspec, ver.getCipherAlgorithm().jceId);
-        
-        Mac x509Hmac = CryptoFunctions.getMac(hashAlgo);
-        x509Hmac.init(secretKey);
-        byte certVerifier[] = x509Hmac.doFinal(ace.x509.getEncoded());
-
-        byte vec[] = CryptoFunctions.generateIv(hashAlgo, header.getKeySalt(), kIntegrityKeyBlock, blockSize); 
-        cipher = getCipher(secretKey, cipherAlgo, ver.getChainingMode(), vec, Cipher.DECRYPT_MODE);
-        byte hmacKey[] = cipher.doFinal(header.getEncryptedHmacKey());
-        hmacKey = getBlock0(hmacKey, hashAlgo.hashSize);
-
-        vec = CryptoFunctions.generateIv(hashAlgo, header.getKeySalt(), kIntegrityValueBlock, blockSize);
-        cipher = getCipher(secretKey, cipherAlgo, ver.getChainingMode(), vec, Cipher.DECRYPT_MODE);
-        byte hmacValue[] = cipher.doFinal(header.getEncryptedHmacValue());
-        hmacValue = getBlock0(hmacValue, hashAlgo.hashSize);
-        
-        
-        if (Arrays.equals(ace.certVerifier, certVerifier)) {
-            setSecretKey(secretKey);
-            setIntegrityHmacKey(hmacKey);
-            setIntegrityHmacValue(hmacValue);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     protected static int getNextBlockSize(int inputLen, int blockSize) {
-        int fillSize;
-        for (fillSize=blockSize; fillSize<inputLen; fillSize+=blockSize);
-        return fillSize;
+        return (int)Math.ceil(inputLen / (double)blockSize) * blockSize;
     }
 
-    protected static byte[] hashInput(EncryptionInfoBuilder builder, byte pwHash[], byte blockKey[], byte inputKey[], int cipherMode) {
-        EncryptionVerifier ver = builder.getVerifier();
-        AgileDecryptor dec = (AgileDecryptor)builder.getDecryptor();
-        int keySize = dec.getKeySizeInBytes();
-        int blockSize = dec.getBlockSizeInBytes();
+    /* package */ static byte[] hashInput(AgileEncryptionVerifier ver, byte[] pwHash, byte[] blockKey, byte[] inputKey, int cipherMode) {
+        CipherAlgorithm cipherAlgo = ver.getCipherAlgorithm();
+        ChainingMode chainMode = ver.getChainingMode();
+        int keySize = ver.getKeySize()/8;
+        int blockSize = ver.getBlockSize();
         HashAlgorithm hashAlgo = ver.getHashAlgorithm();
-        byte[] salt = ver.getSalt();
 
-        byte intermedKey[] = generateKey(pwHash, hashAlgo, blockKey, keySize);
-        SecretKey skey = new SecretKeySpec(intermedKey, ver.getCipherAlgorithm().jceId);
-        byte[] iv = generateIv(hashAlgo, salt, null, blockSize);
-        Cipher cipher = getCipher(skey, ver.getCipherAlgorithm(), ver.getChainingMode(), iv, cipherMode);
+        byte[] intermedKey = generateKey(pwHash, hashAlgo, blockKey, keySize);
+        SecretKey skey = new SecretKeySpec(intermedKey, cipherAlgo.jceId);
+        byte[] iv = generateIv(hashAlgo, ver.getSalt(), null, blockSize);
+        Cipher cipher = getCipher(skey, cipherAlgo, chainMode, iv, cipherMode);
         byte[] hashFinal;
-        
+
+        if (inputKey == null) {
+            throw new EncryptedDocumentException("Cannot has input without inputKey");
+        }
+
         try {
             inputKey = getBlock0(inputKey, getNextBlockSize(inputKey.length, blockSize));
             hashFinal = cipher.doFinal(inputKey);
@@ -286,33 +209,34 @@ public class AgileDecryptor extends Decryptor {
         }
     }
 
+    @SuppressWarnings({"java:S2095"})
+    @Override
     public InputStream getDataStream(DirectoryNode dir) throws IOException, GeneralSecurityException {
         DocumentInputStream dis = dir.createDocumentInputStream(DEFAULT_POIFS_ENTRY);
         _length = dis.readLong();
-        
-        ChunkedCipherInputStream cipherStream = new AgileCipherInputStream(dis, _length);
-        return cipherStream;
+        return new AgileCipherInputStream(dis, _length);
     }
 
+    @Override
     public long getLength(){
-        if(_length == -1) throw new IllegalStateException("EcmaDecryptor.getDataStream() was not called");
+        if(_length == -1) {
+            throw new IllegalStateException("EcmaDecryptor.getDataStream() was not called");
+        }
         return _length;
     }
 
 
-    protected static Cipher initCipherForBlock(Cipher existing, int block, boolean lastChunk, EncryptionInfoBuilder builder, SecretKey skey, int encryptionMode)
+    protected static Cipher initCipherForBlock(Cipher existing, int block, boolean lastChunk, EncryptionInfo encryptionInfo, SecretKey skey, int encryptionMode)
     throws GeneralSecurityException {
-    	
-        EncryptionHeader header = builder.getHeader();
-        if (existing == null || lastChunk) {
-            String padding = (lastChunk ? "PKCS5Padding" : "NoPadding");
-            existing = getCipher(skey, header.getCipherAlgorithm(), header.getChainingMode(), 
-            		header.getKeySalt(), encryptionMode, padding);
+        EncryptionHeader header = encryptionInfo.getHeader();
+        String padding = (lastChunk ? "PKCS5Padding" : "NoPadding");
+        if (existing == null || !existing.getAlgorithm().endsWith(padding)) {
+            existing = getCipher(skey, header.getCipherAlgorithm(), header.getChainingMode(), header.getKeySalt(), encryptionMode, padding);
         }
 
         byte[] blockKey = new byte[4];
         LittleEndian.putInt(blockKey, 0, block);
-        byte[] iv = generateIv(header.getHashAlgorithmEx(), header.getKeySalt(), blockKey, header.getBlockSize());
+        byte[] iv = generateIv(header.getHashAlgorithm(), header.getKeySalt(), blockKey, header.getBlockSize());
 
         AlgorithmParameterSpec aps;
         if (header.getCipherAlgorithm() == CipherAlgorithm.rc2) {
@@ -320,15 +244,15 @@ public class AgileDecryptor extends Decryptor {
         } else {
             aps = new IvParameterSpec(iv);
         }
-            
+
         existing.init(encryptionMode, skey, aps);
-        
+
         return existing;
     }
 
     /**
      * 2.3.4.15 Data Encryption (Agile Encryption)
-     * 
+     *
      * The EncryptedPackage stream (1) MUST be encrypted in 4096-byte segments to facilitate nearly
      * random access while allowing CBC modes to be used in the encryption process.
      * The initialization vector for the encryption process MUST be obtained by using the zero-based
@@ -349,10 +273,16 @@ public class AgileDecryptor extends Decryptor {
 
         // TODO: calculate integrity hmac while reading the stream
         // for a post-validation of the data
-        
+
+        @Override
         protected Cipher initCipherForBlock(Cipher cipher, int block)
         throws GeneralSecurityException {
-            return AgileDecryptor.initCipherForBlock(cipher, block, false, builder, getSecretKey(), Cipher.DECRYPT_MODE);
+            return AgileDecryptor.initCipherForBlock(cipher, block, false, getEncryptionInfo(), getSecretKey(), Cipher.DECRYPT_MODE);
         }
+    }
+
+    @Override
+    public AgileDecryptor copy() {
+        return new AgileDecryptor(this);
     }
 }

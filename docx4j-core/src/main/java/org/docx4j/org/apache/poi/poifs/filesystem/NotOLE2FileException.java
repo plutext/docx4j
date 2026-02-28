@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -30,7 +24,7 @@ import java.io.IOException;
  *  seem to actually be an OLE2 file after all
  */
 public class NotOLE2FileException extends IOException {
-	public NotOLE2FileException(String s) {
-		super(s);
-	}
+    public NotOLE2FileException(String s) {
+        super(s);
+    }
 }

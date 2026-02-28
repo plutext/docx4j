@@ -24,16 +24,16 @@ package org.docx4j.org.apache.poi.hpsf;
 
 import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianByteArrayInputStream;
 
 @Internal
 class Date
 {
     static final int SIZE = 8;
 
-    private byte[] _value;
+    private final byte[] _value = new byte[SIZE];
 
-    Date( byte[] data, int offset )
-    {
-        _value = LittleEndian.getByteArray( data, offset, SIZE );
+    public void read( LittleEndianByteArrayInputStream lei ) {
+        lei.readFully(_value);
     }
 }

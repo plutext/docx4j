@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -24,6 +18,7 @@
 package org.docx4j.org.apache.poi.poifs.property;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -31,17 +26,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
 
 /**
  * Directory property
  */
-public class DirectoryProperty extends Property implements Parent, Iterable<Property> { // TODO - fix instantiable superclass
+public class DirectoryProperty extends Property implements Parent, Iterable<Property> {
 
     /** List of Property instances */
-    private List<Property> _children;
+    private final List<Property> _children = new ArrayList<>();
 
     /** set of children's names */
-    private Set<String>  _children_names;
+    private final Set<String>  _children_names = new HashSet<>();
 
     /**
      * Default constructor
@@ -51,8 +47,6 @@ public class DirectoryProperty extends Property implements Parent, Iterable<Prop
     public DirectoryProperty(String name)
     {
         super();
-        _children       = new ArrayList<Property>();
-        _children_names = new HashSet<String>();
         setName(name);
         setSize(0);
         setPropertyType(PropertyConstants.DIRECTORY_TYPE);
@@ -71,8 +65,6 @@ public class DirectoryProperty extends Property implements Parent, Iterable<Prop
                                 final int offset)
     {
         super(index, array, offset);
-        _children       = new ArrayList<Property>();
-        _children_names = new HashSet<String>();
     }
 
     /**
@@ -125,7 +117,7 @@ public class DirectoryProperty extends Property implements Parent, Iterable<Prop
         return result;
     }
 
-    public static class PropertyComparator implements Comparator<Property> {
+    public static class PropertyComparator implements Comparator<Property>, Serializable {
 
         /**
          * compare method. Assumes both parameters are non-null
@@ -138,9 +130,9 @@ public class DirectoryProperty extends Property implements Parent, Iterable<Prop
          * @param o1 first object to compare, better be a Property
          * @param o2 second object to compare, better be a Property
          *
-         * @return negative value if o1 <  o2,
+         * @return negative value if o1 &lt;  o2,
          *         zero           if o1 == o2,
-         *         positive value if o1 >  o2.
+         *         positive value if o1 &gt;  o2.
          */
         public int compare(Property o1, Property o2)
         {
@@ -197,7 +189,7 @@ public class DirectoryProperty extends Property implements Parent, Iterable<Prop
      */
     protected void preWrite()
     {
-        if (_children.size() > 0)
+        if (!_children.isEmpty())
         {
             Property[] children = _children.toArray(new Property[ 0 ]);
 
@@ -252,13 +244,25 @@ public class DirectoryProperty extends Property implements Parent, Iterable<Prop
     public Iterator<Property> iterator() {
         return getChildren();
     }
+    /**
+     * Get a spliterator over the children of this Parent; all elements
+     * are instances of Property.
+     *
+     * @return Spliterator of children; may refer to an empty collection
+     *
+     * @since 5.2.0
+     */
+    @Override
+    public Spliterator<Property> spliterator() {
+        return _children.spliterator();
+    }
 
     /**
      * Add a new child to the collection of children
      *
      * @param property the new child to be added; must not be null
      *
-     * @exception IOException if we already have a child with the same
+     * @throws IOException if we already have a child with the same
      *                        name
      */
     public void addChild(final Property property)

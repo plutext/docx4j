@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,25 +15,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.poifs.dev;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
-import org.docx4j.org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
+import org.docx4j.org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 /**
  * A simple viewer for POIFS files
- *
- * @author Marc Johnson (mjohnson at apache dot org)
  */
 
-public class POIFSViewer
-{
+public final class POIFSViewer {
+
+    private POIFSViewer() {}
 
     /**
      * Display the contents of multiple POIFS files
@@ -47,31 +39,24 @@ public class POIFSViewer
      * @param args the names of the files to be displayed
      */
 
-    public static void main(final String args[])
-    {
-        if (args.length < 0)
-        {
+    public static void main(final String[] args) {
+        if (args.length == 0) {
             System.err.println("Must specify at least one file to view");
             System.exit(1);
         }
         boolean printNames = (args.length > 1);
 
-        for (int j = 0; j < args.length; j++)
-        {
-            viewFile(args[ j ], printNames);
+        for (String arg : args) {
+            viewFile(arg, printNames);
         }
     }
 
-    private static void viewFile(final String filename,
-                                 final boolean printName)
-    {
-        if (printName)
-        {
-            StringBuffer flowerbox = new StringBuffer();
+    private static void viewFile(String filename, boolean printName) {
+        if (printName) {
+            StringBuilder flowerbox = new StringBuilder();
 
             flowerbox.append(".");
-            for (int j = 0; j < filename.length(); j++)
-            {
+            for (int j = 0; j < filename.length(); j++) {
                 flowerbox.append("-");
             }
             flowerbox.append(".");
@@ -79,23 +64,15 @@ public class POIFSViewer
             System.out.println("|" + filename + "|");
             System.out.println(flowerbox);
         }
-        try
-        {
-            POIFSViewable fs      =
-                new NPOIFSFileSystem(new File(filename));
-            List<String>  strings = POIFSViewEngine.inspectViewable(fs, true,
-                                        0, "  ");
-            Iterator<String> iter = strings.iterator();
-
-            while (iter.hasNext())
-            {
-                System.out.print(iter.next());
+        try {
+            POIFSFileSystem fs = new POIFSFileSystem(new File(filename));
+            List<String> strings = POIFSViewEngine.inspectViewable(fs, true, 0, "  ");
+            for (String s : strings) {
+                System.out.print(s);
             }
-        }
-        catch (IOException e)
-        {
+            fs.close();
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
-}   // end public class POIFSViewer
-
+}

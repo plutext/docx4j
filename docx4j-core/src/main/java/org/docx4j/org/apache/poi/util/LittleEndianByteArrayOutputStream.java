@@ -23,6 +23,7 @@
 
 package org.docx4j.org.apache.poi.util;
 
+import java.io.OutputStream;
 
 /**
  * Adapts a plain byte array to {@link LittleEndianOutput} 
@@ -30,7 +31,7 @@ package org.docx4j.org.apache.poi.util;
  * 
  * @author Josh Micich
  */
-public final class LittleEndianByteArrayOutputStream implements LittleEndianOutput, DelayableLittleEndianOutput {
+public final class LittleEndianByteArrayOutputStream extends OutputStream implements LittleEndianOutput, DelayableLittleEndianOutput {
 	private final byte[] _buf;
 	private final int _endIndex;
 	private int _writeIndex;
@@ -89,6 +90,12 @@ public final class LittleEndianByteArrayOutputStream implements LittleEndianOutp
 		_buf[i++] = (byte)((v >>>  8) & 0xFF);
 		_writeIndex = i;
 	}
+	
+    @Override
+    public void write(int b) {
+        writeByte(b);
+    }
+    
 	public void write(byte[] b) {
 		int len = b.length;
 		checkPosition(len);

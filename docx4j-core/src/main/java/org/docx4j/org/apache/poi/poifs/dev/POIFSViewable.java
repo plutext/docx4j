@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +15,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.poifs.dev;
 
@@ -37,8 +31,6 @@ import java.util.Iterator;
  * A POIFSViewable object is also expected to provide a short
  * description of itself, that can be used by a viewer when the
  * viewable object is collapsed.
- *
- * @author Marc Johnson (mjohnson at apache dot org)
  */
 
 public interface POIFSViewable
@@ -52,7 +44,7 @@ public interface POIFSViewable
      */
 
     public Object [] getViewableArray();
-    
+
     /**
      * Get an Iterator of objects, some of which may implement
      * POIFSViewable

@@ -1,10 +1,3 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +14,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
 
 package org.docx4j.org.apache.poi.poifs.property;
 
@@ -31,13 +23,8 @@ import java.io.IOException;
 
 /**
  * Behavior for parent (directory) properties
- *
- * @author Marc Johnson27591@hotmail.com
  */
-
-public interface Parent
-    extends Child
-{
+public interface Parent extends Child, Iterable<Property> {
 
     /**
      * Get an iterator over the children of this Parent; all elements
@@ -46,14 +33,14 @@ public interface Parent
      * @return Iterator of children; may refer to an empty collection
      */
 
-    public Iterator getChildren();
+    public Iterator<Property> getChildren();
 
     /**
      * Add a new child to the collection of children
      *
      * @param property the new child to be added; must not be null
      *
-     * @exception IOException if the Parent already has a child with
+     * @throws IOException if the Parent already has a child with
      *                        the same name
      */
 
@@ -77,8 +64,4 @@ public interface Parent
      */
 
     public void setNextChild(final Child child);
-
-    /** *** end methods from interface Child *** */
-
-}   // end public interface Parent
-
+}

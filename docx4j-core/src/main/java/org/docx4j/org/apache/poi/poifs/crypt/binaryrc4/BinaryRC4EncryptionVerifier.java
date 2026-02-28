@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -23,9 +17,10 @@
 
 package org.docx4j.org.apache.poi.poifs.crypt.binaryrc4;
 
-//import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
-import org.docx4j.org.apache.poi.poifs.crypt.*;
+import org.docx4j.org.apache.poi.poifs.crypt.CipherAlgorithm;
+import org.docx4j.org.apache.poi.poifs.crypt.EncryptionVerifier;
+import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
 import org.docx4j.org.apache.poi.poifs.crypt.standard.EncryptionRecord;
 import org.docx4j.org.apache.poi.util.LittleEndianByteArrayOutputStream;
 import org.docx4j.org.apache.poi.util.LittleEndianInput;
@@ -41,13 +36,13 @@ public class BinaryRC4EncryptionVerifier extends EncryptionVerifier implements E
     }
 
     protected BinaryRC4EncryptionVerifier(LittleEndianInput is) {
-        byte salt[] = new byte[16];
+        byte[] salt = new byte[16];
         is.readFully(salt);
         setSalt(salt);
-        byte encryptedVerifier[] = new byte[16];
+        byte[] encryptedVerifier = new byte[16];
         is.readFully(encryptedVerifier);
         setEncryptedVerifier(encryptedVerifier);
-        byte encryptedVerifierHash[] = new byte[16];
+        byte[] encryptedVerifierHash = new byte[16];
         is.readFully(encryptedVerifierHash);
         setEncryptedVerifierHash(encryptedVerifierHash);
         setSpinCount(-1);
@@ -57,32 +52,44 @@ public class BinaryRC4EncryptionVerifier extends EncryptionVerifier implements E
         setHashAlgorithm(HashAlgorithm.md5);
     }
 
-    protected void setSalt(byte salt[]) {
+    protected BinaryRC4EncryptionVerifier(BinaryRC4EncryptionVerifier other) {
+        super(other);
+    }
+
+    @Override
+    public void setSalt(byte[] salt) {
         if (salt == null || salt.length != 16) {
             throw new EncryptedDocumentException("invalid verifier salt");
         }
-        
+
         super.setSalt(salt);
     }
 
-    protected void setEncryptedVerifier(byte encryptedVerifier[]) {
+    @Override
+    public void setEncryptedVerifier(byte[] encryptedVerifier) {
         super.setEncryptedVerifier(encryptedVerifier);
     }
 
-    protected void setEncryptedVerifierHash(byte encryptedVerifierHash[]) {
+    @Override
+    public void setEncryptedVerifierHash(byte[] encryptedVerifierHash) {
         super.setEncryptedVerifierHash(encryptedVerifierHash);
     }
 
+    @Override
     public void write(LittleEndianByteArrayOutputStream bos) {
-        byte salt[] = getSalt();
+        byte[] salt = getSalt();
         assert (salt.length == 16);
         bos.write(salt);
-        byte encryptedVerifier[] = getEncryptedVerifier();
+        byte[] encryptedVerifier = getEncryptedVerifier();
         assert (encryptedVerifier.length == 16);
         bos.write(encryptedVerifier);
-        byte encryptedVerifierHash[] = getEncryptedVerifierHash();
+        byte[] encryptedVerifierHash = getEncryptedVerifierHash();
         assert (encryptedVerifierHash.length == 16);
         bos.write(encryptedVerifierHash);
     }
 
+    @Override
+    public BinaryRC4EncryptionVerifier copy() {
+        return new BinaryRC4EncryptionVerifier(this);
+    }
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -29,64 +23,52 @@ import org.docx4j.org.apache.poi.poifs.crypt.*;
 import org.docx4j.org.apache.poi.util.LittleEndianInput;
 
 public class CryptoAPIEncryptionInfoBuilder implements EncryptionInfoBuilder {
-    EncryptionInfo info;
-    CryptoAPIEncryptionHeader header;
-    CryptoAPIEncryptionVerifier verifier;
-    CryptoAPIDecryptor decryptor;
-    CryptoAPIEncryptor encryptor;
-
     public CryptoAPIEncryptionInfoBuilder() {
     }
 
     /**
      * initialize the builder from a stream
      */
-    @SuppressWarnings("unused")
+    @Override
     public void initialize(EncryptionInfo info, LittleEndianInput dis)
     throws IOException {
-        this.info = info;
-        int hSize = dis.readInt();
-        header = new CryptoAPIEncryptionHeader(dis);
-        verifier = new CryptoAPIEncryptionVerifier(dis, header);
-        decryptor = new CryptoAPIDecryptor(this);
-        encryptor = new CryptoAPIEncryptor(this);
+        /* int hSize = */ dis.readInt();
+        CryptoAPIEncryptionHeader header = new CryptoAPIEncryptionHeader(dis);
+        info.setHeader(header);
+        info.setVerifier(new CryptoAPIEncryptionVerifier(dis, header));
+        CryptoAPIDecryptor dec = new CryptoAPIDecryptor();
+        dec.setEncryptionInfo(info);
+        info.setDecryptor(dec);
+        CryptoAPIEncryptor enc = new CryptoAPIEncryptor();
+        enc.setEncryptionInfo(info);
+        info.setEncryptor(enc);
     }
 
     /**
      * initialize the builder from scratch
      */
+    @Override
     public void initialize(EncryptionInfo info,
             CipherAlgorithm cipherAlgorithm, HashAlgorithm hashAlgorithm,
             int keyBits, int blockSize, ChainingMode chainingMode) {
-        this.info = info;
-        if (cipherAlgorithm == null) cipherAlgorithm = CipherAlgorithm.rc4;
-        if (hashAlgorithm == null) hashAlgorithm = HashAlgorithm.sha1;
-        if (keyBits == -1) keyBits = 0x28; 
+        if (cipherAlgorithm == null) {
+            cipherAlgorithm = CipherAlgorithm.rc4;
+        }
+        if (hashAlgorithm == null) {
+            hashAlgorithm = HashAlgorithm.sha1;
+        }
+        if (keyBits == -1) {
+            keyBits = 0x28;
+        } 
         assert(cipherAlgorithm == CipherAlgorithm.rc4 && hashAlgorithm == HashAlgorithm.sha1);
         
-        header = new CryptoAPIEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
-        verifier = new CryptoAPIEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
-        decryptor = new CryptoAPIDecryptor(this);
-        encryptor = new CryptoAPIEncryptor(this);
-    }
-
-    public CryptoAPIEncryptionHeader getHeader() {
-        return header;
-    }
-
-    public CryptoAPIEncryptionVerifier getVerifier() {
-        return verifier;
-    }
-
-    public CryptoAPIDecryptor getDecryptor() {
-        return decryptor;
-    }
-
-    public CryptoAPIEncryptor getEncryptor() {
-        return encryptor;
-    }
-
-    public EncryptionInfo getEncryptionInfo() {
-        return info;
+        info.setHeader(new CryptoAPIEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode));
+        info.setVerifier(new CryptoAPIEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode));
+        CryptoAPIDecryptor dec = new CryptoAPIDecryptor();
+        dec.setEncryptionInfo(info);
+        info.setDecryptor(dec);
+        CryptoAPIEncryptor enc = new CryptoAPIEncryptor();
+        enc.setEncryptionInfo(info);
+        info.setEncryptor(enc);
     }
 }

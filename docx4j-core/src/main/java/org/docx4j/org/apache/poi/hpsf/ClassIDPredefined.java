@@ -1,3 +1,9 @@
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+ 
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -15,7 +21,7 @@
    limitations under the License.
 ==================================================================== */
 
-package org.apache.poi.hpsf;
+package org.docx4j.org.apache.poi.hpsf;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -86,7 +92,7 @@ public enum ClassIDPredefined {
     PDF                  ("{B801CA65-A1FC-11D0-85AD-444553540000}", ".pdf", "application/pdf"),
     /** Plain Text Persistent Handler **/
     TXT_ONLY             ("{5e941d80-bf96-11cd-b579-08002b30bfeb}", ".txt", "text/plain"),
-    /** Microsoft Paint **/
+    /** Microsoft Paint - could be image/bmp, image/x-wmf, or image/x-emf **/
     PAINT                ("{0003000A-0000-0000-C000-000000000046}", null, null),
     /** Standard Hyperlink / STD Moniker **/
     STD_MONIKER          ("{79EAC9D0-BAF9-11CE-8C82-00AA004BA90B}", null, null),

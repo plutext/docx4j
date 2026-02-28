@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +15,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.poifs.dev;
 
@@ -34,8 +28,6 @@ import java.util.List;
 
 /**
  * This class contains methods used to inspect POIFSViewable objects
- *
- * @author Marc Johnson (mjohnson at apache dot org)
  */
 
 public class POIFSViewEngine
@@ -61,7 +53,7 @@ public class POIFSViewEngine
                                        final int indentLevel,
                                        final String indentString)
     {
-        List<String> objects = new ArrayList<String>();
+        List<String> objects = new ArrayList<>();
 
         if (viewable instanceof POIFSViewable)
         {
@@ -75,11 +67,10 @@ public class POIFSViewEngine
                 {
                     Object[] data = inspected.getViewableArray();
 
-                    for (int j = 0; j < data.length; j++)
-                    {
-                        objects.addAll(inspectViewable(data[ j ], drilldown,
-                                                       indentLevel + 1,
-                                                       indentString));
+                    for (Object datum : data) {
+                        objects.addAll(inspectViewable(datum, drilldown,
+                                indentLevel + 1,
+                                indentString));
                     }
                 }
                 else
@@ -96,9 +87,7 @@ public class POIFSViewEngine
                 }
             }
         }
-        else if (viewable==null) {
-            objects.add(indent(indentLevel, indentString, "[null]"));        	
-        } else 
+        else
         {
             objects.add(indent(indentLevel, indentString,
                                viewable.toString()));
@@ -109,8 +98,8 @@ public class POIFSViewEngine
     private static String indent(final int indentLevel,
                                  final String indentString, final String data)
     {
-        StringBuffer finalBuffer  = new StringBuffer();
-        StringBuffer indentPrefix = new StringBuffer();
+        StringBuilder finalBuffer  = new StringBuilder();
+        StringBuilder indentPrefix = new StringBuilder();
 
         for (int j = 0; j < indentLevel; j++)
         {

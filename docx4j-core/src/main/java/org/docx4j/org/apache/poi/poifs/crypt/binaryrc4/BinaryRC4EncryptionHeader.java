@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -30,8 +24,7 @@ import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
 import org.docx4j.org.apache.poi.poifs.crypt.standard.EncryptionRecord;
 import org.docx4j.org.apache.poi.util.LittleEndianByteArrayOutputStream;
 
-public class BinaryRC4EncryptionHeader extends EncryptionHeader implements
-        EncryptionRecord {
+public class BinaryRC4EncryptionHeader extends EncryptionHeader implements EncryptionRecord {
 
     protected BinaryRC4EncryptionHeader() {
         setCipherAlgorithm(CipherAlgorithm.rc4);
@@ -45,6 +38,16 @@ public class BinaryRC4EncryptionHeader extends EncryptionHeader implements
         setChainingMode(null);
     }
 
+    protected BinaryRC4EncryptionHeader(BinaryRC4EncryptionHeader other) {
+        super(other);
+    }
+
+    @Override
     public void write(LittleEndianByteArrayOutputStream littleendianbytearrayoutputstream) {
+    }
+
+    @Override
+    public BinaryRC4EncryptionHeader copy() {
+        return new BinaryRC4EncryptionHeader(this);
     }
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -22,19 +16,6 @@
 ==================================================================== */
 package org.docx4j.org.apache.poi.poifs.crypt.agile;
 
-import java.io.ByteArrayInputStream;
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTEncryption;
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTKeyEncryptor;
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.STCipherChaining;
-import org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate.CTCertificateKeyEncryptor;
-import org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password.CTPasswordKeyEncryptor;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.ChainingMode;
 import org.docx4j.org.apache.poi.poifs.crypt.CipherAlgorithm;
@@ -42,120 +23,172 @@ import org.docx4j.org.apache.poi.poifs.crypt.EncryptionVerifier;
 import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
 
 /**
- * Used when checking if a key is valid for a document 
+ * Used when checking if a key is valid for a document
  */
 public class AgileEncryptionVerifier extends EncryptionVerifier {
 
-    public static class AgileCertificateEntry {
-        X509Certificate x509;
-        byte encryptedKey[];
-        byte certVerifier[];
-    }
-    
-    private List<AgileCertificateEntry> certList = new ArrayList<AgileCertificateEntry>();
+    private int keyBits = -1;
+    private int blockSize = -1;
 
+    @SuppressWarnings("unused")
     public AgileEncryptionVerifier(String descriptor) {
         this(AgileEncryptionInfoBuilder.parseDescriptor(descriptor));
     }
-    
-    protected AgileEncryptionVerifier(CTEncryption ed) {
-        Iterator<CTKeyEncryptor> encList = ed.getKeyEncryptors().getKeyEncryptor().iterator();
-        CTPasswordKeyEncryptor keyData;
-        try {
-            keyData = encList.next().getEncryptedPasswordKey();
-            if (keyData == null) {
-                throw new NullPointerException("encryptedKey not set");
+
+    protected AgileEncryptionVerifier(EncryptionDocument ed) {
+        PasswordKeyEncryptor keyData = null;
+        for (KeyEncryptor ke : ed.getKeyEncryptors()) {
+            keyData = ke.getPasswordKeyEncryptor();
+            if (keyData != null) {
+                break;
             }
-        } catch (Exception e) {
-            throw new EncryptedDocumentException("Unable to parse keyData", e);
         }
-        
-        int keyBits = (int)keyData.getKeyBits();
-        
-        CipherAlgorithm ca = CipherAlgorithm.fromXmlId(keyData.getCipherAlgorithm().toString(), keyBits);
-        setCipherAlgorithm(ca);
 
-        int hashSize = (int)keyData.getHashSize();
+        if (keyData == null || keyData.getHashSize() == null) {
+            throw new IllegalArgumentException("encryptedKey not set");
+        }
 
-        HashAlgorithm ha = HashAlgorithm.fromEcmaId(keyData.getHashAlgorithm().value());
+        setCipherAlgorithm(keyData.getCipherAlgorithm());
+        setKeySize(keyData.getKeyBits());
+
+        Integer blockSize = keyData.getBlockSize();
+        if (blockSize == null) {
+            throw new IllegalArgumentException("blockSize not set");
+        }
+        setBlockSize(blockSize);
+
+        Integer hashSize = keyData.getHashSize();
+        if (hashSize == null) {
+            throw new IllegalArgumentException("hashSize not set");
+        }
+
+        HashAlgorithm ha = keyData.getHashAlgorithm();
         setHashAlgorithm(ha);
 
         if (getHashAlgorithm().hashSize != hashSize) {
-            throw new EncryptedDocumentException("Unsupported hash algorithm: " + 
-                    keyData.getHashAlgorithm().value() + " @ " + hashSize + " bytes");
+            throw new EncryptedDocumentException("Unsupported hash algorithm: " +
+                    keyData.getHashAlgorithm() + " @ " + hashSize + " bytes");
         }
 
-        setSpinCount((int)keyData.getSpinCount());
+        Integer spinCount = keyData.getSpinCount();
+        if (spinCount != null) {
+            setSpinCount(spinCount);
+        }
         setEncryptedVerifier(keyData.getEncryptedVerifierHashInput());
         setSalt(keyData.getSaltValue());
-        setEncryptedKey(keyData.getEncryptedKeyValue()); 
+        setEncryptedKey(keyData.getEncryptedKeyValue());
         setEncryptedVerifierHash(keyData.getEncryptedVerifierHashValue());
 
-        int saltSize = (int)keyData.getSaltSize();
-        if (saltSize != getSalt().length)
+        Integer saltSize = keyData.getSaltSize();
+        if (saltSize == null || saltSize != getSalt().length) {
             throw new EncryptedDocumentException("Invalid salt size");
-        
-        if (keyData.getCipherChaining()==STCipherChaining.CHAINING_MODE_CBC) {
-            setChainingMode(ChainingMode.cbc);
-        } else if (keyData.getCipherChaining()==STCipherChaining.CHAINING_MODE_CFB) {
-            setChainingMode(ChainingMode.cfb);
-        } else {
-            throw new EncryptedDocumentException("Unsupported chaining mode - "+keyData.getCipherChaining().toString());
         }
-        
-        if (!encList.hasNext()) return;
-        
-        try {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            while (encList.hasNext()) {
-                CTCertificateKeyEncryptor certKey = encList.next().getEncryptedCertificateKey();
-                AgileCertificateEntry ace = new AgileCertificateEntry();
-                ace.certVerifier = certKey.getCertVerifier();
-                ace.encryptedKey = certKey.getEncryptedKeyValue();
-                ace.x509 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certKey.getX509Certificate()));
-                certList.add(ace);
-            }
-        } catch (GeneralSecurityException e) {
-            throw new EncryptedDocumentException("can't parse X509 certificate", e);
+
+        setChainingMode(keyData.getCipherChaining());
+        if (keyData.getCipherChaining() != ChainingMode.cbc && keyData.getCipherChaining() != ChainingMode.cfb) {
+            throw new EncryptedDocumentException("Unsupported chaining mode - "+ keyData.getCipherChaining());
         }
     }
-    
+
     public AgileEncryptionVerifier(CipherAlgorithm cipherAlgorithm, HashAlgorithm hashAlgorithm, int keyBits, int blockSize, ChainingMode chainingMode) {
         setCipherAlgorithm(cipherAlgorithm);
         setHashAlgorithm(hashAlgorithm);
         setChainingMode(chainingMode);
+        setKeySize(keyBits);
+        setBlockSize(blockSize);
         setSpinCount(100000); // TODO: use parameter
     }
-    
-    protected void setSalt(byte salt[]) {
+
+    public AgileEncryptionVerifier(AgileEncryptionVerifier other) {
+        super(other);
+        keyBits = other.keyBits;
+        blockSize = other.blockSize;
+    }
+
+    @Override
+    public void setSalt(byte[] salt) {
         if (salt == null || salt.length != getCipherAlgorithm().blockSize) {
             throw new EncryptedDocumentException("invalid verifier salt");
         }
         super.setSalt(salt);
     }
-    
+
     // make method visible for this package
-    protected void setEncryptedVerifier(byte encryptedVerifier[]) {
+    @Override
+    public void setEncryptedVerifier(byte[] encryptedVerifier) {
         super.setEncryptedVerifier(encryptedVerifier);
     }
 
     // make method visible for this package
-    protected void setEncryptedVerifierHash(byte encryptedVerifierHash[]) {
+    @Override
+    public void setEncryptedVerifierHash(byte[] encryptedVerifierHash) {
         super.setEncryptedVerifierHash(encryptedVerifierHash);
     }
 
     // make method visible for this package
-    protected void setEncryptedKey(byte[] encryptedKey) {
+    @Override
+    public void setEncryptedKey(byte[] encryptedKey) {
         super.setEncryptedKey(encryptedKey);
     }
-    
-    public void addCertificate(X509Certificate x509) {
-        AgileCertificateEntry ace = new AgileCertificateEntry();
-        ace.x509 = x509;
-        certList.add(ace);
+
+    @Override
+    public AgileEncryptionVerifier copy() {
+        return new AgileEncryptionVerifier(this);
     }
-    
-    public List<AgileCertificateEntry> getCertificates() {
-        return certList;
+
+
+    /**
+     * The keysize (in bits) of the verifier data. This usually equals the keysize of the header,
+     * but only on a few exceptions, like files generated by Office for Mac, can be
+     * different.
+     *
+     * @return the keysize (in bits) of the verifier.
+     */
+    public int getKeySize() {
+        return keyBits;
+    }
+
+
+    /**
+     * The blockSize (in bytes) of the verifier data.
+     * This usually equals the blocksize of the header.
+     *
+     * @return the blockSize (in bytes) of the verifier,
+     */
+    public int getBlockSize() {
+        return blockSize;
+    }
+
+    /**
+     * Sets the keysize (in bits) of the verifier
+     *
+     * @param keyBits the keysize (in bits)
+     */
+    public void setKeySize(int keyBits) {
+        this.keyBits = keyBits;
+        for (int allowedBits : getCipherAlgorithm().allowedKeySize) {
+            if (allowedBits == keyBits) {
+                return;
+            }
+        }
+        throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for cipher "+getCipherAlgorithm());
+    }
+
+
+    /**
+     * Sets the blockSize (in bytes) of the verifier
+     *
+     * @param blockSize the blockSize (in bytes)
+     */
+    public void setBlockSize(int blockSize) {
+        this.blockSize = blockSize;
+    }
+
+    @Override
+    public final void setCipherAlgorithm(CipherAlgorithm cipherAlgorithm) {
+        super.setCipherAlgorithm(cipherAlgorithm);
+        if (cipherAlgorithm.allowedKeySize.length == 1) {
+            setKeySize(cipherAlgorithm.defaultKeySize);
+        }
     }
 }

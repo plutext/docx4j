@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +15,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.poifs.filesystem;
 
@@ -29,8 +23,6 @@ package org.docx4j.org.apache.poi.poifs.filesystem;
  * This interface provides access to an object managed by a Filesystem
  * instance. Entry objects are further divided into DocumentEntry and
  * DirectoryEntry instances.
- *
- * @author Marc Johnson (mjohnson at apache dot org)
  */
 
 public interface Entry

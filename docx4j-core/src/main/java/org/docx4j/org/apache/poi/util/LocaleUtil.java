@@ -152,5 +152,29 @@ public final class LocaleUtil {
     public static Calendar getLocaleCalendar(TimeZone timeZone) {
         return Calendar.getInstance(timeZone, getUserLocale());
     }
+    
+    /**
+     * Decode the language ID from LCID value
+     *
+     * @param lcid the LCID value
+     * @return the locale/language ID
+     */
+    public static String getLocaleFromLCID(int lcid) {
+        LocaleID lid = LocaleID.lookupByLcid(lcid & 0xFFFF);
+        return (lid == null) ? "invalid" : lid.getLanguageTag();
+    }
+
+    /**
+     * Get default code page from LCID value
+     *
+     * @param lcid the LCID value
+     * @return the default code page
+     */
+    public static int getDefaultCodePageFromLCID(int lcid) {
+        LocaleID lid = LocaleID.lookupByLcid(lcid & 0xFFFF);
+        return (lid == null) ? 0 : lid.getDefaultCodepage();
+    }    
+    
+    
 }
 

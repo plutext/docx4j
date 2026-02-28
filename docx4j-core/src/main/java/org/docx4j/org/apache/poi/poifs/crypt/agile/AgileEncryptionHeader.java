@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -22,25 +16,32 @@
 ==================================================================== */
 package org.docx4j.org.apache.poi.poifs.crypt.agile;
 
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTDataIntegrity;
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTEncryption;
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTKeyData;
-import org.docx4j.com.microsoft.schemas.office.x2006.encryption.STCipherChaining;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.ChainingMode;
 import org.docx4j.org.apache.poi.poifs.crypt.CipherAlgorithm;
 import org.docx4j.org.apache.poi.poifs.crypt.EncryptionHeader;
 import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
+import org.docx4j.org.apache.poi.util.GenericRecordUtil;
 
 public class AgileEncryptionHeader extends EncryptionHeader {
-    private byte encryptedHmacKey[], encryptedHmacValue[];
-    
+    private byte[] encryptedHmacKey;
+    private byte[] encryptedHmacValue;
+
     public AgileEncryptionHeader(String descriptor) {
         this(AgileEncryptionInfoBuilder.parseDescriptor(descriptor));
     }
-    
-    protected AgileEncryptionHeader(CTEncryption ed) {
-        CTKeyData keyData;
+
+    public AgileEncryptionHeader(AgileEncryptionHeader other) {
+        super(other);
+        encryptedHmacKey = (other.encryptedHmacKey == null) ? null : other.encryptedHmacKey.clone();
+        encryptedHmacValue = (other.encryptedHmacValue == null) ? null : other.encryptedHmacValue.clone();
+    }
+
+    protected AgileEncryptionHeader(EncryptionDocument ed) {
+        KeyData keyData;
         try {
             keyData = ed.getKeyData();
             if (keyData == null) {
@@ -50,48 +51,54 @@ public class AgileEncryptionHeader extends EncryptionHeader {
             throw new EncryptedDocumentException("Unable to parse keyData");
         }
 
-        setKeySize((int)keyData.getKeyBits());
-        setFlags(0);
-        setSizeExtra(0);
-        setCspName(null);
-        setBlockSize((int)keyData.getBlockSize());
+        int keyBits = keyData.getKeyBits();
 
-        int keyBits = (int)keyData.getKeyBits();
-        
-        CipherAlgorithm ca = CipherAlgorithm.fromXmlId(keyData.getCipherAlgorithm().toString(), keyBits);
+        CipherAlgorithm ca = keyData.getCipherAlgorithm();
         setCipherAlgorithm(ca);
         setCipherProvider(ca.provider);
 
-        if (keyData.getCipherChaining()==STCipherChaining.CHAINING_MODE_CBC) {
-            setChainingMode(ChainingMode.cbc);
-        } else if (keyData.getCipherChaining()==STCipherChaining.CHAINING_MODE_CFB) {
-            setChainingMode(ChainingMode.cfb);
-        } else {
-            throw new EncryptedDocumentException("Unsupported chaining mode - "+keyData.getCipherChaining().toString());
+        setKeySize(keyBits);
+        setFlags(0);
+        setSizeExtra(0);
+        setCspName(null);
+        setBlockSize(keyData.getBlockSize() == null ? 0 : keyData.getBlockSize());
+
+        setChainingMode(keyData.getCipherChaining());
+
+        if (getChainingMode() != ChainingMode.cbc && getChainingMode() != ChainingMode.cfb) {
+            throw new EncryptedDocumentException("Unsupported chaining mode - "+ keyData.getCipherChaining());
         }
-    
-        int hashSize = (int)keyData.getHashSize();
-        
-        HashAlgorithm ha = HashAlgorithm.fromEcmaId(keyData.getHashAlgorithm().value());
+
+        Integer hashSizeObj = keyData.getHashSize();
+        if (hashSizeObj == null) {
+            throw new EncryptedDocumentException("Invalid hash size: " + hashSizeObj);
+        }
+        int hashSize = hashSizeObj;
+
+        HashAlgorithm ha = keyData.getHashAlgorithm();
         setHashAlgorithm(ha);
 
-        if (getHashAlgorithmEx().hashSize != hashSize) {
-            throw new EncryptedDocumentException("Unsupported hash algorithm: " + 
-                    keyData.getHashAlgorithm().value() + " @ " + hashSize + " bytes");
+        if (getHashAlgorithm().hashSize != hashSize) {
+            throw new EncryptedDocumentException("Unsupported hash algorithm: " +
+                    keyData.getHashAlgorithm() + " @ " + hashSize + " bytes");
         }
 
-        int saltLength = (int)keyData.getSaltSize();
+        if (keyData.getSaltSize() == null) {
+            throw new EncryptedDocumentException("Invalid salt length: " + keyData.getSaltSize());
+        }
+
+        int saltLength = keyData.getSaltSize();
         setKeySalt(keyData.getSaltValue());
         if (getKeySalt().length != saltLength) {
-            throw new EncryptedDocumentException("Invalid salt length");
+            throw new EncryptedDocumentException("Invalid salt length: " + getKeySalt().length + " and " + saltLength);
         }
-        
-        CTDataIntegrity di = ed.getDataIntegrity();
+
+        DataIntegrity di = ed.getDataIntegrity();
         setEncryptedHmacKey(di.getEncryptedHmacKey());
         setEncryptedHmacValue(di.getEncryptedHmacValue());
     }
-    
-    
+
+
     public AgileEncryptionHeader(CipherAlgorithm algorithm, HashAlgorithm hashAlgorithm, int keyBits, int blockSize, ChainingMode chainingMode) {
         setCipherAlgorithm(algorithm);
         setHashAlgorithm(hashAlgorithm);
@@ -101,7 +108,8 @@ public class AgileEncryptionHeader extends EncryptionHeader {
     }
 
     // make method visible for this package
-    protected void setKeySalt(byte salt[]) {
+    @Override
+    public void setKeySalt(byte[] salt) {
         if (salt == null || salt.length != getBlockSize()) {
             throw new EncryptedDocumentException("invalid verifier salt");
         }
@@ -113,7 +121,7 @@ public class AgileEncryptionHeader extends EncryptionHeader {
     }
 
     protected void setEncryptedHmacKey(byte[] encryptedHmacKey) {
-        this.encryptedHmacKey = encryptedHmacKey;
+        this.encryptedHmacKey = (encryptedHmacKey == null) ? null : encryptedHmacKey.clone();
     }
 
     public byte[] getEncryptedHmacValue() {
@@ -121,6 +129,20 @@ public class AgileEncryptionHeader extends EncryptionHeader {
     }
 
     protected void setEncryptedHmacValue(byte[] encryptedHmacValue) {
-        this.encryptedHmacValue = encryptedHmacValue;
+        this.encryptedHmacValue = (encryptedHmacValue == null) ? null : encryptedHmacValue.clone();
+    }
+
+    @Override
+    public Map<String, Supplier<?>> getGenericProperties() {
+        return GenericRecordUtil.getGenericProperties(
+            "base", super::getGenericProperties,
+            "encryptedHmacKey", this::getEncryptedHmacKey,
+            "encryptedHmacValue", this::getEncryptedHmacValue
+        );
+    }
+
+    @Override
+    public AgileEncryptionHeader copy() {
+        return new AgileEncryptionHeader(this);
     }
 }

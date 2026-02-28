@@ -25,15 +25,27 @@ package org.docx4j.org.apache.poi.poifs.crypt;
 
 public enum ChainingMode {
     // ecb - only for standard encryption
-    ecb("ECB", 1),
-    cbc("CBC", 2),
+    ecb("ECB", 1, null),
+    cbc("CBC", 2, "ChainingModeCBC"),
     /* Cipher feedback chaining (CFB), with an 8-bit window */
-    cfb("CFB8", 3);
+    cfb("CFB8", 3, "ChainingModeCFB");
 
     public final String jceId;
     public final int ecmaId;
-    ChainingMode(String jceId, int ecmaId) {
+    public final String xmlId;
+
+    ChainingMode(String jceId, int ecmaId, String xmlId) {
         this.jceId = jceId;
         this.ecmaId = ecmaId;
+        this.xmlId = xmlId;
+    }
+
+    public static ChainingMode fromXmlId(String xmlId) {
+        for (ChainingMode cm : values()) {
+            if (cm.xmlId != null && cm.xmlId.equals(xmlId)) {
+                return cm;
+            }
+        }
+        return null;
     }
 }

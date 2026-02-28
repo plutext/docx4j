@@ -3,8 +3,8 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
- 
- /* ====================================================================
+
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -27,78 +27,107 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/**
- *
- * @author Josh Micich
- */
 public final class LittleEndianOutputStream extends FilterOutputStream implements LittleEndianOutput {
-	public LittleEndianOutputStream(OutputStream out) {
-		super(out);
-	}
+    public LittleEndianOutputStream(OutputStream out) {
+        super(out);
+    }
 
-	@Override
+    @Override
     public void writeByte(int v) {
-		try {
-			out.write(v);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
+            out.write(v);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
-	@Override
+    @Override
     public void writeDouble(double v) {
-		writeLong(Double.doubleToLongBits(v));
-	}
+        writeLong(Double.doubleToLongBits(v));
+    }
 
-	@Override
+    @Override
     public void writeInt(int v) {
-		int b3 = (v >>> 24) & 0xFF;
-		int b2 = (v >>> 16) & 0xFF;
-		int b1 = (v >>>  8) & 0xFF;
-		int b0 = (v >>>  0) & 0xFF;
-		try {
-			out.write(b0);
-			out.write(b1);
-			out.write(b2);
-			out.write(b3);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        int b3 = (v >>> 24) & 0xFF;
+        int b2 = (v >>> 16) & 0xFF;
+        int b1 = (v >>>  8) & 0xFF;
+        int b0 = (v) & 0xFF;
+        try {
+            out.write(b0);
+            out.write(b1);
+            out.write(b2);
+            out.write(b3);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
-	@Override
+    @Override
     public void writeLong(long v) {
-		writeInt((int)(v >>  0));
-		writeInt((int)(v >> 32));
-	}
+        writeInt((int)(v/* >>  0*/));
+        writeInt((int)(v >> 32));
+    }
 
-	@Override
+    @Override
     public void writeShort(int v) {
-		int b1 = (v >>>  8) & 0xFF;
-		int b0 = (v >>>  0) & 0xFF;
-		try {
-			out.write(b0);
-			out.write(b1);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	@Override
+        int b1 = (v >>>  8) & 0xFF;
+        int b0 = (v) & 0xFF;
+        try {
+            out.write(b0);
+            out.write(b1);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    @Override
     public void write(byte[] b) {
-		// suppress IOException for interface method
-		try {
-			super.write(b);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	@Override
+        // suppress IOException for interface method
+        try {
+            super.write(b);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    @Override
     public void write(byte[] b, int off, int len) {
-		// suppress IOException for interface method
-		try {
-			super.write(b, off, len);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        // suppress IOException for interface method
+        try {
+            super.write(b, off, len);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+
+    /**
+     * Put unsigned int into output stream
+     *
+     * @param value
+     *            the int (32-bit) value
+     */
+    public void writeUInt( long value ) {
+        try {
+            out.write( (byte) ( ( value ) & 0xFF ) );
+            out.write( (byte) ( ( value >>> 8 ) & 0xFF ) );
+            out.write( (byte) ( ( value >>> 16 ) & 0xFF ) );
+            out.write( (byte) ( ( value >>> 24 ) & 0xFF ) );
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Put unsigned short into output stream
+     *
+     * @param value
+     *            the unsigned short (16-bit) value
+     */
+    public void putUShort( int value ) {
+        try {
+            out.write( (byte) ( ( value ) & 0xFF ) );
+            out.write( (byte) ( ( value >>> 8 ) & 0xFF ) );
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }

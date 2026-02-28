@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- /* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -23,13 +17,15 @@
         
 package org.docx4j.org.apache.poi.poifs.filesystem;
 
+import org.docx4j.org.apache.poi.UnsupportedFileFormatException;
+
 /**
  * This exception is thrown when we try to open a file that's actually
  *  an Office 2007+ XML file, rather than an OLE2 file (which is what
  *  POIFS works with)
  */
-public class OfficeXmlFileException extends IllegalArgumentException {
-	public OfficeXmlFileException(String s) {
-		super(s);
-	}
+public class OfficeXmlFileException extends UnsupportedFileFormatException {
+    public OfficeXmlFileException(String s) {
+        super(s);
+    }
 }

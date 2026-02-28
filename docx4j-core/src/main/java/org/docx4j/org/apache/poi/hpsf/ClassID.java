@@ -1,3 +1,9 @@
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+ 
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -15,20 +21,17 @@
    limitations under the License.
 ==================================================================== */
 
-package org.apache.poi.hpsf;
+package org.docx4j.org.apache.poi.hpsf;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.Map;
+//import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
+//import java.util.function.Supplier;
 
-import org.apache.poi.common.Duplicatable;
-import org.apache.poi.common.usermodel.GenericRecord;
-import org.apache.poi.util.GenericRecordUtil;
-import org.apache.poi.util.LittleEndianInput;
-import org.apache.poi.util.LittleEndianOutput;
+import org.docx4j.org.apache.poi.util.LittleEndianInput;
+import org.docx4j.org.apache.poi.util.LittleEndianOutput;
 
 /**
  * Represents a class ID (16 bytes). Unlike other little-endian
@@ -38,7 +41,7 @@ import org.apache.poi.util.LittleEndianOutput;
  *
  * The ClassID (or CLSID) is a UUID - see RFC 4122
  */
-public class ClassID implements Duplicatable, GenericRecord {
+public class ClassID  {
 
     /** The number of bytes occupied by this object in the byte stream. */
     public static final int LENGTH = 16;
@@ -284,13 +287,13 @@ public class ClassID implements Duplicatable, GenericRecord {
     }
 
 
-    @Override
-    public ClassID copy() {
-        return new ClassID(this);
-    }
-
-    @Override
-    public Map<String, Supplier<?>> getGenericProperties() {
-        return GenericRecordUtil.getGenericProperties("uuid", this::toString);
-    }
+//    @Override
+//    public ClassID copy() {
+//        return new ClassID(this);
+//    }
+//
+//    @Override
+//    public Map<String, Supplier<?>> getGenericProperties() {
+//        return GenericRecordUtil.getGenericProperties("uuid", this::toString);
+//    }
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -41,7 +35,7 @@ public class DocumentNode
 {
 
     // underlying POIFSDocument instance
-    private OPOIFSDocument _document;
+    private POIFSDocument _document;
 
     /**
      * create a DocumentNode. This method is not public by design; it
@@ -62,7 +56,7 @@ public class DocumentNode
      *
      * @return the internal POIFSDocument
      */
-    OPOIFSDocument getDocument()
+    POIFSDocument getDocument()
     {
         return _document;
     }
@@ -137,10 +131,12 @@ public class DocumentNode
 
     public Iterator<Object> getViewableIterator()
     {
-        List<Object> components = new ArrayList<Object>();
+        List<Object> components = new ArrayList<>();
 
         components.add(getProperty());
-        components.add(_document);
+        if (_document != null) {
+            components.add(_document);
+        }
         return components.iterator();
     }
 

@@ -24,6 +24,7 @@ package org.docx4j.org.apache.poi.hpsf;
 
 import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
+import org.docx4j.org.apache.poi.util.LittleEndianByteArrayInputStream;
 //import org.docx4j.org.apache.poi.util.POILogFactory;
 //import org.docx4j.org.apache.poi.util.POILogger;
 import org.slf4j.Logger;
@@ -34,31 +35,28 @@ class VariantBool
 {
 //    private final static POILogger logger = POILogFactory
 //            .getLogger( VariantBool.class );
-	private static Logger logger = LoggerFactory.getLogger(VariantBool.class);
+	private static Logger log = LoggerFactory.getLogger(VariantBool.class);
 
     static final int SIZE = 2;
 
     private boolean _value;
 
-    VariantBool( byte[] data, int offset )
-    {
-        short value = LittleEndian.getShort( data, offset );
-        if ( value == 0x0000 )
-        {
-            _value = false;
-            return;
+    public void read( LittleEndianByteArrayInputStream lei ) {
+        short value = lei.readShort();
+        switch (value) {
+            case 0:
+                _value = false;
+                break;
+            case -1:
+                _value = true;
+                break;
+            default:
+                log.warn("VARIANT_BOOL value '{}' is incorrect", value);
+                _value = true;
+                break;
         }
-
-        if ( value == 0xffff )
-        {
-            _value = true;
-            return;
-        }
-
-        logger.warn(  "VARIANT_BOOL value '",
-                Short.valueOf( value ), "' is incorrect" );
-        _value = value != 0;
     }
+
 
     boolean getValue()
     {

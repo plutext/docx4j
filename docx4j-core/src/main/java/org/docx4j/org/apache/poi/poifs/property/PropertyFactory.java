@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -21,15 +15,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-        
+
 
 package org.docx4j.org.apache.poi.poifs.property;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 import org.docx4j.org.apache.poi.poifs.common.POIFSConstants;
-import org.docx4j.org.apache.poi.poifs.storage.ListManagedBlock;
 
 /**
  * Factory for turning an array of RawDataBlock instances containing
@@ -39,42 +31,15 @@ import org.docx4j.org.apache.poi.poifs.storage.ListManagedBlock;
  * should correspond to a Property, but which does not map to a proper
  * Property (i.e., a DirectoryProperty, DocumentProperty, or
  * RootProperty) will get mapped to a null Property in the array.
- *
- * @author Marc Johnson (mjohnson at apache dot org)
  */
 
-class PropertyFactory
-{
+final class PropertyFactory {
     // no need for an accessible constructor
     private PropertyFactory()
     {
     }
 
-    /**
-     * Convert raw data blocks to an array of Property's
-     *
-     * @param blocks to be converted
-     *
-     * @return the converted List of Property objects. May contain
-     *         nulls, but will not be null
-     *
-     * @exception IOException if any of the blocks are empty
-     */
-    static List<Property> convertToProperties(ListManagedBlock [] blocks)
-        throws IOException
-    {
-        List<Property> properties = new ArrayList<Property>();
-
-        for (int j = 0; j < blocks.length; j++) {
-            byte[] data = blocks[ j ].getData();
-            convertToProperties(data, properties);
-        }
-        return properties;
-    }
-    
-    static void convertToProperties(byte[] data, List<Property> properties)
-        throws IOException
-    {
+    static void convertToProperties(byte[] data, List<Property> properties) {
        int property_count = data.length / POIFSConstants.PROPERTY_SIZE;
        int offset         = 0;
 
@@ -102,10 +67,8 @@ class PropertyFactory
              properties.add(null);
              break;
           }
-          
+
           offset += POIFSConstants.PROPERTY_SIZE;
        }
     }
-    
-}   // end package scope class PropertyFactory
-
+}

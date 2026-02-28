@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
- 
- 
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -36,13 +30,9 @@ import org.docx4j.org.apache.poi.hpsf.ClassID;
 /**
  * This interface defines methods specific to Directory objects
  * managed by a Filesystem instance.
- *
- * @author Marc Johnson (mjohnson at apache dot org)
  */
 
-public interface DirectoryEntry
-    extends Entry, Iterable<Entry>
-{
+public interface DirectoryEntry extends Entry, Iterable<Entry> {
 
     /**
      * get an iterator of the Entry instances contained directly in
@@ -55,18 +45,18 @@ public interface DirectoryEntry
      *         implementations of Entry.
      */
 
-    public Iterator<Entry> getEntries();
-    
+    Iterator<Entry> getEntries();
+
     /**
      * get the names of all the Entries contained directly in this
      * instance (in other words, names of children only; no grandchildren
      * etc).
      *
      * @return the names of all the entries that may be retrieved with
-     *         getEntry(String), which may be empty (if this 
+     *         getEntry(String), which may be empty (if this
      *         DirectoryEntry is empty)
      */
-    public Set<String> getEntryNames();
+    Set<String> getEntryNames();
 
     /**
      * is this DirectoryEntry empty?
@@ -74,7 +64,7 @@ public interface DirectoryEntry
      * @return true if this instance contains no Entry instances
      */
 
-    public boolean isEmpty();
+    boolean isEmpty();
 
     /**
      * find out how many Entry instances are contained directly within
@@ -84,28 +74,47 @@ public interface DirectoryEntry
      *         Entry instances
      */
 
-    public int getEntryCount();
+    int getEntryCount();
+
 
     /**
-     * Checks if entry with specified name present
+     * Checks if entry with specified name present, case sensitive
+     */
+    boolean hasEntry( final String name );
+
+    /**
+     * Checks if entry with specified name present, case sensitive
      */
 
-    public boolean hasEntry( final String name );
+    boolean hasEntryCaseInsensitive(final String name );
 
     /**
-     * get a specified Entry by name
+     * get a specified Entry by name, case sensitive
      *
      * @param name the name of the Entry to obtain.
      *
      * @return the specified Entry, if it is directly contained in
      *         this DirectoryEntry
      *
-     * @exception FileNotFoundException if no Entry with the specified
+     * @throws FileNotFoundException if no Entry with the specified
      *            name exists in this DirectoryEntry
      */
 
-    public Entry getEntry(final String name)
-        throws FileNotFoundException;
+    Entry getEntry(final String name) throws FileNotFoundException;
+
+    /**
+     * get a specified Entry by name, case insensitive
+     *
+     * @param name the name of the Entry to obtain.
+     *
+     * @return the specified Entry, if it is directly contained in
+     *         this DirectoryEntry
+     *
+     * @throws FileNotFoundException if no Entry with the specified
+     *            name exists in this DirectoryEntry
+     */
+
+    Entry getEntryCaseInsensitive(final String name) throws FileNotFoundException;
 
     /**
      * create a new DocumentEntry
@@ -115,12 +124,9 @@ public interface DirectoryEntry
      *               DocumentEntry
      *
      * @return the new DocumentEntry
-     *
-     * @exception IOException
      */
 
-    public DocumentEntry createDocument(final String name,
-                                        final InputStream stream)
+    DocumentEntry createDocument(final String name, final InputStream stream)
         throws IOException;
 
     /**
@@ -131,12 +137,9 @@ public interface DirectoryEntry
      * @param writer the writer of the new DocumentEntry
      *
      * @return the new DocumentEntry
-     *
-     * @exception IOException
      */
 
-    public DocumentEntry createDocument(final String name, final int size,
-                                        final POIFSWriterListener writer)
+    DocumentEntry createDocument(final String name, final int size, final POIFSWriterListener writer)
         throws IOException;
 
     /**
@@ -145,26 +148,21 @@ public interface DirectoryEntry
      * @param name the name of the new DirectoryEntry
      *
      * @return the new DirectoryEntry
-     *
-     * @exception IOException
      */
-
-    public DirectoryEntry createDirectory(final String name)
-        throws IOException;
+    DirectoryEntry createDirectory(final String name) throws IOException;
 
     /**
      * Gets the storage clsid of the directory entry
      *
      * @return storage Class ID
      */
-    public ClassID getStorageClsid();
+    ClassID getStorageClsid();
 
     /**
      * Sets the storage clsid for the directory entry
      *
      * @param clsidStorage storage Class ID
      */
-    public void setStorageClsid(ClassID clsidStorage);
-
-}   // end public interface DirectoryEntry
+    void setStorageClsid(ClassID clsidStorage);
+}
 
