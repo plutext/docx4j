@@ -549,10 +549,12 @@ public class ZipPartStore implements PartStore {
             return type != AltChunkType.WordprocessingML && type != AltChunkType.OfficeWordTemplate &&
                    type != AltChunkType.OfficeWordMacroEnabled && type != AltChunkType.OfficeWordMacroEnabledTemplate;
         }
+
         if (part instanceof OleObjectBinaryPart) {
-			// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
-			// (though 64-bit version is fine)
-        	return false;
+        	// since 11.5.10 (2026) defaults to true
+        	return Docx4jProperties.getProperty("docx4j.openpackaging.io3.stores.ZipPartStore.shouldCompress.OleObjectBinaryPart", true);
+			// Note: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed (though 64-bit version is fine),
+        	// so prior to 11.5.10 these weren't compressed
         }
         return true;
     }
