@@ -510,10 +510,7 @@ public class ZipPartStore implements PartStore {
 	        }
 			
 	        // Add ZIP entry to output stream.
-			if (part instanceof OleObjectBinaryPart || ! shouldCompress(part)) {
-				// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
-				// (though 64-bit version is fine)
-				
+			if (! shouldCompress(part)) {
 				ZipArchiveEntry ze = new ZipArchiveEntry(resolvedPartUri);
 				ze.setMethod(ZipArchiveOutputStream.STORED);
 				
@@ -543,12 +540,19 @@ public class ZipPartStore implements PartStore {
 	}
 
     private static boolean shouldCompress(Part part) {
+    	// Don't compress images or EmbeddedPackagePart (since these should already be compressed)
         if (part instanceof EmbeddedPackagePart || part instanceof ImagePngPart || part instanceof ImageJpegPart || part instanceof ImageGifPart)
             return false;
         if (part instanceof AlternativeFormatInputPart) {
             AltChunkType type = ((AlternativeFormatInputPart) part).getAltChunkType();
+            // Don't compress if its one of the following AlternativeFormatInputPart
             return type != AltChunkType.WordprocessingML && type != AltChunkType.OfficeWordTemplate &&
                    type != AltChunkType.OfficeWordMacroEnabled && type != AltChunkType.OfficeWordMacroEnabledTemplate;
+        }
+        if (part instanceof OleObjectBinaryPart) {
+			// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
+			// (though 64-bit version is fine)
+        	return false;
         }
         return true;
     }
