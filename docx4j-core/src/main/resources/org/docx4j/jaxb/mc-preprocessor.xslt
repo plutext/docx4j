@@ -155,7 +155,36 @@
 		        <xsl:attribute name="{local-name()}" namespace="{$new-namespace}">
 					<xsl:choose>
 					
-						<!-- points to twips-->
+						<!-- font sizes <w:sz w:val="48.40pt"/> convert to half points -->
+					    <xsl:when test="parent::purlw:sz and substring(., string-length(.) - 1) = 'pt'">
+					    
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+								
+							<xsl:value-of select="round(substring-before(., 'pt') * 2)" />								
+							
+						</xsl:when>
+						
+						<!-- sectPr points to twips-->						
+						<!-- w:pgSz -->						
+						<xsl:when test="(local-name()='h' or local-name()='w') and parent::purlw:pgSz and  substring(., string-length(.) - 1) = 'pt'">	
+													
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+								
+							<xsl:value-of select="round(substring-before(., 'pt') * 20)"/>
+							
+						</xsl:when>
+						<!-- <w:pgMar w:top="72pt" w:right="36pt" w:bottom="72pt" w:left="36pt" w:header="35.40pt" w:footer="35.40pt" w:gutter="0pt"/>
+						     <w:cols w:space="35.40pt"/> -->
+						<xsl:when test="(parent::purlw:pgMar or parent::purlw:cols) and  substring(., string-length(.) - 1) = 'pt'">	
+													
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+								
+							<xsl:value-of select="round(substring-before(., 'pt') * 20)"/>
+							
+						</xsl:when>
+						
+					
+						<!-- points to twips-->						
 						<xsl:when test="substring(., string-length(.) - 1) = 'pt'">	
 													
 							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
