@@ -134,8 +134,14 @@
 			<artifactId>woodstox-core</artifactId>
 			<version>7.1.0</version>
 		</dependency>
-	  
-	  
+
+<!-- since 11.5.10 for OLE part mime type detection
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>3.2.2</version>
+		</dependency>	  
+	-->  
 	</dependencies>
 
 </project>
