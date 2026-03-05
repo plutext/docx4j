@@ -41,7 +41,7 @@ import org.w3c.dom.traversal.NodeIterator;
  * this content control.
  * 
  * A template is attached to a content control (a repeat/condition/or normal bind),
- * using tag od:call=XYZ where XYZ is the template to call.
+ * using tag od:finish=XYZ where XYZ is the template to call.
  * 
  * For example, by placing this on a repeat, a table row could be coloured red if
  * its contents met some condition. 
@@ -50,6 +50,16 @@ import org.w3c.dom.traversal.NodeIterator;
  * @6.1.0
  */
 public class XsltFinisher {
+	
+	/*
+		# From 6.1.0, there is an optional step in which an xslt can be applied to transform
+		# the document part (typically content controls). For example, you might want
+		# to shade a table row if it contains certain values (and you might consider it neater
+		# to do it this way, rather than cluttering your docx with extra conditions).  Content
+		# controls can contain an od:finish tag to make it easier to apply templates to them,
+		# and to provide a heads-up that that content might be affected in this step.
+		# See docx4j-samples-resources/src/main/resources/XsltFinisherInvoice.xslt
+	 */
 
 	private static Logger log = LoggerFactory.getLogger(XsltFinisher.class);
 	
@@ -74,8 +84,8 @@ public class XsltFinisher {
 	 * finisherParams is a map of parameter values you can pass in,
 	 * which named templates can be sensitive to (eg to set a color).
 	 *  
-	 * @param part
 	 * @param xpathsMap
+	 * @param filename
 	 * @param finisherParams
 	 * @throws Docx4JException
 	 * @since 11.5.10
@@ -109,6 +119,7 @@ public class XsltFinisher {
 	 * @param part
 	 * @param xpathsMap
 	 * @param finisherParams
+	 * @param filename
 	 * @throws Docx4JException
 	 */
 	public void apply(JaxbXmlPart part,
