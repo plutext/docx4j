@@ -554,7 +554,7 @@ public class Docx4J {
 			XsltFinisher finisher = new XsltFinisher(wmlPackage);
 			XsltFinisher.setXsltProvider(xsltProvider );
 						
-			finisher.apply(wmlPackage.getMainDocumentPart(), bh.getXpathsMap(), xsltFinisherfilename, finisherParams);
+			finisher.apply(bh.getXpathsMap(), xsltFinisherfilename, finisherParams);
 			
 			new EventFinished(startEvent).publish();			
 		}

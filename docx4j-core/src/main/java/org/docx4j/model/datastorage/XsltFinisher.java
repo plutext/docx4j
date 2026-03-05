@@ -24,6 +24,11 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.SdtPr;
 import org.slf4j.Logger;
@@ -64,6 +69,38 @@ public class XsltFinisher {
 		XsltFinisher.xsltProvider = xsltProvider;
 	}
 
+	/**
+	 * 
+	 * finisherParams is a map of parameter values you can pass in,
+	 * which named templates can be sensitive to (eg to set a color).
+	 *  
+	 * @param part
+	 * @param xpathsMap
+	 * @param finisherParams
+	 * @throws Docx4JException
+	 * @since 11.5.10
+	 */
+	public void apply(
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
+			String filename, Map<String, Map<String, Object>> finisherParams
+			)
+			throws Docx4JException {
+
+        apply(wordMLPackage.getMainDocumentPart(), xpathsMap, filename, finisherParams);
+
+        // Apply to headers/footers
+        RelationshipsPart rp = wordMLPackage.getMainDocumentPart()
+                        .getRelationshipsPart();
+        for (Relationship r : rp.getRelationships().getRelationship()) {
+
+                if (r.getType().equals(Namespaces.HEADER)) {
+                    apply((HeaderPart) rp.getPart(r), xpathsMap, filename, finisherParams);
+                } else if (r.getType().equals(Namespaces.FOOTER)) {
+                    apply((FooterPart) rp.getPart(r), xpathsMap, filename, finisherParams);
+                }
+        }
+	}
+	
 	/**
 	 * 
 	 * finisherParams is a map of parameter values you can pass in,
