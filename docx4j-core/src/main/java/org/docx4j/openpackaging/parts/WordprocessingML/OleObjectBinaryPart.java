@@ -381,6 +381,8 @@ public class OleObjectBinaryPart extends BinaryPart {
     	            	if (!mime.equals(MIME_OCTET)) {
     	            		return mime;
     	            	}
+    	            	// TODO if the result is text/plain, look at filename or command,
+    	            	// for eg .csv
                     } catch (Exception ignored) {}
                 }
             }                
