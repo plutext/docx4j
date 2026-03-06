@@ -143,11 +143,6 @@ public class RemovalHandler {
         public void removeSDTs(WordprocessingMLPackage wordMLPackage,
                         final Quantifier quantifier, final String... keys) throws Docx4JException {
 
-                // A component can apply in both the main document part,
-                // and in headers/footers. See further
-                // http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
-
-
                 removeSDTs(wordMLPackage.getMainDocumentPart(), quantifier, keys);
 
                 // Remove from headers/footers
