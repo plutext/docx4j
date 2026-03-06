@@ -2,6 +2,38 @@ CHANGELOG
 =========
 
 
+Version 11.5.10
+===============
+
+Release date
+------------
+
+7 March 2026
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 11.5.10
+--------------------------
+
+OLE handling:
+- change default, so OleObjectBinaryPart is compressed by default on save for reduced file sizes.
+  If you need the old behaviour (eg for playing WMV files in 32-bit Powerpoint 2010), 
+  then set new property docx4j.openpackaging.io3.stores.ZipPartStore.shouldCompress.OleObjectBinaryPart=false
+- refresh of POI poifs code 
+
+Import "Strict" docx|pptx|xlsx - correct font size handling; sectPr pgSz pgMar cols points to twips
+
+Mechanism to allow the user to supplement the standard MicrosoftFonts.xml with additional entries
+
+Bump certain deps 
+
+Various bug fixes
+
+
 Version 11.5.9  
 ===============
 

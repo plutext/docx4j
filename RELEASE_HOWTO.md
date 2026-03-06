@@ -63,7 +63,7 @@ Check jar versions in pom.xml, build.xml
 though in the end flatten-maven-plugin specifies actual version of all dependencies specifically
 (so manually satisfying dependencyConvergence for each module is not necessary ).
 
-Review dependency-check-reports
+Review dependency-check-reports (currently passes on 3.0 with suppressions for Xerces and Microsoft Graph) 
 
 Check everything is committed (though nexus-staging-maven-plugin doesn't seem to care)
 
