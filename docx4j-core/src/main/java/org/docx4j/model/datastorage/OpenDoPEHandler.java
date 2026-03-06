@@ -308,9 +308,7 @@ public class OpenDoPEHandler {
 	 *
 	 * The implementation of 10 October 2010 replaced the v1 conventions
 	 * implementation with a v2 implementation. The main method in this class
-	 * can convert v1 documents to v2. The v2 implementation is not yet
-	 * complete. All v1 features are implemented, but not the new v2 stuff (eg
-	 * complex conditions).
+	 * can convert v1 documents to v2. 
 	 *
 	 * @param documentPart
 	 * @throws Exception
