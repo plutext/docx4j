@@ -234,6 +234,7 @@
 			      but it doesn't.
 			      
 			      Seems to work with Java 12 though			      
+	       			 -->
 		     <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
 		        <artifactId>maven-enforcer-plugin</artifactId>
@@ -254,7 +255,7 @@
 		                </enforceBytecodeVersion>
 		                 <dependencyConvergence/>
 		              </rules>
-		              <fail>true</fail>
+		              <fail>false</fail>
 		            </configuration>
 		          </execution>
 		        </executions>
@@ -266,7 +267,6 @@
 		          </dependency>
 		        </dependencies> 
 		      </plugin>
-	       			 -->
 	       			 
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
@@ -434,6 +434,9 @@
 			    <version>12.1.5</version> 
 				<configuration>
 					<ossIndexServerId>ossindex</ossIndexServerId>
+			        <failBuildOnCVSS>3.0</failBuildOnCVSS>     
+			        <suppressionFile>${maven.multiModuleProjectDirectory}/suppression.xml</suppressionFile>   
+			        <failOnError>true</failOnError>
 				</configuration>
 			    <executions>
 			        <execution>

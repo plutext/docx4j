@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions
+	xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+	<suppress>
+		<notes>Suppressing Deserialization of Untrusted Data vulnerability for
+			Gson 2.8.2</notes>
+		<packageUrl regex="true">
+			^pkg:maven/com\.google\.code\.gson/gson@2\.8\.2$</packageUrl>
+		<cve>CVE-2022-25647</cve>
+	</suppress>
+
+	<suppress>
+		<notes>Suppressing DoS and Unsafe Deserialization for Guava 20.0</notes>
+		<packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@20\.0$</packageUrl>
+		<cve>CVE-2018-10237</cve>
+		<cve>CVE-2023-2976</cve>
+	</suppress>
+
+	<suppress>
+		<notes>Suppressing Stack Overflow/DoS vulnerabilities for org.json
+			20140107</notes>
+		<packageUrl regex="true">^pkg:maven/org\.json/json@20140107$</packageUrl>
+		<cve>CVE-2023-5072</cve>
+		<cve>CVE-2022-45688</cve>
+	</suppress>
+
+	<suppress>
+		<notes>Suppressing Hostname Verification and Buffer Overflow issues for
+			OkHttp 3.12.1</notes>
+		<packageUrl regex="true">
+			^pkg:maven/com\.squareup\.okhttp3/okhttp@3\.12\.1$</packageUrl>
+		<cve>CVE-2021-0341</cve>
+		<cve>CVE-2023-0833</cve>
+	</suppress>
+
+	<suppress>
+		<notes>Suppressing Gzip Source Buffer Overflow for Okio 1.15.0</notes>
+		<packageUrl regex="true">^pkg:maven/com\.squareup\.okio/okio@1\.15\.0$</packageUrl>
+		<cve>CVE-2023-3635</cve>
+	</suppress>
+</suppressions>

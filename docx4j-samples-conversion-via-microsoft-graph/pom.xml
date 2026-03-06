@@ -39,6 +39,17 @@
 				</configuration>
 			</plugin>
 			
+			<plugin>
+			    <groupId>org.owasp</groupId>
+			    <artifactId>dependency-check-maven</artifactId>
+				<configuration>
+					<ossIndexServerId>ossindex</ossIndexServerId>
+			        <failBuildOnCVSS>5.0</failBuildOnCVSS>     
+			        <suppressionFile>${maven.multiModuleProjectDirectory}/docx4j-samples-conversion-via-microsoft-graph/suppression.xml</suppressionFile>   
+			        <failOnError>true</failOnError>
+				</configuration>
+			</plugin>				
+			
 		</plugins>
 		
 	</build>
