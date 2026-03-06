@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MicrosoftFonts>
+
+	<!-- You can use this file if you wish to supplement MicrosoftFonts.xml rather than override it.
+		 To use it, you would include a line:
+		 
+			docx4j.fonts.microsoft.MicrosoftFonts.supplemental=MicrosoftFonts-supplemental.xml
+			
+		 in your docx4j.properties file.  -->
+
+	<font name="Tinos Regular" filename="tinos-regular.ttf">
+		<bold filename="tinos-bold.ttf" />
+		<italic filename="tinos-italic.ttf" />
+		<bolditalic filename="tinos-bolditalic.ttf" />
+	</font>
+
+</MicrosoftFonts>			
