@@ -82,6 +82,13 @@
 			<version>${project.version}</version>
 		</dependency> 
 		
+		<!-- CVE fix -->		
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>3.0.18</version>
+		</dependency>
+		
 <!-- 
 		<dependency>
             <groupId>org.docx4j</groupId>

@@ -289,7 +289,7 @@
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.20.0</version>
+			<version>1.21.0</version>
 		</dependency>
 
 		<dependency>
@@ -397,7 +397,7 @@
 	    <dependency>
 	      <groupId>org.checkerframework</groupId>
 	      <artifactId>checker-qual</artifactId>
-	      <version>3.52.0</version>
+	      <version>3.54.0</version>
 	    </dependency>
 	    <dependency>
 	      <groupId>com.google.errorprone</groupId>
