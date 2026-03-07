@@ -110,6 +110,10 @@ New release process (docx4j 11.4.9 and later, which uses nexus-staging-maven-plu
 
 in deploy, prompt for passphrase is the *other* one [e..]
 
+Beware: DO NOT use -rf (resume from) in the event that the build fails.  The artifacts before the failure will not be deployed, resulting in partial publication!
+
+You can/should log in to https://central.sonatype.com/publishing/deployments to examine state.
+
 That should complete with something like:
 
 		Uploaded to ossrh: https://oss.sonatype.org:443/service/local/staging/deployByRepositoryId/orgdocx4j-1095/org/docx4j/docx4j-core-tests/11.4.9/docx4j-core-tests-11.4.9.pom (2.7 kB at 1.5 kB/s)

@@ -2,7 +2,7 @@ CHANGELOG
 =========
 
 
-Version 11.5.10
+Version 11.5.11
 ===============
 
 Release date
@@ -16,7 +16,7 @@ Contributors to this release
 
 Jason Harrop
 
-Changes in Version 11.5.10
+Changes in Version 11.5.11
 --------------------------
 
 OLE handling:
@@ -32,6 +32,16 @@ Mechanism to allow the user to supplement the standard MicrosoftFonts.xml with a
 Bump certain deps 
 
 Various bug fixes
+
+Version 11.5.10
+===============
+
+(version 11.5.10 is identical to v11.5.11 and to be treated as a skipped release; the 2 releases were made using nexus-staging-maven-plugin from the same sources)
+
+Release date
+------------
+
+7 March 2026
 
 
 Version 11.5.9  
