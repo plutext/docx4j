@@ -459,6 +459,9 @@ public class FieldRef {
 	 * @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/ffData.html">the spec</a>
 	 */
 	public CTFFData getFormFieldProperties() {
+		if (formFieldProperties==null) {
+			processFldBegin();
+		}
 		return formFieldProperties;
 	}
 	/**
