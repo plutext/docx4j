@@ -2,6 +2,33 @@ CHANGELOG
 =========
 
 
+Version 11.5.12
+===============
+
+Release date
+------------
+
+x April 2026
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 11.5.12
+--------------------------
+
+OpenDoPE XHTML importing. New property docx4j.model.datastorage.BindingTraverser.XHTML.**PrioritiseRPr**.
+For block-level content, everything in the SDT rPr is applied
+(since applying direct formatting to the SDT is the easiest way to specify desired formatting in Word;
+note that you specify paragraph formatting by using a character style with a linked paragraph style).
+This setting determines whether the rPr or direct XHTML formatting have priority.
+Set to true if you don't control the XHTML formatting and you want its
+appearance harmonised with the docx.  Defaults to false.
+Existing property docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt is deprecated.
+
+
 Version 11.5.11
 ===============
 

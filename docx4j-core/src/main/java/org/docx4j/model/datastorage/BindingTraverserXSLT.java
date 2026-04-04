@@ -35,6 +35,9 @@ import org.docx4j.convert.out.html.HtmlCssHelper;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
+import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.properties.Property;
+import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
@@ -43,11 +46,13 @@ import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.UnzippedPartStore;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
@@ -57,16 +62,22 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.org.apache.xalan.extensions.ExpressionContext;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
 import org.docx4j.utils.ResourceUtils;
+import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.w14.CTSdtCheckbox;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
+import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.PStyle;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.RStyle;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tag;
@@ -666,7 +677,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			return null;
 		}
 	}
-	
+		
 	/**
 	 * Convert the input XHTML into a WordML w3c DocumentFragment, which Xalan 
 	 * can insert into XSLT output.
@@ -694,18 +705,26 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
 
+		// Get the SdtPr 
 		SdtPr sdtPr = null;
 		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		if (sdtPrNode==null) {
+			log.warn("No sdtPr Node available");
+			return null;
+		}
 		try {
 			sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode);
 		} catch (JAXBException e) {
 			log.error(e.getMessage(), e);
 		}
-		
+		if (sdtPr==null) {
+			return null;
+		}
 		
 		org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 		DocumentFragment docfrag = docContainer.createDocumentFragment();
 		
+		// Initialize xHTMLImporter via reflection
 		Object xHTMLImporter= null;
 		Class<?> xhtmlImporterClass = null;
 	    try {
@@ -787,13 +806,13 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		    }
 		} 
 
-		Xpath xpath = getXpathFromTag(sdtPr.getTag(), xpathsMap);
-		
+		// Use the XPath to get the XHTML
+		Xpath xpath = getXpathFromTag(sdtPr.getTag(), xpathsMap);		
 		if (xpath==null) {
 			return null;
 		}
-
 		String r = evaluate(xpath, bindingTraverserState, pkg, customXmlDataStorageParts);
+		
 		
 		try {
 
@@ -809,12 +828,50 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			//String unescaped = StringEscapeUtils.unescapeHtml(r);
 			if (log.isDebugEnabled()) {
 				log.debug("Input XHTML: " + r);
-			}
-			
+			}			
 			// It comes to us unescaped, so the above is unnecessary.
 			
+			PropertyResolver propertyResolver = pkg.getMainDocumentPart().getPropertyResolver(); 
+			
+			PPr effectivePPr = null; // if there is a linked pStyle
+			
+			// RPr
+			RPr effectiveRPr = propertyResolver.getEffectiveRPr(rPrSDT);
+			log.info("effectiveRPr: " + XmlUtils.marshaltoString(effectiveRPr));
+			
+			String rStyleVal = null;
+			Style pStyle = null;
+			
+			// PPr				
+			if ( rPrSDT!=null && rPrSDT.getRStyle()!=null && rPrSDT.getRStyle().getVal()!=null) {
+				rStyleVal = rPrSDT.getRStyle().getVal();
+				log.debug(".." + rStyleVal);
+				pStyle = pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getLinkedStyle(rStyleVal);					
+				if (pStyle==null) {						
+					log.debug("No linked style for " + rStyleVal);						
+					// This is OK, use default P style
+					effectivePPr = propertyResolver.getResolvedDefaultParagraphStyle(); // no need to clone since we won't change it
+				} else {						
+					effectivePPr = propertyResolver.getEffectivePPr(pStyle.getStyleId());
+				}
+			} else {
+				log.debug("No rStyle specified ");	
+				// so no linked pStyle.  Use default pStyle				
+				effectivePPr = propertyResolver.getResolvedDefaultParagraphStyle(); // no need to clone since we won't change it
+				// Edge case TODO: what if something higher up in the character style hierarchy had a linked P style?					
+			}
+
 			
 			if (r.startsWith("<span")) {
+				
+				// TODO 2026 04: review this, including use of  @class here
+				// This code can be deleted?
+				
+				// Sanity check: we expect parent to be p
+				if (!"p".equals(sdtParent)) {
+					log.warn("Attempting to insert <span> in " + sdtParent + "/w:sdt. Incompatible.");
+				}
+				
 				// Wrap the XHTML in a span element with @class, @style as appropriate
 				// so FS uses suitable CSS 
 				
@@ -828,15 +885,13 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		    	if (defaultRunStyle.getStyleId()==null) // possible, for non MS source docx
 		    		defaultCharacterStyleId = "DefaultParagraphFont";
 		    	else defaultCharacterStyleId = defaultRunStyle.getStyleId();
-		    	
-		    	
+		    			    	
 		    	StyleTree styleTree = pkg.getMainDocumentPart().getStyleTree();
 				
 				// Set @class	
 				String classVal =null;
-				String rStyleVal = defaultCharacterStyleId;
-				if ( rPrSDT!=null && rPrSDT.getRStyle()!=null) {
-					rStyleVal = rPrSDT.getRStyle().getVal();
+				if (rStyleVal==null) {
+					rStyleVal = defaultCharacterStyleId;
 				}
 				Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
 				org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
@@ -845,8 +900,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				} else {
 					classVal = StyleTree.getHtmlClassAttributeValue(cTree, asn);		
 				}
-		    	
-				
+		    					
 				String css = null;
 				if ( rPrSDT!=null) {
 					StringBuilder result = new StringBuilder();
@@ -870,30 +924,98 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				}
 				log.debug("\nenhanced with css: \n" + r);
 				
+			} else if (!Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverser.XHTML.PrioritiseRPr", false)) {
+				
+				// since 11.5.12
+
+				// Apply everything in the rPr to block-level content, 
+				// since applying direct formatting to the SDT is the easiest way to author in Word.
+				// but allow XHTML formatting to override it.
+				// Note: PrioritiseRPr==true case is handled further below
+				log.info("Giving priority to XHTML formatting");
+				
+				// Hierarchy:
+				// linked pStyle (if any) hierarchy, for pPr only
+				// rStyle hierarchy including rPrDefault				
+				// direct rPr
+				
+				// Note that @class in CSS does not give priority order;
+				// the last match in the stylesheet(s) wins.
+				
+				// So better for us here to determine a single @style
+				// and not use @class at all.  Or use just the top level style?
+				// Maybe we should be doing that, with just express rPr.
+				
+				// If any css in the XHTML is to be ignored, that is done in XHTMLImporter config
+						    					
+				String css = null;
+				StringBuilder result = new StringBuilder();
+				HtmlCssHelper.createCss(pkg, effectivePPr, result, true, false);  // honour indent.  TODO: Consider list item case.
+				HtmlCssHelper.createCss(pkg, effectiveRPr, result); 
+				// that method intentionally skips rFonts, so handle it here for now
+				RFonts rFonts = effectiveRPr.getRFonts();
+				if (rFonts==null) {
+					log.info("No rFonts known.");
+				} else {
+					// eg <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia" w:cstheme="minorBidi"/>
+					// TODO, we really should we using the full RunFontSelector algorithm, applied to each text node in the HTML
+					
+					ThemePart themePart = pkg.getMainDocumentPart().getThemePart();
+					
+					if (rFonts.getAsciiTheme()!=null
+							&& themePart!=null) {
+						try {
+							CTLanguage themeFontLang = null;
+							if (pkg.getMainDocumentPart().getDocumentSettingsPart()!=null) {
+								try {
+									themeFontLang = pkg.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
+								} catch (Docx4JException e) {
+									// TODO Auto-generated catch block
+									log.error(e.getMessage(), e);
+								}
+							}
+							result.append("font-family: '" +  themePart.getFont(rFonts.getAsciiTheme(), themeFontLang) + "'");
+						} catch (Docx4JException e) {
+							// TODO Auto-generated catch block
+							log.error(e.getMessage(), e);
+						}
+					} else {
+						// No theme, so 
+						result.append("font-family: '" +  rFonts.getAscii() + "'");
+					}					
+				}
+				
+				css = result.toString();
+				r = "<div style=\"" + css + "\">" + r + "</div>"; 
+				log.info("\nenhanced with css: \n" + r);
+				
+				
 			} else if (Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt", false)) {
+				// @Deprecated
+				// old approach, prior to 11.5.12
+				
+				/*
+					# For block level XHTML content, apply the paragraph style
+					# linked to w:sdtPr/w:rPr/w:rStyle (if any).
+					# This is how Word allows you to specify pPr, there is no w:sdtPr/w:pPr. 
+					# @class will contain style names
+					# @css will contain express rPr
+					# Note well: this old option does not even apply direct w:sdtPr/w:rPr (!!)
+					# UNLESS:
+					# (1) there is w:sdtPr/w:rPr/w:rStyle, and
+					# (2) that w:rStyle has a linked pStyle. 
+				 */
 				
 				log.debug("Block.rStyle.Adopt..");
 				
 				// its block level, and we're instructed to apply the paragraph style
 				// linked to w:sdtPr/w:rPr/w:rStyle (if any)
-				String rStyleVal=null;
-				if ( rPrSDT!=null && rPrSDT.getRStyle()!=null) {
-					rStyleVal = rPrSDT.getRStyle().getVal();
-					log.debug(".." + rStyleVal);
-				}
-				
 				if (rStyleVal==null) {
-
-					log.debug("No rStyle specified ");
-					
+					log.debug("No rStyle specified ");					
 				} else {
 					
-					Style pStyle = pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getLinkedStyle(rStyleVal);
-					
-					if (pStyle==null) {
-						
-						log.warn("No linked style for " + rStyleVal);
-						
+					if (pStyle==null) {						
+						log.warn("No linked style for " + rStyleVal);						
 					} else {
 						
 						// Got the pStyle .. now apply it in the XHTML
@@ -921,18 +1043,22 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 								css =null;
 							}
 						}
-						
-						// Recurse the XHTML, adding @class and @style
+						// Recurse the XHTML block level content, adding @class and @style
+						// to any elements where it is not already present.
+						// Hmmm TODO we should probably stop recursing as soon as something is
+						// encountered, since otherwise we'll be overriding perhaps inadvertently
 						r = XHTMLAttrInjector.injectAttrs(r, classVal, css);
 
 						log.debug(".." + r);
-						
 					}
-					
+				}
+				
+			} else {
+				if (log.isInfoEnabled()) {
+					log.info("Block level XHTML content; ignoring sdtPr/rPr.  ");
 				}
 				
 			}
-			
 			
 	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
 	        setHyperlinkStyleMethod.invoke(xHTMLImporter, 
@@ -964,67 +1090,54 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			
 			log.info("Got results: " + results.size() );	
 			
+			if (Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverser.XHTML.PrioritiseRPr", false)) {
+				// since 11.5.12
+
+				// Apply everything in the rPr to block-level content,
+				// (since applying direct formatting to the SDT is the easiest way to author in Word)
+				// *after* XHTML importing
+				// so it overrides any XHTML formatting
+				// Note: PrioritiseRPr==false case is handled above
+				log.info("Giving priority to SDT formatting over XHTML");
+
+				// We want to set these styles and directRPr on the content,
+				// and remove any direct rPr (ie from the XHTML)
+				// which would override those settings
+				
+				// So iterate through the results, and recursively apply.
+				String pStyleVal = null;
+				if (pStyle==null) {
+					String defaultParagraphStyleId = pkg.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
+					if (defaultParagraphStyleId!=null) {
+						pStyleVal = defaultParagraphStyleId;
+					} // or equivalently, could just leave it blank
+				} else {
+					pStyleVal = pStyle.getStyleId();
+				}
+				CompoundTraversalUtilVisitorCallback visitor = new CompoundTraversalUtilVisitorCallback(
+						List.of(new PFromXHTMLVisitor( pStyleVal,  effectivePPr), 
+								new RFromXHTMLVisitor( rPrSDT, effectiveRPr)));			
+				visitor.walkJAXBElements(results);				
+			}			
+			
 			log.debug("context: " + sdtParent);
 			
 			if (results.size()>0  
 					&& results.get(0) instanceof P
 					&& sdtParent.equals("p")) {
 				// Importer class always returns run-level content wrapped in a w:p 
-				// so extract contents
-				
+				// so extract contents				
 				if (results.size()>1) {
 					log.warn("In paragraph context, so extra block-level content is being discarded!");
 				}
-				
 								
 				for (Object o : ((P)results.get(0)).getContent() ) {
-					
-//					if (o instanceof R) {
-//
-//						// Start with rPrSDT,
-//						// and then superimpose on top anything which comes
-//						// from the CSS. 
-//						
-//						if (rPrSDT==null) {
-//							// Leave the CSS rPr as it is
-//						} else {
-//							RPr cssRPR = ((R)o).getRPr(); 
-//							if (cssRPR==null) {
-//								((R)o).setRPr(rPrSDT);																
-//							} else {
-//								log.debug("CSS rPR: " + XmlUtils.marshaltoString(cssRPR, true, true));
-//								RPr baseRPR = XmlUtils.deepCopy(rPrSDT);
-//								
-//								// We want to apply
-//								// real CSS settings, but not the defaults eg those in 
-//								// src/main/resources/XhtmlNamespaceHandler.css								
-//								// CSS defaults are:
-//								//  <w:color w:val="000000"/>
-//								//  <w:sz w:val="22"/>	
-//								// We want to ignore those.
-//								if (rPrSDT.getColor()!=null
-//										&& cssRPR.getColor()!=null
-//										&& cssRPR.getColor().getVal().equals("000000")) {
-//									cssRPR.setColor(null);
-//								}
-//								if (rPrSDT.getSz()!=null
-//										&& cssRPR.getSz()!=null
-//										&& cssRPR.getSz().getVal().toString().equals("22")) {
-//									cssRPR.setSz(null);
-//								}
-//								
-//								StyleUtil.apply(cssRPR, baseRPR);
-//								((R)o).setRPr(baseRPR);								
-//							}
-//						}
-//					}					
 					
 					Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
 					
 					if (log.isDebugEnabled() ) {
 						log.debug(XmlUtils.w3CDomNodeToString(tmpDoc));
 					}
-					
 					XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													
 				}
 				
@@ -1037,6 +1150,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
                         if(log.isWarnEnabled()) {
                             log.warn("DISCARDING conversion result (can't add in context p): " + XmlUtils.marshaltoString(o, true));
                         }
+                        continue;
 					} else if (log.isDebugEnabled()) {
 						log.debug("Conversion result: " + XmlUtils.marshaltoString(o, true));						
 					}
@@ -1047,18 +1161,89 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 						log.debug(XmlUtils.w3CDomNodeToString(tmpDoc));
 					}
 					
-					XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
-					
+					XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);											
 				}
 			}
-						
-			return docfrag;			
+			return docfrag;
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return null;
 		}
 	}
+	
+	public static class PFromXHTMLVisitor extends TraversalUtilVisitor<P> {
+		
+		String pStyleVal;
+		PPr effectivePPr;
+		
+		PFromXHTMLVisitor(String pStyleVal, PPr effectivePPr) {
+			this.pStyleVal = pStyleVal;
+			this.effectivePPr = effectivePPr;
+		}
+		
+		@Override
+		public void apply(P p, Object parent, List<Object> siblings) {
+
+			if (p.getPPr()==null) {
+				p.setPPr(new PPr());
+				
+				// for each property set,
+				// - is it in effectivePPr?  if so, unset it
+				//    No need here, since no pPr
+				
+			} else {
+
+				// for each property set,
+				// - is it in effectiveRPr?  if so, unset it
+				StyleUtil.unset(effectivePPr, p.getPPr());
+			}
+			
+			if (pStyleVal!=null) {
+				PStyle pStyle = new PStyle();
+				pStyle.setVal(pStyleVal);
+				
+				p.getPPr().setPStyle(pStyle);
+			}
+		}
+	}
+	
+	public static class RFromXHTMLVisitor extends TraversalUtilVisitor<R> {
+
+		RPr rPrSDT;
+		RPr effectiveRPr;
+		
+		RFromXHTMLVisitor(RPr rPrSDT, RPr effectiveRPr) {
+			this.rPrSDT=rPrSDT;
+			this.effectiveRPr = effectiveRPr;
+		}
+		
+		@Override
+		public void apply(R r, Object parent, List<Object> siblings) {
+
+			if (r.getRPr()==null) {
+				r.setRPr(new RPr());
+				
+				// for each property set,
+				// - is it in effectiveRPr?  if so, unset it
+				//    No need here, since no rPr
+				
+				// - is it in rPrSDT?  if so, copy the setting
+				StyleUtil.apply(rPrSDT, r.getRPr());
+				
+			} else {
+
+				// for each property set,
+				// - is it in effectiveRPr?  if so, unset it
+				StyleUtil.unset(effectiveRPr, r.getRPr());
+				
+				// - is it in rPrSDT?  if so, copy the setting
+				StyleUtil.apply(rPrSDT, r.getRPr());
+				
+			}
+		}
+	}	
+	
 
 	/**
 	 * @param sdtParent

@@ -7,6 +7,7 @@ import java.util.Stack;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -23,6 +24,7 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.RStyle;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TblPr;
 import org.slf4j.Logger;
@@ -235,9 +237,14 @@ public class PropertyResolver {
 		}
 		resolvedStylePPrComponent.put(styleId, effectivePPr);		
 	}
+	
+	public PPr getResolvedDefaultParagraphStyle() {
+		return resolvedStylePPrComponent.get(defaultParagraphStyleId);
+	}
 
 	private void addDefaultParagraphFontToResolvedStyleRPrComponent() {
-	Stack<RPr> rPrStack = new Stack<RPr>();
+		
+		Stack<RPr> rPrStack = new Stack<RPr>();
 
 		fillRPrStack(defaultParagraphStyleId, rPrStack);
 			// Since default font size might be in there.
@@ -253,6 +260,10 @@ public class PropertyResolver {
 			applyRPr(rPr, effectiveRPr);
 		}
 		resolvedStyleRPrComponent.put(defaultCharacterStyleId, effectiveRPr);		
+		
+		if (log.isDebugEnabled()) {
+			log.debug("defaultCharacterStyleId " + defaultCharacterStyleId + " resolved to " + XmlUtils.marshaltoString(effectiveRPr));
+		}		
 	}
 	
 	public Style getEffectiveTableStyle(TblPr tblPr) {
@@ -635,6 +646,33 @@ public class PropertyResolver {
 
 		return getEffectiveRPr(styleId, true, true, true); 
 	}
+	
+	/**
+	 * @param directRPr
+	 * @return
+	 * @since 11.5.12
+	 */
+	public RPr getEffectiveRPr(RPr directRPr) {
+		
+		RPr result = null;
+		if (directRPr!=null && directRPr.getRStyle()!=null && directRPr.getRStyle().getVal()!=null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Using RStyle: " + directRPr.getRStyle().getVal());
+			}
+			RPr styleRPr =  getEffectiveRPr(directRPr.getRStyle().getVal(), true, true, true); 
+			result = XmlUtils.deepCopy(styleRPr);		
+			applyRPr(directRPr, result);
+		} else {
+			// No rStyle, so resolve against default
+			if (log.isDebugEnabled()) {
+				log.debug("No RStyle, using " + defaultCharacterStyleId);
+			}
+			result = XmlUtils.deepCopy(resolvedStyleRPrComponent.get(defaultCharacterStyleId));
+			applyRPr(directRPr, result);
+		}
+		return result;
+	}
+	
 	/**
 	 * apply the rPr in the stack of styles, optionally including documentDefaultRPr
 	 * 
@@ -648,6 +686,7 @@ public class PropertyResolver {
 		// styleId passed in could be a run style
 		// or a *paragraph* style
 		
+		// Check the cache
 		RPr resolvedRPr = resolvedStyleRPrComponent.get(styleId);
 		
 		if (resolvedRPr!=null) {
@@ -692,7 +731,11 @@ public class PropertyResolver {
 		if (applyDocDefaultsLang) {
 			defaultRPr.setLang(this.documentDefaultRPr.getLang());
 		}
-		rPrStack.push(defaultRPr); 
+		rPrStack.push(defaultRPr);
+		if (log.isDebugEnabled()) {
+			log.debug("Using defaultRPr: " + XmlUtils.marshaltoString(defaultRPr));
+		}
+		
 						
 		resolvedRPr = factory.createRPr();			
 		// Now, apply the properties starting at the top of the stack

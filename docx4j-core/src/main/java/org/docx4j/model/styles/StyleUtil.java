@@ -2996,4 +2996,293 @@ public class StyleUtil {
 	protected static String apply(String source, String destination) {
 		return (source == null  ? destination : source);
 	}
+	
+	/**
+	 * Unset any property in destination which is in source
+	 * @param source
+	 * @param destination
+	 * @since 11.5.12
+	 */
+	public static void unset(RPr source, RPr destination) {
+		
+		if (source.getLang()!=null) {
+			destination.setLang(null);
+		}
+		
+		if(source.getRStyle()!=null) {
+			destination.setRStyle(null);
+		}
+				
+		if(source.getRFonts()!=null) {
+			destination.setRFonts(null);
+		}
+		
+		if (source.getB()!=null) {
+			destination.setB(null);
+		}
+		
+		if (source.getBCs()!=null) {
+			destination.setBCs(null);
+		}
+		
+		if (source.getI()!=null) {
+			destination.setI(null);
+		}
+		
+		if (source.getICs()!=null) {
+			destination.setICs(null);
+		}
+		
+		if (source.getCaps()!=null) {
+			destination.setCaps(null);
+		}
+		
+		if (source.getSmallCaps()!=null) {
+			destination.setSmallCaps(null);
+		}
+		
+		if (source.getStrike()!=null) {
+				destination.setStrike(null);
+		}
+		
+		if (source.getDstrike()!=null) {
+			destination.setDstrike(null);
+		}
+		
+		if (source.getOutline()!=null) {
+			destination.setOutline(null);
+		}
+		
+		if (source.getShadow()!=null) {
+			destination.setShadow(null);
+		}
+		
+		if (source.getEmboss()!=null) {
+			destination.setEmboss(null);
+		}
+		
+		if (source.getImprint()!=null) {
+			destination.setImprint(null);
+		}
+		
+		if (source.getSnapToGrid()!=null) {
+			destination.setSnapToGrid(null);
+		}
+		
+		if (source.getVanish()!=null) {		
+			destination.setVanish(null);
+		}
+		
+		if (source.getColor()!=null) {
+			destination.setColor(null);
+		}
+		
+		if (source.getSpacing()!=null) {
+			destination.setSpacing(null);
+		}
+		
+		if (source.getW()!=null) {
+			destination.setW(null);
+		}
+		
+		if (source.getKern()!=null) {
+			destination.setKern(null);
+		}
+		
+		if (source.getPosition()!=null) {
+			destination.setPosition(null);
+		}
+		
+		if (source.getSz()!=null) {
+			destination.setSz(null);
+		}
+		
+		if (source.getSzCs()!=null) {
+			destination.setSzCs(null);
+		}
+		
+		if (source.getHighlight()!=null) {
+			destination.setHighlight(null);
+		}
+		
+		if (source.getU()!=null) {
+			destination.setU(null);
+		}
+		
+		if (source.getEffect()!=null) {
+			destination.setEffect(null);
+		}
+		
+		if (source.getBdr()!=null) {
+			destination.setBdr(null);
+		}
+		
+		if (source.getShd()!=null) {
+			destination.setShd(null);
+		}
+		
+		if (source.getVertAlign()!=null) {
+			destination.setVertAlign(null);
+		}
+		
+		if (source.getRtl()!=null) {
+			destination.setRtl(null);
+		}
+		
+		if (source.getCs()!=null) {
+			destination.setCs(null);
+		}
+		
+		if (source.getEm()!=null) {
+			destination.setEm(null);
+		}
+		
+		if (source.getSpecVanish()!=null) {
+			destination.setSpecVanish(null);
+		}
+		
+		if (source.getOMath()!=null) {
+			destination.setOMath(null);
+		}			
+	}	
+	
+	/**
+	 * Unset any property in destination which is in source
+	 * @param source
+	 * @param destination
+	 * @since 11.5.12
+	 */	
+	public static void unset(PPrBase source, PPrBase destination) {	
+		
+		if (source.getPStyle()!=null) {
+			destination.setPStyle(null);
+		}
+
+		if (source.getKeepNext()!=null) {
+			destination.setKeepNext(null);
+		}
+		
+		if (source.getKeepLines()!=null) {
+			destination.setKeepLines(null);
+		}
+
+		if (source.getPageBreakBefore()!=null) {
+			destination.setPageBreakBefore(null);
+		}
+		
+		if (source.getFramePr()!=null) {
+			destination.setFramePr(null);
+		}
+
+		if (source.getWidowControl()!=null) {
+			destination.setWidowControl(null);
+		}
+		
+		if (source.getNumPr()!=null) {
+			destination.setNumPr(null);
+		}
+
+		if (source.getInd()!=null) {
+			destination.setInd(null);
+		}
+		
+		if (source.getSuppressLineNumbers()!=null) {
+			destination.setSuppressLineNumbers(null);
+		}
+
+		if (source.getPBdr()!=null) {
+			destination.setPBdr(null);
+		}
+		
+		if (source.getShd()!=null) {
+			destination.setShd(null);
+		}
+
+		if (source.getTabs()!=null) {
+			destination.setTabs(null);
+		}
+		
+		if (source.getSuppressAutoHyphens()!=null) {
+			destination.setSuppressAutoHyphens(null);
+		}
+
+		if (source.getKinsoku()!=null) {
+			destination.setKinsoku(null);
+		}
+		
+		if (source.getWordWrap()!=null) {
+			destination.setWordWrap(null);
+		}
+
+		if (source.getOverflowPunct()!=null) {
+			destination.setOverflowPunct(null);
+		}
+
+		if (source.getTopLinePunct()!=null) {
+			destination.setTopLinePunct(null);
+		}
+
+		if (source.getAutoSpaceDE()!=null) {
+			destination.setAutoSpaceDE(null);
+		}
+		
+		if (source.getAutoSpaceDN()!=null) {
+			destination.setAutoSpaceDN(null);
+		}
+
+		if (source.getBidi()!=null) {
+			destination.setBidi(null);
+		}
+		
+		if (source.getAdjustRightInd()!=null) {
+			destination.setAdjustRightInd(null);
+		}
+
+		if (source.getSnapToGrid()!=null) {
+			destination.setSnapToGrid(null);
+		}
+		
+		if (source.getSpacing()!=null) {
+			destination.setSpacing(null);
+		}
+
+		if (source.getContextualSpacing()!=null) {
+			destination.setContextualSpacing(null);
+		}
+		
+		if (source.getMirrorIndents()!=null) {
+			destination.setMirrorIndents(null);
+		}
+
+		if (source.getSuppressOverlap()!=null) {
+			destination.setSuppressOverlap(null);
+		}
+		
+		if (source.getJc()!=null) {
+			destination.setJc(null);
+		}
+
+		if (source.getTextDirection()!=null) {
+			destination.setTextDirection(null);
+		}
+		
+		if (source.getTextAlignment()!=null) {
+			destination.setTextAlignment(null);
+		}
+
+		if (source.getTextboxTightWrap()!=null) {
+			destination.setTextboxTightWrap(null);
+		}
+		
+		if (source.getOutlineLvl()!=null) {
+			destination.setOutlineLvl(null);
+		}
+
+		if (source.getCnfStyle()!=null) {
+			destination.setCnfStyle(null);
+		}
+				
+	}	
+	
+	
 }
