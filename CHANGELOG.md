@@ -20,9 +20,8 @@ Changes in Version 11.5.12
 --------------------------
 
 OpenDoPE XHTML importing. New property docx4j.model.datastorage.BindingTraverser.XHTML.**PrioritiseRPr**.
-For block-level content, everything in the SDT rPr is applied
-(since applying direct formatting to the SDT is the easiest way to specify desired formatting in Word;
-note that you specify paragraph formatting by using a character style with a linked paragraph style).
+Everything in the SDT rPr is applied.  (Selecting the SDT in Word and applying direct formatting is the easiest way to 
+configure the SDT rPr).
 This setting determines whether the rPr or direct XHTML formatting have priority.
 Set to true if you don't control the XHTML formatting and you want its
 appearance harmonised with the docx.  Defaults to false.

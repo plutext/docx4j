@@ -846,7 +846,16 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			if ( rPrSDT!=null && rPrSDT.getRStyle()!=null && rPrSDT.getRStyle().getVal()!=null) {
 				rStyleVal = rPrSDT.getRStyle().getVal();
 				log.debug(".." + rStyleVal);
-				pStyle = pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getLinkedStyle(rStyleVal);					
+				pStyle = pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getLinkedStyle(rStyleVal);	
+				/*
+				 * NB: the Word interface doesn't render formatting in an SDT's linked P style!!
+				 * For example, indent.
+				 * This means that our output might look different (eg be indented differently)
+				 * to what the author saw in Word.
+				 * TODO:  consider whether this is a bug in Word (or a feature...).
+				 * Maybe this means we should be ignoring the linked P style?
+				 * XHTML handling should be consistent with normal block SDTs?
+				 */
 				if (pStyle==null) {						
 					log.debug("No linked style for " + rStyleVal);						
 					// This is OK, use default P style
@@ -860,75 +869,11 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				effectivePPr = propertyResolver.getResolvedDefaultParagraphStyle(); // no need to clone since we won't change it
 				// Edge case TODO: what if something higher up in the character style hierarchy had a linked P style?					
 			}
+				
+			if (!Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverser.XHTML.PrioritiseRPr", false)) {
+				// since 11.5.12					
 
-			
-			if (r.startsWith("<span")) {
-				
-				// TODO 2026 04: review this, including use of  @class here
-				// This code can be deleted?
-				
-				// Sanity check: we expect parent to be p
-				if (!"p".equals(sdtParent)) {
-					log.warn("Attempting to insert <span> in " + sdtParent + "/w:sdt. Incompatible.");
-				}
-				
-				// Wrap the XHTML in a span element with @class, @style as appropriate
-				// so FS uses suitable CSS 
-				
-				// Code copied from XsltHTMLFunctions.createBlockForRPr
-				Style defaultRunStyle = 
-						(pkg.getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
-								pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultCharacterStyle() :
-						null);
-				
-		    	String defaultCharacterStyleId;
-		    	if (defaultRunStyle.getStyleId()==null) // possible, for non MS source docx
-		    		defaultCharacterStyleId = "DefaultParagraphFont";
-		    	else defaultCharacterStyleId = defaultRunStyle.getStyleId();
-		    			    	
-		    	StyleTree styleTree = pkg.getMainDocumentPart().getStyleTree();
-				
-				// Set @class	
-				String classVal =null;
-				if (rStyleVal==null) {
-					rStyleVal = defaultCharacterStyleId;
-				}
-				Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-				org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
-				if (asn==null) {
-					log.warn("No style node for: " + rStyleVal);
-				} else {
-					classVal = StyleTree.getHtmlClassAttributeValue(cTree, asn);		
-				}
-		    					
-				String css = null;
-				if ( rPrSDT!=null) {
-					StringBuilder result = new StringBuilder();
-					HtmlCssHelper.createCss(pkg, rPrSDT, result);
-					css = result.toString();
-					if (css.equals("")) {
-						css =null;
-					}
-				}
-				
-				if (css==null && classVal==null) {
-					// Do nothing
-				} else if (classVal==null) {
-					// just @style
-					r = "<span style=\"" + css + "\">" + r + "</span>"; 
-				} else if (css==null) {
-					// just @class
-					r = "<span class=\"" + classVal + "\">" + r + "</span>"; 
-				} else {
-					r = "<span style=\"" + css + "\" class=\"" + classVal + "\">" + r + "</span>"; 					
-				}
-				log.debug("\nenhanced with css: \n" + r);
-				
-			} else if (!Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverser.XHTML.PrioritiseRPr", false)) {
-				
-				// since 11.5.12
-
-				// Apply everything in the rPr to block-level content, 
+				// Apply everything in the rPr  
 				// since applying direct formatting to the SDT is the easiest way to author in Word.
 				// but allow XHTML formatting to override it.
 				// Note: PrioritiseRPr==true case is handled further below
@@ -947,10 +892,17 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				// Maybe we should be doing that, with just express rPr.
 				
 				// If any css in the XHTML is to be ignored, that is done in XHTMLImporter config
-						    					
+
+				// Sanity check: we expect parent to be p
+				if (r.startsWith("<span") && !"p".equals(sdtParent)) {
+						log.warn("Attempting to insert <span> in " + sdtParent + "/w:sdt. Incompatible.");					
+				}
+				
 				String css = null;
 				StringBuilder result = new StringBuilder();
-				HtmlCssHelper.createCss(pkg, effectivePPr, result, true, false);  // honour indent.  TODO: Consider list item case.
+				if (!r.startsWith("<span")) {
+					HtmlCssHelper.createCss(pkg, effectivePPr, result, true, false);  // honour indent.  TODO: Consider list item case.
+				}
 				HtmlCssHelper.createCss(pkg, effectiveRPr, result); 
 				// that method intentionally skips rFonts, so handle it here for now
 				RFonts rFonts = effectiveRPr.getRFonts();
@@ -986,7 +938,11 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				}
 				
 				css = result.toString();
-				r = "<div style=\"" + css + "\">" + r + "</div>"; 
+				if (r.startsWith("<span")) {
+					r = "<span style=\"" + css + "\">" + r + "</span>";
+				} else {
+					r = "<div style=\"" + css + "\">" + r + "</div>";					
+				}
 				log.info("\nenhanced with css: \n" + r);
 				
 				
@@ -1093,7 +1049,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			if (Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverser.XHTML.PrioritiseRPr", false)) {
 				// since 11.5.12
 
-				// Apply everything in the rPr to block-level content,
+				// Apply everything in the rPr
 				// (since applying direct formatting to the SDT is the easiest way to author in Word)
 				// *after* XHTML importing
 				// so it overrides any XHTML formatting
@@ -1113,7 +1069,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 					} // or equivalently, could just leave it blank
 				} else {
 					pStyleVal = pStyle.getStyleId();
-				}
+				} // doesn't hurt to set this, even for span level content, since we simply won't encounter any P
 				CompoundTraversalUtilVisitorCallback visitor = new CompoundTraversalUtilVisitorCallback(
 						List.of(new PFromXHTMLVisitor( pStyleVal,  effectivePPr), 
 								new RFromXHTMLVisitor( rPrSDT, effectiveRPr)));			
@@ -1132,7 +1088,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				}
 								
 				for (Object o : ((P)results.get(0)).getContent() ) {
-					
+
 					Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
 					
 					if (log.isDebugEnabled() ) {
@@ -1145,7 +1101,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				// Either the first result is not w:p, or context is not inline 
 				
 				for(Object o : results) {
-					
+
 					if (sdtParent.equals("p") && o instanceof P) {
                         if(log.isWarnEnabled()) {
                             log.warn("DISCARDING conversion result (can't add in context p): " + XmlUtils.marshaltoString(o, true));
