@@ -14,8 +14,22 @@
 		<packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@20\.0$</packageUrl>
 		<cve>CVE-2018-10237</cve>
 		<cve>CVE-2023-2976</cve>
+	</suppress>	
+	<suppress>
+		<notes><![CDATA[
+   file name: guava-20.0.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
+		<cve>CVE-2020-8908</cve>
 	</suppress>
-
+	<suppress>
+		<notes><![CDATA[
+   file name: gson-2.8.2.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
+		<vulnerabilityName>CVE-2025-53864</vulnerabilityName>
+	</suppress>
+	
 	<suppress>
 		<notes>Suppressing Stack Overflow/DoS vulnerabilities for org.json
 			20140107</notes>
@@ -38,4 +52,22 @@
 		<packageUrl regex="true">^pkg:maven/com\.squareup\.okio/okio@1\.15\.0$</packageUrl>
 		<cve>CVE-2023-3635</cve>
 	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+   file name: pdfbox-io-3.0.7.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.pdfbox/pdfbox-io@.*$</packageUrl>
+		<cve>CVE-2026-23907</cve>
+	</suppress>
+
+	<suppress>
+		<notes><![CDATA[
+   file name: logback-core-1.5.19.jar
+   ]]></notes>
+		<packageUrl regex="true">^pkg:maven/ch\.qos\.logback/logback-core@.*$</packageUrl>
+		<vulnerabilityName>CVE-2026-1225</vulnerabilityName>
+	</suppress>
+
+
 </suppressions>
