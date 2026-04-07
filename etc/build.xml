@@ -14,10 +14,12 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="11.5.11"/>
+	<property name="version" value="11.5.12"/>
 	<property name="importxhtml-version" value="11.5.6"/>
 	<property name="importxhtml-dir" value="/home/${user.name}/git/docx4j-ImportXHTML"/>
 
+	<property name="documents4j-version" value="1.1.13"/>
+	
 	<property name="release.dir" value="docx4j-community-${version}"/>
 	<property name="releaseMOXy.dir" value="docx4j-JAXB-MOXy-${version}"/>
 	<property name="releaseReferenceImpl.dir" value="docx4j-JAXB-ReferenceImpl-${version}"/>
@@ -458,16 +460,16 @@
     	[INFO] |     \- com.documents4j:documents4j-util-transformer-process:jar:1.1.3:compile
     	-->
 		
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-api/1.1.13/documents4j-api-1.1.13.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-conversion/1.1.13/documents4j-util-conversion-1.1.13.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-api/${documents4j-version}/documents4j-api-${documents4j-version}.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-conversion/${documents4j-version}/documents4j-util-conversion-${documents4j-version}.jar"/>
 
         <pathelement location="${m2Repository}/org/zeroturnaround/zt-exec/1.11/zt-exec-1.11.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-msoffice-word/1.1.7/documents4j-transformer-msoffice-word-1.1.7.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-msoffice-base/1.1.7/documents4j-transformer-msoffice-base-1.1.7.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-api/1.1.7/documents4j-transformer-api-1.1.7.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-all/1.1.13/documents4j-util-all-1.1.13.jar"/>		
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-transformer-process/1.1.7/documents4j-util-transformer-process-1.1.7.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-msoffice-powerpoint/1.1.7/documents4j-transformer-msoffice-powerpoint-1.1.7.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-msoffice-word/${documents4j-version}/documents4j-transformer-msoffice-word-${documents4j-version}.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-msoffice-base/${documents4j-version}/documents4j-transformer-msoffice-base-${documents4j-version}.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-api/${documents4j-version}/documents4j-transformer-api-${documents4j-version}.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-all/${documents4j-version}/documents4j-util-all-${documents4j-version}.jar"/>		
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-transformer-process/${documents4j-version}/documents4j-util-transformer-process-${documents4j-version}.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer-msoffice-powerpoint/${documents4j-version}/documents4j-transformer-msoffice-powerpoint-${documents4j-version}.jar"/>
 		
 	</path>
 
@@ -488,14 +490,14 @@
     	[INFO] |  |  |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.18:compile
 -->
     	
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-local/1.1.13/documents4j-local-1.1.13.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer/1.1.13/documents4j-transformer-1.1.13.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-local/${documents4j-version}/documents4j-local-${documents4j-version}.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-transformer/${documents4j-version}/documents4j-transformer-${documents4j-version}.jar"/>
         <pathelement location="${m2Repository}/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"/>
         <pathelement location="${m2Repository}/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar"/>
         <pathelement location="${m2Repository}/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"/>
         <pathelement location="${m2Repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
         <pathelement location="${m2Repository}/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar"/>
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-all/1.1.7/documents4j-util-all-1.1.7.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-all/${documents4j-version}/documents4j-util-all-${documents4j-version}.jar"/>
         
         <!-- 
         <pathelement location="${m2Repository}/org/codehaus/mojo/animal-sniffer-annotations/1.18/animal-sniffer-annotations-1.18.jar"/>
@@ -576,7 +578,7 @@
 		    	
 		    	--> 
 		    	
-		        <pathelement location="${m2Repository}/com/documents4j/documents4j-client/1.1.13/documents4j-client-1.1.13.jar"/>
+		        <pathelement location="${m2Repository}/com/documents4j/documents4j-client/${documents4j-version}/documents4j-client-${documents4j-version}.jar"/>
 		
 		        <pathelement location="${m2Repository}/com/google/guava/guava/32.0.1-jre/guava-32.0.1-jre.jar"/>
 		        <pathelement location="${m2Repository}/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar"/>
@@ -593,7 +595,7 @@
     	    	[INFO] |  |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.3.0:compile -->
 		    	
 		    	
-        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-ws/1.1.13/documents4j-util-ws-1.1.13.jar"/>
+        <pathelement location="${m2Repository}/com/documents4j/documents4j-util-ws/${documents4j-version}/documents4j-util-ws-${documents4j-version}.jar"/>
 		    	<!--
 		        <pathelement location="${m2Repository}/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar"/>
 		        <pathelement location="${m2Repository}/com/sun/xml/bind/jaxb-core/2.3.0/jaxb-core-2.3.0.jar"/>

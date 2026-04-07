@@ -89,20 +89,29 @@
 -->
 
 		<!--  choose your preferred logging implementation, for example: 
--->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>${version.logback-classic}</version>
 		</dependency>
+-->
 
-		<!--  log4j.  This is compatible with slf4j-api 1.8.0-beta4, but not 2.0.0-alpha5; presumably a release which supports this is to follow.
-		      In the meantime, if you want to use this, you'll need to downgrade slf-api to 1.8.0-beta4  
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${version.logback-classic}</version>
+		</dependency>
+		
+		<!--  log4j. 
+			specifies  org/codehaus/stax2/XMLInputFactory2
+			but docx4j-core doesn't require that in its module-info.
+			A workaround is:
+			  System.setProperty("javax.xml.stream.XMLInputFactory","com.sun.xml.internal.stream.XMLInputFactoryImpl");
 		
 		<dependency>
-		  <groupId>org.apache.logging.log4j</groupId>
-		  <artifactId>log4j-slf4j18-impl</artifactId>
-		  <version>2.17.0</version>
+		    <groupId>org.apache.logging.log4j</groupId>
+		    <artifactId>log4j-slf4j2-impl</artifactId>
+		    <version>2.25.3</version>
 		</dependency>
 -->
 

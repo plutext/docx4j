@@ -8,7 +8,7 @@ Version 11.5.12
 Release date
 ------------
 
-x April 2026
+7 April 2026
 
 
 Contributors to this release

@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.5.11</revision>
+		<revision>11.5.12</revision>
 		<packaging.type>jar</packaging.type>
 		
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,6 +18,7 @@
 		<version.logback-classic>1.5.19</version.logback-classic>
 		<version.maven-jar-plugin>2.3.1</version.maven-jar-plugin>
 		<version.maven-bundle-plugin>5.1.2</version.maven-bundle-plugin>
+		<version.documents4j>1.1.13</version.documents4j>
 	</properties>
 
     <packaging>pom</packaging>
@@ -102,7 +103,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-11.5.11</tag>
+      <tag>docx4j-11.5.12</tag>
       <url>https://github.com/plutext/docx4j</url>
   </scm>
 	<inceptionYear>2007</inceptionYear>
@@ -145,7 +146,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>fontbox</artifactId>
-			<version>3.0.6</version>
+			<version>3.0.7</version>
 		</dependency>		
     </dependencies>
         
@@ -431,7 +432,7 @@
 			<plugin>
 			    <groupId>org.owasp</groupId>
 			    <artifactId>dependency-check-maven</artifactId>
-			    <version>12.1.5</version> 
+			    <version>12.2.0</version> 
 				<configuration>
 					<ossIndexServerId>ossindex</ossIndexServerId>
 			        <failBuildOnCVSS>3.0</failBuildOnCVSS>     
