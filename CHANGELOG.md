@@ -28,7 +28,7 @@ Set to true if you don't control the XHTML formatting and you want its
 appearance harmonised with the docx.  Defaults to false.
 Existing property docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt is deprecated.
 
-
+Bump fontbox to 3.0.7.
 
 Version 11.5.11
 ===============

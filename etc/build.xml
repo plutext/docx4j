@@ -74,8 +74,8 @@
         <pathelement location="${m2Repository}/org/checkerframework/checker-qual/3.54.0/checker-qual-3.54.0.jar"/>
         <pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.3.3/error_prone_annotations-2.3.3.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/3.0.6/fontbox-3.0.6.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.5/pdfbox-io-3.0.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/3.0.7/fontbox-3.0.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.7/pdfbox-io-3.0.7.jar"/>
         
         <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12.1/qdox-1.12.1.jar"/>
 
@@ -143,9 +143,9 @@
         <pathelement location="${m2Repository}/io/github/openhtmltopdf/openhtmltopdf-core/1.1.31/openhtmltopdf-core-1.1.31.jar"/>
         <pathelement location="${m2Repository}/io/github/openhtmltopdf/openhtmltopdf-pdfbox/1.1.31/openhtmltopdf-pdfbox-1.1.31.jar"/>
         <pathelement location="${m2Repository}/de/rototor/pdfbox/graphics2d/3.0.1/graphics2d-3.0.1.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox/3.0.5/pdfbox-3.0.5.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.5/pdfbox-io-3.0.5.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/xmpbox/3.0.5/xmpbox-3.0.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox/3.0.7/pdfbox-3.0.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.7/pdfbox-io-3.0.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/xmpbox/3.0.7/xmpbox-3.0.7.jar"/>
 	</path>
 	
 
