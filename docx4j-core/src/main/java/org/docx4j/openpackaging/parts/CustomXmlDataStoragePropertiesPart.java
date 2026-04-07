@@ -35,7 +35,7 @@ public final class CustomXmlDataStoragePropertiesPart extends JaxbXmlPart<Datast
 	}
 	
 	public CustomXmlDataStoragePropertiesPart() throws InvalidFormatException {
-		super(new PartName("/customXML/itemProps1.xml"));
+		super(new PartName("/customXml/itemProps1.xml"));
 		init();
 	}
 
