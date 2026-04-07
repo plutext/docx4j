@@ -24,6 +24,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
+import org.docx4j.model.fields.formtext.FFDataUtil;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.ContentAccessor;
@@ -37,7 +38,7 @@ import java.util.List;
 
 /**
  * This class will help you to migrate
- * from MERGEFIELDs
+ * from FORMTEXT
  * to use of content control data bindings.
  * 
  * After migrating, you'll be able to
@@ -52,11 +53,11 @@ import java.util.List;
  *  or comments)
  *  
  * @author jharrop
- * @since 3.0.0
+ * @since 11.5.12
  */
-public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
+public class FromFormText extends AbstractMigratorUsingAnswersFormat {
 	
-	private static Logger log = LoggerFactory.getLogger(FromMergeFields.class);
+	private static Logger log = LoggerFactory.getLogger(FromFormText.class);
 	
 	public WordprocessingMLPackage migrate(WordprocessingMLPackage pkgIn) throws Exception {
 		
@@ -88,47 +89,14 @@ public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
 			int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 			P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
 			((ContentAccessor)p.getParent()).getContent().set(index, newP);
-			
-			/*
-			 *   <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:ns23="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math">
-				    <w:r>
-				      <w:t xml:space="preserve">Hallo, lower </w:t>
-				    </w:r>
-				    <w:r>
-				      <w:rPr>
-				        <w:noProof/>
-				      </w:rPr>
-				      <w:fldChar w:fldCharType="begin"/>
-				      <w:instrText xml:space="preserve"> MERGEFIELD  kundenname  \* MERGEFORMAT  </w:instrText>
-				      <w:fldChar w:fldCharType="separate"/>
-				    </w:r>
-				    <w:r>
-				      <w:rPr>
-				        <w:noProof/>
-				      </w:rPr>
-				      <w:t>«Kundenname»</w:t>
-				    </w:r>
-				    <w:r/>
-				    <w:r>
-				      <w:fldChar w:fldCharType="end"/>
-				    </w:r>
-				  </w:p>
-			 */
 		}
 		
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ( fr.getFldName().equals("MERGEFIELD") ) {
-				String instr = extractInstr(fr.getInstructions() );
-
-				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
-				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
+			if ( fr.getFldName().equals("FORMTEXT") ) {
 				
-				String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
-				tmp = tmp.trim();
-				String key  = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
-				log.info("Key: '" + key + "'");
+				String key = FFDataUtil.getDatafieldNameFromFFData(fr.getFormFieldProperties());
 								
 				// Remove the field related runs
 				int end = fr.getParent().getContent().indexOf(fr.getEndRun());
@@ -152,55 +120,7 @@ public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
 		return pkgOut;
 	}
 	
-	private static String extractInstr(List<Object> instructions) {
-		// For MERGEFIELD, expect the list to contain a simple string
-		
-		if (instructions.size()!=1) {
-			log.error("TODO MERGEFIELD field contained complex instruction");
-			return null;
-		}
-		
-		Object o = XmlUtils.unwrap(instructions.get(0));
-		if (o instanceof Text) {
-			return ((Text)o).getValue();
-		} else {
-            if(log.isErrorEnabled()) {
-                log.error("TODO: extract field name from " + o.getClass().getName());
-                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
-            }
-			return null;
-		}
-	}
-	
-//	public static boolean isMergeField(String type) {
-//		
-//		if (type.contains("MERGEFIELD")) {
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
 
-	/**
-	 * @param args
-	 * @throws Exception 
-	 */
-	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") 
-									+ "/TEST1.docx";
-
-		String outputfilepath = System.getProperty("user.dir")
-				+ "/OUT_TEST1.docx";
-
-		WordprocessingMLPackage pkgIn = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-		
-		FromMergeFields migrator = new FromMergeFields();
-		WordprocessingMLPackage pkgOut = migrator.migrate(pkgIn);
-		
-		SaveToZipFile saver = new SaveToZipFile(pkgOut);
-		saver.save(outputfilepath);
-		
-	}
 
 }

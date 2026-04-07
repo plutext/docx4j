@@ -19,13 +19,15 @@ Jason Harrop
 Changes in Version 11.5.12
 --------------------------
 
+FORMTEXT fields: Support merging data into them; better, converting to data-bound content controls.
+
 OpenDoPE XHTML importing. New property docx4j.model.datastorage.BindingTraverser.XHTML.**PrioritiseRPr**.
-Everything in the SDT rPr is applied.  (Selecting the SDT in Word and applying direct formatting is the easiest way to 
-configure the SDT rPr).
+Everything in the SDT rPr is applied.  (Selecting the SDT in Word and applying direct formatting is the easiest way to configure the SDT rPr).
 This setting determines whether the rPr or direct XHTML formatting have priority.
 Set to true if you don't control the XHTML formatting and you want its
 appearance harmonised with the docx.  Defaults to false.
 Existing property docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt is deprecated.
+
 
 
 Version 11.5.11

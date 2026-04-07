@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.model.fields.merge.DataFieldName;
+import org.docx4j.model.fields.merge.MailMerger;
 import org.docx4j.model.fields.merge.MailMerger.OutputField;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -50,6 +51,7 @@ public class FieldsMailMerge {
 		map.put(new DataFieldName("yournumber"), "1234800");
 		data.add(map);		
 		
+		MailMerger mailMerger = new MailMerger(wordMLPackage);
 		
 		if (mergedOutput) {
 			/*
@@ -63,11 +65,11 @@ public class FieldsMailMerge {
 			 */
 
 			// How to treat the MERGEFIELD, in the output?
-			org.docx4j.model.fields.merge.MailMerger.setMERGEFIELDInOutput(OutputField.KEEP_MERGEFIELD);
+			MailMerger.setOutputField(OutputField.KEEP_MERGEFIELD);
 			
 //			System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 			
-			WordprocessingMLPackage output = org.docx4j.model.fields.merge.MailMerger.getConsolidatedResultCrude(wordMLPackage, data, true);
+			WordprocessingMLPackage output = mailMerger.getConsolidatedResultCrude(data, true);
 			
 //			System.out.println(XmlUtils.marshaltoString(output.getMainDocumentPart().getJaxbElement(), true, true));
 			
@@ -77,11 +79,11 @@ public class FieldsMailMerge {
 		} else {
 			// Need to keep the MERGEFIELDs. If you don't, you'd have to clone the docx, and perform the
 			// merge on the clone.  For how to clone, see the MailMerger code, method getConsolidatedResultCrude
-			org.docx4j.model.fields.merge.MailMerger.setMERGEFIELDInOutput(OutputField.KEEP_MERGEFIELD);
+			MailMerger.setOutputField(OutputField.KEEP_MERGEFIELD);
 			
 			int i = 1;
 			for (Map<DataFieldName, String> thismap : data) {
-				org.docx4j.model.fields.merge.MailMerger.performMerge(wordMLPackage, thismap, true);
+				mailMerger.performMerge(thismap, true);
 				wordMLPackage.save(new java.io.File(
 						System.getProperty("user.dir") + "/OUT_FieldsMailMerge_" + i + ".docx") );
 				i++;

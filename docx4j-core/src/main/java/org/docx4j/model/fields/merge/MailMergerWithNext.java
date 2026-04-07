@@ -1,3 +1,22 @@
+/**
+ *  Copyright 2026, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ **/
 package org.docx4j.model.fields.merge;
 
 import java.util.ArrayList;
@@ -26,8 +45,12 @@ import org.slf4j.LoggerFactory;
 
 public class MailMergerWithNext extends MailMerger {
 	
+	public MailMergerWithNext(WordprocessingMLPackage input) {
+		super(input);
+	}
+
 	private static Logger log = LoggerFactory.getLogger(MailMergerWithNext.class);		
-	
+
     /**
      * Similar to performMerge method but better to merge labels template because of using the NEXT instruction to go to the next item.
      * 
@@ -37,16 +60,32 @@ public class MailMergerWithNext extends MailMerger {
      * @param data List of multiple datamap
      * @throws Docx4JException
      */
+	@Deprecated
     public static void performLabelMerge(WordprocessingMLPackage input, List<Map<DataFieldName, String>> data) throws Docx4JException {
+		// In 11.5.2, this static method is retained for backwards compatibility
+    	MailMergerWithNext mailMergerWithNext = new MailMergerWithNext(input);
+    	mailMergerWithNext.performLabelMerge(data);
+    }
+    
+    /**
+     * Similar to performMerge method but better to merge labels template because of using the NEXT instruction to go to the next item.
+     * 
+     * The contents of the input pkg are replaced with the results of the merge.
+     * 
+     * @param input Document template
+     * @param data List of multiple datamap
+     * @throws Docx4JException
+     */
+    public void performLabelMerge(List<Map<DataFieldName, String>> data) throws Docx4JException {
         // Required where converting MERGEFIELD to FORMTEXT
         FormTextFieldNames formTextFieldNames = new FormTextFieldNames();
 
         FieldsPreprocessor.complexifyFields(input.getMainDocumentPart());
-        List<Object> mdpResults = perform(input, input.getMainDocumentPart().getContent(), data, formTextFieldNames);
+        List<Object> mdpResults = perform(input.getMainDocumentPart().getContent(), data, formTextFieldNames);
         input.getMainDocumentPart().getContent().clear();
         input.getMainDocumentPart().getContent().addAll(mdpResults);
     }	
-
+    
     /**
      * Perform the merge. Recognize the NEXT instruction to go to the next data.
      * 
@@ -57,7 +96,7 @@ public class MailMergerWithNext extends MailMerger {
      * @return
      * @throws Docx4JException
      */
-    private static List<Object> perform(WordprocessingMLPackage input, List<Object> contentList, List<Map<DataFieldName, String>> data,
+    private List<Object> perform(List<Object> contentList, List<Map<DataFieldName, String>> data,
             FormTextFieldNames formTextFieldNames) throws Docx4JException {
 
         // We need our fieldRefs point to the correct objects;

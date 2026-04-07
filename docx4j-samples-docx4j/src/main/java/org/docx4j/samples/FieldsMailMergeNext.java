@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.docx4j.model.fields.merge.DataFieldName;
+import org.docx4j.model.fields.merge.MailMerger;
 import org.docx4j.model.fields.merge.MailMerger.OutputField;
+import org.docx4j.model.fields.merge.MailMergerWithNext;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -22,7 +24,9 @@ public class FieldsMailMergeNext {
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
 				new java.io.File(
-						System.getProperty("user.dir") + "/template.docx"));
+						System.getProperty("user.dir") + "/sample-docs/MergeWithNext.docx"));
+
+		MailMergerWithNext mailMergerWithNext = new MailMergerWithNext(wordMLPackage );
 		
 		List<Map<DataFieldName, String>> data = new ArrayList<Map<DataFieldName, String>>();
 		
@@ -41,9 +45,9 @@ public class FieldsMailMergeNext {
 		
 
 		// How to treat the MERGEFIELD, in the output?
-		org.docx4j.model.fields.merge.MailMerger.setMERGEFIELDInOutput(OutputField.REMOVED);
+		MailMerger.setOutputField(OutputField.REMOVED);
 		
-		org.docx4j.model.fields.merge.MailMergerWithNext.performLabelMerge(wordMLPackage, data);
+		mailMergerWithNext.performLabelMerge( data);
 		
 		wordMLPackage.save(new java.io.File(
 				System.getProperty("user.dir") + "/OUT_FieldsMailMerge.docx") );
