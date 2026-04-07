@@ -78,6 +78,7 @@ module org.docx4j.core {
     exports org.docx4j.model.datastorage.xpathtracker;
     exports org.docx4j.model.fields;
     exports org.docx4j.model.fields.docproperty;
+    exports org.docx4j.model.fields.formtext;
     exports org.docx4j.model.fields.merge;
     exports org.docx4j.model.fields.seq;
     exports org.docx4j.model.images;
