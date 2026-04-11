@@ -27,7 +27,9 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.docx4j.wml.STVerticalJc.Adapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -54,6 +56,7 @@ public class CTVerticalJc implements Child
 {
 
     @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    @XmlJavaTypeAdapter(Adapter.class) // Required for RI to treat invalid values as validation errors
     protected STVerticalJc val;
     @XmlTransient
     private Object parent;

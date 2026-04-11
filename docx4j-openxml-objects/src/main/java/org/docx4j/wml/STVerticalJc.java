@@ -21,9 +21,11 @@
 
 package org.docx4j.wml; 
 
+import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.annotation.XmlEnum;
 import jakarta.xml.bind.annotation.XmlEnumValue;
 import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
@@ -94,4 +96,40 @@ public enum STVerticalJc {
         throw new IllegalArgumentException(v);
     }
 
+    /**
+     * Custom Adapter to force JAXB RI to respect validation errors. (MOXy doesn't need it)
+     * @since 11.5.13
+     */    
+    public static class Adapter extends XmlAdapter<String, STVerticalJc> {
+    	
+    	/*
+			The JAXB RI uses a built-in "blind" converter for Enums. If it sees val which doesn't exist, 
+			it fails the conversion internally and assigns null to the field.
+			
+			With this @XmlJavaTypeAdapter, 	JAXB hands the raw string to unmarshal() here
+			
+			TODO with auto-generation, will need to look at using a JAXB bindings 
+			(.xjb) file to inject this adapter automatically.  
+			At that point we should add similar to every enum ST
+		 * 
+    	 */
+    	
+        @Override
+        public STVerticalJc unmarshal(String v) throws Exception {
+            try {
+                return STVerticalJc.fromValue(v);
+            } catch (IllegalArgumentException e) {
+                // By wrapping this in UnmarshalException, JAXB is forced to 
+                // invoke your ValidationEventHandler.
+                throw new UnmarshalException("Invalid value for STVerticalJc: " + v);
+            }
+        }
+
+        @Override
+        public String marshal(STVerticalJc v) {
+            return (v != null) ? v.value() : null;
+        }
+    }    
+    
+    
 }
