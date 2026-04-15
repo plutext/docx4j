@@ -172,9 +172,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		CTCompat compat = this.getJaxbElement().getCompat();
 		if (compat==null) {
 			log.debug("No w:settings/w:compat element; creating..");
+			compat = Context.getWmlObjectFactory().createCTCompat();
+			this.getJaxbElement().setCompat(compat);
 		}
-		compat = Context.getWmlObjectFactory().createCTCompat();
-		this.getJaxbElement().setCompat(compat);
 		
 		CTCompatSetting theSetting = null;
 		for (CTCompatSetting setting : compat.getCompatSetting() ) {
