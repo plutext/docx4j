@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.PhysicalFont;
@@ -65,9 +66,9 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	}
 	
 	@Deprecated
-	public PhysicalFont deObfuscate(String fontNameAsInTablePart, String fontFileName, String fontKey, String filenamePrefix ) {
+	public PhysicalFont deObfuscate(String fontNameAsInTablePart, String fontFileName, String fontKey, Set<File> embeddedFontTempFiles ) {
 		
-		return extract( fontNameAsInTablePart,  fontFileName,  fontKey,  filenamePrefix );
+		return extract( fontNameAsInTablePart,  fontFileName,  fontKey, embeddedFontTempFiles );
 	}
 	
 	/**
@@ -78,16 +79,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	 * but FontLoader can't readily load from a byte array. 
 	 * @param fontKey
 	 */
-	public PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, 
-			String filenamePrefix ) {
-		
-		/*  NB deobfuscation is done multiple times during PDF output.
-		 *  
-		 *  This could be avoided, if we cloned the fontMapper.
-		 *  TODO for 3.3 
-		 *  
-		 *  // (new Throwable()).printStackTrace(); 
-		 */
+	public PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, Set<File> embeddedFontTempFiles ) {
 		
 		byte[] fontData = this.getBytes();
 		
@@ -98,7 +90,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 			return null;
 		}
 		
-		log.info("deObfuscating '" + fontFileName + "' with fontkey: " + fontKey);			
+		log.info("deObfuscating '" + fontFileName + "' with fontkey: " + fontKey);	
 		// INPUT: {1DF903E3-2F14-4575-8028-881FEBABF2AB}
 
 		// See http://openiso.org/Ecma/376/Part4/2.8.1
@@ -129,12 +121,13 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 			}
 		}
 		
-		// Save the result
-		setF(new File(getTmpFontDir(), filenamePrefix + "-"+fontFileName +".ttf"));
-		getF().deleteOnExit();
-		
+		// Save the result		
 		java.io.FileOutputStream fos = null; 
 		try {
+			setF(createFile(fontFileName));
+			embeddedFontTempFiles.add(getF());			
+			getF().deleteOnExit();
+
 			fos = new java.io.FileOutputStream(getF());
 			fos.write(fontData);
 			log.debug("wrote: " + fontData.length);
@@ -144,18 +137,12 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 			log.error(e.getMessage(), e);
 		} 
 		
-//		log.info("Done!");
-		
-		// Save to "Temporary Font Files" directory.
-		// TODO 1 write to a subdir controlled by FontTablePart
-		// TODO 2 add a method there which can be called to delete the dir when the docx is closed/unloaded
 //        FontResolver fontResolver = FontSetup.createMinimalFontResolver();
 		URI baseUri=null;
 		try {
 			baseUri = new URI("/");
 		} catch (URISyntaxException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			log.error(e1.getMessage(), e1);
 		}  
 		InternalResourceResolver fontResolver = new InternalResourceResolver(baseUri,
 				ResourceResolverFactory.createDefaultResourceResolver()) ;
@@ -215,48 +202,5 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	
 	static java.lang.CharSequence target = (new String("-")).subSequence(0, 1);
     static java.lang.CharSequence replacement = (new String("")).subSequence(0, 0);
-	
-    protected static void deleteEmbeddedFontTempFiles(String filenamePrefix) {
-    	
-    	if (getTmpFontDir()==null) {
-    		log.warn("TmpFontDir is null");
-    		return;
-    	}
-    	
-    	// this isn't really necessary given finalize(), but this gets rid of them a bit sooner than GC may happen
-    	// (when it is invoked first; sometimes it isn't - note this is a static method)
-    	
-    	for(File f: getTmpFontDir().listFiles() ) {
-    		
-    	    if(f.getName().startsWith(filenamePrefix)) {
-    	        f.delete();
-    	    }
-    	}
-    	if (log.isWarnEnabled()) {
-    		int count = getTmpFontDir().listFiles().length;
-    		if (count>0) {
-	    		try {
-					log.warn(count + " files remain in " + getTmpFontDir().getCanonicalPath());
-				} catch (IOException e) {
-				}
-	    	}
-    	}
-    }
-	
-	@Override
-	protected void finalize() throws Throwable {
-		
-        try {
-        	if (deleteFileOnFinalize && getF()!=null) {
-	    		log.debug("Deleting  " + getF().getName());
-				getF().delete();
-        	}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			super.finalize();
-		}
-		
-	}
-	
+			
 }

@@ -23,6 +23,7 @@ package org.docx4j.samples;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.FopFactory;
@@ -255,10 +256,15 @@ public class ConvertOutPDFviaXSLFO {
 		System.out.println("Saved: " + outputfilepath);
 
 		// Clean up, so any ObfuscatedFontPart temp files can be deleted 
+        try {
+            // But in a multi-threaded case, we have to wait, for reasons not currently understood!
+            TimeUnit.MILLISECONDS.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }		
 		if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
 			wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
 		}		
-		// This would also do it, via finalize() methods
 		updater = null;
 		foSettings = null;
 		wordMLPackage = null;

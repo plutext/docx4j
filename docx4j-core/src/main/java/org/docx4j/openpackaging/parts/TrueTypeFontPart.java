@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.PhysicalFont;
@@ -78,8 +79,7 @@ public class TrueTypeFontPart extends AbstractFontPart {
 	 * but FontLoader can't readily load from a byte array. 
 	 * @param fontKey
 	 */
-	public PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, 
-			String filenamePrefix ) {
+	public PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, Set<File> embeddedFontTempFiles ) {
 		
 		/*  NB deobfuscation is done multiple times during PDF output.
 		 *  
@@ -92,15 +92,15 @@ public class TrueTypeFontPart extends AbstractFontPart {
 		byte[] fontData = this.getBytes();
 		
 		log.debug("bytes: " + fontData.length);
-				
-		
-		// Save the result
-		setF(new File(getTmpFontDir(), filenamePrefix + "-"+fontFileName +".ttf"));
-		getF().deleteOnExit();
-		String path = null; 
 		
 		java.io.FileOutputStream fos = null; 
+		String path = null; 
 		try {
+			// Save the result
+			setF(createFile(fontFileName));
+			embeddedFontTempFiles.add(getF());
+			getF().deleteOnExit();
+
 			path = getF().getCanonicalPath();
 			fos = new java.io.FileOutputStream(getF());
 			fos.write(fontData);
@@ -163,8 +163,9 @@ public class TrueTypeFontPart extends AbstractFontPart {
 //        try {
           
 
-					List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, getF().toURI());
-					return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
+		// Where the important stuff happens 
+		List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, getF().toURI());
+		return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
 
 
 			// This needs to be done before populateFontMappings, 

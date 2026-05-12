@@ -20,10 +20,16 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
+import java.io.File;
+
 //import java.io.IOException;
 
 //import jakarta.xml.bind.JAXBElement;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import jakarta.xml.bind.JAXBException;
 
@@ -31,6 +37,7 @@ import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.AbstractFontPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -95,7 +102,6 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 		processEmbeddings(null);
 	}
 		
-	private String filenamePrefix = null;
 
     public void processEmbeddings(Mapper fontMapper) {
     	
@@ -104,10 +110,7 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	if (fonts==null) {
     		log.warn("No content in font table part");
     		return;
-    	} else {
-			filenamePrefix = "" + System.currentTimeMillis(); 
-			log.info("Writing temp embedded fonts " + filenamePrefix);
-    	}
+    	} 
     	
 		for (Fonts.Font font : fonts.getFont() ) {
 			String fontName =  font.getName();
@@ -145,17 +148,17 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	
     	if (p instanceof ObfuscatedFontPart) {
     	
-	    	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
+	    	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)p;
 	    	if (obfuscatedFont != null) {
-	    		return obfuscatedFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, filenamePrefix);
+	    		return obfuscatedFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, embeddedFontTempFiles);
 	    	} else {
 	    		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
 	    	}
 	    	
     	} else {
-	    	TrueTypeFontPart truetypeFont = (TrueTypeFontPart)this.getRelationshipsPart().getPart(id);
+	    	TrueTypeFontPart truetypeFont = (TrueTypeFontPart)p;
 	    	if (truetypeFont != null) {
-	    		return truetypeFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, filenamePrefix);
+	    		return truetypeFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, embeddedFontTempFiles);
 	    	} else {
 	    		log.error("Couldn't find TrueTypeFontPart with id: " + id);
 	    	}
@@ -163,6 +166,7 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 		return null;
     }
     
+    private Set<File> embeddedFontTempFiles = new HashSet<File>();
     
     /**
      *  Temporary embedded fonts should be deleted on exit, but for a long running app
@@ -171,9 +175,19 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
      *  using getFontTablePart()
      */
     public void deleteEmbeddedFontTempFiles() {
-    	if (filenamePrefix!=null) {
-    		log.debug("Deleting temp embedded fonts " + filenamePrefix);
-    		ObfuscatedFontPart.deleteEmbeddedFontTempFiles(filenamePrefix);
+    	
+    	// this wouldn't really be necessary if finalize() in the relevant font parts worked as expected
+    	// (it would just get rid of them a bit sooner than GC may happen)
+    	// but from experience finalize sometimes deletes temp font files prematurely, 
+    	// even if FontTablePart maintains a reference to those parts... 
+    	
+    	for (File f : embeddedFontTempFiles) {
+    		if (f.exists()) {
+    			if (log.isDebugEnabled()) {
+    				log.debug("Deleting " + f.getName() + " -- " + System.identityHashCode(this.getPackage().getClass().hashCode()));
+    			}
+    			f.delete();
+    		}
     	}
     }
 

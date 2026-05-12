@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.PhysicalFont;
@@ -34,7 +35,7 @@ public abstract class AbstractFontPart extends BinaryPart {
 
 	private static Logger log = LoggerFactory.getLogger(AbstractFontPart.class);		
 
-	public abstract PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, String filenamePrefix );
+	public abstract PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, Set<File> embeddedFontTempFiles);
 	
 	
 	private java.io.File f; // the temp embedded font file
@@ -51,8 +52,6 @@ public abstract class AbstractFontPart extends BinaryPart {
 	public static File getTmpFontDir() {
 		return tmpFontDir;
 	}
-
-	protected static boolean deleteFileOnFinalize;
     
     static {
     	
@@ -83,8 +82,6 @@ public abstract class AbstractFontPart extends BinaryPart {
     	
     	}
 
-		deleteFileOnFinalize = Docx4jProperties.getProperty(
-				"docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.deleteFileOnFinalize", true);
 	}
     
     public static String getTemporaryEmbeddedFontsDir() {
@@ -115,49 +112,7 @@ public abstract class AbstractFontPart extends BinaryPart {
 	public AbstractFontPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
-		
-		
-    protected static void deleteEmbeddedFontTempFiles(String filenamePrefix) {
-    	
-    	// this isn't really necessary given finalize(), but this gets rid of them a bit sooner than GC may happen
-    	// (when it is invoked first; sometimes it isn't - note this is a static method)
-    	if (log.isDebugEnabled()) {
-    		log.debug("deleting with prefix " + filenamePrefix);
-    	}
-    	
-    	for(File f: getTmpFontDir().listFiles() ) {
-    		
-    	    if(f.getName().startsWith(filenamePrefix)) {
-    	        f.delete();
-    	    }
-    	}
-    	if (log.isWarnEnabled()) {
-    		int count = getTmpFontDir().listFiles().length;
-    		if (count>0) {
-	    		try {
-					log.warn(count + " files remain in " + getTmpFontDir().getCanonicalPath());
-				} catch (IOException e) {
-				}
-	    	}
-    	}
-    }
-	
-	@Override
-	protected void finalize() throws Throwable {
-		
-        try {
-        	if (deleteFileOnFinalize && getF()!=null) {
-	    		log.debug("Deleting  " + getF().getName());
-				getF().delete();
-        	}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			super.finalize();
-		}
-		
-	}
-
+			
 	public java.io.File getF() {
 		return f;
 	}
@@ -166,5 +121,9 @@ public abstract class AbstractFontPart extends BinaryPart {
 		this.f = f;
 	}
 
+	protected File createFile(String fontFileName) throws IOException {
+		return File.createTempFile(fontFileName, ".ttf", getTmpFontDir());
+		
+	}
 	
 }

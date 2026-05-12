@@ -84,14 +84,9 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			currentTime = logDebugStep(log, "Postprocessing", currentTime);
 			
 			if (conversionSettings.getOpcPackage()!=preprocessedPackage) {
-				// We made a temp pkg, so clean up; 
-				// this isn't really necessary since its done in WordprocessingMLPackagefinalize(), but this gets rid of them a bit sooner than GC may happen
-				if (preprocessedPackage instanceof WordprocessingMLPackage) {
-					FontTablePart ftp = ((WordprocessingMLPackage)preprocessedPackage).getMainDocumentPart().getFontTablePart();
-					if (ftp!=null) {
-						ftp.deleteEmbeddedFontTempFiles();
-					}
-				}
+				// We made a temp pkg, so clean up;
+				
+				// DO NOT delete temp font files here, since export can be invoked a second time for a given PDF output. 
 			}
 			
 			logDebugStep(log, "Conversion done", startTime);
