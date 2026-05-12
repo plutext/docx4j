@@ -343,8 +343,11 @@ public class WordprocessingMLPackage extends OpcPackage {
     		throw new Docx4JException("Font Substituter cannot be null.");
     	}
 		fontMapper = fm;
-		org.docx4j.wml.Fonts fonts = null;
-
+		
+		if (!populate) {
+			return;
+		}
+		
 		// 1.  Get a list of all the fonts in the document
 		Set<String> fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
@@ -366,15 +369,13 @@ public class WordprocessingMLPackage extends OpcPackage {
 			
 			fontTablePart.processEmbeddings(fontMapper);
 			
-			fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
+			org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
 //		}
 		
-		if (populate) {
-			try {
-				fontMapper.populateFontMappings(fontsInUse, fonts);
-			} catch (Exception e) {
-				throw new Docx4JException(e.getMessage(),e);
-			}
+		try {
+			fontMapper.populateFontMappings(fontsInUse, fonts);
+		} catch (Exception e) {
+			throw new Docx4JException(e.getMessage(),e);
 		}
 		
 		if (Docx4jProperties.getProperty("docx4j.fonts.automap.enabled", true)) {
@@ -382,7 +383,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 			// but the substitutes are 
 			fontMapper.addMetricallyCompatibleSubstitutes();
 		}
-    	
     }
 
     /**
@@ -526,19 +526,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 	}
 	
 	
-	@Override
-	protected void finalize() throws Throwable {
-		try {
-			FontTablePart ftp = this.getMainDocumentPart().getFontTablePart();
-			if (ftp != null) {
-				ftp.deleteEmbeddedFontTempFiles();
-			}
-		} finally {
-			super.finalize();
-		}
-		
-	}
-
 	public static class FilterSettings {
 		
 		Boolean removeProofErrors = Boolean.FALSE;		
