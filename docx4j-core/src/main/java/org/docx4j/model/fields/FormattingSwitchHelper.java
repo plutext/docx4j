@@ -83,19 +83,19 @@ public class FormattingSwitchHelper {
 	 * Date Time format switch (\@):
 	 * Quotation marks are not required around simple date-time formats that do not include spaces or text
 	 * 
-	 * Month
+	 * Month (upper case only)
      * M         Number without a leading 0 (zero) for single-digit months.
      * MM        Number with a leading 0 (zero) for single-digit months.
      * MMM       Three-letter abbreviation.
      * MMMM      Full name.
 	 *
-	 * Day
+	 * Day (upper or lower case)
 	 * d         Day of the month as a number without a leading 0 (zero) for single-digit days.
      * dd    	 Day of the month as a number with a leading 0 (zero) for single-digit days.
      * ddd       Day of the week as three-letter abbreviation.
      * dddd      Day of the week as its full name.
      * 
- 	 * Year
+ 	 * Year (upper or lower case)
 	 * yy    	 Year as two digits with a leading 0 (zero) for years 01 through 09.
      * yyyy    	 Year as four digits.
 	 * 
