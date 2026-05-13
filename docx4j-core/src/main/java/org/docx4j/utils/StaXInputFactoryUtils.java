@@ -137,13 +137,14 @@ public class StaXInputFactoryUtils {
         try {
             factory.setProperty(key, value);
         } catch (IllegalArgumentException e) {
-        	if (key.equals(XMLConstants.ACCESS_EXTERNAL_DTD)) {
+            if (key.equals(XMLConstants.ACCESS_EXTERNAL_DTD)) {
                 if (HAS_WARNED_ACCESS_EXTERNAL_DTD.getAndSet(true) == false) {
-            		log.warn("StAX Feature unsupported: {}", key, e);
-                }        	
-        	} else {
-        		log.warn("StAX Feature unsupported: {}", key, e);
-        	}
+                    log.warn("StAX Feature unsupported: {}", key);
+                    log.debug("StAX Feature unsupported: {}", key, e);
+                }
+            } else {
+                log.warn("StAX Feature unsupported: {}", key, e);
+            }
         }
     }    
 	
