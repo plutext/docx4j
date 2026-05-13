@@ -1,16 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+	<suppress>
+	   <notes><![CDATA[
+	   file name: jaxb-xjc-4.0.8.jar (shaded: com.sun.xml.bind.external:rngom:4.0.8)
+	   
+	   RNGOM is a RelaxNG Object model library (XSOM for RelaxNG).
+	   
+	   In Eclipse Glassfish versions before 7.0.17, The Host HTTP parameter could cause the web application to 
+	   redirect to the specified URL, when the requested endpoint is '/management/domain'. By modifying the URL 
+	   value to a malicious site, an attacker may successfully launch a phishing scam and steal user credentials.
+	   
+	   Not relevant to docx4j.
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:maven/com\.sun\.xml\.bind\.external/rngom@.*$</packageUrl>
+	   <cpe>cpe:/a:eclipse:glassfish</cpe>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: jaxb-xjc-4.0.8.jar (shaded: com.sun.xml.bind.external:relaxng-datatype:4.0.8)
+	   
+	   Same issue as above.
+	   
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:maven/com\.sun\.xml\.bind\.external/relaxng-datatype@.*$</packageUrl>
+	   <cve>CVE-2024-9329</cve>
+	</suppress>	
     <suppress>
-        <notes><![CDATA[
-        Suppressing CVE-2017-10355 for xercesImpl 2.12.2.
-        This is a DoS vulnerability in XML parsing. We have determined 
-        this is a low risk for docx4j, since docx4j handles XML sources safely..
-        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/xerces/xercesImpl@2\.12\.2$</packageUrl>
-        <cpe>cpe:/a:apache:xerces-j:2.12.2</cpe>
-        <cve>CVE-2017-10355</cve>
-    </suppress>
-    <suppress>
+    	<!-- Why does -MOXy trigger this? -->
 		<notes><![CDATA[
 			   Supressing CVE-2026-23907 and CVE-2026-33929 for pdfbox-io-3.0.7
 			   
@@ -30,4 +46,5 @@
 		<cve>CVE-2026-23907</cve>
 	    <cve>CVE-2026-33929</cve>
 	</suppress>
+
 </suppressions>
