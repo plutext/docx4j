@@ -180,12 +180,18 @@ public class FormattingSwitchHelper {
 		DATE_FORMAT_ITEMS_TO_JAVA.put("MMMM","MMMM");	//Full name.
 		//Day
 		DATE_FORMAT_ITEMS_TO_JAVA.put("d","d");			//Day of the month as a number without a leading 0 (zero) for single-digit days.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("D","d");			//see above
 		DATE_FORMAT_ITEMS_TO_JAVA.put("dd","dd");		//Day of the month as a number with a leading 0 (zero) for single-digit days.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("DD","dd");		//see above	
 		DATE_FORMAT_ITEMS_TO_JAVA.put("ddd","EEE");		//Day of the week as three-letter abbreviation.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("DDD","EEE");		//see above
 		DATE_FORMAT_ITEMS_TO_JAVA.put("dddd","EEEE");	//Day of the week as its full name.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("DDDD","EEEE");	//see above
 		//Year
 		DATE_FORMAT_ITEMS_TO_JAVA.put("yy","yy");		//Year as two digits with a leading 0 (zero) for years 01 through 09.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("YY","yy");		//see above
 		DATE_FORMAT_ITEMS_TO_JAVA.put("yyyy","yyyy");	//Year as four digits.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("YYYY","yyyy");	//see above
 		//Hour
 		DATE_FORMAT_ITEMS_TO_JAVA.put("h","K");			//(12h) Hour without a leading 0 (zero) for single-digit hours.
 		DATE_FORMAT_ITEMS_TO_JAVA.put("H","H");			//(24h) Hour without a leading 0 (zero) for single-digit hours.
