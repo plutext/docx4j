@@ -216,7 +216,7 @@
   <xsl:template match="w:jc[parent::w:rPr]" />  
   <xsl:template match="w:unhidenWhenUsed[parent::w:style]" />  
 
-  <xsl:template match="w:vAlign[@w:val='baseline']" />
+  <xsl:template match="w:vAlign[parent::w:tcPr and @w:val='baseline']" />
  
   <xsl:template match="w:tblHeader" > <!--  Not a problem for docx4j; fix for OpenXML SDK validator  -->
   	<xsl:choose>
