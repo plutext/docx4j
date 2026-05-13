@@ -2,6 +2,49 @@ CHANGELOG
 =========
 
 
+Version 11.5.13
+===============
+
+Release date
+------------
+
+13 May 2026
+
+
+Contributors to this release
+----------------------------
+
+GaoSSR
+Jason Harrop
+matthiaso
+
+Changes in Version 11.5.13
+--------------------------
+
+PDF via FO: improved handling of temp files created from embedded fonts for multi-threaded environments.  
+The only docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart property which now has any effect is tmpFontDir. 
+Files are now not deleted until exit, unless you explicitly invoke FontTablePart's deleteEmbeddedFontTempFiles().
+
+Misc fixes:
+- Fields: respect uppercase date formatting switches for days and years (#671)
+- Don't overwrite WordCompatSetting (#668)
+- Reduce StAX warning noise (#673)
+
+Dump deps:
+- commons-codec:commons-codec ......................... 1.21.0 -> 1.22.0
+- commons-io:commons-io ............................... 2.21.0 -> 2.22.0
+- org.slf4j:slf4j-api ................................. 2.0.17 -> 2.0.18
+- org.slf4j:jcl-over-slf4j ............................ 2.0.17 -> 2.0.18
+
+Reference Impl
+- org.glassfish.jaxb:jaxb-core .......................... 4.0.6 -> 4.0.8
+- org.glassfish.jaxb:jaxb-runtime ....................... 4.0.6 -> 4.0.8
+
+MOXy
+- com.sun.xml.bind:jaxb-xjc ............................. 4.0.6 -> 4.0.8
+- org.eclipse.persistence:org.eclipse.persistence.moxy .. 4.0.4 -> 4.0.9
+ 
+ 
 Version 11.5.12
 ===============
 
