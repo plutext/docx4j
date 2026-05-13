@@ -472,6 +472,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 				
 		// Create a styles part
 		Part stylesPart = new org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart();
+		stylesPart.setPackage(wmlPack);
 		try {
 			((org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart) stylesPart)
 					.unmarshalDefaultStyles();
@@ -482,7 +483,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 			
 		} catch (Exception e) {
 			// TODO: handle exception
-			//e.printStackTrace();	
 			log.error(e.getMessage(), e);
 		}
 		
