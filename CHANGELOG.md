@@ -30,7 +30,7 @@ Misc fixes:
 - Don't overwrite WordCompatSetting (#668)
 - Reduce StAX warning noise (#673)
 
-Dump deps:
+Bump deps:
 - commons-codec:commons-codec ......................... 1.21.0 -> 1.22.0
 - commons-io:commons-io ............................... 2.21.0 -> 2.22.0
 - org.slf4j:slf4j-api ................................. 2.0.17 -> 2.0.18
