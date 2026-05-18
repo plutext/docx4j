@@ -13,6 +13,7 @@ import jakarta.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.FopFactoryBuilder;
@@ -222,8 +223,22 @@ public class FOPAreaTreeHelper {
         	}
         }
         
-		FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettingsHere) ;
-		FopFactory fopFactory = fopFactoryBuilder.build();
+		FopFactory fopFactory = null;
+		if (foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY)==null) {
+
+			log.debug("No FOP_FACTORY in settings, building..");		
+			try {
+				// TODO synchronise
+				FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettingsHere) ;
+				fopFactory = fopFactoryBuilder.build();
+			} catch (FOPException e) {
+				throw new Docx4JException("FOUserAgent issue", e);
+			}
+			
+		} else {
+			fopFactory = (FopFactory)foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY);
+		}        
+        
         
 		// change it back
         foSettingsOverall.getFopConfig().getRenderers().getRenderer().setMime(FOSettings.MIME_PDF);
