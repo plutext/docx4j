@@ -170,18 +170,7 @@ public class ManyThreads {
             // Execute programmatic conversion directly to the target outputstream
             exporter.export(foSettings, os);
         }
-        
-		// Clean up, so any ObfuscatedFontPart temp files can be deleted 
-        // But wait first...
-        // 50ms is ok for 1000 iterations, but not 5000
-        // 100ms is ok for 5000 iterations
-       
-        try {
-            TimeUnit.MILLISECONDS.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        
+                
 		if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
 			wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
 		}		

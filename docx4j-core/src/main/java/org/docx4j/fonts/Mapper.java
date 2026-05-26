@@ -19,8 +19,6 @@
  */
 package org.docx4j.fonts;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,7 +73,11 @@ public abstract class Mapper {
 		super();
 	}
 	
-	protected final static Map<String, PhysicalFont> fontMappings;
+	/* not static since 11.5.14, so embedded fonts can be put in here.
+	 * The alternative would be to have a separate map for embedded fonts,
+	 * which get consulted if it wasn't found in fontMappings. 
+	 */
+	protected final ConcurrentHashMap<String, PhysicalFont> fontMappings = new ConcurrentHashMap<String, PhysicalFont>();
 	
 	@Deprecated // in order to avoid case sensitivity
 	public Map<String, PhysicalFont> getFontMappings() {
@@ -104,13 +106,16 @@ public abstract class Mapper {
 	 * @param pf
 	 */
 	public void put(String key, PhysicalFont pf) {
+		
 		PhysicalFont priorPf = fontMappings.get(key.toLowerCase());
 		if (priorPf != null) {
 			if (priorPf == pf) {
 				// No change, nothing to do.
 				return;
 			}
-			log.warn("Overwriting existing fontMapping: " + key.toLowerCase());
+			if (log.isWarnEnabled()) {
+				log.warn("Overwriting existing fontMapping: " + key.toLowerCase() + " at " + priorPf.embeddedURI + " with " + pf.getEmbeddedURI());
+			}
 		}		
 		fontMappings.put(key.toLowerCase(), pf);
 	}
@@ -119,11 +124,6 @@ public abstract class Mapper {
 	}
 	
 	public final static String FONT_FALLBACK = "Times New Roman"; 
-
-	
-	static {
-		fontMappings = Collections.synchronizedMap(new HashMap<String, PhysicalFont>());
-	}
 	
 	/**
 	 * Populate the fontMappings object. We make an entry for each
@@ -271,6 +271,8 @@ public abstract class Mapper {
 		}
 	}
 
+	// The following methods are used in FopConfigUtil
+	
 	public PhysicalFont getRegularForm(String fontNameAsInFontTablePart) {
 		final PhysicalFont pfRegular = PhysicalFonts.get(fontNameAsInFontTablePart);
 		return (pfRegular != null) ? pfRegular : regularForms.get(fontNameAsInFontTablePart);

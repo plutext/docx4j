@@ -255,13 +255,6 @@ public class ConvertOutPDFviaXSLFO {
     	
 		System.out.println("Saved: " + outputfilepath);
 
-		// Clean up, so any ObfuscatedFontPart temp files can be deleted 
-        try {
-            // But in a multi-threaded case, we have to wait, for reasons not currently understood!
-            TimeUnit.MILLISECONDS.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }		
 		if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
 			wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
 		}		
