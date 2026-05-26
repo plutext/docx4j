@@ -106,7 +106,8 @@ public class FopConfigUtil {
 		Fop fopConfig = factory.createFop();
 		fopConfig.setVersion("1.0");
 		
-		fopConfig.setStrictConfiguration(true);
+		fopConfig.setStrictConfiguration(false);
+		fopConfig.setUseCache(false); // no need for cache, since we declare fonts (and have our own FontCache in PhysicalFonts)
 
 		if (substitutions!=null) {
 			Fonts fonts = factory.createFopFonts();

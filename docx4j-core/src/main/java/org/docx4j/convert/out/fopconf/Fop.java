@@ -73,6 +73,7 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "strictValidation",
     "strictConfiguration",
+    "useCache",
     "accessibility",
     "base",
     "hyphenationBase",
@@ -87,7 +88,21 @@ public class Fop {
     protected Boolean strictValidation;
     @XmlElement(name = "strict-configuration")
     protected Boolean strictConfiguration;
-    protected Boolean accessibility;
+    
+    @XmlElement(name = "use-cache")
+    protected Boolean useCache;
+    
+    
+    public Boolean getUseCache() {
+		return useCache;
+	}
+
+	public void setUseCache(Boolean useCache) {
+		this.useCache = useCache;
+	}
+
+
+	protected Boolean accessibility;
     protected String base;
     @XmlElement(name = "hyphenation-base", required = true)
     protected String hyphenationBase;
@@ -463,6 +478,7 @@ public class Fop {
         @XmlType(name = "", propOrder = {
             "fonts"
         })
+        @XmlRootElement(name = "renderer") 
         public static class Renderer {
 
             @XmlElement(required = true)
