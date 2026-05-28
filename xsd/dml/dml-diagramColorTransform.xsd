@@ -7,7 +7,10 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	elementFormDefault="qualified" attributeFormDefault="unqualified"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 	
 	<xsd:import
 		schemaLocation="../shared/shared-relationshipReference.xsd"
@@ -190,6 +193,11 @@
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_ColorTransform">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="colorsDef")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="title" type="CT_CTName" minOccurs="0"
 				maxOccurs="unbounded">

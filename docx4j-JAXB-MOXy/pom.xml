@@ -115,7 +115,7 @@
 			     https://github.com/eclipse-ee4j/eclipselink/issues/1734
 			-->
 			<dependency>
-			  <groupId>com.sun.xml.bind</groupId>
+			  <groupId>org.glassfish.jaxb</groupId>
 			  <artifactId>jaxb-xjc</artifactId>
 			  <version>4.0.8</version>
 			</dependency>

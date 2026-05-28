@@ -9,7 +9,7 @@ From http://msdn.microsoft.com/en-us/library/ff531265(v=office.12).aspx:
 	
 		Cover Page Properties
 		coverPageProperties
-		http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps
+		http://schemas.microsoft.com/office/2006/coverPageProps
 		§3.5.1, Cover Page Properties
 		
 		Content Type Schema

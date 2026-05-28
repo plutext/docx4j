@@ -6,7 +6,10 @@
 	targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"
 	elementFormDefault="qualified" attributeFormDefault="unqualified"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
@@ -741,6 +744,11 @@
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_DiagramDefinition">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="layoutDef")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="title" type="CT_Name" minOccurs="0"
 				maxOccurs="unbounded">
@@ -813,6 +821,11 @@
 		</xsd:annotation>
 	</xsd:element>
 	<xsd:complexType name="CT_DiagramDefinitionHeader">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="layoutDefHdr")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="title" type="CT_Name" minOccurs="1"
 				maxOccurs="unbounded">

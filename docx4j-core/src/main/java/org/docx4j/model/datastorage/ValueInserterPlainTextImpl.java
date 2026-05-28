@@ -79,7 +79,7 @@ public class ValueInserterPlainTextImpl implements ValueInserterPlainText {
 		if (rPr!=null) {
 			run.setRPr(rPr);
 		}
-		run.getRunContent().add(Context.getWmlObjectFactory().createBr());
+		run.getContent().add(Context.getWmlObjectFactory().createBr());
 		
 		Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
 		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
@@ -137,7 +137,7 @@ public class ValueInserterPlainTextImpl implements ValueInserterPlainText {
 			run.setRPr(rPr);
 		}
 		org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
-		run.getRunContent().add(text);
+		run.getContent().add(text);
 		if (string.startsWith(" ") || string.endsWith(" ") ) {
 			// TODO: tab character?
 			log.debug("setting xml:space=preserve for '" + string + "'");

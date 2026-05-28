@@ -6,7 +6,10 @@
 	xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"
 	elementFormDefault="qualified" blockDefault="#all"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 	
 	<!-- 
 	****************************************************************
@@ -69,6 +72,11 @@
 				Properties</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="Properties")</annox:annotate>
+				</xsd:appinfo>
+			</xsd:annotation>
 			<xsd:all>
 				<xsd:element name="Template" minOccurs="0" maxOccurs="1"
 					type="xsd:string">

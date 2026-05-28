@@ -2,7 +2,7 @@ module docx4j_samples_docx_diffx {
 
 	requires org.slf4j;
 	requires org.docx4j.core;
-	requires org.docx4j.openxml_objects;
+	requires org.docx4j.openxml_objects_combined;
 	requires org.docx4j.docx4j_diffx;
 	
 	requires jakarta.xml.bind;

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+            xmlns:annox="urn:jaxb.jvnet.org:annox"
+            jaxb:extensionBindingPrefixes="annox">
   <xsd:include schemaLocation="dml-baseStylesheet.xsd" />
   <xsd:include schemaLocation="dml-styleDefaults.xsd" />
   <xsd:complexType name="CT_EmptyElement"></xsd:complexType>
@@ -100,6 +103,11 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_BaseStylesOverride">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="themeOverride")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="clrScheme" type="CT_ColorScheme" minOccurs="0" maxOccurs="1">
         <xsd:annotation>

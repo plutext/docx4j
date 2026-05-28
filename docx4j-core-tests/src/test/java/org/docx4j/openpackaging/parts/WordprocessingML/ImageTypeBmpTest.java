@@ -72,9 +72,9 @@ public class ImageTypeBmpTest {
 		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
 		org.docx4j.wml.P  p = factory.createP();
 		org.docx4j.wml.R  run = factory.createR();		
-		p.getParagraphContent().add(run);        
+		p.getContent().add(run);
 		org.docx4j.wml.Drawing drawing = factory.createDrawing();		
-		run.getRunContent().add(drawing);		
+		run.getContent().add(drawing);
 		drawing.getAnchorOrInline().add(inline);
 		
 		return p;

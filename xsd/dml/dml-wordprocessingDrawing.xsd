@@ -8,7 +8,10 @@
 	xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
 
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
@@ -135,11 +138,25 @@
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="distR" type="ST_WrapDistance"
-			use="optional">
+		               use="optional">
 			<xsd:annotation>
 				<xsd:documentation>
 					Distance From Text on Right Edge
 				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="wp14:anchorId">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(jakarta.xml.bind.annotation.adapters.HexBinaryAdapter.class)</annox:annotate>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="wp14:editId">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(jakarta.xml.bind.annotation.adapters.HexBinaryAdapter.class)</annox:annotate>
+				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
@@ -38,6 +41,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="pic"/>
+                <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pic")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>	
   

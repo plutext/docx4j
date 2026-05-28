@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" elementFormDefault="qualified" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
@@ -420,6 +423,11 @@
     </xsd:choice>
   </xsd:group>
   <xsd:complexType name="CT_Drawing">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="wsDr")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="EG_Anchor" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>

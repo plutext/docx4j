@@ -7,7 +7,10 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns="http://schemas.microsoft.com/office/drawing/2008/diagram"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 	
 <!--  Downloaded from http://msdn.microsoft.com/en-us/library/ee198341(v=office.12).aspx
       2011 05 18 
@@ -76,6 +79,11 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_Drawing">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="drawing")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="spTree" type="CT_GroupShape" minOccurs="1" maxOccurs="1"/>
     </xsd:sequence>

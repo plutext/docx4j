@@ -153,7 +153,7 @@ public class CommentsSample extends AbstractSample {
 				// TODO - at present this is XMLGregorianCalendar
 			}
 			org.docx4j.wml.P commentP = factory.createP();
-			comment.getEGBlockLevelElts().add(commentP);
+			comment.getContent().add(commentP);
 			org.docx4j.wml.R commentR = factory.createR();
 			commentP.getContent().add(commentR);
 			org.docx4j.wml.Text commentText = factory.createText();

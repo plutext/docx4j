@@ -45,7 +45,7 @@ import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.SectPr.PgSz;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 
 public class ConversionSectionWrapperFactory {
 	

@@ -10,7 +10,10 @@
 	xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 	
    
   <!-- [MS-PPTX] — v20130726
@@ -185,6 +188,11 @@ Release: July 30, 2013 -->
     <xsd:attribute name="id" type="s:ST_Guid"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SectionList">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sectionLst")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="section" type="CT_Section" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>

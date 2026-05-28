@@ -5,7 +5,10 @@
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" blockDefault="#all"
 	elementFormDefault="qualified" attributeFormDefault="qualified"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 
 	<!-- 
 		
@@ -34,6 +37,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Package" />
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="package")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -59,6 +63,7 @@
 			</xsd:documentation>
 			<xsd:appinfo>
 				<jaxb:class name="Part" />
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="part")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:choice minOccurs="1" maxOccurs="1">
@@ -138,6 +143,7 @@
 			</xsd:documentation>
 			<xsd:appinfo>
 				<jaxb:class name="XmlData" />
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="xmlData")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>

@@ -5,7 +5,10 @@
 				xmlns:inkml="http://www.w3.org/2003/InkML"
 				xmlns:mathml="http://www.w3.org/1998/Math/MathML"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+   xmlns:annox="urn:jaxb.jvnet.org:annox"
+   jaxb:extensionBindingPrefixes="annox"
+   jaxb:version="3.0">
 
 	<xsd:annotation>
 		<xsd:appinfo>
@@ -406,6 +409,9 @@
 	<xsd:complexType name="ink.type">
 		<xsd:annotation>
 			<xsd:documentation>http://www.w3.org/TR/InkML/#inkElement</xsd:documentation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="ink")</annox:annotate>
+			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:choice minOccurs="1" maxOccurs="unbounded">
 			<xsd:element name="definitions" type="inkml:definitions.type" minOccurs="0" maxOccurs="unbounded"/>

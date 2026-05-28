@@ -80,13 +80,13 @@ public class TblFactory {
 		// Now the rows
 		for (int j=1 ; j<=rows; j++) {
 			Tr tr = Context.getWmlObjectFactory().createTr();
-			tbl.getEGContentRowContent().add(tr);
+			tbl.getContent().add(tr);
 			
 			// The cells
 			for (int i=1 ; i<=cols; i++) {
 				
 				Tc tc = Context.getWmlObjectFactory().createTc();
-				tr.getEGContentCellContent().add(tc);
+				tr.getContent().add(tc);
 				
 				TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
 				tc.setTcPr(tcPr);
@@ -97,7 +97,7 @@ public class TblFactory {
 				cellWidth.setW(BigInteger.valueOf(cellWidthTwips));
 				
 				// Cell content - an empty <w:p/>
-				tc.getEGBlockLevelElts().add(
+				tc.getContent().add(
 						Context.getWmlObjectFactory().createP()
 						);
 			}

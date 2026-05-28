@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import jakarta.xml.bind.Binder;
+import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
@@ -85,6 +86,8 @@ import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.docx4j.org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.docx4j.utils.XPathFactoryUtil;
 import org.docx4j.utils.XmlSerializerUtil;
+import org.docx4j.xjc.copy.Copyable;
+import org.jvnet.jaxb.lang.CopyTo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -1241,6 +1244,26 @@ public class XmlUtils {
 			return res;
 		} catch (JAXBException ex) {
 			throw new IllegalArgumentException(ex);
+		}
+	}
+
+	/**
+	 * Clone this JAXB object using its custom copy method, which is much faster than serialization or reflection.
+	 * @param value the object to copy (must implement {@link Copyable}, or be a {@link JAXBElement} containing an object that does)
+	 * @return a deep copy of the object
+	 */
+	public static <T> T deepCopyFast(T value) {
+		Object wrapped = unwrap(value);
+		if (!(wrapped instanceof Copyable)) {
+			throw new IllegalArgumentException("Can't deep copy object that doesn't implement Copyable: " + wrapped.getClass());
+		}
+		Object copy = ((Copyable) wrapped).copy();
+		if (value instanceof JAXBElement<?>) {
+			JAXBElement<?> jaxbElementValue = (JAXBElement<?>) value;
+			JAXBElement jaxbElementCopy = new JAXBElement(jaxbElementValue.getName(), jaxbElementValue.getDeclaredType(), jaxbElementValue.getScope(), copy);
+			return (T) jaxbElementCopy;
+		} else {
+			return (T) copy;
 		}
 	}
 	

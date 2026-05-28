@@ -5,8 +5,12 @@
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"
 	blockDefault="#all" elementFormDefault="qualified"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="ci annox"
+	jaxb:version="3.0">
 	
 	<!-- 
 	****************************************************************
@@ -70,6 +74,22 @@
 			<xsd:documentation>Custom File Properties</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="Properties")</annox:annotate>
+					<ci:code>
+						public int getNextId() {
+							int id = 2;  // Lowest number Word 2007 seems to like is 2 (!)
+							for( Property prop : getProperty() ) {
+								if (prop.getPid() >= id ) {
+									id = prop.getPid() + 1;
+								}
+							}
+							return id;
+						}
+					</ci:code>
+				</xsd:appinfo>
+			</xsd:annotation>
 			<xsd:sequence>
 				<xsd:element name="property" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
@@ -77,6 +97,11 @@
 							Property</xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="property")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
 						<xsd:choice minOccurs="1" maxOccurs="1">
 							<xsd:element ref="vt:vector">
 								<xsd:annotation>

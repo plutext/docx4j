@@ -5,7 +5,10 @@
 	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
 	xmlns:we="http://schemas.microsoft.com/office/webextensions/webextension/2010/11"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 
   <!-- http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11 Schema
        from 
@@ -42,6 +45,11 @@
 
 
   <xsd:complexType name="CT_OsfTaskpane">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="taskpane")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="webextensionref" minOccurs="1" maxOccurs="1" type="we:CT_WebExtensionPartRef"/>
       <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
@@ -53,6 +61,11 @@
     <xsd:attribute name="locked" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
   <xsd:complexType name="CT_OsfTaskpanes">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="taskpanes")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="taskpane" minOccurs="0" maxOccurs="unbounded" type="CT_OsfTaskpane"/>
     </xsd:sequence>

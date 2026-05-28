@@ -113,7 +113,7 @@ public class Containerization {
 				elementList = new ArrayList();
 				for (Comment comment : ((CommentsPart) relPart
 						.getPart(rs)).getJaxbElement().getComment()) {
-					elementList.addAll(comment.getEGBlockLevelElts());
+					elementList.addAll(comment.getContent());
 				}
 			}
 			if ((elementList != null) && (!elementList.isEmpty())) {

@@ -55,29 +55,29 @@
 
 	<xsd:element name="Relationship">
 		<xsd:complexType>
-			<xsd:simpleContent>
-				<xsd:extension base="xsd:string">
-					<!-- 					<xsd:attribute name="TargetMode" type="ST_TargetMode"
-						use="optional" /> -->
-					<xsd:attribute name="TargetMode" use="optional">
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:string">
-								<xsd:enumeration value="External" />
-								<xsd:enumeration value="Internal" />
-							</xsd:restriction>
-						</xsd:simpleType>
-					</xsd:attribute>
-					<xsd:attribute name="Target" type="xsd:anyURI"
-						use="required" />
-					<xsd:attribute name="Type" type="xsd:anyURI"
-						use="required" />
-					<xsd:attribute name="Id" type="xsd:ID"
-						use="required" />
-				</xsd:extension>
-			</xsd:simpleContent>
+			<!-- Do not extend xsd:string; do not generate string value getter/setter. -->
+<!--			<xsd:simpleContent>-->
+<!--				<xsd:extension base="xsd:string">-->
+			<!-- 					<xsd:attribute name="TargetMode" type="ST_TargetMode"
+				use="optional" /> -->
+			<xsd:attribute name="TargetMode" use="optional">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="External" />
+						<xsd:enumeration value="Internal" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:attribute>
+			<xsd:attribute name="Target" type="xsd:anyURI"
+				use="required" />
+			<xsd:attribute name="Type" type="xsd:anyURI"
+				use="required" />
+			<xsd:attribute name="Id" type="xsd:ID"
+				use="required" />
 		</xsd:complexType>
+<!--			</xsd:extension>-->
+<!--		</xsd:simpleContent>-->
 	</xsd:element>
 
 
 </xsd:schema>
-

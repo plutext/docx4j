@@ -6,7 +6,10 @@
 	xmlns="http://schemas.microsoft.com/office/word/2006/wordml"
 	targetNamespace="http://schemas.microsoft.com/office/word/2006/wordml"	
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 
 
 	<!--
@@ -92,6 +95,11 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_VbaSuppData">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="vbaSuppData")</annox:annotate>
+            </xsd:appinfo>
+        </xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="docEvents" type="CT_DocEvents"
 				minOccurs="0" maxOccurs="1" />
@@ -106,6 +114,11 @@
 	<xsd:element name="tcg" type="CT_Tcg" />
  
   <xsd:complexType name="CT_Tcg">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="tcg")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
    <xsd:sequence>
      <xsd:element name="keymaps" type="CT_Keymaps" minOccurs="0" maxOccurs="1"/>
      <xsd:element name="keymapsBad" type="CT_Keymaps" minOccurs="0" maxOccurs="1"/>

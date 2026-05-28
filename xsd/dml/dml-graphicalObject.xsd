@@ -5,12 +5,49 @@
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector"
+	jaxb:extensionBindingPrefixes="ci"
+	jaxb:version="3.0">
 	
 	<xsd:complexType name="CT_GraphicalObjectData">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="graphicData"/>
+				<ci:code>
+					private static Object unwrap(Object o) {
+						if (o==null) return null;
+						if (o instanceof jakarta.xml.bind.JAXBElement) {
+							return ((jakarta.xml.bind.JAXBElement)o).getValue();
+						} else {
+							return o;
+						}
+					}
+
+					@XmlTransient
+					public org.docx4j.dml.picture.Pic getPic() {
+						for (Object o : getAny() ) {
+							if (o instanceof org.docx4j.dml.picture.Pic) return (org.docx4j.dml.picture.Pic)o;
+							if (o instanceof jakarta.xml.bind.JAXBElement
+									&amp;&amp; ((jakarta.xml.bind.JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.dml.picture.Pic") ) {
+									return (org.docx4j.dml.picture.Pic)((jakarta.xml.bind.JAXBElement)o).getValue();
+							}
+						}
+						return null;
+					}
+
+					@XmlTransient
+					public org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape getWordprocessingShape() {
+						for (Object o : getAny() ) {
+							if (o instanceof org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape) return (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape)o;
+							if (o instanceof jakarta.xml.bind.JAXBElement
+									&amp;&amp; (unwrap(o) instanceof  org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape)) {
+									return (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape)((jakarta.xml.bind.JAXBElement)o).getValue();
+							}
+						}
+						return null;
+					}
+				</ci:code>
 			</xsd:appinfo>
 		</xsd:annotation>		
 		<xsd:sequence>

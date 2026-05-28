@@ -6,7 +6,10 @@
 	elementFormDefault="qualified" attributeFormDefault="unqualified"
 	blockDefault="#all"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 	
 	<!-- 
  	 sh ~/jaxb-ri-20071219/bin/xjc.sh opc-contentTypes.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0		
@@ -51,6 +54,11 @@
 	<xs:element name="Override" type="CT_Override" />
 
 	<xs:complexType name="CT_Types">
+		<xs:annotation>
+			<xs:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="Types")</annox:annotate>
+			</xs:appinfo>
+		</xs:annotation>
 		<xs:choice minOccurs="0" maxOccurs="unbounded">
 			<xs:element ref="Default" />
 			<xs:element ref="Override" />

@@ -4,11 +4,18 @@
  elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all" 
  xmlns="http://schemas.microsoft.com/office/word/2016/wordml/cid" 
  targetNamespace="http://schemas.microsoft.com/office/word/2016/wordml/cid"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-    xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+    xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
  
    <xsd:import id="w12" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
-    schemaLocation="wml.xsd"/>  
+    schemaLocation="wml.xsd"/>
+
+    <xsd:import id="mce" namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
     
         <xsd:annotation>
         <xsd:appinfo>
@@ -23,9 +30,15 @@
     </xsd:annotation>
     
    <xsd:complexType name="CT_CommentsIds">
+       <xsd:annotation>
+           <xsd:appinfo>
+               <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="commentsIds")</annox:annotate>
+           </xsd:appinfo>
+       </xsd:annotation>
      <xsd:sequence>
        <xsd:element name="commentId" type="CT_CommentId" minOccurs="0" maxOccurs="unbounded"/>
      </xsd:sequence>
+       <xsd:attribute ref="mc:Ignorable" use="optional" />
    </xsd:complexType>
    <xsd:complexType name="CT_CommentId" >
      <xsd:attribute name="paraId" type="w12:ST_LongHexNumber"/>

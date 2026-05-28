@@ -1,15 +1,15 @@
-package org.docx4j.wml;
-
-import static org.junit.Assert.*;
+package org.docx4j;
 
 import jakarta.xml.bind.JAXBElement;
-
 import org.docx4j.jaxb.Context;
+import org.docx4j.list.ArrayListDocx4j;
+import org.docx4j.wml.Body;
+import org.docx4j.wml.CTAltChunk;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ArrayListWmlTest {
+public class ArrayListDocx4jTest {
 
 	@Before
 	public void setUp() throws Exception {
@@ -25,7 +25,7 @@ public class ArrayListWmlTest {
 		
 		Body b = new Body();
 		
-		ArrayListWml list = new ArrayListWml(b);
+		ArrayListDocx4j list = new ArrayListDocx4j(b);
 		
 		CTAltChunk altChunk = new CTAltChunk();
 		
