@@ -42,8 +42,13 @@ import org.apache.fop.apps.FopConfParser;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.FormattingResults;
-import org.apache.fop.apps.MimeConstants;
+import org.apache.xmlgraphics.util.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
+import org.apache.fop.configuration.Configuration;
+import org.apache.fop.render.intermediate.IFContext;
+import org.apache.fop.render.intermediate.IFDocumentHandlerConfigurator;
+import org.apache.fop.render.intermediate.IFRenderer;
+import org.apache.fop.render.pdf.PDFDocumentHandler;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
@@ -123,6 +128,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		if (settings.getSettings().get(FOP_FACTORY)==null) {
 			
 			try {
+				log.debug("No FOP_FACTORY in settings, building..");
 				FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(settings);
 				fopFactory = fopFactoryBuilder.build();
 				// Put FOP_FACTORY and FO_USER_AGENT in settings
@@ -171,7 +177,10 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		startEvent.publish();
 		
 	    FOUserAgent foUserAgent = (FOUserAgent)settings.getSettings().get(FO_USER_AGENT);
-		render(fopFactory, foUserAgent, apacheFopMime, foDocumentSrc, placeholderLookup, outputStream);
+	    
+	    
+	    
+		render(settings, fopFactory, foUserAgent, apacheFopMime, foDocumentSrc, placeholderLookup, outputStream);
 		
 		new EventFinished(startEvent).publish();
 	}
@@ -197,14 +206,66 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	}
 
 	
-	protected void render(FopFactory fopFactory, FOUserAgent foUserAgent, String outputFormat, Source foDocumentSrc, PlaceholderReplacementHandler.PlaceholderLookup placeholderLookup, OutputStream outputStream) throws Docx4JException {
+	protected void render(FOSettings settings, FopFactory fopFactory, FOUserAgent foUserAgent, String outputFormat, Source foDocumentSrc, PlaceholderReplacementHandler.PlaceholderLookup placeholderLookup, OutputStream outputStream) throws Docx4JException {
+		
+		/* Note that all paths here re-use the provided fopFactory.
+		 * 
+		 * It is up to the user whether they re-use their fopFactory across runs,
+		 * or provide a new one for each export.
+		 * 
+		 * Creating a FopFactory via FopFactoryBuilder is not so expensive if you use
+		 * docx4j's FOSettings, because we specify fonts explicitly and avoid:
+		 *  
+			    <renderer mime="application/pdf">
+			      <fonts>
+			        <auto-detect/>
+			      </fonts>
+			    </renderer>
+		 *  
+		 * If fopFactory is re-used across runs though,
+		 * we need to use the DocumentHandlerOverride mechanism to 
+		 * configure fonts on a per-document basis.
+		 * 
+		 * To make this happen, set    
+    	 */
+		
+		
 		Fop fop = null;
 		Result result = null;
 		try {
+			
 			if (foUserAgent==null) {
-				fop = fopFactory.newFop(outputFormat, outputStream);
+				log.warn("foUserAgent==null");
+				(new Throwable()).printStackTrace();
+				foUserAgent = fopFactory.newFOUserAgent();
+			}
+			
+			if (
+					Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true)
+						&& outputFormat==MimeConstants.MIME_PDF){
+				
+				log.debug("Reusing fopFactory with ConfiguredPDFDocumentHandler");
+								
+				// Use it to configure our custom PDFDocumentHandler  
+		        IFContext ifContext = new IFContext(foUserAgent);
+		        ConfiguredPDFDocumentHandler pdfHandler =
+		                new ConfiguredPDFDocumentHandler(ifContext, settings.getFopConfig());
+		        
+		        // Let FOP create the IFRenderer and wire it to our PDFDocumentHandler.
+		        foUserAgent.setDocumentHandlerOverride(pdfHandler);		        
+		        
+		        fop = foUserAgent.newFop(MimeConstants.MIME_PDF, outputStream);
 			} else {
-				fop = fopFactory.newFop(outputFormat, foUserAgent, outputStream);				
+				if (log.isInfoEnabled()) {
+					if (Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true)==false) {
+						log.info("Using fopFactory WITHOUT ConfiguredPDFDocumentHandler");
+						// Note to use: in this case, create a new fopFactory for each export
+					} else {
+						log.info("newFop: " + outputFormat);
+					}
+				}
+				fop = fopFactory.newFop(outputFormat, foUserAgent, outputStream);	
+				// same as userAgent.newFop(outputFormat, stream);
 			}
 			result = (placeholderLookup == null ?
 					//1 Pass
@@ -247,7 +308,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	
 	
 	/**
-	 * Allow user access to FOUserAgent, so they can setAccessibility(true).  Access to other settings
+	 * Returns fopFactory.newFOUserAgent().  Allow user access to FOUserAgent, so they can setAccessibility(true).  Access to other settings
 	 * is possible but unsupported.
 	 * 
 	 * @param wmlPackage
@@ -277,6 +338,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 * @throws FOPException
 	 */
 	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings) throws FOPException {
+//		(new Throwable()).printStackTrace();
 		return getFopFactoryBuilder(settings, null); 
 	}	
 	/**
@@ -331,5 +393,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		}
 	}
 
+	
 
 }
