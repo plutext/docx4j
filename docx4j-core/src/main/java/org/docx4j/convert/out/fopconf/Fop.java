@@ -23,16 +23,17 @@ import jakarta.xml.bind.annotation.XmlType;
  *       &lt;sequence&gt;
  *         &lt;element name="strict-validation" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *         &lt;element name="strict-configuration" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
+ *         &lt;element name="useCache" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *         &lt;element name="accessibility" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *         &lt;element name="base" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="hyphenation-base" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
- *         &lt;element ref="{http://purl.org/dc/elements/1.1/}hyphenation-pattern" maxOccurs="unbounded"/&gt;
+ *         &lt;element ref="{}hyphenation-pattern" maxOccurs="unbounded"/&gt;
  *         &lt;element name="fonts" minOccurs="0"&gt;
  *           &lt;complexType&gt;
  *             &lt;complexContent&gt;
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *                 &lt;sequence&gt;
- *                   &lt;element ref="{http://purl.org/dc/elements/1.1/}substitutions" minOccurs="0"/&gt;
+ *                   &lt;element ref="{}substitutions" minOccurs="0"/&gt;
  *                 &lt;/sequence&gt;
  *               &lt;/restriction&gt;
  *             &lt;/complexContent&gt;
@@ -43,12 +44,12 @@ import jakarta.xml.bind.annotation.XmlType;
  *             &lt;complexContent&gt;
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *                 &lt;sequence&gt;
- *                   &lt;element name="renderer"&gt;
+ *                   &lt;element name="renderer" maxOccurs="unbounded" minOccurs="0"&gt;
  *                     &lt;complexType&gt;
  *                       &lt;complexContent&gt;
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *                           &lt;sequence&gt;
- *                             &lt;element ref="{http://purl.org/dc/elements/1.1/}fonts"/&gt;
+ *                             &lt;element ref="{}fonts"/&gt;
  *                           &lt;/sequence&gt;
  *                           &lt;attribute name="mime" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
  *                         &lt;/restriction&gt;
@@ -88,21 +89,8 @@ public class Fop {
     protected Boolean strictValidation;
     @XmlElement(name = "strict-configuration")
     protected Boolean strictConfiguration;
-    
-    @XmlElement(name = "use-cache")
     protected Boolean useCache;
-    
-    
-    public Boolean getUseCache() {
-		return useCache;
-	}
-
-	public void setUseCache(Boolean useCache) {
-		this.useCache = useCache;
-	}
-
-
-	protected Boolean accessibility;
+    protected Boolean accessibility;
     protected String base;
     @XmlElement(name = "hyphenation-base", required = true)
     protected String hyphenationBase;
@@ -160,6 +148,30 @@ public class Fop {
      */
     public void setStrictConfiguration(Boolean value) {
         this.strictConfiguration = value;
+    }
+
+    /**
+     * Gets the value of the useCache property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isUseCache() {
+        return useCache;
+    }
+
+    /**
+     * Sets the value of the useCache property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setUseCache(Boolean value) {
+        this.useCache = value;
     }
 
     /**
@@ -240,7 +252,7 @@ public class Fop {
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
+     * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the hyphenationPattern property.
      * 
      * <p>
@@ -346,7 +358,7 @@ public class Fop {
      *   &lt;complexContent&gt;
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
      *       &lt;sequence&gt;
-     *         &lt;element ref="{http://purl.org/dc/elements/1.1/}substitutions" minOccurs="0"/&gt;
+     *         &lt;element ref="{}substitutions" minOccurs="0"/&gt;
      *       &lt;/sequence&gt;
      *     &lt;/restriction&gt;
      *   &lt;/complexContent&gt;
@@ -400,12 +412,12 @@ public class Fop {
      *   &lt;complexContent&gt;
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
      *       &lt;sequence&gt;
-     *         &lt;element name="renderer"&gt;
+     *         &lt;element name="renderer" maxOccurs="unbounded" minOccurs="0"&gt;
      *           &lt;complexType&gt;
      *             &lt;complexContent&gt;
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
      *                 &lt;sequence&gt;
-     *                   &lt;element ref="{http://purl.org/dc/elements/1.1/}fonts"/&gt;
+     *                   &lt;element ref="{}fonts"/&gt;
      *                 &lt;/sequence&gt;
      *                 &lt;attribute name="mime" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
      *               &lt;/restriction&gt;
@@ -426,31 +438,35 @@ public class Fop {
     })
     public static class Renderers {
 
-        @XmlElement(required = true)
-        protected Fop.Renderers.Renderer renderer;
+        protected List<Fop.Renderers.Renderer> renderer;
 
         /**
          * Gets the value of the renderer property.
          * 
-         * @return
-         *     possible object is
-         *     {@link Fop.Renderers.Renderer }
-         *     
-         */
-        public Fop.Renderers.Renderer getRenderer() {
-            return renderer;
-        }
-
-        /**
-         * Sets the value of the renderer property.
+         * <p>
+         * This accessor method returns a reference to the live list,
+         * not a snapshot. Therefore any modification you make to the
+         * returned list will be present inside the Jakarta XML Binding object.
+         * This is why there is not a <CODE>set</CODE> method for the renderer property.
          * 
-         * @param value
-         *     allowed object is
-         *     {@link Fop.Renderers.Renderer }
-         *     
+         * <p>
+         * For example, to add a new item, do as follows:
+         * <pre>
+         *    getRenderer().add(newItem);
+         * </pre>
+         * 
+         * 
+         * <p>
+         * Objects of the following type(s) are allowed in the list
+         * {@link Fop.Renderers.Renderer }
+         * 
+         * 
          */
-        public void setRenderer(Fop.Renderers.Renderer value) {
-            this.renderer = value;
+        public List<Fop.Renderers.Renderer> getRenderer() {
+            if (renderer == null) {
+                renderer = new ArrayList<Fop.Renderers.Renderer>();
+            }
+            return this.renderer;
         }
 
 
@@ -464,7 +480,7 @@ public class Fop {
          *   &lt;complexContent&gt;
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
          *       &lt;sequence&gt;
-         *         &lt;element ref="{http://purl.org/dc/elements/1.1/}fonts"/&gt;
+         *         &lt;element ref="{}fonts"/&gt;
          *       &lt;/sequence&gt;
          *       &lt;attribute name="mime" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
          *     &lt;/restriction&gt;

@@ -120,7 +120,7 @@ public class FopConfigUtil {
 		Renderers renderers = factory.createFopRenderers();
 		fopConfig.setRenderers(renderers);
 		Renderer renderer = factory.createFopRenderersRenderer();
-		renderers.setRenderer(renderer);
+		renderers.getRenderer().add(renderer);
 		renderer.setMime("application/pdf");
 
 		renderer.setFonts(declareRendererFonts(fontMapper, fontsInUse));
@@ -128,6 +128,16 @@ public class FopConfigUtil {
 		return fopConfig;
 	}
 		
+    public static Renderer get(Renderers renderers, String mime) {
+    	
+    	for( Renderer r : renderers.getRenderer()) {
+    		
+    		if (r.getMime().equals(mime)) {
+    			return r;
+    		}
+    	}
+    	return null;
+    }
 
 	/**
 	 * Create a FOP font configuration for each font used in the

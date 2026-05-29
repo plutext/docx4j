@@ -1,12 +1,17 @@
 package org.docx4j.convert.out.fo.renderers;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.configuration.Configuration;
+import org.apache.fop.configuration.DefaultConfigurationBuilder;
 import org.apache.fop.render.intermediate.IFContext;
 import org.apache.fop.render.intermediate.IFDocumentHandlerConfigurator;
 import org.apache.fop.render.pdf.PDFDocumentHandler;
 import org.apache.fop.render.pdf.PDFRendererConfigurator;
 import org.docx4j.XmlUtils;
+import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.slf4j.Logger;
@@ -28,7 +33,9 @@ public class ConfiguredPDFDocumentHandler extends PDFDocumentHandler {
     	
         super(context);
         
-        pdfRendererXml = XmlUtils.marshaltoString(fopconf.getRenderers().getRenderer(), Context.getFopConfigContext());
+        pdfRendererXml = XmlUtils.marshaltoString( 
+        		FopConfigUtil.get(fopconf.getRenderers(), "application/pdf"), 
+        		Context.getFopConfigContext());
 		/*
 		<fop version="1.0">
 		    <renderers>
@@ -40,12 +47,24 @@ public class ConfiguredPDFDocumentHandler extends PDFDocumentHandler {
 	 */
 		
 		try {
-			pdfRendererConfiguration = FopRendererConfigUtil.parsePdfRendererConfiguration(pdfRendererXml);
+			pdfRendererConfiguration = parsePdfRendererConfiguration(pdfRendererXml);
 		} catch (Exception e) {
 			throw new Docx4JException(e.getMessage(), e);
 		}	
     }
     
+
+    
+    private static Configuration parsePdfRendererConfiguration(String rendererXml)
+            throws Exception {
+
+        DefaultConfigurationBuilder builder = new DefaultConfigurationBuilder();
+
+        try (ByteArrayInputStream in = new ByteArrayInputStream(
+                rendererXml.getBytes(StandardCharsets.UTF_8))) {
+            return builder.build(in);
+        }
+    }    
     
     @Override
     public IFDocumentHandlerConfigurator getConfigurator() {

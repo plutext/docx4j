@@ -1,17 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="http://purl.org/dc/elements/1.1/"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
 	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
 <!--
-	docx4j 8.3.3 (javax.xml.bind):
-
-		sudo archlinux-java set java-8-openjdk
-		sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh  fop.xsd -d tmp  -no-header -target 2.0
-		sudo archlinux-java set java-15-openjdk
+		
+		 sh ~/git/docx4j/xjc/jaxb-ri/bin/xjc.sh  fop.xsd -d tmp  -no-header -target 3.0 
  
 -->
   <xs:annotation>
@@ -102,6 +98,7 @@
       <xs:sequence>
         <xs:element name="strict-validation" type="xs:boolean" minOccurs="0"/>
         <xs:element name="strict-configuration" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="useCache" type="xs:boolean" minOccurs="0"/>
         <xs:element name="accessibility" type="xs:boolean" minOccurs="0"/>
         <xs:element name="base" type="xs:string" minOccurs="0"/>
         <xs:element name="hyphenation-base" type="xs:string" />
@@ -116,7 +113,7 @@
         <xs:element name="renderers">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="renderer">
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="renderer">
                 <xs:complexType>
                   <xs:sequence>
                     <xs:element ref="fonts" />
