@@ -2,9 +2,12 @@ package org.docx4j.convert.out.fo;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +29,14 @@ import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
+import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
+import org.docx4j.convert.out.fo.renderers.NonCachingPdfDocumentHandlerConfigurator;
 import org.docx4j.convert.out.fopconf.Fonts.Font;
 import org.docx4j.convert.out.fopconf.Fop;
+import org.docx4j.convert.out.fopconf.Fop.Renderers.Renderer;
 import org.docx4j.finders.SectPrFinder;
+import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -178,74 +185,74 @@ public class FOPAreaTreeHelper {
 
     	// Currently FOP dependent!  But an Antenna House version ought to be feasible.
     	
-        log.info("Creating FopFactory for AreaTree calculations");
-    	
         FOSettings foSettingsHere = Docx4J.createFOSettings();
         foSettingsHere.setFopConfig(foSettingsOverall.getFopConfig());
         
-        /* Here is where fonts are first configured in a FopFactory.
-         * It seems that is remembered, and is not dependent on
-         * type of renderer.
-         * 
-         * So if you set up FopFactory using a config which defines
-         * fonts for "application/pdf" only, but the renderer is
-         * actually application/X-fop-areatree (as it is here),
-         * then you'll only get the default fonts here, and worse,
-         * later on for "application/pdf".
-         * 
-         * In other words, with 
-         * 
-		    <renderers>
-		        <renderer mime="application/pdf">
-		            <fonts>
-		            
-		   as opposed to application/X-fop-areatree
-		   
-		   FOP will say:
-		   
-		   DEBUG FOP 696 - No user configuration found for MIME type application/X-fop-areatree
-		   
-         * So we use a distinct FopFactory here, and better, specifically configure
-         * fonts for renderer application/X-fop-areatree             
-         */
-
-        // no need to clone, as long as we remember to change it back again
-        foSettingsOverall.getFopConfig().getRenderers().getRenderer().setMime(MimeConstants.MIME_FOP_AREA_TREE);
-        //  ERROR org.apache.fop.apps.FOUserAgent 103 - The simulate-style property is only supported in PDF.
-	    List<Font> simulateStyleFonts = new ArrayList<Font>();
-        if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {        	
-        	// Need to set to false
-        	for (Font f : foSettingsOverall.getFopConfig().getRenderers().getRenderer().getFonts().getFont()) {
-        		if (f.isSimulateStyle()) {
-        			f.setSimulateStyle(false);
-			        simulateStyleFonts.add(f);
-        		}
-        	}
-        }
+		FopFactory fopFactory = null;        
+		if (Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true)) {
+			
+			fopFactory = (FopFactory)foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY);
+			
+		} else {
         
-		FopFactory fopFactory = null;
-		if (foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY)==null) {
-
-			log.debug("No FOP_FACTORY in settings, building..");		
+	        /* OLD APPROACH: 
+	         * Note to user: in this case, create a new fopFactory for each export.
+	         * 
+	         * Here is where fonts are first configured in a FopFactory.
+	         * These are cached by FOP; on a per renderer basis.
+	         * 
+	         * So if you set up FopFactory using a config which defines
+	         * fonts for "application/pdf" only, but the renderer is
+	         * actually application/X-fop-areatree (as it is here),
+	         * then you'll only get the default fonts here, and worse,
+	         * later on for "application/pdf".
+	         * 
+	         * In other words, with 
+	         * 
+			    <renderers>
+			        <renderer mime="application/pdf">
+			            <fonts>
+			            
+			   as opposed to application/X-fop-areatree
+			   
+			   FOP will say:
+			   
+			   DEBUG FOP 696 - No user configuration found for MIME type application/X-fop-areatree
+			   
+	         * So we use a distinct FopFactory here, and better, specifically configure
+	         * fonts for renderer application/X-fop-areatree             
+	         */
+	
+	        // no need to clone, as long as we remember to change it back again
+			Renderer renderer = FopConfigUtil.get(foSettingsOverall.getFopConfig().getRenderers(), "application/pdf");
+	        renderer.setMime(MimeConstants.MIME_FOP_AREA_TREE);
+	        //  ERROR org.apache.fop.apps.FOUserAgent 103 - The simulate-style property is only supported in PDF.
+		    List<Font> simulateStyleFonts = new ArrayList<Font>();
+	        if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {        	
+	        	// Need to set to false        	
+	        	for (Font f : renderer.getFonts().getFont()) {
+	        		if (f.isSimulateStyle()) {
+	        			f.setSimulateStyle(false);
+				        simulateStyleFonts.add(f);
+	        		}
+	        	}
+	        }
+	        
+	        // Unfortunately, need a fopFactory here so we don't mess up temp embedded font config
 			try {
-				// TODO synchronise
 				FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettingsHere) ;
 				fopFactory = fopFactoryBuilder.build();
 			} catch (FOPException e) {
 				throw new Docx4JException("FOUserAgent issue", e);
 			}
-			
-		} else {
-			fopFactory = (FopFactory)foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY);
-		}        
+	        
+			// change it back
+			renderer.setMime(FOSettings.MIME_PDF);
+	        for (Font f : simulateStyleFonts) {
+	            f.setSimulateStyle(true);
+	        }
         
-        
-		// change it back
-        foSettingsOverall.getFopConfig().getRenderers().getRenderer().setMime(FOSettings.MIME_PDF);
-        for (Font f : simulateStyleFonts) {
-            f.setSimulateStyle(true);
-        }
-        
+		}
 	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettingsHere, fopFactory);
                 
         foSettingsHere.setOpcPackage(hfPkg);
@@ -258,26 +265,31 @@ public class FOPAreaTreeHelper {
         // Since hfPkg is already a clone, we don't need PP_COMMON_DEEP_COPY
         // Plus it invokes setFontMapper, which does processEmbeddings again, and those fonts aren't much use to us here
         foSettingsHere.getFeatures().remove(ConversionFeatures.PP_COMMON_DEEP_COPY);
-        foSettingsHere.getFeatures().remove(ConversionFeatures.PP_COMMON_CONTAINERIZATION);
-        
+        foSettingsHere.getFeatures().remove(ConversionFeatures.PP_COMMON_CONTAINERIZATION);        
         
         if (log.isDebugEnabled()) {
             log.debug("AreaTree: " + foSettingsHere.getFeatures());
         	foSettingsHere.setFoDumpFile(new java.io.File(System.getProperty("user.dir") + "/hf.fo"));
         }
+        
+        InputStream is;
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        
-        if (useXSLT) {
-        	Docx4J.toFO(foSettingsHere, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
-        } else {
-        	Docx4J.toFO(foSettingsHere, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);        	
-        }
-        
-        InputStream is = new ByteArrayInputStream(os.toByteArray());
+        	Exporter<FOSettings> exporter;
+            if (useXSLT) {
+                exporter = FOExporterXslt.getInstance();     // XSLT: Fully featured
+            } else {
+            	exporter = FOExporterVisitor.getInstance();  // Non XSLT: Faster, but fewer features
+            }            
+            exporter.export(foSettingsHere, os);  
+            
+//            byte[] bytes = os.toByteArray();
+//            System.out.print(new String(bytes, StandardCharsets.UTF_8));
+            
+            is = new ByteArrayInputStream(os.toByteArray());            
+        }        
 		DocumentBuilder builder = XmlUtils.getNewDocumentBuilder();
 		return builder.parse(is);
-
     }	
     
     /**

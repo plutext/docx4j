@@ -19,11 +19,9 @@
  */
 package org.docx4j.convert.out.fo.renderers;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 
@@ -42,13 +40,11 @@ import org.apache.fop.apps.FopConfParser;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.FormattingResults;
-import org.apache.xmlgraphics.util.MimeConstants;
+import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
-import org.apache.fop.configuration.Configuration;
 import org.apache.fop.render.intermediate.IFContext;
-import org.apache.fop.render.intermediate.IFDocumentHandlerConfigurator;
 import org.apache.fop.render.intermediate.IFRenderer;
-import org.apache.fop.render.pdf.PDFDocumentHandler;
+import org.apache.fop.render.xml.XMLRenderer;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
@@ -59,10 +55,8 @@ import org.docx4j.convert.out.fo.PlaceholderReplacementHandler;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
-import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -226,7 +220,11 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		 * we need to use the DocumentHandlerOverride mechanism to 
 		 * configure fonts on a per-document basis.
 		 * 
-		 * To make this happen, set    
+		 * To make this happen, set property:
+		 * 
+		 *    docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler
+		 *    
+		 * (defaults to true).
     	 */
 		
 		
@@ -236,42 +234,69 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			
 			if (foUserAgent==null) {
 				log.warn("foUserAgent==null");
-				(new Throwable()).printStackTrace();
 				foUserAgent = fopFactory.newFOUserAgent();
 			}
+
+			// Necessary for MIME_FOP_AREA_TREE case
+			fopFactory.getFontManager().disableFontCache();
 			
 			if (
-					Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true)
-						&& outputFormat==MimeConstants.MIME_PDF){
+					Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true) 
+						&& (outputFormat==MimeConstants.MIME_PDF || outputFormat==MimeConstants.MIME_FOP_AREA_TREE ) )
+			{
 				
-				log.debug("Reusing fopFactory with ConfiguredPDFDocumentHandler");
-								
+				log.info("Reusing fopFactory with ConfiguredPDFDocumentHandler for " + outputFormat);
+				
 				// Use it to configure our custom PDFDocumentHandler  
 		        IFContext ifContext = new IFContext(foUserAgent);
 		        ConfiguredPDFDocumentHandler pdfHandler =
 		                new ConfiguredPDFDocumentHandler(ifContext, settings.getFopConfig());
-		        
-		        // Let FOP create the IFRenderer and wire it to our PDFDocumentHandler.
-		        foUserAgent.setDocumentHandlerOverride(pdfHandler);		        
-		        
-		        fop = foUserAgent.newFop(MimeConstants.MIME_PDF, outputStream);
+				
+				if (outputFormat==MimeConstants.MIME_PDF){
+			        
+			        // Let FOP create the IFRenderer and wire it to our PDFDocumentHandler.
+			        foUserAgent.setDocumentHandlerOverride(pdfHandler);		        
+			        
+			        fop = foUserAgent.newFop(outputFormat, outputStream);
+				}
+
+				if (outputFormat==org.apache.fop.apps.MimeConstants.MIME_FOP_AREA_TREE) {
+
+			        /*
+			         * IFRenderer delegates setupFontInfo(...) to the document handler,
+			         * so this renderer has our custom PDF font configuration.
+			         */
+			        IFRenderer pdfMimicRenderer = new IFRenderer(foUserAgent);
+			        pdfMimicRenderer.setDocumentHandler(pdfHandler);
+
+			        XMLRenderer areaTreeRenderer = new XMLRenderer(foUserAgent);
+			        areaTreeRenderer.mimicRenderer(pdfMimicRenderer); // make the XMLRenderer mimic a different renderer by using its font setup.
+
+			        // Override the renderer, not the document handler.
+			        foUserAgent.setRendererOverride(areaTreeRenderer);			        
+			        fop = foUserAgent.newFop(outputFormat, outputStream);
+				}
+				
 			} else {
 				if (log.isInfoEnabled()) {
 					if (Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true)==false) {
 						log.info("Using fopFactory WITHOUT ConfiguredPDFDocumentHandler");
-						// Note to use: in this case, create a new fopFactory for each export
+						// Note to user: in this case, you should create a new fopFactory for each export
 					} else {
 						log.info("newFop: " + outputFormat);
 					}
 				}
 				fop = fopFactory.newFop(outputFormat, foUserAgent, outputStream);	
 				// same as userAgent.newFop(outputFormat, stream);
+				
 			}
+			
 			result = (placeholderLookup == null ?
 					//1 Pass
 					new SAXResult(fop.getDefaultHandler()) :
 					//2 Pass
 					new SAXResult(new PlaceholderReplacementHandler(fop.getDefaultHandler(), placeholderLookup)));
+			
 		} catch (FOPException e) {
 			throw new Docx4JException("Exception setting up result for fo transformation: " + e.getMessage(), e);
 		}
