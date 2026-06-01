@@ -77,14 +77,14 @@ public class ConfiguredPDFDocumentHandler extends PDFDocumentHandler {
         } else {
         	// Caches the differing font sets found across documents.
         	// No appreciable difference in speed compared to NonCachingPdfDocumentHandlerConfigurator
-        	// TODO:
+        	// TODO if to be used:
         	// 1. fix error below.
         	// 2. if used, ensure fonts are written in some canonical order
 	        return new PDFRendererConfigurator(
 	                userAgent,
 	                new DelegatingPDFRendererConfigParser(pdfRendererConfiguration, pdfRendererXml));
 	        
-	        /* NB, approx 1 in 10,000 runs, this causes error:
+	        /* NB, this sometimes causes errors like:
 	         * 
 				java.lang.NullPointerException: Cannot invoke "org.w3c.dom.Node.getNodeName()" because "n" is null
 					at org.apache.xmlgraphics.fop.core@2.11/org.apache.fop.configuration.DefaultConfiguration.getChildren(DefaultConfiguration.java:140)

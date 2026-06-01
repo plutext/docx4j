@@ -245,7 +245,9 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 						&& (outputFormat==MimeConstants.MIME_PDF || outputFormat==MimeConstants.MIME_FOP_AREA_TREE ) )
 			{
 				
-				log.info("Reusing fopFactory with ConfiguredPDFDocumentHandler for " + outputFormat);
+				if (log.isDebugEnabled()) {
+					log.debug("Reusing fopFactory with ConfiguredPDFDocumentHandler for " + outputFormat);
+				}
 				
 				// Use it to configure our custom PDFDocumentHandler  
 		        IFContext ifContext = new IFContext(foUserAgent);
