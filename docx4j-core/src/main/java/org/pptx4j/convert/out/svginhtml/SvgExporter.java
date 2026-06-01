@@ -20,6 +20,7 @@ import org.docx4j.dml.CTTransform2D;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
@@ -175,8 +176,9 @@ public class SvgExporter {
 		try {
 			styleTree = context.getPmlPackage().getStyleTree();
 		} catch (InvalidFormatException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			log.error(e1.getMessage(), e1);
+		} catch (CyclicStylesException e) {
+			log.error(e.getMessage(), e);
 		}
     	
 		log.debug("lvl:" +lvl);
@@ -431,8 +433,9 @@ public class SvgExporter {
 		try {
 			styleTree = context.getPmlPackage().getStyleTree();
 		} catch (InvalidFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
+		} catch (CyclicStylesException e) {
+			log.error(e.getMessage(), e);
 		}
 		
 		// Second iteration - paragraph level pPr *and rPr*

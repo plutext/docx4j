@@ -328,6 +328,7 @@ public class PropertyResolver {
 	private void fillTableStyleStackInternal(String styleId, Stack<Style> tableStyleStack, List<String> seen) throws CyclicStylesException {
 		
 		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			// TODO, jump up to add default table style (if not part of the cycle) and DocumentDefaults
 			return;
 		}
 		seen.add(styleId);
@@ -1216,6 +1217,7 @@ public class PropertyResolver {
 
 		// Detect cycles
 		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			// TODO, jump up to add default pStyle (if not part of the cycle) and DocumentDefaults
 			return;
 		}
 		seen.add(styleId);
@@ -1341,6 +1343,7 @@ public class PropertyResolver {
 	private void fillRPrStackInternal(String styleId, Stack<RPr> rPrStack, List<String> seen) throws CyclicStylesException {
 		
 		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			// TODO, jump up to add default rStyle (if not part of the cycle) and DocumentDefaults			
 			return;
 		}
 		seen.add(styleId);

@@ -19,6 +19,7 @@
  */
 package org.docx4j.toc.switches;
 
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.toc.TocEntry;
 import org.docx4j.wml.Style;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class OSwitch extends SelectorSwitch {
 
 
     @Override
-    public void process(Style s, SwitchProcessorInterface sp) {
+    public void process(Style s, SwitchProcessorInterface sp) throws CyclicStylesException {
 //        if(sp.isStyleFound()){
 //            return;
 //        }

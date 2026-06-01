@@ -41,6 +41,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -160,8 +161,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 
 	/**
 	 * get the PropertyResolver, creating if necessary
+	 * @throws Docx4JException 
 	 */
-	public PropertyResolver getPropertyResolver() {
+	public PropertyResolver getPropertyResolver() throws Docx4JException {
 		return getPropertyResolver(true);
 	}
 
@@ -170,27 +172,25 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	 * 
 	 * @param create whether to create if null
 	 * @return
+	 * @throws Docx4JException 
 	 * @since 11.5.2
 	 */
-	public PropertyResolver getPropertyResolver(boolean create) {
+	public PropertyResolver getPropertyResolver(boolean create) throws Docx4JException {
+		
 		// create=false is only really necessary where a StackOverflow is a possibility;
 		// eg getPropertyResolver() being invoked from PropertyResolver's constructor.
 		if (create && propertyResolver == null) {
-			try {
-				propertyResolver = new PropertyResolver((WordprocessingMLPackage) this.pack);
-			} catch (Docx4JException e) {
-				e.printStackTrace();
-			}
+			propertyResolver = new PropertyResolver((WordprocessingMLPackage) this.pack);
 		}
 		return propertyResolver;
 	}
 	
 	private StyleTree styleTree;
-	public StyleTree getStyleTree() {
+	public StyleTree getStyleTree() throws CyclicStylesException {
 		return getStyleTree(false); // preserve existing behaviour
 	}
 	
-	public StyleTree getStyleTree(boolean refresh) {
+	public StyleTree getStyleTree(boolean refresh) throws CyclicStylesException {
 		// refresh is post 2.7.1
 		
 		if (refresh || styleTree==null) {
@@ -236,7 +236,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	
     	log.debug("fontsInUse..");
     	
-    	getPropertyResolver();  // this inits our virtual DocDefaults style
+    	try {
+			getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		}  // this inits our virtual DocDefaults style
     	
     // Setup 
     	
@@ -674,14 +678,18 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		org.docx4j.wml.P p = createParagraphOfText(text);
 						
-		if (getPropertyResolver().activateStyle(styleId)) {
-			// Style is available 
-			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();			
-			org.docx4j.wml.PPr  pPr = factory.createPPr();
-			p.setPPr(pPr);
-			org.docx4j.wml.PPrBase.PStyle pStyle = factory.createPPrBasePStyle();
-			pPr.setPStyle(pStyle);
-			pStyle.setVal(styleId);
+		try {
+			if (getPropertyResolver().activateStyle(styleId)) {
+				// Style is available 
+				org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();			
+				org.docx4j.wml.PPr  pPr = factory.createPPr();
+				p.setPPr(pPr);
+				org.docx4j.wml.PPrBase.PStyle pStyle = factory.createPPrBasePStyle();
+				pPr.setPStyle(pStyle);
+				pStyle.setVal(styleId);
+			}
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
 		} 		
 		
 		return p;
@@ -790,11 +798,15 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		for( String styleName : stylesInUse) {
 	        log.debug("Inspecting style: " + styleName );
 	        
-	        if (getPropertyResolver().activateStyle(styleName)) {
-	        	// Cool
-	        } else {
-	        	log.info(styleName + " couldn't be activated!");
-	        }
+	        try {
+				if (getPropertyResolver().activateStyle(styleName)) {
+					// Cool
+				} else {
+					log.info(styleName + " couldn't be activated!");
+				}
+			} catch (Docx4JException e) {
+				log.error(e.getMessage(), e);
+			}
 	        
 	    }
 	}

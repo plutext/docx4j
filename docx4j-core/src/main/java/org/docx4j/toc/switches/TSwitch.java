@@ -22,6 +22,7 @@ package org.docx4j.toc.switches;
 import java.util.Map;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.toc.TocEntry;
 import org.docx4j.wml.Style;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class TSwitch extends SelectorSwitch {
     private static final String COMMA = ",";
 
     @Override
-    public void process(Style s, SwitchProcessorInterface sp) {
+    public void process(Style s, SwitchProcessorInterface sp) throws CyclicStylesException {
     	
     	if (log.isDebugEnabled()) {
     		log.debug(s.getStyleId());

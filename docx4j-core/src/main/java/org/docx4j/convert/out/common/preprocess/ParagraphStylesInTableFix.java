@@ -248,9 +248,9 @@ public class ParagraphStylesInTableFix {
 					log.debug(s.getStyleId());
 				}			
 				if (Docx4jProperties.getProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", false) ) {
-					return true;
-				} else {
 					throw new CyclicStylesException("Cycle detected in style basedOn hierarchy");
+				} else {
+					return true;
 				}
 			} else {
 				return false;

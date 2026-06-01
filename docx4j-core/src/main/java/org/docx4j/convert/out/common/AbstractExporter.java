@@ -22,6 +22,7 @@ package org.docx4j.convert.out.common;
 import java.io.OutputStream;
 
 import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -133,8 +134,9 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 	 * @param preprocessedPackage
 	 * @param sectionWrappers
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	protected abstract CC createContext(CS conversionSettings, PK preprocessedPackage, ConversionSectionWrappers sectionWrappers);
+	protected abstract CC createContext(CS conversionSettings, PK preprocessedPackage, ConversionSectionWrappers sectionWrappers) throws CyclicStylesException;
 
 	/**
 	 * @param outputStream

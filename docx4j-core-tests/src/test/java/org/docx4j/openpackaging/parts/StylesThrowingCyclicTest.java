@@ -47,7 +47,7 @@ public class StylesThrowingCyclicTest {
 	@BeforeClass
     public static void setUpClass() {
         // Handle Exception 
-		Docx4jProperties.setProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", false);
+		Docx4jProperties.setProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", true);
     }
 	
 

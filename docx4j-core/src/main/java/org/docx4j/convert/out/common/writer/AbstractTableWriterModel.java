@@ -35,6 +35,8 @@ import org.docx4j.finders.TcFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.table.TableModelRow;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
@@ -126,6 +128,7 @@ public class AbstractTableWriterModel extends TableModel {
 	/**
 	 * Build a table representation from a <var>tbl</var> instance.
 	 * Remember to set wordMLPackage before using this method!
+	 * @throws CyclicStylesException 
 	 */
 	public void build(AbstractWmlConversionContext conversionContext, Object node, Node content) throws TransformerException {
 		Tbl tbl = null;
@@ -145,9 +148,13 @@ public class AbstractTableWriterModel extends TableModel {
 		
 		this.tblPr = tbl.getTblPr();
 		
-		PropertyResolver pr = conversionContext.getPropertyResolver();
-			
-		effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		PropertyResolver pr;			
+		try {
+			pr = conversionContext.getPropertyResolver();
+			effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		} catch (Docx4JException e) {
+			throw new TransformerException(e);
+		}
 //	    if (tblPr!=null
 //	    		&& tblPr.getTblW()!=null) {
 //	    	if (tblPr.getTblW().getType()!=null 

@@ -86,6 +86,8 @@ package org.docx4j.model.listnumbering;
 import java.math.BigInteger;
 
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.PPr;
@@ -176,7 +178,13 @@ public class Emulator {
     	// Object to hold results
     	ResultTriple triple = em.new ResultTriple();    	
     	    	
-    	PropertyResolver propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+    	PropertyResolver propertyResolver;
+		try {
+			propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(),e);
+			return null;
+		}
     	    	
     	// If numId is not provided explicitly, 
     	// is it provided by the style?
@@ -191,7 +199,13 @@ public class Emulator {
     		}
     		
     		log.debug("no explicit numId; looking in styles");
-			PPr ppr = propertyResolver.getEffectivePPr(pStyleVal); 
+			PPr ppr;
+			try {
+				ppr = propertyResolver.getEffectivePPr(pStyleVal);
+			} catch (CyclicStylesException e) {
+				log.error(e.getMessage(),e);
+				return null;
+			} 
 			
 	    	if (ppr == null) {
 		    		log.debug("Style '" + pStyleVal + "' has no pPr");
@@ -323,8 +337,14 @@ public class Emulator {
 
     	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
     		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
-    	
-    	PropertyResolver propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+
+    	PropertyResolver propertyResolver;
+    	try {
+    		propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(),e);
+			return null;
+		}
     	    	
     	// If numId is not provided explicitly, 
     	// is it provided by the style?
@@ -377,7 +397,13 @@ public class Emulator {
     			} else {
     	        	// use propertyResolver to follow <w:basedOn w:val="blagh"/>
         			log.debug(pStyleVal + ".. use propertyResolver to follow basedOn");
-    				PPr ppr = propertyResolver.getEffectivePPr(pStyleVal);
+    				PPr ppr=null;
+					try {
+						ppr = propertyResolver.getEffectivePPr(pStyleVal);
+					} catch (CyclicStylesException e) {
+						log.error(e.getMessage(),e);
+						return null;
+					} 
     				
     				numPr = ppr.getNumPr();
         			if (numPr==null) {	

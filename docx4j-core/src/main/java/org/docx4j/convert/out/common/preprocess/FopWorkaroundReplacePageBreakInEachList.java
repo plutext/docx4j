@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.P;
@@ -46,7 +48,7 @@ public class FopWorkaroundReplacePageBreakInEachList {
 	
 	private WordprocessingMLPackage wmlPackage;
 	
-	public static void process(WordprocessingMLPackage wmlPackage) {
+	public static void process(WordprocessingMLPackage wmlPackage) throws Docx4JException {
 		
 		FopWorkaroundReplacePageBreakInEachList worker = new FopWorkaroundReplacePageBreakInEachList(wmlPackage);
 
@@ -60,7 +62,7 @@ public class FopWorkaroundReplacePageBreakInEachList {
 	
 	private PropertyResolver propertyResolver = null;;
 	
-	private void  process() {
+	private void  process() throws Docx4JException {
 
 		propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
 		
@@ -70,7 +72,7 @@ public class FopWorkaroundReplacePageBreakInEachList {
 		wmlPackage.getMainDocumentPart().getJaxbElement().getBody().getContent().addAll(newContent);
 	}
 	
-	private List process(List contentIn) {
+	private List process(List contentIn) throws CyclicStylesException {
 				
 		
 		List<Object> newContent = new ArrayList<Object>();
@@ -140,7 +142,7 @@ public class FopWorkaroundReplacePageBreakInEachList {
 		return newContent;
 	}
 	
-	private PPr getEffectivePPr(P p) {
+	private PPr getEffectivePPr(P p) throws CyclicStylesException {
 
 		PPr pPrDirect = p.getPPr();
         return propertyResolver.getEffectivePPr(pPrDirect);  

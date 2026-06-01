@@ -221,6 +221,7 @@ public class StyleTree {
 
 		// Detect cycles
 		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			log.warn(styleId + " not re-added to tree");
 			return null;
 		}
 		seen.add(styleId);		
@@ -250,7 +251,7 @@ public class StyleTree {
         		 new Node<AugmentedStyle>(tree, styleId, as); 
     		    		
     		// You can have more than 1 node which isn't based on anything
-			log.debug("Style " + styleId + " is not based on anything.");
+			log.debug("Style " + styleId + " is not based on anything; attaching to root.");
 			tree.getRootElement().addChild(n);
 			
 			seen.remove(styleId);
@@ -265,12 +266,31 @@ public class StyleTree {
         	String basedOnStyleName = style.getBasedOn().getVal();   
         	log.debug("..based on " + basedOnStyleName);        	
         	if (tree.get(basedOnStyleName)==null) {
-//            	log.debug("..can disregard that null, but it shouldn't happen again for this style");        	
         		Node<AugmentedStyle> parent = addNodeInternal(basedOnStyleName, allStyles, tree, seen);
-        		if (parent!=null) {
+        		if (parent==null) {
+        			log.warn("Couldn't find parent style " + basedOnStyleName + " for " + styleId  + ", so attaching to root.");
+        			
+        			// Make it basedOn DocDefaults.
+            		// But we have to clone it first, so we don't alter the document proper       			
+            		Style clonedStyle = XmlUtils.deepCopy(style);
+            		
+            		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
+            		based.setVal(ROOT_NAME);		
+            		clonedStyle.setBasedOn(based);
+            		    		
+                	AugmentedStyle as2 = new AugmentedStyle(clonedStyle);        	
+                	Node<AugmentedStyle> n2 = 
+                		 new Node<AugmentedStyle>(tree, styleId, as2); 
+                	
+        			tree.getRootElement().addChild(n2);
+        			
+        		} else {
+        			log.debug("Adding " + n.styleId+ " as child of " + parent.styleId);
+        			
         			parent.addChild(n);
         		}
         	} else {
+    			log.debug("Adding " + n.styleId+ " as child of " + basedOnStyleName);
         		tree.get(basedOnStyleName).addChild(n);
         	}
 

@@ -43,6 +43,8 @@ import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.RPr;
@@ -411,8 +413,20 @@ public class XsltHTMLFunctions {
     		Tbl tbl, int idx) {
     	
     	StringBuffer result = new StringBuffer();		
-		PropertyResolver pr = context.getPropertyResolver();
-		Style s = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		PropertyResolver pr;
+		try {
+			pr = context.getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.error("Couldn't getPropertyResolver", e);
+			return "";
+		}
+		Style s = null;
+		try {
+			s = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		} catch (CyclicStylesException e) {
+			log.error(e.getMessage(),e);
+			return "";
+		}
 		
 		result.append("#" + TableWriter.getId(idx) + " td { ");
     	List<Property> properties =  new ArrayList<Property>();
@@ -517,7 +531,13 @@ public class XsltHTMLFunctions {
     		String htmlElementName ) {
     	
 
-		StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
+		StyleTree styleTree;
+		try {
+			styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
+		} catch (CyclicStylesException e) {
+			log.error("Couldn't getStyleTree", e);
+			return null;
+		}
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
@@ -824,20 +844,20 @@ public class XsltHTMLFunctions {
     		defaultCharacterStyleId = "DefaultParagraphFont";
     	else defaultCharacterStyleId = defaultRunStyle.getStyleId();
     	
+        try {
     	
-    	StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
-    	    	
-    	// Note that this is invoked for every paragraph with a pPr node.
-    	
-    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
-    	// which implements org.w3c.dom.traversal.NodeIterator
+	    	StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
+	    	    	
+	    	// Note that this is invoked for every paragraph with a pPr node.
+	    	
+	    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
+	    	// which implements org.w3c.dom.traversal.NodeIterator
 
     	
 //    	log.info("rPrNode:" + rPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
     	
     	
-        try {
 
         	// Get the rPr node as a JAXB object,
         	// so we can read it using our standard

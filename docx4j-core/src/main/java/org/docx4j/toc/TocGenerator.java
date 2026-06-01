@@ -48,6 +48,7 @@ import org.docx4j.model.bookmarks.BookmarksIntegrity.BookmarksStatus;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -375,9 +376,12 @@ public class TocGenerator {
         
         SwitchProcessor sp = new SwitchProcessor(pageDimensions, leader);
         sp.setStartingIdForNewBookmarks(bookmarkId);
-        tocEntries.addAll(
-        		sp.processSwitches(wordMLPackage, pList, toc.getSwitches(), pNumbersMap));
-        
+        try {
+	        tocEntries.addAll(
+	        		sp.processSwitches(wordMLPackage, pList, toc.getSwitches(), pNumbersMap));
+		} catch (Docx4JException e) {
+			throw new TocException(e.getMessage(), e);
+		} 
         
         if (tocEntries.size()==0) {
         	log.warn("No ToC entries generated!");
@@ -386,15 +390,21 @@ public class TocGenerator {
             sdtContent.getContent().add(p);
             sdtContent.getContent().add(TocSdtUtils.getLastParagraph());
         } else {
-	        // Prep: merge instruction into first tocEntry (avoiding an unwanted additional paragraph)
-	        P firstEntry = tocEntries.get(0).getEntryParagraph(tocStyles);
-	        firstEntry.getContent().addAll(0, toc.getTocInstruction());
+        	try {
+		        // Prep: merge instruction into first tocEntry (avoiding an unwanted additional paragraph)
+		        P firstEntry = tocEntries.get(0).getEntryParagraph(tocStyles);
+		        firstEntry.getContent().addAll(0, toc.getTocInstruction());
+		        
+		        // Add Toc Entries paragraphs
+		        for(TocEntry entry: tocEntries){
+		            sdtContent.getContent().add(entry.getEntryParagraph(tocStyles));
+		        }
+	
+			} catch (CyclicStylesException e) {
+				throw new TocException(e.getMessage(), e);
+			} 
 	        
-	        // Add Toc Entries paragraphs
-	        for(TocEntry entry: tocEntries){
-	            sdtContent.getContent().add(entry.getEntryParagraph(tocStyles));
-	        }
-
+	        
 	        // Add last toc paragraph
 	        sdtContent.getContent().add(TocSdtUtils.getLastParagraph());
 	        

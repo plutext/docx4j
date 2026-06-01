@@ -49,6 +49,7 @@ import org.docx4j.model.properties.table.tr.TrCantSplit;
 import org.docx4j.model.properties.table.tr.TrHeight;
 import org.docx4j.model.table.TableModelCell;
 import org.docx4j.model.table.TableModelRow;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
@@ -197,6 +198,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	}
 
   protected Node toNode(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Document doc) throws TransformerException {
+	  
 	DocumentFragment docfrag = doc.createDocumentFragment();
     Element tableRoot = createNode(doc, null, NODE_TABLE);
     List<Property> rowProperties = new ArrayList<Property>();
@@ -221,7 +223,11 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     cellPropertiesTableSize = cellProperties.size();
     
     docfrag.appendChild(tableRoot);
-	applyTableStyles(context, table, transformState, tableRoot);
+	try {
+		applyTableStyles(context, table, transformState, tableRoot);
+	} catch (CyclicStylesException e) {
+		throw new TransformerException("Cyclic styles detected when processing table styles", e);
+	}
 	
 	// setup column widths
     createColumns(context, table, transformState, doc, tableRoot);
@@ -340,7 +346,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     	}
 	}
 
-	protected void applyTableStyles(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableStyles(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) throws CyclicStylesException {
 	List<Property> tableProperties = null;
 	
 		// This handles:
@@ -571,7 +577,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	protected abstract void applyAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element);
 	  
 	
-	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) throws CyclicStylesException {
 	}
 	
 	protected void applyColumnGroupCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element columnGroup) {

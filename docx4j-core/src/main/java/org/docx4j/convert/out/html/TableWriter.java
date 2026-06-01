@@ -30,6 +30,7 @@ import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.table.TableModelCell;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -97,7 +98,7 @@ public class TableWriter extends AbstractTableWriter {
 	
 	@Override
 	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, 
-			TransformState transformState, Element tableRoot) {
+			TransformState transformState, Element tableRoot) throws CyclicStylesException {
 		
 	int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
 			   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&

@@ -178,6 +178,7 @@ public class Preprocess extends ConversionFeatures {
 //			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM)) {
+			// You can disable this step if you are using FOP post 1.1
 			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM");
 			FopWorkaroundReplacePageBreakInEachList.process(ret);
 //			log.debug(ret.getMainDocumentPart().getXML());

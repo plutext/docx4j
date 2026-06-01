@@ -32,6 +32,7 @@ import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.CTBookmark;
@@ -120,8 +121,9 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 	 * @param settings
 	 * @param preprocessedPackage
 	 * @param conversionSectionWrappers
+	 * @throws CyclicStylesException 
 	 */
-	public HTMLConversionContext(HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) {
+	public HTMLConversionContext(HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) throws CyclicStylesException {
 		super(HTML_WRITER_REGISTRY, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers, createRunFontSelector(preprocessedPackage));
 	}
 
@@ -224,8 +226,9 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 	 * @param settings
 	 * @param preprocessedPackage
 	 * @param conversionSectionWrappers
+	 * @throws CyclicStylesException 
 	 */
-	public HTMLConversionContext(AbstractWriterRegistry writerRegistry, HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) {
+	public HTMLConversionContext(AbstractWriterRegistry writerRegistry, HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) throws CyclicStylesException {
 		super(writerRegistry, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers, createRunFontSelector(preprocessedPackage));
 	}
 	

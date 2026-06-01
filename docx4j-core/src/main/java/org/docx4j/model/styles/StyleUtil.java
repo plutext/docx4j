@@ -3292,7 +3292,10 @@ public class StyleUtil {
 				|| seen.size()>32) { // hardcoded limit on deep basedOn hierarchies 
 			
 			logger.warn("Cycle detected in style basedOn hierarchy for: " + styleId + " - stopping");
-	//			(new Throwable()).printStackTrace();
+			
+			// The caller should try to degrade gracefully, by using as much of the style hierarchy as possible.
+			
+			// Consider remediating the docx by correcting the style's basedOn value?
 			
 			if (logger.isDebugEnabled()) {
 				for (String id: seen) {
@@ -3305,9 +3308,9 @@ public class StyleUtil {
 				logger.debug(styleId);
 			}
 			if (Docx4jProperties.getProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", false) ) {
-				return true;
-			} else {
 				throw new CyclicStylesException("Cycle detected in style basedOn hierarchy for: " + styleId);
+			} else {
+				return true;
 			}
 		} else {
 			return false;

@@ -14,6 +14,8 @@ import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.listnumbering.ListLevel;
 import org.docx4j.model.listnumbering.ListNumberingDefinition;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
@@ -67,7 +69,7 @@ public class ListsToContentControls {
 	
 	public static Logger log = LoggerFactory.getLogger(ListsToContentControls.class);		
 	
-	public ListsToContentControls(WordprocessingMLPackage wmlPackage) {
+	public ListsToContentControls(WordprocessingMLPackage wmlPackage) throws Docx4JException {
 		this.wmlPackage = wmlPackage;
 		mainDocument = wmlPackage.getMainDocumentPart();
 		this.ndp=mainDocument.getNumberingDefinitionsPart();
@@ -100,7 +102,7 @@ public class ListsToContentControls {
 		
 	}
 	
-	public static void process(WordprocessingMLPackage wmlPackage) {
+	public static void process(WordprocessingMLPackage wmlPackage) throws Docx4JException {
 		//TODO: Convert to visitor behaviour here like TraversalUtil.visit with onlyBody = false
 		
 		ListsToContentControls lc = new ListsToContentControls(wmlPackage);
@@ -118,7 +120,7 @@ public class ListsToContentControls {
 //		}
 	}
 	
-	private void process() {
+	private void process() throws CyclicStylesException {
 		List<Object> content = null;
 		List<Object> groupedContent = null;
 		
@@ -266,7 +268,7 @@ public class ListsToContentControls {
 		return null;
 	}
 	
-	private List<Object> groupContent(List<Object> bodyElts) {
+	private List<Object> groupContent(List<Object> bodyElts) throws CyclicStylesException {
 		
 		// Reset state
 		listStack = new LinkedList<ListSpec>();

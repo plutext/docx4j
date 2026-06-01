@@ -26,6 +26,8 @@ import jakarta.xml.bind.Unmarshaller;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -114,6 +116,8 @@ public class XsltCommonFunctions {
     			} catch (ClassCastException e) {
     				log.error("Couldn't cast  to RPr!");
     			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				} catch (Docx4JException e) {
     				log.error(e.getMessage(), e);
 				}        	        			
     		}

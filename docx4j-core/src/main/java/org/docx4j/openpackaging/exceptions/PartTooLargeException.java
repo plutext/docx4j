@@ -20,7 +20,7 @@
 
 package org.docx4j.openpackaging.exceptions;
 
-public class PartTooLargeException extends Docx4JException {
+public class PartTooLargeException extends Docx4JException implements FlawedPackage { 
 
 	public PartTooLargeException(String message){
 		super(message);

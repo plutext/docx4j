@@ -24,6 +24,7 @@ import org.docx4j.convert.out.common.AbstractExporterDelegate;
 import org.docx4j.convert.out.common.AbstractWmlExporter;
 import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 public abstract class AbstractHTMLExporter3 extends AbstractWmlExporter<HTMLSettings, HTMLConversionContext>{
@@ -55,7 +56,7 @@ public abstract class AbstractHTMLExporter3 extends AbstractWmlExporter<HTMLSett
 	protected HTMLConversionContext createContext(
 			HTMLSettings conversionSettings, 
 			WordprocessingMLPackage preprocessedPackage,
-			ConversionSectionWrappers sectionWrappers) {
+			ConversionSectionWrappers sectionWrappers) throws CyclicStylesException {
 		 if (writerRegistry==null) {
 			 return new HTMLConversionContext(conversionSettings, preprocessedPackage, sectionWrappers);
 		 } else {

@@ -41,6 +41,7 @@ import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -258,7 +259,13 @@ public class XsltFOFunctions {
     		String pStyleVal, NodeIterator childResults,
     		boolean sdt) {
 
-    	PropertyResolver propertyResolver = context.getPropertyResolver();
+    	PropertyResolver propertyResolver;
+		try {
+			propertyResolver = context.getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+	    	return null;
+		}
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
@@ -844,7 +851,8 @@ public class XsltFOFunctions {
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
 
-    	PropertyResolver propertyResolver = context.getPropertyResolver();
+        try {
+        	PropertyResolver propertyResolver = context.getPropertyResolver();
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
@@ -856,7 +864,6 @@ public class XsltFOFunctions {
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
     	
     	
-        try {
         	
 			Unmarshaller u = Context.jc.createUnmarshaller();			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());

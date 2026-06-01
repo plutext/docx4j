@@ -45,7 +45,7 @@ public class StylesCyclicTest {
 	@BeforeClass
     public static void setUpClass() {
         // Exception is ignored
-		Docx4jProperties.setProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", true);
+		Docx4jProperties.setProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", false);
     }
 	
     @Test
@@ -56,34 +56,37 @@ public class StylesCyclicTest {
 
         String openXML = "<w:styles xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
                 + "<w:docDefaults>"
-                + "<w:rPrDefault>"
-                + "<w:rPr>"
-                + "<w:rFonts w:asciiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\"/>"
-                + "<w:sz w:val=\"22\"/>"
-                + "<w:szCs w:val=\"22\"/>"
-                + "<w:lang w:bidi=\"ar-SA\" w:eastAsia=\"en-US\" w:val=\"en-US\"/>"
-                + "</w:rPr>"
-                + "</w:rPrDefault>"
-                + "<w:pPrDefault>"
-                + "<w:pPr>"
-                + "<w:spacing w:after=\"200\" w:line=\"276\" w:lineRule=\"auto\"/>"
-                + "</w:pPr>"
-                + "</w:pPrDefault>"
+	                + "<w:rPrDefault>"
+		                + "<w:rPr>"
+			                + "<w:rFonts w:asciiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\"/>"
+			                + "<w:sz w:val=\"22\"/>"
+			                + "<w:szCs w:val=\"22\"/>"
+			                + "<w:lang w:bidi=\"ar-SA\" w:eastAsia=\"en-US\" w:val=\"en-US\"/>"
+		                + "</w:rPr>"
+	                + "</w:rPrDefault>"
+	                + "<w:pPrDefault>"
+		                + "<w:pPr>"
+		                	+ "<w:spacing w:after=\"200\" w:line=\"276\" w:lineRule=\"auto\"/>"
+		                + "</w:pPr>"
+	                + "</w:pPrDefault>"
                 + "</w:docDefaults>"
+	                
                 + "<w:style w:default=\"true\" w:styleId=\"Normal\" w:type=\"paragraph\">"
-                + "<w:name w:val=\"Normal\"/>"
-                + "<w:basedOn w:val=\"Style1\"/>"
+	                + "<w:name w:val=\"Normal\"/>"
+	                + "<w:basedOn w:val=\"Style1\"/>"
                 + "</w:style>"
+	                
                 + "<w:style w:styleId=\"Style1\" w:type=\"paragraph\">"
-                + "<w:name w:val=\"Style1\"/>"
-                + "<w:basedOn w:val=\"Normal\"/>"
+	                + "<w:name w:val=\"Style1\"/>"
+	                + "<w:basedOn w:val=\"Normal\"/>"
                 + "</w:style>"
+	                
                 + "<w:style w:styleId=\"Style2\" w:type=\"paragraph\">"
-                + "<w:name w:val=\"Style2\"/>"
-                + "<w:basedOn w:val=\"Style1\"/>"
+	                + "<w:name w:val=\"Style2\"/>"
+	                + "<w:basedOn w:val=\"Style1\"/>"
                 + "</w:style>"
                 + "<w:style w:default=\"true\" w:styleId=\"DefaultParagraphFont\" w:type=\"character\">"
-                + "<w:name w:val=\"Default Paragraph Font\"/>"
+                	+ "<w:name w:val=\"Default Paragraph Font\"/>"
                 + "</w:style>"
                 + "</w:styles>";
 

@@ -19,7 +19,7 @@
  */
 package org.docx4j.openpackaging.exceptions;
 
-public class CyclicStylesException extends Docx4JException implements FlawedPackage{
+public class CyclicStylesException extends Docx4JException implements FlawedPackage {
 
 	public CyclicStylesException(String message){
 		super(message);

@@ -35,6 +35,7 @@ import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +91,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 		}
 	};
 
-	public FOConversionContext(FOSettings settings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
+	public FOConversionContext(FOSettings settings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) throws CyclicStylesException {
 		super(FO_WRITER_REGISTRY, FO_MESSAGE_WRITER, settings, wmlPackage, conversionSectionWrappers, createRunFontSelector(wmlPackage));
 		this.foRenderer = initializeFoRenderer(settings);
 	}

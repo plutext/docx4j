@@ -22,6 +22,7 @@ package org.docx4j.toc.switches;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.toc.TocEntry;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.OutlineLvl;
@@ -88,7 +89,7 @@ public class USwitch extends SelectorSwitch {
     	// Not used
     }
 
-    public void process(Style s, SwitchProcessorInterface sp, PPr pPr, OSwitch oSwitch) {
+    public void process(Style s, SwitchProcessorInterface sp, PPr pPr, OSwitch oSwitch) throws CyclicStylesException {
     	
     	// TODO, need actual pPr, since it could have an outline level defined on it!
     	
@@ -116,7 +117,7 @@ public class USwitch extends SelectorSwitch {
         return PRIORITY;
     }
     
-    public int getOutlineLvl(PPr pPr, SwitchProcessorInterface sp, Style s, int cutOff) {
+    public int getOutlineLvl(PPr pPr, SwitchProcessorInterface sp, Style s, int cutOff) throws CyclicStylesException {
         // Heading 1 is lvl 0
         // There are 9 levels, so 9 will be lvl 8
         // So return 9 for normal text

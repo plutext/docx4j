@@ -13,6 +13,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
 import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class HtmlExporterNonXSLT {
 		return ret;
 	}
 	
-	public String getCss() {
+	public String getCss() throws CyclicStylesException {
 		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)htmlSettings.getOpcPackage();
 		StringBuilder buffer = new StringBuilder();
 		HtmlCssHelper.createCssForStyles(wmlPackage, 
@@ -104,8 +105,9 @@ public class HtmlExporterNonXSLT {
 	 * 
 	 * @param blockLevelContent
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	public org.w3c.dom.Document export(Object blockLevelContent, String cssClass, String cssId) {
+	public org.w3c.dom.Document export(Object blockLevelContent, String cssClass, String cssId) throws CyclicStylesException {
 		HTMLConversionContext conversionContext = 
 				new HTMLConversionContext(htmlSettings, null, null);
 	Document document = XmlUtils.neww3cDomDocument();	

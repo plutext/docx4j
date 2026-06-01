@@ -25,6 +25,7 @@ import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.P.Hyperlink;
 
@@ -107,7 +108,11 @@ public class BindingHyperlinkResolver {
 	public void activateHyperlinkStyle(WordprocessingMLPackage wordMLPackage) {
 		
 		if (hyperlinkStyleId !=null) {
-			wordMLPackage.getMainDocumentPart().getPropertyResolver().activateStyle(getHyperlinkStyleId());
+			try {
+				wordMLPackage.getMainDocumentPart().getPropertyResolver().activateStyle(getHyperlinkStyleId());
+			} catch (Docx4JException e) {
+				log.error(e.getMessage(), e);
+			}
 		}			
 	}
 

@@ -38,6 +38,7 @@ import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.FldChar;
@@ -148,7 +149,7 @@ public class TocEntry {
         this.entryLevel = entryLevel;
     }
 
-    public P getEntryParagraph(TocStyles tocStyles){
+    public P getEntryParagraph(TocStyles tocStyles) throws CyclicStylesException{
         if(entryP == null){
             entryP = generateTocEntry(tocStyles);
         }
@@ -173,7 +174,7 @@ public class TocEntry {
         return pageNumberText;
     }
 
-    private P generateTocEntry(TocStyles tocStyles){
+    private P generateTocEntry(TocStyles tocStyles) throws CyclicStylesException{
         // Create object for p
         P p3 = wmlObjectFactory.createP(); 
         p3.setPPr(generateTocEntryPPr(tocStyles));
@@ -187,7 +188,7 @@ public class TocEntry {
     }
     
     private Map<String, Ind> styleIndent = new HashMap<String, Ind>();
-    private Ind getInd(String styleId) {
+    private Ind getInd(String styleId) throws CyclicStylesException {
     	
     	if (styleId==null) return null;
     	
@@ -206,7 +207,7 @@ public class TocEntry {
     }
     
 
-    private PPr generateTocEntryPPr(TocStyles tocStyles){
+    private PPr generateTocEntryPPr(TocStyles tocStyles) throws CyclicStylesException{
 
         String styleId = tocStyles.getStyleIdForName(String.format(TocStyles.TOC_STYLE_MASK, entryLevel+1));
     	
@@ -445,7 +446,7 @@ public class TocEntry {
 //    }
 
     // since 3.1.0.5
-    public void setEntryValue(P sourceP) {
+    public void setEntryValue(P sourceP) throws CyclicStylesException {
     	
     	/*
 			Certain Run formatting on entries is re-used, including:
@@ -544,8 +545,9 @@ public class TocEntry {
      * 
      * @param expressRPr
      * @return
+     * @throws CyclicStylesException 
      */
-    private RPr getEffectiveRPr(RPr expressRPr) {
+    private RPr getEffectiveRPr(RPr expressRPr) throws CyclicStylesException {
     	
 		RPr effectiveRPr = Context.getWmlObjectFactory().createRPr();
 

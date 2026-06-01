@@ -27,6 +27,7 @@ import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -71,7 +72,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	protected AbstractWmlConversionContext(AbstractWriterRegistry writerRegistry, 
 			AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, 
 			WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers,
-			RunFontSelector runFontSelector) {
+			RunFontSelector runFontSelector) throws CyclicStylesException {
 		
 		super(messageWriter, conversionSettings, wmlPackage);
 		
@@ -99,7 +100,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		return getWriterRegistry().createTransformStates();
 	}
 	
-	protected StyleTree initializeStyleTree() {
+	protected StyleTree initializeStyleTree() throws CyclicStylesException {
 		//catching and swallowing an exception here isn't good,
 		//that would cause later on a NPE
 		return getWmlPackage().getMainDocumentPart().getStyleTree();
@@ -117,7 +118,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		return writerRegistry;
 	}
 	
-	public PropertyResolver getPropertyResolver() {
+	public PropertyResolver getPropertyResolver() throws Docx4JException {
 		return getWmlPackage().getMainDocumentPart().getPropertyResolver();
 	}
 	

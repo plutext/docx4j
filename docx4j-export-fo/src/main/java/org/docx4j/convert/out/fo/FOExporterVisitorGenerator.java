@@ -38,6 +38,7 @@ import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.CTTabStop;
@@ -233,7 +234,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	
     @Override
 	protected Element handlePPr(FOConversionContext conversionContext, PPr pPrDirect, boolean sdt, 
-			Element currentParent) {
+			Element currentParent) throws Docx4JException {
+    	
     	Element ret = currentParent;
 
     	PropertyResolver propertyResolver = conversionContext.getPropertyResolver();
@@ -601,12 +603,13 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
      * @param rPrNodeIt
      * @param childResults
      * @return
+     * @throws Docx4JException 
      */
     @Override
 	protected void handleRPr(
     		FOConversionContext conversionContext,
     		PPr pPrDirect,
-    		RPr rPrDirect, Element currentParent ) {
+    		RPr rPrDirect, Element currentParent ) throws Docx4JException {
 
     	PropertyResolver propertyResolver = conversionContext.getPropertyResolver();
     	

@@ -27,6 +27,7 @@ import org.docx4j.convert.out.common.writer.AbstractHyperlinkWriter;
 import org.docx4j.convert.out.common.writer.AbstractPictWriter;
 import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.ContentAccessor;
@@ -226,7 +227,11 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			}
 			
 			pPr = ((P)o).getPPr();
-			currentP = handlePPr(conversionContext, pPr, false, currentP);
+			try {
+				currentP = handlePPr(conversionContext, pPr, false, currentP);
+			} catch (Docx4JException e) {
+				log.error(e.getMessage(), e);
+			}
 			
 		} else if (o instanceof org.docx4j.wml.R) {
 			
@@ -237,7 +242,11 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				
 				rPr = ((R)o).getRPr();
 				if ( rPr!=null ) {
-					handleRPr(conversionContext, pPr, rPr, currentSpan);
+					try {
+						handleRPr(conversionContext, pPr, rPr, currentSpan);
+					} catch (Docx4JException e) {
+						log.error(e.getMessage(), e);
+					}
 				}
 
 				if (currentP==null) {
@@ -460,7 +469,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		
 	}
 
-    protected abstract Element handlePPr(CC conversionContext, PPr pPrDirect, boolean sdt, Element currentParent);
+    protected abstract Element handlePPr(CC conversionContext, PPr pPrDirect, boolean sdt, Element currentParent) throws Docx4JException;
 
     
     /**
@@ -468,8 +477,9 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
      * from this rPr node. The paragraph style rPr's have been
      * taken care of on the fo block which represents the paragraph.
      * @return
+     * @throws Docx4JException 
      */
-    protected abstract void handleRPr(CC conversionContext, PPr pPrDirect, RPr rPrDirect, Element currentParent );
+    protected abstract void handleRPr(CC conversionContext, PPr pPrDirect, RPr rPrDirect, Element currentParent ) throws Docx4JException;
     
 	protected abstract AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory<CC> getFactory();
 	

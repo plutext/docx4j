@@ -31,6 +31,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.toc.StyleBasedOnHelper;
 import org.docx4j.toc.TocEntry;
@@ -100,10 +101,11 @@ public class SwitchProcessor implements SwitchProcessorInterface {
      * @param switchesList
      * @param pNumbersMap
      * @return
+     * @throws Docx4JException 
      */
     public List<TocEntry> processSwitches(WordprocessingMLPackage wordMLPackage, List<P> pList, 
     		List<SwitchInterface> switchesList,
-    		Map<P, ResultTriple> pNumbersMap){
+    		Map<P, ResultTriple> pNumbersMap) throws Docx4JException{
     	
         List<TocEntry> tocEntries = new ArrayList<TocEntry>();
         

@@ -38,6 +38,7 @@ import org.docx4j.convert.out.common.AbstractWmlExporter;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.model.fields.FormattingSwitchHelper;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.FoNumberFormatUtil;
@@ -97,7 +98,7 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 	protected FOConversionContext createContext(
 			FOSettings conversionSettings, 
 			WordprocessingMLPackage preprocessedPackage,
-			ConversionSectionWrappers sectionWrappers) {
+			ConversionSectionWrappers sectionWrappers) throws CyclicStylesException {
 		return new FOConversionContext(conversionSettings, preprocessedPackage, sectionWrappers);
 	}
 

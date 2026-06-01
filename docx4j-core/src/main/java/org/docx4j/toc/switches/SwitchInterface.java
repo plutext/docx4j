@@ -19,6 +19,7 @@
  */
 package org.docx4j.toc.switches;
 
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.wml.Style;
 
 public interface SwitchInterface {
@@ -34,7 +35,7 @@ public interface SwitchInterface {
     
     public boolean hasFieldArgument();
     
-    public void process(Style s, SwitchProcessorInterface sp);
+    public void process(Style s, SwitchProcessorInterface sp) throws CyclicStylesException;
     
     public int getPriority();
     

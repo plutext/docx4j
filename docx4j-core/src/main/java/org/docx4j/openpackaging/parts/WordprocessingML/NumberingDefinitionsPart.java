@@ -29,6 +29,7 @@ import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.ListLevel;
 import org.docx4j.model.listnumbering.ListNumberingDefinition;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -414,8 +415,12 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 
 			// Get the style
 			org.docx4j.wml.Style style = null;
-			PropertyResolver propertyResolver 
-				= ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getPropertyResolver(false); 
+			PropertyResolver propertyResolver = null;
+			try {
+				propertyResolver = ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getPropertyResolver(false);
+			} catch (Docx4JException e) {
+				log.error(e.getMessage(), e);
+			} 
 				/* avoids invoking it during init:
 					at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getPropertyResolver(MainDocumentPart.java:163)
 					at org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.getIndFromLvl(NumberingDefinitionsPart.java:417)

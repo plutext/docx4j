@@ -6,6 +6,7 @@ import org.docx4j.convert.out.common.writer.SymbolMapper;
 import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -147,7 +148,12 @@ public class RunFontSelector {
 		
 		if (defaultFont == null) {
 			
-	    	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
+	    	PropertyResolver propertyResolver=null;
+			try {
+				propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
+			} catch (Docx4JException e) {
+				log.error(e.getMessage(), e);
+			}
 			
 			org.docx4j.wml.RFonts rFonts = propertyResolver.getDocumentDefaultRPr().getRFonts();
 		
@@ -415,7 +421,12 @@ public class RunFontSelector {
     		log.debug(text);
     	}
     	
-    	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
+    	PropertyResolver propertyResolver=null;
+		try {
+			propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		}
     	
 //    	Style pStyle = null;
     	String pStyleId = null;
@@ -436,7 +447,11 @@ public class RunFontSelector {
     	if (pStyleId!=null && wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
     		// apply the rPr in the stack of styles, including documentDefaultRPr
 //    		log.debug(pStyleId);
-    		pRPr = propertyResolver.getEffectiveRPr(pStyleId);
+    		try {
+				pRPr = propertyResolver.getEffectiveRPr(pStyleId);
+			} catch (CyclicStylesException e) {
+				log.error(e.getMessage(), e);
+			}
 //        	log.debug("before getEffectiveRPrUsingPStyleRPr\n" + XmlUtils.marshaltoString(pRPr));
     	}
 
@@ -445,7 +460,11 @@ public class RunFontSelector {
 
     	
     	// now apply the direct rPr
-    	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr); 
+    	try {
+			rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr);
+		} catch (CyclicStylesException e) {
+			log.error(e.getMessage(), e);
+		} 
     	// TODO use effective rPr, but don't inherit theme val,
     	// TODO, add cache?
 
