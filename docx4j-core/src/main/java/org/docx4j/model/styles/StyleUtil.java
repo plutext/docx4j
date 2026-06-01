@@ -19,9 +19,11 @@
  */
 package org.docx4j.model.styles;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.paragraph.Indent;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.sharedtypes.STOnOff;
 import org.docx4j.wml.BooleanDefaultTrue;
@@ -3282,6 +3284,34 @@ public class StyleUtil {
 			destination.setCnfStyle(null);
 		}
 				
+	}
+
+	public static boolean isCyclic(String styleId, List<String> seen, Logger logger) throws CyclicStylesException  {
+		
+		if (seen.contains(styleId)
+				|| seen.size()>32) { // hardcoded limit on deep basedOn hierarchies 
+			
+			logger.warn("Cycle detected in style basedOn hierarchy for: " + styleId + " - stopping");
+	//			(new Throwable()).printStackTrace();
+			
+			if (logger.isDebugEnabled()) {
+				for (String id: seen) {
+					if (id.equals(styleId)) {
+						logger.debug(id + " <--- cycle starts here");
+					} else {
+						logger.debug(id);
+					}
+		        }				
+				logger.debug(styleId);
+			}
+			if (Docx4jProperties.getProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", false) ) {
+				return true;
+			} else {
+				throw new CyclicStylesException("Cycle detected in style basedOn hierarchy for: " + styleId);
+			}
+		} else {
+			return false;
+		}
 	}	
 	
 	

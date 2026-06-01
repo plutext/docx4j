@@ -19,12 +19,14 @@
  */
 package org.docx4j.convert.out.common.preprocess;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -147,15 +149,14 @@ public class ParagraphStylesInTableFix {
 		
 		Styles styles = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement();
         
-        styleRenamer.propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
-        // do that first, since it creates virtual styles for DocDefaults,
-        // which we need to include in the below
-        styleRenamer.setStyles(styles);
         
 		try {
+	        styleRenamer.propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+	        // do that first, since it creates virtual styles for DocDefaults,
+	        // which we need to include in the below
+	        styleRenamer.setStyles(styles);
 			new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer);
 		} catch (Docx4JException e) {
-			// TODO Auto-generated catch block
 			log.error(e.getMessage(), e);
 		}
 		
@@ -231,6 +232,31 @@ public class ParagraphStylesInTableFix {
 					);
 	    }
 	    
+		public static boolean isCyclic(Style s, List<Style> hierarchy) throws CyclicStylesException  {
+			
+			if (hierarchy.contains(s)
+					|| hierarchy.size()>32) { // hardcoded limit on deep basedOn hierarchies 
+				
+				if (log.isDebugEnabled()) {
+					for (Style style : hierarchy) {
+						if (style.equals(s)) {
+							log.debug(s.getStyleId() + " <--- cycle starts here");
+						} else {
+							log.debug(style.getStyleId());
+						}
+			        }				
+					log.debug(s.getStyleId());
+				}			
+				if (Docx4jProperties.getProperty("docx4j.openpackaging.exceptions.CyclicStylesException.throw", false) ) {
+					return true;
+				} else {
+					throw new CyclicStylesException("Cycle detected in style basedOn hierarchy");
+				}
+			} else {
+				return false;
+			}
+		}
+	    
 		/**
 		 * In a cell, a paragraph uses the table's paragraph properties,
 		 * plus the relevant paragraph style (Normal, by default).
@@ -241,8 +267,9 @@ public class ParagraphStylesInTableFix {
 		 * TO avoid this, we create a new style, which encapsulates the
 		 * paragraph style, with DocDefaults given lower priority 
 		 * than table style.  This created style has no w:basedOn setting.
+		 * @throws CyclicStylesException 
 		 */
-		private String getCellPStyle(String styleVal, boolean pStyleIsDefault) {
+		private String getCellPStyle(String styleVal, boolean pStyleIsDefault) throws CyclicStylesException {
 			
 			// Font size and jc for the style (which could be the default style), 
 			// without following its based on values
@@ -309,8 +336,14 @@ public class ParagraphStylesInTableFix {
 			
 			Style basedOn = null;
 			String currentStyle = styleVal;
+			
 			do {
+				
 				Style thisStyle = allStyles.get(currentStyle);
+				if (isCyclic(thisStyle, hierarchy)) {
+					log.warn("Cycle above detected in style basedOn hierarchy for: " + thisStyle.getStyleId() + " - stopping");					
+					break;
+				}
 				hierarchy.add(thisStyle);
 				if (log.isDebugEnabled()) {
 					log.debug("adding to hierarchy: " + currentStyle);
@@ -353,6 +386,11 @@ public class ParagraphStylesInTableFix {
 	    				currentStyle = null;
 	    			} else {
 	    			
+	    				if (isCyclic(thisStyle, tblStyles)) {
+	    					log.warn("Cycle above detected in style basedOn hierarchy for: " + thisStyle.getStyleId() + " - stopping");						    					
+	    					break;
+	    				}
+	    				
 		    			if ( thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element 
 		    					&& "Normal Table".equals(thisStyle.getName().getVal())) {
 		    				// Very surprising, but testing using Word 2010 SP1,
@@ -589,7 +627,12 @@ public class ParagraphStylesInTableFix {
 							p.getPPr().getPStyle().setVal(newStyle);
 						} else {
 							// We're in a table
-							String resultStyle = getCellPStyle(newStyle, true);
+							String resultStyle;
+							try {
+								resultStyle = getCellPStyle(newStyle, true);
+							} catch (CyclicStylesException e) {
+								throw new RuntimeException(e);
+							}
 							if (resultStyle==null) {
 								p.getPPr().getPStyle().setVal(newStyle);								
 							} else {
@@ -603,8 +646,13 @@ public class ParagraphStylesInTableFix {
 					if (styleVal!=null) {
 						if (tblStack.size()>0) {						
 							log.debug("Fixing " + pstyle.getVal());
-							String newStyle = getCellPStyle(styleVal, 
-													styleVal.equals(defaultParagraphStyle));
+							String newStyle;
+							try {
+								newStyle = getCellPStyle(styleVal, 
+														styleVal.equals(defaultParagraphStyle));
+							} catch (CyclicStylesException e) {
+								throw new RuntimeException(e);
+							}
 							if (newStyle==null) {
 								log.debug("getCellPStyle returned null, so leave as is");
 							} else {

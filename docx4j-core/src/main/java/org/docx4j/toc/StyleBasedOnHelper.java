@@ -19,7 +19,12 @@
  */
 package org.docx4j.toc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.wml.Style;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +89,29 @@ public class StyleBasedOnHelper {
         }
 		
 	}
+
+	public boolean isBasedOn(Style thisStyle, String baseStyleName ) throws CyclicStylesException {
+		// wrapper that starts a fresh seen set for cycle detection
+		List<String> seen = new ArrayList<String>();
+		return isBasedOnInternal(thisStyle, baseStyleName, seen);
+	}
 	
-	public boolean isBasedOn(Style thisStyle, String baseStyleName ) {
+	
+	public boolean isBasedOnInternal(Style thisStyle, String baseStyleName, List<String> seen ) throws CyclicStylesException {
+		
+		String styleId = thisStyle.getStyleId();
+		if (styleId==null) {
+			log.error("Style with null styleId");
+			return false;
+		}
+		
+		
+		
+		// Detect cycles
+		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			return false;
+		}
+		seen.add(styleId);
 		
 //		if (log.isDebugEnabled()) {
 //			log.debug("Testing " + thisStyle.getName().getVal() + " against " + baseStyleName);
@@ -104,7 +130,7 @@ public class StyleBasedOnHelper {
         		log.error(thisStyle.getStyleId() + " is based on missing " + thisStyle.getBasedOn().getVal());
         		return false;
         	}
-        	return isBasedOn(baseStyle, baseStyleName);
+        	return isBasedOnInternal(baseStyle, baseStyleName, seen);
         }
 		
 	}
@@ -113,8 +139,33 @@ public class StyleBasedOnHelper {
 	 * returns heading level, or -1 if not based on a heading
 	 * @param s
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	public int getBasedOnHeading(Style s) {
+	public int getBasedOnHeading(Style s) throws CyclicStylesException {
+		// wrapper that starts a fresh seen set for cycle detection
+		List<String> seen = new ArrayList<String>();
+		return getBasedOnHeadingInternal(s, seen);
+	}
+	
+	/**
+	 * returns heading level, or -1 if not based on a heading
+	 * @param s
+	 * @return
+	 * @throws CyclicStylesException 
+	 */
+	public int getBasedOnHeadingInternal(Style s, List<String> seen ) throws CyclicStylesException {
+		
+		String styleId = s.getStyleId();
+		if (styleId==null) {
+			log.error("Style with null styleId");
+			return -1;
+		}
+		
+		// Detect cycles
+		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			return -1;
+		}
+		seen.add(styleId);		
 		
         int level = -1;
         if(s.getStyleId().startsWith(HEADING_STYLE)){
@@ -135,7 +186,7 @@ public class StyleBasedOnHelper {
             if(s.getBasedOn()==null){
             	return -1;
             } else {
-                return getBasedOnHeading(propertyResolver.getStyle(s.getBasedOn().getVal()));
+                return getBasedOnHeadingInternal(propertyResolver.getStyle(s.getBasedOn().getVal()), seen);
             }
         } else {
         	return level;

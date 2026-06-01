@@ -2,6 +2,8 @@ package org.docx4j.model.styles;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.PropertyResolver;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -75,8 +78,9 @@ public class StyleTree {
 	 * @param stylesInUse styles actually in use in the main document part,
 	 *                    headers/footers, footnotes/endnotes
 	 * @param allStyles   styles defined in the style definitions part
+	 * @throws CyclicStylesException 
 	 */
-	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles, DocDefaults docDefaults, Style normal) {
+	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles, DocDefaults docDefaults, Style normal) throws CyclicStylesException {
 
 		init(stylesInUse, allStyles, docDefaults, normal, null, null);
 
@@ -88,10 +92,11 @@ public class StyleTree {
 	 * @param stylesInUse styles actually in use in the main document part,
 	 *                    headers/footers, footnotes/endnotes
 	 * @param allStyles   styles defined in the style definitions part
+	 * @throws CyclicStylesException 
 	 * @since 11.1.3
 	 */
 	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles, DocDefaults docDefaults, Style normal,
-			Style defaultCharStyle, Style defaultTableStyle) {
+			Style defaultCharStyle, Style defaultTableStyle) throws CyclicStylesException {
 
 		init(stylesInUse, allStyles, docDefaults, normal, defaultCharStyle, defaultTableStyle);
 	}
@@ -102,9 +107,10 @@ public class StyleTree {
 	 * @param stylesInUse styles actually in use in the main document part,
 	 *                    headers/footers, footnotes/endnotes
 	 * @param allStyles   styles defined in the style definitions part
+	 * @throws CyclicStylesException 
 	 */
 	public void init(Set<String> stylesInUse, Map<String, Style> allStyles, DocDefaults docDefaults, Style normal,
-			Style defaultCharStyle, Style defaultTableStyle) {
+			Style defaultCharStyle, Style defaultTableStyle) throws CyclicStylesException {
 
 //		new Throwable().printStackTrace();
 		
@@ -201,14 +207,29 @@ public class StyleTree {
         }        
 	}
 	
-	
 	private Node<AugmentedStyle> addNode(String styleId, Map<String, Style> allStyles,
-			Tree<AugmentedStyle> tree) {
+			Tree<AugmentedStyle> tree) throws CyclicStylesException {
+		
+		// wrapper that starts a fresh seen set for cycle detection
+		List<String> seen = new ArrayList<String>();		
+		return this.addNodeInternal(styleId, allStyles, tree, seen);
+	}
 
+	
+	private Node<AugmentedStyle> addNodeInternal(String styleId, Map<String, Style> allStyles,
+			Tree<AugmentedStyle> tree, List<String> seen ) throws CyclicStylesException {
+
+		// Detect cycles
+		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			return null;
+		}
+		seen.add(styleId);		
+		
 		log.debug(styleId);
     	Style style = allStyles.get(styleId);
         if (style == null ) {
         	log.error("Couldn't find style: " + styleId);
+    		seen.remove(styleId);
         	return null;
         } 	        		
 		
@@ -232,6 +253,7 @@ public class StyleTree {
 			log.debug("Style " + styleId + " is not based on anything.");
 			tree.getRootElement().addChild(n);
 			
+			seen.remove(styleId);
         	return n;
 						
     	} else if (style.getBasedOn().getVal()!=null) {
@@ -244,7 +266,7 @@ public class StyleTree {
         	log.debug("..based on " + basedOnStyleName);        	
         	if (tree.get(basedOnStyleName)==null) {
 //            	log.debug("..can disregard that null, but it shouldn't happen again for this style");        	
-        		Node<AugmentedStyle> parent = addNode(basedOnStyleName, allStyles, tree);
+        		Node<AugmentedStyle> parent = addNodeInternal(basedOnStyleName, allStyles, tree, seen);
         		if (parent!=null) {
         			parent.addChild(n);
         		}
@@ -252,14 +274,15 @@ public class StyleTree {
         		tree.get(basedOnStyleName).addChild(n);
         	}
 
+    		seen.remove(styleId);
         	return n;
         	
     	} else {
     		log.error("No basedOn set for: " + style.getStyleId() );
+    		seen.remove(styleId);
         	return null;
     	}
     	
-		
 	}
 	
 /*	

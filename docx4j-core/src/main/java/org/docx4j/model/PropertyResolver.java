@@ -2,13 +2,16 @@ package org.docx4j.model;
 
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -114,7 +117,8 @@ public class PropertyResolver {
 	private org.docx4j.wml.Styles styles;
 
 	/**
-	 * Map of all styles in the Style Definitions Part.
+	 * Map of all styles in the Style Definitions Part,
+	 * keyed by styleId. 
 	 * Note, you need to manually keep this up to date
 	 */
 	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
@@ -219,8 +223,9 @@ public class PropertyResolver {
 	/**
 	 * Add the effective properties of Normal style
 	 * to resolvedStylePPrComponent.
+	 * @throws CyclicStylesException 
 	 */
-	private void addNormalToResolvedStylePPrComponent() {
+	private void addNormalToResolvedStylePPrComponent() throws CyclicStylesException {
 		
 		Stack<PPr> pPrStack = new Stack<PPr>();
 //		String styleId = "Normal";
@@ -242,7 +247,7 @@ public class PropertyResolver {
 		return resolvedStylePPrComponent.get(defaultParagraphStyleId);
 	}
 
-	private void addDefaultParagraphFontToResolvedStyleRPrComponent() {
+	private void addDefaultParagraphFontToResolvedStyleRPrComponent() throws CyclicStylesException {
 		
 		Stack<RPr> rPrStack = new Stack<RPr>();
 
@@ -266,7 +271,7 @@ public class PropertyResolver {
 		}		
 	}
 	
-	public Style getEffectiveTableStyle(TblPr tblPr) {
+	public Style getEffectiveTableStyle(TblPr tblPr) throws CyclicStylesException {
 		// OK to pass this a null tblPr.
 		
 		Stack<Style> tableStyleStack = new Stack<Style>();
@@ -306,14 +311,27 @@ public class PropertyResolver {
 		
 		return result;
 	}
-	
+
+	private void fillTableStyleStack(String styleId, Stack<Style> tableStyleStack) throws CyclicStylesException {
+		// wrapper that starts a fresh seen set for cycle detection
+		List<String> seen = new ArrayList<String>();
+		fillTableStyleStackInternal(styleId, tableStyleStack, seen);
+	}
+		
 	/**
 	 * Ascend the style hierarchy, capturing the table styles
 	 *  
 	 * @param stylename
 	 * @param effectivePPr
+	 * @throws CyclicStylesException 
 	 */
-	private void fillTableStyleStack(String styleId, Stack<Style> tableStyleStack) {
+	private void fillTableStyleStackInternal(String styleId, Stack<Style> tableStyleStack, List<String> seen) throws CyclicStylesException {
+		
+		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			return;
+		}
+		seen.add(styleId);
+		
 		// get the style
 		Style style = liveStyles.get(styleId);
 		
@@ -322,8 +340,10 @@ public class PropertyResolver {
 			// No such style!
 			// For now, just log it..
 			log.error("Style definition not found: " + styleId);
+			seen.remove(styleId);			
 			return;
 		}
+		
 		
 		tableStyleStack.push(style);
 		log.debug("Added " + styleId + " to table style stack");
@@ -333,11 +353,13 @@ public class PropertyResolver {
 			log.debug("Style " + styleId + " is a root style.");
     	} else if (style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();           	
-        	fillTableStyleStack( basedOnStyleName, tableStyleStack);
+        	fillTableStyleStackInternal( basedOnStyleName, tableStyleStack, seen);
     	} else {
     		log.debug("No basedOn set for: " + style.getStyleId() );
     	}
 		
+		// remove from seen so that other branches may traverse
+		seen.remove(styleId);    	
 	}
 	
 	
@@ -356,8 +378,9 @@ public class PropertyResolver {
 	 *  
 	 * @param expressPPr
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	public PPr getEffectivePPr(PPr expressPPr) {
+	public PPr getEffectivePPr(PPr expressPPr) throws CyclicStylesException {
 		
 		// Used by docx4j-export-fo project.
 		
@@ -442,8 +465,9 @@ public class PropertyResolver {
 	 *  
 	 * @param expressPPr
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	public PPr getEffectivePPr(String styleId) {
+	public PPr getEffectivePPr(String styleId) throws CyclicStylesException {
 		
 		PPr resolvedPPr = resolvedStylePPrComponent.get(styleId);
 		
@@ -490,8 +514,9 @@ public class PropertyResolver {
 	 * @param expressRPr
 	 * @param pPr - 
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr) {
+	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr) throws CyclicStylesException {
 		
 		// NB Currently used in PDF viaXSLFO only
 		
@@ -541,8 +566,9 @@ public class PropertyResolver {
 	 * @param expressRPr
 	 * @param rPrFromPStyle should be rPr from the paragraph style (as opposed to rPr in the direct pPr, which is only relevant to the paragraph mark)
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr rPrFromPStyle) {
+	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr rPrFromPStyle) throws CyclicStylesException {
 		
 		// Note, RPr pPrLevelRunStyle should be rPr from the paragraph style
 		// (as opposed to rPr in the direct pPr, which is only
@@ -641,8 +667,9 @@ public class PropertyResolver {
 	 * 
 	 * @param styleId
 	 * @return
+	 * @throws CyclicStylesException 
 	 */
-	public RPr getEffectiveRPr(String styleId) {
+	public RPr getEffectiveRPr(String styleId) throws CyclicStylesException {
 
 		return getEffectiveRPr(styleId, true, true, true); 
 	}
@@ -650,9 +677,10 @@ public class PropertyResolver {
 	/**
 	 * @param directRPr
 	 * @return
+	 * @throws CyclicStylesException 
 	 * @since 11.5.12
 	 */
-	public RPr getEffectiveRPr(RPr directRPr) {
+	public RPr getEffectiveRPr(RPr directRPr) throws CyclicStylesException {
 		
 		RPr result = null;
 		if (directRPr!=null && directRPr.getRStyle()!=null && directRPr.getRStyle().getVal()!=null) {
@@ -678,11 +706,12 @@ public class PropertyResolver {
 	 * 
 	 * @param styleId
 	 * @return
+	 * @throws CyclicStylesException 
 	 * @since 8.2.4
 	 */
 	public RPr getEffectiveRPr(String styleId, 
 			boolean applyDocDefaultsRFonts, boolean applyDocDefaultsSz,
-			boolean applyDocDefaultsLang) {
+			boolean applyDocDefaultsLang) throws CyclicStylesException {
 		// styleId passed in could be a run style
 		// or a *paragraph* style
 		
@@ -1162,32 +1191,45 @@ public class PropertyResolver {
 	 *  
 	 * @param stylename
 	 * @param effectivePPr
+	 * @throws CyclicStylesException 
 	 */
-	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) {
+	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) throws CyclicStylesException {
+		// wrapper that starts a fresh seen set for cycle detection
+		List<String> seen = new ArrayList<String>();
+		fillPPrStackInternal(styleId, pPrStack, seen);
+	}
+
+	private void fillPPrStackInternal(String styleId, Stack<PPr> pPrStack, List<String> seen) throws CyclicStylesException {
 		// The return value is the style on which styleId is based.
-		
+
 		// It is purely for the purposes of ascertainNumId (? no, its used by getEffectivePPr(styleId))
-		
+
 		if (styleId==null) {
 			if (log.isDebugEnabled()) {
 				Throwable t = new Throwable();
 				log.debug("Null styleId produced by code path", t);
 			} else {
-				log.warn("Null styleId; Enable debug level logging to see code path");					
+				log.warn("Null styleId; Enable debug level logging to see code path");
 			}
 			return;
 		}
-		
+
+		// Detect cycles
+		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			return;
+		}
+		seen.add(styleId);
+
 		// get the style
 		Style style = liveStyles.get(styleId);
-		
+
 		// add it to the stack
 		if (style==null) {
 			// No such style!
 			// For now, just log it..
 			if (styleId!=null
 					&& styleId.equals("DocDefaults")) {
-				
+
 				// Don't worry about this.
 				// SDP.createVirtualStylesForDocDefaults()
 				// creates a DocDefaults style, and makes Normal based on it
@@ -1209,30 +1251,30 @@ public class PropertyResolver {
 			} else {
 				log.error("Style definition not found: " + styleId);
 			}
+			seen.remove(styleId);
 			return;
 		}
-		
+
 		// For heading styles, check the outline level is as expected
 		if (styleId.startsWith(HEADING_STYLE)) {
-			
+
 			int level = getLvlFromHeadingStyle(styleId);
 			if (level>0
 					&& style.getPPr()!=null
 					&& style.getPPr().getOutlineLvl()!=null
 					&& style.getPPr().getOutlineLvl().getVal()!=null
 					&& style.getPPr().getOutlineLvl().getVal().intValue()!=(level-1)) {
-				
+
 				// must use the outline level appropriate to this heading!
-				// No need to clone, since Microsoft Word automatically overwrites like this!
 				log.info(styleId + " - reset actual outline level with " + (level-1));
 				style.getPPr().getOutlineLvl().setVal(BigInteger.valueOf(level-1));
-			} 
-			
-			pPrStack.push(style.getPPr());				
+			}
+
+			pPrStack.push(style.getPPr());
 		} else {
 			pPrStack.push(style.getPPr());
 		}
-		
+
 		log.debug("Added " + styleId + " to pPr stack");
 		
 		// Some styles contain numPr, without specifying
@@ -1241,23 +1283,23 @@ public class PropertyResolver {
 		// To save numbering emulator from having to do
 		// that work, we make the numId explicit here.
 		boolean ascertainNumId = false;
-		if (style.getPPr()!=null 
+		if (style.getPPr()!=null
 				&& style.getPPr().getNumPr()!=null
 				&& style.getPPr().getNumPr().getNumId()==null) {
 
-			ascertainNumId = true;			
+			ascertainNumId = true;
 			log.debug(styleId +" ascertainNumId: " + ascertainNumId);
 		} else {
-			log.debug(styleId +" ascertainNumId: " + ascertainNumId);			
+			log.debug(styleId +" ascertainNumId: " + ascertainNumId);
 		}
-		
+
 		// if it is based on, recurse
-    	if (style.getBasedOn()==null) {
+		if (style.getBasedOn()==null) {
 			log.debug("Style " + styleId + " is a root style.");
-    	} else if (style.getBasedOn().getVal()!=null) {
-        	String basedOnStyleName = style.getBasedOn().getVal();           	
+		} else if (style.getBasedOn().getVal()!=null) {
+			String basedOnStyleName = style.getBasedOn().getVal();
 			log.debug("Style " + styleId + " is based on " + basedOnStyleName);
-        	fillPPrStack( basedOnStyleName, pPrStack);
+        	fillPPrStackInternal(basedOnStyleName, pPrStack, seen);
         	Style basedOnStyle = liveStyles.get(basedOnStyleName);
         	if (ascertainNumId && basedOnStyle!=null) {
         		// This works via recursion        		
@@ -1269,25 +1311,40 @@ public class PropertyResolver {
         			// Attach it at this level - for this to work,
         			// you can't have a style in the basedOn hierarchy
         			// which doesn't have a numPr element, because
-        			// in that case there is nowhere to hang the style
-        			style.getPPr().getNumPr().setNumId(numId);
-        			log.info("Injected numId " + numId);
-        		}
-        	}
-    	} else {
-    		log.debug("No basedOn set for: " + style.getStyleId() );
-    	}
-		
-	}
+        			// in that case there is nowhere to hang the style					
+					style.getPPr().getNumPr().setNumId(numId);
+					log.info("Injected numId " + numId);
+				}
+			}
+		} else {
+			log.debug("No basedOn set for: " + style.getStyleId() );
+		}
 
+		// remove from seen so that other branches may traverse
+		seen.remove(styleId);
+	}
+	
+
+	private void fillRPrStack(String styleId, Stack<RPr> rPrStack) throws CyclicStylesException {
+		// wrapper that starts a fresh seen set for cycle detection
+		List<String> seen = new ArrayList<String>();
+		fillRPrStackInternal(styleId, rPrStack, seen);
+	}
+	
 	/**
 	 * Ascend the style hierarchy, capturing the rPr bit
 	 *  
 	 * @param stylename
 	 * @param effectivePPr
+	 * @throws CyclicStylesException 
 	 */
-	private void fillRPrStack(String styleId, Stack<RPr> rPrStack) {
+	private void fillRPrStackInternal(String styleId, Stack<RPr> rPrStack, List<String> seen) throws CyclicStylesException {
 		
+		if (StyleUtil.isCyclic(styleId, seen, log)) {
+			return;
+		}
+		seen.add(styleId);
+
 		// get the style
 		Style style = liveStyles.get(styleId);
 		
@@ -1296,6 +1353,7 @@ public class PropertyResolver {
 			// No such style!
 			// For now, just log it..
 			log.error("Style definition not found: " + styleId);
+			seen.remove(styleId);
 			return;
 		}
 		rPrStack.push(style.getRPr());
@@ -1310,11 +1368,13 @@ public class PropertyResolver {
 //    		log.error(XmlUtils.marshaltoString(style));
 //    		throw new RuntimeException(styleId + " is basedOn itself!");
 //    	} 
-        	fillRPrStack( basedOnStyleName, rPrStack);
+        	fillRPrStackInternal( basedOnStyleName, rPrStack, seen);
     	} else {
     		log.debug("No basedOn set for: " + style.getStyleId() );
     	}
 		
+		// remove from seen so that other branches may traverse
+		seen.remove(styleId);    	
 	}
 	
 	
@@ -1331,6 +1391,12 @@ public class PropertyResolver {
     }
 
 	
+    /**
+     * Activate a style contained in docx4j's KnownStyles.xml, making it available for use in the document.  
+     * This is a recursive process, since if the style is based on another style, that other style must also be activated.
+     * @param styleId
+     * @return
+     */
     public boolean activateStyle( String styleId  ) {
     	
     	if (liveStyles.get(styleId)!=null) {
@@ -1383,7 +1449,7 @@ public class PropertyResolver {
     	boolean result1;
     	if (s.getBasedOn()!=null) {
     		String basedOn = s.getBasedOn().getVal();
-    		result1 = activateStyle( basedOn );
+    		result1 = activateStyle( basedOn );  // we don't check for cycles here, since we assume your KnownStyles.xml is ok.
     		
     	} else if ( s.getStyleId().equals(defaultParagraphStyleId)
     			|| s.getStyleId().equals(defaultCharacterStyleId) )
