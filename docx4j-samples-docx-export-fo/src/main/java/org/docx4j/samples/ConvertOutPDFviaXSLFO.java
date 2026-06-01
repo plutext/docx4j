@@ -98,10 +98,14 @@ public class ConvertOutPDFviaXSLFO {
 	
 	// Config for non-command line use
 	static {
+
+		// Modern approach, optimises re-using fopFactory; default is true
+		Docx4jProperties.setProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true);		
 		
 		inputfilepath = null; // to generate a docx (and PDF output) containing font samples
 		
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
+    	inputfilepath = System.getProperty("user.dir") 
+    			+ "/sample-docs/word/sample-docx.docx";
 		
     	saveFO = true;
 	}
@@ -242,22 +246,20 @@ public class ConvertOutPDFviaXSLFO {
     	
 		// Specify whether PDF export uses XSLT or not to create the FO
 		// (XSLT takes longer, but is more complete).
-		
-		// Don't care what type of exporter you use
+			
+		// Prefer the exporter which uses a xsl transformation (this is the default)
 		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
 		
-		// Prefer the exporter, that uses a xsl transformation
-		// Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
-		
-		// Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
+		// Prefer the exporter which doesn't use a xsl transformation (= uses a visitor)
 		// .. faster, but not yet at feature parity
 		// Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
     	
 		System.out.println("Saved: " + outputfilepath);
 
-		if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
-			wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
-		}		
+		// You should manage these after each export in long lived processes
+//		if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
+//			wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
+//		}		
 		updater = null;
 		foSettings = null;
 		wordMLPackage = null;
