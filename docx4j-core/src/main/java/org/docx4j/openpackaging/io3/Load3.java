@@ -362,6 +362,10 @@ public class Load3 extends Load {
 		
 		if (pkg.handled.get(resolvedPartUri)!=null) {
 			
+			if (log.isDebugEnabled()) {
+				log.debug("Already encountered " + resolvedPartUri );
+			}
+			
 			// The source Part (or Package) might have a convenience
 			// method for this
 			part = pkg.getParts().getParts().get(new PartName("/" + resolvedPartUri));
@@ -609,7 +613,8 @@ public class Load3 extends Load {
 //					}
 					
 				} else {
-					// Shouldn't happen, since ContentTypeManagerImpl should
+					// Generally shouldn't happen, since ContentTypeManagerImpl's
+					// newPartForContentType should
 					// return an instance of one of the above, or throw an
 					// Exception.
 					
