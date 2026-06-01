@@ -304,7 +304,10 @@ public class ContentTypeManager  {
 		String ext = new String(partName.substring(partName.indexOf(".") + 1).toLowerCase());
 		log.debug("Looking at extension '" + ext);
 		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
-		if (defaultCT!=null ) {
+		if (defaultCT==null ) {
+			log.debug(ext + " not found in defaultContentType");
+			
+		} else {
 			String contentType = defaultCT.getContentType();
 			if (log.isDebugEnabled()) {			
 				log.debug("Found content type '" + contentType + "' for "
