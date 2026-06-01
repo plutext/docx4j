@@ -160,7 +160,9 @@ public class IdentityPlusMapper extends Mapper {
         		put(documentFontname,         				 
         				PhysicalFonts.get(documentFontname + " bold") );	
         			log.debug(".. mismatch mapped to " + documentFontname + " bold" );
-	        } else if (regularForms.get(documentFontname)!=null) {
+	        } 
+	        /* not in PhysicalFonts */
+	        else if (regularForms.get(documentFontname)!=null) {
         		put(documentFontname,         				 
         				regularForms.get(documentFontname) );	
         			log.debug(".. mapped to embedded regular form " );
