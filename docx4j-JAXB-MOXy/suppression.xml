@@ -46,5 +46,43 @@
 		<cve>CVE-2026-23907</cve>
 	    <cve>CVE-2026-33929</cve>
 	</suppress>
+	
+    <!--
+        CVE-2026-2587: GlassFish EL Injection RCE (CWE-917, CVSS 9.6)
+        CVE-2026-2586: GlassFish Admin Console Authenticated RCE (CWE-94/CWE-917, CVSS 9.1)
 
+        Both CVEs affect eclipse:glassfish < 8.0.2 only.
+        False positive: jaxb-xjc-4.0.8.jar is the JAXB XML binding compiler from the
+        Jakarta XML Binding project. Although both GlassFish and JAXB/XJC are maintained
+        under the Eclipse Foundation umbrella, jaxb-xjc has no dependency on, and does
+        not ship, GlassFish's vulnerable EL gadget handler or Administration Console
+        components. docx4j-JAXB-MOXy is a document-processing library with no HTTP
+        endpoint or GlassFish runtime; the attack surface for both CVEs is entirely absent.
+
+        Assessed: 2026-06-01
+    -->
+    <!-- Suppress on the outer jar's GAV -->
+    <suppress>
+        <notes>
+            CVE-2026-2587 and CVE-2026-2586 are false positives against jaxb-xjc-4.0.8.jar.
+            See block comment above for full rationale.
+        </notes>
+        <gav regex="true">^com\.sun\.xml\.bind:jaxb-xjc:.*$</gav>
+        <cve>CVE-2026-2587</cve>
+        <cve>CVE-2026-2586</cve>
+    </suppress>
+
+    <!-- Suppress on the shaded artifact that Dependency-Check is actually matching -->
+    <suppress>
+        <notes>
+            CVE-2026-2587 and CVE-2026-2586 are false positives against the relaxng-datatype
+            library shaded inside jaxb-xjc-4.0.8.jar (com.sun.xml.bind.external:relaxng-datatype).
+            Dependency-Check erroneously matches version 4.0.8 to the GlassFish CPE.
+            relaxng-datatype is the RelaxNG Datatype library and has no relationship to
+            the vulnerable GlassFish components. See block comment above for full rationale.
+        </notes>
+        <gav regex="true">^com\.sun\.xml\.bind\.external:relaxng-datatype:.*$</gav>
+        <cve>CVE-2026-2587</cve>
+        <cve>CVE-2026-2586</cve>
+    </suppress>
 </suppressions>
