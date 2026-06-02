@@ -12,6 +12,8 @@
 
 	<logger name="org.apache.commons" level="WARN" />
 	<logger name="org.apache.fop" level="INFO" />
+	<logger name="FOP" level="WARN" /> <!-- target-resolution is here at DEBUG level -->
+	<logger name="org.apache.fop.fo.properties.CommonHyphenation" level="ERROR" /> <!-- suppress WARN 174 - Substituted specified hyphenation character (0x2d) with 0x20 because the font doesn't have the specified hyphenation character-->
 	<logger name="org.apache.fontbox" level="INFO" /> <!-- XHTML Import -->
 	<logger name="org.apache.pdfbox" level="INFO" /> <!-- XHTML Import -->
 

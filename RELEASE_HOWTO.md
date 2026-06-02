@@ -57,6 +57,8 @@ Update <tag> in scm element.  (Can it just be deleted?)
 
 Update build.xml so it has the same version as pom.xml (ie without  -SNAPSHOT)
 
+Update docx4j.AppVersion 11.x if x has changed.
+
 Check jar versions in pom.xml, build.xml
 - run mvn versions:display-dependency-updates on core and JAXB x 2
 - run mvn validate to check byte code version and dependencyConvergence on core, JAXB and export-fo; 

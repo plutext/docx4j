@@ -2,6 +2,31 @@ CHANGELOG
 =========
 
 
+Version 11.5.14
+===============
+
+Release date
+------------
+
+2 June 2026
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 11.5.14
+--------------------------
+
+PDF via FO: in multi-threaded environments, support use of a single FopFactory, configuring
+fonts on a per-document basis, or a new FopFactory per export (if you prefer).
+
+Security update (important where system accepts untrusted documents): Detect malformed documents 
+containing cyclic styles.  Property docx4j.openpackaging.exceptions.CyclicStylesException.throw 
+controls whether the detector throws an exception or not.
+
+
 Version 11.5.13
 ===============
 
