@@ -188,12 +188,17 @@ public class FOPAreaTreeHelper {
         FOSettings foSettingsHere = Docx4J.createFOSettings();
         foSettingsHere.setFopConfig(foSettingsOverall.getFopConfig());
         
-		FopFactory fopFactory = null;        
-		if (Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true)) {
+		FopFactory fopFactory = (FopFactory)foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY);        
+		if (Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true) 
+				&& fopFactory !=null ) {
 			
-			fopFactory = (FopFactory)foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY);
+			// use fopFactory
 			
 		} else {
+			
+			if (Docx4jProperties.getProperty("docx4j.convert.out.fo.renderers.ConfiguredPDFDocumentHandler", true)) {
+				log.warn("ConfiguredPDFDocumentHandler is true, but no FopFactory found in FOSettings; creating.. ");
+			}
         
 	        /* OLD APPROACH: 
 	         * Note to user: in this case, create a new fopFactory for each export.
@@ -384,6 +389,11 @@ public class FOPAreaTreeHelper {
 	    	        			Element region = (Element)regionViewport.getFirstChild();
 
 	    	        			int bpda = 0;
+    	    					/* bpda — Block-Progression Dimension Allocated
+	    						The total allocated space in the block-progression direction (i.e., vertical space), 
+	    						including any additional adjustments beyond the content height itself — such as 
+	    						space-before, space-after, or border/padding that gets factored into the area's 
+	    						allocation in the layout tree. */
 	    	        	    	if (region.getLocalName().equals("regionBefore")
 	    	        	    			|| region.getLocalName().equals("regionAfter")) {
 	    	        			
@@ -394,11 +404,18 @@ public class FOPAreaTreeHelper {
 		    	        	    		Element block = (Element)region.getChildNodes().item(m);
 		    	        	    		if (block.getLocalName().equals("block")) {
 		    	        	    			try {
+		    	        	    				if (log.isDebugEnabled()) {
+		    	        	    					log.debug("block @bpda: " + block.getAttribute("bpda"));	
+		    	        	    				}
 	    	        	    					bpda += Integer.parseInt(block.getAttribute("bpda"));
+	    	        	    					
+	    	        	    					
 		    	        	    			} catch (java.lang.NumberFormatException nfe) {
-		    	        	    				// safe to ignore?
-		    	        	    				log.error("For @bpda, \n"+ XmlUtils.w3CDomNodeToString(block));
-		    	        	    				log.error(nfe.getMessage(), nfe);
+		    	        	    				// safe to ignore if one of several blocks is missing @bpda 
+		    	        	    				if (log.isDebugEnabled()) {
+			    	        	    				log.debug("For @bpda, \n"+ XmlUtils.w3CDomNodeToString(block));
+			    	        	    				log.debug(nfe.getMessage(), nfe);
+		    	        	    				}
 		    	        	    			}
 		    	        	    			
 		    	        	    		} else {
