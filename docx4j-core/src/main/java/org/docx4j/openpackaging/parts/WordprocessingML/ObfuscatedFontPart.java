@@ -43,6 +43,7 @@ import org.docx4j.fonts.fop.fonts.FontUris;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.AbstractFontPart;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +62,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_FONT));
 
 		// Used when this Part is added to a rels
-		// TODO
-		//setRelationshipType(Namespaces.);
+		setRelationshipType(Namespaces.FONT);
 	}
 	
 	@Deprecated
@@ -190,15 +190,6 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		// to it mapped to some substitute font!
 		
 	}
-	
-	
-	public static byte fromHexString( String hexStr ){
-    	byte firstNibble  = Byte.parseByte(hexStr.substring(0,1),16); 
-    	byte secondNibble = Byte.parseByte(hexStr.substring(1,2),16);
-    	int finalByte = (secondNibble) | (firstNibble << 4 ); 
-    	return (byte) finalByte;
-	}
-	
 	
 	static java.lang.CharSequence target = (new String("-")).subSequence(0, 1);
     static java.lang.CharSequence replacement = (new String("")).subSequence(0, 0);

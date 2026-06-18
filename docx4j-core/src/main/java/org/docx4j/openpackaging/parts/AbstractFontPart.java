@@ -126,4 +126,72 @@ public abstract class AbstractFontPart extends BinaryPart {
 		
 	}
 	
+	/**
+	 * Obfuscate a font using the supplied fontKey, in accordance
+	 * with ECMA-376 Part 4, 2.8.1, so it can used in an ObfuscatedFontPart.
+	 *
+	 * @param fontKey the w:fontKey value, for example "{1DF903E3-2F14-4575-8028-881FEBABF2AB}"
+	 * @return a new byte array containing the obfuscated font data
+	 */
+	public static byte[] obfuscate(String fontKey, byte[] fontData ) {
+
+		if (fontData == null || fontData.length == 0) {
+			throw new IllegalArgumentException("Font data must not be empty");
+		}
+
+		if (fontData.length < 32) {
+			throw new IllegalArgumentException("Font data must contain at least 32 bytes");
+		}
+
+		byte[] obfuscationKey = constructObfuscationKey(fontKey);
+
+		// work on a copy
+		byte[] obfuscated = java.util.Arrays.copyOf(fontData, fontData.length);
+		
+	    // XOR the first two 16-byte blocks with the *reversed* GUID array.
+	    // This is identical to the deobfuscation loop in ObfuscatedFontPart.extract;
+	    // XOR is its own inverse, so the same operation encrypts and decrypts.
+		for (int j = 0; j < 2; j++) {
+			for (int i = 0; i < 16; i++) {
+				obfuscated[(j * 16) + i] ^= obfuscationKey[15 - i];
+			}
+		}
+
+		return obfuscated;
+	}
+	
+	private static byte[] constructObfuscationKey(String fontKey) {
+
+	    log.info("Obfuscating font with fontKey: " + fontKey);
+
+	    // Step 1 – strip the surrounding braces: {1DF903E3-...-881FEBABF2AB}
+	    if (fontKey == null || fontKey.length() < 2
+	            || fontKey.charAt(0) != '{' || fontKey.charAt(fontKey.length() - 1) != '}') {
+	        throw new IllegalArgumentException("fontKey must be in the form {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}");
+	    }
+	    String tmpString = fontKey.substring(1, fontKey.length() - 1);
+
+	    // Step 2 – strip the hyphens to get a 32-char hex string
+	    String guidString = tmpString.replace("-", "");
+	    if (guidString.length() != 32) {
+	        throw new IllegalArgumentException("fontKey does not expand to a 32-hex-digit GUID: " + fontKey);
+	    }
+
+	    // Step 3 – convert to a 16-byte array (same as ObfuscatedFontPart.extract)
+	    byte[] guidByteArray = new byte[16];
+		for (int i = 0; i < guidByteArray.length; i++) {
+			guidByteArray[i] = fromHexString(guidString.substring(i * 2,
+					(i * 2) + 2));
+		}
+	    
+	    return guidByteArray;
+	}
+
+	public static byte fromHexString( String hexStr ){
+    	byte firstNibble  = Byte.parseByte(hexStr.substring(0,1),16); 
+    	byte secondNibble = Byte.parseByte(hexStr.substring(1,2),16);
+    	int finalByte = (secondNibble) | (firstNibble << 4 ); 
+    	return (byte) finalByte;
+	}
+	
 }

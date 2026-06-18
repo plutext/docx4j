@@ -33,6 +33,7 @@ import java.util.Set;
 
 import jakarta.xml.bind.JAXBException;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -43,6 +44,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.TrueTypeFontPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.FontRel;
 import org.docx4j.wml.Fonts;
@@ -141,10 +144,10 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     		return null;
     	}
     	
-    	String id = fontRel.getId();    	
+    	String relId = fontRel.getId();    	
     	String fontKey = fontRel.getFontKey();
     	    	 
-    	Part p = this.getRelationshipsPart().getPart(id);
+    	Part p = this.getRelationshipsPart().getPart(relId);
     	
     	if (p instanceof ObfuscatedFontPart) {
     	
@@ -152,15 +155,33 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 	    	if (obfuscatedFont != null) {
 	    		return obfuscatedFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, embeddedFontTempFiles);
 	    	} else {
-	    		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
+	    		log.error("Couldn't find ObfuscatedFontPart with id: " + relId);
 	    	}
 	    	
     	} else {
 	    	TrueTypeFontPart truetypeFont = (TrueTypeFontPart)p;
+	    	
+	    	if (Docx4jProperties.getProperty("docx4j.fonts.embedded.obfuscate", false)) {
+		    	// Replace the TrueTypeFontPart with an ObfuscatedFontPart	    		
+	    		if (log.isDebugEnabled()) {
+	    			log.debug("Replacing " + p.getPartName().getName() + "with an ObfuscatedFontPart");
+	    		}
+		    	try {
+		    		ObfuscatedFontPart newPart = new ObfuscatedFontPart( new PartName(p.getPartName().getName() + ".odttf")); // eg /word/embeddings/x.ttf.odttf
+			    	newPart.setBinaryData(truetypeFont.obfuscate(fontKey));
+			    	// Replace the existing relationship with one to the new part, but with the same relId, so that the font table part doesn't need to be updated
+			    	Relationship r = this.getRelationshipsPart().getRelationshipByID(relId);
+			    	this.getRelationshipsPart().removeRelationship(r);
+			    	this.addTargetPart(newPart, AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS, relId);
+				} catch (InvalidFormatException e) {
+					log.error(e.getMessage(), e);
+				}
+	    	}
+	    	
 	    	if (truetypeFont != null) {
 	    		return truetypeFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, embeddedFontTempFiles);
 	    	} else {
-	    		log.error("Couldn't find TrueTypeFontPart with id: " + id);
+	    		log.error("Couldn't find TrueTypeFontPart with id: " + relId);
 	    	}
     	}
 		return null;

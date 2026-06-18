@@ -70,9 +70,14 @@ public class TrueTypeFontPart extends AbstractFontPart {
 		setRelationshipType(Namespaces.FONT);
 	}
 	
+	private String fontKey;
 	
+	public String getFontKey() {
+		return fontKey;
+	}
+
 	/**
-	 * deObfuscate this font, and save it using fontName
+	 * extract this font, and save it using fontName
 	 * 
 	 * @param fontNameAsInTablePart - the name to save the font as. We
 	 * could read the font name from the deObfuscated data,
@@ -81,13 +86,7 @@ public class TrueTypeFontPart extends AbstractFontPart {
 	 */
 	public PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, Set<File> embeddedFontTempFiles ) {
 		
-		/*  NB deobfuscation is done multiple times during PDF output.
-		 *  
-		 *  This could be avoided, if we cloned the fontMapper.
-		 *  TODO for 3.3 
-		 *  
-		 *  // (new Throwable()).printStackTrace(); 
-		 */
+		this.fontKey = fontKey;
 		
 		byte[] fontData = this.getBytes();
 		
@@ -179,6 +178,28 @@ public class TrueTypeFontPart extends AbstractFontPart {
 //		return null;
 		
 	}
+
+	/**
+	 * Obfuscate this TrueType font, in accordance
+	 * with ECMA-376 Part 4, 2.8.1, so it can form the data of an ObfuscatedFontPart.
+	 * 
+	 * Useful where an existing docx (perhaps created with Google Docs) contains this non-obfuscated part.
+	 */
+	public byte[] obfuscate() {
+		return obfuscate(this.fontKey);		
+	}
+
+	/**
+	 * Obfuscate this TrueType font using the supplied fontKey, in accordance
+	 * with ECMA-376 Part 4, 2.8.1, so it can be converted to an ObfuscatedFontPart.
+	 *
+	 * @param fontKey the w:fontKey value, for example "{1DF903E3-2F14-4575-8028-881FEBABF2AB}"
+	 * @return a new byte array containing the obfuscated font data
+	 */
+	public byte[] obfuscate(String fontKey) {
+		return obfuscate(fontKey, this.getBytes());
+	}	
 	
+
 	
 }
