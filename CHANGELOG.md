@@ -27,6 +27,7 @@ containing cyclic styles.  Property docx4j.openpackaging.exceptions.CyclicStyles
 controls whether the detector throws an exception or not.
 
 Note: Docx4j Enterprise users will need to upgrade to Docx4j Enterprise v 11.5.14 to use
+this version.
 
 Version 11.5.13
 ===============
