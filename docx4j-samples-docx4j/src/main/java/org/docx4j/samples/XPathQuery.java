@@ -6,7 +6,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.utils.XPathFactoryUtil;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 
 public class XPathQuery {
 

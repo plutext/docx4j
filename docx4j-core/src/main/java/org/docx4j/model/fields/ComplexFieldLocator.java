@@ -10,7 +10,7 @@ import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.STFldCharType;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

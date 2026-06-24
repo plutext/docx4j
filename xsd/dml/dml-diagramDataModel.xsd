@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram"
+            xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+            xmlns:annox="urn:jaxb.jvnet.org:annox"
+            jaxb:extensionBindingPrefixes="annox">
   <xsd:import schemaLocation="../shared/shared-relationshipReference.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" />
   <xsd:include schemaLocation="dml-diagramLayoutVariables.xsd" />
   <xsd:include schemaLocation="dml-diagramElementPropertySet.xsd" />
@@ -179,6 +182,11 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_DataModel">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="dataModel")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="ptLst" type="CT_PtList">
         <xsd:annotation>

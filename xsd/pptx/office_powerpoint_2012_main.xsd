@@ -8,7 +8,10 @@
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 	
    
   <!-- [MS-PPTX] — v20130726
@@ -81,6 +84,11 @@ Release: July 30, 2013 -->
     <xsd:attribute name="userDrawn" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
   <xsd:complexType name="CT_ExtendedGuideList">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sldGuideLst")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="guide" type="CT_ExtendedGuide" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>

@@ -160,6 +160,8 @@
 	
 	<logger name="org.docx4j.convert.out.documents4j.local" level="INFO"/>
 
+	<logger name="org.docx4j.LoadAndSaveTests" level="INFO" />
+
 
 
 	<!-- OpenDoPE functionality loggers -->

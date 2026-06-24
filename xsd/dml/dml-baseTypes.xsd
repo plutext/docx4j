@@ -358,7 +358,7 @@
     <xsd:sequence>
       <xsd:group ref="EG_ColorTransform" minOccurs="0" maxOccurs="unbounded"></xsd:group>
     </xsd:sequence>
-    <xsd:attribute name="val" type="ST_HexBinary3" use="required">
+    <xsd:attribute name="val" type="xsd:string" use="required">
       <xsd:annotation>
         <xsd:documentation>Value</xsd:documentation>
       </xsd:annotation>

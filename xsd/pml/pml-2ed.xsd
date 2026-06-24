@@ -9,7 +9,10 @@
 	elementFormDefault="qualified"
 	targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 		
 <!--
 
@@ -2414,6 +2417,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CommentAuthor">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="cmAuthor")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
@@ -2444,6 +2452,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CommentAuthorList">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="cmAuthorLst")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="cmAuthor" type="CT_CommentAuthor" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
@@ -2488,6 +2501,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CommentList">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="cmLst")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="cm" type="CT_Comment" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
@@ -2588,6 +2606,11 @@ PRINCIPLES:
 		<xsd:attribute name="progId" type="xsd:string" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Embedded Object ProgID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="spid" type="a:ST_ShapeID" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Shape ID</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
@@ -3695,6 +3718,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Shape" />
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sp")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>

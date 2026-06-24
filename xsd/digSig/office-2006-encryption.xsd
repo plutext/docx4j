@@ -22,8 +22,11 @@
 	xmlns:c="http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.microsoft.com/office/2006/encryption"
 	elementFormDefault="qualified" attributeFormDefault="unqualified"
-		xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 
 	<xs:import
 		namespace="http://schemas.microsoft.com/office/2006/keyEncryptor/password"
@@ -269,6 +272,11 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="CT_Encryption">
+		<xs:annotation>
+			<xs:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="encryption")</annox:annotate>
+			</xs:appinfo>
+		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="keyData" type="CT_KeyData"/>
 			<xs:element name="dataIntegrity" type="CT_DataIntegrity">

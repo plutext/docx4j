@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsd:schema
-	targetNamespace="http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps"
-	xmlns="http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps"
+	targetNamespace="http://schemas.microsoft.com/office/2006/coverPageProps"
+	xmlns="http://schemas.microsoft.com/office/2006/coverPageProps"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	blockDefault="#all" elementFormDefault="qualified"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"

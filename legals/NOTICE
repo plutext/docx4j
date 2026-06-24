@@ -77,6 +77,10 @@ Open Specifications documents, which says you can "distribute in your implementa
 with or without modification, any schemas .. that are included in the documentation".
 See also the Microsoft Open Specifications Promise. 
 
+Copyright © 2026, Oracle and/or its affiliates: contributions to automate the generation of all OpenXML objects from the
+XSD files. These include new files in the docx4j-xjc-copy and docx4j-openxml-objects-combined directories, as well as
+modifications to the XSD files.
+
 From version 11.5.8 of 5 Dec 2025, certain fonts are distributed in module docx4j-export-fo-fonts-symbol.
 
 These are as follows:

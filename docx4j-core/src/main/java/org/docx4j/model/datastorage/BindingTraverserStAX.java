@@ -541,7 +541,7 @@ public class BindingTraverserStAX extends BindingTraverserCommonImpl {
 			if (rPr!=null) {
 				run.setRPr(rPr);
 			}
-			run.getRunContent().add(Context.getWmlObjectFactory().createBr());
+			run.getContent().add(Context.getWmlObjectFactory().createBr());
 			
 			contents.add(run);
 		}
@@ -607,7 +607,7 @@ public class BindingTraverserStAX extends BindingTraverserCommonImpl {
 				run.setRPr(rPr);
 			}
 			org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
-			run.getRunContent().add(text);
+			run.getContent().add(text);
 			if (string.startsWith(" ") || string.endsWith(" ") ) {
 				// TODO: tab character?
 				text.setSpace("preserve");

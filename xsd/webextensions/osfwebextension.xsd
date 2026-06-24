@@ -8,6 +8,8 @@
 	xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:o="urn:schemas-microsoft-com:office:office"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb" xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
 	jaxb:version="3.0">
 
   <!-- http://schemas.microsoft.com/office/webextensions/webextension/2010/11 Schema 
@@ -87,6 +89,11 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_OsfWebExtension">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="webextension")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="reference" type="CT_OsfWebExtensionReference"/>
       <xsd:element name="alternateReferences" type="CT_OsfWebExtensionReferenceList" minOccurs="0" maxOccurs="1"/>

@@ -168,7 +168,12 @@ PRINCIPLES:
 	xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"	
 	xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"	
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	xmlns:inheritance="urn:jaxb.jvnet.org:plugin:inheritance"
+	jaxb:extensionBindingPrefixes="ci annox inheritance"
+	jaxb:version="3.0">
 <!-- 	jaxb:extensionBindingPrefixes="xjc" -->
 
 	<!--  2021 01 04 was getting:
@@ -2610,6 +2615,11 @@ PRINCIPLES:
 					<xsd:documentation>Align Left</xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
+			<xsd:enumeration value="start">
+				<xsd:annotation>
+					<xsd:documentation>Align Start</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
 			<xsd:enumeration value="center">
 				<xsd:annotation>
 					<xsd:documentation>Align Center</xsd:documentation>
@@ -2618,6 +2628,11 @@ PRINCIPLES:
 			<xsd:enumeration value="right">
 				<xsd:annotation>
 					<xsd:documentation>Align Right</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="end">
+				<xsd:annotation>
+					<xsd:documentation>Align End</xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="both">
@@ -2663,6 +2678,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Jc"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="jc")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:attribute name="val" type="JcEnumeration" use="required">
@@ -3376,6 +3392,11 @@ PRINCIPLES:
 		</xsd:complexContent>
 	</xsd:complexType>
 	<xsd:complexType name="CT_MarkupRange">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="bookmarkEnd")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:complexContent>
 			<xsd:extension base="CT_Markup">
 				<xsd:attribute name="displacedByCustomXml"
@@ -3435,6 +3456,11 @@ PRINCIPLES:
 		</xsd:complexContent>
 	</xsd:complexType>
 	<xsd:complexType name="CT_Bookmark">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="bookmarkStart")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:complexContent>
 			<xsd:extension base="CT_BookmarkRange">
 				<xsd:attribute name="name" type="ST_String" use="required">
@@ -3805,6 +3831,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Tabs"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="tabs")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -3910,6 +3937,11 @@ PRINCIPLES:
 						Reference</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="numPr")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:sequence>
 						<xsd:element name="ilvl" minOccurs="0">
 							<xsd:annotation>
@@ -3971,6 +4003,11 @@ PRINCIPLES:
 					<xsd:documentation>Paragraph Borders</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pBdr")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:sequence>
 						<xsd:element name="top" type="CT_Border" minOccurs="0">
 							<xsd:annotation>
@@ -4094,6 +4131,11 @@ PRINCIPLES:
 						Paragraph</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="spacing")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:attribute name="before" type="ST_TwipsMeasure"
 						use="optional">
 						<xsd:annotation>
@@ -4109,7 +4151,7 @@ PRINCIPLES:
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="beforeAutospacing" type="xsd:boolean"
-						default="true" use="optional">
+						default="false" use="optional">
 						<xsd:annotation>
 							<xsd:documentation>Automatically Determine Spacing
 								Above Paragraph</xsd:documentation>
@@ -4130,7 +4172,7 @@ PRINCIPLES:
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="afterAutospacing" type="xsd:boolean"
-						default="true" use="optional">
+						default="false" use="optional">
 						<xsd:annotation>
 							<xsd:documentation>Automatically Determine Spacing
 								Below Paragraph</xsd:documentation>
@@ -4158,6 +4200,11 @@ PRINCIPLES:
 					<xsd:documentation>Paragraph Indentation</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="ind")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:attribute name="left" type="ST_SignedTwipsMeasure"
 						use="optional">
 						<xsd:annotation>
@@ -4173,16 +4220,44 @@ PRINCIPLES:
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="right" type="ST_SignedTwipsMeasure"
-						use="optional">
+					               use="optional">
 						<xsd:annotation>
 							<xsd:documentation>Right
 								Indentation</xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
 					<xsd:attribute name="rightChars" type="ST_DecimalNumber"
-						use="optional">
+					               use="optional">
 						<xsd:annotation>
 							<xsd:documentation>Right Indentation in Character
+								Units</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="start" type="ST_SignedTwipsMeasure"
+					               use="optional">
+						<xsd:annotation>
+							<xsd:documentation>Start
+								Indentation</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="startChars" type="ST_DecimalNumber"
+					               use="optional">
+						<xsd:annotation>
+							<xsd:documentation>Start Indentation in Character
+								Units</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="end" type="ST_SignedTwipsMeasure"
+					               use="optional">
+						<xsd:annotation>
+							<xsd:documentation>End
+								Indentation</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="endChars" type="ST_DecimalNumber"
+					               use="optional">
+						<xsd:annotation>
+							<xsd:documentation>End Indentation in Character
 								Units</xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
@@ -4317,6 +4392,11 @@ PRINCIPLES:
 						Level</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="outlineLvl")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:attribute name="val" use="required">
 						<xsd:simpleType>
 							<xsd:restriction base="xsd:integer"/>
@@ -4353,6 +4433,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="PPr"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pPr")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexContent>
@@ -4482,8 +4563,9 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="pict"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pict")</annox:annotate>
 			</xsd:appinfo>
-		</xsd:annotation>	
+		</xsd:annotation>
 		<xsd:complexContent>
 			<xsd:extension base="CT_PictureBase">
 				<xsd:sequence maxOccurs="1">
@@ -4508,6 +4590,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="drawing"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="drawing")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>	
 		<xsd:choice minOccurs="1" maxOccurs="unbounded">
@@ -4529,6 +4612,12 @@ PRINCIPLES:
 	</xsd:complexType>
 	
 	<xsd:complexType name="CT_SimpleField">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="fldSimple")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="fldData" type="CT_Text" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -4673,6 +4762,7 @@ PRINCIPLES:
   		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="FldChar"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="fldChar")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>	
 		<xsd:choice>
@@ -5498,6 +5588,46 @@ PRINCIPLES:
 	<xsd:simpleType name="ST_VerticalJc">
 		<xsd:annotation>
 			<xsd:documentation>Vertical Alignment Type</xsd:documentation>
+			<xsd:appinfo>
+				<!-- Required for RI to treat invalid values as validation errors -->
+				<annox:annotate target="enum">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(org.docx4j.wml.STVerticalJc.Adapter.class)</annox:annotate>
+				<ci:code>
+				/**
+				 * Custom Adapter to force JAXB RI to respect validation errors. (MOXy doesn't need it)
+				 * @since 11.5.13
+				 */
+				public static class Adapter extends jakarta.xml.bind.annotation.adapters.XmlAdapter&lt;String, STVerticalJc&gt; {
+
+					/*
+						The JAXB RI uses a built-in "blind" converter for Enums. If it sees val which doesn't exist,
+						it fails the conversion internally and assigns null to the field.
+
+						With this @XmlJavaTypeAdapter, 	JAXB hands the raw string to unmarshal() here
+
+						TODO with auto-generation, will need to look at using a JAXB bindings
+						(.xjb) file to inject this adapter automatically.
+						At that point we should add similar to every enum ST
+					 *
+					 */
+
+					@Override
+					public STVerticalJc unmarshal(String v) throws Exception {
+						try {
+							return STVerticalJc.fromValue(v);
+						} catch (IllegalArgumentException e) {
+							// By wrapping this in UnmarshalException, JAXB is forced to
+							// invoke your ValidationEventHandler.
+							throw new jakarta.xml.bind.UnmarshalException("Invalid value for STVerticalJc: " + v);
+						}
+					}
+
+					@Override
+					public String marshal(STVerticalJc v) {
+						return (v != null) ? v.value() : null;
+					}
+				}
+				</ci:code>
+			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="top">
@@ -6002,6 +6132,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SectPr"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sectPr")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -6192,6 +6323,11 @@ PRINCIPLES:
 	</xsd:element>
 	
 	<xsd:complexType name="CT_Perm">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="permEnd")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:attribute name="id" type="ST_String" use="required">
 			<xsd:annotation>
 				<xsd:documentation>Annotation ID</xsd:documentation>
@@ -6209,6 +6345,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="RangePermissionStart"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="permStart")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexContent>
@@ -6296,6 +6433,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Text"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="t")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:simpleContent>
@@ -6394,95 +6532,178 @@ PRINCIPLES:
 					<xsd:documentation>Non Breaking Hyphen
 						Character</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="noBreakHyphen")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="softHyphen" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Optional Hyphen
 						Character</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="softHyphen")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="dayShort" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Date Block - Short Day
 						Format</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="dayShort")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="monthShort" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Date Block - Short Month
 						Format</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="monthShort")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="yearShort" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Date Block - Short Year
 						Format</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="yearShort")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="dayLong" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Date Block - Long Day
 						Format</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="dayLong")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="monthLong" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Date Block - Long Month
 						Format</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="monthLong")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="yearLong" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Date Block - Long Year
 						Format</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="yearLong")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="annotationRef" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Comment Information
 						Block</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="annotationRef")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="footnoteRef" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Footnote Reference Mark</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="footnoteRef")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="endnoteRef" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Endnote Reference Mark</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="endnoteRef")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="separator" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Footnote/Endnote Separator
 						Mark</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="separator")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="continuationSeparator" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Continuation Separator
 						Mark</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="continuationSeparator")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="sym" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Symbol Character</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sym")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:attribute name="font" type="ST_String">
 						<xsd:annotation>
 							<xsd:documentation>Symbol Character
@@ -6502,19 +6723,37 @@ PRINCIPLES:
 				<xsd:annotation>
 					<xsd:documentation>Page Number Block</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pgNum")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="cr" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Carriage Return</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="cr")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="tab" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Tab Character</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="tab")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="object" type="CT_Object">
 				<xsd:annotation>
@@ -6553,6 +6792,11 @@ PRINCIPLES:
 					</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="commentReference")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:attribute name="id" type="ST_DecimalNumber"
 						use="required">
 						<xsd:annotation>
@@ -6576,6 +6820,11 @@ PRINCIPLES:
 						Character</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="ptab")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:attribute name="alignment" type="ST_PTabAlignment"
 						use="required">
 						<xsd:annotation>
@@ -6605,7 +6854,13 @@ PRINCIPLES:
 					<xsd:documentation>Position of Last Calculated Page
 						Break</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexType/>
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="lastRenderedPageBreak")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:complexType>
 			</xsd:element>
 			
 			<!--  added docx4j 3.3.8 -->
@@ -6620,6 +6875,11 @@ PRINCIPLES:
 	</xsd:group>
 	<xsd:element name="r">
 		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				</xsd:appinfo>
+			</xsd:annotation>
 			<xsd:sequence>
 				<xsd:group ref="EG_RPr" minOccurs="0"></xsd:group>
 				<xsd:group ref="EG_RunInnerContent" minOccurs="0"
@@ -7337,6 +7597,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="RPr"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="rPr")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -7423,6 +7684,11 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:group>
 	<xsd:complexType name="CT_AltChunk">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="altChunk")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="altChunkPr" type="CT_AltChunkPr" minOccurs="0"
 				maxOccurs="1">
@@ -7599,6 +7865,11 @@ PRINCIPLES:
 		</xsd:restriction>
 	</xsd:simpleType>
 	<xsd:complexType name="CT_Lock">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="lock")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:attribute name="val" type="ST_Lock">
 			<xsd:annotation>
 				<xsd:documentation>Locking Type</xsd:documentation>
@@ -7832,6 +8103,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_DataBinding">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="dataBinding")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:attribute name="prefixMappings" type="ST_String">
 			<xsd:annotation>
 				<xsd:documentation>XML Namespace Prefix
@@ -7879,6 +8155,240 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SdtPr"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name = "sdtPr")</annox:annotate>
+				<ci:code>
+					private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SdtPr.class);
+
+					private static Object unwrap(Object o) {
+						if (o==null) return null;
+						if (o instanceof jakarta.xml.bind.JAXBElement) {
+							log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+							log.debug("name: " + ((JAXBElement)o).getName() );
+							return ((JAXBElement)o).getValue();
+						} else {
+							return o;
+						}
+					}
+
+					/**
+					 * Gets the value of the id property.
+					 *
+					 * @return
+					 *     possible object is
+					 *     {@link Id }
+					 *
+					 */
+					public Id getId() {
+
+						for (Object o : getRPrOrAliasOrLock()) {
+							if ( o instanceof Id ) {
+								log.debug("found id");
+								return (Id)o;
+							}
+						}
+
+						return null;
+					}
+
+					/**
+					 * Sets the value of the id property.
+					 *
+					 * @param value
+					 *     allowed object is
+					 *     {@link Id }
+					 *
+					 */
+					public void setId(Id value) {
+
+						Id existingId = getId();
+
+						if (existingId!=null) {
+							if (!existingId.equals(value)) {
+								log.debug("Changing SDT ID from " + existingId + " to " + value);
+								rPrOrAliasOrLock.remove(existingId);
+								if (value!=null) {
+									rPrOrAliasOrLock.add(value);
+								}
+							}
+							// else - they are the same, so do nothing
+						} else if (value!=null) {
+							//ObjectFactory factory = new ObjectFactory();
+							//JAXBElement idWrapper = factory.createSdtPrId(value);
+							rPrOrAliasOrLock.add(value);
+						}
+					}
+
+					// Not generated!
+					public java.math.BigInteger setId() {
+
+						Id id = new Id();
+						java.math.BigInteger newIdVal = java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt()));
+						id.setVal( newIdVal );
+						setId(id);
+						log.debug("Generated random id: " + newIdVal.toString() );
+						return newIdVal;
+					}
+
+					/**
+					 * return the first object
+					 * @param clazz
+					 * @return
+					 * @since 3.0.1
+					 */
+					public Object getByClass(Class clazz) {
+
+						for (Object o : getRPrOrAliasOrLock()) {
+							Object o2 = unwrap(o);
+							if ( o2.getClass().equals(clazz) ) {
+								log.debug("found " + clazz.getName());
+								return o2;
+							}
+						}
+
+						return null;
+					}
+
+					/**
+					 * Gets the value of the tag property.
+					 *
+					 * @return
+					 *     possible object is
+					 *     {@link SdtPr.Tag }
+					 *
+					 */
+					public Tag getTag() {
+
+						for (Object o : getRPrOrAliasOrLock()) {
+							if ( o instanceof Tag ) {
+
+				//    			if (Docx4jProperties.getProperty("docx4j.wml.SdtPr.Tag.LengthExceeds64Warning", true)
+				//    					&amp;&amp; ((Tag)o).getVal().length()&gt;64) {
+				//    				log.warn("w:tag too long for Word 2007/2010: " + ((Tag)o).getVal());
+				//    			}
+
+								return (Tag)o;
+							}
+						}
+
+						return null;
+					}
+
+					/**
+					 * Sets the value of the tag property.
+					 *
+					 * @param value
+					 *     allowed object is
+					 *     {@link SdtPr.Tag }
+					 *
+					 */
+					public void setTag(Tag value) {
+
+						Tag existingTag = getTag();
+
+						if (existingTag!=null) {
+							if (!existingTag.equals(value)) {
+								rPrOrAliasOrLock.remove(existingTag);
+								if (value==null) {
+									log.debug("Changing SDT tag from " + existingTag.getVal() + " to null");
+								} else {
+									log.debug("Changing SDT tag from " + existingTag.getVal() + " to " + value.getVal() );
+									rPrOrAliasOrLock.add(value);
+								}
+							}
+							// else - they are the same, so do nothing
+						} else if (value!=null) {
+							//ObjectFactory factory = new ObjectFactory();
+							//JAXBElement idWrapper = factory.createSdtPrId(value);
+							rPrOrAliasOrLock.add(value);
+						}
+					}
+
+					public CTDataBinding getDataBinding() {
+
+						for (Object o : getRPrOrAliasOrLock()) {
+							o = unwrap(o);
+							log.debug("inspecting " + o.getClass().getName() );
+							if ( o instanceof CTDataBinding ) {
+								return (CTDataBinding)o;
+							}
+						}
+						return null;
+					}
+
+					public void setDataBinding(CTDataBinding value) {
+
+						Object existingBinding = getDataBinding();
+
+						if (existingBinding!=null) {
+							if (!existingBinding.equals(value)) {
+								log.debug("Changing DataBinding tag from " + existingBinding + " to " + value);
+
+								//rPrOrAliasOrLock.remove(existingBinding);
+								existingBinding = null;
+								for (Object o : getRPrOrAliasOrLock() ) {
+									Object unwrapped = unwrap(o);
+									if (unwrapped instanceof CTDataBinding) {
+										existingBinding = o;
+										break;
+									}
+								}
+								if (existingBinding!=null) {
+									getRPrOrAliasOrLock().remove(existingBinding);
+								}
+
+								if (value!=null) {
+									rPrOrAliasOrLock.add(value);
+								}
+							}
+							// else - they are the same, so do nothing
+						} else if (value!=null) {
+							//ObjectFactory factory = new ObjectFactory();
+							//JAXBElement idWrapper = factory.createSdtPrId(value);
+							rPrOrAliasOrLock.add(value);
+						}
+					}
+
+					/**
+					 * @param set
+					 * @since 6.1.0
+					 */
+					public void setShowingPlcHdr(boolean set) {
+
+						JAXBElement&lt;BooleanDefaultTrue&gt; plcHdr = null;
+
+						// Is there an existing value
+						for (Object o : getRPrOrAliasOrLock()) {
+							if (o instanceof JAXBElement
+									&amp;&amp; ((JAXBElement)o).getName().getLocalPart().equals("showingPlcHdr")) {
+
+								plcHdr = (JAXBElement&lt;BooleanDefaultTrue&gt;)o;
+								break;
+							}
+						}
+
+						if (plcHdr==null) {
+
+							if (set) {
+								plcHdr = ObjectFactory.get().createSdtPrShowingPlcHdr(new BooleanDefaultTrue() );
+								getRPrOrAliasOrLock().add(plcHdr);
+							}
+
+						} else {
+
+							if (set) {
+								// if its false, set it
+								if (!plcHdr.getValue().isVal()) {
+									plcHdr.setValue(new BooleanDefaultTrue() );
+								}
+							} else /* remove */ {
+								getRPrOrAliasOrLock().remove(plcHdr);
+							}
+
+						}
+
+
+					}
+				</ci:code>
 			</xsd:appinfo>
 		</xsd:annotation>
 		
@@ -7894,6 +8404,11 @@ PRINCIPLES:
 					<xsd:documentation>Friendly Name</xsd:documentation>
 				</xsd:annotation>
 				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:appinfo>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="alias")</annox:annotate>
+						</xsd:appinfo>
+					</xsd:annotation>
 					<xsd:attribute name="val" type="xsd:string"/>
 				</xsd:complexType>
 				
@@ -7935,7 +8450,13 @@ PRINCIPLES:
 						<xsd:documentation>Equation Structured Document
 							Tag</xsd:documentation>
 					</xsd:annotation>
-					<xsd:complexType/>
+					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="equation")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="comboBox" type="CT_SdtComboBox">
 					<xsd:annotation>
@@ -7972,14 +8493,26 @@ PRINCIPLES:
 						<xsd:documentation>Picture Structured Document
 							Tag</xsd:documentation>
 					</xsd:annotation>
-					<xsd:complexType/>
+					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="picture")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="richText">
 					<xsd:annotation>
 						<xsd:documentation>Rich Text Structured Document
 							Tag</xsd:documentation>
 					</xsd:annotation>
-					<xsd:complexType/>
+					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="richText")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="text" type="CT_SdtText">
 					<xsd:annotation>
@@ -7992,21 +8525,39 @@ PRINCIPLES:
 						<xsd:documentation>Citation Structured Document
 							Tag</xsd:documentation>
 					</xsd:annotation>
-					<xsd:complexType/>
+					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="citation")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="group">
 					<xsd:annotation>
 						<xsd:documentation>Group Structured Document
 							Tag</xsd:documentation>
 					</xsd:annotation>
-					<xsd:complexType/>
+					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="group")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="bibliography">
 					<xsd:annotation>
 						<xsd:documentation>Bibliography Structured Document
 							Tag</xsd:documentation>
 					</xsd:annotation>
-					<xsd:complexType/>
+					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="bibliography")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:complexType>
 				</xsd:element>
 			</xsd:choice>
 			<xsd:element ref="w14:checkbox"  minOccurs="0"/>
@@ -8078,6 +8629,12 @@ PRINCIPLES:
   </xsd:simpleType>
 	
 	<xsd:complexType name="CT_SdtContentRun">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:extends>org.docx4j.wml.SdtContent</inheritance:extends>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sdtContent")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:group ref="EG_PContent" minOccurs="0" maxOccurs="unbounded"/>
 	</xsd:complexType>
 	
@@ -8117,20 +8674,29 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SdtContentBlock"/>
+				<inheritance:extends>org.docx4j.wml.SdtContent</inheritance:extends>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sdtContent")</annox:annotate>
+				<ci:code>
+					private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SdtContentBlock.class);
+					
+					public void replaceElement(Object current, List insertions) {
+						int index = getContent().indexOf(current);    	
+						if (index > -1 ) {    		
+							getContent().addAll(index+1, insertions);  
+							Object removed = getContent().remove(index);
+							// sanity check
+							if (!current.equals(removed)) {
+								log.error("removed wrong object?");
+							}    		
+						} else {
+							// Not found
+							log.error("Couldn't find replacement target.");
+						}
+					}
+				</ci:code>
 			</xsd:appinfo>
 		</xsd:annotation>
-		<xsd:group ref="EG_ContentBlockContent" minOccurs="0" maxOccurs="unbounded"/>
-	<!--  2014 01 21:  TODO REVIEW this.
-	
-			Word allows an altChunk in a block level content control, so we should here.
-			
-			Why not use EG_BlockLevelElts which does allow altChunk?
-	
-			org.docx4j.wml.SdtContentBlock manually edited to permit it, but this xsd not changed, so classes not regenerated yet.
-			
-			(With that addition, the content model for SdtContentBlock is the same as Body's) 
-	
-	 -->
+		<xsd:group ref="EG_BlockLevelElts" minOccurs="0" maxOccurs="unbounded"/>
 	</xsd:complexType>
 	
 	
@@ -8139,6 +8705,11 @@ PRINCIPLES:
 			<xsd:documentation>Table Row</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				</xsd:appinfo>
+			</xsd:annotation>
 			<xsd:sequence>
 				<xsd:element name="tblPrEx" type="CT_TblPrEx" minOccurs="0"
 					maxOccurs="1">
@@ -8211,6 +8782,12 @@ PRINCIPLES:
 	</xsd:group>
 	
 	<xsd:complexType name="CT_SdtContentRow">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:extends>org.docx4j.wml.SdtContent</inheritance:extends>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sdtContent")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:group ref="EG_ContentRowContent" minOccurs="0" maxOccurs="unbounded"/>
 	</xsd:complexType>
 	
@@ -8242,6 +8819,12 @@ PRINCIPLES:
 		</xsd:choice>
 	</xsd:group>
 	<xsd:complexType name="CT_SdtContentCell">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:extends>org.docx4j.wml.SdtContent</inheritance:extends>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sdtContent")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:group ref="EG_ContentCellContent" minOccurs="0"
 			maxOccurs="unbounded"/>
 	</xsd:complexType>
@@ -8250,6 +8833,81 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SdtBlock" />
+				<inheritance:implements>org.docx4j.wml.SdtElement</inheritance:implements>
+				<ci:code>
+					private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SdtBlock.class);
+					
+					/* Replace any nested content controls with their content. */
+					public void flatten() {
+						/*
+						&lt;w:sdt xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"&gt;
+							&lt;w:sdtPr&gt;&lt;w:tag w:val="30" /&gt;&lt;w:id w:val="871785936" /&gt;&lt;/w:sdtPr&gt;
+							&lt;w:sdtContent&gt;
+								&lt;w:p w:rsidR="00283267" w:rsidRDefault="00E8712C"&gt;
+									&lt;w:r&gt;&lt;w:t&gt;S&lt;/w:t&gt;&lt;/w:r&gt;
+									&lt;w:sdt&gt;&lt;w:sdtPr&gt;&lt;w:tag w:val="0" /&gt;&lt;w:id w:val="589321610" /&gt;&lt;/w:sdtPr&gt;&lt;w:sdtContent&gt;&lt;w:r&gt;&lt;w:t&gt;Para1&lt;/w:t&gt;&lt;/w:r&gt;&lt;/w:sdtContent&gt;&lt;/w:sdt&gt;
+								&lt;/w:p&gt;
+							&lt;/w:sdtContent&gt;
+						&lt;/w:sdt&gt;
+						*/
+						log.info("Flattening sdt: " + sdtPr.getId().toString() );
+						boolean startAgain;
+						do {
+							startAgain = false;
+							for (Object o : sdtContent.getContent() ) {
+								if (o instanceof SdtBlock) { // A block level SDT - but this doesn't happen
+									log.debug("Interesting .. detected BLOCK level nested sdt: " + ((SdtBlock)o).sdtPr.getId().toString() );
+									sdtContent.replaceElement(o, ((SdtBlock)o).getSdtContent().getContent() );
+									// need to refresh the list we are iterating
+									startAgain = true;
+									break;
+								} else if ( o instanceof org.docx4j.wml.P ) {
+									log.debug( "Paragraph object: ");
+									org.docx4j.wml.P p = (org.docx4j.wml.P)o;
+									flattenP(p);
+								} else if (o instanceof jakarta.xml.bind.JAXBElement) {
+										log.debug( "JAXB: " + ((jakarta.xml.bind.JAXBElement)o).getValue().getClass().getName() );
+								} else {
+									log.debug(o.getClass().getName() + ".. not an sdt");
+								}
+							}
+						} while (startAgain);
+					}
+						
+					public void flattenP(org.docx4j.wml.P p) {
+						/*    	
+								&lt;w:p w:rsidR="00283267" w:rsidRDefault="00E8712C"&gt;
+									&lt;w:r&gt;&lt;w:t&gt;S&lt;/w:t&gt;&lt;/w:r&gt;
+									&lt;w:sdt&gt;&lt;w:sdtPr&gt;&lt;w:tag w:val="0" /&gt;&lt;w:id w:val="589321610" /&gt;&lt;/w:sdtPr&gt;&lt;w:sdtContent&gt;&lt;w:r&gt;&lt;w:t&gt;Para1&lt;/w:t&gt;&lt;/w:r&gt;&lt;/w:sdtContent&gt;&lt;/w:sdt&gt;
+								&lt;/w:p&gt;
+						*/
+						log.info("Flattening nested p " );
+						boolean startAgain;
+						do {
+							startAgain = false;
+							for (Object o : p.getContent() ) {
+								if (o instanceof SdtRun) {  // This code path not used
+									log.debug(".. detected nested sdt " );
+									p.replaceElement(o, ((SdtRun)o).getSdtContent().getContent() );
+									// need to refresh the list we are iterating
+									startAgain = true;
+									break;
+								} else if (o instanceof jakarta.xml.bind.JAXBElement) {
+									if ( ((jakarta.xml.bind.JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtRun") ) {
+										log.debug( ((jakarta.xml.bind.JAXBElement)o).getDeclaredType().getName() + ".. detected SdtRun");
+										org.docx4j.wml.SdtRun sdtRun = (org.docx4j.wml.SdtRun)((jakarta.xml.bind.JAXBElement)o).getValue();
+										p.replaceElement(o, sdtRun.getSdtContent().getContent() );
+									} else {
+										log.debug( ((jakarta.xml.bind.JAXBElement)o).getDeclaredType().getName() + ".. not an sdt");	    				
+									}
+										
+								} else {
+									log.debug(o.getClass().getName() + ".. not an sdt");
+								}
+							}
+						} while (startAgain);
+					}
+				</ci:code>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<!-- 
@@ -8295,6 +8953,8 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SdtRun"/>
+				<inheritance:implements>org.docx4j.wml.SdtElement</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sdt")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		
@@ -8322,6 +8982,12 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_SdtCell">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.SdtElement</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sdt")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="sdtPr" type="CT_SdtPr" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -8346,6 +9012,12 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_SdtRow">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.SdtElement</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sdt")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="sdtPr" type="CT_SdtPr" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -8387,6 +9059,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CustomXmlRun">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="customXmlPr" type="CT_CustomXmlPr" minOccurs="0"
 				maxOccurs="1">
@@ -8409,6 +9086,12 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_SmartTagRun">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="smartTag")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="smartTagPr" type="CT_SmartTagPr" minOccurs="0"
 				maxOccurs="1">
@@ -8453,6 +9136,30 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CustomXmlPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<ci:code>
+					/**
+					 * Gets an attribute by name.
+					 * @param attrName Name of the attribute
+					 * @return {@link CTAttr} or {@code null}
+					 */
+					public CTAttr getAttr(String attrName) {
+						if (attr == null) {
+							attr = new org.docx4j.list.ArrayListDocx4j&lt;CTAttr&gt;(this);
+						}
+						
+						for(CTAttr attr: this.attr) {
+							if(attr.getName().equals(attrName)) {
+								return attr;
+							}
+						}
+						
+						return null;
+					}
+				</ci:code>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="placeholder" minOccurs="0">
 				<xsd:annotation>
@@ -8547,6 +9254,10 @@ PRINCIPLES:
 				<xsd:complexType>
 					<xsd:annotation>
 						<xsd:documentation>Hyperlink</xsd:documentation>
+						<xsd:appinfo>
+							<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+							<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="hyperlink")</annox:annotate>
+						</xsd:appinfo>
 					</xsd:annotation>
 					<xsd:group ref="EG_PContent" minOccurs="0"
 						maxOccurs="unbounded" />
@@ -8618,6 +9329,29 @@ PRINCIPLES:
 			<xsd:documentation>Paragraph</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+					<ci:code>
+						private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(P.class);
+
+						public void replaceElement(Object current, List insertions) {
+							int index = content.indexOf(current);
+							if (index > -1 ) {
+								content.addAll(index+1, insertions);
+								Object removed = content.remove(index);
+								// sanity check
+								if (!current.equals(removed)) {
+									log.error("removed wrong object?");
+								}
+							} else {
+								// Not found
+								log.error("Couldn't find replacement target.");
+							}
+						}
+					</ci:code>
+				</xsd:appinfo>
+			</xsd:annotation>
 			<xsd:sequence>
 				<xsd:element name="pPr" type="CT_PPr" minOccurs="0">
 					<xsd:annotation>
@@ -8678,6 +9412,10 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="TblWidth"/>
+				<ci:code>
+					public final static String TYPE_AUTO = "auto";
+					public final static String TYPE_DXA = "dxa"; // twips
+				</ci:code>
 			</xsd:appinfo>
 		</xsd:annotation>	
 		<xsd:attribute name="w" type="ST_DecimalNumber">
@@ -8754,6 +9492,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="TblGrid"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="tblGrid")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>		
 		<xsd:complexContent>
@@ -8939,6 +9678,12 @@ PRINCIPLES:
 									Border</xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
+						<xsd:element name="start" type="CT_Border" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Table Cell Start
+									Border</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
 						<xsd:element name="left" type="CT_Border" minOccurs="0">
 							<xsd:annotation>
 								<xsd:documentation>Table Cell Left
@@ -8954,6 +9699,12 @@ PRINCIPLES:
 						<xsd:element name="right" type="CT_Border" minOccurs="0">
 							<xsd:annotation>
 								<xsd:documentation>Table Cell Right
+									Border</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="end" type="CT_Border" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Table Cell End
 									Border</xsd:documentation>
 							</xsd:annotation>
 						</xsd:element>
@@ -9034,8 +9785,10 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Tc"/>
+				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="tc")</annox:annotate>
 			</xsd:appinfo>
-		</xsd:annotation>			
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="tcPr" type="CT_TcPr" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -9318,6 +10071,12 @@ PRINCIPLES:
 						Default</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			<xsd:element name="start" type="CT_TblWidth" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Table Cell Start Margin
+						Default</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
 			<xsd:element name="bottom" type="CT_TblWidth" minOccurs="0"
 				maxOccurs="1">
 				<xsd:annotation>
@@ -9329,6 +10088,13 @@ PRINCIPLES:
 				maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation>Table Cell Right Margin
+						Default</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="end" type="CT_TblWidth" minOccurs="0"
+			             maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Table Cell End Margin
 						Default</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
@@ -9491,6 +10257,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="TblPr"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="tblPr")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:complexContent>
@@ -9561,6 +10328,7 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="tblLook" type="CT_TblLook" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="tblCaption" type="CT_String" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblPrEx">
@@ -9582,6 +10350,8 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Tbl"/>
+				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="tbl")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -10303,6 +11073,34 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_Compat">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<ci:code>
+					public CTCompatSetting getCompatSetting(String name, String uri) {
+						for (CTCompatSetting setting : getCompatSetting() ) {
+
+							if (name.equals(setting.getName())
+									&amp;&amp; uri.equals(setting.getUri()) ) {
+								return setting;
+							}
+						}
+						return null;
+					}
+
+					public void setCompatSetting(String name, String uri, String val) {
+
+						CTCompatSetting setting = getCompatSetting( name,  uri);
+						if (setting==null) {
+							setting = new CTCompatSetting();
+							getCompatSetting().add(setting);
+						}
+						setting.setName(name);
+						setting.setUri(uri);
+						setting.setVal(val);
+					}
+				</ci:code>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="useSingleBorderforContiguousCells"
 				type="BooleanDefaultTrue" minOccurs="0">
@@ -11065,6 +11863,11 @@ PRINCIPLES:
 		<xsd:attributeGroup ref="AG_Password"></xsd:attributeGroup>
 	</xsd:complexType>
 	<xsd:complexType name="CT_Settings">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="settings")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="writeProtection" type="CT_WriteProtection"
 				minOccurs="0">
@@ -11802,6 +12605,11 @@ PRINCIPLES:
 		
 	</xsd:complexType>
 	<xsd:complexType name="CT_WebSettings">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="webSettings")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="frameset" type="CT_Frameset" minOccurs="0">
 				<xsd:annotation>
@@ -12125,6 +12933,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Lvl"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="lvl")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -12702,6 +13511,11 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TxbxContent">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:group ref="EG_BlockLevelElts" minOccurs="1" maxOccurs="unbounded"/>
 	</xsd:complexType>
 	<xsd:element name="txbxContent" type="CT_TxbxContent">
@@ -12837,6 +13651,8 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Body"/>
+				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="body")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -12895,6 +13711,11 @@ PRINCIPLES:
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="CT_Footnotes">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="footnotes")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence maxOccurs="unbounded">
 			<xsd:element name="footnote" type="CT_FtnEdn" minOccurs="0">
 				<xsd:annotation>
@@ -12902,6 +13723,7 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
+		<xsd:attribute ref="mc:Ignorable" use="optional" />
 	</xsd:complexType>
 	<xsd:element name="footnotes" type="CT_Footnotes">
 		<xsd:annotation>
@@ -12909,6 +13731,11 @@ PRINCIPLES:
 		</xsd:annotation>
 	</xsd:element>
 	<xsd:complexType name="CT_Endnotes">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="endnotes")</annox:annotate>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence maxOccurs="unbounded">
 			<xsd:element name="endnote" type="CT_FtnEdn" minOccurs="0">
 				<xsd:annotation>
@@ -12916,6 +13743,7 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
+		<xsd:attribute ref="mc:Ignorable" use="optional" />
 	</xsd:complexType>
 	<xsd:element name="endnotes" type="CT_Endnotes">
 		<xsd:annotation>
@@ -12926,18 +13754,28 @@ PRINCIPLES:
 		<xsd:complexType>
 			<xsd:annotation>
 				<xsd:documentation>Header</xsd:documentation>
+				<xsd:appinfo>
+					<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+					<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="hdr")</annox:annotate>
+				</xsd:appinfo>
 			</xsd:annotation>
 			<xsd:group ref="EG_BlockLevelElts" minOccurs="1"
 				maxOccurs="unbounded" />
+			<xsd:attribute ref="mc:Ignorable" use="optional" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="ftr">
 		<xsd:complexType>
 			<xsd:annotation>
 				<xsd:documentation>Footer</xsd:documentation>
+				<xsd:appinfo>
+					<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+					<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="ftr")</annox:annotate>
+				</xsd:appinfo>
 			</xsd:annotation>
 			<xsd:group ref="EG_BlockLevelElts" minOccurs="1"
 				maxOccurs="unbounded" />
+			<xsd:attribute ref="mc:Ignorable" use="optional" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="CT_SmartTagType">
@@ -13628,6 +14466,11 @@ PRINCIPLES:
 							Definition</xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="numPicBullet")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
 						<!-- 2025 recent versions of Word use mc:AlternateContent here,
 						     but since numPicBullet is so little used, this will suffice -->
 						<xsd:choice minOccurs="1" maxOccurs="1">
@@ -13656,6 +14499,11 @@ PRINCIPLES:
 							Definition</xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="abstractNum")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
 						<xsd:sequence>
 							<xsd:element name="nsid" type="CT_LongHexNumber"
 								minOccurs="0">
@@ -13782,6 +14630,11 @@ PRINCIPLES:
 							Instance</xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="num")</annox:annotate>
+							</xsd:appinfo>
+						</xsd:annotation>
 						<xsd:sequence>
 							<xsd:element name="abstractNumId" minOccurs="1">
 								<xsd:annotation>
@@ -13804,6 +14657,11 @@ PRINCIPLES:
 										Override</xsd:documentation>
 								</xsd:annotation>
 								<xsd:complexType>
+									<xsd:annotation>
+										<xsd:appinfo>
+											<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="lvlOverride")</annox:annotate>
+										</xsd:appinfo>
+									</xsd:annotation>
 									<xsd:sequence>
 										<xsd:element name="startOverride"
 											minOccurs="0">
@@ -13870,6 +14728,7 @@ PRINCIPLES:
 					
 				</xsd:element>
 			</xsd:sequence>
+			<xsd:attribute ref="mc:Ignorable" use="optional" />
 		</xsd:complexType>
 		
 	</xsd:element>
@@ -13915,6 +14774,11 @@ PRINCIPLES:
 
 	<xsd:element name="style">
 		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="style")</annox:annotate>
+				</xsd:appinfo>
+			</xsd:annotation>
 			<xsd:sequence>
 				<xsd:element name="name" minOccurs="0" maxOccurs="1">
 					<xsd:annotation>
@@ -14304,6 +15168,7 @@ PRINCIPLES:
 				</xsd:element>
       <xsd:element ref="style" minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
+			<xsd:attribute ref="mc:Ignorable" use="optional" />
 		</xsd:complexType>
 		
 	</xsd:element>
@@ -14437,6 +15302,20 @@ PRINCIPLES:
 			<xsd:documentation>Document</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+					<ci:code>
+						/**
+						* Convenience method to getBody().getContent()
+						* @since 2.7
+						*/
+						public java.util.List&lt;Object&gt; getContent() {
+							return getBody().getContent();
+						}
+					</ci:code>
+				</xsd:appinfo>
+			</xsd:annotation>
 			<xsd:sequence>
 				<xsd:element name="background" type="CT_Background" minOccurs="0">
 					<xsd:annotation>

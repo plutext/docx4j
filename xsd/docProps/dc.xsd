@@ -4,8 +4,10 @@
            targetNamespace="http://purl.org/dc/elements/1.1/"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+           xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+           xmlns:annox="urn:jaxb.jvnet.org:annox"
+           jaxb:extensionBindingPrefixes="annox"
+           jaxb:version="3.0">
 
   <xs:annotation>
     <xs:documentation xml:lang="en">
@@ -79,7 +81,14 @@
      <xs:sequence>
       <xs:any processContents="lax" minOccurs="0" maxOccurs="0"/>
      </xs:sequence>
-     <xs:attribute ref="xml:lang" use="optional"/>
+     <xs:attribute ref="xml:lang" use="optional">
+         <xs:annotation>
+             <xs:appinfo>
+                 <annox:annotate target="field">@jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter(jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter.class)</annox:annotate>
+                 <annox:annotate target="field">@jakarta.xml.bind.annotation.XmlSchemaType(name = "language")</annox:annotate>
+             </xs:appinfo>
+         </xs:annotation>
+     </xs:attribute>
     </xs:restriction>
    </xs:complexContent>
   </xs:complexType>

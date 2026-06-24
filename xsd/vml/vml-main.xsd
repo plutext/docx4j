@@ -15,7 +15,11 @@ xmlns:wvml="urn:schemas-microsoft-com:office:word"
 xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
 xmlns:x="urn:schemas-microsoft-com:office:excel"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0"
+    xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    xmlns:inheritance="urn:jaxb.jvnet.org:plugin:inheritance"
+    jaxb:extensionBindingPrefixes="ci annox inheritance">
 
 
 
@@ -614,6 +618,26 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:annotation>
   </xsd:element>
   <xsd:complexType name="CT_Shape">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="shape")</annox:annotate>
+        <ci:code>
+          /* (non-Javadoc)
+           * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+           * @since 3.0.1
+           */
+          public List&lt;JAXBElement&lt;?&gt;&gt; getEGShapeElements() {
+              if (pathOrFormulasOrHandles == null) {
+                  pathOrFormulasOrHandles = new ArrayListDocx4j&lt;JAXBElement&lt;?&gt;&gt;(this);
+              }
+              return this.pathOrFormulasOrHandles;
+          }
+        </ci:code>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:choice maxOccurs="unbounded">
       <xsd:group ref="EG_ShapeElements" />
       <xsd:element ref="o:ink" />
@@ -636,6 +660,13 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:attribute>
   </xsd:complexType>
   <xsd:complexType name="CT_Shapetype">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element ref="o:complex" minOccurs="0" />
@@ -651,6 +682,24 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:attribute>
   </xsd:complexType>
   <xsd:complexType name="CT_Group">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <ci:code>
+          /* (non-Javadoc)
+           * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+           * @since 3.0.1
+           */
+          public List&lt;JAXBElement&lt;?&gt;&gt; getEGShapeElements() {
+              if (pathOrFormulasOrHandles == null) {
+                  pathOrFormulasOrHandles = new ArrayListDocx4j&lt;JAXBElement&lt;?&gt;&gt;(this);
+              }
+              return this.pathOrFormulasOrHandles;
+          }
+        </ci:code>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:choice maxOccurs="unbounded">
       <xsd:group ref="EG_ShapeElements" />
       <xsd:element ref="group" />
@@ -1267,6 +1316,13 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:annotation>
   </xsd:element>
   <xsd:complexType name="CT_Arc">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
@@ -1284,6 +1340,13 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:attribute>
   </xsd:complexType>
   <xsd:complexType name="CT_Curve">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
@@ -1311,6 +1374,13 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:attribute>
   </xsd:complexType>
   <xsd:complexType name="CT_Image">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
@@ -1319,6 +1389,13 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     <xsd:attributeGroup ref="AG_ImageAttributes" />
   </xsd:complexType>
   <xsd:complexType name="CT_Line">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
@@ -1336,6 +1413,25 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:attribute>
   </xsd:complexType>
   <xsd:complexType name="CT_Oval">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+        <ci:code>
+          /* (non-Javadoc)
+           * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+           * @since 3.0.1
+           */
+          public List&lt;JAXBElement&lt;?&gt;&gt; getEGShapeElements() {
+              if (pathOrFormulasOrHandles == null) {
+                  pathOrFormulasOrHandles = new ArrayListDocx4j&lt;JAXBElement&lt;?&gt;&gt;(this);
+              }
+              return this.pathOrFormulasOrHandles;
+          }
+        </ci:code>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:choice maxOccurs="unbounded">
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
     </xsd:choice>
@@ -1343,6 +1439,25 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     <xsd:attributeGroup ref="AG_AllShapeAttributes" />
   </xsd:complexType>
   <xsd:complexType name="CT_PolyLine">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+        <ci:code>
+          /* (non-Javadoc)
+           * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+           * @since 3.0.1
+           */
+          public List&lt;JAXBElement&lt;?&gt;&gt; getEGShapeElements() {
+              if (pathOrFormulasOrHandles == null) {
+                  pathOrFormulasOrHandles = new ArrayListDocx4j&lt;JAXBElement&lt;?&gt;&gt;(this);
+              }
+              return this.pathOrFormulasOrHandles;
+          }
+        </ci:code>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:group ref="EG_ShapeElements" />
       <xsd:element ref="o:ink" />
@@ -1356,6 +1471,25 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     </xsd:attribute>
   </xsd:complexType>
   <xsd:complexType name="CT_Rect">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+        <ci:code>
+          /* (non-Javadoc)
+           * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+           * @since 3.0.1
+           */
+          public List&lt;JAXBElement&lt;?&gt;&gt; getEGShapeElements() {
+              if (pathOrFormulasOrHandles == null) {
+                  pathOrFormulasOrHandles = new ArrayListDocx4j&lt;JAXBElement&lt;?&gt;&gt;(this);
+              }
+              return this.pathOrFormulasOrHandles;
+          }
+        </ci:code>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:choice maxOccurs="unbounded">
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
     </xsd:choice>
@@ -1363,6 +1497,25 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
     <xsd:attributeGroup ref="AG_AllShapeAttributes" />
   </xsd:complexType>
   <xsd:complexType name="CT_RoundRect">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <inheritance:implements>org.docx4j.vml.VmlShapeElements</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllCoreAttributes</inheritance:implements>
+        <inheritance:implements>org.docx4j.vml.VmlAllShapeAttributes</inheritance:implements>
+        <ci:code>
+          /* (non-Javadoc)
+           * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+           * @since 3.0.1
+           */
+          public List&lt;JAXBElement&lt;?&gt;&gt; getEGShapeElements() {
+              if (pathOrFormulasOrHandles == null) {
+                  pathOrFormulasOrHandles = new ArrayListDocx4j&lt;JAXBElement&lt;?&gt;&gt;(this);
+              }
+              return this.pathOrFormulasOrHandles;
+          }
+        </ci:code>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:choice maxOccurs="unbounded">
       <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
     </xsd:choice>

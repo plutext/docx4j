@@ -1,0 +1,6 @@
+<jaxb:bindings xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+               jaxb:version="3.0">
+
+    <jaxb:globalBindings collectionType="org.docx4j.list.ArrayListDocx4j" />
+
+</jaxb:bindings>

@@ -53,7 +53,7 @@ import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
 import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -300,7 +300,7 @@ public class TraversalUtil {
         	if (wsp.getTxbx()==null) {
         		return null;
         	} else {
-        		return wsp.getTxbx().getTxbxContent().getEGBlockLevelElts();
+        		return wsp.getTxbx().getTxbxContent().getContent();
         		// grandchildren, like we do for vml textbox
         	}
         } else {
@@ -492,7 +492,7 @@ public class TraversalUtil {
 			if (textBox.getTxbxContent()==null) {
 				return null;
 			} else {
-				return textBox.getTxbxContent().getEGBlockLevelElts();
+				return textBox.getTxbxContent().getContent();
 				// grandchildren
 			}
 //		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {				
@@ -642,8 +642,8 @@ public class TraversalUtil {
 			
 		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {
 			
-			((org.docx4j.wml.CTTxbxContent) o).getEGBlockLevelElts().clear();
-			((org.docx4j.wml.CTTxbxContent) o).getEGBlockLevelElts().addAll(newChildren);			
+			((org.docx4j.wml.CTTxbxContent) o).getContent().clear();
+			((org.docx4j.wml.CTTxbxContent) o).getContent().addAll(newChildren);
 
 		} else {
 			
@@ -788,7 +788,7 @@ public class TraversalUtil {
 						elementList = new ArrayList();
 						for (Comment comment : ((CommentsPart) relPart
 								.getPart(rs)).getJaxbElement().getComment()) {
-							elementList.addAll(comment.getEGBlockLevelElts());
+							elementList.addAll(comment.getContent());
 						}
 					}
 					if ((elementList != null) && (!elementList.isEmpty())) {

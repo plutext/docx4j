@@ -9,7 +9,10 @@
 	targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	elementFormDefault="qualified"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 	
 <!--
 	Don't use xjc on this file; use it on sml_root instead
@@ -307,6 +310,11 @@
   </xsd:complexType>
   <xsd:element name="calcChain" type="CT_CalcChain"/>
   <xsd:complexType name="CT_CalcChain">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="calcChain")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="c" type="CT_CalcCell" minOccurs="1" maxOccurs="unbounded"/>
       <xsd:element name="extLst" minOccurs="0" type="CT_ExtensionList"/>
@@ -323,6 +331,11 @@
   </xsd:complexType>
   <xsd:element name="comments" type="CT_Comments"/>
   <xsd:complexType name="CT_Comments">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="comments")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="authors" type="CT_Authors" minOccurs="1" maxOccurs="1"/>
       <xsd:element name="commentList" type="CT_CommentList" minOccurs="1" maxOccurs="1"/>
@@ -610,6 +623,11 @@
   <xsd:element name="pivotCacheRecords" type="CT_PivotCacheRecords"/>
   <xsd:element name="pivotTableDefinition" type="CT_pivotTableDefinition"/>
   <xsd:complexType name="CT_PivotCacheDefinition">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pivotCacheDefinition")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="cacheSource" type="CT_CacheSource" minOccurs="1" maxOccurs="1"/>
       <xsd:element name="cacheFields" type="CT_CacheFields" minOccurs="1" maxOccurs="1"/>
@@ -902,6 +920,11 @@
     <xsd:attribute name="count" type="xsd:unsignedInt"/>
   </xsd:complexType>
   <xsd:complexType name="CT_PivotCacheRecords">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pivotCacheRecords")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="r" minOccurs="0" maxOccurs="unbounded" type="CT_Record"/>
       <xsd:element name="extLst" minOccurs="0" type="CT_ExtensionList"/>
@@ -930,7 +953,14 @@
     <xsd:attribute name="caption" use="optional" type="s:ST_Xstring"/>
     <xsd:attribute name="displayFolder" type="s:ST_Xstring"/>
     <xsd:attribute name="measureGroup" type="s:ST_Xstring"/>
-    <xsd:attribute name="parent" type="s:ST_Xstring"/>
+    <xsd:attribute name="parent" type="s:ST_Xstring">
+      <xsd:annotation>
+        <xsd:appinfo>
+          <!-- Name this attribute "parentAttr" in generated Java code to avoid conflict with "parent" field added by XJC Parent Pointer Plugin -->
+          <jaxb:property name="parentAttr"/>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
     <xsd:attribute name="value" use="required" type="s:ST_Xstring"/>
     <xsd:attribute name="goal" type="s:ST_Xstring"/>
     <xsd:attribute name="status" type="s:ST_Xstring"/>
@@ -1132,11 +1162,23 @@
     <xsd:attribute name="mdx" use="required" type="s:ST_Xstring"/>
     <xsd:attribute name="memberName" type="s:ST_Xstring"/>
     <xsd:attribute name="hierarchy" type="s:ST_Xstring"/>
-    <xsd:attribute name="parent" type="s:ST_Xstring"/>
+    <xsd:attribute name="parent" type="s:ST_Xstring">
+      <xsd:annotation>
+        <xsd:appinfo>
+          <!-- Name this attribute "parentAttr" in generated Java code to avoid conflict with "parent" field added by XJC Parent Pointer Plugin -->
+          <jaxb:property name="parentAttr"/>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
     <xsd:attribute name="solveOrder" type="xsd:int" default="0"/>
     <xsd:attribute name="set" type="xsd:boolean" default="false"/>
   </xsd:complexType>
   <xsd:complexType name="CT_pivotTableDefinition">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="pivotTableDefinition")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="location" type="CT_Location"/>
       <xsd:element name="pivotFields" type="CT_PivotFields" minOccurs="0"/>
@@ -1846,6 +1888,11 @@
   </xsd:simpleType>
   <xsd:element name="sst" type="CT_Sst"/>
   <xsd:complexType name="CT_Sst">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sst")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="si" type="CT_Rst" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="extLst" minOccurs="0" type="CT_ExtensionList"/>
@@ -2247,6 +2294,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Worksheet"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="worksheet")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>      
     <xsd:sequence>
@@ -2298,6 +2346,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SheetData"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sheetData")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>      
     <xsd:sequence>
@@ -2308,6 +2357,11 @@
     <xsd:attribute name="fullCalcOnLoad" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SheetFormatPr">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sheetFormatPr")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:attribute name="baseColWidth" type="xsd:unsignedInt" use="optional" default="8"/>
     <xsd:attribute name="defaultColWidth" type="xsd:double" use="optional"/>
     <xsd:attribute name="defaultRowHeight" type="xsd:double" use="required"/>
@@ -2322,6 +2376,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Cols"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="cols")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>      
     <xsd:sequence>
@@ -2332,6 +2387,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Col"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="col")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>      
     <xsd:attribute name="min" type="xsd:unsignedInt" use="required"/>
@@ -2355,6 +2411,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Row"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="row")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>      
     <xsd:sequence>
@@ -2435,6 +2492,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SheetViews"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sheetViews")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>      
     <xsd:sequence>
@@ -2446,6 +2504,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SheetView"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="sheetView")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>      
     <xsd:sequence>
@@ -3077,6 +3136,11 @@
     <xsd:attribute name="r" type="ST_CellRef" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_Chartsheet">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="chartsheet")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="sheetPr" type="CT_ChartsheetPr" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="sheetViews" type="CT_ChartsheetViews" minOccurs="1" maxOccurs="1"/>
@@ -3509,6 +3573,11 @@
   </xsd:complexType>
   <xsd:element name="styleSheet" type="CT_Stylesheet"/>
   <xsd:complexType name="CT_Stylesheet">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="styleSheet")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="numFmts" type="CT_NumFmts" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="fonts" type="CT_Fonts" minOccurs="0" maxOccurs="1"/>
@@ -3927,6 +3996,11 @@
   </xsd:attributeGroup>
   <xsd:element name="externalLink" type="CT_ExternalLink"/>
   <xsd:complexType name="CT_ExternalLink">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="externalLink")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:choice>
         <xsd:element name="externalBook" type="CT_ExternalBook" minOccurs="0" maxOccurs="1"/>
@@ -4054,6 +4128,11 @@
   </xsd:complexType>
   <xsd:element name="table" type="CT_Table"/>
   <xsd:complexType name="CT_Table">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="table")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="autoFilter" type="CT_AutoFilter" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="sortState" type="CT_SortState" minOccurs="0" maxOccurs="1"/>
@@ -4208,6 +4287,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="Workbook"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="workbook")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>    
     <xsd:sequence>

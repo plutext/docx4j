@@ -21,7 +21,7 @@ because this generates classes in org.docx4j.customxml|dml|math|vml|wml, but its
 -->
 	
 <xsd:schema  
-targetNamespace="foo"
+targetNamespace="urn:docx4j:vml:root"
 xmlns:p="urn:schemas-microsoft-com:office:powerpoint" 
 xmlns:o="urn:schemas-microsoft-com:office:office" 
 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
@@ -65,7 +65,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
 		schemaLocation="vml-spreadsheetDrawing.xsd" />
 	<xsd:import namespace="urn:schemas-microsoft-com:office:powerpoint"
 		schemaLocation="vml-presentationDrawing.xsd" />
-  	
+
 	<xsd:element name="xml">
 		<xsd:complexType>
 			<xsd:sequence>

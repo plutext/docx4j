@@ -160,9 +160,8 @@
 		<mkdir dir="${release.dir}"/>
 
 		<!-- docx4j itself, as built by maven -->
-		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects/${version}/docx4j-openxml-objects-${version}.jar" todir="${release.dir}"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-pml/${version}/docx4j-openxml-objects-pml-${version}.jar" todir="${release.dir}"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-sml/${version}/docx4j-openxml-objects-sml-${version}.jar" todir="${release.dir}"/>
+		<!-- TODO: validate this change and add jaxb-tools-runtime dependency -->
+		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-combined/${version}/docx4j-openxml-objects-combined-${version}.jar" todir="${release.dir}"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-core/${version}/docx4j-core-${version}.jar" todir="${release.dir}"/>
 
 		<copy file="CHANGELOG.md" todir="${release.dir}"/>

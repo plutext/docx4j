@@ -46,7 +46,7 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

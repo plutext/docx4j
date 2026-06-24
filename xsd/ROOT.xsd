@@ -22,7 +22,7 @@
     <xsd:import id="sd" namespace="http://schemas.microsoft.com/office/excel/2010/spreadsheetDrawing" schemaLocation="odrawxml/spreadsheetDrawing2010.xsd"/>
     <xsd:import id="idb" namespace="http://schemas.microsoft.com/office/excel/2008/2/main" schemaLocation="offmacro/office-excel-2008-2-main.xsd"/>
     
-    <xsd:import id="vml" namespace="foo" schemaLocation="vml/vml__ROOT.xsd"/>
+    <xsd:import id="vml" namespace="urn:docx4j:vml:root" schemaLocation="vml/vml__ROOT.xsd"/>
     
     <xsd:import id="wx" namespace="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11" schemaLocation="webextensions/taskpanes_2010_11.xsd"/>
     
@@ -30,7 +30,7 @@
 	
     <xsd:import id="id1" namespace="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" schemaLocation="shared/shared-bibliography.xsd"/>
     <xsd:import id="id2" namespace="http://schemas.openxmlformats.org/officeDocument/2006/customXml" schemaLocation="customXmlProperties/shared-customxmlprops.xsd"/>
-    <xsd:import id="id3" namespace="http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps" schemaLocation="customXmlWellDefined/coverpageproperties.xsd"/>
+    <xsd:import id="id3" namespace="http://schemas.microsoft.com/office/2006/coverPageProps" schemaLocation="customXmlWellDefined/coverpageproperties.xsd"/>
     <xsd:import id="id4" namespace="http://schemas.microsoft.com/office/2006/encryption" schemaLocation="digSig/office-2006-encryption.xsd"/>
     <xsd:import id="id5" namespace="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" schemaLocation="docProps/opc-coreProperties.xsd"/>
     <xsd:import id="id6" namespace="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" schemaLocation="docProps/shared-documentPropertiesCustom.xsd"/>

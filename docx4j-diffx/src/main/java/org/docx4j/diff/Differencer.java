@@ -854,11 +854,11 @@ public class Differencer {
         
         org.docx4j.wml.P newLeftP = wmlFactory.createP();
         newLeftP.setPPr(pl.getPPr());
-        newLeftP.getParagraphContent().addAll(pLeftReplacement);
+        newLeftP.getContent().addAll(pLeftReplacement);
 
         org.docx4j.wml.P newRightP = wmlFactory.createP();
         newRightP.setPPr(pr.getPPr());
-        newRightP.getParagraphContent().addAll(pRightReplacement);
+        newRightP.getContent().addAll(pRightReplacement);
         
 		log.debug("\n\n Left input \n\n" );
         log.debug(leftXmlOld) ;
@@ -916,7 +916,7 @@ public class Differencer {
 	/** Add a word to a w:r's existing w:t */ 
 	private static void addWord(R r, String word) {
 		
-    	List runContent = r.getRunContent();
+    	List runContent = r.getContent();
 		    	
 		for (Object o2 : runContent ) {	
 			
@@ -958,10 +958,10 @@ public class Differencer {
 
 		org.docx4j.wml.R newR = wmlFactory.createR();
 		org.docx4j.wml.Text newT = wmlFactory.createText();
-		newR.getRunContent().add(newT);
+		newR.getContent().add(newT);
 		newT.setValue(textVal);
 		newT.setSpace("preserve");
-		org.docx4j.wml.RPr existingRPr = ((org.docx4j.wml.R)existingP.getParagraphContent().get(rIndex)).getRPr(); 
+		org.docx4j.wml.RPr existingRPr = ((org.docx4j.wml.R)existingP.getContent().get(rIndex)).getRPr(); 
 		if ( existingRPr !=null )
 			newR.setRPr(existingRPr);
 		return newR;
@@ -1002,7 +1002,7 @@ public class Differencer {
 
     public static int[] getParagraphRunTextWordCounts(P p) {
     	
-    	List<Object> children = p.getParagraphContent();
+    	List<Object> children = p.getContent();
     	
     	int i=0;
     	int[] result = new int[children.size()]; // one for each w:r
@@ -1012,7 +1012,7 @@ public class Differencer {
 	    	if ( o instanceof org.docx4j.wml.R ) {
 	    		
 	    		org.docx4j.wml.R r = (org.docx4j.wml.R)o;
-		    	List runContent = r.getRunContent();
+		    	List runContent = r.getContent();
 	    		
 		    	result[i]=0;
 		    	
@@ -1096,12 +1096,12 @@ public class Differencer {
 
     	StringBuilder result = new StringBuilder();
     	
-    	List<Object> children = p.getParagraphContent();
+    	List<Object> children = p.getContent();
     	
     	if ( children.get(i) instanceof org.docx4j.wml.R ) {
     		
     		org.docx4j.wml.R r = (org.docx4j.wml.R)children.get(i);
-	    	List runContent = r.getRunContent();
+	    	List runContent = r.getContent();
     		
 			for (Object o2 : runContent ) {					
 				if (o2 instanceof jakarta.xml.bind.JAXBElement) {

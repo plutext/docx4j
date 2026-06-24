@@ -96,6 +96,11 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     		return "pkg";
     	}
 
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/spreadsheetml/2006/main")) {
+    		// SpreadsheetML parts conventionally use the default namespace for elements.
+    		return requirePrefix ? "s" : "";
+    	}
+
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/presentationml/2006/main")) {
     		return "p";
     	}
@@ -919,12 +924,6 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 	}
 
 	public String getPrefix(String namespaceURI) {  // implementing NamespaceContext
-		
-    	// Excel uses a default namespace, not a prefix. 
-    	if (namespaceURI.equals("http://schemas.openxmlformats.org/spreadsheetml/2006/main")) {
-    		return "";
-    	}
-		
 		return getPreferredPrefixStatic(namespaceURI, null, false );
 		
 //		if (namespaceURI.equals(Namespaces.NS_WORD12))

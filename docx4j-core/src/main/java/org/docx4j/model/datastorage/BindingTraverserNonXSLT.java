@@ -50,7 +50,7 @@ import org.docx4j.wml.SdtRun;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -578,7 +578,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			if (rPr!=null) {
 				run.setRPr(rPr);
 			}
-			run.getRunContent().add(Context.getWmlObjectFactory().createBr());
+			run.getContent().add(Context.getWmlObjectFactory().createBr());
 			
 			contents.add(run);
 		}
@@ -643,7 +643,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 				run.setRPr(rPr);
 			}
 			org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
-			run.getRunContent().add(text);
+			run.getContent().add(text);
 			if (string.startsWith(" ") || string.endsWith(" ") ) {
 				// TODO: tab character?
 				text.setSpace("preserve");

@@ -161,8 +161,9 @@
 	<xsd:include schemaLocation="dml-textRun.xsd" />
 	<xsd:include schemaLocation="dml-text.xsd" />
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" schemaLocation="dml-wordprocessingDrawing.xsd" />
-		
-	<xsd:import namespace="http://opendope.org/SmartArt/DataHierarchy" schemaLocation="../OpenDoPE/SmartArtDataHierarchy.xsd" />
+
+	<!-- Classes are located in docx4j-core rather than being generated as part of docx4j-openxml-objects-combined -->
+<!--	<xsd:import namespace="http://opendope.org/SmartArt/DataHierarchy" schemaLocation="../OpenDoPE/SmartArtDataHierarchy.xsd" />-->
     
     <!--  2017 10 02 -->
     <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2007/8/2/chart" schemaLocation="../odrawxml/chart20070802.xsd" />

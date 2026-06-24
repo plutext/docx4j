@@ -7,7 +7,6 @@
 	<artifactId>docx4j-parent</artifactId>
 	<version>${revision}</version>
   </parent>
-  
 	<artifactId>docx4j-core</artifactId>
 	<packaging>${packaging.type}</packaging>
 	<name>docx4j-core</name>
@@ -201,17 +200,7 @@
 
 		<dependency>
             <groupId>org.docx4j</groupId>
-            <artifactId>docx4j-openxml-objects</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-            <groupId>org.docx4j</groupId>
-            <artifactId>docx4j-openxml-objects-pml</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-            <groupId>org.docx4j</groupId>
-            <artifactId>docx4j-openxml-objects-sml</artifactId>
+			<artifactId>docx4j-openxml-objects-combined</artifactId>
 			<version>${project.version}</version>
 		</dependency>
         

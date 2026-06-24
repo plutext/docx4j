@@ -29,7 +29,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
 import org.junit.Test;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 
 /**
  * See also org.docx4j.wml.ParentTest

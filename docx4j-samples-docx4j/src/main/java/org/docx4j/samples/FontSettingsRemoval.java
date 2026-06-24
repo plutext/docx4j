@@ -50,10 +50,10 @@ import org.docx4j.wml.Numbering.AbstractNum;
 import org.docx4j.wml.Numbering.Num;
 import org.docx4j.wml.Numbering.Num.LvlOverride;
 import org.docx4j.wml.P;
+import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.RPrAbstract;
 import org.docx4j.wml.Style;
 
 
@@ -195,26 +195,22 @@ public class FontSettingsRemoval extends AbstractSample {
 	       */
 			
 			if (p.getPPr()!=null) {
-				
-				handleRPr( p.getPPr().getRPr());
+				ParaRPr rPr = p.getPPr().getRPr();
+				rPr.setRFonts(null);
+				rPr.setSz(null);
+				rPr.setSzCs(null);
 			}
 
 			// Next, remove from any run
 			for(Object o : p.getContent()) {
 				if (o instanceof R) {
-					handleRPr( ((R)o).getRPr());					
+					RPr rPr = ((R)o).getRPr();
+					rPr.setRFonts(null);
+					rPr.setSz(null);
+					rPr.setSzCs(null);
 				}
 			}
 		}
-		
-		private void handleRPr(RPrAbstract rPr) {
-			if (rPr==null) return;
-			
-			rPr.setRFonts(null);
-			rPr.setSz(null);
-			rPr.setSzCs(null);
-		}
-	
 	}	
 	
 	private static void handleAbstractNum(AbstractNum abstractNum) {

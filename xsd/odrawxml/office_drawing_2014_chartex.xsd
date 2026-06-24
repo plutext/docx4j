@@ -6,7 +6,10 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 	    
     <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
          on 20190518
@@ -869,6 +872,11 @@
      </xsd:sequence>
    </xsd:complexType>
    <xsd:complexType name="CT_ChartSpace">
+       <xsd:annotation>
+           <xsd:appinfo>
+               <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="chartSpace")</annox:annotate>
+           </xsd:appinfo>
+       </xsd:annotation>
      <xsd:sequence>
        <xsd:element name="chartData" type="CT_ChartData" minOccurs="1" maxOccurs="1"/>
        <xsd:element name="chart" type="CT_Chart" minOccurs="1" maxOccurs="1"/>

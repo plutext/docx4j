@@ -28,7 +28,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RangePermissionStart;
 import org.docx4j.wml.Text;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -401,12 +401,12 @@ public class BookmarkRenumber {
 					// w:id="0"/></w:r>
 					P p = Context.getWmlObjectFactory().createP();
 					R r = Context.getWmlObjectFactory().createR();
-					p.getParagraphContent().add(r);
+					p.getContent().add(r);
 
 					R.CommentReference cr = Context.getWmlObjectFactory()
 							.createRCommentReference();
 					cr.setId( (BigInteger)id);
-					r.getRunContent().add(cr);
+					r.getContent().add(cr);
 
 					paragraphs.add(p);
 				}

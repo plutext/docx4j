@@ -8,9 +8,7 @@ module org.docx4j.core {
     requires org.apache.commons.lang3;
     requires wmf2svg;
     
-	requires transitive org.docx4j.openxml_objects;
-	requires transitive org.docx4j.openxml_objects_pml;
-	requires transitive org.docx4j.openxml_objects_sml;
+    requires transitive org.docx4j.openxml_objects_combined;
     
 	requires transitive jakarta.activation;
 	
@@ -37,10 +35,12 @@ module org.docx4j.core {
 	requires org.apache.fontbox;
 	requires qdox;
 	requires jakarta.xml.bind;
+	requires docx4j.xjc.copy;
 	
 	requires org.apache.pdfbox.io;
 	requires org.apache.commons.collections4;
 	requires com.zaxxer.sparsebitset;
+    requires org.jvnet.jaxb.plugins.runtime;
     
     exports org.docx4j;
     exports org.docx4j.convert.in;

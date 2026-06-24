@@ -2,7 +2,7 @@ module org.docx4j.docx_anon {
 
 	requires org.slf4j;
 	requires org.docx4j.core;
-	requires org.docx4j.openxml_objects;
+	requires org.docx4j.openxml_objects_combined;
     requires lorem;
 	requires jakarta.xml.bind;
 	

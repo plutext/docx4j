@@ -5,7 +5,10 @@
 	blockDefault="#all" xmlns="http://schemas.microsoft.com/office/word/2012/wordml"
 	targetNamespace="http://schemas.microsoft.com/office/word/2012/wordml"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
 	
   <!-- From [MS-DOCX] — v20121003
 Word Extensions to the Office Open XML (.docx) File Format
@@ -47,6 +50,11 @@ Release: October 8, 2012 -->
   
   
   <xsd:complexType name="CT_CommentsEx">
+      <xsd:annotation>
+          <xsd:appinfo>
+              <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="commentsEx")</annox:annotate>
+          </xsd:appinfo>
+      </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="commentEx" type="CT_CommentEx" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
@@ -60,6 +68,11 @@ Release: October 8, 2012 -->
   <xsd:element name="commentsEx" type="CT_CommentsEx"/>
   
   <xsd:complexType name="CT_People">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="people")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="person" type="CT_Person" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>

@@ -29,7 +29,6 @@ import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.Text;
-import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -345,7 +344,7 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 			if (textBox.getTxbxContent()==null) {
 				return null;
 			} else {
-				return textBox.getTxbxContent().getEGBlockLevelElts();
+				return textBox.getTxbxContent().getContent();
 				// grandchildren
 			}
 			

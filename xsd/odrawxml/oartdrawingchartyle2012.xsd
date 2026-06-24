@@ -7,7 +7,10 @@
 	xmlns:oxsd="http://oxsdSchemaUri"
 	xmlns="http://schemas.microsoft.com/office/drawing/2012/chartStyle"
     xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-    xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+    xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    xmlns:annox="urn:jaxb.jvnet.org:annox"
+    jaxb:extensionBindingPrefixes="annox"
+    jaxb:version="3.0">
     
     <!-- 
     
@@ -62,6 +65,11 @@
     <xsd:list itemType="ST_StyleReferenceModifier"/>
   </xsd:simpleType>
   <xsd:complexType name="CT_ColorStyle">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="colorStyle")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="a:EG_ColorChoice" minOccurs="1" maxOccurs="unbounded"/>
       <xsd:element name="variation" type="CT_ColorStyleVariation" minOccurs="0" maxOccurs="unbounded"/>
@@ -151,6 +159,11 @@
     <xsd:attribute name="mods" type="ST_StyleEntryModifierList" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_ChartStyle">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="chartStyle")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="axisTitle" type="CT_StyleEntry" minOccurs="1" maxOccurs="1"/>
       <xsd:element name="categoryAxis" type="CT_StyleEntry" minOccurs="1" maxOccurs="1"/>

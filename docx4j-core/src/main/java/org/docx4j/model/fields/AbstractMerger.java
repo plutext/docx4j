@@ -62,7 +62,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.STFFTextType;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tc;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
