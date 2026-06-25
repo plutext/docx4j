@@ -39,7 +39,7 @@
 			<groupId>org.jvnet.jaxb</groupId>
 			<artifactId>jaxb-plugins-runtime</artifactId>
 			<!-- TODO: Move dependency & plugin versions to properties in parent POM -->
-			<version>4.0.12</version>
+			<version>4.0.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.docx4j</groupId>
