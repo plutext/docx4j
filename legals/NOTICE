@@ -79,7 +79,7 @@ See also the Microsoft Open Specifications Promise.
 
 Copyright © 2026, Oracle and/or its affiliates: contributions to automate the generation of all OpenXML objects from the
 XSD files. These include new files in the docx4j-xjc-copy and docx4j-openxml-objects-combined directories, as well as
-modifications to the XSD files.
+modifications to the XSD files. See further https://github.com/plutext/docx4j/pull/676
 
 From version 11.5.8 of 5 Dec 2025, certain fonts are distributed in module docx4j-export-fo-fonts-symbol.
 
