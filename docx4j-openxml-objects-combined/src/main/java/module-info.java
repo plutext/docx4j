@@ -5,6 +5,8 @@ module org.docx4j.openxml_objects_combined {
     requires org.jvnet.jaxb.plugins.runtime;
 	requires docx4j.xjc.copy;
 
+	exports org.docx4j.list;
+	
     exports org.docx4j.bibliography;
     
     exports org.docx4j.com.microsoft.schemas.office.drawing.x2010.chartDrawing;
