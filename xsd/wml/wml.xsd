@@ -9062,6 +9062,7 @@ PRINCIPLES:
 		<xsd:annotation>
 			<xsd:appinfo>
 				<inheritance:implements>org.docx4j.wml.ContentAccessor</inheritance:implements>
+				<inheritance:implements>org.docx4j.wml.CTCustomXmlElement</inheritance:implements>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -9113,6 +9114,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CustomXmlBlock">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.CTCustomXmlElement</inheritance:implements>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="customXmlPr" type="CT_CustomXmlPr" minOccurs="0"
 				maxOccurs="1">
@@ -9180,6 +9186,11 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CustomXmlRow">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.CTCustomXmlElement</inheritance:implements>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="customXmlPr" type="CT_CustomXmlPr" minOccurs="0"
 				maxOccurs="1">
@@ -9203,6 +9214,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CustomXmlCell">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<inheritance:implements>org.docx4j.wml.CTCustomXmlElement</inheritance:implements>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="customXmlPr" type="CT_CustomXmlPr" minOccurs="0"
 				maxOccurs="1">
