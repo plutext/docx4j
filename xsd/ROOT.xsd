@@ -38,5 +38,12 @@
     <xsd:import id="id8" namespace="http://schemas.openxmlformats.org/package/2006/relationships" schemaLocation="relationships.xsd"/>
     <xsd:import id="id9" namespace="http://schemas.microsoft.com/office/2006/xmlPackage" schemaLocation="xmlPackage.xsd"/>
     
+<!--Out of scope    
+    <xsd:import id="id10" namespace="http://opendope.org/components" schemaLocation="OpenDoPE/components.xsd"/>
+    <xsd:import id="id11" namespace="http://opendope.org/conditions" schemaLocation="OpenDoPE/conditions.xsd"/>
+    <xsd:import id="id12" namespace="http://opendope.org/SmartArt/DataHierarchy" schemaLocation="OpenDoPE/SmartArtDataHierarchy.xsd"/>
+    <xsd:import id="id13" namespace="http://opendope.org/xpaths" schemaLocation="OpenDoPE/xpaths.xsd"/>
+    questions, answers
+    -->
     
 </xsd:schema>

@@ -6,7 +6,12 @@ attributeFormDefault="unqualified" elementFormDefault="qualified"
 targetNamespace="http://opendope.org/SmartArt/DataHierarchy" 
 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" 
+	xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	xmlns:inheritance="urn:jaxb.jvnet.org:plugin:inheritance"
+	jaxb:extensionBindingPrefixes="ci annox inheritance"
+	jaxb:version="3.0">
 
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" 
   schemaLocation="../dml/dml-diagramDataModel.xsd"/>
