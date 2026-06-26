@@ -1179,16 +1179,34 @@ public class XmlUtils {
 		return deepCopy(value, Context.jc);		
 	}
 	
-	
 	/** Clone this JAXB object
 	 * @param value
 	 * @param jc
 	 * @return
 	 */
 	public static <T> T deepCopy(T value, JAXBContext jc) {
+
+		if (Docx4jProperties.getProperty("docx4j.XmlUtils.deepCopy.classic", false)) {
+			return deepCopyClassic(value, jc);
+		} else {
+			return deepCopyFast(value);
+		}
+		
+		
+	}
+	
+	/** Clone this JAXB object
+	 * @param value
+	 * @param jc
+	 * @return
+	 */
+	public static <T> T deepCopyClassic(T value, JAXBContext jc) {
 		
 		if (value==null) {
 			throw new IllegalArgumentException("Can't clone a null argument");
+		}
+		if (jc==null) {
+			throw new IllegalArgumentException("Can't determine JAXBContext for " + value.getClass().getName());
 		}
 
         JAXBElement<T> elem; 
@@ -1251,11 +1269,15 @@ public class XmlUtils {
 	 * Clone this JAXB object using its custom copy method, which is much faster than serialization or reflection.
 	 * @param value the object to copy (must implement {@link Copyable}, or be a {@link JAXBElement} containing an object that does)
 	 * @return a deep copy of the object
+	 * @since 17.0.0
 	 */
 	public static <T> T deepCopyFast(T value) {
 		Object wrapped = unwrap(value);
 		if (!(wrapped instanceof Copyable)) {
-			throw new IllegalArgumentException("Can't deep copy object that doesn't implement Copyable: " + wrapped.getClass());
+			if (log.isWarnEnabled() ) {
+				log.warn("Object doesn't implement Copyable: " + wrapped.getClass() + "; reverting to deepCopyClassic.");
+			}
+			return deepCopyClassic(value, Context.getJAXBContext(wrapped));	
 		}
 		Object copy = ((Copyable) wrapped).copy();
 		if (value instanceof JAXBElement<?>) {

@@ -24,11 +24,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
@@ -79,7 +82,37 @@ public class Context {
 		return jaxbImplementation;
 	}
 	
+	private static final Map<String, JAXBContext> CONTEXTS_BY_PACKAGE = new HashMap<>();
+
+	private static void registerPackages(JAXBContext context, String contextPath) {
+	    for (String pkg : contextPath.split(":")) {
+	        CONTEXTS_BY_PACKAGE.put(pkg, context);
+	    }
+	}
 	
+	/**
+     * Resolves the JAXBContext associated with the provided object.
+     * @param o The JAXB POJO element (e.g., P, R, etc.)
+     * @return The matching JAXBContext, or null if not found.
+     * @since 17.0.0
+     */
+	public static JAXBContext getJAXBContext(Object o) {
+
+	    if (o == null) {
+	        return null;
+	    }
+
+	    Class<?> clazz = (o instanceof JAXBElement<?>)
+	            ? ((JAXBElement<?>) o).getDeclaredType()
+	            : o.getClass();
+
+	    Package p = clazz.getPackage();
+	    if (p == null) {
+	        return null;
+	    }
+
+	    return CONTEXTS_BY_PACKAGE.get(p.getName());
+	}	
 	static {
 		JAXBContext tempContext = null;
 
@@ -102,6 +135,52 @@ public class Context {
 //			log.warn("Caught/ignored " + e.getMessage());
 //		}
 		
+		String jcString = "org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
+				"org.docx4j.com.microsoft.schemas.office.word.x2006.wordml:" +
+				"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chart.x2007:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
+				// All VML stuff is here, since compiling it requires WML and DML (and MathML), but not PML or SML
+				"org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.vml.wordprocessingDrawing:org.docx4j.vml.presentationDrawing:org.docx4j.vml.spreadsheetDrawing:org.docx4j.vml.root:" +
+				"org.docx4j.docProps.coverPageProps:" +
+				"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
+				"org.docx4j.math:" +
+				"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
+				"org.docx4j.com.microsoft.schemas.ink.x2010.main:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2010.chartDrawing:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2010.main:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle:" +
+//				"org.docx4j.com.microsoft.schemas.office.drawing.x2008.diagram:" // see instead existing org.docx4j.dml.diagram2008
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2010.diagram:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2012.main:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2010.picture:" +
+				"org.docx4j.org.w3.x1998.math.mathML:" +
+				"org.docx4j.org.w3.x2003.inkML:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2013.main.command:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart.ac:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2014.main:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x201611.diagram:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x201611.main:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x201612.diagram:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2016.ink:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2016.SVG.main:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x201703.chart:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2017.decorative:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2017.model3d:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation.model3d:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation:" +
+				"org.docx4j.com.microsoft.schemas.office.drawing.x2018.hyperlinkcolor:" +
+				"org.docx4j.com.microsoft.schemas.office.powerpoint.x2014.inkAction:" + 
+				"org.docx4j.com.microsoft.schemas.office.thememl.x2012.main:" +
+				"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
+				"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape:" +
+				"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas:" +
+				"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup:" +
+				"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing:" +
+				"org.docx4j.w15symex:org.docx4j.w16cid:" +
+				"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
+				"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11";
       
       try { 
 			// JAXBContext.newInstance uses the context class loader of the current thread. 
@@ -118,52 +197,7 @@ public class Context {
     	  
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 
-			tempContext = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2006.wordml:" +
-					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chart.x2007:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
-					// All VML stuff is here, since compiling it requires WML and DML (and MathML), but not PML or SML
-					"org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.vml.wordprocessingDrawing:org.docx4j.vml.presentationDrawing:org.docx4j.vml.spreadsheetDrawing:org.docx4j.vml.root:" +
-					"org.docx4j.docProps.coverPageProps:" +
-					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
-					"org.docx4j.math:" +
-					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
-					"org.docx4j.com.microsoft.schemas.ink.x2010.main:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.chartDrawing:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.main:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle:" +
-//					"org.docx4j.com.microsoft.schemas.office.drawing.x2008.diagram:" // see instead existing org.docx4j.dml.diagram2008
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.diagram:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.main:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.picture:" +
-					"org.docx4j.org.w3.x1998.math.mathML:" +
-					"org.docx4j.org.w3.x2003.inkML:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2013.main.command:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart.ac:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.main:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x201611.diagram:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x201611.main:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x201612.diagram:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2016.ink:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2016.SVG.main:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x201703.chart:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2017.decorative:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2017.model3d:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation.model3d:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.hyperlinkcolor:" +
-					"org.docx4j.com.microsoft.schemas.office.powerpoint.x2014.inkAction:" + 
-					"org.docx4j.com.microsoft.schemas.office.thememl.x2012.main:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing:" +
-					"org.docx4j.w15symex:org.docx4j.w16cid:" +
-					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
-					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader,
+			tempContext = JAXBContext.newInstance(jcString, classLoader,
 					ProviderProperties.getProviderProperties() );
 			
 			log.debug("JAXB Context: " + tempContext.getClass().getName());
@@ -223,15 +257,31 @@ public class Context {
 			
 			jcThemePart = tempContext; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
 			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcDocPropsCore,         "org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms");
+
 			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcDocPropsCustom,         "org.docx4j.docProps.custom");
+
 			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcDocPropsExtended,         "org.docx4j.docProps.extended");
+
 			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcXmlPackage,         "org.docx4j.xmlPackage");
+
 			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcRelationships,         "org.docx4j.relationships");
+
 			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcCustomXmlProperties,         "org.docx4j.customXmlProperties");
+
 			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcContentTypes,         "org.docx4j.openpackaging.contenttype");
 			
 			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcSectionModel,         "org.docx4j.model.structure.jaxb");
 			
+
+
 			try {
 				//jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
 				jcEncryption = JAXBContext.newInstance(
@@ -239,11 +289,16 @@ public class Context {
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password:"
 						,classLoader, ProviderProperties.getProviderProperties() );
+				registerPackages(jcEncryption,
+					    "org.docx4j.com.microsoft.schemas.office.x2006.encryption:"
+					  + "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
+					  + "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password");			
 			} catch (jakarta.xml.bind.JAXBException e) {
 				log.error(e.getMessage());
 			}
 
 			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader, ProviderProperties.getProviderProperties() );
+			registerPackages(jcMCE,         "org.docx4j.mce");
 			
 			log.debug(".. other contexts loaded ..");
 										
@@ -252,7 +307,9 @@ public class Context {
 			ex.printStackTrace();
 			log.error("Cannot initialize context", ex);
 		}				
-      jc = tempContext;
+		jc = tempContext;
+		registerPackages(jc, jcString);
+      
 	}
 	
 	private static org.docx4j.wml.ObjectFactory wmlObjectFactory;
