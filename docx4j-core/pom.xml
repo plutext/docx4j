@@ -159,6 +159,8 @@
 							</execution>
 						</executions>
             </plugin>	
+            
+            
             <!-- phase process-classes or prepare-package -->
 			<!-- manifest goal writes to bin/META-INF/MANIFEST.MF, where it is picked up by maven-jar-plugin -->
  			
@@ -200,7 +202,7 @@
 
 		<dependency>
             <groupId>org.docx4j</groupId>
-			<artifactId>docx4j-openxml-objects-combined</artifactId>
+			<artifactId>docx4j-generated-objects</artifactId>
 			<version>${project.version}</version>
 		</dependency>
         

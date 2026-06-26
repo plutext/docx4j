@@ -34,6 +34,9 @@ import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.outline.Outline;
 import jakarta.xml.bind.JAXBElement;
+
+import org.docx4j.copy.CopyUtils;
+import org.docx4j.copy.Copyable;
 import org.jvnet.jaxb.lang.Child;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;

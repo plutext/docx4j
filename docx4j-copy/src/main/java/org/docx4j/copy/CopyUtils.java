@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
-package org.docx4j.xjc.copy;
+package org.docx4j.copy;
 
 import jakarta.xml.bind.JAXBElement;
 import org.jvnet.jaxb.lang.Child;

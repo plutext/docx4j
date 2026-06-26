@@ -12,25 +12,11 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
-package org.docx4j.xjc.copy;
+module docx4j.copy {
 
-/**
- * Interface implemented by XJC-generated classes to provide a fast deep-copy
- * without marshalling/unmarshalling.
- */
-public interface Copyable {
+	requires static jakarta.xml.bind;
+	requires org.jvnet.jaxb.plugins.runtime;
 
-	/**
-	 * Deep-copy this object and its descendants.
-	 *
-	 * <p>The returned copy and its descendants will have all parent pointers set.
-	 */
-	Object copy();
+	exports org.docx4j.copy;
 
-	/**
-	 * Deep-copy this object and its descendants to the provided target object.
-	 *
-	 * <p>The returned copy and its descendants will have all parent pointers set.
-	 */
-	Object copyTo(Object target);
 }

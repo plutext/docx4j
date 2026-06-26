@@ -35,7 +35,7 @@ module org.docx4j.core {
 	requires org.apache.fontbox;
 	requires qdox;
 	requires jakarta.xml.bind;
-	requires docx4j.xjc.copy;
+	requires docx4j.copy;
 	
 	requires org.apache.pdfbox.io;
 	requires org.apache.commons.collections4;

@@ -3,7 +3,7 @@ module org.docx4j.generated_objects {
 	requires org.slf4j;
 	requires jakarta.xml.bind;
     requires org.jvnet.jaxb.plugins.runtime;
-	requires docx4j.xjc.copy;
+	requires docx4j.copy;
 
 	exports org.docx4j.list;
 	

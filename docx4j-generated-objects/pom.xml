@@ -23,7 +23,7 @@
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>docx4j-openxml-objects-combined</artifactId>
+	<artifactId>docx4j-generated-objects</artifactId>
 	<packaging>${packaging.type}</packaging>
 	<name>docx4j-generated-objects</name>
 	<description>JAXB representation of OpenXML (in target/generated-sources/xjc), plus some interfaces etc</description>
@@ -43,7 +43,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-xjc-copy</artifactId>
+			<artifactId>docx4j-copy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

@@ -24,31 +24,21 @@
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>docx4j-xjc-copy</artifactId>
+	<artifactId>docx4j-copy</artifactId>
 	<packaging>jar</packaging>
-	<name>docx4j-xjc-copy</name>
-	<description>XJC plugin to generate fast deep copy methods that handle parent pointers</description>
+	<name>docx4j-copy</name>
+	<description>Copy interface</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.glassfish.jaxb</groupId>
-			<artifactId>jaxb-xjc</artifactId>
-			<version>4.0.6</version>
-			<scope>compile</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>org.jvnet.jaxb</groupId>
 			<artifactId>jaxb-plugins-runtime</artifactId>
 			<version>4.0.12</version>
-		</dependency>
-		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-copy</artifactId>
-			<version>${project.version}</version>			
 		</dependency>
 	</dependencies>
 

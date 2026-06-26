@@ -86,7 +86,7 @@ import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.docx4j.org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.docx4j.utils.XPathFactoryUtil;
 import org.docx4j.utils.XmlSerializerUtil;
-import org.docx4j.xjc.copy.Copyable;
+import org.docx4j.copy.Copyable;
 import org.jvnet.jaxb.lang.CopyTo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
