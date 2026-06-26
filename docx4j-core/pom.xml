@@ -204,6 +204,13 @@
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-generated-objects</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion> 
+					<!-- Necessary for MOXy to work; see also https://github.com/eclipse-ee4j/jaxb-ri/issues/1813 -->
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>jaxb-core</artifactId>
+				</exclusion>
+			</exclusions>				
 		</dependency>
         
 		<dependency>

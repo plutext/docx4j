@@ -110,15 +110,16 @@
 				<version>${project.version}</version>
 			</dependency>
 
-
-			<!-- avoid java.lang.module.ResolutionException: Module org.eclipse.persistence.moxy does not read a module that exports com.sun.tools.xjc 
-			     https://github.com/eclipse-ee4j/eclipselink/issues/1734
-			-->
+			<!-- Unfortunately, module org.eclipse.persistence.moxy requires com.sun.tools.xjc, even in 5.0.1-RC2  
+			
+				 See https://github.com/eclipse-ee4j/eclipselink/blob/5.0.1-RC2/moxy/org.eclipse.persistence.moxy/src/main/java/module-info.java#L25
+				 and https://github.com/eclipse-ee4j/jaxb-ri/issues/1813
+			-->			
 			<dependency>
-			  <groupId>org.glassfish.jaxb</groupId>
-			  <artifactId>jaxb-xjc</artifactId>
-			  <version>4.0.8</version>
-			</dependency>
+			    <groupId>com.sun.xml.bind</groupId>
+			    <artifactId>jaxb-xjc</artifactId>
+			    <version>4.0.8</version>
+			</dependency>			
 
             <!-- order matters! jaxb-xjc must come before persistence.moxy! 
             perhaps because moxy's pom says the following, confusing eclipse?
