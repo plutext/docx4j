@@ -76,6 +76,7 @@
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="inline"/>
+				<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="inline")</annox:annotate>
 			</xsd:appinfo>
 		</xsd:annotation>			
 		<xsd:sequence>
