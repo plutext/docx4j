@@ -293,6 +293,7 @@
 				<version>3.1.0</version> 
 				<configuration>
 					<maxmemory>512m</maxmemory>
+					<quiet>true</quiet>
 					<additionalJOption>-Xdoclint:none</additionalJOption>
 					<!-- workaround for 'javadoc: error - The code being documented uses packages in the unnamed module' issue
 						 still present in Java 14!

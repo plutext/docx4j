@@ -2,6 +2,32 @@ CHANGELOG
 =========
 
 
+Version 17.0.0
+===============
+
+Release date
+------------
+
+[  ] June 2026
+
+
+Contributors to this release
+----------------------------
+
+Buck Cronk
+
+Jason Harrop
+
+Changes in Version 17.0.0
+--------------------------
+
+Faster Deep Copy
+
+Generate OpenXML Objects on Build
+
+See further https://github.com/plutext/docx4j/pull/676
+
+
 Version 11.5.14
 ===============
 
