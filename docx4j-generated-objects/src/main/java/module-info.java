@@ -1,4 +1,4 @@
-module org.docx4j.openxml_objects_combined {
+module org.docx4j.generated_objects {
 
 	requires org.slf4j;
 	requires jakarta.xml.bind;

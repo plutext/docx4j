@@ -25,8 +25,8 @@
 
 	<artifactId>docx4j-openxml-objects-combined</artifactId>
 	<packaging>${packaging.type}</packaging>
-	<name>docx4j-openxml-objects-combined</name>
-	<description>Our JAXB representation of OpenXML</description>
+	<name>docx4j-generated-objects</name>
+	<description>JAXB representation of OpenXML (in target/generated-sources/xjc), plus some interfaces etc</description>
 
 	<properties>
 <!--		<maven.compiler.source>21</maven.compiler.source>-->

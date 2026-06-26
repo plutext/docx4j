@@ -8,7 +8,7 @@ module org.docx4j.core {
     requires org.apache.commons.lang3;
     requires wmf2svg;
     
-    requires transitive org.docx4j.openxml_objects_combined;
+    requires transitive org.docx4j.generated_objects;
     
 	requires transitive jakarta.activation;
 	

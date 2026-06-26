@@ -26,7 +26,7 @@
     <name>docx4j parent</name>
     
 	<modules>
-		<module>docx4j-openxml-objects-combined</module>
+		<module>docx4j-generated-objects</module>
 		<module>docx4j-xjc-copy</module>
 
         <module>docx4j-core</module>

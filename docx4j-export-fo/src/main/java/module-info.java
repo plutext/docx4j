@@ -2,7 +2,7 @@ module org.docx4j.export_fo {
 
 	requires org.slf4j;
 	requires org.docx4j.core;
-	requires org.docx4j.openxml_objects_combined;
+	requires org.docx4j.generated_objects;
 	requires org.plutext.jaxb.xslfo;
 
 	requires org.apache.xmlgraphics.fop.core;

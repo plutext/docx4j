@@ -2,7 +2,7 @@ module docx4j_samples_docx4j {
 
 	requires org.slf4j;
 	requires org.docx4j.core;
-	requires org.docx4j.openxml_objects_combined;
+	requires org.docx4j.generated_objects;
 	
 	requires org.docx4j.docx_anon;
 	requires jakarta.xml.bind;
