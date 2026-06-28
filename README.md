@@ -21,23 +21,36 @@ It uses JAXB to create the Java representation.
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
 
+docx4j for JAXB 4.0 and Java 11 and later 
+-----------------------------------------
+
+docx4j 17.0.0 targets Java 11.  It is compatible with Java 11, 17, 21, and we expect Java 25.
+
+It uses Jakarta XML Binding API 4.0 (as did docx4j v11.5.x)
+
+Version numbering jumped from 11.5.14 to 17.0.0 to flag three significant changes:
+
+1. the code previously contained in modules docx4j-openxml-objects, docx4j-openxml-objects-pml and docx4j-openxml-objects-sml is now generated from the xsds at build time.  It is in new module `docx4j-generated-objects`
+2. a new `deepCopyFast` method which is used unless configured otherwise to copy objects (ie instead of marshal/unmarshal)
+3. old methods `getEGBlockLevelElts`, `getParagraphContent`, `getRunContent` have been replaced with `getContent`; 
+   `ArrayListWml`, `ArrayListDml`, `ArrayListVml`, and `ArrayListMce` have been replaced by a single `ArrayListDocx4j` class; 
+   `org.jvnet.jaxb2_commons.ppp.Child` is now `org.jvnet.jaxb.lang.Child` 
+   
+To use it, add the dep corresponding to the JAXB implementation you wish to use
+
+* https://central.sonatype.com/artifact/org.docx4j/docx4j-JAXB-ReferenceImpl
+* https://central.sonatype.com/artifact/org.docx4j/docx4j-JAXB-MOXy
+ 
 docx4j for JAXB 3.0 and Java 11+
 --------------------------------
 
 docx4j v11.4.5 uses Jakarta XML Binding API 3.0, as opposed to JAXB 2.x used in earlier versions (which import javax.xml.bind.*).  Since this release uses jakarta.xml.bind, rather than javax.xml.bind, if you have existing code which imports javax.xml.bind, you'll need to search/replace across your code base, replacing javax.xml.bind with jakarta.xml.bind. You'll also need to replace your JAXB jars (which Maven will do for you automatically; otherwise get them from the relevant zip file).
 
 Being a JPMS modularised release, the jars also contain module-info.class entries.
-
-To use it, add the dep corresponding to the JAXB implementation you wish to use
-
-* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl)
- docx4j-JAXB-ReferenceImpl
-* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy)
- docx4j-JAXB-MOXy
  
 
-docx4j-8
---------
+docx4j-8 (legacy, not supported)
+--------------------------------
 
 This is docx4j for Java 8. Although in principle it would compile and run under Java 6, some of its
 dependencies are Java 8 only.  So to run it under Java 6, you'd need to use the same version of the deps
@@ -45,16 +58,7 @@ which docx4j 6.x uses.
 
 docx4j v8 is a multi-module Maven project.
 
-To use docx4j v8, add the dep corresponding to the JAXB implementation you wish to use
-
-* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-Internal/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-Internal?gav=true)
- docx4j-JAXB-Internal (shipped in Oracle and OpenJDK v8)
-* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl?gav=true)
- docx4j-JAXB-ReferenceImpl (you may need to respect the endorsed dir mechanism for the RI jars)
-* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy?gav=true)
- docx4j-JAXB-MOXy
-
-You should use one and only one of docx4j-JAXB-* 
+To use docx4j v8, add the dep corresponding to the JAXB implementation you wish to use.  You should use one and only one of docx4j-JAXB-* 
 
  
 How do I build docx4j?
