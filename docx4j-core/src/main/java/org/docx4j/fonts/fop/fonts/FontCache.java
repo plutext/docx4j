@@ -66,7 +66,7 @@ public final class FontCache implements Serializable {
     private static final String FOP_USER_DIR = ".docx4j";
 
     /** font cache file path */
-    private static final String DEFAULT_CACHE_FILENAME = "fop-fonts.cache";
+    private static final String DEFAULT_CACHE_FILENAME = "docx4j-fonts.cache";
 
     /** has this cache been changed since it was last read? */
     private transient boolean changed;
@@ -101,54 +101,110 @@ public final class FontCache implements Serializable {
     }
 
     private static File toDirectory(String path) {
-        if (path != null) {
+        if (path != null && !path.trim().isEmpty()) {
             File dir = new File(path);
-            if (dir.exists()) {
+            if (dir.exists() && dir.isDirectory()) {
                 return dir;
             }
         }
         return null;
     }
 
+    private static boolean ensureWritableDirectory(File dir) {
+        if (dir == null) {
+            return false;
+        }
+
+        if (dir.exists()) {
+            return dir.isDirectory() && dir.canWrite();
+        }
+
+        return dir.mkdirs() && dir.canWrite();
+    }
+
+    private static final String FONT_CACHE_PROPERTY = "docx4j.fonts.fontcache";
+    
     /**
      * Returns the default font cache file.
      *
      * @param forWriting
-     *            true if the user directory should be created
+     *            true if the cache directory should be created/checked for writability
      * @return the default font cache file
      */
     public static File getDefaultCacheFile(boolean forWriting) {
-    	
-        File userHome = getUserHome();
-        if (userHome != null) {
-        	if (log.isDebugEnabled() ) {
-        		log.debug("Got user.home: " + userHome.getAbsolutePath() );
-        	}
-            File fopUserDir = new File(userHome, FOP_USER_DIR);
-            if (forWriting /* eg discoverPhysicalFonts */ ) {
-                boolean writable = fopUserDir.canWrite();
-                if (!fopUserDir.exists()) {
-                    writable = fopUserDir.mkdir();
-                }
-                if (!writable) {
-                    userHome = getTempDirectory();
-                	if (log.isDebugEnabled() ) {
-                		log.debug("user.home not writable, so using temp dir: " + userHome.getAbsolutePath() );
-                	}
-                    fopUserDir = new File(userHome, FOP_USER_DIR);
-                    fopUserDir.mkdir();
+
+        // 1. Explicit override via system property — highest priority
+        String explicitCache = System.getProperty(FONT_CACHE_PROPERTY);
+        if (explicitCache != null && !explicitCache.trim().isEmpty()) {
+            File override = new File(explicitCache);
+
+            if (override.isDirectory()) {
+                File cacheFile = new File(override, DEFAULT_CACHE_FILENAME);
+                log.debug("Using font cache directory from system property {}: {}",
+                        FONT_CACHE_PROPERTY, cacheFile.getAbsolutePath());
+                return cacheFile;
+            }
+
+            if (forWriting) {
+                File parent = override.getParentFile();
+                if (parent != null && !ensureWritableDirectory(parent)) {
+                    log.warn("Parent directory for configured font cache is not writable: {}",
+                            parent.getAbsolutePath());
                 }
             }
-            return new File(fopUserDir, DEFAULT_CACHE_FILENAME);
-        }
-    	if (log.isDebugEnabled() ) {
-    		File f = new File(FOP_USER_DIR);
-    		log.debug("user.home null; trying " + f.getAbsolutePath() );
-    		return f;
-    	}
-        return new File(FOP_USER_DIR);
-    }
 
+            log.debug("Using font cache file from system property {}: {}",
+                    FONT_CACHE_PROPERTY, override.getAbsolutePath());
+            return override;
+        }
+
+        // 2. Try user.home
+        File userHome = getUserHome();
+        if (userHome != null) {
+            log.debug("Got user.home: {}", userHome.getAbsolutePath());
+
+            File fopUserDir = new File(userHome, FOP_USER_DIR);
+
+            if (!forWriting || ensureWritableDirectory(fopUserDir)) {
+                File cacheFile = new File(fopUserDir, DEFAULT_CACHE_FILENAME);
+                log.debug("Using user.home for font cache: {}", cacheFile.getAbsolutePath());
+                return cacheFile;
+            }
+
+            log.debug("user.home is not usable for font cache ({}), falling back to tmpdir",
+                    fopUserDir.getAbsolutePath());
+        } else {
+            log.debug("user.home is not set or does not reference an existing directory, falling back to tmpdir");
+        }
+
+        // 3. Fall back to java.io.tmpdir
+        File tmpDir = getTempDirectory();
+        if (tmpDir != null) {
+            File fopTmpDir = new File(tmpDir, FOP_USER_DIR);
+
+            if (!forWriting || ensureWritableDirectory(fopTmpDir)) {
+                File cacheFile = new File(fopTmpDir, DEFAULT_CACHE_FILENAME);
+                log.debug("Using tmpdir for font cache: {}", cacheFile.getAbsolutePath());
+                return cacheFile;
+            }
+
+            log.debug("java.io.tmpdir is not usable for font cache: {}",
+                    fopTmpDir.getAbsolutePath());
+        }
+
+        // 4. Last resort: relative path in the current working directory
+        File relativeFopUserDir = new File(FOP_USER_DIR);
+        if (forWriting) {
+            ensureWritableDirectory(relativeFopUserDir);
+        }
+
+        File cacheFile = new File(relativeFopUserDir, DEFAULT_CACHE_FILENAME);
+        log.warn("Neither user.home nor java.io.tmpdir are usable; using relative font cache path: {}",
+                cacheFile.getAbsolutePath());
+
+        return cacheFile;
+    }
+    
     /**
      * Reads the default font cache file and returns its contents.
      *
