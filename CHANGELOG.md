@@ -8,24 +8,32 @@ Version 17.0.0
 Release date
 ------------
 
-[  ] June 2026
+29 June 2026
 
 
 Contributors to this release
 ----------------------------
 
-Buck Cronk
+Buck Cronk, on behalf of Oracle Corporation
 
 Jason Harrop
 
 Changes in Version 17.0.0
 --------------------------
 
-Faster Deep Copy
+Faster XmlUtils.deepCopy implementation
 
-Generate OpenXML Objects on Build
+Generate OpenXML Objects at build time (docx4j-generated-objects/target/generated-sources/xjc)
 
 See further https://github.com/plutext/docx4j/pull/676
+
+Note API changes: old methods `getEGBlockLevelElts`, `getParagraphContent`, `getRunContent` have been replaced with `getContent`; `ArrayListWml`, `ArrayListDml`, `ArrayListVml`, and `ArrayListMce` have been replaced by a single `ArrayListDocx4j` class; `org.jvnet.jaxb2_commons.ppp.Child` is now `org.jvnet.jaxb.lang.Child`
+
+Configurable font cache location. Fixes #677
+
+Embedded fonts are supposed to be obfuscated, but some producers (eg Google Docs)
+don't do that.  New property docx4j.fonts.embedded.obfuscate controls whether docx4j obfuscates them
+if/when FontTablePart's processEmbeddings() is invoked.
 
 
 Version 11.5.14
@@ -125,6 +133,7 @@ appearance harmonised with the docx.  Defaults to false.
 Existing property docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt is deprecated.
 
 Bump fontbox to 3.0.7.
+
 
 Version 11.5.11
 ===============
