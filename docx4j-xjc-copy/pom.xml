@@ -31,11 +31,20 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.deploy.skip>true</maven.deploy.skip>		
 	</properties>
 
 	<build>
 		<plugins>
 			<!--  don't deploy this jar to Maven Central -->			
+			<plugin>
+			    <groupId>org.sonatype.plugins</groupId>
+			    <artifactId>nexus-staging-maven-plugin</artifactId>
+			    <configuration>
+			        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+			    </configuration>
+			</plugin>
+			<!--
 			<plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-deploy-plugin</artifactId>
@@ -43,7 +52,8 @@
 			  <configuration>
 			    <skip>true</skip>
 			  </configuration>
-			</plugin>			
+			</plugin>	
+			-->		
 		</plugins>
 	</build>
 	
