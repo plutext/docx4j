@@ -255,9 +255,11 @@
 		                    <exclude>org.mindrot:jbcrypt</exclude>
 		                  </excludes>
 		                </enforceBytecodeVersion>
+		                <!-- should converge, except for docx4j-documents4j-*
 		                 <dependencyConvergence/>
+		                 -->
 		              </rules>
-		              <fail>false</fail>
+		              <fail>true</fail>
 		            </configuration>
 		          </execution>
 		        </executions>

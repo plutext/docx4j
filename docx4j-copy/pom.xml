@@ -34,12 +34,14 @@
 	</properties>
 
 	<dependencies>
-
+	
+		<!-- org.jvnet.jaxb.lang.Child -->
 		<dependency>
 			<groupId>org.jvnet.jaxb</groupId>
 			<artifactId>jaxb-plugins-runtime</artifactId>
-			<version>4.0.12</version>
+			<version>4.0.13</version>
 		</dependency>
+		
 	</dependencies>
 
 </project>

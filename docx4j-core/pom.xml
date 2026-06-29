@@ -282,9 +282,9 @@
 			<version>2.4</version> 
 		</dependency>
 		 -->
-		
+
 		<dependency>
-			<!--  required for ole introspection -->
+			<!-- required for ole introspection -->
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.22.0</version>
@@ -293,20 +293,21 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-		</dependency>								
+		</dependency>
 
-	<dependency>
-	    <groupId>org.apache.commons</groupId>
-	    <artifactId>commons-collections4</artifactId>
-	    <version>4.5.0</version>
-	</dependency>
-	
-	<dependency>
-	    <groupId>com.zaxxer</groupId>
-	    <artifactId>SparseBitSet</artifactId>
-	    <version>1.3</version>
-	</dependency>	
-
+		<dependency>
+			<!--  since 11.5.11; for org.docx4j.org.apache.poi.hpsf -->
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.5.0</version>
+		</dependency>
+		<dependency>
+			<!--  since 11.5.11; for org.docx4j.org.apache.poi.poifs.crypt.xor -->
+			<groupId>com.zaxxer</groupId>
+			<artifactId>SparseBitSet</artifactId>
+			<version>1.3</version>
+		</dependency>
+		
 	<dependency>
 		<groupId>org.apache.xmlgraphics</groupId>
 		<artifactId>xmlgraphics-commons</artifactId>

@@ -29,8 +29,6 @@
 	<description>JAXB representation of OpenXML (in target/generated-sources/xjc), plus some interfaces etc</description>
 
 	<properties>
-<!--		<maven.compiler.source>21</maven.compiler.source>-->
-<!--		<maven.compiler.target>21</maven.compiler.target>-->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
