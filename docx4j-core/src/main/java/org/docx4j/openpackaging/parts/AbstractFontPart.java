@@ -62,6 +62,10 @@ public abstract class AbstractFontPart extends BinaryPart {
 	        File userHome = getUserHome();
 	        if (userHome == null) {
 	        	log.warn("No home dir found; consider setting property 'docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir'");
+	        	
+	        	// TODO be consistent with FontCache once that approach is proven.
+	        	// Next fallback to temp dir then relative dir
+	        	
 	        } else {
 	        	
 	            File docx4jUserDir = new File(userHome, DOCX4J_USER_DIR);
