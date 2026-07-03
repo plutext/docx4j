@@ -54,6 +54,7 @@ import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.ImageConverterMissingException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
@@ -629,6 +630,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			} else {
 				throw new Docx4JException("Unsupported linked image type.");
 			}
+		} catch (ImageConverterMissingException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new Docx4JException("Error checking image format", e);
 		} 
@@ -1357,8 +1360,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @param density  PixelsPerInch 
 	 * @throws IOException
 	 * @throws InterruptedException
+	 * @throws ImageConverterMissingException 
 	 */
-    public static void convertToPNG(InputStream is, OutputStream os, int density) throws IOException, InterruptedException {
+    public static void convertToPNG(InputStream is, OutputStream os, int density) throws IOException, InterruptedException, ImageConverterMissingException {
 		
 		/*
 		 * See http://www.eichberger.de/2006/05/imagemagick-in-servlets.html
@@ -1371,16 +1375,15 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		 
     	 // @since 11.5.9, standardise on property names starting with docx4j, not org.docx4j
 		 String executableName = Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable");	
-		 if (executableName==null) {
-			 executableName = Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable", "imconvert");
+		 if (executableName==null || executableName.isBlank() ) {
+			 throw new ImageConverterMissingException("Neither GraphicsMagick nor ImageMagick available.");
 		 }
 		 log.info("Start ImageMagick..." + executableName);
 		 Process p = Runtime.getRuntime().exec(executableName + " -density " + density + " -units PixelsPerInch - png:-");  
 		 
-		 // GraphicsMagick is a little quicker than ImageMagick,
-		 // but v1.3.3 (of Dec 2008) still has the now fixed in GM bug
-		 // whereby the right most ~10% of the resulting image is chopped off
-		 //Process p = Runtime.getRuntime().exec("gm convert -density " + density + " -units PixelsPerInch - png:-");  
+		 /* ImageMagick uses the magick command (or legacy commands like convert, identify);
+		  * GraphicsMagick prefixes everything with gm (e.g., gm convert, gm identify).
+		  */
 		 
 		 /* On Windows, if this results in "Invalid Parameter",
 		  * then either ImageMagick is not installed,
