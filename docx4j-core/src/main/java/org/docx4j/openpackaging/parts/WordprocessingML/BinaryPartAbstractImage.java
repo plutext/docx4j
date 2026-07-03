@@ -555,6 +555,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
                 log.info(e.getMessage(),e);
 			}
 			
+			boolean supportPNG = Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.ImageWebPPart.enabled", true);
+			
             if (imagePreloaderFound
                     && (info.getMimeType().equals(ContentTypes.IMAGE_TIFF)
 					|| info.getMimeType().equals(ContentTypes.IMAGE_EMF2) // ImageInfo 
@@ -563,8 +565,28 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 					|| info.getMimeType().equals(ContentTypes.IMAGE_JPEG) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_GIF) 
 //					 || info.getMimeType().equals(ContentTypes.IMAGE_EPS)
+					|| (info.getMimeType().equals(ContentTypes.IMAGE_WEBP) && supportPNG) 
                     || info.getMimeType().equals(ContentTypes.IMAGE_BMP))) {
 					// TODO: add other supported formats
+            	
+            		/* Webp: to handle this image type, you need 
+            		 * etiher to have  <artifactId>imageio-webp</artifactId> on your classpath/modulepath,
+            		 * or GraphicsMagick/ImageMagick present
+            		 * 
+            		 * As of 2026, Word converts a webp image to png rather than adding it natively;
+            		 * we can do the same if GraphicsMagick or ImageMagick are present.
+            		 * 
+            		 * Modern consumers (Word, LibreOffice, OnlyOffice tested) can open docx containing
+            		 * webp, so including without conversion is an option (provided <artifactId>imageio-webp</artifactId>
+            		 * is on your classpath/modulepath.
+            		 * 
+            		 * If <artifactId>imageio-webp</artifactId> is on your classpath/modulepath, 
+            		 * then unless property docx4j.openpackaging.parts.WordprocessingML.ImageWebPPart.enabled is false;
+            		 * we add it without conversion.
+            		 * (ie if you'd prefer to convert it to png, provide GraphicsMagick/ImageMagick and if necessary, set the property). 
+            		 * 
+            		 * 
+            		 */
 				
 				// If its a format Word supports natively, 
 				// do nothing here

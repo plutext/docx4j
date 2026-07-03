@@ -448,6 +448,8 @@ public class ContentTypeManager  {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.IMAGE_WEBP)) {
+			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageWebPPart(new PartName(partName));			
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_PEOPLE)) {
 			return new PeoplePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.VML_DRAWING)) {
