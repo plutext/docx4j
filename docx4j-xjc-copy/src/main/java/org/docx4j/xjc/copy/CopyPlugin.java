@@ -14,6 +14,18 @@
  */
 package org.docx4j.xjc.copy;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.docx4j.copy.CopyUtils;
+import org.docx4j.copy.Copyable;
+import org.jvnet.jaxb.lang.Child;
+import org.w3c.dom.Node;
+import org.xml.sax.ErrorHandler;
+
 import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JAssignmentTarget;
 import com.sun.codemodel.JBlock;
@@ -26,30 +38,14 @@ import com.sun.codemodel.JForEach;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JType;
-import com.sun.codemodel.JTypeVar;
 import com.sun.codemodel.JVar;
 import com.sun.tools.xjc.Options;
 import com.sun.tools.xjc.Plugin;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.outline.Outline;
+
 import jakarta.xml.bind.JAXBElement;
-
-import org.docx4j.copy.CopyUtils;
-import org.docx4j.copy.Copyable;
-import org.jvnet.jaxb.lang.Child;
-import org.w3c.dom.Node;
-import org.xml.sax.ErrorHandler;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Custom alternative to the jaxb-tools Copyable plugin with simplifications and improvements:
@@ -134,6 +130,7 @@ public class CopyPlugin extends Plugin {
 
 	private void copyField(FieldOutline fieldOutline, JBlock body, JVar target) {
 		final String fieldName = fieldOutline.getPropertyInfo().getName(false);
+		final String publicName = fieldOutline.getPropertyInfo().getName(true);
 		final JFieldRef srcField = JExpr._this().ref(fieldName);
 		final JFieldRef dstField = target.ref(fieldName);
 
@@ -145,6 +142,40 @@ public class CopyPlugin extends Plugin {
 			return;
 		}
 
+		if (rawType.isArray()) {
+
+	        final JType componentType = rawType.elementType();
+
+	        if (!componentType.isPrimitive()) {
+	            // Reference-type array — we don't expect the docx4j JAXB model to ever generate one 
+	        	// (it uses List<T> for repeating reference content), so this is unimplemented.
+	            // If this exception ever occurs, implement element-wise copying here.
+	            throw new IllegalStateException("[CopyPlugin] Reference-type array field not supported: "
+	                    + fieldOutline.parent().implClass.fullName()
+	                    + "." + fieldName
+	                    + " -> " + rawType.fullName());	    	
+	        }	        	
+	        	
+            // Primitive array, e.g. byte[] from xs:base64Binary/xs:hexBinary.
+            // clone() is sufficient because primitive elements are copied by value.
+			final JBlock thenBlock = body._if(srcField.ne(JExpr._null()))._then();
+            thenBlock.assign(dstField, srcField.invoke("clone"));
+            return;
+
+	    }
+		
+		if (!(rawType instanceof JClass)) {
+			// For completeness, though we don't expect this to happen in the docx4j JAXB model.
+			// Fall back to assignment
+            System.out.println("[CopyPlugin] Handling non-JClass rawType: "
+                    + fieldOutline.parent().implClass.fullName()
+                    + "." + fieldName
+                    + " -> " + rawType.fullName());	  			
+		    final JBlock thenBlock = body._if(srcField.ne(JExpr._null()))._then();
+		    thenBlock.assign(dstField, srcField);
+		    return;
+		}		
+					
 		// If not primitive, must be a class
 		final JClass fieldClass = (JClass) rawType;
 		final JBlock thenBlock = body._if(srcField.ne(JExpr._null()))._then();
@@ -160,7 +191,9 @@ public class CopyPlugin extends Plugin {
 
 			copyAndAssign(forBody, item, copiedItem, elementType, target);
 
-			forBody.invoke(dstField, "add").arg(copiedItem);
+			forBody.invoke(target.invoke("get" + publicName), "add").arg(copiedItem);
+			// or equivalently:
+			// forBody.add(target.invoke("get" + publicName).invoke("add").arg(copiedItem));
 			return;
 		}
 
@@ -169,6 +202,7 @@ public class CopyPlugin extends Plugin {
 		final JVar copiedObj = thenBlock.decl(fieldClass, "copiedObj");
 		copyAndAssign(thenBlock, objToCopy, copiedObj, fieldClass, target);
 		thenBlock.assign(dstField, copiedObj);
+		
 	}
 
 	private void copyAndAssign(JBlock codeBlock, JVar srcVar, JAssignmentTarget dstVar, JClass type, JVar target) {
