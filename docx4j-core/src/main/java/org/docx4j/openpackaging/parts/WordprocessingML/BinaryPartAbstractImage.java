@@ -894,6 +894,35 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public Inline createImageInline(String filenameHint, String altText, 
 			long id1, int id2, long cx, long cy, boolean link) throws Exception {
 		
+		return createImageInline(filenameHint, altText, this.getRelLast().getId(), id1, id2, cx, cy, link);
+	}
+
+	/**
+	 * Create a <wp:inline> element suitable for this image, which can be
+	 * linked or embedded in w:p/w:r/w:drawing, specifying height and width.  Note
+	 * that you'd ordinarily use one of the methods which don't require
+	 * you to specify height (cy). 
+	 * 
+	 * @param filenameHint
+	 *            Any text, for example the original filename
+	 * @param altText
+	 *            Like HTML's alt text
+	 * @param rEmbedId
+	 *            The relId of the image part            
+	 * @param id1
+	 *            An id unique in the document
+	 * @param id2
+	 *            Another id unique in the document None of these things seem to
+	 *            be exposed in Word 2007's user interface, but Word won't open
+	 * the document if any of the attributes these go in (except @ desc) aren't
+	 *            present!
+	 * @param cx    Image width in EMU
+	 * @param cy    Image height in EMU
+	 * @param link  true if this is to be linked not embedded
+	 * @throws Exception
+	 */	public static Inline createImageInline(String filenameHint, String altText, String rEmbedId,
+			long id1, int id2, long cx, long cy, boolean link) throws Exception {
+		
         if (filenameHint == null) {
 			filenameHint = "";
 		}
@@ -929,7 +958,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         mappings.put("cy", Long.toString(cy));
         mappings.put("filenameHint", filenameHint);
         mappings.put("altText", altText);
-        mappings.put("rEmbedId", this.getRelLast().getId());
+        mappings.put("rEmbedId", rEmbedId);
         mappings.put("id1", Long.toString(id1));
         mappings.put("id2", Integer.toString(id2));
 
@@ -938,6 +967,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         
 		return inline;		
 	}
+	
+	
     final static String namespaces = " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" "
             + "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
             + "xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\"";
