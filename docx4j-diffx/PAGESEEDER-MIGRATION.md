@@ -1,7 +1,30 @@
 # Migration plan: bundled `com.topologi.diffx` → `org.pageseeder.diffx:pso-diffx`
 
-Status: PLAN (July 2026). Target dependency: `org.pageseeder.diffx:pso-diffx:1.3.4`
+Status: Phases 0-3 DONE (July 2026); Phase 4 partially done (module-info, pom,
+sample updated with the code changes; legals/OSGi/CHANGELOG/upstream-issue items
+remain), Phase 5 not started. Target dependency: `org.pageseeder.diffx:pso-diffx:1.3.4`
 (Apache 2.0, Java 11+, actively maintained at https://github.com/pageseeder/diffx).
+
+Outcome notes (July 2026):
+- All 40 paragraph-level golden files are byte-identical under the new
+  implementation.  Key fidelity tricks: `DiffConfig.legacyDefault()` matches the
+  old fork's effective config (namespace-aware, whitespace COMPARE, WORD
+  granularity); `org.docx4j.diff.LegacyDiffOutput` replicates the patched
+  SafeXMLFormatter/SmartXMLFormatter markup (upstream's legacy-namespace switch
+  is package-private and unreachable, so we implement XMLDiffOutput ourselves);
+  and the legacy algorithms' operator convention (first sequence = newer,
+  insertions before deletions at a replacement) is reproduced by running the
+  new algorithm un-swapped and flipping each operator via
+  Docx4jDriver.flipped().
+- The two body-level goldens were regenerated: content identical, but each
+  top-level fragment now carries its own xmlns declarations, because the new
+  XMLWriterNSImpl correctly forgets namespace scopes when elements close
+  (the old writer's stale mappings meant ins:/del: attributes on fragments
+  after the first were bound to the wrong namespace at parse time - a latent
+  bug this migration fixes).
+- The old 5000-token blanket-delete/insert fallback and openResult's
+  hand-built root tag (including its ins->base-URI binding quirk) are
+  preserved as-is.
 
 ## Background and feasibility
 

@@ -20,12 +20,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.P;
 import org.junit.Test;
+import org.pageseeder.diffx.config.DiffConfig;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
-
-import com.topologi.diffx.Docx4jDriver;
-import com.topologi.diffx.Main;
-import com.topologi.diffx.config.DiffXConfig;
 
 /**
  * Captures the current diff output as golden files, so that the planned
@@ -88,12 +85,10 @@ public class GoldenOutputTest {
 				String leftXml = XmlUtils.marshaltoString(pl, true, false);
 				String rightXml = XmlUtils.marshaltoString(pr, true, false);
 
-				DiffXConfig diffxConfig = new DiffXConfig();
-				diffxConfig.setIgnoreWhiteSpace(false);
-				diffxConfig.setPreserveWhiteSpace(true);
+				DiffConfig diffxConfig = Docx4jDriver.legacyConfig();
 
 				Writer out = new StringWriter();
-				Main.diff(toNode(leftXml), toNode(rightXml), out, diffxConfig);
+				Docx4jDriver.diff(toNode(leftXml), toNode(rightXml), out, diffxConfig);
 
 				check("raw_p/" + testparagraphs[i] + "_" + testparagraphs[j] + ".xml",
 						out.toString());

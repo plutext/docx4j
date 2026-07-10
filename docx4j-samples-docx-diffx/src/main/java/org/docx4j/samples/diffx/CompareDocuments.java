@@ -44,10 +44,9 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.diff.Docx4jDriver;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.Document;
-
-import com.topologi.diffx.Docx4jDriver;
 
 
 /**

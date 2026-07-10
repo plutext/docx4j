@@ -65,72 +65,72 @@
             </w:r>
         </w:del>
     </w:p>
-    <w:p>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+    <w:p xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
             <w:t xml:space="preserve">The  brown </w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
-            <w:rPr>
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
+            <w:rPr xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert">
                 <w:b/>
                 <w:sz w:val="28"/>
                 <w:szCs w:val="28"/>
             </w:rPr>
             <w:t xml:space="preserve">fox</w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
             <w:t xml:space="preserve"> jumped over the </w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
-            <w:rPr>
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
+            <w:rPr xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert">
                 <w:u w:val="single"/>
             </w:rPr>
             <w:t xml:space="preserve">lazy old</w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
             <w:t xml:space="preserve"> dog.</w:t>
         </w:r>
     </w:p>
-    <w:p>
-        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="8">
+    <w:p xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
+        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X" w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="8">
             <w:r>
                 <w:t xml:space="preserve">The quick brown fox jumped high </w:t>
             </w:r>
         </w:ins>
-        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="9">
+        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X" w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="9">
             <w:r>
                 <w:t xml:space="preserve">high over the lazy dog.</w:t>
             </w:r>
         </w:ins>
     </w:p>
-    <w:p>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+    <w:p xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
             <w:t xml:space="preserve">Brown </w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
-            <w:rPr>
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
+            <w:rPr xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert">
                 <w:b/>
                 <w:sz w:val="28"/>
                 <w:szCs w:val="28"/>
             </w:rPr>
             <w:t xml:space="preserve">fox</w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
             <w:t xml:space="preserve"> jumped over the </w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
-            <w:rPr>
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
+            <w:rPr xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert">
                 <w:u w:val="single"/>
             </w:rPr>
             <w:t xml:space="preserve">lazy old</w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
             <w:t xml:space="preserve"> grey</w:t>
         </w:r>
-        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+        <w:r xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X">
             <w:t xml:space="preserve"> dog.</w:t>
         </w:r>
     </w:p>
-    <w:sectPr>
+    <w:sectPr xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
         <w:pgSz w:code="9" w:h="16839" w:w="11907"/>
         <w:pgMar w:bottom="1440" w:left="1440" w:right="1440" w:top="1440"/>
     </w:sectPr>

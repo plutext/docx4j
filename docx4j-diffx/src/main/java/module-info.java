@@ -3,22 +3,10 @@ module org.docx4j.docx4j_diffx {
 	requires org.slf4j;
 	requires org.docx4j.core;
 	requires jakarta.xml.bind;
-//	requires docx4j_openxml_objects;
-    
-    exports com.topologi.diffx;
-    exports com.topologi.diffx.algorithm;
-    exports com.topologi.diffx.config;
-    exports com.topologi.diffx.event;
-    exports com.topologi.diffx.event.impl;
-    exports com.topologi.diffx.format;
-    exports com.topologi.diffx.load;
-    exports com.topologi.diffx.load.text;
-    exports com.topologi.diffx.sequence;
-    exports com.topologi.diffx.util;
-    exports com.topologi.diffx.xml;
-    exports com.topologi.diffx.xml.dom;
-    exports com.topologi.diffx.xml.esc;
-    exports com.topologi.diffx.xml.sax;
+
+	// automatic modules (no Automatic-Module-Name manifest entries as at pso-diffx 1.3.4 / pso-xmlwriter 1.1.1)
+	requires pso.diffx;
+	requires pso.xmlwriter;
 
     exports org.eclipse.compare;
     exports org.eclipse.compare.internal;
@@ -26,5 +14,5 @@ module org.docx4j.docx4j_diffx {
 
     exports org.docx4j.diff;
     opens org.docx4j.diff;  // so the XSLT can be loaded by ResourceUtils
-    
+
 }

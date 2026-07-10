@@ -64,11 +64,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.pageseeder.diffx.config.DiffConfig;
 import org.xml.sax.InputSource;
-
-import com.topologi.diffx.Docx4jDriver;
-import com.topologi.diffx.Main;
-import com.topologi.diffx.config.DiffXConfig;
 
 
 
@@ -1137,13 +1134,11 @@ public class Differencer {
 		
 		// output
 		Writer out = new StringWriter();
-		
-		DiffXConfig diffxConfig = new DiffXConfig();
-		diffxConfig.setIgnoreWhiteSpace(false);
-		diffxConfig.setPreserveWhiteSpace(true);
+
+		DiffConfig diffxConfig = Docx4jDriver.legacyConfig();
 
 		try {
-			Main.diff(toNode(xmlr1, true), toNode(xmlr2, true), out, diffxConfig);
+			Docx4jDriver.diff(toNode(xmlr1, true), toNode(xmlr2, true), out, diffxConfig);
 				// The signature which takes Reader objects appears to be broken
 			out.close();
 		} catch (Exception exc) {
