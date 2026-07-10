@@ -60,13 +60,16 @@ which the ASF licenses under the Apache License, Version 2.0
 org.docx4j.services.client.MyRetryHandler is a modified version of Apache's http client DefaultHttpRequestRetryHandler.
 The ASF licenses that file under the Apache License, Version 2.0 
 
-com.topologi.diffx, used in docx4j-diffx, 
-is copyright Topologi 2004.
-It is licensed under the Artistic License.  Under
-clause 4 of that license, we may distribute diffx
-in object code or executable form, provided that 
-we accompany the distribution with the machine-readable 
-source of the modified package.
+docx4j-diffx uses the Diff-X library (org.pageseeder.diffx:pso-diffx) as a
+Maven dependency, copyright Allette Systems (Australia) and licensed under
+the Apache License, Version 2.0.  (docx4j 17.0.x and earlier instead bundled
+a fork of its com.topologi.diffx ancestor, copyright Topologi 2004, licensed
+under the Artistic License.)
+
+org.eclipse.compare, bundled in docx4j-diffx, repackages the LCS range
+differencer from the Eclipse Compare project, copyright IBM Corporation
+2000, 2007, and licensed under the Eclipse Public License v1.0
+(https://www.eclipse.org/legal/epl-v10.html).
  	
 The xsd dir (not shipped in any docx4j jar) contains various xsd files from which the object models
 used by JAXB were generated using XJC.  These generally came from

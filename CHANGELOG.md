@@ -2,6 +2,34 @@ CHANGELOG
 =========
 
 
+Version 17.0.1
+===============
+
+Release date
+------------
+
+xx July 2026
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 17.0.1
+--------------------------
+
+Image conversion:  obsolete property (starting with "org." removed, use docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable.
+Now defaults to no conversion.  Set the property to your executable if you want to handle these images.
+
+docx4j-diffx: the bundled com.topologi.diffx fork (Artistic License) is replaced by its actively maintained
+descendant, org.pageseeder.diffx:pso-diffx 1.3.4 (Apache License v2), used as a Maven dependency.
+Diff output is unchanged (verified against golden files), except that in body-level (divide and conquer)
+diffs, each top level fragment now carries its own namespace declarations; previously ins:/del: attributes
+on fragments after the first were bound to the wrong namespace (a latent bug, now fixed).
+API note: the com.topologi.diffx.* packages are no longer shipped; Docx4jDriver is now org.docx4j.diff.Docx4jDriver.
+org.docx4j.diff.Differencer is unchanged.
+
 Version 17.0.0
 ===============
 

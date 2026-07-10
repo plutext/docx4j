@@ -43,21 +43,18 @@
 						<Bundle-Name>${project.artifactId}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Import-Package>
-                            com.topologi.diffx.event;resolution:=optional,
-                            com.topologi.diffx.xml;resolution:=optional,
-                            com.topologi.diffx.xml.esc;resolution:=optional,
+                            org.pageseeder.diffx.*,
+                            org.pageseeder.xmlwriter.*,
 
                             org.xml.sax,
                             org.xml.sax.ext,
                             org.xml.sax.helpers,
                         </Import-Package>
 						<Export-Package>
-                            com.topologi.diffx.xml,
-                            com.topologi.diffx.xml.esc,
-                            com.topologi.diffx.event,
+						    org.docx4j.diff,
 						    org.eclipse.compare,
 						    org.eclipse.compare.internal,
-						    org.eclipse.compare.rangedifferencer,                            
+						    org.eclipse.compare.rangedifferencer,
                         </Export-Package>
 					</instructions>
 				</configuration>
@@ -70,9 +67,9 @@
 						</goals>
 					</execution>
 				</executions>
-            </plugin>				
+            </plugin>
 -->
-			
+
 		</plugins>
         
 		<resources>

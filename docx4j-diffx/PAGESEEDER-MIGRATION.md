@@ -1,8 +1,10 @@
 # Migration plan: bundled `com.topologi.diffx` → `org.pageseeder.diffx:pso-diffx`
 
-Status: Phases 0-3 DONE (July 2026); Phase 4 partially done (module-info, pom,
-sample updated with the code changes; legals/OSGi/CHANGELOG/upstream-issue items
-remain), Phase 5 not started. Target dependency: `org.pageseeder.diffx:pso-diffx:1.3.4`
+Status: Phases 0-4 DONE (July 2026); the upstream Automatic-Module-Name request
+is drafted in upstream-issue-automatic-module-name.md, awaiting filing.
+Phase 5 (benchmark whether the divide-and-conquer splitter and the bundled
+org.eclipse.compare LCS can be retired) not started.
+Target dependency: `org.pageseeder.diffx:pso-diffx:1.3.4`
 (Apache 2.0, Java 11+, actively maintained at https://github.com/pageseeder/diffx).
 
 Outcome notes (July 2026):
