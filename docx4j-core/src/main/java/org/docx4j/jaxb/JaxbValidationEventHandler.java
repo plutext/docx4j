@@ -122,6 +122,10 @@ public class JaxbValidationEventHandler implements ValidationEventHandler {
 	}
 	
     public boolean handleEvent(ValidationEvent ve) {  
+    	
+    	if (log.isDebugEnabled()) {
+			log.debug("handleEvent called", new Throwable());
+		}
     	    	
 	    if (ve.getSeverity()==ValidationEvent.FATAL_ERROR 
 	    		  || ve.getSeverity()==ValidationEvent.ERROR){
