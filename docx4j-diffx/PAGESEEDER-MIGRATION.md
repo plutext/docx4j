@@ -1,11 +1,38 @@
 # Migration plan: bundled `com.topologi.diffx` → `org.pageseeder.diffx:pso-diffx`
 
-Status: Phases 0-4 DONE (July 2026); the upstream Automatic-Module-Name request
+Status: Phases 0-5 DONE (July 2026); the upstream Automatic-Module-Name request
 is drafted in upstream-issue-automatic-module-name.md, awaiting filing.
-Phase 5 (benchmark whether the divide-and-conquer splitter and the bundled
-org.eclipse.compare LCS can be retired) not started.
 Target dependency: `org.pageseeder.diffx:pso-diffx:1.3.4`
 (Apache 2.0, Java 11+, actively maintained at https://github.com/pageseeder/diffx).
+
+Phase 5 verdict (July 2026): KEEP the divide-and-conquer splitter and the
+bundled org.eclipse.compare LCS.  Benchmark (WholeBodyDiffBenchmark in
+docx4j-diffx-tests; 500 generated paragraphs, ~26k tokens/side, seeded):
+
+| scenario            | splitter        | whole-body OptimisticXMLProcessor |
+|---------------------|-----------------|-----------------------------------|
+| identical           | 13 ms           | 7 ms                              |
+| 5% paras edited     | 13 ms, 31 mk    | 6 ms, 57 mk                       |
+| 20% paras edited    | 18 ms, 557 mk   | 6 ms, 219 mk                      |
+| structural (10 del, 10 ins, 20 moved) | 13 ms, 2129 mk | 11,460 ms, 21,449 mk |
+| 50% paras edited    | 21 ms, 2159 mk  | 8 ms, 479 mk                      |
+
+(mk = ins/del markers in the raw output, a crude quality metric; whole-body
+MatrixXMLAlgorithm refuses every non-identical scenario at this size -
+DataLengthException, >64M comparisons.)
+
+The whole-body optimistic processor is faster and produces cleaner diffs for
+pure in-place word edits, but collapses on structural changes (paragraph
+deletes/inserts/moves - the common case for document revisions): ~900x slower
+and ~10x noisier than the splitter, because the Myers-greedy result breaks
+XML well-formedness and triggers an expensive repair path.  The splitter is
+uniformly fast (13-21 ms) at this document size.
+
+Possible future tweaks (not pursued): use OptimisticXMLProcessor instead of
+MatrixXMLAlgorithm for each changed range inside the splitter (would lift the
+5000-token per-range blanket-delete/insert fallback); investigate why the
+splitter's per-range pairing yields more markers than whole-body on heavy
+in-place edit loads (pre-existing behaviour, not a migration regression).
 
 Outcome notes (July 2026):
 - All 40 paragraph-level golden files are byte-identical under the new
