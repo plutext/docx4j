@@ -388,7 +388,11 @@ public class ListsToContentControls {
 						listStack.push(listSpec);
 					}
 					
-					listSpec.sdtList.getSdtContent().getContent().add(paragraph);
+					if (listSpec != null && listSpec.sdtList != null && listSpec.sdtList.getSdtContent() != null) {
+						listSpec.sdtList.getSdtContent().getContent().add(paragraph);
+					} else {
+						resultElts.add(unwrapped);
+					}
 				} else if (numId==null) {
 					log.error("TODO: encountered null numId!");
 					closeAllLists();
@@ -434,7 +438,11 @@ public class ListsToContentControls {
 						}
 						
 					}
-					listSpec.sdtList.getSdtContent().getContent().add(paragraph);										
+					if (listSpec != null && listSpec.sdtList != null && listSpec.sdtList.getSdtContent() != null) {
+						listSpec.sdtList.getSdtContent().getContent().add(paragraph);
+					} else {
+						resultElts.add(unwrapped);
+					}									
 				} 
 				
 				
