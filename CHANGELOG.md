@@ -39,6 +39,15 @@ Fields: FieldRef.getFldName no longer throws IndexOutOfBoundsException for a com
 whitespace-only w:instrText (Word can produce these); it now returns null, and FieldsPreprocessor.canonicalise
 preserves such a field untouched.  Call sites (MailMerger etc) hardened against a null field name.  See issue 682.
 
+PDF/FO output: characters in the Khmer, Thai, Lao and Myanmar Unicode ranges are now formatted with the
+cs (or cstheme) font, as Word does.  Previously RunFontSelector fell back to the hAnsi font for these ranges,
+so a run specifying its font only via w:cs (as LibreOffice writes for complex scripts) came out in the wrong
+font.  Additionally, consecutive characters in these ranges now share a single fo:inline; previously each
+character was emitted in its own fo:inline, which prevented FOP applying the font's GSUB rules (subscript
+stacking, pre-base vowel reordering), so such text was rendered unshaped even when the correct font was
+selected.  See issue 666.  Note that correct shaping also depends on the font: with FOP 2.11, Noto Sans Khmer
+shapes correctly, but the legacy Khmer OS fonts' GSUB tables are not fully supported.
+
 Fields: FieldsPreprocessor.canonicalise no longer drops run formatting (w:rPr).  Previously the run containing
 the field end char always lost its rPr, and when the output of a merge (eg FORMTEXTMerger with
 OutputField.AS_FORMTEXT_REGULAR) was used as input to a further merge, the field result run - and in some run

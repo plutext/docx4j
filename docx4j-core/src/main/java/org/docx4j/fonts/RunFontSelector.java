@@ -640,8 +640,9 @@ public class RunFontSelector {
 		String eastAsia = null;
 		String ascii = null;
 		String hAnsi = null;
-		
-		STHint hint = rFonts.getHint(); 
+		String cs = null;
+
+		STHint hint = rFonts.getHint();
 		
 		if (rFonts.getEastAsiaTheme()!=null
 				&& getThemePart()!=null) {
@@ -690,10 +691,29 @@ public class RunFontSelector {
 				log.error(e.getMessage(), e);
 			}
 		} else {
-			// No theme, so 
+			// No theme, so
 			hAnsi = rFonts.getHAnsi();
 		}
-		
+
+		if (rFonts.getCstheme()!=null
+				&& getThemePart()!=null) {
+			try {
+				cs = getThemePart().getFont(rFonts.getCstheme(), themeFontLang);
+			} catch (Docx4JException e) {
+				log.error(e.getMessage(), e);
+			}
+			if (cs==null) {
+				cs = rFonts.getCs();
+			}
+		} else {
+			// No theme, so
+			cs = rFonts.getCs();
+		}
+		if (cs!=null && cs.trim().length()==0) {
+			// eg LibreOffice writes w:cs="" in docDefaults
+			cs = null;
+		}
+
     	/*
     	 * If the eastAsia (or eastAsiaTheme if defined) attribute’s value is “Times New Roman”
     	 * and the ascii (or asciiTheme if defined) and hAnsi (or hAnsiTheme if defined) attributes are equal, 
@@ -744,7 +764,7 @@ public class RunFontSelector {
 		
 		vis.setDocument(document);
 		return unicodeRangeToFont(text,  hint,  langEastAsia,
-	    		 eastAsia,  ascii,  hAnsi );
+	    		 eastAsia,  ascii,  hAnsi,  cs );
     }
     
     private int translateUnicode2SingleByte(int cp) {
@@ -800,7 +820,7 @@ public class RunFontSelector {
 	}
     
     private Object unicodeRangeToFont(String text, STHint hint, String langEastAsia,
-    		String eastAsia, String ascii, String hAnsi) {
+    		String eastAsia, String ascii, String hAnsi, String cs) {
     	
 //    	String hAnsi = hAnsiActual;
 //		if (hAnsi==null) {
@@ -1051,7 +1071,40 @@ public class RunFontSelector {
         	    	currentRangeLower = '\u0590';
         	    	currentRangeUpper = '\u07BF';
         	    }
-        	    else if (c>='\u1100' && c<='\u11FF') 
+        	    /* Thai, Lao, Myanmar and Khmer below are complex script ranges
+        	     * not listed at http://msdn.microsoft.com/en-us/library/ff533743.aspx
+        	     * (which says hAnsi for unlisted ranges), but Word formats them
+        	     * with the cs (or cstheme if defined) font.  See issue 666.
+        	     * Setting currentRange also keeps consecutive characters in a
+        	     * single span, which FOP needs in order to shape them correctly. */
+        	    else if (c>='\u0E00' && c<='\u0E7F')
+        	    {
+        	    	// Thai
+    				vis.fontAction(cs==null ? hAnsi : cs);
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u0E00';
+        	    	currentRangeUpper = '\u0E7F';
+        	    }
+        	    else if (c>='\u0E80' && c<='\u0EFF')
+        	    {
+        	    	// Lao
+    				vis.fontAction(cs==null ? hAnsi : cs);
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u0E80';
+        	    	currentRangeUpper = '\u0EFF';
+        	    }
+        	    else if (c>='\u1000' && c<='\u109F')
+        	    {
+        	    	// Myanmar
+    				vis.fontAction(cs==null ? hAnsi : cs);
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u1000';
+        	    	currentRangeUpper = '\u109F';
+        	    }
+        	    else if (c>='\u1100' && c<='\u11FF')
         	    {
         	    	if (eastAsia==null) {
         	    		vis.fontAction("Gungsuh"); // TODO what if not present?
@@ -1063,7 +1116,25 @@ public class RunFontSelector {
         	    	
         	    	currentRangeLower = '\u1100';
         	    	currentRangeUpper = '\u11FF';
-        	    } else if (c>='\u1E00' && c<='\u1EFF') 
+        	    }
+        	    else if (c>='\u1780' && c<='\u17FF')
+        	    {
+        	    	// Khmer; see comment above (issue 666)
+    				vis.fontAction(cs==null ? hAnsi : cs);
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u1780';
+        	    	currentRangeUpper = '\u17FF';
+        	    }
+        	    else if (c>='\u19E0' && c<='\u19FF')
+        	    {
+        	    	// Khmer Symbols
+    				vis.fontAction(cs==null ? hAnsi : cs);
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u19E0';
+        	    	currentRangeUpper = '\u19FF';
+        	    } else if (c>='\u1E00' && c<='\u1EFF')
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
         	    		if (contains(langEastAsia, "zh") ) {
