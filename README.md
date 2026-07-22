@@ -107,6 +107,15 @@ http://www.docx4java.org/forums or StackOverflow (use tag 'docx4j')
 Please post to one or the other, not both
 
 
+Contributing
+------------
+
+Contributions are welcome; please see [CONTRIBUTING.md](CONTRIBUTING.md)
+before opening a pull request. In short: base your PR on the current
+`VERSION_x_y_z` development branch, sign off each commit (DCO,
+`git commit -s`), and disclose any AI assistance with a commit trailer.
+
+
 Legal Information
 -----------------
 

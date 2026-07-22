@@ -50,3 +50,19 @@ Three layers, bottom-up:
 3. **Model/facade layer**: `org.docx4j.Docx4J` is the high-level facade (`load`, `save`, `toPDF`, `toHTML`, bind, with `FLAG_*` constants) delegating to exporters in `org.docx4j.convert.out.*`. `org.docx4j.model` holds higher-level abstractions over raw JAXB objects — notably `PropertyResolver` (effective style/formatting resolution), `model/datastorage` (OpenDoPE content-control data binding), `model/listnumbering`, `model/fields`, `model/structure`.
 
 **Configuration**: `org.docx4j.Docx4jProperties` loads a single `docx4j.properties` from the classpath at static init (warns if absent); typed getters plus programmatic `setProperty`. Behavior toggles throughout the codebase (image handling, binder eagerness, fonts, JAXB output formatting) are keyed through it. A reference file is `docx4j-samples-resources/src/main/resources/docx4j.properties`.
+
+## Model guidance
+
+Most tasks here (tests, docs, routine fixes, single-layer features, refactors)
+are fine on Opus. Prefer Fable 5 for:
+
+- Cross-layer debugging, especially PDF output / XSL-FO / font-selection issues
+- Complex-script and bidi behavior
+- OpenDoPE content-control data binding (`org.docx4j.model.datastorage` and
+  related binding/bind-flag code)
+- JAXB context or classloading problems
+- Changes to widely-shared code (`XmlUtils`, `Context`, `Preprocess`, the
+  `io3` load/save path)
+
+If you are a smaller model and an investigation keeps not converging, say so
+and suggest rerunning on a stronger model rather than guessing.
