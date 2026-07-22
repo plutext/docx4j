@@ -379,7 +379,7 @@ public class FieldsPreprocessor {
 						
 						newR.getContent().add(o2);
 
-						if (currentField.getFldName().equals("FORMTEXT")) {
+						if ("FORMTEXT".equals(currentField.getFldName())) {
 							/*
 							 * Workaround for a bug in Word 2010.
 							 * 

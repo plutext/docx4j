@@ -35,6 +35,10 @@ numbering has a negative w:ilvl (invalid, but seen in the wild); such a paragrap
 numbered, as Word does.  Likewise a paragraph with w:numId="0" (which per ECMA-376 17.9.18 means numbering
 is removed) is no longer wrapped in a list.  See PR 683.
 
+Fields: FieldRef.getFldName no longer throws IndexOutOfBoundsException for a complex field with empty or
+whitespace-only w:instrText (Word can produce these); it now returns null, and FieldsPreprocessor.canonicalise
+preserves such a field untouched.  Call sites (MailMerger etc) hardened against a null field name.  See issue 682.
+
 Version 17.0.0
 ===============
 

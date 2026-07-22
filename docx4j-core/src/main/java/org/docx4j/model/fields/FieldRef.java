@@ -293,12 +293,23 @@ public class FieldRef {
 	 * @return
 	 */
 	public String getFldName() {
-		
+
+		if (instructions.isEmpty()) {
+			// eg a field with empty or whitespace-only w:instrText (issue 682);
+			// FieldsPreprocessor drops such instrText, leaving this list empty
+			log.warn("Field has no instructions; can't determine field name");
+			return null;
+		}
+
 		Object o;
 		if (instructions.get(0) instanceof FieldRef) {
 			log.info("FieldRef present..");
 			FieldRef nested = (FieldRef)instructions.get(0);
-			o = nested.instructions.get(0);			
+			if (nested.instructions.isEmpty()) {
+				log.warn("Nested field has no instructions; can't determine field name");
+				return null;
+			}
+			o = nested.instructions.get(0);
 		} else {
 			o = instructions.get(0);
 		}
@@ -369,6 +380,9 @@ public class FieldRef {
 		if (mergeFormat==null) {
 			//Work it out. Assume for now that this is contained in instructions.get(0).
 			mergeFormat = Boolean.FALSE;
+			if (instructions.isEmpty()) {
+				return mergeFormat;
+			}
 			Object o = XmlUtils.unwrap(instructions.get(0));
 			if (o instanceof Text) {
 				String instr = ((Text)o).getValue();

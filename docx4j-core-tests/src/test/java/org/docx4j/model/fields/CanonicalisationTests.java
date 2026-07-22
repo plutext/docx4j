@@ -143,6 +143,23 @@ public class CanonicalisationTests {
 		assertTrue(resultP.getContent().get(1)==fieldRef1.getResultsSlot());
 	}
 	
+	@Test
+	public void testEmptyInstruction() throws JAXBException, IOException {
+
+		// issue 682: a complex field with whitespace-only instrText
+		// used to cause IndexOutOfBoundsException in FieldRef.getFldName
+		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
+		P resultP = FieldsPreprocessor.canonicalise(getP("Canon_empty_instruction.xml"), fieldRefs);
+
+		FieldRef fieldRef1 =  fieldRefs.get(0);
+		assertTrue(fieldRef1.getFldName()==null);
+		assertTrue(!fieldRef1.isMergeFormat());
+
+		// field result is preserved
+		String xml = XmlUtils.marshaltoString(resultP, true, true);
+		assertTrue(xml.contains("Nothing"));
+	}
+
 	private P getP(String filename) throws JAXBException, IOException {
 		
 		return (P)XmlUtils.unmarshal(org.docx4j.utils.ResourceUtils.getResource("org/docx4j/model/fields/" + filename));

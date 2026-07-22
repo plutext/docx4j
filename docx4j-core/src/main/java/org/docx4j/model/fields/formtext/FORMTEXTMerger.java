@@ -90,7 +90,7 @@ public class FORMTEXTMerger extends AbstractMerger {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ( fr.getFldName().equals("FORMTEXT") ) {				
+			if ( "FORMTEXT".equals(fr.getFldName()) ) {				
 				
 				String datafieldName = FFDataUtil.getDatafieldNameFromFFData(fr.getFormFieldProperties());
 				

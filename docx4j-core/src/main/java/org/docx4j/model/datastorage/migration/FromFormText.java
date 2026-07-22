@@ -94,7 +94,7 @@ public class FromFormText extends AbstractMigratorUsingAnswersFormat {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ( fr.getFldName().equals("FORMTEXT") ) {
+			if ( "FORMTEXT".equals(fr.getFldName()) ) {
 				
 				String key = FFDataUtil.getDatafieldNameFromFFData(fr.getFormFieldProperties());
 								

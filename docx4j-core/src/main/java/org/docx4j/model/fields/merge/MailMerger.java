@@ -204,7 +204,7 @@ public class MailMerger extends AbstractMerger {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ( fr.getFldName().equals("MERGEFIELD") ) {
+			if ( "MERGEFIELD".equals(fr.getFldName()) ) {
 				
 				String instr = extractInstr(fr.getInstructions() );
 				if (instr==null) {

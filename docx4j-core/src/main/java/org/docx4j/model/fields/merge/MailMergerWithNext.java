@@ -122,7 +122,7 @@ public class MailMergerWithNext extends MailMerger {
         // Populate
         for (FieldRef fr : fieldRefs) {
 
-            if (fr.getFldName().equals("MERGEFIELD")) {
+            if ("MERGEFIELD".equals(fr.getFldName())) {
 
                 String instr = extractInstr(fr.getInstructions());
                 String datafieldName = getDatafieldNameFromInstr(instr);
@@ -219,7 +219,7 @@ public class MailMergerWithNext extends MailMerger {
                 // System.out.println("AFTER " +XmlUtils.marshaltoString(
                 // fr.getParent(), true, true));
 
-            } else if (fr.getFldName().equals("NEXT")) {
+            } else if ("NEXT".equals(fr.getFldName())) {
                 // Remove the NEXT field from the document
                 removeSimpleField(fr);
 

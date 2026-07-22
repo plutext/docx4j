@@ -229,7 +229,7 @@ public class CSwitch extends SelectorSwitch {
     		if (log.isDebugEnabled()) {
     			log.debug("'" + fr.getFldName() + "'");
     		}
-			if ( fr.getFldName().equals("SEQ") ) {
+			if ( "SEQ".equals(fr.getFldName()) ) {
 				
 				String instr = extractInstr(fr.getInstructions() );
 				if (instr==null) {
