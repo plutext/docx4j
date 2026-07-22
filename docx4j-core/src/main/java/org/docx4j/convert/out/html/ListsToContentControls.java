@@ -356,11 +356,20 @@ public class ListsToContentControls {
 					ilvl = numPr.getIlvl().getVal();
 				}
 				log.debug("ilvl: " + ilvl.intValue());
-				
+
+				if (numId==null || numId.signum()==0 || ilvl.signum()<0) {
+					// numId 0 means numbering is removed from this paragraph (ECMA-376 17.9.18);
+					// a negative ilvl is invalid, and Word treats such a paragraph as not numbered.
+					// Either way, this is not a list item.  Without this guard, a negative ilvl
+					// leaves listSpec null below (the level-adding loops never execute).
+					closeAllLists();
+					resultElts.add(unwrapped);
+					continue;
+				}
+
 				ListSpec listSpec = listStack.peek();
 				if (listSpec==null
-						|| (numId!=null
-								&& !numId.equals(listSpec.numId))) {
+						|| !numId.equals(listSpec.numId)) {
 					// new or different list
 					log.debug("NEW LIST");
 					
@@ -389,12 +398,7 @@ public class ListsToContentControls {
 					}
 					
 					listSpec.sdtList.getSdtContent().getContent().add(paragraph);
-				} else if (numId==null) {
-					log.error("TODO: encountered null numId!");
-					closeAllLists();
-					resultElts.add(unwrapped);
-					continue;	
-				} else // (numId.equals(listSpec.numId)) 
+				} else // (numId.equals(listSpec.numId))
 				{
 					// same list
 					log.debug("listSpec.ilvl.intValue():" + listSpec.ilvl.intValue());

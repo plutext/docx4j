@@ -28,6 +28,9 @@ import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.Tr;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,7 +182,76 @@ public class ListsToContentControlsTest {
 	}	
 		
 	@Test
-	public  void existingControl() throws Exception {	
+	public  void negativeIlvl() throws Exception {
+
+		// A negative ilvl is invalid; Word treats such a paragraph as not numbered.
+		// Previously this NPE'd (listSpec null), per plutext/docx4j#683
+		WordprocessingMLPackage wordMLPackage = createPkg();
+
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+
+		mdp.getContent().add(createUnnumberedP());
+		mdp.getContent().add(createNumberedP(1,-1));
+		mdp.getContent().add(createUnnumberedP());
+
+		ListsToContentControls.process(wordMLPackage);
+
+		System.out.println(mdp.getXML());
+
+		assertEquals(3, mdp.getContent().size());
+		for (Object o : mdp.getContent()) {
+			assertTrue(XmlUtils.unwrap(o) instanceof P);
+		}
+	}
+
+	@Test
+	public  void negativeIlvlClosesOpenList() throws Exception {
+
+		WordprocessingMLPackage wordMLPackage = createPkg();
+
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+
+		mdp.getContent().add(createNumberedP(1,0));
+		mdp.getContent().add(createNumberedP(1,-1)); // same numId, invalid ilvl
+		mdp.getContent().add(createNumberedP(2,-1)); // different numId, invalid ilvl
+
+		ListsToContentControls.process(wordMLPackage);
+
+		System.out.println(mdp.getXML());
+
+		// list sdt containing first p, then the two invalid ones as bare paragraphs
+		assertEquals(3, mdp.getContent().size());
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(0)) instanceof SdtBlock);
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(1)) instanceof P);
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(2)) instanceof P);
+	}
+
+	@Test
+	public  void numIdZero() throws Exception {
+
+		// numId 0 means numbering is removed from this paragraph (ECMA-376 17.9.18),
+		// so it must not be treated as a list item
+		WordprocessingMLPackage wordMLPackage = createPkg();
+
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+
+		mdp.getContent().add(createNumberedP(1,0));
+		mdp.getContent().add(createNumberedP(0,0)); // numbering removed
+		mdp.getContent().add(createNumberedP(1,0));
+
+		ListsToContentControls.process(wordMLPackage);
+
+		System.out.println(mdp.getXML());
+
+		// first list, bare paragraph, second list
+		assertEquals(3, mdp.getContent().size());
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(0)) instanceof SdtBlock);
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(1)) instanceof P);
+		assertTrue(XmlUtils.unwrap(mdp.getContent().get(2)) instanceof SdtBlock);
+	}
+
+	@Test
+	public  void existingControl() throws Exception {
 		
 		WordprocessingMLPackage wordMLPackage = createPkg();
 		

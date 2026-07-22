@@ -30,6 +30,11 @@ on fragments after the first were bound to the wrong namespace (a latent bug, no
 API note: the com.topologi.diffx.* packages are no longer shipped; Docx4jDriver is now org.docx4j.diff.Docx4jDriver.
 org.docx4j.diff.Differencer is unchanged.
 
+HTML output: ListsToContentControls no longer throws NullPointerException on a paragraph whose effective
+numbering has a negative w:ilvl (invalid, but seen in the wild); such a paragraph is now treated as not
+numbered, as Word does.  Likewise a paragraph with w:numId="0" (which per ECMA-376 17.9.18 means numbering
+is removed) is no longer wrapped in a list.  See PR 683.
+
 Version 17.0.0
 ===============
 
