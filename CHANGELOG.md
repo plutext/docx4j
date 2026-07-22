@@ -39,6 +39,13 @@ Fields: FieldRef.getFldName no longer throws IndexOutOfBoundsException for a com
 whitespace-only w:instrText (Word can produce these); it now returns null, and FieldsPreprocessor.canonicalise
 preserves such a field untouched.  Call sites (MailMerger etc) hardened against a null field name.  See issue 682.
 
+Fields: FieldUpdater (DOCPROPERTY/DOCVARIABLE) now handles a field instruction split across several
+w:instrText fragments, as Word produces when a spelling/grammar marker, rsid boundary or formatting change
+falls inside the instruction; previously such fields were skipped with "TODO DOCPROPERTY field contained
+complex instruction".  The fragments are concatenated, per ECMA-376.  The same concatenation (already used
+by MailMerger and TOC's CSwitch) now also applies to FieldUpdaterSEQ and FromMergeFields, via a new shared
+helper FieldsPreprocessor.extractInstr.  See issue 645.
+
 PDF/FO and HTML output: conversion no longer modifies the styles and settings parts of the input package.
 Previously the ParagraphStylesInTableFix preprocessing step operated on parts whose content was shared with
 the input package (Preprocess.createRelationshipTypes did not list them for deep copy), so its synthetic

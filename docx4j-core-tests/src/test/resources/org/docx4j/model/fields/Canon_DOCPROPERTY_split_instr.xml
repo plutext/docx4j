@@ -1,0 +1,22 @@
+  <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" >
+      <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+      <w:r>
+          <w:instrText xml:space="preserve"> DOCPROPERTY  my</w:instrText>
+      </w:r>
+      <w:proofErr w:type="spellStart"/>
+      <w:r>
+          <w:instrText xml:space="preserve">prop  \* MERGEFORMAT </w:instrText>
+      </w:r>
+      <w:proofErr w:type="spellEnd"/>
+      <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+      <w:r>
+          <w:t>TBD</w:t>
+      </w:r>
+      <w:r>
+          <w:fldChar w:fldCharType="end"/>
+      </w:r>
+  </w:p>

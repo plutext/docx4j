@@ -106,9 +106,42 @@ public class FieldsPreprocessor {
 	
 	
 	/**
+	 * Extract the field instruction string from a FieldRef's instructions,
+	 * concatenating w:instrText fragments.  Word may split an instruction
+	 * across several runs (for example at proofErr, rsid or formatting
+	 * boundaries); per ECMA-376 the instruction is the concatenation of the
+	 * instrText content between the begin and separate fldChars.
+	 *
+	 * @param instructions typically {@link FieldRef#getInstructions()}
+	 * @return the concatenated instruction, or null if the list is empty or
+	 * contains something other than instruction text (eg a nested field)
+	 * @since 17.0.1
+	 */
+	public static String extractInstr(List<Object> instructions) {
+
+		if (instructions.isEmpty()) {
+			log.warn("Field has no instructions");
+			return null;
+		}
+
+		StringBuilder sb = new StringBuilder();
+		for (Object o : instructions) {
+			o = XmlUtils.unwrap(o);
+			if (o instanceof Text) {
+				sb.append(((Text)o).getValue());
+			} else {
+				// eg a nested field (FieldRef); can't resolve that by simple concatenation
+				log.warn("Can't extract instruction: encountered " + o.getClass().getName());
+				return null;
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
 	 * Convert the field(s) in the input P into a predictable
 	 * format, and add a FieldRef object to the list for each
-	 * top level field encountered.  
+	 * top level field encountered.
 	 * 
 	 * WARNING: this method should not be used where a field 
 	 * in the P extends into a subsequent P.

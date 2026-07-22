@@ -277,23 +277,7 @@ public class FieldUpdaterSEQ {
 	}
 	
 	private String extractInstr(List<Object> instructions) {
-		// For SEQ, expect the list to contain a simple string
-		
-		if (instructions.size()!=1) {
-			log.error("TODO SEQ field contained complex instruction");
-			return null;
-		}
-		
-		Object o = XmlUtils.unwrap(instructions.get(0));
-		if (o instanceof Text) {
-			return ((Text)o).getValue();
-		} else {
-            if(log.isErrorEnabled()) {
-                log.error("TODO: extract field name from " + o.getClass().getName());
-                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
-            }
-			return null;
-		}
+		return FieldsPreprocessor.extractInstr(instructions);
 	}
 		
 	

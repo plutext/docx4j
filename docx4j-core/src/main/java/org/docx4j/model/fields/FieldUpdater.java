@@ -244,7 +244,7 @@ public class FieldUpdater {
 			if (DOCPROPERTY.equals(fldName)
 					|| DOCVARIABLE.equals(fldName) ) {
 				
-				String instr = extractInstr(fr.getInstructions());
+				String instr = FieldsPreprocessor.extractInstr(fr.getInstructions());
 				try {
 					fsm.build(instr);
 				} catch (TransformerException e) {
@@ -304,26 +304,6 @@ public class FieldUpdater {
 				report.append("Ignoring " + fr.getFldName() + "\n");				
 			}
 		}	
-	}
-	
-	private String extractInstr(List<Object> instructions) {
-		// For DOCPROPERTY, expect the list to contain a simple string
-		
-		if (instructions.size()!=1) {
-			log.error("TODO DOCPROPERTY field contained complex instruction");
-			return null;
-		}
-		
-		Object o = XmlUtils.unwrap(instructions.get(0));
-		if (o instanceof Text) {
-			return ((Text)o).getValue();
-		} else {
-            if(log.isErrorEnabled()) {
-                log.error("TODO: extract field name from " + o.getClass().getName());
-                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
-            }
-			return null;
-		}
 	}
 	
 }
