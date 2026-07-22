@@ -1071,12 +1071,24 @@ public class RunFontSelector {
         	    	currentRangeLower = '\u0590';
         	    	currentRangeUpper = '\u07BF';
         	    }
-        	    /* Thai, Lao, Myanmar and Khmer below are complex script ranges
-        	     * not listed at http://msdn.microsoft.com/en-us/library/ff533743.aspx
+        	    /* The Indic, Thai, Lao, Myanmar and Khmer ranges below are complex
+        	     * script ranges not listed at http://msdn.microsoft.com/en-us/library/ff533743.aspx
         	     * (which says hAnsi for unlisted ranges), but Word formats them
-        	     * with the cs (or cstheme if defined) font.  See issue 666.
+        	     * with the cs (or cstheme if defined) font.  See issues 666 and 622.
         	     * Setting currentRange also keeps consecutive characters in a
         	     * single span, which FOP needs in order to shape them correctly. */
+        	    else if (c>='\u0900' && c<='\u0DFF')
+        	    {
+        	    	// The Indic scripts: Devanagari, Bengali, Gurmukhi, Gujarati,
+        	    	// Oriya, Tamil, Telugu, Kannada, Malayalam, Sinhala
+        	    	// (contiguous blocks, and the font action is the same,
+        	    	// so one range suffices)
+    				vis.fontAction(cs==null ? hAnsi : cs);
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u0900';
+        	    	currentRangeUpper = '\u0DFF';
+        	    }
         	    else if (c>='\u0E00' && c<='\u0E7F')
         	    {
         	    	// Thai

@@ -46,14 +46,16 @@ correct (RTL) paragraph embedding level; and a w:rtl run is no longer wrapped in
 (FOP handles that by reversing the characters itself, bypassing the font's GSUB rules, so Arabic came
 out unshaped, and in mixed paragraphs the runs came out in the wrong order).  See issue 660.
 
-PDF/FO output: characters in the Khmer, Thai, Lao and Myanmar Unicode ranges are now formatted with the
+PDF/FO output: characters in the Indic (Devanagari, Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu,
+Kannada, Malayalam, Sinhala), Khmer, Thai, Lao and Myanmar Unicode ranges are now formatted with the
 cs (or cstheme) font, as Word does.  Previously RunFontSelector fell back to the hAnsi font for these ranges,
 so a run specifying its font only via w:cs (as LibreOffice writes for complex scripts) came out in the wrong
 font.  Additionally, consecutive characters in these ranges now share a single fo:inline; previously each
-character was emitted in its own fo:inline, which prevented FOP applying the font's GSUB rules (subscript
-stacking, pre-base vowel reordering), so such text was rendered unshaped even when the correct font was
-selected.  See issue 666.  Note that correct shaping also depends on the font: with FOP 2.11, Noto Sans Khmer
-shapes correctly, but the legacy Khmer OS fonts' GSUB tables are not fully supported.
+character was emitted in its own fo:inline, which prevented FOP applying the font's GSUB rules (conjunct
+formation, subscript stacking, vowel reordering), so such text was rendered unshaped even when the correct
+font was selected.  See issues 666 (Khmer) and 622 (Hindi, Telugu).  Note that correct shaping also depends
+on the font: with FOP 2.11 the Noto fonts (Noto Sans Khmer, Noto Sans Devanagari, Noto Sans Telugu) shape
+correctly, but eg the legacy Khmer OS fonts' GSUB tables are not fully supported.
 
 Fields: FieldsPreprocessor.canonicalise no longer drops run formatting (w:rPr).  Previously the run containing
 the field end char always lost its rPr, and when the output of a merge (eg FORMTEXTMerger with
