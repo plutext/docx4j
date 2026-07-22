@@ -87,29 +87,25 @@ public class TextDirection extends AbstractRunProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 
-		if (((BooleanDefaultTrue)this.getObject()).isVal() ) {
-			
-			foElement.setAttribute(FO_NAME, "rtl" ); 
-			
-			// Note: This is post-processed in:
-			// + xslt  case: XsltFOFunctions.createBlockForPPr
-			// + other case: FOExporterVisitorGenerator.rtlAwareAppendChildToCurrentP
-			
-			// so that the inline is wrapped in 
-	    	//    <bidi-override direction="rtl" unicode-bidi="embed">
-			
-			/* See further:
-				From: Glenn Adams <glenn@skynav.com>
-				Date: Fri, Mar 21, 2014 at 8:41 AM
-				Subject: Re: right align arabic in table-cell
-				To: FOP Users <fop-users@xmlgraphics.apache.org>
-			 */
-			
-			
-		} else {
-			//foElement.setAttribute(FO_NAME, "ltr" );
-		}
-		
+		/* Deliberately a no-op, since 17.0.1 (issue 660).
+		 *
+		 * Until then, the run's inline was wrapped in
+		 *    <fo:bidi-override direction="rtl" unicode-bidi="embed">
+		 * (via post-processing in XsltFOFunctions.createBlockForPPr and
+		 * FOExporterVisitorGenerator.rtlAwareAppendChildToCurrentP,
+		 * keyed off a direction="rtl" attribute set here).
+		 *
+		 * But FOP handles a bidi-override by reversing the characters itself,
+		 * without applying the font's GSUB rules, so Arabic came out unshaped;
+		 * and with per-run overrides under a left-to-right paragraph embedding
+		 * level, runs in a mixed RTL/LTR paragraph came out in the wrong order.
+		 *
+		 * The w:rtl text itself is stored in logical order, so it is best to
+		 * leave its rendering to FOP's implementation of the Unicode bidi
+		 * algorithm; all that is needed is the correct paragraph embedding
+		 * level, which w:pPr/w:bidi now establishes (see the Bidi class).
+		 */
+
 	}
 
 	@Override
@@ -123,3 +119,4 @@ public class TextDirection extends AbstractRunProperty {
     }
 	
 }
+

@@ -36,6 +36,7 @@ import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
+import org.docx4j.model.properties.paragraph.Bidi;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -481,18 +482,34 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				createFoAttributes(conversionContext, pPr, currentParent, inlist, ignoreBorders );
 			}
 			
-			if (rPr!=null) {											
+			if (rPr!=null) {
 //				createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
-				
+
 				if (foListBlock==null) {
 					createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
 				} else {
-					createFoAttributes(conversionContext.getWmlPackage(), rPr, ((Element)foListBlock) );					
+					createFoAttributes(conversionContext.getWmlPackage(), rPr, ((Element)foListBlock) );
 				}
-				
+
 	        }
-        
-						
+
+			// If w:bidi, the Bidi class will have set a writing-mode marker
+			// attribute (where it doesn't apply, and FOP ignores it); move it to
+			// an fo:block-container wrapped around the paragraph's block, where
+			// it gives FOP's Unicode bidi algorithm implementation an RTL
+			// paragraph embedding level.  See issue 660.
+			if (currentParent.hasAttribute(Bidi.FO_WRITING_MODE_NAME)
+					&& currentParent.getParentNode()!=null) {
+
+				currentParent.removeAttribute(Bidi.FO_WRITING_MODE_NAME);
+
+				Element container = document.createElementNS(XSL_FO, "block-container");
+				container.setAttribute(Bidi.FO_WRITING_MODE_NAME, Bidi.FO_WRITING_MODE_RTL);
+
+				currentParent.getParentNode().replaceChild(container, currentParent);
+				container.appendChild(currentParent);
+			}
+
 		} catch (Exception e) {
 			getLog().error(e.getMessage(), e);
 		} 
@@ -646,37 +663,14 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 	@Override
 	protected void rtlAwareAppendChildToCurrentP(Element spanEl) {
-		
-    	// Arabic (and presumably Hebrew) fix
-    	// If we have inline direction="rtl" (created by TextDirection class)
-    	// wrap the inline with:
-    	//    <bidi-override direction="rtl" unicode-bidi="embed">
-		/* See further:
-			From: Glenn Adams <glenn@skynav.com>
-			Date: Fri, Mar 21, 2014 at 8:41 AM
-			Subject: Re: right align arabic in table-cell
-			To: FOP Users <fop-users@xmlgraphics.apache.org>
-		 */						
 
-		if (rPr!=null 
-				&& rPr.getRtl()!=null
-			&& rPr.getRtl().isVal())  {
-			
-			spanEl.removeAttribute("direction");
-    		
-    		Element bidiOverride = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
-					"fo:bidi-override");
-        	bidiOverride.setAttribute("unicode-bidi", "embed" );
-        	bidiOverride.setAttribute("direction", "rtl" );    		
-    		
-        	bidiOverride.appendChild(spanEl);
+		// Note: prior to 17.0.1, a w:rtl run's inline was wrapped here in
+		//    <fo:bidi-override direction="rtl" unicode-bidi="embed">
+		// That actively broke FOP's own bidi processing (unshaped Arabic, and
+		// wrong run order in mixed RTL/LTR paragraphs); see issue 660 and the
+		// TextDirection class.
 
-			currentP.appendChild( bidiOverride  );
-        	
-		} else {
-			// Usual case
-			currentP.appendChild( spanEl  );
-		}
-		
+		currentP.appendChild( spanEl  );
+
 	}
 }

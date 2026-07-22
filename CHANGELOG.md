@@ -39,6 +39,13 @@ Fields: FieldRef.getFldName no longer throws IndexOutOfBoundsException for a com
 whitespace-only w:instrText (Word can produce these); it now returns null, and FieldsPreprocessor.canonicalise
 preserves such a field untouched.  Call sites (MailMerger etc) hardened against a null field name.  See issue 682.
 
+PDF/FO output: mixed right-to-left and left-to-right text (eg Arabic with embedded English words) in a
+w:bidi paragraph is now ordered correctly.  Two changes: the paragraph's fo:block is wrapped in
+fo:block-container writing-mode="rl-tb", which gives FOP's Unicode bidi algorithm implementation the
+correct (RTL) paragraph embedding level; and a w:rtl run is no longer wrapped in fo:bidi-override
+(FOP handles that by reversing the characters itself, bypassing the font's GSUB rules, so Arabic came
+out unshaped, and in mixed paragraphs the runs came out in the wrong order).  See issue 660.
+
 PDF/FO output: characters in the Khmer, Thai, Lao and Myanmar Unicode ranges are now formatted with the
 cs (or cstheme) font, as Word does.  Previously RunFontSelector fell back to the hAnsi font for these ranges,
 so a run specifying its font only via w:cs (as LibreOffice writes for complex scripts) came out in the wrong

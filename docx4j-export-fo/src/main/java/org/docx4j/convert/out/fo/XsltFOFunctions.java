@@ -35,6 +35,7 @@ import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.Bidi;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
@@ -104,13 +105,15 @@ public class XsltFOFunctions {
 				((Element)foBlock).setAttribute("margin-top", "0in");    	    	
 				((Element)foBlock).setAttribute("margin-bottom", "0in");    	    	
 
-//				((Element)foBlock).setAttribute("padding-top", "0in");    	    	
-//				((Element)foBlock).setAttribute("padding-bottom", "0in");    	    	
+//				((Element)foBlock).setAttribute("padding-top", "0in");
+//				((Element)foBlock).setAttribute("padding-bottom", "0in");
     	    }
     	}
-    	    
+
+    	wrapInBidiBlockContainer(docfrag);
+
     	return docfrag;
-    }	
+    }
 
     public static DocumentFragment createInlineForSdt( 
     		FOConversionContext context,
@@ -145,41 +148,15 @@ public class XsltFOFunctions {
         		pStyleVal, childResults,
         		false);  
     	
-    	// Arabic (and presumably Hebrew) fix
-    	// If we have inline direction="rtl" (created by TextDirection class)
-    	// wrap the inline with:
-    	//    <bidi-override direction="rtl" unicode-bidi="embed">
-		/* See further:
-			From: Glenn Adams <glenn@skynav.com>
-			Date: Fri, Mar 21, 2014 at 8:41 AM
-			Subject: Re: right align arabic in table-cell
-			To: FOP Users <fop-users@xmlgraphics.apache.org>
-		 */
-    	
+    	// Note: prior to 17.0.1, an inline with direction="rtl" (as then created by
+    	// the TextDirection class for a w:rtl run) was wrapped here in
+    	//    <fo:bidi-override direction="rtl" unicode-bidi="embed">
+    	// That actively broke FOP's own bidi processing (unshaped Arabic, and wrong
+    	// run order in mixed RTL/LTR paragraphs); see issue 660.  Instead, a w:bidi
+    	// paragraph now gets an RTL paragraph embedding level; see wrapInBidiBlockContainer.
+
     	Element block = (Element)df.getFirstChild();
-		NodeList blockChildren = block.getChildNodes();
-    	for (int i = 0 ; i <blockChildren.getLength(); i++ ) {
-    	
-    		if (blockChildren.item(i) instanceof Element) {
-	    		Element inline = (Element)blockChildren.item(i);
-	    	
-		    	if (inline !=null && inline.getAttribute("direction")!=null
-		    			&& inline.getAttribute("direction").equals("rtl")) {
-	
-		        	inline.removeAttribute("direction");
-		    		
-		    		Element bidiOverride = df.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format", 
-							"fo:bidi-override");
-		        	bidiOverride.setAttribute("unicode-bidi", "embed" );
-		        	bidiOverride.setAttribute("direction", "rtl" );    		
-		    		
-		        	block.replaceChild(bidiOverride, inline);
-		        	bidiOverride.appendChild(inline);
-		    		
-		    	}
-    		}
-    	} 
-    	
+
     	if (foContainsElement(block, "leader")) {
 			// ptab to leader implementation:
 			// for leader to work as expected in fop, we need text-align-last; see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
@@ -192,9 +169,65 @@ public class XsltFOFunctions {
     	if (Docx4jProperties.getProperty("docx4j.convert.out.fo.hyphenate", false)) {
     		block.setAttribute("hyphenate", "true");
     	}
-    	
-    	
+
+    	wrapInBidiBlockContainer(df);
+
     	return df;
+    }
+
+    /**
+     * If this paragraph has w:bidi set, the Bidi class will have put a
+     * writing-mode attribute on its fo:block (where the property does not
+     * apply, and FOP ignores it).  Move it to an fo:block-container wrapped
+     * around the fragment's content, which is where it takes effect: it
+     * gives FOP's Unicode bidi algorithm implementation an RTL paragraph
+     * embedding level, so that RTL and LTR runs are ordered correctly.
+     * See issue 660.
+     *
+     * @since 17.0.1
+     */
+    protected static void wrapInBidiBlockContainer(DocumentFragment df) {
+
+    	if (df==null || !(df.getFirstChild() instanceof Element)) return;
+    	Element first = (Element)df.getFirstChild();
+
+    	// The attribute is on the block carrying the pPr properties: the first
+    	// child itself, or, in the list item case, a block inside the list-block.
+    	Element marked = findElementWithWritingMode(first);
+    	if (marked==null) return;
+
+    	marked.removeAttribute(Bidi.FO_WRITING_MODE_NAME);
+
+    	Element container = df.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format",
+    			"fo:block-container");
+    	container.setAttribute(Bidi.FO_WRITING_MODE_NAME, Bidi.FO_WRITING_MODE_RTL);
+
+    	df.replaceChild(container, first);
+    	container.appendChild(first);
+    }
+
+    private static Element findElementWithWritingMode(Element el) {
+
+    	if (el.hasAttribute(Bidi.FO_WRITING_MODE_NAME)) return el;
+
+    	// Only descend the list item structure (the marked block sits inside
+    	// fo:list-item-body there).  In particular, don't descend into an
+    	// fo:block: anything below it is the paragraph's content, which may
+    	// contain already-wrapped nested paragraphs of its own.
+    	String localName = el.getLocalName();
+    	if ("list-block".equals(localName)
+    			|| "list-item".equals(localName)
+    			|| "list-item-body".equals(localName)) {
+
+	    	NodeList children = el.getChildNodes();
+	    	for (int i=0; i<children.getLength(); i++) {
+	    		if (children.item(i) instanceof Element) {
+	    			Element found = findElementWithWritingMode((Element)children.item(i));
+	    			if (found!=null) return found;
+	    		}
+	    	}
+    	}
+    	return null;
     }
     
     

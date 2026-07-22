@@ -48,10 +48,17 @@ public class Bidi extends AbstractParagraphProperty {
 	 *                
 	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(Bidi.class);		
-		
-	
-	
+	protected static Logger log = LoggerFactory.getLogger(Bidi.class);
+
+	/**
+	 * @since 17.0.1
+	 */
+	public final static String FO_WRITING_MODE_NAME = "writing-mode";
+	/**
+	 * @since 17.0.1
+	 */
+	public final static String FO_WRITING_MODE_RTL = "rl-tb";
+
 	public Bidi(BooleanDefaultTrue val) {
 		this.setObject(val);
 	}
@@ -91,17 +98,25 @@ public class Bidi extends AbstractParagraphProperty {
 					fo:block-container, fo:inline-container, and fo:table."
 					http://www.w3.org/TR/2006/REC-xsl11-20061205/#prapply
 				
-			   Per Glenn Adams (FOP user mailing list): none of these is fo:block. 
+			   Per Glenn Adams (FOP user mailing list): none of these is fo:block.
 			   You need to specify it on fo:table.
-			   
+
 			   But it doesn't work on a nested table.
-			   
-			   So all we need to do is:				
 			 */
-			foElement.setAttribute(Justification.FO_NAME,  "right"); 
+			foElement.setAttribute(Justification.FO_NAME,  "right");
 			// unless jc is set to align right; this interaction handled in XsltFOFunctions.createFoAttributes
 			// and equivalent method in FOExporterVisitorGenerator
-			
+
+			/* Since writing-mode doesn't apply to fo:block, the attribute set here
+			 * is a marker: the FO exporters (XsltFOFunctions.createBlockForPPr, and
+			 * FOExporterVisitorGenerator.handlePPr) move it to an fo:block-container
+			 * which they wrap around the block.  Without it, FOP resolves the
+			 * Unicode bidi algorithm with a left-to-right paragraph embedding level,
+			 * so in a paragraph containing both RTL and LTR runs, the runs come out
+			 * in the wrong order.  See issue 660.
+			 */
+			foElement.setAttribute(FO_WRITING_MODE_NAME, FO_WRITING_MODE_RTL);
+
 		} else {
 			foElement.setAttribute(Justification.FO_NAME,  "left"); // eg English
 		}
@@ -119,3 +134,4 @@ public class Bidi extends AbstractParagraphProperty {
 
 	
 }
+
