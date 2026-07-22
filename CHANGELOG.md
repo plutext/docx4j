@@ -39,6 +39,18 @@ Fields: FieldRef.getFldName no longer throws IndexOutOfBoundsException for a com
 whitespace-only w:instrText (Word can produce these); it now returns null, and FieldsPreprocessor.canonicalise
 preserves such a field untouched.  Call sites (MailMerger etc) hardened against a null field name.  See issue 682.
 
+PDF/FO and HTML output: conversion no longer modifies the styles and settings parts of the input package.
+Previously the ParagraphStylesInTableFix preprocessing step operated on parts whose content was shared with
+the input package (Preprocess.createRelationshipTypes did not list them for deep copy), so its synthetic
+"-BR" paragraph styles leaked into the input package's styles part, and the
+overrideTableStyleFontSizeAndJustification compat setting was silently set to "1" in its settings part.
+Both changes were then persisted if the package was saved afterwards - notably by TocGenerator.updateToc(),
+whose page numbering step runs the FO conversion.  Also, preprocessing steps which modify the main document
+part (coverpage sectPr mover, HTML list collection, the two Apache FOP pagebreak workarounds) now declare
+that, so custom feature sets which previously resulted in an empty deep-copy set (and hence, no copy at all,
+with all preprocessing mutating the input package directly) are now copied correctly.  Noticed while
+investigating issue 650 (unclear as yet whether it is the cause of that issue).
+
 PDF/FO output: mixed right-to-left and left-to-right text (eg Arabic with embedded English words) in a
 w:bidi paragraph is now ordered correctly.  Two changes: the paragraph's fo:block is wrapped in
 fo:block-container writing-mode="rl-tb", which gives FOP's Unicode bidi algorithm implementation the

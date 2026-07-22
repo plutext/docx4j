@@ -106,8 +106,20 @@ public class Preprocess extends ConversionFeatures {
 			relationshipTypes.add(Namespaces.FOOTNOTES);
 			relationshipTypes.add(Namespaces.COMMENTS);
 		}
-		if (features.contains(PP_COMMON_MOVE_PAGEBREAK)) {
+		if (features.contains(PP_COMMON_MOVE_PAGEBREAK) ||
+			features.contains(PP_PDF_COVERPAGE_MOVE_SECTPR) ||
+			features.contains(PP_HTML_COLLECT_LISTS) ||
+			features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH) ||
+			features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM)) {
 			relationshipTypes.add(Namespaces.DOCUMENT);
+		}
+		if (features.contains(PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX)) {
+			// ParagraphStylesInTableFix renames pStyle refs in cell paragraphs,
+			// adds synthetic "-BR" styles, and sets the
+			// overrideTableStyleFontSizeAndJustification compat setting
+			relationshipTypes.add(Namespaces.DOCUMENT);
+			relationshipTypes.add(Namespaces.STYLES);
+			relationshipTypes.add(Namespaces.SETTINGS);
 		}
 		return relationshipTypes;
 	}
