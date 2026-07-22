@@ -160,6 +160,52 @@ public class CanonicalisationTests {
 		assertTrue(xml.contains("Nothing"));
 	}
 
+	@Test
+	public void testFORMTEXTrPrPreservedOnReuse() throws JAXBException, IOException {
+
+		// issue 667: when canonicalise output is canonicalised again
+		// (ie merge output re-used as input to another merge),
+		// rPr was dropped from the begin run, results slot and end run
+
+		P p = getP("Canon_FORMTEXT_rPr.xml");
+
+		for (int pass=1; pass<=3; pass++) {
+
+			List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
+			p = FieldsPreprocessor.canonicalise(p, fieldRefs);
+			fieldRefs.get(0).setResult("value" + pass);  // as FORMTEXTMerger does
+
+			assertTrue(p.getContent().size()==3);
+			for (Object o : p.getContent()) {
+				R r = (R)o;
+				assertTrue("pass " + pass + ": rPr missing", r.getRPr()!=null);
+				assertTrue("pass " + pass + ": color missing",
+						"990AE3".equals(r.getRPr().getColor().getVal()));
+			}
+		}
+	}
+
+	@Test
+	public void testFORMTEXTrPrBeginRunOnly() throws JAXBException, IOException {
+
+		// issue 667 variant: rPr on the begin run only; it used to be
+		// clobbered with the following (unformatted) run's null rPr
+
+		P p = getP("Canon_FORMTEXT_rPr_begin_only.xml");
+
+		for (int pass=1; pass<=2; pass++) {
+
+			List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
+			p = FieldsPreprocessor.canonicalise(p, fieldRefs);
+			fieldRefs.get(0).setResult("value" + pass);
+
+			R beginRun = fieldRefs.get(0).getBeginRun();
+			assertTrue("pass " + pass + ": rPr missing on begin run", beginRun.getRPr()!=null);
+			assertTrue("pass " + pass + ": color missing on begin run",
+					"990AE3".equals(beginRun.getRPr().getColor().getVal()));
+		}
+	}
+
 	private P getP(String filename) throws JAXBException, IOException {
 		
 		return (P)XmlUtils.unmarshal(org.docx4j.utils.ResourceUtils.getResource("org/docx4j/model/fields/" + filename));

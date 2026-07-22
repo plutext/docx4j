@@ -10,6 +10,7 @@ import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.Text;
 import org.slf4j.Logger;
@@ -221,6 +222,15 @@ public class FieldsPreprocessor {
 		
 	}
 	
+	/**
+	 * Copy, since the source run's rPr instance may also be stamped onto
+	 * another output run at the top of the handleRun loop; sharing one RPr
+	 * object between two live runs risks aliasing on later mutation.
+	 */
+	private static RPr copyRPr(RPr rPr) {
+		return rPr==null ? null : XmlUtils.deepCopy(rPr);
+	}
+
 	private boolean fieldIsTopLevel() {
 		return stack.size()==1;
 	}
@@ -295,8 +305,14 @@ public class FieldsPreprocessor {
         }
 		
 		for (Object o2 : existingRun.getContent() ) {
-			
-			newR.setRPr(existingRun.getRPr());
+
+			// Only stamp rPr on a run we haven't yet added content to;
+			// newR may be an already-populated run built from an earlier
+			// source run (eg the results slot), whose rPr must not be
+			// clobbered with this run's rPr (issue 667)
+			if (newR.getContent().isEmpty()) {
+				newR.setRPr(existingRun.getRPr());
+			}
 
 			if (isCharType(o2, STFldCharType.BEGIN)) {
 				
@@ -321,11 +337,12 @@ public class FieldsPreprocessor {
 					
 				} else {
 					
-					if ( fieldIsTopLevel() ) { 
+					if ( fieldIsTopLevel() ) {
 						log.debug(".. top level ");
-					
+
 						newR = Context.getWmlObjectFactory().createR();
-						newR.getContent().add(o2);					
+						newR.setRPr(copyRPr(existingRun.getRPr())); // issue 667
+						newR.getContent().add(o2);
 						
 						currentField.setBeginRun(newR); // IMPORTANT, so we can delete it when we perform mail merge
 						
@@ -474,6 +491,7 @@ public class FieldsPreprocessor {
 						
 						// create a run specifically for end char
 						newR = Context.getWmlObjectFactory().createR();
+						newR.setRPr(copyRPr(existingRun.getRPr())); // issue 667
 						newAttachPoint.getContent().add(newR);
 						newR.getContent().add(o2);
 						currentField.setEndRun(newR);

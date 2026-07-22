@@ -39,6 +39,12 @@ Fields: FieldRef.getFldName no longer throws IndexOutOfBoundsException for a com
 whitespace-only w:instrText (Word can produce these); it now returns null, and FieldsPreprocessor.canonicalise
 preserves such a field untouched.  Call sites (MailMerger etc) hardened against a null field name.  See issue 682.
 
+Fields: FieldsPreprocessor.canonicalise no longer drops run formatting (w:rPr).  Previously the run containing
+the field end char always lost its rPr, and when the output of a merge (eg FORMTEXTMerger with
+OutputField.AS_FORMTEXT_REGULAR) was used as input to a further merge, the field result run - and in some run
+layouts the begin run (w:fldChar/w:ffData) - lost its rPr too, so the visible text lost its font/colour/size
+after the first iteration.  See issue 667.
+
 Version 17.0.0
 ===============
 

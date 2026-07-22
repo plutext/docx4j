@@ -1,0 +1,33 @@
+<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" >
+    <w:r>
+        <w:rPr>
+            <w:rFonts w:cs="Arial"/>
+            <w:color w:val="990AE3"/>
+            <w:sz w:val="56"/>
+            <w:szCs w:val="56"/>
+            <w:lang w:eastAsia="fi-FI"/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="begin">
+            <w:ffData>
+                <w:name w:val="test"/>
+                <w:enabled/>
+                <w:calcOnExit w:val="false"/>
+                <w:textInput>
+                    <w:default w:val="HeaderLbl"/>
+                </w:textInput>
+            </w:ffData>
+        </w:fldChar>
+    </w:r>
+    <w:r>
+        <w:instrText xml:space="preserve"> FORMTEXT </w:instrText>
+    </w:r>
+    <w:r>
+        <w:fldChar w:fldCharType="separate"/>
+    </w:r>
+    <w:r>
+        <w:t>HeaderLbl</w:t>
+    </w:r>
+    <w:r>
+        <w:fldChar w:fldCharType="end"/>
+    </w:r>
+</w:p>
