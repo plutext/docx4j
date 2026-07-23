@@ -26,7 +26,6 @@ import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.Docx4jProperties;
@@ -1538,8 +1537,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			String xpResult = part.getData().xpathGetString(xpath, prefixMappings);
 			log.debug(xpath + " yielded result length" + xpResult.length());
 			
-			// Base64 decode it
-			byte[] bytes = Base64.decodeBase64( xpResult.getBytes("UTF8") );
+			// Base64 decode it (lenient: ignores whitespace/non-alphabet chars)
+			byte[] bytes = java.util.Base64.getMimeDecoder().decode(xpResult);
 			
 			// Create image part and add it
 	        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);
@@ -1748,8 +1747,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			String xpResult = part.getData().xpathGetString(xpath, prefixMappings);
 			log.debug(xpath + " yielded result length" + xpResult.length());
 			
-			// Base64 decode it
-			byte[] bytes = Base64.decodeBase64( xpResult.getBytes("UTF8") );
+			// Base64 decode it (lenient: ignores whitespace/non-alphabet chars)
+			byte[] bytes = java.util.Base64.getMimeDecoder().decode(xpResult);
 			
 			// Create image part and add it
 	        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);

@@ -27,7 +27,6 @@ import java.util.List;
 
 import jakarta.xml.bind.JAXBElement;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.Callback;
@@ -342,8 +341,8 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		BinaryPartAbstractImage imagePart = null;
 		try {
-			// Base64 decode it
-			byte[] bytes = Base64.decodeBase64( base64.getBytes("UTF8") );
+			// Base64 decode it (lenient: ignores whitespace/non-alphabet chars)
+			byte[] bytes = java.util.Base64.getMimeDecoder().decode(base64);
 			
 			// Create image part and add it
 			imagePart = BinaryPartAbstractImage.createImagePart(

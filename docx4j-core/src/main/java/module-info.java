@@ -3,7 +3,6 @@ module org.docx4j.core {
     requires java.xml.crypto;
     requires org.plutext.jaxb.svg11;
 //    requires jcl.over.slf4j;
-    requires org.apache.commons.codec;
     requires org.apache.commons.compress;
     requires org.apache.commons.lang3;
     requires wmf2svg;

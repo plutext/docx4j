@@ -5,9 +5,7 @@ module org.docx4j.docx_anon {
 	requires org.docx4j.generated_objects;
     requires lorem;
 	requires jakarta.xml.bind;
-	
-	requires org.apache.commons.codec; // MOXy needs this
-	
+
 	//requires docx4j_JAXB_ReferenceImpl;
     
 //	requires docx4j_JAXB_MOXy;

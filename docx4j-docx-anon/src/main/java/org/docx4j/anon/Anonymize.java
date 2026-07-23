@@ -1,11 +1,11 @@
 package org.docx4j.anon;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.codec.binary.Base64;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -58,9 +58,9 @@ public class Anonymize {
     
     static {
     	
-    	PNG_IMAGE_DATA = Base64.decodeBase64("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAgMAAAAP2OW3AAAADFBMVEUDAP//AAAA/wb//AAD4Tw1AAAACXBIWXMAAAsTAAALEwEAmpwYAAAADElEQVQI12NwYNgAAAF0APHJnpmVAAAAAElFTkSuQmCC");
-    	GIF_IMAGE_DATA = Base64.decodeBase64("R0lGODdhAgACAKEEAAMA//8AAAD/Bv/8ACwAAAAAAgACAAACAww0BQA7");
-        JPEG_IMAGE_DATA = Base64.decodeBase64(
+    	PNG_IMAGE_DATA = Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAgMAAAAP2OW3AAAADFBMVEUDAP//AAAA/wb//AAD4Tw1AAAACXBIWXMAAAsTAAALEwEAmpwYAAAADElEQVQI12NwYNgAAAF0APHJnpmVAAAAAElFTkSuQmCC");
+    	GIF_IMAGE_DATA = Base64.getDecoder().decode("R0lGODdhAgACAKEEAAMA//8AAAD/Bv/8ACwAAAAAAgACAAACAww0BQA7");
+        JPEG_IMAGE_DATA = Base64.getDecoder().decode(
         						"/9j/4AAQSkZJRgABAQEASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABwEaAAUAAAABAAAAYgEbAAUA"
         						+"AAABAAAAagEoAAMAAAABAAIAAAExAAIAAAASAAAAclEQAAEAAAABAQAAAFERAAQAAAABAAALE1ES"
 								+"AAQAAAABAAALEwAAAAAAARlIAAAD6AABGUgAAAPoUGFpbnQuTkVUIHYzLjUuMTAA/9sAQwACAQEC"
@@ -76,8 +76,8 @@ public class Anonymize {
 								+"h4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp"
 								+"6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A/QL4W/sD/ArXfhl4dvr74K/CW8vbzS7ae4uJ/CGnySzy"
 								+"NErM7sYiWYkkknkk0UUV5+U/7jR/wR/JHRP4mf/Z");
-        BMP_IMAGE_DATA = Base64.decodeBase64("Qk1GAAAAAAAAADYAAAAoAAAAAgAAAAIAAAABABgAAAAAAAAAAAATCwAAEwsAAAAAAAAAAAAABv8AAPz///8AAP//AAMD/w==");
-        TIF_IMAGE_DATA = Base64.decodeBase64("");
+        BMP_IMAGE_DATA = Base64.getDecoder().decode("Qk1GAAAAAAAAADYAAAAoAAAAAgAAAAIAAAABABgAAAAAAAAAAAATCwAAEwsAAAAAAAAAAAAABv8AAPz///8AAP//AAMD/w==");
+        TIF_IMAGE_DATA = Base64.getDecoder().decode("");
     }
 
 	

@@ -19,7 +19,6 @@
  **/
 package org.docx4j.model.datastorage;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
@@ -351,8 +350,8 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 				String r = part.xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
 				log.debug(dataBinding.getXpath() + " yielded result " + r);
 				
-				// Base64 decode it
-				byte[] bytes = Base64.decodeBase64( r.getBytes("UTF8") );
+				// Base64 decode it (lenient: ignores whitespace/non-alphabet chars)
+				byte[] bytes = java.util.Base64.getMimeDecoder().decode(r);
 				
 				// Create image part and add it
 		        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);

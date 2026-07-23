@@ -30,6 +30,18 @@ on fragments after the first were bound to the wrong namespace (a latent bug, no
 API note: the com.topologi.diffx.* packages are no longer shipped; Docx4jDriver is now org.docx4j.diff.Docx4jDriver.
 org.docx4j.diff.Differencer is unchanged.
 
+HTML output: images can be embedded in the output as base64 data URIs (instead of being written to an
+image dir), via htmlSettings.setImageHandler(new DataUriConversionImageHandler()) - or equivalently
+setImageDirPath("").  The data URIs are now unchunked: previously the base64 payload contained a CRLF
+every 76 chars, which broke the URI where the output was parsed as XML (XHTML), since XML attribute-value
+normalization turns line breaks into spaces.  See issue 685.
+
+Dependencies: commons-codec is no longer a dependency of docx4j-core (or docx4j-docx-anon); the few
+remaining base64 usages now use java.util.Base64.  Where the input can be user-supplied XML text
+(picture content control data binding, DiagramDataPart.addImage), the MIME decoder is used, which
+like commons-codec ignores whitespace and other non-alphabet characters (though unlike commons-codec
+it does not accept the URL-safe base64 alphabet).
+
 HTML output: ListsToContentControls no longer throws NullPointerException on a paragraph whose effective
 numbering has a negative w:ilvl (invalid, but seen in the wild); such a paragraph is now treated as not
 numbered, as Word does.  Likewise a paragraph with w:numId="0" (which per ECMA-376 17.9.18 means numbering
