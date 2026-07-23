@@ -61,9 +61,14 @@ public abstract class AbstractConversionSettings { //implements ConversionFeatur
 		}
 	}
 	
-	// If this is set to something, images in
-	// internal binary parts will be saved to this directory;
-	// otherwise they won't
+	/** Where images in internal binary parts are saved.
+	 *
+	 *  If null (the default), java.io.tmpdir is used.
+	 *  If set to the empty string, images aren't saved at all: they are
+	 *  embedded in the output as base64 data URIs instead (HTML output only;
+	 *  XSL FO needs image files - see also
+	 *  {@link org.docx4j.model.images.DataUriConversionImageHandler}).
+	 */
 	public void setImageDirPath(String imageDirPath) {
 		settings.put(IMAGE_DIR_PATH, imageDirPath);
 	}

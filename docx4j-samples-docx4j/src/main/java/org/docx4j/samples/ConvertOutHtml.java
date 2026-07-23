@@ -36,6 +36,7 @@ import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.model.fields.FieldUpdater;
+import org.docx4j.model.images.DataUriConversionImageHandler;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -92,6 +93,9 @@ public class ConvertOutHtml extends AbstractSample {
     	htmlSettings.setImageDirPath(inputfilepath + "_files");
     	htmlSettings.setImageTargetUri(inputfilepath.substring(inputfilepath.lastIndexOf("/")+1)
     			+ "_files");
+    	// .. or, instead of the above, to embed images in the output
+    	// as base64 data URIs (no image dir):
+//    	htmlSettings.setImageHandler(new DataUriConversionImageHandler());
     	htmlSettings.setOpcPackage(wordMLPackage);
     	
     	

@@ -19,12 +19,11 @@
  */
 package org.docx4j.model.images;
 
-import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import org.apache.commons.codec.binary.Base64;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.relationships.Relationship;
@@ -95,13 +94,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	String uri = null;
 		if (imageDirPath.equals("")) {
 			// TODO: this isn't going to work for XSL FO!
-			// So for XSL FO, you always need an imageDirPath! 
-
-			// <img
-			// src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub/
-			//
-			// which is nice, except it doesn't work in IE7,
-			// and is limited to 32KB in IE8!
+			// So for XSL FO, you always need an imageDirPath!
 			uri = createEncodedImage(binaryPart, bytes);
 
 		} else {
@@ -112,21 +105,17 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	}
 
 	protected abstract String createStoredImage(BinaryPart binaryPart, byte[] bytes) throws Docx4JException;
-	
+
+	/** Create a data URI (RFC 2397) containing the image.
+	 *
+	 *  The base64 payload is unchunked (no line breaks): XML attribute-value
+	 *  normalization turns line breaks into spaces, which would break the
+	 *  data URI where the output is parsed as XML (eg XHTML).
+	 */
 	protected String createEncodedImage(BinaryPart binaryPart, byte[] bytes) throws Docx4JException {
-	String uri = null;
-	byte[] encoded = Base64.encodeBase64(bytes, true);
-		try {
-			uri = "data:" + binaryPart.getContentType()
-			+ ";base64,"
-			+ (new String(encoded, "UTF-8"));
-		}
-		catch (UnsupportedEncodingException uue) {
-			uri = "data:" + binaryPart.getContentType()
-			+ ";base64,"
-			+ (new String(encoded));
-		}
-		return uri;
+		return "data:" + binaryPart.getContentType()
+				+ ";base64,"
+				+ Base64.getEncoder().encodeToString(bytes);
 	}
 	
 	protected String setupImageName(BinaryPart binaryPart) {
