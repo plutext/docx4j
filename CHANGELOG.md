@@ -56,7 +56,11 @@ whose page numbering step runs the FO conversion.  Also, preprocessing steps whi
 part (coverpage sectPr mover, HTML list collection, the two Apache FOP pagebreak workarounds) now declare
 that, so custom feature sets which previously resulted in an empty deep-copy set (and hence, no copy at all,
 with all preprocessing mutating the input package directly) are now copied correctly.  Noticed while
-investigating issue 650 (unclear as yet whether it is the cause of that issue).
+investigating issue 650: this leak was one half of the cause of that issue.  In 11.5.12 and earlier,
+DocumentSettingsPart.setWordCompatSetting replaced the entire w:compat element (issue 668, fixed in 11.5.13),
+so the ParagraphStylesInTableFix step - operating on the shared settings part - deleted the document's other
+compat settings, including compatibilityMode=15; the document saved after TocGenerator.updateToc() therefore
+opened in Word's Compatibility Mode ("reduced functionality mode").  Either fix alone prevents that symptom.
 
 PDF/FO output: mixed right-to-left and left-to-right text (eg Arabic with embedded English words) in a
 w:bidi paragraph is now ordered correctly.  Two changes: the paragraph's fo:block is wrapped in
