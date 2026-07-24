@@ -262,11 +262,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
 			<version>1.28.0</version>
+			<!-- Don't exclude commons-codec here: although docx4j no longer uses it
+			     (issue 685), commons-compress's module-info hard-requires
+			     org.apache.commons.codec, so excluding it breaks the module path
+			     (FindException in the boot layer). -->
 			<exclusions>
-				<exclusion>
-					<groupId>commons-codec</groupId>
-					<artifactId>commons-codec</artifactId>
-				</exclusion>
 				<exclusion>
 					<groupId>org.apache.commons</groupId>
 					<artifactId>commons-lang3</artifactId>
