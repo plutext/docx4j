@@ -8,7 +8,7 @@ Version 17.0.1
 Release date
 ------------
 
-xx July 2026
+24 July 2026
 
 
 Contributors to this release
@@ -16,87 +16,43 @@ Contributors to this release
 
 Jason Harrop
 
+Claude Fable 5
+
 Changes in Version 17.0.1
 --------------------------
 
-Image conversion:  obsolete property (starting with "org." removed, use docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable.
+New CONTRIBUTIONS.md policy, covering AI assisted contributions, please read.
+
+New CLAUDE.md file: Claude Code automatically reads this at the start of a session to pick up project-specific context — things like coding conventions, architecture notes, commands to run tests/builds, and other instructions — so you don't have to repeat them every time.
+
+Image conversion:  obsolete property (starting with "org.") removed, use docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable.
 Now defaults to no conversion.  Set the property to your executable if you want to handle these images.
 
 docx4j-diffx: the bundled com.topologi.diffx fork (Artistic License) is replaced by its actively maintained
 descendant, org.pageseeder.diffx:pso-diffx 1.3.4 (Apache License v2), used as a Maven dependency.
-Diff output is unchanged (verified against golden files), except that in body-level (divide and conquer)
-diffs, each top level fragment now carries its own namespace declarations; previously ins:/del: attributes
-on fragments after the first were bound to the wrong namespace (a latent bug, now fixed).
-API note: the com.topologi.diffx.* packages are no longer shipped; Docx4jDriver is now org.docx4j.diff.Docx4jDriver.
-org.docx4j.diff.Differencer is unchanged.
 
-HTML output: images can be embedded in the output as base64 data URIs (instead of being written to an
-image dir), via htmlSettings.setImageHandler(new DataUriConversionImageHandler()) - or equivalently
-setImageDirPath("").  The data URIs are now unchunked: previously the base64 payload contained a CRLF
-every 76 chars, which broke the URI where the output was parsed as XML (XHTML), since XML attribute-value
-normalization turns line breaks into spaces.  See issue 685.
+HTML output: 
+- base64 encoded images were supported already, but now made neater and improved with new DataUriConversionImageHandler. sue 685.
+- new CidConversionImageHandler for HTML destined for email (cid: references + collected images to attach); see ConvertOutHtmlToEmail sample. Issue 685.
+- ListsToContentControls: avoid NPE on invalid negative w:ilvl.  See PR 683.
 
-Dependencies: commons-codec is no longer a dependency of docx4j-core (or docx4j-docx-anon); the few
-remaining base64 usages now use java.util.Base64.  Where the input can be user-supplied XML text
-(picture content control data binding, DiagramDataPart.addImage), the MIME decoder is used, which
-like commons-codec ignores whitespace and other non-alphabet characters (though unlike commons-codec
-it does not accept the URL-safe base64 alphabet).
-
-HTML output: ListsToContentControls no longer throws NullPointerException on a paragraph whose effective
-numbering has a negative w:ilvl (invalid, but seen in the wild); such a paragraph is now treated as not
-numbered, as Word does.  Likewise a paragraph with w:numId="0" (which per ECMA-376 17.9.18 means numbering
-is removed) is no longer wrapped in a list.  See PR 683.
-
-Fields: FieldRef.getFldName no longer throws IndexOutOfBoundsException for a complex field with empty or
-whitespace-only w:instrText (Word can produce these); it now returns null, and FieldsPreprocessor.canonicalise
-preserves such a field untouched.  Call sites (MailMerger etc) hardened against a null field name.  See issue 682.
-
-Fields: FieldUpdater (DOCPROPERTY/DOCVARIABLE) now handles a field instruction split across several
+Fields: 
+- FieldUpdater (DOCPROPERTY/DOCVARIABLE) now handles a field instruction split across several
 w:instrText fragments, as Word produces when a spelling/grammar marker, rsid boundary or formatting change
-falls inside the instruction; previously such fields were skipped with "TODO DOCPROPERTY field contained
-complex instruction".  The fragments are concatenated, per ECMA-376.  The same concatenation (already used
-by MailMerger and TOC's CSwitch) now also applies to FieldUpdaterSEQ and FromMergeFields, via a new shared
-helper FieldsPreprocessor.extractInstr.  See issue 645.
+falls inside the instruction.  See issue 645.
+- FieldsPreprocessor.canonicalise run formatting (w:rPr).  See issue 667.
+- FieldRef.getFldName no longer throws IndexOutOfBoundsException for a complex field with empty or
+whitespace-only w:instrText (Word can produce these).  See issue 682.
 
-PDF/FO and HTML output: conversion no longer modifies the styles and settings parts of the input package.
-Previously the ParagraphStylesInTableFix preprocessing step operated on parts whose content was shared with
-the input package (Preprocess.createRelationshipTypes did not list them for deep copy), so its synthetic
-"-BR" paragraph styles leaked into the input package's styles part, and the
-overrideTableStyleFontSizeAndJustification compat setting was silently set to "1" in its settings part.
-Both changes were then persisted if the package was saved afterwards - notably by TocGenerator.updateToc(),
-whose page numbering step runs the FO conversion.  Also, preprocessing steps which modify the main document
-part (coverpage sectPr mover, HTML list collection, the two Apache FOP pagebreak workarounds) now declare
-that, so custom feature sets which previously resulted in an empty deep-copy set (and hence, no copy at all,
-with all preprocessing mutating the input package directly) are now copied correctly.  Noticed while
-investigating issue 650: this leak was one half of the cause of that issue.  In 11.5.12 and earlier,
-DocumentSettingsPart.setWordCompatSetting replaced the entire w:compat element (issue 668, fixed in 11.5.13),
-so the ParagraphStylesInTableFix step - operating on the shared settings part - deleted the document's other
-compat settings, including compatibilityMode=15; the document saved after TocGenerator.updateToc() therefore
-opened in Word's Compatibility Mode ("reduced functionality mode").  Either fix alone prevents that symptom.
-
-PDF/FO output: mixed right-to-left and left-to-right text (eg Arabic with embedded English words) in a
-w:bidi paragraph is now ordered correctly.  Two changes: the paragraph's fo:block is wrapped in
-fo:block-container writing-mode="rl-tb", which gives FOP's Unicode bidi algorithm implementation the
-correct (RTL) paragraph embedding level; and a w:rtl run is no longer wrapped in fo:bidi-override
-(FOP handles that by reversing the characters itself, bypassing the font's GSUB rules, so Arabic came
-out unshaped, and in mixed paragraphs the runs came out in the wrong order).  See issue 660.
-
-PDF/FO output: characters in the Indic (Devanagari, Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu,
+PDF/FO output: 
+- mixed right-to-left and left-to-right text (eg Arabic with embedded English words) in a
+w:bidi paragraph is now ordered correctly. See issue 660.
+-characters in the Indic (Devanagari, Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu,
 Kannada, Malayalam, Sinhala), Khmer, Thai, Lao and Myanmar Unicode ranges are now formatted with the
-cs (or cstheme) font, as Word does.  Previously RunFontSelector fell back to the hAnsi font for these ranges,
-so a run specifying its font only via w:cs (as LibreOffice writes for complex scripts) came out in the wrong
-font.  Additionally, consecutive characters in these ranges now share a single fo:inline; previously each
-character was emitted in its own fo:inline, which prevented FOP applying the font's GSUB rules (conjunct
-formation, subscript stacking, vowel reordering), so such text was rendered unshaped even when the correct
-font was selected.  See issues 666 (Khmer) and 622 (Hindi, Telugu).  Note that correct shaping also depends
+cs (or cstheme) font, as Word does. See issues 666 (Khmer) and 622 (Hindi, Telugu).  Note that correct shaping also depends
 on the font: with FOP 2.11 the Noto fonts (Noto Sans Khmer, Noto Sans Devanagari, Noto Sans Telugu) shape
-correctly, but eg the legacy Khmer OS fonts' GSUB tables are not fully supported.
+correctly, but not eg the legacy Khmer OS fonts
 
-Fields: FieldsPreprocessor.canonicalise no longer drops run formatting (w:rPr).  Previously the run containing
-the field end char always lost its rPr, and when the output of a merge (eg FORMTEXTMerger with
-OutputField.AS_FORMTEXT_REGULAR) was used as input to a further merge, the field result run - and in some run
-layouts the begin run (w:fldChar/w:ffData) - lost its rPr too, so the visible text lost its font/colour/size
-after the first iteration.  See issue 667.
 
 Version 17.0.0
 ===============

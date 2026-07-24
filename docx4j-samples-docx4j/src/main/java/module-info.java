@@ -6,6 +6,8 @@ module docx4j_samples_docx4j {
 	
 	requires org.docx4j.docx_anon;
 	requires jakarta.xml.bind;
+	requires jakarta.mail;  // for ConvertOutHtmlToEmail
+	requires jakarta.activation;
 	
 	// Uncomment ONE of the following:
 	requires org.docx4j.JAXB_ReferenceImpl;
