@@ -353,7 +353,7 @@
 	<dependency>
 	    <groupId>net.arnx</groupId>
 	    <artifactId>wmf2svg</artifactId>
-	    <version>0.9.11</version>
+	    <version>0.10.6</version>
 	</dependency>
 
 		<dependency>

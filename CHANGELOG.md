@@ -32,9 +32,12 @@ docx4j-diffx: the bundled com.topologi.diffx fork (Artistic License) is replaced
 descendant, org.pageseeder.diffx:pso-diffx 1.3.4 (Apache License v2), used as a Maven dependency.
 
 HTML output: 
-- base64 encoded images were supported already, but now made neater and improved with new DataUriConversionImageHandler. sue 685.
+- base64 encoded images were supported already, but now made neater and improved with new DataUriConversionImageHandler. Issue 685.
 - new CidConversionImageHandler for HTML destined for email (cid: references + collected images to attach); see ConvertOutHtmlToEmail sample. Issue 685.
 - ListsToContentControls: avoid NPE on invalid negative w:ilvl.  See PR 683.
+
+Dependencies: docx4j no longer uses commons-codec directly (java.util.Base64 instead, issue 685); the jar
+remains as a transitive dependency, since commons-compress's module-info requires it.
 
 Fields: 
 - FieldUpdater (DOCPROPERTY/DOCVARIABLE) now handles a field instruction split across several
@@ -53,6 +56,12 @@ cs (or cstheme) font, as Word does. See issues 666 (Khmer) and 622 (Hindi, Telug
 on the font: with FOP 2.11 the Noto fonts (Noto Sans Khmer, Noto Sans Devanagari, Noto Sans Telugu) shape
 correctly, but not eg the legacy Khmer OS fonts
 
+Bumped deps:
+org.apache.pdfbox:fontbox ............................. 3.0.7 -> 3.0.8
+net.arnx:wmf2svg .................................... 0.9.11 -> 0.10.6
+com.sun.xml.bind:jaxb-xjc ............................. 4.0.8 -> 4.0.9 [MOXy]
+org.glassfish.jaxb:jaxb-core .......................... 4.0.8 -> 4.0.9 [Eclipse JAXB (aka Reference Implementation)]
+org.glassfish.jaxb:jaxb-runtime ....................... 4.0.8 -> 4.0.9
 
 Version 17.0.0
 ===============
