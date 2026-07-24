@@ -26,27 +26,27 @@
     </w:p>
     <!--Handling simple deleted w:p-->
     <w:p xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
-        <w:del w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="1">
+        <w:del w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="1">
             <w:r>
                 <w:t xml:space="preserve">The green </w:t>
             </w:r>
         </w:del>
-        <w:del w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="2">
+        <w:del w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="2">
             <w:r>
                 <w:t xml:space="preserve">parrot</w:t>
             </w:r>
         </w:del>
-        <w:del w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="3">
+        <w:del w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="3">
             <w:r>
                 <w:t xml:space="preserve"> jumped over the </w:t>
             </w:r>
         </w:del>
-        <w:del w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="4">
+        <w:del w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="4">
             <w:r>
                 <w:t xml:space="preserve">lazy</w:t>
             </w:r>
         </w:del>
-        <w:del w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="5">
+        <w:del w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="5">
             <w:r>
                 <w:t xml:space="preserve"> dog.</w:t>
             </w:r>
@@ -54,12 +54,12 @@
     </w:p>
     <!--Handling simple deleted w:p-->
     <w:p xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
-        <w:del w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="6">
+        <w:del w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="6">
             <w:r>
                 <w:t xml:space="preserve">The quick brown fox jumped high </w:t>
             </w:r>
         </w:del>
-        <w:del w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="7">
+        <w:del w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="7">
             <w:r>
                 <w:t xml:space="preserve">high over the lazy dog.</w:t>
             </w:r>
@@ -91,12 +91,12 @@
         </w:r>
     </w:p>
     <w:p xmlns:ins="http://www.topologi.com/2005/Diff-X/Insert" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
-        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X" w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="8">
+        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X" w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="8">
             <w:r>
                 <w:t xml:space="preserve">The quick brown fox jumped high </w:t>
             </w:r>
         </w:ins>
-        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X" w:date="2009-03-12T04:57:00Z" w:author="golden-author" w:id="9">
+        <w:ins xmlns:xalan="http://xml.apache.org/xalan" xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" xmlns:ins="http://www.topologi.com/2005/Diff-X" w:date="2009-03-11T17:57:00Z" w:author="golden-author" w:id="9">
             <w:r>
                 <w:t xml:space="preserve">high over the lazy dog.</w:t>
             </w:r>

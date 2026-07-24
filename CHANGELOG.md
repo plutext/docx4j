@@ -28,8 +28,10 @@ New CLAUDE.md file: Claude Code automatically reads this at the start of a sessi
 Image conversion:  obsolete property (starting with "org.") removed, use docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable.
 Now defaults to no conversion.  Set the property to your executable if you want to handle these images.
 
-docx4j-diffx: the bundled com.topologi.diffx fork (Artistic License) is replaced by its actively maintained
+docx4j-diffx: 
+- the bundled com.topologi.diffx fork (Artistic License) is replaced by its actively maintained
 descendant, org.pageseeder.diffx:pso-diffx 1.3.4 (Apache License v2), used as a Maven dependency.
+- w:ins/w:del dates are now formatted in UTC (previously JVM default timezone, mislabelled with a 'Z' suffix).
 
 HTML output: 
 - base64 encoded images were supported already, but now made neater and improved with new DataUriConversionImageHandler. Issue 685.

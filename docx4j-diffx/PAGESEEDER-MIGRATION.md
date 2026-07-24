@@ -207,6 +207,10 @@ stable upstream `DiffHandler` API).
   redundant or misfire against the new writer — retest.
 - The change warrants at least a minor-version release (e.g. 17.1.0), given
   `com.topologi.*` disappears from the published jar.
+- Pre-existing (latent) bug, visible in the `wml_p/` goldens as `w:date=""`: the
+  single-paragraph `diff(P, P, ...)` `!preProcess` path never passes its `date`
+  argument to the XSLT (the Body path does, via `transformDiffxOutputToWml`).
+  Fix separately from the migration so goldens don't conflate the two changes.
 
 ## Sequencing
 

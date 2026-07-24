@@ -110,9 +110,14 @@ public class Differencer {
 	
 	
 	
-    final private static SimpleDateFormat RFC3339_FORMAT 
+    final private static SimpleDateFormat RFC3339_FORMAT
     	= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    
+    static {
+    	// the pattern's 'Z' is a literal claiming UTC, so format in UTC
+    	// (otherwise output depends on the JVM default timezone)
+    	RFC3339_FORMAT.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+    }
+
 		// SimpleDateFormat is not thread-safe see:
 		//   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6231579
 		//   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6178997
@@ -645,6 +650,9 @@ public class Differencer {
 								
 				StreamSource src = new StreamSource(new StringReader(simplified));
 				Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+				// TODO: the date argument is never passed to the transform here
+				// (unlike the Body path via transformDiffxOutputToWml), so this
+				// path emits w:date="" on w:ins/w:del
 				transformParameters.put("Differencer", this);
 				transformParameters.put("author", author);
 				transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
