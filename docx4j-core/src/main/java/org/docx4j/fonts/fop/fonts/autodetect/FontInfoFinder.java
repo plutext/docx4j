@@ -219,6 +219,11 @@ public class FontInfoFinder {
                 }
                 
             } catch (Throwable e) {
+            	log.warn("Ignoring " + fontURI.toASCIIString() + "; caused "
+            			+ e.getClass().getName() + (e.getMessage()==null ? "" : ": " + e.getMessage()) );
+            	if (log.isDebugEnabled()) {
+            		log.debug(fontURI.toASCIIString() + " caused ", e);
+            	}
                 if (this.eventListener != null) {
                     this.eventListener.fontLoadingErrorAtAutoDetection(this,
                             fontURI.toASCIIString(), e);
@@ -244,6 +249,11 @@ public class FontInfoFinder {
                         customFont.setEventListener(this.eventListener);
                     }
                 } catch (Throwable e) {
+                	log.warn("Ignoring " + fontName + " in " + fontURI.toASCIIString() + "; caused "
+                			+ e.getClass().getName() + (e.getMessage()==null ? "" : ": " + e.getMessage()) );
+                	if (log.isDebugEnabled()) {
+                		log.debug(fontURI.toASCIIString() + " caused ", e);
+                	}
                     if (fontCache != null) {
                         fontCache.registerFailedFont(embedUri.toASCIIString(), fileLastModified);
                     }
@@ -270,7 +280,12 @@ public class FontInfoFinder {
                 if (this.eventListener != null) {
                     customFont.setEventListener(this.eventListener);
                 }
-            } catch (Exception e) {
+            // docx4j: Throwable, not Exception, so that an AssertionError (assertions are
+            // enabled with -ea) or other Error in the font parsing code causes just this font
+            // to be skipped, instead of aborting discovery of all remaining fonts.
+            } catch (Throwable e) {
+            	log.warn("Ignoring " + fontURI.toASCIIString() + "; caused "
+            			+ e.getClass().getName() + (e.getMessage()==null ? "" : ": " + e.getMessage()) );
             	if (log.isDebugEnabled()) {
             		log.debug(fontURI.toASCIIString() + " caused ", e);
             	}

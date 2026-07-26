@@ -1708,7 +1708,10 @@ public final class OTFAdvancedTypographicTableReader {
         }
         // read deltas
         int n = (es - ss) + 1;
-        if (n < 0) {
+        // docx4j: n == 0 (ie es == ss - 1) used to slip through this guard, only to fail
+        // GlyphPositioningTable.DeviceTable's "startSize <= endSize" assertion. A device table
+        // with no deltas is useless in any case, so treat it the same as a negative count.
+        if (n <= 0) {
             log.debug("invalid device table delta count: " + n + ", ignoring device table");
             return null;
         }
@@ -2051,16 +2054,21 @@ public final class OTFAdvancedTypographicTableReader {
             // read y device table offset
             int ydo = in.readTTFUShort();
             // read x device table (if present)
+            // docx4j: per the OpenType spec, the device table offsets in an Anchor Table format 3
+            // are measured from the beginning of the anchor table, not from wherever the reader
+            // happened to be positioned when this method was entered (cp). Using cp seeks to an
+            // unrelated part of the font and reads garbage; in a variable font (where these are
+            // VariationIndex tables) that path is taken constantly.
             GlyphPositioningTable.DeviceTable xd;
             if (xdo != 0) {
-                xd = readPosDeviceTable(cp, xdo);
+                xd = readPosDeviceTable(anchorTableOffset, xdo);
             } else {
                 xd = null;
             }
             // read y device table (if present)
             GlyphPositioningTable.DeviceTable yd;
             if (ydo != 0) {
-                yd = readPosDeviceTable(cp, ydo);
+                yd = readPosDeviceTable(anchorTableOffset, ydo);
             } else {
                 yd = null;
             }

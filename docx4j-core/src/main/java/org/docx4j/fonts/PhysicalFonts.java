@@ -194,25 +194,35 @@ public class PhysicalFonts {
         
         if (regex==null) {
             for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            	
-            	URI fontUrl = getURI(iter.next());
-                
-                // parse font to ascertain font info
-            	addPhysicalFont( fontUrl);
+
+            	Object fontFile = iter.next();
+            	try {
+                	URI fontUrl = getURI(fontFile);
+
+                    // parse font to ascertain font info
+                	addPhysicalFont( fontUrl);
+            	} catch (Throwable t) {
+            		logDiscoveryFailure(fontFile, t);
+            	}
             }
         } else {
         	Pattern pattern = Pattern.compile(regex);
             for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            	
-            	URI fontUrl = getURI(iter.next());
-                
-            	
-                // parse font to ascertain font info
-            	if (pattern.matcher(fontUrl.toString()).matches()){
-            		addPhysicalFont( fontUrl);        		
-            	} else {
-//                	log.debug("Ignoring " + fontUrl.toString() );
 
+            	Object fontFile = iter.next();
+            	try {
+                	URI fontUrl = getURI(fontFile);
+
+
+                    // parse font to ascertain font info
+                	if (pattern.matcher(fontUrl.toString()).matches()){
+                		addPhysicalFont( fontUrl);
+                	} else {
+//                    	log.debug("Ignoring " + fontUrl.toString() );
+
+                	}
+            	} catch (Throwable t) {
+            		logDiscoveryFailure(fontFile, t);
             	}
             }
         }
@@ -228,6 +238,21 @@ public class PhysicalFonts {
                 
 	}
 	
+	/**
+	 * Report a font file which couldn't be processed, so the user can tell which one it was,
+	 * without aborting discovery of the remaining fonts.
+	 *
+	 * @since 17.0.1
+	 */
+	private static void logDiscoveryFailure(Object fontFile, Throwable t) {
+
+		log.warn("Ignoring " + fontFile + "; caused " + t.getClass().getName()
+				+ (t.getMessage()==null ? "" : ": " + t.getMessage()) );
+		if (log.isDebugEnabled()) {
+			log.debug(String.valueOf(fontFile) + " caused ", t);
+		}
+	}
+
 	private static URI getURI(Object o) throws Exception {
 		
     	if (o instanceof java.io.File) {

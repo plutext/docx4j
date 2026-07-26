@@ -1,6 +1,32 @@
 CHANGELOG
 =========
 
+Version 17.0.2
+===============
+
+Release date
+------------
+
+[not released yet]
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Opus 5
+
+Changes in Version 17.0.2
+--------------------------
+
+Fonts:
+- variable fonts (eg Fedora's google-noto-vf NotoSans[wght].ttf) no longer fail to load with an
+AssertionError from GlyphPositioningTable.DeviceTable. The GPOS anchor reader was measuring device
+table offsets from the wrong origin, so it read garbage; only visible when running with -ea.
+See issue 686.
+- one unreadable font file no longer aborts discovery of all remaining fonts; it is logged (with its
+name, as WARN) and skipped.  See issue 686.
+
 
 Version 17.0.1
 ===============
@@ -57,6 +83,7 @@ Kannada, Malayalam, Sinhala), Khmer, Thai, Lao and Myanmar Unicode ranges are no
 cs (or cstheme) font, as Word does. See issues 666 (Khmer) and 622 (Hindi, Telugu).  Note that correct shaping also depends
 on the font: with FOP 2.11 the Noto fonts (Noto Sans Khmer, Noto Sans Devanagari, Noto Sans Telugu) shape
 correctly, but not eg the legacy Khmer OS fonts
+
 
 Bumped deps:
 org.apache.pdfbox:fontbox ............................. 3.0.7 -> 3.0.8
