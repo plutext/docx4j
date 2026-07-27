@@ -219,6 +219,7 @@ public class FontInfoFinder {
                 }
                 
             } catch (Throwable e) {
+            	rethrowIfFatal(e);
             	log.warn("Ignoring " + fontURI.toASCIIString() + "; caused "
             			+ e.getClass().getName() + (e.getMessage()==null ? "" : ": " + e.getMessage()) );
             	if (log.isDebugEnabled()) {
@@ -249,6 +250,7 @@ public class FontInfoFinder {
                         customFont.setEventListener(this.eventListener);
                     }
                 } catch (Throwable e) {
+                	rethrowIfFatal(e);
                 	log.warn("Ignoring " + fontName + " in " + fontURI.toASCIIString() + "; caused "
                 			+ e.getClass().getName() + (e.getMessage()==null ? "" : ": " + e.getMessage()) );
                 	if (log.isDebugEnabled()) {
@@ -284,6 +286,7 @@ public class FontInfoFinder {
             // enabled with -ea) or other Error in the font parsing code causes just this font
             // to be skipped, instead of aborting discovery of all remaining fonts.
             } catch (Throwable e) {
+            	rethrowIfFatal(e);
             	log.warn("Ignoring " + fontURI.toASCIIString() + "; caused "
             			+ e.getClass().getName() + (e.getMessage()==null ? "" : ": " + e.getMessage()) );
             	if (log.isDebugEnabled()) {
@@ -306,6 +309,24 @@ public class FontInfoFinder {
             }
         }
 
+    }
+
+    /**
+     * We skip a font we can't read, rather than let it abort discovery of the rest, but that
+     * shouldn't extend to swallowing an error which says the JVM itself is in trouble: an
+     * OutOfMemoryError, or a LinkageError (which, not being an Exception, used to propagate
+     * from here anyway).
+     *
+     * @since 17.0.2
+     */
+    private static void rethrowIfFatal(Throwable t) {
+
+    	if (t instanceof VirtualMachineError) {
+    		throw (VirtualMachineError)t;
+    	}
+    	if (t instanceof LinkageError) {
+    		throw (LinkageError)t;
+    	}
     }
 
 }

@@ -242,9 +242,19 @@ public class PhysicalFonts {
 	 * Report a font file which couldn't be processed, so the user can tell which one it was,
 	 * without aborting discovery of the remaining fonts.
 	 *
+	 * Rethrows an error which says the JVM itself is in trouble - an OutOfMemoryError, or a
+	 * LinkageError - since skipping a font is no answer to that.
+	 *
 	 * @since 17.0.2
 	 */
 	private static void logDiscoveryFailure(Object fontFile, Throwable t) {
+
+		if (t instanceof VirtualMachineError) {
+			throw (VirtualMachineError)t;
+		}
+		if (t instanceof LinkageError) {
+			throw (LinkageError)t;
+		}
 
 		log.warn("Ignoring " + fontFile + "; caused " + t.getClass().getName()
 				+ (t.getMessage()==null ? "" : ": " + t.getMessage()) );
