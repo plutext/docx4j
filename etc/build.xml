@@ -14,8 +14,8 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="17.0.1"/>
-	<property name="importxhtml-version" value="17.0.1"/>
+	<property name="version" value="17.0.2"/>
+	<property name="importxhtml-version" value="17.0.2"/>
 	<property name="importxhtml-dir" value="/home/${user.name}/git/docx4j-ImportXHTML"/>
 
 	<property name="documents4j-version" value="1.1.13"/>
