@@ -109,7 +109,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-17.0.1</tag>
+      <tag>docx4j-17.0.2</tag>
       <url>https://github.com/plutext/docx4j</url>
   </scm>
 	<inceptionYear>2007</inceptionYear>

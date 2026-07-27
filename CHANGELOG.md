@@ -7,7 +7,7 @@ Version 17.0.2
 Release date
 ------------
 
-[not released yet]
+27 July 2026
 
 Contributors to this release
 ----------------------------
@@ -18,14 +18,6 @@ Claude Opus 5
 
 Changes in Version 17.0.2
 --------------------------
-
-Fonts:
-- variable fonts (eg Fedora's google-noto-vf NotoSans[wght].ttf) no longer fail to load with an
-AssertionError from GlyphPositioningTable.DeviceTable. The GPOS anchor reader was measuring device
-table offsets from the wrong origin, so it read garbage; only visible when running with -ea.
-See issue 686.
-- one unreadable font file no longer aborts discovery of all remaining fonts; it is logged (with its
-name, as WARN) and skipped.  See issue 686.
 
 Dependencies:
 - org.glassfish.jaxb (jaxb-runtime, jaxb-core, txw2) versions are now managed in the parent pom, so
@@ -41,13 +33,20 @@ com.sun.xml.bind:jaxb-core, which MOXy needs, contains the same packages, so wit
 consumer resolving all modules (eg --add-modules ALL-MODULE-PATH, jlink, jpackage) failed at
 startup with "java.lang.module.ResolutionException: Modules com.sun.xml.bind.core and
 org.glassfish.jaxb.core export package org.glassfish.jaxb.core.v2.runtime.unmarshaller". Building
-docx4j from source was never affected. If you were relying on the JAXB RI arriving this way, declare
-it yourself.
+docx4j from source was never affected. 
 
 With the above, what you resolve from our published poms now matches what we resolve when building.
 
+Fonts:
+- variable fonts (eg Fedora's google-noto-vf NotoSans[wght].ttf) no longer fail to load with an
+AssertionError from GlyphPositioningTable.DeviceTable. The GPOS anchor reader was measuring device
+table offsets from the wrong origin, so it read garbage; only visible when running with -ea.
+See issue 686.
+- one unreadable font file no longer aborts discovery of all remaining fonts; it is logged (with its
+name, as WARN) and skipped.  See issue 686.
 
-Version 17.0.1
+
+Version 17.0.1  (use 17.0.2 instead)
 ===============
 
 Release date
