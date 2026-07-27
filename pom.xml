@@ -397,7 +397,15 @@
 						Flatten both direct and transitive dependencies. This will examine the full dependency tree, 
 						and pull up all transitive dependencies as a direct dependency, and setting their versions appropriately.
 
-						This is recommended if you are releasing a library that uses dependency management to manage dependency versions. -->
+						This is recommended if you are releasing a library that uses dependency management to manage dependency versions.
+
+						Don't switch this to 'direct' without checking what our published poms then contain:
+						'direct' drops the dependencies the parent declares for every module (jakarta.xml.bind-api,
+						slf4j-api), so consumers would no longer get the JAXB API at all. Measured July 2026.
+						Each module would have to declare what it compiles against first.
+
+						Note the cost of 'all', though: since every transitive becomes a direct dependency,
+						a consumer excluding X from one of our artifacts no longer prunes X's subtree. -->
 					<flattenDependencyMode>all</flattenDependencyMode>
 			    </configuration>
 			    <executions>
