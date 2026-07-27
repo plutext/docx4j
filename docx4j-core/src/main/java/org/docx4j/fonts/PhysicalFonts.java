@@ -242,7 +242,7 @@ public class PhysicalFonts {
 	 * Report a font file which couldn't be processed, so the user can tell which one it was,
 	 * without aborting discovery of the remaining fonts.
 	 *
-	 * @since 17.0.1
+	 * @since 17.0.2
 	 */
 	private static void logDiscoveryFailure(Object fontFile, Throwable t) {
 
@@ -375,11 +375,9 @@ public class PhysicalFonts {
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
 		
 		if (embedFontInfoList==null) {
-			if (fontInfoFinder.log.isDebugEnabled()) {
-				log.warn("Aborting: " + fontUrl.toString() );				
-			} else {
-				log.warn("Aborting: " + fontUrl.toString() +  " (to investigate, set org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder to DEBUG)");
-			}
+			// FontInfoFinder has already logged this font, with the reason, at WARN;
+			// no point repeating it here.
+			log.debug("Aborting: " + fontUrl.toString() );
 			return null;
 		}
 		
