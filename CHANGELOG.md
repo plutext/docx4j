@@ -65,12 +65,21 @@ Claude Fable 5
 Changes in Version 17.0.1
 --------------------------
 
+Deep copy: fixes a 17.0.0 regression in the generated copyTo methods, which left the target's
+content list uninitialised, so deep copying a non-empty math run (CTR) threw a NullPointerException.
+This broke PDF/FO conversion of documents containing equations.  See issue 681.
+
+Conversion output preprocessing (PDF/FO, HTML) no longer mutates the input package:
+ParagraphStylesInTableFix modifies the styles part, the settings part and the document, but these
+weren't listed for PartialDeepCopy, so the changes leaked into the input package and were persisted
+if you saved it afterwards.  See issue 650.
+
 New CONTRIBUTIONS.md policy, covering AI assisted contributions, please read.
 
 New CLAUDE.md file: Claude Code automatically reads this at the start of a session to pick up project-specific context — things like coding conventions, architecture notes, commands to run tests/builds, and other instructions — so you don't have to repeat them every time.
 
 Image conversion:  obsolete property (starting with "org.") removed, use docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable.
-Now defaults to no conversion.  Set the property to your executable if you want to handle these images.
+Now defaults to no conversion.  Set the property to your executable if you want to handle these images.  See issue 675.
 
 docx4j-diffx: 
 - the bundled com.topologi.diffx fork (Artistic License) is replaced by its actively maintained
