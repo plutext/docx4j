@@ -16,6 +16,10 @@
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
 	    <github.global.server>github</github.global.server>
 		<version.logback-classic>1.5.19</version.logback-classic>
+		<!-- Eclipse JAXB (aka Reference Implementation).  Managed below, so that the version
+		     org.jvnet.jaxb:jaxb-plugins-runtime pulls in transitively can't diverge from the
+		     version docx4j-JAXB-ReferenceImpl declares. -->
+		<version.jaxb.ri>4.0.9</version.jaxb.ri>
 		<version.maven-jar-plugin>2.3.1</version.maven-jar-plugin>
 		<version.maven-bundle-plugin>5.1.2</version.maven-bundle-plugin>
 		<version.documents4j>1.1.13</version.documents4j>
@@ -149,7 +153,39 @@
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>fontbox</artifactId>
 			<version>3.0.8</version>
-		</dependency>		
+		</dependency>
+
+		<!-- docx4j-copy, docx4j-generated-objects and docx4j-core get jaxb-core (and, through it,
+		     txw2) transitively from org.jvnet.jaxb:jaxb-plugins-runtime, which asks for an older
+		     version than docx4j-JAXB-ReferenceImpl declares. Since we publish flattened poms with
+		     flattenDependencyMode=all, each module's resolved version is written into its published
+		     pom, so any divergence here becomes a dependency convergence error for our users. -->
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>${version.jaxb.ri}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-core</artifactId>
+			<version>${version.jaxb.ri}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>txw2</artifactId>
+			<version>${version.jaxb.ri}</version>
+		</dependency>
+
+		<!-- We exclude commons-logging wherever it is declared (we use jcl-over-slf4j instead),
+		     but flatten-maven-plugin hoists it into our published poms anyway, and at a different
+		     version per module. Pin it so that at least the versions agree. -->
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.4.0</version>
+		</dependency>
     </dependencies>
         
   </dependencyManagement>

@@ -27,6 +27,10 @@ See issue 686.
 - one unreadable font file no longer aborts discovery of all remaining fonts; it is logged (with its
 name, as WARN) and skipped.  See issue 686.
 
+Dependencies: org.glassfish.jaxb (jaxb-runtime, jaxb-core, txw2) and commons-logging are now
+managed in the parent pom, so our published poms no longer declare different versions of them
+in different modules, which was a dependency convergence error for consumers.
+
 
 Version 17.0.1
 ===============
