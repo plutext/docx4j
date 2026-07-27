@@ -33,9 +33,18 @@ our modules no longer resolve different versions of them, which was a dependency
 for consumers.
 - flatten-maven-plugin 1.7.3 -> 1.8.0. Earlier versions ignored our exclusions when writing the
 published poms, so those poms declared dependencies we deliberately exclude: commons-logging (we use
-jcl-over-slf4j), batik-gvt and batik-extension in docx4j-export-fo, and glassfish jaxb-core, which
-docx4j-core excludes so that MOXy works. What you now resolve from our published poms matches what
-we resolve when building.
+jcl-over-slf4j), and batik-gvt and batik-extension in docx4j-export-fo.
+- MOXy on the module path: docx4j-copy and docx4j-generated-objects now exclude
+org.glassfish.jaxb:jaxb-core, so it no longer reaches you via our published poms. It defeated the
+exclusion docx4j-core has had since 17.0.0, because our poms list transitive dependencies directly.
+com.sun.xml.bind:jaxb-core, which MOXy needs, contains the same packages, so with both present a
+consumer resolving all modules (eg --add-modules ALL-MODULE-PATH, jlink, jpackage) failed at
+startup with "java.lang.module.ResolutionException: Modules com.sun.xml.bind.core and
+org.glassfish.jaxb.core export package org.glassfish.jaxb.core.v2.runtime.unmarshaller". Building
+docx4j from source was never affected. If you were relying on the JAXB RI arriving this way, declare
+it yourself.
+
+With the above, what you resolve from our published poms now matches what we resolve when building.
 
 
 Version 17.0.1

@@ -38,6 +38,15 @@
 			<artifactId>jaxb-plugins-runtime</artifactId>
 			<!-- TODO: Move dependency & plugin versions to properties in parent POM -->
 			<version>4.0.13</version>
+			<exclusions>
+				<!-- docx4j-core, and hence anyone using the MOXy selector, must not get the JAXB RI
+				     on the classpath; see jaxb-ri issue 1813. Excluded here, where it enters, so
+				     that our published poms don't reintroduce it. -->
+				<exclusion>
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>jaxb-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.docx4j</groupId>
