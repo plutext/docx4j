@@ -44,8 +44,8 @@
 		
 		<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
 	 -->
+	
 	<property name="logback-version" value="1.5.19"/>
-	<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
 	
 	<!--.NET properties -->
 	<property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
@@ -53,13 +53,14 @@
 
 	<path id="MavenDeps">
         <pathelement location="${m2Repository}/org/jvnet/jaxb/jaxb-plugins-runtime/4.0.13/jaxb-plugins-runtime-4.0.13.jar"/>
+        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/2.1.4/jakarta.activation-api-2.1.4.jar"/>
 
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/11.4.0/jaxb-svg11-11.4.0.jar"/>
 		<pathelement location="${m2Repository}/net/engio/mbassador/1.3.2/mbassador-1.3.2.jar"/>
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.17/jcl-over-slf4j-2.0.17.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.18/jcl-over-slf4j-2.0.18.jar"/>
         <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.20.0/commons-lang3-3.20.0.jar"/>
         <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.28.0/commons-compress-1.28.0.jar"/>
-        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.22.0/commons-codec-1.22.0.jar"/>
+        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.19.0/commons-codec-1.19.0.jar"/> <!-- the version commons-compress specifies --> 
         <pathelement location="${m2Repository}/commons-io/commons-io/2.22.0/commons-io-2.22.0.jar"/>
 		
         <pathelement location="${m2Repository}/org/apache/commons/commons-collections4/4.5.0/commons-collections4-4.5.0.jar"/>
@@ -70,7 +71,7 @@
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/11.0.0/xalan-interpretive-11.0.0.jar"/>
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/11.0.0/xalan-serializer-11.0.0.jar"/>
 
-        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.11/wmf2svg-0.9.11.jar"/>
+        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.10.6/wmf2svg-0.10.6.jar"/>
 
 		<pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.5.3/antlr-runtime-3.5.3.jar"/>
 		<pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
@@ -79,13 +80,12 @@
         <pathelement location="${m2Repository}/org/checkerframework/checker-qual/3.54.0/checker-qual-3.54.0.jar"/>
         <pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.3.3/error_prone_annotations-2.3.3.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/3.0.7/fontbox-3.0.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.7/pdfbox-io-3.0.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/3.0.8/fontbox-3.0.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.8/pdfbox-io-3.0.8.jar"/>
         
         <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12.1/qdox-1.12.1.jar"/>
 
         <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/4.0.5/jakarta.xml.bind-api-4.0.5.jar"/>
-        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/2.1.4/jakarta.activation-api-2.1.4.jar"/>
     	
         <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.18/slf4j-api-2.0.18.jar"/>
 		
@@ -251,11 +251,11 @@
 		<mkdir dir="${releaseMOXy.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseMOXy.dir}/dependencies" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/com/sun/xml/bind/jaxb-xjc/4.0.8/jaxb-xjc-4.0.8.jar"/>
-		        <pathelement location="${m2Repository}/com/sun/xml/bind/jaxb-core/4.0.8/jaxb-core-4.0.8.jar"/> <!-- dep of jaxb-xjc -->
+		        <pathelement location="${m2Repository}/com/sun/xml/bind/jaxb-xjc/4.0.9/jaxb-xjc-4.0.9.jar"/>
+		        <pathelement location="${m2Repository}/com/sun/xml/bind/jaxb-core/4.0.9/jaxb-core-4.0.9.jar"/>
 		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/4.0.9/org.eclipse.persistence.moxy-4.0.9.jar"/>
 		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/4.0.9/org.eclipse.persistence.core-4.0.9.jar"/>
-		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/9.7.0/org.eclipse.persistence.asm-9.7.0.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/9.9.0/org.eclipse.persistence.asm-9.9.0.jar"/>
 		        <pathelement location="${m2Repository}/org/eclipse/angus/angus-activation/2.0.3/angus-activation-2.0.3.jar"/>
 		        <pathelement location="${m2Repository}/org/eclipse/angus/angus-mail/2.0.4/angus-mail-2.0.4.jar"/>
 		        <pathelement location="${m2Repository}/jakarta/mail/jakarta.mail-api/2.1.3/jakarta.mail-api-2.1.3.jar"/>
@@ -282,10 +282,10 @@
 		<mkdir dir="${releaseReferenceImpl.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/4.0.8/jaxb-runtime-4.0.8.jar"/>
-		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/4.0.8/jaxb-core-4.0.8.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/4.0.9/jaxb-runtime-4.0.9.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/4.0.9/jaxb-core-4.0.9.jar"/>
 		        <pathelement location="${m2Repository}/org/eclipse/angus/angus-activation/2.0.3/angus-activation-2.0.3.jar"/>
-		        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/4.0.8/txw2-4.0.8.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/4.0.9/txw2-4.0.9.jar"/>
 		        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar"/>
 			</path>
 		</copy>
