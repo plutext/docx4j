@@ -27,9 +27,15 @@ See issue 686.
 - one unreadable font file no longer aborts discovery of all remaining fonts; it is logged (with its
 name, as WARN) and skipped.  See issue 686.
 
-Dependencies: org.glassfish.jaxb (jaxb-runtime, jaxb-core, txw2) and commons-logging are now
-managed in the parent pom, so our published poms no longer declare different versions of them
-in different modules, which was a dependency convergence error for consumers.
+Dependencies:
+- org.glassfish.jaxb (jaxb-runtime, jaxb-core, txw2) versions are now managed in the parent pom, so
+our modules no longer resolve different versions of them, which was a dependency convergence error
+for consumers.
+- flatten-maven-plugin 1.7.3 -> 1.8.0. Earlier versions ignored our exclusions when writing the
+published poms, so those poms declared dependencies we deliberately exclude: commons-logging (we use
+jcl-over-slf4j), batik-gvt and batik-extension in docx4j-export-fo, and glassfish jaxb-core, which
+docx4j-core excludes so that MOXy works. What you now resolve from our published poms matches what
+we resolve when building.
 
 
 Version 17.0.1

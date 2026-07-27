@@ -157,9 +157,8 @@
 
 		<!-- docx4j-copy, docx4j-generated-objects and docx4j-core get jaxb-core (and, through it,
 		     txw2) transitively from org.jvnet.jaxb:jaxb-plugins-runtime, which asks for an older
-		     version than docx4j-JAXB-ReferenceImpl declares. Since we publish flattened poms with
-		     flattenDependencyMode=all, each module's resolved version is written into its published
-		     pom, so any divergence here becomes a dependency convergence error for our users. -->
+		     version than docx4j-JAXB-ReferenceImpl declares. Left unmanaged, that is a dependency
+		     convergence error for anyone who depends on one of our selector modules. -->
 		<dependency>
 			<groupId>org.glassfish.jaxb</groupId>
 			<artifactId>jaxb-runtime</artifactId>
@@ -178,14 +177,6 @@
 			<version>${version.jaxb.ri}</version>
 		</dependency>
 
-		<!-- We exclude commons-logging wherever it is declared (we use jcl-over-slf4j instead),
-		     but flatten-maven-plugin hoists it into our published poms anyway, and at a different
-		     version per module. Pin it so that at least the versions agree. -->
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.4.0</version>
-		</dependency>
     </dependencies>
         
   </dependencyManagement>
@@ -392,7 +383,12 @@
 			<plugin>
 			    <groupId>org.codehaus.mojo</groupId>
 			    <artifactId>flatten-maven-plugin</artifactId>
-			    <version>1.7.3</version>
+			    <!-- 1.8.0 or later: earlier versions ignored our <exclusions> when hoisting
+			         transitive dependencies (mojohaus/flatten-maven-plugin#408), so our published
+			         poms declared artifacts we deliberately exclude - commons-logging (we use
+			         jcl-over-slf4j), batik-gvt and batik-extension in docx4j-export-fo, and
+			         glassfish jaxb-core, which docx4j-core excludes so that MOXy works. -->
+			    <version>1.8.0</version>
 			    <configuration>
 			        <!--  <updatePomFile>true</updatePomFile>-->
 			        <!-- Keeps all optional POM elements that are required for OSS Repository-Hosting. -->
