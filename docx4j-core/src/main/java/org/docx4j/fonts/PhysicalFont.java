@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
@@ -33,9 +34,8 @@ import org.docx4j.fonts.fop.fonts.Typeface;
 public class PhysicalFont {
 	protected static Logger log = LoggerFactory.getLogger(PhysicalFont.class);		
 	protected InternalResourceResolver fontResolver = null;
-	protected boolean loadTypefaceFailed = false;
-	protected Typeface typeface = null;
-	
+	protected volatile boolean loadTypefaceFailed = false;
+
 	PhysicalFont(String name, EmbedFontInfo embedFontInfo, InternalResourceResolver fontResolver) {
 		
 		try {
@@ -116,15 +116,41 @@ public class PhysicalFont {
 		this.panose = panose;
 	}
 
+	/**
+	 * The Typeface for this font, or null if it can't be loaded.
+	 *
+	 * Since 17.0.3, the Typeface is not held on this object; it lives in
+	 * GlyphCheck's cache, so that it can be reclaimed.  A loaded Typeface
+	 * is expensive (of the order of 100s of KB per font), and a PhysicalFont
+	 * for a system font is held for the life of the JVM in the static map
+	 * in PhysicalFonts, so retaining it here meant it was never freed.
+	 */
 	public Typeface getTypeface() {
-		LazyFont lazyFont = null;
-		if (typeface == null) {
-			if (!loadTypefaceFailed) {
-				lazyFont = new LazyFont(embedFontInfo, fontResolver, false); // TODO: useComplexScripts
-				typeface = lazyFont.getRealFont();
-				loadTypefaceFailed = (typeface == null);
-			}
+		try {
+			return GlyphCheck.getTypeface(this);
+		} catch (ExecutionException e) {
+			log.error(e.getMessage(), e);
+			return null;
 		}
+	}
+
+	/**
+	 * Actually load the Typeface.  Use getTypeface(), so the result is cached.
+	 */
+	Typeface loadTypeface() {
+
+		if (loadTypefaceFailed) return null;
+
+		Typeface typeface = null;
+		try {
+			LazyFont lazyFont = new LazyFont(embedFontInfo, fontResolver, false); // TODO: useComplexScripts
+			typeface = lazyFont.getRealFont();
+		} catch (RuntimeException e) {
+			// eg a font we can't parse; treat it as a font without glyphs,
+			// rather than failing the conversion
+			log.error("Couldn't load typeface for " + name + ": " + e.getMessage(), e);
+		}
+		loadTypefaceFailed = (typeface == null);
 		return typeface;
 	}
 }

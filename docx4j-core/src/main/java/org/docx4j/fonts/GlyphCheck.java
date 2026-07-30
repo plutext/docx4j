@@ -3,7 +3,9 @@
  */
 package org.docx4j.fonts;
 
-import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.docx4j.com.google.common.cache.CacheBuilder;
@@ -24,21 +26,63 @@ public class GlyphCheck {
 	
 	protected static Logger log = LoggerFactory.getLogger(GlyphCheck.class);	
 	
-	private static LoadingCache<PhysicalFont, Typeface> cache = CacheBuilder.newBuilder()
+	/**
+	 * The loaded Typeface for a PhysicalFont.  This cache is the only thing which
+	 * holds a Typeface; PhysicalFont doesn't.
+	 *
+	 * weakKeys, so that the fonts embedded in a docx (which get a PhysicalFont each,
+	 * per document, deliberately not in the static map in PhysicalFonts) aren't
+	 * retained once the package is discarded.
+	 *
+	 * softValues, so that the JVM can reclaim a Typeface (of the order of 100s of KB
+	 * for a system font, more for a CJK TTC) if it needs the memory.  Before 17.0.3,
+	 * maximumSize alone didn't bound anything, since PhysicalFont held the Typeface
+	 * as well, and eviction therefore freed nothing.
+	 */
+	private static LoadingCache<PhysicalFont, Optional<Typeface>> cache = CacheBuilder.newBuilder()
 		       .maximumSize(1000)
-		       .build(new CacheLoader<PhysicalFont, Typeface>() {
-		             public Typeface load(PhysicalFont key)  {
-		            	 
-		            	 return key.getTypeface();
+		       .weakKeys()
+		       .softValues()
+		       .build(new CacheLoader<PhysicalFont, Optional<Typeface>>() {
+		             public Optional<Typeface> load(PhysicalFont key)  {
+
+		            	 return Optional.ofNullable(key.loadTypeface());
 		               }
 		             });
 
-	
+	/**
+	 * The Typeface for this PhysicalFont, loading it if necessary, or null if it
+	 * can't be loaded.
+	 *
+	 * @since 17.0.3
+	 */
+	public static Typeface getTypeface(PhysicalFont physicalFont) throws ExecutionException {
+
+		return cache.get(physicalFont).orElse(null);
+	}
+
+	/**
+	 * The Typeface, or null (having warned once for this font).
+	 */
+	private static Typeface typefaceOrWarn(PhysicalFont physicalFont) throws ExecutionException {
+
+		Typeface t = getTypeface(physicalFont);
+		if (t==null
+				&& warnedAlready.add(String.valueOf(physicalFont.name))) {
+			log.warn("Couldn't load typeface for " + physicalFont.name);
+		}
+		return t;
+	}
+
+
 	public static boolean hasChar(PhysicalFont physicalFont, char c) throws ExecutionException {
 		
-		boolean exists = cache.get(physicalFont).hasChar(c);
-		
-		if (log.isInfoEnabled() 
+		Typeface t = typefaceOrWarn(physicalFont);
+		if (t==null) return false;
+
+		boolean exists = t.hasChar(c);
+
+		if (log.isInfoEnabled()
 				&& !exists) {
 			
             log.info("Glyph " + (int) c + " (0x"
@@ -70,7 +114,9 @@ public class GlyphCheck {
 			combine to represent a single Unicode code point.
 		 */
 		
-		Typeface t = cache.get(physicalFont);
+		Typeface t = typefaceOrWarn(physicalFont);
+		if (t==null) return false;
+
 		if (t instanceof MultiByteFont) {
 			MultiByteFont mbf = (MultiByteFont)t;
 			return mbf.hasCodePoint(cp);
@@ -78,8 +124,8 @@ public class GlyphCheck {
 		if (log.isDebugEnabled()) {
 			log.debug("Not a MultiByteFont");
 		}
-		boolean exists = cache.get(physicalFont).hasChar( (char)cp);
-		
+		boolean exists = t.hasChar( (char)cp);
+
 		if (log.isInfoEnabled() 
 				&& !exists) {
 			
@@ -93,15 +139,14 @@ public class GlyphCheck {
 	}
 	
 	
-	private static HashSet<String> warnedAlready = new HashSet<String>();
+	private static Set<String> warnedAlready = ConcurrentHashMap.newKeySet();
 
 	public static boolean hasChar(String fontName, char c) throws ExecutionException {
-		
+
 		PhysicalFont pf = PhysicalFonts.get(fontName);
 		if (pf==null) {
-			if (!warnedAlready.contains(fontName)) {
+			if (warnedAlready.add(fontName)) {
 				log.warn("Couldn't get font " + fontName);
-				warnedAlready.add(fontName);
 			}
 			return false;
 		}

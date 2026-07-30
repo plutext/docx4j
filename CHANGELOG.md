@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+Version 17.0.3
+===============
+
+Changes in Version 17.0.3
+--------------------------
+
+Fonts:
+- loaded Typefaces are no longer retained for the life of the JVM.  They are now held only in
+GlyphCheck's cache (weak keys, soft values), not also on PhysicalFont, which for a system font lives
+in a static map.  Glyph-checking 1246 installed fonts retained ~290 MB and OOM'd on a 256 MB heap;
+it now runs in 64 MB.
+- a font whose file we can't parse is now treated as a font without glyphs (logged as ERROR),
+rather than throwing out of GlyphCheck.
+
+
 Version 17.0.2
 ===============
 
