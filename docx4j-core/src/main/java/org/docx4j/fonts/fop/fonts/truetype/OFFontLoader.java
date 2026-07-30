@@ -200,7 +200,12 @@ public class OFFontLoader extends FontLoader {
                 multiFont.setCIDType(CIDFontType.CIDTYPE2);
             }
             multiFont.setWidthArray(otf.getWidths());
-            multiFont.setBBoxArray(otf.getBoundingBoxesPacked());
+            // docx4j: upstream does multiFont.setBBoxArray(otf.getBoundingBoxesPacked()) here.
+            // We don't, since nothing can read them: only Fop's SVG and Java2D output does,
+            // and docx4j uses neither - our PDF output goes via Fop's own font classes, not
+            // this copy of them, which exists to answer "has this font a glyph for this
+            // character?".  The bounding boxes cost ~90KB for a 5,000 glyph font, held for
+            // as long as the font is loaded.
         } else {
             singleFont.setFontType(FontType.TRUETYPE);
             singleFont.setEncoding(otf.getCharSetName());

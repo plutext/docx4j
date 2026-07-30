@@ -17,6 +17,10 @@ rather than throwing out of GlyphCheck.
 - our copy of FOP's MultiByteFont stores glyph bounding boxes packed as ints, instead of a
 java.awt.Rectangle per glyph (36 bytes each, held for as long as the font is loaded).  That is
 another 37% off the measurement above: 260 MB -> 165 MB.  Upstream as FOP-3330.
+- and those bounding boxes are no longer loaded at all.  Only FOP's SVG and Java2D output reads
+them, and docx4j's PDF output doesn't use these classes for that; it goes via FOP's own.  165 MB
+-> 53 MB, which is 82% off where the measurement started.  MultiByteFont.getBoundingBox now throws
+UnsupportedOperationException, where FOP would give you a NullPointerException.
 
 
 Version 17.0.2

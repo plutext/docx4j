@@ -1,6 +1,8 @@
 package org.docx4j.fonts;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.awt.Rectangle;
 
@@ -42,6 +44,18 @@ public class MultiByteFontBoundingBoxTest {
 
 		assertEquals(new Rectangle(1, 2, 3, 4), font.getBoundingBox(0, 1));
 		assertEquals(new Rectangle(5, 6, 7, 8), font.getBoundingBox(1, 1));
+	}
+
+	@Test
+	public void notLoadedSaysSo() {
+
+		// OFFontLoader doesn't load them, so this is what a caller gets
+		try {
+			font().getBoundingBox(0, 1);
+			fail("expected UnsupportedOperationException");
+		} catch (UnsupportedOperationException e) {
+			assertTrue(e.getMessage().contains("doesn't load glyph bounding boxes"));
+		}
 	}
 
 	@Test

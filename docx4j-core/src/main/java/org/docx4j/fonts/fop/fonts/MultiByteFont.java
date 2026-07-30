@@ -214,6 +214,12 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
     }
 
     public Rectangle getBoundingBox(int glyphIndex, int size) {
+        if (boundingBoxes == null) {
+            // docx4j: OFFontLoader doesn't load them; see the comment there.  Upstream Fop
+            // gives you a NullPointerException in this situation (see FOP-2468).
+            throw new UnsupportedOperationException(
+                    "docx4j doesn't load glyph bounding boxes; none for " + getFontName());
+        }
         int index = isEmbeddable() ? cidSet.getOriginalGlyphIndex(glyphIndex) : glyphIndex;
         int i = index * 4;
         return new Rectangle(boundingBoxes[i] * size, boundingBoxes[i + 1] * size,
