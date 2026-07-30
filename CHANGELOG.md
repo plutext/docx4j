@@ -14,6 +14,9 @@ in a static map.  Glyph-checking 1246 installed fonts retained ~290 MB and OOM'd
 it now runs in 64 MB.
 - a font whose file we can't parse is now treated as a font without glyphs (logged as ERROR),
 rather than throwing out of GlyphCheck.
+- our copy of FOP's MultiByteFont stores glyph bounding boxes packed as ints, instead of a
+java.awt.Rectangle per glyph (36 bytes each, held for as long as the font is loaded).  That is
+another 37% off the measurement above: 260 MB -> 165 MB.  Upstream as FOP-3330.
 
 
 Version 17.0.2

@@ -1135,6 +1135,23 @@ public abstract class OpenFont {
         return wx;
     }
 
+    /**
+     * The bounding boxes of all glyphs, packed as x, y, width, height per glyph
+     * (so 4 ints each).  Same values as getBoundingBoxes(), without a Rectangle
+     * per glyph; a MultiByteFont holds these for as long as it is loaded.
+     */
+    public int[] getBoundingBoxesPacked() {
+        int[] packed = new int[mtxTab.length * 4];
+        for (int i = 0; i < mtxTab.length; i++) {
+            int[] boundingBox = mtxTab[i].getBoundingBox();
+            packed[i * 4] = convertTTFUnit2PDFUnit(boundingBox[0]);
+            packed[i * 4 + 1] = convertTTFUnit2PDFUnit(boundingBox[1]);
+            packed[i * 4 + 2] = convertTTFUnit2PDFUnit(boundingBox[2] - boundingBox[0]);
+            packed[i * 4 + 3] = convertTTFUnit2PDFUnit(boundingBox[3] - boundingBox[1]);
+        }
+        return packed;
+    }
+
     public Rectangle[] getBoundingBoxes() {
         Rectangle[] boundingBoxes = new Rectangle[mtxTab.length];
         for (int i = 0; i < boundingBoxes.length; i++) {
