@@ -19,6 +19,8 @@
  */
 package org.docx4j.convert.out.html;
 
+import java.math.BigInteger;
+
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
@@ -115,7 +117,8 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			String levelId=null;
 			if (pPrDirect.getNumPr()!=null) {
 				numId = pPrDirect.getNumPr().getNumId()==null ? null : pPrDirect.getNumPr().getNumId().getVal().toString(); 
-				levelId = pPrDirect.getNumPr().getIlvl()==null ? null : pPrDirect.getNumPr().getIlvl().getVal().toString(); 
+				BigInteger explicitIlvl = org.docx4j.model.listnumbering.Emulator.getExplicitIlvl(pPrDirect.getNumPr());
+				levelId = explicitIlvl == null ? null : explicitIlvl.toString();
 			}
 			
         	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(

@@ -614,9 +614,9 @@ public class XsltHTMLFunctions {
 						&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
 						) {
 					Ind numInd = org.docx4j.model.listnumbering.Emulator.getInd(
-	        			context.getWmlPackage(), pStyleVal, 
-	        			pPr.getNumPr().getNumId().getVal().toString(), 
-	        			pPr.getNumPr().getIlvl().getVal().toString() ); 
+							context.getWmlPackage(), pStyleVal,
+							pPr.getNumPr().getNumId().getVal().toString(),
+							org.docx4j.model.listnumbering.Emulator.getIlvlOrDefault(pPr.getNumPr()).toString() );
 					if (numInd!=null) {
 		        		Indent indent = new Indent(pPr.getInd(), numInd);
 		        		pPr.setInd((Ind)indent.getObject());						

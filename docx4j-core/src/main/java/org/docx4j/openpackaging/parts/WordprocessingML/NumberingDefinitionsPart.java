@@ -352,9 +352,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	}
 	
 	public Ind getInd(NumPr numPr) { //, StyleDefinitionsPart sdp, String styleId) {
-		
-		String ilvlString = "0";
-		if (numPr.getIlvl()!=null) ilvlString = numPr.getIlvl().getVal().toString();
+
+		String ilvlString = Emulator.getIlvlOrDefault(numPr).toString();
 		
 		if (numPr.getNumId()==null) {
             if(log.isWarnEnabled()) {
