@@ -120,6 +120,25 @@ public class Emulator {
     public Emulator()
     {
     }
+
+	/**
+	 * Returns the explicitly specified paragraph numbering level, or null when
+	 * it is absent or malformed.
+	 */
+	public static BigInteger getExplicitIlvl(NumPr numPr) {
+		if (numPr == null || numPr.getIlvl() == null) {
+			return null;
+		}
+		return numPr.getIlvl().getVal();
+	}
+
+	/**
+	 * Returns the paragraph numbering level, defaulting an omitted level to 0.
+	 */
+	public static BigInteger getIlvlOrDefault(NumPr numPr) {
+		BigInteger ilvl = getExplicitIlvl(numPr);
+		return ilvl == null ? BigInteger.ZERO : ilvl;
+	}
     
 
     /**
@@ -145,9 +164,9 @@ public class Emulator {
 				BigInteger numId = pPr.getNumPr().getNumId().getVal();
 				if (numId!=null) numIdStr = numId.toString();
 			}
-			if (pPr.getNumPr().getIlvl()!=null) {
-				BigInteger levelId = pPr.getNumPr().getIlvl().getVal();
-				if (levelId!=null) levelIdStr = levelId.toString();
+			BigInteger levelId = getExplicitIlvl(pPr.getNumPr());
+			if (levelId != null) {
+				levelIdStr = levelId.toString();
 			}
 		}
 			
@@ -244,10 +263,10 @@ public class Emulator {
     		if (levelId == null 
     				|| levelId.equals("") ) {
     			
-    			if (numPr.getIlvl() != null ) {
-    				
-    				levelId = numPr.getIlvl().getVal().toString();
-    	    		log.info("levelId=" + levelId + " (from style)" );
+			BigInteger explicitIlvl = getExplicitIlvl(numPr);
+			if (explicitIlvl != null ) {
+				levelId = explicitIlvl.toString();
+				log.info("levelId=" + levelId + " (from style)" );
     			} else {
     				// default
     				levelId = "0";
@@ -431,10 +450,10 @@ public class Emulator {
     		if (levelId == null 
     				|| levelId.equals("") ) {
     			
-    			if (numPr.getIlvl() != null ) {
-    				
-    				levelId = numPr.getIlvl().getVal().toString();
-    	    		log.info("levelId=" + levelId + " (from style)" );
+			BigInteger explicitIlvl = getExplicitIlvl(numPr);
+			if (explicitIlvl != null ) {
+				levelId = explicitIlvl.toString();
+				log.info("levelId=" + levelId + " (from style)" );
     			} else {
     				// default
     				levelId = "0";

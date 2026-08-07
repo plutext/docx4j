@@ -83,8 +83,11 @@
  */
 package org.docx4j.model.listnumbering;
 
+import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
@@ -180,16 +183,36 @@ public class AbstractListNumberingDefinition {
         {
             //XmlNodeList levelNodes = absNumNode.SelectNodes("./w:lvl", nsm);
 
-        	List<Lvl> levelNodes = abstractNumNode.getLvl(); 
+			List<Lvl> levelNodes = abstractNumNode.getLvl();
             if (this.listLevels == null)
             {
                 this.listLevels = new HashMap<String, ListLevel>(levelNodes.size());
             }
 
+			Set<BigInteger> usedLevels = new HashSet<BigInteger>();
+			for (String existingLevel : this.listLevels.keySet()) {
+				usedLevels.add(new BigInteger(existingLevel));
+			}
+			for (Lvl levelNode : levelNodes) {
+				if (levelNode.getIlvl() != null) {
+					usedLevels.add(levelNode.getIlvl());
+				}
+			}
+
             // loop through the levels it defines and instantiate those
             //foreach (XmlNode levelNode in levelNodes)
             for ( Lvl levelNode : levelNodes )  {
-            	readLevel(levelNode);
+				if (levelNode.getIlvl() == null) {
+					BigInteger fallbackLevel = BigInteger.ZERO;
+					while (usedLevels.contains(fallbackLevel)) {
+						fallbackLevel = fallbackLevel.add(BigInteger.ONE);
+					}
+					log.warn("Missing @w:ilvl on w:lvl in abstractNum {}; assigning {}",
+							abstractNumNode.getAbstractNumId(), fallbackLevel);
+					levelNode.setIlvl(fallbackLevel);
+					usedLevels.add(fallbackLevel);
+				}
+				readLevel(levelNode);
             }
         }
         

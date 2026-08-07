@@ -593,12 +593,11 @@ public class XsltFOFunctions {
 			triple = org.docx4j.model.listnumbering.Emulator.getNumber(
 					wmlPackage, pStyleVal, 
 				pPrDirect.getNumPr().getNumId().getVal().toString(), 
-				pPrDirect.getNumPr().getIlvl().getVal().toString() ); 
+				org.docx4j.model.listnumbering.Emulator.getIlvlOrDefault(pPrDirect.getNumPr()).toString() ); 
 		} else {
 			// Get the effective values; since we already know this,
 			// save the effort of doing this again in Emulator
-			Ilvl ilvl = pPr.getNumPr().getIlvl();
-			String ilvlString = ilvl == null ? "0" : ilvl.getVal().toString();
+			String ilvlString = org.docx4j.model.listnumbering.Emulator.getIlvlOrDefault(pPr.getNumPr()).toString();
 			triple = null; 
 			if (pPr.getNumPr().getNumId()!=null) {
 				triple = org.docx4j.model.listnumbering.Emulator.getNumber(
