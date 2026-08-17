@@ -32,6 +32,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.STFldCharType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,7 +157,32 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	public RunFontSelector getRunFontSelector() {
 		return runFontSelector;
 	}
-	
+
+	private PPr currentPPr = null;
+
+	/**
+	 * The direct pPr of the w:p currently being converted, or null.
+	 *
+	 * This is set immediately before a Writer is invoked, and cleared afterwards;
+	 * it is not maintained for the conversion generally.  It is here for the sake
+	 * of writers which generate content of their own (fields), where the font has
+	 * to be resolved without a w:t to hang it off, and the containing paragraph
+	 * isn't otherwise reachable (the field is unmarshalled on its own).
+	 *
+	 * @since 17.0.3
+	 */
+	public PPr getCurrentPPr() {
+		return currentPPr;
+	}
+
+	/**
+	 * @see #getCurrentPPr()
+	 * @since 17.0.3
+	 */
+	public void setCurrentPPr(PPr currentPPr) {
+		this.currentPPr = currentPPr;
+	}
+
 	@Override
 	public void handleHyperlink(ConversionHyperlinkHandler.Model model) throws Docx4JException {
 		getHyperlinkHandler().handleHyperlink(model, getOpcPackage(), getCurrentPart());

@@ -143,13 +143,22 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 		}
 		
-		Node resultNode = 
-			 conversionContext.getWriterRegistry().toNode(
-					 conversionContext, 
-					 unmarshalledNode, 
-					 modelId, 
-					 childResults, 
-					 document);
+		// The writer may need the pPr of the containing w:p, to resolve the font of
+		// content it generates itself (a field).  NB childResults above are already
+		// converted, so nothing else can be using this in the meantime.
+		conversionContext.setCurrentPPr(pPr);
+		Node resultNode = null;
+		try {
+			resultNode =
+				 conversionContext.getWriterRegistry().toNode(
+						 conversionContext,
+						 unmarshalledNode,
+						 modelId,
+						 childResults,
+						 document);
+		} finally {
+			conversionContext.setCurrentPPr(null);
+		}
 		
 
     	

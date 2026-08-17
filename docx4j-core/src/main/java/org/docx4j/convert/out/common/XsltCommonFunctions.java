@@ -155,6 +155,43 @@ public class XsltCommonFunctions {
 	public static Node toNode(AbstractWmlConversionContext context, Node node, NodeList childResults) {
 		return context.getWriterRegistry().toNode(context, node, childResults);
 	}
+
+	/** As above, but also making the pPr of the containing w:p available to the writer.
+	 *
+	 *  A writer which generates content of its own (a field) has no w:t to hang a font
+	 *  off, and can't reach the containing paragraph itself (it is given the node
+	 *  unmarshalled on its own), so it needs this in order to resolve the font the
+	 *  same way an ordinary run's text is resolved.
+	 *
+	 * @param context
+	 * @param node
+	 * @param childResults the already transformed node (element) content
+	 * @param pPrNodeIt the w:pPr of the containing w:p (may be empty)
+	 * @since 17.0.3
+	 */
+	public static Node toNode(AbstractWmlConversionContext context, Node node, NodeList childResults,
+			NodeIterator pPrNodeIt) {
+
+		context.setCurrentPPr(toPPr(pPrNodeIt));
+		try {
+			return context.getWriterRegistry().toNode(context, node, childResults);
+		} finally {
+			context.setCurrentPPr(null);
+		}
+	}
+
+	private static PPr toPPr(NodeIterator pPrNodeIt) {
+
+		if (pPrNodeIt == null) return null;
+		Node n = pPrNodeIt.nextNode();
+		if (n == null) return null;  // the w:p has no w:pPr
+		try {
+			return (PPr)XmlUtils.unmarshal(n);
+		} catch (JAXBException e) {
+			log.error("Couldn't unmarshal pPr: " + e.getMessage(), e);
+			return null;
+		}
+	}
 	
 	/** Next number of a footnote
 	 * 

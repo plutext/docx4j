@@ -29,6 +29,8 @@ import javax.xml.transform.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.fonts.RunFontSelector;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldValueException;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
@@ -39,7 +41,10 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.Text;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
@@ -227,21 +232,21 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 				case FldSimpleNodeWriterHandler.PROCESS_NONE:
 					break;
 				case FldSimpleNodeWriterHandler.PROCESS_APPLY_STYLE:
-					applyStyle(context, fldSimpleModel, ret);
+					applyStyle(context, fldSimpleModel, ret, null);
 					break;
 				case FldSimpleNodeWriterHandler.PROCESS_WRAP_APPLY_STYLE:
 					ret = wrap(context, ret, doc);
-					applyStyle(context, fldSimpleModel, ret);
+					applyStyle(context, fldSimpleModel, ret, null);
 					break;
 			}
 		}
 		else { // FldSimpleStringWriterHandler
-			
+
 			value = ((FldSimpleStringWriterHandler)handler).toString(context, fldSimpleModel);
 			ret = wrap(context, value, doc);
 			// applyStyle treats all 3 cases like CHARFORMAT,
 			// so implementing MERGEFORMAT is a TODO
-			applyStyle(context, fldSimpleModel, ret);
+			applyStyle(context, fldSimpleModel, ret, value);
 		}
 		return ret;
 	}
@@ -271,24 +276,99 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 	/**
 	 * Apply the formatting specified in the rPr node (if any).
-	 * 
+	 *
 	 * @param context
 	 * @param fldSimpleModel
 	 * @param node
 	 */
 	protected void applyStyle(AbstractWmlConversionContext context, FldSimpleModel fldSimpleModel, Node node) {
-		
+		applyStyle(context, fldSimpleModel, node, null);
+	}
+
+	/**
+	 * Apply the formatting specified in the rPr node (if any), including the font.
+	 *
+	 * @param context
+	 * @param fldSimpleModel
+	 * @param node
+	 * @param resultText the text of the field result, where it is known; it is used
+	 *        to select the font (which of w:ascii, w:hAnsi, w:eastAsia, w:cs applies
+	 *        depends on the characters).  May be null.
+	 * @since 17.0.3
+	 */
+	protected void applyStyle(AbstractWmlConversionContext context, FldSimpleModel fldSimpleModel, Node node, String resultText) {
+
 		CTSimpleField ctSimpleField = fldSimpleModel.getFldSimple();
 		RPr rPr = null;
 		if (node != null) {
-			rPr = getRPr(ctSimpleField.getContent());
+			R r = getR(ctSimpleField.getContent());
+			rPr = (r == null ? null : r.getRPr());
 			if (rPr != null) {
 				List<Property> properties = PropertyFactory.createProperties(context.getWmlPackage(), rPr);
 				if ((properties != null) && (!properties.isEmpty())) {
 					applyProperties(properties, node);
 				}
 			}
+			// NB rPr may be null here; RunFontSelector will still resolve a font
+			// from docDefaults/the default paragraph style
+			applyFont(context, rPr, resultText, node);
 		}
+	}
+
+	/**
+	 * Set the font on a node we generated for a field result.
+	 *
+	 * PropertyFactory.createProperties doesn't handle w:rFonts, since for an ordinary
+	 * run, the font is chosen per w:t (by RunFontSelector, which needs the actual
+	 * characters in order to choose between w:ascii, w:hAnsi, w:eastAsia and w:cs).
+	 * The nodes we generate for a field have no w:t, so unless we do this, they'd be
+	 * rendered in the renderer's default font, and a PAGE field in a footer would be
+	 * in a different font to the surrounding text.
+	 *
+	 * @since 17.0.3
+	 */
+	protected void applyFont(AbstractWmlConversionContext context, RPr rPr, String resultText, Node node) {
+
+		if (!(node instanceof Element)) return;
+
+		RunFontSelector runFontSelector = context.getRunFontSelector();
+		if (runFontSelector == null) return;
+
+		// Use the actual field result where we know it, so that the font selection
+		// algorithm sees the characters which will be rendered. Otherwise assume a
+		// digit, since these fields (PAGE, NUMPAGES, SECTIONPAGES) are numeric.
+		Text sample = Context.getWmlObjectFactory().createText();
+		sample.setValue(((resultText == null) || (resultText.length() == 0)) ? "1" : resultText);
+
+		Object fontResult = null;
+		try {
+			/* The containing paragraph isn't reachable from the field itself (it is
+			 * unmarshalled on its own, so the result run's parent is the CTSimpleField),
+			 * so the pPr is passed to us; see AbstractWmlConversionContext#getCurrentPPr.
+			 * Where it is null, RunFontSelector falls back to the default paragraph style. */
+			fontResult = runFontSelector.fontSelector(context.getCurrentPPr(), rPr, sample);
+		} catch (Exception e) {
+			// Not fatal; the field is simply rendered in the default font, as it was before
+			log.warn("Couldn't determine font for field result: " + e.getMessage(), e);
+			return;
+		}
+		if (!(fontResult instanceof DocumentFragment)) return;
+
+		Node styled = ((DocumentFragment)fontResult).getFirstChild();
+		if (styled instanceof Element) {
+			applyFont((Element)styled, (Element)node);
+		}
+	}
+
+	/**
+	 * Copy the font which RunFontSelector set on 'source' (an element it created,
+	 * belonging to some other document) to 'target'.  How that is represented
+	 * differs between output formats, so this is a no-op here.
+	 *
+	 * @since 17.0.3
+	 */
+	protected void applyFont(Element source, Element target) {
+		// see subclasses
 	}
 
 	private Node createNode(Document doc) {
@@ -297,10 +377,10 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 				doc.createElement(elementName));
 	}
 
-	private RPr getRPr(List<Object> content) {
+	private R getR(List<Object> content) {
 		for (int i=0; i<content.size(); i++) {
 			if (content.get(i) instanceof R) {
-				return ((R)content.get(i)).getRPr();
+				return (R)content.get(i);
 			}
 		}
 		return null;

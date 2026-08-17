@@ -7,6 +7,14 @@ Version 17.0.3
 Changes in Version 17.0.3
 --------------------------
 
+PDF/HTML output:
+- a PAGE, NUMPAGES or SECTIONPAGES field is now rendered in the font which applies to it.  We
+generate fo:page-number (or a span) for these, and since there is no w:t there, the font was never
+applied, so page numbers came out in the renderer's default font whilst the surrounding text was in
+the right one.  Ditto DATE/TIME/DOCPROPERTY.  Both a font from the run's own w:rFonts and one
+inherited from the paragraph style are honoured; for the latter, the containing w:p's pPr is now
+passed to the writer (see AbstractWmlConversionContext.getCurrentPPr).
+
 Fonts:
 - loaded Typefaces are no longer retained for the life of the JVM.  They are now held only in
 GlyphCheck's cache (weak keys, soft values), not also on PhysicalFont, which for a system font lives

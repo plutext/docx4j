@@ -884,8 +884,11 @@
 			<xsl:apply-templates/>
 		</xsl:variable>
 
+		<!-- the pPr of the containing w:p, so the writer can resolve the font -->
+		<xsl:variable name="pPrNode" select="ancestor::w:p[1]/w:pPr" />
+
 	  	<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode(
-	  			$conversionContext,., $childResults)"/>	  		
+	  			$conversionContext,., $childResults, $pPrNode)"/>
   </xsl:template>
 
   <!--  Complex fields: update complex field definition level -->

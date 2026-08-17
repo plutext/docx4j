@@ -175,4 +175,21 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	protected void applyProperties(List<Property> properties, Node node) {
 		XsltFOFunctions.applyFoAttributes(properties, (Element)node);
 	}
+
+	/**
+	 * RunFontSelector puts the physical font in @font-family; copy that
+	 * to the node we generated (an fo:page-number, or the fo:wrapper
+	 * containing an fo:page-number-citation-last).
+	 *
+	 * @since 17.0.3
+	 */
+	@Override
+	protected void applyFont(Element source, Element target) {
+
+		String fontFamily = source.getAttribute("font-family");
+		if ((fontFamily != null) && (fontFamily.length() > 0)
+				&& (target.getAttribute("font-family").length() == 0)) {
+			target.setAttribute("font-family", fontFamily);
+		}
+	}
 }
