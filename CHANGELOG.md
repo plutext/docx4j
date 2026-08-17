@@ -14,6 +14,11 @@ applied, so page numbers came out in the renderer's default font whilst the surr
 the right one.  Ditto DATE/TIME/DOCPROPERTY.  Both a font from the run's own w:rFonts and one
 inherited from the paragraph style are honoured; for the latter, the containing w:p's pPr is now
 passed to the writer (see AbstractWmlConversionContext.getCurrentPPr).
+- likewise the other text we generate ourselves, which has no w:t either: footnote and endnote
+numbers (both the reference mark and the number in the note), the dots of a tab leader and the
+spaces we use for a tab where there is no leader, and the space which stands in for an otherwise
+empty paragraph.  The last of these is formatted with the paragraph mark's rPr, which is what it
+represents; the others take the font of the run they belong to.
 
 Fonts:
 - loaded Typefaces are no longer retained for the life of the JVM.  They are now held only in

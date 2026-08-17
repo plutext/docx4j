@@ -733,12 +733,24 @@
 <xsl:template match="w:tab"> 
 
 	<xsl:variable name="p" select="ancestor::*[self::w:p][1]" />
+
+	<!--  The leader dots, and the spaces we use where there is no leader, are
+	      characters we generate; there is no w:t to hang a font off, so unless we
+	      set one, they'd be rendered/measured in the renderer's default font. -->
+	<xsl:variable name="pPrNode" select="$p/w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
+	<xsl:variable name="fontFamily" 
+		select="java:org.docx4j.convert.out.fo.XsltFOFunctions.getFontFamily(
+			$conversionContext, $pPrNode, $rPrNode)" />
 	
 	<xsl:choose>
 		<xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1">
 						
 		  <fo:leader leader-length.minimum="12pt" leader-length.optimum="40pt"
 		    leader-length.maximum="100%" leader-pattern="dots">
+			<xsl:if test="string-length($fontFamily) &gt; 0">
+				<xsl:attribute name="font-family"><xsl:value-of select="$fontFamily"/></xsl:attribute>
+			</xsl:if>
 		  </fo:leader>
 						
 		</xsl:when>		
@@ -746,12 +758,17 @@
 		
 			<!--  Use this simple-minded approach from MS stylesheet,
 			      until our document model can do better.   -->
-		    <xsl:call-template name="OutputTlcChar">
-		      <xsl:with-param name="tlc">
-		        <xsl:text disable-output-escaping="yes">&#160;</xsl:text>
-		      </xsl:with-param>
-		      <xsl:with-param name="count" select="3"/>
-		    </xsl:call-template>
+			<fo:inline>
+				<xsl:if test="string-length($fontFamily) &gt; 0">
+					<xsl:attribute name="font-family"><xsl:value-of select="$fontFamily"/></xsl:attribute>
+				</xsl:if>
+			    <xsl:call-template name="OutputTlcChar">
+			      <xsl:with-param name="tlc">
+			        <xsl:text disable-output-escaping="yes">&#160;</xsl:text>
+			      </xsl:with-param>
+			      <xsl:with-param name="count" select="3"/>
+			    </xsl:call-template>
+			</fo:inline>
 		
 		</xsl:otherwise>
 	
@@ -819,11 +836,18 @@
 
 	<xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextFootnoteNumber($conversionContext)"/></xsl:variable>
 	<xsl:variable name="id"><xsl:value-of select="string(@w:id)"/></xsl:variable>
-	  
+
+	<!-- the number is generated, so it has no w:t to hang a font off; resolve it
+	     from the run this reference belongs to -->
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
+	<xsl:variable name="fnStyled" select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))" />
+
 	<fo:footnote>
 	
 	    <fo:inline baseline-shift="super"
-	               font-size="smaller"><xsl:value-of select="$fn"/></fo:inline>
+	               font-size="smaller"><xsl:copy-of select="$fnStyled"/></fo:inline>
 	               
 	    <fo:footnote-body>
 	      <fo:list-block provisional-label-separation="0pt"
@@ -831,7 +855,7 @@
 	                     space-after.optimum="6pt">
 	        <fo:list-item>
 	          <fo:list-item-label end-indent="label-end()">
-	            <fo:block><xsl:value-of select="$fn"/></fo:block>
+	            <fo:block><xsl:copy-of select="$fnStyled"/></fo:block>
 	          </fo:list-item-label>
 	          <fo:list-item-body start-indent="body-start()">
 	            <fo:block><xsl:apply-templates
@@ -855,14 +879,20 @@
 
   <xsl:template match="w:endnoteReference ">  
     <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextEndnoteNumber($conversionContext)"/></xsl:variable>
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
     <fo:inline baseline-shift="super"
-	               font-size="smaller"><xsl:value-of select="$fn"/></fo:inline>
+	               font-size="smaller"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></fo:inline>
   </xsl:template>
 
   <!--  The number in the note itself -->
   <xsl:template match="w:endnoteRef">
     <xsl:variable name="fn"><xsl:value-of select="count(../../../preceding-sibling::*)-1"/></xsl:variable>
-	<fo:inline baseline-shift="super" font-size="smaller"><xsl:value-of select="$fn"/></fo:inline>
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
+	<fo:inline baseline-shift="super" font-size="smaller"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></fo:inline>
   </xsl:template>  
 
   <xsl:template match="w:endnotes">

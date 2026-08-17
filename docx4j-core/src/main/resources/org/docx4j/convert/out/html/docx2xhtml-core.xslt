@@ -614,23 +614,37 @@
   
   <xsl:template match="w:footnoteReference">  
     <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextFootnoteNumber($conversionContext)"/></xsl:variable>
+	<!-- the number is generated, so it has no w:t to hang a font off; resolve it
+	     from the run this reference belongs to -->
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
   	<span style="vertical-align: top; font-size: xx-small">
-  		<!--  Bidirectional --><a name="fs{$fn}"><a href="#fn{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
+  		<!--  Bidirectional --><a name="fs{$fn}"><a href="#fn{$fn}"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></a></a></span>  
   </xsl:template>
   <xsl:template match="w:endnoteReference ">  
     <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextEndnoteNumber($conversionContext)"/></xsl:variable>
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
   	<span style="vertical-align: top; font-size: xx-small">
-  		<!--  Bidirectional --><a name="es{$fn}"><a href="#en{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
+  		<!--  Bidirectional --><a name="es{$fn}"><a href="#en{$fn}"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></a></a></span>  
   </xsl:template>
 
   <!--  The number in the note itself -->
   <xsl:template match="w:footnoteRef">
     <xsl:variable name="fn"><xsl:value-of select="count(../../../preceding-sibling::*)-1"/></xsl:variable>
-  	<span style="vertical-align: top; font-size: xx-small"><a name="fn{$fn}"><a href="#fs{$fn}"><xsl:value-of select="$fn"/></a></a></span>      
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
+  	<span style="vertical-align: top; font-size: xx-small"><a name="fn{$fn}"><a href="#fs{$fn}"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></a></a></span>      
   </xsl:template>  
   <xsl:template match="w:endnoteRef">
     <xsl:variable name="fn"><xsl:value-of select="count(../../../preceding-sibling::*)-1"/></xsl:variable>
-  	<span style="vertical-align: top; font-size: xx-small"><a name="en{$fn}"><a href="#es{$fn}"><xsl:value-of select="$fn"/></a></a></span>      
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
+  	<span style="vertical-align: top; font-size: xx-small"><a name="en{$fn}"><a href="#es{$fn}"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></a></a></span>      
   </xsl:template>  
 
   <xsl:template match="w:footnotes | w:endnotes">

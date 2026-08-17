@@ -66,63 +66,10 @@ public class XsltCommonFunctions {
     		NodeIterator rPrNodeIt,
     		NodeIterator textNodeIt) {
 
-		PPr pPr = null;
-		RPr rPr = null;
+		PPr pPr = toPPr(pPrNodeIt);
+		RPr rPr = toRPr(conversionContext, rPrNodeIt, pPr);
 		Text text = null;
-    	
-//    	if (rPrNodeIt!=null) 
-		{ 
-    		Node n = pPrNodeIt.nextNode(); //It is never null
-    		if (n!=null) {
-    			try {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				pPr =  (PPr)jaxb;
-    			} catch (ClassCastException e) {
-    				log.error("Couldn't cast  to RPr!");
-    			} catch (JAXBException e) {
-    				log.error(e.getMessage(), e);
-				}        	        			
-    		}
-    	}
-    	
-//    	if (rPrNodeIt!=null) 
-		{ 
-    		Node n = rPrNodeIt.nextNode();
-    		if (n!=null) {
-    			try {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				//rPr =  (RPr)jaxb;
-    				
-    				if (jaxb instanceof RPr) {
-    					//rPrDirect =  (RPr)jaxbR;
-    					rPr = (RPr)jaxb;
-    				} else if (jaxb instanceof ParaRPr) {
-//    					if (log.isDebugEnabled()) {
-//    						Throwable t = new Throwable();
-//    						log.debug("passed ParaRPr", t);
-//    					}
-    					rPr = conversionContext.getPropertyResolver().getEffectiveRPr(null, pPr); 
-//    	    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
-    	        		
-    	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
-    					
-    				}    				
-    				
-    				
-    			} catch (ClassCastException e) {
-    				log.error("Couldn't cast  to RPr!");
-    			} catch (JAXBException e) {
-    				log.error(e.getMessage(), e);
-				} catch (Docx4JException e) {
-    				log.error(e.getMessage(), e);
-				}        	        			
-    		}
-    	}
-		
+
 		{ 
     		Node n = textNodeIt.nextNode();
     		if (n!=null) {
@@ -142,6 +89,92 @@ public class XsltCommonFunctions {
     	
     	return (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
 
+    }
+
+    /** As above, but for text we generate ourselves (a footnote or endnote number),
+     *  as opposed to the contents of a w:t.
+     *
+     *  Without this, the number would be rendered in the renderer's default font,
+     *  rather than the font of the run it belongs to.
+     *
+     * @param conversionContext
+     * @param pPrNodeIt the w:pPr of the containing w:p (may be empty)
+     * @param rPrNodeIt the w:rPr of the containing w:r (may be empty)
+     * @param text the text to be rendered
+     * @since 17.0.3
+     */
+    public static DocumentFragment fontSelectorForGeneratedText(AbstractWmlConversionContext conversionContext, 
+    		NodeIterator pPrNodeIt,
+    		NodeIterator rPrNodeIt,
+    		String text) {
+
+		PPr pPr = toPPr(pPrNodeIt);
+		RPr rPr = toRPr(conversionContext, rPrNodeIt, pPr);
+
+    	/* Pass the text as a w:t with no xml:space, rather than as a String: the
+    	 * String overload doesn't reset RunFontSelector's spacePreserve flag, so
+    	 * generated text would otherwise inherit xml:space="preserve" from whatever
+    	 * w:t that instance (which lives for the conversion) was last used for. */
+    	Text wmlText = Context.getWmlObjectFactory().createText();
+    	wmlText.setValue(text);
+
+    	return (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, wmlText);
+    }
+
+    /** Unmarshal the w:pPr, if there is one. */
+    private static PPr toPPr(NodeIterator pPrNodeIt) {
+
+    	PPr pPr = null;
+		if (pPrNodeIt!=null) 
+		{ 
+    		Node n = pPrNodeIt.nextNode(); 
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				pPr =  (PPr)jaxb;
+    			} catch (ClassCastException e) {
+    				log.error("Couldn't cast  to PPr!");
+    			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+		return pPr;
+    }
+
+    /** Unmarshal the w:rPr, if there is one.  A w:paraRPr (ie the properties of the
+     *  paragraph mark) is applied to the effective rPr of the paragraph. */
+    private static RPr toRPr(AbstractWmlConversionContext conversionContext, NodeIterator rPrNodeIt, PPr pPr) {
+
+    	RPr rPr = null;
+		if (rPrNodeIt!=null) 
+		{ 
+    		Node n = rPrNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				
+    				if (jaxb instanceof RPr) {
+    					rPr = (RPr)jaxb;
+    				} else if (jaxb instanceof ParaRPr) {
+    					rPr = conversionContext.getPropertyResolver().getEffectiveRPr(null, pPr); 
+    	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
+    				}    				
+    				
+    			} catch (ClassCastException e) {
+    				log.error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				} catch (Docx4JException e) {
+    				log.error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+		return rPr;
     }
 	
 	
@@ -177,19 +210,6 @@ public class XsltCommonFunctions {
 			return context.getWriterRegistry().toNode(context, node, childResults);
 		} finally {
 			context.setCurrentPPr(null);
-		}
-	}
-
-	private static PPr toPPr(NodeIterator pPrNodeIt) {
-
-		if (pPrNodeIt == null) return null;
-		Node n = pPrNodeIt.nextNode();
-		if (n == null) return null;  // the w:p has no w:pPr
-		try {
-			return (PPr)XmlUtils.unmarshal(n);
-		} catch (JAXBException e) {
-			log.error("Couldn't unmarshal pPr: " + e.getMessage(), e);
-			return null;
 		}
 	}
 	

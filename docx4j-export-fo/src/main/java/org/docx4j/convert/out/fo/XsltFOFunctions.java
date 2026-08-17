@@ -27,6 +27,7 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
+import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.jaxb.Context;
@@ -419,6 +420,49 @@ public class XsltFOFunctions {
     	    	
     }
 
+	/** The font-family which applies to text we generate ourselves - a tab leader, or
+	 *  the space we put in an otherwise empty block - as opposed to the contents of a
+	 *  w:t.  Empty string where it can't be determined.
+	 *
+	 *  For use from the stylesheet; see also XsltCommonFunctions.fontSelectorForGeneratedText,
+	 *  which is what you want if you can emit the text itself, rather than needing to set
+	 *  a font on an element of your own.
+	 *
+	 * @since 17.0.3
+	 */
+	public static String getFontFamily(FOConversionContext context,
+			NodeIterator pPrNodeIt, NodeIterator rPrNodeIt) {
+
+		return fontFamilyOf(
+				XsltCommonFunctions.fontSelectorForGeneratedText(context, pPrNodeIt, rPrNodeIt, "."));
+	}
+
+	private static String resolveFontFamily(RunFontSelector runFontSelector, PPr pPr, RPr rPr, String sampleText) {
+
+		if (runFontSelector==null) return "";
+		try {
+			org.docx4j.wml.Text sample = Context.getWmlObjectFactory().createText();
+			sample.setValue(sampleText);
+			Object result = runFontSelector.fontSelector(pPr, rPr, sample);
+			return (result instanceof DocumentFragment ? fontFamilyOf((DocumentFragment)result) : "");
+		} catch (Exception e) {
+			// Not fatal; the renderer's default font is used, as it was before
+			log.warn("Couldn't determine font: " + e.getMessage(), e);
+			return "";
+		}
+	}
+
+	private static String fontFamilyOf(DocumentFragment df) {
+
+		if (df==null) return "";
+		Node n = df.getFirstChild();
+		if (n instanceof Element) {
+			String fontFamily = ((Element)n).getAttribute("font-family");
+			if (fontFamily!=null) return fontFamily;
+		}
+		return "";
+	}
+
 	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector, 
 			String pStyleVal, NodeIterator childResults,
 			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark) {
@@ -490,6 +534,19 @@ public class XsltFOFunctions {
 			if (n.getChildNodes().getLength()==0) {
 				
 				((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
+				
+				/* The space we're about to put in the block is the block's own content,
+				 * and what it represents is the paragraph mark, so it is one of the few
+				 * places where the paragraph mark's rPr is the right thing to format
+				 * with.  Without a font, it would be measured in the renderer's default
+				 * font, and the height of an empty paragraph would be wrong.
+				 * @since 17.0.3 */
+				String fontFamily = resolveFontFamily(runFontSelector, pPr,
+						(rPrParagraphMark!=null ? rPrParagraphMark : rPr), " ");
+				if (fontFamily.length()>0) {
+					((Element)foBlockElement).setAttribute("font-family", fontFamily);
+				}
+				
 				foBlockElement.setTextContent(" ");
 				
 			} else {
