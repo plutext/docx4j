@@ -1,0 +1,25 @@
+# Configuration for the DCO app (https://github.com/apps/dco), which checks that
+# every commit in a pull request carries a Signed-off-by line.
+#
+# See CONTRIBUTING.md for what we ask of contributors.
+#
+# NB: the app reads this file from the DEFAULT BRANCH only, so it has to be kept
+# there as development moves from one VERSION_x_y_z branch to the next.
+
+# Exempt the repository owner.  docx4j belongs to a GitHub user rather than an
+# organisation, and for that case the app's rule is simply that the repository
+# owner can push commits without a sign-off.  (For an organisation, this setting
+# instead exempts members whose commits are GPG-signed - a distinction to bear
+# in mind if docx4j ever moves under an org.)
+require:
+  members: false
+
+# Let a contributor who forgot to sign off put it right by pushing a follow-up
+# commit which applies their sign-off retroactively, rather than having to
+# rewrite the history of their branch.  Useful for long-lived pull requests.
+#
+# thirdParty is deliberately left off: it would allow one person to sign off on
+# another's behalf, and the DCO is a certification only the author can properly
+# make.
+allowRemediationCommits:
+  individual: true
