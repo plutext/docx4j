@@ -26,6 +26,12 @@ empty paragraph.  The last of these is formatted with the paragraph mark's rPr, 
 represents; the others take the font of the run they belong to.
 
 Fonts:
+- RunFontSelector's "does this font have a glyph for this character?" checks now ask the font the
+document's font is mapped to, rather than PhysicalFonts.get(nameAsInTheDocument).  That lookup
+found nothing whenever the document font is mapped to a substitute with a different name (eg Arial
+to Arimo Regular), and never anything for a font embedded in the document, since those are kept out
+of PhysicalFonts deliberately; the answer was then "no glyph", and the character was rendered in a
+substitute font it didn't need.  Affects the emoji, complex script and symbol (eg U+2751) paths.
 - text we generate ourselves (a page number, a footnote number, a tab leader) is no longer given a
 font which can't render it.  An embedded font is commonly a subset (w:subsetted="1") covering only
 the characters the author actually typed, and a page number is produced at render time - so eg a

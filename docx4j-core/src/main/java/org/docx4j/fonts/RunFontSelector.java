@@ -888,7 +888,7 @@ public class RunFontSelector {
         	    		log.debug("assuming emoji " + Integer.toHexString(c));
         		    	
         		    	try {
-							if (GlyphCheck.hasChar(hAnsi, c)) {
+							if (hasGlyph(hAnsi, c)) {
 								// TODO: doubt this works for high surrogate 
 								log.debug("present in " + hAnsi);
 								vis.fontAction(hAnsi);        		    		
@@ -1058,7 +1058,7 @@ public class RunFontSelector {
         	    		// so I assume it wouldn't use most other fonts either
         	    		
         	    		// It often uses TNR, so the following is good enough...
-						if (GlyphCheck.hasChar("Times New Roman", c)) {
+						if (hasGlyph("Times New Roman", c)) {
 							vis.fontAction("Times New Roman");        	    		
 						}
 						
@@ -1175,7 +1175,7 @@ public class RunFontSelector {
         	    		} else {
         	    			
         	    			try {
-        						if (GlyphCheck.hasChar(hAnsi, c)) {
+        						if (hasGlyph(hAnsi, c)) {
         							vis.fontAction(hAnsi);        	    		
         						} else {
         							
@@ -1368,11 +1368,44 @@ public class RunFontSelector {
     	return vis.getResult();
     }
     
+    /** The PhysicalFont this *document* font name maps to.
+     *
+     *  This must go via the Mapper, not PhysicalFonts: a font embedded in the document
+     *  is deliberately not added to PhysicalFonts (those are shared by all documents;
+     *  see ObfuscatedFontPart.extract), and a document font is commonly mapped to a
+     *  substitute with a different name (eg Arial to Arimo Regular), which
+     *  PhysicalFonts.get(documentFontName) wouldn't find either.
+     *
+     * @since 17.0.3
+     */
+    private PhysicalFont physicalFontFor(String documentFontName) {
+
+    	if (documentFontName==null) return null;
+    	Mapper fontMapper = wordMLPackage.getFontMapper();
+    	PhysicalFont pf = (fontMapper==null ? null : fontMapper.get(documentFontName));
+    	return (pf!=null ? pf : PhysicalFonts.get(documentFontName));
+    }
+
+    /** Whether the font this document font name maps to has a glyph for c; false if
+     *  there is no such font, so that the caller falls back as it would have done.
+     *
+     * @since 17.0.3
+     */
+    private boolean hasGlyph(String documentFontName, char c) throws ExecutionException {
+
+    	PhysicalFont pf = physicalFontFor(documentFontName);
+    	if (pf==null) {
+    		log.debug("No physical font for " + documentFontName);
+    		return false;
+    	}
+    	return GlyphCheck.hasChar(pf, c);
+    }
+
     private void debugCheckGlyph(String fontName, char c) {
     	
 		if (log.isDebugEnabled()) {
 	    	try {
-				if (!GlyphCheck.hasChar(fontName, c)) {
+				if (!hasGlyph(fontName, c)) {
 //					Throwable t = new Throwable();
 //					log.debug("FIXME", t);
 					log.debug(fontName + "'s PhysicalFont is missing char " + c);
