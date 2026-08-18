@@ -29,6 +29,7 @@ import javax.xml.transform.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldValueException;
@@ -367,6 +368,11 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 		Node styled = ((DocumentFragment)fontResult).getFirstChild();
 		if (styled instanceof Element) {
+			/* The font may not actually have these characters - an embedded font is
+			 * commonly a subset, and a page number is produced at render time, so the
+			 * author's subset need not contain the digits.  Leave it unset in that case,
+			 * so the result is rendered in an inherited font rather than as .notdef. */
+			if (!XsltCommonFunctions.fontCanRender((Element)styled, sample.getValue())) return;
 			applyFont((Element)styled, (Element)node);
 		}
 	}

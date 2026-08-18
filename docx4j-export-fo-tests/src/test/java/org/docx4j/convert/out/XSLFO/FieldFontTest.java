@@ -66,8 +66,13 @@ public class FieldFontTest extends AbstractXSLFOTest {
 	}
 
 	/** w:pgNumType w:fmt="thaiNumbers": the fo:page-sequence should ask for Thai
-	 *  digits (not fall back to Latin), and the font for the PAGE field should be
-	 *  selected for a Thai digit (which Courier New can't render), not for "1". */
+	 *  digits, rather than falling back to Latin ones.
+	 *
+	 *  The font is resolved for the digit which will actually be rendered, and FONT
+	 *  has no Thai digits, so it is deliberately left off the fo:page-number: giving
+	 *  FOP a font which can't render the character produces .notdef, not a fallback.
+	 *  See XsltCommonFunctions.fontCanRender.  The surrounding text, which FONT can
+	 *  render, keeps it. */
 	@Test
 	public void testThaiPageNumberFormat() throws Exception {
 
@@ -75,8 +80,10 @@ public class FieldFontTest extends AbstractXSLFOTest {
 
 		assertTrue("fo:page-sequence doesn't ask for Thai digits",
 				isPresent(doc, "//fo:page-sequence[@format='\u0E51']"));  // ๑, Thai digit one
-		assertTrue("no font-family on fo:page-number",
-				isAbsent(doc, "//fo:page-number[not(@font-family)]"));
+		assertTrue("fo:page-number was given a font which has no Thai digits",
+				isAbsent(doc, "//fo:page-number[@font-family]"));
+		assertTrue("the surrounding text lost its font",
+				isPresent(doc, "//fo:inline[starts-with(text(),'Page')][@font-family]"));
 	}
 
 	/** .. and FOP accepts the resulting format token (the render completes). */

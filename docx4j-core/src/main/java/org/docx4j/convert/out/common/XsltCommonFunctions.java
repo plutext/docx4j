@@ -23,7 +23,11 @@ package org.docx4j.convert.out.common;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.docx4j.XmlUtils;
+import org.docx4j.fonts.GlyphCheck;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
@@ -43,6 +47,7 @@ import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -118,7 +123,86 @@ public class XsltCommonFunctions {
     	Text wmlText = Context.getWmlObjectFactory().createText();
     	wmlText.setValue(text);
 
-    	return (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, wmlText);
+    	DocumentFragment df =
+    			(DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, wmlText);
+
+    	// the font we resolved may not actually have these characters; see fontCanRender
+    	if (df!=null && df.getFirstChild() instanceof Element) {
+    		Element styled = (Element)df.getFirstChild();
+    		if (!fontCanRender(styled, text)) {
+    			removeFont(styled);
+    		}
+    	}
+    	return df;
+    }
+
+    private static final Pattern FONT_FAMILY_IN_CSS = Pattern.compile("font-family:\\s*([^;]*);?");
+
+    /** Whether the font RunFontSelector chose for 'styled' can actually render this text.
+     *
+     *  Only worth asking for text we generate ourselves.  For the contents of a w:t the
+     *  question doesn't arise: where the document embeds a subsetted font (w:subsetted="1"),
+     *  the subset covers the text it was subsetted from.  But a page number, a footnote
+     *  number or a tab leader is produced at render time, so there is no guarantee the
+     *  author's subset contains it.  Apache FOP doesn't fall back to another font; it
+     *  warns 'Glyph "1" (0x31, one) not available in font ...' and renders .notdef.
+     *
+     *  Where this returns false, the caller should leave the font unset, so that the text
+     *  is rendered in whatever font it inherits - legible, if not what was asked for.
+     *
+     * @since 17.0.3
+     */
+    public static boolean fontCanRender(Element styled, String text) {
+
+    	if ((styled==null) || (text==null) || (text.length()==0)) return true;
+
+    	String fontName = physicalFontNameOf(styled);
+    	if ((fontName==null) || (fontName.length()==0)) return true;  // no font was set anyway
+
+    	try {
+    		for (int i=0; i<text.length(); i++) {
+    			if (!GlyphCheck.hasChar(fontName, text.charAt(i))) {
+    				log.debug(fontName + " has no glyph for '" + text.charAt(i)
+    						+ "'; leaving the font unset");
+    				return false;
+    			}
+    		}
+    	} catch (Exception e) {
+    		// not fatal; better to set the font than to fail the conversion
+    		log.warn("Couldn't glyph check " + fontName + ": " + e.getMessage(), e);
+    	}
+    	return true;
+    }
+
+    /** The physical font name RunFontSelector put on this element: @font-family for fo,
+     *  or the font-family declaration in @style for html. */
+    private static String physicalFontNameOf(Element styled) {
+
+    	String fontFamily = styled.getAttribute("font-family");  // fo
+    	if ((fontFamily!=null) && (fontFamily.length()>0)) return fontFamily;
+
+    	String style = styled.getAttribute("style");  // html, eg font-family:'Courier New';
+    	if (style==null) return null;
+    	Matcher m = FONT_FAMILY_IN_CSS.matcher(style);
+    	return (m.find() ? m.group(1).trim().replace("'", "") : null);
+    }
+
+    /** Undo the font RunFontSelector set, leaving the text in whatever font it inherits.
+     *
+     * @since 17.0.3
+     */
+    public static void removeFont(Element styled) {
+
+    	styled.removeAttribute("font-family");
+    	String style = styled.getAttribute("style");
+    	if ((style!=null) && (style.length()>0)) {
+    		String stripped = FONT_FAMILY_IN_CSS.matcher(style).replaceAll("");
+    		if (stripped.length()==0) {
+    			styled.removeAttribute("style");
+    		} else {
+    			styled.setAttribute("style", stripped);
+    		}
+    	}
     }
 
     /** Unmarshal the w:pPr, if there is one. */

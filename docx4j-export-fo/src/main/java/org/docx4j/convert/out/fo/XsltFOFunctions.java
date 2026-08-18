@@ -444,7 +444,12 @@ public class XsltFOFunctions {
 			org.docx4j.wml.Text sample = Context.getWmlObjectFactory().createText();
 			sample.setValue(sampleText);
 			Object result = runFontSelector.fontSelector(pPr, rPr, sample);
-			return (result instanceof DocumentFragment ? fontFamilyOf((DocumentFragment)result) : "");
+			if (!(result instanceof DocumentFragment)) return "";
+			// the font may not have these characters; see XsltCommonFunctions.fontCanRender
+			Node styled = ((DocumentFragment)result).getFirstChild();
+			if (styled instanceof Element
+					&& !XsltCommonFunctions.fontCanRender((Element)styled, sampleText)) return "";
+			return fontFamilyOf((DocumentFragment)result);
 		} catch (Exception e) {
 			// Not fatal; the renderer's default font is used, as it was before
 			log.warn("Couldn't determine font: " + e.getMessage(), e);

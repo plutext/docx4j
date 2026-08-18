@@ -243,25 +243,6 @@ public class BestMatchingMapper extends Mapper {
     	        	log.info(".. but checking again, since physical fonts have changed.");
         		}
 	        }
-	        else if (documentFontName.equals("Calibri") ) {
-	        	// Temp workaround for Calibri to use Carlito Regular;
-	        	// necessary since panose matches carlito bold italic! 
-	        	// @since 11.5.5
-	        	if (PhysicalFonts.get("Calibri")!=null ) {
-	        		// Calibri is present, so use it
-					put(documentFontName, PhysicalFonts.get("Calibri"));
-	    			continue;
-	        	} else if (PhysicalFonts.get("Carlito Regular")!=null ) {
-	        	
-					put(documentFontName, PhysicalFonts.get("Carlito Regular"));
-					log.debug("Mapped " +  documentFontName  + " -->  " + "Carlito-Regular" 
-							+ "( "+ PhysicalFonts.get("Carlito Regular").getEmbeddedURI() );	        		
-	    			continue;
-	        	} else {
-	        		log.debug("Can't override Calibri with Carlito-Regular");
-	        	}
-	        }
-	        
 	        // Embedded fonts - bypass panose for these
 	        if (regularForms.get(documentFontName)!=null) {
         		put(documentFontName,         				 
@@ -303,6 +284,26 @@ public class BestMatchingMapper extends Mapper {
 				log.debug("Mapped " + documentFontName + " -->  " + exactMatch.getName()
 						+ " (exact name match)");
 				continue;
+			}
+
+			/* Temp workaround for Calibri to use Carlito Regular;
+			 * necessary since panose matches carlito bold italic!
+			 *
+			 * @since 11.5.5.  Until 17.0.3 this was done before the embedded font
+			 * forms and the exact name match above, so a Calibri embedded in the
+			 * document, or installed on the system, was passed over in favour of
+			 * Carlito.  It is only about avoiding a poor panose match.
+			 */
+			if (documentFontName.equals("Calibri")) {
+				PhysicalFont carlito = PhysicalFonts.get("Carlito Regular");
+				if (carlito != null) {
+					put(documentFontName, carlito);
+					log.debug("Mapped " + documentFontName + " -->  Carlito-Regular"
+							+ "( " + carlito.getEmbeddedURI());
+					continue;
+				} else {
+					log.debug("Can't override Calibri with Carlito-Regular");
+				}
 			}
 
 			// Panose setup

@@ -26,6 +26,17 @@ empty paragraph.  The last of these is formatted with the paragraph mark's rPr, 
 represents; the others take the font of the run they belong to.
 
 Fonts:
+- text we generate ourselves (a page number, a footnote number, a tab leader) is no longer given a
+font which can't render it.  An embedded font is commonly a subset (w:subsetted="1") covering only
+the characters the author actually typed, and a page number is produced at render time - so eg a
+footer reading "Page { PAGE }" whose cached result was "2" embeds a "2" but no "1", and asking FOP
+for it yielded 'Glyph "1" (0x31, one) not available in font ...' and a .notdef.  We now check
+(XsltCommonFunctions.fontCanRender) and leave the font unset in that case, so the text is rendered
+in an inherited font instead.  The question doesn't arise for the contents of a w:t, since a subset
+covers the text it was subsetted from.
+- an embedded Calibri, or one installed on the system, is no longer passed over in favour of
+Carlito: the Calibri workaround now runs after the embedded font forms and the exact name match,
+since it is only there to avoid a poor panose match.
 - BestMatchingMapper now uses a font which is actually installed, in preference to a panose match.
 Previously it went straight to the panose match, so a font the document asks for could be
 substituted away by another whose panose happened to be closer to the value in the document's font
