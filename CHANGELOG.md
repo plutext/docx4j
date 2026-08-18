@@ -37,6 +37,12 @@ since only its height matters: asking the document's fonts for arbitrary letters
 not available" warnings about text which isn't in the document at all.
 
 Fonts:
+- RunFontSelector no longer warns "TODO: how to handle char ... in range c>='\u2000' && c<='\u2EFF'"
+during the font discovery pass.  fontsInUse() runs before processEmbeddings and
+populateFontMappings (see WordprocessingMLPackage.setFontMapper), so at that point no font resolves
+at all and every such character looked unrenderable - a curly quote in a document whose fonts are
+embedded or substituted was enough.  The conversion pass, which decides what is actually used, gets
+it right.  The message now also names the font, and what it mapped to.
 - RunFontSelector's "does this font have a glyph for this character?" checks now ask the font the
 document's font is mapped to, rather than PhysicalFonts.get(nameAsInTheDocument).  That lookup
 found nothing whenever the document font is mapped to a substitute with a different name (eg Arial

@@ -1200,7 +1200,20 @@ public class RunFontSelector {
         							if (gothicSubs!=null && GlyphCheck.hasChar(gothicSubs, c)) {
 	        							vis.fontAction(FONT_WORD_2016_USES);        	    		
 	        						} else {
-	                	    			log.warn("TODO: how to handle char '" + c + "' in range c>='\\u2000' && c<='\\u2EFF'?");        							
+	                	    			/* In the discovery pass we are only collecting font names, and
+	                	    			 * nothing can be resolved yet anyway: fontsInUse() runs before
+	                	    			 * processEmbeddings and populateFontMappings (see
+	                	    			 * WordprocessingMLPackage.setFontMapper), so every font looks
+	                	    			 * missing.  The conversion pass makes the real decision.
+	                	    			 * @since 17.0.3 */
+	                	    			String msg = "TODO: how to handle char '" + c + "' (0x" + Integer.toHexString(c)
+	                	    					+ ") in range c>='\\u2000' && c<='\\u2EFF'? hAnsi=" + hAnsi
+	                	    					+ ", which maps to " + physicalFontFor(hAnsi);
+	                	    			if (outputType==RunFontActionType.DISCOVERY) {
+	                	    				log.debug(msg + " (discovery pass; ignore)");
+	                	    			} else {
+	                	    				log.warn(msg);
+	                	    			}
 	        						}
         						}
         						
