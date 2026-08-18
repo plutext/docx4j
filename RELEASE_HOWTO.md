@@ -112,6 +112,11 @@ New release process (docx4j 11.4.9 and later, which uses nexus-staging-maven-plu
 
 in deploy, prompt for passphrase is the *other* one [e..]
 
+For -ImportXHTML, it is:
+
+           mvn clean install                                        <- builds all modules, runs the tests
+           mvn clean deploy -P release -pl docx4j-ImportXHTML-core  <- publishes -core only
+
 Beware: DO NOT use -rf (resume from) in the event that the build fails.  The artifacts before the failure will not be deployed, resulting in partial publication!
 
 You can/should log in to https://central.sonatype.com/publishing/deployments to examine state.

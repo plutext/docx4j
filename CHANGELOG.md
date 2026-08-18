@@ -4,87 +4,33 @@ CHANGELOG
 Version 17.0.3
 ===============
 
+Release date
+------------
+
+18 August 2026
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Opus 5
+
 Changes in Version 17.0.3
 --------------------------
 
 PDF/HTML output:
-- a PAGE, NUMPAGES or SECTIONPAGES field is now rendered in the font which applies to it.  We
-generate fo:page-number (or a span) for these, and since there is no w:t there, the font was never
-applied, so page numbers came out in the renderer's default font whilst the surrounding text was in
-the right one.  Ditto DATE/TIME/DOCPROPERTY.  Both a font from the run's own w:rFonts and one
-inherited from the paragraph style are honoured; for the latter, the containing w:p's pPr is now
-passed to the writer (see AbstractWmlConversionContext.getCurrentPPr).
+- a PAGE, NUMPAGES or SECTIONPAGES field is now rendered in the font which applies to it. 
 - digit-based non-Latin page number formats are now honoured: w:pgNumType w:fmt of thaiNumbers,
 hindiNumbers, decimalFullWidth(2) and decimalZero now yield the corresponding digits (previously
-all fell back to Latin "1, 2, 3"), and the font for a PAGE/NUMPAGES/SECTIONPAGES field is selected
-for the digit which will actually be rendered (eg the cs font for a Thai digit).  Letter/counting
-formats (chineseCounting, hebrew1, arabicAbjad etc) still fall back to decimal.
-- likewise the other text we generate ourselves, which has no w:t either: footnote and endnote
-numbers (both the reference mark and the number in the note), the dots of a tab leader and the
-spaces we use for a tab where there is no leader, and the space which stands in for an otherwise
-empty paragraph.  The last of these is formatted with the paragraph mark's rPr, which is what it
-represents; the others take the font of the run they belong to.
+all fell back to Latin "1, 2, 3")
 
-PDF output:
-- the header/footer extent calculation no longer fails on a document which embeds a subsetted font.
-To measure those regions, docx4j lays out a probe document via FOP and reads its area tree.  Where
-a font has no glyph for a character, FOP writes U+FFFF (CharUtilities.NOT_A_CHARACTER) into that
-area tree, which isn't a legal XML character, so parsing it threw and we fell back to the default
-(much too large) extents - eg an fo:region-after of 395pt where it should have been 22pt.  Those
-characters are now dropped before the area tree is parsed.
-- and the probe's own filler paragraph now contains a space rather than the words "BODY CONTENT",
-since only its height matters: asking the document's fonts for arbitrary letters produced "Glyph
-not available" warnings about text which isn't in the document at all.
+Font selection improvements
 
-Fonts:
-- RunFontSelector no longer warns "TODO: how to handle char ... in range c>='\u2000' && c<='\u2EFF'"
-during the font discovery pass.  fontsInUse() runs before processEmbeddings and
-populateFontMappings (see WordprocessingMLPackage.setFontMapper), so at that point no font resolves
-at all and every such character looked unrenderable - a curly quote in a document whose fonts are
-embedded or substituted was enough.  The conversion pass, which decides what is actually used, gets
-it right.  The message now also names the font, and what it mapped to.
-- RunFontSelector's "does this font have a glyph for this character?" checks now ask the font the
-document's font is mapped to, rather than PhysicalFonts.get(nameAsInTheDocument).  That lookup
-found nothing whenever the document font is mapped to a substitute with a different name (eg Arial
-to Arimo Regular), and never anything for a font embedded in the document, since those are kept out
-of PhysicalFonts deliberately; the answer was then "no glyph", and the character was rendered in a
-substitute font it didn't need.  Affects the emoji, complex script and symbol (eg U+2751) paths.
-- text we generate ourselves (a page number, a footnote number, a tab leader) is no longer given a
-font which can't render it.  An embedded font is commonly a subset (w:subsetted="1") covering only
-the characters the author actually typed, and a page number is produced at render time - so eg a
-footer reading "Page { PAGE }" whose cached result was "2" embeds a "2" but no "1", and asking FOP
-for it yielded 'Glyph "1" (0x31, one) not available in font ...' and a .notdef.  We now check
-(XsltCommonFunctions.fontCanRender) and leave the font unset in that case, so the text is rendered
-in an inherited font instead.  The question doesn't arise for the contents of a w:t, since a subset
-covers the text it was subsetted from.
-- an embedded Calibri, or one installed on the system, is no longer passed over in favour of
-Carlito.  There were two paths doing this: BestMatchingMapper's own workaround (which now runs
-after the embedded font forms and the exact name match, since it is only there to avoid a poor
-panose match), and Mapper.addMetricallyCompatibleSubstitutes, which runs after populateFontMappings
-and so overwrote whatever that had chosen - including an embedded font.  It now leaves a font the
-document embeds alone.  This applies to Times New Roman, Arial, Courier New and Cambria too.
-- BestMatchingMapper now uses a font which is actually installed, in preference to a panose match.
-Previously it went straight to the panose match, so a font the document asks for could be
-substituted away by another whose panose happened to be closer to the value in the document's font
-table (this is what the Calibri/Carlito workaround was for).
-- and where the panose values tie, the choice between the candidates is now made on how closely
-their names resemble the one asked for, falling back to a deterministic choice.  The old test was
-"does the name contain the first word of the font we want", which can't distinguish the members of
-a family - for "Franklin Gothic Demi" it is just "franklin", so Book, Heavy and Medium all matched
-equally, and the winner was whichever the map happened to yield last.
+Font memory management improvements
 - loaded Typefaces are no longer retained for the life of the JVM.  They are now held only in
-GlyphCheck's cache (weak keys, soft values), not also on PhysicalFont, which for a system font lives
-in a static map.  Glyph-checking 1246 installed fonts retained ~290 MB and OOM'd on a 256 MB heap;
-it now runs in 64 MB.
-- a font whose file we can't parse is now treated as a font without glyphs (logged as ERROR),
-rather than throwing out of GlyphCheck.
-- our copy of FOP's MultiByteFont stores glyph bounding boxes packed as ints, instead of a
-java.awt.Rectangle per glyph (36 bytes each, held for as long as the font is loaded).  That is
-another 37% off the measurement above: 260 MB -> 165 MB.  Upstream as FOP-3330.
-- and those bounding boxes are no longer loaded at all.  Only FOP's SVG and Java2D output reads
-them, and docx4j's PDF output doesn't use these classes for that; it goes via FOP's own.  165 MB
--> 53 MB, which is 82% off where the measurement started.  MultiByteFont.getBoundingBox now throws
-UnsupportedOperationException, where FOP would give you a NullPointerException.
+GlyphCheck's cache (weak keys, soft values), not also on PhysicalFont
+- our copy of FOP's MultiByteFont no longer loads glyph bounding boxes at all. 
 
 
 Version 17.0.2
