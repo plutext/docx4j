@@ -1205,6 +1205,7 @@ public class RunFontSelector {
 	                	    			 * processEmbeddings and populateFontMappings (see
 	                	    			 * WordprocessingMLPackage.setFontMapper), so every font looks
 	                	    			 * missing.  The conversion pass makes the real decision.
+	                	    			 * See the TODO in WordprocessingMLPackage.setFontMapper.
 	                	    			 * @since 17.0.3 */
 	                	    			String msg = "TODO: how to handle char '" + c + "' (0x" + Integer.toHexString(c)
 	                	    					+ ") in range c>='\\u2000' && c<='\\u2EFF'? hAnsi=" + hAnsi

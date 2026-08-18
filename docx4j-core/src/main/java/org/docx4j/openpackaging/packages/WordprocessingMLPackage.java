@@ -348,7 +348,34 @@ public class WordprocessingMLPackage extends OpcPackage {
 			return;
 		}
 		
-		// 1.  Get a list of all the fonts in the document
+		/* 1.  Get a list of all the fonts in the document
+		 *
+		 * TODO: this pass can't resolve any font.  It walks the document with a
+		 * RunFontSelector (RunFontActionType.DISCOVERY), which asks questions like "has
+		 * this font a glyph for this character?" in order to decide between w:ascii,
+		 * w:hAnsi, w:eastAsia, w:cs and the various substitutes - but we haven't called
+		 * processEmbeddings or populateFontMappings yet (see just below), so the Mapper
+		 * is empty, and PhysicalFonts holds only the fonts installed under the name the
+		 * document happens to use.  A font which is embedded in the document, or which
+		 * is mapped to a substitute with a different name (Calibri to Carlito, say),
+		 * therefore looks entirely absent, and every glyph check comes back false.
+		 *
+		 * The result is that the font list we build the FOP config from is chosen
+		 * without knowing what any font can actually render: where a character looks
+		 * unrenderable we discover a substitute (Segoe UI Symbol, the emoji font)
+		 * instead of, or as well as, the font which would really be used.  It is not
+		 * wrong output - the conversion makes the decision again, properly - but the
+		 * config can name fonts we don't need and miss ones we do.
+		 *
+		 * Fixing it means resolving the fonts before discovering them, which is
+		 * circular as it stands: populateFontMappings takes fontsInUse as its input.
+		 * Doing processEmbeddings first would at least let the embedded fonts resolve
+		 * (they are registered on the Mapper, though in regularForms etc rather than in
+		 * the mappings which Mapper.get consults).
+		 *
+		 * @since 17.0.3 - noted, not fixed.  See RunFontSelector.unicodeRangeToFont,
+		 * where the DISCOVERY pass no longer warns about what it can't resolve.
+		 */
 		Set<String> fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
 //		if ( fm.getClass().getName().equals("org.docx4j.fonts.BestMatchingMapper") ) {
