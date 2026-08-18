@@ -114,29 +114,35 @@ public class FieldFontTest extends AbstractXSLFOTest {
 
 		org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(fo);
 
+		/* What the fonts resolve to depends on what is installed, so say so when this
+		 * fails: the assertions below are about the relationship between the field's
+		 * font and the surrounding text's, not about any particular font. */
+		String diagnostics = "\n  " + FONT + " maps to " + wordMLPackage.getFontMapper().get(FONT)
+				+ "\n  FO was:\n" + new String(fo, "UTF-8");
+
 		// the surrounding text has a font ..
-		assertTrue("no font-family on the surrounding text",
+		assertTrue("no font-family on the surrounding text" + diagnostics,
 				isPresent(doc, "//fo:inline[starts-with(text(),'Page')][@font-family]"));
 
 		// .. namely FONT's physical font - not the document default (were the style
 		// being ignored, text and field would still match, on the default font)
 		PhysicalFont expected = wordMLPackage.getFontMapper().get(FONT);
 		assertNotNull("no physical font for " + FONT + " on this machine", expected);
-		assertTrue("surrounding text isn't in " + FONT,
+		assertTrue("surrounding text isn't in " + FONT + diagnostics,
 				isPresent(doc, "//fo:inline[starts-with(text(),'Page')]"
 						+ "[@font-family='" + expected.getName() + "']"));
 
 		// .. and so should the PAGE field
-		assertTrue("no font-family on fo:page-number",
+		assertTrue("no font-family on fo:page-number" + diagnostics,
 				isAbsent(doc, "//fo:page-number[not(@font-family)]"));
-		assertTrue("fo:page-number font-family doesn't match the surrounding text",
+		assertTrue("fo:page-number font-family doesn't match the surrounding text" + diagnostics,
 				isPresent(doc, "//fo:page-number[@font-family = //fo:inline[starts-with(text(),'Page')]/@font-family]"));
 
 		// NUMPAGES: the fo:page-number-citation-last is wrapped in an fo:wrapper,
 		// which is what carries the inherited properties
-		assertTrue("no font-family on the fo:wrapper of fo:page-number-citation-last",
+		assertTrue("no font-family on the fo:wrapper of fo:page-number-citation-last" + diagnostics,
 				isAbsent(doc, "//fo:wrapper[fo:page-number-citation-last][not(@font-family)]"));
-		assertTrue("fo:page-number-citation-last font-family doesn't match the surrounding text",
+		assertTrue("fo:page-number-citation-last font-family doesn't match the surrounding text" + diagnostics,
 				isPresent(doc, "//fo:wrapper[fo:page-number-citation-last]"
 						+ "[@font-family = //fo:inline[starts-with(text(),'Page')]/@font-family]"));
 	}
