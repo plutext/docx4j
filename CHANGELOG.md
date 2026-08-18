@@ -26,6 +26,15 @@ empty paragraph.  The last of these is formatted with the paragraph mark's rPr, 
 represents; the others take the font of the run they belong to.
 
 Fonts:
+- BestMatchingMapper now uses a font which is actually installed, in preference to a panose match.
+Previously it went straight to the panose match, so a font the document asks for could be
+substituted away by another whose panose happened to be closer to the value in the document's font
+table (this is what the Calibri/Carlito workaround was for).
+- and where the panose values tie, the choice between the candidates is now made on how closely
+their names resemble the one asked for, falling back to a deterministic choice.  The old test was
+"does the name contain the first word of the font we want", which can't distinguish the members of
+a family - for "Franklin Gothic Demi" it is just "franklin", so Book, Heavy and Medium all matched
+equally, and the winner was whichever the map happened to yield last.
 - loaded Typefaces are no longer retained for the life of the JVM.  They are now held only in
 GlyphCheck's cache (weak keys, soft values), not also on PhysicalFont, which for a system font lives
 in a static map.  Glyph-checking 1246 installed fonts retained ~290 MB and OOM'd on a 256 MB heap;

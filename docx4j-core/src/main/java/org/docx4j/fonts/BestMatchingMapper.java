@@ -287,6 +287,24 @@ public class BestMatchingMapper extends Mapper {
 	
 //	        boolean normalFormFound = false;
 	        			
+			/* If we actually have this font, use it.
+			 *
+			 * Until 17.0.3 we went straight to the panose match, which meant an
+			 * installed font could be substituted away by something with a closer
+			 * (or equal) panose value - hence the Calibri/Carlito workaround above,
+			 * and the Verdana/Tahoma tie-break in findClosestPanoseMatch.  The
+			 * font the document asks for is always the best match for it.
+			 *
+			 * @since 17.0.3
+			 */
+			PhysicalFont exactMatch = PhysicalFonts.get(documentFontName);
+			if (exactMatch != null) {
+				put(documentFontName, exactMatch);
+				log.debug("Mapped " + documentFontName + " -->  " + exactMatch.getName()
+						+ " (exact name match)");
+				continue;
+			}
+
 			// Panose setup
 			org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = null;
 			Fonts.Font font = fontsInFontTable.get(documentFontName);
@@ -575,16 +593,20 @@ public class BestMatchingMapper extends Mapper {
 		
 		// documentFontName enables us to use a name match to break a tie;
 		// otherwise it would not be required
-		String keywordToMatch = documentFontName.toLowerCase();		 
-		if (documentFontName.indexOf(" ")>-1 ) {
-			keywordToMatch = keywordToMatch.substring(0, keywordToMatch.indexOf(" "));
+		String documentFontNameLower = documentFontName.toLowerCase();		 
+		// the first word only, eg "franklin" of "Franklin Gothic Demi"; used as the
+		// weakest form of name affinity.  See nameAffinity.
+		String firstWord = documentFontNameLower;
+		if (firstWord.indexOf(" ")>-1 ) {
+			firstWord = firstWord.substring(0, firstWord.indexOf(" "));
 		}
 		
 		String physicalFontKey = null;
 		String panoseKey = null;
 		
 		Iterator it = physicalFontSpace.entrySet().iterator();
-		long bestPanoseMatchValue = -1;		
+		long bestPanoseMatchValue = -1;
+		int bestNameAffinity = -1;		
 		String matchingPanoseString = null;
 	    while (it.hasNext()) {
 	        Map.Entry mapPairs = (Map.Entry)it.next();
@@ -612,24 +634,39 @@ public class BestMatchingMapper extends Mapper {
 				// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
 			}
 			
-			// Verdana and Tahoma have the same panose value,
-			// and without this code, one may be used for the other
-			// TODO - Garamond and Garamond-Italic also have the same
-			// panose values, but this code is not smart enough to
-			// pick the correct one.  Similar confusion between
-			// Cambria and Cambria Math
+			/* Verdana and Tahoma have the same panose value, and without this code,
+			 * one may be used for the other.  Likewise Garamond and Garamond-Italic,
+			 * and Cambria and Cambria Math.
+			 *
+			 * Where the panose values tie, we choose on the name.  Until 17.0.3 that
+			 * test was "does the physical font's name contain the first word of the
+			 * document font's name", which can't tell apart the members of a family:
+			 * for "Franklin Gothic Demi" it is just "franklin", so Book, Heavy and
+			 * Medium all matched, and the winner was whichever the map happened to
+			 * yield last.  We now prefer the closest name, and failing that choose
+			 * deterministically, so the same document always converts the same way.
+			 *
+			 * @since 17.0.3
+			 */
+			int affinity = nameAffinity(documentFontNameLower, firstWord, physicalFont.getName());
 			boolean trump = false;
 			if (panoseMatchValue == bestPanoseMatchValue) {
-				//log.debug("tie .. checking " + keywordToMatch  + " against " +  physicalFont.getName().toLowerCase());
-				if (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>-1) {
+				if (affinity > bestNameAffinity) {
 					trump = true;
+				} else if (affinity == bestNameAffinity
+						&& panoseKey != null
+						&& physicalFontKey.compareTo(panoseKey) < 0) {
+					// nothing to choose between them on either panose or name
+					trump = true;
+				}
+				if (trump) {
 					log.debug("trumped previous best (which was " + panoseKey + ")");
 				}
 			}
 			
 			if (log.isDebugEnabled() ) {
 				if ((panoseMatchValue > bestPanoseMatchValue) 
-						&& (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>0) ) {
+						&& (physicalFont.getName().toLowerCase().indexOf(firstWord)>0) ) {
 					log.debug("Despite name match, " + physicalFont.getName() 
 							+ physicalFont.getPanose()
 							+ " is too far from " + documentFontPanose
@@ -640,6 +677,7 @@ public class BestMatchingMapper extends Mapper {
 	        if (trump || bestPanoseMatchValue==-1 || panoseMatchValue < bestPanoseMatchValue ) {
 	        	
 	        	bestPanoseMatchValue = panoseMatchValue;
+	        	bestNameAffinity = affinity;
 	        	matchingPanoseString = physicalFont.getPanose().toString();
 	        	panoseKey = physicalFontKey;
 	        	
@@ -657,17 +695,46 @@ public class BestMatchingMapper extends Mapper {
 	    }
 
 		if (panoseKey!=null && bestPanoseMatchValue < matchThreshold) {
-			log.debug("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);					
-			
+			log.debug("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);
+
 			return panoseKey;
 		}  else {
 			return null;
 		}
-		
-		
-		
+
+
+
 	}
-	
+
+	/**
+	 * How closely the name of a physical font resembles the name of the font the
+	 * document asks for; used to choose between candidates whose panose values are
+	 * equally distant from it.  Higher is better.
+	 *
+	 * The point of the intermediate values is the members of a font family: for
+	 * "Franklin Gothic Demi", "Franklin Gothic Demi Italic" is a nearer thing than
+	 * "Franklin Gothic Book", which in turn is nearer than some unrelated font
+	 * which happens to share the panose value.
+	 *
+	 * @param documentFontNameLower the document's font name, lower cased
+	 * @param firstWord its first word, eg "franklin"
+	 * @param physicalFontName the candidate's name (any case)
+	 * @since 17.0.3
+	 */
+	private static int nameAffinity(String documentFontNameLower, String firstWord, String physicalFontName) {
+
+		if (physicalFontName == null) return 0;
+		String candidate = physicalFontName.toLowerCase();
+
+		if (candidate.equals(documentFontNameLower)) return 3;
+		// eg "Franklin Gothic Demi Italic" for "Franklin Gothic Demi"
+		if (candidate.startsWith(documentFontNameLower)
+				|| documentFontNameLower.startsWith(candidate)) return 2;
+		// eg "Franklin Gothic Book" for "Franklin Gothic Demi"
+		if (candidate.indexOf(firstWord)>-1) return 1;
+		return 0;
+	}
+
 
 //	public static class PhysicalFontFamily {
 //
