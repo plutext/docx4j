@@ -1381,6 +1381,26 @@ public class PropertyResolver {
 	}
 	
 	
+    /**
+     * TODO: this is a snapshot, taken when the PropertyResolver is constructed, and the
+     * PropertyResolver is then cached on the MainDocumentPart for the life of the package
+     * (see MainDocumentPart.getPropertyResolver).  So a style added to the styles part
+     * afterwards is invisible to style resolution: it doesn't throw, it logs
+     * "Couldn't find style: X" at error and the content silently falls back to the
+     * document defaults.
+     *
+     * That is a trap for callers, who have no way of knowing that some earlier call
+     * happened to construct the resolver - MainDocumentPart.addParagraphOfText does, for
+     * instance, since it activates a style.  Adding a style and then using it is a
+     * perfectly reasonable thing to do, and it quietly doesn't work.
+     *
+     * Worth looking at: refreshing liveStyles when the styles part changes (the
+     * StyleDefinitionsPart could invalidate the resolver), or at least a public way to
+     * ask for it to be rebuilt.  Note the field comment above already says "you need to
+     * manually keep this up to date" - there is just no supported way to do so.
+     *
+     * @since 17.0.3 - noted, not fixed.
+     */
     private void initialiseLiveStyles() {
     	
     	log.debug("initialiseLiveStyles()");
