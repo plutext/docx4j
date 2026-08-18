@@ -239,6 +239,17 @@ public abstract class Mapper {
 		
 	}
 
+	/** Does the document embed this font (in any of its forms)?
+	 *
+	 * @since 17.0.3
+	 */
+	public boolean isEmbedded(String fontNameAsInFontTablePart) {
+		return regularForms.get(fontNameAsInFontTablePart)!=null
+				|| boldForms.get(fontNameAsInFontTablePart)!=null
+				|| italicForms.get(fontNameAsInFontTablePart)!=null
+				|| boldItalicForms.get(fontNameAsInFontTablePart)!=null;
+	}
+
 	public void registerRegularForm(String fontNameAsInFontTablePart, PhysicalFont pfRegular) {
 		if (pfRegular == null) {
 			regularForms.remove(fontNameAsInFontTablePart);
@@ -322,6 +333,19 @@ public abstract class Mapper {
      */
     protected void addMetricallyCompatibleSubstitute(String proprietaryFont, String openSubstitute, String openSubstitute2) {
     	
+    	if (isEmbedded(proprietaryFont)) {
+    		/* The document embeds this font, so populateFontMappings will have mapped it
+    		 * to that.  Don't replace it with a substitute: the embedded font is what the
+    		 * author intended, and it is the only thing which is certain to be available.
+    		 * NB this runs after populateFontMappings; see
+    		 * WordprocessingMLPackage.setFontMapper.
+    		 * @since 17.0.3 */
+    		if (log.isDebugEnabled()) {
+    			log.debug("Not substituting for " + proprietaryFont + "; the document embeds it");
+    		}
+    		return;
+    	}
+
     	if (PhysicalFonts.get(proprietaryFont)==null) {
     		if (PhysicalFonts.get(openSubstitute)!=null) {
 	    		if (log.isDebugEnabled()) {

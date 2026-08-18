@@ -372,7 +372,8 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			 * commonly a subset, and a page number is produced at render time, so the
 			 * author's subset need not contain the digits.  Leave it unset in that case,
 			 * so the result is rendered in an inherited font rather than as .notdef. */
-			if (!XsltCommonFunctions.fontCanRender((Element)styled, sample.getValue())) return;
+			if (!XsltCommonFunctions.fontCanRender(
+					context.getWmlPackage().getFontMapper(), (Element)styled, sample.getValue())) return;
 			applyFont((Element)styled, (Element)node);
 		}
 	}

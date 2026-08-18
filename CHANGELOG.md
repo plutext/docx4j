@@ -35,8 +35,11 @@ for it yielded 'Glyph "1" (0x31, one) not available in font ...' and a .notdef. 
 in an inherited font instead.  The question doesn't arise for the contents of a w:t, since a subset
 covers the text it was subsetted from.
 - an embedded Calibri, or one installed on the system, is no longer passed over in favour of
-Carlito: the Calibri workaround now runs after the embedded font forms and the exact name match,
-since it is only there to avoid a poor panose match.
+Carlito.  There were two paths doing this: BestMatchingMapper's own workaround (which now runs
+after the embedded font forms and the exact name match, since it is only there to avoid a poor
+panose match), and Mapper.addMetricallyCompatibleSubstitutes, which runs after populateFontMappings
+and so overwrote whatever that had chosen - including an embedded font.  It now leaves a font the
+document embeds alone.  This applies to Times New Roman, Arial, Courier New and Cambria too.
 - BestMatchingMapper now uses a font which is actually installed, in preference to a panose match.
 Previously it went straight to the panose match, so a font the document asks for could be
 substituted away by another whose panose happened to be closer to the value in the document's font

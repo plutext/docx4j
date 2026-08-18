@@ -437,7 +437,8 @@ public class XsltFOFunctions {
 				XsltCommonFunctions.fontSelectorForGeneratedText(context, pPrNodeIt, rPrNodeIt, "."));
 	}
 
-	private static String resolveFontFamily(RunFontSelector runFontSelector, PPr pPr, RPr rPr, String sampleText) {
+	private static String resolveFontFamily(WordprocessingMLPackage wmlPackage,
+			RunFontSelector runFontSelector, PPr pPr, RPr rPr, String sampleText) {
 
 		if (runFontSelector==null) return "";
 		try {
@@ -448,7 +449,9 @@ public class XsltFOFunctions {
 			// the font may not have these characters; see XsltCommonFunctions.fontCanRender
 			Node styled = ((DocumentFragment)result).getFirstChild();
 			if (styled instanceof Element
-					&& !XsltCommonFunctions.fontCanRender((Element)styled, sampleText)) return "";
+					&& !XsltCommonFunctions.fontCanRender(
+							(wmlPackage==null ? null : wmlPackage.getFontMapper()),
+							(Element)styled, sampleText)) return "";
 			return fontFamilyOf((DocumentFragment)result);
 		} catch (Exception e) {
 			// Not fatal; the renderer's default font is used, as it was before
@@ -546,7 +549,7 @@ public class XsltFOFunctions {
 				 * with.  Without a font, it would be measured in the renderer's default
 				 * font, and the height of an empty paragraph would be wrong.
 				 * @since 17.0.3 */
-				String fontFamily = resolveFontFamily(runFontSelector, pPr,
+				String fontFamily = resolveFontFamily(wmlPackage, runFontSelector, pPr,
 						(rPrParagraphMark!=null ? rPrParagraphMark : rPr), " ");
 				if (fontFamily.length()>0) {
 					((Element)foBlockElement).setAttribute("font-family", fontFamily);

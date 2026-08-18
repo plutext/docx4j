@@ -28,6 +28,9 @@ import java.util.regex.Pattern;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.GlyphCheck;
+import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
@@ -129,7 +132,7 @@ public class XsltCommonFunctions {
     	// the font we resolved may not actually have these characters; see fontCanRender
     	if (df!=null && df.getFirstChild() instanceof Element) {
     		Element styled = (Element)df.getFirstChild();
-    		if (!fontCanRender(styled, text)) {
+    		if (!fontCanRender(conversionContext.getWmlPackage().getFontMapper(), styled, text)) {
     			removeFont(styled);
     		}
     	}
@@ -152,26 +155,52 @@ public class XsltCommonFunctions {
      *
      * @since 17.0.3
      */
-    public static boolean fontCanRender(Element styled, String text) {
+    public static boolean fontCanRender(Mapper fontMapper, Element styled, String text) {
 
     	if ((styled==null) || (text==null) || (text.length()==0)) return true;
 
     	String fontName = physicalFontNameOf(styled);
     	if ((fontName==null) || (fontName.length()==0)) return true;  // no font was set anyway
 
+    	PhysicalFont pf = physicalFontFor(fontMapper, fontName);
+    	if (pf==null) {
+    		// We can't tell, so use the font: dropping it would be worse.
+    		log.debug("Couldn't resolve " + fontName + "; assuming it can render " + text);
+    		return true;
+    	}
+
     	try {
-    		for (int i=0; i<text.length(); i++) {
-    			if (!GlyphCheck.hasChar(fontName, text.charAt(i))) {
-    				log.debug(fontName + " has no glyph for '" + text.charAt(i)
+    		for (int i=0; i<text.length(); ) {
+    			int cp = text.codePointAt(i);
+    			if (!GlyphCheck.hasCodepoint(pf, cp)) {
+    				log.debug(fontName + " has no glyph for '" + new String(Character.toChars(cp))
     						+ "'; leaving the font unset");
     				return false;
     			}
+    			i += Character.charCount(cp);
     		}
     	} catch (Exception e) {
     		// not fatal; better to set the font than to fail the conversion
     		log.warn("Couldn't glyph check " + fontName + ": " + e.getMessage(), e);
     	}
     	return true;
+    }
+
+    /** The PhysicalFont this name refers to.
+     *
+     *  A font embedded in the document is deliberately NOT added to PhysicalFonts (those are
+     *  available to all documents; see ObfuscatedFontPart.extract), so it has to be found via
+     *  this document's Mapper.  The Mapper is keyed by the name the document uses, whereas what
+     *  we have is the name of the physical font it was mapped to, so we look at the values.
+     */
+    private static PhysicalFont physicalFontFor(Mapper fontMapper, String physicalFontName) {
+
+    	if (fontMapper!=null) {
+    		for (PhysicalFont pf : fontMapper.getFontMappings().values()) {
+    			if ((pf!=null) && physicalFontName.equals(pf.getName())) return pf;
+    		}
+    	}
+    	return PhysicalFonts.get(physicalFontName);
     }
 
     /** The physical font name RunFontSelector put on this element: @font-family for fo,
