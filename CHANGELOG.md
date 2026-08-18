@@ -14,6 +14,11 @@ applied, so page numbers came out in the renderer's default font whilst the surr
 the right one.  Ditto DATE/TIME/DOCPROPERTY.  Both a font from the run's own w:rFonts and one
 inherited from the paragraph style are honoured; for the latter, the containing w:p's pPr is now
 passed to the writer (see AbstractWmlConversionContext.getCurrentPPr).
+- digit-based non-Latin page number formats are now honoured: w:pgNumType w:fmt of thaiNumbers,
+hindiNumbers, decimalFullWidth(2) and decimalZero now yield the corresponding digits (previously
+all fell back to Latin "1, 2, 3"), and the font for a PAGE/NUMPAGES/SECTIONPAGES field is selected
+for the digit which will actually be rendered (eg the cs font for a Thai digit).  Letter/counting
+formats (chineseCounting, hebrew1, arabicAbjad etc) still fall back to decimal.
 - likewise the other text we generate ourselves, which has no w:t either: footnote and endnote
 numbers (both the reference mark and the number in the note), the dots of a tab leader and the
 spaces we use for a tab where there is no leader, and the space which stands in for an otherwise

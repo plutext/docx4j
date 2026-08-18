@@ -40,6 +40,10 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	
 	//In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
 	//to keep it consistent with what fo does, it uses the formatting of the page numbers
+	//TODO: a \* format switch on the field itself (model.getFldParameters()) overrides
+	//the section format, and is ignored here (as in the fo equivalents; see
+	//pageNumberSample in the fo FldSimpleWriter).  The section format is the
+	//overwhelmingly common case.
 	protected abstract static class AbstractPageHandler implements FldSimpleStringWriterHandler {
 
 		@Override

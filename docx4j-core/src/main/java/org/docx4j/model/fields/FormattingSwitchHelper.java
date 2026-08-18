@@ -154,7 +154,13 @@ public class FormattingSwitchHelper {
     protected static final String FO_PAGENUMBER_UPPERALPHA = "A";    // 'A'
     protected static final String FO_PAGENUMBER_LOWERROMAN = "i";    // 'i'
     protected static final String FO_PAGENUMBER_UPPERROMAN = "I";    // 'I'
-	
+    // digit based format tokens: the digit one of the target script, optionally
+    // preceded by zeroes which give the minimum number of digits
+    protected static final String FO_PAGENUMBER_THAI         = "\u0E51";  // THAI DIGIT ONE
+    protected static final String FO_PAGENUMBER_DEVANAGARI   = "\u0967";  // DEVANAGARI DIGIT ONE
+    protected static final String FO_PAGENUMBER_FULLWIDTH    = "\uFF11";  // FULLWIDTH DIGIT ONE
+    protected static final String FO_PAGENUMBER_DECIMAL_ZERO = "01";      // '01', '02' ... '09', '10'
+
 	protected static final Map<String, String> DATE_FORMAT_ITEMS_TO_JAVA = new HashMap<String, String>();
 	
 	static {
@@ -172,6 +178,12 @@ public class FormattingSwitchHelper {
 		FORMAT_PAGE_TO_FO.put(NumberFormat.UPPER_LETTER.value(), FO_PAGENUMBER_UPPERALPHA);		//"upperLetter"
 		FORMAT_PAGE_TO_FO.put(NumberFormat.LOWER_ROMAN.value(), FO_PAGENUMBER_LOWERROMAN);		//"lowerRoman"
 		FORMAT_PAGE_TO_FO.put(NumberFormat.UPPER_ROMAN.value(), FO_PAGENUMBER_UPPERROMAN);		//"upperRoman"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.THAI_NUMBERS.value(), FO_PAGENUMBER_THAI);		//"thaiNumbers"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.HINDI_NUMBERS.value(), FO_PAGENUMBER_DEVANAGARI);	//"hindiNumbers"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.DECIMAL_FULL_WIDTH.value(), FO_PAGENUMBER_FULLWIDTH);	//"decimalFullWidth"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.DECIMAL_FULL_WIDTH_2.value(), FO_PAGENUMBER_FULLWIDTH);	//"decimalFullWidth2"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.DECIMAL_HALF_WIDTH.value(), FO_PAGENUMBER_DECIMAL);	//"decimalHalfWidth"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.DECIMAL_ZERO.value(), FO_PAGENUMBER_DECIMAL_ZERO);	//"decimalZero"
 		
 		//Month
 		DATE_FORMAT_ITEMS_TO_JAVA.put("M","M");			//Number without a leading 0 (zero) for single-digit months.

@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -36,10 +37,13 @@ public class FieldFontTest {
 
 	private static final String FONT = "Courier New";
 
+	/** Where the font comes from in the test package. */
+	private enum FontSource { DIRECT_RFONTS, PARAGRAPH_STYLE, CHARACTER_STYLE }
+
 	@Test
 	public void testPageFieldFont() throws Exception {
 
-		assertFieldFontMatchesText(createPkg(true));
+		assertFieldFontMatchesText(createPkg(FontSource.DIRECT_RFONTS));
 	}
 
 	/** Word doesn't stamp the style's font on each run; it is inherited.  So the
@@ -48,7 +52,16 @@ public class FieldFontTest {
 	@Test
 	public void testPageFieldFontFromParagraphStyle() throws Exception {
 
-		assertFieldFontMatchesText(createPkg(false));
+		assertFieldFontMatchesText(createPkg(FontSource.PARAGRAPH_STYLE));
+	}
+
+	/** Word's footer galleries (in some locales) apply a character style to the
+	 *  field's runs ("page number"), rather than direct w:rFonts.  The font then
+	 *  has to be resolved from the character style. */
+	@Test
+	public void testPageFieldFontFromCharacterStyle() throws Exception {
+
+		assertFieldFontMatchesText(createPkg(FontSource.CHARACTER_STYLE));
 	}
 
 	private void assertFieldFontMatchesText(WordprocessingMLPackage wordMLPackage) throws Exception {
@@ -59,6 +72,12 @@ public class FieldFontTest {
 		String textFont = fontFamilyOfSpanContaining(html, "Page ");
 		assertNotNull("no span for the surrounding text", textFont);
 		assertTrue("no font-family on the surrounding text", textFont.length() > 0);
+
+		// .. namely FONT's physical font - not the document default (were the style
+		// being ignored, text and field would still match, on the default font)
+		PhysicalFont expected = wordMLPackage.getFontMapper().get(FONT);
+		assertNotNull("no physical font for " + FONT + " on this machine", expected);
+		assertEquals("surrounding text isn't in " + FONT, "'" + expected.getName() + "'", textFont);
 
 		// .. and so should the field results (in HTML, both PAGE and NUMPAGES are "1")
 		int fieldSpans = 0;
@@ -98,32 +117,38 @@ public class FieldFontTest {
 
 	/** "Page { PAGE } of { NUMPAGES }" in a footer, in FONT.
 	 *
-	 * @param direct true for w:rFonts on each run; false for a paragraph style
-	 *        which specifies the font, with no direct formatting at all
+	 * @param fontSource where the font comes from: w:rFonts on each run; a paragraph
+	 *        style (with no direct formatting at all); or a character style on each
+	 *        run (as Word's footer galleries produce in some locales)
 	 */
-	private WordprocessingMLPackage createPkg(boolean direct) throws Exception {
+	private WordprocessingMLPackage createPkg(FontSource fontSource) throws Exception {
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		ObjectFactory factory = Context.getWmlObjectFactory();
 
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("Hello world");
 
-		if (!direct) {
-			wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle().add(
-					(Style)XmlUtils.unmarshalString(
-						"<w:style xmlns:w=\"" + Namespaces.NS_WORD12 + "\" w:type=\"paragraph\" w:styleId=\"MyFooter\">"
-						+ "<w:name w:val=\"My Footer\"/>"
-						+ "<w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/></w:rPr>"
-						+ "</w:style>", Context.jc, Style.class));
+		if (fontSource == FontSource.PARAGRAPH_STYLE) {
+			addStyle(wordMLPackage,
+					"<w:style xmlns:w=\"" + Namespaces.NS_WORD12 + "\" w:type=\"paragraph\" w:styleId=\"MyFooter\">"
+					+ "<w:name w:val=\"My Footer\"/>"
+					+ "<w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/></w:rPr>"
+					+ "</w:style>");
+		} else if (fontSource == FontSource.CHARACTER_STYLE) {
+			addStyle(wordMLPackage,
+					"<w:style xmlns:w=\"" + Namespaces.NS_WORD12 + "\" w:type=\"character\" w:styleId=\"PageNumber\">"
+					+ "<w:name w:val=\"page number\"/>"
+					+ "<w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/></w:rPr>"
+					+ "</w:style>");
 		}
 
 		String ftrXml = "<w:ftr xmlns:w=\"" + Namespaces.NS_WORD12 + "\">"
 				+ "<w:p>"
-				+ (direct ? "" : "<w:pPr><w:pStyle w:val=\"MyFooter\"/></w:pPr>")
-				+ r(direct, "<w:t xml:space=\"preserve\">Page </w:t>")
-				+ complexField(direct, "PAGE", "1")
-				+ r(direct, "<w:t xml:space=\"preserve\"> of </w:t>")
-				+ complexField(direct, "NUMPAGES", "1")
+				+ (fontSource == FontSource.PARAGRAPH_STYLE ? "<w:pPr><w:pStyle w:val=\"MyFooter\"/></w:pPr>" : "")
+				+ r(fontSource, "<w:t xml:space=\"preserve\">Page </w:t>")
+				+ complexField(fontSource, "PAGE", "1")
+				+ r(fontSource, "<w:t xml:space=\"preserve\"> of </w:t>")
+				+ complexField(fontSource, "NUMPAGES", "1")
 				+ "</w:p></w:ftr>";
 
 		FooterPart footerPart = new FooterPart(new PartName("/word/footer1.xml"));
@@ -144,17 +169,26 @@ public class FieldFontTest {
 		return wordMLPackage;
 	}
 
-	private static String r(boolean direct, String inner) {
-		return "<w:r>"
-				+ (direct ? "<w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/></w:rPr>" : "")
-				+ inner + "</w:r>";
+	private static void addStyle(WordprocessingMLPackage wordMLPackage, String styleXml) throws Exception {
+		wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle().add(
+				(Style)XmlUtils.unmarshalString(styleXml, Context.jc, Style.class));
 	}
 
-	private static String complexField(boolean direct, String instr, String cachedResult) {
-		return r(direct, "<w:fldChar w:fldCharType=\"begin\"/>")
-			 + r(direct, "<w:instrText xml:space=\"preserve\"> " + instr + " </w:instrText>")
-			 + r(direct, "<w:fldChar w:fldCharType=\"separate\"/>")
-			 + r(direct, "<w:t>" + cachedResult + "</w:t>")
-			 + r(direct, "<w:fldChar w:fldCharType=\"end\"/>");
+	private static String r(FontSource fontSource, String inner) {
+		String rPr = "";
+		if (fontSource == FontSource.DIRECT_RFONTS) {
+			rPr = "<w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/></w:rPr>";
+		} else if (fontSource == FontSource.CHARACTER_STYLE) {
+			rPr = "<w:rPr><w:rStyle w:val=\"PageNumber\"/></w:rPr>";
+		}
+		return "<w:r>" + rPr + inner + "</w:r>";
+	}
+
+	private static String complexField(FontSource fontSource, String instr, String cachedResult) {
+		return r(fontSource, "<w:fldChar w:fldCharType=\"begin\"/>")
+			 + r(fontSource, "<w:instrText xml:space=\"preserve\"> " + instr + " </w:instrText>")
+			 + r(fontSource, "<w:fldChar w:fldCharType=\"separate\"/>")
+			 + r(fontSource, "<w:t>" + cachedResult + "</w:t>")
+			 + r(fontSource, "<w:fldChar w:fldCharType=\"end\"/>");
 	}
 }

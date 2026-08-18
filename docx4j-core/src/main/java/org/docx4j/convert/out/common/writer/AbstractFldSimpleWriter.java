@@ -56,15 +56,26 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	}
 	
 	public interface FldSimpleNodeWriterHandler extends FldSimpleWriterHandler {
-		
+
 		public static final int PROCESS_NONE = 0;
 		public static final int PROCESS_APPLY_STYLE = 1;
 		public static final int PROCESS_WRAP_APPLY_STYLE = 2;
-		
+
 		public int getProcessType();
-		
-		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) 
+
+		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc)
 				throws TransformerException;
+
+		/**
+		 * Text representative of what the node will render as (eg "๑" for an
+		 * fo:page-number in a section using thaiNumbers), so the right font can be
+		 * selected for it; null (the default) is treated as the digit "1".
+		 *
+		 * @since 17.0.3
+		 */
+		default String getSampleText(AbstractWmlConversionContext context, FldSimpleModel model) {
+			return null;
+		}
 	}
 	
 	public interface FldSimpleStringWriterHandler extends FldSimpleWriterHandler {
@@ -232,11 +243,11 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 				case FldSimpleNodeWriterHandler.PROCESS_NONE:
 					break;
 				case FldSimpleNodeWriterHandler.PROCESS_APPLY_STYLE:
-					applyStyle(context, fldSimpleModel, ret, null);
+					applyStyle(context, fldSimpleModel, ret, nodeHandler.getSampleText(context, fldSimpleModel));
 					break;
 				case FldSimpleNodeWriterHandler.PROCESS_WRAP_APPLY_STYLE:
 					ret = wrap(context, ret, doc);
-					applyStyle(context, fldSimpleModel, ret, null);
+					applyStyle(context, fldSimpleModel, ret, nodeHandler.getSampleText(context, fldSimpleModel));
 					break;
 			}
 		}
