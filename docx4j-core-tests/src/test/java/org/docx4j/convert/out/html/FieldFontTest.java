@@ -12,6 +12,9 @@ import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.fonts.GlyphCheck;
+import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -25,6 +28,8 @@ import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.junit.Test;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 
 /**
  * The runs of a PAGE or NUMPAGES field in a footer specify a font (w:rFonts).
@@ -35,7 +40,44 @@ import org.junit.Test;
  */
 public class FieldFontTest {
 
-	private static final String FONT = "Courier New";
+	/** The font the test document asks for.  Chosen from what is actually installed:
+	 *  these tests are about the field's font matching the surrounding text's, and a
+	 *  font which resolves to nothing gets no font-family at all in html output (see
+	 *  RunFontSelector.getCssProperty), which would fail them for the wrong reason. */
+	private static String FONT;
+
+	@BeforeClass
+	public static void chooseAFontWhichExists() throws Exception {
+
+		new IdentityPlusMapper();  // triggers discovery of the physical fonts
+
+		PhysicalFont pf = firstUsable("Courier New", "DejaVu Sans Mono", "Liberation Mono",
+				"DejaVu Sans", "Liberation Sans", "Arimo Regular", "Noto Sans Regular");
+		if (pf==null) {
+			for (PhysicalFont candidate : PhysicalFonts.getPhysicalFonts().values()) {
+				if (canRenderTheTestText(candidate)) { pf = candidate; break; }
+			}
+		}
+		Assume.assumeTrue("no usable physical font on this machine", pf!=null);
+		FONT = pf.getName();
+	}
+
+	private static PhysicalFont firstUsable(String... names) throws Exception {
+		for (String name : names) {
+			PhysicalFont pf = PhysicalFonts.get(name);
+			if (canRenderTheTestText(pf)) return pf;
+		}
+		return null;
+	}
+
+	/** It must have the characters this test uses, or RunFontSelector may not choose it. */
+	private static boolean canRenderTheTestText(PhysicalFont pf) throws Exception {
+		if (pf==null || pf.getName()==null) return false;
+		for (char c : "Page of 1".toCharArray()) {
+			if (!GlyphCheck.hasCodepoint(pf, c)) return false;
+		}
+		return true;
+	}
 
 	/** Where the font comes from in the test package. */
 	private enum FontSource { DIRECT_RFONTS, PARAGRAPH_STYLE, CHARACTER_STYLE }
@@ -126,8 +168,10 @@ public class FieldFontTest {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		ObjectFactory factory = Context.getWmlObjectFactory();
 
-		wordMLPackage.getMainDocumentPart().addParagraphOfText("Hello world");
-
+		/* Add the styles first: PropertyResolver snapshots the styles part when it is
+		 * created (initialiseLiveStyles), and addParagraphOfText creates it - so a style
+		 * added afterwards is invisible, and the run would silently fall back to the
+		 * document default instead of testing what it says it tests. */
 		if (fontSource == FontSource.PARAGRAPH_STYLE) {
 			addStyle(wordMLPackage,
 					"<w:style xmlns:w=\"" + Namespaces.NS_WORD12 + "\" w:type=\"paragraph\" w:styleId=\"MyFooter\">"
@@ -141,6 +185,8 @@ public class FieldFontTest {
 					+ "<w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/></w:rPr>"
 					+ "</w:style>");
 		}
+
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("Hello world");
 
 		String ftrXml = "<w:ftr xmlns:w=\"" + Namespaces.NS_WORD12 + "\">"
 				+ "<w:p>"
