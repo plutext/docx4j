@@ -175,7 +175,15 @@ public class FOPAreaTreeHelper {
     	        Text text = wmlObjectFactory.createText(); 
     	        JAXBElement<org.docx4j.wml.Text> textWrapped = wmlObjectFactory.createRT(text); 
     	        r.getContent().add( textWrapped); 
-    	            text.setValue( "BODY CONTENT"); 
+    	            /* A space, not words: this paragraph is our own, and only its height
+    	             * matters (we measure the header and footer regions, not this one).
+    	             * It is formatted in the document's default font, which may well be an
+    	             * embedded subset containing only the characters the author typed - so
+    	             * asking it for arbitrary letters just produces "Glyph not available"
+    	             * warnings about text which isn't in the document.
+    	             * @since 17.0.3 */
+    	            text.setValue( " "); 
+    	            text.setSpace( "preserve"); 
 
     	return p;
     }    
@@ -291,11 +299,50 @@ public class FOPAreaTreeHelper {
 //            byte[] bytes = os.toByteArray();
 //            System.out.print(new String(bytes, StandardCharsets.UTF_8));
             
-            is = new ByteArrayInputStream(os.toByteArray());            
+            is = new ByteArrayInputStream(removeInvalidXmlCharacters(os.toByteArray()));            
         }        
 		DocumentBuilder builder = XmlUtils.getNewDocumentBuilder();
 		return builder.parse(is);
     }	
+
+    /** Remove characters which aren't legal in XML.
+     *
+     *  FOP writes the text it laid out into the area tree, and where the font has no glyph
+     *  for a character, what it writes is CharUtilities.NOT_A_CHARACTER (U+FFFF).  That
+     *  isn't a legal XML character, so the area tree fails to parse, and we lose the header
+     *  and footer extents altogether: fixExtents catches the exception and leaves the
+     *  layout master set with its (much too large) defaults.
+     *
+     *  A document which embeds a subsetted font is enough to provoke this, since the subset
+     *  contains only the characters the author actually typed.  We only want the geometry
+     *  from the area tree, so simply drop these characters.
+     *
+     * @since 17.0.3
+     */
+    private static byte[] removeInvalidXmlCharacters(byte[] areaTree) {
+
+    	String s = new String(areaTree, StandardCharsets.UTF_8);
+    	StringBuilder sb = null;  // created only if there is something to remove
+    	for (int i=0; i<s.length(); i++) {
+    		char c = s.charAt(i);
+    		// XML 1.0: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+    		boolean valid = (c=='\t' || c=='\n' || c=='\r'
+    				|| (c>='\u0020' && c<='\uD7FF')
+    				|| (c>='\uE000' && c<='\uFFFD')
+    				|| Character.isSurrogate(c));  // a surrogate pair is >= #x10000
+    		if (valid) {
+    			if (sb!=null) sb.append(c);
+    		} else {
+    			if (sb==null) sb = new StringBuilder(s.length()).append(s, 0, i);
+    			if (log.isDebugEnabled()) {
+    				log.debug("Dropping 0x" + Integer.toHexString(c) + " from the area tree");
+    			}
+    		}
+    	}
+    	if (sb==null) return areaTree;
+    	log.debug("Area tree contained characters which aren't legal in XML; dropped them.");
+    	return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
     
     /**
      * 

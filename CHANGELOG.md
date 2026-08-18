@@ -25,6 +25,17 @@ spaces we use for a tab where there is no leader, and the space which stands in 
 empty paragraph.  The last of these is formatted with the paragraph mark's rPr, which is what it
 represents; the others take the font of the run they belong to.
 
+PDF output:
+- the header/footer extent calculation no longer fails on a document which embeds a subsetted font.
+To measure those regions, docx4j lays out a probe document via FOP and reads its area tree.  Where
+a font has no glyph for a character, FOP writes U+FFFF (CharUtilities.NOT_A_CHARACTER) into that
+area tree, which isn't a legal XML character, so parsing it threw and we fell back to the default
+(much too large) extents - eg an fo:region-after of 395pt where it should have been 22pt.  Those
+characters are now dropped before the area tree is parsed.
+- and the probe's own filler paragraph now contains a space rather than the words "BODY CONTENT",
+since only its height matters: asking the document's fonts for arbitrary letters produced "Glyph
+not available" warnings about text which isn't in the document at all.
+
 Fonts:
 - RunFontSelector's "does this font have a glyph for this character?" checks now ask the font the
 document's font is mapped to, rather than PhysicalFonts.get(nameAsInTheDocument).  That lookup
