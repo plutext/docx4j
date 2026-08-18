@@ -1163,6 +1163,28 @@ public class RunFontSelector {
         	    	currentRangeLower = '\u1E00';
         	    	currentRangeUpper = '\u1EFF';
         	    }
+        	    /* TODO: this range is too broad.
+        	     *
+        	     * Unlike the ranges around it, which simply use hAnsi (or cs), this one asks
+        	     * whether the font has a glyph for the character, and looks for a substitute
+        	     * where it hasn't.  That was worked out for a single character - U+2751, a
+        	     * dingbat checkbox, where Word 2016 falls back to Segoe UI Symbol - and then
+        	     * applied to everything from U+2000 to U+2EFF; see the note further down.
+        	     *
+        	     * But U+2000-U+206F is General Punctuation: the curly quotes, the en and em
+        	     * dashes, the ellipsis, the bullet.  That is ordinary text, which Word just
+        	     * renders in the run's own font, and it has no business going through the
+        	     * symbol-substitution logic: it costs a glyph lookup per character, and where
+        	     * the lookup fails we go hunting for a dingbat font to set a quotation mark in.
+        	     *
+        	     * Probably the check should apply only to the blocks where it is warranted -
+        	     * Miscellaneous Symbols (U+2600-U+26FF) and Dingbats (U+2700-U+27BF), maybe the
+        	     * arrows and geometric shapes - with the rest of the range taking the ordinary
+        	     * hAnsi path.  Not changed because it is a real change to font selection, and
+        	     * wrong guesses here show up as subtly wrong PDFs.
+        	     *
+        	     * @since 17.0.3 - noted, not fixed.
+        	     */
         	    else if (c>='\u2000' && c<='\u2EFF') 
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
