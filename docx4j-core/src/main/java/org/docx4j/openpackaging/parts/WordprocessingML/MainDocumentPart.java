@@ -180,9 +180,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		// create=false is only really necessary where a StackOverflow is a possibility;
 		// eg getPropertyResolver() being invoked from PropertyResolver's constructor.
 
-		/* NB once created, this is kept for the life of the package, and it snapshots the
-		 * styles part as it stands; a style added later is invisible to it.  See the TODO
-		 * on PropertyResolver.initialiseLiveStyles. */
+		/* NB once created, this is kept for the life of the package.  Since 17.0.4, a
+		 * style added to the styles part later is still found (see
+		 * PropertyResolver.getLiveStyle); for a style modified or removed, use
+		 * PropertyResolver.refresh(). */
 		if (create && propertyResolver == null) {
 			propertyResolver = new PropertyResolver((WordprocessingMLPackage) this.pack);
 		}

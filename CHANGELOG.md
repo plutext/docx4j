@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+Version 17.0.4
+===============
+
+Changes in Version 17.0.4
+--------------------------
+
+PropertyResolver:
+- a style added to the styles part after the PropertyResolver was constructed is now found
+(previously it was silently invisible to style resolution); new refresh() method for picking up
+a modified or removed style
+
+
 Version 17.0.3
 ===============
 

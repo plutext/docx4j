@@ -118,8 +118,9 @@ public class PropertyResolver {
 
 	/**
 	 * Map of all styles in the Style Definitions Part,
-	 * keyed by styleId. 
-	 * Note, you need to manually keep this up to date
+	 * keyed by styleId.
+	 * Access it via getLiveStyle, which falls back to rescanning the styles part,
+	 * so a style added to the part after this map was built is still found.
 	 */
 	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
 	
@@ -332,16 +333,16 @@ public class PropertyResolver {
 			return;
 		}
 		seen.add(styleId);
-		
+
 		// get the style
-		Style style = liveStyles.get(styleId);
-		
+		Style style = getLiveStyle(styleId);
+
 		// add it to the stack
 		if (style==null) {
 			// No such style!
 			// For now, just log it..
 			log.error("Style definition not found: " + styleId);
-			seen.remove(styleId);			
+			seen.remove(styleId);
 			return;
 		}
 		
@@ -477,8 +478,8 @@ public class PropertyResolver {
 		}
 		
 		// Hmm, have to do the work
-		Style s = liveStyles.get(styleId);
-		
+		Style s = getLiveStyle(styleId);
+
 		if (s==null) {
 			log.error("Couldn't find style: " + styleId);
 			return null;
@@ -724,9 +725,9 @@ public class PropertyResolver {
 		}
 		
 		// Hmm, have to do the work
-		Style s = liveStyles.get(styleId);
-		
-		if (s==null) {			
+		Style s = getLiveStyle(styleId);
+
+		if (s==null) {
 			log.error("Couldn't find style: " + styleId);
 			log.debug("Couldn't find style: " + styleId, new Throwable());
 			return null;
@@ -1223,7 +1224,7 @@ public class PropertyResolver {
 		seen.add(styleId);
 
 		// get the style
-		Style style = liveStyles.get(styleId);
+		Style style = getLiveStyle(styleId);
 
 		// add it to the stack
 		if (style==null) {
@@ -1302,7 +1303,7 @@ public class PropertyResolver {
 			String basedOnStyleName = style.getBasedOn().getVal();
 			log.debug("Style " + styleId + " is based on " + basedOnStyleName);
         	fillPPrStackInternal(basedOnStyleName, pPrStack, seen);
-        	Style basedOnStyle = liveStyles.get(basedOnStyleName);
+        	Style basedOnStyle = getLiveStyle(basedOnStyleName);
         	if (ascertainNumId && basedOnStyle!=null) {
         		// This works via recursion        		
         		//log.debug( XmlUtils.marshaltoString(basedOnStyle, true, true));
@@ -1349,8 +1350,8 @@ public class PropertyResolver {
 		seen.add(styleId);
 
 		// get the style
-		Style style = liveStyles.get(styleId);
-		
+		Style style = getLiveStyle(styleId);
+
 		// add it to the stack
 		if (style==null) {
 			// No such style!
@@ -1381,36 +1382,68 @@ public class PropertyResolver {
 	}
 	
 	
-    /**
-     * TODO: this is a snapshot, taken when the PropertyResolver is constructed, and the
-     * PropertyResolver is then cached on the MainDocumentPart for the life of the package
-     * (see MainDocumentPart.getPropertyResolver).  So a style added to the styles part
-     * afterwards is invisible to style resolution: it doesn't throw, it logs
-     * "Couldn't find style: X" at error and the content silently falls back to the
-     * document defaults.
-     *
-     * That is a trap for callers, who have no way of knowing that some earlier call
-     * happened to construct the resolver - MainDocumentPart.addParagraphOfText does, for
-     * instance, since it activates a style.  Adding a style and then using it is a
-     * perfectly reasonable thing to do, and it quietly doesn't work.
-     *
-     * Worth looking at: refreshing liveStyles when the styles part changes (the
-     * StyleDefinitionsPart could invalidate the resolver), or at least a public way to
-     * ask for it to be rebuilt.  Note the field comment above already says "you need to
-     * manually keep this up to date" - there is just no supported way to do so.
-     *
-     * @since 17.0.3 - noted, not fixed.
-     */
     private void initialiseLiveStyles() {
-    	
+
     	log.debug("initialiseLiveStyles()");
 		liveStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
-		
-		for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
-			liveStyles.put(s.getStyleId(), s);	
+
+		for ( org.docx4j.wml.Style s : styles.getStyle() ) {
+			liveStyles.put(s.getStyleId(), s);
 			log.debug("live style: " + s.getStyleId() );
 		}
-    	
+
+    }
+
+    /**
+     * Get the style with this styleId, looking first in the liveStyles map, and where it
+     * is missing there, rescanning the styles part.  The map is built when this
+     * PropertyResolver is constructed, and the PropertyResolver is then cached on the
+     * MainDocumentPart for the life of the package (see
+     * MainDocumentPart.getPropertyResolver), so without the rescan a style added to the
+     * styles part afterwards would be invisible to style resolution.  The rescan is on
+     * the miss path only; a style which is genuinely absent costs one pass over the
+     * styles list per lookup.
+     *
+     * Note that this handles styles *added* since construction, not styles modified or
+     * removed: resolved properties are cached (resolvedStylePPrComponent etc), so a
+     * change to an existing style's definition is not picked up.  For that, see
+     * {@link #refresh()}.
+     *
+     * @since 17.0.4
+     */
+    private Style getLiveStyle(String styleId) {
+
+    	if (styleId==null) return null;
+
+    	Style result = liveStyles.get(styleId);
+    	if (result==null) {
+    		// styles is the styles part's own JAXB element (not a copy),
+    		// so this picks up styles added since the map was built
+    		for ( org.docx4j.wml.Style s : styles.getStyle() ) {
+    			if (!liveStyles.containsKey(s.getStyleId())) {
+    				liveStyles.put(s.getStyleId(), s);
+    				log.debug("live style (late): " + s.getStyleId() );
+    			}
+    		}
+    		result = liveStyles.get(styleId);
+    	}
+    	return result;
+    }
+
+    /**
+     * Discard cached state and re-read the styles part.  A style merely <em>added</em>
+     * to the styles part since this PropertyResolver was constructed is picked up
+     * automatically, but resolved style properties are cached, so if you have
+     * <em>modified</em> or <em>removed</em> a style (or replaced the styles part's
+     * JAXB element), call this to make the change visible.
+     *
+     * @since 17.0.4
+     */
+    public void refresh() throws Docx4JException {
+
+    	resolvedStylePPrComponent.clear();
+    	resolvedStyleRPrComponent.clear();
+    	init();
     }
 
 	
@@ -1421,10 +1454,10 @@ public class PropertyResolver {
      * @return
      */
     public boolean activateStyle( String styleId  ) {
-    	
-    	if (liveStyles.get(styleId)!=null) {
+
+    	if (getLiveStyle(styleId)!=null) {
     		// Its already live - nothing to do
-    		return true;    		
+    		return true;
     	}
     	// Assumption here is that it doesn't exist in your styles part, so..
     	java.util.Map<String, org.docx4j.wml.Style> knownStyles 
@@ -1449,17 +1482,17 @@ public class PropertyResolver {
     }
 
     private boolean activateStyle(org.docx4j.wml.Style s, boolean replace) {
-    	
-    	if (liveStyles.get(s.getStyleId())!=null) {
+
+    	Style existing = getLiveStyle(s.getStyleId());
+    	if (existing!=null) {
     		// Its already live
-    		
-    		if (!replace) {    			
+
+    		if (!replace) {
     			return false;
     		}
-    		
+
     		// Remove existing entry
-			styles.getStyle().remove( 
-					liveStyles.get(s.getStyleId()) );				
+			styles.getStyle().remove(existing);
     	}
     	
     	// Add it
@@ -1500,8 +1533,8 @@ public class PropertyResolver {
     }
     
     public org.docx4j.wml.Style getStyle(String styleId) {
-    	
-    	return liveStyles.get(styleId);
+
+    	return getLiveStyle(styleId);
     }
 	
 //		/*

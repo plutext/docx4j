@@ -49,7 +49,7 @@ public class PropertyResolverTestUtils {
 		
 	}
 	
-	private static WordprocessingMLPackage createdPkgWithStyles(Styles styles) throws InvalidFormatException {
+	static WordprocessingMLPackage createdPkgWithStyles(Styles styles) throws InvalidFormatException {
 		
 		// Create a package
 		WordprocessingMLPackage wmlPack = new WordprocessingMLPackage();
