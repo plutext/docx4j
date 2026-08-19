@@ -12,6 +12,12 @@ PropertyResolver:
 (previously it was silently invisible to style resolution); new refresh() method for picking up
 a modified or removed style
 
+PDF/HTML output:
+- General Punctuation (curly quotes, dashes, the ellipsis etc, U+2000-U+218F, and likewise
+U+2C00-U+2EFF) now always stays in the run's own font; previously, where the font lacked (or
+couldn't be checked for) the glyph, it was set in a symbol font.  Symbol substitution still
+applies to the symbol blocks U+2190-U+2BFF (arrows, dingbats, misc symbols etc)
+
 
 Version 17.0.3
 ===============

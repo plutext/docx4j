@@ -1163,51 +1163,53 @@ public class RunFontSelector {
         	    	currentRangeLower = '\u1E00';
         	    	currentRangeUpper = '\u1EFF';
         	    }
-        	    /* TODO: this range is too broad.
-        	     *
-        	     * Unlike the ranges around it, which simply use hAnsi (or cs), this one asks
-        	     * whether the font has a glyph for the character, and looks for a substitute
-        	     * where it hasn't.  That was worked out for a single character - U+2751, a
-        	     * dingbat checkbox, where Word 2016 falls back to Segoe UI Symbol - and then
-        	     * applied to everything from U+2000 to U+2EFF; see the note further down.
-        	     *
-        	     * But U+2000-U+206F is General Punctuation: the curly quotes, the en and em
-        	     * dashes, the ellipsis, the bullet.  That is ordinary text, which Word just
-        	     * renders in the run's own font, and it has no business going through the
-        	     * symbol-substitution logic: it costs a glyph lookup per character, and where
-        	     * the lookup fails we go hunting for a dingbat font to set a quotation mark in.
-        	     *
-        	     * Probably the check should apply only to the blocks where it is warranted -
-        	     * Miscellaneous Symbols (U+2600-U+26FF) and Dingbats (U+2700-U+27BF), maybe the
-        	     * arrows and geometric shapes - with the rest of the range taking the ordinary
-        	     * hAnsi path.  Not changed because it is a real change to font selection, and
-        	     * wrong guesses here show up as subtly wrong PDFs.
-        	     *
-        	     * @since 17.0.3 - noted, not fixed.
-        	     */
-        	    else if (c>='\u2000' && c<='\u2EFF') 
+        	    /* U+2000-U+218F: General Punctuation (the curly quotes, the en and em dashes,
+        	     * the ellipsis, the bullet), Superscripts and Subscripts, Currency Symbols,
+        	     * Combining Diacritical Marks for Symbols, Letterlike Symbols, Number Forms.
+        	     * Ordinary text, which Word renders in the run's own font, so no glyph check
+        	     * here (until 17.0.4 this range was handled with the symbol blocks below, so a
+        	     * quotation mark the font lacked was set in a symbol font). */
+        	    else if (c>='\u2000' && c<='\u218F')
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia); 
+        				vis.fontAction(eastAsia);
         	    	} else {
-        	    		// eg <w:rFonts w:ascii="Arial Unicode MS" w:hAnsi="Arial Unicode MS" 
+        	    		// Usual case
+        	    		vis.fontAction(hAnsi);
+        	    	}
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u2000';
+        	    	currentRangeUpper = '\u218F';
+        	    }
+        	    /* U+2190-U+2BFF: the symbol blocks - Arrows, Mathematical Operators,
+        	     * Miscellaneous Technical, Control Pictures, OCR, Enclosed Alphanumerics,
+        	     * Box Drawing, Block Elements, Geometric Shapes, Miscellaneous Symbols,
+        	     * Dingbats, the supplemental arrow/math blocks, Braille.  Here a text font
+        	     * often lacks the glyph, so ask, and look for a substitute where it hasn't. */
+        	    else if (c>='\u2190' && c<='\u2BFF')
+        	    {
+        	    	if (hint == STHint.EAST_ASIA) {
+        				vis.fontAction(eastAsia);
+        	    	} else {
+        	    		// eg <w:rFonts w:ascii="Arial Unicode MS" w:hAnsi="Arial Unicode MS"
         	    		//              w:eastAsia="Arial Unicode MS" w:cs="Arial Unicode MS"/>
         	    		if (hAnsi==null) {
         	    			log.warn("TODO: how to handle char '" + c + "' lacking hAnsi?");
         	    		} else {
-        	    			
+
         	    			try {
         						if (hasGlyph(hAnsi, c)) {
-        							vis.fontAction(hAnsi);        	    		
+        							vis.fontAction(hAnsi);
         						} else {
-        							
+
         							// Note: what follows is based on what Word 2016
-        							// does for Calibri 0x2751 (checkbox) 
-    								// but TODO explore what it does for the entire range c>='\u2000' && c<='\u2EFF'
-        							
+        							// does for Calibri 0x2751 (checkbox)
+    								// but TODO explore what it does for the other symbol blocks
+
         							// Microsoft Word 2016 uses Segoe UI Symbol
         							// (earlier versions used MS Gothic?)
-        							
+
         							final String FONT_WORD_2016_USES = "Segoe UI Symbol";
                 	    			Mapper fontMapper = wordMLPackage.getFontMapper();
                 	    			PhysicalFont gothicSubs = fontMapper.get(FONT_WORD_2016_USES);
@@ -1218,9 +1220,9 @@ public class RunFontSelector {
                 	    			// but it is in DejaVu Sans.
                 	    			// Google eg: "Lower right shadowed white square" font
                 	    			// It is in Segoe UI Symbol, Wing Dings
-        							
+
         							if (gothicSubs!=null && GlyphCheck.hasChar(gothicSubs, c)) {
-	        							vis.fontAction(FONT_WORD_2016_USES);        	    		
+	        							vis.fontAction(FONT_WORD_2016_USES);
 	        						} else {
 	                	    			/* In the discovery pass we are only collecting font names, and
 	                	    			 * nothing can be resolved yet anyway: fontsInUse() runs before
@@ -1230,7 +1232,7 @@ public class RunFontSelector {
 	                	    			 * See the TODO in WordprocessingMLPackage.setFontMapper.
 	                	    			 * @since 17.0.3 */
 	                	    			String msg = "TODO: how to handle char '" + c + "' (0x" + Integer.toHexString(c)
-	                	    					+ ") in range c>='\\u2000' && c<='\\u2EFF'? hAnsi=" + hAnsi
+	                	    					+ ") in range c>='\\u2190' && c<='\\u2BFF'? hAnsi=" + hAnsi
 	                	    					+ ", which maps to " + physicalFontFor(hAnsi);
 	                	    			if (outputType==RunFontActionType.DISCOVERY) {
 	                	    				log.debug(msg + " (discovery pass; ignore)");
@@ -1239,14 +1241,31 @@ public class RunFontSelector {
 	                	    			}
 	        						}
         						}
-        						
+
         					} catch (ExecutionException e) {
         						log.error(e.getMessage(), e);
-        					}        	    			
+        					}
         	    		}         	    	}
         	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u2000';
+
+        	    	currentRangeLower = '\u2190';
+        	    	currentRangeUpper = '\u2BFF';
+        	    }
+        	    /* U+2C00-U+2EFF: scripts and punctuation again - Glagolitic, Latin
+        	     * Extended-C, Coptic, Georgian Supplement, Tifinagh, Ethiopic Extended,
+        	     * Cyrillic Extended-A, Supplemental Punctuation, CJK Radicals Supplement -
+        	     * so ordinary text handling, as for U+2000-U+218F above. */
+        	    else if (c>='\u2C00' && c<='\u2EFF')
+        	    {
+        	    	if (hint == STHint.EAST_ASIA) {
+        				vis.fontAction(eastAsia);
+        	    	} else {
+        	    		// Usual case
+        	    		vis.fontAction(hAnsi);
+        	    	}
+        	    	vis.addCharacterToCurrent(c);
+
+        	    	currentRangeLower = '\u2C00';
         	    	currentRangeUpper = '\u2EFF';
         	    }
         	    else if (c>='\u2F00' && c<='\uDFFF') 
