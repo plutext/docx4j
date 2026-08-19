@@ -369,9 +369,26 @@ public class WordprocessingMLPackage extends OpcPackage {
 		 *
 		 * Fixing it means resolving the fonts before discovering them, which is
 		 * circular as it stands: populateFontMappings takes fontsInUse as its input.
-		 * Doing processEmbeddings first would at least let the embedded fonts resolve
-		 * (they are registered on the Mapper, though in regularForms etc rather than in
-		 * the mappings which Mapper.get consults).
+		 *
+		 * Analysis (2026-08-19) of the options:
+		 *
+		 * - Reordering, ie doing processEmbeddings first, is not worth much: it would
+		 *   only let the *embedded* fonts resolve, and embedded fonts are comparatively
+		 *   uncommon.  It isn't even sufficient for them, since processEmbeddings
+		 *   registers them in regularForms etc, not in the fontMappings which Mapper.get
+		 *   (and so the glyph checks) consult.  It does nothing for the common case, the
+		 *   differently-named substitute.
+		 *
+		 * - The real fix is two passes: a cheap first pass collecting font *names* only
+		 *   (no glyph checks, no substitution) as input to populateFontMappings, then a
+		 *   second discovery pass, with resolution now available, to decide the FOP
+		 *   config list.  That is a restructure of this method.
+		 *
+		 * Not doing the two-pass fix unless a bug report shows the config gap mattering
+		 * (a needed font missing from the generated FOP config, or cost from fonts it
+		 * names unnecessarily).  Note the practical impact shrank in 17.0.4: discovery
+		 * only glyph-checks the symbol blocks U+2190-U+2BFF now, so unresolvable
+		 * ordinary punctuation no longer drags substitute fonts into the list.
 		 *
 		 * @since 17.0.3 - noted, not fixed.  See RunFontSelector.unicodeRangeToFont,
 		 * where the DISCOVERY pass no longer warns about what it can't resolve.
