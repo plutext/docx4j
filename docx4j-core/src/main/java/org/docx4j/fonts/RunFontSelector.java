@@ -31,12 +31,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Apply the appropriate font to the characters in the run,
- * following the rules specified in
- * http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/rFonts.html
- * and http://msdn.microsoft.com/en-us/library/ff533743.aspx
- * ([MS-OI29500] 2.1.87)
- * 
+ * Apply the appropriate font to the characters in the run, following the rules in the
+ * Microsoft implementer notes on rFonts: [MS-OI29500] Part 1 section 17.3.2.26 (ISO 29500),
+ * https://learn.microsoft.com/en-us/openspecs/office_standards/ms-oi29500/aef3c9a6-5d6c-434b-90b7-85e761fd8e62
+ * The table in [MS-OE376] Part 4 section 2.3.2.24 (the ECMA-376 notes, documenting Word 2007)
+ * is identical, so the documented behaviour is stable across Word generations.
+ *
+ * ECMA-376 itself (mirrored at http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/rFonts.html)
+ * just says font use "shall be determined by the Unicode character values of the run content",
+ * without saying how; the old MSDN article ff533743 (link now dead) derived from the same
+ * material as the implementer notes.
+ *
+ * The implementation was validated against the [MS-OI29500] table on 2026-08-19; for the
+ * known deliberate divergences, see the comment at the top of unicodeRangeToFont.
+ *
  * See also http://blogs.msdn.com/b/officeinteroperability/archive/2013/04/22/office-open-xml-themes-schemes-and-fonts.aspx
  * 
  * The ASCII font formats all characters in the ASCII range (character values 0–127). 
@@ -831,9 +839,21 @@ public class RunFontSelector {
     	// See http://stackoverflow.com/questions/196830/what-is-the-easiest-best-most-correct-way-to-iterate-through-the-characters-of-a
     	// and http://stackoverflow.com/questions/8894258/fastest-way-to-iterate-over-all-the-chars-in-a-string
     	
-    	// The ranges specified at http://msdn.microsoft.com/en-us/library/ff533743.aspx
-    	// are from 0000-FFFF, 
-    	// but we do also handle astral characters (those outside Unicode Basic Multilingual Plane)
+    	/* The range dispatch below follows the table in [MS-OI29500] section 17.3.2.26 (see
+    	 * the class javadoc for the reference), validated against it on 2026-08-19.
+    	 * Known deliberate divergences from that table:
+    	 * - the Indic, Thai, Lao, Myanmar and Khmer ranges use cs, not the table's hAnsi,
+    	 *   because that is what Word actually does (issues 666 and 622);
+    	 * - U+2190-U+2BFF glyph-checks the font and substitutes a symbol font where the
+    	 *   glyph is missing, which is beyond the table (observed Word 2016 behaviour);
+    	 * - Hebrew/Arabic U+0590-U+07BF use a Times New Roman heuristic where the table
+    	 *   says ascii (real bidi runs take the cs path before reaching this method);
+    	 * - hint=eastAsia sends U+03D0-U+03FF and U+27C0-U+2E7F to eastAsia, where the
+    	 *   table (by omission) says hAnsi - contrived cases, kept for continuity;
+    	 * - the table's preamble rule (where eastAsia is "Times New Roman" and ascii equals
+    	 *   hAnsi, use ascii) is not implemented.
+    	 * The table covers 0000-FFFF; we also handle astral characters (those outside the
+    	 * Unicode Basic Multilingual Plane). */
     	
     	char currentRangeLower='\u0000';
     	char currentRangeUpper='\u0000';
@@ -1056,8 +1076,9 @@ public class RunFontSelector {
         	    		
         	    		// Word doesn't use Arial Unicode MS (where specified),
         	    		// so I assume it wouldn't use most other fonts either
-        	    		
+
         	    		// It often uses TNR, so the following is good enough...
+        	    		// (NB the [MS-OI29500] table says ascii for 0590-07BF)
 						if (hasGlyph("Times New Roman", c)) {
 							vis.fontAction("Times New Roman");        	    		
 						}
@@ -1072,7 +1093,7 @@ public class RunFontSelector {
         	    	currentRangeUpper = '\u07BF';
         	    }
         	    /* The Indic, Thai, Lao, Myanmar and Khmer ranges below are complex
-        	     * script ranges not listed at http://msdn.microsoft.com/en-us/library/ff533743.aspx
+        	     * script ranges not listed in the [MS-OI29500] table
         	     * (which says hAnsi for unlisted ranges), but Word formats them
         	     * with the cs (or cstheme if defined) font.  See issues 666 and 622.
         	     * Setting currentRange also keeps consecutive characters in a
@@ -1168,7 +1189,9 @@ public class RunFontSelector {
         	     * Combining Diacritical Marks for Symbols, Letterlike Symbols, Number Forms.
         	     * Ordinary text, which Word renders in the run's own font, so no glyph check
         	     * here (until 17.0.4 this range was handled with the symbol blocks below, so a
-        	     * quotation mark the font lacked was set in a symbol font). */
+        	     * quotation mark the font lacked was set in a symbol font).  The whole-block
+        	     * hint=eastAsia handling matches the [MS-OI29500] table: it has no
+        	     * per-character exception lists for these blocks. */
         	    else if (c>='\u2000' && c<='\u218F')
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
@@ -1186,7 +1209,9 @@ public class RunFontSelector {
         	     * Miscellaneous Technical, Control Pictures, OCR, Enclosed Alphanumerics,
         	     * Box Drawing, Block Elements, Geometric Shapes, Miscellaneous Symbols,
         	     * Dingbats, the supplemental arrow/math blocks, Braille.  Here a text font
-        	     * often lacks the glyph, so ask, and look for a substitute where it hasn't. */
+        	     * often lacks the glyph, so ask, and look for a substitute where it hasn't.
+        	     * (The substitution is beyond the [MS-OI29500] table, which just says hAnsi,
+        	     * or eastAsia on hint; it reflects observed Word 2016 behaviour.) */
         	    else if (c>='\u2190' && c<='\u2BFF')
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
@@ -1399,7 +1424,7 @@ public class RunFontSelector {
 //        	    } else if (c>=Character.toChar(0x1F600) && c<='\u1F64F') {
         	    	
         	    } else {
-        	    	// Per http://msdn.microsoft.com/en-us/library/ff533743.aspx
+        	    	// Per [MS-OI29500] section 17.3.2.26,
         	    	// for all ranges not listed in the above, the hAnsi (or hAnsiTheme if defined) font shall be used.
         	    	String hex = String.format("%04x", (int) c);
         	    	log.debug("Defaulting to hAnsi for char " + hex);
