@@ -30,7 +30,9 @@ and its element context stack is now per-instance (was static, so shared across 
 XSLT pathway: the sdtPr's w:rPr is applied to generated runs (was lost), an empty result restores
 the placeholder, a custom inserter set via BindingHandler.setValueInserterPlainText is honoured,
 and tbl/tr-shaped bound sdts are rebuilt (were silently left unbound); date (w:date) and
-checkbox (w14:checkbox) content controls are now bound too (previously XSLT-pathway only); see
+checkbox (w14:checkbox) content controls are now bound too (previously XSLT-pathway only);
+picture binding now preserves the authored drawing where it contains an a:blip (just the image
+rel is replaced), and od:Handler=picture (incl. width=) is supported; see
 docs/developer/change-requests/CR-binding-traverser-parity.md
 
 PropertyResolver:

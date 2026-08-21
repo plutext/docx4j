@@ -40,9 +40,9 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 7 | Empty result → placeholder restore | Y (ValueInserterPlainTextImpl:33) | Y | Y | phase 1 shipped 2026-08-22 (null result now leaves the sdt alone, all impls) |
 | 8 | Pluggable `ValueInserterPlainText` | Y | Y | Y | phase 1 shipped 2026-08-22 |
 | 9 | `local-name()` descape + result trim | Y (BindingTraverserXSLT:1410-1414) | Y | Y | phase 1 shipped 2026-08-22 |
-| 10 | Picture bind (`w:picture` + `w:dataBinding`), template contains `a:blip` | Y — replaces just `r:embed`, preserving the authored drawing (mode picture3) | P | P | non-XSLT always rebuilds the whole drawing (ExtentFinder size only); alt text, wrapping, effects lost |
-| 11 | `od:Handler=picture` (rich text cc containing w:drawing) | Y (bind.xslt:177) | N | N | 3.0.1 feature |
-| 12 | `od:Handler=picture` + `width=n\|auto` | Y (bind.xslt:150) | N | N | 11.1.8 feature |
+| 10 | Picture bind (`w:picture` + `w:dataBinding`), template contains `a:blip` | Y — replaces just `r:embed`, preserving the authored drawing (mode picture3) | Y | Y | phase 4 shipped 2026-08-22; rebuild path retained as fallback where there is no blip |
+| 11 | `od:Handler=picture` (rich text cc containing w:drawing) | Y (bind.xslt:177) | Y | Y | phase 4 shipped 2026-08-22 |
+| 12 | `od:Handler=picture` + `width=n\|auto` | Y (bind.xslt:150) | Y | Y | phase 4 shipped 2026-08-22 |
 | 13 | Date cc (`w:date` + `w:dataBinding`), formatted per dateFormat/lang | Y (xpathDate) | Y | Y | phase 3 shipped 2026-08-22 |
 | 14 | Checkbox cc (`w14:checkbox` + `w:dataBinding`) | Y (w14Checkbox, w14CheckboxAttr) | Y | Y | phase 3 shipped 2026-08-22 |
 | 15 | XHTML import (`od:ContentType=application/xhtml+xml`), ImportXHTML or altChunk fallback | Y (convertXHTML / convertXHTMLtoAltChunk) | N (TODO log) | N (TODO log) | includes bookmark renumbering via BookmarkCounter |
@@ -146,6 +146,14 @@ feature docx.
    TextBindParityTest extended (formatted date, checkbox glyph, w14:checked val).
 4. **Picture parity** (rows 10-12): blip-replacement mode when the template content has
    an `a:blip` (reuse `xpathInjectImageRelId`), then the `od:Handler=picture` variants.
+   **SHIPPED 2026-08-22**: `createImagePartReturnRelId` extracted from
+   `xpathInjectImageRelId` (which now delegates); shared `replaceBlipEmbed` navigates
+   drawing/(inline|anchor)/graphic/graphicData/pic/blipFill/blip and swaps just the
+   r:embed; `applyHandlerPicture` covers od:Handler=picture (blip replacement) and its
+   width= variant (bridges the DOM `xpathInjectImage(odTag)` overload, requesting the
+   run form and letting `applyBoundContent` do the shaping).  TextBindParityTest
+   extended: authored drawings (descr) survive with rebound rels; the width= variant
+   replaces the drawing.
 5. **XHTML + FlatOPC** (rows 15-16): reuse `convertXHTML`/`convertXHTMLtoAltChunk`/
    `convertFlatOPC`; wire `BookmarkCounter` to the traversers' existing (currently
    unused) bookmark id state.

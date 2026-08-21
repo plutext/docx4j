@@ -72,6 +72,37 @@ public class TextBindParityTest {
 		}
 	}
 
+	static class DrawingFinder extends CallbackImpl {
+		// descr (or "(none)") -> blip r:embed
+		java.util.Map<String,String> drawings = new java.util.LinkedHashMap<String,String>();
+		@Override
+		public List<Object> apply(Object o) {
+			if (o instanceof org.docx4j.wml.Drawing) {
+				for (Object di : ((org.docx4j.wml.Drawing)o).getAnchorOrInline()) {
+					di = org.docx4j.XmlUtils.unwrap(di);
+					if (!(di instanceof org.docx4j.dml.wordprocessingDrawing.Inline)) continue;
+					org.docx4j.dml.wordprocessingDrawing.Inline inline
+							= (org.docx4j.dml.wordprocessingDrawing.Inline)di;
+					String descr = inline.getDocPr()==null ? null : inline.getDocPr().getDescr();
+					String embed = null;
+					if (inline.getGraphic()!=null && inline.getGraphic().getGraphicData()!=null) {
+						for (Object any : inline.getGraphic().getGraphicData().getAny()) {
+							any = org.docx4j.XmlUtils.unwrap(any);
+							if (any instanceof org.docx4j.dml.picture.Pic) {
+								org.docx4j.dml.picture.Pic pic = (org.docx4j.dml.picture.Pic)any;
+								if (pic.getBlipFill()!=null && pic.getBlipFill().getBlip()!=null) {
+									embed = pic.getBlipFill().getBlip().getEmbed();
+								}
+							}
+						}
+					}
+					drawings.put(descr==null || descr.length()==0 ? "(none)" : descr, embed);
+				}
+			}
+			return null;
+		}
+	}
+
 	private WordprocessingMLPackage process(String implementation) throws Exception {
 
 		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
@@ -133,6 +164,28 @@ public class TextBindParityTest {
 		CheckboxCheckedFinder checkedFinder = new CheckboxCheckedFinder();
 		new TraversalUtil(pkg.getMainDocumentPart().getContent(), checkedFinder);
 		assertEquals(implementation + ": w14:checked not updated", "1", checkedFinder.checkedVal);
+
+		// picture ccs (phase 4)
+		DrawingFinder drawingFinder = new DrawingFinder();
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), drawingFinder);
+		// KEEPME (w:picture + dataBinding) and KEEPME2 (od:Handler=picture):
+		// the authored drawings survive, with just the image rel replaced
+		for (String descr : new String[]{"KEEPME", "KEEPME2"}) {
+			String embed = drawingFinder.drawings.get(descr);
+			assertTrue(implementation + ": authored drawing " + descr + " lost",
+					drawingFinder.drawings.containsKey(descr));
+			assertTrue(implementation + ": " + descr + " blip not rebound: " + embed,
+					embed!=null && !embed.startsWith("rId99"));
+			assertTrue(implementation + ": " + descr + " embed rel doesn't resolve",
+					pkg.getMainDocumentPart().getRelationshipsPart()
+							.getRelationshipByID(embed)!=null);
+		}
+		// KEEPME3 (od:Handler=picture + width=auto): content replaced with a
+		// freshly sized image
+		assertFalse(implementation + ": width= variant should replace the drawing",
+				drawingFinder.drawings.containsKey("KEEPME3"));
+		assertTrue(implementation + ": width= variant image missing",
+				drawingFinder.drawings.containsKey("(none)"));
 
 		// sdtPr rPr applied: rank instance 2's bound run is bold
 		BoldRunFinder finder = new BoldRunFinder("2");

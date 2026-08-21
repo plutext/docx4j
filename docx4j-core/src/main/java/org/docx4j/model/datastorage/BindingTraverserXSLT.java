@@ -1751,30 +1751,48 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		try {
 			String xpResult = part.getData().xpathGetString(xpath, prefixMappings);
 			log.debug(xpath + " yielded result length" + xpResult.length());
-			
+
+			return createImagePartReturnRelId(wmlPackage, sourcePart, xpResult);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * Create an image part from base64 image data, related to sourcePart,
+	 * returning the new relationship's id (or null on failure).
+	 *
+	 * @since 17.0.4
+	 */
+	public static String createImagePartReturnRelId(WordprocessingMLPackage wmlPackage,
+			JaxbXmlPart sourcePart, String base64) {
+
+		try {
 			// Base64 decode it (lenient: ignores whitespace/non-alphabet chars)
-			byte[] bytes = java.util.Base64.getMimeDecoder().decode(xpResult);
-			
+			byte[] bytes = java.util.Base64.getMimeDecoder().decode(base64);
+
 			// Create image part and add it
 	        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);
 
 	        // In certain circumstances, save it immediately
 	        if (wmlPackage.getTargetPartStore()!=null
 	        		&& wmlPackage.getTargetPartStore() instanceof UnzippedPartStore) {
-	        	log.debug("incrementally saving " + imagePart.getPartName().getName());  
+	        	log.debug("incrementally saving " + imagePart.getPartName().getName());
 	        	((UnzippedPartStore)wmlPackage.getTargetPartStore()).saveBinaryPart(imagePart);
 	        	// remove it from memory
 	        	ByteBuffer bb = null;
 	        	imagePart.setBinaryData(bb);//new byte[0]);
 	        	imagePart.setImageInfo(null); // this might help as well
 	        }
-	        
+
 			return imagePart.getRelLast().getId();
-			
+
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 			return null;
-		} 
+		}
 	}
 	
 	public static String getRepeatPositionCondition(

@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
@@ -99,35 +100,11 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
 			boolean multiLine) {
 
-		String storeItemId = null;
-		String xpath = null;
-		String prefixMappings = null;
-
-		Tag tag = sdtPr.getTag();
-		if (tag!=null && xpathsMap!=null) {
-			HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
-			String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
-			if (xpathId!=null) {
-				org.opendope.xpaths.Xpaths.Xpath xp = xpathsMap.get(xpathId);
-				if (xp==null) {
-					log.warn("Couldn't find xpath with id " + xpathId);
-				} else {
-					storeItemId = xp.getDataBinding().getStoreItemID();
-					xpath = xp.getDataBinding().getXpath();
-					prefixMappings = xp.getDataBinding().getPrefixMappings();
-				}
-			}
-		}
-		if (xpath==null) {
-			CTDataBinding binding = sdtPr.getDataBinding();
-			if (binding==null) {
-				log.warn("No binding found for " + (tag==null ? "(no tag)" : tag.getVal()));
-				return null;
-			}
-			storeItemId = binding.getStoreItemID();
-			xpath = binding.getXpath();
-			prefixMappings = binding.getPrefixMappings();
-		}
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding resolved = resolveBinding(sdtPr, xpathsMap);
+		if (resolved==null) return null;
+		String storeItemId = resolved.getStoreItemID();
+		String xpath = resolved.getXpath();
+		String prefixMappings = resolved.getPrefixMappings();
 
 		DocumentFragment frag = BindingTraverserXSLT.xpathGenerateRuns(
 				null /* no path cache here */,
@@ -155,6 +132,169 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			}
 		}
 		return contents;
+	}
+
+	/**
+	 * Resolve an sdt's binding: the od:xpath tag id via xpathsMap where present
+	 * (as bind.xslt does), falling back to the sdt's own w:dataBinding (which also
+	 * covers w15:dataBinding, since SdtPr.getDataBinding() returns either).
+	 * Null where there is no binding.
+	 */
+	private static org.opendope.xpaths.Xpaths.Xpath.DataBinding resolveBinding(
+			SdtPr sdtPr, Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+
+		Tag tag = sdtPr.getTag();
+		if (tag!=null && xpathsMap!=null) {
+			HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
+			String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+			if (xpathId!=null) {
+				org.opendope.xpaths.Xpaths.Xpath xp = xpathsMap.get(xpathId);
+				if (xp==null) {
+					log.warn("Couldn't find xpath with id " + xpathId);
+				} else {
+					return xp.getDataBinding();
+				}
+			}
+		}
+		CTDataBinding binding = sdtPr.getDataBinding();
+		if (binding==null) {
+			log.warn("No binding found for " + (tag==null ? "(no tag)" : tag.getVal()));
+			return null;
+		}
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding result
+				= new org.opendope.xpaths.Xpaths.Xpath.DataBinding();
+		result.setStoreItemID(binding.getStoreItemID());
+		result.setXpath(binding.getXpath());
+		result.setPrefixMappings(binding.getPrefixMappings());
+		return result;
+	}
+
+	/**
+	 * Where the sdt content contains an authored drawing, replace just its
+	 * a:blip/@r:embed with a rel to a new image part created from the bound
+	 * base64 value, preserving everything else about the drawing - as
+	 * bind.xslt's picture3/picture3richtext modes do.
+	 *
+	 * @return true if a blip was found (the drawing is preserved even where the
+	 * value couldn't be obtained); false if there is no blip to replace
+	 * @since 17.0.4
+	 */
+	protected boolean replaceBlipEmbed(SdtElement sdt,
+			org.docx4j.openpackaging.packages.OpcPackage pkg,
+			JaxbXmlPart sourcePart,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+
+		org.docx4j.dml.CTBlip blip = findBlip(sdt.getSdtContent().getContent());
+		if (blip==null) return false;
+
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding binding = resolveBinding(sdt.getSdtPr(), xpathsMap);
+		if (binding==null) return true; // nothing we can do; leave the drawing alone
+
+		org.docx4j.openpackaging.parts.CustomXmlPart part
+				= (org.docx4j.openpackaging.parts.CustomXmlPart)
+						pkg.getCustomXmlDataStorageParts().get(binding.getStoreItemID().toLowerCase());
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + binding.getStoreItemID());
+			return true;
+		}
+		try {
+			String base64 = part.xpathGetString(binding.getXpath(), binding.getPrefixMappings());
+			if (base64==null || base64.trim().length()==0) {
+				log.warn(binding.getXpath() + " yielded no image data");
+				return true;
+			}
+			String relId = BindingTraverserXSLT.createImagePartReturnRelId(
+					(WordprocessingMLPackage)pkg, sourcePart, base64);
+			if (relId!=null) {
+				blip.setEmbed(relId);
+			}
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		}
+		return true;
+	}
+
+	/**
+	 * The first a:blip in the content: drawing/(inline|anchor)/graphic/graphicData/pic/blipFill/blip.
+	 */
+	private static org.docx4j.dml.CTBlip findBlip(List<Object> content) {
+
+		for (Object o : content) {
+			o = XmlUtils.unwrap(o);
+			if (o instanceof org.docx4j.wml.Drawing) {
+				for (Object di : ((org.docx4j.wml.Drawing)o).getAnchorOrInline()) {
+					di = XmlUtils.unwrap(di);
+					org.docx4j.dml.Graphic graphic = null;
+					if (di instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+						graphic = ((org.docx4j.dml.wordprocessingDrawing.Inline)di).getGraphic();
+					} else if (di instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+						graphic = ((org.docx4j.dml.wordprocessingDrawing.Anchor)di).getGraphic();
+					}
+					if (graphic==null || graphic.getGraphicData()==null) continue;
+					for (Object any : graphic.getGraphicData().getAny()) {
+						any = XmlUtils.unwrap(any);
+						if (any instanceof org.docx4j.dml.picture.Pic) {
+							org.docx4j.dml.picture.Pic pic = (org.docx4j.dml.picture.Pic)any;
+							if (pic.getBlipFill()!=null && pic.getBlipFill().getBlip()!=null) {
+								return pic.getBlipFill().getBlip();
+							}
+						}
+					}
+				}
+			} else {
+				List<Object> children = TraversalUtil.getChildrenImpl(o);
+				if (children!=null) {
+					org.docx4j.dml.CTBlip blip = findBlip(children);
+					if (blip!=null) return blip;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Handle an od:Handler=picture sdt (rich text cc containing a w:drawing).
+	 * With a width param, the content is replaced with a freshly sized image
+	 * (as bind.xslt's 11.1.8 branch does); otherwise just the blip's r:embed
+	 * is replaced, preserving the authored drawing.
+	 * @since 17.0.4
+	 */
+	protected void applyHandlerPicture(SdtElement sdt,
+			org.docx4j.openpackaging.packages.OpcPackage pkg,
+			JaxbXmlPart sourcePart,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
+			Map<String, String> tagMap) {
+
+		if (tagMap.containsKey("width")) {
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			Map<String, org.docx4j.openpackaging.parts.CustomXmlDataStoragePart> parts
+					= (Map)pkg.getCustomXmlDataStorageParts();
+			DocumentFragment frag = null;
+			try {
+				frag = BindingTraverserXSLT.xpathInjectImage(
+						(WordprocessingMLPackage)pkg, sourcePart, parts, xpathsMap,
+						sdt.getSdtPr().getTag().getVal(),
+						"p", "r"); // request the run form; applyBoundContent does the shaping
+			} catch (RuntimeException e) {
+				log.error(e.getMessage(), e);
+			}
+			if (frag==null) return; // leave as is
+			List<Object> contents = new ArrayList<Object>();
+			for (org.w3c.dom.Node n = frag.getFirstChild(); n!=null; n = n.getNextSibling()) {
+				if (n.getNodeType()!=org.w3c.dom.Node.ELEMENT_NODE) continue;
+				Class<?> declaredType = declaredTypeFor(n.getLocalName());
+				if (declaredType==null) continue;
+				try {
+					contents.add(XmlUtils.unmarshal(n, Context.jc, declaredType));
+				} catch (jakarta.xml.bind.JAXBException e) {
+					log.error(e.getMessage(), e);
+					return;
+				}
+			}
+			applyBoundContent(sdt, contents);
+		} else {
+			replaceBlipEmbed(sdt, pkg, sourcePart, xpathsMap);
+		}
 	}
 
 	private static Class<?> declaredTypeFor(String localName) {

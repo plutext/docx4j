@@ -337,15 +337,20 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			}			
 			
 			SdtPr.Picture pic = getPicture(sdtPr);
-			if (sdtPr.getDataBinding()!=null && pic!=null) {
-				
+			if (sdtPr.getDataBinding()!=null && pic!=null
+					&& replaceBlipEmbed(sdt, pkg, part, xpathsMap)) {
+				// authored drawing preserved; just its image rel was replaced
+				// (as bind.xslt's picture3 mode does)
+
+			} else if (sdtPr.getDataBinding()!=null && pic!=null) {
+
 				Object sdtParent = ((Child)o).getParent();
-								
-				sdt.getSdtContent().getContent().clear();				
+
+				sdt.getSdtContent().getContent().clear();
 				sdt.getSdtContent().getContent().add(
 						this.xpathInjectImage(
-								(WordprocessingMLPackage)pkg, part, 
-								sdtPr.getDataBinding(), sdt, 
+								(WordprocessingMLPackage)pkg, part,
+								sdtPr.getDataBinding(), sdt,
 								sdtParent));
 				
 				// TODO v3 XSLT approach
@@ -361,6 +366,10 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 					&& sdtPr.getByClass(org.docx4j.wml.CTSdtDate.class)!=null) {
 				// w:date cc
 				applyDateBinding(sdt, pkg);
+
+			} else if (map!=null && "picture".equals(map.get(OpenDoPEHandler.BINDING_HANDLER))) {
+				// od:Handler=picture rich text cc; see CR-binding-traverser-parity phase 4
+				applyHandlerPicture(sdt, pkg, part, xpathsMap, map);
 
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_CONTENTTYPE)
 						&& map.get(OpenDoPEHandler.BINDING_CONTENTTYPE).equals("application/xhtml+xml")) {
