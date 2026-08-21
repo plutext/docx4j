@@ -54,7 +54,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.xml.bind.JAXBException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,16 +82,18 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			org.docx4j.openpackaging.packages.OpcPackage pkg,
 			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)
 			throws Docx4JException {
-		
+
 		this.part = part;
 		this.pkg = pkg;
 		this.xpathsMap = xpathsMap;
-		
+
 		Object clone = XmlUtils.deepCopy(part.getJaxbElement());
-		
+
+		processRptPosCons(clone);
+
 		BindingTraversor bt = new BindingTraversor();
 		new TraversalUtil(clone, bt);
-		
+
 		return clone;
 	}
 
@@ -106,14 +110,168 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 	public void traverseToBind(JaxbXmlPart part, Object jaxbObject,
 			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)
 			throws Docx4JException {
-		
+
 		this.part = part;  // required for image rels etc
 		this.pkg = part.getPackage();
 		this.xpathsMap = xpathsMap;
-				
+
+		processRptPosCons(jaxbObject);
+
 		BindingTraversor bt = new BindingTraversor();
 		new TraversalUtil(jaxbObject, bt);
-		
+
+	}
+
+	/**
+	 * Sentinel: enclosing repeat instance's position is unknown, so leave
+	 * any od:RptPosCon relating to it alone.
+	 */
+	private static final int[] UNKNOWN_POSITION = new int[0];
+
+	private int[] fragmentRootRepeatPosition = null;
+
+	/**
+	 * Where traverseToBind(part, jaxbObject, xpathsMap) will be invoked with an
+	 * od:rptd sdt (ie a single repeat instance, as BindingTraverserStAX does),
+	 * supply the instance's 1-based position and the total number of instances,
+	 * so od:RptPosCon descendants which relate to that instance can be evaluated.
+	 * If not supplied, such descendants are left as they are.
+	 *
+	 * @since 17.0.4
+	 */
+	public void setFragmentRootRepeatPosition(int pos, int size) {
+		this.fragmentRootRepeatPosition = new int[]{pos, size};
+	}
+
+	/**
+	 * Process od:RptPosCon sdts: keep the sdt where its position condition is
+	 * satisfied by the position of the nearest enclosing od:rptd repeat instance
+	 * (among its identically-tagged siblings); otherwise remove it.  This mirrors
+	 * what bind.xslt does.
+	 */
+	private void processRptPosCons(Object root) {
+
+		Object unwrapped = XmlUtils.unwrap(root);
+
+		Deque<int[]> rptdStack = new ArrayDeque<int[]>();
+
+		String rootTag = getSdtTagVal(unwrapped);
+		if (rootTag!=null
+				&& QueryString.parseQueryString(rootTag, true).containsKey(OpenDoPEHandler.BINDING_RESULT_RPTD)) {
+			// the root itself is a repeat instance (fragment case); its siblings aren't
+			// available here, so its position must have been supplied
+			rptdStack.push(fragmentRootRepeatPosition==null ? UNKNOWN_POSITION : fragmentRootRepeatPosition);
+		}
+
+		walkForRptPosCon(unwrapped, rptdStack);
+	}
+
+	private void walkForRptPosCon(Object node, Deque<int[]> rptdStack) {
+
+		List<Object> children = TraversalUtil.getChildrenImpl(node);
+		if (children==null || children.isEmpty()) return;
+
+		List<Object> removals = null;
+
+		for (Object child : new ArrayList<Object>(children)) {
+
+			Object u = XmlUtils.unwrap(child);
+			String tagVal = getSdtTagVal(u);
+
+			if (tagVal==null) {
+				walkForRptPosCon(u, rptdStack);
+				continue;
+			}
+
+			HashMap<String, String> map = QueryString.parseQueryString(tagVal, true);
+
+			if (map.containsKey(OpenDoPEHandler.BINDING_ROLE_RPT_POS_CON)) {
+
+				Boolean keep = evaluateRptPosConSdt(tagVal, rptdStack.peek());
+				if (keep!=null && !keep) {
+					if (removals==null) removals = new ArrayList<Object>();
+					removals.add(child);
+				} else {
+					walkForRptPosCon(u, rptdStack);
+				}
+
+			} else if (map.containsKey(OpenDoPEHandler.BINDING_RESULT_RPTD)) {
+
+				rptdStack.push(computeRepeatPosition(u, tagVal, children));
+				walkForRptPosCon(u, rptdStack);
+				rptdStack.pop();
+
+			} else {
+				walkForRptPosCon(u, rptdStack);
+			}
+		}
+
+		if (removals!=null) {
+			for (Object r : removals) {
+				if (!children.remove(r)) {
+					log.error("Couldn't remove od:RptPosCon sdt from parent "
+							+ node.getClass().getName());
+				}
+			}
+		}
+	}
+
+	/**
+	 * The 1-based position of this repeat instance among its identically-tagged
+	 * sdt siblings, and the count of those siblings; equivalent to bind.xslt's
+	 * $pos and count($vNodeSet).  Instances of one repeat occurrence share their
+	 * (od:RptOcc stamped) tag, so exact tag match groups per occurrence.
+	 */
+	private int[] computeRepeatPosition(Object rptdSdt, String tagVal, List<Object> siblings) {
+
+		int pos = -1;
+		int size = 0;
+		for (Object sibling : siblings) {
+			Object u = XmlUtils.unwrap(sibling);
+			if (tagVal.equals(getSdtTagVal(u))) {
+				size++;
+				if (u==rptdSdt) pos = size;
+			}
+		}
+		if (pos<0) {
+			log.error("Repeat instance not found among its siblings; tag " + tagVal);
+			return UNKNOWN_POSITION;
+		}
+		return new int[]{pos, size};
+	}
+
+	/**
+	 * @return TRUE keep, FALSE remove, null leave alone
+	 */
+	private Boolean evaluateRptPosConSdt(String tagVal, int[] posSize) {
+
+		if (posSize==null) {
+			// no enclosing repeat instance: bind.xslt omits in this case
+			log.warn("od:RptPosCon outside any repeat instance: omitting. " + tagVal);
+			return Boolean.FALSE;
+		}
+		if (posSize==UNKNOWN_POSITION) return null;
+
+		String expression = null;
+		try {
+			expression = BindingTraverserXSLT.getRepeatPositionCondition(xpathsMap, tagVal);
+		} catch (Exception e) {
+			log.error("Can't get repeat position condition for " + tagVal, e);
+		}
+		if (expression==null) return null;
+
+		return evaluateRptPosCon(expression, posSize[0], posSize[1]);
+	}
+
+	private static String getSdtTagVal(Object o) {
+
+		if (o instanceof SdtElement) {
+			SdtPr sdtPr = ((SdtElement)o).getSdtPr();
+			if (sdtPr!=null && sdtPr.getTag()!=null) {
+				return sdtPr.getTag().getVal();
+			}
+		}
+		return null;
 	}
 	
     static class ExtentFinder extends CallbackImpl {
@@ -205,10 +363,12 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 				// Do nothing
 				
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_ROLE_RPT_POS_CON) ) {
-				// This may be tricky to do here .. 
-				
+				// Already handled by processRptPosCons (those which remain are the
+				// ones whose position condition was satisfied, or couldn't be
+				// evaluated); their literal content is wanted as-is
+
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_ROLE_XPATH) ) {
-				
+
 				log.debug("OpenDoPEHandler.BINDING_ROLE_XPATH, " + sdtPr.getDataBinding().getXpath() );
 				if (log.isDebugEnabled()) {
 					log.debug(XmlUtils.marshaltoString(sdt));
@@ -274,14 +434,24 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 						
 						p.getContent().addAll(
 								this.xpathGenerateRuns(
-									(WordprocessingMLPackage)pkg, part, 
+									(WordprocessingMLPackage)pkg, part,
 									sdtPr,
-									sdtPr.getDataBinding(), 
-									//sdtParent, contentChild, 
+									sdtPr.getDataBinding(),
+									//sdtParent, contentChild,
+									null, isMultiline));
+					} else {
+						// eg run-level sdt containing run(s) directly
+						sdt.getSdtContent().getContent().clear();
+
+						sdt.getSdtContent().getContent().addAll(
+								this.xpathGenerateRuns(
+									(WordprocessingMLPackage)pkg, part,
+									sdtPr,
+									sdtPr.getDataBinding(),
 									null, isMultiline));
 					}
 				} else {
-				
+
 					sdt.getSdtContent().getContent().clear();
 					
 					sdt.getSdtContent().getContent().addAll(

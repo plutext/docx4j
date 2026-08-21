@@ -91,6 +91,10 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 						if (stack.peek().equals("body")
 								|| stack.peek().equals("tc")
 								|| stack.peek().equals("txbxContent")
+								|| stack.peek().equals("hdr")
+								|| stack.peek().equals("ftr")
+								|| stack.peek().equals("footnote")
+								|| stack.peek().equals("endnote")
 								) {
 							o = unmarshaller.unmarshal(xsr, SdtBlock.class);
 						} else if (stack.peek().equals("tbl")) {
@@ -109,7 +113,7 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 						throw new XMLStreamException(e.getMessage(), e);
 					}
 					o = XmlUtils.unwrap(o);
-					log.debug(o.getClass().getName());   
+					if (o!=null) log.debug(o.getClass().getName());
 					if (o instanceof SdtElement) {
 						SdtElement sdt = (SdtElement)o;
 						List<Object> results; 						
@@ -129,9 +133,16 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 							throw new XMLStreamException(e);
 						}
 						mustMove = false; // don't do this in this case, since JAXB will have done it.
+					} else if (o==null) {
+						// context we didn't recognise above, so nothing was unmarshalled
+						// and the reader hasn't moved; stream the sdt start element
+						// through (nested sdts may still be intercepted individually)
+						this.write(xsr,xmlWriter);
+						mustMove = true;
+						stack.push(localName);
 					} else {
 						// Shouldn't happen
-						log.error("Unexpected " + o.getClass().getName());							
+						log.error("Unexpected " + o.getClass().getName());
 					}
 				} else /* not an sdt */ {
 					this.write(xsr,xmlWriter);

@@ -13,6 +13,9 @@ used twice in one paragraph; expanded repeats are tagged with a new od:RptOcc pa
 - OpenDoPEReverter: two occurrences of the same repeat whose expansions are immediately adjacent
 (eg copy-pasted repeat rows in a table) are no longer merged on revert (uses od:RptOcc); a repeat
 instance whose template control can't be found is now left alone instead of nulling content
+- BindingTraverserNonXSLT and BindingTraverserStAX now implement od:RptPosCon (previously only
+the default BindingTraverserXSLT did), and now bind run-level sdts whose content is runs directly;
+SdtStAXHandler handles sdts in hdr/ftr/footnote/endnote and no longer NPEs on unknown contexts
 
 PropertyResolver:
 - a style added to the styles part after the PropertyResolver was constructed is now found
