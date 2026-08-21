@@ -13,6 +13,9 @@ used twice in one paragraph; expanded repeats are tagged with a new od:RptOcc pa
 - a binding inside a repeat can now address a specific item of the repeated collection using a
 position function predicate at the repeat step, eg .../ranks[last()]/rank (discussion 691);
 a numeric predicate (eg [1]) still means the current instance
+- cloned xpath ids now include the repeat occurrence, so two occurrences of the same repeat
+control no longer overwrite each other's entries in the xpaths part (which mis-bound the
+earlier occurrence where the copies' bindings had been edited to differ)
 - OpenDoPEReverter: two occurrences of the same repeat whose expansions are immediately adjacent
 (eg copy-pasted repeat rows in a table) are no longer merged on revert (uses od:RptOcc); a repeat
 instance whose template control can't be found is now left alone instead of nulling content

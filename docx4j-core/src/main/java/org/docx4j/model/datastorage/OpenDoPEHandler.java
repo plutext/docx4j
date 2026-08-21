@@ -1555,10 +1555,18 @@ public class OpenDoPEHandler {
 
 //		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils
 //				.deepCopy(xpathObj);
-		
-		org.opendope.xpaths.Xpaths.Xpath newXPathObj = new org.opendope.xpaths.Xpaths.Xpath();		
-		
-		String newXPathId = xpathObj.getId() + "_" + index;
+
+		org.opendope.xpaths.Xpaths.Xpath newXPathObj = new org.opendope.xpaths.Xpaths.Xpath();
+
+		// The id includes the repeat occurrence (the od:RptOcc counter, stamped
+		// into the od:rptd tag by emptyRepeatTagValue): where the same repeat
+		// control is used twice (identical tags), the two occurrences would
+		// otherwise generate identical cloned ids, and the later occurrence's
+		// entries would overwrite the earlier one's in xpathsMap - which the
+		// binding traversers resolve from - so if the copies' bindings had been
+		// edited to differ, the earlier occurrence bound using the later one's
+		// xpaths.
+		String newXPathId = xpathObj.getId() + "_" + repeatOccurrenceNumber + "_" + index;
 		newXPathObj.setId(newXPathId);
 		
 		org.opendope.xpaths.Xpaths.Xpath.DataBinding dataBinding = new org.opendope.xpaths.Xpaths.Xpath.DataBinding();
