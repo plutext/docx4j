@@ -33,7 +33,7 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 |---|---------|------|---------|------|-------|
 | 1 | Plain `w:dataBinding` text bind | Y | Y | Y | phase 1 shipped 2026-08-22 |
 | 2 | `od:xpath` extended bind | Y | Y | Y | phase 1 shipped 2026-08-22 |
-| 3 | `w15:dataBinding` bind (Word 2013) | Y (bind.xslt:796) | P | P | `SdtPr.getDataBinding()` returns any `CTDataBinding` (w: or w15:), so the plain-bind fallback branch catches these — but with all the 3.1 degradations, and the w15 branch details (richText/docPartGallery exclusions, sdtPr cleanup) unverified |
+| 3 | `w15:dataBinding` bind (Word 2013) | Y (bind.xslt:796) | Y | Y | phase 2 verified 2026-08-22: `SdtPr.getDataBinding()` returns any `CTDataBinding` (w: or w15:), so the plain-bind branch handles these identically post-phase-1 |
 | 4 | Multiline (`w:text/@w:multiLine`) | Y | Y | Y | |
 | 5 | Hyperlink insertion in bound text | Y | Y | Y | third copy of the logic in each impl |
 | 6 | `w:rPr` from sdtPr applied to generated runs | Y | Y | Y | phase 1 shipped 2026-08-22 |
@@ -130,6 +130,12 @@ feature docx.
 2. **w15:dataBinding** (row 3): verify actual behavior with a Word-2013-bound sample
    (the fallback branch likely already binds the value once phase 1 lands); align the
    richText/docPartGallery exclusions and sdtPr handling with bind.xslt:796.
+   **SHIPPED 2026-08-22**: verified via a w15:dataBinding case in TextBindParityTest
+   (identical output across the three implementations).  Finding: no exclusion
+   alignment needed — bind.xslt's not(w:sdtPr/w:docPartGallery) tests a direct child
+   which never occurs (the gallery element lives inside w:docPartObj), so it is
+   vacuous there too; behavior was already consistent, and deliberately excluding
+   docPartObj sdts from text binding would be a behavior change out of scope here.
 3. **Date + checkbox** (rows 13-14): call `xpathDate` / `w14Checkbox` via new
    JAXB-friendly overloads.
 4. **Picture parity** (rows 10-12): blip-replacement mode when the template content has

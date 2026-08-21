@@ -98,6 +98,11 @@ public class TextBindParityTest {
 				allText.contains("Employer Name"));
 		assertFalse(implementation, allText.contains("TBLPLACEHOLDER"));
 
+		// w15:dataBinding (Word 2013) bound like a w:dataBinding
+		assertTrue(implementation + ": w15:dataBinding not bound",
+				allText.contains("W15: Doe"));
+		assertFalse(implementation, allText.contains("W15OLD"));
+
 		// sdtPr rPr applied: rank instance 2's bound run is bold
 		BoldRunFinder finder = new BoldRunFinder("2");
 		new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder);
