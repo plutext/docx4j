@@ -34,8 +34,10 @@ checkbox (w14:checkbox) content controls are now bound too (previously XSLT-path
 picture binding now preserves the authored drawing where it contains an a:blip (just the image
 rel is replaced), and od:Handler=picture (incl. width=) is supported; XHTML import
 (od:ContentType=application/xhtml+xml, via ImportXHTML or altChunk fallback) and Flat OPC
-injection (od:progid=Word.Document) are now supported too; see
-docs/developer/change-requests/CR-binding-traverser-parity.md
+injection (od:progid=Word.Document) are now supported too; sdtPr hygiene matches the XSLT
+pathway (hyperlink content strips w:dataBinding/w:text for Word 2007, restored placeholders get
+w:showingPlcHdr for RemovalHandler, w:placeholder stripped), and the XPath result cache is now
+used by all implementations; see docs/developer/change-requests/CR-binding-traverser-parity.md
 
 PropertyResolver:
 - a style added to the styles part after the PropertyResolver was constructed is now found

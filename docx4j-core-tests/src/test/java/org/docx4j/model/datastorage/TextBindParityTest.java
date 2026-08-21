@@ -117,6 +117,7 @@ public class TextBindParityTest {
 	private WordprocessingMLPackage process(String implementation) throws Exception {
 
 		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
+		BindingHandler.setHyperlinkStyle("Hyperlink");
 		try {
 			String inputfilepath = System.getProperty("user.dir")
 					+ "/src/test/resources/OpenDoPE/text-bind-parity.docx";
@@ -138,6 +139,39 @@ public class TextBindParityTest {
 
 		} finally {
 			Docx4jProperties.setProperty(IMPL_PROPERTY, "BindingTraverserXSLT");
+			BindingHandler.setHyperlinkStyle(null);
+		}
+	}
+
+	static class SdtPrInspector extends CallbackImpl {
+		String tagContains;
+		org.docx4j.wml.SdtPr found = null;
+		SdtPrInspector(String tagContains) { this.tagContains = tagContains; }
+		@Override
+		public List<Object> apply(Object o) {
+			if (o instanceof org.docx4j.wml.SdtElement) {
+				org.docx4j.wml.SdtPr sdtPr = ((org.docx4j.wml.SdtElement)o).getSdtPr();
+				if (sdtPr!=null && sdtPr.getTag()!=null
+						&& sdtPr.getTag().getVal().contains(tagContains)) {
+					found = sdtPr;
+				}
+			}
+			return null;
+		}
+		boolean has(Class<?> clazz) {
+			for (Object o : found.getRPrOrAliasOrLock()) {
+				if (clazz.isInstance(org.docx4j.XmlUtils.unwrap(o))) return true;
+			}
+			return false;
+		}
+		boolean hasElement(String localPart) {
+			for (Object o : found.getRPrOrAliasOrLock()) {
+				if (o instanceof jakarta.xml.bind.JAXBElement
+						&& ((jakarta.xml.bind.JAXBElement<?>)o).getName().getLocalPart().equals(localPart)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 
@@ -220,6 +254,33 @@ public class TextBindParityTest {
 		}
 		assertTrue(implementation + ": FlatOPC content missing", allChunks.contains("FLATOPCTEXT"));
 		assertTrue(implementation + ": XHTML content missing", allChunks.contains("XHTMLCONTENT"));
+
+		// sdtPr hygiene (phase 6)
+		// hyperlink in bound content: w:dataBinding and w:text stripped
+		assertTrue(implementation + ": hyperlink not created",
+				allText.contains("docx4java.org"));
+		assertFalse(implementation, allText.contains("LINKOLD"));
+		SdtPrInspector linkSdt = new SdtPrInspector("XLink");
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), linkSdt);
+		assertTrue(implementation, linkSdt.found!=null);
+		assertFalse(implementation + ": w:dataBinding not stripped (Word 2007 fix)",
+				linkSdt.has(org.docx4j.wml.CTDataBinding.class));
+		assertFalse(implementation + ": w:text not stripped (Word 2007 fix)",
+				linkSdt.has(org.docx4j.wml.CTSdtText.class));
+
+		// restored placeholder: w:showingPlcHdr added
+		SdtPrInspector emptySdt = new SdtPrInspector("XEmpty");
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), emptySdt);
+		assertTrue(implementation, emptySdt.found!=null);
+		assertTrue(implementation + ": w:showingPlcHdr not added",
+				emptySdt.hasElement("showingPlcHdr"));
+
+		// w:placeholder stripped from bound sdts
+		SdtPrInspector rankSdt = new SdtPrInspector("od:xpath=Ff9025b08");
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), rankSdt);
+		assertTrue(implementation, rankSdt.found!=null);
+		assertFalse(implementation + ": w:placeholder not stripped",
+				rankSdt.has(org.docx4j.wml.CTPlaceholder.class));
 
 		// sdtPr rPr applied: rank instance 2's bound run is bold
 		BoldRunFinder finder = new BoldRunFinder("2");

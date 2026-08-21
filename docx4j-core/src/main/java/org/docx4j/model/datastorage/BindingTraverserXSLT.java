@@ -116,11 +116,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 	}
 			
-	private DomToXPathMap domToXPathMap = null;
-	
-	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
-		this.domToXPathMap = domToXPathMap;
-	}
+	// domToXPathMap field and setter are inherited from BindingTraverserCommonImpl
+	// (pulled up in 17.0.4 so all implementations can use the cache)
 
 	/**
 	 * @param part

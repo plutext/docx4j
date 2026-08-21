@@ -107,7 +107,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		String prefixMappings = resolved.getPrefixMappings();
 
 		DocumentFragment frag = BindingTraverserXSLT.xpathGenerateRuns(
-				null /* no path cache here */,
+				domToXPathMap==null ? null : domToXPathMap.getPathMap(),
 				(WordprocessingMLPackage)pkg, sourcePart,
 				pkg.getCustomXmlDataStorageParts(),
 				storeItemId, xpath, prefixMappings,
@@ -116,7 +116,61 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 						bookmarkId==null ? new AtomicInteger() : bookmarkId));
 		if (frag==null) return null;
 
-		return fragmentToJaxb(frag);
+		List<Object> contents = fragmentToJaxb(frag);
+		if (contents!=null) {
+			postBindSdtPrHygiene(sdtPr, contents);
+		}
+		return contents;
+	}
+
+	/**
+	 * The sdtPr adjustments bind.xslt makes for a bound text sdt:
+	 * - where the content contains a w:hyperlink, strip w:dataBinding and
+	 *   w:text (Word 2007 can't open the docx otherwise);
+	 * - where the content is the restored placeholder, add w:showingPlcHdr
+	 *   (so RemovalHandler does the right thing for ALL_BUT_PLACEHOLDERS);
+	 * - strip w:placeholder.
+	 */
+	private static void postBindSdtPrHygiene(SdtPr sdtPr, List<Object> contents) {
+
+		boolean hasHyperlink = false;
+		boolean isPlaceholderContent = false;
+		for (Object o : contents) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof P.Hyperlink) hasHyperlink = true;
+			if (u instanceof org.docx4j.wml.R) {
+				org.docx4j.wml.R r = (org.docx4j.wml.R)u;
+				if (r.getRPr()!=null && r.getRPr().getRStyle()!=null
+						&& "PlaceholderText".equals(r.getRPr().getRStyle().getVal())) {
+					isPlaceholderContent = true;
+				}
+			}
+		}
+		if (hasHyperlink) {
+			removeFromSdtPr(sdtPr, CTDataBinding.class);
+			removeFromSdtPr(sdtPr, CTSdtText.class);
+		}
+		if (isPlaceholderContent) {
+			sdtPr.setShowingPlcHdr(true);
+		}
+		removeFromSdtPr(sdtPr, org.docx4j.wml.CTPlaceholder.class);
+	}
+
+	private static void removeFromSdtPr(SdtPr sdtPr, Class<?> clazz) {
+		java.util.Iterator<Object> it = sdtPr.getRPrOrAliasOrLock().iterator();
+		while (it.hasNext()) {
+			if (clazz.isInstance(XmlUtils.unwrap(it.next()))) it.remove();
+		}
+	}
+
+	/**
+	 * The XPath result cache built during preprocessing; see DomToXPathMap.
+	 * Set by BindingHandler (all implementations, since 17.0.4).
+	 */
+	protected DomToXPathMap domToXPathMap = null;
+
+	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
+		this.domToXPathMap = domToXPathMap;
 	}
 
 	/**

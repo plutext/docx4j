@@ -316,9 +316,13 @@ public class BindingHandler {
 				// Slower, fully featured. The default.
 				log.info("Using BindingTraverserXSLT, which is slower, but fully featured");
 				traverser = new BindingTraverserXSLT();
-				((BindingTraverserXSLT)traverser).setDomToXPathMap(this.domToXPathMap);
 			}
-			
+
+			if (traverser instanceof BindingTraverserCommonImpl) {
+				// since 17.0.4 all implementations can use the XPath result cache
+				((BindingTraverserCommonImpl)traverser).setDomToXPathMap(this.domToXPathMap);
+			}
+
 			traverser.setStartingIdForNewBookmarks(initBookmarkIdStart());
 			
 			if (traverser instanceof BindingTraverserStAX) {

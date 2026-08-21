@@ -1,6 +1,6 @@
 # CR: Binding traverser feature parity (BindingTraverserNonXSLT / BindingTraverserStAX vs BindingTraverserXSLT)
 
-Status: ACCEPTED (2026-08-22) — implementation in progress, following the phase sequencing below
+Status: DONE (2026-08-22) — all phases shipped; see the per-phase notes below
 Scope: `org.docx4j.model.datastorage` binding traversal (BindingHandler.applyBindings pathway)
 Related: #690, discussion #691, commits 7d2d8ba40 (RptPosCon in NonXSLT/StAX), c85beee97 (StAX preprocess recursion)
 
@@ -50,11 +50,11 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 17 | `od:RptPosCon` | Y | Y | Y | since 7d2d8ba40 |
 | 18 | `od:condition` / `od:rptd` pass-through incl. nested | Y | Y | Y | StAX preprocess recursion fixed in c85beee97 |
 | 19 | `w15:resultRepeatZero` pass-through | Y | Y | Y | non-XSLT default branch preserves |
-| 20 | sdtPr Word2007 hyperlink fix (strip `w:dataBinding`+`w:text`) | Y | P | P | non-XSLT strips on hyperlink in processString; XSLT also covers content-derived cases |
-| 21 | Add `w:showingPlcHdr` when content is PlaceholderText-styled | Y (bind.xslt:1133) | N | N | RemovalHandler ALL_BUT_PLACEHOLDERS depends on this |
-| 22 | Strip `w:placeholder` from output sdtPr | Y (bind.xslt:1179) | N | N | cosmetic |
+| 20 | sdtPr Word2007 hyperlink fix (strip `w:dataBinding`+`w:text`) | Y | Y | Y | phase 6 shipped 2026-08-22 (phase 1 had briefly regressed this by deleting the old inline strip; now restored centrally) |
+| 21 | Add `w:showingPlcHdr` when content is PlaceholderText-styled | Y (bind.xslt:1133) | Y | Y | phase 6 shipped 2026-08-22 |
+| 22 | Strip `w:placeholder` from output sdtPr | Y (bind.xslt:1179) | Y | Y | phase 6 shipped 2026-08-22 (for bound text sdts, matching the XSLT) |
 | 23 | Text-bind shapes: rebuild `w:tbl` / `w:tr` sdt content | Y | Y | Y | phase 1 shipped 2026-08-22 |
-| 24 | XPath result cache (`DomToXPathMap` via BindingTraverserState) | Y | N | N | perf only; BindingHandler only wires it to the XSLT traverser |
+| 24 | XPath result cache (`DomToXPathMap` via BindingTraverserState) | Y | Y | Y | phase 7 shipped 2026-08-22: setDomToXPathMap pulled up to BindingTraverserCommonImpl, BindingHandler wires all implementations, StAX propagates to its delegates |
 | 25 | Structural context tracking (BindingTraverserState enteredTc/Tbl) | Y | n/a | n/a | supports the shape decisions in #23 |
 
 Recently closed gaps, for the record: od:RptPosCon (7d2d8ba40); run-level direct-run
@@ -167,8 +167,18 @@ feature docx.
    the ImportXHTML path itself is not exercisable from docx4j-core-tests.
 6. **Output hygiene** (rows 20-22): showingPlcHdr first (functional), then the cosmetic
    bits, or explicitly document them as intentional differences.
+   **SHIPPED 2026-08-22**: postBindSdtPrHygiene in BindingTraverserCommonImpl, applied
+   from generateBoundContent (text binds only, matching where bind.xslt applies its
+   sdtPr transforms): hyperlink content strips w:dataBinding/w:text, placeholder
+   content adds w:showingPlcHdr, w:placeholder is stripped.  Note: phase 1 had
+   briefly regressed the hyperlink strip (the deleted inline processString used to do
+   it); restored here.
 7. **Optional, perf**: wire `DomToXPathMap` into the shared text-bind path (BindingHandler
    already builds it; only the XSLT traverser consumes it today).
+   **SHIPPED 2026-08-22**: field/setter pulled up from BindingTraverserXSLT to
+   BindingTraverserCommonImpl; BindingHandler wires whichever implementation is
+   selected; BindingTraverserStAX propagates it to its NonXSLT delegates;
+   generateBoundContent and the XHTML state use it.
 
 ### Out of scope
 
