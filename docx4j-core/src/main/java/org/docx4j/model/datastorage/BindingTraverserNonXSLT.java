@@ -63,7 +63,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
- * TODO add HTML import, FlatOPC support
+ * Feature parity with the XSLT pathway per
+ * docs/developer/change-requests/CR-binding-traverser-parity.md
  * @author jharrop
  */
 public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
@@ -73,7 +74,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 	JaxbXmlPart part;
 	org.docx4j.openpackaging.packages.OpcPackage pkg;
 	//XPathsPart xPathsPart;
-	Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap; // not currently used; will be when this is fixed to handle XHTML, images, RepeatPositionCondition, FlatOPC
+	Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap;
 	
 	/**
 	 * Entry point.  Traverse a clone of the part.
