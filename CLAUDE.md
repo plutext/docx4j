@@ -27,7 +27,7 @@ Notes:
 
 ## Branch conventions
 
-Each release lives on its own `VERSION_x_y_z` branch (e.g. `VERSION_17_0_1` is current 17.0.1-SNAPSHOT development). `master` is old; pick the branch matching the version you're working on. Update `CHANGELOG.md` for user-visible changes.
+Each release lives on its own `VERSION_x_y_z` branch (e.g. `VERSION_17_0_1` is current 17.0.1-SNAPSHOT development). `master` is old; pick the branch matching the version you're working on. Update `CHANGELOG.md` for user-visible changes. Documented change requests (CRs) for non-trivial work live in `docs/developer/change-requests/` (see its README); update the relevant CR as phases land.
 
 ## Module map
 
