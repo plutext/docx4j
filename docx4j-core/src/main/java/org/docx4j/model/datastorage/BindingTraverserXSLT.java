@@ -1844,38 +1844,66 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		} catch (JAXBException e) {
 			log.error(e.getMessage(), e);
 		}
-		RPr rPr = null;
-		for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-			o = XmlUtils.unwrap(o); 
-			if (o instanceof RPr) {					
-				rPr = (RPr)o;
-				break;
-			}
-		}
 
-		String storeItemId = sdtPr.getDataBinding().getStoreItemID();
-		String xpath = sdtPr.getDataBinding().getXpath();
-		String prefixMappings = sdtPr.getDataBinding().getPrefixMappings();		
-		
-		CustomXmlPart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());		
-		
-		if (part==null) {
-			log.error("Couldn't locate part by storeItemId " + storeItemId);
+		try {
+			org.docx4j.wml.R run = xpathDateRun(customXmlDataStorageParts, sdtPr);
+			if (run==null) return nullResultParagraph(sdtParent, "[missing!]");
+
+			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
+			if (sdtParent.equals("p")) {
+				// Stuff it in a run
+				docContainer = XmlUtils.marshaltoW3CDomDocument(run);
+			} else {
+				// Stuff it in a p
+				org.docx4j.wml.P  p   = Context.getWmlObjectFactory().createP();
+				p.getContent().add(run);
+				docContainer = XmlUtils.marshaltoW3CDomDocument(p);
+			}
+
+			DocumentFragment docfrag = docContainer.createDocumentFragment();
+			docfrag.appendChild(docContainer.getDocumentElement());
+
+			return docfrag;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return null;
 		}
-		
+
+	}
+
+	/**
+	 * The formatted run for a date content control, per its w:date settings
+	 * (rPr from the sdtPr applied; an unparseable value formats the current
+	 * date in red, as Word does).  Null where the data part or value is
+	 * missing, or there are no usable w:date settings.
+	 *
+	 * @since 17.0.4
+	 */
+	public static org.docx4j.wml.R xpathDateRun(
+			Map<String, CustomXmlPart> customXmlDataStorageParts, SdtPr sdtPr) {
+
+		RPr rPr = (RPr)sdtPr.getByClass(RPr.class);
+		CTSdtDate sdtDate = (CTSdtDate)sdtPr.getByClass(CTSdtDate.class);
+		CTDataBinding dataBinding = sdtPr.getDataBinding();
+
+		if (sdtDate==null || sdtDate.getDateFormat()==null
+				|| sdtDate.getDateFormat().getVal()==null) {
+			log.warn("No usable w:date/w:dateFormat");
+			return null;
+		}
+
+		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
+			return null;
+		}
+
 		try {
-			String r= part.xpathGetString(xpath, prefixMappings);				
-			log.debug(xpath + " yielded result " + r);
-			if (r==null) return nullResultParagraph(sdtParent, "[missing!]");
-			
-			CTSdtDate sdtDate = null;
-			Node dateNode = dateNodeIt.nextNode();
-			if (dateNode!=null) {
-				//sdtDate = (CTSdtDate)XmlUtils.unmarshal(dateNode);
-				sdtDate = (CTSdtDate)XmlUtils.unmarshal(dateNode, Context.jc, CTSdtDate.class);
-			}
-			
+			String r = part.xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
+			log.debug(dataBinding.getXpath() + " yielded result " + r);
+			if (r==null) return null;
+
 			/*
 		        <w:date w:fullDate="2012-08-19T00:00:00Z">
 		          <w:dateFormat w:val="d/MM/yyyy"/>
@@ -1883,34 +1911,32 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		          <w:storeMappedDataAs w:val="dateTime"/>
 		          <w:calendar w:val="gregorian"/>
 		        </w:date>
-		        
+
 		        Assume our String r contains something like "2012-08-19T00:00:00Z"
-		        
+
 		        We need to convert it to the given dateFormat string.
-		        
 			 */
 			// Drop the Z
 			if (r.indexOf("Z")>0) {
 				r = r.substring(0, r.indexOf("Z")-1);
 				log.warn("date now " + r);
 			}
-			
+
 			DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-			
+
 			String format = sdtDate.getDateFormat().getVal();
 			log.debug("Using format: " + format);
-			
+
 			// C# dddd (eg "Monday') needs translation
 			// to "EEEE"
 			if (format.contains("dddd")) {
 				format = format.replace("dddd", "EEEE");
 			}
-			
+
 			Format formatter = new SimpleDateFormat(format);
 			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
-			
+
 			Date date;
-//			RPr rPr = null;
 			boolean parseException = false;
 			try {
 				date = (Date)dateTimeFormat.parse(r);
@@ -1925,14 +1951,14 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 					parseException = true;
 					if (rPr==null) {
-						rPr = factory.createRPr();						
+						rPr = factory.createRPr();
 					}
 				}
 			}
 
 			String result = formatter.format(date);
-			
-			org.docx4j.wml.R  run = factory.createR();	
+
+			org.docx4j.wml.R  run = factory.createR();
 			if (rPr!=null) {
 				run.setRPr(rPr);
 			}
@@ -1940,33 +1966,18 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				// <w:color w:val="FF0000"/>
 				Color colorRed = factory.createColor();
 				colorRed.setVal("FF0000");
-				rPr.setColor(colorRed);				
+				rPr.setColor(colorRed);
 			}
 			org.docx4j.wml.Text text = factory.createText();
 			text.setValue(result);
 			run.getContent().add(text);
-				
-			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
-			if (sdtParent.equals("p")) {
-				// Stuff it in a run
-				docContainer = XmlUtils.marshaltoW3CDomDocument(run);						
-			} else {
-				// Stuff it in a p
-				org.docx4j.wml.P  p   = factory.createP();
-				p.getContent().add(run);
-				docContainer = XmlUtils.marshaltoW3CDomDocument(p);						
-			}
-			
-			DocumentFragment docfrag = docContainer.createDocumentFragment();
-			docfrag.appendChild(docContainer.getDocumentElement());
-		
-			return docfrag;
-			
+
+			return run;
+
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return null;
 		}
-		
 	}
 	
 	/**
@@ -2116,53 +2127,13 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 			Boolean checkBoxResult = getCheckboxResult(dataBinding, part);
 			if (checkBoxResult==null) return nullResultParagraph(sdtParent, "[missing!]");
-			
+
 			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
-			org.docx4j.wml.Text text = factory.createText();
-			
-			// TODO: use the symbols specified for checked and uncheckedState
-			if (checkBoxResult.booleanValue()) {
-				
-		        // <w14:checkedState w14:val="2612" w14:font="MS Gothic"/>
-				text.setValue("☒");
-				
-			} else { // Word treats everything else as false
 
-		        // <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
-				text.setValue("☐");
-			}
-			
-			/*
-		        <w:p>
-		          <w:r>
-		            <w:rPr>
-		              <w:rFonts w:ascii="MS Gothic" w:eastAsia="MS Gothic" w:hAnsi="MS Gothic" w:hint="eastAsia"/>
-		            </w:rPr>
-		            <w:t>☐</w:t>
-		          </w:r>
-		        </w:p>
-			 */
 			org.docx4j.wml.P  p   = factory.createP();
-			
-			org.docx4j.wml.R  run = factory.createR();					
-			RPr rpr = factory.createRPr(); 
-		    run.setRPr(rpr);
 
-		    RFonts rfonts = factory.createRFonts(); 
-		    rpr.setRFonts(rfonts); 
-		        rfonts.setEastAsia( "MS Gothic"); 
-		        rfonts.setHint(org.docx4j.wml.STHint.EAST_ASIA);
-		        rfonts.setHAnsi( "MS Gothic"); 
-		        rfonts.setAscii( "MS Gothic");	
-		    
-		    if (sdtRPr!=null) {
-		    	// Preserve checkbox font size
-		    	 if (sdtRPr.getSz()!=null) rpr.setSz(sdtRPr.getSz());
-		    	 if (sdtRPr.getSzCs()!=null) rpr.setSzCs(sdtRPr.getSzCs());
-		    }
-		    
-		    run.getContent().add(text);
-			
+			org.docx4j.wml.R  run = checkboxRun(checkBoxResult.booleanValue(), sdtRPr);
+
 			org.docx4j.wml.Tc tc  = factory.createTc();
 			if (sdtParent.equals("tr")) {
 				tc.getContent().add(p);
@@ -2221,6 +2192,78 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.error(e.getMessage(), e);
 			return null;
 		} 			
+	}
+
+	/**
+	 * The glyph run for a checkbox content control, in the usual MS Gothic,
+	 * preserving font size from the sdtPr's rPr (if any).
+	 *
+	 * @since 17.0.4
+	 */
+	public static org.docx4j.wml.R checkboxRun(boolean checked, RPr sdtRPr) {
+
+		org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
+		org.docx4j.wml.Text text = factory.createText();
+
+		// TODO: use the symbols specified for checked and uncheckedState
+		if (checked) {
+	        // <w14:checkedState w14:val="2612" w14:font="MS Gothic"/>
+			text.setValue("☒");
+		} else { // Word treats everything else as false
+	        // <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+			text.setValue("☐");
+		}
+
+		/*
+	        <w:r>
+	          <w:rPr>
+	            <w:rFonts w:ascii="MS Gothic" w:eastAsia="MS Gothic" w:hAnsi="MS Gothic" w:hint="eastAsia"/>
+	          </w:rPr>
+	          <w:t>☐</w:t>
+	        </w:r>
+		 */
+		org.docx4j.wml.R  run = factory.createR();
+		RPr rpr = factory.createRPr();
+	    run.setRPr(rpr);
+
+	    RFonts rfonts = factory.createRFonts();
+	    rpr.setRFonts(rfonts);
+	        rfonts.setEastAsia( "MS Gothic");
+	        rfonts.setHint(org.docx4j.wml.STHint.EAST_ASIA);
+	        rfonts.setHAnsi( "MS Gothic");
+	        rfonts.setAscii( "MS Gothic");
+
+	    if (sdtRPr!=null) {
+	    	// Preserve checkbox font size
+	    	 if (sdtRPr.getSz()!=null) rpr.setSz(sdtRPr.getSz());
+	    	 if (sdtRPr.getSzCs()!=null) rpr.setSzCs(sdtRPr.getSzCs());
+	    }
+
+	    run.getContent().add(text);
+	    return run;
+	}
+
+	/**
+	 * The bound checkbox value ("true"/"1" is checked, anything else unchecked),
+	 * or null where the data part or value is missing.
+	 *
+	 * @since 17.0.4
+	 */
+	public static Boolean getCheckboxResult(
+			Map<String, CustomXmlPart> customXmlDataStorageParts, SdtPr sdtPr) {
+
+		CTDataBinding dataBinding = sdtPr.getDataBinding();
+		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
+			return null;
+		}
+		try {
+			return getCheckboxResult(dataBinding, part);
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
 	}
 
 	private static Boolean getCheckboxResult(CTDataBinding dataBinding, CustomXmlPart part)

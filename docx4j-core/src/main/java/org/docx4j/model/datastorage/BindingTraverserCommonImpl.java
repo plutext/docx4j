@@ -234,6 +234,62 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 	}
 
 	/**
+	 * Bind a w14:checkbox content control: set w14:checked per the bound value,
+	 * and replace the content with the appropriate glyph run, as bind.xslt does.
+	 * @since 17.0.4
+	 */
+	protected void applyCheckboxBinding(SdtElement sdt,
+			org.docx4j.openpackaging.packages.OpcPackage pkg) {
+
+		SdtPr sdtPr = sdt.getSdtPr();
+		Boolean result = BindingTraverserXSLT.getCheckboxResult(
+				pkg.getCustomXmlDataStorageParts(), sdtPr);
+
+		List<Object> contents = new ArrayList<Object>(1);
+		if (result==null) {
+			contents.add(missingRun());
+		} else {
+			org.docx4j.w14.CTSdtCheckbox checkbox
+					= (org.docx4j.w14.CTSdtCheckbox)sdtPr.getByClass(org.docx4j.w14.CTSdtCheckbox.class);
+			if (checkbox.getChecked()==null) {
+				checkbox.setChecked(new org.docx4j.w14.CTOnOff());
+			}
+			checkbox.getChecked().setVal(result.booleanValue() ? "1" : "0");
+
+			contents.add(BindingTraverserXSLT.checkboxRun(result.booleanValue(),
+					(org.docx4j.wml.RPr)sdtPr.getByClass(org.docx4j.wml.RPr.class)));
+		}
+		applyBoundContent(sdt, contents);
+	}
+
+	/**
+	 * Bind a w:date content control: replace the content with the value
+	 * formatted per the w:date settings, as bind.xslt does.
+	 * @since 17.0.4
+	 */
+	protected void applyDateBinding(SdtElement sdt,
+			org.docx4j.openpackaging.packages.OpcPackage pkg) {
+
+		org.docx4j.wml.R run = BindingTraverserXSLT.xpathDateRun(
+				pkg.getCustomXmlDataStorageParts(), sdt.getSdtPr());
+
+		List<Object> contents = new ArrayList<Object>(1);
+		contents.add(run==null ? missingRun() : run);
+		applyBoundContent(sdt, contents);
+	}
+
+	/**
+	 * Equivalent of BindingTraverserXSLT.nullResultParagraph's marker content.
+	 */
+	private static org.docx4j.wml.R missingRun() {
+		org.docx4j.wml.R run = Context.getWmlObjectFactory().createR();
+		org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
+		text.setValue("[missing!]");
+		run.getContent().add(text);
+		return run;
+	}
+
+	/**
 	 * Evaluate an od:RptPosCon condition (eg "position()&lt;last()-1") for the repeat
 	 * instance at 1-based position pos, in a repeat with size instances.
 	 *

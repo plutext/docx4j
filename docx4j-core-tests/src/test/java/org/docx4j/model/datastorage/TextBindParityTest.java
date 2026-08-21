@@ -54,6 +54,24 @@ public class TextBindParityTest {
 		}
 	}
 
+	static class CheckboxCheckedFinder extends CallbackImpl {
+		String checkedVal = null;
+		@Override
+		public List<Object> apply(Object o) {
+			if (o instanceof org.docx4j.wml.SdtRun || o instanceof org.docx4j.wml.SdtBlock) {
+				org.docx4j.wml.SdtPr sdtPr = ((org.docx4j.wml.SdtElement)o).getSdtPr();
+				if (sdtPr!=null) {
+					org.docx4j.w14.CTSdtCheckbox cb = (org.docx4j.w14.CTSdtCheckbox)
+							sdtPr.getByClass(org.docx4j.w14.CTSdtCheckbox.class);
+					if (cb!=null && cb.getChecked()!=null) {
+						checkedVal = cb.getChecked().getVal();
+					}
+				}
+			}
+			return null;
+		}
+	}
+
 	private WordprocessingMLPackage process(String implementation) throws Exception {
 
 		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
@@ -102,6 +120,19 @@ public class TextBindParityTest {
 		assertTrue(implementation + ": w15:dataBinding not bound",
 				allText.contains("W15: Doe"));
 		assertFalse(implementation, allText.contains("W15OLD"));
+
+		// date cc formatted per w:date settings (phase 3)
+		assertTrue(implementation + ": date cc not bound",
+				allText.contains("Date: 19/08/2026"));
+		assertFalse(implementation, allText.contains("DATEOLD"));
+
+		// checkbox cc glyph + w14:checked updated (phase 3)
+		assertTrue(implementation + ": checkbox cc not bound",
+				allText.contains("Check: ☒"));
+		assertFalse(implementation, allText.contains("CHKOLD"));
+		CheckboxCheckedFinder checkedFinder = new CheckboxCheckedFinder();
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), checkedFinder);
+		assertEquals(implementation + ": w14:checked not updated", "1", checkedFinder.checkedVal);
 
 		// sdtPr rPr applied: rank instance 2's bound run is bold
 		BoldRunFinder finder = new BoldRunFinder("2");

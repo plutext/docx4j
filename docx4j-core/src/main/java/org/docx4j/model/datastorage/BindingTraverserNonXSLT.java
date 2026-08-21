@@ -351,7 +351,17 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 				// TODO v3 XSLT approach
 				// .. if the sdt contains a template picture,
 				// find its a:blip, and just replace that.
-				
+
+			} else if (sdtPr.getDataBinding()!=null
+					&& sdtPr.getByClass(org.docx4j.w14.CTSdtCheckbox.class)!=null) {
+				// w14:checkbox cc; see CR-binding-traverser-parity phase 3
+				applyCheckboxBinding(sdt, pkg);
+
+			} else if (sdtPr.getDataBinding()!=null
+					&& sdtPr.getByClass(org.docx4j.wml.CTSdtDate.class)!=null) {
+				// w:date cc
+				applyDateBinding(sdt, pkg);
+
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_CONTENTTYPE)
 						&& map.get(OpenDoPEHandler.BINDING_CONTENTTYPE).equals("application/xhtml+xml")) {
 					// Convert XHTML.

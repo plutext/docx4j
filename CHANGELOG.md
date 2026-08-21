@@ -29,7 +29,8 @@ and its element context stack is now per-instance (was static, so shared across 
 - BindingTraverserNonXSLT/StAX text binding now routes through ValueInserterPlainText like the
 XSLT pathway: the sdtPr's w:rPr is applied to generated runs (was lost), an empty result restores
 the placeholder, a custom inserter set via BindingHandler.setValueInserterPlainText is honoured,
-and tbl/tr-shaped bound sdts are rebuilt (were silently left unbound); see
+and tbl/tr-shaped bound sdts are rebuilt (were silently left unbound); date (w:date) and
+checkbox (w14:checkbox) content controls are now bound too (previously XSLT-pathway only); see
 docs/developer/change-requests/CR-binding-traverser-parity.md
 
 PropertyResolver:

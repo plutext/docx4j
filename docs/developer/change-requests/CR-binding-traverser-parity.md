@@ -43,8 +43,8 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 10 | Picture bind (`w:picture` + `w:dataBinding`), template contains `a:blip` | Y — replaces just `r:embed`, preserving the authored drawing (mode picture3) | P | P | non-XSLT always rebuilds the whole drawing (ExtentFinder size only); alt text, wrapping, effects lost |
 | 11 | `od:Handler=picture` (rich text cc containing w:drawing) | Y (bind.xslt:177) | N | N | 3.0.1 feature |
 | 12 | `od:Handler=picture` + `width=n\|auto` | Y (bind.xslt:150) | N | N | 11.1.8 feature |
-| 13 | Date cc (`w:date` + `w:dataBinding`), formatted per dateFormat/lang | Y (xpathDate) | N | N | |
-| 14 | Checkbox cc (`w14:checkbox` + `w:dataBinding`) | Y (w14Checkbox, w14CheckboxAttr) | N | N | sets checked state and glyph run |
+| 13 | Date cc (`w:date` + `w:dataBinding`), formatted per dateFormat/lang | Y (xpathDate) | Y | Y | phase 3 shipped 2026-08-22 |
+| 14 | Checkbox cc (`w14:checkbox` + `w:dataBinding`) | Y (w14Checkbox, w14CheckboxAttr) | Y | Y | phase 3 shipped 2026-08-22 |
 | 15 | XHTML import (`od:ContentType=application/xhtml+xml`), ImportXHTML or altChunk fallback | Y (convertXHTML / convertXHTMLtoAltChunk) | N (TODO log) | N (TODO log) | includes bookmark renumbering via BookmarkCounter |
 | 16 | FlatOPC injection (`od:progid=Word.Document`) | Y (convertFlatOPC) | N | N | |
 | 17 | `od:RptPosCon` | Y | Y | Y | since 7d2d8ba40 |
@@ -138,6 +138,12 @@ feature docx.
    docPartObj sdts from text binding would be a behavior change out of scope here.
 3. **Date + checkbox** (rows 13-14): call `xpathDate` / `w14Checkbox` via new
    JAXB-friendly overloads.
+   **SHIPPED 2026-08-22**: the run-building cores extracted as
+   `BindingTraverserXSLT.xpathDateRun` / `checkboxRun` / `getCheckboxResult(Map, SdtPr)`
+   (the DOM methods delegate to them); shared `applyDateBinding`/`applyCheckboxBinding`
+   in BindingTraverserCommonImpl dispatch from both traversers, and also set
+   w14:checked per the bound value (as the XSLT's w14:checked template does).
+   TextBindParityTest extended (formatted date, checkbox glyph, w14:checked val).
 4. **Picture parity** (rows 10-12): blip-replacement mode when the template content has
    an `a:blip` (reuse `xpathInjectImageRelId`), then the `od:Handler=picture` variants.
 5. **XHTML + FlatOPC** (rows 15-16): reuse `convertXHTML`/`convertXHTMLtoAltChunk`/
