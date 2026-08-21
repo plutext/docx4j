@@ -103,6 +103,17 @@ public class TextBindParityTest {
 		}
 	}
 
+	static class AltChunkFinder extends CallbackImpl {
+		List<String> ids = new java.util.ArrayList<String>();
+		@Override
+		public List<Object> apply(Object o) {
+			if (o instanceof org.docx4j.wml.CTAltChunk) {
+				ids.add(((org.docx4j.wml.CTAltChunk)o).getId());
+			}
+			return null;
+		}
+	}
+
 	private WordprocessingMLPackage process(String implementation) throws Exception {
 
 		Docx4jProperties.setProperty(IMPL_PROPERTY, implementation);
@@ -119,6 +130,9 @@ public class TextBindParityTest {
 			BindingHandler bh = new BindingHandler(wordMLPackage);
 			bh.setStartingIdForNewBookmarks(odh.getNextBookmarkId());
 			bh.applyBindings(wordMLPackage.getMainDocumentPart());
+
+			// smoke-test that the result still marshals/saves
+			wordMLPackage.save(new java.io.ByteArrayOutputStream());
 
 			return wordMLPackage;
 
@@ -186,6 +200,26 @@ public class TextBindParityTest {
 				drawingFinder.drawings.containsKey("KEEPME3"));
 		assertTrue(implementation + ": width= variant image missing",
 				drawingFinder.drawings.containsKey("(none)"));
+
+		// FlatOPC + XHTML injected as altChunks (phase 5; XHTML falls back to
+		// altChunk here since docx4j-ImportXHTML is not on the test classpath)
+		assertFalse(implementation, allText.contains("FLATOLD"));
+		assertFalse(implementation, allText.contains("XHTMLOLD"));
+		AltChunkFinder altChunkFinder = new AltChunkFinder();
+		new TraversalUtil(pkg.getMainDocumentPart().getContent(), altChunkFinder);
+		assertEquals(implementation + ": expected 2 altChunks", 2, altChunkFinder.ids.size());
+		String allChunks = "";
+		for (String id : altChunkFinder.ids) {
+			org.docx4j.openpackaging.parts.Part chunk = pkg.getMainDocumentPart()
+					.getRelationshipsPart().getPart(
+							pkg.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(id));
+			assertTrue(implementation + ": altChunk rel " + id + " doesn't resolve",
+					chunk instanceof org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart);
+			allChunks += new String(
+					((org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart)chunk).getBytes());
+		}
+		assertTrue(implementation + ": FlatOPC content missing", allChunks.contains("FLATOPCTEXT"));
+		assertTrue(implementation + ": XHTML content missing", allChunks.contains("XHTMLCONTENT"));
 
 		// sdtPr rPr applied: rank instance 2's bound run is bold
 		BoldRunFinder finder = new BoldRunFinder("2");

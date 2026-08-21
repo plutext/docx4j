@@ -373,8 +373,13 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_CONTENTTYPE)
 						&& map.get(OpenDoPEHandler.BINDING_CONTENTTYPE).equals("application/xhtml+xml")) {
-					// Convert XHTML.
-				log.error("TODO: add HTML import support");
+				// Convert XHTML (via ImportXHTML if available, else altChunk);
+				// see CR-binding-traverser-parity phase 5
+				applyXHTMLBinding(sdt, pkg, part, xpathsMap);
+
+			} else if (map!=null && "Word.Document".equals(map.get(OpenDoPEHandler.BINDING_PROGID))) {
+				// Flat OPC injection as altChunk
+				applyFlatOPCBinding(sdt, pkg, part, xpathsMap);
 				
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_ROLE_CONDITIONAL) ) {
 				// Do nothing

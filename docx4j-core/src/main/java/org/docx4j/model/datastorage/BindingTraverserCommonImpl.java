@@ -116,6 +116,15 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 						bookmarkId==null ? new AtomicInteger() : bookmarkId));
 		if (frag==null) return null;
 
+		return fragmentToJaxb(frag);
+	}
+
+	/**
+	 * Bridge a DocumentFragment produced by one of the BindingTraverserXSLT
+	 * extension functions into JAXB content objects; null on failure.
+	 */
+	private static List<Object> fragmentToJaxb(DocumentFragment frag) {
+
 		List<Object> contents = new ArrayList<Object>();
 		for (org.w3c.dom.Node n = frag.getFirstChild(); n!=null; n = n.getNextSibling()) {
 			if (n.getNodeType()!=org.w3c.dom.Node.ELEMENT_NODE) continue;
@@ -304,9 +313,150 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 		if ("tbl".equals(localName)) return Tbl.class;
 		if ("tr".equals(localName)) return Tr.class;
 		if ("tc".equals(localName)) return Tc.class;
+		if ("altChunk".equals(localName)) return org.docx4j.wml.CTAltChunk.class;
 		if ("bookmarkStart".equals(localName)) return org.docx4j.wml.CTBookmark.class;
 		if ("bookmarkEnd".equals(localName)) return org.docx4j.wml.CTMarkupRange.class;
 		return null;
+	}
+
+	// per-traversal state for the XHTML import extension functions
+	private final Map<String, Integer> sequenceCounters = new HashMap<String, Integer>();
+	private final BindingTraverserState xhtmlTraverserState = new BindingTraverserState();
+
+	/**
+	 * Handle an od:ContentType=application/xhtml+xml sdt: convert the bound
+	 * XHTML via docx4j-ImportXHTML where available, else inject it as an
+	 * altChunk - exactly as bind.xslt does.
+	 * @since 17.0.4
+	 */
+	protected void applyXHTMLBinding(SdtElement sdt,
+			org.docx4j.openpackaging.packages.OpcPackage pkg,
+			JaxbXmlPart sourcePart,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+
+		try {
+			org.w3c.dom.Document sdtPrDoc = XmlUtils.marshaltoW3CDomDocument(sdt.getSdtPr());
+			String[] hints = shapeHints(sdt);
+
+			BindingTraverserXSLT.BookmarkCounter counter = new BindingTraverserXSLT.BookmarkCounter(
+					bookmarkId==null ? new AtomicInteger() : bookmarkId);
+
+			DocumentFragment frag;
+			if (BindingTraverserXSLT.importXHTMLMissing()) {
+				frag = BindingTraverserXSLT.convertXHTMLtoAltChunk(xhtmlTraverserState,
+						(WordprocessingMLPackage)pkg, sourcePart,
+						pkg.getCustomXmlDataStorageParts(), xpathsMap,
+						singleNodeIterator(sdtPrDoc.getDocumentElement()),
+						hints[0], hints[1], sequenceCounters, counter);
+			} else {
+				frag = BindingTraverserXSLT.convertXHTML(xhtmlTraverserState,
+						(WordprocessingMLPackage)pkg, sourcePart,
+						pkg.getCustomXmlDataStorageParts(), xpathsMap,
+						singleNodeIterator(sdtPrDoc.getDocumentElement()),
+						hints[0], hints[1], sequenceCounters, counter);
+			}
+			if (frag==null) return; // leave as is
+
+			List<Object> contents = fragmentToJaxb(frag);
+			if (contents!=null) applyImportedContent(sdt, contents);
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Handle an od:progid=Word.Document sdt: inject the bound Flat OPC XML as
+	 * an altChunk, as bind.xslt does.
+	 * @since 17.0.4
+	 */
+	protected void applyFlatOPCBinding(SdtElement sdt,
+			org.docx4j.openpackaging.packages.OpcPackage pkg,
+			JaxbXmlPart sourcePart,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+
+		if (sdt.getSdtPr().getTag()==null) return;
+		String[] hints = shapeHints(sdt);
+
+		DocumentFragment frag = BindingTraverserXSLT.convertFlatOPC(
+				(WordprocessingMLPackage)pkg, sourcePart,
+				pkg.getCustomXmlDataStorageParts(), xpathsMap,
+				hints[0], hints[1],
+				null, // rPrNodeIt: unused by convertFlatOPC
+				sdt.getSdtPr().getTag().getVal());
+		if (frag==null) return; // leave as is
+
+		List<Object> contents = fragmentToJaxb(frag);
+		if (contents!=null) applyImportedContent(sdt, contents);
+	}
+
+	/**
+	 * Place imported content (which unlike a text bind may be block level -
+	 * w:p, w:tbl, w:altChunk) into the sdt: block content replaces the
+	 * sdtContent (within the tc, where the template content is a table cell);
+	 * run-level content is shaped as for a text bind.
+	 */
+	private void applyImportedContent(SdtElement sdt, List<Object> contents) {
+
+		boolean blockLevel = false;
+		for (Object o : contents) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof P || u instanceof Tbl
+					|| u instanceof org.docx4j.wml.CTAltChunk) {
+				blockLevel = true;
+				break;
+			}
+		}
+		if (!blockLevel) {
+			applyBoundContent(sdt, contents);
+			return;
+		}
+
+		List<Object> sdtContent = sdt.getSdtContent().getContent();
+		Object first = sdtContent.isEmpty() ? null : XmlUtils.unwrap(sdtContent.get(0));
+		if (first instanceof Tc) {
+			Tc tc = (Tc)first;
+			tc.getContent().clear();
+			tc.getContent().addAll(contents);
+		} else {
+			sdtContent.clear();
+			sdtContent.addAll(contents);
+		}
+	}
+
+	/**
+	 * Approximate the $parent/$child strings bind.xslt computes from the sdt's
+	 * ancestors/descendants, from the template content's shape.
+	 */
+	private static String[] shapeHints(SdtElement sdt) {
+		List<Object> content = sdt.getSdtContent().getContent();
+		Object first = content.isEmpty() ? null : XmlUtils.unwrap(content.get(0));
+		if (first instanceof P) return new String[]{"body", "p"};
+		if (first instanceof Tc) return new String[]{"tr", "tc"};
+		if (first instanceof Tr) return new String[]{"tbl", "tr"};
+		if (first instanceof Tbl) return new String[]{"body", "tbl"};
+		return new String[]{"p", "r"};
+	}
+
+	/**
+	 * A NodeIterator serving the one node, as the XSLT extension function
+	 * signatures expect.
+	 */
+	private static org.w3c.dom.traversal.NodeIterator singleNodeIterator(final org.w3c.dom.Node node) {
+		return new org.w3c.dom.traversal.NodeIterator() {
+			private boolean served = false;
+			@Override public org.w3c.dom.Node nextNode() {
+				if (served) return null;
+				served = true;
+				return node;
+			}
+			@Override public org.w3c.dom.Node previousNode() { return null; }
+			@Override public void detach() {}
+			@Override public org.w3c.dom.Node getRoot() { return node; }
+			@Override public int getWhatToShow() { return org.w3c.dom.traversal.NodeFilter.SHOW_ALL; }
+			@Override public org.w3c.dom.traversal.NodeFilter getFilter() { return null; }
+			@Override public boolean getExpandEntityReferences() { return false; }
+		};
 	}
 
 	/**

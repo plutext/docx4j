@@ -45,8 +45,8 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 12 | `od:Handler=picture` + `width=n\|auto` | Y (bind.xslt:150) | Y | Y | phase 4 shipped 2026-08-22 |
 | 13 | Date cc (`w:date` + `w:dataBinding`), formatted per dateFormat/lang | Y (xpathDate) | Y | Y | phase 3 shipped 2026-08-22 |
 | 14 | Checkbox cc (`w14:checkbox` + `w:dataBinding`) | Y (w14Checkbox, w14CheckboxAttr) | Y | Y | phase 3 shipped 2026-08-22 |
-| 15 | XHTML import (`od:ContentType=application/xhtml+xml`), ImportXHTML or altChunk fallback | Y (convertXHTML / convertXHTMLtoAltChunk) | N (TODO log) | N (TODO log) | includes bookmark renumbering via BookmarkCounter |
-| 16 | FlatOPC injection (`od:progid=Word.Document`) | Y (convertFlatOPC) | N | N | |
+| 15 | XHTML import (`od:ContentType=application/xhtml+xml`), ImportXHTML or altChunk fallback | Y (convertXHTML / convertXHTMLtoAltChunk) | Y | Y | phase 5 shipped 2026-08-22 (ImportXHTML path reused but only the altChunk fallback is exercisable in core-tests) |
+| 16 | FlatOPC injection (`od:progid=Word.Document`) | Y (convertFlatOPC) | Y | Y | phase 5 shipped 2026-08-22 |
 | 17 | `od:RptPosCon` | Y | Y | Y | since 7d2d8ba40 |
 | 18 | `od:condition` / `od:rptd` pass-through incl. nested | Y | Y | Y | StAX preprocess recursion fixed in c85beee97 |
 | 19 | `w15:resultRepeatZero` pass-through | Y | Y | Y | non-XSLT default branch preserves |
@@ -157,6 +157,14 @@ feature docx.
 5. **XHTML + FlatOPC** (rows 15-16): reuse `convertXHTML`/`convertXHTMLtoAltChunk`/
    `convertFlatOPC`; wire `BookmarkCounter` to the traversers' existing (currently
    unused) bookmark id state.
+   **SHIPPED 2026-08-22**: the XSLT extension functions are reused unchanged - a
+   single-node NodeIterator wrapper feeds them the marshalled sdtPr, and the $parent/
+   $child strings are approximated from the template content's shape (shapeHints).
+   Imported block content (w:p/w:tbl/w:altChunk) replaces the sdtContent (or the tc's
+   content); run content is shaped as for a text bind.  BookmarkCounter is wired to
+   the traversers' bookmark id state.  TextBindParityTest covers FlatOPC and the
+   XHTML altChunk fallback (rel resolution + chunk bytes), plus a save smoke-test;
+   the ImportXHTML path itself is not exercisable from docx4j-core-tests.
 6. **Output hygiene** (rows 20-22): showingPlcHdr first (functional), then the cosmetic
    bits, or explicitly document them as intentional differences.
 7. **Optional, perf**: wire `DomToXPathMap` into the shared text-bind path (BindingHandler
