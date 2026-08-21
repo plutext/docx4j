@@ -369,117 +369,31 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_ROLE_XPATH) ) {
 
-				log.debug("OpenDoPEHandler.BINDING_ROLE_XPATH, " + sdtPr.getDataBinding().getXpath() );
 				if (log.isDebugEnabled()) {
 					log.debug(XmlUtils.marshaltoString(sdt));
 				}
-				
-				boolean isMultiline = isMultiline(sdtPr);				
-				
-				Object ooo = null;
-				if (sdt.getSdtContent().getContent().size()>0) {
-					ooo = sdt.getSdtContent().getContent().get(0);
-					ooo = XmlUtils.unwrap(ooo);
-					log.debug(ooo.getClass().getName());
+				// via BindingTraverserCommonImpl / ValueInserterPlainText, for parity
+				// with the XSLT pathway (rPr applied, placeholder restored on empty
+				// result, custom inserter honoured); see CR-binding-traverser-parity
+				List<Object> boundContent = generateBoundContent(pkg, part, sdtPr,
+						xpathsMap, isMultiline(sdtPr));
+				if (boundContent!=null) {
+					applyBoundContent(sdt, boundContent);
 				}
-				if (ooo !=null) {
-										
-					if (ooo instanceof P) {
-						/*
-				            <w:sdtContent>
-				                <w:p>
-				                    <w:r>
-				                        <w:t>Joe Bloggs</w:t>
-				                    </w:r>
-				                </w:p>
-				            </w:sdtContent>
-	        			*/
-						P p = (P)ooo;
-						p.getContent().clear();
-						p.getContent().addAll(
-								this.xpathGenerateRuns(
-									(WordprocessingMLPackage)pkg, part, 
-									sdtPr,
-									sdtPr.getDataBinding(), 
-									//sdtParent, contentChild, 
-									null, isMultiline));
-					} else if (ooo instanceof Tc) {
-						/*
-				            <w:sdtContent>
-                                <w:tc>
-                                    <w:p>
-                                        <w:r>
-                                            <w:t>apples</w:t>
-                                        </w:r>
-                                    </w:p>
-                                </w:tc>	
-                                
-                                We want to replace the contents of the w:p 
-                                					 */
-						
-						Tc tc = (Tc)ooo;
-						P p = null;
-						if (tc.getContent().size()>0) {
-							Object o2 = tc.getContent().get(0);
-							log.debug(o2.getClass().getName());
-							if (o2 instanceof P) {
-								p = (P)o2;
-								p.getContent().clear();
-							}
-						}					
-						if (p == null) {
-							p = new P();
-							tc.getContent().add(p);
-						}
-						
-						p.getContent().addAll(
-								this.xpathGenerateRuns(
-									(WordprocessingMLPackage)pkg, part,
-									sdtPr,
-									sdtPr.getDataBinding(),
-									//sdtParent, contentChild,
-									null, isMultiline));
-					} else {
-						// eg run-level sdt containing run(s) directly
-						sdt.getSdtContent().getContent().clear();
 
-						sdt.getSdtContent().getContent().addAll(
-								this.xpathGenerateRuns(
-									(WordprocessingMLPackage)pkg, part,
-									sdtPr,
-									sdtPr.getDataBinding(),
-									null, isMultiline));
-					}
-				} else {
-
-					sdt.getSdtContent().getContent().clear();
-					
-					sdt.getSdtContent().getContent().addAll(
-							this.xpathGenerateRuns(
-								(WordprocessingMLPackage)pkg, part, 
-								sdtPr,
-								sdtPr.getDataBinding(), 
-								//sdtParent, contentChild, 
-								null, isMultiline));
-				}	
-				
-				
 			} else if (sdtPr.getDataBinding()!=null && !isRichText(sdtPr) ) {
 				// TODO and not(w:sdtPr/w:docPartGallery)
 				// .. but which is that?
 		        //@XmlElementRef(name = "docPartList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
 		        //@XmlElementRef(name = "docPartObj", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-				
-				sdt.getSdtContent().getContent().clear();
-				
-				sdt.getSdtContent().getContent().addAll(
-						this.xpathGenerateRuns(
-							(WordprocessingMLPackage)pkg, part, 
-							sdtPr,
-							sdtPr.getDataBinding(), 
-							//sdtParent, contentChild, 
-							null, false));
-				
+
+				// covers w15:dataBinding too (getDataBinding returns either)
+				List<Object> boundContent = generateBoundContent(pkg, part, sdtPr,
+						xpathsMap, isMultiline(sdtPr));
+				if (boundContent!=null) {
+					applyBoundContent(sdt, boundContent);
+				}
+
 			} else {
 				if(log.isDebugEnabled()) {
                     log.debug("Not processing " + XmlUtils.marshaltoString(sdtPr, true));
@@ -646,212 +560,9 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			return null;
 		}
 
-		private  boolean isRichText(SdtPr sdtPr) {
-			
-			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				o = XmlUtils.unwrap(o);
-				if (o instanceof SdtPr.RichText) return true;
-			}
-			return false;
-		}
 		
-		private boolean isMultiline(SdtPr sdtPr) {
-
-			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				
-				o = XmlUtils.unwrap(o);
-				if (o instanceof CTSdtText) {
-					return ((CTSdtText)o).isMultiLine();
-				}
-			}
-			return false;
-		}
 
 		
-		public List<Object> xpathGenerateRuns(
-				WordprocessingMLPackage pkg, 
-				JaxbXmlPart sourcePart,
-				SdtPr sdtPr,
-				CTDataBinding dataBinding,
-//				String sdtParent,
-//				String contentChild,				
-				RPr rPr, boolean multiLine
-				//String tag
-				) {
-			
-			/**
-			 * TODO test cases:
-			 * 
-			 * - multiline data, including cases which start/end with empty token
-			 * - multiline data with w:multiLine absent or set to 0 ie false
-			 * - cases with and without rPr
-			 * - inline and block level sdt
-			 */
-			
-			Map<String, CustomXmlPart> customXmlDataStorageParts = pkg.getCustomXmlDataStorageParts();
-
-			String r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, dataBinding);
-			if (r==null) {
-				log.info(dataBinding.getXpath() + " yielded result null!");				
-				return null;
-			}
-			
-			List<Object> contents = new ArrayList<Object>();
-			
-			try {
-				log.info(dataBinding.getXpath() + " yielded result " + r);
-				
-				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-				
-				StringTokenizer st = new StringTokenizer(r, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
-				
-				if (multiLine) {
-					// our docfrag may contain several runs
-					boolean firsttoken = true;
-					while (st.hasMoreTokens()) {						
-						String line = (String) st.nextToken();
-						
-						if (firsttoken) {
-							firsttoken = false;
-						} else {
-							addBrRunToDocFrag(contents, rPr);
-						}
-						
-						processString(sourcePart, contents, line, sdtPr, rPr);						
-					}
-					
-				} else {
-					// not multiline, so remove any CRLF in data;
-					// our docfrag wil contain a single run
-					StringBuilder sb = new StringBuilder();
-					while (st.hasMoreTokens()) {						
-						sb.append( st.nextToken() );
-					}
-					
-					processString(sourcePart, contents, sb.toString(), sdtPr, rPr);
-				}				
-				
-			} catch (Exception e) {
-				log.error(e.getMessage(), e);
-				return null;
-			}
-			
-			return contents;			
-		}
-
-		private void addBrRunToDocFrag(List<Object> contents, RPr rPr) throws JAXBException {
-			
-			// Not sure whether there is ever anything of interest in the rPr, 
-			// but add it anyway
-			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-			if (rPr!=null) {
-				run.setRPr(rPr);
-			}
-			run.getContent().add(Context.getWmlObjectFactory().createBr());
-			
-			contents.add(run);
-		}
-		
-		private void processString(JaxbXmlPart sourcePart, List<Object> contents, String text, SdtPr sdtPr, RPr rPr) throws JAXBException {
-			
-			int pos = BindingHandler.getHyperlinkResolver().getIndexOfURL(text);
-			if (pos==-1 || BindingHandler.getHyperlinkStyleId() == null) {				
-				addRunToDocFrag(sourcePart, contents,  text,  rPr);
-				return;
-			} 
-			
-			// There is a hyperlink to deal with
-			
-			// We'll need to remove:
-			//   <w:dataBinding w:storeItemID="{5448916C-134B-45E6-B8FE-88CC1FFC17C3}" w:xpath="/myxml[1]/element2[1]" w:prefixMappings=""/>
-			//   <w:text w:multiLine="true"/>
-			// or Word can't open the resulting docx, but we can't do it here,
-			sdtPr.setDataBinding(null);
-			
-			Object sdtPrText = null;
-			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				Object unwrapped = XmlUtils.unwrap(o);
-				if (unwrapped instanceof CTSdtText) {
-					sdtPrText = o;
-					break;
-				}
-			}
-			if (sdtPrText!=null) {
-				sdtPr.getRPrOrAliasOrLock().remove(sdtPrText);
-			}
-			
-			if (pos==0) {
-				int spacePos = text.indexOf(" ");
-				if (spacePos==-1) {
-					addHyperlinkToDocFrag(sourcePart, contents,  text);
-					return;					
-				}
-				
-				// Could contain more than one hyperlink, so process recursively					
-				String first = text.substring(0, spacePos);
-				String rest = text.substring(spacePos);
-				
-				addHyperlinkToDocFrag( sourcePart,  contents,  first);
-				// .. now the recursive bit ..
-				processString(sourcePart,  contents,  rest, sdtPr, rPr);	
-				return;
-			}
-			
-			String first = text.substring(0, pos);
-			String rest = text.substring(pos);
-			
-			addRunToDocFrag( sourcePart,  contents,  first, rPr);
-			// .. now the recursive bit ..
-			processString(sourcePart,  contents,  rest, sdtPr, rPr);				
-		}
-		
-		private void addRunToDocFrag(JaxbXmlPart sourcePart, List<Object> contents, String string, RPr rPr) {
-			
-			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-			if (rPr!=null) {
-				run.setRPr(rPr);
-			}
-			org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
-			run.getContent().add(text);
-			if (string.startsWith(" ") || string.endsWith(" ") ) {
-				// TODO: tab character?
-				text.setSpace("preserve");
-			}
-			text.setValue(string);
-						
-			contents.add(run);
-		}
-		
-		private void addHyperlinkToDocFrag(JaxbXmlPart sourcePart, List<Object> contents, String url) throws JAXBException {
-			
-			// We need to add a relationship to word/_rels/document.xml.rels
-			// but since its external, we don't use the 
-			// usual wordMLPackage.getMainDocumentPart().addTargetPart
-			// mechanism
-			org.docx4j.relationships.ObjectFactory factory =
-				new org.docx4j.relationships.ObjectFactory();
-			
-			org.docx4j.relationships.Relationship rel = factory.createRelationship();
-			rel.setType( Namespaces.HYPERLINK  );
-			rel.setTarget(url);
-			rel.setTargetMode("External");  
-									
-			sourcePart.getRelationshipsPart().addRelationship(rel);
-			
-			// addRelationship sets the rel's @Id
-			
-			String hpl = "<w:hyperlink r:id=\"" + rel.getId() + "\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" " +
-	        "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" >" +
-	        "<w:r>" +
-	        "<w:rPr>" +
-	        "<w:rStyle w:val=\"" + BindingHandler.getHyperlinkStyleId() + "\" />" +  // TODO: enable this style in the document!
-	        "</w:rPr>" +
-	        "<w:t>" + url + "</w:t>" +
-	        "</w:r>" +
-	        "</w:hyperlink>";
-					
-			contents.add((Hyperlink)XmlUtils.unmarshalString(hpl));
-		}
 		
 		
 	}

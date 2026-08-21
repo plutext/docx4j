@@ -31,15 +31,15 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 
 | # | Feature | XSLT | NonXSLT | StAX | Notes |
 |---|---------|------|---------|------|-------|
-| 1 | Plain `w:dataBinding` text bind | Y | P | P | see 3.1: shapes, rPr, placeholder, inserter |
-| 2 | `od:xpath` extended bind | Y | P | P | same degradations as #1 |
+| 1 | Plain `w:dataBinding` text bind | Y | Y | Y | phase 1 shipped 2026-08-22 |
+| 2 | `od:xpath` extended bind | Y | Y | Y | phase 1 shipped 2026-08-22 |
 | 3 | `w15:dataBinding` bind (Word 2013) | Y (bind.xslt:796) | P | P | `SdtPr.getDataBinding()` returns any `CTDataBinding` (w: or w15:), so the plain-bind fallback branch catches these — but with all the 3.1 degradations, and the w15 branch details (richText/docPartGallery exclusions, sdtPr cleanup) unverified |
 | 4 | Multiline (`w:text/@w:multiLine`) | Y | Y | Y | |
 | 5 | Hyperlink insertion in bound text | Y | Y | Y | third copy of the logic in each impl |
-| 6 | `w:rPr` from sdtPr applied to generated runs | Y | **N** | **N** | non-XSLT passes `rPr=null` — formatting of bound text is lost |
-| 7 | Empty result → placeholder restore | Y (ValueInserterPlainTextImpl:33) | N | N | non-XSLT emits nothing; null result risks NPE (`addAll(null)`) |
-| 8 | Pluggable `ValueInserterPlainText` | Y | **N** | **N** | `BindingHandler.setValueInserterPlainText` is silently ignored by non-XSLT (eg ValueInserterPlainTextForOpenAPI3) |
-| 9 | `local-name()` descape + result trim | Y (BindingTraverserXSLT:1410-1414) | N | N | |
+| 6 | `w:rPr` from sdtPr applied to generated runs | Y | Y | Y | phase 1 shipped 2026-08-22 |
+| 7 | Empty result → placeholder restore | Y (ValueInserterPlainTextImpl:33) | Y | Y | phase 1 shipped 2026-08-22 (null result now leaves the sdt alone, all impls) |
+| 8 | Pluggable `ValueInserterPlainText` | Y | Y | Y | phase 1 shipped 2026-08-22 |
+| 9 | `local-name()` descape + result trim | Y (BindingTraverserXSLT:1410-1414) | Y | Y | phase 1 shipped 2026-08-22 |
 | 10 | Picture bind (`w:picture` + `w:dataBinding`), template contains `a:blip` | Y — replaces just `r:embed`, preserving the authored drawing (mode picture3) | P | P | non-XSLT always rebuilds the whole drawing (ExtentFinder size only); alt text, wrapping, effects lost |
 | 11 | `od:Handler=picture` (rich text cc containing w:drawing) | Y (bind.xslt:177) | N | N | 3.0.1 feature |
 | 12 | `od:Handler=picture` + `width=n\|auto` | Y (bind.xslt:150) | N | N | 11.1.8 feature |
@@ -53,7 +53,7 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 20 | sdtPr Word2007 hyperlink fix (strip `w:dataBinding`+`w:text`) | Y | P | P | non-XSLT strips on hyperlink in processString; XSLT also covers content-derived cases |
 | 21 | Add `w:showingPlcHdr` when content is PlaceholderText-styled | Y (bind.xslt:1133) | N | N | RemovalHandler ALL_BUT_PLACEHOLDERS depends on this |
 | 22 | Strip `w:placeholder` from output sdtPr | Y (bind.xslt:1179) | N | N | cosmetic |
-| 23 | Text-bind shapes: rebuild `w:tbl` / `w:tr` sdt content | Y | **N** | **N** | non-XSLT handles p, tc, direct-run, empty only; a bound sdt around a tbl or tr is silently left unbound |
+| 23 | Text-bind shapes: rebuild `w:tbl` / `w:tr` sdt content | Y | Y | Y | phase 1 shipped 2026-08-22 |
 | 24 | XPath result cache (`DomToXPathMap` via BindingTraverserState) | Y | N | N | perf only; BindingHandler only wires it to the XSLT traverser |
 | 25 | Structural context tracking (BindingTraverserState enteredTc/Tbl) | Y | n/a | n/a | supports the shape decisions in #23 |
 
@@ -119,6 +119,14 @@ feature docx.
    route non-XSLT text binding through `ValueInserterPlainText` with the sdtPr's rPr;
    placeholder restore + null-safety; trim/local-name; add tbl/tr shapes; then delete the
    duplicated run-building code from both classes.
+   **SHIPPED 2026-08-22** ("text binding routes through ValueInserterPlainText" commit):
+   shared `generateBoundContent`/`applyBoundContent` in BindingTraverserCommonImpl bridge
+   the XSLT pathway's `xpathGenerateRuns` DocumentFragment output into the JAXB tree;
+   both traversers' duplicated run-building deleted; binding resolved od:xpath-id-first
+   (matching bind.xslt), falling back to w:dataBinding (which covers w15:dataBinding);
+   also fixed a latent NPE in `xpathGenerateRuns` on a null XPath result.
+   Test: TextBindParityTest (asserts rPr application, placeholder restore, tbl shape,
+   and full-text equality across all three implementations).
 2. **w15:dataBinding** (row 3): verify actual behavior with a Word-2013-bound sample
    (the fallback branch likely already binds the value once phase 1 lands); align the
    richText/docPartGallery exclusions and sdtPr handling with bind.xslt:796.

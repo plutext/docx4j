@@ -1395,7 +1395,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		if (r==null) {
 			log.debug("cache miss for " + xpath);
 			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
-			
+			if (r==null) {
+				// eg part not found, or invalid XPath; leave the sdt as it is
+				log.warn(xpath + " yielded null");
+				return null;
+			}
+
 		} else if (log.isDebugEnabled()
 				&& r.trim().length()==0) {
 			// fallback removed for further speed improvement since we are comfortable there are no "cache query"

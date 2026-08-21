@@ -26,6 +26,11 @@ instance whose template control can't be found is now left alone instead of null
 the default BindingTraverserXSLT did), and now bind run-level sdts whose content is runs directly;
 SdtStAXHandler handles sdts in hdr/ftr/footnote/endnote, no longer NPEs on unknown contexts,
 and its element context stack is now per-instance (was static, so shared across threads)
+- BindingTraverserNonXSLT/StAX text binding now routes through ValueInserterPlainText like the
+XSLT pathway: the sdtPr's w:rPr is applied to generated runs (was lost), an empty result restores
+the placeholder, a custom inserter set via BindingHandler.setValueInserterPlainText is honoured,
+and tbl/tr-shaped bound sdts are rebuilt (were silently left unbound); see
+docs/developer/change-requests/CR-binding-traverser-parity.md
 
 PropertyResolver:
 - a style added to the styles part after the PropertyResolver was constructed is now found
