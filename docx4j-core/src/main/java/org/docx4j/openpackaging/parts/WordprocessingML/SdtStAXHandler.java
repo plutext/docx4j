@@ -175,27 +175,29 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 	}
 
     public static class Stack {
-    	
-        static ArrayList<String> list = new ArrayList<String>();
 
-        public static boolean isEmpty() {
+        // instance state (was static until 17.0.4, so all handlers - across
+        // threads - shared the one list!)
+        private final ArrayList<String> list = new ArrayList<String>();
+
+        public boolean isEmpty() {
             return (list.size() == 0);
         }
 
-        public static void push(String data) {
+        public void push(String data) {
             list.add(data);
         }
 
-        public static String pop() {
+        public String pop() {
             if (isEmpty() == true)
                 return null;
             return list.remove(list.size() - 1);
         }
 
-        public static String peek() {
+        public String peek() {
             if (isEmpty())
                 return null;
             return list.get(list.size() - 1);
         }
-    }	
+    }
 }

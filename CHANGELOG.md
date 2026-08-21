@@ -15,7 +15,8 @@ used twice in one paragraph; expanded repeats are tagged with a new od:RptOcc pa
 instance whose template control can't be found is now left alone instead of nulling content
 - BindingTraverserNonXSLT and BindingTraverserStAX now implement od:RptPosCon (previously only
 the default BindingTraverserXSLT did), and now bind run-level sdts whose content is runs directly;
-SdtStAXHandler handles sdts in hdr/ftr/footnote/endnote and no longer NPEs on unknown contexts
+SdtStAXHandler handles sdts in hdr/ftr/footnote/endnote, no longer NPEs on unknown contexts,
+and its element context stack is now per-instance (was static, so shared across threads)
 
 PropertyResolver:
 - a style added to the styles part after the PropertyResolver was constructed is now found
