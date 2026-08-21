@@ -152,7 +152,48 @@ public class XPathEnhancerParser extends Parser {
     }
          
     private boolean sharesPrefix(final String path) {
-      return path != null && path.startsWith(prefix);
+      return path != null && path.startsWith(prefix)
+          && !positionFunctionPredicateFollows(path.substring(prefixLength));
+    }
+
+    /* True if the part of the path following the repeat prefix begins with
+       predicates of which one uses position() or last(): the author is
+       deliberately addressing a specific item of the repeated collection
+       (eg items[last()]), so the path is left as-is rather than being
+       contextualized to the current repeat instance.
+       A numeric predicate (eg [1]) still means the current instance, per the
+       sample-based authoring convention.
+       See https://github.com/plutext/docx4j/discussions/691
+       NB: this method is defined in the @members block of XPathEnhancer.g;
+       keep the two in sync. */
+    private static boolean positionFunctionPredicateFollows(final String suffix) {
+      int i = 0;
+      while (suffix != null && i < suffix.length() && suffix.charAt(i) == '[') {
+        final int start = i;
+        int depth = 0;
+        for (; i < suffix.length(); i++) {
+          final char c = suffix.charAt(i);
+          if (c == '[') {
+            depth++;
+          } else if (c == ']') {
+            depth--;
+            if (depth == 0) {
+              i++;
+              break;
+            }
+          } else if (c == '\'' || c == '"') {
+            final int close = suffix.indexOf(c, i + 1);
+            if (close < 0) return false; // malformed
+            i = close;
+          }
+        }
+        if (depth != 0) return false; // malformed
+        final String predicate = suffix.substring(start + 1, i - 1);
+        if (predicate.contains("position(") || predicate.contains("last(")) {
+          return true;
+        }
+      }
+      return false;
     }
 
     private String remainingSuffix(final String path) {

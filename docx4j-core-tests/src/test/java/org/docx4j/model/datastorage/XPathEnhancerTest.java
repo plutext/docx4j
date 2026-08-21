@@ -33,6 +33,29 @@ public class XPathEnhancerTest {
 	}
 
 	@Test
+	public void testPositionFunctionPredicates() {
+
+		// A predicate at the repeat step which uses last() or position() is a
+		// deliberate reference to a specific item of the repeated collection,
+		// so the path is left alone (see discussion 691)
+		assertUnchanged(SIMPLE, "/prefix[last()]");
+		assertUnchanged(SIMPLE, "/prefix[last()]/further");
+		assertUnchanged(SIMPLE, "/prefix[last()-1]/further");
+		assertUnchanged(SIMPLE, "/prefix[position()=last()]/further");
+		assertUnchanged(SIMPLE, "string(/prefix[last()]/property) = 'wisdom'");
+		assertUnchanged(SIMPLE, "/prefix[@type='a'][last()]/further");
+
+		// ... but last()/position() deeper in the path is relative to the
+		// current instance, so the path is still contextualized
+		assertChanged(SIMPLE, "/prefix/further[last()]",
+				"/prefix[12]/further[last()]");
+
+		// and a numeric predicate still means the current instance
+		// (sample-based authoring convention)
+		assertChanged(SIMPLE, "/prefix[1]/further", "/prefix[12][1]/further");
+	}
+
+	@Test
 	public void testComplicated() {
 
 		// repeating basket
