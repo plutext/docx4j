@@ -16,6 +16,9 @@ a numeric predicate (eg [1]) still means the current instance
 - cloned xpath ids now include the repeat occurrence, so two occurrences of the same repeat
 control no longer overwrite each other's entries in the xpaths part (which mis-bound the
 earlier occurrence where the copies' bindings had been edited to differ)
+- OpenDoPEHandler's StAX preprocessing path now recurses into replacement content, so nested
+constructs (eg a condition inside an expanded repeat, or nested repeats) are processed as they
+are in the default path; previously a false condition inside a repeat leaked its content
 - OpenDoPEReverter: two occurrences of the same repeat whose expansions are immediately adjacent
 (eg copy-pasted repeat rows in a table) are no longer merged on revert (uses od:RptOcc); a repeat
 instance whose template control can't be found is now left alone instead of nulling content

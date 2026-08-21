@@ -447,22 +447,33 @@ public class OpenDoPEHandler {
 
 		@Override
 		protected List<Object> handleSdt(SdtElement sdt) throws Docx4JException {
-							
+
 			SdtPr sdtPr = sdt.getSdtPr();
+			List<Object> results;
 			if (sdtPr.getDataBinding() == null)  {
 				// a real binding attribute trumps any tag
-				return processBindingRoleIfAny(wordMLPackage, sdt);
+				results = processBindingRoleIfAny(wordMLPackage, sdt);
 			} else if (getW15RepeatingSection(sdtPr)!=null) {
-				return processW15Repeat( sdt, wordMLPackage.getCustomXmlDataStorageParts());					
-			} else {				
+				results = processW15Repeat( sdt, wordMLPackage.getCustomXmlDataStorageParts());
+			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Ignoring SDT " + XmlUtils.marshaltoString(sdtPr));
 				}
-				List<Object> results = new ArrayList<Object>();
+				results = new ArrayList<Object>();
 				results.add(sdt);
-				return results;
 			}
-		}	
+
+			// In the JAXB path, ShallowTraversor recurses into replacement content
+			// as it continues its traverse, expanding nested repeats and resolving
+			// nested conditionals (see the preprocess() javadoc).  Here the results
+			// are written straight to the output stream, so recurse now, or eg a
+			// condition inside an expanded repeat would never be evaluated.
+			for (Object result : results) {
+				new TraversalUtil(result, shallowTraversor);
+			}
+
+			return results;
+		}
 	}
 	
 	/**
