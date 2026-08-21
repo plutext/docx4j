@@ -366,10 +366,13 @@ public class OpenDoPEReverter {
 //			log.debug("repeat id: " + key);
 			Object replacement = templateRepeatSdtsByID.get(key);
 			if (replacement==null) {
-				// shouldn't happen provided OpenDoPEHandler preserved SDT ID on first instance of repeat
+				// shouldn't happen provided OpenDoPEHandler preserved SDT ID on first instance of repeat,
+				// but can, eg if the user split a repeat's instances with a manually inserted paragraph;
+				// leave the sdt alone rather than setting null into the content list
 				log.error( OpenDoPEHandler.getSdtPr(entry).getTag().getVal() + " - No replacement SDT with ID " + key.toString() );
+				continue;
 			}
-			
+
 			// ok, replace
 			Child child = (Child)entry;
 			Object parent = child.getParent();
@@ -524,6 +527,10 @@ public class OpenDoPEReverter {
 		
 		// in order to distinguish between instances of a repeat which is used twice
 		String previousRepeatID = null;
+		// od:RptOcc (added 17.0.4) distinguishes occurrences of a repeat which is used
+		// twice even where their expansions are immediately adjacent (nothing between
+		// them to reset previousRepeatID); null in instances made by earlier versions
+		String previousRepeatOcc = null;
 		
 		@Override
 		public List<Object> apply(Object o) {
@@ -553,30 +560,38 @@ public class OpenDoPEReverter {
 						String xpathId= map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
 						
 						if (conditionId != null ) {
-	
+
 							sdtsByConditionIDtoReplace.add(o);
-							previousRepeatID = null; 
-							
-						} else if (resultConditionId != null) { 
-	
+							previousRepeatID = null;
+							previousRepeatOcc = null;
+
+						} else if (resultConditionId != null) {
+
 							sdtsByConditionIDtoReplace.add(o);
-							previousRepeatID = null; 
-							
+							previousRepeatID = null;
+							previousRepeatOcc = null;
+
 						} else if (resultRptdZeroId != null) {
-	
+
 							repeatSdtToReplace.add( o);
-							previousRepeatID = null; 
-							
+							previousRepeatID = null;
+							previousRepeatOcc = null;
+
 						} else if (resultRepeatId != null) {
-	
-							if (previousRepeatID!=null && previousRepeatID.equals(resultRepeatId)) {
+
+							String resultRepeatOcc = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD_OCCURRENCE);
+
+							if (previousRepeatID!=null && previousRepeatID.equals(resultRepeatId)
+									&& (resultRepeatOcc==null ? previousRepeatOcc==null
+											: resultRepeatOcc.equals(previousRepeatOcc))) {
 								// it is second or subsequent
 								repeatSdtToDelete.add( o);
 							} else {
-								repeatSdtToReplace.add( o);							
+								repeatSdtToReplace.add( o);
 							}
-							previousRepeatID = resultRepeatId; 
-							
+							previousRepeatID = resultRepeatId;
+							previousRepeatOcc = resultRepeatOcc;
+
 						} else if (xpathId != null) {
 							
 							boundSdtPotentialRepair.add(o);
@@ -590,8 +605,9 @@ public class OpenDoPEReverter {
 				}
 			} else {
 				previousRepeatID = null;
+				previousRepeatOcc = null;
 			}
-			return null; 
+			return null;
 		}
 		
 		// Don't recurse into an SDT.

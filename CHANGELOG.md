@@ -10,6 +10,9 @@ Changes in Version 17.0.4
 OpenDoPE:
 - od:RptPosCon now evaluates positions per repeat occurrence, so the same repeat control can be
 used twice in one paragraph; expanded repeats are tagged with a new od:RptOcc param (issue 690)
+- OpenDoPEReverter: two occurrences of the same repeat whose expansions are immediately adjacent
+(eg copy-pasted repeat rows in a table) are no longer merged on revert (uses od:RptOcc); a repeat
+instance whose template control can't be found is now left alone instead of nulling content
 
 PropertyResolver:
 - a style added to the styles part after the PropertyResolver was constructed is now found
