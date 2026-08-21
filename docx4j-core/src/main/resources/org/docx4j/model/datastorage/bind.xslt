@@ -572,15 +572,19 @@
   		
   		<!--  We need to calculate our position. See http://stackoverflow.com/questions/2606186/find-position-of-a-node-within-a-nodeset-using-xpath?rq=1
   		 -->
-			<xsl:variable name="vNode" select="ancestor::w:sdt[contains(string(w:sdtPr/w:tag/@w:val), 'od:rptd')]" /> 
-			<xsl:variable name="repeatTag" select="$vNode/w:sdtPr/w:tag/@w:val" />
-				<!--  We could match on repeat ID and repeat instance ID, 
-				 	  but no need, because the tag is cloned, so its contents will be the same across instances -->
-			
-			<!-- <xsl:variable name="repeatParent" select="ancestor::*[contains(string(w:sdt/w:sdtPr/w:tag/@w:val), 'od:rptd')][1]" />  --> 
-			<xsl:variable name="repeatParent" select="$vNode/.." /> 
-			
-			<xsl:variable name="vNodeSet" select="$repeatParent/w:sdt[contains(string(w:sdtPr/w:tag/@w:val), $repeatTag)]" /> 
+			<!--  [1] on the reverse axis selects the nearest such ancestor
+				  (relevant where repeats are nested) -->
+			<xsl:variable name="vNode" select="ancestor::w:sdt[contains(string(w:sdtPr/w:tag/@w:val), 'od:rptd')][1]" />
+			<xsl:variable name="repeatTag" select="string($vNode/w:sdtPr/w:tag/@w:val)" />
+				<!--  The tag is cloned, so it is the same across the instances of an expanded repeat.
+					  Match it exactly (not via contains): OpenDoPEHandler stamps od:RptOcc=n into it,
+					  which differs per occurrence, so two occurrences of the same repeat control in
+					  one parent (eg copy-pasted; issue 690) each get their own node set here. -->
+
+			<!-- <xsl:variable name="repeatParent" select="ancestor::*[contains(string(w:sdt/w:sdtPr/w:tag/@w:val), 'od:rptd')][1]" />  -->
+			<xsl:variable name="repeatParent" select="$vNode/.." />
+
+			<xsl:variable name="vNodeSet" select="$repeatParent/w:sdt[string(w:sdtPr/w:tag/@w:val) = $repeatTag]" />
 
  			<xsl:variable name="dummy"
 				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('vNodeSet', count($vNodeSet)))" />

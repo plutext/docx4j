@@ -222,7 +222,14 @@ public class OpenDoPEHandler {
 	public final static String BINDING_RESULT_RPTD_ZERO = "od:resultRepeatZero";
 	public final static String BINDING_RESULT_RPTD_ZERO_W15 = "w15:resultRepeatZero";
 	public final static String BINDING_RESULT_RPTD = "od:rptd";
-	
+	/**
+	 * Distinguishes expansions of repeat content controls which have identical tags
+	 * (eg a copy-pasted control), so od:RptPosCon can group instances per occurrence.
+	 * See https://github.com/plutext/docx4j/issues/690 and bind.xslt.
+	 * @since 17.0.4
+	 */
+	public final static String BINDING_RESULT_RPTD_OCCURRENCE = "od:RptOcc";
+
 	// Repeat position condition (eg second last entry)
 	public final static String BINDING_ROLE_RPT_POS_CON = "od:RptPosCon";  // see bind.xslt
 
@@ -1201,6 +1208,7 @@ public class OpenDoPEHandler {
 	
 	private int DEBUG_REPEAT_CAP = -1; // should be -1, except when developing!
 	private int totalRepeated = 0;
+	private int repeatOccurrenceNumber = 0;
 	
 	private List<Object> cloneRepeatSdt(Object sdt, String xpathBase,
 			int numRepeats) {
@@ -1271,7 +1279,12 @@ public class OpenDoPEHandler {
 		}
 //		final String emptyRepeatValue = stripPatternMatcher.group(1)
 //				+ stripPatternMatcher.group(3);
-		final String emptyRepeatValue = BINDING_RESULT_RPTD + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		// od:RptOcc uniquely identifies this expansion, so two occurrences of the
+		// same repeat control (identical tags) don't share a tag once expanded;
+		// od:RptPosCon processing in bind.xslt groups instances by exact tag match.
+		// See https://github.com/plutext/docx4j/issues/690
+		final String emptyRepeatValue = BINDING_RESULT_RPTD + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3)
+				+ "&" + BINDING_RESULT_RPTD_OCCURRENCE + "=" + (++repeatOccurrenceNumber);
 		tag.setVal(emptyRepeatValue);
 	}
 	
