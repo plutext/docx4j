@@ -215,3 +215,60 @@ feature docx.
 If only one phase is ever done, do phase 1: it removes the silent-loss cases and, by
 consolidating on `ValueInserterPlainText`, shrinks the code that must be kept in sync
 from three copies to one.
+
+## Appendix: performance comparison (2026-08-22)
+
+Method: fresh JVM per cell (`-Xms512m -Xmx1g`, Java 21, logging at ERROR), median of 10
+iterations after 3 warmups (RptPosCon scaling rows: 3 after 1); each iteration is
+load + OpenDoPEHandler.preprocess + BindingHandler.applyBindings.  "touch" is the
+re-unmarshal a caller pays only if it needs the JAXB tree after the StAX pathway
+(which stores bytes).  Peak heap / allocation from one instrumented iteration.
+Workloads are synthetic scalings of the test templates.
+
+### W1 - invoice.docx table-row repeat, 2,000 rows (~4,000 bound cells)
+
+| impl | preprocess | bind | touch | total | peak heap | alloc |
+|---|---|---|---|---|---|---|
+| XSLT | 83 ms | 4,302 ms | - | 4.4 s | 490 MB | 2.2 GB |
+| NonXSLT | 81 ms | 2,103 ms | - | 2.2 s | 357 MB | 1.5 GB |
+| StAX | 328 ms | 2,989 ms | 141 ms | 3.5 s | 446 MB | 1.7 GB |
+
+### W2 - issue-690 template (run-level repeat + 2 RptPosCon per instance), n ranks
+
+| impl | n=100 | n=200 | n=400 |
+|---|---|---|---|
+| XSLT | 28.7 s | > 2 min/iteration (timed out) | > 5 min (timed out) |
+| NonXSLT | 0.14 s | 0.31 s | 0.84 s |
+| StAX | - | - | 1.5 s |
+
+### W3 - 2,000 independent plain w:dataBinding sdts (no repeats)
+
+| impl | preprocess | bind | touch | total | peak heap | alloc |
+|---|---|---|---|---|---|---|
+| XSLT | 18 ms | 529 ms | - | 0.55 s | 334 MB | 304 MB |
+| NonXSLT | 17 ms | 146 ms | - | 0.17 s | 341 MB | 368 MB |
+| StAX | 177 ms | 709 ms | 65 ms | 0.96 s | 411 MB | 560 MB |
+
+### Observations
+
+1. **NonXSLT is the fastest and leanest across every workload** - roughly 2-3x faster
+   than the XSLT default on repeats and plain binds, with the lowest peak heap and
+   allocation.  Now that it has feature parity, it is a strong candidate for wider use.
+2. **bind.xslt's RptPosCon position calculation does not scale**: `$vNode/preceding::node()`
+   and the `count(.|$set)` membership tests are quadratic-and-worse in document size,
+   so 100 instances already cost ~29 s and 200+ is effectively unusable.  The Java
+   implementation (sibling rank scan) is linear-ish (0.14 s -> 0.84 s for 100 -> 400).
+   Follow-up candidate: rewrite bind.xslt's `$pos` as
+   `count($vNode/preceding-sibling::w:sdt[string(w:sdtPr/w:tag/@w:val)=$repeatTag])+1`
+   (instances are siblings), which should remove the document-wide axis work.
+3. **StAX is currently the slowest end-to-end at these sizes** and allocates more than
+   NonXSLT: its preprocess pays a per-sdt `createUnmarshaller()` cost (visible as
+   ~0.2-0.3 s of preprocess), and its delegation marshals/unmarshals each intercepted
+   sdt.  Its design advantage (never holding the whole JAXB tree) should only pay off
+   on documents much larger than these; unmarshaller/marshaller reuse in
+   SdtStAXHandler is an easy follow-up optimisation.
+4. StAX output is bytes; callers needing the JAXB tree afterwards pay the extra
+   "touch" re-unmarshal (~0.1 s here).
+
+Caveats: single-threaded, tmpfs, one machine, synthetic documents; treat as
+order-of-magnitude guidance rather than precise ratios.
