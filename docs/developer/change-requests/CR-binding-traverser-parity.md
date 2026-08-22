@@ -276,5 +276,36 @@ Workloads are synthetic scalings of the test templates.
 4. StAX output is bytes; callers needing the JAXB tree afterwards pay the extra
    "touch" re-unmarshal (~0.1 s here).
 
+### W4 - StAX-favourable workload: large document, sparse bindings, save-to-bytes
+
+100,000 (or 25,000) three-run prose paragraphs with only 20 bound sdts; the pipeline
+here ends with `pkg.save(bytes)` instead of touching the JAXB tree (the
+generate-and-save persona).  document.xml is ~40 MB (100k) / ~10 MB (25k).
+
+| impl | 25k total | 100k total (bind / save) | 100k peak heap | 100k alloc |
+|---|---|---|---|---|
+| XSLT | 4.1 s | 16.4 s (13.5 / 1.7) | 1,815 MB | 7.7 GB |
+| NonXSLT | 0.78 s | 3.0 s (0.16 / 1.65) | 663 MB | 1.26 GB |
+| StAX | 0.92 s | 3.4 s (2.3 / 0.12) | **379 MB** | **0.98 GB** |
+
+Constrained heap, 100k document:
+
+| heap | XSLT | NonXSLT | StAX |
+|---|---|---|---|
+| -Xmx512m | **OutOfMemoryError** | 3.2 s (peak 519 MB, at the ceiling) | 3.5 s (peak 376 MB) |
+| -Xmx384m | - | 3.9 s (GC pressure, +25%) | 3.4 s (unchanged, peak 364 MB) |
+
+Additional observations:
+
+5. **StAX's design strength is real, and this is its shape**: on a large document with
+   few bindings, saved to bytes, it is time-competitive with NonXSLT (3.4 vs 3.0 s)
+   at roughly **half the peak heap**, and is insensitive to heap pressure where
+   NonXSLT begins to degrade and XSLT (which needs ~1.8 GB here) dies.  Its bind
+   phase carries a double parse (RptPosCon pre-scan + pipe), but its save is nearly
+   free (~0.12 s vs ~1.65 s) since the part content is already bytes.
+6. The XSLT pathway transforms the *whole* document through Xalan even when almost
+   none of it is bound - hence 16.4 s / 1.8 GB on a document the other two handle in
+   ~3 s.
+
 Caveats: single-threaded, tmpfs, one machine, synthetic documents; treat as
 order-of-magnitude guidance rather than precise ratios.
