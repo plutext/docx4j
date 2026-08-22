@@ -588,19 +588,14 @@
 
  			<xsl:variable name="dummy"
 				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('vNodeSet', count($vNodeSet)))" />
- 
-			<xsl:variable name="vPrecNodes" select="$vNode/preceding::node()"/>
-			
-			 <xsl:variable name="vAncNodes" select="$vNode/ancestor::node()"/>
-			
-			 <xsl:variable name="vPrecInNodeSet" select=
-			  "$vNodeSet
-			      [count(.|$vPrecNodes) = count($vPrecNodes)
-			      or
-			       count(.|$vAncNodes) = count($vAncNodes)
-			      ]
-					  "/>
-			<xsl:variable name="pos" select="count($vPrecInNodeSet) +1" />
+
+			<!--  The instances are siblings, so our position in $vNodeSet is just our
+				  rank among the identically-tagged preceding siblings.  (Until 17.0.4
+				  this was computed by intersecting $vNodeSet with
+				  $vNode/preceding::node() - a document-wide axis per RptPosCon sdt,
+				  quadratic-and-worse in document size: ~29s for a repeat of 100,
+				  unusable beyond that.) -->
+			<xsl:variable name="pos" select="count($vNode/preceding-sibling::w:sdt[string(w:sdtPr/w:tag/@w:val) = $repeatTag]) + 1" />
 
 		
 			<xsl:variable name="expression"

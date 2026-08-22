@@ -237,7 +237,8 @@ Workloads are synthetic scalings of the test templates.
 
 | impl | n=100 | n=200 | n=400 |
 |---|---|---|---|
-| XSLT | 28.7 s | > 2 min/iteration (timed out) | > 5 min (timed out) |
+| XSLT (before preceding-sibling fix) | 28.7 s | > 2 min/iteration (timed out) | > 5 min (timed out) |
+| XSLT (after preceding-sibling fix) | 0.88 s | 2.5 s | 8.4 s |
 | NonXSLT | 0.14 s | 0.31 s | 0.84 s |
 | StAX | - | - | 1.5 s |
 
@@ -254,13 +255,16 @@ Workloads are synthetic scalings of the test templates.
 1. **NonXSLT is the fastest and leanest across every workload** - roughly 2-3x faster
    than the XSLT default on repeats and plain binds, with the lowest peak heap and
    allocation.  Now that it has feature parity, it is a strong candidate for wider use.
-2. **bind.xslt's RptPosCon position calculation does not scale**: `$vNode/preceding::node()`
-   and the `count(.|$set)` membership tests are quadratic-and-worse in document size,
-   so 100 instances already cost ~29 s and 200+ is effectively unusable.  The Java
+2. **bind.xslt's RptPosCon position calculation did not scale**: `$vNode/preceding::node()`
+   and the `count(.|$set)` membership tests were quadratic-and-worse in document size,
+   so 100 instances already cost ~29 s and 200+ was effectively unusable.  The Java
    implementation (sibling rank scan) is linear-ish (0.14 s -> 0.84 s for 100 -> 400).
-   Follow-up candidate: rewrite bind.xslt's `$pos` as
+   **FIXED 2026-08-22**: `$pos` is now
    `count($vNode/preceding-sibling::w:sdt[string(w:sdtPr/w:tag/@w:val)=$repeatTag])+1`
-   (instances are siblings), which should remove the document-wide axis work.
+   (instances are siblings; the old expression's ancestor clause was dead) - 34x at
+   n=100 and no more timeouts, per the "after" row above.  The remaining growth is the
+   myeval apply-templates pass over $vNodeSet per RptPosCon sdt (n^2 in instances,
+   small constant); restructuring that has diminishing returns given NonXSLT.
 3. **StAX is currently the slowest end-to-end at these sizes** and allocates more than
    NonXSLT: its preprocess pays a per-sdt `createUnmarshaller()` cost (visible as
    ~0.2-0.3 s of preprocess), and its delegation marshals/unmarshals each intercepted
