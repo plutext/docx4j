@@ -48,9 +48,41 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.xml.bind.JAXBException;
 
+/**
+ * Applies data bindings: injects each bound content control's value from the
+ * custom XML data part(s) into the document content.
+ *
+ * <p><b>Choosing an implementation</b> (property
+ * <code>docx4j.model.datastorage.BindingHandler.Implementation</code>):
+ * all three implementations have feature parity as of 17.0.4 (see
+ * docs/developer/change-requests/CR-binding-traverser-parity.md).</p>
+ *
+ * <ul>
+ * <li><b>BindingTraverserXSLT</b> (the default): the longest-serving
+ * implementation, retained as the default for conservatism, and because
+ * XSLT-level customisation of bind.xslt is possible.  It is the slowest and
+ * heaviest on every workload benchmarked - typically 2-5x NonXSLT, and on a
+ * large document with few bindings dramatically worse, since the whole
+ * document is transformed through Xalan.</li>
+ *
+ * <li><b>BindingTraverserNonXSLT</b>: fastest on every workload benchmarked,
+ * with the lowest allocation on binding-dense documents; the recommended
+ * choice for most workloads.</li>
+ *
+ * <li><b>BindingTraverserStAX</b>: choose where documents are large, bindings
+ * sparse, and the result is saved rather than further processed in memory -
+ * it runs at roughly half the peak heap of NonXSLT (the whole JAXB tree is
+ * never held), its save is nearly free (the part content is already bytes),
+ * and it is insensitive to heap pressure.  On binding-dense documents it is
+ * the slowest of the three.</li>
+ * </ul>
+ *
+ * <p>Benchmark numbers and workloads: the appendix of
+ * docs/developer/change-requests/CR-binding-traverser-parity.md.</p>
+ */
 public class BindingHandler {
-	
-	private static Logger log = LoggerFactory.getLogger(BindingHandler.class);		
+
+	private static Logger log = LoggerFactory.getLogger(BindingHandler.class);
 	
 	/**
 	 * Configure, how the handler handles links found in Custom XML.
@@ -304,17 +336,19 @@ public class BindingHandler {
 			
 			if ( /* Non XSLT */ Docx4jProperties.getProperty("docx4j.model.datastorage.BindingHandler.Implementation", "BindingTraverserXSLT")
 					.equals("BindingTraverserNonXSLT") ) {
-				// Use the non-XSLT approach.  This is faster, but doesn't have feature parity.
-				log.info("Using BindingTraverserNonXSLT, which is faster, but missing some features");
+				// Fastest in benchmarks; feature parity since 17.0.4 (see class javadoc)
+				log.info("Using BindingTraverserNonXSLT (fastest in benchmarks; feature parity since 17.0.4)");
 				traverser = new BindingTraverserNonXSLT();
 			} else if ( /* StAX */ Docx4jProperties.getProperty("docx4j.model.datastorage.BindingHandler.Implementation", "BindingTraverserXSLT")
 					.equals("BindingTraverserStAX") ) {
-				// Use StAX + JAXB.  This is potentially faster (provided the MDP has not been unmarshalled already), but doesn't have feature parity.
-				log.info("Using BindingTraverserStAX");
+				// Use StAX + JAXB.  Lowest memory: the whole JAXB tree is never held
+				// (best where documents are large, bindings sparse, and the result is
+				// saved rather than further processed; feature parity since 17.0.4)
+				log.info("Using BindingTraverserStAX (lowest memory; feature parity since 17.0.4)");
 				traverser = new BindingTraverserStAX();
 			} else { /* XSLT */
-				// Slower, fully featured. The default.
-				log.info("Using BindingTraverserXSLT, which is slower, but fully featured");
+				// The default (longest-serving); slower and heavier than the others.
+				log.info("Using BindingTraverserXSLT, the default (slower and heavier than the alternatives; see BindingHandler javadoc)");
 				traverser = new BindingTraverserXSLT();
 			}
 
