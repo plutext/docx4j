@@ -266,11 +266,13 @@ Workloads are synthetic scalings of the test templates.
    myeval apply-templates pass over $vNodeSet per RptPosCon sdt (n^2 in instances,
    small constant); restructuring that has diminishing returns given NonXSLT.
 3. **StAX is currently the slowest end-to-end at these sizes** and allocates more than
-   NonXSLT: its preprocess pays a per-sdt `createUnmarshaller()` cost (visible as
-   ~0.2-0.3 s of preprocess), and its delegation marshals/unmarshals each intercepted
-   sdt.  Its design advantage (never holding the whole JAXB tree) should only pay off
-   on documents much larger than these; unmarshaller/marshaller reuse in
-   SdtStAXHandler is an easy follow-up optimisation.
+   NonXSLT.  Unmarshaller/Marshaller reuse in SdtStAXHandler was implemented
+   (2026-08-22) but measured only ~3-5% (w1 3.47 s -> 3.34 s, w3 0.96 s -> 0.91 s):
+   the dominant costs are the per-sdt marshal/write through the streaming pipe and
+   the per-sdt delegation to BindingTraverserNonXSLT, not factory creation.  Its
+   design advantage (never holding the whole JAXB tree) should only pay off on
+   documents much larger than these; deeper streaming optimisation is left as
+   possible future work.
 4. StAX output is bytes; callers needing the JAXB tree afterwards pay the extra
    "touch" re-unmarshal (~0.1 s here).
 

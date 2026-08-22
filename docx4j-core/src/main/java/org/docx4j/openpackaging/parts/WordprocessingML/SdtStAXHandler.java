@@ -55,6 +55,28 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc;
 	
 	protected Stack stack = new Stack();
+
+	// Reused across sdts, rather than created per intercepted sdt.  (Benchmarks -
+	// see the CR-binding-traverser-parity appendix - measured only a few percent
+	// from this; the pipe's per-sdt marshal/write dominates.  Kept as simple waste
+	// removal.)  A handler instance is single-threaded.
+	private Unmarshaller unmarshaller;
+	private Marshaller marshaller;
+
+	private Unmarshaller unmarshaller() throws JAXBException {
+		if (unmarshaller==null) {
+			unmarshaller = context.createUnmarshaller();
+		}
+		return unmarshaller;
+	}
+
+	private Marshaller marshaller() throws JAXBException {
+		if (marshaller==null) {
+			marshaller = context.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT,true);
+		}
+		return marshaller;
+	}
 	
 
 	/**
@@ -83,10 +105,8 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 		        log.debug("START_ELEMENT " + localName);
 				if (xsr.getLocalName().equals("sdt")) {
 //		            	log.debug("** found one **");
-					Unmarshaller unmarshaller;
 					Object o=null;
 					try {
-						unmarshaller = context.createUnmarshaller();
 						// To unmarshall to the correct type of sdt, we need to know context
 						if (stack.peek().equals("body")
 								|| stack.peek().equals("tc")
@@ -96,13 +116,13 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 								|| stack.peek().equals("footnote")
 								|| stack.peek().equals("endnote")
 								) {
-							o = unmarshaller.unmarshal(xsr, SdtBlock.class);
+							o = unmarshaller().unmarshal(xsr, SdtBlock.class);
 						} else if (stack.peek().equals("tbl")) {
-							o = unmarshaller.unmarshal(xsr, CTSdtRow.class);								
+							o = unmarshaller().unmarshal(xsr, CTSdtRow.class);								
 						} else if (stack.peek().equals("tr")) {
-							o = unmarshaller.unmarshal(xsr, CTSdtCell.class);								
+							o = unmarshaller().unmarshal(xsr, CTSdtCell.class);								
 						} else if (stack.peek().equals("p")) {
-							o = unmarshaller.unmarshal(xsr, SdtRun.class);								
+							o = unmarshaller().unmarshal(xsr, SdtRun.class);								
 						} else {
 							log.error("TODO stack.peek() " + stack.peek() );
 						}
@@ -124,8 +144,7 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 						}
 						// write results
 						try {
-							Marshaller m = context.createMarshaller();
-							m.setProperty(Marshaller.JAXB_FRAGMENT,true);
+							Marshaller m = marshaller();
 							for(Object oo : results) {
 								m.marshal(oo, xmlWriter);
 							}
