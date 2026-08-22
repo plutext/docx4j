@@ -139,8 +139,12 @@ public class ListLevel {
     public ListLevel(Lvl levelNode)
     {
     	this.jaxbAbstractLvl = levelNode;
-    	
-        this.id = levelNode.getIlvl().toString(); 
+
+        if (levelNode.getIlvl() == null) {
+            log.warn("Missing @w:ilvl on w:lvl; assigning 0");
+            levelNode.setIlvl(BigInteger.ZERO);
+        }
+        this.id = levelNode.getIlvl().toString();
         
         counter = new Counter();
 

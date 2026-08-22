@@ -12,6 +12,7 @@ import org.docx4j.finders.SdtFinder;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
+import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.ListLevel;
 import org.docx4j.model.listnumbering.ListNumberingDefinition;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
@@ -349,12 +350,7 @@ public class ListsToContentControls {
 				
 				BigInteger numId = numPr.getNumId().getVal();
 				
-				BigInteger ilvl = null;
-				if (numPr.getIlvl()==null) {
-					ilvl = BigInteger.ZERO;
-				} else {
-					ilvl = numPr.getIlvl().getVal();
-				}
+				BigInteger ilvl = Emulator.getIlvlOrDefault(numPr);
 				log.debug("ilvl: " + ilvl.intValue());
 
 				if (numId==null || numId.signum()==0 || ilvl.signum()<0) {

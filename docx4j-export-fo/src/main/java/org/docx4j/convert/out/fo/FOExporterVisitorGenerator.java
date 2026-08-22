@@ -46,7 +46,6 @@ import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBrType;
@@ -340,15 +339,14 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				
 	        	ResultTriple triple;
 	        	if (pPrDirect!=null && pPrDirect.getNumPr()!=null) {
-	        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-	        			conversionContext.getWmlPackage(), pStyleVal, 
-	        			pPrDirect.getNumPr().getNumId().getVal().toString(), 
-	        			pPrDirect.getNumPr().getIlvl().getVal().toString() ); 
+				triple = org.docx4j.model.listnumbering.Emulator.getNumber(
+						conversionContext.getWmlPackage(), pStyleVal,
+						pPrDirect.getNumPr().getNumId().getVal().toString(),
+						org.docx4j.model.listnumbering.Emulator.getIlvlOrDefault(pPrDirect.getNumPr()).toString() );
 	        	} else {
 	        		// Get the effective values; since we already know this,
 	        		// save the effort of doing this again in Emulator
-	        		Ilvl ilvl = pPr.getNumPr().getIlvl();
-	        		String ilvlString = ilvl == null ? "0" : ilvl.getVal().toString();
+				String ilvlString = org.docx4j.model.listnumbering.Emulator.getIlvlOrDefault(pPr.getNumPr()).toString();
 	        		triple = null; 
 	        		if (pPr.getNumPr().getNumId()!=null) {
 		        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
