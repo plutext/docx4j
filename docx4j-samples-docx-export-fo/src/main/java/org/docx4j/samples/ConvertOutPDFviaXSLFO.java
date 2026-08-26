@@ -217,14 +217,68 @@ public class ConvertOutPDFviaXSLFO {
 		
 		// Config - step 3 (optional since 11.4.10)
 	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings, fopFactory);
-	    // configure foUserAgent as desired
-	    foUserAgent.setTitle("my title");
-	    
+	    // configure foUserAgent as desired; getFOUserAgent stores the instance in
+	    // foSettings, so what you configure here is what Docx4J.toFO renders with
+
+	    // ==== PDF accessibility (Tagged PDF), PDF/A and PDF/UA ===================
+	    //
+	    // Apache FOP (docx4j-export-fo currently uses FOP 2.11) can produce:
+	    //
+	    // - "Tagged PDF": a logical structure tree plus marked content, so screen
+	    //   readers and other assistive technology can establish reading order.
+	    //   https://xmlgraphics.apache.org/fop/2.11/accessibility.html
+	    //
+	    // - PDF/A (archival): PDF/A-1a|1b, -2a|2b|2u, -3a|3b|3u.
+	    //   https://xmlgraphics.apache.org/fop/2.11/pdfa.html
+	    //
+	    // - PDF/UA-1 (the accessibility standard, ISO 14289-1); covered at the
+	    //   foot of the accessibility page above.
+	    //
+	    // 1. Tagged PDF is switched on with:
+	    //
+//	    foUserAgent.setAccessibility(true);
+	    //
+	    //    This is the programmatic equivalent of <accessibility>true</accessibility>
+	    //    in a fop.xconf.  (The xconf form also takes optional attributes this
+	    //    boolean can't express: keep-empty-tags="false" drops empty blocks from
+	    //    the structure tree, and static-region-per-page="true" repeats
+	    //    header/footer content in the structure tree on each page.)
+	    //
+	    // 2. A PDF/A profile is a renderer option, for example:
+	    //
 //	    foUserAgent.getRendererOptions().put("pdf-a-mode", "PDF/A-1b");
-	    
-	    // PDF/A-1a, PDF/A-2a and PDF/A-3a require accessibility to be enabled
-	    // see further https://stackoverflow.com/a/54587413/1031689
-//	    foUserAgent.setAccessibility(true); // suppress "missing language information" messages from FOUserAgent .processEvent
+	    //
+	    //    Conformance level "b" (basic) works without accessibility; the "a"
+	    //    (accessible) and "u" (unicode) levels - PDF/A-1a, -2a, -3a, -2u, -3u -
+	    //    additionally require setAccessibility(true) above, or FOP will object.
+	    //    See further https://stackoverflow.com/a/54587413/1031689
+	    //    PDF/A also requires every font to be embedded (docx4j's generated FOP
+	    //    config embeds the fonts it maps), prohibits PDF encryption, and
+	    //    PDF/A-1 forces PDF version 1.4.
+	    //
+	    // 3. PDF/UA is likewise a renderer option, and needs accessibility plus a
+	    //    document title:
+	    //
+//	    foUserAgent.getRendererOptions().put("pdf-ua-mode", "PDF/UA-1");
+//	    foUserAgent.setAccessibility(true);
+	    //
+	    //    The title can come from setTitle below (or from dc:title metadata in
+	    //    fo:declarations, which docx4j does not emit).
+	    //
+	    // What to expect from docx4j output in accessible modes: FOP derives the
+	    // structure tree from the XSL-FO docx4j generates.  docx4j does not
+	    // currently emit language/country properties, so with accessibility on,
+	    // FOP raises the INFO event "A piece of text or an image's alternate text
+	    // is missing language information" (PDFEventProducer.unknownLanguage) for
+	    // the affected content; nor does it emit fox:alt-text for images (FOP's
+	    // alternate-text mechanism), or role hints.  The result is valid Tagged
+	    // PDF, but tag quality is basic: run a checker (eg veraPDF for PDF/A, PAC
+	    // for PDF/UA) over your output before claiming conformance.  To quieten
+	    // the INFO events, register your own listener via
+	    // foUserAgent.getEventBroadcaster().addEventListener(..) and filter there.
+	    // =========================================================================
+
+	    foUserAgent.setTitle("my title");  // required for PDF/UA; good practice generally
 	    
 	    
 		// Document format: 
