@@ -221,6 +221,7 @@ public class ConvertOutPDFviaXSLFO {
 	    // foSettings, so what you configure here is what Docx4J.toFO renders with
 
 	    // ==== PDF accessibility (Tagged PDF), PDF/A and PDF/UA ===================
+	    // (this material is also in docs/PDF_FOP_Accessibility.md)
 	    //
 	    // Apache FOP (docx4j-export-fo currently uses FOP 2.11) can produce:
 	    //
