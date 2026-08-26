@@ -334,7 +334,7 @@ public class BindingHandler {
 			}
 			
 			
-			if ( /* Non XSLT */ Docx4jProperties.getProperty("docx4j.model.datastorage.BindingHandler.Implementation", "BindingTraverserXSLT")
+			if ( /* Non XSLT - default since 17.0.4 */ Docx4jProperties.getProperty("docx4j.model.datastorage.BindingHandler.Implementation", "BindingTraverserNonXSLT")
 					.equals("BindingTraverserNonXSLT") ) {
 				// Fastest in benchmarks; feature parity since 17.0.4 (see class javadoc)
 				log.info("Using BindingTraverserNonXSLT (fastest in benchmarks; feature parity since 17.0.4)");
@@ -346,9 +346,9 @@ public class BindingHandler {
 				// saved rather than further processed; feature parity since 17.0.4)
 				log.info("Using BindingTraverserStAX (lowest memory; feature parity since 17.0.4)");
 				traverser = new BindingTraverserStAX();
-			} else { /* XSLT */
-				// The default (longest-serving); slower and heavier than the others.
-				log.info("Using BindingTraverserXSLT, the default (slower and heavier than the alternatives; see BindingHandler javadoc)");
+			} else { /* XSLT - default before 17.0.4 */
+				// The longest-serving; slower and heavier than the others.
+				log.info("Using BindingTraverserXSLT, the old default (slower and heavier than the alternatives; see BindingHandler javadoc)");
 				traverser = new BindingTraverserXSLT();
 			}
 
