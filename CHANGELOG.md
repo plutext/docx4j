@@ -8,6 +8,9 @@ Changes in Version 17.0.4
 --------------------------
 
 OpenDoPE:
+- the default binding traverser is now BindingTraverserNonXSLT (fastest in benchmarks; feature
+parity with the XSLT pathway as of this release).  To restore the previous default, set
+docx4j.model.datastorage.BindingHandler.Implementation=BindingTraverserXSLT
 - od:RptPosCon now evaluates positions per repeat occurrence, so the same repeat control can be
 used twice in one paragraph; expanded repeats are tagged with a new od:RptOcc param (issue 690)
 - a binding inside a repeat can now address a specific item of the repeated collection using a

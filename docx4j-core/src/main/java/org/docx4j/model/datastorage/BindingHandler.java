@@ -58,16 +58,16 @@ import jakarta.xml.bind.JAXBException;
  * docs/developer/change-requests/CR-binding-traverser-parity.md).</p>
  *
  * <ul>
- * <li><b>BindingTraverserXSLT</b> (the default): the longest-serving
- * implementation, retained as the default for conservatism, and because
- * XSLT-level customisation of bind.xslt is possible.  It is the slowest and
- * heaviest on every workload benchmarked - typically 2-5x NonXSLT, and on a
- * large document with few bindings dramatically worse, since the whole
- * document is transformed through Xalan.</li>
+ * <li><b>BindingTraverserNonXSLT</b> (the default since 17.0.4): fastest on
+ * every workload benchmarked, with the lowest allocation on binding-dense
+ * documents; the recommended choice for most workloads.</li>
  *
- * <li><b>BindingTraverserNonXSLT</b>: fastest on every workload benchmarked,
- * with the lowest allocation on binding-dense documents; the recommended
- * choice for most workloads.</li>
+ * <li><b>BindingTraverserXSLT</b> (the default before 17.0.4): the
+ * longest-serving implementation; XSLT-level customisation of bind.xslt is
+ * possible.  It is the slowest and heaviest on every workload benchmarked -
+ * typically 2-5x NonXSLT, and on a large document with few bindings
+ * dramatically worse, since the whole document is transformed through
+ * Xalan.</li>
  *
  * <li><b>BindingTraverserStAX</b>: choose where documents are large, bindings
  * sparse, and the result is saved rather than further processed in memory -

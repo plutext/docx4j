@@ -253,8 +253,11 @@ Workloads are synthetic scalings of the test templates.
 ### Observations
 
 1. **NonXSLT is the fastest and leanest across every workload** - roughly 2-3x faster
-   than the XSLT default on repeats and plain binds, with the lowest peak heap and
-   allocation.  Now that it has feature parity, it is a strong candidate for wider use.
+   than the XSLT pathway on repeats and plain binds, with the lowest peak heap and
+   allocation.  **DECIDED (jharrop, 2c07c556): NonXSLT is the default in 17.0.4**
+   (superseding the earlier defer-a-release recommendation); set
+   docx4j.model.datastorage.BindingHandler.Implementation=BindingTraverserXSLT to
+   restore the previous default.
 2. **bind.xslt's RptPosCon position calculation did not scale**: `$vNode/preceding::node()`
    and the `count(.|$set)` membership tests were quadratic-and-worse in document size,
    so 100 instances already cost ~29 s and 200+ was effectively unusable.  The Java
