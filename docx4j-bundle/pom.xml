@@ -81,6 +81,9 @@
 					                <exclude>META-INF/*.SF</exclude>
 					                <exclude>META-INF/*.DSA</exclude>
 					                <exclude>META-INF/*.RSA</exclude>
+					                <!-- a fat jar must not carry any single dependency's module descriptor -->
+					                <exclude>module-info.class</exclude>
+					                <exclude>META-INF/versions/*/module-info.class</exclude>
 					            </excludes>
 					        </filter>
 					    </filters>			              
@@ -123,7 +126,11 @@
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>  <!-- ?? -->
+			<!-- compile scope, so the shaded jar contains the JAXB runtime;
+			     with test scope (as before 17.0.4) the "fat" jar had the
+			     jakarta.xml.bind API but no implementation, so standalone use
+			     failed with eg "Couldn't get [Content_Types].xml from ZipFile"
+			     (JAXBContext creation having failed underneath) -->
 		</dependency>
 
 <!-- 	

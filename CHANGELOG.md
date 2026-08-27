@@ -42,6 +42,12 @@ pathway (hyperlink content strips w:dataBinding/w:text for Word 2007, restored p
 w:showingPlcHdr for RemovalHandler, w:placeholder stripped), and the XPath result cache is now
 used by all implementations; see docs/developer/change-requests/CR-binding-traverser-parity.md
 
+docx4j-bundle:
+- the shaded ("fat") jar now actually contains the JAXB runtime: docx4j-JAXB-ReferenceImpl was
+declared test scope, so the fat jar carried the jakarta.xml.bind API but no implementation, and
+standalone use failed (eg "Couldn't get [Content_Types].xml from ZipFile"); stray module-info
+descriptors are now also excluded from the shade
+
 PropertyResolver:
 - a style added to the styles part after the PropertyResolver was constructed is now found
 (previously it was silently invisible to style resolution); new refresh() method for picking up
