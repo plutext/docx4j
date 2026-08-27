@@ -255,7 +255,7 @@ public class OpenDoPEHandlerComponents {
 	
   private QName getQName(Element el) {
 	    QName qname = new QName(el.getNamespaceURI(), el.getLocalName());
-	    System.out.println(qname);
+	    log.debug("data root: {}", qname);
 	    return qname;
 	}	
 

@@ -72,8 +72,7 @@ public class CustomXmlDataStoragePartSelector {
 			ccFinder.walkJAXBElements(
 				wordMLPackage.getMainDocumentPart().getJaxbElement().getBody());
 			if (visitor.customXmlDataStoragePart==null) {
-				log.error("FATAL. Couldn't find CustomXmlDataStoragePart  " );
-				return null;
+				return getSoleCandidatePart(wordMLPackage);
 			} else {
 				return visitor.customXmlDataStoragePart;
 				
@@ -84,8 +83,9 @@ public class CustomXmlDataStoragePartSelector {
 			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
 			
 			if (xPaths.getXpath().isEmpty()) {
+				// A component-only host can have an empty XPaths part
 				log.info("No xpaths found, so can't determine CustomXmlDataStoragePart from them" );
-				return null;
+				return getSoleCandidatePart(wordMLPackage);
 			}
 			
 			for (Xpath xp : xPaths.getXpath()) {
@@ -130,12 +130,69 @@ public class CustomXmlDataStoragePartSelector {
 				
 			}
 			log.error("Couldn't identify XML part from XPaths part entries");
-			return null;
+			return getSoleCandidatePart(wordMLPackage);
 			
 			
 		}
 	}
 	
+	/**
+	 * Last resort, where the XPaths part (or content control dataBindings)
+	 * couldn't identify the data part: if the package contains exactly one
+	 * plain CustomXmlDataStoragePart (the OpenDoPE parts are
+	 * JaxbCustomXmlDataStoragePart subclasses, so don't count) which isn't
+	 * one of the well-known Microsoft parts, use that.  This is how the data
+	 * part is found in a component-only host document, whose own XPaths part
+	 * is empty.
+	 *
+	 * @since 17.0.4
+	 */
+	private static CustomXmlPart getSoleCandidatePart(WordprocessingMLPackage wordMLPackage) {
+
+		CustomXmlDataStoragePart candidate = null;
+
+		for (CustomXmlPart part : wordMLPackage.getCustomXmlDataStorageParts().values()) {
+
+			if (!(part instanceof CustomXmlDataStoragePart)) continue;
+			CustomXmlDataStoragePart dataPart = (CustomXmlDataStoragePart)part;
+
+			String rootNs = null;
+			try {
+				org.w3c.dom.Document doc = dataPart.getData().getDocument();
+				if (doc!=null && doc.getDocumentElement()!=null) {
+					rootNs = doc.getDocumentElement().getNamespaceURI();
+				}
+			} catch (Docx4JException e) {
+				log.warn("Couldn't inspect " + dataPart.getPartName().getName(), e);
+				continue;
+			}
+
+			if (rootNs!=null && (
+					   rootNs.equals("http://schemas.microsoft.com/office/2006/coverPageProps")
+					|| rootNs.equals("http://schemas.microsoft.com/office/2006/metadata/properties")
+					|| rootNs.equals("http://schemas.openxmlformats.org/package/2006/metadata/core-properties")
+					|| rootNs.equals("http://schemas.openxmlformats.org/officeDocument/2006/bibliography")
+					|| rootNs.startsWith("http://opendope.org/"))) {
+				continue;
+			}
+
+			if (candidate!=null) {
+				// Ambiguous; refuse to guess
+				log.error("FATAL. Couldn't identify CustomXmlDataStoragePart: several candidates, including "
+						+ candidate.getPartName().getName() + " and " + dataPart.getPartName().getName());
+				return null;
+			}
+			candidate = dataPart;
+		}
+
+		if (candidate==null) {
+			log.error("FATAL. Couldn't find CustomXmlDataStoragePart  " );
+		} else {
+			log.info("Using sole candidate part " + candidate.getPartName().getName());
+		}
+		return candidate;
+	}
+
 	private static boolean shouldSkip(String prefixMappings) {
 
 		if (prefixMappings==null) return false;

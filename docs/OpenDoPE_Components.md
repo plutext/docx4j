@@ -102,6 +102,57 @@ The pipeline, as wired in `Docx4J.bind` (`FLAG_BIND_BIND_XML`):
 - Since processing is not recursive, nested composition (components referencing
   components) requires the pieces to be pre-flattened.
 
+## Running the sample
+
+`org.docx4j.samples.ContentControlBindingComponents` (in `docx4j-samples-docx4j`)
+demonstrates the whole pipeline on two files in
+`docx4j-samples-docx4j/sample-docs/databinding/`:
+
+- **`component-host.xml`** — the host template, as Flat OPC XML (docx4j loads
+  that format transparently).  Its body is six numbered paragraphs; paragraph 4
+  is an sdt tagged `od:component=comp1`, and its components part maps `comp1`
+  to the IRI `component-subdoc.docx`.  Its XPaths and conditions parts are
+  empty: the host has no bindings of its own.
+- **`component-subdoc.docx`** — the component: one paragraph of static text
+  ("if you can see this, component insertion worked") ending in a content
+  control bound to `/yourxml/magic`.
+
+The sample turns component processing on, supplies a `DocxFetcher` that
+resolves the IRI relative to the `sample-docs/databinding` directory, and calls
+`Docx4J.bind` with `FLAG_BIND_INSERT_XML | FLAG_BIND_BIND_XML`, injecting
+
+```xml
+<yourxml>goes here<magic>xyzzy</magic></yourxml>
+```
+
+The magic word deliberately differs from the one saved inside the subdoc
+(`abracadabra`): seeing *xyzzy* in the output proves the component's binding
+was re-evaluated against the host's data, not just carried across.
+
+To run it:
+
+1. Run the `main` from your IDE (or however you usually run the samples), with
+   the **working directory set to `docx4j-samples-docx4j`** — the input paths
+   and output path are resolved against `user.dir`.  You need a docx4j JAXB
+   implementation on the classpath (e.g. `docx4j-JAXB-ReferenceImpl`).
+2. For the component to be merged into real WordML, the commercial **MergeDocx**
+   extension must also be on the classpath, together with its
+   `docx4j-Enterprise-License` and `license3j` dependencies and a
+   `plutext-license.bin` licence file (a trial licence ships with the MergeDocx
+   distribution).  Without MergeDocx the sample still runs, but the component
+   is left in the output as a `w:altChunk` (step 4 above), and the binding is
+   not re-evaluated.
+3. Open the result, `OUT_ComponentsProcessed.docx`.  With MergeDocx you should
+   see paragraphs 1–3, then "4 - if you can see this, component insertion
+   worked! The magic word is: xyzzy", then 5 and 6.
+
+Since the host's own XPaths part is empty, identifying the runtime data part
+can't be done from XPaths entries; since 17.0.4,
+`CustomXmlDataStoragePartSelector` falls back to the sole plain custom XML data
+part in the package (the OpenDoPE and well-known Microsoft parts don't count).
+This is what makes a *component-only* host like this one processable at all —
+earlier versions failed with "Couldn't find CustomXmlDataStoragePart".
+
 ## Related, but orthogonal
 
 The components part is one of a family in
