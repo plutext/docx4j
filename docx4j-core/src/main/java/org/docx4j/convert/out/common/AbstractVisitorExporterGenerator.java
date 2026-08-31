@@ -173,7 +173,34 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	
 	
 	protected void rtlAwareAppendChildToCurrentP(Element child) {
-		parentNode.appendChild(child);
+
+		// currentP, as before this method was extracted (in the 17.0.1 bidi work,
+		// whose base implementation appended to parentNode instead - so the HTML
+		// visitor pathway put run spans NEXT TO the p element rather than inside it)
+		currentP.appendChild(child);
+	}
+
+	/**
+	 * The local name of the JAXBElement wrapping this object in its parent's
+	 * content list.  Needed where several element names share one class, eg
+	 * w:footnoteReference/w:endnoteReference (CTFtnEdnRef) and
+	 * w:moveTo/w:moveFrom (RunTrackChange).
+	 *
+	 * @return the local name, or null if it can't be determined
+	 * @since 17.0.4
+	 */
+	protected static String jaxbElementName(org.jvnet.jaxb.lang.Child value) {
+
+		Object parent = value.getParent();
+		if (parent instanceof ContentAccessor) {
+			for (Object c : ((ContentAccessor)parent).getContent()) {
+				if (c instanceof jakarta.xml.bind.JAXBElement
+						&& ((jakarta.xml.bind.JAXBElement<?>)c).getValue()==value) {
+					return ((jakarta.xml.bind.JAXBElement<?>)c).getName().getLocalPart();
+				}
+			}
+		}
+		return null;
 	}
 	
 	

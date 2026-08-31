@@ -470,7 +470,11 @@
 	</xsl:template>
 
 	<xsl:template match="w:noBreakHyphen">
-		<xsl:text disable-output-escaping="yes">&amp;#8209;</xsl:text>
+		<!-- the actual U+2011 character, not an entity via disable-output-escaping:
+		     d-o-e does not survive the trip through the extension functions' result
+		     tree fragments, so the entity text used to reach the output double
+		     escaped (as &amp;#8209;).  See the character entities note above. -->
+		<xsl:text>&#x2011;</xsl:text>
 	</xsl:template>
 	
 	<xsl:template match="w:br">

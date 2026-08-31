@@ -90,6 +90,18 @@ now applies), so simple inline textboxes render instead of producing nothing
 and generates FO roughly an order of magnitude faster in benchmarks; select it with
 Docx4J.FLAG_EXPORT_PREFER_NONXSL. See docs/developer/change-requests/CR-fo-exporter-parity.md
 
+HTML output, visitor pathway (Docx4J.FLAG_EXPORT_PREFER_NONXSL):
+- run spans are now inside their p element again (a 17.0.1 regression put them next to it)
+- content which the visitor exporter silently dropped is now output: w:softHyphen,
+w:noBreakHyphen, w:cr, and deleted text (w:delText, marked span class="del"); inserted and moved
+text (w:ins/w:moveTo/w:moveFrom) is now marked with the ins/del spans as in the XSLT pathway,
+and the move range markers no longer emit stray anchors;
+see docs/developer/change-requests/CR-html-exporter-parity.md
+
+HTML output, XSLT pathway:
+- w:noBreakHyphen now outputs the actual U+2011 non-breaking hyphen; previously the character
+reached the output double-escaped, as the literal text &amp;#8209;
+
 
 Version 17.0.3
 ===============

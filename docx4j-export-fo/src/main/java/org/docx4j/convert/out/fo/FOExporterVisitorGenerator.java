@@ -38,7 +38,6 @@ import org.docx4j.wml.Br;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTFtnEdnRef;
 import org.docx4j.wml.CTTabStop;
-import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.DelText;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
@@ -217,16 +216,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 	/** the local name of the JAXBElement wrapping this reference in its run */
 	private String refKind(CTFtnEdnRef ref) {
-
-		Object parent = ref.getParent();
-		if (parent instanceof ContentAccessor) {
-			for (Object c : ((ContentAccessor)parent).getContent()) {
-				if (c instanceof JAXBElement && ((JAXBElement<?>)c).getValue()==ref) {
-					return ((JAXBElement<?>)c).getName().getLocalPart();
-				}
-			}
-		}
-		return null;
+		return jaxbElementName(ref);
 	}
 
 	/**
@@ -680,16 +670,10 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
     	
     }
 
-	@Override
-	protected void rtlAwareAppendChildToCurrentP(Element spanEl) {
-
-		// Note: prior to 17.0.1, a w:rtl run's inline was wrapped here in
-		//    <fo:bidi-override direction="rtl" unicode-bidi="embed">
-		// That actively broke FOP's own bidi processing (unshaped Arabic, and
-		// wrong run order in mixed RTL/LTR paragraphs); see issue 660 and the
-		// TextDirection class.
-
-		currentP.appendChild( spanEl  );
-
-	}
+	// Note: prior to 17.0.1, rtlAwareAppendChildToCurrentP was overridden here to
+	// wrap a w:rtl run's inline in <fo:bidi-override direction="rtl"
+	// unicode-bidi="embed">.  That actively broke FOP's own bidi processing
+	// (unshaped Arabic, and wrong run order in mixed RTL/LTR paragraphs); see
+	// issue 660 and the TextDirection class.  The base implementation now does
+	// what the interim override did.
 }

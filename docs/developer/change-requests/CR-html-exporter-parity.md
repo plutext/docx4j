@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: PROPOSED (2026-09-01)
+Status: IN PROGRESS (2026-09-01) — phase 1 shipped (execution order 1, 4, 2, 3, 5, 6)
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
 Related: CR-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
@@ -72,12 +72,12 @@ SdtTagHandler (there is no default registration).
 | 14 | **sdt → SdtWriter + registerTagHandler extension point** (identity default, `*`/`**` hooks, QueryString tag parsing) | Y (toSdtNode) | N | **public API silently ignored by the visitor**; sdts traverse transparently (since FO CR; previously they warned) |
 | 15 | Containerization borders/shading containers (TagSingleBox) | Y* | N | unlike FO, not on by default — requires registerTagHandler(Containerization.TAG_BORDERS/TAG_SHADING, new TagSingleBox()); with no handler, the XSLT's identity handler also loses the container styling, so the *default* outputs match; TAG_RPR is a TODO in both (Containerization.java:78) |
 | 16 | HTML lists: PP_HTML_COLLECT_LISTS + `HTML_ELEMENT` tag → w:p as `li` (createListItemBlockForPPr), ol/ul via SdtToListSdtTagHandler | Y* (li unconditionally; ol/ul needs the handler) | N | PP_HTML_COLLECT_LISTS is a DEFAULT_HTML_FEATURES member, so the sdts are present for both; the visitor renders their paragraphs as plain p with literal number text (degraded, not numberless) |
-| 17 | Tracked changes: `w:ins` / `w:moveTo` → span class="ins" (+ .ins CSS) | Y | N | inserted/moved-in text shown unmarked |
-| 18 | Tracked changes: `w:delText` / `w:moveFrom` → span class="del" | Y | N | **deleted text dropped entirely** (DelText has no case in the base generator) |
-| 19 | moveFromRangeStart/End, moveToRangeStart/End skipped | Y | N | visitor warns |
-| 20 | `w:softHyphen` (U+00AD) | Y | N | dropped |
-| 21 | `w:noBreakHyphen` (U+2011 non-breaking hyphen — NB different output than FO's hyphen+U+FEFF) | Y | N | dropped — **visible text loss** |
-| 22 | `w:cr` → `<br clear="all"/>` | Y | N | dropped |
+| 17 | Tracked changes: `w:ins` / `w:moveTo` → span class="ins" (+ .ins CSS) | Y | Y | phase 1 shipped 2026-09-01 |
+| 18 | Tracked changes: `w:delText` / `w:moveFrom` → span class="del" | Y | Y | phase 1 shipped 2026-09-01 |
+| 19 | moveFromRangeStart/End, moveToRangeStart/End skipped | Y | Y | phase 1 shipped 2026-09-01 (range starts previously reached the bookmark writer, CTMoveBookmark extending CTBookmark) |
+| 20 | `w:softHyphen` (U+00AD) | Y | Y | phase 1 shipped 2026-09-01 |
+| 21 | `w:noBreakHyphen` (U+2011 non-breaking hyphen — NB different output than FO's hyphen+U+FEFF) | Y | Y | phase 1 shipped 2026-09-01; the XSLT itself was emitting a double-escaped entity (see phase 1 notes), fixed |
+| 22 | `w:cr` → `<br clear="all"/>` | Y | Y | phase 1 shipped 2026-09-01 |
 | 23 | Footnote/endnote references: numbered, styled span, bidirectional anchors (a name=fs{n} / href=#fn{n}), 17.0.3 generated-text font | Y | N | **references silently dropped** |
 | 24 | Footnotes/endnotes divs (`class="footnotes"/"endnotes"`) at end of body | Y | N | delegate's appendFootnotesEndnotes is a `//TODO:...` stub |
 | 25 | `w:footnoteRef`/`w:endnoteRef` in the note body: number + link back | Y | N | moot until 23/24 exist |
@@ -163,6 +163,11 @@ then wraps) — reuse it directly:
 
 ### Phases
 
+**Execution order (DECIDED 2026-09-01, jharrop: sequencing is flexible): 1, 4, 2,
+3, 5, 6** — phase 4 runs before phase 2 so the sdt handlers receive
+fully-consolidated childResults (see §5).  Phase numbers below are kept stable
+for reference.
+
 Each phase separately shippable.  Test pattern: an `HtmlVisitorParityTest` in
 docx4j-core-tests `org.docx4j.convert.out.html` (alongside FieldFontTest /
 NoteFontTest), running the same assertions against `Docx4J.toHTML` output under
@@ -178,6 +183,19 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
    `RunTrackChange`, so — as with CTFtnEdnRef in the FO CR — the JAXBElement
    wrapper name in the parent's content list distinguishes them (moveTo → ins
    styling, moveFrom → del styling per the templates).  Small, mechanical.
+   **SHIPPED 2026-09-01**: as planned, plus two findings.  (1) A regression fixed
+   in the shared base class: the 17.0.1 bidi work extracted
+   rtlAwareAppendChildToCurrentP with a base implementation appending to
+   parentNode instead of currentP — the FO generator overrode it back, the HTML
+   generator didn't, so since 17.0.1 the HTML visitor put run spans NEXT TO their
+   p element instead of inside it.  Base now appends to currentP; the FO override
+   is deleted as redundant.  (2) The XSLT reference itself output w:noBreakHyphen
+   as the double-escaped text &amp;#8209;: its disable-output-escaping does not
+   survive the trip through the extension functions' result tree fragments (as
+   the stylesheet's own character-entities note warns); the template now emits
+   the literal U+2011.  Also: the FO generator's refKind now delegates to a new
+   protected base helper jaxbElementName (shared with trackChangeClass here).
+   Test: HtmlVisitorParityTest.testPhase1DroppedContent (both exporters).
 2. **sdt dispatch through SdtWriter** (rows 14-16): restores the
    registerTagHandler contract in the visitor pathway; covers TagSingleBox
    borders/shading, SdtToListSdtTagHandler ol/ul, and the HTML_ELEMENT li shape
@@ -228,7 +246,8 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
   single-child+pPr "empty paragraph still numbered" case (:197).
 - Phase 2 before phase 4 means sdt childResults briefly use the current
   handlePPr output; acceptable (they compose), but if sequencing is flexible,
-  4 before 2 gives cleaner childResults to the handlers.
+  4 before 2 gives cleaner childResults to the handlers.  DECIDED 2026-09-01:
+  sequencing is flexible; running 4 before 2 (see execution order above).
 
 ## 6. Suggested sequencing and effort (rough)
 
