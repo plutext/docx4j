@@ -2,6 +2,8 @@ package org.docx4j.markdown;
 
 import java.util.List;
 
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -42,7 +44,16 @@ public class MarkdownImporter {
 	 */
 	public List<Object> importToMainDocumentPart(String markdown, WordprocessingMLPackage pkg)
 			throws Docx4JException {
-		throw new UnsupportedOperationException("Phase 1 (import core) not yet implemented");
+
+		Parser parser = Parser.builder().build();
+		Node document = parser.parse(markdown);
+
+		MarkdownToWmlVisitor visitor = new MarkdownToWmlVisitor(pkg, options);
+		document.accept(visitor);
+
+		List<Object> content = visitor.getResults();
+		pkg.getMainDocumentPart().getContent().addAll(content);
+		return content;
 	}
 
 	protected MarkdownImportOptions getOptions() {

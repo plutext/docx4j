@@ -1,6 +1,6 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: IN PROGRESS (2026-09-01) — phase 0 complete; naming/placement DECIDED
+Status: IN PROGRESS (2026-09-01) — phases 0-1 complete; naming/placement DECIDED
 2026-09-01 (jharrop): the module is **`docx4j-markdown`**, a **reactor module**.
 Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
@@ -179,6 +179,31 @@ module's own test tree), plus docx-side assertions for the import mapping
    lists with real numbering, code, quotes, links, hr, line breaks), styles
    template support, HTML policy option (DROP/LITERAL only).  Tests: mapping
    assertions per construct.
+
+   **DONE 2026-09-01.**  `MarkdownToWmlVisitor` (AbstractVisitor over the
+   commonmark AST) + `ImportStyles` (KnownStyles activation via
+   PropertyResolver; minimal `CodeChar`/`SourceCode` definitions created only
+   when the template lacks them) + `ImportNumbering`.  Decisions taken:
+   - **Code block shape DECIDED: one paragraph with `w:br` is the default**
+     (`MarkdownImportOptions.CodeBlockShape.SINGLE_PARAGRAPH`); both shapes
+     are implemented and tested, `PARAGRAPH_PER_LINE` selectable per call —
+     so the trade-off (block unity vs per-line styling) is the caller's.
+   - **Numbering**: each top-level list is pre-scanned for a per-depth
+     bullet/ordered *signature* from which a 9-level abstractNum is built —
+     so mixed nesting (ordered-in-bullet etc.) gets correct markers at every
+     level.  Any list with an ordered level gets its own abstractNum+num
+     (restart correct by construction; `start` honoured via `w:start` on
+     lvl 0); bullet-only lists share one num per signature.  Tight/loose →
+     `w:contextualSpacing` true/false; follow-on paragraphs in an item get
+     matching `w:ind` but no numPr.
+   - Block quotes win over list context (a quote inside a list item is
+     styled `Quote`, no numPr); nesting depth ≥2 adds 720 twips indent each.
+   - Images (ahead of phase 2's handler) degrade to hyperlinked alt text —
+     the documented no-fetch default.
+   - 19 mapping tests incl. a save-round-trip (marshal) check and a
+     styles-template-not-clobbered check.  NB the default (createPackage)
+     styles part already defines Heading1-4/Hyperlink; Quote, Heading5-6 and
+     ListParagraph come from KnownStyles.xml activation.
 2. **Import extensions + images** (M): GFM tables, strikethrough, task lists,
    footnotes, front matter; image handler with embed-local/link-remote default;
    IMPORT_XHTML policy via optional ImportXHTML.

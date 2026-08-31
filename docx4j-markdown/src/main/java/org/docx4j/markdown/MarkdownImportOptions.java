@@ -18,7 +18,21 @@ public class MarkdownImportOptions {
 		IMPORT_XHTML
 	}
 
+	/**
+	 * How a code block becomes wml.
+	 */
+	public enum CodeBlockShape {
+		/**
+		 * One paragraph, lines separated by w:br (the default: keeps the
+		 * block a single unit for styling and copy/paste).
+		 */
+		SINGLE_PARAGRAPH,
+		/** One paragraph per line. */
+		PARAGRAPH_PER_LINE
+	}
+
 	private HtmlPolicy htmlPolicy = HtmlPolicy.DROP;
+	private CodeBlockShape codeBlockShape = CodeBlockShape.SINGLE_PARAGRAPH;
 
 	public HtmlPolicy getHtmlPolicy() {
 		return htmlPolicy;
@@ -26,6 +40,15 @@ public class MarkdownImportOptions {
 
 	public MarkdownImportOptions setHtmlPolicy(HtmlPolicy htmlPolicy) {
 		this.htmlPolicy = htmlPolicy;
+		return this;
+	}
+
+	public CodeBlockShape getCodeBlockShape() {
+		return codeBlockShape;
+	}
+
+	public MarkdownImportOptions setCodeBlockShape(CodeBlockShape codeBlockShape) {
+		this.codeBlockShape = codeBlockShape;
 		return this;
 	}
 
