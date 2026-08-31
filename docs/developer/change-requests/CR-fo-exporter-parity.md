@@ -1,6 +1,6 @@
 # CR: FO exporter feature parity (FOExporterVisitor vs FOExporterXslt)
 
-Status: IN PROGRESS (2026-08-31) — phase 1 shipped; see the per-phase notes below
+Status: IN PROGRESS (2026-08-31) — phases 1-2 shipped; see the per-phase notes below
 Scope: `org.docx4j.convert.out.fo` (docx4j-export-fo) plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (docx4j-core)
 Related: CR-binding-traverser-parity.md (same "stop maintaining two copies" principle,
@@ -66,7 +66,7 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 11 | `hyphenate="true"` when docx4j.convert.out.fo.hyphenate set | Y (XsltFOFunctions:170) | Y | phase 1 shipped 2026-08-31 |
 | 12 | `text-align-last="justify"` when block contains a leader (ptab case) | Y (foContainsElement) | Y | phase 1 shipped 2026-08-31 (set where the visitor emits the ptab leader) |
 | 13 | List items (fo:list-block, label via Emulator + RunFontSelector, indent/pdbs) | Y | P | near-duplicate logic; visitor nests block/list-block ("That's different to XSL" comment) and hangs pPr attributes on the outer block, XSLT on the block in list-item-body |
-| 14 | Containerization containers: `w:sdt` XSLT_PBdr/XSLT_Shd → borders/shading on the container block; margin fix for shading; nested-sdt and inline (XSLT_RPr, run w:bdr) cases | Y (createBlockForSdt / createInlineForSdt) | N | **visitor traverses containers transparently; combined with ignoreBorders=!sdt (always true), paragraph top/bottom borders are always dropped, and run borders lost** |
+| 14 | Containerization containers: `w:sdt` XSLT_PBdr/XSLT_Shd → borders/shading on the container block; margin fix for shading; nested-sdt and inline (XSLT_RPr, run w:bdr) cases | Y (createBlockForSdt / createInlineForSdt) | Y | phase 2 shipped 2026-08-31 |
 | 15 | Tracked changes: `w:ins` blue underline | Y (docx2fo.xslt:411) | Y | phase 1 shipped 2026-08-31 |
 | 16 | Tracked changes: `w:delText` red line-through | Y (docx2fo.xslt:422) | Y | phase 1 shipped 2026-08-31 |
 | 17 | `w:softHyphen` (U+00AD) | Y | Y | phase 1 shipped 2026-08-31 |
@@ -200,6 +200,22 @@ CR, byte-for-byte identity is NOT the bar; structural/feature equivalence is.
    `createBlockForSdt`-equivalent (container gets the borders/shading + shading margin
    fix; inner paragraphs keep ignoreBorders), XSLT_RPr via the inline path; non-XSLT_
    sdts stay transparent.  This is the phase that most changes visible layout.
+   **SHIPPED 2026-08-31**: rather than a visitor-side copy, the consolidation
+   direction of §4 was applied directly: XsltFOFunctions' DOM `createBlock` was split
+   into an unmarshal wrapper plus a JAXB-typed `createBlock(context, PPr pPrDirect,
+   pStyleVal, Node childResults, sdt)` holding the effective-props logic (so the
+   fontSzOnly/paragraph-mark computation now exists once), and JAXB-typed
+   `createBlockForSdt`/`createInlineForSdt` overloads were added.  The visitor's
+   apply() intercepts XSLT_-tagged sdts (a pure `containerTag` check also drives
+   shouldTraverse), converts the contents into a fragment with a sub-generator
+   (mirroring the XSLT's childResults-then-wrap composition), and wraps via those
+   overloads; the container-shape cases (first w:p's pPr / nested sdt's first w:p /
+   sdtPr rPr) mirror the w:sdt template.  Non-XSLT_ sdts now traverse silently
+   (previously a "Need to handle" warn).  Note: this also fixes the always-dropped
+   paragraph top/bottom borders, since bordered paragraphs are always containerized.
+   Test: VisitorParityTest.testPhase2Containers (paragraph borders on one container
+   block, no repeated inner borders, shading container with zero margins, run-border
+   container inline).
 3. **Footnotes and endnotes** (rows 4-7): footnote-separator static-content in the
    delegate; `CTFtnEdnRef` branch building the fo:footnote structure (share the
    number-sequencing via the existing context counters and the

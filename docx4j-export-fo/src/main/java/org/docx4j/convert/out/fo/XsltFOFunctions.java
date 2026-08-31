@@ -88,47 +88,106 @@ public class XsltFOFunctions {
 		return LayoutMasterSetBuilder.getLayoutMasterSetFragment(context);
 	}
 	
-    public static DocumentFragment createBlockForSdt(FOConversionContext context, 
+    public static DocumentFragment createBlockForSdt(FOConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults, String tag) {
-    	
+
     	DocumentFragment docfrag = createBlock(context,
         		 pPrNodeIt,
         		 pStyleVal,  childResults,
         		 true);
-    	
-    	// Set margins, but only for a shading container,
-    	// not a borders container
-    	if (tag.equals(Containerization.TAG_SHADING) && docfrag!=null) {
-    		// docfrag.getNodeName() is  #document-fragment
-    	    Node foBlock = docfrag.getFirstChild();
-    	    if (foBlock!=null) {
-				((Element)foBlock).setAttribute("margin-top", "0in");    	    	
-				((Element)foBlock).setAttribute("margin-bottom", "0in");    	    	
 
-//				((Element)foBlock).setAttribute("padding-top", "0in");
-//				((Element)foBlock).setAttribute("padding-bottom", "0in");
-    	    }
-    	}
-
+    	applySdtContainerMargins(docfrag, tag);
     	wrapInBidiBlockContainer(docfrag);
 
     	return docfrag;
     }
 
-    public static DocumentFragment createInlineForSdt( 
+    /**
+     * JAXB-typed form of createBlockForSdt, for the visitor pathway
+     * (FOExporterVisitorGenerator).
+     *
+     * @param pPrDirect the pPr of the first paragraph inside the container
+     * @param childResults the already converted contents of the sdt
+     * @since 17.0.4
+     */
+    public static DocumentFragment createBlockForSdt(FOConversionContext context,
+    		PPr pPrDirect, String pStyleVal, Node childResults, String tag) {
+
+    	DocumentFragment docfrag = createBlock(context, pPrDirect, pStyleVal, childResults, true);
+
+    	applySdtContainerMargins(docfrag, tag);
+    	wrapInBidiBlockContainer(docfrag);
+
+    	return docfrag;
+    }
+
+	/**
+	 * Set margins, but only for a shading container, not a borders container
+	 * (so there isn't a white strip between shaded paragraphs).
+	 */
+	private static void applySdtContainerMargins(DocumentFragment docfrag, String tag) {
+
+    	if (tag.equals(Containerization.TAG_SHADING) && docfrag!=null) {
+    		// docfrag.getNodeName() is  #document-fragment
+    	    Node foBlock = docfrag.getFirstChild();
+    	    if (foBlock!=null) {
+				((Element)foBlock).setAttribute("margin-top", "0in");
+				((Element)foBlock).setAttribute("margin-bottom", "0in");
+
+//				((Element)foBlock).setAttribute("padding-top", "0in");
+//				((Element)foBlock).setAttribute("padding-bottom", "0in");
+    	    }
+    	}
+	}
+
+    public static DocumentFragment createInlineForSdt(
     		FOConversionContext context,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults, String tag) {
-    	
-    	DocumentFragment docfrag = createBlockForRPr( 
+
+    	DocumentFragment docfrag = createBlockForRPr(
         		context,
         		null,
         		rPrNodeIt,
         		childResults);
-    	    
+
     	return docfrag;
-    }	
+    }
+
+    /**
+     * JAXB-typed form of createInlineForSdt, for the visitor pathway: an fo:inline
+     * carrying the effective run properties of the sdtPr's rPr (a run borders/shading
+     * container created by the Containerization preprocess).
+     *
+     * @since 17.0.4
+     */
+    public static DocumentFragment createInlineForSdt(
+    		FOConversionContext context,
+    		RPr rPrDirect, Node childResults) {
+
+        try {
+			RPr rPr = context.getPropertyResolver().getEffectiveRPr(rPrDirect, null);
+
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+			Element foInlineElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
+			document.appendChild(foInlineElement);
+
+			createFoAttributes(context.getWmlPackage(), rPr, foInlineElement);
+
+			if (childResults!=null) {
+				XmlUtils.treeCopy(childResults, foInlineElement);
+			}
+
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+			return docfrag;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+    }
     /**
      * This is invoked on every paragraph, whether it has a pPr or not.
      * 
@@ -287,10 +346,57 @@ public class XsltFOFunctions {
         }
     }
     
-    private static DocumentFragment createBlock( 
+    private static DocumentFragment createBlock(
     		FOConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults,
+    		boolean sdt) {
+
+    	// Note that this is invoked for every paragraph with a pPr node.
+
+    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator
+    	// which implements org.w3c.dom.traversal.NodeIterator
+
+    	// Get the pPr node as a JAXB object,
+    	// so we can read it using our standard
+    	// methods.  Its a bit sad that we
+    	// can't just adorn our DOM tree with the
+    	// original JAXB objects?
+    	PPr pPrDirect = null;
+    	if (pPrNodeIt!=null) {
+    		Node n = pPrNodeIt.nextNode();
+    		if (n==null) {
+    			if (log.isDebugEnabled()) {
+    				log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
+    			}
+    		} else {
+    			if (log.isDebugEnabled()) {
+    				log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
+    			}
+    			try {
+	    			Unmarshaller u = Context.jc.createUnmarshaller();
+	    			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+					pPrDirect =  (PPr)u.unmarshal(n);
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+			    	return null;
+				}
+    		}
+    	}
+    	return createBlock(context, pPrDirect, pStyleVal, childResults.nextNode(), sdt);
+    }
+
+    /**
+     * JAXB-typed form: determine the effective paragraph and run properties for
+     * pPrDirect, and format the block.  Used by both the XSLT pathway (above, after
+     * unmarshalling) and the visitor pathway.
+     *
+     * @since 17.0.4
+     */
+    protected static DocumentFragment createBlock(
+    		FOConversionContext context,
+    		PPr pPrDirect,
+    		String pStyleVal, Node childResults,
     		boolean sdt) {
 
     	PropertyResolver propertyResolver;
@@ -300,22 +406,17 @@ public class XsltFOFunctions {
 			log.error(e.getMessage(), e);
 	    	return null;
 		}
-    	
-    	// Note that this is invoked for every paragraph with a pPr node.
-    	
-    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
-    	// which implements org.w3c.dom.traversal.NodeIterator
-    	
-		Style defaultParagraphStyle = 
+
+		Style defaultParagraphStyle =
 				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
 				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle() :
 				null);
-		
+
     	String defaultParagraphStyleId;
     	if (defaultParagraphStyle==null) // possible, for non MS source docx
     		defaultParagraphStyleId = "Normal";
     	else defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
-    	
+
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
 //			pStyleVal = "Normal";
 			pStyleVal = defaultParagraphStyleId;
@@ -324,100 +425,69 @@ public class XsltFOFunctions {
 			log.debug("style '" + pStyleVal );
 		}
 
-    	//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
-//    	log.info("childResults:" + childResults.getClass().getName() ); 
-    	
-    	
 		/* First, determine effective paragraph and run properties (pPr, rPr) */
-    	PPr pPrDirect = null;
-    	
-    	// Get the pPr node as a JAXB object,
-    	// so we can read it using our standard
-    	// methods.  Its a bit sad that we 
-    	// can't just adorn our DOM tree with the
-    	// original JAXB objects?
     	PPr pPr = null;
     	RPr rPr = null;
     	RPr rPrParagraphMark = null;  // required for list item label
         try {
-        	
-        	if (pPrNodeIt==null) {  // Never happens?        		
-    			if (log.isDebugEnabled()) {
-    				log.debug("Here after all!!");
-    			}
-        		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
-        		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
-        		rPrParagraphMark = rPr;
+
+        	if (pPrDirect==null) {
+            	pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
+            	rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
+            	rPrParagraphMark = rPr;
+        		// TODO - in this case, we should be able to compute once,
+        		// and on subsequent calls, just return pre computed value
         	} else {
-        		Node n = pPrNodeIt.nextNode();
-        		if (n==null) {
-        			if (log.isDebugEnabled()) {
-        				log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
-        			}
-            		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
-            		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
-            		// TODO - in this case, we should be able to compute once,
-            		// and on subsequent calls, just return pre computed value
-        		} else {
-        			if (log.isDebugEnabled()) {
-        				log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
-        			}
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				pPrDirect =  (PPr)jaxb;
-    				pPr = propertyResolver.getEffectivePPr(pPrDirect);  
-    				if ((pPr==null) && (log.isDebugEnabled())) {
-    					log.debug("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
-    				}
-    				
-    				// On the block representing the w:p, we want to put both
-    			    // pPr and rPr attributes.
-    				
-    				if (log.isDebugEnabled()) {
-    					log.debug("getting rPr for paragraph style");
-    				}
+				pPr = propertyResolver.getEffectivePPr(pPrDirect);
+				if ((pPr==null) && (log.isDebugEnabled())) {
+					log.debug("pPr null; obtained from: " + XmlUtils.marshaltoString(pPrDirect, true, true) );
+				}
 
-					// rPr in pPr direct formatting only applies to paragraph mark, 
-					// and by virtue of that, to list item label,
-					// so pass null here.				
-					// 2018 05, actually, sz also affects line spacing (eg 12 pt on block
-            		// with 11 pt inside would have more space), so its important
-            		RPr fontSzOnlyRPr = new RPr();
-            		if (pPrDirect.getRPr()!=null && pPrDirect.getRPr().getSz()!=null) {
-            			HpsMeasure hm = new HpsMeasure(); 
-            			hm.setVal( pPrDirect.getRPr().getSz().getVal() ); // does this suffice as a copy?
-                		fontSzOnlyRPr.setSz(hm);
-            		}
-            		if (pPrDirect.getRPr()!=null) {
-            			// Assume no need to clone
-            			fontSzOnlyRPr.setLang(pPrDirect.getRPr().getLang());
-            		}
-            		
-            		rPr = propertyResolver.getEffectiveRPr(fontSzOnlyRPr, pPrDirect);
-            		
-    				// Now, work out the value for list item label
-            		rPrParagraphMark = XmlUtils.deepCopy(rPr);
-    				
-//        			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
-            		
-            		StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark); 
-    				
+				// On the block representing the w:p, we want to put both
+			    // pPr and rPr attributes.
+
+				if (log.isDebugEnabled()) {
+					log.debug("getting rPr for paragraph style");
+				}
+
+				// rPr in pPr direct formatting only applies to paragraph mark,
+				// and by virtue of that, to list item label,
+				// so pass null here.
+				// 2018 05, actually, sz also affects line spacing (eg 12 pt on block
+        		// with 11 pt inside would have more space), so its important
+        		RPr fontSzOnlyRPr = new RPr();
+        		if (pPrDirect.getRPr()!=null && pPrDirect.getRPr().getSz()!=null) {
+        			HpsMeasure hm = new HpsMeasure();
+        			hm.setVal( pPrDirect.getRPr().getSz().getVal() ); // does this suffice as a copy?
+            		fontSzOnlyRPr.setSz(hm);
         		}
-        	}        	
+        		if (pPrDirect.getRPr()!=null) {
+        			// Assume no need to clone
+        			fontSzOnlyRPr.setLang(pPrDirect.getRPr().getLang());
+        		}
 
-			if (log.isDebugEnabled() && pPr!=null) {				
-				log.debug("P effective pPr: "+ XmlUtils.marshaltoString(pPr, true, true));					
+        		rPr = propertyResolver.getEffectiveRPr(fontSzOnlyRPr, pPrDirect);
+
+				// Now, work out the value for list item label
+        		rPrParagraphMark = XmlUtils.deepCopy(rPr);
+
+//    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
+
+        		StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark);
+        	}
+
+			if (log.isDebugEnabled() && pPr!=null) {
+				log.debug("P effective pPr: "+ XmlUtils.marshaltoString(pPr, true, true));
 			}
 		} catch (Exception e) {
 			//log.error(e.getLocalizedMessage(), e);
 			log.error(e.getMessage(), e);
 	    	return null;
-		} 
-			
+		}
+
 		/* Now that we have pPr, we can format the block. */
-		return createBlock(context.getWmlPackage(), context.getRunFontSelector(), pStyleVal, childResults, sdt, pPrDirect, pPr, rPr, rPrParagraphMark); 
-    	    	
+		return createBlock(context.getWmlPackage(), context.getRunFontSelector(), pStyleVal, childResults, sdt, pPrDirect, pPr, rPr, rPrParagraphMark);
+
     }
 
 	/** The font-family which applies to text we generate ourselves - a tab leader, or
@@ -471,8 +541,16 @@ public class XsltFOFunctions {
 		return "";
 	}
 
-	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector, 
+	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, NodeIterator childResults,
+			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark) {
+
+		return createBlock(wmlPackage, runFontSelector, pStyleVal, childResults.nextNode(),
+				sdt, pPrDirect, pPr, rPr, rPrParagraphMark);
+	}
+
+	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, Node childResults,
 			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark) {
 
         try {
@@ -536,8 +614,8 @@ public class XsltFOFunctions {
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
-			Node n = childResults.nextNode();
-			
+			Node n = childResults;
+
 			// Handle empty case - want the block to be preserved!
 			if (n.getChildNodes().getLength()==0) {
 				

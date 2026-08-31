@@ -136,6 +136,64 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/* ------------------------------------------------------------------
+	 * Phase 2: Containerization containers (paragraph borders/shading, run borders)
+	 * ------------------------------------------------------------------ */
+
+	/** two adjacent paragraphs with the same borders, two shaded ones, and two
+	 *  adjacent runs with the same run border */
+	private WordprocessingMLPackage phase2Pkg() throws Exception {
+
+		String pbdr = "<w:pBdr>"
+				+ "<w:top w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"FF0000\"/>"
+				+ "<w:left w:val=\"single\" w:sz=\"4\" w:space=\"4\" w:color=\"FF0000\"/>"
+				+ "<w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"FF0000\"/>"
+				+ "<w:right w:val=\"single\" w:sz=\"4\" w:space=\"4\" w:color=\"FF0000\"/>"
+				+ "</w:pBdr>";
+		String shd = "<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"FFFF00\"/>";
+		String rbdr = "<w:rPr><w:bdr w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"0000FF\"/></w:rPr>";
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr>" + pbdr + "</w:pPr><w:r><w:t>bordered one</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + pbdr + "</w:pPr><w:r><w:t>bordered two</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + shd + "</w:pPr><w:r><w:t>shaded one</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + shd + "</w:pPr><w:r><w:t>shaded two</w:t></w:r></w:p>"
+				+ "<w:p>"
+				+   "<w:r>" + rbdr + "<w:t>boxed one</w:t></w:r>"
+				+   "<w:r>" + rbdr + "<w:t xml:space=\"preserve\"> boxed two</w:t></w:r>"
+				+ "</w:p>"
+				+ "</w:body></w:document>"));
+		return pkg;
+	}
+
+	@Test
+	public void testPhase2Containers() throws Exception {
+
+		for (int flag : FLAGS) {
+			org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(phase2Pkg(), flag));
+			String impl = flagName(flag) + ": ";
+
+			// the borders sit on one container block around both paragraphs
+			assertTrue(impl + "paragraph borders lost", isPresent(doc,
+					"//fo:block[@border-top-style='solid']"
+					+ "[contains(.,'bordered one')][contains(.,'bordered two')]"));
+			assertTrue(impl + "top border repeated on the inner paragraphs", isAbsent(doc,
+					"//fo:block[@border-top-style]//fo:block[@border-top-style]"));
+
+			// the shading container has zero margins (no white strip between paragraphs)
+			assertTrue(impl + "shading container lost", isPresent(doc,
+					"//fo:block[@background-color='#FFFF00'][@margin-top='0in']"
+					+ "[contains(.,'shaded one')][contains(.,'shaded two')]"));
+
+			// run borders sit on one container inline around both runs
+			assertTrue(impl + "run border container lost", isPresent(doc,
+					"//fo:inline[@border-style='solid']"
+					+ "[contains(.,'boxed one')][contains(.,'boxed two')]"));
+		}
+	}
+
 	/* ------------------------------------------------------------------ */
 
 	private byte[] toFO(WordprocessingMLPackage wordMLPackage, int flag) throws Exception {

@@ -22,6 +22,7 @@ package org.docx4j.convert.out.fo;
 import java.util.List;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
@@ -53,6 +54,7 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RunDel;
 import org.docx4j.wml.RunIns;
+import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STPTabAlignment;
 import org.docx4j.wml.STTabJc;
@@ -147,6 +149,19 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			}
 			return null;
 
+		} else if (o instanceof SdtElement) {
+
+			// A borders/shading container inserted by the Containerization preprocess
+			// (tag XSLT_PBdr/XSLT_Shd/XSLT_RPr) is rendered as a block/inline carrying
+			// the borders/shading; any other sdt is traversed transparently, as in the
+			// XSLT's w:sdt template
+			SdtElement sdt = (SdtElement)o;
+			String tag = containerTag(sdt);
+			if (tag!=null) {
+				handleXsltContainer(sdt, tag);
+			}
+			return null;
+
 		} else if (o instanceof R.Ptab) {
 
 			if (conversionContext.isInComplexFieldDefinition()) {
@@ -172,6 +187,99 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		}
 
 		return super.apply(o);
+	}
+
+	@Override
+	public boolean shouldTraverse(Object o) {
+
+		if (o instanceof SdtElement && containerTag((SdtElement)o)!=null) {
+			// its contents were already converted in apply (handleXsltContainer)
+			return false;
+		}
+		return super.shouldTraverse(o);
+	}
+
+	/**
+	 * The Containerization tag if this sdt is a borders/shading container in a shape
+	 * we can render (cf the cases of the XSLT's w:sdt template); null otherwise.
+	 */
+	private String containerTag(SdtElement sdt) {
+
+		if (sdt.getSdtPr()==null
+				|| sdt.getSdtPr().getTag()==null
+				|| sdt.getSdtPr().getTag().getVal()==null) return null;
+		String tag = sdt.getSdtPr().getTag().getVal();
+		if (!tag.contains("XSLT_")) return null;
+		if (firstPPPr(sdt)!=null || sdtPrRPr(sdt)!=null) return tag;
+		return null;
+	}
+
+	/** the pPr of the container's first paragraph (looking through a nested
+	 *  container, as a borders container may directly hold a shading one) */
+	private PPr firstPPPr(SdtElement sdt) {
+
+		if (sdt.getSdtContent()==null) return null;
+		PPr pPr = firstPPPr(sdt.getSdtContent().getContent());
+		if (pPr!=null) return pPr;
+		for (Object o : sdt.getSdtContent().getContent()) {
+			o = XmlUtils.unwrap(o);
+			if (o instanceof SdtElement) {
+				SdtElement inner = (SdtElement)o;
+				return (inner.getSdtContent()==null ? null
+						: firstPPPr(inner.getSdtContent().getContent()));
+			}
+		}
+		return null;
+	}
+
+	private PPr firstPPPr(List<Object> content) {
+
+		for (Object o : content) {
+			o = XmlUtils.unwrap(o);
+			if (o instanceof P) return ((P)o).getPPr();
+		}
+		return null;
+	}
+
+	private RPr sdtPrRPr(SdtElement sdt) {
+
+		if (sdt.getSdtPr()==null) return null;
+		for (Object o : sdt.getSdtPr().getRPrOrAliasOrLock()) {
+			o = XmlUtils.unwrap(o);
+			if (o instanceof RPr) return (RPr)o;
+		}
+		return null;
+	}
+
+	private void handleXsltContainer(SdtElement sdt, String tag) {
+
+		// convert the contents first (cf the XSLT's childResults)
+		DocumentFragment childResults = document.createDocumentFragment();
+		if (sdt.getSdtContent()!=null) {
+			FOExporterVisitorGenerator generator = (FOExporterVisitorGenerator)
+					getFactory().createInstance(conversionContext, document, childResults);
+			generator.pPr = pPr; // a run-level container keeps its paragraph context
+			new TraversalUtil(sdt.getSdtContent().getContent(), generator);
+		}
+
+		PPr containerPPr = firstPPPr(sdt);
+		if (containerPPr!=null) {
+			// pStyleVal: the XSLT evaluates w:pPr/w:pStyle relative to the w:sdt,
+			// which selects nothing, so pass null (default paragraph style)
+			DocumentFragment result = XsltFOFunctions.createBlockForSdt(
+					conversionContext, containerPPr, null, childResults, tag);
+			if (result!=null) {
+				(tc.peek()!=null ? tc.peek() : parentNode)
+						.appendChild(document.importNode(result, true));
+			}
+		} else {
+			DocumentFragment result = XsltFOFunctions.createInlineForSdt(
+					conversionContext, sdtPrRPr(sdt), childResults);
+			if (result!=null) {
+				(currentP!=null ? currentP : parentNode)
+						.appendChild(document.importNode(result, true));
+			}
+		}
 	}
 
 	@Override

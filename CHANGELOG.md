@@ -64,8 +64,12 @@ PDF output, visitor pathway (Docx4J.FLAG_EXPORT_PREFER_NONXSL):
 w:noBreakHyphen, w:cr, right-aligned w:ptab, and deleted text (w:delText, marked red
 strike-through as in the XSLT pathway); inserted text (w:ins) is now marked blue underlined;
 force-page-count is now set on each page-sequence (no unexpected blank pages before an
-odd/even-page section starts), and the docx4j.convert.out.fo.hyphenate property is honoured;
-see docs/developer/change-requests/CR-fo-exporter-parity.md
+odd/even-page section starts), and the docx4j.convert.out.fo.hyphenate property is honoured
+- paragraph borders and shading are now rendered by the visitor exporter: the border/shading
+containers created by the Containerization preprocess were traversed transparently, so paragraph
+top/bottom borders were always dropped (left/right were kept, which looked worse), merged shading
+lost its margin fix (white strips between shaded paragraphs), and run borders (w:bdr on adjacent
+runs) disappeared; see docs/developer/change-requests/CR-fo-exporter-parity.md
 
 
 Version 17.0.3
