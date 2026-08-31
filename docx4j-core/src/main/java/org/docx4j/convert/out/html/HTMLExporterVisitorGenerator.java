@@ -29,7 +29,9 @@ import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
 import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
+import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.wml.Br;
+import org.docx4j.wml.CTFtnEdnRef;
 import org.docx4j.wml.CTMoveBookmark;
 import org.docx4j.wml.CTMoveFromRangeEnd;
 import org.docx4j.wml.CTMoveToRangeEnd;
@@ -125,6 +127,41 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			}
 			return null;
 
+		} else if (o instanceof CTFtnEdnRef) {
+
+			// w:footnoteReference and w:endnoteReference share this class; the
+			// JAXBElement wrapper in the containing run tells them apart
+			if (!conversionContext.isInComplexFieldDefinition()) {
+				if ("endnoteReference".equals(jaxbElementName((CTFtnEdnRef)o))) {
+					appendNoteReference("es", "en", conversionContext.getNextEndnoteNumber());
+				} else {
+					appendNoteReference("fs", "fn", conversionContext.getNextFootnoteNumber());
+				}
+			}
+			return null;
+
+		} else if (o instanceof R.FootnoteRef) {
+
+			// the number in the footnote itself, linked back to the reference;
+			// noteNumber is set by HTMLExporterVisitorDelegate when rendering notes
+			if (noteNumber>=0 && !conversionContext.isInComplexFieldDefinition()) {
+				appendNoteReference("fn", "fs", noteNumber);
+			}
+			return null;
+
+		} else if (o instanceof R.EndnoteRef) {
+
+			if (noteNumber>=0 && !conversionContext.isInComplexFieldDefinition()) {
+				appendNoteReference("en", "es", noteNumber);
+			}
+			return null;
+
+		} else if (o instanceof R.Separator
+				|| o instanceof R.ContinuationSeparator) {
+
+			// nothing is output for these in the XSLT pathway either
+			return null;
+
 		} else if (o instanceof SdtElement) {
 
 			// dispatch through SdtWriter, so registered SdtTagHandlers (borders/
@@ -170,6 +207,7 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			HTMLExporterVisitorGenerator generator = (HTMLExporterVisitorGenerator)
 					getFactory().createInstance(conversionContext, document, childResults);
 			generator.pPr = pPr; // a run-level sdt keeps its paragraph context
+			generator.noteNumber = noteNumber;
 			new TraversalUtil(sdt.getSdtContent().getContent(), generator);
 		}
 
@@ -231,6 +269,7 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		HTMLExporterVisitorGenerator generator = (HTMLExporterVisitorGenerator)
 				getFactory().createInstance(conversionContext, document, childResults);
 		generator.pPr = pPrDirect;
+		generator.noteNumber = noteNumber; // in case we are inside a footnote/endnote
 		new TraversalUtil(p.getContent(), generator);
 
 		// createBlock merges the numbering indentation into the pPr's ind, so give
@@ -284,6 +323,37 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			XsltHTMLFunctions.composeRunSpan(conversionContext, r.getRPr(), span);
 		}
 		currentSpan = null;
+	}
+
+	/** the number of the note whose content is being rendered (for w:footnoteRef /
+	 *  w:endnoteRef); set by HTMLExporterVisitorDelegate when appending the notes */
+	protected int noteNumber = -1;
+
+	/**
+	 * A note number as the XSLT emits it: a small superscript-ish span holding
+	 * bidirectional anchors, eg for a footnote reference
+	 * &lt;a name="fs1"&gt;&lt;a href="#fn1"&gt; around the styled number.
+	 */
+	private void appendNoteReference(String herePrefix, String therePrefix, int number) {
+
+		Element span = createNode(document, NODE_INLINE);
+		span.setAttribute("style", "vertical-align: top; font-size: xx-small");
+		Element aName = document.createElement("a");
+		aName.setAttribute("name", herePrefix + number);
+		Element aHref = document.createElement("a");
+		aHref.setAttribute("href", "#" + therePrefix + number);
+		aName.appendChild(aHref);
+		span.appendChild(aName);
+
+		// the number is generated, so it has no w:t to hang a font off; resolve it
+		// from the run this reference belongs to (17.0.3 behavior)
+		DocumentFragment styled = XsltCommonFunctions.fontSelectorForGeneratedText(
+				conversionContext, pPr, rPr, Integer.toString(number));
+		if (styled!=null) {
+			XmlUtils.treeCopy(styled, aHref);
+		}
+
+		getCurrentParent().appendChild(span);
 	}
 
 	/** the span class for a tracked-changes wrapper element, or null if o isn't one */

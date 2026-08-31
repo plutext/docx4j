@@ -105,7 +105,11 @@ span, adjacent identical spans merged), and the mapTo=id bookmark contract works
 - sdts now dispatch through SdtWriter in the visitor pathway, so tag handlers registered via
 SdtWriter.registerTagHandler (TagSingleBox borders/shading divs, SdtToListSdtTagHandler ol/ul
 lists, custom handlers) apply there too; previously they were silently ignored under
-FLAG_EXPORT_PREFER_NONXSL; see docs/developer/change-requests/CR-html-exporter-parity.md
+FLAG_EXPORT_PREFER_NONXSL
+- footnotes and endnotes are now rendered by the visitor exporter (previously the reference marks
+AND the note bodies were silently dropped): numbered references with bidirectional anchors, and
+the footnotes/endnotes divs at the end of the body;
+see docs/developer/change-requests/CR-html-exporter-parity.md
 
 HTML output, XSLT pathway:
 - w:noBreakHyphen now outputs the actual U+2011 non-breaking hyphen; previously the character

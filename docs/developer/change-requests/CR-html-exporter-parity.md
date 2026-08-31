@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: IN PROGRESS (2026-09-01) — phases 1, 4 and 2 shipped (execution order 1, 4, 2, 3, 5, 6)
+Status: IN PROGRESS (2026-09-01) — phases 1, 4, 2 and 3 shipped (execution order 1, 4, 2, 3, 5, 6)
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
 Related: CR-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
@@ -78,9 +78,9 @@ SdtTagHandler (there is no default registration).
 | 20 | `w:softHyphen` (U+00AD) | Y | Y | phase 1 shipped 2026-09-01 |
 | 21 | `w:noBreakHyphen` (U+2011 non-breaking hyphen — NB different output than FO's hyphen+U+FEFF) | Y | Y | phase 1 shipped 2026-09-01; the XSLT itself was emitting a double-escaped entity (see phase 1 notes), fixed |
 | 22 | `w:cr` → `<br clear="all"/>` | Y | Y | phase 1 shipped 2026-09-01 |
-| 23 | Footnote/endnote references: numbered, styled span, bidirectional anchors (a name=fs{n} / href=#fn{n}), 17.0.3 generated-text font | Y | N | **references silently dropped** |
-| 24 | Footnotes/endnotes divs (`class="footnotes"/"endnotes"`) at end of body | Y | N | delegate's appendFootnotesEndnotes is a `//TODO:...` stub |
-| 25 | `w:footnoteRef`/`w:endnoteRef` in the note body: number + link back | Y | N | moot until 23/24 exist |
+| 23 | Footnote/endnote references: numbered, styled span, bidirectional anchors (a name=fs{n} / href=#fn{n}), 17.0.3 generated-text font | Y | Y | phase 3 shipped 2026-09-01 |
+| 24 | Footnotes/endnotes divs (`class="footnotes"/"endnotes"`) at end of body | Y | Y | phase 3 shipped 2026-09-01 (appended after the footer div, where the XSLT puts them before it — cosmetic ordering difference) |
+| 25 | `w:footnoteRef`/`w:endnoteRef` in the note body: number + link back | Y | Y | phase 3 shipped 2026-09-01 |
 | 26 | `w:tab` → 3 nbsp | Y | Y | (no font handling in the HTML tab, unlike FO 17.0.3 — same in both, so parity) |
 | 27 | `w:br` | Y | Y | shared BrWriter |
 | 28 | `w:sym` | Y | Y | shared SymbolWriter |
@@ -219,6 +219,17 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
    anchors; footnotes/endnotes divs in appendDocumentFooter (fill the existing
    stub); footnoteRef/endnoteRef in the note bodies.  Reuses the FO CR's
    refKind approach for the shared CTFtnEdnRef class.
+   **SHIPPED 2026-09-01**: appendNoteReference builds the XSLT's shape (the
+   xx-small span holding a name= anchor wrapping a href= anchor around the
+   fontSelectorForGeneratedText-styled number); the four prefix pairs (fs/fn,
+   es/en and their note-body inverses) cover reference and back-link.  The
+   delegate's stub is filled: divs class footnotes/endnotes in the body, notes
+   with id 0 skipped as in the XSLT, each note converted by a generator whose
+   noteNumber field (cf count(preceding-sibling)-1) is propagated into handleP/
+   handleSdt sub-generators.  The divs land after the footer div where the XSLT
+   puts them before it — cosmetic, noted in row 24.  w:separator and
+   w:continuationSeparator are quiet no-ops (the XSLT emits nothing for them
+   either).  Test: HtmlVisitorParityTest.testPhase3FootnotesEndnotes.
 4. **Paragraph/run fidelity via consolidation** (rows 5, 7-13): restructure
    apply(P) to childResults-then-wrap via a JAXB-typed createBlockForPPr /
    createListItemBlockForPPr; handleRPr routes through createBlockForRPr's

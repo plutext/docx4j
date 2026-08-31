@@ -11,8 +11,12 @@ import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTEndnotes;
+import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Style;
@@ -272,6 +276,74 @@ public class HtmlVisitorParityTest {
 
 			// an sdt with an unregistered tag passes its contents through (identity)
 			assertTrue(impl + "identity sdt content lost", html.contains("control content"));
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	 * Phase 3: footnotes and endnotes
+	 * ------------------------------------------------------------------ */
+
+	/** body text with a footnote and an endnote (cf NoteFontTest) */
+	private WordprocessingMLPackage notesPkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body><w:p>"
+				+ "<w:r><w:t xml:space=\"preserve\">Body text </w:t></w:r>"
+				+ "<w:r><w:footnoteReference w:id=\"2\"/></w:r>"
+				+ "<w:r><w:t xml:space=\"preserve\"> and </w:t></w:r>"
+				+ "<w:r><w:endnoteReference w:id=\"2\"/></w:r>"
+				+ "</w:p></w:body></w:document>"));
+
+		FootnotesPart fp = new FootnotesPart();
+		fp.setJaxbElement((CTFootnotes)XmlUtils.unmarshalString(
+				"<w:footnotes " + W + ">"
+				+ "<w:footnote w:type=\"separator\" w:id=\"0\"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>"
+				+ "<w:footnote w:type=\"continuationSeparator\" w:id=\"1\"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>"
+				+ "<w:footnote w:id=\"2\"><w:p>"
+				+   "<w:r><w:footnoteRef/></w:r>"
+				+   "<w:r><w:t xml:space=\"preserve\"> The footnote.</w:t></w:r>"
+				+ "</w:p></w:footnote></w:footnotes>", Context.jc, CTFootnotes.class));
+		pkg.getMainDocumentPart().addTargetPart(fp);
+
+		EndnotesPart ep = new EndnotesPart();
+		ep.setJaxbElement((CTEndnotes)XmlUtils.unmarshalString(
+				"<w:endnotes " + W + ">"
+				+ "<w:endnote w:type=\"separator\" w:id=\"0\"><w:p><w:r><w:separator/></w:r></w:p></w:endnote>"
+				+ "<w:endnote w:type=\"continuationSeparator\" w:id=\"1\"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>"
+				+ "<w:endnote w:id=\"2\"><w:p>"
+				+   "<w:r><w:endnoteRef/></w:r>"
+				+   "<w:r><w:t xml:space=\"preserve\"> The endnote.</w:t></w:r>"
+				+ "</w:p></w:endnote></w:endnotes>", Context.jc, CTEndnotes.class));
+		pkg.getMainDocumentPart().addTargetPart(ep);
+
+		return pkg;
+	}
+
+	@Test
+	public void testPhase3FootnotesEndnotes() throws Exception {
+
+		for (int flag : FLAGS) {
+			String html = toHTML(notesPkg(), flag);
+			String impl = flagName(flag) + ": ";
+
+			// the reference marks: bidirectional anchors around the number
+			assertTrue(impl + "footnote reference lost", Pattern.compile(
+					"<a name=\"fs1\"><a href=\"#fn1\">(<span[^>]*>)*1").matcher(html).find());
+			assertTrue(impl + "endnote reference lost", Pattern.compile(
+					"<a name=\"es1\"><a href=\"#en1\">(<span[^>]*>)*1").matcher(html).find());
+
+			// the notes themselves, in their divs, numbered and linked back
+			String footnotes = block(html, "<div class=\"footnotes\">", "</div>");
+			assertTrue(impl + "footnote body lost", footnotes.contains("The footnote."));
+			assertTrue(impl + "footnote number/backlink lost", Pattern.compile(
+					"<a name=\"fn1\"><a href=\"#fs1\">").matcher(footnotes).find());
+
+			String endnotes = block(html, "<div class=\"endnotes\">", "</div>");
+			assertTrue(impl + "endnote body lost", endnotes.contains("The endnote."));
+			assertTrue(impl + "endnote number/backlink lost", Pattern.compile(
+					"<a name=\"en1\"><a href=\"#es1\">").matcher(endnotes).find());
 		}
 	}
 

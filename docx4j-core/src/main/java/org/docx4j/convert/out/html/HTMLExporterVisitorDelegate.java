@@ -21,6 +21,7 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
+import org.docx4j.TraversalUtil;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
@@ -180,9 +181,29 @@ public class HTMLExporterVisitorDelegate extends AbstractVisitorExporterDelegate
 	}
 
 	protected void appendFootnotesEndnotes(HTMLConversionContext conversionContext,
-			Document document, Element documentRoot, String string,
+			Document document, Element documentRoot, String className,
 			Part part, List<CTFtnEdn> ftnEdnList) {
-		//TODO:...
+
+		// documentRoot is the html element; the div belongs in the body
+		org.w3c.dom.Node body = documentRoot.getLastChild();
+		if (body==null) return;
+
+		Element div = document.createElement("div");
+		div.setAttribute("class", className);
+		body.appendChild(div);
+
+		for (int i=0; i<ftnEdnList.size(); i++) {
+			CTFtnEdn note = ftnEdnList.get(i);
+			if (note.getId()!=null && note.getId().signum()==0) {
+				continue; // the separator; as in the XSLT, only w:id='0' is skipped
+			}
+			HTMLExporterVisitorGenerator generator = (HTMLExporterVisitorGenerator)
+					generatorFactory.createInstance(conversionContext, document, div);
+			// the number w:footnoteRef/w:endnoteRef renders, linked back to the
+			// reference; cf the XSLT's count(preceding-sibling)-1
+			generator.noteNumber = i - 1;
+			new TraversalUtil(note.getContent(), generator);
+		}
 	}
 
 	
