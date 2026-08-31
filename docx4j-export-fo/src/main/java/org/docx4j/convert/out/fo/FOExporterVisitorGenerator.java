@@ -21,6 +21,7 @@ package org.docx4j.convert.out.fo;
 
 import java.util.List;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
@@ -43,13 +44,17 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.CTTabStop;
+import org.docx4j.wml.DelText;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.RunDel;
+import org.docx4j.wml.RunIns;
 import org.docx4j.wml.STBrType;
+import org.docx4j.wml.STPTabAlignment;
 import org.docx4j.wml.STTabJc;
 import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
@@ -89,6 +94,111 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	@Override
 	protected AbstractVisitorExporterGeneratorFactory<FOConversionContext> getFactory() {
 		return GENERATOR_FACTORY;
+	}
+
+	@Override
+	public List<Object> apply(Object o) {
+
+		// FO-specific handling of elements the shared visitor has no case for;
+		// the output matches the corresponding docx2fo.xslt templates.
+
+		if (o instanceof DelText) {
+
+			if (!conversionContext.isInComplexFieldDefinition()) {
+				Element inline = createNode(document, NODE_INLINE);
+				inline.setAttribute("color", "red");
+				inline.setAttribute("text-decoration", "line-through");
+				inline.setTextContent(((DelText)o).getValue());
+				getCurrentParent().appendChild(inline);
+			}
+			return null;
+
+		} else if (o instanceof RunIns || o instanceof RunDel) {
+
+			// RunIns gets its styling wrapper in walkJAXBElements (its runs are
+			// appended while walking); RunDel content is just traversed, with the
+			// visible marking on the w:delText above.
+			return null;
+
+		} else if (o instanceof R.SoftHyphen) {
+
+			if (!conversionContext.isInComplexFieldDefinition()) {
+				getCurrentParent().appendChild(document.createTextNode("\u00AD"));
+			}
+			return null;
+
+		} else if (o instanceof R.NoBreakHyphen) {
+
+			// There is no glyph for NON-BREAKING HYPHEN U+2011 in many fonts, so use
+			// an ordinary hyphen with a zero-width no-break space
+			if (!conversionContext.isInComplexFieldDefinition()) {
+				getCurrentParent().appendChild(document.createTextNode("-\uFEFF"));
+			}
+			return null;
+
+		} else if (o instanceof R.Cr) {
+
+			if (!conversionContext.isInComplexFieldDefinition()) {
+				// an empty block suffices for the line break (matching the XSLT,
+				// whose template's literal space is stripped as stylesheet whitespace)
+				Element block = createNode(document, NODE_BLOCK);
+				block.setAttribute("white-space-treatment", "preserve");
+				getCurrentParent().appendChild(block);
+			}
+			return null;
+
+		} else if (o instanceof R.Ptab) {
+
+			if (conversionContext.isInComplexFieldDefinition()) {
+				return null;
+			}
+			if (STPTabAlignment.RIGHT.equals(((R.Ptab)o).getAlignment())) {
+				Element leader = document.createElementNS(XSL_FO, "leader");
+				leader.setAttribute("leader-length.minimum", "12pt");
+				leader.setAttribute("leader-length.maximum", "100%");
+				leader.setAttribute("leader-length.optimum", "100%");
+				leader.setAttribute("leader-pattern", "space");
+				leader.setAttribute("leader-alignment", "reference-area");
+				getCurrentParent().appendChild(leader);
+				// for leader to work as expected in FOP, we need text-align-last;
+				// see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
+				if (currentP != null) {
+					currentP.setAttribute("text-align-last", "justify");
+				}
+				return null;
+			}
+			return super.apply(o); // other alignments: warn, as the XSLT does
+
+		}
+
+		return super.apply(o);
+	}
+
+	@Override
+	public void walkJAXBElements(Object o) {
+
+		if (o instanceof RunIns
+				&& !conversionContext.isInComplexFieldDefinition()) {
+
+			Element wrapper = createNode(document, NODE_INLINE);
+			wrapper.setAttribute("color", "blue");
+			wrapper.setAttribute("text-decoration", "underline");
+			(currentP != null ? currentP : parentNode).appendChild(wrapper);
+
+			// the w:ins contains runs; have them append their spans to the wrapper
+			Element savedP = currentP;
+			Element savedSpan = currentSpan;
+			currentP = wrapper;
+			try {
+				super.walkJAXBElements(o);
+			} finally {
+				currentP = savedP;
+				currentSpan = savedSpan;
+			}
+			return;
+		}
+
+		super.walkJAXBElements(o);
 	}
 
 	@Override
@@ -238,6 +348,12 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			Element currentParent) throws Docx4JException {
     	
     	Element ret = currentParent;
+
+		// Hyphenation defaults to off; see createBlockForPPr in XsltFOFunctions
+		if (!sdt
+				&& Docx4jProperties.getProperty("docx4j.convert.out.fo.hyphenate", false)) {
+			currentParent.setAttribute("hyphenate", "true");
+		}
 
     	PropertyResolver propertyResolver = conversionContext.getPropertyResolver();
     	

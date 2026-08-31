@@ -59,6 +59,14 @@ U+2C00-U+2EFF) now always stays in the run's own font; previously, where the fon
 couldn't be checked for) the glyph, it was set in a symbol font.  Symbol substitution still
 applies to the symbol blocks U+2190-U+2BFF (arrows, dingbats, misc symbols etc)
 
+PDF output, visitor pathway (Docx4J.FLAG_EXPORT_PREFER_NONXSL):
+- content which the visitor exporter silently dropped is now output: w:softHyphen,
+w:noBreakHyphen, w:cr, right-aligned w:ptab, and deleted text (w:delText, marked red
+strike-through as in the XSLT pathway); inserted text (w:ins) is now marked blue underlined;
+force-page-count is now set on each page-sequence (no unexpected blank pages before an
+odd/even-page section starts), and the docx4j.convert.out.fo.hyphenate property is honoured;
+see docs/developer/change-requests/CR-fo-exporter-parity.md
+
 
 Version 17.0.3
 ===============

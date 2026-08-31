@@ -60,6 +60,10 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 	
     	pageSequence.setAttribute("master-reference", sectionWrapper.getId());
     	pageSequence.setAttribute("id", "section_" + sectionWrapper.getId());
+    	// mimic Word's behavior of not inserting blank pages (except around
+    	// odd/even page section breaks); see getForcePageCount
+    	pageSequence.setAttribute("force-page-count",
+    			XsltFOFunctions.getForcePageCount(conversionContext));
     	pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
     	if (pageNumberInitial > -1) {
         	pageSequence.setAttribute("initial-page-number", Integer.toString(pageNumberInitial));
