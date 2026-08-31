@@ -511,6 +511,22 @@ public class XsltHTMLFunctions {
     	
     }
 
+    /**
+     * JAXB-typed form of createBlockForPPr, for the visitor pathway
+     * (HTMLExporterVisitorGenerator).
+     *
+     * @param pPr the paragraph's own pPr (may be null)
+     * @param childResults the already converted contents of the paragraph
+     * @since 17.0.4
+     */
+    public static DocumentFragment createBlockForPPr(
+    		HTMLConversionContext context,
+    		PPr pPr,
+    		String pStyleVal, Node childResults ) {
+
+    	return createBlock(context, pPr, pStyleVal, childResults, "p");
+    }
+
     public static DocumentFragment createListItemBlockForPPr( 
     		HTMLConversionContext context,
     		NodeIterator pPrNodeIt,
@@ -523,13 +539,74 @@ public class XsltHTMLFunctions {
         		  "li" );
     	
     }
+
+    /**
+     * JAXB-typed form of createListItemBlockForPPr, for the visitor pathway.
+     *
+     * @since 17.0.4
+     */
+    public static DocumentFragment createListItemBlockForPPr(
+    		HTMLConversionContext context,
+    		PPr pPr,
+    		String pStyleVal, Node childResults ) {
+
+    	return createBlock(context, pPr, pStyleVal, childResults, "li");
+    }
     
     private static DocumentFragment createBlock( 
     		HTMLConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults,
     		String htmlElementName ) {
-    	
+
+    	// Note that this is invoked for every paragraph with a pPr node.
+
+    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator
+    	// which implements org.w3c.dom.traversal.NodeIterator
+
+    	// Get the pPr node as a JAXB object,
+    	// so we can read it using our standard
+    	// methods.  Its a bit sad that we
+    	// can't just adorn our DOM tree with the
+    	// original JAXB objects?
+    	PPr pPr = null;
+    	if (pPrNodeIt!=null) { //It is never null
+    		Node n = pPrNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+	    			Unmarshaller u = Context.jc.createUnmarshaller();
+	    			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+	    			Object jaxb = u.unmarshal(n);
+	    			try {
+	    				pPr =  (PPr)jaxb;
+	    			} catch (ClassCastException e) {
+	    				context.getLog().error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
+	    			}
+			} catch (JAXBException e) {
+				context.getLog().error(e.getMessage(), e);
+				return null;
+			}
+    		}
+    	}
+
+    	return createBlock(context, pPr, pStyleVal,
+    			(childResults==null ? null : childResults.nextNode()), htmlElementName);
+    }
+
+    /**
+     * JAXB-typed form: build the html block (p, li or div) for these paragraph
+     * properties, around the already converted content.  Used by both the XSLT
+     * pathway (above, after unmarshalling) and the visitor pathway.
+     *
+     * @param childResults the converted content: the result tree fragment root
+     *   (XSLT pathway) or a DocumentFragment (visitor pathway)
+     * @since 17.0.4
+     */
+    protected static DocumentFragment createBlock(
+    		HTMLConversionContext context,
+    		PPr pPr,
+    		String pStyleVal, Node childResults,
+    		String htmlElementName ) {
 
 		StyleTree styleTree;
 		try {
@@ -538,11 +615,6 @@ public class XsltHTMLFunctions {
 			log.error("Couldn't getStyleTree", e);
 			return null;
 		}
-    	
-    	// Note that this is invoked for every paragraph with a pPr node.
-    	
-    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
-    	// which implements org.w3c.dom.traversal.NodeIterator
 
 		Style defaultParagraphStyle = 
 				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
@@ -559,32 +631,8 @@ public class XsltHTMLFunctions {
 			pStyleVal = defaultParagraphStyleId;
 		}
     	context.getLog().debug("style '" + pStyleVal );     		
-    	
-//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
-//    	log.info("childResults:" + childResults.getClass().getName() ); 
 
-    	
         try {
-        	
-        	// Get the pPr node as a JAXB object,
-        	// so we can read it using our standard
-        	// methods.  Its a bit sad that we 
-        	// can't just adorn our DOM tree with the
-        	// original JAXB objects?
-        	PPr pPr = null;
-        	if (pPrNodeIt!=null) { //It is never null
-        		Node n = pPrNodeIt.nextNode();
-        		if (n!=null) {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-        			try {
-        				pPr =  (PPr)jaxb;
-        			} catch (ClassCastException e) {
-        				context.getLog().error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
-        			}        	        			
-        		}
-        	}
         	
             // Create a DOM document to take the results			
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();			
@@ -634,8 +682,7 @@ public class XsltHTMLFunctions {
 			// Our element (eg <p>) wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
-			// init
-			Node n = childResults.nextNode();
+			Node n = childResults;
 			
 			if (xhtmlBlock.getNodeName().equals("p") 
 					&& context.getBookmarkStart()!=null ) {
@@ -646,62 +693,51 @@ public class XsltHTMLFunctions {
 			
 			
 			if (xhtmlBlock.getNodeName().equals("p")
+					&& n!=null
 					&& n.hasChildNodes()
-					&& n.getChildNodes().item(0).getLocalName().equals("span")) {
+					&& isSpan(n.getChildNodes().item(0))) {
 					// old XSLT won't produce a span for w:r unless there is w:rPr
 				
 				mergeSpans(n.getChildNodes(), document, xhtmlBlock);
 				
-			} else {
-			
-				do {	
-					
-	//				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
-					
-					// getNumberXmlNode creates a span node, which is empty
-					// if there is no numbering.
-					// Let's get rid of any such <span/>.
-					
-					// What we actually get is a document node
-					if (n.getNodeType()==Node.DOCUMENT_NODE) {
-						context.getLog().debug("handling DOCUMENT_NODE");
-						
-						// Do just enough of the handling here
-		                NodeList nodes = n.getChildNodes();
-		                if (nodes != null) {
-		                    for (int i=0; i<nodes.getLength(); i++) {
-		                    	
-		        				if (((Node)nodes.item(i)).getLocalName().equals("span")
-		        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
-		        					// ignore
-		        					context.getLog().debug(".. ignoring <span/> ");
-		        				} else {
-		        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
-		        				}
-		                    }
-		                }	
-		                
-		                
-					} else {
-						
-		//					log.info("Node we are importing: " + n.getClass().getName() );
-		//					foBlockElement.appendChild(
-		//							document.importNode(n, true) );
-						/*
-						 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-						 * which causes
-						 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-						 * 
-						 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-						 * 
-						 * So instead of importNode, use 
-						 */
-						XmlUtils.treeCopy( n,  xhtmlBlock );
-					}
-					// next 
-					n = childResults.nextNode();
-					
-				} while ( n !=null ); 
+			} else if (n!=null
+					&& (n.getNodeType()==Node.DOCUMENT_NODE
+							|| n.getNodeType()==Node.DOCUMENT_FRAGMENT_NODE)) {
+
+				// a result tree fragment presents as a document node; the visitor
+				// pathway passes a document fragment
+				context.getLog().debug("handling DOCUMENT_NODE");
+
+				// Skip any empty <span/>
+                NodeList nodes = n.getChildNodes();
+                if (nodes != null) {
+                    for (int i=0; i<nodes.getLength(); i++) {
+                    	
+        				if (isSpan(nodes.item(i))
+        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
+        					// ignore
+        					context.getLog().debug(".. ignoring <span/> ");
+        				} else {
+        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
+        				}
+                    }
+                }	
+                
+			} else if (n!=null) {
+				
+	//					log.info("Node we are importing: " + n.getClass().getName() );
+	//					foBlockElement.appendChild(
+	//							document.importNode(n, true) );
+				/*
+				 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
+				 * which causes
+				 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
+				 * 
+				 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+				 * 
+				 * So instead of importNode, use 
+				 */
+				XmlUtils.treeCopy( n,  xhtmlBlock );
 			}
 			
 			
@@ -727,6 +763,19 @@ public class XsltHTMLFunctions {
     	
     	return null;
     }
+
+    /** Is this a span element?  NB safe for plain DOM nodes as well as Xalan's
+     *  DTMNodeProxy (which implements Element whatever the node type); a span
+     *  created with the DOM level 1 createElement has a null local name, so fall
+     *  back to the node name. */
+    private static boolean isSpan(Node n) {
+
+    	if (!(n instanceof Element)) return false;
+    	if (n.getNodeType()!=Node.ELEMENT_NODE) return false;
+    	String name = (n.getLocalName()!=null ? n.getLocalName() : n.getNodeName());
+    	return "span".equals(name);
+    }
+
     
     /**
      * Merge adjacent spans if @class and @style are the same
@@ -738,15 +787,18 @@ public class XsltHTMLFunctions {
     	if (nodes==null || nodes.getLength()==0) return;
     	
     	// init .. skip children until we find a span
+    	// (NB items need not be elements: eg a soft hyphen is a text node between
+    	// spans; isSpan is safe for those, where a plain cast is not)
     	int startIndex = 0;
     	Element currentEl; 
     	while (true) {
-    		currentEl = ((Element)nodes.item(startIndex));
-    		    		
-        	if (currentEl.getLocalName().equals("span")) {
+    		Node item = nodes.item(startIndex);
+
+        	if (isSpan(item)) {
+        		currentEl = (Element)item;
             	break;        		
         	} else {
-            	XmlUtils.treeCopy( currentEl,  xhtmlBlock );
+            	XmlUtils.treeCopy( item,  xhtmlBlock );
         	}
         	
         	startIndex++;
@@ -776,11 +828,11 @@ public class XsltHTMLFunctions {
     	
     	for (int i=(startIndex+1); i<nodes.getLength(); i++) {
     		
-        	Element thisSpan = ((Element)nodes.item(i));
+        	Node item = nodes.item(i);
         	
-        	// Handle elements other than span eg img
-        	if (!thisSpan.getLocalName().equals("span")) {
-            	XmlUtils.treeCopy( thisSpan,  xhtmlBlock );
+        	// Handle nodes other than span, eg an img, or a text node
+        	if (!isSpan(item)) {
+            	XmlUtils.treeCopy( item,  xhtmlBlock );
         		
             	// Get read for next span
         		newSpan = document.createElement("span");	
@@ -793,6 +845,7 @@ public class XsltHTMLFunctions {
         		}
         		continue;
         	}
+        	Element thisSpan = (Element)item;
         	
         	// Handle span
         	if (!thisSpan.hasChildNodes()) continue;
@@ -827,6 +880,60 @@ public class XsltHTMLFunctions {
     	}
     }
     
+
+    /**
+     * Apply the createBlockForRPr composition to a span whose children are the
+     * run's converted content, in place: @class (the rStyle, or the default
+     * character style), style from the rPr, merged with the w:t font-selection
+     * span so there is no unnecessary nested span.  For the visitor pathway
+     * (HTMLExporterVisitorGenerator).
+     *
+     * @since 17.0.4
+     */
+    public static void composeRunSpan(HTMLConversionContext context, RPr rPr, Element span) {
+
+		Style defaultRunStyle = 
+				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
+				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultCharacterStyle() :
+				null);
+		
+    	String defaultCharacterStyleId;
+    	if (defaultRunStyle.getStyleId()==null) // possible, for non MS source docx
+    		defaultCharacterStyleId = "DefaultParagraphFont";
+    	else defaultCharacterStyleId = defaultRunStyle.getStyleId();
+
+        try {
+	    	StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
+
+    		// Avoid unnecessary nested span for common case of single child
+	    	if (span.getChildNodes().getLength()==1
+	    			&& isSpan(span.getFirstChild())) {
+
+	    		Element child = (Element)span.getFirstChild();
+				String existingStyle = child.getAttribute("style");
+				span.setAttribute("style", existingStyle );
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				while (child.getFirstChild()!=null) {
+					span.insertBefore(child.getFirstChild(), child);
+				}
+				span.removeChild(child);
+
+	    	} else {
+
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+
+				// merge adjacent identical child spans, as createBlockForRPr does
+				DocumentFragment tmp = span.getOwnerDocument().createDocumentFragment();
+				while (span.getFirstChild()!=null) {
+					tmp.appendChild(span.getFirstChild());
+				}
+				mergeSpans(tmp.getChildNodes(), span.getOwnerDocument(), span);
+	    	}
+
+		} catch (Exception e) {
+			context.getLog().error(e.getMessage(), e);
+		}
+    }
 
     public static DocumentFragment createBlockForRPr( 
     		HTMLConversionContext context,

@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: IN PROGRESS (2026-09-01) — phase 1 shipped (execution order 1, 4, 2, 3, 5, 6)
+Status: IN PROGRESS (2026-09-01) — phases 1 and 4 shipped (execution order 1, 4, 2, 3, 5, 6)
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
 Related: CR-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
@@ -60,18 +60,18 @@ SdtTagHandler (there is no default registration).
 | 2 | userBodyTop / userBodyTail injected into `<body>` | Y | N | HTMLSettings honoured by the stylesheet only |
 | 3 | Default header/footer divs (`class="header"/"footer"`) | Y | Y | both support the default header/footer only |
 | 4 | `div class="document"` wrapper | Y | Y | |
-| 5 | Paragraph `@class` from the style tree | Y (always; default paragraph style when no pStyle) | P | visitor sets class only when direct pStyle present |
+| 5 | Paragraph `@class` from the style tree | Y | Y | phase 4 shipped 2026-09-01 |
 | 6 | Paragraph inline CSS from direct pPr (ignoreBorders) | Y | Y | both read the direct pPr |
-| 7 | List numbering text (bullet U+2022 / numString via Emulator) | Y | P | visitor: only when pPrDirect!=null, so style-based numbering with no direct pPr yields no number; also appends an extra trailing space |
-| 8 | Numbering indentation merged into the paragraph's ind (Emulator.getInd + Indent) | Y (XsltHTMLFunctions:612) | N | |
-| 9 | Empty paragraph → `&nbsp;` (browsers collapse an empty p) | Y (XsltHTMLFunctions:708) | N | |
-| 10 | mergeSpans: adjacent spans with same class/style merged; empty number spans dropped | Y | N | output-size / cosmetic |
-| 11 | bookmarkStart `mapTo=id` mode → p/@id | Y (context.getBookmarkStart consumed in createBlock) | N | with `docx4j.Convert.Out.HTML.BookmarkStartWriter.mapTo=id`, the visitor drops the bookmark entirely; default `a` mode is at parity (shared writer) |
-| 12 | Run span `@class` (rStyle, falling back to the default character style) | Y | P | visitor: only when direct rStyle; no default-character-style class |
-| 13 | Run span/style composition with the w:t font-selection span (avoid nested spans; style concat) | Y (createBlockForRPr) | N | visitor nests the fontSelector span inside the run span |
+| 7 | List numbering text (bullet U+2022 / numString via Emulator) | Y | Y | phase 4 shipped 2026-09-01 (shared getNumberXmlNode; NB with PP_HTML_COLLECT_LISTS on, numbered paragraphs normally become li instead) |
+| 8 | Numbering indentation merged into the paragraph's ind (Emulator.getInd + Indent) | Y | Y | phase 4 shipped 2026-09-01 |
+| 9 | Empty paragraph → `&nbsp;` (browsers collapse an empty p) | Y | Y | phase 4 shipped 2026-09-01 |
+| 10 | mergeSpans: adjacent spans with same class/style merged; empty number spans dropped | Y | Y | phase 4 shipped 2026-09-01 |
+| 11 | bookmarkStart `mapTo=id` mode → p/@id | Y | Y | phase 4 shipped 2026-09-01 (via the shared createBlock; not separately tested — the property is read in a static initializer, so it can't be toggled per-test) |
+| 12 | Run span `@class` (rStyle, falling back to the default character style) | Y | Y | phase 4 shipped 2026-09-01 |
+| 13 | Run span/style composition with the w:t font-selection span (avoid nested spans; style concat) | Y | Y | phase 4 shipped 2026-09-01 |
 | 14 | **sdt → SdtWriter + registerTagHandler extension point** (identity default, `*`/`**` hooks, QueryString tag parsing) | Y (toSdtNode) | N | **public API silently ignored by the visitor**; sdts traverse transparently (since FO CR; previously they warned) |
 | 15 | Containerization borders/shading containers (TagSingleBox) | Y* | N | unlike FO, not on by default — requires registerTagHandler(Containerization.TAG_BORDERS/TAG_SHADING, new TagSingleBox()); with no handler, the XSLT's identity handler also loses the container styling, so the *default* outputs match; TAG_RPR is a TODO in both (Containerization.java:78) |
-| 16 | HTML lists: PP_HTML_COLLECT_LISTS + `HTML_ELEMENT` tag → w:p as `li` (createListItemBlockForPPr), ol/ul via SdtToListSdtTagHandler | Y* (li unconditionally; ol/ul needs the handler) | N | PP_HTML_COLLECT_LISTS is a DEFAULT_HTML_FEATURES member, so the sdts are present for both; the visitor renders their paragraphs as plain p with literal number text (degraded, not numberless) |
+| 16 | HTML lists: PP_HTML_COLLECT_LISTS + `HTML_ELEMENT` tag → w:p as `li` (createListItemBlockForPPr), ol/ul via SdtToListSdtTagHandler | Y* (li unconditionally; ol/ul needs the handler) | P | the li half shipped with phase 4 (2026-09-01); the ol/ul handler half needs phase 2's SdtWriter dispatch |
 | 17 | Tracked changes: `w:ins` / `w:moveTo` → span class="ins" (+ .ins CSS) | Y | Y | phase 1 shipped 2026-09-01 |
 | 18 | Tracked changes: `w:delText` / `w:moveFrom` → span class="del" | Y | Y | phase 1 shipped 2026-09-01 |
 | 19 | moveFromRangeStart/End, moveToRangeStart/End skipped | Y | Y | phase 1 shipped 2026-09-01 (range starts previously reached the bookmark writer, CTMoveBookmark extending CTBookmark) |
@@ -212,6 +212,27 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
    generator now does).  Brings default-style classes, style numbering,
    numbering indent, empty-p nbsp, mergeSpans and the mapTo=id bookmark
    contract along for free.
+   **SHIPPED 2026-09-01**: XsltHTMLFunctions' createBlock split into an unmarshal
+   wrapper + a JAXB/Node-typed core (as done for XsltFOFunctions), with JAXB
+   createBlockForPPr / createListItemBlockForPPr overloads; the visitor's
+   apply(P) sub-generates children into a fragment (prepending the number text
+   via the shared getNumberXmlNode, whose NodeIterator parameter turned out to
+   be unused anyway) and wraps — a w:p inside an HTML_ELEMENT sdt becomes an li,
+   per the w:p template, incl. its in-table-empty-paragraph quirk.  Runs stay
+   streamed, but walkJAXBElements(R) post-processes the span after its children
+   are walked: no span at all for a run without rPr (as the XSLT), otherwise
+   the new XsltHTMLFunctions.composeRunSpan applies the createBlockForRPr
+   composition in place (default character class, style concat with the w:t
+   font span, child-span merging).  handlePPr/handleRPr are stubs.  Findings:
+   mergeSpans and the span-detection had latent plain-DOM hazards — Xalan's
+   DTMNodeProxy implements Element for every node type and reports "#text" as a
+   text node's local name, while DOM level 1 createElement spans have a null
+   local name — fixed with a type/name-safe isSpan used by both pathways; and
+   createBlock mutates the pPr it is given (numbering indent merge), so the
+   visitor passes a deep copy (the XSLT works on a throwaway unmarshalled copy).
+   The visitor's output for the test document is now essentially identical to
+   the XSLT's, down to quirks like the double semicolon in composed styles.
+   Test: HtmlVisitorParityTest.testPhase4ParagraphRunFidelity.
 5. **Document chrome + leakage** (rows 1-2, 33, 37): single `<head>` builder
    used by both (resolving the section-probe drift deliberately); userBodyTop/
    userBodyTail in the delegate; verify and stop the raw-WML fallback for

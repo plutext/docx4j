@@ -8,9 +8,13 @@ import java.util.regex.Pattern;
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Document;
+import org.docx4j.wml.Numbering;
+import org.docx4j.wml.Style;
 import org.junit.Test;
 
 /**
@@ -108,6 +112,82 @@ public class HtmlVisitorParityTest {
 			// emitted for the CTMoveBookmark range starts)
 			assertTrue(impl + "move range marker leaked an anchor",
 					!html.contains("name=\"m1\""));
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	 * Phase 4: paragraph/run fidelity (classes, numbering, empty paragraphs,
+	 * span composition/merging)
+	 * ------------------------------------------------------------------ */
+
+	private WordprocessingMLPackage phase4Pkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:r><w:t>plaintext</w:t></w:r></w:p>"
+				+ "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>boldtext</w:t></w:r></w:p>"
+				+ "<w:p/>"
+				+ "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
+				+   "<w:r><w:t>item text</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:pStyle w:val=\"MyList\"/></w:pPr><w:r><w:t>styled item</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:pStyle w:val=\"Heading1\"/></w:pPr><w:r><w:t>heading text</w:t></w:r></w:p>"
+				+ "</w:body></w:document>"));
+
+		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
+		ndp.setJaxbElement((Numbering)XmlUtils.unmarshalString(
+				"<w:numbering " + W + ">"
+				+ "<w:abstractNum w:abstractNumId=\"1\">"
+				+   "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+				+     "<w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+				+     "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+				+ "</w:abstractNum>"
+				+ "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"1\"/></w:num>"
+				+ "</w:numbering>", Context.jc, Numbering.class));
+		pkg.getMainDocumentPart().addTargetPart(ndp);
+
+		// a style carrying the numbering (style-based numbering case)
+		pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle().add(
+				(Style)XmlUtils.unmarshalString(
+				"<w:style " + W + " w:type=\"paragraph\" w:styleId=\"MyList\">"
+				+ "<w:name w:val=\"MyList\"/><w:basedOn w:val=\"Normal\"/>"
+				+ "<w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
+				+ "</w:style>", Context.jc, Style.class));
+
+		return pkg;
+	}
+
+	@Test
+	public void testPhase4ParagraphRunFidelity() throws Exception {
+
+		for (int flag : FLAGS) {
+			String html = toHTML(phase4Pkg(), flag);
+			String impl = flagName(flag) + ": ";
+
+			// every paragraph gets a class from the style tree, incl. default-styled
+			assertTrue(impl + "no class on a default-styled paragraph", Pattern.compile(
+					"<p class=\"Normal[^\"]*\"[^>]*>(<span[^>]*>)*plaintext").matcher(html).find());
+			assertTrue(impl + "no class from the paragraph's own style", Pattern.compile(
+					"<p class=\"Heading1[^\"]*\"").matcher(html).find());
+
+			// an empty paragraph is preserved with an nbsp
+			assertTrue(impl + "empty paragraph not preserved", Pattern.compile(
+					"<p[^>]*>\u00A0</p>").matcher(html).find());
+
+			// run span composition: the rPr css and the w:t font selection are
+			// merged into ONE span (no nested span), with the default character
+			// style class
+			assertTrue(impl + "run span not composed (nested spans, or missing css)",
+					Pattern.compile("<span class=\"DefaultParagraphFont[^\"]*\" "
+							+ "style=\"[^\"]*font-weight: bold;[^\"]*font-family[^\"]*\">boldtext</span>")
+							.matcher(html).find());
+
+			// numbered paragraphs (direct and style-based) both become li
+			// (via the HTML_ELEMENT sdts the ListsToContentControls preprocess adds)
+			assertTrue(impl + "direct-numbered paragraph is not an li", Pattern.compile(
+					"<li[^>]*style=\"display: list-item;\"[^>]*>(<span[^>]*>)*item text").matcher(html).find());
+			assertTrue(impl + "style-numbered paragraph is not an li", Pattern.compile(
+					"<li class=\"MyList[^\"]*\"[^>]*>(<span[^>]*>)*styled item").matcher(html).find());
 		}
 	}
 

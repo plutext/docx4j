@@ -95,7 +95,13 @@ HTML output, visitor pathway (Docx4J.FLAG_EXPORT_PREFER_NONXSL):
 - content which the visitor exporter silently dropped is now output: w:softHyphen,
 w:noBreakHyphen, w:cr, and deleted text (w:delText, marked span class="del"); inserted and moved
 text (w:ins/w:moveTo/w:moveFrom) is now marked with the ins/del spans as in the XSLT pathway,
-and the move range markers no longer emit stray anchors;
+and the move range markers no longer emit stray anchors
+- the visitor exporter now builds paragraphs and runs with the same code as the XSLT pathway,
+fixing several drifted-copy defects: paragraphs always get their style-tree class (previously
+only with direct pStyle), style-based numbering and numbering indentation are honoured, empty
+paragraphs no longer collapse (nbsp), a w:p in an HTML_ELEMENT list sdt becomes an li, run spans
+are composed rather than nested (rPr css + font selection + default character style class in one
+span, adjacent identical spans merged), and the mapTo=id bookmark contract works;
 see docs/developer/change-requests/CR-html-exporter-parity.md
 
 HTML output, XSLT pathway:

@@ -21,27 +21,27 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
+import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
 import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
-import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.CTMoveBookmark;
 import org.docx4j.wml.CTMoveFromRangeEnd;
 import org.docx4j.wml.CTMoveToRangeEnd;
 import org.docx4j.wml.DelText;
+import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RunDel;
 import org.docx4j.wml.RunIns;
 import org.docx4j.wml.RunTrackChange;
+import org.docx4j.wml.SdtElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -75,7 +75,14 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		// HTML-specific handling of elements the shared visitor has no case for;
 		// the output matches the corresponding docx2xhtml-core.xslt templates.
 
-		if (o instanceof DelText) {
+		if (o instanceof P) {
+
+			// Since 17.0.4, the paragraph element is built by the same code as the
+			// XSLT pathway (children first, then wrap), rather than by handlePPr
+			handleP((P)o);
+			return null;
+
+		} else if (o instanceof DelText) {
 
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				Element span = createNode(document, NODE_INLINE);
@@ -132,6 +139,118 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		return super.apply(o);
 	}
 
+	@Override
+	public boolean shouldTraverse(Object o) {
+
+		if (o instanceof P) {
+			// its contents were already converted in apply (handleP)
+			return false;
+		}
+		return super.shouldTraverse(o);
+	}
+
+	/**
+	 * Convert the paragraph's children into a fragment first (cf the XSLT's
+	 * childResults), then wrap them in the paragraph's element via the shared
+	 * XsltHTMLFunctions.createBlockForPPr — the same code the XSLT pathway uses,
+	 * so the class attribute (incl. for default-styled paragraphs), numbering
+	 * (incl. style-based) and its indentation, empty-paragraph nbsp, span merging
+	 * and the bookmarkStart mapTo=id contract all behave identically.  A w:p
+	 * inside an HTML_ELEMENT list sdt becomes an li, per the w:p template.
+	 *
+	 * @since 17.0.4
+	 */
+	private void handleP(P p) {
+
+		DocumentFragment childResults = document.createDocumentFragment();
+
+		PPr pPrDirect = p.getPPr();
+		String pStyleVal = (pPrDirect!=null && pPrDirect.getPStyle()!=null
+				? pPrDirect.getPStyle().getVal() : "");
+		boolean htmlElement = isInHtmlElementSdt(p);
+
+		// the number text comes first (cf the w:p template); not in the li case
+		// (the li numbers itself), nor for a completely empty paragraph in a table
+		// (see the template's comment about microscopic row heights)
+		boolean emptyInTable = (tc.peek()!=null && pPrDirect==null && p.getContent().isEmpty());
+		if (!htmlElement && !emptyInTable) {
+			String numId = "";
+			String levelId = "";
+			if (pPrDirect!=null && pPrDirect.getNumPr()!=null) {
+				if (pPrDirect.getNumPr().getNumId()!=null
+						&& pPrDirect.getNumPr().getNumId().getVal()!=null) {
+					numId = pPrDirect.getNumPr().getNumId().getVal().toString();
+				}
+				if (pPrDirect.getNumPr().getIlvl()!=null
+						&& pPrDirect.getNumPr().getIlvl().getVal()!=null) {
+					levelId = pPrDirect.getNumPr().getIlvl().getVal().toString();
+				}
+			}
+			String numberText = XsltHTMLFunctions.getNumberXmlNode(
+					conversionContext, null, pStyleVal, numId, levelId);
+			if (numberText!=null) {
+				childResults.appendChild(document.createTextNode(numberText));
+			}
+		}
+
+		HTMLExporterVisitorGenerator generator = (HTMLExporterVisitorGenerator)
+				getFactory().createInstance(conversionContext, document, childResults);
+		generator.pPr = pPrDirect;
+		new TraversalUtil(p.getContent(), generator);
+
+		// createBlock merges the numbering indentation into the pPr's ind, so give
+		// it a copy (the XSLT pathway works on a freshly unmarshalled copy anyway)
+		PPr pPrCopy = (pPrDirect==null ? null : XmlUtils.deepCopy(pPrDirect));
+		DocumentFragment block = (htmlElement
+				? XsltHTMLFunctions.createListItemBlockForPPr(conversionContext, pPrCopy, pStyleVal, childResults)
+				: XsltHTMLFunctions.createBlockForPPr(conversionContext, pPrCopy, pStyleVal, childResults));
+		if (block!=null) {
+			(tc.peek()!=null ? tc.peek() : parentNode)
+					.appendChild(document.importNode(block, true));
+		}
+		currentP = null;
+		currentSpan = null;
+	}
+
+	/** is this paragraph directly inside an sdt whose tag contains HTML_ELEMENT
+	 *  (the ListsToContentControls markup)?  cf the w:p template's
+	 *  contains(../../w:sdtPr/w:tag/@w:val, 'HTML_ELEMENT') */
+	private boolean isInHtmlElementSdt(P p) {
+
+		Object parent = p.getParent();
+		if (!(parent instanceof org.jvnet.jaxb.lang.Child)) return false;
+		Object grandparent = ((org.jvnet.jaxb.lang.Child)parent).getParent();
+		if (!(grandparent instanceof SdtElement)) return false;
+		SdtElement sdt = (SdtElement)grandparent;
+		return sdt.getSdtPr()!=null
+				&& sdt.getSdtPr().getTag()!=null
+				&& sdt.getSdtPr().getTag().getVal()!=null
+				&& sdt.getSdtPr().getTag().getVal().contains("HTML_ELEMENT");
+	}
+
+	/**
+	 * The composition createBlockForRPr performs in the XSLT pathway, applied to
+	 * the streamed run span after its children have been walked: no span at all
+	 * for a run without rPr, otherwise class/style incl. merging with the w:t
+	 * font-selection span.
+	 */
+	private void postProcessRunSpan(R r, Element span) {
+
+		if (span==null || span.getParentNode()==null) return;
+
+		if (r.getRPr()==null) {
+			// the XSLT emits no span for a run without rPr; unwrap
+			Node parent = span.getParentNode();
+			while (span.getFirstChild()!=null) {
+				parent.insertBefore(span.getFirstChild(), span);
+			}
+			parent.removeChild(span);
+		} else {
+			XsltHTMLFunctions.composeRunSpan(conversionContext, r.getRPr(), span);
+		}
+		currentSpan = null;
+	}
+
 	/** the span class for a tracked-changes wrapper element, or null if o isn't one */
 	private String trackChangeClass(Object o) {
 
@@ -171,6 +290,15 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			return;
 		}
 
+		if (o instanceof R
+				&& !conversionContext.isInComplexFieldDefinition()) {
+
+			Element runSpan = currentSpan; // just created by apply(R)
+			super.walkJAXBElements(o);
+			postProcessRunSpan((R)o, runSpan);
+			return;
+		}
+
 		super.walkJAXBElements(o);
 	}
 
@@ -196,96 +324,27 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		return null;
 	}
 	
+	/**
+	 * Not used by this generator since 17.0.4: the paragraph element is built via
+	 * XsltHTMLFunctions.createBlockForPPr (see handleP), the same code as the XSLT
+	 * pathway.
+	 */
 	@Override
 	protected Element handlePPr(HTMLConversionContext conversionContext, PPr pPrDirect, boolean sdt, Element currentParent) {
-		Element ret = currentParent;
 
-		if ( pPrDirect!=null ) {
-			
-			String pStyleVal=null;
-			
-			// Set @class
-			if (pPrDirect.getPStyle()!=null
-					&& pPrDirect.getPStyle().getVal()!=null) {
-
-				pStyleVal = pPrDirect.getPStyle().getVal();						
-				Tree<AugmentedStyle> pTree = conversionContext.getStyleTree().getParagraphStylesTree();		
-				org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
-				currentParent.setAttribute("class", 
-						StyleTree.getHtmlClassAttributeValue(pTree, asn)			
-				);
-			}
-						
-			// Does our pPr contain anything else?
-			boolean ignoreBorders = true;
-			StringBuilder inlineStyle =  new StringBuilder();
-			HtmlCssHelper.createCss(conversionContext.getWmlPackage(), pPrDirect, inlineStyle, ignoreBorders, false);				
-			if (!inlineStyle.toString().equals("") ) {
-				currentParent.setAttribute("style", inlineStyle.toString() );
-			}
-			
-			// Numbering
-			String numberText=null;
-			String numId=null;
-			String levelId=null;
-			if (pPrDirect.getNumPr()!=null) {
-				numId = pPrDirect.getNumPr().getNumId()==null ? null : pPrDirect.getNumPr().getNumId().getVal().toString(); 
-				levelId = pPrDirect.getNumPr().getIlvl()==null ? null : pPrDirect.getNumPr().getIlvl().getVal().toString(); 
-			}
-			
-        	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-        			conversionContext.getWmlPackage(), pStyleVal, numId, levelId);   
-        	
-
-			if (triple==null) {
-				getLog().debug("computed number ResultTriple was null");
-        	} else {
-				if (triple.getBullet() != null) {
-					//numberText = (triple.getBullet() + " ");
-					numberText = "\u2022  "; 
-				} else if (triple.getNumString() == null) {
-					getLog().error("computed NumString was null!");
-					numberText = ("?");
-				} else {
-					numberText = (triple.getNumString() + " ");
-				}
-        	}
-			if (numberText!=null) {
-				currentParent.appendChild(document.createTextNode(
-						numberText + " "));				
-			}
-		}
-		
-		return ret;
+		return currentParent;
 	}
 
+	/**
+	 * Not used by this generator since 17.0.4: the run span's attributes are
+	 * applied after its children are walked, via XsltHTMLFunctions.composeRunSpan
+	 * (see postProcessRunSpan), the same composition as the XSLT pathway.
+	 */
     @Override
 	protected void handleRPr(
     		HTMLConversionContext conversionContext,
     		PPr pPrDirect,
     		RPr rPrDirect, Element currentParent ) {
-
-		// Set @class	
-		if ( rPrDirect.getRStyle()!=null) {
-			String rStyleVal = rPrDirect.getRStyle().getVal();
-			Tree<AugmentedStyle> cTree = conversionContext.getStyleTree().getCharacterStylesTree();		
-			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
-			if (asn==null) {
-				getLog().warn("No style node for: " + rStyleVal);
-			} else {
-				currentParent.setAttribute("class", 
-						StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-				);		
-			}
-		}
-		
-		// Does our rPr contain anything else?
-		StringBuilder inlineStyle =  new StringBuilder();
-		HtmlCssHelper.createCss(conversionContext.getWmlPackage(), rPrDirect, inlineStyle);				
-		if (!inlineStyle.toString().equals("") ) {
-			currentParent.setAttribute("style", inlineStyle.toString() );
-		}
-			
 	}
 
 	@Override
