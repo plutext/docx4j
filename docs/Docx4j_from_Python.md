@@ -3,6 +3,11 @@
 *Last reviewed against docx4j 17.0.4 (August 2026); examples tested with
 Python 3.14, JPype 1.7.1, Java 21.*
 
+*This is the maintained setup reference.  For the "should I?" question — when
+bridging to docx4j beats python-docx or docxtpl — see
+[docx4j from Python](https://www.docx4java.org/docx4j-from-python.html) on the
+docx4j website.*
+
 ## Why would you, given python-docx / docxtpl?
 
 For simple generation or text extraction you shouldn't: python-docx and
