@@ -21,6 +21,16 @@ It uses JAXB to create the Java representation.
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
 
+Choosing a library
+------------------
+
+Evaluating your options for working with Word documents?
+
+* [docx4j vs POI vs Aspose.Words](https://www.docx4java.org/docx4j-vs-poi-vs-aspose.html) — a practical comparison of the three main ways to do it from Java
+* [Why Source Access Matters for LLM-Assisted Programming](https://www.docx4java.org/source-access-llm-assisted-programming.html) — an AI coding assistant is only as good as what it can read ([Markdown mirror](docs/Source_Access_LLM_Assisted_Programming.md))
+* [docx4j from Python](https://www.docx4java.org/docx4j-from-python.html) — when bridging to docx4j beats python-docx or docxtpl (setup: [docs/Docx4j_from_Python.md](docs/Docx4j_from_Python.md))
+
+
 docx4j for JAXB 4.0 and Java 11 and later 
 -----------------------------------------
 
