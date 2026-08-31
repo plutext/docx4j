@@ -114,8 +114,10 @@ doctype and the docx4j.Convert.Out.HTML.OutputMethodXML choice, and shares the X
 <head> builder; a document containing a VML textbox no longer fails the whole conversion
 (WRONG_DOCUMENT_ERR)
 - both HTML pathways: div.footer now gets its print CSS when the document has a footer but no
-header (hasDefaultFooter was computed from hasDefaultHeader in both copies of the head builder);
-see docs/developer/change-requests/CR-html-exporter-parity.md
+header (hasDefaultFooter was computed from hasDefaultHeader in both copies of the head builder)
+- with the above, the HTML visitor exporter reaches feature parity with the (default) XSLT
+exporter, and generates HTML roughly an order of magnitude faster in benchmarks; select it with
+Docx4J.FLAG_EXPORT_PREFER_NONXSL. See docs/developer/change-requests/CR-html-exporter-parity.md
 
 HTML output, XSLT pathway:
 - w:noBreakHyphen now outputs the actual U+2011 non-breaking hyphen; previously the character

@@ -1,6 +1,7 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: IN PROGRESS (2026-09-01) — phases 1-5 shipped (execution order 1, 4, 2, 3, 5, 6)
+Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6).
+The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
 Related: CR-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
@@ -282,6 +283,8 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
    Test: HtmlVisitorParityTest.testPhase5Chrome.
 6. **Optional: measurement**: benchmark the two pipelines post-parity (FO CR
    appendix pattern).  Any default-flag change is out of scope.
+   **SHIPPED 2026-09-01**: benchmark in the appendix; the default-flag decision
+   remains open (and out of scope), as with the FO CR.
 
 ### Out of scope
 
@@ -327,3 +330,20 @@ If only one phase is ever done, do phase 1 (as with the FO CR): smallest effort,
 removes the silent-text-loss cases.  The FO CR's benchmark (visitor ~10x faster
 FO generation) suggests the same order-of-magnitude win is available here for
 users who can move to `FLAG_EXPORT_PREFER_NONXSL` once parity lands.
+
+## Appendix: performance comparison (2026-09-01, post-parity)
+
+Method: same synthetic document as the FO CR's appendix (n three-run justified
+paragraphs with a 5x3 table every 50); `Docx4J.toHTML`, fresh package per
+iteration, median of 7 after 3 warmups, one JVM (-Xmx1g), one machine.
+
+| n paragraphs | XSLT | Visitor | ratio |
+|---|---|---|---|
+| 500 | 459 ms | 63 ms | 7.3x |
+| 2,000 | 2,649 ms | 240 ms | 11.0x |
+
+The same order-of-magnitude advantage as the FO visitor, with the same caveats
+(synthetic document, single-threaded, one machine).  As there, whether
+FLAG_EXPORT_PREFER_NONXSL should become the recommended or default flag is NOT
+decided here; the XSLT pathway remains the default in `Docx4J.getHTMLExporter`,
+and the visitor should get real-world exposure first.
