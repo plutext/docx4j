@@ -250,14 +250,13 @@ public class XsltHTMLFunctions {
 		//TODO: This doesn't quite work as the defaultHeader and defaultFooter are per section,
     	//but this definition is on the document level. 
     	//To access the first section, we have to call first a next() and later return to start()
-    	try {
-//    		conversionContext.getSections().next(); // causes exception
-        	hasDefaultHeader = XsltCommonFunctions.hasDefaultHeader(conversionContext);
-        	hasDefaultFooter = XsltCommonFunctions.hasDefaultHeader(conversionContext);
-    	}
-    	finally {
-//    		conversionContext.getSections().start();
-    	}
+    	// NB the caller must have positioned the section iterator on the first
+    	// section (the XSLT pathway's moveNextSection; the visitor delegate's
+    	// next()/start() around its call)
+    	hasDefaultHeader = XsltCommonFunctions.hasDefaultHeader(conversionContext);
+    	hasDefaultFooter = XsltCommonFunctions.hasDefaultFooter(conversionContext);
+    		// (was hasDefaultHeader - a copy/paste bug, so div.footer never got
+    		// its print CSS when there was a footer but no header)
     	HtmlCssHelper.createDefaultCss(hasDefaultHeader, hasDefaultFooter, buffer);
 		HtmlCssHelper.createCssForStyles(conversionContext.getWmlPackage(), 
 										 conversionContext.getStyleTree(), 

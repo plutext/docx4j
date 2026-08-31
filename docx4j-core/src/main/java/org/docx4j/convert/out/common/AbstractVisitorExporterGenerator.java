@@ -166,6 +166,11 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		
 		if (resultNode != null) {
 			log.debug("Appending " + XmlUtils.w3CDomNodeToString(resultNode));
+			if (resultNode.getOwnerDocument()!=document) {
+				// eg the registry's no-writer fallback marshals into its own
+				// document; appending that directly throws WRONG_DOCUMENT_ERR
+				resultNode = document.importNode(resultNode, true);
+			}
 			parentNode.appendChild(resultNode);
 		}
 		

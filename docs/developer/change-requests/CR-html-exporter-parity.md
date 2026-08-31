@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: IN PROGRESS (2026-09-01) — phases 1, 4, 2 and 3 shipped (execution order 1, 4, 2, 3, 5, 6)
+Status: IN PROGRESS (2026-09-01) — phases 1-5 shipped (execution order 1, 4, 2, 3, 5, 6)
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
 Related: CR-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
@@ -56,8 +56,8 @@ SdtTagHandler (there is no default registration).
 
 | # | Feature | XSLT | Visitor | Notes |
 |---|---------|------|---------|-------|
-| 1 | `<head>`: meta, style (default CSS + styles CSS + userCSS via styleElementHandler), script (toggleDiv + userScript via scriptElementHandler) | Y | Y | duplicated code (XsltHTMLFunctions.appendHeadElement vs HTMLExporterVisitorDelegate.appendDocumentHeader) with drift: the delegate probes the first section for header/footer via next()/start(), the XSLT-side copy has that commented out ("causes exception") |
-| 2 | userBodyTop / userBodyTail injected into `<body>` | Y | N | HTMLSettings honoured by the stylesheet only |
+| 1 | `<head>`: meta, style (default CSS + styles CSS + userCSS via styleElementHandler), script (toggleDiv + userScript via scriptElementHandler) | Y | Y | phase 5: single implementation (appendHeadElement), with the caller positioning the section iterator; incidental bugfix: BOTH copies computed hasDefaultFooter from hasDefaultHeader (copy/paste), so div.footer never got its print CSS when there was a footer but no header |
+| 2 | userBodyTop / userBodyTail injected into `<body>` | Y | Y | phase 5 shipped 2026-09-01; the visitor requires well-formed markup (a DOM can't hold the raw text the XSLT's disable-output-escaping can emit) — parsed as a fragment, or dropped with a warning |
 | 3 | Default header/footer divs (`class="header"/"footer"`) | Y | Y | both support the default header/footer only |
 | 4 | `div class="document"` wrapper | Y | Y | |
 | 5 | Paragraph `@class` from the style tree | Y | Y | phase 4 shipped 2026-09-01 |
@@ -88,11 +88,11 @@ SdtTagHandler (there is no default registration).
 | 30 | `w:hyperlink`, `w:bookmarkStart` (default mode), `w:bookmarkEnd` | Y | Y | shared writers |
 | 31 | Tables (TableWriter) | Y | Y | shared; the per-table cell CSS (getCssForTableCells) is invoked by neither current pathway (legacy-XSLT-only API), so not a parity gap |
 | 32 | Images E10/E20 | Y | Y | same WordXmlPicture methods |
-| 33 | VML textboxes | N (notImplemented comment) | P | the visitor finds the textbox and dispatches to a pict writer — but no pict writer is registered for HTML, so the registry's fallback **marshals the raw WML into the HTML output** (verify); parity = warn/skip like the XSLT |
+| 33 | VML textboxes | N (notImplemented comment) | N | phase 5 shipped 2026-09-01: verified — worse than a leak, the fallback's foreign-document node threw WRONG_DOCUMENT_ERR and **killed the whole conversion**; the visitor now treats w:pict as image-or-warn like the XSLT, and the base convertToNode imports foreign-document writer results |
 | 34 | mc:AlternateContent → Fallback only | Y | Y | via FO CR phase 5 |
 | 35 | `w:smartTag` transparent / `w:smartTagPr` skipped | Y | Y/P | smartTagPr warns (cosmetic) |
 | 36 | Unhandled-element visibility (debug mode) | Y | Y | via FO CR phase 7 |
-| 37 | Output method: XHTML doctype (XML method) or html method by property | Y | P | visitor always serializes as XML, no doctype; document as intentional or add the doctype |
+| 37 | Output method: XHTML doctype (XML method) or html method by property | Y | Y | phase 5 shipped 2026-09-01 (writeDocument override: doctype + xml/html method per the OutputMethodXML property, indent=no, method set explicitly — the serializer would otherwise auto-select the html method for an html root) |
 
 ## 3. Gap detail, grouped
 
@@ -263,6 +263,23 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
    userBodyTail in the delegate; verify and stop the raw-WML fallback for
    unrendered VML (warn/skip); decide doctype/output-method (document as
    intentional difference if not implemented).
+   **SHIPPED 2026-09-01**: the delegate's head builder is deleted in favour of
+   appendHeadElement (delegate positions the section iterator around the call;
+   the shared copy's commented-out probe is resolved into a documented caller
+   contract).  Incidental bugfix in the shared builder: hasDefaultFooter was
+   computed from hasDefaultHeader in BOTH copies.  userBodyTop/userBodyTail are
+   injected (well-formed markup parsed as a fragment; else warn+drop — a DOM
+   cannot hold the raw text disable-output-escaping can emit; recorded in row
+   2).  Row 33 turned out worse than the suspected leak: the no-writer
+   fallback's foreign-document node threw WRONG_DOCUMENT_ERR and killed the
+   conversion; the visitor now treats w:pict as image-or-warn like the XSLT,
+   and convertToNode defensively imports foreign-document writer results (base
+   class, so the FO pathway gains the guard too).  writeDocument now emits the
+   XHTML doctype and honours docx4j.Convert.Out.HTML.OutputMethodXML; method
+   and indent are set explicitly (the serializer auto-selects the html method
+   for an html root, which had it emitting &shy;-style entities, and indentation
+   damages subscripts per the stylesheets' note).
+   Test: HtmlVisitorParityTest.testPhase5Chrome.
 6. **Optional: measurement**: benchmark the two pipelines post-parity (FO CR
    appendix pattern).  Any default-flag change is out of scope.
 

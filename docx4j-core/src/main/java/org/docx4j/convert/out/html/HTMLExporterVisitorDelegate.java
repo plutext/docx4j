@@ -46,56 +46,51 @@ public class HTMLExporterVisitorDelegate extends AbstractVisitorExporterDelegate
 
 	@Override
 	protected void appendDocumentHeader(HTMLConversionContext conversionContext, Document document, Element documentRoot) throws Docx4JException {
-    Element	headEl = document.createElement("head");
-	Element meta = document.createElement("meta");
-	Element element = null;
-	StringBuilder buffer = new StringBuilder(10240);
-	String userCSS = conversionContext.getUserCSS();
-	String userScript = conversionContext.getUserScript();
-	
-	boolean hasDefaultHeader = false;
-	boolean hasDefaultFooter = false;
-    	documentRoot.appendChild(headEl);    	
-    	meta.setAttribute("http-equiv", "Content-Type");
-    	meta.setAttribute("content", "text/html; charset=utf-8");
-    	headEl.appendChild(meta);
-    	
-    	//TODO: This doesn't quite work as the defaultHeader and defaultFooter are per section,
-    	//but this definition is on the document level. 
-    	//To access the first section, we have to call first a next() and later return to start()
-    	try {
-    		conversionContext.getSections().next();
-        	hasDefaultHeader = XsltCommonFunctions.hasDefaultHeader(conversionContext);
-        	hasDefaultFooter = XsltCommonFunctions.hasDefaultHeader(conversionContext);
-    	}
-    	finally {
-    		conversionContext.getSections().start();
-    	}
-    	HtmlCssHelper.createDefaultCss(hasDefaultHeader, hasDefaultFooter, buffer);
-		HtmlCssHelper.createCssForStyles(conversionContext.getWmlPackage(), 
-										 conversionContext.getStyleTree(), 
-										 buffer);
-		if ((userCSS != null) && (userCSS.length() > 0)) {
-			buffer.append(userCSS);
+
+		// the same implementation as the XSLT pathway (appendHeadElement); it
+		// expects the section iterator on the first section, so the per-section
+		// header/footer probe sees section 1
+		org.w3c.dom.DocumentFragment head;
+		try {
+			conversionContext.getSections().next();
+			head = XsltHTMLFunctions.appendHeadElement(conversionContext);
+		} finally {
+			conversionContext.getSections().start();
 		}
-		element = conversionContext.createStyleElement(document, buffer.toString());
-		if (element != null) {
-			headEl.appendChild(element);
-		}
-		buffer.setLength(0);
-		HtmlScriptHelper.createDefaultScript(buffer);
-		if ((userScript != null) && (userScript.length() > 0)) {
-			buffer.append(userScript);
-		}
-		element = conversionContext.createScriptElement(document, buffer.toString());
-		if (element != null) {
-			headEl.appendChild(element);
+		if (head != null) {
+			documentRoot.appendChild(document.importNode(head, true));
 		}
 	}
 
 	@Override
 	protected Element createDocumentBody(HTMLConversionContext conversionContext, Document document, Element documentRoot) {
-		return document.createElement("body");
+	Element body = document.createElement("body");
+		appendUserMarkup(conversionContext, document, body, conversionContext.getUserBodyTop());
+		return body;
+	}
+
+	/**
+	 * userBodyTop/userBodyTail: the XSLT injects these raw (disable-output-escaping),
+	 * which a DOM can't represent, so they must be well-formed here; parsed as a
+	 * fragment, or dropped with a warning.
+	 */
+	protected void appendUserMarkup(HTMLConversionContext conversionContext,
+			Document document, Element parent, String markup) {
+
+		if (markup==null || markup.trim().length()==0) return;
+		try {
+			Document parsed = org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
+					new org.xml.sax.InputSource(new java.io.StringReader(
+							"<x>" + markup + "</x>")));
+			org.w3c.dom.Node wrapper = parsed.getDocumentElement();
+			while (wrapper.getFirstChild()!=null) {
+				parent.appendChild(document.importNode(wrapper.getFirstChild(), true));
+				wrapper.removeChild(wrapper.getFirstChild());
+			}
+		} catch (Exception e) {
+			conversionContext.getLog().warn("Dropping userBodyTop/userBodyTail: this pathway "
+					+ "requires well-formed markup (" + e.getMessage() + ")");
+		}
 	}
 
 	@Override
@@ -177,6 +172,43 @@ public class HTMLExporterVisitorDelegate extends AbstractVisitorExporterDelegate
 				"endnotes",
 				mainDocumentPart.getEndNotesPart(),
 				mainDocumentPart.getEndNotesPart().getJaxbElement().getEndnote());
+		}
+
+		if (documentRoot.getLastChild() instanceof Element) {
+			appendUserMarkup(conversionContext, document,
+					(Element)documentRoot.getLastChild(), conversionContext.getUserBodyTail());
+		}
+	}
+
+	@Override
+	protected void writeDocument(HTMLConversionContext conversionContext, Document document,
+			java.io.OutputStream outputStream) throws Docx4JException {
+
+		// match the XSLT pathway's output: the XHTML doctype, and (as it does, per
+		// the docx4j.Convert.Out.HTML.OutputMethodXML property) the xml or html
+		// serialization method
+		try {
+			javax.xml.transform.Transformer t =
+					org.docx4j.XmlUtils.getTransformerFactory().newTransformer();
+			// set the method explicitly: with an html root element the serializer
+			// would otherwise choose the html method by itself
+			if (org.docx4j.Docx4jProperties.getProperty("docx4j.Convert.Out.HTML.OutputMethodXML", true)) {
+				t.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");
+			} else {
+				t.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "html");
+			}
+			// as the stylesheets say: indentation gives a worse result for things
+			// like subscripts (a carriage return becomes a space)
+			t.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "no");
+			t.setOutputProperty(javax.xml.transform.OutputKeys.DOCTYPE_PUBLIC,
+					"-//W3C//DTD XHTML 1.0 Transitional//EN");
+			t.setOutputProperty(javax.xml.transform.OutputKeys.DOCTYPE_SYSTEM,
+					"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
+			t.setOutputProperty(javax.xml.transform.OutputKeys.ENCODING, "utf-8");
+			t.transform(new javax.xml.transform.dom.DOMSource(document),
+					new javax.xml.transform.stream.StreamResult(outputStream));
+		} catch (javax.xml.transform.TransformerException e) {
+			throw new Docx4JException("Exception writing the html", e);
 		}
 	}
 

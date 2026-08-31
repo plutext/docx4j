@@ -170,6 +170,19 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			handleSdt((SdtElement)o);
 			return null;
 
+		} else if (o instanceof org.docx4j.wml.Pict) {
+
+			// the XSLT renders only the v:imagedata case (there is no HTML pict
+			// writer); without this, the base class would dispatch a textbox pict
+			// to the registry, whose no-writer fallback put raw WML in the output
+			DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
+			if (foreignFragment==null) {
+				getLog().warn("Couldn't render w:pict content (no image; VML textboxes are not supported in HTML output)");
+			} else {
+				getCurrentParent().appendChild(document.importNode(foreignFragment, true));
+			}
+			return null;
+
 		} else if (o instanceof CTMoveBookmark
 				|| o instanceof CTMoveFromRangeEnd
 				|| o instanceof CTMoveToRangeEnd) {

@@ -347,6 +347,54 @@ public class HtmlVisitorParityTest {
 		}
 	}
 
+	/* ------------------------------------------------------------------
+	 * Phase 5: document chrome (head, userBodyTop/Tail, doctype) and VML
+	 * ------------------------------------------------------------------ */
+
+	private WordprocessingMLPackage phase5Pkg() throws Exception {
+
+		String V = "xmlns:v=\"urn:schemas-microsoft-com:vml\"";
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + " " + V + "><w:body>"
+				// a VML textbox: not renderable in HTML (in either pathway), but must
+				// neither break the conversion nor leak raw WML into the output
+				+ "<w:p><w:r><w:pict><v:shape style=\"width:100pt;height:50pt\">"
+				+   "<v:textbox><w:txbxContent><w:p><w:r><w:t>boxtext</w:t></w:r></w:p></w:txbxContent></v:textbox>"
+				+ "</v:shape></w:pict></w:r></w:p>"
+				+ "<w:p><w:r><w:t>after the box</w:t></w:r></w:p>"
+				+ "</w:body></w:document>"));
+		return pkg;
+	}
+
+	@Test
+	public void testPhase5Chrome() throws Exception {
+
+		for (int flag : FLAGS) {
+			HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
+			htmlSettings.setOpcPackage(phase5Pkg());
+			htmlSettings.setUserBodyTop("<div id=\"userTop\">TOP</div>");
+			htmlSettings.setUserBodyTail("<div id=\"userTail\">TAIL</div>");
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Docx4J.toHTML(htmlSettings, baos, flag);
+			String html = baos.toString("UTF-8");
+			String impl = flagName(flag) + ": ";
+
+			assertTrue(impl + "XHTML doctype missing",
+					html.contains("-//W3C//DTD XHTML 1.0 Transitional//EN"));
+			assertTrue(impl + "head style element missing", html.contains("<style"));
+			assertTrue(impl + "head script missing", html.contains("function toggleDiv"));
+
+			assertTrue(impl + "userBodyTop lost", html.contains("id=\"userTop\""));
+			assertTrue(impl + "userBodyTail lost", html.contains("id=\"userTail\""));
+
+			// the textbox: no crash, no raw WML leak, and following content intact
+			assertTrue(impl + "content after the textbox lost", html.contains("after the box"));
+			assertTrue(impl + "raw WML leaked into the output", !html.contains("txbxContent"));
+		}
+	}
+
 	/* ------------------------------------------------------------------ */
 
 	private String toHTML(WordprocessingMLPackage wordMLPackage, int flag) throws Exception {
