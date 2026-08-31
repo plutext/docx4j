@@ -443,6 +443,13 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
             if(log.isDebugEnabled()) {
                 log.debug(XmlUtils.marshaltoString(o));
             }
+			// as the XSLT's no-match template (notImplemented): in debug mode, make
+			// the gap visible in the output itself (message returns null otherwise)
+			DocumentFragment msg = conversionContext.getMessageWriter().message(
+					conversionContext, "NOT IMPLEMENTED: support for " + o.getClass().getName());
+			if (msg!=null) {
+				getCurrentParent().appendChild(document.importNode(msg, true));
+			}
 		}
 		
 		return null;

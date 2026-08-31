@@ -85,8 +85,10 @@ hosted in v:rect (or any other VML shape) is now found, and VML with neither tex
 (eg a v:rect o:hr horizontal rule) no longer NPEs the conversion
 - PDF output (both exporters): a wrapped VML textbox whose style has no
 mso-position-vertical-relative no longer NPEs in FOPictWriterFloatUsed (the VML default, "text",
-now applies), so simple inline textboxes render instead of producing nothing;
-see docs/developer/change-requests/CR-fo-exporter-parity.md
+now applies), so simple inline textboxes render instead of producing nothing
+- with the above, the visitor exporter reaches feature parity with the (default) XSLT exporter,
+and generates FO roughly an order of magnitude faster in benchmarks; select it with
+Docx4J.FLAG_EXPORT_PREFER_NONXSL. See docs/developer/change-requests/CR-fo-exporter-parity.md
 
 
 Version 17.0.3

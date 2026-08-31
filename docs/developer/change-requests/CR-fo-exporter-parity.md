@@ -1,6 +1,7 @@
 # CR: FO exporter feature parity (FOExporterVisitor vs FOExporterXslt)
 
-Status: IN PROGRESS (2026-08-31) — phases 1-5 shipped; see the per-phase notes below
+Status: DONE (2026-08-31) — all 7 phases shipped; see the per-phase notes below.
+The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.fo` (docx4j-export-fo) plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (docx4j-core)
 Related: CR-binding-traverser-parity.md (same "stop maintaining two copies" principle,
@@ -85,9 +86,9 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 30 | Textbox in `v:rect/v:textbox` (3.0.1; e.g. o:hr horizontal rules) | Y | Y | phase 5 shipped 2026-08-31 (getTextBox now accepts any VmlShapeElements, like the writer) |
 | 31 | `mc:AlternateContent` → Fallback only | Y | Y | phase 5 shipped 2026-08-31 (base-generator walk intercepts; TraversalUtil unchanged) |
 | 32 | `w:smartTag` transparent traversal | Y | Y | visitor warns but children render |
-| 33 | Unhandled-element visibility (red message block via FO_MESSAGE_WRITER) | Y (notImplemented) | P | visitor only logs |
+| 33 | Unhandled-element visibility (red message block via FO_MESSAGE_WRITER) | Y (notImplemented) | Y | phase 7 shipped 2026-08-31 (visible in debug mode only, same as notImplemented) |
 | 34 | Bidi / issue-660 RTL paragraph block-container | Y | Y | single copy since phase 4 (wrapInBidiBlockContainer via the shared paragraph path) |
-| 35 | `w:ind`/`w:jc`/bidi-jc-swap/shading/toc-tab on blocks | Y | Y | single copy since phase 4 for paragraph-level attributes; the run-level createFoAttributes copy remains (phase 6) |
+| 35 | `w:ind`/`w:jc`/bidi-jc-swap/shading/toc-tab on blocks | Y | Y | single copy since phase 4 (paragraph level) and phase 6 (run level) |
 
 ## 3. Gap detail, grouped
 
@@ -282,11 +283,22 @@ CR, byte-for-byte identity is NOT the bar; structural/feature equivalence is.
    XsltFOFunctions (or a new shared helper class if the XSLT-specific entry points are
    kept thin), and delete the copies in FOExporterVisitorGenerator.  After this,
    formatting fixes land once.
+   **SHIPPED 2026-08-31**: most of this landed with phase 4 (the paragraph path).
+   Remainder: XsltFOFunctions' RPr createFoAttributes is now public and used by the
+   visitor's handleRPr, whose private copy is deleted.  What deliberately remains
+   duplicated: the w:tab and w:br dispatch logic exists in both the stylesheet
+   markup and the visitor's Java (markup can't call the visitor's structure), and
+   the sectPr/static-content structure likewise (delegate Java vs section
+   template) — these are dispatch, not formatting, per §4's principle.
 7. **Optional: visibility + measurement**: emit the notImplemented red message block
    from the visitor's unhandled-element branch (parity of row 33); then benchmark the
    two pipelines (the binding CR's appendix pattern) to decide whether the visitor,
    once at parity, should become the recommended/default flag — that decision is out
    of scope for this CR and would be its own recorded decision.
+   **SHIPPED 2026-08-31**: the base generator's unhandled-element branch now appends
+   the message writer's fragment (which, like the XSLT's notImplemented, is emitted
+   only when debug logging is enabled — a WARN is logged either way).  Benchmark in
+   the appendix; the default-flag decision remains open (and out of scope).
 
 ### Out of scope
 
@@ -336,3 +348,29 @@ CR, byte-for-byte identity is NOT the bar; structural/feature equivalence is.
 If only one phase is ever done, do phase 1: smallest effort, and it removes the cases
 where the visitor pathway silently loses document text (noBreakHyphen, delText,
 footnote references at least warn today but produce nothing).
+
+## Appendix: performance comparison (2026-08-31, post-parity)
+
+Method: synthetic document of n three-run justified paragraphs (plain/bold/italic)
+with a 5x3 table every 50 paragraphs; `Docx4J.toFO` with
+`FOSettings.INTERNAL_FO_MIME` (FO generation only — the FOP render stage is shared
+by both exporters, so it is excluded); fresh package per iteration, median of 7
+after 3 warmups, one JVM (-Xmx1g), one machine.
+
+| n paragraphs | XSLT | Visitor | ratio |
+|---|---|---|---|
+| 500 | 521 ms | 59 ms | 8.8x |
+| 2,000 | 2,787 ms | 220 ms | 12.7x |
+
+Both figures include the header/footer extent measurement pass (each pipeline
+measures using itself).  The visitor is roughly an order of magnitude faster at
+these sizes and scales better; the ratio echoes the binding-traverser CR's finding
+for the analogous XSLT-vs-tree-walk choice.  Caveats: synthetic document, FO
+generation only, single-threaded, one machine.
+
+Whether FLAG_EXPORT_PREFER_NONXSL should become the recommended or default flag is
+NOT decided here: the parity bar of this CR is met and tested feature-by-feature,
+but the XSLT pathway remains the default (`Docx4J.getFOExporter`), and years of
+production exposure sit behind it.  Revisit after the visitor pathway has had a
+release or two of real-world exposure (cf the binding CR, where the NonXSLT default
+followed the parity work by a release).

@@ -918,8 +918,7 @@ public class XsltFOFunctions {
     }
     
     protected static int getDistanceToNextTabStop( int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
-    	// Also used by FOExporterVisitorGenerator, so should be moved
-    	    	
+
 		int pdbs = 0; 
 		int defaultTab = 360;
 		if (pprTabs!=null
@@ -1152,15 +1151,18 @@ public class XsltFOFunctions {
     	
     }
 
-	private static void createFoAttributes(OpcPackage opcPackage,
+	/** Apply the FO attributes for these run properties.  Public since 17.0.4, so
+	 *  the visitor pathway shares it (previously FOExporterVisitorGenerator had its
+	 *  own copy). */
+	public static void createFoAttributes(OpcPackage opcPackage,
 			RPr rPr, Element foInlineElement){
 
     	List<Property> properties = PropertyFactory.createProperties(opcPackage, rPr);
-    	
+
     	for( Property p :  properties ) {
     		p.setXslFO(foInlineElement);
     	}
-		
+
 	}
 	
     public static String getPageNumberFormat(FOConversionContext context) {

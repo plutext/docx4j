@@ -33,10 +33,7 @@ import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
-import org.docx4j.model.properties.Property;
-import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTFtnEdnRef;
@@ -672,8 +669,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				getLog().debug(XmlUtils.marshaltoString(rPr, true, true));					
 			}
 			
-			//if (rPr!=null) {				
-				createFoAttributes(conversionContext.getWmlPackage(), rPr, ((Element)currentParent) );
+			//if (rPr!=null) {
+				XsltFOFunctions.createFoAttributes(conversionContext.getWmlPackage(), rPr, ((Element)currentParent) );
 			//}
 			
 						
@@ -682,17 +679,6 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		} 
     	
     }
-
-	protected static void createFoAttributes(WordprocessingMLPackage wmlPackage,
-			RPr rPr, Element foInlineElement){
-
-    	List<Property> properties = PropertyFactory.createProperties(wmlPackage, rPr);
-    	
-    	for( Property p :  properties ) {
-    		p.setXslFO(foInlineElement);
-    	}
-		
-	}
 
 	@Override
 	protected void rtlAwareAppendChildToCurrentP(Element spanEl) {
