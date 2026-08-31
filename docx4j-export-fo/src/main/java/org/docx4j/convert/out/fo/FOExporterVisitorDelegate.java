@@ -21,6 +21,7 @@ package org.docx4j.convert.out.fo;
 
 import java.util.List;
 
+import org.docx4j.TraversalUtil;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
@@ -28,8 +29,10 @@ import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.wml.CTFtnEdn;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<FOSettings, FOConversionContext> {
 	
@@ -142,25 +145,67 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 		if (XsltCommonFunctions.hasDefaultFooter(conversionContext)) {
 			appendPartContent(
 				conversionContext, document,
-				currentParent, 
+				currentParent,
 				"xsl-region-after-default",
 				sectionWrapper.getHeaderFooterPolicy().getDefaultFooter(),
 				sectionWrapper.getHeaderFooterPolicy().getDefaultFooter().getJaxbElement().getContent());
 		}
-    	
-    	// TODO
-//		<xsl:if
-//		test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
-//		
-//        <fo:block space-before="44pt" font-weight="bold" font-size="14pt">
-//          <xsl:text>Endnotes</xsl:text>
-//        </fo:block>
-//		
-//		<xsl:apply-templates
-//				select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
-//	</xsl:if>
-    	
 
+		// <fo:static-content flow-name="xsl-footnote-separator">
+		if (XsltCommonFunctions.hasFootnotesPart(conversionContext)) {
+			Element separatorContent = document.createElementNS(XSL_FO, "static-content");
+			separatorContent.setAttribute("flow-name", "xsl-footnote-separator");
+			Element block = document.createElementNS(XSL_FO, "block");
+			separatorContent.appendChild(block);
+			Element leader = document.createElementNS(XSL_FO, "leader");
+			leader.setAttribute("leader-pattern", "rule");
+			leader.setAttribute("leader-length", "100%");
+			leader.setAttribute("rule-style", "solid");
+			leader.setAttribute("rule-thickness", "0.5pt");
+			block.appendChild(leader);
+			currentParent.appendChild(separatorContent);
+		}
+	}
+
+	@Override
+	protected void appendSectionFooter(FOConversionContext conversionContext, Document document,
+			ConversionSectionWrapper sectionWrapper,
+			Element currentParent) throws Docx4JException {
+
+		// Endnotes at the end of the section's flow (which the XSLT does for every
+		// section; Word's default position is actually end of document)
+		if (!XsltCommonFunctions.hasEndnotesPart(conversionContext)) {
+			return;
+		}
+
+		// the fo:flow is the page-sequence's last child (appended after the
+		// static-contents)
+		Node flow = currentParent.getLastChild();
+		if (!(flow instanceof Element)
+				|| !"flow".equals(((Element)flow).getLocalName())) {
+			return;
+		}
+
+		Element heading = document.createElementNS(XSL_FO, "block");
+		heading.setAttribute("space-before", "44pt");
+		heading.setAttribute("font-weight", "bold");
+		heading.setAttribute("font-size", "14pt");
+		heading.setTextContent("Endnotes");
+		flow.appendChild(heading);
+
+		List<CTFtnEdn> endnotes = conversionContext.getWmlPackage().getMainDocumentPart()
+				.getEndNotesPart().getJaxbElement().getEndnote();
+		for (int i=0; i<endnotes.size(); i++) {
+			CTFtnEdn endnote = endnotes.get(i);
+			if (endnote.getId()!=null && endnote.getId().signum()==0) {
+				continue; // the separator; as in the XSLT, only w:id='0' is skipped
+			}
+			FOExporterVisitorGenerator generator = (FOExporterVisitorGenerator)
+					generatorFactory.createInstance(conversionContext, document, flow);
+			// the number w:endnoteRef renders; cf the XSLT's count(preceding-sibling)-1
+			generator.endnoteNumber = i - 1;
+			new TraversalUtil(endnote.getContent(), generator);
+		}
 	}
 
 	protected void appendPartContent(FOConversionContext conversionContext, 

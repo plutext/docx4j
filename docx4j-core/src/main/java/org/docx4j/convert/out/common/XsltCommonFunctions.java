@@ -111,13 +111,25 @@ public class XsltCommonFunctions {
      * @param text the text to be rendered
      * @since 17.0.3
      */
-    public static DocumentFragment fontSelectorForGeneratedText(AbstractWmlConversionContext conversionContext, 
+    public static DocumentFragment fontSelectorForGeneratedText(AbstractWmlConversionContext conversionContext,
     		NodeIterator pPrNodeIt,
     		NodeIterator rPrNodeIt,
     		String text) {
 
 		PPr pPr = toPPr(pPrNodeIt);
 		RPr rPr = toRPr(conversionContext, rPrNodeIt, pPr);
+
+		return fontSelectorForGeneratedText(conversionContext, pPr, rPr, text);
+    }
+
+    /** JAXB-typed form of the above, for the visitor pathway.
+     *
+     * @since 17.0.4
+     */
+    public static DocumentFragment fontSelectorForGeneratedText(AbstractWmlConversionContext conversionContext,
+    		PPr pPr,
+    		RPr rPr,
+    		String text) {
 
     	/* Pass the text as a w:t with no xml:space, rather than as a String: the
     	 * String overload doesn't reset RunFontSelector's spacePreserve flag, so

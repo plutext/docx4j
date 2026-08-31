@@ -69,7 +69,11 @@ odd/even-page section starts), and the docx4j.convert.out.fo.hyphenate property 
 containers created by the Containerization preprocess were traversed transparently, so paragraph
 top/bottom borders were always dropped (left/right were kept, which looked worse), merged shading
 lost its margin fix (white strips between shaded paragraphs), and run borders (w:bdr on adjacent
-runs) disappeared; see docs/developer/change-requests/CR-fo-exporter-parity.md
+runs) disappeared
+- footnotes and endnotes are now rendered by the visitor exporter (previously the reference marks
+AND the note bodies were silently dropped): fo:footnote with the note body at the page bottom plus
+the separator rule, superscript endnote references, and the Endnotes block at the end of the flow;
+see docs/developer/change-requests/CR-fo-exporter-parity.md
 
 
 Version 17.0.3

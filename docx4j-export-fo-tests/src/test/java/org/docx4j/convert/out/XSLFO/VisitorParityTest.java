@@ -8,8 +8,13 @@ import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTEndnotes;
+import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Document;
 import org.junit.Test;
 
@@ -191,6 +196,83 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 			assertTrue(impl + "run border container lost", isPresent(doc,
 					"//fo:inline[@border-style='solid']"
 					+ "[contains(.,'boxed one')][contains(.,'boxed two')]"));
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	 * Phase 3: footnotes and endnotes
+	 * ------------------------------------------------------------------ */
+
+	/** body text with a footnote and an endnote (cf GeneratedTextFontTest) */
+	private WordprocessingMLPackage notesPkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body><w:p>"
+				+ "<w:r><w:t xml:space=\"preserve\">Body text </w:t></w:r>"
+				+ "<w:r><w:footnoteReference w:id=\"2\"/></w:r>"
+				+ "<w:r><w:t xml:space=\"preserve\"> and </w:t></w:r>"
+				+ "<w:r><w:endnoteReference w:id=\"2\"/></w:r>"
+				+ "</w:p></w:body></w:document>"));
+
+		FootnotesPart fp = new FootnotesPart();
+		fp.setJaxbElement((CTFootnotes)XmlUtils.unmarshalString(
+				"<w:footnotes " + W + ">"
+				+ "<w:footnote w:type=\"separator\" w:id=\"0\"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>"
+				// NB the footnote lookup indexes by position, so this has to be here for the ids to line up
+				+ "<w:footnote w:type=\"continuationSeparator\" w:id=\"1\"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>"
+				+ "<w:footnote w:id=\"2\"><w:p>"
+				+   "<w:r><w:footnoteRef/></w:r>"
+				+   "<w:r><w:t xml:space=\"preserve\"> The footnote.</w:t></w:r>"
+				+ "</w:p></w:footnote></w:footnotes>", Context.jc, CTFootnotes.class));
+		pkg.getMainDocumentPart().addTargetPart(fp);
+
+		EndnotesPart ep = new EndnotesPart();
+		ep.setJaxbElement((CTEndnotes)XmlUtils.unmarshalString(
+				"<w:endnotes " + W + ">"
+				+ "<w:endnote w:type=\"separator\" w:id=\"0\"><w:p><w:r><w:separator/></w:r></w:p></w:endnote>"
+				+ "<w:endnote w:type=\"continuationSeparator\" w:id=\"1\"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>"
+				+ "<w:endnote w:id=\"2\"><w:p>"
+				+   "<w:r><w:endnoteRef/></w:r>"
+				+   "<w:r><w:t xml:space=\"preserve\"> The endnote.</w:t></w:r>"
+				+ "</w:p></w:endnote></w:endnotes>", Context.jc, CTEndnotes.class));
+		pkg.getMainDocumentPart().addTargetPart(ep);
+
+		return pkg;
+	}
+
+	@Test
+	public void testPhase3FootnotesEndnotes() throws Exception {
+
+		for (int flag : FLAGS) {
+			org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(notesPkg(), flag));
+			String impl = flagName(flag) + ": ";
+
+			// the separator rule
+			assertTrue(impl + "footnote separator static-content lost", isPresent(doc,
+					"//fo:static-content[@flow-name='xsl-footnote-separator']"
+					+ "//fo:leader[@leader-pattern='rule']"));
+
+			// fo:footnote with superscript marker and the note body as a list-block
+			assertTrue(impl + "footnote lost", isPresent(doc,
+					"//fo:footnote/fo:inline[@baseline-shift='super'][normalize-space(.)='1']"));
+			assertTrue(impl + "footnote body lost", isPresent(doc,
+					"//fo:footnote/fo:footnote-body//fo:list-item-body"
+					+ "//fo:block[contains(.,'The footnote.')]"));
+			assertTrue(impl + "footnote number label lost", isPresent(doc,
+					"//fo:footnote//fo:list-item-label//fo:block[normalize-space(.)='1']"));
+
+			// superscript endnote reference in the text
+			assertTrue(impl + "endnote reference lost", isPresent(doc,
+					"//fo:flow//fo:inline[@baseline-shift='super'][normalize-space(.)='1']"
+					+ "[not(ancestor::fo:footnote)][not(ancestor::fo:list-block)]"));
+
+			// the Endnotes block at the end of the flow
+			assertTrue(impl + "Endnotes heading lost", isPresent(doc,
+					"//fo:flow/fo:block[@font-weight='bold'][normalize-space(.)='Endnotes']"));
+			assertTrue(impl + "endnote body lost", isPresent(doc,
+					"//fo:flow//fo:block[contains(.,'The endnote.')]"));
 		}
 	}
 

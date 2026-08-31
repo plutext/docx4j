@@ -1,6 +1,6 @@
 # CR: FO exporter feature parity (FOExporterVisitor vs FOExporterXslt)
 
-Status: IN PROGRESS (2026-08-31) — phases 1-2 shipped; see the per-phase notes below
+Status: IN PROGRESS (2026-08-31) — phases 1-3 shipped; see the per-phase notes below
 Scope: `org.docx4j.convert.out.fo` (docx4j-export-fo) plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (docx4j-core)
 Related: CR-binding-traverser-parity.md (same "stop maintaining two copies" principle,
@@ -56,10 +56,10 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 1 | Sections, page-sequence master-reference/format/initial-page-number | Y | Y | FOExporterVisitorDelegate.createSectionRoot |
 | 2 | `force-page-count` (Word section type evenPage/oddPage emulation, since 3.2.2) | Y (getForcePageCount) | Y | phase 1 shipped 2026-08-31 |
 | 3 | Headers/footers (first/even/default static-content) | Y | Y | |
-| 4 | Footnote separator static-content (`xsl-footnote-separator` rule) | Y (docx2fo.xslt:236) | N | |
-| 5 | `w:footnoteReference` → fo:footnote (number + body), sequential numbering, 17.0.3 font styling | Y | N | **footnotes silently dropped** (no case in apply(); note body never emitted) |
-| 6 | `w:endnoteReference` superscript number; Endnotes block appended to last flow | Y | N | visitor delegate has the TODO commented out |
-| 7 | `w:footnoteRef`/`w:endnoteRef`/`w:continuationSeparator` handling inside notes | Y | N | moot until 5/6 exist |
+| 4 | Footnote separator static-content (`xsl-footnote-separator` rule) | Y (docx2fo.xslt:236) | Y | phase 3 shipped 2026-08-31 |
+| 5 | `w:footnoteReference` → fo:footnote (number + body), sequential numbering, 17.0.3 font styling | Y | Y | phase 3 shipped 2026-08-31 |
+| 6 | `w:endnoteReference` superscript number; Endnotes block appended to last flow | Y | Y | phase 3 shipped 2026-08-31 (like the XSLT, the Endnotes block is emitted per section, though Word's default position is end of document) |
+| 7 | `w:footnoteRef`/`w:endnoteRef`/`w:continuationSeparator` handling inside notes | Y | Y | phase 3 shipped 2026-08-31 |
 | 8 | Paragraph block from effective pPr/rPr | Y | Y/P | logic duplicated (handlePPr vs createBlock); see rows 9-12 for the drift |
 | 9 | Paragraph-mark `sz`/`lang` affect block line-height (fontSzOnlyRPr, 2018-05 fix) | Y (XsltFOFunctions:386) | N | visitor passes null to getEffectiveRPr |
 | 10 | Empty paragraph keeps its height (preserve + space + paragraph-mark font, 17.0.3) | Y (XsltFOFunctions:542) | N | empty w:p renders as an empty fo:block |
@@ -221,6 +221,19 @@ CR, byte-for-byte identity is NOT the bar; structural/feature equivalence is.
    number-sequencing via the existing context counters and the
    fontSelectorForGeneratedText styling); Endnotes block after the last section's
    body content.
+   **SHIPPED 2026-08-31**: XsltCommonFunctions.fontSelectorForGeneratedText gets a
+   JAXB-typed overload (the NodeIterator form delegates), used for the note numbers
+   with the 17.0.3 glyph-check behavior.  w:footnoteReference/w:endnoteReference
+   share CTFtnEdnRef, so the visitor tells them apart via the JAXBElement wrapper in
+   the run's content list.  The footnote branch mirrors the template's fo:footnote
+   structure and uses the same by-position footnote lookup as the XSLT's getFootnote;
+   the note body is converted with a sub-generator.  The Endnotes block is appended
+   to the flow in appendSectionFooter — per section, matching the XSLT (a latent
+   XSLT oddity for multi-section documents, Word's default being end-of-document;
+   left as-is per the parity bar).  w:endnoteRef renders the note's own number via
+   an endnoteNumber field the delegate sets per endnote (equivalent to the XSLT's
+   count(preceding-sibling)-1); w:footnoteRef, w:separator and w:continuationSeparator
+   are skipped as in the XSLT.  Test: VisitorParityTest.testPhase3FootnotesEndnotes.
 4. **Paragraph fidelity** (rows 9-10, 13, 21): fontSzOnlyRPr in handlePPr; empty-block
    preserve+space+font; font-family on tab leaders/dummies (reuse
    `XsltFOFunctions.getFontFamily`'s core); reconcile the list-item structural

@@ -21,12 +21,15 @@ package org.docx4j.convert.out.fo;
 
 import java.util.List;
 
+import jakarta.xml.bind.JAXBElement;
+
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
+import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.images.WordXmlPictureE10;
@@ -44,7 +47,10 @@ import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Br;
+import org.docx4j.wml.CTFtnEdn;
+import org.docx4j.wml.CTFtnEdnRef;
 import org.docx4j.wml.CTTabStop;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.DelText;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
@@ -149,6 +155,36 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			}
 			return null;
 
+		} else if (o instanceof CTFtnEdnRef) {
+
+			// w:footnoteReference and w:endnoteReference share this class; look at
+			// the JAXBElement wrapper in the containing run to tell them apart
+			if (!conversionContext.isInComplexFieldDefinition()) {
+				if ("endnoteReference".equals(refKind((CTFtnEdnRef)o))) {
+					handleEndnoteReference();
+				} else {
+					handleFootnoteReference((CTFtnEdnRef)o);
+				}
+			}
+			return null;
+
+		} else if (o instanceof R.EndnoteRef) {
+
+			// the number in the endnote itself; endnoteNumber is set by
+			// FOExporterVisitorDelegate.appendSectionFooter when rendering endnotes
+			if (endnoteNumber>=0 && !conversionContext.isInComplexFieldDefinition()) {
+				appendSuperscriptNumber(endnoteNumber);
+			}
+			return null;
+
+		} else if (o instanceof R.FootnoteRef
+				|| o instanceof R.Separator
+				|| o instanceof R.ContinuationSeparator) {
+
+			// the number in the footnote is rendered as the list item label;
+			// separators are generated (xsl-footnote-separator), not copied
+			return null;
+
 		} else if (o instanceof SdtElement) {
 
 			// A borders/shading container inserted by the Containerization preprocess
@@ -187,6 +223,101 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		}
 
 		return super.apply(o);
+	}
+
+	/** the number of the endnote whose content is being rendered (for w:endnoteRef);
+	 *  set by FOExporterVisitorDelegate when appending the Endnotes block */
+	protected int endnoteNumber = -1;
+
+	/** the local name of the JAXBElement wrapping this reference in its run */
+	private String refKind(CTFtnEdnRef ref) {
+
+		Object parent = ref.getParent();
+		if (parent instanceof ContentAccessor) {
+			for (Object c : ((ContentAccessor)parent).getContent()) {
+				if (c instanceof JAXBElement && ((JAXBElement<?>)c).getValue()==ref) {
+					return ((JAXBElement<?>)c).getName().getLocalPart();
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * fo:footnote at the reference position: the superscript number, and the note
+	 * body as a list-block whose label is the number.  Mirrors the XSLT's
+	 * w:footnoteReference template.
+	 */
+	private void handleFootnoteReference(CTFtnEdnRef ref) {
+
+		int fn = conversionContext.getNextFootnoteNumber();
+		DocumentFragment fnStyled = XsltCommonFunctions.fontSelectorForGeneratedText(
+				conversionContext, pPr, rPr, Integer.toString(fn));
+
+		Element footnote = document.createElementNS(XSL_FO, "footnote");
+
+		Element marker = document.createElementNS(XSL_FO, "inline");
+		marker.setAttribute("baseline-shift", "super");
+		marker.setAttribute("font-size", "smaller");
+		XmlUtils.treeCopy(fnStyled, marker);
+		footnote.appendChild(marker);
+
+		Element body = document.createElementNS(XSL_FO, "footnote-body");
+		footnote.appendChild(body);
+
+		Element listBlock = document.createElementNS(XSL_FO, "list-block");
+		listBlock.setAttribute("provisional-label-separation", "0pt");
+		listBlock.setAttribute("provisional-distance-between-starts", "18pt");
+		listBlock.setAttribute("space-after.optimum", "6pt");
+		body.appendChild(listBlock);
+
+		Element listItem = document.createElementNS(XSL_FO, "list-item");
+		listBlock.appendChild(listItem);
+
+		Element listItemLabel = document.createElementNS(XSL_FO, "list-item-label");
+		listItemLabel.setAttribute("end-indent", "label-end()");
+		Element labelBlock = document.createElementNS(XSL_FO, "block");
+		XmlUtils.treeCopy(fnStyled, labelBlock);
+		listItemLabel.appendChild(labelBlock);
+		listItem.appendChild(listItemLabel);
+
+		Element listItemBody = document.createElementNS(XSL_FO, "list-item-body");
+		listItemBody.setAttribute("start-indent", "body-start()");
+		Element bodyBlock = document.createElementNS(XSL_FO, "block");
+		listItemBody.appendChild(bodyBlock);
+		listItem.appendChild(listItemBody);
+
+		// the footnote's content; the same by-position lookup as the XSLT's getFootnote
+		try {
+			CTFtnEdn ftn = (CTFtnEdn)conversionContext.getWmlPackage().getMainDocumentPart()
+					.getFootnotesPart().getJaxbElement().getFootnote()
+					.get(ref.getId().intValue());
+			AbstractVisitorExporterGenerator<FOConversionContext> generator =
+					getFactory().createInstance(conversionContext, document, bodyBlock);
+			new TraversalUtil(ftn.getContent(), generator);
+		} catch (Exception e) {
+			log.error("Couldn't get footnote " + (ref.getId()==null ? "(no id)" : ref.getId())
+					+ ": " + e.getMessage(), e);
+		}
+
+		getCurrentParent().appendChild(footnote);
+	}
+
+	/** superscript endnote number at the reference position */
+	private void handleEndnoteReference() {
+
+		appendSuperscriptNumber(conversionContext.getNextEndnoteNumber());
+	}
+
+	private void appendSuperscriptNumber(int number) {
+
+		DocumentFragment styled = XsltCommonFunctions.fontSelectorForGeneratedText(
+				conversionContext, pPr, rPr, Integer.toString(number));
+		Element inline = document.createElementNS(XSL_FO, "inline");
+		inline.setAttribute("baseline-shift", "super");
+		inline.setAttribute("font-size", "smaller");
+		XmlUtils.treeCopy(styled, inline);
+		getCurrentParent().appendChild(inline);
 	}
 
 	@Override
