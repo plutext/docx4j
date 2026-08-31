@@ -23,7 +23,6 @@ import java.util.List;
 
 import jakarta.xml.bind.JAXBElement;
 
-import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
@@ -34,16 +33,8 @@ import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
-import org.docx4j.model.properties.paragraph.Indent;
-import org.docx4j.model.properties.paragraph.Justification;
-import org.docx4j.model.properties.paragraph.PBorderBottom;
-import org.docx4j.model.properties.paragraph.PBorderTop;
-import org.docx4j.model.properties.paragraph.Bidi;
-import org.docx4j.model.properties.paragraph.PShading;
-import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Br;
@@ -52,10 +43,8 @@ import org.docx4j.wml.CTFtnEdnRef;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.DelText;
-import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RunDel;
@@ -65,9 +54,6 @@ import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STPTabAlignment;
 import org.docx4j.wml.STTabJc;
 import org.docx4j.wml.STTabTlc;
-import org.docx4j.wml.Style;
-import org.docx4j.wml.TcPr;
-import org.docx4j.wml.TrPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
@@ -75,7 +61,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator<FOConversionContext>{
 	
@@ -110,7 +95,14 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		// FO-specific handling of elements the shared visitor has no case for;
 		// the output matches the corresponding docx2fo.xslt templates.
 
-		if (o instanceof DelText) {
+		if (o instanceof P) {
+
+			// Since 17.0.4, the paragraph block is built by the same code as the
+			// XSLT pathway (children first, then wrap), rather than by handlePPr
+			handleP((P)o);
+			return null;
+
+		} else if (o instanceof DelText) {
 
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				Element inline = createNode(document, NODE_INLINE);
@@ -211,11 +203,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				leader.setAttribute("leader-pattern", "space");
 				leader.setAttribute("leader-alignment", "reference-area");
 				getCurrentParent().appendChild(leader);
-				// for leader to work as expected in FOP, we need text-align-last;
-				// see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
-				if (currentP != null) {
-					currentP.setAttribute("text-align-last", "justify");
-				}
+				// text-align-last=justify (which the leader needs in FOP) is set on
+				// the paragraph's block by createBlockForPPr's leader check
 				return null;
 			}
 			return super.apply(o); // other alignments: warn, as the XSLT does
@@ -323,11 +312,50 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	@Override
 	public boolean shouldTraverse(Object o) {
 
+		if (o instanceof P) {
+			// its contents were already converted in apply (handleP)
+			return false;
+		}
 		if (o instanceof SdtElement && containerTag((SdtElement)o)!=null) {
 			// its contents were already converted in apply (handleXsltContainer)
 			return false;
 		}
 		return super.shouldTraverse(o);
+	}
+
+	/**
+	 * Convert the paragraph's children into a fragment first (cf the XSLT's
+	 * childResults), then wrap them in the paragraph's fo:block (or fo:list-block)
+	 * via the shared XsltFOFunctions.createBlockForPPr — the same code the XSLT
+	 * pathway uses, so list structure, empty-paragraph preservation, the
+	 * paragraph-mark sz/lang line-height contribution, hyphenation, leader handling
+	 * and the bidi block-container all behave identically.
+	 *
+	 * @since 17.0.4
+	 */
+	private void handleP(P p) {
+
+		DocumentFragment childResults = document.createDocumentFragment();
+		FOExporterVisitorGenerator generator = (FOExporterVisitorGenerator)
+				getFactory().createInstance(conversionContext, document, childResults);
+		try {
+			// the effective pPr, for font selection within the paragraph (as before)
+			generator.pPr = conversionContext.getPropertyResolver().getEffectivePPr(p.getPPr());
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		}
+		new TraversalUtil(p.getContent(), generator);
+
+		String pStyleVal = (p.getPPr()!=null && p.getPPr().getPStyle()!=null
+				? p.getPPr().getPStyle().getVal() : null);
+		DocumentFragment block = XsltFOFunctions.createBlockForPPr(
+				conversionContext, p.getPPr(), pStyleVal, childResults);
+		if (block!=null) {
+			(tc.peek()!=null ? tc.peek() : parentNode)
+					.appendChild(document.importNode(block, true));
+		}
+		currentP = null;
+		currentSpan = null;
 	}
 
 	/**
@@ -548,420 +576,70 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document) throws DOMException {
 
 		if (!conversionContext.isInComplexFieldDefinition()) {
-						
+
+			// The leader dots, and the spaces we use where there is no leader, are
+			// characters we generate; there is no w:t to hang a font off, so unless we
+			// set one, they'd be rendered/measured in the renderer's default font.
+			String fontFamily = XsltFOFunctions.getFontFamily(conversionContext, pPr, rPr);
+
 	    	if (pPr!=null && pPr.getTabs()!=null) {
-	    		
+
 	    		// xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1"
 	    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
-	    			    		
+
 	    		if (tabStop!=null
 	    				&& tabStop.getVal()!=null     // unlikely
 	    				&& tabStop.getVal().equals(STTabJc.RIGHT)
 	    				&& tabStop.getLeader()!=null  // more likely
 	    				&& tabStop.getLeader().equals(STTabTlc.DOT) ) {
-	    			
+
 					// <fo:leader leader-length.minimum="12pt" leader-length.optimum="40pt"
 					//		    leader-length.maximum="100%" leader-pattern="dots">
-	    			Element foLeader = document.createElementNS(XSL_FO, "leader");	    			
+	    			Element foLeader = document.createElementNS(XSL_FO, "leader");
 	    			foLeader.setAttribute("leader-length.minimum",  "12pt");
 	    			foLeader.setAttribute("leader-length.maximum",  "100%");
 	    			foLeader.setAttribute("leader-length.optimum",  "40pt");
 	    			foLeader.setAttribute("leader-pattern",  "dots");
-	    			
-	    			getCurrentParent().appendChild(foLeader);	    			
-	    			
+	    			if (fontFamily.length()>0) {
+	    				foLeader.setAttribute("font-family", fontFamily);
+	    			}
+
+	    			getCurrentParent().appendChild(foLeader);
+
 	    		} else {
-	    			getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));	    			
+	    			appendTabDummy(fontFamily);
 	    		}
 	    	}
 	    	else {
-    			getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));	    			
-    		}	    	
-			
+	    		appendTabDummy(fontFamily);
+    		}
+
 		}
+	}
+
+	/** the spaces standing in for a tab, in an inline carrying the font (as the
+	 *  XSLT's w:tab template does) */
+	private void appendTabDummy(String fontFamily) {
+
+		Element inline = createNode(document, NODE_INLINE);
+		if (fontFamily.length()>0) {
+			inline.setAttribute("font-family", fontFamily);
+		}
+		inline.setTextContent(TAB_DUMMY);
+		getCurrentParent().appendChild(inline);
 	}
 	
 	
+    /**
+     * Not used by this generator since 17.0.4: the paragraph block is built via
+     * XsltFOFunctions.createBlockForPPr (see handleP), the same code as the XSLT
+     * pathway, and sdt containers via createBlockForSdt (see handleXsltContainer).
+     */
     @Override
-	protected Element handlePPr(FOConversionContext conversionContext, PPr pPrDirect, boolean sdt, 
+	protected Element handlePPr(FOConversionContext conversionContext, PPr pPrDirect, boolean sdt,
 			Element currentParent) throws Docx4JException {
-    	
-    	Element ret = currentParent;
 
-		// Hyphenation defaults to off; see createBlockForPPr in XsltFOFunctions
-		if (!sdt
-				&& Docx4jProperties.getProperty("docx4j.convert.out.fo.hyphenate", false)) {
-			currentParent.setAttribute("hyphenate", "true");
-		}
-
-    	PropertyResolver propertyResolver = conversionContext.getPropertyResolver();
-    	
-
-    	String defaultParagraphStyleId = "Normal";
-    	if (conversionContext.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
-        	Style defaultParagraphStyle = 
-        			conversionContext.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle();
-        	if (defaultParagraphStyle != null) {
-        		defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
-        	}
-    	}
-    	
-    	String pStyleVal = null;
-    	if (pPrDirect!=null && pPrDirect.getPStyle()!=null) {
-    		pStyleVal = pPrDirect.getPStyle().getVal();
-    	} else {
-			pStyleVal = defaultParagraphStyleId;
-		}
-    	getLog().debug("style '" + pStyleVal );     		
-
-        try {
-        	
-//        	PPr pPr = null;
-//        	RPr rPr = null;
-			pPr = propertyResolver.getEffectivePPr(pPrDirect);  
-
-			getLog().debug("getting rPr for paragraph style");    				
-			rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
-			// rPr in pPr direct formatting only applies to paragraph mark, 
-			// and by virtue of that, to list item label,
-			// so pass null here
-			
-			// Now, work out the value for list item label
-			RPr rPrParagraphMark = XmlUtils.deepCopy(rPr);
-	//		System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
-			if (pPrDirect!=null) {
-				StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark);				
-			}
-			
-			if (getLog().isDebugEnabled() && pPr!=null) {				
-				getLog().debug(XmlUtils.marshaltoString(pPr, true, true));					
-			}
-        							
-			boolean inlist = false;
-			boolean indentHandledByNumbering = false;
-			
-			
-			Element foBlockElement = null;
-			Element foListBlock = null;
-			
-//			if (pPr!=null && pPr.getNumPr()!=null ) {
-			if (pPr!=null 
-					&& pPr.getNumPr()!=null 
-					&& pPr.getNumPr().getNumId()!=null
-					&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
-					) {
-				
-				inlist = true;
-				
-				// Its a list item.  At present we make a new list-block for
-				// each list-item. This is not great; DocumentModel will ultimately
-				// allow us to use fo:list-block properly.
-
-				foListBlock = document.createElementNS(XSL_FO, 
-						"list-block");
-				currentParent.appendChild(foListBlock);
-					// That's different to XSL.
-					// Here we end up with block/list-block
-					// cf XSL, where the logic avoids creating 2 elements.
-					// May be easy to fix, if instead of passing in
-					// currentParent, we return block or list-block
-					// from here, and appendChild in the calling code.
-								
-//				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
-				
-				// Need to apply shading at fo:list-block level
-				if (pPr.getShd()!=null) {
-					PShading pShading = new PShading(pPr.getShd());
-					pShading.setXslFO(foListBlock);
-				}
-				
-				Element foListItem = document.createElementNS(XSL_FO, 
-						"list-item");
-				foListBlock.appendChild(foListItem);				
-
-				
-				Element foListItemLabel = document.createElementNS(XSL_FO, 
-						"list-item-label");
-				foListItem.appendChild(foListItemLabel);
-				
-				Element foListItemLabelBody = document.createElementNS(XSL_FO, 
-						"block");
-				foListItemLabel.appendChild(foListItemLabelBody);
-				
-				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
-						"fo:list-item-body");
-				foListItem.appendChild(foListItemBody);	
-				foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");				
-				
-	        	ResultTriple triple;
-	        	if (pPrDirect!=null && pPrDirect.getNumPr()!=null) {
-	        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-	        			conversionContext.getWmlPackage(), pStyleVal, 
-	        			pPrDirect.getNumPr().getNumId().getVal().toString(), 
-	        			pPrDirect.getNumPr().getIlvl().getVal().toString() ); 
-	        	} else {
-	        		// Get the effective values; since we already know this,
-	        		// save the effort of doing this again in Emulator
-	        		Ilvl ilvl = pPr.getNumPr().getIlvl();
-	        		String ilvlString = ilvl == null ? "0" : ilvl.getVal().toString();
-	        		triple = null; 
-	        		if (pPr.getNumPr().getNumId()!=null) {
-		        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-		        				conversionContext.getWmlPackage(), pStyleVal, 
-			        			pPr.getNumPr().getNumId().getVal().toString(), 
-			        			ilvlString ); 		        	
-	        		}
-	        	}
-				
-    			DocumentFragment rfsFrag = null;	        		
-				if (triple==null) {
-					getLog().warn("computed number ResultTriple was null");
-	        		if (getLog().isDebugEnabled() ) {
-	        			foListItemLabelBody.setTextContent("nrt");
-	        		} 
-	        	} else {
-	        		
-	        		/* Format the list item label
-	        		 * 
-	        		 * Since it turns out (in FOP at least) that the label and the body 
-	        		 * don't have the same vertical alignment 
-	        		 * unless font size is applied at the same level
-	        		 * (ie to both -label and -body, or to the block inside each), 
-	        		 * we have to format the list-item-body as well.
-	        		 * This issue only manifests itself if the font size on
-	        		 * the outer list-block is larger than the font sizes
-	        		 * set inside it.
-	        		 */
-
-	        		// OK just to override specific values
-        			// Values come from numbering rPr, unless overridden in p-level rpr
-	        		if(triple.getRPr()==null) {
-	        			
-	        			if (pPr.getRPr()==null) {
-	        				// do nothing, since we're already inheriting the formatting in the style
-	        				// (as opposed to the paragraph mark formatting)
-	        				// EXCEPT for font
-	    					rfsFrag = (DocumentFragment)conversionContext.getRunFontSelector().fontSelector(pPr, rPr, triple.getNumString());
-	    					XsltFOFunctions.applyRunFontSelection(rfsFrag, foListItemLabelBody);
-	        				
-	        			} else {
-
-	        				createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemLabel );	        				
-	        				createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemBody );
-	        				
-	    					rfsFrag = (DocumentFragment)conversionContext.getRunFontSelector().fontSelector(pPr, rPrParagraphMark, triple.getNumString());
-	    					XsltFOFunctions.applyRunFontSelection(rfsFrag, foListItemLabelBody);
-	        				
-	        			}
-	        			
-	        		} else {
-	        			RPr actual = XmlUtils.deepCopy(triple.getRPr()); // clone, so the ilvl rpr is not altered
-//	        			System.out.println(XmlUtils.marshaltoString(rPrParagraphMark));
-	        			
-	        			// pMark overrides numbering, except for font
-	        			// (which makes sense, since that would change the bullet)
-	        			// so set the font
-    					rfsFrag = (DocumentFragment)conversionContext.getRunFontSelector().fontSelector(pPr, actual, triple.getNumString());
-    					XsltFOFunctions.applyRunFontSelection(rfsFrag, foListItemLabelBody);
-	        			
-        				// .. before taking rPrParagraphMark into account
-	            		StyleUtil.apply(rPrParagraphMark, actual); 
-//	        			System.out.println(XmlUtils.marshaltoString(actual));
-	            		
-						createFoAttributes(conversionContext.getWmlPackage(), actual, foListItemLabel );
-						createFoAttributes(conversionContext.getWmlPackage(), actual, foListItemBody );	        			
-	        		}	        		
-
-/*	        		
-	        		// Indent (in combination with provisional-distance-between-starts
-	        		// above
-	        		if (triple.getIndent()!=null) {
-	        			Indent indent = new Indent(triple.getIndent());
-	    				//foListBlock.setAttribute(Indent.FO_NAME, "2in");
-	    				indent.setXslFO(foListBlock);
-	        		}
-	        		
-	*/      
-	        	}
-
-    			int numChars=1;	        		
-        		if (triple.getBullet()!=null ) {
-//	        		foListItemLabelBody.setTextContent(triple.getBullet() );
-    		    	foListItemLabelBody.setTextContent(rfsFrag.getTextContent());  // give effect to any character mapping
-        			
-	        	} else if (triple.getNumString()==null) {
-	        		getLog().warn("computed NumString was null!");
-	        		if (getLog().isDebugEnabled() ) {
-	        			foListItemLabelBody.setTextContent("nns");
-	        		} 
-	        		numChars=0;		        		
-		    	} else {
-					Text number = document.createTextNode( triple.getNumString() );
-					foListItemLabelBody.appendChild(number);
-					numChars = triple.getNumString().length();						
-		    	}
-				
-        		// Indent (setting provisional-distance-between-starts)
-        		// Indent on direct pPr trumps indent in pPr in numbering, which trumps indent
-    			// specified in a style.  Well, not exactly, components which aren't set in
-        		// the direct formatting will be contributed by the numbering's indent settings
-        		Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
-        		if (indent.isHanging() ) {
-    				indent.setXslFOListBlock(foListBlock, -1);	        			
-        		} else {
-        			
-        			int numWidth = 90 * numChars; // crude .. TODO take font size into account
-        			
-        		    int pdbs = XsltFOFunctions.getDistanceToNextTabStop(indent.getNumberPosition(), numWidth,
-        		    		pPrDirect.getTabs(), conversionContext.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart());
-    				indent.setXslFOListBlock(foListBlock, pdbs);	        				        			
-        		}
-				indentHandledByNumbering = true; 				
-								
-				foBlockElement = document.createElementNS(XSL_FO, 
-						"block");
-				foListItemBody.appendChild(foBlockElement);
-				//If we have list items the parent for spans changes (currentP)
-				ret = foBlockElement;
-				
-			} else {
-
-				// Do nothing 
-			}
-			
-							
-			if (pPr!=null) {
-				// Ignore paragraph borders once inside the container
-				boolean ignoreBorders = !sdt;
-
-				createFoAttributes(conversionContext, pPr, currentParent, inlist, ignoreBorders );
-			}
-			
-			if (rPr!=null) {
-//				createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
-
-				if (foListBlock==null) {
-					createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
-				} else {
-					createFoAttributes(conversionContext.getWmlPackage(), rPr, ((Element)foListBlock) );
-				}
-
-	        }
-
-			// If w:bidi, the Bidi class will have set a writing-mode marker
-			// attribute (where it doesn't apply, and FOP ignores it); move it to
-			// an fo:block-container wrapped around the paragraph's block, where
-			// it gives FOP's Unicode bidi algorithm implementation an RTL
-			// paragraph embedding level.  See issue 660.
-			if (currentParent.hasAttribute(Bidi.FO_WRITING_MODE_NAME)
-					&& currentParent.getParentNode()!=null) {
-
-				currentParent.removeAttribute(Bidi.FO_WRITING_MODE_NAME);
-
-				Element container = document.createElementNS(XSL_FO, "block-container");
-				container.setAttribute(Bidi.FO_WRITING_MODE_NAME, Bidi.FO_WRITING_MODE_RTL);
-
-				currentParent.getParentNode().replaceChild(container, currentParent);
-				container.appendChild(currentParent);
-			}
-
-		} catch (Exception e) {
-			getLog().error(e.getMessage(), e);
-		} 
-        
-        return ret;
-    }
-
-    
-	protected void createFoAttributes(FOConversionContext conversionContext, PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
-		
-    	List<Property> properties = PropertyFactory.createProperties(conversionContext.getWmlPackage(), pPr);
-    	
-    	for( Property p :  properties ) {
-			if (p!=null) {
-				
-				if (ignoreBorders &&
-						((p instanceof PBorderTop)
-								|| (p instanceof PBorderBottom))) {
-					continue;
-				}
-								
-				if (inList && !(p instanceof Indent) ) { 
-					// Don't set start-indent in 
-					// fo:list-item-body/fo:block.
-					// This has to be handled above using something like 
-					//  <fo:list-block provisional-distance-between-starts="0.5in" start-indent="2in">
-					p.setXslFO(foBlockElement);
-				} else if (!inList) {
-					p.setXslFO(foBlockElement);
-				}
-			}
-    	}
-    	
-    	if (pPr==null) return;
-		
-    	// Special case, since bidi is translated to align right
-    	// Handle interaction between w:pPr/w:bidi and w:pPr/w:jc/@w:val='right'
-    	if (pPr.getBidi()!=null && pPr.getBidi().isVal()) {
-    		
-    		if (pPr.getJc()!=null) {
-    			if (pPr.getJc().getVal().equals(JcEnumeration.RIGHT)) {
-    				// set it to left!
-    				foBlockElement.setAttribute(Justification.FO_NAME,  "left");
-    			} else if (pPr.getJc().getVal().equals(JcEnumeration.LEFT)) {
-    				// set it to right!
-    				foBlockElement.setAttribute(Justification.FO_NAME,  "right");
-    			}
-    		}
-    	}   
-    	
-    	// Table of contents dot leader needs text-align-last="justify"
-    	// Are we in a TOC?
-    	if (pPr.getTabs()!=null
-    			
-    			// PStyle is not included in our effective pPr!
-//    			&& pPr.getPStyle()!=null 
-//    			&& pPr.getPStyle().getVal()!=null
-//    			&& pPr.getPStyle().getVal().startsWith("TOC")  
-    			) {
-    		
-    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
-    		if (tabStop!=null
-    				//&& tabStop.getLeader().equals(STTabTlc.DOT)
-    				&& tabStop.getVal().equals(STTabJc.RIGHT) ) {
-    			
-    			foBlockElement.setAttribute("text-align-last",  "justify");
-    		}
-    	}
-    	
-    	
-	}
-	
-	/*
-	 *  @since 3.0.0
-	 */
-	protected static void applyFoAttributes(List<Property> properties, Element foElement) {
-		if ((properties != null) && (!properties.isEmpty())) {
-			for (int i=0; i<properties.size(); i++) {
-				properties.get(i).setXslFO(foElement);
-			}
-		}
-	}
-	
-    protected static void createFoAttributes(TrPr trPr, Element foBlockElement){
-    	if (trPr == null) {
-    		return;
-    	}
-    	applyFoAttributes(PropertyFactory.createProperties(trPr), foBlockElement);
-    }
-	
-    protected static void createFoAttributes(TcPr tcPr, Element foBlockElement){
-    	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
-    	
-		if (tcPr==null) {
-			return;
-		}
-    	applyFoAttributes(PropertyFactory.createProperties(tcPr), foBlockElement);
+        return currentParent;
     }
 	
 

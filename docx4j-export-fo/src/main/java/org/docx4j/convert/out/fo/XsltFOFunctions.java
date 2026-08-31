@@ -197,23 +197,48 @@ public class XsltFOFunctions {
      * @param childResults - the already transformed contents of the paragraph.
      * @return
      */
-    public static DocumentFragment createBlockForPPr( 
+    public static DocumentFragment createBlockForPPr(
     		FOConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults) {
-    	
-    	DocumentFragment df = createBlock( 
+
+    	DocumentFragment df = createBlock(
         		context,
         		pPrNodeIt,
         		pStyleVal, childResults,
-        		false);  
-    	
+        		false);
+
+    	return postProcessBlockForPPr(df);
+    }
+
+    /**
+     * JAXB-typed form of createBlockForPPr, for the visitor pathway
+     * (FOExporterVisitorGenerator).
+     *
+     * @param pPrDirect the paragraph's own pPr (may be null)
+     * @param childResults the already converted contents of the paragraph
+     * @since 17.0.4
+     */
+    public static DocumentFragment createBlockForPPr(
+    		FOConversionContext context,
+    		PPr pPrDirect,
+    		String pStyleVal, Node childResults) {
+
+    	DocumentFragment df = createBlock(context, pPrDirect, pStyleVal, childResults, false);
+
+    	return postProcessBlockForPPr(df);
+    }
+
+    private static DocumentFragment postProcessBlockForPPr(DocumentFragment df) {
+
     	// Note: prior to 17.0.1, an inline with direction="rtl" (as then created by
     	// the TextDirection class for a w:rtl run) was wrapped here in
     	//    <fo:bidi-override direction="rtl" unicode-bidi="embed">
     	// That actively broke FOP's own bidi processing (unshaped Arabic, and wrong
     	// run order in mixed RTL/LTR paragraphs); see issue 660.  Instead, a w:bidi
     	// paragraph now gets an RTL paragraph embedding level; see wrapInBidiBlockContainer.
+
+    	if (df==null || !(df.getFirstChild() instanceof Element)) return df;
 
     	Element block = (Element)df.getFirstChild();
 
@@ -505,6 +530,16 @@ public class XsltFOFunctions {
 
 		return fontFamilyOf(
 				XsltCommonFunctions.fontSelectorForGeneratedText(context, pPrNodeIt, rPrNodeIt, "."));
+	}
+
+	/** JAXB-typed form of the above, for the visitor pathway.
+	 *
+	 * @since 17.0.4
+	 */
+	public static String getFontFamily(FOConversionContext context, PPr pPr, RPr rPr) {
+
+		return fontFamilyOf(
+				XsltCommonFunctions.fontSelectorForGeneratedText(context, pPr, rPr, "."));
 	}
 
 	private static String resolveFontFamily(WordprocessingMLPackage wmlPackage,

@@ -12,10 +12,12 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Document;
+import org.docx4j.wml.Numbering;
 import org.junit.Test;
 
 /**
@@ -273,6 +275,108 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 					"//fo:flow/fo:block[@font-weight='bold'][normalize-space(.)='Endnotes']"));
 			assertTrue(impl + "endnote body lost", isPresent(doc,
 					"//fo:flow//fo:block[contains(.,'The endnote.')]"));
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	 * Phase 4: paragraph fidelity (empty paragraphs, generated-text fonts,
+	 * paragraph-mark size, list structure)
+	 * ------------------------------------------------------------------ */
+
+	private static final String FONT = "Courier New";
+	private static final String RPR =
+			"<w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/></w:rPr>";
+
+	private WordprocessingMLPackage phase4Pkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				// a dot leader tab and a plain tab
+				+ "<w:p><w:pPr><w:tabs><w:tab w:val=\"right\" w:leader=\"dot\" w:pos=\"9016\"/></w:tabs></w:pPr>"
+				+   "<w:r>" + RPR + "<w:t>Chapter one</w:t></w:r>"
+				+   "<w:r>" + RPR + "<w:tab/></w:r>"
+				+   "<w:r>" + RPR + "<w:t>7</w:t></w:r>"
+				+ "</w:p>"
+				+ "<w:p>"
+				+   "<w:r>" + RPR + "<w:t>Before</w:t></w:r>"
+				+   "<w:r>" + RPR + "<w:tab/></w:r>"
+				+   "<w:r>" + RPR + "<w:t>After</w:t></w:r>"
+				+ "</w:p>"
+				// empty, with font and size on the paragraph mark
+				+ "<w:p><w:pPr><w:rPr><w:rFonts w:ascii=\"" + FONT + "\" w:hAnsi=\"" + FONT + "\"/>"
+				+   "<w:sz w:val=\"48\"/></w:rPr></w:pPr></w:p>"
+				// sz on the paragraph mark contributes to the block's line height
+				+ "<w:p><w:pPr><w:rPr><w:sz w:val=\"48\"/></w:rPr></w:pPr>"
+				+   "<w:r><w:t>sized text</w:t></w:r></w:p>"
+				// a numbered list item
+				+ "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
+				+   "<w:r><w:t>item text</w:t></w:r></w:p>"
+				+ "</w:body></w:document>"));
+
+		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
+		ndp.setJaxbElement((Numbering)XmlUtils.unmarshalString(
+				"<w:numbering " + W + ">"
+				+ "<w:abstractNum w:abstractNumId=\"1\">"
+				+   "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+				+     "<w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+				+     "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+				+ "</w:abstractNum>"
+				+ "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"1\"/></w:num>"
+				+ "</w:numbering>", Context.jc, Numbering.class));
+		pkg.getMainDocumentPart().addTargetPart(ndp);
+
+		return pkg;
+	}
+
+	/** the font-family the ordinary text was actually mapped to (a physical font
+	 *  name, which need not equal the document's font name) */
+	private String textFont(org.w3c.dom.Document doc, String startsWith) {
+
+		org.w3c.dom.NodeList nl = doc.getElementsByTagNameNS(
+				"http://www.w3.org/1999/XSL/Format", "inline");
+		for (int i=0; i<nl.getLength(); i++) {
+			org.w3c.dom.Element el = (org.w3c.dom.Element)nl.item(i);
+			if (el.getTextContent().startsWith(startsWith)
+					&& el.getAttribute("font-family").length()>0) {
+				return el.getAttribute("font-family");
+			}
+		}
+		return null;
+	}
+
+	@Test
+	public void testPhase4ParagraphFidelity() throws Exception {
+
+		for (int flag : FLAGS) {
+			org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(phase4Pkg(), flag));
+			String impl = flagName(flag) + ": ";
+
+			String font = textFont(doc, "Chapter one");
+			assertTrue(impl + "no font on the ordinary text", font!=null);
+
+			// generated text (leader dots, tab spaces) carries the run's font
+			assertTrue(impl + "dot leader has no or wrong font", isPresent(doc,
+					"//fo:leader[@leader-pattern='dots'][@font-family='" + font + "']"));
+			assertTrue(impl + "tab spaces have no or wrong font", isPresent(doc,
+					"//fo:inline[.='\u00A0\u00A0\u00A0'][@font-family='" + font + "']"));
+
+			// the empty paragraph is preserved, in the paragraph mark's font
+			assertTrue(impl + "empty paragraph collapsed or unstyled", isPresent(doc,
+					"//fo:block[@white-space-treatment='preserve'][@font-family='" + font + "']"));
+
+			// paragraph-mark w:sz contributes to the block (line height)
+			assertTrue(impl + "paragraph-mark sz not applied to the block", isPresent(doc,
+					"//fo:block[starts-with(@font-size,'24')][contains(.,'sized text')]"));
+
+			// list structure: list-block at flow level (no extra wrapper block),
+			// number label, and the text in the item body
+			assertTrue(impl + "list-block missing or wrapped", isPresent(doc,
+					"//fo:flow/fo:list-block"));
+			assertTrue(impl + "list number label lost", isPresent(doc,
+					"//fo:list-block//fo:list-item-label//fo:block[normalize-space(.)='1.']"));
+			assertTrue(impl + "list item text lost", isPresent(doc,
+					"//fo:list-block//fo:list-item-body//fo:block[contains(.,'item text')]"));
 		}
 	}
 

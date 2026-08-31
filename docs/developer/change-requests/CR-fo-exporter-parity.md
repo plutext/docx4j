@@ -1,6 +1,6 @@
 # CR: FO exporter feature parity (FOExporterVisitor vs FOExporterXslt)
 
-Status: IN PROGRESS (2026-08-31) — phases 1-3 shipped; see the per-phase notes below
+Status: IN PROGRESS (2026-08-31) — phases 1-4 shipped; see the per-phase notes below
 Scope: `org.docx4j.convert.out.fo` (docx4j-export-fo) plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (docx4j-core)
 Related: CR-binding-traverser-parity.md (same "stop maintaining two copies" principle,
@@ -60,12 +60,12 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 5 | `w:footnoteReference` → fo:footnote (number + body), sequential numbering, 17.0.3 font styling | Y | Y | phase 3 shipped 2026-08-31 |
 | 6 | `w:endnoteReference` superscript number; Endnotes block appended to last flow | Y | Y | phase 3 shipped 2026-08-31 (like the XSLT, the Endnotes block is emitted per section, though Word's default position is end of document) |
 | 7 | `w:footnoteRef`/`w:endnoteRef`/`w:continuationSeparator` handling inside notes | Y | Y | phase 3 shipped 2026-08-31 |
-| 8 | Paragraph block from effective pPr/rPr | Y | Y/P | logic duplicated (handlePPr vs createBlock); see rows 9-12 for the drift |
-| 9 | Paragraph-mark `sz`/`lang` affect block line-height (fontSzOnlyRPr, 2018-05 fix) | Y (XsltFOFunctions:386) | N | visitor passes null to getEffectiveRPr |
-| 10 | Empty paragraph keeps its height (preserve + space + paragraph-mark font, 17.0.3) | Y (XsltFOFunctions:542) | N | empty w:p renders as an empty fo:block |
+| 8 | Paragraph block from effective pPr/rPr | Y | Y | phase 4 shipped 2026-08-31: one shared implementation (createBlockForPPr) |
+| 9 | Paragraph-mark `sz`/`lang` affect block line-height (fontSzOnlyRPr, 2018-05 fix) | Y | Y | phase 4 shipped 2026-08-31 |
+| 10 | Empty paragraph keeps its height (preserve + space + paragraph-mark font, 17.0.3) | Y | Y | phase 4 shipped 2026-08-31 |
 | 11 | `hyphenate="true"` when docx4j.convert.out.fo.hyphenate set | Y (XsltFOFunctions:170) | Y | phase 1 shipped 2026-08-31 |
 | 12 | `text-align-last="justify"` when block contains a leader (ptab case) | Y (foContainsElement) | Y | phase 1 shipped 2026-08-31 (set where the visitor emits the ptab leader) |
-| 13 | List items (fo:list-block, label via Emulator + RunFontSelector, indent/pdbs) | Y | P | near-duplicate logic; visitor nests block/list-block ("That's different to XSL" comment) and hangs pPr attributes on the outer block, XSLT on the block in list-item-body |
+| 13 | List items (fo:list-block, label via Emulator + RunFontSelector, indent/pdbs) | Y | Y | phase 4 shipped 2026-08-31: identical structure via the shared createBlock/createListBlock |
 | 14 | Containerization containers: `w:sdt` XSLT_PBdr/XSLT_Shd → borders/shading on the container block; margin fix for shading; nested-sdt and inline (XSLT_RPr, run w:bdr) cases | Y (createBlockForSdt / createInlineForSdt) | Y | phase 2 shipped 2026-08-31 |
 | 15 | Tracked changes: `w:ins` blue underline | Y (docx2fo.xslt:411) | Y | phase 1 shipped 2026-08-31 |
 | 16 | Tracked changes: `w:delText` red line-through | Y (docx2fo.xslt:422) | Y | phase 1 shipped 2026-08-31 |
@@ -73,7 +73,7 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 18 | `w:noBreakHyphen` (hyphen + U+FEFF) | Y | Y | phase 1 shipped 2026-08-31 |
 | 19 | `w:cr` (line break block) | Y | Y | phase 1 shipped 2026-08-31 (empty preserve block, matching what the XSLT actually emits) |
 | 20 | `w:ptab[@w:alignment='right']` leader | Y | Y | phase 1 shipped 2026-08-31; other alignments warn, as the XSLT's no-match template does |
-| 21 | `w:tab`: dot-leader / default 3-nbsp | Y | Y/P | logic mirrored, but visitor omits the 17.0.3 font-family on the leader and the nbsp run (measured in renderer default font); visitor reads effective tabs where XSLT reads direct pPr (minor, arguably better) |
+| 21 | `w:tab`: dot-leader / default 3-nbsp | Y | Y | phase 4 shipped 2026-08-31 (fonts via a JAXB getFontFamily overload; visitor still reads effective tabs where XSLT reads direct pPr — minor, arguably better, left as is) |
 | 22 | `w:br` incl. consecutive-br special case | Y | Y | visitor mirrors the template logic |
 | 23 | `w:sym` | Y | Y | shared SymbolWriter |
 | 24 | `w:fldSimple` (PAGE/NUMPAGES/DATE... + font resolution) | Y | Y | shared FldSimpleWriter; 2-pass shared |
@@ -86,8 +86,8 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 31 | `mc:AlternateContent` → Fallback only | Y | P | TraversalUtil.getChildrenImpl returns Choice(s) **and** Fallback → warns, and risk of duplicate/garbled output |
 | 32 | `w:smartTag` transparent traversal | Y | Y | visitor warns but children render |
 | 33 | Unhandled-element visibility (red message block via FO_MESSAGE_WRITER) | Y (notImplemented) | P | visitor only logs |
-| 34 | Bidi / issue-660 RTL paragraph block-container | Y | Y | two copies of the logic |
-| 35 | `w:ind`/`w:jc`/bidi-jc-swap/shading/toc-tab on blocks | Y | Y | two copies (createFoAttributes in XsltFOFunctions and in the generator) |
+| 34 | Bidi / issue-660 RTL paragraph block-container | Y | Y | single copy since phase 4 (wrapInBidiBlockContainer via the shared paragraph path) |
+| 35 | `w:ind`/`w:jc`/bidi-jc-swap/shading/toc-tab on blocks | Y | Y | single copy since phase 4 for paragraph-level attributes; the run-level createFoAttributes copy remains (phase 6) |
 
 ## 3. Gap detail, grouped
 
@@ -239,6 +239,26 @@ CR, byte-for-byte identity is NOT the bar; structural/feature equivalence is.
    `XsltFOFunctions.getFontFamily`'s core); reconcile the list-item structural
    difference (or document it as intentional).  Best done *by* doing phase 6's
    consolidation for handlePPr — consider merging.
+   **SHIPPED 2026-08-31** — done by consolidation, as anticipated: the visitor's
+   apply(P) now converts the paragraph's children into a fragment with a
+   sub-generator and wraps them via a new JAXB-typed
+   `XsltFOFunctions.createBlockForPPr` (its post-processing — leader check,
+   hyphenate, bidi block-container — extracted into a tail shared with the DOM
+   form).  handlePPr and its ~290 lines of drifted copies (list building,
+   paragraph attribute application, bidi move) are deleted; the abstract method
+   remains as a stub.  Rows 9, 10, 13 and the paragraph half of rows 34/35 come
+   along for free.  convertTabToNode sets font-family on the dot leader and wraps
+   the tab spaces in a fonted inline via a JAXB `getFontFamily` overload (row 21);
+   the ptab branch's text-align-last special-casing is replaced by the shared
+   leader check (row 12 proper).  Also fixed in the shared base class: images
+   (CTBlip / v:imagedata) now append via getCurrentParent() instead of currentP —
+   under childResults-style sub-generation currentP is null there, and this was
+   already a latent NPE for an image inside a hyperlink (the HTML visitor pathway
+   benefits too).  Consequence at parity: a w:tbl directly following a paragraph
+   is now a sibling of the paragraph's block (as in the XSLT) rather than being
+   nested inside it.  Test: VisitorParityTest.testPhase4ParagraphFidelity (leader
+   and tab-space fonts, empty-paragraph preservation + font, paragraph-mark sz on
+   the block, flow-level list-block with label and body).
 5. **Traversal semantics** (rows 30-31): AlternateContent → Fallback-only for export
    (hook in the base generator; don't change TraversalUtil.getChildrenImpl, other
    callers may want both); recognize `v:rect` (and check `v:oval` etc.) textboxes in

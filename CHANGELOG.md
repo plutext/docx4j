@@ -72,8 +72,13 @@ lost its margin fix (white strips between shaded paragraphs), and run borders (w
 runs) disappeared
 - footnotes and endnotes are now rendered by the visitor exporter (previously the reference marks
 AND the note bodies were silently dropped): fo:footnote with the note body at the page bottom plus
-the separator rule, superscript endnote references, and the Endnotes block at the end of the flow;
-see docs/developer/change-requests/CR-fo-exporter-parity.md
+the separator rule, superscript endnote references, and the Endnotes block at the end of the flow
+- the visitor exporter now builds paragraph blocks with the same code as the XSLT pathway, fixing
+several drifted-copy defects: empty paragraphs no longer collapse to zero height (and take the
+paragraph mark's font), paragraph-mark w:sz contributes to line height, list items get the same
+fo:list-block structure and attribute placement, and tab leaders/spaces are rendered in the run's
+font rather than the renderer default; an image inside a hyperlink no longer NPEs (visitor
+pathways, PDF and HTML); see docs/developer/change-requests/CR-fo-exporter-parity.md
 
 
 Version 17.0.3

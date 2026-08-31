@@ -366,8 +366,11 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 			DocumentFragment foreignFragment = createImage(IMAGE_E20, conversionContext, anchorOrInline);
 			anchorOrInline = null;
-			
-			currentP.appendChild( document.importNode(foreignFragment, true) );
+
+			// getCurrentParent, not currentP: inside content converted by a
+			// sub-generator (a hyperlink's, or since 17.0.4 a paragraph's), currentP
+			// is null; and the XSLT puts the image in the run's inline anyway
+			getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
 			
 		} else if (o instanceof org.docx4j.wml.Pict) {
 	      /*<w:pict>
@@ -380,7 +383,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			if (textBox==null) {
 				// Assume it contains an image!
 				DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
-				currentP.appendChild( document.importNode(foreignFragment, true) );
+				getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
 				
 			} else {
 				
