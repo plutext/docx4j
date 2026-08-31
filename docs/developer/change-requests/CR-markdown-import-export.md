@@ -1,7 +1,8 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: PROPOSED (2026-09-01)
-Scope: a NEW module (working name `docx4j-markdown`) — import (markdown→wml) and
+Status: PROPOSED (2026-09-01); naming/placement DECIDED 2026-09-01 (jharrop):
+the module is **`docx4j-markdown`**, a **reactor module**.  Not yet implemented.
+Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
 mappings need
 Related: CR-mcp-server.md (a `markdown_to_docx` / `docx_to_markdown` tool pair is
@@ -182,10 +183,8 @@ module's own test tree), plus docx-side assertions for the import mapping
 - **Scope creep**: markdown has no styles, columns, sections, or floating
   anything; resist inventing syntax.  Everything outside CommonMark+GFM is
   lossy by design and documented, not extended.
-- **Naming**: `docx4j-markdown` vs `docx4j-md`; and whether import should ALSO
-  ship as an ImportXHTML-style separate repo instead of a reactor module —
-  leaning reactor module (no Java-floor conflict, small deps).  DECISION
-  NEEDED (jharrop).
+- **Naming**: DECIDED 2026-09-01 (jharrop): `docx4j-markdown`, as a reactor
+  module (not a separate repo).
 
 ## 7. Suggested sequencing and effort (rough)
 
