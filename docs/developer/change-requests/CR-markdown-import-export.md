@@ -1,0 +1,203 @@
+# CR: Markdown import/export (markdown→docx and docx→markdown)
+
+Status: PROPOSED (2026-09-01)
+Scope: a NEW module (working name `docx4j-markdown`) — import (markdown→wml) and
+export (wml→markdown); docx4j-core changes limited to whatever small hooks the
+mappings need
+Related: CR-mcp-server.md (a `markdown_to_docx` / `docx_to_markdown` tool pair is
+that CR's natural phase-2+ extension — agents author in markdown even more
+naturally than HTML); docx4j-ImportXHTML (the existing rich-text import pathway,
+and the fallback for embedded HTML); CR-fo/html-exporter-parity (the lesson
+below about single implementations)
+
+## 1. Background
+
+Markdown is the lingua franca of programmatic and AI-generated content; docx is
+what that content is delivered in.  Today docx4j users bridge the two via HTML
+(markdown → HTML → ImportXHTML), which works but is indirect: fidelity is
+HTML/CSS-shaped (lists as indents rather than real numbering, styles via CSS
+mapping) and the ImportXHTML stack is a heavy dependency for the purpose.
+There is no docx→markdown at all.
+
+### Parsing: use commonmark-java; do not write a parser
+
+Decision proposed up front, since it was the originating question:
+
+- **commonmark-java** (`org.commonmark:commonmark`, 0.30.x) is the
+  reference-quality Java implementation: conformant against the CommonMark spec
+  suite, small core, **BSD 2-Clause**, actively maintained, and **Java 11+ — the
+  same baseline as docx4j**.  Extension artifacts cover exactly what a docx
+  mapping wants: GFM tables, strikethrough, task-list items, footnotes, YAML
+  front matter, autolink.  It also has a `MarkdownRenderer` (AST → markdown
+  text), which matters for the export side (§4).
+- BSD-2-Clause is in Apache's own Category A of permitted licenses: an ASLv2
+  project may depend on it and bundle it, with attribution preserved.  No
+  copyleft concern; practically indistinguishable from an Apache-2.0 dependency
+  for our purposes.  (Strictly-Apache-2.0 alternatives are weaker: JetBrains'
+  intellij-markdown drags in Kotlin; txtmark is unmaintained.)
+- Writing our own parser buys nothing: CommonMark conformance (emphasis
+  delimiter runs, HTML blocks, link reference definitions, list tightness, tab
+  rules — on the order of 650 spec cases) is a permanent tax, and the
+  differentiated work is entirely in the wml mapping, which no parser provides.
+
+### Prior art: flexmark-java
+
+flexmark-java (also BSD-2) ships `flexmark-docx-converter`, built **on docx4j**.
+So markdown→docx via docx4j already exists in the ecosystem.  Why first-party
+anyway: control of the mapping (styles, real numbering, footnotes — consistent
+with how docx4j users expect documents to be built), support under one roof,
+docx→markdown (flexmark doesn't do that direction), and the MCP/website story.
+We deliberately do NOT compete on dialect breadth — CommonMark + GFM extensions
+only; users needing exotic dialects keep using flexmark.  BSD-2 permits studying
+its mapping choices with attribution where helpful.
+
+### Lesson carried over from the exporter-parity CRs
+
+One implementation per direction.  The export is a single visitor-style
+serializer over the JAXB tree (TraversalUtil); there is no XSLT twin, ever.
+
+## 2. Module shape
+
+- **`docx4j-markdown`**, in the reactor (unlike the MCP server there is no
+  Java-floor conflict: commonmark-java is Java 11+).  Depends on docx4j-core +
+  `org.commonmark:commonmark` + the ext artifacts used (tables, strikethrough,
+  task-list-items, footnotes, yaml-front-matter).  ImportXHTML remains optional
+  (reflection), used only for embedded-HTML handling if configured (§3).
+- Entry points: `MarkdownImporter` (markdown string/stream + options →
+  content list added to a package/part) and `MarkdownExporter` (package/part +
+  options → markdown string/stream).  `Docx4J` facade hooks
+  (`toMarkdown`/`fromMarkdown` via reflection, like the FO/documents4j
+  exporters) can come once the API settles — phase 5.
+- Both directions take an **options object** (target styles, image handling,
+  embedded-HTML policy, extension toggles) — no Docx4jProperties globals for
+  per-call behavior.
+
+## 3. Import mapping (markdown AST → wml)
+
+Route: walk the commonmark AST directly into wml (not via HTML).  The importer
+builds into a caller-supplied `WordprocessingMLPackage` (or a fresh
+`createPackage()`), so a **styles template docx** can supply house styles; the
+importer ensures the styles it references exist (adding minimal definitions
+where absent, via the styles part).
+
+| Markdown (CommonMark) | wml |
+|---|---|
+| Heading level n | `w:pStyle` `Heading1..6` (styleIds — stable across localized Word UIs, unlike display names) |
+| Paragraph | Normal (or the template's default) |
+| Emphasis / Strong | `w:i` / `w:b` runs |
+| Inline code | a character style (create `CodeChar` if absent: mono font, shading) |
+| Fenced / indented code block | a paragraph style (`SourceCode`-like: mono, shading, no proofing); lines separated by `w:br` within one paragraph (keeps the block one unit) — decision to revisit in phase 1 vs one-para-per-line |
+| Block quote | `Quote` style; nesting via additional indentation |
+| Bullet / ordered lists | **real numbering**: one abstractNum for bullets, one for decimal, `w:ilvl` from nesting depth; new `w:num` per top-level list so ordered lists restart correctly; tight vs loose lists → spacing (contextualSpacing) |
+| Link | `w:hyperlink` + rel (external); link reference definitions resolved by the parser |
+| Image | pluggable handler (cf `ConversionImageHandler` precedent): local paths and data URIs embedded via BinaryPartAbstractImage; **remote URLs are NOT fetched by default** (security §6) — emitted as hyperlinked alt text unless the caller supplies a fetching handler |
+| Thematic break | paragraph with bottom `w:pBdr` (NOT the legacy `v:rect o:hr` idiom, which the FO/HTML exporters can't render) |
+| Hard/soft line break | `w:br` / space |
+| HTML block / inline HTML | policy option: `DROP` (default), `LITERAL` (as text), or `IMPORT_XHTML` (route through ImportXHTML when on classpath) |
+
+GFM extensions (phase 2): tables → `w:tbl` with a table style (header row from
+the delimiter row, per-column alignment via `w:jc`); strikethrough → `w:strike`;
+task lists → checkbox glyphs (☐/☒) or optionally `w14:checkbox` sdts;
+footnotes → **real footnotes** (footnotesPart + `w:footnoteReference` — the
+machinery is well understood after the exporter-parity work); YAML front
+matter → core document properties (title/author/keywords) where keys match,
+else ignored.
+
+## 4. Export mapping (wml → markdown)
+
+A TraversalUtil-based walker builds a **commonmark AST**, then
+`MarkdownRenderer` serializes it — escaping (literal `*`, `_`, `|` in cells,
+etc.) is the genuinely fiddly part of markdown *generation*, and the renderer
+does it correctly for free.  Phase 0 must verify how much extension coverage
+MarkdownRenderer has (tables in particular); where an extension has no markdown
+renderer, fall back to hand-emitting that construct into a raw-text node.
+
+Reverse mappings, with the important detection choices:
+
+- **Headings via effective `outlineLvl`** (PropertyResolver), not style-name
+  matching — robust across templates and localized style names; outlineLvl 0-5
+  → `#`..`######`.
+- Bold/italic/strike/code from **effective rPr** (code = mono font or the
+  CodeChar-style); avoids missing style-carried formatting.
+- Lists via the numbering model (Emulator/ListNumbering): numFmt bullet →
+  `-`, decimal → `1.`; ilvl → nesting; anything fancier (roman, multilevel
+  text) degrades to the nearest of the two with the literal number text lost
+  (documented).
+- Tables → GFM pipes; block content inside cells flattens to inline with
+  `<br>`; vMerge/gridSpan degrade (top-left wins, empties elsewhere) — GFM has
+  no spans.  Documented lossiness.
+- Hyperlinks → `[text](target)`; images → extracted to an images directory
+  (like the HTML export's imageDirPath) with relative links, or data URIs by
+  option.
+- Footnotes → the footnotes extension syntax.
+- Explicitly lossy and documented: headers/footers ignored; fields → their
+  cached result text; content controls → their content; textboxes/VML →
+  dropped with a warning; tracked changes → option `ACCEPT` (default) or
+  `MARKUP` (`~~del~~` / ins as plain).
+
+**Fidelity bar and test strategy**: round-trip stability — for documents within
+the CommonMark+GFM subset, md → docx → md must be idempotent after the first
+trip.  Golden round-trip tests are the backbone (in docx4j-core-tests or the
+module's own test tree), plus docx-side assertions for the import mapping
+(styles, numbering, footnotes present) in the HtmlVisitorParityTest style.
+
+## 5. Phases
+
+0. **Spike** (S): commonmark AST walking + MarkdownRenderer extension coverage
+   (tables!); confirm the ext artifacts' licenses match core (BSD-2); module
+   skeleton in the reactor.  Findings recorded here.
+1. **Import core** (M): CommonMark constructs (headings, paragraphs, emphasis,
+   lists with real numbering, code, quotes, links, hr, line breaks), styles
+   template support, HTML policy option (DROP/LITERAL only).  Tests: mapping
+   assertions per construct.
+2. **Import extensions + images** (M): GFM tables, strikethrough, task lists,
+   footnotes, front matter; image handler with embed-local/link-remote default;
+   IMPORT_XHTML policy via optional ImportXHTML.
+3. **Export core + round-trip** (M): CommonMark subset out, via AST +
+   MarkdownRenderer; golden round-trip suite established.
+4. **Export extensions** (S-M): tables, strikethrough, footnotes, image
+   extraction; tracked-changes option.
+5. **Integration** (S): `Docx4J.toMarkdown`/`fromMarkdown` facade hooks
+   (reflection); MCP tools `markdown_to_docx` / `docx_to_markdown` in the MCP
+   server CR's tool surface; docs + website mention; CHANGELOG.
+
+## 6. Risks / open questions
+
+- **Remote images**: fetching URLs from inside a library invites SSRF and
+  supply-chain surprises; default is link-don't-fetch, with fetching only via a
+  caller-supplied handler.  Same posture as the MCP server CR.
+- **MarkdownRenderer extension gaps**: if tables (or others) can't render to
+  markdown, the export needs hand-emission for those nodes — contained risk,
+  verified in phase 0.
+- **Code block shape** (one paragraph with w:br vs paragraph-per-line):
+  affects copy/paste behavior in Word and round-trip fidelity; decide in
+  phase 1 with both prototyped.
+- **List numbering edge cases**: ordered-list `start` values, interrupted
+  lists, and the tight/loose distinction are where markdown↔numbering.xml
+  impedance shows; the round-trip suite is the guard.
+- **flexmark coexistence**: message discipline — docx4j-markdown is
+  CommonMark+GFM with first-party mapping quality; flexmark remains the answer
+  for exotic dialects.  A short comparison note in the module README avoids
+  confused bug reports.
+- **Scope creep**: markdown has no styles, columns, sections, or floating
+  anything; resist inventing syntax.  Everything outside CommonMark+GFM is
+  lossy by design and documented, not extended.
+- **Naming**: `docx4j-markdown` vs `docx4j-md`; and whether import should ALSO
+  ship as an ImportXHTML-style separate repo instead of a reactor module —
+  leaning reactor module (no Java-floor conflict, small deps).  DECISION
+  NEEDED (jharrop).
+
+## 7. Suggested sequencing and effort (rough)
+
+| Phase | Effort | Value |
+|-------|--------|-------|
+| 0 Spike | S | De-risks renderer coverage + module shape |
+| 1 Import core | M | The most-wanted half (agents/pipelines author markdown) |
+| 2 Import extensions | M | Tables/footnotes are where HTML-route fidelity hurts today |
+| 3 Export core | M | The half nobody else offers on docx4j |
+| 4 Export extensions | S-M | Completes round-trip |
+| 5 Integration | S | Facade + MCP + docs |
+
+If only phases 0-2 are ever done, that is already the headline feature:
+first-party markdown→docx with real styles, numbering, tables and footnotes —
+no HTML detour, no third-party converter.
