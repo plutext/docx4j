@@ -125,6 +125,14 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			}
 			return null;
 
+		} else if (o instanceof SdtElement) {
+
+			// dispatch through SdtWriter, so registered SdtTagHandlers (borders/
+			// shading TagSingleBox, list SdtToListSdtTagHandler, user handlers)
+			// apply in this pathway too, as they do via the w:sdt template
+			handleSdt((SdtElement)o);
+			return null;
+
 		} else if (o instanceof CTMoveBookmark
 				|| o instanceof CTMoveFromRangeEnd
 				|| o instanceof CTMoveToRangeEnd) {
@@ -142,11 +150,38 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 	@Override
 	public boolean shouldTraverse(Object o) {
 
-		if (o instanceof P) {
-			// its contents were already converted in apply (handleP)
+		if (o instanceof P || o instanceof SdtElement) {
+			// its contents were already converted in apply (handleP / handleSdt)
 			return false;
 		}
 		return super.shouldTraverse(o);
+	}
+
+	/**
+	 * Convert the sdt's contents into a fragment, then hand them to SdtWriter,
+	 * whose registered tag handlers shape the output (identity by default).
+	 *
+	 * @since 17.0.4
+	 */
+	private void handleSdt(SdtElement sdt) {
+
+		DocumentFragment childResults = document.createDocumentFragment();
+		if (sdt.getSdtContent()!=null) {
+			HTMLExporterVisitorGenerator generator = (HTMLExporterVisitorGenerator)
+					getFactory().createInstance(conversionContext, document, childResults);
+			generator.pPr = pPr; // a run-level sdt keeps its paragraph context
+			new TraversalUtil(sdt.getSdtContent().getContent(), generator);
+		}
+
+		try {
+			Node result = SdtWriter.toNode(conversionContext, sdt.getSdtPr(), childResults);
+			if (result!=null) {
+				(tc.peek()!=null ? tc.peek() : getCurrentParent())
+						.appendChild(document.importNode(result, true));
+			}
+		} catch (javax.xml.transform.TransformerException e) {
+			getLog().error(e.getMessage(), e);
+		}
 	}
 
 	/**

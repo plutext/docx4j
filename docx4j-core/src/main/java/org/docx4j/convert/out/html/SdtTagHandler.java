@@ -77,22 +77,25 @@ public abstract class SdtTagHandler {
 				// if there is no numbering.
 				// Let's get rid of any such <span/>.
 
-				// What we actually get is a document node
-				if (n.getNodeType() == Node.DOCUMENT_NODE) {
+				// What we actually get is a document node (or, from the visitor
+				// pathway, a document fragment)
+				if (n.getNodeType() == Node.DOCUMENT_NODE
+						|| n.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
 					log.debug("handling DOCUMENT_NODE");
 					// Do just enough of the handling here
 					NodeList nodes = n.getChildNodes();
 					if (nodes != null) {
 						for (int i = 0; i < nodes.getLength(); i++) {
 
-							if (((Node) nodes.item(i)).getLocalName().equals(
-									"span")
-									&& !((Node) nodes.item(i)).hasChildNodes()) {
+							Node item = nodes.item(i);
+							if (item.getNodeType()==Node.ELEMENT_NODE
+									&& "span".equals(item.getLocalName()!=null
+											? item.getLocalName() : item.getNodeName())
+									&& !item.hasChildNodes()) {
 								// ignore
 								log.debug(".. ignoring <span/> ");
 							} else {
-								XmlUtils.treeCopy((Node) nodes.item(i),
-										xhtmlDiv);
+								XmlUtils.treeCopy(item, xhtmlDiv);
 							}
 						}
 					}

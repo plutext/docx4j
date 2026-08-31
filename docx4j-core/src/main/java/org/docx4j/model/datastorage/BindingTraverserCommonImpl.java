@@ -497,20 +497,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 	 * signatures expect.
 	 */
 	private static org.w3c.dom.traversal.NodeIterator singleNodeIterator(final org.w3c.dom.Node node) {
-		return new org.w3c.dom.traversal.NodeIterator() {
-			private boolean served = false;
-			@Override public org.w3c.dom.Node nextNode() {
-				if (served) return null;
-				served = true;
-				return node;
-			}
-			@Override public org.w3c.dom.Node previousNode() { return null; }
-			@Override public void detach() {}
-			@Override public org.w3c.dom.Node getRoot() { return node; }
-			@Override public int getWhatToShow() { return org.w3c.dom.traversal.NodeFilter.SHOW_ALL; }
-			@Override public org.w3c.dom.traversal.NodeFilter getFilter() { return null; }
-			@Override public boolean getExpandEntityReferences() { return false; }
-		};
+		return XmlUtils.singleNodeIterator(node);
 	}
 
 	/**

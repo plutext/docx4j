@@ -60,9 +60,6 @@ public class SdtWriter {
 	public static Node toNode(HTMLConversionContext context,
     		NodeIterator sdtPrNodeIt,
 			NodeIterator childResults) throws TransformerException {
-	
-		Node result = null;
-		SdtTagHandler handler;
 
 		/* We avoid unmarshalling the sdt itself, since 
 		 * it could be one of a number of docx4j classes
@@ -88,9 +85,34 @@ public class SdtWriter {
 		} catch (JAXBException e1) {
 			throw new TransformerException("Missing or broken w:sdtPr", e1);
 		}
-		
+
+		return toNode(context, sdtPr, childResults);
+	}
+
+	/**
+	 * JAXB/Node-typed form, for the visitor pathway (HTMLExporterVisitorGenerator):
+	 * the registered tag handlers apply there too.  The handlers' NodeIterator
+	 * signature is fed a single-node iterator over the childResults fragment.
+	 *
+	 * @param sdtPr may be null (an sdt without sdtPr): the no-tag handling applies
+	 * @since 17.0.4
+	 */
+	public static Node toNode(HTMLConversionContext context,
+			SdtPr sdtPr,
+			Node childResults) throws TransformerException {
+
+		return toNode(context, sdtPr, XmlUtils.singleNodeIterator(childResults));
+	}
+
+	protected static Node toNode(HTMLConversionContext context,
+			SdtPr sdtPr,
+			NodeIterator childResults) throws TransformerException {
+
+		Node result = null;
+		SdtTagHandler handler;
+
 		log.debug("in sdt");
-		if (sdtPr.getTag()==null) {
+		if (sdtPr==null || sdtPr.getTag()==null) {
 			log.debug(".. no w:tag");
 			
 			if (handlers.get("*")!=null) {

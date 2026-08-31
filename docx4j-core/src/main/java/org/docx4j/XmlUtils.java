@@ -1325,6 +1325,30 @@ public class XmlUtils {
     }
     
 	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
+	/**
+	 * A NodeIterator serving just this one node, as the XSLT extension function
+	 * signatures expect; used to feed those functions (and the SdtTagHandler API)
+	 * from the non-XSLT pathways.
+	 *
+	 * @since 17.0.4
+	 */
+	public static org.w3c.dom.traversal.NodeIterator singleNodeIterator(final org.w3c.dom.Node node) {
+		return new org.w3c.dom.traversal.NodeIterator() {
+			private boolean served = false;
+			@Override public org.w3c.dom.Node nextNode() {
+				if (served) return null;
+				served = true;
+				return node;
+			}
+			@Override public org.w3c.dom.Node previousNode() { return null; }
+			@Override public void detach() {}
+			@Override public org.w3c.dom.Node getRoot() { return node; }
+			@Override public int getWhatToShow() { return org.w3c.dom.traversal.NodeFilter.SHOW_ALL; }
+			@Override public org.w3c.dom.traversal.NodeFilter getFilter() { return null; }
+			@Override public boolean getExpandEntityReferences() { return false; }
+		};
+	}
+
 	public static org.w3c.dom.Document neww3cDomDocument() {
 		
 		return XmlUtils.getNewDocumentBuilder().newDocument();

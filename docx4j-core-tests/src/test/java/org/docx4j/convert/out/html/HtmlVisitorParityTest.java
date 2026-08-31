@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
@@ -188,6 +189,89 @@ public class HtmlVisitorParityTest {
 					"<li[^>]*style=\"display: list-item;\"[^>]*>(<span[^>]*>)*item text").matcher(html).find());
 			assertTrue(impl + "style-numbered paragraph is not an li", Pattern.compile(
 					"<li class=\"MyList[^\"]*\"[^>]*>(<span[^>]*>)*styled item").matcher(html).find());
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	 * Phase 2: sdt dispatch through SdtWriter (registered tag handlers)
+	 * ------------------------------------------------------------------ */
+
+	private WordprocessingMLPackage phase2Pkg() throws Exception {
+
+		String pbdr = "<w:pBdr><w:top w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"FF0000\"/>"
+				+ "<w:left w:val=\"single\" w:sz=\"4\" w:space=\"4\" w:color=\"FF0000\"/>"
+				+ "<w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"FF0000\"/>"
+				+ "<w:right w:val=\"single\" w:sz=\"4\" w:space=\"4\" w:color=\"FF0000\"/></w:pBdr>";
+		String shd = "<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"FFFF00\"/>";
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr>" + pbdr + "</w:pPr><w:r><w:t>bordered one</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + pbdr + "</w:pPr><w:r><w:t>bordered two</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + shd + "</w:pPr><w:r><w:t>shaded one</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr>" + shd + "</w:pPr><w:r><w:t>shaded two</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
+				+   "<w:r><w:t>item one</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
+				+   "<w:r><w:t>item two</w:t></w:r></w:p>"
+				// no handler registered for this tag: the identity handler applies
+				+ "<w:sdt><w:sdtPr><w:tag w:val=\"unhandled=1\"/></w:sdtPr><w:sdtContent>"
+				+   "<w:p><w:r><w:t>control content</w:t></w:r></w:p></w:sdtContent></w:sdt>"
+				+ "</w:body></w:document>"));
+
+		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
+		ndp.setJaxbElement((Numbering)XmlUtils.unmarshalString(
+				"<w:numbering " + W + "><w:abstractNum w:abstractNumId=\"1\">"
+				+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+				+ "<w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+				+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl></w:abstractNum>"
+				+ "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"1\"/></w:num></w:numbering>",
+				Context.jc, Numbering.class));
+		pkg.getMainDocumentPart().addTargetPart(ndp);
+
+		return pkg;
+	}
+
+	/** the innermost element block starting at the first match of startRegex */
+	private static String block(String html, String startRegex, String endTag) {
+		java.util.regex.Matcher m = Pattern.compile(startRegex).matcher(html);
+		if (!m.find()) return "";
+		int end = html.indexOf(endTag, m.start());
+		return (end<0 ? "" : html.substring(m.start(), end));
+	}
+
+	@Test
+	public void testPhase2SdtTagHandlers() throws Exception {
+
+		// the registered-tag-handler extension point (SdtWriter javadoc; note the
+		// handler map is static, so this registration outlives the test - which is
+		// fine here, since surefire forks a JVM per test class)
+		SdtWriter.registerTagHandler(Containerization.TAG_BORDERS, new TagSingleBox());
+		SdtWriter.registerTagHandler(Containerization.TAG_SHADING, new TagSingleBox());
+		SdtWriter.registerTagHandler("HTML_ELEMENT", new SdtToListSdtTagHandler());
+
+		for (int flag : FLAGS) {
+			String html = toHTML(phase2Pkg(), flag);
+			String impl = flagName(flag) + ": ";
+
+			// TagSingleBox: one bordered div around both paragraphs
+			String borderDiv = block(html, "<div style=\"[^\"]*border-left-style: solid;[^\"]*\">", "</div>");
+			assertTrue(impl + "borders container div lost",
+					borderDiv.contains("bordered one") && borderDiv.contains("bordered two"));
+
+			// .. and a shaded div around both shaded paragraphs
+			String shadedDiv = block(html, "<div style=\"[^\"]*background-color: #FFFF00;[^\"]*\">", "</div>");
+			assertTrue(impl + "shading container div lost",
+					shadedDiv.contains("shaded one") && shadedDiv.contains("shaded two"));
+
+			// SdtToListSdtTagHandler: a real ol around the li items
+			String ol = block(html, "<ol>", "</ol>");
+			assertTrue(impl + "ol/li list lost",
+					ol.contains("<li") && ol.contains("item one") && ol.contains("item two"));
+
+			// an sdt with an unregistered tag passes its contents through (identity)
+			assertTrue(impl + "identity sdt content lost", html.contains("control content"));
 		}
 	}
 

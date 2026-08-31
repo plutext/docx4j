@@ -72,17 +72,20 @@ public class TagSingleBox extends SdtTagHandler {
 //		log.debug("Node is: " + n.getNodeName() );
 
 		Element xhtmlDiv = document.createElement("div");
-		xhtmlDiv.setAttribute("style", ((Element)n).getAttribute("style") );
-		
-		docfrag.appendChild(xhtmlDiv);						
-    	
+		if (n instanceof Element) {
+			xhtmlDiv.setAttribute("style", ((Element)n).getAttribute("style") );
+		}
+
+		docfrag.appendChild(xhtmlDiv);
+
 		return xhtmlDiv;
 	}
 	
 	private Node getNodeByName(String name, Node n) {
 		
 		if (n.getNodeType()!=Node.ELEMENT_NODE
-				&& n.getNodeType()!=Node.DOCUMENT_NODE) {
+				&& n.getNodeType()!=Node.DOCUMENT_NODE
+				&& n.getNodeType()!=Node.DOCUMENT_FRAGMENT_NODE) {
 			return null;
 		}
 		

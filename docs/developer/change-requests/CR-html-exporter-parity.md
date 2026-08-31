@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: IN PROGRESS (2026-09-01) — phases 1 and 4 shipped (execution order 1, 4, 2, 3, 5, 6)
+Status: IN PROGRESS (2026-09-01) — phases 1, 4 and 2 shipped (execution order 1, 4, 2, 3, 5, 6)
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
 Related: CR-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
@@ -69,9 +69,9 @@ SdtTagHandler (there is no default registration).
 | 11 | bookmarkStart `mapTo=id` mode → p/@id | Y | Y | phase 4 shipped 2026-09-01 (via the shared createBlock; not separately tested — the property is read in a static initializer, so it can't be toggled per-test) |
 | 12 | Run span `@class` (rStyle, falling back to the default character style) | Y | Y | phase 4 shipped 2026-09-01 |
 | 13 | Run span/style composition with the w:t font-selection span (avoid nested spans; style concat) | Y | Y | phase 4 shipped 2026-09-01 |
-| 14 | **sdt → SdtWriter + registerTagHandler extension point** (identity default, `*`/`**` hooks, QueryString tag parsing) | Y (toSdtNode) | N | **public API silently ignored by the visitor**; sdts traverse transparently (since FO CR; previously they warned) |
-| 15 | Containerization borders/shading containers (TagSingleBox) | Y* | N | unlike FO, not on by default — requires registerTagHandler(Containerization.TAG_BORDERS/TAG_SHADING, new TagSingleBox()); with no handler, the XSLT's identity handler also loses the container styling, so the *default* outputs match; TAG_RPR is a TODO in both (Containerization.java:78) |
-| 16 | HTML lists: PP_HTML_COLLECT_LISTS + `HTML_ELEMENT` tag → w:p as `li` (createListItemBlockForPPr), ol/ul via SdtToListSdtTagHandler | Y* (li unconditionally; ol/ul needs the handler) | P | the li half shipped with phase 4 (2026-09-01); the ol/ul handler half needs phase 2's SdtWriter dispatch |
+| 14 | **sdt → SdtWriter + registerTagHandler extension point** (identity default, `*`/`**` hooks, QueryString tag parsing) | Y (toSdtNode) | Y | phase 2 shipped 2026-09-01 |
+| 15 | Containerization borders/shading containers (TagSingleBox) | Y* | Y* | phase 2 shipped 2026-09-01 (still requires the handler registration, in both pathways; TAG_RPR remains a TODO in both) |
+| 16 | HTML lists: PP_HTML_COLLECT_LISTS + `HTML_ELEMENT` tag → w:p as `li` (createListItemBlockForPPr), ol/ul via SdtToListSdtTagHandler | Y* | Y* | li half: phase 4; ol/ul handler half: phase 2 (both 2026-09-01) |
 | 17 | Tracked changes: `w:ins` / `w:moveTo` → span class="ins" (+ .ins CSS) | Y | Y | phase 1 shipped 2026-09-01 |
 | 18 | Tracked changes: `w:delText` / `w:moveFrom` → span class="del" | Y | Y | phase 1 shipped 2026-09-01 |
 | 19 | moveFromRangeStart/End, moveToRangeStart/End skipped | Y | Y | phase 1 shipped 2026-09-01 (range starts previously reached the bookmark writer, CTMoveBookmark extending CTBookmark) |
@@ -201,6 +201,20 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
    borders/shading, SdtToListSdtTagHandler ol/ul, and the HTML_ELEMENT li shape
    for paragraphs.  Verify with a handler-registration test (and reset the
    static handler map afterwards — it is global state).
+   **SHIPPED 2026-09-01**: SdtWriter gets a JAXB/Node-typed toNode(context,
+   SdtPr, Node childResults) (null sdtPr → the no-tag handling, where the XSLT
+   form throws), feeding the handlers' NodeIterator signature via
+   XmlUtils.singleNodeIterator (promoted from BindingTraverserCommonImpl, which
+   now delegates).  The visitor's handleSdt sub-generates the sdt contents and
+   dispatches; handlers needed fragment-awareness for visitor-fed childResults:
+   SdtTagHandler.attachContents accepts DOCUMENT_FRAGMENT and skips empty spans
+   null-safely, TagSingleBox.getNodeByName accepts a fragment and createDiv
+   null-guards the first-p lookup.  Test registers TagSingleBox (borders and
+   shading divs around the containerized paragraphs), SdtToListSdtTagHandler
+   (real ol around the li items) and asserts identity pass-through for an
+   unregistered tag; no reset needed since surefire forks a JVM per test class
+   (noted in the test).  Output identical between the pathways for the test
+   document.  Test: HtmlVisitorParityTest.testPhase2SdtTagHandlers.
 3. **Footnotes/endnotes** (rows 23-25): reference spans with bidirectional
    anchors; footnotes/endnotes divs in appendDocumentFooter (fill the existing
    stub); footnoteRef/endnoteRef in the note bodies.  Reuses the FO CR's

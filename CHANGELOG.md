@@ -101,8 +101,11 @@ fixing several drifted-copy defects: paragraphs always get their style-tree clas
 only with direct pStyle), style-based numbering and numbering indentation are honoured, empty
 paragraphs no longer collapse (nbsp), a w:p in an HTML_ELEMENT list sdt becomes an li, run spans
 are composed rather than nested (rPr css + font selection + default character style class in one
-span, adjacent identical spans merged), and the mapTo=id bookmark contract works;
-see docs/developer/change-requests/CR-html-exporter-parity.md
+span, adjacent identical spans merged), and the mapTo=id bookmark contract works
+- sdts now dispatch through SdtWriter in the visitor pathway, so tag handlers registered via
+SdtWriter.registerTagHandler (TagSingleBox borders/shading divs, SdtToListSdtTagHandler ol/ul
+lists, custom handlers) apply there too; previously they were silently ignored under
+FLAG_EXPORT_PREFER_NONXSL; see docs/developer/change-requests/CR-html-exporter-parity.md
 
 HTML output, XSLT pathway:
 - w:noBreakHyphen now outputs the actual U+2011 non-breaking hyphen; previously the character
