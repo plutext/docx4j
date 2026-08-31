@@ -1,7 +1,7 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: PROPOSED (2026-09-01); naming/placement DECIDED 2026-09-01 (jharrop):
-the module is **`docx4j-markdown`**, a **reactor module**.  Not yet implemented.
+Status: IN PROGRESS (2026-09-01) — phase 0 complete; naming/placement DECIDED
+2026-09-01 (jharrop): the module is **`docx4j-markdown`**, a **reactor module**.
 Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
 mappings need
@@ -147,6 +147,34 @@ module's own test tree), plus docx-side assertions for the import mapping
 0. **Spike** (S): commonmark AST walking + MarkdownRenderer extension coverage
    (tables!); confirm the ext artifacts' licenses match core (BSD-2); module
    skeleton in the reactor.  Findings recorded here.
+
+   **DONE 2026-09-01.  Findings** (against commonmark-java **0.30.0**, the
+   latest release, 2026-08-06):
+   - **MarkdownRenderer covers every extension we use.**  All five ext
+     artifacts ship a `MarkdownNodeRenderer`: `TableMarkdownNodeRenderer`,
+     `StrikethroughMarkdownNodeRenderer`, `TaskListItemMarkdownNodeRenderer`,
+     `FootnoteMarkdownNodeRenderer`, `YamlFrontMatterMarkdownNodeRenderer`.
+     Tables render with per-column alignment preserved.  The hand-emission
+     fallback contemplated in §4/§6 is NOT needed.
+   - **Round trip is idempotent after the first trip** (parse→render→parse→
+     render is a fixed point) for a document exercising all extensions.
+     Both findings are pinned as executable assertions in
+     `CommonmarkSpikeTest`, so a commonmark upgrade that regresses them fails
+     the build.
+   - **Licenses**: all artifacts BSD-2-Clause (Bundle-License in each
+     manifest).  Bytecode is class-file 55 (Java 11) including
+     `module-info.class`, so the parent's enforce-bytecode-version rule passes.
+   - **JPMS**: proper modules (not just Automatic-Module-Name):
+     `org.commonmark`, `org.commonmark.ext.gfm.tables`,
+     `org.commonmark.ext.gfm.strikethrough`,
+     `org.commonmark.ext.task.list.items`, `org.commonmark.ext.footnotes`,
+     `org.commonmark.ext.front.matter`.
+   - **Module skeleton** built and installed in the reactor (after
+     docx4j-docx-anon in `<modules>`): pom, `module-info.java`, README
+     (incl. the flexmark comparison note §6 asks for), and the entry-point
+     API surface (`MarkdownImporter`/`MarkdownExporter` +
+     `MarkdownImportOptions`/`MarkdownExportOptions`) with conversion methods
+     stubbed to throw until phases 1/3.
 1. **Import core** (M): CommonMark constructs (headings, paragraphs, emphasis,
    lists with real numbering, code, quotes, links, hr, line breaks), styles
    template support, HTML policy option (DROP/LITERAL only).  Tests: mapping

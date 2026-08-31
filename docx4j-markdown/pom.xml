@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+
+	<artifactId>docx4j-markdown</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-markdown</name>
+
+	<description>
+		Markdown import (markdown to docx) and export (docx to markdown),
+		using commonmark-java for parsing and markdown serialization.
+		CommonMark plus the GFM extensions: tables, strikethrough, task
+		list items, footnotes, YAML front matter.
+	</description>
+
+	<properties>
+		<version.commonmark>0.30.0</version.commonmark>
+	</properties>
+
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+	</build>
+
+	<dependencies>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- commonmark-java (BSD-2-Clause), the reference CommonMark implementation for Java -->
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark</artifactId>
+			<version>${version.commonmark}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-gfm-tables</artifactId>
+			<version>${version.commonmark}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-gfm-strikethrough</artifactId>
+			<version>${version.commonmark}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-task-list-items</artifactId>
+			<version>${version.commonmark}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-footnotes</artifactId>
+			<version>${version.commonmark}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-yaml-front-matter</artifactId>
+			<version>${version.commonmark}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${version.logback-classic}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>
