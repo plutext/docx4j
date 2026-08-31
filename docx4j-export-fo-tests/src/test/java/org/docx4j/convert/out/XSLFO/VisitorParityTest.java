@@ -380,6 +380,60 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/* ------------------------------------------------------------------
+	 * Phase 5: traversal semantics (mc:AlternateContent, v:rect textboxes)
+	 * ------------------------------------------------------------------ */
+
+	private static final String MC = "xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\"";
+	private static final String V = "xmlns:v=\"urn:schemas-microsoft-com:vml\"";
+	private static final String O = "xmlns:o=\"urn:schemas-microsoft-com:office:office\"";
+
+	private WordprocessingMLPackage phase5Pkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + " " + MC + " " + V + " " + O + "><w:body>"
+				// only the Fallback should be rendered
+				+ "<mc:AlternateContent>"
+				+   "<mc:Choice Requires=\"wps\"><w:p><w:r><w:t>choice text</w:t></w:r></w:p></mc:Choice>"
+				+   "<mc:Fallback><w:p><w:r><w:t>fallback text</w:t></w:r></w:p></mc:Fallback>"
+				+ "</mc:AlternateContent>"
+				// a textbox hosted in v:rect (as Word writes for some textboxes)
+				+ "<w:p><w:r><w:pict>"
+				+   "<v:rect style=\"width:100pt;height:50pt\">"
+				+     "<v:textbox><w:txbxContent>"
+				+       "<w:p><w:r><w:t>rect box</w:t></w:r></w:p>"
+				+     "</w:txbxContent></v:textbox>"
+				+   "</v:rect>"
+				+ "</w:pict></w:r></w:p>"
+				// a horizontal rule: no textbox, no image; must not break the conversion
+				+ "<w:p><w:r><w:pict>"
+				+   "<v:rect style=\"width:0;height:1.5pt\" o:hr=\"t\" o:hrstd=\"t\" fillcolor=\"#a0a0a0\" stroked=\"f\"/>"
+				+ "</w:pict></w:r></w:p>"
+				+ "<w:p><w:r><w:t>after hr</w:t></w:r></w:p>"
+				+ "</w:body></w:document>"));
+		return pkg;
+	}
+
+	@Test
+	public void testPhase5TraversalSemantics() throws Exception {
+
+		for (int flag : FLAGS) {
+			org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(phase5Pkg(), flag));
+			String text = doc.getDocumentElement().getTextContent();
+			String impl = flagName(flag) + ": ";
+
+			assertTrue(impl + "mc:Fallback content lost", text.contains("fallback text"));
+			assertTrue(impl + "mc:Choice content rendered (should be Fallback only)",
+					!text.contains("choice text"));
+
+			assertTrue(impl + "v:rect textbox content lost", text.contains("rect box"));
+
+			// the o:hr rule paragraph must not have broken the conversion
+			assertTrue(impl + "content after the horizontal rule lost", text.contains("after hr"));
+		}
+	}
+
 	/* ------------------------------------------------------------------ */
 
 	private byte[] toFO(WordprocessingMLPackage wordMLPackage, int flag) throws Exception {

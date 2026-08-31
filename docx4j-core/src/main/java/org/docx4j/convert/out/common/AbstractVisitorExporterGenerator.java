@@ -179,9 +179,21 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	
 	@Override
 	public void walkJAXBElements(Object o) {
-		
+
+		if (o instanceof org.docx4j.mce.AlternateContent) {
+			// For export, process the Fallback only, as the XSLT pathway does.
+			// (TraversalUtil's generic getChildren returns the Choices AND the
+			// Fallback, which would render the content twice, or worse.)
+			org.docx4j.mce.AlternateContent.Fallback fallback =
+					((org.docx4j.mce.AlternateContent)o).getFallback();
+			if (fallback!=null) {
+				super.walkJAXBElements(fallback);
+			}
+			return;
+		}
+
 		Node existingParentNode = parentNode;
-		
+
 		if (o instanceof org.docx4j.wml.Tr) {
 			
 			tr.push(document.createElementNS(Namespaces.NS_WORD12, "tr"));
@@ -370,7 +382,11 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			// getCurrentParent, not currentP: inside content converted by a
 			// sub-generator (a hyperlink's, or since 17.0.4 a paragraph's), currentP
 			// is null; and the XSLT puts the image in the run's inline anyway
-			getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
+			if (foreignFragment==null) {
+				log.warn("createImage returned null for a:blip");
+			} else {
+				getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
+			}
 			
 		} else if (o instanceof org.docx4j.wml.Pict) {
 	      /*<w:pict>
@@ -383,7 +399,13 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			if (textBox==null) {
 				// Assume it contains an image!
 				DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
-				getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
+				if (foreignFragment==null) {
+					// eg a v:rect horizontal rule (o:hr), or other VML with neither
+					// textbox nor imagedata
+					log.warn("Couldn't render w:pict content (no textbox, no image)");
+				} else {
+					getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
+				}
 				
 			} else {
 				
@@ -405,12 +427,17 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 						  o, AbstractSymbolWriter.WRITER_ID,
 						  document, getCurrentParent());
 			
+		} else if (o instanceof org.docx4j.mce.AlternateContent) {
+
+			// only the Fallback is traversed; see walkJAXBElements
+			log.info("mc:AlternateContent: selecting Fallback ie ignoring mc:Choice");
+
 		} else if ((o instanceof org.docx4j.wml.ProofErr) ||
 				   (o instanceof org.docx4j.wml.R.LastRenderedPageBreak) ||
 				   (o instanceof org.docx4j.wml.CTMarkupRange)) {
 		//Ignore theese types, they don't need to be outputed/handled
 		//CTMarkupRange is the w:bookmarkEnd
-			
+
 		} else {
 			log.warn("Need to handle " + o.getClass().getName() );
             if(log.isDebugEnabled()) {
@@ -446,13 +473,17 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	
 	private org.docx4j.vml.CTTextbox getTextBox(org.docx4j.wml.Pict pict) {
 
-		org.docx4j.vml.CTShape shape = null;
+		// any VML shape can host the textbox: v:shape, but also v:rect (as Word
+		// uses for certain textboxes and horizontal rules), v:oval etc; the same
+		// approach as FOPictWriterAbstract
+		org.docx4j.vml.VmlShapeElements shape = null;
 		for (Object o2 : pict.getAnyAndAny() ) {
-			
+
 			o2 = XmlUtils.unwrap(o2);
 //			System.out.println(o.getClass().getName());
-			if (o2 instanceof org.docx4j.vml.CTShape) {
-				shape = (org.docx4j.vml.CTShape)o2;
+			if (o2 instanceof org.docx4j.vml.VmlShapeElements
+					&& !(o2 instanceof org.docx4j.vml.CTShapetype)) {
+				shape = (org.docx4j.vml.VmlShapeElements)o2;
 				break;
 			}
 		}
@@ -461,24 +492,19 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			return null;
 		} else {
 
-			org.docx4j.vml.CTTextbox textBox = null;
-			org.docx4j.vml.wordprocessingDrawing.CTWrap w10Wrap = null;  
-			for (Object o2 : shape.getPathOrFormulasOrHandles() ) {
-				
+			for (Object o2 : shape.getEGShapeElements() ) {
+
 				o2 = XmlUtils.unwrap(o2);
-				
+
 				if (o2 instanceof org.docx4j.vml.CTTextbox) {
-					textBox = (org.docx4j.vml.CTTextbox)o2;
-				}
-				if (o2 instanceof org.docx4j.vml.wordprocessingDrawing.CTWrap) {
-					w10Wrap = (org.docx4j.vml.wordprocessingDrawing.CTWrap)o2;
+					return (org.docx4j.vml.CTTextbox)o2;
 				}
 			}
-			
-			return textBox;
-			
+
+			return null;
+
 		}
-		
+
 	}
 
     protected abstract Element handlePPr(CC conversionContext, PPr pPrDirect, boolean sdt, Element currentParent) throws Docx4JException;

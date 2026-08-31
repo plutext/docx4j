@@ -78,7 +78,15 @@ several drifted-copy defects: empty paragraphs no longer collapse to zero height
 paragraph mark's font), paragraph-mark w:sz contributes to line height, list items get the same
 fo:list-block structure and attribute placement, and tab leaders/spaces are rendered in the run's
 font rather than the renderer default; an image inside a hyperlink no longer NPEs (visitor
-pathways, PDF and HTML); see docs/developer/change-requests/CR-fo-exporter-parity.md
+pathways, PDF and HTML)
+- visitor pathways (PDF and HTML) now render only the mc:Fallback of an mc:AlternateContent, as
+the XSLT pathways do (previously both the Choice and the Fallback were traversed); a textbox
+hosted in v:rect (or any other VML shape) is now found, and VML with neither textbox nor image
+(eg a v:rect o:hr horizontal rule) no longer NPEs the conversion
+- PDF output (both exporters): a wrapped VML textbox whose style has no
+mso-position-vertical-relative no longer NPEs in FOPictWriterFloatUsed (the VML default, "text",
+now applies), so simple inline textboxes render instead of producing nothing;
+see docs/developer/change-requests/CR-fo-exporter-parity.md
 
 
 Version 17.0.3

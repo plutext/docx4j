@@ -1,6 +1,6 @@
 # CR: FO exporter feature parity (FOExporterVisitor vs FOExporterXslt)
 
-Status: IN PROGRESS (2026-08-31) — phases 1-4 shipped; see the per-phase notes below
+Status: IN PROGRESS (2026-08-31) — phases 1-5 shipped; see the per-phase notes below
 Scope: `org.docx4j.convert.out.fo` (docx4j-export-fo) plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (docx4j-core)
 Related: CR-binding-traverser-parity.md (same "stop maintaining two copies" principle,
@@ -82,8 +82,8 @@ Legend: Y = at parity; P = partial/degraded; N = missing; refs are to current co
 | 27 | Tables (incl. vMerge etc. via TableWriter) | Y | Y | shared TableWriter |
 | 28 | Images E20 (`w:drawing`) and E10 (`w:pict` v:imagedata) | Y | Y | same WordXmlPicture methods |
 | 29 | Textbox in `v:shape/v:textbox` | Y | Y | both via FOPictWriter |
-| 30 | Textbox in `v:rect/v:textbox` (3.0.1; e.g. o:hr horizontal rules) | Y | N | getTextBox only recognizes CTShape → falls into "assume image", likely NPE or dropped (verify) |
-| 31 | `mc:AlternateContent` → Fallback only | Y | P | TraversalUtil.getChildrenImpl returns Choice(s) **and** Fallback → warns, and risk of duplicate/garbled output |
+| 30 | Textbox in `v:rect/v:textbox` (3.0.1; e.g. o:hr horizontal rules) | Y | Y | phase 5 shipped 2026-08-31 (getTextBox now accepts any VmlShapeElements, like the writer) |
+| 31 | `mc:AlternateContent` → Fallback only | Y | Y | phase 5 shipped 2026-08-31 (base-generator walk intercepts; TraversalUtil unchanged) |
 | 32 | `w:smartTag` transparent traversal | Y | Y | visitor warns but children render |
 | 33 | Unhandled-element visibility (red message block via FO_MESSAGE_WRITER) | Y (notImplemented) | P | visitor only logs |
 | 34 | Bidi / issue-660 RTL paragraph block-container | Y | Y | single copy since phase 4 (wrapInBidiBlockContainer via the shared paragraph path) |
@@ -263,6 +263,20 @@ CR, byte-for-byte identity is NOT the bar; structural/feature equivalence is.
    (hook in the base generator; don't change TraversalUtil.getChildrenImpl, other
    callers may want both); recognize `v:rect` (and check `v:oval` etc.) textboxes in
    getTextBox; verify/fix the null-image NPE path.
+   **SHIPPED 2026-08-31** (all in the shared base generator, so the HTML visitor
+   pathway benefits too): walkJAXBElements intercepts mc:AlternateContent and walks
+   only the Fallback (TraversalUtil.getChildrenImpl unchanged, other callers may
+   want both); getTextBox now accepts any VmlShapeElements host (v:shape, v:rect,
+   v:oval...), the same approach as FOPictWriterAbstract; and the CTBlip/w:pict
+   image appends are null-guarded (a v:rect o:hr horizontal rule — no textbox, no
+   imagedata — previously NPE'd the whole conversion; now warn+skip, the XSLT
+   equivalent being its notImplemented comment).  Finding along the way, fixed in
+   the SHARED writer (so it also fixes the XSLT pathway): FOPictWriterFloatUsed
+   NPE'd on any wrapped textbox whose style lacks mso-position-vertical-relative —
+   per the VML spec the default is "text", so it is now treated as such (the
+   simple inline v:rect textbox case previously produced nothing in BOTH
+   pathways).  Test: VisitorParityTest.testPhase5TraversalSemantics (Fallback-only
+   rendering, v:rect textbox content, o:hr not breaking the conversion).
 6. **Consolidation** (row 35 and §3.6): fold the duplicated createFoAttributes /
    createBlock / createListBlock / bidi-wrap logic into single shared methods in
    XsltFOFunctions (or a new shared helper class if the XSLT-specific entry points are

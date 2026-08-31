@@ -102,8 +102,8 @@ public  class FOPictWriterFloatUsed extends FOPictWriterNoWrapImpl {
 	// Floats define a block that is "out of line" in drifts to the top/left/right side of the page;
 	// the text *flows around it*.
 
-		if ( mso_position_vertical_relative !=null
-				&& mso_position_vertical_relative.equals("text")) {
+		if ( mso_position_vertical_relative ==null   // "text" is the default, per the VML spec
+				|| mso_position_vertical_relative.equals("text")) {
 
 			// Just lay it out in the flow; graceful degradation
 			Element ret = doc.createElementNS(XSL_FO, "block");
