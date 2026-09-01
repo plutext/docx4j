@@ -1,6 +1,6 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: IN PROGRESS (2026-09-01) — phases 0-3 complete; naming/placement DECIDED
+Status: IN PROGRESS (2026-09-01) — phases 0-4 complete; naming/placement DECIDED
 2026-09-01 (jharrop): the module is **`docx4j-markdown`**, a **reactor module**.
 Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
@@ -275,6 +275,34 @@ module's own test tree), plus docx-side assertions for the import mapping
      idempotence requirement (13 golden tests + 7 export-detection tests).
 4. **Export extensions** (S-M): tables, strikethrough, footnotes, image
    extraction; tracked-changes option.
+
+   **DONE 2026-09-01.**  As specified in §4, with these notes:
+   - **Tables**: first row is the header; gridSpan pads with empty cells so
+     columns stay aligned; vMerge continuations become empty cells (top-left
+     wins); multi-paragraph cells flatten with `<br>` (HtmlInline node);
+     nested tables dropped with a warning.  Header-row bold is suppressed
+     (it's convention, not markup) so imported tables round-trip.
+   - **Footnotes**: `w:footnoteReference` → `[^id]` (labels are normalized
+     to footnote ids — a `[^note]`-style name doesn't survive the docx trip);
+     referenced definitions are converted from the footnotes part (with the
+     part's own rels active for links/images inside) and appended in
+     reference order; the footnoteRef marker run's leftover space is
+     trimmed.  Endnotes are not mapped (`CTFtnEdnRef` is shared — the
+     JAXBElement name distinguishes footnoteReference from
+     endnoteReference).
+   - **Images**: data URI by default (self-contained, no filesystem writes);
+     `setImageDirPath` extracts to files (`image1.png`, ...) with
+     `setImageTargetUri` as the link prefix (mirrors the HTML export's
+     imageDirPath).  Alt text from docPr descr (falling back to name).
+     A data-URI image round-trips byte-identical.
+   - **Tracked changes**: ACCEPT (default) keeps `w:ins` content and drops
+     `w:del`; MARKUP renders deletions as `~~strikethrough~~`.  Gotcha:
+     **`w:delText` unmarshals to `org.docx4j.wml.DelText`, which does NOT
+     extend `Text`** — it needs its own instanceof.
+   - Task lists are import-only: the ☒/☐ glyphs export as literal text, not
+     `[x]` markers (documented lossiness).
+   - 3 more golden round-trip tests (table/strikethrough/footnotes are
+     canonical-equal) + 7 export-extension tests (59 total in the module).
 5. **Integration** (S): `Docx4J.toMarkdown`/`fromMarkdown` facade hooks
    (reflection); MCP tools `markdown_to_docx` / `docx_to_markdown` in the MCP
    server CR's tool surface; docs + website mention; CHANGELOG.

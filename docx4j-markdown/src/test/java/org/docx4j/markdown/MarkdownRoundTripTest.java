@@ -115,6 +115,24 @@ public class MarkdownRoundTripTest {
 		assertRoundTrip("Literal \\*stars\\* and \\_underscores\\_ and \\# hash.\n");
 	}
 
+	// ------------------------------------------- phase 4: extension round trips
+
+	@Test
+	public void table() throws Exception {
+		assertRoundTrip("| Name | Qty |\n|------|----:|\n| ant | 1 |\n| bee | 22 |\n");
+	}
+
+	@Test
+	public void strikethrough() throws Exception {
+		assertRoundTrip("keep ~~gone~~ end\n");
+	}
+
+	@Test
+	public void footnote() throws Exception {
+		// numeric labels: import normalizes labels to footnote ids
+		assertRoundTrip("Body text.[^1]\n\nMore.[^2]\n\n[^1]: First note\n\n[^2]: Second *note*\n");
+	}
+
 	@Test
 	public void composite() throws Exception {
 		assertRoundTrip("# Title\n\n"

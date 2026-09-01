@@ -9,6 +9,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.commonmark.ext.footnotes.FootnoteDefinition;
+import org.commonmark.ext.footnotes.FootnoteReference;
+import org.commonmark.ext.gfm.strikethrough.Strikethrough;
+import org.commonmark.ext.gfm.tables.TableBlock;
+import org.commonmark.ext.gfm.tables.TableBody;
+import org.commonmark.ext.gfm.tables.TableCell;
+import org.commonmark.ext.gfm.tables.TableHead;
+import org.commonmark.ext.gfm.tables.TableRow;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.BulletList;
 import org.commonmark.node.Code;
@@ -34,17 +42,29 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Br;
+import org.docx4j.wml.CTFtnEdn;
+import org.docx4j.wml.CTFtnEdnRef;
 import org.docx4j.wml.CTSimpleField;
+import org.docx4j.wml.Drawing;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.RunDel;
+import org.docx4j.wml.RunIns;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPrInner;
+import org.docx4j.wml.Tr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +115,20 @@ class WmlToMarkdown {
 	private int fieldDepth;
 	private int awaitingSeparate;
 
+	// tracked changes: >0 while inside w:del under the MARKUP policy
+	private int delMarkupDepth;
+
+	// >0 while building a GFM table header row (its bold is convention, not markup)
+	private int tableHeaderDepth;
+
+	// footnotes referenced by the document, in reference order (id -> label)
+	private final java.util.Map<BigInteger, String> footnoteLabels = new java.util.LinkedHashMap<>();
+
+	// the rels of the part whose content is being walked (footnotes have their own)
+	private RelationshipsPart currentRels;
+
+	private int imageCounter;
+
 	WmlToMarkdown(WordprocessingMLPackage pkg, MarkdownExportOptions options) {
 		this.pkg = pkg;
 		this.options = options;
@@ -104,11 +138,13 @@ class WmlToMarkdown {
 	Document convert() throws Docx4JException {
 		resolver = mdp.getPropertyResolver();
 		ndp = mdp.getNumberingDefinitionsPart();
+		currentRels = mdp.getRelationshipsPart();
 
 		Document document = new Document();
 		processBlocks(mdp.getContent(), document);
 		closeLists();
 		closeQuote();
+		appendFootnoteDefinitions(document);
 		return document;
 	}
 
@@ -126,10 +162,10 @@ class WmlToMarkdown {
 				closeLists();
 				closeQuote();
 				processBlocks(((SdtElement) block).getSdtContent().getContent(), container);
-			} else if (block instanceof org.docx4j.wml.Tbl) {
+			} else if (block instanceof Tbl) {
 				closeLists();
 				closeQuote();
-				log.warn("Table export is phase 4; dropping table");
+				table((Tbl) block, container);
 			} else {
 				log.debug("Dropping unmapped block {}", block.getClass().getSimpleName());
 			}
@@ -389,6 +425,174 @@ class WmlToMarkdown {
 		openLists.clear();
 	}
 
+	// ---------------------------------------------------------------- tables
+
+	/**
+	 * GFM pipes: first row is the header; block content in cells flattens to
+	 * inline with &lt;br&gt;; vMerge/gridSpan degrade (top-left wins, empty
+	 * cells elsewhere) — GFM has no spans.
+	 */
+	private void table(Tbl tbl, Node container) throws Docx4JException {
+
+		TableBlock tableBlock = new TableBlock();
+		TableHead head = new TableHead();
+		TableBody body = new TableBody();
+		tableBlock.appendChild(head);
+
+		boolean first = true;
+		for (Object rowObj : tbl.getContent()) {
+			Object rowU = XmlUtils.unwrap(rowObj);
+			if (!(rowU instanceof Tr)) {
+				continue;
+			}
+			TableRow row = new TableRow();
+			for (Object cellObj : ((Tr) rowU).getContent()) {
+				Object cellU = XmlUtils.unwrap(cellObj);
+				if (!(cellU instanceof Tc)) {
+					continue;
+				}
+				Tc tc = (Tc) cellU;
+				row.appendChild(tableCell(tc, first));
+				// gridSpan: pad with empty cells so columns stay aligned
+				TcPrInner tcPr = tc.getTcPr();
+				if (tcPr != null && tcPr.getGridSpan() != null
+						&& tcPr.getGridSpan().getVal() != null) {
+					for (int s = 1; s < tcPr.getGridSpan().getVal().intValue(); s++) {
+						row.appendChild(emptyCell(first));
+					}
+				}
+			}
+			if (first) {
+				head.appendChild(row);
+				first = false;
+			} else {
+				body.appendChild(row);
+			}
+		}
+		if (body.getFirstChild() != null) {
+			tableBlock.appendChild(body);
+		}
+		container.appendChild(tableBlock);
+	}
+
+	private TableCell tableCell(Tc tc, boolean header) throws Docx4JException {
+
+		TableCell cell = emptyCell(header);
+
+		// vMerge continuation: the merge's top cell already holds the content
+		TcPrInner tcPr = tc.getTcPr();
+		if (tcPr != null && tcPr.getVMerge() != null
+				&& !"restart".equals(tcPr.getVMerge().getVal())) {
+			return cell;
+		}
+
+		InlineSink sink = new InlineSink(cell);
+		if (header) {
+			tableHeaderDepth++;
+		}
+		boolean firstP = true;
+		for (Object o : tc.getContent()) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof P) {
+				P p = (P) u;
+				if (!firstP) {
+					sink.node(htmlBr()); // GFM cells are single-line
+				}
+				firstP = false;
+				if (cell.getAlignment() == null) {
+					cell.setAlignment(cellAlignment(p));
+				}
+				RPr baseline = resolver.getEffectiveRPr(null, p.getPPr());
+				processInlines(p.getContent(), sink, p.getPPr(), baseline);
+			} else if (u instanceof SdtElement) {
+				log.debug("Flattening cell content control");
+			} else if (u instanceof Tbl) {
+				log.warn("Nested table dropped (GFM cells are inline-only)");
+			}
+		}
+		sink.flush();
+		if (header) {
+			tableHeaderDepth--;
+		}
+		return cell;
+	}
+
+	private TableCell emptyCell(boolean header) {
+		TableCell cell = new TableCell();
+		cell.setHeader(header);
+		return cell;
+	}
+
+	private static org.commonmark.node.HtmlInline htmlBr() {
+		org.commonmark.node.HtmlInline br = new org.commonmark.node.HtmlInline();
+		br.setLiteral("<br>");
+		return br;
+	}
+
+	private TableCell.Alignment cellAlignment(P p) {
+		if (p.getPPr() == null || p.getPPr().getJc() == null) {
+			return null;
+		}
+		switch (p.getPPr().getJc().getVal()) {
+		case CENTER:
+			return TableCell.Alignment.CENTER;
+		case RIGHT:
+			return TableCell.Alignment.RIGHT;
+		default:
+			return null; // LEFT is GFM's default
+		}
+	}
+
+	// ---------------------------------------------------------------- footnotes
+
+	private void appendFootnoteDefinitions(Document document) throws Docx4JException {
+
+		if (footnoteLabels.isEmpty()) {
+			return;
+		}
+		FootnotesPart footnotesPart = mdp.getFootnotesPart();
+		if (footnotesPart == null) {
+			return;
+		}
+
+		RelationshipsPart savedRels = currentRels;
+		currentRels = footnotesPart.getRelationshipsPart(); // may be null
+
+		for (java.util.Map.Entry<BigInteger, String> entry : footnoteLabels.entrySet()) {
+			CTFtnEdn footnote = null;
+			for (CTFtnEdn candidate : footnotesPart.getJaxbElement().getFootnote()) {
+				if (entry.getKey().equals(candidate.getId())) {
+					footnote = candidate;
+					break;
+				}
+			}
+			if (footnote == null) {
+				log.warn("footnoteReference to missing footnote {}", entry.getKey());
+				continue;
+			}
+			FootnoteDefinition definition = new FootnoteDefinition(entry.getValue());
+			processBlocks(footnote.getContent(), definition);
+			closeLists();
+			closeQuote();
+			trimLeadingMarkerSpace(definition);
+			document.appendChild(definition);
+		}
+
+		currentRels = savedRels;
+	}
+
+	/** Drop the leading space left behind by the footnoteRef marker run. */
+	private static void trimLeadingMarkerSpace(FootnoteDefinition definition) {
+		Node paragraph = definition.getFirstChild();
+		if (paragraph instanceof org.commonmark.node.Paragraph
+				&& paragraph.getFirstChild() instanceof Text) {
+			Text text = (Text) paragraph.getFirstChild();
+			if (text.getLiteral() != null && text.getLiteral().startsWith(" ")) {
+				text.setLiteral(text.getLiteral().substring(1));
+			}
+		}
+	}
+
 	// ---------------------------------------------------------------- inlines
 
 	/** Accumulates same-formatted text, wrapping it on flush. */
@@ -397,15 +601,17 @@ class WmlToMarkdown {
 		final StringBuilder buf = new StringBuilder();
 		boolean bold;
 		boolean italic;
+		boolean strike;
 		InlineSink(Node parent) {
 			this.parent = parent;
 		}
-		void text(String s, boolean b, boolean i) {
-			if ((b != bold || i != italic) && buf.length() > 0) {
+		void text(String s, boolean b, boolean i, boolean st) {
+			if ((b != bold || i != italic || st != strike) && buf.length() > 0) {
 				flush();
 			}
 			bold = b;
 			italic = i;
+			strike = st;
 			buf.append(s);
 		}
 		void node(Node n) {
@@ -428,6 +634,11 @@ class WmlToMarkdown {
 				Emphasis em = new Emphasis();
 				em.appendChild(n);
 				n = em;
+			}
+			if (strike) {
+				Strikethrough st = new Strikethrough("~~");
+				st.appendChild(n);
+				n = st;
 			}
 			parent.appendChild(n);
 			buf.setLength(0);
@@ -471,6 +682,15 @@ class WmlToMarkdown {
 				processInlines(((CTSimpleField) u).getContent(), sink, directPPr, baseline);
 			} else if (u instanceof SdtElement) {
 				processInlines(((SdtElement) u).getSdtContent().getContent(), sink, directPPr, baseline);
+			} else if (u instanceof RunIns) {
+				// an insertion's content, under both policies
+				processInlines(((RunIns) u).getCustomXmlOrSmartTagOrSdt(), sink, directPPr, baseline);
+			} else if (u instanceof RunDel) {
+				if (options.getTrackedChangesPolicy() == MarkdownExportOptions.TrackedChangesPolicy.MARKUP) {
+					delMarkupDepth++;
+					processInlines(((RunDel) u).getCustomXmlOrSmartTagOrSdt(), sink, directPPr, baseline);
+					delMarkupDepth--;
+				} // ACCEPT: deletions dropped
 			} else {
 				log.debug("Dropping unmapped inline {}", u.getClass().getSimpleName());
 			}
@@ -483,9 +703,13 @@ class WmlToMarkdown {
 
 		boolean code = isCode(r.getRPr(), effRPr, baseline);
 		boolean bold = isOn(effRPr == null ? null : effRPr.getB())
-				&& !isOn(baseline == null ? null : baseline.getB());
+				&& !isOn(baseline == null ? null : baseline.getB())
+				&& tableHeaderDepth == 0; // header-row bold is convention, not markup
 		boolean italic = isOn(effRPr == null ? null : effRPr.getI())
 				&& !isOn(baseline == null ? null : baseline.getI());
+		boolean strike = (isOn(effRPr == null ? null : effRPr.getStrike())
+				&& !isOn(baseline == null ? null : baseline.getStrike()))
+				|| delMarkupDepth > 0;
 
 		for (Object rc : r.getContent()) {
 			Object u = XmlUtils.unwrap(rc);
@@ -510,21 +734,131 @@ class WmlToMarkdown {
 			} else if (awaitingSeparate > 0) {
 				// between a field's begin and separate: instruction, not result
 				continue;
-			} else if (u instanceof org.docx4j.wml.Text) {
-				String value = ((org.docx4j.wml.Text) u).getValue();
+			} else if (u instanceof org.docx4j.wml.Text
+					|| u instanceof org.docx4j.wml.DelText) {
+				String value = (u instanceof org.docx4j.wml.Text)
+						? ((org.docx4j.wml.Text) u).getValue()
+						: ((org.docx4j.wml.DelText) u).getValue();
 				if (value != null && !value.isEmpty()) {
 					if (code) {
 						sink.node(new Code(value));
 					} else {
-						sink.text(value, bold, italic);
+						sink.text(value, bold, italic, strike);
 					}
 				}
 			} else if (u instanceof Br) {
 				sink.node(new HardLineBreak());
 			} else if (u instanceof R.Tab) {
-				sink.text("\t", bold, italic);
+				sink.text("\t", bold, italic, strike);
+			} else if (u instanceof CTFtnEdnRef
+					&& isFootnoteReference(rc)) {
+				CTFtnEdnRef ref = (CTFtnEdnRef) u;
+				if (ref.getId() != null) {
+					String label = footnoteLabels.computeIfAbsent(ref.getId(), BigInteger::toString);
+					sink.node(new FootnoteReference(label));
+				}
+			} else if (u instanceof Drawing) {
+				drawing((Drawing) u, sink);
 			}
 			// instrText and other run content dropped
+		}
+	}
+
+	/** CTFtnEdnRef is also the endnoteReference type; check the element name. */
+	private static boolean isFootnoteReference(Object rawContent) {
+		return rawContent instanceof jakarta.xml.bind.JAXBElement
+				&& "footnoteReference".equals(
+						((jakarta.xml.bind.JAXBElement<?>) rawContent).getName().getLocalPart());
+	}
+
+	// ---------------------------------------------------------------- images
+
+	private void drawing(Drawing drawing, InlineSink sink) {
+
+		for (Object o : drawing.getAnchorOrInline()) {
+			org.docx4j.dml.Graphic graphic = null;
+			org.docx4j.dml.CTNonVisualDrawingProps docPr = null;
+			if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+				graphic = ((org.docx4j.dml.wordprocessingDrawing.Inline) o).getGraphic();
+				docPr = ((org.docx4j.dml.wordprocessingDrawing.Inline) o).getDocPr();
+			} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+				graphic = ((org.docx4j.dml.wordprocessingDrawing.Anchor) o).getGraphic();
+				docPr = ((org.docx4j.dml.wordprocessingDrawing.Anchor) o).getDocPr();
+			}
+			if (graphic == null || graphic.getGraphicData() == null
+					|| graphic.getGraphicData().getPic() == null
+					|| graphic.getGraphicData().getPic().getBlipFill() == null
+					|| graphic.getGraphicData().getPic().getBlipFill().getBlip() == null) {
+				log.debug("Dropping non-picture drawing");
+				continue;
+			}
+			String embed = graphic.getGraphicData().getPic().getBlipFill().getBlip().getEmbed();
+			if (embed == null || currentRels == null) {
+				continue;
+			}
+			Relationship rel = currentRels.getRelationshipByID(embed);
+			if (rel == null || !(currentRels.getPart(rel) instanceof BinaryPartAbstractImage)) {
+				log.warn("Dropping image with unresolvable relationship {}", embed);
+				continue;
+			}
+			BinaryPartAbstractImage imagePart = (BinaryPartAbstractImage) currentRels.getPart(rel);
+
+			String destination;
+			try {
+				destination = imageDestination(imagePart);
+			} catch (Exception e) {
+				log.warn("Could not extract image; dropping it", e);
+				continue;
+			}
+
+			String alt = null;
+			if (docPr != null) {
+				alt = (docPr.getDescr() != null && !docPr.getDescr().isEmpty())
+						? docPr.getDescr() : docPr.getName();
+			}
+			org.commonmark.node.Image image = new org.commonmark.node.Image(destination, null);
+			image.appendChild(new Text(alt == null ? "" : alt));
+			sink.node(image);
+		}
+	}
+
+	/** Data URI by default; a file in imageDirPath (with a relative link) when set. */
+	private String imageDestination(BinaryPartAbstractImage imagePart) throws Exception {
+
+		byte[] bytes = imagePart.getBytes();
+		String contentType = imagePart.getContentType();
+
+		if (options.getImageDirPath() == null) {
+			return "data:" + contentType + ";base64,"
+					+ java.util.Base64.getEncoder().encodeToString(bytes);
+		}
+
+		String ext = extensionFor(contentType, imagePart);
+		String fileName = "image" + (++imageCounter) + "." + ext;
+		java.io.File dir = new java.io.File(options.getImageDirPath());
+		dir.mkdirs();
+		try (java.io.FileOutputStream out = new java.io.FileOutputStream(new java.io.File(dir, fileName))) {
+			out.write(bytes);
+		}
+		return (options.getImageTargetUri() == null || options.getImageTargetUri().isEmpty())
+				? fileName
+				: options.getImageTargetUri() + "/" + fileName;
+	}
+
+	private static String extensionFor(String contentType, BinaryPartAbstractImage part) {
+		switch (contentType == null ? "" : contentType) {
+		case "image/png": return "png";
+		case "image/jpeg": return "jpg";
+		case "image/gif": return "gif";
+		case "image/bmp": return "bmp";
+		case "image/tiff": return "tif";
+		case "image/svg+xml": return "svg";
+		case "image/x-emf": return "emf";
+		case "image/x-wmf": return "wmf";
+		default:
+			String name = part.getPartName().getName();
+			int dot = name.lastIndexOf('.');
+			return (dot >= 0) ? name.substring(dot + 1) : "bin";
 		}
 	}
 
