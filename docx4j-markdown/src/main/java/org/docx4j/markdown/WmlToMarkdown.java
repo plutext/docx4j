@@ -192,6 +192,27 @@ class WmlToMarkdown {
 			return index;
 		}
 
+		// display math: a paragraph which IS one m:oMathPara
+		org.docx4j.math.CTOMathPara oMathPara = soleOMathPara(p);
+		if (oMathPara != null) {
+			closeLists();
+			closeQuote();
+			try {
+				org.docx4j.markdown.math.DisplayMath displayMath =
+						new org.docx4j.markdown.math.DisplayMath();
+				displayMath.setLiteral(new org.docx4j.markdown.math.OmmlToLatex()
+						.convertOMathPara(oMathPara));
+				container.appendChild(displayMath);
+			} catch (org.docx4j.markdown.math.OmmlMathException e) {
+				log.warn("Equation outside the OMML->LaTeX subset ({}); flattened to its text",
+						e.getMessage());
+				org.commonmark.node.Paragraph flat = new org.commonmark.node.Paragraph();
+				flat.appendChild(new Text(flattenMathText(oMathPara)));
+				container.appendChild(flat);
+			}
+			return index;
+		}
+
 		// code block: SourceCode-styled paragraphs, consecutive ones merged
 		if (ImportStyles.SOURCE_CODE.equals(pStyleId)) {
 			closeLists();
@@ -273,6 +294,68 @@ class WmlToMarkdown {
 		// NB the DIRECT pPr: getEffectiveRPr resolves the paragraph style via pPr.getPStyle()
 		processInlines(p.getContent(), paragraph, p.getPPr());
 		return paragraph;
+	}
+
+	// ---------------------------------------------------------------- math
+
+	private void inlineOMath(org.docx4j.math.CTOMath oMath, InlineSink sink) {
+		try {
+			String latex = new org.docx4j.markdown.math.OmmlToLatex().convertOMath(oMath);
+			if (!latex.isEmpty()) {
+				sink.node(new org.docx4j.markdown.math.InlineMath(latex, false));
+			}
+		} catch (org.docx4j.markdown.math.OmmlMathException e) {
+			log.warn("Equation outside the OMML->LaTeX subset ({}); flattened to its text",
+					e.getMessage());
+			sink.text(flattenMathText(oMath), false, false, false);
+		}
+	}
+
+	private static final java.util.regex.Pattern M_T_PATTERN =
+			java.util.regex.Pattern.compile("<m:t[^>]*>(.*?)</m:t>", java.util.regex.Pattern.DOTALL);
+
+	/** m:t text of an equation we can't translate (documented lossiness). */
+	private String flattenMathText(Object mathObject) {
+		org.docx4j.math.ObjectFactory mathFactory = new org.docx4j.math.ObjectFactory();
+		Object wrapped;
+		if (mathObject instanceof org.docx4j.math.CTOMath) {
+			wrapped = mathFactory.createOMath((org.docx4j.math.CTOMath) mathObject);
+		} else if (mathObject instanceof org.docx4j.math.CTOMathPara) {
+			wrapped = mathFactory.createOMathPara((org.docx4j.math.CTOMathPara) mathObject);
+		} else {
+			return "";
+		}
+		String xml;
+		try {
+			xml = XmlUtils.marshaltoString(wrapped, true, org.docx4j.jaxb.Context.jc);
+		} catch (Exception e) {
+			log.warn("Could not marshal equation for flattening", e);
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		java.util.regex.Matcher matcher = M_T_PATTERN.matcher(xml);
+		while (matcher.find()) {
+			sb.append(matcher.group(1)
+					.replace("&lt;", "<").replace("&gt;", ">")
+					.replace("&quot;", "\"").replace("&amp;", "&"));
+		}
+		return sb.toString();
+	}
+
+	private org.docx4j.math.CTOMathPara soleOMathPara(P p) {
+		org.docx4j.math.CTOMathPara found = null;
+		for (Object o : p.getContent()) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof org.docx4j.math.CTOMathPara) {
+				if (found != null) {
+					return null;
+				}
+				found = (org.docx4j.math.CTOMathPara) u;
+			} else {
+				return null; // mixed content: handled inline
+			}
+		}
+		return found;
 	}
 
 	private boolean isThematicBreak(P p, PPr directPPr) {
@@ -682,6 +765,14 @@ class WmlToMarkdown {
 				processInlines(((CTSimpleField) u).getContent(), sink, directPPr, baseline);
 			} else if (u instanceof SdtElement) {
 				processInlines(((SdtElement) u).getSdtContent().getContent(), sink, directPPr, baseline);
+			} else if (u instanceof org.docx4j.math.CTOMath) {
+				inlineOMath((org.docx4j.math.CTOMath) u, sink);
+			} else if (u instanceof org.docx4j.math.CTOMathPara) {
+				// oMathPara mixed with other inline content: degrade to inline
+				for (org.docx4j.math.CTOMath oMath
+						: ((org.docx4j.math.CTOMathPara) u).getOMath()) {
+					inlineOMath(oMath, sink);
+				}
 			} else if (u instanceof RunIns) {
 				// an insertion's content, under both policies
 				processInlines(((RunIns) u).getCustomXmlOrSmartTagOrSdt(), sink, directPPr, baseline);

@@ -30,7 +30,8 @@ public class MarkdownRoundTripTest {
 				StrikethroughExtension.create(),
 				TaskListItemsExtension.create(),
 				FootnotesExtension.create(),
-				YamlFrontMatterExtension.create());
+				YamlFrontMatterExtension.create(),
+				org.docx4j.markdown.math.MathExtension.create());
 	}
 
 	/** What commonmark itself would emit for this markdown. */
@@ -131,6 +132,44 @@ public class MarkdownRoundTripTest {
 	public void footnote() throws Exception {
 		// numeric labels: import normalizes labels to footnote ids
 		assertRoundTrip("Body text.[^1]\n\nMore.[^2]\n\n[^1]: First note\n\n[^2]: Second *note*\n");
+	}
+
+	// ------------------------------------------- phase d: math round trips
+	// (inputs in the translator's normalized form: braced args, \le not \leq,
+	//  no math-mode whitespace, display math on one line)
+
+	@Test
+	public void inlineMath() throws Exception {
+		assertRoundTrip("Value $P=\\frac{1}{2}\\rho AU^{3}$ here.\n");
+	}
+
+	@Test
+	public void inlineMathConstructs() throws Exception {
+		assertRoundTrip("Scripts $U_{i}^{3}$, roots $\\sqrt{2}$ and $\\sqrt[3]{x}$, "
+				+ "sums $\\sum_{i}A_{i}$, text $P_{\\text{observed}}$ and "
+				+ "$U_{\\mathrm{REWS}}$, accents $\\hat{x}$ and $\\vec{v}$.\n");
+	}
+
+	@Test
+	public void displayMath() throws Exception {
+		assertRoundTrip("$$\nU_{\\mathrm{REWS}}="
+				+ "{\\left(\\frac{\\sum_{i}A_{i}U_{i}^{3}}{\\sum_{i}A_{i}}\\right)}^{1/3}\n$$\n");
+	}
+
+	@Test
+	public void displayAligned() throws Exception {
+		assertRoundTrip("$$\n\\begin{aligned}x&=1 \\\\ y&=2\\end{aligned}\n$$\n");
+	}
+
+	@Test
+	public void displayBoxed() throws Exception {
+		assertRoundTrip("$$\n\\boxed{\\text{atmosphere}\\to\\text{site wind}\\to\\text{rotor wind}}\n$$\n");
+	}
+
+	@Test
+	public void mathAndCurrencyCoexist() throws Exception {
+		// literal $ is escaped on export, so it can't turn into math
+		assertRoundTrip("It costs \\$5, and $x^{2}$ is math.\n");
 	}
 
 	@Test

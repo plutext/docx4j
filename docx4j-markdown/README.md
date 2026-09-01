@@ -12,7 +12,33 @@ Markdown import (markdown→docx) and export (docx→markdown) for docx4j.
   `org.docx4j.markdown.MarkdownExporter`.
 
 Dialect: **CommonMark + the GFM extensions** (tables, strikethrough, task list
-items, footnotes) plus YAML front matter.  Deliberately nothing more.
+items, footnotes) plus YAML front matter and TeX math.  Deliberately nothing
+more.
+
+## Math
+
+`$...$` (inline) and `$$ ... $$` (display) — also `\(...\)` and, as a block,
+`\[ ... \]` — are translated to **native OMML equations**, both directions.
+The supported LaTeX subset is the contract (anything else falls back,
+loudly — see below):
+
+`\frac` (incl `\frac12`) · `_`/`^` scripts · `\sqrt[n]` · `\sum \prod \int
+\iint \iiint \oint \bigcup \bigcap` with limits · `\left ( [ \{ | \langle
+\lfloor \lceil . \right` · `\text` · `\mathrm` / `{\rm}` / `\operatorname` ·
+`\mathbf` / `\mathit` / `\bf` / `\it` · `\begin{aligned}` (`align`/`align*`)
+with `\\` rows and `&` alignment · `\boxed` · accents `\hat \tilde \bar \vec
+\dot \ddot \check \breve \acute \grave` · `\overline`/`\underline` · greek
+(incl var-forms) · ~60 operator/relation/arrow/set symbols · spacing
+`\, \; \: \quad \qquad` · function names (`\sin`, `\log`, `\lim`, …) ·
+escapes `\{ \} \$ \% \& \# \_`.
+
+**Nothing fails silently.**  An equation outside the subset degrades — whole,
+delimiters preserved — to its literal source in the `CodeChar` style, and is
+reported through `MarkdownImportOptions.setIssueListener(...)` (source +
+reason; collect into a list for programmatic triage).  On export, OMML
+outside the subset flattens to its text with a warning.
+`MathPolicy.LITERAL` skips translation entirely;
+`Extension.MATH` turns recognition off.
 
 ## Usage
 

@@ -48,6 +48,11 @@ real footnotes, task lists, YAML front matter; no HTML detour) and export (docx-
 CommonMark+GFM, incl image extraction and a tracked-changes option); remote images are never
 fetched.  Facade hooks Docx4J.fromMarkdown/toMarkdown (docx4j-markdown must be on the classpath).
 See docs/developer/change-requests/CR-markdown-import-export.md and the module README
+- TeX math: $...$ / $$...$$ (and \(..\), block \[..\]) translated to native OMML equations in
+both directions, for a published LaTeX subset (frac, scripts, sqrt, sum/int with limits,
+left/right delimiters, text/mathrm, aligned, boxed, accents, greek + common symbols).
+Equations outside the subset never disappear: they fall back whole to their literal source and
+are reported via an issue listener.  See docs/developer/change-requests/CR-markdown-math.md
 
 docx4j-bundle:
 - the shaded ("fat") jar now actually contains the JAXB runtime: docx4j-JAXB-ReferenceImpl was

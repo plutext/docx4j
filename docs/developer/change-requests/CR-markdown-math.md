@@ -1,6 +1,9 @@
 # CR: Markdown math (LaTeX equations → native OMML, and back)
 
-Status: IN PROGRESS (2026-09-01) — phases a-c complete
+Status: DONE (2026-09-01) — all phases (a-d) implemented and tested (114
+tests in the module).  Outstanding: eyeball QA in Word (nary limit
+placement, stretchy delimiters, and especially whether eqArr renders `&` as
+alignment or literally — see phase c note).
 Scope: extend **docx4j-markdown** with equation support — `$...$` / `$$...$$`
 (and `\(...\)` / `\[...\]`) recognized at parse time, and a **deliberately
 restricted LaTeX subset** translated to Word's native OMML
@@ -209,6 +212,32 @@ c. **Structures** (S): `aligned`→`m:eqArr`, `\boxed`→`m:borderBox`,
 d. **Export** (M): OMML→LaTeX reverse for the subset; math joins the golden
    round-trip suite (normalized-form inputs: the translator regenerates
    `\frac{1}{2}`, not `\frac12`).
+
+   **DONE 2026-09-01.**  `OmmlToLatex` (public) walks the OMML element
+   lists; `WmlToMarkdown` emits `InlineMath` for `m:oMath` in a run
+   sequence and `DisplayMath` for a paragraph that IS one `m:oMathPara`
+   (an `m:oMathPara` mixed with other inline content degrades to inline).
+   Notes:
+   - **Normalized output** is the canonical form: braced arguments
+     (`U^{3}`), shortest symbol command on collisions (`\le` not `\leq`,
+     `\to` not `\rightarrow`), no math-mode whitespace, display math on
+     one line, `\[..\]`→`$$`.  Script bases stay bare only for a single
+     plain character.  A `LatexBuilder` inserts the space after a
+     letters-command only when a letter follows (`\rho AU^{3}`).
+   - Reverse symbol/nary/accent maps derive from `LatexToOmml`'s tables
+     (now package-visible) — one source of truth.
+   - `&` re-exports bare inside an eqArr (alignment mark), `\&`-escaped
+     elsewhere.
+   - **Flatten fallback**: OMML outside the subset (`OmmlMathException`)
+     flattens to its `m:t` text with a warning — implemented by
+     marshalling the node and extracting `m:t` runs, because
+     `TraversalUtil.getChildrenImpl`'s reflective fallback returns only
+     the FIRST List-returning method and misses most OMML containers
+     (found by test).
+   - 6 golden round-trip tests (canonical-equality, incl the REWS display
+     equation, aligned, boxed, and math-plus-currency in one line) + 5
+     translator/exporter tests; 16 translator fixed-point strings verified
+     idempotent.
 
 ## 4. Risks / notes
 

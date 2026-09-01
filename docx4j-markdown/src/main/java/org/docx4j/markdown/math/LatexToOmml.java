@@ -771,9 +771,9 @@ public class LatexToOmml {
 
 	// ---------------------------------------------------------------- tables
 
-	private static final Map<String, String> NARY = new HashMap<>();
-	private static final Map<String, String> SYMBOLS = new HashMap<>();
-	private static final java.util.Set<String> FUNCTION_NAMES = java.util.Set.of(
+	static final Map<String, String> NARY = new HashMap<>();
+	static final Map<String, String> SYMBOLS = new HashMap<>();
+	static final java.util.Set<String> FUNCTION_NAMES = java.util.Set.of(
 			"sin", "cos", "tan", "cot", "sec", "csc",
 			"arcsin", "arccos", "arctan", "sinh", "cosh", "tanh",
 			"log", "ln", "lg", "exp", "max", "min", "sup", "inf",
