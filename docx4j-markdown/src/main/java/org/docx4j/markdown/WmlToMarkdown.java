@@ -585,8 +585,7 @@ class WmlToMarkdown {
 				if (cell.getAlignment() == null) {
 					cell.setAlignment(cellAlignment(p));
 				}
-				RPr baseline = resolver.getEffectiveRPr(null, p.getPPr());
-				processInlines(p.getContent(), sink, p.getPPr(), baseline);
+				processInlines(p.getContent(), sink, p.getPPr(), baselineFor(p.getPPr()));
 			} else if (u instanceof SdtElement) {
 				log.debug("Flattening cell content control");
 			} else if (u instanceof Tbl) {
@@ -728,15 +727,39 @@ class WmlToMarkdown {
 		}
 	}
 
+	// effective run properties of a paragraph style, computed once per
+	// styleId rather than once per paragraph ("" = no style); a null value
+	// is cached too, hence containsKey
+	private final java.util.Map<String, RPr> baselineRPrByStyle = new java.util.HashMap<>();
+
+	/**
+	 * The paragraph style's own formatting is the baseline: only formatting
+	 * beyond it becomes markdown markers.
+	 */
+	private RPr baselineFor(PPr directPPr) throws Docx4JException {
+		String key;
+		if (directPPr == null) {
+			key = "";
+		} else if (directPPr.getPStyle() != null) {
+			key = directPPr.getPStyle().getVal();
+		} else if (directPPr.getRPr() != null) {
+			// paragraph-mark rPr can contribute when there is no pStyle:
+			// per-paragraph, so not cacheable
+			return resolver.getEffectiveRPr(null, directPPr);
+		} else {
+			key = "";
+		}
+		if (!baselineRPrByStyle.containsKey(key)) {
+			baselineRPrByStyle.put(key, resolver.getEffectiveRPr(null, directPPr));
+		}
+		return baselineRPrByStyle.get(key);
+	}
+
 	private void processInlines(List<Object> content, Node parent, PPr directPPr)
 			throws Docx4JException {
 
-		// the paragraph style's own formatting is the baseline: only
-		// formatting beyond it becomes markdown markers
-		RPr baseline = resolver.getEffectiveRPr(null, directPPr);
-
 		InlineSink sink = new InlineSink(parent);
-		processInlines(content, sink, directPPr, baseline);
+		processInlines(content, sink, directPPr, baselineFor(directPPr));
 		sink.flush();
 	}
 
@@ -790,7 +813,10 @@ class WmlToMarkdown {
 
 	private void run(R r, InlineSink sink, PPr directPPr, RPr baseline) throws Docx4JException {
 
-		RPr effRPr = resolver.getEffectiveRPr(r.getRPr(), directPPr);
+		// a run with no rPr of its own resolves to the baseline by definition
+		// (most runs), sparing a PropertyResolver call per run
+		RPr effRPr = (r.getRPr() == null) ? baseline
+				: resolver.getEffectiveRPr(r.getRPr(), directPPr);
 
 		boolean code = isCode(r.getRPr(), effRPr, baseline);
 		boolean bold = isOn(effRPr == null ? null : effRPr.getB())
