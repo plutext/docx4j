@@ -282,10 +282,16 @@ public class LatexToOmml {
 		case "middle":
 			throw err("\\middle outside \\left ... \\right");
 		case "text":
+			// prose: raw, spaces significant
 			return List.of(textRun(readRawGroup(), true, ctx));
 		case "mathrm":
-		case "operatorname":
-			return List.of(textRun(readRawGroup(), false, ctx));
+		case "operatorname": {
+			// still MATH mode (\mathrm{m\,s^{-1}} nests commands and
+			// scripts), just upright — so parse, don't read raw
+			Ctx roman = ctx.copy();
+			roman.sty = STStyle.P;
+			return parseArgAsSequence(roman);
+		}
 		case "mathbf": {
 			Ctx bold = ctx.copy();
 			bold.sty = STStyle.B;

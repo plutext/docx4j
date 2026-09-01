@@ -106,6 +106,22 @@ public class MarkdownMathCorpusTest {
 		assertTrue(omml("U_{\\min}^C\n\\ \\text{or}\\ \nU_{\\max}^C").contains(">or<"));
 	}
 
+	// ------------------------------------------------- \mathrm is math mode
+
+	@Test
+	public void mathrmParsesItsArgument() throws Exception {
+		// \mathrm{m\,s^{-1}} used to become ONE literal-text run
+		// "m\,s^{-1}" (readRawGroup); it is math mode — parse it, upright
+		String xml = omml("\\mathrm{m\\,s^{-1}}.");
+		assertTrue(xml.contains("<m:sSup>"));
+		assertTrue(xml.contains(">-1<"));
+		assertTrue(xml.contains("m:val=\"p\""));
+		assertTrue(!xml.contains("s^{-1}"));
+		// and the same via {\rm ...}
+		String rm = omml("{\\rm m\\,s^{-1}}.");
+		assertTrue(rm.contains("<m:sSup>"));
+	}
+
 	// ------------------------------------------------- single-line \[ .. \]
 
 	@Test
@@ -229,6 +245,8 @@ public class MarkdownMathCorpusTest {
 		"L_\\tau(y,q_\\tau)\n=\n\\begin{cases}\n\\tau(y-q_\\tau),\n& y\\ge q_\\tau,\\\\\n"
 			+ "(1-\\tau)(q_\\tau-y),\n& y<q_\\tau.\n\\end{cases}",
 		"D_i(t)\n=\n\\begin{cases}\n1,&\\text{REZ }i\\text{ in drought},\\\\\n0,&\\text{otherwise}.\n\\end{cases}",
+		"\\mathrm{m\\,s^{-1}}.",
+		"{\\rm m\\,s^{-1}}.",
 	};
 
 	@Test
