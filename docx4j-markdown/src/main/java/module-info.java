@@ -13,5 +13,6 @@ module org.docx4j.markdown {
 	requires org.commonmark.ext.front.matter;
 
 	exports org.docx4j.markdown;
+	exports org.docx4j.markdown.math;
 
 }

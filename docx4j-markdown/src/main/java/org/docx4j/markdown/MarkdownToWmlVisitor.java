@@ -451,6 +451,8 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 	public void visit(CustomBlock customBlock) {
 		if (customBlock instanceof TableBlock) {
 			table((TableBlock) customBlock);
+		} else if (customBlock instanceof org.docx4j.markdown.math.DisplayMath) {
+			displayMath((org.docx4j.markdown.math.DisplayMath) customBlock);
 		} else if (customBlock instanceof FootnoteDefinition) {
 			// realised on demand when a FootnoteReference points at it
 		} else if (customBlock instanceof YamlFrontMatterBlock) {
@@ -469,6 +471,8 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 		} else if (customNode instanceof TaskListItemMarker) {
 			// held until the item's first paragraph exists (the marker precedes it)
 			pendingTaskMarker = ((TaskListItemMarker) customNode).isChecked() ? "☒ " : "☐ ";
+		} else if (customNode instanceof org.docx4j.markdown.math.InlineMath) {
+			inlineMath((org.docx4j.markdown.math.InlineMath) customNode);
 		} else if (customNode instanceof FootnoteReference) {
 			footnoteReference((FootnoteReference) customNode);
 		} else if (customNode instanceof InlineFootnote) {
@@ -477,6 +481,66 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 			// mapped to core document properties by the importer
 		} else {
 			visitChildren(customNode);
+		}
+	}
+
+	// ------------------------------------------------------------ math
+
+	/**
+	 * Phase a of CR-markdown-math: recognition + lossless literal fallback.
+	 * The LaTeX→OMML translator is phase b; until then every equation
+	 * degrades (loudly, via the issue listener) to its literal source in
+	 * the CodeChar style, delimiters preserved.
+	 */
+	private void inlineMath(org.docx4j.markdown.math.InlineMath math) {
+		issue("inline math", math.getLiteral(),
+				"LaTeX->OMML translation not yet implemented (CR-markdown-math phase b); emitted literal source");
+		String delimiter = math.isDisplayHint() ? "$$" : "$";
+		addLiteralMathRun(delimiter + math.getLiteral().replace('\n', ' ') + delimiter);
+	}
+
+	private void displayMath(org.docx4j.markdown.math.DisplayMath math) {
+		issue("display math", math.getLiteral(),
+				"LaTeX->OMML translation not yet implemented (CR-markdown-math phase b); emitted literal source");
+		newParagraph(null);
+		String[] lines = ("$$\n" + math.getLiteral() + "\n$$").split("\n", -1);
+		for (int i = 0; i < lines.length; i++) {
+			if (i > 0) {
+				R br = factory.createR();
+				br.getContent().add(factory.createBr());
+				currentP.getContent().add(br);
+			}
+			addLiteralMathRun(lines[i]);
+		}
+		endParagraph();
+	}
+
+	private void addLiteralMathRun(String text) {
+		try {
+			styles.ensureCodeChar();
+		} catch (Docx4JException e) {
+			log.warn("Could not create CodeChar style", e);
+		}
+		R r = factory.createR();
+		RPr rPr = runRPr();
+		if (rPr == null) {
+			rPr = factory.createRPr();
+		}
+		RStyle rStyle = factory.createRStyle();
+		rStyle.setVal(ImportStyles.CODE_CHAR);
+		rPr.setRStyle(rStyle);
+		r.setRPr(rPr);
+		org.docx4j.wml.Text t = factory.createText();
+		t.setValue(text);
+		t.setSpace("preserve");
+		r.getContent().add(t);
+		runTarget().add(r);
+	}
+
+	private void issue(String construct, String source, String reason) {
+		MarkdownImportIssueListener listener = options.getIssueListener();
+		if (listener != null) {
+			listener.onIssue(new MarkdownImportIssue(construct, source, reason));
 		}
 	}
 

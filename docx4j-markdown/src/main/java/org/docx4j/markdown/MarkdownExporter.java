@@ -41,7 +41,8 @@ public class MarkdownExporter {
 						StrikethroughExtension.create(),
 						TaskListItemsExtension.create(),
 						FootnotesExtension.create(),
-						YamlFrontMatterExtension.create()))
+						YamlFrontMatterExtension.create(),
+						org.docx4j.markdown.math.MathExtension.create()))
 				.build();
 		return renderer.render(document);
 	}

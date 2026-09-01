@@ -1,6 +1,6 @@
 # CR: Markdown math (LaTeX equations → native OMML, and back)
 
-Status: PROPOSED (2026-09-01)
+Status: IN PROGRESS (2026-09-01) — phase a complete
 Scope: extend **docx4j-markdown** with equation support — `$...$` / `$$...$$`
 (and `\(...\)` / `\[...\]`) recognized at parse time, and a **deliberately
 restricted LaTeX subset** translated to Word's native OMML
@@ -43,7 +43,10 @@ commonmark-java has no math extension, so we ship one in the module
   `$` must not be followed by whitespace, the closing `$` must not be
   preceded by whitespace nor followed by a digit; `\$` escapes.  `\(...\)`
   likewise (trigger `\`).  `$$...$$` appearing inline in a mixed line is
-  treated as inline math.
+  treated as inline math.  **`\[...\]` is a display BLOCK only, never
+  inline**: markdown's own escaping writes literal brackets as `\[x\]`, so
+  an inline bracket form turns escaped brackets into math (found by the
+  existing escaping round-trip test in phase a).
 - **Display**: a custom block parser for a line starting `$$` (content until
   the closing `$$` line; single-line `$$ x $$` allowed), and the same for
   `\[ ... \]`.  Accepting `\[...\]` directly removes the first rule of any
@@ -122,6 +125,29 @@ a. **Recognition + fallback + report** (S): MathExtension (inline `$`,
    toggle, `MarkdownImportIssueListener` plumbing, literal fallback for all
    math (conversion arrives in b).  Tests: delimiter guards, block shapes,
    fallback fidelity, report contents.
+
+   **DONE 2026-09-01.**  `org.docx4j.markdown.math` (exported):
+   `MathExtension` (Parser + MarkdownRenderer extension), `InlineMath`
+   (with a display hint for inline `$$..$$`), `DisplayMath`.  Notes:
+   - Single-line `$$x$$` is deliberately NOT claimed by the block parser
+     (commonmark's `BlockContinue.finished()` consumes the current line, so
+     a block completing on its opening line would swallow the next one);
+     it parses as `InlineMath(displayHint)` instead, which phase b places
+     as display.
+   - Closing `$$` may share a line with trailing math content (captured in
+     `tryContinue` before `finished()`); an unclosed block runs to EOF.
+   - Inline `\[...\]` dropped (see §2 — collides with bracket escaping);
+     `\(...\)` kept, both normalize to `$`-forms on render.
+   - The renderer side declares `$` a special character, so literal
+     dollars in exported text are `\$`-escaped and can't turn into math on
+     re-parse.
+   - Issue plumbing is generic (`MarkdownImportIssue`/`Listener` on the
+     options, default logs); in this phase every equation reports one
+     issue and falls back to CodeChar-styled literal source with
+     delimiters preserved (display blocks as a `$$`-fenced paragraph with
+     `w:br` line breaks).
+   - 13 tests incl. equations inside list items (fine, per design) and
+     currency/spacing/escape guards.
 b. **Core translator** (M): `LatexToOmml` — runs/symbols, `\frac`, sub/sup,
    `\sqrt`, nary, `\left/\right`, `\text`/`\mathrm`/`{\rm}`, fonts, spacing,
    function names; `MathPolicy` option; inline `m:oMath` + display

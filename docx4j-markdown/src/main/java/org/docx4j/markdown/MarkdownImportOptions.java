@@ -33,15 +33,21 @@ public class MarkdownImportOptions {
 
 	/**
 	 * The supported markdown extensions (all enabled by default).
+	 * MATH is TeX math: {@code $...$} / {@code $$...$$} (and the
+	 * {@code \(...\)} / {@code \[...\]} forms); see CR-markdown-math.
 	 */
 	public enum Extension {
-		TABLES, STRIKETHROUGH, TASK_LIST_ITEMS, FOOTNOTES, YAML_FRONT_MATTER
+		TABLES, STRIKETHROUGH, TASK_LIST_ITEMS, FOOTNOTES, YAML_FRONT_MATTER, MATH
 	}
+
+	private static final org.slf4j.Logger log =
+			org.slf4j.LoggerFactory.getLogger(MarkdownImportOptions.class);
 
 	private HtmlPolicy htmlPolicy = HtmlPolicy.DROP;
 	private CodeBlockShape codeBlockShape = CodeBlockShape.SINGLE_PARAGRAPH;
 	private java.util.Set<Extension> extensions = java.util.EnumSet.allOf(Extension.class);
 	private MarkdownImageHandler imageHandler = new DefaultMarkdownImageHandler();
+	private MarkdownImportIssueListener issueListener = issue -> log.warn("{}", issue);
 
 	public HtmlPolicy getHtmlPolicy() {
 		return htmlPolicy;
@@ -87,6 +93,20 @@ public class MarkdownImportOptions {
 	 */
 	public MarkdownImportOptions setImageHandler(MarkdownImageHandler imageHandler) {
 		this.imageHandler = imageHandler;
+		return this;
+	}
+
+	public MarkdownImportIssueListener getIssueListener() {
+		return issueListener;
+	}
+
+	/**
+	 * Where degradations are reported (see {@link MarkdownImportIssue}).
+	 * The default logs a warning per issue; supply eg {@code issues::add}
+	 * to collect them for programmatic triage.
+	 */
+	public MarkdownImportOptions setIssueListener(MarkdownImportIssueListener issueListener) {
+		this.issueListener = issueListener;
 		return this;
 	}
 

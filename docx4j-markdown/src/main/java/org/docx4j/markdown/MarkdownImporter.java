@@ -102,6 +102,9 @@ public class MarkdownImporter {
 			case YAML_FRONT_MATTER:
 				extensions.add(YamlFrontMatterExtension.create());
 				break;
+			case MATH:
+				extensions.add(org.docx4j.markdown.math.MathExtension.create());
+				break;
 			}
 		}
 		return extensions;
