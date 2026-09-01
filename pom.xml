@@ -68,14 +68,7 @@
         <module>docx4j-samples-documents4j-remote</module>        
         <module>docx4j-samples-documents4j-local</module>        
 
-<!--
-
         <module>docx4j-bundle</module>        
-		July 2025
-		docx4j-bundle needs Sources, Javadoc in order to pass Central Publishing component validation
-
-		-->
-
 
         <module>docx4j-legacy-service</module>        
         

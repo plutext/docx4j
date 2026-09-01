@@ -65,11 +65,15 @@ You need a JDK installed (JPype locates it via `JAVA_HOME`), and the docx4j
 jars:
 
 - For loading / manipulating / OpenDoPE binding / saving docx-pptx-xlsx, the
-  **shaded bundle jar** is a single self-contained file:
-  `docx4j-bundle-<version>-shaded.jar` (build it with `mvn install` in the
-  `docx4j-bundle` directory, after `mvn install` at the top level; the bundle
-  is not deployed to Maven Central).  Note: the shaded jar only contains the
-  JAXB runtime from 17.0.4 on.
+  **shaded bundle jar** is a single self-contained file.  From 17.0.4 it is
+  published to Maven Central as `org.docx4j:docx4j-bundle`, so you can just
+  download `docx4j-bundle-<version>.jar` (eg from
+  `https://repo1.maven.org/maven2/org/docx4j/docx4j-bundle/<version>/`).  It
+  contains docx4j-core plus the JAXB reference-implementation runtime, so no
+  other jars are needed for the operations above.  (You can also build it
+  yourself: `mvn install` in the `docx4j-bundle` directory after `mvn install`
+  at the top level — the file is then `target/docx4j-bundle-<version>.jar`.)
+  Note: the bundle only contains the JAXB runtime from 17.0.4 on.
 - For **PDF output**, add `docx4j-export-fo` and its dependencies.  The
   simplest way to collect them is a throwaway Maven pom depending on
   `org.docx4j:docx4j-export-fo`, then
@@ -84,7 +88,7 @@ table-row repeat and conditions):
 ```python
 import sys, jpype, jpype.imports
 
-jpype.startJVM(classpath=["docx4j-bundle-17.0.4-shaded.jar"])
+jpype.startJVM(classpath=["docx4j-bundle-17.0.4.jar"])
 
 from java.io import File, StringWriter
 from org.docx4j.openpackaging.packages import WordprocessingMLPackage
@@ -111,7 +115,7 @@ pkg.save(File("out.docx"))
 ```python
 import glob, jpype, jpype.imports
 
-cp = ["docx4j-bundle-17.0.4-shaded.jar"] + glob.glob("libs/*.jar")
+cp = ["docx4j-bundle-17.0.4.jar"] + glob.glob("libs/*.jar")
 jpype.startJVM(classpath=cp)
 
 from java.io import File, FileOutputStream

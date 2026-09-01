@@ -16,15 +16,18 @@
 		fat jar
 	</description>
 
-	<properties>
-	 <!--  Avoid potential error: 
-	 
-			 MavenReportException: Error while generating Javadoc: 
-			[ERROR] Exit code: 1 - javadoc: error - The code being documented uses packages in the unnamed module, 
-			but the packages defined in http://www.docx4java.org/docx4j-JAXB-ReferenceImpl/apidocs/ are in named modules. -->
-	    <maven.javadoc.skip>true</maven.javadoc.skip> <!--  see https://stackoverflow.com/questions/7412016/how-can-i-disable-the-maven-javadoc-plugin-from-the-command-line -->
-		<maven.deploy.skip>true</maven.deploy.skip>			    
-	</properties>
+	<!--
+		Published to Maven Central as an uber jar (shape B: the shaded fat jar IS
+		the main artifact; the deployed pom carries no dependencies).  See
+		design-rationale.md in this directory.
+
+		The old maven.javadoc.skip / maven.deploy.skip properties are gone: this
+		module has no src/ of its own, so maven-source-plugin and
+		maven-javadoc-plugin each produce an empty (but present, and signed) jar,
+		which is what Central's component validation needs.  The "unnamed module"
+		javadoc error that prompted the skip only occurs when documenting docx4j's
+		real classes; there are none here.
+	-->
 	
   <build>
     <plugins>
@@ -60,8 +63,18 @@
 									<exclude>junit:junit</exclude>
 								</excludes>								
 							</artifactSet>
-			              <shadedArtifactAttached>true</shadedArtifactAttached>
-			              <shadedClassifierName>shaded</shadedClassifierName>
+			              <!-- shape B: the fat jar replaces the main artifact
+			                   (docx4j-bundle-<v>.jar), so it gets the clean Central
+			                   download URL and carries the sources/javadoc/signature
+			                   siblings.  createDependencyReducedPom is irrelevant here
+			                   because flatten (below) writes the deployed pom. -->
+			              <shadedArtifactAttached>false</shadedArtifactAttached>
+			              <!-- Don't let shade write the deployed pom: flatten (below)
+			                   owns it, stripping dependencies entirely.  Leaving this
+			                   at the default (true) would install shade's
+			                   dependency-reduced-pom instead, which still carries a
+			                   test-scope junit. -->
+			              <createDependencyReducedPom>false</createDependencyReducedPom>
 			              <!-- 
                           <relocations>
                             <relocation>
@@ -86,31 +99,51 @@
 					                <exclude>META-INF/versions/*/module-info.class</exclude>
 					            </excludes>
 					        </filter>
-					    </filters>			              
+					    </filters>
+					    <transformers>
+					        <!-- The bundled dependencies each ship their own LICENSE/NOTICE
+					             (and, for some, META-INF/services provider files).  Without
+					             these transformers shade keeps only one file per path
+					             (last-wins), which loses attribution and can break service
+					             discovery.
+					             - ApacheNoticeResourceTransformer aggregates every bundled
+					               NOTICE into one META-INF/NOTICE (Apache-2.0 section 4d).
+					             - ServicesResourceTransformer concatenates colliding
+					               META-INF/services/* provider lists instead of dropping all
+					               but one.
+					             We deliberately do NOT use ApacheLicenseResourceTransformer:
+					             in this shade version it merely *consumes* (drops) LICENSE
+					             files without emitting one, which would also delete the
+					             canonical Apache-2.0 LICENSE we ship as a module resource
+					             (src/main/resources/META-INF/LICENSE). -->
+					        <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+					            <projectName>docx4j-bundle</projectName>
+					        </transformer>
+					        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+					    </transformers>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 			
-			<!--  don't deploy this jar to Maven Central -->			
+			<!-- The deployed pom must NOT re-declare the dependencies that were
+			     shaded into the fat jar (docx4j-core et al), or a Maven consumer
+			     would get those classes twice.  The parent runs flatten with
+			     flattenDependencyMode=all, which hoists every transitive as a
+			     direct dependency; override it here to strip the dependencies
+			     section entirely, so the deployed pom is a self-contained uber-jar
+			     pom.  See design-rationale.md. -->
 			<plugin>
-			    <groupId>org.sonatype.plugins</groupId>
-			    <artifactId>nexus-staging-maven-plugin</artifactId>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>flatten-maven-plugin</artifactId>
 			    <configuration>
-			        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+			        <flattenMode>ossrh</flattenMode>
+			        <pomElements>
+			            <dependencies>remove</dependencies>
+			        </pomElements>
 			    </configuration>
 			</plugin>
-			<!--
-			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-deploy-plugin</artifactId>
-			  <version>3.0.0-M1</version>
-			  <configuration>
-			    <skip>true</skip>
-			  </configuration>
-			</plugin>	
-			-->		
-				
+
 	    </plugins>
   </build>
 	
