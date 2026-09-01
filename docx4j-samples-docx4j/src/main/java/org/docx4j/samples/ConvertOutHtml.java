@@ -40,10 +40,7 @@ import org.docx4j.model.images.DataUriConversionImageHandler;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
- * This sample uses XSLT (and Xalan) to
- * produce HTML output.  (There is also
- * HtmlExporterNonXSLT for environments where
- * that is not desirable eg Android).
+ * This sample produces HTML output. 
  *
  * If the source docx contained a WMF, that
  * will get converted to inline SVG.  In order
@@ -186,9 +183,9 @@ public class ConvertOutHtml extends AbstractSample {
 		//Don't care what type of exporter you use
 //		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_NONE);
 		//Prefer the exporter, that uses a xsl transformation
-		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		//Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
 		//Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
-//		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
 
 		if (save) {
 			System.out.println("Saved: " + inputfilepath + ".html ");

@@ -48,6 +48,15 @@ referencing its own condition directly or transitively) with a Docx4JException, 
 recursing until a StackOverflowError killed the binding thread; DoS via a crafted .docx bound by
 Docx4J.bind() (GHSA-qw8x-rxfh-9qqq)
 
+PDF and HTML export:
+- the default export pathway (FLAG_NONE) is now the visitor (non-XSLT) implementation, for both
+docx->PDF (via XSL-FO) and docx->HTML; it reached feature parity with the XSLT pathway in this
+release (see the FO/HTML exporter parity change requests).  To restore the previous default, pass
+Docx4J.FLAG_EXPORT_PREFER_XSL to toPDF/toFO/toHTML
+- the non-XSLT FO/HTML exporter no longer logs "Need to handle org.docx4j.wml.Drawing" for every
+image (the w:drawing wrapper is now matched as a no-op, as w:tr/w:tc already were); output is
+unchanged, and a spurious debug-only "NOT IMPLEMENTED" node next to each image is gone
+
 New module docx4j-markdown:
 - markdown import (markdown->docx: real heading/quote/code styles, real numbering, GFM tables,
 real footnotes, task lists, YAML front matter; no HTML detour) and export (docx->markdown,

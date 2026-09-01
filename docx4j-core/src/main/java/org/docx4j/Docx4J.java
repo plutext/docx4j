@@ -106,11 +106,14 @@ public class Docx4J {
 	 */
 	public static final int FLAG_NONE = 0;
 	
-	/** If available export the document using a xsl transformation
+	/** If available export the document using a xsl transformation.
+	 *  Since 17.0.4 the default (FLAG_NONE) is the visitor pathway
+	 *  (FLAG_EXPORT_PREFER_NONXSL); pass this flag to force the XSLT pathway.
 	 */
 	public static final int FLAG_EXPORT_PREFER_XSL = 1;
-	
-	/** If available export the document using a visitor
+
+	/** If available export the document using a visitor.
+	 *  This is the default pathway since 17.0.4 (ie for FLAG_NONE).
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
 	
@@ -926,11 +929,11 @@ public class Docx4J {
 	
 	protected static Exporter<FOSettings> getFOExporter(int flags)  throws Docx4JException {
 		switch (flags) {
-			case FLAG_EXPORT_PREFER_NONXSL:
-				return FOExporterVisitorGetInstance();
 			case FLAG_EXPORT_PREFER_XSL:
-			default:
 				return FOExporterXsltGetInstance();
+			case FLAG_EXPORT_PREFER_NONXSL:
+			default:
+				return FOExporterVisitorGetInstance();
 		}
 	}
 		
@@ -1042,11 +1045,11 @@ public class Docx4J {
 	
 	protected static Exporter<HTMLSettings> getHTMLExporter(int flags) {
 		switch (flags) {
-			case FLAG_EXPORT_PREFER_NONXSL:
-				return HTMLExporterVisitor.getInstance();
 			case FLAG_EXPORT_PREFER_XSL:
-			default:
 				return HTMLExporterXslt.getInstance();
+			case FLAG_EXPORT_PREFER_NONXSL:
+			default:
+				return HTMLExporterVisitor.getInstance();
 		}
 	}
 

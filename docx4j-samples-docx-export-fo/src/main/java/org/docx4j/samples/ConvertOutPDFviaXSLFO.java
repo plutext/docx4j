@@ -300,14 +300,14 @@ public class ConvertOutPDFviaXSLFO {
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
     	
 		// Specify whether PDF export uses XSLT or not to create the FO
-		// (XSLT takes longer, but is more complete).
+		// (XSLT used to be more complete).
 			
-		// Prefer the exporter which uses a xsl transformation (this is the default)
-		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		// Prefer the exporter which uses a xsl transformation (this was the default until 17.0.4)
+		// Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
 		
 		// Prefer the exporter which doesn't use a xsl transformation (= uses a visitor)
-		// .. faster, but not yet at feature parity
-		// Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+		// .. faster, and as of 17.0.4, feature parity
+		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
     	
 		System.out.println("Saved: " + outputfilepath);
 

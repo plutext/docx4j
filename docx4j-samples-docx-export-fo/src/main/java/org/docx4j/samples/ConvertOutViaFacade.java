@@ -32,7 +32,8 @@ import org.docx4j.fonts.Mapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
- * Demo of PDF output.
+ * Demo of PDF output, using the Docx4J facade,
+ * ie Docx4J.toPDF.
  * 
  * PDF output is via XSL FO.
  * First XSL FO is created, then FOP
@@ -135,7 +136,7 @@ public class ConvertOutViaFacade {
 //			foSettings.getFeatures().remove(ConversionFeatures.PP_COMMON_CONTAINERIZATION);
 //			System.out.println(foSettings.getFeatures());
 //			
-//			Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+//			Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
     }
     
 	protected static void getInputFilePath(String[] args) throws IllegalArgumentException {

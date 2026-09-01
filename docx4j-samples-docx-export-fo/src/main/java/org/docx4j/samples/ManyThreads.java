@@ -202,8 +202,8 @@ public class ManyThreads {
         try (OutputStream os = new FileOutputStream(outputfilepath)) {
         	
             // Instantiate your chosen exporter manually
-            Exporter<FOSettings> exporter = FOExporterXslt.getInstance();     // XSLT: Fully featured
-//          Exporter<FOSettings> exporter = FOExporterVisitor.getInstance();  // Non XSLT: Faster, but fewer features
+//          Exporter<FOSettings> exporter = FOExporterXslt.getInstance();     // XSLT: Fully featured, old default
+            Exporter<FOSettings> exporter = FOExporterVisitor.getInstance();  // Non XSLT: Faster, and fully featured since 17.0.4
             
             // Execute programmatic conversion directly to the target outputstream
             exporter.export(foSettings, os);

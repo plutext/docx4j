@@ -632,9 +632,7 @@ public class TocGenerator {
     }
     
     /**
-     * Whether to use XSLT to generate page numbers in the TOC via FOP.  Of the three methods available,
-     * XSLT (the default) is 2nd most featureful, but slowest.  From v3.3.0, DocumentServices is 
-     * recommended as quickest and most accurate, and will be used unless docx4j-export-fo is present.
+     * Whether to use XSLT to generate page numbers in the TOC via FOP. 
      * 
      * @param useXSLT
      */
@@ -642,7 +640,7 @@ public class TocGenerator {
     	foViaXSLT = useXSLT;
     }
     
-    private boolean foViaXSLT = true;
+    private boolean foViaXSLT = false; // default to nonXSLT since 17.0.4
     
 
 	/**
@@ -791,7 +789,7 @@ public class TocGenerator {
         	if (foViaXSLT) {        		
         		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
         	} else {
-        		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);        		
+        		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL); // best since 17.0.4       		
         	}
             
             long end = System.currentTimeMillis();
