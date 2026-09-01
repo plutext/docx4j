@@ -217,6 +217,12 @@ module's own test tree), plus docx-side assertions for the import mapping
      definition created if a template lacks it), header row gets
      `w:tblHeader` + bold runs, per-column alignment from the delimiter row
      as `w:jc` on cell paragraphs (LEFT omitted).
+     AMENDED 2026-09-01 (MCP-session hand-off): gridCols now carry explicit
+     equal widths (the section's writable width split per column) — the
+     original widthless `<w:gridCol/>` was legal and fine in Word, but
+     NPE'd `AbstractTableWriter.createColumns` so both PDF pathways and
+     HTML silently dropped every imported table; the writer was hardened
+     against missing widths too.
    - **Footnotes**: real footnotes — `ImportFootnotes` lazily initialises
      the footnotes part (separator/continuationSeparator) + settings
      `w:footnotePr` (FootnoteAdd-sample idiom); definitions realised on

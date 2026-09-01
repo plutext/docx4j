@@ -55,12 +55,25 @@ Equations outside the subset never disappear: they fall back whole to their lite
 are reported via an issue listener.  See docs/developer/change-requests/CR-markdown-math.md
 - export: effective-rPr baselines are now cached per paragraph style and runs without their own
 rPr skip property resolution entirely (a 1MB document exports ~2.5x faster)
+- imported tables now carry explicit equal gridCol widths (split of the section's writable
+width), so they render via the PDF/HTML pathways (see the AbstractTableWriter fix)
 
 docx4j-bundle:
 - the shaded ("fat") jar now actually contains the JAXB runtime: docx4j-JAXB-ReferenceImpl was
 declared test scope, so the fat jar carried the jakarta.xml.bind API but no implementation, and
 standalone use failed (eg "Couldn't get [Content_Types].xml from ZipFile"); stray module-info
 descriptors are now also excluded from the shade
+
+PDF/HTML output, tables:
+- a w:gridCol with no w:w (legal; Word tolerates it) NPE'd AbstractTableWriter.createColumns,
+so the whole table was silently dropped ("Cannot convert org.docx4j.wml.Tbl") by both PDF
+pathways and HTML; a missing width is now treated like the no-tblGrid case
+
+Fields:
+- DateFormatInferencer now accepts ISO 8601 input (yyyy-MM-dd, yyyy-MM-dd HH:mm:ss, and the
+'T' date-time forms) in both locale modes — what programmatic callers send first
+- a \@ date switch on a value in no recognised date format NPE'd in DateFormat.format; per the
+spec the switch now has no effect (value passes through unchanged, with a warning)
 
 RelationshipsPart:
 - adding n relationships was O(n^2) (two full scans of the existing rels per add, in getNextId

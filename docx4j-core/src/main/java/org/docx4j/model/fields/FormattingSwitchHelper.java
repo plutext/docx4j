@@ -277,7 +277,16 @@ public class FormattingSwitchHelper {
 					// For =, today's date is used!
 					date = new Date();
 				}
-				value = formatDate(model, dtFormat, date, lang);
+				if (date == null) {
+					// unrecognised format: per the specification (as for the
+					// not-a-date case below), the switch has no effect; see
+					// DateFormatInferencer for the recognised formats.
+					// Previously this NPE'd in DateFormat.format.
+					log.warn("Field value '" + value
+							+ "' is not in a date format DateFormatInferencer recognises; \\@ switch ignored");
+				} else {
+					value = formatDate(model, dtFormat, date, lang);
+				}
 			}
 			
 		} catch (FieldResultIsNotADateOrTimeException e) {

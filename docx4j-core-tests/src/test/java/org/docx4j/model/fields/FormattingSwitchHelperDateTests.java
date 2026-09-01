@@ -77,6 +77,29 @@ public class FormattingSwitchHelperDateTests {
 	   SwitchTestData data = new SwitchTestData("\\@ yyyy-MM-dd", "4/15/2013");
 	   doit("MERGEFIELD", data, "2013-04-15");
 	   doit("DOCPROPERTY", data, "2013-04-15");
+	}
+
+	@Test
+	public void testDateIsoInput() throws TransformerException, Docx4JException {
+	   // ISO 8601 input is what programmatic callers send first
+	   SwitchTestData data = new SwitchTestData("\\@ \"MMMM d, yyyy\"", "2013-04-15");
+	   doit("MERGEFIELD", data, "April 15, 2013");
+	   doit("DOCPROPERTY", data, "April 15, 2013");
+	}
+
+	@Test
+	public void testDateIsoDateTimeInput() throws TransformerException, Docx4JException {
+	   SwitchTestData data = new SwitchTestData("\\@ \"MMMM d, yyyy HH:mm\"", "2013-04-15T09:30:00");
+	   doit("MERGEFIELD", data, "April 15, 2013 09:30");
+	}
+
+	@Test
+	public void testDateUnparseableDoesNotThrow() throws TransformerException, Docx4JException {
+	   // an unrecognised value: per the spec the \@ switch has no effect
+	   // (this used to NPE in DateFormat.format)
+	   SwitchTestData data = new SwitchTestData("\\@ \"MMMM d, yyyy\"", "not a date");
+	   doit("MERGEFIELD", data, "not a date");
+	   doit("DOCPROPERTY", data, "not a date");
 	} 
 	 
 	@Test
