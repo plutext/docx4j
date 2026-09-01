@@ -364,38 +364,63 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	private int nextId = 1;
 
 	public String getNextId() {
-		
-		// Relationship part always 
-		// determines the Relationship Id		
+
+		// Relationship part always
+		// determines the Relationship Id
 		String id = "rId" + nextId;
-		
+
     	do {
     		id = "rId" + nextId;
     		nextId++;
-    		
+
     	} while (isRelIdOccupied(id));
-		
+
 		return id;
-		
+
 	}
-	
-	public boolean isRelIdOccupied(String relId) {
-		
-		for (Relationship existing : jaxbElement.getRelationship() ) {			
-			if (existing.getId().equals(relId) ) {
-				log.debug(relId + " already in use, with target " + existing.getTarget() );
-				return true;
-			}			
+
+	/* Occupied-id lookups used to scan the whole relationship list, which
+	 * made adding n relationships O(n^2) (this part's addRelationship scans
+	 * twice per add) - noticeable from a few thousand rels, eg a
+	 * hyperlink-dense import.  So maintain a set of the occupied ids,
+	 * guarded by the identity and size of the live relationship list: a
+	 * replaced jaxbElement (setRelationships/unmarshal) or a direct
+	 * list-level add/remove is detected and triggers a rebuild.  The one
+	 * mutation the guard can't see is editing an EXISTING rel's id in
+	 * place; code which renumbers ids that way should already be calling
+	 * resetIdAllocator(), which also invalidates this cache. */
+	private java.util.Set<String> occupiedRelIds;
+	private List<Relationship> occupiedRelIdsSource;
+	private int occupiedRelIdsSize;
+
+	private java.util.Set<String> occupiedRelIds() {
+		List<Relationship> rels = jaxbElement.getRelationship();
+		if (occupiedRelIds == null || occupiedRelIdsSource != rels
+				|| occupiedRelIdsSize != rels.size()) {
+			occupiedRelIds = new java.util.HashSet<>(Math.max(16, rels.size() * 2));
+			for (Relationship existing : rels) {
+				occupiedRelIds.add(existing.getId());
+			}
+			occupiedRelIdsSource = rels;
+			occupiedRelIdsSize = rels.size();
 		}
-		return false;
+		return occupiedRelIds;
+	}
+
+	public boolean isRelIdOccupied(String relId) {
+
+		return occupiedRelIds().contains(relId);
 	}
 	
 	/**
 	 * Assumes relationship ids are all of the form
 	 * 'rIdn' where n is a positive integer.
+	 * Also call this if you have edited the ids of EXISTING relationship
+	 * objects in place (it invalidates the occupied-id cache).
 	 */
 	public void resetIdAllocator() {
-		
+
+		occupiedRelIds = null;
 		int highestId = 0;
 		for (Relationship rel : jaxbElement.getRelationship() ) {
 
@@ -708,8 +733,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 					"Refusing to add another rel with id " + relId 
 					+ ". Target is " + rel.getTarget() );
 		}
+		java.util.Set<String> occupied = occupiedRelIds(); // build/verify BEFORE the add
 		jaxbElement.getRelationship().add(rel);
 		rel.setParent(jaxbElement);
+		occupied.add(relId);
+		occupiedRelIdsSize++;
 		return true;
 	}
 	
