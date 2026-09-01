@@ -172,6 +172,48 @@ public class LatexToOmml {
 			return List.of(parseDelimited(ctx));
 		case "right":
 			throw err("\\right without \\left");
+		case "begin": {
+			String environment = readRawGroup();
+			switch (environment) {
+			case "aligned":
+			case "align":
+			case "align*":
+				return List.of(parseEqArr(ctx, environment));
+			default:
+				throw err("unsupported environment \\begin{" + environment + "}");
+			}
+		}
+		case "end":
+			throw err("\\end without \\begin");
+		case "boxed": {
+			org.docx4j.math.CTBorderBox borderBox = factory.createCTBorderBox();
+			borderBox.setE(parseArg(ctx));
+			return List.of(factory.createCTOMathArgBorderBox(borderBox));
+		}
+		case "hat":
+			return List.of(accent("\u0302", ctx));
+		case "tilde":
+			return List.of(accent("\u0303", ctx));
+		case "bar":
+			return List.of(accent("\u0305", ctx));
+		case "vec":
+			return List.of(accent("\u20D7", ctx));
+		case "dot":
+			return List.of(accent("\u0307", ctx));
+		case "ddot":
+			return List.of(accent("\u0308", ctx));
+		case "check":
+			return List.of(accent("\u030C", ctx));
+		case "breve":
+			return List.of(accent("\u0306", ctx));
+		case "acute":
+			return List.of(accent("\u0301", ctx));
+		case "grave":
+			return List.of(accent("\u0300", ctx));
+		case "overline":
+			return List.of(bar(org.docx4j.math.STTopBot.TOP, ctx));
+		case "underline":
+			return List.of(bar(org.docx4j.math.STTopBot.BOT, ctx));
 		case "text":
 			return List.of(textRun(readRawGroup(), true, ctx));
 		case "mathrm":
@@ -431,6 +473,96 @@ public class LatexToOmml {
 		// empty and following content simply flows after the operator
 		nary.setE(factory.createCTOMathArg());
 		return factory.createCTOMathArgNary(nary);
+	}
+
+	// ---------------------------------------------------------------- structures
+
+	private Object accent(String combiningChar, Ctx ctx) throws LatexMathException {
+		org.docx4j.math.CTAcc acc = factory.createCTAcc();
+		org.docx4j.math.CTAccPr accPr = factory.createCTAccPr();
+		org.docx4j.math.CTChar chr = factory.createCTChar();
+		chr.setVal(combiningChar);
+		accPr.setChr(chr);
+		acc.setAccPr(accPr);
+		acc.setE(parseArg(ctx));
+		return factory.createCTOMathArgAcc(acc);
+	}
+
+	private Object bar(org.docx4j.math.STTopBot position, Ctx ctx) throws LatexMathException {
+		org.docx4j.math.CTBar bar = factory.createCTBar();
+		org.docx4j.math.CTBarPr barPr = factory.createCTBarPr();
+		org.docx4j.math.CTTopBot pos = factory.createCTTopBot();
+		pos.setVal(position);
+		barPr.setPos(pos);
+		bar.setBarPr(barPr);
+		bar.setE(parseArg(ctx));
+		return factory.createCTOMathArgBar(bar);
+	}
+
+	/**
+	 * {@code \begin{aligned} rows \\ separated \end{aligned}} → m:eqArr.
+	 * '&' alignment marks are kept as literal characters in the row text —
+	 * which is how Word's linear format stores alignment in an equation
+	 * array.
+	 */
+	private Object parseEqArr(Ctx outerCtx, String environment) throws LatexMathException {
+
+		Ctx ctx = outerCtx.copy();
+		org.docx4j.math.CTEqArr eqArr = factory.createCTEqArr();
+		List<List<Object>> atoms = new ArrayList<>();
+
+		while (true) {
+			skipWhitespace();
+			if (pos >= src.length()) {
+				throw err("missing \\end{" + environment + "}");
+			}
+			char c = src.charAt(pos);
+			if (c == '\\') {
+				int saved = pos;
+				String command = readCommandName();
+				if ("\\".equals(command)) {
+					eqArr.getE().add(argOf(mergeAdjacentRuns(flatten(atoms))));
+					atoms = new ArrayList<>();
+					continue;
+				}
+				if ("end".equals(command)) {
+					String closed = readRawGroup();
+					if (!environment.equals(closed)) {
+						throw err("\\begin{" + environment + "} closed by \\end{" + closed + "}");
+					}
+					break;
+				}
+				pos = saved; // an ordinary command: let parseAtom re-read it
+				List<Object> atom = parseAtom(ctx);
+				if (atom != null) {
+					atoms.add(atom);
+				}
+				continue;
+			}
+			if (c == '_' || c == '^') {
+				List<Object> base = atoms.isEmpty() ? new ArrayList<>()
+						: atoms.remove(atoms.size() - 1);
+				atoms.add(List.of(parseScripts(argOf(base), ctx)));
+				continue;
+			}
+			List<Object> atom = parseAtom(ctx);
+			if (atom != null) {
+				atoms.add(atom);
+			}
+		}
+
+		if (!atoms.isEmpty() || eqArr.getE().isEmpty()) {
+			eqArr.getE().add(argOf(mergeAdjacentRuns(flatten(atoms))));
+		}
+		return factory.createCTOMathArgEqArr(eqArr);
+	}
+
+	private static List<Object> flatten(List<List<Object>> atoms) {
+		List<Object> out = new ArrayList<>();
+		for (List<Object> atom : atoms) {
+			out.addAll(atom);
+		}
+		return out;
 	}
 
 	// ---------------------------------------------------------------- \left..\right

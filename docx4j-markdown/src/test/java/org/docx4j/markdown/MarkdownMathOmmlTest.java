@@ -152,10 +152,10 @@ public class MarkdownMathOmmlTest {
 	@Test
 	public void unsupportedCommandFailsWhole() throws Exception {
 		try {
-			omml("\\boxed{x}"); // phase c
+			omml("\\xcancel{x}"); // cancel package: outside the subset
 			fail("expected LatexMathException");
 		} catch (LatexMathException e) {
-			assertTrue(e.getMessage().contains("\\boxed"));
+			assertTrue(e.getMessage().contains("\\xcancel"));
 		}
 		try {
 			omml("\\frac{a}"); // malformed

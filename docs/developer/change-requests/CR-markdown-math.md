@@ -1,6 +1,6 @@
 # CR: Markdown math (LaTeX equations → native OMML, and back)
 
-Status: IN PROGRESS (2026-09-01) — phases a-b complete
+Status: IN PROGRESS (2026-09-01) — phases a-c complete
 Scope: extend **docx4j-markdown** with equation support — `$...$` / `$$...$$`
 (and `\(...\)` / `\[...\]`) recognized at parse time, and a **deliberately
 restricted LaTeX subset** translated to Word's native OMML
@@ -189,6 +189,23 @@ b. **Core translator** (M): `LatexToOmml` — runs/symbols, `\frac`, sub/sup,
      eyeballing in Word (nary limits, stretchy delimiters).
 c. **Structures** (S): `aligned`→`m:eqArr`, `\boxed`→`m:borderBox`,
    accents→`m:acc`, `\overline`→`m:bar`.
+
+   **DONE 2026-09-01.**
+   - `\begin{aligned}` (also `align`/`align*`) → `m:eqArr`, rows split on
+     `\\`; a trailing `\\` before `\end` adds no empty row; env names must
+     match.  **`&` alignment marks are kept as literal `&` characters in
+     the row runs** — Word's linear-format convention for equation-array
+     alignment; flagged for the Word eyeball QA (if Word shows literal
+     ampersands instead of aligning, drop them at parse time instead).
+   - `\boxed{...}` → `m:borderBox` — the motivating
+     atmosphere→site-wind→rotor-wind example now imports as-is, no
+     normalisation pass needed.
+   - Accents via combining chars in `m:accPr/m:chr`: `\hat` U+0302,
+     `\tilde` U+0303, `\bar` U+0305, `\vec` U+20D7, `\dot`/`\ddot`,
+     `\check`, `\breve`, `\acute`, `\grave`; `\overline`/`\underline` →
+     `m:bar` pos top/bot.
+   - 10 tests.  NB for future work: `\underline` etc in a Java *comment*
+     is an illegal unicode escape (`\u`+non-hex) — cost one compile cycle.
 d. **Export** (M): OMML→LaTeX reverse for the subset; math joins the golden
    round-trip suite (normalized-form inputs: the translator regenerates
    `\frac{1}{2}`, not `\frac12`).
