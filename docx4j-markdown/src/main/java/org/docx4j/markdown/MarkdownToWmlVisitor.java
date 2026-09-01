@@ -632,14 +632,45 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 			}
 		}
 
+		// equal column widths: Word would tolerate widthless gridCols, but
+		// the FO/HTML table writers expect w:w (and Word autofits anyway)
 		TblGrid tblGrid = factory.createTblGrid();
+		int columnWidth = (cols > 0) ? writableWidthTwips() / cols : 0;
 		for (int i = 0; i < cols; i++) {
 			TblGridCol gridCol = factory.createTblGridCol();
+			gridCol.setW(BigInteger.valueOf(columnWidth));
 			tblGrid.getGridCol().add(gridCol);
 		}
 		tbl.setTblGrid(tblGrid);
 
 		results.add(tbl);
+	}
+
+	/** The section's page width minus margins; A4 with 1in margins if unstated. */
+	private int writableWidthTwips() {
+		try {
+			org.docx4j.wml.SectPr sectPr = mdp.getContents().getBody().getSectPr();
+			if (sectPr != null && sectPr.getPgSz() != null && sectPr.getPgSz().getW() != null) {
+				long width = sectPr.getPgSz().getW().longValue();
+				long left = 1440;
+				long right = 1440;
+				if (sectPr.getPgMar() != null) {
+					if (sectPr.getPgMar().getLeft() != null) {
+						left = sectPr.getPgMar().getLeft().longValue();
+					}
+					if (sectPr.getPgMar().getRight() != null) {
+						right = sectPr.getPgMar().getRight().longValue();
+					}
+				}
+				long writable = width - left - right;
+				if (writable > 0) {
+					return (int) writable;
+				}
+			}
+		} catch (Docx4JException e) {
+			log.warn("Could not read section properties for table width", e);
+		}
+		return 9026; // A4 minus 1in margins
 	}
 
 	private Tc tableCell(TableCell cell, boolean header) {

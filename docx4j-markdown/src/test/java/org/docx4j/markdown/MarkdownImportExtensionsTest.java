@@ -106,6 +106,51 @@ public class MarkdownImportExtensionsTest {
 	}
 
 	@Test
+	public void tableGridColumnsHaveWidths() throws Exception {
+		// Word tolerates widthless w:gridCol, but the FO/HTML table writers
+		// NPE'd on it and both PDF pathways (and HTML) silently dropped the
+		// table — so emit an equal split of the section's writable width
+		WordprocessingMLPackage pkg = convert(TABLE_MD);
+		Tbl tbl = (Tbl) content(pkg).get(0);
+		for (org.docx4j.wml.TblGridCol col : tbl.getTblGrid().getGridCol()) {
+			assertNotNull(col.getW());
+		}
+		assertEquals(9026 / 2, // A4 with 1in margins, 2 columns
+				tbl.getTblGrid().getGridCol().get(0).getW().intValue());
+	}
+
+	@Test
+	public void tableSurvivesHtmlExport() throws Exception {
+		WordprocessingMLPackage pkg = convert(TABLE_MD);
+		String html = toHtml(pkg);
+		assertTrue(html.contains("<table"));
+		assertTrue(html.contains("ant"));
+		assertTrue(html.contains("22"));
+	}
+
+	@Test
+	public void widthlessGridColsToleratedByExport() throws Exception {
+		// other producers (and hand-built docs) may omit w:w: the table
+		// writers must not drop the table over it
+		WordprocessingMLPackage pkg = convert(TABLE_MD);
+		Tbl tbl = (Tbl) content(pkg).get(0);
+		for (org.docx4j.wml.TblGridCol col : tbl.getTblGrid().getGridCol()) {
+			col.setW(null);
+		}
+		String html = toHtml(pkg);
+		assertTrue(html.contains("<table"));
+		assertTrue(html.contains("ant"));
+	}
+
+	private static String toHtml(WordprocessingMLPackage pkg) throws Exception {
+		org.docx4j.convert.out.HTMLSettings settings = org.docx4j.Docx4J.createHTMLSettings();
+		settings.setOpcPackage(pkg);
+		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+		org.docx4j.Docx4J.toHTML(settings, out, org.docx4j.Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+		return out.toString("UTF-8");
+	}
+
+	@Test
 	public void extensionsCanBeDisabled() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		new MarkdownImporter(new MarkdownImportOptions()

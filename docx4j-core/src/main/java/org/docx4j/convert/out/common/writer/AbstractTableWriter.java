@@ -335,7 +335,11 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     	if ((gridCols != null) && (!gridCols.isEmpty())) {
 	    	for(int i=0; i<gridCols.size(); i++) {
 		        column = createNode(doc, columnGroup, NODE_TABLE_COLUMN);
-	    		applyColumnCustomAttributes(context, table, transformState, column, i, gridCols.get(i).getW().intValue());
+		        // w:gridCol/@w:w is optional (Word tolerates its absence);
+		        // -1 means no width, as in the no-tblGrid branch below
+		        java.math.BigInteger w = gridCols.get(i).getW();
+	    		applyColumnCustomAttributes(context, table, transformState, column, i,
+	    				(w == null) ? -1 : w.intValue());
 	    	}
     	}
     	else {
