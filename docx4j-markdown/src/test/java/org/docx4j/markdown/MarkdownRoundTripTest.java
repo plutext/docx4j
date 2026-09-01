@@ -153,7 +153,13 @@ public class MarkdownRoundTripTest {
 	@Test
 	public void displayMath() throws Exception {
 		assertRoundTrip("$$\nU_{\\mathrm{REWS}}="
-				+ "{\\left(\\frac{\\sum_{i}A_{i}U_{i}^{3}}{\\sum_{i}A_{i}}\\right)}^{1/3}\n$$\n");
+				+ "(\\frac{\\sum_{i}A_{i}U_{i}^{3}}{\\sum_{i}A_{i}})^{1/3}\n$$\n");
+	}
+
+	@Test
+	public void displayFarmSum() throws Exception {
+		// the pandoc-comparison equation: operand bound into the sum, real parens
+		assertRoundTrip("$$\nP_{\\mathrm{farm}}=\\sum_{i}P(U_{i})\n$$\n");
 	}
 
 	@Test

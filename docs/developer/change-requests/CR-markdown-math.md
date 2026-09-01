@@ -263,6 +263,30 @@ Every failing equation from that import is now a verbatim test corpus
 (`MarkdownMathCorpusTest`, 25 equations, converts with zero issues), plus
 structure assertions and 10 new round-trip fixed points.  125 tests total.
 
+## 3c. Pandoc parity (2026-09-01)
+
+A side-by-side docx (our import vs pandoc's, same two course equations,
+round-tripped through Word) showed two structural things texmath does
+better; both adopted:
+
+- **The n-ary operand goes inside `m:e`**: `\sum_i A_iU_i^3` binds `A_i`
+  into the operator's base (one following atom, with its scripts; further
+  content flows after; a following operator/relation/punctuation atom is
+  not swallowed — letter/digit runs and structures are).  Word then treats
+  operator+operand as a unit for spacing/stretching/line-breaking.
+  Previously our `m:e` was empty and everything trailed.
+- **Balanced bare `(...)` becomes a real `m:d`** (stretchy delimiters —
+  `P(U_i)` renders as function application, and `(...)^{2}` scripts the
+  whole group); unbalanced parens stay literal characters (parse is tried
+  and reverted).  Export normalization changed accordingly: a plain-paren
+  `m:d` re-exports as bare `(...)` (so `\left(x+y\right)` normalizes to
+  `(x+y)`); brackets/others keep `\left..\right`.
+
+NOT adopted from pandoc's output (no rendering difference, deliberately):
+explicit `m:jc` center on oMathPara (it's the default), `m:sty` "p" on
+operators/digits (Word only italicizes letters), and a zero-width-space
+run inside hidden nary limits (our `supHide` + empty element is cleaner).
+
 ## 4. Risks / notes
 
 - **Subset creep** is the real risk (texmath's failing was pretending to

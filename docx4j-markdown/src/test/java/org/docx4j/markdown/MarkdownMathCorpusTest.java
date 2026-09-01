@@ -106,6 +106,41 @@ public class MarkdownMathCorpusTest {
 		assertTrue(omml("U_{\\min}^C\n\\ \\text{or}\\ \nU_{\\max}^C").contains(">or<"));
 	}
 
+	// ------------------------------------------------------- pandoc parity
+
+	@Test
+	public void naryBindsItsOperand() throws Exception {
+		// the following atom (with its scripts) goes INSIDE the operator's
+		// m:e — Word then treats operator+operand as a unit (as pandoc does);
+		// further content flows after
+		String xml = omml("\\sum_i A_i U_i^3");
+		assertTrue(xml.contains("<m:e><m:sSub>"));
+		assertTrue(xml.indexOf("<m:sSubSup>") > xml.indexOf("</m:nary>"));
+
+		// but an operator/relation after the sum is not swallowed
+		String bare = omml("\\sum_i = 1");
+		assertTrue(bare.contains("<m:e/>"));
+	}
+
+	@Test
+	public void bareParensBecomeRealDelimiters() throws Exception {
+		String xml = omml("P(U_i)");
+		assertTrue(xml.contains("<m:d>"));
+		assertTrue(!xml.contains(">(<"));
+		// and scripts bind to the whole group
+		assertTrue(omml("(x+y)^2").contains("<m:sSup><m:sSupPr>")
+				|| omml("(x+y)^2").contains("<m:sSup>"));
+	}
+
+	@Test
+	public void unbalancedParenStaysLiteral() throws Exception {
+		String xml = omml("f(x");
+		assertTrue(!xml.contains("<m:d>"));
+		assertTrue(xml.contains("f(x"));
+		// a bare closing paren too
+		assertTrue(omml("[0,1)").contains("[0,1)"));
+	}
+
 	// ------------------------------------------------------------- round trips
 
 	@Test

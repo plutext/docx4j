@@ -344,6 +344,14 @@ public class OmmlToLatex {
 			}
 		}
 
+		// plain round parens re-export bare (the importer makes m:d of those)
+		if ("(".equals(beg) && ")".equals(end) && sep == null && d.getE().size() == 1) {
+			builder.raw("(");
+			elements(d.getE().get(0).getEGOMathElements(), builder, false);
+			builder.raw(")");
+			return;
+		}
+
 		builder.command("left");
 		builder.raw(delimiterFor(beg));
 		boolean first = true;
@@ -453,6 +461,11 @@ public class OmmlToLatex {
 		if (arg != null && arg.getEGOMathElements().size() == 1) {
 			Object o = arg.getEGOMathElements().get(0);
 			Object u = (o instanceof JAXBElement) ? ((JAXBElement<?>) o).getValue() : o;
+			if (u instanceof CTD) {
+				// scripts bind to a (...) group in LaTeX too: no braces needed
+				elements(arg.getEGOMathElements(), builder, false);
+				return;
+			}
 			if (u instanceof CTR) {
 				CTR r = (CTR) u;
 				String text = null;

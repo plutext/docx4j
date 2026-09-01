@@ -32,8 +32,12 @@ public class MarkdownMathExportTest {
 			"\\sqrt{2}",
 			"\\sqrt[3]{x+y}",
 			"\\sum_{i}A_{i}",
+			"\\sum_{i}A_{i}U_{i}^{3}", // A_i binds into the operator's base, U_i^3 flows after
+			"\\sum_{i}P(U_{i})",
 			"\\int_{0}^{1}x",
-			"\\left(x+y\\right)",
+			"(x+y)",
+			"P(U_{i})",
+			"\\left[x+y\\right]",
 			"\\text{site wind}",
 			"U_{\\mathrm{REWS}}",
 			"\\sin x",
@@ -41,7 +45,7 @@ public class MarkdownMathExportTest {
 			"\\overline{AB}",
 			"\\boxed{\\text{a}\\to\\text{b}}",
 			"\\begin{aligned}x&=1 \\\\ y&=2\\end{aligned}",
-			"{\\left(\\frac{\\sum_{i}A_{i}U_{i}^{3}}{\\sum_{i}A_{i}}\\right)}^{1/3}",
+			"(\\frac{\\sum_{i}A_{i}U_{i}^{3}}{\\sum_{i}A_{i}})^{1/3}",
 		};
 		for (String latex : fixedPoints) {
 			assertEquals(latex, latexTrip(latex));
@@ -56,6 +60,8 @@ public class MarkdownMathExportTest {
 				latexTrip("P = \\frac12 \\rho A U^3"));
 		assertEquals("x\\le y", latexTrip("x \\leq y"));
 		assertEquals("a\\to b", latexTrip("a \\rightarrow b"));
+		// plain \left( \right) normalizes to bare parens (both are m:d)
+		assertEquals("(x+y)", latexTrip("\\left(x+y\\right)"));
 	}
 
 	@Test

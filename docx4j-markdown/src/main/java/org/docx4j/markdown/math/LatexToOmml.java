@@ -130,6 +130,29 @@ public class LatexToOmml {
 			pos++;
 			return parseSequence(ctx, '}');
 		}
+		if (c == '(') {
+			// a balanced bare (...) becomes a real m:d — stretchy delimiters,
+			// and scripts bind to the whole group; unbalanced stays literal
+			int saved = pos;
+			try {
+				pos++;
+				List<Object> content = parseSequence(ctx, ')');
+				CTD d = factory.createCTD();
+				org.docx4j.math.CTDPr dPr = factory.createCTDPr();
+				org.docx4j.math.CTChar begChr = factory.createCTChar();
+				begChr.setVal("(");
+				dPr.setBegChr(begChr);
+				org.docx4j.math.CTChar endChr = factory.createCTChar();
+				endChr.setVal(")");
+				dPr.setEndChr(endChr);
+				d.setDPr(dPr);
+				d.getE().add(argOf(content));
+				return List.of(factory.createCTOMathArgD(d));
+			} catch (LatexMathException e) {
+				pos = saved + 1;
+				return List.of(run("(", ctx));
+			}
+		}
 		if (c == '\\') {
 			return parseCommand(ctx);
 		}
@@ -523,10 +546,49 @@ public class LatexToOmml {
 		}
 		nary.setSub(sub);
 		nary.setSup(sup);
-		// like texmath, the operand is not grouped in LaTeX, so the base is
-		// empty and following content simply flows after the operator
-		nary.setE(factory.createCTOMathArg());
+		// LaTeX doesn't group the operand, so take the one following atom
+		// (with its scripts) as the operator's base — as texmath does; Word
+		// then treats operator+operand as a unit (spacing, line-breaking).
+		// A following operator/relation/punctuation atom is left alone.
+		nary.setE(consumeNaryOperand(ctx));
 		return factory.createCTOMathArgNary(nary);
+	}
+
+	private CTOMathArg consumeNaryOperand(Ctx ctx) throws LatexMathException {
+		skipWhitespace();
+		int saved = pos;
+		if (pos < src.length()) {
+			char c = src.charAt(pos);
+			if (c != '}' && c != ')' && c != ']' && c != '&' && c != '_' && c != '^') {
+				List<Object> atom = parseAtom(ctx);
+				if (atom != null) {
+					// the atom's own scripts belong to it, not to the nary
+					while (pos < src.length()
+							&& (src.charAt(pos) == '_' || src.charAt(pos) == '^')) {
+						atom = List.of(parseScripts(argOf(atom), ctx));
+					}
+					if (isEligibleOperand(atom)) {
+						return argOf(atom);
+					}
+				}
+				pos = saved;
+			}
+		}
+		return factory.createCTOMathArg();
+	}
+
+	/** Structures and letter/digit runs bind to the operator; operators, relations and punctuation don't. */
+	private static boolean isEligibleOperand(List<Object> atom) {
+		if (atom.size() != 1) {
+			return true; // a multi-element group
+		}
+		CTR run = asRun(atom.get(0));
+		if (run == null) {
+			return true; // frac, sqrt, delimiters, a scripted atom, ...
+		}
+		CTText text = textOf(run);
+		return text != null && text.getValue() != null && !text.getValue().isEmpty()
+				&& text.getValue().chars().allMatch(Character::isLetterOrDigit);
 	}
 
 	// ---------------------------------------------------------------- structures
