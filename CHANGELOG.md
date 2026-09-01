@@ -74,6 +74,10 @@ PDF/HTML output, tables:
 - a w:gridCol with no w:w (legal; Word tolerates it) NPE'd AbstractTableWriter.createColumns,
 so the whole table was silently dropped ("Cannot convert org.docx4j.wml.Tbl") by both PDF
 pathways and HTML; a missing width is now treated like the no-tblGrid case
+- ParagraphStylesInTableFix no longer clobbers the document's overrideTableStyleFontSizeAnd
+Justification compat setting before reading it: it captured the live CTCompatSetting, then wrote
+"1" into that same object, so a document that set the flag to 0 lost table-style font-size/
+justification primacy in tables (eg a 12pt Normal wrongly beat a table style's size)
 
 Fields:
 - DateFormatInferencer now accepts ISO 8601 input (yyyy-MM-dd, yyyy-MM-dd HH:mm:ss, and the

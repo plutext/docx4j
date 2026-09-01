@@ -118,17 +118,28 @@ public class ParagraphStylesInTableFix {
 				// since the default is what we want in this case
 				
 			} else {
-				styleRenamer.overrideTableStyleFontSizeAndJustification 
+				CTCompatSetting original
 					= dsp.getWordCompatSetting("overrideTableStyleFontSizeAndJustification");
-				if (styleRenamer.overrideTableStyleFontSizeAndJustification==null) {
+				if (original==null) {
 					styleRenamer.overrideTableStyleFontSizeAndJustification=defaultSetting;
 					// TODO,consider making the function return the default value?
+				} else {
+					// Snapshot the incoming value.  getWordCompatSetting returns the live
+					// CTCompatSetting from the settings part, and the setWordCompatSetting
+					// call below mutates that same object in place (setVal), so holding the
+					// reference would let our own write clobber the value the StyleRenamer
+					// needs to read.
+					CTCompatSetting snapshot = Context.getWmlObjectFactory().createCTCompatSetting();
+					snapshot.setUri(original.getUri());
+					snapshot.setName(original.getName());
+					snapshot.setVal(original.getVal());
+					styleRenamer.overrideTableStyleFontSizeAndJustification = snapshot;
 				}
 			}
 
 			// For our output docx, we always want:-
 			dsp.setWordCompatSetting("overrideTableStyleFontSizeAndJustification", "1");
-			// since the p styles we make/use take the table style into account 
+			// since the p styles we make/use take the table style into account
 			
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
@@ -526,13 +537,13 @@ public class ParagraphStylesInTableFix {
 					
 					
 				} else if (tableStyleFontSize!=null) {
-					
+
 					// the exception
 					if (effectiveFontSize!=null
 							&& effectiveFontSize.getVal().intValue()==24 )
 					newStyle.getRPr().setSz(tableStyleFontSize); //use this!
 					// What about SzCs?
-					
+
 				} else {
 					
 					// the table style doesn't set it
@@ -574,7 +585,7 @@ public class ParagraphStylesInTableFix {
 			
 			newStyle.setStyleId(resultStyleID);
 //			newStyles.getStyle().add(newStyle);
-			cellPStyles.add(resultStyleID); 
+			cellPStyles.add(resultStyleID);
 			
 			// required for PDF (but not XHTML) output
 			propertyResolver.activateStyle(newStyle);
