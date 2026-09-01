@@ -42,6 +42,12 @@ pathway (hyperlink content strips w:dataBinding/w:text for Word 2007, restored p
 w:showingPlcHdr for RemovalHandler, w:placeholder stripped), and the XPath result cache is now
 used by all implementations; see docs/developer/change-requests/CR-binding-traverser-parity.md
 
+Security:
+- OpenDoPEHandler now rejects a cyclic or dangling OpenDoPE condition graph (a <conditionref>
+referencing its own condition directly or transitively) with a Docx4JException, instead of
+recursing until a StackOverflowError killed the binding thread; DoS via a crafted .docx bound by
+Docx4J.bind() (GHSA-qw8x-rxfh-9qqq)
+
 New module docx4j-markdown:
 - markdown import (markdown->docx: real heading/quote/code styles, real numbering, GFM tables,
 real footnotes, task lists, YAML front matter; no HTML detour) and export (docx->markdown,

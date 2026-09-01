@@ -66,7 +66,12 @@ import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
+import org.opendope.conditions.And;
 import org.opendope.conditions.Condition;
+import org.opendope.conditions.Conditionref;
+import org.opendope.conditions.Evaluable;
+import org.opendope.conditions.Not;
+import org.opendope.conditions.Or;
 import org.opendope.xpaths.Xpaths;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
@@ -125,6 +130,13 @@ public class OpenDoPEHandler {
 					log.error("Duplicates in Conditions part: " + c.getId());
 				}
 			}
+
+			// A <conditionref> is a plain attribute (not an IDREF), so JAXB does no
+			// cycle resolution.  Two conditions referencing each other would drive
+			// Condition/And/Or/Not/Conditionref.evaluate into unbounded recursion and
+			// a StackOverflowError, killing the bind thread (GHSA-qw8x-rxfh-9qqq).
+			// Reject a cyclic (or dangling) condition graph up front.
+			checkConditionGraphAcyclic(conditionsMap);
 		}
 		
 		if (wordMLPackage.getMainDocumentPart().getComponentsPart() != null) {
@@ -189,6 +201,70 @@ public class OpenDoPEHandler {
 		shallowTraversor.wordMLPackage = wordMLPackage;
 		
 		bookmarkRenumber = new BookmarkRenumber(wordMLPackage);
+	}
+
+	/**
+	 * Verify that following <conditionref> edges through the condition graph never
+	 * revisits a condition (a cycle) and never dangles (a ref to an absent id).
+	 * Either case would otherwise cause the recursive evaluate/toString/listXPaths/
+	 * repeat methods to blow the stack or NPE at bind time; see GHSA-qw8x-rxfh-9qqq.
+	 * Uses standard three-colour DFS: onStack = being visited, checked = proven acyclic.
+	 *
+	 * @since 17.0.4
+	 */
+	private static void checkConditionGraphAcyclic(Map<String, Condition> conditionsMap)
+			throws Docx4JException {
+		Set<String> checked = new HashSet<String>();
+		for (Condition c : conditionsMap.values()) {
+			checkConditionAcyclic(c, conditionsMap, new HashSet<String>(), checked);
+		}
+	}
+
+	private static void checkConditionAcyclic(Condition c, Map<String, Condition> conditionsMap,
+			Set<String> onStack, Set<String> checked) throws Docx4JException {
+		String id = c.getId();
+		if (id != null) {
+			if (onStack.contains(id)) {
+				throw new Docx4JException("Cyclic OpenDoPE condition detected: '" + id
+						+ "' references itself directly or transitively; refusing to bind.");
+			}
+			if (checked.contains(id)) {
+				return; // already proven acyclic via an earlier path
+			}
+			onStack.add(id);
+		}
+		checkParticleAcyclic(c.getParticle(), conditionsMap, onStack, checked);
+		if (id != null) {
+			onStack.remove(id);
+			checked.add(id);
+		}
+	}
+
+	private static void checkParticleAcyclic(Evaluable particle, Map<String, Condition> conditionsMap,
+			Set<String> onStack, Set<String> checked) throws Docx4JException {
+		if (particle == null) {
+			return;
+		}
+		if (particle instanceof Conditionref) {
+			String refId = ((Conditionref) particle).getId();
+			Condition target = conditionsMap.get(refId);
+			if (target == null) {
+				throw new Docx4JException("OpenDoPE conditionref points to missing condition '"
+						+ refId + "'.");
+			}
+			checkConditionAcyclic(target, conditionsMap, onStack, checked);
+		} else if (particle instanceof Not) {
+			checkParticleAcyclic(((Not) particle).getParticle(), conditionsMap, onStack, checked);
+		} else if (particle instanceof And) {
+			for (Evaluable e : ((And) particle).getXpathrefOrAndOrOr()) {
+				checkParticleAcyclic(e, conditionsMap, onStack, checked);
+			}
+		} else if (particle instanceof Or) {
+			for (Evaluable e : ((Or) particle).getXpathrefOrAndOrOr()) {
+				checkParticleAcyclic(e, conditionsMap, onStack, checked);
+			}
+		}
+		// Xpathref is a leaf: nothing to recurse into
 	}
 
 	private DomToXPathMap domToXPathMap = null;
