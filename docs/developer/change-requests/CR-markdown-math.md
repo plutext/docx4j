@@ -1,0 +1,147 @@
+# CR: Markdown math (LaTeX equations → native OMML, and back)
+
+Status: PROPOSED (2026-09-01)
+Scope: extend **docx4j-markdown** with equation support — `$...$` / `$$...$$`
+(and `\(...\)` / `\[...\]`) recognized at parse time, and a **deliberately
+restricted LaTeX subset** translated to Word's native OMML
+(`org.docx4j.math`, which the generated object model already covers in full).
+docx4j-core is untouched.
+Related: CR-markdown-import-export.md (the host module; DONE 2026-09-01).
+
+## 1. Background
+
+The motivating experience (jharrop, converting a course of markdown+MathJax
+material): the standard route is Pandoc, whose `texmath` parser translates TeX
+math to OMML but supports only a subset of LaTeX — and anything it cannot
+parse **silently disappears, degrades to literal text, or becomes malformed**.
+Working around that means maintaining a "DOCX-normalisation pass" over the
+canonical markdown (`\[...\]`→`$$`, strip `\boxed`, pull equations out of
+lists/tables, split `aligned`, …) before Pandoc ever runs.
+
+Observations that shape this CR:
+
+- Most of the failures are **presentation syntax, not exotic mathematics**:
+  conventional physics/engineering math (`\frac`, `\sqrt`, `\sum`, sub/sup,
+  greek, `\text`) is a small, stable core.
+- Several of the things one must normalise away for Pandoc are **not DOCX
+  weaknesses at all**: OMML has a native `\boxed` (`m:borderBox`) and a native
+  `aligned` (`m:eqArr`); and in our importer equations inside tables, list
+  items and quotes are just paragraph content — nothing special breaks.
+- The weak link is purely "arbitrary LaTeX → OMML".  The fix is to not
+  attempt arbitrary LaTeX: define the subset, translate it well, and make
+  everything outside it fail **loudly and losslessly**.
+
+## 2. Design
+
+### Recognition (markdown side)
+
+commonmark-java has no math extension, so we ship one in the module
+(`org.docx4j.markdown.math.MathExtension`):
+
+- **Inline**: `$...$` via a custom `InlineContentParserFactory` (trigger `$`),
+  with GitHub-style guards so currency doesn't false-positive: the opening
+  `$` must not be followed by whitespace, the closing `$` must not be
+  preceded by whitespace nor followed by a digit; `\$` escapes.  `\(...\)`
+  likewise (trigger `\`).  `$$...$$` appearing inline in a mixed line is
+  treated as inline math.
+- **Display**: a custom block parser for a line starting `$$` (content until
+  the closing `$$` line; single-line `$$ x $$` allowed), and the same for
+  `\[ ... \]`.  Accepting `\[...\]` directly removes the first rule of any
+  normalisation pass.
+- Nodes `InlineMath` / `DisplayMath` carry the raw LaTeX source; the
+  extension also implements `MarkdownRendererExtension`, so the nodes render
+  back to `$...$` / `$$...$$` (needed by the exporter and the round-trip
+  suite).
+- Toggle: `MarkdownImportOptions.Extension.MATH`, on by default like the
+  other extensions (GitHub renders `$` math, so this stays within the
+  module's CommonMark+GFM-adjacent dialect discipline).
+
+### Translation (LaTeX subset → OMML)
+
+**Direct to `org.docx4j.math` JAXB, no MathML detour.**  SnuggleTeX is
+unmaintained; Microsoft's `MML2OMML.XSL` is not redistributable under ASLv2;
+and the generated object model already has all 82 OMML classes.  A small
+recursive-descent parser (`LatexToOmml`) over the published grammar:
+
+| LaTeX (supported subset) | OMML |
+|---|---|
+| `\frac{a}{b}`, `\frac12` | `m:f` |
+| `x_i`, `U^3`, `U_i^3` | `m:sSub` / `m:sSup` / `m:sSubSup` |
+| `\sqrt{x}`, `\sqrt[n]{x}` | `m:rad` |
+| `\sum`, `\int`, `\prod` (+ `_`/`^` limits) | `m:nary` (empty base; limits hidden when absent) |
+| `\left( ... \right)` (incl `[ ] \{ \} \| .`) | `m:d` |
+| `\text{...}` | `m:r` with `m:nor` (normal text) |
+| `\mathrm{...}`, `{\rm ...}` | `m:r` with `m:sty` p (roman) |
+| `\mathbf` / `\mathit` | `m:sty` b / i |
+| `\begin{aligned}...\end{aligned}` (`\\` rows) | `m:eqArr` |
+| `\boxed{...}` | `m:borderBox` |
+| `\hat \bar \vec \tilde \dot \ddot` | `m:acc` |
+| `\overline` / `\underline` | `m:bar` |
+| greek, arrows, operators, `\infty` etc. | command→Unicode table in `m:t` |
+| `\,` `\;` `\quad` `\qquad` | Unicode spaces |
+| `\sin \cos \log \lim` … | upright function-name runs |
+
+Plain `()[]` stay literal characters (as texmath does); `&` alignment marks
+in `aligned` are handled per what Word actually round-trips (verified during
+implementation).  Everything else — unknown macros, unsupported
+environments — is a **parse failure**, never a partial translation.
+
+### Failure policy (the point of the exercise)
+
+- A failed equation falls back **per-equation** to its literal source, boxed
+  in the `CodeChar` style with delimiters preserved — nothing is ever lost.
+- Every fallback (and every dropped construct generally) is reported through
+  a new `MarkdownImportIssueListener` on the options (issue = construct kind,
+  source snippet, reason).  Default listener logs a warning; callers get the
+  machine-readable "pandoc --verbose" equivalent by collecting into a list.
+- `MarkdownImportOptions.MathPolicy`: `OMML` (default) or `LITERAL` (never
+  attempt conversion).
+
+### Placement in wml
+
+- Inline math → `m:oMath` (JAXBElement, `math:ObjectFactory.createOMath`) in
+  the paragraph's run sequence — works unchanged inside table cells, list
+  items, quotes, headings.
+- Display math → its own paragraph containing `m:oMathPara` (Word centers
+  display math itself).  A display equation inside a list item becomes a
+  paragraph of the item, as follow-on paragraphs already do.
+
+### Export side (docx → markdown)
+
+The reverse walk: `m:oMath`/`m:oMathPara` encountered by `WmlToMarkdown` is
+translated OMML→LaTeX for the same subset into `InlineMath`/`DisplayMath`
+nodes (rendered `$...$`/`$$...$$` by the extension).  Unsupported OMML nodes
+flatten to their `m:t` text with a warning.  Until this phase lands, math in
+exported documents degrades explicitly (flattened `m:t` text + warning),
+documented as lossiness.
+
+## 3. Phases
+
+a. **Recognition + fallback + report** (S): MathExtension (inline `$`,
+   `\(...\)`; blocks `$$`, `\[...\]`), renderer support, `Extension.MATH`
+   toggle, `MarkdownImportIssueListener` plumbing, literal fallback for all
+   math (conversion arrives in b).  Tests: delimiter guards, block shapes,
+   fallback fidelity, report contents.
+b. **Core translator** (M): `LatexToOmml` — runs/symbols, `\frac`, sub/sup,
+   `\sqrt`, nary, `\left/\right`, `\text`/`\mathrm`/`{\rm}`, fonts, spacing,
+   function names; `MathPolicy` option; inline `m:oMath` + display
+   `m:oMathPara` placement.  Tests: per-construct OMML assertions, the REWS
+   diagnostic equation as a golden case, failure→fallback+report, save/marshal.
+c. **Structures** (S): `aligned`→`m:eqArr`, `\boxed`→`m:borderBox`,
+   accents→`m:acc`, `\overline`→`m:bar`.
+d. **Export** (M): OMML→LaTeX reverse for the subset; math joins the golden
+   round-trip suite (normalized-form inputs: the translator regenerates
+   `\frac{1}{2}`, not `\frac12`).
+
+## 4. Risks / notes
+
+- **Subset creep** is the real risk (texmath's failing was pretending to
+  generality).  Defence: the grammar above is the contract, published in the
+  module README; everything else fails loudly into the report.
+- **Word rendering QA needs eyeballs**: nary limit placement, stretchy
+  delimiters, eqArr alignment.  The test suite asserts OMML structure;
+  someone must open the output in Word once per phase.
+- `$` guards follow GitHub's rules; documents that used literal `$...$`
+  spans matching those rules will now parse as math — the MATH toggle (or
+  `\$`) is the out.
+- Font: Word applies Cambria Math to `m:r` automatically; we set no fonts.
