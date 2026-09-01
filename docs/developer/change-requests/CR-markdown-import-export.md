@@ -1,7 +1,9 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: IN PROGRESS (2026-09-01) — phases 0-4 complete; naming/placement DECIDED
-2026-09-01 (jharrop): the module is **`docx4j-markdown`**, a **reactor module**.
+Status: DONE (2026-09-01) — all phases (0-5) implemented and tested (60 tests
+in the module); only the website mention remains (external, pending).
+Naming/placement DECIDED 2026-09-01 (jharrop): the module is
+**`docx4j-markdown`**, a **reactor module**.
 Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
 mappings need
@@ -306,6 +308,22 @@ module's own test tree), plus docx-side assertions for the import mapping
 5. **Integration** (S): `Docx4J.toMarkdown`/`fromMarkdown` facade hooks
    (reflection); MCP tools `markdown_to_docx` / `docx_to_markdown` in the MCP
    server CR's tool surface; docs + website mention; CHANGELOG.
+
+   **DONE 2026-09-01** (except the website mention — external, pending):
+   - `Docx4J.fromMarkdown(String)` / `Docx4J.toMarkdown(pkg)` added to
+     docx4j-core via reflection (same posture as the legacy-services
+     detection): no core dependency on docx4j-markdown; clear
+     "requires docx4j-markdown on your classpath" error; cause unwrapped
+     when the underlying converter throws Docx4JException.  Works under
+     JPMS too (the package is exported; verified by Docx4JFacadeTest,
+     which runs on the module path).
+   - `markdown_to_docx` / `docx_to_markdown` added to CR-mcp-server.md's
+     phase-2 tool surface table.
+   - Module README expanded with usage (importer/exporter, options,
+     facade); CHANGELOG entry under 17.0.4 ("New module docx4j-markdown").
+   - No sample class added: docx4j-samples-docx4j currently carries
+     uncommitted local work, and the README covers usage; add one there
+     later if wanted.
 
 ## 6. Risks / open questions
 

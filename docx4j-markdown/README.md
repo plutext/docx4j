@@ -14,6 +14,29 @@ Markdown import (markdown→docx) and export (docx→markdown) for docx4j.
 Dialect: **CommonMark + the GFM extensions** (tables, strikethrough, task list
 items, footnotes) plus YAML front matter.  Deliberately nothing more.
 
+## Usage
+
+```java
+// markdown -> docx
+WordprocessingMLPackage pkg = new MarkdownImporter().createPackage(markdown);
+// ... or into your own styles-template docx:
+new MarkdownImporter().importToMainDocumentPart(markdown, templatePkg);
+
+// docx -> markdown
+String md = new MarkdownExporter().export(pkg);
+
+// options per call (never Docx4jProperties globals):
+new MarkdownImporter(new MarkdownImportOptions()
+        .setHtmlPolicy(MarkdownImportOptions.HtmlPolicy.LITERAL)
+        .setImageHandler(new DefaultMarkdownImageHandler("/base/dir")));
+new MarkdownExporter(new MarkdownExportOptions()
+        .setImageDirPath("/out/images").setImageTargetUri("images")
+        .setTrackedChangesPolicy(MarkdownExportOptions.TrackedChangesPolicy.MARKUP));
+```
+
+Convenience facade (docx4j-core), when docx4j-markdown is on the classpath:
+`Docx4J.fromMarkdown(String)` and `Docx4J.toMarkdown(pkg)`.
+
 ## docx4j-markdown vs flexmark-java
 
 [flexmark-java](https://github.com/vsch/flexmark-java) ships

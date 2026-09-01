@@ -1049,4 +1049,60 @@ public class Docx4J {
 				return HTMLExporterXslt.getInstance();
 		}
 	}
+
+	/**
+	 * Convert markdown (CommonMark + GFM extensions) to a new
+	 * WordprocessingMLPackage.  Requires docx4j-markdown on the classpath
+	 * (invoked via reflection, so docx4j-core doesn't depend on it); for
+	 * options (styles template, image handling, HTML policy) use
+	 * org.docx4j.markdown.MarkdownImporter directly.
+	 *
+	 * @since 17.0.4
+	 */
+	public static WordprocessingMLPackage fromMarkdown(String markdown) throws Docx4JException {
+
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.markdown.MarkdownImporter");
+			Object importer = clazz.getConstructor().newInstance();
+			return (WordprocessingMLPackage) clazz.getMethod("createPackage", String.class)
+					.invoke(importer, markdown);
+		} catch (ClassNotFoundException e) {
+			throw new Docx4JException("fromMarkdown requires docx4j-markdown on your classpath", e);
+		} catch (java.lang.reflect.InvocationTargetException e) {
+			if (e.getCause() instanceof Docx4JException) {
+				throw (Docx4JException) e.getCause();
+			}
+			throw new Docx4JException("markdown import failed", e);
+		} catch (Exception e) {
+			throw new Docx4JException("markdown import failed", e);
+		}
+	}
+
+	/**
+	 * Convert the main document part to markdown (CommonMark + GFM
+	 * extensions).  Requires docx4j-markdown on the classpath (invoked via
+	 * reflection, so docx4j-core doesn't depend on it); for options (image
+	 * extraction, tracked changes) use
+	 * org.docx4j.markdown.MarkdownExporter directly.
+	 *
+	 * @since 17.0.4
+	 */
+	public static String toMarkdown(WordprocessingMLPackage wmlPackage) throws Docx4JException {
+
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.markdown.MarkdownExporter");
+			Object exporter = clazz.getConstructor().newInstance();
+			return (String) clazz.getMethod("export", WordprocessingMLPackage.class)
+					.invoke(exporter, wmlPackage);
+		} catch (ClassNotFoundException e) {
+			throw new Docx4JException("toMarkdown requires docx4j-markdown on your classpath", e);
+		} catch (java.lang.reflect.InvocationTargetException e) {
+			if (e.getCause() instanceof Docx4JException) {
+				throw (Docx4JException) e.getCause();
+			}
+			throw new Docx4JException("markdown export failed", e);
+		} catch (Exception e) {
+			throw new Docx4JException("markdown export failed", e);
+		}
+	}
 }

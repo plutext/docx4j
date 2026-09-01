@@ -106,6 +106,8 @@ The pair is the product.
 |---|---|---|---|
 | `html_to_docx` | `html` (string) or `input_path`, optional `styles_template_path` (docx whose styles apply), `output_path` | docx | docx4j-ImportXHTML; altChunk fallback if ImportXHTML absent |
 | `convert_to_html` | `input_path`, `output_path` or inline return | HTML | Docx4J.toHTML (visitor exporter) |
+| `markdown_to_docx` | `markdown` (string) or `input_path`, optional `styles_template_path`, `output_path` | docx (real styles/numbering/tables/footnotes; no HTML detour) | docx4j-markdown `MarkdownImporter` (shipped 17.0.4; remote images NOT fetched — same posture as §6) |
+| `docx_to_markdown` | `input_path`, optional `image_dir_path`, `tracked_changes` (accept/markup) | markdown (CommonMark+GFM) | docx4j-markdown `MarkdownExporter` (shipped 17.0.4) |
 
 ### Extended (phase 4)
 

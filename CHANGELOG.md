@@ -42,6 +42,13 @@ pathway (hyperlink content strips w:dataBinding/w:text for Word 2007, restored p
 w:showingPlcHdr for RemovalHandler, w:placeholder stripped), and the XPath result cache is now
 used by all implementations; see docs/developer/change-requests/CR-binding-traverser-parity.md
 
+New module docx4j-markdown:
+- markdown import (markdown->docx: real heading/quote/code styles, real numbering, GFM tables,
+real footnotes, task lists, YAML front matter; no HTML detour) and export (docx->markdown,
+CommonMark+GFM, incl image extraction and a tracked-changes option); remote images are never
+fetched.  Facade hooks Docx4J.fromMarkdown/toMarkdown (docx4j-markdown must be on the classpath).
+See docs/developer/change-requests/CR-markdown-import-export.md and the module README
+
 docx4j-bundle:
 - the shaded ("fat") jar now actually contains the JAXB runtime: docx4j-JAXB-ReferenceImpl was
 declared test scope, so the fat jar carried the jakarta.xml.bind API but no implementation, and
