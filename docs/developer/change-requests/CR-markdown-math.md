@@ -239,6 +239,30 @@ d. **Export** (M): OMML→LaTeX reverse for the subset; math joins the golden
      translator/exporter tests; 16 translator fixed-point strings verified
      idempotent.
 
+## 3b. Subset growth round 1 (2026-09-01)
+
+The first real course import (math-laden, ~45 equations reported by the
+issue listener — the loud-failure mechanism working as designed) surfaced
+these, all conventional amsmath; added in both directions:
+
+| LaTeX | OMML |
+|---|---|
+| `\begin{cases}` | `m:d` (begChr `{`, empty endChr) holding an `m:eqArr` |
+| `\xrightarrow{f}` / `\xleftarrow` | `m:limUpp` over ⟶ / ⟵ |
+| `\overset{a}{b}` / `\stackrel` | `m:limUpp` (stackrel normalizes to overset on export) |
+| `\not` + symbol | combining long solidus U+0338 appended (eg ⇏); export re-detects it |
+| `\mathcal` / `\mathbb` / `\mathfrak` | `m:scr` script/double-struck/fraktur |
+| `\big`…`\Biggm` + delimiter | delimiter kept, sizing dropped (documented; `\bigg\|_{U_t}` works) |
+| `\middle\|` | `m:sepChr` + multiple `m:e` args in the `m:d` |
+| `\textbf` / `\textit` | `m:nor` + w:rPr `w:b`/`w:i` (math runs may carry w:rPr) |
+| `\widehat` / `\widetilde` | same `m:acc` as `\hat`/`\tilde` |
+| `\ ` before a LINE BREAK | was "unsupported command \<newline>" — any escaped whitespace is now a space |
+| long arrows, `\implies`, `\iff` | symbol table (⟹ normalizes to `\iff`/`\implies` shortest-wins) |
+
+Every failing equation from that import is now a verbatim test corpus
+(`MarkdownMathCorpusTest`, 25 equations, converts with zero issues), plus
+structure assertions and 10 new round-trip fixed points.  125 tests total.
+
 ## 4. Risks / notes
 
 - **Subset creep** is the real risk (texmath's failing was pretending to

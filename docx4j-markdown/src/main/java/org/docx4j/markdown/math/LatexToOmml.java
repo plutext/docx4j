@@ -44,10 +44,12 @@ public class LatexToOmml {
 	private static final class Ctx {
 		STStyle sty;      // p / b / i, or null for default math italic
 		boolean normalText; // \text{}: m:nor
+		org.docx4j.math.STScript scr; // \mathcal etc: m:scr
 		Ctx copy() {
 			Ctx c = new Ctx();
 			c.sty = sty;
 			c.normalText = normalText;
+			c.scr = scr;
 			return c;
 		}
 	}
@@ -146,6 +148,11 @@ public class LatexToOmml {
 
 		String command = readCommandName();
 
+		// "\ " — including a backslash before a line break — is an explicit space
+		if (command.length() == 1 && Character.isWhitespace(command.charAt(0))) {
+			return List.of(run(" ", ctx));
+		}
+
 		switch (command) {
 		case "frac": {
 			CTF f = factory.createCTF();
@@ -179,6 +186,8 @@ public class LatexToOmml {
 			case "align":
 			case "align*":
 				return List.of(parseEqArr(ctx, environment));
+			case "cases":
+				return List.of(parseCases(ctx));
 			default:
 				throw err("unsupported environment \\begin{" + environment + "}");
 			}
@@ -210,10 +219,45 @@ public class LatexToOmml {
 			return List.of(accent("\u0301", ctx));
 		case "grave":
 			return List.of(accent("\u0300", ctx));
+		case "widehat":
+			return List.of(accent("\u0302", ctx));
+		case "widetilde":
+			return List.of(accent("\u0303", ctx));
 		case "overline":
 			return List.of(bar(org.docx4j.math.STTopBot.TOP, ctx));
 		case "underline":
 			return List.of(bar(org.docx4j.math.STTopBot.BOT, ctx));
+		case "xrightarrow":
+			return List.of(limUpp(argOf(List.of(run("⟶", ctx))), parseArg(ctx)));
+		case "xleftarrow":
+			return List.of(limUpp(argOf(List.of(run("⟵", ctx))), parseArg(ctx)));
+		case "overset":
+		case "stackrel": {
+			CTOMathArg over = parseArg(ctx);
+			CTOMathArg base = parseArg(ctx);
+			return List.of(limUpp(base, over));
+		}
+		case "not": {
+			// negate the following symbol with a combining long solidus
+			List<Object> next = parseAtom(ctx);
+			org.docx4j.math.CTText t = (next != null && next.size() == 1)
+					? singleRunText(next.get(0)) : null;
+			if (t == null) {
+				throw err("\\not must be followed by a single symbol");
+			}
+			t.setValue(t.getValue() + "\u0338"); // combining long solidus overlay
+			return next;
+		}
+		case "big": case "Big": case "bigg": case "Bigg":
+		case "bigl": case "Bigl": case "biggl": case "Biggl":
+		case "bigr": case "Bigr": case "biggr": case "Biggr":
+		case "bigm": case "Bigm": case "biggm": case "Biggm": {
+			// sizing prefixes: keep the delimiter, drop the sizing
+			String delimiter = readDelimiterChar();
+			return delimiter.isEmpty() ? null : List.of(run(delimiter, ctx));
+		}
+		case "middle":
+			throw err("\\middle outside \\left ... \\right");
 		case "text":
 			return List.of(textRun(readRawGroup(), true, ctx));
 		case "mathrm":
@@ -229,6 +273,16 @@ public class LatexToOmml {
 			italic.sty = STStyle.I;
 			return parseArgAsSequence(italic);
 		}
+		case "mathcal":
+			return parseArgAsScript(ctx, org.docx4j.math.STScript.SCRIPT);
+		case "mathbb":
+			return parseArgAsScript(ctx, org.docx4j.math.STScript.DOUBLE_STRUCK);
+		case "mathfrak":
+			return parseArgAsScript(ctx, org.docx4j.math.STScript.FRAKTUR);
+		case "textbf":
+			return List.of(boldOrItalicTextRun(readRawGroup(), true, false));
+		case "textit":
+			return List.of(boldOrItalicTextRun(readRawGroup(), false, true));
 		case "rm":
 			ctx.sty = STStyle.P;
 			return null;
@@ -477,6 +531,64 @@ public class LatexToOmml {
 
 	// ---------------------------------------------------------------- structures
 
+	/** {@code \begin{cases}} → an m:eqArr behind a lone "{" delimiter. */
+	private Object parseCases(Ctx ctx) throws LatexMathException {
+		Object eqArr = parseEqArr(ctx, "cases");
+		CTD d = factory.createCTD();
+		org.docx4j.math.CTDPr dPr = factory.createCTDPr();
+		org.docx4j.math.CTChar begChr = factory.createCTChar();
+		begChr.setVal("{");
+		dPr.setBegChr(begChr);
+		org.docx4j.math.CTChar endChr = factory.createCTChar();
+		endChr.setVal("");
+		dPr.setEndChr(endChr);
+		d.setDPr(dPr);
+		d.getE().add(argOf(List.of(eqArr)));
+		return factory.createCTOMathArgD(d);
+	}
+
+	/** {@code \xrightarrow{f}}, {@code \overset{a}{b}}: content above a base. */
+	private Object limUpp(CTOMathArg base, CTOMathArg lim) {
+		org.docx4j.math.CTLimUpp limUpp = factory.createCTLimUpp();
+		limUpp.setE(base);
+		limUpp.setLim(lim);
+		return factory.createCTOMathArgLimUpp(limUpp);
+	}
+
+	private List<Object> parseArgAsScript(Ctx outer, org.docx4j.math.STScript script)
+			throws LatexMathException {
+		Ctx ctx = outer.copy();
+		ctx.scr = script;
+		return parseArgAsSequence(ctx);
+	}
+
+	/** {@code \textbf}/{@code \textit}: normal text carrying w:rPr bold/italic. */
+	private Object boldOrItalicTextRun(String text, boolean bold, boolean italic) {
+		CTR r = factory.createCTR();
+		CTRPR mathRPr = factory.createCTRPR();
+		mathRPr.setNor(factory.createCTOnOff());
+		r.getContent().add(factory.createCTRRPrMath(mathRPr));
+		org.docx4j.wml.RPr wmlRPr = new org.docx4j.wml.ObjectFactory().createRPr();
+		if (bold) {
+			wmlRPr.setB(new org.docx4j.wml.ObjectFactory().createBooleanDefaultTrue());
+		}
+		if (italic) {
+			wmlRPr.setI(new org.docx4j.wml.ObjectFactory().createBooleanDefaultTrue());
+		}
+		r.getContent().add(factory.createCTRRPr(wmlRPr));
+		CTText t = factory.createCTText();
+		t.setValue(text);
+		t.setSpace("preserve");
+		r.getContent().add(factory.createCTRTMath(t));
+		return factory.createCTOMathArgR(r);
+	}
+
+	/** The single m:t of a one-run element list, else null. */
+	private static CTText singleRunText(Object element) {
+		CTR run = asRun(element);
+		return (run == null) ? null : textOf(run);
+	}
+
 	private Object accent(String combiningChar, Ctx ctx) throws LatexMathException {
 		org.docx4j.math.CTAcc acc = factory.createCTAcc();
 		org.docx4j.math.CTAccPr accPr = factory.createCTAccPr();
@@ -570,7 +682,9 @@ public class LatexToOmml {
 	private Object parseDelimited(Ctx ctx) throws LatexMathException {
 
 		String beg = readDelimiterChar();
+		List<CTOMathArg> args = new ArrayList<>();
 		List<List<Object>> atoms = new ArrayList<>();
+		String sep = null;
 		String end = null;
 		while (true) {
 			skipWhitespace();
@@ -584,6 +698,18 @@ public class LatexToOmml {
 				end = readDelimiterChar();
 				break;
 			}
+			if (c == '\\' && src.startsWith("\\middle", pos)
+					&& !continuesAsLetter(pos + "\\middle".length())) {
+				// \middle| splits the content: OMML's sepChr between m:e args
+				pos += "\\middle".length();
+				String delimiter = readDelimiterChar();
+				if (sep == null) {
+					sep = delimiter;
+				}
+				args.add(argOf(mergeAdjacentRuns(flatten(atoms))));
+				atoms = new ArrayList<>();
+				continue;
+			}
 			if (c == '_' || c == '^') {
 				List<Object> base = atoms.isEmpty() ? new ArrayList<>()
 						: atoms.remove(atoms.size() - 1);
@@ -595,6 +721,7 @@ public class LatexToOmml {
 				atoms.add(atom);
 			}
 		}
+		args.add(argOf(mergeAdjacentRuns(flatten(atoms))));
 
 		CTD d = factory.createCTD();
 		org.docx4j.math.CTDPr dPr = factory.createCTDPr();
@@ -604,12 +731,13 @@ public class LatexToOmml {
 		org.docx4j.math.CTChar endChr = factory.createCTChar();
 		endChr.setVal(end);
 		dPr.setEndChr(endChr);
-		d.setDPr(dPr);
-		List<Object> flat = new ArrayList<>();
-		for (List<Object> atom : atoms) {
-			flat.addAll(atom);
+		if (sep != null) {
+			org.docx4j.math.CTChar sepChr = factory.createCTChar();
+			sepChr.setVal(sep);
+			dPr.setSepChr(sepChr);
 		}
-		d.getE().add(argOf(mergeAdjacentRuns(flat)));
+		d.setDPr(dPr);
+		d.getE().addAll(args);
 		return factory.createCTOMathArgD(d);
 	}
 
@@ -652,25 +780,31 @@ public class LatexToOmml {
 	// ---------------------------------------------------------------- runs
 
 	private Object run(String text, Ctx ctx) {
-		return runElement(text, ctx.normalText, ctx.sty, false);
+		return runElement(text, ctx.normalText, ctx.sty, ctx.scr, false);
 	}
 
 	private Object textRun(String text, boolean normalText, Ctx ctx) {
 		// \text -> m:nor (prose); \mathrm/function names -> upright math (m:sty p)
 		return runElement(text, normalText || ctx.normalText,
-				normalText ? null : STStyle.P, true);
+				normalText ? null : STStyle.P, null, true);
 	}
 
-	private Object runElement(String text, boolean normalText, STStyle sty, boolean preserveSpace) {
+	private Object runElement(String text, boolean normalText, STStyle sty,
+			org.docx4j.math.STScript scr, boolean preserveSpace) {
 		CTR r = factory.createCTR();
-		if (normalText || sty != null) {
+		if (normalText || sty != null || scr != null) {
 			CTRPR rPr = factory.createCTRPR();
 			if (normalText) {
 				rPr.setNor(factory.createCTOnOff());
-			} else {
+			} else if (sty != null) {
 				org.docx4j.math.CTStyle style = factory.createCTStyle();
 				style.setVal(sty);
 				rPr.setSty(style);
+			}
+			if (scr != null && !normalText) {
+				org.docx4j.math.CTScript script = factory.createCTScript();
+				script.setVal(scr);
+				rPr.setScr(script);
 			}
 			r.getContent().add(factory.createCTRRPrMath(rPr));
 		}
@@ -744,7 +878,20 @@ public class LatexToOmml {
 		boolean norB = pb != null && pb.getNor() != null;
 		STStyle styA = (pa != null && pa.getSty() != null) ? pa.getSty().getVal() : null;
 		STStyle styB = (pb != null && pb.getSty() != null) ? pb.getSty().getVal() : null;
-		return norA == norB && styA == styB;
+		org.docx4j.math.STScript scrA = (pa != null && pa.getScr() != null) ? pa.getScr().getVal() : null;
+		org.docx4j.math.STScript scrB = (pb != null && pb.getScr() != null) ? pb.getScr().getVal() : null;
+		return norA == norB && styA == styB && scrA == scrB
+				&& wmlRPrOf(a) == null && wmlRPrOf(b) == null; // \textbf runs never merge
+	}
+
+	private static org.docx4j.wml.RPr wmlRPrOf(CTR r) {
+		for (Object o : r.getContent()) {
+			if (o instanceof jakarta.xml.bind.JAXBElement
+					&& ((jakarta.xml.bind.JAXBElement<?>) o).getValue() instanceof org.docx4j.wml.RPr) {
+				return (org.docx4j.wml.RPr) ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+			}
+		}
+		return null;
 	}
 
 	private static CTRPR rPrOf(CTR r) {
@@ -822,6 +969,9 @@ public class LatexToOmml {
 			{"leftrightarrow", "↔"}, {"Leftrightarrow", "⇔"},
 			{"mapsto", "↦"}, {"uparrow", "↑"}, {"downarrow", "↓"},
 			{"longrightarrow", "⟶"}, {"longleftarrow", "⟵"},
+			{"longleftrightarrow", "⟷"}, {"Longrightarrow", "⟹"},
+			{"Longleftarrow", "⟸"}, {"Longleftrightarrow", "⟺"},
+			{"implies", "⟹"}, {"iff", "⟺"}, {"mid", "∣"},
 			{"infty", "∞"}, {"partial", "∂"}, {"nabla", "∇"},
 			{"hbar", "ℏ"}, {"ell", "ℓ"}, {"Re", "ℜ"}, {"Im", "ℑ"},
 			{"aleph", "ℵ"}, {"wp", "℘"}, {"prime", "′"}, {"degree", "°"},

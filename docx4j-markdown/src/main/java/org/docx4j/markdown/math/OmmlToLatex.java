@@ -158,6 +158,8 @@ public class OmmlToLatex {
 			} else if (u instanceof CTBorderBox) {
 				builder.command("boxed");
 				bracedArg(((CTBorderBox) u).getE(), builder);
+			} else if (u instanceof org.docx4j.math.CTLimUpp) {
+				limUpp((org.docx4j.math.CTLimUpp) u, builder);
 			} else if (u instanceof CTAcc) {
 				acc((CTAcc) u, builder);
 			} else if (u instanceof CTBar) {
@@ -178,11 +180,14 @@ public class OmmlToLatex {
 	private void run(CTR r, LatexBuilder builder, boolean inEqArr) throws OmmlMathException {
 
 		CTRPR rPr = null;
+		org.docx4j.wml.RPr wmlRPr = null;
 		StringBuilder text = new StringBuilder();
 		for (Object o : r.getContent()) {
 			Object u = (o instanceof JAXBElement) ? ((JAXBElement<?>) o).getValue() : o;
 			if (u instanceof CTRPR) {
 				rPr = (CTRPR) u;
+			} else if (u instanceof org.docx4j.wml.RPr) {
+				wmlRPr = (org.docx4j.wml.RPr) u;
 			} else if (u instanceof CTText) {
 				text.append(((CTText) u).getValue());
 			} else if (u instanceof org.docx4j.wml.Text) {
@@ -196,7 +201,26 @@ public class OmmlToLatex {
 		}
 
 		if (rPr != null && rPr.getNor() != null) {
-			builder.command("text");
+			String command = "text";
+			if (wmlRPr != null && wmlRPr.getB() != null && wmlRPr.getB().isVal()) {
+				command = "textbf";
+			} else if (wmlRPr != null && wmlRPr.getI() != null && wmlRPr.getI().isVal()) {
+				command = "textit";
+			}
+			builder.command(command);
+			builder.raw("{" + escapeText(s) + "}");
+			return;
+		}
+		org.docx4j.math.STScript scr = (rPr != null && rPr.getScr() != null)
+				? rPr.getScr().getVal() : null;
+		if (scr != null) {
+			switch (scr) {
+			case SCRIPT: builder.command("mathcal"); break;
+			case DOUBLE_STRUCK: builder.command("mathbb"); break;
+			case FRAKTUR: builder.command("mathfrak"); break;
+			default:
+				throw new OmmlMathException("unsupported m:scr " + scr);
+			}
 			builder.raw("{" + escapeText(s) + "}");
 			return;
 		}
@@ -227,6 +251,11 @@ public class OmmlToLatex {
 	private void mathChars(String s, LatexBuilder builder, boolean inEqArr) {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
+			// combining long solidus overlay after a symbol = \not before it
+			if (i + 1 < s.length() && s.charAt(i + 1) == '\u0338') {
+				builder.command("not");
+				i++; // consume the combining char; c is emitted below
+			}
 			String symbol = REVERSE_SYMBOLS.get(String.valueOf(c));
 			if (symbol != null) {
 				builder.command(symbol);
@@ -301,9 +330,29 @@ public class OmmlToLatex {
 				? d.getDPr().getBegChr().getVal() : "(";
 		String end = (d.getDPr() != null && d.getDPr().getEndChr() != null)
 				? d.getDPr().getEndChr().getVal() : ")";
+		String sep = (d.getDPr() != null && d.getDPr().getSepChr() != null)
+				? d.getDPr().getSepChr().getVal() : null;
+
+		// a lone "{" holding a single equation array is \begin{cases}
+		if ("{".equals(beg) && "".equals(end) && sep == null && d.getE().size() == 1
+				&& d.getE().get(0).getEGOMathElements().size() == 1) {
+			Object only = d.getE().get(0).getEGOMathElements().get(0);
+			Object u = (only instanceof JAXBElement) ? ((JAXBElement<?>) only).getValue() : only;
+			if (u instanceof CTEqArr) {
+				rows("cases", (CTEqArr) u, builder);
+				return;
+			}
+		}
+
 		builder.command("left");
 		builder.raw(delimiterFor(beg));
+		boolean first = true;
 		for (CTOMathArg e : d.getE()) {
+			if (!first) {
+				builder.command("middle");
+				builder.raw(delimiterFor(sep == null ? "∣" : sep));
+			}
+			first = false;
 			elements(e.getEGOMathElements(), builder, false);
 		}
 		builder.command("right");
@@ -317,6 +366,7 @@ public class OmmlToLatex {
 		switch (chr) {
 		case "{": return "\\{";
 		case "}": return "\\}";
+		case "∣": return "|";
 		case "‖": return "\\|";
 		case "⟨": return "\\langle ";
 		case "⟩": return "\\rangle ";
@@ -329,7 +379,12 @@ public class OmmlToLatex {
 	}
 
 	private void eqArr(CTEqArr eqArr, LatexBuilder builder) throws OmmlMathException {
-		builder.raw("\\begin{aligned}");
+		rows("aligned", eqArr, builder);
+	}
+
+	private void rows(String environment, CTEqArr eqArr, LatexBuilder builder)
+			throws OmmlMathException {
+		builder.raw("\\begin{" + environment + "}");
 		boolean first = true;
 		for (CTOMathArg row : eqArr.getE()) {
 			if (!first) {
@@ -338,7 +393,35 @@ public class OmmlToLatex {
 			first = false;
 			elements(row.getEGOMathElements(), builder, true);
 		}
-		builder.raw("\\end{aligned}");
+		builder.raw("\\end{" + environment + "}");
+	}
+
+	/** Content above a base: {@code \xrightarrow} for arrows, else {@code \overset}. */
+	private void limUpp(org.docx4j.math.CTLimUpp limUpp, LatexBuilder builder)
+			throws OmmlMathException {
+		String baseText = null;
+		if (limUpp.getE() != null && limUpp.getE().getEGOMathElements().size() == 1) {
+			Object only = limUpp.getE().getEGOMathElements().get(0);
+			Object u = (only instanceof JAXBElement) ? ((JAXBElement<?>) only).getValue() : only;
+			if (u instanceof CTR) {
+				StringBuilder sb = new StringBuilder();
+				for (Object rc : ((CTR) u).getContent()) {
+					Object ru = (rc instanceof JAXBElement) ? ((JAXBElement<?>) rc).getValue() : rc;
+					if (ru instanceof CTText) {
+						sb.append(((CTText) ru).getValue());
+					}
+				}
+				baseText = sb.toString();
+			}
+		}
+		if ("⟶".equals(baseText) || "⟵".equals(baseText)) {
+			builder.command("⟶".equals(baseText) ? "xrightarrow" : "xleftarrow");
+			bracedArg(limUpp.getLim(), builder);
+			return;
+		}
+		builder.command("overset");
+		bracedArg(limUpp.getLim(), builder);
+		bracedArg(limUpp.getE(), builder);
 	}
 
 	private void acc(CTAcc acc, LatexBuilder builder) throws OmmlMathException {

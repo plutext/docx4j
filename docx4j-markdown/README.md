@@ -24,13 +24,17 @@ loudly — see below):
 
 `\frac` (incl `\frac12`) · `_`/`^` scripts · `\sqrt[n]` · `\sum \prod \int
 \iint \iiint \oint \bigcup \bigcap` with limits · `\left ( [ \{ | \langle
-\lfloor \lceil . \right` · `\text` · `\mathrm` / `{\rm}` / `\operatorname` ·
-`\mathbf` / `\mathit` / `\bf` / `\it` · `\begin{aligned}` (`align`/`align*`)
-with `\\` rows and `&` alignment · `\boxed` · accents `\hat \tilde \bar \vec
-\dot \ddot \check \breve \acute \grave` · `\overline`/`\underline` · greek
-(incl var-forms) · ~60 operator/relation/arrow/set symbols · spacing
-`\, \; \: \quad \qquad` · function names (`\sin`, `\log`, `\lim`, …) ·
-escapes `\{ \} \$ \% \& \# \_`.
+\lfloor \lceil . \right` with `\middle` · `\text` / `\textbf` / `\textit` ·
+`\mathrm` / `{\rm}` / `\operatorname` · `\mathbf` / `\mathit` / `\mathcal` /
+`\mathbb` / `\mathfrak` / `\bf` / `\it` · `\begin{aligned}`
+(`align`/`align*`) and `\begin{cases}` with `\\` rows and `&` alignment ·
+`\boxed` · `\xrightarrow`/`\xleftarrow`/`\overset`/`\stackrel` · `\not` ·
+accents `\hat \tilde \bar \vec \dot \ddot \check \breve \acute \grave`
+(incl `\widehat`/`\widetilde`) · `\overline`/`\underline` · greek (incl
+var-forms) · ~70 operator/relation/arrow/set symbols · spacing `\, \; \:
+\quad \qquad` and `\ ` · sizing prefixes `\big`…`\Biggr` (delimiter kept,
+sizing dropped) · function names (`\sin`, `\log`, `\lim`, …) · escapes
+`\{ \} \$ \% \& \# \_`.
 
 **Nothing fails silently.**  An equation outside the subset degrades — whole,
 delimiters preserved — to its literal source in the `CodeChar` style, and is
