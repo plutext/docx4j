@@ -1,5 +1,11 @@
 package org.docx4j.markdown;
 
+import org.commonmark.ext.footnotes.FootnotesExtension;
+import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.ext.task.list.items.TaskListItemsExtension;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -26,7 +32,18 @@ public class MarkdownExporter {
 	 * Export the main document part of the given package to markdown.
 	 */
 	public String export(WordprocessingMLPackage pkg) throws Docx4JException {
-		throw new UnsupportedOperationException("Phase 3 (export core) not yet implemented");
+
+		org.commonmark.node.Document document = new WmlToMarkdown(pkg, options).convert();
+
+		MarkdownRenderer renderer = MarkdownRenderer.builder()
+				.extensions(java.util.List.of(
+						TablesExtension.create(),
+						StrikethroughExtension.create(),
+						TaskListItemsExtension.create(),
+						FootnotesExtension.create(),
+						YamlFrontMatterExtension.create()))
+				.build();
+		return renderer.render(document);
 	}
 
 	protected MarkdownExportOptions getOptions() {

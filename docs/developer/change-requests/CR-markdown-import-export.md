@@ -1,6 +1,6 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: IN PROGRESS (2026-09-01) — phases 0-2 complete; naming/placement DECIDED
+Status: IN PROGRESS (2026-09-01) — phases 0-3 complete; naming/placement DECIDED
 2026-09-01 (jharrop): the module is **`docx4j-markdown`**, a **reactor module**.
 Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
@@ -240,6 +240,39 @@ module's own test tree), plus docx-side assertions for the import mapping
    - 10 further tests (29 total in the module).
 3. **Export core + round-trip** (M): CommonMark subset out, via AST +
    MarkdownRenderer; golden round-trip suite established.
+
+   **DONE 2026-09-01.**  `WmlToMarkdown` — a direct recursive walk of the
+   JAXB content tree building a commonmark AST (same one-implementation
+   spirit as "TraversalUtil-based"; a flat visitor doesn't fit tree
+   building), rendered by MarkdownRenderer so escaping is the reference
+   implementation's.  Detection as specified in §4, plus findings:
+   - **Heading check must precede the numbering check**: Word's built-in
+     Heading styles (KnownStyles Heading5/6) carry legacy `w:numPr`, which
+     otherwise exports headings as absurd nested bullets.
+   - **Baseline-relative formatting**: bold/italic/code compare the run's
+     effective rPr against the *paragraph style's* effective rPr
+     (`getEffectiveRPr(null, directPPr)`), so a Heading's inherent bold
+     doesn't become `**markers**`.  NB pass the DIRECT pPr — 
+     `getEffectiveRPr(rPr, pPr)` resolves via `pPr.getPStyle()`, which the
+     effective pPr no longer has.
+   - Inline code: `CodeChar` rStyle or effective mono ascii font (small
+     font-name allowlist) where the baseline isn't mono.
+   - Lists: state machine over consecutive numbered paragraphs; per-level
+     bullet/ordered from the numbering model (`ListLevel.IsBullet()`);
+     gotcha: **`ListLevel.getStartValue()` is `w:start` minus one** (counter
+     semantics) — add 1 back.  Tight/loose from effective
+     contextualSpacing; ListParagraph follow-on paragraphs rejoin the item.
+   - Synthesized `ThematicBreak` needs `setLiteral("---")` (else the
+     renderer emits `___`); Strong nests INSIDE Emphasis so `***x***`
+     round-trips (the other nesting renders `**_x_**`).
+   - Fields: begin/separate/end tracked, instruction text skipped, cached
+     result kept; fldSimple content kept; SDTs contribute their content;
+     empty paragraphs dropped (markdown has none); tables logged+dropped
+     until phase 4.
+   - **Round-trip bar implemented as canonical-equality**: for in-subset
+     documents, export-after-import must equal commonmark's own
+     `render(parse(md))` — a stronger, self-maintaining form of the
+     idempotence requirement (13 golden tests + 7 export-detection tests).
 4. **Export extensions** (S-M): tables, strikethrough, footnotes, image
    extraction; tracked-changes option.
 5. **Integration** (S): `Docx4J.toMarkdown`/`fromMarkdown` facade hooks
