@@ -31,6 +31,8 @@ class ImportStyles {
 	static final String CODE_CHAR = "CodeChar";
 	/** Paragraph style for code blocks; created if absent. */
 	static final String SOURCE_CODE = "SourceCode";
+	/** Table style; created if absent. */
+	static final String TABLE_GRID = "TableGrid";
 
 	private static final String W_NS = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
 
@@ -60,6 +62,21 @@ class ImportStyles {
 			+ "</w:rPr>"
 			+ "</w:style>";
 
+	private static final String TABLE_GRID_XML =
+			"<w:style " + W_NS + " w:type=\"table\" w:styleId=\"" + TABLE_GRID + "\">"
+			+ "<w:name w:val=\"Table Grid\"/>"
+			+ "<w:tblPr>"
+			+ "<w:tblBorders>"
+			+ "<w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+			+ "<w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+			+ "<w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+			+ "<w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+			+ "<w:insideH w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+			+ "<w:insideV w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>"
+			+ "</w:tblBorders>"
+			+ "</w:tblPr>"
+			+ "</w:style>";
+
 	private final PropertyResolver resolver;
 
 	ImportStyles(WordprocessingMLPackage pkg) throws Docx4JException {
@@ -82,6 +99,10 @@ class ImportStyles {
 
 	void ensureSourceCode() throws Docx4JException {
 		ensureCustom(SOURCE_CODE, SOURCE_CODE_XML);
+	}
+
+	void ensureTableGrid() throws Docx4JException {
+		ensureCustom(TABLE_GRID, TABLE_GRID_XML);
 	}
 
 	private void ensureCustom(String styleId, String xml) throws Docx4JException {

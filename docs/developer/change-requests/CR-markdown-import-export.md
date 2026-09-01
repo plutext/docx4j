@@ -1,6 +1,6 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: IN PROGRESS (2026-09-01) — phases 0-1 complete; naming/placement DECIDED
+Status: IN PROGRESS (2026-09-01) — phases 0-2 complete; naming/placement DECIDED
 2026-09-01 (jharrop): the module is **`docx4j-markdown`**, a **reactor module**.
 Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
@@ -207,6 +207,37 @@ module's own test tree), plus docx-side assertions for the import mapping
 2. **Import extensions + images** (M): GFM tables, strikethrough, task lists,
    footnotes, front matter; image handler with embed-local/link-remote default;
    IMPORT_XHTML policy via optional ImportXHTML.
+
+   **DONE 2026-09-01.**  Options gained per-extension toggles
+   (`MarkdownImportOptions.Extension`, all on by default) and a pluggable
+   `MarkdownImageHandler`.  Notes:
+   - **Tables**: `TableGrid` style (default part has it; minimal bordered
+     definition created if a template lacks it), header row gets
+     `w:tblHeader` + bold runs, per-column alignment from the delimiter row
+     as `w:jc` on cell paragraphs (LEFT omitted).
+   - **Footnotes**: real footnotes — `ImportFootnotes` lazily initialises
+     the footnotes part (separator/continuationSeparator) + settings
+     `w:footnotePr` (FootnoteAdd-sample idiom); definitions realised on
+     first reference (repeat references share one footnote id); first
+     definition paragraph restyled `FootnoteText` with the
+     footnoteRef-marker run prepended.  Inline footnotes (`^[..]`) also
+     handled if the parser produces them.
+   - **Task lists**: glyphs ☒/☐ (the marker precedes the item's paragraph in
+     the AST, so it is held and prepended when the paragraph starts);
+     the `w14:checkbox` sdt alternative was NOT implemented (revisit on
+     demand).
+   - **Front matter**: title/author/keywords → dc:title/dc:creator/
+     cp:keywords; other keys ignored.  NB commonmark's YAML support is
+     minimal: block lists yes, flow sequences (`[a, b]`) stay literal.
+   - **Images**: `DefaultMarkdownImageHandler` embeds data URIs (base64)
+     and local files (relative paths only when a baseDir is supplied);
+     http(s) is never fetched — declines, and the importer emits
+     hyperlinked alt text.  Custom handlers return run content (w:drawing).
+   - **IMPORT_XHTML**: reflection into
+     `org.docx4j.convert.in.xhtml.XHTMLImporterImpl` for HTML *blocks*;
+     inline HTML arrives tag-by-tag so it cannot be routed and is dropped
+     under this policy (documented in code).
+   - 10 further tests (29 total in the module).
 3. **Export core + round-trip** (M): CommonMark subset out, via AST +
    MarkdownRenderer; golden round-trip suite established.
 4. **Export extensions** (S-M): tables, strikethrough, footnotes, image

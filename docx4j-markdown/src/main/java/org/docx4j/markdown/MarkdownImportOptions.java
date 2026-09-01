@@ -31,8 +31,17 @@ public class MarkdownImportOptions {
 		PARAGRAPH_PER_LINE
 	}
 
+	/**
+	 * The supported markdown extensions (all enabled by default).
+	 */
+	public enum Extension {
+		TABLES, STRIKETHROUGH, TASK_LIST_ITEMS, FOOTNOTES, YAML_FRONT_MATTER
+	}
+
 	private HtmlPolicy htmlPolicy = HtmlPolicy.DROP;
 	private CodeBlockShape codeBlockShape = CodeBlockShape.SINGLE_PARAGRAPH;
+	private java.util.Set<Extension> extensions = java.util.EnumSet.allOf(Extension.class);
+	private MarkdownImageHandler imageHandler = new DefaultMarkdownImageHandler();
 
 	public HtmlPolicy getHtmlPolicy() {
 		return htmlPolicy;
@@ -49,6 +58,35 @@ public class MarkdownImportOptions {
 
 	public MarkdownImportOptions setCodeBlockShape(CodeBlockShape codeBlockShape) {
 		this.codeBlockShape = codeBlockShape;
+		return this;
+	}
+
+	public java.util.Set<Extension> getExtensions() {
+		return extensions;
+	}
+
+	/**
+	 * Restrict which markdown extensions are enabled (the default is all).
+	 * Pass an empty set for pure CommonMark.
+	 */
+	public MarkdownImportOptions setExtensions(java.util.Set<Extension> extensions) {
+		this.extensions = extensions;
+		return this;
+	}
+
+	public MarkdownImageHandler getImageHandler() {
+		return imageHandler;
+	}
+
+	/**
+	 * How images are realised.  The default embeds data URIs and local files
+	 * but never fetches remote URLs (those degrade to hyperlinked alt text);
+	 * supply a handler to change that — eg
+	 * {@code new DefaultMarkdownImageHandler(baseDir)} to resolve relative
+	 * paths, or your own implementation to fetch remote images.
+	 */
+	public MarkdownImportOptions setImageHandler(MarkdownImageHandler imageHandler) {
+		this.imageHandler = imageHandler;
 		return this;
 	}
 

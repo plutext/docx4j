@@ -6,10 +6,23 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import org.commonmark.ext.footnotes.FootnoteDefinition;
+import org.commonmark.ext.footnotes.FootnoteReference;
+import org.commonmark.ext.footnotes.InlineFootnote;
+import org.commonmark.ext.front.matter.YamlFrontMatterBlock;
+import org.commonmark.ext.front.matter.YamlFrontMatterNode;
+import org.commonmark.ext.gfm.strikethrough.Strikethrough;
+import org.commonmark.ext.gfm.tables.TableBlock;
+import org.commonmark.ext.gfm.tables.TableCell;
+import org.commonmark.ext.gfm.tables.TableHead;
+import org.commonmark.ext.gfm.tables.TableRow;
+import org.commonmark.ext.task.list.items.TaskListItemMarker;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.BulletList;
 import org.commonmark.node.Code;
+import org.commonmark.node.CustomBlock;
+import org.commonmark.node.CustomNode;
 import org.commonmark.node.Emphasis;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.HardLineBreak;
@@ -34,6 +47,10 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.CTFtnEdnRef;
+import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.Jc;
+import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
@@ -42,12 +59,22 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
 import org.docx4j.wml.STBorder;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblGrid;
+import org.docx4j.wml.TblGridCol;
+import org.docx4j.wml.TblPr;
+import org.docx4j.wml.TblWidth;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.Tr;
+import org.docx4j.wml.TrPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Walks the commonmark AST, building wml block content (no HTML detour).
- * CommonMark core constructs only; the GFM extensions are phase 2.
+ * Walks the commonmark AST, building wml block content (no HTML detour):
+ * CommonMark core plus the GFM extensions (tables, strikethrough, task list
+ * items, footnotes) and YAML front matter (skipped here; the importer maps it
+ * to core document properties).
  */
 class MarkdownToWmlVisitor extends AbstractVisitor {
 
@@ -56,18 +83,26 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 	private static final int TWIPS_PER_LEVEL = 720;
 
 	private final ObjectFactory factory = Context.getWmlObjectFactory();
+	private final WordprocessingMLPackage pkg;
 	private final MainDocumentPart mdp;
 	private final MarkdownImportOptions options;
 	private final ImportStyles styles;
 	private final ImportNumbering numbering;
+	private final ImportFootnotes footnotes;
 
-	private final List<Object> results = new ArrayList<>();
+	private List<Object> results = new ArrayList<>();
+
+	// footnote definitions by label (collected by the importer up front)
+	private java.util.Map<String, FootnoteDefinition> footnoteDefinitions = java.util.Collections.emptyMap();
+	private final java.util.Map<String, BigInteger> footnoteIdsByLabel = new java.util.HashMap<>();
 
 	// inline state
 	private P currentP;
 	private P.Hyperlink currentHyperlink;
 	private int boldDepth;
 	private int italicDepth;
+	private int strikeDepth;
+	private String pendingTaskMarker; // glyph to prepend to the item's first paragraph
 
 	// block context
 	private int quoteDepth;
@@ -83,18 +118,24 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 			this.tight = tight;
 		}
 	}
-	private final Deque<ListCtx> listStack = new ArrayDeque<>();
+	private Deque<ListCtx> listStack = new ArrayDeque<>();
 
 	MarkdownToWmlVisitor(WordprocessingMLPackage pkg, MarkdownImportOptions options)
 			throws Docx4JException {
+		this.pkg = pkg;
 		this.mdp = pkg.getMainDocumentPart();
 		this.options = options;
 		this.styles = new ImportStyles(pkg);
 		this.numbering = new ImportNumbering(pkg);
+		this.footnotes = new ImportFootnotes(pkg);
 	}
 
 	List<Object> getResults() {
 		return results;
+	}
+
+	void setFootnoteDefinitions(java.util.Map<String, FootnoteDefinition> definitions) {
+		this.footnoteDefinitions = definitions;
 	}
 
 	// ---------------------------------------------------------------- blocks
@@ -112,6 +153,10 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 	@Override
 	public void visit(Paragraph paragraph) {
 		newParagraph(contextPPr());
+		if (pendingTaskMarker != null) {
+			addText(pendingTaskMarker);
+			pendingTaskMarker = null;
+		}
 		visitChildren(paragraph);
 		endParagraph();
 	}
@@ -239,7 +284,10 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 			endParagraph();
 			break;
 		case IMPORT_XHTML:
-			log.warn("HtmlPolicy.IMPORT_XHTML is not implemented yet (phase 2); dropping HTML block");
+			List<Object> converted = XhtmlFallback.tryConvert(pkg, htmlBlock.getLiteral());
+			if (converted != null) {
+				results.addAll(converted);
+			}
 			break;
 		case DROP:
 		default:
@@ -254,7 +302,9 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 			addText(htmlInline.getLiteral());
 			break;
 		case IMPORT_XHTML:
-			log.warn("HtmlPolicy.IMPORT_XHTML is not implemented yet (phase 2); dropping inline HTML");
+			// inline HTML arrives tag-by-tag (not as well-formed fragments),
+			// so it can't be routed through ImportXHTML; dropped
+			log.debug("IMPORT_XHTML applies to HTML blocks only; dropping inline HTML");
 			break;
 		case DROP:
 		default:
@@ -322,13 +372,43 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 	}
 
 	/**
-	 * Phase 1: an image becomes its alt text, hyperlinked to the image
-	 * location (remote images are never fetched).  The pluggable image
-	 * handler which can embed images is phase 2.
+	 * The image handler decides how to realise the image (the default embeds
+	 * data URIs and local files, and never fetches remote URLs); if it
+	 * declines, the image degrades to its alt text hyperlinked to the
+	 * destination.
 	 */
 	@Override
 	public void visit(Image image) {
+		MarkdownImageHandler handler = options.getImageHandler();
+		if (handler != null && image.getDestination() != null && !image.getDestination().isEmpty()) {
+			Object runContent = handler.toRunContent(
+					image.getDestination(), image.getTitle(), altTextOf(image), pkg);
+			if (runContent != null) {
+				R r = factory.createR();
+				r.getContent().add(runContent);
+				runTarget().add(r);
+				return;
+			}
+		}
 		inlineHyperlink(image, image.getDestination());
+	}
+
+	private static String altTextOf(Image image) {
+		StringBuilder sb = new StringBuilder();
+		appendLiterals(image, sb);
+		return sb.toString();
+	}
+
+	private static void appendLiterals(org.commonmark.node.Node node, StringBuilder sb) {
+		for (org.commonmark.node.Node c = node.getFirstChild(); c != null; c = c.getNext()) {
+			if (c instanceof org.commonmark.node.Text) {
+				sb.append(((org.commonmark.node.Text) c).getLiteral());
+			} else if (c instanceof Code) {
+				sb.append(((Code) c).getLiteral());
+			} else {
+				appendLiterals(c, sb);
+			}
+		}
 	}
 
 	private void inlineHyperlink(org.commonmark.node.Node parent, String destination) {
@@ -363,6 +443,227 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 		currentHyperlink = hyperlink;
 		visitChildren(parent);
 		currentHyperlink = null;
+	}
+
+	// ------------------------------------------------------------ extensions
+
+	@Override
+	public void visit(CustomBlock customBlock) {
+		if (customBlock instanceof TableBlock) {
+			table((TableBlock) customBlock);
+		} else if (customBlock instanceof FootnoteDefinition) {
+			// realised on demand when a FootnoteReference points at it
+		} else if (customBlock instanceof YamlFrontMatterBlock) {
+			// mapped to core document properties by the importer
+		} else {
+			visitChildren(customBlock);
+		}
+	}
+
+	@Override
+	public void visit(CustomNode customNode) {
+		if (customNode instanceof Strikethrough) {
+			strikeDepth++;
+			visitChildren(customNode);
+			strikeDepth--;
+		} else if (customNode instanceof TaskListItemMarker) {
+			// held until the item's first paragraph exists (the marker precedes it)
+			pendingTaskMarker = ((TaskListItemMarker) customNode).isChecked() ? "☒ " : "☐ ";
+		} else if (customNode instanceof FootnoteReference) {
+			footnoteReference((FootnoteReference) customNode);
+		} else if (customNode instanceof InlineFootnote) {
+			inlineFootnote((InlineFootnote) customNode);
+		} else if (customNode instanceof YamlFrontMatterNode) {
+			// mapped to core document properties by the importer
+		} else {
+			visitChildren(customNode);
+		}
+	}
+
+	// ------------------------------------------------------------ tables
+
+	private void table(TableBlock tableBlock) {
+
+		try {
+			styles.ensureTableGrid();
+		} catch (Docx4JException e) {
+			log.warn("Could not create TableGrid style", e);
+		}
+
+		Tbl tbl = factory.createTbl();
+		TblPr tblPr = factory.createTblPr();
+		CTTblPrBase.TblStyle tblStyle = factory.createCTTblPrBaseTblStyle();
+		tblStyle.setVal(ImportStyles.TABLE_GRID);
+		tblPr.setTblStyle(tblStyle);
+		TblWidth tblW = factory.createTblWidth();
+		tblW.setW(BigInteger.ZERO);
+		tblW.setType("auto");
+		tblPr.setTblW(tblW);
+		tbl.setTblPr(tblPr);
+
+		int cols = 0;
+		for (org.commonmark.node.Node section = tableBlock.getFirstChild();
+				section != null; section = section.getNext()) {
+			boolean header = section instanceof TableHead;
+			for (org.commonmark.node.Node rowNode = section.getFirstChild();
+					rowNode != null; rowNode = rowNode.getNext()) {
+				if (!(rowNode instanceof TableRow)) {
+					continue;
+				}
+				Tr tr = factory.createTr();
+				if (header) {
+					TrPr trPr = factory.createTrPr();
+					trPr.getCnfStyleOrDivIdOrGridBefore().add(
+							factory.createCTTrPrBaseTblHeader(factory.createBooleanDefaultTrue()));
+					tr.setTrPr(trPr);
+				}
+				int rowCols = 0;
+				for (org.commonmark.node.Node cellNode = rowNode.getFirstChild();
+						cellNode != null; cellNode = cellNode.getNext()) {
+					if (!(cellNode instanceof TableCell)) {
+						continue;
+					}
+					tr.getContent().add(tableCell((TableCell) cellNode, header));
+					rowCols++;
+				}
+				cols = Math.max(cols, rowCols);
+				tbl.getContent().add(tr);
+			}
+		}
+
+		TblGrid tblGrid = factory.createTblGrid();
+		for (int i = 0; i < cols; i++) {
+			TblGridCol gridCol = factory.createTblGridCol();
+			tblGrid.getGridCol().add(gridCol);
+		}
+		tbl.setTblGrid(tblGrid);
+
+		results.add(tbl);
+	}
+
+	private Tc tableCell(TableCell cell, boolean header) {
+
+		Tc tc = factory.createTc();
+		P cellP = factory.createP();
+
+		TableCell.Alignment alignment = cell.getAlignment();
+		if (alignment != null && alignment != TableCell.Alignment.LEFT) {
+			PPr pPr = factory.createPPr();
+			Jc jc = factory.createJc();
+			jc.setVal(alignment == TableCell.Alignment.CENTER
+					? JcEnumeration.CENTER : JcEnumeration.RIGHT);
+			pPr.setJc(jc);
+			cellP.setPPr(pPr);
+		}
+
+		// cell content is inline-only in GFM; build it into the cell's paragraph
+		P savedP = currentP;
+		P.Hyperlink savedHyperlink = currentHyperlink;
+		currentP = cellP;
+		currentHyperlink = null;
+		if (header) {
+			boldDepth++; // TableGrid has no header formatting of its own
+		}
+		visitChildren(cell);
+		if (header) {
+			boldDepth--;
+		}
+		currentP = savedP;
+		currentHyperlink = savedHyperlink;
+
+		tc.getContent().add(cellP);
+		return tc;
+	}
+
+	// ------------------------------------------------------------ footnotes
+
+	private void footnoteReference(FootnoteReference ref) {
+
+		String label = ref.getLabel();
+		BigInteger id = footnoteIdsByLabel.get(label);
+		if (id == null) {
+			FootnoteDefinition definition = footnoteDefinitions.get(label);
+			if (definition == null) {
+				log.warn("No footnote definition for label {}", label);
+				addText("[^" + label + "]");
+				return;
+			}
+			id = realiseFootnote(() -> visitChildren(definition));
+			if (id == null) {
+				addText("[^" + label + "]");
+				return;
+			}
+			footnoteIdsByLabel.put(label, id);
+		}
+		addFootnoteRefRun(id);
+	}
+
+	private void inlineFootnote(InlineFootnote inlineFootnote) {
+		// inline content ^[like this] becomes a one-paragraph footnote
+		BigInteger id = realiseFootnote(() -> {
+			newParagraph(null);
+			visitChildren(inlineFootnote);
+			endParagraph();
+		});
+		if (id != null) {
+			addFootnoteRefRun(id);
+		}
+	}
+
+	private BigInteger realiseFootnote(Runnable body) {
+		styles.ensureKnown(ImportFootnotes.FOOTNOTE_TEXT);
+		styles.ensureKnown(ImportFootnotes.FOOTNOTE_REFERENCE);
+		List<Object> blocks = collectBlocks(body);
+		try {
+			return footnotes.add(blocks);
+		} catch (Docx4JException e) {
+			log.warn("Could not add footnote", e);
+			return null;
+		}
+	}
+
+	private void addFootnoteRefRun(BigInteger id) {
+		R r = factory.createR();
+		RPr rPr = runRPr();
+		if (rPr == null) {
+			rPr = factory.createRPr();
+		}
+		RStyle rStyle = factory.createRStyle();
+		rStyle.setVal(ImportFootnotes.FOOTNOTE_REFERENCE);
+		rPr.setRStyle(rStyle);
+		r.setRPr(rPr);
+		CTFtnEdnRef ref = factory.createCTFtnEdnRef();
+		ref.setId(id);
+		r.getContent().add(factory.createRFootnoteReference(ref));
+		runTarget().add(r);
+	}
+
+	/**
+	 * Run the given body with fresh output and block context (as for content
+	 * destined for another part, eg a footnote), returning what it built.
+	 */
+	private List<Object> collectBlocks(Runnable body) {
+		List<Object> savedResults = results;
+		P savedP = currentP;
+		P.Hyperlink savedHyperlink = currentHyperlink;
+		int savedQuoteDepth = quoteDepth;
+		Deque<ListCtx> savedListStack = listStack;
+
+		results = new ArrayList<>();
+		currentP = null;
+		currentHyperlink = null;
+		quoteDepth = 0;
+		listStack = new ArrayDeque<>();
+
+		body.run();
+
+		List<Object> out = results;
+		results = savedResults;
+		currentP = savedP;
+		currentHyperlink = savedHyperlink;
+		quoteDepth = savedQuoteDepth;
+		listStack = savedListStack;
+		return out;
 	}
 
 	// ---------------------------------------------------------------- helpers
@@ -465,7 +766,7 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 
 	/** rPr for the current inline formatting state, or null if none applies. */
 	private RPr runRPr() {
-		if (boldDepth == 0 && italicDepth == 0 && currentHyperlink == null) {
+		if (boldDepth == 0 && italicDepth == 0 && strikeDepth == 0 && currentHyperlink == null) {
 			return null;
 		}
 		RPr rPr = factory.createRPr();
@@ -479,6 +780,9 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 		}
 		if (italicDepth > 0) {
 			rPr.setI(factory.createBooleanDefaultTrue());
+		}
+		if (strikeDepth > 0) {
+			rPr.setStrike(factory.createBooleanDefaultTrue());
 		}
 		return rPr;
 	}
