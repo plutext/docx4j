@@ -43,11 +43,26 @@ public class MarkdownImportOptions {
 	private static final org.slf4j.Logger log =
 			org.slf4j.LoggerFactory.getLogger(MarkdownImportOptions.class);
 
+	/**
+	 * How TeX math is realised.
+	 */
+	public enum MathPolicy {
+		/**
+		 * Translate the supported LaTeX subset to native OMML equations
+		 * (the default); an equation outside the subset falls back to its
+		 * literal source and raises an issue.
+		 */
+		OMML,
+		/** Never translate: all math as literal source text. */
+		LITERAL
+	}
+
 	private HtmlPolicy htmlPolicy = HtmlPolicy.DROP;
 	private CodeBlockShape codeBlockShape = CodeBlockShape.SINGLE_PARAGRAPH;
 	private java.util.Set<Extension> extensions = java.util.EnumSet.allOf(Extension.class);
 	private MarkdownImageHandler imageHandler = new DefaultMarkdownImageHandler();
 	private MarkdownImportIssueListener issueListener = issue -> log.warn("{}", issue);
+	private MathPolicy mathPolicy = MathPolicy.OMML;
 
 	public HtmlPolicy getHtmlPolicy() {
 		return htmlPolicy;
@@ -107,6 +122,15 @@ public class MarkdownImportOptions {
 	 */
 	public MarkdownImportOptions setIssueListener(MarkdownImportIssueListener issueListener) {
 		this.issueListener = issueListener;
+		return this;
+	}
+
+	public MathPolicy getMathPolicy() {
+		return mathPolicy;
+	}
+
+	public MarkdownImportOptions setMathPolicy(MathPolicy mathPolicy) {
+		this.mathPolicy = mathPolicy;
 		return this;
 	}
 

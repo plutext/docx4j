@@ -1,6 +1,6 @@
 # CR: Markdown math (LaTeX equations → native OMML, and back)
 
-Status: IN PROGRESS (2026-09-01) — phase a complete
+Status: IN PROGRESS (2026-09-01) — phases a-b complete
 Scope: extend **docx4j-markdown** with equation support — `$...$` / `$$...$$`
 (and `\(...\)` / `\[...\]`) recognized at parse time, and a **deliberately
 restricted LaTeX subset** translated to Word's native OMML
@@ -153,6 +153,40 @@ b. **Core translator** (M): `LatexToOmml` — runs/symbols, `\frac`, sub/sup,
    function names; `MathPolicy` option; inline `m:oMath` + display
    `m:oMathPara` placement.  Tests: per-construct OMML assertions, the REWS
    diagnostic equation as a golden case, failure→fallback+report, save/marshal.
+
+   **DONE 2026-09-01.**  `LatexToOmml` (public, in the math package): a
+   recursive-descent parser over a cursor, sequences tracked as *atoms* so
+   `_`/`^` bind to the preceding atom only (LaTeX semantics — so `ab^2`
+   scripts the `b`); adjacent same-format runs merged into one `m:r`.
+   Implementation notes:
+   - `\frac12`-style single-token arguments supported (LaTeX allows braceless
+     single-char args).
+   - nary operators consume their own `_`/`^` into `m:sub`/`m:sup` (hidden
+     via subHide/supHide when absent); `limLoc` undOvr for ∑-family, subSup
+     for ∫-family; the operand is NOT grouped (empty `m:e`, content flows
+     after — texmath's convention, and renders correctly).
+   - `\left./\right.` → empty `m:begChr/m:endChr` (invisible delimiter);
+     `\{ \} \langle`… mapped; `\left`-scanning recognises `\right` only when
+     not a longer command name.
+   - `\text` → `m:nor` (prose, spaces preserved); `\mathrm`/`\operatorname`
+     and bare function names (`\sin`, `\log`, `\lim`, …) → `m:sty` "p";
+     `{\rm …}`/`\bf`/`\it` are group-scoped style switches; `\mathbf`/
+     `\mathit` argument-scoped.
+   - Spacing macros are real Unicode: `\,`→U+2009, `\;`/`\:`→U+2005,
+     `\quad`→U+2003, `\qquad` doubled; `\!` dropped (no OMML equivalent).
+   - ~90 symbol commands (greek incl. var-forms, operators, relations,
+     arrows, dots, sets/logic); `'` → prime (U+2032).
+   - `MathPolicy` (OMML default / LITERAL) on the options; placement:
+     inline → `m:oMath` in the paragraph (works in table cells/list items —
+     tested), display → own paragraph with `m:oMathPara`; a paragraph that
+     IS a single `$$..$$` (the single-line form, an inline node with
+     display hint) is promoted to display.
+   - Failure is all-or-nothing per equation: `LatexMathException` → issue
+     (construct, source, reason incl. the offending command) + literal
+     CodeChar fallback; a good and a bad equation in one paragraph behave
+     independently (tested).
+   - 20 tests incl. the REWS golden equation; a QA docx was generated for
+     eyeballing in Word (nary limits, stretchy delimiters).
 c. **Structures** (S): `aligned`→`m:eqArr`, `\boxed`→`m:borderBox`,
    accents→`m:acc`, `\overline`→`m:bar`.
 d. **Export** (M): OMML→LaTeX reverse for the subset; math joins the golden

@@ -152,6 +152,15 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 
 	@Override
 	public void visit(Paragraph paragraph) {
+		// a paragraph that IS a single $$...$$ (single-line form parses as
+		// an inline node with a display hint) gets display treatment
+		if (paragraph.getFirstChild() instanceof org.docx4j.markdown.math.InlineMath
+				&& paragraph.getFirstChild() == paragraph.getLastChild()
+				&& ((org.docx4j.markdown.math.InlineMath) paragraph.getFirstChild()).isDisplayHint()
+				&& pendingTaskMarker == null) {
+			displayMath(((org.docx4j.markdown.math.InlineMath) paragraph.getFirstChild()).getLiteral());
+			return;
+		}
 		newParagraph(contextPPr());
 		if (pendingTaskMarker != null) {
 			addText(pendingTaskMarker);
@@ -487,23 +496,51 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 	// ------------------------------------------------------------ math
 
 	/**
-	 * Phase a of CR-markdown-math: recognition + lossless literal fallback.
-	 * The LaTeX→OMML translator is phase b; until then every equation
-	 * degrades (loudly, via the issue listener) to its literal source in
-	 * the CodeChar style, delimiters preserved.
+	 * CR-markdown-math: the supported LaTeX subset becomes native OMML
+	 * (unless MathPolicy.LITERAL); anything outside it degrades — loudly,
+	 * via the issue listener — to its literal source in the CodeChar style,
+	 * delimiters preserved.
 	 */
 	private void inlineMath(org.docx4j.markdown.math.InlineMath math) {
-		issue("inline math", math.getLiteral(),
-				"LaTeX->OMML translation not yet implemented (CR-markdown-math phase b); emitted literal source");
+		if (options.getMathPolicy() == MarkdownImportOptions.MathPolicy.OMML) {
+			try {
+				org.docx4j.math.CTOMath oMath =
+						new org.docx4j.markdown.math.LatexToOmml().convertInline(math.getLiteral());
+				runTarget().add(new org.docx4j.math.ObjectFactory().createOMath(oMath));
+				return;
+			} catch (org.docx4j.markdown.math.LatexMathException e) {
+				issue("inline math", math.getLiteral(),
+						"unsupported LaTeX: " + e.getMessage() + "; emitted literal source");
+			}
+		}
 		String delimiter = math.isDisplayHint() ? "$$" : "$";
 		addLiteralMathRun(delimiter + math.getLiteral().replace('\n', ' ') + delimiter);
 	}
 
 	private void displayMath(org.docx4j.markdown.math.DisplayMath math) {
-		issue("display math", math.getLiteral(),
-				"LaTeX->OMML translation not yet implemented (CR-markdown-math phase b); emitted literal source");
+		displayMath(math.getLiteral());
+	}
+
+	private void displayMath(String literal) {
+		if (options.getMathPolicy() == MarkdownImportOptions.MathPolicy.OMML) {
+			try {
+				org.docx4j.math.CTOMathPara oMathPara =
+						new org.docx4j.markdown.math.LatexToOmml().convertDisplay(literal);
+				newParagraph(contextPPr());
+				currentP.getContent().add(new org.docx4j.math.ObjectFactory().createOMathPara(oMathPara));
+				endParagraph();
+				return;
+			} catch (org.docx4j.markdown.math.LatexMathException e) {
+				issue("display math", literal,
+						"unsupported LaTeX: " + e.getMessage() + "; emitted literal source");
+			}
+		}
+		literalDisplayMath(literal);
+	}
+
+	private void literalDisplayMath(String literal) {
 		newParagraph(null);
-		String[] lines = ("$$\n" + math.getLiteral() + "\n$$").split("\n", -1);
+		String[] lines = ("$$\n" + literal + "\n$$").split("\n", -1);
 		for (int i = 0; i < lines.length; i++) {
 			if (i > 0) {
 				R br = factory.createR();

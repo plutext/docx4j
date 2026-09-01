@@ -22,9 +22,13 @@ public class MarkdownMathRecognitionTest {
 
 	private final List<MarkdownImportIssue> issues = new ArrayList<>();
 
+	// MathPolicy.LITERAL: these tests cover recognition and the literal
+	// rendering shape; the OMML translation itself is MarkdownMathOmmlTest
 	private WordprocessingMLPackage convert(String md) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
-		new MarkdownImporter(new MarkdownImportOptions().setIssueListener(issues::add))
+		new MarkdownImporter(new MarkdownImportOptions()
+				.setMathPolicy(MarkdownImportOptions.MathPolicy.LITERAL)
+				.setIssueListener(issues::add))
 				.importToMainDocumentPart(md, pkg);
 		return pkg;
 	}
@@ -69,9 +73,7 @@ public class MarkdownMathRecognitionTest {
 		assertEquals("Power: $P=\\frac12\\rho A U^3$ done", text(p));
 		// the math is one CodeChar-styled run, delimiters preserved
 		assertEquals("$P=\\frac12\\rho A U^3$", codeCharText(p));
-		assertEquals(1, issues.size());
-		assertEquals("inline math", issues.get(0).getConstruct());
-		assertEquals("P=\\frac12\\rho A U^3", issues.get(0).getSource());
+		assertTrue(issues.isEmpty()); // LITERAL is a policy choice, not a degradation
 	}
 
 	@Test
@@ -89,9 +91,7 @@ public class MarkdownMathRecognitionTest {
 		P math = (P) content(pkg).get(1);
 		// literal fallback paragraph: fenced, lines separated by w:br
 		assertEquals("$$P_{\\rm wind}=\\frac12 \\rho A U^3$$", codeCharText(math));
-		assertEquals(1, issues.size());
-		assertEquals("display math", issues.get(0).getConstruct());
-		assertEquals("P_{\\rm wind}\n=\n\\frac12 \\rho A U^3", issues.get(0).getSource());
+		assertTrue(issues.isEmpty());
 	}
 
 	@Test
