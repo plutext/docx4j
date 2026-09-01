@@ -17,8 +17,11 @@ more.
 
 ## Math
 
-`$...$` (inline) and `$$ ... $$` (display) — also `\(...\)` and, as a block,
-`\[ ... \]` — are translated to **native OMML equations**, both directions.
+`$...$` (inline) and `$$ ... $$` (display) — also `\(...\)` and, at line
+start, `\[ ... \]` (single-line or multi-line) — are translated to **native
+OMML equations**, both directions.  The one unrecognized form is `\[...\]`
+buried inside a running line of text: markdown's own escaping owns brackets
+there, so use `$...$` for inline math.
 The supported LaTeX subset is the contract (anything else falls back,
 loudly — see below):
 

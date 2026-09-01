@@ -139,6 +139,18 @@ a. **Recognition + fallback + report** (S): MathExtension (inline `$`,
      as display.
    - Closing `$$` may share a line with trailing math content (captured in
      `tryContinue` before `finished()`); an unclosed block runs to EOF.
+     AMENDED 2026-09-01: a fully single-line block (`\[x\]` or `$$x$$` alone
+     on a line) is now claimed by the block parser after all — via a
+     `singleLine` flag whose `tryContinue` returns `BlockContinue.none()`
+     (block closes, next line reprocessed normally), avoiding the
+     `finished()`-consumes-the-line problem.  This was found as a SILENT
+     loss: single-line `\[{\rm m\,s^{-1}}.\]` has no inline fallback (`$$`
+     does), so it degraded to escaped-bracket text with no issue raised.
+     Also fixed at the same time: a line-start `$$x$$ trailing text` used
+     to open a multi-line block and swallow following lines; a mid-line
+     closer now declines the block (the inline parser handles it).  The
+     only unrecognized form left is `\[..\]` inside a running line of text
+     (markdown bracket escaping owns that; README says use `$...$`).
    - Inline `\[...\]` dropped (see §2 — collides with bracket escaping);
      `\(...\)` kept, both normalize to `$`-forms on render.
    - The renderer side declares `$` a special character, so literal

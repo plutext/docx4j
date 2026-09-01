@@ -106,6 +106,39 @@ public class MarkdownMathCorpusTest {
 		assertTrue(omml("U_{\\min}^C\n\\ \\text{or}\\ \nU_{\\max}^C").contains(">or<"));
 	}
 
+	// ------------------------------------------------- single-line \[ .. \]
+
+	@Test
+	public void singleLineBracketDisplayIsMath() throws Exception {
+		// \[{\rm m\,s^{-1}}.\] on ONE line has no inline fallback ($$ does),
+		// so the block parser must claim it; it used to degrade silently to
+		// escaped-bracket text
+		List<MarkdownImportIssue> issues = new ArrayList<>();
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		new MarkdownImporter(new MarkdownImportOptions().setIssueListener(issues::add))
+				.importToMainDocumentPart("\\[{\\rm m\\,s^{-1}}.\\]\n", pkg);
+		String xml = XmlUtils.marshaltoString(
+				pkg.getMainDocumentPart().getJaxbElement(), true, Context.jc);
+		assertTrue(xml.contains("<m:oMathPara>"));
+		assertTrue(xml.contains("<m:sSup>")); // the ^{-1} exponent
+		assertTrue(xml.contains(">-1<"));
+		assertTrue(issues.isEmpty());
+	}
+
+	@Test
+	public void closerMidLineDoesNotSwallowFollowingLines() throws Exception {
+		// "$$x^2$$ and more" must not open a block that eats the next lines
+		List<MarkdownImportIssue> issues = new ArrayList<>();
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		new MarkdownImporter(new MarkdownImportOptions().setIssueListener(issues::add))
+				.importToMainDocumentPart("$$x^2$$ and more\n\nnext paragraph\n", pkg);
+		String xml = XmlUtils.marshaltoString(
+				pkg.getMainDocumentPart().getJaxbElement(), true, Context.jc);
+		assertTrue(xml.contains("<m:oMath")); // the inline $$ parser took it
+		assertTrue(xml.contains("and more"));
+		assertTrue(xml.contains("next paragraph"));
+	}
+
 	// ------------------------------------------------------- pandoc parity
 
 	@Test

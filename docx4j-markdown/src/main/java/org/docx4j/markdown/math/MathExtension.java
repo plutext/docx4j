@@ -193,12 +193,22 @@ public class MathExtension implements Parser.ParserExtension, MarkdownRenderer.M
 			if (!startsWith(line, i, opener)) {
 				return BlockStart.none();
 			}
-			String rest = line.subSequence(i + opener.length(), line.length()).toString();
-			if (rest.trim().endsWith(closer)) {
-				// closes on the same line: leave it to the inline parsers
-				return BlockStart.none();
+			String trimmed = line.subSequence(i + opener.length(), line.length())
+					.toString().trim();
+			boolean singleLine = false;
+			int closerIndex = trimmed.indexOf(closer);
+			if (closerIndex >= 0) {
+				if (closerIndex == trimmed.length() - closer.length()) {
+					// \[ x \] (or $$ x $$) complete on this line: a display
+					// block too — crucial for \[..\], which has NO inline form
+					singleLine = true;
+				} else {
+					// the closer mid-line, with trailing content: not a
+					// display block (else it would swallow following lines)
+					return BlockStart.none();
+				}
 			}
-			return BlockStart.of(new DisplayBlockParser(closer))
+			return BlockStart.of(new DisplayBlockParser(closer, singleLine))
 					.atIndex(i + opener.length());
 		}
 
@@ -219,11 +229,13 @@ public class MathExtension implements Parser.ParserExtension, MarkdownRenderer.M
 
 		private final DisplayMath block = new DisplayMath();
 		private final String closer;
+		private final boolean singleLine;
 		private final StringBuilder content = new StringBuilder();
 		private boolean seenOpeningRemainder;
 
-		DisplayBlockParser(String closer) {
+		DisplayBlockParser(String closer, boolean singleLine) {
 			this.closer = closer;
+			this.singleLine = singleLine;
 		}
 
 		@Override
@@ -233,6 +245,9 @@ public class MathExtension implements Parser.ParserExtension, MarkdownRenderer.M
 
 		@Override
 		public BlockContinue tryContinue(ParserState state) {
+			if (singleLine) {
+				return BlockContinue.none(); // complete: the block closes here
+			}
 			String line = state.getLine().getContent().toString();
 			String trimmed = line.trim();
 			if (trimmed.endsWith(closer)) {
@@ -250,6 +265,9 @@ public class MathExtension implements Parser.ParserExtension, MarkdownRenderer.M
 			if (!seenOpeningRemainder) {
 				seenOpeningRemainder = true; // remainder of the opening line
 				String rest = line.getContent().toString().trim();
+				if (singleLine) {
+					rest = rest.substring(0, rest.length() - closer.length()).trim();
+				}
 				if (!rest.isEmpty()) {
 					appendContentLine(rest);
 				}
