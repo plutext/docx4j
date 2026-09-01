@@ -394,9 +394,17 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 //			System.out.println("#wrapped in w:tc OK");
 			
+		} else if (o instanceof org.docx4j.wml.Drawing) {
+
+			// The w:drawing wrapper needs no handling of its own: we descend into
+			// it (shouldTraverse returns true) and its wp:inline/wp:anchor and
+			// a:blip are handled below.  Match it here so it doesn't fall to the
+			// notImplemented catch-all (which warns, and in debug injects a
+			// spurious NOT IMPLEMENTED node), as Tr/Tc are matched above.
+
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline
 				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
-			
+
 			anchorOrInline = o;  // keep this until we handle CTBlip
 			
 		} else if (o instanceof org.docx4j.dml.CTBlip) {
