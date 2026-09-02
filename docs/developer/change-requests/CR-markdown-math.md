@@ -325,6 +325,19 @@ Notes:
 - A script on a groupChr exports bare (`\underbrace{a+b}_{n}` — the label
   is the brace's subscript in LaTeX too), like the existing `m:d` rule.
 
+## 3e. Word eyeball QA: PASS (2026-09-02)
+
+A generated QA docx (aligned, cases, matrices, under/overbrace, underset —
+produced by the markdown importer from the 17.0.4-SNAPSHOT artifacts) was
+verified in desktop Word, all constructs rendering correctly.  In
+particular the open eqArr question is settled: literal `&` characters in
+an `m:eqArr` row's `m:t` render as invisible alignment marks (the `=`
+column aligns; no ampersand prints), matching Word's own storage
+convention — confirmed by toggling the equation Professional → Linear →
+Professional, which shows the `&` marks in linear form and preserves the
+alignment on conversion back.  Word also accepts the matrix code's empty
+`<m:mPr/>` without repair.
+
 ## 4. Risks / notes
 
 - **Subset creep** is the real risk (texmath's failing was pretending to
@@ -332,7 +345,8 @@ Notes:
   module README; everything else fails loudly into the report.
 - **Word rendering QA needs eyeballs**: nary limit placement, stretchy
   delimiters, eqArr alignment.  The test suite asserts OMML structure;
-  someone must open the output in Word once per phase.
+  someone must open the output in Word once per phase.  (Done for the full
+  subset as of §3e.)
 - `$` guards follow GitHub's rules; documents that used literal `$...$`
   spans matching those rules will now parse as math — the MATH toggle (or
   `\$`) is the out.
