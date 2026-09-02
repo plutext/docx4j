@@ -236,9 +236,20 @@ spike reversed that — it is now Route A, the recommended approach.)
 - **Baseline alignment in FOP.** Resolved by the spike: the plugin set
   `alignment-adjust` and FOP honoured it — the equation sat correctly on the text
   baseline.
-- **Optional dependency ergonomics.** With the reflective-optional approach,
-  users who want math in PDF add `de.rototor.jeuclid:jeuclid-core`; without it,
-  equations degrade to text with a one-time warning. Document clearly.
+- **Dependency weight — decided: ship it by default, but keep it removable.**
+  The net new footprint is small: `jeuclid-core` (~520 KB) + `jeuclid-fop`
+  (~17 KB) ≈ **540 KB**. Everything else in jeuclid-fop's tree (Batik, XML
+  Graphics Commons, xml-apis) is already in `docx4j-export-fo` at newer versions
+  that win; `commons-logging` is excluded (docx4j uses `jcl-over-slf4j`). The
+  spike ran `jeuclid-core` against the module's newer Batik + FOP 2.11, so
+  there's no version clash beyond a standard `<exclusion>` on jeuclid's bundled
+  FOP/Batik. Given the tiny size, the Apache-2.0 licence, and the "math just
+  works" goal, make jeuclid a **regular** dependency of `docx4j-export-fo` (PDF
+  math on out of the box) but call `JEuclidFopFactoryConfigurator.configure`
+  **reflectively/guarded** with a text fallback, so a user who excludes the
+  jeuclid jars degrades gracefully instead of hitting `NoClassDefFoundError`.
+  (Rejected `<optional>true</optional>`: it would deny out-of-the-box math for a
+  540 KB saving.)
 - **Licensing.** JEuclid (de.rototor) and MathJax are both Apache-2.0 — clean.
   The whole pipeline is now free of Microsoft's non-redistributable XSLT.
 - **Scope.** HTML already emits MathML natively (browsers render it); this CR is
