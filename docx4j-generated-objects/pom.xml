@@ -120,7 +120,7 @@
 						</goals>
 						<configuration>
 							<!-- JEP 330 single-file source launch: cross-platform,
-							     no compile step; see TODO_Windows_builds.md -->
+							     no compile step; see docs/developer/change-requests/CR-windows-builds.md -->
 							<executable>java</executable>
 							<arguments>
 								<argument>${project.basedir}/ModifyGeneratedSources.java</argument>

@@ -5,7 +5,7 @@
 # Shell scripts: a CRLF checkout (Git for Windows default core.autocrlf=true)
 # breaks the shebang.  (The build itself no longer runs any .sh —
 # modify-generated-sources.sh was ported to ModifyGeneratedSources.java;
-# see docx4j-generated-objects/TODO_Windows_builds.md.)
+# see docs/developer/change-requests/CR-windows-builds.md.)
 *.sh text eol=lf
 
 # Golden fixtures compared byte-for-byte: GoldenOutputTest normalizes the

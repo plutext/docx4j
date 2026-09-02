@@ -10,7 +10,7 @@ import java.util.stream.Stream;
  * SdtElement signatures, VML attribute order, etc).  Cross-platform
  * replacement for modify-generated-sources.sh, which needed bash/perl/sed/
  * find and so stopped docx4j building on native Windows (see
- * TODO_Windows_builds.md).  Invoked by exec-maven-plugin at process-sources
+ * docs/developer/change-requests/CR-windows-builds.md).  Invoked by exec-maven-plugin at process-sources
  * via single-file source launch (JEP 330): {@code java ModifyGeneratedSources.java}
  * — no compile step, no dependencies.  Must stay Java 11 source compatible
  * (so: no text blocks); the search/replace strings below are byte-exact
