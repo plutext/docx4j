@@ -92,11 +92,14 @@ http://www.docx4java.org/downloads.html
 How do I get started?
 ------------------
 
-See the Getting Started guide:  https://github.com/plutext/docx4j/tree/master/docs
+See the Getting Started guide: [docs/Docx4j_GettingStarted.md](docs/Docx4j_GettingStarted.md)
+(also there as docx, HTML and PDF — the docx is canonical; the other formats are
+generated from it by docx4j itself)
 
 and the Cheat Sheet:  http://www.docx4java.org/blog/2013/05/docx4j-in-a-single-page/
 
-And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samples
+And see the sample code in the `docx4j-samples-*` modules, eg
+[docx4j-samples-docx4j](docx4j-samples-docx4j/src/main/java/org/docx4j/samples)
 
 You'll probably want the Helper AddIn to generate code:  http://www.docx4java.org/blog/2016/05/docx4j-helper-word-addin-new-version-v3-3-0/
 
