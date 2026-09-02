@@ -89,6 +89,47 @@ Porting notes:
 - Delete `modify-generated-sources.sh` in the same commit the port lands,
   so the two can't drift.
 
+## Decision: keep the bare-JDK-11 build floor (2026-09-02)
+
+The port uses string concatenation, not text blocks: the pom's
+`<release>11</release>` is treated as also meaning "buildable with a bare
+JDK 11", and JEP 330 source launch runs the patcher on the build JDK, so
+text blocks (JDK 15+) would have silently raised the build floor via a
+side door.  Two further points sealed it:
+
+- text blocks **strip trailing whitespace** unless escaped (`\s`) — and the
+  CTLine search strings depend on trailing spaces in Javadoc lines, so the
+  "natural" syntax is actually a trap for exactly these strings;
+- with concatenation, every tab and trailing space is an explicit `\t` or
+  a visible quoted space, which is more robust against editor/formatter
+  cleanup than either the heredocs were or text blocks would be.
+
+Revisit only if the build floor is deliberately raised for other reasons.
+
+## Verification (2026-09-02, shipped in c47957cf5)
+
+- **A naive rebuild-and-diff is confounded: XJC output is nondeterministic
+  between runs.**  Building twice (same JDK, same inputs, minutes apart)
+  produced different member *ordering* in generated classes neither patcher
+  touches (eg `CTArc` attributes/getters shuffled).  Harmless for JAXB
+  semantics, but it means generated code is not reproducible build-to-build
+  — relevant to any future reproducible-builds effort, and to anyone
+  tempted to diff generated trees across builds.
+- **The verification that works: a controlled A/B on one frozen XJC
+  output.**  Run `mvn generate-sources` once (XJC only — process-sources
+  not reached, so unpatched), copy the tree twice, run the bash script on
+  one copy and the Java tool on the other, `diff -r`: **byte-identical**.
+  The heredocs were transcribed from `cat -A` output (tabs as `^I`, line
+  ends as `$`), not by eye — rendered terminal output cannot distinguish
+  tabs from spaces, and both the search side (CTLine trailing spaces) and
+  the replace side (Highlight/Styles tab/space mix, including a trailing
+  tab after one `} else {`) depend on exact bytes.
+- **Idempotence**: a second run skips all 20 `patch_once` equivalents via
+  the markers and changes nothing (tree still identical).
+- **Downstream**: module + docx4j-core rebuild green; deep-copy tests pass.
+- Not yet verified on an actual Windows machine — the first real Windows
+  build report is the remaining proof point.
+
 ## Remaining smaller items (none are build blockers)
 
 - **Known test flakiness on Windows**: CLAUDE.md's "some tests may fail on
