@@ -13,7 +13,8 @@ SdtElement signatures, VML attribute order etc) was ported from bash (which need
 bash/perl/sed/find, so WSL) to a cross-platform Java tool run via single-file source
 launch (docx4j-generated-objects/ModifyGeneratedSources.java); output verified
 byte-identical.  A .gitattributes was also added (17.0.4 cycle) so CRLF checkouts
-no longer break the build
+no longer break the build.  Verified on Windows 2026-09-03: full build, all tests
+green (one font test needed a Segoe UI Symbol fallback where DejaVu is absent)
 
 Version 17.0.4
 ===============

@@ -127,14 +127,15 @@ Revisit only if the build floor is deliberately raised for other reasons.
 - **Idempotence**: a second run skips all 20 `patch_once` equivalents via
   the markers and changes nothing (tree still identical).
 - **Downstream**: module + docx4j-core rebuild green; deep-copy tests pass.
-- **Verified on a real Windows machine (2026-09-03)**: the build ran the
-  whole reactor — checkout, XJC, the Java patcher, compile — up to the
-  predicted environment-dependent test category: a font test NPE'd where
-  DejaVu Sans is absent (RunFontSelectorCalibriCheckBoxTest, fixed in
-  5ed7b6553 with a Segoe UI Symbol fallback + Assume guard, the pattern
-  the newer RunFontSelector tests already use).  I.e. the build machinery
-  itself works on native Windows; remaining Windows failures, if any, are
-  in the known font-dependent test class.
+- **Verified on a real Windows machine (2026-09-03): full `mvn clean
+  install`, ALL TESTS PASS.**  The first run got through the whole
+  reactor — checkout, XJC, the Java patcher, compile — to one font test
+  that NPE'd where DejaVu Sans is absent
+  (RunFontSelectorCalibriCheckBoxTest, fixed in 5ed7b6553 with a Segoe UI
+  Symbol fallback + Assume guard, the pattern the newer RunFontSelector
+  tests already use); with that fix the suite is green.  The long-standing
+  "some tests may fail on Windows" caveat is retired (CLAUDE.md updated) —
+  the font-dependent tests guard themselves with Assume/fallbacks now.
 
 ## Remaining smaller items (none are build blockers)
 
