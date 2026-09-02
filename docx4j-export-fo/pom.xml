@@ -216,6 +216,53 @@
 			</exclusions>
 		</dependency>
 
+		<!-- MathML in PDF: jeuclid-fop renders MathML in fo:instream-foreign-object
+		     (CR-math-pdf-fo).  ~540 KB net; everything else in its tree (Batik,
+		     xmlgraphics-commons, xml-apis) is already here at newer versions that
+		     win, so we exclude its stale copies and its bundled FOP.  Registered
+		     reflectively (FORendererApacheFOP), so a consumer can exclude these
+		     jars and math degrades to text rather than breaking. -->
+		<dependency>
+			<groupId>de.rototor.jeuclid</groupId>
+			<artifactId>jeuclid-fop</artifactId>
+			<version>3.1.14</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>fop</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>fop-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>xmlgraphics-commons</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis-ext</artifactId>
+				</exclusion>
+				<!-- pull the newer Batik that FOP 2.11 already brings -->
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-all</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>batik</groupId>
+					<artifactId>batik-all</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 	</dependencies>
 	
 </project>

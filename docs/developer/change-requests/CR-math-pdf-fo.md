@@ -203,14 +203,20 @@ spike reversed that — it is now Route A, the recommended approach.)
 
 ## 5. Phases
 
-1. **Plugin wiring (Route A).** Add `jeuclid-fop`/`jeuclid-core` as optional deps
-   (exclude their FOP); register via `JEuclidFopFactoryConfigurator.configure`
-   reflectively where `FORendererApacheFOP` builds the `FopFactory`. Emit
-   `fo:instream-foreign-object` wrapping the `OmmlToMathML` MathML for
-   `m:oMath`/`m:oMathPara` in both FO pathways (shared `XsltFOFunctions` helper +
-   `FOExporterVisitorGenerator` case), falling back to text when the plugin is
-   absent. Test: a docx equation renders in the PDF, both pathways. (Spike already
-   proved the render path on FOP 2.11.)
+1. **Plugin wiring (Route A). DONE.** `jeuclid-fop`/`jeuclid-core` added to
+   docx4j-export-fo (their FOP/Batik/xmlgraphics/commons-logging/xml-apis
+   excluded — the module's newer copies win). Registered reflectively in
+   `FORendererApacheFOP.getFOUserAgent` (the single chokepoint every build path —
+   `FopReflective` for toPDF, and `render()` — funnels through; registering only
+   in `render()`'s build branch was skipped because `FopReflective` pre-populates
+   `FOP_FACTORY`). `XsltFOFunctions.mathToFO` emits `fo:instream-foreign-object`
+   wrapping the `OmmlToMathML` MathML, or the equation's text when no renderer is
+   present; wired into both FO pathways (`docx2fo.xslt` m:oMath templates +
+   `FOExporterVisitorGenerator` case, non-traversable). `isMathMLRendererAvailable()`
+   gates emit-MathML vs text. Verified end-to-end: the quadratic-formula sample
+   renders in the PDF via both pathways, and degrades to text (no crash) when the
+   jeuclid jars are excluded. `MathMLPdfTest` (3 tests). Also exported
+   `org.docx4j.convert.out.mathml` from docx4j-core's module-info.
 2. **Regression corpus.** Extend the CR-math-omml-mathml corpus toward ~50–100
    deliberately nasty equations (stretchy operators, nested radicals/fractions,
    matrices, n-ary limits, accents, math fonts). Render to PDF, eyeball vs Word's

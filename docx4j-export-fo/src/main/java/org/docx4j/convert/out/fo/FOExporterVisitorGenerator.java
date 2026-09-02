@@ -205,6 +205,17 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			}
 			return super.apply(o); // other alignments: warn, as the XSLT does
 
+		} else if (o instanceof org.docx4j.math.CTOMathPara
+				|| o instanceof org.docx4j.math.CTOMath) {
+
+			// equation -> MathML in fo:instream-foreign-object (rendered by the
+			// jeuclid-fop plugin), or the equation's text if no renderer is present
+			org.w3c.dom.DocumentFragment frag = XsltFOFunctions.mathToFO(conversionContext, o);
+			if (frag != null) {
+				getCurrentParent().appendChild(document.importNode(frag, true));
+			}
+			return null;
+
 		}
 
 		return super.apply(o);
@@ -305,6 +316,11 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		}
 		if (o instanceof SdtElement && containerTag((SdtElement)o)!=null) {
 			// its contents were already converted in apply (handleXsltContainer)
+			return false;
+		}
+		if (o instanceof org.docx4j.math.CTOMath
+				|| o instanceof org.docx4j.math.CTOMathPara) {
+			// handled whole in apply(); don't descend into the OMML children
 			return false;
 		}
 		return super.shouldTraverse(o);

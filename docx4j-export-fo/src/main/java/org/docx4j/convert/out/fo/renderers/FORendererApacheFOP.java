@@ -347,8 +347,12 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		if (fopFactory==null) {
 			throw new Docx4JException("FopFactory is null");
 		}
+		// register the MathML renderer (jeuclid-fop) before the user agent is
+		// built from the factory - this is the single point every build path funnels
+		// through (FopReflective for toPDF, and render() when it builds its own)
+		registerMathMLRenderer(fopFactory);
 		settings.getSettings().put(FOP_FACTORY, fopFactory);
-		
+
 	    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
 		settings.getSettings().put(FO_USER_AGENT, foUserAgent);
 		
@@ -366,8 +370,48 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 */
 	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings) throws FOPException {
 //		(new Throwable()).printStackTrace();
-		return getFopFactoryBuilder(settings, null); 
-	}	
+		return getFopFactoryBuilder(settings, null);
+	}
+
+	private static Boolean mathMLRendererAvailable = null;
+
+	/**
+	 * Whether a MathML renderer (the jeuclid-fop plugin) is on the classpath.
+	 * When true, the FO exporters emit equations as MathML inside
+	 * fo:instream-foreign-object (which this plugin renders); when false they fall
+	 * back to the equation's text. jeuclid is a default dependency but a consumer
+	 * may exclude it. See CR-math-pdf-fo.
+	 *
+	 * @since 17.0.4
+	 */
+	public static boolean isMathMLRendererAvailable() {
+		if (mathMLRendererAvailable == null) {
+			try {
+				Class.forName("net.sourceforge.jeuclid.fop.plugin.JEuclidFopFactoryConfigurator");
+				mathMLRendererAvailable = Boolean.TRUE;
+			} catch (Throwable t) {
+				mathMLRendererAvailable = Boolean.FALSE;
+				log.info("No MathML renderer (jeuclid-fop) on the classpath; equations in PDF will be rendered as text.");
+			}
+		}
+		return mathMLRendererAvailable;
+	}
+
+	/** Register the jeuclid-fop MathML plugin with the factory, if present. */
+	private static void registerMathMLRenderer(FopFactory fopFactory) {
+		if (!isMathMLRendererAvailable()) {
+			return;
+		}
+		try {
+			Class<?> configurator = Class.forName(
+					"net.sourceforge.jeuclid.fop.plugin.JEuclidFopFactoryConfigurator");
+			configurator.getMethod("configure", FopFactory.class).invoke(null, fopFactory);
+			log.debug("Registered JEuclid MathML renderer with FOP");
+		} catch (Throwable t) {
+			log.warn("Couldn't register the JEuclid MathML renderer: " + t.getMessage());
+		}
+	}
+
 	/**
 	 * Get a FopFactoryBuilder, automagically preconfigured with font info.
 	 * Uses the specified ResourceResolver.

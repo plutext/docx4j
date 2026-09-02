@@ -52,6 +52,7 @@ module org.docx4j.core {
     exports org.docx4j.convert.out.flatOpcXml;
     exports org.docx4j.convert.out.fopconf;
     exports org.docx4j.convert.out.html;
+    exports org.docx4j.convert.out.mathml;
     exports org.docx4j.document.wordprocessingml;
     exports org.docx4j.events;
     exports org.docx4j.finders;

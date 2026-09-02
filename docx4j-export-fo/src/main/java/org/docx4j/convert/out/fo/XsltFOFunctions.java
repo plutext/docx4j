@@ -188,6 +188,84 @@ public class XsltFOFunctions {
 			return null;
 		}
     }
+
+    /**
+     * Convert an m:oMath / m:oMathPara node to FO for PDF. When a MathML renderer
+     * (jeuclid-fop) is on the classpath, emits fo:instream-foreign-object wrapping
+     * the MathML from OmmlToMathML (FOP + the plugin render it); otherwise falls
+     * back to the equation's text so PDF export never fails on math. Shared by the
+     * XSLT pathway (docx2fo.xslt, via this NodeIterator form) and the visitor
+     * pathway (FOExporterVisitorGenerator, via the Object form). See CR-math-pdf-fo.
+     *
+     * @since 17.0.4
+     */
+    public static DocumentFragment mathToFO(FOConversionContext context, NodeIterator ommlNodeIt) {
+    	Node n = (ommlNodeIt == null) ? null : ommlNodeIt.nextNode();
+    	if (n == null) {
+    		return null;
+    	}
+    	try {
+    		Unmarshaller u = Context.jc.createUnmarshaller();
+    		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+    		return mathToFO(context, XmlUtils.unwrap(u.unmarshal(n)));
+    	} catch (Exception e) {
+    		log.warn("MathML->FO failed; omitting equation: " + e.getMessage());
+    		return null;
+    	}
+    }
+
+    public static DocumentFragment mathToFO(FOConversionContext context, Object omml) {
+    	Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+    	DocumentFragment frag = document.createDocumentFragment();
+
+    	if (org.docx4j.convert.out.fo.renderers.FORendererApacheFOP.isMathMLRendererAvailable()) {
+    		try {
+    			org.docx4j.convert.out.mathml.OmmlToMathML converter =
+    					new org.docx4j.convert.out.mathml.OmmlToMathML();
+    			Document mathDoc;
+    			if (omml instanceof org.docx4j.math.CTOMathPara) {
+    				mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMathPara) omml);
+    			} else {
+    				mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMath) omml);
+    			}
+    			Element ifo = document.createElementNS(
+    					"http://www.w3.org/1999/XSL/Format", "fo:instream-foreign-object");
+    			ifo.appendChild(document.importNode(mathDoc.getDocumentElement(), true));
+    			frag.appendChild(ifo);
+    			return frag;
+    		} catch (org.docx4j.convert.out.mathml.MathConversionException e) {
+    			log.warn("OMML->MathML failed; emitting equation text: " + e.getMessage());
+    			// fall through to text
+    		}
+    	}
+
+    	String text = mathText(omml);
+    	if (!text.isEmpty()) {
+    		frag.appendChild(document.createTextNode(text));
+    	}
+    	return frag;
+    }
+
+    /** Plain text of an OMath/OMathPara, for the no-renderer / failure fallback. */
+    private static String mathText(Object omml) {
+    	try {
+    		org.docx4j.math.ObjectFactory of = new org.docx4j.math.ObjectFactory();
+    		Object toMarshal = (omml instanceof org.docx4j.math.CTOMathPara)
+    				? of.createOMathPara((org.docx4j.math.CTOMathPara) omml)
+    				: of.createOMath((org.docx4j.math.CTOMath) omml);
+    		Document d = XmlUtils.marshaltoW3CDomDocument(toMarshal);
+    		org.w3c.dom.NodeList ts = d.getElementsByTagNameNS(
+    				"http://schemas.openxmlformats.org/officeDocument/2006/math", "t");
+    		StringBuilder sb = new StringBuilder();
+    		for (int i = 0; i < ts.getLength(); i++) {
+    			sb.append(ts.item(i).getTextContent());
+    		}
+    		return sb.toString();
+    	} catch (Exception e) {
+    		return "";
+    	}
+    }
+
     /**
      * This is invoked on every paragraph, whether it has a pPr or not.
      * 

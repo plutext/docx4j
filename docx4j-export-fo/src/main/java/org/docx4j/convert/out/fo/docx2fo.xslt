@@ -13,9 +13,10 @@
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"		
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic r">	
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic r m">
 
   <!-- 
     Copyright 200?-2012, Plutext Pty Ltd.
@@ -953,9 +954,19 @@
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
+  <!-- Equations: MathML in fo:instream-foreign-object, rendered by jeuclid-fop
+       (falls back to the equation's text if no MathML renderer is present).
+       See CR-math-pdf-fo. -->
+  <xsl:template match="m:oMathPara">
+		<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.mathToFO($conversionContext, .)" />
+  </xsl:template>
+  <xsl:template match="m:oMath">
+		<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.mathToFO($conversionContext, .)" />
+  </xsl:template>
+
   <xsl:template match="*">
-		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., '' )" />  	
+		<xsl:copy-of
+			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., '' )" />
   </xsl:template>
 
 </xsl:stylesheet>

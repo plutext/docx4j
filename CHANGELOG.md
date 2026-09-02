@@ -62,6 +62,11 @@ and the XSLT pathways — via a new Apache-licensed Java converter
 OMML2MML.XSL.  On an unsupported construct it falls back to the equation's text.  (The XSLT
 pathway calls it through XsltHTMLFunctions.convertMathML; to use OMML2MML.XSL instead, see the
 comments in docx2xhtml-core.xslt.)  See docs/developer/change-requests/CR-math-omml-mathml.md
+- docx->PDF (via XSL-FO) now renders equations too: the exporters emit the OmmlToMathML MathML in
+fo:instream-foreign-object, rendered by the jeuclid-fop plugin (a new ~540 KB Apache-2.0 dependency
+of docx4j-export-fo; the rest of its tree is already present).  Works on both FO pathways; if the
+jeuclid jars are excluded, equations fall back to text rather than failing.  See
+docs/developer/change-requests/CR-math-pdf-fo.md
 
 New module docx4j-markdown:
 - markdown import (markdown->docx: real heading/quote/code styles, real numbering, GFM tables,
