@@ -80,6 +80,12 @@
 			<version>${project.version}</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-markdown</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+				
 		<!-- required if specified by property javax.xml.parsers.SAXParserFactory
 			 in docx4j.properties  
 		<dependency>
@@ -175,11 +181,6 @@
 		</dependency>
 	-->
 	
-	<dependency>
-		<groupId>org.docx4j</groupId>
-		<artifactId>docx4j-markdown</artifactId>
-		<version>17.0.4-SNAPSHOT</version>
-	</dependency>
 	</dependencies>
 
 </project>
