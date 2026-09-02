@@ -67,7 +67,7 @@ public class HorizontalRuleRemove extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.docx";
+			inputfilepath = System.getProperty("user.dir") + "/OUT_OpenAndSaveRoundTripTest.docx";
 		}
 		try {
 			getOutputFilePath(args);

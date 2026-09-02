@@ -11,6 +11,8 @@ module docx4j_samples_docx4j {
 	
 	// Uncomment ONE of the following:
 	requires org.docx4j.JAXB_ReferenceImpl;
+	requires org.jvnet.jaxb.plugins.runtime;
+	requires org.docx4j.markdown;
 //	 requires org.docx4j.JAXB_MOXy;
 	
 //	requires xercesImpl;

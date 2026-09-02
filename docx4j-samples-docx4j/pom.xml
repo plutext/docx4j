@@ -175,6 +175,11 @@
 		</dependency>
 	-->
 	
+	<dependency>
+		<groupId>org.docx4j</groupId>
+		<artifactId>docx4j-markdown</artifactId>
+		<version>17.0.4-SNAPSHOT</version>
+	</dependency>
 	</dependencies>
 
 </project>
