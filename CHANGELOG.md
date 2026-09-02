@@ -194,7 +194,7 @@ AND the note bodies were silently dropped): numbered references with bidirection
 the footnotes/endnotes divs at the end of the body
 - the visitor exporter now honours userBodyTop/userBodyTail (well-formed markup), emits the XHTML
 doctype and the docx4j.Convert.Out.HTML.OutputMethodXML choice, and shares the XSLT pathway's
-<head> builder; a document containing a VML textbox no longer fails the whole conversion
+&lt;head> builder; a document containing a VML textbox no longer fails the whole conversion
 (WRONG_DOCUMENT_ERR)
 - both HTML pathways: div.footer now gets its print CSS when the document has a footer but no
 header (hasDefaultFooter was computed from hasDefaultHeader in both copies of the head builder)
