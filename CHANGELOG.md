@@ -56,10 +56,12 @@ Docx4J.FLAG_EXPORT_PREFER_XSL to toPDF/toFO/toHTML
 - the non-XSLT FO/HTML exporter no longer logs "Need to handle org.docx4j.wml.Drawing" for every
 image (the w:drawing wrapper is now matched as a no-op, as w:tr/w:tc already were); output is
 unchanged, and a spurious debug-only "NOT IMPLEMENTED" node next to each image is gone
-- docx->HTML (non-XSLT pathway) now emits equations as native MathML out of the box, via a new
-Apache-licensed Java converter (org.docx4j.convert.out.mathml.OmmlToMathML) — no longer requiring
-Microsoft's non-redistributable OMML2MML.XSL.  On an unsupported construct it falls back to the
-equation's text.  See docs/developer/change-requests/CR-math-omml-mathml.md
+- docx->HTML now emits equations as native MathML out of the box — on BOTH the visitor (default)
+and the XSLT pathways — via a new Apache-licensed Java converter
+(org.docx4j.convert.out.mathml.OmmlToMathML), no longer requiring Microsoft's non-redistributable
+OMML2MML.XSL.  On an unsupported construct it falls back to the equation's text.  (The XSLT
+pathway calls it through XsltHTMLFunctions.convertMathML; to use OMML2MML.XSL instead, see the
+comments in docx2xhtml-core.xslt.)  See docs/developer/change-requests/CR-math-omml-mathml.md
 
 New module docx4j-markdown:
 - markdown import (markdown->docx: real heading/quote/code styles, real numbering, GFM tables,

@@ -21,14 +21,13 @@
               from the definition in an _rels file
               (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
-<!-- MathML (1 of 3).  Since 17.0.4 the default HTML exporter is the non-XSLT
-     (visitor) pathway, which emits equations as native MathML out of the box
-     (org.docx4j.convert.out.mathml.OmmlToMathML) - nothing to configure.
+<!-- MathML (1 of 3).  Since 17.0.4 both HTML pathways emit equations as native
+     MathML out of the box (org.docx4j.convert.out.mathml.OmmlToMathML) - nothing
+     to configure.  The XSLT pathway does it via the m:oMath templates in block 3.
 
-     This XSLT pathway (Docx4J.FLAG_EXPORT_PREFER_XSL) does NOT convert OMML to
-     MathML by itself.  To get MathML here you must supply Microsoft's
-     OMML2MML.XSL (part of Microsoft Office, not redistributable with docx4j;
-     change its output encoding to UTF-8) and uncomment blocks 1-3:
+     If you would rather use Microsoft's OMML2MML.XSL (part of Microsoft Office,
+     not redistributable with docx4j; change its output encoding to UTF-8),
+     uncomment this include and swap the block 3 templates as noted there:
     <xsl:include href="OMML2MML.xslt" />
  -->
 
@@ -690,15 +689,16 @@
 			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.updateComplexFieldDefinition($conversionContext, .)" />  	
   </xsl:template>
 
-<!-- MathML (3 of 3): with OMML2MML.XSL included (block 1), this wraps each
-     equation in a <math> element.  Uncomment together with block 1.  (The
-     default non-XSLT exporter does this natively and needs none of this.)
+<!-- MathML (3 of 3): equations become native MathML via our own converter
+     (OmmlToMathML), so no OMML2MML.XSL is required.  To use Microsoft's
+     stylesheet instead, uncomment its include in block 1 and replace these two
+     templates with:  <math ...><xsl:apply-templates/></math> -->
   <xsl:template match="m:oMathPara" >
-    <math xmlns='http://www.w3.org/1998/Math/MathML'>
-            <xsl:apply-templates/>
-    </math>
+    <xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.convertMathML($conversionContext, .)" />
   </xsl:template>
--->
+  <xsl:template match="m:oMath" >
+    <xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.convertMathML($conversionContext, .)" />
+  </xsl:template>
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  alternate content     ++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->

@@ -18,7 +18,18 @@ import org.junit.Test;
 public class HtmlMathMLTest {
 
 	@Test
-	public void displayEquationEmitsMathML() throws Exception {
+	public void visitorPathwayEmitsMathML() throws Exception {
+		assertMathML(Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+	}
+
+	@Test
+	public void xsltPathwayEmitsMathML() throws Exception {
+		// the XSLT pathway now converts natively too (via XsltHTMLFunctions.convertMathML),
+		// so no Microsoft OMML2MML.XSL is needed
+		assertMathML(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	private void assertMathML(int flag) throws Exception {
 
 		// 2010-sample1.docx holds a display equation (the quadratic formula)
 		String path = System.getProperty("user.dir")
@@ -29,7 +40,7 @@ public class HtmlMathMLTest {
 		settings.setOpcPackage(pkg);
 
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		Docx4J.toHTML(settings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+		Docx4J.toHTML(settings, os, flag);
 		String html = os.toString("UTF-8");
 
 		assertTrue("output should contain a MathML <math> element:\n" + html,

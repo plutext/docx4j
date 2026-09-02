@@ -179,8 +179,52 @@ public class XsltHTMLFunctions {
 		docfrag.appendChild(document.getDocumentElement());
 
 		return docfrag;
-		
 
+
+	}
+
+	/**
+	 * Convert an {@code m:oMath} / {@code m:oMathPara} node to native MathML, so
+	 * the XSLT HTML pathway can emit MathML without Microsoft's non-
+	 * redistributable OMML2MML.XSL. Called from docx2xhtml-core.xslt; mirrors the
+	 * visitor pathway's {@code HTMLExporterVisitorGenerator}. On failure returns
+	 * null (the equation is simply omitted from the MathML output), so one exotic
+	 * equation never fails the document.
+	 *
+	 * @since 17.0.4
+	 */
+	public static DocumentFragment convertMathML(HTMLConversionContext context, NodeIterator ommlNodeIt) {
+
+		Node n = (ommlNodeIt == null) ? null : ommlNodeIt.nextNode();
+		if (n == null) {
+			return null;
+		}
+		try {
+			Unmarshaller u = Context.jc.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			Object jaxb = XmlUtils.unwrap(u.unmarshal(n));
+
+			org.docx4j.convert.out.mathml.OmmlToMathML converter =
+					new org.docx4j.convert.out.mathml.OmmlToMathML();
+			org.w3c.dom.Document mathDoc;
+			if (jaxb instanceof org.docx4j.math.CTOMathPara) {
+				mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMathPara) jaxb);
+			} else if (jaxb instanceof org.docx4j.math.CTOMath) {
+				mathDoc = converter.toMathMLDocument((org.docx4j.math.CTOMath) jaxb);
+			} else {
+				context.getLog().warn("Unexpected math node "
+						+ (jaxb == null ? "null" : jaxb.getClass().getName()));
+				return null;
+			}
+
+			DocumentFragment frag = mathDoc.createDocumentFragment();
+			frag.appendChild(mathDoc.getDocumentElement());
+			return frag;
+
+		} catch (Exception e) {
+			context.getLog().warn("OMML->MathML failed; omitting equation: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/**
