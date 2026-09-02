@@ -101,16 +101,16 @@ public class RunFontSelectorJapaneseTest {
 			Element foInline = (Element)df.getFirstChild();
 			System.out.println(i + ": " + foInline.getAttribute("font-family"));
 			
-			if (PhysicalFonts.get("MS Mincho")==null
-					&& System.getProperty("os.name").startsWith("Windows")
-					&& System.getProperty("os.version").equals("6.2")) {
-				/* On Windows 10, MS Mincho, the expected result, is not installed by default. 
-				 * See further http://answers.microsoft.com/en-us/windows/forum/windows_10-start/some-fonts-are-missing-after-upgrade/95839dfa-0df2-4bc0-875a-fd6b57e61fe4?auth=1 
-				 * */ 
-				
-//				System.out.println(System.getProperty("os.name"));
-//				System.out.println(System.getProperty("os.version"));
-				
+			if (PhysicalFonts.get("MS Mincho")==null) {
+				/* MS Mincho, the expected result, is not installed by default on
+				 * Windows 10+ (it comes with the Japanese language pack); where it
+				 * is absent, RunFontSelector falls back to Century for the minchō
+				 * paragraph.  See further http://answers.microsoft.com/en-us/windows/forum/windows_10-start/some-fonts-are-missing-after-upgrade/95839dfa-0df2-4bc0-875a-fd6b57e61fe4?auth=1
+				 * (This branch was previously ALSO gated on os.version 6.2 — ie
+				 * Windows 8 — so it never applied on the Windows 10+ boxes it
+				 * describes; verified against a real Windows 11 run 2026-09-03.)
+				 * */
+
 				assertEquals(win10Base[i], foInline.getAttribute("font-family"));
 			} else {
 				assertEquals(expectedFont[i], foInline.getAttribute("font-family"));				
