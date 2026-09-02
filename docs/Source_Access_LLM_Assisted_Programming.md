@@ -4,9 +4,14 @@
 [Why Source Access Matters for LLM-Assisted Programming](https://www.docx4java.org/source-access-llm-assisted-programming.html)
 on the docx4j website. This copy is a mirror for GitHub readers.*
 
-An AI coding assistant is only as good as what it can read. That single fact
-changes how dependencies should be chosen — and improves the economics of both
-using and contributing to open source.
+An AI coding assistant is only as good as what it can read. Every assistant
+arrives *recalling* your dependency from training data — imperfectly, with
+its versions blurred together. Source access is the difference between
+recalling a library and knowing it: on any question of behaviour, the source
+answers with certainty, the documentation approximately, and recall with
+hallucination risk. That single fact changes how dependencies should be
+chosen — and improves the economics of both using and contributing to open
+source.
 
 ## An assistant reasons from what it can read
 
