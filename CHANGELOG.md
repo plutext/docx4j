@@ -129,7 +129,7 @@ U+2C00-U+2EFF) now always stays in the run's own font; previously, where the fon
 couldn't be checked for) the glyph, it was set in a symbol font.  Symbol substitution still
 applies to the symbol blocks U+2190-U+2BFF (arrows, dingbats, misc symbols etc)
 
-PDF output, visitor pathway (Docx4J.FLAG_EXPORT_PREFER_NONXSL):
+PDF output, visitor pathway (the new default; explicitly Docx4J.FLAG_EXPORT_PREFER_NONXSL):
 - content which the visitor exporter silently dropped is now output: w:softHyphen,
 w:noBreakHyphen, w:cr, right-aligned w:ptab, and deleted text (w:delText, marked red
 strike-through as in the XSLT pathway); inserted text (w:ins) is now marked blue underlined;
@@ -156,11 +156,12 @@ hosted in v:rect (or any other VML shape) is now found, and VML with neither tex
 - PDF output (both exporters): a wrapped VML textbox whose style has no
 mso-position-vertical-relative no longer NPEs in FOPictWriterFloatUsed (the VML default, "text",
 now applies), so simple inline textboxes render instead of producing nothing
-- with the above, the visitor exporter reaches feature parity with the (default) XSLT exporter,
-and generates FO roughly an order of magnitude faster in benchmarks; select it with
-Docx4J.FLAG_EXPORT_PREFER_NONXSL. See docs/developer/change-requests/CR-fo-exporter-parity.md
+- with the above, the visitor exporter reaches feature parity with the XSLT exporter, and
+generates FO roughly an order of magnitude faster in benchmarks; it is now the default (see
+"PDF and HTML export" above; Docx4J.FLAG_EXPORT_PREFER_XSL restores the XSLT pathway).
+See docs/developer/change-requests/CR-fo-exporter-parity.md
 
-HTML output, visitor pathway (Docx4J.FLAG_EXPORT_PREFER_NONXSL):
+HTML output, visitor pathway (the new default; explicitly Docx4J.FLAG_EXPORT_PREFER_NONXSL):
 - run spans are now inside their p element again (a 17.0.1 regression put them next to it)
 - content which the visitor exporter silently dropped is now output: w:softHyphen,
 w:noBreakHyphen, w:cr, and deleted text (w:delText, marked span class="del"); inserted and moved
@@ -185,9 +186,10 @@ doctype and the docx4j.Convert.Out.HTML.OutputMethodXML choice, and shares the X
 (WRONG_DOCUMENT_ERR)
 - both HTML pathways: div.footer now gets its print CSS when the document has a footer but no
 header (hasDefaultFooter was computed from hasDefaultHeader in both copies of the head builder)
-- with the above, the HTML visitor exporter reaches feature parity with the (default) XSLT
-exporter, and generates HTML roughly an order of magnitude faster in benchmarks; select it with
-Docx4J.FLAG_EXPORT_PREFER_NONXSL. See docs/developer/change-requests/CR-html-exporter-parity.md
+- with the above, the HTML visitor exporter reaches feature parity with the XSLT exporter, and
+generates HTML roughly an order of magnitude faster in benchmarks; it is now the default (see
+"PDF and HTML export" above; Docx4J.FLAG_EXPORT_PREFER_XSL restores the XSLT pathway).
+See docs/developer/change-requests/CR-html-exporter-parity.md
 
 HTML output, XSLT pathway:
 - w:noBreakHyphen now outputs the actual U+2011 non-breaking hyphen; previously the character
