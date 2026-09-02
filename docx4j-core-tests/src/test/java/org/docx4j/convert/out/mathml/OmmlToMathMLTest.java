@@ -19,7 +19,7 @@ import org.xml.sax.InputSource;
 /**
  * Drives {@link OmmlToMathML} over the committed OMML corpus (Word's output for
  * the W3C MathML Test Suite inputs; see
- * docs/developer/change-requests/math-corpus-tools/). Each case is converted and
+ * docs/developer/math-corpus-tools/). Each case is converted and
  * checked for well-formedness and the expected MathML construct.
  */
 public class OmmlToMathMLTest {

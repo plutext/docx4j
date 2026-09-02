@@ -206,7 +206,7 @@ Two classes of corpus, kept separate because the ready-made ones are copyleft:
 ## 5. Phases
 
 1. **Test corpus + skeleton.** DONE (commit 4342c45f7). 25-case corpus committed
-   under math-corpus-tools/corpus (mml/omml/word-mml); tooling
+   under ../math-corpus-tools/corpus (mml/omml/word-mml); tooling
    (MathmlToDocx.bas, OmmlFixtureExtractor.java); copyleft suites left as
    out-of-tree oracles.
 2. **OMML → MathML core.** DONE. `org.docx4j.convert.out.mathml.OmmlToMathML` +
