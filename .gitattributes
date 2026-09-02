@@ -1,0 +1,15 @@
+# Targeted line-ending rules only.  Deliberately NOT "* text=auto": the tree
+# still contains legacy CRLF text files, and a global rule would flag them all
+# for renormalization.  Add rules here as specific needs arise.
+
+# Executed by exec-maven-plugin (docx4j-generated-objects, process-sources).
+# A CRLF checkout (Git for Windows default core.autocrlf=true) breaks the
+# shebang, and puts \r in the heredoc patch strings so they no longer match
+# the LF output of XJC.  See docx4j-generated-objects/TODO_Windows_builds.md.
+*.sh text eol=lf
+
+# Golden fixtures compared byte-for-byte: GoldenOutputTest normalizes the
+# ACTUAL diff output to LF but reads these expected files raw, so a CRLF
+# checkout fails every comparison (and docx4j-diffx-tests is in the reactor,
+# so that fails "mvn install").
+docx4j-diffx-tests/src/test/resources/org/docx4j/diff/golden/** text eol=lf
