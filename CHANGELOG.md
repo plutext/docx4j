@@ -4,6 +4,18 @@ CHANGELOG
 Version 17.0.4
 ===============
 
+Release date
+------------
+
+2 September 2026
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Fable 5, Opus 4.8
+
 Changes in Version 17.0.4
 --------------------------
 
