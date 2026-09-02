@@ -9,7 +9,7 @@ docx4j is an open source (Apache v2) Java library for creating, editing, and sav
 ## Build and test commands
 
 ```bash
-mvn clean install              # full build; works on native Windows too from 17.0.5 (see CR-009)
+mvn clean install              # full build; works on Linux, macOS and (from 17.0.5) native Windows (see CR-009)
 mvn install -DskipTests        # skip tests
 
 # Run tests in the test module (requires upstream modules built: -am)

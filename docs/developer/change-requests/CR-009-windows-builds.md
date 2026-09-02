@@ -136,6 +136,17 @@ Revisit only if the build floor is deliberately raised for other reasons.
   tests already use); with that fix the suite is green.  The long-standing
   "some tests may fail on Windows" caveat is retired (CLAUDE.md updated) —
   the font-dependent tests guard themselves with Assume/fallbacks now.
+  Follow-through the Windows runs surfaced: five RunFontSelector tests'
+  "Windows-only" guard was dead code (toLowerCase() vs "Windows"), so they
+  had silently passed everywhere while testing nothing — fixed e0e9b1345
+  (Assume, corrected comparison), after which their first-ever real
+  execution exposed a stale expectation in the Japanese test (MS Mincho
+  absent on stock Windows 10+; concession branch was gated on Windows 8's
+  os.version — fixed 501c8682a, gate on the font's absence itself).
+- **macOS verified too (2026-09-03): full build, all tests pass** — as
+  predicted (the shell script's BSD-sed fork was the only macOS special
+  case, and the Java port removed the need for it).  All three platforms
+  are now green.
 
 ## Remaining smaller items (none are build blockers)
 
