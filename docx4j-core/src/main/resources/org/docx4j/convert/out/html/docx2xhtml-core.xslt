@@ -21,7 +21,14 @@
               from the definition in an _rels file
               (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
-<!-- Uncomment for MathML (1 of 3); this file is part of Microsoft Office, and not provided in docx4j. Change it to output UTF-8  
+<!-- MathML (1 of 3).  Since 17.0.4 the default HTML exporter is the non-XSLT
+     (visitor) pathway, which emits equations as native MathML out of the box
+     (org.docx4j.convert.out.mathml.OmmlToMathML) - nothing to configure.
+
+     This XSLT pathway (Docx4J.FLAG_EXPORT_PREFER_XSL) does NOT convert OMML to
+     MathML by itself.  To get MathML here you must supply Microsoft's
+     OMML2MML.XSL (part of Microsoft Office, not redistributable with docx4j;
+     change its output encoding to UTF-8) and uncomment blocks 1-3:
     <xsl:include href="OMML2MML.xslt" />
  -->
 
@@ -136,7 +143,9 @@
 			
 			<xsl:call-template name="pretty-print-block" />
             
-<!-- Uncomment for MathML (2 of 3)
+<!-- MathML (2 of 3): a MathJax script, if you want to render MathML in browsers
+     that lack native MathML support.  Applies to both pathways' MathML output;
+     uncomment (and consider self-hosting rather than a CDN):
             <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=MML_HTMLorMML-full"><xsl:comment/></script>
             -->
 		</body>
@@ -681,11 +690,13 @@
 			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.updateComplexFieldDefinition($conversionContext, .)" />  	
   </xsl:template>
 
-<!-- Uncomment for MathML (3 of 3) 
+<!-- MathML (3 of 3): with OMML2MML.XSL included (block 1), this wraps each
+     equation in a <math> element.  Uncomment together with block 1.  (The
+     default non-XSLT exporter does this natively and needs none of this.)
   <xsl:template match="m:oMathPara" >
     <math xmlns='http://www.w3.org/1998/Math/MathML'>
             <xsl:apply-templates/>
-    </math>    
+    </math>
   </xsl:template>
 -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->

@@ -1,6 +1,7 @@
 # CR: Native OMML ⇄ MathML (drop the Microsoft XSLT dependency)
 
-Status: **PROPOSED** 2026-09-02. No code yet.
+Status: **DONE** 2026-09-02. All five phases shipped (see §5); math now converts
+both directions natively, no Microsoft XSLT.
 
 ## 1. Background
 
@@ -233,9 +234,17 @@ Two classes of corpus, kept separate because the ready-made ones are copyleft:
    corpus and end-to-end via `XHTMLImporterImpl` (`MathMLImportTest`). Remaining:
    round-trip (OMML→MathML→OMML) tests once ImportXHTML depends on a docx4j build
    that has `OmmlToMathML` (currently pins 17.0.3).
-5. **Docs + wiring cleanup.** Update the commented-out blocks in
-   `docx2xhtml-core.xslt` (native path now covers it), the ImportXHTML README,
-   and the forum-referenced "bring your own OMML2MML.XSL" guidance. CHANGELOG.
+5. **Docs + wiring cleanup.** DONE. `docx2xhtml-core.xslt`'s three MathML
+   comment blocks now explain that the default non-XSLT exporter emits MathML
+   natively, and that the OMML2MML.XSL include is only for the opt-in XSLT
+   pathway. ImportXHTML's `getMathXSLT` javadoc notes it is the opt-in path
+   (native `MathMLToOmml` is the default). CHANGELOGs updated in both repos. No
+   other "bring your own OMML2MML.XSL" guidance remained in the repos.
+
+Status: phases 1–5 shipped. Follow-ups (not blocking): FO/PDF MathML would need
+JEuclid in FOP (separate); OMML→MathML→OMML round-trip tests once ImportXHTML
+tracks a docx4j build with `OmmlToMathML`; broaden coverage as real documents
+surface constructs beyond the corpus subset.
 
 ## 6. Risks / notes
 
