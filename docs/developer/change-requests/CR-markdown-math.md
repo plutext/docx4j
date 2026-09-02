@@ -299,6 +299,32 @@ explicit `m:jc` center on oMathPara (it's the default), `m:sty` "p" on
 operators/digits (Word only italicizes letters), and a zero-width-space
 run inside hidden nary limits (our `supHide` + empty element is cleaner).
 
+## 3d. Subset growth round 2: matrix, braces, underset (2026-09-02)
+
+Three OMML constructs the OMML→MathML converter already handled but the
+markdown pathway flattened to text; added in both directions (round-trip
+remains the subset's defining invariant).  Prescripts (`m:sPre`) and
+phantom (`m:phant`) stay deferred — rare, and their LaTeX forms are
+awkward — keeping their loud text fallback:
+
+| LaTeX | OMML |
+|---|---|
+| `\begin{matrix}a&b \\ c&d\end{matrix}` | `m:m` (rows `m:mr`, cells `m:e`) |
+| `\begin{pmatrix}` / `\begin{bmatrix}` | `m:d` (`(`/`[` begChr) holding a single `m:m` |
+| `\underbrace{e}` / `\overbrace{e}` | `m:groupChr` chr ⏟/⏞, pos bot/top (export also accepts ︸/︷) |
+| `\underset{a}{b}` | `m:limLow` (mirror of the existing `\overset` → `m:limUpp`) |
+
+Notes:
+- Unlike `aligned` (where `&` stays a literal alignment mark in the row
+  text, per Word's linear format), in a matrix `&` separates cells — so
+  matrix parsing is its own loop, not `parseEqArr`.
+- Export detection of pmatrix/bmatrix (a `()`/`[]` `m:d` wrapping a lone
+  `m:m`) runs **before** the plain-paren-`m:d`-exports-bare rule, which
+  would otherwise swallow pmatrix; consequently `(\begin{matrix}..)` and
+  `\left(..matrix..\right)` both normalize to `pmatrix`.
+- A script on a groupChr exports bare (`\underbrace{a+b}_{n}` — the label
+  is the brace's subscript in LaTeX too), like the existing `m:d` rule.
+
 ## 4. Risks / notes
 
 - **Subset creep** is the real risk (texmath's failing was pretending to

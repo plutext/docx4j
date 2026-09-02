@@ -31,7 +31,9 @@ loudly — see below):
 `\mathrm` / `{\rm}` / `\operatorname` · `\mathbf` / `\mathit` / `\mathcal` /
 `\mathbb` / `\mathfrak` / `\bf` / `\it` · `\begin{aligned}`
 (`align`/`align*`) and `\begin{cases}` with `\\` rows and `&` alignment ·
-`\boxed` · `\xrightarrow`/`\xleftarrow`/`\overset`/`\stackrel` · `\not` ·
+`\begin{matrix}` (`pmatrix`/`bmatrix`) with `&` cells ·
+`\boxed` · `\xrightarrow`/`\xleftarrow`/`\overset`/`\stackrel`/`\underset` ·
+`\underbrace`/`\overbrace` · `\not` ·
 accents `\hat \tilde \bar \vec \dot \ddot \check \breve \acute \grave`
 (incl `\widehat`/`\widetilde`) · `\overline`/`\underline` · greek (incl
 var-forms) · ~70 operator/relation/arrow/set symbols · spacing `\, \; \:

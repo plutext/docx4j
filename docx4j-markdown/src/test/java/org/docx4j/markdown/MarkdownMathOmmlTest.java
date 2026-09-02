@@ -138,6 +138,42 @@ public class MarkdownMathOmmlTest {
 	}
 
 	@Test
+	public void matrix() throws Exception {
+		String xml = omml("\\begin{matrix}a&b \\\\ c&d\\end{matrix}");
+		assertTrue(xml.contains("<m:m>"));
+		assertEquals(2, count(xml, "<m:mr>"));
+		assertEquals(4, count(xml, "<m:e>"));
+		// pmatrix/bmatrix add the surrounding delimiter
+		String p = omml("\\begin{pmatrix}1&2 \\\\ 3&4\\end{pmatrix}");
+		assertTrue(p.contains("<m:d>"));
+		assertTrue(p.contains("m:val=\"(\""));
+		String b = omml("\\begin{bmatrix}x \\\\ y\\end{bmatrix}");
+		assertTrue(b.contains("m:val=\"[\""));
+		assertEquals(2, count(b, "<m:mr>"));
+	}
+
+	@Test
+	public void underAndOverbrace() throws Exception {
+		String under = omml("\\underbrace{a+b}_{n}");
+		assertTrue(under.contains("<m:groupChr>"));
+		assertTrue(under.contains("m:val=\"⏟\""));
+		assertTrue(under.contains("m:val=\"bot\""));
+		assertTrue(under.contains("<m:sSub>")); // the label is the brace's subscript
+		String over = omml("\\overbrace{x+y}");
+		assertTrue(over.contains("m:val=\"⏞\""));
+		assertTrue(over.contains("m:val=\"top\""));
+	}
+
+	@Test
+	public void underset() throws Exception {
+		String xml = omml("\\underset{0}{x}");
+		assertTrue(xml.contains("<m:limLow>"));
+		// m:e (the base) precedes m:lim (the content below)
+		assertTrue(xml.indexOf(">x<") < xml.indexOf("<m:lim>"));
+		assertTrue(xml.contains(">0<"));
+	}
+
+	@Test
 	public void rewsGoldenEquation() throws Exception {
 		// the diagnostic equation from the motivating course material
 		String xml = omml("U_{\\rm REWS}\n=\n\\left(\n\\frac{\\sum_i A_i U_i^3}\n"

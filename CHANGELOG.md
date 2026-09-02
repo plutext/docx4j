@@ -76,7 +76,8 @@ fetched.  Facade hooks Docx4J.fromMarkdown/toMarkdown (docx4j-markdown must be o
 See docs/developer/change-requests/CR-markdown-import-export.md and the module README
 - TeX math: $...$ / $$...$$ (and \(..\), block \[..\]) translated to native OMML equations in
 both directions, for a published LaTeX subset (frac, scripts, sqrt, sum/int with limits,
-left/right delimiters, text/mathrm, aligned, boxed, accents, greek + common symbols).
+left/right delimiters, text/mathrm, aligned, matrix/pmatrix/bmatrix, boxed, accents,
+underbrace/overbrace, overset/underset, greek + common symbols).
 Equations outside the subset never disappear: they fall back whole to their literal source and
 are reported via an issue listener.  See docs/developer/change-requests/CR-markdown-math.md
 - export: effective-rPr baselines are now cached per paragraph style and runs without their own

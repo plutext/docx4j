@@ -211,6 +211,10 @@ public class LatexToOmml {
 				return List.of(parseEqArr(ctx, environment));
 			case "cases":
 				return List.of(parseCases(ctx));
+			case "matrix":
+			case "pmatrix":
+			case "bmatrix":
+				return List.of(parseMatrix(ctx, environment));
 			default:
 				throw err("unsupported environment \\begin{" + environment + "}");
 			}
@@ -250,6 +254,10 @@ public class LatexToOmml {
 			return List.of(bar(org.docx4j.math.STTopBot.TOP, ctx));
 		case "underline":
 			return List.of(bar(org.docx4j.math.STTopBot.BOT, ctx));
+		case "overbrace":
+			return List.of(groupChr("⏞", org.docx4j.math.STTopBot.TOP, ctx));
+		case "underbrace":
+			return List.of(groupChr("⏟", org.docx4j.math.STTopBot.BOT, ctx));
 		case "xrightarrow":
 			return List.of(limUpp(argOf(List.of(run("⟶", ctx))), parseArg(ctx)));
 		case "xleftarrow":
@@ -259,6 +267,11 @@ public class LatexToOmml {
 			CTOMathArg over = parseArg(ctx);
 			CTOMathArg base = parseArg(ctx);
 			return List.of(limUpp(base, over));
+		}
+		case "underset": {
+			CTOMathArg under = parseArg(ctx);
+			CTOMathArg base = parseArg(ctx);
+			return List.of(limLow(base, under));
 		}
 		case "not": {
 			// negate the following symbol with a combining long solidus
@@ -623,6 +636,31 @@ public class LatexToOmml {
 		return factory.createCTOMathArgLimUpp(limUpp);
 	}
 
+	// underset{a}{b} (\overset's mirror image): content below a base
+	// (no backslash above: "backslash-u" is an illegal unicode escape even in a comment)
+	private Object limLow(CTOMathArg base, CTOMathArg lim) {
+		org.docx4j.math.CTLimLow limLow = factory.createCTLimLow();
+		limLow.setE(base);
+		limLow.setLim(lim);
+		return factory.createCTOMathArgLimLow(limLow);
+	}
+
+	/** underbrace / {@code \overbrace}: a stretchy brace grouping. */
+	private Object groupChr(String chr, org.docx4j.math.STTopBot position, Ctx ctx)
+			throws LatexMathException {
+		org.docx4j.math.CTGroupChr groupChr = factory.createCTGroupChr();
+		org.docx4j.math.CTGroupChrPr groupChrPr = factory.createCTGroupChrPr();
+		org.docx4j.math.CTChar chrEl = factory.createCTChar();
+		chrEl.setVal(chr);
+		groupChrPr.setChr(chrEl);
+		org.docx4j.math.CTTopBot topBot = factory.createCTTopBot();
+		topBot.setVal(position);
+		groupChrPr.setPos(topBot);
+		groupChr.setGroupChrPr(groupChrPr);
+		groupChr.setE(parseArg(ctx));
+		return factory.createCTOMathArgGroupChr(groupChr);
+	}
+
 	private List<Object> parseArgAsScript(Ctx outer, org.docx4j.math.STScript script)
 			throws LatexMathException {
 		Ctx ctx = outer.copy();
@@ -735,6 +773,97 @@ public class LatexToOmml {
 			eqArr.getE().add(argOf(mergeAdjacentRuns(flatten(atoms))));
 		}
 		return factory.createCTOMathArgEqArr(eqArr);
+	}
+
+	/**
+	 * {@code \begin{matrix} a & b \\ c & d \end{matrix}} → m:m; pmatrix and
+	 * bmatrix add the surrounding m:d.  Unlike an equation array, {@code &}
+	 * here separates cells (a matrix has real columns).
+	 */
+	private Object parseMatrix(Ctx outerCtx, String environment) throws LatexMathException {
+
+		Ctx ctx = outerCtx.copy();
+		org.docx4j.math.CTM m = factory.createCTM();
+		m.setMPr(factory.createCTMPr());
+		org.docx4j.math.CTMR row = factory.createCTMR();
+		List<List<Object>> atoms = new ArrayList<>();
+
+		while (true) {
+			skipWhitespace();
+			if (pos >= src.length()) {
+				throw err("missing \\end{" + environment + "}");
+			}
+			char c = src.charAt(pos);
+			if (c == '&') {
+				pos++;
+				row.getE().add(argOf(mergeAdjacentRuns(flatten(atoms))));
+				atoms = new ArrayList<>();
+				continue;
+			}
+			if (c == '\\') {
+				int saved = pos;
+				String command = readCommandName();
+				if ("\\".equals(command)) {
+					row.getE().add(argOf(mergeAdjacentRuns(flatten(atoms))));
+					atoms = new ArrayList<>();
+					m.getMr().add(row);
+					row = factory.createCTMR();
+					continue;
+				}
+				if ("end".equals(command)) {
+					String closed = readRawGroup();
+					if (!environment.equals(closed)) {
+						throw err("\\begin{" + environment + "} closed by \\end{" + closed + "}");
+					}
+					break;
+				}
+				pos = saved; // an ordinary command: let parseAtom re-read it
+				List<Object> atom = parseAtom(ctx);
+				if (atom != null) {
+					atoms.add(atom);
+				}
+				continue;
+			}
+			if (c == '_' || c == '^') {
+				List<Object> base = atoms.isEmpty() ? new ArrayList<>()
+						: atoms.remove(atoms.size() - 1);
+				atoms.add(List.of(parseScripts(argOf(base), ctx)));
+				continue;
+			}
+			List<Object> atom = parseAtom(ctx);
+			if (atom != null) {
+				atoms.add(atom);
+			}
+		}
+
+		if (!atoms.isEmpty() || !row.getE().isEmpty() || m.getMr().isEmpty()) {
+			row.getE().add(argOf(mergeAdjacentRuns(flatten(atoms))));
+			m.getMr().add(row);
+		}
+
+		Object matrix = factory.createCTOMathArgM(m);
+		switch (environment) {
+		case "pmatrix":
+			return delimited(matrix, "(", ")");
+		case "bmatrix":
+			return delimited(matrix, "[", "]");
+		default:
+			return matrix;
+		}
+	}
+
+	private Object delimited(Object element, String beg, String end) {
+		CTD d = factory.createCTD();
+		org.docx4j.math.CTDPr dPr = factory.createCTDPr();
+		org.docx4j.math.CTChar begChr = factory.createCTChar();
+		begChr.setVal(beg);
+		dPr.setBegChr(begChr);
+		org.docx4j.math.CTChar endChr = factory.createCTChar();
+		endChr.setVal(end);
+		dPr.setEndChr(endChr);
+		d.setDPr(dPr);
+		d.getE().add(argOf(List.of(element)));
+		return factory.createCTOMathArgD(d);
 	}
 
 	private static List<Object> flatten(List<List<Object>> atoms) {

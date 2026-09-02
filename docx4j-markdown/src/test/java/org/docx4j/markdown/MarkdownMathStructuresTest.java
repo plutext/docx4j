@@ -95,10 +95,10 @@ public class MarkdownMathStructuresTest {
 	@Test
 	public void unsupportedEnvironmentStillFails() throws Exception {
 		try {
-			omml("\\begin{matrix}a & b\\end{matrix}");
+			omml("\\begin{array}{cc}a & b\\end{array}");
 			fail("expected LatexMathException");
 		} catch (LatexMathException e) {
-			assertTrue(e.getMessage().contains("matrix"));
+			assertTrue(e.getMessage().contains("array"));
 		}
 		try {
 			omml("\\begin{aligned}x\\end{align}");

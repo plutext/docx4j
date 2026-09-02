@@ -45,6 +45,15 @@ public class MarkdownMathExportTest {
 			"\\overline{AB}",
 			"\\boxed{\\text{a}\\to\\text{b}}",
 			"\\begin{aligned}x&=1 \\\\ y&=2\\end{aligned}",
+			"\\begin{matrix}a&b \\\\ c&d\\end{matrix}",
+			"\\begin{pmatrix}1&2 \\\\ 3&4\\end{pmatrix}",
+			"\\begin{bmatrix}x \\\\ y\\end{bmatrix}",
+			"\\begin{pmatrix}\\frac{1}{2}&0 \\\\ 0&U^{3}\\end{pmatrix}",
+			"\\underbrace{a+b}",
+			"\\underbrace{a+b}_{n}",
+			"\\overbrace{x+y}^{n}",
+			"\\underset{n}{X}",
+			"\\underset{n\\to\\infty}{\\max}",
 			"(\\frac{\\sum_{i}A_{i}U_{i}^{3}}{\\sum_{i}A_{i}})^{1/3}",
 		};
 		for (String latex : fixedPoints) {
@@ -62,6 +71,11 @@ public class MarkdownMathExportTest {
 		assertEquals("a\\to b", latexTrip("a \\rightarrow b"));
 		// plain \left( \right) normalizes to bare parens (both are m:d)
 		assertEquals("(x+y)", latexTrip("\\left(x+y\\right)"));
+		// parens around a bare matrix normalize to pmatrix (both are m:d + m:m)
+		assertEquals("\\begin{pmatrix}1&2 \\\\ 3&4\\end{pmatrix}",
+				latexTrip("(\\begin{matrix}1&2 \\\\ 3&4\\end{matrix})"));
+		assertEquals("\\begin{pmatrix}1&2 \\\\ 3&4\\end{pmatrix}",
+				latexTrip("\\left(\\begin{matrix}1&2 \\\\ 3&4\\end{matrix}\\right)"));
 	}
 
 	@Test

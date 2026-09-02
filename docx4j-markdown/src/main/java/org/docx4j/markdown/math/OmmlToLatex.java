@@ -12,6 +12,10 @@ import org.docx4j.math.CTBorderBox;
 import org.docx4j.math.CTD;
 import org.docx4j.math.CTEqArr;
 import org.docx4j.math.CTF;
+import org.docx4j.math.CTGroupChr;
+import org.docx4j.math.CTLimLow;
+import org.docx4j.math.CTM;
+import org.docx4j.math.CTMR;
 import org.docx4j.math.CTNary;
 import org.docx4j.math.CTOMath;
 import org.docx4j.math.CTOMathArg;
@@ -155,6 +159,15 @@ public class OmmlToLatex {
 				delimited((CTD) u, builder);
 			} else if (u instanceof CTEqArr) {
 				eqArr((CTEqArr) u, builder);
+			} else if (u instanceof CTM) {
+				matrix("matrix", (CTM) u, builder);
+			} else if (u instanceof CTGroupChr) {
+				groupChr((CTGroupChr) u, builder);
+			} else if (u instanceof CTLimLow) {
+				CTLimLow limLow = (CTLimLow) u;
+				builder.command("underset");
+				bracedArg(limLow.getLim(), builder);
+				bracedArg(limLow.getE(), builder);
 			} else if (u instanceof CTBorderBox) {
 				builder.command("boxed");
 				bracedArg(((CTBorderBox) u).getE(), builder);
@@ -344,6 +357,23 @@ public class OmmlToLatex {
 			}
 		}
 
+		// () or [] holding a single matrix is \begin{pmatrix} / \begin{bmatrix}
+		if (sep == null && d.getE().size() == 1
+				&& d.getE().get(0).getEGOMathElements().size() == 1) {
+			Object only = d.getE().get(0).getEGOMathElements().get(0);
+			Object u = (only instanceof JAXBElement) ? ((JAXBElement<?>) only).getValue() : only;
+			if (u instanceof CTM) {
+				if ("(".equals(beg) && ")".equals(end)) {
+					matrix("pmatrix", (CTM) u, builder);
+					return;
+				}
+				if ("[".equals(beg) && "]".equals(end)) {
+					matrix("bmatrix", (CTM) u, builder);
+					return;
+				}
+			}
+		}
+
 		// plain round parens re-export bare (the importer makes m:d of those)
 		if ("(".equals(beg) && ")".equals(end) && sep == null && d.getE().size() == 1) {
 			builder.raw("(");
@@ -404,6 +434,44 @@ public class OmmlToLatex {
 		builder.raw("\\end{" + environment + "}");
 	}
 
+	/** Rows of &-separated cells: {@code \begin{matrix}a&b \\ c&d\end{matrix}}. */
+	private void matrix(String environment, CTM m, LatexBuilder builder)
+			throws OmmlMathException {
+		builder.raw("\\begin{" + environment + "}");
+		boolean firstRow = true;
+		for (CTMR row : m.getMr()) {
+			if (!firstRow) {
+				builder.raw(" \\\\ ");
+			}
+			firstRow = false;
+			boolean firstCell = true;
+			for (CTOMathArg cell : row.getE()) {
+				if (!firstCell) {
+					builder.raw("&");
+				}
+				firstCell = false;
+				elements(cell.getEGOMathElements(), builder, false);
+			}
+		}
+		builder.raw("\\end{" + environment + "}");
+	}
+
+	private void groupChr(CTGroupChr groupChr, LatexBuilder builder) throws OmmlMathException {
+		String chr = (groupChr.getGroupChrPr() != null && groupChr.getGroupChrPr().getChr() != null)
+				? groupChr.getGroupChrPr().getChr().getVal() : "⏟"; // OMML default: bottom brace
+		switch (chr) {
+		case "⏟": case "︸":
+			builder.command("underbrace");
+			break;
+		case "⏞": case "︷":
+			builder.command("overbrace");
+			break;
+		default:
+			throw new OmmlMathException("unsupported group character " + chr);
+		}
+		bracedArg(groupChr.getE(), builder);
+	}
+
 	/** Content above a base: {@code \xrightarrow} for arrows, else {@code \overset}. */
 	private void limUpp(org.docx4j.math.CTLimUpp limUpp, LatexBuilder builder)
 			throws OmmlMathException {
@@ -461,8 +529,9 @@ public class OmmlToLatex {
 		if (arg != null && arg.getEGOMathElements().size() == 1) {
 			Object o = arg.getEGOMathElements().get(0);
 			Object u = (o instanceof JAXBElement) ? ((JAXBElement<?>) o).getValue() : o;
-			if (u instanceof CTD) {
-				// scripts bind to a (...) group in LaTeX too: no braces needed
+			if (u instanceof CTD || u instanceof CTGroupChr) {
+				// scripts bind to a (...) group — or to an underbrace,
+				// whose label is its subscript — in LaTeX too: no braces
 				elements(arg.getEGOMathElements(), builder, false);
 				return;
 			}
