@@ -400,15 +400,18 @@ public class ContentTypes {
 	public static final String EXTENSION_JPG_1 = "jpg";
 	public static final String EXTENSION_JPG_2 = "jpeg";
 	
-	/* Legacy Microsoft format
-	 * Office 2010, 2013 and later (Word and Powerpoint) can insert a JXR file, 
-	 * but they all convert it to PNG on the fly.
-	 * None of them appear to support displaying the JXR in a Word document,
-	 * whether legacy VML or the modern format.
-	 * Tried image/jxr, image/vnd.ms-photo but not image/hdp 
+	/* JPEG XR (HD Photo / Windows Media Photo), a Microsoft format.
+	 * Office 2010, 2013 and later (Word and Powerpoint) usually convert an
+	 * inserted JXR file to PNG on the fly — but not always: forcing a .wdp
+	 * through the Insert Picture dialog's "All Files" filter leaves it in
+	 * /word/media untouched (issues 560, 693), and Word itself has written
+	 * .wdp parts since 2010 (the pre-effects original of an edited picture,
+	 * eg /word/media/hdphoto1.wdp referenced from a14:imgLayer).
+	 * [Content_Types].xml declares Default Extension="wdp"
+	 * ContentType="image/vnd.ms-photo".
 	 */
-	// public static final String IMAGE_JPEG_XR = "image/vnd.ms-photo";
-	// public static final String EXTENSION_JPEG_XR = "hdp";
+	public static final String IMAGE_JPEG_XR = "image/vnd.ms-photo";
+	public static final String EXTENSION_JPEG_XR = "wdp";
 	
 
 	/**

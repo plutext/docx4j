@@ -106,6 +106,11 @@ Fields:
 - a \@ date switch on a value in no recognised date format NPE'd in DateFormat.format; per the
 spec the switch now has no effect (value passes through unchanged, with a warning)
 
+Packaging:
+- new ImageJpegXrPart for JPEG XR / HD Photo (.wdp, image/vnd.ms-photo): Word writes such parts
+itself (the pre-effects original of an edited picture) and keeps an inserted .wdp as-is; these
+loaded as plain BinaryPart with an ERROR logged (issues 560, 693)
+
 RelationshipsPart:
 - adding n relationships was O(n^2) (two full scans of the existing rels per add, in getNextId
 and addRelationship); occupied ids are now tracked in a set guarded by the live list's identity
