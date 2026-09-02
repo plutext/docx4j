@@ -40,13 +40,12 @@ public class RunFontSelectorChinese2Test {
 	@Test
 	public  void testFont() throws Exception {
 		
-		if (System.getProperty("os.name")!=null
-				&& System.getProperty("os.name").toLowerCase().startsWith("Windows")) {
-			// OK, assume fonts present
-		} else {
-			log.info("Skipping RunFontSelector test, since required fonts likely missing (non-Windows OS)");
-			return;
-		}		
+		// The expected fonts are only likely present on Windows.  Assume makes the
+		// skip visible in reports (a case bug here - toLowerCase() compared against
+		// "Windows" - previously made this return early, ie silently pass, on
+		// EVERY OS, so these assertions had never actually run anywhere).
+		org.junit.Assume.assumeTrue("required fonts likely missing (non-Windows OS)",
+			System.getProperty("os.name", "").toLowerCase().startsWith("windows"));
 		
 		boolean save = false;
 		
