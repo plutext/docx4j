@@ -48,6 +48,18 @@ public class HtmlVisitorParityTest {
 				.matcher(html).find();
 	}
 
+	/** what the output actually contains around the needle — so an
+	 *  environment-dependent failure (eg font mapping) is diagnosable from
+	 *  the CI log alone */
+	private static String around(String html, String needle) {
+		int i = html.indexOf(needle);
+		if (i < 0) {
+			return " [needle '" + needle + "' absent from output]";
+		}
+		return " actual: [" + html.substring(Math.max(0, i - 300),
+				Math.min(html.length(), i + needle.length() + 100)) + "]";
+	}
+
 	/* ------------------------------------------------------------------
 	 * Phase 1: previously dropped content (and the run-span placement fix)
 	 * ------------------------------------------------------------------ */
@@ -182,7 +194,8 @@ public class HtmlVisitorParityTest {
 			// run span composition: the rPr css and the w:t font selection are
 			// merged into ONE span (no nested span), with the default character
 			// style class
-			assertTrue(impl + "run span not composed (nested spans, or missing css)",
+			assertTrue(impl + "run span not composed (nested spans, or missing css)"
+					+ around(html, "boldtext"),
 					Pattern.compile("<span class=\"DefaultParagraphFont[^\"]*\" "
 							+ "style=\"[^\"]*font-weight: bold;[^\"]*font-family[^\"]*\">boldtext</span>")
 							.matcher(html).find());
