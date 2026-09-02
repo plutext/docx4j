@@ -223,9 +223,16 @@ Two classes of corpus, kept separate because the ready-made ones are copyleft:
    convert to well-formed MathML (`OmmlToMathMLTest`), many byte-identical to
    Word's oracle. Remaining: wire into the visitor HTML exporter; broaden beyond
    the corpus subset as bugs surface.
-4. **MathML → OMML core + advanced** (in `docx4j-ImportXHTML`): the reverse of
-   phases 2–3; replace the `mml2omml.xsl` invocation and remove the bundled
-   stylesheet. Round-trip tests (OMML → MathML → OMML) for stability.
+4. **MathML → OMML core + advanced** (in `docx4j-ImportXHTML`): DONE (that repo,
+   VERSION_17_0_3, commit 0205a84). `org.docx4j.convert.in.xhtml.math.MathMLToOmml`
+   — the reverse of phases 2–3 (runs+mathvariant, frac, rad, scripts, n-ary,
+   delimiters, matrix, prescripts, accents, groupChr, phantom, enclose); lenient
+   on unknowns. `XHTMLImporterImpl` now calls it for embedded `<math>` instead of
+   the `mml2omml.xslZ` placeholder (the user's own XSLT still honoured if the
+   `docx4j-ImportXHTML.mml2omml` property is set). Verified over the 25-case
+   corpus and end-to-end via `XHTMLImporterImpl` (`MathMLImportTest`). Remaining:
+   round-trip (OMML→MathML→OMML) tests once ImportXHTML depends on a docx4j build
+   that has `OmmlToMathML` (currently pins 17.0.3).
 5. **Docs + wiring cleanup.** Update the commented-out blocks in
    `docx2xhtml-core.xslt` (native path now covers it), the ImportXHTML README,
    and the forum-referenced "bring your own OMML2MML.XSL" guidance. CHANGELOG.
