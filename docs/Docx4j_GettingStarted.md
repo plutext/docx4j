@@ -16,8 +16,6 @@ Contents
 
 [Handling legacy binary .doc files	6](#_Toc239259260)
 
-[Getting Help: the docx4j forum	7](#_Toc239259261)
-
 [A word about Jaxb	7](#_Toc239259262)
 
 [Using docx4j via Maven	8](#_Toc239259263)
@@ -254,19 +252,6 @@ For more information, please see ***Specification versions*** below.
 An effective approach is to use LibreOffice or OpenOffice (via jodconverter) to convert the doc to docx, which docx4j can then process.  If you need to return a binary .doc, LibreOffice or OpenOffice/jodconverter can convert the docx back to .doc.
 
 With 8.2.0, docx4j can also convert binary .doc or RTF to docx, using Microsoft Word courtesy of documents4j.   The sub-projects docx4j-documents4j-local and docx4j-documents4j-remote provide an interface to documents4j which is convenient for docx4j users.
-
-# Getting Help: the docx4j forum
-
-Free community support is available in the docx4j forum, at [http://www.docx4java.org/forums/](http://www.docx4java.org/forums/) and on Stack Overflow.
-
-Before posting, please:
-
-- check this document doesn’t answer your question
-- try to help yourself: people are unlikely to help you if it looks like you are asking someone else to do lots of work you presumably are being paid to do!
-- ensure your post says which version of docx4j you are using, and contains your Java code (between \[java\] .. and .. \[/java\]) and XML (between \[xml\] .. and .. \[/xml\]), and if appropriate a docx/pptx/xlsx attachment
-- consider browsing relevant docx4j source code 
-
-This discussion is generally in English.  If you would like to moderate a forum in another language (for example, French, Chinese, Spanish…), please let us know.
 
 # A word about Jaxb
 
@@ -1329,6 +1314,8 @@ LLMs and coding agents (Claude Code, Copilot, and similar) are good at writing d
 The docx4j source tree is set up for AI-assisted development too: CLAUDE.md in the repository root (https://github.com/plutext/docx4j/blob/HEAD/CLAUDE.md) orients a coding agent – build commands, module map, architecture – and docs/developer/change-requests/ records the design history that gives an agent (or a human) context for non-trivial changes.  Much of docx4j 17.0.x was built this way.
 
 Contributions – including AI-assisted ones – are welcome.  Please do submit issues (a small docx reproducing the problem is worth a thousand words) and pull requests.  See CONTRIBUTING.md (https://github.com/plutext/docx4j/blob/HEAD/CONTRIBUTING.md) for the ground rules: DCO sign-off, and for AI assistance, that you have reviewed and can stand behind the code, and disclose the assistance with an Assisted-by: trailer.
+
+And when you want to discuss something with a human: use GitHub discussions (https://github.com/plutext/docx4j/discussions) for questions and ideas, GitHub issues for bugs, or the docx4j forum at http://www.docx4java.org/forums/
 
 # docx to (X)HTML
 
