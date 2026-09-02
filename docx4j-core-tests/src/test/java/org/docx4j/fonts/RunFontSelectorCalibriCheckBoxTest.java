@@ -68,11 +68,19 @@ public class RunFontSelectorCalibriCheckBoxTest {
 
 		Mapper fontMapper = wordMLPackage.getFontMapper();
 //		PhysicalFont font = PhysicalFonts.get("noto sans symbols regular"); // Glyph 10065 (0x2751) not available in font Noto Sans Symbols Regular
+		// DejaVu Sans is near-universal on Linux but absent on stock Windows;
+		// there, fall back to Segoe UI Symbol (present since Windows 7, and it
+		// has U+2751).  Otherwise skip, as the other RunFontSelector tests do
+		// (previously this ploughed on and NPE'd on the null mapping).
 		PhysicalFont font = PhysicalFonts.get("dejavu sans");
 		if (font==null) {
-			System.out.println("Missing PhysicalFont.");
+			font = PhysicalFonts.get("segoe ui symbol");
 		}
-		
+		org.junit.Assume.assumeTrue("neither DejaVu Sans nor Segoe UI Symbol is installed",
+				font != null);
+		org.junit.Assume.assumeTrue(font.getName() + " has no U+2751",
+				GlyphCheck.hasChar(font, '❑'));
+
 		//fontMapper.put("Calibri", font);
 		fontMapper.put(FONT_WORD_2016_USES, font); 
 		// static String[] expectedFont = { "MS Gothic"}; // Word sometime prior to 2016? 
