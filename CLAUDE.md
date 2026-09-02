@@ -29,6 +29,20 @@ Notes:
 
 Each release lives on its own `VERSION_x_y_z` branch (e.g. `VERSION_17_0_1` is current 17.0.1-SNAPSHOT development). `master` is old; pick the branch matching the version you're working on. Update `CHANGELOG.md` for user-visible changes. Documented change requests (CRs) for non-trivial work live in `docs/developer/change-requests/` (see its README); update the relevant CR as phases land.
 
+## AI attribution in commits
+
+- Stamp your own session's model (`Co-Authored-By: Claude <model>` +
+  `Claude-Session: <url>`, per the harness default). Never copy the model
+  name from trailers in git history — earlier commits were made by other
+  sessions on other models.
+- If another model materially contributed in this session (a subagent run
+  with a model override), add a second `Co-Authored-By` line for it.
+- If another Claude session reviewed or directed this work before push, add
+  `Reviewed-by: Claude <model> <noreply@anthropic.com>` (plus that session's
+  `Claude-Session` URL on the following line if known).
+- The `Co-Authored-By` model names feed the release's "Contributors" block
+  in `CHANGELOG.md`, so accuracy here matters.
+
 ## Module map
 
 - **docx4j-core** — the main library. Note `org/pptx4j`, `org/xlsx4j`, `org/glox4j` (SmartArt), and `org/opendope` are top-level *packages inside docx4j-core*, not separate modules.
