@@ -3,6 +3,17 @@
 Status: **PROPOSED** 2026-09-02. No code yet. Follow-on to CR-math-omml-mathml
 (which gave us native OMML⇄MathML with no Microsoft XSLT).
 
+**Spike result (2026-09-02): the `jeuclid-fop` plugin works with FOP 2.11
+unmodified.** Rendering `<fo:instream-foreign-object><math>…</math></fo:…>` with
+`de.rototor.jeuclid:jeuclid-fop:3.1.14` on the classpath and
+`JEuclidFopFactoryConfigurator.configure(fopFactory)` produced a correct,
+baseline-aligned quadratic formula in a PDF — no patching. Its
+`JEuclidElementMapping extends org.apache.fop.fo.ElementMapping` overrides exactly
+the (still-present, single-abstract-method) FOP 2.11 SPI, and it links cleanly.
+So the recommendation below now **leads with the plugin route**; the
+render-to-SVG design is kept as the escalation path (for MathJax-grade fidelity or
+FOP-upgrade breakage).
+
 ## 1. Background
 
 docx→PDF goes docx → XSL-FO → Apache FOP → PDF. FOP renders ordinary FO plus
@@ -52,13 +63,47 @@ Goal: equations appear in docx→PDF out of the box (subject to a renderer being
 the classpath), Apache-licensed, with a pluggable renderer so quality can be
 improved without touching the exporter.
 
-Non-goals: teaching FOP to lay out MathML directly (the `jeuclid-fop` extension —
-rejected, see §4); a hard dependency on any heavyweight renderer; perfect visual
-parity with Word on pathological equations in v1.
+Non-goals: a hard dependency on any heavyweight renderer; perfect visual parity
+with Word on pathological equations in v1.
 
 ## 3. Design
 
-### Renderer SPI
+### Route A — the jeuclid-fop plugin (recommended; proven with FOP 2.11)
+
+Emit the MathML straight into the FO and let FOP render it via the plugin's
+`ElementMapping`. Our exporter never touches SVG or baselines — the plugin does
+MathML→layout (internally via JEuclid) and sets `alignment-adjust` for the
+baseline itself. Concretely:
+
+- Add optional deps `de.rototor.jeuclid:jeuclid-fop:3.1.14` (+ `jeuclid-core`,
+  both Apache-2.0), **excluding** the plugin's transitive `org.apache.xmlgraphics:fop`
+  so our FOP 2.11 wins.
+- When the plugin is on the classpath, call
+  `JEuclidFopFactoryConfigurator.configure(fopFactory)` after
+  `FORendererApacheFOP` builds the `FopFactory` (reflectively, so docx4j-export-fo
+  does not hard-depend on it).
+- Both FO pathways emit, for each `m:oMath`/`m:oMathPara`,
+  `<fo:instream-foreign-object>` wrapping the MathML DOM from `OmmlToMathML`. If
+  the plugin is absent, fall back to the equation's text (emitting bare MathML
+  without the plugin would make FOP error on the unknown foreign namespace).
+
+This is by far the least code: no SVG conversion, no baseline maths, no viewport
+normalisation in docx4j. The spike (see status) confirmed it renders correctly on
+FOP 2.11 unmodified.
+
+Trade-offs: it pins us to JEuclid's (MathML-2-era) layout, and to a stale
+third-party artifact whose `ElementMapping`/image-loader integration could break
+on a future FOP. Both are acceptable for a first cut given how small the surface
+is; Route B is the escape hatch.
+
+### Route B — render to SVG ourselves (escalation; renderer-pluggable)
+
+Used only if JEuclid's fidelity proves insufficient (per the phase-3 corpus) or a
+future FOP breaks the plugin. Same end result, but docx4j pre-renders MathML→SVG
+and emits SVG (a stable, first-class FOP foreign object), which also lets us swap
+in a better renderer (MathJax) without changing the exporter.
+
+#### Renderer SPI
 
 ```java
 package org.docx4j.convert.out.mathml;   // beside OmmlToMathML
@@ -147,33 +192,36 @@ alignment-adjust = -(depth / height) * 100 %
 
 ## 4. Alternatives rejected
 
-- **`jeuclid-fop` extension** — registers MathML as a foreign namespace in FOP.
-  Couples us to FOP 2.3-era extension APIs and to a stale artifact; gains nothing
-  over rendering to SVG ourselves. Rejected.
 - **Fake it with FO primitives** (`baseline-shift`, inline tables) — fine for
   `x²`/`H₂O`, hopeless for fractions/radicals/stretchy fences/matrices/limits.
   Rejected.
 - **Teach FOP OMML directly** — no.
 - **Temml / LaTeXML** — TeX-oriented; wrong direction (we already have MathML).
 
+(The `jeuclid-fop` FOP extension was previously listed here as rejected; the
+spike reversed that — it is now Route A, the recommended approach.)
+
 ## 5. Phases
 
-1. **SPI + JEuclid renderer + sizing.** `MathMLRenderer`/`MathGraphic` in core;
-   `JEuclidMathMLRenderer` in docx4j-export-fo (optional `jeuclid-core`, reflective
-   load); point-normalised SVG + baseline. Unit test: MathML → non-empty SVG with
-   sane width/height/baseline for the corpus.
-2. **FO emitter + wiring.** `XsltFOFunctions.mathToFO`; wire the visitor and XSLT
-   FO pathways; fall back to text when no renderer/render fails. Test: a docx with
-   an equation produces a PDF containing an SVG (FOP runs clean); both pathways.
-3. **Regression corpus.** Extend the CR-math-omml-mathml corpus toward ~50–100
+1. **Plugin wiring (Route A).** Add `jeuclid-fop`/`jeuclid-core` as optional deps
+   (exclude their FOP); register via `JEuclidFopFactoryConfigurator.configure`
+   reflectively where `FORendererApacheFOP` builds the `FopFactory`. Emit
+   `fo:instream-foreign-object` wrapping the `OmmlToMathML` MathML for
+   `m:oMath`/`m:oMathPara` in both FO pathways (shared `XsltFOFunctions` helper +
+   `FOExporterVisitorGenerator` case), falling back to text when the plugin is
+   absent. Test: a docx equation renders in the PDF, both pathways. (Spike already
+   proved the render path on FOP 2.11.)
+2. **Regression corpus.** Extend the CR-math-omml-mathml corpus toward ~50–100
    deliberately nasty equations (stretchy operators, nested radicals/fractions,
    matrices, n-ary limits, accents, math fonts). Render to PDF, eyeball vs Word's
-   PDF; capture known-weak cases.
-4. **Decide on MathJax.** If JEuclid's fidelity is inadequate on the corpus,
-   add `MathJaxMathMLRenderer` (GraalJS first) behind the same SPI. Otherwise
-   record JEuclid as sufficient and defer.
-5. **Docs + CHANGELOG.** How to enable (add `jeuclid-core`), the fallback
-   behaviour, and the renderer SPI for anyone wanting MathJax/other.
+   PDF; capture known-weak cases. This decides whether Route A is good enough.
+3. **Route B only if needed.** If the corpus shows JEuclid's fidelity is
+   inadequate (or to hedge FOP-upgrade risk): add the `MathMLRenderer`/
+   `MathGraphic` SPI + point-normalised SVG, a `JEuclidMathMLRenderer` and/or a
+   `MathJaxMathMLRenderer` (GraalJS first), and switch the emitter to embed SVG
+   instead of MathML. Otherwise record Route A as sufficient and defer.
+4. **Docs + CHANGELOG.** How to enable (add the jeuclid deps), the fallback
+   behaviour, and — if Route B ships — the renderer SPI for MathJax/other.
 
 ## 6. Risks / notes
 
@@ -182,12 +230,12 @@ alignment-adjust = -(depth / height) * 100 %
   features), which is JEuclid's sweet spot. Still, matrices, stretchy fences and
   spacing are the likely weak spots — hence the corpus gate (phase 3) before
   committing.
-- **Math fonts.** JEuclid may reference math fonts rather than emitting paths; if
-  so those fonts must be available to the SVG rasteriser. MathJax emits paths and
-  sidesteps this. Check in phase 1.
-- **Baseline alignment in FOP.** Confirm FOP honours `alignment-adjust` on an
-  `fo:instream-foreign-object`; if not, fall back to `baseline-shift` or a
-  wrapping inline box. Verify in phase 2.
+- **Math fonts.** Resolved by the spike: the rendered PDF embedded only Helvetica
+  (for the surrounding text) and no math font — JEuclid draws the equation as
+  vector paths, so no math-font availability problem.
+- **Baseline alignment in FOP.** Resolved by the spike: the plugin set
+  `alignment-adjust` and FOP honoured it — the equation sat correctly on the text
+  baseline.
 - **Optional dependency ergonomics.** With the reflective-optional approach,
   users who want math in PDF add `de.rototor.jeuclid:jeuclid-core`; without it,
   equations degrade to text with a one-time warning. Document clearly.
