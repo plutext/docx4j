@@ -14,8 +14,8 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="17.0.3"/>
-	<property name="importxhtml-version" value="17.0.2"/>
+	<property name="version" value="17.0.4"/>
+	<property name="importxhtml-version" value="17.0.4"/>
 	<property name="importxhtml-dir" value="/home/${user.name}/git/docx4j-ImportXHTML"/>
 
 	<property name="documents4j-version" value="1.1.13"/>
@@ -139,8 +139,24 @@
         <!--<pathelement location="${m2Repository}/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar"/>-->
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-codec/1.19/batik-codec-1.19.jar"/>
 		
+		<!-- since 17.0.4 -->
+        <pathelement location="${m2Repository}/de/rototor/jeuclid/jeuclid-fop/3.1.14/jeuclid-fop-3.1.14.jar"/>
+        <pathelement location="${m2Repository}/de/rototor/jeuclid/jeuclid-core/3.1.14/jeuclid-core-3.1.14.jar"/>
+		
+		
 	</path>
-	
+
+	<!-- since 17.0.4 -->
+	<path id="docx4j-markdown.classpath">
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-markdown/${version}/docx4j-markdown-${version}.jar"/>
+        <pathelement location="${m2Repository}/org/commonmark/commonmark/0.30.0/commonmark-0.30.0.jar"/>
+        <pathelement location="${m2Repository}/org/commonmark/commonmark-ext-gfm-tables/0.30.0/commonmark-ext-gfm-tables-0.30.0.jar"/>
+        <pathelement location="${m2Repository}/org/commonmark/commonmark-ext-gfm-strikethrough/0.30.0/commonmark-ext-gfm-strikethrough-0.30.0.jar"/>
+        <pathelement location="${m2Repository}/org/commonmark/commonmark-ext-task-list-items/0.30.0/commonmark-ext-task-list-items-0.30.0.jar"/>
+        <pathelement location="${m2Repository}/org/commonmark/commonmark-ext-footnotes/0.30.0/commonmark-ext-footnotes-0.30.0.jar"/>
+        <pathelement location="${m2Repository}/org/commonmark/commonmark-ext-yaml-front-matter/0.30.0/commonmark-ext-yaml-front-matter-0.30.0.jar"/>
+	</path>
+
 	<path id="docx4j-ImportXHTML.classpath">
 		
 		<pathelement location="${m2Repository}/org/docx4j/docx4j-ImportXHTML-core/${importxhtml-version}/docx4j-ImportXHTML-core-${importxhtml-version}.jar" />
@@ -216,6 +232,15 @@
 			<!-- requires Ant 1.7.0 -->
 			<path>
 				<path refid="docx4j-export-fo.classpath"/>
+			</path>
+		</copy>
+
+		<!-- markdown (since 17.0.4) -->
+		<mkdir dir="${release.dir}/optional/markdown"/>
+		<copy todir="${release.dir}/optional/markdown" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+				<path refid="docx4j-markdown.classpath"/>
 			</path>
 		</copy>
 
