@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>17.0.4</revision>
+		<revision>17.0.5-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 		
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -103,7 +103,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-17.0.4</tag>
+      <tag>docx4j-17.0.5</tag>
       <url>https://github.com/plutext/docx4j</url>
   </scm>
 	<inceptionYear>2007</inceptionYear>
