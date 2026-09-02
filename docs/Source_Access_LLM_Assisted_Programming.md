@@ -39,9 +39,21 @@ integration.
 
 Against an open library, the assistant answers immediately, from ground truth:
 the implementation itself, and — often better — the test suite and runnable
-samples, which are executable, maintained examples of intended use. The git
-history answers the questions documentation never does: *why* it works this
-way, what it replaced, which behaviours are deliberate.
+samples, which are executable, maintained examples of intended use. A mature
+test suite is hundreds of worked examples of how to construct things, each
+pinned to expected behaviour assertion by assertion — for an assistant, often
+richer raw material than the documentation. The git history answers the
+questions documentation never does: *why* it works this way, what it
+replaced, which behaviours are deliberate.
+
+Concretely, from recent AI-assisted sessions against docx4j itself: an
+undocumented constructor flag that lets two exporters share one set of
+extracted images; a code comment explaining why the HTML serializer must
+*not* pretty-print (a line break before a subscript renders as a visible
+space) — which stopped a plausible "improvement" that would have corrupted
+output; the exact list of directories the font subsystem scans, which turned
+a mysterious CI-only test failure into a one-line diagnosis. None of these
+appear in any documentation. Each was a five-second search of the source.
 
 This improves the economics of **using** open source before any code changes
 hands: support-shaped questions become self-serve, and their latency leaves
@@ -73,6 +85,14 @@ The difference is starkest when behaviour surprises you.
    request*, with the test that proves the fix.
 4. Once merged, maintenance of that fix belongs to the project. Your fork
    delta returns to zero.
+
+A checkout you can *build* upgrades the loop again, from reading to
+experiment: the assistant doesn't have to be right, it can check. Recent
+docx4j examples: a suspected regression was ruled out by running the previous
+release's jars and the current build against the same inputs and comparing
+outputs cell by cell; a build-tool rewrite was validated by diffing its
+output byte-for-byte against the tool it replaced. Source you can execute
+beats source you can only read — and only open source offers either.
 
 ## The economics of contributing have inverted, too
 
@@ -134,6 +154,13 @@ Each "yes" makes your assistant materially more capable against that
 dependency. A "no" anywhere is a place where, one day, an investigation will
 stop and a workaround will become permanent.
 
+One practical note once you've adopted: make sure the assistant is reading
+code that actually exists. Where parts of a library's API are generated at
+build time — docx4j's OpenXML object model, for instance — a bare clone
+doesn't yet contain the classes you'll use most; build it once so it does, or
+point your tools at the `-sources` jars your package manager already
+downloads.
+
 ## Frequently asked questions
 
 **Does source access help even when nothing is broken?**
@@ -160,9 +187,12 @@ theoretical freedom into throughput you use weekly.
 
 Largely, yes: open codebases, their documentation and their public discussions
 are in the training data of every major model, so assistants arrive knowing
-the idioms. But the stronger effect is at development time — the assistant
-reading the exact version on your classpath, rather than remembering an older
-one.
+the idioms. But training-data knowledge blurs every era of a library
+together: an assistant remembering docx4j may mix the `javax.xml.bind` years
+with `jakarta`, long-renamed methods with current ones, or defaults that
+flipped a release ago. The stronger effect is at development time — the
+assistant reading the exact version on your classpath dispels exactly those
+confusions, which are otherwise its most confident mistakes.
 
 ## Where this argument came from
 
