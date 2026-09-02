@@ -78,17 +78,10 @@ Get it from GitHub, at https://github.com/plutext/docx4j
 
 ```
 mvn clean
-mvn install
+mvn install -Dgpg.skip=true
 ```
 
-Some of the tests might fail on Windows.  For now, you could skip them: `mvn install -DskipTests`  
-
 For more details, see http://www.docx4java.org/blog/2015/06/docx4j-from-github-in-eclipse-5-years-on/
-
-If you are working with the source code, please join the developer
-mailing list:
-
-        docx4j-dev-subscribe@docx4java.org
 
 
 Where do I get a binary?
@@ -108,13 +101,41 @@ And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samp
 You'll probably want the Helper AddIn to generate code:  http://www.docx4java.org/blog/2016/05/docx4j-helper-word-addin-new-version-v3-3-0/
 
 
+Using an LLM with docx4j
+------------------------
+
+LLMs and coding agents are good at writing docx4j code, and you should feel
+free to use them — we recommend [Claude](https://www.claude.com).  Two things
+help: docx4j's documentation is available in LLM-friendly form at
+https://www.docx4java.org/llms.txt, and the `docx4j-samples-*` modules give an
+agent working code to pattern-match against.  The classic failure modes to
+watch for: `javax.xml.bind` imports (current docx4j uses `jakarta.xml.bind`),
+and invented APIs for merging documents (merging is a commercial extension —
+see https://www.plutext.com).
+
+The source tree is set up for AI-assisted development too: [CLAUDE.md](CLAUDE.md)
+orients a coding agent (build commands, module map, architecture), and
+[docs/developer/change-requests/](docs/developer/change-requests/) records the
+design history behind non-trivial changes.  Much of docx4j 17.x was built this
+way.
+
+Contributions — including AI-assisted ones — are welcome.  Please do raise
+[issues](https://github.com/plutext/docx4j/issues) (a small docx reproducing
+the problem is worth a thousand words) and pull requests; see
+[CONTRIBUTING.md](CONTRIBUTING.md) for the ground rules.
+
+To talk to a human, use
+[GitHub discussions](https://github.com/plutext/docx4j/discussions).
+
 
 Where to get help?
 ------------------
 
-http://www.docx4java.org/forums or StackOverflow (use tag 'docx4j')
+Your LLM is a good first resort (see "Using an LLM with docx4j" above).
 
-Please post to one or the other, not both
+To talk to a human, use [GitHub discussions](https://github.com/plutext/docx4j/discussions);
+there is also the forum at http://www.docx4java.org/forums and StackOverflow
+(tag 'docx4j').  Please post to one, not several.
 
 
 Contributing
