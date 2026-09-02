@@ -1,0 +1,109 @@
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <m:d>
+        <m:dPr>
+            <m:ctrlPr>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+            </m:ctrlPr>
+        </m:dPr>
+        <m:e>
+            <m:m>
+                <m:mPr>
+                    <m:plcHide m:val="1"/>
+                    <m:mcs>
+                        <m:mc>
+                            <m:mcPr>
+                                <m:count m:val="3"/>
+                                <m:mcJc m:val="center"/>
+                            </m:mcPr>
+                        </m:mc>
+                    </m:mcs>
+                    <m:ctrlPr>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                    </m:ctrlPr>
+                </m:mPr>
+                <m:mr>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>1</m:t>
+                        </m:r>
+                    </m:e>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>0</m:t>
+                        </m:r>
+                    </m:e>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>0</m:t>
+                        </m:r>
+                    </m:e>
+                </m:mr>
+                <m:mr>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>0</m:t>
+                        </m:r>
+                    </m:e>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>1</m:t>
+                        </m:r>
+                    </m:e>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>0</m:t>
+                        </m:r>
+                    </m:e>
+                </m:mr>
+                <m:mr>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>0</m:t>
+                        </m:r>
+                    </m:e>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>0</m:t>
+                        </m:r>
+                    </m:e>
+                    <m:e>
+                        <m:r>
+                            <w:rPr>
+                                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                            </w:rPr>
+                            <m:t>1</m:t>
+                        </m:r>
+                    </m:e>
+                </m:mr>
+            </m:m>
+        </m:e>
+    </m:d>
+</m:oMath>

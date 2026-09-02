@@ -1,0 +1,142 @@
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <m:limUpp>
+        <m:limUppPr>
+            <m:ctrlPr>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+            </m:ctrlPr>
+        </m:limUppPr>
+        <m:e>
+            <m:nary>
+                <m:naryPr>
+                    <m:limLoc m:val="undOvr"/>
+                    <m:grow m:val="1"/>
+                    <m:supHide m:val="1"/>
+                    <m:ctrlPr>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                    </m:ctrlPr>
+                </m:naryPr>
+                <m:sub>
+                    <m:r>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                        <m:t>0</m:t>
+                    </m:r>
+                </m:sub>
+                <m:sup/>
+                <m:e/>
+            </m:nary>
+        </m:e>
+        <m:lim>
+            <m:r>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+                <m:t>∞</m:t>
+            </m:r>
+        </m:lim>
+    </m:limUpp>
+    <m:r>
+        <m:rPr>
+            <m:nor/>
+        </m:rPr>
+        <m:t> </m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:lit/>
+            <m:nor/>
+        </m:rPr>
+        <m:t>&amp;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:nor/>
+        </m:rPr>
+        <m:t>#x0200A;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:lit/>
+            <m:nor/>
+        </m:rPr>
+        <m:t>&amp;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:nor/>
+        </m:rPr>
+        <m:t>#x0200A; vs </m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:lit/>
+            <m:nor/>
+        </m:rPr>
+        <m:t>&amp;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:nor/>
+        </m:rPr>
+        <m:t>#x02009;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:lit/>
+            <m:nor/>
+        </m:rPr>
+        <m:t>&amp;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:nor/>
+        </m:rPr>
+        <m:t>#x0200A;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:lit/>
+            <m:nor/>
+        </m:rPr>
+        <m:t>&amp;</m:t>
+    </m:r>
+    <m:r>
+        <m:rPr>
+            <m:nor/>
+        </m:rPr>
+        <m:t>#x0200A;</m:t>
+    </m:r>
+    <m:nary>
+        <m:naryPr>
+            <m:limLoc m:val="undOvr"/>
+            <m:grow m:val="1"/>
+            <m:ctrlPr>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+            </m:ctrlPr>
+        </m:naryPr>
+        <m:sub>
+            <m:r>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+                <m:t>0</m:t>
+            </m:r>
+        </m:sub>
+        <m:sup>
+            <m:r>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+                <m:t>∞</m:t>
+            </m:r>
+        </m:sup>
+        <m:e/>
+    </m:nary>
+</m:oMath>

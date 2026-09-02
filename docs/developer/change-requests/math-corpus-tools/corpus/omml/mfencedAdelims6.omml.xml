@@ -1,0 +1,92 @@
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <m:d>
+        <m:dPr>
+            <m:begChr m:val="["/>
+            <m:ctrlPr>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+            </m:ctrlPr>
+        </m:dPr>
+        <m:e>
+            <m:r>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+                <m:t>a+b</m:t>
+            </m:r>
+        </m:e>
+    </m:d>
+    <m:d>
+        <m:dPr>
+            <m:begChr m:val="{"/>
+            <m:sepChr m:val=""/>
+            <m:endChr m:val="}"/>
+            <m:ctrlPr>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+            </m:ctrlPr>
+        </m:dPr>
+        <m:e>
+            <m:f>
+                <m:fPr>
+                    <m:ctrlPr>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                    </m:ctrlPr>
+                </m:fPr>
+                <m:num>
+                    <m:r>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                        <m:t>a</m:t>
+                    </m:r>
+                </m:num>
+                <m:den>
+                    <m:r>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                        <m:t>b</m:t>
+                    </m:r>
+                </m:den>
+            </m:f>
+        </m:e>
+        <m:e>
+            <m:f>
+                <m:fPr>
+                    <m:ctrlPr>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                    </m:ctrlPr>
+                </m:fPr>
+                <m:num>
+                    <m:r>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                        <m:t>d</m:t>
+                    </m:r>
+                </m:num>
+                <m:den>
+                    <m:r>
+                        <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                        </w:rPr>
+                        <m:t>e</m:t>
+                    </m:r>
+                </m:den>
+            </m:f>
+            <m:r>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+                <m:t>;a+b+a+b</m:t>
+            </m:r>
+        </m:e>
+    </m:d>
+</m:oMath>

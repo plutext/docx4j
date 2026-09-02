@@ -1,0 +1,13 @@
+<math xmlns="http://www.w3.org/1998/Math/MathML"> 
+  <mrow> 
+    <mover accent="true"> 
+      <mi> x </mi> 
+      <mo> &#x0005E; </mo> 
+    </mover> 
+    <mtext> &#x02002;&amp;#x02002;vs&amp;#x02002;&amp;#x02002; </mtext> 
+    <mover accent="false"> 
+      <mi> x </mi> 
+      <mo> &#x0005E; </mo> 
+    </mover> 
+  </mrow> 
+</math>

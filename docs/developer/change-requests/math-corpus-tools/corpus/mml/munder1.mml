@@ -1,0 +1,16 @@
+<math xmlns="http://www.w3.org/1998/Math/MathML"> 
+  <mrow> 
+    <munder> 
+      <mo> ( </mo> 
+      <mo> &#x00332; </mo> 
+    </munder> 
+    <mfrac> 
+      <mi> a </mi> 
+      <mi> b </mi> 
+    </mfrac> 
+    <mover> 
+      <mo> ) </mo> 
+      <mo> &#x000AF; </mo> 
+    </mover> 
+  </mrow> 
+</math>

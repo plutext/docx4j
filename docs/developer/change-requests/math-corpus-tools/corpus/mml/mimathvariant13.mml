@@ -1,0 +1,110 @@
+<math xmlns="http://www.w3.org/1998/Math/MathML"> 
+  <mtable> 
+    <mtr> 
+      <mtd> 
+        <mi>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='normal'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='italic'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-italic'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='double-struck'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-fraktur'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='script'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-script'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='fraktur'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='sans-serif'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-sans-serif'>a 
+        </mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='sans-serif-italic'>a 
+        </mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='sans-serif-bold-italic'>a 
+        </mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='monospace'>a</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold'>ab</mi> 
+      </mtd> 
+    </mtr> 
+    <mtr> 
+      <mtd> 
+        <mi>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='normal'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='italic'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-italic'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='double-struck'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-fraktur'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='script'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-script'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='fraktur'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='sans-serif'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold-sans-serif'>A 
+        </mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='sans-serif-italic'>A 
+        </mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='sans-serif-bold-italic'>A 
+        </mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='monospace'>A</mi> 
+      </mtd> 
+      <mtd> 
+        <mi mathvariant='bold'>&#x003B1;</mi> 
+      </mtd> 
+    </mtr> 
+  </mtable> 
+</math>

@@ -1,0 +1,18 @@
+<math xmlns="http://www.w3.org/1998/Math/MathML"> 
+  <mrow> 
+    <mover> 
+      <munder> 
+        <mo> &#x0222B; </mo> 
+        <mn> 0 </mn> 
+      </munder> 
+      <mi> &#x0221E; </mi> 
+    </mover> 
+    <mtext> &#x02009;&amp;#x0200A;&amp;#x0200A; vs &amp;#x02009;&amp;#x0200A;&amp;#x0200A; 
+    </mtext> 
+    <munderover> 
+      <mo> &#x0222B; </mo> 
+      <mn> 0 </mn> 
+      <mi> &#x0221E; </mi> 
+    </munderover> 
+  </mrow> 
+</math>
