@@ -1,6 +1,20 @@
 CHANGELOG
 =========
 
+Version 17.0.5
+===============
+
+Changes in Version 17.0.5
+--------------------------
+
+Build:
+- docx4j now builds on native Windows: the XJC post-processing step (parent pointers,
+SdtElement signatures, VML attribute order etc) was ported from bash (which needed
+bash/perl/sed/find, so WSL) to a cross-platform Java tool run via single-file source
+launch (docx4j-generated-objects/ModifyGeneratedSources.java); output verified
+byte-identical.  A .gitattributes was also added (17.0.4 cycle) so CRLF checkouts
+no longer break the build
+
 Version 17.0.4
 ===============
 

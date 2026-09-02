@@ -1,12 +1,16 @@
-# TODO: building docx4j on Windows
+# Building docx4j on Windows
 
 Status of an audit (2026-09-02) of what stops `mvn clean install` on native
-Windows, and the recommended fix for the one hard blocker.  The line-ending
-half of the problem is already handled: see the repo-root `.gitattributes`
-(added with this note), which forces LF for `*.sh` and for the diffx golden
-fixtures that `GoldenOutputTest` compares byte-for-byte.
+Windows.  **Both blockers are now fixed**: the line-ending half via the
+repo-root `.gitattributes` (forces LF for `*.sh` and for the diffx golden
+fixtures that `GoldenOutputTest` compares byte-for-byte), and the hard
+blocker below via `ModifyGeneratedSources.java` (17.0.5 dev), which
+replaced `modify-generated-sources.sh` — ported per the recommendation
+in the next section, verified byte-identical against the script's output
+on the same XJC input, and idempotent.  What remains below is kept for
+the record, plus the smaller items at the end (none are blockers).
 
-## The hard blocker: modify-generated-sources.sh
+## The (fixed) hard blocker: modify-generated-sources.sh
 
 This module's pom binds exec-maven-plugin at `process-sources` to run
 `modify-generated-sources.sh`, which patches the XJC output (parent pointers,

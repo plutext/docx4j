@@ -119,7 +119,12 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>${project.basedir}/modify-generated-sources.sh</executable>
+							<!-- JEP 330 single-file source launch: cross-platform,
+							     no compile step; see TODO_Windows_builds.md -->
+							<executable>java</executable>
+							<arguments>
+								<argument>${project.basedir}/ModifyGeneratedSources.java</argument>
+							</arguments>
 						</configuration>
 					</execution>
 <!--					<execution>-->
