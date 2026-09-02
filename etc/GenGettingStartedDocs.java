@@ -41,10 +41,24 @@ public class GenGettingStartedDocs {
 		settings.setImageDirPath(filesDir);
 		settings.setImageTargetUri(filesUri);
 		settings.setImageHandler(new org.docx4j.convert.out.html.HTMLConversionImageHandler(filesDir, filesUri, false));
-		try (java.io.OutputStream os = new java.io.FileOutputStream(
-				new java.io.File(outDir, "Docx4j_GettingStarted.html"))) {
-			Docx4J.toHTML(settings, os, Docx4J.FLAG_NONE);
-		}
+		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+		Docx4J.toHTML(settings, baos, Docx4J.FLAG_NONE);
+		java.nio.file.Files.writeString(
+				java.nio.file.Path.of(outDir, "Docx4j_GettingStarted.html"),
+				breakAtBlockBoundaries(baos.toString(java.nio.charset.StandardCharsets.UTF_8)));
 		System.out.println("HTML OK");
+	}
+
+	/**
+	 * One line per block element instead of one 100,000+ char line.  NOT
+	 * OutputKeys.INDENT: the serializers deliberately set INDENT=no because
+	 * indentation inserts whitespace before inline elements (a line break
+	 * before a subscript renders as a space).  A newline immediately before
+	 * a block-level tag sits between blocks, where HTML ignores it.
+	 */
+	static String breakAtBlockBoundaries(String html) {
+		return html
+			.replaceAll("<(p|div|table|tbody|tr|td|th|li|ul|ol|h[1-6]|head|body|style|meta|title|link)([ >/])", "\n<$1$2")
+			.replaceAll("</(div|table|tbody|tr|ul|ol|head|body|html)>", "\n</$1>");
 	}
 }
