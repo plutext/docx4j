@@ -204,17 +204,22 @@ Two classes of corpus, kept separate because the ready-made ones are copyleft:
 
 ## 5. Phases
 
-1. **Test corpus + skeleton.** Assemble the vendored corpus (W3C MathML suite +
-   our Word-derived OMML↔MathML pairs) per the section above; wire the copyleft
-   suites (texmath, mathml2omml) as out-of-tree dev oracles only. Stand up
-   `OmmlToMathML` / `MathMLToOmml` skeletons with the failure-policy plumbing and
-   an entity table. Clean-room note recorded in the package javadoc.
-2. **OMML → MathML core.** fractions, radicals, sub/sup/subsup, runs + mathvariant,
-   delimiters, n-ary with limits. Wire into the HTML visitor exporter behind the
-   existing math toggle; MathML now emits out of the box.
-3. **OMML → MathML advanced.** matrices/eqArr + alignment, accents/bars,
-   under/over, groupChr/box/phantom, boxed/borderBox. Uncomment-free parity with
-   what `OMML2MML.XSL` produced for the covered set.
+1. **Test corpus + skeleton.** DONE (commit 4342c45f7). 25-case corpus committed
+   under math-corpus-tools/corpus (mml/omml/word-mml); tooling
+   (MathmlToDocx.bas, OmmlFixtureExtractor.java); copyleft suites left as
+   out-of-tree oracles.
+2. **OMML → MathML core.** DONE. `org.docx4j.convert.out.mathml.OmmlToMathML` +
+   `MathConversionException` in docx4j-core: runs (mi/mn/mo/mtext) with
+   mathvariant, fractions (incl. bevelled/linear/no-bar), radicals (msqrt/mroot),
+   sub/sup/subsup, n-ary with sub/undOvr limits, delimiters. Emits a W3C DOM /
+   string; styles as `mathvariant` (Word uses the Alphanumeric Symbols block —
+   equivalent). NOT yet wired into the HTML visitor exporter (follow-up).
+3. **OMML → MathML advanced.** DONE (same pass): matrices (CTM/mtable),
+   eqArr, prescripts (CTSPre/mmultiscripts), function apply (CTFunc), accents,
+   bars, limLow/limUpp, groupChr, phantom, box/borderBox. All 25 corpus cases
+   convert to well-formed MathML (`OmmlToMathMLTest`), many byte-identical to
+   Word's oracle. Remaining: wire into the visitor HTML exporter; broaden beyond
+   the corpus subset as bugs surface.
 4. **MathML → OMML core + advanced** (in `docx4j-ImportXHTML`): the reverse of
    phases 2–3; replace the `mml2omml.xsl` invocation and remove the bundled
    stylesheet. Round-trip tests (OMML → MathML → OMML) for stability.

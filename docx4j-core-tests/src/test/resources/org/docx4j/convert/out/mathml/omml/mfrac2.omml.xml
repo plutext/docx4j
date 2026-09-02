@@ -1,0 +1,27 @@
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <m:f>
+        <m:fPr>
+            <m:ctrlPr>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+            </m:ctrlPr>
+        </m:fPr>
+        <m:num>
+            <m:r>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+                <m:t>ⅆ</m:t>
+            </m:r>
+        </m:num>
+        <m:den>
+            <m:r>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+                <m:t>ⅆx</m:t>
+            </m:r>
+        </m:den>
+    </m:f>
+</m:oMath>

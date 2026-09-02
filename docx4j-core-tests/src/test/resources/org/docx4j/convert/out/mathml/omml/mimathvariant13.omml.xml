@@ -1,0 +1,372 @@
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <m:m>
+        <m:mPr>
+            <m:plcHide m:val="1"/>
+            <m:mcs>
+                <m:mc>
+                    <m:mcPr>
+                        <m:count m:val="16"/>
+                        <m:mcJc m:val="center"/>
+                    </m:mcPr>
+                </m:mc>
+            </m:mcs>
+            <m:ctrlPr>
+                <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                </w:rPr>
+            </m:ctrlPr>
+        </m:mPr>
+        <m:mr>
+            <m:e>
+                <m:r>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="p"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="double-struck"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="fraktur"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="script"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="script"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="fraktur"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="monospace"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>a</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>ab</m:t>
+                </m:r>
+            </m:e>
+        </m:mr>
+        <m:mr>
+            <m:e>
+                <m:r>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="p"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="double-struck"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="fraktur"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="script"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="script"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="fraktur"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="sans-serif"/>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:scr m:val="monospace"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>A</m:t>
+                </m:r>
+            </m:e>
+            <m:e>
+                <m:r>
+                    <m:rPr>
+                        <m:sty m:val="bi"/>
+                    </m:rPr>
+                    <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                    </w:rPr>
+                    <m:t>α</m:t>
+                </m:r>
+            </m:e>
+        </m:mr>
+    </m:m>
+</m:oMath>
