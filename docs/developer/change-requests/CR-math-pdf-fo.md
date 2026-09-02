@@ -217,25 +217,50 @@ spike reversed that — it is now Route A, the recommended approach.)
    renders in the PDF via both pathways, and degrades to text (no crash) when the
    jeuclid jars are excluded. `MathMLPdfTest` (3 tests). Also exported
    `org.docx4j.convert.out.mathml` from docx4j-core's module-info.
-2. **Regression corpus.** Extend the CR-math-omml-mathml corpus toward ~50–100
-   deliberately nasty equations (stretchy operators, nested radicals/fractions,
-   matrices, n-ary limits, accents, math fonts). Render to PDF, eyeball vs Word's
-   PDF; capture known-weak cases. This decides whether Route A is good enough.
-3. **Route B only if needed.** If the corpus shows JEuclid's fidelity is
-   inadequate (or to hedge FOP-upgrade risk): add the `MathMLRenderer`/
+2. **Regression corpus.** LARGELY SATISFIED by a real document (see below);
+   optionally still extend the CR-math-omml-mathml corpus toward ~50–100
+   deliberately nasty equations and eyeball vs Word's PDF to catch tail cases.
+3. **Route B only if needed.** JEuclid's fidelity looks sufficient on the
+   real-world test, so Route B is **deferred** (not rejected). Revisit only if a
+   fidelity gap surfaces, or to hedge FOP-upgrade risk: add the `MathMLRenderer`/
    `MathGraphic` SPI + point-normalised SVG, a `JEuclidMathMLRenderer` and/or a
    `MathJaxMathMLRenderer` (GraalJS first), and switch the emitter to embed SVG
-   instead of MathML. Otherwise record Route A as sufficient and defer.
+   instead of MathML.
 4. **Docs + CHANGELOG.** How to enable (add the jeuclid deps), the fallback
    behaviour, and — if Route B ships — the renderer SPI for MathJax/other.
 
+### Real-world validation (2026-09-02)
+
+`docx4j-samples-docx-export-fo/wind-course.docx` — a **1,150-page** document
+generated from markdown, with **~10,700 equations** (5,598 inline `m:oMath` +
+5,118 display `m:oMathPara`) — converted to an **11 MB PDF in ~22 s with zero
+errors or warnings** (no `OMML→MathML failed`, no exceptions). Quality is good:
+`U_REWS = (Σᵢ AᵢUᵢ³ / Σᵢ Aᵢ)^(1/3)` rendered with stretchy parentheses scaled to
+the fraction, summations with sub-limits, a nested fraction and a group exponent;
+subscripts/superscripts, `P_rated/A`, and unit exponents (`m s⁻¹`) all correct.
+This is strong evidence Route A / JEuclid is good enough, and weakens the case for
+Route B.
+
+**Known limitation surfaced: long display equations do not line-wrap.** A MathML
+equation becomes one atomic graphic in `fo:instream-foreign-object`, so FOP can't
+break inside it; a very long display equation (e.g. an `A → B → … → Z` arrow
+chain authored as a single equation) overflows the right margin rather than
+wrapping. Inherent to the approach (Word has the same "can't wrap an equation"
+constraint, though it may shrink-to-fit). Everything within the page width renders
+correctly. Possible future mitigations: shrink-to-fit an over-wide graphic, or
+split arrow-chain "equations" at the source. Not a conversion bug.
+
 ## 6. Risks / notes
 
-- **JEuclid layout quality.** 2010-era engine, MathML 1/2. Encouragingly, our
-  `OmmlToMathML` emits conventional Presentation MathML (not MathML-Core-only
-  features), which is JEuclid's sweet spot. Still, matrices, stretchy fences and
-  spacing are the likely weak spots — hence the corpus gate (phase 3) before
-  committing.
+- **JEuclid layout quality.** 2010-era engine, MathML 1/2, but it held up well on
+  the 10,700-equation real document (fractions, stretchy fences, summations with
+  limits, scripts). Our `OmmlToMathML` emits conventional Presentation MathML,
+  which is JEuclid's sweet spot. Matrices and unusual constructs are the remaining
+  places to watch; the corpus (phase 2) can probe them, but the case for replacing
+  JEuclid now is weak.
+- **Long display equations don't line-wrap** — see the real-world validation
+  note. An over-wide single equation overflows rather than wrapping; inherent to
+  rendering an equation as one atomic foreign-object graphic.
 - **Math fonts.** Resolved by the spike: the rendered PDF embedded only Helvetica
   (for the surrounding text) and no math font — JEuclid draws the equation as
   vector paths, so no math-font availability problem.
