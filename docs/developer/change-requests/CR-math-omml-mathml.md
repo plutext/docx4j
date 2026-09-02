@@ -213,7 +213,10 @@ Two classes of corpus, kept separate because the ready-made ones are copyleft:
    mathvariant, fractions (incl. bevelled/linear/no-bar), radicals (msqrt/mroot),
    sub/sup/subsup, n-ary with sub/undOvr limits, delimiters. Emits a W3C DOM /
    string; styles as `mathvariant` (Word uses the Alphanumeric Symbols block —
-   equivalent). NOT yet wired into the HTML visitor exporter (follow-up).
+   equivalent). **Wired into the HTML visitor exporter** (`HTMLExporterVisitorGenerator`:
+   `m:oMath` / `m:oMathPara` → imported MathML; falls back to the equation's text
+   on failure). docx→HTML (the 17.0.4 default pathway) now emits MathML out of the
+   box (`HtmlMathMLTest`).
 3. **OMML → MathML advanced.** DONE (same pass): matrices (CTM/mtable),
    eqArr, prescripts (CTSPre/mmultiscripts), function apply (CTFunc), accents,
    bars, limLow/limUpp, groupChr, phantom, box/borderBox. All 25 corpus cases

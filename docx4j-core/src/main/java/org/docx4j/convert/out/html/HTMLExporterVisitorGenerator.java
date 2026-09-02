@@ -192,6 +192,18 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			// writer and emit an anchor)
 			return null;
 
+		} else if (o instanceof org.docx4j.math.CTOMathPara) {
+
+			// display equation (m:oMathPara) -> native MathML, no XSLT needed
+			appendMathML(convertMath((org.docx4j.math.CTOMathPara)o), o);
+			return null;
+
+		} else if (o instanceof org.docx4j.math.CTOMath) {
+
+			// inline equation (m:oMath) -> native MathML
+			appendMathML(convertMath((org.docx4j.math.CTOMath)o), o);
+			return null;
+
 		}
 
 		return super.apply(o);
@@ -204,7 +216,71 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			// its contents were already converted in apply (handleP / handleSdt)
 			return false;
 		}
+		if (o instanceof org.docx4j.math.CTOMath
+				|| o instanceof org.docx4j.math.CTOMathPara) {
+			// converted whole in apply(); don't descend into the OMML children
+			// (the base class would warn on each unhandled m:* element)
+			return false;
+		}
 		return super.shouldTraverse(o);
+	}
+
+	// ---------------------------------------------------------------- MathML
+
+	private org.w3c.dom.Document convertMath(org.docx4j.math.CTOMath oMath) {
+		try {
+			return new org.docx4j.convert.out.mathml.OmmlToMathML().toMathMLDocument(oMath);
+		} catch (org.docx4j.convert.out.mathml.MathConversionException e) {
+			getLog().warn("OMML->MathML failed; emitting equation text instead: " + e.getMessage());
+			return null;
+		}
+	}
+
+	private org.w3c.dom.Document convertMath(org.docx4j.math.CTOMathPara oMathPara) {
+		try {
+			return new org.docx4j.convert.out.mathml.OmmlToMathML().toMathMLDocument(oMathPara);
+		} catch (org.docx4j.convert.out.mathml.MathConversionException e) {
+			getLog().warn("OMML->MathML failed; emitting equation text instead: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Append the converted MathML into the output, importing its {@code <math>}
+	 * root into this document. On a conversion failure ({@code mathDoc == null})
+	 * fall back to the equation's plain text, so one exotic equation never fails
+	 * the whole document (see the CR's failure policy).
+	 */
+	private void appendMathML(org.w3c.dom.Document mathDoc, Object omml) {
+		if (mathDoc != null && mathDoc.getDocumentElement() != null) {
+			Node imported = document.importNode(mathDoc.getDocumentElement(), true);
+			getCurrentParent().appendChild(imported);
+		} else {
+			String text = mathText(omml);
+			if (!text.isEmpty()) {
+				getCurrentParent().appendChild(document.createTextNode(text));
+			}
+		}
+	}
+
+	/** Concatenate the {@code m:t} text of an OMath/OMathPara, for the fallback. */
+	private String mathText(Object omml) {
+		try {
+			org.docx4j.math.ObjectFactory of = new org.docx4j.math.ObjectFactory();
+			Object toMarshal = (omml instanceof org.docx4j.math.CTOMathPara)
+					? of.createOMathPara((org.docx4j.math.CTOMathPara) omml)
+					: of.createOMath((org.docx4j.math.CTOMath) omml);
+			org.w3c.dom.Document d = XmlUtils.marshaltoW3CDomDocument(toMarshal);
+			org.w3c.dom.NodeList ts = d.getElementsByTagNameNS(
+					"http://schemas.openxmlformats.org/officeDocument/2006/math", "t");
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < ts.getLength(); i++) {
+				sb.append(ts.item(i).getTextContent());
+			}
+			return sb.toString();
+		} catch (Exception e) {
+			return "";
+		}
 	}
 
 	/**
