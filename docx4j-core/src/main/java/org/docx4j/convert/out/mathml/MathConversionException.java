@@ -20,7 +20,7 @@ package org.docx4j.convert.out.mathml;
  * Thrown when an OMML (or MathML) construct is outside the supported subset.
  * The caller is expected to catch this and fall back (eg emit the equation's
  * text), rather than let one exotic equation fail the whole document
- * conversion. See docs/developer/change-requests/CR-math-omml-mathml.md.
+ * conversion. See docs/developer/change-requests/CR-007-math-omml-mathml.md.
  *
  * @since 17.0.4
  */

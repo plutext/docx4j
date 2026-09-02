@@ -26,7 +26,7 @@ import org.junit.Test;
  * Feature parity between the two HTML exporters: the same assertions are run
  * against the output of HTMLExporterXslt (the reference) and HTMLExporterVisitor.
  *
- * See docs/developer/change-requests/CR-html-exporter-parity.md; test methods are
+ * See docs/developer/change-requests/CR-003-html-exporter-parity.md; test methods are
  * grouped by that CR's phases.  Assertions are on the serialized output (regex),
  * as in NoteFontTest, so no DTD resolution is involved.
  */

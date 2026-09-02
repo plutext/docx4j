@@ -1,6 +1,6 @@
 Attribute VB_Name = "MathmlToDocx"
 ' ---------------------------------------------------------------------------
-' Corpus generator for CR-math-omml-mathml.
+' Corpus generator for CR-007-math-omml-mathml.
 '
 ' Batch-converts a folder of MathML files into Word documents (so docx4j can
 ' extract the OMML), and captures Word's own MathML for each equation (the

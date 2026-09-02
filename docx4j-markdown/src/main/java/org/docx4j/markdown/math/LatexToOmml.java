@@ -26,7 +26,7 @@ import org.docx4j.math.STLimLoc;
 import org.docx4j.math.STStyle;
 
 /**
- * Translates a deliberately restricted LaTeX subset (see CR-markdown-math
+ * Translates a deliberately restricted LaTeX subset (see CR-006-markdown-math
  * §2 and the module README) directly into OMML ({@code org.docx4j.math}).
  * No MathML detour, no XSLT.
  *

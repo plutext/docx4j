@@ -956,7 +956,7 @@
 
   <!-- Equations: MathML in fo:instream-foreign-object, rendered by jeuclid-fop
        (falls back to the equation's text if no MathML renderer is present).
-       See CR-math-pdf-fo. -->
+       See CR-008-math-pdf-fo. -->
   <xsl:template match="m:oMathPara">
 		<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.mathToFO($conversionContext, .)" />
   </xsl:template>

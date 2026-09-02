@@ -1,6 +1,6 @@
 # OMML ⇄ MathML corpus — attribution
 
-The corpus for CR-math-omml-mathml (see `../README.md`). Layout:
+The corpus for CR-007-math-omml-mathml (see `../README.md`). Layout:
 
 - `mml/NAME.mml` — the MathML **inputs**, one `<math>` Presentation island each.
 - `omml/NAME.omml.xml` — Word's **OMML** for that equation (import expected output).

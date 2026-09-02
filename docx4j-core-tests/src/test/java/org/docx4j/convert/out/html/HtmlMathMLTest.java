@@ -13,7 +13,7 @@ import org.junit.Test;
 /**
  * The non-XSLT (visitor) HTML exporter emits equations as native MathML — no
  * Microsoft OMML2MML.XSL required. See
- * docs/developer/change-requests/CR-math-omml-mathml.md.
+ * docs/developer/change-requests/CR-007-math-omml-mathml.md.
  */
 public class HtmlMathMLTest {
 

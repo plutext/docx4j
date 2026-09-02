@@ -92,8 +92,8 @@ non-redistributable `OMML2MML.XSL` / `MML2OMML.XSL`:
 - `de.rototor.jeuclid:jeuclid-fop` — MathML → SVG for the PDF/FO pathway
   (Apache-2.0; ~540 KB net on top of the FO module's existing Batik/FOP).
 
-Design notes live in `docs/developer/change-requests/` (CR-markdown-math,
-CR-math-omml-mathml, CR-math-pdf-fo).
+Design notes live in `docs/developer/change-requests/` (CR-006-markdown-math,
+CR-007-math-omml-mathml, CR-008-math-pdf-fo).
 
 ## How it compares
 
@@ -163,5 +163,5 @@ HTML, and a maths PDF — from maths-heavy Markdown.**
 
 - `docs/Docx4j_from_Python.md` — driving all of the above from Python via JPype.
 - `docx4j-markdown` module README — Markdown import/export options.
-- `docs/developer/change-requests/CR-markdown-math.md`,
-  `CR-math-omml-mathml.md`, `CR-math-pdf-fo.md` — the design records.
+- `docs/developer/change-requests/CR-006-markdown-math.md`,
+  `CR-007-math-omml-mathml.md`, `CR-008-math-pdf-fo.md` — the design records.

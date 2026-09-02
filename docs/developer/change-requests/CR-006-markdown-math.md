@@ -9,7 +9,7 @@ Scope: extend **docx4j-markdown** with equation support — `$...$` / `$$...$$`
 restricted LaTeX subset** translated to Word's native OMML
 (`org.docx4j.math`, which the generated object model already covers in full).
 docx4j-core is untouched.
-Related: CR-markdown-import-export.md (the host module; DONE 2026-09-01).
+Related: CR-005-markdown-import-export.md (the host module; DONE 2026-09-01).
 
 ## 1. Background
 

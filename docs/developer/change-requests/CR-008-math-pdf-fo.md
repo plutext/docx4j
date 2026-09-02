@@ -1,6 +1,6 @@
 # CR: Math in PDF output (OMML → MathML → SVG → XSL-FO → FOP)
 
-Status: **PROPOSED** 2026-09-02. No code yet. Follow-on to CR-math-omml-mathml
+Status: **PROPOSED** 2026-09-02. No code yet. Follow-on to CR-007-math-omml-mathml
 (which gave us native OMML⇄MathML with no Microsoft XSLT).
 
 **Spike result (2026-09-02): the `jeuclid-fop` plugin works with FOP 2.11
@@ -28,7 +28,7 @@ sees it, because SVG is already a first-class foreign object:
 
 ```
 OMML (CTOMath)
-  │  OmmlToMathML          (ours, native — CR-math-omml-mathml; no MS XSLT)
+  │  OmmlToMathML          (ours, native — CR-007-math-omml-mathml; no MS XSLT)
   ▼
 MathML
   │  MathMLRenderer        (MathML -> SVG + width/height/baseline)
@@ -218,7 +218,7 @@ spike reversed that — it is now Route A, the recommended approach.)
    jeuclid jars are excluded. `MathMLPdfTest` (3 tests). Also exported
    `org.docx4j.convert.out.mathml` from docx4j-core's module-info.
 2. **Regression corpus.** LARGELY SATISFIED by a real document (see below);
-   optionally still extend the CR-math-omml-mathml corpus toward ~50–100
+   optionally still extend the CR-007-math-omml-mathml corpus toward ~50–100
    deliberately nasty equations and eyeball vs Word's PDF to catch tail cases.
 3. **Route B only if needed.** JEuclid's fidelity looks sufficient on the
    real-world test, so Route B is **deferred** (not rejected). Revisit only if a

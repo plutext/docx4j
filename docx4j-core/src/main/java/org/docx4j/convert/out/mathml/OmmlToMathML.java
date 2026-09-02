@@ -65,7 +65,7 @@ import org.w3c.dom.Element;
  * Converts Word OMML ({@code org.docx4j.math}) to Presentation MathML, natively
  * in Java — no XSLT, so no dependency on Microsoft's non-redistributable
  * {@code OMML2MML.XSL}. Clean-room from ECMA-376 §22.1 and the W3C MathML spec;
- * see docs/developer/change-requests/CR-math-omml-mathml.md.
+ * see docs/developer/change-requests/CR-007-math-omml-mathml.md.
  *
  * <p>Output is a W3C DOM (or string) in the MathML namespace. Styles are emitted
  * as {@code mathvariant} attributes (Word itself uses the Mathematical

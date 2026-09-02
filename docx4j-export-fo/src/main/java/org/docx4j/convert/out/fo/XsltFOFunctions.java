@@ -195,7 +195,7 @@ public class XsltFOFunctions {
      * the MathML from OmmlToMathML (FOP + the plugin render it); otherwise falls
      * back to the equation's text so PDF export never fails on math. Shared by the
      * XSLT pathway (docx2fo.xslt, via this NodeIterator form) and the visitor
-     * pathway (FOExporterVisitorGenerator, via the Object form). See CR-math-pdf-fo.
+     * pathway (FOExporterVisitorGenerator, via the Object form). See CR-008-math-pdf-fo.
      *
      * @since 17.0.4
      */

@@ -40,7 +40,7 @@ friction is entirely a redistribution-licence artefact.
 **Precedent that native Java is the right fix.** docx4j already manipulates OMML
 natively as JAXB (`org.docx4j.math.*`: `CTOMath`, `CTF`, `CTNary`, `CTRad`,
 `CTSSub`/`CTSSup`/`CTSSubSup`, `CTD`, `CTM`/`CTMr`, `CTEqArr`, `CTR`/`CTText`,
-…). The `docx4j-markdown` module (2026-09, CR-markdown-math) already contains
+…). The `docx4j-markdown` module (2026-09, CR-006-markdown-math) already contains
 `LatexToOmml` and `OmmlToLatex`, which build and read that model in both
 directions for a LaTeX subset. Re-implementing OMML ⇄ MathML in Java is squarely
 in the same territory — and easier, because both OMML and MathML are structured
@@ -142,7 +142,7 @@ Both are pure model↔DOM transforms; no I/O, no engine.
 
 ### Failure policy
 
-Follow the CR-markdown-math precedent: never crash the whole conversion on a
+Follow the CR-006-markdown-math precedent: never crash the whole conversion on a
 math construct outside the supported set. On something unmappable, fall back
 (export: emit the equation's text/`mtext` or skip with a marker; import: keep the
 MathML as-is or drop with a logged event) and report via an issue/event listener,

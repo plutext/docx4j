@@ -16,7 +16,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.junit.Test;
 
 /**
- * CR-markdown-math phase c: aligned → m:eqArr, boxed → m:borderBox,
+ * CR-006-markdown-math phase c: aligned → m:eqArr, boxed → m:borderBox,
  * accents → m:acc, overline/underline → m:bar.  (No backslashes in this
  * comment: {@code \}+u in a Java comment is a unicode escape.)
  */

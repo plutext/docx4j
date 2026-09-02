@@ -34,7 +34,7 @@ public class MarkdownImportOptions {
 	/**
 	 * The supported markdown extensions (all enabled by default).
 	 * MATH is TeX math: {@code $...$} / {@code $$...$$} (and the
-	 * {@code \(...\)} / {@code \[...\]} forms); see CR-markdown-math.
+	 * {@code \(...\)} / {@code \[...\]} forms); see CR-006-markdown-math.
 	 */
 	public enum Extension {
 		TABLES, STRIKETHROUGH, TASK_LIST_ITEMS, FOOTNOTES, YAML_FRONT_MATTER, MATH

@@ -64,7 +64,7 @@ import java.util.StringTokenizer;
 
 /**
  * Feature parity with the XSLT pathway per
- * docs/developer/change-requests/CR-binding-traverser-parity.md
+ * docs/developer/change-requests/CR-001-binding-traverser-parity.md
  * @author jharrop
  */
 public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
@@ -360,7 +360,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 
 			} else if (sdtPr.getDataBinding()!=null
 					&& sdtPr.getByClass(org.docx4j.w14.CTSdtCheckbox.class)!=null) {
-				// w14:checkbox cc; see CR-binding-traverser-parity phase 3
+				// w14:checkbox cc; see CR-001-binding-traverser-parity phase 3
 				applyCheckboxBinding(sdt, pkg);
 
 			} else if (sdtPr.getDataBinding()!=null
@@ -369,13 +369,13 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 				applyDateBinding(sdt, pkg);
 
 			} else if (map!=null && "picture".equals(map.get(OpenDoPEHandler.BINDING_HANDLER))) {
-				// od:Handler=picture rich text cc; see CR-binding-traverser-parity phase 4
+				// od:Handler=picture rich text cc; see CR-001-binding-traverser-parity phase 4
 				applyHandlerPicture(sdt, pkg, part, xpathsMap, map);
 
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_CONTENTTYPE)
 						&& map.get(OpenDoPEHandler.BINDING_CONTENTTYPE).equals("application/xhtml+xml")) {
 				// Convert XHTML (via ImportXHTML if available, else altChunk);
-				// see CR-binding-traverser-parity phase 5
+				// see CR-001-binding-traverser-parity phase 5
 				applyXHTMLBinding(sdt, pkg, part, xpathsMap);
 
 			} else if (map!=null && "Word.Document".equals(map.get(OpenDoPEHandler.BINDING_PROGID))) {
@@ -399,7 +399,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 				}
 				// via BindingTraverserCommonImpl / ValueInserterPlainText, for parity
 				// with the XSLT pathway (rPr applied, placeholder restored on empty
-				// result, custom inserter honoured); see CR-binding-traverser-parity
+				// result, custom inserter honoured); see CR-001-binding-traverser-parity
 				List<Object> boundContent = generateBoundContent(pkg, part, sdtPr,
 						xpathsMap, isMultiline(sdtPr));
 				if (boundContent!=null) {

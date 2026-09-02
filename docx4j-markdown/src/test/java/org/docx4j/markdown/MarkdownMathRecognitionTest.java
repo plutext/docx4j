@@ -15,7 +15,7 @@ import org.docx4j.wml.Text;
 import org.junit.Test;
 
 /**
- * CR-markdown-math phase a: $-math recognition, currency guards, lossless
+ * CR-006-markdown-math phase a: $-math recognition, currency guards, lossless
  * literal fallback (LaTeX→OMML is phase b), and issue reporting.
  */
 public class MarkdownMathRecognitionTest {

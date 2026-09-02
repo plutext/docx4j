@@ -380,7 +380,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 * When true, the FO exporters emit equations as MathML inside
 	 * fo:instream-foreign-object (which this plugin renders); when false they fall
 	 * back to the equation's text. jeuclid is a default dependency but a consumer
-	 * may exclude it. See CR-math-pdf-fo.
+	 * may exclude it. See CR-008-math-pdf-fo.
 	 *
 	 * @since 17.0.4
 	 */

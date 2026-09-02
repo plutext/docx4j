@@ -4,7 +4,7 @@ Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 
 The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
-Related: CR-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
+Related: CR-002-fo-exporter-parity.md (DONE 2026-08-31) — the same exercise for FO/PDF.
 Several of that CR's base-class fixes already apply to the HTML visitor pathway
 (see §2 rows marked "via FO CR").  The deprecated `HtmlExporterNG2` /
 `HtmlExporterNonXSLT` (pre-3.0 API) are out of scope.

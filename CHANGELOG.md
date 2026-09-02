@@ -66,7 +66,7 @@ rel is replaced), and od:Handler=picture (incl. width=) is supported; XHTML impo
 injection (od:progid=Word.Document) are now supported too; sdtPr hygiene matches the XSLT
 pathway (hyperlink content strips w:dataBinding/w:text for Word 2007, restored placeholders get
 w:showingPlcHdr for RemovalHandler, w:placeholder stripped), and the XPath result cache is now
-used by all implementations; see docs/developer/change-requests/CR-binding-traverser-parity.md
+used by all implementations; see docs/developer/change-requests/CR-001-binding-traverser-parity.md
 
 Security:
 - OpenDoPEHandler now rejects a cyclic or dangling OpenDoPE condition graph (a <conditionref>
@@ -87,25 +87,25 @@ and the XSLT pathways — via a new Apache-licensed Java converter
 (org.docx4j.convert.out.mathml.OmmlToMathML), no longer requiring Microsoft's non-redistributable
 OMML2MML.XSL.  On an unsupported construct it falls back to the equation's text.  (The XSLT
 pathway calls it through XsltHTMLFunctions.convertMathML; to use OMML2MML.XSL instead, see the
-comments in docx2xhtml-core.xslt.)  See docs/developer/change-requests/CR-math-omml-mathml.md
+comments in docx2xhtml-core.xslt.)  See docs/developer/change-requests/CR-007-math-omml-mathml.md
 - docx->PDF (via XSL-FO) now renders equations too: the exporters emit the OmmlToMathML MathML in
 fo:instream-foreign-object, rendered by the jeuclid-fop plugin (a new ~540 KB Apache-2.0 dependency
 of docx4j-export-fo; the rest of its tree is already present).  Works on both FO pathways; if the
 jeuclid jars are excluded, equations fall back to text rather than failing.  See
-docs/developer/change-requests/CR-math-pdf-fo.md
+docs/developer/change-requests/CR-008-math-pdf-fo.md
 
 New module docx4j-markdown:
 - markdown import (markdown->docx: real heading/quote/code styles, real numbering, GFM tables,
 real footnotes, task lists, YAML front matter; no HTML detour) and export (docx->markdown,
 CommonMark+GFM, incl image extraction and a tracked-changes option); remote images are never
 fetched.  Facade hooks Docx4J.fromMarkdown/toMarkdown (docx4j-markdown must be on the classpath).
-See docs/developer/change-requests/CR-markdown-import-export.md and the module README
+See docs/developer/change-requests/CR-005-markdown-import-export.md and the module README
 - TeX math: $...$ / $$...$$ (and \(..\), block \[..\]) translated to native OMML equations in
 both directions, for a published LaTeX subset (frac, scripts, sqrt, sum/int with limits,
 left/right delimiters, text/mathrm, aligned, matrix/pmatrix/bmatrix, boxed, accents,
 underbrace/overbrace, overset/underset, greek + common symbols).
 Equations outside the subset never disappear: they fall back whole to their literal source and
-are reported via an issue listener.  See docs/developer/change-requests/CR-markdown-math.md
+are reported via an issue listener.  See docs/developer/change-requests/CR-006-markdown-math.md
 - export: effective-rPr baselines are now cached per paragraph style and runs without their own
 rPr skip property resolution entirely (a 1MB document exports ~2.5x faster)
 - imported tables now carry explicit equal gridCol widths (split of the section's writable
@@ -185,7 +185,7 @@ now applies), so simple inline textboxes render instead of producing nothing
 - with the above, the visitor exporter reaches feature parity with the XSLT exporter, and
 generates FO roughly an order of magnitude faster in benchmarks; it is now the default (see
 "PDF and HTML export" above; Docx4J.FLAG_EXPORT_PREFER_XSL restores the XSLT pathway).
-See docs/developer/change-requests/CR-fo-exporter-parity.md
+See docs/developer/change-requests/CR-002-fo-exporter-parity.md
 
 HTML output, visitor pathway (the new default; explicitly Docx4J.FLAG_EXPORT_PREFER_NONXSL):
 - run spans are now inside their p element again (a 17.0.1 regression put them next to it)
@@ -215,7 +215,7 @@ header (hasDefaultFooter was computed from hasDefaultHeader in both copies of th
 - with the above, the HTML visitor exporter reaches feature parity with the XSLT exporter, and
 generates HTML roughly an order of magnitude faster in benchmarks; it is now the default (see
 "PDF and HTML export" above; Docx4J.FLAG_EXPORT_PREFER_XSL restores the XSLT pathway).
-See docs/developer/change-requests/CR-html-exporter-parity.md
+See docs/developer/change-requests/CR-003-html-exporter-parity.md
 
 HTML output, XSLT pathway:
 - w:noBreakHyphen now outputs the actual U+2011 non-breaking hyphen; previously the character

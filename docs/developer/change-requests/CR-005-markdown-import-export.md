@@ -7,7 +7,7 @@ Naming/placement DECIDED 2026-09-01 (jharrop): the module is
 Scope: a NEW reactor module `docx4j-markdown` — import (markdown→wml) and
 export (wml→markdown); docx4j-core changes limited to whatever small hooks the
 mappings need
-Related: CR-mcp-server.md (a `markdown_to_docx` / `docx_to_markdown` tool pair is
+Related: CR-004-mcp-server.md (a `markdown_to_docx` / `docx_to_markdown` tool pair is
 that CR's natural phase-2+ extension — agents author in markdown even more
 naturally than HTML); docx4j-ImportXHTML (the existing rich-text import pathway,
 and the fallback for embedded HTML); CR-fo/html-exporter-parity (the lesson
@@ -323,7 +323,7 @@ module's own test tree), plus docx-side assertions for the import mapping
      when the underlying converter throws Docx4JException.  Works under
      JPMS too (the package is exported; verified by Docx4JFacadeTest,
      which runs on the module path).
-   - `markdown_to_docx` / `docx_to_markdown` added to CR-mcp-server.md's
+   - `markdown_to_docx` / `docx_to_markdown` added to CR-004-mcp-server.md's
      phase-2 tool surface table.
    - Module README expanded with usage (importer/exporter, options,
      facade); CHANGELOG entry under 17.0.4 ("New module docx4j-markdown").

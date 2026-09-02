@@ -5,7 +5,7 @@ Scope: a NEW satellite artifact (working name `docx4j-mcp`) — no changes to
 docx4j-core beyond what the tools need; repo/module placement is an open question (§7)
 Related: the "Why docx4j" website pages and Docx4j_from_Python.md (both answer
 "I want docx4j's engine but don't write Java" — MCP is a third, stronger answer);
-CR-fo-exporter-parity.md / CR-html-exporter-parity.md (the fast visitor exporters
+CR-002-fo-exporter-parity.md / CR-003-html-exporter-parity.md (the fast visitor exporters
 are what a conversion tool should run on)
 
 ## 1. Background

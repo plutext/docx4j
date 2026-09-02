@@ -14,7 +14,7 @@ import org.junit.Test;
 /**
  * PDF (XSL-FO) math: equations are emitted as MathML in
  * fo:instream-foreign-object, which the jeuclid-fop plugin renders. See
- * CR-math-pdf-fo. jeuclid is a dependency of docx4j-export-fo, so it is on the
+ * CR-008-math-pdf-fo. jeuclid is a dependency of docx4j-export-fo, so it is on the
  * test classpath here.
  */
 public class MathMLPdfTest {

@@ -13,7 +13,7 @@ import org.docx4j.wml.P;
 import org.junit.Test;
 
 /**
- * CR-markdown-math phase d: OMML → LaTeX (the reverse translator), and the
+ * CR-006-markdown-math phase d: OMML → LaTeX (the reverse translator), and the
  * exporter's flatten-with-warning fallback for equations outside the subset.
  */
 public class MarkdownMathExportTest {

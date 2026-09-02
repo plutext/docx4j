@@ -24,7 +24,7 @@ import org.junit.Test;
  * Feature parity between the two FO exporters: the same assertions are run against
  * the output of FOExporterXslt (the reference) and FOExporterVisitor.
  *
- * See docs/developer/change-requests/CR-fo-exporter-parity.md; test methods are
+ * See docs/developer/change-requests/CR-002-fo-exporter-parity.md; test methods are
  * grouped by that CR's phases.
  */
 public class VisitorParityTest extends AbstractXSLFOTest {

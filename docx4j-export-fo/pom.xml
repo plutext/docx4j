@@ -217,7 +217,7 @@
 		</dependency>
 
 		<!-- MathML in PDF: jeuclid-fop renders MathML in fo:instream-foreign-object
-		     (CR-math-pdf-fo).  ~540 KB net; everything else in its tree (Batik,
+		     (CR-008-math-pdf-fo).  ~540 KB net; everything else in its tree (Batik,
 		     xmlgraphics-commons, xml-apis) is already here at newer versions that
 		     win, so we exclude its stale copies and its bundled FOP.  Registered
 		     reflectively (FORendererApacheFOP), so a consumer can exclude these

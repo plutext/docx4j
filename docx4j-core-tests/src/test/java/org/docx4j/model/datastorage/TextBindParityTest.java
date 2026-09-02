@@ -17,7 +17,7 @@ import org.docx4j.wml.Text;
 import org.junit.Test;
 
 /**
- * CR-binding-traverser-parity phase 1: text binding must behave the same under
+ * CR-001-binding-traverser-parity phase 1: text binding must behave the same under
  * all three binding traverser implementations:
  *
  * - the sdtPr's w:rPr is applied to the generated runs (previously lost under

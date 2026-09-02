@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
- * Corpus tool for CR-math-omml-mathml: pull every OMML equation out of the
+ * Corpus tool for CR-007-math-omml-mathml: pull every OMML equation out of the
  * Word-generated .docx files and write each as a standalone {@code <m:oMath>}
  * fixture, paired by basename with the MathML that produced it.
  *

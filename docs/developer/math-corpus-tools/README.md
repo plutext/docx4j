@@ -1,8 +1,8 @@
-# Math corpus tools (for CR-math-omml-mathml)
+# Math corpus tools (for CR-007-math-omml-mathml)
 
 One-off tooling to build the OMML ⇄ MathML test corpus by using **Word as a
 black-box oracle** — never Microsoft's `OMML2MML.XSL` / `MML2OMML.XSL` source.
-See `change-requests/CR-math-omml-mathml.md` for the clean-room principle and
+See `change-requests/CR-007-math-omml-mathml.md` for the clean-room principle and
 why the corpus is built this way.
 
 The pipeline turns MathML inputs into paired fixtures:

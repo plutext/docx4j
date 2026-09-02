@@ -4,7 +4,7 @@ Status: DONE (2026-08-31) — all 7 phases shipped; see the per-phase notes belo
 The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.fo` (docx4j-export-fo) plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (docx4j-core)
-Related: CR-binding-traverser-parity.md (same "stop maintaining two copies" principle,
+Related: CR-001-binding-traverser-parity.md (same "stop maintaining two copies" principle,
 applied there to OpenDoPE binding traversal)
 
 ## 1. Background
@@ -146,7 +146,7 @@ This is the same disease the binding-traverser CR cured in `model.datastorage`.
 
 ## 4. Proposed approach
 
-**Principle (same as CR-binding-traverser-parity): stop maintaining two copies of
+**Principle (same as CR-001-binding-traverser-parity): stop maintaining two copies of
 feature logic.**  Here the consolidation is easier than it was for binding: both
 pipelines emit W3C DOM, and `XsltFOFunctions` already separates its XSLT plumbing from
 JAXB-typed cores — e.g. the inner

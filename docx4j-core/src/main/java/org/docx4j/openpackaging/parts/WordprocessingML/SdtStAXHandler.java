@@ -57,7 +57,7 @@ public abstract class SdtStAXHandler extends StAXHandlerAbstract  {
 	protected Stack stack = new Stack();
 
 	// Reused across sdts, rather than created per intercepted sdt.  (Benchmarks -
-	// see the CR-binding-traverser-parity appendix - measured only a few percent
+	// see the CR-001-binding-traverser-parity appendix - measured only a few percent
 	// from this; the pipe's per-sdt marshal/write dominates.  Kept as simple waste
 	// removal.)  A handler instance is single-threaded.
 	private Unmarshaller unmarshaller;

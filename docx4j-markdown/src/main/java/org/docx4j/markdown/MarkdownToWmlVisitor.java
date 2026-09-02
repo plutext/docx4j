@@ -496,7 +496,7 @@ class MarkdownToWmlVisitor extends AbstractVisitor {
 	// ------------------------------------------------------------ math
 
 	/**
-	 * CR-markdown-math: the supported LaTeX subset becomes native OMML
+	 * CR-006-markdown-math: the supported LaTeX subset becomes native OMML
 	 * (unless MathPolicy.LITERAL); anything outside it degrades — loudly,
 	 * via the issue listener — to its literal source in the CodeChar style,
 	 * delimiters preserved.

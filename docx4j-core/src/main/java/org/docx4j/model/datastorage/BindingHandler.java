@@ -55,7 +55,7 @@ import jakarta.xml.bind.JAXBException;
  * <p><b>Choosing an implementation</b> (property
  * <code>docx4j.model.datastorage.BindingHandler.Implementation</code>):
  * all three implementations have feature parity as of 17.0.4 (see
- * docs/developer/change-requests/CR-binding-traverser-parity.md).</p>
+ * docs/developer/change-requests/CR-001-binding-traverser-parity.md).</p>
  *
  * <ul>
  * <li><b>BindingTraverserNonXSLT</b> (the default since 17.0.4): fastest on
@@ -78,7 +78,7 @@ import jakarta.xml.bind.JAXBException;
  * </ul>
  *
  * <p>Benchmark numbers and workloads: the appendix of
- * docs/developer/change-requests/CR-binding-traverser-parity.md.</p>
+ * docs/developer/change-requests/CR-001-binding-traverser-parity.md.</p>
  */
 public class BindingHandler {
 

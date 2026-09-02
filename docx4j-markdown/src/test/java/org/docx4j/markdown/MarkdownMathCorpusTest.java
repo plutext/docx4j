@@ -15,7 +15,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.junit.Test;
 
 /**
- * Subset growth round 1 (CR-markdown-math): the constructs a real math-laden
+ * Subset growth round 1 (CR-006-markdown-math): the constructs a real math-laden
  * course import surfaced through the issue listener — cases, xrightarrow,
  * mathcal/mathbb, \not, sizing prefixes, \middle, overset/stackrel, widehat,
  * textbf, and backslash-space before a line break.

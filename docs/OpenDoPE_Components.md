@@ -163,5 +163,5 @@ independent of composition.
 
 Components also resolve before data binding ever runs, so the choice of
 binding traverser implementation (see `BindingHandler`'s javadoc and
-`docs/developer/change-requests/CR-binding-traverser-parity.md`) does not
+`docs/developer/change-requests/CR-001-binding-traverser-parity.md`) does not
 affect component processing.

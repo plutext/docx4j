@@ -18,7 +18,7 @@ import org.docx4j.wml.P;
 import org.junit.Test;
 
 /**
- * CR-markdown-math phase b: the restricted LaTeX subset → OMML, per
+ * CR-006-markdown-math phase b: the restricted LaTeX subset → OMML, per
  * construct; placement (m:oMath inline, m:oMathPara display); loud lossless
  * fallback for anything outside the subset.
  */
