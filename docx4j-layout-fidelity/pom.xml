@@ -30,6 +30,24 @@
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 			</plugin>
+			<!-- write the runtime classpath to target/cp.txt on every package, so the
+			     mains can be run with java -cp "target/classes:$(cat target/cp.txt)" -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>build-classpath</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build-classpath</goal>
+						</goals>
+						<configuration>
+							<outputFile>${project.build.directory}/cp.txt</outputFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
