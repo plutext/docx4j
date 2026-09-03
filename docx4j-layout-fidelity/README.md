@@ -20,8 +20,11 @@ Pipeline:
 ## Build and run
 
 ```bash
-# upstream modules must be installed at the current ${revision} first
-mvn -o install -DskipTests -Dgpg.skip=true -pl docx4j-export-fo,docx4j-documents4j-local,docx4j-JAXB-ReferenceImpl -am
+# upstream modules must be installed at the current ${revision} first.
+# Use `clean`: the XJC plugin only checks xsd/ROOT.xsd for staleness, so after a pull
+# that changed an imported schema (xsd/wml/wml.xsd etc.) an incremental build keeps
+# the old generated classes and docx4j-core fails with "cannot find symbol".
+mvn clean install -DskipTests -Dgpg.skip=true -pl docx4j-export-fo,docx4j-documents4j-local,docx4j-JAXB-ReferenceImpl -am
 # then this module (not in the reactor, so build it from its directory)
 cd docx4j-layout-fidelity && mvn -o -Dgpg.skip=true -DskipTests package dependency:build-classpath -Dmdep.outputFile=target/cp.txt
 
