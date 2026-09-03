@@ -26,22 +26,18 @@ Pipeline:
 # the old generated classes and docx4j-core fails with "cannot find symbol".
 mvn clean install -DskipTests -Dgpg.skip=true -pl docx4j-export-fo,docx4j-documents4j-local,docx4j-JAXB-ReferenceImpl -am
 # then this module (not in the reactor, so build it from its directory);
-# packaging also writes the runtime classpath to target/cp.txt.
+# packaging also copies the runtime dependencies to target/lib.
 # (No -o on a machine that has not built this module before: the dependency plugin
 # has to be downloaded once.)
 cd docx4j-layout-fidelity && mvn -Dgpg.skip=true -DskipTests package
 
-CP="target/classes:$(cat target/cp.txt)"
+CP="target/classes:target/lib/*"
 java -cp "$CP" org.docx4j.fidelity.Fidelity generate  target/corpus
 java -cp "$CP" org.docx4j.fidelity.Fidelity run       target/corpus /path/to/goldens target/report [dpi]
 ```
 
-On Windows the separator is `;` and the file is read with `set /p`:
-
-```
-set /p DEPS=<target\cp.txt
-set CP=target\classes;%DEPS%
-```
+On Windows the separator is `;`: `-cp "target\classes;target\lib\*"`. (Do not put the
+classpath in an environment variable via `set /p`: it truncates at 1023 characters.)
 
 On the Windows VM (Word installed, and the corpus fonts installed as system
 fonts: Liberation Serif and Liberation Sans from `docx4j-export-fo-fonts-liberation`,

@@ -30,20 +30,22 @@
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 			</plugin>
-			<!-- write the runtime classpath to target/cp.txt on every package, so the
-			     mains can be run with java -cp "target/classes:$(cat target/cp.txt)" -->
+			<!-- copy the runtime dependencies to target/lib on every package, so the mains
+			     run with the wildcard classpath "target/classes:target/lib/*" on any OS
+			     (a classpath string in a file is too long for cmd's set /p). -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>build-classpath</id>
+						<id>copy-dependencies</id>
 						<phase>package</phase>
 						<goals>
-							<goal>build-classpath</goal>
+							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputFile>${project.build.directory}/cp.txt</outputFile>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<includeScope>runtime</includeScope>
 						</configuration>
 					</execution>
 				</executions>
