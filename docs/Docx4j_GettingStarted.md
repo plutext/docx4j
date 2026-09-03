@@ -2,151 +2,151 @@ Docx4j - Getting Started
 
 Contents
 
-[What is docx4j?	4](#_Toc239259254)
+[What is docx4j?	4](#_Toc239264890)
 
-[What sorts of things can you do with docx4j?	4](#_Toc239259255)
+[What sorts of things can you do with docx4j?	4](#_Toc239264891)
 
-[Is docx4j for you?	5](#_Toc239259256)
+[Is docx4j for you?	5](#_Toc239264892)
 
-[GraalVM	5](#_Toc239259257)
+[GraalVM	5](#_Toc239264893)
 
-[docx4j.NET	5](#_Toc239259258)
+[docx4j.NET	5](#_Toc239264894)
 
-[What Word documents does it support?	6](#_Toc239259259)
+[What Word documents does it support?	6](#_Toc239264895)
 
-[Handling legacy binary .doc files	6](#_Toc239259260)
+[Handling legacy binary .doc files	6](#_Toc239264896)
 
-[A word about Jaxb	7](#_Toc239259262)
+[A word about Jaxb	6](#_Toc239264897)
 
-[Using docx4j via Maven	8](#_Toc239259263)
+[Using docx4j via Maven	7](#_Toc239264898)
 
-[Using docx4j binaries	8](#_Toc239259264)
+[Using docx4j binaries	8](#_Toc239264899)
 
-[docx4j dependencies	9](#_Toc239259265)
+[docx4j dependencies	8](#_Toc239264900)
 
-[slf4j	9](#_Toc239259266)
+[slf4j	8](#_Toc239264901)
 
-[other dependencies	9](#_Toc239259267)
+[other dependencies	9](#_Toc239264902)
 
-[Docx4j source code	10](#_Toc239259268)
+[Docx4j source code	9](#_Toc239264903)
 
-[Javadoc	10](#_Toc239259269)
+[Javadoc	9](#_Toc239264904)
 
-[Building docx4j from source	10](#_Toc239259270)
+[Building docx4j from source	10](#_Toc239264905)
 
-[Command line -via Maven	10](#_Toc239259271)
+[Command line -via Maven	10](#_Toc239264906)
 
-[Eclipse	10](#_Toc239259272)
+[Eclipse	10](#_Toc239264907)
 
-[Using a different IDE?	11](#_Toc239259273)
+[Using a different IDE?	10](#_Toc239264908)
 
-[Open an existing docx/pptx/xlsx document	11](#_Toc239259274)
+[Open an existing docx/pptx/xlsx document	10](#_Toc239264909)
 
-[OpenXML concepts	12](#_Toc239259275)
+[OpenXML concepts	11](#_Toc239264910)
 
-[Specification versions	12](#_Toc239259276)
+[Specification versions	12](#_Toc239264911)
 
-[Architecture	13](#_Toc239259277)
+[Architecture	13](#_Toc239264912)
 
-[Jaxb: marshalling and unmarshalling	14](#_Toc239259278)
+[Jaxb: marshalling and unmarshalling	14](#_Toc239264913)
 
-[Parts List	15](#_Toc239259279)
+[Parts List	15](#_Toc239264914)
 
-[MainDocumentPart	17](#_Toc239259280)
+[MainDocumentPart	17](#_Toc239264915)
 
-[Samples	19](#_Toc239259281)
+[Samples	18](#_Toc239264916)
 
-[Creating a new docx	21](#_Toc239259282)
+[Creating a new docx	20](#_Toc239264917)
 
-[docx4j.properties	21](#_Toc239259283)
+[docx4j.properties	20](#_Toc239264918)
 
-[Adding a paragraph of text	22](#_Toc239259284)
+[Adding a paragraph of text	21](#_Toc239264919)
 
-[General strategy/approach for creating stuff	23](#_Toc239259285)
+[General strategy/approach for creating stuff	22](#_Toc239264920)
 
-[Formatting Properties	25](#_Toc239259286)
+[Formatting Properties	24](#_Toc239264921)
 
-[Creating and adding a table	25](#_Toc239259287)
+[Creating and adding a table	24](#_Toc239264922)
 
-[Selecting your insertion/editing point;  accessing JAXB nodes via XPath	26](#_Toc239259288)
+[Selecting your insertion/editing point;  accessing JAXB nodes via XPath	25](#_Toc239264923)
 
-[Traversing a document	26](#_Toc239259289)
+[Traversing a document	25](#_Toc239264924)
 
-[Adding a Part	27](#_Toc239259290)
+[Adding a Part	26](#_Toc239264925)
 
-[Importing XHTML	27](#_Toc239259291)
+[Importing XHTML	26](#_Toc239264926)
 
-[Markdown import and export	28](#_Toc239259292)
+[Markdown import and export	27](#_Toc239264927)
 
-[docx4j for AI agents (MCP)	28](#_Toc239259293)
+[docx4j for AI agents (MCP)	27](#_Toc239264928)
 
-[Using an LLM with docx4j	28](#_Toc239259294)
+[Using an LLM with docx4j	27](#_Toc239264929)
 
-[docx to (X)HTML	29](#_Toc239259295)
+[docx to (X)HTML	28](#_Toc239264930)
 
-[docx to PDF	29](#_Toc239259296)
+[docx to PDF	28](#_Toc239264931)
 
-[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc239259297)
+[docx/pptx/xlsx to PDF via Documents4j (using Word)	30](#_Toc239264932)
 
-[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc239259298)
+[docx/pptx/xlsx to PDF via Microsoft Graph	30](#_Toc239264933)
 
-[docx to PDF via XSL FO	31](#_Toc239259299)
+[docx to PDF via XSL FO	30](#_Toc239264934)
 
-[Image Handling - DOCX	33](#_Toc239259300)
+[Image Handling - DOCX	32](#_Toc239264935)
 
-[Manual Image Manipulation	35](#_Toc239259301)
+[Manual Image Manipulation	34](#_Toc239264936)
 
-[Image Handling – PPTX	35](#_Toc239259302)
+[Image Handling – PPTX	34](#_Toc239264937)
 
-[Adding Headers/Footers	35](#_Toc239259303)
+[Adding Headers/Footers	34](#_Toc239264938)
 
-[Protection Settings	35](#_Toc239259304)
+[Protection Settings	34](#_Toc239264939)
 
-[docx Table of Contents	36](#_Toc239259305)
+[docx Table of Contents	35](#_Toc239264940)
 
-[Introduction	36](#_Toc239259306)
+[Introduction	35](#_Toc239264941)
 
-[Field background	37](#_Toc239259307)
+[Field background	36](#_Toc239264942)
 
-[TOC Content Control	37](#_Toc239259308)
+[TOC Content Control	36](#_Toc239264943)
 
-[TOC Field Syntax	38](#_Toc239259309)
+[TOC Field Syntax	37](#_Toc239264944)
 
-[Inserting/generating a TOC – "pure Java" considerations	40](#_Toc239259310)
+[Inserting/generating a TOC – "pure Java" considerations	39](#_Toc239264945)
 
-[Text extraction	40](#_Toc239259311)
+[Text extraction	39](#_Toc239264946)
 
-[Text substitution/document generation/reporting	40](#_Toc239259312)
+[Text substitution/document generation/reporting	39](#_Toc239264947)
 
-[Text substitution – document surface	41](#_Toc239259313)
+[Text substitution – document surface	40](#_Toc239264948)
 
-[Text substitution via data bound content controls	42](#_Toc239259314)
+[Text substitution via data bound content controls	41](#_Toc239264949)
 
-[Binding extensions for repeats and conditionals	43](#_Toc239259315)
+[Binding extensions for repeats and conditionals	42](#_Toc239264950)
 
-[Binding escaped XHTML (XML + CSS)	43](#_Toc239259316)
+[Binding escaped XHTML (XML + CSS)	42](#_Toc239264951)
 
-[Binding other rich content	43](#_Toc239259317)
+[Binding other rich content	42](#_Toc239264952)
 
-[Authoring	43](#_Toc239259318)
+[Authoring	42](#_Toc239264953)
 
-[Mailmerge	43](#_Toc239259319)
+[Mailmerge	42](#_Toc239264954)
 
-[SmartArt	43](#_Toc239259320)
+[SmartArt	42](#_Toc239264955)
 
-[JAXB stuff	44](#_Toc239259321)
+[JAXB stuff	43](#_Toc239264956)
 
-[Cloning	44](#_Toc239259322)
+[Cloning	43](#_Toc239264957)
 
-[javax.xml.bind.JAXBElement	44](#_Toc239259323)
+[javax.xml.bind.JAXBElement	43](#_Toc239264958)
 
-[@XmlRootElement	44](#_Toc239259324)
+[@XmlRootElement	43](#_Toc239264959)
 
-[Merging Documents and Presentations	45](#_Toc239259325)
+[Merging Documents and Presentations	44](#_Toc239264960)
 
-[Appendix 1 – Font Mapping	47](#_Toc239259326)
+[Appendix 1 – Font Mapping	46](#_Toc239264961)
 
-[Appendix 2 – Office font solutions	50](#_Toc239259327)
+[Appendix 2 – Office font solutions	49](#_Toc239264962)
 
 This guide covers docx4j **11.5.x **and** 17.x**, both of which are for Java 11 and later.   
 
@@ -1285,7 +1285,7 @@ Generally, you'll also need to add a reference to the part (using its relationsh
 
 # Importing XHTML
 
-docx4j can convert XHTML content (paragraphs, tables, images) into native WordML, reproducing much of the formatting.  
+docx4j can convert XHTML content (paragraphs, tables, images — and, since 17.0.4, MathML, which becomes a native Word equation) into native WordML, reproducing much of the formatting.  
 
 From v3, the XHTML Import functionality is a [separate project on GitHub](https://github.com/plutext/docx4j-ImportXHTML).
 
