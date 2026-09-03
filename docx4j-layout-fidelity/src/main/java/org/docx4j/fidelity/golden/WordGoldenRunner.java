@@ -18,38 +18,61 @@ import org.docx4j.wml.CTCompatSetting;
  * corpus directory to PDF through Word (documents4j-local) and writes a
  * manifest recording the environment, so goldens are reproducible.
  *
- * <pre>java -cp ... org.docx4j.fidelity.golden.WordGoldenRunner &lt;corpusDir&gt; &lt;goldenDir&gt;</pre>
+ * <pre>java -cp ... org.docx4j.fidelity.golden.WordGoldenRunner &lt;corpusDir&gt; &lt;goldenDir&gt; [--force]</pre>
+ *
+ * Probes whose PDF already exists (non-empty) are skipped unless --force is given, so a
+ * failed run can be resumed. Failures are reported per file and the exit code is 1 if any.
  */
 public final class WordGoldenRunner {
 
 	public static void main(String[] args) throws Exception {
 		File corpusDir = new File(args[0]);
 		File goldenDir = new File(args[1]);
+		boolean force = args.length > 2 && "--force".equals(args[2]);
 		goldenDir.mkdirs();
 		File[] files = corpusDir.listFiles((d, n) -> n.endsWith(".docx") && !n.startsWith("~"));
 		if (files == null || files.length == 0) throw new IllegalArgumentException("no docx in " + corpusDir);
 		Arrays.sort(files);
 
 		Documents4jLocalServices word = new Documents4jLocalServices();
-		try (PrintWriter m = new PrintWriter(new FileWriter(new File(goldenDir, "golden-manifest.properties")))) {
+		int failed = 0;
+		int done = 0;
+		int skipped = 0;
+		try (PrintWriter m = new PrintWriter(new FileWriter(new File(goldenDir, "golden-manifest.properties"), true))) {
+			m.println("# run " + ZonedDateTime.now());
 			m.println("source=documents4j-local (desktop Word)");
-			m.println("generated=" + ZonedDateTime.now());
 			m.println("os=" + System.getProperty("os.name") + " " + System.getProperty("os.version"));
 			m.println("java=" + System.getProperty("java.version"));
-			m.println("docx4j.version=" + Docx4J.class.getPackage().getImplementationVersion());
 			for (File docx : files) {
 				String id = docx.getName().replaceAll("\\.docx$", "");
-				WordprocessingMLPackage pkg = Docx4J.load(docx);
-				try (FileOutputStream os = new FileOutputStream(new File(goldenDir, id + ".pdf"))) {
-					word.export(pkg, os);
+				File pdf = new File(goldenDir, id + ".pdf");
+				if (pdf.length() > 0 && !force) {
+					skipped++;
+					continue;
 				}
-				m.println(id + ".compatibilityMode=" + compatMode(pkg));
-				System.out.println("golden " + id);
+				try {
+					WordprocessingMLPackage pkg = Docx4J.load(docx);
+					try (FileOutputStream os = new FileOutputStream(pdf)) {
+						word.export(pkg, os);
+					}
+					if (pdf.length() == 0) throw new IllegalStateException("Word produced an empty PDF");
+					m.println(id + ".compatibilityMode=" + compatMode(pkg));
+					m.println(id + ".generated=" + ZonedDateTime.now());
+					done++;
+					System.out.println("golden " + id);
+				} catch (Throwable t) {
+					failed++;
+					pdf.delete();
+					m.println(id + ".FAILED=" + t);
+					System.out.println("FAILED " + id + ": " + t);
+					t.printStackTrace(System.out);
+				}
+				m.flush();
 			}
-		} finally {
-			// documents4j keeps worker threads; do not wait for them
-			System.exit(0);
 		}
+		System.out.printf("done %d, skipped (already present) %d, failed %d%n", done, skipped, failed);
+		// documents4j keeps worker threads; do not wait for them
+		System.exit(failed == 0 ? 0 : 1);
 	}
 
 	static String compatMode(WordprocessingMLPackage pkg) {
