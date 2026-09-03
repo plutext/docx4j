@@ -180,19 +180,10 @@ public class OmmlToMathML {
 	// ------------------------------------------------------------------ run
 
 	private void appendRun(Element parent, CTR r) {
-		CTRPR rPr = null;
+		CTRPR[] rPrHolder = { null };
 		StringBuilder text = new StringBuilder();
-		for (Object o : r.getContent()) {
-			Object u = unwrap(o);
-			if (u instanceof CTRPR) {
-				rPr = (CTRPR) u;
-			} else if (u instanceof CTText) {
-				text.append(((CTText) u).getValue());
-			} else if (u instanceof org.docx4j.wml.Text) {
-				text.append(((org.docx4j.wml.Text) u).getValue());
-			}
-			// other run content (breaks etc.) is dropped
-		}
+		collectRunContent(r.getContent(), rPrHolder, text);
+		CTRPR rPr = rPrHolder[0];
 		String s = text.toString();
 		if (s.isEmpty()) {
 			return;
@@ -233,6 +224,40 @@ public class OmmlToMathML {
 			}
 			parent.appendChild(token);
 		}
+	}
+
+	/**
+	 * Collects the run's rPr and text, seeing through tracked-changes
+	 * wrappers (CR-010 / issue 348): w:ins content is included, w:del
+	 * content excluded — the accepted-revisions view of the equation.
+	 */
+	private void collectRunContent(List<Object> content, CTRPR[] rPrHolder,
+			StringBuilder text) {
+		for (Object o : content) {
+			Object u = unwrap(o);
+			if (u instanceof org.docx4j.wml.CTMathRunTrackChange) {
+				if (isIns(o)) {
+					collectRunContent(((org.docx4j.wml.CTMathRunTrackChange) u).getRest(),
+							rPrHolder, text);
+				}
+				// w:del: excluded
+			} else if (u instanceof CTRPR) {
+				if (rPrHolder[0] == null) {
+					rPrHolder[0] = (CTRPR) u;
+				}
+			} else if (u instanceof CTText) {
+				text.append(((CTText) u).getValue());
+			} else if (u instanceof org.docx4j.wml.Text) {
+				text.append(((org.docx4j.wml.Text) u).getValue());
+			}
+			// other run content (breaks etc.) is dropped
+		}
+	}
+
+	/** whether the (wrapped) element is w:ins, as opposed to w:del */
+	private static boolean isIns(Object wrapped) {
+		return wrapped instanceof JAXBElement
+				&& "ins".equals(((JAXBElement<?>) wrapped).getName().getLocalPart());
 	}
 
 	private static boolean isDigit(char c) {

@@ -7632,6 +7632,32 @@ PRINCIPLES:
 			</xsd:element>
 		</xsd:choice>
 	</xsd:group>
+	<xsd:complexType name="CT_MathRunTrackChange">
+		<xsd:annotation>
+			<xsd:documentation>w:ins/w:del wrapping math run content inside m:r -
+				Word's serialization of tracked changes in equations. Not in
+				ECMA-376's math CT_R; see docx4j issue 348 / CR-010.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="CT_TrackChange">
+				<xsd:group ref="m:EG_MathRunTrackChangeContent"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:group name="EG_MathRunTrackChanges">
+		<xsd:choice>
+			<xsd:element name="ins" type="CT_MathRunTrackChange">
+				<xsd:annotation>
+					<xsd:documentation>Inserted Math Run Content</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="del" type="CT_MathRunTrackChange">
+				<xsd:annotation>
+					<xsd:documentation>Deleted Math Run Content</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
 	<xsd:complexType name="CT_ParaRPrOriginal">
 		<xsd:sequence>
 			<xsd:group ref="EG_ParaRPrTrackChanges" minOccurs="0"></xsd:group>

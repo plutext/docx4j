@@ -190,25 +190,48 @@ public class OmmlToLatex {
 		}
 	}
 
+	/** Collected run pieces; tracked-changes wrappers are resolved during
+	 *  collection (CR-010 / issue 348): w:ins content included, w:del content
+	 *  excluded — the accepted-revisions view of the equation. */
+	private static final class RunPieces {
+		CTRPR rPr;
+		org.docx4j.wml.RPr wmlRPr;
+		final StringBuilder text = new StringBuilder();
+
+		void collect(List<Object> content) {
+			for (Object o : content) {
+				Object u = (o instanceof JAXBElement) ? ((JAXBElement<?>) o).getValue() : o;
+				if (u instanceof org.docx4j.wml.CTMathRunTrackChange) {
+					if (o instanceof JAXBElement
+							&& "ins".equals(((JAXBElement<?>) o).getName().getLocalPart())) {
+						collect(((org.docx4j.wml.CTMathRunTrackChange) u).getRest());
+					}
+					// w:del: excluded
+				} else if (u instanceof CTRPR) {
+					if (rPr == null) {
+						rPr = (CTRPR) u;
+					}
+				} else if (u instanceof org.docx4j.wml.RPr) {
+					if (wmlRPr == null) {
+						wmlRPr = (org.docx4j.wml.RPr) u;
+					}
+				} else if (u instanceof CTText) {
+					text.append(((CTText) u).getValue());
+				} else if (u instanceof org.docx4j.wml.Text) {
+					text.append(((org.docx4j.wml.Text) u).getValue());
+				}
+				// other run content (breaks etc) is dropped
+			}
+		}
+	}
+
 	private void run(CTR r, LatexBuilder builder, boolean inEqArr) throws OmmlMathException {
 
-		CTRPR rPr = null;
-		org.docx4j.wml.RPr wmlRPr = null;
-		StringBuilder text = new StringBuilder();
-		for (Object o : r.getContent()) {
-			Object u = (o instanceof JAXBElement) ? ((JAXBElement<?>) o).getValue() : o;
-			if (u instanceof CTRPR) {
-				rPr = (CTRPR) u;
-			} else if (u instanceof org.docx4j.wml.RPr) {
-				wmlRPr = (org.docx4j.wml.RPr) u;
-			} else if (u instanceof CTText) {
-				text.append(((CTText) u).getValue());
-			} else if (u instanceof org.docx4j.wml.Text) {
-				text.append(((org.docx4j.wml.Text) u).getValue());
-			}
-			// other run content (breaks etc) is dropped
-		}
-		String s = text.toString();
+		RunPieces pieces = new RunPieces();
+		pieces.collect(r.getContent());
+		CTRPR rPr = pieces.rPr;
+		org.docx4j.wml.RPr wmlRPr = pieces.wmlRPr;
+		String s = pieces.text.toString();
 		if (s.isEmpty()) {
 			return;
 		}

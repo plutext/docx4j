@@ -465,12 +465,41 @@
 						<xsd:documentation>Text</xsd:documentation>
  						<xsd:appinfo>
 							<jaxb:class name="tMath"/>
-						</xsd:appinfo> 
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:group ref="w:EG_MathRunTrackChanges"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:group name="EG_MathRunTrackChangeContent">
+		<xsd:annotation>
+			<xsd:documentation>Content of a w:ins/w:del wrapper inside m:r
+				(tracked changes in equations): the whole math run content
+				moves inside the wrapper, in the same order as in a plain
+				m:r. See docx4j issue 348 / CR-010.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="rPr" type="CT_RPR" minOccurs="0">
+				<xsd:annotation>
+ 					<xsd:appinfo>
+						<jaxb:class name="rPrMath"/>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="w:EG_RPr" minOccurs="0"/>
+			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+				<xsd:group ref="w:EG_RunInnerContent"/>
+				<xsd:element name="t" type="CT_Text" minOccurs="0">
+					<xsd:annotation>
+ 						<xsd:appinfo>
+							<jaxb:class name="tMath"/>
+						</xsd:appinfo>
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:choice>
 		</xsd:sequence>
-	</xsd:complexType>
+	</xsd:group>
 	<xsd:complexType name="CT_CtrlPr">
 		<xsd:sequence>
 			<xsd:group ref="w:EG_RPrMath" minOccurs="0"/>

@@ -109,6 +109,22 @@ public class MarkdownMathExportTest {
 	}
 
 	@Test
+	public void trackedChangesAcceptedRevisionsView() throws Exception {
+		// CR-010 / issue 348: w:ins content is included, w:del excluded
+		String xml = "<m:oMath xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\""
+				+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+				+ "<m:r><m:t>a+</m:t></m:r>"
+				+ "<m:r><w:ins w:id=\"1\" w:author=\"a\" w:date=\"2026-09-01T12:43:00Z\">"
+				+ "<w:rPr><w:rFonts w:ascii=\"Cambria Math\"/></w:rPr><m:t>b</m:t></w:ins></m:r>"
+				+ "<m:r><w:del w:id=\"2\" w:author=\"a\" w:date=\"2026-09-01T12:43:00Z\">"
+				+ "<w:rPr><w:rFonts w:ascii=\"Cambria Math\"/></w:rPr><m:t>c</m:t></w:del></m:r>"
+				+ "</m:oMath>";
+		org.docx4j.math.CTOMath oMath = (org.docx4j.math.CTOMath) XmlUtils.unwrap(
+				XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.math.CTOMath.class));
+		assertEquals("a+b", new OmmlToLatex().convertOMath(oMath));
+	}
+
+	@Test
 	public void mathInHeadingExports() throws Exception {
 		WordprocessingMLPackage pkg = new MarkdownImporter().createPackage(
 				"# The $U^{3}$ law\n");
