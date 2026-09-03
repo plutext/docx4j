@@ -334,8 +334,12 @@ public final class Doc {
 
 	// ---------------------------------------------------------------- images
 
-	/** A generated PNG (gradient with a border and a diagonal), placed inline at the given width in EMU. */
-	public R inlineImage(int wPx, int hPx, long cxEmu) throws Exception {
+	/**
+	 * A generated PNG (gradient with a border and a diagonal), placed inline at the
+	 * given width in twips (docx4j's createImageInline takes twips, not EMU; height
+	 * follows the pixel aspect ratio).
+	 */
+	public R inlineImage(int wPx, int hPx, long cxTwips) throws Exception {
 		imageCounter++;
 		BufferedImage img = new BufferedImage(wPx, hPx, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
@@ -352,7 +356,7 @@ public final class Doc {
 		ImageIO.write(img, "png", bos);
 		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, mdp, bos.toByteArray());
 		Inline inline = imagePart.createImageInline("probe" + imageCounter, "probe image " + imageCounter,
-				imageCounter, imageCounter + 100, cxEmu, false);
+				imageCounter, imageCounter + 100, cxTwips, false);
 		R r = F.createR();
 		Drawing d = F.createDrawing();
 		d.getAnchorOrInline().add(inline);

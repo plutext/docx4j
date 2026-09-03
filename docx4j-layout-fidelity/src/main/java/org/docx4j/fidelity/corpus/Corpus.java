@@ -254,12 +254,12 @@ public final class Corpus {
 			Doc d = Doc.create(15);
 			d.para("before. " + prose(1)).after(240).add();
 			P p = d.para("text then image ").build();
-			p.getContent().add(d.inlineImage(200, 80, 1440000L)); // 1.5in wide
+			p.getContent().add(d.inlineImage(200, 80, 2160L)); // 1.5in wide (twips)
 			p.getContent().add(Doc.run(" then text. " + prose(1, 1), SERIF, 24, null));
 			d.add(p);
 			d.para("wide image next. " + prose(1, 2)).before(240).after(240).add();
 			P wide = d.para().noLabel().build();
-			wide.getContent().add(d.inlineImage(600, 200, 5486400L)); // 6in wide
+			wide.getContent().add(d.inlineImage(600, 200, 8640L)); // 6in wide (twips)
 			d.add(wide);
 			d.para("after. " + prose(1, 3)).before(240).add();
 			return d.pkg();
