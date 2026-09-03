@@ -7,6 +7,14 @@ Version 17.0.5
 Changes in Version 17.0.5
 --------------------------
 
+Math:
+- tracked changes inside equations no longer lose content (issue 348, open since 2019):
+Word wraps math run content in w:ins/w:del inside m:r, which the JAXB model rejected - the
+wrapper AND its m:t were silently dropped at load, so a load/save round trip emptied the
+equation.  Modelled now (new wml CT_MathRunTrackChange); MathML/HTML/PDF/LaTeX output
+shows the accepted-revisions view (ins included, del excluded; rendering deletions is
+deferred).  See docs/developer/change-requests/CR-010-math-tracked-changes.md
+
 Build:
 - docx4j now builds on native Windows: the XJC post-processing step (parent pointers,
 SdtElement signatures, VML attribute order etc) was ported from bash (which needed

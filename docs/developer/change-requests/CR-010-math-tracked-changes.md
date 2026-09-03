@@ -1,6 +1,12 @@
 # CR: Tracked changes inside equations (issue #348)
 
-Status: PROPOSED (2026-09-03)
+Status: DONE (2026-09-03) — phases 1 and 2 shipped in 992c8d572 (schema +
+regenerate + round-trip tests; consumer traversal with accepted-revisions
+semantics).  Open decision resolved by Jason: rendering deleted math
+struck-through in HTML/PDF is DEFERRED.  Full core suite 540 green,
+markdown module 139 green; sample docx is now the committed test fixture
+docx4j-core-tests/src/test/resources/tracked-changes-equations.docx.
+Phase 3 (CHANGELOG + issue comment) with this status update.
 Scope: schema (`xsd/wml/wml.xsd`, `xsd/shared/shared-math-2ed.xsd`) + regenerated
 `org.docx4j.math.CTR`; the OMML consumers that walk math run content
 Related: issue #348 (2019, still open — verified reproducible 2026-09-03)
