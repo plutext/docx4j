@@ -556,14 +556,15 @@ public class XsltFOFunctions {
 				// rPr in pPr direct formatting only applies to paragraph mark,
 				// and by virtue of that, to list item label,
 				// so pass null here.
-				// 2018 05, actually, sz also affects line spacing (eg 12 pt on block
-        		// with 11 pt inside would have more space), so its important
+				// 2018 05 .. 17.0.4: the paragraph mark's sz was applied to the block too,
+        		// on the theory that a 12pt mark on 11pt runs gives more line spacing.
+        		// Measured against Word 365 (CR-001 harness, line-mixed probe): it does
+        		// not; Word ignores the mark's size for a paragraph that has text, and
+        		// putting it on the block made FOP use it as a floor for every line
+        		// (a 36pt mark gave 36pt lines).  Since 17.0.5 line heights come from
+        		// the runs (see WordLineMetrics / applyBlockLineHeight below); the mark
+        		// only sizes an empty paragraph, via rPrParagraphMark.  Lang is kept.
         		RPr fontSzOnlyRPr = new RPr();
-        		if (pPrDirect.getRPr()!=null && pPrDirect.getRPr().getSz()!=null) {
-        			HpsMeasure hm = new HpsMeasure();
-        			hm.setVal( pPrDirect.getRPr().getSz().getVal() ); // does this suffice as a copy?
-            		fontSzOnlyRPr.setSz(hm);
-        		}
         		if (pPrDirect.getRPr()!=null) {
         			// Assume no need to clone
         			fontSzOnlyRPr.setLang(pPrDirect.getRPr().getLang());
@@ -747,7 +748,8 @@ public class XsltFOFunctions {
 				}
 				
 				foBlockElement.setTextContent(" ");
-				
+				applyEmptyParagraphLineHeight(foBlockElement, fontFamily, pPr,
+						(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
 			} else {
 			
 				/* don't do:
@@ -777,9 +779,8 @@ public class XsltFOFunctions {
 				 * So instead of importNode, use 
 				 */
 	            XmlUtils.treeCopy( n,  foBlockElement );
-				
+	            applyBlockLineHeight(foBlockElement);
 			}
-			
 			// FOP doesn't support "ignore-if-surrounding-linefeed", and "pre" is no good, since wrapping does not happen
 			// (so paragraph continues right over edge of page)
 			//((Element)foBlockElement).setAttribute( "white-space", "ignore");
@@ -794,6 +795,102 @@ public class XsltFOFunctions {
 			log.error(e.getMessage(), e);
 		}
         return null;
+	}
+
+		/**
+	 * Give the block the font and line-height of the run that owns most of the
+	 * paragraph's text.
+	 *
+	 * Why the block: measured with FOP 2.11 (CR-001 harness), a line's height is
+	 * the union of the block's nominal line rectangle (the block's font plus its
+	 * line-height) and the bare glyph boxes of the inlines; the line-height on an
+	 * fo:inline is ignored for line stacking.  So a block whose font differs from
+	 * its runs' adds a per-line error (0.7pt for 11pt default vs 12pt Liberation
+	 * Serif) however good the inline values are, while a block in the run's font
+	 * with Word's line-height reproduces Word's pitch exactly (13.80pt at 12pt).
+	 *
+	 * RunFontSelector puts font-family, font-size and the Word line-height (from
+	 * the physical font's metrics, the run size and the paragraph's w:spacing) on
+	 * every span it creates; this picks the combination carrying the most
+	 * characters, which is the whole paragraph in the common uniform case.  A
+	 * larger run inside such a paragraph still enlarges its own line through its
+	 * glyph box (as in Word, though by its ascent+descent rather than Word's full
+	 * line height for that size); a smaller run does not shrink anything.
+	 *
+	 * @since 17.0.5
+	 */
+	protected static void applyBlockLineHeight(Element foBlockElement) {
+		java.util.Map<String, long[]> weights = new java.util.HashMap<>(); // key -> {chars}
+		java.util.Map<String, String[]> attrs = new java.util.HashMap<>();
+		collectRunFonts(foBlockElement, weights, attrs);
+		String best = null;
+		long bestWeight = -1;
+		for (java.util.Map.Entry<String, long[]> e : weights.entrySet()) {
+			if (e.getValue()[0] > bestWeight) {
+				bestWeight = e.getValue()[0];
+				best = e.getKey();
+			}
+		}
+				if (best==null) return;
+		String[] a = attrs.get(best);
+		if (a[0]!=null && a[0].length()>0) foBlockElement.setAttribute("font-family", a[0]);
+		if (a[1]!=null && a[1].length()>0) foBlockElement.setAttribute("font-size", a[1]);
+				foBlockElement.setAttribute("line-height", a[2]);
+	}
+
+	/** Accumulate, per (font-family, font-size, line-height) of the spans carrying a
+	 *  line-height, the number of characters they hold; not descending into nested blocks. */
+	private static void collectRunFonts(Node node, java.util.Map<String, long[]> weights, java.util.Map<String, String[]> attrs) {
+		NodeList children = node.getChildNodes();
+		for (int i=0; i<children.getLength(); i++) {
+			Node c = children.item(i);
+			if (!(c instanceof Element)) continue;
+			Element el = (Element)c;
+			String localName = el.getLocalName();
+			// nested blocks, tables, footnotes: their lines are their own
+			if ("block".equals(localName) || "table".equals(localName)
+					|| "block-container".equals(localName) || "list-block".equals(localName)
+					|| "footnote".equals(localName)) continue;
+			String lh = el.getAttribute("line-height");
+			if (lh!=null && lh.endsWith("pt")) {
+				String family = el.getAttribute("font-family");
+				String size = inheritedAttribute(el, "font-size");
+												String key = family + "|" + size + "|" + lh;
+				long chars = el.getTextContent()==null ? 0 : el.getTextContent().length();
+				weights.computeIfAbsent(key, k -> new long[1])[0] += Math.max(1, chars);
+				attrs.putIfAbsent(key, new String[] { family, size, lh });
+			}
+			collectRunFonts(el, weights, attrs);
+		}
+	}
+
+	/** The attribute on this element or its nearest ancestor within the fragment (font-size
+	 *  sits on the run's fo:inline, the font-family/line-height on the span inside it). */
+	private static String inheritedAttribute(Element el, String name) {
+		Node n = el;
+		while (n instanceof Element) {
+			String v = ((Element)n).getAttribute(name);
+			if (v!=null && v.length()>0) return v;
+			n = n.getParentNode();
+		}
+		return "";
+	}
+
+	/**
+	 * An empty paragraph is as tall as its paragraph mark: the mark's font and
+	 * size under the paragraph's w:spacing.
+	 *
+	 * @since 17.0.5
+	 */
+	protected static void applyEmptyParagraphLineHeight(Element foBlockElement, String physicalFontFamily,
+			PPr pPr, RPr markRPr) {
+		if (markRPr==null || markRPr.getSz()==null || markRPr.getSz().getVal()==null) return;
+		double sizePt = markRPr.getSz().getVal().doubleValue()/2;
+		org.docx4j.fonts.PhysicalFont pf = (physicalFontFamily==null || physicalFontFamily.length()==0)
+				? null : org.docx4j.fonts.PhysicalFonts.get(physicalFontFamily);
+		foBlockElement.setAttribute("font-size", org.docx4j.fonts.WordLineMetrics.format(sizePt));
+		foBlockElement.setAttribute("line-height", org.docx4j.fonts.WordLineMetrics.lineHeightPtString(
+				pf, sizePt, pPr==null ? null : pPr.getSpacing()));
 	}
 
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,

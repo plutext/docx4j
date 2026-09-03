@@ -7,6 +7,17 @@ Version 17.0.5
 Changes in Version 17.0.5
 --------------------------
 
+PDF via XSL FO - line height now matches Word:
+- line pitch was a percentage of the block's font size (12pt "single" came out at
+~11.7pt where Word gives 13.8pt), so pages held 15-20% more lines than Word's and every
+page break moved.  Each run's fo:inline now carries the line-height Word would give it,
+computed from the physical font's hhea/OS/2 metrics (GDI tmHeight + external leading)
+and w:spacing (auto/exact/atLeast), so the tallest run sizes the line as in Word.  The
+paragraph mark's size no longer inflates lines of non-empty paragraphs (Word ignores it;
+a 36pt mark used to give 36pt lines).  New org.docx4j.fonts.WordLineMetrics.
+Measured against Word 365 with the new docx4j-layout-fidelity harness (not in the
+reactor; see its README).
+
 Math:
 - tracked changes inside equations no longer lose content (issue 348, open since 2019):
 Word wraps math run content in w:ins/w:del inside m:r, which the JAXB model rejected - the

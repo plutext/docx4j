@@ -545,18 +545,18 @@ public class FOPAreaTreeHelper {
     					// You need to debug to find out why
     					
     				} else {
-	        			float hBpdaPts = hBpdaMilliPts/1000;
+	        			float hBpdaPts = hBpdaMilliPts/1000f;
 		    			spm.getRegionBefore().setExtent(hBpdaPts+"pt");
 		    			spm.getRegionBody().setMarginTop(hBpdaPts+"pt");
 		    			
 		    			// If the top margin in Word > what we have, then pad with margin top
-		    			float totalHeight = (page.getHeaderMargin()/20 ) // twips to points
+		    			float totalHeight = (page.getHeaderMargin()/20f ) // twips to points
 		    								+ hBpdaPts;
 		    			
-		    			float extraMargin = (page.getPgMar().getTop().intValue()/20) - totalHeight;  
+		    			float extraMargin = (page.getPgMar().getTop().intValue()/20f) - totalHeight;  
 		    			
 		    			if (extraMargin>0) {
-		    				float required = (page.getPgMar().getTop().intValue()-page.getHeaderMargin())/20;
+		    				float required = (page.getPgMar().getTop().intValue()-page.getHeaderMargin())/20f;
 			    			spm.getRegionBody().setMarginTop(required+"pt");	    				
 		    			} // otherwise, we've expanded to the extent of the header already
     				}
@@ -569,18 +569,18 @@ public class FOPAreaTreeHelper {
     					log.error("No footerBpda for " + simplePageMasterName);
     					
     				} else {    				
-		    			float fBpdaPts = fBpdaMilliPts/1000;
+		    			float fBpdaPts = fBpdaMilliPts/1000f;
 		    			spm.getRegionAfter().setExtent(fBpdaPts+"pt");
 		    			spm.getRegionBody().setMarginBottom(fBpdaPts+"pt");
 		    			
 		    			// If the bottom margin in Word > what we have, then pad with margin bottom
-		    			float totalHeight = (page.getFooterMargin()/20 ) // twips to points
+		    			float totalHeight = (page.getFooterMargin()/20f ) // twips to points
 		    								+ fBpdaPts;
 		    			
-		    			float extraMargin = (page.getPgMar().getBottom().intValue()/20) - totalHeight;  
+		    			float extraMargin = (page.getPgMar().getBottom().intValue()/20f) - totalHeight;  
 		    			
 		    			if (extraMargin>0) {
-		    				float required = (page.getPgMar().getBottom().intValue()-page.getFooterMargin())/20;
+		    				float required = (page.getPgMar().getBottom().intValue()-page.getFooterMargin())/20f;
 			    			spm.getRegionBody().setMarginBottom(required+"pt");	    				
 		    			} // otherwise, we've expanded to the extent of the footer already
 	    			

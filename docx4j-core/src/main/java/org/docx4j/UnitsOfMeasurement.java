@@ -118,22 +118,26 @@ public class UnitsOfMeasurement {
 	 * @param left
 	 * @return
 	 */
+	/**
+	 * A twips value as a CSS/XSL-FO length, losslessly: whole inches as "Nin",
+	 * otherwise points ("12pt", "35.4pt"; a twip is 0.05pt, so two decimals are exact).
+	 *
+	 * Before 17.0.5 this rounded to whole millimetres whenever the value was not a
+	 * multiple of 1/80 inch, which lost up to 0.5mm (1.4pt) per value: a 708-twip
+	 * header distance became "12mm" (12.49), 12pt paragraph spacing became "4mm"
+	 * (11.34pt).  Measured against Word (CR-001 harness), those losses were a
+	 * visible part of the page layout error.
+	 */
 	public static String twipToBest(int leftL ) {
-		
-		float inch4f = 80*twipToInch(leftL);
-		float inch4fabit = inch4f + 0.49f;
-		int inch4 = Math.round(inch4f);
-		int inch4next = Math.round( inch4fabit);
-		float inches = twipToInch(leftL);
-		if (inch4==inch4next) {
-			log.debug(leftL + " twips -> " + inches + "inches");
-			// inches work 			
-			return format2DP.format(inches) + "in";
-		} else {
-			float mm = inches/0.0394f;
-			log.debug(leftL + " twips -> " + mm + "mm ("+ format2DP.format(inches) + "inches)");
-			return Math.round(mm) + "mm";
-		} 							
+		if (leftL % 1440 == 0) {
+			return (leftL / 1440) + "in";
+		}
+		if (leftL % 20 == 0) {
+			return (leftL / 20) + "pt";
+		}
+		String s = String.format(java.util.Locale.ROOT, "%.2f", leftL / 20f);
+		s = s.replaceAll("0+$", "").replaceAll("\\.$", "");
+		return s + "pt";
 	}
 	
 	public static String rgbTripleToHex(float red, float green, float blue) {

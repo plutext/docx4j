@@ -80,6 +80,13 @@
 			<version>${project.version}</version>
 			<scope>test</scope>            
 		</dependency>
+		<!-- a known TTF for WordLineMetricsTest -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-liberation</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	
 		<!-- required, as specified in docx4j.properties -->
 		<dependency>

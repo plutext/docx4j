@@ -365,9 +365,14 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 			assertTrue(impl + "empty paragraph collapsed or unstyled", isPresent(doc,
 					"//fo:block[@white-space-treatment='preserve'][@font-family='" + font + "']"));
 
-			// paragraph-mark w:sz contributes to the block (line height)
-			assertTrue(impl + "paragraph-mark sz not applied to the block", isPresent(doc,
+						// paragraph-mark w:sz must NOT size the block of a paragraph that has text:
+			// Word ignores it there (measured, CR-001 line-mixed probe), and FOP would
+			// use it as a floor for every line.  Since 17.0.5 the block takes the font,
+			// size and Word line-height of its dominant run instead.
+			assertTrue(impl + "paragraph-mark sz applied to the block", isAbsent(doc,
 					"//fo:block[starts-with(@font-size,'24')][contains(.,'sized text')]"));
+			assertTrue(impl + "block of sized text has no line-height", isPresent(doc,
+					"//fo:block[contains(@line-height,'pt')][contains(.,'sized text')]"));
 
 			// list structure: list-block at flow level (no extra wrapper block),
 			// number label, and the text in the item body

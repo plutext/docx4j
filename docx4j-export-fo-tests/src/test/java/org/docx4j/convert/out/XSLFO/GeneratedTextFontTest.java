@@ -102,9 +102,13 @@ public class GeneratedTextFontTest extends AbstractXSLFOTest {
 		assertTrue("the space in an empty block has no font",
 				isPresent(doc, "//fo:block[@white-space-treatment='preserve'][@font-family]"));
 
-		// .. and only there; ordinary blocks are still formatted per w:t
-		assertTrue("a font was set on a block which has content",
-				isAbsent(doc, "//fo:block[@font-family][not(@white-space-treatment='preserve')]"));
+				// Since 17.0.5 (CR-001 Phase 1) a block with content also carries a font:
+		// the one of the run owning most of its text, together with the line-height
+		// Word gives that run, because FOP sizes lines from the block's font and
+		// line-height (line-height on fo:inline is ignored for line stacking).
+		// The runs' own fonts still apply to the text itself.
+		assertTrue("a block with content has no font/line-height of its dominant run",
+				isPresent(doc, "//fo:block[@font-family][contains(@line-height,'pt')][not(@white-space-treatment='preserve')]"));
 	}
 
 	private byte[] toFO(WordprocessingMLPackage wordMLPackage) throws Exception {

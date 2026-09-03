@@ -13,6 +13,7 @@ import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STHint;
@@ -300,8 +301,10 @@ public class RunFontSelector {
     			}
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
+    			applyLineHeight(el, fallbackFont);
     		} else {	
     			el.setAttribute("font-family", val );
+    			applyLineHeight(el, val);
     		}
     		
 			// NB, for PDF/FOP, white space handling on the parent fo:block, 
@@ -378,12 +381,61 @@ public class RunFontSelector {
     		if (val==null) {
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
+    			applyLineHeight(el, fallbackFont);
     		} else {	
     			el.setAttribute("font-family", val );
+    			applyLineHeight(el, val);
     		}
     	} 
     }
     
+    
+    // ---- Word line height (XSL FO only); see WordLineMetrics. @since 17.0.5
+
+    /** The paragraph spacing and run size of the run currently being processed, captured in
+     *  fontSelector so that the spans it creates can carry the line-height Word would give them. */
+    private PPrBase.Spacing currentSpacing;
+    private double currentSizePt = -1;
+    private PPr lastPPr;
+    private PPrBase.Spacing lastPPrSpacing;
+
+    private void captureLineSpec(PropertyResolver propertyResolver, PPr pPr, RPr rPr) {
+    	if (outputType!=RunFontActionType.XSL_FO) return;
+    	currentSizePt = (rPr!=null && rPr.getSz()!=null && rPr.getSz().getVal()!=null)
+    			? rPr.getSz().getVal().doubleValue()/2 : -1;
+    	// effective pPr is needed for the style-inherited w:spacing; cache per pPr object
+    	// (the visitor pathway passes the same object for every run of a paragraph)
+    	if (pPr!=null && pPr==lastPPr) {
+    		currentSpacing = lastPPrSpacing;
+    		return;
+    	}
+    	PPrBase.Spacing spacing = null;
+    	try {
+    		PPr effective = (propertyResolver==null) ? pPr : propertyResolver.getEffectivePPr(pPr);
+    		if (effective!=null) spacing = effective.getSpacing();
+    	} catch (Exception e) {
+    		log.warn("Couldn't resolve effective pPr for line height: " + e.getMessage());
+    		if (pPr!=null) spacing = pPr.getSpacing();
+    	}
+    	lastPPr = pPr;
+    	lastPPrSpacing = spacing;
+    	currentSpacing = spacing;
+    }
+
+    /** Set line-height on this FO span from the physical font's Word metrics, the run's
+     *  size and the paragraph's w:spacing.  Word sizes a line by the tallest run on it;
+     *  with these on every fo:inline, FOP's max-height line stacking does the same. */
+    private void applyLineHeight(Element el, String physicalFontName) {
+    	if (outputType!=RunFontActionType.XSL_FO || currentSizePt<=0 || el==null) return;
+    	    	PhysicalFont pf = physicalFontName==null ? null : PhysicalFonts.get(physicalFontName);
+    	    	el.setAttribute("line-height", WordLineMetrics.lineHeightPtString(pf, currentSizePt, currentSpacing));
+    	// Not done: moving the text to where Word puts it within the line (FOP centres
+    	// the leading, Word does not; see WordLineMetrics.baselineShiftPt).  Tried as
+    	// baseline-shift on the span: FOP enlarges the line box by the shift instead of
+    	// moving the glyphs inside it, so the pitch drifted.  Needs a layout-manager
+    	// level change (CR-001 option B); the residual is a constant per paragraph.
+    }
+
     private boolean spacePreserve;
     
 
@@ -472,7 +524,8 @@ public class RunFontSelector {
 			rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr);
 		} catch (CyclicStylesException e) {
 			log.error(e.getMessage(), e);
-		} 
+		}
+    	captureLineSpec(propertyResolver, pPr, rPr); 
     	// TODO use effective rPr, but don't inherit theme val,
     	// TODO, add cache?
 
