@@ -69,9 +69,10 @@ import org.docx4j.wml.Tr;
  * {@link Para#add()} is prefixed with a label ("P01 ", "P02 ", ...) so that a
  * line in either PDF can be attributed to its paragraph without heuristics.
  *
- * Fonts are restricted to the four that are installed on both the Linux build
- * host and the Windows reference VM (they ship in the docx4j-export-fo-fonts-*
- * modules): Liberation Serif, Liberation Sans, Carlito, DejaVu Sans.
+ * Fonts are restricted to four that must be installed on both the Linux build
+ * host and the Windows reference VM: Liberation Serif and Liberation Sans
+ * (docx4j-export-fo-fonts-liberation), Carlito (docx4j-export-fo-fonts-crosextra)
+ * and DejaVu Sans (not in any docx4j font module; from the dejavu-fonts project).
  */
 public final class Doc {
 

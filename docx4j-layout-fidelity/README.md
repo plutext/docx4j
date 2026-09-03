@@ -30,8 +30,10 @@ java -cp "$CP" org.docx4j.fidelity.Fidelity generate  target/corpus
 java -cp "$CP" org.docx4j.fidelity.Fidelity run       target/corpus /path/to/goldens target/report [dpi]
 ```
 
-On the Windows VM (Word installed; the Liberation, Carlito and DejaVu fonts
-from the `docx4j-export-fo-fonts-*` modules installed as system fonts):
+On the Windows VM (Word installed, and the corpus fonts installed as system
+fonts: Liberation Serif and Liberation Sans from `docx4j-export-fo-fonts-liberation`,
+Carlito from `docx4j-export-fo-fonts-crosextra`, and DejaVu Sans, which is not in
+any docx4j font module; use the host's `/usr/share/fonts/TTF/DejaVuSans*.ttf`):
 
 ```
 java -cp "%CP%" org.docx4j.fidelity.golden.WordGoldenRunner <sharedFolder>\corpus <sharedFolder>\goldens
