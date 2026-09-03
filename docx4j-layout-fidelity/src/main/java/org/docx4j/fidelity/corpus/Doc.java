@@ -472,6 +472,8 @@ public final class Doc {
 		private String font = SERIF;
 		private int halfPts = 24;
 		private boolean label = true;
+		/** Runs are materialised in build(), so font() applies to text() calls made before it. */
+		private final java.util.List<Object[]> parts = new java.util.ArrayList<>();
 
 		Para(Doc doc) {
 			this.doc = doc;
@@ -483,6 +485,7 @@ public final class Doc {
 			sp.setLineRule(STLineSpacingRule.AUTO);
 		}
 
+		/** The paragraph font, used for the label and for text() runs (wherever it is called in the chain). */
 		public Para font(String font, int halfPts) {
 			this.font = font;
 			this.halfPts = halfPts;
@@ -494,13 +497,16 @@ public final class Doc {
 			return this;
 		}
 
+		/** Text in the paragraph font. */
 		public Para text(String text) {
-			p.getContent().add(Doc.run(text, font, halfPts, null));
+			parts.add(new Object[] { text, null, null, null });
 			return this;
 		}
 
+		/** Text in an explicit font/size, optionally customised. */
+		@SuppressWarnings("unchecked")
 		public Para run(String text, String font, int halfPts, Consumer<RPr> customiser) {
-			p.getContent().add(Doc.run(text, font, halfPts, customiser));
+			parts.add(new Object[] { text, font, halfPts, customiser });
 			return this;
 		}
 
@@ -582,10 +588,18 @@ public final class Doc {
 			return this;
 		}
 
+		@SuppressWarnings("unchecked")
 		public P build() {
 			if (label) {
-				p.getContent().add(0, Doc.run(doc.nextLabel(), font, halfPts, null));
+				p.getContent().add(Doc.run(doc.nextLabel(), font, halfPts, null));
 			}
+			for (Object[] part : parts) {
+				String f = part[1] == null ? font : (String) part[1];
+				int sz = part[2] == null ? halfPts : (Integer) part[2];
+				p.getContent().add(Doc.run((String) part[0], f, sz, (Consumer<RPr>) part[3]));
+			}
+			parts.clear();
+			label = false; // a second build() must not add another label
 			return p;
 		}
 

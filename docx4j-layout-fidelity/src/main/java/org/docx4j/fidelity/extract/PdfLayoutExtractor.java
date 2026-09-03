@@ -31,14 +31,15 @@ public final class PdfLayoutExtractor {
 				out.pageWidths.add((double) page.getMediaBox().getWidth());
 				out.pageHeights.add((double) page.getMediaBox().getHeight());
 			}
-			TextCollector tc = new TextCollector(out);
-			tc.setSortByPosition(true);
-			tc.getText(doc);
 			int i = 0;
 			for (PDPage page : doc.getPages()) {
 				new BoxCollector(page, i, out).run();
 				i++;
 			}
+			// boxes first: the text collector uses vertical rules (table borders) as split points
+			TextCollector tc = new TextCollector(out);
+			tc.setSortByPosition(true);
+			tc.getText(doc);
 			out.lines.sort((a, b) -> a.page != b.page ? Integer.compare(a.page, b.page)
 					: (Math.abs(a.y - b.y) > 0.01 ? Double.compare(a.y, b.y) : Double.compare(a.x0, b.x0)));
 			return out;
@@ -89,15 +90,30 @@ public final class PdfLayoutExtractor {
 			if (!cluster.isEmpty()) emit(pageIndex, cluster);
 		}
 
-		/** cluster is sorted by x already (same baseline); split at wide gaps. */
+		/**
+		 * Split a baseline cluster into lines (a) at a gap wider than 0.7 em that is also
+		 * more than three times the cluster's median word gap (tab stops, borderless
+		 * cells), or (b) at any gap crossed by a vertical rule (table borders). Justified
+		 * text has uniformly wide word gaps, so (a) keeps such lines together.
+		 */
 		private void emit(int pageIndex, List<TextPosition> cluster) {
 			cluster.sort((a, b) -> Float.compare(a.getXDirAdj(), b.getXDirAdj()));
+			List<Float> gaps = new ArrayList<>();
+			for (int i = 1; i < cluster.size(); i++) {
+				float g = cluster.get(i).getXDirAdj() - (cluster.get(i - 1).getXDirAdj() + cluster.get(i - 1).getWidthDirAdj());
+				if (g > 0.15f * cluster.get(i - 1).getFontSizeInPt()) gaps.add(g);
+			}
+			Collections.sort(gaps);
+			float medianWordGap = gaps.isEmpty() ? 0f : gaps.get(gaps.size() / 2);
 			List<TextPosition> run = new ArrayList<>();
 			TextPosition prev = null;
 			for (TextPosition tp : cluster) {
 				if (prev != null) {
-					float gap = tp.getXDirAdj() - (prev.getXDirAdj() + prev.getWidthDirAdj());
-					if (gap > 0.7f * Math.max(prev.getFontSizeInPt(), 1f)) {
+					float from = prev.getXDirAdj() + prev.getWidthDirAdj();
+					float gap = tp.getXDirAdj() - from;
+					float em = Math.max(prev.getFontSizeInPt(), 1f);
+					boolean wide = gap > 0.7f * em && gap > 3f * medianWordGap;
+					if (wide || (gap > 0 && verticalRuleBetween(pageIndex, from, tp.getXDirAdj(), tp.getYDirAdj(), em))) {
 						addLine(pageIndex, run);
 						run = new ArrayList<>();
 					}
@@ -106,6 +122,17 @@ public final class PdfLayoutExtractor {
 				prev = tp;
 			}
 			addLine(pageIndex, run);
+		}
+
+		/** A thin vertical stroke/fill box lying horizontally inside [x0,x1] and vertically spanning the baseline. */
+		private boolean verticalRuleBetween(int pageIndex, float x0, float x1, float baseline, float em) {
+			for (PdfLayout.Box b : out.boxes) {
+				if (b.page != pageIndex || b.w > 3 || b.h < 0.5 * em) continue;
+				double cx = b.x + b.w / 2;
+				if (cx < x0 || cx > x1) continue;
+				if (b.y <= baseline && b.y + b.h >= baseline - 0.7 * em) return true;
+			}
+			return false;
 		}
 
 		private void addLine(int pageIndex, List<TextPosition> run) {
