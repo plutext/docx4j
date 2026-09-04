@@ -425,6 +425,13 @@
   
   <xsl:template match="w:sdt">
   	<xsl:choose>
+  		<xsl:when test="starts-with(./w:sdtPr/w:tag/@w:val, 'XSLT_Cols')">
+  			<!-- a part of a merged page-sequence with fewer columns than the sequence
+  			     (ConversionSectionWrapperFactory): a block spanning them all -->
+  			<fo:block span="all">
+  				<xsl:apply-templates select="w:sdtContent/*"/>
+  			</fo:block>
+  		</xsl:when>
   		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, 'XSLT_')">
   			<!-- An SDT we've inserted to handle adjacent borders/shading nodes -->
   			<xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logWarn($conversionContext, 'XSLT_')" />

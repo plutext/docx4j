@@ -24,6 +24,7 @@ import java.math.BigInteger;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.jaxb.Context;
+import org.docx4j.XmlUtils;
 import org.docx4j.wml.CTColumns;
 import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SectPr;
@@ -387,6 +388,18 @@ public class PageDimensions {
 		} else {
 			return 1;
 		}
+	}
+
+	/**
+	 * Override the column count (on a copy of w:cols, the section's own is not
+	 * touched): a page-sequence made of several continuous sections takes the
+	 * largest of their counts, the narrower parts spanning all columns.
+	 *
+	 * @since 17.0.5
+	 */
+	public void setColsNum(int num) {
+		cols = (cols == null) ? Context.getWmlObjectFactory().createCTColumns() : XmlUtils.deepCopy(cols);
+		cols.setNum(java.math.BigInteger.valueOf(num));
 	}
 
 	public int getColsSpacing() {

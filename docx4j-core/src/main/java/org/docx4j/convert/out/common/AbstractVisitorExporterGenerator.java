@@ -126,6 +126,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		if (unmarshalledNode instanceof ContentAccessor) {
 			childResults = document.createDocumentFragment();
 			AbstractVisitorExporterGenerator<CC> generator = getFactory().createInstance(conversionContext, document, childResults);
+			// the content (a hyperlink's runs, say) is still in this paragraph: a w:tab
+			// inside a TOC hyperlink needs the paragraph's tab stops for its dot leader
+			generator.pPr = pPr;
+			generator.rPr = rPr;
 			new TraversalUtil(((ContentAccessor)unmarshalledNode).getContent(), generator);
 			
 		} else if (unmarshalledNode instanceof org.docx4j.wml.Pict) {

@@ -205,8 +205,10 @@ public class ConversionSectionWrapperFactory {
 		ConversionSectionWrapper currentSectionWrapper = null;
 		HeaderFooterPolicy previousHF = null;
 		int conversionSectionIndex = 0;
-		List<Object> sectionContent = new ArrayList<Object>();
-		
+				List<Object> sectionContent = new ArrayList<Object>();
+		// the continuous sections merged into the wrapper being built, as
+		// {unused, column count, end index (exclusive) in sectionContent}
+		List<int[]> columnParts = new ArrayList<int[]>();
 		// Now go through the document content,
 		
 		int sectPrIndex = 0; // includes continuous ones
@@ -262,9 +264,11 @@ public class ConversionSectionWrapperFactory {
 							PgSz pgSzThis = ppr.getSectPr().getPgSz();
 							PgSz pgSzNext = followingSectPr.getPgSz();
 							if (insertPageBreak( pgSzThis,  pgSzNext)) {
-								
 								ppr.setPageBreakBefore(new BooleanDefaultTrue());
 							}
+							// this section's content (up to and including this paragraph) is
+							// one part of the merged page-sequence, with its own column count
+							columnParts.add(new int[] { 0, colsNum(ppr.getSectPr()), sectionContent.size() + 1 });
 							//ppr.setSectPr(null); // Don't do this, since we have to process the docx (inc sectPrs) multiple times for a single PDF output
 							
 												} else {
@@ -274,12 +278,17 @@ public class ConversionSectionWrapperFactory {
 							// it was added to the next section's, where it rendered as an
 							// empty first line at the top of the new section's first page.
 							sectionContent.add(o);
+							int cols = spanColumnParts(sectionContent, columnParts, colsNum(ppr.getSectPr()));
 							currentSectionWrapper = createSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders, 
 									++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
+							if (cols > colsNum(ppr.getSectPr())) {
+								currentSectionWrapper.getPageDimensions().setColsNum(cols);
+							}
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
+							columnParts = new ArrayList<int[]>();
 							continue;
 						}
 					}
@@ -290,11 +299,75 @@ public class ConversionSectionWrapperFactory {
 		}
 		
 		// Section wrapper for the document level sectPr, containing remaining content
+		int cols = spanColumnParts(sectionContent, columnParts, colsNum(document.getBody().getSectPr()));
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
 				++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
+		if (cols > colsNum(document.getBody().getSectPr())) {
+			currentSectionWrapper.getPageDimensions().setColsNum(cols);
+		}
 		conversionSections.add(currentSectionWrapper);
 		return conversionSections;
+	}
+
+	/** Tag of the container the FO exporter renders as a block spanning all columns. @since 17.0.5 */
+	public static final String TAG_SPAN_ALL = "XSLT_Cols";
+
+	private static int colsNum(SectPr sectPr) {
+		if (sectPr == null || sectPr.getCols() == null || sectPr.getCols().getNum() == null) return 1;
+		return Math.max(1, sectPr.getCols().getNum().intValue());
+	}
+
+	/**
+	 * A page-sequence cannot change its column count mid-page, but a block in it
+	 * can span all its columns.  So when continuous sections with different
+	 * column counts were merged into one wrapper, the page-sequence takes the
+	 * largest count and each part with fewer columns is wrapped in a container
+	 * (tag XSLT_Cols=n) the FO exporter renders as fo:block span="all"; FOP
+	 * balances the columns before it, as Word does at a continuous break.  Word's
+	 * common case (1 column, then a 2-column stretch, then 1 column again) comes
+	 * out right; a 2-column part under a 3-column count is spanned too (an
+	 * approximation).  Sections whose counts agree are left alone.
+	 *
+	 * @param columnParts the merged parts as {unused, cols, end index (exclusive) in content}
+	 * @return the column count the wrapper should use
+	 * @since 17.0.5
+	 */
+	private static int spanColumnParts(List<Object> content, List<int[]> columnParts, int lastCols) {
+		int max = lastCols;
+		for (int[] part : columnParts) max = Math.max(max, part[1]);
+		boolean uniform = true;
+		for (int[] part : columnParts) if (part[1] != max) uniform = false;
+		if (columnParts.isEmpty() || (uniform && lastCols == max)) return max;
+		List<Object> result = new ArrayList<Object>();
+		int start = 0;
+		for (int[] part : columnParts) {
+			int end = Math.min(part[2], content.size());
+			addPart(result, content.subList(start, end), part[1], max);
+			start = end;
+		}
+		addPart(result, content.subList(start, content.size()), lastCols, max);
+		content.clear();
+		content.addAll(result);
+		return max;
+	}
+
+	private static void addPart(List<Object> result, List<Object> part, int cols, int max) {
+		if (part.isEmpty()) return;
+		if (cols >= max) {
+			result.addAll(part);
+			return;
+		}
+		SdtBlock sdt = Context.getWmlObjectFactory().createSdtBlock();
+		org.docx4j.wml.SdtPr sdtPr = Context.getWmlObjectFactory().createSdtPr();
+		org.docx4j.wml.Tag tag = Context.getWmlObjectFactory().createTag();
+		tag.setVal(TAG_SPAN_ALL + "=" + cols);
+		sdtPr.setTag(tag);
+		sdt.setSdtPr(sdtPr);
+		org.docx4j.wml.SdtContentBlock sdtContent = Context.getWmlObjectFactory().createSdtContentBlock();
+		sdtContent.getContent().addAll(new ArrayList<Object>(part));
+		sdt.setSdtContent(sdtContent);
+		result.add(sdt);
 	}
 	
 	private static boolean insertPageBreak(PgSz pgSzThis, PgSz pgSzNext) {

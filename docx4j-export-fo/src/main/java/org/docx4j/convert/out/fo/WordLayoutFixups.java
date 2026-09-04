@@ -395,6 +395,7 @@ public final class WordLayoutFixups {
 	 */
 	static void applyAutoSpacingBetweenListItems(Document doc) {
 		for (Element flow : elements(doc, "flow")) autoSpacingAmong(flow);
+		for (Element span : spanAllBlocks(doc)) autoSpacingAmong(span);
 		for (Element cell : elements(doc, "table-cell")) autoSpacingAmong(cell);
 	}
 
@@ -454,7 +455,19 @@ public final class WordLayoutFixups {
 	 */
 	static void applyContextualSpacing(Document doc) {
 		for (Element flow : elements(doc, "flow")) contextualSpacingAmong(flow);
+		for (Element span : spanAllBlocks(doc)) contextualSpacingAmong(span);
 		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell);
+	}
+
+	/** The blocks spanning all columns of a multi-column page-sequence (a merged
+	 *  continuous section, ConversionSectionWrapperFactory): their children are
+	 *  flow-level paragraphs too. */
+	private static List<Element> spanAllBlocks(Document doc) {
+		List<Element> out = new ArrayList<>();
+		for (Element b : elements(doc, "block")) {
+			if ("all".equals(b.getAttribute("span"))) out.add(b);
+		}
+		return out;
 	}
 
 		/** The paragraph blocks of a flow or cell, in order (one per flow-level child that is a paragraph). */

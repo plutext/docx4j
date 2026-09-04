@@ -134,6 +134,22 @@ the count FOP's plain path uses.  Measured against Word 365 (spacing-char probe:
 marginal case; Word adds the expansion after every character, spaces included, as FOP
 renders it.  Candidate for an upstream FOP report (GlyphMapping.processWordMapping).
 
+Sections with different column counts (PDF):
+- a continuous section break with another column count (the common case: a stretch of
+two-column text inside a one-column document) merged the sections into one page-sequence
+that took the column count of the LAST of them, so everything before it came out in two
+columns as well (the Getting Started guide's title and contents pages).  The
+page-sequence now takes the largest count and each narrower part is wrapped in a
+container the FO exporter renders as fo:block span="all"; FOP balances the columns before
+it, which is what Word does at a continuous break (measured).  Sections whose counts
+agree are unchanged.
+
+Tab leaders inside hyperlinks (PDF):
+- a w:tab inside a w:hyperlink (every entry of a Word table of contents) lost its
+paragraph's tab stops in the visitor pathway, so the dot leader became three spaces and
+the entry was justified across the line.  The sub-generator a writer uses now keeps the
+paragraph's properties, as the XSLT pathway always did.
+
 Paragraph borders (PDF and HTML):
 - borders and shading that a paragraph gets from its style were not rendered at all:
 the containerization preprocess read only the paragraph's direct w:pPr.  Word's default

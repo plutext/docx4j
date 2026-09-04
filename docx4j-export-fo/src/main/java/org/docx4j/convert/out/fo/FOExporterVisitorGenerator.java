@@ -190,6 +190,18 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			// the borders/shading; any other sdt is traversed transparently, as in the
 			// XSLT's w:sdt template
 			SdtElement sdt = (SdtElement)o;
+			if (isSpanAllContainer(sdt)) {
+				// a part of a merged page-sequence with fewer columns than the
+				// sequence (ConversionSectionWrapperFactory): a block spanning them all
+				Element block = document.createElementNS(XSL_FO, "block");
+				block.setAttribute("span", "all");
+				getCurrentParent().appendChild(block);
+				FOExporterVisitorGenerator generator = childGenerator(block);
+				if (sdt.getSdtContent()!=null) {
+					new TraversalUtil(sdt.getSdtContent().getContent(), generator);
+				}
+				return null;
+			}
 			String tag = containerTag(sdt);
 			if (tag!=null) {
 				handleXsltContainer(sdt, tag);
@@ -298,6 +310,12 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		XmlUtils.treeCopy(styled, getCurrentParent());
 	}
 
+	private static boolean isSpanAllContainer(SdtElement sdt) {
+		return sdt.getSdtPr()!=null && sdt.getSdtPr().getTag()!=null && sdt.getSdtPr().getTag().getVal()!=null
+				&& sdt.getSdtPr().getTag().getVal().startsWith(
+						org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory.TAG_SPAN_ALL);
+	}
+
 	@Override
 	public boolean shouldTraverse(Object o) {
 
@@ -305,7 +323,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			// its contents were already converted in apply (handleP)
 			return false;
 		}
-		if (o instanceof SdtElement && containerTag((SdtElement)o)!=null) {
+		if (o instanceof SdtElement && (isSpanAllContainer((SdtElement)o) || containerTag((SdtElement)o)!=null)) {
 			// its contents were already converted in apply (handleXsltContainer)
 			return false;
 		}

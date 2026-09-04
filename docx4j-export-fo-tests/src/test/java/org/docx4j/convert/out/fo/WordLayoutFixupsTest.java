@@ -268,4 +268,16 @@ public class WordLayoutFixupsTest {
 			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wordLineBreaking", "true");
 		}
 	}
+
+	// ---- columns and span-all parts (merged continuous sections)
+
+	@Test
+	public void paragraphsInsideASpanAllBlockAreNeighbours() {
+		String in = flow("<fo:block span=\"all\">"
+				+ "<fo:block docx4j-pstyle=\"ListParagraph\" docx4j-contextual=\"1\" space-after=\"10pt\">a</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"ListParagraph\" docx4j-contextual=\"1\" space-after=\"10pt\">b</fo:block>"
+				+ "</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue("contextual spacing not applied inside the span block", out.contains("space-after=\"0pt\">a<"));
+	}
 }
