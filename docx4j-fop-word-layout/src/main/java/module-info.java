@@ -9,4 +9,6 @@ module org.docx4j.fop_word_layout {
 
 	provides org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer
 		with org.docx4j.fop.wordlayout.WordLayoutCustomizer;
+	provides org.apache.fop.fo.ElementMapping
+		with org.docx4j.fop.wordlayout.WordLayoutElementMapping;
 }

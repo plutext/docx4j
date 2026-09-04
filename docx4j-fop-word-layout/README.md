@@ -31,9 +31,35 @@ private inner class, so this jar carries a copy of FOP 2.11's
 `LineLayoutManager` (`WordLineLayoutManager`, Apache License 2.0) whose
 breaking loop is greedy, a `WordBlockLayoutManager` that creates it, and a
 `WordLayoutManagerMaker` that FOP is given through
-`FopFactoryBuilder.setLayoutManagerMakerOverride`. Two package-private FOP
-members are reached by reflection (`LBP`); fop-core is an automatic module, so
-that needs no `--add-opens`.
+`FopFactoryBuilder.setLayoutManagerMakerOverride`. A few package-private or
+private FOP members are reached by reflection (`LBP`: `LineBreakPosition`,
+`AlignmentContext`'s constructor and line-height, `InlineLayoutManager.font`);
+fop-core is an automatic module, so that needs no `--add-opens`.
+
+Since CR-001 §6.9 the jar also places lines as Word does. docx4j writes three
+attributes on each paragraph's `fo:block` in the namespace
+`http://docx4j.org/fop/word-layout`, which `WordLayoutElementMapping` registers
+with FOP (through `META-INF/services/org.apache.fop.fo.ElementMapping`) so FOP
+keeps them as the block's foreign attributes instead of rejecting them:
+
+- `docx4j:line-box`: the text box of a line (the paragraph font's
+  single-spacing pitch: usWinAscent + usWinDescent + external leading);
+- `docx4j:baseline`: the baseline within it (ascent + external leading);
+- `docx4j:line-rule`: `auto`, `exact` or `atLeast` (`w:lineRule`).
+
+`WordLineLayoutManager` sizes each line from the runs on it (each run's span
+carries Word's pitch as its `line-height`, read from the alignment context by
+reflection, and its font's ascent share from `WordLineMetrics`), then applies
+the rule: for `auto` the block's `line-height` / box is the multiple and the
+extra goes *below* the text as a `LeadingGlue` emitted after the break
+possibility that follows the line, so FOP's page breaker drops it when it takes
+the break (the last line of a page keeps only its text box, as in Word).
+`WordFlowLayoutManager` moves a paragraph's last leading behind the break the
+flow adds after the block. `exact` clips the line to the box; `atLeast` puts a
+shortfall above the text. docx4j writes the attributes only when
+`WordLayoutCustomizer.extensionNamespace()` reports the namespace (Word line
+breaking on), because FOP rejects them without the mapping. `WordLeadingTest`
+checks the page fit on a monospace font.
 
 The copy is tied to FOP 2.11 internals. When FOP is upgraded, re-derive it:
 copy the new `LineLayoutManager.java`, rename, extend `LineLayoutManager`,

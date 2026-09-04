@@ -161,7 +161,8 @@ public final class WordLineMetrics {
 		STLineSpacingRule rule = spacing.getLineRule() == null ? STLineSpacingRule.AUTO : spacing.getLineRule();
 		switch (rule) {
 		case EXACT:
-			return line * m.winAscent * sizePt / single;
+			// measured 0.80 of the line for Liberation Serif at 9/12/24pt exact (CR-001 §6.9)
+			return line * m.winAscent / (m.winAscent + m.winDescent);
 		case AT_LEAST:
 			return natural + Math.max(0, line - single);
 		case AUTO:

@@ -23,6 +23,9 @@ import java.util.List;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.flow.Block;
+import org.apache.fop.fo.pagination.Flow;
+import org.apache.fop.layoutmgr.FlowLayoutManager;
+import org.apache.fop.layoutmgr.PageSequenceLayoutManager;
 import org.apache.fop.layoutmgr.LayoutManager;
 import org.apache.fop.layoutmgr.LayoutManagerMapping;
 
@@ -31,6 +34,8 @@ import org.apache.fop.layoutmgr.LayoutManagerMapping;
  * ({@code FopFactoryBuilder.setLayoutManagerMakerOverride}): FOP's own
  * {@link LayoutManagerMapping} with {@link WordBlockLayoutManager} for
  * {@code fo:block}.
+ *
+ * It also supplies {@link WordFlowLayoutManager} for the flow.
  *
  * FOP holds the override at factory level and never tells it the
  * {@code FOUserAgent}, which the standard makers need (TextLayoutManager asks
@@ -65,11 +70,21 @@ public class WordLayoutManagerMaker extends LayoutManagerMapping {
 		return delegate(node.getUserAgent()).makeLayoutManager(node);
 	}
 
+	@Override
+	public FlowLayoutManager makeFlowLayoutManager(PageSequenceLayoutManager pslm, Flow flow) {
+		return new WordFlowLayoutManager(pslm, flow);
+	}
+
 	/** The per-agent mapping: FOP's, with the block maker replaced. */
 	static class Mapping extends LayoutManagerMapping {
 
 		Mapping(FOUserAgent agent) {
 			super(agent);
+		}
+
+		@Override
+		public FlowLayoutManager makeFlowLayoutManager(PageSequenceLayoutManager pslm, Flow flow) {
+			return new WordFlowLayoutManager(pslm, flow);
 		}
 
 		@Override

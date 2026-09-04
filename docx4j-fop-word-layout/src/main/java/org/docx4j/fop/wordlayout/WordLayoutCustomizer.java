@@ -57,6 +57,13 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		}
 	}
 
+	/** The namespace of the line-box attributes WordLineLayoutManager reads, when
+	 *  Word line breaking is on (otherwise docx4j leaves them out). */
+	@Override
+	public String extensionNamespace() {
+		return Docx4jProperties.getProperty(PROPERTY, true) ? WordLayoutElementMapping.URI : null;
+	}
+
 	@Override
 	public void customize(FopFactoryBuilder builder, FOSettings settings) {
 		if (!Docx4jProperties.getProperty(PROPERTY, true)) {

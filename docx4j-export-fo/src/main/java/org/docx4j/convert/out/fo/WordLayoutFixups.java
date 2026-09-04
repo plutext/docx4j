@@ -116,6 +116,7 @@ public final class WordLayoutFixups {
 
 	public static void apply(Document doc, int compatibilityMode) {
 		disregardBaselineShifts(doc);
+		lineBoxAttributes(doc);
 		anchorImages(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
 		applyContextualSpacing(doc);
@@ -140,6 +141,59 @@ public final class WordLayoutFixups {
 		if (root != null && isFo(root, "root")) {
 			root.setAttribute("line-height-shift-adjustment", "disregard-shifts");
 		}
+	}
+
+	// ------------------------------------------------------------ 0b. Word's line box
+
+	/** Hints from XsltFOFunctions.applyLineBoxHints: the text box of the block's
+	 *  lines and the baseline within it, in pt. */
+	public static final String HINT_LINE_BOX = "docx4j-linebox";
+	public static final String HINT_BASELINE = "docx4j-baseline";
+	public static final String HINT_LINE_RULE = "docx4j-linerule";
+
+	private static final String XMLNS = "http://www.w3.org/2000/xmlns/";
+
+	/**
+	 * When docx4j-fop-word-layout is on the classpath (its FopFactoryCustomizer
+	 * names the namespace its ElementMapping registers), the line-box hints
+	 * become docx4j:line-box / docx4j:baseline attributes on the block, which
+	 * its line manager reads: each line is then Word's text box with the extra
+	 * leading as glue below it, dropped at the bottom of a page.  Without the
+	 * jar FOP would reject the attributes, so they are left out.
+	 */
+	static void lineBoxAttributes(Document doc) {
+		String ns = extensionNamespace();
+		boolean declared = false;
+		for (Element block : elements(doc, "block")) {
+			String box = block.getAttribute(HINT_LINE_BOX);
+			String baseline = block.getAttribute(HINT_BASELINE);
+			String rule = block.getAttribute(HINT_LINE_RULE);
+			block.removeAttribute(HINT_LINE_BOX);
+			block.removeAttribute(HINT_BASELINE);
+			block.removeAttribute(HINT_LINE_RULE);
+			if (ns == null || box.length() == 0) continue;
+			if (!declared) {
+				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+			}
+			block.setAttributeNS(ns, "docx4j:line-box", box.endsWith("pt") ? box : box + "pt");
+			if (baseline.length() > 0) block.setAttributeNS(ns, "docx4j:baseline", baseline.endsWith("pt") ? baseline : baseline + "pt");
+			if (rule.length() > 0) block.setAttributeNS(ns, "docx4j:line-rule", rule);
+		}
+	}
+
+	/** The extension namespace a loaded FopFactoryCustomizer supports, or null. */
+	static String extensionNamespace() {
+		try {
+			for (org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer c
+					: java.util.ServiceLoader.load(org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer.class)) {
+				String ns = c.extensionNamespace();
+				if (ns != null) return ns;
+			}
+		} catch (java.util.ServiceConfigurationError e) {
+			log.warn("FopFactoryCustomizer lookup failed: " + e.getMessage());
+		}
+		return null;
 	}
 
 	// ------------------------------------------------------------ 0a. anchored pictures
@@ -324,6 +378,8 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_CONTEXTUAL);
 			block.removeAttribute(HINT_AUTOSPACING);
 			block.removeAttribute(HINT_LIST);
+			block.removeAttribute(HINT_LINE_BOX);
+			block.removeAttribute(HINT_BASELINE);
 		}
 		for (Element g : elements(doc, "external-graphic")) {
 			for (String hint : ANCHOR_HINTS) g.removeAttribute(hint);

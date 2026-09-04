@@ -31,5 +31,22 @@ import org.docx4j.convert.out.FOSettings;
  */
 public interface FopFactoryCustomizer {
 
+	/** The namespace of the layout attributes docx4j-fop-word-layout's line manager
+	 *  reads from fo:block (docx4j:line-box, docx4j:baseline); its ElementMapping
+	 *  registers it with FOP.  @since 17.0.5 */
+	String WORD_LAYOUT_NAMESPACE = "http://docx4j.org/fop/word-layout";
+
 	void customize(FopFactoryBuilder builder, FOSettings settings);
+
+	/**
+	 * The namespace of extension attributes this customizer's layout managers
+	 * read from the FO, or null.  WordLayoutFixups writes those attributes only
+	 * when a loaded customizer returns their namespace, because FOP rejects
+	 * attributes in a namespace no ElementMapping has registered.
+	 *
+	 * @since 17.0.5
+	 */
+	default String extensionNamespace() {
+		return null;
+	}
 }

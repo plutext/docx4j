@@ -631,6 +631,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
                                              availableShrink, availableStretch,
                                              difference, ratio, 0, startIndent, endIndent,
                                              0, ipd, 0, 0, 0);
+            } else if (wordLineBox > 0) {
+                int[] line = wordLine(par, firstElementIndex, lastElementIndex);
+                return LBP.create(thisLLM,
+                                             knuthParagraphs.indexOf(par),
+                                             firstElementIndex, lastElementIndex,
+                                             availableShrink, availableStretch,
+                                             difference, ratio, 0, startIndent, endIndent,
+                                             line[0], ipd, 0, line[1], line[2]);
             } else {
                 return LBP.create(thisLLM,
                                              knuthParagraphs.indexOf(par),
@@ -641,6 +649,108 @@ public class WordLineLayoutManager extends LineLayoutManager {
                                              ipd, spaceBefore, spaceAfter,
                                              lineLead);
             }
+        }
+
+        /**
+         * A line as Word makes it: {box height, extra leading below, baseline}, in
+         * millipoints.  Word sizes a line from the runs on it: the ascent is the
+         * largest run ascent (usWinAscent + external leading, at the run's size) and
+         * the descent the largest run descent, whatever the run's vertical
+         * alignment (a raised superscript still counts its full height, the shift
+         * itself not).  The block carries those for its dominant run
+         * (docx4j:line-box, docx4j:baseline); every other run's span carries Word's
+         * pitch as its line-height, which FOP hands over as the alignment context's
+         * height, split here in the block font's ascent:descent ratio (exact for the
+         * same font at another size, within a few percent across fonts).  A box
+         * whose bottom sits on the baseline (a picture) keeps FOP's altitude.
+         * Then the spacing rule: "auto" multiplies the natural line by the block's
+         * factor and puts the extra below as leading; "atLeast" puts any shortfall
+         * above; "exact" clips to the given height.
+         */
+        private int[] wordLine(KnuthSequence par, int firstElementIndex, int lastElementIndex) {
+            int blockAscent = wordBaseline > 0 ? wordBaseline : lead;
+            int blockDescent = wordLineBox - blockAscent;
+            double ratio = (double) blockAscent / wordLineBox;
+            // from the runs on the line only: a line holding just a picture has no
+            // descent in Word (its bottom is the picture's), text runs bring theirs
+            int ascent = 0;
+            int descent = 0;
+            if (wordLineRule != RULE_EXACT && fobj.getLineStackingStrategy() != EN_FONT_HEIGHT) {
+                ListIterator inlineIterator = par.listIterator(firstElementIndex);
+                AlignmentContext lastAC = null;
+                for (int j = firstElementIndex; j <= lastElementIndex; j++) {
+                    KnuthElement element = (KnuthElement) inlineIterator.next();
+                    if (!(element instanceof KnuthInlineBox)) continue;
+                    AlignmentContext ac = ((KnuthInlineBox) element).getAlignmentContext();
+                    if (ac == null || lastAC == ac) continue;
+                    lastAC = ac;
+                    if (ac.usesInitialBaselineTable()
+                            && (ac.getAlignmentBaselineIdentifier() == EN_BEFORE_EDGE
+                                || ac.getAlignmentBaselineIdentifier() == EN_AFTER_EDGE)) {
+                        continue;
+                    }
+                    int h = ac.getHeight();
+                    if (h <= 0) continue;
+                    if (ac.getDepth() == 0) {
+                        // bottom on the baseline (a picture): FOP's altitude is the height
+                        ascent = Math.max(ascent, ac.getAltitude());
+                        continue;
+                    }
+                    // Word's pitch for the run: its fo:inline's own line-height (docx4j puts
+                    // Word's single-spacing pitch on every run's span); an inherited value
+                    // is the block's line-height, in which case FOP's content height for
+                    // the run is scaled by the block font's pitch : content ratio
+                    int pitch = LBP.lineHeight(ac);
+                    if (pitch <= 0 || pitch == lineHeight) {
+                        pitch = (int) Math.round(h * (double) wordLineBox / (lead + follow));
+                    }
+                    // the run font's own ascent share when it can be read, else the block's
+                    double r = ratio;
+                    org.apache.fop.fonts.Font f = LBP.inlineFont(element.getLayoutManager());
+                    if (f != null && f.getFontMetrics() != null) {
+                        org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(f.getFontMetrics().getFullName());
+                        org.docx4j.fonts.WordLineMetrics.Metrics m = pf == null ? null : org.docx4j.fonts.WordLineMetrics.get(pf);
+                        if (m != null && !m.fallback && m.lineHeightFactor() > 0) {
+                            r = (m.winAscent + m.externalLeading) / m.lineHeightFactor();
+                        }
+                    }
+                    int alt = (int) Math.round(pitch * r);
+                    if (WordLineLayoutManager.log.isDebugEnabled()) {
+                        WordLineLayoutManager.log.debug("wordLine inline: fop height=" + h + " pitch=" + pitch + " ascent=" + alt
+                                + " shift=" + ac.getBaselineShiftValue() + " font=" + (f == null ? "-" : f.getFontMetrics().getFullName() + "/" + f.getFontSize()));
+                    }
+                    ascent = Math.max(ascent, alt);
+                    descent = Math.max(descent, pitch - alt);
+                }
+            }
+            if (ascent + descent == 0) {
+                // nothing measurable on the line (or exact spacing): the block's font
+                ascent = blockAscent;
+                descent = blockDescent;
+            }
+            if (WordLineLayoutManager.log.isDebugEnabled()) {
+                WordLineLayoutManager.log.debug("wordLine: box=" + wordLineBox + " baseline=" + wordBaseline + " lineHeight=" + lineHeight
+                        + " rule=" + wordLineRule + " -> ascent=" + ascent + " descent=" + descent);
+            }
+            int box, leading = 0, baseline;
+            switch (wordLineRule) {
+                case RULE_EXACT:
+                    box = wordLineBox;
+                    baseline = wordBaseline > 0 ? wordBaseline : lead;
+                    break;
+                case RULE_AT_LEAST:
+                    box = Math.max(ascent + descent, lineHeight);
+                    baseline = ascent + Math.max(0, lineHeight - (ascent + descent));
+                    break;
+                default:
+                    box = ascent + descent;
+                    baseline = ascent;
+                    if (lineHeight > wordLineBox) {
+                        double factor = (double) lineHeight / wordLineBox;
+                        leading = (int) Math.round(box * factor) - box;
+                    }
+            }
+            return new int[] { box, leading, baseline };
         }
 
         @Override
@@ -711,6 +821,48 @@ public class WordLineLayoutManager extends LineLayoutManager {
         lineHeight = lh;
         lead = l;
         follow = f;
+        wordLineBox = foreignLength(block, WordLayoutElementMapping.LINE_BOX);
+        wordBaseline = foreignLength(block, WordLayoutElementMapping.BASELINE);
+        String rule = foreignAttribute(block, WordLayoutElementMapping.LINE_RULE);
+        wordLineRule = "exact".equals(rule) ? RULE_EXACT : "atLeast".equals(rule) ? RULE_AT_LEAST : RULE_AUTO;
+    }
+
+    private static final int RULE_AUTO = 0, RULE_EXACT = 1, RULE_AT_LEAST = 2;
+    private final int wordLineRule;
+
+    /**
+     * Word's text box for a line of this paragraph and the baseline within it,
+     * in millipoints, from the block's docx4j:line-box / docx4j:baseline
+     * attributes ({@link WordLayoutElementMapping}); 0 when absent, in which
+     * case lines are made as FOP makes them.  The block's line-height less the
+     * box is the extra leading, emitted as {@link LeadingGlue} after each line
+     * so that it is dropped at the bottom of a page, as Word drops it.
+     */
+    private final int wordLineBox;
+    private final int wordBaseline;
+
+    private static String foreignAttribute(Block block, String localName) {
+        java.util.Map<?, ?> attrs = block.getForeignAttributes();
+        if (attrs == null) return null;
+        for (java.util.Map.Entry<?, ?> e : attrs.entrySet()) {
+            org.apache.xmlgraphics.util.QName name = (org.apache.xmlgraphics.util.QName) e.getKey();
+            if (WordLayoutElementMapping.URI.equals(name.getNamespaceURI())
+                    && localName.equals(name.getLocalName())) {
+                return String.valueOf(e.getValue()).trim();
+            }
+        }
+        return null;
+    }
+
+    private static int foreignLength(Block block, String localName) {
+        String v = foreignAttribute(block, localName);
+        if (v == null) return 0;
+        if (v.endsWith("pt")) v = v.substring(0, v.length() - 2);
+        try {
+            return (int) Math.round(Double.parseDouble(v) * 1000);
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
     }
 
     /** {@inheritDoc} */
@@ -1024,6 +1176,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
         List<ListElement> returnList = new LinkedList<>();
 
         int endIndex = -1;
+        // Word lines: the previous line's extra leading, to be emitted after the
+        // break possibility that follows the line (glue after a taken break is
+        // dropped, so the last line of a page keeps only its text box)
+        int pendingLeading = 0;
         for (int p = 0; p < knuthParagraphs.size(); p++) {
             // penalty between paragraphs
             if (p > 0) {
@@ -1033,6 +1189,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
                             keep.getPenalty(),
                             keep.getContext(),
                             context));
+                if (pendingLeading > 0) {
+                    returnList.add(new LeadingGlue(pendingLeading));
+                    pendingLeading = 0;
+                }
             }
 
             LineLayoutPossibilities llPoss = lineLayoutsList[p];
@@ -1084,6 +1244,13 @@ public class WordLineLayoutManager extends LineLayoutManager {
                                     keep.getPenalty(),
                                     keep.getContext(),
                                     context));
+                    } else if (i > 0 && pendingLeading > 0) {
+                        // no break allowed here: the glue must not become one
+                        returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, true));
+                    }
+                    if (i > 0 && pendingLeading > 0) {
+                        returnList.add(new LeadingGlue(pendingLeading));
+                        pendingLeading = 0;
                     }
                     endIndex = llPoss.getChosenPosition(i).getLeafPos();
                     // create a list of the FootnoteBodyLM handling footnotes
@@ -1097,9 +1264,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     if (baselineOffset < 0) {
                         baselineOffset = LBP.spaceBefore(lbp) + LBP.baseline(lbp);
                     }
+                    // a Word line's leading (spaceAfter) goes into LeadingGlue after the
+                    // next break possibility; FOP's lines keep it in the box
+                    int boxHeight = LBP.lineHeight(lbp) + LBP.spaceBefore(lbp)
+                            + (wordLineBox > 0 ? 0 : LBP.spaceAfter(lbp));
                     if (floats.isEmpty()) {
-                        returnList.add(new KnuthBlockBox(LBP.lineHeight(lbp) + LBP.spaceBefore(lbp) + LBP.spaceAfter(lbp),
-                                footnoteList, lbp, false));
+                        returnList.add(new KnuthBlockBox(boxHeight, footnoteList, lbp, false));
                     } else {
                         // add a line with height zero and no content and attach float to it
                         returnList.add(new KnuthBlockBox(0, Collections.emptyList(), null, false, floats));
@@ -1108,12 +1278,24 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         returnList.add(new BreakElement(new LeafPosition(this, p, previousEndIndex), keep
                                 .getPenalty(), keep.getContext(), context));
                         // add the original line where the float was but without the float now
-                        returnList.add(new KnuthBlockBox(LBP.lineHeight(lbp) + LBP.spaceBefore(lbp) + LBP.spaceAfter(lbp),
-                                footnoteList, lbp, false));
+                        returnList.add(new KnuthBlockBox(boxHeight, footnoteList, lbp, false));
+                    }
+                    if (wordLineBox > 0) {
+                        pendingLeading = LBP.spaceAfter(lbp);
                     }
                     previousEndIndex = endIndex;
                 }
             }
+        }
+        if (pendingLeading > 0) {
+            // the last line's leading; WordFlowLayoutManager moves it behind the
+            // break possibility the flow adds after this block.  The empty box keeps
+            // the list from ending in glue, which the flow would take for a break
+            // possibility of its own and add no penalty (BlockStackingLayoutManager
+            // .addInBetweenBreak: "glue-type break possibility not handled properly").
+            returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, true));
+            returnList.add(new LeadingGlue(pendingLeading));
+            returnList.add(new KnuthBox(0, null, true));
         }
 
         return returnList;

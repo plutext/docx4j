@@ -118,6 +118,40 @@ final class LBP {
 		}
 	}
 
+	// ---- AlignmentContext.lineHeight and InlineLayoutManager.font (both private)
+
+	private static final Field AC_LINE_HEIGHT, ILM_FONT;
+	static {
+		try {
+			AC_LINE_HEIGHT = org.apache.fop.layoutmgr.inline.AlignmentContext.class.getDeclaredField("lineHeight");
+			AC_LINE_HEIGHT.setAccessible(true);
+			ILM_FONT = org.apache.fop.layoutmgr.inline.InlineLayoutManager.class.getDeclaredField("font");
+			ILM_FONT.setAccessible(true);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("FOP's AlignmentContext/InlineLayoutManager have changed; docx4j-fop-word-layout needs updating", e);
+		}
+	}
+
+	/** The line-height the inline's alignment context was made with (its fo:inline's
+	 *  line-height property, inherited if not set), in millipoints. */
+	static int lineHeight(org.apache.fop.layoutmgr.inline.AlignmentContext ac) {
+		try {
+			return AC_LINE_HEIGHT.getInt(ac);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/** The font of an fo:inline's layout manager, or null for other managers. */
+	static org.apache.fop.fonts.Font inlineFont(LayoutManager lm) {
+		if (!(lm instanceof org.apache.fop.layoutmgr.inline.InlineLayoutManager)) return null;
+		try {
+			return (org.apache.fop.fonts.Font) ILM_FONT.get(lm);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	static int parIndex(LineBreakPosition p) { return i(PAR_INDEX, p); }
 	static int startIndex(LineBreakPosition p) { return i(START_INDEX, p); }
 	static int availableShrink(LineBreakPosition p) { return i(AVAILABLE_SHRINK, p); }

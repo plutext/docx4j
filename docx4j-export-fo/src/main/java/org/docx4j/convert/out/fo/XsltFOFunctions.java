@@ -797,7 +797,19 @@ public class XsltFOFunctions {
 				 * So instead of importNode, use 
 				 */
 	            XmlUtils.treeCopy( n,  foBlockElement );
-	            applyBlockLineHeight(foBlockElement);
+	            if (!applyBlockLineHeight(foBlockElement, pPr)) {
+	            	// no run text to size the lines from (a paragraph holding only a
+	            	// picture): the paragraph's own font, as for an empty paragraph, so
+	            	// the line manager still applies Word's rules (the picture's line
+	            	// then has the picture's height and no descent)
+					String fontFamily = resolveFontFamily(wmlPackage, runFontSelector, pPr,
+							(rPrParagraphMark!=null ? rPrParagraphMark : rPr), " ");
+					if (fontFamily.length()>0) {
+						((Element)foBlockElement).setAttribute("font-family", fontFamily);
+					}
+					applyEmptyParagraphLineHeight(foBlockElement, fontFamily, pPr,
+							(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
+	            }
 			}
 			// FOP doesn't support "ignore-if-surrounding-linefeed", and "pre" is no good, since wrapping does not happen
 			// (so paragraph continues right over edge of page)
@@ -837,7 +849,8 @@ public class XsltFOFunctions {
 	 *
 	 * @since 17.0.5
 	 */
-	protected static void applyBlockLineHeight(Element foBlockElement) {
+	/** @return whether a run font was found to size the block's lines from */
+	protected static boolean applyBlockLineHeight(Element foBlockElement, PPr pPr) {
 		java.util.Map<String, long[]> weights = new java.util.HashMap<>(); // key -> {chars}
 		java.util.Map<String, String[]> attrs = new java.util.HashMap<>();
 		collectRunFonts(foBlockElement, weights, attrs);
@@ -849,11 +862,75 @@ public class XsltFOFunctions {
 				best = e.getKey();
 			}
 		}
-				if (best==null) return;
+		if (best==null) return false;
 		String[] a = attrs.get(best);
 		if (a[0]!=null && a[0].length()>0) foBlockElement.setAttribute("font-family", a[0]);
 		if (a[1]!=null && a[1].length()>0) foBlockElement.setAttribute("font-size", a[1]);
-				foBlockElement.setAttribute("line-height", a[2]);
+		foBlockElement.setAttribute("line-height", a[2]);
+		applyLineBoxHints(foBlockElement, a[0], a[1], a[2], pPr);
+		return true;
+	}
+
+	/**
+	 * Word's text box and baseline for the block's lines, as hints for
+	 * WordLayoutFixups (which passes them to docx4j-fop-word-layout's line manager
+	 * when it is present, or drops them): for "auto" spacing the box is the font's
+	 * single-spacing pitch and the extra leading goes below it, where Word drops it
+	 * at a page bottom; the baseline sits at ascent + external leading.  Exact and
+	 * atLeast spacing keep the whole line as the box, with Word's baseline in it.
+	 * Measured against Word 365 (CR-001 §6.3, §6.9).
+	 *
+	 * @since 17.0.5
+	 */
+	static void applyLineBoxHints(Element foBlockElement, String physicalFontFamily, String fontSize,
+			String lineHeight, PPr pPr) {
+		if (!WordLayoutFixups.isEnabled()) return;
+		if (physicalFontFamily==null || physicalFontFamily.length()==0 || fontSize==null || !fontSize.endsWith("pt")
+				|| lineHeight==null || !lineHeight.endsWith("pt")) return;
+		org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(physicalFontFamily);
+		org.docx4j.fonts.WordLineMetrics.Metrics m = org.docx4j.fonts.WordLineMetrics.get(pf);
+		if (m==null || m.fallback) return;
+		double sizePt, lhPt;
+		try {
+			sizePt = Double.parseDouble(fontSize.substring(0, fontSize.length()-2));
+			lhPt = Double.parseDouble(lineHeight.substring(0, lineHeight.length()-2));
+		} catch (NumberFormatException e) {
+			return;
+		}
+		org.docx4j.wml.PPrBase.Spacing spacing = pPr==null ? null : pPr.getSpacing();
+		double single = m.lineHeightFactor() * sizePt;
+		double natural = (m.winAscent + m.externalLeading) * sizePt;
+		org.docx4j.wml.STLineSpacingRule rule = (spacing==null || spacing.getLine()==null) ? org.docx4j.wml.STLineSpacingRule.AUTO
+				: (spacing.getLineRule()==null ? org.docx4j.wml.STLineSpacingRule.AUTO : spacing.getLineRule());
+		double box, baseline;
+		String ruleName;
+		switch (rule) {
+		case EXACT:
+			// the line is the given height and the text is placed in it in the font's
+			// ascent:descent ratio (measured 0.80 of the line for Liberation Serif;
+			// usWinAscent/(usWinAscent+usWinDescent) gives 0.81)
+			box = lhPt;
+			baseline = lhPt * m.winAscent / (m.winAscent + m.winDescent);
+			ruleName = "exact";
+			break;
+		case AT_LEAST:
+			// the natural line; the line manager puts any shortfall against the
+			// block's line-height above the text
+			box = single;
+			baseline = natural;
+			ruleName = "atLeast";
+			break;
+		default:
+			// the natural line; the block's line-height / box is the multiple, whose
+			// extra goes below the text as droppable leading.  Multiples below 1
+			// shrink the box, off the top.
+			box = Math.min(single, lhPt);
+			baseline = lhPt < single ? Math.max(0, natural - (single - lhPt)) : natural;
+			ruleName = "auto";
+		}
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_LINE_BOX, org.docx4j.fonts.WordLineMetrics.format(box));
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_BASELINE, org.docx4j.fonts.WordLineMetrics.format(baseline));
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_LINE_RULE, ruleName);
 	}
 
 	/** Accumulate, per (font-family, font-size, line-height) of the spans carrying a
@@ -983,6 +1060,8 @@ public class XsltFOFunctions {
 		foBlockElement.setAttribute("font-size", org.docx4j.fonts.WordLineMetrics.format(sizePt));
 		foBlockElement.setAttribute("line-height", org.docx4j.fonts.WordLineMetrics.lineHeightPtString(
 				pf, sizePt, pPr==null ? null : pPr.getSpacing()));
+		applyLineBoxHints(foBlockElement, physicalFontFamily, foBlockElement.getAttribute("font-size"),
+				foBlockElement.getAttribute("line-height"), pPr);
 	}
 
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,

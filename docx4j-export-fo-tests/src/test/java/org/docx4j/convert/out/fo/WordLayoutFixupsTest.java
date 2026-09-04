@@ -242,4 +242,30 @@ public class WordLayoutFixupsTest {
 		assertFalse(out.contains("docx4j-anchor"));
 		assertFalse(out.contains("fo:float"));
 	}
+
+	// ---- Word's line box (docx4j-fop-word-layout on the classpath here)
+
+	@Test
+	public void lineBoxHintsBecomeNamespacedAttributes() {
+		String in = flow("<fo:block docx4j-pstyle=\"\" line-height=\"27.6pt\" docx4j-linebox=\"13.8pt\" docx4j-baseline=\"11.2pt\" docx4j-linerule=\"auto\">x</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue(out.contains("xmlns:docx4j=\"http://docx4j.org/fop/word-layout\""));
+		assertTrue(out.contains("docx4j:line-box=\"13.8pt\""));
+		assertTrue(out.contains("docx4j:baseline=\"11.2pt\""));
+		assertTrue(out.contains("docx4j:line-rule=\"auto\""));
+		assertFalse("hints not stripped", out.contains("docx4j-linebox") || out.contains("docx4j-baseline"));
+	}
+
+	@Test
+	public void lineBoxHintsDroppedWhenWordLineBreakingIsOff() {
+		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wordLineBreaking", "false");
+		try {
+			String in = flow("<fo:block docx4j-pstyle=\"\" line-height=\"27.6pt\" docx4j-linebox=\"13.8pt\" docx4j-baseline=\"11.2pt\" docx4j-linerule=\"auto\">x</fo:block>");
+			String out = WordLayoutFixups.apply(in, 15);
+			assertFalse("FOP would reject the attributes without the jar's ElementMapping", out.contains("docx4j:"));
+			assertFalse(out.contains("docx4j-linebox"));
+		} finally {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.wordLineBreaking", "true");
+		}
+	}
 }

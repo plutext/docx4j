@@ -82,6 +82,32 @@ line moved.  Four long-prose probes went from 88-94% to 100% line parity.
 - 20 of 28 layout probes now match Word line for line (footnotes 98%, anchored 86%: the
 misses are the both-sides wrap and a 0.4pt width case).  Harness: -Dfidelity.only=id,id.
 
+PDF via XSL FO - lines placed as Word places them (docx4j-fop-word-layout, CR-001 §6.9):
+- Word puts a line's extra leading (anything beyond the font's single-spacing pitch)
+below the text and drops it at the bottom of a page: the last line of a page fits if
+its text box does, and a page's first line starts with its ascent.  FOP centres the
+leading, so with 1.5 or double spacing the last line moved to the next page (measured:
+Word let 10.4pt of an 11.6pt leading hang below the margin) and every baseline sat
+half a leading too high or low.  Each paragraph block now carries Word's text box,
+baseline and spacing rule (docx4j:line-box, docx4j:baseline, docx4j:line-rule, in a
+namespace the jar's ElementMapping registers with FOP); the jar's line manager makes
+each line that box with the leading as glue after the break possibility (dropped when
+the break is taken), and its flow manager moves a paragraph's last leading behind the
+break that follows it.  Baselines now match Word's to 0.1pt on every prose probe
+(median 0.02pt, was -1.4pt), and line-auto's page break matches.
+- lines are sized from the runs on them, as Word does: the largest run ascent and
+descent (each run's span carries Word's pitch for its font and size; a raised or
+lowered run counts its full height, not the shift), so a line holding a 24pt run in a
+10pt paragraph is 27.6pt (line-mixed within 0.4pt, was 5.8), a footnote's first line
+holds its 11pt number (footnotes within 1.6pt, was 4.8), and a line holding only a
+picture is the picture's height with no descent (image-inline within 0.3pt, was 2.9).
+- exact line spacing puts the baseline at usWinAscent/(usWinAscent+usWinDescent) of
+the line (measured 0.80 for Liberation Serif at 9, 12 and 24pt; the ratio gives 0.81);
+atLeast puts any shortfall above the text; a multiple below 1 shrinks the box from
+the top.  line-exact-atleast within 0.1pt (was 0.75 median, 4.6 max).
+- without the jar nothing changes: the attributes are only written when its
+FopFactoryCustomizer reports the namespace (new extensionNamespace() on the SPI).
+
 Tables (PDF and HTML) - geometry as Word lays it out (measured):
 - Word's default cell margins (0.08in left and right) now apply when neither the table
 nor its style sets them; cell text sat on the border and every column was 10.8pt too
