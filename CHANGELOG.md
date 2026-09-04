@@ -35,6 +35,20 @@ first in the next section, rendering as an empty line at the top of its first pa
 - new DocumentSettingsPart.getCompatibilityMode(); fixups can be disabled with
 docx4j.convert.out.fo.wordLayoutFixups=false.
 
+PDF via XSL FO - Word-style line breaking (new module docx4j-fop-word-layout):
+- Word breaks lines greedily (first fit); FOP's Knuth-Plass total-fit optimises the whole
+paragraph, so with identical fonts and widths about a quarter of ragged-right lines broke
+differently and every later line and page moved.  The new jar carries a copy of FOP 2.11's
+LineLayoutManager with a greedy breaking loop and installs it through FOP's
+LayoutManagerMaker override; docx4j-export-fo finds it via ServiceLoader (new
+FopFactoryCustomizer SPI), so adding the jar to the classpath is all that is needed.
+Justified text: Word compresses a line's spaces (to about 3/4) to pull one more word in;
+reproduced with a configurable limit (docx4j.convert.out.fo.wordLineBreaking.maxSpaceShrink,
+default 0.24, measured).  Measured against Word 365: ragged prose line parity 72% -> 100%,
+justified 63% -> 98%; 14 of 22 layout probes now match Word line for line.
+Off with docx4j.convert.out.fo.wordLineBreaking=false.  The copy is tied to FOP 2.11 and
+must be re-derived on FOP upgrades (its README says how).
+
 Tables (PDF and HTML) - geometry as Word lays it out (measured):
 - Word's default cell margins (0.08in left and right) now apply when neither the table
 nor its style sets them; cell text sat on the border and every column was 10.8pt too

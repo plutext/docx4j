@@ -58,6 +58,12 @@
 			<artifactId>docx4j-export-fo</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- Word-style line breaking (CR-001 Phase 5); remove to measure without it -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-fop-word-layout</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- a JAXB runtime, because the harness has runnable mains -->
 		<dependency>
 			<groupId>org.docx4j</groupId>

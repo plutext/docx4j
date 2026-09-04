@@ -42,7 +42,8 @@
         <module>docx4j-docx-anon</module>
         <module>docx4j-markdown</module>
         
-        <module>docx4j-export-fo</module>        
+                <module>docx4j-export-fo</module>
+        <module>docx4j-fop-word-layout</module>        
         <module>docx4j-export-fo-fonts-symbol</module>        
         <module>docx4j-export-fo-fonts-croscore</module>  
         <module>docx4j-export-fo-fonts-crosextra</module>   

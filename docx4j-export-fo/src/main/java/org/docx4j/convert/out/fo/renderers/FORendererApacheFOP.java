@@ -447,12 +447,21 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			}
 
 			FopConfParser fopConfParser = null;
-			if (resourceResolver==null) {
+						if (resourceResolver==null) {
 				fopConfParser = new FopConfParser(is, defaultBaseURI);
 			} else {
 				fopConfParser = new FopConfParser(is, defaultBaseURI, resourceResolver);
 			}
-			return fopConfParser.getFopFactoryBuilder();
+			FopFactoryBuilder builder = fopConfParser.getFopFactoryBuilder();
+			// FopFactoryCustomizer services (e.g. docx4j-fop-word-layout's line breaking). @since 17.0.5
+			for (FopFactoryCustomizer customizer : java.util.ServiceLoader.load(FopFactoryCustomizer.class)) {
+				try {
+					customizer.customize(builder, settings);
+				} catch (Exception e) {
+					log.warn("FopFactoryCustomizer " + customizer.getClass().getName() + " failed: " + e.getMessage(), e);
+				}
+			}
+			return builder;
 
 //			log.debug("FOP configured OK." );
 //			return fopFactoryBuilder.build();

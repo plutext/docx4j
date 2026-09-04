@@ -29,7 +29,9 @@ module org.docx4j.export_fo {
 	exports org.docx4j.convert.out.XSLFO;
 	
     // Resource folders must be open! See https://stackoverflow.com/questions/45166757/loading-classes-and-resources-in-java-9/45173837#45173837  
-	opens org.docx4j.convert.out.fo;
+		opens org.docx4j.convert.out.fo;
 	opens org.docx4j.convert.out.fo.renderers;
+
+	uses org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer;
 	
 }

@@ -81,6 +81,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- Word-style line breaking, so the PDF-rendering tests exercise it -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-fop-word-layout</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
