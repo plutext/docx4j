@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /*
  *  @author Alberto Zerolo, Adam Schmideg, Jason Harrop
@@ -125,6 +127,109 @@ public class TableWriter extends AbstractTableWriter {
 			
 		}
 				
+	}
+
+		/**
+	 * Measure the cell's converted FO content: every span carries the physical
+	 * font-family and (via its ancestors) the font-size that FOP will use, so the
+	 * widths are FOP's own.  Words are split at white space; a word may run across
+	 * spans.  Nested tables and leaders end a word.
+	 *
+	 * @since 17.0.5
+	 */
+	@Override
+	protected double[] measureCellContent(AbstractWmlConversionContext context, org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell cell) {
+		Node content = cell.getContent();
+		if (content == null) return new double[] { 0, 0 };
+		double[] out = new double[2];
+		NodeList children = content.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out);
+		}
+		return out;
+	}
+
+	private static void measureBlockTree(Element el, double[] out) {
+		String ln = el.getLocalName();
+		if ("table".equals(ln)) {
+			// a nested table: treat as unbreakable at its own width if known, else ignore
+			String w = el.getAttribute("width");
+			double pt = org.docx4j.convert.out.fo.WordLayoutFixups.lengthPt(w);
+			out[0] = Math.max(out[0], pt);
+			out[1] = Math.max(out[1], pt);
+			return;
+		}
+		if ("block".equals(ln) || "list-block".equals(ln) || "block-container".equals(ln)) {
+			// a paragraph (or a container of them): measure its inline content as one line
+			double[] line = new double[3]; // {maxWord, total, currentWord}
+			measureInline(el, line, true);
+			line[0] = Math.max(line[0], line[2]);
+			out[0] = Math.max(out[0], line[0]);
+			out[1] = Math.max(out[1], line[1]);
+			return;
+		}
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out);
+		}
+	}
+
+	/** Walk inline content; nested blocks (paragraphs inside a list item) each count as a line. */
+	private static void measureInline(Element el, double[] line, boolean top) {
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (n.getNodeType() == Node.TEXT_NODE) {
+				measureText(n.getNodeValue(), fontFor(el), sizeFor(el), line);
+			} else if (n instanceof Element) {
+				Element c = (Element) n;
+				String ln = c.getLocalName();
+				if ("leader".equals(ln) || "table".equals(ln) || "external-graphic".equals(ln)) {
+					line[0] = Math.max(line[0], line[2]);
+					line[2] = 0;
+				} else if ("block".equals(ln) && !top) {
+					double[] inner = new double[3];
+					measureInline(c, inner, false);
+					inner[0] = Math.max(inner[0], inner[2]);
+					line[0] = Math.max(line[0], inner[0]);
+					line[1] = Math.max(line[1], inner[1]);
+				} else {
+					measureInline(c, line, false);
+				}
+			}
+		}
+	}
+
+	private static void measureText(String text, org.docx4j.fonts.PhysicalFont pf, double sizePt, double[] line) {
+		org.docx4j.fonts.fop.fonts.Typeface tf = org.docx4j.fonts.TextMeasurer.typeface(pf);
+		for (int i = 0; i < text.length(); ) {
+			int cp = text.codePointAt(i);
+			i += Character.charCount(cp);
+			double w = org.docx4j.fonts.TextMeasurer.glyphWidthPt(tf, cp, sizePt);
+			line[1] += w;
+			if (Character.isWhitespace(cp) || cp == ' ' && false) {
+				line[0] = Math.max(line[0], line[2]);
+				line[2] = 0;
+			} else {
+				line[2] += w;
+			}
+		}
+	}
+
+	private static org.docx4j.fonts.PhysicalFont fontFor(Element el) {
+		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
+			String f = ((Element) n).getAttribute("font-family");
+			if (f != null && f.length() > 0) return org.docx4j.fonts.PhysicalFonts.get(f);
+		}
+		return null;
+	}
+
+	private static double sizeFor(Element el) {
+		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
+			String f = ((Element) n).getAttribute("font-size");
+			if (f != null && f.length() > 0) return org.docx4j.convert.out.fo.WordLayoutFixups.lengthPt(f);
+		}
+		return 11;
 	}
 
 	@Override

@@ -35,6 +35,18 @@ first in the next section, rendering as an empty line at the top of its first pa
 - new DocumentSettingsPart.getCompatibilityMode(); fixups can be disabled with
 docx4j.convert.out.fo.wordLayoutFixups=false.
 
+Tables (PDF and HTML) - geometry as Word lays it out (measured):
+- Word's default cell margins (0.08in left and right) now apply when neither the table
+nor its style sets them; cell text sat on the border and every column was 10.8pt too
+narrow.  Measured: cell text starts at the border centre + half the border width + 5.4pt.
+- autofit column widths (PDF): Word's default table layout sizes columns from their
+content, like the classic HTML automatic table layout (minimum = widest word, maximum =
+unwrapped content, slack shared by flexibility, preferred widths fixed).  docx4j always
+used w:tblGrid, which Word honours only for fixed layout or when every cell has a
+preferred width.  New org.docx4j.model.table.AutofitLayout and org.docx4j.fonts.TextMeasurer
+(glyph widths from the font FOP will use); the FO table writer measures each cell's
+converted content.  Measured against Word: 34.9 / 65.9pt for columns Word gave 34.3 / 65.5.
+
 Math:
 - tracked changes inside equations no longer lose content (issue 348, open since 2019):
 Word wraps math run content in w:ins/w:del inside m:r, which the JAXB model rejected - the

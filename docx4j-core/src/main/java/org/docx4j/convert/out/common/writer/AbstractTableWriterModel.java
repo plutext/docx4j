@@ -88,6 +88,29 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class AbstractTableWriterModel extends TableModel {
+
+	/** Column widths in twips decided by autofit (see AbstractTableWriter.computeAutofitColumnWidths),
+	 *  or null to use the grid.  @since 17.0.5 */
+	private int[] autofitColumnWidths;
+
+	public int[] getAutofitColumnWidths() {
+		return autofitColumnWidths;
+	}
+
+	public void setAutofitColumnWidths(int[] widths) {
+		this.autofitColumnWidths = widths;
+	}
+
+	/** The table width in twips: the sum of the autofit widths when set, else the grid's. */
+	@Override
+	public int getTableWidth() {
+		if (autofitColumnWidths != null) {
+			int sum = 0;
+			for (int w : autofitColumnWidths) sum += w;
+			return sum;
+		}
+		return super.getTableWidth();
+	}
 	
 	private final static Logger log = LoggerFactory.getLogger(AbstractTableWriterModel.class);
 

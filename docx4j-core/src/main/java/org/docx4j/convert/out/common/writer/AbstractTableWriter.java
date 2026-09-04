@@ -214,6 +214,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	Element row = null;
 	Element cellNode = null;
     
+        int[] autofit = computeAutofitColumnWidths(context, table);
+    if (autofit != null) {
+    	table.setAutofitColumnWidths(autofit);
+    }
     createRowProperties(rowProperties, table.getEffectiveTableStyle().getTrPr(), true);
     rowPropertiesTableSize = rowProperties.size();
     createCellProperties(cellProperties, table.getEffectiveTableStyle().getTrPr());
@@ -326,13 +330,121 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
   		return (ret != null ? ret : parent);
   	}
 	
+		/**
+	 * Word's default table layout is autofit: column widths follow the content
+	 * (see {@link org.docx4j.model.table.AutofitLayout}).  Until 17.0.5 docx4j
+	 * always used w:tblGrid, which Word only honours when every cell has a
+	 * preferred width or the layout is fixed.  Autofit needs text measurement,
+	 * which depends on the output format: {@link #measureCellContent} returns null
+	 * here, so this base class keeps the grid; the FO writer overrides it.
+	 *
+	 * @return column widths in twips, or null to use the grid
+	 * @since 17.0.5
+	 */
+	protected int[] computeAutofitColumnWidths(AbstractWmlConversionContext context, AbstractTableWriterModel table) {
+		try {
+			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+			if (tblPr != null && tblPr.getTblLayout() != null
+					&& tblPr.getTblLayout().getType() == org.docx4j.wml.STTblLayoutType.FIXED) {
+				return null;
+			}
+			int cols = table.getColCount();
+			if (cols == 0) return null;
+			int[] pref = new int[cols];
+			java.util.Arrays.fill(pref, -1);
+			double[] min = new double[cols], max = new double[cols];
+			boolean anyAuto = false;
+			int marginTwips = cellMarginsTwips(tblPr);
+			for (TableModelRow row : table.getRows()) {
+				for (int c = 0; c < row.size() && c < cols; c++) {
+					TableModelCell cell = row.get(c);
+					if (cell == null || cell.isDummy() || !(cell instanceof AbstractTableWriterModelCell)) continue;
+					int span = Math.max(1, cell.getColspan());
+					org.docx4j.wml.TblWidth tcW = cell.getTcPr() == null ? null : cell.getTcPr().getTcW();
+					boolean hasPref = tcW != null && tcW.getW() != null && tcW.getW().intValue() > 0
+							&& (tcW.getType() == null || "dxa".equals(tcW.getType()));
+					if (span == 1) {
+						if (hasPref) pref[c] = Math.max(pref[c], tcW.getW().intValue());
+						else anyAuto = true;
+					}
+					double[] mm = measureCellContent(context, (AbstractTableWriterModelCell) cell);
+					if (mm == null) return null; // cannot measure: keep the grid
+					double mn = mm[0] * 20 + marginTwips, mx = mm[1] * 20 + marginTwips;
+					for (int k = c; k < c + span && k < cols; k++) {
+						min[k] = Math.max(min[k], mn / span);
+						max[k] = Math.max(max[k], mx / span);
+					}
+				}
+			}
+			if (!anyAuto) return null; // every column has a preferred width: the grid is what Word uses
+			int available = availableWidthTwips(context, tblPr);
+			if (available <= 0) return null;
+			int[] mi = new int[cols], ma = new int[cols];
+			for (int i = 0; i < cols; i++) {
+				mi[i] = (int) Math.ceil(min[i]);
+				ma[i] = (int) Math.ceil(max[i]);
+			}
+			return org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
+		} catch (Exception e) {
+			log.warn("Autofit skipped: " + e.getMessage(), e);
+			return null;
+		}
+	}
+
+	/** Left + right cell margins in twips, from the effective tblPr or Word's default. */
+	private static int cellMarginsTwips(org.docx4j.wml.CTTblPrBase tblPr) {
+		int left = WORD_DEFAULT_CELL_MARGIN_TWIPS, right = WORD_DEFAULT_CELL_MARGIN_TWIPS;
+		if (tblPr != null && tblPr.getTblCellMar() != null) {
+			CTTblCellMar m = tblPr.getTblCellMar();
+			if (m.getLeft() != null && m.getLeft().getW() != null && "dxa".equals(m.getLeft().getType())) left = m.getLeft().getW().intValue();
+			if (m.getRight() != null && m.getRight().getW() != null && "dxa".equals(m.getRight().getType())) right = m.getRight().getW().intValue();
+		}
+		return left + right;
+	}
+
+	/** The width the table may take: w:tblW when absolute or a percentage, else the
+	 *  writable page width less the table indent. */
+	private static int availableWidthTwips(AbstractWmlConversionContext context, org.docx4j.wml.CTTblPrBase tblPr) {
+		int writable = -1;
+		try {
+			writable = context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
+		} catch (Exception e) {
+			log.debug("No section page dimensions for autofit: " + e.getMessage());
+		}
+		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
+		if (tblW != null && tblW.getW() != null && tblW.getW().intValue() > 0) {
+			if ("dxa".equals(tblW.getType())) return tblW.getW().intValue();
+			if ("pct".equals(tblW.getType()) && writable > 0) return (int) ((long) writable * tblW.getW().intValue() / 5000);
+		}
+		if (writable <= 0) return -1;
+		org.docx4j.wml.TblWidth ind = tblPr == null ? null : tblPr.getTblInd();
+		if (ind != null && ind.getW() != null && "dxa".equals(ind.getType()) && ind.getW().intValue() > 0) {
+			writable -= ind.getW().intValue();
+		}
+		return writable;
+	}
+
+	/**
+	 * Minimum and maximum content widths of a cell in points: {widest unbreakable
+	 * unit, content unwrapped}; null when this output format cannot measure.
+	 * @since 17.0.5
+	 */
+	protected double[] measureCellContent(AbstractWmlConversionContext context, AbstractTableWriterModelCell cell) {
+		return null;
+	}
+
 	protected void createColumns(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Document doc, Element tableRoot) throws DOMException {
-		List<TblGridCol> gridCols = (table.getTblGrid() != null ? table.getTblGrid().getGridCol() : null);
+				List<TblGridCol> gridCols = (table.getTblGrid() != null ? table.getTblGrid().getGridCol() : null);
 		Element columnGroup = createNode(doc, tableRoot, NODE_TABLE_COLUMN_GROUP);
 		Element column = null;
-		
 		applyColumnGroupCustomAttributes(context, table, transformState, columnGroup);
-    	if ((gridCols != null) && (!gridCols.isEmpty())) {
+		int[] autofit = table.getAutofitColumnWidths();
+		if (autofit != null) {
+	    	for(int i=0; i<autofit.length; i++) {
+		        column = createNode(doc, columnGroup, NODE_TABLE_COLUMN);
+	    		applyColumnCustomAttributes(context, table, transformState, column, i, autofit[i]);
+	    	}
+		} else if ((gridCols != null) && (!gridCols.isEmpty())) {
 	    	for(int i=0; i<gridCols.size(); i++) {
 		        column = createNode(doc, columnGroup, NODE_TABLE_COLUMN);
 		        // w:gridCol/@w:w is optional (Word tolerates its absence);
@@ -463,7 +575,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			}						
 		}
 
-		if (tblCellMargin != null) {
+				if (tblCellMargin != null) {
 			if (tblCellMargin.getTop() != null)
 				properties.add(new CellMarginTop(tblCellMargin.getTop()));
 			if (tblCellMargin.getBottom() != null)
@@ -473,7 +585,29 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			if (tblCellMargin.getRight() != null)
 				properties.add(new CellMarginRight(tblCellMargin.getRight()));
 		}
-		
+		// Word's application default when neither the table nor its style says:
+		// 0.08in (108 twips) left and right, 0 top and bottom.  Word's built-in
+		// "Normal Table" style carries these, but a document need not define it
+		// (docx4j's default styles part does not), and Word applies them anyway.
+		// Measured (CR-001 harness, table-fixed): cell text starts at the border
+		// centre + half the border width + 5.4pt.  Without this, text sat on the
+		// border and every autofit width was 10.8pt too narrow.  @since 17.0.5
+		if (tblCellMargin == null || tblCellMargin.getLeft() == null) {
+			properties.add(new CellMarginLeft(defaultCellMargin()));
+		}
+		if (tblCellMargin == null || tblCellMargin.getRight() == null) {
+			properties.add(new CellMarginRight(defaultCellMargin()));
+		}
+	}
+
+	/** 108 twips (0.08in), Word's default left/right cell margin. @since 17.0.5 */
+	public static final int WORD_DEFAULT_CELL_MARGIN_TWIPS = 108;
+
+	private static org.docx4j.wml.TblWidth defaultCellMargin() {
+		org.docx4j.wml.TblWidth w = org.docx4j.jaxb.Context.getWmlObjectFactory().createTblWidth();
+		w.setType("dxa");
+		w.setW(java.math.BigInteger.valueOf(WORD_DEFAULT_CELL_MARGIN_TWIPS));
+		return w;
 	}
 
 	protected void createCellProperties(List<Property> properties, TcPr tcPr) {
