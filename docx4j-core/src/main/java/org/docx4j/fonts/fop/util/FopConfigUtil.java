@@ -247,12 +247,12 @@ public class FopConfigUtil {
 	 * Word does not apply kerning unless a run asks for it (w:kern), whereas
 	 * FOP kerns every font that has a kern table; the difference moves line
 	 * breaks (a kerned line can be a fraction of a point shorter).  So kerning
-	 * is off unless docx4j.fonts.fop.util.FopConfigUtil.kerning=true.
+	 * is off unless docx4j.convert.out.fo.kerning=true.
 	 *
 	 * @since 17.0.5
 	 */
 	private static boolean kerning() {
-		return Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.kerning", false);
+		return Docx4jProperties.getProperty("docx4j.convert.out.fo.kerning", false);
 	}
 
 	/**

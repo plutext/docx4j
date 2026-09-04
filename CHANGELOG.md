@@ -4,6 +4,18 @@ CHANGELOG
 Version 17.0.5
 ===============
 
+Release date
+------------
+
+5 September 2026
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Fable 5.1
+
 Changes in Version 17.0.5
 --------------------------
 
@@ -97,7 +109,7 @@ carries the pair values, so they stay break opportunities.  Measured on the kern
 probe: kerned lines within 0.13pt of Word's width (were 5pt wide), unkerned identical,
 line breaks the same for every threshold case.  Four long-prose probes went from 88-94%
 to 100% line parity.
-docx4j.fonts.fop.util.FopConfigUtil.kerning=true kerns everything, as before.
+docx4j.convert.out.fo.kerning=true kerns everything, as before.
 Found on the way: the visitor pathway (the default) handed the run font selector a
 resolved pPr without its w:pStyle, so run properties coming from the paragraph style
 (fonts, size, w:kern) were not seen when choosing a run's font; the XSLT pathway had

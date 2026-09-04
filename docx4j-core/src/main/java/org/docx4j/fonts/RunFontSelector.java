@@ -426,7 +426,7 @@ public class RunFontSelector {
 
     /** per-run kerning is only needed while FOP's fonts are unkerned (the default) */
     private static boolean perRunKerning() {
-    	return !Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.kerning", false);
+    	return !Docx4jProperties.getProperty("docx4j.convert.out.fo.kerning", false);
     }
 
     /** the font-family for the FO span: the kerned twin when the run kerns */
