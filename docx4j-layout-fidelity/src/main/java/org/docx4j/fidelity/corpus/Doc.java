@@ -495,6 +495,15 @@ public final class Doc {
 		rpr.setB(new BooleanDefaultTrue());
 	}
 
+	/** w:spacing on the run: expanded (positive) or condensed character spacing, in twentieths of a point. */
+	public static java.util.function.Consumer<RPr> charSpacing(int twentieths) {
+		return rpr -> {
+			org.docx4j.wml.CTSignedTwipsMeasure sp = F.createCTSignedTwipsMeasure();
+			sp.setVal(BigInteger.valueOf(twentieths));
+			rpr.setSpacing(sp);
+		};
+	}
+
 	/** w:kern: kern this run if its size is at least this many half-points. */
 	public static java.util.function.Consumer<RPr> kern(int halfPts) {
 		return rpr -> {

@@ -36,10 +36,12 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Comments.Comment;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
@@ -87,7 +89,15 @@ public class Containerization {
 		List<Object> elementList = null;
 		
 		mainDocument = wmlPackage.getMainDocumentPart();
-		groupAdjacentBorders(mainDocument.getJaxbElement().getBody().getContent());
+		// borders and shading may come from the paragraph's style (Word's Title
+		// style has a bottom border); resolve them through the property resolver
+		PropertyResolver resolver = null;
+		try {
+			resolver = mainDocument.getPropertyResolver();
+		} catch (Exception e) {
+			log.warn("No property resolver; grouping direct borders only: " + e.getMessage());
+		}
+		groupAdjacentBorders(mainDocument.getJaxbElement().getBody().getContent(), resolver);
 
 		relPart = mainDocument.getRelationshipsPart();
 		relList = relPart.getRelationships().getRelationship();
@@ -117,23 +127,28 @@ public class Containerization {
 				}
 			}
 			if ((elementList != null) && (!elementList.isEmpty())) {
-				groupAdjacentBorders(elementList);
+				groupAdjacentBorders(elementList, resolver);
 			}
 		}
 	}
 	
 
 	protected static void groupAdjacentBorders(List<Object> content) {
-		
+		groupAdjacentBorders(content, null);
+	}
+
+	/** @param resolver to see borders and shading the paragraph style gives (null: direct w:pPr only)
+	 *  @since 17.0.5 */
+	protected static void groupAdjacentBorders(List<Object> content, PropertyResolver resolver) {
 		List<Object> groupedContent = null;
-		groupedContent = groupBodyContent(content);
+		groupedContent = groupBodyContent(content, resolver);
 		if (groupedContent != null) {
 			content.clear();
 			content.addAll(groupedContent);
 		}
 	}
 		
-	private static void groupTable(Tbl table) {
+	private static void groupTable(Tbl table, PropertyResolver resolver) {
 		
 		List<Object> cellElts = null;
 		Tr tr = null;
@@ -152,7 +167,7 @@ public class Containerization {
 						if (elemCe instanceof Tc) {
 							tc = (Tc)elemCe;
 							if (tc.getContent() != null) {
-								cellElts = groupBodyContent(tc.getContent());
+								cellElts = groupBodyContent(tc.getContent(), resolver);
 								if (cellElts != null) {
 									tc.getContent().clear();
 									tc.getContent().addAll(cellElts);
@@ -165,7 +180,36 @@ public class Containerization {
 		}
 	}
 
+	/**
+	 * The paragraph's borders and shading as Word sees them: from its style
+	 * chain (the default template's Title style has a bottom border) with the
+	 * direct w:pPr on top.  The effective pPr is built only when the style has
+	 * borders or shading, so ordinary paragraphs cost a cached lookup.
+	 *
+	 * @since 17.0.5
+	 */
+	private static PPr effectivePPr(P paragraph, PropertyResolver resolver) {
+		PPr direct = paragraph.getPPr();
+		if (resolver == null) return direct;
+		try {
+			PPr stylePPr = (direct == null || direct.getPStyle() == null || direct.getPStyle().getVal() == null)
+					? resolver.getEffectivePPr((PPr) null)
+					: resolver.getEffectivePPr(direct.getPStyle().getVal());
+			if (stylePPr == null || (stylePPr.getPBdr() == null && stylePPr.getShd() == null)) {
+				return direct;
+			}
+			return resolver.getEffectivePPr(direct);
+		} catch (Exception e) {
+			log.warn("Effective borders: " + e.getMessage());
+			return direct;
+		}
+	}
+
 	private static List<Object> groupBodyContent(List<Object> bodyElts) {
+		return groupBodyContent(bodyElts, null);
+	}
+
+	private static List<Object> groupBodyContent(List<Object> bodyElts, PropertyResolver resolver) {
 		
 		List<Object> resultElts = new ArrayList<Object>();
 		List<Object> paragraphElts = null;
@@ -194,11 +238,10 @@ public class Containerization {
 
 				currentBorders = null;
 				currentShading = null;
-				if (paragraph.getPPr() != null ) {
-					// TODO: use effective ppr properties! 
-					// ie take styles into account				
-					currentBorders = paragraph.getPPr().getPBdr();
-					currentShading = paragraph.getPPr().getShd();
+				PPr pPr = effectivePPr(paragraph, resolver);
+				if (pPr != null) {
+					currentBorders = pPr.getPBdr();
+					currentShading = pPr.getShd();
 				}
 
 				if ( bordersChanged(currentBorders, lastBorders )) {
@@ -231,7 +274,7 @@ public class Containerization {
 				}
 			}
 			else if (unwrapped instanceof Tbl) {
-				groupTable((Tbl)unwrapped);
+				groupTable((Tbl)unwrapped, resolver);
 			}
 			if (sdtShading!=null) {
 				sdtShading.getSdtContent().getContent().add(o);

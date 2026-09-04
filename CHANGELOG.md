@@ -122,6 +122,16 @@ the top.  line-exact-atleast within 0.1pt (was 0.75 median, 4.6 max).
 - without the jar nothing changes: the attributes are only written when its
 FopFactoryCustomizer reports the namespace (new extensionNamespace() on the SPI).
 
+Paragraph borders (PDF and HTML):
+- borders and shading that a paragraph gets from its style were not rendered at all:
+the containerization preprocess read only the paragraph's direct w:pPr.  Word's default
+Title style has a bottom border, so every Title was missing it.  The effective (style
+resolved) borders are used now, so styled paragraphs are wrapped and adjacent ones with
+the same borders join, as Word does.
+- a border's w:space (the gap between the text and the border) was ignored; it is
+now the padding on that side (measured: Word's Title, 4pt space + 1pt border, starts the
+next paragraph 5pt lower, and so does docx4j now).
+
 Tables (PDF and HTML) - geometry as Word lays it out (measured):
 - Word's default cell margins (0.08in left and right) now apply when neither the table
 nor its style sets them; cell text sat on the border and every column was 10.8pt too

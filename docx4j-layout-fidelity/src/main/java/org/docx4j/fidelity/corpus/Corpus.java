@@ -476,6 +476,19 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		PROBES.add(new Probe("spacing-char",
+				"character spacing (w:spacing): expanded 0.25, 1 and 3pt, condensed 0.5pt, and a control; does the expansion apply to spaces?", () -> {
+			Doc d = Doc.create(15);
+			String pairs = "AVAILABLE TAX WAYS To Yo Vo Wa Te Ty. Two Yachts, Toy Yaks, Wavy Tyres. ";
+			d.para("control, no spacing. " + pairs + prose(2)).after(160).add();
+			d.para().run("expanded 0.25pt (w:spacing 5). " + pairs + prose(2, 1), SERIF, 24, Doc.charSpacing(5)).after(160).add();
+			d.para().run("expanded 1pt (w:spacing 20). " + pairs + prose(2, 2), SERIF, 24, Doc.charSpacing(20)).after(160).add();
+			d.para().run("expanded 3pt (w:spacing 60). " + pairs + prose(2, 3), SERIF, 24, Doc.charSpacing(60)).after(160).add();
+			d.para().run("condensed 0.5pt (w:spacing -10). " + pairs + prose(2, 4), SERIF, 24, Doc.charSpacing(-10)).after(160).add();
+			d.para("control again. " + pairs + prose(2, 5)).after(160).add();
+			return d.pkg();
+		}));
+
 		PROBES.add(new Probe("image-inline",
 				"inline images: small in a line of text, and a wide one on its own", () -> {
 			Doc d = Doc.create(15);

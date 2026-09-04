@@ -489,7 +489,13 @@ public final class WordLayoutFixups {
 	/** The paragraph block this flow-level element stands for: itself, the block in a
 	 *  list item's body, or the block inside a bidi block-container; null for tables etc. */
 	private static Element paragraphBlock(Element el) {
-		if (isFo(el, "block")) return el.hasAttribute(HINT_PSTYLE) ? el : null;
+		if (isFo(el, "block")) {
+			if (el.hasAttribute(HINT_PSTYLE)) return el;
+			// a borders/shading container (Containerization) wraps its paragraphs in a
+			// plain block: the first paragraph inside stands for it
+			Element b = firstBlock(el);
+			return (b != null && b.hasAttribute(HINT_PSTYLE)) ? b : null;
+		}
 		if (isFo(el, "table")) return null;
 		if (isFo(el, "list-block")) {
 			for (Element body : descendants(el, "list-item-body")) {

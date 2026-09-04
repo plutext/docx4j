@@ -47,6 +47,17 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 		CSS_NAME__STYLE = CSS_NAME_BASE + "-style";
 		CSS_NAME__WIDTH = CSS_NAME_BASE + "-width";
 		CSS_NAME__COLOR = CSS_NAME_BASE + "-color";
+		PADDING_NAME = "padding-" + CSS_NAME_BASE.substring(CSS_NAME_BASE.indexOf('-') + 1);
+	}
+
+	/** padding-top/-bottom/-left/-right: w:space, the gap Word leaves between the
+	 *  text and a paragraph border (points).  Measured (CR-001, Title style: 4pt
+	 *  space, 1pt border: the next paragraph starts 5pt lower).  @since 17.0.5 */
+	protected String PADDING_NAME;
+
+	private String paddingPt(CTBorder border) {
+		if (border.getSpace()==null || border.getSpace().signum()<=0) return null;
+		return border.getSpace().toString() + "pt";
 	}
 	
 	public AbstractPBorder(CSSValue value, String css_name) {	
@@ -117,7 +128,8 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 			}
 		}
 		
-		return val + sz + color; 
+		String padding = paddingPt(border)==null ? "" : composeCss(PADDING_NAME, paddingPt(border));
+		return val + sz + color + padding; 
 	}
 
 	public float eighthsToMM(int eighths ) {		
@@ -173,6 +185,9 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 			}
 		}
 		
+		if (paddingPt(border)!=null) {
+			foElement.setAttribute(PADDING_NAME, paddingPt(border));
+		}
 	}
 
 	public abstract void set(PPr pPr);
