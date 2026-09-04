@@ -420,9 +420,78 @@ public final class Doc {
 			return this;
 		}
 
-		public Table autoWidth() {
+				public Table autoWidth() {
 			tblPr.setTblW(width(0, "auto"));
 			return this;
+		}
+
+		/** w:tblW of the given type: "dxa" (twips) or "pct" (fiftieths of a percent, 5000 = 100%). */
+		public Table tableWidth(int w, String type) {
+			tblPr.setTblW(width(w, type));
+			return this;
+		}
+
+		/** w:tblCellSpacing (twips): Word's separate-borders model. */
+		public Table cellSpacing(int twips) {
+			tblPr.setTblCellSpacing(width(twips, "dxa"));
+			return this;
+		}
+
+		/** A floating table (w:tblpPr) positioned relative to the margin, with text wrapping around it. */
+		public Table floating(int xTwips, int yTwips) {
+			org.docx4j.wml.CTTblPPr pp = F.createCTTblPPr();
+			pp.setHorzAnchor(org.docx4j.wml.STHAnchor.MARGIN);
+			pp.setVertAnchor(org.docx4j.wml.STVAnchor.TEXT);
+			pp.setTblpX(BigInteger.valueOf(xTwips));
+			pp.setTblpY(BigInteger.valueOf(yTwips));
+			pp.setLeftFromText(BigInteger.valueOf(180));
+			pp.setRightFromText(BigInteger.valueOf(180));
+			pp.setTopFromText(BigInteger.valueOf(0));
+			pp.setBottomFromText(BigInteger.valueOf(0));
+			tblPr.setTblpPr(pp);
+			return this;
+		}
+
+		/** A row from prepared cells (see {@link #cell}); optional height rule. */
+		public Table rowOf(Integer heightTwips, org.docx4j.wml.STHeightRule rule, Tc... cells) {
+			Tr tr = F.createTr();
+			if (heightTwips != null) {
+				org.docx4j.wml.TrPr trPr = F.createTrPr();
+				org.docx4j.wml.CTHeight h = F.createCTHeight();
+				h.setVal(BigInteger.valueOf(heightTwips));
+				if (rule != null) h.setHRule(rule);
+				trPr.getCnfStyleOrDivIdOrGridBefore().add(F.createCTTrPrBaseTrHeight(h));
+				tr.setTrPr(trPr);
+			}
+			for (Tc tc : cells) tr.getContent().add(tc);
+			tbl.getContent().add(tr);
+			return this;
+		}
+
+		/** A cell with one paragraph; span > 1 sets w:gridSpan; widthTwips null = auto. */
+		public Tc cell(String text, String font, int halfPts, int span, Integer widthTwips) {
+			Tc tc = F.createTc();
+			TcPr tcPr = F.createTcPr();
+			tcPr.setTcW(widthTwips == null ? width(0, "auto") : width(widthTwips, "dxa"));
+			if (span > 1) {
+				org.docx4j.wml.TcPrInner.GridSpan gs = F.createTcPrInnerGridSpan();
+				gs.setVal(BigInteger.valueOf(span));
+				tcPr.setGridSpan(gs);
+			}
+			tc.setTcPr(tcPr);
+			tc.getContent().add(plainParagraph(text, font, halfPts));
+			return tc;
+		}
+
+		/** A cell holding a nested table (plus the mandatory trailing paragraph). */
+		public Tc cellWith(Tbl nested, String after, String font, int halfPts) {
+			Tc tc = F.createTc();
+			TcPr tcPr = F.createTcPr();
+			tcPr.setTcW(width(0, "auto"));
+			tc.setTcPr(tcPr);
+			tc.getContent().add(nested);
+			tc.getContent().add(plainParagraph(after, font, halfPts));
+			return tc;
 		}
 
 		public Table indent(int twips) {

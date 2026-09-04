@@ -270,6 +270,96 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+				PROBES.add(new Probe("table-width",
+				"autofit with w:tblW 50% (pct), 5000 twips (dxa) and auto: same auto-width cells in each", () -> {
+			Doc d = Doc.create(15);
+			String[][] rows = { { "short", "medium length cell", prose(2) }, { "a", "b", "c" } };
+			for (String[] spec : new String[][] { { "2500", "pct" }, { "5000", "dxa" }, { "0", "auto" } }) {
+				d.para("tblW " + spec[0] + " " + spec[1] + ". " + prose(1)).after(240).add();
+				Doc.Table t = new Doc.Table(3000, 3000, 3000).tableWidth(Integer.parseInt(spec[0]), spec[1]);
+				for (String[] r : rows) t.row(SERIF, 24, true, r);
+				d.add(t.build());
+			}
+			d.para("after. " + prose(1, 1)).before(240).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("table-span",
+				"cells spanning columns (gridSpan) under autofit and under fixed layout", () -> {
+			Doc d = Doc.create(15);
+			d.para("autofit with spans. " + prose(1)).after(240).add();
+			Doc.Table t = new Doc.Table(3000, 3000, 3000).autoWidth();
+			t.rowOf(null, null, t.cell("spans two columns: " + prose(1, 2), SERIF, 24, 2, null), t.cell("third", SERIF, 24, 1, null));
+			t.rowOf(null, null, t.cell("one", SERIF, 24, 1, null), t.cell("two " + prose(1, 3), SERIF, 24, 1, null), t.cell("three", SERIF, 24, 1, null));
+			t.rowOf(null, null, t.cell("first", SERIF, 24, 1, null), t.cell("spans two: " + prose(1, 4), SERIF, 24, 2, null));
+			d.add(t.build());
+			d.para("fixed with spans. " + prose(1, 1)).before(240).after(240).add();
+			Doc.Table f = new Doc.Table(2000, 3000, 4000).fixedLayout();
+			f.rowOf(null, null, f.cell("spans two " + prose(1, 5), SERIF, 24, 2, 5000), f.cell("third " + prose(1, 6), SERIF, 24, 1, 4000));
+			f.rowOf(null, null, f.cell("one", SERIF, 24, 1, 2000), f.cell("two", SERIF, 24, 1, 3000), f.cell("three", SERIF, 24, 1, 4000));
+			d.add(f.build());
+			d.para("after. " + prose(1, 7)).before(240).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("table-nested",
+				"a fixed 2-column table nested in the second cell of an autofit table", () -> {
+			Doc d = Doc.create(15);
+			d.para("before. " + prose(1)).after(240).add();
+			Doc.Table inner = new Doc.Table(1500, 1500).fixedLayout();
+			inner.row(SERIF, 20, false, "in a", "in b").row(SERIF, 20, false, prose(1, 1), "x");
+			Doc.Table outer = new Doc.Table(3000, 3000, 3000).autoWidth();
+			outer.rowOf(null, null, outer.cell("outer left " + prose(1, 2), SERIF, 24, 1, null),
+					outer.cellWith(inner.build(), "after nested", SERIF, 24),
+					outer.cell("outer right", SERIF, 24, 1, null));
+			d.add(outer.build());
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("table-floating",
+				"a floating table (tblpPr, right of the margin, 1in down) with body text flowing beside it", () -> {
+			Doc d = Doc.create(15);
+			d.para("before. " + prose(1)).after(240).add();
+			Doc.Table t = new Doc.Table(2000, 2000).fixedLayout().floating(4500, 1440);
+			t.row(SERIF, 24, false, "float a", "float b").row(SERIF, 24, false, prose(1, 1), "y");
+			d.add(t.build());
+			for (int i = 0; i < 6; i++) {
+				d.para(prose(4, i + 2)).after(160).add();
+			}
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("table-cellspacing",
+				"tblCellSpacing 72 twips (separate borders) and default, same content", () -> {
+			Doc d = Doc.create(15);
+			d.para("cell spacing 72 twips. " + prose(1)).after(240).add();
+			d.add(new Doc.Table(3000, 3000).fixedLayout().cellSpacing(72)
+					.row(SERIF, 24, false, "spaced", "borders")
+					.row(SERIF, 24, false, prose(1, 1), "z").build());
+			d.para("no cell spacing. " + prose(1, 2)).before(240).after(240).add();
+			d.add(new Doc.Table(3000, 3000).fixedLayout()
+					.row(SERIF, 24, false, "collapsed", "borders")
+					.row(SERIF, 24, false, prose(1, 1), "z").build());
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("table-rowheight",
+				"trHeight atLeast 600 (bigger than one line), atLeast 100 (smaller), exact 600, exact 200 (smaller than the text)", () -> {
+			Doc d = Doc.create(15);
+			d.para("before. " + prose(1)).after(240).add();
+			Doc.Table t = new Doc.Table(4000, 4000).fixedLayout();
+			t.rowOf(600, org.docx4j.wml.STHeightRule.AT_LEAST, t.cell("atLeast 600", SERIF, 24, 1, 4000), t.cell("one line", SERIF, 24, 1, 4000));
+			t.rowOf(100, org.docx4j.wml.STHeightRule.AT_LEAST, t.cell("atLeast 100", SERIF, 24, 1, 4000), t.cell(prose(1, 1), SERIF, 24, 1, 4000));
+			t.rowOf(600, org.docx4j.wml.STHeightRule.EXACT, t.cell("exact 600", SERIF, 24, 1, 4000), t.cell("one line", SERIF, 24, 1, 4000));
+			t.rowOf(200, org.docx4j.wml.STHeightRule.EXACT, t.cell("exact 200 clips", SERIF, 24, 1, 4000), t.cell(prose(1, 2), SERIF, 24, 1, 4000));
+			t.rowOf(null, null, t.cell("no height", SERIF, 24, 1, 4000), t.cell("one line", SERIF, 24, 1, 4000));
+			d.add(t.build());
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		}));
+
 		// ---------------------------------------------------------- page furniture
 		PROBES.add(new Probe("page-header-footer",
 				"one-line header/footer in section 1; four-line header in section 2; body pushed down", () -> {
