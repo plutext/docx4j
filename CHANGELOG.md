@@ -122,6 +122,18 @@ the top.  line-exact-atleast within 0.1pt (was 0.75 median, 4.6 max).
 - without the jar nothing changes: the attributes are only written when its
 FopFactoryCustomizer reports the namespace (new extensionNamespace() on the SPI).
 
+PDF via FO - character spacing (w:spacing) no longer runs past the margin
+(docx4j-fop-word-layout):
+- FOP 2.11's complex-script text path (taken for every embedded OpenType font with
+GSUB/GPOS tables, i.e. all of docx4j's) leaves the letter spaces out of a word's width
+when breaking lines while still spacing every glyph when rendering, so expanded text
+overflowed the right margin (measured: 3pt spacing, 95pt over; Word's Title style at
+0.25pt, one word too many) and condensed text stopped short.  The line manager restores
+the count FOP's plain path uses.  Measured against Word 365 (spacing-char probe:
+0.25/1/3pt expanded, 0.5pt condensed): every line breaks as Word's bar one 0.3pt
+marginal case; Word adds the expansion after every character, spaces included, as FOP
+renders it.  Candidate for an upstream FOP report (GlyphMapping.processWordMapping).
+
 Paragraph borders (PDF and HTML):
 - borders and shading that a paragraph gets from its style were not rendered at all:
 the containerization preprocess read only the paragraph's direct w:pPr.  Word's default

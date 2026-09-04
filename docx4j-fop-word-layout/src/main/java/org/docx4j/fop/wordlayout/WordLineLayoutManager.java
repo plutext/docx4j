@@ -68,6 +68,7 @@ import org.apache.fop.layoutmgr.KnuthSequence;
 import org.apache.fop.layoutmgr.LayoutContext;
 import org.apache.fop.layoutmgr.LayoutManager;
 import org.apache.fop.layoutmgr.LeafPosition;
+import org.apache.fop.layoutmgr.inline.KnuthInlineBox;
 import org.apache.fop.layoutmgr.ListElement;
 import org.apache.fop.layoutmgr.NonLeafPosition;
 import org.apache.fop.layoutmgr.Position;
@@ -980,6 +981,69 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * Phase 1 of Knuth algorithm: Collect all inline Knuth elements before determining line breaks.
      * @param context the LayoutContext
      */
+    /**
+     * FOP 2.11's GlyphMapping.processWordMapping (the path taken for fonts with
+     * GSUB or GPOS tables, so every embedded OpenType font while complex-script
+     * features are on) never adds the letter spaces to a word's width, while the
+     * renderer still spaces every glyph (TextArea's letter-space adjust); so
+     * lines with letter-spacing overflow the margin (measured, CR-001 §6.6 item
+     * 16: 3pt spacing, 95pt over; 0.25pt, one word too many).  The plain path,
+     * processWordNoMapping, counts wordLength - 1 spaces plus one when a break
+     * opportunity that is not a space follows.  That count is applied here to
+     * each word box a text manager returned, the way its own path would have.
+     */
+    private void fixLetterSpaces(InlineLevelLayoutManager lm, List<KnuthSequence> seqs) {
+        if (seqs == null) return;
+        for (KnuthSequence seq : seqs) {
+            for (int i = 0; i < seq.size(); i++) {
+                Object o = seq.get(i);
+                if (!(o instanceof KnuthInlineBox)) continue;
+                KnuthInlineBox box = (KnuthInlineBox) o;
+                // the child is usually an fo:inline's manager, whose elements wrap the
+                // text manager's positions: unwrap to the text manager's leaf position
+                Position pos = box.getPosition();
+                Position leaf = pos;
+                while (leaf != null && !(leaf instanceof LeafPosition)) {
+                    leaf = leaf.getPosition();
+                }
+                if (leaf == null || !(leaf.getLM() instanceof org.apache.fop.layoutmgr.inline.TextLayoutManager)) continue;
+                org.apache.fop.layoutmgr.inline.TextLayoutManager tlm = (org.apache.fop.layoutmgr.inline.TextLayoutManager) leaf.getLM();
+                MinOptMax ls = LBP.letterSpaceIPD(tlm);
+                if (ls == null || (ls.getOpt() == 0 && ls.getStretch() == 0 && ls.getShrink() == 0)) continue;
+                List<org.apache.fop.fonts.GlyphMapping> mappings = LBP.mappings(tlm);
+                int idx = ((LeafPosition) leaf).getLeafPos();
+                if (idx < 0 || idx >= mappings.size()) continue;
+                org.apache.fop.fonts.GlyphMapping m = mappings.get(idx);
+                if (m.isSpace || m.letterSpaceCount != 0 || m.font == null
+                        || !(m.font.performsSubstitution() || m.font.performsPositioning())) continue;
+                int wordLength = m.getWordLength();
+                if (wordLength <= 0) continue;
+                org.apache.fop.fo.FOText foText = LBP.foText(tlm);
+                // processWordNoMapping's rule: the break character after the word counts
+                // as a letter space unless it is a space.  Measured against Word
+                // (spacing-char, 0.25/1/3pt expanded, 0.5pt condensed): every line
+                // breaks as Word's bar one 0.3pt-marginal case; counting a letter space
+                // after every character instead (Word's rendering) broke lines a word
+                // early throughout.
+                boolean breakOpp = m.breakOppAfter && m.endIndex < foText.length()
+                        && !Character.isWhitespace(foText.charAt(m.endIndex));
+                int spaces = wordLength - 1 + (breakOpp ? 1 : 0);
+                m.breakOppAfter = breakOpp;
+                m.letterSpaceCount = spaces;
+                m.areaIPD = m.areaIPD.plus(ls.mult(spaces));
+                boolean suppressible = breakOpp && !m.isHyphenated;
+                int width = ls.isStiff()
+                        ? (suppressible ? m.areaIPD.getOpt() - ls.getOpt() : m.areaIPD.getOpt())
+                        : m.areaIPD.getOpt() - spaces * ls.getOpt();
+                if (WordLineLayoutManager.log.isDebugEnabled()) {
+                    WordLineLayoutManager.log.debug("letter spaces restored: word " + m.startIndex + "-" + m.endIndex
+                            + " +" + spaces + " x " + ls.getOpt() + " -> box " + width);
+                }
+                seq.set(i, new KnuthInlineBox(width, box.getAlignmentContext(), pos, box.isAuxiliary()));
+            }
+        }
+    }
+
     private void collectInlineKnuthElements(LayoutContext context) {
         LayoutContext inlineLC = LayoutContext.copyOf(context);
 
@@ -994,6 +1058,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         InlineLevelLayoutManager curLM;
         while ((curLM = (InlineLevelLayoutManager) getChildLM()) != null) {
             List<KnuthSequence> inlineElements = curLM.getNextKnuthElements(inlineLC, effectiveAlignment);
+            fixLetterSpaces(curLM, inlineElements);
             if (inlineElements == null || inlineElements.size() == 0) {
                 /* curLM.getNextKnuthElements() returned null or an empty list;
                  * this can happen if there is nothing more to layout,

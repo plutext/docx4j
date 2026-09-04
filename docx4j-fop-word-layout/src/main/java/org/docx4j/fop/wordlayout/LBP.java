@@ -152,6 +152,47 @@ final class LBP {
 		}
 	}
 
+	// ---- TextLayoutManager.mappings / letterSpaceIPD / foText (private)
+
+	private static final Field TLM_MAPPINGS, TLM_LETTER_SPACE, TLM_FOTEXT;
+	static {
+		try {
+			TLM_MAPPINGS = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("mappings");
+			TLM_MAPPINGS.setAccessible(true);
+			TLM_LETTER_SPACE = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("letterSpaceIPD");
+			TLM_LETTER_SPACE.setAccessible(true);
+			TLM_FOTEXT = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("foText");
+			TLM_FOTEXT.setAccessible(true);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("FOP's TextLayoutManager has changed; docx4j-fop-word-layout needs updating", e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	static java.util.List<org.apache.fop.fonts.GlyphMapping> mappings(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		try {
+			return (java.util.List<org.apache.fop.fonts.GlyphMapping>) TLM_MAPPINGS.get(tlm);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	static org.apache.fop.traits.MinOptMax letterSpaceIPD(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		try {
+			return (org.apache.fop.traits.MinOptMax) TLM_LETTER_SPACE.get(tlm);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	static org.apache.fop.fo.FOText foText(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		try {
+			return (org.apache.fop.fo.FOText) TLM_FOTEXT.get(tlm);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	static int parIndex(LineBreakPosition p) { return i(PAR_INDEX, p); }
 	static int startIndex(LineBreakPosition p) { return i(START_INDEX, p); }
 	static int availableShrink(LineBreakPosition p) { return i(AVAILABLE_SHRINK, p); }
