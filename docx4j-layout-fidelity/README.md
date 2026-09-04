@@ -16,6 +16,8 @@ Pipeline:
    subsequence on line text), reports line-break and page-break parity and
    baseline/x deltas, rasterises both and counts differing ink pixels, and
    writes an HTML report with side-by-side pages and a red/blue overlay.
+5. `score` does 1-4 without the images over a large corpus of real documents,
+   writing a CSV scoreboard and a delta against a previous one (see below).
 
 ## Build and run
 
@@ -58,12 +60,82 @@ A stand-in reference for plumbing checks (never the target):
 soffice --headless --convert-to pdf --outdir target/goldens-lo target/corpus/*.docx
 ```
 
+## Scoring a real-document corpus
+
+`run` is for the 33 hand-built probes: it renders everything, stops at the first
+exception, and writes an HTML report with page images. `score` is for a corpus of
+hundreds of real documents, where some will fail and the question is not "what
+does this one document do" but "did this change help across the corpus".
+
+```bash
+CP="target/classes:target/lib/*"
+java -cp "$CP" org.docx4j.fidelity.Fidelity score <corpusDir> <refPdfDir> <outDir> [baseline.csv]
+# -Dfidelity.timeoutSeconds=120  per-document conversion timeout (default 120)
+# -Dfidelity.only=id,id          restricts the run to those documents
+```
+
+Every `<id>.docx` in `corpusDir` that has an `<id>.pdf` in `refPdfDir` (the Word
+PDF of the same basename) is rendered to `<outDir>/fop/<id>.pdf` (and `.fo`) and
+compared against it. Documents are done smallest first, so a run that is cut
+short has still covered the most documents. A document that throws is one `error`
+row and a document that hangs past the timeout is one `timeout` row; neither stops
+the run. No page images and no per-document HTML report are produced — at this
+scale the CSV is the report.
+
+Outputs, in `outDir`:
+
+- **`scoreboard.csv`** — one row per document, plus a final `TOTAL` row carrying
+  the aggregate (its numeric columns are a convenience; the whole aggregate is
+  also spelled out as text in that row's `firstDivergence` column, and reading a
+  scoreboard back recomputes the aggregate from the document rows).
+- **`scoreboard.txt`** — the aggregate, the delta if a baseline was given, then
+  one line per document, worst line parity first.
+
+Columns:
+
+| column | meaning |
+| --- | --- |
+| `id` | the docx basename |
+| `compatMode` | the leading number of the name (`12_en-AU_...` → Word compatibility mode 12), blank if the name does not start with one |
+| `sizeBytes` | size of the docx |
+| `status` | `ok`, `error` (threw), `timeout` (no result in time), `noref` (no Word PDF, not scored) |
+| `refPages` / `candPages` | page count, Word / docx4j |
+| `refLines` / `candLines` | text lines extracted from each PDF |
+| `lineParity` | reference lines that have an identical line in the candidate, 0-1 — the headline number |
+| `pageParity` | matched lines that are also on the same page |
+| `matched` | matched line count |
+| `medianDy` / `maxDy` | candidate minus reference baseline, in points, over lines matched on the same page |
+| `firstDivergence` | the first line- or page-break difference |
+| `error` | first line of the exception, for `error` / `timeout` rows |
+
+The aggregate is: documents scored / errors / timeouts / no-reference; documents
+with the same page count; lines matched over lines total; median and mean line
+parity; and documents at line parity >= 0.98.
+
+The loop for a layout change:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.Fidelity score corpus goldens target/score
+cp target/score/scoreboard.csv target/baseline.csv     # keep the "before"
+# ... make the layout change, rebuild docx4j-export-fo and this module ...
+java -cp "$CP" org.docx4j.fidelity.Fidelity score corpus goldens target/score target/baseline.csv
+```
+
+The second run prints the aggregate before and after side by side, then every
+document whose line parity moved by more than 0.02, or whose status or
+page-count equality changed — regressions (biggest drop) first, then
+improvements. Accept the change only if no aggregate figure falls and no
+document regresses beyond that noise floor; a change that lifts the mean while
+breaking a handful of documents needs those documents looked at individually
+(`run` with `-Dfidelity.only=<id>` gives the page images).
+
 ## JUnit
 
 `FidelityTest` generates and renders the corpus unconditionally, and compares
 against goldens when `-Ddocx4j.fidelity.golden=<dir>` (or the
 `DOCX4J_FIDELITY_GOLDEN` environment variable) is set. No tolerances fail the
-build yet.
+build yet. `ScoreboardTest` covers the `score` mode's CSV, aggregate and delta
+arithmetic on synthetic comparison results, so it needs no documents.
 
 ## Reading the report
 
