@@ -906,8 +906,8 @@ public class XsltFOFunctions {
 
 	/**
 	 * Word's text box and baseline for the block's lines, as hints for
-	 * WordLayoutFixups (which passes them to docx4j-fop-word-layout's line manager
-	 * when it is present, or drops them): for "auto" spacing the box is the font's
+	 * WordLayoutFixups (which passes them to org.docx4j.fop.wordlayout's line manager
+	 * when Word layout is on, or drops them): for "auto" spacing the box is the font's
 	 * single-spacing pitch and the extra leading goes below it, where Word drops it
 	 * at a page bottom; the baseline sits at ascent + external leading.  Exact and
 	 * atLeast spacing keep the whole line as the box, with Word's baseline in it.

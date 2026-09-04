@@ -26,23 +26,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Registers Word-style line breaking with every FopFactory docx4j builds.
- * Found by docx4j-export-fo through ServiceLoader (META-INF/services) when
- * this jar is on the classpath; nothing else is needed.  Turn it off with
- * docx4j property docx4j.convert.out.fo.wordLineBreaking=false.
+ * Registers Word-style layout (line breaking and line placement) with every
+ * FopFactory docx4j builds.  Part of docx4j-export-fo, found through
+ * ServiceLoader (META-INF/services), and on by default; nothing has to be
+ * added to the classpath.  Turn it off with the docx4j property
+ * docx4j.convert.out.fo.wordLayout=false, which restores plain FOP layout.
  */
 public class WordLayoutCustomizer implements FopFactoryCustomizer {
 
 	private static final Logger log = LoggerFactory.getLogger(WordLayoutCustomizer.class);
 
-	public static final String PROPERTY = "docx4j.convert.out.fo.wordLineBreaking";
+	public static final String PROPERTY = "docx4j.convert.out.fo.wordLayout";
 
 	/** How far the spaces of a justified line may be compressed to fit one more word,
 	 *  as a fraction of their natural width; docx4j property or system property
-	 *  docx4j.convert.out.fo.wordLineBreaking.maxSpaceShrink (default 0.24: measured against
+	 *  docx4j.convert.out.fo.wordLayout.maxSpaceShrink (default 0.24: measured against
 	 *  Word 365, the value at which the justified probe breaks 98% of its lines as Word does;
 	 *  0.20 gives 78%, 0.30 gives 74%). */
-	public static final String MAX_SPACE_SHRINK = "docx4j.convert.out.fo.wordLineBreaking.maxSpaceShrink";
+	public static final String MAX_SPACE_SHRINK = "docx4j.convert.out.fo.wordLayout.maxSpaceShrink";
 
 	public static final double DEFAULT_MAX_SPACE_SHRINK = 0.24;
 
@@ -58,7 +59,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	}
 
 	/** The namespace of the line-box attributes WordLineLayoutManager reads, when
-	 *  Word line breaking is on (otherwise docx4j leaves them out). */
+	 *  Word layout is on (otherwise docx4j leaves them out). */
 	@Override
 	public String extensionNamespace() {
 		return Docx4jProperties.getProperty(PROPERTY, true) ? WordLayoutElementMapping.URI : null;
@@ -67,10 +68,10 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	@Override
 	public void customize(FopFactoryBuilder builder, FOSettings settings) {
 		if (!Docx4jProperties.getProperty(PROPERTY, true)) {
-			log.debug("Word line breaking disabled by " + PROPERTY);
+			log.debug("Word layout disabled by " + PROPERTY);
 			return;
 		}
 		builder.setLayoutManagerMakerOverride(new WordLayoutManagerMaker());
-		log.debug("Word line breaking enabled");
+		log.debug("Word layout enabled");
 	}
 }

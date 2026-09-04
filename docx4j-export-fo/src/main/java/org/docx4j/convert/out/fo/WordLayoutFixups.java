@@ -230,12 +230,13 @@ public final class WordLayoutFixups {
 	private static final String XMLNS = "http://www.w3.org/2000/xmlns/";
 
 	/**
-	 * When docx4j-fop-word-layout is on the classpath (its FopFactoryCustomizer
-	 * names the namespace its ElementMapping registers), the line-box hints
-	 * become docx4j:line-box / docx4j:baseline attributes on the block, which
-	 * its line manager reads: each line is then Word's text box with the extra
-	 * leading as glue below it, dropped at the bottom of a page.  Without the
-	 * jar FOP would reject the attributes, so they are left out.
+	 * When Word layout is on (the default; org.docx4j.fop.wordlayout's
+	 * FopFactoryCustomizer names the namespace its ElementMapping registers),
+	 * the line-box hints become docx4j:line-box / docx4j:baseline attributes on
+	 * the block, which the Word line manager reads: each line is then Word's
+	 * text box with the extra leading as glue below it, dropped at the bottom of
+	 * a page.  With docx4j.convert.out.fo.wordLayout=false FOP would reject the
+	 * attributes, so they are left out.
 	 */
 	static void lineBoxAttributes(Document doc) {
 		String ns = extensionNamespace();

@@ -453,7 +453,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 				fopConfParser = new FopConfParser(is, defaultBaseURI, resourceResolver);
 			}
 			FopFactoryBuilder builder = fopConfParser.getFopFactoryBuilder();
-			// FopFactoryCustomizer services (e.g. docx4j-fop-word-layout's line breaking). @since 17.0.5
+			// FopFactoryCustomizer services (e.g. org.docx4j.fop.wordlayout's Word layout, on by default). @since 17.0.5
 			for (FopFactoryCustomizer customizer : java.util.ServiceLoader.load(FopFactoryCustomizer.class)) {
 				try {
 					customizer.customize(builder, settings);

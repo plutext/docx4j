@@ -1,9 +1,13 @@
-# docx4j-fop-word-layout
+# Word-style layout (org.docx4j.fop.wordlayout)
 
-Word-style line breaking for docx4j's PDF output via Apache FOP (Enterprise
-CR-001, Phase 5). Add the jar to the classpath; docx4j-export-fo finds it
-through `ServiceLoader` and installs it on every FopFactory it builds. Turn it
-off with the docx4j property `docx4j.convert.out.fo.wordLineBreaking=false`.
+Word-style line breaking and line placement for docx4j's PDF output via Apache
+FOP (Enterprise CR-001, Phase 5). The code is part of docx4j-export-fo, in the
+package `org.docx4j.fop.wordlayout` — there is no separate jar to add. It is on
+by default: docx4j-export-fo finds `WordLayoutCustomizer` through
+`ServiceLoader` (`META-INF/services`) and installs it on every FopFactory it
+builds. Turn it off with the docx4j property
+`docx4j.convert.out.fo.wordLayout=false`, which restores plain FOP layout (the
+`docx4j:` attributes below are then not written either).
 
 ## What it changes
 
@@ -16,7 +20,7 @@ differently, and every later line and page moves.
 For justified text Word also compresses the spaces of a line to pull one more
 word in, down to about three quarters of their natural width (measured from
 Word 365 output; glyphs keep their width). The limit is
-`docx4j.convert.out.fo.wordLineBreaking.maxSpaceShrink`, default 0.24, which is
+`docx4j.convert.out.fo.wordLayout.maxSpaceShrink`, default 0.24, which is
 the value at which the harness's justified probe breaks 98% of its lines as
 Word does.
 
@@ -27,7 +31,7 @@ line-break parity on ragged prose 72% -> 100%, justified prose 63% -> 98%; 14 of
 ## How
 
 FOP exposes no first-fit option and its line manager's breaking algorithm is a
-private inner class, so this jar carries a copy of FOP 2.11's
+private inner class, so this package carries a copy of FOP 2.11's
 `LineLayoutManager` (`WordLineLayoutManager`, Apache License 2.0) whose
 breaking loop is greedy, a `WordBlockLayoutManager` that creates it, and a
 `WordLayoutManagerMaker` that FOP is given through
@@ -36,7 +40,7 @@ private FOP members are reached by reflection (`LBP`: `LineBreakPosition`,
 `AlignmentContext`'s constructor and line-height, `InlineLayoutManager.font`);
 fop-core is an automatic module, so that needs no `--add-opens`.
 
-Since CR-001 §6.9 the jar also places lines as Word does. docx4j writes three
+Since CR-001 §6.9 these managers also place lines as Word does. docx4j writes three
 attributes on each paragraph's `fo:block` in the namespace
 `http://docx4j.org/fop/word-layout`, which `WordLayoutElementMapping` registers
 with FOP (through `META-INF/services/org.apache.fop.fo.ElementMapping`) so FOP
@@ -57,8 +61,8 @@ the break (the last line of a page keeps only its text box, as in Word).
 `WordFlowLayoutManager` moves a paragraph's last leading behind the break the
 flow adds after the block. `exact` clips the line to the box; `atLeast` puts a
 shortfall above the text. docx4j writes the attributes only when
-`WordLayoutCustomizer.extensionNamespace()` reports the namespace (Word line
-breaking on), because FOP rejects them without the mapping. `WordLeadingTest`
+`WordLayoutCustomizer.extensionNamespace()` reports the namespace (Word layout
+on), because FOP rejects them without the mapping. `WordLeadingTest`
 checks the page fit on a monospace font.
 
 The copy is tied to FOP 2.11 internals. When FOP is upgraded, re-derive it:

@@ -24,7 +24,7 @@ Pipeline:
 # Use `clean`: the XJC plugin only checks xsd/ROOT.xsd for staleness, so after a pull
 # that changed an imported schema (xsd/wml/wml.xsd etc.) an incremental build keeps
 # the old generated classes and docx4j-core fails with "cannot find symbol".
-mvn clean install -DskipTests -Dgpg.skip=true -pl docx4j-export-fo,docx4j-fop-word-layout,docx4j-documents4j-local,docx4j-JAXB-ReferenceImpl -am
+mvn clean install -DskipTests -Dgpg.skip=true -pl docx4j-export-fo,docx4j-documents4j-local,docx4j-JAXB-ReferenceImpl -am
 # then this module (not in the reactor, so build it from its directory);
 # packaging also copies the runtime dependencies to target/lib.
 # (No -o on a machine that has not built this module before: the dependency plugin

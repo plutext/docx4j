@@ -61,14 +61,11 @@
 					<include>**/*.xml</include>
 				</includes>
 			</resource>
-			<!-- 
+			<!-- META-INF/services (the Word layout managers' FopFactoryCustomizer
+			     and FOP ElementMapping) live here -->
 			<resource>
 				<directory>src/main/resources</directory>
-				<includes>
-					<include>docx4j.properties</include>
-				</includes>
 			</resource>
-			 -->
 			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
 				</excludes> </resource> -->
 		</resources>
@@ -104,7 +101,15 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
+		<!-- the org.docx4j.fop.wordlayout tests lay text out in a known font -->
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-liberation</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-export-fo-fonts-symbol</artifactId>

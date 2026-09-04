@@ -7,6 +7,15 @@ Version 17.0.5
 Changes in Version 17.0.5
 --------------------------
 
+PDF via XSL FO - layout now follows Word's rules by default:
+- line breaking, line placement, list labels, footnotes and kerning are laid out as Word
+lays them out, not as plain FOP does.  The line breaking and line placement are FOP layout
+managers, in docx4j-export-fo (package org.docx4j.fop.wordlayout, see its
+README-word-layout.md); nothing extra goes on the classpath.
+- docx4j.convert.out.fo.wordLayout=false turns all of it off and restores plain FOP layout.
+- the FopFactoryCustomizer SPI docx4j uses to install them stays available for an
+application's own FopFactory customisations.
+
 PDF via XSL FO - line height now matches Word:
 - line pitch was a percentage of the block's font size (12pt "single" came out at
 ~11.7pt where Word gives 13.8pt), so pages held 15-20% more lines than Word's and every
@@ -35,19 +44,19 @@ first in the next section, rendering as an empty line at the top of its first pa
 - new DocumentSettingsPart.getCompatibilityMode(); fixups can be disabled with
 docx4j.convert.out.fo.wordLayoutFixups=false.
 
-PDF via XSL FO - Word-style line breaking (new module docx4j-fop-word-layout):
+PDF via XSL FO - Word-style line breaking (org.docx4j.fop.wordlayout, in docx4j-export-fo):
 - Word breaks lines greedily (first fit); FOP's Knuth-Plass total-fit optimises the whole
 paragraph, so with identical fonts and widths about a quarter of ragged-right lines broke
-differently and every later line and page moved.  The new jar carries a copy of FOP 2.11's
-LineLayoutManager with a greedy breaking loop and installs it through FOP's
-LayoutManagerMaker override; docx4j-export-fo finds it via ServiceLoader (new
-FopFactoryCustomizer SPI), so adding the jar to the classpath is all that is needed.
+differently and every later line and page moved.  docx4j-export-fo now carries a copy of
+FOP 2.11's LineLayoutManager with a greedy breaking loop and installs it through FOP's
+LayoutManagerMaker override; it is found via ServiceLoader (new FopFactoryCustomizer SPI)
+and is on by default, so nothing has to be added to the classpath.
 Justified text: Word compresses a line's spaces (to about 3/4) to pull one more word in;
-reproduced with a configurable limit (docx4j.convert.out.fo.wordLineBreaking.maxSpaceShrink,
+reproduced with a configurable limit (docx4j.convert.out.fo.wordLayout.maxSpaceShrink,
 default 0.24, measured).  Measured against Word 365: ragged prose line parity 72% -> 100%,
 justified 63% -> 98%; 14 of 22 layout probes now match Word line for line.
-Off with docx4j.convert.out.fo.wordLineBreaking=false.  The copy is tied to FOP 2.11 and
-must be re-derived on FOP upgrades (its README says how).
+Off with docx4j.convert.out.fo.wordLayout=false.  The copy is tied to FOP 2.11 and
+must be re-derived on FOP upgrades (README-word-layout.md says how).
 
 PDF via XSL FO - footnotes, anchored pictures, superscripts, kerning (measured against
 Word 365, CR-001 Phase 4):
@@ -96,7 +105,7 @@ them.  The style id is kept now.
 - 20 of 28 layout probes now match Word line for line (footnotes 98%, anchored 86%: the
 misses are the both-sides wrap and a 0.4pt width case).  Harness: -Dfidelity.only=id,id.
 
-PDF via XSL FO - lines placed as Word places them (docx4j-fop-word-layout, CR-001 §6.9):
+PDF via XSL FO - lines placed as Word places them (org.docx4j.fop.wordlayout, CR-001 §6.9):
 - Word puts a line's extra leading (anything beyond the font's single-spacing pitch)
 below the text and drops it at the bottom of a page: the last line of a page fits if
 its text box does, and a page's first line starts with its ascent.  FOP centres the
@@ -104,7 +113,7 @@ leading, so with 1.5 or double spacing the last line moved to the next page (mea
 Word let 10.4pt of an 11.6pt leading hang below the margin) and every baseline sat
 half a leading too high or low.  Each paragraph block now carries Word's text box,
 baseline and spacing rule (docx4j:line-box, docx4j:baseline, docx4j:line-rule, in a
-namespace the jar's ElementMapping registers with FOP); the jar's line manager makes
+namespace the ElementMapping registers with FOP); the Word line manager makes
 each line that box with the leading as glue after the break possibility (dropped when
 the break is taken), and its flow manager moves a paragraph's last leading behind the
 break that follows it.  Baselines now match Word's to 0.1pt on every prose probe
@@ -119,11 +128,12 @@ picture is the picture's height with no descent (image-inline within 0.3pt, was 
 the line (measured 0.80 for Liberation Serif at 9, 12 and 24pt; the ratio gives 0.81);
 atLeast puts any shortfall above the text; a multiple below 1 shrinks the box from
 the top.  line-exact-atleast within 0.1pt (was 0.75 median, 4.6 max).
-- without the jar nothing changes: the attributes are only written when its
-FopFactoryCustomizer reports the namespace (new extensionNamespace() on the SPI).
+- with docx4j.convert.out.fo.wordLayout=false nothing changes: the attributes are only
+written when the FopFactoryCustomizer reports the namespace (new extensionNamespace()
+on the SPI).
 
 PDF via FO - character spacing (w:spacing) no longer runs past the margin
-(docx4j-fop-word-layout):
+(org.docx4j.fop.wordlayout):
 - FOP 2.11's complex-script text path (taken for every embedded OpenType font with
 GSUB/GPOS tables, i.e. all of docx4j's) leaves the letter spaces out of a word's width
 when breaking lines while still spacing every glyph when rendering, so expanded text
@@ -157,13 +167,13 @@ installation and its downloaded cloud fonts: Aptos, Grandview, Tenorite and the 
 keyed by the names documents use, "Calibri Light" as well as "Calibri") is now
 consulted by WordLineMetrics before the physical font's own, and
 the run font selector stamps the document font on each span (docx4j:font) for the
-jar's per-run line sizing.
+Word line manager's per-run line sizing.
 - a list item's first line is sized by its number or bullet too: Word raises the line
 by what the label's ascent exceeds the text's, without the auto multiple and without
 the label's descent (a Symbol bullet on Calibri 11pt makes the line 16.04pt, not 15.44;
 a Courier New "o", whose descent exceeds Calibri's, leaves it at 15.44; both measured).
 The label block gets the combined box and the body block the label's ascent
-(docx4j:label-ascent) for the jar's line manager; the jar's new
+(docx4j:label-ascent) for the Word line manager; the new
 WordListItemLayoutManager keeps the item's last leading discardable at the foot of a
 page (FOP's list item manager folds it into its boxes), and the flow manager drops the
 leading of the flow's last line for the same reason.
@@ -176,7 +186,7 @@ Both pathways.  A leader of fixed length no longer justifies the paragraph's las
 - a line break at the end of a paragraph gets the empty line Word gives it (both pathways).
 - Word does not break a line after a solidus: "http://schemas.openxmlformats.org/..." and
 "OpenOffice/jodconverter" go whole to the next line where UAX #14 lets FOP break after
-the "/"; the jar's line manager suppresses those break opportunities.
+the "/"; the Word line manager suppresses those break opportunities.
 - result: the same page count as Word (50, was 51), 86% of lines identical in text and
 position (was 73%), the first seven pages line for line; the 30 layout probes are
 unchanged (21 at 100%).

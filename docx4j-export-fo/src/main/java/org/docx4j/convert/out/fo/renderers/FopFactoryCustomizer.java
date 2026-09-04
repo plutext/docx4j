@@ -23,15 +23,16 @@ import org.docx4j.convert.out.FOSettings;
 
 /**
  * A hook into the FopFactoryBuilder docx4j prepares for each PDF export,
- * discovered through {@link java.util.ServiceLoader}.  docx4j-fop-word-layout
- * uses it to install Word-style line breaking; an application can register
- * its own to set FOP options docx4j does not expose.
+ * discovered through {@link java.util.ServiceLoader}.  docx4j's own
+ * org.docx4j.fop.wordlayout (in this jar) uses it to install Word-style
+ * layout; an application can register its own to set FOP options docx4j
+ * does not expose.
  *
  * @since 17.0.5
  */
 public interface FopFactoryCustomizer {
 
-	/** The namespace of the layout attributes docx4j-fop-word-layout's line manager
+	/** The namespace of the layout attributes org.docx4j.fop.wordlayout's line manager
 	 *  reads from fo:block (docx4j:line-box, docx4j:baseline); its ElementMapping
 	 *  registers it with FOP.  @since 17.0.5 */
 	String WORD_LAYOUT_NAMESPACE = "http://docx4j.org/fop/word-layout";

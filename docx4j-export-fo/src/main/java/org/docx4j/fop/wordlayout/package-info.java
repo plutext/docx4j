@@ -9,7 +9,7 @@
  * lines differently, and every later line and page moves.
  *
  * FOP exposes no first-fit option and its line manager's breaking algorithm
- * is a private inner class, so this jar carries a copy of FOP 2.11's
+ * is a private inner class, so this package carries a copy of FOP 2.11's
  * {@code LineLayoutManager} ({@link org.docx4j.fop.wordlayout.WordLineLayoutManager},
  * Apache License 2.0) whose breaking loop is greedy, a
  * {@link org.docx4j.fop.wordlayout.WordBlockLayoutManager} that creates it, and
@@ -18,8 +18,10 @@
  * is tied to FOP 2.11 internals and must be re-derived when FOP is upgraded;
  * the class comment says what was changed.
  *
- * Activation is automatic: docx4j-export-fo loads
- * {@link org.docx4j.fop.wordlayout.WordLayoutCustomizer} through ServiceLoader
- * when this jar is on the classpath.
+ * These classes are part of docx4j-export-fo (there is no separate jar) and
+ * are on by default: docx4j-export-fo loads
+ * {@link org.docx4j.fop.wordlayout.WordLayoutCustomizer} through ServiceLoader.
+ * docx4j.convert.out.fo.wordLayout=false restores plain FOP layout.
+ * See README-word-layout.md.
  */
 package org.docx4j.fop.wordlayout;

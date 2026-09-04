@@ -59,7 +59,7 @@ final class LBP {
 			SPACE_AFTER = field("spaceAfter");
 			BASELINE = field("baseline");
 		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's LineBreakPosition has changed; docx4j-fop-word-layout needs updating", e);
+			throw new IllegalStateException("FOP's LineBreakPosition has changed; org.docx4j.fop.wordlayout needs updating", e);
 		}
 	}
 
@@ -78,7 +78,7 @@ final class LBP {
 					org.apache.fop.fonts.Font.class, int.class, org.apache.fop.traits.WritingMode.class);
 			AC_CTOR.setAccessible(true);
 		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's AlignmentContext has changed; docx4j-fop-word-layout needs updating", e);
+			throw new IllegalStateException("FOP's AlignmentContext has changed; org.docx4j.fop.wordlayout needs updating", e);
 		}
 	}
 
@@ -128,7 +128,7 @@ final class LBP {
 			ILM_FONT = org.apache.fop.layoutmgr.inline.InlineLayoutManager.class.getDeclaredField("font");
 			ILM_FONT.setAccessible(true);
 		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's AlignmentContext/InlineLayoutManager have changed; docx4j-fop-word-layout needs updating", e);
+			throw new IllegalStateException("FOP's AlignmentContext/InlineLayoutManager have changed; org.docx4j.fop.wordlayout needs updating", e);
 		}
 	}
 
@@ -164,7 +164,7 @@ final class LBP {
 			TLM_FOTEXT = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("foText");
 			TLM_FOTEXT.setAccessible(true);
 		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's TextLayoutManager has changed; docx4j-fop-word-layout needs updating", e);
+			throw new IllegalStateException("FOP's TextLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
 		}
 	}
 

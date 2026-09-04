@@ -54,7 +54,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 			BODY_LIST = ListItemLayoutManager.class.getDeclaredField("bodyList");
 			BODY_LIST.setAccessible(true);
 		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's ListItemLayoutManager has changed; docx4j-fop-word-layout needs updating", e);
+			throw new IllegalStateException("FOP's ListItemLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
 		}
 	}
 

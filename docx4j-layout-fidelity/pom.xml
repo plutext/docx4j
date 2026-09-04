@@ -58,12 +58,9 @@
 			<artifactId>docx4j-export-fo</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- Word-style line breaking (CR-001 Phase 5); remove to measure without it -->
-		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-fop-word-layout</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+		<!-- Word-style line breaking and line placement (CR-001 Phase 5) is part of
+		     docx4j-export-fo and on by default; set
+		     docx4j.convert.out.fo.wordLayout=false to measure without it -->
 		<!-- a JAXB runtime, because the harness has runnable mains -->
 		<dependency>
 			<groupId>org.docx4j</groupId>

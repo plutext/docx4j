@@ -81,13 +81,8 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Word-style line breaking, so the PDF-rendering tests exercise it -->
-		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-fop-word-layout</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
+		<!-- Word-style line breaking and line placement is part of docx4j-export-fo
+		     and on by default, so the PDF-rendering tests exercise it -->
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>

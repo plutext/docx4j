@@ -27,11 +27,18 @@ module org.docx4j.export_fo {
 	exports org.docx4j.convert.out.pdf;
 	exports org.docx4j.convert.out.pdf.viaXSLFO;
 	exports org.docx4j.convert.out.XSLFO;
-	
+	exports org.docx4j.fop.wordlayout;
+
     // Resource folders must be open! See https://stackoverflow.com/questions/45166757/loading-classes-and-resources-in-java-9/45173837#45173837  
 		opens org.docx4j.convert.out.fo;
 	opens org.docx4j.convert.out.fo.renderers;
 
 	uses org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer;
-	
+
+	// Word-style line breaking and line placement (see README-word-layout.md)
+	provides org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer
+		with org.docx4j.fop.wordlayout.WordLayoutCustomizer;
+	provides org.apache.fop.fo.ElementMapping
+		with org.docx4j.fop.wordlayout.WordLayoutElementMapping;
+
 }
