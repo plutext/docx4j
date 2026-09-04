@@ -192,6 +192,15 @@ characters at 8pt wrap where Word's did not; line heights still follow Consolas'
 metrics (word-line-metrics.properties).  Getting Started guide: pages 11 and 12 now
 start as Word's do; the wider code widens its tables by 6%.
 
+w:keepLines was ignored (PDF and HTML):
+- "Keep lines together", which every built-in heading style sets, was never mapped, so a
+heading broken over two lines by a w:br could straddle a page (the Getting Started guide's
+"Selecting your insertion/editing point; / accessing JAXB nodes via XPath" at the foot of
+page 25).  New KeepLines paragraph property: keep-together.within-page="always" in FO,
+page-break-inside: avoid in CSS, and the reverse for CSS import.  Note that a paragraph
+without keepLines can still be split at a w:br by FOP where Word's widow control would
+not (the break is a nested block); see CR-001 §6.6.
+
 Tab leaders inside hyperlinks (PDF):
 - a w:tab inside a w:hyperlink (every entry of a Word table of contents) lost its
 paragraph's tab stops in the visitor pathway, so the dot leader became three spaces and

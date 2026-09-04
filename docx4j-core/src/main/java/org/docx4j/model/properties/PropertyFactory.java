@@ -24,6 +24,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Bidi;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
+import org.docx4j.model.properties.paragraph.KeepLines;
 import org.docx4j.model.properties.paragraph.KeepNext;
 import org.docx4j.model.properties.paragraph.LineSpacing;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -441,8 +442,8 @@ public class PropertyFactory {
 //			dest.setFramePr(pPr.getFramePr());
 		if (pPr.getJc() != null)
 			properties.add(new Justification(pPr.getJc()));
-//		if (pPr.getKeepLines() != null)
-//			dest.setKeepLines(pPr.getKeepLines());
+		if (pPr.getKeepLines() != null)
+			properties.add(new KeepLines(pPr.getKeepLines()));
 		if (pPr.getKeepNext() != null)
 			properties.add(new KeepNext(pPr.getKeepNext()));
 //		if (pPr.getKinsoku() != null)
@@ -634,6 +635,9 @@ public class PropertyFactory {
 			} else if (name.equals(KeepNext.CSS_NAME )) {
 				// page-break-after
 				return new KeepNext(value);
+			} else if (name.equals(KeepLines.CSS_NAME )) {
+				// page-break-inside
+				return new KeepLines(value);
 			} else if (name.equals(PageBreakBefore.CSS_NAME)) {
 				// page-break-before
 				return new PageBreakBefore(value);
