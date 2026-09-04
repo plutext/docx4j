@@ -453,6 +453,21 @@ public final class Corpus {
 			}
 			return d.pkg();
 		}));
+		PROBES.add(new Probe("footnote-space-after",
+				"paragraphs with 24pt space after ending against a footnote area (section 1) and against a plain page bottom (section 2, control): is the space after kept above the footnotes?", () -> {
+			Doc d = Doc.create(15);
+			for (int i = 0; i < 26; i++) {
+				Doc.Para p = d.para(prose(2, i)).after(480);
+				if (i % 4 == 0) p.run(d.footnoteRef("Note for paragraph " + i + ". " + prose(1, i), SERIF, 20));
+				p.add();
+			}
+			d.endSection("nextPage", 0);
+			for (int i = 0; i < 26; i++) {
+				d.para(prose(2, i + 1)).after(480).add();
+			}
+			d.finishFootnotes();
+			return d.pkg();
+		}));
 		PROBES.add(new Probe("page-landscape-margins",
 				"section 1 A4 portrait 1in margins; section 2 A4 landscape with 0.5in/1.5in/0.75in/2in margins; section 3 Letter portrait 0.75in", () -> {
 			Doc d = Doc.create(15);
