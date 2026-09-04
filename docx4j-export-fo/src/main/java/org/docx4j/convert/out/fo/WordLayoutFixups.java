@@ -119,9 +119,44 @@ public final class WordLayoutFixups {
 		applyContextualSpacing(doc);
 		applyAutoSpacingBetweenListItems(doc);
 		retainSpaceBeforeAtFlowStart(doc);
-		retainSpacingAtCellEdges(doc, compatibilityMode);
+				retainSpacingAtCellEdges(doc, compatibilityMode);
 		fixLists(doc);
+		clipExactRows(doc);
 		stripHints(doc);
+	}
+
+	/** "docx4j-row-exact" on a table-row (TrHeight): the row must be exactly that tall. */
+	public static final String HINT_ROW_EXACT = "docx4j-row-exact";
+
+	// ------------------------------------------------------------ 5. exact row heights
+
+	/**
+	 * FOP grows a row to its content whatever its height says; Word keeps an
+	 * "exact" row at its height and draws the overflow over the following rows.
+	 * Wrap each cell's content in a block-container of that height with
+	 * overflow="hidden": the overflow is clipped rather than drawn, but the row and
+	 * everything below it are where Word puts them.
+	 */
+	static void clipExactRows(Document doc) {
+		for (Element row : elements(doc, "table-row")) {
+			String h = row.getAttribute(HINT_ROW_EXACT);
+			row.removeAttribute(HINT_ROW_EXACT);
+			if (h == null || h.length() == 0) continue;
+			double heightPt = lengthPt(h);
+			if (heightPt <= 0) continue;
+			NodeList cells = row.getChildNodes();
+			for (int i = 0; i < cells.getLength(); i++) {
+				if (!(cells.item(i) instanceof Element) || !isFo((Element) cells.item(i), "table-cell")) continue;
+				Element cell = (Element) cells.item(i);
+				double inner = heightPt - lengthPt(cell.getAttribute("padding-top")) - lengthPt(cell.getAttribute("padding-bottom"))
+						- lengthPt(cell.getAttribute("border-top-width")) - lengthPt(cell.getAttribute("border-bottom-width"));
+				Element container = doc.createElementNS(FO_NS, "fo:block-container");
+				container.setAttribute("block-progression-dimension", org.docx4j.fonts.WordLineMetrics.format(Math.max(0.1, inner)));
+				container.setAttribute("overflow", "hidden");
+				while (cell.getFirstChild() != null) container.appendChild(cell.getFirstChild());
+				cell.appendChild(container);
+			}
+		}
 	}
 
 	/** Remove the hint attributes whether or not the rules ran (FOP must not see them). */

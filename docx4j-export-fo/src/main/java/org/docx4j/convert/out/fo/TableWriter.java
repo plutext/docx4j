@@ -101,11 +101,18 @@ public class TableWriter extends AbstractTableWriter {
 	    // borderConflictResolutionRequired in TableModel is correct, but xsl-fo only knows about a
 	    // cellSpacing (border-separation) on the table level. For this reason, cellSpacings on row-level
 	    // are ignored.
-		if (cellSpacing > 0) {
+				if (cellSpacing > 0) {
 			tableRoot.setAttribute(TABLE_BORDER_MODEL, "separate"); // this is the default in CSS
 			tableRoot.setAttribute("border-separation", 
 					//WW seems only to store cellSpacing/2 but displays and applies cellSpacing * 2
 					UnitsOfMeasurement.twipToBest(cellSpacing * 2));
+			// Word puts a full gap (2 x tblCellSpacing) between the table border and the
+			// outer cells, where the separate-border model puts half of one; the other
+			// half comes as padding on the table (measured, CR-001 table-cellspacing:
+			// Word's outer cell border sits 7.2pt inside the table border for 72 twips).
+			// The columns give it back (see applyColumnCustomAttributes) so the table
+			// keeps its grid width.  @since 17.0.5
+			tableRoot.setAttribute("padding", UnitsOfMeasurement.twipToBest(cellSpacing));
 		}
 		else {
 			tableRoot.setAttribute(TABLE_BORDER_MODEL, "collapse");
@@ -234,8 +241,18 @@ public class TableWriter extends AbstractTableWriter {
 
 	@Override
 	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
-        column.setAttribute("column-number", Integer.toString(columnIndex + 1));
+                column.setAttribute("column-number", Integer.toString(columnIndex + 1));
 		if (columnWidth > -1) {
+			int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
+					(table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
+					(table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null)) ?
+					table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW().intValue() : 0;
+			if (cellSpacing > 0) {
+				// Word: each column loses a whole gap and a half of the outer gaps (a 150pt
+				// column with 3.6pt spacing holds a 139.2pt cell); FOP's separate model
+				// takes one gap per column, so give up the extra half here.
+				columnWidth = Math.max(1, columnWidth - cellSpacing);
+			}
 	        column.setAttribute("column-width", UnitsOfMeasurement.twipToBest(columnWidth) );
 		}
 	}

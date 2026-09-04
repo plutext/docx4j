@@ -121,10 +121,18 @@ public class TrHeight extends AbstractTrProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 		
-		CTHeight ctHeight = (CTHeight)getObject();
+				CTHeight ctHeight = (CTHeight)getObject();
 		if ((ctHeight != null) && (ctHeight.getVal() != null)) {
 			foElement.setAttribute(FO_NAME, 
 					UnitsOfMeasurement.twipToBest(ctHeight.getVal().intValue()));
+			// FOP treats a row's height as a minimum.  Word's "exact" keeps the row at
+			// that height and lets taller content overflow (measured, CR-001
+			// table-rowheight).  The FO exporter's WordLayoutFixups clips the cell
+			// content to this height instead, so the rows after it sit where Word puts
+			// them.  Hint attribute, stripped there.  @since 17.0.5
+			if (ctHeight.getHRule() == STHeightRule.EXACT) {
+				foElement.setAttribute("docx4j-row-exact", UnitsOfMeasurement.twipToBest(ctHeight.getVal().intValue()));
+			}
 		}
 	}
 

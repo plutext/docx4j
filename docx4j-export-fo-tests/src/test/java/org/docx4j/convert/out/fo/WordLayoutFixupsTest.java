@@ -134,6 +134,19 @@ public class WordLayoutFixupsTest {
 		assertTrue(c2, c2.contains("space-after=\"0pt\"") && c2.contains("space-before=\"14pt\""));
 	}
 
+		@Test
+	public void exactRowsClipTheirCells() {
+		String in = flow("<fo:table><fo:table-body>"
+				+ "<fo:table-row height=\"10pt\" docx4j-row-exact=\"10pt\"><fo:table-cell padding-top=\"1pt\"><fo:block>a</fo:block><fo:block>b</fo:block></fo:table-cell></fo:table-row>"
+				+ "<fo:table-row height=\"30pt\"><fo:table-cell><fo:block>c</fo:block></fo:table-cell></fo:table-row>"
+				+ "</fo:table-body></fo:table>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertFalse(out.contains("docx4j-row-exact"));
+		assertEquals("only the exact row is wrapped", 1, count(out, "<fo:block-container"));
+		assertTrue(out.contains("block-progression-dimension=\"9pt\"") && out.contains("overflow=\"hidden\""));
+		assertTrue("both blocks inside the container", out.indexOf("<fo:block-container") < out.indexOf(">a<") && out.indexOf(">b<") < out.indexOf("</fo:block-container>"));
+	}
+
 	@Test
 	public void zeroSpaceNeedsNoRetain() {
 		String in = flow("<fo:block space-before=\"0in\">one</fo:block>");

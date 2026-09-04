@@ -46,6 +46,18 @@ used w:tblGrid, which Word honours only for fixed layout or when every cell has 
 preferred width.  New org.docx4j.model.table.AutofitLayout and org.docx4j.fonts.TextMeasurer
 (glyph widths from the font FOP will use); the FO table writer measures each cell's
 converted content.  Measured against Word: 34.9 / 65.9pt for columns Word gave 34.3 / 65.5.
+- autofit with column-spanning cells: a spanning cell widens the columns it spans only
+when their sum falls short of its need (Word kept 31 / 385 / 30pt outer columns under
+two 2-column spans; docx4j had split the span's width evenly).  w:tblW pct and dxa,
+and nested tables, measured right without change.
+- w:tblCellSpacing: Word puts a full gap between the table border and the outer cells
+and each column gives up a whole gap plus half; FO's separate-border model puts half a
+gap at the edges.  Padding on the fo:table and narrower columns reproduce Word's
+geometry (cell text 3.6pt further in for 72 twips spacing, table width unchanged).
+- w:trHeight "exact" rows: FOP treated the height as a minimum and grew the row to its
+content; Word keeps the row and overflows the text over the next rows.  The cell
+content is now clipped to the exact height (an fo:block-container with
+overflow="hidden"), so the rows below sit where Word puts them.
 
 Math:
 - tracked changes inside equations no longer lose content (issue 348, open since 2019):

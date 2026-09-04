@@ -354,7 +354,14 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			java.util.Arrays.fill(pref, -1);
 			double[] min = new double[cols], max = new double[cols];
 			boolean anyAuto = false;
-			int marginTwips = cellMarginsTwips(tblPr);
+						int marginTwips = cellMarginsTwips(tblPr);
+			// Pass 1: single-column cells set the columns' minima and maxima.
+			// Pass 2: a spanning cell only widens the columns it spans when their sum
+			// falls short of its own need, and then in proportion to their flexibility
+			// (measured: a 3-column autofit table with two 2-column spanning cells kept
+			// its narrow outer columns at the width of their one-word cells, 31 / 385 /
+			// 30pt, exactly as the classic algorithm gives).
+			java.util.List<Object[]> spanning = new java.util.ArrayList<>();
 			for (TableModelRow row : table.getRows()) {
 				for (int c = 0; c < row.size() && c < cols; c++) {
 					TableModelCell cell = row.get(c);
@@ -363,18 +370,26 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					org.docx4j.wml.TblWidth tcW = cell.getTcPr() == null ? null : cell.getTcPr().getTcW();
 					boolean hasPref = tcW != null && tcW.getW() != null && tcW.getW().intValue() > 0
 							&& (tcW.getType() == null || "dxa".equals(tcW.getType()));
-					if (span == 1) {
-						if (hasPref) pref[c] = Math.max(pref[c], tcW.getW().intValue());
-						else anyAuto = true;
-					}
 					double[] mm = measureCellContent(context, (AbstractTableWriterModelCell) cell);
 					if (mm == null) return null; // cannot measure: keep the grid
 					double mn = mm[0] * 20 + marginTwips, mx = mm[1] * 20 + marginTwips;
-					for (int k = c; k < c + span && k < cols; k++) {
-						min[k] = Math.max(min[k], mn / span);
-						max[k] = Math.max(max[k], mx / span);
+					if (span == 1) {
+						if (hasPref) pref[c] = Math.max(pref[c], tcW.getW().intValue());
+						else anyAuto = true;
+						min[c] = Math.max(min[c], mn);
+						max[c] = Math.max(max[c], mx);
+					} else {
+						spanning.add(new Object[] { c, span, mn, mx });
 					}
 				}
+			}
+			for (Object[] sp : spanning) {
+				int c = (Integer) sp[0], span = (Integer) sp[1];
+				int end = Math.min(cols, c + span);
+				double need = (Double) sp[2], needMax = (Double) sp[3];
+				spreadShortfall(min, c, end, need, max);
+				spreadShortfall(max, c, end, needMax, max);
+				for (int k = c; k < end; k++) max[k] = Math.max(max[k], min[k]);
 			}
 			if (!anyAuto) return null; // every column has a preferred width: the grid is what Word uses
 			int available = availableWidthTwips(context, tblPr);
@@ -388,6 +403,22 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		} catch (Exception e) {
 			log.warn("Autofit skipped: " + e.getMessage(), e);
 			return null;
+		}
+	}
+
+		/** Raise the columns [from, to) so that they sum to at least need, sharing the shortfall
+	 *  in proportion to (max - current), or evenly when there is no flexibility. */
+	private static void spreadShortfall(double[] widths, int from, int to, double need, double[] max) {
+		double sum = 0, flex = 0;
+		for (int k = from; k < to; k++) {
+			sum += widths[k];
+			flex += Math.max(0, max[k] - widths[k]);
+		}
+		double shortfall = need - sum;
+		if (shortfall <= 0) return;
+		for (int k = from; k < to; k++) {
+			double share = flex > 0 ? shortfall * Math.max(0, max[k] - widths[k]) / flex : shortfall / (to - from);
+			widths[k] += share;
 		}
 	}
 
