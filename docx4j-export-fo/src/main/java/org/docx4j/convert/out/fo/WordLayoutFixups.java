@@ -116,6 +116,7 @@ public final class WordLayoutFixups {
 
 	public static void apply(Document doc, int compatibilityMode) {
 		disregardBaselineShifts(doc);
+		listLabelLines(doc);
 		lineBoxAttributes(doc);
 		anchorImages(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
@@ -150,6 +151,81 @@ public final class WordLayoutFixups {
 	public static final String HINT_LINE_BOX = "docx4j-linebox";
 	public static final String HINT_BASELINE = "docx4j-baseline";
 	public static final String HINT_LINE_RULE = "docx4j-linerule";
+	/** on a list item's first paragraph block: the label's natural ascent, which
+	 *  joins the runs of the first line (WordLineLayoutManager) */
+	public static final String HINT_LABEL_ASCENT = "docx4j-label-ascent";
+
+	// ------------------------------------------------------------ 0a. list labels
+
+	/**
+	 * Word sizes a list item's first line from the number or bullet as well as
+	 * the text, but only by the label's ascent, and without the auto multiple:
+	 * a Symbol bullet on Calibri 11pt makes the line 16.04pt, not 15.44 (Symbol's
+	 * ascent exceeds Calibri's by 0.59pt), while a Courier New "o" bullet, whose
+	 * descent exceeds Calibri's, leaves it at 15.45 (both measured, CR-001 §6.10).  In FO the label is a
+	 * separate block, so the label block is given the combined box and baseline
+	 * (its height and baseline then match the body's first line) and the body
+	 * block the label's natural ascent for the line manager to fold into its
+	 * first line.
+	 */
+	static void listLabelLines(Document doc) {
+		for (Element item : elements(doc, "list-item")) {
+			Element labelEl = firstChildElement(item, "list-item-label");
+			Element bodyEl = firstChildElement(item, "list-item-body");
+			if (labelEl == null || bodyEl == null) continue;
+			Element label = firstChildElement(labelEl, "block");
+			if (label == null) continue;
+			Element body = null;
+			for (Element b : descendants(bodyEl, "block")) {
+				if (b.getAttribute(HINT_LINE_BOX).length() > 0) { body = b; break; }
+			}
+			if (body == null) continue;
+			double box = lengthPt(body.getAttribute(HINT_LINE_BOX));
+			double base = lengthPt(body.getAttribute(HINT_BASELINE));
+			double bodyLh = lengthPt(body.getAttribute("line-height"));
+			if (box <= 0 || base <= 0) continue;
+			String rule = body.getAttribute(HINT_LINE_RULE);
+			if ("exact".equals(rule)) {
+				label.setAttribute(HINT_LINE_BOX, body.getAttribute(HINT_LINE_BOX));
+				label.setAttribute(HINT_BASELINE, body.getAttribute(HINT_BASELINE));
+				label.setAttribute(HINT_LINE_RULE, rule);
+				if (bodyLh > 0) label.setAttribute("line-height", body.getAttribute("line-height"));
+				continue;
+			}
+			double size = 0;
+			for (Element e = label; e != null && size <= 0; e = e.getParentNode() instanceof Element ? (Element) e.getParentNode() : null) {
+				size = lengthPt(e.getAttribute("font-size"));
+			}
+			String family = label.getAttribute("font-family");
+			String docFont = label.getAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
+			if (size <= 0 || (family.length() == 0 && docFont.length() == 0)) continue;
+			org.docx4j.fonts.WordLineMetrics.Metrics m = org.docx4j.fonts.WordLineMetrics.get(
+					docFont.length() == 0 ? null : docFont,
+					family.length() == 0 ? null : org.docx4j.fonts.PhysicalFonts.get(family));
+			if (m.fallback) continue;
+			double labelAscent = (m.winAscent + m.externalLeading) * size;
+			double a = Math.max(labelAscent, base);
+			double d = box - base;
+			label.setAttribute(HINT_LINE_BOX, pt(a + d));
+			label.setAttribute(HINT_BASELINE, pt(a));
+			if (rule.length() > 0) label.setAttribute(HINT_LINE_RULE, rule);
+			if ("atLeast".equals(rule)) {
+				if (bodyLh > 0) label.setAttribute("line-height", body.getAttribute("line-height"));
+			} else if (bodyLh > 0) {
+				// the text line's leading under the paragraph's auto multiple; the label's
+				// excess ascent is not multiplied (16.04 = 15.44 + 0.59 for the Symbol bullet)
+				label.setAttribute("line-height", pt(a + d + (bodyLh - box)));
+			}
+			body.setAttribute(HINT_LABEL_ASCENT, pt(labelAscent));
+		}
+	}
+
+	private static Element firstChildElement(Element parent, String localName) {
+		for (Node c = parent.getFirstChild(); c != null; c = c.getNextSibling()) {
+			if (c instanceof Element && localName.equals(c.getLocalName()) && FO_NS.equals(c.getNamespaceURI())) return (Element) c;
+		}
+		return null;
+	}
 
 	private static final String XMLNS = "http://www.w3.org/2000/xmlns/";
 
@@ -164,13 +240,27 @@ public final class WordLayoutFixups {
 	static void lineBoxAttributes(Document doc) {
 		String ns = extensionNamespace();
 		boolean declared = false;
+		// the runs' document fonts (RunFontSelector.HINT_FONT), for the line manager's per-run metrics
+		for (Element span : elements(doc, "inline")) {
+			String font = span.getAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
+			if (font.length() == 0) continue;
+			span.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
+			if (ns == null) continue;
+			if (!declared) {
+				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+			}
+			span.setAttributeNS(ns, "docx4j:font", font);
+		}
 		for (Element block : elements(doc, "block")) {
 			String box = block.getAttribute(HINT_LINE_BOX);
 			String baseline = block.getAttribute(HINT_BASELINE);
 			String rule = block.getAttribute(HINT_LINE_RULE);
+			String labelAscent = block.getAttribute(HINT_LABEL_ASCENT);
 			block.removeAttribute(HINT_LINE_BOX);
 			block.removeAttribute(HINT_BASELINE);
 			block.removeAttribute(HINT_LINE_RULE);
+			block.removeAttribute(HINT_LABEL_ASCENT);
 			if (ns == null || box.length() == 0) continue;
 			if (!declared) {
 				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
@@ -179,6 +269,7 @@ public final class WordLayoutFixups {
 			block.setAttributeNS(ns, "docx4j:line-box", box.endsWith("pt") ? box : box + "pt");
 			if (baseline.length() > 0) block.setAttributeNS(ns, "docx4j:baseline", baseline.endsWith("pt") ? baseline : baseline + "pt");
 			if (rule.length() > 0) block.setAttributeNS(ns, "docx4j:line-rule", rule);
+			if (labelAscent.length() > 0) block.setAttributeNS(ns, "docx4j:label-ascent", labelAscent);
 		}
 	}
 
@@ -380,9 +471,15 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_LIST);
 			block.removeAttribute(HINT_LINE_BOX);
 			block.removeAttribute(HINT_BASELINE);
+			block.removeAttribute(HINT_LINE_RULE);
+			block.removeAttribute(HINT_LABEL_ASCENT);
+			block.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
 		}
 		for (Element g : elements(doc, "external-graphic")) {
 			for (String hint : ANCHOR_HINTS) g.removeAttribute(hint);
+		}
+		for (Element span : elements(doc, "inline")) {
+			span.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
 		}
 	}
 

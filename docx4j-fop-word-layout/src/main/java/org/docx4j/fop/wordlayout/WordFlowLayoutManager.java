@@ -69,10 +69,14 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 			if (!(el instanceof LeadingGlue)) continue;
 			int glueIndex = it.previousIndex();
 			int target = -1;
+			boolean boxFollows = false;
 			for (int i = glueIndex + 1; i < elements.size(); i++) {
 				ListElement e = elements.get(i);
 				if (e instanceof KnuthElement && ((KnuthElement) e).isBox()
-						&& !(((KnuthElement) e).isAuxiliary() && ((KnuthElement) e).getWidth() == 0)) break;
+						&& !(((KnuthElement) e).isAuxiliary() && ((KnuthElement) e).getWidth() == 0)) {
+					boxFollows = true;
+					break;
+				}
 				if (e instanceof KnuthPenalty && ((KnuthPenalty) e).getPenalty() < KnuthElement.INFINITE) {
 					target = i;
 					break;
@@ -82,6 +86,11 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 				elements.remove(glueIndex);
 				elements.add(target, el); // target shifted down by one: now right after the penalty
 				it = elements.listIterator(target + 1);
+			} else if (target < 0 && !boxFollows) {
+				// the flow's last line: its leading would count towards the page before the
+				// forced break the page breaker appends, where Word drops it (a page whose
+				// text fits is not broken for the leading below its last line)
+				it.remove();
 			}
 		}
 	}

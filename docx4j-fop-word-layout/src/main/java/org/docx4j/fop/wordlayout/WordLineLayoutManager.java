@@ -704,13 +704,20 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     int pitch = LBP.lineHeight(ac);
                     if (pitch <= 0 || pitch == lineHeight) {
                         pitch = (int) Math.round(h * (double) wordLineBox / (lead + follow));
+                    } else if (wordLineRule == RULE_AUTO && wordLineBox > 0 && lineHeight > wordLineBox) {
+                        // the span's pitch carries the paragraph's auto multiple, applied
+                        // once below to the whole line: take the run's natural pitch
+                        pitch = (int) Math.round(pitch * (double) wordLineBox / lineHeight);
                     }
                     // the run font's own ascent share when it can be read, else the block's
                     double r = ratio;
                     org.apache.fop.fonts.Font f = LBP.inlineFont(element.getLayoutManager());
                     if (f != null && f.getFontMetrics() != null) {
                         org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(f.getFontMetrics().getFullName());
-                        org.docx4j.fonts.WordLineMetrics.Metrics m = pf == null ? null : org.docx4j.fonts.WordLineMetrics.get(pf);
+                        // the span's docx4j:font names the document font a substitute renders
+                        String docFont = foreignAttribute(element.getLayoutManager().getFObj(), "font");
+                        org.docx4j.fonts.WordLineMetrics.Metrics m = (pf == null && docFont == null) ? null
+                                : org.docx4j.fonts.WordLineMetrics.get(docFont, pf);
                         if (m != null && !m.fallback && m.lineHeightFactor() > 0) {
                             r = (m.winAscent + m.externalLeading) / m.lineHeightFactor();
                         }
@@ -729,6 +736,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 ascent = blockAscent;
                 descent = blockDescent;
             }
+            // the list label shares the item's first line: Word adds what its ascent
+            // exceeds the text's by, and does not multiply that by the auto factor
+            // (a Symbol bullet on Calibri 11pt at 1.15: 16.04 = 15.44 + 0.59, not 16.11)
+            int labelExtra = 0;
+            if (labelAscent > ascent && wordLineRule != RULE_EXACT && knuthParagraphs.indexOf(par) == 0
+                    && firstElementIndex <= ((Paragraph) par).ignoreAtStart) {
+                labelExtra = labelAscent - ascent;
+            }
             if (WordLineLayoutManager.log.isDebugEnabled()) {
                 WordLineLayoutManager.log.debug("wordLine: box=" + wordLineBox + " baseline=" + wordBaseline + " lineHeight=" + lineHeight
                         + " rule=" + wordLineRule + " -> ascent=" + ascent + " descent=" + descent);
@@ -740,6 +755,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     baseline = wordBaseline > 0 ? wordBaseline : lead;
                     break;
                 case RULE_AT_LEAST:
+                    ascent += labelExtra;
                     box = Math.max(ascent + descent, lineHeight);
                     baseline = ascent + Math.max(0, lineHeight - (ascent + descent));
                     break;
@@ -750,6 +766,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         double factor = (double) lineHeight / wordLineBox;
                         leading = (int) Math.round(box * factor) - box;
                     }
+                    box += labelExtra;
+                    baseline += labelExtra;
             }
             return new int[] { box, leading, baseline };
         }
@@ -826,7 +844,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
         wordBaseline = foreignLength(block, WordLayoutElementMapping.BASELINE);
         String rule = foreignAttribute(block, WordLayoutElementMapping.LINE_RULE);
         wordLineRule = "exact".equals(rule) ? RULE_EXACT : "atLeast".equals(rule) ? RULE_AT_LEAST : RULE_AUTO;
+        labelAscent = foreignLength(block, WordLayoutElementMapping.LABEL_ASCENT);
     }
+
+    /** a list label's natural ascent (millipoints), on the item's first line; Word
+     *  counts the label's ascent, not its descent (WordLayoutFixups.listLabelLines) */
+    private final int labelAscent;
 
     private static final int RULE_AUTO = 0, RULE_EXACT = 1, RULE_AT_LEAST = 2;
     private final int wordLineRule;
@@ -842,7 +865,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private final int wordLineBox;
     private final int wordBaseline;
 
-    private static String foreignAttribute(Block block, String localName) {
+    private static String foreignAttribute(org.apache.fop.fo.FObj block, String localName) {
+        if (block == null) return null;
         java.util.Map<?, ?> attrs = block.getForeignAttributes();
         if (attrs == null) return null;
         for (java.util.Map.Entry<?, ?> e : attrs.entrySet()) {
@@ -1044,6 +1068,49 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
     }
 
+    /**
+     * Word does not break a line after a solidus.  Measured on the Getting
+     * Started guide (CR-001 §6.10): "http://schemas.openxmlformats.org/..." and
+     * "OpenOffice/jodconverter" go whole to the next line where UAX #14, which
+     * FOP's text managers follow, allows a break after the "/".  Those break
+     * opportunities are made infinite penalties here.
+     */
+    private void suppressSolidusBreaks(List<KnuthSequence> seqs) {
+        if (seqs == null) return;
+        for (KnuthSequence seq : seqs) {
+            for (int i = 1; i < seq.size(); i++) {
+                Object o = seq.get(i);
+                if (!(o instanceof KnuthPenalty)) continue;
+                KnuthPenalty p = (KnuthPenalty) o;
+                if (p.getPenalty() >= KnuthElement.INFINITE || p.isForcedBreak()) continue;
+                // back to the word box the opportunity follows: a text manager puts
+                // "box, aux penalty, glue, penalty, glue" for a break after a character
+                int j = i - 1;
+                while (j > 0 && (seq.get(j) instanceof KnuthPenalty
+                        || (seq.get(j) instanceof KnuthGlue && ((KnuthGlue) seq.get(j)).getWidth() == 0)
+                        || (seq.get(j) instanceof KnuthInlineBox && ((KnuthInlineBox) seq.get(j)).isAuxiliary()
+                            && ((KnuthInlineBox) seq.get(j)).getWidth() == 0))) {
+                    j--;
+                }
+                Object before = seq.get(j);
+                if (!(before instanceof KnuthInlineBox)) continue;
+                Position leaf = ((KnuthInlineBox) before).getPosition();
+                while (leaf != null && !(leaf instanceof LeafPosition)) {
+                    leaf = leaf.getPosition();
+                }
+                if (leaf == null || !(leaf.getLM() instanceof org.apache.fop.layoutmgr.inline.TextLayoutManager)) continue;
+                org.apache.fop.layoutmgr.inline.TextLayoutManager tlm = (org.apache.fop.layoutmgr.inline.TextLayoutManager) leaf.getLM();
+                List<org.apache.fop.fonts.GlyphMapping> mappings = LBP.mappings(tlm);
+                int idx = ((LeafPosition) leaf).getLeafPos();
+                if (idx < 0 || idx >= mappings.size()) continue;
+                org.apache.fop.fonts.GlyphMapping m = mappings.get(idx);
+                org.apache.fop.fo.FOText foText = LBP.foText(tlm);
+                if (m.endIndex <= 0 || m.endIndex > foText.length() || foText.charAt(m.endIndex - 1) != '/') continue;
+                seq.set(i, new KnuthPenalty(p.getWidth(), KnuthElement.INFINITE, false, p.getPosition(), p.isAuxiliary()));
+            }
+        }
+    }
+
     private void collectInlineKnuthElements(LayoutContext context) {
         LayoutContext inlineLC = LayoutContext.copyOf(context);
 
@@ -1059,6 +1126,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         while ((curLM = (InlineLevelLayoutManager) getChildLM()) != null) {
             List<KnuthSequence> inlineElements = curLM.getNextKnuthElements(inlineLC, effectiveAlignment);
             fixLetterSpaces(curLM, inlineElements);
+            suppressSolidusBreaks(inlineElements);
             if (inlineElements == null || inlineElements.size() == 0) {
                 /* curLM.getNextKnuthElements() returned null or an empty list;
                  * this can happen if there is nothing more to layout,

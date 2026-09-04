@@ -53,6 +53,8 @@ public class WordLayoutElementMapping extends ElementMapping {
 	public static final String BASELINE = "baseline";
 	/** auto | exact | atLeast: how the block's line-height relates to the box. */
 	public static final String LINE_RULE = "line-rule";
+	/** on a list item's first block: the label's natural ascent, part of its first line */
+	public static final String LABEL_ASCENT = "label-ascent";
 
 	public WordLayoutElementMapping() {
 		namespaceURI = URI;

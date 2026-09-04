@@ -687,6 +687,18 @@
 			
 			</xsl:otherwise>
 		</xsl:choose>
+
+		<!-- Word gives a break at the end of a paragraph an empty line of its own
+		     (measured, CR-001 §6.10); a no-break space in the run's font makes one -->
+		<xsl:if test="not(@w:type='page')
+				and count(following-sibling::*[self::w:t or self::w:tab or self::w:br or self::w:drawing or self::w:pict or self::w:sym or self::w:footnoteReference or self::w:endnoteReference])=0
+				and count(../following-sibling::*[self::w:r or self::w:hyperlink or self::w:fldSimple or self::w:sdt or self::w:smartTag or self::w:ins][.//w:t or .//w:tab or .//w:br or .//w:drawing or .//w:pict or .//w:sym or .//w:footnoteReference or .//w:endnoteReference])=0">
+			<xsl:variable name="brP" select="ancestor::*[self::w:p][1]" />
+			<xsl:variable name="brPPrNode" select="$brP/w:pPr" />
+			<xsl:variable name="brRPrNode" select="../w:rPr" />
+			<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+				$conversionContext, $brPPrNode, $brRPrNode, '&#160;')" />
+		</xsl:if>
 	  		  			
 	</xsl:template>
 
@@ -747,6 +759,13 @@
 		select="java:org.docx4j.convert.out.fo.XsltFOFunctions.getFontFamily(
 			$conversionContext, $pPrNode, $rPrNode)" />
 	
+	<!-- a tab before any text: a leader to Word's next tab stop (see XsltFOFunctions.leadingTabLeaderLength) -->
+	<xsl:variable name="leadingTabLength"
+		select="java:org.docx4j.convert.out.fo.XsltFOFunctions.leadingTabLeaderLength(
+			$conversionContext, $pPrNode,
+			count(preceding-sibling::w:tab) + count(../preceding-sibling::w:r/w:tab),
+			count(preceding-sibling::w:t) + count(../preceding-sibling::w:r/w:t) + count(../preceding-sibling::w:hyperlink//w:t) + count(../preceding-sibling::w:fldSimple//w:t))" />
+
 	<xsl:choose>
 		<xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1">
 						
@@ -758,6 +777,16 @@
 		  </fo:leader>
 						
 		</xsl:when>		
+		<xsl:when test="string-length($leadingTabLength) &gt; 0">
+
+		  <fo:leader leader-pattern="space">
+			<xsl:attribute name="leader-length"><xsl:value-of select="$leadingTabLength"/></xsl:attribute>
+			<xsl:if test="string-length($fontFamily) &gt; 0">
+				<xsl:attribute name="font-family"><xsl:value-of select="$fontFamily"/></xsl:attribute>
+			</xsl:if>
+		  </fo:leader>
+
+		</xsl:when>
 		<xsl:otherwise>
 		
 			<!--  Use this simple-minded approach from MS stylesheet,

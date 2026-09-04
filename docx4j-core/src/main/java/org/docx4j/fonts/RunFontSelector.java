@@ -304,10 +304,10 @@ public class RunFontSelector {
     			}
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
-    			applyLineHeight(el, fallbackFont);
+    			applyLineHeight(el, fontName, fallbackFont);
     		} else {	
     			el.setAttribute("font-family", foFontFamily(val) );
-    			applyLineHeight(el, val);
+    			applyLineHeight(el, fontName, val);
     		}
     		
 			// NB, for PDF/FOP, white space handling on the parent fo:block, 
@@ -384,10 +384,10 @@ public class RunFontSelector {
     		if (val==null) {
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
-    			applyLineHeight(el, fallbackFont);
+    			applyLineHeight(el, fontName, fallbackFont);
     		} else {	
     			el.setAttribute("font-family", foFontFamily(val) );
-    			applyLineHeight(el, val);
+    			applyLineHeight(el, fontName, val);
     		}
     	} 
     }
@@ -519,6 +519,30 @@ public class RunFontSelector {
     private PPr lastPPr;
     private PPrBase.Spacing lastPPrSpacing;
 
+    /**
+     * The document font an rPr asks for its ASCII text (w:ascii, or the theme font
+     * w:asciiTheme names; failing those, w:hAnsi or the document default), for
+     * line metrics of generated text and paragraph marks.
+     *
+     * @since 17.0.5
+     */
+    public String asciiFontName(RPr rPr) {
+    	RFonts rFonts = rPr==null ? null : rPr.getRFonts();
+    	if (rFonts!=null) {
+    		if (rFonts.getAsciiTheme()!=null && getThemePart()!=null) {
+    			try {
+    				String f = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
+    				if (f!=null && f.length()>0) return f;
+    			} catch (Exception e) {
+    				log.debug(e.getMessage());
+    			}
+    		}
+    		if (rFonts.getAscii()!=null) return rFonts.getAscii();
+    		if (rFonts.getHAnsi()!=null) return rFonts.getHAnsi();
+    	}
+    	return getDefaultFont();
+    }
+
     private void captureLineSpec(PropertyResolver propertyResolver, PPr pPr, RPr rPr) {
     	if (outputType!=RunFontActionType.XSL_FO) return;
     	currentKerned = isKerned(rPr);
@@ -546,10 +570,19 @@ public class RunFontSelector {
     /** Set line-height on this FO span from the physical font's Word metrics, the run's
      *  size and the paragraph's w:spacing.  Word sizes a line by the tallest run on it;
      *  with these on every fo:inline, FOP's max-height line stacking does the same. */
-    private void applyLineHeight(Element el, String physicalFontName) {
+    /** Hint on the FO span naming the document font (the one the docx asks for), so the
+     *  block's line box and the line manager can size the line from its metrics when a
+     *  substitute renders it; removed by WordLayoutFixups.  @since 17.0.5 */
+    public static final String HINT_FONT = "docx4j-font";
+
+    private void applyLineHeight(Element el, String documentFontName, String physicalFontName) {
     	if (outputType!=RunFontActionType.XSL_FO || currentSizePt<=0 || el==null) return;
     	    	PhysicalFont pf = physicalFontName==null ? null : PhysicalFonts.get(physicalFontName);
-    	    	el.setAttribute("line-height", WordLineMetrics.lineHeightPtString(pf, currentSizePt, currentSpacing));
+    	    	el.setAttribute("line-height", WordLineMetrics.lineHeightPtString(documentFontName, pf, currentSizePt, currentSpacing));
+    	    	if (documentFontName!=null && WordLineMetrics.hasTableEntry(documentFontName)
+    	    			&& Docx4jProperties.getProperty("docx4j.convert.out.fo.wordLayoutFixups", true)) {
+    	    		el.setAttribute(HINT_FONT, documentFontName);
+    	    	}
     	// Not done: moving the text to where Word puts it within the line (FOP centres
     	// the leading, Word does not; see WordLineMetrics.baselineShiftPt).  Tried as
     	// baseline-shift on the span: FOP enlarges the line box by the shift instead of

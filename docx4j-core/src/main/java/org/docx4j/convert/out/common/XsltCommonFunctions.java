@@ -27,6 +27,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.docx4j.wml.P;
+import org.docx4j.wml.R;
+import org.docx4j.wml.Br;
+import org.docx4j.wml.ContentAccessor;
+import java.util.ArrayList;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.GlyphCheck;
 import org.docx4j.fonts.Mapper;
@@ -248,6 +253,84 @@ public class XsltCommonFunctions {
     }
 
     /** Unmarshal the w:pPr, if there is one. */
+    // ------------------------------------------------------------ paragraph leaves
+
+    /** The w:p an object within a paragraph belongs to, or null. @since 17.0.5 */
+    public static P paragraphOf(Object o) {
+    	Object cur = o;
+    	for (int guard = 0; cur != null && guard < 32; guard++) {
+    		if (cur instanceof P) return (P) cur;
+    		if (!(cur instanceof org.jvnet.jaxb.lang.Child)) return null;
+    		cur = ((org.jvnet.jaxb.lang.Child) cur).getParent();
+    	}
+    	return null;
+    }
+
+    /** The run-level leaves of a paragraph in document order (text, tabs, breaks,
+     *  drawings...), looking into runs, hyperlinks, fields, smart tags and inline
+     *  content controls.  @since 17.0.5 */
+    public static List<Object> paragraphLeaves(P p) {
+    	List<Object> out = new ArrayList<Object>();
+    	if (p != null) collectLeaves(p.getContent(), out, 0);
+    	return out;
+    }
+
+    private static void collectLeaves(List<Object> content, List<Object> out, int depth) {
+    	if (content == null || depth > 16) return;
+    	for (Object c : content) {
+    		Object o = XmlUtils.unwrap(c);
+    		if (o instanceof R) {
+    			for (Object rc : ((R) o).getContent()) out.add(XmlUtils.unwrap(rc));
+    		} else if (o instanceof org.docx4j.wml.SdtRun) {
+    			org.docx4j.wml.SdtContent sc = ((org.docx4j.wml.SdtRun) o).getSdtContent();
+    			if (sc != null) collectLeaves(sc.getContent(), out, depth + 1);
+    		} else if (o instanceof ContentAccessor) {
+    			collectLeaves(((ContentAccessor) o).getContent(), out, depth + 1);
+    		}
+    	}
+    }
+
+    /** Whether a run leaf takes up space on the line (text, tab, break, picture,
+     *  symbol, note reference); run properties and markers do not.  @since 17.0.5 */
+    public static boolean isVisibleLeaf(Object leaf) {
+    	if (leaf instanceof org.docx4j.wml.Text) {
+    		String v = ((org.docx4j.wml.Text) leaf).getValue();
+    		return v != null && v.length() > 0;
+    	}
+    	return leaf instanceof R.Tab || leaf instanceof Br || leaf instanceof org.docx4j.wml.Drawing
+    			|| leaf instanceof org.docx4j.wml.Pict || leaf instanceof R.Sym
+    			|| leaf instanceof org.docx4j.wml.CTObject || leaf instanceof org.docx4j.wml.CTFtnEdnRef
+    			|| leaf instanceof org.docx4j.wml.R.Ptab || leaf instanceof org.docx4j.wml.R.NoBreakHyphen
+    			|| leaf instanceof org.docx4j.wml.R.SoftHyphen;
+    }
+
+    /** How many tabs precede this one at the start of its paragraph (0 for the
+     *  first), or -1 when anything visible other than tabs comes before it.
+     *  @since 17.0.5 */
+    public static int leadingTabOrdinal(R.Tab tab) {
+    	P p = paragraphOf(tab);
+    	if (p == null) return -1;
+    	int tabs = 0;
+    	for (Object leaf : paragraphLeaves(p)) {
+    		if (leaf == tab) return tabs;
+    		if (leaf instanceof R.Tab) tabs++;
+    		else if (isVisibleLeaf(leaf)) return -1;
+    	}
+    	return -1;
+    }
+
+    /** Whether nothing visible follows this break in its paragraph.  @since 17.0.5 */
+    public static boolean isTrailingBreak(Br br) {
+    	P p = paragraphOf(br);
+    	if (p == null) return false;
+    	boolean seen = false;
+    	for (Object leaf : paragraphLeaves(p)) {
+    		if (leaf == br) { seen = true; continue; }
+    		if (seen && isVisibleLeaf(leaf)) return false;
+    	}
+    	return seen;
+    }
+
     private static PPr toPPr(NodeIterator pPrNodeIt) {
 
     	PPr pPr = null;

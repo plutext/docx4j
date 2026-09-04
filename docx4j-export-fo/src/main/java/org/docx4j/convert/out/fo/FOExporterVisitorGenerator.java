@@ -592,6 +592,14 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 					  document, getCurrentParent() );
 			
 		}
+
+		if ((br.getType()==null || br.getType().equals(STBrType.TEXT_WRAPPING))
+				&& XsltCommonFunctions.isTrailingBreak(br)) {
+			// Word gives a break at the end of a paragraph an empty line of its own
+			// (measured, CR-001 §6.10); a no-break space in the run's font makes one
+			DocumentFragment line = XsltCommonFunctions.fontSelectorForGeneratedText(conversionContext, pPr, rPr, "\u00A0");
+			if (line != null) getCurrentParent().appendChild(document.importNode(line, true));
+		}
 		
 		if ((br.getType()!=null
 				  && br.getType().equals(STBrType.PAGE))) {
@@ -600,6 +608,19 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	}
 	
 	
+	@Override
+	protected void convertTabToNode(FOConversionContext conversionContext, Document document, org.docx4j.wml.R.Tab tab) throws DOMException {
+		leadingTabOrdinal = XsltCommonFunctions.leadingTabOrdinal(tab);
+		try {
+			convertTabToNode(conversionContext, document);
+		} finally {
+			leadingTabOrdinal = -1;
+		}
+	}
+
+	/** the tab being converted: how many tabs precede it at its paragraph's start, or -1 */
+	private int leadingTabOrdinal = -1;
+
 	@Override
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document) throws DOMException {
 
@@ -634,16 +655,31 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 	    			getCurrentParent().appendChild(foLeader);
 
-	    		} else {
+	    		} else if (!appendLeadingTab(conversionContext, fontFamily)) {
 	    			appendTabDummy(fontFamily);
 	    		}
 	    	}
-	    	else {
+	    	else if (!appendLeadingTab(conversionContext, fontFamily)) {
 	    		appendTabDummy(fontFamily);
     		}
 
 		}
 	}
+
+	/** A tab before any text in the paragraph: a leader to Word's next tab stop
+	 *  (XsltFOFunctions.leadingTabLeaderLength).  @return whether one was added */
+	private boolean appendLeadingTab(FOConversionContext conversionContext, String fontFamily) {
+		if (leadingTabOrdinal < 0) return false;
+		String length = XsltFOFunctions.leadingTabLeaderLength(conversionContext, pPr, leadingTabOrdinal, 0);
+		if (length.length() == 0) return false;
+		Element leader = document.createElementNS(XSL_FO, "leader");
+		leader.setAttribute("leader-pattern", "space");
+		leader.setAttribute("leader-length", length);
+		if (fontFamily.length() > 0) leader.setAttribute("font-family", fontFamily);
+		getCurrentParent().appendChild(leader);
+		return true;
+	}
+
 
 	/** the spaces standing in for a tab, in an inline carrying the font (as the
 	 *  XSLT's w:tab template does) */

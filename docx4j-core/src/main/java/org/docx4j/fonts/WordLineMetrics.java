@@ -106,6 +106,59 @@ public final class WordLineMetrics {
 
 	private WordLineMetrics() {}
 
+	/**
+	 * Word's vertical metrics of the <i>document</i> font, when it is one of the
+	 * Microsoft fonts in word-line-metrics.properties, combined with FOP's
+	 * placement of the physical font that renders it; otherwise the physical
+	 * font's own.  A metric-compatible substitute matches in advance widths, not
+	 * always vertically (Caladea 1.300 for Cambria's 1.172, DejaVu Serif 1.164
+	 * for Symbol's 1.225), and Word sizes the line from the document font.
+	 * Measured (CR-001 §6.10).  Never null.
+	 *
+	 * @since 17.0.5
+	 */
+	public static Metrics get(String documentFont, PhysicalFont pf) {
+		Metrics physical = get(pf);
+		int[] t = documentFont == null ? null : TABLE.get().get(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
+		if (t == null) return physical;
+		double upem = t[0];
+		int winA = t[1], winD = t[2], hheaA = t[3], hheaD = t[4], gap = t[5];
+		// GDI: tmExternalLeading = max(0, hhea ascender - hhea descender + lineGap - (usWinAscent + usWinDescent))
+		int ext = Math.max(0, (hheaA - hheaD + gap) - (winA + winD));
+		return new Metrics(winA / upem, winD / upem, ext / upem, physical.fopAscent, physical.fopDescent, false);
+	}
+
+	/** whether the table knows this document font */
+	public static boolean hasTableEntry(String documentFont) {
+		return documentFont != null && TABLE.get().containsKey(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
+	}
+
+	private static final java.util.function.Supplier<Map<String, int[]>> TABLE = new java.util.function.Supplier<Map<String, int[]>>() {
+		private volatile Map<String, int[]> table;
+		public Map<String, int[]> get() {
+			if (table == null) {
+				Map<String, int[]> m = new java.util.HashMap<>();
+				try (InputStream is = WordLineMetrics.class.getResourceAsStream("word-line-metrics.properties")) {
+					if (is != null) {
+						java.util.Properties props = new java.util.Properties();
+						props.load(is);
+						for (String name : props.stringPropertyNames()) {
+							String[] v = props.getProperty(name).split(";");
+							if (v.length < 6) continue;
+							int[] t = new int[6];
+							for (int i = 0; i < 6; i++) t[i] = Integer.parseInt(v[i].trim());
+							m.put(name.trim().toLowerCase(java.util.Locale.ROOT), t);
+						}
+					}
+				} catch (Exception e) {
+					log.warn("word-line-metrics.properties: " + e.getMessage());
+				}
+				table = m;
+			}
+			return table;
+		}
+	};
+
 	/** Metrics for this physical font, or the fallback if its file cannot be read. Never null. */
 	public static Metrics get(PhysicalFont pf) {
 		if (pf == null || pf.getEmbeddedURI() == null) return FALLBACK;
@@ -129,7 +182,12 @@ public final class WordLineMetrics {
 	 * no w:line.
 	 */
 	public static double lineHeightPt(PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
-		double single = get(pf).lineHeightFactor() * sizePt;
+		return lineHeightPt(null, pf, sizePt, spacing);
+	}
+
+	/** As {@link #lineHeightPt(PhysicalFont, double, PPrBase.Spacing)}, sized from the document font when the table knows it. @since 17.0.5 */
+	public static double lineHeightPt(String documentFont, PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
+		double single = get(documentFont, pf).lineHeightFactor() * sizePt;
 		if (spacing == null || spacing.getLine() == null) return single;
 		double line = spacing.getLine().doubleValue();
 		STLineSpacingRule rule = spacing.getLineRule() == null ? STLineSpacingRule.AUTO : spacing.getLineRule();
@@ -153,7 +211,12 @@ public final class WordLineMetrics {
 	 * scaled proportionally.
 	 */
 	public static double wordBaselinePt(PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
-		Metrics m = get(pf);
+		return wordBaselinePt(null, pf, sizePt, spacing);
+	}
+
+	/** @since 17.0.5 */
+	public static double wordBaselinePt(String documentFont, PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
+		Metrics m = get(documentFont, pf);
 		double single = m.lineHeightFactor() * sizePt;
 		double natural = (m.winAscent + m.externalLeading) * sizePt;
 		if (spacing == null || spacing.getLine() == null) return natural;
@@ -198,6 +261,11 @@ public final class WordLineMetrics {
 	}
 
 	/** {@link #lineHeightPt} formatted as an FO/CSS length, e.g. "13.8pt". */
+	/** @since 17.0.5 */
+	public static String lineHeightPtString(String documentFont, PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
+		return format(lineHeightPt(documentFont, pf, sizePt, spacing));
+	}
+
 	public static String lineHeightPtString(PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
 		return format(lineHeightPt(pf, sizePt, spacing));
 	}

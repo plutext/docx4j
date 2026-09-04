@@ -144,6 +144,41 @@ container the FO exporter renders as fo:block span="all"; FOP balances the colum
 it, which is what Word does at a continuous break (measured).  Sections whose counts
 agree are unchanged.
 
+PDF via XSL FO - a real document against Word (CR-001 §6.10: docs/Docx4j_GettingStarted.docx,
+50 pages, measured against Word 365's PDF of it):
+- lines are sized from the DOCUMENT font when a substitute renders it.  Word takes
+usWinAscent/usWinDescent/lineGap from the font the docx names, and a metric-compatible
+clone matches in advance widths, not always vertically (Caladea's single-spacing factor
+is 1.300 to Cambria's 1.172, DejaVu Serif's 1.164 to Symbol's 1.225, Cousine's 1.133 to
+Consolas's 1.171), so every heading, bullet and code line drifted and the guide ran a
+page long.  A table of the vertical metrics of 296 Microsoft font families
+(org/docx4j/fonts/word-line-metrics.properties, read from the fonts of an Office 365
+installation) is now consulted by WordLineMetrics before the physical font's own, and
+the run font selector stamps the document font on each span (docx4j:font) for the
+jar's per-run line sizing.
+- a list item's first line is sized by its number or bullet too: Word raises the line
+by what the label's ascent exceeds the text's, without the auto multiple and without
+the label's descent (a Symbol bullet on Calibri 11pt makes the line 16.04pt, not 15.44;
+a Courier New "o", whose descent exceeds Calibri's, leaves it at 15.44; both measured).
+The label block gets the combined box and the body block the label's ascent
+(docx4j:label-ascent) for the jar's line manager; the jar's new
+WordListItemLayoutManager keeps the item's last leading discardable at the foot of a
+page (FOP's list item manager folds it into its boxes), and the flow manager drops the
+leading of the flow's last line for the same reason.
+- a tab at the start of a paragraph is a leader to Word's next tab stop (the
+paragraph's w:tabs, a hanging indent's stop, then the default interval, custom stops
+clearing the defaults before them) instead of three spaces, so code blocks indent as
+Word indents them; a tab after text is unchanged (its start is not known before layout).
+Both pathways.  A leader of fixed length no longer justifies the paragraph's last line
+(text-align-last=justify was set for any leader; only stretching leaders need it).
+- a line break at the end of a paragraph gets the empty line Word gives it (both pathways).
+- Word does not break a line after a solidus: "http://schemas.openxmlformats.org/..." and
+"OpenOffice/jodconverter" go whole to the next line where UAX #14 lets FOP break after
+the "/"; the jar's line manager suppresses those break opportunities.
+- result: the same page count as Word (50, was 51), 86% of lines identical in text and
+position (was 73%), the first seven pages line for line; the 30 layout probes are
+unchanged (21 at 100%).
+
 Tab leaders inside hyperlinks (PDF):
 - a w:tab inside a w:hyperlink (every entry of a Word table of contents) lost its
 paragraph's tab stops in the visitor pathway, so the dot leader became three spaces and

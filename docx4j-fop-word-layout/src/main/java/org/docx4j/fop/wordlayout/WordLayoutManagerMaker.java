@@ -33,7 +33,7 @@ import org.apache.fop.layoutmgr.LayoutManagerMapping;
  * The {@code LayoutManagerMaker} docx4j gives FOP
  * ({@code FopFactoryBuilder.setLayoutManagerMakerOverride}): FOP's own
  * {@link LayoutManagerMapping} with {@link WordBlockLayoutManager} for
- * {@code fo:block}.
+ * {@code fo:block} and {@link WordListItemLayoutManager} for {@code fo:list-item}.
  *
  * It also supplies {@link WordFlowLayoutManager} for the flow.
  *
@@ -94,6 +94,12 @@ public class WordLayoutManagerMaker extends LayoutManagerMapping {
 				@Override
 				public void make(FONode node, List lms, FOUserAgent userAgent) {
 					lms.add(new WordBlockLayoutManager((Block) node));
+				}
+			});
+			registerMaker(org.apache.fop.fo.flow.ListItem.class, new Maker() {
+				@Override
+				public void make(FONode node, List lms, FOUserAgent userAgent) {
+					lms.add(new WordListItemLayoutManager((org.apache.fop.fo.flow.ListItem) node));
 				}
 			});
 		}

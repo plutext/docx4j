@@ -348,7 +348,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			}
 
 		} else if (o instanceof org.docx4j.wml.R.Tab) {
-			convertTabToNode(conversionContext, document);
+			convertTabToNode(conversionContext, document, (org.docx4j.wml.R.Tab) o);
 			
 		} else if (o instanceof org.docx4j.wml.CTSimpleField) {
 
@@ -514,6 +514,13 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		return -1;
 	}
 	
+	/** As {@link #convertTabToNode(AbstractWmlConversionContext, Document)}, with the tab
+	 *  itself (its place in the paragraph decides how the FO exporter renders it).
+	 *  @since 17.0.5 */
+	protected void convertTabToNode(CC conversionContext, Document document, org.docx4j.wml.R.Tab tab) throws DOMException {
+		convertTabToNode(conversionContext, document);
+	}
+
 	protected void convertTabToNode(CC conversionContext, Document document) throws DOMException {
 		
 		if (!conversionContext.isInComplexFieldDefinition()) {

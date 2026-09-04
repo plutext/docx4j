@@ -53,6 +53,7 @@ import org.docx4j.wml.CTTwipsMeasure;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
@@ -320,11 +321,12 @@ public class XsltFOFunctions {
 
     	Element block = (Element)df.getFirstChild();
 
-    	if (foContainsElement(block, "leader")) {
+    	if (foContainsStretchingLeader(block)) {
 			// ptab to leader implementation:
 			// for leader to work as expected in fop, we need text-align-last; see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
 			// this code adds that.
     		// Note that it doesn't seem to be necessary for leader in TOC, but it doesn't hurt
+    		// (a leader of fixed length, standing in for a leading tab, must not justify the last line)
 			block.setAttribute("text-align-last", "justify");
     	}
 
@@ -400,6 +402,16 @@ public class XsltFOFunctions {
      * @param elementName
      * @return
      */
+	/** a leader with a range of lengths (dot leaders, ptabs): FOP expands it only on a justified last line */
+	private static boolean foContainsStretchingLeader(Element block) {
+		NodeList nl = block.getElementsByTagNameNS(XSL_FO, "leader");
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element l = (Element) nl.item(i);
+			if (l.hasAttribute("leader-length.maximum") || l.hasAttribute("leader-length.optimum")) return true;
+		}
+		return false;
+	}
+
     private static boolean foContainsElement(Node sourceNode, String elementName) {
 
         switch (sourceNode.getNodeType() ) {
@@ -770,7 +782,8 @@ public class XsltFOFunctions {
 				
 				foBlockElement.setTextContent(" ");
 				applyEmptyParagraphLineHeight(foBlockElement, fontFamily, pPr,
-						(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
+						(rPrParagraphMark!=null ? rPrParagraphMark : rPr),
+						runFontSelector==null ? null : runFontSelector.asciiFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
 			} else {
 			
 				/* don't do:
@@ -811,7 +824,8 @@ public class XsltFOFunctions {
 						((Element)foBlockElement).setAttribute("font-family", fontFamily);
 					}
 					applyEmptyParagraphLineHeight(foBlockElement, fontFamily, pPr,
-							(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
+							(rPrParagraphMark!=null ? rPrParagraphMark : rPr),
+							runFontSelector==null ? null : runFontSelector.asciiFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
 	            }
 			}
 			// FOP doesn't support "ignore-if-surrounding-linefeed", and "pre" is no good, since wrapping does not happen
@@ -870,7 +884,7 @@ public class XsltFOFunctions {
 		if (a[0]!=null && a[0].length()>0) foBlockElement.setAttribute("font-family", a[0]);
 		if (a[1]!=null && a[1].length()>0) foBlockElement.setAttribute("font-size", a[1]);
 		foBlockElement.setAttribute("line-height", a[2]);
-		applyLineBoxHints(foBlockElement, a[0], a[1], a[2], pPr);
+		applyLineBoxHints(foBlockElement, a[0], a[1], a[2], pPr, a[3]);
 		return true;
 	}
 
@@ -887,11 +901,17 @@ public class XsltFOFunctions {
 	 */
 	static void applyLineBoxHints(Element foBlockElement, String physicalFontFamily, String fontSize,
 			String lineHeight, PPr pPr) {
+		applyLineBoxHints(foBlockElement, physicalFontFamily, fontSize, lineHeight, pPr, null);
+	}
+
+	/** @param documentFont the font the docx asks for (its Word metrics, when known, size the box) */
+	static void applyLineBoxHints(Element foBlockElement, String physicalFontFamily, String fontSize,
+			String lineHeight, PPr pPr, String documentFont) {
 		if (!WordLayoutFixups.isEnabled()) return;
 		if (physicalFontFamily==null || physicalFontFamily.length()==0 || fontSize==null || !fontSize.endsWith("pt")
 				|| lineHeight==null || !lineHeight.endsWith("pt")) return;
 		org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(physicalFontFamily);
-		org.docx4j.fonts.WordLineMetrics.Metrics m = org.docx4j.fonts.WordLineMetrics.get(pf);
+		org.docx4j.fonts.WordLineMetrics.Metrics m = org.docx4j.fonts.WordLineMetrics.get(documentFont, pf);
 		if (m==null || m.fallback) return;
 		double sizePt, lhPt;
 		try {
@@ -903,6 +923,7 @@ public class XsltFOFunctions {
 		org.docx4j.wml.PPrBase.Spacing spacing = pPr==null ? null : pPr.getSpacing();
 		double single = m.lineHeightFactor() * sizePt;
 		double natural = (m.winAscent + m.externalLeading) * sizePt;
+		// (m already carries the document font's metrics when the table knows it)
 		org.docx4j.wml.STLineSpacingRule rule = (spacing==null || spacing.getLine()==null) ? org.docx4j.wml.STLineSpacingRule.AUTO
 				: (spacing.getLineRule()==null ? org.docx4j.wml.STLineSpacingRule.AUTO : spacing.getLineRule());
 		double box, baseline;
@@ -953,10 +974,11 @@ public class XsltFOFunctions {
 			if (lh!=null && lh.endsWith("pt")) {
 				String family = el.getAttribute("font-family");
 				String size = inheritedAttribute(el, "font-size");
-												String key = family + "|" + size + "|" + lh;
+				String docFont = el.getAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
+				String key = family + "|" + size + "|" + lh + "|" + docFont;
 				long chars = el.getTextContent()==null ? 0 : el.getTextContent().length();
 				weights.computeIfAbsent(key, k -> new long[1])[0] += Math.max(1, chars);
-				attrs.putIfAbsent(key, new String[] { family, size, lh });
+				attrs.putIfAbsent(key, new String[] { family, size, lh, docFont.length()==0 ? null : docFont });
 			}
 			collectRunFonts(el, weights, attrs);
 		}
@@ -1056,15 +1078,21 @@ public class XsltFOFunctions {
 
 	protected static void applyEmptyParagraphLineHeight(Element foBlockElement, String physicalFontFamily,
 			PPr pPr, RPr markRPr) {
+		applyEmptyParagraphLineHeight(foBlockElement, physicalFontFamily, pPr, markRPr, null);
+	}
+
+	/** @param documentFont the mark's document font (RunFontSelector.asciiFontName), for Word's metrics when a substitute renders it */
+	protected static void applyEmptyParagraphLineHeight(Element foBlockElement, String physicalFontFamily,
+			PPr pPr, RPr markRPr, String documentFont) {
 		if (markRPr==null || markRPr.getSz()==null || markRPr.getSz().getVal()==null) return;
 		double sizePt = markRPr.getSz().getVal().doubleValue()/2;
 		org.docx4j.fonts.PhysicalFont pf = (physicalFontFamily==null || physicalFontFamily.length()==0)
 				? null : org.docx4j.fonts.PhysicalFonts.get(physicalFontFamily);
 		foBlockElement.setAttribute("font-size", org.docx4j.fonts.WordLineMetrics.format(sizePt));
 		foBlockElement.setAttribute("line-height", org.docx4j.fonts.WordLineMetrics.lineHeightPtString(
-				pf, sizePt, pPr==null ? null : pPr.getSpacing()));
+				documentFont, pf, sizePt, pPr==null ? null : pPr.getSpacing()));
 		applyLineBoxHints(foBlockElement, physicalFontFamily, foBlockElement.getAttribute("font-size"),
-				foBlockElement.getAttribute("line-height"), pPr);
+				foBlockElement.getAttribute("line-height"), pPr, documentFont);
 	}
 
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
@@ -1262,10 +1290,112 @@ public class XsltFOFunctions {
     		if (attr!=null) {
     			foListItemLabelBody.setAttribute("font-family", attr.getValue());
     		}
+    		// and its line pitch and document font (WordLayoutFixups.listLabelLines
+    		// sizes the item's first line from the label's metrics too, as Word does)
+    		for (String name : new String[] { "line-height", org.docx4j.fonts.RunFontSelector.HINT_FONT }) {
+    			Attr a = ((Element)frag.getFirstChild()).getAttributeNode(name);
+    			if (a!=null) foListItemLabelBody.setAttribute(name, a.getValue());
+    		}
     	}
 			
     }
     
+	/**
+	 * The length of the leader standing in for a tab at the start of a paragraph
+	 * (nothing but tabs before it), as Word lays it out: from the first line's
+	 * start to the next tab stop.  Stops are the paragraph's w:tabs (cleared
+	 * ones excepted), the implicit stop a hanging indent makes at the left
+	 * indent, and the document's default interval (w:defaultTabStop, 720 twips
+	 * if absent), all measured from the left margin.  Measured on the Getting
+	 * Started guide (CR-001 §6.10): its code blocks begin with tabs, and Word's
+	 * text starts at 0.5in per tab.  A tab after text is not handled here
+	 * (its start is not known before layout).
+	 *
+	 * @param precedingTabs how many tabs already began the paragraph
+	 * @param precedingText how many text runs precede it (any: not a leading tab)
+	 * @return the leader length such as "36pt", or "" when it does not apply
+	 * @since 17.0.5
+	 */
+	public static String leadingTabLeaderLength(FOConversionContext context, PPr effectivePPr,
+			int precedingTabs, int precedingText) {
+		if (precedingText > 0 || effectivePPr == null) return "";
+		int pos = firstLineStartTwips(effectivePPr);
+		DocumentSettingsPart settings = null;
+		try {
+			settings = context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart();
+		} catch (Exception e) {
+			log.debug(e.getMessage());
+		}
+		int from = pos;
+		int stop = pos;
+		for (int i = 0; i <= precedingTabs; i++) {
+			from = stop;
+			stop = nextTabStop(stop, effectivePPr, settings);
+		}
+		if (stop <= from) return "";
+		return org.docx4j.fonts.WordLineMetrics.format((stop - from) / 20.0);
+	}
+
+	/** XSLT form of the above (the direct pPr, resolved here). @since 17.0.5 */
+	public static String leadingTabLeaderLength(FOConversionContext context, NodeIterator pPrNodeIt,
+			int precedingTabs, int precedingText) {
+		if (precedingText > 0) return "";
+		PPr pPr = null;
+		try {
+			Node n = pPrNodeIt == null ? null : pPrNodeIt.nextNode();
+			if (n != null) pPr = (PPr) XmlUtils.unwrap(XmlUtils.unmarshal(n));
+			pPr = context.getPropertyResolver().getEffectivePPr(pPr);
+		} catch (Exception e) {
+			log.warn("Couldn't resolve pPr for a leading tab: " + e.getMessage());
+			return "";
+		}
+		return leadingTabLeaderLength(context, pPr, precedingTabs, precedingText);
+	}
+
+	/** where the first line's text starts, in twips from the left margin */
+	static int firstLineStartTwips(PPr pPr) {
+		PPrBase.Ind ind = pPr == null ? null : pPr.getInd();
+		if (ind == null) return 0;
+		int left = ind.getLeft() != null ? ind.getLeft().intValue()
+				: ind.getStart() != null ? ind.getStart().intValue() : 0;
+		if (ind.getHanging() != null) return left - ind.getHanging().intValue();
+		if (ind.getFirstLine() != null) return left + ind.getFirstLine().intValue();
+		return left;
+	}
+
+	/** the first tab stop after pos (twips), as Word finds it: a custom stop (or a
+	 *  hanging indent's) clears the default stops before it; the default interval
+	 *  resumes beyond the last of them */
+	static int nextTabStop(int pos, PPr pPr, DocumentSettingsPart settings) {
+		int best = Integer.MAX_VALUE;
+		if (pPr != null && pPr.getTabs() != null) {
+			for (CTTabStop t : pPr.getTabs().getTab()) {
+				if (t.getPos() == null || STTabJc.CLEAR.equals(t.getVal())) continue;
+				int p = t.getPos().intValue();
+				if (p > pos && p < best) best = p;
+			}
+		}
+		PPrBase.Ind ind = pPr == null ? null : pPr.getInd();
+		if (ind != null && ind.getHanging() != null) {
+			int left = ind.getLeft() != null ? ind.getLeft().intValue()
+					: ind.getStart() != null ? ind.getStart().intValue() : 0;
+			if (left > pos && left < best) best = left;
+		}
+		if (best < Integer.MAX_VALUE) return best;
+		int defaultTab = 720;
+		try {
+			if (settings != null && settings.getJaxbElement() != null
+					&& settings.getJaxbElement().getDefaultTabStop() != null
+					&& settings.getJaxbElement().getDefaultTabStop().getVal() != null) {
+				int v = settings.getJaxbElement().getDefaultTabStop().getVal().intValue();
+				if (v > 0) defaultTab = v;
+			}
+		} catch (Exception e) {
+			log.debug(e.getMessage());
+		}
+		return pos < 0 ? 0 : (pos / defaultTab + 1) * defaultTab;
+	}
+
     protected static int getDistanceToNextTabStop( int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
 
 		int pdbs = 0; 

@@ -280,4 +280,48 @@ public class WordLayoutFixupsTest {
 		String out = WordLayoutFixups.apply(in, 15);
 		assertTrue("contextual spacing not applied inside the span block", out.contains("space-after=\"0pt\">a<"));
 	}
+
+	/** A list label's ascent joins the item's first line (CR-001 §6.10): a Symbol
+	 *  bullet (ascent 11.06pt at 11pt) on Calibri (10.47 + 2.95) makes the label
+	 *  block a 14.01pt box on an 11.06pt baseline, with the text line's 2.01pt of
+	 *  leading; the body block learns the label's ascent for the line manager. */
+	@Test
+	public void listLabelAscentJoinsTheFirstLine() throws Exception {
+		String body = "<fo:block docx4j-linebox=\"13.428pt\" docx4j-baseline=\"10.474pt\" docx4j-linerule=\"auto\""
+				+ " font-family=\"Carlito Regular\" font-size=\"11pt\" line-height=\"15.442pt\">text</fo:block>";
+		String in = flow("<fo:list-block><fo:list-item>"
+				+ "<fo:list-item-label font-size=\"11pt\"><fo:block font-family=\"DejaVu Serif\" docx4j-font=\"Symbol\" line-height=\"15.497pt\">\u2022</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body>" + body + "</fo:list-item-body>"
+				+ "</fo:list-item></fo:list-block>");
+		org.w3c.dom.Document doc = org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
+				new org.xml.sax.InputSource(new java.io.StringReader(in)));
+		WordLayoutFixups.listLabelLines(doc);
+		org.w3c.dom.NodeList blocks = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		org.w3c.dom.Element label = (org.w3c.dom.Element) blocks.item(0);
+		org.w3c.dom.Element text = (org.w3c.dom.Element) blocks.item(1);
+		assertEquals("14.01pt", label.getAttribute(WordLayoutFixups.HINT_LINE_BOX));
+		assertEquals("11.06pt", label.getAttribute(WordLayoutFixups.HINT_BASELINE));
+		assertEquals("auto", label.getAttribute(WordLayoutFixups.HINT_LINE_RULE));
+		assertEquals("16.03pt", label.getAttribute("line-height"));
+		assertEquals("11.06pt", text.getAttribute(WordLayoutFixups.HINT_LABEL_ASCENT));
+
+		// a Courier New "o" (ascent 9.16pt) does not raise Calibri's line, and its
+		// descent (3.30pt, more than Calibri's) is not counted either
+		in = flow("<fo:list-block><fo:list-item>"
+				+ "<fo:list-item-label font-size=\"11pt\"><fo:block font-family=\"Cousine\" docx4j-font=\"Courier New\" line-height=\"14.33pt\">o</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body>" + body + "</fo:list-item-body>"
+				+ "</fo:list-item></fo:list-block>");
+		doc = org.docx4j.XmlUtils.getNewDocumentBuilder().parse(new org.xml.sax.InputSource(new java.io.StringReader(in)));
+		WordLayoutFixups.listLabelLines(doc);
+		blocks = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "block");
+		label = (org.w3c.dom.Element) blocks.item(0);
+		assertEquals("13.43pt", label.getAttribute(WordLayoutFixups.HINT_LINE_BOX));
+		assertEquals("10.47pt", label.getAttribute(WordLayoutFixups.HINT_BASELINE));
+		assertEquals("15.44pt", label.getAttribute("line-height"));
+
+		// through apply(): the hints become the extension's attributes or are stripped, never left as-is
+		String out = WordLayoutFixups.apply(in, 15);
+		assertFalse(out.contains("docx4j-label-ascent"));
+		assertFalse(out.contains("docx4j-font"));
+	}
 }

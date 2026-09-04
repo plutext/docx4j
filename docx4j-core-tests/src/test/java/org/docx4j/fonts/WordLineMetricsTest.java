@@ -2,6 +2,8 @@ package org.docx4j.fonts;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -76,5 +78,38 @@ public class WordLineMetricsTest {
 		assertEquals("13.8pt", WordLineMetrics.format(13.8));
 		assertEquals("13.801pt", WordLineMetrics.format(13.8006));
 		assertEquals("12pt", WordLineMetrics.format(12.0));
+	}
+
+	/** word-line-metrics.properties: Word's vertical metrics of Microsoft fonts, by
+	 *  document font name, for when a substitute renders them (CR-001 §6.10). */
+	@Test
+	public void documentFontTable() {
+		assertTrue(WordLineMetrics.hasTableEntry("Cambria"));
+		assertTrue("case-insensitive", WordLineMetrics.hasTableEntry("calibri"));
+		assertFalse(WordLineMetrics.hasTableEntry("No Such Font"));
+
+		// cambria=2048;1946;455;1946;-455;0 -> (1946+455)/2048, no external leading
+		WordLineMetrics.Metrics cambria = WordLineMetrics.get("Cambria", null);
+		assertFalse(cambria.fallback);
+		assertEquals(1946 / 2048.0, cambria.winAscent, 1e-9);
+		assertEquals(455 / 2048.0, cambria.winDescent, 1e-9);
+		assertEquals(0, cambria.externalLeading, 1e-9);
+		assertEquals(1.17236, cambria.lineHeightFactor(), 1e-4);
+
+		// symbol=2048;2059;450;2059;-450;0
+		assertEquals(1.22510, WordLineMetrics.get("Symbol", null).lineHeightFactor(), 1e-4);
+		// consolas=2048;1884;514;1521;-527;350: hhea sums to the win height, so no leading
+		assertEquals(1.17090, WordLineMetrics.get("Consolas", null).lineHeightFactor(), 1e-4);
+		// times new roman=2048;1825;443;1825;-443;87: the 87 of lineGap is external leading
+		WordLineMetrics.Metrics tnr = WordLineMetrics.get("Times New Roman", null);
+		assertEquals(87 / 2048.0, tnr.externalLeading, 1e-9);
+
+		// unknown document font, no physical font: the fallback
+		assertTrue(WordLineMetrics.get("No Such Font", null).fallback);
+		assertTrue(WordLineMetrics.get(null, null).fallback);
+
+		// an 18pt Cambria heading at single spacing: 21.10pt (Caladea's own 1.300 would give 23.4)
+		assertEquals(2401 / 2048.0 * 18, WordLineMetrics.lineHeightPt("Cambria", null, 18, null), 1e-9);
+		assertEquals("21.103pt", WordLineMetrics.lineHeightPtString("Cambria", null, 18, null));
 	}
 }
