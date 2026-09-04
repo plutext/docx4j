@@ -81,7 +81,13 @@ only the Title style), FOP kerned every font, and a kerned line can be a fractio
 point shorter, so a word Word wraps stayed on the line and every later line moved.
 FOP's fonts are now configured unkerned and each also under "<name>+kern" with kerning
 on (embedded only if used); the run font selector sends runs Word kerns to the twin
-(RunFontSelector.isKerned).  Four long-prose probes went from 88-94% to 100% line parity.
+(RunFontSelector.isKerned).  Word also kerns pairs involving the space glyph ("A "
+-50/1000 em, " A" -60, "T ", "Y ", "V ", "W " in Liberation Serif), which FOP skips
+because its spaces are glue; such spaces are wrapped in an inline whose word-spacing
+carries the pair values, so they stay break opportunities.  Measured on the kern-title
+probe: kerned lines within 0.13pt of Word's width (were 5pt wide), unkerned identical,
+line breaks the same for every threshold case.  Four long-prose probes went from 88-94%
+to 100% line parity.
 docx4j.fonts.fop.util.FopConfigUtil.kerning=true kerns everything, as before.
 Found on the way: the visitor pathway (the default) handed the run font selector a
 resolved pPr without its w:pStyle, so run properties coming from the paragraph style

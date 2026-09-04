@@ -21,6 +21,9 @@ import org.docx4j.wml.Style;
 import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.docx4j.fonts.fop.fonts.CustomFont;
+import org.docx4j.fonts.fop.fonts.Typeface;
+import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -249,7 +252,7 @@ public class RunFontSelector {
 		}
 		DocumentFragment docfrag = document.createDocumentFragment();
 		docfrag.appendChild(document.getDocumentElement());
-		return docfrag;
+		return (DocumentFragment)kernSpaces(docfrag);
     }
     
 
@@ -429,6 +432,89 @@ public class RunFontSelector {
     /** the font-family for the FO span: the kerned twin when the run kerns */
     private String foFontFamily(String physicalFontName) {
     	return (currentKerned && perRunKerning()) ? physicalFontName + KERNED_SUFFIX : physicalFontName;
+    }
+
+    /**
+     * Word kerns pairs involving the space glyph as well (measured: "A␠" -50/1000
+     * em, "␠A" -60, "T␠", "Y␠", "V␠", "W␠" in Liberation Serif), whereas FOP
+     * kerns only within words, its spaces being glue.  For a kerned run each
+     * space whose pairs kern is wrapped in an inline whose word-spacing carries
+     * the pair values (FOP: a space's width is the glyph plus word-spacing), so
+     * it stays a break opportunity.  Pairs across run boundaries are not seen.
+     *
+     * @since 17.0.5
+     */
+    private Object kernSpaces(Object fragment) {
+    	if (!(fragment instanceof DocumentFragment) || outputType!=RunFontActionType.XSL_FO
+    			|| !currentKerned || !perRunKerning() || currentSizePt<=0) return fragment;
+    	DocumentFragment df = (DocumentFragment)fragment;
+    	for (Node n = df.getFirstChild(); n!=null; n = n.getNextSibling()) {
+    		if (!(n instanceof Element)) continue;
+    		Element span = (Element)n;
+    		String family = span.getAttribute("font-family");
+    		if (family.length()==0 || span.getChildNodes().getLength()!=1 || !(span.getFirstChild() instanceof org.w3c.dom.Text)) continue;
+    		String text = span.getTextContent();
+    		if (text.indexOf(' ')<0) continue;
+    		java.util.Map<Integer, java.util.Map<Integer, Integer>> kern = kerningPairs(PhysicalFonts.get(family));
+    		if (kern==null) continue;
+    		int[] cps = text.codePoints().toArray();
+    		Document doc = span.getOwnerDocument();
+    		StringBuilder seg = new StringBuilder();
+    		boolean any = false;
+    		java.util.List<Node> children = new java.util.ArrayList<>();
+    		for (int i=0; i<cps.length; i++) {
+    			int cp = cps[i];
+    			if (cp==' ') {
+    				int k = (i>0 ? kernValue(kern, cps[i-1], ' ') : 0) + (i+1<cps.length ? kernValue(kern, ' ', cps[i+1]) : 0);
+    				if (k!=0) {
+    					if (seg.length()>0) { children.add(doc.createTextNode(seg.toString())); seg.setLength(0); }
+    					Element sp = doc.createElementNS(span.getNamespaceURI(),
+    							(span.getPrefix()==null ? "" : span.getPrefix() + ":") + "inline");
+    					sp.setAttribute("word-spacing", WordLineMetrics.format(k * currentSizePt / 1000.0));
+    					sp.appendChild(doc.createTextNode(" "));
+    					children.add(sp);
+    					any = true;
+    					continue;
+    				}
+    			}
+    			seg.appendCodePoint(cp);
+    		}
+    		if (!any) continue;
+    		if (seg.length()>0) children.add(doc.createTextNode(seg.toString()));
+    		span.removeChild(span.getFirstChild());
+    		for (Node c : children) span.appendChild(c);
+    	}
+    	return fragment;
+    }
+
+    private static int kernValue(java.util.Map<Integer, java.util.Map<Integer, Integer>> kern, int a, int b) {
+    	java.util.Map<Integer, Integer> m = kern.get(a);
+    	if (m==null) return 0;
+    	Integer v = m.get(b);
+    	return v==null ? 0 : v;
+    }
+
+    private static final java.util.Map<PhysicalFont, java.util.Map<Integer, java.util.Map<Integer, Integer>>> KERNING
+    		= java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    private static final java.util.Map<Integer, java.util.Map<Integer, Integer>> NO_KERNING = java.util.Collections.emptyMap();
+
+    /** the font's kern-table pairs (unicode -> unicode -> 1/1000 em), or null */
+    private static java.util.Map<Integer, java.util.Map<Integer, Integer>> kerningPairs(PhysicalFont pf) {
+    	if (pf==null) return null;
+    	java.util.Map<Integer, java.util.Map<Integer, Integer>> m = KERNING.get(pf);
+    	if (m==null) {
+    		m = NO_KERNING;
+    		try {
+    			Typeface tf = GlyphCheck.getTypeface(pf);
+    			if (tf instanceof CustomFont && ((CustomFont)tf).hasKerningInfo()) {
+    				m = ((CustomFont)tf).getKerningInfo();
+    			}
+    		} catch (Exception e) {
+    			log.warn("No kerning for " + pf.getName() + ": " + e.getMessage());
+    		}
+    		KERNING.put(pf, m);
+    	}
+    	return m==NO_KERNING ? null : m;
     }
     private PPr lastPPr;
     private PPrBase.Spacing lastPPrSpacing;
@@ -1533,7 +1619,7 @@ public class RunFontSelector {
     	
     	// Handle final span
     	vis.finishPrevious();
-    	return vis.getResult();
+    	return kernSpaces(vis.getResult());
     }
     
     /** The PhysicalFont this *document* font name maps to.

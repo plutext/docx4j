@@ -33,6 +33,7 @@ public class KernedRunsTest {
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>"
 				+ "<w:p>" + run("plain", 24, null) + run("below", 24, 28) + run("at", 28, 28) + run("above", 56, 28) + run("off", 24, 0) + "</w:p>"
+				+ "<w:p>" + run("AVAILABLE TAX WAYS", 24, 2) + run("PLAIN TAX WAYS", 24, null) + "</w:p>"
 				+ "<w:p><w:pPr><w:pStyle w:val=\"Title\"/></w:pPr><w:r><w:rPr>" + FONT + "</w:rPr><w:t>title</w:t></w:r></w:p>"
 				+ "</w:body></w:document>"));
 		FOSettings foSettings = Docx4J.createFOSettings();
@@ -52,7 +53,34 @@ public class KernedRunsTest {
 		return null;
 	}
 
+	/** the span holding the text, whatever its children */
+	private static Element span(org.w3c.dom.Document doc, String startsWith) {
+		NodeList nl = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "inline");
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element el = (Element) nl.item(i);
+			if (el.getTextContent().startsWith(startsWith) && el.getAttribute("font-family").length() > 0) return el;
+		}
+		return null;
+	}
+
+	private static int wordSpacingChildren(Element span) {
+		int n = 0;
+		NodeList c = span.getChildNodes();
+		for (int i = 0; i < c.getLength(); i++) {
+			if (c.item(i) instanceof Element && ((Element) c.item(i)).getAttribute("word-spacing").startsWith("-")) n++;
+		}
+		return n;
+	}
+
 	private void check(org.w3c.dom.Document doc) {
+		// Word kerns pairs with the space glyph too ("E␠", "␠T", "X␠", "␠W", "S"): each such
+		// space of a kerned run is an inline carrying the pair values as word-spacing
+		Element kerned = span(doc, "AVAILABLE");
+		assertEquals("Liberation Serif+kern", kerned.getAttribute("font-family"));
+		assertEquals("AVAILABLE TAX WAYS", kerned.getTextContent());
+		org.junit.Assert.assertTrue("no kerned spaces", wordSpacingChildren(kerned) >= 1);
+		assertEquals("unkerned run keeps plain spaces", 0, wordSpacingChildren(span(doc, "PLAIN")));
+
 		assertEquals("Liberation Serif", family(doc, "plain"));
 		assertEquals("12pt below a 14pt threshold", "Liberation Serif", family(doc, "below"));
 		assertEquals("14pt at a 14pt threshold", "Liberation Serif+kern", family(doc, "at"));
