@@ -282,7 +282,14 @@ public final class Doc {
 
 	// ---------------------------------------------------------------- header/footer
 
-	public void addHeader(String font, int halfPts, String... lines) throws Exception {
+		public void addHeader(String font, int halfPts, String... lines) throws Exception {
+		addHeader(HdrFtrRef.DEFAULT, font, halfPts, lines);
+	}
+
+	/** A header of the given type (DEFAULT, FIRST, EVEN); FIRST also sets w:titlePg, EVEN sets w:evenAndOddHeaders. */
+	public void addHeader(HdrFtrRef type, String font, int halfPts, String... lines) throws Exception {
+		if (type == HdrFtrRef.FIRST) sectPr().setTitlePg(new BooleanDefaultTrue());
+		if (type == HdrFtrRef.EVEN) evenAndOddHeaders();
 		hdrFtrCounter++;
 		HeaderPart hp = new HeaderPart(new PartName("/word/header" + hdrFtrCounter + ".xml"));
 		Hdr hdr = F.createHdr();
@@ -290,14 +297,144 @@ public final class Doc {
 			hdr.getContent().add(plainParagraph(line, font, halfPts));
 		}
 		hp.setJaxbElement(hdr);
-		Relationship rel = mdp.addTargetPart(hp);
+				Relationship rel = mdp.addTargetPart(hp);
 		HeaderReference ref = F.createHeaderReference();
 		ref.setId(rel.getId());
-		ref.setType(HdrFtrRef.DEFAULT);
+		ref.setType(type);
 		sectPr().getEGHdrFtrReferences().add(ref);
 	}
 
-	public void addFooter(String font, int halfPts, String... lines) throws Exception {
+	private void evenAndOddHeaders() throws Exception {
+		DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
+		dsp.getContents().setEvenAndOddHeaders(new BooleanDefaultTrue());
+	}
+
+	/** Page size in twips and margins (top, right, bottom, left) for the current section. */
+	public void pageGeometry(int wTwips, int hTwips, boolean landscape, int top, int right, int bottom, int left) {
+		SectPr sp = sectPr();
+		SectPr.PgSz sz = sp.getPgSz() == null ? F.createSectPrPgSz() : sp.getPgSz();
+		sz.setW(BigInteger.valueOf(wTwips));
+		sz.setH(BigInteger.valueOf(hTwips));
+		if (landscape) sz.setOrient(org.docx4j.wml.STPageOrientation.LANDSCAPE);
+		sp.setPgSz(sz);
+		SectPr.PgMar m = sp.getPgMar();
+		m.setTop(BigInteger.valueOf(top));
+		m.setRight(BigInteger.valueOf(right));
+		m.setBottom(BigInteger.valueOf(bottom));
+		m.setLeft(BigInteger.valueOf(left));
+	}
+
+	// ---------------------------------------------------------------- anchored images
+
+	/**
+	 * A generated PNG as a floating (anchored) picture. wrap: "square" (text both sides),
+	 * "topAndBottom", or "none" (behind text). Horizontal: alignment "left"/"right"/"center"
+	 * relative to the margin, or a posOffset in EMU when hAlign is null. Vertical: posOffset
+	 * from the paragraph.
+	 */
+	public R anchoredImage(int wPx, int hPx, long cxEmu, long cyEmu, String wrap, String hAlign, long hOffsetEmu, long vOffsetEmu) throws Exception {
+		imageCounter++;
+		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, mdp, png(wPx, hPx));
+		String rId = imagePart.getSourceRelationship().getId();
+		String wrapXml = "square".equals(wrap) ? "<wp:wrapSquare wrapText=\"bothSides\"/>"
+				: "topAndBottom".equals(wrap) ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
+		String posH = hAlign != null ? "<wp:align>" + hAlign + "</wp:align>" : "<wp:posOffset>" + hOffsetEmu + "</wp:posOffset>";
+		String xml = "<wp:anchor xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
+				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
+				+ " distT=\"0\" distB=\"0\" distL=\"114300\" distR=\"114300\" simplePos=\"0\" relativeHeight=\"" + (251658240 + imageCounter) + "\""
+				+ " behindDoc=\"" + ("none".equals(wrap) ? 1 : 0) + "\" locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\">"
+				+ "<wp:simplePos x=\"0\" y=\"0\"/>"
+				+ "<wp:positionH relativeFrom=\"margin\">" + posH + "</wp:positionH>"
+				+ "<wp:positionV relativeFrom=\"paragraph\"><wp:posOffset>" + vOffsetEmu + "</wp:posOffset></wp:positionV>"
+				+ "<wp:extent cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+				+ wrapXml
+				+ "<wp:docPr id=\"" + imageCounter + "\" name=\"anchor" + imageCounter + "\"/>"
+				+ "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect=\"1\"/></wp:cNvGraphicFramePr>"
+				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic>"
+				+ "<pic:nvPicPr><pic:cNvPr id=\"" + (100 + imageCounter) + "\" name=\"anchor" + imageCounter + "\"/><pic:cNvPicPr/></pic:nvPicPr>"
+				+ "<pic:blipFill><a:blip r:embed=\"" + rId + "\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
+				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr>"
+				+ "</pic:pic></a:graphicData></a:graphic></wp:anchor>";
+		Object anchor = XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.dml.wordprocessingDrawing.Anchor.class);
+		if (anchor instanceof jakarta.xml.bind.JAXBElement) anchor = ((jakarta.xml.bind.JAXBElement<?>) anchor).getValue();
+		R r = F.createR();
+		Drawing d = F.createDrawing();
+		d.getAnchorOrInline().add((org.docx4j.dml.wordprocessingDrawing.Anchor) anchor);
+		r.getContent().add(d);
+		return r;
+	}
+
+	private static byte[] png(int wPx, int hPx) throws Exception {
+		BufferedImage img = new BufferedImage(wPx, hPx, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = img.createGraphics();
+		for (int x = 0; x < wPx; x++) {
+			int v = 80 + (x * 150) / Math.max(1, wPx);
+			g.setColor(new Color(v, v, 220));
+			g.drawLine(x, 0, x, hPx);
+		}
+		g.setColor(Color.BLACK);
+		g.drawRect(0, 0, wPx - 1, hPx - 1);
+		g.drawLine(0, 0, wPx - 1, hPx - 1);
+		g.dispose();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ImageIO.write(img, "png", bos);
+		return bos.toByteArray();
+	}
+
+	// ---------------------------------------------------------------- footnotes
+
+	private int footnoteCounter = 0;
+	private StringBuilder footnotesXml;
+
+	/** A run holding a footnote reference; the footnote's text goes into the footnotes part (created on first use). */
+	public R footnoteRef(String footnoteText, String font, int halfPts) throws Exception {
+		if (footnotesXml == null) {
+			footnotesXml = new StringBuilder();
+			DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
+			org.docx4j.wml.CTFtnDocProps fp = F.createCTFtnDocProps();
+			org.docx4j.wml.CTFtnEdnSepRef sep = F.createCTFtnEdnSepRef(); sep.setId(BigInteger.valueOf(-1));
+			org.docx4j.wml.CTFtnEdnSepRef cont = F.createCTFtnEdnSepRef(); cont.setId(BigInteger.ZERO);
+			fp.getFootnote().add(sep); fp.getFootnote().add(cont);
+			dsp.getContents().setFootnotePr(fp);
+		}
+		footnoteCounter++;
+		String rpr = "<w:rPr><w:rFonts w:ascii=\"" + font + "\" w:hAnsi=\"" + font + "\" w:cs=\"" + font + "\"/><w:sz w:val=\"" + halfPts + "\"/><w:szCs w:val=\"" + halfPts + "\"/></w:rPr>";
+		footnotesXml.append("<w:footnote w:id=\"" + footnoteCounter + "\"><w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr>"
+				+ "<w:r><w:rPr><w:vertAlign w:val=\"superscript\"/></w:rPr><w:footnoteRef/></w:r>"
+				+ "<w:r>" + rpr + "<w:t xml:space=\"preserve\"> " + footnoteText.replace("&", "&amp;").replace("<", "&lt;") + "</w:t></w:r></w:p></w:footnote>");
+		R r = F.createR();
+		RPr rp = F.createRPr();
+		CTVerticalAlignRun va = F.createCTVerticalAlignRun(); va.setVal(STVerticalAlignRun.SUPERSCRIPT); rp.setVertAlign(va);
+		r.setRPr(rp);
+		org.docx4j.wml.CTFtnEdnRef ref = F.createCTFtnEdnRef();
+		ref.setId(BigInteger.valueOf(footnoteCounter));
+		r.getContent().add(F.createRFootnoteReference(ref));
+		return r;
+	}
+
+	/** Must be called after all footnoteRef() calls: writes the footnotes part. */
+	public void finishFootnotes() throws Exception {
+		if (footnotesXml == null) return;
+		String xml = "<w:footnotes xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+				+ "<w:footnote w:type=\"separator\" w:id=\"-1\"><w:p><w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr><w:r><w:separator/></w:r></w:p></w:footnote>"
+				+ "<w:footnote w:type=\"continuationSeparator\" w:id=\"0\"><w:p><w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>"
+				+ footnotesXml + "</w:footnotes>";
+		org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart fp = new org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart();
+		Object o = XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.wml.CTFootnotes.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		fp.setJaxbElement((org.docx4j.wml.CTFootnotes) o);
+		mdp.addTargetPart(fp);
+	}
+
+		public void addFooter(String font, int halfPts, String... lines) throws Exception {
+		addFooter(HdrFtrRef.DEFAULT, font, halfPts, lines);
+	}
+
+	public void addFooter(HdrFtrRef type, String font, int halfPts, String... lines) throws Exception {
+		if (type == HdrFtrRef.FIRST) sectPr().setTitlePg(new BooleanDefaultTrue());
+		if (type == HdrFtrRef.EVEN) evenAndOddHeaders();
 		hdrFtrCounter++;
 		FooterPart fp = new FooterPart(new PartName("/word/footer" + hdrFtrCounter + ".xml"));
 		Ftr ftr = F.createFtr();
@@ -305,10 +442,10 @@ public final class Doc {
 			ftr.getContent().add(plainParagraph(line, font, halfPts));
 		}
 		fp.setJaxbElement(ftr);
-		Relationship rel = mdp.addTargetPart(fp);
+				Relationship rel = mdp.addTargetPart(fp);
 		FooterReference ref = F.createFooterReference();
 		ref.setId(rel.getId());
-		ref.setType(HdrFtrRef.DEFAULT);
+		ref.setType(type);
 		sectPr().getEGHdrFtrReferences().add(ref);
 	}
 
@@ -682,8 +819,21 @@ public final class Doc {
 			return this;
 		}
 
-		public Para keepNext() {
+				public Para keepNext() {
 			ppr.setKeepNext(new BooleanDefaultTrue());
+			return this;
+		}
+
+		public Para widowControl(boolean on) {
+			BooleanDefaultTrue b = new BooleanDefaultTrue();
+			b.setVal(on);
+			ppr.setWidowControl(b);
+			return this;
+		}
+
+		/** Append a prepared run (an image, a footnote reference) after the text. */
+		public Para run(R r) {
+			parts.add(new Object[] { r, null, null, null });
 			return this;
 		}
 
@@ -708,7 +858,11 @@ public final class Doc {
 			if (label) {
 				p.getContent().add(Doc.run(doc.nextLabel(), font, halfPts, null));
 			}
-			for (Object[] part : parts) {
+						for (Object[] part : parts) {
+				if (part[0] instanceof R) {
+					p.getContent().add((R) part[0]);
+					continue;
+				}
 				String f = part[1] == null ? font : (String) part[1];
 				int sz = part[2] == null ? halfPts : (Integer) part[2];
 				p.getContent().add(Doc.run((String) part[0], f, sz, (Consumer<RPr>) part[3]));

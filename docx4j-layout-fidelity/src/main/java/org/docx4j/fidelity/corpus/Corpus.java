@@ -378,6 +378,87 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+				PROBES.add(new Probe("widow-orphan",
+				"three-line paragraphs straddling page bottoms with widowControl on (section 1) and off (section 2)", () -> {
+			Doc d = Doc.create(15);
+			for (int i = 0; i < 34; i++) {
+				d.para(prose(3, i)).add();
+			}
+			d.endSection("nextPage", 0);
+			for (int i = 0; i < 34; i++) {
+				d.para(prose(3, i + 1)).widowControl(false).add();
+			}
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("page-first-even-odd",
+				"different first-page header, even/odd headers and footers, over five pages", () -> {
+			Doc d = Doc.create(15);
+			d.addHeader(org.docx4j.wml.HdrFtrRef.FIRST, SANS, 20, "FIRST PAGE HEADER");
+			d.addHeader(org.docx4j.wml.HdrFtrRef.EVEN, SANS, 20, "even page header");
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, SANS, 20, "odd page header");
+			d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, SANS, 20, "odd footer");
+			d.addFooter(org.docx4j.wml.HdrFtrRef.EVEN, SANS, 20, "even footer");
+			for (int i = 0; i < 60; i++) {
+				d.para(prose(3, i)).after(160).add();
+			}
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("page-tall-header",
+				"a 12-line header whose height exceeds the top margin (body must move down), and a 6-line footer", () -> {
+			Doc d = Doc.create(15);
+			String[] h = new String[12];
+			for (int i = 0; i < 12; i++) h[i] = "tall header line " + (i + 1);
+			d.addHeader(SANS, 20, h);
+			d.addFooter(SANS, 20, "footer 1", "footer 2", "footer 3", "footer 4", "footer 5", "footer 6");
+			for (int i = 0; i < 30; i++) {
+				d.para(prose(3, i)).after(160).add();
+			}
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("page-landscape-margins",
+				"section 1 A4 portrait 1in margins; section 2 A4 landscape with 0.5in/1.5in/0.75in/2in margins; section 3 Letter portrait 0.75in", () -> {
+			Doc d = Doc.create(15);
+			for (int i = 0; i < 6; i++) d.para(prose(3, i)).after(160).add();
+			d.endSection("nextPage", 0);
+			d.pageGeometry(16839, 11907, true, 720, 2160, 1080, 2880);
+			for (int i = 0; i < 8; i++) d.para(prose(3, i + 2)).after(160).add();
+			d.endSection("nextPage", 0);
+			d.pageGeometry(12240, 15840, false, 1080, 1080, 1080, 1080);
+			for (int i = 0; i < 8; i++) d.para(prose(3, i + 4)).after(160).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("footnotes",
+				"short and long footnotes, several on one page, one near the page bottom", () -> {
+			Doc d = Doc.create(15);
+			d.para("first paragraph").run(d.footnoteRef("A short footnote.", SERIF, 20)).text(" " + prose(2)).after(160).add();
+			d.para(prose(2, 1)).run(d.footnoteRef("A long footnote: " + prose(4, 2), SERIF, 20)).text(" " + prose(1, 3)).after(160).add();
+			for (int i = 0; i < 20; i++) {
+				Doc.Para p = d.para(prose(3, i + 2)).after(160);
+				if (i % 6 == 5) p.run(d.footnoteRef("Footnote in the flow, paragraph " + i + ". " + prose(1, i), SERIF, 20));
+				p.add();
+			}
+			d.finishFootnotes();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("image-anchored",
+				"anchored pictures: square wrap at the right margin, top-and-bottom wrap, behind text, and a square wrap at a left offset", () -> {
+			Doc d = Doc.create(15);
+			d.para("square wrap, right of margin. " + prose(1)).after(160).run(d.anchoredImage(200, 150, 1440000L, 1080000L, "square", "right", 0, 0)).add();
+			for (int i = 0; i < 4; i++) d.para(prose(3, i + 1)).after(160).add();
+			d.para("top and bottom wrap, centred. " + prose(1, 2)).after(160).run(d.anchoredImage(300, 100, 2160000L, 720000L, "topAndBottom", "center", 0, 0)).add();
+			for (int i = 0; i < 3; i++) d.para(prose(3, i + 3)).after(160).add();
+			d.para("behind text at a left offset. " + prose(1, 4)).after(160).run(d.anchoredImage(200, 100, 1440000L, 720000L, "none", null, 914400L, 0)).add();
+			for (int i = 0; i < 3; i++) d.para(prose(3, i + 5)).after(160).add();
+			d.para("square wrap at a left offset of 1in, 0.5in below the paragraph. " + prose(1, 6)).after(160).run(d.anchoredImage(150, 150, 1080000L, 1080000L, "square", null, 914400L, 457200L)).add();
+			for (int i = 0; i < 4; i++) d.para(prose(3, i + 6)).after(160).add();
+			return d.pkg();
+		}));
+
 		// ---------------------------------------------------------- images
 		PROBES.add(new Probe("image-inline",
 				"inline images: small in a line of text, and a wide one on its own", () -> {
