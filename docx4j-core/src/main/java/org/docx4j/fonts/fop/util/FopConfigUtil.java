@@ -48,6 +48,7 @@ import org.docx4j.convert.out.fopconf.Fop.Renderers.Renderer;
 import org.docx4j.convert.out.fopconf.Substitutions;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.jaxb.Context;
@@ -234,6 +235,9 @@ public class FopConfigUtil {
 		} else {
 			for (Entry<String, Font> entry : fontEntries.entrySet() ) {
 				rendererFonts.getFont().add(entry.getValue());
+				if (!kerning()) {
+					rendererFonts.getFont().add(kernedTwin(entry.getValue()));
+				}
 			}			
 		}
 		return rendererFonts;
@@ -249,6 +253,27 @@ public class FopConfigUtil {
 	 */
 	private static boolean kerning() {
 		return Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.kerning", false);
+	}
+
+	/**
+	 * The same font again with FOP kerning on, under each triplet name plus
+	 * {@link RunFontSelector#KERNED_SUFFIX}: Word kerns a run only when its
+	 * w:kern threshold is at or below its size, and FOP kerns per font, so
+	 * RunFontSelector sends kerned runs to this twin.  FOP embeds a declared
+	 * font only when it is used, so documents without kerned runs pay nothing.
+	 *
+	 * @since 17.0.5
+	 */
+	private static org.docx4j.convert.out.fopconf.Fonts.Font kernedTwin(org.docx4j.convert.out.fopconf.Fonts.Font font) {
+		org.docx4j.convert.out.fopconf.Fonts.Font twin = factory.createFontsFont();
+		twin.setEmbedUrl(font.getEmbedUrl());
+		twin.setSubFont(font.getSubFont());
+		twin.setSimulateStyle(font.isSimulateStyle());
+		twin.setKerning(true);
+		for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : font.getFontTriplet()) {
+			twin.getFontTriplet().add(createFontTriplet(t.getName() + RunFontSelector.KERNED_SUFFIX, t.getStyle(), t.getWeight()));
+		}
+		return twin;
 	}
 
 	private static void createFontEntrySimulateStyles(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 

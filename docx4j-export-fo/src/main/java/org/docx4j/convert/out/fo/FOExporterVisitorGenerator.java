@@ -344,6 +344,14 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		try {
 			// the effective pPr, for font selection within the paragraph (as before)
 			generator.pPr = conversionContext.getPropertyResolver().getEffectivePPr(p.getPPr());
+			// the resolved pPr has no w:pStyle; RunFontSelector needs it to apply the
+			// paragraph style's run properties (fonts, size, w:kern) to the runs, as
+			// the XSLT pathway does with the raw pPr (found by KernedRunsTest, 17.0.5)
+			if (generator.pPr != null && generator.pPr.getPStyle() == null
+					&& p.getPPr() != null && p.getPPr().getPStyle() != null) {
+				generator.pPr = XmlUtils.deepCopy(generator.pPr);
+				generator.pPr.setPStyle(p.getPPr().getPStyle());
+			}
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
 		}

@@ -75,10 +75,18 @@ builds the FO.
 by 0.36 of it (lowered by 0.16 for subscripts), as Word does; they were full size, and
 FOP grew the line by the shift (a footnote reference made its line 10pt taller).  The FO
 root now carries line-height-shift-adjustment="disregard-shifts".
-- kerning is off by default (docx4j.fonts.fop.util.FopConfigUtil.kerning=false): Word
-does not kern unless w:kern asks for it, FOP kerned every font, and a kerned line can be
-a fraction of a point shorter, so a word Word wraps stayed on the line and every later
-line moved.  Four long-prose probes went from 88-94% to 100% line parity.
+- kerning as Word applies it: Word kerns a run only when w:kern is present and its
+threshold is at or below the run's size (ECMA-376 17.3.2.19; the default template kerns
+only the Title style), FOP kerned every font, and a kerned line can be a fraction of a
+point shorter, so a word Word wraps stayed on the line and every later line moved.
+FOP's fonts are now configured unkerned and each also under "<name>+kern" with kerning
+on (embedded only if used); the run font selector sends runs Word kerns to the twin
+(RunFontSelector.isKerned).  Four long-prose probes went from 88-94% to 100% line parity.
+docx4j.fonts.fop.util.FopConfigUtil.kerning=true kerns everything, as before.
+Found on the way: the visitor pathway (the default) handed the run font selector a
+resolved pPr without its w:pStyle, so run properties coming from the paragraph style
+(fonts, size, w:kern) were not seen when choosing a run's font; the XSLT pathway had
+them.  The style id is kept now.
 - 20 of 28 layout probes now match Word line for line (footnotes 98%, anchored 86%: the
 misses are the both-sides wrap and a 0.4pt width case).  Harness: -Dfidelity.only=id,id.
 

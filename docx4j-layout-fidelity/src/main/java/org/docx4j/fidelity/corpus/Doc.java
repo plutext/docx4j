@@ -495,6 +495,15 @@ public final class Doc {
 		rpr.setB(new BooleanDefaultTrue());
 	}
 
+	/** w:kern: kern this run if its size is at least this many half-points. */
+	public static java.util.function.Consumer<RPr> kern(int halfPts) {
+		return rpr -> {
+			HpsMeasure k = F.createHpsMeasure();
+			k.setVal(BigInteger.valueOf(halfPts));
+			rpr.setKern(k);
+		};
+	}
+
 	// ---------------------------------------------------------------- images
 
 	/**

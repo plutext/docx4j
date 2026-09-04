@@ -83,6 +83,10 @@ public class PhysicalFonts {
 	 * @return
 	 */
 	public static PhysicalFont get(String key) {
+		if (key.endsWith(RunFontSelector.KERNED_SUFFIX)) {
+			// the kerned twin FopConfigUtil registers for a font (per-run kerning)
+			key = key.substring(0, key.length() - RunFontSelector.KERNED_SUFFIX.length());
+		}
 		return physicalFontMap.get(key.toLowerCase());
 	}
 	/**

@@ -460,6 +460,22 @@ public final class Corpus {
 		}));
 
 		// ---------------------------------------------------------- images
+		PROBES.add(new Probe("kern-title",
+				"kerning: w:kern at, above and below the run size, via the Title style, and none (control)", () -> {
+			Doc d = Doc.create(15);
+			String pairs = "AVAILABLE TAX WAYS To Yo Vo Wa Te Ty. Typography AWAY from the Valley; PAY VAT AT LA. "
+					+ "Two Yachts, Toy Yaks, Wavy Tyres. ";
+			d.para("no kern, 12pt (control). " + pairs + prose(2)).after(160).add();
+			d.para().run("kern 28 at 28pt (kerns). " + pairs, SERIF, 56, Doc.kern(28)).after(160).add();
+			d.para().run("kern 28 at 12pt (below threshold, no kern). " + pairs + prose(2, 1), SERIF, 24, Doc.kern(28)).after(160).add();
+			d.para().run("kern 24 at 12pt (at threshold, kerns). " + pairs + prose(2, 2), SERIF, 24, Doc.kern(24)).after(160).add();
+			d.para().run("kern 28 at 14pt (at threshold, kerns). " + pairs + prose(2, 3), SERIF, 28, Doc.kern(28)).after(160).add();
+			d.para().run("kern 2 at 12pt, prose (kerns). " + prose(4, 4), SERIF, 24, Doc.kern(2)).after(160).add();
+			d.para("Title style (kern 28 from the style). " + pairs).style("Title").add();
+			d.para("no kern again (control). " + pairs + prose(2, 5)).after(160).add();
+			return d.pkg();
+		}));
+
 		PROBES.add(new Probe("image-inline",
 				"inline images: small in a line of text, and a wide one on its own", () -> {
 			Doc d = Doc.create(15);

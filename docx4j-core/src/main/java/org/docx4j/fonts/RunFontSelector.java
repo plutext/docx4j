@@ -303,7 +303,7 @@ public class RunFontSelector {
     			el.setAttribute("font-family", fallbackFont );
     			applyLineHeight(el, fallbackFont);
     		} else {	
-    			el.setAttribute("font-family", val );
+    			el.setAttribute("font-family", foFontFamily(val) );
     			applyLineHeight(el, val);
     		}
     		
@@ -383,7 +383,7 @@ public class RunFontSelector {
     			el.setAttribute("font-family", fallbackFont );
     			applyLineHeight(el, fallbackFont);
     		} else {	
-    			el.setAttribute("font-family", val );
+    			el.setAttribute("font-family", foFontFamily(val) );
     			applyLineHeight(el, val);
     		}
     	} 
@@ -396,11 +396,46 @@ public class RunFontSelector {
      *  fontSelector so that the spans it creates can carry the line-height Word would give them. */
     private PPrBase.Spacing currentSpacing;
     private double currentSizePt = -1;
+
+    /**
+     * Suffix of the font-family name under which FopConfigUtil registers a
+     * font's kerned twin (same file, FOP kerning on).  Word kerns a run only
+     * when its w:kern threshold is at or below its size (ECMA-376 17.3.2.19),
+     * and FOP kerns per font, so kerned runs use the twin.
+     *
+     * @since 17.0.5
+     */
+    public static final String KERNED_SUFFIX = "+kern";
+
+    /** whether the current run is kerned in Word: w:kern present, non-zero, and no
+     *  larger than the run's w:sz (both half-points) */
+    private boolean currentKerned;
+
+    /** Word's rule for a run's kerning (the rPr must be the effective one). */
+    public static boolean isKerned(RPr rPr) {
+    	if (rPr==null || rPr.getKern()==null || rPr.getKern().getVal()==null) return false;
+    	java.math.BigInteger kern = rPr.getKern().getVal();
+    	if (kern.signum()<=0) return false;
+    	java.math.BigInteger sz = (rPr.getSz()==null || rPr.getSz().getVal()==null)
+    			? java.math.BigInteger.valueOf(20) : rPr.getSz().getVal(); // 10pt if nothing says otherwise
+    	return sz.compareTo(kern) >= 0;
+    }
+
+    /** per-run kerning is only needed while FOP's fonts are unkerned (the default) */
+    private static boolean perRunKerning() {
+    	return !Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.kerning", false);
+    }
+
+    /** the font-family for the FO span: the kerned twin when the run kerns */
+    private String foFontFamily(String physicalFontName) {
+    	return (currentKerned && perRunKerning()) ? physicalFontName + KERNED_SUFFIX : physicalFontName;
+    }
     private PPr lastPPr;
     private PPrBase.Spacing lastPPrSpacing;
 
     private void captureLineSpec(PropertyResolver propertyResolver, PPr pPr, RPr rPr) {
     	if (outputType!=RunFontActionType.XSL_FO) return;
+    	currentKerned = isKerned(rPr);
     	currentSizePt = (rPr!=null && rPr.getSz()!=null && rPr.getSz().getVal()!=null)
     			? rPr.getSz().getVal().doubleValue()/2 : -1;
     	// effective pPr is needed for the style-inherited w:spacing; cache per pPr object
