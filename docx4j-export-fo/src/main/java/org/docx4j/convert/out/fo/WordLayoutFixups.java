@@ -82,8 +82,12 @@ public final class WordLayoutFixups {
 		/** Hint attributes XsltFOFunctions puts on blocks for this pass (stripped here).  Plain
 	 *  names, not namespaced: Xalan drops the namespace declaration when it copies the
 	 *  fragment in the XSLT pathway, leaving an unbound prefix. */
-	public static final String HINT_PSTYLE = "docx4j-pstyle";
+		public static final String HINT_PSTYLE = "docx4j-pstyle";
 	public static final String HINT_CONTEXTUAL = "docx4j-contextual";
+	/** "b", "a" or "ba": which of the paragraph's spacings are HTML auto spacing. */
+	public static final String HINT_AUTOSPACING = "docx4j-autospacing";
+	/** "1" on the paragraph block of a list item. */
+	public static final String HINT_LIST = "docx4j-list";
 
 	/** docx4j.convert.out.fo.wordLayoutFixups (default true).  When false, no hints are
 	 *  stamped and the pass is skipped entirely. */
@@ -110,11 +114,13 @@ public final class WordLayoutFixups {
 		}
 	}
 
-		public static void apply(Document doc, int compatibilityMode) {
+			public static void apply(Document doc, int compatibilityMode) {
 		mergePageBreakParagraphs(doc, compatibilityMode);
 		applyContextualSpacing(doc);
+		applyAutoSpacingBetweenListItems(doc);
 		retainSpaceBeforeAtFlowStart(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
+		fixLists(doc);
 		stripHints(doc);
 	}
 
@@ -123,6 +129,64 @@ public final class WordLayoutFixups {
 		for (Element block : elements(doc, "block")) {
 			block.removeAttribute(HINT_PSTYLE);
 			block.removeAttribute(HINT_CONTEXTUAL);
+			block.removeAttribute(HINT_AUTOSPACING);
+			block.removeAttribute(HINT_LIST);
+		}
+	}
+
+	// ------------------------------------------------------------ 0b. auto spacing in lists
+
+	/**
+	 * Word drops HTML auto spacing between consecutive list items (measured:
+	 * 14pt before the first item and after the last, 0 between items), the way
+	 * contextual spacing works.
+	 */
+	static void applyAutoSpacingBetweenListItems(Document doc) {
+		for (Element flow : elements(doc, "flow")) autoSpacingAmong(flow);
+		for (Element cell : elements(doc, "table-cell")) autoSpacingAmong(cell);
+	}
+
+	private static void autoSpacingAmong(Element container) {
+		List<Element> paras = paragraphBlocks(container);
+		for (int i = 0; i + 1 < paras.size(); i++) {
+			Element a = paras.get(i), b = paras.get(i + 1);
+			if (!"1".equals(a.getAttribute(HINT_LIST)) || !"1".equals(b.getAttribute(HINT_LIST))) continue;
+			boolean aAuto = a.getAttribute(HINT_AUTOSPACING).indexOf('a') >= 0;
+			boolean bAuto = b.getAttribute(HINT_AUTOSPACING).indexOf('b') >= 0;
+			if (aAuto && bAuto) {
+				a.setAttribute("space-after", "0pt");
+				b.setAttribute("space-before", "0pt");
+			}
+		}
+	}
+
+	// ------------------------------------------------------------ 4. lists
+
+	/**
+	 * docx4j puts the paragraph's properties on the block inside
+	 * fo:list-item-body, where FOP does not apply space-before/space-after (the
+	 * list showed no spacing at all: measured 13.4pt before a list item with 14pt
+	 * auto spacing, against Word's 27.8).  Move them to the fo:list-block, which
+	 * is the flow-level object (one list item per list-block in docx4j's output),
+	 * and give the label block the body's line-height so both sit on one line.
+	 */
+	static void fixLists(Document doc) {
+		for (Element listBlock : elements(doc, "list-block")) {
+			Element body = null, label = null;
+			for (Element b : descendants(listBlock, "list-item-body")) { body = firstBlock(b); break; }
+			for (Element l : descendants(listBlock, "list-item-label")) { label = firstBlock(l); break; }
+			if (body == null) continue;
+			for (String name : new String[] { "space-before", "space-after",
+					"space-before.conditionality", "space-after.conditionality" }) {
+				if (body.hasAttribute(name)) {
+					listBlock.setAttribute(name, body.getAttribute(name));
+					body.removeAttribute(name);
+				}
+			}
+			if (label != null && !label.hasAttribute("line-height") && body.hasAttribute("line-height")) {
+				label.setAttribute("line-height", body.getAttribute("line-height"));
+				if (body.hasAttribute("font-size")) label.setAttribute("font-size", body.getAttribute("font-size"));
+			}
 		}
 	}
 
@@ -130,8 +194,9 @@ public final class WordLayoutFixups {
 
 	/**
 	 * w:contextualSpacing ("Don't add space between paragraphs of the same style"):
-	 * a paragraph with it ignores its space-before when the previous paragraph has the
-	 * same style, and its space-after when the next one has (ECMA-376 17.3.1.9).
+	 * no space between two paragraphs of the same style when either has it
+	 * (ECMA-376 17.3.1.9 describes the flagged paragraph's own spacing; Word also
+	 * drops the neighbour's, measured).
 	 * Neighbours are the consecutive paragraphs of a flow or of a table cell; a list
 	 * item's paragraph is the block inside its list-item-body.
 	 */
@@ -140,7 +205,8 @@ public final class WordLayoutFixups {
 		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell);
 	}
 
-	private static void contextualSpacingAmong(Element container) {
+		/** The paragraph blocks of a flow or cell, in order (one per flow-level child that is a paragraph). */
+	private static List<Element> paragraphBlocks(Element container) {
 		List<Element> paras = new ArrayList<>();
 		NodeList children = container.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
@@ -149,12 +215,22 @@ public final class WordLayoutFixups {
 			Element p = paragraphBlock((Element) n);
 			if (p != null) paras.add(p);
 		}
+		return paras;
+	}
+
+	private static void contextualSpacingAmong(Element container) {
+		List<Element> paras = paragraphBlocks(container);
 		for (int i = 0; i + 1 < paras.size(); i++) {
 			Element a = paras.get(i), b = paras.get(i + 1);
-			String sa = a.getAttribute(HINT_PSTYLE), sb = b.getAttribute(HINT_PSTYLE);
+						String sa = a.getAttribute(HINT_PSTYLE), sb = b.getAttribute(HINT_PSTYLE);
 			if (sa == null || sa.length() == 0 || !sa.equals(sb)) continue;
-			if ("1".equals(a.getAttribute(HINT_CONTEXTUAL))) a.setAttribute("space-after", "0pt");
-			if ("1".equals(b.getAttribute(HINT_CONTEXTUAL))) b.setAttribute("space-before", "0pt");
+			// Measured (Word 365): the gap is zero when EITHER paragraph has it, not
+			// just the side the spec's wording suggests: a contextual paragraph followed
+			// by a non-contextual one of the same style with 12pt before got no gap.
+			if ("1".equals(a.getAttribute(HINT_CONTEXTUAL)) || "1".equals(b.getAttribute(HINT_CONTEXTUAL))) {
+				a.setAttribute("space-after", "0pt");
+				b.setAttribute("space-before", "0pt");
+			}
 		}
 	}
 
@@ -210,12 +286,60 @@ public final class WordLayoutFixups {
 
 	// ------------------------------------------------------------ 2. flow start
 
+		/**
+	 * At the top of the first page of a section, Word applies the first paragraph's
+	 * space-before reduced by the space-after of the last paragraph of the previous
+	 * section (measured: 36pt before after a section-break paragraph with 0 / 10 /
+	 * 20pt after gave 36 / 26 / 16pt; 6pt before after 20pt after gave 0).  On the
+	 * first page of the document there is no previous paragraph, so the full value
+	 * applies.  FO would discard it, hence conditionality="retain".
+	 */
 	static void retainSpaceBeforeAtFlowStart(Document doc) {
+		double prevAfter = 0;
 		for (Element flow : elements(doc, "flow")) {
 			Element first = firstBlock(flow);
 			if (first != null && hasSpace(first, "space-before")) {
-				first.setAttribute("space-before.conditionality", "retain");
+				double before = Math.max(0, lengthPt(first.getAttribute("space-before")) - prevAfter);
+				if (before > 0) {
+					first.setAttribute("space-before", org.docx4j.fonts.WordLineMetrics.format(before));
+					first.setAttribute("space-before.conditionality", "retain");
+				} else {
+					first.setAttribute("space-before", "0pt");
+				}
 			}
+			Element last = lastBlock(flow);
+			prevAfter = (last == null || !hasSpace(last, "space-after")) ? 0 : lengthPt(last.getAttribute("space-after"));
+		}
+	}
+
+	/** The last fo:block in document order under this element, not descending into tables. */
+	private static Element lastBlock(Element parent) {
+		NodeList children = parent.getChildNodes();
+		for (int i = children.getLength() - 1; i >= 0; i--) {
+			Node n = children.item(i);
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			if (isFo(el, "table")) return null;
+			if (isFo(el, "block")) return el;
+			Element inner = lastBlock(el);
+			if (inner != null) return inner;
+		}
+		return null;
+	}
+
+	/** An FO length in points; 0 if unparseable. */
+	static double lengthPt(String v) {
+		if (v == null) return 0;
+		v = v.trim();
+		try {
+			if (v.endsWith("pt")) return Double.parseDouble(v.substring(0, v.length() - 2));
+			if (v.endsWith("in")) return Double.parseDouble(v.substring(0, v.length() - 2)) * 72;
+			if (v.endsWith("mm")) return Double.parseDouble(v.substring(0, v.length() - 2)) * 72 / 25.4;
+			if (v.endsWith("cm")) return Double.parseDouble(v.substring(0, v.length() - 2)) * 72 / 2.54;
+			if (v.endsWith("px")) return Double.parseDouble(v.substring(0, v.length() - 2)) * 0.75;
+			return Double.parseDouble(v);
+		} catch (NumberFormatException e) {
+			return 0;
 		}
 	}
 
@@ -240,15 +364,17 @@ public final class WordLayoutFixups {
 		for (Element cell : elements(doc, "table-cell")) {
 			List<Element> blocks = childBlocks(cell);
 			if (blocks.isEmpty()) continue;
-			Element first = blocks.get(0);
-			if (hasSpace(first, "space-before")) {
+						Element first = blocks.get(0);
+			if (first.getAttribute(HINT_AUTOSPACING).indexOf('b') >= 0) {
+				first.setAttribute("space-before", "0pt"); // auto spacing is dropped at cell edges (measured)
+			} else if (hasSpace(first, "space-before")) {
 				first.setAttribute("space-before.conditionality", "retain");
 			}
-			if (compatibilityMode >= 15) {
-				Element last = blocks.get(blocks.size() - 1);
-				if (hasSpace(last, "space-after")) {
-					last.setAttribute("space-after.conditionality", "retain");
-				}
+			Element last = blocks.get(blocks.size() - 1);
+			if (last.getAttribute(HINT_AUTOSPACING).indexOf('a') >= 0) {
+				last.setAttribute("space-after", "0pt");
+			} else if (compatibilityMode >= 15 && hasSpace(last, "space-after")) {
+				last.setAttribute("space-after.conditionality", "retain");
 			}
 		}
 	}

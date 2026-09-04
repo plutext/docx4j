@@ -714,10 +714,18 @@ public class XsltFOFunctions {
 			// paragraph style, and whether w:contextualSpacing applies, which needs the
 			// neighbours.  Plain attribute names: a namespaced attribute loses its
 			// declaration when Xalan copies the fragment in the XSLT pathway.  @since 17.0.5
-			if (WordLayoutFixups.isEnabled()) {
+						if (WordLayoutFixups.isEnabled()) {
 				foBlockElement.setAttribute(WordLayoutFixups.HINT_PSTYLE, pStyleVal==null ? "" : pStyleVal);
 				if (pPr!=null && pPr.getContextualSpacing()!=null && pPr.getContextualSpacing().isVal()) {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_CONTEXTUAL, "1");
+				}
+				if (pPr!=null && pPr.getSpacing()!=null
+						&& (pPr.getSpacing().isBeforeAutospacing() || pPr.getSpacing().isAfterAutospacing())) {
+					foBlockElement.setAttribute(WordLayoutFixups.HINT_AUTOSPACING,
+							(pPr.getSpacing().isBeforeAutospacing() ? "b" : "") + (pPr.getSpacing().isAfterAutospacing() ? "a" : ""));
+				}
+				if (foListBlock!=null) {
+					foBlockElement.setAttribute(WordLayoutFixups.HINT_LIST, "1");
 				}
 			}
 			

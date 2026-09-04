@@ -84,6 +84,56 @@ public class WordLayoutFixupsTest {
 		assertTrue("three untouched", b3.contains("space-before=\"12pt\"") && b3.contains("space-after=\"12pt\""));
 	}
 
+		@Test
+	public void contextualSpacingEitherSide() {
+		String in = flow("<fo:block docx4j-pstyle=\"A\" docx4j-contextual=\"1\" space-after=\"12pt\">one</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\" space-before=\"12pt\">two</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		int two = out.indexOf(">two<");
+		assertTrue("neighbour's before dropped too", out.substring(out.lastIndexOf("<fo:block", two), two).contains("space-before=\"0pt\""));
+	}
+
+	@Test
+	public void sectionStartSubtractsPreviousSpaceAfter() {
+		String in = "<fo:root " + NS + ">"
+				+ "<fo:page-sequence><fo:flow flow-name=\"xsl-region-body\"><fo:block space-before=\"36pt\">a</fo:block><fo:block space-after=\"10pt\">sect</fo:block></fo:flow></fo:page-sequence>"
+				+ "<fo:page-sequence><fo:flow flow-name=\"xsl-region-body\"><fo:block space-before=\"36pt\">b</fo:block><fo:block space-after=\"20pt\">sect</fo:block></fo:flow></fo:page-sequence>"
+				+ "<fo:page-sequence><fo:flow flow-name=\"xsl-region-body\"><fo:block space-before=\"6pt\">c</fo:block></fo:flow></fo:page-sequence>"
+				+ "</fo:root>";
+		String out = WordLayoutFixups.apply(in, 15);
+		String a = out.substring(out.lastIndexOf("<fo:block", out.indexOf(">a<")), out.indexOf(">a<"));
+		String b = out.substring(out.lastIndexOf("<fo:block", out.indexOf(">b<")), out.indexOf(">b<"));
+		String c = out.substring(out.lastIndexOf("<fo:block", out.indexOf(">c<")), out.indexOf(">c<"));
+		assertTrue("first page: full 36pt", a.contains("space-before=\"36pt\"") && a.contains("retain"));
+		assertTrue("36 - 10 = 26", b.contains("space-before=\"26pt\"") && b.contains("retain"));
+		assertTrue("6 - 20 -> 0", c.contains("space-before=\"0pt\"") && !c.contains("retain"));
+	}
+
+	@Test
+	public void autoSpacingDroppedBetweenListItemsAndAtCellEdges() {
+		String item = "<fo:list-block><fo:list-item><fo:list-item-label><fo:block>1.</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body><fo:block docx4j-pstyle=\"N\" docx4j-list=\"1\" docx4j-autospacing=\"ba\" line-height=\"13.8pt\" space-before=\"14pt\" space-after=\"14pt\">%s</fo:block></fo:list-item-body></fo:list-item></fo:list-block>";
+		String in = flow("<fo:block docx4j-pstyle=\"N\">plain</fo:block>" + String.format(item, "i1") + String.format(item, "i2") + "<fo:block docx4j-pstyle=\"N\">after</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		// spacing moved to the list-blocks: first keeps 14 before, 0 after; second 0 before, 14 after
+		int i1 = out.indexOf(">i1<"), i2 = out.indexOf(">i2<");
+		String lb1 = out.substring(out.lastIndexOf("<fo:list-block", i1), out.indexOf(">", out.lastIndexOf("<fo:list-block", i1)));
+		String lb2 = out.substring(out.lastIndexOf("<fo:list-block", i2), out.indexOf(">", out.lastIndexOf("<fo:list-block", i2)));
+		assertTrue(lb1, lb1.contains("space-before=\"14pt\"") && lb1.contains("space-after=\"0pt\""));
+		assertTrue(lb2, lb2.contains("space-before=\"0pt\"") && lb2.contains("space-after=\"14pt\""));
+		assertTrue("label block gets the body's line-height", out.contains("<fo:block line-height=\"13.8pt\">1.</fo:block>"));
+
+		String cell = "<fo:table><fo:table-body><fo:table-row><fo:table-cell>"
+				+ "<fo:block docx4j-autospacing=\"ba\" space-before=\"14pt\" space-after=\"14pt\">c1</fo:block>"
+				+ "<fo:block docx4j-autospacing=\"ba\" space-before=\"14pt\" space-after=\"14pt\">c2</fo:block>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>";
+		out = WordLayoutFixups.apply(flow(cell), 15);
+		String c1 = out.substring(out.lastIndexOf("<fo:block", out.indexOf(">c1<")), out.indexOf(">c1<"));
+		String c2 = out.substring(out.lastIndexOf("<fo:block", out.indexOf(">c2<")), out.indexOf(">c2<"));
+		assertTrue(c1, c1.contains("space-before=\"0pt\"") && c1.contains("space-after=\"14pt\"") && !c1.contains("retain"));
+		assertTrue(c2, c2.contains("space-after=\"0pt\"") && c2.contains("space-before=\"14pt\""));
+	}
+
 	@Test
 	public void zeroSpaceNeedsNoRetain() {
 		String in = flow("<fo:block space-before=\"0in\">one</fo:block>");
