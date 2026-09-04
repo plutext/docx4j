@@ -151,9 +151,11 @@ usWinAscent/usWinDescent/lineGap from the font the docx names, and a metric-comp
 clone matches in advance widths, not always vertically (Caladea's single-spacing factor
 is 1.300 to Cambria's 1.172, DejaVu Serif's 1.164 to Symbol's 1.225, Cousine's 1.133 to
 Consolas's 1.171), so every heading, bullet and code line drifted and the guide ran a
-page long.  A table of the vertical metrics of 296 Microsoft font families
+page long.  A table of the vertical metrics of 512 Microsoft font families
 (org/docx4j/fonts/word-line-metrics.properties, read from the fonts of an Office 365
-installation) is now consulted by WordLineMetrics before the physical font's own, and
+installation and its downloaded cloud fonts: Aptos, Grandview, Tenorite and the rest,
+keyed by the names documents use, "Calibri Light" as well as "Calibri") is now
+consulted by WordLineMetrics before the physical font's own, and
 the run font selector stamps the document font on each span (docx4j:font) for the
 jar's per-run line sizing.
 - a list item's first line is sized by its number or bullet too: Word raises the line
