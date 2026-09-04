@@ -201,6 +201,14 @@ page-break-inside: avoid in CSS, and the reverse for CSS import.  Note that a pa
 without keepLines can still be split at a w:br by FOP where Word's widow control would
 not (the break is a nested block); see CR-001 §6.6.
 
+Equations were omitted from PDF in the XSLT pathway:
+- the stylesheet's call to XsltFOFunctions.mathToFO was resolved by Xalan to the Object
+overload, which received a DTM node iterator instead of the unmarshalled OMML and gave
+up, so the XSLT pathway (FLAG_EXPORT_PREFER_XSL) produced an empty paragraph where the
+visitor pathway rendered the equation.  The overload now accepts a node or node
+iterator and converts it (MathMLPdfTest.xsltPathwayEmitsMathMLForeignObject, since
+17.0.4, passes).
+
 Tab leaders inside hyperlinks (PDF):
 - a w:tab inside a w:hyperlink (every entry of a Word table of contents) lost its
 paragraph's tab stops in the visitor pathway, so the dot leader became three spaces and

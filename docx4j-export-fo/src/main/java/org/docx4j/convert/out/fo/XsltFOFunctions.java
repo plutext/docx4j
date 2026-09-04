@@ -216,6 +216,22 @@ public class XsltFOFunctions {
     }
 
     public static DocumentFragment mathToFO(FOConversionContext context, Object omml) {
+    	// Xalan resolves the stylesheet's call to this overload and passes its node
+    	// iterator (a DTMNodeIterator) as the Object, not to the NodeIterator form
+    	// above; the equation then went unconverted in the XSLT pathway (17.0.4).
+    	if (omml instanceof NodeIterator) {
+    		return mathToFO(context, (NodeIterator) omml);
+    	}
+    	if (omml instanceof Node) {
+    		try {
+    			Unmarshaller u = Context.jc.createUnmarshaller();
+    			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+    			omml = XmlUtils.unwrap(u.unmarshal((Node) omml));
+    		} catch (Exception e) {
+    			log.warn("MathML->FO failed; omitting equation: " + e.getMessage());
+    			return null;
+    		}
+    	}
     	Document document = XmlUtils.getNewDocumentBuilder().newDocument();
     	DocumentFragment frag = document.createDocumentFragment();
 
