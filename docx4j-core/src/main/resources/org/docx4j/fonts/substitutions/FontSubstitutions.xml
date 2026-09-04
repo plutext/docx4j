@@ -185,7 +185,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 		<FontType></FontType>
 	</replace>
 	<replace name="consolas">
-		<SubstFonts>consolas;andalemono;bitstreamverasansmono;dejavusansmono;lucidaconsole</SubstFonts>
+		<SubstFonts>consolas;andalemono;bitstreamverasansmono;dejavusansmono;lucidaconsole;cousine;liberationmono;couriernew</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>

@@ -322,6 +322,14 @@ public abstract class Mapper {
 		// Crosextra
     	addMetricallyCompatibleSubstitute("Calibri", "Carlito Regular", null);
     	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", null);
+
+    	// Monospace fonts with no metric-compatible clone: a monospace stand-in keeps
+    	// code aligned, where the default (proportional) fallback would not.  Widths
+    	// differ (Consolas advances 0.55em, Cousine and Liberation Mono 0.6em); line
+    	// heights come from the document font's own metrics (WordLineMetrics).
+    	// @since 17.0.5
+    	addMetricallyCompatibleSubstitute("Consolas", "Cousine Regular", "Liberation Mono");
+    	addMetricallyCompatibleSubstitute("Lucida Console", "Cousine Regular", "Liberation Mono");
     	
     }
     

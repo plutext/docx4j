@@ -181,6 +181,17 @@ the "/"; the jar's line manager suppresses those break opportunities.
 position (was 73%), the first seven pages line for line; the 30 layout probes are
 unchanged (21 at 100%).
 
+Consolas and Lucida Console rendered in the proportional fallback font (PDF):
+- IdentityPlusMapper substitutes Calibri, Cambria, Arial, Times New Roman and Courier New
+with their metric-compatible clones, but the two monospace fonts have none, so code set
+in them came out in Carlito (or whatever the default fallback was) and nothing aligned.
+They now map to Cousine (croscore) or Liberation Mono, whichever is present, and
+BestMatchingMapper's substitution list for Consolas names them too.  Widths differ
+(Consolas advances 0.55em, the stand-ins 0.6em), so code lines longer than about 97
+characters at 8pt wrap where Word's did not; line heights still follow Consolas's own
+metrics (word-line-metrics.properties).  Getting Started guide: pages 11 and 12 now
+start as Word's do; the wider code widens its tables by 6%.
+
 Tab leaders inside hyperlinks (PDF):
 - a w:tab inside a w:hyperlink (every entry of a Word table of contents) lost its
 paragraph's tab stops in the visitor pathway, so the dot leader became three spaces and
