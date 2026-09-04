@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
@@ -115,6 +116,13 @@ public final class Doc {
 
 	public WordprocessingMLPackage pkg() {
 		return pkg;
+	}
+
+	/** w:pgMar header and footer distances (twips) for the current section. */
+	public void headerFooterDistance(int headerTwips, int footerTwips) {
+		SectPr.PgMar m = sectPr().getPgMar();
+		m.setHeader(BigInteger.valueOf(headerTwips));
+		m.setFooter(BigInteger.valueOf(footerTwips));
 	}
 
 	public MainDocumentPart mdp() {
@@ -304,6 +312,53 @@ public final class Doc {
 		sectPr().getEGHdrFtrReferences().add(ref);
 	}
 
+	/** A header whose content is the given paragraphs (see {@link #pictureParagraph}). */
+	public void addHeader(HdrFtrRef type, List<P> paragraphs) throws Exception {
+		if (type == HdrFtrRef.FIRST) sectPr().setTitlePg(new BooleanDefaultTrue());
+		if (type == HdrFtrRef.EVEN) evenAndOddHeaders();
+		hdrFtrCounter++;
+		HeaderPart hp = new HeaderPart(new PartName("/word/header" + hdrFtrCounter + ".xml"));
+		Relationship rel = mdp.addTargetPart(hp); // before relating pictures to it
+		Hdr hdr = F.createHdr();
+		for (P para : paragraphs) {
+			// a picture's image part must hang off the header part
+			for (Object o : para.getContent()) {
+				if (o instanceof R) for (Object c : ((R) o).getContent()) {
+					if (c instanceof Drawing) rehome((Drawing) c, hp);
+				}
+			}
+			hdr.getContent().add(para);
+		}
+		hp.setJaxbElement(hdr);
+		HeaderReference ref = F.createHeaderReference();
+		ref.setId(rel.getId());
+		ref.setType(type);
+		sectPr().getEGHdrFtrReferences().add(ref);
+	}
+
+	/** A single-spaced paragraph holding an inline picture, for headers. */
+	public P pictureParagraph(int wPx, int hPx, long cxTwips) throws Exception {
+		P p = plainParagraph("", SERIF_DEFAULT, 20);
+		p.getContent().clear();
+		p.getContent().add(inlineImage(wPx, hPx, cxTwips));
+		return p;
+	}
+
+	private static final String SERIF_DEFAULT = "Liberation Serif";
+
+	/** Re-relate a picture made against the main document part to a header part. */
+	private void rehome(Drawing d, HeaderPart hp) throws Exception {
+		for (Object o : d.getAnchorOrInline()) {
+			if (!(o instanceof Inline)) continue;
+			org.docx4j.dml.picture.Pic pic = ((Inline) o).getGraphic().getGraphicData().getPic();
+			String rId = pic.getBlipFill().getBlip().getEmbed();
+			Relationship old = mdp.getRelationshipsPart().getRelationshipByID(rId);
+			org.docx4j.openpackaging.parts.Part imagePart = mdp.getRelationshipsPart().getPart(old);
+			Relationship rel = hp.addTargetPart(imagePart);
+			pic.getBlipFill().getBlip().setEmbed(rel.getId());
+		}
+	}
+
 	private void evenAndOddHeaders() throws Exception {
 		DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
 		dsp.getContents().setEvenAndOddHeaders(new BooleanDefaultTrue());
@@ -449,7 +504,7 @@ public final class Doc {
 		sectPr().getEGHdrFtrReferences().add(ref);
 	}
 
-	static P plainParagraph(String text, String font, int halfPts) {
+	public static P plainParagraph(String text, String font, int halfPts) {
 		P p = F.createP();
 		PPr ppr = F.createPPr();
 		PPrBase.Spacing sp = F.createPPrBaseSpacing();

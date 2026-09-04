@@ -418,6 +418,41 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		PROBES.add(new Probe("page-header-footnotes",
+				"four-line header and two-line footer at 0.25in/0.75in distances, with footnotes in the flow (one near the page bottom)", () -> {
+			Doc d = Doc.create(15);
+			d.headerFooterDistance(360, 1080);
+			d.addHeader(SANS, 20, "Header line 1", "Header line 2", "Header line 3", "Header line 4 (body starts below this)");
+			d.addFooter(SANS, 20, "Footer line 1", "Footer line 2 (body ends above this)");
+			d.para("first paragraph").run(d.footnoteRef("A short footnote.", SERIF, 20)).text(" " + prose(2)).after(160).add();
+			d.para(prose(2, 1)).run(d.footnoteRef("A long footnote: " + prose(4, 2), SERIF, 20)).text(" " + prose(1, 3)).after(160).add();
+			for (int i = 0; i < 24; i++) {
+				Doc.Para p = d.para(prose(3, i + 2)).after(160);
+				if (i % 5 == 4) p.run(d.footnoteRef("Footnote in the flow, paragraph " + i + ". " + prose(1, i), SERIF, 20));
+				p.add();
+			}
+			d.finishFootnotes();
+			return d.pkg();
+		}));
+		PROBES.add(new Probe("page-first-even-odd-heights",
+				"first-page header of three lines, even header of one, odd header of five with a picture; one-line odd and three-line even footers; six pages", () -> {
+			Doc d = Doc.create(15);
+			d.addHeader(org.docx4j.wml.HdrFtrRef.FIRST, SANS, 20, "FIRST PAGE HEADER line 1", "first line 2", "first line 3");
+			d.addHeader(org.docx4j.wml.HdrFtrRef.EVEN, SANS, 20, "even page header");
+			java.util.List<org.docx4j.wml.P> odd = new java.util.ArrayList<>();
+			odd.add(Doc.plainParagraph("odd page header line 1", SANS, 20));
+			odd.add(Doc.plainParagraph("odd line 2", SANS, 20));
+			odd.add(d.pictureParagraph(240, 60, 2160));
+			odd.add(Doc.plainParagraph("odd line 4", SANS, 20));
+			odd.add(Doc.plainParagraph("odd line 5 (body starts below this)", SANS, 20));
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, odd);
+			d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, SANS, 20, "odd footer");
+			d.addFooter(org.docx4j.wml.HdrFtrRef.EVEN, SANS, 20, "even footer line 1", "even footer line 2", "even footer line 3");
+			for (int i = 0; i < 72; i++) {
+				d.para(prose(3, i)).after(160).add();
+			}
+			return d.pkg();
+		}));
 		PROBES.add(new Probe("page-landscape-margins",
 				"section 1 A4 portrait 1in margins; section 2 A4 landscape with 0.5in/1.5in/0.75in/2in margins; section 3 Letter portrait 0.75in", () -> {
 			Doc d = Doc.create(15);
