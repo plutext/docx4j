@@ -153,6 +153,13 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 			log.error("No UTF-8!? " + e.getMessage());
 			foDocument = ((ByteArrayOutputStream)intermediateOutputStream).toString();
 		}
+				// Word's page-level spacing rules (hard page breaks, section starts, cell edges);
+		// see WordLayoutFixups.  @since 17.0.5
+				if (WordLayoutFixups.isEnabled()) {
+			foDocument = WordLayoutFixups.apply(foDocument,
+					org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart.getCompatibilityMode(
+							foConversionContext.getWmlPackage()));
+		}
 		if (log.isDebugEnabled()) {
 			log.debug(foDocument);
 		}

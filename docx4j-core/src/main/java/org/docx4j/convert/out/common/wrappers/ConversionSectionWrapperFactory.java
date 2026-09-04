@@ -267,14 +267,20 @@ public class ConversionSectionWrapperFactory {
 							}
 							//ppr.setSectPr(null); // Don't do this, since we have to process the docx (inc sectPrs) multiple times for a single PDF output
 							
-						} else {
+												} else {
+							// The paragraph carrying the sectPr is the last paragraph of the
+							// section it ends (in Word its mark is where the section break
+							// shows), so it belongs in this section's content.  Until 17.0.5
+							// it was added to the next section's, where it rendered as an
+							// empty first line at the top of the new section's first page.
+							sectionContent.add(o);
 							currentSectionWrapper = createSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders, 
 									++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
-							
+							continue;
 						}
 					}
 				}				

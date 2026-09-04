@@ -59,15 +59,16 @@ public final class Corpus {
 				sp.setAfter(BigInteger.valueOf(240));
 				ppr.setSpacing(sp);
 			});
+			// no direct spacing on these paragraphs: the style's 12pt before/after must apply
 			for (int i = 0; i < 4; i++) {
-				d.para("same style, contextual. " + prose(1, i)).style("ProbeBody").contextual().add();
+				d.para("same style, contextual. " + prose(1, i)).style("ProbeBody").inheritSpacing().contextual().add();
 			}
-			d.para("other style. " + prose(1, 4)).style("ProbeOther").add();
+			d.para("other style. " + prose(1, 4)).style("ProbeOther").inheritSpacing().add();
 			for (int i = 0; i < 3; i++) {
-				d.para("same style, contextual again. " + prose(1, i + 5)).style("ProbeBody").contextual().add();
+				d.para("same style, contextual again. " + prose(1, i + 5)).style("ProbeBody").inheritSpacing().contextual().add();
 			}
-			d.para("same style, NOT contextual. " + prose(1, 2)).style("ProbeBody").add();
-			d.para("same style, NOT contextual. " + prose(1, 3)).style("ProbeBody").add();
+			d.para("same style, NOT contextual. " + prose(1, 2)).style("ProbeBody").inheritSpacing().add();
+			d.para("same style, NOT contextual. " + prose(1, 3)).style("ProbeBody").inheritSpacing().add();
 			return d.pkg();
 		}));
 
@@ -96,6 +97,45 @@ public final class Corpus {
 			for (int i = 0; i < 40; i++) {
 				d.para("natural flow, before=24pt. " + prose(1, i)).before(480).add();
 			}
+			return d.pkg();
+		}));
+
+				PROBES.add(new Probe("spacing-section-start",
+				"space-before of the first paragraph after a next-page section break, with the section-break paragraph's space-after 0 / 10 / 20pt, and before smaller than that after", () -> {
+			Doc d = Doc.create(15);
+			d.para("section 1. " + prose(2)).add();
+			d.endSection("nextPage", 0);
+			d.para("after break para after=0, before=36pt. " + prose(2, 1)).before(720).add();
+			d.endSection("nextPage", 200);
+			d.para("after break para after=10pt, before=36pt. " + prose(2, 2)).before(720).add();
+			d.endSection("nextPage", 400);
+			d.para("after break para after=20pt, before=36pt. " + prose(2, 3)).before(720).add();
+			d.endSection("nextPage", 400);
+			d.para("after break para after=20pt, before=6pt. " + prose(2, 4)).before(120).add();
+			d.endSection("nextPage", 0);
+			d.para("after break para after=0, before=0. " + prose(2, 5)).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("spacing-autospacing-context",
+				"HTML auto spacing between list items and inside a table cell", () -> {
+			Doc d = Doc.create(15);
+			d.para("plain. " + prose(1)).add();
+			d.para("list item, auto before+after. " + prose(1, 1)).autospacing(true, true).listItem().add();
+			d.para("list item, auto before+after. " + prose(1, 2)).autospacing(true, true).listItem().add();
+			d.para("list item, auto before+after. " + prose(1, 3)).autospacing(true, true).listItem().add();
+			d.para("plain after list. " + prose(1, 4)).add();
+			Doc.Table t = new Doc.Table(4000, 4000).fixedLayout();
+			org.docx4j.wml.Tr tr = Doc.F.createTr();
+			for (int i = 0; i < 2; i++) {
+				org.docx4j.wml.Tc tc = Doc.F.createTc();
+				tc.getContent().add(d.para("cell auto before+after " + prose(1, i)).noLabel().autospacing(true, true).build());
+				tc.getContent().add(d.para("second cell para, auto " + prose(1, i + 2)).noLabel().autospacing(true, true).build());
+				tr.getContent().add(tc);
+			}
+			t.build().getContent().add(tr);
+			d.add(t.build());
+			d.para("plain after table. " + prose(1, 5)).add();
 			return d.pkg();
 		}));
 

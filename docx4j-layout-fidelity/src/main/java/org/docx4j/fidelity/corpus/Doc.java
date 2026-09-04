@@ -219,12 +219,24 @@ public final class Doc {
 	 * body sectPr is reset to start a new section of the given type
 	 * ("nextPage" or "continuous") with no header/footer references.
 	 */
-	public void endSection(String nextSectionType) {
+		public void endSection(String nextSectionType) {
+		endSection(nextSectionType, null);
+	}
+
+	/** As {@link #endSection(String)}, with explicit spacing on the section-break paragraph
+	 *  (null = inherit docDefaults, which docx4j's default template sets to after=10pt). */
+	public void endSection(String nextSectionType, Integer afterTwips) {
 		SectPr current = sectPr();
 		SectPr copy = XmlUtils.deepCopy(current);
 		P p = F.createP();
 		PPr ppr = F.createPPr();
 		ppr.setSectPr(copy);
+		if (afterTwips != null) {
+			PPrBase.Spacing sp = F.createPPrBaseSpacing();
+			sp.setBefore(BigInteger.ZERO);
+			sp.setAfter(BigInteger.valueOf(afterTwips));
+			ppr.setSpacing(sp);
+		}
 		p.setPPr(ppr);
 		mdp.getContent().add(p);
 
@@ -232,6 +244,20 @@ public final class Doc {
 		SectPr.Type type = F.createSectPrType();
 		type.setVal(nextSectionType);
 		current.setType(type);
+	}
+
+		// ---------------------------------------------------------------- numbering
+
+	private boolean numberingAdded = false;
+
+	/** Make the docx4j default numbering definitions available (numId 1 = decimal list). */
+	public void ensureNumbering() throws Exception {
+		if (numberingAdded) return;
+		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp =
+				new org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart();
+		mdp.addTargetPart(ndp);
+		ndp.unmarshalDefaultNumbering();
+		numberingAdded = true;
 	}
 
 	// ---------------------------------------------------------------- styles
@@ -526,10 +552,30 @@ public final class Doc {
 			return this;
 		}
 
-		/** Remove w:line entirely (inherit from style / docDefaults). */
+				/** Remove w:line entirely (inherit from style / docDefaults). */
 		public Para noLine() {
 			sp.setLine(null);
 			sp.setLineRule(null);
+			return this;
+		}
+
+		/** No direct w:spacing at all: before/after/line come from the style and docDefaults. */
+		public Para inheritSpacing() {
+			ppr.setSpacing(null);
+			return this;
+		}
+
+		/** Make this a list item of the default decimal list (numId 1, level 0). */
+		public Para listItem() throws Exception {
+			doc.ensureNumbering();
+			PPrBase.NumPr numPr = F.createPPrBaseNumPr();
+			PPrBase.NumPr.Ilvl ilvl = F.createPPrBaseNumPrIlvl();
+			ilvl.setVal(BigInteger.ZERO);
+			numPr.setIlvl(ilvl);
+			PPrBase.NumPr.NumId numId = F.createPPrBaseNumPrNumId();
+			numId.setVal(BigInteger.ONE);
+			numPr.setNumId(numId);
+			ppr.setNumPr(numPr);
 			return this;
 		}
 

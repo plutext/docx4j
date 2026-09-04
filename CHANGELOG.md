@@ -18,6 +18,23 @@ a 36pt mark used to give 36pt lines).  New org.docx4j.fonts.WordLineMetrics.
 Measured against Word 365 with the new docx4j-layout-fidelity harness (not in the
 reactor; see its README).
 
+PDF via XSL FO - paragraph spacing edge rules, as Word applies them (measured):
+- HTML auto spacing (w:beforeAutospacing / w:afterAutospacing) is now 14pt, as in Word
+(it was ignored); w:doNotUseHTMLParagraphAutoSpacing is honoured.
+- a paragraph holding only a page break no longer leaves an empty line at the top of
+the new page, and the next paragraph's space-before is dropped there as Word 2013+
+does (kept in compatibility modes below 15).
+- space-before is applied at the top of the first page of a section (Word does; FO
+discards it).
+- inside table cells, a paragraph's space-before applies at the cell top and its
+space-after at the cell bottom (compatibility mode 15).
+- the paragraph carrying a section break belongs to the section it ends; it was put
+first in the next section, rendering as an empty line at the top of its first page
+(also affected HTML output).
+- w:widowControl off is passed to FOP (widows/orphans 1); on is the default in both.
+- new DocumentSettingsPart.getCompatibilityMode(); fixups can be disabled with
+docx4j.convert.out.fo.wordLayoutFixups=false.
+
 Math:
 - tracked changes inside equations no longer lose content (issue 348, open since 2019):
 Word wraps math run content in w:ins/w:del inside m:r, which the JAXB model rejected - the

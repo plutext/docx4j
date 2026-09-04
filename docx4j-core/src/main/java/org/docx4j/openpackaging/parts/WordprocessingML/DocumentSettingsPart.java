@@ -144,6 +144,49 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * @return
 	 * @throws Docx4JException
 	 */
+		/**
+	 * The w:compatSetting compatibilityMode (11 = Word 2003, 12 = Word 2007, 14 = Word 2010,
+	 * 15 = Word 2013 and later), or 12 when there is no such setting: Word opens such a
+	 * document in compatibility mode, and 12 is what a docx4j-created package gets.
+	 * Layout rules differ by mode; see org.docx4j.convert.out.fo.WordLayoutFixups.
+	 *
+	 * @since 17.0.5
+	 */
+	public int getCompatibilityMode() {
+		try {
+			CTCompatSetting cs = getWordCompatSetting("compatibilityMode");
+			if (cs != null && cs.getVal() != null) return Integer.parseInt(cs.getVal().trim());
+		} catch (Exception e) {
+			log.warn("Bad compatibilityMode: " + e.getMessage());
+		}
+		return 12;
+	}
+
+	/**
+	 * Static convenience: the compatibility mode of this package, 12 when it has no
+	 * settings part.
+	 *
+	 * @since 17.0.5
+	 */
+	public static int getCompatibilityMode(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
+		if (pkg == null || pkg.getMainDocumentPart() == null) return 12;
+		DocumentSettingsPart dsp = pkg.getMainDocumentPart().getDocumentSettingsPart();
+		return dsp == null ? 12 : dsp.getCompatibilityMode();
+	}
+
+	/** w:compat/w:doNotUseHTMLParagraphAutoSpacing: use the explicit before/after values
+	 *  instead of Word's 14pt HTML auto spacing.  @since 17.0.5 */
+	public static boolean isDoNotUseHTMLParagraphAutoSpacing(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
+		try {
+			DocumentSettingsPart dsp = pkg.getMainDocumentPart().getDocumentSettingsPart();
+			if (dsp == null || dsp.getContents().getCompat() == null) return false;
+			org.docx4j.wml.BooleanDefaultTrue b = dsp.getContents().getCompat().getDoNotUseHTMLParagraphAutoSpacing();
+			return b != null && b.isVal();
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	public CTCompatSetting getWordCompatSetting(String name) { 
 	
 		CTCompat compat = this.getJaxbElement().getCompat();

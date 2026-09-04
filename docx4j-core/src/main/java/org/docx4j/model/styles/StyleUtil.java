@@ -2371,11 +2371,19 @@ public class StyleUtil {
 		return destination;
 	}
 
-	public static Spacing apply(Spacing source, Spacing destination) {
+		public static Spacing apply(Spacing source, Spacing destination) {
+		// beforeAutospacing/afterAutospacing (HTML auto spacing) are attributes in their
+		// own right and must survive the merge; the getters cannot distinguish absent
+		// from false, so only true is carried.  @since 17.0.5
+		if (source != null && (source.isBeforeAutospacing() || source.isAfterAutospacing())) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createPPrBaseSpacing();
+			if (source.isBeforeAutospacing()) destination.setBeforeAutospacing(Boolean.TRUE);
+			if (source.isAfterAutospacing()) destination.setAfterAutospacing(Boolean.TRUE);
+		}
 		if (!isEmpty(source)) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createPPrBaseSpacing();
-			
 			destination.setAfter(apply(source.getAfter(), destination.getAfter()));
 			destination.setAfterLines(apply(source.getAfterLines(), destination.getAfterLines()));
 			destination.setBefore(apply(source.getBefore(), destination.getBefore()));

@@ -704,11 +704,21 @@ public class XsltFOFunctions {
 				document.appendChild(foBlockElement);
 			}
 			
-			/* Now apply pPr (whether its a list or not) */				
+						/* Now apply pPr (whether its a list or not) */				
 			if (pPr!=null) {
 				// Ignore paragraph borders once inside the container
 				boolean ignoreBorders = !sdt;
 				createFoAttributes(wmlPackage, pPr, ((Element)foBlockElement), indentHandledByNumbering, ignoreBorders );				
+			}
+						// Hints for WordLayoutFixups (removed there, so FOP never sees them): the
+			// paragraph style, and whether w:contextualSpacing applies, which needs the
+			// neighbours.  Plain attribute names: a namespaced attribute loses its
+			// declaration when Xalan copies the fragment in the XSLT pathway.  @since 17.0.5
+			if (WordLayoutFixups.isEnabled()) {
+				foBlockElement.setAttribute(WordLayoutFixups.HINT_PSTYLE, pStyleVal==null ? "" : pStyleVal);
+				if (pPr!=null && pPr.getContextualSpacing()!=null && pPr.getContextualSpacing().isVal()) {
+					foBlockElement.setAttribute(WordLayoutFixups.HINT_CONTEXTUAL, "1");
+				}
 			}
 			
 			/* Now apply rPr */				

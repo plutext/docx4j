@@ -26,6 +26,9 @@ import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
 import org.docx4j.model.properties.paragraph.LineSpacing;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
+import org.docx4j.model.properties.paragraph.WidowControl;
 import org.docx4j.model.properties.paragraph.NumberingProperty;
 import org.docx4j.model.properties.paragraph.OutlineLevel;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
@@ -413,6 +416,9 @@ public class PropertyFactory {
 	}
 	
 
+		/** Word's HTML auto paragraph spacing: 14pt. @since 17.0.5 */
+	public static final BigInteger HTML_AUTO_SPACING_TWIPS = BigInteger.valueOf(280);
+
 	public static List<Property> createProperties(OpcPackage wmlPackage, PPr pPr) {
 		
 		List<Property> properties = new ArrayList<Property>();
@@ -487,12 +493,23 @@ public class PropertyFactory {
 			properties.add(new PShading(pPr.getShd()));
 //		if (pPr.getSnapToGrid() != null)
 //			dest.setSnapToGrid(pPr.getSnapToGrid());
-		if (pPr.getSpacing() != null) {
+				if (pPr.getSpacing() != null) {
 			Spacing spacing = pPr.getSpacing();
-			if (spacing.getBefore()!=null) {
+			// HTML auto spacing (beforeAutospacing/afterAutospacing): Word uses 14pt,
+			// combined with the neighbour by "larger of the two" like any other spacing
+			// (measured, Word 365, CR-001 spacing-autospacing probe), unless the
+			// compat setting doNotUseHTMLParagraphAutoSpacing says to use the explicit
+			// values.  @since 17.0.5
+			boolean autoSpacing = !(wmlPackage instanceof WordprocessingMLPackage)
+					|| !DocumentSettingsPart.isDoNotUseHTMLParagraphAutoSpacing((WordprocessingMLPackage)wmlPackage);
+			if (autoSpacing && spacing.isBeforeAutospacing()) {
+				properties.add(new SpaceBefore(HTML_AUTO_SPACING_TWIPS));
+			} else if (spacing.getBefore()!=null) {
 				properties.add(new SpaceBefore(spacing.getBefore()));
 			}
-			if (spacing.getAfter()!=null) {
+			if (autoSpacing && spacing.isAfterAutospacing()) {
+				properties.add(new SpaceAfter(HTML_AUTO_SPACING_TWIPS));
+			} else if (spacing.getAfter()!=null) {
 				properties.add(new SpaceAfter(spacing.getAfter()));				
 			}
 			if (spacing.getLine()!=null) {
@@ -521,8 +538,10 @@ public class PropertyFactory {
 //			dest.setTextDirection(pPr.getTextDirection());
 //		if (pPr.getTopLinePunct() != null)
 //			dest.setTopLinePunct(pPr.getTopLinePunct());
-//		if (pPr.getWidowControl() != null)
-//			dest.setWidowControl(pPr.getWidowControl());
+		if (pPr.getWidowControl() != null && !pPr.getWidowControl().isVal()) {
+			// Word's default (and XSL FO's, widows/orphans 2) is on; only "off" needs saying
+			properties.add(new WidowControl(pPr.getWidowControl()));
+		}
 //		if (pPr.getWordWrap() != null)
 //			dest.setWordWrap(pPr.getWordWrap());
 		return properties;		

@@ -882,6 +882,9 @@ public class PropertyResolver {
 		}
 	
 		//BooleanDefaultTrue contextualSpacing;
+		if (pPrToApply.getContextualSpacing()!=null) { // @since 17.0.5: it affects spacing (see WordLayoutFixups)
+			return true;
+		}
 		//BooleanDefaultTrue mirrorIndents;
 		//BooleanDefaultTrue suppressOverlap;
 		//Jc jc;
