@@ -34,6 +34,7 @@ cd docx4j-layout-fidelity && mvn -Dgpg.skip=true -DskipTests package
 CP="target/classes:target/lib/*"
 java -cp "$CP" org.docx4j.fidelity.Fidelity generate  target/corpus
 java -cp "$CP" org.docx4j.fidelity.Fidelity run       target/corpus /path/to/goldens target/report [dpi]
+# -Dfidelity.only=footnotes,image-anchored restricts render/compare/run to those probes
 ```
 
 On Windows the separator is `;`: `-cp "target\classes;target\lib\*"`. (Do not put the

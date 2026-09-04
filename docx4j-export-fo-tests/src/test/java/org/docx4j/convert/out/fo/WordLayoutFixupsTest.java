@@ -158,4 +158,88 @@ public class WordLayoutFixupsTest {
 		while ((i = s.indexOf(sub, i)) >= 0) { n++; i += sub.length(); }
 		return n;
 	}
+
+	// ---- Phase 4: superscripts and anchored pictures
+
+	@Test
+	public void rootDisregardsBaselineShifts() {
+		String out = WordLayoutFixups.apply(flow("<fo:block>x</fo:block>"), 15);
+		assertTrue(out.contains("line-height-shift-adjustment=\"disregard-shifts\""));
+	}
+
+	private static String anchored(String kind, String x, String y, String extra) {
+		return "<fo:block docx4j-pstyle=\"\" space-before=\"6pt\"><fo:inline>text</fo:inline>"
+				+ "<fo:inline><fo:external-graphic src=\"x.png\" content-width=\"113px\" content-height=\"85px\""
+				+ " docx4j-anchor=\"" + kind + "\" docx4j-anchor-w=\"113.39\" docx4j-anchor-h=\"85.04\""
+				+ " docx4j-anchor-x=\"" + x + "\" docx4j-anchor-y=\"" + y + "\" docx4j-anchor-dist=\"9 9 0 0\""
+				+ " docx4j-anchor-col=\"451.3\" docx4j-anchor-ml=\"72\"" + extra + "/></fo:inline></fo:block>";
+	}
+
+	@Test
+	public void squareWrapAtTheRightMarginBecomesARightFloat() {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "337.91", "p:0", "")), 15);
+		assertTrue("no float", out.contains("float=\"right\""));
+		// the float is the paragraph block's first child, before the text
+		assertTrue(out.indexOf("<fo:float") < out.indexOf(">text<"));
+		// wrap distance on the text side; nothing between the picture and the margin
+		assertTrue(out.contains("padding-left=\"9pt\""));
+		assertTrue(out.contains("padding-right=\"0pt\""));
+		// the picture at its extent, in a block whose font cannot move it
+		assertTrue(out.contains("content-width=\"113.39pt\""));
+		assertTrue(out.contains("font-size=\"0.1pt\"") && out.contains("line-height=\"0pt\""));
+		assertFalse("hints not stripped", out.contains("docx4j-anchor"));
+	}
+
+	@Test
+	public void squareWrapNearTheLeftEdgeBecomesALeftFloatPaddedToItsOffset() {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "72", "p:36", "")), 15);
+		assertTrue(out.contains("float=\"left\""));
+		assertTrue("offset from the column edge", out.contains("padding-left=\"72pt\""));
+		assertTrue("wrap distance on the text side", out.contains("padding-right=\"9pt\""));
+		assertTrue("vertical offset from the paragraph top", out.contains("padding-top=\"36pt\""));
+	}
+
+	@Test
+	public void topAndBottomWrapIsABlockContainerAsTallAsThePicture() {
+		String out = WordLayoutFixups.apply(flow(anchored("topAndBottom", "168.96", "p:0", "")), 15);
+		assertFalse(out.contains("fo:float"));
+		assertTrue(out.contains("height=\"85.04pt\""));
+		assertTrue("centred by its offset", out.contains("start-indent=\"168.96pt\""));
+		assertTrue(out.indexOf("<fo:block-container") < out.indexOf(">text<"));
+	}
+
+	@Test
+	public void noWrapIsAbsolutelyPositionedFromTheParagraphTop() {
+		String out = WordLayoutFixups.apply(flow(anchored("none", "72", "p:0", " docx4j-anchor-behind=\"1\"")), 15);
+		assertTrue(out.contains("absolute-position=\"absolute\""));
+		assertTrue(out.contains("height=\"0pt\""));
+		assertTrue(out.contains("left=\"72pt\"") && out.contains("top=\"0pt\""));
+	}
+
+	@Test
+	public void pageRelativePositionIsFixedOnThePage() {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "72", "page:100", "")), 15);
+		assertFalse("cannot wrap around a page-positioned picture", out.contains("fo:float"));
+		assertTrue(out.contains("absolute-position=\"fixed\""));
+		assertTrue("left from the page edge", out.contains("left=\"144pt\"") && out.contains("top=\"100pt\""));
+	}
+
+	@Test
+	public void wrappedPictureInATableCellIsLaidOutTopAndBottom() {
+		String cell = "<fo:table " + NS + "><fo:table-body><fo:table-row><fo:table-cell>"
+				+ anchored("square", "0", "p:0", "") + "</fo:table-cell></fo:table-row></fo:table-body></fo:table>";
+		String out = WordLayoutFixups.apply(flow(cell), 15);
+		assertFalse("FOP has no floats inside tables", out.contains("fo:float"));
+		assertTrue(out.contains("<fo:block-container") && out.contains("height=\"85.04pt\""));
+	}
+
+	@Test
+	public void hintsStrippedWhenNoParagraphBlockIsFound() {
+		String in = flow("<fo:block><fo:external-graphic src=\"x.png\" docx4j-anchor=\"square\" docx4j-anchor-w=\"10\""
+				+ " docx4j-anchor-h=\"10\" docx4j-anchor-x=\"0\" docx4j-anchor-y=\"p:0\" docx4j-anchor-dist=\"0 0 0 0\""
+				+ " docx4j-anchor-col=\"400\" docx4j-anchor-ml=\"72\"/></fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertFalse(out.contains("docx4j-anchor"));
+		assertFalse(out.contains("fo:float"));
+	}
 }

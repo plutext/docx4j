@@ -161,15 +161,25 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			// the number in the endnote itself; endnoteNumber is set by
 			// FOExporterVisitorDelegate.appendSectionFooter when rendering endnotes
 			if (endnoteNumber>=0 && !conversionContext.isInComplexFieldDefinition()) {
-				appendSuperscriptNumber(endnoteNumber);
+				appendNoteNumber(endnoteNumber);
 			}
 			return null;
 
-		} else if (o instanceof R.FootnoteRef
-				|| o instanceof R.Separator
+		} else if (o instanceof R.FootnoteRef) {
+
+			// the number in the footnote itself, styled by its own run (Word's
+			// FootnoteReference style makes it a superscript); footnoteNumber is
+			// set by handleFootnoteReference on the generator for the note's content
+			if (footnoteNumber>=0 && !conversionContext.isInComplexFieldDefinition()) {
+				DocumentFragment styled = XsltCommonFunctions.fontSelectorForGeneratedText(
+						conversionContext, pPr, rPr, Integer.toString(footnoteNumber));
+				XmlUtils.treeCopy(styled, getCurrentParent());
+			}
+			return null;
+
+		} else if (o instanceof R.Separator
 				|| o instanceof R.ContinuationSeparator) {
 
-			// the number in the footnote is rendered as the list item label;
 			// separators are generated (xsl-footnote-separator), not copied
 			return null;
 
@@ -225,15 +235,21 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	 *  set by FOExporterVisitorDelegate when appending the Endnotes block */
 	protected int endnoteNumber = -1;
 
+	/** the number of the footnote whose content is being rendered (for w:footnoteRef);
+	 *  set by handleFootnoteReference.  @since 17.0.5 */
+	protected int footnoteNumber = -1;
+
 	/** the local name of the JAXBElement wrapping this reference in its run */
 	private String refKind(CTFtnEdnRef ref) {
 		return jaxbElementName(ref);
 	}
 
 	/**
-	 * fo:footnote at the reference position: the superscript number, and the note
-	 * body as a list-block whose label is the number.  Mirrors the XSLT's
-	 * w:footnoteReference template.
+	 * fo:footnote at the reference position: the number, styled by the
+	 * reference's run (Word's FootnoteReference style makes it a superscript),
+	 * and the note's paragraphs as the footnote body, as Word lays them out:
+	 * no hanging indent, the number (w:footnoteRef) inline in the first
+	 * paragraph.  Mirrors the XSLT's w:footnoteReference template.
 	 */
 	private void handleFootnoteReference(CTFtnEdnRef ref) {
 
@@ -244,43 +260,20 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		Element footnote = document.createElementNS(XSL_FO, "footnote");
 
 		Element marker = document.createElementNS(XSL_FO, "inline");
-		marker.setAttribute("baseline-shift", "super");
-		marker.setAttribute("font-size", "smaller");
 		XmlUtils.treeCopy(fnStyled, marker);
 		footnote.appendChild(marker);
 
 		Element body = document.createElementNS(XSL_FO, "footnote-body");
 		footnote.appendChild(body);
 
-		Element listBlock = document.createElementNS(XSL_FO, "list-block");
-		listBlock.setAttribute("provisional-label-separation", "0pt");
-		listBlock.setAttribute("provisional-distance-between-starts", "18pt");
-		listBlock.setAttribute("space-after.optimum", "6pt");
-		body.appendChild(listBlock);
-
-		Element listItem = document.createElementNS(XSL_FO, "list-item");
-		listBlock.appendChild(listItem);
-
-		Element listItemLabel = document.createElementNS(XSL_FO, "list-item-label");
-		listItemLabel.setAttribute("end-indent", "label-end()");
-		Element labelBlock = document.createElementNS(XSL_FO, "block");
-		XmlUtils.treeCopy(fnStyled, labelBlock);
-		listItemLabel.appendChild(labelBlock);
-		listItem.appendChild(listItemLabel);
-
-		Element listItemBody = document.createElementNS(XSL_FO, "list-item-body");
-		listItemBody.setAttribute("start-indent", "body-start()");
-		Element bodyBlock = document.createElementNS(XSL_FO, "block");
-		listItemBody.appendChild(bodyBlock);
-		listItem.appendChild(listItemBody);
-
-		// the footnote's content; the same by-position lookup as the XSLT's getFootnote
+		// the footnote's content, found by w:id as the XSLT's getFootnote does
 		try {
-			CTFtnEdn ftn = (CTFtnEdn)conversionContext.getWmlPackage().getMainDocumentPart()
-					.getFootnotesPart().getJaxbElement().getFootnote()
-					.get(ref.getId().intValue());
-			AbstractVisitorExporterGenerator<FOConversionContext> generator =
-					getFactory().createInstance(conversionContext, document, bodyBlock);
+			CTFtnEdn ftn = XsltCommonFunctions.findNote(
+					conversionContext.getWmlPackage().getMainDocumentPart()
+					.getFootnotesPart().getJaxbElement().getFootnote(),
+					ref.getId().toString());
+			FOExporterVisitorGenerator generator = childGenerator(body);
+			generator.footnoteNumber = fn;
 			new TraversalUtil(ftn.getContent(), generator);
 		} catch (Exception e) {
 			log.error("Couldn't get footnote " + (ref.getId()==null ? "(no id)" : ref.getId())
@@ -293,18 +286,16 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	/** superscript endnote number at the reference position */
 	private void handleEndnoteReference() {
 
-		appendSuperscriptNumber(conversionContext.getNextEndnoteNumber());
+		appendNoteNumber(conversionContext.getNextEndnoteNumber());
 	}
 
-	private void appendSuperscriptNumber(int number) {
+	private void appendNoteNumber(int number) {
 
+		// styled by the run alone: Word raises it only if the run (usually via the
+		// EndnoteReference style) is a superscript
 		DocumentFragment styled = XsltCommonFunctions.fontSelectorForGeneratedText(
 				conversionContext, pPr, rPr, Integer.toString(number));
-		Element inline = document.createElementNS(XSL_FO, "inline");
-		inline.setAttribute("baseline-shift", "super");
-		inline.setAttribute("font-size", "smaller");
-		XmlUtils.treeCopy(styled, inline);
-		getCurrentParent().appendChild(inline);
+		XmlUtils.treeCopy(styled, getCurrentParent());
 	}
 
 	@Override
@@ -336,11 +327,20 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	 *
 	 * @since 17.0.4
 	 */
+	/** A generator for nested content, carrying the note numbers w:footnoteRef and
+	 *  w:endnoteRef render (a note's paragraphs are converted by child generators). */
+	private FOExporterVisitorGenerator childGenerator(Node parent) {
+		FOExporterVisitorGenerator generator = (FOExporterVisitorGenerator)
+				getFactory().createInstance(conversionContext, document, parent);
+		generator.footnoteNumber = footnoteNumber;
+		generator.endnoteNumber = endnoteNumber;
+		return generator;
+	}
+
 	private void handleP(P p) {
 
 		DocumentFragment childResults = document.createDocumentFragment();
-		FOExporterVisitorGenerator generator = (FOExporterVisitorGenerator)
-				getFactory().createInstance(conversionContext, document, childResults);
+		FOExporterVisitorGenerator generator = childGenerator(childResults);
 		try {
 			// the effective pPr, for font selection within the paragraph (as before)
 			generator.pPr = conversionContext.getPropertyResolver().getEffectivePPr(p.getPPr());
@@ -418,8 +418,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		// convert the contents first (cf the XSLT's childResults)
 		DocumentFragment childResults = document.createDocumentFragment();
 		if (sdt.getSdtContent()!=null) {
-			FOExporterVisitorGenerator generator = (FOExporterVisitorGenerator)
-					getFactory().createInstance(conversionContext, document, childResults);
+			FOExporterVisitorGenerator generator = childGenerator(childResults);
 			generator.pPr = pPr; // a run-level container keeps its paragraph context
 			new TraversalUtil(sdt.getSdtContent().getContent(), generator);
 		}

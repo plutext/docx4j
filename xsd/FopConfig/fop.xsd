@@ -87,6 +87,7 @@
                               <xs:attribute name="simulate-style" type="xs:boolean" use="required" />
                               <xs:attribute name="embed-url" type="xs:string" use="required" />
                               <xs:attribute name="sub-font" type="xs:string" use="optional" />
+                              <xs:attribute name="kerning" type="xs:boolean" use="optional" />
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>

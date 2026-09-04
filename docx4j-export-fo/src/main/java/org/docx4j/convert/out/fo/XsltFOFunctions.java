@@ -900,6 +900,80 @@ public class XsltFOFunctions {
 	 *
 	 * @since 17.0.5
 	 */
+	/** Word's footnote separator is a rule 2in long. */
+	public static final double FOOTNOTE_SEPARATOR_LENGTH_PT = 144;
+	/** ... 0.6pt thick (measured from Word 365 PDF output) ... */
+	public static final double FOOTNOTE_SEPARATOR_THICKNESS_PT = 0.6;
+
+	/**
+	 * The content of the xsl-footnote-separator static-content, as Word draws
+	 * it: the separator note is a paragraph in the document's default font whose
+	 * line holds a 2in rule, vertically centred in that line (measured: rule
+	 * top at 6.5pt of a 13.44pt Carlito 11pt line).  A block-container as tall
+	 * as that line, holding a 2in-wide block-container whose bottom border is
+	 * the rule.
+	 *
+	 * @since 17.0.5
+	 */
+	public static DocumentFragment footnoteSeparator(AbstractWmlConversionContext context) {
+		double lineHeightPt = 0;
+		try {
+			org.docx4j.wml.CTFootnotes footnotes = context.getWmlPackage().getMainDocumentPart()
+					.getFootnotesPart().getJaxbElement();
+			PPr pPr = null;
+			for (org.docx4j.wml.CTFtnEdn note : footnotes.getFootnote()) {
+				if (note.getType()==org.docx4j.wml.STFtnEdn.SEPARATOR) {
+					for (Object o : note.getContent()) {
+						o = XmlUtils.unwrap(o);
+						if (o instanceof org.docx4j.wml.P) {
+							pPr = ((org.docx4j.wml.P)o).getPPr();
+							break;
+						}
+					}
+					break;
+				}
+			}
+			RPr rPr = context.getPropertyResolver().getEffectiveRPr(null, pPr);
+			DocumentFragment styled = XsltCommonFunctions.fontSelectorForGeneratedText(context, pPr, rPr, " ");
+			String lh = findAttribute(styled, "line-height");
+			if (lh!=null && lh.endsWith("pt")) {
+				lineHeightPt = Double.parseDouble(lh.substring(0, lh.length()-2));
+			} else if (rPr!=null && rPr.getSz()!=null) {
+				lineHeightPt = rPr.getSz().getVal().doubleValue()/2 * org.docx4j.fonts.WordLineMetrics.FALLBACK_FACTOR;
+			}
+		} catch (Exception e) {
+			log.warn("Footnote separator line height: " + e.getMessage(), e);
+		}
+		if (lineHeightPt<=0) lineHeightPt = 13.8;
+
+		Document d = XmlUtils.getNewDocumentBuilder().newDocument();
+		DocumentFragment frag = d.createDocumentFragment();
+		Element line = d.createElementNS(XSL_FO, "block-container");
+		line.setAttribute("height", org.docx4j.fonts.WordLineMetrics.format(lineHeightPt));
+		Element rule = d.createElementNS(XSL_FO, "block-container");
+		rule.setAttribute("width", org.docx4j.fonts.WordLineMetrics.format(FOOTNOTE_SEPARATOR_LENGTH_PT));
+		rule.setAttribute("height", org.docx4j.fonts.WordLineMetrics.format(
+				(lineHeightPt - FOOTNOTE_SEPARATOR_THICKNESS_PT)/2));
+		rule.setAttribute("border-bottom", org.docx4j.fonts.WordLineMetrics.format(FOOTNOTE_SEPARATOR_THICKNESS_PT)
+				+ " solid black");
+		rule.appendChild(d.createElementNS(XSL_FO, "block"));
+		line.appendChild(rule);
+		frag.appendChild(line);
+		return frag;
+	}
+
+	private static final String XSL_FO = "http://www.w3.org/1999/XSL/Format";
+
+	private static String findAttribute(Node n, String name) {
+		if (n instanceof Element && ((Element)n).hasAttribute(name)) return ((Element)n).getAttribute(name);
+		NodeList children = n.getChildNodes();
+		for (int i=0; i<children.getLength(); i++) {
+			String v = findAttribute(children.item(i), name);
+			if (v!=null) return v;
+		}
+		return null;
+	}
+
 	protected static void applyEmptyParagraphLineHeight(Element foBlockElement, String physicalFontFamily,
 			PPr pPr, RPr markRPr) {
 		if (markRPr==null || markRPr.getSz()==null || markRPr.getSz().getVal()==null) return;

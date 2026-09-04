@@ -114,15 +114,173 @@ public final class WordLayoutFixups {
 		}
 	}
 
-			public static void apply(Document doc, int compatibilityMode) {
+	public static void apply(Document doc, int compatibilityMode) {
+		disregardBaselineShifts(doc);
+		anchorImages(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
 		applyContextualSpacing(doc);
 		applyAutoSpacingBetweenListItems(doc);
 		retainSpaceBeforeAtFlowStart(doc);
-				retainSpacingAtCellEdges(doc, compatibilityMode);
+		retainSpacingAtCellEdges(doc, compatibilityMode);
 		fixLists(doc);
 		clipExactRows(doc);
 		stripHints(doc);
+	}
+
+	// ------------------------------------------------------------ 0. superscripts
+
+	/**
+	 * A superscript or subscript does not make Word's line taller (measured:
+	 * a footnote reference adds 0.5pt below a 13.8pt line, nothing above), while
+	 * FOP grows the line box by the shift; XSL's line-height-shift-adjustment
+	 * turns that off.
+	 */
+	static void disregardBaselineShifts(Document doc) {
+		Element root = doc.getDocumentElement();
+		if (root != null && isFo(root, "root")) {
+			root.setAttribute("line-height-shift-adjustment", "disregard-shifts");
+		}
+	}
+
+	// ------------------------------------------------------------ 0a. anchored pictures
+
+	public static final String HINT_ANCHOR = "docx4j-anchor";
+	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, "docx4j-anchor-w", "docx4j-anchor-h",
+			"docx4j-anchor-x", "docx4j-anchor-y", "docx4j-anchor-dist", "docx4j-anchor-behind",
+			"docx4j-anchor-col", "docx4j-anchor-ml" };
+
+	/**
+	 * Word positions an anchored picture (wp:anchor) relative to its paragraph,
+	 * column or page, and wraps the text around it; WordXmlPictureE20 stamps
+	 * that geometry on the fo:external-graphic (lengths in pt, x from the
+	 * column's left edge, y "p:" from the paragraph's top or "page:" from the
+	 * page top) and this turns it into what FOP can do:
+	 * <ul>
+	 * <li>square/tight/through wrap: an fo:float at the left or right edge
+	 * (whichever the picture is nearer), padded so the picture sits where Word
+	 * puts it, text on the other side only (Word flows text on both sides of a
+	 * picture in the middle);</li>
+	 * <li>top-and-bottom wrap: a block-container as tall as the picture at the
+	 * paragraph's top;</li>
+	 * <li>no wrap (behind or in front of text): an absolutely positioned
+	 * block-container inside a zero-height one at the paragraph's top, so it
+	 * takes no space; page-relative positions use fixed positioning.</li>
+	 * </ul>
+	 * The picture's block uses a tiny font and zero line-height so its top is
+	 * exactly the container's top (FOP otherwise offsets it by the block font's
+	 * ascender).  Floats only work in the main flow, so a wrapped picture inside
+	 * a table, header, footer or footnote is laid out top-and-bottom instead,
+	 * and one with a page-relative vertical position is fixed without wrapping.
+	 */
+	static void anchorImages(Document doc) {
+		for (Element g : elements(doc, "external-graphic")) {
+			String kind = g.getAttribute(HINT_ANCHOR);
+			if (kind == null || kind.length() == 0) continue;
+			try {
+				anchorImage(doc, g, kind);
+			} catch (RuntimeException e) {
+				log.warn("Anchored picture left in the flow: " + e.getMessage(), e);
+			}
+			for (String hint : ANCHOR_HINTS) g.removeAttribute(hint);
+		}
+	}
+
+	private static void anchorImage(Document doc, Element g, String kind) {
+		double w = Double.parseDouble(g.getAttribute("docx4j-anchor-w"));
+		double h = Double.parseDouble(g.getAttribute("docx4j-anchor-h"));
+		double x = Double.parseDouble(g.getAttribute("docx4j-anchor-x"));
+		double col = Double.parseDouble(g.getAttribute("docx4j-anchor-col"));
+		double ml = Double.parseDouble(g.getAttribute("docx4j-anchor-ml"));
+		String y = g.getAttribute("docx4j-anchor-y");
+		boolean pageY = y.startsWith("page:");
+		double off = Double.parseDouble(y.substring(y.indexOf(':') + 1));
+		String[] dist = g.getAttribute("docx4j-anchor-dist").split(" ");
+		double distL = Double.parseDouble(dist[0]), distR = Double.parseDouble(dist[1]),
+				distB = Double.parseDouble(dist[3]);
+
+		Element para = enclosingParagraph(g);
+		if (para == null) return; // leave it inline
+
+		// the picture at its extent (content-width/height carry rounded pixels)
+		g.setAttribute("content-width", pt(w));
+		g.setAttribute("content-height", pt(h));
+		Element holder = doc.createElementNS(FO_NS, "fo:block");
+		holder.setAttribute("font-size", "0.1pt");
+		holder.setAttribute("line-height", "0pt");
+		holder.appendChild(g); // moves it out of its run
+
+		if (pageY) kind = "none"; // FOP cannot wrap text around a page-positioned object
+		if ("square".equals(kind) && !floatsAllowed(para)) kind = "topAndBottom";
+
+		Element wrapper;
+		if ("square".equals(kind)) {
+			boolean right = x + w / 2 > col / 2;
+			wrapper = doc.createElementNS(FO_NS, "fo:float");
+			wrapper.setAttribute("float", right ? "right" : "left");
+			holder.setAttribute("padding-left", pt(right ? distL : Math.max(0, x)));
+			holder.setAttribute("padding-right", pt(right ? Math.max(0, col - x - w) : distR));
+			if (off > 0) holder.setAttribute("padding-top", pt(off));
+			if (distB > 0) holder.setAttribute("padding-bottom", pt(distB));
+			wrapper.appendChild(holder);
+		} else if ("topAndBottom".equals(kind)) {
+			wrapper = doc.createElementNS(FO_NS, "fo:block-container");
+			wrapper.setAttribute("height", pt(Math.max(0, off) + h + distB));
+			wrapper.setAttribute("start-indent", "0pt");
+			wrapper.setAttribute("end-indent", "0pt");
+			if (off > 0) holder.setAttribute("padding-top", pt(off));
+			holder.setAttribute("start-indent", pt(Math.max(0, x)));
+			wrapper.appendChild(holder);
+		} else {
+			wrapper = doc.createElementNS(FO_NS, "fo:block-container");
+			wrapper.setAttribute("height", "0pt");
+			wrapper.setAttribute("overflow", "visible");
+			wrapper.setAttribute("start-indent", "0pt");
+			wrapper.setAttribute("end-indent", "0pt");
+			Element abs = doc.createElementNS(FO_NS, "fo:block-container");
+			abs.setAttribute("absolute-position", pageY ? "fixed" : "absolute");
+			abs.setAttribute("top", pt(off));
+			abs.setAttribute("left", pt(pageY ? x + ml : x));
+			abs.setAttribute("width", pt(w));
+			abs.setAttribute("height", pt(h));
+			abs.setAttribute("overflow", "visible");
+			abs.appendChild(holder);
+			wrapper.appendChild(abs);
+		}
+		para.insertBefore(wrapper, para.getFirstChild());
+	}
+
+	/** The paragraph's fo:block (the nearest ancestor stamped with the pstyle hint). */
+	private static Element enclosingParagraph(Element el) {
+		Node n = el.getParentNode();
+		while (n instanceof Element) {
+			Element e = (Element) n;
+			if (isFo(e, "block") && e.hasAttribute(HINT_PSTYLE)) return e;
+			if (isFo(e, "flow") || isFo(e, "static-content")) return null;
+			n = n.getParentNode();
+		}
+		return null;
+	}
+
+	/** FOP lays out side floats only in the main flow's blocks. */
+	private static boolean floatsAllowed(Element para) {
+		Node n = para.getParentNode();
+		while (n instanceof Element) {
+			Element e = (Element) n;
+			if (isFo(e, "flow")) return true;
+			if (isFo(e, "table-cell") || isFo(e, "static-content") || isFo(e, "footnote-body")
+					|| isFo(e, "float") || isFo(e, "block-container") || isFo(e, "inline-container")) return false;
+			n = n.getParentNode();
+		}
+		return false;
+	}
+
+	private static String pt(double v) {
+		String s = String.format(java.util.Locale.ROOT, "%.2f", v);
+		if (s.endsWith("0")) s = s.substring(0, s.length() - 1);
+		if (s.endsWith("0")) s = s.substring(0, s.length() - 1);
+		if (s.endsWith(".")) s = s.substring(0, s.length() - 1);
+		if (s.equals("-0")) s = "0";
+		return s + "pt";
 	}
 
 	/** "docx4j-row-exact" on a table-row (TrHeight): the row must be exactly that tall. */
@@ -166,6 +324,9 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_CONTEXTUAL);
 			block.removeAttribute(HINT_AUTOSPACING);
 			block.removeAttribute(HINT_LIST);
+		}
+		for (Element g : elements(doc, "external-graphic")) {
+			for (String hint : ANCHOR_HINTS) g.removeAttribute(hint);
 		}
 	}
 

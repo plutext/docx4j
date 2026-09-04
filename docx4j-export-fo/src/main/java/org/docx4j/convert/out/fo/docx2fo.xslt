@@ -236,12 +236,8 @@
 				<xsl:if
 					test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasFootnotesPart($conversionContext)">
 					<fo:static-content flow-name="xsl-footnote-separator">
-					    <fo:block>
-					      <fo:leader leader-pattern="rule"
-					                 leader-length="100%"
-					                 rule-style="solid"
-					                 rule-thickness="0.5pt"/>
-					    </fo:block>
+						<!-- Word's separator: a 2in rule in a line of the separator note's font -->
+						<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.footnoteSeparator($conversionContext)" />
 					  </fo:static-content>				
 				</xsl:if>
 				
@@ -845,25 +841,14 @@
 	<xsl:variable name="fnStyled" select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
 			$conversionContext, $pPrNode, $rPrNode, string($fn))" />
 
+	<!-- the number styled by the reference's run (Word's FootnoteReference style makes
+	     it a superscript), and the note's paragraphs as the body, laid out as Word
+	     does: no hanging indent, the number (w:footnoteRef) inline in the first paragraph -->
 	<fo:footnote>
-	
-	    <fo:inline baseline-shift="super"
-	               font-size="smaller"><xsl:copy-of select="$fnStyled"/></fo:inline>
-	               
+	    <fo:inline><xsl:copy-of select="$fnStyled"/></fo:inline>
 	    <fo:footnote-body>
-	      <fo:list-block provisional-label-separation="0pt"
-	                     provisional-distance-between-starts="18pt"
-	                     space-after.optimum="6pt">
-	        <fo:list-item>
-	          <fo:list-item-label end-indent="label-end()">
-	            <fo:block><xsl:copy-of select="$fnStyled"/></fo:block>
-	          </fo:list-item-label>
-	          <fo:list-item-body start-indent="body-start()">
-	            <fo:block><xsl:apply-templates
-					select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getFootnote($conversionContext, $id)" /></fo:block>
-	          </fo:list-item-body>
-	        </fo:list-item>
-	      </fo:list-block>
+	    	<xsl:apply-templates
+					select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getFootnote($conversionContext, $id)" />
 	    </fo:footnote-body>
 	  </fo:footnote>
 	    
@@ -873,8 +858,14 @@
   	<xsl:apply-templates/>  
   </xsl:template>
   
-  <!--  The number in the note itself -->
-  <xsl:template match="w:footnoteRef" />
+  <!--  The number in the note itself, styled by its own run -->
+  <xsl:template match="w:footnoteRef">
+	<xsl:variable name="pPrNode" select="../../w:pPr" />
+	<xsl:variable name="rPrNode" select="../w:rPr" />
+	<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode,
+			string(java:org.docx4j.convert.out.common.XsltCommonFunctions.getCurrentFootnoteNumber($conversionContext)))" />
+  </xsl:template>
   
 
 
@@ -882,9 +873,10 @@
     <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextEndnoteNumber($conversionContext)"/></xsl:variable>
 	<xsl:variable name="pPrNode" select="../../w:pPr" />
 	<xsl:variable name="rPrNode" select="../w:rPr" />
-    <fo:inline baseline-shift="super"
-	               font-size="smaller"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
-			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></fo:inline>
+    <!-- styled by the run alone: Word raises it only if the run (usually via the
+         EndnoteReference style) is a superscript -->
+    <xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/>
   </xsl:template>
 
   <!--  The number in the note itself -->
@@ -892,8 +884,8 @@
     <xsl:variable name="fn"><xsl:value-of select="count(../../../preceding-sibling::*)-1"/></xsl:variable>
 	<xsl:variable name="pPrNode" select="../../w:pPr" />
 	<xsl:variable name="rPrNode" select="../w:rPr" />
-	<fo:inline baseline-shift="super" font-size="smaller"><xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
-			$conversionContext, $pPrNode, $rPrNode, string($fn))"/></fo:inline>
+	<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+			$conversionContext, $pPrNode, $rPrNode, string($fn))"/>
   </xsl:template>  
 
   <xsl:template match="w:endnotes">

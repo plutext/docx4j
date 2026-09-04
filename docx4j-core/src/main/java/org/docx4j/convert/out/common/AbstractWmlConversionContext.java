@@ -131,6 +131,12 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
     	return ++footnoteNumberCounter;
     }
 
+    /** The number most recently issued by getNextFootnoteNumber: the number of the
+     *  footnote whose content is being rendered (for w:footnoteRef).  @since 17.0.5 */
+    public int getCurrentFootnoteNumber() {
+    	return footnoteNumberCounter;
+    }
+
 	public void setCurrentPart(Part currentPart) {
 		this.currentPart = currentPart;
 	}

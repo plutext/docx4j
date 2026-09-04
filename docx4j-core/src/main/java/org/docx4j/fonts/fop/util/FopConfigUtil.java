@@ -239,6 +239,18 @@ public class FopConfigUtil {
 		return rendererFonts;
 	}
 
+	/**
+	 * Word does not apply kerning unless a run asks for it (w:kern), whereas
+	 * FOP kerns every font that has a kern table; the difference moves line
+	 * breaks (a kerned line can be a fraction of a point shorter).  So kerning
+	 * is off unless docx4j.fonts.fop.util.FopConfigUtil.kerning=true.
+	 *
+	 * @since 17.0.5
+	 */
+	private static boolean kerning() {
+		return Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.kerning", false);
+	}
+
 	private static void createFontEntrySimulateStyles(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf) {
 		
@@ -246,6 +258,7 @@ public class FopConfigUtil {
 		fontEntries.put(pf.getEmbeddedURI().toString(), rendererFont);
     	
     	rendererFont.setSimulateStyle(false);
+    	rendererFont.setKerning(kerning());
     	
 	    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
 	    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
@@ -315,6 +328,7 @@ public class FopConfigUtil {
 		fontEntries.put(pf.getEmbeddedURI().toString(), rendererFont);    	
     	
     	rendererFont.setSimulateStyle(false);
+    	rendererFont.setKerning(kerning());
     	
 	    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
 	    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
@@ -375,6 +389,7 @@ public class FopConfigUtil {
 
 		org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
     	rendererFont.setSimulateStyle(false);
+    	rendererFont.setKerning(kerning());
     	// name?
     	rendererFont.setEmbedUrl(pfVariation.getEmbeddedURI().toString());
     	rendererFont.setSubFont(subFontAtt);

@@ -23,6 +23,7 @@ package org.docx4j.convert.out.common;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -347,13 +348,39 @@ public class XsltCommonFunctions {
     	return context.getNextFootnoteNumber();
     }
     
+	public static int getCurrentFootnoteNumber(AbstractWmlConversionContext context) {
+    	return context.getCurrentFootnoteNumber();
+    }
+
+	/**
+	 * The footnote (or endnote) a w:footnoteReference/w:endnoteReference points at, by
+	 * w:id.  Word numbers its separator w:id="-1" and continuation separator
+	 * w:id="0", so a note's id is not its position in the part: fetching by position
+	 * returned the note before the one referenced.  Falls back to position for a
+	 * part whose ids don't resolve.
+	 *
+	 * @since 17.0.5
+	 */
+	public static CTFtnEdn findNote(List<CTFtnEdn> notes, String id) {
+		for (CTFtnEdn note : notes) {
+			if (note.getId() != null && note.getId().toString().equals(id)) {
+				return note;
+			}
+		}
+		int pos = Integer.parseInt(id);
+		if (pos >= 0 && pos < notes.size()) {
+			log.warn("Note with w:id " + id + " not found; using position " + pos);
+			return notes.get(pos);
+		}
+		throw new IllegalArgumentException("No note with w:id " + id);
+	}
+
 	public static Node getFootnote(AbstractWmlConversionContext context, String id) {	
 		WordprocessingMLPackage wmlPackage = context.getWmlPackage();
 		CTFootnotes footnotes = wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement();
-		int pos = Integer.parseInt(id);
 		
 		// No @XmlRootElement on CTFtnEdn, so .. 
-		CTFtnEdn ftn = (CTFtnEdn)footnotes.getFootnote().get(pos);
+		CTFtnEdn ftn = findNote(footnotes.getFootnote(), id);
 		Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
 				Context.jc, Namespaces.NS_WORD12, "footnote",  CTFtnEdn.class );
 		if (log.isDebugEnabled()) {

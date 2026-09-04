@@ -49,6 +49,39 @@ justified 63% -> 98%; 14 of 22 layout probes now match Word line for line.
 Off with docx4j.convert.out.fo.wordLineBreaking=false.  The copy is tied to FOP 2.11 and
 must be re-derived on FOP upgrades (its README says how).
 
+PDF via XSL FO - footnotes, anchored pictures, superscripts, kerning (measured against
+Word 365, CR-001 Phase 4):
+- a footnote reference rendered the note BEFORE the one it points at: the note was
+fetched by position, but Word numbers its separator w:id="-1" and continuation
+separator w:id="0", so w:id 1 sits at position 2.  Notes are now found by w:id (both
+pathways, and XsltCommonFunctions.getFootnote).
+- footnotes are laid out as Word does: the note's paragraphs directly in the footnote
+body with the number (w:footnoteRef) inline in the first one, instead of a list-block
+with an 18pt hanging indent and 6pt after each note; the separator is Word's 2in rule,
+vertically centred in a line of the separator note's font, instead of a full-width
+0.5pt leader.  Footnote and endnote numbers take their formatting from their runs alone
+(Word's FootnoteReference/EndnoteReference styles make them superscripts); they were
+always raised and shrunk.
+- anchored pictures (wp:anchor) were rendered inline at the end of their paragraph.
+Now: square/tight/through wrap becomes an fo:float at the nearer edge, padded so the
+picture sits where Word puts it (text on the other side only; Word flows it on both
+sides of a picture in the middle); top-and-bottom wrap a block-container as tall as the
+picture at the paragraph's top; no wrap (behind/in front of text) an absolutely
+positioned block-container that takes no space; positions relative to page or margins
+are fixed on the page (no wrapping).  Measured: all four probe pictures within 0.3pt of
+Word's position.  WordXmlPictureE20 stamps the geometry as hints, WordLayoutFixups
+builds the FO.
+- superscripts and subscripts (w:vertAlign) are drawn at 65% of the run's size, raised
+by 0.36 of it (lowered by 0.16 for subscripts), as Word does; they were full size, and
+FOP grew the line by the shift (a footnote reference made its line 10pt taller).  The FO
+root now carries line-height-shift-adjustment="disregard-shifts".
+- kerning is off by default (docx4j.fonts.fop.util.FopConfigUtil.kerning=false): Word
+does not kern unless w:kern asks for it, FOP kerned every font, and a kerned line can be
+a fraction of a point shorter, so a word Word wraps stayed on the line and every later
+line moved.  Four long-prose probes went from 88-94% to 100% line parity.
+- 20 of 28 layout probes now match Word line for line (footnotes 98%, anchored 86%: the
+misses are the both-sides wrap and a 0.4pt width case).  Harness: -Dfidelity.only=id,id.
+
 Tables (PDF and HTML) - geometry as Word lays it out (measured):
 - Word's default cell margins (0.08in left and right) now apply when neither the table
 nor its style sets them; cell text sat on the border and every column was 10.8pt too

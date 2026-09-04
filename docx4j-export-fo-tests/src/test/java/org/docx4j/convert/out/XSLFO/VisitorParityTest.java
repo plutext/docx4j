@@ -251,23 +251,24 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 			org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(notesPkg(), flag));
 			String impl = flagName(flag) + ": ";
 
-			// the separator rule
+			// the separator rule: since 17.0.5 (CR-001 Phase 4) Word's 2in rule, a
+			// block-container's bottom border in a line of the separator note's font
 			assertTrue(impl + "footnote separator static-content lost", isPresent(doc,
 					"//fo:static-content[@flow-name='xsl-footnote-separator']"
-					+ "//fo:leader[@leader-pattern='rule']"));
+					+ "/fo:block-container/fo:block-container[@width='144pt'][@border-bottom]"));
 
-			// fo:footnote with superscript marker and the note body as a list-block
+			// fo:footnote with the number as marker (styled by its run alone) and the
+			// note's paragraph directly in the body, its number inline
 			assertTrue(impl + "footnote lost", isPresent(doc,
-					"//fo:footnote/fo:inline[@baseline-shift='super'][normalize-space(.)='1']"));
+					"//fo:footnote/fo:inline[normalize-space(.)='1']"));
 			assertTrue(impl + "footnote body lost", isPresent(doc,
-					"//fo:footnote/fo:footnote-body//fo:list-item-body"
-					+ "//fo:block[contains(.,'The footnote.')]"));
-			assertTrue(impl + "footnote number label lost", isPresent(doc,
-					"//fo:footnote//fo:list-item-label//fo:block[normalize-space(.)='1']"));
+					"//fo:footnote/fo:footnote-body/fo:block[contains(.,'The footnote.')]"));
+			assertTrue(impl + "footnote number lost", isPresent(doc,
+					"//fo:footnote/fo:footnote-body/fo:block//fo:inline[normalize-space(.)='1']"));
 
-			// superscript endnote reference in the text
+			// endnote reference in the text
 			assertTrue(impl + "endnote reference lost", isPresent(doc,
-					"//fo:flow//fo:inline[@baseline-shift='super'][normalize-space(.)='1']"
+					"//fo:flow//fo:inline[normalize-space(.)='1']"
 					+ "[not(ancestor::fo:footnote)][not(ancestor::fo:list-block)]"));
 
 			// the Endnotes block at the end of the flow

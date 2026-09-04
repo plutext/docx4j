@@ -56,22 +56,31 @@ public class GeneratedTextFontTest extends AbstractXSLFOTest {
 		String font = textFont(doc, "Body text");
 		assertTrue("no font on the ordinary text", font!=null);
 
-		// a footnote reference, an endnote reference, and the number in the endnote
-		assertTrue("expected 3 note marks",
-				3 == countMarks(doc));
-		assertTrue("a note reference mark has no font, or not the font of the text",
-				isAbsent(doc, "//fo:inline[@baseline-shift='super'][not(fo:inline/@font-family='" + font + "')]"));
+		// a footnote reference, an endnote reference, and the numbers in the notes:
+		// four generated "1"s, each in the font of the run it belongs to (since
+		// 17.0.5 nothing else is added: Word raises a note number only if its run is
+		// a superscript)
+		assertTrue("expected 4 note numbers in the text's font",
+				4 == countMarks(doc, font));
+		assertTrue("a note number has no font, or not the font of the text",
+				isAbsent(doc, "//fo:inline[text()='1'][not(@font-family='" + font + "')]"));
 
-		// the number in the footnote itself is the label of the list-block
-		assertTrue("the number in the footnote has no font, or not the font of the text",
-				isPresent(doc, "//fo:list-item-label//fo:block/fo:inline[@font-family='" + font + "']"));
+		// the footnote's content sits directly in the footnote body (no list-block),
+		// its number inline in the first paragraph, found by w:id
+		assertTrue("the footnote's paragraph is not the footnote body's block",
+				isPresent(doc, "//fo:footnote-body/fo:block//fo:inline[@font-family='" + font + "'][text()='1']"));
+		assertTrue("the footnote's text was not found by w:id",
+				isPresent(doc, "//fo:footnote-body//fo:inline[contains(text(),'The footnote.')]"));
+		assertTrue("footnote body still a list-block",
+				isAbsent(doc, "//fo:footnote-body//fo:list-block"));
 	}
 
-	private int countMarks(org.w3c.dom.Document doc) {
+	private int countMarks(org.w3c.dom.Document doc, String font) {
 		int count = 0;
 		NodeList nl = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "inline");
 		for (int i=0; i<nl.getLength(); i++) {
-			if (((org.w3c.dom.Element)nl.item(i)).getAttribute("baseline-shift").equals("super")) count++;
+			org.w3c.dom.Element el = (org.w3c.dom.Element)nl.item(i);
+			if ("1".equals(el.getTextContent()) && font.equals(el.getAttribute("font-family"))) count++;
 		}
 		return count;
 	}

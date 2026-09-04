@@ -97,15 +97,51 @@ public class VerticalAlignment extends AbstractRunProperty {
 	public void setXslFO(Element foElement) {
 		
 		STVerticalAlignRun va = ((CTVerticalAlignRun)this.getObject()).getVal();
-		
-		if ( STVerticalAlignRun.SUBSCRIPT.equals(va) ) {
-			foElement.setAttribute(FO_NAME, "sub" );			
-			// Some suggest @baseline-shift="sub" as an alternative			
-		} else if ( STVerticalAlignRun.SUPERSCRIPT.equals(va) ) {
-			foElement.setAttribute(FO_NAME, "super" );
-		} else {
-			// STVerticalAlignRun.BASELINE
+		boolean superscript = STVerticalAlignRun.SUPERSCRIPT.equals(va);
+		if (!superscript && !STVerticalAlignRun.SUBSCRIPT.equals(va)) {
+			return; // STVerticalAlignRun.BASELINE
 		}
+
+		// Word draws a superscript or subscript at 65% of the run's size, raised by
+		// about a third of that size (superscript) or lowered by about a sixth
+		// (subscript); measured against Word 365 output (CR-001 Phase 4).  The run's
+		// font-size is already on the element (FontSize precedes this property in
+		// PropertyFactory), so both can be given in points; a line's height is not
+		// affected, as in Word, because the FO root disregards baseline shifts
+		// (WordLayoutFixups).
+		double sizePt = sizePt(foElement.getAttribute("font-size"));
+		if (sizePt > 0) {
+			foElement.setAttribute("font-size", format(sizePt * SIZE_FACTOR) + "pt");
+			foElement.setAttribute("baseline-shift",
+					format(sizePt * (superscript ? SUPERSCRIPT_RAISE : -SUBSCRIPT_DROP)) + "pt");
+		} else {
+			foElement.setAttribute("font-size", Math.round(SIZE_FACTOR * 100) + "%");
+			foElement.setAttribute("baseline-shift", superscript ? "super" : "sub");
+		}
+	}
+
+	/** Size of a superscript or subscript relative to the run's size. @since 17.0.5 */
+	public static final double SIZE_FACTOR = 0.65;
+	/** Raise of a superscript relative to the run's (unreduced) size. @since 17.0.5 */
+	public static final double SUPERSCRIPT_RAISE = 0.36;
+	/** Drop of a subscript relative to the run's (unreduced) size. @since 17.0.5 */
+	public static final double SUBSCRIPT_DROP = 0.16;
+
+	private static double sizePt(String fontSize) {
+		if (fontSize == null || !fontSize.endsWith("pt")) return 0;
+		try {
+			return Double.parseDouble(fontSize.substring(0, fontSize.length() - 2).trim());
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
+
+	private static String format(double pt) {
+		String s = String.format(java.util.Locale.ROOT, "%.2f", pt);
+		if (s.endsWith("0")) s = s.substring(0, s.length() - 1);
+		if (s.endsWith("0")) s = s.substring(0, s.length() - 1);
+		if (s.endsWith(".")) s = s.substring(0, s.length() - 1);
+		return s;
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.convert.out.FOSettings;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
@@ -155,14 +156,8 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 		if (XsltCommonFunctions.hasFootnotesPart(conversionContext)) {
 			Element separatorContent = document.createElementNS(XSL_FO, "static-content");
 			separatorContent.setAttribute("flow-name", "xsl-footnote-separator");
-			Element block = document.createElementNS(XSL_FO, "block");
-			separatorContent.appendChild(block);
-			Element leader = document.createElementNS(XSL_FO, "leader");
-			leader.setAttribute("leader-pattern", "rule");
-			leader.setAttribute("leader-length", "100%");
-			leader.setAttribute("rule-style", "solid");
-			leader.setAttribute("rule-thickness", "0.5pt");
-			block.appendChild(leader);
+			// Word's separator: a 2in rule in a line of the separator note's font
+			XmlUtils.treeCopy(XsltFOFunctions.footnoteSeparator(conversionContext), separatorContent);
 			currentParent.appendChild(separatorContent);
 		}
 	}
@@ -199,6 +194,10 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 			CTFtnEdn endnote = endnotes.get(i);
 			if (endnote.getId()!=null && endnote.getId().signum()==0) {
 				continue; // the separator; as in the XSLT, only w:id='0' is skipped
+			}
+			if (endnote.getType()==org.docx4j.wml.STFtnEdn.SEPARATOR
+					|| endnote.getType()==org.docx4j.wml.STFtnEdn.CONTINUATION_SEPARATOR) {
+				continue; // Word writes its separators as w:id="-1" and "0"
 			}
 			FOExporterVisitorGenerator generator = (FOExporterVisitorGenerator)
 					generatorFactory.createInstance(conversionContext, document, flow);

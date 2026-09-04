@@ -138,6 +138,8 @@ public class Fonts {
         protected String embedUrl;
         @XmlAttribute(name = "sub-font")
         protected String subFont;
+        @XmlAttribute(name = "kerning")
+        protected Boolean kerning;
 
         /**
          * Gets the value of the fontTriplet property.
@@ -230,6 +232,21 @@ public class Fonts {
          */
         public void setSubFont(String value) {
             this.subFont = value;
+        }
+
+        /**
+         * FOP's kerning attribute (its default is true).  Word does not kern
+         * unless the run says so (w:kern), so docx4j sets this false by default;
+         * see FopConfigUtil.
+         *
+         * @since 17.0.5
+         */
+        public Boolean isKerning() {
+            return kerning;
+        }
+
+        public void setKerning(Boolean value) {
+            this.kerning = value;
         }
 
 

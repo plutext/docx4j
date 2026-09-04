@@ -364,6 +364,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
         		 context.getImageHandler(), wpInline, sourcePart);
     	
         Document d = converter.createXslFoImageElement();
+        converter.stampAnchorHints(d, context);
 
 		DocumentFragment docfrag = d.createDocumentFragment();
 		docfrag.appendChild(d.getDocumentElement());
@@ -385,6 +386,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
         		 context.getImageHandler(), wpInline, sourcePart);
     	
         Document d = converter.createXslFoImageElement();
+        converter.stampAnchorHints(d, context);
 
 		DocumentFragment docfrag = d.createDocumentFragment();
 		docfrag.appendChild(d.getDocumentElement());
@@ -392,6 +394,144 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 		return docfrag;
     }
     
+    // ---------------------------------------------------------------- anchored pictures
+
+    /** Hint attributes describing a wp:anchor, for export-fo's WordLayoutFixups
+     *  (which turns them into fo:float / block-containers and removes them).
+     *  Lengths are in points; x is measured from the column's left edge, y is
+     *  "p:<pt>" from the anchor paragraph's top or "page:<pt>" from the page top.
+     *  @since 17.0.5 */
+    public static final String HINT_ANCHOR = "docx4j-anchor";
+    public static final String HINT_ANCHOR_W = "docx4j-anchor-w";
+    public static final String HINT_ANCHOR_H = "docx4j-anchor-h";
+    public static final String HINT_ANCHOR_X = "docx4j-anchor-x";
+    public static final String HINT_ANCHOR_Y = "docx4j-anchor-y";
+    public static final String HINT_ANCHOR_DIST = "docx4j-anchor-dist";
+    public static final String HINT_ANCHOR_BEHIND = "docx4j-anchor-behind";
+    public static final String HINT_ANCHOR_COL = "docx4j-anchor-col";
+    public static final String HINT_ANCHOR_ML = "docx4j-anchor-ml";
+
+    /** The property WordLayoutFixups (docx4j-export-fo) is enabled by. */
+    private static final String WORD_LAYOUT_FIXUPS_PROPERTY = "docx4j.convert.out.fo.wordLayoutFixups";
+
+    private static final double EMU_PER_PT = 12700;
+
+    /**
+     * Word places an anchored picture relative to its paragraph, column or page
+     * and wraps text around it; the FO for that (a side float, a block-container,
+     * an absolutely positioned block-container) can only be built once the
+     * paragraph's fo:block exists, so the anchor's geometry travels on the
+     * fo:external-graphic as hint attributes for export-fo's WordLayoutFixups.
+     *
+     * @since 17.0.5
+     */
+    void stampAnchorHints(Document d, AbstractWmlConversionContext context) {
+    	if (anchor==null || d==null || d.getDocumentElement()==null || context==null) return;
+    	if (!org.docx4j.Docx4jProperties.getProperty(WORD_LAYOUT_FIXUPS_PROPERTY, true)) return;
+    	try {
+	    	org.docx4j.model.structure.PageDimensions pd = context.getSections().getCurrentSection().getPageDimensions();
+	    	org.w3c.dom.Element g = d.getDocumentElement();
+
+	    	String kind;
+	    	if (anchor.getWrapTopAndBottom()!=null) kind = "topAndBottom";
+	    	else if (anchor.getWrapSquare()!=null || anchor.getWrapTight()!=null || anchor.getWrapThrough()!=null) kind = "square";
+	    	else kind = "none";
+
+	    	CTPositiveSize2D extent = anchor.getExtent();
+	    	if (extent==null) return;
+	    	double w = extent.getCx() / EMU_PER_PT;
+	    	double h = extent.getCy() / EMU_PER_PT;
+
+	    	double colW = pd.getWritableWidthTwips() / 20d;
+	    	double pageW = pd.getPgSz().getW().doubleValue() / 20d;
+	    	double pageH = pd.getPgSz().getH().doubleValue() / 20d;
+	    	double mL = pd.getPgMar().getLeft().doubleValue() / 20d;
+	    	double mR = pd.getPgMar().getRight().doubleValue() / 20d;
+	    	double mT = pd.getPgMar().getTop().doubleValue() / 20d;
+	    	double mB = pd.getPgMar().getBottom().doubleValue() / 20d;
+
+	    	// horizontal: the reference box in column coordinates, then align or offset
+	    	org.docx4j.dml.wordprocessingDrawing.CTPosH ph = anchor.getPositionH();
+	    	double refLeft = 0, refRight = colW;
+	    	org.docx4j.dml.wordprocessingDrawing.STRelFromH relH = ph==null ? null : ph.getRelativeFrom();
+	    	if (relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.PAGE) {
+	    		refLeft = -mL; refRight = pageW - mL;
+	    	} else if (relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.LEFT_MARGIN
+	    			|| relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.INSIDE_MARGIN) {
+	    		refLeft = -mL; refRight = 0;
+	    	} else if (relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.RIGHT_MARGIN
+	    			|| relH==org.docx4j.dml.wordprocessingDrawing.STRelFromH.OUTSIDE_MARGIN) {
+	    		refLeft = colW; refRight = colW + mR;
+	    	} // margin, column, character: the column (character: from the column start, an approximation)
+	    	double x = refLeft;
+	    	if (ph!=null && ph.getAlign()!=null) {
+	    		switch (ph.getAlign()) {
+	    			case CENTER: x = (refLeft + refRight - w) / 2; break;
+	    			case RIGHT: case OUTSIDE: x = refRight - w; break;
+	    			default: x = refLeft; // left, inside
+	    		}
+	    	} else if (ph!=null && ph.getPosOffset()!=null) {
+	    		x = refLeft + ph.getPosOffset() / EMU_PER_PT;
+	    	}
+
+	    	// vertical: from the paragraph's top, or from the page's top
+	    	org.docx4j.dml.wordprocessingDrawing.CTPosV pv = anchor.getPositionV();
+	    	org.docx4j.dml.wordprocessingDrawing.STRelFromV relV = pv==null ? null : pv.getRelativeFrom();
+	    	double off = (pv!=null && pv.getPosOffset()!=null) ? pv.getPosOffset() / EMU_PER_PT : 0;
+	    	String y;
+	    	if (relV==null || relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.PARAGRAPH
+	    			|| relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.LINE) {
+	    		y = "p:" + fmt(off); // line: from the paragraph's top, an approximation
+	    	} else {
+	    		double refTop = 0, refBottom = pageH;
+	    		if (relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.MARGIN) {
+	    			refTop = mT; refBottom = pageH - mB;
+	    		} else if (relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.TOP_MARGIN
+	    				|| relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.INSIDE_MARGIN) {
+	    			refTop = 0; refBottom = mT;
+	    		} else if (relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.BOTTOM_MARGIN
+	    				|| relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.OUTSIDE_MARGIN) {
+	    			refTop = pageH - mB; refBottom = pageH;
+	    		}
+	    		double py = refTop + off;
+	    		if (pv.getAlign()!=null) {
+	    			switch (pv.getAlign()) {
+	    				case CENTER: py = (refTop + refBottom - h) / 2; break;
+	    				case BOTTOM: case OUTSIDE: py = refBottom - h; break;
+	    				default: py = refTop; // top, inside
+	    			}
+	    		}
+	    		y = "page:" + fmt(py);
+	    	}
+
+	    	g.setAttribute(HINT_ANCHOR, kind);
+	    	g.setAttribute(HINT_ANCHOR_W, fmt(w));
+	    	g.setAttribute(HINT_ANCHOR_H, fmt(h));
+	    	g.setAttribute(HINT_ANCHOR_X, fmt(x));
+	    	g.setAttribute(HINT_ANCHOR_Y, y);
+	    	g.setAttribute(HINT_ANCHOR_DIST, fmt(emu(anchor.getDistL())) + " " + fmt(emu(anchor.getDistR()))
+	    			+ " " + fmt(emu(anchor.getDistT())) + " " + fmt(emu(anchor.getDistB())));
+	    	if (anchor.isBehindDoc()) g.setAttribute(HINT_ANCHOR_BEHIND, "1");
+	    	g.setAttribute(HINT_ANCHOR_COL, fmt(colW));
+	    	g.setAttribute(HINT_ANCHOR_ML, fmt(mL));
+    	} catch (Exception e) {
+    		log.warn("Anchored picture left in the flow: " + e.getMessage(), e);
+    	}
+    }
+
+    private static double emu(Long v) {
+    	return v==null ? 0 : v / EMU_PER_PT;
+    }
+
+    private static String fmt(double pt) {
+    	String s = String.format(java.util.Locale.ROOT, "%.2f", pt);
+    	if (s.endsWith("0")) s = s.substring(0, s.length()-1);
+    	if (s.endsWith("0")) s = s.substring(0, s.length()-1);
+    	if (s.endsWith(".")) s = s.substring(0, s.length()-1);
+    	if (s.equals("-0")) s = "0";
+    	return s;
+    }
+
     private void readDimensions() {
     	CTPositiveSize2D size2d = getExtent();
     	if (size2d==null) {

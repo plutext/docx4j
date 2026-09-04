@@ -57,6 +57,7 @@ public final class Fidelity {
 
 	private static void usage() {
 		System.out.println("usage: generate <corpusDir> | render <corpusDir> <pdfDir> | compare <refPdfDir> <candPdfDir> <reportDir> [dpi] | run <corpusDir> <refPdfDir> <reportDir> [dpi]");
+		System.out.println("       -Dfidelity.only=id,id  restricts render/compare/run to those probes");
 	}
 
 	public static void render(File corpusDir, File pdfDir) throws Exception {
@@ -84,7 +85,7 @@ public final class Fidelity {
 
 	public static List<LayoutComparison.Result> compare(File refDir, File candDir, File reportDir, int dpi) throws Exception {
 		List<LayoutComparison.Result> results = new ArrayList<>();
-		File[] refs = refDir.listFiles((d, n) -> n.endsWith(".pdf"));
+		File[] refs = refDir.listFiles((d, n) -> n.endsWith(".pdf") && selected(n));
 		if (refs == null) throw new IllegalArgumentException("no PDFs in " + refDir);
 		Arrays.sort(refs);
 		for (File ref : refs) {
@@ -110,8 +111,19 @@ public final class Fidelity {
 		return results;
 	}
 
+	/** -Dfidelity.only=id,id restricts render and compare to those probes. */
+	static boolean selected(String fileName) {
+		String only = System.getProperty("fidelity.only");
+		if (only == null || only.trim().isEmpty()) return true;
+		String id = fileName.replaceAll("\\.(docx|pdf)$", "");
+		for (String s : only.split(",")) {
+			if (s.trim().equals(id)) return true;
+		}
+		return false;
+	}
+
 	static File[] docxFiles(File dir) {
-		File[] files = dir.listFiles((d, n) -> n.endsWith(".docx") && !n.startsWith("~"));
+		File[] files = dir.listFiles((d, n) -> n.endsWith(".docx") && !n.startsWith("~") && selected(n));
 		if (files == null) throw new IllegalArgumentException("no docx in " + dir);
 		Arrays.sort(files);
 		return files;
