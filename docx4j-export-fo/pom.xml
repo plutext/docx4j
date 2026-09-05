@@ -176,6 +176,13 @@
 					<groupId>xml-apis</groupId>
 					<artifactId>xml-apis-ext</artifactId>
 				</exclusion>				
+				<!-- xml-apis (via batik-dom) duplicates the JDK's javax.xml / org.w3c.dom /
+				     org.xml.sax packages: a split package which breaks the module path
+				     (add-modules ALL-MODULE-PATH).  Not needed on Java 11+.  @since 17.0.5 -->
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
 				<exclusion>
 					<groupId>org.apache.xmlgraphics</groupId>
 					<artifactId>batik-extension</artifactId>
@@ -195,6 +202,10 @@
 				<exclusion>
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.apache.xmlgraphics</groupId>

@@ -500,6 +500,12 @@ visitor pathway rendered the equation.  The overload now accepts a node or node
 iterator and converts it (MathMLPdfTest.xsltPathwayEmitsMathMLForeignObject, since
 17.0.4, passes).
 
+docx4j-export-fo on the module path:
+- xml-apis:xml-apis:1.4.01, pulled in through batik-dom, duplicates the JDK's javax.xml,
+org.w3c.dom and org.xml.sax packages, so --add-modules ALL-MODULE-PATH failed with a
+ResolutionException (split package against java.xml) unless the consumer dropped that
+jar.  Excluded now (not needed on Java 11+); output is identical.
+
 Tab leaders inside hyperlinks (PDF):
 - a w:tab inside a w:hyperlink (every entry of a Word table of contents) lost its
 paragraph's tab stops in the visitor pathway, so the dot leader became three spaces and
