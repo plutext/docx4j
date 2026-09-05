@@ -66,6 +66,10 @@ compression than a whole word does (docx4j.convert.out.fo.wordLayout.maxHyphenSp
 default 0.10); and a word in capitals now breaks where its lower-case form breaks, FOP's
 pattern lookup being lossy for capitals
 
+HTML output, visitor pathway (the default):
+- a line break in the middle of a run no longer ends the run: text after it keeps the run's
+formatting (and no longer logs "null currentSpan!")
+
 Other:
 - Docx4J facade: Docx4J.updateToc(pkg[, skipPageNumbering]) updates a document's table of
 contents in place (returning false if it has none), and Docx4J.FLAG_EXPORT_UPDATE_TOC does

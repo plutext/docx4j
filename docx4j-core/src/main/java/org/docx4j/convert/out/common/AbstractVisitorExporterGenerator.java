@@ -339,8 +339,15 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				
 				if (currentSpan==null) {
-					// eg after <br/>
-					log.error("null currentSpan! " + ((Text)o).getValue() );
+					// Legitimate, not an error: a w:t need not be inside a run
+					// whose span we are still filling.  The FO generator closes
+					// the span at a page break (so the text after it starts a new
+					// inline), and w:t is legal outside w:r at all (the XSLT has
+					// its own w:t[not(parent::w:r)] template for that).  Either
+					// way the text is kept: we just open an inline for it here.
+					// (Until 17.0.6 the HTML generator also got here for a soft
+					// return mid-run, which WAS a defect - see its handleBr.)
+					log.debug("null currentSpan; opening one for: " + ((Text)o).getValue() );
 					Element spanEl = createNode(document, NODE_INLINE);
 					if (currentP==null) {
 						// Hyperlink special case

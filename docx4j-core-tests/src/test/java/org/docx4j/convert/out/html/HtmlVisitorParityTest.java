@@ -48,6 +48,38 @@ public class HtmlVisitorParityTest {
 				.matcher(html).find();
 	}
 
+	/** is text somewhere inside a span whose start tag contains cssFragment?
+	 *  (unlike a plain regex, this follows nested spans to that span's own
+	 *  close tag, so intervening markup - eg a br - doesn't matter) */
+	private static boolean withinSpanStyled(String htmlIn, String cssFragment, String text) {
+
+		// drop self-closed (empty) spans, so the depth count below need only
+		// handle start/end tag pairs
+		String html = htmlIn.replaceAll("<span[^>]*/>", "");
+
+		java.util.regex.Matcher m = Pattern.compile("<span [^>]*"
+				+ Pattern.quote(cssFragment) + "[^>]*>").matcher(html);
+		while (m.find()) {
+			int depth = 1;
+			int i = m.end();
+			while (i < html.length() && depth > 0) {
+				int open = html.indexOf("<span", i);
+				int close = html.indexOf("</span>", i);
+				if (close < 0) break;
+				int hit = html.indexOf(text, i);
+				if (hit >= 0 && hit < close) return true;
+				if (open >= 0 && open < close) {
+					depth++;
+					i = open + 5;
+				} else {
+					depth--;
+					i = close + 7;
+				}
+			}
+		}
+		return false;
+	}
+
 	/** what the output actually contains around the needle — so an
 	 *  environment-dependent failure (eg font mapping) is diagnosable from
 	 *  the CI log alone */
@@ -129,6 +161,59 @@ public class HtmlVisitorParityTest {
 			// emitted for the CTMoveBookmark range starts)
 			assertTrue(impl + "move range marker leaked an anchor",
 					!html.contains("name=\"m1\""));
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	 * A break in the middle of a run: the text after it stays in the run
+	 * (17.0.6; the visitor used to close the run span at the break, so the
+	 * following w:t got a bare span with none of the run's formatting, and
+	 * logged "null currentSpan!")
+	 * ------------------------------------------------------------------ */
+
+	private WordprocessingMLPackage breakInRunPkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				// break between two w:t of the same run
+				+ "<w:p><w:r><w:rPr><w:b/></w:rPr>"
+				+   "<w:t>beforebr</w:t><w:br/><w:t>afterbr</w:t>"
+				+ "</w:r></w:p>"
+				// break first in the run (as Word writes a soft return starting a line)
+				+ "<w:p><w:r><w:rPr><w:i/></w:rPr>"
+				+   "<w:br/><w:t>leadingbr</w:t>"
+				+ "</w:r></w:p>"
+				// page break, then more text in the same run
+				+ "<w:p><w:r><w:rPr><w:b/></w:rPr>"
+				+   "<w:t>beforepage</w:t><w:br w:type=\"page\"/><w:t>afterpage</w:t>"
+				+ "</w:r></w:p>"
+				+ "</w:body></w:document>"));
+		return pkg;
+	}
+
+	@Test
+	public void testBreakInsideRun() throws Exception {
+
+		for (int flag : FLAGS) {
+			String html = toHTML(breakInRunPkg(), flag);
+			String impl = flagName(flag) + ": ";
+
+			// text following the break keeps the run's formatting
+			assertTrue(impl + "text after a break lost the run's bold"
+					+ around(html, "afterbr"),
+					withinSpanStyled(html, "font-weight: bold;", "afterbr"));
+			assertTrue(impl + "text after a leading break lost the run's italic"
+					+ around(html, "leadingbr"),
+					withinSpanStyled(html, "font-style: italic;", "leadingbr"));
+			assertTrue(impl + "text after a page break lost the run's bold"
+					+ around(html, "afterpage"),
+					withinSpanStyled(html, "font-weight: bold;", "afterpage"));
+
+			// and the break itself is still there
+			// (the page break is not: the PageBreak preprocess step has already
+			// turned it into page-break-before on the paragraph)
+			assertTrue(impl + "br lost", html.contains("<br"));
 		}
 	}
 
