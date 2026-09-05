@@ -124,6 +124,16 @@ there
 hidden text no longer produces an empty fo:table-cell, which is invalid FO; and a line
 broken beside a wide fo:float no longer throws NullPointerException (FOP 2.11's
 LineLayoutManager reads a null layout manager when reporting the overflow)
+- a square/tight-wrapped anchored picture inside a table cell (or a header, footnote or
+multi-column region, where FOP has no working fo:float) is now positioned where Word puts it
+when it is narrower than 60% of the cell, instead of reserving its full height; two such
+pictures in one cell no longer stack their reservations
+- a square/tight-wrapped picture which leaves no room beside it (over 90% of the column) is
+no longer given to fo:float: Word puts the text below it, and two full-page pictures were
+being drawn on top of each other at the foot of one page instead of on a page each
+- a picture is now drawn filling the frame the document declares (wp:extent), as Word draws
+it: FOP's uniform scaling left a picture whose crop or stretch changed its aspect ratio
+smaller than the document asks for, which re-paginated documents full of photographs
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

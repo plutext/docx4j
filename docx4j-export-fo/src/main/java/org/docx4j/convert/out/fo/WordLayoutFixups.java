@@ -561,9 +561,20 @@ public final class WordLayoutFixups {
 	 * otherwise.
 	 * The picture's block uses a tiny font and zero line-height so its top is
 	 * exactly the container's top (FOP otherwise offsets it by the block font's
-	 * ascender).  Floats only work in the main flow, so a wrapped picture inside
-	 * a table, header, footer or footnote is laid out top-and-bottom instead,
-	 * and one with a page-relative vertical position is fixed without wrapping.
+	 * ascender).
+	 * <p>Floats only work in the main flow - FOP reports "fo:float (on fo:table)
+	 * isn't implemented" and paints nothing at all for one in a table cell - so
+	 * where there is no float to be had a wrapped picture takes the text box's
+	 * treatment ({@link #anchorTextBox}, §9.2): narrower than 60% of its measure
+	 * (the cell's content width in a cell, the text column otherwise) it is
+	 * positioned where Word puts it and takes no space, and wider than that it
+	 * reserves its height as a top-and-bottom wrap does.  In the flow a picture is
+	 * floated however wide it is, since Word wraps beside one which leaves any room
+	 * at all (measured: text beside a 348pt picture on a 453.55pt column), until it
+	 * leaves no room - over 90% of the measure - where Word puts the text below it
+	 * and FOP would anchor the float to a line and paint the picture over the page
+	 * edge.  A picture with a page-relative vertical position is fixed without
+	 * wrapping.</p>
 	 */
 	static void anchorImages(Document doc) {
 		for (Element g : elements(doc, "external-graphic")) {
@@ -603,8 +614,20 @@ public final class WordLayoutFixups {
 		holder.appendChild(g); // moves it out of its run
 
 		if (pageY) kind = "none"; // FOP cannot wrap text around a page-positioned object
-		if ("square".equals(kind) && (!floatsAllowed(para) || !FOConversionContext.useFloats())) {
-			kind = "topAndBottom";
+		if ("square".equals(kind) && !FOConversionContext.useFloats()) {
+			kind = "topAndBottom"; // the property asks for the picture to be in the flow
+		} else if ("square".equals(kind)) {
+			double measure = anchorMeasure(para, col);
+			if (!floatsAllowed(para)) {
+				// no float to be had here (a table cell, a header or footer, a footnote):
+				// the §9.2 rule, positioned where Word puts it or reserving its height
+				kind = (measure > 0 && w < 0.6 * measure) ? "none" : "topAndBottom";
+			} else if (measure > 0 && w > 0.9 * measure) {
+				// a picture with no room for text beside it: Word puts the text below it,
+				// which is what the flow does anyway, and FOP would otherwise anchor the
+				// float to a line and paint the picture over the page edge
+				kind = "topAndBottom";
+			}
 		}
 
 		Element wrapper;
@@ -641,7 +664,93 @@ public final class WordLayoutFixups {
 			abs.appendChild(holder);
 			wrapper.appendChild(abs);
 		}
-		para.insertBefore(wrapper, para.getFirstChild());
+		insertAnchorWrapper(para, wrapper);
+	}
+
+	/**
+	 * Puts an anchored object's wrapper at the head of its paragraph, with the wrappers
+	 * which take no space ahead of those which reserve height.
+	 *
+	 * <p>An absolutely positioned container is placed relative to its own zero-height
+	 * wrapper - an fo:block-container is a reference area - so that wrapper has to sit at
+	 * the paragraph's top for the docx's offset to mean what Word means by it.  Measured
+	 * on a cell holding a full-width wrapped picture and a small one 10.6pt below the
+	 * paragraph's top: with the reservation first, the small picture came out at 179.9
+	 * where Word has it at 81.5, one reserved height (98.6pt) low.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static void insertAnchorWrapper(Element para, Element wrapper) {
+		Node at = para.getFirstChild();
+		if (!takesNoSpace(wrapper)) {
+			while (at instanceof Element && takesNoSpace((Element) at)) at = at.getNextSibling();
+		}
+		para.insertBefore(wrapper, at); // insertBefore(w, null) appends
+	}
+
+	/**
+	 * The width a wrapped anchored object's width is judged against: the containing
+	 * cell's content width where the object is in a table cell - Word measures a "column"
+	 * position from the cell there, and the cell is what the object could have text
+	 * beside it in - and the section's text column otherwise.
+	 *
+	 * @param para the paragraph's block
+	 * @param col  the section's text column width, from the anchor hints
+	 * @return the measure in points, or 0 where it is not known
+	 * @since 17.0.6
+	 */
+	private static double anchorMeasure(Element para, double col) {
+		Element cell = ancestorCell(para);
+		if (cell == null) return col;
+		double w = cellContentWidthPt(cell);
+		return w > 0 ? w : col;
+	}
+
+	/** The nearest ancestor fo:table-cell, or null (stopping at the flow). */
+	private static Element ancestorCell(Element el) {
+		for (Node n = el.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			Element e = (Element) n;
+			if (isFo(e, "table-cell")) return e;
+			if (isFo(e, "flow") || isFo(e, "static-content")) return null;
+		}
+		return null;
+	}
+
+	/**
+	 * A cell's content width: the fo:table-column widths its grid slots cover, less its
+	 * own padding.  The cell's column index is the number of grid columns the cells
+	 * before it in the row occupy (fo:table-cell carries no column index of its own here).
+	 */
+	private static double cellContentWidthPt(Element cell) {
+		Element table = ancestorTable(cell);
+		Node row = cell.getParentNode();
+		if (table == null || !(row instanceof Element)) return 0;
+		List<Double> columns = new ArrayList<>();
+		for (Node n = table.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && isFo((Element) n, "table-column")) {
+				columns.add(lengthPt(((Element) n).getAttribute("column-width")));
+			}
+		}
+		if (columns.isEmpty()) return 0;
+		int index = 0;
+		for (Node n = row.getFirstChild(); n != null && n != cell; n = n.getNextSibling()) {
+			if (n instanceof Element && isFo((Element) n, "table-cell")) {
+				index += spanned((Element) n);
+			}
+		}
+		double w = 0;
+		for (int i = index; i < index + spanned(cell) && i < columns.size(); i++) w += columns.get(i);
+		return w - lengthPt(cell.getAttribute("padding-left")) - lengthPt(cell.getAttribute("padding-right"));
+	}
+
+	private static int spanned(Element cell) {
+		String v = cell.getAttribute("number-columns-spanned");
+		if (v == null || v.length() == 0) return 1;
+		try {
+			return Math.max(1, Integer.parseInt(v.trim()));
+		} catch (NumberFormatException e) {
+			return 1;
+		}
 	}
 
 	/**
@@ -979,6 +1088,13 @@ public final class WordLayoutFixups {
 			Node child = fl;
 			Node parent = fl.getParentNode();
 			while (parent instanceof Element && !isFo((Element) parent, "flow")) {
+				// never out of a cell, a header/footer or a footnote: the float would
+				// leave the content it belongs to
+				if (isFo((Element) parent, "table-cell") || isFo((Element) parent, "static-content")
+						|| isFo((Element) parent, "footnote-body")) {
+					child = fl;
+					break;
+				}
 				child = parent;
 				parent = parent.getParentNode();
 			}
@@ -1238,7 +1354,7 @@ public final class WordLayoutFixups {
 		resetTextBox(box);
 		box.getParentNode().removeChild(box);
 		wrapper.appendChild(box);
-		para.insertBefore(wrapper, para.getFirstChild());
+		insertAnchorWrapper(para, wrapper);
 	}
 
 	/**

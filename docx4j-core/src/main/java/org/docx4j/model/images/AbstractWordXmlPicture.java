@@ -207,6 +207,23 @@ public abstract class AbstractWordXmlPicture {
             {
             	imageElement.setAttribute("content-height", length(dimensions.height)+dimensions.heightUnit);
             }
+
+            if (dimensions.width>0 && dimensions.height>0)
+            {
+            	/* Word draws a picture filling the frame the document declares (wp:extent,
+            	 * or the VML shape's width/height), whatever the stored bitmap's own aspect
+            	 * ratio: a crop (a:srcRect) or a deliberate stretch makes the two differ.
+            	 * XSL-FO's default scaling is "uniform", so where both content-width and
+            	 * content-height are given FOP scales by the smaller factor and leaves the
+            	 * frame part empty - a 4:3 photograph cropped to 1.9:1 came out 493pt wide
+            	 * in Word and 346pt here, and two such pictures then needed a page each.
+            	 * 651 of 1737 pictures across 50 documents of a long-document corpus
+            	 * declare an extent whose aspect differs from the bitmap's by over 2%.
+            	 * The crop itself is not reproduced (§9.1): the picture is stretched into
+            	 * the frame rather than cropped to it, which is the same geometry.
+            	 */
+            	imageElement.setAttribute("scaling", "non-uniform");
+            }
 //
 //            if (hlinkRef !=null && !hlinkRef.equals(""))
 //            {

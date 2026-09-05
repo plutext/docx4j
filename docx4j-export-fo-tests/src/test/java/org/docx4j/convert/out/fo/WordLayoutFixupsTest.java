@@ -250,13 +250,71 @@ public class WordLayoutFixupsTest {
 				.contains("float=\"right\""));
 	}
 
+	/** A cell of the given column width holding one square-wrapped picture. */
+	private static String cellWithPicture(String columnWidth, String pictureWidth) {
+		return "<fo:table " + NS + " width=\"" + columnWidth + "\">"
+				+ "<fo:table-column column-width=\"" + columnWidth + "\"/><fo:table-body><fo:table-row>"
+				+ "<fo:table-cell>"
+				+ anchored("square", "0", "p:0", "").replace("docx4j-anchor-w=\"113.39\"",
+						"docx4j-anchor-w=\"" + pictureWidth + "\"")
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>";
+	}
+
+	/**
+	 * FOP does not implement fo:float in a table ("fo:float (on fo:table)") and paints
+	 * nothing for one, so a wrapped picture in a cell takes the text box's treatment
+	 * (&#xa7;9.2): narrower than 60% of the cell it is positioned and takes no space.
+	 */
 	@Test
-	public void wrappedPictureInATableCellIsLaidOutTopAndBottom() {
-		String cell = "<fo:table " + NS + "><fo:table-body><fo:table-row><fo:table-cell>"
-				+ anchored("square", "0", "p:0", "") + "</fo:table-cell></fo:table-row></fo:table-body></fo:table>";
-		String out = WordLayoutFixups.apply(flow(cell), 15);
+	public void narrowWrappedPictureInATableCellIsPositioned() {
+		String out = WordLayoutFixups.apply(flow(cellWithPicture("300pt", "113.39")), 15);
 		assertFalse("FOP has no floats inside tables", out.contains("fo:float"));
+		assertTrue("positioned where Word puts it: " + out, out.contains("absolute-position=\"absolute\""));
+		assertTrue("and taking no space", out.contains("height=\"0pt\""));
+	}
+
+	/** Wider than 60% of the cell, nothing fits beside it, so it reserves its height. */
+	@Test
+	public void wideWrappedPictureInATableCellReservesItsHeight() {
+		String out = WordLayoutFixups.apply(flow(cellWithPicture("150pt", "113.39")), 15);
+		assertFalse("FOP has no floats inside tables", out.contains("fo:float"));
+		assertFalse("not positioned: " + out, out.contains("absolute-position"));
 		assertTrue(out.contains("<fo:block-container") && out.contains("height=\"85.04pt\""));
+	}
+
+	/**
+	 * A picture which leaves no room beside it - over 90% of the column - is not
+	 * floated: Word puts the text below it, and FOP otherwise anchors the float to a
+	 * line and paints the picture over the page edge (measured on a document whose two
+	 * full-page pictures Word gives a page each, and which came out drawn on top of
+	 * each other at the foot of one page).  A picture which does leave room is still
+	 * floated: Word wraps beside a 348pt picture on a 453.55pt column.
+	 */
+	@Test
+	public void aPictureFillingTheColumnIsNotFloated() {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "0", "p:0", "")
+				.replace("docx4j-anchor-w=\"113.39\"", "docx4j-anchor-w=\"440\"")), 15);
+		assertFalse("440pt of a 451.3pt column: " + out, out.contains("fo:float"));
+		assertTrue(out.contains("<fo:block-container") && out.contains("height=\"85.04pt\""));
+	}
+
+	@Test
+	public void aPictureWhichLeavesRoomBesideItIsStillFloated() {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "0", "p:0", "")
+				.replace("docx4j-anchor-w=\"113.39\"", "docx4j-anchor-w=\"348\"")), 15);
+		assertTrue("348pt of a 451.3pt column, which Word wraps beside: " + out,
+				out.contains("fo:float"));
+	}
+
+	/** With no column widths to read, the section's text column is the measure. */
+	@Test
+	public void pictureInACellWithNoColumnWidthsUsesTheTextColumn() {
+		String cell = "<fo:table " + NS + "><fo:table-body><fo:table-row><fo:table-cell>"
+				+ anchored("square", "0", "p:0", "").replace("docx4j-anchor-w=\"113.39\"",
+						"docx4j-anchor-w=\"400\"")
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>";
+		String out = WordLayoutFixups.apply(flow(cell), 15);
+		assertFalse("400pt is 89% of the 451.3pt column: " + out, out.contains("absolute-position"));
 	}
 
 	@Test
@@ -578,5 +636,19 @@ public class WordLayoutFixupsTest {
 				+ "<fo:block><fo:inline><fo:block>y</fo:block></fo:inline></fo:block>"), 15);
 		assertFalse("a float holding a table renders nothing at flow level: " + out,
 				out.contains("<fo:flow flow-name=\"xsl-region-body\"><fo:float"));
+	}
+
+	/** Hoisting a float to flow level must never take it out of the cell, header or
+	 *  footnote it belongs to - it would be painted somewhere else entirely. */
+	@Test
+	public void aFloatInACellIsNeverHoistedOutOfIt() {
+		String out = WordLayoutFixups.apply(page(
+				"<fo:table><fo:table-body><fo:table-row><fo:table-cell>"
+				+ "<fo:block><fo:float float=\"left\"><fo:block>f</fo:block></fo:float></fo:block>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>"
+				+ "<fo:block><fo:inline><fo:block>y</fo:block></fo:inline></fo:block>"), 15);
+		assertTrue("the float must stay inside the cell: " + out,
+				out.indexOf("<fo:float") > out.indexOf("<fo:table-cell"));
+		assertFalse(out.contains("<fo:flow flow-name=\"xsl-region-body\"><fo:float"));
 	}
 }

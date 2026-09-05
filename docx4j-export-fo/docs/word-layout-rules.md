@@ -916,7 +916,9 @@ There is no Word probe for the older modes; the measurement is a corpus document
 `w:gridSpan="3"` cell holding a centred paragraph: Word centres that text on 297.65pt, the
 exact centre of a 595.3pt page, where taking the shift centred it on 292.25 - 5.4pt, one
 cell margin, left. Fitting the rule to mode 14 alone also took that document from 13 pages
-to Word's 15. A mode-11 or mode-12 probe would settle it properly.
+to Word's 15. The `table-grid-edge-compat12` and `-compat11` probes (`w:tblInd` 108 with
+Word's default cell margins and with the table's own, at the top level and nested in a
+cell) are that measurement, and await a Word golden.
 
 <a id="s61nested"></a>**A nested table takes no shift either.** Word puts the grid edge of
 a table inside a `w:tc` on the containing cell's **content** edge, and adds the nested
@@ -1021,6 +1023,16 @@ page edge and lost 7 of Word's 15 pages. Such a grid is scaled to the column. Th
 **1.25** (`AbstractTableWriter.GRID_OVERHANG_LIMIT`), above the 19% Word was measured
 overhanging and below the narrowest refitted case: fitting autofit grids only 1-2% over
 re-broke cells Word does not break, and cost line parity on two documents.
+
+Two corpus measurements of **grid-sized** tables disagree, which the rule above does not
+yet account for: a 29%-over grid with `w:tblInd` −1300 is honoured in full and overhangs
+both margins (Word's cell clips run 7.0..589.85 on a 595.35pt page), while a 1.7%-over
+grid with `w:tblInd` 0 is fitted into the text column (day columns 140.6 / 133.1 / 146.2 /
+141.2 / 132.8 summing to 693.8 against a 697.95pt column). The working hypothesis is that
+Word clamps an over-wide grid only where the author has not deliberately indented the
+table out of the column. The `table-grid-overwide` probe - the same grid 1.7%, 10% and 29%
+over the column, each at `w:tblInd` 0 and −1300, autofit and fixed layout, every `w:tcW`
+in dxa - is that measurement, and awaits a Word golden; nothing has been changed here.
 
 ### 6.6 `w:tblCellSpacing`
 
@@ -1288,7 +1300,7 @@ end of its paragraph:
 
 | `wp:wrap` | Rendered as |
 | --- | --- |
-| square, tight, through | an `fo:float` at the nearer edge, padded so the picture sits where Word puts it (text on the other side only) |
+| square, tight, through | an `fo:float` at the nearer edge, padded so the picture sits where Word puts it (text on the other side only); see [where no float is possible, and where none is wanted](#s91nofloat) |
 | topAndBottom | a block-container as tall as the picture, at the paragraph's top |
 | none (behind or in front of text) | an absolutely positioned block-container that takes no space |
 | position relative to page or margins | fixed on the page, no wrapping |
@@ -1302,6 +1314,57 @@ FOP details worth knowing if you touch this: a picture's block needs `font-size`
 a block-container inside a right float lands at the left edge, so a plain `fo:block` is
 used. `docx4j.convert.out.fo.pictures.float=false` lays these pictures out in the flow
 instead; see §10 for why you might want that.
+
+<a id="s91nofloat"></a>**Where there is no float to be had** - a table cell, a header or
+footer, a footnote, a multi-column region - a wrapped picture takes the text box's
+treatment ([§9.2](#92-text-boxes)) rather than reserving its height: narrower than 60% of
+its measure it is positioned where Word puts it and takes no space, wider than that it
+reserves its height as a top-and-bottom wrap does. The measure is the containing cell's
+content width in a cell (Word measures a `relativeFrom="column"` offset from the cell
+there) and the section's text column otherwise. FOP does not implement floats in a table
+at all - it logs "the following feature isn't implemented by Apache FOP, yet: fo:float
+(on fo:table)" and paints nothing - so the alternative was the reservation, and where a
+cell held two wrapped pictures the two reservations stacked. Measured on a corpus cover
+page whose cell holds a 495.95 x 98.55pt banner at (0.25, 0) and a 108 x 19.5pt logo at
+(1.5, 10.6): Word draws them **overlapping**, at x=56.7 y=70.85 and x=58.2 y=81.45 from
+the page's top left, and makes the row as tall as the lower of the two plus the
+paragraph's own line; docx4j stacked 98.55 + 30.1pt and every line of the page was 28.0pt
+low, 57 pages against Word's 56. With the rule, the logo lands within 0.05pt of Word and
+the page counts agree. 28 such containers sit in table cells across 15 documents of a
+103-document corpus, 15 of them narrow enough to be positioned.
+
+An absolutely positioned container is placed relative to its own zero-height wrapper (an
+`fo:block-container` is a reference area), so the wrappers which take no space go ahead of
+those which reserve height at the head of the paragraph; with the reservation first the
+logo above came out at 179.9 rather than 81.5, one reserved height low.
+
+**A picture which leaves no room beside it is not floated**, even in the main flow. Word
+wraps beside a picture as long as any measure is left, and it is a **wide** measure that
+is left: measured on a corpus document's page 2, a 348pt `wrapSquare` picture on a 453.55pt
+column (77%) has Word running seven lines down the 105.65pt beside it. But where the
+picture is as wide as the column there is nothing to wrap, and Word puts the text below it,
+which is what the flow does anyway - measured on a document whose two full-page pictures
+(550.1 x 708.6pt and 497.4 x 648.1pt on a 459.9pt column) Word gives a page each: floated,
+FOP anchored both to a line near the foot of one page and drew them on top of each other
+past the page edge, and Word's five pages were three. So a picture over **90%** of its
+measure reserves its height instead. Of the 70 picture floats of the three corpora, 13 are
+that wide, in 8 documents - and they are also the floats FOP's two float defects (§10) bite
+on. (The 60% cut above, which decides between positioning and reserving where no float is
+possible, is a different question: neither of those reproduces the wrap at all, and 60% is
+where the smaller error changes over - §9.2.)
+
+**A picture fills the frame the document declares.** Word draws a picture at its
+`wp:extent` (or the VML shape's `width`/`height`) whatever the stored bitmap's own aspect
+ratio - a crop (`a:srcRect`) or a deliberate stretch makes the two differ. XSL-FO's
+default `scaling` is `uniform`, so with both `content-width` and `content-height` given
+FOP scales by the smaller factor and leaves the rest of the frame empty: measured on a
+document whose 4:3 photographs are cropped to 1.9:1, Word draws one 492.71 x 259.85pt and
+FOP drew it 346.49 x 259.87, so two pictures Word fits on a page needed a page each. The
+graphic therefore carries `scaling="non-uniform"`. **Limitation**: the crop itself is not
+reproduced - the picture is stretched into the frame rather than cropped to it, which is
+the same geometry and the wrong content. 651 of the 1737 pictures of a 103-document corpus
+(50 of its documents), 55 of 435 and 22 of 79 in the two others, declare an extent whose
+aspect differs from the bitmap's by more than 2%.
 
 **A VML picture** (`w:pict/v:shape` holding a `v:imagedata`) whose shape style says
 `position:absolute` is placed the same way, from the same shape properties a VML text box
@@ -1418,6 +1481,12 @@ Worked around here, and worth knowing about:
   it. Plain FOP 2.11 throws the same on the same FO, so it is upstream, but the copy of
   `LineLayoutManager` docx4j carries (§4.1) has the null check, and the block it guards only
   reports the overflow. Upstream report candidate: one null check.
+- **`fo:float` is not implemented inside a table.** FOP logs "the following feature isn't
+  implemented by Apache FOP, yet: fo:float (on fo:table)" and paints nothing at all - not
+  the float's content, not an indent - for a float anywhere under an `fo:table`, so a
+  wrapped picture in a cell is positioned or reserved instead ([§9.1](#s91nofloat)).
+  Hoisting a float to flow level (above) therefore never takes it out of a cell, a
+  header/footer or a footnote: it would be painted somewhere else entirely.
 - **A float holding a table renders nothing at flow level**, and a float with no line to
   anchor to is dropped: a float which is a direct child of `fo:flow` and holds an
   `fo:table` produces no area at all, silently (measured, same minimal case with a table in
@@ -1474,6 +1543,20 @@ Limitations that remain in docx4j's output:
   container cannot do. `topFromText`/`bottomFromText` are ignored.
 - **Exact-height rows clip** their overflowing content rather than drawing it over the rows
   below ([§6](#s68)).
+- **A picture's crop** (`a:srcRect`) is not applied: the picture is stretched into the
+  frame the docx declares rather than cropped to it ([§9.1](#91-anchored-pictures)). The
+  geometry is Word's, the content is not.
+- **Pages carrying only a picture.** The eight documents a long-document corpus reported
+  as differing only in page count were each checked for a page with nothing on it, with
+  `mutool draw -F trace`: **not one page of either PDF, Word's or docx4j's, is empty** -
+  every page the text-based triage called blank carries a picture. What those documents
+  have is a picture drawn at the wrong size (fixed, [§9.1](#91-anchored-pictures)) or
+  vertical drift accumulated further up, and no page-break rule was found to be wrong
+  there. The `page-blank` probe carries the shapes that could not be settled from the
+  corpus - a document ending in a page break, a `nextPage` section break after a
+  page-filling table, and `oddPage`/`evenPage` sections whose page already has the parity
+  asked for - and awaits a Word golden. docx4j today emits a page for the trailing break
+  and a filler for the parity break; whether Word does is what the probe measures.
 
 ---
 

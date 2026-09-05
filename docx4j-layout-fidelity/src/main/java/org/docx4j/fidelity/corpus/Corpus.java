@@ -22,6 +22,7 @@ import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.STLineSpacingRule;
+import org.docx4j.wml.Tbl;
 
 /**
  * The probe corpus. Each probe isolates one layout rule (or a small family of
@@ -865,6 +866,146 @@ public final class Corpus {
 			d.para("Section 4, one column, wide margins again. " + prose(3, 4)).before(240).add();
 			return d.pkg();
 		}));
+
+		// --------------------------------- b2 batch 8: over-wide grids, the grid edge
+		//                                   below mode 14, and pages with nothing on them
+
+		/*
+		 * E4/E5: what Word does with a grid-sized table (w:tblW in dxa and every w:tcW in
+		 * dxa) whose w:tblGrid is wider than the text column.  Two corpus measurements
+		 * disagree - a 29%-over grid with w:tblInd -1300 is honoured in full and
+		 * overhangs both margins, a 1.7%-over grid with w:tblInd 0 is fitted into the
+		 * column - so the question is whether the cut is the size of the overhang or the
+		 * indent.  One case a page, each with a paragraph after it whose lines show where
+		 * the text column is.  The text column here is 9026 twips (A4, 1in margins).
+		 */
+		PROBES.add(new Probe("table-grid-overwide",
+				"grid-sized tables (w:tblW and every w:tcW in dxa) whose w:tblGrid is 1.7%, 10% "
+				+ "and 29% wider than the text column, at w:tblInd 0 and w:tblInd -1300, "
+				+ "autofit and fixed layout", () -> {
+			Doc d = Doc.create(15);
+			int[][] grids = { { 2200, 3400, 3580 },    // 9180tw = 1.7% over
+			                  { 2400, 3700, 3829 },    // 9929tw = 10% over
+			                  { 2800, 4400, 4444 } };  // 11644tw = 29% over
+			String[] over = { "1.7%", "10%", "29%" };
+			int page = 0;
+			for (int g = 0; g < grids.length; g++) {
+				for (int variant = 0; variant < 3; variant++) {
+					if (page++ > 0) d.pageBreak();
+					// variant 0: tblInd 0; 1: tblInd -1300; 2: tblInd 0, fixed layout
+					String what = over[g] + " over, w:tblInd " + (variant == 1 ? "-1300" : "0")
+							+ (variant == 2 ? ", fixed layout" : "");
+					d.para(what + ". " + prose(1, g)).after(240).add();
+					Doc.Table t = new Doc.Table(grids[g]).indent(variant == 1 ? -1300 : 0);
+					if (variant == 2) t.fixedLayout();
+					t.row(SERIF, 20, false, "A " + over[g], "B " + over[g], "C " + over[g]);
+					t.row(SERIF, 20, false, prose(1, g + 1), prose(1, g + 2), prose(1, g + 3));
+					d.add(t.build());
+					d.para("after the table. " + prose(2, g + 4)).before(240).add();
+				}
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * §6.1's grid-edge shift is applied in compatibility mode 14 alone since 17.0.6,
+		 * on the strength of one corpus document with no compatibilityMode setting at all
+		 * (mode 12).  These two probes are the Word measurement for modes 12 and 11, and
+		 * they carry the nested case (§6.1's nested rule was measured in mode 14 only).
+		 */
+		PROBES.add(gridEdgeNestedProbe(12));
+		PROBES.add(gridEdgeNestedProbe(11));
+
+		/*
+		 * The shapes suspected of costing (or losing) a page where the content of the two
+		 * documents otherwise agrees.  Each section is a page or two, and what matters in
+		 * the golden is simply how many pages there are and which of them carry text.
+		 */
+		PROBES.add(new Probe("page-blank",
+				"pages with nothing on them: a nextPage section break after a page-filling "
+				+ "table, oddPage and evenPage breaks whose next page is already right, a "
+				+ "paragraph holding only a page break, and a document ending in a page break", () -> {
+			Doc d = Doc.create(15);
+
+			// 1. a table 32 rows of exactly 20pt tall - 664pt of a 698pt body, so the
+			//    page is full and nothing more can go on it - then a nextPage break
+			d.para("Section 1 opens with a table which fills the page.").after(0).add();
+			Doc.Table t = new Doc.Table(4500, 4500);
+			for (int i = 0; i < 32; i++) {
+				t.rowOf(400, org.docx4j.wml.STHeightRule.EXACT,
+						t.cell("row " + (i + 1), SERIF, 24, 1, 4500),
+						t.cell("value " + (i + 1), SERIF, 24, 1, 4500));
+			}
+			d.add(t.build());
+			d.endSection("nextPage", 0);
+
+			// 2. w:type oddPage and evenPage sections: does Word add a filler page where the
+			//    page the section would open already has the parity asked for, and where it
+			//    does not?  (Doc.endSection names the type of the section it opens.)
+			d.para("Section 2, one page; the section after it is w:type oddPage.").after(0).add();
+			d.endSection("oddPage", 0);
+			d.para("Section 3, one page; the section after it is w:type evenPage.").after(0).add();
+			d.endSection("evenPage", 0);
+			d.para("Section 4, one page; the section after it is w:type evenPage again.").after(0).add();
+			d.endSection("evenPage", 0);
+			d.para("Section 5, one page; the section after it is a plain one.").after(0).add();
+			d.endSection("nextPage", 0);
+			// the last section is a plain one: the trailing break must not be confounded
+			// with a parity filler
+			d.sectPr().setType(null);
+
+			// 3. a paragraph whose only content is a page break, mid-document (control)
+			d.para("Section 6. The next paragraph holds nothing but a page break. "
+					+ prose(2, 4)).after(240).add();
+			d.pageBreak();
+			d.para("After the page-break-only paragraph. " + prose(2, 5)).after(240).add();
+
+			// 4. and the document ends with one: does Word add a page for it?
+			d.para("The last paragraph with text on it. " + prose(2, 6)).after(240).add();
+			d.pageBreak();
+			return d.pkg();
+		}));
+	}
+
+	/**
+	 * §6.1's grid edge below mode 14: w:tblInd 108 with Word's default cell margins and
+	 * with the table's own, at the top level and nested in a cell.  Since 17.0.6 the
+	 * shift is applied in mode 14 alone, which no Word golden has confirmed for the older
+	 * modes (§6.1); this is that measurement.
+	 */
+	private static Probe gridEdgeNestedProbe(int compatMode) {
+		return new Probe("table-grid-edge-compat" + compatMode,
+				"w:tblInd 108 with default and with 108-twip cell margins, top-level and "
+				+ "nested in a cell, compatibilityMode " + compatMode, () -> {
+			Doc d = Doc.create(compatMode);
+
+			d.para("top level, default cell margins. " + prose(1)).after(240).add();
+			d.add(new Doc.Table(4000, 4000).indent(108)
+					.row(SERIF, 24, true, "default margins", "right").build());
+
+			d.para("top level, w:tblCellMar 108. " + prose(1, 1)).before(240).after(240).add();
+			d.add(new Doc.Table(4000, 4000).indent(108).cellMargins(108, 0)
+					.row(SERIF, 24, true, "cellMar 108", "right").build());
+
+			d.para("nested, both levels default margins. " + prose(1, 2)).before(240).after(240).add();
+			Doc.Table outer = new Doc.Table(4000, 4000).indent(108);
+			Tbl inner = new Doc.Table(1800, 1800)
+					.row(SERIF, 24, true, "nested A", "nested B").build();
+			outer.rowOf(null, null, outer.cellWith(inner, "", SERIF, 24),
+					outer.cell("outer right", SERIF, 24, 1, null));
+			d.add(outer.build());
+
+			d.para("nested, w:tblCellMar 108 on both. " + prose(1, 3)).before(240).after(240).add();
+			Doc.Table outer2 = new Doc.Table(4000, 4000).indent(108).cellMargins(108, 0);
+			Tbl inner2 = new Doc.Table(1800, 1800).cellMargins(108, 0)
+					.row(SERIF, 24, true, "nested C", "nested D").build();
+			outer2.rowOf(null, null, outer2.cellWith(inner2, "", SERIF, 24),
+					outer2.cell("outer right", SERIF, 24, 1, null));
+			d.add(outer2.build());
+
+			d.para("after. " + prose(1, 4)).before(240).add();
+			return d.pkg();
+		});
 	}
 
 	/**
