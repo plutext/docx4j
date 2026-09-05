@@ -436,10 +436,19 @@ public final class Scoreboard {
 	}
 
 	static boolean isRegression(Row before, Row after) {
-		if (after.lineParity < before.lineParity - 1e-9) return true;
-		if (after.lineParity > before.lineParity + 1e-9) return false;
+		// the baseline comes back from a CSV written to 4 decimals while the new run's
+		// parity is full precision, so compare at the precision both sides have: an
+		// unchanged document differing by 1e-9 is not a regression
+		double b = round4(before.lineParity), a = round4(after.lineParity);
+		if (a < b) return true;
+		if (a > b) return false;
 		if (before.scored() && !after.scored()) return true;
 		return before.samePages() && !after.samePages();
+	}
+
+	/** the precision the CSV carries (see {@link Row#line()} and the CSV writer). */
+	static double round4(double v) {
+		return Math.round(v * 10000.0) / 10000.0;
 	}
 
 	static String changeLine(Row before, Row after) {

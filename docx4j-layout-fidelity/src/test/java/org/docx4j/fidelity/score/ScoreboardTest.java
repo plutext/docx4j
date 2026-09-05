@@ -137,6 +137,37 @@ public class ScoreboardTest {
 		assertFalse("unchanged document not listed", text.contains("15_fr-FR_fields_5"));
 	}
 
+	/**
+	 * The baseline is read back from a CSV written to 4 decimals while the new run's
+	 * parity is full precision, so a document that did not move can differ by 1e-9.
+	 * Comparing at the CSV's own precision keeps such a document out of the
+	 * regression count.
+	 */
+	@Test
+	public void unchangedParityBelowCsvPrecisionIsNotARegression() throws Exception {
+		File csv = new File("target/fidelity/score-test/rounding.csv");
+		List<Row> written = new ArrayList<>();
+		// 1000/1300 = 0.769230769..., which the CSV holds as 0.7692
+		written.add(Row.of(result("12_en-AU_tbl_1", 2, 2, 1300, 1000), 1000));
+		Scoreboard.writeCsv(csv, written);
+		List<Row> before = Scoreboard.readCsv(csv);
+		assertEquals(0.7692, before.get(0).lineParity, 1e-9);
+
+		// the same document, rendered identically: full precision, above the CSV's value
+		Row unmoved = Row.of(result("12_en-AU_tbl_1", 2, 2, 1300, 1000), 1000);
+		assertTrue("full precision, above what the CSV holds", unmoved.lineParity > 0.7692);
+		assertFalse("unchanged at the CSV's precision", Scoreboard.isRegression(before.get(0), unmoved));
+
+		// a real drop is still a regression
+		assertTrue(Scoreboard.isRegression(before.get(0), Row.of(result("12_en-AU_tbl_1", 2, 2, 1300, 999), 1000)));
+
+		// the delta reports nothing at all for the unmoved document
+		List<Row> after = new ArrayList<>();
+		after.add(unmoved);
+		String text = String.join("\n", Scoreboard.delta("rounding.csv", before, after));
+		assertTrue(text.contains("changed documents: 0 (0 regressions, 0 improvements)"));
+	}
+
 	@Test
 	public void deltaAgainstItselfIsEmpty() {
 		List<Row> rows = scoreboard();

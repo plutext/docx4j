@@ -251,7 +251,9 @@ PDF via XSL FO - ten more differences from Word, from scoring 194 real documents
 puts the first column's TEXT at the text margin + w:tblInd, so the grid edge is one left
 cell margin further back; docx4j put the grid edge at the indent and added the cell
 margin as padding.  The FO table's start-indent is now w:tblInd less the effective
-w:tblCellMar/w:left (Word's default 108 twips where nothing sets it).
+w:tblCellMar/w:left (Word's default 108 twips where nothing sets it).  (Word 2013 changed
+this rule; from 17.0.5 the compensation is applied only below compatibility mode 15 - see
+below.)
 - a w:jc="center" table wider than the text column is centred by Word, overhanging both
 margins; we left-aligned it at the margin.  start-indent is now the negative half of the
 overflow.
@@ -657,6 +659,28 @@ signed) - which is what line breaking cares about.  Arimo stays the last resort.
 - Cambria/Caladea was measured and left alone: Caladea is 3.9% narrower than Cambria on
 the regular face and 2.8% on the bold, and no installed face is closer.
 
+Tables (PDF via XSL FO) - two rules settled by new Word goldens (both pathways.  Over the
+194 real documents: mean line parity 0.8207 -> 0.8256, median 0.8727 -> 0.8837, 82.5% of
+lines matching Word exactly, was 82.1%; 7 documents better, 1 worse - an 8-column table
+whose grid proportions are not the ones Word gave it.  The 36 layout probes are unchanged,
+and the two table-indent probes reach 100%):
+- where the table's grid edge goes changed in Word 2013: from compatibility mode 15 the
+grid edge sits at the text margin + w:tblInd and the first column's text one cell margin
+further right, where below mode 15 it is the text which lands on the indent.  17.0.5
+introduced the older rule for every document (see above); it is now applied only below
+mode 15.  A document with no compatibilityMode setting is mode 12, and keeps the older
+rule.  Measured: first cell text at 72.0 / 72.0 / 77.3pt for no w:tblInd, w:tblInd 0 and
+w:tblInd 108 in mode 14, and at 77.8 / 77.8 / 83.1pt in mode 15.
+- a preferred table width (w:tblW in dxa, or pct of the text column) wider than the
+columns sized from their content now widens them until the table is that wide; docx4j left
+them at their content widths, so a table Word drew 400pt wide came out 154pt wide with its
+cell text wrapped.  The proportions are the columns' content where every cell is
+auto-width (measured: content of 67.4 and 74.1pt in a 400pt table gave Word 190.7 and
+209.3pt), and the w:tblGrid where any cell declares a width of its own - a w:tcW in "pct"
+is the common case, and Word lays such a table out on its grid however little content a
+column holds.  A column with an absolute w:tcW keeps it and the rest share what is left;
+w:tblLayout "fixed" still uses the grid as it stands.
+
 docx4j-layout-fidelity (the measurement harness; not in the reactor):
 - the scoreboard's compatMode column now comes from the document's own w:compatSetting
 compatibilityMode, read from word/settings.xml, instead of the leading number of the file
@@ -664,8 +688,11 @@ name, which disagrees with it often enough to be useless for segmenting results.
 - three probes added: table-indent-compat15 and table-indent-compat14 (2-column autofit
 tables with no w:tblInd, with w:tblInd 0 and with w:tblInd 108, under compatibility modes
 15 and 14, to settle where Word puts the grid edge) and ptab-right (a right w:ptab in a
-header and in the body, and a paragraph with a right indent).  They have no Word goldens
-yet.
+header and in the body, and a paragraph with a right indent).  All three have Word
+goldens now; 36 probes do.
+- the delta's regression test compared a full-precision line parity with a baseline read
+back from a 4-decimal CSV, so a document which had not moved could be reported as a
+regression by 1e-9.  Both sides are rounded to the CSV's own precision now.
 
 Math:
 - tracked changes inside equations no longer lose content (issue 348, open since 2019):

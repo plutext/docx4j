@@ -364,6 +364,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			if (cols == 0) return null;
 			int[] pref = new int[cols];
 			java.util.Arrays.fill(pref, -1);
+			// a column whose cells declare a width of their own, in any unit: where any
+			// column does, widening to the table's preferred width follows the w:tblGrid
+			// rather than the columns' content (see widenToPreferredTableWidth)
+			boolean[] declared = new boolean[cols];
 			double[] min = new double[cols], max = new double[cols];
 			boolean anyAuto = false;
 						int marginTwips = cellMarginsTwips(tblPr);
@@ -386,6 +390,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					if (mm == null) return null; // cannot measure: keep the grid
 					double mn = mm[0] * 20 + marginTwips, mx = mm[1] * 20 + marginTwips;
 					if (span == 1) {
+						if (tcW != null && tcW.getW() != null && tcW.getW().intValue() > 0
+								&& !"auto".equals(tcW.getType())) {
+							declared[c] = true;
+						}
 						if (hasPref) pref[c] = Math.max(pref[c], tcW.getW().intValue());
 						else anyAuto = true;
 						min[c] = Math.max(min[c], mn);
@@ -411,7 +419,12 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				mi[i] = (int) Math.ceil(min[i]);
 				ma[i] = (int) Math.ceil(max[i]);
 			}
-			return org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
+			int[] widths = org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
+			boolean anyDeclared = false;
+			for (boolean d : declared) anyDeclared |= d;
+			int[] basis = anyDeclared ? gridWidths(table, cols) : null;
+			return widenToPreferredTableWidth(widths, pref, basis == null ? widths : basis,
+					preferredTableWidthTwips(context, tblPr));
 		} catch (Exception e) {
 			log.warn("Autofit skipped: " + e.getMessage(), e);
 			return null;
@@ -520,16 +533,13 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	/** The width the table may take: w:tblW when absolute or a percentage, else the
 	 *  writable page width less the table indent. */
 	private static int availableWidthTwips(AbstractWmlConversionContext context, org.docx4j.wml.CTTblPrBase tblPr) {
+		int preferred = preferredTableWidthTwips(context, tblPr);
+		if (preferred > 0) return preferred;
 		int writable = -1;
 		try {
 			writable = context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
 		} catch (Exception e) {
 			log.debug("No section page dimensions for autofit: " + e.getMessage());
-		}
-		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
-		if (tblW != null && tblW.getW() != null && tblW.getW().intValue() > 0) {
-			if ("dxa".equals(tblW.getType())) return tblW.getW().intValue();
-			if ("pct".equals(tblW.getType()) && writable > 0) return (int) ((long) writable * tblW.getW().intValue() / 5000);
 		}
 		if (writable <= 0) return -1;
 		org.docx4j.wml.TblWidth ind = tblPr == null ? null : tblPr.getTblInd();
@@ -537,6 +547,106 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			writable -= ind.getW().intValue();
 		}
 		return writable;
+	}
+
+	/**
+	 * The table's own preferred width in twips: w:tblW as "dxa" (twips) or as "pct"
+	 * (fiftieths of a percent of the text column), or -1 when the table has none
+	 * (w:tblW absent, or "auto", which is what Word writes for a table sized purely
+	 * by its content).
+	 *
+	 * @since 17.0.5
+	 */
+	private static int preferredTableWidthTwips(AbstractWmlConversionContext context, org.docx4j.wml.CTTblPrBase tblPr) {
+		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
+		if (tblW == null || tblW.getW() == null || tblW.getW().intValue() <= 0) return -1;
+		if ("dxa".equals(tblW.getType())) return tblW.getW().intValue();
+		if ("pct".equals(tblW.getType())) {
+			try {
+				int writable = context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
+				if (writable > 0) return (int) ((long) writable * tblW.getW().intValue() / 5000);
+			} catch (Exception e) {
+				log.debug("No section page dimensions for the table's preferred width: " + e.getMessage());
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Word's preferred table width is a target, not just a cap: where the columns
+	 * sized from their content come to less than w:tblW, Word widens them until the
+	 * table is that wide, keeping their proportions.  A column with a preferred
+	 * width of its own (w:tcW) keeps it, and the surplus goes to the rest.
+	 *
+	 * <p>Measured (CR-001, table-indent probes): two auto-width cells whose content
+	 * is 67.4 and 74.1pt wide in a table asking for 400pt gave Word columns of
+	 * 190.7 and 209.3pt - the content proportions, scaled up - where docx4j left
+	 * them at their content widths and wrapped the text.  w:tblLayout "fixed" does
+	 * not reach here: the grid is used as it stands.</p>
+	 *
+	 * <p>The content proportions are Word's only where the cells are all auto-width.
+	 * Where any cell declares a width of its own - a w:tcW in "pct" is the common case -
+	 * the caller passes the w:tblGrid as the basis instead: measured over the
+	 * real-document corpus, Word lays such a table out on its grid, however little
+	 * content a column holds (one 100%-wide table's first column came out at its grid
+	 * width of 93.5pt where its content proportion would have given it 460 of 481pt).</p>
+	 *
+	 * @param widths the columns as sized from their content
+	 * @param preferred per-column w:tcW in twips, or -1 for none: such a column keeps
+	 *        the width the autofit pass gave it and the rest share what is left
+	 * @param basis the proportions to widen in (the content widths, or the grid)
+	 * @param target the table's preferred width in twips, or -1 for none
+	 * @since 17.0.5
+	 */
+	static int[] widenToPreferredTableWidth(int[] widths, int[] preferred, int[] basis, int target) {
+		if (widths == null || widths.length == 0 || target <= 0) return widths;
+		if (basis == null || basis.length != widths.length) basis = widths;
+		long total = 0;
+		for (int w : widths) total += w;
+		if (total <= 0 || total >= target) return widths;
+
+		long fixed = 0, flexible = 0, flexNow = 0;
+		for (int i = 0; i < widths.length; i++) {
+			if (preferred != null && preferred[i] > 0) {
+				fixed += widths[i];
+			} else {
+				flexible += Math.max(0, basis[i]);
+				flexNow += widths[i];
+			}
+		}
+		if (flexible <= 0) return widths; // nothing to widen
+		long room = target - fixed;
+		if (room <= flexNow) return widths; // the columns already fill the table
+
+		int[] out = new int[widths.length];
+		long given = 0;
+		int last = -1;
+		for (int i = 0; i < widths.length; i++) {
+			if (preferred != null && preferred[i] > 0) {
+				out[i] = widths[i];
+				continue;
+			}
+			out[i] = (int) Math.max(1, room * Math.max(0, basis[i]) / flexible);
+			given += out[i];
+			last = i;
+		}
+		if (last >= 0) out[last] += (int) (room - given); // the rounding remainder
+		return out;
+	}
+
+	/** The table's w:tblGrid as an array of twips, or null when it does not describe
+	 *  every column.  @since 17.0.5 */
+	private static int[] gridWidths(AbstractTableWriterModel table, int cols) {
+		if (table.getTblGrid() == null) return null;
+		List<TblGridCol> gridCols = table.getTblGrid().getGridCol();
+		if (gridCols == null || gridCols.size() != cols) return null;
+		int[] out = new int[cols];
+		for (int i = 0; i < cols; i++) {
+			java.math.BigInteger w = gridCols.get(i).getW();
+			if (w == null || w.intValue() <= 0) return null;
+			out[i] = w.intValue();
+		}
+		return out;
 	}
 
 	/**

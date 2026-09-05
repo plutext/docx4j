@@ -147,13 +147,21 @@ public class TableWriter extends AbstractTableWriter {
 	/**
 	 * Where the table's grid edge goes, as Word puts it.
 	 *
-	 * <p>Word places the <em>text</em> of the first column at the text margin plus
-	 * w:tblInd, so the grid edge itself sits one left cell margin further back:
-	 * margin + tblInd - tblCellMar/left.  docx4j put the grid edge at margin +
-	 * tblInd and then added the cell margin as padding, so every table's content
-	 * (and its overflow past the right margin) was one left cell margin - usually
-	 * 108 twips = 5.4pt - too far right.  Measured against Word for tblInd 0 and
-	 * 108 (CR-001, real documents).</p>
+	 * <p>Where the compatibility mode is below 15 (Word 2013), Word places the
+	 * <em>text</em> of the first column at the text margin plus w:tblInd, so the
+	 * grid edge itself sits one left cell margin further back: margin + tblInd -
+	 * tblCellMar/left.  docx4j put the grid edge at margin + tblInd and then added
+	 * the cell margin as padding, so such a table's content (and its overflow past
+	 * the right margin) was one left cell margin - usually 108 twips = 5.4pt - too
+	 * far right.  Measured against Word for tblInd 0 and 108 (CR-001, real
+	 * documents and the table-indent-compat14 probe).</p>
+	 *
+	 * <p>Word 2013 changed this: in mode 15 the <em>grid edge</em> goes at margin +
+	 * tblInd, and the text one cell margin further right again (measured, probe
+	 * table-indent-compat15: first cell text at 77.8pt for tblInd 0 and 83.1pt for
+	 * tblInd 108, against 72.0 and 77.3 in mode 14).  A document with no
+	 * compatibilityMode setting is mode 12 - Word opens it in compatibility mode -
+	 * and so takes the older rule.</p>
 	 *
 	 * <p>A w:jc="center" table wider than the text column is a separate case: Word
 	 * centres it, letting it overhang both margins, where we left-aligned it at the
@@ -185,7 +193,20 @@ public class TableWriter extends AbstractTableWriter {
 				indent = tblInd.getW().intValue();
 			}
 		}
-		tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest(indent - leftCellMarginTwips(tblPr)));
+		if (compatibilityMode(context) < 15) indent -= leftCellMarginTwips(tblPr);
+		tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest(indent));
+	}
+
+	/** The document's w:compatSetting compatibilityMode (12 when it has none).
+	 *  @since 17.0.5 */
+	private static int compatibilityMode(AbstractWmlConversionContext context) {
+		try {
+			return org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart
+					.getCompatibilityMode(context.getWmlPackage());
+		} catch (Exception e) {
+			logger.debug("No compatibility mode: " + e.getMessage());
+			return 12;
+		}
 	}
 
 	/** The effective left cell margin in twips: w:tblPr/w:tblCellMar/w:left (the table

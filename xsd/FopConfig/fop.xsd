@@ -88,6 +88,7 @@
                               <xs:attribute name="embed-url" type="xs:string" use="required" />
                               <xs:attribute name="sub-font" type="xs:string" use="optional" />
                               <xs:attribute name="kerning" type="xs:boolean" use="optional" />
+                              <xs:attribute name="encoding-mode" type="xs:string" use="optional" />
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
