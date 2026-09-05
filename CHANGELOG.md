@@ -53,6 +53,14 @@ org.w3c.dom and org.xml.sax packages, so --add-modules ALL-MODULE-PATH failed wi
 ResolutionException (split package against java.xml) unless the consumer dropped that
 jar.  Excluded now (not needed on Java 11+); output is identical.
 
+Table of contents page numbers (TocGenerator.updateToc / generateToc):
+- page numbers were read from FOP's page viewport key ("P95"), which is only sequential
+while FOP never lays a page out twice; with the Word layout managers FOP restarts pages, so
+a contents entry could say 95 for page 5.  The key is now resolved to the viewport's page
+number (the formatted number where it is numeric, as Word shows it) once the whole area
+tree is read, since the links are the contents entries themselves, met before the pages
+they point to.
+
 Math:
 - tracked changes inside equations no longer lose content (issue 348):
 Word wraps math run content in w:ins/w:del inside m:r, which the JAXB model rejected - the

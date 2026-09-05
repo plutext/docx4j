@@ -6,8 +6,10 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * Regenerates the derived formats of the Getting Started guide from the
  * canonical docx, using docx4j itself (the HTML via the visitor exporter —
  * the 17.0.4 default — the Markdown via docx4j-markdown, and, from 17.0.5,
- * the PDF via docx4j-export-fo with the Word layout managers).  Update the
- * TOC field in Word first (F9) so the page numbers are current.
+ * the PDF via docx4j-export-fo with the Word layout managers).  The TOC is
+ * updated first with docx4j's own pagination (TocGenerator.updateToc), so
+ * the contents page numbers match the PDF docx4j produces; the canonical
+ * docx is not modified.
  *
  * Run per release, from the repo root, against the installed artifacts
  * (JEP 330 single-file launch; needs docx4j-core, docx4j-JAXB-ReferenceImpl,
@@ -24,6 +26,18 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 public class GenGettingStartedDocs {
 	public static void main(String[] args) throws Exception {
 		String docx = args[0], outDir = args[1], filesDir = args[2], filesUri = args[3];
+
+		// Update the TOC (entries and page numbers) with docx4j's own pagination
+		// (TocGenerator paginates via docx4j-export-fo), so the PDF's contents page
+		// matches the PDF; the updated package is saved to a temp file that the
+		// three conversions below load, and the canonical docx is left alone.
+		WordprocessingMLPackage tocPkg = Docx4J.load(new java.io.File(docx));
+		new org.docx4j.toc.TocGenerator(tocPkg).updateToc(false);
+		java.io.File updated = java.io.File.createTempFile("GettingStarted-toc", ".docx");
+		updated.deleteOnExit();
+		Docx4J.save(tocPkg, updated);
+		System.out.println("TOC OK");
+		docx = updated.getPath();
 
 		// Markdown (images extracted, so the md is diffable)
 		WordprocessingMLPackage pkg = Docx4J.load(new java.io.File(docx));

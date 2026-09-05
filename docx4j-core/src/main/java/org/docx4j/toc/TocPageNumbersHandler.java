@@ -37,6 +37,19 @@ public class TocPageNumbersHandler extends DefaultHandler {
     private static final String COMMA = ",";
     private static final String INTERNAL_LINK = "internal-link";
     private static final String INLINE_PARENT = "inlineparent";
+    private static final String PAGE_VIEWPORT = "pageViewport";
+
+    /** FOP's page viewport keys ("P95") mapped to the page's number.  The key is
+     *  an identifier, not a page number: it is sequential only while FOP never
+     *  re-lays a page out, and the Word layout managers (17.0.5) make it restart
+     *  pages, after which a viewport keyed P95 can be page 5.  The formatted
+     *  number (what the page shows, and what Word puts in a TOC) is used where it
+     *  is an integer, else the plain number.  @since 17.0.5 */
+    private final Map<String, Integer> viewportPages = new HashMap<String, Integer>();
+    /** bookmark -> viewport key, resolved once the whole tree is read: the links
+     *  are the TOC's own entries on its first pages, met before the viewports
+     *  they point to */
+    private final Map<String, String> pendingKeys = new HashMap<String, String>();
 
     private Map<String, Integer> pageNumbers;
 
@@ -47,6 +60,25 @@ public class TocPageNumbersHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if(qName.equals(PAGE_VIEWPORT)){
+            String key = attributes.getValue("key");
+            String nr = attributes.getValue("formatted-nr");
+            Integer page = null;
+            try {
+                if (nr != null) page = Integer.parseInt(nr.trim());
+            } catch (NumberFormatException e) {
+                // roman or lettered page numbers: fall back to the plain number
+            }
+            if (page == null) {
+                try {
+                    page = Integer.parseInt(attributes.getValue("nr").trim());
+                } catch (Exception e) {
+                    log.info("Page viewport without a number: key " + key);
+                }
+            }
+            if (key != null && page != null) viewportPages.put(key, page);
+            return;
+        }
         if(qName.equals(INLINE_PARENT)){
             String aQName;
             for(int i=0; i < attributes.getLength(); i++){
@@ -61,6 +93,10 @@ public class TocPageNumbersHandler extends DefaultHandler {
     private void parseValue(String value){
         String[] split = value.split(COMMA);
         String pageRef = split[1].replace(R_BRACKET, "");
+        String key = split[0].replace("(", "").trim();   // "P95"
+        pendingKeys.put(pageRef, key);
+        // the old reading of the key as a number, replaced at the end of the
+        // document by the viewport's page number where a viewport was seen
         int pageNumber = 1;
         try{
             pageNumber = Integer.parseInt(split[0].replaceAll(L_BRACKET_P, ""));
@@ -70,7 +106,20 @@ public class TocPageNumbersHandler extends DefaultHandler {
         pageNumbers.put(pageRef, pageNumber);
     }
 
+    @Override
+    public void endDocument() throws SAXException {
+        resolve();
+    }
+
+    private void resolve() {
+        for (Map.Entry<String, String> e : pendingKeys.entrySet()) {
+            Integer page = viewportPages.get(e.getValue());
+            if (page != null) pageNumbers.put(e.getKey(), page);
+        }
+    }
+
     public Map<String, Integer> getPageNumbers() {
+        resolve();
         return pageNumbers;
     }
     

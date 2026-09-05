@@ -2,151 +2,151 @@ Docx4j - Getting Started
 
 Contents
 
-[What is docx4j?	4](#_Toc239264890)
+[What is docx4j?	4](#_Toc85469886)
 
-[What sorts of things can you do with docx4j?	4](#_Toc239264891)
+[What sorts of things can you do with docx4j?	5](#_Toc85469887)
 
-[Is docx4j for you?	5](#_Toc239264892)
+[Is docx4j for you?	5](#_Toc85469888)
 
-[GraalVM	5](#_Toc239264893)
+[GraalVM	6](#_Toc85469889)
 
-[docx4j.NET	5](#_Toc239264894)
+[docx4j.NET	6](#_Toc85469890)
 
-[What Word documents does it support?	6](#_Toc239264895)
+[What Word documents does it support?	6](#_Toc85469891)
 
-[Handling legacy binary .doc files	6](#_Toc239264896)
+[Handling legacy binary .doc files	7](#_Toc85469892)
 
-[A word about Jaxb	6](#_Toc239264897)
+[A word about Jaxb	7](#_Toc85469893)
 
-[Using docx4j via Maven	7](#_Toc239264898)
+[Using docx4j via Maven	8](#_Toc85469894)
 
-[Using docx4j binaries	8](#_Toc239264899)
+[Using docx4j binaries	8](#_Toc85469895)
 
-[docx4j dependencies	8](#_Toc239264900)
+[docx4j dependencies	8](#_Toc85469896)
 
-[slf4j	8](#_Toc239264901)
+[slf4j	8](#_Toc85469897)
 
-[other dependencies	9](#_Toc239264902)
+[other dependencies	9](#_Toc85469898)
 
-[Docx4j source code	9](#_Toc239264903)
+[Docx4j source code	10](#_Toc85469899)
 
-[Javadoc	9](#_Toc239264904)
+[Javadoc	10](#_Toc854698100)
 
-[Building docx4j from source	10](#_Toc239264905)
+[Building docx4j from source	10](#_Toc854698101)
 
-[Command line -via Maven	10](#_Toc239264906)
+[Command line -via Maven	10](#_Toc854698102)
 
-[Eclipse	10](#_Toc239264907)
+[Eclipse	10](#_Toc854698103)
 
-[Using a different IDE?	10](#_Toc239264908)
+[Using a different IDE?	11](#_Toc854698104)
 
-[Open an existing docx/pptx/xlsx document	10](#_Toc239264909)
+[Open an existing docx/pptx/xlsx document	11](#_Toc854698105)
 
-[OpenXML concepts	11](#_Toc239264910)
+[OpenXML concepts	12](#_Toc854698106)
 
-[Specification versions	12](#_Toc239264911)
+[Specification versions	12](#_Toc854698107)
 
-[Architecture	13](#_Toc239264912)
+[Architecture	13](#_Toc854698108)
 
-[Jaxb: marshalling and unmarshalling	14](#_Toc239264913)
+[Jaxb: marshalling and unmarshalling	14](#_Toc854698109)
 
-[Parts List	15](#_Toc239264914)
+[Parts List	15](#_Toc854698110)
 
-[MainDocumentPart	17](#_Toc239264915)
+[MainDocumentPart	17](#_Toc854698111)
 
-[Samples	18](#_Toc239264916)
+[Samples	19](#_Toc854698112)
 
-[Creating a new docx	20](#_Toc239264917)
+[Creating a new docx	21](#_Toc854698113)
 
-[docx4j.properties	20](#_Toc239264918)
+[docx4j.properties	21](#_Toc854698114)
 
-[Adding a paragraph of text	21](#_Toc239264919)
+[Adding a paragraph of text	22](#_Toc854698115)
 
-[General strategy/approach for creating stuff	22](#_Toc239264920)
+[General strategy/approach for creating stuff	23](#_Toc854698116)
 
-[Formatting Properties	24](#_Toc239264921)
+[Formatting Properties	25](#_Toc854698117)
 
-[Creating and adding a table	24](#_Toc239264922)
+[Creating and adding a table	25](#_Toc854698118)
 
-[Selecting your insertion/editing point;  accessing JAXB nodes via XPath	25](#_Toc239264923)
+[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc854698119)
 
-[Traversing a document	25](#_Toc239264924)
+[Traversing a document	26](#_Toc854698120)
 
-[Adding a Part	26](#_Toc239264925)
+[Adding a Part	27](#_Toc854698121)
 
-[Importing XHTML	26](#_Toc239264926)
+[Importing XHTML	27](#_Toc854698122)
 
-[Markdown import and export	27](#_Toc239264927)
+[Markdown import and export	28](#_Toc854698123)
 
-[docx4j for AI agents (MCP)	27](#_Toc239264928)
+[docx4j for AI agents (MCP)	28](#_Toc854698124)
 
-[Using an LLM with docx4j	27](#_Toc239264929)
+[Using an LLM with docx4j	28](#_Toc854698125)
 
-[docx to (X)HTML	28](#_Toc239264930)
+[docx to (X)HTML	29](#_Toc854698126)
 
-[docx to PDF	28](#_Toc239264931)
+[docx to PDF	29](#_Toc854698127)
 
-[docx/pptx/xlsx to PDF via Documents4j (using Word)	30](#_Toc239264932)
+[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc854698128)
 
-[docx/pptx/xlsx to PDF via Microsoft Graph	30](#_Toc239264933)
+[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc854698129)
 
-[docx to PDF via XSL FO	30](#_Toc239264934)
+[docx to PDF via XSL FO	31](#_Toc854698130)
 
-[Image Handling - DOCX	32](#_Toc239264935)
+[Image Handling - DOCX	33](#_Toc854698131)
 
-[Manual Image Manipulation	34](#_Toc239264936)
+[Manual Image Manipulation	35](#_Toc854698132)
 
-[Image Handling – PPTX	34](#_Toc239264937)
+[Image Handling – PPTX	35](#_Toc854698133)
 
-[Adding Headers/Footers	34](#_Toc239264938)
+[Adding Headers/Footers	36](#_Toc854698134)
 
-[Protection Settings	34](#_Toc239264939)
+[Protection Settings	36](#_Toc854698135)
 
-[docx Table of Contents	35](#_Toc239264940)
+[docx Table of Contents	36](#_Toc854698136)
 
-[Introduction	35](#_Toc239264941)
+[Introduction	37](#_Toc854698137)
 
-[Field background	36](#_Toc239264942)
+[Field background	37](#_Toc854698138)
 
-[TOC Content Control	36](#_Toc239264943)
+[TOC Content Control	38](#_Toc854698139)
 
-[TOC Field Syntax	37](#_Toc239264944)
+[TOC Field Syntax	38](#_Toc854698140)
 
-[Inserting/generating a TOC – "pure Java" considerations	39](#_Toc239264945)
+[Inserting/generating a TOC – "pure Java" considerations	40](#_Toc854698141)
 
-[Text extraction	39](#_Toc239264946)
+[Text extraction	40](#_Toc854698142)
 
-[Text substitution/document generation/reporting	39](#_Toc239264947)
+[Text substitution/document generation/reporting	41](#_Toc854698143)
 
-[Text substitution – document surface	40](#_Toc239264948)
+[Text substitution – document surface	41](#_Toc854698144)
 
-[Text substitution via data bound content controls	41](#_Toc239264949)
+[Text substitution via data bound content controls	42](#_Toc854698145)
 
-[Binding extensions for repeats and conditionals	42](#_Toc239264950)
+[Binding extensions for repeats and conditionals	43](#_Toc854698146)
 
-[Binding escaped XHTML (XML + CSS)	42](#_Toc239264951)
+[Binding escaped XHTML (XML + CSS)	43](#_Toc854698147)
 
-[Binding other rich content	42](#_Toc239264952)
+[Binding other rich content	43](#_Toc854698148)
 
-[Authoring	42](#_Toc239264953)
+[Authoring	43](#_Toc854698149)
 
-[Mailmerge	42](#_Toc239264954)
+[Mailmerge	43](#_Toc854698150)
 
-[SmartArt	42](#_Toc239264955)
+[SmartArt	44](#_Toc854698151)
 
-[JAXB stuff	43](#_Toc239264956)
+[JAXB stuff	44](#_Toc854698152)
 
-[Cloning	43](#_Toc239264957)
+[Cloning	44](#_Toc854698153)
 
-[javax.xml.bind.JAXBElement	43](#_Toc239264958)
+[javax.xml.bind.JAXBElement	44](#_Toc854698154)
 
-[@XmlRootElement	43](#_Toc239264959)
+[@XmlRootElement	45](#_Toc854698155)
 
-[Merging Documents and Presentations	44](#_Toc239264960)
+[Merging Documents and Presentations	45](#_Toc854698156)
 
-[Appendix 1 – Font Mapping	46](#_Toc239264961)
+[Appendix 1 – Font Mapping	47](#_Toc854698157)
 
-[Appendix 2 – Office font solutions	49](#_Toc239264962)
+[Appendix 2 – Office font solutions	50](#_Toc854698158)
 
   
 
