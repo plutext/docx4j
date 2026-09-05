@@ -129,6 +129,32 @@ public final class Doc {
 		return mdp;
 	}
 
+	private int bookmarkId = 0;
+
+	int nextBookmarkId() {
+		return ++bookmarkId;
+	}
+
+	/** w:pgNumType w:start for the current section: the number its first page carries,
+	 *  and so the number a PAGEREF to anything on it gives. */
+	public void pageNumberStart(int start) {
+		org.docx4j.wml.CTPageNumber n = F.createCTPageNumber();
+		n.setStart(BigInteger.valueOf(start));
+		sectPr().setPgNumType(n);
+	}
+
+	/** A PAGEREF field, which is what an entry of a table of contents holds: the page
+	 *  the bookmark is on, hyperlinked (\h).  The number cached in the file is
+	 *  {@code cached}; the field is marked dirty, so Word refreshes it when the document
+	 *  is opened. */
+	public static Object pageref(String bookmarkName, String cached, String font, int halfPts) {
+		org.docx4j.wml.CTSimpleField f = F.createCTSimpleField();
+		f.setInstr(" PAGEREF " + bookmarkName + " \\h ");
+		f.setDirty(Boolean.TRUE);
+		f.getContent().add(run(cached, font, halfPts, null));
+		return F.createPFldSimple(f);
+	}
+
 	public SectPr sectPr() {
 		try {
 			SectPr sp = mdp.getContents().getBody().getSectPr();
@@ -1077,13 +1103,40 @@ public final class Doc {
 
 		/** A custom tab stop: position in twips from the left margin, and its alignment. */
 		public Para tabStop(int posTwips, org.docx4j.wml.STTabJc align) {
+			return tabStop(posTwips, align, org.docx4j.wml.STTabTlc.NONE);
+		}
+
+		/** A custom tab stop with a leader (w:leader: dot, hyphen, underscore, ...). */
+		public Para tabStop(int posTwips, org.docx4j.wml.STTabJc align, org.docx4j.wml.STTabTlc leader) {
 			if (ppr.getTabs() == null) ppr.setTabs(F.createTabs());
 			org.docx4j.wml.CTTabStop stop = F.createCTTabStop();
 			stop.setPos(BigInteger.valueOf(posTwips));
 			stop.setVal(align);
-			stop.setLeader(org.docx4j.wml.STTabTlc.NONE);
+			stop.setLeader(leader);
 			ppr.getTabs().getTab().add(stop);
 			return this;
+		}
+
+		/** Append a prepared content object (a field, a bookmark) after the text. */
+		public Para content(Object o) {
+			parts.add(new Object[] { o, null, null, null });
+			return this;
+		}
+
+		/** Wrap this paragraph's content in a bookmark, as a Word heading a table of
+		 *  contents points at is wrapped. */
+		public Para bookmark(String name) {
+			this.bookmarkName = name;
+			return this;
+		}
+
+		private String bookmarkName;
+
+		/** A PAGEREF field, which is what an entry of a table of contents holds: the page
+		 *  its bookmark is on, hyperlinked (\h).  The result cached in the file is
+		 *  {@code cached}; the field is marked dirty, so Word refreshes it on open. */
+		public Para pageref(String bookmarkName, String cached) {
+			return content(Doc.pageref(bookmarkName, cached, font, halfPts));
 		}
 
 		/**
@@ -1131,8 +1184,8 @@ public final class Doc {
 				p.getContent().add(Doc.run(doc.nextLabel(), font, halfPts, langCustomiser));
 			}
 						for (Object[] part : parts) {
-				if (part[0] instanceof R) {
-					p.getContent().add((R) part[0]);
+				if (!(part[0] instanceof String)) {
+					p.getContent().add(part[0]);
 					continue;
 				}
 				String f = part[1] == null ? font : (String) part[1];
@@ -1141,6 +1194,16 @@ public final class Doc {
 				Consumer<RPr> customiser = langCustomiser == null ? c
 						: (c == null ? langCustomiser : langCustomiser.andThen(c));
 				p.getContent().add(Doc.run((String) part[0], f, sz, customiser));
+			}
+			if (bookmarkName != null) {
+				org.docx4j.wml.CTBookmark bm = F.createCTBookmark();
+				bm.setId(BigInteger.valueOf(doc.nextBookmarkId()));
+				bm.setName(bookmarkName);
+				p.getContent().add(0, F.createPBookmarkStart(bm));
+				org.docx4j.wml.CTMarkupRange end = F.createCTMarkupRange();
+				end.setId(bm.getId());
+				p.getContent().add(F.createPBookmarkEnd(end));
+				bookmarkName = null;
 			}
 			parts.clear();
 			label = false; // a second build() must not add another label

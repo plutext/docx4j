@@ -118,6 +118,48 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	public AbstractWriterRegistry getWriterRegistry() {
 		return writerRegistry;
 	}
+
+	/** The names of the bookmarks in the document, or null where they could not be
+	 *  collected; see {@link #hasBookmark(String)}. */
+	private java.util.Set<String> bookmarkNames = null;
+	private boolean bookmarkNamesCollected = false;
+
+	/**
+	 * Whether the document contains a bookmark of this name, so that a field
+	 * referring to it (PAGEREF, REF, a TOC entry) can be rendered as a reference at
+	 * all.
+	 *
+	 * <p>Word tolerates a field whose target bookmark is gone - editing routinely
+	 * leaves a table of contents pointing at headings the document no longer has -
+	 * and paints the result it cached the last time the field was updated.  XSL FO
+	 * has no equivalent: an {@code fo:page-number-citation} whose {@code ref-id}
+	 * never resolves is painted as nothing at all, so a document of that shape lost
+	 * every one of its page numbers.  A writer therefore asks first, and keeps the
+	 * cached result where the answer is no.</p>
+	 *
+	 * <p>Only the main document part is searched, which is where a bookmark a field
+	 * can reach lives; where it cannot be searched the answer is yes, leaving the
+	 * behaviour as it was.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	public boolean hasBookmark(String name) {
+		if (!bookmarkNamesCollected) {
+			bookmarkNamesCollected = true;
+			try {
+				org.docx4j.finders.RangeFinder finder = new org.docx4j.finders.RangeFinder();
+				new org.docx4j.TraversalUtil(getWmlPackage().getMainDocumentPart().getContent(), finder);
+				java.util.Set<String> names = new java.util.HashSet<String>();
+				for (org.docx4j.wml.CTBookmark bm : finder.getStarts()) {
+					if (bm.getName() != null) names.add(bm.getName());
+				}
+				bookmarkNames = names;
+			} catch (Exception e) {
+				log.warn("Couldn't collect the document's bookmarks: " + e.getMessage());
+			}
+		}
+		return bookmarkNames == null || bookmarkNames.contains(name);
+	}
 	
 	public PropertyResolver getPropertyResolver() throws Docx4JException {
 		return getWmlPackage().getMainDocumentPart().getPropertyResolver();

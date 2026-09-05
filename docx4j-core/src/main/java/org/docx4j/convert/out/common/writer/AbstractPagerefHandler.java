@@ -35,6 +35,9 @@ import org.w3c.dom.NodeList;
 
 //In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
 public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.FldSimpleNodeWriterHandler {
+
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AbstractPagerefHandler.class);
+
 	protected int outputType = -1;
 	
 	protected AbstractPagerefHandler(int outputType) {
@@ -53,6 +56,17 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
 	String bookmarkId = model.getFldParameters().get(0);
 	Node content = model.getContent();
+		// The bookmark this field points at is not in the document: Word paints the
+		// result the field cached, and so do we.  A reference to an id that is never
+		// emitted resolves to nothing at all in FO (fo:page-number-citation) and to a
+		// dead link in HTML, which cost one corpus document all 150 of its table of
+		// contents page numbers.  @since 17.0.6
+		if (!context.hasBookmark(bookmarkId)) {
+			if (log.isDebugEnabled()) {
+				log.debug("PAGEREF target '" + bookmarkId + "' is not in the document; keeping the field's cached result");
+			}
+			return content;
+		}
 	Node literalNode = null;
 	AbstractHyperlinkWriterModel hyperlinkModel = null;
 	DocumentFragment docFrag = null;

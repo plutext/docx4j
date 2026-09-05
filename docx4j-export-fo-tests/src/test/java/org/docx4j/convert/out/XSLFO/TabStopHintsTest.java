@@ -90,12 +90,16 @@ public class TabStopHintsTest {
 			Element leader = firstTabLeader(doc);
 			assertTrue("no tab leader", leader!=null);
 			assertEquals("0pt", leader.getAttribute("leader-length"));
-			// the n-th tab takes its leader from the n-th stop: the first stop has none,
-			// the second a dot leader
-			assertEquals("space", leader.getAttribute("leader-pattern"));
+			// which stop a tab reaches is decided at layout time, so every tab of the
+			// paragraph gets the paragraph's own leader and the line manager keeps it
+			// only on the tabs whose resolved stop draws one (@since 17.0.6; until then
+			// the n-th tab took the n-th stop's leader, which lost the dots of a TOC
+			// entry whose tab count differs from its stop count)
 			NodeList leaders = doc.getElementsByTagNameNS(FO, "leader");
 			assertEquals(2, leaders.getLength());
+			assertEquals("dots", ((Element) leaders.item(0)).getAttribute("leader-pattern"));
 			assertEquals("dots", ((Element) leaders.item(1)).getAttribute("leader-pattern"));
+			assertEquals("reference-area", leader.getAttribute("leader-alignment"));
 		}
 	}
 

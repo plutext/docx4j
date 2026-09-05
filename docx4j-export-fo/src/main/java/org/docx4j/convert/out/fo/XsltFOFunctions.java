@@ -1895,9 +1895,9 @@ public class XsltFOFunctions {
 	 * Word does; a {@code rule} with {@code rule-style="dotted"} draws square dots at
 	 * the rule thickness instead), {@code rule} for a hyphen/underscore/heavy leader,
 	 * else {@code space}.  Which stop a tab reaches is not known before layout, so the
-	 * pattern is taken from the n-th custom stop for the n-th tab of the paragraph,
-	 * which is how a document that sets stops and tabs to them is written; the line
-	 * manager suppresses a leader whose resolved stop has none.
+	 * pattern is the paragraph's own ({@link #tabLeaderPattern}) and the line manager
+	 * decides, from the stop the tab actually reaches, whether to keep it, blank it or
+	 * replace it.
 	 *
 	 * <p>Without them, a tab that begins a paragraph is still a fixed leader
 	 * ({@link #leadingTabLeaderLength}), and any other tab the old three no-break
@@ -1947,7 +1947,12 @@ public class XsltFOFunctions {
 				leader.setAttribute("leader-length", leadingLength);
 			} else {
 				leader.setAttribute("leader-length", "0pt");
-				leader.setAttribute("leader-pattern", tabLeaderPattern(effectivePPr, precedingTabs));
+				leader.setAttribute("leader-pattern", tabLeaderPattern(effectivePPr));
+				// Word's dots sit on a fixed grid, every line's dots in the same columns;
+				// leader-alignment="reference-area" asks for that.  (FOP 2.11 reads the
+				// property only in its RTF renderer, so this is inert in PDF output; the
+				// dots start at the leader's own left edge.)
+				leader.setAttribute("leader-alignment", "reference-area");
 				leader.setAttribute(HINT_TAB, "1");
 			}
 			if (fontFamily.length()>0) leader.setAttribute("font-family", fontFamily);
@@ -2002,15 +2007,30 @@ public class XsltFOFunctions {
 				&& org.docx4j.wml.STTabTlc.DOT.equals(tabStop.getLeader());
 	}
 
-	/** "dots", "rule" or "space" for the n-th tab of a paragraph; see {@link #tabToFO}. */
-	private static String tabLeaderPattern(PPr pPr, int tabOrdinal) {
+	/**
+	 * The leader FOP is to build the area for: "dots", "rule" or "space".
+	 *
+	 * <p>Which stop a tab reaches is decided at layout time, so the pattern cannot be
+	 * chosen per tab here.  Every tab of the paragraph therefore gets the paragraph's
+	 * own leader - the first non-clear stop that draws one - and the line manager
+	 * blanks the leader of a tab whose resolved stop draws none, or replaces it where
+	 * the resolved stop draws the other kind ({@code LBP.setLeaderPattern}).  The
+	 * paragraph's stops, on its block as docx4j:tabs, are the single source of truth;
+	 * this only decides which area FOP builds, and an unused one costs nothing (a
+	 * leader of no width paints no dots).
+	 *
+	 * <p>Until 17.0.6 the n-th tab took the n-th stop's leader, which lost the dots of
+	 * every TOC entry whose tab count differs from its stop count.
+	 *
+	 * @since 17.0.6
+	 */
+	private static String tabLeaderPattern(PPr pPr) {
 
 		if (pPr==null || pPr.getTabs()==null) return "space";
-		int i = 0;
 		for (CTTabStop t : pPr.getTabs().getTab()) {
 			if (t.getPos()==null || STTabJc.CLEAR.equals(t.getVal())) continue;
-			if (i++ < tabOrdinal) continue;
-			return leaderPattern(t.getLeader());
+			String pattern = leaderPattern(t.getLeader());
+			if (!"space".equals(pattern)) return pattern;
 		}
 		return "space";
 	}

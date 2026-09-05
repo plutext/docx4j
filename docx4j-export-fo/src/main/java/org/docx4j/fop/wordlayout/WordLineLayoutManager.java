@@ -605,20 +605,33 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // paragraph's own stops are
                 stop = tabLeftMpt + getLineWidth();
                 align = TAB_RIGHT;
-                stopHasLeader = false;
+                stopLeader = LBP.LEADER_NONE;
             } else {
-                stop = nextTabStop(tabLeftMpt + x);      // sets stopAlignment/stopHasLeader
+                stop = nextTabStop(tabLeftMpt + x);      // sets stopAlignment/stopLeader
                 align = stopAlignment;
             }
             int width = stop - (tabLeftMpt + x);
+            boolean clamped = false;
             if (align != TAB_LEFT) {
                 width -= followingWidth(position, align);
+                // Word clamps a centre, right or decimal stop so that the text it aligns
+                // ends on the right indent: unlike a left stop (below), such a stop does
+                // not take the line past the indent.  Measured on a centred footer whose
+                // centre stop lies 11.3pt past the point at which its text fills the
+                // content width: Word draws one line filling it, where the unclamped tab
+                // overflowed and wrapped.
+                int cap = getLineWidth() - x - followingWidth(position, TAB_LEFT);
+                if (cap < 0) cap = 0;
+                if (width > cap) {
+                    width = cap;
+                    clamped = true;
+                }
             }
             if (width < 0) {
                 // Word cannot move backwards: a stop the text has already passed, or one
                 // whose right/centre text does not fit before it, advances nothing
                 width = 0;
-            } else {
+            } else if (!clamped) {
                 // a stop past the paragraph's right indent is still honoured; the line is
                 // allowed to run on to it (see tabOverhang)
                 tabOverhang = Math.max(tabOverhang, (stop - tabLeftMpt) - getLineWidth());
@@ -627,10 +640,33 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 WordLineLayoutManager.log.debug("tab at x=" + x + " (" + (tabLeftMpt + x)
                         + " from the margin) -> stop " + stop + " align=" + align + " width=" + width);
             }
-            // the FO could not know which stop the tab would reach, so a leader that
-            // turns out to land on a stop without one is blanked
-            if (!stopHasLeader) LBP.blankLeaderArea(leader);
+            // the FO could not know which stop the tab would reach, so the leader of the
+            // stop it did reach is set on the area now (blanked where that stop has none)
+            LBP.setLeaderPattern(leader, stopLeader);
+            // a right/centre/decimal stop measured an unresolved page number as FOP's
+            // "MMM" placeholder; the width it loses when it resolves is the tab's, not
+            // the line's (see pageNumberTabs)
+            if (align != TAB_LEFT && followingHasUnresolvedPageNumber(position)) {
+                pageNumberTabs.add(leader);
+            }
             return width;
+        }
+
+        /**
+         * Whether the text this tab aligns holds a page number FOP has not resolved yet:
+         * {@code AbstractPageNumberCitationLayoutManager} measures one as the placeholder
+         * "MMM", so {@link #followingWidth} subtracted a width the line will not have.
+         *
+         * @since 17.0.6
+         */
+        private boolean followingHasUnresolvedPageNumber(int position) {
+            for (int i = position + 1; i < par.size(); i++) {
+                KnuthElement e = getElement(i);
+                if (e.isPenalty() && e.isForcedBreak()) break;
+                if (e.isGlue() && tabLeader((KnuthGlue) e) != null) break;
+                if (isPageNumberCitation(e)) return true;
+            }
+            return false;
         }
 
         /**
@@ -1144,12 +1180,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
         String[] parts = (stops == null || stops.length() == 0) ? new String[0] : stops.split(";");
         tabStops = new int[parts.length];
         tabStopAlign = new int[parts.length];
-        tabStopLeader = new boolean[parts.length];
+        tabStopLeader = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {
             String[] stopFields = parts[i].split(":", -1);
             tabStops[i] = twipsToMpt(stopFields[0]);
             tabStopAlign[i] = tabAlignment(stopFields.length > 1 ? stopFields[1] : "left");
-            tabStopLeader[i] = stopFields.length > 2 && !"none".equals(stopFields[2]);
+            tabStopLeader[i] = tabLeaderKind(stopFields.length > 2 ? stopFields[2] : "none");
         }
         int def = twipsToMpt(foreignAttribute(block, WordLayoutElementMapping.TAB_DEFAULT));
         tabDefaultMpt = def > 0 ? def : 720 * 50;
@@ -1268,7 +1304,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *  because they clear the default stops before them too. */
     private final int[] tabStops;
     private final int[] tabStopAlign;
-    private final boolean[] tabStopLeader;
+    /** what each stop's w:leader draws (LBP.LEADER_NONE/-DOTS/-RULE) */
+    private final int[] tabStopLeader;
     /** the default interval (w:defaultTabStop) in millipoints */
     private final int tabDefaultMpt;
     /** the paragraph's left indent in millipoints: the line manager's x is measured
@@ -1280,10 +1317,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** the decimal separator a decimal stop aligns (w:decimalSymbol; "." by default) */
     private final char decimalSeparator;
 
-    /** set by {@link #nextTabStop}: the alignment of the stop it found, and whether
-     *  that stop draws a leader */
+    /** set by {@link #nextTabStop}: the alignment of the stop it found, and what
+     *  leader that stop draws (LBP.LEADER_NONE/-DOTS/-RULE) */
     private int stopAlignment;
-    private boolean stopHasLeader;
+    private int stopLeader;
 
     /**
      * The first tab stop after x (millipoints from the left margin), as Word finds
@@ -1296,19 +1333,19 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private int nextTabStop(int x) {
         int best = Integer.MAX_VALUE;
         stopAlignment = TAB_LEFT;
-        stopHasLeader = false;
+        stopLeader = LBP.LEADER_NONE;
         for (int i = 0; i < tabStops.length; i++) {
             if (tabStopAlign[i] == TAB_CLEAR) continue;
             if (tabStops[i] > x && tabStops[i] < best) {
                 best = tabStops[i];
                 stopAlignment = tabStopAlign[i];
-                stopHasLeader = tabStopLeader[i];
+                stopLeader = tabStopLeader[i];
             }
         }
         if (tabHanging && tabLeftMpt > x && tabLeftMpt < best) {
             best = tabLeftMpt;
             stopAlignment = TAB_LEFT;
-            stopHasLeader = false;
+            stopLeader = LBP.LEADER_NONE;
         }
         if (best < Integer.MAX_VALUE) return best;
         if (x < 0) return 0;
@@ -1328,6 +1365,125 @@ public class WordLineLayoutManager extends LineLayoutManager {
         if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) return null;
         String kind = foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB);
         return (kind != null && kind.length() > 0) ? lm : null;
+    }
+
+    // ---- a right tab whose text ends in an unresolved page number ---------------
+
+    /**
+     * The tab leaders whose right, centre or decimal stop measured a page number FOP
+     * had not resolved.
+     *
+     * <p>FOP measures an unresolved {@code fo:page-number-citation} as the placeholder
+     * "MMM" (AbstractPageNumberCitationLayoutManager), so the width the tab subtracted
+     * for the text it aligns is one the line will not have: once
+     * {@code UnresolvedPageNumber.resolveIDRef} puts the real number in, the number
+     * ends width("MMM") - width(number) short of the stop - measured at 10.7pt on one
+     * document's every TOC line (DejaVu Sans 8pt: "MMM" 20.71pt, "61" 10.18pt) and at
+     * 25pt on another's.  Word puts the number on the stop.
+     *
+     * <p>The width the number loses belongs to the tab, not to the line's right end, so
+     * {@link #addInlineArea} pairs each of these tabs with the unresolved number that
+     * follows it and a {@link TabPageNumberWidth} moves the width across when the
+     * number resolves.
+     *
+     * @since 17.0.6
+     */
+    private final java.util.Set<LayoutManager> pageNumberTabs
+            = Collections.newSetFromMap(new java.util.IdentityHashMap<LayoutManager, Boolean>());
+
+    /** whether this Knuth element is an fo:page-number-citation, which FOP may not
+     *  have resolved when the line is laid out. */
+    private static boolean isPageNumberCitation(KnuthElement e) {
+        Position leaf = e.getPosition();
+        while (leaf != null && !(leaf instanceof LeafPosition)) {
+            leaf = leaf.getPosition();
+        }
+        return leaf != null
+                && leaf.getLM() instanceof AbstractPageNumberCitationLayoutManager;
+    }
+
+    /**
+     * Hand the width an unresolved page number gives up to the tab that aligns it, so
+     * that the number still ends on its stop; see {@link #pageNumberTabs}.  The area's
+     * own notification puts the line back the width the number's did take off it.
+     *
+     * @since 17.0.6
+     */
+    private static final class TabPageNumberWidth implements org.apache.fop.area.Resolvable {
+
+        private final InlineArea tab;
+        private final org.apache.fop.area.inline.UnresolvedPageNumber number;
+        private final int placeholderWidth;
+        private boolean resolved;
+
+        TabPageNumberWidth(InlineArea tab, org.apache.fop.area.inline.UnresolvedPageNumber number) {
+            this.tab = tab;
+            this.number = number;
+            this.placeholderWidth = number.getIPD();
+        }
+
+        public String[] getIDRefs() {
+            return number.getIDRefs();
+        }
+
+        public boolean isResolved() {
+            return resolved;
+        }
+
+        public void resolveIDRef(String id, List<org.apache.fop.area.PageViewport> pages) {
+            if (resolved) return;
+            resolved = true;
+            int delta = placeholderWidth - number.getIPD();
+            if (delta != 0) {
+                tab.handleIPDVariation(delta);
+            }
+        }
+    }
+
+    /**
+     * Pair each of this line's {@link #pageNumberTabs} with the unresolved page number
+     * it aligns, once the line's areas exist.
+     */
+    private void fixPageNumberTabs(KnuthSequence seq, int from, int to, LineArea lineArea) {
+        if (getPSLM() == null) return;
+        List<InlineArea> flat = new ArrayList<InlineArea>();
+        flatten(lineArea.getInlineAreas(), flat);
+        for (int i = Math.max(0, from); i <= to && i < seq.size(); i++) {
+            Object o = seq.get(i);
+            if (!(o instanceof KnuthGlue)) continue;
+            LayoutManager lm = tabLeader((KnuthGlue) o);
+            if (lm == null || !pageNumberTabs.contains(lm)) continue;
+            InlineArea tabArea = LBP.leafArea(lm);
+            if (tabArea == null) continue;
+            int at = -1;
+            for (int j = 0; j < flat.size(); j++) {
+                if (flat.get(j) == tabArea) { at = j; break; }
+            }
+            if (at < 0) continue;
+            for (int j = at + 1; j < flat.size(); j++) {
+                if (!(flat.get(j) instanceof org.apache.fop.area.inline.UnresolvedPageNumber)) continue;
+                org.apache.fop.area.inline.UnresolvedPageNumber number
+                        = (org.apache.fop.area.inline.UnresolvedPageNumber) flat.get(j);
+                String[] ids = number.getIDRefs();
+                if (ids != null && ids.length > 0 && ids[0] != null) {
+                    getPSLM().addUnresolvedArea(ids[0], new TabPageNumberWidth(tabArea, number));
+                    pageNumberTabs.remove(lm);   // this tab's area is placed; never twice
+                }
+                break;
+            }
+        }
+    }
+
+    /** This line's inline areas in the order they are painted; a FilledArea (a dot
+     *  leader) repeats its children to fill its width, so it is left whole. */
+    private static void flatten(List<InlineArea> areas, List<InlineArea> out) {
+        for (InlineArea a : areas) {
+            out.add(a);
+            if (a instanceof org.apache.fop.area.inline.InlineParent
+                    && !(a instanceof org.apache.fop.area.inline.FilledArea)) {
+                flatten(((org.apache.fop.area.inline.InlineParent) a).getChildAreas(), out);
+            }
+        }
     }
 
     /** whether this tab leader stands in for a right {@code w:ptab} rather than a
@@ -1360,6 +1516,13 @@ public class WordLineLayoutManager extends LineLayoutManager {
             if (e instanceof KnuthGlue && tabLeader((KnuthGlue) e) != null) return true;
         }
         return false;
+    }
+
+    /** What {@code w:leader} draws: nothing, dots or a rule.  @since 17.0.6 */
+    private static int tabLeaderKind(String v) {
+        if ("dot".equals(v) || "middleDot".equals(v)) return LBP.LEADER_DOTS;
+        if ("hyphen".equals(v) || "underscore".equals(v) || "heavy".equals(v)) return LBP.LEADER_RULE;
+        return LBP.LEADER_NONE;   // none, and anything unknown
     }
 
     private static int tabAlignment(String v) {
@@ -2551,6 +2714,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
             childLM.addAreas(inlinePosIter, lc);
             lc.setLeadingSpace(lc.getTrailingSpace());
             lc.setTrailingSpace(new SpaceSpecifier(false));
+        }
+
+        // a right/centre/decimal tab measured an unresolved page number as "MMM": give
+        // the width back to the tab when it resolves (@since 17.0.6)
+        if (!pageNumberTabs.isEmpty()) {
+            fixPageNumberTabs(seq, startElementIndex, endElementIndex, lineArea);
         }
 
         // if display-align is distribute, add space after

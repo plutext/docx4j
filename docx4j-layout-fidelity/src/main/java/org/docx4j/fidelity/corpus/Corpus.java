@@ -965,6 +965,127 @@ public final class Corpus {
 			d.pageBreak();
 			return d.pkg();
 		}));
+
+		// --------------------------------- b2 batch 9: right and dot-leader tabs (E25)
+
+		/*
+		 * Which stop's leader a tab draws.  docx4j gave the n-th tab the n-th stop's
+		 * leader until 17.0.6, which loses the dots of every table of contents entry
+		 * whose tab count differs from its stop count; the rule the goldens are to
+		 * confirm is that the leader is the one of the stop the tab REACHES.  The stops
+		 * are a corpus TOC's (360/540/851 left with no leader, 9990 right with dots) and
+		 * the lines differ in how many tabs they have and where they start.
+		 */
+		PROBES.add(new Probe("tab-leader-resolved",
+				"one dot-leader stop (9000 right) behind three plain left stops, on lines with "
+				+ "one, two and three tabs and on a line whose first tab already sits past the "
+				+ "last left stop", () -> {
+			Doc d = Doc.create(15);
+			d.para("Table of contents entries; the only stop with a leader is the last.").after(240).add();
+			// (a) a leading tab and text: the tab reaches the first left stop
+			tocStops(d.para().noLabel()).tab().text("leading tab, then text").after(120).add();
+			// (b) text, one tab, text: the tab passes 360/540/851 and reaches the dot stop
+			tocStops(d.para().noLabel()).text("Foreword").tab().text("9").after(120).add();
+			// (c) three fields as a numbered entry: "1." tab "Scope" tab "9"
+			tocStops(d.para().noLabel()).text("1.").tab().text("Scope").tab().text("9").after(120).add();
+			// (d) the first tab already sits past the last left stop
+			tocStops(d.para().noLabel())
+					.text("A first line long enough that its tab starts past the last left stop")
+					.tab().text("10").after(120).add();
+			// (e) two tabs where only the second reaches the dot stop
+			tocStops(d.para().noLabel()).text("2.").tab().text("Terms and definitions").tab().text("11").after(240).add();
+			d.para("after. " + prose(1)).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * The trailing-tab class of the same signature: a corpus TOC entry ends
+		 * <w:tab/><w:t/><w:tab/>, so the tab that reaches the dot stop is the FIRST of
+		 * them and the second runs on to the next default stop, which has no leader.
+		 */
+		PROBES.add(new Probe("tab-leader-trailing",
+				"paragraphs ending in a tab, and in two tabs with nothing after either, against "
+				+ "a right dot-leader stop", () -> {
+			Doc d = Doc.create(15);
+			d.para("Entries whose tabs are trailing.").after(240).add();
+			tocStops(d.para().noLabel()).text("Trailing tab, nothing after it").tab().after(120).add();
+			tocStops(d.para().noLabel()).text("Two trailing tabs").tab().tab().after(120).add();
+			tocStops(d.para().noLabel()).text("Two trailing tabs and a number").tab().tab().text("12").after(120).add();
+			tocStops(d.para().noLabel()).tab().tab().after(240).add();
+			d.para("after. " + prose(1)).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * A table of contents whose page numbers are PAGEREF fields: FOP measures an
+		 * unresolved fo:page-number-citation as the placeholder "MMM", so the number
+		 * landed width("MMM") - width(number) short of the stop.  Page numbering starts
+		 * at 98 in the second section, so the entries carry numbers of one, two and
+		 * three digits.  The last entry points at a bookmark the document does not
+		 * contain, which is what a TOC left behind by editing does: Word paints the
+		 * cached result.
+		 */
+		PROBES.add(new Probe("tab-toc-pageref",
+				"table of contents entries whose numbers are PAGEREF fields (1, 2 and 3 digits) "
+				+ "against a 9020 right stop with dots, and one whose bookmark is gone", () -> {
+			Doc d = Doc.create(15);
+			d.para("Contents").font(SANS, 28).after(240).add();
+			String[] headings = { "Scope", "Normative references", "Terms and definitions",
+					"Requirements", "Test methods", "Marking and labelling" };
+			for (int i = 0; i < headings.length; i++) {
+				tocEntryStops(d.para().noLabel()).text(headings[i]).tab()
+						.pageref("_Toc9000" + i, Integer.toString(i + 1)).after(0).add();
+			}
+			tocEntryStops(d.para().noLabel()).text("An entry whose bookmark has been deleted").tab()
+					.pageref("_TocMissing", "42").after(240).add();
+
+			// the headings themselves, one per page; the second section numbers its pages
+			// from 98, so three of the entries above resolve to three digits
+			for (int i = 0; i < 3; i++) {
+				d.para(headings[i]).font(SANS, 26).bookmark("_Toc9000" + i).after(120).add();
+				d.para(prose(6, i)).add();
+				d.pageBreak();
+			}
+			d.endSection("nextPage", 0);
+			d.pageNumberStart(98);
+			for (int i = 3; i < headings.length; i++) {
+				d.para(headings[i]).font(SANS, 26).bookmark("_Toc9000" + i).after(120).add();
+				d.para(prose(6, i)).add();
+				if (i < headings.length - 1) d.pageBreak();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * A centre or right stop whose text would run past the right indent.  §4.4 says
+		 * a stop beyond the indent is still honoured and the line runs into it, which is
+		 * measured for a LEFT stop; a corpus footer says Word clamps a centre stop so
+		 * that the text ends on the indent instead of overflowing and wrapping.  The
+		 * stops are that footer's (4252 clear, 8504 clear, 9355 centre) and the content
+		 * is sized either side of the point at which the aligned text fills the width.
+		 */
+		PROBES.add(new Probe("tab-clamp-right",
+				"centre and right stops close to and past the right indent, with text short "
+				+ "enough to fit and long enough to overrun", () -> {
+			Doc d = Doc.create(15);
+			String[] texts = { "SHORT", "A MEDIUM LENGTH LINE OF TEXT",
+					"A CONSIDERABLY LONGER LINE OF TEXT WHICH WOULD OVERRUN THE INDENT DE 20" };
+			for (String text : texts) {
+				d.para().noLabel().font(SANS, 16).jc(JcEnumeration.CENTER)
+						.tabStop(4252, org.docx4j.wml.STTabJc.CLEAR)
+						.tabStop(8504, org.docx4j.wml.STTabJc.CLEAR)
+						.tabStop(9355, org.docx4j.wml.STTabJc.CENTER)
+						.text("centre stop 9355: ").tab().text(text).after(120).add();
+				d.para().noLabel().font(SANS, 16)
+						.tabStop(9355, org.docx4j.wml.STTabJc.RIGHT)
+						.text("right stop 9355: ").tab().text(text).after(120).add();
+				d.para().noLabel().font(SANS, 16)
+						.tabStop(9355, org.docx4j.wml.STTabJc.LEFT)
+						.text("left stop 9355: ").tab().text(text).after(240).add();
+			}
+			d.para("after. " + prose(1)).add();
+			return d.pkg();
+		}));
 	}
 
 	/**
@@ -1006,6 +1127,25 @@ public final class Corpus {
 			d.para("after. " + prose(1, 4)).before(240).add();
 			return d.pkg();
 		});
+	}
+
+	/** A corpus table of contents' stops: three plain left stops and a right stop with a
+	 *  dot leader at the right margin.  The corpus TOC's own right stop is 9990 twips;
+	 *  this page's content is 9026 wide, so the stop is 9000 - a stop past the right
+	 *  indent is the tab-clamp-right probe's question, not this one's. */
+	private static Doc.Para tocStops(Doc.Para p) {
+		return p.tabStop(360, org.docx4j.wml.STTabJc.LEFT)
+				.tabStop(540, org.docx4j.wml.STTabJc.LEFT)
+				.tabStop(851, org.docx4j.wml.STTabJc.LEFT)
+				.tabStop(9000, org.docx4j.wml.STTabJc.RIGHT, org.docx4j.wml.STTabTlc.DOT);
+	}
+
+	/** Another corpus table of contents' stops: one left stop and a right dot stop at the
+	 *  right margin (the corpus's own are 1320 and 9350, on a Letter-width page whose
+	 *  content edge is 540pt). */
+	private static Doc.Para tocEntryStops(Doc.Para p) {
+		return p.tabStop(1320, org.docx4j.wml.STTabJc.LEFT)
+				.tabStop(9020, org.docx4j.wml.STTabJc.RIGHT, org.docx4j.wml.STTabTlc.DOT);
 	}
 
 	/**

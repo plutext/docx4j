@@ -69,6 +69,18 @@ no longer widens every paragraph in its cells past the cell's edge
 - a line holding a tab is now aligned by the paragraph's w:jc, the tab's own width counted
 in, as Word aligns it; the tab is still sized as if the line began at the left indent.  Such
 lines were drawn flush left whatever the w:jc
+- a tab now draws the leader (w:leader dot, hyphen, ...) of the stop it reaches, decided
+when the line is laid out; the n-th tab used to take the n-th stop's leader, so a table of
+contents whose entries have fewer tabs than stops, or trailing ones, lost its dots
+- a centre, right or decimal tab stop beyond the right indent is now clamped so that the
+text it aligns ends on the indent, as Word clamps it, rather than overflowing and wrapping
+(a left stop beyond the indent is still honoured)
+- a right, centre or decimal tab whose text ends in a page reference now puts the number on
+the stop: FOP measures an unresolved fo:page-number-citation as "MMM", and the width it
+gives up when it resolves is now taken from the tab
+- a PAGEREF or table-of-contents field whose bookmark the document no longer contains now
+keeps the result Word cached for it, in PDF and HTML alike; the reference resolved to
+nothing and the page number was painted as nothing at all
 - a cell in a table whose columns docx4j sized from their content now fits the line that
 sized the column, instead of re-breaking it: Word's fit width is the column less the cell
 margins, the borders not taken off

@@ -39,6 +39,11 @@ public class TabStopTest {
 
 	private static final String TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"space\"/>";
 
+	/** what XsltFOFunctions.tabToFO writes for a paragraph one of whose stops has a dot
+	 *  leader: every tab of the paragraph gets it, and the line manager decides which of
+	 *  them keeps it (@since 17.0.6) */
+	private static final String DOT_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
+
 	/** @param tabs docx4j:tabs, "pos:align:leader;..." in twips; "" for none
 	 *  @param ind  docx4j:tab-ind, "left:firstLine:separator" in twips */
 	private static String fo(String tabs, String ind, String blockAttrs, String content) {
@@ -52,8 +57,8 @@ public class TabStopTest {
 				+ "</fo:flow></fo:page-sequence></fo:root>";
 	}
 
-	/** The x at which each word of each line starts, in points from the region edge. */
-	private static List<Double> wordStarts(String fo) throws Exception {
+	/** FOP's area tree for this FO, with the Word layout managers in place. */
+	private static Document area(String fo) throws Exception {
 		FopFactoryBuilder b = new FopFactoryBuilder(new File(".").toURI());
 		b.setLayoutManagerMakerOverride(new WordLayoutManagerMaker());
 		FopFactory factory = b.build();
@@ -64,7 +69,12 @@ public class TabStopTest {
 		t.transform(new StreamSource(new ByteArrayInputStream(fo.getBytes("UTF-8"))), new SAXResult(fop.getDefaultHandler()));
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true);
-		Document doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(out.toByteArray()));
+		return dbf.newDocumentBuilder().parse(new ByteArrayInputStream(out.toByteArray()));
+	}
+
+	/** The x at which each word of each line starts, in points from the region edge. */
+	private static List<Double> wordStarts(String fo) throws Exception {
+		Document doc = area(fo);
 		List<Double> starts = new ArrayList<>();
 		NodeList las = doc.getElementsByTagName("lineArea");
 		for (int i = 0; i < las.getLength(); i++) {
@@ -91,6 +101,57 @@ public class TabStopTest {
 				walk(c, x, starts);
 			}
 		}
+	}
+
+	/** What each tab of each line drew, in order: "dots", "rule" or "space" (a leader of
+	 *  no pattern, which is also what a blanked one becomes).  A dot leader is a
+	 *  FilledArea, which the area tree writes as an inlineparent of repeated dots. */
+	private static List<String> leaders(String fo) throws Exception {
+		List<String> found = new ArrayList<>();
+		NodeList las = area(fo).getElementsByTagName("lineArea");
+		for (int i = 0; i < las.getLength(); i++) {
+			collectLeaders((Element) las.item(i), found);
+		}
+		return found;
+	}
+
+	private static void collectLeaders(Element el, List<String> found) {
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (!(n instanceof Element)) continue;
+			Element c = (Element) n;
+			String name = c.getLocalName();
+			if ("text".equals(name)) continue;              // words, not leaders
+			if ("space".equals(name)) found.add("space");
+			else if ("leader".equals(name)) found.add("rule");
+			else if ("inlineparent".equals(name)) found.add("dots");
+			else collectLeaders(c, found);
+		}
+	}
+
+	/** The baseline each dot of each dot leader is drawn on, in points from the line's
+	 *  top: the leader's area carries the offset, the dot its baseline within it. */
+	private static List<Double> dotBaselines(String fo) throws Exception {
+		List<Double> found = new ArrayList<>();
+		NodeList parents = area(fo).getElementsByTagName("inlineparent");
+		for (int i = 0; i < parents.getLength(); i++) {
+			Element parent = (Element) parents.item(i);
+			double offset = ipd(parent, "offset");
+			NodeList texts = parent.getElementsByTagName("text");
+			for (int j = 0; j < texts.getLength(); j++) {
+				Element text = (Element) texts.item(j);
+				if (!".".equals(text.getTextContent())) continue;
+				found.add(round(offset + ipd(text, "baseline")));
+			}
+		}
+		return found;
+	}
+
+	private static List<String> list(String... names) {
+		List<String> out = new ArrayList<>();
+		for (String n : names) out.add(n);
+		return out;
 	}
 
 	private static double ipd(Element el, String attr) {
@@ -220,6 +281,111 @@ public class TabStopTest {
 				wordStarts(fo("9000:left:none", "0:0:.", "text-align=\"center\"", "abc" + TAB + "x")));
 		assertEquals(at(0, 450),
 				wordStarts(fo("9000:left:none", "0:0:.", "text-align=\"end\"", "abc" + TAB + "x")));
+	}
+
+	/**
+	 * The leader a tab draws is the leader of the stop it <em>reaches</em>, which is
+	 * known only here: the FO gives every tab of the paragraph the paragraph's own
+	 * leader and the line manager keeps it, blanks it, or replaces it.
+	 *
+	 * <p>Measured on Word 365's PDF of a table of contents whose stops are
+	 * 360/540/851 left with no leader and 9990 right with a dot leader: every entry's
+	 * dots run to the right stop, whether the entry has one tab or two.  docx4j gave
+	 * the n-th tab the n-th stop's leader until 17.0.6, so a one-tab entry took the
+	 * first stop's (none) and painted nothing.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void theLeaderIsTheOneOfTheStopTheTabReaches() throws Exception {
+		String stops = "720:left:none;4000:right:dot";     // 36pt left, 200pt right + dots
+		// "abcdefghij" is 72pt, past the left stop: the tab reaches the dot stop
+		assertEquals(list("dots"), leaders(fo(stops, "0:0:.", null, "abcdefghij" + DOT_TAB + "9")));
+		// "a" is 7.2pt: the same paragraph's tab reaches the left stop, which has none
+		assertEquals(list("space"), leaders(fo(stops, "0:0:.", null, "a" + DOT_TAB + "9")));
+	}
+
+	/**
+	 * A trailing tab: the first tab reaches the dot stop and draws its dots, the second
+	 * runs on to the next default stop, which has no leader.  (Measured on a Word TOC
+	 * whose entries end {@code <w:tab/><w:t/><w:tab/>}: the dots stop at the right stop.)
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aTrailingTabDrawsTheLeaderOfTheStopItReaches() throws Exception {
+		assertEquals(list("dots", "space"),
+				leaders(fo("720:left:none;4000:right:dot", "0:0:.", null, "abcdefghij" + DOT_TAB + DOT_TAB)));
+	}
+
+	/**
+	 * A leader the FO asked FOP for as a space, whose resolved stop turns out to draw
+	 * dots - a paragraph mixing dot and rule stops - is given a dot leader built here.
+	 * It hangs on the alignment context FOP made for the pattern the FO asked for, so
+	 * its dots take that context's height (the leader's rule thickness) as their
+	 * baseline rather than their own; measured against the leader FOP builds itself,
+	 * both land on the line's baseline, 7.548pt.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aLeaderReplacedWithDotsSitsWhereFopsOwnDotsSit() throws Exception {
+		String content = "abc" + TAB + "wxyz";
+		String dots = "abc" + DOT_TAB + "wxyz";
+		List<Double> replaced = dotBaselines(fo("4000:right:dot", "0:0:.", null, content));
+		List<Double> native_ = dotBaselines(fo("4000:right:dot", "0:0:.", null, dots));
+		assertEquals("no dots were drawn", 20, native_.size());
+		assertEquals(native_, replaced);
+	}
+
+	/**
+	 * Word clamps a centre, right or decimal stop so that the text it aligns ends on the
+	 * right indent: unlike a left stop, such a stop does not take the line past the
+	 * indent (measured on a centred footer whose centre stop would have taken its text
+	 * 11.3pt past the content width - Word draws one line filling the width, where the
+	 * unclamped tab overflowed and wrapped onto a second).
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aCentreOrRightStopIsClampedAtTheRightIndent() throws Exception {
+		// centre stop at 9000 twips = 450pt, past the 400pt edge: "abc" (21.6) + the tab
+		// + "wxyzwxyz" (57.6) would centre the text on 450, so the tab is cut to end the
+		// text on 400
+		assertEquals(at(0, 400 - 8 * CHAR),
+				wordStarts(fo("9000:center:none", "0:0:.", null, "abc" + TAB + "wxyzwxyz")));
+		assertEquals(at(0, 400 - 4 * CHAR),
+				wordStarts(fo("9000:right:none", "0:0:.", null, "abc" + TAB + "wxyz")));
+		assertEquals(at(0, 400 - 5 * CHAR),
+				wordStarts(fo("9000:decimal:none", "0:0:.", null, "abc" + TAB + "12345")));
+		// a left stop past the edge is still honoured (§4.4), and one that fits is
+		// unaffected by the clamp
+		assertEquals(at(0, 450), wordStarts(fo("9000:left:none", "0:0:.", null, "abc" + TAB + "x")));
+		assertEquals(at(0, 200 - 4 * CHAR),
+				wordStarts(fo("4000:right:none", "0:0:.", null, "abc" + TAB + "wxyz")));
+	}
+
+	/**
+	 * A right stop whose text is a page number FOP has not resolved yet still puts the
+	 * number on the stop: FOP measures an unresolved fo:page-number-citation as the
+	 * placeholder "MMM", and the width it gives up when it resolves is the tab's.
+	 *
+	 * <p>Measured on Word's PDF of a 311-page document (stops 1320 left, 9350 right with
+	 * dots, margin 72pt): the page number's right edge is on the stop, 539.74pt, on
+	 * every line, where docx4j's line ended 10.7pt short - "MMM" 20.71pt against "61"
+	 * 10.18pt in DejaVu Sans 8pt.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aRightStopPutsAnUnresolvedPageNumberOnTheStop() throws Exception {
+		// "abc" + a tab to the 200pt right stop + the citation, which resolves to "2"
+		// (7.2pt): without the fix the tab keeps the room "MMM" (21.6pt) needed and the
+		// number lands at 178.4
+		String fo = fo("4000:right:none", "0:0:.", null,
+				"abc" + TAB + "<fo:page-number-citation ref-id=\"target\"/>")
+				.replace("</fo:flow>", "<fo:block break-before=\"page\" id=\"target\">x</fo:block></fo:flow>");
+		assertEquals(at(0, 200 - CHAR, 0), wordStarts(fo));
 	}
 
 	@Test

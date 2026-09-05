@@ -225,6 +225,128 @@ final class LBP {
 		}
 	}
 
+	/** The area a leaf inline manager (an fo:leader standing in for a tab) will add to
+	 *  the line, so that it can be found again once the line's areas exist.
+	 *  @since 17.0.6 */
+	static org.apache.fop.area.inline.InlineArea leafArea(org.apache.fop.layoutmgr.LayoutManager lm) {
+		try {
+			Object area = LNLM_CUR_AREA.get(lm);
+			return (area instanceof org.apache.fop.area.inline.InlineArea)
+					? (org.apache.fop.area.inline.InlineArea) area : null;
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	// ---- the leader of the stop a tab actually reached -------------------------
+
+	/** {@link #setLeaderPattern} kinds, as {@code w:leader} gives them. */
+	static final int LEADER_NONE = 0, LEADER_DOTS = 1, LEADER_RULE = 2;
+
+	/** LeaderLayoutManager.font (private): the font its dots are drawn in. */
+	private static final Field LLM_FONT;
+	static {
+		try {
+			LLM_FONT = org.apache.fop.layoutmgr.inline.LeaderLayoutManager.class.getDeclaredField("font");
+			LLM_FONT.setAccessible(true);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("FOP's LeaderLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
+		}
+	}
+
+	/**
+	 * Give a tab's leader the leader of the stop it turned out to reach.
+	 *
+	 * <p>The FO cannot know which stop that will be, so it asks FOP for the paragraph's
+	 * own leader (XsltFOFunctions.tabLeaderPattern) and the line manager settles it
+	 * here: a stop with no leader blanks the area, and one whose leader is the other
+	 * kind - a paragraph mixing dot and rule stops - gets an area built the way
+	 * {@code LeaderLayoutManager.getLeaderInlineArea} builds it.  The replacement is
+	 * hung on the leader's own alignment context, which FOP made for the pattern the
+	 * FO asked for, so the dots of a replaced area sit on the leader's rule thickness
+	 * rather than on their own height.
+	 *
+	 * @param kind one of {@link #LEADER_NONE}, {@link #LEADER_DOTS}, {@link #LEADER_RULE}
+	 * @since 17.0.6
+	 */
+	static void setLeaderPattern(org.apache.fop.layoutmgr.LayoutManager lm, int kind) {
+		if (kind == LEADER_NONE) {
+			blankLeaderArea(lm);
+			return;
+		}
+		if (!(lm.getFObj() instanceof org.apache.fop.fo.flow.Leader)) return;
+		org.apache.fop.fo.flow.Leader fobj = (org.apache.fop.fo.flow.Leader) lm.getFObj();
+		int pattern = fobj.getLeaderPattern();
+		if ((kind == LEADER_DOTS && pattern == org.apache.fop.fo.Constants.EN_DOTS)
+				|| (kind == LEADER_RULE && pattern == org.apache.fop.fo.Constants.EN_RULE)) {
+			return;   // FOP already built the area this stop wants
+		}
+		try {
+			Object area = LNLM_CUR_AREA.get(lm);
+			if (!(area instanceof org.apache.fop.area.inline.InlineArea)) return;
+			org.apache.fop.area.inline.InlineArea old = (org.apache.fop.area.inline.InlineArea) area;
+			int thickness = fobj.getRuleThickness().getValue(lm);
+			org.apache.fop.area.inline.InlineArea fresh = kind == LEADER_RULE
+					? ruleArea(fobj, thickness, old.getBidiLevel())
+					: dotsArea(lm, fobj, thickness, old.getBidiLevel());
+			if (fresh == null) return;
+			LNLM_CUR_AREA.set(lm, fresh);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static org.apache.fop.area.inline.InlineArea ruleArea(org.apache.fop.fo.flow.Leader fobj,
+			int thickness, int level) {
+		if (fobj.getRuleStyle() == org.apache.fop.fo.Constants.EN_NONE) return null;
+		org.apache.fop.area.inline.Leader rule = new org.apache.fop.area.inline.Leader();
+		rule.setRuleStyle(fobj.getRuleStyle());
+		rule.setRuleThickness(thickness);
+		rule.setBPD(thickness);
+		rule.addTrait(org.apache.fop.area.Trait.COLOR, fobj.getColor());
+		if (level >= 0) rule.setBidiLevel(level);
+		return rule;
+	}
+
+	private static org.apache.fop.area.inline.InlineArea dotsArea(org.apache.fop.layoutmgr.LayoutManager lm,
+			org.apache.fop.fo.flow.Leader fobj, int thickness, int level) {
+		org.apache.fop.fonts.Font font;
+		try {
+			font = (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+		if (font == null) return null;
+		int width = font.getCharWidth('.');
+		if (width <= 0) return null;
+		org.apache.fop.area.inline.TextArea dot = new org.apache.fop.area.inline.TextArea();
+		int[] levels = (level < 0) ? null : new int[] { level };
+		dot.addWord(".", width, null, levels, null, 0);
+		dot.setIPD(width);
+		dot.setBPD(width);
+		// FOP would put the dot's baseline at its own height; this area hangs on an
+		// alignment context built for the pattern the FO asked for, whose height is the
+		// leader's rule thickness, so the baseline goes there instead
+		dot.setBaselineOffset(thickness);
+		org.apache.fop.layoutmgr.TraitSetter.addFontTraits(dot, font);
+		dot.addTrait(org.apache.fop.area.Trait.COLOR, fobj.getColor());
+		org.apache.fop.area.inline.Space spacer = null;
+		int patternWidth = fobj.getLeaderPatternWidth().getValue(lm);
+		if (patternWidth > width) {
+			spacer = new org.apache.fop.area.inline.Space();
+			spacer.setIPD(patternWidth - width);
+			if (level >= 0) spacer.setBidiLevel(level);
+			width = patternWidth;
+		}
+		org.apache.fop.area.inline.FilledArea filled = new org.apache.fop.area.inline.FilledArea();
+		filled.setUnitWidth(width);
+		filled.addChildArea(dot);
+		if (spacer != null) filled.addChildArea(spacer);
+		filled.setBPD(dot.getBPD());
+		if (level >= 0) filled.setBidiLevel(level);
+		return filled;
+	}
+
 	/** Replace a leader's area with a plain space of the same height: the tab reached
 	 *  a stop with no leader, but the FO could not know which stop that would be. */
 	static void blankLeaderArea(org.apache.fop.layoutmgr.LayoutManager lm) {

@@ -463,8 +463,18 @@ its trailing space hanging past it; **centre** - the text's middle sits on the s
 is right-aligned on it.
 
 Word cannot move backwards: a stop the text has already passed, and a right or centre stop
-whose text does not fit before it, advance nothing. A stop beyond the paragraph's right
-indent is still honoured, and the line runs into the indent rather than wrapping. A line
+whose text does not fit before it, advance nothing. A **left** stop beyond the paragraph's
+right indent is still honoured, and the line runs into the indent rather than wrapping.
+
+<a id="s44clamp"></a>A **centre, right or decimal** stop beyond it is **clamped** instead,
+so that the text it aligns ends on the right indent. Measured on a centred footer whose
+stops are `4252:clear;8504:clear;9355:center` on a 595.35pt page with 56.7pt margins - a
+481.95pt content width, and a centre stop at 467.75pt from the margin, so the centred text
+would end 11.3pt past the content edge: Word draws **one** line filling the width, 56.7 to
+538.6, where the unclamped tab overflowed and wrapped a fragment onto a second line (18
+Word pages against our 20, the footer region 18.4pt tall instead of 9.2). In the line
+manager: `width = min(stop - x - alignedOffset, lineWidth - x - followingWidth)`, and a
+clamped tab does not raise the overhang that lets a line run past the indent. A line
 holding a tab is **sized** from the left indent whatever the paragraph's `w:jc` - the stop
 a tab reaches is the same one it would reach on a left-aligned line - and the line, its
 tabs' widths counted in, is then **aligned as a whole** by the `w:jc`. Measured: six
@@ -488,11 +498,31 @@ docx4j drew every such line flush left before 17.0.6 (`tab-jc` max dx 372.4pt ->
 Three documents of a 40-document corpus slice have a centred or right-aligned paragraph
 containing a tab.
 
-**Leaders.** `w:leader` `dot` and `middleDot` draw dots (FOP repeats the font's own dot, as
-Word does; a dotted rule does not match); `hyphen`, `underscore` and `heavy` draw a rule;
-anything else nothing. Which stop a tab will reach is unknown when the FO is written, so
-the n-th tab of a paragraph takes the leader of the n-th stop, and the line manager blanks
-a leader whose resolved stop has none.
+<a id="s44leader"></a>**Leaders.** `w:leader` `dot` and `middleDot` draw dots (FOP repeats
+the font's own dot, as Word does; a dotted rule does not match); `hyphen`, `underscore` and
+`heavy` draw a rule; anything else nothing. The leader a tab draws is the leader of **the
+stop it reaches**, which is settled at layout time like the width. Until 17.0.6 the n-th
+tab of a paragraph took the leader of the n-th stop, which is right only where the tabs and
+the stops correspond one to one: a table of contents whose stops are
+`360:left;540:left;851:left;9990:right:dot` gives its one-tab entries ("Foreword" then the
+page number) the *first* stop's leader, so Word's dots ran the width of the page and ours
+painted nothing - 150 such lines in one corpus document, and the class covers at least
+seven of 157. The trailing-tab shape (`…<w:tab/><w:t/><w:tab/>`) is the same defect from
+the other end: the tab that reaches the dot stop is the first of the two.
+
+Since the FO cannot know which stop a tab will reach, it asks FOP for the **paragraph's**
+leader - the first of its stops that draws one - and the line manager settles each tab
+against the stop it resolved: it keeps that area, blanks it where the stop has no leader,
+or, in the rare paragraph mixing dot and rule stops, builds the other kind
+(`LBP.setLeaderPattern`). `docx4j:tabs` on the block, which carries every stop's leader, is
+the single source of truth.
+
+**Where the dots start** is FOP's business and not Word's: Word's dots sit on a fixed grid
+(measured: the last dot of every line of one document's TOC is at x=524.35, and the runs
+are whole multiples of the 2.881pt period), while FOP begins each leader's dots at the
+leader's own left edge. `leader-alignment="reference-area"` is what XSL FO offers for it and
+docx4j now writes it, but FOP 2.11 reads that property in its RTF renderer alone, so it is
+inert in PDF output. Sub-dot-width phase, no effect on where anything else falls.
 
 **A leading tab** - one before any visible content on the line - is instead an `fo:leader`
 of fixed length to the next stop, computed at FO-generation time, so code blocks and
@@ -501,8 +531,34 @@ hanging first lines indent as Word indents them. A fixed-length leader does not 
 
 **Table-of-contents entries** (first stop right-aligned with a dot leader) keep the
 stretching leader and `text-align-last="justify"` they have always had: their stop is the
-right margin, and only a stretching leader can absorb the width an unresolved
-`fo:page-number-citation` loses when it resolves. See §10 for the limitation this leaves.
+right margin, and a stretching leader absorbs the width an unresolved
+`fo:page-number-citation` loses when it resolves.
+
+<a id="s44pageref"></a>**A page number is put on its stop, whatever FOP measured it as.**
+Every other right, centre or decimal stop whose text holds a page reference used to land
+short, because FOP measures an unresolved `fo:page-number-citation` as the placeholder
+`MMM` (`AbstractPageNumberCitationLayoutManager`, fop-core 2.6 to 2.11) and the line
+manager subtracted that width from the tab. Measured against Word's PDF of a 311-page
+document (stops `1320:left;9350:right:dot`, DejaVu Sans 8pt): Word puts the number's right
+edge on the stop, 539.74pt, on every line, where ours ended 529.0 - 10.7pt short, which is
+`MMM` 20.71pt against "61" 10.18pt; another document was 25pt short on 53 lines, and 37 of
+the 236 corpus documents with placed tabs have the shape. Word's rule is that the width a
+page number gives up when it resolves belongs to **the tab**, not to the line's right end,
+so the line manager pairs such a tab with the number that follows it and widens the tab by
+exactly what the number loses when FOP resolves it (`TabPageNumberWidth`, a `Resolvable`
+registered beside FOP's own; the tab's notification also puts back what the number's took
+off the line). FOP's own redistribution could not do it: it applies a variation factor to a
+justified line's stretchable areas, and a tab of a settled width on a start-aligned line has
+neither.
+
+**A page reference whose bookmark is gone keeps its cached result.** Word paints the result
+it cached for a field whose target has been deleted - which editing leaves behind
+routinely: one corpus document emits 150 `PAGEREF` fields and holds not one of the
+bookmarks they name. An `fo:page-number-citation` whose `ref-id` is never emitted is
+painted as **nothing at all** by FOP, so all 150 numbers vanished (and the entries' dots
+with them, since the line ended early). Both pathways now check the document for the
+bookmark first (`AbstractWmlConversionContext.hasBookmark`) and keep the field's cached
+runs where it is absent, which is also what HTML output wanted: the link had nowhere to go.
 
 A right `w:ptab` is resolved as a right tab stop at the end of the line, by the same line
 manager. With `wordLayout=false` no stops are written, and a mid-line tab keeps the
@@ -1503,6 +1559,9 @@ Worked around here, and worth knowing about:
   Arabic and Indic shaping as well. Hence the `+noliga` declaration (§5.5).
 - **`ToUnicode` maps one character per CID**, so a ligature glyph with no cmap entry cannot
   be mapped back to the characters it stands for.
+- **`leader-alignment` is ignored** outside the RTF renderer, so a dot leader's dots start
+  at the leader's own left edge rather than on a grid shared by the lines of a block, as
+  Word's do ([§4.4](#s44leader)). Sub-dot-width, and nothing else moves with them.
 
 Limitations that remain in docx4j's output:
 
@@ -1520,10 +1579,12 @@ Limitations that remain in docx4j's output:
   comes from - measured cases include a table-of-contents line 26pt short of Word's, an
   after-tab fragment laid out on a line of its own, and a line running past the page edge -
   and no rule has been derived for them yet.
-- **Page references in tabbed text**: FOP measures a line containing an unresolved
-  `fo:page-number-citation` with an `MMM` placeholder, so a right, centre or decimal stop
-  whose text holds a page reference lands a few points off. Table-of-contents entries are
-  unaffected, because their stretching leader absorbs the difference (§4.4).
+- **Page references in tabbed text**: FOP measures an unresolved
+  `fo:page-number-citation` as an `MMM` placeholder, and its own redistribution can give
+  the difference back only on a justified line. Worked around since 17.0.6 by moving the
+  width to the tab when the citation resolves ([§4.4](#s44pageref)); upstream report
+  candidate (the placeholder is a fixed private constant, and `resolveIDRef` notifies the
+  line but nothing that could re-place the text).
 - **Widow control across a `w:br`**: a `w:br` is a nested block, which ends FOP's line
   sequence, so a paragraph without `w:keepLines` can still be split there where Word's
   widow control would not ([§3](#s39)).
