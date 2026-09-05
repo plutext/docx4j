@@ -30,6 +30,7 @@ import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.CTTblLayoutType;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.R;
 import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STTblLayoutType;
@@ -55,11 +56,10 @@ import org.slf4j.LoggerFactory;
  * whose columns are 157 and 318pt with a 24pt gap came out as two 237.5pt columns, so
  * every line of the second column started 80pt left of Word's and broke differently.  A
  * one-row {@code fo:table} gets the widths and the gaps exactly right; what it cannot do
- * is let the content flow from one column into the next, so the transformation is only
- * made where the document itself says where the columns divide - a {@code w:br
- * w:type="column"} for each boundary. That is how Word's own documents are written
- * (thirteen of the eighteen unequal-column documents across the two corpora carry exactly
- * one column break per two-column stretch); the rest are left as equal columns.</p>
+ * is let the content flow from one column into the next, so it is divided where the
+ * document itself says - a {@code w:br w:type="column"} for each boundary, which is how
+ * most such documents are written - and where it does not say, by the estimate
+ * {@link Balance} makes of where Word's own balancing would divide it.</p>
  *
  * <p>The table takes no borders, no cell margins and no indent, so the only geometry it
  * adds is the columns themselves: a spacer column carries each {@code w:col/@w:space}.</p>
@@ -91,6 +91,7 @@ class UnequalColumns {
 		int[] widths = columns[0], spaces = columns[1];
 
 		List<List<Object>> groups = split(content, widths.length);
+		if (groups == null) groups = Balance.split(content, widths, sectPr);
 		if (groups == null) return null;
 
 		Tbl tbl = F.createTbl();
@@ -167,15 +168,47 @@ class UnequalColumns {
 			P after = XmlUtils.deepCopy(p);
 			truncateAtColumnBreak(before, true);
 			truncateAtColumnBreak(after, false);
+			// it is one paragraph, and its space-after goes with the half that ends it:
+			// measured on the columns-unequal probe, where the break ends the paragraph,
+			// Word starts the next section 13.9pt below the last line of column one, ie
+			// the line height alone, the paragraph's 6pt space-after having gone with its
+			// mark into column two.  Its space-before is left on both halves, which is
+			// where Word puts it: taking it off the second half cost four corpus
+			// documents 2 to 6 points of line parity each.
+			dropSpacing(before, false);
+
 			if (rendersSomething(before)) current.add(before);
 			groups.add(current);
 			current = new ArrayList<Object>();
-			if (rendersSomething(after)) current.add(after);
+			// what follows the break opens the next column even when it is nothing but the
+			// paragraph mark: the mark takes a line there, and the paragraph's space-after
+			// with it.  Measured on the columns-unequal probe, where the break ends its
+			// paragraph: Word starts column 2 at y=183.4, 19.4pt below column 1's 164.0,
+			// ie one 13.8pt line plus the paragraph's 6pt space-after.
+			current.add(after);
 		}
 		groups.add(current);
 		if (groups.size() != columns) return null;
 		for (List<Object> group : groups) if (group.isEmpty()) return null;
 		return groups;
+	}
+
+	/** Sets the paragraph's space-before or space-after to zero, which a half of a divided
+	 *  paragraph takes where the whole paragraph's does not belong to it.  Zero rather than
+	 *  removed: removed, the style's own spacing (10pt in Word's default style) applies. */
+	static void dropSpacing(P p, boolean before) {
+		if (p.getPPr() == null) p.setPPr(F.createPPr());
+		if (p.getPPr().getSpacing() == null) p.getPPr().setSpacing(F.createPPrBaseSpacing());
+		PPrBase.Spacing spacing = p.getPPr().getSpacing();
+		if (before) {
+			spacing.setBefore(BigInteger.ZERO);
+			spacing.setBeforeLines(null);
+			spacing.setBeforeAutospacing(Boolean.FALSE);
+		} else {
+			spacing.setAfter(BigInteger.ZERO);
+			spacing.setAfterLines(null);
+			spacing.setAfterAutospacing(Boolean.FALSE);
+		}
 	}
 
 	private static int columnBreaks(P p) {

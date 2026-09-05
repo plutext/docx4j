@@ -50,6 +50,19 @@ docx4j.convert.out.fo.tables.position=false for the old behaviour
 - a section whose w:cols declares columns of different widths (w:equalWidth="0") is now
 rendered as a one-row table whose cells are the columns, divided where the document's
 w:br w:type="column" divides them; XSL FO's own columns are all the same width
+- a floating table anchored to the text (w:tblpPr with the default w:vertAnchor="text") now
+floats, with the text running beside it as it does in Word, w:leftFromText/w:rightFromText
+away; one too wide for text to fit beside it, or in a multi-column section, stays in the
+flow.  Set docx4j.convert.out.fo.tables.float=false for the old behaviour
+- a page- or margin-anchored floating table which opens a page, and is narrow enough for
+text to fit beside it, is now positioned at its anchor as one which opens a section is: Word
+puts the text that fits above the frame at the top of the page, not below the table
+- an empty paragraph carrying a hard page break before an out-of-flow object - a floating
+table or a picture Word positions itself - no longer takes a line at the top of the new page
+- unequal columns which the document does not divide with a w:br w:type="column" are now
+divided by estimated line count, as Word balances them, rather than falling back to XSL FO's
+equal columns; and the half of a divided paragraph which opens the next column now takes the
+line Word gives it even when the break ends the paragraph
 - a merged run of continuous sections whose page margins differ now builds its page masters
 on the part whose columns need the widest text column, and a negative end-indent on a table
 no longer widens every paragraph in its cells past the cell's edge

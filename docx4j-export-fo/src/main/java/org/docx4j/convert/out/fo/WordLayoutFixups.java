@@ -522,8 +522,20 @@ public final class WordLayoutFixups {
 	/** With {@link #HINT_TBLP_FRAME}: before, center or after. @since 17.0.6 */
 	public static final String HINT_TBLP_ALIGN = "docx4j-tblp-align";
 
+	/** On an fo:table: "left" or "right", the edge a text-anchored floating table floats
+	 *  to (TableWriter.floatBesideText).  @since 17.0.6 */
+	public static final String HINT_TBLP_FLOAT = "docx4j-tblp-float";
+	/** With {@link #HINT_TBLP_FLOAT}: the float holder's padding, left right top, which
+	 *  is what puts the table where Word puts it.  @since 17.0.6 */
+	public static final String HINT_TBLP_PAD = "docx4j-tblp-pad";
+
+	/** On an fo:table: "true" where text could fit beside the table in its column, which
+	 *  is the case in which Word's wrapping is worth reproducing.  @since 17.0.6 */
+	public static final String HINT_TBLP_NARROW = "docx4j-tblp-narrow";
+
 	private static final String[] TBLP_HINTS = { HINT_TBLP_LEFT, HINT_TBLP_TOP,
-			HINT_TBLP_FRAME, HINT_TBLP_ALIGN };
+			HINT_TBLP_FRAME, HINT_TBLP_ALIGN, HINT_TBLP_FLOAT, HINT_TBLP_PAD,
+			HINT_TBLP_NARROW };
 
 	/**
 	 * Word positions an anchored picture (wp:anchor) relative to its paragraph,
@@ -665,21 +677,113 @@ public final class WordLayoutFixups {
 		for (Element tbl : elements(doc, "table")) {
 			boolean positioned = tbl.hasAttribute(HINT_TBLP_LEFT)
 					&& (tbl.hasAttribute(HINT_TBLP_TOP) || tbl.hasAttribute(HINT_TBLP_FRAME));
-			if (positioned) {
-				try {
+			try {
+				if (positioned) {
 					anchorFloatingTable(doc, tbl);
-				} catch (RuntimeException e) {
-					log.warn("Floating table left in the flow: " + e.getMessage(), e);
+				} else if (tbl.hasAttribute(HINT_TBLP_FLOAT)) {
+					floatFloatingTable(doc, tbl);
 				}
+			} catch (RuntimeException e) {
+				log.warn("Floating table left in the flow: " + e.getMessage(), e);
 			}
 			for (String hint : TBLP_HINTS) tbl.removeAttribute(hint);
 		}
 	}
 
+	/**
+	 * A text-anchored floating table (the default {@code w:vertAnchor="text"}), which Word
+	 * puts beside the text of the paragraph it is anchored to - the paragraph the w:tbl
+	 * precedes: an fo:float inside that paragraph, holding a one-row table whose columns
+	 * are the gap to the text, the table, and what is left of the column
+	 * ({@link org.docx4j.convert.out.fo.TableWriter} measured them from {@code w:tblpX},
+	 * {@code w:leftFromText} and {@code w:rightFromText}; {@code w:tblpY} is padding above
+	 * the table).
+	 *
+	 * <p>The table's own indents are reset, since the one-row table carries the position.
+	 * A float only lays out in the main flow, so a table in a cell, a header, a footer or
+	 * a footnote is left where it is.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static void floatFloatingTable(Document doc, Element tbl) {
+		Node parent = tbl.getParentNode();
+		if (!(parent instanceof Element) || !isFo((Element) parent, "flow")) return;
+		// {@link #hoistFloats} would move this float to flow level, where FOP renders a
+		// float holding a table as nothing at all (measured), losing the table; and left
+		// where it is, the combination throws.  So the table stays in the flow instead.
+		if (blockInsideInlineAfter(doc, tbl)) {
+			log.debug("Floating table left in the flow: a line break inside a run follows it");
+			return;
+		}
+
+		String[] pad = tbl.getAttribute(HINT_TBLP_PAD).trim().split("\\s+");
+		if (pad.length < 3) return;
+		double padLeft = lengthPt(pad[0]), padRight = lengthPt(pad[1]), padTop = lengthPt(pad[2]);
+		double width = tableWidthPt(tbl);
+		if (width <= 0) return;
+
+		Element wrapper = doc.createElementNS(FO_NS, "fo:float");
+		wrapper.setAttribute("float", tbl.getAttribute(HINT_TBLP_FLOAT));
+		Element holder = doc.createElementNS(FO_NS, "fo:block");
+		holder.setAttribute("start-indent", "0pt");
+		holder.setAttribute("end-indent", "0pt");
+		if (padTop > 0) holder.setAttribute("padding-top", pt(padTop));
+		wrapper.appendChild(holder);
+
+		// FOP gives the float area the ipd of its content and ignores the padding of the
+		// block in it (measured: a right float's padding-right does not move the table,
+		// and its padding-left pushes it past the margin), so the gaps are columns of a
+		// one-row table which holds the table itself: that reserves exactly the band Word
+		// keeps clear, and puts the table at w:tblpX within it.
+		Element outer = doc.createElementNS(FO_NS, "fo:table");
+		outer.setAttribute("table-layout", "fixed");
+		outer.setAttribute("width", pt(padLeft + width + padRight));
+		outer.setAttribute("start-indent", "0pt");
+		outer.setAttribute("end-indent", "0pt");
+		Element body = doc.createElementNS(FO_NS, "fo:table-body");
+		Element row = doc.createElementNS(FO_NS, "fo:table-row");
+		holder.appendChild(outer);
+		double[] widths = { padLeft, width, padRight };
+		for (int i = 0; i < widths.length; i++) {
+			if (widths[i] <= 0) continue;
+			Element col = doc.createElementNS(FO_NS, "fo:table-column");
+			col.setAttribute("column-width", pt(widths[i]));
+			outer.appendChild(col);
+			Element cell = doc.createElementNS(FO_NS, "fo:table-cell");
+			row.appendChild(cell);
+			if (i != 1) {
+				Element blank = doc.createElementNS(FO_NS, "fo:block");
+				blank.setAttribute("font-size", "0.1pt");
+				blank.setAttribute("line-height", "0pt");
+				cell.appendChild(blank);
+			}
+		}
+		outer.appendChild(body);
+		body.appendChild(row);
+
+		// FOP anchors a side float to a line, and drops one which has no line to anchor
+		// to (measured: a float holding the table as a direct child of the flow rendered
+		// nothing at all), so it goes inside the paragraph the table is anchored to - the
+		// one it precedes, which is the paragraph Word measures w:tblpY from.
+		Element anchor = null;
+		for (Node n = tbl.getNextSibling(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			if (isFo((Element) n, "block")) anchor = (Element) n;
+			break;
+		}
+		if (anchor == null) return;
+
+		parent.removeChild(tbl);
+		tbl.setAttribute("start-indent", "0pt");
+		tbl.setAttribute("end-indent", "0pt");
+		cellFor(row, padLeft > 0 ? 1 : 0).appendChild(tbl);
+		anchor.insertBefore(wrapper, anchor.getFirstChild());
+	}
+
 	private static void anchorFloatingTable(Document doc, Element tbl) {
 		Node parent = tbl.getParentNode();
 		if (!(parent instanceof Element) || !isFo((Element) parent, "flow")) return;
-		if (!opensTheFlow((Element) parent, tbl)) return;
+		if (!opensThePage(tbl)) return;
 
 		double left = lengthPt(tbl.getAttribute(HINT_TBLP_LEFT));
 		double width = tableWidthPt(tbl);
@@ -709,6 +813,10 @@ public final class WordLayoutFixups {
 		wrapper.setAttribute("overflow", "visible");
 		wrapper.setAttribute("start-indent", "0pt");
 		wrapper.setAttribute("end-indent", "0pt");
+		if (tbl.hasAttribute("break-before")) { // the wrapper is in the flow, the table is not
+			wrapper.setAttribute("break-before", tbl.getAttribute("break-before"));
+			tbl.removeAttribute("break-before");
+		}
 		wrapper.appendChild(abs);
 
 		parent.insertBefore(wrapper, tbl);
@@ -718,15 +826,59 @@ public final class WordLayoutFixups {
 		abs.appendChild(tbl);
 	}
 
-	/** Whether nothing but empty paragraphs precedes this table in the flow. */
-	private static boolean opensTheFlow(Element flow, Element tbl) {
-		for (Node n = flow.getFirstChild(); n != null; n = n.getNextSibling()) {
+	/**
+	 * Whether this table is the first thing on its page: nothing but empty paragraphs and
+	 * tables already taken out of the flow precedes it, back to a forced page break or to
+	 * the start of the flow.
+	 *
+	 * <p>Word positions every page- or margin-anchored table at its anchor whatever
+	 * precedes it, and flows the text around it - measured on the table-floating-anchor
+	 * probe, where each such table follows a page break and Word puts the following
+	 * paragraph at the top of the page (y=83.1) with the table below it (168.3 for
+	 * {@code tblpY=3136}), while docx4j left the table in the flow at 108.9 and the
+	 * paragraph under it at 192.4.  What cannot be reproduced is the wrapping: nothing
+	 * flows beside an absolutely positioned container, so where the flow needs the band
+	 * the table is drawn in, the two are drawn on top of each other.</p>
+	 *
+	 * <p>Hence the two cases in which the table is taken out of the flow: one which
+	 * <b>opens its section</b> (the cover page, the letterhead), where the flow has
+	 * nothing before it and Word starts the page with the frame in any case; and one
+	 * which <b>opens a page</b> and is narrow enough for text to fit beside it, where
+	 * Word puts the text that fits above the frame at the top of the page, as the flow
+	 * does.  A full-width table which opens a page stays in the flow: Word can only put
+	 * the following content below it, which is what the flow does anyway - measured on a
+	 * corpus letter whose page-anchored full-width table ({@code tblpY=1891}, 97% of the
+	 * column) has Word's next table below it at y=257.6, where positioning ours drew the
+	 * two on top of each other and cost 0.08 of line parity.</p>
+	 */
+	private static boolean opensThePage(Element tbl) {
+		boolean narrow = "true".equals(tbl.getAttribute(HINT_TBLP_NARROW));
+		if ("page".equals(tbl.getAttribute("break-before"))) return narrow;
+		for (Node n = tbl.getPreviousSibling(); n != null; n = n.getPreviousSibling()) {
 			if (!(n instanceof Element)) continue;
-			if (n == tbl) return true;
 			Element el = (Element) n;
+			if (takesNoSpace(el)) continue;
 			if (!isFo(el, "block") || !blankBlock(el)) return false;
+			if ("page".equals(el.getAttribute("break-before"))
+					|| "page".equals(el.getAttribute("break-after"))) {
+				return narrow;
+			}
 		}
-		return false;
+		return true; // it opens the section: the cover page, the letterhead
+	}
+
+	/** A container holding nothing but an absolutely positioned one: a floating table or
+	 *  a picture already taken out of the flow, which the page's own layout ignores. */
+	private static boolean takesNoSpace(Element el) {
+		if (!isFo(el, "block-container")) return false;
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			if (!isFo((Element) n, "block-container")
+					|| !((Element) n).hasAttribute("absolute-position")) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** A block with nothing on its lines: an empty paragraph (which already carries the
@@ -737,6 +889,35 @@ public final class WordLayoutFixups {
 		}
 		String text = el.getTextContent();
 		return text == null || text.trim().length() == 0;
+	}
+
+	/**
+	 * Whether an fo:block inside an fo:inline - how the visitor pathway emits a line break
+	 * inside a run - comes after this element in document order.  That is the other half
+	 * of the FOP float defect {@link #hoistFloats} works around.
+	 */
+	private static boolean blockInsideInlineAfter(Document doc, Element el) {
+		return blockInsideInlineAfter(doc.getDocumentElement(), el, new boolean[1]);
+	}
+
+	private static boolean blockInsideInlineAfter(Element at, Element after, boolean[] seen) {
+		if (at == after) seen[0] = true;
+		else if (seen[0] && isFo(at, "block")) {
+			Node parent = at.getParentNode();
+			if (parent instanceof Element && isFo((Element) parent, "inline")) return true;
+		}
+		for (Node n = at.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && blockInsideInlineAfter((Element) n, after, seen)) return true;
+		}
+		return false;
+	}
+
+	private static Element cellFor(Element row, int index) {
+		int i = 0;
+		for (Node n = row.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && i++ == index) return (Element) n;
+		}
+		throw new IllegalStateException("no cell " + index);
 	}
 
 	/** The table's width: its own attribute, else the sum of its columns'. */
@@ -1599,7 +1780,15 @@ public final class WordLayoutFixups {
 		}
 		for (Element empty : empties) {
 			Element next = nextElementSibling(empty);
-			if (next == null || !isFo(next, "block")) {
+			// a container which takes no space - a floating table or a picture already
+			// positioned out of the flow - takes the break as a block does: that is what
+			// the page of a page-anchored floating table begins with, and leaving the
+			// empty block there cost a line at the top of it (measured on the
+			// table-floating-anchor probe: Word's first paragraph at y=83.1, docx4j's at
+			// 108.6).  Not a table: measured on a corpus document whose page break is
+			// followed by one, Word keeps that line, and dropping it lost a page.
+			// @since 17.0.6
+			if (next == null || !(isFo(next, "block") || takesNoSpace(next))) {
 				continue; // last thing in the flow: the break has nothing to move to; keep it
 			}
 			if (!next.hasAttribute("break-before") || "auto".equals(next.getAttribute("break-before"))) {

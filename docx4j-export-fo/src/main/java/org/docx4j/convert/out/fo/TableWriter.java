@@ -244,6 +244,20 @@ public class TableWriter extends AbstractTableWriter {
 				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.tables.position", true);
 	}
 
+	/** docx4j.convert.out.fo.tables.float (default true): whether a text-anchored floating
+	 *  table becomes an fo:float with the text flowing beside it.  @since 17.0.6 */
+	static boolean floatingTablesWrap() {
+		return org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.tables.float", true);
+	}
+
+	/** A table taking more than this share of the text column has no room for text beside
+	 *  it, so it is left in the flow (where the text follows it, which is where Word's
+	 *  wrapping puts it too).  Measured: a CV built out of twelve text-anchored tables,
+	 *  one of which takes 73% of the column, has Word putting the next table below it,
+	 *  never beside it - FOP will fit whatever it can in the rest of the band, which cost
+	 *  that document a page and 0.03 of line parity. */
+	private static final double FLOAT_MAX_SHARE = 0.6;
+
 	/**
 	 * A floating table (w:tblPr/w:tblpPr), as Word places it.
 	 *
@@ -324,7 +338,16 @@ public class TableWriter extends AbstractTableWriter {
 				&& (vertPage || org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor()))) {
 			topTwips = (vertPage ? 0 : marginTop) + tblpPr.getTblpY().intValue();
 		}
-		if (topTwips == null && frame == null) return indent; // stays in the flow
+		if (topTwips == null && frame == null) {
+			// text-anchored: an fo:float at the anchor paragraph, text beside it
+			return floatBesideText(dims, tblpPr, tableRoot, indent, width);
+		}
+		if (width > 0 && dims.getWritableWidthTwips() > 0
+				&& width <= FLOAT_MAX_SHARE * dims.getWritableWidthTwips()) {
+			// text can fit beside it, which is what decides whether Word's wrapping is
+			// worth reproducing where the table is mid-document (WordLayoutFixups)
+			tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_NARROW, "true");
+		}
 
 		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_LEFT,
 				UnitsOfMeasurement.twipToBest(marginLeft + indent));
@@ -337,6 +360,70 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		// the start-indent stands: the fixups zero it only where they do position the
 		// table (which they decline to do for a table with text before it)
+		return indent;
+	}
+
+	/**
+	 * A table anchored to the text (the default {@code w:vertAnchor="text"}, which is what
+	 * 69 of the 74 {@code w:tblpPr} of the corpora say) sits beside the text: Word puts it
+	 * {@code w:tblpY} below the top of the paragraph it is anchored to - the paragraph the
+	 * {@code w:tbl} precedes - and flows that paragraph's text past it, narrowing only the
+	 * lines the table's own band covers.
+	 *
+	 * <p>Measured on the table-floating probe (a 200pt table, {@code horzAnchor="margin"
+	 * tblpX=4500 tblpY=1440}, in a 451.3pt column): Word's anchor paragraph starts at
+	 * y=111.7 and the table's top edge is at 183.7 = 111.7 + 72, its first cell text at
+	 * y=195.3 x=302.7 = 72 + 225 + 5.4; the anchor paragraph's own five lines run the full
+	 * width above the table and the next paragraph's lines stop at 285.8, ie one
+	 * {@code w:leftFromText} (9pt) short of the table.  docx4j laid the table out in the
+	 * flow, which took the whole column width and pushed everything after it 102pt down
+	 * the page.</p>
+	 *
+	 * <p>The FO is an {@code fo:float} at that point in the flow, at the edge the table is
+	 * nearer, padded so the table sits where Word puts it and {@code w:leftFromText} /
+	 * {@code w:rightFromText} away from the text ({@link WordLayoutFixups#anchorFloatingTables}
+	 * builds it, the same machinery as an anchored picture, &#xa7;9.1).  FOP's floats are
+	 * single-sided, so the text runs down one side only, where Word would run it down
+	 * both; and a float begins at the line it is anchored at, so {@code tblpY} is padding
+	 * above the table rather than a band the text flows past, which narrows the lines
+	 * beside the padding too.</p>
+	 *
+	 * <p>Left in the flow, where the text follows the table instead of running beside it:
+	 * a table which fills more than {@value #FLOAT_MAX_SHARE} of the column (nothing fits
+	 * beside it, which is what Word's wrapping comes to as well), one whose horizontal
+	 * position falls outside the text column (a page-anchored table in the margin), and a
+	 * table in a section of more than one column, since FOP drops a float from a
+	 * multi-column region silently.</p>
+	 *
+	 * @return the start-indent to use
+	 * @since 17.0.6
+	 */
+	private int floatBesideText(org.docx4j.model.structure.PageDimensions dims,
+			org.docx4j.wml.CTTblPPr tblpPr, Element tableRoot, int indent, int width) {
+
+		if (!floatingTablesWrap()) return indent;
+		int column = dims.getWritableWidthTwips();
+		if (width <= 0 || column <= 0) return indent;
+		if (dims.getColsNum() > 1) return indent;
+		if (width > FLOAT_MAX_SHARE * column) return indent;
+		if (indent < 0 || indent + width > column) return indent;
+
+		int leftFromText = intValue(tblpPr.getLeftFromText(), 0);
+		int rightFromText = intValue(tblpPr.getRightFromText(), 0);
+		boolean right = indent + width / 2.0 > column / 2.0;
+		int padLeft = right ? leftFromText : indent;
+		int padRight = right ? column - indent - width : rightFromText;
+		int padTop = 0;
+		if (tblpPr.getTblpY() != null && !org.docx4j.wml.STVAnchor.PAGE.equals(tblpPr.getVertAnchor())
+				&& !org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor())) {
+			padTop = Math.max(0, tblpPr.getTblpY().intValue());
+		}
+		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_FLOAT, right ? "right" : "left");
+		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_PAD,
+				UnitsOfMeasurement.twipToBest(Math.max(0, padLeft)) + " "
+				+ UnitsOfMeasurement.twipToBest(Math.max(0, padRight)) + " "
+				+ UnitsOfMeasurement.twipToBest(padTop));
+		// the start-indent stands: the fixups zero it only where they do build the float
 		return indent;
 	}
 

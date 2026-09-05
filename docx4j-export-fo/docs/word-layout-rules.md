@@ -34,7 +34,7 @@ line-break parity, page-break parity, baseline deltas and x deltas are reported,
 rasterised overlay per page.
 
 The harness is `docx4j-layout-fidelity` (in the repository, not in the reactor, not
-deployed; see its README). 43 probes have Word goldens:
+deployed; see its README). 45 probes have Word goldens:
 
 `spacing-adjacent`, `spacing-contextual`, `spacing-autospacing`,
 `spacing-autospacing-context`, `spacing-page-top`, `spacing-section-start`,
@@ -46,13 +46,8 @@ deployed; see its README). 43 probes have Word goldens:
 `table-fixed`, `table-autofit`, `table-width`, `table-span`, `table-nested`,
 `table-floating`, `table-cellspacing`, `table-rowheight`, `table-indent-compat14`,
 `table-indent-compat15`, `hyphenation`, `hyphenation-zone`, `tab-jc`, `pbdr-space`,
-`table-grid-edge-compat14`, `table-grid-edge-compat15`, `table-autofit-wrap`.
-
-Two more probes are in the corpus awaiting their first Word run: `table-floating-anchor`
-(a floating table anchored to the page and to the margin box, by `tblpX`/`tblpY` and by
-`tblpXSpec`/`tblpYSpec`, each with text after it, §6.8) and `columns-unequal` (unequal
-`w:cols` with and without a `w:br w:type="column"`, between continuous sections whose
-`w:pgMar` differ by 100pt, §7).
+`table-grid-edge-compat14`, `table-grid-edge-compat15`, `table-autofit-wrap`,
+`table-floating-anchor`, `columns-unequal`.
 
 A rule a probe could not settle on its own was checked against a corpus of 194 real
 documents scored against Word's own PDFs of them, so a change is accepted only when the
@@ -260,7 +255,12 @@ before gets no gap.
 
 <a id="s33"></a>**Hard page breaks.** A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there **from
-compatibility mode 15**, and kept below mode 15.
+compatibility mode 15**, and kept below mode 15. The break moves to the next paragraph, or
+to the next container which takes no space (a floating table or a picture already positioned
+out of the flow, §6.8 and §9.1) - measured on `table-floating-anchor`, where the page of a
+page-anchored table began with an empty line docx4j put 25.5pt above Word's first paragraph.
+It does not move to a **table**: measured on a corpus document whose hard break is followed
+by one, Word keeps that line, and dropping it lost a page of the nineteen.
 
 **A page break inside a table** belongs to the table, not to the paragraph: Word takes a
 `w:pageBreakBefore` on the paragraph which opens the table, and ignores one anywhere else in
@@ -967,32 +967,71 @@ margins): Word's first cell text is at 77.8 = (594 - 450.05)/2 + 5.4. This appli
 floating table, whether or not it is taken out of the flow; before 17.0.6 the probe's table
 sat at the margin, 225pt left of Word's.
 
-**Vertically** only a position Word measures from the page (`vertAnchor="page"`) or from
-the margin box (`vertAnchor="margin"`, or any `tblpYSpec`) is reproduced, and only for a
-table that **opens its section's flow** - the cover page and the letterhead. Such a table
-goes into an absolutely positioned `fo:block-container` (the anchored-picture machinery,
-§9.1) and takes no space in the flow. `tblpY` is measured to the table's top edge:
-measured, a table with `vertAnchor="page" tblpY=3136` (156.8pt) has Word's first cell line
-at y=167.6. Where the docx states a `tblpYSpec` the table's height is not known before
-layout, so the container is the whole frame with `display-align` on it: measured, a cover
-table with `tblpYSpec="bottom"` and no `w:vertAnchor` on an A4 page with a 70.9pt bottom
-margin has its last line at y=765.4, i.e. its bottom edge on the **bottom margin**, so the
-frame for a `tblpYSpec` without `vertAnchor="page"` is the margin box.
+**Vertically** Word measures the position from the page (`vertAnchor="page"`), from the
+margin box (`vertAnchor="margin"`, or any `tblpYSpec`) or - the default, and 136 of the 152
+`w:tblpPr` of the corpora - from the paragraph the table is anchored to
+(`vertAnchor="text"`), which is the paragraph the `w:tbl` precedes. The three are
+reproduced differently.
 
-`w:tblpY` against the default `vertAnchor="text"` is an offset from the paragraph the table
-is anchored to, and leaves the table in the flow. So does a page-anchored table with text
-before it: Word wraps that text around the table, which where the table fills the column
-means below it, and XSL-FO can express neither the wrap nor a reservation of a height it
-does not know. Measured on two corpus documents whose page-anchored table sits mid-flow -
-Word puts the table at its `tblpY` (y=94.6, first line 111.1) and the next table below it
-(y=257.6); positioning ours and closing the flow over it drew the two on top of each other
-and cost both documents about 0.09 of line parity. A positioned table keeps its columns,
-cell margins and borders; its own `start-indent` is reset, because the container carries
-the position. `docx4j.convert.out.fo.tables.position=false` lays every table out in the
-flow, as 17.0.5 did.
+**Anchored to the text**: an `fo:float` at that paragraph, at the edge of the column the
+table is nearer, with the text flowing past it. Measured on `table-floating` (a 200pt table
+at `horzAnchor="margin" tblpX=4500 tblpY=1440` in a 451.3pt column): Word's anchor paragraph
+begins at y=111.7 and the table's top edge is at 183.7 = 111.7 + 72 (`tblpY`), its first
+cell text at 302.7; that paragraph's own lines run the full width above the table and the
+next paragraph's stop at 285.8, one `w:leftFromText` (9pt) short of it. docx4j laid the
+table out in the flow, taking the whole column width and pushing everything after it 102pt
+down the page.
 
-`leftFromText` / `rightFromText` / `topFromText` / `bottomFromText` are the wrap distances,
-and are not used: nothing wraps beside a positioned table (§10).
+FOP gives a float the ipd of its content and ignores the padding of the block inside it -
+measured, a right float's `padding-right` does not move the table and its `padding-left`
+pushes it past the margin - so the float holds a **one-row table whose columns are the gap
+to the text, the table, and what is left of the column**, which reserves exactly the band
+Word keeps clear and puts the table at its `tblpX` within it. FOP anchors a side float to a
+line and drops one which has none, so the float goes inside the anchor paragraph rather than
+at flow level.
+
+Left in the flow, where the text follows the table rather than running beside it: a table
+filling more than 60% of the column (nothing useful fits beside it; measured on a CV built
+out of twelve floating tables, one of them 73% of the column, where Word puts the next table
+below it and FOP fitted it into the rest of the band, costing a page), one whose horizontal
+position falls outside the text column, and one in a section of more than one column, since
+FOP drops a float from a multi-column region silently.
+`docx4j.convert.out.fo.tables.float=false` leaves every one of them in the flow.
+
+**Anchored to the page or the margin box**: an absolutely positioned `fo:block-container`
+(the anchored-picture machinery, §9.1), which takes no space in the flow. `tblpY` is
+measured to the table's top edge: measured, a table with `vertAnchor="page" tblpY=3136`
+(156.8pt) has Word's first cell line at y=167.6. Where the docx states a `tblpYSpec` the
+table's height is not known before layout, so the container is the whole frame with
+`display-align` on it: measured, a cover table with `tblpYSpec="bottom"` and no
+`w:vertAnchor` on an A4 page with a 70.9pt bottom margin has its last line at y=765.4, i.e.
+its bottom edge on the **bottom margin**, so the frame for a `tblpYSpec` without
+`vertAnchor="page"` is the margin box.
+
+Nothing flows beside a positioned container, so where the flow needs the band the table is
+drawn in, the two are drawn on top of each other, and only two shapes are positioned: a
+table which **opens its section's flow** (the cover page, the letterhead), and one which
+**opens a page** - everything before it on the page is empty, back to a hard break - and is
+narrow enough (60% of the column) for text to fit beside it. Measured on
+`table-floating-anchor`, whose page-anchored tables each follow a page break: Word puts the
+paragraph after the table at the top of the page (y=83.1) and the table at its anchor
+(168.3 for `tblpY=3136`, 697.4 for `tblpYSpec="bottom"`, 390.4 for `tblpYSpec="center"` on
+the page), where docx4j left the table in the flow at 108.9 and the paragraph below it at
+192.4. A full-width table which opens a page stays in the flow: measured on a corpus letter
+whose page-anchored table (`tblpY=1891`, 97% of the column) has Word's next table below it
+at y=257.6, positioning ours drew the two on top of each other and cost 0.08 of line parity.
+A page-anchored table **mid-page** stays in the flow for the same reason - measured, Word
+floats a narrow one beside the text (probe page 6: the table at y=225.9 x=368.5, the lines
+beside it stopping at 339.6), which a container cannot do and a float cannot be put at an
+absolute y.
+
+A positioned table keeps its columns, cell margins and borders; its own `start-indent` is
+reset, because the container (or the float's one-row table) carries the position.
+`docx4j.convert.out.fo.tables.position=false` lays every table out in the flow, as 17.0.5
+did.
+
+`leftFromText` and `rightFromText` are the gaps the float leaves; `topFromText` and
+`bottomFromText` are not used, and nothing wraps beside a *positioned* table (§10).
 
 ---
 
@@ -1029,15 +1068,39 @@ rendered as a **one-row `fo:table` whose cells are the columns**, a spacer colum
 each `w:col/@w:space`; the page-sequence is then single-column for that stretch. Measured on
 a certificate whose columns are 157 and 318pt with a 24pt gap: Word's second column starts
 at x=232.2, where equal columns put ours at 312.5 and every line in it broke differently.
-A table cannot flow content from one column into the next, so the rule applies only where
-the document itself says where the columns divide - a `w:br w:type="column"` per boundary
-(thirteen of the eighteen unequal-column documents of the two corpora are written that way;
-the rest keep FOP's equal columns, whose balancing is the better approximation there). Word
-divides the paragraph the break is *in*: what precedes the break ends the column and what
-follows it opens the next - measured on a letterhead whose address block is one paragraph
-with the break in the middle of it, where Word puts the text after the break at the top of
-column 2 (y=79.5, x=397.4). Columns within 5% of each other (4716/4715, 4680/4860 in the
-corpora) are Word's own rounding of equal columns and are left to the region body.
+A table cannot flow content from one column into the next, so where the document itself
+says where the columns divide - a `w:br w:type="column"` per boundary - that is where they
+are divided. Word divides the paragraph the break is *in*: what precedes the break ends the
+column and what follows it opens the next - measured on a letterhead whose address block is
+one paragraph with the break in the middle of it, where Word puts the text after the break
+at the top of column 2 (y=79.5, x=397.4).
+
+The half that opens the next column takes a line **even when the break ends the paragraph
+and nothing is left of it but its mark**, and the paragraph's space-after goes with that
+mark: measured on `columns-unequal`, whose break ends its paragraph, Word starts column 2 at
+y=183.4, 19.4pt below column 1's 164.0 - one 13.4pt line plus the paragraph's 6pt
+space-after - and starts the next section 13.9pt below column 1's last line, i.e. with no
+space-after there at all. The two halves are one paragraph, so its space-after goes with the
+half that ends it, set to zero on the other rather than removed (removed, the style's own
+spacing - 10pt in Word's default style - would apply instead). Its space-before stays on
+both halves, which is where Word puts it: taking it off the second half cost four corpus
+documents 2 to 6 points of line parity each.
+
+**Without a column break** Word balances the columns itself, and the division is estimated:
+each word's advance is taken as half its font size per character, the words are filled
+greedily into each column's measure, and the split is the first word at which column one is
+no shorter than column two - Word gives the odd line to the first column. What the estimate
+has to get right is the *ratio* of the columns' capacities, which is the ratio of their
+measures whatever the per-character figure is. Measured on `columns-unequal`, whose third
+section is one paragraph in columns of 157 and 318pt: Word gives each column eight lines,
+dividing the paragraph inside itself ("... quis nostrud" ends column 1), and so does docx4j,
+one word short of Word's division. A paragraph is divided only where every one of its runs
+is plain text; a stretch holding a table, a break of its own, or more content than fits the
+page is left to the region body, whose balancing can do what a one-row table cannot
+(`Balance.java`). Before 17.0.6 every such section was.
+
+Columns within 5% of each other (4716/4715, 4680/4860 in the corpora) are Word's own
+rounding of equal columns and are left to the region body.
 `org.docx4j.convert.out.common.wrappers.UnequalColumns` builds the table.
 
 <a id="s74"></a>**Margins of merged sections.** A page master can carry only one set of
@@ -1223,6 +1286,12 @@ Worked around here, and worth knowing about:
   child of `fo:flow`, and `WordLayoutFixups` moves it there in a document which has both
   (only then: at flow level the float anchors slightly higher, which measures a little
   further from Word).
+- **A float holding a table renders nothing at flow level**, and a float with no line to
+  anchor to is dropped: a float which is a direct child of `fo:flow` and holds an
+  `fo:table` produces no area at all, silently (measured, same minimal case with a table in
+  the float). So a floating table's float goes inside the paragraph it is anchored to, and
+  a floating table which the defect above would move to flow level is left in the flow
+  instead - losing the wrap rather than the table ([§6.8](#s69)).
 - **A block-container in a multi-column flow** makes FOP throw when it balances the last
   page's columns, which is why merged sections carry their margin differences as indents
   ([§7](#s74)).
@@ -1237,9 +1306,9 @@ Worked around here, and worth knowing about:
 Limitations that remain in docx4j's output:
 
 - **Unequal column widths** are a one-row table ([§7](#s73)), which fixes the widths but
-  cannot flow content from one column into the next: a stretch that does not divide itself
-  with a `w:br w:type="column"` still renders as equal columns, and one that does not fit
-  the page is broken by FOP as a table rather than as columns.
+  cannot flow content from one column into the next: where the document does not divide
+  itself with a `w:br w:type="column"` the division is estimated from the text's width
+  rather than laid out, and a stretch that does not fit the page is left as equal columns.
 - **Text does not flow beside a text box** (§9.2), nor down both sides of a picture in the
   middle of a column (§9.1).
 - **Page references in tabbed text**: FOP measures a line containing an unresolved
@@ -1251,12 +1320,18 @@ Limitations that remain in docx4j's output:
   widow control would not ([§3](#s39)).
 - **Space-after against a footnote area** is not yet applied as Word applies it
   ([§3](#s310)).
-- **Floating tables** (`w:tblpPr`): the horizontal position is always applied, and a table
-  anchored to the page or the margin box which opens its section is placed there
-  ([§6.8](#s69)) - the cover page and the letterhead. What is not reproduced is Word's
-  **wrapping**: nothing flows beside a positioned table, and a floating table with text
-  before it is left in the flow, so its vertical position is wherever the flow puts it
-  rather than its `tblpY`. `leftFromText`/`topFromText` and the rest are ignored.
+- **Floating tables** (`w:tblpPr`, [§6.8](#s69)): the horizontal position is always
+  applied. A table anchored to the **text** floats, with the text beside it, but FOP
+  anchors a float to the line it sits at, where Word's frame starts `tblpY` below the top
+  of the anchor paragraph: the lines beside that offset are narrowed where Word leaves them
+  full width (`tblpY` is within 15pt of zero for 103 of the 132 text-anchored tables of the
+  corpora which state one, and the table-floating probe's 72pt costs it two points of
+  parity). Word runs text down both
+  sides of a frame; an `fo:float` is single-sided.
+  A table anchored to the **page or the margin box** is positioned only where it opens its
+  section or opens a page and is narrow; positioned mid-page it would be drawn over the
+  content Word puts below it, and mid-page Word wraps text beside it, which a positioned
+  container cannot do. `topFromText`/`bottomFromText` are ignored.
 - **Exact-height rows clip** their overflowing content rather than drawing it over the rows
   below ([§6](#s68)).
 

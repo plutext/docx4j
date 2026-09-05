@@ -136,20 +136,106 @@ public class UnequalColumnsTest extends AbstractXSLFOTest {
 		unequalColumnsBecomeATable(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
-	/** No column break: a table could not flow the content from one column into the
-	 *  next, so the section keeps FOP's equal columns. */
-	private void withoutAColumnBreakNothingChanges(int flags) throws Exception {
+	/** No column break: Word balances the columns itself, so the content is divided by
+	 *  estimated line count - measured on the columns-unequal probe, whose sixteen lines
+	 *  Word divides eight and eight, breaking inside the paragraph. */
+	private void withoutAColumnBreakTheColumnsAreBalanced(int flags) throws Exception {
 		org.w3c.dom.Document doc = fo(SECT_1 + NO_BREAK + sect2(UNEQUAL), flags);
+		assertEquals("the columns are the table's", 1, columnCount(doc));
+		NodeList cols = doc.getElementsByTagNameNS(FO_NS, "table-column");
+		assertEquals(3, cols.getLength());
+		assertEquals(157.0, pt(((Element) cols.item(0)).getAttribute("column-width")), 0.01);
+		assertEquals(318.0, pt(((Element) cols.item(2)).getAttribute("column-width")), 0.01);
+		NodeList cells = doc.getElementsByTagNameNS(FO_NS, "table-cell");
+		assertEquals(3, cells.getLength());
+		assertTrue("column 1 holds the start: " + cells.item(0).getTextContent(),
+				cells.item(0).getTextContent().contains("certificate"));
+		assertTrue("column 2 holds the rest: " + cells.item(2).getTextContent(),
+				cells.item(2).getTextContent().contains("completing"));
+	}
+
+	@Test public void noBreakVisitor() throws Exception {
+		withoutAColumnBreakTheColumnsAreBalanced(Docx4J.FLAG_NONE);
+	}
+
+	@Test public void noBreakXslt() throws Exception {
+		withoutAColumnBreakTheColumnsAreBalanced(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/** Word divides the paragraph the balance point falls in.  Here one long paragraph is
+	 *  all there is, so the division is inside it. */
+	private void balancingDividesTheParagraph(int flags) throws Exception {
+		StringBuilder prose = new StringBuilder("<w:p><w:r><w:t>");
+		for (int i = 0; i < 40; i++) prose.append("word").append(i).append(' ');
+		prose.append("</w:t></w:r></w:p>");
+		org.w3c.dom.Document doc = fo(SECT_1 + prose + sect2(UNEQUAL), flags);
+		NodeList cells = doc.getElementsByTagNameNS(FO_NS, "table-cell");
+		assertEquals(3, cells.getLength());
+		String one = cells.item(0).getTextContent(), two = cells.item(2).getTextContent();
+		assertTrue("column 1 opens the paragraph: " + one, one.contains("word0"));
+		assertTrue("column 2 ends it: " + two, two.contains("word39"));
+		assertTrue("neither column holds it all", !one.contains("word39") && !two.contains("word0"));
+	}
+
+	@Test public void balanceDividesVisitor() throws Exception {
+		balancingDividesTheParagraph(Docx4J.FLAG_NONE);
+	}
+
+	@Test public void balanceDividesXslt() throws Exception {
+		balancingDividesTheParagraph(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/** More content than fits the page: a one-row table cannot break into columns across
+	 *  a page, so the section is left to the region body, whose balancing can. */
+	private void tooMuchToFitIsLeftAlone(int flags) throws Exception {
+		StringBuilder prose = new StringBuilder("<w:p><w:r><w:t>");
+		for (int i = 0; i < 4000; i++) prose.append("word").append(i).append(' ');
+		prose.append("</w:t></w:r></w:p>");
+		org.w3c.dom.Document doc = fo(SECT_1 + prose + sect2(UNEQUAL), flags);
 		assertEquals(2, columnCount(doc));
 		assertEquals(0, doc.getElementsByTagNameNS(FO_NS, "table").getLength());
 	}
 
-	@Test public void noBreakVisitor() throws Exception {
-		withoutAColumnBreakNothingChanges(Docx4J.FLAG_NONE);
+	@Test public void tooMuchVisitor() throws Exception {
+		tooMuchToFitIsLeftAlone(Docx4J.FLAG_NONE);
 	}
 
-	@Test public void noBreakXslt() throws Exception {
-		withoutAColumnBreakNothingChanges(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	/** The half of a divided paragraph which opens the next column takes a line of its
+	 *  own even when the break ends the paragraph and nothing is left but its mark, and
+	 *  the paragraph's space-after goes with it.  Measured on the columns-unequal probe:
+	 *  Word starts column 2 at y=183.4, 19.4pt below column 1's 164.0 - one 13.8pt line
+	 *  plus the paragraph's 6pt space-after - and the next section 13.9pt below column
+	 *  one's last line, ie with no space-after there at all. */
+	private void aBreakEndingAParagraphLeavesItsMark(int flags) throws Exception {
+		String endBreak = "<w:p><w:pPr><w:spacing w:after=\"120\"/></w:pPr>"
+				+ "<w:r><w:t>ends column one</w:t><w:br w:type=\"column\"/></w:r></w:p>"
+				+ "<w:p><w:r><w:t>opens column two</w:t></w:r></w:p>";
+		org.w3c.dom.Document doc = fo(SECT_1 + endBreak + sect2(UNEQUAL), flags);
+		NodeList cells = doc.getElementsByTagNameNS(FO_NS, "table-cell");
+		assertEquals(3, cells.getLength());
+
+		Element one = (Element) cells.item(0), two = (Element) cells.item(2);
+		NodeList blocksOne = one.getElementsByTagNameNS(FO_NS, "block");
+		assertEquals("no space-after on the half that does not end the paragraph", 0.0,
+				pt(((Element) blocksOne.item(0)).getAttribute("space-after")), 0.01);
+
+		NodeList blocksTwo = two.getElementsByTagNameNS(FO_NS, "block");
+		assertTrue("column 2 opens with the paragraph's mark: " + two.getTextContent(),
+				blocksTwo.getLength() > 1);
+		Element mark = (Element) blocksTwo.item(0);
+		assertEquals("which carries the space-after", 6.0,
+				pt(mark.getAttribute("space-after")), 0.01);
+		assertTrue("and nothing else: " + mark.getTextContent(),
+				mark.getTextContent().trim().length() == 0);
+		assertTrue("the text follows it", two.getTextContent().contains("opens column two"));
+	}
+
+	@Test public void breakEndingAParagraphVisitor() throws Exception {
+		aBreakEndingAParagraphLeavesItsMark(Docx4J.FLAG_NONE);
+	}
+
+	@Test public void breakEndingAParagraphXslt() throws Exception {
+		aBreakEndingAParagraphLeavesItsMark(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	/** Word divides the paragraph the break is in: what precedes it ends the column,
