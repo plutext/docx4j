@@ -42,8 +42,21 @@ region body
 - font substitutes: Verdana now prefers DejaVu Sans, Comic Sans MS Noto Sans, and Georgia,
 Book Antiqua and Palatino Linotype P052 - each measured 8-15% closer to Word's line widths
 than the Arial or Times clone they had
+- a floating table (w:tblPr/w:tblpPr) now goes where Word puts it horizontally (its grid
+edge at w:tblpX, or centred/right within the page or the text column per w:tblpXSpec); one
+anchored to the page or the margin box which opens its section - a cover page or a
+letterhead - is also placed vertically, out of the flow.  Set
+docx4j.convert.out.fo.tables.position=false for the old behaviour
+- a section whose w:cols declares columns of different widths (w:equalWidth="0") is now
+rendered as a one-row table whose cells are the columns, divided where the document's
+w:br w:type="column" divides them; XSL FO's own columns are all the same width
+- a merged run of continuous sections whose page margins differ now builds its page masters
+on the part whose columns need the widest text column, and a negative end-indent on a table
+no longer widens every paragraph in its cells past the cell's edge
 
 Other:
+- StyleUtil: a w:tblPr/w:tblpPr whose only properties were an anchor or a *Spec was treated
+as empty, so a floating table lost its position when the effective table style was built
 - PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
 
 

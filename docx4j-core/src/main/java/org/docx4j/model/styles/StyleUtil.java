@@ -1598,12 +1598,15 @@ public class StyleUtil {
 			isEmpty(tblpPr.getRightFromText()) &&
 			isEmpty(tblpPr.getTopFromText()) &&
 			isEmpty(tblpPr.getBottomFromText()) &&
-			isEmpty(tblpPr.getVertAnchor() == null) &&
-			isEmpty(tblpPr.getHorzAnchor() == null) &&
-			isEmpty(tblpPr.getTblpXSpec() == null) &&
+			// (isEmpty(x==null) reads as "empty when x is set": inverted, so a floating
+			// table whose only properties were an anchor or a *Spec lost its w:tblpPr
+			// when the effective table style was built.  @since 17.0.6)
+			(tblpPr.getVertAnchor() == null) &&
+			(tblpPr.getHorzAnchor() == null) &&
+			(tblpPr.getTblpXSpec() == null) &&
 			isEmpty(tblpPr.getTblpX()) &&
-			isEmpty(tblpPr.getTblpYSpec() == null) &&
-			isEmpty(tblpPr.getTblpY())		
+			(tblpPr.getTblpYSpec() == null) &&
+			isEmpty(tblpPr.getTblpY())
 		    );
 	}
 

@@ -34,8 +34,7 @@ line-break parity, page-break parity, baseline deltas and x deltas are reported,
 rasterised overlay per page.
 
 The harness is `docx4j-layout-fidelity` (in the repository, not in the reactor, not
-deployed; see its README). 36 probes have Word goldens (`hyphenation` and
-`hyphenation-zone` are newer and have none yet):
+deployed; see its README). 43 probes have Word goldens:
 
 `spacing-adjacent`, `spacing-contextual`, `spacing-autospacing`,
 `spacing-autospacing-context`, `spacing-page-top`, `spacing-section-start`,
@@ -46,14 +45,14 @@ deployed; see its README). 36 probes have Word goldens (`hyphenation` and
 `page-first-even-odd-heights`, `page-tall-header`, `page-landscape-margins`,
 `table-fixed`, `table-autofit`, `table-width`, `table-span`, `table-nested`,
 `table-floating`, `table-cellspacing`, `table-rowheight`, `table-indent-compat14`,
-`table-indent-compat15`.
+`table-indent-compat15`, `hyphenation`, `hyphenation-zone`, `tab-jc`, `pbdr-space`,
+`table-grid-edge-compat14`, `table-grid-edge-compat15`, `table-autofit-wrap`.
 
-Five more probes are in the corpus awaiting their first Word run, each written to settle a
-rule a real document contradicts: `tab-jc` (§4.4's "a tabbed line is laid out from the
-left"), `pbdr-space` (§3's "a border's `w:space` is the padding on that side", inside a
-table cell and outside), `table-grid-edge-compat14` and `-compat15` (§6.1's grid edge with
-an explicit `w:tblCellMar`), and `table-autofit-wrap` (§6.3's column distribution, where a
-small difference changes which cell wraps).
+Two more probes are in the corpus awaiting their first Word run: `table-floating-anchor`
+(a floating table anchored to the page and to the margin box, by `tblpX`/`tblpY` and by
+`tblpXSpec`/`tblpYSpec`, each with text after it, §6.8) and `columns-unequal` (unequal
+`w:cols` with and without a `w:br w:type="column"`, between continuous sections whose
+`w:pgMar` differ by 100pt, §7).
 
 A rule a probe could not settle on its own was checked against a corpus of 194 real
 documents scored against Word's own PDFs of them, so a change is accepted only when the
@@ -83,6 +82,7 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.wordLayoutFixups` | `true` | The DOM pass over the generated FO (`WordLayoutFixups`): Word's spacing edge rules, the line-box attributes, exact-height rows, anchored pictures, text boxes. `false` gives the FO docx4j 17.0.4 produced. |
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
+| `docx4j.convert.out.fo.tables.position` | `true` | A floating table's `w:tblpPr`: the grid edge at `tblpX`/`tblpXSpec`, and a page- or margin-anchored table which opens its section placed absolutely (§6.8). `false` lays every table out in the flow, as 17.0.5 did. |
 | `docx4j.convert.out.fo.pictures.float` | `true` | Whether a picture Word wraps text around may be an `fo:float`. `false` lays such pictures out in the flow (no text beside them, but immune to the FOP float defect, §10). Text boxes are never floats whatever this says. |
 | `docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable` | unset | Names an ImageMagick/GraphicsMagick executable. Set, a picture FOP cannot paint (EMF) is converted to PNG and painted; unset, its space is reserved but it is not drawn (§9.4). |
 | `docx4j.convert.out.fo.pictures.convertDensity` | `300` | Pixels per inch that converter rasterises a metafile at. |
@@ -759,7 +759,49 @@ height as a minimum and grows the row. docx4j clips the cell content to the exac
 (an `fo:block-container` with `overflow="hidden"`), so the rows below sit where Word puts
 them; the overflowing text is clipped rather than drawn over them.
 
-Floating tables (`w:tblpPr`) are measured but not reproduced - see §10.
+<a id="s69"></a>
+### 6.8 Floating tables
+
+A table with `w:tblPr/w:tblpPr` is a frame: Word gives it a position of its own and flows
+the surrounding text around it.
+
+**Horizontally** the frame is the page for `horzAnchor="page"` and the text column
+otherwise, and the table's **grid edge** goes at `tblpX` within it, or where `tblpXSpec`
+says (`left`/`inside`, `center`, `right`/`outside`). Measured on `table-floating` (mode 15,
+72pt margins, `horzAnchor="margin" tblpX=4500`): Word's first cell text is at 302.7pt =
+72 + 225 + one 5.4pt cell margin, so the grid edge is at margin + `tblpX` with no
+compatibility-mode adjustment - unlike `w:tblInd` (§6.1). Measured on a real cover page
+(`horzAnchor="margin" tblpXSpec="center"`, a 450.05pt table on a 594pt page with no
+margins): Word's first cell text is at 77.8 = (594 - 450.05)/2 + 5.4. This applies to every
+floating table, whether or not it is taken out of the flow; before 17.0.6 the probe's table
+sat at the margin, 225pt left of Word's.
+
+**Vertically** only a position Word measures from the page (`vertAnchor="page"`) or from
+the margin box (`vertAnchor="margin"`, or any `tblpYSpec`) is reproduced, and only for a
+table that **opens its section's flow** - the cover page and the letterhead. Such a table
+goes into an absolutely positioned `fo:block-container` (the anchored-picture machinery,
+§9.1) and takes no space in the flow. `tblpY` is measured to the table's top edge:
+measured, a table with `vertAnchor="page" tblpY=3136` (156.8pt) has Word's first cell line
+at y=167.6. Where the docx states a `tblpYSpec` the table's height is not known before
+layout, so the container is the whole frame with `display-align` on it: measured, a cover
+table with `tblpYSpec="bottom"` and no `w:vertAnchor` on an A4 page with a 70.9pt bottom
+margin has its last line at y=765.4, i.e. its bottom edge on the **bottom margin**, so the
+frame for a `tblpYSpec` without `vertAnchor="page"` is the margin box.
+
+`w:tblpY` against the default `vertAnchor="text"` is an offset from the paragraph the table
+is anchored to, and leaves the table in the flow. So does a page-anchored table with text
+before it: Word wraps that text around the table, which where the table fills the column
+means below it, and XSL-FO can express neither the wrap nor a reservation of a height it
+does not know. Measured on two corpus documents whose page-anchored table sits mid-flow -
+Word puts the table at its `tblpY` (y=94.6, first line 111.1) and the next table below it
+(y=257.6); positioning ours and closing the flow over it drew the two on top of each other
+and cost both documents about 0.09 of line parity. A positioned table keeps its columns,
+cell margins and borders; its own `start-indent` is reset, because the container carries
+the position. `docx4j.convert.out.fo.tables.position=false` lays every table out in the
+flow, as 17.0.5 did.
+
+`leftFromText` / `rightFromText` / `topFromText` / `bottomFromText` are the wrap distances,
+and are not used: nothing wraps beside a positioned table (§10).
 
 ---
 
@@ -788,9 +830,24 @@ columns.
 columns of different widths the container's value is commonly nothing like the real gap -
 measured, 7.7pt where the real gap was 51.25pt - so every line in the section broke
 differently. Where a run of continuous sections is merged, the count and the gap come from
-the same section. **Limitation**: XSL-FO's region-body columns are all the same width, so a
+the same section.
+
+**Columns of different widths.** XSL-FO's region-body columns are all the same width, so a
 section with `w:cols/@w:equalWidth="0"` and `w:col` children of different widths is
-rendered as equal columns, with the first column's gap.
+rendered as a **one-row `fo:table` whose cells are the columns**, a spacer column carrying
+each `w:col/@w:space`; the page-sequence is then single-column for that stretch. Measured on
+a certificate whose columns are 157 and 318pt with a 24pt gap: Word's second column starts
+at x=232.2, where equal columns put ours at 312.5 and every line in it broke differently.
+A table cannot flow content from one column into the next, so the rule applies only where
+the document itself says where the columns divide - a `w:br w:type="column"` per boundary
+(thirteen of the eighteen unequal-column documents of the two corpora are written that way;
+the rest keep FOP's equal columns, whose balancing is the better approximation there). Word
+divides the paragraph the break is *in*: what precedes the break ends the column and what
+follows it opens the next - measured on a letterhead whose address block is one paragraph
+with the break in the middle of it, where Word puts the text after the break at the top of
+column 2 (y=79.5, x=397.4). Columns within 5% of each other (4716/4715, 4680/4860 in the
+corpora) are Word's own rounding of equal columns and are left to the region body.
+`org.docx4j.convert.out.common.wrappers.UnequalColumns` builds the table.
 
 <a id="s74"></a>**Margins of merged sections.** A page master can carry only one set of
 margins, so a merged run of continuous sections takes the **first** section's `w:pgMar`, as
@@ -799,6 +856,17 @@ tables of each part that differs. Taking the last section's margins laid the ear
 out 2 to 8pt out of place; the text now starts within 0.03pt of Word's x. An
 `fo:block-container` carrying the indents would be tidier, but a block-container in a
 multi-column flow makes FOP throw when it balances the last page's columns.
+
+A part's measure is the region body less its own indents, whatever the region body is, so
+which section's margins the masters carry does not move any line - except for the one thing
+an indent cannot move, the **columns**, which the region body bounds. Where the merged run
+still has a multi-column part (one whose columns are equal, since unequal ones are now a
+table) whose own text column is wider than the first part's, the masters are built on that
+part instead.
+
+A negative `end-indent` given to a table this way used to be inherited by every paragraph in
+every cell, which then ran that far past the cell's edge; `fo:table-body` now resets
+`end-indent` as well as `start-indent`.
 
 <a id="s75"></a>**Vertical alignment of a section.** `w:sectPr/w:vAlign` - Word's Page Setup
 "Vertical alignment" - is `display-align` on `fo:region-body`: `center` for `center` and for
@@ -966,9 +1034,10 @@ Worked around here, and worth knowing about:
 
 Limitations that remain in docx4j's output:
 
-- **Unequal column widths** render as equal columns ([§7](#s73)). Rendering such a stretch
-  as a one-row table would fix the widths but stop the content flowing from one column to
-  the next.
+- **Unequal column widths** are a one-row table ([§7](#s73)), which fixes the widths but
+  cannot flow content from one column into the next: a stretch that does not divide itself
+  with a `w:br w:type="column"` still renders as equal columns, and one that does not fit
+  the page is broken by FOP as a table rather than as columns.
 - **Text does not flow beside a text box** (§9.2), nor down both sides of a picture in the
   middle of a column (§9.1).
 - **Page references in tabbed text**: FOP measures a line containing an unresolved
@@ -980,7 +1049,12 @@ Limitations that remain in docx4j's output:
   widow control would not ([§3](#s39)).
 - **Space-after against a footnote area** is not yet applied as Word applies it
   ([§3](#s310)).
-- **Floating tables** (`w:tblpPr`) are not expressible in XSL-FO at their stated position.
+- **Floating tables** (`w:tblpPr`): the horizontal position is always applied, and a table
+  anchored to the page or the margin box which opens its section is placed there
+  ([§6.8](#s69)) - the cover page and the letterhead. What is not reproduced is Word's
+  **wrapping**: nothing flows beside a positioned table, and a floating table with text
+  before it is left in the flow, so its vertical position is wherever the flow puts it
+  rather than its `tblpY`. `leftFromText`/`topFromText` and the rest are ignored.
 - **Exact-height rows clip** their overflowing content rather than drawing it over the rows
   below ([§6](#s68)).
 

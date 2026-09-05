@@ -752,6 +752,117 @@ public final class Corpus {
 			d.para("after. " + prose(1, 1)).before(240).add();
 			return d.pkg();
 		}));
+
+		// ------------------------------------- b2 batch 3: floating tables, unequal columns
+
+		/*
+		 * C2: a floating table (w:tblpPr) whose position Word measures from the page or
+		 * from the margin box.  One case per page, each with a paragraph after it, so
+		 * the golden shows both where Word puts the table and what it does with the text
+		 * that follows: 17.0.6 places such a table absolutely only where it opens the
+		 * section, because Word wraps the following text around it and XSL-FO cannot.
+		 * The existing table-floating probe covers the common w:vertAnchor="text" case.
+		 */
+		PROBES.add(new Probe("table-floating-anchor",
+				"floating tables anchored to the page and to the margin box: tblpX/tblpY, "
+				+ "tblpXSpec centre and right, tblpYSpec top/centre/bottom", () -> {
+			Doc d = Doc.create(15);
+
+			// 1. opens the flow, anchored to the page at 72pt / 144pt
+			Doc.Table a = new Doc.Table(2600, 2600).fixedLayout()
+					.floating("page", "page", 1440, null, 2880, null);
+			a.row(SERIF, 24, false, "page anchor", "x 72 y 144").row(SERIF, 24, false, prose(1, 1), "b");
+			d.add(a.build());
+			d.para("text after a page-anchored table at 72/144. " + prose(2)).after(240).add();
+			d.pageBreak();
+
+			// 2. centred on the text column, 156.8pt down the page (a Word cover page)
+			Doc.Table b = new Doc.Table(2600, 2600).fixedLayout()
+					.floating("page", "margin", null, "center", 3136, null);
+			b.row(SERIF, 24, false, "page anchor", "centred on the margin")
+					.row(SERIF, 24, false, prose(1, 2), "b");
+			d.add(b.build());
+			d.para("text after a centred page-anchored table. " + prose(2, 1)).after(240).add();
+			d.pageBreak();
+
+			// 3. tblpYSpec: the bottom of the margin box, with no w:vertAnchor at all
+			Doc.Table c = new Doc.Table(2600, 2600).fixedLayout()
+					.floating(null, null, null, null, null, "bottom");
+			c.row(SERIF, 24, false, "no anchor", "tblpYSpec bottom")
+					.row(SERIF, 24, false, prose(1, 3), "b");
+			d.add(c.build());
+			d.para("text after a table at the bottom of the margin box. " + prose(2, 2)).after(240).add();
+			d.pageBreak();
+
+			// 4. tblpYSpec centre of the page, tblpXSpec right of the page
+			Doc.Table e = new Doc.Table(2600, 2600).fixedLayout()
+					.floating("page", "page", null, "right", null, "center");
+			e.row(SERIF, 24, false, "page anchor", "right, centred")
+					.row(SERIF, 24, false, prose(1, 4), "b");
+			d.add(e.build());
+			d.para("text after a table centred on the page. " + prose(2, 3)).after(240).add();
+			d.pageBreak();
+
+			// 5. the margin box as the frame, with offsets
+			Doc.Table f = new Doc.Table(2600, 2600).fixedLayout()
+					.floating("margin", "margin", 1000, null, 2000, null);
+			f.row(SERIF, 24, false, "margin anchor", "x 50 y 100")
+					.row(SERIF, 24, false, prose(1, 5), "b");
+			d.add(f.build());
+			d.para("text after a margin-anchored table at 50/100. " + prose(2, 4)).after(240).add();
+			d.pageBreak();
+
+			// 6. a narrow table with a lot of text after it: does Word flow text beside it?
+			d.para("before the narrow table. " + prose(1, 6)).after(240).add();
+			Doc.Table g = new Doc.Table(1600, 1600).fixedLayout()
+					.floating("page", "margin", null, "right", 4320, null);
+			g.row(SERIF, 20, false, "narrow", "table").row(SERIF, 20, false, "beside", "text");
+			d.add(g.build());
+			for (int i = 0; i < 5; i++) {
+				d.para(prose(4, i + 7)).after(160).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * C6: a section whose w:cols declares columns of different widths, and a run of
+		 * merged continuous sections whose w:pgMar differ by a lot.  17.0.6 renders an
+		 * unequal-column stretch as a one-row table, split at the w:br w:type="column";
+		 * this probe has the same stretch with the break and without it, and a following
+		 * continuous section whose margins are 100pt wider, so the golden shows both what
+		 * Word's column boundaries are and which margins it starts the page with.
+		 */
+		PROBES.add(new Probe("columns-unequal",
+				"unequal w:cols (157 + 24 + 318pt) with and without a column break, "
+				+ "between continuous sections whose w:pgMar differ by 100pt", () -> {
+			Doc d = Doc.create(15);
+			// section 1: one column, 152 / 186pt margins
+			d.pageGeometry(11900, 16840, false, 1440, 3720, 1440, 3040);
+			d.columns(new int[] { 5140 }, new int[] { 720 });
+			d.para("Section 1, one column, wide margins. " + prose(2)).after(240).add();
+			d.endSection("continuous");
+
+			// section 2: two unequal columns, 51 / 45pt margins, divided by a column break
+			d.pageGeometry(11900, 16840, false, 1440, 900, 1440, 1020);
+			d.columns(new int[] { 3140, 6360 }, new int[] { 480, 0 });
+			d.para("Column one of two unequal columns. " + prose(2, 1)).after(120).add();
+			d.para("The last line of column one.").columnBreak().after(120).add();
+			d.para("Column two, which is twice as wide. " + prose(3, 2)).after(120).add();
+			d.endSection("continuous");
+
+			// section 3: the same unequal columns with no column break at all
+			d.pageGeometry(11900, 16840, false, 1440, 900, 1440, 1020);
+			d.columns(new int[] { 3140, 6360 }, new int[] { 480, 0 });
+			d.para("No column break here, so Word balances the two unequal columns itself. "
+					+ prose(6, 3)).after(120).add();
+			d.endSection("continuous");
+
+			// section 4: one column again, back to the wide margins
+			d.pageGeometry(11900, 16840, false, 1440, 3720, 1440, 3040);
+			d.columns(new int[] { 5140 }, new int[] { 720 });
+			d.para("Section 4, one column, wide margins again. " + prose(3, 4)).before(240).add();
+			return d.pkg();
+		}));
 	}
 
 	/**

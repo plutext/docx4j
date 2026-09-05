@@ -454,6 +454,33 @@ public final class Doc {
 		m.setLeft(BigInteger.valueOf(left));
 	}
 
+	/**
+	 * The current section's w:cols: {@code widths} and {@code spaces} in twips, one
+	 * entry each per column (the last space is ignored, as Word writes it).  Word marks
+	 * such a section w:equalWidth="0".  Pass a single width for a one-column section.
+	 */
+	public void columns(int[] widths, int[] spaces) {
+		org.docx4j.wml.CTColumns cols = F.createCTColumns();
+		cols.setEqualWidth(Boolean.FALSE);
+		if (widths.length > 1) cols.setNum(BigInteger.valueOf(widths.length));
+		cols.setSpace(BigInteger.valueOf(spaces.length > 0 ? spaces[0] : 720));
+		for (int i = 0; i < widths.length; i++) {
+			org.docx4j.wml.CTColumn col = F.createCTColumn();
+			col.setW(BigInteger.valueOf(widths[i]));
+			if (i + 1 < widths.length) col.setSpace(BigInteger.valueOf(spaces[i]));
+			cols.getCol().add(col);
+		}
+		sectPr().setCols(cols);
+	}
+
+	/** The current section's w:cols as {@code num} equal columns with one gap. */
+	public void equalColumns(int num, int spaceTwips) {
+		org.docx4j.wml.CTColumns cols = F.createCTColumns();
+		cols.setNum(BigInteger.valueOf(num));
+		cols.setSpace(BigInteger.valueOf(spaceTwips));
+		sectPr().setCols(cols);
+	}
+
 	// ---------------------------------------------------------------- anchored images
 
 	/**
@@ -719,6 +746,27 @@ public final class Doc {
 		/** w:tblCellSpacing (twips): Word's separate-borders model. */
 		public Table cellSpacing(int twips) {
 			tblPr.setTblCellSpacing(width(twips, "dxa"));
+			return this;
+		}
+
+		/**
+		 * A floating table (w:tblpPr) at the position Word's Table Properties dialog
+		 * states: the anchors name the frame ("text", "margin" or "page"), and each of
+		 * x and y is either an offset in twips or a *Spec ("left"/"center"/"right",
+		 * "top"/"center"/"bottom"). Pass null for the ones the docx should not carry.
+		 */
+		public Table floating(String vertAnchor, String horzAnchor,
+				Integer xTwips, String xSpec, Integer yTwips, String ySpec) {
+			org.docx4j.wml.CTTblPPr pp = F.createCTTblPPr();
+			if (vertAnchor != null) pp.setVertAnchor(org.docx4j.wml.STVAnchor.fromValue(vertAnchor));
+			if (horzAnchor != null) pp.setHorzAnchor(org.docx4j.wml.STHAnchor.fromValue(horzAnchor));
+			if (xTwips != null) pp.setTblpX(BigInteger.valueOf(xTwips));
+			if (xSpec != null) pp.setTblpXSpec(org.docx4j.wml.STXAlign.fromValue(xSpec));
+			if (yTwips != null) pp.setTblpY(BigInteger.valueOf(yTwips));
+			if (ySpec != null) pp.setTblpYSpec(org.docx4j.wml.STYAlign.fromValue(ySpec));
+			pp.setLeftFromText(BigInteger.valueOf(180));
+			pp.setRightFromText(BigInteger.valueOf(180));
+			tblPr.setTblpPr(pp);
 			return this;
 		}
 
@@ -1009,6 +1057,15 @@ public final class Doc {
 		public Para pageBreakBefore() {
 			ppr.setPageBreakBefore(new BooleanDefaultTrue());
 			return this;
+		}
+
+		/** A run holding one w:br w:type="column": where Word divides the columns. */
+		public Para columnBreak() {
+			R r = F.createR();
+			Br br = F.createBr();
+			br.setType(STBrType.COLUMN);
+			r.getContent().add(br);
+			return run(r);
 		}
 
 		/** A run holding one w:tab, in the paragraph's own font. */

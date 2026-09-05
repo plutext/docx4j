@@ -293,15 +293,15 @@ public class ConversionSectionWrapperFactory {
 							if (sectionContent.isEmpty() || !rendersNothing((org.docx4j.wml.P)o)) {
 								sectionContent.add(o);
 							}
-							int cols = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
+							Merged merged = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
 							currentSectionWrapper = createSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
 									++conversionSectionIndex, sectionContent, dummyPageNumbering);
-							useWinningPartCols(currentSectionWrapper, columnParts, ppr.getSectPr(), cols);
-							if (cols > colsNum(ppr.getSectPr())) {
-								currentSectionWrapper.getPageDimensions().setColsNum(cols);
+							useWinningPartCols(currentSectionWrapper, columnParts, ppr.getSectPr(), merged.cols);
+							if (merged.cols != colsNum(ppr.getSectPr())) {
+								currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 							}
-							useFirstPartMargins(currentSectionWrapper, columnParts);
+							usePartMargins(currentSectionWrapper, merged.marginRef);
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
@@ -327,15 +327,15 @@ public class ConversionSectionWrapperFactory {
 			return conversionSections;
 		}
 
-		int cols = spanColumnParts(sectionContent, columnParts, document.getBody().getSectPr());
+		Merged merged = spanColumnParts(sectionContent, columnParts, document.getBody().getSectPr());
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
 				++conversionSectionIndex, sectionContent, dummyPageNumbering);
-		useWinningPartCols(currentSectionWrapper, columnParts, document.getBody().getSectPr(), cols);
-		if (cols > colsNum(document.getBody().getSectPr())) {
-			currentSectionWrapper.getPageDimensions().setColsNum(cols);
+		useWinningPartCols(currentSectionWrapper, columnParts, document.getBody().getSectPr(), merged.cols);
+		if (merged.cols != colsNum(document.getBody().getSectPr())) {
+			currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 		}
-		useFirstPartMargins(currentSectionWrapper, columnParts);
+		usePartMargins(currentSectionWrapper, merged.marginRef);
 		conversionSections.add(currentSectionWrapper);
 		return conversionSections;
 	}
@@ -438,26 +438,73 @@ public class ConversionSectionWrapperFactory {
 	 * The page masters of a page-sequence made of several continuous sections can
 	 * only carry one set of page margins; until 17.0.5 that was the last section's,
 	 * applied to all the content before it as well.  Word starts the page with the
-	 * first of them, so that is what the sequence uses; the other parts carry the
-	 * difference as indents (spanColumnParts).
+	 * first of them, so that is normally what the sequence uses (see
+	 * {@link #marginReference}); the other parts carry the difference as indents
+	 * (spanColumnParts).
 	 *
+	 * @param part the section whose w:pgMar the masters take; null leaves the wrapper's own
 	 * @since 17.0.5
 	 */
-	private static void useFirstPartMargins(ConversionSectionWrapper wrapper, List<MergedPart> columnParts) {
-		if (wrapper == null || columnParts.isEmpty()) return;
-		SectPr first = columnParts.get(0).sectPr;
-		if (first == null || first.getPgMar() == null) return;
-		if (marginLeft(first) < 0 || marginRight(first) < 0) return;
+	private static void usePartMargins(ConversionSectionWrapper wrapper, SectPr part) {
+		if (wrapper == null || part == null || part.getPgMar() == null) return;
+		if (marginLeft(part) < 0 || marginRight(part) < 0) return;
 		// on a copy of the wrapper's own (which has the values the last section's
 		// sectPr, or the defaults, gave it, so nothing that is unset here goes missing)
 		SectPr.PgMar pgMar = XmlUtils.deepCopy(wrapper.getPageDimensions().getPgMar());
-		pgMar.setLeft(first.getPgMar().getLeft());
-		pgMar.setRight(first.getPgMar().getRight());
-		if (first.getPgMar().getTop() != null) pgMar.setTop(first.getPgMar().getTop());
-		if (first.getPgMar().getBottom() != null) pgMar.setBottom(first.getPgMar().getBottom());
-		if (first.getPgMar().getHeader() != null) pgMar.setHeader(first.getPgMar().getHeader());
-		if (first.getPgMar().getFooter() != null) pgMar.setFooter(first.getPgMar().getFooter());
+		pgMar.setLeft(part.getPgMar().getLeft());
+		pgMar.setRight(part.getPgMar().getRight());
+		if (part.getPgMar().getTop() != null) pgMar.setTop(part.getPgMar().getTop());
+		if (part.getPgMar().getBottom() != null) pgMar.setBottom(part.getPgMar().getBottom());
+		if (part.getPgMar().getHeader() != null) pgMar.setHeader(part.getPgMar().getHeader());
+		if (part.getPgMar().getFooter() != null) pgMar.setFooter(part.getPgMar().getFooter());
 		wrapper.getPageDimensions().setPgMar(pgMar);
+	}
+
+	/** What merging a run of continuous sections into one page-sequence came to.
+	 *  @since 17.0.6 */
+	private static class Merged {
+		/** the column count the page-sequence must use */
+		final int cols;
+		/** the section whose w:pgMar the page masters take, or null for the wrapper's own */
+		final SectPr marginRef;
+		Merged(int cols, SectPr marginRef) {
+			this.cols = cols;
+			this.marginRef = marginRef;
+		}
+	}
+
+	/**
+	 * Which of the merged sections' w:pgMar the page-sequence is built on.
+	 *
+	 * <p>Word starts the page with the <b>first</b> of them, and 17.0.5 used that, the
+	 * other parts carrying the difference as indents - which puts every line where Word
+	 * puts it, because a part's measure is the region body less its own indents whatever
+	 * the region body is.  The region body still bounds one thing the indents cannot
+	 * move: the <b>columns</b>. So where the sequence has a multi-column part whose own
+	 * text column is wider than the first part's, the page masters are built on that
+	 * part instead.  Measured: a certificate whose section 1 has 152/186pt margins and
+	 * one column, and whose continuous section 2 has 51/45pt margins and two columns of
+	 * 157 + 24 + 318pt, needs a 499pt region body for those columns; built on section 1
+	 * it was 257pt and the two columns came out 116.5pt wide, with the blocks' negative
+	 * end-indents letting the text overflow them.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static SectPr marginReference(List<SectPr> sectPrs, int[] cols, int max) {
+		SectPr first = sectPrs.get(0);
+		if (max < 2 || marginLeft(first) < 0 || marginRight(first) < 0) return first;
+		SectPr widest = null;
+		for (int i = 0; i < sectPrs.size(); i++) {
+			SectPr sp = sectPrs.get(i);
+			if (cols[i] != max || marginLeft(sp) < 0 || marginRight(sp) < 0) continue;
+			if (widest == null
+					|| marginLeft(sp) + marginRight(sp) < marginLeft(widest) + marginRight(widest)) {
+				widest = sp;
+			}
+		}
+		if (widest == null) return first;
+		return (marginLeft(widest) + marginRight(widest) < marginLeft(first) + marginRight(first))
+				? widest : first;
 	}
 
 	/**
@@ -477,45 +524,77 @@ public class ConversionSectionWrapperFactory {
 	 * </ul>
 	 * Sections that agree in both are left alone.
 	 *
+	 * <p>Since 17.0.6 a part whose w:cols declares columns of different widths becomes a
+	 * one-row table instead ({@link UnequalColumns}), and so counts as one column here;
+	 * and the margins the masters take are {@link #marginReference}'s rather than always
+	 * the first part's.</p>
+	 *
 	 * @param columnParts the merged parts, in order
 	 * @param lastSectPr the sectPr that ends the page-sequence (the last part)
 	 * @return the column count the wrapper should use
 	 * @since 17.0.5
 	 */
-	private static int spanColumnParts(List<Object> content, List<MergedPart> columnParts, SectPr lastSectPr) {
-		int lastCols = colsNum(lastSectPr);
-		int max = lastCols;
-		for (MergedPart part : columnParts) max = Math.max(max, colsNum(part.sectPr));
-		if (columnParts.isEmpty()) return max;
+	private static Merged spanColumnParts(List<Object> content, List<MergedPart> columnParts, SectPr lastSectPr) {
 
-		SectPr first = columnParts.get(0).sectPr;
-		int refLeft = marginLeft(first), refRight = marginRight(first);
-		boolean sameMargins = true;
-		for (MergedPart part : columnParts) {
-			if (marginLeft(part.sectPr) != refLeft || marginRight(part.sectPr) != refRight) sameMargins = false;
-		}
-		if (marginLeft(lastSectPr) != refLeft || marginRight(lastSectPr) != refRight) sameMargins = false;
-		if (refLeft < 0 || refRight < 0) sameMargins = true; // nothing to compare against
-
-		boolean uniformCols = (lastCols == max);
-		for (MergedPart part : columnParts) if (colsNum(part.sectPr) != max) uniformCols = false;
-		if (uniformCols && sameMargins) return max;
-
-		List<Object> result = new ArrayList<Object>();
+		// the parts of the page-sequence, in order, each with its own sectPr
+		List<List<Object>> parts = new ArrayList<List<Object>>();
+		List<SectPr> sectPrs = new ArrayList<SectPr>();
 		int start = 0;
 		for (MergedPart part : columnParts) {
 			int end = Math.min(part.end, content.size());
-			addPart(result, content.subList(start, end), part.sectPr, max, sameMargins, refLeft, refRight);
+			parts.add(new ArrayList<Object>(content.subList(start, end)));
+			sectPrs.add(part.sectPr);
 			start = end;
 		}
-		addPart(result, content.subList(start, content.size()), lastSectPr, max, sameMargins, refLeft, refRight);
+		parts.add(new ArrayList<Object>(content.subList(start, content.size())));
+		sectPrs.add(lastSectPr);
+
+		// a stretch of unequal columns becomes a one-row table, and so one column
+		int[] cols = new int[parts.size()];
+		boolean asTables = false;
+		for (int i = 0; i < parts.size(); i++) {
+			cols[i] = colsNum(sectPrs.get(i));
+			List<Object> table = UnequalColumns.asOneRowTable(parts.get(i), sectPrs.get(i));
+			if (table != null) {
+				parts.set(i, table);
+				cols[i] = 1;
+				asTables = true;
+			}
+		}
+		int max = 1;
+		for (int c : cols) max = Math.max(max, c);
+
+		if (columnParts.isEmpty()) {
+			if (asTables) {
+				content.clear();
+				content.addAll(parts.get(0));
+			}
+			return new Merged(max, null);
+		}
+
+		SectPr ref = marginReference(sectPrs, cols, max);
+		int refLeft = marginLeft(ref), refRight = marginRight(ref);
+		boolean sameMargins = true;
+		for (SectPr sectPr : sectPrs) {
+			if (marginLeft(sectPr) != refLeft || marginRight(sectPr) != refRight) sameMargins = false;
+		}
+		if (refLeft < 0 || refRight < 0) sameMargins = true; // nothing to compare against
+
+		boolean uniformCols = true;
+		for (int c : cols) if (c != max) uniformCols = false;
+		if (uniformCols && sameMargins && !asTables) return new Merged(max, ref);
+
+		List<Object> result = new ArrayList<Object>();
+		for (int i = 0; i < parts.size(); i++) {
+			addPart(result, parts.get(i), sectPrs.get(i), cols[i], max, sameMargins, refLeft, refRight);
+		}
 		content.clear();
 		content.addAll(result);
-		return max;
+		return new Merged(max, ref);
 	}
 
-	private static void addPart(List<Object> result, List<Object> part, SectPr sectPr, int max,
-			boolean sameMargins, int refLeft, int refRight) {
+	private static void addPart(List<Object> result, List<Object> part, SectPr sectPr, int partCols,
+			int max, boolean sameMargins, int refLeft, int refRight) {
 		if (part.isEmpty()) return;
 		List<Object> content = new ArrayList<Object>(part);
 		if (!sameMargins
@@ -524,8 +603,8 @@ public class ConversionSectionWrapperFactory {
 			content = wrap(content,
 					TAG_INDENT + "=" + (marginLeft(sectPr) - refLeft) + "," + (marginRight(sectPr) - refRight));
 		}
-		if (colsNum(sectPr) < max) {
-			content = wrap(content, TAG_SPAN_ALL + "=" + colsNum(sectPr));
+		if (partCols < max) {
+			content = wrap(content, TAG_SPAN_ALL + "=" + partCols);
 		}
 		result.addAll(content);
 	}

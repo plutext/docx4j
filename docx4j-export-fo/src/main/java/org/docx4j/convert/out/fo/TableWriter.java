@@ -178,23 +178,142 @@ public class TableWriter extends AbstractTableWriter {
 				&& org.docx4j.wml.JcEnumeration.CENTER.equals(tblPr.getJc().getVal());
 		int width = table.getTableWidth();
 		int available = writableWidthTwips(context);
+		int indent;
 		if (centred && width > 0 && available > 0 && width > available) {
-			tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest((available - width) / 2));
-			return;
-		}
-
-		// Word ignores w:tblInd on a centred or right aligned table (as PropertyFactory does)
-		int indent = 0;
-		if (!centred && (tblPr == null || tblPr.getJc() == null
-				|| !org.docx4j.wml.JcEnumeration.RIGHT.equals(tblPr.getJc().getVal()))) {
-			org.docx4j.wml.TblWidth tblInd = tblPr == null ? null : tblPr.getTblInd();
-			if (tblInd != null && tblInd.getW() != null
-					&& (tblInd.getType() == null || "dxa".equals(tblInd.getType()))) {
-				indent = tblInd.getW().intValue();
+			indent = (available - width) / 2;
+		} else {
+			// Word ignores w:tblInd on a centred or right aligned table (as PropertyFactory does)
+			indent = 0;
+			if (!centred && (tblPr == null || tblPr.getJc() == null
+					|| !org.docx4j.wml.JcEnumeration.RIGHT.equals(tblPr.getJc().getVal()))) {
+				org.docx4j.wml.TblWidth tblInd = tblPr == null ? null : tblPr.getTblInd();
+				if (tblInd != null && tblInd.getW() != null
+						&& (tblInd.getType() == null || "dxa".equals(tblInd.getType()))) {
+					indent = tblInd.getW().intValue();
+				}
 			}
+			if (compatibilityMode(context) < 15) indent -= leftCellMarginTwips(tblPr);
 		}
-		if (compatibilityMode(context) < 15) indent -= leftCellMarginTwips(tblPr);
+		if (tblPr != null && tblPr.getTblpPr() != null && floatingTablesEnabled()) {
+			indent = applyFloatingPosition(context, table, tableRoot, tblPr.getTblpPr(), indent);
+		}
 		tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest(indent));
+	}
+
+	/** docx4j.convert.out.fo.tables.position (default true): whether a table's w:tblpPr
+	 *  is honoured at all.  @since 17.0.6 */
+	static boolean floatingTablesEnabled() {
+		return WordLayoutFixups.isEnabled()
+				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.tables.position", true);
+	}
+
+	/**
+	 * A floating table (w:tblPr/w:tblpPr), as Word places it.
+	 *
+	 * <p><b>Horizontally</b> the frame is the page for {@code horzAnchor="page"} and the
+	 * text column otherwise, and the table's <em>grid edge</em> goes at {@code tblpX}
+	 * within it, or where {@code tblpXSpec} says (left / centre / right of the frame).
+	 * Measured on the table-floating probe (mode 15, 72pt margins,
+	 * {@code horzAnchor="margin" tblpX=4500}): Word's first cell text is at 302.7pt =
+	 * 72 + 225 + one 5.4pt cell margin, so the grid edge is at the margin + tblpX with
+	 * no compatibility-mode adjustment; and on a real cover page
+	 * ({@code horzAnchor="margin" tblpXSpec="center"}, a 450.05pt table on a 594pt
+	 * zero-margin page) Word's first cell text is at 77.8 = (594-450.05)/2 + 5.4.</p>
+	 *
+	 * <p><b>Vertically</b> only the positions Word measures from the page or the margin
+	 * box are reproduced, since those are the ones XSL-FO can express: the table is then
+	 * taken out of the flow into an absolutely positioned container (hints for
+	 * {@link WordLayoutFixups#anchorFloatingTables}), which is what the cover pages and
+	 * letterheads of the corpus need. {@code tblpY} against {@code vertAnchor="text"} -
+	 * the common case, an offset from the paragraph the table is anchored to - leaves
+	 * the table in the flow, because reserving its height there is what Word does only
+	 * for a table too wide to have text beside it, and XSL-FO cannot wrap text around
+	 * the rest.</p>
+	 *
+	 * @param indent the start-indent (twips, from the text margin) the non-floating
+	 *        rules chose
+	 * @return the start-indent to use
+	 * @since 17.0.6
+	 */
+	private int applyFloatingPosition(AbstractWmlConversionContext context, AbstractTableWriterModel table,
+			Element tableRoot, org.docx4j.wml.CTTblPPr tblpPr, int indent) {
+
+		org.docx4j.model.structure.PageDimensions dims = pageDimensions(context);
+		if (dims == null || dims.getPgSz() == null || dims.getPgSz().getW() == null
+				|| dims.getPgSz().getH() == null || dims.getPgMar() == null) {
+			return indent;
+		}
+		int pageW = dims.getPgSz().getW().intValue();
+		int pageH = dims.getPgSz().getH().intValue();
+		int marginLeft = intValue(dims.getPgMar().getLeft(), 0);
+		int marginTop = intValue(dims.getPgMar().getTop(), 0);
+		int marginBottom = intValue(dims.getPgMar().getBottom(), 0);
+		int width = table.getTableWidth();
+
+		// horizontal: the frame, then the grid edge within it
+		boolean horzPage = org.docx4j.wml.STHAnchor.PAGE.equals(tblpPr.getHorzAnchor());
+		int frameLeft = horzPage ? 0 : marginLeft;
+		int frameWidth = horzPage ? pageW : dims.getWritableWidthTwips();
+		Integer xInFrame = null;
+		if (tblpPr.getTblpXSpec() != null) {
+			switch (tblpPr.getTblpXSpec()) {
+				case CENTER: xInFrame = width > 0 ? (frameWidth - width) / 2 : 0; break;
+				case RIGHT: case OUTSIDE: xInFrame = width > 0 ? frameWidth - width : 0; break;
+				default: xInFrame = 0; break; // left, inside
+			}
+		} else if (tblpPr.getTblpX() != null) {
+			xInFrame = tblpPr.getTblpX().intValue();
+		}
+		if (xInFrame != null) indent = frameLeft - marginLeft + xInFrame;
+
+		// vertical: only a position measured from the page or the margin box takes the
+		// table out of the flow
+		boolean vertPage = org.docx4j.wml.STVAnchor.PAGE.equals(tblpPr.getVertAnchor());
+		Integer topTwips = null;
+		int[] frame = null;
+		String align = null;
+		if (tblpPr.getTblpYSpec() != null && !org.docx4j.wml.STYAlign.INLINE.equals(tblpPr.getTblpYSpec())) {
+			// measured: a cover-page table with tblpYSpec="bottom" and no vertAnchor has
+			// its last line at y=765.4 on an A4 page with a 70.9pt bottom margin, ie its
+			// bottom edge on the bottom margin, so the frame is the margin box
+			frame = vertPage ? new int[] { 0, pageH }
+					: new int[] { marginTop, pageH - marginTop - marginBottom };
+			switch (tblpPr.getTblpYSpec()) {
+				case CENTER: align = "center"; break;
+				case BOTTOM: case OUTSIDE: align = "after"; break;
+				default: align = "before"; break; // top, inside
+			}
+		} else if (tblpPr.getTblpY() != null
+				&& (vertPage || org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor()))) {
+			topTwips = (vertPage ? 0 : marginTop) + tblpPr.getTblpY().intValue();
+		}
+		if (topTwips == null && frame == null) return indent; // stays in the flow
+
+		tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_LEFT,
+				UnitsOfMeasurement.twipToBest(marginLeft + indent));
+		if (topTwips != null) {
+			tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_TOP, UnitsOfMeasurement.twipToBest(topTwips));
+		} else {
+			tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_FRAME,
+					UnitsOfMeasurement.twipToBest(frame[0]) + " " + UnitsOfMeasurement.twipToBest(frame[1]));
+			tableRoot.setAttribute(WordLayoutFixups.HINT_TBLP_ALIGN, align);
+		}
+		// the start-indent stands: the fixups zero it only where they do position the
+		// table (which they decline to do for a table with text before it)
+		return indent;
+	}
+
+	private static int intValue(java.math.BigInteger v, int fallback) {
+		return v == null ? fallback : v.intValue();
+	}
+
+	private static org.docx4j.model.structure.PageDimensions pageDimensions(AbstractWmlConversionContext context) {
+		try {
+			return context.getSections().getCurrentSection().getPageDimensions();
+		} catch (Exception e) {
+			logger.debug("No section page dimensions: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/** The document's w:compatSetting compatibilityMode (12 when it has none).
@@ -424,7 +543,12 @@ public class TableWriter extends AbstractTableWriter {
   		// since start-indent is inherited, we need to counteract any setting on the table itself
   		// see http://stackoverflow.com/questions/12391778/shift-a-fop-table-to-the-right
   		rowContainer.setAttribute("start-indent", "0in");
-  		
+  		// end-indent likewise: a table given a negative one (a merged continuous section
+  		// carrying its own page margins, ConversionSectionWrapperFactory) passed it down to
+  		// every paragraph in every cell, which then ran that far past the cell's edge.
+  		// @since 17.0.6
+  		rowContainer.setAttribute("end-indent", "0in");
+
   	}
   	
     /**
