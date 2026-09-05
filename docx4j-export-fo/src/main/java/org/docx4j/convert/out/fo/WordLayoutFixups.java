@@ -142,6 +142,7 @@ public final class WordLayoutFixups {
 		hoistFloats(doc);
 		reserveUnpaintablePictures(doc);
 		emptyLineForBlockWithNoContent(doc);
+		leadingWhitespaceLeader(doc);
 		containWhitespaceTreatment(doc);
 		dropParagraphAfterNestedTable(doc);
 		dropPageBreaksInTableCells(doc);
@@ -154,6 +155,7 @@ public final class WordLayoutFixups {
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
 		fixLists(doc);
+		blockForEmptyCell(doc);
 		clipExactRows(doc);
 		stripHints(doc);
 	}
@@ -970,6 +972,10 @@ public final class WordLayoutFixups {
 		for (Element fl : floats) {
 			Integer position = at.get(fl);
 			if (position == null || position > lastBlockInsideInline) continue;
+			// FOP renders a float holding an fo:table at flow level as nothing at all
+			// (measured), so such a float is never moved; a floating table which would
+			// need this is left in the flow instead ({@link #floatFloatingTable}).
+			if (widest(fl, "table") > 0) continue;
 			Node child = fl;
 			Node parent = fl.getParentNode();
 			while (parent instanceof Element && !isFo((Element) parent, "flow")) {
@@ -1000,6 +1006,19 @@ public final class WordLayoutFixups {
 			if (n instanceof Element) last = Math.max(last, number((Element) n, counter, floats));
 		}
 		return last;
+	}
+
+	/** The widest fo:external-graphic (content-width) or fo:table (width) at or under
+	 *  this element; 0 where it holds none. */
+	private static double widest(Element el, String name) {
+		double w = 0;
+		if (isFo(el, name)) {
+			w = "table".equals(name) ? tableWidthPt(el) : lengthPt(el.getAttribute("content-width"));
+		}
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) w = Math.max(w, widest((Element) n, name));
+		}
+		return w;
 	}
 
 	// ------------------------------------------------------------ 0e. pictures FOP cannot paint
@@ -1216,9 +1235,52 @@ public final class WordLayoutFixups {
 			if (off > 0) wrapper.setAttribute("padding-top", pt(off));
 			wrapper.setAttribute("start-indent", pt(Math.max(0, x)));
 		}
+		resetTextBox(box);
 		box.getParentNode().removeChild(box);
 		wrapper.appendChild(box);
 		para.insertBefore(wrapper, para.getFirstChild());
+	}
+
+	/**
+	 * A text box is laid out from its own edges, and nothing in it is paginated.
+	 *
+	 * <p><b>Alignment and indents.</b> The box's blocks would otherwise inherit the
+	 * anchoring paragraph's text-align and indents, which are about the paragraph, not
+	 * about the box.  Measured on a 222-page letter whose letterhead is a VML box
+	 * anchored in a right-aligned cell paragraph: Word starts all seven of the box's
+	 * lines at x=346.0, where each of ours was right-aligned inside the box, from 312.4
+	 * to 438.9.  A paragraph of the box which states its own w:jc keeps it - that goes on
+	 * its own block.</p>
+	 *
+	 * <p><b>Pagination.</b> Word paginates nothing inside a text box: it is a frame, not
+	 * part of the flow.  FOP, given break-before="page" inside an absolutely positioned
+	 * container, paints only the last container of a run of them - measured on three
+	 * boxes in zero-height wrappers, only the third was drawn, and without the breaks all
+	 * three were.  A 335-page mail merge of 2345 boxes, every paragraph of which carries
+	 * w:pageBreakBefore, came out with one line a page against Word's nine (3167
+	 * reference lines against our 335).</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static void resetTextBox(Element box) {
+		box.setAttribute("text-align", "start");
+		box.setAttribute("text-align-last", "relative");
+		box.setAttribute("text-indent", "0pt");
+		box.setAttribute("start-indent", "0pt");
+		box.setAttribute("end-indent", "0pt");
+		dropPagination(box);
+	}
+
+	/** Pagination properties FOP must not see inside a positioned container. */
+	private static final String[] PAGINATION = { "break-before", "break-after",
+			"keep-together", "keep-together.within-page", "keep-with-next",
+			"keep-with-next.within-page", "keep-with-previous", "keep-with-previous.within-page" };
+
+	private static void dropPagination(Element el) {
+		for (String name : PAGINATION) el.removeAttribute(name);
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) dropPagination((Element) n);
+		}
 	}
 
 	/** The block the text box belongs to: the nearest ancestor fo:block. */
@@ -1298,6 +1360,36 @@ public final class WordLayoutFixups {
 				while (cell.getFirstChild() != null) container.appendChild(cell.getFirstChild());
 				cell.appendChild(container);
 			}
+		}
+	}
+
+	/**
+	 * An {@code fo:table-cell} must hold at least one block: its content model is
+	 * {@code marker* (%block;)+}, and FOP fails the whole export with
+	 * "fo:table-cell is missing child elements" where it holds none.
+	 *
+	 * <p>A cell whose every paragraph is hidden text produces none: &#xa7;9.3's rule that
+	 * a paragraph all of whose runs and whose mark are hidden leaves no line at all is
+	 * right in the flow, but empties the cell.  Word prints the row with an empty cell -
+	 * its height comes from the other cells - so an empty {@code fo:block}, which
+	 * generates no line and so no height, is exactly what is wanted.  Measured: one
+	 * document of a 103-document corpus has eleven such cells, and lost its whole
+	 * export to them.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void blockForEmptyCell(Document doc) {
+		for (Element cell : elements(doc, "table-cell")) {
+			boolean hasBlock = false;
+			for (Node n = cell.getFirstChild(); n != null && !hasBlock; n = n.getNextSibling()) {
+				if (!(n instanceof Element)) continue;
+				Element child = (Element) n;
+				hasBlock = isFo(child, "block") || isFo(child, "block-container")
+						|| isFo(child, "table") || isFo(child, "list-block")
+						|| isFo(child, "table-and-caption") || isFo(child, "block-container");
+			}
+			if (hasBlock) continue;
+			cell.appendChild(doc.createElementNS(FO_NS, "fo:block"));
 		}
 	}
 
@@ -1566,6 +1658,160 @@ public final class WordLayoutFixups {
 	}
 
 	/**
+	 * The whitespace a paragraph begins with, as a leader of exactly its width.
+	 *
+	 * <p>Word paints it (&#xa7;4.5) and the XSL-FO default treatment,
+	 * ignore-if-surrounding-linefeed, deletes it, so
+	 * {@link XsltFOFunctions#createBlockForPPr} writes
+	 * {@code white-space-treatment="preserve"} on such a block.  That keeps the leading
+	 * spaces - and also the space at every <em>line-break opportunity</em>, so every
+	 * wrapped line starts one space to the right of Word's, and on a justified line that
+	 * space is stretched too.  Measured on a document whose first body paragraph is
+	 * justified and begins with ten literal spaces: Word's continuation lines all start at
+	 * x=113.3 where ours ran 119.0 / 117.0 / 117.9 / 120.0 - a spread of up to 4.6pt, on 92
+	 * of that document's 142 matched runs of lines and on six documents of a 103-document
+	 * corpus.  Isolated on the same block in a probe FO, preserve buys the ten leading
+	 * spaces (x0 144.7 against Word's 146.9, the default's 113.3) and costs one space,
+	 * 2.8-3.0pt, at every wrap.</p>
+	 *
+	 * <p>An {@code fo:inline} carrying the property instead is not honoured - FOP reads it
+	 * from the nearest ancestor block - so the whitespace itself becomes an
+	 * {@code fo:leader} of its measured width, which is what a leading tab already is
+	 * (&#xa7;4.4): it reserves the width, is not a break opportunity, and puts no glyphs in
+	 * the PDF's text layer, where Word's own PDF has none either.  The block then goes back
+	 * on the default treatment.  Where the width cannot be measured - no font, no size, or
+	 * whitespace other than plain spaces - the property stands, which is 17.0.5's
+	 * behaviour.</p>
+	 *
+	 * <p>The empty-paragraph placeholder (&#xa7;2.5), whose whole content is one space, is
+	 * left alone: that space is the line, not an indent.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void leadingWhitespaceLeader(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if (!"preserve".equals(block.getAttribute("white-space-treatment"))) continue;
+			if (inFlowText(block).trim().length() == 0) continue; // the placeholder
+			List<Node> at = new ArrayList<Node>();
+			List<Integer> counts = new ArrayList<Integer>();
+			boolean[] state = new boolean[] { true, false };
+			scanLeadingWhitespace(block, state, at, counts);
+			if (state[1] || at.isEmpty()) continue;
+			List<Double> widths = new ArrayList<Double>();
+			boolean ok = true;
+			for (int i = 0; i < at.size() && ok; i++) {
+				double w = spacesWidthPt(block, at.get(i), counts.get(i).intValue());
+				if (w < 0) ok = false;
+				else widths.add(Double.valueOf(w));
+			}
+			if (!ok) continue;
+			for (int i = 0; i < at.size(); i++) {
+				Node text0 = at.get(i);
+				Element leader = doc.createElementNS(FO_NS, "fo:leader");
+				leader.setAttribute("leader-pattern", "space");
+				leader.setAttribute("leader-length",
+						org.docx4j.fonts.WordLineMetrics.format(widths.get(i).doubleValue()));
+				text0.getParentNode().insertBefore(leader, text0);
+				text0.setNodeValue(text0.getNodeValue().substring(counts.get(i).intValue()));
+			}
+			block.removeAttribute("white-space-treatment");
+		}
+	}
+
+	/** The block's own text: what an out-of-flow child (a positioned container, a float)
+	 *  holds is not on this block's line. */
+	private static String inFlowText(Element el) {
+		StringBuilder sb = new StringBuilder();
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
+				if (n.getNodeValue() != null) sb.append(n.getNodeValue());
+			} else if (n instanceof Element) {
+				Element child = (Element) n;
+				if (isFo(child, "block-container") || isFo(child, "float")) continue;
+				sb.append(inFlowText(child));
+			}
+		}
+		return sb.toString();
+	}
+
+	/** The width of n spaces in the font this text node is set in, or -1 where it cannot be
+	 *  worked out.  The block is the outermost place to look for the font. */
+	private static double spacesWidthPt(Element block, Node text, int count) {
+		String family = null, size = null;
+		for (Node p = text.getParentNode(); p instanceof Element; p = p.getParentNode()) {
+			Element el = (Element) p;
+			if (family == null && el.getAttribute("font-family").length() > 0) {
+				family = el.getAttribute("font-family");
+			}
+			if (size == null && el.getAttribute("font-size").length() > 0) {
+				size = el.getAttribute("font-size");
+			}
+			if (el == block) break;
+		}
+		if (family == null || size == null) return -1;
+		double sizePt = lengthPt(size);
+		if (sizePt <= 0) return -1;
+		org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(family);
+		if (pf == null) return -1;
+		StringBuilder spaces = new StringBuilder(count);
+		for (int i = 0; i < count; i++) spaces.append(' ');
+		try {
+			double w = org.docx4j.fonts.TextMeasurer.widthPt(spaces.toString(), pf, sizePt);
+			return w > 0 ? w : -1;
+		} catch (RuntimeException e) {
+			return -1;
+		}
+	}
+
+	/**
+	 * The text nodes which begin with whitespace FOP would delete: at the start of the
+	 * block, and after each nested block (a w:br).  Mirrors
+	 * XsltFOFunctions.scanLeadingWhitespace, which decides whether the property is written.
+	 *
+	 * @param state [0] true while the next character would be "after a linefeed" for FOP;
+	 *        [1] set where such whitespace is something other than plain spaces
+	 */
+	private static void scanLeadingWhitespace(Node n, boolean[] state,
+			List<Node> at, List<Integer> counts) {
+		NodeList children = n.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node child = children.item(i);
+			if (child.getNodeType() == Node.TEXT_NODE || child.getNodeType() == Node.CDATA_SECTION_NODE) {
+				String v = child.getNodeValue();
+				if (v == null || v.isEmpty()) continue;
+				if (state[0] && isXmlWhitespace(v.charAt(0))) {
+					int end = 0;
+					while (end < v.length() && isXmlWhitespace(v.charAt(end))) end++;
+					for (int j = 0; j < end; j++) {
+						if (v.charAt(j) != ' ') state[1] = true;
+					}
+					at.add(child);
+					counts.add(Integer.valueOf(end));
+				}
+				state[0] = false;
+				continue;
+			}
+			if (!(child instanceof Element)) continue;
+			Element el = (Element) child;
+			if (isFo(el, "block-container") || isFo(el, "float")) continue;
+			if (isFo(el, "inline") || isFo(el, "wrapper") || isFo(el, "basic-link")
+					|| isFo(el, "bidi-override")) {
+				scanLeadingWhitespace(el, state, at, counts);
+				continue;
+			}
+			if (isFo(el, "block") || isFo(el, "list-block") || isFo(el, "table")) {
+				state[0] = true;
+				continue;
+			}
+			state[0] = false; // a leader, an external-graphic, a page-number, ...
+		}
+	}
+
+	private static boolean isXmlWhitespace(char c) {
+		return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+	}
+
+	/**
 	 * white-space-treatment is an <em>inherited</em> property, and FOP reads it from the
 	 * nearest ancestor fo:block (XMLWhiteSpaceHandler takes it from currentBlock), so a
 	 * paragraph which needs its own whitespace preserved - the empty-paragraph
@@ -1815,7 +2061,16 @@ public final class WordLayoutFixups {
 		double prevAfter = 0;
 		for (Element flow : elements(doc, "flow")) {
 			Element first = firstBlock(flow);
-			if (first != null && hasSpace(first, "space-before")) {
+			if (first != null && isAutoSpaceBefore(first)) {
+				// HTML auto spacing (w:beforeAutospacing) is a margin, and a margin
+				// collapses out at the top of the body: measured on a document whose
+				// first paragraph carries it, every line of page 1 was exactly +14.0pt -
+				// Word 73.5 / 86.7 / 98.2 / 109.7, docx4j 87.5 / 100.7 / 112.2 / 123.7.
+				// An explicit w:spacing w:before is honoured there (the spacing-page-top
+				// probe: 36pt before on the first paragraph of a document), so only the
+				// automatic value goes.  @since 17.0.6
+				first.setAttribute("space-before", "0pt");
+			} else if (first != null && hasSpace(first, "space-before")) {
 				double before = Math.max(0, lengthPt(first.getAttribute("space-before")) - prevAfter);
 				if (before > 0) {
 					first.setAttribute("space-before", org.docx4j.fonts.WordLineMetrics.format(before));
@@ -1827,6 +2082,17 @@ public final class WordLayoutFixups {
 			Element last = lastBlock(flow);
 			prevAfter = (last == null || !hasSpace(last, "space-after")) ? 0 : lengthPt(last.getAttribute("space-after"));
 		}
+	}
+
+	/** Whether this block's space-before is HTML auto spacing (w:beforeAutospacing),
+	 *  which the hint records as "b" or "ba". */
+	private static boolean isAutoSpaceBefore(Element block) {
+		if (!hasSpace(block, "space-before")) return false;
+		if (block.getAttribute(HINT_AUTOSPACING).contains("b")) return true;
+		// a borders/shading wrapper carries the first paragraph's spacing (syncContainerSpacing)
+		Element inner = firstBlock(block);
+		return inner != null && inner != block && hasSpace(inner, "space-before")
+				&& inner.getAttribute(HINT_AUTOSPACING).contains("b");
 	}
 
 	/** The last fo:block in document order under this element, not descending into tables. */

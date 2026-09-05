@@ -808,7 +808,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 InlineLevelEventProducer eventProducer
                     = InlineLevelEventProducer.Provider.get(
                         getFObj().getUserAgent().getEventBroadcaster());
-                if (curChildLM.getFObj() == null) {
+                /* FOP 2.11's LineLayoutManager:403 reads curChildLM.getFObj() without
+                 * checking curChildLM itself, and curChildLM is null on the float
+                 * re-layout pass (PageBreaker.handleFloatLayout), so a line which has to
+                 * be broken in what is left beside a wide fo:float throws
+                 * NullPointerException here and the whole export fails.  Plain FOP 2.11
+                 * throws the same on the same FO, so it is an upstream defect; two
+                 * documents of a 103-document corpus were lost to it, and this is only
+                 * the event which reports the overflow.  @since 17.0.6 */
+                if (curChildLM == null || curChildLM.getFObj() == null) {
                     eventProducer.lineOverflows(this, getFObj().getName(), bestActiveNode.line,
                             -lack, getFObj().getLocator());
                 } else {

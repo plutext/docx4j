@@ -28,7 +28,14 @@ import org.w3c.dom.NodeList;
  * started 58.8pt left of Word's line, and five leading spaces in a right-aligned cell
  * cost 19.96pt.</p>
  *
- * <p><b>And where the property goes.</b> white-space-treatment is an <em>inherited</em>
+ * <p><b>But not by preserving whitespace on the block</b>, which also keeps the space at
+ * every line-break opportunity: measured on a document whose first body paragraph is
+ * justified and begins with ten literal spaces, Word's continuation lines all start at
+ * x=113.3 where ours ran 119.0 / 117.0 / 117.9 / 120.0.  The whitespace itself becomes an
+ * fo:leader of its measured width instead, as a leading tab already is.</p>
+ *
+ * <p><b>And where the property goes</b> when it is still needed (the empty-paragraph
+ * placeholder).  white-space-treatment is an <em>inherited</em>
  * property which FOP reads from the nearest ancestor fo:block, so it has to be written on
  * the paragraph's block - but where that block is also a container (a paragraph whose
  * objects were lifted into positioned fo:block-containers), every block inside those
@@ -93,8 +100,17 @@ public class WhitespaceTreatmentTest extends AbstractXSLFOTest {
 			Element b = (Element) blocks.item(i);
 			if (!b.getTextContent().contains("Indented by spaces")) continue;
 			found = true;
-			assertEquals("the block holding the leading spaces must preserve them",
-					"preserve", b.getAttribute("white-space-treatment"));
+			assertEquals("the leading spaces must be a leader, not text", "Indented by spaces",
+					b.getTextContent());
+			org.w3c.dom.NodeList leaders = b.getElementsByTagNameNS(FO_NS, "leader");
+			assertEquals("one leader, of the width of the five spaces", 1, leaders.getLength());
+			Element leader = (Element)leaders.item(0);
+			assertEquals("space", leader.getAttribute("leader-pattern"));
+			assertTrue("no width: " + leader.getAttribute("leader-length"),
+					Double.parseDouble(leader.getAttribute("leader-length").replace("pt", "")) > 4);
+			assertEquals("white-space-treatment=preserve also keeps the space at every"
+					+ " line-break opportunity, so the block stays on the default",
+					"", b.getAttribute("white-space-treatment"));
 		}
 		assertTrue("the paragraph was not found in the FO", found);
 	}
@@ -141,16 +157,25 @@ public class WhitespaceTreatmentTest extends AbstractXSLFOTest {
 				with - without > 4000);
 	}
 
-	/** The ipd (inline-progression dimension) of the first text area on the first line. */
+	/** The inline-progression dimension of everything on the first line - the leading
+	 *  whitespace is a leader area, not a text area. */
 	private static int firstLineWidth(org.w3c.dom.Document areaTree) {
 		NodeList lines = areaTree.getElementsByTagName("lineArea");
 		assertTrue("no lineArea", lines.getLength() > 0);
-		NodeList texts = ((Element) lines.item(0)).getElementsByTagName("text");
-		assertTrue("no text area", texts.getLength() > 0);
+		return sumIpd((Element) lines.item(0));
+	}
+
+	private static int sumIpd(Element parent) {
 		int total = 0;
-		for (int i = 0; i < texts.getLength(); i++) {
-			String ipd = ((Element) texts.item(i)).getAttribute("ipd");
-			if (ipd.length() > 0) total += Integer.parseInt(ipd);
+		for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			String ipd = el.getAttribute("ipd");
+			if (ipd.length() > 0) {
+				total += Integer.parseInt(ipd);
+			} else {
+				total += sumIpd(el);
+			}
 		}
 		return total;
 	}

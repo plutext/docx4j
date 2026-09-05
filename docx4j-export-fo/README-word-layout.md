@@ -91,6 +91,13 @@ monospace font; it needs hyphenation patterns, which FOP does not ship, so
 `net.sf.offo:fop-hyph` is a **test-scope** dependency of this module (it is not
 under the Apache licence and is a dependency of nothing docx4j publishes).
 
+The copy carries one fix to FOP's own code as well: `updateData2` reads
+`curChildLM.getFObj()` without checking `curChildLM`, which is null on the float
+re-layout pass, so a line that has to be broken in what is left beside a wide
+`fo:float` threw `NullPointerException` and failed the whole export. Plain FOP
+2.11 throws the same on the same FO; the block it guards only reports the
+overflow. Keep the null check when re-deriving, and drop it if FOP fixes it.
+
 The copy is tied to FOP 2.11 internals. When FOP is upgraded, re-derive it:
 copy the new `LineLayoutManager.java`, rename, extend `LineLayoutManager`,
 route `LineBreakPosition` and `AlignmentContext` construction through `LBP`,
@@ -98,5 +105,6 @@ and re-apply the greedy members of the inner `LineBreakingAlgorithm`
 (`findBreakingPoints`, `considerLegalBreak`, `fitsByShrinkingSpaces`,
 `commit`, `greedyBreakPoints`, `handleGlueAt`/`computeDifference` for tabs,
 `commitLastFitting`/`hyphenationAllowed` for hyphenation), the caps check in
-`getHyphenContext`, and the single-pass `findOptimalBreakingPoints`. `GreedyLineBreakingTest` checks the result on a
+`getHyphenContext`, the null check in `updateData2`, and the single-pass
+`findOptimalBreakingPoints`. `GreedyLineBreakingTest` checks the result on a
 monospace font where every expected break can be counted.

@@ -441,4 +441,142 @@ public class WordLayoutFixupsTest {
 		assertTrue("nor a space-before: " + last, last.contains("space-before=\"0pt\""));
 		assertTrue("but the last paragraph's space-after stands: " + last, last.contains("space-after=\"10pt\""));
 	}
+
+	// ------------------------------------------------------------------- empty cell
+
+	/**
+	 * An fo:table-cell must hold at least one block (content model
+	 * marker* (%block;)+); FOP fails the whole export with "fo:table-cell is missing
+	 * child elements" where it holds none.  A cell whose every paragraph is hidden text
+	 * produces none - Word prints the row with the cell empty, its height coming from
+	 * the other cells.  One document of a 103-document corpus has eleven such cells and
+	 * lost its whole export to them.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void anEmptyCellGetsABlock() {
+		String table = "<fo:table " + NS + "><fo:table-body><fo:table-row>"
+				+ "<fo:table-cell><fo:block>hello</fo:block></fo:table-cell>"
+				+ "<fo:table-cell display-align=\"center\" padding-left=\"2.03mm\"/>"
+				+ "</fo:table-row></fo:table-body></fo:table>";
+		String out = WordLayoutFixups.apply(flow(table), 15);
+		assertFalse("the empty cell is still empty: " + out, out.contains("padding-left=\"2.03mm\"/>"));
+		assertEquals("one block per cell", 2, count(out, "<fo:block"));
+	}
+
+	@Test
+	public void aCellHoldingOnlyAContainerIsLeftAlone() {
+		String table = "<fo:table " + NS + "><fo:table-body><fo:table-row>"
+				+ "<fo:table-cell><fo:block-container><fo:block>x</fo:block></fo:block-container></fo:table-cell>"
+				+ "</fo:table-row></fo:table-body></fo:table>";
+		String out = WordLayoutFixups.apply(flow(table), 15);
+		assertEquals("a block-container is a %block; nothing to add", 1, count(out, "<fo:block>"));
+	}
+
+	// ------------------------------------------------------------------- text boxes
+
+	/** An absolutely positioned text box, as FOTextBoxes writes it before the fixups. */
+	private static String textBox(String blocks) {
+		return "<fo:block " + NS + " text-align=\"right\" start-indent=\"20pt\" docx4j-pstyle=\"A\">"
+				+ "<fo:block-container docx4j-anchor=\"none\" docx4j-anchor-w=\"180pt\""
+				+ " docx4j-anchor-h=\"30pt\" docx4j-anchor-x=\"100pt\" docx4j-anchor-col=\"451pt\""
+				+ " docx4j-anchor-ml=\"72pt\" docx4j-anchor-y=\"para:90pt\">"
+				+ blocks + "</fo:block-container></fo:block>";
+	}
+
+	/**
+	 * Word lays a text box out from the box's own edges: its paragraphs inherit neither
+	 * the anchoring paragraph's w:jc nor its indents.  Measured on a 222-page letter
+	 * whose letterhead box is anchored in a right-aligned cell paragraph: Word starts
+	 * all seven of its lines at x=346.0, where ours ran from 312.4 to 438.9.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aTextBoxDoesNotInheritTheParagraphsAlignment() {
+		String out = WordLayoutFixups.apply(flow(textBox("<fo:block>Service de l'informatique</fo:block>")), 15);
+		int box = out.indexOf("absolute-position");
+		assertTrue("the box was not positioned: " + out, box > 0);
+		String container = out.substring(out.lastIndexOf("<fo:block-container", box), out.indexOf('>', box));
+		assertTrue("the box must reset text-align: " + container, container.contains("text-align=\"start\""));
+		assertTrue("and the indents: " + container, container.contains("start-indent=\"0pt\""));
+	}
+
+	/**
+	 * Word paginates nothing inside a text box.  FOP, given break-before="page" inside
+	 * an absolutely positioned container, paints only the last container of a run of
+	 * them: measured on three boxes in zero-height wrappers, only the third was drawn,
+	 * and without the breaks all three were.  A 335-page mail merge of 2345 boxes, every
+	 * paragraph carrying w:pageBreakBefore, came out with one line a page against Word's
+	 * nine.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aTextBoxIsNotPaginated() {
+		String out = WordLayoutFixups.apply(flow(
+				textBox("<fo:block break-before=\"page\" keep-with-next.within-page=\"always\">x</fo:block>")), 15);
+		assertFalse("a page break inside a text box loses the box: " + out, out.contains("break-before"));
+		assertFalse(out.contains("keep-with-next"));
+	}
+
+	// ------------------------------------------------------------------- flow start
+
+	/**
+	 * HTML auto spacing (w:beforeAutospacing) is a margin, and a margin collapses out at
+	 * the top of the body: measured on a document whose first paragraph carries it,
+	 * every line of page 1 was exactly +14.0pt (Word 73.5 / 86.7 / 98.2, docx4j 87.5 /
+	 * 100.7 / 112.2).  An explicit w:spacing w:before is honoured there - the
+	 * spacing-page-top probe measured 36pt on the first paragraph of a document - so
+	 * only the automatic value goes.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void autoSpaceBeforeGoesAtTheStartOfAFlow() {
+		String out = WordLayoutFixups.apply(flow(
+				"<fo:block docx4j-pstyle=\"A\" docx4j-autospacing=\"ba\" space-before=\"14pt\" space-after=\"14pt\">one</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\" docx4j-autospacing=\"ba\" space-before=\"14pt\">two</fo:block>"), 15);
+		String first = out.substring(out.indexOf("<fo:block", out.indexOf("<fo:flow")), out.indexOf(">one<"));
+		assertTrue("auto space-before must go at the top of the flow: " + first,
+				first.contains("space-before=\"0pt\""));
+		assertFalse("and must not be retained: " + first, first.contains("conditionality"));
+	}
+
+	@Test
+	public void anExplicitSpaceBeforeIsStillRetainedAtTheStartOfAFlow() {
+		String out = WordLayoutFixups.apply(flow(
+				"<fo:block docx4j-pstyle=\"A\" space-before=\"36pt\">one</fo:block>"), 15);
+		assertTrue(out.contains("space-before.conditionality=\"retain\""));
+	}
+
+	// ------------------------------------------------------------------- floats
+
+	private static final String MASTERS =
+			"<fo:layout-master-set><fo:simple-page-master master-name=\"m\" page-width=\"595.3pt\""
+			+ " page-height=\"841.9pt\" margin-left=\"85.05pt\" margin-right=\"85.05pt\">"
+			+ "<fo:region-body column-count=\"1\" margin-left=\"0mm\" margin-right=\"0mm\"/>"
+			+ "</fo:simple-page-master></fo:layout-master-set>";
+
+	/** A whole page-sequence, so that the fixups can work out the measure (425.2pt). */
+	private static String page(String blocks) {
+		return "<fo:root " + NS + ">" + MASTERS
+				+ "<fo:page-sequence master-reference=\"m\"><fo:flow flow-name=\"xsl-region-body\">"
+				+ blocks + "</fo:flow></fo:page-sequence></fo:root>";
+	}
+
+	/** FOP renders a float holding an fo:table at flow level as nothing at all
+	 *  (measured), so such a float is never moved there. */
+	@Test
+	public void aFloatHoldingATableIsNeverHoisted() {
+		String out = WordLayoutFixups.apply(page(
+				"<fo:block><fo:float float=\"left\"><fo:block>"
+				+ "<fo:table width=\"460pt\"><fo:table-body><fo:table-row><fo:table-cell>"
+				+ "<fo:block>x</fo:block></fo:table-cell></fo:table-row></fo:table-body></fo:table>"
+				+ "</fo:block></fo:float></fo:block>"
+				+ "<fo:block><fo:inline><fo:block>y</fo:block></fo:inline></fo:block>"), 15);
+		assertFalse("a float holding a table renders nothing at flow level: " + out,
+				out.contains("<fo:flow flow-name=\"xsl-region-body\"><fo:float"));
+	}
 }

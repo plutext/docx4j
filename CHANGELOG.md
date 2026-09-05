@@ -96,10 +96,42 @@ content edge
 paragraph, which was never examined
 - w:pgMar w:bottom="0" no longer reserves w:footer as the bottom margin where the section
 has no footer part
+- a hard page break which follows content in its own paragraph now breaks the page where it
+is, not before the paragraph: Word leaves the text (or picture) before it on the page it is
+on
+- text in an absolutely positioned text box is no longer aligned or indented by the
+paragraph the box is anchored in, and pagination properties (w:pageBreakBefore, keep-*)
+inside a text box are dropped: FOP paints only the last of a run of positioned containers
+which carry a page break
+- a metrically compatible substitute is now used only for the characters it can draw:
+Caladea, which stands in for Cambria, has no Greek and no Cyrillic, so a Greek document set
+in Cambria came out 48% notdef
+- w:w character scaling is now applied, as a measured letter-spacing: FOP cannot scale text
+horizontally, but the run's total advance - which is what decides where the lines break -
+is reproduced exactly
+- the line height of a document font docx4j has no metrics for, and Windows itself
+substitutes, now comes from the font Windows substitutes: a Helvetica document's lines were
+24.6% too tall, having taken the substitute's own OS/2 win metrics
+- Sylfaen's Georgian now uses DejaVu Serif Condensed, measured 10% closer to Word's line
+widths than DejaVu Serif
+- whitespace a paragraph begins with is now a leader of its measured width rather than
+whitespace preserved on the block, which also kept the space at every line-wrap point and
+moved every wrapped line 3-5pt right
+- HTML auto spacing (w:beforeAutospacing) is now dropped at the top of a page-sequence, as a
+margin collapses at the top of an HTML body; an explicit w:spacing w:before is still applied
+there
+- documents which failed to export at all now export: a table cell whose every paragraph is
+hidden text no longer produces an empty fo:table-cell, which is invalid FO; and a line
+broken beside a wide fo:float no longer throws NullPointerException (FOP 2.11's
+LineLayoutManager reads a null layout manager when reporting the overflow)
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's
 formatting (and no longer logs "null currentSpan!")
+
+HTML output:
+- a hard page break which follows content in its own paragraph now breaks the page where it
+is, as in the PDF output above
 
 Other:
 - loading: the zip-bomb guard's FileTooLargeException (total uncompressed size over

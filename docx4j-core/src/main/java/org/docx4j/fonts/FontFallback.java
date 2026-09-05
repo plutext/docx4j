@@ -61,19 +61,37 @@ public class FontFallback {
 	/** The broad classes a stand-in can preserve. */
 	public enum FontClass { SERIF, SANS, MONO, UNKNOWN }
 
-	/** Scripts a conventional Latin substitute can be assumed to cover, so that a
-	 *  font used only for these needs no coverage-driven choice. */
+	/** Scripts which do not identify a font of their own: no installed face is named
+	 *  after them, so {@link #scriptWord} has nothing to look for and
+	 *  {@link #warnNoCoverage} nothing to name. */
 	private static final Set<Character.UnicodeScript> LATINISH = new LinkedHashSet<Character.UnicodeScript>(
 			Arrays.asList(Character.UnicodeScript.LATIN, Character.UnicodeScript.COMMON,
 					Character.UnicodeScript.INHERITED, Character.UnicodeScript.GREEK,
 					Character.UnicodeScript.CYRILLIC, Character.UnicodeScript.UNKNOWN));
+
+	/**
+	 * Scripts every conventional stand-in covers, so that text using only these needs no
+	 * coverage check at all.
+	 *
+	 * <p>Greek and Cyrillic are <b>not</b> among them, although they were until 17.0.6.
+	 * A metric-compatible clone is chosen for its advance widths, and several of them
+	 * carry the Latin alphabet alone: Caladea, which stands in for Cambria, has no Greek
+	 * and no Cyrillic at all.  Measured on a Greek document set in Cambria, 48% of the
+	 * glyphs painted were notdef, on 68 Word pages, while Carlito - already loaded for
+	 * the same document's Calibri - covers both scripts.  Skipping the check for them
+	 * meant the per-script pass ({@link RunFontSelector} glyph fallback) never ran on the
+	 * text that most needed it.</p>
+	 */
+	private static final Set<Character.UnicodeScript> ALWAYS_COVERED = new LinkedHashSet<Character.UnicodeScript>(
+			Arrays.asList(Character.UnicodeScript.LATIN, Character.UnicodeScript.COMMON,
+					Character.UnicodeScript.INHERITED, Character.UnicodeScript.UNKNOWN));
 
 	/** Whether a font used only with these code points needs a coverage-driven substitute
 	 *  (as opposed to one chosen on class alone). */
 	public static boolean needsCoverage(int[] codePoints) {
 		if (codePoints==null) return false;
 		for (int cp : codePoints) {
-			if (!LATINISH.contains(scriptOf(cp))) return true;
+			if (!ALWAYS_COVERED.contains(scriptOf(cp))) return true;
 		}
 		return false;
 	}
@@ -360,6 +378,10 @@ public class FontFallback {
 		FontClass fontClass = classOf(documentFontName);
 
 		List<PhysicalFont> candidates = new ArrayList<PhysicalFont>();
+		for (String name : measuredForScript(documentFontName, codePoints)) {
+			PhysicalFont pf = PhysicalFonts.get(name);
+			if (pf!=null) candidates.add(pf);
+		}
 		for (String name : substituteNames(documentFontName)) {
 			PhysicalFont pf = physicalFontByKey(name);
 			if (pf!=null) candidates.add(pf);
@@ -395,6 +417,39 @@ public class FontFallback {
 			if (covers(pf, codePoints)) return pf;
 		}
 		return null;
+	}
+
+	/**
+	 * Substitutes measured against Word's own PDFs for one document font in one script,
+	 * where the ordinary class-based order picks a face whose widths are wrong.
+	 *
+	 * <p>A document font may need a different stand-in per script - the class defaults
+	 * are chosen for Latin - and a script's first covering face is not necessarily its
+	 * closest.  Measured: Sylfaen's Georgian in DejaVu Serif comes out 8.6% wide (a line
+	 * Word ends at x=525.5 ran to 546.6, 21pt past its right edge; over 82 exact-match
+	 * lines of another document the ratio is Word/ours 0.876), where DejaVu Serif
+	 * Condensed measures 0.900 - the only Georgian-covering face within 3%.  Noto Serif
+	 * Georgian is 0.999 of DejaVu Serif, i.e. no better.</p>
+	 *
+	 * <p>Sylfaen's <em>Cyrillic</em> has no such answer here: Caladea measures closest to
+	 * it (1.0288 against Tinos's 1.041) but has no Cyrillic at all, so Tinos stands.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static List<String> measuredForScript(String documentFontName, int[] codePoints) {
+
+		List<String> result = new ArrayList<String>();
+		if (documentFontName==null) return result;
+		String name = documentFontName.trim().toLowerCase();
+		boolean georgian = false;
+		for (int cp : codePoints) {
+			if (scriptOf(cp)==Character.UnicodeScript.GEORGIAN) { georgian = true; break; }
+		}
+		if (georgian && name.startsWith("sylfaen")) {
+			result.add("DejaVu Serif Condensed");
+			result.add("DejaVu Serif Condensed Book");
+		}
+		return result;
 	}
 
 	/** Regular weights before bold/italic/light variants, and the document font's class first. */

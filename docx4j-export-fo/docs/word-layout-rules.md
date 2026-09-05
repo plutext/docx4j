@@ -225,6 +225,18 @@ So the line manager can apply this per run, the run font selector stamps the doc
 on each span (`docx4j:font`): a run of Tahoma set in Arimo keeps Tahoma's line height. A
 font that cannot be read at all falls back to a factor of 1.2, FOP's `normal`.
 
+<a id="s27alias"></a>**A document font in neither the table nor the machine** falls back to
+the physical substitute's own metrics, and those are not the metrics of the font it stands
+in for. Measured on a 9pt single-spaced Helvetica document: Word's line pitch is 10.34pt
+(1.149 em) and docx4j's was 12.89pt, +24.6% on every line, 249 reference lines against our
+320, five Word pages against six. The 12.89pt is Arimo's OS/2 `usWinAscent`/`usWinDescent`,
+2136/797 over 2048 units, a factor of 1.432; Arial's are 1854/434 with a 67-unit external
+leading, 1.150 - which is what Word gives Helvetica, because Windows substitutes Arial for
+it. So the rule is not "use hhea when the win metrics look large": it is that Word uses the
+metrics of the font it substitutes, and `WordLineMetrics` therefore carries a short list of
+such aliases (Helvetica and Helvetica Neue take Arial's row). A font with no entry and no
+alias still takes the physical font's, which is all there is to go on.
+
 ### 2.8 List labels
 
 Word raises a list item's first line by the amount the label's ascent exceeds the text's -
@@ -248,12 +260,36 @@ to be put back. At a section start the first paragraph's space-before is reduced
 space-after of the previous section's last paragraph: measured, 36pt before, after 0 / 10 /
 20pt of after, gives 36 / 26 / 16pt; 6pt before after 20pt of after gives 0.
 
+**HTML auto spacing is the exception there.** `w:beforeAutospacing` is a margin, and a
+margin collapses out at the top of the body: measured on a document whose first paragraph
+carries it, every line of page 1 was exactly +14.0pt (Word 73.5 / 86.7 / 98.2 / 109.7 /
+121.3 / 132.8, docx4j 87.5 / 100.7 / 112.2 / 123.7 / 135.2 / 146.7) and its 9 Word pages
+were 10. An explicit `w:spacing w:before` is honoured at a flow start - that is what the
+`spacing-page-top` probe measures, 36pt on the first paragraph of a document - so only the
+automatic value is dropped. The first flow block carried a retained space-before in 17 of
+99 documents of the long-document corpus.
+
 **Contextual spacing.** `w:contextualSpacing` (ECMA-376 17.3.1.9) zeroes the gap between
 two same-style paragraphs when **either** carries it, not only on the flagged paragraph's
 side: a contextual paragraph followed by a non-contextual one of the same style with 12pt
 before gets no gap.
 
-<a id="s33"></a>**Hard page breaks.** A paragraph holding only a page break leaves no empty
+<a id="s33"></a>**Hard page breaks.** Word breaks the page **at** the break: where a
+`w:br w:type="page"` follows content in its own paragraph, what precedes it stays on the
+page it is on and what follows opens the next. docx4j moved the break to the front of the
+paragraph (`w:pageBreakBefore`, the `w:br` dropped), which took the text before it to the
+next page as well: measured with `mutool draw -F trace` on a document whose cover picture
+and page break share a paragraph, Word puts the 270x225pt picture on page 1
+(`transform="270 0 0 225 162.65 347.59"`) and docx4j put it on page 2 at y=80.58, so every
+line of page 2 sat 268.4pt low and 54 Word pages came out as 44. 21 of 99 documents of a
+corpus of long real documents hold such a paragraph. The paragraph is split in two at the
+break (`convert/out/common/preprocess/PageBreak`), and because the two halves are one
+paragraph nothing is doubled between them: the first keeps the space-before and loses the
+space-after, the second the other way about, and the second takes neither the numbering
+label - Word numbers the paragraph once - nor the first-line indent. A `w:sectPr` belongs
+to the paragraph's end, so it goes with the second half.
+
+A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there **from
 compatibility mode 15**, and kept below mode 15. The break moves to the next paragraph, or
 to the next container which takes no space (a floating table or a picture already positioned
@@ -588,10 +624,34 @@ of a block, and the position after a nested block (which is what a `w:br` become
 Measured: a run whose `w:t` is `xml:space="preserve"` with eighteen leading spaces at 13pt
 Times New Roman started 58.8pt left of Word's line, and five leading spaces in a
 right-aligned cell cost 19.96pt - Word right-aligns the text *and its leading spaces* on
-the content edge. So `white-space-treatment="preserve"` goes on the block, but only where
-the block really does begin with whitespace. This applies to a paragraph whose only
+the content edge. This applies to a paragraph whose only
 in-flow content is spaces as well (typically one which also anchors a text box): Word
 gives it a line, and FOP built none, since the spaces were gone before layout.
+
+<a id="s45nbsp"></a>**But not with `white-space-treatment="preserve"`**, which docx4j set
+on the block until 17.0.6: it also keeps the space that falls at a **line-break
+opportunity**, so every wrapped line starts one space to the right of Word's, and on a
+justified line that space is stretched too. Measured on a document whose first body
+paragraph is justified and begins with ten literal spaces, Word's continuation lines all
+start at x=113.3 where ours ran 119.0 / 117.0 / 117.9 / 120.0 - a spread of up to 4.6pt, on
+92 of that document's 142 matched runs of lines and on six documents of the long-document
+corpus. Isolated on the same block in a probe FO: `preserve` buys the ten leading spaces
+(x0 144.7 against Word's 146.9, the default's 113.3) and costs one space, 2.8-3.0pt, at
+every wrap. An `fo:inline` carrying the property instead is not honoured - FOP reads it
+from the nearest ancestor block, as above - so the **leading whitespace itself** becomes an
+`fo:leader` of exactly its measured width, which is what a leading tab already is (§4.4):
+it reserves the width, is not a break opportunity, and the block goes back on the default
+treatment. `WordLayoutFixups.leadingWhitespaceLeader` does it, rather than the block writer,
+because the block's `font-family` is not settled until that writer returns. Where the width
+cannot be measured - no font, no size, or whitespace other than plain spaces - the property
+stands, which is what 17.0.5 did.
+
+A leader also keeps the PDF's **text layer** as Word's is. No-break spaces were tried first
+and reproduce the geometry exactly - the painted lines are identical to the point - but they
+are glyphs, so the extracted text gains five or eight leading spaces that Word's PDF does
+not have, which the harness scores as a line that does not match. The empty-paragraph
+placeholder of [§2.5](#s25), whose whole in-flow content is one space, keeps `preserve`:
+that space is the line, not an indent.
 
 **And it must not be inherited.** `white-space-treatment` is an inherited property which
 FOP reads from the nearest ancestor `fo:block`, so it has to be on the paragraph's block -
@@ -605,7 +665,7 @@ out-of-flow child of such a block back on the XSL-FO default, which stops the in
 without moving the placeholder off the block that needs it. The same applies to the
 empty-paragraph placeholder of [§2.5](#s25).
 
-### 4.6 Character spacing (`w:spacing` on a run)
+### 4.6 Character spacing (`w:spacing` on a run) and scaling (`w:w`)
 
 Word adds the expansion after **every** character, spaces included, which is also how FOP
 renders it. The problem is how FOP *measures* it: FOP 2.11's complex-script text path
@@ -622,6 +682,26 @@ one 0.3pt marginal case, line parity 29% -> 79%, and `kern-title` 93% -> 100%. C
 letter space after every character when measuring, rather than the plain path's count,
 broke a word early on every line, so Word's fit rule is the plain path's. Upstream FOP
 report candidate.
+
+<a id="s46w"></a>**`w:w`, character scaling** (ECMA-376 17.3.2.43) multiplies the run's
+glyph advances by a percentage. Neither XSL-FO nor FOP can scale text horizontally: there
+is no property for it, `font-stretch` is CSS and picks a different face rather than
+scaling one, and scaling only the *measurement* would leave FOP painting glyphs wider than
+the space reserved for them. What can be reproduced exactly is the effect that matters for
+layout, the run's total advance, so the difference is spread over the run's characters as
+`letter-spacing`, which FOP both measures and renders: the glyphs keep their shape, the
+words fall where Word puts them and the lines break where Word breaks them. The amount is
+measured rather than estimated - each span's natural width is taken from the font FOP will
+use (`org.docx4j.fonts.TextMeasurer`) and the letter space is
+`width x (w/100 - 1) / characters` - and it is applied in `RunFontSelector`, so both
+pathways get it. **Limitation**: a run which also carries `w:spacing` keeps only the
+character spacing, since the two share the one property; Word applies both.
+Measured on a document of 186 scaled runs (`w:w` 102/103/105) whose font mapping is exact
+(Arial->Arimo, Times->Tinos, Courier->Cousine), so that `w:w` is the whole error: the
+median width ratio of our lines to Word's over twenty long matched lines was 0.9516, e.g.
+a line Word draws 72.5..520.3 (447.8pt) came out 72.4..497.2 (424.8pt); it scores 0.746 ->
+0.937 of Word's lines. Programmatically, a 94% run's painted line is now 94% of its natural
+width to within 2%.
 
 ---
 
@@ -642,6 +722,19 @@ For a font the machine does not have, docx4j chooses in this order:
    text, a font that can actually render it - preferring the document font's class, caching
    the choice per (font, script), and warning once per font and script rather than once per
    glyph (`org.docx4j.fonts.FontFallback`).
+
+<a id="s51cover"></a>Step 3 applies to a step-1 substitute too. A metric clone is chosen
+for its advance widths, and several of them carry the Latin alphabet alone: Caladea, which
+stands in for Cambria, has neither Greek nor Cyrillic (`fc-query`:
+`20-7e a0-161 164-17f 192 1fa-1ff 218-21b 237 2c6-2c7 ...`). Until 17.0.6 the coverage check
+skipped Greek and Cyrillic outright, on the assumption that any conventional stand-in
+covers them, so step 1's choice was never questioned. Measured on a 68-page Greek document
+set in Cambria: **48% of the glyphs docx4j painted were notdef** and its line parity was
+0.072, the worst of a 103-document corpus, while Carlito - already loaded for the same
+document's Calibri - covers both scripts. The check now runs for every script but Latin,
+Common and Inherited, so the clone renders what it can and the rest falls through to a face
+that can draw it (Greek Cambria reaches Tinos here, a serif with Greek; the residual is the
+width difference, and the document goes to 0.248 with Word's page count within 3 of ours).
 
 Without the last two, an unmapped font fell back to the document's default font whatever
 the script, so Georgian, Ethiopic or CJK text came out as notdef boxes even on a machine
@@ -668,11 +761,15 @@ against the real font:
 Each of these falls back through the choice it replaced, so a machine with only the
 Liberation jar behaves as before.
 
-**Not solved**: Sylfaen (a Georgian face) renders 19% *wider* than Word's - Word 161.1..464.5
-against our 132.4..493.1 - through the glyph-aware pass's DejaVu Serif. Of the Georgian
-faces installed on the reference machine, Noto Serif Georgian measures 0.993 and Noto Sans
-Georgian 1.006 of DejaVu Serif, where 0.84 is wanted, so no substitution available here
-helps.
+**Sylfaen** (a Georgian face) rendered wide through the glyph-aware pass's DejaVu Serif:
+measured, our Georgian lines are 8.6% wider than Word's (a line Word ends at x=525.5 ran to
+546.6, 21pt past its right edge) and over 82 exact-match lines of a second document the
+ratio Word/ours is 0.876. **DejaVu Serif Condensed** measures 0.900 - the only
+Georgian-covering face within 3%, where Noto Serif Georgian is 0.999 of DejaVu Serif, i.e.
+no better - so `FontFallback` carries it as a measured per-(font, script) preference,
+consulted before the class defaults. Sylfaen's *Cyrillic* has no such answer here: Caladea
+measures closest to it (1.0288 against Tinos's 1.041) but has no Cyrillic at all, so Tinos
+stands and the residual is 4%.
 
 Some fonts are deliberately **left unmapped**, each measured over the corpus to be better
 off with the document default than with any available stand-in: condensed faces generally,
@@ -943,6 +1040,14 @@ in for 72 twips of spacing.
 - Where `w:tblGrid` declares fewer `w:gridCol` than a row has cells, the grid follows the
   widest row, as Word does; an added column takes the cell's own width, else an equal share
   of what is left of the table's width.
+- **A cell which produced no block gets an empty one.** `fo:table-cell`'s content model is
+  `marker* (%block;)+`, and FOP fails the whole export with "fo:table-cell is missing child
+  elements" where a cell holds none. A cell whose every paragraph is hidden text produces
+  none - [§9.3](#93-hidden-text)'s rule that such a paragraph leaves no line is right in the
+  flow but empties the cell. Word prints the row with the cell empty, its height coming from
+  the other cells, which is what an empty `fo:block` gives (it generates no line, so no
+  height). One document of a 103-document corpus has eleven such cells and lost its whole
+  export to them.
 
 <a id="s68"></a>**Exact row heights.** `w:trHeight` with `w:hRule="exact"`: Word keeps the
 row at that height and lets the text overflow over the rows below, where FOP treats the
@@ -1218,6 +1323,22 @@ the same anchoring path as pictures. A VML box takes its position from the `v:sh
 the shape is `stroked="f"`; a DrawingML shape takes the anchor's own geometry and its
 `wps:bodyPr` insets; a shape inside `mc:AlternateContent` renders the fallback.
 
+**A text box is laid out from its own edges, and nothing in it is paginated.** Its blocks
+would otherwise inherit the anchoring paragraph's `text-align` and indents, which are about
+the paragraph rather than the box: measured on a 222-page letter whose letterhead is a VML
+box anchored in a right-aligned cell paragraph, Word starts all seven of the box's lines at
+x=346.0 where each of ours was right-aligned inside the box, from 312.4 to 438.9. And Word
+paginates nothing inside a box - it is a frame, not part of the flow - while FOP, given
+`break-before="page"` inside an absolutely positioned container, paints only the **last**
+container of a run of them: measured on three boxes in zero-height wrappers, only the third
+was drawn, and without the breaks all three were. A 335-page mail merge of 2345 boxes, every
+paragraph of which carries `w:pageBreakBefore`, came out with one line a page against Word's
+nine - 3167 reference lines against our 335, line parity 0.101, and 0.974 once the
+pagination properties are stripped. So the positioned container resets `text-align`,
+`text-indent` and the indents, and `break-*` and `keep-*` are dropped from everything inside
+it; a paragraph of the box which states its own `w:jc` keeps it, since that goes on its own
+block.
+
 **A text box is never given to `fo:float`**, whatever its wrapping style: a float discards
 the box's position, which is the one thing the docx states exactly, and FOP's side floats
 are unreliable (§10). Instead, a box in front of or behind the text, and a wrapped box
@@ -1286,6 +1407,17 @@ Worked around here, and worth knowing about:
   child of `fo:flow`, and `WordLayoutFixups` moves it there in a document which has both
   (only then: at flow level the float anchors slightly higher, which measures a little
   further from Word).
+- **`fo:float` plus a line that has to break beside it throws.** FOP 2.11's
+  `LineLayoutManager$LineBreakingAlgorithm.updateData2` (line 403) reads
+  `curChildLM.getFObj()` without checking `curChildLM`, which is null on the float
+  re-layout pass under `PageBreaker.handleFloatLayout`, so a line broken in what is left
+  beside a wide float throws `NullPointerException` and the export fails. It takes a side
+  float, a following block mixing block-level and inline children - which is what an
+  anchored picture or text box lifted into a positioned container beside a run of text
+  produces - and a line that overflows; two documents of a 103-document corpus were lost to
+  it. Plain FOP 2.11 throws the same on the same FO, so it is upstream, but the copy of
+  `LineLayoutManager` docx4j carries (§4.1) has the null check, and the block it guards only
+  reports the overflow. Upstream report candidate: one null check.
 - **A float holding a table renders nothing at flow level**, and a float with no line to
   anchor to is dropped: a float which is a direct child of `fo:flow` and holds an
   `fo:table` produces no area at all, silently (measured, same minimal case with a table in
@@ -1311,6 +1443,14 @@ Limitations that remain in docx4j's output:
   rather than laid out, and a stretch that does not fit the page is left as equal columns.
 - **Text does not flow beside a text box** (§9.2), nor down both sides of a picture in the
   middle of a column (§9.1).
+- **Right and dot-leader tab stops** still cost line parity in documents full of
+  tables of contents: `docx4j:tab` leaders whose resolved stop is right-aligned or carries
+  a dot leader are the largest remaining item of the long-document corpus (a zero-length
+  leader appears in 64 of 99 of its documents, and a `right` or `decimal` stop in 26).
+  The stops themselves are resolved (§4.4); what is not settled is where the residual
+  comes from - measured cases include a table-of-contents line 26pt short of Word's, an
+  after-tab fragment laid out on a line of its own, and a line running past the page edge -
+  and no rule has been derived for them yet.
 - **Page references in tabbed text**: FOP measures a line containing an unresolved
   `fo:page-number-citation` with an `MMM` placeholder, so a right, centre or decimal stop
   whose text holds a page reference lands a few points off. Table-of-contents entries are

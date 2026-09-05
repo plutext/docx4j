@@ -1167,16 +1167,25 @@ public class XsltFOFunctions {
 	             * a right-aligned cell cost 19.96pt, the line being right-aligned on text
 	             * that no longer holds them.
 	             *
-	             * white-space-treatment is only set where the block really does begin
-	             * with whitespace, since preserving it everywhere is what used to indent
-	             * the line after a wrap (issue 369): with the default, FOP drops the glue
-	             * at each line boundary, which is Word's own behaviour for a run of
-	             * spaces at a line end.
+	             * white-space-treatment="preserve" on the block would do it, but it also
+	             * keeps the space that falls at a *line-break opportunity*, so every
+	             * wrapped line starts one space to the right of Word's (and on a
+	             * justified line that space is stretched too).  Measured on a document
+	             * whose first body paragraph is justified and begins with ten literal
+	             * spaces: Word's continuation lines all start at x=113.3, ours at 119.0 /
+	             * 117.0 / 117.9 / 120.0 - a spread of up to 4.6pt, on 92 of its 142
+	             * matched runs of lines, and on six documents of a 103-document corpus.
+	             * Isolated on a probe: preserve buys the ten leading spaces (x0 144.7
+	             * against Word's 146.9, the default's 113.3) and costs one space,
+	             * 2.8-3.0pt, at every wrap.
+	             *
+	             * So the property is written here, and
+	             * WordLayoutFixups.leadingWhitespaceLeader then replaces the whitespace
+	             * itself with an fo:leader of exactly its width - which is what a leading
+	             * tab already is - and takes the property off again.  It runs there
+	             * because the block's font-family is not settled until this method
+	             * returns.  Where the width cannot be measured the property stands.
 	             * @since 17.0.6 */
-	            if (startsWithWhitespace(n)) {
-	            	((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
-	            }
-
 	//				log.info("Node we are importing: " + n.getClass().getName() );
 	//				foBlockElement.appendChild(
 	//						document.importNode(n, true) );
@@ -1190,6 +1199,9 @@ public class XsltFOFunctions {
 				 * So instead of importNode, use 
 				 */
 	            XmlUtils.treeCopy( n,  foBlockElement );
+	            if (startsWithWhitespace(foBlockElement)) {
+	            	((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
+	            }
 	            if (!applyBlockLineHeight(foBlockElement, pPr)) {
 	            	// no run text to size the lines from (a paragraph holding only a
 	            	// picture): the paragraph's own font, as for an empty paragraph, so

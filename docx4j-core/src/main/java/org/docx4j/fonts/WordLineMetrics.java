@@ -119,7 +119,7 @@ public final class WordLineMetrics {
 	 */
 	public static Metrics get(String documentFont, PhysicalFont pf) {
 		Metrics physical = get(pf);
-		int[] t = documentFont == null ? null : TABLE.get().get(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
+		int[] t = documentFont == null ? null : lookup(documentFont);
 		if (t == null) return physical;
 		double upem = t[0];
 		int winA = t[1], winD = t[2], hheaA = t[3], hheaD = t[4], gap = t[5];
@@ -130,7 +130,38 @@ public final class WordLineMetrics {
 
 	/** whether the table knows this document font */
 	public static boolean hasTableEntry(String documentFont) {
-		return documentFont != null && TABLE.get().containsKey(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
+		return documentFont != null && lookup(documentFont) != null;
+	}
+
+	private static int[] lookup(String documentFont) {
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		int[] t = TABLE.get().get(key);
+		if (t != null) return t;
+		String alias = ALIASES.get(key);
+		return alias == null ? null : TABLE.get().get(alias);
+	}
+
+	/**
+	 * Document fonts Windows itself substitutes, whose line metrics Word therefore takes
+	 * from the font it substitutes rather than from any table of its own.
+	 *
+	 * <p>Without this the line box came from the <em>physical substitute's</em> OS/2 win
+	 * metrics, which are not the metrics of the font it stands in for: Arimo's
+	 * usWinAscent/Descent are 2136/797 over 2048 units, a factor of 1.432, where Arial's
+	 * are 1854/434 with a 67-unit external leading, 1.150 - the number every Arial
+	 * document already gets, and the number Word uses for Helvetica.  Measured on a
+	 * 9pt single-spaced Helvetica document: Word's line pitch is 10.34pt (1.149 em) and
+	 * docx4j's was 12.89pt, +24.6% on every line, five Word pages against our six.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static final Map<String, String> ALIASES;
+	static {
+		Map<String, String> m = new java.util.HashMap<>();
+		m.put("helvetica", "arial");
+		m.put("helvetica neue", "arial");
+		m.put("helveticaneue", "arial");
+		ALIASES = java.util.Collections.unmodifiableMap(m);
 	}
 
 	private static final java.util.function.Supplier<Map<String, int[]>> TABLE = new java.util.function.Supplier<Map<String, int[]>>() {
