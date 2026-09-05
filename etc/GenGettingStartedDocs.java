@@ -5,12 +5,14 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 /**
  * Regenerates the derived formats of the Getting Started guide from the
  * canonical docx, using docx4j itself (the HTML via the visitor exporter —
- * the 17.0.4 default — and the Markdown via docx4j-markdown).  The PDF is
- * produced separately, from Word (update the TOC field there first: F9).
+ * the 17.0.4 default — the Markdown via docx4j-markdown, and, from 17.0.5,
+ * the PDF via docx4j-export-fo with the Word layout managers).  Update the
+ * TOC field in Word first (F9) so the page numbers are current.
  *
  * Run per release, from the repo root, against the installed artifacts
  * (JEP 330 single-file launch; needs docx4j-core, docx4j-JAXB-ReferenceImpl,
- * docx4j-markdown and their deps on the classpath — or just the fat jar):
+ * docx4j-markdown, docx4j-export-fo and the croscore/crosextra font jars on
+ * the classpath — or just the fat jar):
  *
  *   java -cp docx4j-bundle-&lt;version&gt;-shaded.jar etc/GenGettingStartedDocs.java \
  *        docs/Docx4j_GettingStarted.docx docs \
@@ -47,6 +49,17 @@ public class GenGettingStartedDocs {
 				java.nio.file.Path.of(outDir, "Docx4j_GettingStarted.html"),
 				breakAtBlockBoundaries(baos.toString(java.nio.charset.StandardCharsets.UTF_8)));
 		System.out.println("HTML OK");
+
+		// PDF via XSL FO / FOP with the Word layout managers (17.0.5); fonts: the
+		// docx names Calibri/Cambria/Consolas, mapped to Carlito/Caladea/Cousine
+		pkg = Docx4J.load(new java.io.File(docx));
+		try (java.io.FileOutputStream pdf = new java.io.FileOutputStream(
+				java.nio.file.Path.of(outDir, "Docx4j_GettingStarted.pdf").toFile())) {
+			org.docx4j.convert.out.FOSettings fo = Docx4J.createFOSettings();
+			fo.setOpcPackage(pkg);
+			Docx4J.toFO(fo, pdf, Docx4J.FLAG_NONE); // explicitly the FO pathway
+		}
+		System.out.println("PDF OK");
 	}
 
 	/**

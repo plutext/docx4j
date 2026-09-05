@@ -148,7 +148,10 @@ Contents
 
 [Appendix 2 – Office font solutions	49](#_Toc239264962)
 
-This guide covers docx4j **11.5.x **and** 17.x**, both of which are for Java 11 and later.   
+  
+
+
+**This guide is for docx4j 17.0.5 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -285,7 +288,7 @@ docx4j is in Maven Central.  For Maven users, this makes it really easy to get g
 
 As noted in the introduction, current release series are docx4j **11.5.x.** and **17.x**
 
-To use docx4j 17.0.4, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
+To use docx4j 17.0.5, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
 
 &#9;	\<!-- use the JAXB Reference Implementation --\>
 
@@ -295,7 +298,7 @@ To use docx4j 17.0.4, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		\<artifactId\>**docx4j-JAXB-ReferenceImpl**\</artifactId\>
 
-&#9;		\<version\>17.0.4\</version\>
+&#9;		\<version\>17.0.5\</version\>
 
 &#9;	\</dependency\>
 
@@ -309,7 +312,7 @@ To use docx4j 17.0.4, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		\<artifactId\>**docx4j-JAXB-MOXy**\</artifactId\>
 
-&#9;		\<version\>17.0.4\</version\>
+&#9;		\<version\>17.0.5\</version\>
 
 &#9;	\</dependency\>
 
@@ -395,10 +398,12 @@ Javadoc can be downloaded from Maven Central (search for docx4j at search.maven.
 
 Get the source code from GitHub (see above), then… (you probably want to skip down to the next page, to get it working in Eclipse).
 
+docx4j builds on Linux, macOS and Windows (from 17.0.5).
+
 ## Command line -via Maven
 
 export MAVEN\_OPTS=-Xmx512m  
-mvn install 
+mvn install  -Dgpg.skip=true
 
 ## Eclipse
 
@@ -1287,9 +1292,7 @@ Generally, you'll also need to add a reference to the part (using its relationsh
 
 docx4j can convert XHTML content (paragraphs, tables, images — and, since 17.0.4, MathML, which becomes a native Word equation) into native WordML, reproducing much of the formatting.  
 
-From v3, the XHTML Import functionality is a [separate project on GitHub](https://github.com/plutext/docx4j-ImportXHTML).
-
-The reason being that its main dependency – Flying Saucer - is licensed under LGPL v2.1 (as opposed to ASL v2, which docx4j’s other dependencies use).
+XHTML Import functionality is a [separate project on GitHub](https://github.com/plutext/docx4j-ImportXHTML) because its main dependency – Flying Saucer - is licensed under LGPL v2.1 (as opposed to ASL v2, which docx4j’s other dependencies use).
 
 If you want this functionality, you have to add these jars to your classpath.
 
@@ -1398,9 +1401,9 @@ If Word is not available, you can generate PDF output via XSL FO using FOP.  If 
 
 From 17.0.4, the visitor (non-XSLT) FO exporter is likewise the default (pass Docx4J.FLAG\_EXPORT\_PREFER\_XSL for the XSLT pathway), and equations in the docx are rendered in the PDF, via the JEuclid FOP plugin which docx4j-export-fo now includes.
 
-See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
+PDF output via XSL FO is substantially improved in 17.0.5: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
 
-Configure hyphenation at [https://github.com/plutext/docx4j/blob/master/docx4j-samples-resources/src/main/resources/docx4j.properties#L115](https://github.com/plutext/docx4j/blob/master/docx4j-samples-resources/src/main/resources/docx4j.properties)
+See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
 These jars are in the zip file, in dir optional/export-fo  
 
