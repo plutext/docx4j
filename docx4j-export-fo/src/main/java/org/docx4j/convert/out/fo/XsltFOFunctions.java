@@ -707,9 +707,7 @@ public class XsltFOFunctions {
 			if (sdt) { 
 				// Don't convert an SDT into an extra fo:list-block!
 				document.appendChild(foBlockElement);
-			} else if (pPr!=null 
-					&& pPr.getNumPr()!=null 
-					&& pPr.getNumPr().getNumId()!=null
+			} else if (numIdVal(pPr)!=null
 					&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
 					) {
 				
@@ -1111,6 +1109,29 @@ public class XsltFOFunctions {
 				foBlockElement.getAttribute("line-height"), pPr, documentFont);
 	}
 
+	/**
+	 * The numbering level of a w:numPr as a string.  Both w:ilvl and its w:val are
+	 * optional; Word treats their absence as level 0.
+	 *
+	 * @since 17.0.5
+	 */
+	static String ilvlVal(PPrBase.NumPr numPr) {
+		if (numPr == null || numPr.getIlvl() == null || numPr.getIlvl().getVal() == null) return "0";
+		return numPr.getIlvl().getVal().toString();
+	}
+
+	/**
+	 * The w:numId of a pPr's numbering as a string, or null when there isn't one.
+	 *
+	 * @since 17.0.5
+	 */
+	static String numIdVal(PPrBase pPr) {
+		if (pPr == null || pPr.getNumPr() == null
+				|| pPr.getNumPr().getNumId() == null
+				|| pPr.getNumPr().getNumId().getVal() == null) return null;
+		return pPr.getNumPr().getNumId().getVal().toString();
+	}
+
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
 			Element foBlockElement, Element foListBlock) {
@@ -1160,22 +1181,26 @@ public class XsltFOFunctions {
 		foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
 		
 		ResultTriple triple;
-		if (pPrDirect!=null && pPrDirect.getNumPr()!=null) {
+		// w:ilvl is optional (and so is its w:val); a paragraph numbered with just a
+		// w:numId is at level 0.  Likewise w:numId/@w:val: without it there is no
+		// numbering to apply.  @since 17.0.5
+		String directNumId = numIdVal(pPrDirect);
+		if (directNumId != null) {
 			triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-					wmlPackage, pStyleVal, 
-				pPrDirect.getNumPr().getNumId().getVal().toString(), 
-				pPrDirect.getNumPr().getIlvl().getVal().toString() ); 
+					wmlPackage, pStyleVal,
+				directNumId,
+				ilvlVal(pPrDirect.getNumPr()) );
 		} else {
 			// Get the effective values; since we already know this,
 			// save the effort of doing this again in Emulator
-			Ilvl ilvl = pPr.getNumPr().getIlvl();
-			String ilvlString = ilvl == null ? "0" : ilvl.getVal().toString();
-			triple = null; 
-			if (pPr.getNumPr().getNumId()!=null) {
+			String ilvlString = ilvlVal(pPr.getNumPr());
+			triple = null;
+			String numIdString = numIdVal(pPr);
+			if (numIdString != null) {
 				triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-						wmlPackage, pStyleVal, 
-		    			pPr.getNumPr().getNumId().getVal().toString(), 
-		    			ilvlString ); 		        	
+						wmlPackage, pStyleVal,
+		    			numIdString,
+		    			ilvlString );
 			}
 		}
 		

@@ -211,18 +211,26 @@ public class AbstractTableWriterModel extends TableModel {
 		
 		ensureFoTableBody(trFinder.getTrList()); // this is currently applied to HTML etc as well
 		
-		int r = 0;
+		int r = 0;      // index of the w:tr in the converted content
 		for (Tr tr : trFinder.getTrList()) {
 				startRow(tr);
 				handleRow(cellContents, tr, r);
 				r++;
 				if (rows.get(row).getRowContents().isEmpty()) {
+					// a w:tr with no w:tc (Word renders nothing for it); r is not
+					// decremented, since it indexes the converted content, in which
+					// this row is still present
 					rows.remove(row);
 					row--;
-					r--;
 				}
 		}
-		
+
+		// rows which are wholly covered by merges from elsewhere can't be written
+		dropFullySpannedRows();
+
+		// and where the rows are wider than w:tblGrid, the grid follows the rows
+		extendGridToWidestRow();
+
 		CTTblPrBase tblPr = effectiveTableStyle.getTblPr();
 		if (tblPr != null) {
 			if (tblPr.getTblCellSpacing()!=null) {

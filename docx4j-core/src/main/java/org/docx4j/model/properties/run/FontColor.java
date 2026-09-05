@@ -90,7 +90,7 @@ public class FontColor extends AbstractRunProperty {
 	public String getCssProperty() {
 		
 		if (((Color)this.getObject()).getVal()!=null ) {
-			return composeCss(CSS_NAME, "#" + ((Color)this.getObject()).getVal());
+			return composeCss(CSS_NAME, hexColour(((Color)this.getObject()).getVal()));
 		} else {
 			return CSS_NULL;
 		}
@@ -105,7 +105,7 @@ public class FontColor extends AbstractRunProperty {
 				// set it to black
 				foElement.setAttribute(FO_NAME, "black");				
 			} else {
-				foElement.setAttribute(FO_NAME, "#" + ((Color)this.getObject()).getVal());
+				foElement.setAttribute(FO_NAME, hexColour(((Color)this.getObject()).getVal()));
 			}
 		} else {
 			//

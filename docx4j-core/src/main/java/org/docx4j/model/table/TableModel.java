@@ -31,7 +31,9 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.TcFinder;
+import org.docx4j.jaxb.Context;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTHeight;
 import org.docx4j.wml.CTTrPrBase;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
@@ -40,6 +42,7 @@ import org.docx4j.wml.TblGridCol;
 import org.docx4j.wml.TblPr;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
+import org.docx4j.wml.TrPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -230,20 +233,31 @@ public class TableModel {
 //	}
 
 	protected void addDummyCell(int colSpan, boolean isBefore, boolean isAfter) {
-		
+
 		log.debug("gridSpan, so addDummyCell " + colSpan + " " + isBefore + " " + isAfter);
-		TableModelCell cell; 
-		if (colSpan>1) {
-			for (int i=1; i<colSpan; i++) {
-				cell = new TableModelCell(this, row, ++col);
-				cell.dummyBefore=isBefore;
-				cell.dummyAfter=isAfter;
-				cell.setColspan(colSpan);
-				addCell(cell);				
-			}
+		/* w:gridSpan: the cell itself occupies the first of the colSpan grid columns,
+		 * so it is followed by colSpan-1 dummies.
+		 *
+		 * w:gridBefore/w:gridAfter: there is no such cell, so the row needs a dummy for
+		 * each of the colSpan grid columns skipped.  Before 17.0.5 one of them was lost
+		 * (and, where colSpan was 1, all of them), leaving the row narrower than the
+		 * grid; a row wider than the first row then overflowed the columns written for
+		 * the table.  @since 17.0.5
+		 */
+		int count = (isBefore || isAfter) ? colSpan : colSpan - 1;
+		TableModelCell cell;
+		for (int i=0; i<count; i++) {
+			cell = new TableModelCell(this, row, ++col);
+			cell.dummyBefore=isBefore;
+			cell.dummyAfter=isAfter;
+			// a gridBefore/gridAfter dummy stands for a single grid column; a gridSpan
+			// dummy carries its cell's span, so vertically merged cells below it can
+			// pick the span up (see TableModelCell)
+			cell.setColspan((isBefore || isAfter) ? 1 : colSpan);
+			addCell(cell);
 		}
-		
-		
+
+
 	}
 
 	protected void addCell(TableModelCell cell) {
@@ -263,8 +277,17 @@ public class TableModel {
 		return "col" + String.valueOf(col + 1);
 	}
 
+	/**
+	 * The number of columns in the table: that of its widest row.  (Until 17.0.5 this
+	 * was the width of the first row, so a table whose later rows had more cells - which
+	 * Word allows, and renders by extending the grid - was written with too few columns.)
+	 */
 	public int getColCount() {
-		return rows.get(0).size();
+		int max = 0;
+		for (TableModelRow r : rows) {
+			if (r.size() > max) max = r.size();
+		}
+		return max;
 	}
 
 	public List<TableModelRow> getRows() {
@@ -598,8 +621,146 @@ public class TableModel {
 		return null;
 	}
 	
+	/**
+	 * A row in which every cell continues a merge begun elsewhere has nothing of its
+	 * own to write: Word draws it as part of the merged cell, and it contributes only
+	 * its height.  Neither XSL-FO (fo:table-row's content model is table-cell+) nor
+	 * HTML can express a row with no cell at all, so the row is dropped, the merges
+	 * which covered it are shortened by one row, and its height is given to the row
+	 * above (which is where the merge starts).
+	 *
+	 * @since 17.0.5
+	 */
+	protected void dropFullySpannedRows() {
+
+		for (int r = rows.size()-1; r>0; r--) {
+
+			TableModelRow modelRow = rows.get(r);
+			List<TableModelCell> contents = modelRow.getRowContents();
+			if (contents.isEmpty()) continue; // build() drops these
+			if (rowWritesCells(r)) continue;
+
+			log.debug("row " + r + " is entirely spanned; dropping it");
+
+			// shorten the merges which covered it, exactly reversing the increments
+			// the vertically merged cells of this row made when they were added
+			for (TableModelCell cell : contents) {
+				if (cell.isVMerged()) cell.decrementRowSpan();
+			}
+
+			transferHeight(rows.get(r-1), modelRow);
+
+			rows.remove(r);
+			if (headerMaxRow >= r) headerMaxRow--;
+			if (row >= r) row--;
+		}
+	}
+
+	/**
+	 * True if the row at index r has at least one cell to write; a row which has none
+	 * (every cell continues a merge) is dropped by {@link #dropFullySpannedRows}.
+	 */
+	public boolean rowWritesCells(int r) {
+		for (TableModelCell cell : rows.get(r).getRowContents()) {
+			if (!cell.isDummy() || cell.isDummyBefore() || cell.isDummyAfter()) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Add the height of a row being dropped to the row which absorbs it, so the table
+	 * keeps its overall height.  The properties are copied first: they belong to the
+	 * document, which we must not alter.
+	 */
+	private void transferHeight(TableModelRow target, TableModelRow dropped) {
+
+		CTHeight droppedHeight = trHeight(dropped.getRowProperties());
+		if (droppedHeight==null || droppedHeight.getVal()==null) return;
+
+		TrPr trPr = target.getRowProperties();
+		TrPr copy = (trPr==null ? Context.getWmlObjectFactory().createTrPr() : XmlUtils.deepCopy(trPr));
+		CTHeight targetHeight = trHeight(copy);
+		if (targetHeight==null) {
+			targetHeight = Context.getWmlObjectFactory().createCTHeight();
+			targetHeight.setHRule(droppedHeight.getHRule());
+			targetHeight.setVal(droppedHeight.getVal());
+			copy.getCnfStyleOrDivIdOrGridBefore().add(
+					Context.getWmlObjectFactory().createCTTrPrBaseTrHeight(targetHeight));
+		} else {
+			targetHeight.setVal(targetHeight.getVal()==null ? droppedHeight.getVal()
+					: targetHeight.getVal().add(droppedHeight.getVal()));
+		}
+		target.setRowProperties(copy);
+	}
+
+	private CTHeight trHeight(TrPr trPr) {
+		if (trPr==null) return null;
+		JAXBElement<?> element = getElement(trPr.getCnfStyleOrDivIdOrGridBefore(), "trHeight");
+		return (element==null ? null : (CTHeight)element.getValue());
+	}
+
+	/**
+	 * Word trusts the cells: where a row has more cells than w:tblGrid has w:gridCol,
+	 * the grid is extended (otherwise the extra cells have no column to sit in, which
+	 * XSL-FO rejects).  A missing column takes the width of the cell in it, else an
+	 * equal share of what is left of the table's preferred width, else the average of
+	 * the columns the grid does declare.  The grid is copied before it is extended,
+	 * since it belongs to the document.
+	 *
+	 * @since 17.0.5
+	 */
+	protected void extendGridToWidestRow() {
+
+		int cols = getColCount();
+		if (tblGrid==null || tblGrid.getGridCol()==null || tblGrid.getGridCol().isEmpty()) return;
+		int declared = tblGrid.getGridCol().size();
+		if (declared >= cols) return;
+
+		log.debug("table has " + cols + " columns but only " + declared + " gridCol; extending the grid");
+
+		int declaredWidth = 0, withWidth = 0;
+		for (TblGridCol gridCol : tblGrid.getGridCol()) {
+			if (gridCol.getW()!=null) {
+				declaredWidth += gridCol.getW().intValue();
+				withWidth++;
+			}
+		}
+		int share = -1;
+		if (tblPr!=null && tblPr.getTblW()!=null && tblPr.getTblW().getW()!=null
+				&& (tblPr.getTblW().getType()==null || "dxa".equals(tblPr.getTblW().getType()))) {
+			int remaining = tblPr.getTblW().getW().intValue() - declaredWidth;
+			if (remaining > 0) share = remaining/(cols - declared);
+		}
+		if (share <= 0 && withWidth > 0) share = declaredWidth/withWidth;
+
+		TblGrid extended = XmlUtils.deepCopy(tblGrid);
+		for (int c = declared; c < cols; c++) {
+			int w = cellWidth(c);
+			if (w <= 0) w = share;
+			TblGridCol gridCol = Context.getWmlObjectFactory().createTblGridCol();
+			if (w > 0) gridCol.setW(BigInteger.valueOf(w));
+			extended.getGridCol().add(gridCol);
+		}
+		tblGrid = extended;
+	}
+
+	/** The preferred width of a cell occupying column c on its own, or -1. */
+	private int cellWidth(int c) {
+		for (TableModelRow row : rows) {
+			if (c >= row.size()) continue;
+			TableModelCell cell = row.get(c);
+			if (cell==null || cell.isDummy() || cell.getColspan() > 1 || cell.getTcPr()==null) continue;
+			org.docx4j.wml.TblWidth tcW = cell.getTcPr().getTcW();
+			if (tcW!=null && tcW.getW()!=null && tcW.getW().intValue() > 0
+					&& (tcW.getType()==null || "dxa".equals(tcW.getType()))) {
+				return tcW.getW().intValue();
+			}
+		}
+		return -1;
+	}
+
 	protected int calcTableWidth() {
-		
+
 		int ret = -1;
 		List<TblGridCol> gridCols = (getTblGrid() != null ? getTblGrid().getGridCol() : null);
 		//The calculation is done the way it was done in the TableWriter. This isn't necesarily correct,

@@ -322,6 +322,9 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		Fop fop = null;
 		Result result = null;
 		try {
+			// as in render(): docx4j specifies the fonts itself, so FOP's font cache is
+			// not wanted here (and reading a stale or half-written one can fail hard)
+			fopFactory.getFontManager().disableFontCache();
 			fop = fopFactory.newFop(outputFormat, new NullOutputStream());
 			result = new SAXResult(new PlaceholderReplacementHandler(fop.getDefaultHandler(), placeholderLookup));
 		} catch (FOPException e) {
@@ -453,6 +456,17 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 				fopConfParser = new FopConfParser(is, defaultBaseURI, resourceResolver);
 			}
 			FopFactoryBuilder builder = fopConfParser.getFopFactoryBuilder();
+			/* FOP's font cache (~/.fop/fop-fonts.cache) is a serialized object graph,
+			 * shared by every FOP on the machine and written without locking.  docx4j
+			 * lists the fonts it wants explicitly, so the cache saves it nothing; but
+			 * a stale or half-written cache file makes FontCache.loadFrom throw a
+			 * ClassCastException (which FOP does not catch), and every export then
+			 * fails until someone deletes the file.  So don't use it, unless the
+			 * caller's fop config asked for it.  @since 17.0.5
+			 */
+			if (fopConfig == null || fopConfig.isUseCache() == null || !fopConfig.isUseCache().booleanValue()) {
+				builder.getFontManager().disableFontCache();
+			}
 			// FopFactoryCustomizer services (e.g. org.docx4j.fop.wordlayout's Word layout, on by default). @since 17.0.5
 			for (FopFactoryCustomizer customizer : java.util.ServiceLoader.load(FopFactoryCustomizer.class)) {
 				try {

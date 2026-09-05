@@ -243,7 +243,15 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	
     for (int rowIndex = 0; rowIndex < table.getRows().size(); rowIndex++) {
 			rowModel = table.getRows().get(rowIndex);
-			
+
+			// a row with no cell of its own can't be written (fo:table-row's content
+			// model is table-cell+); the model drops such rows, adjusting the merges
+			// which cover them, so this is just a guarantee.  @since 17.0.5
+			if (!table.rowWritesCells(rowIndex)) {
+				log.debug("skipping row " + rowIndex + ": nothing to write");
+				continue;
+			}
+
 			if ((inHeader) && (rowIndex > table.getHeaderMaxRow())) {
 				rowContainer = createNode(doc, tableRoot, NODE_TABLE_BODY);
 				tableRoot.appendChild(rowContainer);

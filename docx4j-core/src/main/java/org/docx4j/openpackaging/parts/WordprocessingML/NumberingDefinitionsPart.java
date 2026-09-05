@@ -353,16 +353,17 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	
 	public Ind getInd(NumPr numPr) { //, StyleDefinitionsPart sdp, String styleId) {
 		
+		// w:ilvl (and its w:val) is optional; its absence means level 0
 		String ilvlString = "0";
-		if (numPr.getIlvl()!=null) ilvlString = numPr.getIlvl().getVal().toString();
+		if (numPr.getIlvl()!=null && numPr.getIlvl().getVal()!=null) ilvlString = numPr.getIlvl().getVal().toString();
 		
-		if (numPr.getNumId()==null) {
+		if (numPr.getNumId()==null || numPr.getNumId().getVal()==null) {
             if(log.isWarnEnabled()) {
                 log.warn("numPr without numId: " + XmlUtils.marshaltoString(numPr, true, true));
             }
-						
+
 			return null;
-		} else {		
+		} else {
 			return getInd(numPr.getNumId().getVal().toString(), ilvlString );
 		}
 	}

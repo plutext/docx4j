@@ -76,6 +76,22 @@ public abstract class Property {
 	public final static String CSS_COLON = ":"; 
 	public final static String CSS_SPACE = " "; 
 	public final static String CSS_COMMA = ";"; 
+	/**
+	 * A docx colour (w:val, w:fill, w:color) as a CSS/XSL-FO colour.  Word tolerates a
+	 * value which already carries the "#", but "##0000FF" makes FOP throw, aborting the
+	 * whole export, so the "#" is added only where it is missing.
+	 *
+	 * @since 17.0.5
+	 */
+	public final static String hexColour(String value) {
+		if (value==null) return null;
+		String v = value.trim();
+		while (v.startsWith("#")) {
+			v = v.substring(1);
+		}
+		return "#" + v;
+	}
+
 	public final static String composeCss(String name, String value) {
 		return name + CSS_COLON + CSS_SPACE + value + CSS_COMMA;
 		

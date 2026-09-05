@@ -38,6 +38,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
@@ -298,7 +299,18 @@ public class ConversionSectionWrapperFactory {
 //			System.out.println(XmlUtils.marshaltoString(o, true));
 		}
 		
-		// Section wrapper for the document level sectPr, containing remaining content
+		/* Section wrapper for the document level sectPr, containing remaining content.
+		 *
+		 * Since 17.0.5 the paragraph carrying a sectPr belongs to the section it ends,
+		 * so where the last paragraph of the body carries one, this last section has no
+		 * content of its own.  Word renders nothing for it; an fo:flow with no block in
+		 * it is invalid FO, and the export failed.
+		 */
+		if (sectionContent.isEmpty() && !conversionSections.isEmpty()) {
+			log.debug("the document level sectPr has no content; nothing to render for it");
+			return conversionSections;
+		}
+
 		int cols = spanColumnParts(sectionContent, columnParts, colsNum(document.getBody().getSectPr()));
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
@@ -427,13 +439,25 @@ public class ConversionSectionWrapperFactory {
 			// so that parentList is correct for nested sdt
 			
 			SdtBlock sdtBlock = sbr.sdtBlocks.get(i);
+			Object parent = sdtBlock.getParent();
 			List<Object> parentList = null;
-			if (sdtBlock.getParent() instanceof ArrayList) {
-				parentList = (ArrayList)sdtBlock.getParent();
+			if (parent instanceof List) {
+				parentList = (List<Object>)parent;
+			} else if (parent instanceof ContentAccessor) {
+				// eg a w:sdt which is a child of w:body: the parent pointer is the
+				// object, not its content list.  Until 17.0.5 this aborted the export
+				// with a NullPointerException.
+				parentList = ((ContentAccessor)parent).getContent();
 			} else {
-				log.error("Handle " + sdtBlock.getParent().getClass().getName());
+				log.error("Can't unwrap w:sdt: unexpected parent "
+						+ (parent==null ? "null" : parent.getClass().getName()));
+				continue;
 			}
 			int index = parentList.indexOf(sdtBlock);
+			if (index<0) {
+				log.error("Can't unwrap w:sdt: not found in its parent's content");
+				continue;
+			}
 			parentList.remove(index);
 			parentList.addAll(index, sdtBlock.getSdtContent().getContent());				
 		}

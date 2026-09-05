@@ -30,6 +30,16 @@ public class TableModelRow {
 	public TrPr getRowProperties() {
 		return trPr;
 	}
+
+	/**
+	 * Replace this row's properties.  Pass a copy: the TrPr a row starts with belongs
+	 * to the document being converted.
+	 *
+	 * @since 17.0.5
+	 */
+	public void setRowProperties(TrPr trPr) {
+		this.trPr = trPr;
+	}
 	
 	public CTTblPrEx getRowPropertiesExceptions() {
 		return tblPrEx;

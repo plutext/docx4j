@@ -349,8 +349,9 @@ public class ListsToContentControls {
 				
 				BigInteger numId = numPr.getNumId().getVal();
 				
+				// w:ilvl (and its w:val) is optional; its absence means level 0
 				BigInteger ilvl = null;
-				if (numPr.getIlvl()==null) {
+				if (numPr.getIlvl()==null || numPr.getIlvl().getVal()==null) {
 					ilvl = BigInteger.ZERO;
 				} else {
 					ilvl = numPr.getIlvl().getVal();

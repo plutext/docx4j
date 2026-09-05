@@ -127,21 +127,39 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			String key = model.getFldArgument();
 			
 			try {
-				String value = dpr.getValue(key).toString();
+				String value = dpr.getValue(key);
+				if (value == null) {
+					throw new FieldValueException("No value found for DOCPROPERTY " + key);
+				}
 				log.debug("= " + value);
 				return FormattingSwitchHelper.applyFormattingSwitch(context.getWmlPackage(), model, value);
 			} catch (FieldValueException e) {
-				
-				if (e.getMessage().contains("No value found for DOCPROPERTY PAGES")) {// TODO improve this
-					// Handle this case
-				}
-				throw new TransformerException(e);
-				
+
+				// The document property doesn't exist (or has no value).  Word displays
+				// the field's cached result in that case, so we do the same, rather than
+				// failing the export.  @since 17.0.5
+				String cached = cachedResultText(model);
+				log.warn(e.getMessage() + "; using the cached field result '" + cached + "'");
+				return cached;
+
 			} catch (Docx4JException e) {
-				
+
 				throw new TransformerException(e);
-			}			
+			}
 		}
+	}
+
+	/**
+	 * The text of the field's cached result (the content of the w:fldSimple, which for a
+	 * complex field is its result runs; see FieldsCombiner), or "" if there is none.
+	 * It is what Word shows for a field it can't evaluate.
+	 *
+	 * @since 17.0.5
+	 */
+	protected static String cachedResultText(FldSimpleModel model) {
+		Node content = (model == null ? null : model.getContent());
+		String text = (content == null ? null : content.getTextContent());
+		return (text == null ? "" : text);
 	}
 	
 	//NB, see also FldSimpleWriter, where PAGE handler is defined.

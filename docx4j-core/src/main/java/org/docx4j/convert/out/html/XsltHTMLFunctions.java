@@ -700,14 +700,17 @@ public class XsltHTMLFunctions {
 			if (pPr!=null) {
 				
 				// Is there numbering indentation to honour?
-				if (pPr.getNumPr()!=null 
+				if (pPr.getNumPr()!=null
 						&& pPr.getNumPr().getNumId()!=null
+						&& pPr.getNumPr().getNumId().getVal()!=null
 						&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
 						) {
+					// w:ilvl (and its w:val) is optional; Word treats its absence as level 0
 					Ind numInd = org.docx4j.model.listnumbering.Emulator.getInd(
-	        			context.getWmlPackage(), pStyleVal, 
-	        			pPr.getNumPr().getNumId().getVal().toString(), 
-	        			pPr.getNumPr().getIlvl().getVal().toString() ); 
+	        			context.getWmlPackage(), pStyleVal,
+	        			pPr.getNumPr().getNumId().getVal().toString(),
+	        			(pPr.getNumPr().getIlvl()==null || pPr.getNumPr().getIlvl().getVal()==null)
+	        				? "0" : pPr.getNumPr().getIlvl().getVal().toString() );
 					if (numInd!=null) {
 		        		Indent indent = new Indent(pPr.getInd(), numInd);
 		        		pPr.setInd((Ind)indent.getObject());						

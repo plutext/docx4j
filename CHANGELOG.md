@@ -19,6 +19,46 @@ Claude Fable 5.1
 Changes in Version 17.0.5
 --------------------------
 
+PDF via XSL FO - documents which threw instead of converting (found by scoring 194 real
+documents; both pathways):
+- a DOCPROPERTY field naming a property the document doesn't have aborted the whole
+export (FieldValueException "No value found for DOCPROPERTY ..").  Word shows the
+field's cached result, and so do we now, logging a warning; the complex field (w:fldChar)
+form goes the same way, since FieldsCombiner turns it into a w:fldSimple.
+- a numbered paragraph whose w:numPr carried a w:numId but no w:ilvl threw a
+NullPointerException.  The level defaults to 0, as in Word, wherever numbering levels
+are read (XsltFOFunctions, Emulator, NumberingDefinitionsPart, the HTML exporter); a
+w:numId or w:ilvl without its w:val no longer throws either.
+- every export failed with a ClassCastException where FOP's font cache
+(~/.fop/fop-fonts.cache) was stale or half-written - it is deserialized without locking,
+and FontCache.loadFrom doesn't catch that.  docx4j lists its fonts explicitly, so the
+cache buys it nothing: the FopFactory docx4j builds no longer uses it, and neither does
+the first pass of a two-pass render with a caller's factory (only the second pass
+disabled it before).
+- a w:tr with nothing of its own to write - every cell continuing a vertical merge, or
+no w:tc at all - became an empty fo:table-row, which FOP rejects (content model is
+table-cell+).  Word draws such a row as part of the merged cell, so the row is dropped,
+the merges which covered it are shortened by a row, and its height goes to the row above.
+Also fixed on the way: the row after a cell-less w:tr took the previous row's cell
+contents.
+- rows wider than the columns written for the table made FOP throw ("The column-number
+or number of cells in the row overflows the number of fo:table-columns").  w:gridAfter
+and w:gridBefore lost a column from the row they apply to, so the first row (which
+decided the column count) was narrower than the rest; and where w:tblGrid declares fewer
+w:gridCol than a row has cells, the grid now follows the widest row as Word does, the
+added column taking the cell's own width, else an equal share of what is left of the
+table's width.
+- a w:sdt wrapping the paragraph which carries the section's w:sectPr aborted the export
+with a NullPointerException when the w:sdt was a child of w:body (its parent pointer is
+the Body, not a list).
+- where the last paragraph of the body carries its own w:sectPr, the section the
+document-level w:sectPr describes has no content; it was written as a page-sequence with
+an empty fo:flow, which FOP rejects.  Word renders nothing for such a section, and now
+neither do we.
+- a colour written with the "#" already in it (w:color w:val="#0000FF", which Word
+accepts) came out as "##0000FF" and FOP threw parsing it; the "#" is now added only
+where it is missing (colours, shading fills and border colours, FO and HTML).
+
 PDF via XSL FO - layout now follows Word's rules by default:
 - line breaking, line placement, list labels, footnotes and kerning are laid out as Word
 lays them out, not as plain FOP does.  The line breaking and line placement are FOP layout

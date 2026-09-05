@@ -20,6 +20,8 @@
 
 package org.docx4j.model.table;
 
+import java.util.List;
+
 import jakarta.xml.bind.JAXBContext;
 
 import org.slf4j.Logger;
@@ -135,28 +137,23 @@ public class TableModelCell {
 		// rowspan
 		try {
 			String vm = tc.getTcPr().getVMerge().getVal();
-			if (vm == null || vm.equals("continue")) {
-				dummy = true;				
+			// A continuation with nothing above it to continue (a first row, or a row
+			// wider than the one before) is a cell in its own right, as it is in Word;
+			// were it a dummy, nothing would be written for it. @since 17.0.5
+			if ((vm == null || vm.equals("continue")) && cellAbove()!=null) {
+				dummy = true;
 			}
 			// dummy cells propagate this call upwards until a real cell is found
 			incrementRowSpan();
 		} catch (NullPointerException ne) {
 			// no vMerge
 		}
-		
+
 		if (dummy) {
 			// set its colspan to the same value as its upper neighbor,
 			// so dummy cells will be created to the right if colspan>1
-			try {
-				colspan = table.getCell(row - 1, col).colspan;
-			} catch (NullPointerException ne) {
-				logger.warn("Problem at row " + row + " -1, col " + col);
-				logger.warn("model so far: \n" + this.table.debugStr() );
-				logger.warn("and this cell: " + this.debugStr() );
-				logger.warn(ne.getMessage(), ne);
-				logger.warn("Problems with table " + XmlUtils.marshaltoString(table.tbl));
-			}
-				
+			colspan = cellAbove().colspan;
+
 		} else {
 			// real cell
 			// colspan
@@ -198,16 +195,32 @@ public class TableModelCell {
 	}
 
 	/**
+	 * The cell in the same column of the row above, or null if there is none (this is
+	 * the first row, or that row is narrower than this one).
+	 *
+	 * @since 17.0.5
+	 */
+	private TableModelCell cellAbove() {
+		if (row<=0) return null;
+		List<TableModelRow> rows = table.getRows();
+		if (row-1 >= rows.size()) return null;
+		TableModelRow above = rows.get(row-1);
+		if (col<0 || col >= above.size()) return null;
+		return above.get(col);
+	}
+
+	/**
 	 * If this is a real cell, increment rowspan; if this is a dummy,
 	 * propagate the call to the cell upwards
 	 */
 	protected void incrementRowSpan() {
 		if (dummy) {
 			logger.debug("dummy=true for row " + row + ", col " + col + " so propogate to r-1");
-			if (row>0) {
-				table.getCell(row - 1, col).incrementRowSpan();
+			TableModelCell above = cellAbove();
+			if (above!=null) {
+				above.incrementRowSpan();
 			} else {
-				logger.debug(".. but already at row 0; using rowspan=" + rowspan);
+				logger.debug(".. but there is no cell above; using rowspan=" + rowspan);
 			}
 		} else {
 			logger.debug("incremented rowspan for row " + row + ", col " + col );
@@ -217,6 +230,21 @@ public class TableModelCell {
 //				logger.debug("\n\n"+ this.table.debugStr());
 //			}
 			
+		}
+	}
+
+	/**
+	 * Undo one incrementRowSpan: used when a row which contained nothing but merge
+	 * continuations is dropped (see TableModel.dropFullySpannedRows).
+	 *
+	 * @since 17.0.5
+	 */
+	protected void decrementRowSpan() {
+		if (dummy) {
+			TableModelCell above = cellAbove();
+			if (above!=null) above.decrementRowSpan();
+		} else if (rowspan > 1) {
+			rowspan--;
 		}
 	}
 

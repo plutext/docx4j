@@ -103,7 +103,7 @@ public class RShading extends AbstractRunProperty {
 		// We just support fill color right now
 		if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
-			return composeCss(CSS_NAME, "#" + shd.getFill() );
+			return composeCss(CSS_NAME, hexColour(shd.getFill()) );
 		} else {
 			return CSS_NULL;
 		}
@@ -127,7 +127,7 @@ public class RShading extends AbstractRunProperty {
 		// We just support fill color right now
 		if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
-			foElement.setAttribute(FO_NAME, "#" + shd.getFill() );
+			foElement.setAttribute(FO_NAME, hexColour(shd.getFill()) );
 		} 
 	}
 

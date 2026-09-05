@@ -235,17 +235,22 @@ public class Emulator {
     			return null;    			
     		}
     		
+    		if (numPr.getNumId().getVal()==null) {
+    			log.error("numId had no val!");
+    			return null;
+    		}
     		numId = numPr.getNumId().getVal().toString();
     		if (numId.equals("")) {
     			log.error("numId was empty!");
     			return null;
-    		} 
-    		
-    		if (levelId == null 
+    		}
+
+    		if (levelId == null
     				|| levelId.equals("") ) {
-    			
-    			if (numPr.getIlvl() != null ) {
-    				
+
+    			// w:ilvl (and its w:val) is optional; its absence means level 0
+    			if (numPr.getIlvl() != null && numPr.getIlvl().getVal() != null ) {
+
     				levelId = numPr.getIlvl().getVal().toString();
     	    		log.info("levelId=" + levelId + " (from style)" );
     			} else {
@@ -422,17 +427,22 @@ public class Emulator {
     			return null;    			
     		}
     		
+    		if (numPr.getNumId().getVal()==null) {
+    			log.error("numId had no val!");
+    			return null;
+    		}
     		numId = numPr.getNumId().getVal().toString();
     		if (numId.equals("")) {
     			log.error("numId was empty!");
     			return null;
-    		} 
-    		
-    		if (levelId == null 
+    		}
+
+    		if (levelId == null
     				|| levelId.equals("") ) {
-    			
-    			if (numPr.getIlvl() != null ) {
-    				
+
+    			// w:ilvl (and its w:val) is optional; its absence means level 0
+    			if (numPr.getIlvl() != null && numPr.getIlvl().getVal() != null ) {
+
     				levelId = numPr.getIlvl().getVal().toString();
     	    		log.info("levelId=" + levelId + " (from style)" );
     			} else {
