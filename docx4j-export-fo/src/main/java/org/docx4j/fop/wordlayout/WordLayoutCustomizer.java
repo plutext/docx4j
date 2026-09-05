@@ -42,19 +42,31 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 *  as a fraction of their natural width; docx4j property or system property
 	 *  docx4j.convert.out.fo.wordLayout.maxSpaceShrink (default 0.24: measured against
 	 *  Word 365, the value at which the justified probe breaks 98% of its lines as Word does;
-	 *  0.20 gives 78%, 0.30 gives 74%). */
+	 *  0.20 gives 78%, 0.30 gives 74%).
+	 *
+	 *  This is the limit for a document Word lays out with its 2013 engine
+	 *  (w:compatSetting compatibilityMode 15).  Older documents get 0: docx4j writes
+	 *  docx4j:space-shrink="0" on fo:root for them and the line manager caps this
+	 *  value with it. */
 	public static final String MAX_SPACE_SHRINK = "docx4j.convert.out.fo.wordLayout.maxSpaceShrink";
 
 	public static final double DEFAULT_MAX_SPACE_SHRINK = 0.24;
 
 	public static double maxSpaceShrink() {
+		Double v = configuredMaxSpaceShrink();
+		return v == null ? DEFAULT_MAX_SPACE_SHRINK : v.doubleValue();
+	}
+
+	/** The value the caller set, or null: an explicit setting applies to every document,
+	 *  where the default is capped by the document's own docx4j:space-shrink. */
+	public static Double configuredMaxSpaceShrink() {
 		String v = System.getProperty(MAX_SPACE_SHRINK);
 		if (v == null) v = Docx4jProperties.getProperty(MAX_SPACE_SHRINK);
-		if (v == null) return DEFAULT_MAX_SPACE_SHRINK;
+		if (v == null) return null;
 		try {
-			return Double.parseDouble(v.trim());
+			return Double.valueOf(v.trim());
 		} catch (NumberFormatException e) {
-			return DEFAULT_MAX_SPACE_SHRINK;
+			return null;
 		}
 	}
 

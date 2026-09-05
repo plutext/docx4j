@@ -387,7 +387,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             if (WordLineLayoutManager.log.isTraceEnabled()) {
                 WordLineLayoutManager.log.trace("greedy idx=" + elementIdx + " diff=" + difference + " lineWidth=" + getLineWidth()
                         + " active.pos=" + active.position + " cand=" + candIdx + " forced=" + element.isForcedBreak()
-                        + " align=" + alignment + " justify=" + Constants.EN_JUSTIFY + " maxShrink=" + WordLayoutCustomizer.maxSpaceShrink()
+                        + " align=" + alignment + " justify=" + Constants.EN_JUSTIFY + " maxShrink=" + maxSpaceShrink
                         + " el=" + element);
             }
             boolean fits = difference >= 0 || fitsByShrinkingSpaces(elementIdx, difference);
@@ -433,7 +433,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             if (alignment != Constants.EN_JUSTIFY || difference >= 0) {
                 return difference >= 0;
             }
-            double maxShrink = WordLayoutCustomizer.maxSpaceShrink();
+            double maxShrink = maxSpaceShrink;
             if (maxShrink <= 0) {
                 return false;
             }
@@ -845,6 +845,34 @@ public class WordLineLayoutManager extends LineLayoutManager {
         String rule = foreignAttribute(block, WordLayoutElementMapping.LINE_RULE);
         wordLineRule = "exact".equals(rule) ? RULE_EXACT : "atLeast".equals(rule) ? RULE_AT_LEAST : RULE_AUTO;
         labelAscent = foreignLength(block, WordLayoutElementMapping.LABEL_ASCENT);
+        maxSpaceShrink = documentSpaceShrink(block);
+    }
+
+    /**
+     * How far this line's spaces may be compressed to pull in a word that does not
+     * fit at natural width: the configured limit
+     * ({@link WordLayoutCustomizer#maxSpaceShrink()}), capped by the document's own
+     * docx4j:space-shrink on fo:root, which docx4j sets to 0 for a document whose
+     * compatibility mode is below 15 (Word only compresses from its 2013 engine on).
+     */
+    private final double maxSpaceShrink;
+
+    private static double documentSpaceShrink(org.apache.fop.fo.FObj block) {
+        Double explicit = WordLayoutCustomizer.configuredMaxSpaceShrink();
+        if (explicit != null) return explicit.doubleValue();
+        double configured = WordLayoutCustomizer.DEFAULT_MAX_SPACE_SHRINK;
+        org.apache.fop.fo.FONode node = block;
+        while (node != null && node.getParent() != null) {
+            node = node.getParent();
+        }
+        if (!(node instanceof org.apache.fop.fo.FObj)) return configured;
+        String v = foreignAttribute((org.apache.fop.fo.FObj) node, WordLayoutElementMapping.SPACE_SHRINK);
+        if (v == null) return configured;
+        try {
+            return Math.min(configured, Double.parseDouble(v));
+        } catch (NumberFormatException e) {
+            return configured;
+        }
     }
 
     /** a list label's natural ascent (millipoints), on the item's first line; Word

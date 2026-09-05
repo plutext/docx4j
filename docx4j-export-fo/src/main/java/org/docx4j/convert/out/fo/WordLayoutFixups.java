@@ -117,7 +117,7 @@ public final class WordLayoutFixups {
 	public static void apply(Document doc, int compatibilityMode) {
 		disregardBaselineShifts(doc);
 		listLabelLines(doc);
-		lineBoxAttributes(doc);
+		lineBoxAttributes(doc, compatibilityMode);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
@@ -238,10 +238,25 @@ public final class WordLayoutFixups {
 	 * text box with the extra leading as glue below it, dropped at the bottom of
 	 * a page.  With docx4j.convert.out.fo.wordLayout=false FOP would reject the
 	 * attributes, so they are left out.
+	 *
+	 * fo:root also gets docx4j:space-shrink for a document Word lays out with a
+	 * pre-2013 engine: measured over 190 Word goldens, a justified line's spaces
+	 * are compressed (to as little as 0.76 of their natural width) in compatibility
+	 * mode 15 only; in modes 11, 12 and 14, and where the setting is absent, Word
+	 * never compresses them, so a word that does not fit at natural width goes to
+	 * the next line.
 	 */
-	static void lineBoxAttributes(Document doc) {
+	static void lineBoxAttributes(Document doc, int compatibilityMode) {
 		String ns = extensionNamespace();
 		boolean declared = false;
+		if (ns != null && compatibilityMode < 15) {
+			Element root = doc.getDocumentElement();
+			if (root != null && isFo(root, "root")) {
+				root.setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+				root.setAttributeNS(ns, "docx4j:space-shrink", "0");
+			}
+		}
 		// the runs' document fonts (RunFontSelector.HINT_FONT), for the line manager's per-run metrics
 		for (Element span : elements(doc, "inline")) {
 			String font = span.getAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);

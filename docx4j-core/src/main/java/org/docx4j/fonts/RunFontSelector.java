@@ -102,6 +102,7 @@ public class RunFontSelector {
 				
 		vis.setRunFontSelector(this);
 		
+		fallbackPhysicalFont = physicalFontFor(getDefaultFont());
 		fallbackFont = getPhysicalFont(getDefaultFont());
 		if (fallbackFont==null) {
 			fallbackFont = getDefaultFont();
@@ -126,6 +127,33 @@ public class RunFontSelector {
 	}
 	
 	String fallbackFont = null;
+
+	/** The physical font {@link #fallbackFont} names, registered with the Mapper the
+	 *  first time a run actually falls back to it so that FopConfigUtil declares it:
+	 *  it is the default font's physical font, which need not be among the fonts the
+	 *  document names, in which case FOP reported "Font ... not found. Substituting
+	 *  with any" and used a default font.  @since 17.0.5 */
+	private PhysicalFont fallbackPhysicalFont = null;
+
+	private final java.util.Set<String> registeredFonts = new java.util.HashSet<String>();
+
+	/**
+	 * Tell the Mapper (and so FopConfigUtil, which asks it after the FO has been
+	 * generated) about a physical font this conversion actually put in @font-family.
+	 * The FOP configuration is built from the fonts the document's runs name, so a
+	 * font reached only through a paragraph mark, an empty paragraph, a style or the
+	 * fallback was not declared and FOP reported "Font ... not found. Substituting
+	 * with any", quietly rendering that text in a default font.
+	 *
+	 * @since 17.0.5
+	 */
+	private void registerUsedFont(String family, PhysicalFont pf) {
+		if (pf==null || family==null || outputType!=RunFontActionType.XSL_FO) return;
+		if (!registeredFonts.add(family)) return;
+		if (wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
+			wordMLPackage.getFontMapper().registerLastResortFallback(pf);
+		}
+	}
 	
 	CTLanguage themeFontLang = null;
 	
@@ -303,7 +331,8 @@ public class RunFontSelector {
     			el.setAttribute("style", getCssProperty(fontName));
     		}
     	} else if (outputType==RunFontActionType.XSL_FO) {
-    		String val = getPhysicalFont(fontName);
+    		PhysicalFont resolved = physicalFontResolved(fontName);
+    		String val = resolved==null ? null : resolved.getName();
     		if (val==null) {
     			if (log.isDebugEnabled() ) {
     				log.debug(fontName + " not mapped; using fallback " + fallbackFont);
@@ -311,9 +340,11 @@ public class RunFontSelector {
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
     			applyLineHeight(el, fontName, fallbackFont);
+    			registerUsedFont(fallbackFont, fallbackPhysicalFont);
     		} else {
     			el.setAttribute("font-family", foFontFamily(val) );
     			applyLineHeight(el, fontName, val);
+    			registerUsedFont(val, resolved);
     		}
     		if (fontName!=null) {
     			// glyphFallback needs the font the document asked for; it removes this
@@ -395,6 +426,7 @@ public class RunFontSelector {
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
     			applyLineHeight(el, fontName, fallbackFont);
+    			registerUsedFont(fallbackFont, fallbackPhysicalFont);
     		} else {	
     			el.setAttribute("font-family", foFontFamily(val) );
     			applyLineHeight(el, fontName, val);
@@ -2008,11 +2040,15 @@ public class RunFontSelector {
     				
         	    	vis.addCharacterToCurrent(c);
         	    	
-        	    	currentRangeLower='\u0000';
-        	    	currentRangeUpper='\u0000';
-        	    	
-        	    	// TODO: enhance to allow current to be reused, if font is same
-        	    	
+        	    	/* Every character of this gap takes this branch and so gets hAnsi:
+        	    	 * remember the whole gap, so that the next character of the same
+        	    	 * script joins this span.  (Until 17.0.5 the range was reset to
+        	    	 * 0000-0000, which no character matches, so a Georgian or Ethiopic
+        	    	 * word became one fo:inline per character - and FOP kerns and
+        	    	 * letter-spaces within an inline, not across two.) */
+        	    	char[] gap = defaultRange(c);
+        	    	currentRangeLower = gap[0];
+        	    	currentRangeUpper = gap[1];
         	    	
         	    }
     	    }
@@ -2021,6 +2057,40 @@ public class RunFontSelector {
     	// Handle final span
     	vis.finishPrevious();
     	return finish(vis.getResult());
+    }
+
+    /* The ranges the dispatch above tests, in order.  Anything outside them falls
+     * through to its final else, which always uses hAnsi. */
+    private static final char[][] LISTED_RANGES = {
+    	{'\u0000','\u007F'}, {'\u00A0','\u00FF'}, {'\u0100','\u02AF'}, {'\u02B0','\u04FF'},
+    	{'\u0590','\u07BF'}, {'\u0900','\u0DFF'}, {'\u0E00','\u0E7F'}, {'\u0E80','\u0EFF'},
+    	{'\u1000','\u109F'}, {'\u1100','\u11FF'}, {'\u1780','\u17FF'}, {'\u19E0','\u19FF'},
+    	{'\u1E00','\u1EFF'}, {'\u2000','\u218F'}, {'\u2190','\u2BFF'}, {'\u2C00','\u2EFF'},
+    	{'\u2F00','\uDFFF'}, {'\uE000','\uF8FF'}, {'\uF900','\uFAFF'}, {'\uFB00','\uFB4F'},
+    	{'\uFB50','\uFDFF'}, {'\uFE30','\uFE6F'}, {'\uFE70','\uFEFE'}, {'\uFF00','\uFFEF'}
+    };
+
+    /**
+     * The gap between the ranges [MS-OI29500] 17.3.2.26 lists (see
+     * {@link #LISTED_RANGES}) that this character falls in: the run of characters
+     * which all take the dispatch's final else and so all get hAnsi, and which can
+     * therefore share one span.  Georgian (U+10A0-U+10FF), Armenian (U+0530-U+058F),
+     * Tibetan, Ethiopic, Mongolian and Greek Extended are the common ones.
+     *
+     * @since 17.0.5
+     */
+    static char[] defaultRange(char c) {
+    	char lower = '\u0000';
+    	char upper = '\uFFFF';
+    	for (char[] r : LISTED_RANGES) {
+    		if (c >= r[0] && c <= r[1]) {
+    			// listed after all: only this character (the caller's branch is not used)
+    			return new char[] { c, c };
+    		}
+    		if (r[1] < c && r[1] >= lower) lower = (char)(r[1] + 1);
+    		if (r[0] > c && r[0] <= upper) upper = (char)(r[0] - 1);
+    	}
+    	return new char[] { lower, upper };
     }
     
     /** The PhysicalFont this *document* font name maps to.
@@ -2094,6 +2164,13 @@ public class RunFontSelector {
 
 	
 	private String getPhysicalFont(String fontName) {
+		PhysicalFont pf = physicalFontResolved(fontName);
+		return pf==null ? null : pf.getName();
+	}
+
+	/** The physical font this document font name resolves to (via the CJK alias where
+	 *  there is one), or null. */
+	private PhysicalFont physicalFontResolved(String fontName) {
 		
 		log.debug("looking for: " + fontName);
 //		if (log.isDebugEnabled()) {
@@ -2104,7 +2181,7 @@ public class RunFontSelector {
 		PhysicalFont pf = wordMLPackage.getFontMapper().get(fontName);
 		if (pf!=null) {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
-			return pf.getName();
+			return pf;
 		} else {
 			
 			// This is ok if it happens 
@@ -2141,7 +2218,7 @@ public class RunFontSelector {
 				log.debug(englishFromCJK + " (from CJK) maps to " + pf.getName() );				
 			}
 			
-			return pf.getName();
+			return pf;
 		}		
 	}	
 	

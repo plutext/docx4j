@@ -26,10 +26,9 @@
 package org.docx4j.fonts.fop.util;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.xml.bind.Marshaller;
@@ -155,14 +154,16 @@ public class FopConfigUtil {
 			return rendererFonts;
 		}
 		
-		/* The idea here is to avoid duplicates,
-                <font simulate-style="false" embed-url="file:/usr/share/fonts/noto/NotoSansSymbols2-Regular.ttf">
-                    <font-triplet name="Noto Sans Symbols 2 Regular" style="normal" weight="normal"/>
-                </font>
-           gets key @embed-url
+		/* Two document fonts commonly map to the same file - Times New Roman and
+		 * Tinos to Tinos-Regular.ttf, several unmapped fonts to one substitute -
+		 * and each needs its own font-triplet on the one <font embed-url=..>.
+		 * Until 17.0.5 the entries were kept in a map keyed by @embed-url, so the
+		 * second font silently replaced the first (its triplets are added after the
+		 * put) and FOP then reported "Font X not found. Substituting with any".
+		 * They are collected in order now and merged by mergeByEmbedUrl.
 		 */
 
-		Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries = new HashMap<String, org.docx4j.convert.out.fopconf.Fonts.Font>(); 
+		List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries = new ArrayList<org.docx4j.convert.out.fopconf.Fonts.Font>(); 
 		
 		if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", true)) {
 		// <font simulate-style="true"	
@@ -233,10 +234,10 @@ public class FopConfigUtil {
 		if (fontEntries.isEmpty()) {
 			log.warn("No fonts configured!");
 		} else {
-			for (Entry<String, Font> entry : fontEntries.entrySet() ) {
-				rendererFonts.getFont().add(entry.getValue());
+			for (Font entry : mergeByEmbedUrl(fontEntries) ) {
+				rendererFonts.getFont().add(entry);
 				if (!kerning()) {
-					rendererFonts.getFont().add(kernedTwin(entry.getValue()));
+					rendererFonts.getFont().add(kernedTwin(entry));
 				}
 			}			
 		}
@@ -276,11 +277,11 @@ public class FopConfigUtil {
 		return twin;
 	}
 
-	private static void createFontEntrySimulateStyles(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
+	private static void createFontEntrySimulateStyles(Mapper fontMapper, List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf) {
 		
     	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
-		fontEntries.put(pf.getEmbeddedURI().toString(), rendererFont);
+		fontEntries.add(rendererFont);
     	
     	rendererFont.setSimulateStyle(false);
     	rendererFont.setKerning(kerning());
@@ -306,7 +307,7 @@ public class FopConfigUtil {
     			}
     		} else {    			
     			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, "italic", "italic", "normal");    			
-        		fontEntries.put(variant.getEmbedUrl(), variant);    			
+        		fontEntries.add(variant);    			
     			if (log.isDebugEnabled()) {
     				log.debug(fontName + " - added italic form");
     			}
@@ -322,7 +323,7 @@ public class FopConfigUtil {
     			}
     		} else {    			
     			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, "bold", "normal", "bold");
-        		fontEntries.put(variant.getEmbedUrl(), variant);    			
+        		fontEntries.add(variant);    			
     			if (log.isDebugEnabled()) {
     				log.debug(fontName + " - added bold form");
     			}
@@ -346,11 +347,11 @@ public class FopConfigUtil {
 		
 	}	
 	
-	private static void createFontEntry(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
+	private static void createFontEntry(Mapper fontMapper, List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf) {
 
     	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
-		fontEntries.put(pf.getEmbeddedURI().toString(), rendererFont);    	
+		fontEntries.add(rendererFont);    	
     	
     	rendererFont.setSimulateStyle(false);
     	rendererFont.setKerning(kerning());
@@ -381,7 +382,7 @@ public class FopConfigUtil {
 		return triplet;
 	}
 
-	private static void addVariations(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
+	private static void addVariations(Mapper fontMapper, List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf,
 			String subFontAtt) {
 				
@@ -391,21 +392,21 @@ public class FopConfigUtil {
 			log.debug(fontName + " no bold form");
 		} else {
 			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, subFontAtt, "normal", "bold");
-    		fontEntries.put(variant.getEmbedUrl(), variant);
+    		fontEntries.add(variant);
 		}
 		pfVariation = fontMapper.getBoldItalicForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no bold italic form");
 		} else {
 			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, subFontAtt, "italic", "bold");
-    		fontEntries.put(variant.getEmbedUrl(), variant);
+    		fontEntries.add(variant);
 		}
 		pfVariation = fontMapper.getItalicForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no italic form");
 		} else {
 			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, subFontAtt, "italic", "normal");
-    		fontEntries.put(variant.getEmbedUrl(), variant);
+    		fontEntries.add(variant);
 		}
 	}
 		
@@ -467,26 +468,92 @@ public class FopConfigUtil {
 		if (renderer.getFonts()==null) {
 			renderer.setFonts(factory.createFonts());
 		}
-		Set<String> declared = new java.util.HashSet<String>();
-		for (Font f : renderer.getFonts().getFont()) {
-			if (f.getEmbedUrl()!=null) declared.add(f.getEmbedUrl());
-		}
 
-		Map<String, Font> fontEntries = new HashMap<String, Font>();
+		List<Font> fontEntries = new ArrayList<Font>();
 		for (PhysicalFont pf : fontMapper.getLastResortFallbacks().values()) {
-			if (pf.getEmbeddedURI()==null || declared.contains(pf.getEmbeddedURI().toString())) continue;
+			if (pf.getEmbeddedURI()==null) continue;
 			if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", true)) {
 				createFontEntrySimulateStyles(fontMapper, fontEntries, pf.getName(), pf);
 			} else {
 				createFontEntry(fontMapper, fontEntries, pf.getName(), pf);
 			}
 		}
-		for (Entry<String, Font> entry : fontEntries.entrySet()) {
-			if (entry.getValue().getEmbedUrl()!=null && !declared.add(entry.getValue().getEmbedUrl())) continue;
-			renderer.getFonts().getFont().add(entry.getValue());
-			if (!kerning()) {
-				renderer.getFonts().getFont().add(kernedTwin(entry.getValue()));
+		/* A fallback is commonly the same file as a font the document already
+		 * names (Times New Roman and the Tinos Regular fallback are one file),
+		 * and until 17.0.5 it was then dropped, leaving RunFontSelector's
+		 * font-family undeclared: FOP reported "Font Tinos Regular,normal,400
+		 * not found. Substituting with any" and used a default font.  Its
+		 * triplets go onto the existing declaration instead. */
+		for (Font entry : mergeByEmbedUrl(fontEntries)) {
+			Font existing = find(renderer.getFonts().getFont(), entry, false);
+			if (existing==null) {
+				renderer.getFonts().getFont().add(entry);
+				if (!kerning()) {
+					renderer.getFonts().getFont().add(kernedTwin(entry));
+				}
+				continue;
 			}
+			mergeTriplets(existing, entry);
+			if (!kerning()) {
+				Font twin = find(renderer.getFonts().getFont(), entry, true);
+				if (twin==null) {
+					renderer.getFonts().getFont().add(kernedTwin(entry));
+				} else {
+					mergeTriplets(twin, kernedTwin(entry));
+				}
+			}
+		}
+	}
+
+	/**
+	 * One {@code <font>} per (embed-url, sub-font, simulate-style) declaration, carrying
+	 * every triplet declared for it: FOP looks a font up by triplet, so two document
+	 * fonts sharing a file need both names on the one declaration.
+	 *
+	 * @since 17.0.5
+	 */
+	private static List<Font> mergeByEmbedUrl(List<Font> entries) {
+		List<Font> merged = new ArrayList<Font>();
+		for (Font f : entries) {
+			Font existing = find(merged, f, null);
+			if (existing==null) {
+				merged.add(f);
+			} else {
+				mergeTriplets(existing, f);
+			}
+		}
+		return merged;
+	}
+
+	/** The entry of the same file, sub-font and simulate-style as {@code like};
+	 *  {@code kerned} null matches either, true or false the entry's kerning. */
+	private static Font find(List<Font> entries, Font like, Boolean kerned) {
+		for (Font f : entries) {
+			if (!eq(f.getEmbedUrl(), like.getEmbedUrl())) continue;
+			if (!eq(f.getSubFont(), like.getSubFont())) continue;
+			if (f.isSimulateStyle()!=like.isSimulateStyle()) continue;
+			if (kerned!=null && kerned.booleanValue()!=Boolean.TRUE.equals(f.isKerning())) continue;
+			return f;
+		}
+		return null;
+	}
+
+	private static boolean eq(String a, String b) {
+		return a==null ? b==null : a.equals(b);
+	}
+
+	/** Add the triplets {@code into} does not have yet. */
+	private static void mergeTriplets(Font into, Font from) {
+		for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : from.getFontTriplet()) {
+			boolean present = false;
+			for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet e : into.getFontTriplet()) {
+				if (eq(e.getName(), t.getName()) && eq(e.getStyle(), t.getStyle())
+						&& eq(e.getWeight(), t.getWeight())) {
+					present = true;
+					break;
+				}
+			}
+			if (!present) into.getFontTriplet().add(t);
 		}
 	}
 

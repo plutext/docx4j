@@ -39,6 +39,11 @@ import org.apache.fop.fo.ElementMapping;
  * decides where any difference between the block's line-height and the box
  * goes: below as droppable leading, above, or nowhere (clipped).</li>
  * </ul>
+ * and one on {@code fo:root}:
+ * <ul>
+ * <li>{@code docx4j:space-shrink}: how far the spaces of a justified line may be
+ * compressed to pull a word in (see {@link #SPACE_SHRINK}).</li>
+ * </ul>
  * No elements are defined.  Found by FOP through META-INF/services
  * (org.apache.fop.fo.ElementMapping); docx4j-export-fo learns the namespace
  * from {@link WordLayoutCustomizer#extensionNamespace()}.
@@ -55,6 +60,11 @@ public class WordLayoutElementMapping extends ElementMapping {
 	public static final String LINE_RULE = "line-rule";
 	/** on a list item's first block: the label's natural ascent, part of its first line */
 	public static final String LABEL_ASCENT = "label-ascent";
+	/** on fo:root: how far this document's Word engine may compress the spaces of a
+	 *  justified line to pull a word in, as a fraction of their natural width.  Word
+	 *  only does that from compatibility mode 15 (the Word 2013 layout engine); for
+	 *  an older document docx4j writes 0.  @since 17.0.5 */
+	public static final String SPACE_SHRINK = "space-shrink";
 
 	public WordLayoutElementMapping() {
 		namespaceURI = URI;

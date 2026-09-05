@@ -450,6 +450,40 @@ content; Word keeps the row and overflows the text over the next rows.  The cell
 content is now clipped to the exact height (an fo:block-container with
 overflow="hidden"), so the rows below sit where Word puts them.
 
+PDF via XSL FO - justified lines fitted one word more than Word, and two font
+declaration bugs, from scoring the same 194 real documents (over that corpus: lines
+matching Word exactly 72.9% -> 77.5%, mean line parity 0.7316 -> 0.7660, median 0.7703
+-> 0.8148, same page count 138 -> 139 of 190; 41 documents better, 2 down.  The 33
+layout probes are unchanged):
+- Word only compresses the spaces of a justified line to pull one more word in from its
+2013 layout engine on (w:compatSetting compatibilityMode 15).  Measured over the Word
+goldens, 3,498 justified lines: in mode 15, 34 of 50 documents have lines whose spaces
+are down to 0.76 of their natural width; in modes 11, 12 and 14, and where the setting
+is absent, not one line in 2,102 goes below it (lowest 0.942, within the goldens' own
+rounding).  17.0.5's maxSpaceShrink (0.24) was applied to every document, so a legacy
+document fitted a word Word puts on the next line, and every following line and page
+moved.  docx4j now writes docx4j:space-shrink="0" on fo:root for a document below mode
+15 and the line manager caps the limit with it; setting
+docx4j.convert.out.fo.wordLayout.maxSpaceShrink explicitly still applies to every
+document.  The two documents that got worse are ones where our text is wider than
+Word's for another reason (a font the box does not have, substituted by a wider one;
+a 3pt paragraph indent difference) which the compression had been absorbing.
+- a font docx4j put in @font-family was not always declared to FOP, which then logged
+"Font ... not found. Substituting with any" and quietly set that text in a default font
+(55 occurrences over the corpus, now none).  Two causes: the FOP configuration is built
+from the fonts the document's runs name, so a font reached only through a paragraph mark,
+an empty paragraph, a style or the fallback was missing - RunFontSelector registers the
+physical font it actually used, as it already did for glyph fallbacks; and FopConfigUtil
+kept its font entries in a map keyed by @embed-url, so two document fonts sharing one
+file (Times New Roman and Tinos, or several unmapped fonts sharing a substitute) lost the
+first one's font-triplet.  Entries for one file are merged now, triplets and all, in both
+the main pass and the late fallback pass.
+- a character of a script [MS-OI29500] 17.3.2.26 does not list - Georgian, Armenian,
+Ethiopic, Tibetan, Greek Extended - started a new fo:inline, so such a word was one span
+per letter, and FOP kerns and letter-spaces within a span, not across two.  Consecutive
+characters of the same unlisted range share a span now
+(RunFontSelector.unicodeRangeToFont).
+
 docx4j-layout-fidelity (the measurement harness; not in the reactor):
 - the scoreboard's compatMode column now comes from the document's own w:compatSetting
 compatibilityMode, read from word/settings.xml, instead of the leading number of the file

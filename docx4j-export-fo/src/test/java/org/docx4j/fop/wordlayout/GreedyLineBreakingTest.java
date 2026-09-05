@@ -37,7 +37,15 @@ public class GreedyLineBreakingTest {
 	private static final double LINE = 200;
 
 	private static String fo(String text, String align) {
-		return "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">"
+		return fo(text, align, null);
+	}
+
+	/** @param spaceShrink docx4j:space-shrink on fo:root, as docx4j writes it for a
+	 *  document whose compatibility mode is below 15; null to leave it out. */
+	private static String fo(String text, String align, String spaceShrink) {
+		return "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
+				+ (spaceShrink==null ? "" : " xmlns:docx4j=\"" + WordLayoutElementMapping.URI
+						+ "\" docx4j:space-shrink=\"" + spaceShrink + "\"") + ">"
 				+ "<fo:layout-master-set><fo:simple-page-master master-name=\"m\" page-width=\"200pt\" page-height=\"400pt\" margin=\"0pt\">"
 				+ "<fo:region-body/></fo:simple-page-master></fo:layout-master-set>"
 				+ "<fo:page-sequence master-reference=\"m\"><fo:flow flow-name=\"xsl-region-body\">"
@@ -128,6 +136,22 @@ public class GreedyLineBreakingTest {
 		String noFit = words(5, 5, 5, 6) + " abcdefg " + words(9, 9, 9);
 		got = lines(fo(noFit, "justify"), true);
 		assertEquals(24, got.get(0).length());
+	}
+
+	/**
+	 * Word only compresses the spaces of a justified line from its 2013 layout engine
+	 * (w:compatSetting compatibilityMode 15); measured over 190 Word goldens, no line
+	 * of a mode 11, 12 or 14 document has spaces below their natural width.  docx4j
+	 * writes docx4j:space-shrink="0" on fo:root for such a document, and the word that
+	 * only fitted by compression then goes to the next line, as Word puts it.
+	 */
+	@Test
+	public void aLegacyCompatDocumentDoesNotCompressSpacesToPullAWordIn() throws Exception {
+		String fits = words(5, 5, 5, 6) + " abc " + words(9, 9, 9);
+		assertEquals("without the attribute, the word is pulled in",
+				28, lines(fo(fits, "justify"), true).get(0).length());
+		assertEquals("space-shrink=0: the word goes to the next line",
+				24, lines(fo(fits, "justify", "0"), true).get(0).length());
 	}
 
 	@Test
