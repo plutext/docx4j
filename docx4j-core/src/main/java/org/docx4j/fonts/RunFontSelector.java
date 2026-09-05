@@ -255,9 +255,10 @@ public class RunFontSelector {
 		return (DocumentFragment)finish(docfrag);
     }
 
-    /** The final touches on a converted run's fragment: kerned spaces, then small caps. */
+    /** The final touches on a converted run's fragment: a font which has the glyphs,
+     *  then kerned spaces, then small caps. */
     private Object finish(Object fragment) {
-    	return smallCaps(kernSpaces(fragment));
+    	return smallCaps(kernSpaces(glyphFallback(fragment)));
     }
     
 
@@ -310,11 +311,15 @@ public class RunFontSelector {
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
     			applyLineHeight(el, fontName, fallbackFont);
-    		} else {	
+    		} else {
     			el.setAttribute("font-family", foFontFamily(val) );
     			applyLineHeight(el, fontName, val);
     		}
-    		
+    		if (fontName!=null) {
+    			// glyphFallback needs the font the document asked for; it removes this
+    			el.setAttribute(MARK_DOCUMENT_FONT, fontName);
+    		}
+
 			// NB, for PDF/FOP, white space handling on the parent fo:block, 
     		// see XsltFOFunctions (for XSLT), and AbstractVisitorExporterGenerator (non XSLT)
     		
@@ -593,6 +598,193 @@ public class RunFontSelector {
     	// baseline-shift on the span: FOP enlarges the line box by the shift instead of
     	// moving the glyphs inside it, so the pitch drifted.  Needs a layout-manager
     	// level change (CR-001 option B); the residual is a constant per paragraph.
+    }
+
+    // ---- glyph-aware last-resort fallback (XSL FO only). @since 17.0.5
+
+    /**
+     * Attribute in which setAttribute leaves the font the *document* asked for, so that
+     * glyphFallback can consult its class and its line metrics; always removed there.
+     */
+    private static final String MARK_DOCUMENT_FONT = "docx4j-document-font";
+
+    /** The choice made for a (document font, script) pair, for this conversion.  A null
+     *  value means nothing installed covers it (already warned about). */
+    private final java.util.Map<String, PhysicalFont> fallbackByScript
+    		= new java.util.HashMap<String, PhysicalFont>();
+
+    /**
+     * Where the font a span ended up with has no glyphs for the span's characters, put
+     * the characters in one which has.
+     *
+     * <p>An unmapped font falls back to the document default's physical font, which is
+     * chosen without reference to what the run actually contains: a document setting
+     * Georgian in a font the box lacks rendered as a row of notdef boxes even where the
+     * box had Noto Sans Georgian installed (CR-001 cause C3).  The choice is made per
+     * script, preferring a font of the document font's own class, and cached for the
+     * conversion.  Where nothing installed covers the script, the span is left alone and
+     * {@link FontFallback#warnNoCoverage} says so once, rather than FOP saying so once
+     * per glyph.</p>
+     *
+     * <p>Only spans containing something outside Latin/Greek/Cyrillic are examined, so
+     * ordinary documents pay one code point scan per span.</p>
+     */
+    private Object glyphFallback(Object fragment) {
+
+    	if (outputType!=RunFontActionType.XSL_FO || !(fragment instanceof DocumentFragment)) {
+    		return fragment;
+    	}
+    	for (Node n = ((DocumentFragment)fragment).getFirstChild(); n!=null; n = n.getNextSibling()) {
+    		if (n instanceof Element) {
+    			try {
+    				glyphFallback((Element)n);
+    			} catch (Exception e) {
+    				log.warn("Couldn't check glyph coverage: " + e.getMessage());
+    				((Element)n).removeAttribute(MARK_DOCUMENT_FONT);
+    			}
+    		}
+    	}
+    	return fragment;
+    }
+
+    private void glyphFallback(Element span) throws ExecutionException {
+
+    	String documentFont = span.getAttribute(MARK_DOCUMENT_FONT);
+    	span.removeAttribute(MARK_DOCUMENT_FONT);
+
+    	String text = span.getTextContent();
+    	if (text==null || text.length()==0 || span.getChildNodes().getLength()>1) return;
+
+    	int[] cps = text.codePoints().toArray();
+    	if (!FontFallback.needsCoverage(cps)) return;
+
+    	String family = span.getAttribute("font-family");
+    	if (family.length()==0) return;
+    	boolean kerned = family.endsWith(KERNED_SUFFIX);
+    	PhysicalFont current = PhysicalFonts.get(family); // strips the kerned suffix itself
+    	if (current==null && documentFont.length()>0) current = physicalFontFor(documentFont);
+
+    	// what the current font can't render, by script
+    	java.util.Map<Character.UnicodeScript, java.util.List<Integer>> missing
+    			= new java.util.LinkedHashMap<Character.UnicodeScript, java.util.List<Integer>>();
+    	boolean[] covered = new boolean[cps.length];
+    	for (int i=0; i<cps.length; i++) {
+    		covered[i] = current!=null && GlyphCheck.hasCodepoint(current, cps[i]);
+    		if (covered[i]) continue;
+    		Character.UnicodeScript script = FontFallback.scriptOf(cps[i]);
+    		java.util.List<Integer> list = missing.get(script);
+    		if (list==null) {
+    			list = new java.util.ArrayList<Integer>();
+    			missing.put(script, list);
+    		}
+    		if (!list.contains(cps[i]) && list.size()<32) list.add(cps[i]);
+    	}
+    	if (missing.isEmpty()) return;
+
+    	java.util.Map<Character.UnicodeScript, PhysicalFont> chosen
+    			= new java.util.HashMap<Character.UnicodeScript, PhysicalFont>();
+    	for (java.util.Map.Entry<Character.UnicodeScript, java.util.List<Integer>> e : missing.entrySet()) {
+    		chosen.put(e.getKey(), fallbackFor(documentFont, e.getKey(), e.getValue()));
+    	}
+
+    	// assign a font per code point; a shared character (space, digit, punctuation) goes
+    	// with what precedes it, so a Georgian phrase doesn't come apart at its spaces
+    	PhysicalFont[] assigned = new PhysicalFont[cps.length];
+    	PhysicalFont previous = null;
+    	boolean any = false;
+    	for (int i=0; i<cps.length; i++) {
+    		Character.UnicodeScript script = FontFallback.scriptOf(cps[i]);
+    		PhysicalFont pf;
+    		if (covered[i]) {
+    			pf = isShared(script) ? previous : null;
+    			if (pf!=null && !GlyphCheck.hasCodepoint(pf, cps[i])) pf = null;
+    		} else {
+    			pf = chosen.get(script);
+    		}
+    		assigned[i] = pf;
+    		if (pf!=null) any = true;
+    		previous = pf;
+    	}
+    	if (!any) return;
+
+    	// the common case: one substitute, and it can render the whole span
+    	PhysicalFont single = null;
+    	boolean one = true;
+    	for (PhysicalFont pf : assigned) {
+    		if (pf==null) continue;
+    		if (single==null) single = pf;
+    		else if (single!=pf) { one = false; break; }
+    	}
+    	if (one && single!=null && FontFallback.covers(single, cps)) {
+    		setFallbackFamily(span, documentFont, single, kerned);
+    		return;
+    	}
+
+    	// mixed: wrap each stretch which needs a substitute in an inline of its own
+    	Document doc = span.getOwnerDocument();
+    	java.util.List<Node> children = new java.util.ArrayList<Node>();
+    	StringBuilder seg = new StringBuilder();
+    	PhysicalFont segFont = assigned[0];
+    	for (int i=0; i<cps.length; i++) {
+    		if (assigned[i]!=segFont) {
+    			children.add(segmentNode(doc, span, seg.toString(), segFont, documentFont, kerned));
+    			seg.setLength(0);
+    			segFont = assigned[i];
+    		}
+    		seg.appendCodePoint(cps[i]);
+    	}
+    	if (seg.length()>0) {
+    		children.add(segmentNode(doc, span, seg.toString(), segFont, documentFont, kerned));
+    	}
+    	while (span.getFirstChild()!=null) span.removeChild(span.getFirstChild());
+    	for (Node c : children) span.appendChild(c);
+    }
+
+    /** Characters a script shares with its neighbours (spaces, digits, punctuation). */
+    private static boolean isShared(Character.UnicodeScript script) {
+    	return script==Character.UnicodeScript.COMMON || script==Character.UnicodeScript.INHERITED;
+    }
+
+    private Node segmentNode(Document doc, Element span, String text, PhysicalFont pf,
+    		String documentFont, boolean kerned) {
+
+    	if (pf==null) return doc.createTextNode(text);
+    	Element inline = doc.createElementNS(span.getNamespaceURI(),
+    			(span.getPrefix()==null ? "" : span.getPrefix() + ":") + "inline");
+    	setFallbackFamily(inline, documentFont, pf, kerned);
+    	inline.appendChild(doc.createTextNode(text));
+    	return inline;
+    }
+
+    private void setFallbackFamily(Element el, String documentFont, PhysicalFont pf, boolean kerned) {
+
+    	el.setAttribute("font-family", kerned && perRunKerning() ? pf.getName() + KERNED_SUFFIX : pf.getName());
+    	applyLineHeight(el, documentFont.length()==0 ? null : documentFont, pf.getName());
+    	if (wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
+    		// so that the FOP configuration declares it; see FopConfigUtil
+    		wordMLPackage.getFontMapper().registerLastResortFallback(pf);
+    	}
+    }
+
+    /** The font to render this script in, for text the document sets in this font; null
+     *  where nothing installed can. */
+    private PhysicalFont fallbackFor(String documentFont, Character.UnicodeScript script,
+    		java.util.List<Integer> codePoints) {
+
+    	String key = documentFont + " " + script;
+    	if (fallbackByScript.containsKey(key)) return fallbackByScript.get(key);
+
+    	int[] cps = new int[codePoints.size()];
+    	for (int i=0; i<cps.length; i++) cps[i] = codePoints.get(i);
+
+    	PhysicalFont pf = FontFallback.selectCovering(documentFont, cps);
+    	if (pf==null) {
+    		FontFallback.warnNoCoverage(documentFont, cps);
+    	} else if (log.isDebugEnabled()) {
+    		log.debug(script + " set in " + documentFont + " rendered in " + pf.getName());
+    	}
+    	fallbackByScript.put(key, pf);
+    	return pf;
     }
 
     // ---- w:caps / w:smallCaps, and the literal soft hyphen (XSL FO only). @since 17.0.5

@@ -357,6 +357,72 @@ public abstract class Mapper {
     	
     }
     
+    /** Whether {@link #addClassBasedSubstitutes} applies to this mapper.  False for
+     *  {@link BestMatchingMapper}, which reaches its own conclusions from panose and
+     *  from FontSubstitutions.xml, and whose behaviour is unchanged.
+     *  @since 17.0.5 */
+    public boolean wantsClassBasedSubstitutes() {
+    	return true;
+    }
+
+    /**
+     * Map whatever is still unmapped after {@link #addMetricallyCompatibleSubstitutes()}
+     * to a font of the same class.
+     *
+     * <p>Without this, an unmapped font falls back to whatever the document's *default*
+     * font maps to, which is a Times clone standing in for a sans as often as not
+     * (CR-001 cause C3).  Doing it here, rather than only in RunFontSelector, means the
+     * chosen font is declared to FOP with the rest.  Glyph coverage is a separate
+     * matter, settled per script segment during the conversion; see
+     * {@link FontFallback#selectCovering}.</p>
+     *
+     * <p>The classes and the candidate lists come from FontSubstitutions.xml, which
+     * {@link BestMatchingMapper} already consults; this makes them available to
+     * {@link IdentityPlusMapper}, which is the default mapper, without changing what
+     * BestMatchingMapper does.</p>
+     *
+     * <p>Deliberately conservative: a condensed face (Arial Narrow) is left unmapped,
+     * since measured over a real-document corpus the ordinary condensed faces a Linux
+     * box has are further from its widths than the document default is.</p>
+     *
+     * @param documentFontNames the fonts the document uses
+     * @since 17.0.5
+     */
+    public void addClassBasedSubstitutes(Set<String> documentFontNames) {
+
+    	if (documentFontNames==null) return;
+    	for (String documentFontName : documentFontNames) {
+
+    		if (documentFontName==null || documentFontName.trim().length()==0) continue;
+    		if (get(documentFontName)!=null) continue; // already mapped
+    		if (isEmbedded(documentFontName)) continue;
+    		if (PhysicalFonts.get(documentFontName)!=null) continue; // installed; identity
+
+    		PhysicalFont pf = FontFallback.selectByClass(documentFontName);
+    		if (pf!=null) {
+    			if (log.isDebugEnabled()) {
+    				log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (same class)");
+    			}
+    			put(documentFontName, pf);
+    		}
+    	}
+    }
+
+    /** Physical fonts RunFontSelector chose as a last resort during conversion, which the
+     *  FOP configuration therefore has to be told about late; see FopConfigUtil.
+     *  @since 17.0.5 */
+    private final Map<String, PhysicalFont> lastResortFallbacks = new ConcurrentHashMap<String, PhysicalFont>();
+
+    /** @since 17.0.5 */
+    public void registerLastResortFallback(PhysicalFont pf) {
+    	if (pf!=null && pf.getName()!=null) lastResortFallbacks.putIfAbsent(pf.getName(), pf);
+    }
+
+    /** @since 17.0.5 */
+    public Map<String, PhysicalFont> getLastResortFallbacks() {
+    	return lastResortFallbacks;
+    }
+
     /**
      * @param proprietaryFont
      * @param openSubstitute

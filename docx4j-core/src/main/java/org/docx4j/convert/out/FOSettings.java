@@ -69,7 +69,19 @@ public class FOSettings extends AbstractConversionSettings {
 		this.fopConfig = fopConfig;
 	}
 
+	/**
+	 * The configuration FOP is to be given.
+	 *
+	 * <p>Since 17.0.5 this also declares any font RunFontSelector had to fall back to
+	 * while generating the FO, since the configuration itself is built from the fonts
+	 * the document names, before there is any FO.  The renderer asks for it after the FO
+	 * has been generated, so by then the set is complete.</p>
+	 */
 	public Fop getFopConfig() {
+		if (fopConfig!=null && getOpcPackage() instanceof WordprocessingMLPackage) {
+			FopConfigUtil.declareFallbackFonts(fopConfig,
+					((WordprocessingMLPackage)getOpcPackage()).getFontMapper());
+		}
 		return fopConfig;
 	}
 	

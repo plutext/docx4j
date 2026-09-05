@@ -67,7 +67,16 @@ public class BestMatchingMapper extends Mapper {
 	public BestMatchingMapper() {
 		super();
 	}
-		
+
+	/** This mapper reaches its own conclusions, from panose and from the explicit
+	 *  substitutions in FontSubstitutions.xml; the class-based step added in 17.0.5 is
+	 *  for the mappers which don't.  @since 17.0.5 */
+	@Override
+	public boolean wantsClassBasedSubstitutes() {
+		return false;
+	}
+
+	
 	/** The substitutions listed in FontSubstitutions.xml
 	 * Will be used only if there is no panose match.  */
 	private final static Map<String, FontSubstitutions.Replace> explicitSubstitutionsMap;

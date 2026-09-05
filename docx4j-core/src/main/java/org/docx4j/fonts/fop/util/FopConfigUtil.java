@@ -444,5 +444,50 @@ public class FopConfigUtil {
 	protected static String weightToCSS2FontWeight(int i) {
 		return (i >= 700 ? "bold" : "normal");
 	}
-	
+
+	/**
+	 * Declare the fonts RunFontSelector chose as a last resort while generating the FO.
+	 *
+	 * <p>The configuration is built from the fonts the document names, before the FO
+	 * exists; a font picked during the conversion because the mapped one had no glyphs
+	 * for the run (a Noto face for the document's Georgian, say) is therefore not in it,
+	 * and FOP would silently render the run in its default font instead.  FOSettings
+	 * calls this when the renderer asks for the configuration, which is after the FO has
+	 * been generated.  Idempotent: a font already declared is left alone.</p>
+	 *
+	 * @since 17.0.5
+	 */
+	public static void declareFallbackFonts(Fop fopConfig, Mapper fontMapper) {
+
+		if (fopConfig==null || fontMapper==null || fontMapper.getLastResortFallbacks().isEmpty()) return;
+
+		Renderer renderer = (fopConfig.getRenderers()==null) ? null
+				: get(fopConfig.getRenderers(), "application/pdf");
+		if (renderer==null) return;
+		if (renderer.getFonts()==null) {
+			renderer.setFonts(factory.createFonts());
+		}
+		Set<String> declared = new java.util.HashSet<String>();
+		for (Font f : renderer.getFonts().getFont()) {
+			if (f.getEmbedUrl()!=null) declared.add(f.getEmbedUrl());
+		}
+
+		Map<String, Font> fontEntries = new HashMap<String, Font>();
+		for (PhysicalFont pf : fontMapper.getLastResortFallbacks().values()) {
+			if (pf.getEmbeddedURI()==null || declared.contains(pf.getEmbeddedURI().toString())) continue;
+			if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", true)) {
+				createFontEntrySimulateStyles(fontMapper, fontEntries, pf.getName(), pf);
+			} else {
+				createFontEntry(fontMapper, fontEntries, pf.getName(), pf);
+			}
+		}
+		for (Entry<String, Font> entry : fontEntries.entrySet()) {
+			if (entry.getValue().getEmbedUrl()!=null && !declared.add(entry.getValue().getEmbedUrl())) continue;
+			renderer.getFonts().getFont().add(entry.getValue());
+			if (!kerning()) {
+				renderer.getFonts().getFont().add(kernedTwin(entry.getValue()));
+			}
+		}
+	}
+
 }

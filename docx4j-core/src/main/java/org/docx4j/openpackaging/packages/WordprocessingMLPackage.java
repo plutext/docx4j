@@ -424,8 +424,15 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		if (Docx4jProperties.getProperty("docx4j.fonts.automap.enabled", true)) {
 			// Auto-add mappings for Calibri, Cambria etc if those fonts aren't available
-			// but the substitutes are 
+			// but the substitutes are
 			fontMapper.addMetricallyCompatibleSubstitutes();
+
+			/* Then whatever is still unmapped, to a font of its own class, so that it
+			 * doesn't fall back to the document default (a serif standing in for a sans,
+			 * as often as not).  @since 17.0.5 */
+			if (fontMapper.wantsClassBasedSubstitutes()) {
+				fontMapper.addClassBasedSubstitutes(fontsInUse);
+			}
 		}
     }
 

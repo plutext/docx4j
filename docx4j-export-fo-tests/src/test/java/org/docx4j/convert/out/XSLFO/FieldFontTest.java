@@ -111,25 +111,45 @@ public class FieldFontTest extends AbstractXSLFOTest {
 	 *  digits, rather than falling back to Latin ones.
 	 *
 	 *  The font is resolved for the digit which will actually be rendered, and FONT
-	 *  has no Thai digits, so it is deliberately left off the fo:page-number: giving
-	 *  FOP a font which can't render the character produces .notdef, not a fallback.
-	 *  See XsltCommonFunctions.fontCanRender.  The surrounding text, which FONT can
-	 *  render, keeps it. */
+	 *  has no Thai digits.  Giving FOP a font which can't render the character
+	 *  produces .notdef, not a fallback, so the fo:page-number must end up either with
+	 *  no font at all (XsltCommonFunctions.fontCanRender drops it) or, since 17.0.5,
+	 *  with the Thai-capable font the glyph-aware fallback found for it.  The
+	 *  surrounding text, which FONT can render, keeps it. */
 	@Test
 	public void testThaiPageNumberFormat() throws Exception {
 
-		// the point of the test is that the font is dropped because it can't render ๑
-		Assume.assumeFalse(FONT + " has Thai digits, so it wouldn't be dropped",
+		// the point of the test is that FONT itself can't render the Thai digit
+		Assume.assumeFalse(FONT + " has Thai digits, so nothing would have to be done",
 				GlyphCheck.hasCodepoint(PhysicalFonts.get(FONT), '\u0E51'));
 
 		org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(createThaiPkg()));
 
 		assertTrue("fo:page-sequence doesn't ask for Thai digits",
 				isPresent(doc, "//fo:page-sequence[@format='\u0E51']"));  // ๑, Thai digit one
-		assertTrue("fo:page-number was given a font which has no Thai digits",
-				isAbsent(doc, "//fo:page-number[@font-family]"));
+		assertTrue("fo:page-number kept a font which has no Thai digits",
+				isAbsent(doc, "//fo:page-number[@font-family='" + FONT + "']"));
+		for (org.w3c.dom.Element pageNumber : pageNumbersWithAFont(doc)) {
+			String family = pageNumber.getAttribute("font-family");
+			PhysicalFont pf = PhysicalFonts.get(family);
+			assertNotNull("fo:page-number names " + family + ", which is not installed", pf);
+			assertTrue("fo:page-number was given " + family + ", which has no Thai digits",
+					GlyphCheck.hasCodepoint(pf, '\u0E51'));
+		}
 		assertTrue("the surrounding text lost its font",
 				isPresent(doc, "//fo:inline[starts-with(text(),'Page')][@font-family]"));
+	}
+
+	/** the fo:page-number elements which carry a font-family */
+	private java.util.List<org.w3c.dom.Element> pageNumbersWithAFont(org.w3c.dom.Document doc) {
+		java.util.List<org.w3c.dom.Element> result = new java.util.ArrayList<org.w3c.dom.Element>();
+		org.w3c.dom.NodeList nl = doc.getElementsByTagNameNS(
+				"http://www.w3.org/1999/XSL/Format", "page-number");
+		for (int i=0; i<nl.getLength(); i++) {
+			org.w3c.dom.Element el = (org.w3c.dom.Element)nl.item(i);
+			if (el.getAttribute("font-family").length()>0) result.add(el);
+		}
+		return result;
 	}
 
 	/** .. and FOP accepts the resulting format token (the render completes). */

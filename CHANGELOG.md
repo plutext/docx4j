@@ -298,6 +298,21 @@ is deliberately left to the old fallback, since the condensed faces a Linux box 
 are further from Arial Narrow's widths than the document default is).  Its two secondary
 substitutes were also the wrong way round, so on a box with Liberation but not Croscore,
 Times New Roman became a sans and Arial a serif.
+- fonts that table doesn't know still fell back to the document default, chosen without
+asking whether it had the glyphs: a script the substitute lacks (Georgian, Ethiopic, CJK)
+came out as notdef boxes even where the box had a font for it.  Whatever is left unmapped
+now takes a font of its own class, from the classes and candidate lists in
+FontSubstitutions.xml (which only BestMatchingMapper consulted; its behaviour is
+unchanged), and the run font selector then picks, per script segment, a font which can
+render it - preferring the document font's class, caching the choice per font and script,
+and warning once per font and script where nothing installed covers it, rather than once
+per glyph.  New org.docx4j.fonts.FontFallback.  Line heights still come from the document
+font (WordLineMetrics), so a Tahoma run set in Arimo keeps Tahoma's line height.  As with
+Arial Narrow, three cases are left unmapped on purpose, each measured over the corpus to
+be better off with the document default: condensed faces, Lato, and a PostScript name
+(TimesNewRomanPS-BoldMT, MyriadPro-Regular) - no system has a family by that name, so Word
+doesn't resolve it either and falls back to its own default.  A name whose only clue is
+that it ends in "Sans" or "Serif" isn't taken as grounds to substitute either.
 
 PDF via XSL FO - text boxes and multi-column sections, from scoring the same 194 real
 documents (both pathways.  Over that corpus: one document more renders at all (190
