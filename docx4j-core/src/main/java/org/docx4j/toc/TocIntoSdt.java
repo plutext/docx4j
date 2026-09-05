@@ -96,7 +96,7 @@ public class TocIntoSdt  {
 		int toIndex = topLevelContent.indexOf(finder.pLast);
 
 		if (fromIndex<0 || toIndex<0) {
-			throw new TocException("Couldn't find TOC field");
+			throw new NoTocFoundException("Couldn't find TOC field");
 		}
 		
 		this.tocInstruction = finder.tocInstruction;

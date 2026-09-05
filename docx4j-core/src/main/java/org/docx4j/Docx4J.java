@@ -75,6 +75,8 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.toc.NoTocFoundException;
+import org.docx4j.toc.TocGenerator;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
@@ -116,7 +118,35 @@ public class Docx4J {
 	 *  This is the default pathway since 17.0.4 (ie for FLAG_NONE).
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
-	
+
+	/** Update the document's table of contents before exporting it, so that the
+	 *  ToC in the output reflects the document as it is now.
+	 *
+	 *  Combine with the FLAG_EXPORT_PREFER_ flags in the usual way, eg
+	 *  <code>Docx4J.FLAG_EXPORT_UPDATE_TOC | Docx4J.FLAG_EXPORT_PREFER_XSL</code>.
+	 *
+	 *  Honoured by toPDF, toFO and toHTML.  For PDF/FO the entries are updated
+	 *  <em>with</em> page numbers, which means the document is laid out by FOP
+	 *  first (so this roughly doubles the time the export takes, and requires
+	 *  docx4j-export-fo).  For HTML, where there are no page numbers, the
+	 *  entries are updated without them (no FO/FOP involved).
+	 *
+	 *  If you only care about the PDF (not about the package afterwards), you
+	 *  can have the entries without paying for that second layout: the PAGEREF
+	 *  fields become fo:page-number-citation, which FOP resolves as it renders,
+	 *  so <code>Docx4J.updateToc(pkg, true)</code> followed by an ordinary
+	 *  export prints the same page numbers, in half the time.
+	 *
+	 *  <b>The package is updated in place</b> (as Docx4J.updateToc does); clone
+	 *  it first (Docx4J.clone) if you don't want that.
+	 *
+	 *  If the document contains no ToC, the export proceeds unchanged.
+	 *
+	 *  @see #updateToc(WordprocessingMLPackage, boolean)
+	 *  @since 17.0.6
+	 */
+	public static final int FLAG_EXPORT_UPDATE_TOC = 4;
+
 	/** Save the document in a zip container (default docx)
 	 */
 	public static final int FLAG_SAVE_ZIP_FILE = 1;
@@ -700,23 +730,101 @@ public class Docx4J {
 	}
 	
 	/**
+	 * Update the table of contents in this document (its entries <em>and</em>
+	 * their page numbers), in place.
+	 *
+	 * Equivalent to <code>updateToc(wmlPackage, false)</code>; see there for
+	 * what it costs and what it requires.
+	 *
+	 * @return true if a ToC was found and updated; false if the document
+	 * contains no ToC (in which case nothing is changed)
+	 * @since 17.0.6
+	 */
+	public static boolean updateToc(WordprocessingMLPackage wmlPackage) throws Docx4JException {
+		return updateToc(wmlPackage, false);
+	}
+
+	/**
+	 * Update the table of contents in this document, in place: the existing ToC
+	 * content control (or a "bare" TOC field, which is wrapped in one) is
+	 * repopulated from the document's current headings, keeping its existing
+	 * heading paragraph and tab leader.
+	 *
+	 * <b>The package is modified.</b>  If you want to keep the original intact
+	 * - to update the ToC for a PDF, but save the docx without touching it -
+	 * clone it first (see Docx4J.clone).
+	 *
+	 * With page numbers (skipPageNumbering false), docx4j has to work out what
+	 * ends up on which page, which it does by laying the document out with
+	 * Apache FOP: so you need docx4j-export-fo on your classpath, and this
+	 * takes about as long as exporting the document to PDF.  Without them
+	 * (skipPageNumbering true) it is quick, and needs nothing extra; that is
+	 * the sensible choice for HTML, or for a docx you will open in Word (Word
+	 * repaginates the ToC itself).
+	 *
+	 * @param wmlPackage the document to update, in place
+	 * @param skipPageNumbering don't generate page numbers
+	 * @return true if a ToC was found and updated; false if the document
+	 * contains no ToC (in which case nothing is changed)
+	 * @throws org.docx4j.toc.TocException if there is a ToC, but it can't be
+	 * updated (for example, page numbers were asked for, but no page numbering
+	 * implementation is available, or the document's bookmarks are broken)
+	 * @since 17.0.6
+	 */
+	public static boolean updateToc(WordprocessingMLPackage wmlPackage, boolean skipPageNumbering) throws Docx4JException {
+
+		try {
+			new TocGenerator(wmlPackage).updateToc(skipPageNumbering);
+			return true;
+		} catch (NoTocFoundException e) {
+			log.debug("No ToC in this document; nothing to update.");
+			return false;
+		}
+	}
+
+	/**
 	 *  Create the configuration object for conversions that are done via xsl-fo
-	 */	
+	 */
 	public static FOSettings createFOSettings() {
 		return new FOSettings();
 	}
 	
 	/**
 	 *  Convert the document via xsl-fo
-	 */	
+	 *
+	 *  With FLAG_EXPORT_UPDATE_TOC, the package's table of contents (entries and
+	 *  page numbers) is updated in place first.
+	 */
 	public static void toFO(FOSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
-		
+
 		if (log.isDebugEnabled()) {
-	    	log.debug(XmlUtils.marshaltoString(settings.getFopConfig(), Context.getFopConfigContext()));			
+	    	log.debug(XmlUtils.marshaltoString(settings.getFopConfig(), Context.getFopConfigContext()));
 		}
-		
+
+		flags = updateTocIfRequested(settings.getOpcPackage(), flags, false);
+
 		Exporter<FOSettings> exporter = getFOExporter(flags);
 		exporter.export(settings, outputStream);
+	}
+
+	/**
+	 * If FLAG_EXPORT_UPDATE_TOC is set, update the ToC in this package (in place),
+	 * and return the flags with that bit cleared, so the export itself sees only
+	 * the flags it understands (and so we don't update the ToC twice, when one
+	 * facade method delegates to another).
+	 *
+	 * @since 17.0.6
+	 */
+	private static int updateTocIfRequested(OpcPackage pkg, int flags, boolean skipPageNumbering) throws Docx4JException {
+
+		if ((flags & FLAG_EXPORT_UPDATE_TOC) != FLAG_EXPORT_UPDATE_TOC) return flags;
+
+		if (pkg instanceof WordprocessingMLPackage) {
+			updateToc((WordprocessingMLPackage)pkg, skipPageNumbering);
+		} else {
+			log.warn("FLAG_EXPORT_UPDATE_TOC ignored; not a WordprocessingMLPackage");
+		}
+		return flags & ~FLAG_EXPORT_UPDATE_TOC;
 	}
 
 	/**
@@ -728,13 +836,20 @@ public class Docx4J {
 	
 	/**
 	 *  Convenience method to convert the document to PDF
+	 *
+	 *  With FLAG_EXPORT_UPDATE_TOC, the package's table of contents (entries and
+	 *  page numbers) is updated in place first.
+	 *
 	 *  @since 11.5.8
-	 */	
+	 */
 	public static void toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream, int flags) throws Docx4JException {
-				
+
 		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
 		startEvent.publish();
-		
+
+		// Do this before the export (and clear the bit, so toFO below doesn't repeat it)
+		flags = updateTocIfRequested(wmlPackage, flags, false);
+
 		if (pdfViaDocuments4jRemote()) {
 			
 			Exporter<Documents4jConversionSettings> exporter = documents4jRemoteExporterGetInstance();
@@ -1010,12 +1125,18 @@ public class Docx4J {
 	
 	/**
 	 *  Convert the document to HTML
-	 */	
+	 *
+	 *  With FLAG_EXPORT_UPDATE_TOC, the package's table of contents is updated in
+	 *  place first, but without page numbers (HTML has no pages), so no FO/FOP
+	 *  rendering is involved.
+	 */
 	public static void toHTML(HTMLSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
 
 		StartEvent startEvent = new StartEvent( settings.getOpcPackage(), WellKnownProcessSteps.HTML_OUT );
 		startEvent.publish();
-		
+
+		flags = updateTocIfRequested(settings.getOpcPackage(), flags, true);
+
 		Exporter<HTMLSettings> exporter = getHTMLExporter(flags);
 		exporter.export(settings, outputStream);
 		

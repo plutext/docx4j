@@ -30,7 +30,11 @@ import org.docx4j.toc.TocGenerator;
  * to update a ToC.  
  * 
  * For page numbers, this example has export-fo on your classpath
- *  
+ *
+ * Since 17.0.6, the simple case is a one liner: Docx4J.updateToc(wordMLPackage)
+ * (and Docx4J.FLAG_EXPORT_UPDATE_TOC does it as part of toPDF/toFO/toHTML).
+ * Use TocGenerator directly, as here, when you want the options.
+ *
  * Note: If you have Word available, you can use it to populate (and/or update) the ToC.
  * That uses a different code path; please see the TocOperations example in 
  * docx4j-samples-export-documents4j-local

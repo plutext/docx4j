@@ -28,11 +28,13 @@ public class GenGettingStartedDocs {
 		String docx = args[0], outDir = args[1], filesDir = args[2], filesUri = args[3];
 
 		// Update the TOC (entries and page numbers) with docx4j's own pagination
-		// (TocGenerator paginates via docx4j-export-fo), so the PDF's contents page
-		// matches the PDF; the updated package is saved to a temp file that the
+		// (Docx4J.updateToc paginates via docx4j-export-fo), so the PDF's contents
+		// page matches the PDF; the updated package is saved to a temp file that the
 		// three conversions below load, and the canonical docx is left alone.
+		// (updateToc updates the package in place, which is why we load our own copy
+		// here rather than passing Docx4J.FLAG_EXPORT_UPDATE_TOC to the export.)
 		WordprocessingMLPackage tocPkg = Docx4J.load(new java.io.File(docx));
-		new org.docx4j.toc.TocGenerator(tocPkg).updateToc(false);
+		if (!Docx4J.updateToc(tocPkg)) throw new IllegalStateException("no TOC in " + docx);
 		java.io.File updated = java.io.File.createTempFile("GettingStarted-toc", ".docx");
 		updated.deleteOnExit();
 		Docx4J.save(tocPkg, updated);

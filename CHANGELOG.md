@@ -67,6 +67,9 @@ default 0.10); and a word in capitals now breaks where its lower-case form break
 pattern lookup being lossy for capitals
 
 Other:
+- Docx4J facade: Docx4J.updateToc(pkg[, skipPageNumbering]) updates a document's table of
+contents in place (returning false if it has none), and Docx4J.FLAG_EXPORT_UPDATE_TOC does
+it as part of toPDF/toFO (with page numbers) or toHTML (without)
 - StyleUtil: a w:tblPr/w:tblpPr whose only properties were an anchor or a *Spec was treated
 as empty, so a floating table lost its position when the effective table style was built
 - PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
