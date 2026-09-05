@@ -193,6 +193,55 @@ final class LBP {
 		}
 	}
 
+	// ---- LeafNodeLayoutManager.areaInfo / curArea and AreaInfo.ipdArea (all protected)
+
+	private static final Field LNLM_AREA_INFO, LNLM_CUR_AREA, AREA_INFO_IPD;
+	static {
+		try {
+			LNLM_AREA_INFO = org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class.getDeclaredField("areaInfo");
+			LNLM_AREA_INFO.setAccessible(true);
+			LNLM_CUR_AREA = org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class.getDeclaredField("curArea");
+			LNLM_CUR_AREA.setAccessible(true);
+			AREA_INFO_IPD = Class.forName("org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager$AreaInfo")
+					.getDeclaredField("ipdArea");
+			AREA_INFO_IPD.setAccessible(true);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("FOP's LeafNodeLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
+		}
+	}
+
+	/**
+	 * Give a leaf inline manager (here: an fo:leader standing in for a tab) the width
+	 * the line manager worked out.  Its area's IPD comes from its own stored AreaInfo
+	 * at addAreas time, not from the Knuth element, so both have to be set.
+	 */
+	static void setLeafIPD(org.apache.fop.layoutmgr.LayoutManager lm, int ipd) {
+		try {
+			Object areaInfo = LNLM_AREA_INFO.get(lm);
+			if (areaInfo == null) return;
+			AREA_INFO_IPD.set(areaInfo, org.apache.fop.traits.MinOptMax.getInstance(ipd));
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/** Replace a leader's area with a plain space of the same height: the tab reached
+	 *  a stop with no leader, but the FO could not know which stop that would be. */
+	static void blankLeaderArea(org.apache.fop.layoutmgr.LayoutManager lm) {
+		try {
+			Object area = LNLM_CUR_AREA.get(lm);
+			if (!(area instanceof org.apache.fop.area.inline.InlineArea)
+					|| area instanceof org.apache.fop.area.inline.Space) return;
+			org.apache.fop.area.inline.InlineArea old = (org.apache.fop.area.inline.InlineArea) area;
+			org.apache.fop.area.inline.Space blank = new org.apache.fop.area.inline.Space();
+			blank.setBPD(old.getBPD());
+			blank.setBidiLevel(old.getBidiLevel());
+			LNLM_CUR_AREA.set(lm, blank);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	static int parIndex(LineBreakPosition p) { return i(PAR_INDEX, p); }
 	static int startIndex(LineBreakPosition p) { return i(START_INDEX, p); }
 	static int availableShrink(LineBreakPosition p) { return i(AVAILABLE_SHRINK, p); }

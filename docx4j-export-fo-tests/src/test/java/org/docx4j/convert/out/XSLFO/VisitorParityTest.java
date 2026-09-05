@@ -356,11 +356,12 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 			String font = textFont(doc, "Chapter one");
 			assertTrue(impl + "no font on the ordinary text", font!=null);
 
-			// generated text (leader dots, tab spaces) carries the run's font
+			// generated content (the dot leader of a TOC, the leader a tab becomes)
+			// carries the run's font
 			assertTrue(impl + "dot leader has no or wrong font", isPresent(doc,
 					"//fo:leader[@leader-pattern='dots'][@font-family='" + font + "']"));
-			assertTrue(impl + "tab spaces have no or wrong font", isPresent(doc,
-					"//fo:inline[.='\u00A0\u00A0\u00A0'][@font-family='" + font + "']"));
+			assertTrue(impl + "tab leader has no or wrong font", isPresent(doc,
+					"//fo:leader[@leader-length='0pt'][@font-family='" + font + "']"));
 
 			// the empty paragraph is preserved, in the paragraph mark's font
 			assertTrue(impl + "empty paragraph collapsed or unstyled", isPresent(doc,

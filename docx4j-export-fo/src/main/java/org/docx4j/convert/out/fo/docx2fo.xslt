@@ -775,57 +775,15 @@
 	      set one, they'd be rendered/measured in the renderer's default font. -->
 	<xsl:variable name="pPrNode" select="$p/w:pPr" />
 	<xsl:variable name="rPrNode" select="../w:rPr" />
-	<xsl:variable name="fontFamily" 
-		select="java:org.docx4j.convert.out.fo.XsltFOFunctions.getFontFamily(
-			$conversionContext, $pPrNode, $rPrNode)" />
-	
-	<!-- a tab before any text: a leader to Word's next tab stop (see XsltFOFunctions.leadingTabLeaderLength) -->
-	<xsl:variable name="leadingTabLength"
-		select="java:org.docx4j.convert.out.fo.XsltFOFunctions.leadingTabLeaderLength(
-			$conversionContext, $pPrNode,
-			count(preceding-sibling::w:tab) + count(../preceding-sibling::w:r/w:tab),
-			count(preceding-sibling::w:t) + count(../preceding-sibling::w:r/w:t) + count(../preceding-sibling::w:hyperlink//w:t) + count(../preceding-sibling::w:fldSimple//w:t))" />
 
-	<xsl:choose>
-		<xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1">
-						
-		  <fo:leader leader-length.minimum="12pt" leader-length.optimum="40pt"
-		    leader-length.maximum="100%" leader-pattern="dots">
-			<xsl:if test="string-length($fontFamily) &gt; 0">
-				<xsl:attribute name="font-family"><xsl:value-of select="$fontFamily"/></xsl:attribute>
-			</xsl:if>
-		  </fo:leader>
-						
-		</xsl:when>		
-		<xsl:when test="string-length($leadingTabLength) &gt; 0">
-
-		  <fo:leader leader-pattern="space">
-			<xsl:attribute name="leader-length"><xsl:value-of select="$leadingTabLength"/></xsl:attribute>
-			<xsl:if test="string-length($fontFamily) &gt; 0">
-				<xsl:attribute name="font-family"><xsl:value-of select="$fontFamily"/></xsl:attribute>
-			</xsl:if>
-		  </fo:leader>
-
-		</xsl:when>
-		<xsl:otherwise>
-		
-			<!--  Use this simple-minded approach from MS stylesheet,
-			      until our document model can do better.   -->
-			<fo:inline>
-				<xsl:if test="string-length($fontFamily) &gt; 0">
-					<xsl:attribute name="font-family"><xsl:value-of select="$fontFamily"/></xsl:attribute>
-				</xsl:if>
-			    <xsl:call-template name="OutputTlcChar">
-			      <xsl:with-param name="tlc">
-			        <xsl:text disable-output-escaping="yes">&#160;</xsl:text>
-			      </xsl:with-param>
-			      <xsl:with-param name="count" select="3"/>
-			    </xsl:call-template>
-			</fo:inline>
-		
-		</xsl:otherwise>
-	
-	</xsl:choose>
+	<!-- With the Word layout managers on, a zero-length fo:leader the line manager
+	     sizes from the tab stops on the paragraph's block; otherwise a fixed leader
+	     for a tab that begins the paragraph, and three no-break spaces for any other
+	     (see XsltFOFunctions.tabToFO). -->
+	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.tabToFO(
+		$conversionContext, $pPrNode, $rPrNode,
+		count(preceding-sibling::w:tab) + count(../preceding-sibling::w:r/w:tab) + count(../preceding-sibling::w:hyperlink//w:tab) + count(../preceding-sibling::w:fldSimple//w:tab),
+		count(preceding-sibling::w:t) + count(../preceding-sibling::w:r/w:t) + count(../preceding-sibling::w:hyperlink//w:t) + count(../preceding-sibling::w:fldSimple//w:t))" />
 
 
 </xsl:template>

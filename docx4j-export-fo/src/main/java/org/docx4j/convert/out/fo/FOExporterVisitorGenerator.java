@@ -37,7 +37,6 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTFtnEdnRef;
-import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.DelText;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
@@ -48,8 +47,6 @@ import org.docx4j.wml.RunIns;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STPTabAlignment;
-import org.docx4j.wml.STTabJc;
-import org.docx4j.wml.STTabTlc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
@@ -666,88 +663,32 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	@Override
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document, org.docx4j.wml.R.Tab tab) throws DOMException {
 		leadingTabOrdinal = XsltCommonFunctions.leadingTabOrdinal(tab);
+		tabOrdinal = XsltCommonFunctions.tabOrdinal(tab);
 		try {
 			convertTabToNode(conversionContext, document);
 		} finally {
 			leadingTabOrdinal = -1;
+			tabOrdinal = 0;
 		}
 	}
 
 	/** the tab being converted: how many tabs precede it at its paragraph's start, or -1 */
 	private int leadingTabOrdinal = -1;
+	/** the tab being converted: how many tabs precede it in its paragraph */
+	private int tabOrdinal = 0;
 
 	@Override
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document) throws DOMException {
 
 		if (!conversionContext.isInComplexFieldDefinition()) {
 
-			// The leader dots, and the spaces we use where there is no leader, are
-			// characters we generate; there is no w:t to hang a font off, so unless we
-			// set one, they'd be rendered/measured in the renderer's default font.
-			String fontFamily = XsltFOFunctions.getFontFamily(conversionContext, pPr, rPr);
-
-	    	if (pPr!=null && pPr.getTabs()!=null) {
-
-	    		// xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1"
-	    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
-
-	    		if (tabStop!=null
-	    				&& tabStop.getVal()!=null     // unlikely
-	    				&& tabStop.getVal().equals(STTabJc.RIGHT)
-	    				&& tabStop.getLeader()!=null  // more likely
-	    				&& tabStop.getLeader().equals(STTabTlc.DOT) ) {
-
-					// <fo:leader leader-length.minimum="12pt" leader-length.optimum="40pt"
-					//		    leader-length.maximum="100%" leader-pattern="dots">
-	    			Element foLeader = document.createElementNS(XSL_FO, "leader");
-	    			foLeader.setAttribute("leader-length.minimum",  "12pt");
-	    			foLeader.setAttribute("leader-length.maximum",  "100%");
-	    			foLeader.setAttribute("leader-length.optimum",  "40pt");
-	    			foLeader.setAttribute("leader-pattern",  "dots");
-	    			if (fontFamily.length()>0) {
-	    				foLeader.setAttribute("font-family", fontFamily);
-	    			}
-
-	    			getCurrentParent().appendChild(foLeader);
-
-	    		} else if (!appendLeadingTab(conversionContext, fontFamily)) {
-	    			appendTabDummy(fontFamily);
-	    		}
-	    	}
-	    	else if (!appendLeadingTab(conversionContext, fontFamily)) {
-	    		appendTabDummy(fontFamily);
-    		}
-
+			// shared with the XSLT pathway's w:tab template
+			org.w3c.dom.DocumentFragment frag = XsltFOFunctions.tabToFO(conversionContext, pPr, rPr,
+					tabOrdinal, leadingTabOrdinal < 0 ? 1 : 0);
+			if (frag!=null) getCurrentParent().appendChild(document.importNode(frag, true));
 		}
 	}
 
-	/** A tab before any text in the paragraph: a leader to Word's next tab stop
-	 *  (XsltFOFunctions.leadingTabLeaderLength).  @return whether one was added */
-	private boolean appendLeadingTab(FOConversionContext conversionContext, String fontFamily) {
-		if (leadingTabOrdinal < 0) return false;
-		String length = XsltFOFunctions.leadingTabLeaderLength(conversionContext, pPr, leadingTabOrdinal, 0);
-		if (length.length() == 0) return false;
-		Element leader = document.createElementNS(XSL_FO, "leader");
-		leader.setAttribute("leader-pattern", "space");
-		leader.setAttribute("leader-length", length);
-		if (fontFamily.length() > 0) leader.setAttribute("font-family", fontFamily);
-		getCurrentParent().appendChild(leader);
-		return true;
-	}
-
-
-	/** the spaces standing in for a tab, in an inline carrying the font (as the
-	 *  XSLT's w:tab template does) */
-	private void appendTabDummy(String fontFamily) {
-
-		Element inline = createNode(document, NODE_INLINE);
-		if (fontFamily.length()>0) {
-			inline.setAttribute("font-family", fontFamily);
-		}
-		inline.setTextContent(TAB_DUMMY);
-		getCurrentParent().appendChild(inline);
-	}
-	
 	
     /**
      * Not used by this generator since 17.0.4: the paragraph block is built via

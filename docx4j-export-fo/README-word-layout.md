@@ -37,7 +37,9 @@ breaking loop is greedy, a `WordBlockLayoutManager` that creates it, and a
 `WordLayoutManagerMaker` that FOP is given through
 `FopFactoryBuilder.setLayoutManagerMakerOverride`. A few package-private or
 private FOP members are reached by reflection (`LBP`: `LineBreakPosition`,
-`AlignmentContext`'s constructor and line-height, `InlineLayoutManager.font`);
+`AlignmentContext`'s constructor and line-height, `InlineLayoutManager.font`,
+`TextLayoutManager`'s mappings/letterSpaceIPD/foText, and
+`LeafNodeLayoutManager`'s `areaInfo`/`curArea` with `AreaInfo.ipdArea`);
 fop-core is an automatic module, so that needs no `--add-opens`.
 
 Since CR-001 §6.9 these managers also place lines as Word does. docx4j writes three
@@ -60,7 +62,18 @@ possibility that follows the line, so FOP's page breaker drops it when it takes
 the break (the last line of a page keeps only its text box, as in Word).
 `WordFlowLayoutManager` moves a paragraph's last leading behind the break the
 flow adds after the block. `exact` clips the line to the box; `atLeast` puts a
-shortfall above the text. docx4j writes the attributes only when
+shortfall above the text.
+
+A tab in the middle of a line is placed here too (its stops measured against
+Word): docx4j emits it
+as an `fo:leader` of no length marked `docx4j:tab`, and the paragraph's block
+carries `docx4j:tabs` (its `w:tabs`, `pos:align:leader` in twips from the left
+margin), `docx4j:tab-default` (`w:defaultTabStop`) and `docx4j:tab-ind`
+(`left:firstLineOffset:decimalSymbol`). The line manager gives the leader's Knuth
+glue - and, through `LBP.setLeafIPD`, the leader layout manager's own record of
+its width - the distance from the x it starts at to the stop it reaches;
+`TabStopTest` checks the positions on a monospace font. docx4j writes the
+attributes only when
 `WordLayoutCustomizer.extensionNamespace()` reports the namespace (Word layout
 on), because FOP rejects them without the mapping. `WordLeadingTest`
 checks the page fit on a monospace font.
@@ -70,6 +83,7 @@ copy the new `LineLayoutManager.java`, rename, extend `LineLayoutManager`,
 route `LineBreakPosition` and `AlignmentContext` construction through `LBP`,
 and re-apply the greedy members of the inner `LineBreakingAlgorithm`
 (`findBreakingPoints`, `considerLegalBreak`, `fitsByShrinkingSpaces`,
-`commit`, `greedyBreakPoints`) and the single-pass
+`commit`, `greedyBreakPoints`, `handleGlueAt`/`computeDifference` for tabs) and
+the single-pass
 `findOptimalBreakingPoints`. `GreedyLineBreakingTest` checks the result on a
 monospace font where every expected break can be counted.

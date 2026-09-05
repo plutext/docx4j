@@ -66,6 +66,19 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  an older document docx4j writes 0.  @since 17.0.5 */
 	public static final String SPACE_SHRINK = "space-shrink";
 
+	/** on an fo:leader: it stands in for a w:tab, and {@link WordLineLayoutManager}
+	 *  gives it the width from the x it starts at to the tab stop it reaches. */
+	public static final String TAB = "tab";
+	/** on a paragraph's fo:block: its custom tab stops, "pos:align:leader;..." in
+	 *  twips from the left margin (w:val="clear" stops included: they clear the
+	 *  default stops before them). */
+	public static final String TABS = "tabs";
+	/** with {@link #TABS}: the default tab interval in twips (w:defaultTabStop). */
+	public static final String TAB_DEFAULT = "tab-default";
+	/** with {@link #TABS}: "left:firstLineOffset" in twips, the paragraph's indents,
+	 *  which put the stops and the running x in one frame. */
+	public static final String TAB_IND = "tab-ind";
+
 	public WordLayoutElementMapping() {
 		namespaceURI = URI;
 	}

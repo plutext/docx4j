@@ -315,6 +315,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
         private int candTotalStretch;
         private int candTotalShrink;
         private boolean restartRequested;
+        /** How far past the available width a tab stop on the line being built reaches.
+         *  Word honours a stop beyond the paragraph's right indent (measured: a footer
+         *  with w:ind right=360 and a right stop at the full text width puts its page
+         *  number on the stop, in the indent, and does not wrap), so the line is allowed
+         *  that much more. */
+        private int tabOverhang;
 
         @Override
         public int findBreakingPoints(KnuthSequence par, int startIndex,
@@ -335,6 +341,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             addNode(0, active);
             candIdx = -1;
             restartRequested = false;
+            tabOverhang = 0;
             if (WordLineLayoutManager.log.isTraceEnabled()) {
                 StringBuilder sb = new StringBuilder("greedy paragraph, " + par.size() + " elements, lineWidth=" + getLineWidth() + ":");
                 for (int i = 0; i < par.size(); i++) {
@@ -447,6 +454,124 @@ public class WordLineLayoutManager extends LineLayoutManager {
             return -difference <= maxShrink * spaces;
         }
 
+        // ---- Word's tab stops ---------------------------------------------------
+
+        /**
+         * A tab is an fo:leader of no length until we get here: only now is the x it
+         * starts at known.  Its width is the distance from that x to the tab stop it
+         * reaches, so the following text lands on the stop (the stops measured against
+         * Word's own PDFs; see {@link WordLineLayoutManager#nextTabStop}).  The leader's
+         * Knuth glue is replaced with one of that width, and the leader's layout
+         * manager told it too, since its area's IPD comes from its own record.
+         */
+        @Override
+        protected void handleGlueAt(KnuthGlue glue, int position, boolean previousIsBox, int allowedBreaks) {
+            LayoutManager tab = tabLeader(glue);
+            if (tab == null) {
+                super.handleGlueAt(glue, position, previousIsBox, allowedBreaks);
+                return;
+            }
+            int width = tabWidth(position, tab);
+            LBP.setLeafIPD(tab, width);
+            par.set(position, new KnuthGlue(width, 0, 0, glue.getPosition(), false));
+            totalWidth += width;
+        }
+
+        /**
+         * The width of the tab at this element index, in millipoints.  A left stop puts
+         * the following text on the stop; a right stop its end there, a centre stop its
+         * middle, a decimal stop its decimal separator (the text up to the next tab or
+         * the end of the paragraph).  Word cannot move backwards, so a tab whose text
+         * does not fit before the stop collapses to nothing; a stop beyond the
+         * paragraph's right indent is still honoured and the line runs into the indent.
+         */
+        private int tabWidth(int position, LayoutManager leader) {
+            int x = totalWidth - active.totalWidth;      // from the line's start
+            int stop = nextTabStop(tabLeftMpt + x);      // sets stopAlignment/stopHasLeader
+            int align = stopAlignment;
+            int width = stop - (tabLeftMpt + x);
+            if (align != TAB_LEFT) {
+                width -= followingWidth(position, align);
+            }
+            if (width < 0) {
+                // Word cannot move backwards: a stop the text has already passed, or one
+                // whose right/centre text does not fit before it, advances nothing
+                width = 0;
+            } else {
+                // a stop past the paragraph's right indent is still honoured; the line is
+                // allowed to run on to it (see tabOverhang)
+                tabOverhang = Math.max(tabOverhang, (stop - tabLeftMpt) - getLineWidth());
+            }
+            if (WordLineLayoutManager.log.isDebugEnabled()) {
+                WordLineLayoutManager.log.debug("tab at x=" + x + " (" + (tabLeftMpt + x)
+                        + " from the margin) -> stop " + stop + " align=" + align + " width=" + width);
+            }
+            // the FO could not know which stop the tab would reach, so a leader that
+            // turns out to land on a stop without one is blanked
+            if (!stopHasLeader) LBP.blankLeaderArea(leader);
+            return width;
+        }
+
+        /**
+         * The width of the text between this tab and the next one (or the end of the
+         * paragraph), which is what a right, centre or decimal stop aligns.  A centre
+         * stop takes half of it; a decimal stop the part before the decimal separator
+         * (and, where there is none, all of it, as Word right-aligns it then).
+         */
+        private int followingWidth(int position, int align) {
+            int width = 0;
+            int trailingSpace = 0;   // Word lets the trailing space hang past the stop
+            for (int i = position + 1; i < par.size(); i++) {
+                KnuthElement e = getElement(i);
+                if (e.isPenalty() && e.isForcedBreak()) break;
+                if (e.isGlue() && tabLeader((KnuthGlue) e) != null) break;
+                if (e.isPenalty()) continue;
+                if (align == TAB_DECIMAL) {
+                    int upTo = widthUpToDecimal(e);
+                    if (upTo >= 0) return width + upTo;
+                }
+                width += e.getWidth();
+                if (e.isGlue()) trailingSpace += e.getWidth();
+                else if (e.getWidth() > 0) trailingSpace = 0;
+            }
+            width -= trailingSpace;
+            if (width < 0) width = 0;
+            if (align == TAB_CENTER) return width / 2;
+            return width;
+        }
+
+        /** The width of the part of this box before the decimal separator, or -1 when
+         *  it holds none. */
+        private int widthUpToDecimal(KnuthElement e) {
+            if (!(e instanceof KnuthInlineBox)) return -1;
+            Position leaf = e.getPosition();
+            while (leaf != null && !(leaf instanceof LeafPosition)) {
+                leaf = leaf.getPosition();
+            }
+            if (leaf == null || !(leaf.getLM() instanceof org.apache.fop.layoutmgr.inline.TextLayoutManager)) return -1;
+            org.apache.fop.layoutmgr.inline.TextLayoutManager tlm
+                    = (org.apache.fop.layoutmgr.inline.TextLayoutManager) leaf.getLM();
+            List<org.apache.fop.fonts.GlyphMapping> mappings = LBP.mappings(tlm);
+            int idx = ((LeafPosition) leaf).getLeafPos();
+            if (idx < 0 || idx >= mappings.size()) return -1;
+            org.apache.fop.fonts.GlyphMapping m = mappings.get(idx);
+            if (m.font == null) return -1;
+            org.apache.fop.fo.FOText foText = LBP.foText(tlm);
+            for (int c = m.startIndex; c < m.endIndex && c < foText.length(); c++) {
+                if (foText.charAt(c) != decimalSeparator) continue;
+                StringBuilder sb = new StringBuilder();
+                for (int k = m.startIndex; k < c; k++) sb.append(foText.charAt(k));
+                return m.font.getWordWidth(sb.toString());
+            }
+            return -1;
+        }
+
+        /** The line may run on to a tab stop that lies past the available width. */
+        @Override
+        protected int computeDifference(KnuthNode activeNode, KnuthElement element, int elementIndex) {
+            return super.computeDifference(activeNode, element, elementIndex) + tabOverhang;
+        }
+
         private void commit(int idx, int difference, double r, int availableShrink, int availableStretch,
                 int tw, int ts, int tsh, boolean restart) {
             int fitness = r < -0.5 ? 0 : (r <= 0.5 ? 1 : (r <= 1 ? 2 : 3));
@@ -455,6 +580,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             removeNode(active.line, active);
             active = node;
             candIdx = -1;
+            tabOverhang = 0;
             if (restart) {
                 restartRequested = true; // restartFrom() re-adds the node and resets the totals
             } else {
@@ -480,6 +606,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
             int endIndent;
             int difference = bestActiveNode.difference;
             int textAlign = (bestActiveNode.line < total) ? alignment : alignmentLast;
+
+            if (lineHasTab(par, bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0,
+                    bestActiveNode.position)) {
+                textAlign = Constants.EN_START;
+            }
 
             switch (textAlign) {
             case Constants.EN_START:
@@ -846,7 +977,38 @@ public class WordLineLayoutManager extends LineLayoutManager {
         wordLineRule = "exact".equals(rule) ? RULE_EXACT : "atLeast".equals(rule) ? RULE_AT_LEAST : RULE_AUTO;
         labelAscent = foreignLength(block, WordLayoutElementMapping.LABEL_ASCENT);
         maxSpaceShrink = documentSpaceShrink(block);
+
+        // the tab stops the block's tabs are laid out against
+        String stops = foreignAttribute(block, WordLayoutElementMapping.TABS);
+        hasTabStops = stops != null;
+        String[] parts = (stops == null || stops.length() == 0) ? new String[0] : stops.split(";");
+        tabStops = new int[parts.length];
+        tabStopAlign = new int[parts.length];
+        tabStopLeader = new boolean[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            String[] stopFields = parts[i].split(":", -1);
+            tabStops[i] = twipsToMpt(stopFields[0]);
+            tabStopAlign[i] = tabAlignment(stopFields.length > 1 ? stopFields[1] : "left");
+            tabStopLeader[i] = stopFields.length > 2 && !"none".equals(stopFields[2]);
+        }
+        int def = twipsToMpt(foreignAttribute(block, WordLayoutElementMapping.TAB_DEFAULT));
+        tabDefaultMpt = def > 0 ? def : 720 * 50;
+        String ind = foreignAttribute(block, WordLayoutElementMapping.TAB_IND);
+        String[] indParts = ind == null ? new String[0] : ind.split(":", -1);
+        tabLeftMpt = indParts.length > 0 ? twipsToMpt(indParts[0]) : 0;
+        tabHanging = indParts.length > 1 && twipsToMpt(indParts[1]) < 0;
+        decimalSeparator = (indParts.length > 2 && indParts[2].length() > 0) ? indParts[2].charAt(0) : '.';
     }
+
+    private static int twipsToMpt(String twips) {
+        if (twips == null || twips.length() == 0) return 0;
+        try {
+            return Integer.parseInt(twips.trim()) * 50;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
 
     /**
      * How far this line's spaces may be compressed to pull in a word that does not
@@ -878,6 +1040,99 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** a list label's natural ascent (millipoints), on the item's first line; Word
      *  counts the label's ascent, not its descent (WordLayoutFixups.listLabelLines) */
     private final int labelAscent;
+
+    // ---- Word's tab stops (docx4j:tabs, docx4j:tab-default, docx4j:tab-ind) ------
+
+    static final int TAB_LEFT = 0, TAB_CENTER = 1, TAB_RIGHT = 2, TAB_DECIMAL = 3, TAB_CLEAR = 4;
+
+    /** whether this paragraph carries tab stops, i.e. holds a tab we place */
+    private final boolean hasTabStops;
+    /** the custom stops, in millipoints from the left margin, with their alignment
+     *  (TAB_*) and whether they draw a leader; cleared stops are kept as TAB_CLEAR
+     *  because they clear the default stops before them too. */
+    private final int[] tabStops;
+    private final int[] tabStopAlign;
+    private final boolean[] tabStopLeader;
+    /** the default interval (w:defaultTabStop) in millipoints */
+    private final int tabDefaultMpt;
+    /** the paragraph's left indent in millipoints: the line manager's x is measured
+     *  from there, the stops from the left margin */
+    private final int tabLeftMpt;
+    /** a hanging indent (a negative first-line offset) makes an implicit stop at the
+     *  left indent */
+    private final boolean tabHanging;
+    /** the decimal separator a decimal stop aligns (w:decimalSymbol; "." by default) */
+    private final char decimalSeparator;
+
+    /** set by {@link #nextTabStop}: the alignment of the stop it found, and whether
+     *  that stop draws a leader */
+    private int stopAlignment;
+    private boolean stopHasLeader;
+
+    /**
+     * The first tab stop after x (millipoints from the left margin), as Word finds
+     * it: a custom stop, or the implicit stop a hanging indent makes at the left
+     * indent, and only where there is none of those the default interval — a custom
+     * stop clears the default stops before it.  Mirrors
+     * XsltFOFunctions.nextTabStop, which does the same for a tab that begins a
+     * paragraph.
+     */
+    private int nextTabStop(int x) {
+        int best = Integer.MAX_VALUE;
+        stopAlignment = TAB_LEFT;
+        stopHasLeader = false;
+        for (int i = 0; i < tabStops.length; i++) {
+            if (tabStopAlign[i] == TAB_CLEAR) continue;
+            if (tabStops[i] > x && tabStops[i] < best) {
+                best = tabStops[i];
+                stopAlignment = tabStopAlign[i];
+                stopHasLeader = tabStopLeader[i];
+            }
+        }
+        if (tabHanging && tabLeftMpt > x && tabLeftMpt < best) {
+            best = tabLeftMpt;
+            stopAlignment = TAB_LEFT;
+            stopHasLeader = false;
+        }
+        if (best < Integer.MAX_VALUE) return best;
+        if (x < 0) return 0;
+        return (x / tabDefaultMpt + 1) * tabDefaultMpt;
+    }
+
+    /** The layout manager of the fo:leader standing in for a w:tab, or null.  The
+     *  leader is usually inside the run's fo:inline, whose manager wraps its positions,
+     *  so unwrap to the leaf as fixLetterSpaces does. */
+    private LayoutManager tabLeader(KnuthGlue glue) {
+        if (!hasTabStops) return null;
+        Position leaf = glue.getPosition();
+        while (leaf != null && !(leaf instanceof LeafPosition)) {
+            leaf = leaf.getPosition();
+        }
+        LayoutManager lm = leaf == null ? null : leaf.getLM();
+        if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) return null;
+        return "1".equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB)) ? lm : null;
+    }
+
+    /** whether the line between these element indexes holds a tab.  Word lays such a
+     *  line out from the left whatever the paragraph's alignment: the stops are
+     *  absolute (measured on a w:jc="right" footer whose tabs Word placed from the
+     *  left margin). */
+    private boolean lineHasTab(KnuthSequence par, int from, int to) {
+        if (!hasTabStops) return false;
+        for (int i = Math.max(0, from); i <= to && i < par.size(); i++) {
+            Object e = par.get(i);
+            if (e instanceof KnuthGlue && tabLeader((KnuthGlue) e) != null) return true;
+        }
+        return false;
+    }
+
+    private static int tabAlignment(String v) {
+        if ("center".equals(v)) return TAB_CENTER;
+        if ("right".equals(v) || "end".equals(v)) return TAB_RIGHT;
+        if ("decimal".equals(v)) return TAB_DECIMAL;
+        if ("clear".equals(v)) return TAB_CLEAR;
+        return TAB_LEFT; // left, start, bar, num
+    }
 
     private static final int RULE_AUTO = 0, RULE_EXACT = 1, RULE_AT_LEAST = 2;
     private final int wordLineRule;
@@ -1948,7 +2203,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
         int endElementIndex = lbp.getLeafPos();
 
         LineArea lineArea = new LineArea(
-                (lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast),
+                lineHasTab(seq, startElementIndex, endElementIndex) ? EN_START
+                        : (lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast),
                 LBP.difference(lbp), LBP.availableStretch(lbp), LBP.availableShrink(lbp));
         lineArea.setChangeBarList(getChangeBarList());
 

@@ -319,6 +319,20 @@ public class XsltCommonFunctions {
     	return -1;
     }
 
+    /** How many tabs precede this one in its paragraph (whatever else is between
+     *  them); the n-th tab of a paragraph takes its leader from the n-th tab stop.
+     *  @since 17.0.5 */
+    public static int tabOrdinal(R.Tab tab) {
+    	P p = paragraphOf(tab);
+    	if (p == null) return 0;
+    	int tabs = 0;
+    	for (Object leaf : paragraphLeaves(p)) {
+    		if (leaf == tab) return tabs;
+    		if (leaf instanceof R.Tab) tabs++;
+    	}
+    	return tabs;
+    }
+
     /** Whether nothing visible follows this break in its paragraph.  @since 17.0.5 */
     public static boolean isTrailingBreak(Br br) {
     	P p = paragraphOf(br);

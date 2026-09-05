@@ -232,7 +232,7 @@ leading of the flow's last line for the same reason.
 - a tab at the start of a paragraph is a leader to Word's next tab stop (the
 paragraph's w:tabs, a hanging indent's stop, then the default interval, custom stops
 clearing the defaults before them) instead of three spaces, so code blocks indent as
-Word indents them; a tab after text is unchanged (its start is not known before layout).
+Word indents them; a tab after text followed later (see below).
 Both pathways.  A leader of fixed length no longer justifies the paragraph's last line
 (text-align-last=justify was set for any leader; only stretching leaders need it).
 - a line break at the end of a paragraph gets the empty line Word gives it (both pathways).
@@ -365,6 +365,46 @@ columns (with the first column's gap).  Rendering such a stretch as a one-row ta
 fix the widths but stop the content flowing from one column to the next, and there is no
 reliable way to tell at FO-generation time whether it would fit on the page; see CR-001
 §6.6.
+
+PDF via XSL FO - a tab in the middle of a line is laid out against Word's tab stops
+(org.docx4j.fop.wordlayout; both pathways.  Over the 194-document corpus: mean line parity
+0.7660 -> 0.7868, median 0.8148 -> 0.8420, 79.2% of lines matching Word exactly, was 77.5%;
+37 documents better, none worse; the 33 layout probes unchanged):
+- only a tab that preceded all of a paragraph's text became a leader (17.0.5, above);
+every other one was three no-break spaces, because where it starts is not known before
+layout.  Six consecutive tabs advanced 54pt where Word advanced 216pt, and 22 of the 40
+worst-scoring documents in the corpus had at least one.  A tab is now an fo:leader of no
+length which the Word line manager sizes during layout, from the x it starts at to the
+stop it reaches; the paragraph's block carries the stops it needs (docx4j:tabs,
+docx4j:tab-default, docx4j:tab-ind, in the namespace the ElementMapping registers).
+- the rules, measured against Word's PDFs: stops are the paragraph's w:tabs, the implicit
+stop a hanging indent makes at the left indent, and beyond the last of them a grid at
+w:defaultTabStop (720 twips where it is absent), all from the left margin - a custom stop
+clears the default stops before it, and a stop exactly at the current x is not the next
+one.  A left stop puts the following text on it; a right stop the END of the text between
+this tab and the next (or the paragraph's end), with its trailing space hanging past the
+stop; a centre stop that text's middle; a decimal stop its w:decimalSymbol (defaulting to
+"."), or, where it holds none, its end, as a right stop.  Word cannot move backwards: a
+stop the text has already passed, and a right or centre stop whose text does not fit
+before it, advance nothing.  A stop beyond the paragraph's right indent is still honoured
+and the line runs into the indent rather than wrapping.  A line holding a tab is laid out
+from the left whatever the paragraph's w:jc.  Word does not break a line at a tab.
+- the leader a stop draws (w:leader) comes with it: dots for dot and middleDot (FOP
+repeats the font's own dot, as Word does, rather than a rule with square dotted marks),
+a rule for hyphen, underscore and heavy, otherwise nothing.  Which stop a tab will reach
+is not known when the FO is written, so the n-th tab of a paragraph takes the leader of
+its n-th stop, and the line manager blanks a leader whose resolved stop has none.
+- a table of contents entry (the paragraph's first stop right-aligned with a dot leader)
+keeps the stretching leader and text-align-last="justify" it has always had: its stop is
+the right margin, and only a stretching leader absorbs the width an unresolved
+fo:page-number-citation loses when it resolves (FOP measures the line with a "MMM"
+placeholder).  Any other right, centre or decimal stop whose text holds a page reference
+is measured with that placeholder and lands a few points off - the known limitation here.
+- text-align-last="justify" is no longer set for any paragraph whose first stop is
+right-aligned, only for the leaders that stretch; it was justifying the last line of
+ordinary paragraphs.
+- with docx4j.convert.out.fo.wordLayout=false nothing changes: no stops are written and a
+tab after text keeps the three-space stand-in.
 
 FOSettings.setWmlPackage did not build the FOP configuration (PDF):
 - only setOpcPackage did, so a caller using the deprecated setter got a

@@ -156,6 +156,20 @@ public final class WordLayoutFixups {
 	 *  joins the runs of the first line (WordLineLayoutManager) */
 	public static final String HINT_LABEL_ASCENT = "docx4j-label-ascent";
 
+	/** on an fo:leader standing in for a w:tab (XsltFOFunctions.tabToFO): the line
+	 *  manager gives it its width.  @since 17.0.5 */
+	public static final String HINT_TAB = "docx4j-tab";
+	/** on the paragraph block of a paragraph holding a tab: its custom tab stops,
+	 *  "pos:align:leader;..." in twips from the left margin.  @since 17.0.5 */
+	public static final String HINT_TABS = "docx4j-tabs";
+	/** with HINT_TABS: the default tab interval in twips (w:defaultTabStop). @since 17.0.5 */
+	public static final String HINT_TAB_DEFAULT = "docx4j-tab-default";
+	/** with HINT_TABS: "left:firstLineOffset" in twips, the paragraph's indents,
+	 *  which put the tab stops and the running x in the same frame.  @since 17.0.5 */
+	public static final String HINT_TAB_IND = "docx4j-tab-ind";
+
+	private static final String[] TAB_HINTS = { HINT_TABS, HINT_TAB_DEFAULT, HINT_TAB_IND };
+
 	// ------------------------------------------------------------ 0a. list labels
 
 	/**
@@ -269,7 +283,33 @@ public final class WordLayoutFixups {
 			}
 			span.setAttributeNS(ns, "docx4j:font", font);
 		}
+		// the tab leaders and, on their paragraph's block, the stops they are laid out
+		// against (XsltFOFunctions.tabToFO / applyTabStopHints).  @since 17.0.5
+		for (Element leader : elements(doc, "leader")) {
+			if (leader.getAttribute(HINT_TAB).length()==0) continue;
+			leader.removeAttribute(HINT_TAB);
+			if (ns == null) continue;
+			if (!declared) {
+				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+			}
+			leader.setAttributeNS(ns, "docx4j:tab", "1");
+		}
 		for (Element block : elements(doc, "block")) {
+			String tabs = block.getAttribute(HINT_TABS);
+			boolean hasTabs = block.hasAttribute(HINT_TABS);
+			String tabDefault = block.getAttribute(HINT_TAB_DEFAULT);
+			String tabInd = block.getAttribute(HINT_TAB_IND);
+			for (String hint : TAB_HINTS) block.removeAttribute(hint);
+			if (ns != null && hasTabs) {
+				if (!declared) {
+					doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+					declared = true;
+				}
+				block.setAttributeNS(ns, "docx4j:tabs", tabs);
+				block.setAttributeNS(ns, "docx4j:tab-default", tabDefault);
+				block.setAttributeNS(ns, "docx4j:tab-ind", tabInd);
+			}
 			String box = block.getAttribute(HINT_LINE_BOX);
 			String baseline = block.getAttribute(HINT_BASELINE);
 			String rule = block.getAttribute(HINT_LINE_RULE);
@@ -290,16 +330,28 @@ public final class WordLayoutFixups {
 		}
 	}
 
-	/** The extension namespace a loaded FopFactoryCustomizer supports, or null. */
-	static String extensionNamespace() {
-		try {
-			for (org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer c
-					: java.util.ServiceLoader.load(org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer.class)) {
-				String ns = c.extensionNamespace();
-				if (ns != null) return ns;
+	private static volatile List<org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer> customizers;
+
+	/** The extension namespace a loaded FopFactoryCustomizer supports, or null.
+	 *  (The customizers are found once; each is still asked every time, since whether
+	 *  it wants the attributes is a docx4j property the caller may change.) */
+	public static String extensionNamespace() {
+		List<org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer> loaded = customizers;
+		if (loaded == null) {
+			loaded = new ArrayList<>();
+			try {
+				for (org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer c
+						: java.util.ServiceLoader.load(org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer.class)) {
+					loaded.add(c);
+				}
+			} catch (java.util.ServiceConfigurationError e) {
+				log.warn("FopFactoryCustomizer lookup failed: " + e.getMessage());
 			}
-		} catch (java.util.ServiceConfigurationError e) {
-			log.warn("FopFactoryCustomizer lookup failed: " + e.getMessage());
+			customizers = loaded;
+		}
+		for (org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer c : loaded) {
+			String ns = c.extensionNamespace();
+			if (ns != null) return ns;
 		}
 		return null;
 	}
@@ -598,7 +650,11 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_BASELINE);
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
+			for (String hint : TAB_HINTS) block.removeAttribute(hint);
 			block.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
+		}
+		for (Element leader : elements(doc, "leader")) {
+			leader.removeAttribute(HINT_TAB);
 		}
 		for (Element g : elements(doc, "external-graphic")) {
 			for (String hint : ANCHOR_HINTS) g.removeAttribute(hint);

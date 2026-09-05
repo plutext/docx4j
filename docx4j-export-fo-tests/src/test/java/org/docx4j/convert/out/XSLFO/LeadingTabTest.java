@@ -18,8 +18,8 @@ import org.w3c.dom.NodeList;
 /**
  * A tab at the start of a paragraph becomes a leader to Word's next tab stop
  * (CR-001 §6.10: the Getting Started guide's code blocks begin with tabs, and
- * Word starts their text 0.5in per tab); a tab after text keeps the old
- * three-space stand-in.  Both FO pathways.
+ * Word starts their text 0.5in per tab); a tab after text is a leader of no
+ * length, which the line manager sizes during layout.  Both FO pathways.
  */
 public class LeadingTabTest {
 
@@ -58,8 +58,10 @@ public class LeadingTabTest {
 		// two leading tabs, default stops every 720 twips
 		assertEquals(java.util.Arrays.asList("36pt", "36pt"),
 				leaders(fo(p(null, "<w:tab/><w:tab/><w:t>x</w:t>"), flags)));
-		// a tab after text: not a leading tab
-		assertEquals(0, leaders(fo(p(null, "<w:t>a</w:t><w:tab/><w:t>b</w:t>"), flags)).size());
+		// a tab after text: not a leading tab, so it becomes a leader of no length which
+		// the line manager sizes from the paragraph's stops (see TabStopHintsTest)
+		assertEquals(java.util.Arrays.asList("0pt"),
+				leaders(fo(p(null, "<w:t>a</w:t><w:tab/><w:t>b</w:t>"), flags)));
 		// a custom stop at 1000 twips, then the default grid resumes (1440)
 		assertEquals(java.util.Arrays.asList("50pt", "22pt"),
 				leaders(fo(p("<w:tabs><w:tab w:val=\"left\" w:pos=\"1000\"/></w:tabs>", "<w:tab/><w:tab/><w:t>x</w:t>"), flags)));

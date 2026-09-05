@@ -96,9 +96,11 @@ public class GeneratedTextFontTest extends AbstractXSLFOTest {
 		assertTrue("the dot leader has no font, or not the font of the text",
 				isPresent(doc, "//fo:leader[@leader-pattern='dots'][@font-family='" + font + "']"));
 
-		// where there is no leader, a tab is rendered as three non breaking spaces
-		assertTrue("the spaces standing in for a tab have no font, or not the font of the text",
-				isPresent(doc, "//fo:inline[text()='   '][@font-family='" + font + "']"));
+		// a tab where the paragraph has no dot leader is a leader of no length, which
+		// the Word line manager sizes during layout (since 17.0.5); it too carries the
+		// run's font, since a leader it lands on is drawn in it
+		assertTrue("the leader standing in for a tab has no font, or not the font of the text",
+				isPresent(doc, "//fo:leader[@leader-length='0pt'][@font-family='" + font + "']"));
 	}
 
 	@Test

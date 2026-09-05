@@ -911,6 +911,9 @@ public class XsltFOFunctions {
 			Element foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
 			Element foListBlock = null;
 			boolean indentHandledByNumbering = false;
+			// a list item's indent comes from the numbering where the paragraph does not
+			// give one, and its tab stops are measured from it
+			PPrBase.Ind[] listInd = new PPrBase.Ind[1];
 			// Is it a list item?
 			if (sdt) { 
 				// Don't convert an SDT into an extra fo:list-block!
@@ -927,7 +930,7 @@ public class XsltFOFunctions {
 				// allow us to use fo:list-block properly.
 
 				indentHandledByNumbering = createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
-						rPrParagraphMark, document, foBlockElement, foListBlock);
+						rPrParagraphMark, document, foBlockElement, foListBlock, listInd);
 				
 				if (log.isDebugEnabled()) {
 					log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
@@ -964,6 +967,13 @@ public class XsltFOFunctions {
 				if (foListBlock!=null) {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_LIST, "1");
 				}
+			}
+
+			// the tab stops this paragraph's tabs are laid out against (only where it
+			// has one: the line manager needs them, nothing else does).  @since 17.0.5
+			if (realTabs() && containsTabLeader(childResults)) {
+				applyTabStopHints(foBlockElement, pPr, listInd[0],
+						wmlPackage==null ? null : wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
 			}
 			
 			/* Now apply rPr */				
@@ -1343,6 +1353,16 @@ public class XsltFOFunctions {
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
 			Element foBlockElement, Element foListBlock) {
+
+		return createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
+				rPrParagraphMark, document, foBlockElement, foListBlock, null);
+	}
+
+	/** @param indOut receives the item's resolved indent (the paragraph's, filled out by
+	 *  the numbering's), which is what its tab stops are measured from.  @since 17.0.5 */
+	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
+			Element foBlockElement, Element foListBlock, PPrBase.Ind[] indOut) {
 		
 		/* Create something like:
 		 * 			
@@ -1497,6 +1517,9 @@ public class XsltFOFunctions {
 			// Well, not exactly, components which aren't set in
 			// the direct formatting will be contributed by the numbering's indent settings
 			Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
+			if (indOut!=null && indent.getObject() instanceof PPrBase.Ind) {
+				indOut[0] = (PPrBase.Ind)indent.getObject();
+			}
 			if (indent.isHanging() ) {
 				indent.setXslFOListBlock(foListBlock, -1);	        			
 			} else {
@@ -1585,6 +1608,250 @@ public class XsltFOFunctions {
 		return org.docx4j.fonts.WordLineMetrics.format((stop - from) / 20.0);
 	}
 
+	// ---------------------------------------------------------------- w:tab
+
+	/**
+	 * Whether a tab in the middle of a line can be laid out for real: the Word
+	 * layout managers (org.docx4j.fop.wordlayout) must be on, since only they know
+	 * the x at which the tab starts.  Without them a tab after text keeps the old
+	 * stand-in of three no-break spaces.
+	 *
+	 * @since 17.0.5
+	 */
+	public static boolean realTabs() {
+		return WordLayoutFixups.isEnabled() && WordLayoutFixups.extensionNamespace()!=null;
+	}
+
+	/** the FO leader standing in for a tab carries this, so the line manager can tell
+	 *  it from a ptab or a fixed leading-tab leader (WordLayoutFixups moves it into the
+	 *  docx4j: namespace).  @since 17.0.5 */
+	static final String HINT_TAB = WordLayoutFixups.HINT_TAB;
+
+	/**
+	 * The FO for a {@code w:tab}, for both pathways.
+	 *
+	 * <p>With the Word layout managers on, every tab becomes a zero-length
+	 * {@code fo:leader} marked {@code docx4j-tab}; the line manager gives it the width
+	 * from the x it starts at to the tab stop it reaches (the stops travel on the
+	 * paragraph's block, see {@link #applyTabStopHints}).  The leader's pattern is the
+	 * stop's leader: {@code dots} for a dot leader (FOP repeats the font's own dot, as
+	 * Word does; a {@code rule} with {@code rule-style="dotted"} draws square dots at
+	 * the rule thickness instead), {@code rule} for a hyphen/underscore/heavy leader,
+	 * else {@code space}.  Which stop a tab reaches is not known before layout, so the
+	 * pattern is taken from the n-th custom stop for the n-th tab of the paragraph,
+	 * which is how a document that sets stops and tabs to them is written; the line
+	 * manager suppresses a leader whose resolved stop has none.
+	 *
+	 * <p>Without them, a tab that begins a paragraph is still a fixed leader
+	 * ({@link #leadingTabLeaderLength}), and any other tab the old three no-break
+	 * spaces.
+	 *
+	 * @param precedingTabs how many tabs precede this one in the paragraph
+	 * @param precedingText how many text runs precede it (0: nothing but tabs so far)
+	 * @since 17.0.5
+	 */
+	public static DocumentFragment tabToFO(FOConversionContext context, PPr effectivePPr, RPr rPr,
+			int precedingTabs, int precedingText) {
+
+		Document d;
+		try {
+			d = XmlUtils.getNewDocumentBuilder().newDocument();
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+		DocumentFragment df = d.createDocumentFragment();
+		String fontFamily = getFontFamily(context, effectivePPr, rPr);
+
+		// A table of contents (the first stop right-aligned with a dot leader) keeps the
+		// stretching leader it has always had: its stop is the right margin, so FOP's own
+		// text-align-last="justify" puts the number there — and, unlike a leader of a
+		// width we fix now, that leader absorbs the width an unresolved
+		// fo:page-number-citation loses when it resolves ("MMM" while the line is
+		// measured), which is how the page numbers of a TOC line up at all.
+		if (isTocDotLeader(effectivePPr)) {
+			Element foLeader = d.createElementNS(XSL_FO, "fo:leader");
+			foLeader.setAttribute("leader-length.minimum",  "12pt");
+			foLeader.setAttribute("leader-length.maximum",  "100%");
+			foLeader.setAttribute("leader-length.optimum",  "40pt");
+			foLeader.setAttribute("leader-pattern",  "dots");
+			if (fontFamily.length()>0) foLeader.setAttribute("font-family", fontFamily);
+			df.appendChild(foLeader);
+			return df;
+		}
+
+		if (realTabs()) {
+			// a tab before any text is already right without the layout managers, and
+			// nothing about it depends on them; leave it a fixed leader
+			String leadingLength = leadingTabLeaderLength(context, effectivePPr, precedingTabs, precedingText);
+			Element leader = d.createElementNS(XSL_FO, "fo:leader");
+			if (leadingLength.length()>0) {
+				leader.setAttribute("leader-pattern", "space");
+				leader.setAttribute("leader-length", leadingLength);
+			} else {
+				leader.setAttribute("leader-length", "0pt");
+				leader.setAttribute("leader-pattern", tabLeaderPattern(effectivePPr, precedingTabs));
+				leader.setAttribute(HINT_TAB, "1");
+			}
+			if (fontFamily.length()>0) leader.setAttribute("font-family", fontFamily);
+			df.appendChild(leader);
+			return df;
+		}
+
+		// legacy (docx4j.convert.out.fo.wordLayout=false)
+		String length = leadingTabLeaderLength(context, effectivePPr, precedingTabs, precedingText);
+		if (length.length()>0) {
+			Element leader = d.createElementNS(XSL_FO, "fo:leader");
+			leader.setAttribute("leader-pattern", "space");
+			leader.setAttribute("leader-length", length);
+			if (fontFamily.length()>0) leader.setAttribute("font-family", fontFamily);
+			df.appendChild(leader);
+			return df;
+		}
+		Element inline = d.createElementNS(XSL_FO, "fo:inline");
+		if (fontFamily.length()>0) inline.setAttribute("font-family", fontFamily);
+		inline.setTextContent("   ");
+		df.appendChild(inline);
+		return df;
+	}
+
+	/** XSLT form of the above (the direct pPr, resolved here). @since 17.0.5 */
+	public static DocumentFragment tabToFO(FOConversionContext context, NodeIterator pPrNodeIt,
+			NodeIterator rPrNodeIt, int precedingTabs, int precedingText) {
+
+		PPr pPr = null;
+		RPr rPr = null;
+		try {
+			Node n = pPrNodeIt == null ? null : pPrNodeIt.nextNode();
+			if (n != null) pPr = (PPr) XmlUtils.unwrap(XmlUtils.unmarshal(n));
+			pPr = context.getPropertyResolver().getEffectivePPr(pPr);
+			Node r = rPrNodeIt == null ? null : rPrNodeIt.nextNode();
+			if (r != null) rPr = (RPr) XmlUtils.unwrap(XmlUtils.unmarshal(r));
+		} catch (Exception e) {
+			log.warn("Couldn't resolve pPr for a tab: " + e.getMessage());
+		}
+		return tabToFO(context, pPr, rPr, precedingTabs, precedingText);
+	}
+
+	/** The table-of-contents shape: the paragraph's first tab stop is right-aligned
+	 *  with a dot leader.  Its tabs are rendered as a stretching dot leader with
+	 *  text-align-last="justify", not laid out against the stops; see
+	 *  {@link #tabToFO}.  @since 17.0.5 */
+	static boolean isTocDotLeader(PPr pPr) {
+		if (pPr==null || pPr.getTabs()==null || pPr.getTabs().getTab().isEmpty()) return false;
+		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
+		return tabStop!=null
+				&& STTabJc.RIGHT.equals(tabStop.getVal())
+				&& org.docx4j.wml.STTabTlc.DOT.equals(tabStop.getLeader());
+	}
+
+	/** "dots", "rule" or "space" for the n-th tab of a paragraph; see {@link #tabToFO}. */
+	private static String tabLeaderPattern(PPr pPr, int tabOrdinal) {
+
+		if (pPr==null || pPr.getTabs()==null) return "space";
+		int i = 0;
+		for (CTTabStop t : pPr.getTabs().getTab()) {
+			if (t.getPos()==null || STTabJc.CLEAR.equals(t.getVal())) continue;
+			if (i++ < tabOrdinal) continue;
+			return leaderPattern(t.getLeader());
+		}
+		return "space";
+	}
+
+	private static String leaderPattern(org.docx4j.wml.STTabTlc leader) {
+		if (leader==null) return "space";
+		switch (leader) {
+		case DOT:
+		case MIDDLE_DOT:
+			return "dots";
+		case HYPHEN:
+		case UNDERSCORE:
+		case HEAVY:
+			return "rule";
+		default:
+			return "space";
+		}
+	}
+
+	/**
+	 * The paragraph's tab stops, for the line manager, as hints on its block:
+	 * {@code docx4j-tabs} = {@code pos:align:leader;...} in twips from the left
+	 * margin (custom stops, {@code w:val="clear"} ones included so they can clear
+	 * the defaults), {@code docx4j-tab-default} the default interval
+	 * ({@code w:defaultTabStop}, 720 twips if absent) and {@code docx4j-tab-ind} =
+	 * {@code left:firstLineOffset}, the paragraph's left indent and what its first
+	 * line adds to it (a negative offset is a hanging indent, which makes an implicit
+	 * stop at the left indent).
+	 *
+	 * @since 17.0.5
+	 */
+	static void applyTabStopHints(Element foBlockElement, PPr pPr, PPrBase.Ind numberingInd,
+			DocumentSettingsPart settings) {
+
+		StringBuilder sb = new StringBuilder();
+		if (pPr!=null && pPr.getTabs()!=null) {
+			for (CTTabStop t : pPr.getTabs().getTab()) {
+				if (t.getPos()==null) continue;
+				if (sb.length()>0) sb.append(';');
+				sb.append(t.getPos().intValue()).append(':')
+					.append(t.getVal()==null ? "left" : t.getVal().value()).append(':')
+					.append(t.getLeader()==null ? "none" : t.getLeader().value());
+			}
+		}
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_TABS, sb.toString());
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_TAB_DEFAULT, Integer.toString(defaultTabStop(settings)));
+		PPrBase.Ind ind = numberingInd!=null ? numberingInd : (pPr==null ? null : pPr.getInd());
+		int left = 0, firstLine = 0;
+		if (ind!=null) {
+			left = ind.getLeft()!=null ? ind.getLeft().intValue()
+					: ind.getStart()!=null ? ind.getStart().intValue() : 0;
+			if (ind.getHanging()!=null) firstLine = -ind.getHanging().intValue();
+			else if (ind.getFirstLine()!=null) firstLine = ind.getFirstLine().intValue();
+		}
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_TAB_IND,
+				left + ":" + firstLine + ":" + decimalSymbol(settings));
+	}
+
+	/** w:decimalSymbol, which a decimal tab stop aligns on; "." if it is not set. */
+	private static String decimalSymbol(DocumentSettingsPart settings) {
+		try {
+			if (settings!=null && settings.getJaxbElement()!=null
+					&& settings.getJaxbElement().getDecimalSymbol()!=null
+					&& settings.getJaxbElement().getDecimalSymbol().getVal()!=null
+					&& settings.getJaxbElement().getDecimalSymbol().getVal().length()>0) {
+				return settings.getJaxbElement().getDecimalSymbol().getVal().substring(0, 1);
+			}
+		} catch (Exception e) {
+			log.debug(e.getMessage());
+		}
+		return ".";
+	}
+
+	/** w:defaultTabStop, or 720 twips (Word's own default) when it is absent. @since 17.0.5 */
+	static int defaultTabStop(DocumentSettingsPart settings) {
+		try {
+			if (settings!=null && settings.getJaxbElement()!=null
+					&& settings.getJaxbElement().getDefaultTabStop()!=null
+					&& settings.getJaxbElement().getDefaultTabStop().getVal()!=null) {
+				int v = settings.getJaxbElement().getDefaultTabStop().getVal().intValue();
+				if (v > 0) return v;
+			}
+		} catch (Exception e) {
+			log.debug(e.getMessage());
+		}
+		return 720;
+	}
+
+	/** whether the paragraph's content holds a tab we laid out as a leader */
+	private static boolean containsTabLeader(Node n) {
+		if (n==null) return false;
+		if (n instanceof Element && ((Element)n).hasAttribute(WordLayoutFixups.HINT_TAB)) return true;
+		for (Node c = n.getFirstChild(); c!=null; c = c.getNextSibling()) {
+			if (containsTabLeader(c)) return true;
+		}
+		return false;
+	}
+
 	/** XSLT form of the above (the direct pPr, resolved here). @since 17.0.5 */
 	public static String leadingTabLeaderLength(FOConversionContext context, NodeIterator pPrNodeIt,
 			int precedingTabs, int precedingText) {
@@ -1631,17 +1898,7 @@ public class XsltFOFunctions {
 			if (left > pos && left < best) best = left;
 		}
 		if (best < Integer.MAX_VALUE) return best;
-		int defaultTab = 720;
-		try {
-			if (settings != null && settings.getJaxbElement() != null
-					&& settings.getJaxbElement().getDefaultTabStop() != null
-					&& settings.getJaxbElement().getDefaultTabStop().getVal() != null) {
-				int v = settings.getJaxbElement().getDefaultTabStop().getVal().intValue();
-				if (v > 0) defaultTab = v;
-			}
-		} catch (Exception e) {
-			log.debug(e.getMessage());
-		}
+		int defaultTab = defaultTabStop(settings);
 		return pos < 0 ? 0 : (pos / defaultTab + 1) * defaultTab;
 	}
 
@@ -1724,21 +1981,18 @@ public class XsltFOFunctions {
     		}
     	}
     	
-    	// Table of contents dot leader needs text-align-last="justify"
-    	// Are we in a TOC?
-    	if (pPr.getTabs()!=null
-    			
-    			// PStyle is not included in our effective pPr!
-//    			&& pPr.getPStyle()!=null 
-//    			&& pPr.getPStyle().getVal()!=null
-//    			&& pPr.getPStyle().getVal().startsWith("TOC")  
-    			) {
-    		
+    	// The stretching dot leader of a table of contents needs text-align-last="justify"
+    	// (PStyle is not included in our effective pPr, so the stops are the test).
+    	// With real tabs the leader has the width the line manager gave it, and justifying
+    	// the last line would stretch the spaces around it; only the TOC shape, which keeps
+    	// its stretching leader (XsltFOFunctions.tabToFO), still needs this.  @since 17.0.5
+    	if (pPr.getTabs()!=null && !pPr.getTabs().getTab().isEmpty()) {
+
     		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
     		if (tabStop!=null
-    				//&& tabStop.getLeader().equals(STTabTlc.DOT)
-    				&& tabStop.getVal().equals(STTabJc.RIGHT) ) {
-    			
+    				&& STTabJc.RIGHT.equals(tabStop.getVal())
+    				&& (!realTabs() || isTocDotLeader(pPr)) ) {
+
     			foBlockElement.setAttribute("text-align-last",  "justify");
     		}
     	}
