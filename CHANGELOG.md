@@ -243,6 +243,62 @@ the "/"; the Word line manager suppresses those break opportunities.
 position (was 73%), the first seven pages line for line; the 30 layout probes are
 unchanged (21 at 100%).
 
+PDF via XSL FO - ten more differences from Word, from scoring 194 real documents
+(measured against Word's own PDFs; both pathways.  Over that corpus: mean line parity
+0.695 -> 0.716, median 0.749 -> 0.756, 71.4% of lines matching Word exactly, was 69.7%;
+40 documents better, 5 worse; the 33 layout probes unchanged):
+- every table sat 5.4pt too far right and overflowed the right margin by the same.  Word
+puts the first column's TEXT at the text margin + w:tblInd, so the grid edge is one left
+cell margin further back; docx4j put the grid edge at the indent and added the cell
+margin as padding.  The FO table's start-indent is now w:tblInd less the effective
+w:tblCellMar/w:left (Word's default 108 twips where nothing sets it).
+- a w:jc="center" table wider than the text column is centred by Word, overhanging both
+margins; we left-aligned it at the margin.  start-indent is now the negative half of the
+overflow.
+- an autofit table could run off the page (117pt past the edge on one document, where Word
+kept it inside): where w:tblW asks for more than the text column, the autofit pass sized
+the columns to it.  Widths docx4j chooses for itself are now scaled down to the text
+column.  A table's own w:tblGrid is left alone even when it is wider - measured over the
+corpus, Word draws tables whose grid is 3% to 19% wider than the text column overhanging
+the right margin, at their grid width, and fitting those cost line parity on eight
+documents.
+- w:ind/@w:right (and @w:end) was never emitted, so a paragraph indented from both sides
+was laid out at the full column width and did not break where Word breaks it.  It is now
+end-indent in FO and margin-right in CSS.  w:start/w:end also survive style resolution now
+(StyleUtil dropped them).
+- a right w:ptab was given leader-length.optimum="100%" - the whole reference area - which
+is what FOP measures the line with, so the line was always over-full and broke in the
+middle of the text on either side of the tab.  The optimum is now the minimum; the leader
+still stretches, because the block carries text-align-last="justify".
+- w:caps and w:smallCaps were dropped: a heading in the built-in Book Title character
+style came out in lower case and 85pt narrower than Word's.  FO has no text-transform or
+font-variant, so the text itself is upper-cased (in the run's w:lang, since Turkish and
+Lithuanian case differently), and for small caps the originally lower-case stretches go in
+an inline at 80% of the size.  HTML gets text-transform/font-variant (new Caps and
+SmallCaps run properties).
+- w:vanish (hidden text) was rendered, pushing everything after it down the page.  Word
+prints nothing for it and leaves no space; a paragraph whose runs and paragraph mark are
+all hidden leaves no line at all.  Set docx4j.convert.out.printHiddenText=true to render it
+anyway (Word's "print hidden text" is an application option, not part of the docx).  Also
+fixed: a run whose only direct formatting was w:vanish resolved to an effective rPr without
+it (PropertyResolver.hasDirectRPrFormatting).  HTML skips hidden runs too.
+- a literal U+00AD in a w:t was painted as a notdef box in the middle of a word ("PO
+Number -# KLS-#CHP"): FOP does not break at a soft hyphen and most fonts have no glyph for
+it.  It is dropped from the FO text; Word shows one only where it breaks the line there.
+- the Wingdings 0xD8 bullet came out as U+2B9A, the "equilateral" arrowhead Unicode 7.0
+added; Word maps it to the Dingbats U+27A2, as its own PDF output shows, and that is what
+most fonts carry.  Its up/down/left counterparts keep 2B99/2B9B/2B98.
+- unmapped fonts fell back to the document's default font, so a sans came out in a Times
+clone and the other way about.  addMetricallyCompatibleSubstitutes now also covers Tahoma,
+Verdana, Trebuchet MS, Segoe UI, Segoe UI Light, Arial Black, Gadugi, Helvetica, Helvetica
+Neue (Arimo / Liberation Sans), Georgia, Garamond, Book Antiqua, Palatino Linotype, Bookman
+Old Style (Tinos / Liberation Serif), Calibri Light (Carlito) and Arial Narrow (Liberation
+Sans Narrow, which neither font jar carries; where it is not installed either, Arial Narrow
+is deliberately left to the old fallback, since the condensed faces a Linux box does have
+are further from Arial Narrow's widths than the document default is).  Its two secondary
+substitutes were also the wrong way round, so on a box with Liberation but not Croscore,
+Times New Roman became a sans and Arial a serif.
+
 Consolas and Lucida Console rendered in the proportional fallback font (PDF):
 - IdentityPlusMapper substitutes Calibri, Cambria, Arial, Times New Roman and Courier New
 with their metric-compatible clones, but the two monospace fonts have none, so code set
@@ -310,6 +366,11 @@ geometry (cell text 3.6pt further in for 72 twips spacing, table width unchanged
 content; Word keeps the row and overflows the text over the next rows.  The cell
 content is now clipped to the exact height (an fo:block-container with
 overflow="hidden"), so the rows below sit where Word puts them.
+
+docx4j-layout-fidelity (the measurement harness; not in the reactor):
+- the scoreboard's compatMode column now comes from the document's own w:compatSetting
+compatibilityMode, read from word/settings.xml, instead of the leading number of the file
+name, which disagrees with it often enough to be useless for segmenting results.
 
 Math:
 - tracked changes inside equations no longer lose content (issue 348, open since 2019):

@@ -1344,7 +1344,13 @@ public class StyleUtil {
 			 isEmpty(ind.getLeft()) &&
 			 isEmpty(ind.getLeftChars()) &&
 			 isEmpty(ind.getRight()) &&
-			 isEmpty(ind.getRightChars())
+			 isEmpty(ind.getRightChars()) &&
+			 // w:start/w:end are the strict-conformance spellings of w:left/w:right;
+			 // dropping them here lost them in style resolution.  @since 17.0.5
+			 isEmpty(ind.getStart()) &&
+			 isEmpty(ind.getStartChars()) &&
+			 isEmpty(ind.getEnd()) &&
+			 isEmpty(ind.getEndChars())
 			)
 		);
 	}
@@ -2367,6 +2373,10 @@ public class StyleUtil {
 			destination.setLeftChars(apply(source.getLeftChars(), destination.getLeftChars()));
 			destination.setRight(apply(source.getRight(), destination.getRight()));
 			destination.setRightChars(apply(source.getRightChars(), destination.getRightChars()));
+			destination.setStart(apply(source.getStart(), destination.getStart()));
+			destination.setStartChars(apply(source.getStartChars(), destination.getStartChars()));
+			destination.setEnd(apply(source.getEnd(), destination.getEnd()));
+			destination.setEndChars(apply(source.getEndChars(), destination.getEndChars()));
 		}
 		return destination;
 	}

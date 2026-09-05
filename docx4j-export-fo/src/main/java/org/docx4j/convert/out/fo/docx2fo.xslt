@@ -816,7 +816,11 @@
      -->
 <xsl:template match="w:ptab[@w:alignment='right']"> 
 
-	  <fo:leader leader-length.minimum="12pt" leader-length.maximum="100%" leader-length.optimum="100%" 
+	  <!-- leader-length.optimum is what FOP measures the line with: 100% (the whole
+	       reference area) made the line over-full and broke it at the nearest
+	       opportunity.  The leader stretches to the maximum at justification time,
+	       which text-align-last="justify" (createBlockForPPr) asks for. -->
+	  <fo:leader leader-length.minimum="12pt" leader-length.maximum="100%" leader-length.optimum="12pt"
 	  leader-pattern="space"  leader-alignment="reference-area" />
 
 </xsl:template>

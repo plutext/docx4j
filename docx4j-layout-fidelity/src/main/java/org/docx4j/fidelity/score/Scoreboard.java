@@ -13,8 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.docx4j.fidelity.compare.LayoutComparison;
 
@@ -41,8 +39,6 @@ public final class Scoreboard {
 			"refLines", "candLines", "lineParity", "pageParity", "matched", "medianDy", "maxDy", "firstDivergence",
 			"error" };
 
-	private static final Pattern COMPAT_MODE = Pattern.compile("^(\\d+)_.*");
-
 	private Scoreboard() {}
 
 	/** ok = rendered and compared; error / timeout = conversion failed; noref = no Word PDF to compare with. */
@@ -60,7 +56,6 @@ public final class Scoreboard {
 
 		public Row(String id, long sizeBytes, String status) {
 			this.id = id;
-			this.compatMode = compatMode(id);
 			this.sizeBytes = sizeBytes;
 			this.status = status;
 		}
@@ -104,12 +99,6 @@ public final class Scoreboard {
 					candPages, refLines, candLines, lineParity * 100, pageParity * 100, medianDy, maxDy,
 					firstDivergence);
 		}
-	}
-
-	/** the leading number of a corpus file name is the Word compatibility mode; "" when absent. */
-	public static String compatMode(String id) {
-		Matcher m = COMPAT_MODE.matcher(id == null ? "" : id);
-		return m.matches() ? m.group(1) : "";
 	}
 
 	/** Everything the aggregate lines report; recomputed from the rows, never parsed back from the TOTAL row. */

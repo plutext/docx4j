@@ -88,6 +88,12 @@ public class TableWriter extends AbstractTableWriter {
 	protected void applyAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element) {
 		XsltFOFunctions.applyFoAttributes(properties, element);
 	}
+
+	/** PDF paginates, so an over-wide table is scaled to the page as Word does. @since 17.0.5 */
+	@Override
+	protected boolean fitsTableToPage() {
+		return true;
+	}
 	
 	@Override
 	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, 
@@ -119,10 +125,12 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		// table width
 		if (table.getTableWidth() > 0) {
-			tableRoot.setAttribute("width", UnitsOfMeasurement.twipToBest(table.getTableWidth()) );		
+			tableRoot.setAttribute("width", UnitsOfMeasurement.twipToBest(table.getTableWidth()) );
 		}
-		
-		
+
+		applyStartIndent(context, table, tableRoot);
+
+
 		// Hebrew: columns appear in reverse order
 		// see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/bidiVisual.html
 		// @since 3.0.2
@@ -134,6 +142,71 @@ public class TableWriter extends AbstractTableWriter {
 			
 		}
 				
+	}
+
+	/**
+	 * Where the table's grid edge goes, as Word puts it.
+	 *
+	 * <p>Word places the <em>text</em> of the first column at the text margin plus
+	 * w:tblInd, so the grid edge itself sits one left cell margin further back:
+	 * margin + tblInd - tblCellMar/left.  docx4j put the grid edge at margin +
+	 * tblInd and then added the cell margin as padding, so every table's content
+	 * (and its overflow past the right margin) was one left cell margin - usually
+	 * 108 twips = 5.4pt - too far right.  Measured against Word for tblInd 0 and
+	 * 108 (CR-001, real documents).</p>
+	 *
+	 * <p>A w:jc="center" table wider than the text column is a separate case: Word
+	 * centres it, letting it overhang both margins, where we left-aligned it at the
+	 * margin.  Then the grid edge is the negative half-overflow, and no cell margin
+	 * is taken off (Word centres the grid, not the text).</p>
+	 *
+	 * @since 17.0.5
+	 */
+	private void applyStartIndent(AbstractWmlConversionContext context, AbstractTableWriterModel table, Element tableRoot) {
+
+		org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+
+		boolean centred = tblPr != null && tblPr.getJc() != null
+				&& org.docx4j.wml.JcEnumeration.CENTER.equals(tblPr.getJc().getVal());
+		int width = table.getTableWidth();
+		int available = writableWidthTwips(context);
+		if (centred && width > 0 && available > 0 && width > available) {
+			tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest((available - width) / 2));
+			return;
+		}
+
+		// Word ignores w:tblInd on a centred or right aligned table (as PropertyFactory does)
+		int indent = 0;
+		if (!centred && (tblPr == null || tblPr.getJc() == null
+				|| !org.docx4j.wml.JcEnumeration.RIGHT.equals(tblPr.getJc().getVal()))) {
+			org.docx4j.wml.TblWidth tblInd = tblPr == null ? null : tblPr.getTblInd();
+			if (tblInd != null && tblInd.getW() != null
+					&& (tblInd.getType() == null || "dxa".equals(tblInd.getType()))) {
+				indent = tblInd.getW().intValue();
+			}
+		}
+		tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest(indent - leftCellMarginTwips(tblPr)));
+	}
+
+	/** The effective left cell margin in twips: w:tblPr/w:tblCellMar/w:left (the table
+	 *  style's is already merged into the effective tblPr), else Word's default 108. */
+	private static int leftCellMarginTwips(org.docx4j.wml.CTTblPrBase tblPr) {
+		if (tblPr != null && tblPr.getTblCellMar() != null && tblPr.getTblCellMar().getLeft() != null) {
+			org.docx4j.wml.TblWidth left = tblPr.getTblCellMar().getLeft();
+			if (left.getW() != null && (left.getType() == null || "dxa".equals(left.getType()))) {
+				return left.getW().intValue();
+			}
+		}
+		return AbstractTableWriter.WORD_DEFAULT_CELL_MARGIN_TWIPS;
+	}
+
+	private static int writableWidthTwips(AbstractWmlConversionContext context) {
+		try {
+			return context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
+		} catch (Exception e) {
+			logger.debug("No section page dimensions: " + e.getMessage());
+			return -1;
+		}
 	}
 
 		/**

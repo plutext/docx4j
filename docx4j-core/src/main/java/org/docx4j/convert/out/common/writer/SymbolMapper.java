@@ -196,7 +196,11 @@ public class SymbolMapper {
 			m.put((short)213, "\u232B");
 			m.put((short)214, "\u2326");
 			m.put((short)215, "\u2B98");
-			m.put((short)216, "\u2B9A");
+			// Word maps this one to the Dingbats arrowhead, not to the Unicode 7.0
+			// "equilateral" arrowhead alanwood gives (verified against Word's own PDF
+			// output, where the character extracts as U+27A2).  Its up/down/left
+			// counterparts have no Dingbats equivalent, so they keep 2B99/2B9B/2B98.
+			m.put((short)216, "\u27A2"); // alanwood: 2B9A
 			m.put((short)217, "\u2B99");
 			m.put((short)218, "\u2B9B");
 			m.put((short)219, "\u2B88");

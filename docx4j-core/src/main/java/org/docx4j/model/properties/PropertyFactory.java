@@ -43,6 +43,7 @@ import org.docx4j.model.properties.paragraph.SpaceBefore;
 import org.docx4j.model.properties.paragraph.Tabs;
 import org.docx4j.model.properties.paragraph.TextAlignmentVertical;
 import org.docx4j.model.properties.run.Bold;
+import org.docx4j.model.properties.run.Caps;
 import org.docx4j.model.properties.run.FontColor;
 import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.HighlightColor;
@@ -50,6 +51,7 @@ import org.docx4j.model.properties.run.Italics;
 import org.docx4j.model.properties.run.Lang;
 import org.docx4j.model.properties.run.RBorder;
 import org.docx4j.model.properties.run.RShading;
+import org.docx4j.model.properties.run.SmallCaps;
 import org.docx4j.model.properties.run.Strike;
 import org.docx4j.model.properties.run.TextDirection;
 import org.docx4j.model.properties.run.Underline;
@@ -239,8 +241,12 @@ public class PropertyFactory {
 //			dest.setBCs(rPr.getBCs());
 		if (rPr.getBdr() != null)
 			properties.add(new RBorder(rPr.getBdr()));
-//		if (rPr.getCaps() != null)
-//			dest.setCaps(rPr.getCaps());
+		// HTML gets text-transform/font-variant; for PDF, RunFontSelector transforms
+		// the text itself (FO has no equivalent property).  @since 17.0.5
+		if (rPr.getCaps() != null)
+			properties.add(new Caps(rPr.getCaps()) );
+		if (rPr.getSmallCaps() != null)
+			properties.add(new SmallCaps(rPr.getSmallCaps()) );
 		if (rPr.getColor() != null)
 			properties.add(new FontColor(rPr.getColor()) );
 //		if (rPr.getCs() != null)
@@ -334,8 +340,12 @@ public class PropertyFactory {
 //			dest.setBCs(rPr.getBCs());
 //		if (rPr.getBdr() != null)
 //			properties.add(new RBorder(rPr.getBdr()));
-//		if (rPr.getCaps() != null)
-//			dest.setCaps(rPr.getCaps());
+		// HTML gets text-transform/font-variant; for PDF, RunFontSelector transforms
+		// the text itself (FO has no equivalent property).  @since 17.0.5
+		if (rPr.getCaps() != null)
+			properties.add(new Caps(rPr.getCaps()) );
+		if (rPr.getSmallCaps() != null)
+			properties.add(new SmallCaps(rPr.getSmallCaps()) );
 		if (rPr.getColor() != null)
 			properties.add(new FontColor(rPr.getColor()) );
 //		if (rPr.getCs() != null)

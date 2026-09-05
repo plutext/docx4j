@@ -28,6 +28,7 @@ import jakarta.xml.bind.Unmarshaller;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.HiddenText;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -981,7 +982,18 @@ public class XsltHTMLFunctions {
 		}
     }
 
-    public static DocumentFragment createBlockForRPr( 
+	/** A pPr carrying just this paragraph style, so that a run's effective properties
+	 *  can be resolved the way the visitor pathway resolves them.  @since 17.0.5 */
+	private static org.docx4j.wml.PPr pPrForStyle(String pStyleVal) {
+		if (pStyleVal==null || pStyleVal.length()==0) return null;
+		org.docx4j.wml.PPr pPr = Context.getWmlObjectFactory().createPPr();
+		org.docx4j.wml.PPrBase.PStyle pStyle = Context.getWmlObjectFactory().createPPrBasePStyle();
+		pStyle.setVal(pStyleVal);
+		pPr.setPStyle(pStyle);
+		return pPr;
+	}
+
+    public static DocumentFragment createBlockForRPr(
     		HTMLConversionContext context,
     		String pStyleVal,
     		NodeIterator rPrNodeIt,
@@ -1031,6 +1043,12 @@ public class XsltHTMLFunctions {
         			}        	        			
         		}
         	}
+
+			// Word prints nothing for hidden text; the visitor pathway does this in
+			// AbstractVisitorExporterGenerator, so both pathways agree.  @since 17.0.5
+			if (rPr!=null && HiddenText.isHiddenRun(context.getPropertyResolver(), pPrForStyle(pStyleVal), rPr)) {
+				return null;
+			}
 
 			// Our span wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates

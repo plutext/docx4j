@@ -36,7 +36,9 @@ public class ScoreboardTest {
 
 	private static List<Row> scoreboard() {
 		List<Row> rows = new ArrayList<>();
-		rows.add(Row.of(result("12_en-AU_tbl_1", 2, 2, 100, 100), 1000)); // parity 1.00
+		Row first = Row.of(result("12_en-AU_tbl_1", 2, 2, 100, 100), 1000); // parity 1.00
+		first.compatMode = "12"; // set by Fidelity from the document's own settings.xml
+		rows.add(first);
 		rows.add(Row.of(result("15_en-US_num_2", 3, 3, 100, 90), 2000)); // parity 0.90
 		rows.add(Row.of(result("plain_3", 4, 5, 100, 50), 3000)); // parity 0.50, pages differ
 		Row err = new Row("14_de-DE_sdt_4", 4000, "error");
@@ -44,13 +46,6 @@ public class ScoreboardTest {
 		rows.add(err);
 		rows.add(new Row("15_fr-FR_fields_5", 5000, "noref"));
 		return rows;
-	}
-
-	@Test
-	public void compatModeIsTheLeadingNumber() {
-		assertEquals("12", Scoreboard.compatMode("12_en-AU_fields7_num_tbl_11868"));
-		assertEquals("", Scoreboard.compatMode("break-justified"));
-		assertEquals("", Scoreboard.compatMode(""));
 	}
 
 	@Test

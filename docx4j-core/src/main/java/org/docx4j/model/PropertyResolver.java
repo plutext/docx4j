@@ -987,6 +987,12 @@ public class PropertyResolver {
 		//BooleanDefaultTrue noProof;
 		//BooleanDefaultTrue snapToGrid;
 		//BooleanDefaultTrue vanish;
+		// hidden text: a run whose only direct formatting is w:vanish was treated as
+		// having none, so the effective rPr came back without it and it was rendered
+		// (@since 17.0.5)
+		if (rPrToApply.getVanish()!=null) {
+			return true;
+		}
 		//BooleanDefaultTrue webHidden;
 		//Color color;
 		if (rPrToApply.getColor()!=null ) {
@@ -1096,6 +1102,12 @@ public class PropertyResolver {
 		//BooleanDefaultTrue noProof;
 		//BooleanDefaultTrue snapToGrid;
 		//BooleanDefaultTrue vanish;
+		// hidden text: a run whose only direct formatting is w:vanish was treated as
+		// having none, so the effective rPr came back without it and it was rendered
+		// (@since 17.0.5)
+		if (rPrToApply.getVanish()!=null) {
+			return true;
+		}
 		//BooleanDefaultTrue webHidden;
 		//Color color;
 		if (rPrToApply.getColor()!=null ) {

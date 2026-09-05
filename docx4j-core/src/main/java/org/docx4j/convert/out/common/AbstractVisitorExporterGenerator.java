@@ -91,8 +91,16 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		this.parentNode = parentNode;
 	}
 
+	/** set by apply for a run which is hidden text ({@link HiddenText}), so that its
+	 *  content is not walked either.  @since 17.0.5 */
+	private boolean skipHiddenRun = false;
+
 	@Override
 	public boolean shouldTraverse(Object o) {
+		if (skipHiddenRun) {
+			skipHiddenRun = false;
+			return false;
+		}
 		if ((o instanceof org.docx4j.wml.Tbl) ||
 			(o instanceof org.docx4j.wml.P.Hyperlink) ||
 			(o instanceof org.docx4j.wml.CTSimpleField) ||
@@ -291,7 +299,12 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			}
 			
 		} else if (o instanceof org.docx4j.wml.R) {
-			
+
+			if (isHiddenRun((R)o)) {
+				// Word prints nothing for hidden text, and leaves no space for it
+				skipHiddenRun = true;
+				return null;
+			}
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				// Convert run to span
 				Element spanEl = createNode(document, NODE_INLINE);
@@ -499,6 +512,25 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		return null;
 	}
 	
+	/**
+	 * Whether this run is hidden text (w:vanish), which Word does not print.  Only a
+	 * run with its own w:rPr is tested: a run without one can only be hidden through
+	 * its paragraph's style, in which case the paragraph mark is hidden too and the
+	 * whole paragraph goes (the XSLT pathway makes the same distinction, so the two
+	 * pathways produce the same output).
+	 *
+	 * @since 17.0.5
+	 */
+	protected boolean isHiddenRun(R r) {
+		if (r.getRPr()==null) return false;
+		try {
+			return HiddenText.isHiddenRun(conversionContext.getPropertyResolver(), pPr, r.getRPr());
+		} catch (Exception e) {
+			log.warn("Couldn't resolve effective rPr for w:vanish: " + e.getMessage());
+			return false;
+		}
+	}
+
 	abstract protected void handleBr(Br o);
 	
 	protected int getPos(List list, Object wanted) {

@@ -218,6 +218,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     if (autofit != null) {
     	table.setAutofitColumnWidths(autofit);
     }
+    int[] fitted = fitToAvailableWidth(context, table);
+    if (fitted != null) {
+    	table.setAutofitColumnWidths(fitted);
+    }
     createRowProperties(rowProperties, table.getEffectiveTableStyle().getTrPr(), true);
     rowPropertiesTableSize = rowProperties.size();
     createCellProperties(cellProperties, table.getEffectiveTableStyle().getTrPr());
@@ -412,6 +416,78 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			log.warn("Autofit skipped: " + e.getMessage(), e);
 			return null;
 		}
+	}
+
+	/**
+	 * Keep the widths this class chose inside the page: where the autofit pass
+	 * (which sizes columns from their content, and so can be wrong) came out wider
+	 * than the text column, every column is scaled down in proportion.
+	 *
+	 * <p>A table's own w:tblGrid is left alone even when it is wider, because that is
+	 * what Word does: measured over the real-document corpus, Word draws tables whose
+	 * grid is 3% to 19% wider than the text column overhanging the right margin, at
+	 * their grid width - one such document matched Word line for line before an
+	 * earlier version of this method scaled its tables to fit.  Only widths docx4j
+	 * decided for itself are fitted.</p>
+	 *
+	 * <p>Only formats which paginate do this ({@link #fitsTableToPage()}); in HTML an
+	 * over-wide table is the browser's business.</p>
+	 *
+	 * @return column widths in twips, or null to leave the widths alone
+	 * @since 17.0.5
+	 */
+	protected int[] fitToAvailableWidth(AbstractWmlConversionContext context, AbstractTableWriterModel table) {
+		if (!fitsTableToPage()) return null;
+		try {
+			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+			if (tblPr != null && tblPr.getTblLayout() != null
+					&& tblPr.getTblLayout().getType() == org.docx4j.wml.STTblLayoutType.FIXED) {
+				return null; // Word overflows a fixed-layout table
+			}
+			int[] widths = table.getAutofitColumnWidths();
+			if (widths == null) return null; // the document's own grid: Word keeps it
+			long total = 0;
+			for (int w : widths) total += w;
+			if (total <= 0) return null;
+
+			int writable = -1;
+			try {
+				writable = context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
+			} catch (Exception e) {
+				log.debug("No section page dimensions to fit the table to: " + e.getMessage());
+			}
+			if (writable <= 0) return null;
+			org.docx4j.wml.TblWidth ind = tblPr == null ? null : tblPr.getTblInd();
+			if (ind != null && ind.getW() != null && "dxa".equals(ind.getType()) && ind.getW().intValue() > 0) {
+				writable -= ind.getW().intValue();
+			}
+			if (writable <= 0 || total <= writable) return null;
+
+			int[] out = new int[widths.length];
+			long given = 0;
+			for (int i = 0; i < widths.length; i++) {
+				out[i] = (int) Math.max(1, (long) widths[i] * writable / total);
+				given += out[i];
+			}
+			// the rounding remainder goes to the widest column
+			int widest = 0;
+			for (int i = 1; i < out.length; i++) if (out[i] > out[widest]) widest = i;
+			out[widest] += (int) (writable - given);
+			if (out[widest] < 1) out[widest] = 1;
+			if (log.isDebugEnabled()) {
+				log.debug("Table scaled from " + total + " to " + writable + " twips to fit the page");
+			}
+			return out;
+		} catch (Exception e) {
+			log.warn("Table fit skipped: " + e.getMessage(), e);
+			return null;
+		}
+	}
+
+	/** Whether this output format should scale an over-wide table down to the page,
+	 *  as Word does; true for paginated output.  @since 17.0.5 */
+	protected boolean fitsTableToPage() {
+		return false;
 	}
 
 		/** Raise the columns [from, to) so that they sum to at least need, sharing the shortfall

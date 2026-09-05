@@ -252,7 +252,12 @@ public class RunFontSelector {
 		}
 		DocumentFragment docfrag = document.createDocumentFragment();
 		docfrag.appendChild(document.getDocumentElement());
-		return (DocumentFragment)kernSpaces(docfrag);
+		return (DocumentFragment)finish(docfrag);
+    }
+
+    /** The final touches on a converted run's fragment: kerned spaces, then small caps. */
+    private Object finish(Object fragment) {
+    	return smallCaps(kernSpaces(fragment));
     }
     
 
@@ -590,8 +595,177 @@ public class RunFontSelector {
     	// level change (CR-001 option B); the residual is a constant per paragraph.
     }
 
+    // ---- w:caps / w:smallCaps, and the literal soft hyphen (XSL FO only). @since 17.0.5
+
+    /**
+     * The size of a small capital, as a proportion of the run's font size.  Word's
+     * small caps are about 80% of the size (it uses the font's own small-cap design
+     * where there is one, and scales otherwise); FO has no font-variant, and FOP
+     * would ignore it, so docx4j uppercases the text itself and puts the
+     * originally-lower-case stretches in an inline at this size.
+     */
+    private static final String SMALL_CAPS_SIZE = "80%";
+
+    /** for the text last transformed: whether each code point was originally lower case
+     *  (so is to be set as a small capital), or null when the run is not small caps */
+    private boolean[] smallCapsMask;
+
+    /**
+     * The text as it is to be rendered: upper-cased where the effective run properties
+     * say w:caps or w:smallCaps, and with literal soft hyphens (U+00AD) dropped.
+     *
+     * <p>Word applies w:caps and w:smallCaps when it renders, leaving the stored text
+     * alone; FOP has no text-transform or font-variant, so the transformation has to
+     * happen here.  It is upper-cased in the run's own language (w:lang, else the
+     * document's, both of which the effective rPr carries), since Turkish and
+     * Lithuanian case differently.</p>
+     *
+     * <p>FOP does not break at U+00AD, and most fonts have no glyph for it, so a
+     * literal soft hyphen came out as a notdef box in the middle of a word; Word only
+     * ever shows one where it breaks the line.</p>
+     *
+     * <p>HTML gets text-transform/font-variant instead (see the Caps and SmallCaps
+     * properties), so the text itself is left alone there.</p>
+     */
+    private String capsAndSoftHyphens(RPr rPr, String text) {
+
+    	smallCapsMask = null;
+    	if (text==null || text.length()==0 || outputType!=RunFontActionType.XSL_FO) return text;
+
+    	boolean caps = isOn(rPr==null ? null : rPr.getCaps());
+    	boolean smallCaps = !caps && isOn(rPr==null ? null : rPr.getSmallCaps());
+    	boolean softHyphen = text.indexOf('\u00AD')>=0;
+    	if (!caps && !smallCaps && !softHyphen) return text;
+
+    	java.util.Locale locale = runLocale(rPr);
+    	StringBuilder sb = new StringBuilder(text.length());
+    	java.util.List<Boolean> lower = smallCaps ? new java.util.ArrayList<Boolean>(text.length()) : null;
+    	for (int i=0; i<text.length(); ) {
+    		int cp = text.codePointAt(i);
+    		i += Character.charCount(cp);
+    		if (cp=='\u00AD') continue; // a discretionary hyphen: nothing is painted unless it breaks
+    		int out = cp;
+    		if (caps || smallCaps) {
+    			String one = new String(Character.toChars(cp));
+    			String up = one.toUpperCase(locale);
+    			// keep the mapping one code point to one, so that the small caps mask lines
+    			// up with the text (eg German ß upper-cases to SS, which Word leaves alone)
+    			if (up.codePointCount(0, up.length())==1) out = up.codePointAt(0);
+    		}
+    		if (lower!=null) lower.add(Character.isLowerCase(cp));
+    		sb.appendCodePoint(out);
+    	}
+    	if (lower!=null) {
+    		boolean any = false;
+    		boolean[] mask = new boolean[lower.size()];
+    		for (int i=0; i<mask.length; i++) {
+    			mask[i] = lower.get(i);
+    			any |= mask[i];
+    		}
+    		if (any) smallCapsMask = mask;
+    	}
+    	return sb.toString();
+    }
+
+    private static boolean isOn(BooleanDefaultTrue val) {
+    	return val!=null && val.isVal();
+    }
+
+    /** The run's language, for case conversion: w:lang (the effective rPr carries the
+     *  document default), else the root locale. */
+    private static java.util.Locale runLocale(RPr rPr) {
+    	if (rPr!=null && rPr.getLang()!=null) {
+    		String tag = rPr.getLang().getVal();
+    		if (tag!=null && tag.length()>0) {
+    			try {
+    				java.util.Locale l = java.util.Locale.forLanguageTag(tag);
+    				if (l!=null && l.getLanguage().length()>0) return l;
+    			} catch (Exception e) {
+    				log.debug("Not a language tag: " + tag);
+    			}
+    		}
+    	}
+    	return java.util.Locale.ROOT;
+    }
+
+    /**
+     * Put the originally-lower-case stretches of a small caps run into an inline at
+     * {@value #SMALL_CAPS_SIZE} of the run's size.  The mask was built from the text
+     * this fragment was made from, so the two are walked in step; if they have come
+     * apart (a run whose text was rewritten on the way, as Arabic-Indic shaping does),
+     * the run is simply left in full capitals.
+     */
+    private Object smallCaps(Object fragment) {
+
+    	boolean[] mask = smallCapsMask;
+    	smallCapsMask = null;
+    	if (mask==null || !(fragment instanceof DocumentFragment) || outputType!=RunFontActionType.XSL_FO) {
+    		return fragment;
+    	}
+    	DocumentFragment df = (DocumentFragment)fragment;
+    	java.util.List<org.w3c.dom.Text> texts = new java.util.ArrayList<>();
+    	collectTextNodes(df, texts);
+    	int total = 0;
+    	for (org.w3c.dom.Text t : texts) {
+    		String v = t.getNodeValue();
+    		if (v!=null) total += v.codePointCount(0, v.length());
+    	}
+    	if (total!=mask.length) {
+    		log.debug("Small caps skipped: " + total + " characters rendered, " + mask.length + " expected");
+    		return fragment;
+    	}
+    	Document doc = df.getOwnerDocument();
+    	int pos = 0;
+    	for (org.w3c.dom.Text t : texts) {
+    		String v = t.getNodeValue();
+    		if (v==null || v.length()==0) continue;
+    		int[] cps = v.codePoints().toArray();
+    		java.util.List<Node> replacement = new java.util.ArrayList<>();
+    		StringBuilder seg = new StringBuilder();
+    		boolean segSmall = mask[pos];
+    		for (int cp : cps) {
+    			boolean small = mask[pos++];
+    			if (small!=segSmall) {
+    				flushSmallCapsSegment(doc, replacement, seg, segSmall);
+    				segSmall = small;
+    			}
+    			seg.appendCodePoint(cp);
+    		}
+    		flushSmallCapsSegment(doc, replacement, seg, segSmall);
+    		if (replacement.size()==1 && replacement.get(0) instanceof org.w3c.dom.Text) continue; // nothing to wrap
+    		Node parent = t.getParentNode();
+    		if (parent==null) continue;
+    		for (Node n : replacement) parent.insertBefore(n, t);
+    		parent.removeChild(t);
+    	}
+    	return fragment;
+    }
+
+    private void flushSmallCapsSegment(Document doc, java.util.List<Node> out, StringBuilder seg, boolean small) {
+    	if (seg.length()==0) return;
+    	if (small) {
+    		Element inline = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
+    		inline.setAttribute("font-size", SMALL_CAPS_SIZE);
+    		inline.appendChild(doc.createTextNode(seg.toString()));
+    		out.add(inline);
+    	} else {
+    		out.add(doc.createTextNode(seg.toString()));
+    	}
+    	seg.setLength(0);
+    }
+
+    private static void collectTextNodes(Node n, java.util.List<org.w3c.dom.Text> out) {
+    	for (Node c = n.getFirstChild(); c!=null; c = c.getNextSibling()) {
+    		if (c.getNodeType()==Node.TEXT_NODE) {
+    			out.add((org.w3c.dom.Text)c);
+    		} else {
+    			collectTextNodes(c, out);
+    		}
+    	}
+    }
+
     private boolean spacePreserve;
-    
+
 
     /**
      * Apply font selection algorithm to this Text, based on supplied PPr, RPr
@@ -679,9 +853,11 @@ public class RunFontSelector {
 		} catch (CyclicStylesException e) {
 			log.error(e.getMessage(), e);
 		}
-    	captureLineSpec(propertyResolver, pPr, rPr); 
+    	captureLineSpec(propertyResolver, pPr, rPr);
     	// TODO use effective rPr, but don't inherit theme val,
     	// TODO, add cache?
+
+    	text = capsAndSoftHyphens(rPr, text);
 
     	if(log.isDebugEnabled()) {
             log.debug("effective\n" + XmlUtils.marshaltoString(rPr));
@@ -1652,7 +1828,7 @@ public class RunFontSelector {
     	
     	// Handle final span
     	vis.finishPrevious();
-    	return kernSpaces(vis.getResult());
+    	return finish(vis.getResult());
     }
     
     /** The PhysicalFont this *document* font name maps to.

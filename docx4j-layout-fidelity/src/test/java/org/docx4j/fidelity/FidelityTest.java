@@ -1,5 +1,6 @@
 package org.docx4j.fidelity;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
@@ -31,6 +32,26 @@ public class FidelityTest {
 		for (org.docx4j.fidelity.corpus.Probe p : Corpus.all()) {
 			assertTrue(p.id, new File("target/fidelity/fop", p.id + ".pdf").length() > 0);
 		}
+	}
+
+	/**
+	 * The compatMode column comes from the document's own w:compatSetting, not from the
+	 * leading number of the file name (which disagrees with it often enough to be
+	 * useless, and which eight documents of the real-document sample do not have at
+	 * all).
+	 */
+	@Test
+	public void compatModeComesFromTheDocument() throws Exception {
+		File dir = new File("target/fidelity/compat");
+		dir.mkdirs();
+
+		File declared = new File(dir, "99_named_wrongly.docx");
+		org.docx4j.fidelity.corpus.Doc.create(12).pkg().save(declared);
+		assertEquals("12", Fidelity.compatMode(declared));
+
+		File none = new File(dir, "15_no_compat_setting.docx");
+		org.docx4j.openpackaging.packages.WordprocessingMLPackage.createPackage().save(none);
+		assertEquals("", Fidelity.compatMode(none));
 	}
 
 	@Test

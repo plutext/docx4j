@@ -41,14 +41,25 @@ public class Indent extends AbstractParagraphProperty {
 	// 'Left' pushes the box to the right, which results can result in a horizontal scroll bar in the web browser.
 	/**
 	 * @since 2.7.2
-	 */	
+	 */
 	public String getCssName() {
 		return CSS_NAME;
 	}
-	
-	public final static String FO_NAME  = "start-indent"; 
+
+	/** w:ind/@w:right (or @w:end); the right hand side was ignored until 17.0.5, so a
+	 *  paragraph indented from both sides was laid out at the full column width. */
+	public final static String CSS_NAME_RIGHT = "margin-right";
+
+	public final static String FO_NAME  = "start-indent";
+	public final static String FO_NAME_END  = "end-indent";
 	public final static String FO_NAME_TEXT_INDENT  = "text-indent";
-	
+
+	/** The end (right) indent in twips: w:right, else w:end; null when neither is set. */
+	private BigInteger getEndIndent() {
+		Ind ind = (Ind)this.getObject();
+		return ind.getRight()!=null ? ind.getRight() : ind.getEnd();
+	}
+
 	
 	public Indent(Ind val) {
 		this.setObject(val);
@@ -163,10 +174,15 @@ public class Indent extends AbstractParagraphProperty {
 		
 		String prop = "position: relative; ";
 		
-		BigInteger left = ((Ind)this.getObject()).getLeft();		
+		BigInteger left = ((Ind)this.getObject()).getLeft();
 		if (left!=null) {
 			prop  = prop  + composeCss(CSS_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
-		} 
+		}
+
+		BigInteger right = getEndIndent();
+		if (right!=null) {
+			prop  = prop  + composeCss(CSS_NAME_RIGHT, UnitsOfMeasurement.twipToBest(right.intValue()) );
+		}
 
 		// SPEC: The firstLine and hanging attributes are mutually exclusive, if both are specified, then
 		// the firstLine value is ignored.		
@@ -180,7 +196,7 @@ public class Indent extends AbstractParagraphProperty {
 		} 
 
 		
-		if (left==null && firstline == null && hanging==null){
+		if (left==null && right==null && firstline == null && hanging==null){
             if(log.isDebugEnabled()) {
                 log.debug("What to do with " + XmlUtils.marshaltoString(this.getObject(), true, true));
             }
@@ -199,6 +215,11 @@ public class Indent extends AbstractParagraphProperty {
 		BigInteger left = ((Ind)this.getObject()).getLeft();
 		if (left !=null) {
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
+			updated = true;
+		}
+		BigInteger right = getEndIndent();
+		if (right !=null) {
+			foElement.setAttribute(FO_NAME_END, UnitsOfMeasurement.twipToBest(right.intValue()) );
 			updated = true;
 		}
 		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
@@ -274,13 +295,18 @@ public class Indent extends AbstractParagraphProperty {
 		
 		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
 		BigInteger hanging = ((Ind)this.getObject()).getHanging();
-		
+
+		BigInteger right = getEndIndent();
+		if (right != null) {
+			foElement.setAttribute(FO_NAME_END, UnitsOfMeasurement.twipToBest(right.intValue()) );
+		}
+
 		// SPEC: The firstLine and hanging attributes are mutually exclusive, if both are specified, then
 		// the firstLine value is ignored.
 		if (hanging != null) {
-			
+
 			int hangingInt = hanging.intValue();
-			
+
 			// start = left - hanging
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-hangingInt) );
 			

@@ -166,12 +166,15 @@ public final class Fidelity {
 			File ref = new File(refPdfDir, id + ".pdf");
 			if (!ref.exists()) {
 				Scoreboard.Row row = new Scoreboard.Row(id, docx.length(), "noref");
+				row.compatMode = compatMode(docx);
 				row.error = "no reference PDF " + ref.getName();
 				rows.add(row);
 				System.out.printf(Locale.ROOT, "[%d/%d] %-44s noref%n", n, docs.length, id);
 				continue;
 			}
-			rows.add(scoreOne(docx, ref, fopDir, id, timeoutSeconds, n, docs.length));
+			Scoreboard.Row scored = scoreOne(docx, ref, fopDir, id, timeoutSeconds, n, docs.length);
+			scored.compatMode = compatMode(docx);
+			rows.add(scored);
 		}
 
 		List<String> deltaLines = null;
@@ -195,6 +198,42 @@ public final class Fidelity {
 		System.out.println("scoreboard: " + csv + " and " + new File(outDir, "scoreboard.txt"));
 		return rows;
 	}
+
+	/**
+	 * The document's own Word compatibility mode: w:compatSetting w:name="compatibilityMode"
+	 * in word/settings.xml, or "" where the document declares none.
+	 *
+	 * <p>The corpus file names carry a leading number which was used for this, but it
+	 * disagrees with the document often enough to be useless for segmenting results
+	 * (and eight documents of the sample declare no mode at all), so the docx itself is
+	 * read.  The zip entry is parsed directly: this runs before the conversion, on every
+	 * document of a large corpus, and a full load would cost far more than it is worth.
+	 */
+	static String compatMode(File docx) {
+		try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(docx)) {
+			java.util.zip.ZipEntry entry = zip.getEntry("word/settings.xml");
+			if (entry == null) return "";
+			String xml;
+			try (java.io.InputStream is = zip.getInputStream(entry)) {
+				xml = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+			}
+			java.util.regex.Matcher m = COMPAT_SETTING.matcher(xml);
+			while (m.find()) {
+				String element = m.group();
+				if (!element.contains("\"compatibilityMode\"")) continue;
+				java.util.regex.Matcher v = COMPAT_VAL.matcher(element);
+				if (v.find()) return v.group(1);
+			}
+		} catch (Exception e) {
+			System.out.println("compatMode " + docx.getName() + ": " + e);
+		}
+		return "";
+	}
+
+	private static final java.util.regex.Pattern COMPAT_SETTING =
+			java.util.regex.Pattern.compile("<w:compatSetting\\b[^>]*>");
+	private static final java.util.regex.Pattern COMPAT_VAL =
+			java.util.regex.Pattern.compile("w:val=\"([^\"]*)\"");
 
 	/**
 	 * One document, in its own thread so a conversion that never returns cannot

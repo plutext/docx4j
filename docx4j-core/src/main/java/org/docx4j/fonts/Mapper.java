@@ -314,14 +314,38 @@ public abstract class Mapper {
      */
     public void addMetricallyCompatibleSubstitutes() {
 		
-		// Croscore or Liberation
-    	addMetricallyCompatibleSubstitute("Times New Roman", "Tinos Regular", "Liberation Sans");
-    	addMetricallyCompatibleSubstitute("Arial", "Arimo Regular", "Liberation Serif");
+		// Croscore or Liberation.  NB Times New Roman is a serif and Arial a sans:
+		// the two second substitutes were the wrong way round until 17.0.5, so on a
+		// box with Liberation but not Croscore each became the other's class.
+    	addMetricallyCompatibleSubstitute("Times New Roman", "Tinos Regular", "Liberation Serif");
+    	addMetricallyCompatibleSubstitute("Arial", "Arimo Regular", "Liberation Sans");
     	addMetricallyCompatibleSubstitute("Courier New", "Cousine Regular", "Liberation Mono");
 
 		// Crosextra
     	addMetricallyCompatibleSubstitute("Calibri", "Carlito Regular", null);
     	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", null);
+    	addMetricallyCompatibleSubstitute("Calibri Light", "Carlito Regular", null);
+
+    	// Fonts with no metric-compatible clone, but where a stand-in of the right
+    	// class is much closer than the document's default font, which is what
+    	// RunFontSelector falls back to (a sans in Tinos, or Georgian in Carlito,
+    	// was the first divergence in a fifth of a real-document sample; CR-001).
+    	// The widths are not Word's, so lines still break differently.  @since 17.0.5
+    	for (String sans : new String[] { "Tahoma", "Verdana", "Trebuchet MS", "Segoe UI", "Segoe UI Light",
+    			"Arial Black", "Gadugi", "Helvetica", "Helvetica Neue" }) {
+    		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
+    	}
+    	for (String serif : new String[] { "Georgia", "Garamond", "Book Antiqua", "Palatino Linotype",
+    			"Bookman Old Style" }) {
+    		addMetricallyCompatibleSubstitute(serif, "Tinos Regular", "Liberation Serif");
+    	}
+    	// Liberation Sans Narrow is metric-compatible with Arial Narrow, but neither the
+    	// Liberation nor the Croscore jar carries it.  Where it isn't installed either,
+    	// Arial Narrow is deliberately left unmapped: measured over the real-document
+    	// corpus, DejaVu Sans Condensed (the nearest condensed face on a typical Linux
+    	// box) is wider than Arial Narrow than the document default is, and substituting
+    	// it cost line parity on three documents.
+    	addMetricallyCompatibleSubstitute("Arial Narrow", "Liberation Sans Narrow", null);
 
     	// Monospace fonts with no metric-compatible clone: a monospace stand-in keeps
     	// code aligned, where the default (proportional) fallback would not.  Widths

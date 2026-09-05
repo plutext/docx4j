@@ -27,6 +27,7 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
+import org.docx4j.convert.out.common.HiddenText;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.fonts.RunFontSelector;
@@ -617,10 +618,31 @@ public class XsltFOFunctions {
 	    	return null;
 		}
 
+		// A paragraph whose mark is hidden text and whose content came to nothing (its
+		// runs were all hidden, or it had none) leaves no line at all in Word, where an
+		// empty block here would push everything below it down.  @since 17.0.5
+		if (HiddenText.isHiddenParagraph(rPrParagraphMark) && isEmptyContent(childResults)) {
+			return null;
+		}
+
 		/* Now that we have pPr, we can format the block. */
 		return createBlock(context.getWmlPackage(), context.getRunFontSelector(), pStyleVal, childResults, sdt, pPrDirect, pPr, rPr, rPrParagraphMark);
 
     }
+
+	/** Whether the paragraph's converted content is nothing at all: no elements, and no
+	 *  text beyond white space the stylesheet may have contributed.  @since 17.0.5 */
+	private static boolean isEmptyContent(Node childResults) {
+		if (childResults==null) return true;
+		for (Node n = childResults.getFirstChild(); n!=null; n = n.getNextSibling()) {
+			if (n.getNodeType()==Node.ELEMENT_NODE) return false;
+			if (n.getNodeType()==Node.TEXT_NODE || n.getNodeType()==Node.CDATA_SECTION_NODE) {
+				String v = n.getNodeValue();
+				if (v!=null && v.trim().length()>0) return false;
+			}
+		}
+		return true;
+	}
 
 	/** The font-family which applies to text we generate ourselves - a tab leader, or
 	 *  the space we put in an otherwise empty block - as opposed to the contents of a
@@ -1632,9 +1654,14 @@ public class XsltFOFunctions {
 				
 			} else {
 				log.error("TODO handle  .." + jaxbR.getClass().getName());
-			}        	
-        	
-			
+			}
+
+			// Word prints nothing for hidden text, and leaves no space for it.  The
+			// visitor pathway does this in AbstractVisitorExporterGenerator.  @since 17.0.5
+			if (!HiddenText.isPrinted() && HiddenText.isHidden(rPr)) {
+				return null;
+			}
+
             // Create a DOM builder and parse the fragment
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			
