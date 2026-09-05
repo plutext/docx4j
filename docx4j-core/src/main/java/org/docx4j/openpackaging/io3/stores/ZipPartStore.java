@@ -151,6 +151,11 @@ public class ZipPartStore implements PartStore {
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
 			} catch (PartTooLargeException e) {
 				throw e;
+			} catch (FileTooLargeException e) {
+				// the zip-bomb guard's own exception: a real document with large
+				// uncompressible-looking parts (EMF images compress 200:1) trips it,
+				// and the "is it a zip file?" wrapper hid the cause and the property
+				throw e;
 			} catch (Exception e) {
 	            throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
 			}

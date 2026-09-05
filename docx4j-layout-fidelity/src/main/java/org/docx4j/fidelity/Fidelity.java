@@ -50,6 +50,13 @@ public final class Fidelity {
 		if (hyphenate != null) {
 			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.hyphenate", hyphenate.trim());
 		}
+		// real documents are not zip bombs: a 668KB docx whose EMF images unpack to
+		// 95MB trips docx4j's 50MB default, so the guard is loosened for scoring
+		// (must run before ZipPartStore is loaded, which reads it once)
+		if (System.getProperty("fidelity.maxUncompressed") == null) {
+			org.docx4j.Docx4jProperties.setProperty(
+					"docx4j.openpackaging.package.MAX_UNCOMPRESSED_SIZE.unzip.error", "1073741824");
+		}
 		switch (args[0]) {
 		case "generate":
 			Corpus.generate(new File(args[1]));

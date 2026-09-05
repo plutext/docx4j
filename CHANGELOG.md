@@ -71,6 +71,10 @@ HTML output, visitor pathway (the default):
 formatting (and no longer logs "null currentSpan!")
 
 Other:
+- loading: the zip-bomb guard's FileTooLargeException (total uncompressed size over
+docx4j.openpackaging.package.MAX_UNCOMPRESSED_SIZE.unzip.error) is no longer wrapped as "Error
+processing zip file (is it a zip file?)", which hid the cause: a real 668KB docx whose EMF images
+unpack to 95MB trips the 50MB default
 - Docx4J facade: Docx4J.updateToc(pkg[, skipPageNumbering]) updates a document's table of
 contents in place (returning false if it has none), and Docx4J.FLAG_EXPORT_UPDATE_TOC does
 it as part of toPDF/toFO (with page numbers) or toHTML (without)
