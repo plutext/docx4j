@@ -264,7 +264,22 @@ public class TableWriter extends AbstractTableWriter {
 			} else if (n instanceof Element) {
 				Element c = (Element) n;
 				String ln = c.getLocalName();
-				if ("leader".equals(ln) || "table".equals(ln) || "external-graphic".equals(ln)) {
+				if ("external-graphic".equals(ln) || "instream-foreign-object".equals(ln)) {
+					/* An image (or an equation) is a word of its own, and Word's autofit
+					 * sizes the column to it: a cell holding nothing but a picture used to
+					 * measure zero and collapse to its cell margins, which in a table where
+					 * every w:tcW is auto left the text columns to take the whole width, one
+					 * word per line.  An anchored picture is taken out of the flow (see
+					 * WordLayoutFixups), so it does not widen anything. */
+					line[0] = Math.max(line[0], line[2]);
+					line[2] = 0;
+					double gw = c.hasAttribute(org.docx4j.model.images.WordXmlPictureE20.HINT_ANCHOR) ? 0
+							: graphicWidthPt(c);
+					if (gw > 0) {
+						line[0] = Math.max(line[0], gw);
+						line[1] += gw;
+					}
+				} else if ("leader".equals(ln) || "table".equals(ln)) {
 					line[0] = Math.max(line[0], line[2]);
 					line[2] = 0;
 				} else if ("block".equals(ln) && !top) {
@@ -278,6 +293,22 @@ public class TableWriter extends AbstractTableWriter {
 				}
 			}
 		}
+	}
+
+	/** The rendered width of an fo:external-graphic / fo:instream-foreign-object, in points. @since 17.0.5 */
+	private static double graphicWidthPt(Element g) {
+		String w = g.getAttribute("content-width");
+		if (w.length() == 0) w = g.getAttribute("width");
+		if (w.endsWith("px")) {
+			// AbstractWordXmlPicture writes the picture's size in points but labels the
+			// unit px, and FOP's default source resolution is 72dpi, so here a px is a point
+			try {
+				return Double.parseDouble(w.substring(0, w.length() - 2));
+			} catch (NumberFormatException e) {
+				return 0;
+			}
+		}
+		return WordLayoutFixups.lengthPt(w);
 	}
 
 	private static void measureText(String text, org.docx4j.fonts.PhysicalFont pf, double sizePt, double[] line) {

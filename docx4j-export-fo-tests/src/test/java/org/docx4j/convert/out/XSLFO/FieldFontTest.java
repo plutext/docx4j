@@ -194,9 +194,11 @@ public class FieldFontTest extends AbstractXSLFOTest {
 		// being ignored, text and field would still match, on the default font)
 		PhysicalFont expected = wordMLPackage.getFontMapper().get(FONT);
 		assertNotNull("no physical font for " + FONT + " on this machine", expected);
+		// starts-with, since the family name may carry a variant suffix (the kerned or
+		// the no-ligature twin FopConfigUtil declares); it is the same physical font
 		assertTrue("surrounding text isn't in " + FONT + diagnostics,
 				isPresent(doc, "//fo:inline[starts-with(text(),'Page')]"
-						+ "[@font-family='" + expected.getName() + "']"));
+						+ "[starts-with(@font-family,'" + expected.getName() + "')]"));
 
 		// .. and so should the PAGE field
 		assertTrue("no font-family on fo:page-number" + diagnostics,

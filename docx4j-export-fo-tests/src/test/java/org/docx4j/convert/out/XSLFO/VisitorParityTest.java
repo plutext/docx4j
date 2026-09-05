@@ -85,9 +85,10 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 							+ "//fo:block[@white-space-treatment='preserve']"));
 			assertTrue(impl + "ptab leader lost", isPresent(doc,
 					"//fo:leader[@leader-pattern='space'][@leader-alignment='reference-area']"));
-			assertTrue(impl + "ptab needs text-align-last on its block", isPresent(doc,
-					"//fo:block[@text-align-last='justify']"
-					+ "//fo:leader[@leader-pattern='space']"));
+			// the right ptab is a right tab stop at the end of the line; the line manager
+			// sizes its leader from the paragraph's tab stops (@since 17.0.5)
+			assertTrue(impl + "ptab leader not marked for the line manager", isPresent(doc,
+					"//fo:leader[@leader-pattern='space'][@leader-length='0pt']"));
 			assertTrue(impl + "inserted text not marked", isPresent(doc,
 					"//fo:inline[@color='blue'][@text-decoration='underline'][contains(.,'inserted')]"));
 			assertTrue(impl + "deleted text lost or not marked", isPresent(doc,

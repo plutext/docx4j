@@ -233,21 +233,11 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				return null;
 			}
 			if (STPTabAlignment.RIGHT.equals(((R.Ptab)o).getAlignment())) {
-				Element leader = document.createElementNS(XSL_FO, "leader");
-				leader.setAttribute("leader-length.minimum", "12pt");
-				leader.setAttribute("leader-length.maximum", "100%");
-				// optimum is the length FOP uses when it measures the line, so 100% (the
-				// whole reference area) made every such line over-full and broke it at the
-				// nearest opportunity - in the middle of the text either side of the tab.
-				// The leader stretches to the maximum at justification time, which is what
-				// text-align-last="justify" (set by createBlockForPPr's leader check) asks
-				// for.  @since 17.0.5
-				leader.setAttribute("leader-length.optimum", "12pt");
-				leader.setAttribute("leader-pattern", "space");
-				leader.setAttribute("leader-alignment", "reference-area");
-				getCurrentParent().appendChild(leader);
-				// text-align-last=justify (which the leader needs in FOP) is set on
-				// the paragraph's block by createBlockForPPr's leader check
+				// a right tab stop at the end of the line; see XsltFOFunctions.ptabToFO
+				org.w3c.dom.DocumentFragment ptab = XsltFOFunctions.ptabToFO(conversionContext);
+				if (ptab != null) {
+					getCurrentParent().appendChild(document.importNode(ptab, true));
+				}
 				return null;
 			}
 			return super.apply(o); // other alignments: warn, as the XSLT does

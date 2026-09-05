@@ -239,7 +239,11 @@ public class FopConfigUtil {
 				if (!kerning()) {
 					rendererFonts.getFont().add(kernedTwin(entry));
 				}
-			}			
+				Font noLiga = noLigaTwin(entry);
+				if (noLiga!=null) {
+					rendererFonts.getFont().add(noLiga);
+				}
+			}
 		}
 		return rendererFonts;
 	}
@@ -277,7 +281,57 @@ public class FopConfigUtil {
 		return twin;
 	}
 
-	private static void createFontEntrySimulateStyles(Mapper fontMapper, List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
+	/**
+	 * The same font again with no OpenType features at all, under each triplet name
+	 * plus {@link RunFontSelector#NOLIGA_SUFFIX}.
+	 *
+	 * <p>FOP applies the GSUB features ccmp, liga and locl to every font that has
+	 * them, unconditionally (DefaultScriptProcessor.GSUB_FEATURES); Word applies no
+	 * standard ligature unless the run asks for one (w14:ligatures).  The difference
+	 * is not only width: a ligature glyph has no cmap entry of its own, so FOP mints
+	 * a private-use code point for it and the PDF's ToUnicode maps the ligature to
+	 * U+E000 - the text is painted, but cannot be extracted, searched or read by a
+	 * screen reader.  Measured over a real-document corpus, a third of the lines of
+	 * a French document came out with "ti" as U+E000.</p>
+	 *
+	 * <p>FOP has no per-run or per-feature switch (the renderer's complex-scripts
+	 * option disables Arabic and Indic shaping too, and the per-font "advanced"
+	 * attribute is dropped on the PDF path).  What does work per declaration is
+	 * encoding-mode="single-byte", which loads the font as a simple TrueType font -
+	 * one that implements neither Substitutable nor Positionable, so no GSUB and no
+	 * GPOS.  RunFontSelector sends runs of simple-script text that ask for neither
+	 * ligatures nor kerning to this twin.</p>
+	 *
+	 * <p>Only TrueType-flavoured files get a twin: FOP forces a single-byte font to
+	 * FontType.TRUETYPE, which would misdescribe a CFF/OpenType font in the PDF.</p>
+	 *
+	 * @return null where the font must not be declared this way
+	 * @since 17.0.5
+	 */
+	private static org.docx4j.convert.out.fopconf.Fonts.Font noLigaTwin(org.docx4j.convert.out.fopconf.Fonts.Font font) {
+		if (!isTrueTypeFlavoured(font.getEmbedUrl())) return null;
+		org.docx4j.convert.out.fopconf.Fonts.Font twin = factory.createFontsFont();
+		twin.setEmbedUrl(font.getEmbedUrl());
+		twin.setSubFont(font.getSubFont());
+		twin.setSimulateStyle(font.isSimulateStyle());
+		twin.setKerning(false);
+		twin.setEncodingMode("single-byte");
+		for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : font.getFontTriplet()) {
+			twin.getFontTriplet().add(createFontTriplet(t.getName() + RunFontSelector.NOLIGA_SUFFIX, t.getStyle(), t.getWeight()));
+		}
+		return twin;
+	}
+
+	/** whether the font file holds glyf outlines (.ttf/.ttc), as opposed to CFF ones. */
+	public static boolean isTrueTypeFlavoured(String embedUrl) {
+		if (embedUrl==null) return false;
+		String u = embedUrl.toLowerCase();
+		int q = u.indexOf('?');
+		if (q>0) u = u.substring(0, q);
+		return u.endsWith(".ttf") || u.endsWith(".ttc");
+	}
+
+	private static void createFontEntrySimulateStyles(Mapper fontMapper, List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries,
 			String fontName, PhysicalFont pf) {
 		
     	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
@@ -491,15 +545,24 @@ public class FopConfigUtil {
 				if (!kerning()) {
 					renderer.getFonts().getFont().add(kernedTwin(entry));
 				}
-				continue;
+			} else {
+				mergeTriplets(existing, entry);
+				if (!kerning()) {
+					Font twin = find(renderer.getFonts().getFont(), entry, true);
+					if (twin==null) {
+						renderer.getFonts().getFont().add(kernedTwin(entry));
+					} else {
+						mergeTriplets(twin, kernedTwin(entry));
+					}
+				}
 			}
-			mergeTriplets(existing, entry);
-			if (!kerning()) {
-				Font twin = find(renderer.getFonts().getFont(), entry, true);
-				if (twin==null) {
-					renderer.getFonts().getFont().add(kernedTwin(entry));
+			Font noLiga = noLigaTwin(entry);
+			if (noLiga!=null) {
+				Font existingNoLiga = find(renderer.getFonts().getFont(), noLiga, false);
+				if (existingNoLiga==null) {
+					renderer.getFonts().getFont().add(noLiga);
 				} else {
-					mergeTriplets(twin, kernedTwin(entry));
+					mergeTriplets(existingNoLiga, noLiga);
 				}
 			}
 		}
@@ -532,6 +595,7 @@ public class FopConfigUtil {
 			if (!eq(f.getEmbedUrl(), like.getEmbedUrl())) continue;
 			if (!eq(f.getSubFont(), like.getSubFont())) continue;
 			if (f.isSimulateStyle()!=like.isSimulateStyle()) continue;
+			if (!eq(f.getEncodingMode(), like.getEncodingMode())) continue; // the +noliga twin is its own declaration
 			if (kerned!=null && kerned.booleanValue()!=Boolean.TRUE.equals(f.isKerning())) continue;
 			return f;
 		}

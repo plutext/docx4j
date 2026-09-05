@@ -86,12 +86,12 @@ public class RunFontSelectorGeneralPunctuationTest {
 				// no symbol substitution: since DOC_FONT resolves to nothing, we
 				// get the fallback font, but never the symbol font
 				assertNotEquals("punctuation was set in the symbol font",
-						dejaVu.getName(), fontFamily);
-				assertEquals(rfs.fallbackFont, fontFamily);
+						dejaVu.getName(), plain(fontFamily));
+				assertEquals(rfs.fallbackFont, plain(fontFamily));
 			} else {
 				// the dingbat and the arrow still substitute, as Word does
 				assertEquals(texts[i] + " should have used the symbol substitute",
-						dejaVu.getName(), fontFamily);
+						dejaVu.getName(), plain(fontFamily));
 			}
 		}
 	}
@@ -197,5 +197,20 @@ public class RunFontSelectorGeneralPunctuationTest {
 				}
 
 			}, RunFontActionType.XSL_FO);
+	}
+
+	/** the font-family without the variant suffix (the kerned or no-ligature twin
+	 *  FopConfigUtil declares); it is the same physical font */
+	private static String plain(String fontFamily) {
+		if (fontFamily==null) return null;
+		if (fontFamily.endsWith(org.docx4j.fonts.RunFontSelector.NOLIGA_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length()
+					- org.docx4j.fonts.RunFontSelector.NOLIGA_SUFFIX.length());
+		}
+		if (fontFamily.endsWith(org.docx4j.fonts.RunFontSelector.KERNED_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length()
+					- org.docx4j.fonts.RunFontSelector.KERNED_SUFFIX.length());
+		}
+		return fontFamily;
 	}
 }

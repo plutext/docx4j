@@ -86,6 +86,9 @@ public class PhysicalFonts {
 		if (key.endsWith(RunFontSelector.KERNED_SUFFIX)) {
 			// the kerned twin FopConfigUtil registers for a font (per-run kerning)
 			key = key.substring(0, key.length() - RunFontSelector.KERNED_SUFFIX.length());
+		} else if (key.endsWith(RunFontSelector.NOLIGA_SUFFIX)) {
+			// its twin with no OpenType features (per-run ligatures); @since 17.0.5
+			key = key.substring(0, key.length() - RunFontSelector.NOLIGA_SUFFIX.length());
 		}
 		return physicalFontMap.get(key.toLowerCase());
 	}

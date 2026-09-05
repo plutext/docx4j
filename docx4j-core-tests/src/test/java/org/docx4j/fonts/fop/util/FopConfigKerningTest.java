@@ -35,6 +35,9 @@ public class FopConfigKerningTest {
 		int fonts = 0, twins = 0;
 		java.util.Set<String> names = new HashSet<>();
 		for (Fonts.Font f : fop.getRenderers().getRenderer().get(0).getFonts().getFont()) {
+			// the no-ligature twin has no OpenType feature at all, kerning included,
+			// so it is neither a font needing a kerned twin nor a kerned twin itself
+			if (f.getEncodingMode()!=null) continue;
 			for (Fonts.Font.FontTriplet t : f.getFontTriplet()) names.add(t.getName());
 			if (Boolean.TRUE.equals(f.isKerning())) {
 				twins++;

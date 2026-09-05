@@ -263,26 +263,41 @@ public class ConversionSectionWrapperFactory {
 							
 							PgSz pgSzThis = ppr.getSectPr().getPgSz();
 							PgSz pgSzNext = followingSectPr.getPgSz();
-							if (insertPageBreak( pgSzThis,  pgSzNext)) {
+							boolean pageBreak = insertPageBreak( pgSzThis,  pgSzNext);
+							if (pageBreak) {
 								ppr.setPageBreakBefore(new BooleanDefaultTrue());
 							}
+							// Word gives the section break mark no line of its own where the
+							// paragraph carrying it is otherwise empty; keep the paragraph
+							// only where it has content, where it is all this section has,
+							// or where it carries the page break inserted just above.
+							boolean drop = !pageBreak && !sectionContent.isEmpty()
+									&& rendersNothing((org.docx4j.wml.P)o);
 							// this section's content (up to and including this paragraph) is
 							// one part of the merged page-sequence, with its own column
 							// count and page margins
-							columnParts.add(new MergedPart(ppr.getSectPr(), sectionContent.size() + 1));
+							columnParts.add(new MergedPart(ppr.getSectPr(), sectionContent.size() + (drop ? 0 : 1)));
 							//ppr.setSectPr(null); // Don't do this, since we have to process the docx (inc sectPrs) multiple times for a single PDF output
-							
+							if (drop) continue;
+
 												} else {
 							// The paragraph carrying the sectPr is the last paragraph of the
 							// section it ends (in Word its mark is where the section break
 							// shows), so it belongs in this section's content.  Until 17.0.5
 							// it was added to the next section's, where it rendered as an
 							// empty first line at the top of the new section's first page.
-							sectionContent.add(o);
+							// Word gives it no line at all when it is empty (the break mark
+							// is all it is), and the empty block otherwise ends the flow -
+							// and where it does not fit, starts a page of its own carrying
+							// only the running header.
+							if (sectionContent.isEmpty() || !rendersNothing((org.docx4j.wml.P)o)) {
+								sectionContent.add(o);
+							}
 							int cols = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
 							currentSectionWrapper = createSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
 									++conversionSectionIndex, sectionContent, dummyPageNumbering);
+							useWinningPartCols(currentSectionWrapper, columnParts, ppr.getSectPr(), cols);
 							if (cols > colsNum(ppr.getSectPr())) {
 								currentSectionWrapper.getPageDimensions().setColsNum(cols);
 							}
@@ -316,6 +331,7 @@ public class ConversionSectionWrapperFactory {
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
 				++conversionSectionIndex, sectionContent, dummyPageNumbering);
+		useWinningPartCols(currentSectionWrapper, columnParts, document.getBody().getSectPr(), cols);
 		if (cols > colsNum(document.getBody().getSectPr())) {
 			currentSectionWrapper.getPageDimensions().setColsNum(cols);
 		}
@@ -357,6 +373,65 @@ public class ConversionSectionWrapperFactory {
 	private static int marginRight(SectPr sectPr) {
 		if (sectPr == null || sectPr.getPgMar() == null || sectPr.getPgMar().getRight() == null) return -1;
 		return sectPr.getPgMar().getRight().intValue();
+	}
+
+	/**
+	 * True where Word gives the paragraph no line of its own: it carries a
+	 * section break mark and nothing else.  Bookmarks, comment/permission range
+	 * markers, proofing marks and runs with no content render nothing, so they
+	 * do not make the paragraph non-empty.
+	 *
+	 * @since 17.0.5
+	 */
+	private static boolean rendersNothing(org.docx4j.wml.P p) {
+		if (p.getContent() == null) return true;
+		for (Object child : p.getContent()) {
+			Object o = XmlUtils.unwrap(child);
+			if (o instanceof org.docx4j.wml.ProofErr
+					|| o instanceof org.docx4j.wml.CTBookmark
+					|| o instanceof org.docx4j.wml.CTMarkupRange
+					|| o instanceof org.docx4j.wml.CTPerm) {
+				continue;
+			}
+			if (o instanceof org.docx4j.wml.R) {
+				for (Object rChild : ((org.docx4j.wml.R)o).getContent()) {
+					Object r = XmlUtils.unwrap(rChild);
+					if (r instanceof org.docx4j.wml.RPr
+							|| r instanceof org.docx4j.wml.R.LastRenderedPageBreak) {
+						continue;
+					}
+					return false;
+				}
+				continue;
+			}
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * A page-sequence made of several merged continuous sections takes its column
+	 * count from the part that has the most columns (spanColumnParts), but the
+	 * wrapper itself was built from the sectPr that ends the sequence - so until
+	 * 17.0.5 the column gap came from that last section, which in the common case
+	 * (columns, then one column again) is the one with no columns at all.  The gap
+	 * and the count must come from the same section, so copy that part's whole
+	 * w:cols across.
+	 *
+	 * @param lastSectPr the sectPr that ends the page-sequence
+	 * @param cols the column count the wrapper will use
+	 * @since 17.0.5
+	 */
+	private static void useWinningPartCols(ConversionSectionWrapper wrapper, List<MergedPart> columnParts,
+			SectPr lastSectPr, int cols) {
+		if (wrapper == null || columnParts.isEmpty() || cols < 2) return;
+		if (colsNum(lastSectPr) == cols) return; // the wrapper's own w:cols already won
+		for (MergedPart part : columnParts) {
+			if (colsNum(part.sectPr) == cols && part.sectPr.getCols() != null) {
+				wrapper.getPageDimensions().setCols(part.sectPr.getCols());
+				return;
+			}
+		}
 	}
 
 	/**

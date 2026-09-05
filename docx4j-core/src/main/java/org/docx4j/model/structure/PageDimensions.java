@@ -403,6 +403,18 @@ public class PageDimensions {
 	}
 
 	/**
+	 * Use these column properties (count, gap and w:col children) instead of the
+	 * section's own.  Where continuous sections are merged into one page-sequence,
+	 * the count and the gap have to come from the same one of them.  A copy is
+	 * taken, so the section's own w:cols is not touched.
+	 *
+	 * @since 17.0.5
+	 */
+	public void setCols(CTColumns cols) {
+		this.cols = (cols == null) ? Context.getWmlObjectFactory().createCTColumns() : XmlUtils.deepCopy(cols);
+	}
+
+	/**
 	 * The space between columns, in twips.
 	 *
 	 * <p>Where w:cols has w:col children, each column carries its own w:space

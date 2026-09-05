@@ -284,9 +284,67 @@ public class RunFontSelector {
     }
 
     /** The final touches on a converted run's fragment: a font which has the glyphs,
-     *  then kerned spaces, then small caps. */
+     *  then kerned spaces, then small caps, then the no-ligature declaration where
+     *  Word would apply none. */
     private Object finish(Object fragment) {
-    	return smallCaps(kernSpaces(glyphFallback(fragment)));
+    	return noLigatures(smallCaps(kernSpaces(glyphFallback(fragment))));
+    }
+
+    /**
+     * Send the spans of this run to the font's {@link #NOLIGA_SUFFIX} declaration,
+     * where Word would apply no OpenType feature to them: the run asks for no
+     * ligatures (w14:ligatures) and no kerning (w:kern), and its text is Latin, which
+     * is the script Word's standard ligatures are about.
+     *
+     * <p>Only Latin: FOP's single-byte font puts anything outside its primary
+     * encoding into chained 256-glyph encodings, and measured over a real-document
+     * corpus a whole non-Latin alphabet comes out of that with characters missing
+     * from the PDF's text layer (Cyrillic; the ink is right, the extraction is not).
+     * Text which needs shaping - Arabic, Indic, Khmer, Hebrew - must keep GSUB
+     * anyway.  Only a TrueType-flavoured font has such a twin at all
+     * (FopConfigUtil), so the font-family is left alone for the rest.</p>
+     *
+     * @since 17.0.5
+     */
+    private Object noLigatures(Object fragment) {
+    	if (outputType!=RunFontActionType.XSL_FO || !(fragment instanceof DocumentFragment)
+    			|| currentLigatures || (currentKerned && perRunKerning()) || ligatures()) {
+    		return fragment;
+    	}
+    	for (Node n = ((DocumentFragment)fragment).getFirstChild(); n!=null; n = n.getNextSibling()) {
+    		if (n instanceof Element) noLigatures((Element)n);
+    	}
+    	return fragment;
+    }
+
+    private void noLigatures(Element el) {
+    	String family = el.getAttribute("font-family");
+    	if (family.length()>0 && !family.endsWith(KERNED_SUFFIX) && !family.endsWith(NOLIGA_SUFFIX)) {
+    		String text = el.getTextContent();
+    		if (text!=null && text.length()>0 && latinOnly(text.codePoints().toArray())) {
+    			PhysicalFont pf = PhysicalFonts.get(family);
+    			if (pf!=null && pf.getEmbeddedURI()!=null
+    					&& org.docx4j.fonts.fop.util.FopConfigUtil.isTrueTypeFlavoured(pf.getEmbeddedURI().toString())) {
+    				el.setAttribute("font-family", family + NOLIGA_SUFFIX);
+    			}
+    		}
+    	}
+    	for (Node c = el.getFirstChild(); c!=null; c = c.getNextSibling()) {
+    		if (c instanceof Element) noLigatures((Element)c);
+    	}
+    }
+
+    /** whether every code point is Latin (or script-neutral: punctuation, digits, marks) */
+    private static boolean latinOnly(int[] cps) {
+    	for (int cp : cps) {
+    		Character.UnicodeScript script = FontFallback.scriptOf(cp);
+    		if (script!=Character.UnicodeScript.LATIN
+    				&& script!=Character.UnicodeScript.COMMON
+    				&& script!=Character.UnicodeScript.INHERITED) {
+    			return false;
+    		}
+    	}
+    	return true;
     }
     
 
@@ -452,9 +510,32 @@ public class RunFontSelector {
      */
     public static final String KERNED_SUFFIX = "+kern";
 
+    /**
+     * Suffix of the font-family name under which FopConfigUtil registers a
+     * font's declaration with no OpenType features (FOP's
+     * encoding-mode="single-byte").  FOP applies the GSUB feature "liga" to every
+     * font that has it; Word applies no standard ligature unless the run asks
+     * (w14:ligatures), and the ligature glyph has no Unicode of its own, so the
+     * PDF's ToUnicode maps it to a private-use code point and the text cannot be
+     * extracted, searched or read out.  Runs of Latin text which ask for neither
+     * ligatures nor kerning use this twin.
+     *
+     * @since 17.0.5
+     */
+    public static final String NOLIGA_SUFFIX = "+noliga";
+
     /** whether the current run is kerned in Word: w:kern present, non-zero, and no
      *  larger than the run's w:sz (both half-points) */
     private boolean currentKerned;
+
+    /** whether the current run asks for ligatures (w14:ligatures); Word's default is none */
+    private boolean currentLigatures;
+
+    /** Word's rule for a run's ligatures: none unless w14:ligatures says otherwise. */
+    public static boolean hasLigatures(RPr rPr) {
+    	if (rPr==null || rPr.getLigatures()==null || rPr.getLigatures().getVal()==null) return false;
+    	return rPr.getLigatures().getVal() != org.docx4j.w14.STLigatures.NONE;
+    }
 
     /** Word's rule for a run's kerning (the rPr must be the effective one). */
     public static boolean isKerned(RPr rPr) {
@@ -464,6 +545,17 @@ public class RunFontSelector {
     	java.math.BigInteger sz = (rPr.getSz()==null || rPr.getSz().getVal()==null)
     			? java.math.BigInteger.valueOf(20) : rPr.getSz().getVal(); // 10pt if nothing says otherwise
     	return sz.compareTo(kern) >= 0;
+    }
+
+    /**
+     * Leave FOP to apply the OpenType ligature features to every font, as it did
+     * before 17.0.5 - Word applies none unless the run asks (w14:ligatures), so this
+     * is off by default.
+     *
+     * @since 17.0.5
+     */
+    private static boolean ligatures() {
+    	return Docx4jProperties.getProperty("docx4j.convert.out.fo.ligatures", false);
     }
 
     /** per-run kerning is only needed while FOP's fonts are unkerned (the default) */
@@ -588,6 +680,7 @@ public class RunFontSelector {
     private void captureLineSpec(PropertyResolver propertyResolver, PPr pPr, RPr rPr) {
     	if (outputType!=RunFontActionType.XSL_FO) return;
     	currentKerned = isKerned(rPr);
+    	currentLigatures = hasLigatures(rPr);
     	currentSizePt = (rPr!=null && rPr.getSz()!=null && rPr.getSz().getVal()!=null)
     			? rPr.getSz().getVal().doubleValue()/2 : -1;
     	// effective pPr is needed for the style-inherited w:spacing; cache per pPr object

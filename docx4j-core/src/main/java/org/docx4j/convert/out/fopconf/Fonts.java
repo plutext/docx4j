@@ -140,6 +140,8 @@ public class Fonts {
         protected String subFont;
         @XmlAttribute(name = "kerning")
         protected Boolean kerning;
+        @XmlAttribute(name = "encoding-mode")
+        protected String encodingMode;
 
         /**
          * Gets the value of the fontTriplet property.
@@ -247,6 +249,22 @@ public class Fonts {
 
         public void setKerning(Boolean value) {
             this.kerning = value;
+        }
+
+        /**
+         * FOP's encoding-mode attribute: "auto" (its default), "single-byte" or
+         * "cid".  A single-byte declaration loads the font as a simple TrueType
+         * font, which does not implement FOP's Substitutable/Positionable, so no
+         * OpenType feature (liga, kern, ...) is applied to it; see FopConfigUtil.
+         *
+         * @since 17.0.5
+         */
+        public String getEncodingMode() {
+            return encodingMode;
+        }
+
+        public void setEncodingMode(String value) {
+            this.encodingMode = value;
         }
 
 

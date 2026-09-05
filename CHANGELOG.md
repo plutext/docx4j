@@ -572,10 +572,100 @@ per letter, and FOP kerns and letter-spaces within a span, not across two.  Cons
 characters of the same unlisted range share a span now
 (RunFontSelector.unicodeRangeToFont).
 
+PDF via XSL FO - five more differences from Word, and ligatures, from scoring the same
+194 real documents (over that corpus: lines matching Word exactly 79.8% -> 82.1%, mean
+line parity 0.7945 -> 0.8207, median 0.8529 -> 0.8727, same page count 141 -> 151 of 190,
+documents at 0.98 or better 24 -> 27; 44 documents better, 5 down.  The 33 probes with
+Word goldens are unchanged.  Of the five: one is a rounding artefact (its page count went
+from 9 to Word's 8 and its line parity did not move); two are documents with columns of
+different widths, where the now-correct gap moves the (still equal) columns further from
+Word's - the stated limitation above; one is a document where the Arial Narrow substitute is now
+exact but its Garamond runs are still rendered at the size the docx asks for and Word's
+are not; and one is a document whose empty section-break marks Word does give space to,
+inside a merged two-column page-sequence where dropping them re-balances the columns.
+Keeping the mark wherever the section is merged into a neighbour's page-sequence was
+measured too, and is worse overall):
+- Word gives no line to the paragraph mark which carries a section break, where that
+paragraph is empty: the mark is all it is.  docx4j put an empty block at the end of the
+section's flow, which cost a line height at every mid-page break and, where the block did
+not fit on the section's last page, made FOP start a page for it - a page carrying only
+the running header.  Four documents of the corpus gained one to three such pages each,
+and one paid a line at each of twenty breaks.  A paragraph with content of its own is
+still rendered, as is one which is all the section has (a flow with no block is invalid
+FO), and the section break still decides the next page master.
+- the column gap of a run of merged continuous sections came from the section which ends
+the page-sequence - in the common case the one-column section after the columns - since
+only its column count was taken from the part which has the columns.  The count and the
+gap come from the same section now (ConversionSectionWrapperFactory copies its whole
+w:cols; new PageDimensions.setCols).
+- Word's autofit sizes a column to whatever is in it, pictures included; docx4j measured
+only text, so a cell holding nothing but a picture measured zero and collapsed to its
+cell margins, and in a table where every w:tcW is auto the columns which do hold text
+then took the whole width and wrapped one word per line.  One document ran to 28 pages
+where Word gives 3.
+- a right w:ptab advanced only its minimum, leaving the text after it short of the right
+margin: it was a stretching fo:leader, and FOP expands one only on a justified last line.
+It is what Word makes of it now - a right tab stop at the end of the line, sized by the
+tab-stop line manager like any w:tab (XsltFOFunctions.ptabToFO, for both pathways).
+- the body was pushed down by w:pgMar/@w:header minus w:pgMar/@w:top wherever the header
+distance is larger than the top margin and the header is empty (13.9pt on every line of
+one document).  Word starts the body at the top margin and moves it down only where the
+header itself reaches further, ie header distance plus header height (FOPAreaTreeHelper).
+
+PDF via XSL FO - OpenType ligatures where Word applies none:
+- FOP applies the GSUB feature "liga" to every font that has it.  In Calibri, and in its
+metric twin Carlito, that turns "ti" and "tt" into ligature glyphs which have no cmap
+entry of their own, so FOP mints a private-use code point for them and the PDF's
+ToUnicode maps the ligature to U+E000: the ink lands in the right place, but the text
+cannot be extracted, searched or read by a screen reader.  Word applies no standard
+ligature unless the run asks (w14:ligatures).  A third of the non-blank lines of one
+corpus document carried such a glyph and so could never match Word's text.
+- FOP has no per-run, per-script or per-feature switch for this: the features are a
+private static list in DefaultScriptProcessor, the renderer's complex-scripts option
+turns off Arabic and Indic shaping as well, and the per-font "advanced" attribute is
+discarded on the PDF path (LazyFont; reported upstream).  What does work per declaration
+is encoding-mode="single-byte", which loads the font as a simple TrueType font - one
+which implements neither Substitutable nor Positionable, so no OpenType feature is
+applied to it at all.  docx4j declares each TrueType font a second time that way, under
+the family name plus "+noliga" (as it already does for kerning), and sends runs of Latin
+text which ask for neither ligatures nor kerning to that declaration; a run which does
+ask for ligatures keeps the ordinary one, and so does anything but Latin - a single-byte
+font chains 256-glyph encodings for whatever its primary one does not hold, and measured
+over the corpus a whole non-Latin alphabet then loses characters from the PDF's text
+layer (the ink stays right).  A CFF/OpenType font gets no such twin either, since FOP
+would then misdescribe it in the PDF as TrueType.
+- as a side effect this also stops FOP kerning those runs from the font's GPOS table,
+which 17.0.5's kerning="false" could not: FOP's kerning attribute governs only the legacy
+kern table, and a font like Carlito has none.  Word does not kern unless the run says so,
+so this is the intended behaviour finally taking effect.
+- docx4j.convert.out.fo.ligatures=true restores the previous behaviour.
+- w14:ligatures now survives style resolution (StyleUtil.apply for rPr), so a character
+or paragraph style can ask for ligatures too.
+
+Fonts:
+- Arial Narrow also maps to Nimbus Sans Narrow (URW's Helvetica Narrow, in the
+ghostscript fonts) where Liberation Sans Narrow is not installed, which recent Liberation
+packages no longer ship.  Measured against Arial Narrow itself, Nimbus Sans Narrow's
+advances agree to within one unit per 1000 over letters, digits and punctuation (0.02%
+mean, bold likewise), against 14% for Carlito and 22% for Arimo, which is where the
+fallback had been ending up; seven documents of the corpus are set in Arial Narrow.
+Where neither twin is installed Arial Narrow is still left unmapped on purpose.
+- Segoe UI Light maps to Source Sans in preference to Arimo.  Neither is a metric clone,
+but Arimo's advances are systematically 11.8% wider than Segoe UI Light's on letters, so
+every line breaks early, where Source Sans has no systematic bias at all (+0.4% mean
+signed) - which is what line breaking cares about.  Arimo stays the last resort.
+- Cambria/Caladea was measured and left alone: Caladea is 3.9% narrower than Cambria on
+the regular face and 2.8% on the bold, and no installed face is closer.
+
 docx4j-layout-fidelity (the measurement harness; not in the reactor):
 - the scoreboard's compatMode column now comes from the document's own w:compatSetting
 compatibilityMode, read from word/settings.xml, instead of the leading number of the file
 name, which disagrees with it often enough to be useless for segmenting results.
+- three probes added: table-indent-compat15 and table-indent-compat14 (2-column autofit
+tables with no w:tblInd, with w:tblInd 0 and with w:tblInd 108, under compatibility modes
+15 and 14, to settle where Word puts the grid edge) and ptab-right (a right w:ptab in a
+header and in the body, and a paragraph with a right indent).  They have no Word goldens
+yet.
 
 Math:
 - tracked changes inside equations no longer lose content (issue 348, open since 2019):

@@ -487,8 +487,18 @@ public class WordLineLayoutManager extends LineLayoutManager {
          */
         private int tabWidth(int position, LayoutManager leader) {
             int x = totalWidth - active.totalWidth;      // from the line's start
-            int stop = nextTabStop(tabLeftMpt + x);      // sets stopAlignment/stopHasLeader
-            int align = stopAlignment;
+            int stop;
+            int align;
+            if (isPtabRight(leader)) {
+                // a right w:ptab: a right tab stop at the end of the line, whatever the
+                // paragraph's own stops are
+                stop = tabLeftMpt + getLineWidth();
+                align = TAB_RIGHT;
+                stopHasLeader = false;
+            } else {
+                stop = nextTabStop(tabLeftMpt + x);      // sets stopAlignment/stopHasLeader
+                align = stopAlignment;
+            }
             int width = stop - (tabLeftMpt + x);
             if (align != TAB_LEFT) {
                 width -= followingWidth(position, align);
@@ -1110,7 +1120,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
         LayoutManager lm = leaf == null ? null : leaf.getLM();
         if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) return null;
-        return "1".equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB)) ? lm : null;
+        String kind = foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB);
+        return (kind != null && kind.length() > 0) ? lm : null;
+    }
+
+    /** whether this tab leader stands in for a right {@code w:ptab} rather than a
+     *  {@code w:tab} (XsltFOFunctions.ptabToFO).  @since 17.0.5 */
+    private boolean isPtabRight(LayoutManager lm) {
+        return org.docx4j.convert.out.fo.XsltFOFunctions.TAB_PTAB_RIGHT
+                .equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB));
     }
 
     /** whether the line between these element indexes holds a tab.  Word lays such a

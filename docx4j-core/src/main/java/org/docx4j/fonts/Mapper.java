@@ -340,21 +340,35 @@ public abstract class Mapper {
     	// RunFontSelector falls back to (a sans in Tinos, or Georgian in Carlito,
     	// was the first divergence in a fifth of a real-document sample; CR-001).
     	// The widths are not Word's, so lines still break differently.  @since 17.0.5
-    	for (String sans : new String[] { "Tahoma", "Verdana", "Trebuchet MS", "Segoe UI", "Segoe UI Light",
+    	for (String sans : new String[] { "Tahoma", "Verdana", "Trebuchet MS", "Segoe UI",
     			"Arial Black", "Gadugi", "Helvetica", "Helvetica Neue" }) {
     		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
     	}
+
+    	// Segoe UI Light has no metric clone, but Arimo is the wrong shape for it:
+    	// measured against the Segoe UI Light Word embeds, Arimo's advances are
+    	// systematically 11.8% wider, so every line breaks early.  Source Sans has
+    	// no systematic bias at all (+0.4% mean signed, 9.4% mean absolute), which is
+    	// what line breaking cares about.  Arimo remains the last resort.
+    	// @since 17.0.5
+    	addFirstAvailableSubstitute("Segoe UI Light",
+    			"Source Sans 3", "Source Sans Pro", "Arimo Regular", "Liberation Sans");
     	for (String serif : new String[] { "Georgia", "Garamond", "Book Antiqua", "Palatino Linotype",
     			"Bookman Old Style" }) {
     		addMetricallyCompatibleSubstitute(serif, "Tinos Regular", "Liberation Serif");
     	}
     	// Liberation Sans Narrow is metric-compatible with Arial Narrow, but neither the
-    	// Liberation nor the Croscore jar carries it.  Where it isn't installed either,
-    	// Arial Narrow is deliberately left unmapped: measured over the real-document
-    	// corpus, DejaVu Sans Condensed (the nearest condensed face on a typical Linux
-    	// box) is wider than Arial Narrow than the document default is, and substituting
-    	// it cost line parity on three documents.
-    	addMetricallyCompatibleSubstitute("Arial Narrow", "Liberation Sans Narrow", null);
+    	// Liberation nor the Croscore jar carries it, and it is no longer in the
+    	// Liberation package.  Nimbus Sans Narrow (URW's Helvetica Narrow, in
+    	// ghostscript-fonts) is the same 82% condensation and matches Arial Narrow's
+    	// advances to within one unit per 1000 over letters, digits and punctuation
+    	// (0.02% mean, bold likewise; the control pair Century Gothic / URW Gothic
+    	// measures 0.29% by the same method).  Where neither is installed, Arial Narrow
+    	// is still deliberately left unmapped: measured over the real-document corpus,
+    	// DejaVu Sans Condensed (the nearest condensed face on a typical Linux box) is
+    	// further from Arial Narrow than the document default is, and substituting it
+    	// cost line parity on three documents.
+    	addFirstAvailableSubstitute("Arial Narrow", "Liberation Sans Narrow", "Nimbus Sans Narrow");
 
     	// Monospace fonts with no metric-compatible clone: a monospace stand-in keeps
     	// code aligned, where the default (proportional) fallback would not.  Widths
@@ -438,6 +452,21 @@ public abstract class Mapper {
      * @param openSubstitute2
      * @since 11.5.9
      */
+    /**
+     * As {@link #addMetricallyCompatibleSubstitute(String, String, String)}, but
+     * choosing the first of any number of candidates which is installed, best first.
+     *
+     * @since 17.0.5
+     */
+    protected void addFirstAvailableSubstitute(String proprietaryFont, String... openSubstitutes) {
+    	for (String candidate : openSubstitutes) {
+    		if (candidate!=null && PhysicalFonts.get(candidate)!=null) {
+    			addMetricallyCompatibleSubstitute(proprietaryFont, candidate, null);
+    			return;
+    		}
+    	}
+    }
+
     protected void addMetricallyCompatibleSubstitute(String proprietaryFont, String openSubstitute, String openSubstitute2) {
     	
     	if (isEmbedded(proprietaryFont)) {

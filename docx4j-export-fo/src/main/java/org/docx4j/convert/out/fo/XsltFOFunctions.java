@@ -1638,6 +1638,51 @@ public class XsltFOFunctions {
 	 *  docx4j: namespace).  @since 17.0.5 */
 	static final String HINT_TAB = WordLayoutFixups.HINT_TAB;
 
+	/** {@link #HINT_TAB} value marking the leader of a right {@code w:ptab}. @since 17.0.5 */
+	public static final String TAB_PTAB_RIGHT = "ptab-right";
+
+	/**
+	 * The FO for a right {@code w:ptab}, for both pathways.
+	 *
+	 * <p>A right ptab is a right tab stop at the end of the line - the right page
+	 * margin or the paragraph's right indent, which come to the same thing in the
+	 * line manager's coordinates - so with the Word layout managers on it is a
+	 * zero-length {@code fo:leader} marked {@code docx4j-tab=ptab-right}, and the
+	 * line manager advances it to the end of the line less the width of the text
+	 * that follows it.  Until 17.0.5 it was a stretching leader; FOP expands one
+	 * only on a justified last line, and its optimum has to stay small or the line
+	 * measures over-full and breaks - so the text after the tab advanced by the
+	 * optimum instead of reaching the margin.</p>
+	 *
+	 * @since 17.0.5
+	 */
+	public static DocumentFragment ptabToFO(FOConversionContext context) {
+
+		Document d;
+		try {
+			d = XmlUtils.getNewDocumentBuilder().newDocument();
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+		DocumentFragment df = d.createDocumentFragment();
+		Element leader = d.createElementNS(XSL_FO, "fo:leader");
+		leader.setAttribute("leader-pattern", "space");
+		leader.setAttribute("leader-alignment", "reference-area");
+		if (realTabs()) {
+			leader.setAttribute("leader-length", "0pt");
+			leader.setAttribute(HINT_TAB, TAB_PTAB_RIGHT);
+		} else {
+			// legacy (docx4j.convert.out.fo.wordLayout=false): a stretching leader,
+			// with text-align-last="justify" from createBlockForPPr's leader check
+			leader.setAttribute("leader-length.minimum", "12pt");
+			leader.setAttribute("leader-length.maximum", "100%");
+			leader.setAttribute("leader-length.optimum", "12pt");
+		}
+		df.appendChild(leader);
+		return df;
+	}
+
 	/**
 	 * The FO for a {@code w:tab}, for both pathways.
 	 *

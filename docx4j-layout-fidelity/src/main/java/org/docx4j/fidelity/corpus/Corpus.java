@@ -554,6 +554,75 @@ public final class Corpus {
 			d.para("after. " + prose(1, 3)).before(240).add();
 			return d.pkg();
 		}));
+
+		// ---------------------------------------------------- table indent (N7 probe)
+		PROBES.add(tableIndentProbe(15));
+		PROBES.add(tableIndentProbe(14));
+
+		PROBES.add(new Probe("ptab-right",
+				"a right w:ptab in the header and in the body, and a paragraph with a right indent", () -> {
+			Doc d = Doc.create(15);
+
+			List<P> header = new ArrayList<>();
+			P h = Doc.plainParagraph("left text", SANS, 20);
+			h.getContent().add(rightPtab());
+			h.getContent().add(Doc.run("right text", SANS, 20, null));
+			header.add(h);
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, header);
+
+			d.para("before the ptab paragraph. " + prose(1)).after(240).add();
+
+			P body = d.para("body left").noLabel().build();
+			body.getContent().add(rightPtab());
+			body.getContent().add(Doc.run("body right", SERIF, 24, null));
+			d.add(body);
+
+			d.para("right indent 1440. " + prose(2, 1)).before(240).after(240).indent(0, 0, 0).add();
+			P indented = d.para("this paragraph has w:ind right=1440. " + prose(2, 2)).noLabel().build();
+			PPrBase.Ind ind = Doc.F.createPPrBaseInd();
+			ind.setRight(BigInteger.valueOf(1440));
+			indented.getPPr().setInd(ind);
+			d.add(indented);
+
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		}));
+	}
+
+	/** A run holding a right w:ptab relative to the margin. */
+	private static org.docx4j.wml.R rightPtab() {
+		org.docx4j.wml.R r = Doc.F.createR();
+		org.docx4j.wml.R.Ptab ptab = Doc.F.createRPtab();
+		ptab.setAlignment(org.docx4j.wml.STPTabAlignment.RIGHT);
+		ptab.setRelativeTo(org.docx4j.wml.STPTabRelativeTo.MARGIN);
+		ptab.setLeader(org.docx4j.wml.STPTabLeader.NONE);
+		r.getContent().add(ptab);
+		return r;
+	}
+
+	/**
+	 * Where Word puts the grid edge of an autofit table: with no w:tblInd at all,
+	 * with w:tblInd 0, and with w:tblInd 108, under one compatibility mode.  Word's
+	 * default cell margins apply (no w:tblCellMar), so the difference between the
+	 * cases is the whole question.
+	 */
+	private static Probe tableIndentProbe(int compatMode) {
+		return new Probe("table-indent-compat" + compatMode,
+				"autofit 2-column tables with no w:tblInd, w:tblInd 0 and w:tblInd 108,"
+				+ " default cell margins, compatibilityMode " + compatMode, () -> {
+			Doc d = Doc.create(compatMode);
+			d.para("no w:tblInd. " + prose(1)).after(240).add();
+			d.add(new Doc.Table(4000, 4000)
+					.row(SERIF, 24, true, "no tblInd left", "no tblInd right").build());
+			d.para("w:tblInd 0. " + prose(1, 1)).before(240).after(240).add();
+			d.add(new Doc.Table(4000, 4000).indent(0)
+					.row(SERIF, 24, true, "tblInd 0 left", "tblInd 0 right").build());
+			d.para("w:tblInd 108. " + prose(1, 2)).before(240).after(240).add();
+			d.add(new Doc.Table(4000, 4000).indent(108)
+					.row(SERIF, 24, true, "tblInd 108 left", "tblInd 108 right").build());
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		});
 	}
 
 	public static List<Probe> all() {

@@ -2080,6 +2080,10 @@ public class StyleUtil {
 			destination.setEm(apply(source.getEm(), destination.getEm()));
 			destination.setSpecVanish(apply(source.getSpecVanish(), destination.getSpecVanish()));
 			destination.setOMath(apply(source.getOMath(), destination.getOMath()));
+			// Word's ligature setting, which decides whether the run's OpenType
+			// ligatures are applied at all (RunFontSelector).  @since 17.0.5
+			destination.setLigatures(source.getLigatures()==null
+					? destination.getLigatures() : source.getLigatures());
 		}
 		return destination;
 	}

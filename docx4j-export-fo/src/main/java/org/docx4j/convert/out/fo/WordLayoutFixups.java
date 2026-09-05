@@ -286,14 +286,15 @@ public final class WordLayoutFixups {
 		// the tab leaders and, on their paragraph's block, the stops they are laid out
 		// against (XsltFOFunctions.tabToFO / applyTabStopHints).  @since 17.0.5
 		for (Element leader : elements(doc, "leader")) {
-			if (leader.getAttribute(HINT_TAB).length()==0) continue;
+			String kind = leader.getAttribute(HINT_TAB);
+			if (kind.length()==0) continue;
 			leader.removeAttribute(HINT_TAB);
 			if (ns == null) continue;
 			if (!declared) {
 				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
 				declared = true;
 			}
-			leader.setAttributeNS(ns, "docx4j:tab", "1");
+			leader.setAttributeNS(ns, "docx4j:tab", kind);
 		}
 		for (Element block : elements(doc, "block")) {
 			String tabs = block.getAttribute(HINT_TABS);

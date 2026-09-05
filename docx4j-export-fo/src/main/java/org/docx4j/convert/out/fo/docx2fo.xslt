@@ -792,14 +792,12 @@
       <w:ptab w:relativeTo="margin" w:alignment="right" w:leader="none"/>
     </w:r>
      -->
-<xsl:template match="w:ptab[@w:alignment='right']"> 
+<xsl:template match="w:ptab[@w:alignment='right']">
 
-	  <!-- leader-length.optimum is what FOP measures the line with: 100% (the whole
-	       reference area) made the line over-full and broke it at the nearest
-	       opportunity.  The leader stretches to the maximum at justification time,
-	       which text-align-last="justify" (createBlockForPPr) asks for. -->
-	  <fo:leader leader-length.minimum="12pt" leader-length.maximum="100%" leader-length.optimum="12pt"
-	  leader-pattern="space"  leader-alignment="reference-area" />
+	  <!-- With the Word layout managers on, a zero-length fo:leader the line manager
+	       advances to the end of the line; otherwise a stretching leader
+	       (see XsltFOFunctions.ptabToFO). -->
+	  <xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.ptabToFO($conversionContext)" />
 
 </xsl:template>
 

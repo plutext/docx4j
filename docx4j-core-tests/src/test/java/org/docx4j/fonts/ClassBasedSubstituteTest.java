@@ -74,7 +74,9 @@ public class ClassBasedSubstituteTest {
 	@Test
 	public void condensedFacesAreLeftAlone() throws Exception {
 		if (PhysicalFonts.get("Arial Narrow")!=null) return;
-		if (PhysicalFonts.get("Liberation Sans Narrow")!=null) return; // its metric twin
+		// its metric twins, which addMetricallyCompatibleSubstitutes maps it to
+		if (PhysicalFonts.get("Liberation Sans Narrow")!=null) return;
+		if (PhysicalFonts.get("Nimbus Sans Narrow")!=null) return;
 		assertNull("Arial Narrow should be left to the document default",
 				mapper("Arial Narrow").get("Arial Narrow"));
 	}

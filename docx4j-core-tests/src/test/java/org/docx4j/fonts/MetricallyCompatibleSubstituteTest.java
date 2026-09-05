@@ -88,11 +88,15 @@ public class MetricallyCompatibleSubstituteTest {
 	}
 
 	/**
-	 * Arial Narrow maps to Liberation Sans Narrow, which is metric-compatible with it but
-	 * which neither font jar carries; where the box has not installed it either, Arial
-	 * Narrow is left unmapped on purpose (the condensed faces a Linux box does have are
-	 * further from Arial Narrow's widths than the document default is, measured over the
-	 * real-document corpus).
+	 * Arial Narrow maps to one of its metric twins: Liberation Sans Narrow, which
+	 * neither font jar carries and which recent Liberation packages no longer ship, or
+	 * Nimbus Sans Narrow, URW's Helvetica Narrow in the base 35 (the ghostscript
+	 * fonts).  Nimbus Sans Narrow matches Arial Narrow's advances to within a unit per
+	 * 1000 over letters, digits and punctuation - 0.02% mean, bold likewise, against
+	 * 14% for Carlito and 22% for Arimo, which is where the fallback used to end up.
+	 * Where neither twin is installed, Arial Narrow is left unmapped on purpose (the
+	 * other condensed faces a Linux box has are further from its widths than the
+	 * document default is, measured over the real-document corpus).
 	 */
 	@Test
 	public void arialNarrowMapsOnlyToItsMetricTwin() throws Exception {
@@ -100,9 +104,31 @@ public class MetricallyCompatibleSubstituteTest {
 		if (PhysicalFonts.get("Arial Narrow") != null) return; // installed: identity
 		if (PhysicalFonts.get("Liberation Sans Narrow") != null) {
 			assertSubstitute(mapper, "Arial Narrow", "liberation sans narrow");
+		} else if (PhysicalFonts.get("Nimbus Sans Narrow") != null) {
+			assertSubstitute(mapper, "Arial Narrow", "nimbus sans narrow");
 		} else {
 			org.junit.Assert.assertNull("Arial Narrow should be left to the default fallback",
 					mapper.get("Arial Narrow"));
+		}
+	}
+
+	/**
+	 * Segoe UI Light has no metric clone, but Arimo is the wrong shape for it: measured
+	 * against the Segoe UI Light Word embeds, Arimo's advances are systematically 11.8%
+	 * wider on letters, so every line breaks early.  Source Sans has no systematic bias
+	 * (+0.4% mean signed), which is what line breaking cares about; Arimo stays the
+	 * last resort.
+	 */
+	@Test
+	public void segoeUiLightPrefersAFaceWithoutAWidthBias() throws Exception {
+		Mapper mapper = mapper();
+		if (PhysicalFonts.get("Segoe UI Light") != null) return; // installed: identity
+		if (PhysicalFonts.get("Source Sans 3") != null) {
+			assertSubstitute(mapper, "Segoe UI Light", "source sans 3");
+		} else if (PhysicalFonts.get("Source Sans Pro") != null) {
+			assertSubstitute(mapper, "Segoe UI Light", "source sans pro");
+		} else {
+			assertSubstitute(mapper, "Segoe UI Light", "arimo", "liberation sans");
 		}
 	}
 }

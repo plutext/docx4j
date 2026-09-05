@@ -120,7 +120,9 @@ public class RunFontSelectorCalibriCheckBoxTest {
 			Element foInline = (Element)df.getFirstChild();
 			System.out.println("@font-family='" + foInline.getAttribute("font-family"));
 			
-			assertEquals(expectedFont[i], foInline.getAttribute("font-family"));
+			// the family may carry a variant suffix (the kerned or the no-ligature twin
+			// FopConfigUtil declares); it is the same physical font
+			assertEquals(expectedFont[i], plain(foInline.getAttribute("font-family")));
 		}
 		
 	}	
@@ -544,4 +546,19 @@ public class RunFontSelectorCalibriCheckBoxTest {
 			}, RunFontActionType.XSL_FO);
 
 	}	
+
+	/** the font-family without the variant suffix (the kerned or no-ligature twin
+	 *  FopConfigUtil declares); it is the same physical font */
+	private static String plain(String fontFamily) {
+		if (fontFamily==null) return null;
+		if (fontFamily.endsWith(org.docx4j.fonts.RunFontSelector.NOLIGA_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length()
+					- org.docx4j.fonts.RunFontSelector.NOLIGA_SUFFIX.length());
+		}
+		if (fontFamily.endsWith(org.docx4j.fonts.RunFontSelector.KERNED_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length()
+					- org.docx4j.fonts.RunFontSelector.KERNED_SUFFIX.length());
+		}
+		return fontFamily;
+	}
 }

@@ -547,18 +547,23 @@ public class FOPAreaTreeHelper {
     				} else {
 	        			float hBpdaPts = hBpdaMilliPts/1000f;
 		    			spm.getRegionBefore().setExtent(hBpdaPts+"pt");
-		    			spm.getRegionBody().setMarginTop(hBpdaPts+"pt");
-		    			
-		    			// If the top margin in Word > what we have, then pad with margin top
-		    			float totalHeight = (page.getHeaderMargin()/20f ) // twips to points
-		    								+ hBpdaPts;
-		    			
-		    			float extraMargin = (page.getPgMar().getTop().intValue()/20f) - totalHeight;  
-		    			
-		    			if (extraMargin>0) {
-		    				float required = (page.getPgMar().getTop().intValue()-page.getHeaderMargin())/20f;
-			    			spm.getRegionBody().setMarginTop(required+"pt");	    				
-		    			} // otherwise, we've expanded to the extent of the header already
+
+		    			/* Word starts the body at the top margin, and pushes it down only
+		    			 * where the header reaches further, ie where the header distance
+		    			 * plus the header's own height is more than the top margin.  Where
+		    			 * there is no header (or an empty one), there is nothing to reserve
+		    			 * and the header distance alone must not move the body: until 17.0.5
+		    			 * it did, since the page master's own margin-top is the header
+		    			 * distance, so a document with w:header greater than w:pgMar/@w:top
+		    			 * had its whole body pushed down by the difference.
+		    			 */
+		    			float headerMarginPts = page.getHeaderMargin()/20f; // twips to points
+		    			float topMarginPts = page.getPgMar().getTop().intValue()/20f;
+		    			float bodyTop = Math.max(topMarginPts,
+		    					(hBpdaPts>0) ? headerMarginPts + hBpdaPts : 0f);
+		    			float spmTop = Math.min(headerMarginPts, bodyTop);
+		    			spm.setMarginTop(spmTop+"pt");
+		    			spm.getRegionBody().setMarginTop((bodyTop-spmTop)+"pt");
     				}
     			}
     			

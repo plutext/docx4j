@@ -81,11 +81,13 @@ public class KernedRunsTest {
 		org.junit.Assert.assertTrue("no kerned spaces", wordSpacingChildren(kerned) >= 1);
 		assertEquals("unkerned run keeps plain spaces", 0, wordSpacingChildren(span(doc, "PLAIN")));
 
-		assertEquals("Liberation Serif", family(doc, "plain"));
-		assertEquals("12pt below a 14pt threshold", "Liberation Serif", family(doc, "below"));
+		// an unkerned run goes to the no-ligature twin, which has no OpenType feature
+		// at all - neither GSUB liga nor GPOS kern, which is Word's default
+		assertEquals("Liberation Serif+noliga", family(doc, "plain"));
+		assertEquals("12pt below a 14pt threshold", "Liberation Serif+noliga", family(doc, "below"));
 		assertEquals("14pt at a 14pt threshold", "Liberation Serif+kern", family(doc, "at"));
 		assertEquals("Liberation Serif+kern", family(doc, "above"));
-		assertEquals("w:kern 0", "Liberation Serif", family(doc, "off"));
+		assertEquals("w:kern 0", "Liberation Serif+noliga", family(doc, "off"));
 		// Word's Title style: w:kern 28 at 26/28pt
 		assertEquals("kerning from the style", "Liberation Serif+kern", family(doc, "title"));
 	}
