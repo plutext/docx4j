@@ -43,6 +43,13 @@ public final class Fidelity {
 			usage();
 			return;
 		}
+		// -Dfidelity.hyphenate=true|false overrides the documents' hyphenation setting
+		// (docx4j.convert.out.fo.hyphenate): a golden made on a machine without the
+		// language's proofing tools is unhyphenated whatever the document asks for
+		String hyphenate = System.getProperty("fidelity.hyphenate");
+		if (hyphenate != null) {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.hyphenate", hyphenate.trim());
+		}
 		switch (args[0]) {
 		case "generate":
 			Corpus.generate(new File(args[1]));
