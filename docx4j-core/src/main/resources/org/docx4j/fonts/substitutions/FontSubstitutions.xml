@@ -390,7 +390,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="avantgarde">
 		<SubstFonts>
-			centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -569,7 +569,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="centurygothic">
 		<SubstFonts>
-			centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -730,7 +730,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	
 	<replace name="conga">
 		<SubstFonts>
-			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -740,7 +740,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="copperlategothic">
 		<SubstFonts>
-			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -945,7 +945,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="engravers">
 		<SubstFonts>
-			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -995,7 +995,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="felixtitling">
 		<SubstFonts>
-			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -1135,7 +1135,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="gothic">
 		<SubstFonts>
-			hggothicbsun;msgothic;mspgothic;hggothic;hggothicb;hggothice;ipagothic;kochigothic;sazanamigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+			hggothicbsun;msgothic;mspgothic;hggothic;hggothicb;hggothice;ipagothic;kochigothic;sazanamigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
 		<SubstFontsMS>msgothic</SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -1155,7 +1155,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="gothicl">
 		<SubstFonts>
-			msgothic;mspgothic;hggothic;hggothicb;hggothice;ipapgothic;sazanamigothic;kochigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+			msgothic;mspgothic;hggothic;hggothicb;hggothice;ipapgothic;sazanamigothic;kochigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
 		<SubstFontsMS>msgothic</SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -2643,7 +2643,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="sheffield">
 		<SubstFonts>
-			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>
@@ -2763,7 +2763,7 @@ Verdana -> Bitstream Vera Sans or DejaVu Sans
 	</replace>
 	<replace name="spartan">
 		<SubstFonts>
-			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;urwgothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
 		<SubstFontsMS></SubstFontsMS>
 		<SubstFontsPS></SubstFontsPS>
 		<SubstFontsHTML></SubstFontsHTML>

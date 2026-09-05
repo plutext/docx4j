@@ -99,4 +99,77 @@ public class IndentRightTest extends AbstractXSLFOTest {
 	private int lines(WordprocessingMLPackage pkg) throws Exception {
 		return lineCount(areaTree(pkg, Docx4J.FLAG_NONE));
 	}
+
+	// ---- the construct a real document raised (CR-001, batch 7)
+
+	/**
+	 * A numbered paragraph whose left indent comes from the numbering level, whose
+	 * hanging indent is set directly (overriding the level's), and whose right indent
+	 * is set directly, over a style which has a left indent of its own.
+	 *
+	 * <p>Word lays such a paragraph out with its first line at (level left - direct
+	 * hanging) and its wrapped lines at the level left, and takes the right indent from
+	 * the paragraph.  This is a regression guard on that resolution: a real document
+	 * looked, measured from the PDFs, as though we were indenting 60 twips too far from
+	 * the right, but the difference was Word writing the paragraph mark's space glyph
+	 * past the end of the justified line - counted as ink by the extractor, not laid out
+	 * by Word.  Measured line width there: Word 453.80pt, docx4j 453.60pt.</p>
+	 */
+	private static WordprocessingMLPackage numberedPkg() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+
+		// a style with a left indent, as a converted "Body Text" has
+		pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle().add(
+				(org.docx4j.wml.Style)XmlUtils.unmarshalString("<w:style " + W + " w:type=\"paragraph\" w:styleId=\"Body\">"
+						+ "<w:name w:val=\"Body\"/><w:pPr><w:ind w:left=\"118\"/></w:pPr></w:style>"));
+
+		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp
+				= new org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart();
+		ndp.setJaxbElement((org.docx4j.wml.Numbering)XmlUtils.unmarshalString("<w:numbering " + W + ">"
+				+ "<w:abstractNum w:abstractNumId=\"0\"><w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/>"
+				+ "<w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+				+ "<w:pPr><w:ind w:left=\"478\" w:hanging=\"284\"/></w:pPr></w:lvl></w:abstractNum>"
+				+ "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"0\"/></w:num></w:numbering>"));
+		pkg.getMainDocumentPart().addTargetPart(ndp);
+
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr><w:pStyle w:val=\"Body\"/>"
+				+ "<w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr>"
+				+ "<w:ind w:right=\"110\" w:hanging=\"360\"/><w:jc w:val=\"both\"/></w:pPr>"
+				+ "<w:r><w:t>" + TEXT + "</w:t></w:r></w:p>"
+				+ SECT_PR + "</w:body></w:document>"));
+		return pkg;
+	}
+
+	private void checkNumbered(int flags) throws Exception {
+
+		FOSettings foSettings = Docx4J.createFOSettings();
+		foSettings.setWmlPackage(numberedPkg());
+		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, baos, flags);
+		org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(
+				new java.io.ByteArrayInputStream(baos.toByteArray()));
+
+		NodeList lists = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "list-block");
+		assertEquals(1, lists.getLength());
+		Element list = (Element) lists.item(0);
+		// first line at 478 - 360 = 118 twips; the wrapped lines 360 twips further in
+		assertEquals("5.9pt", list.getAttribute("start-indent"));
+		assertEquals("18pt", list.getAttribute("provisional-distance-between-starts"));
+		// the paragraph's own right indent, not the numbering's and not the style's
+		assertEquals("5.5pt", list.getAttribute("end-indent"));
+	}
+
+	@Test
+	public void numberedParagraphIndentsVisitor() throws Exception {
+		checkNumbered(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void numberedParagraphIndentsXslt() throws Exception {
+		checkNumbered(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
 }

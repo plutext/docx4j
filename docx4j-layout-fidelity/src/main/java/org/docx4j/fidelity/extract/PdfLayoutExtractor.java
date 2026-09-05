@@ -139,8 +139,14 @@ public final class PdfLayoutExtractor {
 			if (run.isEmpty()) return;
 			StringBuilder text = new StringBuilder();
 			List<Double> ys = new ArrayList<>();
+			/* x0/x1 span the ink, not the whitespace glyphs around it.  Word writes a
+			 * tab as a space glyph at the position the tab started from, and ends a
+			 * justified line with the space that carries the paragraph mark's size, so
+			 * counting those made a line look up to 3pt wider at each end than the text
+			 * on it - and made a correct indent look like a 60 twip error. */
 			double x0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE;
 			TextPosition prev = null;
+			TextPosition firstInk = null;
 			for (TextPosition tp : run) {
 				if (prev != null) {
 					float gap = tp.getXDirAdj() - (prev.getXDirAdj() + prev.getWidthDirAdj());
@@ -150,8 +156,11 @@ public final class PdfLayoutExtractor {
 				}
 				text.append(tp.getUnicode());
 				ys.add((double) tp.getYDirAdj());
-				x0 = Math.min(x0, tp.getXDirAdj());
-				x1 = Math.max(x1, tp.getXDirAdj() + tp.getWidthDirAdj());
+				if (!isBlank(tp)) {
+					if (firstInk == null) firstInk = tp;
+					x0 = Math.min(x0, tp.getXDirAdj());
+					x1 = Math.max(x1, tp.getXDirAdj() + tp.getWidthDirAdj());
+				}
 				prev = tp;
 			}
 			String t = text.toString().trim().replaceAll("\\s+", " ");
@@ -162,11 +171,22 @@ public final class PdfLayoutExtractor {
 			l.y = ys.get(ys.size() / 2);
 			l.x0 = x0;
 			l.x1 = x1;
-			TextPosition first = run.get(0);
+			TextPosition first = firstInk != null ? firstInk : run.get(0);
 			l.size = first.getFontSizeInPt();
 			l.font = first.getFont() == null ? "" : String.valueOf(first.getFont().getName());
 			l.text = t;
 			out.lines.add(l);
+		}
+
+		/** Whether this glyph puts no ink on the page (a space, or a tab written as one). */
+		private static boolean isBlank(TextPosition tp) {
+			String u = tp.getUnicode();
+			if (u == null || u.isEmpty()) return true;
+			for (int i = 0; i < u.length(); i++) {
+				char c = u.charAt(i);
+				if (!Character.isWhitespace(c) && c != '\u00a0' && c != '\u200b') return false;
+			}
+			return true;
 		}
 	}
 

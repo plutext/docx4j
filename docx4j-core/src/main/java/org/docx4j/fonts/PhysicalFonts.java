@@ -315,9 +315,27 @@ public class PhysicalFonts {
 			
 	        if (pf!=null) {
 	        		        	
-	        	// Add it to the map
-	        	put(pf.getName(), pf);
-	    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedURI());
+	        	/* Add it to the map, unless a plainer face is registered under that name
+	        	 * already.  A whole family can report one name: in the URW base 35 (the
+	        	 * ghostscript fonts most Linux boxes have), URW Gothic Book, Demi, Book
+	        	 * Oblique and Demi Oblique all call themselves "URW Gothic", and FOP
+	        	 * reports each as weight 400 upright, so the four are indistinguishable
+	        	 * here except by file name.  Registering them last-one-wins made the name
+	        	 * mean whichever the file system happened to hand over last - on this
+	        	 * developer's box "Nimbus Roman" was NimbusRoman-BoldItalic and "URW
+	        	 * Gothic" was URWGothic-DemiOblique - so a substitution which asked for
+	        	 * the family got a bold italic.  Only when discovering fonts: a caller
+	        	 * naming a font file for a document font still gets what it asked for.
+	        	 * @since 17.0.5
+	        	 */
+	        	PhysicalFont incumbent = nameAsInFontTablePart==null ? get(pf.getName()) : null;
+	        	if (incumbent==null || styleRank(pf) < styleRank(incumbent)) {
+	        		put(pf.getName(), pf);
+	        		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedURI());
+	        	} else {
+	        		log.debug("Keeping '" + pf.getName() + "' -> " + incumbent.getEmbeddedURI()
+	        				+ "; plainer than " + pf.getEmbeddedURI());
+	        	}
 
 				if (nameAsInFontTablePart != null 
 						&& get(nameAsInFontTablePart)==null) {
@@ -563,6 +581,34 @@ public class PhysicalFonts {
 		return pfList;
 	}
 	
+	/**
+	 * How far this font is from the plain upright face of its family, judged from its
+	 * file name (the style is not in the family name of the fonts this is for, and FOP's
+	 * font detection reports them all as upright weight 400).  Lower is plainer.
+	 *
+	 * @since 17.0.5
+	 */
+	private static int styleRank(PhysicalFont pf) {
+
+		java.net.URI uri = pf==null ? null : pf.getEmbeddedURI();
+		String name = uri==null ? null : uri.toString();
+		if (name==null) return 0;
+		name = name.substring(name.lastIndexOf('/')+1).toLowerCase();
+		int dot = name.lastIndexOf('.');
+		if (dot>0) name = name.substring(0, dot);
+		// the style is what follows the family in a PostScript file name
+		// (NimbusRoman-BoldItalic, C059-BdIta, URWGothic-BookOblique)
+		int dash = name.lastIndexOf('-');
+		String style = dash>0 ? name.substring(dash+1) : name;
+		if (style.contains("ita") || style.contains("obli")) return 8;
+		for (String bolder : new String[] { "bold", "bd", "black", "blk", "heavy",
+				"demi", "semi", "ultra" }) {
+			if (style.contains(bolder)) return 4;
+		}
+		if (style.contains("light") || style.contains("thin")) return 2;
+		return 0;
+	}
+
 	public static PhysicalFont getBoldForm( PhysicalFont pf) {
 		
 		// look up the font in MicrosoftFontsRegistry

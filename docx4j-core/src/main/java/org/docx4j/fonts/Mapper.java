@@ -326,6 +326,15 @@ public abstract class Mapper {
     	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", null);
     	addMetricallyCompatibleSubstitute("Calibri Light", "Carlito Regular", null);
 
+    	// URW base 35 (ghostscript-fonts, on most Linux boxes).  Century Gothic was
+    	// drawn to ITC Avant Garde Gothic's widths, and URW Gothic is the Avant Garde
+    	// clone: measured against the Century Gothic Word embedded in a real document,
+    	// URW Gothic Book matches it to the unit over 6743 characters (0.00%), and
+    	// URW Gothic Demi likewise matches Century Gothic Bold.  Without this the
+    	// class-based fallback reached a Helvetica clone, 3.1% wider, which is enough
+    	// to break a full line differently.  @since 17.0.5
+    	addMetricallyCompatibleSubstitute("Century Gothic", "URW Gothic", null);
+
     	// Fonts with no metric-compatible clone, but where a stand-in of the right
     	// class is much closer than the document's default font, which is what
     	// RunFontSelector falls back to (a sans in Tinos, or Georgian in Carlito,

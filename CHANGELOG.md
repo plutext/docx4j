@@ -406,6 +406,54 @@ ordinary paragraphs.
 - with docx4j.convert.out.fo.wordLayout=false nothing changes: no stops are written and a
 tab after text keeps the three-space stand-in.
 
+PDF via XSL FO - runs of spaces, and fonts whose whole family reports one name (from
+scoring the same 194 real documents; both pathways.  Over that corpus: mean line parity
+0.7868 -> 0.7945, median 0.8420 -> 0.8529, 79.8% of lines matching Word exactly, was
+79.2%, 141 documents with Word's page count, was 139, 24 documents at 98% or better, was
+18; 19 documents better, 4 worse; the 33 layout probes unchanged):
+- a run of spaces came out as one space.  Word renders every one of them, and documents
+use them to line things up, typically after tabs: on one measured line eight spaces were
+drawn as one, 21pt short of Word.  The paragraph's fo:block now carries
+white-space-collapse="false".  It has to go on the block, not on the fo:inline holding
+the spaces: FOP takes the property from the nearest ancestor fo:block
+(XMLWhiteSpaceHandler).  white-space-treatment stays at its default
+(ignore-if-surrounding-linefeed), which is both what makes this safe and what Word does -
+with the default, FOP drops glue at the start and end of every line, so a run of spaces
+at a line end hangs there and the wrapped line starts flush.  The unwanted indent after a
+line wrap which had this ruled out until now (issue 369) came from
+white-space-treatment="preserve", which was always set with it, not from the collapse
+setting.  Measured with FOP 2.11: a run of n spaces becomes a single glue n space widths
+wide, so it cannot break in the middle and is discarded whole at a line boundary.
+The four documents which lost line parity are each a table or two-column layout where a
+paragraph now takes a line more than Word's; on one of them the cell text is now the
+width Word gives it to 0.1pt (was 7pt short) and only wraps because the column is a
+fraction narrower than Word's.
+- Century Gothic came out in a Helvetica clone, 3.1% wider, so lines of it broke
+differently.  It is now substituted by URW Gothic, the ITC Avant Garde Gothic clone in
+the URW base 35 (the ghostscript fonts): Century Gothic was drawn to Avant Garde's
+widths, and measured against the Century Gothic Word embedded in a real document's PDF,
+URW Gothic Book matches it to the unit over 6743 characters (0.00%; Nimbus Sans +3.13%,
+Arimo and Liberation Sans +3.00%, DejaVu Sans +7.22%, Noto Sans -2.11%, Carlito -14.24%),
+and URW Gothic Demi likewise matches Century Gothic Bold.  urwgothic also goes into the
+Avant Garde candidate lists in FontSubstitutions.xml, and FontFallback now knows URW
+Gothic is a sans.
+- a family whose faces all report one name registered whichever file the file system
+handed over last.  In the URW base 35, URW Gothic Book, Demi, Book Oblique and Demi
+Oblique all call themselves "URW Gothic", and FOP's font detection reports each as
+upright weight 400, so nothing but the file name tells them apart: on the box this was
+found on, "Nimbus Roman" meant NimbusRoman-BoldItalic, "Nimbus Mono PS" meant
+NimbusMonoPS-BoldItalic, "C059" meant C059-BdIta and "URW Gothic" meant
+URWGothic-DemiOblique - so asking for the family got a bold italic, 3.5% wide of the
+face it was standing in for.  Font discovery now keeps the plainest face of such a
+family; a caller naming a font file for a document font still gets what it asked for.
+- looked at and left alone: a real document's justified lines measured 2.85pt narrower
+than Word's, which looked like a 60 twip right indent resolved wrongly.  It is not: Word
+writes the paragraph mark's space glyph past the end of a justified line, and the
+harness was counting it as ink.  The line widths differ by 0.2pt (Word 453.80pt, docx4j
+453.60pt).  The harness's PDF extractor now measures a line from its first to its last
+non-blank glyph, so a tab (which Word also writes as a space glyph, at the position the
+tab started from) and a trailing space stop moving x0 and x1.
+
 FOSettings.setWmlPackage did not build the FOP configuration (PDF):
 - only setOpcPackage did, so a caller using the deprecated setter got a
 NullPointerException from ConfiguredPDFDocumentHandler at render time, a long way from the

@@ -72,6 +72,22 @@ public class MetricallyCompatibleSubstituteTest {
 	}
 
 	/**
+	 * Century Gothic was drawn to ITC Avant Garde Gothic's widths, and URW Gothic (the
+	 * Avant Garde clone in the URW base 35, ie the ghostscript fonts) matches it to the
+	 * unit: measured against the Century Gothic a real document had Word embed, URW
+	 * Gothic Book is 0.00% different over 6743 characters, and URW Gothic Demi likewise
+	 * matches Century Gothic Bold.  Left to the class-based fallback it reached a
+	 * Helvetica clone instead, 3.1% wider - enough to break a full line differently.
+	 */
+	@Test
+	public void centuryGothicPrefersItsAvantGardeClone() throws Exception {
+		Mapper mapper = mapper();
+		if (PhysicalFonts.get("Century Gothic") != null) return; // installed: identity
+		if (PhysicalFonts.get("URW Gothic") == null) return; // the URW base 35 is not installed here
+		assertSubstitute(mapper, "Century Gothic", "urw gothic");
+	}
+
+	/**
 	 * Arial Narrow maps to Liberation Sans Narrow, which is metric-compatible with it but
 	 * which neither font jar carries; where the box has not installed it either, Arial
 	 * Narrow is left unmapped on purpose (the condensed faces a Linux box does have are

@@ -1018,18 +1018,29 @@ public class XsltFOFunctions {
 						runFontSelector==null ? null : runFontSelector.asciiFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
 			} else {
 			
-				/* don't do:
-				 * 
-	            ((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
+	            /* Word renders every space in a run of spaces (documents use them to
+	             * line things up, especially after tabs); XSL-FO collapses a run to one
+	             * unless white-space-collapse is false, so a line could come out ~21pt
+	             * short.  FOP reads the property from the nearest ancestor fo:block
+	             * (XMLWhiteSpaceHandler takes it from currentBlock), so it has to go
+	             * here and not on the fo:inline holding the spaces.
+	             *
+	             * white-space-treatment must stay at its default
+	             * (ignore-if-surrounding-linefeed).  That is what makes this safe, and
+	             * it is also what Word does: with the default, FOP's
+	             * LineLayoutManager.addInlineArea drops glue at the start and end of
+	             * every line, so a run of spaces at a line end hangs there and the next
+	             * line starts flush - no indent after a wrapped line, which is what
+	             * white-space-treatment="preserve" used to cause here (issue 369, and
+	             * https://stackoverflow.com/questions/57475550).  Measured with FOP
+	             * 2.11: TextLayoutManager.processWhitespace turns a run of n spaces into
+	             * one glue of n space widths, so the run is atomic - it cannot be broken
+	             * in the middle, and it is discarded whole at a line boundary.
+	             *
+	             * See also https://www.docx4java.org/forums/docx-java-f6/export-fo-preserve-whitespaces-t2762.html
+	             * and https://www.docx4java.org/forums/pdf-output-f27/converting-docx-to-pdf-not-preserving-whitespace-t2752.html
+	             * @since 17.0.5 */
 	            ((Element)foBlockElement).setAttribute( "white-space-collapse", "false");
-
-	            Suggested at https://www.docx4java.org/forums/docx-java-f6/export-fo-preserve-whitespaces-t2762.html 
-	            because it causes unwanted formatting issues.  See https://stackoverflow.com/questions/57475550/unwanted-indent-after-line-wrap/57488818
-	            and https://github.com/plutext/docx4j/issues/369
-	            
-	            In any subsequent review of this, also consider https://www.docx4java.org/forums/pdf-output-f27/converting-docx-to-pdf-not-preserving-whitespace-t2752.html
-	            
-				 */
 	            
 				
 	//				log.info("Node we are importing: " + n.getClass().getName() );

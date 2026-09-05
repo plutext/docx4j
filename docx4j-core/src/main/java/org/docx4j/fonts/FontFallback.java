@@ -229,9 +229,12 @@ public class FontFallback {
 		for (String word : n.split("[^a-z0-9]+")) {
 			if (word.equals("mono")) return FontClass.MONO;
 		}
-		// NB no "gothic": in a Microsoft font name it is as often Japanese (MS Gothic,
-		// Yu Gothic) as it is a sans (Century Gothic, which FontSubstitutions.xml knows)
+		// NB no bare "gothic": in a Microsoft font name it is as often Japanese (MS
+		// Gothic, Yu Gothic) as it is a sans (Century Gothic, which FontSubstitutions.xml
+		// knows).  "urw gothic" is the whole family name of the Avant Garde clone in the
+		// URW base 35, which Century Gothic substitutes to, so it is not ambiguous.
 		for (String sans : new String[] { "arimo", "carlito", "cantarell", "helvetica", "arial",
+				"urw gothic",
 				"verdana", "tahoma", "segoe", "gadugi", "trebuchet", "calibri", "grotesk",
 				"grotesque", "futura", "frutiger", "myriad", "univers", "avenir", "lato", "roboto",
 				"franklin", "open sans" }) {
