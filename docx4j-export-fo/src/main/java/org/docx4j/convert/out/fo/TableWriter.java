@@ -128,6 +128,13 @@ public class TableWriter extends AbstractTableWriter {
 			tableRoot.setAttribute("width", UnitsOfMeasurement.twipToBest(table.getTableWidth()) );
 		}
 
+		// Word's content-based autofit sized these columns to hold their widest cell on
+		// one line, so a line must not be re-broken by the width FOP charges for the
+		// cell borders; WordLayoutFixups.cellLineWidth gives it back.  @since 17.0.6
+		if (table.isContentSizedColumns() && WordLayoutFixups.isEnabled()) {
+			tableRoot.setAttribute(WordLayoutFixups.HINT_CONTENT_SIZED, "1");
+		}
+
 		applyStartIndent(context, table, tableRoot);
 
 

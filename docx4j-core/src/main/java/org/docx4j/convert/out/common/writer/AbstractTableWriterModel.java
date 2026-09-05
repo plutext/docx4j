@@ -101,6 +101,18 @@ public class AbstractTableWriterModel extends TableModel {
 		this.autofitColumnWidths = widths;
 	}
 
+	/** Whether the column widths came from Word's content-based autofit pass, as opposed
+	 *  to the w:tblGrid (scaled to the page or not).  @since 17.0.6 */
+	private boolean contentSizedColumns;
+
+	public boolean isContentSizedColumns() {
+		return contentSizedColumns;
+	}
+
+	public void setContentSizedColumns(boolean contentSized) {
+		this.contentSizedColumns = contentSized;
+	}
+
 	/** The table width in twips: the sum of the autofit widths when set, else the grid's. */
 	@Override
 	public int getTableWidth() {

@@ -172,6 +172,56 @@ public class TabStopTest {
 				wordStarts(fo("9000:left:none", "0:0:.", null, "abc" + TAB + "x")));
 	}
 
+	/**
+	 * Word sizes the tabs on a line as if the line began at the left indent, and then
+	 * aligns the whole line - the tabs' widths counted in - by the paragraph's w:jc.
+	 *
+	 * <p>Measured on the {@code tab-jc} probe (A4, Times New Roman 12pt, 1in margins,
+	 * so a 451.3pt line centred on 297.65 and ending at 523.35): a centred paragraph of
+	 * text 87.7pt wide followed by a tab is drawn at 243.7..331.4 - the text plus the
+	 * 20.3pt the tab takes to the 180pt default stop, 108pt in all, centred - and the
+	 * same text right-aligned at 415.6..496.6.  With a custom stop at 6000 twips the
+	 * line is 300pt whatever it holds, and Word draws it at 147.7 centred and 223.5
+	 * right-aligned.  docx4j drew all of them flush left.</p>
+	 */
+	@Test
+	public void aLineHoldingATabIsAlignedByTheParagraphsJc() throws Exception {
+		// "abc" (21.6pt) + a tab to the 36pt default stop + "x" (7.2pt) = 43.2pt of line
+		String content = "abc" + TAB + "x";
+		double line = 43.2;
+		assertEquals("flush left by default", at(0, 36),
+				wordStarts(fo("", "0:0:.", null, content)));
+		double centred = (400 - line) / 2;
+		assertEquals(at(centred, centred + 36),
+				wordStarts(fo("", "0:0:.", "text-align=\"center\"", content)));
+		double right = 400 - line;
+		assertEquals(at(right, right + 36),
+				wordStarts(fo("", "0:0:.", "text-align=\"end\"", content)));
+	}
+
+	/**
+	 * A justified line holding a tab is not stretched: the tab absorbs the slack, so
+	 * the line is laid out from the start (which is also what its last line does).
+	 */
+	@Test
+	public void aJustifiedLineHoldingATabIsLaidOutFromTheStart() throws Exception {
+		assertEquals(at(0, 36),
+				wordStarts(fo("", "0:0:.", "text-align=\"justify\"", "abc" + TAB + "x")));
+	}
+
+	/**
+	 * A tab stop past the available width fills the line, so w:jc cannot move it any
+	 * further: the stop at 9000 twips (450pt) takes the line past the 400pt edge, and
+	 * a centred paragraph still starts at 0 rather than being pushed left of the margin.
+	 */
+	@Test
+	public void aLineRunningPastTheEdgeIsNotMovedByJc() throws Exception {
+		assertEquals(at(0, 450),
+				wordStarts(fo("9000:left:none", "0:0:.", "text-align=\"center\"", "abc" + TAB + "x")));
+		assertEquals(at(0, 450),
+				wordStarts(fo("9000:left:none", "0:0:.", "text-align=\"end\"", "abc" + TAB + "x")));
+	}
+
 	@Test
 	public void aHangingIndentMakesAStopAtTheLeftIndent() throws Exception {
 		// left 1440 twips (72pt), hanging 720 (36pt): the first line starts 36pt in and

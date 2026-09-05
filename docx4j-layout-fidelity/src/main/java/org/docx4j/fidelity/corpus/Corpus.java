@@ -649,11 +649,12 @@ public final class Corpus {
 		// ------------------------------------- rules 17.0.5 added, to be re-measured
 
 		/*
-		 * §4.4 says "a line holding a tab is laid out from the left whatever the
-		 * paragraph's w:jc".  A real document contradicts that for a *trailing* tab:
-		 * Word drew a centred line ending in a tab at x=208.9, docx4j at 56.7, flush
-		 * left.  This probe separates a leading tab, a mid-line tab and a trailing tab
-		 * under each of centre, right and justified.
+		 * §4.4 used to say "a line holding a tab is laid out from the left whatever the
+		 * paragraph's w:jc".  Settled by this probe's golden: Word sizes the tabs as if
+		 * the line began at the left indent, and then aligns the whole line - the tabs'
+		 * widths counted in - by the w:jc; a justified line is laid out from the start.
+		 * A leading tab, a mid-line tab and a trailing tab under each of centre, right
+		 * and justified.
 		 */
 		PROBES.add(new Probe("tab-jc",
 				"centre/right/justified paragraphs whose tab is leading, mid-line or trailing", () -> {
@@ -675,10 +676,11 @@ public final class Corpus {
 		/*
 		 * §3 says a border's w:space is the padding on that side (measured on Word's
 		 * Title style: 4pt space, 1pt border, the next paragraph 5pt lower).  A real
-		 * document contradicts that inside a table cell: for a 0.5pt border with
-		 * w:space="1" Word's row pitch was exactly the bare line box (9.1pt for an 8pt
-		 * Arial line), where docx4j's was 12.2pt.  Same paragraph in and out of a cell,
-		 * at three w:space values.
+		 * document had seemed to contradict that inside a table cell; this probe's
+		 * golden says the vertical rule holds there too, and adds one: Word draws the
+		 * left and right borders outside the text area, so neither they nor their
+		 * w:space narrow the text.  Same paragraph in and out of a cell, at three
+		 * w:space values.
 		 */
 		PROBES.add(new Probe("pbdr-space",
 				"a 0.5pt paragraph border with w:space 0, 1 and 4pt, inside a table cell and outside", () -> {

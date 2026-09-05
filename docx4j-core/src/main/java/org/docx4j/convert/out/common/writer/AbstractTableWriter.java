@@ -217,10 +217,13 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
         int[] autofit = computeAutofitColumnWidths(context, table);
     if (autofit != null) {
     	table.setAutofitColumnWidths(autofit);
+    	table.setContentSizedColumns(true);
     }
     int[] fitted = fitToAvailableWidth(context, table);
     if (fitted != null) {
     	table.setAutofitColumnWidths(fitted);
+    	// scaled to the page: the columns no longer hold their content by construction
+    	table.setContentSizedColumns(false);
     }
     createRowProperties(rowProperties, table.getEffectiveTableStyle().getTrPr(), true);
     rowPropertiesTableSize = rowProperties.size();

@@ -148,6 +148,7 @@ public final class WordLayoutFixups {
 		syncContainerSpacing(doc);
 		retainSpaceBeforeAtFlowStart(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
+		cellLineWidth(doc);
 		fixLists(doc);
 		clipExactRows(doc);
 		stripHints(doc);
@@ -1069,6 +1070,7 @@ public final class WordLayoutFixups {
 		}
 		for (Element tbl : elements(doc, "table")) {
 			for (String hint : TBLP_HINTS) tbl.removeAttribute(hint);
+			tbl.removeAttribute(HINT_CONTENT_SIZED);
 		}
 		for (Element span : elements(doc, "inline")) {
 			span.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
@@ -1361,6 +1363,62 @@ public final class WordLayoutFixups {
 			if (f == block) return true;
 		}
 		return false;
+	}
+
+	// -------------------------------------------------- 6. the width a cell line fits in
+
+	/** "1" on an fo:table whose columns docx4j's content-based autofit pass sized
+	 *  (TableWriter.applyTableCustomAttributes). */
+	public static final String HINT_CONTENT_SIZED = "docx4j-content-sized";
+
+	/**
+	 * A column Word's autofit pass sized holds its widest cell content on one line,
+	 * because that content is what set the width: measured on {@code table-autofit-wrap},
+	 * Word's three columns are the widest content plus the cell margins (127.4 = 116.1 +
+	 * 10.8) and each is drawn whole, the widest bleeding 0.4pt of its right margin.  FOP
+	 * takes the cell's borders off the content width as well - half of each collapsed
+	 * border, all of a separate one - so exactly those lines were re-broken: all three
+	 * columns of that probe wrapped, and in {@code pbdr-space} a cell's "second line 0"
+	 * (47.1pt of content in a 47.1pt column) came out on two lines.
+	 *
+	 * <p>The border allowance is given back as a smaller end padding, which leaves the
+	 * text's start - the grid edge plus half the border plus the left cell margin (§6.2)
+	 * - exactly where it was, and lets the content reach as far past the right cell
+	 * margin as Word lets it.
+	 *
+	 * <p>Only for a table whose columns docx4j sized from the content.  Where the
+	 * w:tblGrid decides the width (a fixed layout, or a table stating a width of its
+	 * own) Word charges the border too: measured on {@code table-fixed} and
+	 * {@code table-cellspacing}, a 150pt column with 5.4pt margins broke a 139.2pt line
+	 * that fits in 150 - 10.8 = 139.2 but not in 139.2 less the 0.5pt border.
+	 *
+	 * @since 17.0.6
+	 */
+	static void cellLineWidth(Document doc) {
+		for (Element cell : elements(doc, "table-cell")) {
+			Element tbl = ancestorTable(cell);
+			if (tbl == null || !"1".equals(tbl.getAttribute(HINT_CONTENT_SIZED))) continue;
+			// FOP charges a collapsed border half to each of the two cells it separates,
+			// a separate border wholly to its own cell
+			double share = "separate".equals(tbl.getAttribute("border-collapse")) ? 1 : 0.5;
+			double give = share * (lengthPt(cell.getAttribute("border-left-width"))
+					+ lengthPt(cell.getAttribute("border-right-width")));
+			if (give <= 0) continue;
+			// the end side is the one to take it from: the start padding places the text
+			String end = "rl-tb".equals(writingMode(cell)) ? "padding-left" : "padding-right";
+			double padding = lengthPt(cell.getAttribute(end));
+			if (padding <= 0) continue;   // nothing to give back; FO padding cannot go negative
+			cell.setAttribute(end, pt(Math.max(0, padding - give)));
+		}
+	}
+
+	/** The nearest writing-mode in force on this element, or null. */
+	private static String writingMode(Element el) {
+		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
+			String v = ((Element) n).getAttribute("writing-mode");
+			if (v != null && v.length() > 0) return v;
+		}
+		return null;
 	}
 
 	/** The nearest ancestor fo:table of this element, or null. */

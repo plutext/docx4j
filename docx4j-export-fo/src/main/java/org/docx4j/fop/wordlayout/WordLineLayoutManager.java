@@ -334,6 +334,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
          *  number on the stop, in the indent, and does not wrap), so the line is allowed
          *  that much more. */
         private int tabOverhang;
+        /** The tabOverhang each committed line ended with, which updateData2 takes back
+         *  off the node's difference before aligning the line (alignDifference). */
+        private final java.util.IdentityHashMap<KnuthNode, Integer> nodeTabOverhang
+                = new java.util.IdentityHashMap<KnuthNode, Integer>();
 
         @Override
         public int findBreakingPoints(KnuthSequence par, int startIndex,
@@ -357,6 +361,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             consecutiveHyphens = 0;
             restartRequested = false;
             tabOverhang = 0;
+            nodeTabOverhang.clear();
             if (WordLineLayoutManager.log.isTraceEnabled()) {
                 StringBuilder sb = new StringBuilder("greedy paragraph, " + par.size() + " elements, lineWidth=" + getLineWidth() + ":");
                 for (int i = 0; i < par.size(); i++) {
@@ -429,6 +434,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // fits at its natural width, or (justified) with the spaces compressed
                 // within Word's limit: remember, keep going
                 if (isHyphenationPoint(element)) {
+                    if (!hyphenFits(elementIdx, difference)) {
+                        // Word pays much less to take a longer hyphenation fragment than
+                        // it pays to pull a whole word on; the last fragment that was
+                        // within maxHyphenSpaceShrink stays the candidate
+                        return;
+                    }
                     hyphIdx = elementIdx;
                     hyphDifference = difference;
                     hyphRatio = r;
@@ -464,10 +475,13 @@ public class WordLineLayoutManager extends LineLayoutManager {
          * WordLayoutCustomizer.maxSpaceShrink (default 0.24).
          */
         private boolean fitsByShrinkingSpaces(int elementIdx, int difference) {
+            return fitsByShrinkingSpaces(elementIdx, difference, maxSpaceShrink);
+        }
+
+        private boolean fitsByShrinkingSpaces(int elementIdx, int difference, double maxShrink) {
             if (alignment != Constants.EN_JUSTIFY || difference >= 0) {
                 return difference >= 0;
             }
-            double maxShrink = maxSpaceShrink;
             if (maxShrink <= 0) {
                 return false;
             }
@@ -479,6 +493,22 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 }
             }
             return -difference <= maxShrink * spaces;
+        }
+
+        /**
+         * Whether Word would take a hyphenation fragment this long.  It compresses a
+         * justified line's spaces by up to {@link #maxSpaceShrink} to pull a whole word
+         * onto the line, but by much less to take a longer piece of a word it is
+         * hyphenating anyway: measured against the goldens of the two hyphenation
+         * probes, Word accepted fragments costing 1.2% and 6.0% of the line's spaces and
+         * rejected 13.5%, 14.5%, 22.0% and 25.6% (see
+         * {@link WordLayoutCustomizer#MAX_HYPHEN_SPACE_SHRINK}).
+         *
+         * @since 17.0.6
+         */
+        private boolean hyphenFits(int elementIdx, int difference) {
+            return difference >= 0
+                    || fitsByShrinkingSpaces(elementIdx, difference, maxHyphenSpaceShrink);
         }
 
         // ---- Word's hyphenation -------------------------------------------------
@@ -512,20 +542,25 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
 
         /**
-         * Word's hyphenation zone (w:hyphenationZone, default 0.25 inch): the largest
-         * gap it tolerates at the end of a line.  When the next whole word does not
-         * fit, Word hyphenates it only where the space left on the line is greater
-         * than the zone; otherwise it leaves the ragged edge and breaks before the
-         * word.  Where nothing whole fitted on the line at all (an overlong word at
-         * the start of a line) the gap is the whole line, so the zone is met.
+         * Whether the word that did not fit may be hyphenated.
          *
-         * w:consecutiveHyphenLimit caps how many lines in a row may end in a hyphen
+         * <p>w:consecutiveHyphenLimit caps how many lines in a row may end in a hyphen
          * (0 = no limit); it is counted within the paragraph, which is as far as one
          * line manager sees.
+         *
+         * <p>w:hyphenationZone - the largest gap Word is said to tolerate at a line end
+         * before it hyphenates - is <b>not</b> applied: measured on the two hyphenation
+         * probes, whose zones are 18pt and 36pt, Word broke every line of the same prose
+         * identically, and hyphenated lines whose gap without the hyphen was 16.71pt to
+         * 34.09pt, well inside the 36pt zone.  The 17.0.5 behaviour is kept behind
+         * {@link WordLayoutCustomizer#ENFORCE_HYPHENATION_ZONE}.
          */
         private boolean hyphenationAllowed() {
             if (hyphenLimit > 0 && consecutiveHyphens >= hyphenLimit) {
                 return false;
+            }
+            if (!enforceHyphenationZone) {
+                return true;
             }
             return candIdx <= active.position || candDifference > hyphenationZone;
         }
@@ -658,6 +693,18 @@ public class WordLineLayoutManager extends LineLayoutManager {
             return super.computeDifference(activeNode, element, elementIndex) + tabOverhang;
         }
 
+        /**
+         * The slack a line holding a tab is aligned by: its stored difference less the
+         * tab overhang computeDifference added, and never negative.  A line whose tab
+         * reaches past the available width fills it, so w:jc cannot move it any further
+         * (Word cannot move backwards; see tabWidth).
+         */
+        private int alignDifference(KnuthNode node, int difference) {
+            Integer overhang = nodeTabOverhang.get(node);
+            int d = overhang == null ? difference : difference - overhang.intValue();
+            return d > 0 ? d : 0;
+        }
+
         private void commit(int idx, int difference, double r, int availableShrink, int availableStretch,
                 int tw, int ts, int tsh, boolean restart) {
             int fitness = r < -0.5 ? 0 : (r <= 0.5 ? 1 : (r <= 1 ? 2 : 3));
@@ -668,6 +715,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
             consecutiveHyphens = isHyphenationPoint(getElement(idx)) ? consecutiveHyphens + 1 : 0;
             candIdx = -1;
             hyphIdx = -1;
+            if (tabOverhang != 0) {
+                nodeTabOverhang.put(node, Integer.valueOf(tabOverhang));
+            }
             tabOverhang = 0;
             if (restart) {
                 restartRequested = true; // restartFrom() re-adds the node and resets the totals
@@ -695,9 +745,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
             int difference = bestActiveNode.difference;
             int textAlign = (bestActiveNode.line < total) ? alignment : alignmentLast;
 
+            // the width the line is aligned by: computeDifference adds the tab overhang,
+            // so a line running on to a stop past the available width would otherwise be
+            // shifted further still (see alignDifference)
+            int alignDifference = difference;
             if (lineHasTab(par, bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0,
                     bestActiveNode.position)) {
-                textAlign = Constants.EN_START;
+                textAlign = alignmentForTabLine(textAlign);
+                alignDifference = alignDifference(bestActiveNode, difference);
             }
 
             switch (textAlign) {
@@ -706,11 +761,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 endIndent = difference > 0 ? difference : 0;
                 break;
             case Constants.EN_END:
-                startIndent = difference;
+                startIndent = alignDifference;
                 endIndent = 0;
                 break;
             case Constants.EN_CENTER:
-                startIndent = difference / 2;
+                startIndent = alignDifference / 2;
                 endIndent = startIndent;
                 break;
             default:
@@ -1065,6 +1120,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         wordLineRule = "exact".equals(rule) ? RULE_EXACT : "atLeast".equals(rule) ? RULE_AT_LEAST : RULE_AUTO;
         labelAscent = foreignLength(block, WordLayoutElementMapping.LABEL_ASCENT);
         maxSpaceShrink = documentSpaceShrink(block);
+        maxHyphenSpaceShrink = documentHyphenSpaceShrink(maxSpaceShrink);
 
         // the document's hyphenation settings (docx4j:hyphenation-zone, -hyphen-limit,
         // -hyphenate-caps on fo:root; WordLayoutFixups.lineBoxAttributes)
@@ -1121,9 +1177,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
     // ---- Word's hyphenation (docx4j:hyphenation-zone and friends) ---------------
 
-    /** w:hyphenationZone in millipoints: the largest gap Word tolerates at the end of
-     *  a line before it hyphenates the next word.  @since 17.0.6 */
+    /** w:hyphenationZone in millipoints: the largest gap Word is said to tolerate at the
+     *  end of a line before it hyphenates the next word.  Measured against Word 365 it
+     *  never fires, so it is applied only when
+     *  {@link WordLayoutCustomizer#ENFORCE_HYPHENATION_ZONE} is set.  @since 17.0.6 */
     private final int hyphenationZone;
+
+    /** Whether {@link #hyphenationZone} is applied at all (default false).  @since 17.0.6 */
+    private final boolean enforceHyphenationZone = WordLayoutCustomizer.enforceHyphenationZone();
     /** w:consecutiveHyphenLimit: how many lines in a row may end in a hyphen; 0 = no
      *  limit.  @since 17.0.6 */
     private final int hyphenLimit;
@@ -1155,6 +1216,21 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * compatibility mode is below 15 (Word only compresses from its 2013 engine on).
      */
     private final double maxSpaceShrink;
+
+    /**
+     * How far this line's spaces may be compressed to take a longer hyphenation
+     * fragment - a much tighter limit than {@link #maxSpaceShrink}, which is what Word
+     * will pay to pull a whole word onto the line
+     * ({@link WordLayoutCustomizer#maxHyphenSpaceShrink()}, default 0.10).  Capped by
+     * the document's own docx4j:space-shrink, like maxSpaceShrink.
+     *
+     * @since 17.0.6
+     */
+    private final double maxHyphenSpaceShrink;
+
+    private static double documentHyphenSpaceShrink(double spaceShrink) {
+        return Math.min(WordLayoutCustomizer.maxHyphenSpaceShrink(), spaceShrink);
+    }
 
     private static double documentSpaceShrink(org.apache.fop.fo.FObj block) {
         Double explicit = WordLayoutCustomizer.configuredMaxSpaceShrink();
@@ -1253,10 +1329,22 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 .equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB));
     }
 
-    /** whether the line between these element indexes holds a tab.  Word lays such a
-     *  line out from the left whatever the paragraph's alignment: the stops are
-     *  absolute (measured on a w:jc="right" footer whose tabs Word placed from the
-     *  left margin). */
+    /**
+     * How a line holding a tab is aligned.  The tabs on it are <em>sized</em> as if the
+     * line began at the paragraph's left indent, whatever the alignment - the stops are
+     * absolute (measured on a w:jc="right" footer whose tabs Word placed from the left
+     * margin; see tabWidth) - and Word then aligns the whole line, the tabs' widths
+     * counted in, by the paragraph's <code>w:jc</code> (measured on the
+     * <code>tab-jc</code> probe; §4.4).  A justified line is the exception: the tab
+     * absorbs the slack, so the line is laid out from the start rather than stretched.
+     *
+     * @since 17.0.6
+     */
+    private static int alignmentForTabLine(int textAlign) {
+        return textAlign == Constants.EN_JUSTIFY ? Constants.EN_START : textAlign;
+    }
+
+    /** whether the line between these element indexes holds a tab */
     private boolean lineHasTab(KnuthSequence par, int from, int to) {
         if (!hasTabStops) return false;
         for (int i = Math.max(0, from); i <= to && i < par.size(); i++) {
@@ -2259,6 +2347,24 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return true;
     }
 
+    /**
+     * The word as the TeX patterns want to see it: lower case.  FOP's pattern lookup
+     * folds case with the pattern file's own class table, which is lossy for words in
+     * capitals - measured with fop-hyph's en_GB patterns, APPROPRIATIONS came back as
+     * AP-PRO-PRIATIONS (Word breaks it APPROPRI-ATIONS) and DEPARTMENTS gained a
+     * spurious DEPARTMEN-TS.  Lowercasing first gives the points the same word in lower
+     * case gets.  The result is only used to look the points up, so a mapping that
+     * changed the length (Turkish dotted I, German sharp S in some locales) is
+     * discarded, leaving the offsets valid.
+     *
+     * @since 17.0.6
+     */
+    private static String forPatternLookup(StringBuffer sbChars) {
+        String word = sbChars.toString();
+        String lower = word.toLowerCase(java.util.Locale.ROOT);
+        return lower.length() == word.length() ? lower : word;
+    }
+
     private HyphContext getHyphenContext(StringBuffer sbChars) {
         // w:doNotHyphenateCaps: Word leaves a word in capitals whole.  Done here, where
         // the whole word is to hand, rather than at the penalty: FOP then inserts no
@@ -2283,7 +2389,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                                hyphenationProperties.country.getString(),
                                getFObj().getUserAgent().getHyphenationResourceResolver(),
                                getFObj().getUserAgent().getHyphenationPatternNames(),
-                               sbChars.toString(),
+                               forPatternLookup(sbChars),
                                hyphenationProperties.hyphenationRemainCharacterCount.getValue(),
                                hyphenationProperties.hyphenationPushCharacterCount.getValue(),
                                getFObj().getUserAgent());
@@ -2352,9 +2458,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
         int startElementIndex = LBP.startIndex(lbp);
         int endElementIndex = lbp.getLeafPos();
 
-        LineArea lineArea = new LineArea(
-                lineHasTab(seq, startElementIndex, endElementIndex) ? EN_START
-                        : (lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast),
+        int lineAlignment = lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast;
+        if (lineHasTab(seq, startElementIndex, endElementIndex)) {
+            lineAlignment = alignmentForTabLine(lineAlignment);
+        }
+        LineArea lineArea = new LineArea(lineAlignment,
                 LBP.difference(lbp), LBP.availableStretch(lbp), LBP.availableShrink(lbp));
         lineArea.setChangeBarList(getChangeBarList());
 

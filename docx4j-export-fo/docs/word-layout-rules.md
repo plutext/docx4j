@@ -79,6 +79,8 @@ justified lines (§4.2).
 | --- | --- | --- |
 | `docx4j.convert.out.fo.wordLayout` | `true` | Word's layout managers: greedy line breaking, Word's line box and leading placement, tab-stop resolution, justified-space compression. `false` restores plain FOP layout, and the `docx4j:` foreign attributes are then not written either. |
 | `docx4j.convert.out.fo.wordLayout.maxSpaceShrink` | `0.24` | How far the spaces of a justified line may be compressed to pull one more word in, as a fraction of their natural width. Only read when `wordLayout` is on; set explicitly, it applies whatever the compatibility mode. |
+| `docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink` | `0.10` | The same, for taking a longer **hyphenation fragment** rather than a whole word; Word pays much less for one (§4.7). Capped by `maxSpaceShrink`. |
+| `docx4j.convert.out.fo.wordLayout.hyphenationZone` | `false` | `true` enforces `w:hyphenationZone` as the largest gap tolerated before hyphenating, which is what docx4j did to 17.0.5. Measured against Word, the zone never fires (§4.7). |
 | `docx4j.convert.out.fo.wordLayoutFixups` | `true` | The DOM pass over the generated FO (`WordLayoutFixups`): Word's spacing edge rules, the line-box attributes, exact-height rows, anchored pictures, text boxes. `false` gives the FO docx4j 17.0.4 produced. |
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
@@ -266,11 +268,22 @@ border). A border's `w:space` - the gap between the text and the border - is the
 that side: measured, Word's Title with 4pt space and a 1pt border starts the next paragraph
 5pt lower, and so does docx4j, to 0.1pt. PDF and HTML.
 
-*Open*: one real document contradicts this **inside a table cell**. For a 0.5pt border with
-`w:space="1"` on every side, Word's row pitch is 9.1pt - exactly the bare 8pt Arial line box
-- so Word added nothing at all, where docx4j added 3pt (0.5 + 1 top and bottom) and turned
-16 Word pages into 21. The `pbdr-space` probe (a 0.5pt border at `w:space` 0, 1 and 4pt,
-in the flow and in a cell) exists to settle it; nothing is changed until its golden is in.
+<a id="s3pbdr"></a>That is the rule **above and below**, and it holds inside a table cell
+too. Measured on the `pbdr-space` probe (a 0.5pt border at `w:space` 0, 1 and 4pt, in the
+flow and in a narrow cell): Word adds the border and the space above and below the
+bordered paragraph, and between two consecutive paragraphs sharing a border, one border
+and one space. docx4j's baselines track Word's to 0.1pt across each of the probe's three
+groups; adjacent baselines wobble by up to 0.3pt in either direction, which is the
+goldens' own rounding - Word draws a 0.5pt border 0.48pt wide. (A real document had
+suggested Word adds nothing at all in a cell; it does.)
+
+**Left and right borders cost no text width.** Word draws a paragraph's left and right
+borders **outside** the text area and `w:space` widens that gap rather than narrowing the
+text: measured on the same probe, the bordered paragraph's text starts at x=72.0 in the
+flow and 77.8 in the cell for `w:space` 0, 1 and 4 alike - the same x as an unbordered
+paragraph - and its right border is drawn 1.8pt past the cell's own content edge. FO puts
+them outside too, for a block whose `start-indent` is inherited, so nothing had to change
+here; what did break the probe was the **cell's** borders (§6.3).
 
 **Container wrappers.** Adjacent paragraphs sharing a border or shading are wrapped in one
 block by the `Containerization` preprocess, and that wrapper is built from the **first**
@@ -373,17 +386,28 @@ is right-aligned on it.
 Word cannot move backwards: a stop the text has already passed, and a right or centre stop
 whose text does not fit before it, advance nothing. A stop beyond the paragraph's right
 indent is still honoured, and the line runs into the indent rather than wrapping. A line
-holding a tab is laid out from the left whatever the paragraph's `w:jc`. Measured: six
+holding a tab is **sized** from the left indent whatever the paragraph's `w:jc` - the stop
+a tab reaches is the same one it would reach on a left-aligned line - and the line, its
+tabs' widths counted in, is then **aligned as a whole** by the `w:jc`. Measured: six
 consecutive tabs advance 216pt in Word, where the former three-no-break-space stand-in
 advanced 54pt.
 
-*Open*: that last rule is too broad for a **trailing** tab. One real document has
-`w:jc="center"` on a paragraph of text followed by a `w:tab`, and Word draws the text at
-x=208.9..365.4 - centred, with the tab's advance counted in the centred width - where
-docx4j draws it at 56.7, flush left. Three documents of a 40-document slice have a centred
-or right-aligned paragraph containing a tab, one paragraph each. The `tab-jc` probe (a
-leading, a mid-line and a trailing tab under each of centre, right and justified) exists to
-settle it; nothing is changed until its golden is in.
+<a id="s44jc"></a>**Alignment.** Measured on the `tab-jc` probe (A4, Times New Roman 12pt,
+1in margins: a 451.3pt line, centred on 297.65, ending at 523.35). A trailing tab after
+87.7pt of text takes 20.3pt to reach the 180pt default stop, so the line is 108pt: Word
+draws the text at 243.7..331.4 centred (the 108pt line centred on 297.65) and at
+415.6..496.6 right-aligned (the 108pt line ending at 523.35). With a custom left stop at
+6000 twips the line is 300pt whatever text it holds, and Word starts it at 147.7 centred
+and 223.5 right-aligned. A leading
+tab is a fixed leader inside the line and was already aligned with it; a mid-line tab is
+sized from the left indent too, and the whole line is then aligned. A **justified**
+paragraph is the exception: the tab absorbs the slack and Word lays the line out from the
+start (x=72 in the probe). A stop that reaches past the available width fills the line, so
+`w:jc` cannot move it any further - Word cannot move backwards.
+
+docx4j drew every such line flush left before 17.0.6 (`tab-jc` max dx 372.4pt -> 0.36pt).
+Three documents of a 40-document corpus slice have a centred or right-aligned paragraph
+containing a tab.
 
 **Leaders.** `w:leader` `dot` and `middleDot` draw dots (FOP repeats the font's own dot, as
 Word does; a dotted rule does not match); `hyphen`, `underscore` and `heavy` draw a rule;
@@ -411,12 +435,8 @@ Off unless the document asks for it: `w:settings/w:autoHyphenation`. A paragraph
 effective `w:pPr` carries `w:suppressAutoHyphens` is never hyphenated. The rules the line
 manager then applies, all of them Word's:
 
-- **The hyphenation zone** (`w:hyphenationZone`, twips) is the largest gap Word tolerates
-  at the end of a line. When the next whole word does not fit, Word hyphenates it only
-  where the space left on the line is **greater than** the zone, taking the last
-  hyphenation point that fits; otherwise it leaves the ragged edge and breaks before the
-  word. Where nothing whole has fitted on the line at all, the gap is the whole line, so
-  the zone is met and an overlong word is hyphenated.
+- **A word that does not fit is hyphenated**, at the **last** hyphenation point that fits
+  (greedy, like the line breaking itself).
 - **`w:consecutiveHyphenLimit`** caps how many lines in a row may end in a hyphen; 0, and
   the absent case, mean no limit. Counted within a paragraph, which is as far as one line
   manager sees.
@@ -426,10 +446,52 @@ manager then applies, all of them Word's:
   break is the paragraph's own forced break. Word has no rule against hyphenating the
   *second to last* line, and neither does this.
 
-**The zone's default.** ECMA-376 17.15.1.44 gives none. Word's UI default is 0.25 inch in
-US measurements and 0.75 cm in metric ones; all four corpus documents that switch
-hyphenation on carry `w:hyphenationZone w:val="425"` (0.75 cm) explicitly. docx4j uses 360
-twips where the element is absent.
+<a id="s47zone"></a>**The hyphenation zone does not fire.** `w:hyphenationZone` is
+documented as the largest gap Word tolerates at a line end before it hyphenates, and
+docx4j applied it that way until 17.0.6. Measured against Word 365's goldens for the
+`hyphenation` (zone 360 twips = 18pt) and `hyphenation-zone` (zone 720 = 36pt) probes,
+which hold the same prose: Word's line breaks are **identical** in the two documents
+except where `w:consecutiveHyphenLimit=2` or `w:doNotHyphenateCaps` - the other two
+settings the second probe carries - explains the difference, and Word hyphenated lines
+whose gap without the hyphen was 16.71pt to 34.09pt, well inside the 36pt zone. So the
+zone never decided anything. Enforcing it cost 12 of the 13 first divergences in probe 2
+and 1 of the 5 in probe 1 (line parity 47% and 83%).
+
+The plumbing stays: `docx4j:hyphenation-zone` still travels on `fo:root`, and
+`docx4j.convert.out.fo.wordLayout.hyphenationZone=true` restores the 17.0.5 behaviour.
+Its default, where the element is absent, is Word's UI default of 0.25 inch (360 twips)
+in US measurements - 0.75 cm in metric ones; all four corpus documents that switch
+hyphenation on carry `w:hyphenationZone w:val="425"` explicitly, and ECMA-376 17.15.1.44
+gives no default.
+
+<a id="s47shrink"></a>**Two space-compression limits.** §4.2's `maxSpaceShrink` is what
+Word pays to pull a **whole word** onto a justified line (measured at up to 20.5% on
+these goldens, and 0.24 is the corpus default). It pays much less to take a longer
+**hyphenation fragment** - the piece of the word that stays on the line - when it is
+hyphenating anyway: fitted to the goldens' 124 lines with exact glyph widths, Word
+accepted fragments costing 1.2% and 6.0% of the line's spaces and rejected 13.5%, 14.5%,
+22.0% and 25.6%. `docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink` is that limit,
+default **0.10**; it is capped by `maxSpaceShrink` like everything else. It accounted for
+3 of the 5 first divergences in probe 1.
+
+<a id="s47caps"></a>**Pattern lookup folds case badly.** FOP's `Hyphenator` matches the
+patterns through the pattern file's own class table, which is lossy for a word written in
+capitals: with fop-hyph's en patterns, APPROPRIATIONS came back AP-PRO-PRIATIONS where
+Word breaks it APPROPRI-ATIONS, and DEPARTMENTS gained a spurious DEPARTMEN-TS. The word
+is lowercased before the lookup (the offsets are unchanged, and a mapping that changed
+the length is discarded so they stay valid), so capitals break where the same word in
+lower case breaks.
+
+**Minimum letters either side.** Word's are 2 before the hyphen and 3 after
+(de-scribes, re-sponsibilities, ex-ceeded in the goldens). FOP's
+`hyphenation-remain-character-count` / `-push-character-count` default to 2/2, which is
+what docx4j leaves them at: raising the push count to 3 would lose breaks Word takes.
+
+**Where this leaves the probes.** 121 of Word's 124 lines (`hyphenation` 95% line parity
+from 83%, `hyphenation-zone` 100% from 47%), and the same line breaks in both, as Word has
+them. The residual is one dictionary difference at the end of `hyphenation`, which costs
+the three lines after it: Word breaks TRANSFOR-MATION where the en patterns give
+TRANSFORMA-TION.
 
 **Patterns.** FOP hyphenates from TeX pattern files, and neither FOP nor docx4j ships any:
 without them nothing is hyphenated, whatever the document says. The usual source is
@@ -457,7 +519,7 @@ every paragraph that does not suppress hyphenation (what the property did from 8
 `false` hyphenates nothing. Unset, the document decides.
 
 Probes: `hyphenation` (zone 360, no limit) and `hyphenation-zone` (zone 720, limit 2,
-`w:doNotHyphenateCaps`), the same prose in both.
+`w:doNotHyphenateCaps`), the same prose in both; both have Word 365 goldens.
 
 ### 4.5 Runs of spaces
 
@@ -700,6 +762,29 @@ line.
 widens the columns it spans only when their sum falls short of what it needs, sharing by
 flexibility. Word kept 31 / 385 / 30pt outer columns under two two-column spans, where
 splitting the span's width evenly gave the outer columns +25pt.
+
+<a id="s63fit"></a>**The line a content-sized column holds.** A column Word's autofit pass
+sized holds its widest cell content on one line, because that content is what set the
+width, and Word's fit test there does not take the cell's borders off. Measured on
+`table-autofit-wrap` P04: Word's columns are 127.2 / 137.8 / 148.6pt (grid line to grid
+line), the widest content in each is 116.2 / 126.8 / 137.5pt, the cell margins are 5.4 +
+5.4, the first cell's text starts at the grid line + 5.4 with no border allowance, and
+each of those lines is drawn whole with a fifth of a point to spare. FOP subtracts the
+borders from the cell's content width as well (half of each
+collapsed border, all of a separate one), so exactly the lines that sized the columns were
+re-broken: all three columns of that probe wrapped, and in `pbdr-space` a cell holding
+47.1pt of text in a 47.1pt column came out on two lines. `WordLayoutFixups.cellLineWidth`
+gives the border allowance back as a smaller **end** padding, so the text's start - the
+grid edge plus half the border plus the left cell margin (§6.2) - does not move, and the
+content may reach as far past the right cell margin as Word lets it. Probe line parity 88%
+-> 100% and 75% -> 100%.
+
+Only for a table whose columns docx4j sized from the content. Where the `w:tblGrid`
+decides the width - `w:tblLayout="fixed"`, every cell with a preferred width, or a grid
+scaled to the page (§6.5) - Word charges the borders too: measured on `table-fixed` and
+`table-cellspacing`, a 150pt column with 5.4pt margins breaks a 139.2pt line, which fits
+in 150 - 10.8 = 139.2 but not in that less the 0.5pt border. The FO table writer stamps
+`docx4j-content-sized` on the `fo:table` for the fixup to read.
 
 ### 6.4 Widening to the preferred width
 
@@ -1078,3 +1163,8 @@ Word layout is on, and read by the layout managers:
 | `docx4j:hyphenation-zone` | `fo:root` | `w:hyphenationZone` in twips (§4.7) |
 | `docx4j:hyphen-limit` | `fo:root` | `w:consecutiveHyphenLimit`, where it is not 0 |
 | `docx4j:hyphenate-caps` | `fo:root` | `false` for `w:doNotHyphenateCaps` |
+
+`WordLayoutFixups` also stamps hints of its own, without a namespace prefix (Xalan drops
+the declaration when it copies a fragment in the XSLT pathway), and strips every one of
+them before the FO reaches FOP; `docx4j-content-sized` on an `fo:table` - the columns came
+from the content-based autofit pass (§6.3) - is one of those.

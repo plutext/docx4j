@@ -53,6 +53,18 @@ w:br w:type="column" divides them; XSL FO's own columns are all the same width
 - a merged run of continuous sections whose page margins differ now builds its page masters
 on the part whose columns need the widest text column, and a negative end-indent on a table
 no longer widens every paragraph in its cells past the cell's edge
+- a line holding a tab is now aligned by the paragraph's w:jc, the tab's own width counted
+in, as Word aligns it; the tab is still sized as if the line began at the left indent.  Such
+lines were drawn flush left whatever the w:jc
+- a cell in a table whose columns docx4j sized from their content now fits the line that
+sized the column, instead of re-breaking it: Word's fit width is the column less the cell
+margins, the borders not taken off
+- automatic hyphenation, measured against Word 365's own PDFs: w:hyphenationZone does not
+in fact stop Word hyphenating, so it is no longer applied (docx4j.convert.out.fo.wordLayout
+.hyphenationZone=true restores it); a longer hyphenation fragment buys much less space
+compression than a whole word does (docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink,
+default 0.10); and a word in capitals now breaks where its lower-case form breaks, FOP's
+pattern lookup being lossy for capitals
 
 Other:
 - StyleUtil: a w:tblPr/w:tblpPr whose only properties were an anchor or a *Spec was treated
