@@ -108,7 +108,7 @@ This command prompt can be used to do what follows for the 4 projects.  ie the a
 
 New release process (docx4j 11.4.9 and later, which uses nexus-staging-maven-plugin instead of maven-deploy-plugin based on https://central.sonatype.org/publish/publish-maven/ and working with gpg 2.2.40 (first listed signature is jason@plutext.org)
 
-    mvn clean deploy -P release
+    mvn clean deploy -P release -Dsurefire.skipAfterFailureCount=1 
 
 in deploy, prompt for passphrase is the *other* one [e..]
 
@@ -229,6 +229,7 @@ Wait for it to appear in Maven Central...
 		
 Update downloads.html
 Announce release in docx4j forum
+
 Update news  (includes link to release announcement)
 
 Update the default branch in GitHub (Settings > General > Default Branch > Switch)

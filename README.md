@@ -93,7 +93,7 @@ How do I get started?
 ------------------
 
 See the Getting Started guide: [docs/Docx4j_GettingStarted.md](docs/Docx4j_GettingStarted.md)
-(also there as docx, HTML and PDF — the docx is canonical; the other formats are
+(also there as docx, HTML and PDF — the docx is canonical; other formats are
 generated from it by docx4j itself)
 
 and the Cheat Sheet:  http://www.docx4java.org/blog/2013/05/docx4j-in-a-single-page/
