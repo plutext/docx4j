@@ -161,6 +161,24 @@ lowered run counts its full height, not its shifted height. Each run's `fo:inlin
 Word's pitch for its own font and size, and the line manager takes the maximum; a line with
 no runs takes the paragraph's font.
 
+<a id="s24pic"></a>The line box the line manager works from is written by
+`applyBlockLineHeight`, which sizes it from the **text** runs on the line - so a paragraph
+whose only content is a picture had none at all, and the line manager then left the line
+to FOP, which puts the paragraph font's descent below the picture. Measured on a real
+document: a 67.5pt logo above a 14pt paragraph put the next baseline at y=298.2 against
+Word's 293.9. `WordLayoutFixups.imageOnlyLineBox` gives such a paragraph the picture's own
+height as its line box (an *inline* picture only: one about to be lifted into a positioned
+container takes no line of its own, and its paragraph gets the paragraph mark's line,
+[§2.5](#s25)).
+
+**A picture's size is fractional.** `wp:extent` is in EMU, and 12700 EMU is exactly one
+point, so a picture Word sizes at 857250 EMU is 67.5pt. docx4j wrote `content-height` and
+`content-width` with `Integer.toString`, which threw the fraction away - "67px", which FOP
+reads as 67pt at its default 72dpi - and everything below the picture moved up half a
+point. 291 such attributes in 75 of 156 corpus documents. The size is now written in
+points, with its decimals.
+
+<a id="s25"></a>
 ### 2.5 The paragraph mark
 
 Word ignores the paragraph mark's size when sizing the lines of a **non-empty** paragraph
@@ -259,8 +277,33 @@ by "larger of" like any other spacing, and honours `w:doNotUseHTMLParagraphAutoS
 is dropped between consecutive list items (so a list gets 14pt before the first item and
 after the last) and at the top and bottom of a table cell.
 
+An explicit `w:beforeAutospacing="0"` in direct formatting switches off the
+`w:beforeAutospacing="1"` of the style the paragraph uses, and likewise for
+`w:afterAutospacing`. That needs the attribute's three states - true, false, absent - which
+XJC's `isBeforeAutospacing()` cannot report, since it returns a primitive `boolean`
+(`org.docx4j.wml.AutospacingAccess` reads the field itself). Style resolution carried only
+true until 17.0.6, so the override did nothing: measured on a document whose `NormalWeb`
+style carries it and which overrides it on 20 paragraphs, 17 came out 14pt low - Word's
+first divergence at y=171.4, docx4j's at 186.2, and the next gap 30.7pt against 58.9.
+
 <a id="s35"></a>**Table cells.** A paragraph's space-before applies at the cell top, and its
-space-after at the cell bottom in compatibility mode 15.
+space-after at the cell bottom in compatibility mode 15. XSL-FO drops space at the end of a
+reference area, so `WordLayoutFixups` pins it there with
+`space-after.conditionality="retain"` - and the cell's edges are boundaries
+`w:contextualSpacing` cancels the space at, the **only** paragraph of a cell included.
+Cancelling it walked the cell's paragraphs in pairs, so a single-paragraph cell was never
+examined at all: measured on a planner whose cells hold one contextual paragraph each
+against docDefaults `w:after="200"`, Word's row pitch is 10.1pt (the 9.199pt line box plus
+`w:trHeight` 199) and docx4j's was 19.9pt, +9.0pt on the first row and +9.5 on every row
+after it - 37 Word pages came out as 43.
+
+**The paragraph a nested table forces.** OOXML requires a `w:p` after a `w:tbl` inside a
+`w:tc`, and Word gives that one no line at all. Measured on a mode-14 header whose outer
+row 1 holds three nested rows (baselines 23.5 / 33.8 / 43.9, pitch 10.2): Word's next outer
+row starts at 54.7, 10.8pt later, with no room for an 11.5pt line, where docx4j went 43.7
+-> 64.8. The header table then ended 28.9pt low and the body started 35.7 to 37.0pt low,
+which turned Word's two pages into four. Only the *cell-final* paragraph that follows the
+table: an empty paragraph anywhere else in a cell keeps its line, as [§2.5](#s25) says.
 
 **Borders as padding.** A paragraph's borders and shading are resolved through the style
 hierarchy, not read only from its direct `w:pPr` (Word's default Title style has a bottom
@@ -529,14 +572,38 @@ Word). The paragraph's `fo:block` carries `white-space-collapse="false"`. It mus
 block, not on the `fo:inline` holding the spaces: FOP's `XMLWhiteSpaceHandler` reads the
 property from the nearest ancestor `fo:block`.
 
-`white-space-treatment` stays at its default (`ignore-if-surrounding-linefeed`), which is
-both what makes this safe and what Word does - FOP then drops glue at the start and end of
-every line, so a run of spaces at a line end hangs there and the wrapped line starts flush.
-Measured with FOP 2.11: a run of n spaces becomes a single glue n space widths wide, so it
-cannot break in the middle and is discarded whole at a line boundary. (The unwanted indent
-after a line wrap which had ruled this out before came from
-`white-space-treatment="preserve"`, which used always to be set with it, not from the
-collapse setting.)
+`white-space-treatment` stays at its default (`ignore-if-surrounding-linefeed`) on a
+paragraph whose content does not begin with whitespace, which is both what makes this safe
+and what Word does - FOP then drops glue at the start and end of every line, so a run of
+spaces at a line end hangs there and the wrapped line starts flush. Measured with FOP 2.11:
+a run of n spaces becomes a single glue n space widths wide, so it cannot break in the
+middle and is discarded whole at a line boundary. (The unwanted indent after a line wrap
+which had ruled this out before came from `white-space-treatment="preserve"`, which used
+always to be set with it, not from the collapse setting.)
+
+<a id="s45lead"></a>**Whitespace the paragraph starts with is a different matter**, and
+turning collapsing off is not enough for it: FOP's `XMLWhiteSpaceHandler` treats the start
+of a block, and the position after a nested block (which is what a `w:br` becomes), as
+"after a linefeed", so the default treatment *deletes* those characters. Word paints them.
+Measured: a run whose `w:t` is `xml:space="preserve"` with eighteen leading spaces at 13pt
+Times New Roman started 58.8pt left of Word's line, and five leading spaces in a
+right-aligned cell cost 19.96pt - Word right-aligns the text *and its leading spaces* on
+the content edge. So `white-space-treatment="preserve"` goes on the block, but only where
+the block really does begin with whitespace. This applies to a paragraph whose only
+in-flow content is spaces as well (typically one which also anchors a text box): Word
+gives it a line, and FOP built none, since the spaces were gone before layout.
+
+**And it must not be inherited.** `white-space-treatment` is an inherited property which
+FOP reads from the nearest ancestor `fo:block`, so it has to be on the paragraph's block -
+but where that block is a *container*, a paragraph whose objects have been lifted into
+positioned `fo:block-container`s (an anchored picture, a text box), every block inside
+those containers inherits it and keeps its own leading whitespace. Measured: one paragraph
+enclosing forty positioned text boxes moved every continuation line inside them from
+x=72.0 to 74.2 - one 8pt Arimo space, 0.2778 em - and the narrower measure re-broke the
+text; 174 such blocks in 53 of 156 corpus documents. `WordLayoutFixups` puts each
+out-of-flow child of such a block back on the XSL-FO default, which stops the inheritance
+without moving the placeholder off the block that needs it. The same applies to the
+empty-paragraph placeholder of [§2.5](#s25).
 
 ### 4.6 Character spacing (`w:spacing` on a run)
 
@@ -612,6 +679,24 @@ off with the document default than with any available stand-in: condensed faces 
 Lato, PostScript-style names (a name no system has a family for, so Word does not resolve
 it either), a name whose only clue is that it ends in "Sans" or "Serif", and Arial Narrow
 where neither of its twins is installed.
+
+<a id="s52faces"></a>**All four faces of a substitute family are declared, not just the
+regular one.** `MicrosoftFontsRegistry`, which is how docx4j finds a family's bold and
+italic files, knows only Microsoft's own families - so for every substitute above, and for
+Carlito, Caladea and the Liberation and URW families, the bold and italic faces came back
+null and `FopConfigUtil` declared the family as the regular file with
+`simulate-style="true"`. FOP then synthesised the bold by re-stroking the regular glyphs:
+the ink looked bold, but every advance width was the regular face's. Measured against
+Word's own PDFs of five corpus documents, bold text came out 11-18% narrow ("Partita IVA"
+42.2pt against Word's 49.6, "Dato da sincronizzare" 86.9 against 97.1) while the regular
+weight of the same documents measured 0.9996 of Word's, and a centred Verdana title was
+240.0pt against Word's 270.7 - it is 269.8 now, and the PDF embeds `DejaVuSans-Bold` where
+before it held only `DejaVuSans`. The faces are found by the family's own name ("DejaVu
+Sans" + " Bold", "Carlito Regular" -> "Carlito" + " Bold") and, failing that, by file name,
+since a whole URW family reports one name and is told apart only by its file
+(P052-Roman.otf -> P052-Bold.otf). Both are exact lookups in the maps font discovery built,
+so a family which really has no such face still gets none - and the `+noliga` and `+kern`
+twins follow, because each declaration gets its own.
 
 ### 5.3 Families whose faces all report one name
 
@@ -719,15 +804,36 @@ inline at 80% of the size. HTML gets `text-transform` / `font-variant`.
 
 ### 6.1 Where the table sits
 
-This rule changed in Word 2013. **From compatibility mode 15** the table's grid edge sits
-at the text margin + `w:tblInd`, and the first column's text one left cell margin further
-right. **Below mode 15** it is the first column's *text* that lands on the text margin +
-`w:tblInd`, so the grid edge is one left cell margin further back.
+Normally the table's grid edge sits at the text margin + `w:tblInd`, and the first column's
+text one left cell margin further right. **In compatibility mode 14** - Word 2010's layout
+engine, and that mode alone - it is the first column's *text* that lands on the text margin
++ `w:tblInd`, so the grid edge is one left cell margin further back.
 
 Measured with `table-indent-compat14` / `-compat15`: the first cell's text at 72.0 / 72.0 /
 77.3pt for no `w:tblInd`, `w:tblInd` 0 and `w:tblInd` 108 in mode 14, and at 77.8 / 77.8 /
-83.1pt in mode 15. A document with no compatibilityMode setting is mode 12 and takes the
-older rule.
+83.1pt in mode 15.
+
+**Below mode 14 the shift does not apply**, although docx4j applied it there until 17.0.6.
+There is no Word probe for the older modes; the measurement is a corpus document with no
+`compatibilityMode` setting at all (so mode 12) whose first table row is a single
+`w:gridSpan="3"` cell holding a centred paragraph: Word centres that text on 297.65pt, the
+exact centre of a 595.3pt page, where taking the shift centred it on 292.25 - 5.4pt, one
+cell margin, left. Fitting the rule to mode 14 alone also took that document from 13 pages
+to Word's 15. A mode-11 or mode-12 probe would settle it properly.
+
+<a id="s61nested"></a>**A nested table takes no shift either.** Word puts the grid edge of
+a table inside a `w:tc` on the containing cell's **content** edge, and adds the nested
+table's own cell margin on top of that. Measured on a mode-14 first-page header (page
+margin 28.35pt, outer `w:tblInd` 108, cell margin 108 both levels): Word's clip for the
+nested table runs from 33.9 = 28.35 + 5.4, and its first cell's text is at 39.1, where
+docx4j drew it at 34.0 - one cell margin left, on every cell of every nested table. The
+outer table of the same document matched Word exactly, which is what proves the rule is
+about nesting and not about the mode. There were 45 such tables across 11 corpus documents,
+and it was the first divergence in four of them. Whether a table is nested is not known
+where the indent is computed - in the XSLT pathway the `w:tbl` reaching the table writer
+was unmarshalled on its own, so it has no parent - so the shift is stamped on the
+`fo:table` and `WordLayoutFixups.nestedTableGridEdge` gives it back to the tables that turn
+out to be inside an `fo:table-cell`.
 
 A `w:jc="center"` table wider than the text column is **centred by Word, overhanging both
 margins**; its start-indent is the negative half of the overflow.
@@ -971,6 +1077,17 @@ line of one document). Header and footer extents come from an area-tree pre-pass
 five-line odd header containing a picture, one-line odd and three-line even footers, six
 pages - matches Word on 7 of 7 pages and 318 of 318 lines.
 
+**Where the body ends** is the mirror of it: the bottom margin, pulled up only where the
+footer reaches further, i.e. `max(bottom margin, footer distance + footer height)`. Where
+the section has **no footer part** there is nothing to reserve and the footer distance
+alone must not shorten the body. Measured on a document whose 44 `w:sectPr` all say
+`w:pgMar w:bottom="0" w:footer="720"` and which has no `footerReference` (nor any
+`headerReference`): Word's body runs to the foot of the A4 page, 841.9pt, and puts each
+section's last line - a hand-made "Pagina N Van 22" - at y=827.3 to 828.2, while docx4j
+reserved the 36pt footer distance and ended the body at 805.9. Twenty-one of the 22
+sections spilled that one line onto a page of its own for that reason alone: Word's 24
+pages came out as 44, and are 26 now.
+
 ---
 
 ## 8. Footnotes
@@ -1166,5 +1283,6 @@ Word layout is on, and read by the layout managers:
 
 `WordLayoutFixups` also stamps hints of its own, without a namespace prefix (Xalan drops
 the declaration when it copies a fragment in the XSLT pathway), and strips every one of
-them before the FO reaches FOP; `docx4j-content-sized` on an `fo:table` - the columns came
-from the content-based autofit pass (§6.3) - is one of those.
+them before the FO reaches FOP; two on an `fo:table` are `docx4j-content-sized` (the
+columns came from the content-based autofit pass, §6.3) and `docx4j-grid-shift` (the cell
+margin the mode-14 grid edge was moved back by, [§6.1](#s61nested)).

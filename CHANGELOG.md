@@ -65,6 +65,24 @@ in fact stop Word hyphenating, so it is no longer applied (docx4j.convert.out.fo
 compression than a whole word does (docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink,
 default 0.10); and a word in capitals now breaks where its lower-case form breaks, FOP's
 pattern lookup being lossy for capitals
+- whitespace a paragraph begins with is now painted, as Word paints it: turning
+white-space-collapse off is not enough, since FOP deletes whitespace at the start of a block
+- the empty line an empty paragraph gets no longer makes the positioned pictures and text
+boxes inside that paragraph keep their own leading whitespace (white-space-treatment is an
+inherited property)
+- an inline picture's size is no longer rounded to a whole point, and a line holding only a
+picture is now the picture's height, with no descent below it
+- bold and italic are now found for a substituted font family (DejaVu Sans, Noto Sans, P052,
+Carlito, the Liberation and URW families), so a bold run is no longer set in the regular
+face's widths - it was 11-18% narrow
+- the compatibility-mode-14 table grid edge is now applied only in that mode, and not to a
+table nested in a w:tc: Word puts a nested table's grid edge on the containing cell's
+content edge
+- the w:p OOXML requires after a nested table in a w:tc now takes no line, as in Word
+- w:contextualSpacing now cancels the space at a cell's edges for a cell holding a single
+paragraph, which was never examined
+- w:pgMar w:bottom="0" no longer reserves w:footer as the bottom margin where the section
+has no footer part
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's
@@ -81,6 +99,9 @@ it as part of toPDF/toFO (with page numbers) or toHTML (without)
 - StyleUtil: a w:tblPr/w:tblpPr whose only properties were an anchor or a *Spec was treated
 as empty, so a floating table lost its position when the effective table style was built
 - PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
+- StyleUtil: w:beforeAutospacing="0" / w:afterAutospacing="0" in direct formatting now
+switches off the style's "1"; XJC's getters cannot tell an absent attribute from a false
+one, so org.docx4j.wml.AutospacingAccess reports the three states
 
 
 Version 17.0.5

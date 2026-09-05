@@ -190,9 +190,11 @@ public class UnpaintablePictureTest extends AbstractXSLFOTest {
 				g.getAttribute("src").startsWith("data:image/png;base64,"));
 		assertEquals("a 1x1 stand-in would be scaled square without this",
 				"non-uniform", g.getAttribute("scaling"));
-		// the declared extent is untouched (px, at FOP's default 72dpi source resolution)
-		assertEquals("100px", g.getAttribute("content-width"));
-		assertEquals("75px", g.getAttribute("content-height"));
+		// the declared extent is untouched.  wp:extent is in EMU and 12700 EMU is one
+		// point, so from 17.0.6 the size is written in points, and fractionally: it used
+		// to be rounded to a whole "px" (FOP reads px at 72dpi, so a px was a point).
+		assertEquals("100pt", g.getAttribute("content-width"));
+		assertEquals("75pt", g.getAttribute("content-height"));
 	}
 
 	@Test

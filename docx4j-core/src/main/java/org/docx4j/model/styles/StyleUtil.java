@@ -2389,14 +2389,24 @@ public class StyleUtil {
 	}
 
 		public static Spacing apply(Spacing source, Spacing destination) {
-		// beforeAutospacing/afterAutospacing (HTML auto spacing) are attributes in their
-		// own right and must survive the merge; the getters cannot distinguish absent
-		// from false, so only true is carried.  @since 17.0.5
-		if (source != null && (source.isBeforeAutospacing() || source.isAfterAutospacing())) {
+		/* beforeAutospacing/afterAutospacing (HTML auto spacing) are attributes in their
+		 * own right and must survive the merge.  XJC's getters report an absent attribute
+		 * and an explicit w:beforeAutospacing="0" alike as false, so until 17.0.6 only
+		 * true was carried - and a paragraph whose direct formatting says
+		 * <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0"/> could not switch
+		 * off the w:beforeAutospacing="1" of the style it uses: PropertyFactory then gave
+		 * it HTML_AUTO_SPACING_TWIPS = 14pt.  Measured on a document whose NormalWeb
+		 * style carries it and which overrides it on 20 paragraphs: 17 of them came out
+		 * 14pt low and the drift compounded (Word's first divergence y=171.4, docx4j's
+		 * 186.2; the next gap 30.7pt against 58.9).  AutospacingAccess reports the
+		 * attribute as the docx states it.  @since 17.0.6 */
+		Boolean before = org.docx4j.wml.AutospacingAccess.getBeforeAutospacing(source);
+		Boolean after = org.docx4j.wml.AutospacingAccess.getAfterAutospacing(source);
+		if (before != null || after != null) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createPPrBaseSpacing();
-			if (source.isBeforeAutospacing()) destination.setBeforeAutospacing(Boolean.TRUE);
-			if (source.isAfterAutospacing()) destination.setAfterAutospacing(Boolean.TRUE);
+			if (before != null) destination.setBeforeAutospacing(before);
+			if (after != null) destination.setAfterAutospacing(after);
 		}
 		if (!isEmpty(source)) {
 			if (destination == null)

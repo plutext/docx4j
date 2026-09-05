@@ -612,19 +612,93 @@ public class PhysicalFonts {
 		return 0;
 	}
 
+	/**
+	 * The bold, italic or bold-italic face of a family MicrosoftFontsRegistry knows
+	 * nothing about - which is every substitute {@code Mapper} reaches outside that
+	 * table (DejaVu Sans, Noto Sans, P052, Carlito, Caladea, the URW base 35 ...).
+	 *
+	 * <p>Without this, a document font mapped to such a family was declared to FOP as
+	 * the regular file with {@code simulate-style="true"}, so FOP synthesised its bold
+	 * by re-stroking the regular glyphs: the ink looked bold but every advance width was
+	 * the regular face's.  Measured against Word's own PDFs, bold headings came out
+	 * 11-18% narrow ("Partita IVA" 42.2pt against Word's 49.6, "Dato da sincronizzare"
+	 * 86.9 against 97.1), and a centred Verdana title 240.0pt against Word's 270.7 -
+	 * while the regular weight of the same documents measured 0.9996 of Word's.</p>
+	 *
+	 * <p>Two routes, in order: the face's own name ("DejaVu Sans" + " Bold", "Carlito
+	 * Regular" -> "Carlito" + " Bold"), and failing that the file name, since a whole
+	 * URW family reports one name and is told apart only by its file (P052-Roman.otf ->
+	 * P052-Bold.otf).  Both are exact lookups in the maps discovery built, so a family
+	 * which really has no such face still gets none.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static PhysicalFont siblingFace(PhysicalFont pf, boolean bold, boolean italic) {
+
+		if (pf==null || (!bold && !italic)) return null;
+
+		String name = pf.getName();
+		if (name!=null) {
+			String family = name.toLowerCase();
+			for (String plain : new String[] { " regular", " roman", " book", " normal", " upright" }) {
+				if (family.endsWith(plain)) {
+					family = family.substring(0, family.length()-plain.length());
+					break;
+				}
+			}
+			for (String style : styleWords(bold, italic)) {
+				PhysicalFont candidate = physicalFontMap.get(family + " " + style);
+				if (candidate!=null && candidate!=pf) return candidate;
+			}
+		}
+
+		java.net.URI uri = pf.getEmbeddedURI();
+		if (uri!=null) {
+			String file = uri.toString();
+			file = file.substring(file.lastIndexOf('/')+1);
+			int dot = file.lastIndexOf('.');
+			if (dot>0) {
+				String ext = file.substring(dot).toLowerCase();
+				String stem = file.substring(0, dot);
+				int dash = stem.lastIndexOf('-');
+				if (dash>0) stem = stem.substring(0, dash);
+				for (String style : fileStyleWords(bold, italic)) {
+					PhysicalFont candidate = physicalFontMapByFilenameLowercase.get(
+							(stem + "-" + style + ext).toLowerCase());
+					if (candidate!=null && candidate!=pf) return candidate;
+				}
+			}
+		}
+		return null;
+	}
+
+	private static String[] styleWords(boolean bold, boolean italic) {
+		if (bold && italic) return new String[] { "bold italic", "bold oblique" };
+		if (bold) return new String[] { "bold" };
+		return new String[] { "italic", "oblique" };
+	}
+
+	private static String[] fileStyleWords(boolean bold, boolean italic) {
+		// "Demi" is the URW base 35's bold (URWGothic-Demi.otf, and a whole URW family
+		// reports one name, so the file is the only way to reach it)
+		if (bold && italic) return new String[] { "BoldItalic", "BoldOblique", "BdIta", "DemiOblique" };
+		if (bold) return new String[] { "Bold", "Bd", "Demi" };
+		return new String[] { "Italic", "Oblique", "Ita" };
+	}
+
 	public static PhysicalFont getBoldForm( PhysicalFont pf) {
-		
+
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
 		
 		if (msFont==null) {
-			log.warn("No entry in MicrosoftFontsRegistry for: " + pf.getName());
-			return null;
+			log.debug("No entry in MicrosoftFontsRegistry for: " + pf.getName());
+			return siblingFace(pf, true, false);
 		}
 		
 		if (msFont.getBold()==null) {
 			log.debug("No bold form for: " + pf.getName());
-			return null;
+			return siblingFace(pf, true, false);
 		} else {
 			
 			// We have to go via the file name, grrr..
@@ -651,13 +725,13 @@ public class PhysicalFonts {
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
 		
 		if (msFont==null) {
-			log.warn("No entry in MicrosoftFontsRegistry for: " + pf.getName());
-			return null;
+			log.debug("No entry in MicrosoftFontsRegistry for: " + pf.getName());
+			return siblingFace(pf, true, true);
 		}
 		
 		if (msFont.getBolditalic()==null) {
 			log.debug("No Bolditalic form for: " + pf.getName());
-			return null;
+			return siblingFace(pf, true, true);
 		} else {
 			
 			// We have to go via the file name, grrr..
@@ -684,12 +758,12 @@ public class PhysicalFonts {
 		
 		if (msFont==null) {
 			log.debug("No entry in MicrosoftFontsRegistry for: " + pf.getName());
-			return null;
+			return siblingFace(pf, false, true);
 		}
 		
 		if (msFont.getItalic()==null) {
-			log.info("No italic form for: " + pf.getName());
-			return null;
+			log.debug("No italic form for: " + pf.getName());
+			return siblingFace(pf, false, true);
 		} else {
 			
 			// We have to go via the file name, grrr..

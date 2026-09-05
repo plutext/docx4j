@@ -1155,8 +1155,28 @@ public class XsltFOFunctions {
 	             * and https://www.docx4java.org/forums/pdf-output-f27/converting-docx-to-pdf-not-preserving-whitespace-t2752.html
 	             * @since 17.0.5 */
 	            ((Element)foBlockElement).setAttribute( "white-space-collapse", "false");
-	            
-				
+
+	            /* Turning collapsing off is not enough for whitespace at the very start of
+	             * the paragraph's content, or at the start of the text after a w:br: the
+	             * XSL-FO default white-space-treatment is ignore-if-surrounding-linefeed,
+	             * and FOP's XMLWhiteSpaceHandler treats the start of a block, and the
+	             * position after a nested block, as "after a linefeed", so it deletes
+	             * those characters outright.  Word paints them.  Measured: a run whose
+	             * w:t is xml:space="preserve" with eighteen leading spaces at 13pt Times
+	             * New Roman starts 58.8pt left of Word's line, and five leading spaces in
+	             * a right-aligned cell cost 19.96pt, the line being right-aligned on text
+	             * that no longer holds them.
+	             *
+	             * white-space-treatment is only set where the block really does begin
+	             * with whitespace, since preserving it everywhere is what used to indent
+	             * the line after a wrap (issue 369): with the default, FOP drops the glue
+	             * at each line boundary, which is Word's own behaviour for a run of
+	             * spaces at a line end.
+	             * @since 17.0.6 */
+	            if (startsWithWhitespace(n)) {
+	            	((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
+	            }
+
 	//				log.info("Node we are importing: " + n.getClass().getName() );
 	//				foBlockElement.appendChild(
 	//						document.importNode(n, true) );
@@ -1422,6 +1442,61 @@ public class XsltFOFunctions {
 	}
 
 	private static final String XSL_FO = "http://www.w3.org/1999/XSL/Format";
+
+	/**
+	 * Whether this paragraph's converted content begins - at the start of the block, or
+	 * at the start of the text after a nested block (a w:br) - with whitespace that
+	 * positions text on the line, and which FOP's default white-space-treatment would
+	 * delete.  Out-of-flow children (a positioned fo:block-container, an fo:float) are
+	 * skipped: they are not on the block's own line.
+	 *
+	 * @since 17.0.6
+	 */
+	static boolean startsWithWhitespace(Node childResults) {
+		boolean[] state = new boolean[] { true, false }; // atBoundary, leading whitespace found
+		scanLeadingWhitespace(childResults, state);
+		return state[1];
+	}
+
+	/** @param state [0] true while the next character would be "after a linefeed" for
+	 *        FOP; [1] set once whitespace was found in such a position. */
+	private static void scanLeadingWhitespace(Node n, boolean[] state) {
+		NodeList children = n.getChildNodes();
+		for (int i=0; i<children.getLength(); i++) {
+			Node child = children.item(i);
+			if (child.getNodeType()==Node.TEXT_NODE || child.getNodeType()==Node.CDATA_SECTION_NODE) {
+				String v = child.getNodeValue();
+				if (v==null || v.isEmpty()) continue;
+				if (state[0] && isXmlWhitespace(v.charAt(0))) state[1] = true;
+				state[0] = false;
+				continue;
+			}
+			if (!(child instanceof Element)) continue;
+			Element el = (Element)child;
+			String name = el.getLocalName()!=null ? el.getLocalName() : el.getNodeName();
+			if (name.endsWith("block-container") || name.endsWith("float")) {
+				continue; // out of the flow, and it leaves us at a boundary
+			}
+			if (name.endsWith("inline") || name.endsWith("wrapper")
+					|| name.endsWith("basic-link") || name.endsWith("bidi-override")) {
+				scanLeadingWhitespace(el, state);
+				continue;
+			}
+			if (name.endsWith("block") || name.endsWith("list-block") || name.endsWith("table")) {
+				// a nested block (the block a w:br becomes) ends the line sequence, so
+				// what follows it is "after a linefeed" again.  Its own content is not
+				// examined: it is its own currentBlock for FOP, and measured over the
+				// corpus, preserving whitespace inside it costs more than it buys.
+				state[0] = true;
+				continue;
+			}
+			state[0] = false; // a leader, an external-graphic, a page-number, ...
+		}
+	}
+
+	private static boolean isXmlWhitespace(char c) {
+		return c==' ' || c=='\t' || c=='\n' || c=='\r';
+	}
 
 	private static String findAttribute(Node n, String name) {
 		if (n instanceof Element && ((Element)n).hasAttribute(name)) return ((Element)n).getAttribute(name);

@@ -411,10 +411,10 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	//int endIndex = style.indexOf("pt", beginIndex);
     	
     	if (name.equals("height")) {
-    		dimensions.height = Math.round(f);
+    		dimensions.height = f; // fractional: rounding a VML shape's height moved the lines below it (@since 17.0.6)
     		dimensions.heightUnit = unit;
     	} else if (name.equals("width")) {
-    		dimensions.width = Math.round(f);
+    		dimensions.width = f;
     		dimensions.widthUnit = unit;
     	}
     	

@@ -133,6 +133,7 @@ public final class WordLayoutFixups {
 	public static void apply(Document doc, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
 		disregardBaselineShifts(doc);
+		imageOnlyLineBox(doc);
 		listLabelLines(doc);
 		lineBoxAttributes(doc, compatibilityMode, hyphenation);
 		anchorImages(doc);
@@ -141,6 +142,8 @@ public final class WordLayoutFixups {
 		hoistFloats(doc);
 		reserveUnpaintablePictures(doc);
 		emptyLineForBlockWithNoContent(doc);
+		containWhitespaceTreatment(doc);
+		dropParagraphAfterNestedTable(doc);
 		dropPageBreaksInTableCells(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
 		applyContextualSpacing(doc);
@@ -149,6 +152,7 @@ public final class WordLayoutFixups {
 		retainSpaceBeforeAtFlowStart(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		cellLineWidth(doc);
+		nestedTableGridEdge(doc);
 		fixLists(doc);
 		clipExactRows(doc);
 		stripHints(doc);
@@ -166,6 +170,74 @@ public final class WordLayoutFixups {
 		Element root = doc.getDocumentElement();
 		if (root != null && isFo(root, "root")) {
 			root.setAttribute("line-height-shift-adjustment", "disregard-shifts");
+		}
+	}
+
+	// ------------------------------------------------------------ 0a2. a line holding only a picture
+
+	/**
+	 * Word gives a line holding nothing but a picture the picture's height and no
+	 * descent (&#xa7;2.4).  The line box the layout manager needs is written by
+	 * XsltFOFunctions.applyBlockLineHeight, which sizes it from the <em>text</em> runs on
+	 * the line - so a paragraph whose only content is an inline picture gets no line box
+	 * at all, and the line manager then falls back to FOP's own line, which adds the
+	 * paragraph font's descent below the picture.  Measured: a 67.5pt logo above a 14pt
+	 * paragraph put the next baseline 4.8pt below Word's, on every such paragraph.
+	 *
+	 * <p>Only an <em>inline</em> picture counts: one that is about to be lifted into a
+	 * positioned container (it carries the anchor hints) takes no line of its own, and
+	 * that paragraph gets the paragraph mark's line instead
+	 * ({@link #emptyLineForBlockWithNoContent}).</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void imageOnlyLineBox(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			if (block.hasAttribute(HINT_LINE_BOX)) continue;
+			double height = inlineGraphicHeight(block);
+			if (height <= 0) continue;
+			block.setAttribute(HINT_LINE_BOX, org.docx4j.fonts.WordLineMetrics.format(height));
+			block.setAttribute(HINT_BASELINE, org.docx4j.fonts.WordLineMetrics.format(height));
+			block.setAttribute(HINT_LINE_RULE, "auto");
+		}
+	}
+
+	/** The tallest inline graphic directly on this block's line, in points; 0 where the
+	 *  block holds anything else that would be on the line, or no graphic at all. */
+	private static double inlineGraphicHeight(Element el) {
+		double[] state = { 0, 0 }; // tallest graphic, disqualified
+		scanInlineGraphics(el, state);
+		return state[1] != 0 ? 0 : state[0];
+	}
+
+	private static void scanInlineGraphics(Element el, double[] state) {
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength() && state[1] == 0; i++) {
+			Node n = children.item(i);
+			if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
+				String v = n.getNodeValue();
+				if (v != null && v.trim().length() > 0) state[1] = 1; // text on the line too
+				continue;
+			}
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			if (isFo(child, "block-container") || isFo(child, "float")) continue; // out of the flow
+			if (isFo(child, "external-graphic") || isFo(child, "instream-foreign-object")) {
+				double h = lengthPt(child.getAttribute("content-height"));
+				if (child.hasAttribute(HINT_ANCHOR) || h <= 0) { // about to be positioned, or unsized
+					state[1] = 1;
+					return;
+				}
+				state[0] = Math.max(state[0], h);
+				continue;
+			}
+			if (isFo(child, "inline") || isFo(child, "wrapper") || isFo(child, "basic-link")
+					|| isFo(child, "bidi-override")) {
+				scanInlineGraphics(child, state);
+				continue;
+			}
+			state[1] = 1; // a leader, a page-number, a nested block, ...
 		}
 	}
 
@@ -1071,6 +1143,7 @@ public final class WordLayoutFixups {
 		for (Element tbl : elements(doc, "table")) {
 			for (String hint : TBLP_HINTS) tbl.removeAttribute(hint);
 			tbl.removeAttribute(HINT_CONTENT_SIZED);
+			tbl.removeAttribute(HINT_GRID_SHIFT);
 		}
 		for (Element span : elements(doc, "inline")) {
 			span.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
@@ -1145,9 +1218,9 @@ public final class WordLayoutFixups {
 	 * item's paragraph is the block inside its list-item-body.
 	 */
 	static void applyContextualSpacing(Document doc) {
-		for (Element flow : elements(doc, "flow")) contextualSpacingAmong(flow);
-		for (Element span : spanAllBlocks(doc)) contextualSpacingAmong(span);
-		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell);
+		for (Element flow : elements(doc, "flow")) contextualSpacingAmong(flow, false);
+		for (Element span : spanAllBlocks(doc)) contextualSpacingAmong(span, false);
+		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell, true);
 	}
 
 	/** The blocks spanning all columns of a multi-column page-sequence (a merged
@@ -1174,8 +1247,24 @@ public final class WordLayoutFixups {
 		return paras;
 	}
 
-	private static void contextualSpacingAmong(Element container) {
+	/**
+	 * @param cellEdges the container is a table cell, whose top and bottom edges are
+	 *        themselves boundaries a contextual paragraph's space is dropped at.  The
+	 *        pairwise loop below stops one short of the end, so a cell holding a
+	 *        <em>single</em> paragraph was never examined at all - and
+	 *        {@link #retainSpacingAtCellEdges} then pinned that paragraph's docDefaults
+	 *        space-after to the cell bottom.  Measured on a compat-15 planner whose
+	 *        cells hold one contextual paragraph each: Word's row pitch is 10.1pt (the
+	 *        9.199pt line box plus w:trHeight 199) and docx4j's was 19.9pt, on every row
+	 *        of 37 Word pages, which came out as 43.
+	 */
+	private static void contextualSpacingAmong(Element container, boolean cellEdges) {
 		List<Element> paras = paragraphBlocks(container);
+		if (cellEdges && !paras.isEmpty()) {
+			Element first = paras.get(0), last = paras.get(paras.size() - 1);
+			if ("1".equals(first.getAttribute(HINT_CONTEXTUAL))) first.setAttribute("space-before", "0pt");
+			if ("1".equals(last.getAttribute(HINT_CONTEXTUAL))) last.setAttribute("space-after", "0pt");
+		}
 		for (int i = 0; i + 1 < paras.size(); i++) {
 			Element a = paras.get(i), b = paras.get(i + 1);
 						String sa = a.getAttribute(HINT_PSTYLE), sb = b.getAttribute(HINT_PSTYLE);
@@ -1295,6 +1384,40 @@ public final class WordLayoutFixups {
 		}
 	}
 
+	/**
+	 * white-space-treatment is an <em>inherited</em> property, and FOP reads it from the
+	 * nearest ancestor fo:block (XMLWhiteSpaceHandler takes it from currentBlock), so a
+	 * paragraph which needs its own whitespace preserved - the empty-paragraph
+	 * placeholder above, or a paragraph whose text begins with a space (&#xa7;4.5) - has
+	 * to carry the property on its block.  Where that block is also a <em>container</em>
+	 * - a paragraph whose objects were lifted out into positioned fo:block-containers (an
+	 * anchored picture, a text box) - every block inside those containers inherits
+	 * "preserve" and keeps its own leading whitespace.  Measured: one such paragraph
+	 * enclosing forty positioned text boxes moved every continuation line inside them
+	 * from x=72.0 to 74.2, exactly one 8pt Arimo space (0.2778em = 2.22pt), and the
+	 * narrower measure re-broke the text; 174 blocks in 53 of 156 corpus documents.
+	 *
+	 * <p>So each out-of-flow child - never part of the paragraph's own line - is put back
+	 * on the XSL-FO default.  A block inside one that really wants preserved whitespace
+	 * states it for itself.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void containWhitespaceTreatment(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if (!"preserve".equals(block.getAttribute("white-space-treatment"))) continue;
+			NodeList children = block.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++) {
+				Node n = children.item(i);
+				if (!(n instanceof Element)) continue;
+				Element child = (Element) n;
+				if (!isFo(child, "block-container") && !isFo(child, "float")) continue;
+				if (child.hasAttribute("white-space-treatment")) continue; // it decided for itself
+				child.setAttribute("white-space-treatment", "ignore-if-surrounding-linefeed");
+			}
+		}
+	}
+
 	/** Whether this block's own children would give FOP something to put on a line.
 	 *  Only an out-of-flow child - a positioned container holding an anchored picture
 	 *  or a text box, or a float - is not counted; a nested fo:block (a w:br) makes
@@ -1370,6 +1493,44 @@ public final class WordLayoutFixups {
 	/** "1" on an fo:table whose columns docx4j's content-based autofit pass sized
 	 *  (TableWriter.applyTableCustomAttributes). */
 	public static final String HINT_CONTENT_SIZED = "docx4j-content-sized";
+
+	/** On an fo:table whose start-indent took the compatibility-mode-14 grid-edge shift
+	 *  (TableWriter.applyStartIndent): the left cell margin it was moved back by.
+	 *  @since 17.0.6 */
+	public static final String HINT_GRID_SHIFT = "docx4j-grid-shift";
+
+	/**
+	 * Word applies the mode-14 grid-edge shift to a <em>top-level</em> table only.  A
+	 * table nested in a w:tc has its grid edge on the containing cell's content edge,
+	 * with its own cell margin added on top: measured on a mode-14 header (page margin
+	 * 28.35pt, outer w:tblInd 108, cell margin 108), Word's clip for a nested table runs
+	 * from 33.9 = 28.35 + 5.4 and its text lands at 39.1, where docx4j drew it at 34.0 -
+	 * one cell margin left, on every cell of every nested table.  There were 45 of them
+	 * across 11 corpus documents, and it was the first divergence in four.
+	 *
+	 * <p>Whether a table is nested is not known where the shift is computed - in the XSLT
+	 * pathway the w:tbl reaching the table writer was unmarshalled on its own, so it has
+	 * no parent - but it is plain here, which also keeps the two pathways identical.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void nestedTableGridEdge(Document doc) {
+		for (Element tbl : elements(doc, "table")) {
+			if (!tbl.hasAttribute(HINT_GRID_SHIFT)) continue;
+			double shift = lengthPt(tbl.getAttribute(HINT_GRID_SHIFT));
+			tbl.removeAttribute(HINT_GRID_SHIFT);
+			if (shift == 0 || !insideTableCell(tbl)) continue;
+			double indent = lengthPt(tbl.getAttribute("start-indent"));
+			tbl.setAttribute("start-indent", org.docx4j.fonts.WordLineMetrics.format(indent + shift));
+		}
+	}
+
+	private static boolean insideTableCell(Element el) {
+		for (Node n = el.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			if (isFo((Element) n, "table-cell")) return true;
+		}
+		return false;
+	}
 
 	/**
 	 * A column Word's autofit pass sized holds its widest cell content on one line,
@@ -1526,6 +1687,54 @@ public final class WordLayoutFixups {
 	}
 
 	// ------------------------------------------------------------ 3. table cells
+
+	/**
+	 * OOXML requires a {@code w:p} after a {@code w:tbl} inside a {@code w:tc}, and Word
+	 * gives that paragraph no line at all - the cell ends on the nested table.  docx4j
+	 * writes it like any other empty paragraph (&#xa7;2.5), which is a whole line too
+	 * many at the bottom of every cell holding a nested table.
+	 *
+	 * <p>Measured on a mode-14 first-page header whose outer row 1 holds three nested
+	 * rows (baselines 23.5 / 33.8 / 43.9, pitch 10.2): Word's next outer row starts at
+	 * 54.7, 10.8pt later, where docx4j went 43.7 -> 64.8.  The header table then ended
+	 * 28.9pt low and the body started 35.7 to 37.0pt low, which turned Word's two pages
+	 * into four.  Only the <em>cell-final</em> paragraph that follows the table: an
+	 * empty paragraph anywhere else in a cell keeps its line, as Word gives it one.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void dropParagraphAfterNestedTable(Document doc) {
+		for (Element cell : elements(doc, "table-cell")) {
+			Element last = null, previous = null;
+			NodeList children = cell.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++) {
+				Node n = children.item(i);
+				if (!(n instanceof Element)) continue;
+				previous = last;
+				last = (Element) n;
+			}
+			if (last == null || previous == null) continue;
+			if (!isFo(last, "block") || !last.hasAttribute(HINT_PSTYLE)) continue;
+			if (!isFo(previous, "table")) continue;
+			if (!isBlank(last)) continue;
+			cell.removeChild(last);
+		}
+	}
+
+	/** Whether this block would put nothing but whitespace on its line: no element
+	 *  children of its own, and no non-whitespace text (the empty-paragraph placeholder). */
+	private static boolean isBlank(Element el) {
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (n instanceof Element) return false;
+			if ((n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE)
+					&& n.getNodeValue().trim().length() > 0) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	static void retainSpacingAtCellEdges(Document doc, int compatibilityMode) {
 		for (Element cell : elements(doc, "table-cell")) {

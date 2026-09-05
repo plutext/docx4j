@@ -199,7 +199,17 @@ public class TableWriter extends AbstractTableWriter {
 					indent = tblInd.getW().intValue();
 				}
 			}
-			if (compatibilityMode(context) < 15) indent -= leftCellMarginTwips(tblPr);
+			if (compatibilityMode(context) == 14) {
+				int shift = leftCellMarginTwips(tblPr);
+				indent -= shift;
+				// Word does not shift a table nested in a w:tc (see isNested); whether
+				// this one is is not known until the FO is assembled, since in the XSLT
+				// pathway the w:tbl reaching here was unmarshalled on its own.
+				if (shift != 0) {
+					tableRoot.setAttribute(WordLayoutFixups.HINT_GRID_SHIFT,
+							UnitsOfMeasurement.twipToBest(shift));
+				}
+			}
 		}
 		if (tblPr != null && tblPr.getTblpPr() != null && floatingTablesEnabled()) {
 			indent = applyFloatingPosition(context, table, tableRoot, tblPr.getTblpPr(), indent);
@@ -207,6 +217,26 @@ public class TableWriter extends AbstractTableWriter {
 		tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest(indent));
 	}
 
+	/**
+	 * Word puts a table nested in a {@code w:tc} on the containing cell's <em>content</em>
+	 * edge and adds its own cell margin on top of that, so the mode-14 grid-edge shift
+	 * must not be applied to it: measured on a mode-14 header (page margin 28.35pt, outer
+	 * {@code w:tblInd} 108, cell margin 108), Word's clip for a nested table runs from
+	 * 33.9 = 28.35 + 5.4 and its text lands at 39.1, where docx4j drew it at 34.0 - one
+	 * cell margin left, on every cell of every nested table (45 of them in 11 corpus
+	 * documents).  {@link WordLayoutFixups#nestedTableGridEdge} gives the shift back to
+	 * the tables that turn out to be nested.
+	 *
+	 * <p>The shift is Word 2010's, ie compatibility mode <em>14</em> exactly.  Below that,
+	 * measured on a document with no {@code compatibilityMode} setting at all (mode 12)
+	 * whose first row is one {@code w:gridSpan="3"} centred cell: Word centres it on
+	 * 297.65, the exact page centre, so its grid edge is at margin + {@code w:tblInd}
+	 * as in mode 15, and docx4j - which took the shift below mode 15 - centred it 5.4pt
+	 * left.  The probes {@code table-indent-compat14} and {@code table-grid-edge-compat14}
+	 * establish the rule for mode 14 itself.
+	 *
+	 * @since 17.0.6
+	 */
 	/** docx4j.convert.out.fo.tables.position (default true): whether a table's w:tblpPr
 	 *  is honoured at all.  @since 17.0.6 */
 	static boolean floatingTablesEnabled() {

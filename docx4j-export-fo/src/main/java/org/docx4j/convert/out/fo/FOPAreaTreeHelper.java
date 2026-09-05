@@ -576,19 +576,26 @@ public class FOPAreaTreeHelper {
     				} else {    				
 		    			float fBpdaPts = fBpdaMilliPts/1000f;
 		    			spm.getRegionAfter().setExtent(fBpdaPts+"pt");
-		    			spm.getRegionBody().setMarginBottom(fBpdaPts+"pt");
-		    			
-		    			// If the bottom margin in Word > what we have, then pad with margin bottom
-		    			float totalHeight = (page.getFooterMargin()/20f ) // twips to points
-		    								+ fBpdaPts;
-		    			
-		    			float extraMargin = (page.getPgMar().getBottom().intValue()/20f) - totalHeight;  
-		    			
-		    			if (extraMargin>0) {
-		    				float required = (page.getPgMar().getBottom().intValue()-page.getFooterMargin())/20f;
-			    			spm.getRegionBody().setMarginBottom(required+"pt");	    				
-		    			} // otherwise, we've expanded to the extent of the footer already
-	    			
+
+		    			/* The mirror of the header rule above: Word ends the body at the
+		    			 * bottom margin, and pulls it up only where the footer reaches
+		    			 * further, ie where w:footer plus the footer's own height is more
+		    			 * than w:pgMar/@w:bottom.  Where there is no footer part (or an
+		    			 * empty one) there is nothing to reserve, and w:footer alone must
+		    			 * not shorten the body: a document whose 44 sectPr all say
+		    			 * w:bottom="0" w:footer="720" and which has no footerReference at
+		    			 * all had its body end 36pt above the page bottom, where Word ran
+		    			 * it to 841.9pt on an A4 page.  Every section's last line - Word
+		    			 * puts it at y=827.3..828.2 - then spilled onto a page of its own,
+		    			 * 21 times: 24 Word pages came out as 44.  @since 17.0.6 */
+		    			float footerMarginPts = page.getFooterMargin()/20f; // twips to points
+		    			float bottomMarginPts = page.getPgMar().getBottom().intValue()/20f;
+		    			float bodyBottom = Math.max(bottomMarginPts,
+		    					(fBpdaPts>0) ? footerMarginPts + fBpdaPts : 0f);
+		    			float spmBottom = Math.min(footerMarginPts, bodyBottom);
+		    			spm.setMarginBottom(spmBottom+"pt");
+		    			spm.getRegionBody().setMarginBottom((bodyBottom-spmBottom)+"pt");
+
     				}
     			}    			
     			

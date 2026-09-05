@@ -115,12 +115,12 @@ public abstract class AbstractWordXmlPicture {
 
             if (dimensions.width>0)
             {
-            	imageElement.setAttribute("width",  Integer.toString(dimensions.width));
+            	imageElement.setAttribute("width",  Integer.toString((int) Math.round(dimensions.width)));
             }
 
             if (dimensions.height>0)
             {
-            	imageElement.setAttribute("height", Integer.toString(dimensions.height));
+            	imageElement.setAttribute("height", Integer.toString((int) Math.round(dimensions.height)));
             }
 
             if (hlinkRef !=null && !hlinkRef.equals(""))
@@ -156,6 +156,17 @@ public abstract class AbstractWordXmlPicture {
         
     }
 
+	/** A length for XSL-FO: as many decimals as it takes, at most two, and no trailing
+	 *  zeros.  Word states a picture's size in EMU, so 857250 EMU is 67.5pt, not 67.
+	 *  @since 17.0.6 */
+	protected static String length(double v) {
+		String s = String.format(java.util.Locale.ROOT, "%.2f", v);
+		while (s.contains(".") && (s.endsWith("0") || s.endsWith("."))) {
+			s = s.substring(0, s.length()-1);
+		}
+		return s;
+	}
+
 	protected Document createXslFoImageElement()
     {
 
@@ -189,12 +200,12 @@ public abstract class AbstractWordXmlPicture {
 //
             if (dimensions.width>0)
             {
-            	imageElement.setAttribute("content-width",  Integer.toString(dimensions.width)+dimensions.widthUnit);
+            	imageElement.setAttribute("content-width",  length(dimensions.width)+dimensions.widthUnit);
             }
 
             if (dimensions.height>0)
             {
-            	imageElement.setAttribute("content-height", Integer.toString(dimensions.height)+dimensions.heightUnit);
+            	imageElement.setAttribute("content-height", length(dimensions.height)+dimensions.heightUnit);
             }
 //
 //            if (hlinkRef !=null && !hlinkRef.equals(""))
@@ -303,10 +314,14 @@ public abstract class AbstractWordXmlPicture {
      */
     public class Dimensions {
     	
-    	public int height;
+    	/** @since 17.0.6 a fractional length: Word's wp:extent is in EMU, and rounding it
+    	 *  to a whole unit lost up to half a point per picture (an image declared 67.5pt
+    	 *  tall came out 67), which moves every line below it. */
+    	public double height;
     	public String heightUnit;
     	
-    	public int width;
+    	/** @since 17.0.6 fractional; see {@link #height} */
+    	public double width;
     	public String widthUnit;
     	
     //  /**
