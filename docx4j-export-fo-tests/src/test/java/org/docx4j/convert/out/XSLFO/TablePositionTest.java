@@ -25,10 +25,13 @@ import org.w3c.dom.NodeList;
  *   margin as padding, so such a table's content was 5.4pt too far right and
  *   overflowed the right margin by the same;</li>
  * <li>in mode 15 (Word 2013) the grid edge itself goes on the indent, and the text a
- *   cell margin further right - and so it does below mode 14: measured on a mode-12
- *   document (no compatibilityMode setting at all) whose first row is one
- *   w:gridSpan="3" centred cell, Word centres it on 297.65, the exact page centre,
- *   where taking the shift centred it 5.4pt left;</li>
+ *   cell margin further right;</li>
+ * <li>modes 11 and 12 take the mode-14 shift too (measured, probes
+ *   table-grid-edge-compat11 / -compat12: Word's first cell text is at 77.3pt for
+ *   w:tblInd 108, where mode 15 puts it at 83.1), but capped at w:tblInd, so a table
+ *   with no w:tblInd sits on the margin - measured on a mode-12 document whose first
+ *   row is one w:gridSpan="3" centred cell, which Word centres on 297.65, the exact
+ *   page centre, where taking the shift centred it 5.4pt left;</li>
  * <li>a w:jc="center" table wider than the text column is centred by Word,
  *   overhanging both margins;</li>
  * <li>widths docx4j chose itself (the autofit pass) are kept inside the text
@@ -130,14 +133,30 @@ public class TablePositionTest {
 		assertEquals("compatibilityMode 14", 0.0, startIndentPt(fo(indented, flags, 14)), 0.01);
 
 		// Word 2013 (mode 15): the grid edge goes on the indent and the text one cell
-		// margin further right (measured: 77.8pt for tblInd 0, 83.1 for 108).  Modes
-		// below 14 do the same: measured on a mode-12 corpus document whose first row is
-		// a single centred w:gridSpan="3" cell, which Word centres on the exact page
-		// centre (297.65 of a 595.3pt page), 5.4pt right of where the shift put it.
-		for (Integer mode : new Integer[] { null, 11, 12, 15, 16 }) {
+		// margin further right (measured: 77.8pt for tblInd 0, 83.1 for 108).
+		for (Integer mode : new Integer[] { 15, 16 }) {
 			assertEquals("compatibilityMode " + mode, 0.0, startIndentPt(fo(plain, flags, mode)), 0.01);
 			assertEquals("compatibilityMode " + mode, 5.4, startIndentPt(fo(indented, flags, mode)), 0.01);
 		}
+
+		// Modes 11 and 12 (and a document with no compatibilityMode setting at all, which
+		// Word opens as mode 12) take the shift as mode 14 does - measured on the
+		// table-grid-edge-compat11 / -compat12 probes, where Word puts the first cell's
+		// text at 77.3pt for w:tblInd 108, the mode-14 position - but capped at w:tblInd,
+		// so the grid edge never goes left of the margin: measured on a mode-12 document
+		// whose first row is a single centred w:gridSpan="3" cell with no w:tblInd, which
+		// Word centres on the exact page centre (297.65 of a 595.3pt page), 5.4pt right
+		// of where an uncapped shift put it.  @since 17.0.6
+		String indentedFar = table("<w:tblInd w:type=\"dxa\" w:w=\"288\"/>",
+				"<w:gridCol w:w=\"2000\"/><w:gridCol w:w=\"2000\"/>", cell(null, "one") + cell(null, "two"));
+		for (Integer mode : new Integer[] { null, 11, 12 }) {
+			assertEquals("compatibilityMode " + mode, 0.0, startIndentPt(fo(plain, flags, mode)), 0.01);
+			assertEquals("compatibilityMode " + mode, 0.0, startIndentPt(fo(indented, flags, mode)), 0.01);
+			// 288 twips = 14.4pt of indent, less the 5.4pt default cell margin
+			assertEquals("compatibilityMode " + mode, 9.0, startIndentPt(fo(indentedFar, flags, mode)), 0.01);
+		}
+		// mode 14 has no cap: 14.4 - 5.4 there too, but 0 - 5.4 for a table with no indent
+		assertEquals("compatibilityMode 14", 9.0, startIndentPt(fo(indentedFar, flags, 14)), 0.01);
 	}
 
 	private void checkCentredOverflow(int flags) throws Exception {

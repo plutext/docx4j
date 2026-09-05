@@ -170,6 +170,23 @@ public class TableWriter extends AbstractTableWriter {
 	 * compatibilityMode setting is mode 12 - Word opens it in compatibility mode -
 	 * and so takes the older rule.</p>
 	 *
+	 * <p><b>Modes 11 and 12 take it too</b>, measured on the table-grid-edge-compat12
+	 * and -compat11 probes (w:tblInd 108, Word's default cell margins and the table's
+	 * own w:tblCellMar 108): Word's first cell text is at 77.3pt in both, exactly as in
+	 * mode 14, where the mode-15 geometry would put it at 83.1.  17.0.6 briefly
+	 * restricted the shift to mode 14 alone, on one corpus document; that document is
+	 * the measurement behind the clamp below.</p>
+	 *
+	 * <p><b>Below mode 14 the grid edge does not move left of the margin</b>: the shift
+	 * is capped at w:tblInd, so a table with no w:tblInd (or one of 0) sits on the
+	 * margin.  Measured on a mode-12 document with no w:tblInd whose first row is a
+	 * single w:gridSpan="3" cell holding a centred paragraph: Word centres that text on
+	 * 297.65pt, the exact centre of the 595.3pt page and of its text column, so the grid
+	 * edge is on the margin; taking the shift centred it on 292.25, one cell margin left,
+	 * and cost that document two of Word's fifteen pages.  Mode 14 has no such cap - the
+	 * table-indent-compat14 probe puts the first cell's text at 72.0pt for no w:tblInd
+	 * and for w:tblInd 0 alike, so there the grid edge is at margin - cell margin.</p>
+	 *
 	 * <p>A w:jc="center" table wider than the text column is a separate case: Word
 	 * centres it, letting it overhang both margins, where we left-aligned it at the
 	 * margin.  Then the grid edge is the negative half-overflow, and no cell margin
@@ -199,8 +216,14 @@ public class TableWriter extends AbstractTableWriter {
 					indent = tblInd.getW().intValue();
 				}
 			}
-			if (compatibilityMode(context) == 14) {
+			int mode = compatibilityMode(context);
+			if (mode < 15) {
 				int shift = leftCellMarginTwips(tblPr);
+				// Below mode 14 the shift never takes the grid edge left of the margin
+				// (measured; see the class comment above): it is capped at w:tblInd.
+				if (mode < 14) {
+					shift = Math.min(shift, Math.max(0, indent));
+				}
 				indent -= shift;
 				// Word does not shift a table nested in a w:tc (see isNested); whether
 				// this one is is not known until the FO is assembled, since in the XSLT
@@ -227,13 +250,12 @@ public class TableWriter extends AbstractTableWriter {
 	 * documents).  {@link WordLayoutFixups#nestedTableGridEdge} gives the shift back to
 	 * the tables that turn out to be nested.
 	 *
-	 * <p>The shift is Word 2010's, ie compatibility mode <em>14</em> exactly.  Below that,
-	 * measured on a document with no {@code compatibilityMode} setting at all (mode 12)
-	 * whose first row is one {@code w:gridSpan="3"} centred cell: Word centres it on
-	 * 297.65, the exact page centre, so its grid edge is at margin + {@code w:tblInd}
-	 * as in mode 15, and docx4j - which took the shift below mode 15 - centred it 5.4pt
-	 * left.  The probes {@code table-indent-compat14} and {@code table-grid-edge-compat14}
-	 * establish the rule for mode 14 itself.
+	 * <p>The shift is taken in every mode below 15 (measured: probes
+	 * {@code table-grid-edge-compat11}, {@code -compat12} and {@code -compat14}), capped
+	 * at {@code w:tblInd} below mode 14 - see {@link #applyStartIndent}.  Below mode 14
+	 * that cap alone puts a nested table (which carries no {@code w:tblInd} of its own)
+	 * on the containing cell's content edge, and this pass then has nothing to give
+	 * back; in mode 14, where the shift is unconditional, it has.</p>
 	 *
 	 * @since 17.0.6
 	 */

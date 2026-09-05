@@ -147,6 +147,33 @@ public class WordLayoutFixupsTest {
 		assertTrue("both blocks inside the container", out.indexOf("<fo:block-container") < out.indexOf(">a<") && out.indexOf(">b<") < out.indexOf("</fo:block-container>"));
 	}
 
+	/**
+	 * Word's exact row height is the whole row, borders included, where FOP reads
+	 * {@code height} as the cell's content height and adds the border it charges the
+	 * cell on top - half of each collapsed border, all of a separate one.  So the
+	 * height comes down by that allowance.  @since 17.0.6
+	 */
+	@Test
+	public void exactRowHeightAllowsForTheBorderFopAdds() {
+		String collapsed = flow("<fo:table border-collapse=\"collapse\"><fo:table-body>"
+				+ "<fo:table-row height=\"20pt\" docx4j-row-exact=\"20pt\">"
+				+ "<fo:table-cell border-top-width=\"0.5pt\" border-bottom-width=\"0.5pt\">"
+				+ "<fo:block>a</fo:block></fo:table-cell>"
+				+ "</fo:table-row></fo:table-body></fo:table>");
+		String out = WordLayoutFixups.apply(collapsed, 15);
+		assertTrue(out, out.contains("height=\"19.5pt\""));
+		assertTrue(out, out.contains("block-progression-dimension=\"19.5pt\""));
+
+		String separate = flow("<fo:table border-collapse=\"separate\"><fo:table-body>"
+				+ "<fo:table-row height=\"20pt\" docx4j-row-exact=\"20pt\">"
+				+ "<fo:table-cell border-top-width=\"0.5pt\" border-bottom-width=\"0.5pt\" padding-top=\"1pt\">"
+				+ "<fo:block>a</fo:block></fo:table-cell>"
+				+ "</fo:table-row></fo:table-body></fo:table>");
+		out = WordLayoutFixups.apply(separate, 15);
+		assertTrue(out, out.contains("height=\"19pt\""));
+		assertTrue(out, out.contains("block-progression-dimension=\"18pt\""));
+	}
+
 	@Test
 	public void zeroSpaceNeedsNoRetain() {
 		String in = flow("<fo:block space-before=\"0in\">one</fo:block>");

@@ -1456,6 +1456,19 @@ public final class WordLayoutFixups {
 	 * Wrap each cell's content in a block-container of that height with
 	 * overflow="hidden": the overflow is clipped rather than drawn, but the row and
 	 * everything below it are where Word puts them.
+	 *
+	 * <p><b>Word's exact height is the whole row, borders included</b>, where FOP reads
+	 * {@code height} on an {@code fo:table-row} as the cell's <em>content</em> height and
+	 * advances to the next row by that plus the border it charges the cell - half of each
+	 * collapsed border, all of a separate one.  So the height is reduced by that border
+	 * allowance, and the block-container clipped to what is then left after the cell's
+	 * padding.  Measured on the page-blank probe (32 rows of {@code w:trHeight w:val="400"
+	 * w:hRule="exact"}, 0.5pt collapsed borders): Word's row pitch is 20.0pt (baselines
+	 * 617.5 / 637.6 / 657.5 / 677.5) and docx4j's was 20.5 (630.3 / 650.8 / 671.3), 16pt
+	 * over the page; FOP's area tree put the rows 20500mp apart for a 20000mp content
+	 * height, and 20000mp apart once the height was 19500mp.  The same 0.5pt is the
+	 * residual of the table-rowheight probe's two exact rows.  {@code w:hRule="atLeast"}
+	 * rows are not touched: Word's own atLeast pitch tracks ours to 0.1pt.</p>
 	 */
 	static void clipExactRows(Document doc) {
 		for (Element row : elements(doc, "table-row")) {
@@ -1464,18 +1477,27 @@ public final class WordLayoutFixups {
 			if (h == null || h.length() == 0) continue;
 			double heightPt = lengthPt(h);
 			if (heightPt <= 0) continue;
+			Element tbl = ancestorTable(row);
+			// FOP charges a collapsed border half to each of the two cells it separates,
+			// a separate border wholly to its own cell
+			double share = tbl != null && "separate".equals(tbl.getAttribute("border-collapse")) ? 1 : 0.5;
 			NodeList cells = row.getChildNodes();
+			double content = heightPt;
 			for (int i = 0; i < cells.getLength(); i++) {
 				if (!(cells.item(i) instanceof Element) || !isFo((Element) cells.item(i), "table-cell")) continue;
 				Element cell = (Element) cells.item(i);
-				double inner = heightPt - lengthPt(cell.getAttribute("padding-top")) - lengthPt(cell.getAttribute("padding-bottom"))
-						- lengthPt(cell.getAttribute("border-top-width")) - lengthPt(cell.getAttribute("border-bottom-width"));
+				double borders = share * (lengthPt(cell.getAttribute("border-top-width"))
+						+ lengthPt(cell.getAttribute("border-bottom-width")));
+				double inner = heightPt - borders
+						- lengthPt(cell.getAttribute("padding-top")) - lengthPt(cell.getAttribute("padding-bottom"));
+				content = Math.min(content, heightPt - borders);
 				Element container = doc.createElementNS(FO_NS, "fo:block-container");
 				container.setAttribute("block-progression-dimension", org.docx4j.fonts.WordLineMetrics.format(Math.max(0.1, inner)));
 				container.setAttribute("overflow", "hidden");
 				while (cell.getFirstChild() != null) container.appendChild(cell.getFirstChild());
 				cell.appendChild(container);
 			}
+			row.setAttribute("height", org.docx4j.fonts.WordLineMetrics.format(Math.max(0.1, content)));
 		}
 	}
 
@@ -2292,17 +2314,38 @@ public final class WordLayoutFixups {
 		}
 	}
 
-	/** Whether this block would put nothing but whitespace on its line: no element
-	 *  children of its own, and no non-whitespace text (the empty-paragraph placeholder). */
+	/**
+	 * Whether this block would put nothing but whitespace on its line.
+	 *
+	 * <p>Empty inline wrappers do not count, and neither does whitespace-only text: the
+	 * paragraph a nested table forces arrives here as an {@code fo:block} holding an
+	 * empty {@code fo:inline} (the run whose only content was the paragraph mark) plus
+	 * the preserved space {@link #emptyLineForBlockWithNoContent} appends to it, so a
+	 * test that stopped at the first element child never fired on the shape it was
+	 * written for.  Measured on the table-grid-edge-compat12 probe: Word's paragraph
+	 * after a cell's nested table is at 283.3, 27.4pt below the nested row's baseline,
+	 * where docx4j went to 294.8 - one 11.5pt line too many, twice over.</p>
+	 *
+	 * <p>Anything else - a graphic, a leader, a nested block or a positioned container -
+	 * is content, and the block keeps its line.</p>
+	 */
 	private static boolean isBlank(Element el) {
 		NodeList children = el.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			Node n = children.item(i);
-			if (n instanceof Element) return false;
-			if ((n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE)
-					&& n.getNodeValue().trim().length() > 0) {
-				return false;
+			if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
+				if (n.getNodeValue() != null && n.getNodeValue().trim().length() > 0) return false;
+				continue;
 			}
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			if (child.hasAttribute("id")) return false; // a bookmark's anchor: keep it
+			if (isFo(child, "inline") || isFo(child, "basic-link") || isFo(child, "wrapper")
+					|| isFo(child, "bidi-override")) {
+				if (!isBlank(child)) return false;
+				continue;
+			}
+			return false;
 		}
 		return true;
 	}

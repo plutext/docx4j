@@ -34,7 +34,7 @@ line-break parity, page-break parity, baseline deltas and x deltas are reported,
 rasterised overlay per page.
 
 The harness is `docx4j-layout-fidelity` (in the repository, not in the reactor, not
-deployed; see its README). 45 probes have Word goldens:
+deployed; see its README). 53 probes have Word goldens:
 
 `spacing-adjacent`, `spacing-contextual`, `spacing-autospacing`,
 `spacing-autospacing-context`, `spacing-page-top`, `spacing-section-start`,
@@ -43,11 +43,14 @@ deployed; see its README). 45 probes have Word goldens:
 `footnote-space-after`, `image-inline`, `image-anchored`, `ptab-right`,
 `page-header-footer`, `page-header-footnotes`, `page-first-even-odd`,
 `page-first-even-odd-heights`, `page-tall-header`, `page-landscape-margins`,
-`table-fixed`, `table-autofit`, `table-width`, `table-span`, `table-nested`,
-`table-floating`, `table-cellspacing`, `table-rowheight`, `table-indent-compat14`,
-`table-indent-compat15`, `hyphenation`, `hyphenation-zone`, `tab-jc`, `pbdr-space`,
-`table-grid-edge-compat14`, `table-grid-edge-compat15`, `table-autofit-wrap`,
-`table-floating-anchor`, `columns-unequal`.
+`page-blank`, `table-fixed`, `table-autofit`, `table-width`, `table-span`,
+`table-nested`, `table-floating`, `table-cellspacing`, `table-rowheight`,
+`table-indent-compat14`, `table-indent-compat15`, `hyphenation`, `hyphenation-zone`,
+`tab-jc`, `tab-clamp-right`, `tab-leader-resolved`, `tab-leader-trailing`,
+`tab-toc-pageref`, `pbdr-space`, `table-grid-edge-compat11`,
+`table-grid-edge-compat12`, `table-grid-edge-compat14`, `table-grid-edge-compat15`,
+`table-grid-overwide`, `table-autofit-wrap`, `table-floating-anchor`,
+`columns-unequal`.
 
 A rule a probe could not settle on its own was checked against a corpus of 194 real
 documents scored against Word's own PDFs of them, so a change is accepted only when the
@@ -340,6 +343,17 @@ row starts at 54.7, 10.8pt later, with no room for an 11.5pt line, where docx4j 
 -> 64.8. The header table then ended 28.9pt low and the body started 35.7 to 37.0pt low,
 which turned Word's two pages into four. Only the *cell-final* paragraph that follows the
 table: an empty paragraph anywhere else in a cell keeps its line, as [§2.5](#s25) says.
+
+Word writes that paragraph with a **run** in it whose text is empty, so it reaches the FO
+as a block holding an empty `fo:inline` (plus the preserved space the empty-line rule
+above gives a block which would otherwise build no line area), and a blank test that
+stopped at the first element child never fired on the shape the rule was written for.
+Measured on `table-grid-edge-compat12`, whose P03 row holds a nested table in its left
+cell: Word's next paragraph is at 283.3, 27.4pt below the nested row's baseline, where
+docx4j went to 294.8 - one 11.5pt line and its spacing too many, after each of the probe's
+two nested tables. Empty inline wrappers and whitespace-only text are now blank; a
+graphic, a leader, a nested block or a positioned container is content, and the block
+keeps its line.
 
 **Borders as padding.** A paragraph's borders and shading are resolved through the style
 hierarchy, not read only from its direct `w:pPr` (Word's default Title style has a bottom
@@ -958,23 +972,27 @@ inline at 80% of the size. HTML gets `text-transform` / `font-variant`.
 ### 6.1 Where the table sits
 
 Normally the table's grid edge sits at the text margin + `w:tblInd`, and the first column's
-text one left cell margin further right. **In compatibility mode 14** - Word 2010's layout
-engine, and that mode alone - it is the first column's *text* that lands on the text margin
-+ `w:tblInd`, so the grid edge is one left cell margin further back.
+text one left cell margin further right. **Below compatibility mode 15** - Word 2010's
+layout engine and the ones before it - it is the first column's *text* that lands on the
+text margin + `w:tblInd`, so the grid edge is one left cell margin further back.
 
 Measured with `table-indent-compat14` / `-compat15`: the first cell's text at 72.0 / 72.0 /
 77.3pt for no `w:tblInd`, `w:tblInd` 0 and `w:tblInd` 108 in mode 14, and at 77.8 / 77.8 /
-83.1pt in mode 15.
+83.1pt in mode 15. **Modes 11 and 12 take the shift too**: measured with
+`table-grid-edge-compat12` and `-compat11` (`w:tblInd` 108, at the top level with Word's
+default cell margins and with the table's own `w:tblCellMar` 108, and nested in a cell),
+Word's first cell text is at 77.3pt in both modes, exactly where mode 14 puts it and 5.8pt
+left of where mode 15 would. 17.0.6 briefly restricted the shift to mode 14 alone, on the
+strength of the corpus document in the next paragraph, and those two goldens settled it.
 
-**Below mode 14 the shift does not apply**, although docx4j applied it there until 17.0.6.
-There is no Word probe for the older modes; the measurement is a corpus document with no
-`compatibilityMode` setting at all (so mode 12) whose first table row is a single
-`w:gridSpan="3"` cell holding a centred paragraph: Word centres that text on 297.65pt, the
-exact centre of a 595.3pt page, where taking the shift centred it on 292.25 - 5.4pt, one
-cell margin, left. Fitting the rule to mode 14 alone also took that document from 13 pages
-to Word's 15. The `table-grid-edge-compat12` and `-compat11` probes (`w:tblInd` 108 with
-Word's default cell margins and with the table's own, at the top level and nested in a
-cell) are that measurement, and await a Word golden.
+**Below mode 14 the shift is capped at `w:tblInd`**, so the grid edge never moves left of
+the text margin and a table with no `w:tblInd` (or one of 0) sits on the margin. The
+measurement is a corpus document with no `compatibilityMode` setting at all (so mode 12,
+§1.3) whose first table row is a single `w:gridSpan="3"` cell holding a centred paragraph
+and whose table has no `w:tblInd`: Word centres that text on 297.65pt, the exact centre of
+a 595.3pt page and of its text column, where taking the shift centred it on 292.25 - 5.4pt,
+one cell margin, left, and cost the document two of Word's fifteen pages. Mode 14 has no
+such cap, which is what its own probe's 72.0pt for no `w:tblInd` says.
 
 <a id="s61nested"></a>**A nested table takes no shift either.** Word puts the grid edge of
 a table inside a `w:tc` on the containing cell's **content** edge, and adds the nested
@@ -983,12 +1001,14 @@ margin 28.35pt, outer `w:tblInd` 108, cell margin 108 both levels): Word's clip 
 nested table runs from 33.9 = 28.35 + 5.4, and its first cell's text is at 39.1, where
 docx4j drew it at 34.0 - one cell margin left, on every cell of every nested table. The
 outer table of the same document matched Word exactly, which is what proves the rule is
-about nesting and not about the mode. There were 45 such tables across 11 corpus documents,
-and it was the first divergence in four of them. Whether a table is nested is not known
-where the indent is computed - in the XSLT pathway the `w:tbl` reaching the table writer
-was unmarshalled on its own, so it has no parent - so the shift is stamped on the
-`fo:table` and `WordLayoutFixups.nestedTableGridEdge` gives it back to the tables that turn
-out to be inside an `fo:table-cell`.
+about nesting and not about the mode; `table-grid-edge-compat12` says the same at mode 12,
+where Word's nested cell text is at 83.1 = the containing cell's content edge (77.4) plus
+one cell margin. Whether a table is nested is not known where the indent is computed - in
+the XSLT pathway the `w:tbl` reaching the table writer was unmarshalled on its own, so it
+has no parent - so the shift is stamped on the `fo:table` and
+`WordLayoutFixups.nestedTableGridEdge` gives it back to the tables that turn out to be
+inside an `fo:table-cell`. Below mode 14 the cap does that on its own: a nested table
+carries no `w:tblInd`, so it takes no shift to give back.
 
 A `w:jc="center"` table wider than the text column is **centred by Word, overhanging both
 margins**; its start-indent is the negative half of the overflow.
@@ -1088,7 +1108,9 @@ grid with `w:tblInd` 0 is fitted into the text column (day columns 140.6 / 133.1
 Word clamps an over-wide grid only where the author has not deliberately indented the
 table out of the column. The `table-grid-overwide` probe - the same grid 1.7%, 10% and 29%
 over the column, each at `w:tblInd` 0 and −1300, autofit and fixed layout, every `w:tcW`
-in dxa - is that measurement, and awaits a Word golden; nothing has been changed here.
+in dxa - is that measurement; nothing has been changed here. Its Word golden has since
+arrived, and docx4j matches it on every line of all nine pages, so the rule above covers
+the shapes the probe holds and the disagreement is elsewhere.
 
 ### 6.6 `w:tblCellSpacing`
 
@@ -1122,6 +1144,20 @@ row at that height and lets the text overflow over the rows below, where FOP tre
 height as a minimum and grows the row. docx4j clips the cell content to the exact height
 (an `fo:block-container` with `overflow="hidden"`), so the rows below sit where Word puts
 them; the overflowing text is clipped rather than drawn over them.
+
+**Word's exact height is the whole row, borders included.** FOP reads `height` on an
+`fo:table-row` as the cell's *content* height and advances to the next row by that plus
+the border it charges the cell - half of each collapsed border, all of a separate one - so
+every exact row came out half a point too tall for a 0.5pt border. `WordLayoutFixups`
+takes that allowance off the row's `height` as well as off the clipping container.
+Measured on `page-blank`, whose first section is 32 rows of `w:trHeight w:val="400"
+w:hRule="exact"` (20pt): Word's row pitch is 20.0 (baselines 617.5 / 637.6 / 657.5 /
+677.5) and docx4j's was 20.5 (630.3 / 650.8 / 671.3), 16pt over the page; FOP's area tree
+put the rows 20500 millipoints apart for a 20000mp content height, and 20000mp apart once
+the height was 19500mp. The same half point was the residual of `table-rowheight`, whose
+two exact rows were 30.5 and 10.5pt against Word's 30.1 and 10.0 (probe line parity 89% ->
+100%). `w:hRule="atLeast"` rows are not touched: Word's atLeast pitch tracks docx4j's to
+0.1pt on the same probe.
 
 <a id="s69"></a>
 ### 6.8 Floating tables

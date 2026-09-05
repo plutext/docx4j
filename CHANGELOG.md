@@ -100,10 +100,12 @@ picture is now the picture's height, with no descent below it
 - bold and italic are now found for a substituted font family (DejaVu Sans, Noto Sans, P052,
 Carlito, the Liberation and URW families), so a bold run is no longer set in the regular
 face's widths - it was 11-18% narrow
-- the compatibility-mode-14 table grid edge is now applied only in that mode, and not to a
-table nested in a w:tc: Word puts a nested table's grid edge on the containing cell's
-content edge
-- the w:p OOXML requires after a nested table in a w:tc now takes no line, as in Word
+- the table grid edge Word uses below compatibility mode 15 (the first column's text on the
+margin + w:tblInd) is now applied in modes 11 and 12 as well as 14, capped at w:tblInd below
+mode 14 so the grid never starts left of the margin, and not applied to a table nested in a
+w:tc: Word puts a nested table's grid edge on the containing cell's content edge
+- the w:p OOXML requires after a nested table in a w:tc now takes no line, as in Word,
+including the shape Word writes it in - a paragraph holding a run whose text is empty
 - w:contextualSpacing now cancels the space at a cell's edges for a cell holding a single
 paragraph, which was never examined
 - w:pgMar w:bottom="0" no longer reserves w:footer as the bottom margin where the section
@@ -146,6 +148,9 @@ being drawn on top of each other at the foot of one page instead of on a page ea
 - a picture is now drawn filling the frame the document declares (wp:extent), as Word draws
 it: FOP's uniform scaling left a picture whose crop or stretch changed its aspect ratio
 smaller than the document asks for, which re-paginated documents full of photographs
+- a row of w:trHeight w:hRule="exact" is now exactly that tall, borders included as Word
+counts them: FOP added the cell's border on top of the height, making every such row half a
+point too tall (16pt over a page of 32 rows)
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

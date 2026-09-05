@@ -55,6 +55,11 @@ public class NestedTableTest extends AbstractXSLFOTest {
 	/** the mandatory empty paragraph OOXML requires after a nested table in a cell */
 	private static final String MANDATORY_P = "<w:p/>";
 
+	/** The same, as Word writes it: the paragraph carries a run whose text is empty, which
+	 *  reaches the FO as an fo:block holding an empty fo:inline (plus the preserved space
+	 *  WordLayoutFixups gives a block that would otherwise build no line area). */
+	private static final String MANDATORY_P_EMPTY_RUN = "<w:p><w:r><w:t></w:t></w:r></w:p>";
+
 	private static String outerTable(String cellContent) {
 		return "<w:tbl><w:tblPr><w:tblW w:w=\"9000\" w:type=\"dxa\"/>"
 				+ "<w:tblInd w:w=\"108\" w:type=\"dxa\"/><w:tblLayout w:type=\"fixed\"/>"
@@ -126,6 +131,34 @@ public class NestedTableTest extends AbstractXSLFOTest {
 		theNestedTableKeepsItsCellMargin(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
+	/**
+	 * And below mode 14, where the shift is capped at the table's own w:tblInd, both
+	 * tables land on the same edges: measured on the table-grid-edge-compat12 and
+	 * -compat11 probes, Word's top-level cell text is at 77.3 (margin 72 + w:tblInd 5.4)
+	 * and the nested table's at 83.1, the containing cell's content edge plus its own
+	 * cell margin.  @since 17.0.6
+	 */
+	private void theGridEdgeBelowModeFourteen(int flags) throws Exception {
+		for (int mode : new int[] { 11, 12 }) {
+			NodeList tables = fo(pkg(mode, NESTED + MANDATORY_P), flags).getElementsByTagNameNS(FO, "table");
+			assertEquals("outer and nested", 2, tables.getLength());
+			assertEquals("the top-level table's grid edge, mode " + mode, 0,
+					lengthPt(((Element) tables.item(0)).getAttribute("start-indent")), 0.05);
+			assertEquals("the nested table's grid edge, mode " + mode, 0,
+					lengthPt(((Element) tables.item(1)).getAttribute("start-indent")), 0.05);
+		}
+	}
+
+	@Test
+	public void theGridEdgeBelowModeFourteenVisitor() throws Exception {
+		theGridEdgeBelowModeFourteen(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void theGridEdgeBelowModeFourteenXslt() throws Exception {
+		theGridEdgeBelowModeFourteen(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	// ---------------------------------------------------------------- the mandatory paragraph
 
 	private void theMandatoryParagraphTakesNoLine(int flags) throws Exception {
@@ -141,6 +174,46 @@ public class NestedTableTest extends AbstractXSLFOTest {
 	@Test
 	public void theMandatoryParagraphTakesNoLineXslt() throws Exception {
 		theMandatoryParagraphTakesNoLine(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/**
+	 * The shape Word actually writes: the paragraph carries a run, so the fo:block holds
+	 * an empty fo:inline.  A blank test that stopped at the first element child never
+	 * fired on it - measured on the table-grid-edge-compat12 probe, where Word's next
+	 * paragraph is 27.4pt below the nested row's baseline and docx4j left 40.0pt, one
+	 * 11.5pt line and its spacing too many, after each of the probe's two nested tables.
+	 * @since 17.0.6
+	 */
+	private void theMandatoryParagraphWithARunTakesNoLine(int flags) throws Exception {
+		Element cell = firstCell(fo(pkg(14, NESTED + MANDATORY_P_EMPTY_RUN), flags));
+		assertEquals("the cell holds the nested table and nothing else", 1, childElements(cell));
+	}
+
+	@Test
+	public void theMandatoryParagraphWithARunTakesNoLineVisitor() throws Exception {
+		theMandatoryParagraphWithARunTakesNoLine(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void theMandatoryParagraphWithARunTakesNoLineXslt() throws Exception {
+		theMandatoryParagraphWithARunTakesNoLine(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/** A paragraph with text in it after the nested table is not the mandatory one. */
+	private void aParagraphWithTextAfterTheTableKeepsItsLine(int flags) throws Exception {
+		Element cell = firstCell(fo(pkg(14,
+				NESTED + "<w:p><w:r><w:t>after</w:t></w:r></w:p>"), flags));
+		assertEquals("the nested table and the paragraph after it", 2, childElements(cell));
+	}
+
+	@Test
+	public void aParagraphWithTextAfterTheTableKeepsItsLineVisitor() throws Exception {
+		aParagraphWithTextAfterTheTableKeepsItsLine(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void aParagraphWithTextAfterTheTableKeepsItsLineXslt() throws Exception {
+		aParagraphWithTextAfterTheTableKeepsItsLine(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	/** But only that one: an empty paragraph elsewhere in the cell keeps its line. */
