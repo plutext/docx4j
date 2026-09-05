@@ -77,6 +77,8 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
 | `docx4j.convert.out.fo.pictures.float` | `true` | Whether a picture Word wraps text around may be an `fo:float`. `false` lays such pictures out in the flow (no text beside them, but immune to the FOP float defect, §10). Text boxes are never floats whatever this says. |
+| `docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable` | unset | Names an ImageMagick/GraphicsMagick executable. Set, a picture FOP cannot paint (EMF) is converted to PNG and painted; unset, its space is reserved but it is not drawn (§9.4). |
+| `docx4j.convert.out.fo.pictures.convertDensity` | `300` | Pixels per inch that converter rasterises a metafile at. |
 | `docx4j.convert.out.printHiddenText` | `false` | Hidden text (`w:vanish`) is not rendered and takes no space, as Word prints it. `true` renders it. PDF and HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
 
@@ -804,6 +806,30 @@ and paragraph mark are all hidden leaves no line at all. Word's "print hidden te
 application printing option rather than part of the docx, so it is the docx4j property
 `docx4j.convert.out.printHiddenText` (default `false`). PDF and HTML.
 
+### 9.4 A picture FOP cannot paint
+
+Word draws every picture. FOP paints only the formats it has a loader for, and when it has
+none it drops the viewport with the picture, so the space Word gives it collapses and
+everything below moves up the page. Two kinds hit that: **EMF** (FOP can size it from the
+metafile header but there is no EMF loader for PDF output) and **bytes that are no image at
+all** - Word stores the web server's error page as the picture part when a linked picture
+cannot be fetched, and one document of a 157-document corpus held eighteen of those.
+
+Such a picture is pointed at a transparent 1x1 PNG (a `data:` URI, which FOP resolves) and
+given `scaling="non-uniform"`, so the extent the document declares is reserved exactly -
+which is what the layout needs - and one line is logged for the document rather than an
+error per picture. Where
+`docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable`
+names a converter, the metafile is converted to PNG and painted instead.
+
+The formats FOP does paint, with what docx4j already depends on (xmlgraphics-commons, the
+JDK's ImageIO, Batik): PNG, JPEG - baseline, progressive and CMYK alike, since FOP passes
+JPEG through to the PDF unchanged - GIF, BMP, TIFF, EPS, SVG and WMF (Batik's loader). No
+extra ImageIO plugin is needed for any of them; measured, not assumed. A palette TIFF with
+LZW compression is the one gap: the JDK's own TIFF reader throws
+`UnsupportedOperationException` from `TIFFImageReader.readRaster` on it, which fails the
+whole export; the TwelveMonkeys `imageio-tiff` plugin on the classpath reads it.
+
 ---
 
 ## 10. Known FOP defects and limitations
@@ -822,6 +848,17 @@ Worked around here, and worth knowing about:
   square/tight/through wrapping are the only floats docx4j emits;
   `docx4j.convert.out.fo.pictures.float=false` avoids them. The default stays `true`
   because the wrapping is right far more often than the defect bites.
+- **`fo:float` plus a block inside an inline throws.** A float nested in an `fo:block`
+  sharing a flow with an `fo:block` nested in an `fo:inline` makes FOP throw
+  `NullPointerException` from `TraitSetter.setVisibility`, called with the null
+  `curBlockArea` of a `BlockLayoutManager` that produced no area; the export fails.
+  A block inside an inline is how the visitor pathway emits a line break inside a run, so
+  the combination is common: three documents of a 157-document corpus failed on it.
+  Minimal case: `<fo:block><fo:float float="right"><fo:block/></fo:float><fo:inline>
+  <fo:block>x</fo:block></fo:inline></fo:block>`. The float lays out correctly as a direct
+  child of `fo:flow`, and `WordLayoutFixups` moves it there in a document which has both
+  (only then: at flow level the float anchors slightly higher, which measures a little
+  further from Word).
 - **A block-container in a multi-column flow** makes FOP throw when it balances the last
   page's columns, which is why merged sections carry their margin differences as indents
   ([§7](#s74)).

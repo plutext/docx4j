@@ -12,6 +12,19 @@ PDF via XSL FO:
 w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit, w:doNotHyphenateCaps and
 w:suppressAutoHyphens.  FOP still needs hyphenation patterns, which docx4j does not ship;
 docx4j.convert.out.fo.hyphenate now overrides the document (true: all, false: none)
+- documents which failed to export at all now export: a repeated bookmark name (which Word
+allows, FOP does not) is given an id only once; and an anchored picture's fo:float is moved
+to flow level where a line break inside a run follows it, a combination which threw
+NullPointerException in FOP's BlockLayoutManager
+- a picture FOP cannot paint (EMF, or bytes which are no image at all - Word stores the web
+server's error page when a linked picture cannot be fetched) now reserves the space the
+document declares for it, instead of collapsing and moving everything below it up the page.
+One line is logged per document rather than an error per picture.  Set
+docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable to
+convert such a picture with ImageMagick/GraphicsMagick and paint it (density:
+docx4j.convert.out.fo.pictures.convertDensity, default 300).  PNG, JPEG (baseline,
+progressive and CMYK), GIF, BMP, TIFF, EPS, SVG and WMF are painted as before, with no extra
+ImageIO plugin
 
 Other:
 - PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting

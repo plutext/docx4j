@@ -167,4 +167,22 @@ public abstract class AbstractConversionContext {
 		return log;
 	}
 
+	/** The ids already put in the output document; see {@link #claimId(String)}. */
+	private final java.util.Set<String> claimedIds = new java.util.HashSet<String>();
+
+	/**
+	 * Claim an id for the output document.  Word does not require a bookmark's name to
+	 * be unique in a document (copy/paste and merges routinely leave two of a name),
+	 * but XSL FO and HTML both require an id to be, and FOP refuses to render a
+	 * document with a repeated one at all.  Writers therefore claim the id first and
+	 * emit it only if it was free; a reference to the name then resolves to the first
+	 * occurrence, which is what Word does with it too.
+	 *
+	 * @return true the first time this id is claimed in this conversion
+	 * @since 17.0.6
+	 */
+	public boolean claimId(String id) {
+		return claimedIds.add(id);
+	}
+
 }

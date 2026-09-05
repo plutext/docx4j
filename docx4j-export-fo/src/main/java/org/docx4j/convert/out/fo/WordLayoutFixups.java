@@ -18,6 +18,7 @@
  */
 package org.docx4j.convert.out.fo;
 
+import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -136,6 +137,8 @@ public final class WordLayoutFixups {
 		lineBoxAttributes(doc, compatibilityMode, hyphenation);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
+		hoistFloats(doc);
+		reserveUnpaintablePictures(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
 		applyContextualSpacing(doc);
 		applyAutoSpacingBetweenListItems(doc);
@@ -532,6 +535,215 @@ public final class WordLayoutFixups {
 			wrapper.appendChild(abs);
 		}
 		para.insertBefore(wrapper, para.getFirstChild());
+	}
+
+	// ------------------------------------------------------------ 0d. floats at flow level
+
+	/**
+	 * Move every fo:float to be a direct child of its fo:flow, immediately before the
+	 * flow-level ancestor it sits in.
+	 *
+	 * <p>FOP throws NullPointerException from TraitSetter.setVisibility (called with the
+	 * null curBlockArea of a BlockLayoutManager which produced no area) whenever a float
+	 * nested in an fo:block shares a flow with an fo:block nested in an fo:inline - which
+	 * is how a line break inside a run reaches the FO (BrWriter emits a block with
+	 * linefeed-treatment="preserve"), so it is a common combination and the whole export
+	 * fails.  The float is laid out correctly when it is a direct child of the flow.</p>
+	 *
+	 * <p>Only the floats which the crash is in prospect for are moved: it takes a block
+	 * inside an inline <em>after</em> the float (measured - one before it lays out), and
+	 * at flow level a float anchors just above its paragraph rather than at the
+	 * paragraph's first line, which measures a little further from Word (the
+	 * image-anchored probe fell from 86% to 76% when every float was moved, and a real
+	 * document whose only such block precedes its floats regressed with it).  The XSLT
+	 * pathway emits a line break as a sibling of the run's inlines rather than inside
+	 * one, so it never needs this.</p>
+	 *
+	 * <p>A float inside a table cell, header/footer or footnote has no flow ancestor;
+	 * those are left alone (FOP ignores them there in any case, and
+	 * {@link #anchorImage} does not create them).</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void hoistFloats(Document doc) {
+		List<Element> floats = elements(doc, "float");
+		if (floats.isEmpty()) return;
+		java.util.Map<Element, Integer> at = new java.util.HashMap<Element, Integer>();
+		int lastBlockInsideInline = number(doc.getDocumentElement(), new int[1], at);
+		if (lastBlockInsideInline < 0) return; // FOP copes with floats on their own
+		for (Element fl : floats) {
+			Integer position = at.get(fl);
+			if (position == null || position > lastBlockInsideInline) continue;
+			Node child = fl;
+			Node parent = fl.getParentNode();
+			while (parent instanceof Element && !isFo((Element) parent, "flow")) {
+				child = parent;
+				parent = parent.getParentNode();
+			}
+			if (!(parent instanceof Element) || child == fl) continue; // already at flow level
+			parent.insertBefore(fl, child);
+		}
+	}
+
+	/**
+	 * Numbers the elements in document order, recording where each fo:float is.
+	 *
+	 * @return the position of the last fo:block inside an fo:inline - the shape a line
+	 *         break inside a run produces, and the other half of the crash - or -1.
+	 */
+	private static int number(Element el, int[] counter, java.util.Map<Element, Integer> floats) {
+		int last = -1;
+		int position = counter[0]++;
+		if (isFo(el, "float")) {
+			floats.put(el, position);
+		} else if (isFo(el, "block")) {
+			Node parent = el.getParentNode();
+			if (parent instanceof Element && isFo((Element) parent, "inline")) last = position;
+		}
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) last = Math.max(last, number((Element) n, counter, floats));
+		}
+		return last;
+	}
+
+	// ------------------------------------------------------------ 0e. pictures FOP cannot paint
+
+	/** A 1x1 fully transparent PNG as a data: URI; FOP resolves those. */
+	private static final String TRANSPARENT_PNG = "data:image/png;base64,"
+			+ "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+	/** The executable BinaryPartAbstractImage.convertToPNG uses; unset by default. */
+	private static final String CONVERTER_PROPERTY =
+			"docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable";
+
+	/** Pixels per inch the converter rasterises a metafile at. */
+	private static final String CONVERTER_DENSITY_PROPERTY = "docx4j.convert.out.fo.pictures.convertDensity";
+
+	/**
+	 * Word draws every picture; FOP paints only the formats it has a loader for.  A
+	 * picture it cannot paint is not just missing: FOP drops the viewport with it, so
+	 * the space Word gives the picture collapses and everything below moves up.
+	 *
+	 * <p>The formats docx4j's dependencies cover are PNG, JPEG (baseline, progressive and
+	 * CMYK alike), GIF, BMP, TIFF, EPS, SVG and WMF (that last through Batik).  EMF has a
+	 * preloader but no loader, so FOP scales the viewport to the metafile's own aspect
+	 * ratio and paints nothing; bytes that are no image at all (Word stores the server's
+	 * 404 page when a linked picture cannot be fetched) have neither, and collapse.</p>
+	 *
+	 * <p>Each such picture is pointed at a transparent 1x1 PNG and scaled non-uniformly,
+	 * which reserves exactly the extent the document declares - what Word's layout needs -
+	 * and one line is logged for the document rather than an error per picture.  If
+	 * {@value #CONVERTER_PROPERTY} names an ImageMagick/GraphicsMagick executable, a
+	 * metafile is converted to PNG and painted instead.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void reserveUnpaintablePictures(Document doc) {
+		java.util.Map<String, String> converted = new java.util.HashMap<String, String>();
+		java.util.Map<String, Integer> reserved = new java.util.TreeMap<String, Integer>();
+		for (Element g : elements(doc, "external-graphic")) {
+			String src = g.getAttribute("src");
+			if (src == null || !src.startsWith("file:")) continue; // data:/cid: are handler output
+			File f = fileOf(src);
+			if (f == null || !f.isFile()) continue;
+			String format = sniff(f);
+			if (format == null) continue; // FOP can paint it
+
+			String png = converted.containsKey(src) ? converted.get(src) : convertToPng(f);
+			converted.put(src, png);
+			if (png != null) {
+				g.setAttribute("src", png);
+				continue;
+			}
+			g.setAttribute("src", TRANSPARENT_PNG);
+			if (g.hasAttribute("content-width") && g.hasAttribute("content-height")) {
+				g.setAttribute("scaling", "non-uniform"); // a 1x1 image would otherwise go square
+			}
+			Integer n = reserved.get(format);
+			reserved.put(format, n == null ? 1 : n + 1);
+		}
+		if (!reserved.isEmpty()) {
+			int total = 0;
+			for (Integer n : reserved.values()) total += n;
+			log.warn("FOP cannot paint " + total + " picture(s) in this document " + reserved
+					+ "; their space is reserved but they are not drawn.  Set " + CONVERTER_PROPERTY
+					+ " to convert them with ImageMagick/GraphicsMagick and draw them.");
+		}
+	}
+
+	private static File fileOf(String src) {
+		try {
+			return new File(new java.net.URI(src));
+		} catch (Exception e) {
+			log.debug("Not a file URI: " + src);
+			return null;
+		}
+	}
+
+	/**
+	 * @return null if FOP can paint the file, otherwise the format's name (for the log).
+	 */
+	private static String sniff(File f) {
+		byte[] b = new byte[64];
+		int n;
+		try (java.io.InputStream is = new java.io.FileInputStream(f)) {
+			n = is.readNBytes(b, 0, b.length);
+		} catch (java.io.IOException e) {
+			return "unreadable";
+		}
+		if (n >= 8 && b[0] == (byte) 0x89 && b[1] == 'P' && b[2] == 'N' && b[3] == 'G') return null;
+		if (n >= 3 && b[0] == (byte) 0xFF && b[1] == (byte) 0xD8 && b[2] == (byte) 0xFF) return null;
+		if (n >= 4 && b[0] == 'G' && b[1] == 'I' && b[2] == 'F' && b[3] == '8') return null;
+		if (n >= 2 && b[0] == 'B' && b[1] == 'M') return null;
+		if (n >= 4 && ((b[0] == 'I' && b[1] == 'I' && b[2] == 42 && b[3] == 0)
+				|| (b[0] == 'M' && b[1] == 'M' && b[2] == 0 && b[3] == 42))) return null; // TIFF
+		if (n >= 4 && b[0] == '%' && b[1] == '!' && b[2] == 'P' && b[3] == 'S') return null; // EPS
+		if (n >= 4 && b[0] == (byte) 0xC5 && b[1] == (byte) 0xD0 && b[2] == (byte) 0xD3
+				&& b[3] == (byte) 0xC6) return null; // DOS EPS
+		// WMF: Batik's loader, which FOP uses when it is on the classpath
+		if (n >= 4 && b[0] == (byte) 0xD7 && b[1] == (byte) 0xCD && b[2] == (byte) 0xC6
+				&& b[3] == (byte) 0x9A) return null;
+		if (n >= 4 && b[0] == 1 && b[1] == 0 && b[2] == 9 && b[3] == 0) return null;
+		int from = (n >= 3 && b[0] == (byte) 0xEF && b[1] == (byte) 0xBB && b[2] == (byte) 0xBF) ? 3 : 0;
+		String head = new String(b, from, Math.max(0, n - from),
+				java.nio.charset.StandardCharsets.ISO_8859_1).trim();
+		if (head.startsWith("<?xml") || head.startsWith("<svg")) return null;
+		if (n >= 44 && b[40] == ' ' && b[41] == 'E' && b[42] == 'M' && b[43] == 'F') return "EMF";
+		if (head.regionMatches(true, 0, "<!doctype html", 0, 14) || head.regionMatches(true, 0, "<html", 0, 5)) {
+			return "not an image (HTML)";
+		}
+		if (n == 0) return "empty";
+		return "unrecognised";
+	}
+
+	/**
+	 * @return the URI of a PNG the picture was converted to, or null if no converter is
+	 *         configured or it could not do it.
+	 */
+	private static String convertToPng(File f) {
+		String exe = org.docx4j.Docx4jProperties.getProperty(CONVERTER_PROPERTY);
+		if (exe == null || exe.trim().length() == 0) return null;
+		String density = org.docx4j.Docx4jProperties.getProperty(CONVERTER_DENSITY_PROPERTY, "300");
+		File png = new File(f.getPath() + ".docx4j.png");
+		try {
+			if (!png.isFile() || png.length() == 0) {
+				Process p = new ProcessBuilder(exe.trim(), "-density", density, "-units", "PixelsPerInch",
+						f.getPath(), png.getPath()).redirectErrorStream(true).start();
+				p.getInputStream().readAllBytes(); // don't let the pipe fill
+				if (!p.waitFor(60, java.util.concurrent.TimeUnit.SECONDS)) {
+					p.destroyForcibly();
+					return null;
+				}
+			}
+			if (png.isFile() && png.length() > 0 && sniff(png) == null) {
+				return png.toURI().toURL().toString();
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} catch (Exception e) {
+			log.warn("Could not convert " + f.getName() + " with " + exe + ": " + e.getMessage());
+		}
+		return null;
 	}
 
 	// ------------------------------------------------------------ 0c. text boxes
