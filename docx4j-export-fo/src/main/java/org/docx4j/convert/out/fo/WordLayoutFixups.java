@@ -119,6 +119,7 @@ public final class WordLayoutFixups {
 		listLabelLines(doc);
 		lineBoxAttributes(doc);
 		anchorImages(doc);
+		anchorTextBoxes(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
 		applyContextualSpacing(doc);
 		applyAutoSpacingBetweenListItems(doc);
@@ -291,9 +292,21 @@ public final class WordLayoutFixups {
 	// ------------------------------------------------------------ 0a. anchored pictures
 
 	public static final String HINT_ANCHOR = "docx4j-anchor";
-	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, "docx4j-anchor-w", "docx4j-anchor-h",
-			"docx4j-anchor-x", "docx4j-anchor-y", "docx4j-anchor-dist", "docx4j-anchor-behind",
-			"docx4j-anchor-col", "docx4j-anchor-ml" };
+	/** @since 17.0.5 */
+	public static final String HINT_ANCHOR_W = "docx4j-anchor-w";
+	/** @since 17.0.5 */
+	public static final String HINT_ANCHOR_H = "docx4j-anchor-h";
+	/** @since 17.0.5 */
+	public static final String HINT_ANCHOR_X = "docx4j-anchor-x";
+	/** @since 17.0.5 */
+	public static final String HINT_ANCHOR_Y = "docx4j-anchor-y";
+	/** @since 17.0.5 */
+	public static final String HINT_ANCHOR_COL = "docx4j-anchor-col";
+	/** @since 17.0.5 */
+	public static final String HINT_ANCHOR_ML = "docx4j-anchor-ml";
+	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
+			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
+			HINT_ANCHOR_COL, HINT_ANCHOR_ML };
 
 	/**
 	 * Word positions an anchored picture (wp:anchor) relative to its paragraph,
@@ -312,6 +325,9 @@ public final class WordLayoutFixups {
 	 * block-container inside a zero-height one at the paragraph's top, so it
 	 * takes no space; page-relative positions use fixed positioning.</li>
 	 * </ul>
+	 * A float is only used where docx4j.convert.out.fo.pictures.float allows it
+	 * (FOConversionContext.FLOAT_PROPERTY); the picture is laid out top-and-bottom
+	 * otherwise.
 	 * The picture's block uses a tiny font and zero line-height so its top is
 	 * exactly the container's top (FOP otherwise offsets it by the block font's
 	 * ascender).  Floats only work in the main flow, so a wrapped picture inside
@@ -356,7 +372,9 @@ public final class WordLayoutFixups {
 		holder.appendChild(g); // moves it out of its run
 
 		if (pageY) kind = "none"; // FOP cannot wrap text around a page-positioned object
-		if ("square".equals(kind) && !floatsAllowed(para)) kind = "topAndBottom";
+		if ("square".equals(kind) && (!floatsAllowed(para) || !FOConversionContext.useFloats())) {
+			kind = "topAndBottom";
+		}
 
 		Element wrapper;
 		if ("square".equals(kind)) {
@@ -393,6 +411,97 @@ public final class WordLayoutFixups {
 			wrapper.appendChild(abs);
 		}
 		para.insertBefore(wrapper, para.getFirstChild());
+	}
+
+	// ------------------------------------------------------------ 0c. text boxes
+
+	/**
+	 * A text box (VML w:pict/v:shape/v:textbox, or DrawingML wps:wsp/wps:txbx)
+	 * reaches here as an fo:block-container carrying the same anchor hints a
+	 * picture does (FOTextBoxes), still inside the run's fo:inline - which is not
+	 * block-level content, so FOP would paint nothing.  It is moved to the start of
+	 * its paragraph's block and placed as Word places it:
+	 * <ul>
+	 * <li>behind or in front of the text (or positioned relative to the page): an
+	 * absolutely positioned container inside a zero-height one, so it takes no
+	 * space in the flow;</li>
+	 * <li>wrapped and as wide as the column: a container that reserves the box's
+	 * height at the paragraph, indented to the box's x.  A narrower wrapped box is
+	 * placed like the first case, since Word flows text beside it and we cannot
+	 * (see FOTextBoxes).</li>
+	 * </ul>
+	 *
+	 * @since 17.0.5
+	 */
+	static void anchorTextBoxes(Document doc) {
+		for (Element box : elements(doc, "block-container")) {
+			String kind = box.getAttribute(HINT_ANCHOR);
+			if (kind == null || kind.length() == 0) continue;
+			try {
+				anchorTextBox(doc, box, kind);
+			} catch (RuntimeException e) {
+				log.warn("Text box left in the flow: " + e.getMessage(), e);
+			}
+			for (String hint : ANCHOR_HINTS) box.removeAttribute(hint);
+		}
+	}
+
+	private static void anchorTextBox(Document doc, Element box, String kind) {
+		double w = lengthPt(box.getAttribute(HINT_ANCHOR_W));
+		double h = lengthPt(box.getAttribute(HINT_ANCHOR_H));
+		double x = lengthPt(box.getAttribute(HINT_ANCHOR_X));
+		double col = lengthPt(box.getAttribute(HINT_ANCHOR_COL));
+		double ml = lengthPt(box.getAttribute(HINT_ANCHOR_ML));
+		String y = box.getAttribute(HINT_ANCHOR_Y);
+		boolean pageY = y.startsWith("page:");
+		double off = lengthPt(y.substring(y.indexOf(':') + 1));
+
+		Element para = enclosingBlock(box);
+		if (para == null) {
+			log.warn("No block to place a text box in; it will not be painted");
+			return;
+		}
+
+		// a box narrow enough for Word to flow text beside it is placed where Word
+		// puts it and takes no space: reserving its height would push the text below
+		// it, and where several such boxes sit side by side (a planner laid out in
+		// text boxes) that costs a page each.  A box that fills the column has no
+		// text beside it in Word either, so it reserves its height.
+		if ("square".equals(kind) && col > 0 && w < 0.6 * col) kind = "none";
+
+		Element wrapper = doc.createElementNS(FO_NS, "fo:block-container");
+		wrapper.setAttribute("start-indent", "0pt");
+		wrapper.setAttribute("end-indent", "0pt");
+		wrapper.setAttribute("overflow", "visible");
+		if ("none".equals(kind) || pageY) {
+			// out of the flow: the zero-height container takes no space
+			wrapper.setAttribute("height", "0pt");
+			box.setAttribute("absolute-position", pageY ? "fixed" : "absolute");
+			box.setAttribute("top", pt(off));
+			box.setAttribute("left", pt(pageY ? x + ml : x));
+		} else {
+			// wrapped: reserve the box's height where Word puts it.  The indent goes on
+			// the wrapper, whose reference area the box then starts at (the box resets
+			// the inherited indent for its own content).
+			if (h > 0) wrapper.setAttribute("height", pt(h));
+			if (off > 0) wrapper.setAttribute("padding-top", pt(off));
+			wrapper.setAttribute("start-indent", pt(Math.max(0, x)));
+		}
+		box.getParentNode().removeChild(box);
+		wrapper.appendChild(box);
+		para.insertBefore(wrapper, para.getFirstChild());
+	}
+
+	/** The block the text box belongs to: the nearest ancestor fo:block. */
+	private static Element enclosingBlock(Element el) {
+		Node n = el.getParentNode();
+		while (n instanceof Element) {
+			Element e = (Element) n;
+			if (isFo(e, "block")) return e;
+			if (isFo(e, "flow") || isFo(e, "static-content") || isFo(e, "table-cell")) return null;
+			n = n.getParentNode();
+		}
+		return null;
 	}
 
 	/** The paragraph's fo:block (the nearest ancestor stamped with the pstyle hint). */

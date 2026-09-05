@@ -299,6 +299,74 @@ are further from Arial Narrow's widths than the document default is).  Its two s
 substitutes were also the wrong way round, so on a box with Liberation but not Croscore,
 Times New Roman became a sans and Arial a serif.
 
+PDF via XSL FO - text boxes and multi-column sections, from scoring the same 194 real
+documents (both pathways.  Over that corpus: one document more renders at all (190
+scored, one export still fails - see fo:float below), lines matching Word exactly 71.4%
+-> 71.5%, mean line parity 0.7162 -> 0.7178, median 0.7561 -> 0.7619; 13 documents
+better, 7 down.  Six of those seven are documents of many continuous or multi-column
+sections whose geometry moved TOWARDS Word's - their text now starts within 0.03pt of
+Word's x, where it was 2 to 8pt out - and whose lines then break differently, because our
+justified lines still pull in a word Word leaves out; the seventh is a text box now
+painted where Word paints it.  The 33 layout probes are unchanged):
+- a VML text box (w:pict/v:shape/v:textbox) was emitted as an fo:block-container with
+position="absolute" - not an XSL-FO property, the FO 1.1 name is absolute-position - and
+a top but no left, width or height, nested inside an fo:inline, which is not block-level
+content.  FOP painted nothing at all, so letterheads and forms built from text boxes lost
+every word in them (six documents in the corpus).  A text box now goes through the same
+treatment as an anchored picture (WordLayoutFixups): its position from the v:shape's
+style (mso-position-horizontal(-relative) / -vertical(-relative), margin-left/top, width,
+height), its v:textbox insets as padding, and its border unless the shape is stroked="f".
+New FOTextBoxes.
+- a DrawingML shape's text box (w:drawing/wp:anchor|wp:inline/../wps:wsp/wps:txbx/
+w:txbxContent) never reached the FO at all: only a:graphicData holding pic:pic was
+handled.  Its paragraphs are rendered now, placed from the anchor's own geometry, which
+WordXmlPictureE20.stampAnchorHints already worked out for pictures, with the shape's
+wps:bodyPr insets.  A shape inside mc:AlternateContent still renders the fallback.
+- a text box is never given to fo:float, whatever its wrapping style: a float discards
+the box's position, which is the one thing the docx states exactly, and FOP's side floats
+are unreliable (below).  A box in front of or behind the text, and a wrapped one narrower
+than 60% of the column (Word flows text beside it, and a planner built from six such
+boxes would otherwise cost a page each), is positioned where Word puts it and takes no
+space; a wider wrapped one reserves its height at its paragraph.  The limitation to be
+aware of: text does not flow beside a text box.
+- the column gap came from w:cols/@w:space even where the section has w:col children,
+each of which carries its own w:space.  With columns of different widths the container's
+value is commonly nothing like the real gap (one document: 7.7pt used for a 51.25pt gap),
+so every line in the section broke differently.  The first column's space is used where
+there are w:col children; equal columns with none are unchanged
+(PageDimensions.getColsSpacing).
+- continuous sections merged into one page-sequence all took the LAST section's w:pgMar,
+so the content before it was laid out at the wrong width and in the wrong place (measured
+against Word: 2 to 8pt out on the documents concerned).  The page masters can only carry
+one set of margins, so the sequence takes the FIRST section's, as Word starts the page,
+and the difference is added to the indents of the paragraphs and tables of each part that
+has others (a container tag XSLT_Ind, beside the XSLT_Cols container of 17.0.5's
+column-count work; XsltFOFunctions.shiftIndents).  An fo:block-container carrying the
+indents would be tidier, but a block-container in a multi-column flow makes FOP throw when
+it balances the last page's columns.
+- limitation: XSL-FO's region-body columns are all the same width, so a section with
+w:cols/@w:equalWidth="0" and w:col children of different widths is still rendered as equal
+columns (with the first column's gap).  Rendering such a stretch as a one-row table would
+fix the widths but stop the content flowing from one column to the next, and there is no
+reliable way to tell at FO-generation time whether it would fit on the page; see CR-001
+§6.6.
+
+FOSettings.setWmlPackage did not build the FOP configuration (PDF):
+- only setOpcPackage did, so a caller using the deprecated setter got a
+NullPointerException from ConfiguredPDFDocumentHandler at render time, a long way from the
+cause.  setWmlPackage now does what setOpcPackage does.
+
+fo:float is defective in FOP, and can be turned off (PDF):
+- a side float of any height followed by content that overflows the page (a table row
+taller than the space left, say) makes FOP throw java.util.NoSuchElementException from
+LMiter.next under PageBreaker.handleFloatLayout, and the export fails.  Minimal case: one
+fo:float with a block in it, then a table whose row does not fit.  Anchored pictures with
+square/tight/through wrapping are the only floats docx4j emits since text boxes stopped
+using them; docx4j.convert.out.fo.pictures.float=false lays those out in the flow instead
+(no text beside them, but the export completes).  Default true - i.e. unchanged - since
+the wrapping is right far more often than the defect bites; one corpus document still
+fails to export with the default.  To be reported upstream.
+
 Consolas and Lucida Console rendered in the proportional fallback font (PDF):
 - IdentityPlusMapper substitutes Calibri, Cambria, Arial, Times New Roman and Courier New
 with their metric-compatible clones, but the two monospace fonts have none, so code set

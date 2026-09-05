@@ -402,11 +402,53 @@ public class PageDimensions {
 		cols.setNum(java.math.BigInteger.valueOf(num));
 	}
 
+	/**
+	 * The space between columns, in twips.
+	 *
+	 * <p>Where w:cols has w:col children, each column carries its own w:space
+	 * (the space between it and the next one) and w:cols/@w:space is only the
+	 * value Word's dialog was last given: with columns of different widths it
+	 * is commonly nothing like the real gap.  XSL-FO has a single column-gap,
+	 * so we take the first column's.  Equal columns (no children) use
+	 * w:cols/@w:space, as before.</p>
+	 *
+	 * @since 17.0.5 the w:col/@w:space case (previously always w:cols/@w:space)
+	 */
 	public int getColsSpacing() {
+		if (cols.getCol() != null && cols.getCol().size() > 1) {
+			// the last column has no space to a next one, so any but the last will do
+			for (org.docx4j.wml.CTColumn col : cols.getCol().subList(0, cols.getCol().size()-1)) {
+				if (col.getSpace() != null) {
+					return col.getSpace().intValue();
+				}
+			}
+		}
 		if (cols.getSpace() != null) {
 			return cols.getSpace().intValue();
 		} else {
 			return 720; //default in Word 2010 is 1/2 inch
 		}
+	}
+
+	/**
+	 * True where the section's columns are of different widths (w:cols with
+	 * w:col children of differing w:w).  XSL-FO's region-body columns are all
+	 * the same width, so such a section is rendered as equal columns; see the
+	 * limitation noted in the CHANGELOG for 17.0.5.
+	 *
+	 * @since 17.0.5
+	 */
+	public boolean hasUnequalCols() {
+		if (cols == null || cols.getCol() == null || cols.getCol().size() < 2) return false;
+		java.math.BigInteger w = null;
+		for (org.docx4j.wml.CTColumn col : cols.getCol()) {
+			if (col.getW() == null) return false;
+			if (w == null) {
+				w = col.getW();
+			} else if (w.compareTo(col.getW()) != 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

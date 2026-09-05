@@ -207,9 +207,8 @@ public class ConversionSectionWrapperFactory {
 		HeaderFooterPolicy previousHF = null;
 		int conversionSectionIndex = 0;
 				List<Object> sectionContent = new ArrayList<Object>();
-		// the continuous sections merged into the wrapper being built, as
-		// {unused, column count, end index (exclusive) in sectionContent}
-		List<int[]> columnParts = new ArrayList<int[]>();
+		// the continuous sections merged into the wrapper being built
+		List<MergedPart> columnParts = new ArrayList<MergedPart>();
 		// Now go through the document content,
 		
 		int sectPrIndex = 0; // includes continuous ones
@@ -268,8 +267,9 @@ public class ConversionSectionWrapperFactory {
 								ppr.setPageBreakBefore(new BooleanDefaultTrue());
 							}
 							// this section's content (up to and including this paragraph) is
-							// one part of the merged page-sequence, with its own column count
-							columnParts.add(new int[] { 0, colsNum(ppr.getSectPr()), sectionContent.size() + 1 });
+							// one part of the merged page-sequence, with its own column
+							// count and page margins
+							columnParts.add(new MergedPart(ppr.getSectPr(), sectionContent.size() + 1));
 							//ppr.setSectPr(null); // Don't do this, since we have to process the docx (inc sectPrs) multiple times for a single PDF output
 							
 												} else {
@@ -279,17 +279,18 @@ public class ConversionSectionWrapperFactory {
 							// it was added to the next section's, where it rendered as an
 							// empty first line at the top of the new section's first page.
 							sectionContent.add(o);
-							int cols = spanColumnParts(sectionContent, columnParts, colsNum(ppr.getSectPr()));
+							int cols = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
 							currentSectionWrapper = createSectionWrapper(
-									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders, 
-									++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
+									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
+									++conversionSectionIndex, sectionContent, dummyPageNumbering);
 							if (cols > colsNum(ppr.getSectPr())) {
 								currentSectionWrapper.getPageDimensions().setColsNum(cols);
 							}
+							useFirstPartMargins(currentSectionWrapper, columnParts);
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
-							columnParts = new ArrayList<int[]>();
+							columnParts = new ArrayList<MergedPart>();
 							continue;
 						}
 					}
@@ -311,13 +312,14 @@ public class ConversionSectionWrapperFactory {
 			return conversionSections;
 		}
 
-		int cols = spanColumnParts(sectionContent, columnParts, colsNum(document.getBody().getSectPr()));
+		int cols = spanColumnParts(sectionContent, columnParts, document.getBody().getSectPr());
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
-				++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
+				++conversionSectionIndex, sectionContent, dummyPageNumbering);
 		if (cols > colsNum(document.getBody().getSectPr())) {
 			currentSectionWrapper.getPageDimensions().setColsNum(cols);
 		}
+		useFirstPartMargins(currentSectionWrapper, columnParts);
 		conversionSections.add(currentSectionWrapper);
 		return conversionSections;
 	}
@@ -325,63 +327,150 @@ public class ConversionSectionWrapperFactory {
 	/** Tag of the container the FO exporter renders as a block spanning all columns. @since 17.0.5 */
 	public static final String TAG_SPAN_ALL = "XSLT_Cols";
 
+	/** Tag of the container the FO exporter renders with start-indent/end-indent, so
+	 *  that a merged continuous section keeps its own page margins.  The value is
+	 *  <code>XSLT_Ind=start,end</code> in twips, relative to the page-sequence's own
+	 *  margins.  @since 17.0.5 */
+	public static final String TAG_INDENT = "XSLT_Ind";
+
+	/** One of the continuous sections merged into a single page-sequence. @since 17.0.5 */
+	private static class MergedPart {
+		final SectPr sectPr;
+		/** end index (exclusive) of this part's content */
+		final int end;
+		MergedPart(SectPr sectPr, int end) {
+			this.sectPr = sectPr;
+			this.end = end;
+		}
+	}
+
 	private static int colsNum(SectPr sectPr) {
 		if (sectPr == null || sectPr.getCols() == null || sectPr.getCols().getNum() == null) return 1;
 		return Math.max(1, sectPr.getCols().getNum().intValue());
 	}
 
+	private static int marginLeft(SectPr sectPr) {
+		if (sectPr == null || sectPr.getPgMar() == null || sectPr.getPgMar().getLeft() == null) return -1;
+		return sectPr.getPgMar().getLeft().intValue();
+	}
+
+	private static int marginRight(SectPr sectPr) {
+		if (sectPr == null || sectPr.getPgMar() == null || sectPr.getPgMar().getRight() == null) return -1;
+		return sectPr.getPgMar().getRight().intValue();
+	}
+
 	/**
-	 * A page-sequence cannot change its column count mid-page, but a block in it
-	 * can span all its columns.  So when continuous sections with different
-	 * column counts were merged into one wrapper, the page-sequence takes the
-	 * largest count and each part with fewer columns is wrapped in a container
-	 * (tag XSLT_Cols=n) the FO exporter renders as fo:block span="all"; FOP
-	 * balances the columns before it, as Word does at a continuous break.  Word's
-	 * common case (1 column, then a 2-column stretch, then 1 column again) comes
-	 * out right; a 2-column part under a 3-column count is spanned too (an
-	 * approximation).  Sections whose counts agree are left alone.
+	 * The page masters of a page-sequence made of several continuous sections can
+	 * only carry one set of page margins; until 17.0.5 that was the last section's,
+	 * applied to all the content before it as well.  Word starts the page with the
+	 * first of them, so that is what the sequence uses; the other parts carry the
+	 * difference as indents (spanColumnParts).
 	 *
-	 * @param columnParts the merged parts as {unused, cols, end index (exclusive) in content}
+	 * @since 17.0.5
+	 */
+	private static void useFirstPartMargins(ConversionSectionWrapper wrapper, List<MergedPart> columnParts) {
+		if (wrapper == null || columnParts.isEmpty()) return;
+		SectPr first = columnParts.get(0).sectPr;
+		if (first == null || first.getPgMar() == null) return;
+		if (marginLeft(first) < 0 || marginRight(first) < 0) return;
+		// on a copy of the wrapper's own (which has the values the last section's
+		// sectPr, or the defaults, gave it, so nothing that is unset here goes missing)
+		SectPr.PgMar pgMar = XmlUtils.deepCopy(wrapper.getPageDimensions().getPgMar());
+		pgMar.setLeft(first.getPgMar().getLeft());
+		pgMar.setRight(first.getPgMar().getRight());
+		if (first.getPgMar().getTop() != null) pgMar.setTop(first.getPgMar().getTop());
+		if (first.getPgMar().getBottom() != null) pgMar.setBottom(first.getPgMar().getBottom());
+		if (first.getPgMar().getHeader() != null) pgMar.setHeader(first.getPgMar().getHeader());
+		if (first.getPgMar().getFooter() != null) pgMar.setFooter(first.getPgMar().getFooter());
+		wrapper.getPageDimensions().setPgMar(pgMar);
+	}
+
+	/**
+	 * A page-sequence cannot change its column count or its page margins mid-page,
+	 * but a block in it can span all its columns, and can be indented.  So when
+	 * continuous sections were merged into one wrapper, the page-sequence takes the
+	 * largest column count and the first section's margins, and each part that
+	 * differs is wrapped in a container the FO exporter renders accordingly:
+	 * <ul>
+	 * <li>fewer columns (tag XSLT_Cols=n): fo:block span="all"; FOP balances the
+	 * columns before it, as Word does at a continuous break.  Word's common case
+	 * (1 column, then a 2-column stretch, then 1 column again) comes out right; a
+	 * 2-column part under a 3-column count is spanned too (an approximation).</li>
+	 * <li>other page margins (tag XSLT_Ind=start,end in twips): an
+	 * fo:block-container indented by the difference, which is a new reference area,
+	 * so the indents of the paragraphs and tables inside it still work.</li>
+	 * </ul>
+	 * Sections that agree in both are left alone.
+	 *
+	 * @param columnParts the merged parts, in order
+	 * @param lastSectPr the sectPr that ends the page-sequence (the last part)
 	 * @return the column count the wrapper should use
 	 * @since 17.0.5
 	 */
-	private static int spanColumnParts(List<Object> content, List<int[]> columnParts, int lastCols) {
+	private static int spanColumnParts(List<Object> content, List<MergedPart> columnParts, SectPr lastSectPr) {
+		int lastCols = colsNum(lastSectPr);
 		int max = lastCols;
-		for (int[] part : columnParts) max = Math.max(max, part[1]);
-		boolean uniform = true;
-		for (int[] part : columnParts) if (part[1] != max) uniform = false;
-		if (columnParts.isEmpty() || (uniform && lastCols == max)) return max;
+		for (MergedPart part : columnParts) max = Math.max(max, colsNum(part.sectPr));
+		if (columnParts.isEmpty()) return max;
+
+		SectPr first = columnParts.get(0).sectPr;
+		int refLeft = marginLeft(first), refRight = marginRight(first);
+		boolean sameMargins = true;
+		for (MergedPart part : columnParts) {
+			if (marginLeft(part.sectPr) != refLeft || marginRight(part.sectPr) != refRight) sameMargins = false;
+		}
+		if (marginLeft(lastSectPr) != refLeft || marginRight(lastSectPr) != refRight) sameMargins = false;
+		if (refLeft < 0 || refRight < 0) sameMargins = true; // nothing to compare against
+
+		boolean uniformCols = (lastCols == max);
+		for (MergedPart part : columnParts) if (colsNum(part.sectPr) != max) uniformCols = false;
+		if (uniformCols && sameMargins) return max;
+
 		List<Object> result = new ArrayList<Object>();
 		int start = 0;
-		for (int[] part : columnParts) {
-			int end = Math.min(part[2], content.size());
-			addPart(result, content.subList(start, end), part[1], max);
+		for (MergedPart part : columnParts) {
+			int end = Math.min(part.end, content.size());
+			addPart(result, content.subList(start, end), part.sectPr, max, sameMargins, refLeft, refRight);
 			start = end;
 		}
-		addPart(result, content.subList(start, content.size()), lastCols, max);
+		addPart(result, content.subList(start, content.size()), lastSectPr, max, sameMargins, refLeft, refRight);
 		content.clear();
 		content.addAll(result);
 		return max;
 	}
 
-	private static void addPart(List<Object> result, List<Object> part, int cols, int max) {
+	private static void addPart(List<Object> result, List<Object> part, SectPr sectPr, int max,
+			boolean sameMargins, int refLeft, int refRight) {
 		if (part.isEmpty()) return;
-		if (cols >= max) {
-			result.addAll(part);
-			return;
+		List<Object> content = new ArrayList<Object>(part);
+		if (!sameMargins
+				&& (marginLeft(sectPr) != refLeft || marginRight(sectPr) != refRight)
+				&& marginLeft(sectPr) >= 0 && marginRight(sectPr) >= 0) {
+			content = wrap(content,
+					TAG_INDENT + "=" + (marginLeft(sectPr) - refLeft) + "," + (marginRight(sectPr) - refRight));
 		}
+		if (colsNum(sectPr) < max) {
+			content = wrap(content, TAG_SPAN_ALL + "=" + colsNum(sectPr));
+		}
+		result.addAll(content);
+	}
+
+	/** The content in an SdtBlock carrying this tag (the containers the FO exporter renders). */
+	private static List<Object> wrap(List<Object> content, String tagVal) {
 		SdtBlock sdt = Context.getWmlObjectFactory().createSdtBlock();
 		org.docx4j.wml.SdtPr sdtPr = Context.getWmlObjectFactory().createSdtPr();
 		org.docx4j.wml.Tag tag = Context.getWmlObjectFactory().createTag();
-		tag.setVal(TAG_SPAN_ALL + "=" + cols);
+		tag.setVal(tagVal);
 		sdtPr.setTag(tag);
 		sdt.setSdtPr(sdtPr);
 		org.docx4j.wml.SdtContentBlock sdtContent = Context.getWmlObjectFactory().createSdtContentBlock();
-		sdtContent.getContent().addAll(new ArrayList<Object>(part));
+		sdtContent.getContent().addAll(content);
 		sdt.setSdtContent(sdtContent);
-		result.add(sdt);
+		List<Object> wrapped = new ArrayList<Object>();
+		wrapped.add(sdt);
+		return wrapped;
 	}
-	
+
 	private static boolean insertPageBreak(PgSz pgSzThis, PgSz pgSzNext) {
 
 		boolean insertPageBreak = false;

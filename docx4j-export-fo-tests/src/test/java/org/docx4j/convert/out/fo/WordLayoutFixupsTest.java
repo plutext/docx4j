@@ -224,6 +224,32 @@ public class WordLayoutFixupsTest {
 		assertTrue("left from the page edge", out.contains("left=\"144pt\"") && out.contains("top=\"100pt\""));
 	}
 
+	/**
+	 * FOP throws on a side float followed by content that overflows the page
+	 * (NoSuchElementException in LMiter.next), so docx4j.convert.out.fo.pictures
+	 * .float=false lays wrapped pictures out in the flow instead.
+	 */
+	@Test
+	public void picturesFloatPropertyOffLaysThemOutTopAndBottom() {
+		String was = org.docx4j.Docx4jProperties.getProperties()
+				.getProperty(FOConversionContext.FLOAT_PROPERTY);
+		try {
+			org.docx4j.Docx4jProperties.setProperty(FOConversionContext.FLOAT_PROPERTY, false);
+			String out = WordLayoutFixups.apply(flow(anchored("square", "337.91", "p:0", "")), 15);
+			assertFalse("no float when the property is off", out.contains("fo:float"));
+			assertTrue(out.contains("<fo:block-container") && out.contains("height=\"85.04pt\""));
+		} finally {
+			if (was==null) {
+				org.docx4j.Docx4jProperties.getProperties().remove(FOConversionContext.FLOAT_PROPERTY);
+			} else {
+				org.docx4j.Docx4jProperties.setProperty(FOConversionContext.FLOAT_PROPERTY, was);
+			}
+		}
+		// and back on by default
+		assertTrue(WordLayoutFixups.apply(flow(anchored("square", "337.91", "p:0", "")), 15)
+				.contains("float=\"right\""));
+	}
+
 	@Test
 	public void wrappedPictureInATableCellIsLaidOutTopAndBottom() {
 		String cell = "<fo:table " + NS + "><fo:table-body><fo:table-row><fo:table-cell>"

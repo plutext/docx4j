@@ -91,13 +91,32 @@ public class FOSettings extends AbstractConversionSettings {
 	@Override
 	public void setOpcPackage(OpcPackage opcPackage) throws Docx4JException {
 		settings.put(OPC_PACKAGE, opcPackage);
-		
+
 		if (fopConfig==null
 				&& opcPackage instanceof WordprocessingMLPackage) {
 			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)opcPackage;
 			fopConfig = FopConfigUtil.createConfigurationObject(
-					wmlPackage.getFontMapper(), 
+					wmlPackage.getFontMapper(),
 					wmlPackage.getMainDocumentPart().fontsInUse());
+		}
+	}
+
+	/**
+	 * The deprecated form of setOpcPackage, with the same side effect: without the
+	 * fop configuration these settings build here, PDF output fails in
+	 * ConfiguredPDFDocumentHandler with a NullPointerException.  Prefer
+	 * setOpcPackage, whose Docx4JException this cannot declare.
+	 *
+	 * @since 17.0.5 builds the fop configuration (before, only setOpcPackage did)
+	 */
+	@Override
+	@Deprecated
+	public void setWmlPackage(OpcPackage opcPackage) {
+		try {
+			setOpcPackage(opcPackage);
+		} catch (Docx4JException e) {
+			throw new org.docx4j.openpackaging.exceptions.Docx4JRuntimeException(
+					"Couldn't create the fop configuration: " + e.getMessage(), e);
 		}
 	}
 

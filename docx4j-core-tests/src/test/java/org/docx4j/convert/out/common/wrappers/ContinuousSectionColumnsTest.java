@@ -58,6 +58,45 @@ public class ContinuousSectionColumnsTest {
 		assertEquals(1, list.get(1).getPageDimensions().getColsNum());
 	}
 
+	/**
+	 * The page masters can only carry one set of margins, so the merged sequence
+	 * takes the first section's (Word starts the page with those) and each part
+	 * with others carries the difference as indents.  Until 17.0.5 the sequence
+	 * took the last section's margins and applied them to all of the content.
+	 */
+	@Test
+	public void eachMergedPartKeepsItsOwnMargins() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ p("two columns a")
+				+ "<w:p><w:pPr><w:sectPr><w:pgMar w:top=\"1440\" w:right=\"567\" w:bottom=\"1440\" w:left=\"567\"/>"
+				+ "<w:cols w:num=\"2\" w:space=\"708\"/></w:sectPr></w:pPr></w:p>"
+				+ p("one column")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/>"
+				+ "<w:pgMar w:top=\"1440\" w:right=\"1134\" w:bottom=\"1440\" w:left=\"1134\"/>"
+				+ "<w:cols w:space=\"708\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		List<ConversionSectionWrapper> list = ConversionSectionWrapperFactory.process(pkg, false, false).getList();
+		assertEquals(1, list.size());
+		ConversionSectionWrapper merged = list.get(0);
+		assertEquals("the first section's left margin", 567,
+				merged.getPageDimensions().getPgMar().getLeft().intValue());
+		assertEquals(567, merged.getPageDimensions().getPgMar().getRight().intValue());
+
+		// the two-column part is the reference (the larger count, the sequence's
+		// margins), so only the second part is wrapped, twice: its paragraph and the
+		// paragraph carrying the first section's sectPr are the parts' content
+		assertEquals(3, merged.getContent().size());
+		Object last = XmlUtils.unwrap(merged.getContent().get(2));
+		assertTrue("the narrower part not wrapped: " + last.getClass(), last instanceof SdtBlock);
+		SdtBlock span = (SdtBlock)last;
+		assertEquals(ConversionSectionWrapperFactory.TAG_SPAN_ALL + "=1", span.getSdtPr().getTag().getVal());
+		SdtBlock indent = (SdtBlock)XmlUtils.unwrap(span.getSdtContent().getContent().get(0));
+		assertEquals("the difference from the sequence's margins, in twips",
+				ConversionSectionWrapperFactory.TAG_INDENT + "=567,567", indent.getSdtPr().getTag().getVal());
+	}
+
 	@Test
 	public void sectionsWithTheSameCountAreLeftAlone() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();

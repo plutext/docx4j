@@ -192,6 +192,192 @@ public class XsltFOFunctions {
     }
 
     /**
+     * The text box of a DrawingML shape (wps:wsp/wps:txbx/w:txbxContent) in this
+     * wp:anchor or wp:inline, or null where there is none.  Word puts the text of a
+     * shape there; until 17.0.5 it never reached the FO at all (only a:graphic
+     * containing pic:pic was handled), so shape text was simply lost.
+     *
+     * @since 17.0.5
+     */
+    public static org.docx4j.wml.CTTxbxContent shapeTextBox(Object anchorOrInline) {
+
+    	org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
+    			= shape(anchorOrInline);
+    	if (wsp==null || wsp.getTxbx()==null) return null;
+    	return wsp.getTxbx().getTxbxContent();
+    }
+
+    /** The DrawingML shape (wps:wsp) in this wp:anchor or wp:inline, or null. */
+    private static org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape
+    		shape(Object anchorOrInline) {
+
+    	org.docx4j.dml.Graphic graphic = null;
+    	if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+    		graphic = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getGraphic();
+    	} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+    		graphic = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getGraphic();
+    	}
+    	if (graphic==null || graphic.getGraphicData()==null) return null;
+    	return graphic.getGraphicData().getWordprocessingShape();
+    }
+
+    /**
+     * The fo:block-container a DrawingML shape's text box is rendered in, carrying
+     * the anchor's geometry as hints for WordLayoutFixups (the same treatment an
+     * anchored picture gets).  The caller adds the converted w:txbxContent.
+     *
+     * @since 17.0.5
+     */
+    public static Element createShapeTextBox(FOConversionContext context,
+    		Object anchorOrInline, Document document) {
+
+    	org.docx4j.dml.CTPositiveSize2D extent = null;
+    	if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+    		extent = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getExtent();
+    	} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+    		extent = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getExtent();
+    	}
+    	double w = (extent==null) ? 0 : extent.getCx() / 12700d;
+    	double h = (extent==null) ? 0 : extent.getCy() / 12700d;
+
+    	// a wp:inline shape is in the flow; a wp:anchor is positioned, and
+    	// stampAnchorHints works out where from its wrap and position elements
+    	Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0,
+    			shapeInsets(anchorOrInline));
+    	if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+    			&& FOTextBoxes.isEnabled()) {
+    		org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(container,
+    				(org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline, context);
+    		if ("topAndBottom".equals(container.getAttribute(WordLayoutFixups.HINT_ANCHOR))) {
+    			// the fixups' text box cases are "none" (out of the flow) and "square"
+    			// (reserve the box's height); topAndBottom is the latter
+    			container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
+    		}
+    	}
+    	return container;
+    }
+
+    /** The shape's text insets (wps:bodyPr lIns/tIns/rIns/bIns, EMU) in points, or null
+     *  for Word's defaults. */
+    private static double[] shapeInsets(Object anchorOrInline) {
+
+    	org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
+    			= shape(anchorOrInline);
+    	if (wsp==null || wsp.getBodyPr()==null) return null;
+    	org.docx4j.dml.CTTextBodyProperties bodyPr = wsp.getBodyPr();
+    	if (bodyPr.getLIns()==null && bodyPr.getTIns()==null
+    			&& bodyPr.getRIns()==null && bodyPr.getBIns()==null) return null;
+    	// DrawingML's defaults are Word's: 0.1in left and right, 0.05in top and bottom
+    	return new double[] {
+    			bodyPr.getLIns()==null ? 7.2 : bodyPr.getLIns() / 12700d,
+    			bodyPr.getTIns()==null ? 3.6 : bodyPr.getTIns() / 12700d,
+    			bodyPr.getRIns()==null ? 7.2 : bodyPr.getRIns() / 12700d,
+    			bodyPr.getBIns()==null ? 3.6 : bodyPr.getBIns() / 12700d };
+    }
+
+    /**
+     * The XSLT pathway's form of createShapeTextBox: the shape's text box with its
+     * already converted content.
+     *
+     * @since 17.0.5
+     */
+    public static DocumentFragment createShapeTextBox(FOConversionContext context,
+    		NodeIterator anchorIt, NodeIterator childResultsIt) {
+
+    	try {
+    		Node anchorNode = (anchorIt==null) ? null : anchorIt.nextNode();
+    		if (anchorNode==null) return null;
+    		Unmarshaller u = Context.jc.createUnmarshaller();
+    		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+    		Object anchorOrInline = XmlUtils.unwrap(u.unmarshal(anchorNode));
+
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+			Element container = createShapeTextBox(context, anchorOrInline, document);
+			document.appendChild(container);
+			Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+			if (childResults!=null) {
+				XmlUtils.treeCopy(childResults, container);
+			}
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+			return docfrag;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+    }
+
+    /**
+     * A merged continuous section with its own page margins keeps them by having the
+     * difference added to the indents of its own paragraphs and tables (tag
+     * XSLT_Ind=start,end in twips, relative to the page-sequence's margins; see
+     * ConversionSectionWrapperFactory).
+     *
+     * <p>An fo:block-container carrying the indents would be tidier - it is a
+     * reference area, so the indents inside it would go on working unchanged - but a
+     * block-container in a multi-column flow makes FOP throw when it balances the
+     * last page's columns (NullPointerException in TraitSetter.setVisibility, from
+     * BlockContainerLayoutManager.addAreas), and an fo:block carrying them would not
+     * contain the indents its children set for themselves (indents are measured from
+     * the reference area, not from the parent block).</p>
+     *
+     * @since 17.0.5
+     */
+    public static void shiftIndents(Node parent, String tagVal) {
+
+    	int[] indents = indents(tagVal);
+    	if (parent==null || (indents[0]==0 && indents[1]==0)) return;
+    	double start = indents[0] / 20d, end = indents[1] / 20d;
+    	for (Node n = parent.getFirstChild(); n!=null; n = n.getNextSibling()) {
+    		if (!(n instanceof Element)) continue;
+    		shift((Element)n, "start-indent", start);
+    		shift((Element)n, "end-indent", end);
+    	}
+    }
+
+    private static void shift(Element child, String name, double delta) {
+    	double value = WordLayoutFixups.lengthPt(child.getAttribute(name)) + delta;
+    	child.setAttribute(name, org.docx4j.fonts.WordLineMetrics.format(value));
+    }
+
+    /**
+     * The XSLT pathway's form of shiftIndents: the part's already converted content,
+     * with the section's margin difference added to its indents.
+     *
+     * @since 17.0.5
+     */
+    public static DocumentFragment shiftIndents(String tagVal, NodeIterator childResultsIt) {
+
+    	Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+    	try {
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+			DocumentFragment docfrag = document.createDocumentFragment();
+			if (childResults!=null) {
+				XmlUtils.treeCopy(childResults, docfrag);
+			}
+			shiftIndents(docfrag, tagVal);
+			return docfrag;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+    }
+
+    /** The start and end indents (in twips) in an XSLT_Ind=start,end tag value. */
+    private static int[] indents(String tagVal) {
+
+    	int[] result = new int[2];
+    	try {
+    		String vals = tagVal.substring(tagVal.indexOf('=')+1);
+    		result[0] = Integer.parseInt(vals.substring(0, vals.indexOf(',')).trim());
+    		result[1] = Integer.parseInt(vals.substring(vals.indexOf(',')+1).trim());
+    	} catch (Exception e) {
+    		log.error("Couldn't read indents from " + tagVal, e);
+    	}
+    	return result;
+    }
+
+    /**
      * Convert an m:oMath / m:oMathPara node to FO for PDF. When a MathML renderer
      * (jeuclid-fop) is on the classpath, emits fo:instream-foreign-object wrapping
      * the MathML from OmmlToMathML (FOP + the plugin render it); otherwise falls

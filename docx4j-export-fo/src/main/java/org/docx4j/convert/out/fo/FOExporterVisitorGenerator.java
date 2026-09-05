@@ -98,6 +98,16 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			handleP((P)o);
 			return null;
 
+		} else if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
+				&& XsltFOFunctions.shapeTextBox(o)!=null) {
+
+			// a DrawingML shape's text box (wps:wsp/wps:txbx): its text, in a
+			// container WordLayoutFixups positions as it does an anchored picture.
+			// @since 17.0.5
+			handleShapeTextBox(o);
+			return null;
+
 		} else if (o instanceof DelText) {
 
 			if (!conversionContext.isInComplexFieldDefinition()) {
@@ -200,6 +210,18 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				if (sdt.getSdtContent()!=null) {
 					new TraversalUtil(sdt.getSdtContent().getContent(), generator);
 				}
+				return null;
+			}
+			if (indentContainer(sdt)!=null) {
+				// a part of a merged page-sequence with other page margins
+				// (ConversionSectionWrapperFactory): the difference is added to the
+				// indents of its own paragraphs and tables
+				DocumentFragment part = document.createDocumentFragment();
+				if (sdt.getSdtContent()!=null) {
+					new TraversalUtil(sdt.getSdtContent().getContent(), childGenerator(part));
+				}
+				XsltFOFunctions.shiftIndents(part, indentContainer(sdt));
+				getCurrentParent().appendChild(part);
 				return null;
 			}
 			String tag = containerTag(sdt);
@@ -316,10 +338,30 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		XmlUtils.treeCopy(styled, getCurrentParent());
 	}
 
+	/** The shape's text box, as a positioned container of the box's paragraphs. @since 17.0.5 */
+	private void handleShapeTextBox(Object anchorOrInline) {
+
+		Element container = XsltFOFunctions.createShapeTextBox(conversionContext, anchorOrInline, document);
+		getCurrentParent().appendChild(container);
+		org.docx4j.wml.CTTxbxContent txbx = XsltFOFunctions.shapeTextBox(anchorOrInline);
+		if (txbx!=null) {
+			new TraversalUtil(txbx.getContent(), childGenerator(container));
+		}
+	}
+
 	private static boolean isSpanAllContainer(SdtElement sdt) {
 		return sdt.getSdtPr()!=null && sdt.getSdtPr().getTag()!=null && sdt.getSdtPr().getTag().getVal()!=null
 				&& sdt.getSdtPr().getTag().getVal().startsWith(
 						org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory.TAG_SPAN_ALL);
+	}
+
+	/** The tag value of an XSLT_Ind container (a merged continuous section with other
+	 *  page margins), or null.  @since 17.0.5 */
+	private static String indentContainer(SdtElement sdt) {
+		if (sdt.getSdtPr()==null || sdt.getSdtPr().getTag()==null || sdt.getSdtPr().getTag().getVal()==null) return null;
+		String val = sdt.getSdtPr().getTag().getVal();
+		return val.startsWith(
+				org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory.TAG_INDENT) ? val : null;
 	}
 
 	@Override
@@ -329,8 +371,15 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			// its contents were already converted in apply (handleP)
 			return false;
 		}
-		if (o instanceof SdtElement && (isSpanAllContainer((SdtElement)o) || containerTag((SdtElement)o)!=null)) {
+		if (o instanceof SdtElement && (isSpanAllContainer((SdtElement)o) || indentContainer((SdtElement)o)!=null
+				|| containerTag((SdtElement)o)!=null)) {
 			// its contents were already converted in apply (handleXsltContainer)
+			return false;
+		}
+		if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
+				&& XsltFOFunctions.shapeTextBox(o)!=null) {
+			// its text box was already converted in apply (handleShapeTextBox)
 			return false;
 		}
 		if (o instanceof org.docx4j.math.CTOMath

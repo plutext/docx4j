@@ -159,6 +159,12 @@ public abstract class FOPictWriterAbstract extends AbstractPictWriter {
 //		}
 
 
+		if (FOTextBoxes.isEnabled()) {
+			// the text box as a positioned block-container, placed by WordLayoutFixups
+			// (which also removes the hints it travels with).  @since 17.0.5
+			return textBoxNode(context, modelContent, doc, shape, textBox, w10Wrap, props);
+		}
+
 		boolean wrap = true;
 		if (w10Wrap!=null) {
 
@@ -207,6 +213,52 @@ public abstract class FOPictWriterAbstract extends AbstractPictWriter {
 		return handleVTextBoxWrapped(context, modelContent, doc, shape, props);
 	}
 
+
+	/**
+	 * The VML text box as an fo:block-container carrying its content and the
+	 * geometry hints WordLayoutFixups places it with: Word's position
+	 * (mso-position-horizontal(-relative) / -vertical(-relative), margin-left/top,
+	 * width/height from the v:shape's @style), its insets and, unless the shape is
+	 * stroked="f", its border.
+	 *
+	 * <p>Until 17.0.5 this was an fo:block-container with position="absolute" (not
+	 * an XSL-FO property) nested in an fo:inline, which FOP did not paint at all.</p>
+	 *
+	 * @since 17.0.5
+	 */
+	protected Node textBoxNode(AbstractWmlConversionContext context, Node modelContent, Document doc,
+			org.docx4j.vml.VmlShapeElements shape, org.docx4j.vml.CTTextbox textBox,
+			org.docx4j.vml.wordprocessingDrawing.CTWrap w10Wrap, Map<String, String> props) {
+
+		String wrapType = "none";
+		if (w10Wrap!=null && w10Wrap.getType()!=null && !w10Wrap.getType().equals(STWrapType.NONE)) {
+			wrapType = w10Wrap.getType().value();
+		}
+		PageDimensions pageDimensions = context.getSections().getCurrentSection().getPageDimensions();
+
+		Element container = FOTextBoxes.createVmlContainer(doc, props, wrapType,
+				FOTextBoxes.inset(textBox.getInset()), pageDimensions);
+
+		if (stroked(shape)) {
+			setBorders(container);
+		}
+		if (modelContent!=null) {
+			XmlUtils.treeCopy(modelContent.getChildNodes(), container);
+		}
+		return container;
+	}
+
+	/** Word draws a text box's border unless the shape says stroked="f". */
+	private static boolean stroked(org.docx4j.vml.VmlShapeElements shape) {
+		if (shape instanceof org.docx4j.vml.VmlAllShapeAttributes) {
+			org.docx4j.vml.STTrueFalse stroked = ((org.docx4j.vml.VmlAllShapeAttributes)shape).getStroked();
+			if (stroked!=null) {
+				return !(stroked.equals(org.docx4j.vml.STTrueFalse.F)
+						|| stroked.equals(org.docx4j.vml.STTrueFalse.FALSE));
+			}
+		}
+		return true;
+	}
 
 	abstract public Node handleVTextBoxNoWrap(AbstractWmlConversionContext context,
 			Node modelContent, Document doc,

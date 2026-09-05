@@ -426,11 +426,21 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @since 17.0.5
      */
     void stampAnchorHints(Document d, AbstractWmlConversionContext context) {
-    	if (anchor==null || d==null || d.getDocumentElement()==null || context==null) return;
+    	if (d==null || d.getDocumentElement()==null) return;
+    	stampAnchorHints(d.getDocumentElement(), anchor, context);
+    }
+
+    /**
+     * As above, for any element standing in for an anchored object: since 17.0.5
+     * a DrawingML shape's text box (wps:wsp/wps:txbx) is positioned this way too.
+     *
+     * @since 17.0.5
+     */
+    public static void stampAnchorHints(org.w3c.dom.Element g, Anchor anchor, AbstractWmlConversionContext context) {
+    	if (anchor==null || g==null || context==null) return;
     	if (!org.docx4j.Docx4jProperties.getProperty(WORD_LAYOUT_FIXUPS_PROPERTY, true)) return;
     	try {
 	    	org.docx4j.model.structure.PageDimensions pd = context.getSections().getCurrentSection().getPageDimensions();
-	    	org.w3c.dom.Element g = d.getDocumentElement();
 
 	    	String kind;
 	    	if (anchor.getWrapTopAndBottom()!=null) kind = "topAndBottom";

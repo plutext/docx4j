@@ -69,9 +69,31 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 				registerWriter(new FldSimpleWriter());
 				registerWriter(new BookmarkStartWriter());
 				registerWriter(new HyperlinkWriter());
-				registerWriter(new FOPictWriterFloatUsed()); 
+				registerWriter(useFloats() ? new FOPictWriterFloatUsed() : new FOPictWriterFloatAvoided());
 			}
 		};
+
+	/**
+	 * docx4j.convert.out.fo.pictures.float (default true): whether a picture or
+	 * text box Word wraps text around may be rendered as an fo:float.
+	 *
+	 * <p>FOP's side floats are unreliable: a float of any height followed by
+	 * content that overflows the page (a table row taller than the space left, say)
+	 * makes it throw NoSuchElementException from LMiter.next, under
+	 * PageBreaker.handleFloatLayout, and the whole export fails.  Set this false to
+	 * lay such objects out in the flow instead (no text beside them, but the export
+	 * completes).  Since 17.0.5 a text box is never a float in any case; this
+	 * governs anchored pictures with square/tight/through wrapping, and which
+	 * picture writer is registered here.</p>
+	 *
+	 * @since 17.0.5
+	 */
+	public static final String FLOAT_PROPERTY = "docx4j.convert.out.fo.pictures.float";
+
+	/** @since 17.0.5 */
+	public static boolean useFloats() {
+		return org.docx4j.Docx4jProperties.getProperty(FLOAT_PROPERTY, true);
+	}
 			
 	//The message writer for pdf	
 	protected static final AbstractMessageWriter FO_MESSAGE_WRITER = new AbstractMessageWriter() {

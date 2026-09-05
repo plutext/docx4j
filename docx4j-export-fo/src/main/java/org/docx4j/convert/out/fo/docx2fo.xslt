@@ -12,11 +12,12 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+	xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic r m">
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic wps r m">
 
   <!-- 
     Copyright 200?-2012, Plutext Pty Ltd.
@@ -432,6 +433,16 @@
   				<xsl:apply-templates select="w:sdtContent/*"/>
   			</fo:block>
   		</xsl:when>
+  		<xsl:when test="starts-with(./w:sdtPr/w:tag/@w:val, 'XSLT_Ind')">
+  			<!-- a part of a merged page-sequence with other page margins
+  			     (ConversionSectionWrapperFactory): the difference is added to the
+  			     indents of its paragraphs and tables -->
+			<xsl:variable name="childResults">
+	  			<xsl:apply-templates select="w:sdtContent/*"/>
+			</xsl:variable>
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.shiftIndents(
+		  		string(./w:sdtPr/w:tag/@w:val), $childResults)"/>
+  		</xsl:when>
   		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, 'XSLT_')">
   			<!-- An SDT we've inserted to handle adjacent borders/shading nodes -->
   			<xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logWarn($conversionContext, 'XSLT_')" />
@@ -511,6 +522,15 @@
 		   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createXslFoImgE20( 
 		   			$conversionContext,
 		  			$wpinline)" />  		
+  		</xsl:when>
+  		<xsl:when test="./a:graphic/a:graphicData/wps:wsp/wps:txbx/w:txbxContent">
+  			<!--  a DrawingML shape's text box; positioned by WordLayoutFixups as an
+  			      anchored picture is (17.0.5) -->
+			<xsl:variable name="childResults">
+	  			<xsl:apply-templates select="./a:graphic/a:graphicData/wps:wsp/wps:txbx/w:txbxContent/*"/>
+			</xsl:variable>
+		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeTextBox(
+		   			$conversionContext, $wpinline, $childResults)" />
   		</xsl:when>
   		<xsl:otherwise>
   		
