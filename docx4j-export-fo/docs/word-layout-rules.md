@@ -3,7 +3,7 @@
 How Word lays out a page, as measured against Word 365, and what docx4j does about it when
 converting a docx to PDF via XSL-FO and Apache FOP. A reference, organised by topic: each
 rule is stated once, with the measurement that established it and the property that turns
-it off where there is one. Describes docx4j 17.0.5 with FOP 2.11.
+it off where there is one. Describes docx4j 17.0.6 with FOP 2.11.
 
 For what to do when FOP is upgraded, see [README-word-layout.md](../README-word-layout.md),
 which documents the copied `LineLayoutManager` and how to re-derive it.
@@ -19,7 +19,8 @@ visitor exporter, which is the default, and the XSLT one (`FLAG_EXPORT_PREFER_XS
 behave the same unless a rule says otherwise. A few rules (paragraph borders, hidden text,
 `w:keepLines`, caps, default cell margins) apply to HTML output too, and say so.
 
-Nothing here needs an extra jar. The FOP layout managers live in docx4j-export-fo, package
+Nothing here needs an extra jar, bar hyphenation patterns (§4.7). The FOP layout managers
+live in docx4j-export-fo, package
 `org.docx4j.fop.wordlayout`, and are installed on every FopFactory docx4j builds through
 the `FopFactoryCustomizer` SPI (`ServiceLoader`, `META-INF/services`). That SPI remains
 available for an application's own FopFactory customisations.
@@ -33,7 +34,8 @@ line-break parity, page-break parity, baseline deltas and x deltas are reported,
 rasterised overlay per page.
 
 The harness is `docx4j-layout-fidelity` (in the repository, not in the reactor, not
-deployed; see its README). 36 probes have Word goldens:
+deployed; see its README). 36 probes have Word goldens (`hyphenation` and
+`hyphenation-zone` are newer and have none yet):
 
 `spacing-adjacent`, `spacing-contextual`, `spacing-autospacing`,
 `spacing-autospacing-context`, `spacing-page-top`, `spacing-section-start`,
@@ -76,8 +78,7 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
 | `docx4j.convert.out.fo.pictures.float` | `true` | Whether a picture Word wraps text around may be an `fo:float`. `false` lays such pictures out in the flow (no text beside them, but immune to the FOP float defect, §10). Text boxes are never floats whatever this says. |
 | `docx4j.convert.out.printHiddenText` | `false` | Hidden text (`w:vanish`) is not rendered and takes no space, as Word prints it. `true` renders it. PDF and HTML. |
-
-Related, and older than this work: `docx4j.convert.out.fo.hyphenate` (default `false`).
+| `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
 
 The foreign attributes the layout managers read are in the namespace
 `http://docx4j.org/fop/word-layout`, registered with FOP by `WordLayoutElementMapping` so
@@ -348,6 +349,60 @@ right margin, and only a stretching leader can absorb the width an unresolved
 A right `w:ptab` is resolved as a right tab stop at the end of the line, by the same line
 manager. With `wordLayout=false` no stops are written, and a mid-line tab keeps the
 three-space stand-in.
+
+### 4.7 Automatic hyphenation
+
+Off unless the document asks for it: `w:settings/w:autoHyphenation`. A paragraph whose
+effective `w:pPr` carries `w:suppressAutoHyphens` is never hyphenated. The rules the line
+manager then applies, all of them Word's:
+
+- **The hyphenation zone** (`w:hyphenationZone`, twips) is the largest gap Word tolerates
+  at the end of a line. When the next whole word does not fit, Word hyphenates it only
+  where the space left on the line is **greater than** the zone, taking the last
+  hyphenation point that fits; otherwise it leaves the ragged edge and breaks before the
+  word. Where nothing whole has fitted on the line at all, the gap is the whole line, so
+  the zone is met and an overlong word is hyphenated.
+- **`w:consecutiveHyphenLimit`** caps how many lines in a row may end in a hyphen; 0, and
+  the absent case, mean no limit. Counted within a paragraph, which is as far as one line
+  manager sees.
+- **`w:doNotHyphenateCaps`** leaves a word written entirely in capitals whole. Applied
+  where the whole word is known, so no hyphenation point is inserted in it at all.
+- The **last line** of a paragraph cannot end in a hyphen, because the greedy loop's last
+  break is the paragraph's own forced break. Word has no rule against hyphenating the
+  *second to last* line, and neither does this.
+
+**The zone's default.** ECMA-376 17.15.1.44 gives none. Word's UI default is 0.25 inch in
+US measurements and 0.75 cm in metric ones; all four corpus documents that switch
+hyphenation on carry `w:hyphenationZone w:val="425"` (0.75 cm) explicitly. docx4j uses 360
+twips where the element is absent.
+
+**Patterns.** FOP hyphenates from TeX pattern files, and neither FOP nor docx4j ships any:
+without them nothing is hyphenated, whatever the document says. The usual source is
+`net.sf.offo:fop-hyph`, which is not under the Apache licence, so an application that
+wants hyphenated output adds it (or its own patterns) to its own classpath. It is a
+test-scope dependency of docx4j-export-fo and a dependency of the layout-fidelity harness,
+and of no published docx4j module.
+
+**Language.** FOP chooses patterns by the block's `language` and `country` properties,
+which docx4j has always written from the paragraph's effective `w:lang`
+(`org.docx4j.model.properties.run.Lang`). Two limitations follow: Word chooses per run,
+while FOP reads its hyphenation properties from the block, so a paragraph mixing languages
+is hyphenated in the paragraph's own; and a `w:lang` carried only by the paragraph mark
+never reaches the effective `rPr`, because `StyleUtil.isEmpty(RPr)` does not count
+`w:lang`.
+
+**Word needs a dictionary too.** Measured: of the four corpus documents which set
+`w:autoHyphenation` (de-AT, de-DE, sl-SI, pt-BR), Word 365 on the English reference
+machine hyphenated not one word - the only hyphens at its line ends are hyphens the text
+itself contains. Word hyphenates only where the proofing tools for the run's language are
+installed, which the docx does not record; docx4j hyphenates wherever it has patterns.
+
+`docx4j.convert.out.fo.hyphenate` overrides the document either way: `true` hyphenates
+every paragraph that does not suppress hyphenation (what the property did from 8.3.3), and
+`false` hyphenates nothing. Unset, the document decides.
+
+Probes: `hyphenation` (zone 360, no limit) and `hyphenation-zone` (zone 720, limit 2,
+`w:doNotHyphenateCaps`), the same prose in both.
 
 ### 4.5 Runs of spaces
 
@@ -815,3 +870,6 @@ Word layout is on, and read by the layout managers:
 | `docx4j:tabs`, `docx4j:tab-default`, `docx4j:tab-ind` | paragraph block | the resolved tab stops (§4.4) |
 | `docx4j:tab` | `fo:leader` | this leader is a tab, to be sized during layout |
 | `docx4j:space-shrink` | `fo:root` | `0` below compatibility mode 15 (§4.2) |
+| `docx4j:hyphenation-zone` | `fo:root` | `w:hyphenationZone` in twips (§4.7) |
+| `docx4j:hyphen-limit` | `fo:root` | `w:consecutiveHyphenLimit`, where it is not 0 |
+| `docx4j:hyphenate-caps` | `fo:root` | `false` for `w:doNotHyphenateCaps` |

@@ -78,12 +78,25 @@ attributes only when
 on), because FOP rejects them without the mapping. `WordLeadingTest`
 checks the page fit on a monospace font.
 
+Automatic hyphenation is decided here too, by Word's rules (`w:hyphenationZone`,
+`w:consecutiveHyphenLimit`, `w:doNotHyphenateCaps`, carried on `fo:root` as
+`docx4j:hyphenation-zone`, `docx4j:hyphen-limit` and `docx4j:hyphenate-caps`).
+FOP's own `findHyphenationPoints` puts a flagged penalty at every point the
+patterns allow; the greedy loop keeps the last one that fits alongside the last
+whole-word break, and prefers it only where the gap the whole word would leave
+is greater than the zone and the consecutive limit is not reached.
+`getHyphenContext` returns null for a word in capitals when the caps rule is on,
+so no point is inserted in it at all. `HyphenationTest` checks all of that on a
+monospace font; it needs hyphenation patterns, which FOP does not ship, so
+`net.sf.offo:fop-hyph` is a **test-scope** dependency of this module (it is not
+under the Apache licence and is a dependency of nothing docx4j publishes).
+
 The copy is tied to FOP 2.11 internals. When FOP is upgraded, re-derive it:
 copy the new `LineLayoutManager.java`, rename, extend `LineLayoutManager`,
 route `LineBreakPosition` and `AlignmentContext` construction through `LBP`,
 and re-apply the greedy members of the inner `LineBreakingAlgorithm`
 (`findBreakingPoints`, `considerLegalBreak`, `fitsByShrinkingSpaces`,
-`commit`, `greedyBreakPoints`, `handleGlueAt`/`computeDifference` for tabs) and
-the single-pass
-`findOptimalBreakingPoints`. `GreedyLineBreakingTest` checks the result on a
+`commit`, `greedyBreakPoints`, `handleGlueAt`/`computeDifference` for tabs,
+`commitLastFitting`/`hyphenationAllowed` for hyphenation), the caps check in
+`getHyphenContext`, and the single-pass `findOptimalBreakingPoints`. `GreedyLineBreakingTest` checks the result on a
 monospace font where every expected break can be counted.

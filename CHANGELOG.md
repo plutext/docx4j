@@ -1,6 +1,22 @@
 CHANGELOG
 =========
 
+Version 17.0.6
+===============
+
+Changes in Version 17.0.6
+--------------------------
+
+PDF via XSL FO:
+- automatic hyphenation now follows the document's own settings and Word's rules:
+w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit, w:doNotHyphenateCaps and
+w:suppressAutoHyphens.  FOP still needs hyphenation patterns, which docx4j does not ship;
+docx4j.convert.out.fo.hyphenate now overrides the document (true: all, false: none)
+
+Other:
+- PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
+
+
 Version 17.0.5
 ===============
 

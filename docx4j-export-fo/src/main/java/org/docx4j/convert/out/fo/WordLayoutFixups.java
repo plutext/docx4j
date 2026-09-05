@@ -99,9 +99,19 @@ public final class WordLayoutFixups {
 
 	/** Parse, fix, and re-serialise (without indentation, so white-space handling is unchanged). */
 	public static String apply(String foDocument, int compatibilityMode) {
+		return apply(foDocument, compatibilityMode, null);
+	}
+
+	/**
+	 * @param hyphenation the document's hyphenation settings, which go on fo:root
+	 *        for the line manager; null for a document which is not hyphenated.
+	 * @since 17.0.6
+	 */
+	public static String apply(String foDocument, int compatibilityMode,
+			org.docx4j.model.HyphenationSettings hyphenation) {
 		try {
 			Document doc = XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(foDocument)));
-			apply(doc, compatibilityMode);
+			apply(doc, compatibilityMode, hyphenation);
 			Transformer t = XmlUtils.getTransformerFactory().newTransformer();
 			t.setOutputProperty(OutputKeys.INDENT, "no");
 			t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
@@ -115,9 +125,15 @@ public final class WordLayoutFixups {
 	}
 
 	public static void apply(Document doc, int compatibilityMode) {
+		apply(doc, compatibilityMode, null);
+	}
+
+	/** @since 17.0.6 */
+	public static void apply(Document doc, int compatibilityMode,
+			org.docx4j.model.HyphenationSettings hyphenation) {
 		disregardBaselineShifts(doc);
 		listLabelLines(doc);
-		lineBoxAttributes(doc, compatibilityMode);
+		lineBoxAttributes(doc, compatibilityMode, hyphenation);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
@@ -235,6 +251,16 @@ public final class WordLayoutFixups {
 		}
 	}
 
+	/** Whether any block asks to be hyphenated (XsltFOFunctions.applyHyphenation):
+	 *  only then are the document's hyphenation settings worth writing on fo:root.
+	 *  @since 17.0.6 */
+	private static boolean anyBlockHyphenates(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if ("true".equals(block.getAttribute("hyphenate"))) return true;
+		}
+		return false;
+	}
+
 	private static Element firstChildElement(Element parent, String localName) {
 		for (Node c = parent.getFirstChild(); c != null; c = c.getNextSibling()) {
 			if (c instanceof Element && localName.equals(c.getLocalName()) && FO_NS.equals(c.getNamespaceURI())) return (Element) c;
@@ -261,14 +287,41 @@ public final class WordLayoutFixups {
 	 * the next line.
 	 */
 	static void lineBoxAttributes(Document doc, int compatibilityMode) {
+		lineBoxAttributes(doc, compatibilityMode, null);
+	}
+
+	/**
+	 * @param hyphenation the document's hyphenation settings (w:hyphenationZone,
+	 *        w:consecutiveHyphenLimit, w:doNotHyphenateCaps), which the line
+	 *        manager applies to the paragraphs whose block carries
+	 *        hyphenate="true"; null, or a document which does not hyphenate,
+	 *        writes none of them.  @since 17.0.6
+	 */
+	static void lineBoxAttributes(Document doc, int compatibilityMode,
+			org.docx4j.model.HyphenationSettings hyphenation) {
 		String ns = extensionNamespace();
 		boolean declared = false;
-		if (ns != null && compatibilityMode < 15) {
-			Element root = doc.getDocumentElement();
-			if (root != null && isFo(root, "root")) {
+		Element root = doc.getDocumentElement();
+		if (ns != null && root != null && isFo(root, "root")) {
+			if (compatibilityMode < 15) {
 				root.setAttributeNS(XMLNS, "xmlns:docx4j", ns);
 				declared = true;
 				root.setAttributeNS(ns, "docx4j:space-shrink", "0");
+			}
+			if (hyphenation != null && anyBlockHyphenates(doc)) {
+				if (!declared) {
+					root.setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+					declared = true;
+				}
+				root.setAttributeNS(ns, "docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.HYPHENATION_ZONE,
+						Integer.toString(hyphenation.getZoneTwips()));
+				if (hyphenation.getConsecutiveLimit() > 0) {
+					root.setAttributeNS(ns, "docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.HYPHEN_LIMIT,
+							Integer.toString(hyphenation.getConsecutiveLimit()));
+				}
+				if (hyphenation.isDoNotHyphenateCaps()) {
+					root.setAttributeNS(ns, "docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.HYPHENATE_CAPS, "false");
+				}
 			}
 		}
 		// the runs' document fonts (RunFontSelector.HINT_FONT), for the line manager's per-run metrics

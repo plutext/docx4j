@@ -187,7 +187,71 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		}
 	}
 
-	public CTCompatSetting getWordCompatSetting(String name) { 
+	/**
+	 * w:autoHyphenation: whether Word hyphenates this document's contents
+	 * automatically (ECMA-376 17.15.1.10).  Off where the element is absent.
+	 *
+	 * @since 17.0.6
+	 */
+	public static boolean isAutoHyphenation(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
+		CTSettings s = getSettings(pkg);
+		return s != null && s.getAutoHyphenation() != null && s.getAutoHyphenation().isVal();
+	}
+
+	/**
+	 * w:hyphenationZone in twips (ECMA-376 17.15.1.44): the largest gap Word
+	 * tolerates at the end of a line before it hyphenates the next word.  Where
+	 * the element is absent, Word's US default of 0.25 inch (360 twips).
+	 *
+	 * @since 17.0.6
+	 */
+	public static int getHyphenationZone(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
+		CTSettings s = getSettings(pkg);
+		if (s == null || s.getHyphenationZone() == null || s.getHyphenationZone().getVal() == null) {
+			return org.docx4j.model.HyphenationSettings.DEFAULT_ZONE_TWIPS;
+		}
+		return s.getHyphenationZone().getVal().intValue();
+	}
+
+	/**
+	 * w:consecutiveHyphenLimit (ECMA-376 17.15.1.22): how many lines in a row may
+	 * end in a hyphen.  0, which is also the absent case, means no limit.
+	 *
+	 * @since 17.0.6
+	 */
+	public static int getConsecutiveHyphenLimit(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
+		CTSettings s = getSettings(pkg);
+		if (s == null || s.getConsecutiveHyphenLimit() == null
+				|| s.getConsecutiveHyphenLimit().getVal() == null) {
+			return 0;
+		}
+		int v = s.getConsecutiveHyphenLimit().getVal().intValue();
+		return v < 0 ? 0 : v;
+	}
+
+	/**
+	 * w:doNotHyphenateCaps (ECMA-376 17.15.1.37): words in all capital letters
+	 * are not hyphenated.
+	 *
+	 * @since 17.0.6
+	 */
+	public static boolean isDoNotHyphenateCaps(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
+		CTSettings s = getSettings(pkg);
+		return s != null && s.getDoNotHyphenateCaps() != null && s.getDoNotHyphenateCaps().isVal();
+	}
+
+	/** This package's w:settings, or null where it has none. @since 17.0.6 */
+	private static CTSettings getSettings(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
+		try {
+			if (pkg == null || pkg.getMainDocumentPart() == null) return null;
+			DocumentSettingsPart dsp = pkg.getMainDocumentPart().getDocumentSettingsPart();
+			return dsp == null ? null : dsp.getContents();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public CTCompatSetting getWordCompatSetting(String name) {
 	
 		CTCompat compat = this.getJaxbElement().getCompat();
 		if (compat==null) {

@@ -315,6 +315,19 @@ public class WordLineLayoutManager extends LineLayoutManager {
         private int candTotalStretch;
         private int candTotalShrink;
         private boolean restartRequested;
+        /** The last flagged (hyphenation) penalty at which the line still fitted, and
+         *  the totals then.  It always lies inside the word that follows candIdx: a
+         *  whole-word break supersedes the hyphenation points before it. */
+        private int hyphIdx = -1;
+        private int hyphDifference;
+        private double hyphRatio;
+        private int hyphShrink;
+        private int hyphStretch;
+        private int hyphTotalWidth;
+        private int hyphTotalStretch;
+        private int hyphTotalShrink;
+        /** How many committed lines in a row ended in a hyphen (w:consecutiveHyphenLimit). */
+        private int consecutiveHyphens;
         /** How far past the available width a tab stop on the line being built reaches.
          *  Word honours a stop beyond the paragraph's right indent (measured: a footer
          *  with w:ind right=360 and a right stop at the full text width puts its page
@@ -340,6 +353,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
             active = createNode(previousPosition, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, null);
             addNode(0, active);
             candIdx = -1;
+            hyphIdx = -1;
+            consecutiveHyphens = 0;
             restartRequested = false;
             tabOverhang = 0;
             if (WordLineLayoutManager.log.isTraceEnabled()) {
@@ -398,12 +413,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         + " el=" + element);
             }
             boolean fits = difference >= 0 || fitsByShrinkingSpaces(elementIdx, difference);
-            if (!fits && candIdx > active.position) {
+            if (!fits && commitLastFitting()) {
                 // too long now (whether or not this is the paragraph's own forced break):
-                // break at the last break that fitted and rescan from there; a forced
-                // break is met again after the rescan
-                commit(candIdx, candDifference, candRatio, candShrink, candStretch,
-                        candTotalWidth, candTotalStretch, candTotalShrink, true);
+                // break at the last break that fitted - hyphenating the word that did not
+                // fit where Word would - and rescan from there; a forced break is met
+                // again after the rescan
                 return;
             }
             if (element.isForcedBreak()) {
@@ -414,6 +428,17 @@ public class WordLineLayoutManager extends LineLayoutManager {
             if (fits) {
                 // fits at its natural width, or (justified) with the spaces compressed
                 // within Word's limit: remember, keep going
+                if (isHyphenationPoint(element)) {
+                    hyphIdx = elementIdx;
+                    hyphDifference = difference;
+                    hyphRatio = r;
+                    hyphShrink = availableShrink;
+                    hyphStretch = availableStretch;
+                    hyphTotalWidth = totalWidth;
+                    hyphTotalStretch = totalStretch;
+                    hyphTotalShrink = totalShrink;
+                    return;
+                }
                 candIdx = elementIdx;
                 candDifference = difference;
                 candRatio = r;
@@ -422,6 +447,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 candTotalWidth = totalWidth;
                 candTotalStretch = totalStretch;
                 candTotalShrink = totalShrink;
+                // any hyphenation point before a whole word that fits is of no interest
+                hyphIdx = -1;
                 return;
             }
             // nothing fitted since the last break: an overlong word; break here, overfull
@@ -452,6 +479,55 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 }
             }
             return -difference <= maxShrink * spaces;
+        }
+
+        // ---- Word's hyphenation -------------------------------------------------
+
+        /** A flagged penalty is a hyphenation point: findHyphenationPoints put one at
+         *  every place the patterns allow the word to be divided. */
+        private boolean isHyphenationPoint(KnuthElement element) {
+            return element.isPenalty() && ((KnuthPenalty) element).isPenaltyFlagged();
+        }
+
+        /**
+         * The word being tried does not fit.  Break at the last opportunity that did,
+         * as Word does; where the hyphenation zone allows it, that opportunity is a
+         * hyphenation point inside the word rather than the space before it.
+         *
+         * @return false where nothing at all has fitted since the last break (an
+         *         overlong word, which the caller then breaks overfull)
+         */
+        private boolean commitLastFitting() {
+            if (hyphIdx > active.position && hyphenationAllowed()) {
+                commit(hyphIdx, hyphDifference, hyphRatio, hyphShrink, hyphStretch,
+                        hyphTotalWidth, hyphTotalStretch, hyphTotalShrink, true);
+                return true;
+            }
+            if (candIdx > active.position) {
+                commit(candIdx, candDifference, candRatio, candShrink, candStretch,
+                        candTotalWidth, candTotalStretch, candTotalShrink, true);
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Word's hyphenation zone (w:hyphenationZone, default 0.25 inch): the largest
+         * gap it tolerates at the end of a line.  When the next whole word does not
+         * fit, Word hyphenates it only where the space left on the line is greater
+         * than the zone; otherwise it leaves the ragged edge and breaks before the
+         * word.  Where nothing whole fitted on the line at all (an overlong word at
+         * the start of a line) the gap is the whole line, so the zone is met.
+         *
+         * w:consecutiveHyphenLimit caps how many lines in a row may end in a hyphen
+         * (0 = no limit); it is counted within the paragraph, which is as far as one
+         * line manager sees.
+         */
+        private boolean hyphenationAllowed() {
+            if (hyphenLimit > 0 && consecutiveHyphens >= hyphenLimit) {
+                return false;
+            }
+            return candIdx <= active.position || candDifference > hyphenationZone;
         }
 
         // ---- Word's tab stops ---------------------------------------------------
@@ -589,7 +665,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     r, availableShrink, availableStretch, difference, 0, active);
             removeNode(active.line, active);
             active = node;
+            consecutiveHyphens = isHyphenationPoint(getElement(idx)) ? consecutiveHyphens + 1 : 0;
             candIdx = -1;
+            hyphIdx = -1;
             tabOverhang = 0;
             if (restart) {
                 restartRequested = true; // restartFrom() re-adds the node and resets the totals
@@ -988,6 +1066,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
         labelAscent = foreignLength(block, WordLayoutElementMapping.LABEL_ASCENT);
         maxSpaceShrink = documentSpaceShrink(block);
 
+        // the document's hyphenation settings (docx4j:hyphenation-zone, -hyphen-limit,
+        // -hyphenate-caps on fo:root; WordLayoutFixups.lineBoxAttributes)
+        int zone = twipsToMpt(rootAttribute(block, WordLayoutElementMapping.HYPHENATION_ZONE));
+        hyphenationZone = zone > 0 ? zone
+                : org.docx4j.model.HyphenationSettings.DEFAULT_ZONE_TWIPS * 50;
+        hyphenLimit = intAttribute(rootAttribute(block, WordLayoutElementMapping.HYPHEN_LIMIT));
+        hyphenateCaps = !"false".equals(rootAttribute(block, WordLayoutElementMapping.HYPHENATE_CAPS));
+
         // the tab stops the block's tabs are laid out against
         String stops = foreignAttribute(block, WordLayoutElementMapping.TABS);
         hasTabStops = stops != null;
@@ -1011,12 +1097,53 @@ public class WordLineLayoutManager extends LineLayoutManager {
     }
 
     private static int twipsToMpt(String twips) {
-        if (twips == null || twips.length() == 0) return 0;
+        return intAttribute(twips) * 50;
+    }
+
+    private static int intAttribute(String v) {
+        if (v == null || v.length() == 0) return 0;
         try {
-            return Integer.parseInt(twips.trim()) * 50;
+            return Integer.parseInt(v.trim());
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    /** A docx4j foreign attribute on fo:root: a document-level setting.  @since 17.0.6 */
+    private static String rootAttribute(org.apache.fop.fo.FObj block, String name) {
+        org.apache.fop.fo.FONode node = block;
+        while (node != null && node.getParent() != null) {
+            node = node.getParent();
+        }
+        if (!(node instanceof org.apache.fop.fo.FObj)) return null;
+        return foreignAttribute((org.apache.fop.fo.FObj) node, name);
+    }
+
+    // ---- Word's hyphenation (docx4j:hyphenation-zone and friends) ---------------
+
+    /** w:hyphenationZone in millipoints: the largest gap Word tolerates at the end of
+     *  a line before it hyphenates the next word.  @since 17.0.6 */
+    private final int hyphenationZone;
+    /** w:consecutiveHyphenLimit: how many lines in a row may end in a hyphen; 0 = no
+     *  limit.  @since 17.0.6 */
+    private final int hyphenLimit;
+    /** w:doNotHyphenateCaps inverted: false means a word in all capitals is left
+     *  whole.  @since 17.0.6 */
+    private final boolean hyphenateCaps;
+
+    /** Whether this word may be hyphenated at all: with w:doNotHyphenateCaps, a word
+     *  written entirely in capitals is not.  Measured against Word's definition: at
+     *  least one letter, and no lower-case one (digits and punctuation, as in
+     *  "ISO-9001", do not make a word mixed case).  @since 17.0.6 */
+    private boolean hyphenatable(CharSequence word) {
+        if (hyphenateCaps) return true;
+        boolean anyLetter = false;
+        for (int i = 0; i < word.length(); i++) {
+            char c = word.charAt(i);
+            if (Character.isLowerCase(c)) return true;
+            if (Character.isLetter(c)) anyLetter = true;
+        }
+        return !anyLetter;
     }
 
 
@@ -1033,12 +1160,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         Double explicit = WordLayoutCustomizer.configuredMaxSpaceShrink();
         if (explicit != null) return explicit.doubleValue();
         double configured = WordLayoutCustomizer.DEFAULT_MAX_SPACE_SHRINK;
-        org.apache.fop.fo.FONode node = block;
-        while (node != null && node.getParent() != null) {
-            node = node.getParent();
-        }
-        if (!(node instanceof org.apache.fop.fo.FObj)) return configured;
-        String v = foreignAttribute((org.apache.fop.fo.FObj) node, WordLayoutElementMapping.SPACE_SHRINK);
+        String v = rootAttribute(block, WordLayoutElementMapping.SPACE_SHRINK);
         if (v == null) return configured;
         try {
             return Math.min(configured, Double.parseDouble(v));
@@ -1579,7 +1701,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * breaks differently in about a quarter of lines with identical fonts and
      * widths (CR-001 harness, break-ragged).  This runs the greedy algorithm
      * once; there is no threshold ladder because it always succeeds.
-     * Hyphenation points are used when the block asks for them.
+     * Where the block asks for hyphenation, FOP's findHyphenationPoints inserts a
+     * flagged penalty at every point the patterns allow, and the greedy loop takes
+     * one only where Word would: the gap the next whole word would leave is bigger
+     * than w:hyphenationZone, and w:consecutiveHyphenLimit is not reached
+     * (see considerLegalBreak / hyphenationAllowed).
      */
     private LineLayoutPossibilities findOptimalBreakingPoints(int alignment, Paragraph currPar,
                                                               boolean isLastPar) {
@@ -2134,6 +2260,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
     }
 
     private HyphContext getHyphenContext(StringBuffer sbChars) {
+        // w:doNotHyphenateCaps: Word leaves a word in capitals whole.  Done here, where
+        // the whole word is to hand, rather than at the penalty: FOP then inserts no
+        // hyphenation point in it at all.  @since 17.0.6
+        if (!hyphenatable(sbChars)) {
+            return null;
+        }
         // Find all hyphenation points in this word
         // (get in an array of offsets)
         // hyphenationProperties are from the block level?.

@@ -4,6 +4,7 @@ import static org.docx4j.fidelity.corpus.Doc.CARLITO;
 import static org.docx4j.fidelity.corpus.Doc.DEJAVU;
 import static org.docx4j.fidelity.corpus.Doc.SANS;
 import static org.docx4j.fidelity.corpus.Doc.SERIF;
+import static org.docx4j.fidelity.corpus.Doc.longProse;
 import static org.docx4j.fidelity.corpus.Doc.prose;
 
 import java.io.File;
@@ -229,6 +230,63 @@ public final class Corpus {
 				d.para(prose(6, 3)).font(fonts[f], sizes[f]).after(120).indent(720, 720, 0).add();
 				d.para(prose(6, 5)).font(fonts[f], sizes[f]).after(120).indent(720, 0, 360).add();
 			}
+			return d.pkg();
+		}));
+
+		// ---------------------------------------------------------- hyphenation
+		PROBES.add(new Probe("hyphenation",
+				"automatic hyphenation, English, w:hyphenationZone 360 and no consecutive limit:"
+				+ " justified and ragged prose of long words, narrow measures, a suppressAutoHyphens"
+				+ " paragraph and a paragraph of capitals", () -> {
+			Doc d = Doc.create(15);
+			d.documentLanguage("en-US");
+			d.hyphenation(true, 360, 0, false);
+			// justified: Word hyphenates where the gap left by the next word exceeds the zone
+			for (int i = 0; i < 5; i++) {
+				d.para(longProse(2, i * 2)).lang("en-US").jc(JcEnumeration.BOTH).after(120).add();
+			}
+			// ragged right: the same rule, with no space compression to confuse it
+			for (int i = 0; i < 5; i++) {
+				d.para(longProse(2, i * 2 + 1)).lang("en-US").after(120).add();
+			}
+			// narrow measures, where a long word leaves a big gap on nearly every line
+			for (int i = 0; i < 3; i++) {
+				d.para(longProse(2, i)).lang("en-US").indent(2160, 0, 0).after(120).add();
+			}
+			d.para(longProse(2, 4)).lang("en-US").jc(JcEnumeration.BOTH).indent(2880, 0, 0).after(120).add();
+			// small type, so a hyphenation point falls inside the zone more often
+			d.para(longProse(3, 2)).lang("en-US").font(SERIF, 16).jc(JcEnumeration.BOTH).after(120).add();
+			d.para(longProse(3, 5)).lang("en-US").font(SERIF, 16).after(120).add();
+			// this paragraph alone is exempt
+			d.para("suppressAutoHyphens. " + longProse(2, 3)).lang("en-US")
+					.suppressAutoHyphens().jc(JcEnumeration.BOTH).after(120).add();
+			// capitals: hyphenated here (the control for the doNotHyphenateCaps probe)
+			d.para(longProse(2, 6).toUpperCase()).lang("en-US").jc(JcEnumeration.BOTH).after(120).add();
+			d.para(longProse(2, 7)).lang("en-US").jc(JcEnumeration.BOTH).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("hyphenation-zone",
+				"automatic hyphenation with w:hyphenationZone 720, w:consecutiveHyphenLimit 2 and"
+				+ " w:doNotHyphenateCaps: the same prose as the hyphenation probe", () -> {
+			Doc d = Doc.create(15);
+			d.documentLanguage("en-US");
+			d.hyphenation(true, 720, 2, true);
+			for (int i = 0; i < 5; i++) {
+				d.para(longProse(2, i * 2)).lang("en-US").jc(JcEnumeration.BOTH).after(120).add();
+			}
+			for (int i = 0; i < 5; i++) {
+				d.para(longProse(2, i * 2 + 1)).lang("en-US").after(120).add();
+			}
+			for (int i = 0; i < 3; i++) {
+				d.para(longProse(2, i)).lang("en-US").indent(2160, 0, 0).after(120).add();
+			}
+			d.para(longProse(2, 4)).lang("en-US").jc(JcEnumeration.BOTH).indent(2880, 0, 0).after(120).add();
+			d.para(longProse(3, 2)).lang("en-US").font(SERIF, 16).jc(JcEnumeration.BOTH).after(120).add();
+			d.para(longProse(3, 5)).lang("en-US").font(SERIF, 16).after(120).add();
+			// all capitals: w:doNotHyphenateCaps leaves these words whole
+			d.para(longProse(2, 6).toUpperCase()).lang("en-US").jc(JcEnumeration.BOTH).after(120).add();
+			d.para(longProse(2, 7)).lang("en-US").jc(JcEnumeration.BOTH).add();
 			return d.pkg();
 		}));
 

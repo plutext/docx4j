@@ -110,6 +110,21 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- TEST SCOPE ONLY, and deliberately not a dependency of any published
+		     module: FOP has no hyphenation patterns of its own, and the OFFO ones
+		     are not under the Apache licence (fop-hyph is distributed under the
+		     LaTeX Project Public Licence and the licences of the individual TeX
+		     pattern files).  HyphenationTest needs patterns to hyphenate anything;
+		     an application that wants hyphenated PDF output adds net.sf.offo:fop-hyph
+		     (or its own patterns) to its own classpath.  See docs/word-layout-rules.md
+		     section 4.7. -->
+		<dependency>
+			<groupId>net.sf.offo</groupId>
+			<artifactId>fop-hyph</artifactId>
+			<version>2.0</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-export-fo-fonts-symbol</artifactId>

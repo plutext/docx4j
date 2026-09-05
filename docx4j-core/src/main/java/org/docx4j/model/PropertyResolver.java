@@ -901,7 +901,11 @@ public class PropertyResolver {
 		//CTTextboxTightWrap textboxTightWrap;
 		//PPrBase.OutlineLvl outlineLvl;
 		if (pPrToApply.getOutlineLvl()!=null ) {
-			return true;		
+			return true;
+		}
+		//BooleanDefaultTrue suppressAutoHyphens;
+		if (pPrToApply.getSuppressAutoHyphens()!=null) { // @since 17.0.6: it exempts the paragraph from automatic hyphenation
+			return true;
 		}
 		//PPrBase.DivId divId;
 		//CTCnf cnfStyle;

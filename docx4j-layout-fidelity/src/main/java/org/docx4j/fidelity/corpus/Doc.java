@@ -175,6 +175,31 @@ public final class Doc {
 		"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
 	};
 
+	/**
+	 * Prose whose words are mostly 10 to 15 letters long, for the hyphenation
+	 * probes: Word only hyphenates where the word that does not fit would leave a
+	 * gap bigger than the hyphenation zone, which needs long words.
+	 */
+	private static final String[] LONG_SENTENCES = {
+		"The administration acknowledged that implementation of the recommendations required extraordinary international collaboration.",
+		"Documentation accompanying the specification describes the responsibilities of every participating organisation comprehensively.",
+		"Considerable improvements in productivity followed the reorganisation of the manufacturing establishment near Northampton.",
+		"Understanding the relationship between representation and interpretation demands considerable philosophical sophistication.",
+		"Environmental considerations increasingly influence infrastructure development throughout the metropolitan municipalities.",
+		"Professional qualifications and accreditation requirements were harmonised across the participating jurisdictions.",
+		"Communications between the departments deteriorated whenever administrative responsibilities were redistributed unexpectedly.",
+		"Preliminary investigations confirmed that the transformation programme substantially exceeded the original appropriations.",
+	};
+
+	public static String longProse(int sentences, int offset) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < sentences; i++) {
+			if (i > 0) sb.append(' ');
+			sb.append(LONG_SENTENCES[(i + offset) % LONG_SENTENCES.length]);
+		}
+		return sb.toString();
+	}
+
 	public static String prose(int sentences) {
 		return prose(sentences, 0);
 	}
@@ -266,6 +291,56 @@ public final class Doc {
 		mdp.addTargetPart(ndp);
 		ndp.unmarshalDefaultNumbering();
 		numberingAdded = true;
+	}
+
+	// ------------------------------------------------------------ hyphenation
+
+	/**
+	 * The document's automatic hyphenation settings (w:settings): w:autoHyphenation,
+	 * w:hyphenationZone in twips (Word's UI default is 360 = 0.25 inch), w:
+	 * consecutiveHyphenLimit (0 = no limit) and w:doNotHyphenateCaps.
+	 */
+	public void hyphenation(boolean auto, int zoneTwips, int consecutiveLimit, boolean doNotHyphenateCaps)
+			throws Exception {
+		DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
+		if (dsp == null) {
+			dsp = new DocumentSettingsPart();
+			dsp.setContents(F.createCTSettings());
+			mdp.addTargetPart(dsp);
+		}
+		org.docx4j.wml.CTSettings settings = dsp.getContents();
+		if (auto) settings.setAutoHyphenation(new BooleanDefaultTrue());
+		org.docx4j.wml.CTTwipsMeasure zone = F.createCTTwipsMeasure();
+		zone.setVal(java.math.BigInteger.valueOf(zoneTwips));
+		settings.setHyphenationZone(zone);
+		if (consecutiveLimit > 0) {
+			org.docx4j.wml.CTSettings.ConsecutiveHyphenLimit limit = new org.docx4j.wml.CTSettings.ConsecutiveHyphenLimit();
+			limit.setVal(BigInteger.valueOf(consecutiveLimit));
+			settings.setConsecutiveHyphenLimit(limit);
+		}
+		if (doNotHyphenateCaps) settings.setDoNotHyphenateCaps(new BooleanDefaultTrue());
+	}
+
+	/** w:lang on the document defaults (w:docDefaults/w:rPrDefault), which is the
+	 *  language Word and FOP both choose hyphenation patterns by. */
+	public void documentLanguage(String lang) {
+		org.docx4j.wml.Styles styles = mdp.getStyleDefinitionsPart().getJaxbElement();
+		if (styles.getDocDefaults() == null) {
+			styles.setDocDefaults(F.createDocDefaults());
+		}
+		if (styles.getDocDefaults().getRPrDefault() == null) {
+			styles.getDocDefaults().setRPrDefault(F.createDocDefaultsRPrDefault());
+		}
+		if (styles.getDocDefaults().getRPrDefault().getRPr() == null) {
+			styles.getDocDefaults().getRPrDefault().setRPr(F.createRPr());
+		}
+		styles.getDocDefaults().getRPrDefault().getRPr().setLang(language(lang));
+	}
+
+	static org.docx4j.wml.CTLanguage language(String lang) {
+		org.docx4j.wml.CTLanguage l = F.createCTLanguage();
+		l.setVal(lang);
+		return l;
 	}
 
 	// ---------------------------------------------------------------- styles
@@ -926,10 +1001,26 @@ public final class Doc {
 			return this;
 		}
 
+		/** w:suppressAutoHyphens: this paragraph is never hyphenated. */
+		public Para suppressAutoHyphens() {
+			ppr.setSuppressAutoHyphens(new BooleanDefaultTrue());
+			return this;
+		}
+
+		/** w:lang on every run of this paragraph. */
+		public Para lang(String lang) {
+			this.lang = lang;
+			return this;
+		}
+
+		private String lang;
+
 		@SuppressWarnings("unchecked")
 		public P build() {
+			Consumer<RPr> langCustomiser = lang == null ? null
+					: rpr -> rpr.setLang(Doc.language(lang));
 			if (label) {
-				p.getContent().add(Doc.run(doc.nextLabel(), font, halfPts, null));
+				p.getContent().add(Doc.run(doc.nextLabel(), font, halfPts, langCustomiser));
 			}
 						for (Object[] part : parts) {
 				if (part[0] instanceof R) {
@@ -938,7 +1029,10 @@ public final class Doc {
 				}
 				String f = part[1] == null ? font : (String) part[1];
 				int sz = part[2] == null ? halfPts : (Integer) part[2];
-				p.getContent().add(Doc.run((String) part[0], f, sz, (Consumer<RPr>) part[3]));
+				Consumer<RPr> c = (Consumer<RPr>) part[3];
+				Consumer<RPr> customiser = langCustomiser == null ? c
+						: (c == null ? langCustomiser : langCustomiser.andThen(c));
+				p.getContent().add(Doc.run((String) part[0], f, sz, customiser));
 			}
 			parts.clear();
 			label = false; // a second build() must not add another label

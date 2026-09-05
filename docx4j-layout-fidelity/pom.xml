@@ -73,6 +73,17 @@
 			<artifactId>docx4j-documents4j-local</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- Hyphenation patterns.  FOP ships none, and these are NOT under the Apache
+		     licence (OFFO's fop-hyph is distributed under the LaTeX Project Public
+		     Licence, plus the licences of the individual TeX pattern files), so this
+		     is a dependency of this harness alone - which is not in the reactor and
+		     never deployed - and of no published docx4j module.  Without it the
+		     hyphenation probes render unhyphenated. -->
+		<dependency>
+			<groupId>net.sf.offo</groupId>
+			<artifactId>fop-hyph</artifactId>
+			<version>2.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>

@@ -54,6 +54,31 @@ java -cp "%CP%" org.docx4j.fidelity.golden.WordGoldenRunner <sharedFolder>\corpu
 Commit the goldens and `golden-manifest.properties` together. Regenerate them
 only when the corpus changes or Word on the VM is updated.
 
+## Hyphenation patterns (licence note)
+
+FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`
+probes would render unhyphenated without them. This module therefore depends on
+`net.sf.offo:fop-hyph`, which is **not** under the Apache licence (the OFFO
+distribution is under the LaTeX Project Public Licence, together with the
+licences of the individual TeX pattern files). That is acceptable here because
+this harness is not in the reactor and is never deployed; it is a test-scope
+dependency of docx4j-export-fo for the same reason, and a dependency of no
+published docx4j module.
+
+Because the patterns are here, the real-document corpus now hyphenates the four
+documents that set `w:autoHyphenation` (de-AT, de-DE, sl-SI, pt-BR), while Word
+on the reference VM hyphenated none of them - it needs the proofing tools for the
+text's language installed, and the English machine had none. That costs those
+documents line parity and shows up in `score` as a regression which is an
+artefact of the reference, not of the layout. Re-golden them on a VM with the
+German proofing tools before reading it as one, or drop this dependency while
+scoring.
+
+Note that `target/lib` is only added to, never cleaned, by `copy-dependencies`:
+after a version bump it holds both versions of every docx4j jar and the old one
+may win on the wildcard classpath. Delete the stale ones (or `target/lib`
+itself) after a bump.
+
 A stand-in reference for plumbing checks (never the target):
 
 ```bash
@@ -62,7 +87,7 @@ soffice --headless --convert-to pdf --outdir target/goldens-lo target/corpus/*.d
 
 ## Scoring a real-document corpus
 
-`run` is for the 33 hand-built probes: it renders everything, stops at the first
+`run` is for the hand-built probes: it renders everything, stops at the first
 exception, and writes an HTML report with page images. `score` is for a corpus of
 hundreds of real documents, where some will fail and the question is not "what
 does this one document do" but "did this change help across the corpus".

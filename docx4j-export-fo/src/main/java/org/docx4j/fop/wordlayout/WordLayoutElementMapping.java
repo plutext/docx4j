@@ -42,7 +42,10 @@ import org.apache.fop.fo.ElementMapping;
  * and one on {@code fo:root}:
  * <ul>
  * <li>{@code docx4j:space-shrink}: how far the spaces of a justified line may be
- * compressed to pull a word in (see {@link #SPACE_SHRINK}).</li>
+ * compressed to pull a word in (see {@link #SPACE_SHRINK});</li>
+ * <li>{@code docx4j:hyphenation-zone}, {@code docx4j:hyphen-limit} and
+ * {@code docx4j:hyphenate-caps}: the document's hyphenation settings (see
+ * {@link #HYPHENATION_ZONE}).</li>
  * </ul>
  * No elements are defined.  Found by FOP through META-INF/services
  * (org.apache.fop.fo.ElementMapping); docx4j-export-fo learns the namespace
@@ -65,6 +68,17 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  only does that from compatibility mode 15 (the Word 2013 layout engine); for
 	 *  an older document docx4j writes 0.  @since 17.0.5 */
 	public static final String SPACE_SHRINK = "space-shrink";
+
+	/** on fo:root: w:hyphenationZone in twips - the largest gap this document's Word
+	 *  engine tolerates at the end of a line before it hyphenates the next word.
+	 *  @since 17.0.6 */
+	public static final String HYPHENATION_ZONE = "hyphenation-zone";
+	/** on fo:root: w:consecutiveHyphenLimit - how many lines in a row may end in a
+	 *  hyphen.  Absent, or 0, means no limit.  @since 17.0.6 */
+	public static final String HYPHEN_LIMIT = "hyphen-limit";
+	/** on fo:root: "false" for w:doNotHyphenateCaps - a word in all capitals is not
+	 *  hyphenated.  @since 17.0.6 */
+	public static final String HYPHENATE_CAPS = "hyphenate-caps";
 
 	/** on an fo:leader: it stands in for a w:tab, and {@link WordLineLayoutManager}
 	 *  gives it the width from the x it starts at to the tab stop it reaches. */

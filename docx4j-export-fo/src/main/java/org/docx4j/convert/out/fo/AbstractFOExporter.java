@@ -158,7 +158,8 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 				if (WordLayoutFixups.isEnabled()) {
 			foDocument = WordLayoutFixups.apply(foDocument,
 					org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart.getCompatibilityMode(
-							foConversionContext.getWmlPackage()));
+							foConversionContext.getWmlPackage()),
+					org.docx4j.model.HyphenationSettings.of(foConversionContext.getWmlPackage()));
 		}
 		if (log.isDebugEnabled()) {
 			log.debug(foDocument);

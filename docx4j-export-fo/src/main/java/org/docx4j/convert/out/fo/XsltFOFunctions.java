@@ -533,10 +533,8 @@ public class XsltFOFunctions {
 			block.setAttribute("text-align-last", "justify");
     	}
 
-    	// Hyphenation defaults to off
-    	if (Docx4jProperties.getProperty("docx4j.convert.out.fo.hyphenate", false)) {
-    		block.setAttribute("hyphenate", "true");
-    	}
+    	// (hyphenation is applied in createBlock, where the document's settings and the
+    	//  effective pPr are both to hand; see applyHyphenation)
 
     	wrapInBidiBlockContainer(df);
 
@@ -891,6 +889,47 @@ public class XsltFOFunctions {
 		return "";
 	}
 
+	/**
+	 * Automatic hyphenation.  Word hyphenates a paragraph when the document asks
+	 * for it (w:settings/w:autoHyphenation) and the paragraph does not suppress it
+	 * (w:pPr/w:suppressAutoHyphens, resolved through the style hierarchy).  The
+	 * zone, the consecutive-line limit and the all-caps rule are document-level, so
+	 * they go on fo:root (WordLayoutFixups.lineBoxAttributes) for the line manager
+	 * to read.
+	 *
+	 * The docx4j property {@code docx4j.convert.out.fo.hyphenate} overrides the
+	 * document: {@code true} hyphenates every paragraph that does not suppress
+	 * hyphenation (what the property has always done), {@code false} hyphenates
+	 * nothing, and where it is not set at all the document's own setting decides.
+	 *
+	 * FOP chooses its hyphenation patterns by the block's {@code language} and
+	 * {@code country} properties, which docx4j already writes from the paragraph's
+	 * effective w:lang (org.docx4j.model.properties.run.Lang), so nothing is done
+	 * about them here.  Two limitations follow: Word chooses its patterns per run,
+	 * while FOP reads the hyphenation properties from the block, so a paragraph
+	 * mixing languages is hyphenated in the paragraph's own; and a w:lang carried
+	 * only by the paragraph mark does not reach the effective rPr at all, because
+	 * StyleUtil.isEmpty(RPr) does not count w:lang.
+	 *
+	 * @since 17.0.6
+	 */
+	static void applyHyphenation(WordprocessingMLPackage wmlPackage, PPr pPr, Element foBlockElement) {
+
+		String override = Docx4jProperties.getProperty("docx4j.convert.out.fo.hyphenate");
+		boolean hyphenate;
+		if (override == null || override.trim().length() == 0) {
+			hyphenate = org.docx4j.model.HyphenationSettings.of(wmlPackage).hyphenates(pPr);
+		} else if (Boolean.parseBoolean(override.trim())) {
+			// force on, but a paragraph which suppresses hyphenation still suppresses it
+			hyphenate = !org.docx4j.model.HyphenationSettings.isSuppressed(pPr);
+		} else {
+			hyphenate = false;
+		}
+		if (hyphenate) {
+			foBlockElement.setAttribute("hyphenate", "true");
+		}
+	}
+
 	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, NodeIterator childResults,
 			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark) {
@@ -968,6 +1007,10 @@ public class XsltFOFunctions {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_LIST, "1");
 				}
 			}
+
+			// automatic hyphenation, from w:settings/w:autoHyphenation and the
+			// paragraph's w:suppressAutoHyphens.  @since 17.0.6
+			applyHyphenation(wmlPackage, pPr, foBlockElement);
 
 			// the tab stops this paragraph's tabs are laid out against (only where it
 			// has one: the line manager needs them, nothing else does).  @since 17.0.5
