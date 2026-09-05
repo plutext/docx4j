@@ -58,7 +58,11 @@ public class MetricallyCompatibleSubstituteTest {
 		assertSubstitute(mapper, "Segoe UI", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Helvetica", "arimo", "liberation sans");
 
-		assertSubstitute(mapper, "Calibri Light", "carlito");
+		// crosextra clone where installed, else the Liberation sans (a build server
+		// with only the Liberation jar has no Carlito)
+		assertSubstitute(mapper, "Calibri Light", "carlito", "liberation sans");
+		assertSubstitute(mapper, "Calibri", "carlito", "liberation sans");
+		assertSubstitute(mapper, "Cambria", "caladea", "liberation serif");
 	}
 
 	/** The pair whose secondary substitutes were swapped: neither may become the other's class. */

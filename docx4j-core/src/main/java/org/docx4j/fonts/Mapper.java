@@ -322,9 +322,13 @@ public abstract class Mapper {
     	addMetricallyCompatibleSubstitute("Courier New", "Cousine Regular", "Liberation Mono");
 
 		// Crosextra
-    	addMetricallyCompatibleSubstitute("Calibri", "Carlito Regular", null);
-    	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", null);
-    	addMetricallyCompatibleSubstitute("Calibri Light", "Carlito Regular", null);
+    	// second choice where the crosextra clones are absent (a box with only the
+    	// Liberation jar, e.g. a build server): a font of the same class, so the
+    	// text is at least a sans / a serif; line heights still come from the
+    	// document font's own metrics (WordLineMetrics).  @since 17.0.5
+    	addMetricallyCompatibleSubstitute("Calibri", "Carlito Regular", "Liberation Sans");
+    	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", "Liberation Serif");
+    	addMetricallyCompatibleSubstitute("Calibri Light", "Carlito Regular", "Liberation Sans");
 
     	// URW base 35 (ghostscript-fonts, on most Linux boxes).  Century Gothic was
     	// drawn to ITC Avant Garde Gothic's widths, and URW Gothic is the Avant Garde
@@ -333,7 +337,7 @@ public abstract class Mapper {
     	// URW Gothic Demi likewise matches Century Gothic Bold.  Without this the
     	// class-based fallback reached a Helvetica clone, 3.1% wider, which is enough
     	// to break a full line differently.  @since 17.0.5
-    	addMetricallyCompatibleSubstitute("Century Gothic", "URW Gothic", null);
+    	addMetricallyCompatibleSubstitute("Century Gothic", "URW Gothic", "Liberation Sans");
 
     	// Fonts with no metric-compatible clone, but where a stand-in of the right
     	// class is much closer than the document's default font, which is what
