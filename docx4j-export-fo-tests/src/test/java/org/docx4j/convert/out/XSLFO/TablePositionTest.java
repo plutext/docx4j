@@ -31,7 +31,9 @@ import org.w3c.dom.NodeList;
  *   overhanging both margins;</li>
  * <li>widths docx4j chose itself (the autofit pass) are kept inside the text
  *   column; a table's own w:tblGrid is left alone even when it is wider, because
- *   that is what Word does.</li>
+ *   that is what Word does - unless the table is autofit (no w:tblW of its own,
+ *   no fixed layout) and its grid is far wider than the column, in which case the
+ *   grid is a layout Word cached for a wider page and recomputes.</li>
  * </ul>
  *
  * Both FO pathways (the table FO is built in Java for each).
@@ -168,12 +170,25 @@ public class TablePositionTest {
 				cell("6000", "one") + cell("6000", "two"));
 		assertEquals(600.0, pt(foTable(fo(fixed, flags)).getAttribute("width")), 0.01);
 
-		// and so is the document's own w:tblGrid, even when it is wider than the column:
-		// Word draws such a table overhanging the right margin at its grid width
+		// and so is the document's own w:tblGrid where the table states a width of its
+		// own: Word draws such a table overhanging the right margin at its grid width
 		// (measured over the real-document corpus at 3% to 19% over)
-		String grid = table("", "<w:gridCol w:w=\"6000\"/><w:gridCol w:w=\"6000\"/>",
+		String grid = table("<w:tblW w:type=\"dxa\" w:w=\"12000\"/>",
+				"<w:gridCol w:w=\"6000\"/><w:gridCol w:w=\"6000\"/>",
 				cell("6000", "one") + cell("6000", "two"));
 		assertEquals(600.0, pt(foTable(fo(grid, flags)).getAttribute("width")), 0.01);
+
+		// an autofit table's grid a few per cent over the column is Word's own layout
+		// and stands too (480pt on 451.3, 6% over)
+		String autofitJustOver = table("", "<w:gridCol w:w=\"4800\"/><w:gridCol w:w=\"4800\"/>",
+				cell("4800", "one") + cell("4800", "two"));
+		assertEquals(480.0, pt(foTable(fo(autofitJustOver, flags)).getAttribute("width")), 0.01);
+
+		// but an autofit grid far wider than the column is a layout Word cached for a
+		// wider page and recomputes: 600pt on 451.3 (1.33x) is fitted.  @since 17.0.6
+		String autofitFarOver = table("", "<w:gridCol w:w=\"6000\"/><w:gridCol w:w=\"6000\"/>",
+				cell("6000", "one") + cell("6000", "two"));
+		assertEquals(COLUMN_TWIPS / 20.0, pt(foTable(fo(autofitFarOver, flags)).getAttribute("width")), 0.01);
 	}
 
 	@Test

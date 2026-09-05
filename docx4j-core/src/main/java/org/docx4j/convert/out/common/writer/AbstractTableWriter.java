@@ -443,6 +443,20 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * earlier version of this method scaled its tables to fit.  Only widths docx4j
 	 * decided for itself are fitted.</p>
 	 *
+	 * <p>That exemption reaches only a table which states a width of its own - a
+	 * w:tblW in "dxa" or "pct", or w:tblLayout="fixed" - and, for an <em>autofit</em>
+	 * table (w:tblW absent or "auto", the layout not fixed), only up to
+	 * {@link #GRID_OVERHANG_LIMIT}.  An autofit table's grid is the width Word cached
+	 * from its last layout; Word re-runs its content-based autofit against the page it
+	 * is laying out now, so a grid far wider than the column - a table pasted from a
+	 * landscape page, say - is not a layout Word would produce.  Measured over the
+	 * real-document corpus, autofit grids 1.4 to 2.7 times the text column are drawn
+	 * by Word inside it (one 956pt grid on a 453.6pt column came out at 505.3pt),
+	 * while docx4j painted half the document past the page edge and lost 7 of Word's
+	 * 15 pages; grids a few per cent over are drawn by Word at their grid width, and
+	 * scaling those re-broke cells Word does not break.  Such a grid is scaled to the
+	 * column here.</p>
+	 *
 	 * <p>Only formats which paginate do this ({@link #fitsTableToPage()}); in HTML an
 	 * over-wide table is the browser's business.</p>
 	 *
@@ -458,7 +472,15 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				return null; // Word overflows a fixed-layout table
 			}
 			int[] widths = table.getAutofitColumnWidths();
-			if (widths == null) return null; // the document's own grid: Word keeps it
+			boolean ownGrid = widths == null;
+			if (ownGrid) {
+				// The document's own grid.  Word keeps an over-wide one only where the
+				// table states a width of its own; an autofit table's grid is a cached
+				// layout Word recomputes and clamps to the text column.  @since 17.0.6
+				if (preferredTableWidthTwips(context, tblPr) > 0) return null;
+				widths = gridWidths(table, table.getColCount());
+				if (widths == null) return null;
+			}
 			long total = 0;
 			for (int w : widths) total += w;
 			if (total <= 0) return null;
@@ -475,6 +497,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				writable -= ind.getW().intValue();
 			}
 			if (writable <= 0 || total <= writable) return null;
+			if (ownGrid && total < writable * GRID_OVERHANG_LIMIT) return null;
 
 			int[] out = new int[widths.length];
 			long given = 0;
@@ -496,6 +519,16 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			return null;
 		}
 	}
+
+	/**
+	 * How far past the text column an <em>autofit</em> table's own w:tblGrid may reach
+	 * before {@link #fitToAvailableWidth} scales it down.  Measured over the
+	 * real-document corpus: Word draws autofit grids up to about a fifth over at their
+	 * grid width (&#xa7;6.5), and re-fits ones 1.35 to 2.7 times the column.
+	 *
+	 * @since 17.0.6
+	 */
+	protected static final double GRID_OVERHANG_LIMIT = 1.25;
 
 	/** Whether this output format should scale an over-wide table down to the page,
 	 *  as Word does; true for paginated output.  @since 17.0.5 */

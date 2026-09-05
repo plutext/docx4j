@@ -378,6 +378,21 @@ public class LayoutMasterSetBuilder {
 		rb.setColumnCount(String.valueOf(page.getColsNum())); //Number of Equal Width Columns
 		rb.setColumnGap(UnitsOfMeasurement.twipToBest(page.getColsSpacing())); //Spacing Between Equal Width Columns
 
+		/* w:sectPr/w:vAlign: Word aligns the section's content vertically in the text
+		 * area (Page Setup > Layout > Vertical alignment).  display-align on
+		 * fo:region-body is XSL 1.1's equivalent and FOP applies it, so a title page
+		 * whose section says "center" is centred rather than sitting at the top:
+		 * measured, every line of one such page was 112.5pt above Word's.  "both"
+		 * (justified) has no FO equivalent - the closest is "center".  @since 17.0.6 */
+		String vAlign = page.getVerticalAlign();
+		if (vAlign!=null) {
+			if ("center".equals(vAlign) || "both".equals(vAlign)) {
+				rb.setDisplayAlign(org.plutext.jaxb.xslfo.DisplayAlignType.CENTER);
+			} else if ("bottom".equals(vAlign)) {
+				rb.setDisplayAlign(org.plutext.jaxb.xslfo.DisplayAlignType.AFTER);
+			}
+		}
+
 		float halfPageHeight = page.getPgSz().getH().intValue()/40; // convert from twips, then * 0.5
 		String halfPageHeightPts = halfPageHeight + "pt";  
 		

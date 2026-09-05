@@ -344,10 +344,22 @@ public abstract class Mapper {
     	// RunFontSelector falls back to (a sans in Tinos, or Georgian in Carlito,
     	// was the first divergence in a fifth of a real-document sample; CR-001).
     	// The widths are not Word's, so lines still break differently.  @since 17.0.5
-    	for (String sans : new String[] { "Tahoma", "Verdana", "Trebuchet MS", "Segoe UI",
+    	for (String sans : new String[] { "Tahoma", "Trebuchet MS", "Segoe UI",
     			"Arial Black", "Gadugi", "Helvetica", "Helvetica Neue" }) {
     		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
     	}
+
+    	// Verdana and Comic Sans MS are much wider than Arial, so an Arial clone
+    	// re-breaks every line of a document set in them.  Measured against Word's own
+    	// PDFs of real documents, on lines whose text matches exactly: Word's Verdana
+    	// lines are 1.141x our Arimo ones, and DejaVu Sans is 1.14x Arimo over a mixed
+    	// Latin sample; Word's Comic Sans lines are 1.153x our Carlito ones (Comic Sans
+    	// reached Carlito through the class-based fallback), and Noto Sans is 1.15x
+    	// Carlito.  Tahoma is left where it is: on an all-Tahoma document the median
+    	// ratio to our Arimo output is 1.006.  @since 17.0.6
+    	addFirstAvailableSubstitute("Verdana", "DejaVu Sans", "Arimo Regular", "Liberation Sans");
+    	addFirstAvailableSubstitute("Comic Sans MS", "Noto Sans Regular", "DejaVu Sans",
+    			"Arimo Regular", "Liberation Sans");
 
     	// Segoe UI Light has no metric clone, but Arimo is the wrong shape for it:
     	// measured against the Segoe UI Light Word embeds, Arimo's advances are
@@ -357,9 +369,18 @@ public abstract class Mapper {
     	// @since 17.0.5
     	addFirstAvailableSubstitute("Segoe UI Light",
     			"Source Sans 3", "Source Sans Pro", "Arimo Regular", "Liberation Sans");
-    	for (String serif : new String[] { "Georgia", "Garamond", "Book Antiqua", "Palatino Linotype",
-    			"Bookman Old Style" }) {
+    	for (String serif : new String[] { "Garamond", "Bookman Old Style" }) {
     		addMetricallyCompatibleSubstitute(serif, "Tinos Regular", "Liberation Serif");
+    	}
+
+    	// The Palatino family, and Georgia, are wider than Times, so a Times clone
+    	// re-breaks their lines.  P052 is URW's Palladio, the Palatino clone, and is in
+    	// the URW base 35 (ghostscript-fonts).  Measured against Word's own PDFs:
+    	// Word's Book Antiqua lines are 1.087-1.114x our Tinos ones and its Georgia
+    	// lines 1.076-1.112x, where P052 is 1.09x Tinos over a mixed Latin sample.
+    	// @since 17.0.6
+    	for (String palatino : new String[] { "Georgia", "Book Antiqua", "Palatino Linotype" }) {
+    		addFirstAvailableSubstitute(palatino, "P052", "Tinos Regular", "Liberation Serif");
     	}
     	// Liberation Sans Narrow is metric-compatible with Arial Narrow, but neither the
     	// Liberation nor the Croscore jar carries it, and it is no longer in the

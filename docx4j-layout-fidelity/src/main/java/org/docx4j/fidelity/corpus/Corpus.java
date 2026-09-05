@@ -645,6 +645,145 @@ public final class Corpus {
 			d.para("after. " + prose(1, 3)).before(240).add();
 			return d.pkg();
 		}));
+
+		// ------------------------------------- rules 17.0.5 added, to be re-measured
+
+		/*
+		 * §4.4 says "a line holding a tab is laid out from the left whatever the
+		 * paragraph's w:jc".  A real document contradicts that for a *trailing* tab:
+		 * Word drew a centred line ending in a tab at x=208.9, docx4j at 56.7, flush
+		 * left.  This probe separates a leading tab, a mid-line tab and a trailing tab
+		 * under each of centre, right and justified.
+		 */
+		PROBES.add(new Probe("tab-jc",
+				"centre/right/justified paragraphs whose tab is leading, mid-line or trailing", () -> {
+			Doc d = Doc.create(15);
+			JcEnumeration[] alignments = { JcEnumeration.CENTER, JcEnumeration.RIGHT, JcEnumeration.BOTH };
+			for (JcEnumeration jc : alignments) {
+				String name = jc.value();
+				d.para("no tab, " + name).jc(jc).after(120).add();
+				d.para().noLabel().jc(jc).text("trailing tab, " + name).tab().after(120).add();
+				d.para().noLabel().jc(jc).tab().text("leading tab, " + name).after(120).add();
+				d.para().noLabel().jc(jc).text("mid ").tab().text("tab, " + name).after(120).add();
+				d.para().noLabel().jc(jc).text("trailing tab with a stop, " + name)
+						.tabStop(6000, org.docx4j.wml.STTabJc.LEFT).tab().after(240).add();
+			}
+			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * §3 says a border's w:space is the padding on that side (measured on Word's
+		 * Title style: 4pt space, 1pt border, the next paragraph 5pt lower).  A real
+		 * document contradicts that inside a table cell: for a 0.5pt border with
+		 * w:space="1" Word's row pitch was exactly the bare line box (9.1pt for an 8pt
+		 * Arial line), where docx4j's was 12.2pt.  Same paragraph in and out of a cell,
+		 * at three w:space values.
+		 */
+		PROBES.add(new Probe("pbdr-space",
+				"a 0.5pt paragraph border with w:space 0, 1 and 4pt, inside a table cell and outside", () -> {
+			Doc d = Doc.create(15);
+			for (int space : new int[] { 0, 1, 4 }) {
+				d.para("border space " + space + "pt, in the flow").font(SANS, 16).borders(4, space).add();
+				d.para("next paragraph, space " + space).font(SANS, 16).after(240).add();
+
+				d.para("the same in a cell, space " + space).font(SANS, 16).after(120).add();
+				Doc.Table t = new Doc.Table(4000, 4000).autoWidth();
+				t.rowOf(null, null,
+						t.cellOf(d.para().noLabel().font(SANS, 16).text("bordered " + space).borders(4, space).build(),
+								 d.para().noLabel().font(SANS, 16).text("second line " + space).build()),
+						t.cellOf(d.para().noLabel().font(SANS, 16).text("plain " + space).build(),
+								 d.para().noLabel().font(SANS, 16).text("second line " + space).build()));
+				d.add(t.build());
+				d.para("after the table, space " + space).font(SANS, 16).before(240).after(240).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * §6.1's compat-14 table grid edge disagreed with two real mode-14 documents,
+		 * whose first cell text sits at margin + w:tblInd + one left cell margin - the
+		 * mode-15 geometry.  The table-indent-compat14/15 probes cover w:tblInd with
+		 * Word's default cell margins; this pair adds an explicit w:tblCellMar (Word's
+		 * own 108 twips, and a different 72) and a fixed layout, which are the other
+		 * things those documents have.
+		 */
+		PROBES.add(gridEdgeProbe(14));
+		PROBES.add(gridEdgeProbe(15));
+
+		/*
+		 * C7: our autofit column widths differ from Word's by enough to change where a
+		 * cell wraps.  A 2-column autofit table whose cells hold long words gives the
+		 * classic algorithm little slack to share, so a small difference in the minima
+		 * or the maxima shows up as a different break.
+		 */
+		PROBES.add(new Probe("table-autofit-wrap",
+				"2-column autofit tables of long words: where the column boundary falls decides the wrap", () -> {
+			Doc d = Doc.create(15);
+			d.para("before. " + prose(1)).after(240).add();
+
+			d.para("long words both sides").before(240).after(120).add();
+			d.add(new Doc.Table(4513, 4513).autoWidth()
+					.row(SERIF, 24, true,
+						"Teaching and learning sequence for the fortnight",
+						"Differentiation and assessment opportunities considered")
+					.row(SERIF, 24, true,
+						"Comprehension strategies demonstrated",
+						"Reflection")
+					.build());
+
+			d.para("one long word, one short").before(240).after(120).add();
+			d.add(new Doc.Table(4513, 4513).autoWidth()
+					.row(SERIF, 24, true,
+						"Responsibilities",
+						"The organisation's internationalisation programme covers " + prose(1))
+					.row(SERIF, 24, true, "Owner", "Name")
+					.build());
+
+			d.para("three columns, mixed word lengths").before(240).after(120).add();
+			d.add(new Doc.Table(3008, 3008, 3009).autoWidth()
+					.row(SERIF, 24, true, "Monday", "Wednesday", "Friday")
+					.row(SERIF, 24, true,
+						"Reading comprehension",
+						"Mathematics investigation",
+						"Physical education and sport")
+					.build());
+
+			d.para("after. " + prose(1, 1)).before(240).add();
+			return d.pkg();
+		}));
+	}
+
+	/**
+	 * Where Word puts an autofit table's grid edge when the table declares its own
+	 * cell margins, under one compatibility mode.  §6.1's rule (below mode 15 the
+	 * first column's text lands on the margin + w:tblInd; from mode 15 the grid edge
+	 * does) was measured with Word's default margins only.
+	 */
+	private static Probe gridEdgeProbe(int compatMode) {
+		return new Probe("table-grid-edge-compat" + compatMode,
+				"w:tblInd 108 with default, 108 and 72 twip cell margins, autofit and fixed,"
+				+ " compatibilityMode " + compatMode, () -> {
+			Doc d = Doc.create(compatMode);
+			d.para("default cell margins. " + prose(1)).after(240).add();
+			d.add(new Doc.Table(4000, 4000).indent(108)
+					.row(SERIF, 24, true, "default margins", "right").build());
+
+			d.para("w:tblCellMar 108. " + prose(1, 1)).before(240).after(240).add();
+			d.add(new Doc.Table(4000, 4000).indent(108).cellMargins(108, 0)
+					.row(SERIF, 24, true, "cellMar 108", "right").build());
+
+			d.para("w:tblCellMar 72. " + prose(1, 2)).before(240).after(240).add();
+			d.add(new Doc.Table(4000, 4000).indent(108).cellMargins(72, 0)
+					.row(SERIF, 24, true, "cellMar 72", "right").build());
+
+			d.para("fixed layout, w:tblCellMar 108. " + prose(1, 3)).before(240).after(240).add();
+			d.add(new Doc.Table(4000, 4000).fixedLayout().indent(108).cellMargins(108, 0)
+					.row(SERIF, 24, false, "fixed cellMar 108", "right").build());
+
+			d.para("after. " + prose(1, 4)).before(240).add();
+			return d.pkg();
+		});
 	}
 
 	/** A run holding a right w:ptab relative to the margin. */

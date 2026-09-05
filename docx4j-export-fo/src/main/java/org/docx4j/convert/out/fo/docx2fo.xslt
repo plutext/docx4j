@@ -549,10 +549,14 @@
 		<xsl:when test="./v:shape/v:imagedata">
 
 	  		<xsl:variable name="wpict" select="."/>
-		  	
-		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10( 
+
+		  	<!--  an absolutely positioned VML picture is placed as Word places it,
+		  	      instead of taking a line at the end of its paragraph (17.0.6) -->
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createVmlPicture(
 		  	$conversionContext,
-  			$wpict)" />
+  			$wpict,
+  			string(./v:shape/@style),
+  			string(./v:shape/w10:wrap/@type))" />
 		</xsl:when>
 		<xsl:when test="./v:shape/v:textbox">
 			<!--  from 3.0.1 -->

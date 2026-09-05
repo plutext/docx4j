@@ -104,6 +104,52 @@ public class FOTextBoxes {
 		return container;
 	}
 
+	/** No inset: a VML picture's box is the picture. */
+	private static final double[] NO_INSET = { 0, 0, 0, 0 };
+
+	/**
+	 * A v:shape's @style as a property map ("position:absolute;margin-left:-2.85pt;...").
+	 * A property with no value, or with more colons than one, is skipped rather than
+	 * throwing.
+	 *
+	 * @since 17.0.6
+	 */
+	public static Map<String, String> parseStyle(String style) {
+		Map<String, String> map = new java.util.HashMap<String, String>();
+		if (style==null) return map;
+		for (String entry : style.split(";")) {
+			int colon = entry.indexOf(':');
+			if (colon <= 0 || colon == entry.length()-1) continue;
+			map.put(entry.substring(0, colon).trim(), entry.substring(colon+1).trim());
+		}
+		return map;
+	}
+
+	/**
+	 * Whether a v:shape's @style says Word positions it rather than laying it out in
+	 * the line ("position:absolute", which is what Word writes for every floating
+	 * picture and text box).
+	 *
+	 * @since 17.0.6
+	 */
+	public static boolean isPositioned(Map<String, String> props) {
+		return "absolute".equals(props.get("position"))
+				&& !"char".equals(props.get("mso-position-horizontal-relative"));
+	}
+
+	/**
+	 * The container an absolutely positioned VML <em>picture</em>
+	 * (w:pict/v:shape/v:imagedata) goes in, so that it is placed where Word places it
+	 * instead of taking a line in the flow.  Same geometry as a VML text box, with no
+	 * inset: the shape's box is the picture.
+	 *
+	 * @since 17.0.6
+	 */
+	public static Element createVmlPictureContainer(Document doc, Map<String, String> props,
+			String wrapType, PageDimensions pd) {
+		return createVmlContainer(doc, props, wrapType, NO_INSET, pd);
+	}
+
 	/**
 	 * The container for a VML text box, from the v:shape's @style properties
 	 * (the same properties Word writes for an anchored picture, in CSS form).

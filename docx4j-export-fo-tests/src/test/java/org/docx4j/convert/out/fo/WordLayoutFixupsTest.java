@@ -350,4 +350,95 @@ public class WordLayoutFixupsTest {
 		assertFalse(out.contains("docx4j-label-ascent"));
 		assertFalse(out.contains("docx4j-font"));
 	}
+
+	/**
+	 * Word gives every paragraph a line at the paragraph mark's font and size, whatever
+	 * its runs came to.  A paragraph whose runs produced no inline content - an empty
+	 * w:t, or a run holding only an anchored picture, which is lifted into a positioned
+	 * container - reached FOP as a block with nothing to put on a line, so it took no
+	 * height at all.  Measured: three table spacer rows each holding one paragraph with
+	 * an empty w:t lost 33.7pt of Word's row height, and a paragraph holding only a
+	 * wrapNone anchored picture cost its whole 15.44pt line.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aParagraphWithNoInlineContentStillGetsALine() {
+		String in = flow("<fo:block docx4j-pstyle=\"A\">one</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\"><fo:inline><fo:inline font-family=\"Tinos\"/></fo:inline></fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\"><fo:block-container height=\"0pt\"><fo:block>x</fo:block></fo:block-container>"
+				+ "<fo:inline/></fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\">two</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("both empty paragraphs get the preserved space", 2,
+				count(out, "white-space-treatment=\"preserve\""));
+	}
+
+	/** A paragraph which does produce content is left alone. */
+	@Test
+	public void aParagraphWithContentIsNotGivenAnExtraSpace() {
+		String in = flow("<fo:block docx4j-pstyle=\"A\"><fo:inline>text</fo:inline></fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\"><fo:inline><fo:external-graphic src=\"x.png\"/></fo:inline></fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\"><fo:inline> </fo:inline></fo:block>"
+				+ "<fo:block docx4j-pstyle=\"A\"><fo:inline><fo:leader/></fo:inline></fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals(0, count(out, "white-space-treatment=\"preserve\""));
+	}
+
+	/**
+	 * Inside a table, Word applies w:pageBreakBefore to the table: a break on the
+	 * paragraph that opens the table starts the table on a new page, one anywhere else
+	 * in it is ignored.  FOP breaks the table wherever it finds a break-before in a
+	 * cell: a mail-merge template with sixteen of them spread over one table's rows
+	 * came out as twelve pages against Word's four, while a report with one on the
+	 * first paragraph of each of two tables has Word's five pages only because those
+	 * two breaks are taken.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void pageBreakBeforeInATableAppliesToTheTable() {
+		String table = "<fo:table " + NS + "><fo:table-body>"
+				+ "<fo:table-row><fo:table-cell>"
+				+ "<fo:block docx4j-pstyle=\"A\" break-before=\"page\">first</fo:block>"
+				+ "</fo:table-cell></fo:table-row>"
+				+ "<fo:table-row><fo:table-cell>"
+				+ "<fo:block docx4j-pstyle=\"A\" break-before=\"page\">later</fo:block>"
+				+ "</fo:table-cell></fo:table-row>"
+				+ "</fo:table-body></fo:table>";
+		String out = WordLayoutFixups.apply(flow("<fo:block docx4j-pstyle=\"A\">before</fo:block>" + table), 15);
+		assertEquals("the opening break moves to the table, the later one goes", 1,
+				count(out, "break-before=\"page\""));
+		assertTrue("the break must be on the fo:table",
+				out.indexOf("break-before=\"page\"") < out.indexOf("<fo:table-body"));
+		assertTrue(out.indexOf("break-before=\"page\"") > out.indexOf(">before<"));
+	}
+
+	/**
+	 * A borders/shading container (Containerization) is built from its first paragraph's
+	 * properties, spacing included.  Space is combined by "larger of", so that normally
+	 * costs nothing - but where contextual spacing zeroes the paragraph's space-after,
+	 * the wrapper's copy puts the gap back.  Measured: a planner whose shaded cells
+	 * carry w:contextualSpacing with 10pt of docDefaults space-after had every row 9.5pt
+	 * too tall, and 37 Word pages came out as 43.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void containerWrapperFollowsItsParagraphsSpacing() {
+		String wrapper = "<fo:block background-color=\"#eeeeee\" space-before=\"10pt\" space-after=\"10pt\">"
+				+ "<fo:block docx4j-pstyle=\"A\" docx4j-contextual=\"1\" space-before=\"10pt\" space-after=\"10pt\">%s</fo:block>"
+				+ "</fo:block>";
+		String out = WordLayoutFixups.apply(flow(String.format(wrapper, "one") + String.format(wrapper, "two")), 15);
+
+		int second = out.indexOf("<fo:block background-color", 1 + out.indexOf("<fo:block background-color"));
+		String first = out.substring(out.indexOf("<fo:block background-color"), second);
+		assertTrue("the wrapper keeps the first paragraph's space-before: " + first,
+				first.contains("space-before=\"10pt\""));
+		assertTrue("the wrapper must not keep a space-after the fixups removed: " + first,
+				first.contains("space-after=\"0pt\""));
+		String last = out.substring(second, out.indexOf("</fo:flow>"));
+		assertTrue("nor a space-before: " + last, last.contains("space-before=\"0pt\""));
+		assertTrue("but the last paragraph's space-after stands: " + last, last.contains("space-after=\"10pt\""));
+	}
 }

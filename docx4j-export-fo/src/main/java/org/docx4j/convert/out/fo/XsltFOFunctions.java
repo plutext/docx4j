@@ -192,6 +192,77 @@ public class XsltFOFunctions {
     }
 
     /**
+     * A w:pict holding a picture (v:shape/v:imagedata), for the XSLT pathway.  Word
+     * writes an absolutely positioned VML picture exactly as it writes a text box - a
+     * v:shape @style with position:absolute, mso-position-*, margin-left/top, width and
+     * height - and places it accordingly; docx4j rendered every such picture inline at
+     * the end of its paragraph, which took a line the picture does not take.  Measured:
+     * a first-page header with a 66pt picture at position:absolute and ten right-aligned
+     * address lines had Word's first header line at y=34.3 and ours at y=94.3, with the
+     * alignment lost as well.
+     *
+     * @since 17.0.6
+     */
+    public static DocumentFragment createVmlPicture(FOConversionContext context,
+    		NodeIterator wpict, String style, String wrapType) {
+
+    	DocumentFragment frag = org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10(context, wpict);
+    	return anchorVmlPicture(context, frag, style, wrapType);
+    }
+
+    /**
+     * The fo:external-graphic of an absolutely positioned VML picture, in the
+     * fo:block-container WordLayoutFixups places (the same treatment a VML text box
+     * gets, see {@link FOTextBoxes}).  A picture the shape lays out in the line, or a
+     * fragment which is not a picture, is returned unchanged.
+     *
+     * @param style the v:shape's @style; @param wrapType the w10:wrap type, or ""
+     * @since 17.0.6
+     */
+    public static DocumentFragment anchorVmlPicture(AbstractWmlConversionContext context,
+    		DocumentFragment frag, String style, String wrapType) {
+
+    	if (frag==null || !FOTextBoxes.isEnabled()) return frag;
+    	try {
+	    	java.util.Map<String, String> props = FOTextBoxes.parseStyle(style);
+	    	if (!FOTextBoxes.isPositioned(props)) return frag;
+
+	    	Element graphic = null;
+	    	for (Node n = frag.getFirstChild(); n!=null; n = n.getNextSibling()) {
+	    		if (n instanceof Element && "external-graphic".equals(n.getLocalName())) {
+	    			graphic = (Element)n;
+	    			break;
+	    		}
+	    	}
+	    	if (graphic==null) return frag;
+
+	    	Document doc = frag.getOwnerDocument();
+	    	org.docx4j.model.structure.PageDimensions pd
+	    			= context.getSections().getCurrentSection().getPageDimensions();
+	    	Element container = FOTextBoxes.createVmlPictureContainer(doc, props,
+	    			(wrapType==null || wrapType.length()==0) ? "none" : wrapType, pd);
+
+	    	// the picture at the shape's own extent (E10 rounds the style to whole points)
+	    	double w = FOTextBoxes.pts(props.get("width"), 0);
+	    	double h = FOTextBoxes.pts(props.get("height"), 0);
+	    	if (w > 0) graphic.setAttribute("content-width", FOTextBoxes.pt(w));
+	    	if (h > 0) graphic.setAttribute("content-height", FOTextBoxes.pt(h));
+
+	    	Element holder = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
+	    	holder.setAttribute("font-size", "0.1pt");
+	    	holder.setAttribute("line-height", "0pt");
+	    	frag.removeChild(graphic);
+	    	holder.appendChild(graphic);
+	    	container.appendChild(holder);
+	    	frag.appendChild(container);
+	    	return frag;
+    	} catch (Exception e) {
+    		log.warn("Absolutely positioned VML picture left in the flow: " + e.getMessage(), e);
+    		return frag;
+    	}
+    }
+
+    /**
      * The text box of a DrawingML shape (wps:wsp/wps:txbx/w:txbxContent) in this
      * wp:anchor or wp:inline, or null where there is none.  Word puts the text of a
      * shape there; until 17.0.5 it never reached the FO at all (only a:graphic

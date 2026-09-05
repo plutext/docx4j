@@ -139,9 +139,12 @@ public final class WordLayoutFixups {
 		anchorTextBoxes(doc);
 		hoistFloats(doc);
 		reserveUnpaintablePictures(doc);
+		emptyLineForBlockWithNoContent(doc);
+		dropPageBreaksInTableCells(doc);
 		mergePageBreakParagraphs(doc, compatibilityMode);
 		applyContextualSpacing(doc);
 		applyAutoSpacingBetweenListItems(doc);
+		syncContainerSpacing(doc);
 		retainSpaceBeforeAtFlowStart(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		fixLists(doc);
@@ -1075,7 +1078,156 @@ public final class WordLayoutFixups {
 		return out;
 	}
 
+	/**
+	 * A borders/shading container (the preprocess {@code Containerization} puts
+	 * adjacent paragraphs sharing a border or shading into one) is an fo:block built
+	 * from the <em>first</em> paragraph's properties, its spacing included, wrapping
+	 * the paragraphs themselves.  Space-before and space-after are combined by "larger
+	 * of", so carrying them twice normally costs nothing - but where a rule above
+	 * removes a paragraph's spacing (contextual spacing, HTML auto spacing between
+	 * list items) the wrapper's copy survives and puts the gap back.  Measured: a
+	 * planner whose shaded cells carry w:contextualSpacing with 10pt of docDefaults
+	 * space-after had every row 9.5pt too tall - Word's row pitch 36.5 -> 46.6 -> 57.1,
+	 * ours 35.7 -> 55.6 -> 75.3 - and 37 Word pages came out as 43.
+	 *
+	 * <p>The wrapper's spacing is therefore made to follow the paragraphs it holds:
+	 * space-before from the first, space-after from the last.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void syncContainerSpacing(Document doc) {
+		for (Element wrapper : elements(doc, "block")) {
+			if (wrapper.hasAttribute(HINT_PSTYLE)) continue;
+			List<Element> paras = new ArrayList<>();
+			boolean onlyParagraphs = true;
+			NodeList children = wrapper.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++) {
+				Node n = children.item(i);
+				if (!(n instanceof Element)) continue;
+				Element el = (Element) n;
+				if (isFo(el, "block") && el.hasAttribute(HINT_PSTYLE)) paras.add(el);
+				else { onlyParagraphs = false; break; }
+			}
+			if (!onlyParagraphs || paras.isEmpty()) continue;
+			copySpace(paras.get(0), wrapper, "space-before");
+			copySpace(paras.get(paras.size() - 1), wrapper, "space-after");
+		}
+	}
+
+	private static void copySpace(Element from, Element to, String name) {
+		if (!to.hasAttribute(name)) return; // the wrapper never had any
+		if (from.hasAttribute(name)) to.setAttribute(name, from.getAttribute(name));
+		else to.removeAttribute(name);
+	}
+
+	// ------------------------------------------------------------ 0e. a line for every paragraph
+
+	/**
+	 * Word gives every paragraph a line, at the paragraph mark's font and size
+	 * (&#xa7;2.5), whatever its runs came to.  A paragraph with no runs at all already
+	 * gets one (XsltFOFunctions.createBlock writes a preserved space), but a paragraph
+	 * whose runs produced no <em>inline</em> content did not: an fo:block whose only
+	 * child is an empty fo:inline builds no line area in FOP, and one whose picture has
+	 * been lifted into a positioned container is left with the container and an empty
+	 * inline.  Measured: a document whose first body paragraph holds only a wrapNone
+	 * anchored picture had every line 15.44pt - exactly that block's line-height - above
+	 * Word's, and a table whose three spacer rows each hold one paragraph with an empty
+	 * w:t lost 33.7pt of row height at the third line of the document.
+	 *
+	 * <p>Such a block gets the same preserved space the run-less case gets; it already
+	 * carries the paragraph mark's font, line-height and line-box hints.  Positioned
+	 * containers (an anchored picture or a text box) do not count as content, since
+	 * Word gives the paragraph its line as well as placing the object.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void emptyLineForBlockWithNoContent(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			if (!block.hasChildNodes()) continue; // no children at all: createBlock handled it
+			if (producesContent(block)) continue;
+			block.setAttribute("white-space-treatment", "preserve");
+			block.appendChild(doc.createTextNode(" "));
+		}
+	}
+
+	/** Whether this block's own children would give FOP something to put on a line.
+	 *  Only an out-of-flow child - a positioned container holding an anchored picture
+	 *  or a text box, or a float - is not counted; a nested fo:block (a w:br) makes
+	 *  lines of its own, so it is. */
+	private static boolean producesContent(Element el) {
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
+				if (n.getNodeValue() != null && n.getNodeValue().length() > 0) return true;
+				continue;
+			}
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			if (isFo(child, "block-container") || isFo(child, "float")) {
+				continue; // out of the flow: its own areas, not this block's line
+			}
+			if (isFo(child, "inline") || isFo(child, "basic-link") || isFo(child, "wrapper")
+					|| isFo(child, "bidi-override")) {
+				if (producesContent(child)) return true;
+				continue;
+			}
+			return true; // external-graphic, leader, page-number, footnote, character, ...
+		}
+		return false;
+	}
+
 	// ------------------------------------------------------------ 1. hard page breaks
+
+	/**
+	 * Inside a table, Word applies w:pageBreakBefore to the <em>table</em>, not to the
+	 * paragraph: a break on the paragraph that opens the table starts the table on a
+	 * new page, and one anywhere else in the table is ignored.  FOP instead takes every
+	 * break-before it finds in an fo:table-cell and breaks the table there.
+	 *
+	 * <p>Measured against Word's own PDFs: a mail-merge template with sixteen
+	 * w:pageBreakBefore spread over the rows of one table came out as twelve pages
+	 * against Word's four, the extra pages carrying one line each; a report with one on
+	 * the first paragraph of each of two tables has five pages in Word, which are the
+	 * two breaks taken at the tables.</p>
+	 *
+	 * <p>A break on the opening paragraph is therefore moved to the fo:table, and any
+	 * other break inside a cell is dropped.  A nested table cannot carry it (the break
+	 * would land inside the outer table, which is the behaviour being removed), so
+	 * there it is dropped as well.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void dropPageBreaksInTableCells(Document doc) {
+		for (Element cell : elements(doc, "table-cell")) {
+			for (Element block : descendants(cell, "block")) {
+				if (!"page".equals(block.getAttribute("break-before"))) continue;
+				block.removeAttribute("break-before");
+				Element table = ancestorTable(block);
+				if (table != null && ancestorTable(table) == null && opensTable(table, block)) {
+					table.setAttribute("break-before", "page");
+				}
+			}
+		}
+	}
+
+	/** Whether this block is the first thing the table holds, descending through any
+	 *  borders/shading wrapper the first cell's content is in. */
+	private static boolean opensTable(Element table, Element block) {
+		for (Element f = firstBlock(table); f != null; f = firstBlock(f)) {
+			if (f == block) return true;
+		}
+		return false;
+	}
+
+	/** The nearest ancestor fo:table of this element, or null. */
+	private static Element ancestorTable(Element el) {
+		for (Node n = el.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			if (isFo((Element) n, "table")) return (Element) n;
+		}
+		return null;
+	}
 
 	static void mergePageBreakParagraphs(Document doc, int compatibilityMode) {
 		List<Element> empties = new ArrayList<>();

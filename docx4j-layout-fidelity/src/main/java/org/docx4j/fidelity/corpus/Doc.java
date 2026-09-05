@@ -768,6 +768,16 @@ public final class Doc {
 			return tc;
 		}
 
+		/** A cell holding prepared paragraphs; the cell's width is auto. */
+		public Tc cellOf(P... paragraphs) {
+			Tc tc = F.createTc();
+			TcPr tcPr = F.createTcPr();
+			tcPr.setTcW(width(0, "auto"));
+			tc.setTcPr(tcPr);
+			for (P p : paragraphs) tc.getContent().add(p);
+			return tc;
+		}
+
 		/** A cell holding a nested table (plus the mandatory trailing paragraph). */
 		public Tc cellWith(Tbl nested, String after, String font, int halfPts) {
 			Tc tc = F.createTc();
@@ -999,6 +1009,47 @@ public final class Doc {
 		public Para pageBreakBefore() {
 			ppr.setPageBreakBefore(new BooleanDefaultTrue());
 			return this;
+		}
+
+		/** A run holding one w:tab, in the paragraph's own font. */
+		public Para tab() {
+			R r = F.createR();
+			r.getContent().add(F.createRTab());
+			return run(r);
+		}
+
+		/** A custom tab stop: position in twips from the left margin, and its alignment. */
+		public Para tabStop(int posTwips, org.docx4j.wml.STTabJc align) {
+			if (ppr.getTabs() == null) ppr.setTabs(F.createTabs());
+			org.docx4j.wml.CTTabStop stop = F.createCTTabStop();
+			stop.setPos(BigInteger.valueOf(posTwips));
+			stop.setVal(align);
+			stop.setLeader(org.docx4j.wml.STTabTlc.NONE);
+			ppr.getTabs().getTab().add(stop);
+			return this;
+		}
+
+		/**
+		 * w:pBdr on all four sides: sz in eighths of a point, w:space in points (the
+		 * gap Word leaves between the text and the border).
+		 */
+		public Para borders(int eighthsOfPoint, int spacePt) {
+			PPrBase.PBdr bdr = F.createPPrBasePBdr();
+			bdr.setTop(paraBorder(eighthsOfPoint, spacePt));
+			bdr.setLeft(paraBorder(eighthsOfPoint, spacePt));
+			bdr.setBottom(paraBorder(eighthsOfPoint, spacePt));
+			bdr.setRight(paraBorder(eighthsOfPoint, spacePt));
+			ppr.setPBdr(bdr);
+			return this;
+		}
+
+		private static CTBorder paraBorder(int sz, int spacePt) {
+			CTBorder b = F.createCTBorder();
+			b.setVal(STBorder.SINGLE);
+			b.setSz(BigInteger.valueOf(sz));
+			b.setColor("000000");
+			b.setSpace(BigInteger.valueOf(spacePt));
+			return b;
 		}
 
 		/** w:suppressAutoHyphens: this paragraph is never hyphenated. */

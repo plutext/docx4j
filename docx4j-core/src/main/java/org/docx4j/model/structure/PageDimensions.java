@@ -75,7 +75,29 @@ public class PageDimensions {
 			init(null, null, null);
 		} else {
 			init(sectPr.getPgSz(), sectPr.getPgMar(), sectPr.getCols());
+			if (sectPr.getVAlign()!=null && sectPr.getVAlign().getVal()!=null) {
+				this.verticalAlign = sectPr.getVAlign().getVal().value();
+			}
 		}
+	}
+
+	private String verticalAlign;
+
+	/**
+	 * The section's w:sectPr/w:vAlign ("top", "center", "both" or "bottom"), or null
+	 * where it has none.  Word aligns the section's content vertically within the text
+	 * area; the FO exporter renders "center" and "bottom" as display-align on the
+	 * region body.
+	 *
+	 * @since 17.0.6
+	 */
+	public String getVerticalAlign() {
+		return verticalAlign;
+	}
+
+	/** @since 17.0.6 */
+	public void setVerticalAlign(String verticalAlign) {
+		this.verticalAlign = verticalAlign;
 	}
 
 	private void init(PgSz pgSz, PgMar pgMar, CTColumns cols) {

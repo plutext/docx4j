@@ -240,9 +240,13 @@ public class FontFallback {
 				"franklin", "open sans" }) {
 			if (n.contains(sans)) return FontClass.SANS;
 		}
+		// "p052" and "c059" are the whole family names of the Palatino and Century
+		// Schoolbook clones in the URW base 35 (Georgia, Book Antiqua and Palatino
+		// Linotype substitute to P052), so nothing in their names says "serif".
 		for (String serif : new String[] { "tinos", "caladea", "charter", "times", "georgia",
-				"garamond", "palatino", "bookman", "book antiqua", "cambria", "constantia", "century",
-				"baskerville", "caslon", "utopia", "minion", "sylfaen", "roman" }) {
+				"garamond", "palatino", "p052", "c059", "bookman", "book antiqua", "cambria",
+				"constantia", "century", "baskerville", "caslon", "utopia", "minion", "sylfaen",
+				"roman" }) {
 			if (n.contains(serif)) return FontClass.SERIF;
 		}
 		if (generic) {

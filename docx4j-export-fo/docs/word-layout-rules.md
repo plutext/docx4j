@@ -48,6 +48,13 @@ deployed; see its README). 36 probes have Word goldens (`hyphenation` and
 `table-floating`, `table-cellspacing`, `table-rowheight`, `table-indent-compat14`,
 `table-indent-compat15`.
 
+Five more probes are in the corpus awaiting their first Word run, each written to settle a
+rule a real document contradicts: `tab-jc` (§4.4's "a tabbed line is laid out from the
+left"), `pbdr-space` (§3's "a border's `w:space` is the padding on that side", inside a
+table cell and outside), `table-grid-edge-compat14` and `-compat15` (§6.1's grid edge with
+an explicit `w:tblCellMar`), and `table-autofit-wrap` (§6.3's column distribution, where a
+small difference changes which cell wraps).
+
 A rule a probe could not settle on its own was checked against a corpus of 194 real
 documents scored against Word's own PDFs of them, so a change is accepted only when the
 aggregate - documents with Word's page count, share of lines matching Word exactly, mean
@@ -158,6 +165,18 @@ Word ignores the paragraph mark's size when sizing the lines of a **non-empty** 
 (a 36pt mark on a 12pt paragraph used to give 36pt lines). An **empty** paragraph keeps the
 mark's font and size, and is one line high.
 
+"Empty" means *nothing on a line*, not "no runs": a paragraph whose runs came to no inline
+content gets the same line. Two shapes reach the FO as a block FOP can build no line area
+from - a run holding only an empty `w:t`, and a run whose only content is an anchored
+picture or a text box, which is lifted out into a positioned container. Measured: a
+document whose first body paragraph holds only a `wrapNone` anchored picture had every line
+15.44pt (that block's own line height) above Word's, and a table whose three spacer rows
+each hold one paragraph with an empty `w:t` lost 33.7pt of Word's row height at the third
+line of the document. `WordLayoutFixups` gives such a block the same
+`white-space-treatment="preserve"` space a run-less paragraph gets; it already carries the
+mark's font and line-box attributes. A paragraph all of whose runs and whose mark are
+hidden text still gets no line ([§9.3](#93-hidden-text)).
+
 ### 2.6 Superscripts and subscripts
 
 `w:vertAlign` is drawn at 65% of the run's size, raised by 0.36 of that size, or lowered by
@@ -223,6 +242,16 @@ before gets no gap.
 line at the top of the new page. The next paragraph's space-before is dropped there **from
 compatibility mode 15**, and kept below mode 15.
 
+**A page break inside a table** belongs to the table, not to the paragraph: Word takes a
+`w:pageBreakBefore` on the paragraph which opens the table, and ignores one anywhere else in
+it. Measured on two documents: a mail-merge template with sixteen of them spread over the
+rows of a single table is four pages in Word and was twelve here, the extra pages carrying
+one line each; a report with one on the first paragraph of each of two tables is five pages
+in Word, and is five only because those two breaks are taken. `WordLayoutFixups` moves an
+opening break to the `fo:table` and drops the rest (FOP otherwise breaks the table wherever
+it finds one in a cell). A nested table cannot carry the break - it would land inside the
+outer table - so there it is dropped.
+
 **HTML auto spacing.** `w:beforeAutospacing` / `w:afterAutospacing` is **14pt**, combined
 by "larger of" like any other spacing, and honours `w:doNotUseHTMLParagraphAutoSpacing`. It
 is dropped between consecutive list items (so a list gets 14pt before the first item and
@@ -236,6 +265,22 @@ hierarchy, not read only from its direct `w:pPr` (Word's default Title style has
 border). A border's `w:space` - the gap between the text and the border - is the padding on
 that side: measured, Word's Title with 4pt space and a 1pt border starts the next paragraph
 5pt lower, and so does docx4j, to 0.1pt. PDF and HTML.
+
+*Open*: one real document contradicts this **inside a table cell**. For a 0.5pt border with
+`w:space="1"` on every side, Word's row pitch is 9.1pt - exactly the bare 8pt Arial line box
+- so Word added nothing at all, where docx4j added 3pt (0.5 + 1 top and bottom) and turned
+16 Word pages into 21. The `pbdr-space` probe (a 0.5pt border at `w:space` 0, 1 and 4pt,
+in the flow and in a cell) exists to settle it; nothing is changed until its golden is in.
+
+**Container wrappers.** Adjacent paragraphs sharing a border or shading are wrapped in one
+block by the `Containerization` preprocess, and that wrapper is built from the **first**
+paragraph's properties, its spacing included. Space is combined by "larger of", so the
+duplicate normally costs nothing - but where a rule above removes a paragraph's spacing the
+wrapper's copy survives and puts the gap back. Measured: a planner whose shaded cells carry
+`w:contextualSpacing` against 10pt of docDefaults space-after had every row 9.5pt too tall
+(Word's row pitch 36.5 -> 46.6 -> 57.1, docx4j's 35.7 -> 55.6 -> 75.3) and 37 Word pages
+came out as 43. The wrapper's space-before and space-after now follow its first and last
+paragraph.
 
 **List items.** Space-before and space-after belong on the `fo:list-block`, not on the
 block inside `fo:list-item-body` where FOP does not apply them.
@@ -331,6 +376,14 @@ indent is still honoured, and the line runs into the indent rather than wrapping
 holding a tab is laid out from the left whatever the paragraph's `w:jc`. Measured: six
 consecutive tabs advance 216pt in Word, where the former three-no-break-space stand-in
 advanced 54pt.
+
+*Open*: that last rule is too broad for a **trailing** tab. One real document has
+`w:jc="center"` on a paragraph of text followed by a `w:tab`, and Word draws the text at
+x=208.9..365.4 - centred, with the tab's advance counted in the centred width - where
+docx4j draws it at 56.7, flush left. Three documents of a 40-document slice have a centred
+or right-aligned paragraph containing a tab, one paragraph each. The `tab-jc` probe (a
+leading, a mid-line and a trailing tab under each of centre, right and justified) exists to
+settle it; nothing is changed until its golden is in.
 
 **Leaders.** `w:leader` `dot` and `middleDot` draw dots (FOP repeats the font's own dot, as
 Word does; a dotted rule does not match); `hyphen`, `underscore` and `heavy` draw a rule;
@@ -450,10 +503,10 @@ report candidate.
 For a font the machine does not have, docx4j chooses in this order:
 
 1. **Metric-compatible clone**, from `Mapper.addMetricallyCompatibleSubstitutes`: Calibri,
-   Calibri Light, Cambria, Arial, Times New Roman, Courier New, Tahoma, Verdana, Trebuchet
-   MS, Segoe UI, Segoe UI Light, Arial Black, Gadugi, Helvetica, Helvetica Neue, Georgia,
-   Garamond, Book Antiqua, Palatino Linotype, Bookman Old Style, Arial Narrow, Century
-   Gothic, Consolas, Lucida Console.
+   Calibri Light, Cambria, Arial, Times New Roman, Courier New, Tahoma, Verdana, Comic Sans
+   MS, Trebuchet MS, Segoe UI, Segoe UI Light, Arial Black, Gadugi, Helvetica, Helvetica
+   Neue, Georgia, Garamond, Book Antiqua, Palatino Linotype, Bookman Old Style, Arial
+   Narrow, Century Gothic, Consolas, Lucida Console.
 2. **Class-based**: whatever is left unmapped takes a font of its own class (sans, serif,
    monospace) from the classes and candidate lists in `FontSubstitutions.xml`.
 3. **Glyph-aware, per script**: the run font selector then picks, per script segment of the
@@ -479,6 +532,18 @@ against the real font:
 | Segoe UI Light | Source Sans 3 (Arimo as last resort) | Arimo is systematically 11.8% wider on letters, so every line breaks early; Source Sans 3 has no systematic bias (+0.4% mean signed). Neither is a metric clone. |
 | Consolas, Lucida Console | Cousine, else Liberation Mono | The stand-ins advance 0.6em to Consolas's 0.55em, so code lines longer than about 97 characters at 8pt wrap where Word's did not. Line heights still follow Consolas's own metrics. |
 | Cambria | Caladea | Left as it is: Caladea is 3.9% narrower on the regular face and 2.8% on the bold, and no installed face is closer. |
+| Verdana | DejaVu Sans (Arimo as last resort) | Verdana is much wider than Arial: measured on real documents' lines whose text matches Word's exactly, Word's Verdana lines are 1.141 x our Arimo ones, and a 14% narrow font re-breaks every line. DejaVu Sans is 1.14 x Arimo over a mixed Latin sample. Tahoma stays on Arimo: on an all-Tahoma document the median ratio is 1.006. |
+| Comic Sans MS | Noto Sans (DejaVu Sans, then Arimo) | Word's Comic Sans lines are 1.153 x our Carlito ones (the class-based fallback reached Carlito); Noto Sans is 1.15 x Carlito. |
+| Georgia, Book Antiqua, Palatino Linotype | P052, URW's Palladio (Tinos as last resort) | Word's Book Antiqua lines are 1.087-1.114 x our Tinos ones and its Georgia lines 1.076-1.112 x; P052 is 1.09 x Tinos. P052 is in the URW base 35 (ghostscript-fonts). |
+
+Each of these falls back through the choice it replaced, so a machine with only the
+Liberation jar behaves as before.
+
+**Not solved**: Sylfaen (a Georgian face) renders 19% *wider* than Word's - Word 161.1..464.5
+against our 132.4..493.1 - through the glyph-aware pass's DejaVu Serif. Of the Georgian
+faces installed on the reference machine, Noto Serif Georgian measures 0.993 and Noto Sans
+Georgian 1.006 of DejaVu Serif, where 0.84 is wanted, so no substitution available here
+helps.
 
 Some fonts are deliberately **left unmapped**, each measured over the corpus to be better
 off with the document default than with any available stand-in: condensed faces generally,
@@ -658,6 +723,17 @@ measured over the corpus, Word draws tables whose grid is 3% to 19% wider than t
 column overhanging the right margin, at their grid width, and fitting them cost line parity
 on eight documents.
 
+That exemption is unconditional only for a table which states a width of its own - a
+`w:tblW` in `dxa` or `pct`, or `w:tblLayout="fixed"`. For an **autofit** table (`w:tblW`
+absent or `auto`, layout not fixed) the grid is only the layout Word cached the last time it
+laid the table out, and Word recomputes it against the page it is on now: measured, autofit
+grids 1.35 to 2.7 times the text column are drawn by Word *inside* it (one 956.45pt grid on
+a 453.6pt column came out 505.3pt wide), while docx4j painted half that document past the
+page edge and lost 7 of Word's 15 pages. Such a grid is scaled to the column. The cut is at
+**1.25** (`AbstractTableWriter.GRID_OVERHANG_LIMIT`), above the 19% Word was measured
+overhanging and below the narrowest refitted case: fitting autofit grids only 1-2% over
+re-broke cells Word does not break, and cost line parity on two documents.
+
 ### 6.6 `w:tblCellSpacing`
 
 Word puts a whole gap (2 x the spacing) between the table border and the outer cells, and
@@ -724,6 +800,14 @@ out 2 to 8pt out of place; the text now starts within 0.03pt of Word's x. An
 `fo:block-container` carrying the indents would be tidier, but a block-container in a
 multi-column flow makes FOP throw when it balances the last page's columns.
 
+<a id="s75"></a>**Vertical alignment of a section.** `w:sectPr/w:vAlign` - Word's Page Setup
+"Vertical alignment" - is `display-align` on `fo:region-body`: `center` for `center` and for
+`both` (XSL-FO has no justified equivalent), `after` for `bottom`, nothing for `top`. It
+costs nothing on a full page, so it applies to the whole section as Word applies it.
+Measured on a 179-page specification whose title section carries
+`<w:vAlign w:val="center"/>`: every line of page 1 was 112.5pt above Word's (Word's first
+line at y=275.9, docx4j's at 163.4), and is now within 6pt.
+
 **Where the body starts.** Word starts the body at the top margin and moves it down only
 where the header itself reaches further, i.e. `max(top margin, header distance + header
 height)`. Using the header distance alone pushed the body down by `w:pgMar/@w:header` minus
@@ -780,6 +864,16 @@ FOP details worth knowing if you touch this: a picture's block needs `font-size`
 a block-container inside a right float lands at the left edge, so a plain `fo:block` is
 used. `docx4j.convert.out.fo.pictures.float=false` lays these pictures out in the flow
 instead; see §10 for why you might want that.
+
+**A VML picture** (`w:pict/v:shape` holding a `v:imagedata`) whose shape style says
+`position:absolute` is placed the same way, from the same shape properties a VML text box
+uses (§9.2). Word writes an absolutely positioned picture exactly as it writes a text box;
+docx4j rendered every VML picture inline at the end of its paragraph, which took a line the
+picture does not take. Measured: a first-page header with a 66pt picture at
+`position:absolute` plus ten right-aligned address lines had Word's first header line at
+y=34.3 x=510.5 and docx4j's at y=94.3 x=255.1 - 60pt down and off its alignment - and the
+header's measured extent (§7) was 203.4pt against Word's ~111. A picture whose shape states
+no position is still laid out in the line, as Word lays it out.
 
 ### 9.2 Text boxes
 

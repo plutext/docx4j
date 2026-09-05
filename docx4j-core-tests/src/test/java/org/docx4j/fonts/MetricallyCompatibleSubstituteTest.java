@@ -48,13 +48,14 @@ public class MetricallyCompatibleSubstituteTest {
 	public void serifsGetASerifAndSansGetASans() throws Exception {
 		Mapper mapper = mapper();
 		assertSubstitute(mapper, "Times New Roman", "tinos", "liberation serif");
-		assertSubstitute(mapper, "Georgia", "tinos", "liberation serif");
-		assertSubstitute(mapper, "Book Antiqua", "tinos", "liberation serif");
+		assertSubstitute(mapper, "Georgia", "p052", "tinos", "liberation serif");
+		assertSubstitute(mapper, "Book Antiqua", "p052", "tinos", "liberation serif");
 		assertSubstitute(mapper, "Garamond", "tinos", "liberation serif");
 
 		assertSubstitute(mapper, "Arial", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Tahoma", "arimo", "liberation sans");
-		assertSubstitute(mapper, "Verdana", "arimo", "liberation sans");
+		assertSubstitute(mapper, "Verdana", "dejavu sans", "arimo", "liberation sans");
+		assertSubstitute(mapper, "Comic Sans MS", "noto sans", "dejavu sans", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Segoe UI", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Helvetica", "arimo", "liberation sans");
 
@@ -113,6 +114,35 @@ public class MetricallyCompatibleSubstituteTest {
 		} else {
 			org.junit.Assert.assertNull("Arial Narrow should be left to the default fallback",
 					mapper.get("Arial Narrow"));
+		}
+	}
+
+	/**
+	 * Verdana, Comic Sans MS and the Palatino family are much wider than the Arial and
+	 * Times clones the table used to give them, and a font 8-15% narrow re-breaks every
+	 * line.  Measured against Word's own PDFs of real documents, on lines whose text
+	 * matches exactly: Verdana 1.141x our Arimo output (DejaVu Sans is 1.14x Arimo),
+	 * Comic Sans MS 1.153x our Carlito output (Noto Sans is 1.15x Carlito), Book
+	 * Antiqua 1.087-1.114x and Georgia 1.076-1.112x our Tinos output (P052, URW's
+	 * Palladio, is 1.09x Tinos).  Each falls back through the old choice, so a machine
+	 * with only the Liberation jar behaves as before.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void widerFacesPreferAWiderSubstitute() throws Exception {
+		Mapper mapper = mapper();
+		if (PhysicalFonts.get("Verdana") == null && PhysicalFonts.get("DejaVu Sans") != null) {
+			assertSubstitute(mapper, "Verdana", "dejavu sans");
+		}
+		if (PhysicalFonts.get("Comic Sans MS") == null && PhysicalFonts.get("Noto Sans Regular") != null) {
+			assertSubstitute(mapper, "Comic Sans MS", "noto sans");
+		}
+		if (PhysicalFonts.get("P052") != null) {
+			for (String palatino : new String[] { "Georgia", "Book Antiqua", "Palatino Linotype" }) {
+				if (PhysicalFonts.get(palatino) != null) continue; // installed: identity
+				assertSubstitute(mapper, palatino, "p052");
+			}
 		}
 	}
 

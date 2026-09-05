@@ -26,6 +26,23 @@ docx4j.convert.out.fo.pictures.convertDensity, default 300).  PNG, JPEG (baselin
 progressive and CMYK), GIF, BMP, TIFF, EPS, SVG and WMF are painted as before, with no extra
 ImageIO plugin
 
+- an autofit table (no w:tblW of its own, no fixed layout) whose w:tblGrid is far wider than
+the text column is now fitted to it, as Word refits such a grid; a grid up to a quarter over
+still overhangs the margin, as Word draws it
+- a paragraph whose runs produced nothing to put on a line - an empty w:t, or a run holding
+only an anchored picture - now gets the empty line Word gives it
+- an absolutely positioned VML picture (w:pict/v:shape with position:absolute) is now placed
+where Word places it, instead of taking a line at the end of its paragraph
+- a borders/shading container no longer keeps space-before or space-after which the spacing
+rules removed from the paragraphs inside it
+- w:pageBreakBefore inside a table now applies to the table, as it does in Word: taken where
+it opens the table, ignored anywhere else in it
+- w:sectPr/w:vAlign ("center", "both", "bottom") is now applied, as display-align on the
+region body
+- font substitutes: Verdana now prefers DejaVu Sans, Comic Sans MS Noto Sans, and Georgia,
+Book Antiqua and Palatino Linotype P052 - each measured 8-15% closer to Word's line widths
+than the Arial or Times clone they had
+
 Other:
 - PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
 
