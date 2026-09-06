@@ -305,6 +305,58 @@ public final class Doc {
 		current.setType(type);
 	}
 
+	/**
+	 * A section break at exactly this point, with the break type written on the
+	 * break paragraph itself: an empty paragraph carrying a copy of the current
+	 * sectPr whose {@code w:type} is {@code type}, or which carries no
+	 * {@code w:type} at all when {@code type} is null (Word reads that as
+	 * nextPage). {@link #endSection} instead names the type of the section it
+	 * opens, which lands on the *next* break paragraph, and that is no use where
+	 * the question is what Word does with this break.
+	 *
+	 * Headers and footers on the body sectPr are cleared, so the section which
+	 * follows starts without them.
+	 */
+	public void sectionBreakHere(String type, Integer afterTwips) {
+		SectPr current = sectPr();
+		SectPr copy = XmlUtils.deepCopy(current);
+		if (type == null) {
+			copy.setType(null);
+		} else {
+			SectPr.Type t = F.createSectPrType();
+			t.setVal(type);
+			copy.setType(t);
+		}
+		P p = F.createP();
+		PPr ppr = F.createPPr();
+		ppr.setSectPr(copy);
+		if (afterTwips != null) {
+			PPrBase.Spacing sp = F.createPPrBaseSpacing();
+			sp.setBefore(BigInteger.ZERO);
+			sp.setAfter(BigInteger.valueOf(afterTwips));
+			ppr.setSpacing(sp);
+		}
+		p.setPPr(ppr);
+		mdp.getContent().add(p);
+		current.getEGHdrFtrReferences().clear();
+		current.setType(null);
+	}
+
+	/** An empty paragraph: no runs at all, and no label. */
+	public P emptyParagraph() {
+		P p = F.createP();
+		PPr ppr = F.createPPr();
+		PPrBase.Spacing sp = F.createPPrBaseSpacing();
+		sp.setBefore(BigInteger.ZERO);
+		sp.setAfter(BigInteger.ZERO);
+		sp.setLine(BigInteger.valueOf(240));
+		sp.setLineRule(STLineSpacingRule.AUTO);
+		ppr.setSpacing(sp);
+		p.setPPr(ppr);
+		mdp.getContent().add(p);
+		return p;
+	}
+
 		// ---------------------------------------------------------------- numbering
 
 	private boolean numberingAdded = false;
@@ -372,6 +424,13 @@ public final class Doc {
 	// ---------------------------------------------------------------- styles
 
 	public void addParagraphStyle(String styleId, String basedOn, Consumer<PPr> pPrCustomiser) {
+		addParagraphStyle(styleId, basedOn, pPrCustomiser, null);
+	}
+
+	/** A paragraph style with run properties of its own (the font and size a run with no
+	 *  w:rPr of its own inherits) as well as paragraph properties. */
+	public void addParagraphStyle(String styleId, String basedOn, Consumer<PPr> pPrCustomiser,
+			Consumer<RPr> rPrCustomiser) {
 		Style s = F.createStyle();
 		s.setType("paragraph");
 		s.setStyleId(styleId);
@@ -384,9 +443,49 @@ public final class Doc {
 			s.setBasedOn(b);
 		}
 		PPr ppr = F.createPPr();
-		pPrCustomiser.accept(ppr);
+		if (pPrCustomiser != null) pPrCustomiser.accept(ppr);
 		s.setPPr(ppr);
+		if (rPrCustomiser != null) {
+			RPr rpr = F.createRPr();
+			rPrCustomiser.accept(rpr);
+			s.setRPr(rpr);
+		}
 		mdp.getStyleDefinitionsPart().getJaxbElement().getStyle().add(s);
+	}
+
+	/** An RPr customiser setting the font (ascii/hAnsi/cs/eastAsia) and the size. */
+	public static Consumer<RPr> font(String font, int halfPts) {
+		return rpr -> {
+			RFonts rf = F.createRFonts();
+			rf.setAscii(font);
+			rf.setHAnsi(font);
+			rf.setCs(font);
+			rf.setEastAsia(font);
+			rpr.setRFonts(rf);
+			HpsMeasure sz = F.createHpsMeasure();
+			sz.setVal(BigInteger.valueOf(halfPts));
+			rpr.setSz(sz);
+			rpr.setSzCs(sz);
+		};
+	}
+
+	/**
+	 * The document defaults' run properties (w:docDefaults/w:rPrDefault/w:rPr): the font
+	 * and size a run inherits before any style or direct formatting. Word's own
+	 * application default (Aptos 11pt) applies where a document declares none.
+	 */
+	public void documentDefaultRun(String fontName, int halfPts) {
+		org.docx4j.wml.Styles styles = mdp.getStyleDefinitionsPart().getJaxbElement();
+		if (styles.getDocDefaults() == null) {
+			styles.setDocDefaults(F.createDocDefaults());
+		}
+		if (styles.getDocDefaults().getRPrDefault() == null) {
+			styles.getDocDefaults().setRPrDefault(F.createDocDefaultsRPrDefault());
+		}
+		if (styles.getDocDefaults().getRPrDefault().getRPr() == null) {
+			styles.getDocDefaults().getRPrDefault().setRPr(F.createRPr());
+		}
+		font(fontName, halfPts).accept(styles.getDocDefaults().getRPrDefault().getRPr());
 	}
 
 	// ---------------------------------------------------------------- header/footer
@@ -435,6 +534,45 @@ public final class Doc {
 		ref.setId(rel.getId());
 		ref.setType(type);
 		sectPr().getEGHdrFtrReferences().add(ref);
+	}
+
+	/**
+	 * A header whose content is the given block-level objects: paragraphs, tables, or
+	 * anything else that goes in a w:hdr. Pictures anywhere inside are re-related to the
+	 * header part, however deeply nested (a picture in a table cell included).
+	 */
+	public void addHeaderContent(HdrFtrRef type, List<Object> content) throws Exception {
+		if (type == HdrFtrRef.FIRST) sectPr().setTitlePg(new BooleanDefaultTrue());
+		if (type == HdrFtrRef.EVEN) evenAndOddHeaders();
+		hdrFtrCounter++;
+		HeaderPart hp = new HeaderPart(new PartName("/word/header" + hdrFtrCounter + ".xml"));
+		Relationship rel = mdp.addTargetPart(hp); // before relating pictures to it
+		Hdr hdr = F.createHdr();
+		for (Object o : content) {
+			rehomeDeep(o, hp);
+			hdr.getContent().add(o);
+		}
+		hp.setJaxbElement(hdr);
+		HeaderReference ref = F.createHeaderReference();
+		ref.setId(rel.getId());
+		ref.setType(type);
+		sectPr().getEGHdrFtrReferences().add(ref);
+	}
+
+	/** Re-relate every picture inside the node - at any depth - to the header part. */
+	private void rehomeDeep(Object node, HeaderPart hp) throws Exception {
+		if (node instanceof jakarta.xml.bind.JAXBElement) {
+			node = ((jakarta.xml.bind.JAXBElement<?>) node).getValue();
+		}
+		if (node instanceof Drawing) {
+			rehome((Drawing) node, hp);
+			return;
+		}
+		if (node instanceof org.docx4j.wml.ContentAccessor) {
+			for (Object child : ((org.docx4j.wml.ContentAccessor) node).getContent()) {
+				rehomeDeep(child, hp);
+			}
+		}
 	}
 
 	/** A single-spaced paragraph holding an inline picture, for headers. */
@@ -537,6 +675,43 @@ public final class Doc {
 				+ "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect=\"1\"/></wp:cNvGraphicFramePr>"
 				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic>"
 				+ "<pic:nvPicPr><pic:cNvPr id=\"" + (100 + imageCounter) + "\" name=\"anchor" + imageCounter + "\"/><pic:cNvPicPr/></pic:nvPicPr>"
+				+ "<pic:blipFill><a:blip r:embed=\"" + rId + "\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
+				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr>"
+				+ "</pic:pic></a:graphicData></a:graphic></wp:anchor>";
+		Object anchor = XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.dml.wordprocessingDrawing.Anchor.class);
+		if (anchor instanceof jakarta.xml.bind.JAXBElement) anchor = ((jakarta.xml.bind.JAXBElement<?>) anchor).getValue();
+		R r = F.createR();
+		Drawing d = F.createDrawing();
+		d.getAnchorOrInline().add((org.docx4j.dml.wordprocessingDrawing.Anchor) anchor);
+		r.getContent().add(d);
+		return r;
+	}
+
+	/**
+	 * A generated PNG anchored to the PAGE, behind the text, at the given offsets in EMU
+	 * from the page's top left corner - the shape a cover background has. Word clamps a
+	 * picture whose offsets put it off the page; the raw offsets are what the docx says.
+	 */
+	public R pageAnchoredImage(int wPx, int hPx, long cxEmu, long cyEmu, long hOffsetEmu, long vOffsetEmu)
+			throws Exception {
+		imageCounter++;
+		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, mdp, png(wPx, hPx));
+		String rId = imagePart.getSourceRelationship().getId();
+		String xml = "<wp:anchor xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
+				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
+				+ " distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\" simplePos=\"0\" relativeHeight=\"" + (251658240 + imageCounter) + "\""
+				+ " behindDoc=\"1\" locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\">"
+				+ "<wp:simplePos x=\"0\" y=\"0\"/>"
+				+ "<wp:positionH relativeFrom=\"page\"><wp:posOffset>" + hOffsetEmu + "</wp:posOffset></wp:positionH>"
+				+ "<wp:positionV relativeFrom=\"page\"><wp:posOffset>" + vOffsetEmu + "</wp:posOffset></wp:positionV>"
+				+ "<wp:extent cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+				+ "<wp:wrapNone/>"
+				+ "<wp:docPr id=\"" + imageCounter + "\" name=\"pageAnchor" + imageCounter + "\"/>"
+				+ "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect=\"1\"/></wp:cNvGraphicFramePr>"
+				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic>"
+				+ "<pic:nvPicPr><pic:cNvPr id=\"" + (200 + imageCounter) + "\" name=\"pageAnchor" + imageCounter + "\"/><pic:cNvPicPr/></pic:nvPicPr>"
 				+ "<pic:blipFill><a:blip r:embed=\"" + rId + "\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
 				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr>"
 				+ "</pic:pic></a:graphicData></a:graphic></wp:anchor>";
@@ -852,6 +1027,24 @@ public final class Doc {
 			return tc;
 		}
 
+		/**
+		 * A cell holding prepared paragraphs, with an explicit width in twips and an
+		 * optional w:vAlign ("top", "center" or "bottom"; null writes none).
+		 */
+		public Tc cellOf(Integer widthTwips, String vAlign, P... paragraphs) {
+			Tc tc = F.createTc();
+			TcPr tcPr = F.createTcPr();
+			tcPr.setTcW(widthTwips == null ? width(0, "auto") : width(widthTwips, "dxa"));
+			if (vAlign != null) {
+				org.docx4j.wml.CTVerticalJc jc = F.createCTVerticalJc();
+				jc.setVal(org.docx4j.wml.STVerticalJc.fromValue(vAlign));
+				tcPr.setVAlign(jc);
+			}
+			tc.setTcPr(tcPr);
+			for (P p : paragraphs) tc.getContent().add(p);
+			return tc;
+		}
+
 		/** A cell holding a nested table (plus the mandatory trailing paragraph). */
 		public Tc cellWith(Tbl nested, String after, String font, int halfPts) {
 			Tc tc = F.createTc();
@@ -1085,6 +1278,16 @@ public final class Doc {
 			return this;
 		}
 
+		/** A run holding one w:br w:type="page", inside this paragraph: two of them in a
+		 *  row is the shape a corpus document's near-empty page comes from. */
+		public Para pageBreakRun() {
+			R r = F.createR();
+			Br br = F.createBr();
+			br.setType(STBrType.PAGE);
+			r.getContent().add(br);
+			return run(r);
+		}
+
 		/** A run holding one w:br w:type="column": where Word divides the columns. */
 		public Para columnBreak() {
 			R r = F.createR();
@@ -1094,10 +1297,32 @@ public final class Doc {
 			return run(r);
 		}
 
-		/** A run holding one w:tab, in the paragraph's own font. */
+		/** A run holding one w:tab and <b>no w:rPr at all</b>, which is how Word writes a
+		 *  tab typed between two runs: its font is whatever a bare run inherits. */
 		public Para tab() {
 			R r = F.createR();
 			r.getContent().add(F.createRTab());
+			return run(r);
+		}
+
+		/** A run holding one w:tab with an explicit font and size of its own. */
+		public Para tab(String font, int halfPts) {
+			R r = F.createR();
+			RPr rpr = F.createRPr();
+			Doc.font(font, halfPts).accept(rpr);
+			r.setRPr(rpr);
+			r.getContent().add(F.createRTab());
+			return run(r);
+		}
+
+		/** Text in a run with <b>no w:rPr at all</b>: its font and size are the ones the
+		 *  style and the document defaults give it. */
+		public Para bareText(String text) {
+			R r = F.createR();
+			Text t = F.createText();
+			t.setValue(text);
+			t.setSpace("preserve");
+			r.getContent().add(t);
 			return run(r);
 		}
 

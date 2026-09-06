@@ -1086,8 +1086,421 @@ public final class Corpus {
 			d.para("after. " + prose(1)).add();
 			return d.pkg();
 		}));
+
+		// --------------------------------- b2 batch 13 triage: PROBES ONLY.  Each of
+		//                                   these five settles a rule the corpus suggests
+		//                                   but no Word golden has yet answered; nothing
+		//                                   is coded until the goldens are back.
+
+		/*
+		 * G9: §6.1's below-mode-15 grid edge is capped at min(shift, max(0, w:tblInd)), so
+		 * the shift is cancelled where the indent is zero, absent or negative.  Two corpus
+		 * measurements contradict that cap in opposite directions and 150 documents move
+		 * with it, so Word decides:
+		 *
+		 *   (a) a NEGATIVE w:tblInd.  A mode-12 header table at w:tblInd -736 has Word's
+		 *       grid edge at margin + tblInd - one cell margin: the shift is taken in
+		 *       full, and the cap - which reads a signed indent and so caps at 0 - cancels
+		 *       it (dx +5.7 with the width identical).  Here at -108 (one cell margin, the
+		 *       cap's own boundary) and at -360.
+		 *   (b) a FIXED-LAYOUT table with NO w:tblInd at all.  Word puts the first cell's
+		 *       text on the page margin, i.e. it takes the shift exactly where the cap
+		 *       forbids it (+5.5pt on every line of every table).  This contradicts the
+		 *       document the cap was derived from, whose table is autofit, so the autofit
+		 *       twin is on the page after each fixed one.
+		 *
+		 * Grid-sized throughout (w:tblW in dxa and every w:tcW in dxa), one case a page,
+		 * with Word's default cell margins and with the table's own w:tblCellMar 108.  The
+		 * mode-15 twin says whether any of it is mode-dependent at all.
+		 */
+		PROBES.add(gridEdgeSignedProbe(12));
+		PROBES.add(gridEdgeSignedProbe(14));
+		PROBES.add(gridEdgeSignedProbe(15));
+
+		/*
+		 * G7: where Word emits a page with nothing on it.  §10 long said that no page of
+		 * either PDF is empty; one corpus document has six wholly empty pages (no text, no
+		 * image, no path) and another a near-empty one, and until those shapes are
+		 * measured §3.3's page-break rules rest on one probe.  Reading the two documents
+		 * settles what the shapes are, and both are the opposite way round from the
+		 * obvious guess:
+		 *
+		 *   - all six of the first document's empty pages are an empty paragraph carrying
+		 *     a w:sectPr with NO w:type (so nextPage) followed by a paragraph whose only
+		 *     content is w:br w:type="page".  The section break opens the page and the
+		 *     break paragraph is the whole of it.  The same document has three other
+		 *     break-only paragraphs which do NOT follow a section break, and none of them
+		 *     costs a page - so it is the adjacency that matters, and that is S1 here.
+		 *   - the second document's near-empty page is TWO consecutive w:br w:type="page"
+		 *     runs at the head of a paragraph, inside a table cell (S2b).
+		 *
+		 * page-blank already carries the exact-row table then nextPage, the oddPage and
+		 * evenPage parities, a page-break-only paragraph mid-document and a document
+		 * ending in a page break; these are the other shapes.  Nothing carries a header or
+		 * a footer until the last section, so an empty page here is wholly empty.
+		 */
+		PROBES.add(new Probe("page-empty",
+				"the shapes Word gives a page of its own to: a sectPr with no w:type then a "
+				+ "break-only paragraph, two page breaks in one paragraph and in a table "
+				+ "cell, a page break then an empty paragraph then a nextPage break, a page "
+				+ "break then a nextPage break, a page-filling table then w:pageBreakBefore, "
+				+ "w:pageBreakBefore opening a nextPage section, and a last section holding "
+				+ "only a header, a footer and an empty paragraph", () -> {
+			Doc d = Doc.create(15);
+
+			// S1 - the corpus shape, six times over in one document: an empty paragraph
+			//      carrying a w:sectPr with no w:type, then a paragraph holding only a
+			//      page break
+			d.para("S1. An empty paragraph carrying a w:sectPr with no w:type follows, and "
+					+ "then a paragraph whose only content is a page break. " + prose(1)).after(120).add();
+			d.sectionBreakHere(null, 0);
+			d.pageBreak();
+			d.para("S1 after. " + prose(1, 1)).after(240).add();
+
+			// S2 - two page breaks in one paragraph, and two break-only paragraphs
+			d.para("S2. Two page breaks in one paragraph follow. " + prose(1, 2)).after(120).add();
+			d.para().noLabel().pageBreakRun().pageBreakRun().add();
+			d.para("S2 after. " + prose(1, 3)).after(240).add();
+
+			d.para("S2a. Two paragraphs each holding one page break follow. "
+					+ prose(1, 4)).after(120).add();
+			d.pageBreak();
+			d.pageBreak();
+			d.para("S2a after. " + prose(1, 5)).after(240).add();
+
+			// S2b - the second corpus document's shape: two page breaks at the head of a
+			//       paragraph inside a table cell, before the cell's own content
+			d.para("S2b. A one-row table whose first cell opens with two page breaks "
+					+ "follows. " + prose(1, 6)).after(120).add();
+			Doc.Table cellBreaks = new Doc.Table(4500, 4500);
+			cellBreaks.rowOf(null, null,
+					cellBreaks.cellOf(4500, null, d.para().noLabel()
+							.pageBreakRun().pageBreakRun().text("S2b cell content").build()),
+					cellBreaks.cellOf(4500, null, Doc.plainParagraph("S2b right cell", SERIF, 24)));
+			d.add(cellBreaks.build());
+			d.para("S2b after. " + prose(1, 7)).before(240).after(240).add();
+
+			// S3 - a page break, an empty paragraph, then a nextPage section break: the
+			//      corpus shape's mirror image
+			d.para("S3. A page break, then an empty paragraph, then a nextPage section "
+					+ "break. " + prose(1, 1)).after(120).add();
+			d.pageBreak();
+			d.emptyParagraph();
+			d.sectionBreakHere("nextPage", 0);
+			d.para("S3 after. " + prose(1, 2)).after(240).add();
+
+			// S4 - a page break immediately followed by a nextPage section break
+			d.para("S4. A page break, then a nextPage section break with nothing between "
+					+ "them. " + prose(1, 3)).after(120).add();
+			d.pageBreak();
+			d.sectionBreakHere("nextPage", 0);
+			d.para("S4 after. " + prose(1, 4)).after(240).add();
+
+			// S5 - a table of exact rows filling the page, then w:pageBreakBefore
+			//      (page-blank has the same table followed by a nextPage break)
+			d.para("S5. A table of exact rows fills the rest of this page; the paragraph "
+					+ "after it carries w:pageBreakBefore.").after(0).add();
+			Doc.Table filler = new Doc.Table(4500, 4500);
+			for (int i = 0; i < 31; i++) {
+				filler.rowOf(400, org.docx4j.wml.STHeightRule.EXACT,
+						filler.cell("S5 row " + (i + 1), SERIF, 24, 1, 4500),
+						filler.cell("value " + (i + 1), SERIF, 24, 1, 4500));
+			}
+			d.add(filler.build());
+			d.para("S5 after, on a page of its own by w:pageBreakBefore. " + prose(1, 5))
+					.pageBreakBefore().after(240).add();
+
+			// S6 - w:pageBreakBefore on the first paragraph of a nextPage section, which
+			//      has opened a page already
+			d.para("S6. A nextPage section break follows, and the first paragraph of the "
+					+ "section it opens carries w:pageBreakBefore too. " + prose(1, 6)).after(120).add();
+			d.sectionBreakHere("nextPage", 0);
+			d.para("S6 after. This paragraph carries w:pageBreakBefore. " + prose(1, 7))
+					.pageBreakBefore().after(240).add();
+
+			// S7 - the trailing page whose body is empty: a last section holding nothing
+			//      but a header, a footer and one empty paragraph (ledger class C, five
+			//      documents, where our last page carries the running header alone)
+			d.para("S7. The last section follows: it holds only a header, a footer and one "
+					+ "empty paragraph, so its page has no body. " + prose(1)).after(120).add();
+			d.sectionBreakHere("nextPage", 0);
+			d.addHeader(SANS, 20, "S7 running header");
+			d.addFooter(SANS, 20, "S7 running footer");
+			d.emptyParagraph();
+			return d.pkg();
+		}));
+
+		/*
+		 * b2-batch11 left a residual on two probe lines which is the leader's font size,
+		 * and §4.4 says a line holding only a tab takes its height "from the block's
+		 * font".  Word appears instead to size both the lone tab's line and its leader
+		 * dots by the TAB RUN's own font - and a tab Word writes between two runs carries
+		 * no w:rPr at all, so that font is whatever a bare run inherits (Word's own
+		 * application default, Aptos 11.04pt, where the document declares nothing).  The
+		 * paragraphs' text runs here are 8pt, so a tab sized by the paragraph and a tab
+		 * sized by the application default are far apart.
+		 *
+		 * A, B, C are leader lines whose tab run carries no w:rPr, the paragraph's 8pt,
+		 * and 14pt; D to H put a lone tab on a line of its own between two prose
+		 * paragraphs, so its height can be read off the gap - G and H vary the paragraph
+		 * mark's size against the tab run's, which is the other candidate (§2.5).  I and J
+		 * are the inheritance case: a style saying 8pt in a document whose w:docDefaults
+		 * say 11pt Carlito, with every run bare.
+		 */
+		PROBES.add(new Probe("tab-run-font",
+				"a tab run with no w:rPr, with the paragraph's 8pt and with 14pt, on leader "
+				+ "lines and on lines holding nothing but the tab; the paragraph mark's size "
+				+ "against the tab run's; and a bare tab where w:docDefaults say 11pt and the "
+				+ "style 8pt", () -> {
+			Doc d = Doc.create(15);
+			// the document defaults are 11pt Carlito and the style says 8pt: a bare run
+			// takes one of them, and which one is I and J below
+			d.documentDefaultRun(CARLITO, 22);
+			d.addParagraphStyle("Small8", null, null, Doc.font(SERIF, 16));
+
+			d.para("Tab runs at three sizes against a 9000 right stop with dots; every text "
+					+ "run of A, B and C is 8pt. " + prose(1)).font(SERIF, 20).after(240).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16))
+					.text("A. the tab run has no w:rPr").tab().text("9").after(120).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16))
+					.text("B. the tab run carries 8pt").tab(SERIF, 16).text("9").after(120).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16))
+					.text("C. the tab run carries 14pt").tab(SERIF, 28).text("9").after(240).add();
+
+			d.para("D. A line holding nothing but a tab whose run has no w:rPr follows.")
+					.font(SERIF, 20).after(0).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16)).tab().after(0).add();
+			d.para("D after.").font(SERIF, 20).after(240).add();
+
+			d.para("E. A line holding nothing but a tab whose run carries 8pt follows.")
+					.font(SERIF, 20).after(0).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16)).tab(SERIF, 16).after(0).add();
+			d.para("E after.").font(SERIF, 20).after(240).add();
+
+			d.para("F. A line holding nothing but a tab whose run carries 14pt follows.")
+					.font(SERIF, 20).after(0).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16)).tab(SERIF, 28).after(0).add();
+			d.para("F after.").font(SERIF, 20).after(240).add();
+
+			d.para("G. A lone tab run with no w:rPr, whose paragraph mark is 14pt, follows.")
+					.font(SERIF, 20).after(0).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16)).markSize(28).tab().after(0).add();
+			d.para("G after.").font(SERIF, 20).after(240).add();
+
+			d.para("H. A lone 14pt tab run whose paragraph mark is 8pt follows.")
+					.font(SERIF, 20).after(0).add();
+			leaderStop(d.para().noLabel().font(SERIF, 16)).markSize(16).tab(SERIF, 28).after(0).add();
+			d.para("H after.").font(SERIF, 20).after(240).add();
+
+			d.para("I and J are styled Small8, which says 8pt, in a document whose "
+					+ "w:docDefaults say 11pt Carlito; none of their runs carries a w:rPr.")
+					.font(SERIF, 20).after(120).add();
+			leaderStop(d.para().noLabel().style("Small8"))
+					.bareText("I. bare runs and a bare tab").tab().bareText("9").after(120).add();
+			d.para("J. A line holding nothing but a bare tab, styled Small8, follows.")
+					.font(SERIF, 20).after(0).add();
+			leaderStop(d.para().noLabel().style("Small8")).tab().after(0).add();
+			d.para("J after.").font(SERIF, 20).after(240).add();
+
+			d.para("after. " + prose(1, 1)).font(SERIF, 20).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * b2-batch12's G2 fix (a picture-only paragraph's line box is max(existing,
+		 * picture), the baseline at its foot and no descent) cost 10.3pt on a vertically
+		 * centred header cell holding a small picture: the cell, and with it the header's
+		 * measured extent and every page's body top, grew.  What Word does with such a
+		 * cell has never been measured, so this is that measurement, with the same cell in
+		 * the body as the control and the two line-spacing cases the rule cancels or keeps
+		 * (a multiple, w:spacing line=276 lineRule=auto, and an exact line shorter than
+		 * the picture).  The picture inside an italic run is the shape which produces an
+		 * fo:inline, and so the line box the rule has to reckon with.
+		 */
+		PROBES.add(new Probe("picture-header-cell",
+				"a 24pt inline picture in a table cell with w:vAlign center, in a header and "
+				+ "in the body, alone in the cell and with text under it, against the same "
+				+ "table with no w:vAlign; and picture-only paragraphs at line=276 auto, at "
+				+ "an exact 12pt line, and inside an italic run", () -> {
+			Doc d = Doc.create(15);
+
+			d.para("Section 1. Its header holds a two-row table whose left cell is "
+					+ "w:vAlign center and holds a 24pt inline picture; the table below is "
+					+ "the same one in the body. " + prose(2)).after(240).add();
+			d.add(pictureCellTable(d, "body1", "center"));
+			d.para("after the body twin of the header's table. " + prose(2, 1)).before(240).after(240).add();
+			d.addHeaderContent(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.Arrays.asList(
+					(Object) Doc.plainParagraph("H1: the cells below are w:vAlign center", SANS, 16),
+					pictureCellTable(d, "hdr1", "center"),
+					Doc.plainParagraph("", SANS, 16)));
+			d.sectionBreakHere("nextPage", 0);
+
+			d.para("Section 2. The same header and the same body table, with no w:vAlign "
+					+ "on any cell. " + prose(2, 2)).after(240).add();
+			d.add(pictureCellTable(d, "body2", null));
+			d.para("after the body twin. " + prose(2, 3)).before(240).after(240).add();
+			d.addHeaderContent(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.Arrays.asList(
+					(Object) Doc.plainParagraph("H2: the cells below carry no w:vAlign", SANS, 16),
+					pictureCellTable(d, "hdr2", null),
+					Doc.plainParagraph("", SANS, 16)));
+
+			// the line-spacing cases the picture-only line box has to reckon with
+			d.para("K. A picture-only paragraph at w:spacing line=276 lineRule=auto "
+					+ "follows.").after(0).add();
+			d.para().noLabel().line(276, STLineSpacingRule.AUTO).run(d.inlineImage(200, 80, 1200))
+					.after(0).add();
+			d.para("K after.").after(240).add();
+
+			d.para("L. A picture-only paragraph at an exact 12pt line follows; the picture "
+					+ "is 24pt tall.").after(0).add();
+			d.para().noLabel().line(240, STLineSpacingRule.EXACT).run(d.inlineImage(200, 80, 1200))
+					.after(0).add();
+			d.para("L after.").after(240).add();
+
+			d.para("M. A picture-only paragraph whose picture sits inside an italic run, at "
+					+ "line=276 lineRule=auto, follows.").after(0).add();
+			d.para().noLabel().line(276, STLineSpacingRule.AUTO)
+					.run(italic(d.inlineImage(200, 80, 1200))).after(0).add();
+			d.para("M after. " + prose(2, 4)).after(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * G17: a corpus cover's background picture is page-anchored at wp:positionH
+		 * posOffset -5353685 (-421.55pt) and positionV -1244600 (-98.0pt) with a
+		 * 656.3 x 797.0pt extent, and Word draws it at (-34.8, 0.0) - clamped to the page -
+		 * where we draw it at the raw offsets, which puts the inline logo below it 161.8pt
+		 * above our body top and costs the document ten of Word's forty-five pages.  Where
+		 * Word starts clamping, and whether the clamp depends on the picture's size, has
+		 * never been measured.  One case a page: a small negative offset, a larger one, the
+		 * corpus's own, and the corpus's own offsets under a small picture.
+		 */
+		PROBES.add(new Probe("picture-anchor-negative",
+				"page-anchored pictures at negative wp:positionH/V offsets - -9pt, -50pt, "
+				+ "the corpus cover's -421.55/-98.0pt, and a small picture at the same - one "
+				+ "per page, with body text to measure the clamp against", () -> {
+			Doc d = Doc.create(15);
+			long[][] offsets = {
+					{ -114300L, -114300L },     // -9pt and -9pt: just off the page
+					{ -635000L, -635000L },     // -50pt and -50pt
+					{ -5353685L, -1244600L } }; // -421.55pt and -98.0pt: the corpus cover's
+			String[] what = { "-9pt / -9pt", "-50pt / -50pt", "-421.55pt / -98.0pt" };
+			for (int i = 0; i < offsets.length; i++) {
+				if (i > 0) d.pageBreak();
+				d.para("Page " + (i + 1) + ": a page-anchored 656.3 x 797.0pt picture "
+						+ "behind the text at wp:positionH/V " + what[i] + " from the page's "
+						+ "top left corner. " + prose(2, i)).after(240).add();
+				d.para().noLabel()
+						.run(d.pageAnchoredImage(240, 291, 8335010L, 10121900L, offsets[i][0], offsets[i][1]))
+						.after(240).add();
+				d.para("Body text on the same page, so the clamp can be read off these "
+						+ "lines. " + prose(3, i + 1)).add();
+			}
+			d.pageBreak();
+			d.para("Page 4: a 200 x 150pt page-anchored picture at the same -421.55pt / "
+					+ "-98.0pt, which is more than its own width off the page. "
+					+ prose(2, 3)).after(240).add();
+			d.para().noLabel()
+					.run(d.pageAnchoredImage(200, 150, 2540000L, 1905000L, -5353685L, -1244600L))
+					.after(240).add();
+			d.para("Body text on the same page. " + prose(3, 4)).add();
+			return d.pkg();
+		}));
 	}
 
+
+	/**
+	 * §6.1's grid edge where the cap min(shift, max(0, w:tblInd)) and the corpus
+	 * disagree: a grid-sized table at a negative w:tblInd, and a fixed-layout table with
+	 * no w:tblInd at all beside its autofit twin, each with Word's default cell margins
+	 * and with the table's own w:tblCellMar 108, one case a page.
+	 */
+	private static Probe gridEdgeSignedProbe(int compatMode) {
+		return new Probe("table-grid-edge-signed-compat" + compatMode,
+				"grid-sized tables at w:tblInd -108 and -360, and a table with no w:tblInd "
+				+ "fixed and autofit, with default and with 108-twip cell margins, "
+				+ "compatibilityMode " + compatMode, () -> {
+			Doc d = Doc.create(compatMode);
+			int page = 0;
+			// (a) a negative w:tblInd, which the signed cap cancels the shift for
+			for (int ind : new int[] { -108, -360 }) {
+				for (int mar = 0; mar < 2; mar++) {
+					if (page++ > 0) d.pageBreak();
+					d.para("w:tblInd " + ind + ", "
+							+ (mar == 0 ? "Word's default cell margins" : "w:tblCellMar 108")
+							+ ". The lines of this paragraph start on the text margin. "
+							+ prose(2, page)).after(240).add();
+					Doc.Table t = new Doc.Table(4000, 4000).indent(ind);
+					if (mar == 1) t.cellMargins(108, 0);
+					t.row(SERIF, 24, false, "IND" + ind + (mar == 1 ? " margin 108" : ""), "right");
+					d.add(t.build());
+					d.para("after the table. " + prose(1, page)).before(240).add();
+				}
+			}
+			// (b) no w:tblInd at all, fixed layout and autofit
+			for (int fixed = 1; fixed >= 0; fixed--) {
+				for (int mar = 0; mar < 2; mar++) {
+					d.pageBreak();
+					d.para("no w:tblInd at all, " + (fixed == 1 ? "w:tblLayout fixed" : "autofit")
+							+ ", " + (mar == 0 ? "Word's default cell margins" : "w:tblCellMar 108")
+							+ ". " + prose(2, page)).after(240).add();
+					Doc.Table t = new Doc.Table(4000, 4000);
+					if (fixed == 1) t.fixedLayout();
+					if (mar == 1) t.cellMargins(108, 0);
+					t.row(SERIF, 24, false, (fixed == 1 ? "FIXED" : "AUTOFIT")
+							+ (mar == 1 ? " margin 108" : ""), "right");
+					d.add(t.build());
+					d.para("after the table. " + prose(1, page)).before(240).add();
+					page++;
+				}
+			}
+			return d.pkg();
+		});
+	}
+
+	/** One right stop at the right margin with a dot leader, which is what makes a lone
+	 *  tab visible: the dots it draws are as tall as the tab's own font. */
+	private static Doc.Para leaderStop(Doc.Para p) {
+		return p.tabStop(9000, org.docx4j.wml.STTabJc.RIGHT, org.docx4j.wml.STTabTlc.DOT);
+	}
+
+	/**
+	 * A two-row table whose left cell holds a 24pt inline picture: in row A the picture
+	 * cell is the taller of the two, in row B the text cell is, and the picture cell also
+	 * holds a line of text.  {@code vAlign} is written on every cell ("center"), or on
+	 * none when null.
+	 */
+	private static Tbl pictureCellTable(Doc d, String tag, String vAlign) throws Exception {
+		Doc.Table t = new Doc.Table(3000, 6000);
+		P picOnly = Doc.plainParagraph("", SERIF, 20);
+		picOnly.getContent().clear();
+		picOnly.getContent().add(d.inlineImage(200, 80, 1200));
+		t.rowOf(null, null,
+				t.cellOf(3000, vAlign, picOnly),
+				t.cellOf(6000, vAlign,
+						Doc.plainParagraph(tag + " A: one line beside a 24pt picture", SERIF, 20)));
+		P picAndText = Doc.plainParagraph("", SERIF, 20);
+		picAndText.getContent().clear();
+		picAndText.getContent().add(d.inlineImage(200, 80, 1200));
+		t.rowOf(null, null,
+				t.cellOf(3000, vAlign, picAndText,
+						Doc.plainParagraph(tag + " B: text under the picture", SERIF, 20)),
+				t.cellOf(6000, vAlign,
+						Doc.plainParagraph(tag + " B line 1", SERIF, 20),
+						Doc.plainParagraph(tag + " B line 2", SERIF, 20),
+						Doc.plainParagraph(tag + " B line 3", SERIF, 20),
+						Doc.plainParagraph(tag + " B line 4", SERIF, 20)));
+		return t.build();
+	}
+
+	/** The run in italics, which is what makes the FO exporter wrap the picture in an
+	 *  fo:inline and so give its block a line box of its own. */
+	private static org.docx4j.wml.R italic(org.docx4j.wml.R r) {
+		org.docx4j.wml.RPr rpr = Doc.F.createRPr();
+		rpr.setI(new org.docx4j.wml.BooleanDefaultTrue());
+		r.setRPr(rpr);
+		return r;
+	}
 	/**
 	 * §6.1's grid edge below mode 14: w:tblInd 108 with Word's default cell margins and
 	 * with the table's own, at the top level and nested in a cell.  Since 17.0.6 the
