@@ -306,6 +306,28 @@ public final class Doc {
 	}
 
 	/**
+	 * Ends the current section <b>on an existing paragraph</b>: that paragraph carries a
+	 * copy of the body sectPr, which is where Word puts it.  {@link #endSection} appends
+	 * an empty paragraph of its own instead, and that paragraph - not the one before it -
+	 * is then the section's last block, which is no use where the question is what the
+	 * section's last block is.
+	 */
+	public void endSectionOn(P p, String nextSectionType) {
+		SectPr current = sectPr();
+		SectPr copy = XmlUtils.deepCopy(current);
+		PPr ppr = p.getPPr();
+		if (ppr == null) {
+			ppr = F.createPPr();
+			p.setPPr(ppr);
+		}
+		ppr.setSectPr(copy);
+		current.getEGHdrFtrReferences().clear();
+		SectPr.Type type = F.createSectPrType();
+		type.setVal(nextSectionType);
+		current.setType(type);
+	}
+
+	/**
 	 * A section break at exactly this point, with the break type written on the
 	 * break paragraph itself: an empty paragraph carrying a copy of the current
 	 * sectPr whose {@code w:type} is {@code type}, or which carries no
@@ -369,6 +391,82 @@ public final class Doc {
 		mdp.addTargetPart(ndp);
 		ndp.unmarshalDefaultNumbering();
 		numberingAdded = true;
+	}
+
+	/**
+	 * A numbering part built from the {@code w:abstractNum} and {@code w:num} elements
+	 * given as XML (without the {@code w:numbering} wrapper, which this adds).  The
+	 * numbering probes turn on details a builder would hide - whether a level carries a
+	 * {@code w:pStyle} link, what its own {@code w:pPr} indents say - so the caller
+	 * writes the XML.  Replaces any numbering part added earlier.
+	 */
+	public void numberingXml(String body) throws Exception {
+		String xml = "<w:numbering xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+				+ body + "</w:numbering>";
+		Object o = XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.wml.Numbering.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp =
+				new org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart();
+		ndp.setJaxbElement((org.docx4j.wml.Numbering) o);
+		mdp.addTargetPart(ndp);
+		numberingAdded = true;
+	}
+
+	/**
+	 * One {@code w:lvl} of a decimal list: {@code w:ilvl}, the label's text, the
+	 * indents Word's own list levels carry, and - when {@code pStyleLink} is not null -
+	 * a {@code w:pStyle} link naming the paragraph style the level belongs to.  Element
+	 * order follows CT_Lvl, which JAXB needs.
+	 */
+	public static String decimalLevel(int ilvl, String pStyleLink, int leftTwips, int hangingTwips) {
+		return "<w:lvl w:ilvl=\"" + ilvl + "\">"
+				+ "<w:start w:val=\"1\"/>"
+				+ "<w:numFmt w:val=\"decimal\"/>"
+				+ (pStyleLink == null ? "" : "<w:pStyle w:val=\"" + pStyleLink + "\"/>")
+				+ "<w:lvlText w:val=\"%" + (ilvl + 1) + ".\"/>"
+				+ "<w:lvlJc w:val=\"left\"/>"
+				+ "<w:pPr><w:ind w:left=\"" + leftTwips + "\" w:hanging=\"" + hangingTwips + "\"/></w:pPr>"
+				+ "</w:lvl>";
+	}
+
+	// ---------------------------------------------------------------- measurement
+
+	/**
+	 * The advance width, in points, of {@code text} set in {@code fontName} at
+	 * {@code halfPts} half-points: the font's own advances, with fractional metrics and
+	 * no kerning, which is what Word and FOP both read out of the hmtx table for a run
+	 * carrying no {@code w:kern} and no {@code w:spacing}.  A probe which has to make a
+	 * quarter of a point decide a line break needs the exact number, not an estimate,
+	 * so a substituted font is an error rather than an approximation.
+	 */
+	public static double advancePoints(String text, String fontName, int halfPts) {
+		java.awt.Font f = new java.awt.Font(fontName, java.awt.Font.PLAIN, 1).deriveFont(halfPts / 2.0f);
+		if (!fontName.equalsIgnoreCase(f.getFamily())) {
+			throw new IllegalStateException("font '" + fontName + "' is not installed on this host"
+					+ " (java.awt gave '" + f.getFamily() + "'); the measured probes cannot be built");
+		}
+		java.awt.font.FontRenderContext frc = new java.awt.font.FontRenderContext(null, false, true);
+		return f.getStringBounds(text, frc).getWidth();
+	}
+
+	/**
+	 * {@link #advancePoints} rounded up to a whole twip: the narrowest measure which
+	 * still holds the text on one line, to within the resolution a docx can express.
+	 * A cell whose text measure is exactly this is at most 1/20 point wider than the
+	 * text, so any further charge against the measure - half a border, a whole one -
+	 * wraps the last word.
+	 */
+	public static int advanceTwipsCeil(String text, String fontName, int halfPts) {
+		return (int) Math.ceil(advancePoints(text, fontName, halfPts) * 20.0 - 1e-9);
+	}
+
+	// ------------------------------------------------------------ section vAlign
+
+	/** {@code w:vAlign} on the current section: "top", "center", "both" or "bottom". */
+	public void verticalAlignment(String val) {
+		org.docx4j.wml.CTVerticalJc jc = F.createCTVerticalJc();
+		jc.setVal(org.docx4j.wml.STVerticalJc.fromValue(val));
+		sectPr().setVAlign(jc);
 	}
 
 	// ------------------------------------------------------------ hyphenation
@@ -1073,6 +1171,28 @@ public final class Doc {
 			return this;
 		}
 
+		/** w:tblBorders with every side w:val="none": a table which draws nothing, so
+		 *  nothing can be charged against the cells' text measure either. */
+		public Table noBorders() {
+			TblBorders b = F.createTblBorders();
+			b.setTop(noBorder());
+			b.setLeft(noBorder());
+			b.setBottom(noBorder());
+			b.setRight(noBorder());
+			b.setInsideH(noBorder());
+			b.setInsideV(noBorder());
+			tblPr.setTblBorders(b);
+			return this;
+		}
+
+		private static CTBorder noBorder() {
+			CTBorder b = F.createCTBorder();
+			b.setVal(STBorder.NONE);
+			b.setSz(BigInteger.ZERO);
+			b.setSpace(BigInteger.ZERO);
+			return b;
+		}
+
 		public Table cellMargins(int leftRightTwips, int topBottomTwips) {
 			CTTblCellMar m = F.createCTTblCellMar();
 			m.setLeft(width(leftRightTwips, "dxa"));
@@ -1100,6 +1220,28 @@ public final class Doc {
 
 		public Tbl build() {
 			return tbl;
+		}
+
+		/**
+		 * The cell's own w:tcMar left and right, in twips, overriding the table's
+		 * w:tblCellMar; null leaves that side to the table.  Varying one cell's left
+		 * margin against another's is how a probe puts three different text measures in
+		 * one column, and so how it reads off which of them Word actually used.
+		 */
+		public static Tc tcMargins(Tc tc, Integer leftTwips, Integer rightTwips) {
+			TcPr tcPr = tc.getTcPr();
+			if (tcPr == null) {
+				tcPr = F.createTcPr();
+				tc.setTcPr(tcPr);
+			}
+			org.docx4j.wml.TcMar m = tcPr.getTcMar();
+			if (m == null) {
+				m = F.createTcMar();
+				tcPr.setTcMar(m);
+			}
+			if (leftTwips != null) m.setLeft(width(leftTwips, "dxa"));
+			if (rightTwips != null) m.setRight(width(rightTwips, "dxa"));
+			return tc;
 		}
 
 		private static CTBorder border(int sz) {
@@ -1207,6 +1349,35 @@ public final class Doc {
 			numId.setVal(BigInteger.ONE);
 			numPr.setNumId(numId);
 			ppr.setNumPr(numPr);
+			return this;
+		}
+
+		/**
+		 * Direct w:numPr on the paragraph: {@code numId} names a w:num of the numbering
+		 * part (0 is Word's "this paragraph is not numbered", which a numbered style's
+		 * numbering is switched off with), and {@code ilvl} is written only when it is
+		 * not null - a w:numPr with no w:ilvl is the shape Word writes for a paragraph
+		 * whose level comes from its style, and whether Word then reads it as level 0 is
+		 * the whole question of the numbering-label probe.
+		 */
+		public Para numPr(int numId, Integer ilvl) {
+			PPrBase.NumPr numPr = F.createPPrBaseNumPr();
+			if (ilvl != null) {
+				PPrBase.NumPr.Ilvl lvl = F.createPPrBaseNumPrIlvl();
+				lvl.setVal(BigInteger.valueOf(ilvl));
+				numPr.setIlvl(lvl);
+			}
+			PPrBase.NumPr.NumId id = F.createPPrBaseNumPrNumId();
+			id.setVal(BigInteger.valueOf(numId));
+			numPr.setNumId(id);
+			ppr.setNumPr(numPr);
+			return this;
+		}
+
+		/** No direct w:ind at all: the indents come from the style, and from the
+		 *  numbering level where one applies. */
+		public Para noIndent() {
+			ppr.setInd(null);
 			return this;
 		}
 

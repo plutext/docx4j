@@ -1406,6 +1406,584 @@ public final class Corpus {
 			d.para("Body text on the same page. " + prose(3, 4)).add();
 			return d.pkg();
 		}));
+
+		// --------------------------------- b2 batch 23 triage: PROBES ONLY.  Each of
+		//                                   these five settles a rule the corpora suggest
+		//                                   but no Word golden has yet answered; nothing
+		//                                   is coded until the goldens are back.
+
+		/*
+		 * H12: does Word charge a cell's border against the text measure, and when?  The
+		 * question has two contradictory answers on the record.
+		 *
+		 *   - §6.3's content-sized cell rule gives the border allowance back for a
+		 *     content-sized column only, and WordLayoutFixups.cellLineWidth's javadoc
+		 *     records the OPPOSITE measurement for a grid-sized one, from the table-fixed
+		 *     and table-cellspacing goldens: a 150pt column with 5.4pt margins broke a
+		 *     139.2pt line, which fits in 150 - 10.8 but not in that less the 0.5pt
+		 *     border.  Those probes' lines had NO slack at all, so they say only that
+		 *     something was charged - not half a border against a whole one.
+		 *   - H12 says the opposite for grid-sized tables and now has seven corpus
+		 *     measurements: a corpus document (our 122.27 against a 122.65pt string Word
+		 *     keeps on one line in 122.5), a corpus document (72 - 10.83 - 0.5 =
+		 *     60.67 against Word's 61.17 and a 61.3pt string), a corpus document (13
+		 *     pages became 14), and four more in ledger4, of which a corpus document
+		 *     is a direct measurement of the offset rather than an inference: our text
+		 *     starts at x=38.7 where Word's starts at 37.9, the 0.8pt being the cell
+		 *     margin plus half the left border.
+		 *
+		 * So the golden has to separate four hypotheses, and the corpus cannot.  A cell
+		 * has two borders in the inline direction, and what FOP charges is a share of
+		 * EACH of them - half of a collapsed one, all of a separate one - so its charge is
+		 * one whole border width for a collapsed cell and two for a separate one.
+		 *
+		 * The trick which makes that readable is that all three rows of a table hold the
+		 * SAME line - so one column serves them all - and differ only in the cell's own
+		 * w:tcMar on the END side.  The column is the line's measured advance rounded up
+		 * to a whole twip, plus two twips of slack, plus the two 108-twip margins, so with
+		 * nothing charged the line fits with a tenth of a point to spare.  Row 2 gives its
+		 * right margin back half a border width, row 3 a whole one; the left margin never
+		 * moves, so all three lines start at the same x and only the measure changes.  The
+		 * line ends in a word which has nowhere to go but a second line, so each row is
+		 * one line or two, and the rung the wrapping stops at is the answer:
+		 *
+		 *      charged against the measure                        R1  R2  R3
+		 *      nothing (H12, and §6.3 for a content-sized column)  1   1   1
+		 *      half a border width                                 2   1   1
+		 *      one border width (FOP's collapsed cell)             2   2   1
+		 *      two border widths (FOP's separate cell)             2   2   2
+		 *
+		 * Half a border is 5, 15 and 30 twips for the three widths, against two twips of
+		 * slack; only the 0.5pt table's row 2 is decided by as little as 0.15pt, so the
+		 * 1.5 and 3pt tables are the ones to read where the two disagree.  T0 is the
+		 * borderless control, which must read 1/1/1 whatever the answer.
+		 *
+		 * 17.0.6 renders 1/1/1 for T0, 2/1/1 for T1 (the 0.5pt tight rung), 2/2/1 for T2
+		 * and T3, and 2/2/2 for the three w:tblCellSpacing tables - FOP's charge exactly.
+		 *
+		 * Row 1 of every table also answers the second half of H12 on its own, without any
+		 * line counting: a corpus document's measurement is where the text STARTS, so
+		 * the golden's first glyph x against the table's left border says whether Word put
+		 * it on the grid edge plus the cell margin, or on that plus half the border (§6.2).
+		 *
+		 * The grid-sized tables are w:tblLayout fixed with w:tcW in dxa, so the column is
+		 * the grid and nothing refits (whether Word refits a declared width at all is
+		 * table-grid-pct's question).  The three content-autofit tables (w:tblW auto,
+		 * w:tcW auto) should hold their line whatever the answer, since the content is
+		 * what sized the column, so they are read the other way: the right border's x says
+		 * whether Word's content-preferred width is the line's advance plus the two
+		 * margins, or that plus the border.  17.0.6 wraps them all the same: cellLineWidth
+		 * does give the allowance back (padding-right 4.91pt against 5.4), but our own
+		 * autofit pass sizes the column 0.4pt narrower than the line's measured advance,
+		 * which is a second thing for the golden to settle.
+		 *
+		 * One table a page, and the line is measured from the installed Liberation Serif,
+		 * so the column is exact rather than estimated.
+		 */
+		PROBES.add(new Probe("table-cell-measure",
+				"one line whose advance exactly fills the column less the cell margins, in "
+				+ "cells whose own w:tcMar gives back nothing, half a border and a whole "
+				+ "border on the end side: grid-sized (w:tblLayout fixed, w:tcW dxa) with "
+				+ "collapsed and with separate (w:tblCellSpacing 72) borders of 0.5, 1.5 "
+				+ "and 3pt, a borderless control, and content-autofit twins whose width is "
+				+ "read off the border positions", () -> {
+			Doc d = Doc.create(15);
+			// the line every cell holds; the "TnRm " tag is the same width in every cell
+			// (Liberation Serif's digits are tabular), so one column serves all three rows
+			final String sentence = "The quick brown fox jumps over the lazy dog while the farmer watches.";
+			final int[] eighths = { 4, 12, 24 };          // 0.5, 1.5 and 3pt borders
+			int table = 0;
+
+			d.para("Every table below holds the same line, whose advance in 12pt Liberation "
+					+ "Serif was measured from the font itself. The column is that advance "
+					+ "rounded up to a whole twip, plus two twips, plus the two 108-twip "
+					+ "cell margins, so the line fits with a tenth of a point to spare when "
+					+ "nothing else is charged against the measure. Row 2 of each table "
+					+ "gives its right cell margin back half the border width, row 3 the "
+					+ "whole border width; the left margin never moves, so all three lines "
+					+ "start at the same place. A row which wraps has had that much charged "
+					+ "against it. " + prose(1)).after(240).add();
+
+			// T0: the borderless control - 1/1/1 under every hypothesis
+			d.para("Table T" + table + ": w:tblBorders none, so nothing can be charged. All "
+					+ "three rows must hold their line on one line. "
+					+ prose(1, 1)).after(240).add();
+			d.add(measureTable("T" + table, sentence, 0, 0, false, true));
+			d.para("after T" + table + ". " + prose(1, 2)).before(240).add();
+			table++;
+
+			// T1..T3: grid-sized, collapsed borders
+			for (int i = 0; i < eighths.length; i++) {
+				d.pageBreak();
+				d.para("Table T" + table + ": grid-sized (w:tblLayout fixed, w:tcW in dxa), "
+						+ "collapsed borders of " + (eighths[i] / 8.0) + "pt. Row 1 wraps if "
+						+ "anything at all is charged against the measure, row 2 if more "
+						+ "than half a border width is, row 3 if more than a whole one is. "
+						+ prose(1, i)).after(240).add();
+				d.add(measureTable("T" + table, sentence, eighths[i], 0, false, false));
+				d.para("after T" + table + ". " + prose(1, i + 1)).before(240).add();
+				table++;
+			}
+
+			// T4..T6: grid-sized, separate borders (w:tblCellSpacing), where FOP charges
+			// the whole border rather than half of it
+			for (int i = 0; i < eighths.length; i++) {
+				d.pageBreak();
+				d.para("Table T" + table + ": the same, with w:tblCellSpacing 72 - Word's "
+						+ "separate-borders model - and borders of " + (eighths[i] / 8.0)
+						+ "pt. " + prose(1, i + 2)).after(240).add();
+				d.add(measureTable("T" + table, sentence, eighths[i], 72, false, false));
+				d.para("after T" + table + ". " + prose(1, i + 3)).before(240).add();
+				table++;
+			}
+
+			// T7..T9: content-autofit twins, read off the border positions
+			for (int i = 0; i < eighths.length; i++) {
+				d.pageBreak();
+				d.para("Table T" + table + ": content-autofit (w:tblW auto, every w:tcW "
+						+ "auto), borders of " + (eighths[i] / 8.0) + "pt. An autofit column "
+						+ "is sized to the content which set it, so Word should hold this "
+						+ "line whole however much it charges; what the golden gives is the "
+						+ "right border's position, and so whether Word's content-preferred "
+						+ "width is the line's advance plus the two margins, or that plus "
+						+ "the border. "
+						+ prose(1, i + 4)).after(240).add();
+				d.add(measureTable("T" + table, sentence, eighths[i], 0, true, false));
+				d.para("after T" + table + ". " + prose(1, i + 5)).before(240).add();
+				table++;
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * J27 against E37, which the ledger calls exact opposites, so neither may be
+		 * implemented before Word answers both.
+		 *
+		 *   - J27 (a corpus document, a corpus document): Word paints NO label
+		 *     for a w:pStyle-linked level at ilvl 0 and still uses the level's indent for
+		 *     the text.  Verified glyph by glyph: Word's heading is "Entity ed EOS
+		 *     Solutions" at x=85.0 with no number, and 85.0 - 56.7 = 28.35pt = the level's
+		 *     w:ind w:left 567, while the paragraph's style says w:ind w:left 0
+		 *     w:firstLine 0, which we honoured, painting a "1" at 56.7.  Its ilvl 1
+		 *     matches us exactly, so whatever it is is specific to the linked ilvl 0.
+		 *     9838 has two w:num sharing one abstractNum, which the ledger names as a
+		 *     likely trigger.
+		 *   - E37 (a corpus document): the paragraph style's own w:ind - which arrives
+		 *     through w:basedOn, on the same style that holds the w:numPr - beats the
+		 *     level's, and Word does paint the label.  Word's bullet is at 46.8 with its
+		 *     continuation at 58.1 (the style's 227tw hanging indent); we render 64.8 /
+		 *     82.8 from the level's 720/360.
+		 *
+		 * Three numbering definitions, each with its own recognisable level-0 indent so
+		 * the golden says which one Word used:
+		 *
+		 *   numId 20 - level 0 carries w:pStyle "NumLinked" and w:ind left 567 hanging 567
+		 *   numId 21 - no w:pStyle link on any level; w:ind left 720 hanging 360
+		 *   numId 22 - level 0 carries w:pStyle "NumUnused", a style which exists but
+		 *              which no paragraph uses; w:ind left 1080 hanging 540
+		 *   numId 23 - a second w:num over abstractNum 20, so that abstract definition is
+		 *              shared by two instances (9838's shape)
+		 *
+		 * Each case is one paragraph long enough to wrap, so the golden shows both where
+		 * the label sits and where the second line starts, and each is introduced by a
+		 * prose paragraph naming it.
+		 */
+		PROBES.add(new Probe("numbering-label-ilvl0",
+				"a numbering definition linked to a paragraph style against direct w:numPr: "
+				+ "with and without the paragraph's own w:ind, with and without w:ilvl, a "
+				+ "style whose w:ind and w:numPr arrive through w:basedOn, a style stating "
+				+ "w:ind left 0 firstLine 0, a level whose w:pStyle names a style the "
+				+ "paragraph does not use, two w:num sharing one abstractNum, and w:numId 0 "
+				+ "on a numbered style", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"20\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, "NumLinked", 567, 567)
+					+ Doc.decimalLevel(1, null, 1134, 567)
+					+ "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"21\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, null, 720, 360)
+					+ Doc.decimalLevel(1, null, 1440, 360)
+					+ "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"22\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, "NumUnused", 1080, 540)
+					+ Doc.decimalLevel(1, null, 2160, 540)
+					+ "</w:abstractNum>"
+					+ "<w:num w:numId=\"20\"><w:abstractNumId w:val=\"20\"/></w:num>"
+					+ "<w:num w:numId=\"21\"><w:abstractNumId w:val=\"21\"/></w:num>"
+					+ "<w:num w:numId=\"22\"><w:abstractNumId w:val=\"22\"/></w:num>"
+					+ "<w:num w:numId=\"23\"><w:abstractNumId w:val=\"20\"/></w:num>");
+
+			// the numbered style: w:numPr naming numId 20 and NO w:ilvl, which is the
+			// shape Word writes for a style linked to a list
+			d.addParagraphStyle("NumLinked", "Normal", ppr -> ppr.setNumPr(numPr(20)));
+			// J27's shape: the same, and the style states w:ind left 0 firstLine 0, which
+			// is what Word ignored in favour of the level's 567
+			d.addParagraphStyle("NumLinkedInd0", "Normal", ppr -> {
+				ppr.setNumPr(numPr(20));
+				PPrBase.Ind ind = Doc.F.createPPrBaseInd();
+				ind.setLeft(BigInteger.ZERO);
+				ind.setFirstLine(BigInteger.ZERO);
+				ppr.setInd(ind);
+			});
+			// E37's shape: a base style holding BOTH the w:numPr and a w:ind of 227/227,
+			// and the style the paragraph actually uses derived from it
+			d.addParagraphStyle("NumBase", "Normal", ppr -> {
+				ppr.setNumPr(numPr(21));
+				PPrBase.Ind ind = Doc.F.createPPrBaseInd();
+				ind.setLeft(BigInteger.valueOf(227));
+				ind.setHanging(BigInteger.valueOf(227));
+				ppr.setInd(ind);
+			});
+			d.addParagraphStyle("NumDerived", "NumBase", ppr -> { });
+			// a plain style for the direct-numPr cases, and the style numId 22's level 0
+			// links to but nothing uses
+			d.addParagraphStyle("NumPlain", "Normal", ppr -> { });
+			d.addParagraphStyle("NumUnused", "Normal", ppr -> { });
+
+			String tail = " This paragraph is long enough to wrap, so the golden shows where "
+					+ "its second line starts as well as where its first one does. " + prose(1);
+			int n = 0;
+
+			String[][] cases = {
+				{ "w:pStyle NumLinked, whose w:numPr names numId 20 with no w:ilvl; the "
+					+ "paragraph carries no w:numPr and no w:ind of its own. The level's "
+					+ "indent is 567 left, 567 hanging" },
+				{ "the same style, and a direct w:numPr naming numId 20 with w:ilvl 0" },
+				{ "the same style, and a direct w:numPr naming numId 20 with NO w:ilvl "
+					+ "at all" },
+				{ "the same style, and the paragraph's own w:ind left 1440 hanging 360, "
+					+ "against the level's 567/567" },
+				{ "the same style, a direct w:numPr with w:ilvl 0, and the paragraph's "
+					+ "own w:ind left 1440 hanging 360" },
+				{ "w:pStyle NumLinkedInd0: the same numbered style, but the STYLE states "
+					+ "w:ind left 0 firstLine 0. This is J27's shape, where Word ignored "
+					+ "the style's indent, used the level's 567, and painted no label" },
+				{ "w:pStyle NumDerived, based on NumBase, which holds both the w:numPr "
+					+ "(numId 21, whose level 0 is not style-linked) and w:ind left 227 "
+					+ "hanging 227. This is E37's shape, where Word used the style's "
+					+ "indent rather than the level's 720/360" },
+				{ "an unnumbered style and a direct w:numPr naming numId 21, whose levels "
+					+ "carry no w:pStyle link at all, with w:ilvl 0" },
+				{ "the same, with the paragraph's own w:ind left 1440 hanging 360" },
+				{ "an unnumbered style and a direct w:numPr naming numId 22, whose level 0 "
+					+ "carries a w:pStyle link to NumUnused - a style which exists but "
+					+ "which this paragraph does not use" },
+				{ "w:pStyle NumLinked and a direct w:numPr naming numId 23, a second w:num "
+					+ "over the same abstractNum 20 the style's own numId 20 names, so one "
+					+ "abstract definition is shared by two instances" },
+				{ "w:pStyle NumLinked with a direct w:numPr naming w:numId 0 and no "
+					+ "w:ilvl, which is how Word switches a numbered style's numbering off" },
+				{ "the same, with w:ilvl 0 written alongside the w:numId 0" },
+				{ "w:pStyle NumLinked, no direct w:numPr, and the paragraph's own w:ind "
+					+ "left 0 hanging 0 - an indent which overrides the level's without "
+					+ "moving anything" },
+			};
+			for (String[] c : cases) {
+				n++;
+				d.para("N" + n + ": " + c[0] + ". " + prose(1, n))
+						.before(n == 1 ? 0 : 240).after(120).add();
+				Doc.Para p = d.para("N" + n + "." + tail).inheritSpacing();
+				switch (n) {
+					case 1: p.style("NumLinked"); break;
+					case 2: p.style("NumLinked").numPr(20, 0); break;
+					case 3: p.style("NumLinked").numPr(20, null); break;
+					case 4: p.style("NumLinked").indent(1440, 0, 360); break;
+					case 5: p.style("NumLinked").numPr(20, 0).indent(1440, 0, 360); break;
+					case 6: p.style("NumLinkedInd0"); break;
+					case 7: p.style("NumDerived"); break;
+					case 8: p.style("NumPlain").numPr(21, 0); break;
+					case 9: p.style("NumPlain").numPr(21, 0).indent(1440, 0, 360); break;
+					case 10: p.style("NumPlain").numPr(22, 0); break;
+					case 11: p.style("NumLinked").numPr(23, 0); break;
+					case 12: p.style("NumLinked").numPr(0, null); break;
+					case 13: p.style("NumLinked").numPr(0, 0); break;
+					default: p.style("NumLinked").indent(0, 0, 0); break;
+				}
+				p.add();
+			}
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * E4/E5's remaining clause: what a w:tblW of type pct means when the w:tblGrid
+		 * disagrees with it.  §6.5's exemption for a table stating a width of its own is
+		 * unconditional, and a corpus document confirms it for pct - w:tblW 5000
+		 * pct with a 492.7pt grid on a 481.9pt column, and Word honours the grid, every
+		 * column edge a uniform 1.026x ours, while we clamp.  What no golden says is what
+		 * the pct itself then means: whether the grid is scaled to it at all, what happens
+		 * when the pct is over 100, whether the pct is taken of the text column or of the
+		 * column less a w:tblInd, and whether w:tblLayout fixed changes any of it.
+		 *
+		 * The last two tables are J28's half: a CONTENT-autofit table (w:tblW auto) whose
+		 * grid is 1.47% wider than the text column - the ledger measured Word refitting
+		 * such a grid by x0.9855, i.e. exactly down to the column, and §6.5's cut is at
+		 * 1.25, so we leave it alone.  P10 has auto cells and P11 the grid-sized twin,
+		 * which says whether the refit depends on the cells declaring widths.
+		 *
+		 * The text column is 9026 twips (A4 less two 1-inch margins). Each cell holds
+		 * prose, so the width Word gave the column can be read off where the lines wrap as
+		 * well as off the borders. One table a page.
+		 */
+		PROBES.add(new Probe("table-grid-pct",
+				"w:tblW of type pct at 100, 120 and 80 per cent against a w:tblGrid which "
+				+ "does not sum to it (2.2 per cent over, 33 per cent over, 33 per cent "
+				+ "under), autofit and w:tblLayout fixed, with and without w:tblInd; and a "
+				+ "content-autofit grid 1.47 per cent wider than the text column, with auto "
+				+ "and with dxa cells", () -> {
+			Doc d = Doc.create(15);
+			d.para("The text column of this page is 9026 twips. Each table below declares a "
+					+ "w:tblW in pct (fiftieths of a per cent) and a w:tblGrid which may or "
+					+ "may not sum to the width that pct asks for; the prose in the cells "
+					+ "shows where the columns actually ended up. " + prose(1)).after(240).add();
+
+			// pct, gridA, gridB, fixed?, tblInd (-1 = none)
+			int[][] cases = {
+				{ 5000, 4513, 4513, 0, -1 },   // the grid sums to the pct width exactly
+				{ 5000, 4614, 4614, 0, -1 },   // 2.2% over, 2422's shape
+				{ 5000, 6000, 6000, 0, -1 },   // 33% over
+				{ 5000, 3000, 3000, 0, -1 },   // 33% under
+				{ 6000, 4513, 4513, 0, -1 },   // 120%: wider than the text column
+				{ 4000, 4513, 4513, 0, -1 },   // 80%
+				{ 5000, 4614, 4614, 1, -1 },   // 2.2% over, fixed layout
+				{ 5000, 3000, 3000, 1, -1 },   // 33% under, fixed layout
+				{ 5000, 4513, 4513, 0, 720 },  // is the pct of the column, or of the rest?
+				{ 5000, 4513, 4513, 1, 720 },
+			};
+			for (int i = 0; i < cases.length; i++) {
+				int[] c = cases[i];
+				if (i > 0) d.pageBreak();
+				d.para("Table P" + (i + 1) + ": w:tblW " + c[0] + " pct (" + (c[0] / 50.0)
+						+ " per cent of 9026 = " + Math.round(9026.0 * c[0] / 5000.0)
+						+ " twips), w:tblGrid " + c[1] + "+" + c[2] + " = " + (c[1] + c[2])
+						+ ", " + (c[3] == 1 ? "w:tblLayout fixed" : "autofit")
+						+ (c[4] < 0 ? ", no w:tblInd" : ", w:tblInd " + c[4]) + ". "
+						+ prose(1, i)).after(240).add();
+				Doc.Table t = new Doc.Table(c[1], c[2]);
+				t.tableWidth(c[0], "pct");
+				if (c[3] == 1) t.fixedLayout();
+				if (c[4] >= 0) t.indent(c[4]);
+				t.row(SERIF, 24, true,
+						"P" + (i + 1) + " left. " + prose(1, i + 1),
+						"P" + (i + 1) + " right. " + prose(1, i + 2));
+				d.add(t.build());
+				d.para("after P" + (i + 1) + ". " + prose(1, i + 3)).before(240).add();
+			}
+
+			// P11, P12: J28 - a content-autofit grid 1.47% wider than the text column
+			for (int auto = 1; auto >= 0; auto--) {
+				int p = auto == 1 ? 11 : 12;
+				d.pageBreak();
+				d.para("Table P" + p + ": w:tblW auto with a w:tblGrid of 4580+4579 = 9159, "
+						+ "which is 1.47 per cent wider than the 9026-twip text column, and "
+						+ "every w:tcW " + (auto == 1 ? "auto" : "in dxa")
+						+ ". The ledger measured Word refitting such a grid by 0.9855, "
+						+ "which is exactly down to the column. " + prose(1, auto)).after(240).add();
+				Doc.Table t = new Doc.Table(4580, 4579).autoWidth();
+				t.row(SERIF, 24, auto == 1,
+						"P" + p + " left. " + prose(1, auto + 1),
+						"P" + p + " right. " + prose(1, auto + 2));
+				d.add(t.build());
+				d.para("after P" + p + ". " + prose(1, auto + 3)).before(240).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * The open question af866704e left, which §3.3's s33cell states as the narrower
+		 * reading rather than as a measurement: a single w:br w:type="page" at the head of
+		 * a cell's first paragraph opens the table on a new page (measured on a corpus
+		 * document, twice), but page-empty's two consecutive breaks in the same position
+		 * were ignored.  H10 says the opposite of the first half outright - "Word never
+		 * paginates on a hard break inside a table cell" - on a corpus document, whose
+		 * page 1 carries both the introducing paragraph and the table, and
+		 * a corpus document; two corpus-3 documents point the other way.  17 documents
+		 * of the three corpora hold the shape.
+		 *
+		 * So the position and the count are varied one at a time, each case a table of its
+		 * own on a page of its own with prose before it.  Where Word honours a break the
+		 * case's table lands one page later than ours does, so the page counts themselves
+		 * are part of the measurement.
+		 */
+		PROBES.add(new Probe("page-break-in-cell",
+				"a page break at the head of a cell's first paragraph, two of them, one in a "
+				+ "later paragraph of the cell, one in a cell which is not the first, one in "
+				+ "the second row, and w:pageBreakBefore on the cell's first paragraph", () -> {
+			Doc d = Doc.create(15);
+			d.para("Each case below is a two-column table on a page of its own, introduced "
+					+ "by a paragraph like this one. Where Word gives the break inside the "
+					+ "cell effect, the table opens on the page after its introduction; "
+					+ "where Word ignores it, the two share a page. " + prose(1)).after(240).add();
+
+			// B1: one page break at the head of the first cell's first paragraph
+			d.para("B1: a single w:br w:type=page at the head of the first paragraph of the "
+					+ "first cell. " + prose(1, 1)).after(240).add();
+			Doc.Table b1 = new Doc.Table(4500, 4500);
+			b1.rowOf(null, null,
+					b1.cellOf(4500, null, d.para().noLabel().pageBreakRun().text("B1 cell one").build()),
+					b1.cellOf(4500, null, Doc.plainParagraph("B1 cell two", SERIF, 24)));
+			b1.rowOf(null, null,
+					b1.cellOf(4500, null, Doc.plainParagraph("B1 row two, cell one", SERIF, 24)),
+					b1.cellOf(4500, null, Doc.plainParagraph("B1 row two, cell two", SERIF, 24)));
+			d.add(b1.build());
+			d.para("after B1. " + prose(1, 2)).before(240).add();
+
+			// B2: two consecutive page breaks in the same position (page-empty's S2b)
+			d.pageBreak();
+			d.para("B2: two consecutive w:br w:type=page at the head of the first paragraph "
+					+ "of the first cell. " + prose(1, 3)).after(240).add();
+			Doc.Table b2 = new Doc.Table(4500, 4500);
+			b2.rowOf(null, null,
+					b2.cellOf(4500, null, d.para().noLabel().pageBreakRun().pageBreakRun()
+							.text("B2 cell one").build()),
+					b2.cellOf(4500, null, Doc.plainParagraph("B2 cell two", SERIF, 24)));
+			b2.rowOf(null, null,
+					b2.cellOf(4500, null, Doc.plainParagraph("B2 row two, cell one", SERIF, 24)),
+					b2.cellOf(4500, null, Doc.plainParagraph("B2 row two, cell two", SERIF, 24)));
+			d.add(b2.build());
+			d.para("after B2. " + prose(1, 4)).before(240).add();
+
+			// B3: one break in the cell's SECOND paragraph
+			d.pageBreak();
+			d.para("B3: one w:br w:type=page at the head of the SECOND paragraph of the "
+					+ "first cell. " + prose(1, 5)).after(240).add();
+			Doc.Table b3 = new Doc.Table(4500, 4500);
+			b3.rowOf(null, null,
+					b3.cellOf(4500, null,
+							Doc.plainParagraph("B3 cell one, first paragraph", SERIF, 24),
+							d.para().noLabel().pageBreakRun()
+									.text("B3 cell one, second paragraph").build()),
+					b3.cellOf(4500, null, Doc.plainParagraph("B3 cell two", SERIF, 24)));
+			d.add(b3.build());
+			d.para("after B3. " + prose(1, 6)).before(240).add();
+
+			// B4: one break at the head of the SECOND cell of the first row
+			d.pageBreak();
+			d.para("B4: one w:br w:type=page at the head of the first paragraph of the "
+					+ "SECOND cell of the first row. " + prose(1, 7)).after(240).add();
+			Doc.Table b4 = new Doc.Table(4500, 4500);
+			b4.rowOf(null, null,
+					b4.cellOf(4500, null, Doc.plainParagraph("B4 cell one", SERIF, 24)),
+					b4.cellOf(4500, null, d.para().noLabel().pageBreakRun().text("B4 cell two").build()));
+			d.add(b4.build());
+			d.para("after B4. " + prose(1)).before(240).add();
+
+			// B5: one break at the head of the first cell of the SECOND row
+			d.pageBreak();
+			d.para("B5: one w:br w:type=page at the head of the first paragraph of the "
+					+ "first cell of the SECOND row, so the table has already begun. "
+					+ prose(1, 1)).after(240).add();
+			Doc.Table b5 = new Doc.Table(4500, 4500);
+			b5.rowOf(null, null,
+					b5.cellOf(4500, null, Doc.plainParagraph("B5 row one, cell one", SERIF, 24)),
+					b5.cellOf(4500, null, Doc.plainParagraph("B5 row one, cell two", SERIF, 24)));
+			b5.rowOf(null, null,
+					b5.cellOf(4500, null, d.para().noLabel().pageBreakRun()
+							.text("B5 row two, cell one").build()),
+					b5.cellOf(4500, null, Doc.plainParagraph("B5 row two, cell two", SERIF, 24)));
+			d.add(b5.build());
+			d.para("after B5. " + prose(1, 2)).before(240).add();
+
+			// B6: w:pageBreakBefore on the first cell's first paragraph
+			d.pageBreak();
+			d.para("B6: w:pageBreakBefore on the first paragraph of the first cell, rather "
+					+ "than a break run. " + prose(1, 3)).after(240).add();
+			Doc.Table b6 = new Doc.Table(4500, 4500);
+			b6.rowOf(null, null,
+					b6.cellOf(4500, null, d.para().noLabel().pageBreakBefore()
+							.text("B6 cell one").build()),
+					b6.cellOf(4500, null, Doc.plainParagraph("B6 cell two", SERIF, 24)));
+			b6.rowOf(null, null,
+					b6.cellOf(4500, null, Doc.plainParagraph("B6 row two, cell one", SERIF, 24)),
+					b6.cellOf(4500, null, Doc.plainParagraph("B6 row two, cell two", SERIF, 24)));
+			d.add(b6.build());
+			d.para("after B6. " + prose(1, 4)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * J14: what a section's w:vAlign counts as the block it aligns.  §7's s75 makes
+		 * w:vAlign a display-align on fo:region-body, and a corpus document's
+		 * centred title section is then a uniform +5.9pt low over every line, with an
+		 * identical block height (316.6 against 316.9): its last block is
+		 * space-after="10pt" and FOP counts that 10pt inside the aligned content where
+		 * Word appears not to.  Whether Word counts it has never been measured.
+		 *
+		 * Each alignment gets three sections: one whose last block is a paragraph with
+		 * 24pt space-after, a control whose last paragraph has none - so the 24pt can be
+		 * read as a difference rather than against an absolute - and one whose last block
+		 * is a table.  The first two carry the w:sectPr on the spaced paragraph itself,
+		 * which is where Word puts it and which keeps that paragraph the section's last
+		 * block; a table cannot carry a w:sectPr, so the table sections end in the empty
+		 * paragraph Word requires after a table, which has no spacing of its own.
+		 *
+		 * Every section is short, so the alignment has somewhere to move the content to.
+		 */
+		PROBES.add(new Probe("section-valign-bottom",
+				"w:vAlign bottom, center, both and top on short sections whose last "
+				+ "paragraph has 24pt space-after, on controls whose last paragraph has "
+				+ "none, and on sections whose last block is a table; plus a bottom-aligned "
+				+ "section whose first paragraph has 24pt space-before", () -> {
+			Doc d = Doc.create(15);
+			String[] aligns = { "bottom", "center", "both", "top" };
+			int s = 0;
+			for (String a : aligns) {
+				// (i) the last block is a paragraph with 24pt space-after, and it carries
+				//     the w:sectPr itself
+				s++;
+				d.verticalAlignment(a);
+				d.para("V" + s + ": this section is w:vAlign " + a + " and its last block is "
+						+ "a paragraph whose w:spacing w:after is 24pt. "
+						+ prose(2, s)).after(240).add();
+				P last = d.para("V" + s + " last paragraph, w:after 24pt. " + prose(1, s))
+						.after(480).add();
+				d.endSectionOn(last, "nextPage");
+
+				// (ii) the control: the same section with no space-after at all
+				s++;
+				d.verticalAlignment(a);
+				d.para("V" + s + ": the control for V" + (s - 1) + " - w:vAlign " + a
+						+ ", and its last paragraph has no space-after at all. "
+						+ prose(2, s)).after(240).add();
+				P lastCtl = d.para("V" + s + " last paragraph, w:after 0. " + prose(1, s))
+						.after(0).add();
+				d.endSectionOn(lastCtl, "nextPage");
+
+				// (iii) the last block is a table, followed by the empty paragraph Word
+				//       requires after one; that paragraph carries the w:sectPr
+				s++;
+				d.verticalAlignment(a);
+				d.para("V" + s + ": w:vAlign " + a + " again, and this section's last block "
+						+ "is a table rather than a paragraph. The empty paragraph Word "
+						+ "requires after a table follows it, and carries the w:sectPr. "
+						+ prose(2, s)).after(240).add();
+				Doc.Table t = new Doc.Table(4500, 4500);
+				t.row(SERIF, 24, false, "V" + s + " row one, left", "V" + s + " row one, right");
+				t.row(SERIF, 24, false, "V" + s + " row two, left", "V" + s + " row two, right");
+				d.add(t.build());
+				d.endSection("nextPage", 0);
+			}
+			// (iv) the other end of the same question: does a bottom-aligned section count
+			//      its FIRST block's space-before?
+			s++;
+			d.verticalAlignment("bottom");
+			d.para("V" + s + ": w:vAlign bottom, and this section's FIRST paragraph carries "
+					+ "24pt space-before rather than its last carrying space-after. "
+					+ prose(2, s)).before(480).after(240).add();
+			P lastBefore = d.para("V" + s + " last paragraph, no spacing. " + prose(1, s))
+					.after(0).add();
+			d.endSectionOn(lastBefore, "nextPage");
+
+			// the document's last section, where the w:vAlign is on the body sectPr rather
+			// than on a break paragraph
+			s++;
+			d.verticalAlignment("bottom");
+			d.para("V" + s + ": the document's last section, w:vAlign bottom, so the "
+					+ "w:vAlign is on the body sectPr. " + prose(2, s)).after(240).add();
+			d.para("V" + s + " last paragraph, w:after 24pt. " + prose(1, s)).after(480).add();
+			return d.pkg();
+		}));
 	}
 
 
@@ -1627,6 +2205,56 @@ public final class Corpus {
 			d.para("after. " + prose(1, 3)).before(240).add();
 			return d.pkg();
 		});
+	}
+
+	/** A w:numPr naming {@code numId} and no w:ilvl at all - the shape Word writes on a
+	 *  paragraph style linked to a list. */
+	private static PPrBase.NumPr numPr(int numId) {
+		PPrBase.NumPr np = Doc.F.createPPrBaseNumPr();
+		PPrBase.NumPr.NumId id = Doc.F.createPPrBaseNumPrNumId();
+		id.setVal(BigInteger.valueOf(numId));
+		np.setNumId(id);
+		return np;
+	}
+
+	/**
+	 * One table of {@code table-cell-measure}.  Three rows hold the same measured line in
+	 * a column exactly wide enough for it (its advance rounded up to a whole twip, plus
+	 * two twips of slack, plus the two 108-twip cell margins) and differ only in how much
+	 * of the cell's own <b>end</b> margin they give back: nothing, half the border, the
+	 * whole border.  The start margin never moves, so all three lines begin at the same x
+	 * and only the measure changes, and the row which wraps says what Word charged.
+	 *
+	 * <p>A content-autofit table cannot wrap, so it gets one row and is read off its
+	 * border positions instead.
+	 */
+	private static Tbl measureTable(String tag, String sentence, int eighthsOfPoint,
+			int cellSpacingTwips, boolean autofit, boolean noBorders) {
+		int borderTwips = eighthsOfPoint * 5 / 2;   // eighths of a point -> twips
+		int advance = Doc.advanceTwipsCeil(tag + "R1 " + sentence, SERIF, 24);
+		int col = advance + 2 + 216;
+		Doc.Table t = new Doc.Table(col);
+		if (autofit) {
+			t.autoWidth();
+		} else {
+			t.fixedLayout();
+		}
+		t.cellMargins(108, 0);
+		if (noBorders) {
+			t.noBorders();
+		} else {
+			t.borders(eighthsOfPoint);
+		}
+		if (cellSpacingTwips > 0) t.cellSpacing(cellSpacingTwips);
+		int rows = autofit ? 1 : 3;
+		for (int r = 1; r <= rows; r++) {
+			int give = r == 1 ? 0 : (r == 2 ? borderTwips / 2 : borderTwips);
+			org.docx4j.wml.Tc tc = t.cellOf(autofit ? null : col, null,
+					Doc.plainParagraph(tag + "R" + r + " " + sentence, SERIF, 24));
+			Doc.Table.tcMargins(tc, 108, 108 - give);
+			t.rowOf(null, null, tc);
+		}
+		return t.build();
 	}
 
 	public static List<Probe> all() {
