@@ -90,7 +90,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model, new java.util.Date(), documentLanguage(context));
 		}
 	}
 	
@@ -100,7 +100,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model, new java.util.Date(), documentLanguage(context));
 		}
 	}
 	
@@ -111,7 +111,30 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model, new java.util.Date(), documentLanguage(context));
+		}
+	}
+
+	/**
+	 * The document's own language ({@code w:docDefaults/w:rPrDefault/w:rPr/w:lang}), in
+	 * which Word writes the month and day names a date field prints; null where the
+	 * document does not state one, which leaves the platform default as before.
+	 *
+	 * <p>Measured against Word 365 on two Turkish documents: Word's {@code DATE} reads
+	 * "6 Eyl&uuml;l 2026" (270.1..325.1) where docx4j's read "7 September 2026"
+	 * (256.5..338.8).</p>
+	 *
+	 * @since 17.0.6
+	 */
+	protected static String documentLanguage(AbstractWmlConversionContext context) {
+		try {
+			org.docx4j.wml.CTLanguage lang = context.getWmlPackage().getMainDocumentPart()
+					.getStyleDefinitionsPart(false).getJaxbElement()
+					.getDocDefaults().getRPrDefault().getRPr().getLang();
+			String val = lang == null ? null : lang.getVal();
+			return (val == null || val.trim().length() == 0) ? null : val.trim();
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
@@ -121,7 +144,23 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			
+
+			/* Word does not re-evaluate a DOCPROPERTY when it opens or prints a document:
+			 * it paints the result the field cached, and only F9 (or an explicit update)
+			 * changes it.  Where the two have diverged, the cached result is therefore
+			 * what a reader of Word's own PDF sees.  Measured on a document whose
+			 * docProps/custom.xml says invoice_nr=1018 and mwst-nr=CHE-258.324.254 while
+			 * document.xml caches 10518 and CHE-XXX.xxx.xxx.xxx: Word prints the cached
+			 * text on all three of the lines involved, and printing the evaluated one was
+			 * that document's whole parity loss.
+			 * Set docx4j.convert.out.fields.docPropertyCachedResult to false to evaluate
+			 * the property instead.  @since 17.0.6 */
+			if (org.docx4j.Docx4jProperties.getProperty(
+					"docx4j.convert.out.fields.docPropertyCachedResult", true)) {
+				String cached = cachedResultText(model);
+				if (cached.trim().length() > 0) return cached;
+			}
+
 			// First, get the value
 			DocPropertyResolver dpr = new DocPropertyResolver(context.getWmlPackage());
 			String key = model.getFldArgument();

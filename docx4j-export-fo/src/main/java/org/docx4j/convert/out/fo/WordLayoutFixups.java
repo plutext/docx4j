@@ -147,6 +147,8 @@ public final class WordLayoutFixups {
 		reserveUnpaintablePictures(doc);
 		columnBreaks(doc); // before emptyLineForBlockWithNoContent: what follows the break takes a line
 		emptyLineForBlockWithNoContent(doc);
+		emptyLineAfterLineBreak(doc);
+		tocLeaderEndIndent(doc);
 		leadingWhitespaceLeader(doc);
 		containWhitespaceTreatment(doc);
 		dropParagraphAfterNestedTable(doc);
@@ -401,6 +403,11 @@ public final class WordLayoutFixups {
 	public static final String HINT_TAB_IND = "docx4j-tab-ind";
 
 	private static final String[] TAB_HINTS = { HINT_TABS, HINT_TAB_DEFAULT, HINT_TAB_IND };
+
+	/** on a table-of-contents entry's block (XsltFOFunctions.applyTocStopHint): the
+	 *  entry's own right dot stop in twips from the left margin, which is where its
+	 *  stretching leader ends.  @since 17.0.6 */
+	public static final String HINT_TOC_STOP = "docx4j-toc-stop";
 
 	/** on the block a {@code w:br w:type="column"} makes (BrWriter): where the section
 	 *  has columns to go to, it is a column break and not a line break.  @since 17.0.6 */
@@ -1318,6 +1325,18 @@ public final class WordLayoutFixups {
 		holder.appendChild(g); // moves it out of its run
 
 		if (pageY) kind = "none"; // FOP cannot wrap text around a page-positioned object
+		/* A picture Word draws *behind* the text (wp:anchor/@behindDoc="1") displaces
+		 * nothing: its wrap element is not applied, the text runs over it, and it
+		 * reserves no space.  Measured on a document whose 155.25pt logo carries
+		 * wrapSquare and behindDoc="1": Word puts the caption beside it at x=85.0,
+		 * where the float put ours at 249.3 - +164.3 = the picture's 155.25 plus its
+		 * 9.0pt distL/distR - and moved a whole block from above the table to below it,
+		 * everything after it +92.6pt.  In the body only: a header or footer region takes
+		 * its height from what is in it, and a picture drawn behind that region's text is
+		 * still what gives it that height - measured, letting a behindDoc anchor in a
+		 * footer reserve nothing took a document's region-body margin-bottom from 73.7 to
+		 * 50.2pt and cost it a page of 27.  @since 17.0.6 */
+		if ("1".equals(g.getAttribute("docx4j-anchor-behind")) && floatsAllowed(para)) kind = "none";
 		if ("square".equals(kind) && !FOConversionContext.useFloats()) {
 			kind = "topAndBottom"; // the property asks for the picture to be in the flow
 		} else if ("square".equals(kind) && oneColumn > 0) {
@@ -2340,6 +2359,73 @@ public final class WordLayoutFixups {
 		return col > 0 ? col : 0;
 	}
 
+	/**
+	 * A table-of-contents entry's stretching leader ends on the entry's own right dot
+	 * stop, not on the paragraph's right indent.
+	 *
+	 * <p>{@code text-align-last="justify"} stretches the leader to the block's
+	 * end-indent.  Word stretches it to the stop the tab reaches, and where that stop
+	 * lies outside the text column Word lets the entry overhang the margin.  Measured on
+	 * an A4 document with 72pt margins - a right edge at x=523.35 - whose TOC1 style
+	 * declares a right dot stop at 9350 twips (x=539.5): all 308 of Word's entry lines
+	 * end at 539.6 where ours ended at 523.3, and being 16.2pt short of Word's measure
+	 * six entries took two lines where Word takes one.  9 documents of three corpora
+	 * declare a TOC stop more than 2pt from their text column; in the rest the stop is
+	 * the right edge and nothing changes.</p>
+	 *
+	 * <p>Only in the flow: inside a table cell the block's reference area is the cell,
+	 * which the stop - measured from the page's left margin - says nothing about.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void tocLeaderEndIndent(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			String hint = block.getAttribute(HINT_TOC_STOP);
+			if (hint == null || hint.length() == 0) continue;
+			if (insideTableCell(block)) continue;
+			double stopPt;
+			try {
+				stopPt = Integer.parseInt(hint) / 20d;
+			} catch (NumberFormatException e) {
+				continue;
+			}
+			double measure = textColumnWidthPt(block);
+			if (measure <= 0) continue;
+			double want = measure - stopPt;
+			double have = lengthPt(block.getAttribute("end-indent"));
+			if (want > have - 2) continue;
+			/* Only ever *out*, never in.  A paragraph may declare several stops and this is
+			 * the first of them; where it is well inside the text column the entry's dots
+			 * still run to the right indent, because a later stop - or the right indent
+			 * itself - is what the entry's tab reaches.  Measured: pulling the end-indent
+			 * in fired on 72 blocks of one corpus document (end-indent="245.25pt" on a
+			 * 490pt measure) and cost it 0.025 of line parity, where letting the line
+			 * overhang costs nothing where the stop is inside. */
+			// the entry may overhang the margin, but not run off the page
+			double margin = pageMarginRightPt(block);
+			block.setAttribute("end-indent", pt(Math.max(want, -margin)));
+		}
+	}
+
+	/** The width of the section's text column, before any column division. */
+	private static double textColumnWidthPt(Element el) {
+		Element rb = regionBody(el);
+		if (rb == null) return 0;
+		Node spmNode = rb.getParentNode();
+		if (!(spmNode instanceof Element)) return 0;
+		Element spm = (Element) spmNode;
+		return lengthPt(spm.getAttribute("page-width"))
+				- lengthPt(spm.getAttribute("margin-left")) - lengthPt(spm.getAttribute("margin-right"))
+				- lengthPt(rb.getAttribute("margin-left")) - lengthPt(rb.getAttribute("margin-right"));
+	}
+
+	/** The page master's own right margin, which is how far a line may overhang. */
+	private static double pageMarginRightPt(Element el) {
+		Element rb = regionBody(el);
+		if (rb == null || !(rb.getParentNode() instanceof Element)) return 0;
+		return lengthPt(((Element) rb.getParentNode()).getAttribute("margin-right"));
+	}
+
 	/** The fo:region-body of the page master this element's page-sequence names.
 	 *
 	 *  <p>Walked from the fo:layout-master-set's own children rather than looked up with
@@ -2510,6 +2596,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
 			block.removeAttribute(HINT_COLUMN_BREAK);
+			block.removeAttribute(HINT_TOC_STOP);
 			block.removeAttribute(HINT_FRAME);
 			for (String hint : TAB_HINTS) block.removeAttribute(hint);
 			block.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
@@ -2833,6 +2920,111 @@ public final class WordLayoutFixups {
 			block.setAttribute("white-space-treatment", "preserve");
 			block.appendChild(doc.createTextNode(" "));
 		}
+	}
+
+	/**
+	 * Word gives a {@code w:br} its line even where nothing follows it on that line.
+	 *
+	 * <p>The twin of {@link #emptyLineForBlockWithNoContent}, one level down: that rule
+	 * is about a whole paragraph whose runs painted nothing, this one about a
+	 * <em>line</em> inside a paragraph.  {@code BrWriter} writes a line break as a nested
+	 * {@code fo:block line-height="0pt" linefeed-treatment="preserve"}, so where what
+	 * follows the break is empty - an empty run, a field with no result, or simply
+	 * another break - nothing sizes the new line, the 0pt line-height stands, and the
+	 * line vanishes.  Measured on a paragraph reading
+	 * {@code 555 test <br/> asfdsdfsdf <fld/> <br/> <fld/> <br/> <fld/> <br/> <fld/>}
+	 * whose fields have no result: Word runs from y=200.7 to 293.9, six line boxes,
+	 * where ours ran 200.5 to 247.3 - three lines, 46.5pt, lost.  748 such breaks in 50
+	 * documents of three corpora.</p>
+	 *
+	 * <p>Such a break's own block gives up its 0pt line-height, so it measures the
+	 * paragraph's line box like any other line.  Adding content to the new line instead -
+	 * the preserved space the empty-<em>paragraph</em> case gets - does not work in both
+	 * pathways: where the break's block is a direct child of the paragraph's, which is
+	 * the XSLT pathway's shape, the space is an anonymous block of its own and the
+	 * default white-space treatment (ignore-if-surrounding-linefeed) drops it against the
+	 * linefeed the break itself is.</p>
+	 *
+	 * <p>A break immediately followed by <em>another</em> break is already right and is
+	 * left alone: the postprocessor takes the 0pt line-height off the second of a
+	 * contiguous pair, so the pair measures the two lines Word draws.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void emptyLineAfterLineBreak(Document doc) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.emptyLineAfterBreak", true)) return;
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			List<Element> breaks = new ArrayList<>();
+			if (!lineBreaksWithNothingAfter(block, breaks, new boolean[2])) continue;
+			for (Element br : breaks) {
+				br.removeAttribute("line-height");
+			}
+		}
+	}
+
+	/**
+	 * Collects, in reverse document order, the line breaks of this block whose new line
+	 * has nothing on it and which FOP would therefore give no line.
+	 *
+	 * <p>A break immediately followed by another break is already right: the postprocessor
+	 * takes the 0pt line-height off the second of a contiguous pair, so the pair measures
+	 * two lines as Word draws them.  It is a break whose new line holds something that
+	 * paints <em>nothing</em> - an empty run, a field with no result - which is lost.</p>
+	 *
+	 * @param state [0] content painting on the current line has been seen;
+	 *              [1] the break below this one already takes a line of its own
+	 * @return true where any such break was found
+	 */
+	private static boolean lineBreaksWithNothingAfter(Element el, List<Element> breaks, boolean[] state) {
+		boolean found = false;
+		NodeList children = el.getChildNodes();
+		for (int i = children.getLength() - 1; i >= 0; i--) {
+			Node n = children.item(i);
+			if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
+				if (n.getNodeValue() != null && n.getNodeValue().length() > 0) {
+					state[0] = true;
+					state[1] = false;
+				}
+				continue;
+			}
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			if (isFo(child, "block-container") || isFo(child, "float")) continue; // out of the flow
+			if (isLineBreak(child)) {
+				boolean zeroHeight = "0pt".equals(child.getAttribute("line-height"));
+				if (!state[0] && !state[1] && zeroHeight) {
+					breaks.add(child);
+					found = true;
+				}
+				state[0] = false;      // a new line starts above this break
+				state[1] = !zeroHeight || breaks.contains(child);
+				continue;
+			}
+			if (isFo(child, "inline") || isFo(child, "basic-link") || isFo(child, "wrapper")
+					|| isFo(child, "bidi-override")) {
+				found |= lineBreaksWithNothingAfter(child, breaks, state);
+				continue;
+			}
+			if (isFo(child, "block")) {
+				// a nested block of any other kind is a break in its own right; whatever
+				// it holds is not this line's
+				state[0] = true;
+				state[1] = false;
+				continue;
+			}
+			state[0] = true; // external-graphic, leader, page-number, character, ...
+			state[1] = false;
+		}
+		return found;
+	}
+
+	/** The nested block BrWriter writes for a {@code w:br} which is not a page break. */
+	private static boolean isLineBreak(Element el) {
+		return isFo(el, "block")
+				&& "preserve".equals(el.getAttribute("linefeed-treatment"))
+				&& !el.hasAttribute("break-before");
 	}
 
 	/**
@@ -3759,6 +3951,10 @@ public final class WordLayoutFixups {
 			if (blocks.isEmpty()) continue;
 						Element first = blocks.get(0);
 			if (first.getAttribute(HINT_AUTOSPACING).indexOf('b') >= 0) {
+				/* ... except at the start of a *cell*, where Word's automatic spacing is
+				 * zero for the first paragraph but the cell's reference area then eats
+				 * the space Word does apply, so the retained conditionality below is what
+				 * carries a stated w:before through. */
 				first.setAttribute("space-before", "0pt"); // auto spacing is dropped at cell edges (measured)
 			} else if (hasSpace(first, "space-before")) {
 				first.setAttribute("space-before.conditionality", "retain");

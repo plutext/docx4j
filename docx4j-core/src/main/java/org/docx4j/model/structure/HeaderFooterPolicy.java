@@ -242,6 +242,20 @@ public class HeaderFooterPolicy {
 	}
 
 	/**
+	 * Whether the document has no such header or footer at all: no part, or the empty
+	 * one docx4j invents for <code>w:titlePg</code> / <code>w:evenAndOddHeaders</code>.
+	 * A real part which happens to paint nothing is <em>not</em> absent
+	 * ({@link #reservesNothing} covers that), and Word treats the two differently at the
+	 * foot of the page: with no footer part the body runs to the bottom margin, while an
+	 * empty footer part still stops it at <code>w:footer</code>.
+	 *
+	 * @since 17.0.6
+	 */
+	public static boolean isAbsent(org.docx4j.openpackaging.parts.Part part) {
+		return part == null || isDummy(part);
+	}
+
+	/**
 	 * Whether this header or footer reserves no space on the page: either it is the
 	 * dummy part docx4j invents ({@link #isDummy}), or it is a real part with nothing
 	 * in it - at most one paragraph, painting nothing.

@@ -497,9 +497,10 @@ public class PageDimensions {
 	}
 
 	/**
-	 * Where {@code w:cols} declares exactly one {@code w:col} narrower than the margin
-	 * box, Word uses that column's width for the text: the twips by which the text
-	 * column is narrower than the margin box, else 0.
+	 * Where {@code w:cols} declares exactly one {@code w:col}, Word uses that column's
+	 * width for the text whether it is narrower or <em>wider</em> than the margin box:
+	 * the twips by which the text column is narrower than the margin box, negative
+	 * where it is wider, and 0 where there is no such column.
 	 *
 	 * <p>Word's own rounding of an equal single column is common, so a difference of
 	 * less than 1% of the margin box is ignored, as {@link #hasUnequalCols()} ignores
@@ -508,7 +509,7 @@ public class PageDimensions {
 	 * @since 17.0.6
 	 */
 	public int getSingleColumnNarrowing() {
-		if (singleColumnNarrowing <= 0) return 0;
+		if (singleColumnNarrowing == 0) return 0;
 		// the margins may since have been rewritten for a merged run of continuous
 		// sections (CR-001 section 7); the column width was stated against the section's own, so
 		// apply it only where the two still agree
@@ -531,8 +532,8 @@ public class PageDimensions {
 		if (col.getW() == null) return 0;
 		int width = singleColumnWritableWidth;
 		int declared = col.getW().intValue();
-		if (declared <= 0 || declared >= width) return 0;
-		if (width - declared < width / 100) return 0; // Word's rounding of the full width
+		if (declared <= 0) return 0;
+		if (Math.abs(width - declared) < width / 100) return 0; // Word's rounding of the full width
 		return width - declared;
 	}
 

@@ -963,9 +963,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
             // so a line running on to a stop past the available width would otherwise be
             // shifted further still (see alignDifference)
             int alignDifference = difference;
-            if (lineHasTab(par, bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0,
-                    bestActiveNode.position)) {
-                textAlign = alignmentForTabLine(textAlign);
+            int tabLineFrom = bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0;
+            if (lineHasTab(par, tabLineFrom, bestActiveNode.position)) {
+                textAlign = alignmentForTabLine(textAlign, par, tabLineFrom, bestActiveNode.position);
                 alignDifference = alignDifference(bestActiveNode, difference);
             }
 
@@ -1761,13 +1761,63 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * absolute (measured on a w:jc="right" footer whose tabs Word placed from the left
      * margin; see tabWidth) - and Word then aligns the whole line, the tabs' widths
      * counted in, by the paragraph's <code>w:jc</code> (measured on the
-     * <code>tab-jc</code> probe; §4.4).  A justified line is the exception: the tab
-     * absorbs the slack, so the line is laid out from the start rather than stretched.
+     * <code>tab-jc</code> probe; §4.4).
+     *
+     * <p>A justified line is the exception, and 17.0.6 first made every such line
+     * start-aligned.  Measured, Word draws the distinction at what follows the
+     * <em>last</em> tab: where a tab is the last thing on the line, or the words after it
+     * do not reach the end, the tab absorbs the slack and the line is laid out from the
+     * start (the <code>tab-jc</code> probe, whose trailing tab Word leaves at x=72); but
+     * where text follows the tab, Word justifies that text to the right indent as it
+     * would on any other line.  Measured on a numbered clause reading
+     * <code>1.1.&lt;tab&gt;Настоящий договор ...</code> in a w:jc="both" paragraph: the
+     * words and the tab position are ours exactly (both start the text at the same x),
+     * and Word stretches the spaces to x1=560.1 where the start-aligned line stopped at
+     * 530.8 - 29.3pt of stretch lost, on every such line of the document.  784 blocks in
+     * 83 documents of three corpora carry both a tab and w:jc="both".</p>
+     *
+     * <p>The stretch is FOP's, applied to every stretchable area of the line, so it may
+     * be kept only where nothing stretchable sits <em>before</em> the last tab - which is
+     * the ordinary shape, a label or a number and then the tab.  Otherwise the tab's
+     * settled width would no longer put the text on its stop, and the line goes back to
+     * being laid out from the start.</p>
      *
      * @since 17.0.6
      */
-    private static int alignmentForTabLine(int textAlign) {
-        return textAlign == Constants.EN_JUSTIFY ? Constants.EN_START : textAlign;
+    private int alignmentForTabLine(int textAlign, KnuthSequence par, int from, int to) {
+        if (textAlign != Constants.EN_JUSTIFY) return textAlign;
+        return justifiableTabLine(par, from, to) ? Constants.EN_JUSTIFY : Constants.EN_START;
+    }
+
+    /** Whether a justified line holding a tab is one Word stretches: text after the last
+     *  tab, and nothing stretchable before it. */
+    private boolean justifiableTabLine(KnuthSequence par, int from, int to) {
+        int lastTab = -1;
+        int start = Math.max(0, from);
+        int end = Math.min(to, par.size() - 1);
+        for (int i = start; i <= end; i++) {
+            Object e = par.get(i);
+            if (e instanceof KnuthGlue && tabLeader((KnuthGlue) e) != null) lastTab = i;
+        }
+        if (lastTab < 0) return false;
+        boolean textAfter = false;
+        for (int i = lastTab + 1; i <= end; i++) {
+            Object e = par.get(i);
+            if (e instanceof KnuthElement && ((KnuthElement) e).isBox()
+                    && ((KnuthElement) e).getWidth() > 0) {
+                textAfter = true;
+                break;
+            }
+        }
+        if (!textAfter) return false;
+        for (int i = start; i < lastTab; i++) {
+            Object e = par.get(i);
+            if (e instanceof KnuthGlue && tabLeader((KnuthGlue) e) == null
+                    && ((KnuthGlue) e).getStretch() > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** whether the line between these element indexes holds a tab */
@@ -3331,7 +3381,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
         int lineAlignment = lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast;
         if (lineHasTab(seq, startElementIndex, endElementIndex)) {
-            lineAlignment = alignmentForTabLine(lineAlignment);
+            lineAlignment = alignmentForTabLine(lineAlignment, seq, startElementIndex, endElementIndex);
         }
         LineArea lineArea = new LineArea(lineAlignment,
                 LBP.difference(lbp), LBP.availableStretch(lbp), LBP.availableShrink(lbp));

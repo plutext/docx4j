@@ -335,6 +335,28 @@ right margin, as Word does, instead of the same margins as an odd page
 - w:tblPr/w:jc="center" now centres a table narrower than the text column, not only one
 wider than it
 - a space in front of a PAGE or NUMPAGES field is no longer collapsed away by FOP
+- w:pgNumType/@w:fmt now reaches the page sequence: a PAGE field's \* switch which names no
+number format (a bare PAGE, or \* MERGEFORMAT) no longer masks the section's own format
+- an empty footer *part* still stops the body at w:pgMar/@w:footer, as Word does; only a
+document with no footer part at all reserves nothing.  A footer distance past a quarter of
+the page is ignored, as Word ignores it
+- a section declaring a single w:col *wider* than its margin box now uses that width, and
+overhangs the right margin as Word does (the other half of the narrow-column rule)
+- the content-autofit column sizer now reads a cell's own w:tcMar, not only the table's
+w:tblCellMar, so a line which sized its column still fits in it
+- a w:br whose new line holds nothing that paints - an empty run, a field with no result -
+now takes a line box, as Word gives it; docx4j.convert.out.fo.wordLayout.emptyLineAfterBreak
+turns this off
+- a justified line holding a tab is stretched again where text follows the last tab, which
+is what Word does; only a line whose tab absorbs the slack is laid out from the start
+- a table-of-contents entry's stretching leader now ends on the entry's own right dot stop
+where that lies outside the text column, overhanging the margin as Word does
+- wp:anchor/@behindDoc="1": a picture Word draws behind the text no longer displaces it
+- Cambria's Greek is now set in P052, measured at 1.0281 x Tinos-Bold against Word's 1.0834
+(Caladea, Cambria's metric twin in Latin, has no Greek at all)
+- a DATE, TIME or PRINTDATE field is now formatted in the document's own language
+(w:docDefaults/w:rPrDefault/w:rPr/w:lang), and an abbreviated month name loses the trailing
+period the format string supplies
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's
@@ -349,6 +371,12 @@ for the SVG generator), otherwise as a PNG put through that same handler.  Until
 <img src> named the .wmf/.emf, which no browser shows (CR-011 phase 2)
 
 Other:
+- fields: a DOCPROPERTY now keeps the result the document cached, which is what Word paints
+until the field is updated; docx4j.convert.out.fields.docPropertyCachedResult=false
+evaluates the property instead
+- loading: malformed nesting (a w:r or a w:p directly inside a w:r) now *splits* the outer
+run rather than flattening its content into it, so each nested run keeps its own w:rPr and
+the lone-space runs between words survive
 - loading: the zip-bomb guard's FileTooLargeException (total uncompressed size over
 docx4j.openpackaging.package.MAX_UNCOMPRESSED_SIZE.unzip.error) is no longer wrapped as "Error
 processing zip file (is it a zip file?)", which hid the cause: a real 668KB docx whose EMF images

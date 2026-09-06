@@ -434,6 +434,16 @@ public class FontFallback {
 	 * <p>Sylfaen's <em>Cyrillic</em> has no such answer here: Caladea measures closest to
 	 * it (1.0288 against Tinos's 1.041) but has no Cyrillic at all, so Tinos stands.</p>
 	 *
+	 * <p><b>Cambria's Greek</b> is the second entry, and a consequence of 17.0.6's rule
+	 * that a metric substitute stands in only for the characters it can draw: Caladea,
+	 * which is Cambria's metric twin in Latin, has no Greek at all, so Greek fell through
+	 * to the document default serif.  Measured on 27 lines of a Greek document whose
+	 * geometry is otherwise ours to 0.4pt, Word's Cambria-Bold is 1.0834 x Tinos-Bold;
+	 * of the installed Greek-covering serifs P052 (URW's Palladio) measures 1.0281 - 5.1%
+	 * short, against Tinos's 7.7% - and Noto Serif 1.1574 (+6.8%), C059 1.1706,
+	 * DejaVu Serif 1.3643.  P052 is therefore preferred for Cambria's Greek; where it is
+	 * not installed the order falls through to what it was.</p>
+	 *
 	 * @since 17.0.6
 	 */
 	private static List<String> measuredForScript(String documentFontName, int[] codePoints) {
@@ -441,13 +451,18 @@ public class FontFallback {
 		List<String> result = new ArrayList<String>();
 		if (documentFontName==null) return result;
 		String name = documentFontName.trim().toLowerCase();
-		boolean georgian = false;
+		boolean georgian = false, greek = false;
 		for (int cp : codePoints) {
-			if (scriptOf(cp)==Character.UnicodeScript.GEORGIAN) { georgian = true; break; }
+			Character.UnicodeScript script = scriptOf(cp);
+			if (script==Character.UnicodeScript.GEORGIAN) georgian = true;
+			else if (script==Character.UnicodeScript.GREEK) greek = true;
 		}
 		if (georgian && name.startsWith("sylfaen")) {
 			result.add("DejaVu Serif Condensed");
 			result.add("DejaVu Serif Condensed Book");
+		}
+		if (greek && name.startsWith("cambria")) {
+			result.add("P052");
 		}
 		return result;
 	}

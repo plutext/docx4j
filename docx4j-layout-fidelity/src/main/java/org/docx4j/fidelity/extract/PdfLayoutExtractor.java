@@ -14,6 +14,7 @@ import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
@@ -217,10 +218,21 @@ public final class PdfLayoutExtractor {
 			addLine(pageIndex, run);
 		}
 
-		/** A thin vertical stroke/fill box lying horizontally inside [x0,x1] and vertically spanning the baseline. */
+		/** A thin vertical stroke/fill box lying horizontally inside [x0,x1] and vertically spanning the baseline.
+		 *
+		 * <p>A rule the reader cannot see is not a rule.  Word paints its cell borders as
+		 * filled rectangles, so they arrive here with a real width; FOP paints them as
+		 * <em>strokes</em>, whose bounding box is zero-wide for a vertical line, so the
+		 * width alone cannot tell a genuine border from a border that paints nothing.
+		 * What tells them apart is the colour: a document collapsing its cell boundaries
+		 * had FOP stroke 52 of them per page in {@code 6pt white} on white paper - Word's
+		 * PDF of the same page draws nothing there at all - and every such boundary split
+		 * an extracted table row into one line per cell, doubling that document's
+		 * candidate line count against an unchanged golden.  Its visible neighbours, and
+		 * the 364 grey 1pt strokes of another document's table, are unaffected. */
 		private boolean verticalRuleBetween(int pageIndex, float x0, float x1, float baseline, float em) {
 			for (PdfLayout.Box b : out.boxes) {
-				if (b.page != pageIndex || b.w > 3 || b.h < 0.5 * em) continue;
+				if (b.page != pageIndex || b.w > 3 || b.h < 0.5 * em || b.invisible) continue;
 				double cx = b.x + b.w / 2;
 				if (cx < x0 || cx > x1) continue;
 				if (b.y <= baseline && b.y + b.h >= baseline - 0.7 * em) return true;
@@ -310,7 +322,21 @@ public final class PdfLayoutExtractor {
 			b.y = pageHeight - (r.getY() + r.getHeight());
 			b.w = r.getWidth();
 			b.h = r.getHeight();
+			b.invisible = !"image".equals(kind) && isWhite(kind);
 			out.boxes.add(b);
+		}
+
+		/** True where the paint is white, i.e. the same as the paper. */
+		private boolean isWhite(String kind) {
+			try {
+				PDColor c = "stroke".equals(kind)
+						? getGraphicsState().getStrokingColor()
+						: getGraphicsState().getNonStrokingColor();
+				int rgb = c.toRGB();
+				return ((rgb >> 16) & 0xff) >= 250 && ((rgb >> 8) & 0xff) >= 250 && (rgb & 0xff) >= 250;
+			} catch (Exception e) {
+				return false;   // a colour space we cannot convert is not evidence of invisibility
+			}
 		}
 
 		@Override

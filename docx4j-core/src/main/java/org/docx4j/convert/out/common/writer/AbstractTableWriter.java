@@ -410,7 +410,6 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			boolean[] declared = new boolean[cols];
 			double[] min = new double[cols], max = new double[cols];
 			boolean anyAuto = false;
-						int marginTwips = cellMarginsTwips(tblPr);
 			// Pass 1: single-column cells set the columns' minima and maxima.
 			// Pass 2: a spanning cell only widens the columns it spans when their sum
 			// falls short of its own need, and then in proportion to their flexibility
@@ -428,7 +427,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 							&& (tcW.getType() == null || "dxa".equals(tcW.getType()));
 					double[] mm = measureCellContent(context, (AbstractTableWriterModelCell) cell);
 					if (mm == null) return null; // cannot measure: keep the grid
-					double mn = mm[0] * 20 + marginTwips, mx = mm[1] * 20 + marginTwips;
+					int cellMargins = cellMarginsTwips(tblPr, cell.getTcPr());
+					double mn = mm[0] * 20 + cellMargins, mx = mm[1] * 20 + cellMargins;
 					if (span == 1) {
 						if (tcW != null && tcW.getW() != null && tcW.getW().intValue() > 0
 								&& !"auto".equals(tcW.getType())) {
@@ -662,6 +662,48 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			double share = flex > 0 ? shortfall * Math.max(0, max[k] - widths[k]) / flex : shortfall / (to - from);
 			widths[k] += share;
 		}
+	}
+
+	/**
+	 * Left + right cell margins in twips for one cell: the cell's own
+	 * {@code w:tcMar} where it declares them, else the table's {@code w:tblCellMar},
+	 * else Word's default.
+	 *
+	 * <p>Measured against Word 365 on a table whose {@code w:tblCellMar} is 0 left and
+	 * right and whose every cell overrides with {@code w:tcMar} 30 twips: sizing the
+	 * columns to the bare text width gave a column of 68.95pt for a cell whose one line
+	 * is 68.9pt wide, and the cell writer's 1.5pt of padding each side then left a
+	 * 65.95pt measure - so the very line that sized the column no longer fitted and
+	 * broke in two, on every such cell of the table.  Word keeps it on one line
+	 * (70.8..149.5).
+	 *
+	 * @since 17.0.6
+	 */
+	private static int cellMarginsTwips(org.docx4j.wml.CTTblPrBase tblPr, org.docx4j.wml.TcPr tcPr) {
+		org.docx4j.wml.TcMar m = tcPr == null ? null : tcPr.getTcMar();
+		int fromTable = cellMarginsTwips(tblPr);
+		/* Only where the table gives its cells no margins of its own: measured, taking the
+		 * cell's over the table's wherever it states them cost 0.054 of line parity on a
+		 * document whose cells say left=120 right=0 against the table's 15/15 (its columns
+		 * came out 78 / 44.25 / 230.2pt where the grid gives 73.5 / 40.8 / 242.65).  The
+		 * shape the rule is for is a table which states 0 and cells which state the real
+		 * margin. */
+		if (m == null || fromTable != 0) return fromTable;
+		int left = -1, right = -1;
+		if (m.getLeft() != null && m.getLeft().getW() != null && "dxa".equals(m.getLeft().getType())) {
+			left = m.getLeft().getW().intValue();
+		}
+		if (m.getRight() != null && m.getRight().getW() != null && "dxa".equals(m.getRight().getType())) {
+			right = m.getRight().getW().intValue();
+		}
+		if (left < 0 && right < 0) return fromTable;
+		if (left < 0 || right < 0) {
+			// one side only: take the other from the table's own pair
+			int half = fromTable / 2;
+			if (left < 0) left = half;
+			if (right < 0) right = fromTable - half;
+		}
+		return left + right;
 	}
 
 	/** Left + right cell margins in twips, from the effective tblPr or Word's default. */

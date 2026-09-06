@@ -156,6 +156,51 @@ public class MetricallyCompatibleSubstituteTest {
 	}
 
 	/**
+	 * Cambria's <em>Greek</em> needs a substitute of its own: Caladea, Cambria's metric
+	 * twin in Latin, has no Greek at all, so under the "a metric substitute stands in only
+	 * for the characters it can draw" rule Greek fell through to the document default
+	 * serif.  Measured against Word 365 over 27 lines of a Greek document whose geometry
+	 * is otherwise docx4j's to 0.4pt, Word's Cambria-Bold is 1.0834 x Tinos-Bold; of the
+	 * installed Greek-covering serifs P052 (URW's Palladio) measures 1.0281 - 5.1% short,
+	 * against Tinos's 7.7% - and Noto Serif 1.1574, C059 1.1706, DejaVu Serif 1.3643.
+	 * Where P052 is not installed the order is what it was, so a machine with only the
+	 * Liberation jar behaves as before.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void cambriasGreekPrefersP052() throws Exception {
+		if (PhysicalFonts.get("Cambria") != null) return;   // installed: identity
+		int[] greek = codePoints("\u0391\u03bd\u03bf\u03b9\u03ba\u03c4\u03cc");
+		PhysicalFont chosen = org.docx4j.fonts.FontFallback.selectCovering("Cambria", greek);
+		if (PhysicalFonts.get("P052") == null) {
+			// nothing to assert but that the fallback still finds something for Greek
+			assertNotNull("no Greek-covering fallback for Cambria", chosen);
+			return;
+		}
+		assertNotNull("no Greek-covering fallback for Cambria", chosen);
+		assertTrue("Cambria's Greek came out in " + chosen.getName() + ", not P052",
+				chosen.getName().toLowerCase().startsWith("p052"));
+	}
+
+	/** Latin is unaffected: Caladea is still Cambria's substitute there. */
+	@Test
+	public void cambriasLatinIsUnchanged() throws Exception {
+		if (PhysicalFonts.get("Cambria") != null) return;   // installed: identity
+		if (PhysicalFonts.get("Caladea") == null) return;
+		PhysicalFont chosen = org.docx4j.fonts.FontFallback.selectCovering("Cambria", codePoints("Latin"));
+		assertNotNull(chosen);
+		assertTrue("Cambria's Latin came out in " + chosen.getName() + ", not Caladea",
+				chosen.getName().toLowerCase().startsWith("caladea"));
+	}
+
+	private static int[] codePoints(String s) {
+		int[] cps = new int[s.length()];
+		for (int i = 0; i < s.length(); i++) cps[i] = s.charAt(i);
+		return cps;
+	}
+
+	/**
 	 * Segoe UI Light has no metric clone, but Arimo is the wrong shape for it: measured
 	 * against the Segoe UI Light Word embeds, Arimo's advances are systematically 11.8%
 	 * wider on letters, so every line breaks early.  Source Sans has no systematic bias

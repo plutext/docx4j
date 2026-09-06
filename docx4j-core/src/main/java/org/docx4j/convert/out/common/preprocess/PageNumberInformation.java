@@ -56,7 +56,31 @@ public class PageNumberInformation {
 		this.pagePresent = pagePresent;
 	}
 	public boolean hasPageFormat() {
-		return (pageFormat != null);
+		return isNumberFormat(pageFormat);
+	}
+
+	/**
+	 * Whether a field's <code>\\*</code> switch names a number format at all.
+	 *
+	 * <p>Measured against Word 365: a section declaring
+	 * <code>&lt;w:pgNumType w:fmt="upperRoman"/&gt;</code> whose footers hold
+	 * <code>PAGE</code> and <code>PAGE \\* MERGEFORMAT</code> has Word print
+	 * <code>I</code>, <code>II</code>, ... on all 25 pages, where docx4j printed
+	 * <code>1</code>: the switch collector had recorded the empty value of the bare
+	 * <code>PAGE</code> and the <code>MERGEFORMAT</code> of the other, and either,
+	 * being non-null, masked the section's own format.  <code>MERGEFORMAT</code> and
+	 * <code>CHARFORMAT</code> say what to do with the field's <em>character</em>
+	 * formatting when it is updated and name no number format, so neither overrides
+	 * <code>w:pgNumType/@w:fmt</code>.
+	 *
+	 * @since 17.0.6
+	 */
+	private static boolean isNumberFormat(String formatSwitch) {
+		if (formatSwitch == null) return false;
+		String s = formatSwitch.trim();
+		return s.length() > 0
+				&& !"MERGEFORMAT".equalsIgnoreCase(s)
+				&& !"CHARFORMAT".equalsIgnoreCase(s);
 	}
 	public String getPageFormat() {
 		return (hasPageFormat() ? pageFormat : defaultNumberFormat);
@@ -80,7 +104,7 @@ public class PageNumberInformation {
 		this.numpagesPresent = numpagesPresent;
 	}
 	public boolean hasNumpagesFormat() {
-		return (numpagesFormat != null);
+		return isNumberFormat(numpagesFormat);
 	}
 	public String getNumpagesFormat() {
 		return (hasNumpagesFormat() ? numpagesFormat : defaultNumberFormat);
@@ -95,7 +119,7 @@ public class PageNumberInformation {
 		this.sectionpagesPresent = sectionpagesPresent;
 	}
 	public boolean hasSectionpagesFormat() {
-		return (sectionpagesFormat != null);
+		return isNumberFormat(sectionpagesFormat);
 	}
 	public String getSectionpagesFormat() {
 		return (hasSectionpagesFormat() ? sectionpagesFormat : defaultNumberFormat);

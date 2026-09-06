@@ -245,7 +245,22 @@ well as to docx4j's; four knobs are worth knowing about.
   asymmetry it closes is systematic, and it can only merge, on both sides
   alike. The vertical-rule split (a real cell boundary) is not subject to it.
 
-All four are measuring, not rendering: **re-baseline** (rescore the corpora with
+- **An invisible rule is not a rule.** `PdfLayoutExtractor.verticalRuleBetween`
+  splits a baseline cluster at a thin vertical box, which is how a table row is
+  read as one line per cell on both sides. Word paints its cell borders as
+  *filled* rectangles, so they arrive with a real width; FOP paints them as
+  *strokes*, whose bounding box is zero-wide for a vertical line - so the width
+  alone cannot tell a genuine border from one that paints nothing. The colour
+  can: a document which collapses its cell boundaries had FOP stroke 52 of them
+  a page in **6pt white on white paper**, where Word's PDF of the same page
+  draws nothing at all, and every one split a row into one line per cell -
+  7784 candidate lines against an unchanged golden's 222 pages became 15362.
+  A box whose paint converts to RGB above 250/255 on every channel is therefore
+  not a rule. Its visible neighbours, and the 364 grey 1pt strokes of another
+  document's table, are unaffected; measured, one document gained 0.26 of line
+  parity and one lost 0.07 (its rows now pair whole rather than cell by cell).
+
+All five are measuring, not rendering: **re-baseline** (rescore the corpora with
 the harness change alone) before scoring a rendering change against them.
 
 ## Reading the report

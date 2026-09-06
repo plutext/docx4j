@@ -1,6 +1,7 @@
 package org.docx4j.jaxb;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
@@ -67,6 +68,35 @@ public class MalformedNestingTest {
 				"<w:p><w:hyperlink w:anchor=\"x\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r>"
 				+ "<w:p><w:r><w:t>inner</w:t></w:r></w:p>"
 				+ "</w:hyperlink></w:p>"));
+	}
+
+	/**
+	 * The nested runs keep their own w:rPr - and their own whitespace.
+	 *
+	 * <p>17.0.6 first flattened the nested runs' content into the outer run, which lost
+	 * both.  Measured against Word 365 on a document whose hyperlinks hold
+	 * {@code w:hyperlink/w:r/(w:rPr, w:r, w:r, ...)} with the words in
+	 * {@code w:rStyle="Highlight"} runs and the spaces between them in runs of their own:
+	 * Word paints "Orb&aacute;n Viktor &raquo; Mondatok" in the highlighted style and
+	 * docx4j painted "Orb&aacute;nViktor&raquo; Mondatok", the lone-space runs gone, on
+	 * 466 lines.  The outer run is split instead, so each nested run stands as a run of
+	 * its own.</p>
+	 */
+	@Test
+	public void nestedRunsKeepTheirOwnFormattingAndSpaces() throws Exception {
+		String body = "<w:p><w:hyperlink w:anchor=\"x\"><w:r><w:rPr><w:i/></w:rPr>"
+				+ "<w:r><w:rPr><w:b/></w:rPr><w:t>Orban</w:t></w:r>"
+				+ "<w:r><w:t xml:space=\"preserve\"> </w:t></w:r>"
+				+ "<w:r><w:rPr><w:b/></w:rPr><w:t>Viktor</w:t></w:r>"
+				+ "</w:r></w:hyperlink></w:p>";
+		assertEquals("Orban Viktor", text(body));
+
+		String xml = "<w:document " + W + " xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">"
+				+ "<w:body>" + body + "</w:body></w:document>";
+		Object o = XmlUtils.unmarshal(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+		String marshalled = XmlUtils.marshaltoString(o, true, true);
+		assertTrue("the nested runs' own w:rPr was lost: " + marshalled,
+				marshalled.contains("<w:b/>"));
 	}
 
 	/** A run deeper inside a run is the ordinary shape of a text box, and must not be

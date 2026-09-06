@@ -940,9 +940,28 @@ public class FormattingSwitchHelper {
 	}
 	
 	public static String formatDate(FldSimpleModel model, Date date) {
-		
+		return formatDate(model, date, null);
+	}
+
+	/**
+	 * A {@code DATE}, {@code TIME} or {@code PRINTDATE} field in the document's own
+	 * language.
+	 *
+	 * <p>Word writes the month and day names of the field's language, not of the machine
+	 * the file is opened on.  Measured against Word 365 on two Turkish documents whose
+	 * {@code DATE} carries {@code \@ "d MMMM yyyy"}: Word prints "6 Eyl&uuml;l 2026"
+	 * and the extent is 270.1..325.1, where docx4j printed "7 September 2026" at
+	 * 256.5..338.8; a German one has Word's "06. Sep." against our "07. Sept." (CLDR's
+	 * German abbreviation is not Word's).  The date itself is the day the PDF is made in
+	 * both, which is why the extent rather than the text is the measurement.</p>
+	 *
+	 * @param lang a BCP&nbsp;47 / {@code w:lang} tag, or null for the platform default
+	 * @since 17.0.6
+	 */
+	public static String formatDate(FldSimpleModel model, Date date, String lang) {
+
 		String format = findFirstSwitchValue("\\@", model.getFldParameters(), true);
-		return formatDate(model, format, date );
+		return formatDate(model, format, date, lang);
 	}
 
 	public static String formatDate(FldSimpleModel model, String format, Date date) {
@@ -1041,9 +1060,33 @@ public class FormattingSwitchHelper {
 			// Be Java 6 compatible
 			dateFormat = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, 0, 					
 					localeforLanguageTag(lang));
+			dateFormat.setDateFormatSymbols(wordMonthAbbreviations(dateFormat.getDateFormatSymbols()));
 			dateFormatsMap.put(lang, dateFormat);
 		}
 		return dateFormat;
+	}
+
+	/**
+	 * Word's abbreviated month names carry no trailing period, and the format string
+	 * supplies the punctuation around them.
+	 *
+	 * <p>CLDR's do carry one in several languages, so a German {@code dd". "MMM". "yyyy}
+	 * came out "07. Sep.. 2026" against Word's "06. Sep." once the field was formatted in
+	 * the document's own language.  Trimming the abbreviation is what Word does; the full
+	 * names ({@code MMMM}) are untouched.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static java.text.DateFormatSymbols wordMonthAbbreviations(java.text.DateFormatSymbols symbols) {
+		String[] months = symbols.getShortMonths();
+		String[] trimmed = new String[months.length];
+		for (int i = 0; i < months.length; i++) {
+			String m = months[i];
+			while (m != null && m.endsWith(".")) m = m.substring(0, m.length() - 1);
+			trimmed[i] = m;
+		}
+		symbols.setShortMonths(trimmed);
+		return symbols;
 	}
 	
 }

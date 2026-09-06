@@ -628,8 +628,17 @@ public class LayoutMasterSetBuilder {
 		 * edge at 504 where ours was 523.45 (+19.45pt).  §7's unequal-columns table is
 		 * only built for several w:col children, so a single narrow one fell through.
 		 * @since 17.0.6 */
+		/* The other half: a single w:col <em>wider</em> than the margin box widens the
+		 * text past the right margin, and Word lets it overhang.  Measured on a 595.35pt
+		 * page with 72pt margins (a 451.35pt margin box) whose w:cols says
+		 * <w:col w:w="9560"/> (478pt): Word centres a heading on 311.15 where ours was
+		 * 297.5, and puts a right-tabbed line's end at 535.4 where ours was 508.0 - a
+		 * flat -27.4pt, which is 550 - 522.6 - and Word's page 2 was absorbed into our
+		 * page 1.  The overhang is clamped at the page edge. @since 17.0.6 */
 		int narrowing = page.getSingleColumnNarrowing();
-		if (narrowing > 0) marginRightTwips += narrowing;
+		if (narrowing != 0) {
+			marginRightTwips = Math.max(0, marginRightTwips + narrowing);
+		}
 
 		spm.setMarginLeft( UnitsOfMeasurement.twipToBest(marginLeftTwips) );
 		spm.setMarginRight( UnitsOfMeasurement.twipToBest(marginRightTwips) );

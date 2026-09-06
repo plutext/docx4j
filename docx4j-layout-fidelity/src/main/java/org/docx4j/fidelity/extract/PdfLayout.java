@@ -135,10 +135,13 @@ public final class PdfLayout {
 		public int page;
 		public double x, y, w, h;
 		public String kind;       // stroke | fill | image
+		/** White on white: the box is in the PDF but the reader sees nothing there. */
+		public boolean invisible;
 
 		@Override
 		public String toString() {
-			return String.format("p%d %s x=%.2f y=%.2f w=%.2f h=%.2f", page + 1, kind, x, y, w, h);
+			return String.format("p%d %s x=%.2f y=%.2f w=%.2f h=%.2f%s",
+					page + 1, kind, x, y, w, h, invisible ? " invisible" : "");
 		}
 	}
 

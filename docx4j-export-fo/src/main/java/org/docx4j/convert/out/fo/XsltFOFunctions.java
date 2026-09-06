@@ -1173,6 +1173,12 @@ public class XsltFOFunctions {
 				applyTabStopHints(foBlockElement, pPr, listInd[0],
 						wmlPackage==null ? null : wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
 			}
+
+			// a table-of-contents entry's stretching leader ends on the entry's own right
+			// dot stop, not on the paragraph's right indent (§4.4); the stop's position
+			// goes on the block and WordLayoutFixups, which has the page masters, turns
+			// it into an end-indent
+			applyTocStopHint(foBlockElement, pPr);
 			
 			/* Now apply rPr */				
 			if (rPr!=null) {
@@ -2463,6 +2469,30 @@ public class XsltFOFunctions {
 		return tabStop!=null
 				&& STTabJc.RIGHT.equals(tabStop.getVal())
 				&& org.docx4j.wml.STTabTlc.DOT.equals(tabStop.getLeader());
+	}
+
+	/**
+	 * For a table-of-contents entry keeping the stretching leader, its own right dot
+	 * stop, in twips from the left margin, as {@code docx4j-toc-stop} on the block.
+	 *
+	 * <p>A stretching leader stretches to the block's end-indent, which is the
+	 * paragraph's right <em>indent</em>; Word stretches it to the stop the tab reaches,
+	 * and where that stop lies outside the text column Word lets the entry overhang the
+	 * margin.  Measured on an A4 document with 72pt margins - a right edge at x=523.35 -
+	 * whose TOC1 style declares {@code <w:tab w:val="right" w:leader="dot" w:pos="9350"/>}
+	 * (x=539.5): every one of Word's 308 entry lines ends at 539.6 where ours ended at
+	 * 523.3, and being 16.2pt short of Word's measure six entries took two lines where
+	 * Word takes one.  9 documents of three corpora have a TOC stop more than 2pt from
+	 * their text column.  {@link WordLayoutFixups#tocLeaderEndIndent} does the sum, since
+	 * the page masters are what the text column has to be measured against.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void applyTocStopHint(Element foBlockElement, PPr pPr) {
+		if (!isTocDotLeader(pPr)) return;
+		CTTabStop stop = pPr.getTabs().getTab().get(0);
+		if (stop.getPos() == null) return;
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_TOC_STOP, stop.getPos().toString());
 	}
 
 	/**

@@ -481,43 +481,62 @@
 	     reports "unexpected element" and (once this preprocessor has let unmarshalling
 	     continue) the whole subtree is discarded silently - one corpus document lost 412
 	     lines that way, and 10 documents of three corpora hold the shape.  Word renders
-	     them, so the content is hoisted into the legal position around it: a nested run's
-	     content joins the run it sits in, a nested paragraph's content joins the run or
-	     hyperlink it sits in.  The nested element's own w:rPr / w:pPr goes, since there is
-	     nowhere legal to carry it; the text, which is what the layout is about, stays.
+	     them, so the content is hoisted into the legal position around it.
+
+	     The run holding the nested content is *split*: each nested run becomes a sibling
+	     run, keeping its own w:rPr, and each of the outer run's own children is wrapped in
+	     a run carrying the outer w:rPr.  Flattening the nested runs' content into the outer
+	     run instead - which is what 17.0.6 first did - loses their character formatting and
+	     their whitespace: on a document whose hyperlinks hold
+	     w:hyperlink/w:r/(w:rPr, w:r, w:r, ...) with the words in w:rStyle="Highlight" runs
+	     and the spaces between them in runs of their own, Word paints
+	     "Orban Viktor >> Mondatok" in the highlighted style and we painted
+	     "OrbanViktor>> Mondatok" - the lone-space runs gone - on 466 lines.
 	     Only a direct child is matched: a w:r deeper inside a w:r is the ordinary shape of
 	     a text box (w:r/w:pict/v:textbox/w:txbxContent/w:p/w:r), which is perfectly legal.
 	     @since 17.0.6 -->
 
-	<xsl:template match="w:r/w:r">
+	<xsl:template match="w:r[w:r or w:p]">
 		<xsl:variable name="logging"
-			select="java:org.docx4j.utils.XSLTUtils.logWarn('w:r nested directly in w:r; hoisting its content')" />
-		<xsl:apply-templates select="node()[not(self::w:rPr)]" />
+			select="java:org.docx4j.utils.XSLTUtils.logWarn('w:r or w:p nested directly in w:r; splitting the run')" />
+		<xsl:variable name="outerRPr" select="w:rPr" />
+		<xsl:for-each select="*[not(self::w:rPr)]">
+			<xsl:choose>
+				<xsl:when test="self::w:r">
+					<xsl:apply-templates select="." />
+				</xsl:when>
+				<xsl:when test="self::w:p">
+					<xsl:apply-templates select="*[not(self::w:pPr)]" mode="unwrap-paragraphs" />
+				</xsl:when>
+				<xsl:otherwise>
+					<w:r>
+						<xsl:apply-templates select="$outerRPr" />
+						<xsl:apply-templates select="." />
+					</w:r>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:for-each>
 	</xsl:template>
 
 	<!-- a w:hyperlink takes runs, so the nested paragraph's own content stands as it is -->
 	<xsl:template match="w:hyperlink/w:p">
 		<xsl:variable name="logging"
 			select="java:org.docx4j.utils.XSLTUtils.logWarn('w:p nested directly in w:hyperlink; hoisting its content')" />
-		<xsl:apply-templates select="node()[not(self::w:pPr)]" />
+		<xsl:apply-templates select="*[not(self::w:pPr)]" mode="unwrap-paragraphs" />
 	</xsl:template>
 
-	<!-- a w:r does not, so the paragraph's runs are unwrapped as well -->
-	<xsl:template match="w:r/w:p">
-		<xsl:variable name="logging"
-			select="java:org.docx4j.utils.XSLTUtils.logWarn('w:p nested directly in w:r; hoisting its content')" />
-		<xsl:apply-templates select="node()[not(self::w:pPr)]" mode="unwrap-runs" />
+	<!-- a paragraph nested where only runs are legal contributes the runs it holds; a
+	     run, a hyperlink or anything else legal there is copied as it stands, with its
+	     own properties -->
+	<xsl:template match="w:p" mode="unwrap-paragraphs">
+		<xsl:apply-templates select="*[not(self::w:pPr)]" mode="unwrap-paragraphs" />
 	</xsl:template>
 
-	<xsl:template match="w:r | w:p | w:hyperlink | w:ins | w:del | w:smartTag | w:bdo | w:dir" mode="unwrap-runs">
-		<xsl:apply-templates select="node()[not(self::w:rPr) and not(self::w:pPr)]" mode="unwrap-runs" />
+	<xsl:template match="w:sdt | w:sdtContent" mode="unwrap-paragraphs">
+		<xsl:apply-templates select="*[not(self::w:sdtPr) and not(self::w:sdtEndPr)]" mode="unwrap-paragraphs" />
 	</xsl:template>
 
-	<xsl:template match="w:sdt | w:sdtContent" mode="unwrap-runs">
-		<xsl:apply-templates select="node()[not(self::w:sdtPr) and not(self::w:sdtEndPr)]" mode="unwrap-runs" />
-	</xsl:template>
-
-	<xsl:template match="node()" mode="unwrap-runs">
+	<xsl:template match="node()" mode="unwrap-paragraphs">
 		<xsl:apply-templates select="." />
 	</xsl:template>
 
