@@ -41,6 +41,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
@@ -167,9 +168,23 @@ public class FOPAreaTreeHelper {
     	        RPr rpr = wmlObjectFactory.createRPr(); 
     	        r.setRPr(rpr); 
     	            // Create object for sz
-    	            HpsMeasure hpsmeasure3 = wmlObjectFactory.createHpsMeasure(); 
-    	            rpr.setSz(hpsmeasure3); 
-    	                hpsmeasure3.setVal( BigInteger.valueOf( 96) ); 
+    	            HpsMeasure hpsmeasure3 = wmlObjectFactory.createHpsMeasure();
+    	            rpr.setSz(hpsmeasure3);
+    	                hpsmeasure3.setVal( BigInteger.valueOf( 96) );
+
+    	            /* The document's own rPrDefault may hide every run: a corpus document
+    	             * whose styles.xml/docDefaults carries <w:vanish/> produced an empty
+    	             * <fo:flow/>, which is invalid FO, so the extent pre-pass threw and the
+    	             * half-page defaults survived - 3 Word pages came out as 35, each
+    	             * holding two or three lines in a 24pt strip.  These paragraphs are
+    	             * ours and only their height matters, so the defaults are overridden
+    	             * here.  @since 17.0.6 */
+    	            BooleanDefaultTrue notHidden = wmlObjectFactory.createBooleanDefaultTrue();
+    	            notHidden.setVal(Boolean.FALSE);
+    	            rpr.setVanish(notHidden);
+    	            BooleanDefaultTrue notWebHidden = wmlObjectFactory.createBooleanDefaultTrue();
+    	            notWebHidden.setVal(Boolean.FALSE);
+    	            rpr.setWebHidden(notWebHidden);
 
     	        // Create object for t (wrapped in JAXBElement) 
     	        Text text = wmlObjectFactory.createText(); 
@@ -498,9 +513,33 @@ public class FOPAreaTreeHelper {
     }
     
 
+    /** The header this page master's region-before shows, or null. */
+    private static boolean isDummyHeader(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
+    	if ("firstpage".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getFirstHeader());
+    	} else if ("evenpage".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getEvenHeader());
+    	} else if ("default".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getDefaultHeader());
+    	}
+    	// "simple": no header at all
+    	return true;
+    }
+
+    private static boolean isDummyFooter(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
+    	if ("firstpage".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getFirstFooter());
+    	} else if ("evenpage".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getEvenFooter());
+    	} else if ("default".equals(pageKind)) {
+    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getDefaultFooter());
+    	}
+    	return true;
+    }
+
     /**
      * Inject the calculated heights for each header and footer, and adjust the region body margins to fit them.
-     * 
+     *
      * @param layoutMasterSet
      * @param headerBpda
      * @param footerBpda
@@ -530,12 +569,25 @@ public class FOPAreaTreeHelper {
     			int index = -1 + Integer.parseInt(
     					simplePageMasterName.substring(1, simplePageMasterName.indexOf("-")));
     			PageDimensions page = null;
+    			org.docx4j.model.structure.HeaderFooterPolicy hfPolicy = null;
     			if (sections.get(index)==null) {
     				log.error("Couldn't find section " + index + " from " + simplePageMasterName);
     			} else {
     				page = sections.get(index).getPageDimensions();
+    				hfPolicy = sections.get(index).getHeaderFooterPolicy();
     			}
-    			
+    			/* Where the part is the empty one docx4j invents for w:titlePg or
+    			 * w:evenAndOddHeaders, the document has no header (or footer) there and
+    			 * Word reserves nothing for it - not even the line box our empty
+    			 * paragraph measures.  Measured on a document with no header part and no
+    			 * headerReference at all, w:pgMar/@w:top=432 (21.6pt) and w:header=706
+    			 * (35.3pt): Word's body top is 21.6, ours was 35.3 + a 13.799pt dummy
+    			 * extent = 49.1, so every line and the logo was +26.5 to +27.5pt low.
+    			 * @since 17.0.6 */
+    			String pageKind = simplePageMasterName.substring(simplePageMasterName.indexOf("-") + 1);
+    			boolean headerIsDummy = hfPolicy != null && isDummyHeader(hfPolicy, pageKind);
+    			boolean footerIsDummy = hfPolicy != null && isDummyFooter(hfPolicy, pageKind);
+
     			// Region before
     			if (spm.getRegionBefore()!=null) {
     				Integer hBpdaMilliPts = headerBpda.get(simplePageMasterName);
@@ -567,9 +619,10 @@ public class FOPAreaTreeHelper {
 		    			 * ours at 49.25 - +33.7pt on the table header, on page 2 and on
 		    			 * every one of six pictures.  A second document, w:top="-993",
 		    			 * was +97.5pt throughout.  @since 17.0.6 */
+		    			float headerReserve = headerIsDummy ? 0f : hBpdaPts;
 		    			float bodyTop = topMarginPts < 0 ? -topMarginPts
 		    					: Math.max(topMarginPts,
-		    					(hBpdaPts>0) ? headerMarginPts + hBpdaPts : 0f);
+		    					(headerReserve>0) ? headerMarginPts + headerReserve : 0f);
 		    			float spmTop = Math.min(headerMarginPts, bodyTop);
 		    			spm.setMarginTop(spmTop+"pt");
 		    			spm.getRegionBody().setMarginTop((bodyTop-spmTop)+"pt");
@@ -600,9 +653,10 @@ public class FOPAreaTreeHelper {
 		    			float footerMarginPts = page.getFooterMargin()/20f; // twips to points
 		    			float bottomMarginPts = page.getPgMar().getBottom().intValue()/20f;
 		    			// the mirror of the negative top margin above
+		    			float footerReserve = footerIsDummy ? 0f : fBpdaPts;
 		    			float bodyBottom = bottomMarginPts < 0 ? -bottomMarginPts
 		    					: Math.max(bottomMarginPts,
-		    					(fBpdaPts>0) ? footerMarginPts + fBpdaPts : 0f);
+		    					(footerReserve>0) ? footerMarginPts + footerReserve : 0f);
 		    			float spmBottom = Math.min(footerMarginPts, bodyBottom);
 		    			spm.setMarginBottom(spmBottom+"pt");
 		    			spm.getRegionBody().setMarginBottom((bodyBottom-spmBottom)+"pt");

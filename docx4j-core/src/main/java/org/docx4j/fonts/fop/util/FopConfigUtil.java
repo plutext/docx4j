@@ -303,7 +303,13 @@ public class FopConfigUtil {
 	 * ligatures nor kerning to this twin.</p>
 	 *
 	 * <p>Only TrueType-flavoured files get a twin: FOP forces a single-byte font to
-	 * FontType.TRUETYPE, which would misdescribe a CFF/OpenType font in the PDF.</p>
+	 * FontType.TRUETYPE, which would misdescribe a CFF/OpenType font in the PDF.
+	 * Measured (CR-001, 17.0.6): declaring an <code>.otf</code> substitute this way does
+	 * suppress the ligatures and does extract, but FOP writes the font as
+	 * <code>/Subtype /TrueType</code> with the <code>OTTO</code> file in a
+	 * <code>/FontFile2</code> stream - invalid PDF, which only lenient readers draw.  So
+	 * a CFF-flavoured substitute (URW's Nimbus Sans Narrow for Arial Narrow, Source Sans
+	 * 3 for Segoe UI Light) still gets FOP's ligatures; the fix belongs upstream.</p>
 	 *
 	 * @return null where the font must not be declared this way
 	 * @since 17.0.5

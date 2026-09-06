@@ -417,7 +417,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         + " align=" + alignment + " justify=" + Constants.EN_JUSTIFY + " maxShrink=" + maxSpaceShrink
                         + " el=" + element);
             }
-            boolean fits = difference >= 0 || fitsByShrinkingSpaces(elementIdx, difference);
+            boolean fits = difference >= 0
+                    || (fitsByShrinkingSpaces(elementIdx, difference) && worthCompressing());
             if (!fits && commitLastFitting()) {
                 // too long now (whether or not this is the paragraph's own forced break):
                 // break at the last break that fitted - hyphenating the word that did not
@@ -485,6 +486,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
             if (maxShrink <= 0) {
                 return false;
             }
+            return -difference <= maxShrink * spacesWidth(elementIdx);
+        }
+
+        /** The natural width of the spaces between the last break and elementIdx. */
+        private int spacesWidth(int elementIdx) {
             int spaces = 0;
             for (int i = active.position + 1; i < elementIdx; i++) {
                 KnuthElement e = getElement(i);
@@ -492,7 +498,27 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     spaces += e.getWidth();
                 }
             }
-            return -difference <= maxShrink * spaces;
+            return spaces;
+        }
+
+        /**
+         * Whether Word would compress this line rather than break at the last
+         * opportunity that fitted.  Being inside {@link #maxSpaceShrink} is not enough:
+         * Word compresses only when the line it would otherwise leave is very loose.
+         * Measured (CR-001 §4.2): on three corpus lines where Word refused a compression
+         * of 22.5 / 15.1 / 13.3% the alternative it took was stretched by only
+         * 38.5 / 16.1 / 12.8%, while in the break-justified golden the alternative to
+         * each compressed line was far looser again.  The threshold is
+         * {@link WordLayoutCustomizer#MIN_STRETCH_TO_COMPRESS} (0.30).
+         *
+         * @since 17.0.6
+         */
+        private boolean worthCompressing() {
+            if (minStretchToCompress <= 0) return true;
+            if (candIdx < 0) return true;   // nothing has fitted on this line yet
+            int spaces = spacesWidth(candIdx);
+            if (spaces <= 0) return true;
+            return candDifference > minStretchToCompress * spaces;
         }
 
         /**
@@ -1403,6 +1429,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private final double maxHyphenSpaceShrink;
 
+    /**
+     * How loose the alternative line has to be before Word compresses this one to pull
+     * one more word on ({@link WordLayoutCustomizer#minStretchToCompress()}, default
+     * 0.90 of the spaces' natural width).
+     *
+     * @since 17.0.6
+     */
+    private final double minStretchToCompress = WordLayoutCustomizer.minStretchToCompress();
+
     private static double documentHyphenSpaceShrink(double spaceShrink) {
         return Math.min(WordLayoutCustomizer.maxHyphenSpaceShrink(), spaceShrink);
     }
@@ -1887,8 +1922,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * lines with letter-spacing overflow the margin (measured, CR-001 §6.6 item
      * 16: 3pt spacing, 95pt over; 0.25pt, one word too many).  The plain path,
      * processWordNoMapping, counts wordLength - 1 spaces plus one when a break
-     * opportunity that is not a space follows.  That count is applied here to
-     * each word box a text manager returned, the way its own path would have.
+     * opportunity that is not a space follows - one short of Word, which spaces
+     * the word's last character too.  Both are brought here to Word's count, one
+     * letter space after every character of the word (CR-001 §4.6).
      */
     private void fixLetterSpaces(InlineLevelLayoutManager lm, List<KnuthSequence> seqs) {
         if (seqs == null) return;
@@ -1912,23 +1948,26 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 int idx = ((LeafPosition) leaf).getLeafPos();
                 if (idx < 0 || idx >= mappings.size()) continue;
                 org.apache.fop.fonts.GlyphMapping m = mappings.get(idx);
-                if (m.isSpace || m.letterSpaceCount != 0 || m.font == null
-                        || !(m.font.performsSubstitution() || m.font.performsPositioning())) continue;
+                if (m.isSpace || m.font == null) continue;
                 int wordLength = m.getWordLength();
-                if (wordLength <= 0) continue;
+                if (wordLength <= 0 || m.letterSpaceCount == wordLength) continue;
                 org.apache.fop.fo.FOText foText = LBP.foText(tlm);
-                // processWordNoMapping's rule: the break character after the word counts
-                // as a letter space unless it is a space.  Measured against Word
-                // (spacing-char, 0.25/1/3pt expanded, 0.5pt condensed): every line
-                // breaks as Word's bar one 0.3pt-marginal case; counting a letter space
-                // after every character instead (Word's rendering) broke lines a word
-                // early throughout.
+                // Word puts one character space after every character, the word's last
+                // included, and one after a space (see fixSpaceLetterSpaces).  Measured
+                // on the spacing-char probe's golden, Times New Roman 12pt, w:spacing 20
+                // (1pt): "expanded" advances 6.228 6.948 7.068 6.228 6.948 7.068 6.228
+                // 7.068 - the final "d" is 6.0 + 1.068, and the space that follows is
+                // 3.0 + 0.948.  (Until 17.0.6 this counted wordLength - 1, which was
+                // right only while FOP's doubled word space, now corrected, made up the
+                // difference.)  FOP paints one after every glyph, so measure and paint
+                // now agree.
                 boolean breakOpp = m.breakOppAfter && m.endIndex < foText.length()
                         && !Character.isWhitespace(foText.charAt(m.endIndex));
-                int spaces = wordLength - 1 + (breakOpp ? 1 : 0);
+                int spaces = wordLength;
+                int added = spaces - m.letterSpaceCount;
                 m.breakOppAfter = breakOpp;
                 m.letterSpaceCount = spaces;
-                m.areaIPD = m.areaIPD.plus(ls.mult(spaces));
+                m.areaIPD = m.areaIPD.plus(ls.mult(added));
                 boolean suppressible = breakOpp && !m.isHyphenated;
                 int width = ls.isStiff()
                         ? (suppressible ? m.areaIPD.getOpt() - ls.getOpt() : m.areaIPD.getOpt())
@@ -1938,6 +1977,83 @@ public class WordLineLayoutManager extends LineLayoutManager {
                             + " +" + spaces + " x " + ls.getOpt() + " -> box " + width);
                 }
                 seq.set(i, new KnuthInlineBox(width, box.getAlignmentContext(), pos, box.isAuxiliary()));
+            }
+        }
+    }
+
+    /**
+     * Word gives a space the same character spacing as any other character - one
+     * {@code w:spacing w:val} after it, so its advance is the font's space plus
+     * val/20 pt.  FOP's {@code SpaceVal.makeWordSpacing} adds the letter space
+     * <em>twice</em> to the word space (its own TODO: "Adding 2 letter spaces here
+     * is not 100% correct"), so every space in a letter-spaced run is measured
+     * val/20 pt too wide, and lines break early.
+     *
+     * <p>Measured (CR-001 §4.6, corpus batch 1): Times New Roman 11pt, a run of one
+     * space carrying {@code w:spacing w:val="19"} (0.95pt).  The natural space is
+     * 2.75pt; Word's advance is 3.87pt and ours was 4.65 = 2.75 + 2 x 0.95.  In one
+     * document 620 such runs made a 447.4pt line 458.5pt.
+     *
+     * <p>FOP's <em>painting</em> already follows Word: {@code addMappingAreas} sets
+     * the word-space adjust to {@code wordSpaceIPD - spaceCharIPD - 2 x letterSpace},
+     * so the glyph advance comes out at space + one letter space.  Only the measure
+     * is wrong.  The correction therefore goes on the glyph mapping (which is what
+     * both the Knuth element and the text area's width are taken from) and leaves
+     * FOP's {@code wordSpaceIPD} alone, so that the painted advance is unchanged.
+     */
+    private void fixSpaceLetterSpaces(List<KnuthSequence> seqs) {
+        if (seqs == null) return;
+        java.util.Map<org.apache.fop.fonts.GlyphMapping, int[]> fixed = new java.util.IdentityHashMap<>();
+        for (KnuthSequence seq : seqs) {
+            for (int i = 0; i < seq.size(); i++) {
+                Object o = seq.get(i);
+                if (!(o instanceof KnuthGlue) && !(o instanceof KnuthInlineBox)) continue;
+                KnuthElement el = (KnuthElement) o;
+                Position pos = el.getPosition();
+                Position leaf = pos;
+                while (leaf != null && !(leaf instanceof LeafPosition)) {
+                    leaf = leaf.getPosition();
+                }
+                if (leaf == null || !(leaf.getLM() instanceof org.apache.fop.layoutmgr.inline.TextLayoutManager)) continue;
+                int idx = ((LeafPosition) leaf).getLeafPos();
+                if (idx < 0) continue;   // the auxiliary positions, which carry no width
+                org.apache.fop.layoutmgr.inline.TextLayoutManager tlm =
+                        (org.apache.fop.layoutmgr.inline.TextLayoutManager) leaf.getLM();
+                MinOptMax ls = LBP.letterSpaceIPD(tlm);
+                if (ls == null || ls.getOpt() == 0) continue;
+                List<org.apache.fop.fonts.GlyphMapping> mappings = LBP.mappings(tlm);
+                if (idx >= mappings.size()) continue;
+                org.apache.fop.fonts.GlyphMapping m = mappings.get(idx);
+                if (!m.isSpace || m.wordSpaceCount <= 0) continue;
+                int[] delta = fixed.get(m);
+                if (delta == null) {
+                    int spaceChar = LBP.spaceCharIPD(tlm);
+                    int doubled = m.wordSpaceCount * (spaceChar + 2 * ls.getOpt());
+                    if (m.areaIPD.getOpt() != doubled) continue;   // not the doubled form
+                    int once = m.wordSpaceCount * (spaceChar + ls.getOpt());
+                    delta = new int[] {doubled - once};
+                    fixed.put(m, delta);
+                    m.areaIPD = MinOptMax.getInstance(once - m.areaIPD.getShrink(), once,
+                            once + m.areaIPD.getStretch());
+                    if (WordLineLayoutManager.log.isDebugEnabled()) {
+                        WordLineLayoutManager.log.debug("space letter-spacing counted once: "
+                                + doubled + " -> " + once);
+                    }
+                }
+                // exactly one element per space mapping carries the mapping's own
+                // (non-auxiliary) position, and its width includes the mapping's optimum
+                int width = (o instanceof KnuthGlue)
+                        ? ((KnuthGlue) o).getWidth() : ((KnuthInlineBox) o).getWidth();
+                if (width < delta[0]) continue;
+                if (o instanceof KnuthGlue) {
+                    KnuthGlue g = (KnuthGlue) o;
+                    seq.set(i, new KnuthGlue(width - delta[0], g.getStretch(), g.getShrink(),
+                            g.getPosition(), g.isAuxiliary()));
+                } else {
+                    KnuthInlineBox b = (KnuthInlineBox) o;
+                    seq.set(i, new KnuthInlineBox(width - delta[0], b.getAlignmentContext(),
+                            b.getPosition(), b.isAuxiliary()));
+                }
             }
         }
     }
@@ -1985,6 +2101,103 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
     }
 
+    /** The glyph mapping a Knuth element belongs to, or null for an auxiliary one. */
+    private static org.apache.fop.fonts.GlyphMapping mappingOf(Object element) {
+        if (!(element instanceof KnuthElement)) return null;
+        Position leaf = ((KnuthElement) element).getPosition();
+        while (leaf != null && !(leaf instanceof LeafPosition)) {
+            leaf = leaf.getPosition();
+        }
+        if (leaf == null || !(leaf.getLM() instanceof org.apache.fop.layoutmgr.inline.TextLayoutManager)) return null;
+        org.apache.fop.layoutmgr.inline.TextLayoutManager tlm =
+                (org.apache.fop.layoutmgr.inline.TextLayoutManager) leaf.getLM();
+        int idx = ((LeafPosition) leaf).getLeafPos();
+        List<org.apache.fop.fonts.GlyphMapping> mappings = LBP.mappings(tlm);
+        if (idx < 0 || idx >= mappings.size()) return null;
+        return mappings.get(idx);
+    }
+
+    /** The text manager a Knuth element belongs to, or null. */
+    private static org.apache.fop.layoutmgr.inline.TextLayoutManager tlmOf(Object element) {
+        if (!(element instanceof KnuthElement)) return null;
+        Position leaf = ((KnuthElement) element).getPosition();
+        while (leaf != null && !(leaf instanceof LeafPosition)) {
+            leaf = leaf.getPosition();
+        }
+        if (leaf == null || !(leaf.getLM() instanceof org.apache.fop.layoutmgr.inline.TextLayoutManager)) return null;
+        return (org.apache.fop.layoutmgr.inline.TextLayoutManager) leaf.getLM();
+    }
+
+    /**
+     * Word breaks <em>before</em> a word which begins with a solidus; UAX #14, which
+     * FOP's text managers follow, does not (rule LB13 forbids a break before class SY),
+     * so the space and the slash-led word become one unbreakable unit.
+     *
+     * <p>Measured: a header cell 84.2pt wide holding "Roll Number /Registration Number"
+     * - all ordinary U+0020 - was painted "Roll" then a 93.5pt
+     * "Number /Registration" running 6pt outside the table, where Word sets
+     * "Roll Number " and "/Registration ". FOP's elements for it are
+     * {@code box("Number") box(" ") box("/") penalty ...}: the space is a
+     * <em>non-breaking</em> box, so a zero penalty is inserted after it.  Where the
+     * paragraph is justified the space is a glue behind an infinite penalty, and that
+     * penalty is relaxed instead.  &#xa7;4.3's rule that Word does not break
+     * <em>after</em> a solidus is unchanged.</p>
+     *
+     * @since 17.0.6
+     */
+    private void solidusLeadingBreaks(List<KnuthSequence> seqs) {
+        if (seqs == null) return;
+        for (KnuthSequence seq : seqs) {
+            for (int i = seq.size() - 2; i >= 0; i--) {
+                Object o = seq.get(i);
+                org.apache.fop.fonts.GlyphMapping space = mappingOf(o);
+                if (space == null || !space.isSpace) continue;
+                // the next element carrying a mapping: is it a word starting with "/"?
+                org.apache.fop.fonts.GlyphMapping next = null;
+                int nextIdx = -1;
+                for (int j = i + 1; j < seq.size() && j <= i + 4; j++) {
+                    next = mappingOf(seq.get(j));
+                    if (next != null) { nextIdx = j; break; }
+                }
+                if (next == null || next == space || next.isSpace) continue;
+                org.apache.fop.layoutmgr.inline.TextLayoutManager tlm = tlmOf(seq.get(nextIdx));
+                if (tlm == null) continue;
+                org.apache.fop.fo.FOText foText = LBP.foText(tlm);
+                if (next.startIndex >= foText.length() || foText.charAt(next.startIndex) != '/') continue;
+                if (next.endIndex >= foText.length()
+                        || !Character.isLetterOrDigit(foText.charAt(next.endIndex))) continue;
+                if (o instanceof KnuthGlue) {
+                    // justified: relax the infinite penalty in front of the space glue
+                    if (i > 0 && seq.get(i - 1) instanceof KnuthPenalty
+                            && ((KnuthPenalty) seq.get(i - 1)).getPenalty() >= KnuthElement.INFINITE) {
+                        KnuthPenalty inf = (KnuthPenalty) seq.get(i - 1);
+                        seq.set(i - 1, new KnuthPenalty(inf.getWidth(), 0, false,
+                                inf.getPosition(), inf.isAuxiliary()));
+                    }
+                } else if (o instanceof KnuthInlineBox) {
+                    Position aux = auxiliaryPosition(seq, i);
+                    if (aux == null) continue;
+                    seq.add(i + 1, new KnuthPenalty(0, 0, false, aux, true));
+                }
+            }
+        }
+    }
+
+    /** The position of a nearby auxiliary element (one which stands for no glyph). */
+    private static Position auxiliaryPosition(KnuthSequence seq, int from) {
+        for (int d = 1; d < seq.size(); d++) {
+            for (int j : new int[] {from - d, from + d}) {
+                if (j < 0 || j >= seq.size()) continue;
+                Object o = seq.get(j);
+                if (!(o instanceof KnuthElement)) continue;
+                if (mappingOf(o) != null) continue;   // stands for a glyph
+                Position pos = ((KnuthElement) o).getPosition();
+                if (pos != null) return pos;
+            }
+        }
+        return null;
+    }
+
     private void collectInlineKnuthElements(LayoutContext context) {
         LayoutContext inlineLC = LayoutContext.copyOf(context);
 
@@ -2000,7 +2213,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
         while ((curLM = (InlineLevelLayoutManager) getChildLM()) != null) {
             List<KnuthSequence> inlineElements = curLM.getNextKnuthElements(inlineLC, effectiveAlignment);
             fixLetterSpaces(curLM, inlineElements);
+            fixSpaceLetterSpaces(inlineElements);
             suppressSolidusBreaks(inlineElements);
+            solidusLeadingBreaks(inlineElements);
             if (inlineElements == null || inlineElements.size() == 0) {
                 /* curLM.getNextKnuthElements() returned null or an empty list;
                  * this can happen if there is nothing more to layout,

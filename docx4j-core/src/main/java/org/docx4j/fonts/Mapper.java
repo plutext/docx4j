@@ -344,10 +344,23 @@ public abstract class Mapper {
     	// RunFontSelector falls back to (a sans in Tinos, or Georgian in Carlito,
     	// was the first divergence in a fifth of a real-document sample; CR-001).
     	// The widths are not Word's, so lines still break differently.  @since 17.0.5
+    	// Tw Cen MT (Twentieth Century) is a geometric sans; without an entry it fell
+    	// through to the serif default and its labels came out 3-4% narrow (measured
+    	// against Word's own PDF of a corpus document, every y and x within 0.3pt and
+    	// the text 1.03-1.04x ours).  Arimo is 1.0605x Tinos, so the residual is 2%.
+    	// @since 17.0.6
     	for (String sans : new String[] { "Tahoma", "Trebuchet MS", "Segoe UI",
-    			"Arial Black", "Gadugi", "Helvetica", "Helvetica Neue" }) {
+    			"Gadugi", "Helvetica", "Helvetica Neue", "Tw Cen MT" }) {
     		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
     	}
+
+    	// Arial Black is far heavier and wider than Arial: measured against Word's own
+    	// PDF of a corpus document, its centred title is 281.2pt against our Arimo's
+    	// 247.9 on the same centre - 1.134x.  Noto Sans Black measures 1.1122x Arimo
+    	// over a mixed Latin sample, so the residual is 2% instead of 13.4%.  Arimo
+    	// remains the last resort.  @since 17.0.6
+    	addFirstAvailableSubstitute("Arial Black", "Noto Sans Black", "Noto Sans Display Black",
+    			"Arimo Regular", "Liberation Sans");
 
     	// Verdana and Comic Sans MS are much wider than Arial, so an Arial clone
     	// re-breaks every line of a document set in them.  Measured against Word's own

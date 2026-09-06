@@ -727,6 +727,20 @@
 			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, $predecessor)" />
 			 -->			
 		
+		<!-- Word gives a break which opens a paragraph an empty line of its own, as it
+		     does one which ends it (measured, CR-001 §4.3) -->
+		<xsl:if test="not(@w:type='page') and not(@w:type='column')
+				and count(preceding-sibling::*[self::w:t or self::w:tab or self::w:br or self::w:drawing or self::w:pict or self::w:sym or self::w:footnoteReference or self::w:endnoteReference])=0
+				and count(../preceding-sibling::*[self::w:r or self::w:hyperlink or self::w:fldSimple or self::w:sdt or self::w:smartTag or self::w:ins][.//w:t or .//w:tab or .//w:br or .//w:drawing or .//w:pict or .//w:sym or .//w:footnoteReference or .//w:endnoteReference])=0
+				and (count(following-sibling::*[self::w:t or self::w:tab or self::w:br or self::w:drawing or self::w:pict or self::w:sym or self::w:footnoteReference or self::w:endnoteReference])&gt;0
+				  or count(../following-sibling::*[self::w:r or self::w:hyperlink or self::w:fldSimple or self::w:sdt or self::w:smartTag or self::w:ins][.//w:t or .//w:tab or .//w:br or .//w:drawing or .//w:pict or .//w:sym or .//w:footnoteReference or .//w:endnoteReference])&gt;0)">
+			<xsl:variable name="leadBrP" select="ancestor::*[self::w:p][1]" />
+			<xsl:variable name="leadBrPPrNode" select="$leadBrP/w:pPr" />
+			<xsl:variable name="leadBrRPrNode" select="../w:rPr" />
+			<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelectorForGeneratedText(
+				$conversionContext, $leadBrPPrNode, $leadBrRPrNode, '&#160;')" />
+		</xsl:if>
+
 		<xsl:choose>
 			<xsl:when test="$predecessor='br' and not(@w:type='page') and not(@w:type='column')">
 				<!-- special case; see discussion in BrWriter -->

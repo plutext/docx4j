@@ -1914,6 +1914,23 @@ public class StyleUtil {
 	public static void apply(PPrBase source, PPrBase destination) {
 		apply(source, destination, null);
 	}
+
+	/** Whether this w:numPr says "not numbered" - w:numId w:val="0".  @since 17.0.6 */
+	public static boolean numberingOff(NumPr numPr) {
+		return numPr != null && numPr.getNumId() != null && numPr.getNumId().getVal() != null
+				&& numPr.getNumId().getVal().signum() == 0;
+	}
+
+	/** Take out of an indent the components a numbering level contributed. @since 17.0.6 */
+	private static void dropNumberingInd(Ind ind, Ind fromLevel) {
+		if (ind == null || fromLevel == null) return;
+		if (fromLevel.getLeft() != null && fromLevel.getLeft().equals(ind.getLeft())) ind.setLeft(null);
+		if (fromLevel.getRight() != null && fromLevel.getRight().equals(ind.getRight())) ind.setRight(null);
+		if (fromLevel.getHanging() != null && fromLevel.getHanging().equals(ind.getHanging())) ind.setHanging(null);
+		if (fromLevel.getFirstLine() != null && fromLevel.getFirstLine().equals(ind.getFirstLine())) ind.setFirstLine(null);
+		if (fromLevel.getStart() != null && fromLevel.getStart().equals(ind.getStart())) ind.setStart(null);
+		if (fromLevel.getEnd() != null && fromLevel.getEnd().equals(ind.getEnd())) ind.setEnd(null);
+	}
 	
 	/**
 	 * @param source
@@ -1932,8 +1949,28 @@ public class StyleUtil {
 			destination.setFramePr(apply(source.getFramePr(), destination.getFramePr()));	
 			destination.setWidowControl(apply(source.getWidowControl(), destination.getWidowControl()));
 
-			destination.setNumPr(apply(source.getNumPr(), destination.getNumPr()));	
-			
+			NumPr inheritedNumPr = destination.getNumPr();
+			destination.setNumPr(apply(source.getNumPr(), destination.getNumPr()));
+
+			/* ECMA-376 17.9.18: w:numId w:val="0" takes the paragraph out of the list, so
+			 * neither the level's label nor its w:ind applies - only the paragraph's own.
+			 * Measured on a heading styled with a style whose numbering (numId 2, ilvl 5)
+			 * carries a 57.6pt hanging indent and which is overridden with
+			 * <w:numPr><w:ilvl w:val="0"/><w:numId w:val="0"/></w:numPr> and
+			 * <w:ind w:left="720"/>: Word draws it at x=78.5..541.2 and we drew the same
+			 * 462pt of text at 20.9..483.1, exactly 57.6pt left, on ten paragraphs.
+			 * Only the components the inherited level contributed are dropped, so a
+			 * w:ind the style states itself survives.  @since 17.0.6 */
+			if (numberingDefinitionsPart != null && numberingOff(source.getNumPr())
+					&& inheritedNumPr != null && destination.getInd() != null) {
+				Ind fromLevel = numberingDefinitionsPart.getInd(inheritedNumPr);
+				if (fromLevel != null) {
+					Ind own = XmlUtils.deepCopy(destination.getInd());
+					dropNumberingInd(own, fromLevel);
+					destination.setInd(own);
+				}
+			}
+
 			/* comment copied from org.docx4j.convert.out.fo.XsltFOFunctions
 
 				 Indent (setting provisional-distance-between-starts)

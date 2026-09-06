@@ -59,6 +59,15 @@ public class MetricallyCompatibleSubstituteTest {
 		assertSubstitute(mapper, "Segoe UI", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Helvetica", "arimo", "liberation sans");
 
+		/* Arial Black is far heavier and wider than Arial: measured against Word's own
+		 * PDF of a corpus document, a centred Arial Black title is 281.2pt against our
+		 * Arimo's 247.9 on the same centre - 1.134x - where Noto Sans Black measures
+		 * 1.1122x Arimo over a mixed Latin sample.  Tw Cen MT is a geometric sans, and
+		 * without an entry fell through to the serif default: its labels came out 3-4%
+		 * narrow against Word.  @since 17.0.6 */
+		assertSubstitute(mapper, "Arial Black", "noto sans black", "arimo", "liberation sans");
+		assertSubstitute(mapper, "Tw Cen MT", "arimo", "liberation sans");
+
 		// crosextra clone where installed, else the Liberation sans (a build server
 		// with only the Liberation jar has no Carlito)
 		assertSubstitute(mapper, "Calibri Light", "carlito", "liberation sans");

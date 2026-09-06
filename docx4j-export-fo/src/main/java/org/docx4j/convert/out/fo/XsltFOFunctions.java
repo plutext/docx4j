@@ -101,6 +101,7 @@ public class XsltFOFunctions {
         		 true);
 
     	applySdtContainerMargins(docfrag, tag);
+    	resetContainerIndents(docfrag, tag);
     	wrapInBidiBlockContainer(docfrag);
 
     	return docfrag;
@@ -120,6 +121,7 @@ public class XsltFOFunctions {
     	DocumentFragment docfrag = createBlock(context, pPrDirect, pStyleVal, childResults, true);
 
     	applySdtContainerMargins(docfrag, tag);
+    	resetContainerIndents(docfrag, tag);
     	wrapInBidiBlockContainer(docfrag);
 
     	return docfrag;
@@ -128,20 +130,74 @@ public class XsltFOFunctions {
 	/**
 	 * Set margins, but only for a shading container, not a borders container
 	 * (so there isn't a white strip between shaded paragraphs).
+	 *
+	 * <p>{@code margin} is a shorthand for the space properties, and FOP 2.11 lets it win
+	 * over a {@code space-before}/{@code space-after} set on the same element - so
+	 * writing it here silently cancelled the paragraph's own spacing.  Proved by
+	 * running two blocks through FOP: one with {@code margin-top="0in"
+	 * space-before="30pt" space-before.conditionality="retain"} rendered at y=80.6,
+	 * level with its sibling; the identical block without {@code margin-top} rendered
+	 * at 122.6, exactly 30pt down.  Measured on two corpus documents of one template,
+	 * whose row-1 cells Word puts on baseline 145.3 and we put at 142.0; the -3.3pt
+	 * grew to -14.0pt by y=695 and moved the closing paragraph onto the wrong page.
+	 * So the shorthand is written only where there is no space of that side to lose.
+	 * @since 17.0.6</p>
 	 */
 	private static void applySdtContainerMargins(DocumentFragment docfrag, String tag) {
 
     	if (tag.equals(Containerization.TAG_SHADING) && docfrag!=null) {
     		// docfrag.getNodeName() is  #document-fragment
     	    Node foBlock = docfrag.getFirstChild();
-    	    if (foBlock!=null) {
-				((Element)foBlock).setAttribute("margin-top", "0in");
-				((Element)foBlock).setAttribute("margin-bottom", "0in");
-
-//				((Element)foBlock).setAttribute("padding-top", "0in");
-//				((Element)foBlock).setAttribute("padding-bottom", "0in");
+    	    if (foBlock instanceof Element) {
+    	    	Element block = (Element)foBlock;
+    	    	if (isZeroOrAbsent(block.getAttribute("space-before"))) {
+    	    		block.setAttribute("margin-top", "0in");
+    	    	}
+    	    	if (isZeroOrAbsent(block.getAttribute("space-after"))) {
+    	    		block.setAttribute("margin-bottom", "0in");
+    	    	}
     	    }
     	}
+	}
+
+	/**
+	 * {@code start-indent}, {@code end-indent} and {@code text-indent} are inherited
+	 * XSL-FO properties, and a shading container is built from the pPr of the
+	 * <em>first</em> paragraph in it - so every later paragraph of the group which does
+	 * not set its own is displaced by the first one's indents.  Measured: a shaded group
+	 * opening with a {@code ListParagraph} (w:ind left=1440 hanging=360) put its
+	 * following body paragraphs at x=126.0..236.0 where Word draws them at
+	 * 72.0..182.3 - the same width, 54pt right (72 inherited less the 18pt
+	 * text-indent), on eight such blocks in one document.  The paragraphs inside keep
+	 * their own indents, so the wrapper is reset.
+	 *
+	 * @since 17.0.6
+	 */
+	private static void resetContainerIndents(DocumentFragment docfrag, String tag) {
+		if (!Containerization.TAG_SHADING.equals(tag) || docfrag == null) return;
+		Node foBlock = docfrag.getFirstChild();
+		if (!(foBlock instanceof Element)) return;
+		Element block = (Element) foBlock;
+		block.setAttribute("start-indent", "0pt");
+		block.setAttribute("end-indent", "0pt");
+		block.setAttribute("text-indent", "0pt");
+	}
+
+	/** Whether an FO length attribute is absent, empty or a zero of any unit. */
+	private static boolean isZeroOrAbsent(String length) {
+		if (length == null || length.length() == 0) return true;
+		String v = length.trim();
+		int i = 0;
+		while (i < v.length() && (Character.isDigit(v.charAt(i)) || v.charAt(i) == '.'
+				|| v.charAt(i) == '-' || v.charAt(i) == '+')) {
+			i++;
+		}
+		if (i == 0) return false;
+		try {
+			return Double.parseDouble(v.substring(0, i)) == 0d;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
     public static DocumentFragment createInlineForSdt(
@@ -1810,16 +1866,10 @@ public class XsltFOFunctions {
 			if (indOut!=null && indent.getObject() instanceof PPrBase.Ind) {
 				indOut[0] = (PPrBase.Ind)indent.getObject();
 			}
-			if (indent.isHanging() ) {
-				indent.setXslFOListBlock(foListBlock, -1);	        			
-			} else {
-				
-				int numWidth = 90 * numChars; // crude .. TODO take font size into account
-				
-			    int pdbs = getDistanceToNextTabStop(indent.getNumberPosition(), numWidth,
-			    		pPrDirect.getTabs(), wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
-				indent.setXslFOListBlock(foListBlock, pdbs);	        				        			
-			}
+			int numWidth = 90 * numChars; // crude .. TODO take font size into account
+			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth);
+			// -1 in the hanging case where the label fits, so the hanging indent stands
+			indent.setXslFOListBlock(foListBlock, pdbs);
 			indentHandledByNumbering = true; 
 			
 //	        		// Set the font
@@ -1943,11 +1993,44 @@ public class XsltFOFunctions {
 	private static int labelGapTwips(WordprocessingMLPackage wmlPackage, Indent indent,
 			PPrBase.Ind resolved, PPr pPrDirect, int numChars) {
 
-		if (indent.isHanging() && resolved!=null && resolved.getHanging()!=null) {
+		int numWidth = 90 * numChars;
+		if (indent.isHanging() && resolved!=null && resolved.getHanging()!=null
+				&& resolved.getHanging().intValue() >= numWidth) {
 			return resolved.getHanging().intValue();
 		}
 		if (wmlPackage==null) return 0;
-		return getDistanceToNextTabStop(indent.getNumberPosition(), 90 * numChars,
+		return getDistanceToNextTabStop(indent.getNumberPosition(), numWidth,
+				pPrDirect.getTabs(), wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
+	}
+
+	/**
+	 * The width of a list block's label column: the level's hanging indent where the label
+	 * fits inside it (-1, which {@link Indent#setXslFOListBlock} reads as "the hanging
+	 * indent"), and otherwise what {@code w:suff} says - the next tab stop past the
+	 * label, the label plus one space, or the label itself.
+	 *
+	 * <p>&#xa7;2.8 took the tab-stop path only where the level has no hanging indent at all;
+	 * a hanging indent narrower than the label was not covered, and the label overprinted
+	 * the text.  Measured (CR-001 &#xa7;2.8): with {@code w:ind w:left="40" w:hanging="6"},
+	 * a {@code w:tab w:pos="358"} and a "(%1)" label, Word puts "(" at x=56.66 and the
+	 * text at 72.98 - the 358tw stop - where our 0.3pt label column produced
+	 * "(M2i)tverpachtet".</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static int labelColumnTwips(WordprocessingMLPackage wmlPackage, Indent indent,
+			PPr pPrDirect, ResultTriple triple, int numWidth) {
+
+		PPrBase.Ind ind = indent.getObject() instanceof PPrBase.Ind ? (PPrBase.Ind)indent.getObject() : null;
+		int hanging = (ind!=null && ind.getHanging()!=null) ? ind.getHanging().intValue() : -1;
+		if (hanging >= numWidth) return -1;   // the label fits: the hanging indent stands
+
+		String suff = triple!=null && triple.getLvl()!=null && triple.getLvl().getSuff()!=null
+				&& triple.getLvl().getSuff().getVal()!=null
+				? triple.getLvl().getSuff().getVal() : "tab";
+		if ("nothing".equals(suff)) return numWidth;
+		if ("space".equals(suff)) return numWidth + 90;   // one space, on the same crude scale
+		return getDistanceToNextTabStop(indent.getNumberPosition(), numWidth,
 				pPrDirect.getTabs(), wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
 	}
     

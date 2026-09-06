@@ -232,6 +232,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	// will apply these as a default on each td, and then override
     createCellProperties(cellProperties, table.getEffectiveTableStyle().getTblPr());
     cellPropertiesTableSize = cellProperties.size();
+    // resolved per cell below: the outer definitions belong to the table's edges
+    TblBorders tableBorders = table.getEffectiveTableStyle().getTblPr()==null ? null
+    		: table.getEffectiveTableStyle().getTblPr().getTblBorders();
     
     docfrag.appendChild(tableRoot);
 	try {
@@ -298,6 +301,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					cellNode = createNode(doc, row, (inHeader ? NODE_TABLE_HEADER_CELL : NODE_TABLE_BODY_CELL));
 					row.appendChild(cellNode);
 					//Apply cell style
+					createCellBorderProperties(cellProperties, tableBorders,
+							rowIndex, table.getRows().size(), cell, table.getColCount());
 					createCellProperties(cellProperties, cell.getTcPr());
 					processAttributes(context, cellProperties, cellNode);
 					applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, false);
@@ -878,18 +883,16 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			return;
 		}
 		
-	TblBorders tblBorders = tblPr.getTblBorders();
 	CTTblCellMar tblCellMargin = tblPr.getTblCellMar();
-		if (tblBorders!=null) {
-			if (tblBorders.getInsideH()!=null) {
-				properties.add(new BorderTop(tblBorders.getTop()));
-				properties.add(new BorderBottom(tblBorders.getBottom()));
-			}
-			if (tblBorders.getInsideV()!=null) { 
-				properties.add(new BorderRight(tblBorders.getRight()));
-				properties.add(new BorderLeft(tblBorders.getLeft()));
-			}						
-		}
+		/* w:tblBorders is no longer applied here: its top/bottom/left/right describe the
+		 * table's outer edge and insideH/insideV the rules between cells (ECMA-376
+		 * 17.4.39), so it has to be resolved per cell - createCellBorderProperties.
+		 * Until 17.0.6 the outer definition went on every cell whenever insideH or
+		 * insideV existed, which is right only where the two agree: measured on a table
+		 * whose outer borders are nil and whose insideV is single sz=18 color=FFFFFF,
+		 * Word draws a 2.25pt white rule between the columns (fill_path
+		 * x=186.1..188.2) and every one of our cells came out border-*-style="none".
+		 * @since 17.0.6 */
 
 				if (tblCellMargin != null) {
 			if (tblCellMargin.getTop() != null)
@@ -924,6 +927,34 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		w.setType("dxa");
 		w.setW(java.math.BigInteger.valueOf(WORD_DEFAULT_CELL_MARGIN_TWIPS));
 		return w;
+	}
+
+	/**
+	 * The table's own borders, resolved for one cell: the outer definitions
+	 * (top/bottom/left/right) apply to the cells on the table's edges and
+	 * insideH/insideV to the sides which face another cell (ECMA-376 17.4.39).  The
+	 * cell's own w:tcBorders, applied after this, overrides.
+	 *
+	 * @since 17.0.6
+	 */
+	protected void createCellBorderProperties(List<Property> properties, TblBorders tblBorders,
+			int rowIndex, int rowCount, TableModelCell cell, int colCount) {
+		if (tblBorders == null || cell == null) return;
+		boolean firstRow = rowIndex <= 0;
+		boolean lastRow  = rowIndex + cell.getExtraRows() >= rowCount - 1;
+		int col = cell.getColumn();
+		boolean firstCol = col <= 0;
+		boolean lastCol  = col + cell.getExtraCols() >= colCount - 1;
+
+		CTBorder top    = firstRow ? tblBorders.getTop()    : tblBorders.getInsideH();
+		CTBorder bottom = lastRow  ? tblBorders.getBottom() : tblBorders.getInsideH();
+		CTBorder left   = firstCol ? tblBorders.getLeft()   : tblBorders.getInsideV();
+		CTBorder right  = lastCol  ? tblBorders.getRight()  : tblBorders.getInsideV();
+
+		if (top != null)    properties.add(new BorderTop(top));
+		if (bottom != null) properties.add(new BorderBottom(bottom));
+		if (left != null)   properties.add(new BorderLeft(left));
+		if (right != null)  properties.add(new BorderRight(right));
 	}
 
 	protected void createCellProperties(List<Property> properties, TcPr tcPr) {

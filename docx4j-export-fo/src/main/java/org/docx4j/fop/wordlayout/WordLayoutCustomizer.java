@@ -75,6 +75,30 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return v == null ? DEFAULT_MAX_HYPHEN_SPACE_SHRINK : v.doubleValue();
 	}
 
+	/** How stretched the alternative line has to be before Word compresses instead.
+	 *  Word does <em>not</em> compress a justified line to pull one more word on merely
+	 *  because the compression is inside {@link #MAX_SPACE_SHRINK}; it does so only when
+	 *  the line it would otherwise leave is very loose.  Measured (CR-001 §4.2, corpus
+	 *  batch 1): on three corpus lines Word refused compressions of 22.5%, 15.1% and
+	 *  13.3% and took a line stretched by 38.5%, 16.1% and 12.8% instead, while in the
+	 *  <code>break-justified</code> golden it compressed lines whose alternative was far
+	 *  looser again.  Swept on that probe: 0 and 0.1 break 98% of its lines as Word
+	 *  does, <b>0.2 and 0.3 break 100%</b>, 0.5 gives 83% and 0.7 gives 57%; on the
+	 *  batch-1 documents carrying these lines 0.3 is also the maximum (77.5% -> 80.2% of
+	 *  lines matched).  docx4j property or system property
+	 *  docx4j.convert.out.fo.wordLayout.minStretchToCompress; 0 restores 17.0.5's
+	 *  behaviour of compressing whenever the shrink is within the cap.
+	 *  @since 17.0.6 */
+	public static final String MIN_STRETCH_TO_COMPRESS
+			= "docx4j.convert.out.fo.wordLayout.minStretchToCompress";
+
+	public static final double DEFAULT_MIN_STRETCH_TO_COMPRESS = 0.30;
+
+	public static double minStretchToCompress() {
+		Double v = doubleProperty(MIN_STRETCH_TO_COMPRESS);
+		return v == null ? DEFAULT_MIN_STRETCH_TO_COMPRESS : v.doubleValue();
+	}
+
 	/** Whether <code>w:hyphenationZone</code> is enforced as the largest gap Word will
 	 *  leave at a line end before hyphenating.  Measured on the two hyphenation probes,
 	 *  whose zones are 18pt and 36pt: Word's line breaks are the same in both, and it

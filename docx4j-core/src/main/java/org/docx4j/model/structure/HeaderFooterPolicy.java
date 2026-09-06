@@ -225,6 +225,22 @@ public class HeaderFooterPolicy {
 		}
 	}
 
+	/**
+	 * Whether this is the empty header or footer docx4j invents where
+	 * <code>w:titlePg</code> or <code>w:evenAndOddHeaders</code> asks for one the
+	 * document does not have.  Word reserves no space at all for a header or footer
+	 * which is not in the document, so a caller sizing the page's regions must not
+	 * treat one of these as a real, if empty, part.
+	 *
+	 * @since 17.0.6
+	 */
+	public static boolean isDummy(org.docx4j.openpackaging.parts.Part part) {
+		return part != null && part.getPartName() != null
+				&& (part == dummyHeader || part == dummyFooter
+					|| "/word/dummyheader.xml".equals(part.getPartName().getName())
+					|| "/word/dummyfooter.xml".equals(part.getPartName().getName()));
+	}
+
 	private HeaderPart getDummyHeader() {
 		if (dummyHeader == null) {
 			createDummyHeaderFooter();

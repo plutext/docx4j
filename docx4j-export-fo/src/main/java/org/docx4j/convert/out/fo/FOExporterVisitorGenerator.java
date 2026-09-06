@@ -627,10 +627,18 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			}
 		}
 		
-		if ((!firstBr) && 
+		if ((br.getType()==null || br.getType().equals(STBrType.TEXT_WRAPPING))
+				&& XsltCommonFunctions.isLeadingBreak(br)) {
+			// Word gives a break which opens a paragraph an empty line of its own, as it
+			// does one which ends it (measured, CR-001 §4.3); a no-break space makes one
+			DocumentFragment line = XsltCommonFunctions.fontSelectorForGeneratedText(conversionContext, pPr, rPr, "\u00A0");
+			if (line != null) getCurrentParent().appendChild(document.importNode(line, true));
+		}
+
+		if ((!firstBr) &&
 				(br.getType()==null
 				  || br.getType().equals(STBrType.TEXT_WRAPPING))) {
-			
+
 			// ie  a soft-return following another
 			// 
 			Element ret = createNode(document, NODE_BLOCK);

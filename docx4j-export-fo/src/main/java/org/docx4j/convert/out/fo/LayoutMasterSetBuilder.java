@@ -24,6 +24,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
+import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
@@ -158,6 +159,18 @@ public class LayoutMasterSetBuilder {
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			/* The pre-pass could not measure the headers and footers, and until 17.0.6
+			 * the dummy extents it started with survived: each region then took about
+			 * half the page, leaving a body strip a couple of lines high.  One corpus
+			 * document (whose docDefaults carry w:vanish, so the trimmed package
+			 * produced an invalid empty fo:flow) came out as 35 pages for Word's 3.
+			 * A header or footer we could not measure is much better treated as absent.
+			 * @since 17.0.6 */
+			try {
+				zeroExtents(lms, context.getSections());
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
+			}
 		}
         if(log.isDebugEnabled()) {
             log.debug("resulting LMS: " + XmlUtils.marshaltoString(lms, Context.getXslFoContext()));
@@ -167,11 +180,28 @@ public class LayoutMasterSetBuilder {
 		
 	}
 	
+	/**
+	 * Give every header and footer region a zero extent, and the body the margins
+	 * w:pgMar asks for: what {@link FOPAreaTreeHelper#adjustLayoutMasterSet} would do
+	 * had it measured every region as empty.  Used only when the extent pre-pass fails.
+	 *
+	 * @since 17.0.6
+	 */
+	private static void zeroExtents(LayoutMasterSet lms, ConversionSectionWrappers sections) {
+		Map<String, Integer> zeroes = new HashMap<String, Integer>();
+		for (Object o : lms.getSimplePageMasterOrPageSequenceMaster()) {
+			if (o instanceof SimplePageMaster) {
+				zeroes.put(((SimplePageMaster)o).getMasterName(), Integer.valueOf(0));
+			}
+		}
+		FOPAreaTreeHelper.adjustLayoutMasterSet(lms, sections, zeroes, zeroes);
+	}
+
     /**
      * For XSLFOExporterNonXSLT
      * @since 3.0
-     * 
-     */	
+     *
+     */
 	public static void appendLayoutMasterSetFragment(AbstractWmlConversionContext context, Node foRoot) {
 
 		LayoutMasterSet lms = getFoLayoutMasterSet(context);	

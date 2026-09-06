@@ -301,11 +301,34 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 			 * all where Word prints the total on every page.  The 2-pass path resolves
 			 * the count from the area tree first, which is what it exists for.
 			 * @since 17.0.6 */
-			if (wrapper.getPageNumberInformation().isNumpagesPresent() && i < wrapperList.size()-1) {
+			if (wrapper.getPageNumberInformation().isNumpagesPresent()
+					&& (i < wrapperList.size()-1 || twoPassForNumpages())) {
 				numPagesUsed = true;
 			}
 		}
 		return (ret || numPagesUsed || ((sectionPagesUsed) && (wrapperList.size() > 1)));
 	}
-	
+
+	/**
+	 * Whether a NUMPAGES anywhere makes the conversion two-pass, so that the count is
+	 * written as a literal the way Word prints it, rather than as an
+	 * {@code fo:page-number-citation-last} FOP resolves after it has broken the line.
+	 *
+	 * <p>FOP reserves the width of "MMM" for an unresolved citation.  Measured on a
+	 * corpus document whose footer is an image, "Trang ", the page number, "/" and the
+	 * count: the line no longer fitted and wrapped, Word's "Trang 1/ 2" at y=775.7
+	 * x=525.3..572.0 becoming "Trang 1/" at 761.9 and "2" at 775.6 x=40.5, and the
+	 * footer region grew to 53.5pt, costing the body that much on every page.  A
+	 * document of several sections was already two-pass for the same field.</p>
+	 *
+	 * <p>Set {@code docx4j.convert.out.fo.twoPassForNumpages} to false to keep the
+	 * single pass (and the citation) where the second render costs too much.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static boolean twoPassForNumpages() {
+		return org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.twoPassForNumpages", true);
+	}
+
 }

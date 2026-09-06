@@ -96,6 +96,30 @@ public class SolidusBreakTest {
 		assertEquals("FOP (UAX #14) breaks after a solidus", true, broken);
 	}
 
+	/**
+	 * Word breaks <em>before</em> a word which begins with a solidus; UAX #14 rule LB13
+	 * forbids a break before class SY, so FOP made the space and the word one
+	 * unbreakable unit.  Measured (CR-001 &#xa7;4.3) on an 84.2pt header cell holding
+	 * "Roll Number /Registration Number": Word sets "Roll Number " and "/Registration ",
+	 * where ours painted "Roll" and then a 93.5pt "Number /Registration" 6pt outside the
+	 * table.
+	 */
+	@Test
+	public void breaksBeforeASlashLedWord() throws Exception {
+		// "aaaa bbbb cccc dddd" = 19 chars, and "/Registration" (13) does not fit after it
+		List<String> got = lines(fo("aaaa bbbb cccc dddd /Registration Number"), true);
+		assertEquals("aaaa bbbb cccc dddd", got.get(0));
+		assertEquals("/Registration Number", got.get(1));
+	}
+
+	@Test
+	public void fopItselfWillNotBreakBeforeASlashLedWord() throws Exception {
+		List<String> got = lines(fo("aaaa bbbb cccc dddd /Registration Number"), false);
+		// LB13 forbids a break before the "/", so FOP's only opportunity is after it
+		assertEquals("UAX #14 LB13 keeps the space and the slash-led word together",
+				"aaaa bbbb cccc dddd /", got.get(0));
+	}
+
 	@Test
 	public void slashJoinedWordsStayTogether() throws Exception {
 		// "aaaa bbbb cccc dddd eeee" = 24 chars; "OpenOffice/jodconverter" (23) must go whole to line 2

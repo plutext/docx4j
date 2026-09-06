@@ -1803,17 +1803,30 @@ public final class WordLayoutFixups {
 	 * document of a 103-document corpus has eleven such cells, and lost its whole
 	 * export to them.</p>
 	 *
+	 * <p>{@code fo:flow} and {@code fo:static-content} have the same content model, and a
+	 * document whose {@code w:docDefaults/w:rPrDefault/w:rPr} carries {@code w:vanish} -
+	 * every run in it hidden - produces an empty flow.  FOP then fails the export, and
+	 * the header/footer extent pre-pass, which runs the same pipeline over a trimmed
+	 * copy, fails with it: measured, one corpus document was rendered with the
+	 * half-page default extents that failure leaves behind, 35 pages for Word's 3.</p>
+	 *
 	 * @since 17.0.6
 	 */
 	static void blockForEmptyCell(Document doc) {
-		for (Element cell : elements(doc, "table-cell")) {
+		blockForEmptyContainers(doc, "table-cell");
+		blockForEmptyContainers(doc, "flow");
+		blockForEmptyContainers(doc, "static-content");
+	}
+
+	private static void blockForEmptyContainers(Document doc, String localName) {
+		for (Element cell : elements(doc, localName)) {
 			boolean hasBlock = false;
 			for (Node n = cell.getFirstChild(); n != null && !hasBlock; n = n.getNextSibling()) {
 				if (!(n instanceof Element)) continue;
 				Element child = (Element) n;
 				hasBlock = isFo(child, "block") || isFo(child, "block-container")
 						|| isFo(child, "table") || isFo(child, "list-block")
-						|| isFo(child, "table-and-caption") || isFo(child, "block-container");
+						|| isFo(child, "table-and-caption");
 			}
 			if (hasBlock) continue;
 			cell.appendChild(doc.createElementNS(FO_NS, "fo:block"));

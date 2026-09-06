@@ -309,9 +309,17 @@ public class Indent extends AbstractParagraphProperty {
 
 			// start = left - hanging
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-hangingInt) );
-			
-			// pdbs = hanging
-			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(hangingInt));
+
+			/* pdbs = hanging, unless the caller measured the label as wider than the
+			 * hanging indent: Word keeps the label's natural width and sends the text to
+			 * the first tab stop past it rather than overprinting.  Measured on a
+			 * document whose paragraphs are <w:ind w:left="40" w:hanging="6"/> with a
+			 * <w:tab w:val="left" w:pos="358"/> and a "(%1)" label: Word draws "(" at
+			 * x=56.66 and the text's "M" at 72.98 - the 358tw stop - where our 0.3pt
+			 * label column gave "(M2i)tverpachtet".  A caller which has not measured
+			 * passes -1.  @since 17.0.6 */
+			int labelGap = pdbs > hangingInt ? pdbs : hangingInt;
+			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(labelGap));
 
 			// text is always 0
 			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(0) );

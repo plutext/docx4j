@@ -154,7 +154,7 @@ final class LBP {
 
 	// ---- TextLayoutManager.mappings / letterSpaceIPD / foText (private)
 
-	private static final Field TLM_MAPPINGS, TLM_LETTER_SPACE, TLM_FOTEXT;
+	private static final Field TLM_MAPPINGS, TLM_LETTER_SPACE, TLM_FOTEXT, TLM_SPACE_CHAR_IPD;
 	static {
 		try {
 			TLM_MAPPINGS = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("mappings");
@@ -163,6 +163,8 @@ final class LBP {
 			TLM_LETTER_SPACE.setAccessible(true);
 			TLM_FOTEXT = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("foText");
 			TLM_FOTEXT.setAccessible(true);
+			TLM_SPACE_CHAR_IPD = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("spaceCharIPD");
+			TLM_SPACE_CHAR_IPD.setAccessible(true);
 		} catch (ReflectiveOperationException e) {
 			throw new IllegalStateException("FOP's TextLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
 		}
@@ -180,6 +182,15 @@ final class LBP {
 	static org.apache.fop.traits.MinOptMax letterSpaceIPD(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
 		try {
 			return (org.apache.fop.traits.MinOptMax) TLM_LETTER_SPACE.get(tlm);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/** The advance of the space character in the manager's space font, in millipoints. */
+	static int spaceCharIPD(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		try {
+			return TLM_SPACE_CHAR_IPD.getInt(tlm);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}

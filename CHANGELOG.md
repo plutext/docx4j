@@ -246,6 +246,38 @@ own column at the list indent
 - a paragraph which begins with an anchored picture, a text box or a floating table now
 keeps its first-line indent: the object's wrapper is block-level, and FOP indents no
 anonymous block after one
+- a run's character spacing (w:spacing) is now measured once: FOP adds the letter space to a
+word space twice, and counts one letter space fewer per word than Word, so a line of
+letter-spaced runs came out 11pt wide of Word's
+- a justified line is compressed to pull one more word onto it only where the line it would
+otherwise leave is very loose; being inside the shrink cap is not enough
+(docx4j.convert.out.fo.wordLayout.minStretchToCompress, default 0.30)
+- the header/footer extent pre-pass no longer leaves half-page regions behind when it fails:
+the extents fall back to nothing.  A document whose w:docDefaults hide every run (w:vanish)
+no longer produces the empty fo:flow which made it fail - 3 Word pages had come out as 35
+- margin-top/margin-bottom on a shading container no longer cancels the paragraph's
+space-before/space-after, which FOP lets the shorthand win over
+- a w:br which opens a paragraph now takes a line of its own, as one which ends it does
+- w:tblBorders is now resolved per cell: top/bottom/left/right apply to the table's edges and
+insideH/insideV between cells.  The outer definition used to go on every cell, so a table
+whose outer borders are nil lost the rules its insideV draws
+- a section with no header part no longer reserves w:header as its top margin; likewise the
+footer distance where docx4j invents an empty part for w:titlePg or w:evenAndOddHeaders
+- w:numId w:val="0" now takes the paragraph out of the list entirely (ECMA-376 17.9.18): the
+level's indent no longer applies, only the paragraph's own w:ind
+- Word breaks before a word which begins with "/", where UAX #14 forbids it; the space in
+front of such a word is no longer unbreakable.  The rule that Word does not break after a
+"/" is unchanged
+- a borders/shading container no longer passes its first paragraph's indents to the
+paragraphs which follow it inside the container
+- font substitutes: Arial Black now prefers Noto Sans Black (1.11x Arimo, against Word's
+1.13x) and Tw Cen MT is treated as the sans it is instead of falling through to Times
+- a list label wider than its hanging indent no longer overprints the text: as in Word the
+text starts at the first tab stop past the label, or after one space (w:suff)
+- a NUMPAGES field now takes the 2-pass path wherever it appears, so the count is written as
+a literal: FOP reserves the width of "MMM" for an unresolved fo:page-number-citation-last,
+which wrapped a footer line Word keeps on one and cost the body 53.5pt on every page
+(docx4j.convert.out.fo.twoPassForNumpages=false to keep the single pass)
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

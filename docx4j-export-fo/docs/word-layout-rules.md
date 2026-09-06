@@ -360,6 +360,27 @@ and -77.8pt on the three labels. On a right-aligned Cyrillic heading the label w
 own left margin. Left-aligned and justified paragraphs keep the hanging-indent geometry,
 where the label does stand at the list indent.
 
+<a id="s28wide"></a>**A label wider than the hanging indent** does not overprint the text:
+Word keeps the label's natural width and sends the text to the first tab stop past it (or,
+per `w:suff`, one space past it, or straight after it). Measured on a document whose
+paragraphs are `<w:ind w:left="40" w:hanging="6"/>` with a `<w:tab w:val="left"
+w:pos="358"/>` and a `(%1)` label: Word draws "(" at x=56.66, "2" at 60.02, ")" at 65.54, a
+space at 68.90 and the text's "M" at **72.98** - the 358tw stop - where our 0.3pt label
+column produced "(M2i)tverpachtet". The label column
+(`provisional-distance-between-starts`) is therefore the hanging indent only where the
+label fits inside it; otherwise it is what `w:suff` says, on the same crude label-width
+estimate the no-hanging case already used. 10 documents of the three corpora have a label
+column under 5pt.
+
+<a id="s28numid0"></a>**`w:numId w:val="0"` takes the paragraph out of the list** (ECMA-376
+17.9.18), so neither the label nor the level's `w:ind` applies - only the paragraph's own.
+docx4j suppressed the label but kept the level's indent: measured on a heading styled with
+a style whose numbering (numId 2, ilvl 5) carries a 57.6pt hanging indent and which is
+overridden with `<w:numPr><w:ilvl w:val="0"/><w:numId w:val="0"/></w:numPr>` and
+`<w:ind w:left="720"/>`, Word draws it at x=78.5..541.2 and docx4j drew the same 462pt of
+text at 20.9..483.1 - exactly 57.6pt left, on ten paragraphs. Only the components the
+inherited level contributed are dropped, so a `w:ind` the style states itself survives.
+
 <a id="s28font"></a>**A level `w:rPr` which names no font** - Word writes
 `<w:rFonts w:hint="default"/>`, which says only how to choose between fonts it does not
 state - leaves the label in the paragraph's own font. Reading it as a font of its own reset
@@ -553,6 +574,27 @@ wrapper's copy survives and puts the gap back. Measured: a planner whose shaded 
 came out as 43. The wrapper's space-before and space-after now follow its first and last
 paragraph.
 
+<a id="s3contmargin"></a>**The wrapper must not write the `margin` shorthand where it has
+spacing.** A shading container carries `margin-top="0in" margin-bottom="0in"` so that no
+white strip appears between shaded paragraphs; the same element carries the paragraph's
+`space-before`/`space-after`, and FOP 2.11 lets the shorthand win. Proved by running two
+blocks through FOP: one with `margin-top="0in" space-before="30pt"
+space-before.conditionality="retain"` renders at y=80.6, level with its sibling cell; the
+identical block without `margin-top` renders at 122.6, exactly 30pt down. Measured on two
+corpus documents of one template whose row-1 cells Word puts on baseline 145.3 and docx4j
+put at 142.0: the -3.3pt grew to -14.0pt by y=695 and moved the closing paragraph off the
+page Word's own `w:lastRenderedPageBreak` puts it on. The shorthand is now written only on
+the side which has no space to lose.
+
+<a id="s3contindent"></a>**The wrapper must not pass on its first paragraph's indents.**
+`start-indent`, `end-indent` and `text-indent` are inherited XSL-FO properties, so every
+later paragraph of the group which does not set its own was displaced by the first one's.
+Measured: a shaded group opening with a `ListParagraph` (`w:ind w:left="1440"
+w:hanging="360"`) put the body paragraphs after it at x=126.0..236.0 where Word draws them
+at 72.0..182.3 - the same width, 54pt right (72 inherited less the 18pt text-indent) - on
+eight such blocks in one document. The shading wrapper is reset to zero and the paragraphs
+inside keep their own.
+
 <a id="s3bdrrun"></a>**One box for a run of identically bordered paragraphs, whatever their
 shading.** `Containerization` groups by border and then, *inside* that group, by shading,
 which is the right nesting - but both wrappers are built from the same paragraph's
@@ -631,11 +673,34 @@ lines as Word does (0.20 gives 78%, 0.30 gives 74%). For a document below mode 1
 writes `docx4j:space-shrink="0"` on `fo:root` and the line manager caps the allowance with
 it. Setting the property explicitly applies it to every document.
 
+Being inside that cap is **not** enough. Word compresses only when the line it would
+otherwise leave is very loose: measured on three corpus lines it refused compressions of
+22.5%, 15.1% and 13.3% and took an alternative stretched by only 38.5%, 16.1% and 12.8%
+instead, while every line it did compress in the `break-justified` golden had a far looser
+alternative again. `docx4j.convert.out.fo.wordLayout.minStretchToCompress` is how stretched
+that alternative has to be, as a fraction of the spaces' natural width; swept on the probe,
+0 and 0.1 break 98% of its lines as Word does, **0.2 and 0.3 break 100%**, 0.5 gives 83%
+and 0.7 gives 57%. The default is 0.30, which is also the maximum over the batch-1
+documents carrying those lines (77.5% -> 80.2% of lines matched). 0 restores 17.0.5's
+behaviour.
+
 ### 4.3 Break opportunities Word does not take
 
 Word does not break after a solidus, where UAX #14 lets FOP break: a URL, or a pair of
 words joined by a slash, goes whole to the next line. Word does not break a line at a tab
 either.
+
+Word does break **before** a word which begins with a solidus, where UAX #14 does not (rule
+LB13 forbids a break before class SY), so FOP made the space and the slash-led word one
+unbreakable unit: measured, an 84.2pt header cell holding "Roll Number /Registration
+Number" was painted "Roll" and then a 93.5pt "Number /Registration" running 6pt outside the
+table, where Word sets "Roll Number " and "/Registration ". FOP's elements for it are
+`box("Number") box(" ") box("/")` - the space is a non-breaking box - so the line manager
+puts a zero penalty after it (and relaxes the infinite penalty in the justified form).
+
+A `w:br` which **opens** a paragraph gets a line of its own, as one which ends it does:
+measured, Word's gap after a one-line paragraph followed by
+`<w:p><w:r><w:br/></w:r><w:r>...` is 25.7pt - two 12.85pt lines - where ours was 13.1pt.
 
 A literal U+00AD in a `w:t` is dropped from the FO: FOP does not break at a soft hyphen and
 most fonts have no glyph for one, so it was painted as a notdef box in the middle of a
@@ -1012,12 +1077,27 @@ following non-space break character. So expanded text overflowed the right margi
 measured 95pt over at 3pt spacing, and one word too many in Word's Title style at 0.25pt -
 and condensed text stopped short.
 
-The Word line manager re-derives the plain path's count for each word box. Measured on
-`spacing-char` (0.25 / 1 / 3pt expanded, 0.5pt condensed): every line breaks as Word's bar
-one 0.3pt marginal case, line parity 29% -> 79%, and `kern-title` 93% -> 100%. Counting a
-letter space after every character when measuring, rather than the plain path's count,
-broke a word early on every line, so Word's fit rule is the plain path's. Upstream FOP
-report candidate.
+FOP's *word space* is wrong the other way: `SpaceVal.makeWordSpacing` adds the letter space
+to it **twice** (its own TODO says "Adding 2 letter spaces here is not 100% correct"), so
+every space in a letter-spaced run is measured one letter space too wide. Measured on a
+corpus document at Times New Roman 11pt whose space runs carry `w:spacing w:val="19"`
+(0.95pt): the natural space is 2.75pt, Word's advance 3.87 and ours was 4.65 = 2.75 + 2 x
+0.95; over 620 such runs a 447.4pt line came out 458.5pt. FOP's *painting* already follows
+Word here (`addMappingAreas` sets the word-space adjust to
+`wordSpaceIPD - spaceCharIPD - 2 x letterSpace`), so the correction goes on the glyph
+mapping - which is what both the Knuth element and the text area's width come from - and
+leaves FOP's `wordSpaceIPD` alone.
+
+With that corrected, Word's own rule holds on both sides: **one character space after every
+character, the word's last and the spaces included**. Measured on the `spacing-char` golden,
+Times New Roman 12pt, `w:spacing w:val="20"` (1pt): "expanded" advances 6.228 6.948 7.068
+6.228 6.948 7.068 6.228 7.068 - the final "d" is 6.0 + 1.068 - and the space after it is
+3.0 + 0.948. So the line manager brings both of FOP's paths (the complex one, which counts
+none, and the plain one, which counts `wordLength - 1`) to `wordLength`. Until 17.0.6 it
+used the plain path's count, which was right only while the doubled word space made up the
+difference. Line parity on the probe 29% -> 79%, `kern-title` 93% -> 100%; a corpus
+document of 620 letter-spaced space runs went 0.39 -> 0.98. Upstream FOP report candidate
+(two: `SpaceVal.makeWordSpacing` and `GlyphMapping.processWordMapping`).
 
 <a id="s46w"></a>**`w:w`, character scaling** (ECMA-376 17.3.2.43) multiplies the run's
 glyph advances by a percentage. Neither XSL-FO nor FOP can scale text horizontally: there
@@ -1104,6 +1184,8 @@ against the real font:
 | Consolas, Lucida Console | Cousine, else Liberation Mono | The stand-ins advance 0.6em to Consolas's 0.55em, so code lines longer than about 97 characters at 8pt wrap where Word's did not. Line heights still follow Consolas's own metrics. |
 | Cambria | Caladea | Left as it is: Caladea is 3.9% narrower on the regular face and 2.8% on the bold, and no installed face is closer. |
 | Verdana | DejaVu Sans (Arimo as last resort) | Verdana is much wider than Arial: measured on real documents' lines whose text matches Word's exactly, Word's Verdana lines are 1.141 x our Arimo ones, and a 14% narrow font re-breaks every line. DejaVu Sans is 1.14 x Arimo over a mixed Latin sample. Tahoma stays on Arimo: on an all-Tahoma document the median ratio is 1.006. |
+| Arial Black | Noto Sans Black (Arimo as last resort) | Arial Black is far heavier and wider than Arial: a centred Arial Black title Word draws 281.2pt wide came out 247.9pt on the same centre in Arimo - Word/ours 1.134 - where Noto Sans Black measures 1.1122 x Arimo over a mixed Latin sample. |
+| Tw Cen MT | Arimo | A geometric sans with no entry at all, so it fell through to the *serif* default: on a document where every y and x matched Word to 0.3pt its labels were 3-4% narrow. Arimo is 1.0605 x Tinos, so the residual is about 2%. |
 | Comic Sans MS | Noto Sans (DejaVu Sans, then Arimo) | Word's Comic Sans lines are 1.153 x our Carlito ones (the class-based fallback reached Carlito); Noto Sans is 1.15 x Carlito. |
 | Georgia, Book Antiqua, Palatino Linotype | P052, URW's Palladio (Tinos as last resort) | Word's Book Antiqua lines are 1.087-1.114 x our Tinos ones and its Georgia lines 1.076-1.112 x; P052 is 1.09 x Tinos. P052 is in the URW base 35 (ghostscript-fonts). |
 
@@ -1414,6 +1496,16 @@ over the column, each at `w:tblInd` 0 and −1300, autofit and fixed layout, eve
 in dxa - is that measurement; nothing has been changed here. Its Word golden has since
 arrived, and docx4j matches it on every line of all nine pages, so the rule above covers
 the shapes the probe holds and the disagreement is elsewhere.
+
+<a id="s65borders"></a>**`w:tblBorders` is resolved per cell.** Its `top`, `bottom`, `left`
+and `right` describe the table's **outer** edge and `insideH`/`insideV` the rules **between**
+cells (ECMA-376 17.4.39); the cell's own `w:tcBorders` overrides both. docx4j applied the
+outer definition to every cell whenever `insideH` or `insideV` existed, which looks right
+only where the two agree. Measured on a table whose outer borders are `nil` and whose
+`insideV` is `single sz="18" color="FFFFFF"`: `mutool draw -F trace` on Word's PDF shows a
+white 2.25pt rule between the columns (`fill_path x=186.1..188.2 y=251.6..278.0`) and every
+one of our cells came out `border-*-style="none"`. 39 documents of the three corpora, 403
+tables; the document this was measured on went from 0.17 to 0.93 of Word's lines.
 
 ### 6.6 `w:tblCellSpacing`
 
@@ -1754,6 +1846,30 @@ what Word measures; the space itself is invisible either way, since a static-con
 laid out from the region's top edge. 66 documents of the three corpora have a header or
 footer whose last block carries a space-after.
 
+<a id="s7nohdr"></a>**A header or footer the document does not have reserves nothing.**
+Where `w:titlePg` or `w:evenAndOddHeaders` asks for a header or footer the document has no
+part for, docx4j invents an empty one (`HeaderFooterPolicy.getDummyHeader`) so that the page
+master has a region to hang the static-content on. Its one empty paragraph measured a line
+box, and that line box was reserved: measured on a document with no header part and no
+`w:headerReference` at all, `w:pgMar w:top="432"` (21.6pt) and `w:header="706"` (35.3pt),
+Word's body top is `w:top` = 21.6 where ours was `35.3 + 13.799` = 49.1, and every line and
+the logo came out **+26.5 to +27.5pt** low (Word's line 203.3 -> ours 229.8; the logo's
+`mutool` ty 69.9 -> 97.4). Such a part now reserves nothing, on either side. 44 documents of
+the three corpora have `w:header` greater than `w:pgMar/@w:top` and no `headerReference`.
+
+<a id="s7extfail"></a>**If the pre-pass fails, the extents fall back to nothing**, not to
+the half-page values it starts from. `LayoutMasterSetBuilder` seeds each region with half
+the page height and replaces it from the area tree; when the pre-pass threw, the seed
+survived and the body became a strip a couple of lines high. Measured: one document renders
+**35 pages for Word's 3**, its FO saying `<region-before extent="396.0pt"/>` and
+`<region-after extent="396.0pt"/>` on a 792pt page with no header or footer part at all, so
+each page held two or three lines at y=366.7. The cause was its
+`styles.xml/docDefaults/rPrDefault/rPr` carrying `<w:vanish/>` - every run in the document,
+the pre-pass's own filler paragraphs included, is hidden text - which produced an empty
+`<fo:flow/>`, invalid FO. Both halves are fixed: the filler runs override `w:vanish`, and an
+`fo:flow` or `fo:static-content` with nothing in it gets one empty `fo:block`, as an empty
+`fo:table-cell` already did.
+
 <a id="s7negmar"></a>**A negative `w:pgMar/@w:top`** means "the body starts |top| from the
 page edge whatever the header does": Word lets the header overlap the text rather than
 pushing it down. Measured on a document with `w:top="-312"` (-15.6pt) and `w:header="709"`:
@@ -2021,8 +2137,26 @@ Worked around here, and worth knowing about:
 
 - **Letter-spacing is left out of the measured width** on FOP's complex-script text path
   (`GlyphMapping.processWordMapping`) while still being rendered, so expanded text
-  overflows and condensed text stops short. The line manager restores the plain path's
-  count (§4.6). Upstream report candidate.
+  overflows and condensed text stops short. The line manager restores Word's count
+  (§4.6). Upstream report candidate.
+- **The letter space is added to the word space twice.** `SpaceVal.makeWordSpacing` does
+  `space.plus(letterSpacing.getSpace().mult(2))`, with a TODO saying it is not right, so
+  every space in a letter-spaced run is measured one letter space too wide while
+  `addMappingAreas` paints it one letter space narrower than it measured it. Measured: a
+  2.75pt space in a run carrying `w:spacing w:val="19"` was laid out at 4.65pt where Word
+  advances 3.87. The line manager corrects the glyph mapping (§4.6). Upstream report
+  candidate.
+- **A break before a solidus is prohibited.** FOP follows UAX #14 rule LB13 (no break
+  before class SY); Word breaks there, so the space and the slash-led word after it were
+  one unbreakable unit (§4.3). Worked around in the line manager.
+- **`encoding-mode="single-byte"` misdescribes a CFF font.** It is what suppresses FOP's
+  unconditional `liga`/`ccmp`/`locl` (§5.5), but FOP forces such a font to
+  `FontType.TRUETYPE`: measured, declaring an `.otf` substitute this way does suppress the
+  ligatures and does extract, but the PDF holds `/Subtype /TrueType` with the `OTTO` file
+  in a `/FontFile2` stream, which only lenient readers draw. So a CFF-flavoured substitute
+  (URW's Nimbus Sans Narrow for Arial Narrow, Source Sans 3 for Segoe UI Light) still gets
+  FOP's ligatures, and its text layer carries U+FB01 or an unmapped private-use code
+  point. Not worked around; the fix belongs upstream.
 - **`fo:float` throws.** A side float of any height followed by content that overflows the
   page (a table row taller than the space left, say) makes FOP throw
   `java.util.NoSuchElementException` from `LMiter.next` under

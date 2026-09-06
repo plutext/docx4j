@@ -345,6 +345,29 @@ public class XsltCommonFunctions {
     	return seen;
     }
 
+    /**
+     * Whether nothing visible precedes this break in its paragraph, and something
+     * follows it: Word gives such a break a line of its own, the same way it does a
+     * trailing one.  Measured (CR-001 &#xa7;4.3): a paragraph opening
+     * <code>&lt;w:r&gt;&lt;w:br/&gt;&lt;/w:r&gt;</code> leaves Word a 25.7pt gap - two
+     * 12.85pt lines - where ours was 13.1pt, and the text below it 13.8pt high.
+     *
+     * @since 17.0.6
+     */
+    public static boolean isLeadingBreak(Br br) {
+    	P p = paragraphOf(br);
+    	if (p == null) return false;
+    	boolean seen = false;
+    	boolean followed = false;
+    	for (Object leaf : paragraphLeaves(p)) {
+    		if (leaf == br) { seen = true; continue; }
+    		if (!isVisibleLeaf(leaf)) continue;
+    		if (!seen) return false;   // something visible before it
+    		followed = true;
+    	}
+    	return seen && followed;
+    }
+
     private static PPr toPPr(NodeIterator pPrNodeIt) {
 
     	PPr pPr = null;
