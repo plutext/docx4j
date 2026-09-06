@@ -283,6 +283,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	protected boolean checkRequires2Pass() {
 	boolean ret = false;
 	boolean sectionPagesUsed = false;
+	boolean numPagesUsed = false;
 	ConversionSectionWrapper wrapper = null;
 	List<ConversionSectionWrapper> wrapperList = getSections().getList();
 		for (int i=0; (!ret) && (i < wrapperList.size()); i++) {
@@ -294,8 +295,17 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 			if (wrapper.getPageNumberInformation().isSectionpagesPresent()) {
 				sectionPagesUsed = true;
 			}
+			/* A NUMPAGES in any section but the last becomes a
+			 * fo:page-number-citation-last naming a *later* page-sequence, which FOP
+			 * cannot resolve while it lays that section out - so it painted nothing at
+			 * all where Word prints the total on every page.  The 2-pass path resolves
+			 * the count from the area tree first, which is what it exists for.
+			 * @since 17.0.6 */
+			if (wrapper.getPageNumberInformation().isNumpagesPresent() && i < wrapperList.size()-1) {
+				numPagesUsed = true;
+			}
 		}
-		return (ret || ((sectionPagesUsed) && (wrapperList.size() > 1)));
+		return (ret || numPagesUsed || ((sectionPagesUsed) && (wrapperList.size() > 1)));
 	}
 	
 }

@@ -414,6 +414,68 @@ public abstract class Mapper {
     }
 
     /**
+     * {@code w:altName} in {@code word/fontTable.xml} (ECMA-376 17.8.3.1): "the name of
+     * an alternate font which shall be used if the font specified is not available".
+     * That is the document author's own answer to a missing font, and Word takes it -
+     * measured on a document whose Normal style is {@code HelveticaNeue LT 55 Roman}
+     * with {@code &lt;w:altName w:val="Times New Roman"/&gt;}, where Word's PDF embeds
+     * TimesNewRomanPSMT while docx4j reached the theme's minorHAnsi (Arial) 2194 times,
+     * making our lines 1.072 x Word's over 140 matched lines and re-breaking them.
+     *
+     * <p>Consulted after {@link #addMetricallyCompatibleSubstitutes()} - a metric clone
+     * of the document's own font is a better answer than any alias - and before
+     * {@link #addClassBasedSubstitutes(Set)}, which is only a guess from the name.  A
+     * font the machine has, or the document embeds, keeps itself.</p>
+     *
+     * <p>The alternate name is resolved the way any document font is: the physical font
+     * of that name if the machine has it, else whatever this mapper has already mapped
+     * it to (its metric clone).  Where it resolves, the alternate is also registered
+     * with {@link WordLineMetrics} as this font's alias, since Word takes the line
+     * metrics of the font it actually uses (&#xa7;2.7).</p>
+     *
+     * @param documentFontNames the fonts the document uses; null for every font in the table
+     * @param wmlFonts the font table part's content
+     * @since 17.0.6
+     */
+    public void addAltNameSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {
+
+    	if (wmlFonts==null || wmlFonts.getFont()==null) return;
+
+    	// the table is keyed on the name as the document writes it; match case-insensitively
+    	Map<String, String> altNames = new java.util.HashMap<String, String>();
+    	for (org.docx4j.wml.Fonts.Font font : wmlFonts.getFont()) {
+    		if (font==null || font.getName()==null || font.getAltName()==null) continue;
+    		String alt = font.getAltName().getVal();
+    		if (alt==null || alt.trim().length()==0) continue;
+    		altNames.put(font.getName().trim().toLowerCase(), alt.trim());
+    	}
+    	if (altNames.isEmpty()) return;
+
+    	java.util.Collection<String> names = documentFontNames!=null ? documentFontNames : altNames.keySet();
+    	for (String documentFontName : names) {
+
+    		if (documentFontName==null || documentFontName.trim().length()==0) continue;
+    		if (get(documentFontName)!=null) continue;             // already mapped
+    		if (isEmbedded(documentFontName)) continue;
+    		if (PhysicalFonts.get(documentFontName)!=null) continue; // installed; identity
+
+    		String alt = altNames.get(documentFontName.trim().toLowerCase());
+    		if (alt==null || alt.equalsIgnoreCase(documentFontName.trim())) continue;
+
+    		PhysicalFont pf = PhysicalFonts.get(alt);
+    		if (pf==null) pf = PhysicalFonts.get(alt + " Regular");
+    		if (pf==null) pf = get(alt);
+    		if (pf==null) continue;
+
+    		if (log.isDebugEnabled()) {
+    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (w:altName " + alt + ")");
+    		}
+    		put(documentFontName, pf);
+    		WordLineMetrics.registerAlias(documentFontName, alt);
+    	}
+    }
+
+    /**
      * Map whatever is still unmapped after {@link #addMetricallyCompatibleSubstitutes()}
      * to a font of the same class.
      *

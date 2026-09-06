@@ -151,6 +151,7 @@ public final class WordLayoutFixups {
 		applyAutoSpacingBetweenListItems(doc);
 		syncContainerSpacing(doc);
 		retainSpaceBeforeAtFlowStart(doc);
+		retainSpacingAtStaticContentEnd(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
@@ -196,12 +197,35 @@ public final class WordLayoutFixups {
 	static void imageOnlyLineBox(Document doc) {
 		for (Element block : elements(doc, "block")) {
 			if (!block.hasAttribute(HINT_PSTYLE)) continue;
-			if (block.hasAttribute(HINT_LINE_BOX)) continue;
+			// an exact line rule fixes the line's height whatever is on it, picture included
+			if ("exact".equals(block.getAttribute(HINT_LINE_RULE))) continue;
 			double height = inlineGraphicHeight(block);
 			if (height <= 0) continue;
+			// applyBlockLineHeight very often does write a line box for such a paragraph
+			// - from the run the picture sits in, or from the paragraph mark - and the
+			// rule used to skip exactly the paragraphs it was written for, leaving the
+			// picture's line the paragraph's height *plus* the picture.  Word's line is
+			// the picture's own height with no descent, so the larger of the two wins.
+			// @since 17.0.6
+			double box = lengthPt(block.getAttribute(HINT_LINE_BOX));
+			if (height <= box) continue;
 			block.setAttribute(HINT_LINE_BOX, org.docx4j.fonts.WordLineMetrics.format(height));
 			block.setAttribute(HINT_BASELINE, org.docx4j.fonts.WordLineMetrics.format(height));
 			block.setAttribute(HINT_LINE_RULE, "auto");
+			// ... and the paragraph's line-spacing multiple does not apply to it: Word
+			// gives the picture's line the picture's height, not 1.5 x it.  Left at the
+			// text line-height, the extra leading is a fraction of the *picture*:
+			// measured on a document whose 269.68pt diagrams sit in blocks of
+			// line-box 13.428pt / line-height 20.142pt, the caption after each came out
+			// 132.6pt below Word's (515.8 against 383.2), almost exactly half the
+			// picture, and 88 Word pages came out as 105.  Only where there is a
+			// multiple to cancel (line-height beyond the box): a single-spaced
+			// paragraph's line-height is its box, and raising it grew a header holding
+			// a picture by 10.3pt, which re-centred the picture in its cell 5.1pt below
+			// Word's.  @since 17.0.6
+			if (box > 0 && lengthPt(block.getAttribute("line-height")) > box) {
+				block.setAttribute("line-height", org.docx4j.fonts.WordLineMetrics.format(height));
+			}
 		}
 	}
 
@@ -2382,6 +2406,63 @@ public final class WordLayoutFixups {
 		return true;
 	}
 
+	/**
+	 * A header's or footer's height, as Word measures it, includes the space-after of
+	 * its last paragraph.  XSL-FO drops space at the end of a reference area, so the
+	 * area-tree pre-pass which measures the two regions ({@link FOPAreaTreeHelper})
+	 * measured one space-after short, and &#xa7;7's
+	 * {@code max(top margin, header distance + header height)} then started the body
+	 * that much too high (and ended it that much too low).
+	 *
+	 * <p>Measured on a document with {@code w:pgMar w:top="1440" w:header="709"} whose
+	 * header and footer each hold two paragraphs with 10pt between them: our
+	 * {@code region-before} extent was 58.867pt and {@code region-after} 32.362pt, each
+	 * exactly the blocks' line boxes plus the <em>middle</em> 10pt.  Word's first body
+	 * line is at y=113.6 where ours was 102.3, and Word's footer line at 722.6 where
+	 * ours was 731.9 - 20.6pt more body on every one of 311 pages.</p>
+	 *
+	 * <p>Pinning the space rather than adding it in the helper keeps the two exporter
+	 * pathways in step and needs no second source of truth for the value; the space is
+	 * invisible either way, since a static-content is laid out from the region's top
+	 * edge and nothing follows the last block.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void retainSpacingAtStaticContentEnd(Document doc) {
+		for (Element sc : elements(doc, "static-content")) {
+			String flow = sc.getAttribute("flow-name");
+			if (!flow.startsWith("xsl-region-before") && !flow.startsWith("xsl-region-after")) {
+				continue; // the footnote separator is not a header
+			}
+			// An *empty* header or footer reserves nothing at all, and the header or
+			// footer distance alone must not move the body (§7): a section with no
+			// footer part still gets a region and a placeholder block, and pinning that
+			// block's docDefaults space-after made the region 10pt tall, which pulled
+			// the body up by the footer distance plus the space.  Measured: a document
+			// whose 44 sectPr say w:bottom="0" w:footer="720" with no footerReference
+			// spilled each section's last line onto a page of its own, 24 Word pages
+			// coming out as 89.  @since 17.0.6
+			if (!hasVisibleContent(sc)) continue;
+			Element last = lastBlock(sc);
+			if (last != null && hasSpace(last, "space-after")) {
+				last.setAttribute("space-after.conditionality", "retain");
+			}
+		}
+	}
+
+	/** Whether this region draws anything: text beyond white space, or a graphic, a
+	 *  leader, a page number, a table.  @since 17.0.6 */
+	private static boolean hasVisibleContent(Element el) {
+		String text = el.getTextContent();
+		if (text != null && text.trim().length() > 0) return true;
+		for (String name : new String[] { "external-graphic", "instream-foreign-object",
+				"leader", "page-number", "page-number-citation", "page-number-citation-last",
+				"table" }) {
+			if (el.getElementsByTagNameNS(FO_NS, name).getLength() > 0) return true;
+		}
+		return false;
+	}
+
 	static void retainSpacingAtCellEdges(Document doc, int compatibilityMode) {
 		for (Element cell : elements(doc, "table-cell")) {
 			List<Element> blocks = childBlocks(cell);
@@ -2395,7 +2476,13 @@ public final class WordLayoutFixups {
 			Element last = blocks.get(blocks.size() - 1);
 			if (last.getAttribute(HINT_AUTOSPACING).indexOf('a') >= 0) {
 				last.setAttribute("space-after", "0pt");
-			} else if (compatibilityMode >= 15 && hasSpace(last, "space-after")) {
+			} else if (hasSpace(last, "space-after")) {
+				// Word keeps a cell's last paragraph's space-after below mode 15 too:
+				// measured on a mode-14 document whose cell paragraphs carry
+				// w:spacing w:before="60" w:after="60" (3pt each), Word's row pitch is
+				// 119.6 -> 137.6 -> 155.6 = 18.0pt = 3 + 11.5 + 3, where ours was
+				// 110.7 -> 125.7 -> 139.2 (the space-before only) and the deficit grew
+				// to -25.4pt by y=360 on page 1.  @since 17.0.6
 				last.setAttribute("space-after.conditionality", "retain");
 			}
 		}

@@ -196,6 +196,11 @@ public class LayoutMasterSetBuilder {
 		LayoutMasterSet lms = getFactory().createLayoutMasterSet();
 		List<ConversionSectionWrapper> sections = context.getSections().getList();
 		ConversionSectionWrapper section = null;
+
+		/* w:gutterAtTop and w:mirrorMargins are document settings, not section ones;
+		 * they decide which edge w:pgMar/@w:gutter is added to.  @since 17.0.6 */
+		boolean gutterAtTop = settingIsOn(context, "gutterAtTop");
+		boolean mirrorMargins = settingIsOn(context, "mirrorMargins");
 		
 		for(int i=0; i<sections.size(); i++) {
 			
@@ -213,7 +218,7 @@ public class LayoutMasterSetBuilder {
 							section.getPageDimensions(), 
 							"firstpage",
 						(hf.getFirstHeader()!=null),
-						(hf.getFirstFooter()!=null) ));
+						(hf.getFirstFooter()!=null) , gutterAtTop, mirrorMargins));
 			}
 			
 			// has even or odd header or footer?
@@ -230,7 +235,7 @@ public class LayoutMasterSetBuilder {
 							section.getPageDimensions(), 
 							"evenpage",
 						(hf.getEvenHeader()!=null),
-						(hf.getEvenFooter()!=null) ));
+						(hf.getEvenFooter()!=null) , gutterAtTop, mirrorMargins));
 				
 				// the xslt outputs a "-default" page as the odd-page
 			}
@@ -243,7 +248,7 @@ public class LayoutMasterSetBuilder {
 							section.getPageDimensions(), 
 							"default",
 						(hf.getDefaultHeader()!=null),
-						(hf.getDefaultFooter()!=null) ));				
+						(hf.getDefaultFooter()!=null) , gutterAtTop, mirrorMargins));				
 			}
 
 			// simple: no headers and footers - after the first page anyway/
@@ -262,7 +267,7 @@ public class LayoutMasterSetBuilder {
 						createSimplePageMaster(sectionName + "-simple",  
 								section.getPageDimensions(), 
 								"simple",
-							true, true));
+							true, true, gutterAtTop, mirrorMargins));
 			}
 			
 			// SECOND, create page-sequence-masters
@@ -332,9 +337,31 @@ public class LayoutMasterSetBuilder {
 	}
 	
 	
+	/** @since 17.0.6 */
+	private static boolean settingIsOn(AbstractWmlConversionContext context, String name) {
+		try {
+			org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart dsp =
+					context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart();
+			if (dsp==null || dsp.getJaxbElement()==null) return false;
+			org.docx4j.wml.CTSettings settings = dsp.getJaxbElement();
+			org.docx4j.wml.BooleanDefaultTrue b = "gutterAtTop".equals(name)
+					? settings.getGutterAtTop() : settings.getMirrorMargins();
+			return b!=null && b.isVal();
+		} catch (Exception e) {
+			log.debug("Couldn't read w:" + name + ": " + e.getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * @param gutterAtTop w:settings/w:gutterAtTop
+	 * @param mirrorMargins w:settings/w:mirrorMargins - together these decide which edge
+	 *        w:pgMar/@w:gutter is added to (@since 17.0.6)
+	 */
 	private static SimplePageMaster createSimplePageMaster( 
 			String masterName, PageDimensions page, String appendRegionName, 
-			boolean needBefore, boolean needAfter) {
+			boolean needBefore, boolean needAfter,
+			boolean gutterAtTop, boolean mirrorMargins) {
 		
 		// This method uses dummy large extents
 		// A later step fixes them.
@@ -349,8 +376,34 @@ public class LayoutMasterSetBuilder {
 		spm.setPageHeight( UnitsOfMeasurement.twipToBest(page.getPgSz().getH().intValue() ));
 		spm.setPageWidth(  UnitsOfMeasurement.twipToBest(page.getPgSz().getW().intValue() ));
 		
-		spm.setMarginLeft( UnitsOfMeasurement.twipToBest(page.getPgMar().getLeft().intValue() ) );
-		spm.setMarginRight( UnitsOfMeasurement.twipToBest(page.getPgMar().getRight().intValue()) );
+		/* w:pgMar/@w:gutter is extra binding margin, added to the left margin (or to the
+		 * top with w:gutterAtTop; with mirrored margins it goes to the right on even
+		 * pages).  PageDimensions.getWritableWidthTwips() already subtracts it, so the
+		 * text column was the right width and started in the wrong place: measured on a
+		 * document with w:left="851" w:gutter="567", Word puts every portrait line at
+		 * x=70.9 (851 + 567 twips) where ours was at 42.5, -28.35pt on 222 pages.
+		 * @since 17.0.6 */
+		int gutterTwips = page.getGutter();
+		boolean gutterOnRight = !gutterAtTop && mirrorMargins
+				&& masterName!=null && masterName.endsWith("-evenpage");
+
+		int marginLeftTwips = page.getPgMar().getLeft().intValue()
+				+ ((gutterAtTop || gutterOnRight) ? 0 : gutterTwips);
+		int marginRightTwips = page.getPgMar().getRight().intValue()
+				+ (gutterOnRight ? gutterTwips : 0);
+
+		/* A section whose w:cols declares a single w:col narrower than the margin box
+		 * uses that width for its text: measured on a document whose margin box is
+		 * 451.45pt and whose w:cols says <w:col w:w="8640"/> (432pt), Word centres on
+		 * 288 where ours was 297.7 (+9.7pt on every centred line) and puts the right
+		 * edge at 504 where ours was 523.45 (+19.45pt).  §7's unequal-columns table is
+		 * only built for several w:col children, so a single narrow one fell through.
+		 * @since 17.0.6 */
+		int narrowing = page.getSingleColumnNarrowing();
+		if (narrowing > 0) marginRightTwips += narrowing;
+
+		spm.setMarginLeft( UnitsOfMeasurement.twipToBest(marginLeftTwips) );
+		spm.setMarginRight( UnitsOfMeasurement.twipToBest(marginRightTwips) );
 		
 		/* 
 		 * Region before & after live in region body margins:
@@ -406,7 +459,7 @@ public class LayoutMasterSetBuilder {
 			
 			// Margin top on SPM is space between the page edge and the start of the header			
 			int marginTopTwips 
-				=  page.getHeaderMargin();
+				=  page.getHeaderMargin() + (gutterAtTop ? gutterTwips : 0);
 			spm.setMarginTop( UnitsOfMeasurement.twipToBest(marginTopTwips ) );
 			
 			// Size header manually
@@ -418,8 +471,11 @@ public class LayoutMasterSetBuilder {
 			
 			
 		} else {
-			// No header
-			spm.setMarginTop( UnitsOfMeasurement.twipToBest(page.getPgMar().getTop().intValue() ) );
+			// No header.  A negative w:pgMar/@w:top means the body starts |top| from the
+			// page edge (§7, FOPAreaTreeHelper); a negative FO margin would put it off
+			// the page.  @since 17.0.6
+			spm.setMarginTop( UnitsOfMeasurement.twipToBest(
+					Math.abs(page.getPgMar().getTop().intValue()) + (gutterAtTop ? gutterTwips : 0) ) );
 		}
 
 		if (needAfter) {
@@ -438,8 +494,9 @@ public class LayoutMasterSetBuilder {
 			rb.setMarginBottom(halfPageHeightPts );
 			
 		} else {
-			// No footer
-			spm.setMarginBottom( UnitsOfMeasurement.twipToBest(page.getPgMar().getBottom().intValue()) );
+			// No footer; a negative w:pgMar/@w:bottom as above
+			spm.setMarginBottom( UnitsOfMeasurement.twipToBest(
+					Math.abs(page.getPgMar().getBottom().intValue())) );
 		}
 		
 		return spm;

@@ -64,7 +64,11 @@ public class WordLayoutFixupsTest {
 		assertEquals(1, count(out15, "space-after.conditionality=\"retain\""));
 		String out14 = WordLayoutFixups.apply(flow(cell), 14);
 		assertEquals(1, count(out14, "space-before.conditionality=\"retain\""));
-		assertEquals("bottom spacing in cells is a mode 15 rule", 0, count(out14, "space-after.conditionality=\"retain\""));
+		// Word keeps a cell's last paragraph's space-after below mode 15 too: measured on
+		// a mode-14 document whose cell paragraphs carry w:before=60 w:after=60, Word's
+		// row pitch is 3 + 11.5 + 3 = 18.0pt where ours was 15.0.  @since 17.0.6
+		assertEquals("bottom spacing in cells applies below mode 15 too", 1,
+				count(out14, "space-after.conditionality=\"retain\""));
 	}
 
 		@Test

@@ -1175,6 +1175,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // nothing measurable on the line (or exact spacing): the block's font
                 ascent = blockAscent;
                 descent = blockDescent;
+            } else if (wordLineBox > 0 && wordBaseline == wordLineBox) {
+                // WordLayoutFixups.imageOnlyLineBox marks a paragraph whose only content
+                // is an inline picture by putting the baseline at the foot of the box:
+                // Word's line is then the picture's height with no descent at all
+                // (docx4j:line-box == docx4j:baseline is written nowhere else).  The
+                // run the picture sits in still contributes its font's descent here,
+                // which put every line of one document a flat 2.6pt below Word's.
+                // @since 17.0.6
+                descent = 0;
             }
             // the list label shares the item's first line: Word adds what its ascent
             // exceeds the text's by, and does not multiply that by the auto factor

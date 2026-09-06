@@ -559,7 +559,16 @@ public class FOPAreaTreeHelper {
 		    			 */
 		    			float headerMarginPts = page.getHeaderMargin()/20f; // twips to points
 		    			float topMarginPts = page.getPgMar().getTop().intValue()/20f;
-		    			float bodyTop = Math.max(topMarginPts,
+		    			/* A negative w:pgMar/@w:top means "the body starts |top| from the
+		    			 * page edge whatever the header does" - Word lets the header
+		    			 * overlap the text rather than pushing it down.  Measured on a
+		    			 * document with w:top="-312" (-15.6pt) and w:header="709": Word's
+		    			 * body top is 15.55pt, where max(top, header + header height) put
+		    			 * ours at 49.25 - +33.7pt on the table header, on page 2 and on
+		    			 * every one of six pictures.  A second document, w:top="-993",
+		    			 * was +97.5pt throughout.  @since 17.0.6 */
+		    			float bodyTop = topMarginPts < 0 ? -topMarginPts
+		    					: Math.max(topMarginPts,
 		    					(hBpdaPts>0) ? headerMarginPts + hBpdaPts : 0f);
 		    			float spmTop = Math.min(headerMarginPts, bodyTop);
 		    			spm.setMarginTop(spmTop+"pt");
@@ -590,7 +599,9 @@ public class FOPAreaTreeHelper {
 		    			 * 21 times: 24 Word pages came out as 44.  @since 17.0.6 */
 		    			float footerMarginPts = page.getFooterMargin()/20f; // twips to points
 		    			float bottomMarginPts = page.getPgMar().getBottom().intValue()/20f;
-		    			float bodyBottom = Math.max(bottomMarginPts,
+		    			// the mirror of the negative top margin above
+		    			float bodyBottom = bottomMarginPts < 0 ? -bottomMarginPts
+		    					: Math.max(bottomMarginPts,
 		    					(fBpdaPts>0) ? footerMarginPts + fBpdaPts : 0f);
 		    			float spmBottom = Math.min(footerMarginPts, bodyBottom);
 		    			spm.setMarginBottom(spmBottom+"pt");

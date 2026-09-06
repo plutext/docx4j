@@ -86,6 +86,7 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.pictures.float` | `true` | Whether a picture Word wraps text around may be an `fo:float`. `false` lays such pictures out in the flow (no text beside them, but immune to the FOP float defect, §10). Text boxes are never floats whatever this says. |
 | `docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable` | unset | Names an ImageMagick/GraphicsMagick executable. Set, a picture FOP cannot paint (EMF) is converted to PNG and painted; unset, its space is reserved but it is not drawn (§9.4). |
 | `docx4j.convert.out.fo.pictures.convertDensity` | `300` | Pixels per inch that converter rasterises a metafile at. |
+| `docx4j.fonts.altName.enabled` | `true` | Whether a font this machine does not have may be resolved through the `w:altName` its own font table gives it (§5.1). `false` goes straight to the class-based fallback. |
 | `docx4j.convert.out.printHiddenText` | `false` | Hidden text (`w:vanish`) is not rendered and takes no space, as Word prints it. `true` renders it. PDF and HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
 
@@ -169,6 +170,28 @@ height as its line box (an *inline* picture only: one about to be lifted into a 
 container takes no line of its own, and its paragraph gets the paragraph mark's line,
 [§2.5](#s25)).
 
+<a id="s24picbox"></a>**And the rule applies even where the paragraph already has a line
+box.** `applyBlockLineHeight` very often writes one for such a paragraph - from the run the
+picture sits in (a picture inside a run which carries `w:i` gets an `fo:inline` with a
+line-height of its own), or from the paragraph mark - and `imageOnlyLineBox` used to skip
+any block which had one, i.e. exactly the paragraphs the rule was written for. The
+picture's line then came out as the paragraph's height *plus* the picture. Measured:
+a 125.04pt picture in a block of `line-box="13.799pt"` put every line of the document a
+flat **+4.8pt** below Word's (207.0 against 211.8) with x exact to 0.1pt - 13.799 - 11.203
+is 2.6pt of added descent, plus rounding. The larger of the two now wins, the baseline
+sits at the foot of the box (which is how the line manager knows the line has no descent
+at all), and **the paragraph's line-spacing multiple does not apply to the picture**: with
+`line-box="13.428pt" line-height="20.142pt"` around a 269.68pt diagram, the extra leading
+was half the *picture* - the caption after it at y=515.8 against Word's 383.2, **+132.6pt**
+- and `mutool draw -F trace` counted two diagrams on each of Word's pages 65-67 against one
+on each of ours; 88 Word pages came out as 105, and are 83 now. The multiple is only
+cancelled where there is one to cancel (a `line-height` beyond the box); a single-spaced
+paragraph's `line-height` is its box, and raising that grew a header holding a picture by
+10.3pt, which re-centred the picture in its vertically-centred cell 5.1pt below Word's.
+An **exact** line rule still clips a picture as it clips anything else. A block whose only content is a
+`external-graphic` taller than its own line box occurs in 142 documents of the three
+corpora, 961 blocks.
+
 **A picture's size is fractional.** `wp:extent` is in EMU, and 12700 EMU is exactly one
 point, so a picture Word sizes at 857250 EMU is 67.5pt. docx4j wrote `content-height` and
 `content-width` with `Integer.toString`, which threw the fraction away - "67px", which FOP
@@ -240,6 +263,10 @@ metrics of the font it substitutes, and `WordLineMetrics` therefore carries a sh
 such aliases (Helvetica and Helvetica Neue take Arial's row). A font with no entry and no
 alias still takes the physical font's, which is all there is to go on.
 
+A document which declares its own alias in `w:altName` (§5.1) adds one of these too: where
+that alias is what resolves the font, Word is using the alternate font outright, so the
+line metrics are the alternate's.
+
 ### 2.8 List labels
 
 Word raises a list item's first line by the amount the label's ascent exceeds the text's -
@@ -292,6 +319,17 @@ space-after, the second the other way about, and the second takes neither the nu
 label - Word numbers the paragraph once - nor the first-line indent. A `w:sectPr` belongs
 to the paragraph's end, so it goes with the second half.
 
+Both of those - the split, and the plain `w:pageBreakBefore` conversion where the break
+comes first - are done by a walk which visited the **body's own children only** until
+17.0.6, so a paragraph inside a `w:sdt` (a table of contents, a cover page, any building
+block) was missed and its break stayed nested in an `fo:inline`, where FOP ignores it.
+Measured on a document whose contents control wraps two such paragraphs: FOP laid the
+paragraph's 12pt space-before down on the **previous** page and the leading block-level
+child ate its first-line indent - Word's page 2 heading at `y=97.0 x=72.0` against docx4j's
+`85.1 / 89.8`, and every line of that page carried the -11.9. The walk now descends into
+block-level content controls; it still does not descend into a **table**, where a page
+break belongs to the table (below).
+
 A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there **from
 compatibility mode 15**, and kept below mode 15. The break moves to the next paragraph, or
@@ -314,6 +352,18 @@ gives it a ninth page - so a break with no section after it keeps its page
 (`WordLayoutFixups.mergePageBreakParagraphs`). The blank page was not
 `force-page-count`: docx4j writes `no-force` on every page-sequence already, and Word's own
 `w:pgNumType w:start` restart (98 in that probe) costs no page either.
+
+The rule was re-measured in 17.0.6 against the real documents which hold that shape, since
+its page counts had been read as a regression. It is right, and the page count was the
+coincidence: on a 26-page document with four such section ends, the **old** output was 26
+pages with **four** blank pages (12, 22, 24 and 26) where Word has 26 pages with **one**
+(page 26, the document's own end, which the rule keeps). The rule removes exactly the three
+Word does not have; that document is now 23 pages because its content is three pages
+shorter than Word's for unrelated reasons. A second document went 34 pages to 32 against
+Word's 31, and a third kept Word's 56 exactly. 20 documents of the three corpora hold a
+page break with nothing but a `w:sectPr` paragraph after it. (Word does emit genuinely
+empty pages elsewhere - one 22-page document has two and one 56-page document six, none of
+them at a section end - which §10 records.)
 
 **A page break inside a table** belongs to the table, not to the paragraph: Word takes a
 `w:pageBreakBefore` on the paragraph which opens the table, and ignores one anywhere else in
@@ -340,7 +390,18 @@ style carries it and which overrides it on 20 paragraphs, 17 came out 14pt low -
 first divergence at y=171.4, docx4j's at 186.2, and the next gap 30.7pt against 58.9.
 
 <a id="s35"></a>**Table cells.** A paragraph's space-before applies at the cell top, and its
-space-after at the cell bottom in compatibility mode 15. XSL-FO drops space at the end of a
+space-after at the cell bottom - **in every compatibility mode**. docx4j pinned the
+space-after only from mode 15 until 17.0.6; measured on a mode-14 document whose cell
+paragraphs carry `w:spacing w:before="60" w:after="60"` (3pt each), Word's row pitch is
+119.6 -> 137.6 -> 155.6 = **18.0pt** = 3 + 11.5 + 3, where docx4j's was 110.7 -> 125.7 ->
+139.2 (15.0 / 13.5, the space-before only) and the deficit grew to -25.4pt by y=360 on page
+1, with x matching to 0.3pt throughout. Confirmed on a second mode-14 document, a
+one-page form: Word's row baselines are 21.73 / 51.05 / 73.17 / 101.74 (pitches 29.3 /
+22.1 / 28.6), docx4j's were 18.46 / 45.71 / 66.29 / 91.63 (27.25 / 20.6 / 25.3) and are
+18.46 / 47.42 / 69.43 / 97.49 (28.96 / 22.0 / 28.1). 120 documents of the three corpora
+are below mode 15 with a cell paragraph carrying `w:after`; a handful of them, whose rows
+were the right height only because the space was missing, gain a page where their last
+row now spills. XSL-FO drops space at the end of a
 reference area, so `WordLayoutFixups` pins it there with
 `space-after.conditionality="retain"` - and the cell's edges are boundaries
 `w:contextualSpacing` cancels the space at, the **only** paragraph of a cell included.
@@ -861,14 +922,27 @@ For a font the machine does not have, docx4j chooses in this order:
    MS, Trebuchet MS, Segoe UI, Segoe UI Light, Arial Black, Gadugi, Helvetica, Helvetica
    Neue, Georgia, Garamond, Book Antiqua, Palatino Linotype, Bookman Old Style, Arial
    Narrow, Century Gothic, Consolas, Lucida Console.
-2. **Class-based**: whatever is left unmapped takes a font of its own class (sans, serif,
+2. **The document's own `w:altName`**, from `word/fontTable.xml` (ECMA-376 17.8.3.1, "the
+   name of an alternate font which shall be used if the font specified is not available").
+   That is the author's answer to a missing font, and it is what Word uses; the alternate
+   is resolved as any document font is - itself if the machine has it, else its own metric
+   clone. Measured on a document whose Normal style is
+   `<w:rFonts w:ascii="HelveticaNeue LT 55 Roman"/>` with
+   `<w:altName w:val="Times New Roman"/>`: Word's PDF embeds **TimesNewRomanPSMT** where
+   docx4j's FO said `font-family="Arimo Regular+noliga"` **2194 times** - the theme's
+   `minorHAnsi` - so our lines measured 1.0721 x Word's over 140 matched lines and the
+   document's line parity was 0.242, the corpus's second worst; it is 0.759 now, with 26
+   pages against Word's 29 where it had been 32. 142 documents of the three corpora name a
+   font carrying a `w:altName`. It also supplies the line metrics (§2.7), since Word is
+   using the alternate font outright. `docx4j.fonts.altName.enabled=false` skips this step.
+3. **Class-based**: whatever is left unmapped takes a font of its own class (sans, serif,
    monospace) from the classes and candidate lists in `FontSubstitutions.xml`.
-3. **Glyph-aware, per script**: the run font selector then picks, per script segment of the
+4. **Glyph-aware, per script**: the run font selector then picks, per script segment of the
    text, a font that can actually render it - preferring the document font's class, caching
    the choice per (font, script), and warning once per font and script rather than once per
    glyph (`org.docx4j.fonts.FontFallback`).
 
-<a id="s51cover"></a>Step 3 applies to a step-1 substitute too. A metric clone is chosen
+<a id="s51cover"></a>Step 4 applies to a step-1 substitute too. A metric clone is chosen
 for its advance widths, and several of them carry the Latin alphabet alone: Caladea, which
 stands in for Cambria, has neither Greek nor Cyrillic (`fc-query`:
 `20-7e a0-161 164-17f 192 1fa-1ff 218-21b 237 2c6-2c7 ...`). Until 17.0.6 the coverage check
@@ -1414,6 +1488,24 @@ Measured on a 179-page specification whose title section carries
 `<w:vAlign w:val="center"/>`: every line of page 1 was 112.5pt above Word's (Word's first
 line at y=275.9, docx4j's at 163.4), and is now within 6pt.
 
+<a id="s7gutter"></a>**The gutter.** `w:pgMar/@w:gutter` is the binding margin, and Word
+adds it to the **left** margin - to the top with `w:settings/w:gutterAtTop`, and to the
+right of an even page where `w:mirrorMargins` is set. `PageDimensions.getWritableWidthTwips()`
+already subtracts it, so until 17.0.6 the text column was the right width and started in the
+wrong place: measured on a document with `w:pgMar w:left="851" w:gutter="567"`, Word puts
+every portrait line at **x=70.9** (851 + 567 twips) where docx4j's was at 42.5, -28.35pt on
+all 222 pages. Two documents of the three corpora set a gutter.
+
+<a id="s7col"></a>**A single narrow `w:col`.** Where `w:cols` declares exactly one `w:col`
+narrower than the margin box, Word uses that width for the text. The unequal-columns table
+above is built only for *several* `w:col` children, so a single narrow one fell through:
+measured on a document whose margin box is 451.45pt and whose section says
+`<w:cols w:space="720" w:equalWidth="0"><w:col w:w="8640"/>` (432pt), Word centres on
+`72 + 216 = 288` against docx4j's 297.7 (**+9.7pt on every centred line**) and puts the
+right edge at 504 against 523.45 (**+19.45pt on every right-aligned line**), over 58 pages;
+the document's line parity went 0.557 to 0.910. A declared width within 1% of the margin
+box is Word's own rounding of the full width and is ignored.
+
 **Where the body starts.** Word starts the body at the top margin and moves it down only
 where the header itself reaches further, i.e. `max(top margin, header distance + header
 height)`. Using the header distance alone pushed the body down by `w:pgMar/@w:header` minus
@@ -1423,6 +1515,48 @@ line of one document). Header and footer extents come from an area-tree pre-pass
 `page-first-even-odd-heights` - a three-line first-page header, a one-line even header, a
 five-line odd header containing a picture, one-line odd and three-line even footers, six
 pages - matches Word on 7 of 7 pages and 318 of 318 lines.
+
+<a id="s7hfspace"></a>**A header's height includes its last paragraph's space-after.**
+XSL-FO drops space at the end of a reference area, so the pre-pass measured one space-after
+short and the body then started that much too high (and ended that much too low). Measured
+on a document with `w:pgMar w:top="1440" w:header="709"` whose header and footer each hold
+two paragraphs 10pt apart: our `region-before` extent was 58.867pt and `region-after`
+32.362pt - 11.181 + 10 + 11.181 exactly, the middle 10 being the space between the two
+blocks and the trailing one excluded. Word's first body line is at y=113.6 where docx4j's
+was 102.3, and Word's footer line at 722.6 where docx4j's was 731.9: **20.6pt more body on
+every one of 311 pages**. `WordLayoutFixups` now pins the last block of each
+`fo:static-content` with `space-after.conditionality="retain"`, so the pre-pass measures
+what Word measures; the space itself is invisible either way, since a static-content is
+laid out from the region's top edge. 66 documents of the three corpora have a header or
+footer whose last block carries a space-after.
+
+<a id="s7negmar"></a>**A negative `w:pgMar/@w:top`** means "the body starts |top| from the
+page edge whatever the header does": Word lets the header overlap the text rather than
+pushing it down. Measured on a document with `w:top="-312"` (-15.6pt) and `w:header="709"`:
+Word's body top is 15.55pt where `max(top, header + header height)` put docx4j's at 49.25 -
+**+33.7pt** on the table header, on page 2 and on each of six pictures (Word
+82.1/117.1/155.8/195.0/259.9/305.0, docx4j 115.8/150.8/189.8/229.3/294.5/346.6), and 8 Word
+pages came out as 14. A second document, `w:top="-993"` (-49.65pt), was **+97.5pt**
+throughout and 16 Word pages came out as 21; both are page-exact now. `w:bottom` is the
+mirror of it.
+
+<a id="s7pagefield"></a>**`PAGE` in a header or footer must be live.** Word commonly writes
+the field's `w:fldChar begin`, `w:instrText` and `w:fldChar separate` in **one run** - and
+inside a `w:sdt` when it comes from the "Page Numbers (Bottom of Page)" building block.
+`FieldsCombiner` looked at one `w:fldChar` per run, so it saw the BEGIN and never the
+SEPARATE, the field was never combined into a `w:fldSimple`, and its runs were emitted as
+the *cached result*: the FO held no `fo:page-number` at all. Measured: a 76-page document
+printed "Página 73 de 76" on all 76 pages where Word prints 2 ... 76, and a 23-page one
+printed "1" on all 23 - one wrong line on every page. Such a run is now split into one run
+per item (which renders identically) before the combiner sees it. 52 documents of the three
+corpora have a header or footer `PAGE` field and no `fo:page-number`.
+
+A `NUMPAGES` in any section but the last becomes an `fo:page-number-citation-last` naming a
+**later** page-sequence, which FOP cannot resolve while it lays that section out, so it
+painted nothing: Word's header `"2 di 78"` (`x=479.5..506.9`) against our `"2 di"`
+(486.1..499.9). Such a document now takes the 2-pass path, which resolves the count from
+the area tree first, as it already did for `SECTIONPAGES`. 17 documents of the three
+corpora.
 
 **Where the body ends** is the mirror of it: the bottom margin, pulled up only where the
 footer reaches further, i.e. `max(bottom margin, footer distance + footer height)`. Where
@@ -1739,7 +1873,12 @@ Limitations that remain in docx4j's output:
   every page the text-based triage called blank carries a picture. What those documents
   have is a picture drawn at the wrong size (fixed, [§9.1](#91-anchored-pictures)) or
   vertical drift accumulated further up, and no page-break rule was found to be wrong
-  there. The `page-blank` probe carries the shapes that could not be settled from the
+  there. That is about **those eight documents**, and not a statement about Word: a wider
+  sweep found Word emitting genuinely empty pages (no text, no image, no path) in two
+  documents of a 103-document corpus - six in one of 56 pages and two in one of 22, none
+  of them at a section end ([§3.3](#s33sect)), and none of which docx4j emits. What
+  produces them is not yet pinned. The `page-blank` probe carries the shapes that could
+  not be settled from the
   corpus - a document ending in a page break, a `nextPage` section break after a
   page-filling table, and `oddPage`/`evenPage` sections whose page already has the parity
   asked for - and awaits a Word golden. docx4j today emits a page for the trailing break

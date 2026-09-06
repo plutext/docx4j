@@ -54,6 +54,9 @@ region body
 - font substitutes: Verdana now prefers DejaVu Sans, Comic Sans MS Noto Sans, and Georgia,
 Book Antiqua and Palatino Linotype P052 - each measured 8-15% closer to Word's line widths
 than the Arial or Times clone they had
+- a font this machine does not have is now resolved through the w:altName the document's own
+fontTable.xml gives it (ECMA-376 17.8.3.1), as Word does, before the class-based fallback;
+its line metrics come from the alternate too (docx4j.fonts.altName.enabled=false to skip)
 - a floating table (w:tblPr/w:tblpPr) now goes where Word puts it horizontally (its grid
 edge at w:tblpX, or centred/right within the page or the text column per w:tblpXSpec); one
 anchored to the page or the margin box which opens its section - a cover page or a
@@ -171,6 +174,27 @@ smaller than the document asks for, which re-paginated documents full of photogr
 - a row of w:trHeight w:hRule="exact" is now exactly that tall, borders included as Word
 counts them: FOP added the cell's border on top of the height, making every such row half a
 point too tall (16pt over a page of 32 rows)
+- a paragraph whose only content is an inline picture is now the picture's height even when
+the paragraph already has a line box of its own, and a line-spacing multiple is no longer
+charged against the picture
+- a header's or footer's height now includes its last paragraph's space-after, as Word
+measures it, so the body no longer starts that much too high nor ends that much too low
+- a cell's last paragraph now keeps its space-after below compatibility mode 15 as well as
+at 15, which is what Word does
+- a negative w:pgMar w:top (or w:bottom) is now honoured: Word starts the body |top| from the
+page edge and lets the header overlap it
+- w:pgMar w:gutter is now added to the left margin (to the top with w:gutterAtTop, and to the
+right of an even page with w:mirrorMargins)
+- a section whose w:cols declares a single w:col narrower than the margin box now uses that
+width for its text
+- a PAGE or NUMPAGES field whose w:fldChar begin, w:instrText and w:fldChar separate share
+one run - which is how Word writes a page number in a footer, in a content control or not -
+is now a live fo:page-number instead of the field's cached result painted on every page
+- a NUMPAGES in any section but the last now takes the 2-pass path, since FOP cannot resolve
+a forward fo:page-number-citation-last and painted nothing
+- a hard page break in a paragraph inside a w:sdt is now handled as one at body level is:
+the preprocess pass only walked the body's own children, so a break inside a table of
+contents or a cover page stayed nested in an fo:inline, where FOP ignores it
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

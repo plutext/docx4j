@@ -87,15 +87,36 @@ public class PageBreak {
 	}
 
 	private static void movePageBreaks(Body body) {
+		movePageBreaks(body.getContent());
+	}
 
-		List<Object> elts = body.getContent();
+	/**
+	 * @param elts a list of block-level content: the body's, or that of a content
+	 *        control standing at block level.  A paragraph inside a {@code w:sdt} was
+	 *        not visited at all until 17.0.6, so neither the split above nor the
+	 *        {@code w:pageBreakBefore} conversion reached it and the break stayed
+	 *        nested in an {@code fo:inline}, where FOP ignores it: measured on a
+	 *        document whose contents control wraps two such paragraphs, FOP laid the
+	 *        paragraph's 12pt space-before down on the previous page and the leading
+	 *        block-level child ate its first-line indent - Word's page 2 heading at
+	 *        y=97.0 x=72.0 against ours at 85.1 / 89.8, on every line of the page.
+	 *        Tables are deliberately not descended into: a page break inside one
+	 *        belongs to the table (&#xa7;3.3) and is handled in the FO.
+	 */
+	private static void movePageBreaks(List<Object> elts) {
+
 		for (int i=0; i<elts.size(); i++) {
-			Object o = elts.get(i);
+			Object o = XmlUtils.unwrap(elts.get(i));
 			if (o instanceof P) {
 				updateParagraph((P)o, elts, i);
 				// where the paragraph was split, the continuation is now at i+1 and is
 				// visited by the loop in its turn, so a paragraph with several breaks
 				// is split at each of them
+			} else if (o instanceof org.docx4j.wml.SdtBlock) {
+				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock)o;
+				if (sdt.getSdtContent()!=null && sdt.getSdtContent().getContent()!=null) {
+					movePageBreaks(sdt.getSdtContent().getContent());
+				}
 			}
 		}
 	}

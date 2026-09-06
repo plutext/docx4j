@@ -79,8 +79,57 @@ public class FieldsCombiner {
 
 		@Override
 		public void apply(P element) {
+			normaliseFieldRuns(element.getContent());
 			processContent(element.getContent());
-		}	
+		}
+
+		/**
+		 * Word often writes a whole field header in one run -
+		 * {@code <w:r><w:fldChar begin/><w:instrText> PAGE </w:instrText><w:fldChar separate/></w:r>}
+		 * - and the state machine below looks at one {@code w:fldChar} per run
+		 * ({@link #getFldCharType}), so it saw the BEGIN, never the SEPARATE, and the
+		 * field was never combined into a {@code w:fldSimple}.  The runs were then
+		 * emitted as the field's cached result: measured, a 76-page document printed
+		 * "Página 73 de 76" on every page where Word prints 2 ... 76, and the FO held no
+		 * {@code fo:page-number} at all.  Splitting such a run into one run per item,
+		 * each keeping the run properties, renders identically and lets the state
+		 * machine see the field.
+		 *
+		 * @since 17.0.6
+		 */
+		static void normaliseFieldRuns(List<Object> pContent) {
+
+			if (pContent==null) return;
+			for (int i=0; i<pContent.size(); i++) {
+				if (!(pContent.get(i) instanceof R)) continue;
+				R r = (R)pContent.get(i);
+				List<Object> rContent = r.getContent();
+				if (rContent==null || rContent.size()<2) continue;
+				boolean fieldPart = false;
+				for (Object c : rContent) {
+					Object u = XmlUtils.unwrap(c);
+					if (u instanceof FldChar
+							|| (c instanceof JAXBElement
+								&& _RInstrText_QNAME.equals(((JAXBElement)c).getName()))) {
+						fieldPart = true;
+						break;
+					}
+				}
+				if (!fieldPart) continue;
+
+				List<Object> split = new ArrayList<Object>(rContent.size());
+				for (Object c : rContent) {
+					R n = Context.getWmlObjectFactory().createR();
+					if (r.getRPr()!=null) n.setRPr(XmlUtils.deepCopy(r.getRPr()));
+					n.setParent(r.getParent());
+					n.getContent().add(c);
+					split.add(n);
+				}
+				pContent.remove(i);
+				pContent.addAll(i, split);
+				i += split.size() - 1;
+			}
+		}
 
 		protected void processContent(List<Object> pContent) {
 		List<Object> pResult = null;

@@ -427,6 +427,14 @@ public class WordprocessingMLPackage extends OpcPackage {
 			// but the substitutes are
 			fontMapper.addMetricallyCompatibleSubstitutes();
 
+			/* Then the document's own answer for a font this machine does not have:
+			 * w:altName in the font table (ECMA-376 17.8.3.1), which is what Word uses.
+			 * Before the class-based pass below, which is only a guess from the name.
+			 * @since 17.0.6 */
+			if (Docx4jProperties.getProperty("docx4j.fonts.altName.enabled", true)) {
+				fontMapper.addAltNameSubstitutes(fontsInUse, fonts);
+			}
+
 			/* Then whatever is still unmapped, to a font of its own class, so that it
 			 * doesn't fall back to the document default (a serif standing in for a sans,
 			 * as often as not).  @since 17.0.5 */

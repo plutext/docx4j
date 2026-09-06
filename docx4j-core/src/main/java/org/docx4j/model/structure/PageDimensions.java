@@ -125,6 +125,7 @@ public class PageDimensions {
 			this.cols = cols;
 		}
 
+		this.singleColumnNarrowing = computeSingleColumnNarrowing();
 	}
 
 	private CTColumns cols;
@@ -462,6 +463,58 @@ public class PageDimensions {
 		} else {
 			return 720; //default in Word 2010 is 1/2 inch
 		}
+	}
+
+	/**
+	 * {@code w:pgMar/@w:gutter}: the binding margin, in twips.  Word adds it to the
+	 * left margin (or to the top where {@code w:gutterAtTop} is set, and to the right
+	 * of an even page where the margins are mirrored); it is <em>not</em> part of the
+	 * writable width, which {@link #getWritableWidthTwips()} already subtracts it from.
+	 *
+	 * @since 17.0.6
+	 */
+	public int getGutter() {
+		return (pgMar == null || pgMar.getGutter() == null) ? 0 : pgMar.getGutter().intValue();
+	}
+
+	/**
+	 * Where {@code w:cols} declares exactly one {@code w:col} narrower than the margin
+	 * box, Word uses that column's width for the text: the twips by which the text
+	 * column is narrower than the margin box, else 0.
+	 *
+	 * <p>Word's own rounding of an equal single column is common, so a difference of
+	 * less than 1% of the margin box is ignored, as {@link #hasUnequalCols()} ignores
+	 * a 5% difference between columns.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	public int getSingleColumnNarrowing() {
+		if (singleColumnNarrowing <= 0) return 0;
+		// the margins may since have been rewritten for a merged run of continuous
+		// sections (CR-001 section 7); the column width was stated against the section's own, so
+		// apply it only where the two still agree
+		return getWritableWidthTwips() == singleColumnWritableWidth ? singleColumnNarrowing : 0;
+	}
+
+	/** Computed once, from the section's <em>own</em> w:pgSz and w:pgMar.  A merged run of
+	 *  continuous sections has the first section's w:pgMar written over this one's,
+	 *  which would otherwise measure a column stated for quite different margins against
+	 *  quite different ones: on a document whose sections alternate w:left="760" and
+	 *  w:left="9560", each with a w:col of exactly its own writable width, that made the
+	 *  text column 80pt wide and 24 Word pages came out as 89.  @since 17.0.6 */
+	private int singleColumnNarrowing = 0;
+	private int singleColumnWritableWidth = 0;
+
+	private int computeSingleColumnNarrowing() {
+		singleColumnWritableWidth = getWritableWidthTwips();
+		if (cols == null || cols.getCol() == null || cols.getCol().size() != 1) return 0;
+		org.docx4j.wml.CTColumn col = cols.getCol().get(0);
+		if (col.getW() == null) return 0;
+		int width = singleColumnWritableWidth;
+		int declared = col.getW().intValue();
+		if (declared <= 0 || declared >= width) return 0;
+		if (width - declared < width / 100) return 0; // Word's rounding of the full width
+		return width - declared;
 	}
 
 	/**

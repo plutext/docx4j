@@ -138,8 +138,31 @@ public final class WordLineMetrics {
 		int[] t = TABLE.get().get(key);
 		if (t != null) return t;
 		String alias = ALIASES.get(key);
+		if (alias == null) alias = DOCUMENT_ALIASES.get(key);
 		return alias == null ? null : TABLE.get().get(alias);
 	}
+
+	/**
+	 * Aliases a document declared for itself, in {@code w:altName} (ECMA-376 17.8.3.1):
+	 * where docx4j resolves a missing font through its alternate name
+	 * ({@link Mapper#addAltNameSubstitutes}), Word is using the alternate font outright,
+	 * so its vertical metrics are the alternate's, not the physical substitute's
+	 * (&#xa7;2.7).  Registered only for a font this machine does not have, so nothing
+	 * an installed font would answer is displaced.
+	 *
+	 * @since 17.0.6
+	 */
+	public static void registerAlias(String documentFont, String substituteFont) {
+		if (documentFont == null || substituteFont == null) return;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		String value = substituteFont.trim().toLowerCase(java.util.Locale.ROOT);
+		if (key.length() == 0 || value.length() == 0 || key.equals(value)) return;
+		if (TABLE.get().containsKey(key) || ALIASES.containsKey(key)) return; // it has its own
+		DOCUMENT_ALIASES.put(key, value);
+	}
+
+	/** @since 17.0.6 */
+	private static final Map<String, String> DOCUMENT_ALIASES = new java.util.concurrent.ConcurrentHashMap<String, String>();
 
 	/**
 	 * Document fonts Windows itself substitutes, whose line metrics Word therefore takes
