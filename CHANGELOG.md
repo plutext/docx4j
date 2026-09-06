@@ -355,6 +355,22 @@ them (ECMA-376 17.3.1.38), and a w:val="clear" removes the inherited stop at tha
 rather than being copied through as a stop of its own
 - the tbl-p-style-fix preprocessing step (ConversionFeatures.PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX)
 now covers header and footer parts as well as the body
+- a word too long for a line of its own is now broken inside it, at the last character
+that fits, as Word breaks one: FOP offers no break inside such a word, so a long token or
+a rule of underscores was painted whole, off the page.  Word moves the word to a line of
+its own first, and does not break one that overruns by less than an inch (nor do we, since
+a narrower overrun is usually a column docx4j fitted too tightly).  Turn it off with
+docx4j.convert.out.fo.wordLayout.emergencyBreak=false
+- a tab which begins a paragraph and reaches a right, centre or decimal stop is now laid
+out against that stop: it was advanced to the stop's own position, so the text after it
+began where Word ends it
+- a run with no w:rPr now keeps the size its style chain gives it, instead of taking the
+size of whichever run owns most of the paragraph's text (a paragraph mark's w:sz, in
+particular, sizes the mark alone)
+- docx4j.fonts.wordLineMetrics.deviceGrid=true rounds a font's single line height to Word's
+600 dpi layout grid (Carlito at 11pt is 13.44pt, not 13.428), which is what Word does.  Off
+by default: measured over a 156-document corpus it moves page breaks and costs more than
+the 0.02pt a line it wins
 - HeaderFooterPolicy.reservesNothing(part) reports whether a header or footer takes any
 space on the page: the part docx4j invents for w:titlePg / w:evenAndOddHeaders, or a real
 one holding a single empty paragraph

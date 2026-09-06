@@ -166,7 +166,7 @@ arithmetic on synthetic comparison results, so it needs no documents.
 
 Both PDFs go through the same PDFBox-based extractor
 (`extract/PdfLayoutExtractor`), so anything it does is done to Word's PDF as
-well as to docx4j's; two knobs are worth knowing about.
+well as to docx4j's; four knobs are worth knowing about.
 
 - **`-Dfidelity.wordGapEm=`** (default `0.25`) is how wide a gap between two
   glyphs, as a fraction of the font size, is read as a word space where the PDF
@@ -190,8 +190,37 @@ well as to docx4j's; two knobs are worth knowing about.
   extracted `duty ...... 5` and `duty......5` although the geometry agreed to
   0.2pt. Measured, it is worth +0.113, +0.031, +0.021, +0.017 and +0.014 of
   line parity on five documents.
+- **`-Dfidelity.rowTolerancePt=`** (default `3`, `0` turns it off) is how far
+  apart two lines' baselines may be and still be read as one row, which is
+  ordered left to right rather than by baseline. The comparison is an LCS over
+  the line list in order, so a pair of lines the two PDFs put in the opposite
+  order is a pair it cannot match, and it loses both. That happens wherever a
+  label cell sits beside the text it labels: a `w:vAlign` label and the first
+  line of the body column beside it are within a line of each other, and which
+  has the smaller baseline is decided by a fraction of a point - Word puts one
+  corpus document's `Assessment of student` 0.7pt *above* the `Diagnostic
+  assessment: KWL chart` it labels and docx4j puts it 7.0pt *below*, so the
+  strict baseline order disagrees although both renders paint the same row.
+  Measured over eight label-heavy documents, 8086 reference lines: 6458 lines
+  matched at 0, 6725 at 2pt, **6730 at 3pt**, 6722 at 4pt, 6686 at 5pt, 6738 at
+  8pt (but median parity 0.8620 against 3pt's 0.8697), 6526 at 12pt, where a row
+  starts swallowing the next line of a column. A column's line pitch is at
+  least 9pt in the densest of those tables. Over the three corpora the change is
+  worth +0.4 to +1.0% of matched lines and +0.004 to +0.007 of mean parity, with
+  no page count moved (it is a measuring change, not a rendering one).
+- **`-Dfidelity.minSplitPt=`** (default `20`, `0` turns it off) is how wide a
+  gap must be before it can split a baseline into two lines at all. The other
+  split tests are relative (0.7 em, three median word gaps), so a short tab gap
+  splits a line whenever it is written as a real gap and does not when it is
+  written as space glyphs, and Word and docx4j do not agree on which: Word's
+  PDF writes the tab between a list label and its text as space glyphs, so
+  `1. Introduction` is read as one line, where ours writes no glyph in the gap
+  and it is read as two. It is nearly inert - four reference lines and one
+  extra match out of 8086 on those eight documents - and kept only because the
+  asymmetry it closes is systematic, and it can only merge, on both sides
+  alike. The vertical-rule split (a real cell boundary) is not subject to it.
 
-Both are measuring, not rendering: **re-baseline** (rescore the corpora with
+All four are measuring, not rendering: **re-baseline** (rescore the corpora with
 the harness change alone) before scoring a rendering change against them.
 
 ## Reading the report

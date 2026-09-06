@@ -118,6 +118,36 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return Boolean.parseBoolean(v.trim());
 	}
 
+	/**
+	 * Whether a word too long for a line of its own is broken inside it, at the last
+	 * character that fits - Word's last resort, and the only way such a word does not
+	 * run off the page.  UAX #14, which FOP follows, offers no break inside a word like
+	 * {@code KONS_ADATOK_SZERZODO_ADATAI_TERM_SZEMELY_LAKCIM_VAROS}, so FOP paints the
+	 * whole of it: measured over the three corpora, 1959 lines are painted outside their
+	 * page in 73 documents against Word's 207 in 20, and Word's are deliberate overhangs.
+	 *
+	 * <p>Measured on a corpus golden (an insurance template of long placeholder tokens in
+	 * a 279pt cell): Word moves such a word to a line of its own first - a preceding line
+	 * with 85pt of slack is left short rather than filled with the word's head - and then
+	 * breaks it wherever the measure falls, mid-token and with no hyphen
+	 * ({@code ...THEN(m} / {@code egegyezik}).
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.emergencyBreak=false turns it off.
+	 *
+	 * @since 17.0.6
+	 */
+	public static final String EMERGENCY_BREAK
+			= "docx4j.convert.out.fo.wordLayout.emergencyBreak";
+
+	public static boolean emergencyBreak() {
+		String v = System.getProperty(EMERGENCY_BREAK);
+		if (v == null) {
+			return Docx4jProperties.getProperty(EMERGENCY_BREAK, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
 	private static Double doubleProperty(String name) {
 		String v = System.getProperty(name);
 		if (v == null) v = Docx4jProperties.getProperty(name);

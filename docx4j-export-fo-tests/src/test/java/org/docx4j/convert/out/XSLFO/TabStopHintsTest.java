@@ -152,6 +152,70 @@ public class TabStopHintsTest {
 		}
 	}
 
+	/**
+	 * A tab which begins a paragraph and reaches a <em>left</em> stop is a fixed leader
+	 * of the distance to that stop: nothing about it depends on layout.
+	 *
+	 * @since 17.0.6 (the assertion; the behaviour is 17.0.5's)
+	 */
+	@Test
+	public void aLeadingTabToALeftStopIsAFixedLeader() throws Exception {
+		String body = "<w:p><w:pPr><w:tabs><w:tab w:val=\"left\" w:pos=\"2880\"/></w:tabs></w:pPr>"
+				+ "<w:r><w:tab/><w:t>Page 1 of 2</w:t></w:r></w:p>";
+		for (int flag : FLAGS) {
+			org.w3c.dom.Document doc = fo(body, null, flag);
+			assertTrue("a left stop needs no layout", firstTabLeader(doc)==null);
+			Element leader = (Element) doc.getElementsByTagNameNS(FO, "leader").item(0);
+			assertEquals("144pt", leader.getAttribute("leader-length"));   // 2880 twips
+			assertEquals("space", leader.getAttribute("leader-pattern"));
+		}
+	}
+
+	/**
+	 * A tab which begins a paragraph and reaches a centre, right or decimal stop is not:
+	 * the text after it has to be measured before the tab's width is known, so it takes
+	 * the ordinary zero-length docx4j:tab leader and the line manager settles it.  A
+	 * fixed leader of the stop's full offset laid a right stop out as a left one - the
+	 * text <i>began</i> on the stop instead of <i>ending</i> there (a corpus footer's
+	 * "Page 1 von 2" began at 539.8 where Word ends it at 540.3, 46pt past the margin).
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aLeadingTabToARightOrCentreStopIsLaidOut() throws Exception {
+		for (String val : new String[] { "right", "center", "decimal" }) {
+			String body = "<w:p><w:pPr><w:tabs><w:tab w:val=\"" + val + "\" w:pos=\"9356\"/></w:tabs></w:pPr>"
+					+ "<w:r><w:tab/><w:t>Page 1 von 2</w:t></w:r></w:p>";
+			for (int flag : FLAGS) {
+				org.w3c.dom.Document doc = fo(body, null, flag);
+				Element leader = firstTabLeader(doc);
+				assertTrue(val + ": a leading tab to an aligned stop must be laid out", leader!=null);
+				assertEquals("0pt", leader.getAttribute("leader-length"));
+				Element block = firstBlockWithTabs(doc);
+				assertTrue(val + ": the stops must travel to the line manager", block!=null);
+				assertEquals("9356:" + val + ":none", block.getAttributeNS(NS, "tabs"));
+			}
+		}
+	}
+
+	/** ... and a second leading tab which lands on the default grid past a right stop
+	 *  is a left stop again, so it keeps its fixed leader. */
+	@Test
+	public void aLeadingTabPastTheLastCustomStopIsAFixedLeaderAgain() throws Exception {
+		String body = "<w:p><w:pPr><w:tabs><w:tab w:val=\"right\" w:pos=\"1000\"/></w:tabs></w:pPr>"
+				+ "<w:r><w:tab/><w:tab/><w:t>x</w:t></w:r></w:p>";
+		for (int flag : FLAGS) {
+			org.w3c.dom.Document doc = fo(body, "720", flag);
+			NodeList leaders = doc.getElementsByTagNameNS(FO, "leader");
+			assertEquals(2, leaders.getLength());
+			// the first reaches the right stop at 1000 twips: laid out
+			assertEquals("0pt", ((Element) leaders.item(0)).getAttribute("leader-length"));
+			assertTrue(((Element) leaders.item(0)).hasAttributeNS(NS, "tab"));
+			// the second reaches the default grid at 1440 twips, which is a left stop
+			assertEquals("22pt", ((Element) leaders.item(1)).getAttribute("leader-length"));
+		}
+	}
+
 	/** A table of contents keeps the stretching dot leader it has always had: its
 	 *  stop is the right margin and FOP's text-align-last="justify" puts the page
 	 *  number there, absorbing what an unresolved page-number citation loses. */

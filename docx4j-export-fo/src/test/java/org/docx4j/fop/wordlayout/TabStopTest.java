@@ -322,11 +322,19 @@ public class TabStopTest {
 		assertEquals(at(0, 450),
 				wordStarts(fo("9000:left:hyphen", "0:0:.", null, "abcdefghij" + RULE_TAB + "x")));
 		// 60 glyphs are 432pt, past the 400pt line before the tab is even reached: the tab
-		// does not break a line which is over-full already, and runs on to its stop
-		assertEquals(at(0, 450),
-				wordStarts(fo("9000:left:none", "0:0:.", null,
-						"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij"
-						+ TAB + "x")));
+		// does not break a line which is over-full already, and runs on to its stop.
+		// (Word's emergency break is off here: a 432pt word on a 400pt line is exactly
+		// what it breaks, and this case is about the tab, not the word - see
+		// EmergencyBreakTest.  @since 17.0.6)
+		System.setProperty(WordLayoutCustomizer.EMERGENCY_BREAK, "false");
+		try {
+			assertEquals(at(0, 450),
+					wordStarts(fo("9000:left:none", "0:0:.", null,
+							"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij"
+							+ TAB + "x")));
+		} finally {
+			System.clearProperty(WordLayoutCustomizer.EMERGENCY_BREAK);
+		}
 		// and a trailing tab has nothing to move: it stays on the line it is on
 		assertEquals(at(0),
 				wordStarts(fo("9000:left:none", "0:0:.", null, "abc" + TAB)));

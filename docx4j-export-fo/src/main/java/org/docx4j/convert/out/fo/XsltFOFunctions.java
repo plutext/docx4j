@@ -1395,7 +1395,10 @@ public class XsltFOFunctions {
 		if (best==null) return false;
 		String[] a = attrs.get(best);
 		if (a[0]!=null && a[0].length()>0) foBlockElement.setAttribute("font-family", a[0]);
-		if (a[1]!=null && a[1].length()>0) foBlockElement.setAttribute("font-size", a[1]);
+		if (a[1]!=null && a[1].length()>0) {
+			pinInheritedFontSize(foBlockElement, a[1]);
+			foBlockElement.setAttribute("font-size", a[1]);
+		}
 		foBlockElement.setAttribute("line-height", a[2]);
 		applyLineBoxHints(foBlockElement, a[0], a[1], a[2], pPr, a[3]);
 		return true;
@@ -1434,7 +1437,8 @@ public class XsltFOFunctions {
 			return;
 		}
 		org.docx4j.wml.PPrBase.Spacing spacing = pPr==null ? null : pPr.getSpacing();
-		double single = m.lineHeightFactor() * sizePt;
+		// on Word's 600 dpi grid, like the line-height the block carries (WordLineMetrics)
+		double single = org.docx4j.fonts.WordLineMetrics.singleLineHeightPt(documentFont, pf, sizePt);
 		double natural = (m.winAscent + m.externalLeading) * sizePt;
 		// (m already carries the document font's metrics when the table knows it)
 		org.docx4j.wml.STLineSpacingRule rule = (spacing==null || spacing.getLine()==null) ? org.docx4j.wml.STLineSpacingRule.AUTO
@@ -1468,6 +1472,50 @@ public class XsltFOFunctions {
 		foBlockElement.setAttribute(WordLayoutFixups.HINT_LINE_BOX, org.docx4j.fonts.WordLineMetrics.format(box));
 		foBlockElement.setAttribute(WordLayoutFixups.HINT_BASELINE, org.docx4j.fonts.WordLineMetrics.format(baseline));
 		foBlockElement.setAttribute(WordLayoutFixups.HINT_LINE_RULE, ruleName);
+	}
+
+	/**
+	 * Keep the size the block's own children were measured at, before the block takes
+	 * the size of the run that owns most of its text.
+	 *
+	 * <p>A {@code w:r} with no {@code w:rPr} gets no {@code font-size} of its own - the
+	 * XSLT pathway does not even wrap it in an {@code fo:inline}, and the visitor's is
+	 * bare - so it inherits the block's, which is the paragraph's effective size
+	 * (docDefaults, then the paragraph style's {@code w:rPr}).  That is right until
+	 * {@link #applyBlockLineHeight} replaces the block's size with the dominant run's,
+	 * at which point the sizeless runs silently change size with it.  Word does not: a
+	 * run takes its size from the style chain, and the paragraph mark's {@code w:rPr}
+	 * sizes the mark alone.
+	 *
+	 * <p>Measured on a corpus header of {@code [image][45 spaces][24pt text]} whose
+	 * paragraph mark carries {@code w:sz="48"}: the 45 spaces are 45 x 2.5 = 111.6pt in
+	 * Word and were 45 x 5.42 = 244.1pt for us, which wrapped the heading, made the
+	 * header two lines on every page and 8 Word pages 10 of ours.
+	 *
+	 * @since 17.0.6
+	 */
+	private static void pinInheritedFontSize(Element foBlockElement, String newSize) {
+		String old = foBlockElement.getAttribute("font-size");
+		if (old==null || old.length()==0 || old.equals(newSize)) return;
+		NodeList children = foBlockElement.getChildNodes();
+		for (int i=0; i<children.getLength(); i++) {
+			Node c = children.item(i);
+			if (!(c instanceof Element)) continue;
+			Element el = (Element)c;
+			String localName = el.getLocalName();
+			// a nested block is its own reference area; its own rules gave it a size
+			if ("block".equals(localName) || "table".equals(localName)
+					|| "block-container".equals(localName) || "list-block".equals(localName)
+					|| "footnote".equals(localName)) continue;
+			// only text needs a size.  A bookmark anchor is an empty fo:inline, and giving
+			// one a size of its own makes FOP build an empty inline area that size and take
+			// the line's height from it: measured, three corpus documents fell from 1.000
+			// when their <inline id="..."/> anchors were pinned
+			String text = el.getTextContent();
+			if (text==null || text.length()==0) continue;
+			String own = el.getAttribute("font-size");
+			if (own==null || own.length()==0) el.setAttribute("font-size", old);
+		}
 	}
 
 	/** Accumulate, per (font-family, font-size, line-height) of the spans carrying a
@@ -2148,6 +2196,51 @@ public class XsltFOFunctions {
 		return org.docx4j.fonts.WordLineMetrics.format((stop - from) / 20.0);
 	}
 
+	/**
+	 * Whether the tab which begins a paragraph reaches a stop only layout can settle:
+	 * a centre, right or decimal one.
+	 *
+	 * <p>{@link #leadingTabLeaderLength} advances such a tab to the stop, which lays a
+	 * right stop out as a left one - the text after the tab <i>begins</i> on the stop
+	 * where Word makes it <i>end</i> there.  Measured on a corpus footer whose only
+	 * content is {@code <w:tab w:val="right" w:pos="9356"/>} then "Page 1 von 2": Word
+	 * ends that text at x=540.3, and a leader of the stop's full 467.8pt began it at
+	 * 539.8, 46pt past the margin.  It went unnoticed while such a line merely
+	 * overflowed; 17.0.6's rule that a tab which can reach no stop breaks the line turns
+	 * the overflow into a wrap, and cost a footer line on every page of three documents.
+	 * It is masked wherever the block is itself {@code text-align="right"}.
+	 *
+	 * <p>So such a tab takes the ordinary zero-length {@code docx4j-tab} leader instead,
+	 * and {@code WordLineLayoutManager.tabWidth} gives it the stop less the width of the
+	 * text it aligns - which is exactly what it does for a right stop anywhere else in
+	 * the line.  A left stop (and the hanging indent's implicit stop, and the default
+	 * grid, which are left) keeps the fixed leader: nothing about it depends on layout.
+	 *
+	 * @since 17.0.6
+	 */
+	static boolean leadingTabNeedsLayout(FOConversionContext context, PPr effectivePPr,
+			int precedingTabs, int precedingText) {
+		if (precedingText > 0 || effectivePPr == null) return false;
+		if (effectivePPr.getTabs() == null || effectivePPr.getTabs().getTab().isEmpty()) return false;
+		DocumentSettingsPart settings = null;
+		try {
+			settings = context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart();
+		} catch (Exception e) {
+			log.debug(e.getMessage());
+		}
+		int stop = firstLineStartTwips(effectivePPr);
+		for (int i = 0; i <= precedingTabs; i++) {
+			stop = nextTabStop(stop, effectivePPr, settings);
+		}
+		for (CTTabStop t : effectivePPr.getTabs().getTab()) {
+			if (t.getPos() == null || STTabJc.CLEAR.equals(t.getVal())) continue;
+			if (t.getPos().intValue() != stop) continue;
+			return STTabJc.RIGHT.equals(t.getVal()) || STTabJc.CENTER.equals(t.getVal())
+					|| STTabJc.DECIMAL.equals(t.getVal());
+		}
+		return false;
+	}
+
 	// ---------------------------------------------------------------- w:tab
 
 	/**
@@ -2266,9 +2359,12 @@ public class XsltFOFunctions {
 		}
 
 		if (realTabs()) {
-			// a tab before any text is already right without the layout managers, and
-			// nothing about it depends on them; leave it a fixed leader
-			String leadingLength = leadingTabLeaderLength(context, effectivePPr, precedingTabs, precedingText);
+			// a tab before any text which reaches a left stop is already right without the
+			// layout managers, and nothing about it depends on them; leave it a fixed
+			// leader.  One reaching a centre/right/decimal stop does depend on them: the
+			// text it aligns has to be measured first (see leadingTabNeedsLayout)
+			String leadingLength = leadingTabNeedsLayout(context, effectivePPr, precedingTabs, precedingText)
+					? "" : leadingTabLeaderLength(context, effectivePPr, precedingTabs, precedingText);
 			Element leader = d.createElementNS(XSL_FO, "fo:leader");
 			if (leadingLength.length()>0) {
 				leader.setAttribute("leader-pattern", "space");

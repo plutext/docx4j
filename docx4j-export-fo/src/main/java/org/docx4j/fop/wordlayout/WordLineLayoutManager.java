@@ -419,6 +419,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
             }
             boolean fits = difference >= 0
                     || (fitsByShrinkingSpaces(elementIdx, difference) && worthCompressing());
+            // a break inside an over-long word is Word's last resort, and only once the
+            // word has a line to itself; it must still be measured, though, or the line
+            // holding it would never be found too long (see emergencyUsable)
+            boolean usable = emergencyUsable(element, elementIdx);
             if (!fits && commitLastFitting()) {
                 // too long now (whether or not this is the paragraph's own forced break):
                 // break at the last break that fitted - hyphenating the word that did not
@@ -432,6 +436,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 return;
             }
             if (fits) {
+                if (!usable) {
+                    return;
+                }
                 // fits at its natural width, or (justified) with the spaces compressed
                 // within Word's limit: remember, keep going
                 if (isHyphenationPoint(element)) {
@@ -463,9 +470,37 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 hyphIdx = -1;
                 return;
             }
+            if (!usable) {
+                return;
+            }
             // nothing fitted since the last break: an overlong word; break here, overfull
             commit(elementIdx, difference, r, availableShrink, availableStretch,
                     totalWidth, totalStretch, totalShrink, false);
+        }
+
+        /**
+         * Whether a break inside an over-long word may be taken here.
+         *
+         * <p>Word's emergency break is a last resort in two senses: it breaks a word only
+         * when the word cannot fit on any line, and only once the word has a line to
+         * itself.  Measured on a corpus golden, the line before such a word ends 85pt
+         * short of the measure rather than taking the word's head, so the ordinary break
+         * before the word has to win while anything else is on the line.
+         *
+         * @since 17.0.6
+         */
+        private boolean emergencyUsable(KnuthElement element, int elementIdx) {
+            Object word = emergencyElement.get(element);
+            if (word == null) return true;                  // an ordinary break
+            // inclusive: the first line's node is the paragraph's first box, not a break
+            for (int i = active.position; i < elementIdx; i++) {
+                KnuthElement el = getElement(i);
+                if (emergencyElement.get(el) == word) continue;
+                // only a box holds text; the glue a line begins with is its discarded
+                // leading space, and penalties stand for nothing
+                if (el.isBox() && !el.isAuxiliary() && el.getWidth() > 0) return false;
+            }
+            return true;
         }
 
         /**
@@ -2183,6 +2218,259 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
     }
 
+    // ---- Word's emergency break (E10) --------------------------------------------
+
+    /**
+     * Every element of a word this manager has broken inside, mapped to a token
+     * standing for that word.  {@link LineBreakingAlgorithm#emergencyUsable} needs it to
+     * tell an emergency break from an ordinary one, and to tell whether the line it
+     * would end holds nothing but that word.
+     *
+     * @since 17.0.6
+     */
+    private final java.util.IdentityHashMap<Object, Object> emergencyElement
+            = new java.util.IdentityHashMap<Object, Object>();
+
+    private final boolean emergencyBreakEnabled = WordLayoutCustomizer.emergencyBreak();
+
+    /**
+     * Word's last resort: a word too long for a line of its own is broken inside it, at
+     * the last character that fits.
+     *
+     * <p>UAX #14, which FOP's text managers follow, offers no break inside a word like
+     * {@code KONS_ADATOK_SZERZODO_ADATAI_TERM_SZEMELY_LAKCIM_VAROS} or a rule of
+     * underscores, so FOP paints the whole of it however narrow the measure: over the
+     * three corpora 1959 lines are painted outside their page in 73 documents, against
+     * Word's 207 in 20 - and Word's are deliberate overhangs.
+     *
+     * <p>Measured on a corpus golden, an insurance template of long placeholder tokens
+     * in a 279pt cell.  Word does two things.  It moves such a word to a line of its
+     * own: the line before {@code tartóval):ELSEENDIFIF_csak_az_uzembentartoval_THEN(...}
+     * ends at 453.9 with 85pt of the measure unused, so Word did not fill it with the
+     * word's head.  Then it breaks the word wherever the measure falls, mid-token and
+     * with no hyphen: {@code ...THEN(m} to the cell edge at 538.8, then
+     * {@code egegyezik...} on the next line.
+     *
+     * <p>So a word wider than the whole measure is split here into one glyph mapping per
+     * character, with a zero-width break between each pair, and
+     * {@link LineBreakingAlgorithm#emergencyUsable} lets the greedy loop take one only
+     * once the line holds nothing but that word - which is what makes Word's first step
+     * happen, since until then the ordinary break before the word is the last one that
+     * fitted.  Kerning and glyph positioning within the word are lost, which is the
+     * price of breaking it; the word's total width is preserved exactly.
+     *
+     * <p>Only a word which is one FOP glyph mapping is split (one run of text in one
+     * font, which is what these tokens are), and only where that mapping carries no
+     * substituted glyph sequence: a word FOP shaped through GSUB/GPOS cannot be rebuilt
+     * from its characters, so it is left whole.
+     *
+     * @param available the widest line the paragraph can have, in millipoints: a word
+     *        narrower than that can always be moved to a line where it fits
+     * @since 17.0.6
+     */
+    private void emergencyBreaks(Paragraph par, int available) {
+        if (!emergencyBreakEnabled || available <= 0 || par == null) return;
+        // collect first, split from the end backwards, so the indices stay valid
+        List<Integer> overlong = null;
+        for (int i = 0; i < par.size(); i++) {
+            KnuthElement e = (KnuthElement) par.get(i);
+            if (!e.isBox() || e.isAuxiliary()) continue;
+            int width = e.getWidth();
+            int boxes = 1;
+            int j = i + 1;
+            for (; j < par.size(); j++) {
+                KnuthElement el = (KnuthElement) par.get(j);
+                if (el.isBox() && !el.isAuxiliary()) { width += el.getWidth(); boxes++; continue; }
+                if (el.isAuxiliary()) continue;
+                if (el instanceof KnuthPenalty
+                        && ((KnuthPenalty) el).getPenalty() >= KnuthElement.INFINITE) continue;
+                break;      // a glue or a real break opportunity: the word ends here
+            }
+            if (boxes == 1 && width > available + OVERRUN_TOLERANCE) {
+                if (overlong == null) overlong = new ArrayList<Integer>();
+                overlong.add(Integer.valueOf(i));
+            }
+            i = j - 1;
+        }
+        if (overlong == null) return;
+        for (int k = overlong.size() - 1; k >= 0; k--) {
+            splitForEmergencyBreak(par, overlong.get(k).intValue());
+        }
+    }
+
+    /**
+     * How far past the measure a word may run before it is broken rather than left to
+     * overflow: one inch (millipoints).
+     *
+     * <p>The rule has to be conservative, because a word which does not fit is very often
+     * a measure <em>we</em> got wrong rather than a word Word breaks, and breaking it then
+     * hides the real defect and costs a line.  Measured over the corpus documents which
+     * carry the shape, every word that overflowed by less than an inch was one Word
+     * fitted or let overhang - "BALES" by 2.6pt and "'A'" by 1.4pt in a certificate whose
+     * columns Word autofits a fraction wider than we do (that document scores 1.000
+     * without the rule and 0.826 with it at a 1pt tolerance); "CANTIDAD" by 20pt in a
+     * cell whose text Word turns on its side, where our measure is the unrotated width;
+     * "Telecomunicaciones." by 20pt in a table whose grid we still fit wrongly.  The words
+     * Word does break overflow by 78 to 345pt.  The {@code table-autofit} probe's 23.976pt
+     * column against a 23.988pt word - 0.012pt - is the smallest of them.
+     *
+     * @since 17.0.6
+     */
+    private static final int OVERRUN_TOLERANCE = 72000;
+
+    /** Split the single-mapping word whose box is at this index into one mapping and
+     *  one box per character, with a zero-width break between each pair. */
+    private void splitForEmergencyBreak(Paragraph par, int index) {
+        KnuthElement box = (KnuthElement) par.get(index);
+        if (!(box instanceof KnuthInlineBox)) return;
+        org.apache.fop.layoutmgr.inline.TextLayoutManager tlm = tlmOf(box);
+        if (tlm == null) return;
+        org.apache.fop.fonts.GlyphMapping m = mappingOf(box);
+        if (m == null || m.isSpace || m.font == null) return;
+        // a mapping which carries a substituted glyph sequence (a complex script, or an
+        // OpenType feature FOP applied) cannot be rebuilt from the characters, and the
+        // fragments would render unshaped: leave such a word whole
+        if (m.mapping != null || m.associations != null || m.gposAdjustments != null) return;
+        List<org.apache.fop.fonts.GlyphMapping> mappings = LBP.mappings(tlm);
+        int idx = ((LeafPosition) leafPositionOf(box)).getLeafPos();
+        if (idx < 0 || idx >= mappings.size() || mappings.get(idx) != m) return;
+        org.apache.fop.fo.FOText foText = LBP.foText(tlm);
+        if (m.endIndex > foText.length() || m.endIndex - m.startIndex < 2) return;
+        MinOptMax letterSpace = LBP.letterSpaceIPD(tlm);
+        if (letterSpace == null || !letterSpace.isStiff()) return;   // adjustable: leave it to FOP
+        // the breaks need a position which stands for no glyph, or the text manager
+        // would build the word's areas twice
+        // the break's position must stand for no glyph, and must be wrapped exactly as
+        // the word's own is, or the inline managers it sits in are given a position they
+        // did not make and never build their area
+        Position aux = auxiliaryLike(box.getPosition(), tlm);
+        if (aux == null) return;
+
+        // one fragment per character (a surrogate pair stays whole)
+        List<int[]> spans = new ArrayList<int[]>();
+        for (int c = m.startIndex; c < m.endIndex; ) {
+            int cp = Character.codePointAt(foText, c);
+            int next = c + Character.charCount(cp);
+            if (next > m.endIndex) next = m.endIndex;
+            spans.add(new int[] { c, next, cp });
+            c = next;
+        }
+        if (spans.size() < 2) return;
+
+        List<org.apache.fop.fonts.GlyphMapping> fragments
+                = new ArrayList<org.apache.fop.fonts.GlyphMapping>(spans.size());
+        int total = 0;
+        for (int j = 0; j < spans.size(); j++) {
+            boolean last = j == spans.size() - 1;
+            int letterSpaceCount = last ? 0 : 1;
+            int ipd = m.font.getCharWidth(spans.get(j)[2]) + letterSpaceCount * letterSpace.getOpt();
+            total += ipd;
+            fragments.add(new org.apache.fop.fonts.GlyphMapping(spans.get(j)[0], spans.get(j)[1], 0,
+                    letterSpaceCount, MinOptMax.getInstance(ipd), false, false,
+                    last && m.breakOppAfter, m.font, m.level, null));
+        }
+        // the word's own width wins: kerning, which the per-character widths do not
+        // carry, goes onto the last fragment so the whole word measures as it did
+        int residual = m.areaIPD.getOpt() - total;
+        org.apache.fop.fonts.GlyphMapping tail = fragments.get(fragments.size() - 1);
+        tail.areaIPD = MinOptMax.getInstance(Math.max(0, tail.areaIPD.getOpt() + residual));
+
+        // the mappings after this one move along by as many places as we have added
+        int added = fragments.size() - 1;
+        mappings.set(idx, fragments.get(0));
+        mappings.addAll(idx + 1, fragments.subList(1, fragments.size()));
+        shiftLeafPositions(tlm, idx, added);
+
+        // and the box becomes a box per fragment, with a break between each pair
+        Object word = new Object();
+        List<KnuthElement> replacement = new ArrayList<KnuthElement>(2 * fragments.size());
+        for (int j = 0; j < fragments.size(); j++) {
+            if (j > 0) {
+                KnuthPenalty p = new KnuthPenalty(0, 0, false, aux, true);
+                emergencyElement.put(p, word);
+                replacement.add(p);
+            }
+            KnuthInlineBox b = new KnuthInlineBox(fragments.get(j).areaIPD.getOpt(),
+                    ((KnuthInlineBox) box).getAlignmentContext(),
+                    positionLike(box.getPosition(), tlm, idx + j), false);
+            emergencyElement.put(b, word);
+            replacement.add(b);
+        }
+        par.remove(index);
+        par.addAll(index, replacement);
+        if (log.isDebugEnabled()) {
+            log.debug("emergency break: " + foText.subSequence(m.startIndex, m.endIndex)
+                    + " (" + m.areaIPD.getOpt() + "mpt) split into " + fragments.size() + " characters");
+        }
+    }
+
+    /** Every LeafPosition of this text manager at or past {@code from} moves on by
+     *  {@code by} places; the paragraphs are the only place they live at this stage. */
+    private void shiftLeafPositions(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm,
+            int from, int by) {
+        if (by == 0) return;
+        // one position object can be shared by several elements: shift each once
+        java.util.IdentityHashMap<Position, Position> done = new java.util.IdentityHashMap<Position, Position>();
+        for (KnuthSequence seq : knuthParagraphs) {
+            for (int i = 0; i < seq.size(); i++) {
+                Object o = seq.get(i);
+                if (!(o instanceof KnuthElement)) continue;
+                Position leaf = leafPositionOf((KnuthElement) o);
+                if (leaf == null || leaf.getLM() != tlm) continue;
+                if (done.put(leaf, leaf) != null) continue;
+                int pos = ((LeafPosition) leaf).getLeafPos();
+                if (pos > from) LBP.setLeafPos((LeafPosition) leaf, pos + by);
+            }
+        }
+    }
+
+    /**
+     * A position shaped like this one but standing for no glyph: the same chain of
+     * wrappers, ending in the text manager's own "no mapping" leaf.  A paragraph which
+     * is nothing but the over-long word holds no auxiliary element to borrow a position
+     * from, and a bare leaf would be routed past the inline managers the word sits in.
+     *
+     * @since 17.0.6
+     */
+    private static Position auxiliaryLike(Position p, org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+        return positionLike(p, tlm, -1);
+    }
+
+    /**
+     * A position shaped like this one - the same chain of wrappers - but naming a
+     * different glyph mapping of the same text manager, or the manager's "no mapping"
+     * leaf for {@code leafPos} -1.  The wrappers matter: an unwrapped leaf is routed
+     * straight to the text manager, past the inline managers the text sits in, and they
+     * then have no area for it to be added to.
+     *
+     * @since 17.0.6
+     */
+    private static Position positionLike(Position p, org.apache.fop.layoutmgr.inline.TextLayoutManager tlm,
+            int leafPos) {
+        if (p instanceof LeafPosition) {
+            LeafPosition leaf = new LeafPosition(tlm, leafPos);
+            leaf.setIndex(p.getIndex());
+            return leaf;
+        }
+        if (p instanceof NonLeafPosition) {
+            Position inner = positionLike(p.getPosition(), tlm, leafPos);
+            if (inner == null) return null;
+            NonLeafPosition wrapper = new NonLeafPosition(p.getLM(), inner);
+            wrapper.setIndex(p.getIndex());
+            return wrapper;
+        }
+        return null;
+    }
+
+    /** The LeafPosition an element's position chain ends in, or null. */
+    private static Position leafPositionOf(KnuthElement e) {
+        Position leaf = e.getPosition();
+        while (leaf != null && !(leaf instanceof LeafPosition)) {
+            leaf = leaf.getPosition();
+        }
+        return leaf;
+    }
+
     /** The position of a nearby auxiliary element (one which stands for no glyph). */
     private static Position auxiliaryPosition(KnuthSequence seq, int from) {
         for (int d = 1; d < seq.size(); d++) {
@@ -2390,6 +2678,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
         if (canHyphenate && !hyphenationPerformed) {
             hyphenationPerformed = isLastPar;
             findHyphenationPoints(currPar);
+        }
+        // Word's last resort, after every legal break the document itself offers:
+        // a word too long for any line is broken inside it (see emergencyBreaks)
+        if (canWrap) {
+            emergencyBreaks(currPar, ipd);
         }
         int allowedBreaks = !canWrap ? BreakingAlgorithm.ONLY_FORCED_BREAKS
                 : (canHyphenate ? BreakingAlgorithm.ALL_BREAKS : BreakingAlgorithm.NO_FLAGGED_PENALTIES);

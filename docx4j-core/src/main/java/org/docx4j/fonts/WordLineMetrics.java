@@ -231,6 +231,99 @@ public final class WordLineMetrics {
 	}
 
 	/**
+	 * Word's layout grid: 1/600 inch, 0.12pt.
+	 *
+	 * <p>Word lays a page out in 600 dpi device units - its A4 page is 595.32 x 841.92pt,
+	 * which is 4961 x 7016 of them - and a line height is a whole number of them.
+	 * Measured on the CR-001 line-auto and line-exact-atleast goldens, where every line
+	 * pitch Word paints is a multiple of 0.12pt:
+	 *
+	 * <pre>
+	 *   font / size          exact single    Word     units
+	 *   Liberation Serif 12    13.7988      13.80      115
+	 *   Carlito 11             13.4277      13.44      112
+	 *   Liberation Sans 10     11.4990      11.52       96
+	 *   DejaVu Sans 10         11.6406      11.64       97
+	 * </pre>
+	 *
+	 * and the multiple is taken from the rounded single and rounded again:
+	 * Liberation Serif 12pt at {@code w:line="276"} is 115 units x 276/240 = 132.25,
+	 * i.e. 132 units = 15.84pt, which is what Word paints (three consecutive pitches of
+	 * 15.840 in the golden), where the unrounded 13.7988 x 1.15 = 15.869 is 0.03pt
+	 * short every line.  Over the 20 paragraphs of the line-auto golden the residual is
+	 * within +/-0.06pt of a line, which is what a page break turns on.  {@code atLeast}
+	 * is rounded too: 20pt is 166.67 units, and Word's pitch for
+	 * {@code w:line="400" w:lineRule="atLeast"} is 20.04, not 20.00.
+	 *
+	 * @since 17.0.6
+	 */
+	public static final double GRID_PT = 72.0 / 600.0;
+
+	/**
+	 * A length snapped to Word's 600 dpi layout grid ({@link #GRID_PT}).
+	 *
+	 * <p>Half a unit goes to the even one, which is what Word's own halves do: Liberation
+	 * Serif 12pt at {@code w:line="360"} is 115 x 1.5 = 172.5 units and Word paints
+	 * 20.64 (172) on two of the golden's three pitches, not 20.76 (173).
+	 *
+	 * @since 17.0.6
+	 */
+	public static double onGrid(double pt) {
+		return deviceGrid() ? fromUnits(gridUnits(pt)) : pt;
+	}
+
+	/**
+	 * {@code docx4j.fonts.wordLineMetrics.deviceGrid}: whether the single line height is
+	 * rounded to Word's 600 dpi layout grid.
+	 *
+	 * <p><b>Off by default, although it is what Word does</b> - which is worth stating
+	 * plainly.  The grid is confirmed on all four fonts of the {@code line-auto} golden
+	 * (see {@link #GRID_PT}), and the arithmetic without it is 0.001 to 0.021pt short of
+	 * every one of them.  But 0.02pt a line is smaller than what the rest of the layout
+	 * still gets wrong, and moving it changes which line falls at a page bottom: measured
+	 * over the 156 documents of the hardest corpus, rounding cost 124 matched lines
+	 * (54491 -&gt; 54367 of 71610), took the median document from 0.9065 to 0.9035, and
+	 * lost 0.146 on one seven-page document whose page breaks it flipped.  It is left
+	 * here, switchable, for a round which can measure it against a corpus whose page
+	 * breaks are not already decided by other errors.
+	 *
+	 * @since 17.0.6
+	 */
+	public static final String DEVICE_GRID = "docx4j.fonts.wordLineMetrics.deviceGrid";
+
+	private static boolean deviceGrid() {
+		String v = System.getProperty(DEVICE_GRID);
+		if (v == null) return org.docx4j.Docx4jProperties.getProperty(DEVICE_GRID, false);
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/** A length in whole grid units, which is where the arithmetic is done: 13.80pt
+	 *  is 115 of them, and 115 x 276/240 is 132.25, not 15.869pt. */
+	private static double gridUnits(double pt) {
+		return Math.rint(pt * 600.0 / 72.0);
+	}
+
+	private static double fromUnits(double units) {
+		return units * 72.0 / 600.0;
+	}
+
+	/**
+	 * Word's single line height in points for text in this font at this size, on the
+	 * 600 dpi grid ({@link #GRID_PT}).  Everything the {@code w:spacing} rules do is
+	 * done to this value, not to the raw factor.
+	 *
+	 * @since 17.0.6
+	 */
+	public static double singleLineHeightPt(String documentFont, PhysicalFont pf, double sizePt) {
+		return fromUnits(singleUnits(documentFont, pf, sizePt));
+	}
+
+	private static double singleUnits(String documentFont, PhysicalFont pf, double sizePt) {
+		double exact = get(documentFont, pf).lineHeightFactor() * sizePt;
+		return deviceGrid() ? gridUnits(exact) : exact * 600.0 / 72.0;
+	}
+
+	/**
 	 * Word's line height in points for text in this font at this size, under the
 	 * paragraph's w:spacing (line/lineRule); "single" when spacing is null or has
 	 * no w:line.
@@ -241,18 +334,18 @@ public final class WordLineMetrics {
 
 	/** As {@link #lineHeightPt(PhysicalFont, double, PPrBase.Spacing)}, sized from the document font when the table knows it. @since 17.0.5 */
 	public static double lineHeightPt(String documentFont, PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
-		double single = get(documentFont, pf).lineHeightFactor() * sizePt;
-		if (spacing == null || spacing.getLine() == null) return single;
+		double singleU = singleUnits(documentFont, pf, sizePt);
+		if (spacing == null || spacing.getLine() == null) return fromUnits(singleU);
 		double line = spacing.getLine().doubleValue();
 		STLineSpacingRule rule = spacing.getLineRule() == null ? STLineSpacingRule.AUTO : spacing.getLineRule();
 		switch (rule) {
 		case EXACT:
 			return line / 20.0;
 		case AT_LEAST:
-			return Math.max(single, line / 20.0);
+			return Math.max(fromUnits(singleU), line / 20.0);
 		case AUTO:
 		default:
-			return single * line / 240.0;
+			return fromUnits(singleU) * line / 240.0;
 		}
 	}
 
@@ -271,10 +364,10 @@ public final class WordLineMetrics {
 	/** @since 17.0.5 */
 	public static double wordBaselinePt(String documentFont, PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
 		Metrics m = get(documentFont, pf);
-		double single = m.lineHeightFactor() * sizePt;
+		double single = singleLineHeightPt(documentFont, pf, sizePt);
 		double natural = (m.winAscent + m.externalLeading) * sizePt;
 		if (spacing == null || spacing.getLine() == null) return natural;
-		double line = spacing.getLine().doubleValue() / 20.0;
+		double line = onGrid(spacing.getLine().doubleValue() / 20.0);
 		STLineSpacingRule rule = spacing.getLineRule() == null ? STLineSpacingRule.AUTO : spacing.getLineRule();
 		switch (rule) {
 		case EXACT:

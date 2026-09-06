@@ -62,6 +62,83 @@ public class WordLineMetricsTest {
 		assertEquals(single, apply(single, sp), 1e-9);
 	}
 
+	/**
+	 * Word's single line height is a whole number of 1/600 inch units - it lays a page out
+	 * at 600 dpi - and 17.0.6 rounds to that grid.  What w:spacing then makes of it is
+	 * <b>not</b> rounded again: Word's own pitch alternates between the two units either
+	 * side of the exact value (Liberation Serif 12pt at w:line="276" is 132.25 units, and
+	 * the line-auto golden's four pitches are 15.96 / 15.84 / 15.87 / 15.84), so it is the
+	 * accumulated position Word rounds, not the pitch.  Values below are from the
+	 * line-auto and line-exact-atleast goldens.
+	 */
+	@Test
+	public void wordDeviceGrid() throws Exception {
+		// off by default (it moved page breaks on the corpora); see WordLineMetrics.DEVICE_GRID
+		System.setProperty(WordLineMetrics.DEVICE_GRID, "true");
+		try {
+		assertEquals(0.12, WordLineMetrics.GRID_PT, 1e-12);
+		// every single-spacing pitch Word paints is a whole number of grid units
+		for (double pt : new double[] { 13.80, 13.44, 11.52, 11.64 }) {
+			assertEquals(pt, WordLineMetrics.onGrid(pt), 1e-9);
+		}
+		// half a unit goes to the even one: 172.5 -> 172 (20.64), which is Word's
+		assertEquals(20.64, WordLineMetrics.onGrid(20.70), 1e-9);
+
+		ObjectFactory f = new ObjectFactory();
+		PPrBase.Spacing sp = f.createPPrBaseSpacing();
+
+		// single spacing, exact -> Word (grid units).  Word paints all four exactly.
+		// Liberation Serif 12: 13.7988 -> 13.80 (115); Carlito 11: 13.4277 -> 13.44 (112);
+		// Liberation Sans 10: 11.4990 -> 11.52 (96); DejaVu Sans 10: 11.6406 -> 11.64 (97)
+		assertEquals(13.80, lineHeight("Liberation Serif", 12, null), 1e-9);
+		assertEquals(13.44, lineHeight("Carlito", 11, null), 1e-9);
+		assertEquals(11.52, lineHeight("Liberation Sans", 10, null), 1e-9);
+		assertEquals(11.64, lineHeight("DejaVu Sans", 10, null), 1e-9);
+		assertEquals(13.80, lineHeight("Liberation Serif", 12, auto(sp, 240)), 1e-9);
+
+		// the multiple is taken from the rounded single and left there.  Word's mean pitch
+		// over the golden's paragraphs is in brackets
+		assertEquals(14.8925, lineHeight("Liberation Serif", 12, auto(sp, 259)), 1e-9);   // 14.880
+		assertEquals(15.87, lineHeight("Liberation Serif", 12, auto(sp, 276)), 1e-9);     // 15.8775
+		assertEquals(20.70, lineHeight("Liberation Serif", 12, auto(sp, 360)), 1e-9);     // 20.680
+		assertEquals(27.60, lineHeight("Liberation Serif", 12, auto(sp, 480)), 1e-9);     // 27.607
+		assertEquals(15.456, lineHeight("Carlito", 11, auto(sp, 276)), 1e-9);             // 15.450
+		assertEquals(26.88, lineHeight("Carlito", 11, auto(sp, 480)), 1e-9);              // 26.880
+		assertEquals(13.248, lineHeight("Liberation Sans", 10, auto(sp, 276)), 1e-9);     // 13.208
+		assertEquals(13.386, lineHeight("DejaVu Sans", 10, auto(sp, 276)), 1e-9);         // 13.392
+
+		// exact and atLeast are the w:line value itself, ungridded
+		assertEquals(9.00, lineHeight("Liberation Serif", 12, rule(sp, 180, STLineSpacingRule.EXACT)), 1e-9);
+		assertEquals(24.00, lineHeight("Liberation Serif", 12, rule(sp, 480, STLineSpacingRule.EXACT)), 1e-9);
+		assertEquals(13.80, lineHeight("Liberation Serif", 12, rule(sp, 120, STLineSpacingRule.AT_LEAST)), 1e-9);
+		assertEquals(20.00, lineHeight("Liberation Serif", 12, rule(sp, 400, STLineSpacingRule.AT_LEAST)), 1e-9);
+		} finally {
+			System.clearProperty(WordLineMetrics.DEVICE_GRID);
+		}
+	}
+
+	/** The shipped default is the 17.0.5 arithmetic, ungridded. */
+	@Test
+	public void theGridIsOffByDefault() throws Exception {
+		assertEquals(13.4277, lineHeight("Carlito", 11, null), 1e-4);
+		assertEquals(13.4277, WordLineMetrics.onGrid(13.4277), 1e-9);
+		assertEquals(13.7988, lineHeight("Liberation Serif", 12, null), 1e-4);
+	}
+
+	private static double lineHeight(String documentFont, double sizePt, PPrBase.Spacing sp) {
+		return WordLineMetrics.lineHeightPt(documentFont, null, sizePt, sp);
+	}
+
+	private static PPrBase.Spacing auto(PPrBase.Spacing sp, int line) {
+		return rule(sp, line, STLineSpacingRule.AUTO);
+	}
+
+	private static PPrBase.Spacing rule(PPrBase.Spacing sp, int line, STLineSpacingRule r) {
+		sp.setLine(BigInteger.valueOf(line));
+		sp.setLineRule(r);
+		return sp;
+	}
+
 	/** Same arithmetic as WordLineMetrics.lineHeightPt, but from a known single value. */
 	private static double apply(double single, PPrBase.Spacing sp) {
 		if (sp.getLine() == null) return single;
@@ -109,6 +186,7 @@ public class WordLineMetricsTest {
 		assertTrue(WordLineMetrics.get(null, null).fallback);
 
 		// an 18pt Cambria heading at single spacing: 21.10pt (Caladea's own 1.300 would give 23.4)
+		assertEquals(2401 / 2048.0 * 18, WordLineMetrics.get("Cambria", null).lineHeightFactor() * 18, 1e-9);
 		assertEquals(2401 / 2048.0 * 18, WordLineMetrics.lineHeightPt("Cambria", null, 18, null), 1e-9);
 		assertEquals("21.103pt", WordLineMetrics.lineHeightPtString("Cambria", null, 18, null));
 	}

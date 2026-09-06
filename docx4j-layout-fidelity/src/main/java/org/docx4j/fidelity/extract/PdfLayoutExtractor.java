@@ -40,6 +40,34 @@ public final class PdfLayoutExtractor {
 	private static final float WORD_GAP_EM =
 			Float.parseFloat(System.getProperty("fidelity.wordGapEm", "0.25"));
 
+	/**
+	 * How wide a gap has to be, in points, before it can split a baseline into two
+	 * lines at all.
+	 *
+	 * <p>The gap rules below are relative (0.7 em, three median word gaps), so a short
+	 * tab gap splits a line whenever it is written as a real gap and does not when it is
+	 * written as space glyphs - and Word and docx4j do not agree on which.  A numbered
+	 * or bulleted paragraph is the common shape: Word's PDF writes the tab between the
+	 * label and the text as space glyphs at the label's own size, so PDFBox reads
+	 * {@code "1. Introduction"} as one line, while ours writes no glyph in the gap and
+	 * the same paragraph is read as {@code "1."} and {@code "Introduction"}.  Neither
+	 * reading is wrong, but they must be the same on both sides or the LCS loses the
+	 * pair, and it loses two lines each time it does.  Below this width a gap therefore
+	 * never splits, on either side; the vertical-rule test (a real cell boundary) still
+	 * does, at any width.
+	 *
+	 * <p>20pt covers the 0.25in family of hanging indents whole and leaves the 0.5in
+	 * family - wide enough that both sides read it the same way - splitting as before.
+	 * <b>It is nearly inert</b>, and deliberately so: measured on eight label-heavy
+	 * corpus documents it merges four reference lines and wins one extra match out of
+	 * 8086, because the 0.7 em and three-median tests below already refuse most short
+	 * gaps.  It is kept because the asymmetry it closes is systematic rather than large,
+	 * and it can only ever merge - never split - and does so on both sides alike.  See
+	 * the README.  {@code -Dfidelity.minSplitPt=} overrides it; 0 disables it.
+	 */
+	private static final float MIN_SPLIT_PT =
+			Float.parseFloat(System.getProperty("fidelity.minSplitPt", "20"));
+
 	public static PdfLayout extract(File pdf) throws IOException {
 		try (PDDocument doc = Loader.loadPDF(pdf)) {
 			PdfLayout out = new PdfLayout();
@@ -58,7 +86,55 @@ public final class PdfLayoutExtractor {
 			tc.getText(doc);
 			out.lines.sort((a, b) -> a.page != b.page ? Integer.compare(a.page, b.page)
 					: (Math.abs(a.y - b.y) > 0.01 ? Double.compare(a.y, b.y) : Double.compare(a.x0, b.x0)));
+			orderByRow(out);
 			return out;
+		}
+	}
+
+	/**
+	 * How far apart, in points, two lines' baselines may be and still be read as one
+	 * row - which is ordered left to right, not by baseline.
+	 *
+	 * <p>The comparison is an LCS over the line list in order, so a pair of lines the
+	 * two PDFs put in the opposite order is a pair the LCS cannot match, and it loses
+	 * both.  A label cell beside the text it labels is where that happens: a
+	 * {@code w:vAlign} label and the first line of the body column beside it sit within
+	 * a line of each other, and which of the two has the smaller baseline is decided by
+	 * a fraction of a point of vertical alignment - Word puts one corpus document's
+	 * "Assessment of student" 0.7pt <em>above</em> the "Diagnostic assessment: KWL
+	 * chart" it labels and we put it 7.0pt <em>below</em>, so the strict baseline order
+	 * disagrees although both renders paint the same row.  Ordering a row left to right
+	 * makes the two agree whatever the vertical alignment does, and it is the order the
+	 * documents are read in.
+	 *
+	 * <p>Measured (b2-batch21) on eight label-heavy corpus documents, 8086 reference
+	 * lines: lines matched 6458 at 0 (the strict baseline order), 6725 at 2pt,
+	 * <b>6730 at 3pt</b>, 6722 at 4pt, 6686 at 5pt, 6738 at 8pt (but median parity
+	 * 0.8620 against 3pt's 0.8697) and 6526 at 12pt, where a row starts swallowing the
+	 * next line of a column.  3pt is the peak; a column's line pitch is at least 9pt in
+	 * the densest of those tables.  {@code -Dfidelity.rowTolerancePt=} overrides it; 0
+	 * restores the strict baseline order.
+	 *
+	 * @since 17.0.6
+	 */
+	private static final double ROW_TOLERANCE_PT =
+			Double.parseDouble(System.getProperty("fidelity.rowTolerancePt", "3"));
+
+	/** Order each row (a run of lines on one page whose baselines lie within
+	 *  {@link #ROW_TOLERANCE_PT} of the row's first) left to right. */
+	private static void orderByRow(PdfLayout out) {
+		if (ROW_TOLERANCE_PT <= 0) return;
+		for (int i = 0; i < out.lines.size(); ) {
+			int j = i + 1;
+			double y0 = out.lines.get(i).y;
+			int page = out.lines.get(i).page;
+			while (j < out.lines.size() && out.lines.get(j).page == page
+					&& out.lines.get(j).y - y0 <= ROW_TOLERANCE_PT) j++;
+			if (j - i > 1) {
+				// stable: lines at the same x keep their baseline order
+				out.lines.subList(i, j).sort((a, b) -> Double.compare(a.x0, b.x0));
+			}
+			i = j;
 		}
 	}
 
@@ -107,10 +183,11 @@ public final class PdfLayoutExtractor {
 		}
 
 		/**
-		 * Split a baseline cluster into lines (a) at a gap wider than 0.7 em that is also
-		 * more than three times the cluster's median word gap (tab stops, borderless
-		 * cells), or (b) at any gap crossed by a vertical rule (table borders). Justified
-		 * text has uniformly wide word gaps, so (a) keeps such lines together.
+		 * Split a baseline cluster into lines (a) at a gap of at least {@link #MIN_SPLIT_PT}
+		 * which is also wider than 0.7 em and more than three times the cluster's median
+		 * word gap (tab stops, borderless cells), or (b) at any gap crossed by a vertical
+		 * rule (table borders). Justified text has uniformly wide word gaps, so (a) keeps
+		 * such lines together.
 		 */
 		private void emit(int pageIndex, List<TextPosition> cluster) {
 			cluster.sort((a, b) -> Float.compare(a.getXDirAdj(), b.getXDirAdj()));
@@ -128,7 +205,7 @@ public final class PdfLayoutExtractor {
 					float from = prev.getXDirAdj() + prev.getWidthDirAdj();
 					float gap = tp.getXDirAdj() - from;
 					float em = Math.max(prev.getFontSizeInPt(), 1f);
-					boolean wide = gap > 0.7f * em && gap > 3f * medianWordGap;
+					boolean wide = gap >= MIN_SPLIT_PT && gap > 0.7f * em && gap > 3f * medianWordGap;
 					if (wide || (gap > 0 && verticalRuleBetween(pageIndex, from, tp.getXDirAdj(), tp.getYDirAdj(), em))) {
 						addLine(pageIndex, run);
 						run = new ArrayList<>();

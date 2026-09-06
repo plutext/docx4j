@@ -204,6 +204,29 @@ final class LBP {
 		}
 	}
 
+	// ---- LeafPosition.leafPos (private, and there is no setter)
+
+	private static final Field LEAF_POS;
+	static {
+		try {
+			LEAF_POS = org.apache.fop.layoutmgr.LeafPosition.class.getDeclaredField("leafPos");
+			LEAF_POS.setAccessible(true);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("FOP's LeafPosition has changed; org.docx4j.fop.wordlayout needs updating", e);
+		}
+	}
+
+	/** Move a position on to a different glyph mapping: splitting one mapping into
+	 *  several shifts every later index, and a position is what carries the index.
+	 *  @since 17.0.6 */
+	static void setLeafPos(org.apache.fop.layoutmgr.LeafPosition p, int value) {
+		try {
+			LEAF_POS.setInt(p, value);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	// ---- LeafNodeLayoutManager.areaInfo / curArea and AreaInfo.ipdArea (all protected)
 
 	private static final Field LNLM_AREA_INFO, LNLM_CUR_AREA, AREA_INFO_IPD;

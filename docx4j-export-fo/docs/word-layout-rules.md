@@ -103,6 +103,8 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink` | `0.10` | The same, for taking a longer **hyphenation fragment** rather than a whole word; Word pays much less for one (§4.7). Capped by `maxSpaceShrink`. |
 | `docx4j.convert.out.fo.wordLayout.tocStretchingLeader` | `true` | A table-of-contents entry (first stop right-aligned with a dot leader) keeps the stretching `fo:leader` and `text-align-last="justify"`. `false` lays its tabs out against the stops like any other tab, which also gives its dots Word's grid phase; measured, the two are a wash (§4.4). |
 | `docx4j.convert.out.fo.wordLayout.hyphenationZone` | `false` | `true` enforces `w:hyphenationZone` as the largest gap tolerated before hyphenating, which is what docx4j did to 17.0.5. Measured against Word, the zone never fires (§4.7). |
+| `docx4j.convert.out.fo.wordLayout.emergencyBreak` | `true` | A word too long for a line of its own is broken inside it, at the last character that fits, as Word breaks one (§4.3). `false` paints it whole, off the page, as FOP does. |
+| `docx4j.fonts.wordLineMetrics.deviceGrid` | `false` | `true` rounds a font's single line height to Word's 600 dpi layout grid, 1/600 inch, which is what Word does (§2.1) - but measured over the corpora it moves page breaks and costs more than the 0.02pt a line it wins. |
 | `docx4j.convert.out.fo.wordLayoutFixups` | `true` | The DOM pass over the generated FO (`WordLayoutFixups`): Word's spacing edge rules, the line-box attributes, exact-height rows, anchored pictures, text boxes. `false` gives the FO docx4j 17.0.4 produced. |
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
@@ -142,6 +144,33 @@ Liberation Sans 11.52pt at 10pt, DejaVu Sans 11.64pt at 10pt. `org.docx4j.fonts.
 WordLineMetrics` computes it; the pitch agrees with Word's to 0.05pt over four fonts and
 five multiples. Sizing lines as a percentage of the block's font size instead (12pt single
 came out at ~11.7pt) put 15-20% more lines on a page than Word has.
+
+<a id="s21grid"></a>**Word's `single` is a whole number of 1/600 inch, and ours is not**
+(measured 17.0.6, **not** applied by default). Word lays a page out in 600 dpi device units
+- its A4 page is 595.32 x 841.92pt, which is 4961 x 7016 of them - and a single line is a
+whole number of them. All four of the `line-auto` golden's fonts confirm it, and the
+arithmetic above is 0.001 to 0.021pt short of every one of them:
+
+| font / size | exact | Word | units |
+|---|---|---|---|
+| Liberation Serif 12 | 13.7988 | **13.80** | 115 |
+| Carlito 11 | 13.4277 | **13.44** | 112 |
+| Liberation Sans 10 | 11.4990 | **11.52** | 96 |
+| DejaVu Sans 10 | 11.6406 | **11.64** | 97 |
+
+Half a unit goes to the even one. What `w:spacing` then makes of `single` is **not** rounded
+again: Word's own pitch inside one paragraph alternates between the two units either side of
+the exact value - Liberation Serif 12pt at `w:line="276"` is 115 x 276/240 = 132.25 units
+and the golden's four pitches are 15.96 / 15.84 / 15.87 / 15.84, averaging 15.8775 against
+the exact 15.87 - so it is the accumulated *position* Word rounds, not the pitch. (Rounding
+the pitch as well was tried and is worse again: it moved a page break in this very probe.)
+
+`docx4j.fonts.wordLineMetrics.deviceGrid=true` applies the rounding, and it is **off by
+default**. 0.02pt a line is smaller than what the rest of the layout still gets wrong, and
+moving it changes which line falls at a page bottom: measured over the 156 documents of the
+hardest corpus, rounding cost 124 matched lines (54491 -> 54367 of 71610), took the median
+document from 0.9065 to 0.9035, and lost 0.146 on one seven-page document whose page breaks
+it flipped. Worth revisiting once page breaks are not already decided by other errors.
 
 ### 2.2 `w:spacing/@w:lineRule`
 
@@ -263,6 +292,19 @@ line of the document. `WordLayoutFixups` gives such a block the same
 `white-space-treatment="preserve"` space a run-less paragraph gets; it already carries the
 mark's font and line-box attributes. A paragraph all of whose runs and whose mark are
 hidden text still gets no line ([§9.3](#93-hidden-text)).
+
+**And a run takes no size from the mark either** (17.0.6). A `w:r` with no `w:rPr` gets no
+`font-size` of its own in the FO - the XSLT pathway does not even wrap it in an
+`fo:inline` - so it inherits the block's, which starts as the paragraph's effective size
+(docDefaults, then the paragraph style's `w:rPr`). That was right until
+[§2.4](#24-a-lines-height-comes-from-the-runs-on-it) replaced the block's size with the
+dominant run's, at which point the sizeless runs silently changed size with it. Word does
+not: a run takes its size from the style chain, and the mark's `w:rPr` sizes the mark alone.
+Measured on a corpus header of [115.8pt picture][45 spaces][24pt text] whose mark carries
+`w:sz="48"`: Word's spaces are 45 x 2.5 = 111.6pt and ours were 45 x 5.42 = **244.1**, which
+wrapped the heading, made the header two lines on every page, and made 8 Word pages 10 of
+ours. The block still takes the dominant run's size for its lines; its children keep the
+size they were measured at.
 
 ### 2.6 Superscripts and subscripts
 
@@ -781,6 +823,59 @@ most fonts have no glyph for one, so it was painted as a notdef box in the middl
 word. Word shows one only where it breaks the line there. A `w:br` at the end of a
 paragraph gets the empty line Word gives it.
 
+#### The emergency break: a word too long for any line (17.0.6)
+
+When no legal break will do, Word breaks the word itself. UAX #14, which FOP follows,
+offers no break inside `KONS_ADATOK_SZERZODO_ADATAI_TERM_SZEMELY_LAKCIM_VAROS` or a rule of
+underscores, so FOP painted the whole of it however narrow the measure: over the three
+corpora **1959 lines were painted outside their page in 73 documents**, against Word's 207
+in 20 - and Word's are deliberate overhangs.
+
+Measured on a corpus golden, an insurance template of long placeholder tokens in a 279pt
+cell. Word does two things, in this order:
+
+1. **The word gets a line of its own.** The line before
+   `tartóval):ELSEENDIFIF_csak_az_uzembentartoval_THEN(megegyezik` ends at x=453.9 with 85pt
+   of the measure unused; Word did not fill it with the word's head.
+2. **Then the word is broken wherever the measure falls** - mid-token, at the character, and
+   with no hyphen: `...THEN(m` to the cell edge at 538.8, then `egegyezik...` on the next
+   line. `KONS_ADATOK_SZERZODO_ADATAI_TERM_SZEMEL` / `Y_SZUL_HELY,` is the same.
+
+So a word wider than the whole measure is split into one glyph mapping per character with a
+zero-width break between each pair, and the greedy loop may take one of those breaks only
+once the line holds nothing but that word - which is what makes step 1 happen, since until
+then the ordinary break before the word is the last one that fitted.
+
+Three limits:
+
+- A word which is more than one glyph mapping (several fonts, or an `fo:inline` boundary
+  inside it) is left alone.
+- So is one whose mapping carries a **substituted glyph sequence** - a complex script, or an
+  OpenType feature FOP applied: such a word cannot be rebuilt from its characters and the
+  fragments would render unshaped. (Inert on every corpus document the rule touches.)
+- **The word must be over the measure by more than an inch.** The rule has to be
+  conservative, because a word which does not fit is very often a measure *we* got wrong
+  rather than a word Word breaks, and breaking it then hides the real defect and costs a
+  line. Measured over every corpus document carrying the shape, each word that overflowed by
+  less than an inch was one Word fitted or let overhang - `BALES` by 2.6pt and `'A'` by
+  1.4pt in a certificate whose columns Word autofits a fraction wider than we do (that
+  document scores 1.000 without the rule and 0.826 with a 1pt tolerance); `CANTIDAD` by 20pt
+  in a cell whose text Word turns on its side, where our measure is the unrotated width;
+  `Telecomunicaciones.` by 20pt in a table whose grid we still fit wrongly. The words Word
+  does break overflow by 78 to 345pt. The `table-autofit` probe's 23.976pt column against a
+  23.988pt word - 0.012pt - is the smallest of them.
+
+Kerning and glyph positioning inside the word are lost, which is the price of breaking it;
+the word's total width is preserved exactly (the residual goes on the last character).
+`docx4j.convert.out.fo.wordLayout.emergencyBreak=false` turns the rule off.
+
+Measured over the three corpora, the conservative rule takes the lines painted outside their
+page from 1959 in 73 documents to 1915 in 70, against Word's 207 in 20. Most of what remains
+is not this rule's to fix: it is text beside a picture whose wrap we do not narrow (E24), a
+dropped `fo:float` (E27), an over-wide grid, and cells whose text Word turns on its side.
+What it does buy is line parity where the token *is* the content: two documents of one corpus
+go 0.500 -> 0.661 and 0.559 -> 0.701, and a third 0.579 -> 0.673.
+
 ### 4.4 Tab stops
 
 Where a tab starts is not known when the FO is written, so a mid-line tab is an `fo:leader`
@@ -947,6 +1042,20 @@ measured. A **rule** leader is continuous and has no phase.
 of fixed length to the next stop, computed at FO-generation time, so code blocks and
 hanging first lines indent as Word indents them. A fixed-length leader does not set
 `text-align-last="justify"`; only a stretching one needs it.
+
+**...but only where the stop it reaches is a left one** (17.0.6). A fixed leader of the
+stop's own offset lays a right stop out as a left one: the text after the tab *begins* on
+the stop where Word makes it *end* there. Measured on a corpus footer whose only content is
+`<w:tab w:val="right" w:pos="9356"/>` then "Page 1 von 2": Word ends that text at x=540.3,
+and the 467.8pt leader began it at 539.8, 46pt past the margin. It went unnoticed while such
+a line merely overflowed; the [rule above](#s44break) that a tab which can reach no stop
+breaks the line turned the overflow into a wrap and cost a footer line on every page of
+three documents. A leading tab reaching a centre, right or decimal stop therefore takes the
+ordinary zero-length `docx4j:tab` leader and the line manager settles it, exactly as it does
+for such a stop anywhere else in the line. The hanging indent's implicit stop and the
+default grid are left stops, so a second leading tab landing on the grid keeps its fixed
+leader. 325 blocks in 60 documents of the three corpora carry a right, centre or decimal
+stop in a block which is not itself right-aligned.
 
 **Table-of-contents entries** (first stop right-aligned with a dot leader) keep the
 stretching leader and `text-align-last="justify"` they have always had: their stop is the
