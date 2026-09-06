@@ -18,9 +18,41 @@ public final class PdfLayout {
 		public String font;
 		public String text;       // whitespace-collapsed
 
+		/**
+		 * The text a line is paired on.  Runs of leader characters are collapsed to a
+		 * single token, with the whitespace around them, so that a dot leader whose dots
+		 * differ by one - which is what a phase difference of less than one dot's advance
+		 * comes to - still pairs.  Word writes {@code "1. Scope ...... 5"} where the dots
+		 * start on the reference area's grid; docx4j's start on the text, so the two
+		 * extract as {@code "duty ...... 5"} and {@code "duty......5"} although the
+		 * geometry agrees to 0.2pt.  Both sides go through this, so nothing is hidden
+		 * that is not equally hidden on Word's side.
+		 *
+		 * <p>Measured over the corpora: worth up to +0.085 of line parity on a
+		 * table-of-contents-heavy document.  {@code -Dfidelity.leaderNormalise=false}
+		 * restores the raw text.</p>
+		 */
 		public String key() {
-			return text;
+			// cached: the LCS asks every reference line for its key against every
+			// candidate line, so a 43,000-line document would run the regex 1.8 billion
+			// times (measured: the biggest corpus document stopped finishing at all)
+			String k = key;
+			if (k == null) {
+				k = NORMALISE_LEADERS ? LEADER_RUN.matcher(text).replaceAll("\u2026") : text;
+				key = k;
+			}
+			return k;
 		}
+
+		private String key;
+
+		/** Three or more leader glyphs (dot, middle dot, underscore), however spaced,
+		 *  together with the whitespace on either side of the run. */
+		private static final java.util.regex.Pattern LEADER_RUN = java.util.regex.Pattern
+				.compile("\\s*[.\u00b7\u2027_]\\s*(?:[.\u00b7\u2027_]\\s*){2,}");
+
+		private static final boolean NORMALISE_LEADERS =
+				!"false".equalsIgnoreCase(System.getProperty("fidelity.leaderNormalise", "true"));
 
 		@Override
 		public String toString() {

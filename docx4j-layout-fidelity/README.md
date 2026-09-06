@@ -121,7 +121,7 @@ Columns:
 | column | meaning |
 | --- | --- |
 | `id` | the docx basename |
-| `compatMode` | the leading number of the name (`12_en-AU_...` → Word compatibility mode 12), blank if the name does not start with one |
+| `compatMode` | the leading number of the name (`12_...` → Word compatibility mode 12), blank if the name does not start with one |
 | `sizeBytes` | size of the docx |
 | `status` | `ok`, `error` (threw), `timeout` (no result in time), `noref` (no Word PDF, not scored) |
 | `refPages` / `candPages` | page count, Word / docx4j |
@@ -161,6 +161,38 @@ against goldens when `-Ddocx4j.fidelity.golden=<dir>` (or the
 `DOCX4J_FIDELITY_GOLDEN` environment variable) is set. No tolerances fail the
 build yet. `ScoreboardTest` covers the `score` mode's CSV, aggregate and delta
 arithmetic on synthetic comparison results, so it needs no documents.
+
+## How a line is extracted and paired
+
+Both PDFs go through the same PDFBox-based extractor
+(`extract/PdfLayoutExtractor`), so anything it does is done to Word's PDF as
+well as to docx4j's; two knobs are worth knowing about.
+
+- **`-Dfidelity.wordGapEm=`** (default `0.25`) is how wide a gap between two
+  glyphs, as a fraction of the font size, is read as a word space where the PDF
+  has no space glyph. It was 0.15, which split words: Word's own PDF of one
+  corpus document has a heading PDFBox read as `Inte ntion of the 5 week
+  Program`, where `mutool draw -F stext` reads `Intention` with the glyphs
+  running 12.75..54.91 contiguously. A space is never that narrow - an ordinary
+  one is 0.25 to 0.28 em in these documents' fonts, and a justified line
+  compresses one to about 0.19 em at worst - so 0.25 is below the narrowest
+  space and above the widest intra-word gap measured. The same threshold is the
+  median word gap the line splitter compares a wide gap against, so it also
+  stops a tabbed line being split in two where Word's PDF keeps it whole.
+  Measured over the goldens of five table-of-contents-heavy documents, it
+  changes 0 / 2 / 0 / 4 / 24 lines.
+- **`-Dfidelity.leaderNormalise=false`** turns off the leader-run
+  normalisation in `PdfLayout.Line.key()`, which is what the LCS pairs on. Runs
+  of three or more leader glyphs (`.`, `·`, `‧`, `_`), however spaced, collapse
+  to one token together with the whitespace around them, so a dot leader whose
+  dots differ by one still pairs: Word writes `duty ...... 5`, where its dots
+  sit on the reference area's grid, and docx4j's start on the text, so the two
+  extracted `duty ...... 5` and `duty......5` although the geometry agreed to
+  0.2pt. Measured, it is worth +0.113, +0.031, +0.021, +0.017 and +0.014 of
+  line parity on five documents.
+
+Both are measuring, not rendering: **re-baseline** (rescore the corpora with
+the harness change alone) before scoring a rendering change against them.
 
 ## Reading the report
 

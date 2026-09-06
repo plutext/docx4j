@@ -38,6 +38,19 @@ MathType equation, an embedded workbook or Visio drawing, an OLE icon) is now re
 Word draws it.  Neither FO exporter matched w:object before, so the preview was dropped
 unless the document wrapped it in w:pict; the HTML exporters gain it too (CR-011)
 
+- a table whose cells declare widths of their own is now laid out on its w:tblGrid, not on
+row 1's w:tcW: Word treats a cell width as a preferred one, and row 1 is often stale or
+partial (one table came out 404.4pt wide against Word's 729pt, wrapping every cell)
+- w:pgMar/@w:gutter is no longer added to the left margin of a landscape section, nor taken
+off its text column: measured against Word, which applies it to portrait sections only
+- malformed nesting some producers write and Word renders - a w:r directly inside a w:r, a
+w:p directly inside a w:r or a w:hyperlink - is no longer discarded on load: the content is
+hoisted into the legal position around it (one document recovered 412 lines)
+- a floating table below compatibility mode 15 with no w:tblpX is no longer refused its
+float by the grid-edge shift, which is about the grid rather than where Word puts the frame
+- docx4j.convert.out.fo.wordLayout.tocStretchingLeader=false lays a table-of-contents
+entry's tabs out against its stops, so its dots get Word's grid phase; the default is still
+the stretching leader, since the two measure the same against Word
 - an autofit table (no w:tblW of its own, no fixed layout) whose w:tblGrid is far wider than
 the text column is now fitted to it, as Word refits such a grid; a grid up to a quarter over
 still overhangs the margin, as Word draws it

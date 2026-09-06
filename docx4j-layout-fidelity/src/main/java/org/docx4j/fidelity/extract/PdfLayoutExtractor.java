@@ -24,6 +24,22 @@ public final class PdfLayoutExtractor {
 
 	private PdfLayoutExtractor() {}
 
+	/**
+	 * How wide a gap between two glyphs, as a fraction of the font size, is read as a
+	 * word space where the PDF has no space glyph.
+	 *
+	 * <p>0.15 em split words: Word's PDF of one corpus document has a heading PDFBox
+	 * reads as "Inte ntion of the 5 week Program", where {@code mutool draw -F stext}
+	 * reads {@code Intention} with the glyphs running 12.75..54.91 contiguously.  The
+	 * gap is PDFBox's own arithmetic - the glyph advance it charges against the position
+	 * the PDF sets - and a space is never that narrow: an ordinary space is 0.25 to 0.28
+	 * em in the fonts these documents use, and a justified line compresses one to about
+	 * 0.19 em at worst (&#xa7;4.2).  0.25 em is below that and above the widest
+	 * intra-word gap measured.  {@code -Dfidelity.wordGapEm=} overrides it.
+	 */
+	private static final float WORD_GAP_EM =
+			Float.parseFloat(System.getProperty("fidelity.wordGapEm", "0.25"));
+
 	public static PdfLayout extract(File pdf) throws IOException {
 		try (PDDocument doc = Loader.loadPDF(pdf)) {
 			PdfLayout out = new PdfLayout();
@@ -101,7 +117,7 @@ public final class PdfLayoutExtractor {
 			List<Float> gaps = new ArrayList<>();
 			for (int i = 1; i < cluster.size(); i++) {
 				float g = cluster.get(i).getXDirAdj() - (cluster.get(i - 1).getXDirAdj() + cluster.get(i - 1).getWidthDirAdj());
-				if (g > 0.15f * cluster.get(i - 1).getFontSizeInPt()) gaps.add(g);
+				if (g > WORD_GAP_EM * cluster.get(i - 1).getFontSizeInPt()) gaps.add(g);
 			}
 			Collections.sort(gaps);
 			float medianWordGap = gaps.isEmpty() ? 0f : gaps.get(gaps.size() / 2);
@@ -150,7 +166,7 @@ public final class PdfLayoutExtractor {
 			for (TextPosition tp : run) {
 				if (prev != null) {
 					float gap = tp.getXDirAdj() - (prev.getXDirAdj() + prev.getWidthDirAdj());
-					if (gap > 0.15f * prev.getFontSizeInPt() && text.length() > 0 && text.charAt(text.length() - 1) != ' ') {
+					if (gap > WORD_GAP_EM * prev.getFontSizeInPt() && text.length() > 0 && text.charAt(text.length() - 1) != ' ') {
 						text.append(' ');
 					}
 				}

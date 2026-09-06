@@ -1998,11 +1998,45 @@ public class XsltFOFunctions {
 		return tabToFO(context, pPr, rPr, precedingTabs, precedingText);
 	}
 
+	/**
+	 * {@code docx4j.convert.out.fo.wordLayout.tocStretchingLeader}: whether a
+	 * table-of-contents entry keeps the stretching {@code fo:leader} and
+	 * {@code text-align-last="justify"} docx4j gave it before 17.0.6, rather than being
+	 * laid out against its tab stops like any other tab.
+	 *
+	 * <p>The stretching leader was kept for one reason: FOP measures an unresolved
+	 * {@code fo:page-number-citation} as the placeholder "MMM", and only a leader that
+	 * can stretch gives that width back when the citation resolves.  17.0.6 moves the
+	 * difference to the tab itself ({@code TabPageNumberWidth}, &#xa7;4.4), so a resolved
+	 * tab now lands on its stop too - and it gets the dot grid's phase with it, which a
+	 * stretching leader cannot have: its width is settled by FOP's justification, after
+	 * the line manager has been and gone, so its dots begin on the text where Word's
+	 * begin on the reference area's grid.  Measured over the corpora, 18 documents and
+	 * about 797 lines carry that shape.</p>
+	 *
+	 * <p><b>Measured, and it is a wash</b>, which is why the default is still the
+	 * stretching leader.  On the corpus document with the most of them (98 entries),
+	 * Word's first dot on five consecutive entries is at 132.05 / 126.77 / 248.26 /
+	 * 190.15 / 142.61; the stretching leader puts it at 132.45 / 126.07 / 249.59 /
+	 * 190.92 / 143.24 (mean error 0.77pt) and the resolved tab at 132.00 / 127.00 /
+	 * 247.00 / 189.50 / 144.50 (0.82pt).  Line parity did not move on any of the four
+	 * documents holding the most of them (0.8494, 0.7651, 0.9212 unchanged, 0.9240 ->
+	 * 0.9220).  The parity these lines had been losing was the harness pairing them on
+	 * a dot count, which its leader-run normalisation now settles.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static boolean tocStretchingLeader() {
+		return org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.tocStretchingLeader", true);
+	}
+
 	/** The table-of-contents shape: the paragraph's first tab stop is right-aligned
 	 *  with a dot leader.  Its tabs are rendered as a stretching dot leader with
 	 *  text-align-last="justify", not laid out against the stops; see
 	 *  {@link #tabToFO}.  @since 17.0.5 */
 	static boolean isTocDotLeader(PPr pPr) {
+		if (!tocStretchingLeader()) return false;
 		if (pPr==null || pPr.getTabs()==null || pPr.getTabs().getTab().isEmpty()) return false;
 		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
 		return tabStop!=null

@@ -866,6 +866,12 @@ public final class WordLayoutFixups {
 		Element holder = doc.createElementNS(FO_NS, "fo:block");
 		holder.setAttribute("start-indent", "0pt");
 		holder.setAttribute("end-indent", "0pt");
+		/* w:tblpY, the drop from the top of the anchor paragraph to the top of Word's
+		 * frame, is padding on the block inside the float.  Measured on the
+		 * table-floating probe (tblpY=1440): Word's anchor paragraph begins at y=111.7
+		 * and its "float a" cell line at 186.8, ours at 186.6.  (What FOP will not do is
+		 * leave the lines *above* the table full width: it anchors the float at the line
+		 * it sits at, so the padding narrows them too - §10.) */
 		if (padTop > 0) holder.setAttribute("padding-top", pt(padTop));
 		wrapper.appendChild(holder);
 

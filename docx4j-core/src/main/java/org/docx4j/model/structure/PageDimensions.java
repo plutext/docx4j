@@ -336,12 +336,7 @@ public class PageDimensions {
 
 	public int getWritableWidthTwips() {
 
-		int gutter = 0;
-		if (pgMar.getGutter()!=null) {
-			gutter = pgMar.getGutter().intValue();
-		}
-
-		return pgSz.getW().intValue() - (gutter + pgMar.getLeft().intValue() + pgMar.getRight().intValue());
+		return pgSz.getW().intValue() - (getGutter() + pgMar.getLeft().intValue() + pgMar.getRight().intValue());
 	}
 
 	/**headers/footers into account!
@@ -471,10 +466,34 @@ public class PageDimensions {
 	 * of an even page where the margins are mirrored); it is <em>not</em> part of the
 	 * writable width, which {@link #getWritableWidthTwips()} already subtracts it from.
 	 *
+	 * <p><b>A landscape section takes no gutter.</b>  Measured on the one corpus document
+	 * which has both orientations and a gutter ({@code w:gutter="567"} on each of its two
+	 * {@code w:sectPr}): in the portrait section, whose {@code w:left} is 851 twips, Word
+	 * puts every line at x=70.9 = (851 + 567)/20, while in the landscape section, whose
+	 * {@code w:left} is 680, Word puts the running head at 49.7 and the table grid edge at
+	 * 28.55 = 34.0 - one 5.4pt cell margin - i.e. on {@code w:left} itself, with the
+	 * gutter nowhere: adding it put all 222 landscape pages 28.35pt right of Word's (our
+	 * text ran 62.4..843.2 against Word's 34.1..804.2, past the 841.9pt page edge) and
+	 * narrowed the writable width, so the document's 100%-wide tables came out 737pt
+	 * against Word's 765.35pt (the full {@code w:tblGrid}).  It is not moved to the top
+	 * either: Word's table on that page begins at y=52.85, above the 70.9pt a top gutter
+	 * would give.</p>
+	 *
 	 * @since 17.0.6
 	 */
 	public int getGutter() {
-		return (pgMar == null || pgMar.getGutter() == null) ? 0 : pgMar.getGutter().intValue();
+		if (pgMar == null || pgMar.getGutter() == null) return 0;
+		if (isLandscape()) return 0;
+		return pgMar.getGutter().intValue();
+	}
+
+	/** Whether this section's page is landscape: w:pgSz/@w:orient, else w &gt; h.
+	 *  @since 17.0.6 */
+	public boolean isLandscape() {
+		if (pgSz == null) return false;
+		if (pgSz.getOrient() != null) return STPageOrientation.LANDSCAPE.equals(pgSz.getOrient());
+		return pgSz.getW() != null && pgSz.getH() != null
+				&& pgSz.getW().intValue() > pgSz.getH().intValue();
 	}
 
 	/**

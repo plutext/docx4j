@@ -59,7 +59,29 @@ and median per-document line parity - does not fall and no document regresses be
 noise. Over the 17.0.5 cycle that went from 69.7% of lines matching Word exactly to 82.5%,
 and from 128 to 152 of 190 scored documents having Word's page count.
 
-### 1.3 Compatibility modes
+<a id="s13malformed"></a>
+### 1.3 Malformed input Word renders anyway
+
+Some producers write nesting that is in no content model, and Word renders it: a `w:r`
+directly inside a `w:r`, and a `w:p` directly inside a `w:r` or a `w:hyperlink`. JAXB
+reports "unexpected element" for each, docx4j falls back to its preprocessing pass
+(`org/docx4j/jaxb/mc-preprocessor.xslt`, the same one that resolves `mc:AlternateContent`)
+and lets unmarshalling continue - and the whole offending subtree was then discarded
+silently. Measured on a document holding 76 runs nested in runs and 76 paragraphs nested
+in hyperlinks: the text docx4j extracted was 119,726 characters against 145,483 in the
+document, one word appearing 302 times against 472 and another 11 times against 21, and
+the FO held none of the first at all; Word's 54 pages came out as 44.
+
+The preprocessor now hoists such content into the legal position around it - a nested
+run's content joins the run it sits in, a nested paragraph's content joins the run or
+hyperlink it sits in, the nested element's own `w:rPr`/`w:pPr` going, since there is
+nowhere legal to carry it. Only a **direct** child is matched: a `w:r` deeper inside a
+`w:r` is the ordinary shape of a text box
+(`w:r/w:pict/v:textbox/w:txbxContent/w:p/w:r`), which is perfectly legal. 10 documents of
+the three corpora hold the shape; the one measured above went from 0.383 to 0.463 of
+Word's lines and from 44 pages to 51 of Word's 54.
+
+### 1.4 Compatibility modes
 
 Several of Word's rules changed with its 2013 layout engine. Word records which engine
 lays a document out in `word/settings.xml`, as
@@ -71,13 +93,14 @@ Rules that depend on it: the table grid edge (§6.1), space-before after a hard 
 (§3.3), space-after at the bottom of a table cell (§3.5), and space compression on
 justified lines (§4.2).
 
-### 1.4 Properties
+### 1.5 Properties
 
 | Property | Default | Effect |
 | --- | --- | --- |
 | `docx4j.convert.out.fo.wordLayout` | `true` | Word's layout managers: greedy line breaking, Word's line box and leading placement, tab-stop resolution, justified-space compression. `false` restores plain FOP layout, and the `docx4j:` foreign attributes are then not written either. |
 | `docx4j.convert.out.fo.wordLayout.maxSpaceShrink` | `0.24` | How far the spaces of a justified line may be compressed to pull one more word in, as a fraction of their natural width. Only read when `wordLayout` is on; set explicitly, it applies whatever the compatibility mode. |
 | `docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink` | `0.10` | The same, for taking a longer **hyphenation fragment** rather than a whole word; Word pays much less for one (§4.7). Capped by `maxSpaceShrink`. |
+| `docx4j.convert.out.fo.wordLayout.tocStretchingLeader` | `true` | A table-of-contents entry (first stop right-aligned with a dot leader) keeps the stretching `fo:leader` and `text-align-last="justify"`. `false` lays its tabs out against the stops like any other tab, which also gives its dots Word's grid phase; measured, the two are a wash (§4.4). |
 | `docx4j.convert.out.fo.wordLayout.hyphenationZone` | `false` | `true` enforces `w:hyphenationZone` as the largest gap tolerated before hyphenating, which is what docx4j did to 17.0.5. Measured against Word, the zone never fires (§4.7). |
 | `docx4j.convert.out.fo.wordLayoutFixups` | `true` | The DOM pass over the generated FO (`WordLayoutFixups`): Word's spacing edge rules, the line-box attributes, exact-height rows, anchored pictures, text boxes. `false` gives the FO docx4j 17.0.4 produced. |
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
@@ -684,6 +707,22 @@ stretching leader and `text-align-last="justify"` they have always had: their st
 right margin, and a stretching leader absorbs the width an unresolved
 `fo:page-number-citation` loses when it resolves.
 
+<a id="s44toc"></a>Its one cost is the phase above: a stretching leader's width is settled
+by FOP's justification, after the line manager has been and gone, so its dots begin on the
+text where Word's begin on the grid. 18 documents of the three corpora and about 797
+lines carry the shape. Since 17.0.6 moves the page number's width to the tab itself
+([below](#s44pageref)), such an entry can go through the ordinary resolved-tab path
+instead - and get the phase with it -
+and `docx4j.convert.out.fo.wordLayout.tocStretchingLeader=false` does that.
+**Measured, the two are a wash**, which is why the stretching leader is still the default.
+On the corpus document with the most of them, Word's first dot on five consecutive
+entries is at 132.05 / 126.77 / 248.26 / 190.15 / 142.61; the stretching leader puts it at
+132.45 / 126.07 / 249.59 / 190.92 / 143.24 (mean error 0.77pt) and the resolved tab at
+132.00 / 127.00 / 247.00 / 189.50 / 144.50 (0.82pt). Line parity did not move on any of
+the four documents holding the most of them (0.8494, 0.7651 and 0.9212 unchanged, 0.9240
+to 0.9220). What those lines had been losing was not the geometry but the harness pairing
+them on their exact dot count, which its leader-run normalisation now settles.
+
 <a id="s44pageref"></a>**A page number is put on its stop, whatever FOP measured it as.**
 Every other right, centre or decimal stop whose text holds a page reference used to land
 short, because FOP measures an unresolved `fo:page-number-citation` as the placeholder
@@ -1137,7 +1176,7 @@ strength of the corpus document in the next paragraph, and those two goldens set
 **Below mode 14 the shift is capped at `w:tblInd`**, so the grid edge never moves left of
 the text margin and a table with no `w:tblInd` (or one of 0) sits on the margin. The
 measurement is a corpus document with no `compatibilityMode` setting at all (so mode 12,
-§1.3) whose first table row is a single `w:gridSpan="3"` cell holding a centred paragraph
+§1.4) whose first table row is a single `w:gridSpan="3"` cell holding a centred paragraph
 and whose table has no `w:tblInd`: Word centres that text on 297.65pt, the exact centre of
 a 595.3pt page and of its text column, where taking the shift centred it on 292.25 - 5.4pt,
 one cell margin, left, and cost the document two of Word's fifteen pages. Mode 14 has no
@@ -1187,6 +1226,26 @@ Word gave 34.3 / 65.5pt of 451.3pt.
 width; measuring only text collapsed such a cell to its margins, and where every `w:tcW` is
 auto the columns that did hold text then took the whole width and wrapped one word per
 line.
+
+<a id="s63grid"></a>**`w:tcW` is a preferred width, and the grid outranks it.** Word honours the
+`w:tblGrid` when every cell has a preferred width, and a row's `w:tcW` need neither
+describe every column nor agree with the grid - Word keeps the grid it cached and treats
+the cell widths as a hint. docx4j's autofit pass read the condition per *cell* rather than
+per *column*, and gave a column whose cells state a `w:tcW` exactly that width, so a table
+whose row 1 was stale or partial was laid out on row 1. Measured on a landscape report
+whose table is `w:tblW 14580 dxa` with a grid summing to the same 729pt while row 1's
+`w:tcW` sum to 404.4pt: Word's page-3 cell clips run `43.9..81.9 | 82.6..128.2 |
+128.9..182.0 | 182.4..235.5 | 236.2..327.7 | 328.4..772.3` = **728.4pt, the grid**, on a
+769.9pt column (so no over-wide clamp is involved), where docx4j wrote
+`width="404.4pt"` and wrapped every cell - "11:30 PM" became "11:30" + "PM", and Word's
+249 lines came out as 320. The grid now wins wherever it describes every column of the
+widest row and either every column has a preferred width, or the table states an absolute
+`w:tblW` which the grid sums to within 1% and at least one cell declares a width. A
+table whose cells are all auto-width is untouched, so the content-based pass and §6.4's
+widening still apply to it. A row-1 `w:tcW` sum differing from the grid by more than a
+tenth occurs in **45 documents** of the three corpora; the one measured above went
+from 0.534 to 0.795 of Word's lines, and two more of that corpus from 0.914 to 0.986
+and from 0.758 to 0.864.
 
 **Column-spanning cells.** Non-spanning cells size their columns first; a spanning cell
 widens the columns it spans only when their sum falls short of what it needs, sharing by
@@ -1348,13 +1407,32 @@ Word keeps clear and puts the table at its `tblpX` within it. FOP anchors a side
 line and drops one which has none, so the float goes inside the anchor paragraph rather than
 at flow level.
 
+<a id="s68tblpy"></a>**`tblpY` is padding above the table inside the float, and it lands.**
+Measured on `table-floating` (`tblpY=1440`, 72pt): Word's "float a" cell line is at y=186.8
+and docx4j's at **186.6**. What FOP will not do is leave the lines *above* it full width:
+it anchors the float at the line it sits at, so the padding narrows those lines too - Word's
+first five lines of the anchor paragraph run the full width to x=516 and end at y=169.5,
+where ours are cut to x=280 from the paragraph's first line. That is the whole of the
+probe's residual, and it is §10's float-anchoring limitation, not the offset.
+
 Left in the flow, where the text follows the table rather than running beside it: a table
 filling more than 60% of the column (nothing useful fits beside it; measured on a CV built
 out of twelve floating tables, one of them 73% of the column, where Word puts the next table
 below it and FOP fitted it into the rest of the band, costing a page), one whose horizontal
 position falls outside the text column, and one in a section of more than one column, since
-FOP drops a float from a multi-column region silently.
+FOP drops a float from a multi-column region silently. A table in a **cell**, a header, a
+footer or a footnote is left in the flow too: FOP implements no float under an `fo:table`
+and paints nothing at all for one (§10). And a float which a line break inside a run
+*follows* is declined, because hoisting it to flow level - which is what that combination
+otherwise needs, to avoid FOP's `TraitSetter.setVisibility` NPE - loses a float holding a
+table entirely (§10); one corpus document's 219.6pt rubric table is left in the flow for
+that reason alone, at a cost of 168.3pt on every line after it.
 `docx4j.convert.out.fo.tables.float=false` leaves every one of them in the flow.
+
+The horizontal position the band is measured from is the table's **unshifted** grid edge:
+below mode 15 §6.1 has already moved the grid edge back by one left cell margin, which is
+about the grid rather than about where Word puts the frame, so a table with no `w:tblpX`
+arrived at −108 twips and was declined the float outright.
 
 **Anchored to the page or the margin box**: an absolutely positioned `fo:block-container`
 (the anchored-picture machinery, §9.1), which takes no space in the flow. `tblpY` is
@@ -1495,6 +1573,18 @@ already subtracts it, so until 17.0.6 the text column was the right width and st
 wrong place: measured on a document with `w:pgMar w:left="851" w:gutter="567"`, Word puts
 every portrait line at **x=70.9** (851 + 567 twips) where docx4j's was at 42.5, -28.35pt on
 all 222 pages. Two documents of the three corpora set a gutter.
+
+<a id="s7gutterland"></a>**A landscape section takes no gutter at all.** The same document
+is the measurement, since its two `w:sectPr` both carry `w:gutter="567"`: in the landscape
+one, whose `w:left` is 680 twips, Word puts the running head at x=49.7 and the table's grid
+edge at 28.55 = 34.0 less one 5.4pt cell margin - i.e. on `w:left` itself. Adding the
+gutter there put all 222 landscape pages 28.35pt right of Word's (our text ran 62.4..843.2
+against Word's 34.1..804.2, past the 841.9pt page edge) *and* narrowed the writable width,
+so the document's 100%-wide tables came out 737pt against Word's 765.35pt, the full
+`w:tblGrid`. It is not moved to the top either: Word's table on that page begins at
+y=52.85, above the 70.9pt a top gutter would give. `PageDimensions.getGutter()` therefore
+returns 0 for a landscape section, and `getWritableWidthTwips()` reads it, so the two
+cannot disagree.
 
 <a id="s7col"></a>**A single narrow `w:col`.** Where `w:cols` declares exactly one `w:col`
 narrower than the margin box, Word uses that width for the text. The unequal-columns table
@@ -1851,12 +1941,13 @@ Limitations that remain in docx4j's output:
 - **Space-after against a footnote area** is not yet applied as Word applies it
   ([§3](#s310)).
 - **Floating tables** (`w:tblpPr`, [§6.8](#s69)): the horizontal position is always
-  applied. A table anchored to the **text** floats, with the text beside it, but FOP
-  anchors a float to the line it sits at, where Word's frame starts `tblpY` below the top
-  of the anchor paragraph: the lines beside that offset are narrowed where Word leaves them
-  full width (`tblpY` is within 15pt of zero for 103 of the 132 text-anchored tables of the
-  corpora which state one, and the table-floating probe's 72pt costs it two points of
-  parity). Word runs text down both
+  applied, and so is `tblpY` - the table lands within 0.2pt of Word's y on the
+  `table-floating` probe ([§6.8](#s68tblpy)). What FOP will not do is leave the lines
+  *above* the offset full width: it anchors a float to the line it sits at, where Word's
+  frame starts `tblpY` below the top of the anchor paragraph, so those lines are narrowed
+  where Word leaves them full (`tblpY` is within 15pt of zero for 103 of the 132
+  text-anchored tables of the corpora which state one, and the probe's 72pt costs it two
+  points of parity). Word runs text down both
   sides of a frame; an `fo:float` is single-sided.
   A table anchored to the **page or the margin box** is positioned only where it opens its
   section or opens a page and is narrow; positioned mid-page it would be drawn over the

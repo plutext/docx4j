@@ -203,6 +203,7 @@ public class TableWriter extends AbstractTableWriter {
 		int width = table.getTableWidth();
 		int available = writableWidthTwips(context);
 		int indent;
+		int gridShift = 0;
 		if (centred && width > 0 && available > 0 && width > available) {
 			indent = (available - width) / 2;
 		} else {
@@ -228,6 +229,7 @@ public class TableWriter extends AbstractTableWriter {
 				// Word does not shift a table nested in a w:tc (see isNested); whether
 				// this one is is not known until the FO is assembled, since in the XSLT
 				// pathway the w:tbl reaching here was unmarshalled on its own.
+				gridShift = shift;
 				if (shift != 0) {
 					tableRoot.setAttribute(WordLayoutFixups.HINT_GRID_SHIFT,
 							UnitsOfMeasurement.twipToBest(shift));
@@ -235,7 +237,7 @@ public class TableWriter extends AbstractTableWriter {
 			}
 		}
 		if (tblPr != null && tblPr.getTblpPr() != null && floatingTablesEnabled()) {
-			indent = applyFloatingPosition(context, table, tableRoot, tblPr.getTblpPr(), indent);
+			indent = applyFloatingPosition(context, table, tableRoot, tblPr.getTblpPr(), indent, gridShift);
 		}
 		tableRoot.setAttribute("start-indent", UnitsOfMeasurement.twipToBest(indent));
 	}
@@ -309,7 +311,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * @since 17.0.6
 	 */
 	private int applyFloatingPosition(AbstractWmlConversionContext context, AbstractTableWriterModel table,
-			Element tableRoot, org.docx4j.wml.CTTblPPr tblpPr, int indent) {
+			Element tableRoot, org.docx4j.wml.CTTblPPr tblpPr, int indent, int gridShift) {
 
 		org.docx4j.model.structure.PageDimensions dims = pageDimensions(context);
 		if (dims == null || dims.getPgSz() == null || dims.getPgSz().getW() == null
@@ -337,7 +339,11 @@ public class TableWriter extends AbstractTableWriter {
 		} else if (tblpPr.getTblpX() != null) {
 			xInFrame = tblpPr.getTblpX().intValue();
 		}
-		if (xInFrame != null) indent = frameLeft - marginLeft + xInFrame;
+		if (xInFrame != null) {
+			// the frame's own position, with no grid-edge shift in it
+			indent = frameLeft - marginLeft + xInFrame;
+			gridShift = 0;
+		}
 
 		// vertical: only a position measured from the page or the margin box takes the
 		// table out of the flow
@@ -362,7 +368,7 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		if (topTwips == null && frame == null) {
 			// text-anchored: an fo:float at the anchor paragraph, text beside it
-			return floatBesideText(dims, tblpPr, tableRoot, indent, width);
+			return floatBesideText(dims, tblpPr, tableRoot, indent, width, gridShift);
 		}
 		if (width > 0 && dims.getWritableWidthTwips() > 0
 				&& width <= FLOAT_MAX_SHARE * dims.getWritableWidthTwips()) {
@@ -421,20 +427,25 @@ public class TableWriter extends AbstractTableWriter {
 	 * @since 17.0.6
 	 */
 	private int floatBesideText(org.docx4j.model.structure.PageDimensions dims,
-			org.docx4j.wml.CTTblPPr tblpPr, Element tableRoot, int indent, int width) {
+			org.docx4j.wml.CTTblPPr tblpPr, Element tableRoot, int indent, int width, int gridShift) {
 
 		if (!floatingTablesWrap()) return indent;
 		int column = dims.getWritableWidthTwips();
 		if (width <= 0 || column <= 0) return indent;
 		if (dims.getColsNum() > 1) return indent;
 		if (width > FLOAT_MAX_SHARE * column) return indent;
-		if (indent < 0 || indent + width > column) return indent;
+		/* Below mode 15 applyStartIndent has already moved the grid edge back by one cell
+		 * margin (§6.1), which is about the grid and not about where Word puts the frame;
+		 * a table with no w:tblpX therefore arrived here at -108 twips and was declined the
+		 * float outright.  The band is measured from the unshifted position.  @since 17.0.6 */
+		int bandStart = indent + gridShift;
+		if (bandStart < 0 || bandStart + width > column) return indent;
 
 		int leftFromText = intValue(tblpPr.getLeftFromText(), 0);
 		int rightFromText = intValue(tblpPr.getRightFromText(), 0);
-		boolean right = indent + width / 2.0 > column / 2.0;
-		int padLeft = right ? leftFromText : indent;
-		int padRight = right ? column - indent - width : rightFromText;
+		boolean right = bandStart + width / 2.0 > column / 2.0;
+		int padLeft = right ? leftFromText : bandStart;
+		int padRight = right ? column - bandStart - width : rightFromText;
 		int padTop = 0;
 		if (tblpPr.getTblpY() != null && !org.docx4j.wml.STVAnchor.PAGE.equals(tblpPr.getVertAnchor())
 				&& !org.docx4j.wml.STVAnchor.MARGIN.equals(tblpPr.getVertAnchor())) {

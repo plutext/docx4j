@@ -415,6 +415,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				for (int k = c; k < end; k++) max[k] = Math.max(max[k], min[k]);
 			}
 			if (!anyAuto) return null; // every column has a preferred width: the grid is what Word uses
+			if (gridIsAuthoritative(table, tblPr, cols, pref, declared)) return null;
 			int available = availableWidthTwips(context, tblPr);
 			if (available <= 0) return null;
 			int[] mi = new int[cols], ma = new int[cols];
@@ -432,6 +433,60 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			log.warn("Autofit skipped: " + e.getMessage(), e);
 			return null;
 		}
+	}
+
+	/**
+	 * Whether the table's own {@code w:tblGrid} is the layout Word uses, so that the
+	 * content-based autofit pass must stand aside.
+	 *
+	 * <p>ECMA-376's {@code w:tcW} is a <em>preferred</em> width, and a row's cells need
+	 * neither describe every column nor agree with the grid: Word keeps the grid it
+	 * cached and treats the cell widths as a hint.  {@link #computeAutofitColumnWidths}
+	 * used to give a column whose cells state a {@code w:tcW} exactly that width, so a
+	 * table whose row 1 is stale or partial was laid out on row 1 rather than on its
+	 * grid.  Measured on a landscape report whose table is {@code w:tblW 14580 dxa} with
+	 * a {@code w:tblGrid} summing to the same 729pt while row 1's {@code w:tcW} sum to
+	 * 404.4pt: Word's page-3 cell clips run 43.9..81.9 | 82.6..128.2 | 128.9..182.0 |
+	 * 182.4..235.5 | 236.2..327.7 | 328.4..772.3 - 728.4pt, the grid, on a 769.9pt
+	 * column - where docx4j wrote {@code width="404.4pt"} and wrapped every cell,
+	 * turning Word's 249 lines into 320.  45 documents of the three corpora have a row 1
+	 * whose {@code w:tcW} sum differs from the grid by more than a tenth.</p>
+	 *
+	 * <p>The grid wins when it describes every column of the widest row and either</p>
+	 * <ul>
+	 * <li>every column has a preferred width of its own - which is Word's own condition
+	 *     for honouring the grid (&#xa7;6.3), read per column rather than per cell; or
+	 * <li>the table states an absolute {@code w:tblW} which the grid sums to (within 1%),
+	 *     and at least one cell declares a width - the grid is then plainly the layout
+	 *     the table was written for.
+	 * </ul>
+	 *
+	 * <p>A table whose cells are all auto-width is untouched, so Word's content-based
+	 * autofit (&#xa7;6.3) and the widening of &#xa7;6.4 still apply to it.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static boolean gridIsAuthoritative(AbstractTableWriterModel table,
+			org.docx4j.wml.CTTblPrBase tblPr, int cols, int[] pref, boolean[] declared) {
+
+		int[] grid = gridWidths(table, cols);
+		if (grid == null) return false;
+
+		boolean anyDeclared = false, everyColumnPreferred = cols > 0;
+		for (int i = 0; i < cols; i++) {
+			if (pref[i] <= 0) everyColumnPreferred = false;
+			if (declared[i]) anyDeclared = true;
+		}
+		if (!anyDeclared) return false; // a wholly auto-width table is Word's autofit
+		if (everyColumnPreferred) return true;
+
+		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
+		if (tblW == null || tblW.getW() == null || !"dxa".equals(tblW.getType())) return false;
+		long stated = tblW.getW().longValue();
+		if (stated <= 0) return false;
+		long sum = 0;
+		for (int w : grid) sum += w;
+		return Math.abs(sum - stated) * 100 <= stated;
 	}
 
 	/**
