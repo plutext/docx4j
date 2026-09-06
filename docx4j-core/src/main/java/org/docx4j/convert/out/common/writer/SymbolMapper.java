@@ -236,7 +236,10 @@ public class SymbolMapper {
 			m.put((short)249, "\uD83E\uDC6C");
 			m.put((short)250, "\uD83E\uDC6D");
 			m.put((short)251, "\uD83D\uDDF6");
-			m.put((short)252, "\u2714");
+			// U+2713 CHECK MARK, not U+2714 HEAVY CHECK MARK: measured against Word's
+			// own PDF of a document whose w:lvlText is Wingdings 0xFC, which paints
+			// U+2713 (the widths agree to 0.1pt either way).  @since 17.0.6
+			m.put((short)252, "\u2713");
 			m.put((short)253, "\uD83D\uDDF7");
 			m.put((short)254, "\uD83D\uDDF9");
 			m.put((short)255, "\u229E"); // no equivalent for Windows logo, use ⊞ (SQUARED PLUS) \u229E or 🪟 (WINDOW) U+1FA9F

@@ -299,6 +299,45 @@ than 15.44pt; a Courier New `o`, whose descent exceeds Calibri's but whose ascen
 leaves it at 15.44pt. The label block gets the combined box and baseline, and the body
 block carries `docx4j:label-ascent` for the line manager to add after the multiple.
 
+<a id="s28def"></a>**Which level definition the label comes from.** A numbering instance may
+carry a level definition of its own (`w:num/w:lvlOverride/w:lvl`, ECMA-376 17.9.8), which
+replaces the abstract one; docx4j read the **abstract** level only, so an override's
+`w:ind` was lost. Measured on a document whose `w:num` 32 overrides ilvl 0
+with `<w:ind w:left="397" w:hanging="113"/>`: Word puts the bullet at 14.2pt and the item's
+text at 19.85pt, where docx4j had no list indent at all to work from, fell back to the
+paragraph's tab stops and gave the label a width of **453.6pt** - the list text then ran off
+the page and Word's two pages came out as four. Where the override states no indent the
+abstract level's stands. Its **formatting** is a separate question, not yet settled here:
+the label and the item's text are given one `w:rPr` (the level's), so taking an override's
+`<w:b/>` set the whole paragraph bold, where Word draws the number bold and the text after
+it in the regular face - measured, Tahoma-Bold then Tahoma on one line. Word's rule is that
+a level's `w:rPr` formats the number alone (ECMA-376 17.9.24); splitting the two is a change
+for every numbered paragraph, so the override's `w:rPr` is left unread for now. 20 documents
+of the three corpora carry a `w:lvlOverride/w:lvl` at all.
+
+<a id="s28ind"></a>**A partial `w:ind` merges with the level's, attribute by attribute.**
+A paragraph stating only `<w:ind w:right="22"/>` keeps the level's `w:left` and
+`w:hanging`; the paragraph's own values win where it states them (`IndentRightTest`).
+**Where the level has no hanging indent** the label's width does come from the paragraph's
+tab stops, and there a `w:val="clear"` entry is not a stop at all - it removes an inherited
+one (ECMA-376 17.3.1.37) - and `w:tabs` need not be in position order: the nearest stop past
+the label is taken, cleared entries skipped.
+
+<a id="s28lgl"></a>**`w:isLgl`** (Word's "Legal style numbering") displays the levels a
+number **inherits** in decimal, whatever their own `w:numFmt`, at whatever level it is
+stated; the level carrying it keeps its own format (Word's built-in Article/Section
+numbering, whose ilvl 1 is `decimalZero` with `w:isLgl`, prints "Section 1.01" - the
+`IsLglTest` docx). docx4j honoured it at ilvl 1 only, and rewrote `%1` alone: measured on a
+document whose abstractNum carries `<w:isLgl/>` at ilvl 1, 2 and 3 with `w:lvlText`
+`%1.%2.` and `%1.%2.%3.` over an `upperRoman` ilvl 0, Word prints "3.6.2." where docx4j
+printed "III.6.2.", so every second- and third-level heading failed to match.
+
+<a id="s28font"></a>**A level `w:rPr` which names no font** - Word writes
+`<w:rFonts w:hint="default"/>`, which says only how to choose between fonts it does not
+state - leaves the label in the paragraph's own font. Reading it as a font of its own reset
+the label to the document default: measured, Word draws the whole line in Arial-BoldMT
+where docx4j drew the label in Tinos-Bold beside an Arimo-Bold heading.
+
 ---
 
 ## 3. Paragraph spacing at the edges
@@ -486,8 +525,32 @@ wrapper's copy survives and puts the gap back. Measured: a planner whose shaded 
 came out as 43. The wrapper's space-before and space-after now follow its first and last
 paragraph.
 
+<a id="s3bdrrun"></a>**One box for a run of identically bordered paragraphs, whatever their
+shading.** `Containerization` groups by border and then, *inside* that group, by shading,
+which is the right nesting - but both wrappers are built from the same paragraph's
+properties, so the inner one repeated the outer's top and bottom borders and their
+`w:space` padding. With a 0.5pt border at `w:space="1"` that is 2 x (0.51 + 1) = **3.02pt
+per shading change**. Measured on a planner whose cells hold three identically bordered
+paragraphs in three different fills: Word's row pitch is 61.0 -> 70.1 -> 79.2, i.e. 9.1pt,
+the bare Arial 8pt line box, so Word adds **nothing** at the shading change, where docx4j
+went 61.3 -> 70.5 -> 82.7 and the drift reached +68pt by the foot of page 1; 16 Word pages
+came out as 21, and are 16. The inner container now drops the border and padding the outer
+one draws (its left and right borders stay, since those are drawn outside the text either
+way and cost no width, above). A paragraph carrying both a border and shading of its own is
+the same shape with one paragraph in it, and was 3.02pt too tall for the same reason. 33
+documents of one corpus have a bordered wrapper directly wrapping another block.
+
 **List items.** Space-before and space-after belong on the `fo:list-block`, not on the
-block inside `fo:list-item-body` where FOP does not apply them.
+block inside `fo:list-item-body` where FOP does not apply them - and so does a **hard page
+break** inside the paragraph, for the same reason: FOP laid the list block's space-before
+down on the page the break leaves. Measured on a document whose `Heading1` carries
+`<w:spacing w:before="360" w:after="240"/>` and whose first run is `<w:br w:type="page"/>`:
+Word's heading is at y=85.0 - the 56.7pt top margin plus 18pt of space-before plus its
+ascent - where docx4j's block top was 56.75, the top margin exactly, and every line of that
+page carried the -18.2. The `break-before` moves to the `fo:list-block`, which then needs
+`space-before.conditionality="retain"`, since XSL-FO discards space at the start of a
+reference area and [§3.3](#s33) is Word's rule here: space-before is honoured at the top of
+a page after an *explicit* break (an automatic one never writes `break-before`).
 
 **Widow control.** `w:widowControl` off maps to `widows="1" orphans="1"`; on is the default
 on both sides. Word's widow and orphan decisions match FOP's once the line breaking does
@@ -1146,7 +1209,11 @@ symbol substitution applies to U+2190-U+2BFF.
 
 The Wingdings 0xD8 bullet maps to the Dingbats U+27A2, as Word's own PDF output shows, and
 not to U+2B9A, the "equilateral" arrowhead Unicode 7.0 added; its up, down and left
-counterparts keep U+2B99, U+2B9B and U+2B98.
+counterparts keep U+2B99, U+2B9B and U+2B98. Wingdings 0xFC is **U+2713** CHECK MARK for
+the same reason, not U+2714 HEAVY CHECK MARK: measured on a document whose bullet is that
+character, the drawn widths agree to 0.1pt either way (Word 90.0..213.9, docx4j
+90.0..213.8) and only the PDF's text layer differed, so every one of those lines failed to
+match.
 
 `w:caps` and `w:smallCaps` have no XSL-FO equivalent (`text-transform` and `font-variant`
 are CSS), so the text itself is upper-cased, in the run's `w:lang`, since Turkish and
@@ -1491,6 +1558,18 @@ whose counts agree are untouched. The common case is a stretch of two-column tex
 one-column document; taking the last section's count put everything before it into two
 columns.
 
+A spanning block is a reference area of its own, so XSL-FO drops the space at its end and
+the **last paragraph of the narrower part loses its space-after** - and nothing here has
+put it back. Measured on a document whose one-column opening runs into a continuous
+two-column section: the 10pt of docDefaults `w:after="200"` on the last block before the
+break goes missing, Word's third line at y=290.5 against docx4j's 280.3, and every line
+after it carries the -10.2. Two ways of restoring it were measured and both were dropped:
+`space-after.conditionality="retain"` on that block keeps the space at *every*
+reference-area end, the foot of a page included, where Word drops it - it moved a second
+document's later pages by 17.7pt and cost it 0.20 of line parity - and the space-after on
+the spanning block itself, which is where it belongs, is discarded by FOP as well
+(measured: no change at all). See [§10](#10-known-fop-defects-and-limitations).
+
 <a id="s73"></a>**The column gap** comes from the columns' own `w:cols/w:col/@w:space` where
 `w:cols` has `w:col` children; `w:cols/@w:space` is the equal-columns value only. With
 columns of different widths the container's value is commonly nothing like the real gap -
@@ -1710,7 +1789,8 @@ instead; see §10 for why you might want that.
 footer, a footnote, a multi-column region - a wrapped picture takes the text box's
 treatment ([§9.2](#92-text-boxes)) rather than reserving its height: narrower than 60% of
 its measure it is positioned where Word puts it and takes no space, wider than that it
-reserves its height as a top-and-bottom wrap does. The measure is the containing cell's
+reserves its height as a top-and-bottom wrap does - except in a multi-column region, where
+it is positioned whatever its width ([below](#s91cols)). The measure is the containing cell's
 content width in a cell (Word measures a `relativeFrom="column"` offset from the cell
 there) and the section's text column otherwise. FOP does not implement floats in a table
 at all - it logs "the following feature isn't implemented by Apache FOP, yet: fo:float
@@ -1728,6 +1808,24 @@ An absolutely positioned container is placed relative to its own zero-height wra
 `fo:block-container` is a reference area), so the wrappers which take no space go ahead of
 those which reserve height at the head of the paragraph; with the reservation first the
 logo above came out at 179.9 rather than 81.5, one reserved height low.
+
+<a id="s91cols"></a>**In a multi-column region a wrapped object is always positioned**,
+whatever its width, and so is a text box. FOP paints nothing at all for an `fo:float` in a
+multi-column region - neither the picture nor an indent beside it - and the alternative,
+reserving the height at the anchor, is charged to the column the *anchor* is in, which is
+Word's column only when the object is in that column, and even then Word wraps beside it
+rather than below it. Measured: a landscape two-column document (columns 360.675pt) whose
+87.75 x 48pt `wrapTight` logo was given to `fo:float` has one picture in its PDF where
+`mutool draw -F trace` counts two in Word's, and whose 340.15 x 246.75pt picture anchored
+406.0pt from the margin - i.e. in column 2 - reserved 278.4pt at the head of column 1,
+putting the title at y=323.0 against Word's 37.0. Positioned, both land where Word draws
+them (the second at x=448.5 in column 2) and the title stays at the top. On a portrait
+two-column page whose 186.75pt text box sits in a 213pt column, reserving its height cost a
+page and took line parity from 0.478 to 0.087. The **column** width, not the section's text
+column, is also what a `relativeFrom="column"` offset is measured within, and an object
+whose horizontal position is at or past it belongs to a later column, so it reserves
+nothing where it is anchored. `WordLayoutFixups.columnCount`/`columnWidthPt` read the
+`column-count` and `column-gap` of the page master the object's page-sequence names.
 
 **A picture which leaves no room beside it is not floated**, even in the main flow. Word
 wraps beside a picture as long as any measure is left, and it is a **wide** measure that
@@ -1902,6 +2000,11 @@ Worked around here, and worth knowing about:
 - **A block-container in a multi-column flow** makes FOP throw when it balances the last
   page's columns, which is why merged sections carry their margin differences as indents
   ([§7](#s74)).
+- **Space at a `span="all"` boundary is discarded**, on the spanning block as well as on
+  the last block inside it, so the space-after Word draws where a one-column stretch runs
+  into a continuous multi-column section is lost (measured, 10pt on one document, §7). The
+  only lever XSL-FO offers is `space-after.conditionality="retain"`, which keeps the space
+  at the foot of every page too, and costs more than it buys.
 - **`advanced="false"` on a font declaration is parsed and then discarded** on the PDF path
   (`LazyFont`), so it cannot be used to switch OpenType features off. Reported upstream.
 - **No per-run, per-script or per-feature GSUB switch**: the features are a private static

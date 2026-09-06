@@ -208,6 +208,33 @@ a forward fo:page-number-citation-last and painted nothing
 - a hard page break in a paragraph inside a w:sdt is now handled as one at body level is:
 the preprocess pass only walked the body's own children, so a break inside a table of
 contents or a cover page stayed nested in an fo:inline, where FOP ignores it
+- a run of consecutive paragraphs whose borders are identical is one box, as Word draws it:
+a shading change inside the run no longer repeats the border and its w:space, which added
+3pt of height at each change (and 3pt to a lone paragraph carrying both a border and
+shading)
+- a numbering instance's own level definition (w:num/w:lvlOverride/w:lvl) now supplies the
+list's indent; only the abstract level was read, so an overridden indent was lost and the
+label took its width from a tab stop instead - one list label came out 453.6pt wide.  PDF
+and HTML
+- where a list label's width does come from the paragraph's tab stops, a w:val="clear"
+entry is no longer counted as a stop (it removes one), and the nearest stop past the label
+is taken whatever order w:tabs states them in
+- an anchored picture or a text box which Word wraps text around is now positioned where
+Word puts it, rather than floated or reserved, when it is in a multi-column section: FOP
+paints nothing at all for an fo:float in a multi-column region, and a reservation is charged
+to the column the anchor is in - where Word draws the object in the column it occupies, and
+wraps the text beside it there.  A picture Word puts in a later column no longer pushes the
+first column's text down by its height
+- w:isLgl (Word's "legal style numbering") is now applied at whatever level states it, and
+to every level the number inherits rather than to %1 alone: "3.6.2." where docx4j printed
+"III.6.2.".  The level carrying it keeps its own w:numFmt, as Word does.  PDF and HTML
+- a numbering level whose w:rPr names no font (Word writes w:rFonts with only a w:hint)
+now leaves the label in the paragraph's own font instead of resetting it to the document
+default
+- the Wingdings check mark (0xFC) is U+2713, not U+2714, as Word's own PDF output shows
+(PDF and HTML)
+- a hard page break inside a numbered paragraph now breaks before the whole list block, and
+the paragraph's space-before is applied at the top of the new page as Word applies it
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

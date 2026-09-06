@@ -344,9 +344,21 @@ public class ListNumberingDefinition {
     {
         ListLevel controllingLvl = this.levels.get( level ); 
         
-        boolean isLegal = level.equals("1")
-        					&& controllingLvl.getJaxbAbstractLvl().getIsLgl() !=null 
-        					&& controllingLvl.getJaxbAbstractLvl().getIsLgl().isVal();
+        /* w:isLgl at *any* level, and applied to every level the format string
+         * displays *above* this one - Word's "Legal style numbering": the levels this
+         * number inherits are shown in decimal whatever their own w:numFmt, while this
+         * level keeps its own (Word's built-in Article/Section numbering, whose ilvl 1
+         * is decimalZero with w:isLgl, prints "Section 1.01" - IsLglTest).  Until
+         * 17.0.6 it was honoured at ilvl 1 alone: measured on a document whose
+         * abstractNum carries <w:isLgl/> at ilvl 1, 2 and 3 with w:lvlText "%1.%2." and
+         * "%1.%2.%3." over an upperRoman ilvl 0, Word prints "3.6.2." where docx4j
+         * printed "III.6.2.".  The instance's own level definition (w:lvlOverride/w:lvl)
+         * carries it too, where there is one.  @since 17.0.6 */
+        Lvl controllingDefinition = (controllingLvl.getJaxbOverrideLvl()!=null)
+        					? controllingLvl.getJaxbOverrideLvl() : controllingLvl.getJaxbAbstractLvl();
+        boolean isLegal = controllingDefinition!=null
+        					&& controllingDefinition.getIsLgl() !=null
+        					&& controllingDefinition.getIsLgl().isVal();
         /*
          * Explanation of <w:isLgl/>
          * 
@@ -400,13 +412,21 @@ public class ListNumberingDefinition {
          *  
          * In other words, the default numbering behaviour is to 
          * format a level using the w:numFmt specified in that level.
-         * w:isLgl overrides that behaviour, and uses decimal
-         * numbering for ilvl 0.  w:isLgl only seems to have 
-         * any effect in Word 2010 when specified at ilvl 1
-         * (I tried it at a deeper level, and is behaved as if
-         *  not present at all).
+         * w:isLgl overrides that behaviour for the levels this number
+         * *inherits*: each of them is shown in decimal, whatever its own
+         * w:numFmt, while the level carrying w:isLgl keeps its own (which
+         * is why the example prints "Section 1.01" and not "Section 1.1").
+         * Measured at ilvl 2 and 3 as well as at ilvl 1 (@since 17.0.6;
+         * before, it was read at ilvl 1 only).
          */
     	
+        int thisLevel = -1;
+        try {
+        	thisLevel = Integer.parseInt(level);
+        } catch (NumberFormatException e) {
+        	// not a level number: no level is "above" it, so isLgl changes nothing
+        }
+
         String formatString = controllingLvl.getLevelText();
         log.debug("levelText: " + formatString );
         StringBuilder result = new StringBuilder();
@@ -423,10 +443,11 @@ public class ListNumberingDefinition {
                     // as it turns out, in the format String, the level is 1-based
                     int levelId =  Integer.parseInt(formatStringLevel) - 1;
                     ListLevel lvl = this.levels.get( Integer.toString(levelId) );
-                    if (levelId==0  && isLegal ) {
-                    	// Special case: Use normal decimal numbering
+                    if (isLegal && levelId < thisLevel) {
+                    	// Special case: Use normal decimal numbering, for every level
+                    	// above this one (@since 17.0.6; ilvl 0 only before)
                     	result.append(lvl.getCurrentValueUnformatted() );
-                    	
+
                     } else {
                     	// Usual case
                     	result.append(lvl.getCurrentValueFormatted() );

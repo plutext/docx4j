@@ -1689,6 +1689,22 @@ public class XsltFOFunctions {
 				
 			} else {
 				RPr actual = XmlUtils.deepCopy(triple.getRPr()); // clone, so the ilvl rpr is not altered
+				/* A w:rFonts which names no font - Word writes <w:rFonts w:hint="default"/>
+				 * on a level whose label is in the paragraph's own font - is not a font
+				 * of its own, and reading it as one reset the label to the document
+				 * default.  Measured on a document whose level rPr is
+				 * <w:rFonts w:hint="default"/><w:b/><w:i w:val="0"/> in Arial headings:
+				 * Word draws the whole line in Arial-BoldMT where docx4j drew the label
+				 * in Tinos-Bold beside an Arimo-Bold heading.  @since 17.0.6 */
+				if (namesNoFont(actual.getRFonts())) {
+					org.docx4j.wml.RFonts inherited = null;
+					if (rPrParagraphMark!=null && !namesNoFont(rPrParagraphMark.getRFonts())) {
+						inherited = rPrParagraphMark.getRFonts();
+					} else if (rPr!=null && !namesNoFont(rPr.getRFonts())) {
+						inherited = rPr.getRFonts();
+					}
+					actual.setRFonts(inherited==null ? null : XmlUtils.deepCopy(inherited));
+				}
 //	        			System.out.println(XmlUtils.marshaltoString(rPrParagraphMark));
 				
 				// pMark overrides numbering, except for font
@@ -2216,6 +2232,21 @@ public class XsltFOFunctions {
 		return pos < 0 ? 0 : (pos / defaultTab + 1) * defaultTab;
 	}
 
+    /**
+     * A w:rFonts which names no font at all: only w:hint (or nothing), which says how to
+     * choose between the fonts it does not state.  Such an element is not a font of its
+     * own, so whatever carries it inherits the font it would otherwise have.
+     *
+     * @since 17.0.6
+     */
+    static boolean namesNoFont(org.docx4j.wml.RFonts rFonts) {
+    	if (rFonts==null) return false;
+    	return rFonts.getAscii()==null && rFonts.getHAnsi()==null
+    			&& rFonts.getCs()==null && rFonts.getEastAsia()==null
+    			&& rFonts.getAsciiTheme()==null && rFonts.getHAnsiTheme()==null
+    			&& rFonts.getCstheme()==null && rFonts.getEastAsiaTheme()==null;
+    }
+
     protected static int getDistanceToNextTabStop( int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
 
 		int pdbs = 0; 
@@ -2223,15 +2254,28 @@ public class XsltFOFunctions {
 		if (pprTabs!=null
 				&& pprTabs.getTab()!=null
 				&& pprTabs.getTab().size()>0) {
-			
+
+			/* The nearest stop past the label, which is the first in *position* order:
+			 * a w:tabs need not be sorted, and a w:val="clear" entry is not a stop at
+			 * all - it removes the inherited one at that position (ECMA-376 17.3.1.37).
+			 * Measured on a document whose numbered paragraph carries
+			 * <w:tabs><w:tab w:val="clear" w:pos="9072"/><w:tab w:val="left"
+			 * w:pos="4536"/>...: the label came out 453.6pt wide (the cleared stop, and
+			 * the first in document order) where Word's list text starts at 19.85pt.
+			 * @since 17.0.6 */
+			int best = Integer.MAX_VALUE;
 			for ( CTTabStop tabStop : pprTabs.getTab() ) {
-					if (tabStop.getPos().intValue()> (pos+ numWidth) ) {
-						log.debug("tab stop: using specified");
-						return (tabStop.getPos().intValue() - pos);
-					}
+					if (tabStop.getPos()==null) continue;
+					if (STTabJc.CLEAR.equals(tabStop.getVal())) continue;
+					int p = tabStop.getPos().intValue();
+					if (p > (pos + numWidth) && p < best) best = p;
 			}
-			
-		} 
+			if (best < Integer.MAX_VALUE) {
+				log.debug("tab stop: using specified");
+				return best - pos;
+			}
+
+		}
 		
 		// The default tabs continue to apply after the specified ones
 		if (settings!=null

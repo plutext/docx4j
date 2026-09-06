@@ -150,12 +150,14 @@ public final class WordLayoutFixups {
 		applyContextualSpacing(doc);
 		applyAutoSpacingBetweenListItems(doc);
 		syncContainerSpacing(doc);
+		mergeBorderContainers(doc);
 		retainSpaceBeforeAtFlowStart(doc);
 		retainSpacingAtStaticContentEnd(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
 		fixLists(doc);
+		listItemPageBreaks(doc); // after fixLists, which is what puts the item's space-before on the list-block
 		blockForEmptyCell(doc);
 		clipExactRows(doc);
 		stripHints(doc);
@@ -633,6 +635,11 @@ public final class WordLayoutFixups {
 		Element para = enclosingParagraph(g);
 		if (para == null) return; // leave it inline
 
+		// in a multi-column section the anchor hints' "column" is the section's whole
+		// text column; Word's is the column the object is anchored in (@since 17.0.6)
+		double oneColumn = columnWidthPt(para);
+		if (oneColumn > 0) col = oneColumn;
+
 		// the picture at its extent (content-width/height carry rounded pixels)
 		g.setAttribute("content-width", pt(w));
 		g.setAttribute("content-height", pt(h));
@@ -644,6 +651,16 @@ public final class WordLayoutFixups {
 		if (pageY) kind = "none"; // FOP cannot wrap text around a page-positioned object
 		if ("square".equals(kind) && !FOConversionContext.useFloats()) {
 			kind = "topAndBottom"; // the property asks for the picture to be in the flow
+		} else if ("square".equals(kind) && oneColumn > 0) {
+			/* A multi-column region: FOP paints no float there at all, and a reservation
+			 * is charged to the column the anchor is in - where Word wraps the text
+			 * beside the object inside its own column, or draws it in another column
+			 * altogether.  Positioning it is the closer of the two: measured on a
+			 * two-column page whose 186.75pt text box sits in a 213pt column, reserving
+			 * its height cost a page and took line parity from 0.478 to 0.087, and on a
+			 * landscape two-column document the reservation put the title at y=323.0
+			 * against Word's 37.0.  @since 17.0.6 */
+			kind = "none";
 		} else if ("square".equals(kind)) {
 			double measure = anchorMeasure(para, col);
 			if (!floatsAllowed(para)) {
@@ -657,6 +674,15 @@ public final class WordLayoutFixups {
 				kind = "topAndBottom";
 			}
 		}
+		/* A picture whose horizontal position puts it in a *later* column reserves
+		 * nothing in the column its anchor is in: Word lays it out in the column it
+		 * occupies, and the flow beside it is untouched.  Measured on a landscape
+		 * two-column document (columns 360.675pt) whose 340.15 x 246.75pt picture is
+		 * anchored at 406.0pt from the margin: Word draws it at x=448.5 in column 2 and
+		 * keeps its title at y=37.0, where the 278.4pt reservation at the head of
+		 * column 1 put ours at 323.0.  An absolutely positioned container is measured
+		 * from the same origin, so it lands where Word puts it.  @since 17.0.6 */
+		if (oneColumn > 0 && x >= oneColumn && !"none".equals(kind)) kind = "none";
 
 		Element wrapper;
 		if ("square".equals(kind)) {
@@ -1359,12 +1385,19 @@ public final class WordLayoutFixups {
 			log.warn("No block to place a text box in; it will not be painted");
 			return;
 		}
+		double oneColumn = columnWidthPt(para); // the column, not the section (@since 17.0.6)
+		if (oneColumn > 0) col = oneColumn;
 
 		// a box narrow enough for Word to flow text beside it is placed where Word
 		// puts it and takes no space: reserving its height would push the text below
 		// it, and where several such boxes sit side by side (a planner laid out in
 		// text boxes) that costs a page each.  A box that fills the column has no
-		// text beside it in Word either, so it reserves its height.
+		// text beside it in Word either, so it reserves its height - except in a
+		// multi-column region, where a reservation is charged to the column the anchor
+		// is in and Word wraps the text beside the box within its own column: measured,
+		// reserving a 186.75pt box's height in a 213pt column cost a page and took line
+		// parity from 0.478 to 0.087 (@since 17.0.6)
+		if ("square".equals(kind) && oneColumn > 0) kind = "none";
 		if ("square".equals(kind) && col > 0 && w < 0.6 * col) kind = "none";
 
 		Element wrapper = doc.createElementNS(FO_NS, "fo:block-container");
@@ -1457,17 +1490,123 @@ public final class WordLayoutFixups {
 		return null;
 	}
 
-	/** FOP lays out side floats only in the main flow's blocks. */
+	/** FOP lays out side floats only in the main flow's blocks, and not in a
+	 *  multi-column region, where it drops them silently ({@link #columnCount}). */
 	private static boolean floatsAllowed(Element para) {
 		Node n = para.getParentNode();
 		while (n instanceof Element) {
 			Element e = (Element) n;
-			if (isFo(e, "flow")) return true;
+			if (isFo(e, "flow")) return columnCount(para) <= 1;
 			if (isFo(e, "table-cell") || isFo(e, "static-content") || isFo(e, "footnote-body")
 					|| isFo(e, "float") || isFo(e, "block-container") || isFo(e, "inline-container")) return false;
 			n = n.getParentNode();
 		}
 		return false;
+	}
+
+	/**
+	 * The number of columns the region body this element is laid out in has, from the
+	 * page master its page-sequence names; 1 where it cannot be worked out.
+	 *
+	 * <p>FOP drops an {@code fo:float} in a multi-column region silently - it paints
+	 * neither the float's content nor an indent for it (&#xa7;10) - so a wrapped picture
+	 * or table there takes the no-float treatment ([&#xa7;9.1]) instead.  Measured on a
+	 * landscape two-column document whose 87.75 x 48pt logo is a {@code wrapTight}
+	 * anchored picture: {@code mutool draw -F trace} counts two images on Word's page 1
+	 * and one on ours - the float was never painted at all.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static int columnCount(Element el) {
+		Element rb = regionBody(el);
+		if (rb == null) return 1;
+		String n = rb.getAttribute("column-count");
+		try {
+			return n.length() == 0 ? 1 : Math.max(1, Integer.parseInt(n.trim()));
+		} catch (NumberFormatException e) {
+			return 1;
+		}
+	}
+
+	/**
+	 * The width of one column of the region body this element is laid out in, in points:
+	 * the body width less the gaps, divided by the column count.  0 where it cannot be
+	 * worked out (so the caller keeps the section's text column, which is what the
+	 * anchor hints carry).
+	 *
+	 * <p>Word measures a {@code relativeFrom="column"} offset, and decides what fits
+	 * beside an object, in the column the object is anchored in - not in the section's
+	 * whole text column.  It is what tells an object anchored in a <em>later</em> column
+	 * from one in this one ([&#xa7;9.1]); the 60% and 90% share tests do not arise in a
+	 * multi-column region, where a wrapped object is always positioned.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static double columnWidthPt(Element el) {
+		Element rb = regionBody(el);
+		if (rb == null) return 0;
+		int columns = columnCount(el);
+		if (columns <= 1) return 0;
+		Node spmNode = rb.getParentNode();
+		if (!(spmNode instanceof Element)) return 0;
+		Element spm = (Element) spmNode;
+		double width = lengthPt(spm.getAttribute("page-width"))
+				- lengthPt(spm.getAttribute("margin-left")) - lengthPt(spm.getAttribute("margin-right"))
+				- lengthPt(rb.getAttribute("margin-left")) - lengthPt(rb.getAttribute("margin-right"));
+		if (width <= 0) return 0;
+		double gap = lengthPt(rb.getAttribute("column-gap"));
+		double col = (width - (columns - 1) * gap) / columns;
+		return col > 0 ? col : 0;
+	}
+
+	/** The fo:region-body of the page master this element's page-sequence names.
+	 *
+	 *  <p>Walked from the fo:layout-master-set's own children rather than looked up with
+	 *  getElementsByTagNameNS: this is called once per anchored object, and a
+	 *  document-wide scan is re-walked from scratch each time, since the pass that calls
+	 *  it is moving elements about (Xerces invalidates its NodeList cache on every
+	 *  change).  Measured on a 335-page mail merge of 2345 text boxes, the scan turned
+	 *  the export from under 300s into over 600s.</p> */
+	private static Element regionBody(Element el) {
+		Element sequence = null;
+		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
+			if (isFo((Element) n, "page-sequence")) { sequence = (Element) n; break; }
+		}
+		if (sequence == null || !(sequence.getParentNode() instanceof Element)) return null;
+		Element masters = firstChildElement((Element) sequence.getParentNode(), "layout-master-set");
+		if (masters == null) return null;
+		String name = sequence.getAttribute("master-reference");
+		for (int hop = 0; hop < 3 && name.length() > 0; hop++) {
+			Element master = masterNamed(masters, "simple-page-master", name);
+			if (master != null) return firstChildElement(master, "region-body");
+			// a page-sequence-master: follow its first alternative
+			Element sequenceMaster = masterNamed(masters, "page-sequence-master", name);
+			if (sequenceMaster == null) return null;
+			String next = null;
+			for (String kind : new String[] { "conditional-page-master-reference",
+					"single-page-master-reference", "repeatable-page-master-reference" }) {
+				for (Element ref : descendants(sequenceMaster, kind)) {
+					if (ref.getAttribute("master-reference").length() > 0) {
+						next = ref.getAttribute("master-reference");
+						break;
+					}
+				}
+				if (next != null) break;
+			}
+			if (next == null) return null;
+			name = next;
+		}
+		return null;
+	}
+
+	/** A child of fo:layout-master-set of this kind, with this master-name. */
+	private static Element masterNamed(Element masters, String localName, String name) {
+		for (Node n = masters.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			if (isFo(el, localName) && name.equals(el.getAttribute("master-name"))) return el;
+		}
+		return null;
 	}
 
 	private static String pt(double v) {
@@ -1796,6 +1935,60 @@ public final class WordLayoutFixups {
 		if (!to.hasAttribute(name)) return; // the wrapper never had any
 		if (from.hasAttribute(name)) to.setAttribute(name, from.getAttribute(name));
 		else to.removeAttribute(name);
+	}
+
+	/**
+	 * A run of consecutive paragraphs whose borders are identical is <b>one</b> box in
+	 * Word: one top border and its {@code w:space} above the first paragraph, one bottom
+	 * border and its space below the last, and nothing between them - a shading change
+	 * inside the run does not open a second box.
+	 *
+	 * <p>The {@code Containerization} preprocess groups by border and then, <em>inside</em>
+	 * that group, by shading, so the nesting is already right; what was wrong is that both
+	 * containers are built from the same paragraph's properties, so the inner (shading) one
+	 * repeated the outer's top and bottom borders and their padding.  With a 0.5pt border
+	 * at {@code w:space="1"} that is 2 x (0.51 + 1) = <b>3.02pt</b> per shading change.
+	 * Measured on a planner whose cells hold three identically bordered paragraphs in three
+	 * different fills: Word's row pitch is 61.0 -&gt; 70.1 -&gt; 79.2 (9.1pt, the bare Arial
+	 * 8pt line box, so Word adds nothing at the change) where docx4j went 61.3 -&gt; 70.5
+	 * -&gt; 82.7, and the drift reached +68pt by the foot of page 1; 16 Word pages came out
+	 * as 21.  33 documents of the corpus have a bordered wrapper directly wrapping another
+	 * block.  A paragraph carrying both a border and shading of its own is the same shape
+	 * with one paragraph in it, and was 3.02pt too tall for the same reason.</p>
+	 *
+	 * <p>The inner container therefore drops the border and padding the outer one already
+	 * draws.  Its left and right borders stay: they are drawn outside the text either way,
+	 * so they cost no width (&#xa7;3), and the outer box's own left/right border is in the
+	 * same place.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void mergeBorderContainers(Document doc) {
+		for (Element inner : elements(doc, "block")) {
+			if (inner.hasAttribute(HINT_PSTYLE)) continue; // a paragraph, not a container
+			Node parent = inner.getParentNode();
+			if (!(parent instanceof Element) || !isFo((Element) parent, "block")) continue;
+			Element outer = (Element) parent;
+			if (outer.hasAttribute(HINT_PSTYLE)) continue; // not a container either
+			if (!sameEdge(outer, inner, "top") || !sameEdge(outer, inner, "bottom")) continue;
+			for (String side : new String[] { "top", "bottom" }) {
+				if (!inner.hasAttribute("border-" + side + "-width")) continue;
+				for (String property : new String[] { "border-" + side + "-width",
+						"border-" + side + "-style", "border-" + side + "-color",
+						"padding-" + side }) {
+					inner.removeAttribute(property);
+				}
+			}
+		}
+	}
+
+	/** True where the two blocks state the same border on this side (both may state none). */
+	private static boolean sameEdge(Element a, Element b, String side) {
+		for (String property : new String[] { "border-" + side + "-width",
+				"border-" + side + "-style", "border-" + side + "-color" }) {
+			if (!a.getAttribute(property).equals(b.getAttribute(property))) return false;
+		}
+		return true;
 	}
 
 	// ------------------------------------------------------------ 0e. a line for every paragraph
@@ -2434,6 +2627,44 @@ public final class WordLayoutFixups {
 	 *
 	 * @since 17.0.6
 	 */
+	/**
+	 * A hard page break inside a numbered paragraph belongs to the paragraph, not to the
+	 * block inside its {@code fo:list-item-body}: FOP lays the list block's space-before
+	 * down on the page the break leaves, so Word's space above the heading is lost.
+	 *
+	 * <p>Measured on a document whose {@code Heading1} carries
+	 * {@code <w:spacing w:before="360" w:after="240"/>} and whose first run is
+	 * {@code <w:br w:type="page"/>}: Word's heading is at y=85.0 = the top margin (56.7)
+	 * plus 18pt of space-before plus its ascent, where docx4j's block top was 56.75 - the
+	 * top margin exactly - and every line of the page carried the -18.2.  The break moves
+	 * to the {@code fo:list-block}, which then needs
+	 * {@code space-before.conditionality="retain"}, since XSL-FO discards space at the
+	 * start of a reference area (&#xa7;3.3: Word honours space-before at the top of a page
+	 * after an <em>explicit</em> break, and drops it after an automatic one - and an
+	 * automatic break never writes {@code break-before} here).</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void listItemPageBreaks(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			String br = block.getAttribute("break-before");
+			if (!"page".equals(br) && !"even-page".equals(br) && !"odd-page".equals(br)) continue;
+			Element listBlock = null;
+			for (Node n = block.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+				Element e = (Element) n;
+				if (isFo(e, "list-block")) { listBlock = e; break; }
+				if (isFo(e, "flow") || isFo(e, "static-content") || isFo(e, "table-cell")
+						|| isFo(e, "block-container")) break;
+			}
+			if (listBlock == null) continue;
+			block.removeAttribute("break-before");
+			listBlock.setAttribute("break-before", br);
+			if (hasSpace(listBlock, "space-before")) {
+				listBlock.setAttribute("space-before.conditionality", "retain");
+			}
+		}
+	}
+
 	static void retainSpacingAtStaticContentEnd(Document doc) {
 		for (Element sc : elements(doc, "static-content")) {
 			String flow = sc.getAttribute("flow-name");

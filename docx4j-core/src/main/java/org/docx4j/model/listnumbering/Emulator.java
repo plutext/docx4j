@@ -292,14 +292,31 @@ public class Emulator {
 				triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 			}
 			
-			triple.lvl = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl();
-			
-			PPr ppr = triple.getLvl().getPPr();
-			if (ppr!=null) {
-				triple.ind = ppr.getInd();
-			}
-			
-			triple.rPr = triple.getLvl().getRPr();
+			/* The indent the instance's own level definition gives
+			 * (w:num/w:lvlOverride/w:lvl, ECMA-376 17.9.8), which until 17.0.6 was lost:
+			 * only the abstract level was read here, so the list-block had neither
+			 * indent nor hanging indent to work from.  Measured on a document whose
+			 * w:num 32 overrides ilvl 0 with <w:ind w:left="397" w:hanging="113"/>:
+			 * Word puts the bullet at 14.2pt and the item's text at 19.85pt, where
+			 * docx4j fell back to the paragraph's first tab stop and gave the label a
+			 * width of 453.6pt, running the text off the page and turning Word's two
+			 * pages into four.  Where the override states no indent the abstract
+			 * level's stands, as NumberingDefinitionsPart.getInd resolves it.
+			 *
+			 * The override's *formatting* (its w:rPr) is deliberately not taken: the
+			 * label and the item's text share one rPr here, so a level w:rPr carrying
+			 * w:b sets the whole paragraph bold, where Word draws the number bold and
+			 * the text after it in the regular face (measured).  Splitting the two is a
+			 * change for every numbered paragraph, not only for the 20 documents of the
+			 * three corpora which carry a w:lvlOverride/w:lvl, so it is left for a
+			 * batch of its own.  @since 17.0.6 */
+			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
+			triple.lvl = listLevel.getJaxbAbstractLvl();
+
+			triple.ind = indOf(listLevel.getJaxbOverrideLvl());
+			if (triple.ind==null) triple.ind = indOf(triple.getLvl());
+
+			triple.rPr = (triple.getLvl()==null) ? null : triple.getLvl().getRPr();
 			
 		} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 			
@@ -466,18 +483,23 @@ public class Emulator {
 						levelId)) {
 
 			// don't IncrementCounter here
-			
-			Lvl lvl = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl();
-			PPr ppr = lvl.getPPr();
-			
-			if (ppr==null) {
-				return null;
-			} else {
-				return ppr.getInd();
-			}
-			
-		} 
+
+			// the instance's own level definition (w:lvlOverride/w:lvl) first, as
+			// getNumber does since 17.0.6, then the abstract one
+			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
+			Ind ind = indOf(listLevel.getJaxbOverrideLvl());
+			return (ind!=null) ? ind : indOf(listLevel.getJaxbAbstractLvl());
+
+		}
 		return null;
+    }
+
+    /** A level definition's w:ind, or null (the level, its w:pPr or its w:ind absent).
+     *  @since 17.0.6 */
+    private static Ind indOf(Lvl lvl) {
+    	if (lvl==null) return null;
+    	PPr ppr = lvl.getPPr();
+    	return (ppr==null) ? null : ppr.getInd();
     }
     
 //    public ListLevel getListNumberingDefinition(NumberingDefinitionsPart numberingPart, NumPr numPr) {
