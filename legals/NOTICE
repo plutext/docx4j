@@ -48,8 +48,14 @@ https://github.com/apache/camel/blob/main/core/camel-xml-jaxp/src/main/java/org/
 at commit https://github.com/apache/camel/commit/4ea9e6c357371682b855d2d79655b41120331b7a
 in docx4j 11.4.0 onward. The ASF licenses this file under the Apache License, Version 2.0
 
-org.docx4j.org.apache.poi repackages portions of Apache POI, 
+org.docx4j.org.apache.poi repackages portions of Apache POI,
 which the ASF licenses under the Apache License, Version 2.0
+
+In particular, org.docx4j.org.apache.poi.hwmf and org.docx4j.org.apache.poi.hemf
+(Windows Metafile / Enhanced Metafile / EMF+ parsing and rendering), together with
+the org.docx4j.org.apache.poi.sl.draw, .sl.usermodel and .common.usermodel.fonts
+support classes they need, repackage portions of Apache POI 5.5.1
+(poi-scratchpad and poi), which the ASF licenses under the Apache License, Version 2.0
 
 org.docx4j.org.apache.xerces.util.EncodingMap.java repackages a file 
 from xercesImpl 2.11.0.  The ASF licenses this file under the Apache License, Version 2.0

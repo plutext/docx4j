@@ -1,6 +1,7 @@
 # CR: WMF / EMF / EMF+ rendering via repackaged Apache POI HWMF and HEMF
 
-Status: PROPOSED (2026-09-06) — analysis and plan; nothing implemented yet.
+Status: IN PROGRESS (2026-09-06) — phase 1 landed (repackaging only; no change to docx4j's
+output yet), see git log. Phases 2-4 not started.
 Converted from the maintainer's analysis note of 2026-09-04/06 (verified against
 POI trunk at `../poi` and the 5.3.0 release jars, and this tree at 451f05172).
 Scope: rendering Windows metafiles (WMF, EMF, EMF+) held in a package — inline and
@@ -325,6 +326,37 @@ Wiring, in order of value:
    notices on every file, `README` recording the upstream tag and commit.
    Acceptance: the copied POI test files render to PNG at a fixed DPI in a
    golden test; `mvn install` clean on the module path (no new `requires`).
+
+   **DONE 2026-09-06** — phase 1 landed, see git log. Nothing in docx4j calls the
+   new code yet, so behaviour is unchanged. Notes on what differed from the plan:
+   - No `util` class needed upgrading. docx4j's existing copy of `IOUtils`,
+     `LittleEndianInputStream`, `StringUtil`, `GenericRecordUtil`,
+     `GenericRecordJsonWriter`, `Beta` and `FileMagic` is already at the 5.5.1 level
+     (only logging and `@Internal` differ), so no POIFS/HPSF caller was touched.
+     Genuinely new: `util/{Dimension2DDouble, Units}`, five `common.usermodel.fonts`
+     classes plus `FontFacet`/`FontGroup`. `common/Duplicatable` was already present.
+   - The three commons-math3 uses are in `HemfPlusDraw`, not `HemfPlusBrush` as §1.3
+     says. `AffineTransform.createInverse()` does not fit (the matrices have a
+     `{1,1,1}` bottom row), so a local 3x3 adjugate inverse was written instead.
+   - `DrawPictureShape.getImageRenderer` is replaced by a new
+     `sl.draw.ImageRendererFactory`, and `DrawFactory` by a two-method shim; the
+     default `DrawFontManager` (`Docx4jDrawFontManager`) maps face names through
+     `PhysicalFonts` and can build an AWT font from a docx4j font file.
+   - §4.1 step 6 / §7 assume 5.5.1 already carries the May–June 2026 bounds-check
+     fixes. It does not: 5.5.1 was released 2025-11-30. Seven small upstream fixes
+     (one NPE, six unbounded-allocation guards) were back-ported and are listed with
+     their commit ids in the package README.
+   - Three upstream behaviours surfaced by the new tests and pinned there:
+     `wrench.emf` replays 35 `polyPolygon16` records but paints nothing;
+     `HwmfPicture.draw` does not swallow per-record exceptions the way
+     `HemfPicture.draw` does (so one bad record aborts a whole WMF); and the parsers
+     use bare `assert` in ~20 places, so a malformed file raises `AssertionError`
+     under `-ea` and is waved through in production. Phase 2 must catch `Throwable`
+     at the docx4j boundary; the blank render belongs to phase 4.
+   - Tests: 103 new tests in `docx4j-core-tests` (`org.docx4j.metafiles`), over 31
+     `.wmf`/`.emf` inputs (22 from POI's test-data, 9 from `metafile-samples`), with
+     8 golden thumbnails. Full `docx4j-core-tests`: 728 tests, 0 failures. Full
+     reactor `mvn install` clean.
 2. **Wire in** (§4.2 items 1–2): `MetafileRenderer` in docx4j-core with the
    HWMF/HEMF implementation; the SVG helper in `docx4j-export-fo`
    (`SVGGraphics2D` from batik-svggen, already present) feeding

@@ -182,6 +182,8 @@ as empty, so a floating table lost its position when the effective table style w
 - StyleUtil: w:beforeAutospacing="0" / w:afterAutospacing="0" in direct formatting now
 switches off the style's "1"; XJC's getters cannot tell an absent attribute from a false
 one, so org.docx4j.wml.AutospacingAccess reports the three states
+- Apache POI 5.5.1's HWMF/HEMF (WMF/EMF/EMF+ parsing and Graphics2D rendering) repackaged
+into org.docx4j.org.apache.poi.{hwmf,hemf}; not yet wired into output (CR-011 phase 1)
 
 
 Version 17.0.5

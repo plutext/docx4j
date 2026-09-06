@@ -110,6 +110,15 @@ module org.docx4j.core {
     exports org.docx4j.openpackaging.parts.relationships;
     exports org.docx4j.openpackaging.parts.webextensions;
     exports org.docx4j.org.apache.poi;
+    exports org.docx4j.org.apache.poi.common;
+    exports org.docx4j.org.apache.poi.common.usermodel;
+    exports org.docx4j.org.apache.poi.common.usermodel.fonts;
+    // Apache POI HEMF/HWMF: WMF/EMF/EMF+ (CR-011).  The record packages
+    // (h{w,e}mf.record[.emf|.emfplus]) are internal and deliberately not exported.
+    exports org.docx4j.org.apache.poi.hemf.draw;
+    exports org.docx4j.org.apache.poi.hemf.usermodel;
+    exports org.docx4j.org.apache.poi.hwmf.draw;
+    exports org.docx4j.org.apache.poi.hwmf.usermodel;
     exports org.docx4j.org.apache.poi.hpsf;
     exports org.docx4j.org.apache.poi.hpsf.wellknown;
     exports org.docx4j.org.apache.poi.hssf;
@@ -125,6 +134,8 @@ module org.docx4j.core {
     exports org.docx4j.org.apache.poi.poifs.nio;
     exports org.docx4j.org.apache.poi.poifs.property;
     exports org.docx4j.org.apache.poi.poifs.storage;
+    exports org.docx4j.org.apache.poi.sl.draw;
+    exports org.docx4j.org.apache.poi.sl.usermodel;
     exports org.docx4j.org.apache.poi.util;
 
     exports org.docx4j.org.apache.xerces.util;

@@ -63,11 +63,14 @@
                             org.apache.avalon.framework.configuration;resolution:=optional,
                             org.apache.commons.codec.binary,
 						    org.apache.commons.codec,
+						    org.apache.commons.collections4,
+						    org.apache.commons.collections4.iterators,
 						    org.apache.commons.compress,
 						    org.apache.commons.lang3,
     
                             org.apache.commons.io,
                             org.apache.commons.io.filefilter,
+                            org.apache.commons.io.input,
                             org.apache.commons.io.output,
                             org.apache.commons.lang;version="[2.4,3)",
                             org.apache.commons.lang.text;version="[2.4,3)",
@@ -91,6 +94,9 @@
                             
                             org.apache.xml.utils,
                             
+                            javax.imageio,
+                            javax.imageio.metadata,
+                            javax.imageio.stream,
                             javax.xml.stream,
                             javax.xml.stream.events,
                             javax.xml.stream.util,
