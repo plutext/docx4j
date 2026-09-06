@@ -227,6 +227,17 @@ An **exact** line rule still clips a picture as it clips anything else. A block 
 `external-graphic` taller than its own line box occurs in 142 documents of the three
 corpora, 961 blocks.
 
+<a id="s24piconly"></a>**What else may be on a picture-only line.** A **space leader** - a
+tab, or the leader §4.5 writes for leading whitespace - reserves width and paints nothing,
+and an **anchored** picture is about to be lifted out of the flow altogether, so neither is
+on the line and neither makes it taller than the picture. Both used to disqualify the
+paragraph. Measured on a body paragraph of [anchored 62.25pt logo][1.7pt tab][inline 25.5pt
+logo], with `w:pgMar w:top="584"` (29.2pt): Word's first baseline is **63.1** - the
+paragraph is exactly the inline picture's 25.5pt - where ours was 66.8, the picture plus the
+13pt run's descent and line gap; it is 63.0 now. A leader that does paint (dots, a rule)
+still disqualifies the line, and where the anchored picture is the paragraph's only one the
+rule still does nothing (the paragraph gets the mark's line, [§2.5](#s25)).
+
 **A picture's size is fractional.** `wp:extent` is in EMU, and 12700 EMU is exactly one
 point, so a picture Word sizes at 857250 EMU is 67.5pt. docx4j wrote `content-height` and
 `content-width` with `Integer.toString`, which threw the fraction away - "67px", which FOP
@@ -427,6 +438,15 @@ two same-style paragraphs when **either** carries it, not only on the flagged pa
 side: a contextual paragraph followed by a non-contextual one of the same style with 12pt
 before gets no gap.
 
+<a id="s3ctxdefault"></a>**Two paragraphs which state no `w:pStyle` are of the same
+style** - the default paragraph style - so the rule pairs them. `docx4j:pstyle` is `""` for
+such a paragraph and the comparison read `""` as "unknown" and skipped it, so a document
+whose paragraphs are all plain Normal never got the rule at all. Measured on a planner whose
+shaded Normal cells carry `w:contextualSpacing` against 10pt of docDefaults space-after:
+Word's grid of baselines is 93.9 / 103.0 / 112.3 / 121.5 where ours split into 93.6 / 102.8 /
+112.0 for columns 1, 3, 5 against 92.8 / 102.0 / 111.2 for 2 and 4 - **+9.9pt** - and 37
+Word pages came out as 39.
+
 <a id="s33"></a>**Hard page breaks.** Word breaks the page **at** the break: where a
 `w:br w:type="page"` follows content in its own paragraph, what precedes it stays on the
 page it is on and what follows opens the next. docx4j moved the break to the front of the
@@ -570,7 +590,11 @@ Cancelling it walked the cell's paragraphs in pairs, so a single-paragraph cell 
 examined at all: measured on a planner whose cells hold one contextual paragraph each
 against docDefaults `w:after="200"`, Word's row pitch is 10.1pt (the 9.199pt line box plus
 `w:trHeight` 199) and docx4j's was 19.9pt, +9.0pt on the first row and +9.5 on every row
-after it - 37 Word pages came out as 43.
+after it - 37 Word pages came out as 43. It is the **only** paragraph of a cell because
+where the cell holds several there is no next paragraph for the "same style" test to be
+about, and Word applies the last one's space-after: measured on a document whose cells end
+in a bulleted List Paragraph carrying `w:contextualSpacing` and `w:after="200"`, Word's row
+pitch is 25.0pt and suppressing the space gave 19.9.
 
 **The paragraph a nested table forces.** OOXML requires a `w:p` after a `w:tbl` inside a
 `w:tc`, and Word gives that one no line at all. Measured on a mode-14 header whose outer
@@ -772,7 +796,11 @@ The stops, measured against Word's PDFs:
 - **all measured from the left margin**, not from the paragraph's indent;
 - a custom stop clears the default grid stops before it, and the grid resumes past the last
   custom stop;
-- a stop exactly at the current x is not the next stop.
+- a stop exactly at the current x is not the next stop;
+- <a id="s44merge"></a>**a paragraph's own `w:tabs` merge with the ones it inherits** from
+  its style chain, rather than replacing them (ECMA-376 17.3.1.38), and a
+  `<w:tab w:val="clear" w:pos="..."/>` **removes** the inherited stop at that position
+  instead of being copied through as a stop of its own (17.3.1.37).
 
 What each alignment does with the text between this tab and the next (or the paragraph's
 end): **left** - the text starts on the stop; **right** - the text's end sits on the stop,
@@ -784,6 +812,18 @@ Word cannot move backwards: a stop the text has already passed, and a right or c
 whose text does not fit before it, advance nothing. A **left** stop beyond the paragraph's
 right indent - but still inside the text column - is honoured, and the line runs into the
 indent rather than wrapping.
+
+`StyleUtil.apply(Tabs, Tabs)` did the opposite - `destination.getTab().clear()`, on the
+reasoning that "tabs are relative to each other" - which lost the style's stops wherever a
+paragraph added one of its own, and left every `clear` in the result as an ordinary stop.
+Measured against Word 365: a paragraph declaring `clear 6804` and `left 6379` on a style
+which declares `clear 284` and `left 6804, 7938, 9072` and `right 10348` has Word putting
+the text after its third tab at x=**466.65** (stop 9072), where falling through to
+`w:defaultTabStop` 709 put ours at 403.0, on 30 blocks of that document; another, whose
+style declares left stops at 284 and 8930 and whose paragraph adds 5103 and 7655, has Word
+painting `"1.<tab>Artikelbezogene Prüfpunkte ..."` as one line with the text at x=28.3..485.0
+where ours jumped to 283.5..499.2, and is 28.4..484.8 now. 25 documents of the three corpora
+add tabs to a style which already declares some.
 
 <a id="s44break"></a>**A tab which can reach no stop breaks the line.** Beyond the end of
 the **reference area** - the text column, or the table cell - there is no stop for a tab to
@@ -1176,8 +1216,20 @@ words fall where Word puts them and the lines break where Word breaks them. The 
 measured rather than estimated - each span's natural width is taken from the font FOP will
 use (`org.docx4j.fonts.TextMeasurer`) and the letter space is
 `width x (w/100 - 1) / characters` - and it is applied in `RunFontSelector`, so both
-pathways get it. **Limitation**: a run which also carries `w:spacing` keeps only the
-character spacing, since the two share the one property; Word applies both.
+pathways get it.
+
+**A run carrying both `w:spacing` and `w:w` gets both.** They share the one XSL-FO
+property, and `letter-spacing` is *inherited*: the run's own `fo:inline` carries the
+character spacing and the per-font selection inline inside it carries the scaling, so the
+inner value simply replaced the outer one. Measured on a document whose every run carries
+`w:w="94"` and a `w:spacing`, and whose FO read `<inline letter-spacing="-0.2pt"><inline
+docx4j:font="Arial" letter-spacing="-0.244pt">`: "All payments should be made by cash or
+Cheque." is 57.1..294.7 = **237.6pt** in Word and was 57.0..302.7 = 245.7 - **+8.1pt**,
+which is 0.2pt over the line's 38 characters; it is 57.0..296.0 now. `RunFontSelector`
+marks a span whose letter-spacing is scaling alone and `WordLayoutFixups.combineLetterSpacing`
+adds the nearest ancestor's to it; a value the exporter merely repeats on a nested inline
+carries no mark and is left alone. 4325 nested pairs in 22 documents of the three corpora.
+
 Measured on a document of 186 scaled runs (`w:w` 102/103/105) whose font mapping is exact
 (Arial->Arimo, Times->Tinos, Courier->Cousine), so that `w:w` is the whole error: the
 median width ratio of our lines to Word's over twenty long matched lines was 0.9516, e.g.
@@ -2004,6 +2056,77 @@ the logo came out **+26.5 to +27.5pt** low (Word's line 203.3 -> ours 229.8; the
 `mutool` ty 69.9 -> 97.4). Such a part now reserves nothing, on either side. 44 documents of
 the three corpora have `w:header` greater than `w:pgMar/@w:top` and no `headerReference`.
 
+<a id="s7emptyhf"></a>**A header or footer part with nothing in it reserves nothing
+either.** The rule above is about the part docx4j invents; a *real* part holding only empty
+paragraphs is the same to Word. Measured on a document with `w:pgMar w:top="510"` (25.5pt)
+and `w:header="709"` (35.45pt) whose `header1.xml` is a single empty `w:p`: Word's body top
+is 25.5 (first baseline 38.7) where ours was `35.45 + 13.428` = 48.88 (baseline 61.6),
+**+22.9pt on every page**, and Word's last page-1 row fell onto our page 2. At the foot,
+a document with `w:bottom="1418"` (70.9pt) and `w:footer="5811"` (**290.55pt**) whose two
+footer parts are each one empty `w:p`: Word's body runs to 756.2 and paints nothing at 551,
+where our `margin-bottom="290.55pt"` ended it at 551.4 and made **3 Word pages 5**.
+`HeaderFooterPolicy.reservesNothing` decides it: **at most one paragraph**, and that
+paragraph holding no non-blank `w:t`, drawing, `w:pict`, table, field or symbol. The
+one-paragraph limit is measured too - a single empty `w:p` is what Word writes for a header
+it has been given and then cleared, while *several* empty paragraphs are blank lines the
+author put there and Word reserves them: on a two-empty-paragraph header with
+`w:pgMar w:top="1417"` (70.85pt) and `w:header="708"` (35.4pt), Word's first body baseline
+is 110.7, i.e. a body top of about 90.6 = 35.4 + the header's own ~55pt, where reserving
+nothing put ours at 70.85 and every line 19.8pt above Word's. 7 documents of the three
+corpora have `w:footer` greater than `w:pgMar/@w:bottom` with every footer part empty, and
+70 have a header that is only empty paragraphs.
+
+**Not settled.** Two further documents disagree with the rule as stated: a landscape one
+whose *default* footer is a single empty `w:p` (its even footer carries a `PAGE` field) has
+Word paginating as if the 36pt footer distance were reserved, and reserving nothing there
+fits its two pages onto one. The discriminator - all the section's parts of that kind
+empty, or the header/footer distance against the margin - is not established, and the rule
+is left as measured on the two documents above, which it does fix (5 pages to Word's 3 on
+one).
+
+<a id="s7hfanchor"></a>**An anchored drawing in a header or footer does not make it
+taller.** Word positions a floating object out of the flow and sizes the region on its
+in-flow paragraphs; we laid the picture out in the flow and charged its height to the
+region. Measured on a header whose one paragraph holds only a `wrapSquare` anchor, with
+`w:pgMar w:top="1394"` (69.7pt) and `w:header="283"` (14.15pt): Word's body top is 69.7
+where our `region-before extent="90.453pt"` put it at 104.6 - **+34.7pt on every line**,
+and the tail spilled onto a second page holding nothing but the footer. A header holding
+one `wrapTopAndBottom` picture 54.35pt tall came out as `extent="114.054pt"`, exactly
+**+54.5pt**, and 3 Word pages became 4. The extent pre-pass therefore takes floating
+drawings out of the header and footer paragraphs it measures
+(`FOPAreaTreeHelper.dropFloatingDrawingsFromHeadersFooters`, on the pre-pass's own copy -
+the real render still paints and positions the picture). Only a paragraph of the header or
+footer *itself*, not one in a table it holds: a cell's height is the row's, and doing it
+everywhere shortened letterhead tables Word does size around (measured: -0.043 and a page
+on one document, -0.022 on another). `docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects=false`
+restores 17.0.5's behaviour.
+
+<a id="s7hfspacebefore"></a>**The first paragraph of a header or footer keeps its
+space-before.** `space-before.conditionality` defaults to `discard` at the start of a
+reference area, the mirror of [§7's space-after rule](#s7hfspace), so FOP dropped it where
+Word applies it. Measured on a header whose first block carries `w:before="66"` (3.3pt) and
+whose baseline is 8.004pt, with `w:header="426"` (21.3pt): Word's first header baseline is
+`21.3 + 3.3 + 8.004` = **32.6** exactly, where ours was 28.3 - **-4.3pt on all 16 pages**;
+a second document, whose header style carries `w:before="153"` (7.65pt), has Word at 59.5
+against our 50.9. It is pinned only where that first block actually paints something: in
+the pre-pass a header whose only content is a floating drawing is measured empty (above),
+and retaining the placeholder's space there put a document's spurious second page back.
+59 static-contents in 25 documents of the three corpora carry it.
+
+<a id="s7hftblstyle"></a>**A table in a header or footer takes its table style's `w:pPr`
+and `w:rPr`,** as one in the body does. ECMA-376 puts the table style's paragraph and run
+properties above `docDefaults` and below the paragraph style, which is what
+`ParagraphStylesInTableFix` (the `pp.common.tbl-p-style-fix` preprocessing step) builds a
+synthetic style for - but it only ever walked the main document part. Measured on a
+document whose header table uses `TableGridLight`
+(`<w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr>`) and whose
+paragraphs have no `w:pStyle`: Word's four baselines in the row-spanning cell are 104.2 /
+116.9 / 129.4 / 142.1 - a pitch of **12.7pt**, the line box alone - where ours were 147.0 /
+167.7 / 188.3 / 208.9, a pitch of 20.7 = 12.649 + 8, because `docDefaults`' `w:after="200"`
+survived on all 16 header paragraphs. That is 128pt of drift and a
+`region-before extent="341.265pt"`, now 215.0. 152 documents of the three corpora use a
+table style which carries a `w:pPr/w:spacing`.
+
 <a id="s7extfail"></a>**If the pre-pass fails, the extents fall back to nothing**, not to
 the half-page values it starts from. `LayoutMasterSetBuilder` seeds each region with half
 the page height and replaces it from the area tree; when the pre-pass threw, the seed
@@ -2231,6 +2354,32 @@ pagination properties are stripped. So the positioned container resets `text-ali
 `text-indent` and the indents, and `break-*` and `keep-*` are dropped from everything inside
 it; a paragraph of the box which states its own `w:jc` keeps it, since that goes on its own
 block.
+
+<a id="s92inset"></a>**The inset puts the text inside the shape.** Word's `width`/`height`
+are the shape, and its text starts one inset in from them. Down the page that is padding on
+the positioned `fo:block-container`, whose content box is the shape less the top and bottom
+insets. Across the line it cannot be: FOP measures a block-container's children from its
+*content* rectangle and their inherited `start-indent` is 0 there, so a `padding-left` was
+thrown away - and `resetTextBox` writing an explicit `start-indent="0pt"` on that same
+container made sure of it (XSL-FO 1.1 §5.3.2: an explicit `start-indent` *replaces*
+"inherited + padding-start + border-start-width"). Measured against Word 365 on a timetable
+laid out in five VML text boxes: Word's text starts at x=**86.4** with the shape clipped at
+79.2 - the 7.2pt default inset - where ours started at 79.0, and the same **-7.4pt** on
+boxes 4 (Word 506.8 / ours 499.3) and 5 (Word 642.4 / ours 634.9); it is 506.5 and 642.0
+now. It is also why a *centred* line in such a box sat 7.2pt left of Word's - the content
+rectangle was the right width but began in the wrong place. So across the line the
+container's `width` is the shape less the **end** inset (which stays padding, and which FOP
+does take off the measure), the **start** inset is `start-indent`, and `resetTextBox` no
+longer overwrites either. The measure is unchanged: 297.9 - 7.2 - 7.2 = 283.5. A shape's
+`strokeweight` is still uncounted, so a bordered box's text is up to half a stroke left of
+Word's. 694 absolutely positioned containers carrying padding, in 40 documents of the three
+corpora.
+
+<a id="s92negx"></a>**A negative horizontal offset is honoured**, not clamped to the column
+edge: Word draws such a box out into the margin. Measured on a landscape planner whose box
+is anchored at -41.0pt, Word's box content rect is 31.0..1141.7 - its border rect starting
+48.2pt left of the column - where ours started at 72.0, a constant **+41.0pt** on every line
+of the page.
 
 **A text box is never given to `fo:float`**, whatever its wrapping style: a float discards
 the box's position, which is the one thing the docx states exactly, and FOP's side floats

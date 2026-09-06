@@ -145,6 +145,153 @@ public class FOPAreaTreeHelper {
 		}
     }
     
+    /**
+     * Take the floating drawings out of the headers and footers we are about to
+     * measure.
+     *
+     * <p>Word does not size a header or footer around an anchored object: the object is
+     * out of the flow, positioned where its anchor says, and the region is as tall as
+     * its in-flow paragraphs.  We laid the picture out in the flow and charged its
+     * height to the region.  Measured against Word 365: a header whose one paragraph
+     * holds only a <code>wrapSquare</code> anchor - <code>w:pgMar/@w:top=1394</code>
+     * (69.7pt), <code>w:header=283</code> (14.15pt) - has Word's body top at 69.7,
+     * where our <code>region-before extent="90.453pt"</code> put it at 104.6, +34.7pt
+     * on every line and a spurious second page; and a header holding one
+     * <code>wrapTopAndBottom</code> picture 54.35pt tall came out as
+     * <code>extent="114.054pt"</code>, exactly 54.5pt more than Word, and 3 Word pages
+     * became 4.</p>
+     *
+     * <p>Only the measurement is affected - hfPkg is the pre-pass's own copy, and the
+     * real render still paints and positions the picture.</p>
+     *
+     * @since 17.0.6
+     */
+    static void dropFloatingDrawingsFromHeadersFooters(WordprocessingMLPackage hfPkg) {
+
+    	if (!Docx4jProperties.getProperty(
+    			"docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects", true)) return;
+
+    	org.docx4j.openpackaging.parts.relationships.RelationshipsPart relPart
+    		= hfPkg.getMainDocumentPart().getRelationshipsPart();
+    	if (relPart==null) return;
+    	for (org.docx4j.relationships.Relationship rs : relPart.getRelationships().getRelationship()) {
+    		Object hdrFtr = null;
+    		try {
+	    		if (org.docx4j.openpackaging.parts.relationships.Namespaces.HEADER.equals(rs.getType())) {
+	    			hdrFtr = ((org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart)relPart.getPart(rs)).getJaxbElement();
+	    		} else if (org.docx4j.openpackaging.parts.relationships.Namespaces.FOOTER.equals(rs.getType())) {
+	    			hdrFtr = ((org.docx4j.openpackaging.parts.WordprocessingML.FooterPart)relPart.getPart(rs)).getJaxbElement();
+	    		}
+    		} catch (RuntimeException e) {
+    			log.warn(e.getMessage());
+    		}
+    		if (hdrFtr==null) continue;
+    		/* Only the header's own paragraphs, not a paragraph in a table it holds: a
+    		 * cell's height is the row's, and taking an anchored picture out of one
+    		 * shortened letterhead tables Word does size around.  Measured: doing it
+    		 * everywhere cost 0.043 and a page on a 27-page document and 0.022 on
+    		 * another, where restricting it to the header's own paragraphs keeps both
+    		 * page-count fixes and loses neither. */
+    		FloatingDrawingRemover remover = new FloatingDrawingRemover();
+    		try {
+	    		for (Object child : ((org.docx4j.wml.ContentAccessor)hdrFtr).getContent()) {
+	    			remover.apply(XmlUtils.unwrap(child));
+	    		}
+    		} catch (RuntimeException e) {
+    			log.warn(e.getMessage(), e);
+    		}
+    	}
+    }
+
+    private static class FloatingDrawingRemover extends TraversalUtil.CallbackImpl {
+
+		@Override
+		public List<Object> apply(Object o) {
+			/* Only a paragraph whose *whole* content is floating: where the paragraph
+			 * also carries text or an inline picture, its own height already covers the
+			 * anchored one in most layouts, and dropping the anchor from the measurement
+			 * shortened headers Word does reserve for.  Measured on the corpus: taking
+			 * every anchored drawing out cost 0.043 and a page on one document and 0.022
+			 * on another, where restricting it to an anchor-only paragraph keeps the two
+			 * page-count fixes it buys. */
+			if (o instanceof org.docx4j.wml.P) {
+				org.docx4j.wml.P p = (org.docx4j.wml.P)o;
+				List<Object> floating = new ArrayList<Object>();
+				if (!paints(p, floating) && !floating.isEmpty()) {
+					for (Object d : floating) removeFrom(p, d);
+				}
+			}
+			return null;
+		}
+
+		/** Whether this content paints anything other than a floating drawing; the
+		 *  floating ones it finds are collected. */
+		private boolean paints(Object o, List<Object> floating) {
+			o = XmlUtils.unwrap(o);
+			if (o == null) return false;
+			if (o instanceof org.docx4j.wml.Drawing) {
+				if (isFloating((org.docx4j.wml.Drawing)o)) {
+					floating.add(o);
+					return false;
+				}
+				return true;
+			}
+			if (o instanceof org.docx4j.wml.Text) {
+				String v = ((org.docx4j.wml.Text)o).getValue();
+				return v != null && v.trim().length() > 0;
+			}
+			if (o instanceof org.docx4j.wml.Pict
+					|| o instanceof org.docx4j.wml.Tbl
+					|| o instanceof org.docx4j.wml.CTSimpleField
+					|| o instanceof org.docx4j.wml.FldChar
+					|| o instanceof org.docx4j.wml.R.Sym
+					|| o instanceof org.docx4j.wml.CTObject) {
+				return true;
+			}
+			List<Object> children;
+			try {
+				children = TraversalUtil.getChildrenImpl(o);
+			} catch (RuntimeException e) {
+				return true;
+			}
+			if (children == null) return false;
+			boolean paints = false;
+			for (Object child : children) {
+				if (paints(child, floating)) paints = true;
+			}
+			return paints;
+		}
+
+		/** Remove this drawing wherever it sits below the paragraph. */
+		private boolean removeFrom(Object parent, Object drawing) {
+			List<Object> children;
+			try {
+				children = TraversalUtil.getChildrenImpl(parent);
+			} catch (RuntimeException e) {
+				return false;
+			}
+			if (children == null) return false;
+			for (java.util.Iterator<Object> it = children.iterator(); it.hasNext(); ) {
+				Object raw = it.next();
+				if (XmlUtils.unwrap(raw) == drawing) {
+					it.remove();
+					return true;
+				}
+			}
+			for (Object child : new ArrayList<Object>(children)) {
+				if (removeFrom(XmlUtils.unwrap(child), drawing)) return true;
+			}
+			return false;
+		}
+
+		private boolean isFloating(org.docx4j.wml.Drawing d) {
+			for (Object o : d.getAnchorOrInline()) {
+				if (XmlUtils.unwrap(o) instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) return true;
+			}
+			return false;
+		}
+    }
+
     private static P createFillerP() {
 
     	org.docx4j.wml.ObjectFactory wmlObjectFactory = Context.getWmlObjectFactory();
@@ -513,14 +660,16 @@ public class FOPAreaTreeHelper {
     }
     
 
-    /** The header this page master's region-before shows, or null. */
+    /** Whether the header this page master's region-before shows reserves nothing:
+     *  the dummy part docx4j invents for w:titlePg / w:evenAndOddHeaders, or a real
+     *  part with nothing in it (@since 17.0.6). */
     private static boolean isDummyHeader(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
     	if ("firstpage".equals(pageKind)) {
-    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getFirstHeader());
+    		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getFirstHeader());
     	} else if ("evenpage".equals(pageKind)) {
-    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getEvenHeader());
+    		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getEvenHeader());
     	} else if ("default".equals(pageKind)) {
-    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getDefaultHeader());
+    		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getDefaultHeader());
     	}
     	// "simple": no header at all
     	return true;
@@ -528,11 +677,11 @@ public class FOPAreaTreeHelper {
 
     private static boolean isDummyFooter(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
     	if ("firstpage".equals(pageKind)) {
-    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getFirstFooter());
+    		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getFirstFooter());
     	} else if ("evenpage".equals(pageKind)) {
-    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getEvenFooter());
+    		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getEvenFooter());
     	} else if ("default".equals(pageKind)) {
-    		return org.docx4j.model.structure.HeaderFooterPolicy.isDummy(hf.getDefaultFooter());
+    		return org.docx4j.model.structure.HeaderFooterPolicy.reservesNothing(hf.getDefaultFooter());
     	}
     	return true;
     }

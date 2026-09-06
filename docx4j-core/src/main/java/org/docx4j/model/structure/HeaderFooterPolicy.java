@@ -241,6 +241,86 @@ public class HeaderFooterPolicy {
 					|| "/word/dummyfooter.xml".equals(part.getPartName().getName()));
 	}
 
+	/**
+	 * Whether this header or footer reserves no space on the page: either it is the
+	 * dummy part docx4j invents ({@link #isDummy}), or it is a real part with nothing
+	 * in it - at most one paragraph, painting nothing.
+	 *
+	 * <p>Measured against Word 365.  A document with <code>w:pgMar/@w:top=510</code>
+	 * (25.5pt) and <code>w:header=709</code> (35.45pt) whose <code>header1.xml</code>
+	 * holds a single empty <code>w:p</code>: Word's body top is 25.5 (its first
+	 * baseline 38.7), so the empty header contributes neither its own line box nor the
+	 * header distance; ours reserved 35.45 + a 13.428pt line, +22.9pt on every page,
+	 * and Word's last page-1 row fell onto our page 2.  The mirror at the foot: a
+	 * document with <code>w:bottom=1418</code> (70.9pt) and <code>w:footer=5811</code>
+	 * (290.55pt) whose two footer parts are each one empty <code>w:p</code> - Word's
+	 * body runs to 756.2 and paints nothing at 551, where our
+	 * <code>margin-bottom="290.55pt"</code> ended the body at 551.4 and made 3 Word
+	 * pages 5.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	public static boolean reservesNothing(org.docx4j.openpackaging.parts.Part part) {
+		if (part == null) return true;
+		if (isDummy(part)) return true;
+		List<Object> content = null;
+		if (part instanceof HeaderPart) {
+			org.docx4j.wml.Hdr hdr = ((HeaderPart)part).getJaxbElement();
+			content = hdr==null ? null : hdr.getContent();
+		} else if (part instanceof FooterPart) {
+			org.docx4j.wml.Ftr ftr = ((FooterPart)part).getJaxbElement();
+			content = ftr==null ? null : ftr.getContent();
+		} else {
+			return false;
+		}
+		if (content == null) return true;
+		/* At most one paragraph.  A header or footer Word has been given and then
+		 * cleared is a single empty w:p, and that is the one Word reserves nothing for;
+		 * where the part holds *several* empty paragraphs the author put blank lines
+		 * there and Word reserves them.  Measured on a two-empty-paragraph header with
+		 * w:pgMar w:top="1417" (70.85pt) and w:header="708" (35.4pt): Word's first body
+		 * baseline is 110.7, ie a body top of about 90.6 = 35.4 + the header's own
+		 * ~55pt, where reserving nothing would have put it at 70.85 - and did, 13.9pt
+		 * above our previous render and 19.8 above Word's. */
+		if (content.size() > 1) return false;
+		for (Object o : content) {
+			if (paintsSomething(o)) return false;
+		}
+		return true;
+	}
+
+	/** Whether this content would put anything on the page (a paragraph mark alone
+	 *  does not: Word reserves nothing for a header of empty paragraphs). */
+	private static boolean paintsSomething(Object o) {
+		o = org.docx4j.XmlUtils.unwrap(o);
+		if (o == null) return false;
+		if (o instanceof org.docx4j.wml.Text) {
+			String v = ((org.docx4j.wml.Text)o).getValue();
+			return v != null && v.trim().length() > 0;
+		}
+		if (o instanceof org.docx4j.wml.Drawing
+				|| o instanceof org.docx4j.wml.Pict
+				|| o instanceof org.docx4j.wml.Tbl
+				|| o instanceof org.docx4j.wml.CTSimpleField
+				|| o instanceof org.docx4j.wml.FldChar
+				|| o instanceof org.docx4j.wml.R.Sym
+				|| o instanceof org.docx4j.wml.R.Cr
+				|| o instanceof org.docx4j.wml.CTObject) {
+			return true;
+		}
+		List<Object> children;
+		try {
+			children = org.docx4j.TraversalUtil.getChildrenImpl(o);
+		} catch (RuntimeException e) {
+			return true; // don't claim "empty" for something we can't walk
+		}
+		if (children == null) return false;
+		for (Object child : children) {
+			if (paintsSomething(child)) return true;
+		}
+		return false;
+	}
+
 	private HeaderPart getDummyHeader() {
 		if (dummyHeader == null) {
 			createDummyHeaderFooter();

@@ -79,18 +79,29 @@ public class FOTextBoxes {
 
 		Element container = doc.createElementNS(XSL_FO, "fo:block-container");
 		double[] in = (inset==null) ? DEFAULT_INSET : inset;
-		// Word's width and height are the box; the text inside is inset from them, so
-		// the container's content box is that much smaller and its border box is Word's
-		if (w > in[0] + in[2]) container.setAttribute("width", pt(w - in[0] - in[2]));
+		/* Word's width and height are the box and the text inside is inset from them.
+		 * Down the block-progression direction the container's content box is that much
+		 * smaller and the inset is padding, so its border box is Word's.  Across the
+		 * line it cannot be: FOP measures a block-container's children from its
+		 * *content* rectangle and their inherited start-indent is 0 there - it does not
+		 * add the padding - so an inset expressed as padding-left was simply thrown
+		 * away and every line began on the border edge.  Measured against Word 365 on a
+		 * timetable of five VML boxes: Word's text starts at x=86.4 in a shape clipped
+		 * at 79.2 (the 7.2pt inset), ours at 79.0, and the same -7.4pt on the other four
+		 * boxes.  So across the line the width is Word's whole box and the inset is the
+		 * indent, which leaves the same content measure (297.9 - 2 x 7.2 = 283.5) and
+		 * starts it in the right place.  (The end inset stays padding: FOP does take
+		 * padding-right off the measure, and taking it off twice - once as padding and
+		 * again as end-indent - fitted a word too few on every line.)  @since 17.0.6 */
+		if (w > in[2]) container.setAttribute("width", pt(w - in[2]));
 		if (h > in[1] + in[3]) container.setAttribute("height", pt(h - in[1] - in[3]));
 		container.setAttribute("overflow", "visible");
-		if (in[0] > 0) container.setAttribute("padding-left", pt(in[0]));
 		if (in[1] > 0) container.setAttribute("padding-top", pt(in[1]));
 		if (in[2] > 0) container.setAttribute("padding-right", pt(in[2]));
 		if (in[3] > 0) container.setAttribute("padding-bottom", pt(in[3]));
 		// indents are inherited and measured from the reference area, which the
 		// container is: without this the content would be indented all over again
-		container.setAttribute("start-indent", "0pt");
+		container.setAttribute("start-indent", pt(Math.max(0, in[0])));
 		container.setAttribute("end-indent", "0pt");
 		if (!"inline".equals(kind)) {
 			container.setAttribute(WordLayoutFixups.HINT_ANCHOR, kind);

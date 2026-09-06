@@ -82,7 +82,11 @@ public class TabStopHintsTest {
 			org.w3c.dom.Document doc = fo(body, "567", flag);
 			Element block = firstBlockWithTabs(doc);
 			assertTrue("no tab stops on the block", block!=null);
-			assertEquals("1000:left:none;4000:right:dot;5000:clear:none",
+			// a w:val="clear" removes the inherited stop at that position and is not
+			// itself a stop (ECMA-376 17.3.1.37/.38): here there is nothing at 5000 to
+			// remove, so it simply disappears.  Until 17.0.6 StyleUtil copied clears
+			// through as ordinary stops.
+			assertEquals("1000:left:none;4000:right:dot",
 					block.getAttributeNS(NS, "tabs"));
 			assertEquals("567", block.getAttributeNS(NS, "tab-default"));
 			assertEquals("720:-360:,", block.getAttributeNS(NS, "tab-ind"));

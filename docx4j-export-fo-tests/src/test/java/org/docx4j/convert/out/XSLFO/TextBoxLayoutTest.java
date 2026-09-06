@@ -104,7 +104,12 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 		assertEquals("absolute", container.getAttribute("absolute-position"));
 		assertEquals("100pt", container.getAttribute("left"));
 		assertEquals("90pt", container.getAttribute("top"));
-		// the box is 180 x 30pt; the container's content box is that less its insets
+		/* The box is 180 x 30pt.  Down the page the container's content box is that
+		 * less the top and bottom insets, which are padding.  Across the line only the
+		 * end inset is padding: the start inset is start-indent, because FOP measures a
+		 * block-container's children from its content rectangle and would otherwise
+		 * throw a padding-left away (@since 17.0.6 - Word's text starts at the shape
+		 * edge plus the inset, and ours started on the edge). */
 		assertEquals(width, container.getAttribute("width"));
 		assertEquals(height, container.getAttribute("height"));
 		// and it takes no space in the flow: the container it sits in is zero-height
@@ -127,12 +132,12 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 	@Test
 	public void drawingMLTextBoxVisitor() throws Exception {
 		// no wps:bodyPr insets, so Word's defaults: 0.1in left and right, 0.05in top and bottom
-		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_NONE, "165.6pt", "22.8pt");
+		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_NONE, "172.8pt", "22.8pt");
 	}
 
 	@Test
 	public void drawingMLTextBoxXslt() throws Exception {
-		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_EXPORT_PREFER_XSL, "165.6pt", "22.8pt");
+		placedAbsolutely(DML_TEXT_BOX, Docx4J.FLAG_EXPORT_PREFER_XSL, "172.8pt", "22.8pt");
 	}
 
 	/** A box Word wraps text around that fills the column reserves its height where

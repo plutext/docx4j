@@ -79,6 +79,7 @@ import org.docx4j.wml.STHAnchor;
 import org.docx4j.wml.STHeightRule;
 import org.docx4j.wml.STHint;
 import org.docx4j.wml.STLineSpacingRule;
+import org.docx4j.wml.STTabJc;
 import org.docx4j.wml.STShd;
 import org.docx4j.wml.STTblLayoutType;
 import org.docx4j.wml.STTblOverlap;
@@ -2463,30 +2464,66 @@ public class StyleUtil {
 		return (source == null ? STLineSpacingRule.AUTO : source);
 	}
 	
+	/**
+	 * Merge a tab stop set into the one inherited from the style hierarchy.
+	 *
+	 * <p>ECMA-376 &#xa7;17.3.1.38 (<code>w:tabs</code>): the custom tab stops of a
+	 * paragraph are the union of those it declares and those it inherits, and a stop
+	 * with <code>w:val="clear"</code> removes the inherited stop at that
+	 * <code>w:pos</code> (17.3.1.37).  Until 17.0.6 the source set simply replaced the
+	 * destination, on the reasoning that "tabs are relative to each other" - which also
+	 * left every <code>clear</code> in the result as an ordinary stop.</p>
+	 *
+	 * <p>Measured against Word 365.  A paragraph declaring
+	 * <code>&lt;w:tab w:val="clear" w:pos="6804"/&gt;&lt;w:tab w:val="left"
+	 * w:pos="6379"/&gt;</code> on a style which declares <code>clear 284</code> and
+	 * <code>left 6804, 7938, 9072</code> and <code>right 10348</code>: Word puts the
+	 * text after the third tab at x=466.65 (stop 9072), where dropping the style's set
+	 * fell through to <code>w:defaultTabStop</code> 709 and put it at 403.0 - on 30
+	 * blocks of that document.  A second document, whose style declares left stops at
+	 * 284 and 8930 and whose paragraph adds 5103 and 7655, has Word painting
+	 * "1.&lt;tab&gt;Artikelbezogene ..." as one line with the text at x=42.5 (stop
+	 * 284), where we jumped to 283.5.</p>
+	 *
+	 * @since 17.0.6 merges rather than replaces
+	 */
 	public static Tabs apply(Tabs source, Tabs destination) {
-	CTTabStop sourceTabStop = null;
-	CTTabStop destinationTabStop = null;
-		//Tabs are relative to each other, therefore if there are any tabs in the source 
-		//they should replace those in the destination and not be added to the destination.
-		if (!isEmpty(source)) {
-			if (destination == null)
-				destination = Context.getWmlObjectFactory().createTabs();
-			
-			destination.getTab().clear();
-			for (int i=0; i<source.getTab().size(); i++) {
-				sourceTabStop = source.getTab().get(i);
-				destinationTabStop = Context.getWmlObjectFactory().createCTTabStop();
-				destinationTabStop.setLeader(sourceTabStop.getLeader()); //enum
-				destinationTabStop.setPos(sourceTabStop.getPos()); //atomic
-				destinationTabStop.setVal(sourceTabStop.getVal()); //enum
-				
-				if (destinationTabStop != null) {
-					destination.getTab().add(destinationTabStop);
+		if (isEmpty(source)) return destination;
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createTabs();
+
+		for (CTTabStop sourceTabStop : source.getTab()) {
+			BigInteger pos = sourceTabStop.getPos();
+			// a stop at the same position replaces the inherited one, whatever it was
+			if (pos != null) {
+				for (java.util.Iterator<CTTabStop> it = destination.getTab().iterator(); it.hasNext(); ) {
+					BigInteger existing = it.next().getPos();
+					if (existing != null && existing.compareTo(pos) == 0) it.remove();
 				}
 			}
+			// ... and w:val="clear" says only "remove it"
+			if (STTabJc.CLEAR.equals(sourceTabStop.getVal())) continue;
+
+			CTTabStop destinationTabStop = Context.getWmlObjectFactory().createCTTabStop();
+			destinationTabStop.setLeader(sourceTabStop.getLeader()); //enum
+			destinationTabStop.setPos(pos); //atomic
+			destinationTabStop.setVal(sourceTabStop.getVal()); //enum
+			destination.getTab().add(destinationTabStop);
 		}
+		// Word holds the stops in ascending position order, and so do the consumers
+		java.util.Collections.sort(destination.getTab(), TAB_STOP_ORDER);
 		return destination;
 	}
+
+	private static final java.util.Comparator<CTTabStop> TAB_STOP_ORDER = new java.util.Comparator<CTTabStop>() {
+		public int compare(CTTabStop a, CTTabStop b) {
+			BigInteger pa = a==null ? null : a.getPos();
+			BigInteger pb = b==null ? null : b.getPos();
+			if (pa == null) return pb == null ? 0 : -1;
+			if (pb == null) return 1;
+			return pa.compareTo(pb);
+		}
+	};
 
 	public static CTShd apply(CTShd source, CTShd destination) {
 		if (!isEmpty(source)) {

@@ -30,6 +30,11 @@ import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTCompatSetting;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.Jc;
@@ -167,12 +172,37 @@ public class ParagraphStylesInTableFix {
 	        // which we need to include in the below
 	        styleRenamer.setStyles(styles);
 			new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer);
+
+			/* Headers and footers too.  A table in a header is styled by its w:tblStyle
+			 * exactly as one in the body is, and letterhead tables are common: measured
+			 * on a document whose header table uses TableGridLight
+			 * (<w:pPr><w:spacing w:after="0" w:line="240"/></w:pPr>), Word's four
+			 * baselines in the row-spanning cell are 104.2 / 116.9 / 129.4 / 142.1 - a
+			 * pitch of 12.7pt, the line box alone - where ours were 147.0 / 167.7 /
+			 * 188.3 / 208.9, a pitch of 20.7pt, because docDefaults' w:after="200" (8pt)
+			 * survived on all 16 header paragraphs.  That is 128pt of drift, and it also
+			 * made the header extent 341.3pt.  @since 17.0.6 */
+			RelationshipsPart relPart = wmlPackage.getMainDocumentPart().getRelationshipsPart();
+			if (relPart!=null) {
+				for (Relationship rs : relPart.getRelationships().getRelationship()) {
+					List<Object> content = null;
+					if (Namespaces.HEADER.equals(rs.getType())) {
+						content = ((HeaderPart)relPart.getPart(rs)).getJaxbElement().getContent();
+					} else if (Namespaces.FOOTER.equals(rs.getType())) {
+						content = ((FooterPart)relPart.getPart(rs)).getJaxbElement().getContent();
+					}
+					if (content!=null) {
+						new TraversalUtil(content, styleRenamer);
+					}
+				}
+			}
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
+		} catch (RuntimeException e) {
+			// eg a header part which isn't loadable; the body is done, don't lose that
+			log.error(e.getMessage(), e);
 		}
-		
-		// TODO, headers/footers as well
-		
+
 //		System.out.println(wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getXML());
 		
 

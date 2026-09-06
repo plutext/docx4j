@@ -133,6 +133,7 @@ public final class WordLayoutFixups {
 	public static void apply(Document doc, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
 		disregardBaselineShifts(doc);
+		combineLetterSpacing(doc);
 		imageOnlyLineBox(doc);
 		inlineLabelGaps(doc);
 		listLabelLines(doc);
@@ -179,6 +180,59 @@ public final class WordLayoutFixups {
 		Element root = doc.getDocumentElement();
 		if (root != null && isFo(root, "root")) {
 			root.setAttribute("line-height-shift-adjustment", "disregard-shifts");
+		}
+	}
+
+	// ------------------------------------------------------------ 0a1. letter-spacing
+
+	/**
+	 * Word's character spacing (<code>w:spacing</code>) and its character scaling
+	 * (<code>w:w</code>, reproduced as a measured letter space, &#xa7;4.6) are both
+	 * carried as <code>letter-spacing</code>, on the run's own <code>fo:inline</code> and
+	 * on the per-font selection inline inside it.  <code>letter-spacing</code> is an
+	 * inherited property, so the inner value <em>replaced</em> the outer one where Word
+	 * applies both.
+	 *
+	 * <p>Measured against Word 365 on a document whose every run carries
+	 * <code>w:w="94"</code> and a <code>w:spacing</code>: the FO read
+	 * <code>&lt;inline letter-spacing="-0.2pt"&gt;&lt;inline docx4j:font="Arial"
+	 * letter-spacing="-0.244pt"&gt;</code>, and "All payments should be made by cash or
+	 * Cheque." is 57.1..294.7 = 237.6pt in Word against our 57.0..302.7 = 245.7pt - +8.1pt,
+	 * which is 0.2pt over the line's 38 characters.</p>
+	 *
+	 * <p>Each explicit value therefore becomes the sum of itself and the nearest
+	 * ancestor's.  Working in document order makes that cumulative over any depth.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void combineLetterSpacing(Document doc) {
+		List<Element> scaled = new ArrayList<>();
+		collectScaledLetterSpacing(doc.getDocumentElement(), scaled);
+		for (Element el : scaled) {
+			el.removeAttribute(HINT_SCALED_SPACING);
+			double outer = 0;
+			for (Node n = el.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+				Element ancestor = (Element) n;
+				if (ancestor.hasAttribute("letter-spacing")) {
+					outer = lengthPt(ancestor.getAttribute("letter-spacing"));
+					break;
+				}
+			}
+			if (outer == 0) continue;
+			double own = lengthPt(el.getAttribute("letter-spacing"));
+			el.setAttribute("letter-spacing", org.docx4j.fonts.WordLineMetrics.format(own + outer));
+		}
+	}
+
+	/** RunFontSelector's mark on a span whose letter-spacing is w:w scaling alone. */
+	public static final String HINT_SCALED_SPACING =
+			org.docx4j.fonts.RunFontSelector.HINT_SCALED_LETTER_SPACING;
+
+	private static void collectScaledLetterSpacing(Element el, List<Element> out) {
+		if (el == null) return;
+		if (el.hasAttribute(HINT_SCALED_SPACING)) out.add(el);
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) collectScaledLetterSpacing((Element) n, out);
 		}
 	}
 
@@ -274,8 +328,19 @@ public final class WordLayoutFixups {
 			Element child = (Element) n;
 			if (isFo(child, "block-container") || isFo(child, "float")) continue; // out of the flow
 			if (isFo(child, "external-graphic") || isFo(child, "instream-foreign-object")) {
+				/* An anchored picture is about to be lifted into a positioned container
+				 * (anchorImages), so it is not on this line at all - Word floats it.  It
+				 * used to disqualify the line, which cost the rule every paragraph
+				 * holding an anchored picture *and* an inline one: measured on a document
+				 * whose first body paragraph is [anchored 62.25pt logo][tab][inline
+				 * 25.5pt logo], Word's first baseline is 63.1pt from the page top with a
+				 * 29.2pt top margin - the paragraph is the inline picture's 25.5pt -
+				 * where ours was 29.2, the picture plus the 13pt run's descent and line
+				 * gap.  Where the anchored picture is the only one, the height stays 0
+				 * and the rule still does nothing.  @since 17.0.6 */
+				if (child.hasAttribute(HINT_ANCHOR)) continue;
 				double h = lengthPt(child.getAttribute("content-height"));
-				if (child.hasAttribute(HINT_ANCHOR) || h <= 0) { // about to be positioned, or unsized
+				if (h <= 0) { // unsized
 					state[1] = 1;
 					return;
 				}
@@ -287,7 +352,20 @@ public final class WordLayoutFixups {
 				scanInlineGraphics(child, state);
 				continue;
 			}
-			state[1] = 1; // a leader, a page-number, a nested block, ...
+			/* A space leader reserves width and paints nothing, so it does not make
+			 * Word's line taller than the picture on it: a tab, or the leading
+			 * whitespace leadingWhitespaceLeader writes, in front of a logo.  Measured
+			 * on a document whose first body paragraph is [1.7pt tab][bookmark][25.5pt
+			 * logo]: Word's first baseline is 63.1 with a 29.2pt top margin, ie the
+			 * paragraph is exactly the picture's 25.5pt, where ours was 29.2 - the
+			 * picture plus the 13pt run's descent and line gap.  A leader that does
+			 * paint (dots, a rule) still disqualifies the line.  @since 17.0.6 */
+			if (isFo(child, "leader")
+					&& (!child.hasAttribute("leader-pattern")
+						|| "space".equals(child.getAttribute("leader-pattern")))) {
+				continue;
+			}
+			state[1] = 1; // a painting leader, a page-number, a nested block, ...
 		}
 	}
 
@@ -2105,7 +2183,13 @@ public final class WordLayoutFixups {
 			// the inherited indent for its own content).
 			if (h > 0) wrapper.setAttribute("height", pt(h));
 			if (off > 0) wrapper.setAttribute("padding-top", pt(off));
-			wrapper.setAttribute("start-indent", pt(Math.max(0, x)));
+			/* A negative offset puts the box out into the margin, which is where Word
+			 * draws it; clamping it to zero moved the box and everything laid out with
+			 * it back to the column edge.  Measured: a landscape planner whose text box
+			 * is anchored at -41.0pt has Word's box content rect at 31.0..1141.7 - its
+			 * border rect starting 48.2pt left of the column - where ours started at
+			 * 72.0, a constant +41.0pt on every line of the page.  @since 17.0.6 */
+			wrapper.setAttribute("start-indent", pt(x));
 		}
 		resetTextBox(box);
 		box.getParentNode().removeChild(box);
@@ -2138,8 +2222,8 @@ public final class WordLayoutFixups {
 		box.setAttribute("text-align", "start");
 		box.setAttribute("text-align-last", "relative");
 		box.setAttribute("text-indent", "0pt");
-		box.setAttribute("start-indent", "0pt");
-		box.setAttribute("end-indent", "0pt");
+		// start-indent and end-indent are the box's own inset (FOTextBoxes.createContainer)
+		// and must not be reset here: they are what puts the text inside the shape.
 		dropPagination(box);
 	}
 
@@ -2549,15 +2633,31 @@ public final class WordLayoutFixups {
 	 */
 	private static void contextualSpacingAmong(Element container, boolean cellEdges) {
 		List<Element> paras = paragraphBlocks(container);
-		if (cellEdges && !paras.isEmpty()) {
-			Element first = paras.get(0), last = paras.get(paras.size() - 1);
-			if ("1".equals(first.getAttribute(HINT_CONTEXTUAL))) first.setAttribute("space-before", "0pt");
-			if ("1".equals(last.getAttribute(HINT_CONTEXTUAL))) last.setAttribute("space-after", "0pt");
+		/* Only a cell holding a *single* paragraph, which is the shape this was measured
+		 * on.  Where the cell holds several, Word applies the last one's space-after at
+		 * the cell bottom - there is no next paragraph for the "same style" test to be
+		 * about: measured on a document whose cells end in a bulleted List Paragraph
+		 * with w:contextualSpacing and w:after="200", Word's row pitch is 25.0pt and
+		 * suppressing it gave us 19.9.  @since 17.0.6 */
+		if (cellEdges && paras.size() == 1) {
+			Element only = paras.get(0);
+			if ("1".equals(only.getAttribute(HINT_CONTEXTUAL))) {
+				only.setAttribute("space-before", "0pt");
+				only.setAttribute("space-after", "0pt");
+			}
 		}
 		for (int i = 0; i + 1 < paras.size(); i++) {
 			Element a = paras.get(i), b = paras.get(i + 1);
-						String sa = a.getAttribute(HINT_PSTYLE), sb = b.getAttribute(HINT_PSTYLE);
-			if (sa == null || sa.length() == 0 || !sa.equals(sb)) continue;
+			String sa = a.getAttribute(HINT_PSTYLE), sb = b.getAttribute(HINT_PSTYLE);
+			/* Two paragraphs which state no w:pStyle are both of the default style, so
+			 * they are "of the same style" and w:contextualSpacing pairs them.  The hint
+			 * is "" for such a paragraph (XsltFOFunctions), and treating "" as "unknown"
+			 * meant it never did: measured on a planner whose shaded Normal cells carry
+			 * w:contextualSpacing with 10pt of docDefaults space-after, Word's grid of
+			 * baselines is 93.9 / 103.0 / 112.3 / 121.5 where ours split into 93.6 /
+			 * 102.8 / 112.0 against 92.8 / 102.0 / 111.2 - +9.9pt - and 37 Word pages
+			 * came out as 39.  @since 17.0.6 */
+			if (sa == null || sb == null || !sa.equals(sb)) continue;
 			// Measured (Word 365): the gap is zero when EITHER paragraph has it, not
 			// just the side the spec's wording suggests: a contextual paragraph followed
 			// by a non-contextual one of the same style with 12pt before got no gap.
@@ -3561,6 +3661,18 @@ public final class WordLayoutFixups {
 			// spilled each section's last line onto a page of its own, 24 Word pages
 			// coming out as 89.  @since 17.0.6
 			if (!hasVisibleContent(sc)) continue;
+			/* The same at the other end: space-before.conditionality also defaults to
+			 * discard at the start of a reference area, so FOP drops the first
+			 * paragraph's space-before where Word applies it.  Measured against Word
+			 * 365: a header whose first block has w:before="66" (3.3pt) and a 8.004pt
+			 * baseline, with w:header=426 (21.3pt), puts Word's first header baseline at
+			 * 21.3 + 3.3 + 8.004 = 32.6 exactly, where ours was 28.3 - -4.3pt on all 16
+			 * pages; a second document, whose header style carries w:before="153"
+			 * (7.65pt), has Word at 59.5 and ours at 50.9.  @since 17.0.6 */
+			Element first = firstBlock(sc);
+			if (first != null && hasSpace(first, "space-before") && hasVisibleContent(first)) {
+				first.setAttribute("space-before.conditionality", "retain");
+			}
 			Element last = lastBlock(sc);
 			if (last != null && hasSpace(last, "space-after")) {
 				last.setAttribute("space-after.conditionality", "retain");

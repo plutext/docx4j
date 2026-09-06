@@ -658,7 +658,9 @@ public class WordLayoutFixupsTest {
 		assertTrue("the box was not positioned: " + out, box > 0);
 		String container = out.substring(out.lastIndexOf("<fo:block-container", box), out.indexOf('>', box));
 		assertTrue("the box must reset text-align: " + container, container.contains("text-align=\"start\""));
-		assertTrue("and the indents: " + container, container.contains("start-indent=\"0pt\""));
+		// the box keeps its own inset as start-indent (the hand-written FO here declares
+		// none, so it is 0pt); what must not survive is the paragraph's text-indent
+		assertTrue("and the indents: " + container, container.contains("text-indent=\"0pt\""));
 	}
 
 	/**
@@ -750,5 +752,118 @@ public class WordLayoutFixupsTest {
 		assertTrue("the float must stay inside the cell: " + out,
 				out.indexOf("<fo:float") > out.indexOf("<fo:table-cell"));
 		assertFalse(out.contains("<fo:flow flow-name=\"xsl-region-body\"><fo:float"));
+	}
+
+	// ------------------------------------------------------------ 17.0.6, b2-batch20
+
+	/**
+	 * A space leader (a tab, or the leader leadingWhitespaceLeader writes) and an
+	 * anchored picture are not on the paragraph's line, so a paragraph which also holds
+	 * one inline picture is still a picture-only line.  Measured: a body paragraph of
+	 * [anchored 62.25pt logo][1.7pt tab][inline 25.5pt logo] has Word's first baseline
+	 * 25.5pt below the top margin, where ours was 29.2 - the picture plus the run's
+	 * descent and line gap.
+	 */
+	@Test
+	public void aTabAndAnAnchoredPictureDoNotSpoilAPictureOnlyLine() {
+		String in = flow("<fo:block docx4j-pstyle=\"\" line-height=\"10.349pt\">"
+				+ "<fo:external-graphic docx4j-anchor=\"none\" content-height=\"62.25pt\" content-width=\"40pt\" src=\"a.png\"/>"
+				+ "<fo:leader leader-pattern=\"space\" leader-length=\"1.7pt\"/>"
+				+ "<fo:inline id=\"bm\"/>"
+				+ "<fo:inline font-size=\"13.0pt\"><fo:external-graphic content-height=\"25.5pt\" content-width=\"123.13pt\" src=\"b.jpeg\"/></fo:inline>"
+				+ "</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue("the inline picture must size the line: " + out, out.contains("line-box=\"25.5pt\""));
+	}
+
+	/** A dot leader does paint, so it still disqualifies the line. */
+	@Test
+	public void aDotLeaderStillDisqualifiesAPictureLine() {
+		String in = flow("<fo:block docx4j-pstyle=\"\" line-height=\"10.349pt\">"
+				+ "<fo:leader leader-pattern=\"dots\" leader-length=\"20pt\"/>"
+				+ "<fo:external-graphic content-height=\"25.5pt\" content-width=\"123pt\" src=\"b.jpeg\"/>"
+				+ "</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertFalse("a painting leader is on the line: " + out, out.contains("line-box=\"25.5pt\""));
+	}
+
+	/**
+	 * letter-spacing is inherited, so the per-font inline's value (w:w character
+	 * scaling) must be the sum of it and the run's own (w:spacing), not a replacement.
+	 * Measured: a run of w:w="94" plus a w:spacing of -0.2pt ran 8.1pt long over a
+	 * 38-character line.
+	 */
+	@Test
+	public void letterSpacingOfNestedInlinesIsCumulative() {
+		String in = flow("<fo:block docx4j-pstyle=\"\"><fo:inline letter-spacing=\"-0.2pt\">"
+				+ "<fo:inline docx4j-font=\"Arial\" docx4j-scaled-spacing=\"1\""
+				+ " letter-spacing=\"-0.244pt\">All</fo:inline>"
+				+ "</fo:inline></fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue("the two must combine: " + out, out.contains("letter-spacing=\"-0.444pt\""));
+		assertFalse("the hint must be stripped: " + out, out.contains("docx4j-scaled-spacing"));
+
+		// but a value the exporter repeats on a nested inline (the same w:spacing, no
+		// w:w) carries no mark and must not be added to itself
+		String same = flow("<fo:block docx4j-pstyle=\"\"><fo:inline letter-spacing=\"0.2pt\">"
+				+ "<fo:inline docx4j-font=\"Arial\" letter-spacing=\"0.2pt\">All</fo:inline>"
+				+ "</fo:inline></fo:block>");
+		String outSame = WordLayoutFixups.apply(same, 15);
+		assertFalse("an unmarked nested value must be left alone: " + outSame,
+				outSame.contains("letter-spacing=\"0.4pt\""));
+	}
+
+	/** Word applies the first paragraph's space-before at the top of a header or
+	 *  footer, where XSL-FO's default conditionality discards it. */
+	@Test
+	public void headerKeepsSpaceBeforeAtItsStart() {
+		String in = "<fo:root " + NS + "><fo:page-sequence>"
+				+ "<fo:static-content flow-name=\"xsl-region-before\">"
+				+ "<fo:block space-before=\"3.3pt\" space-after=\"6pt\">Gezin</fo:block>"
+				+ "</fo:static-content>"
+				+ "<fo:flow flow-name=\"xsl-region-body\"><fo:block>b</fo:block></fo:flow>"
+				+ "</fo:page-sequence></fo:root>";
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("space-before must be retained at the header's start", 1,
+				count(out, "space-before.conditionality=\"retain\""));
+		assertEquals(1, count(out, "space-after.conditionality=\"retain\""));
+	}
+
+	/** Two paragraphs which state no w:pStyle are both of the default style, so
+	 *  w:contextualSpacing pairs them (the hint is "" for such a paragraph). */
+	@Test
+	public void contextualSpacingPairsTwoDefaultStyleParagraphs() {
+		String in = flow("<fo:block docx4j-pstyle=\"\" docx4j-contextual=\"1\" space-after=\"10pt\">one</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"\" docx4j-contextual=\"1\" space-before=\"10pt\">two</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		int one = out.indexOf(">one<"), two = out.indexOf(">two<");
+		assertTrue("one: after suppressed", out.substring(out.lastIndexOf("<fo:block", one), one).contains("space-after=\"0pt\""));
+		assertTrue("two: before suppressed", out.substring(out.lastIndexOf("<fo:block", two), two).contains("space-before=\"0pt\""));
+	}
+
+	/**
+	 * At a cell's edges w:contextualSpacing drops the space only where the cell holds a
+	 * single paragraph.  Where it holds several, there is no next paragraph for the
+	 * "same style" test to be about and Word applies the last one's space-after:
+	 * measured, Word's row pitch 25.0pt against the 19.9 suppressing it gave.
+	 */
+	@Test
+	public void contextualSpacingAtCellEdgesOnlyForASingleParagraphCell() {
+		String one = "<fo:table><fo:table-body><fo:table-row><fo:table-cell>"
+				+ "<fo:block docx4j-pstyle=\"L\" docx4j-contextual=\"1\" space-before=\"10pt\" space-after=\"10pt\">only</fo:block>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>";
+		String outOne = WordLayoutFixups.apply(flow(one), 15);
+		assertTrue("a single contextual paragraph loses both: " + outOne,
+				outOne.contains("space-before=\"0pt\"") && outOne.contains("space-after=\"0pt\""));
+
+		String many = "<fo:table><fo:table-body><fo:table-row><fo:table-cell>"
+				+ "<fo:block docx4j-pstyle=\"L\" docx4j-contextual=\"1\" space-before=\"10pt\" space-after=\"10pt\">a</fo:block>"
+				+ "<fo:block docx4j-pstyle=\"L\" docx4j-contextual=\"1\" space-before=\"10pt\" space-after=\"10pt\">b</fo:block>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>";
+		String outMany = WordLayoutFixups.apply(flow(many), 15);
+		int b = outMany.indexOf(">b<");
+		String last = outMany.substring(outMany.lastIndexOf("<fo:block", b), b);
+		assertTrue("the last of several keeps its space-after: " + last,
+				last.contains("space-after=\"10pt\""));
 	}
 }

@@ -305,6 +305,27 @@ that follows, spanning w:lines of its lines (w:dropCap="margin" hangs it in the 
 - a rotated table cell (w:textDirection) now gets the dimensions a turned reference area
 needs - the cell's content width and the row's height - so its text is painted inside the
 cell instead of past the page edge, and the row is not inflated
+- a table in a header or footer now takes its table style's w:pPr and w:rPr, as a table in
+the body does: a letterhead table's paragraphs were spaced by docDefaults, which made the
+header too tall on every page
+- a header or footer part holding one empty paragraph - which is what Word writes for one
+you have cleared - now reserves nothing, as Word reserves nothing for it: the header/footer
+distance alone no longer moves the body
+- an anchored (floating) drawing in a header or footer no longer counts towards that
+region's height: Word positions it out of the flow (set
+docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects=false for the old behaviour)
+- the first paragraph of a header or footer now keeps its space-before, which XSL FO's
+default conditionality discards at the start of a reference area
+- a text box's inset now puts its text inside the shape: an explicit start-indent of 0 on
+the positioned container threw the inset away and every line began on the border edge; and
+a text box at a negative horizontal offset is no longer clamped to the column edge
+- a paragraph whose only line content is one inline picture now takes the picture's line
+where a tab or an anchored picture shares the paragraph with it
+- w:spacing character spacing and w:w character scaling now combine on the same run: the
+scaling, which travels as letter-spacing on the inner font inline, replaced the spacing
+- w:contextualSpacing now pairs two paragraphs which state no w:pStyle (both are of the
+default style); at a cell's top and bottom edges it applies only where the cell holds a
+single paragraph, since Word applies the last of several paragraphs' space-after there
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's
@@ -329,6 +350,14 @@ it as part of toPDF/toFO (with page numbers) or toHTML (without)
 - StyleUtil: a w:tblPr/w:tblpPr whose only properties were an anchor or a *Spec was treated
 as empty, so a floating table lost its position when the effective table style was built
 - PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
+- StyleUtil: a paragraph's w:tabs now merge with the stops it inherits instead of replacing
+them (ECMA-376 17.3.1.38), and a w:val="clear" removes the inherited stop at that position
+rather than being copied through as a stop of its own
+- the tbl-p-style-fix preprocessing step (ConversionFeatures.PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX)
+now covers header and footer parts as well as the body
+- HeaderFooterPolicy.reservesNothing(part) reports whether a header or footer takes any
+space on the page: the part docx4j invents for w:titlePg / w:evenAndOddHeaders, or a real
+one holding a single empty paragraph
 - PropertyResolver: a paragraph whose only direct formatting is a w:framePr (a Word text
 frame) no longer loses it from getEffectivePPr
 - StyleUtil: w:framePr's attributes now inherit one at a time, so a paragraph stating only

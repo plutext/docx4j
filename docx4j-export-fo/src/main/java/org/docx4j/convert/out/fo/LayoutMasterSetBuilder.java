@@ -135,6 +135,7 @@ public class LayoutMasterSetBuilder {
 			hfPkg = (WordprocessingMLPackage) PartialDeepCopy.process(wordMLPackage, relationshipTypes);
 			
 			FOPAreaTreeHelper.trimContent(hfPkg);
+			FOPAreaTreeHelper.dropFloatingDrawingsFromHeadersFooters(hfPkg);
 			
 			FOSettings foSettings = (FOSettings)context.getConversionSettings();
 			org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg, useXSLT, foSettings);

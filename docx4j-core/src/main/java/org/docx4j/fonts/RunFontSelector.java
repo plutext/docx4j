@@ -532,6 +532,12 @@ public class RunFontSelector {
      *  @since 17.0.6 */
     private int currentScalingPct = 100;
 
+    /** On an FO span whose letter-spacing is w:w character scaling alone: the run's own
+     *  w:spacing (an ancestor inline's letter-spacing, which this one would otherwise
+     *  replace, the property being inherited) has still to be added to it.  Removed by
+     *  WordLayoutFixups.  @since 17.0.6 */
+    public static final String HINT_SCALED_LETTER_SPACING = "docx4j-scaled-spacing";
+
     /** whether the current run asks for ligatures (w14:ligatures); Word's default is none */
     private boolean currentLigatures;
 
@@ -670,9 +676,12 @@ public class RunFontSelector {
     		}
     		return;
     	}
-    	// the two share the one property, so a run which also carries w:spacing keeps
-    	// only the character spacing; Word applies both
-    	if (span.hasAttribute("letter-spacing")) return;
+    	// Word applies both w:spacing and w:w, and letter-spacing (the one XSL-FO
+    	// property they share) is inherited, so this value has to be added to whatever
+    	// the run's own inline carries rather than replacing it.  The span is marked so
+    	// that WordLayoutFixups.combineLetterSpacing, which sees the finished tree, can
+    	// do the addition; a span which already carries the run's spacing here is
+    	// summed directly.  @since 17.0.6
     	String text = span.getTextContent();
     	if (text==null || text.length()==0) return;
     	PhysicalFont pf = PhysicalFonts.get(family);
@@ -689,7 +698,23 @@ public class RunFontSelector {
     	if (width<=0) return;
     	double letterSpacing = width * factor / characters;
     	if (Math.abs(letterSpacing) < 0.001) return;
-    	span.setAttribute("letter-spacing", WordLineMetrics.format(letterSpacing));
+    	if (span.hasAttribute("letter-spacing")) {
+    		double own = 0;
+    		String v = span.getAttribute("letter-spacing");
+    		if (v.endsWith("pt")) {
+    			try {
+    				own = Double.parseDouble(v.substring(0, v.length()-2));
+    			} catch (NumberFormatException e) {
+    				return; // some other unit: leave the run's own spacing alone
+    			}
+    		} else {
+    			return;
+    		}
+    		span.setAttribute("letter-spacing", WordLineMetrics.format(own + letterSpacing));
+    	} else {
+    		span.setAttribute("letter-spacing", WordLineMetrics.format(letterSpacing));
+    		span.setAttribute(HINT_SCALED_LETTER_SPACING, "1");
+    	}
     }
 
     private static int kernValue(java.util.Map<Integer, java.util.Map<Integer, Integer>> kern, int a, int b) {
