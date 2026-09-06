@@ -1781,15 +1781,18 @@ public class XsltFOFunctions {
 	 * 90.0 and 108.0.
 	 *
 	 * <p>Only where a <em>style</em> brought the numbering.  A paragraph whose own
-	 * {@code w:numPr} names it keeps the level's indent, because the effective one is
-	 * not Word's merge for it: {@link org.docx4j.model.styles.StyleUtil}'s {@code w:ind}
-	 * merge takes the hanging indent whole from whichever {@code w:ind} states either of
-	 * {@code w:hanging} and {@code w:firstLine}, so a style stating only {@code w:left}
-	 * wipes the level's hanging indent.  Measured on two corpus documents whose bulleted
-	 * items carry a direct {@code w:numPr}: Word puts their wrapped lines at x=89.3, the
-	 * level's 198-twip hanging indent, and reading the effective indent for them drew
-	 * every one at the bullet's own 79.4 and cost the first 0.085 and the second 0.05 of
-	 * line parity.</p>
+	 * {@code w:numPr} names it keeps the level's indent, and the reason is <b>not</b> the
+	 * {@code w:ind} merge, which was 17.0.6's first reading of it:
+	 * {@link org.docx4j.model.styles.StyleUtil} merges two {@code w:ind} attribute by
+	 * attribute except that {@code w:firstLine} and {@code w:hanging} are one property, so
+	 * a {@code w:ind} stating only {@code w:left} leaves an inherited hanging indent
+	 * exactly where it was, which is Word's own rule ({@code IndMergeTest} records it).
+	 * Measured again with the glyph advances rounded (&#xa7;10), the two documents that
+	 * first motivated the gate no longer move, but two others of a second corpus fall
+	 * 0.068 and 0.053, and in one of them the effective indent is <em>right</em> for some
+	 * of the document's direct-{@code w:numPr} bullets (x=458.98 against Word's 458.83,
+	 * where the level's indent gives 522.66) and 361pt out for others.  What separates
+	 * the two is not yet known, so the gate stays.</p>
 	 *
 	 * @since 17.0.6
 	 */

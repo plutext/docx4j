@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.configuration.Configuration;
-import org.apache.fop.fonts.CustomFontCollection;
 import org.apache.fop.fonts.DefaultFontConfigurator;
 import org.apache.fop.fonts.EmbedFontInfo;
 import org.apache.fop.fonts.FontCollection;
@@ -74,7 +73,9 @@ public final class NonCachingPdfDocumentHandlerConfigurator
         List<EmbedFontInfo> embedFontInfoList =
                 fontConfigurator.configure(config.getFontInfoConfig());
 
-        fontCollections.add(new CustomFontCollection(
+        // CustomFontCollection, but with glyph advances rounded to the nearest
+        // 1/1000 em instead of truncated (CR-001; org.docx4j.fop.fonts)
+        fontCollections.add(new org.docx4j.fop.fonts.WordWidthsFontCollection(
                 fontManager.getResourceResolver(),
                 embedFontInfoList,
                 userAgent.isComplexScriptFeaturesEnabled()));

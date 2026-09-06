@@ -98,6 +98,42 @@ re-layout pass, so a line that has to be broken in what is left beside a wide
 2.11 throws the same on the same FO; the block it guards only reports the
 overflow. Keep the null check when re-deriving, and drop it if FOP fixes it.
 
+## Glyph advances (org.docx4j.fop.fonts)
+
+The other copy this module carries is a small one, and it is worth one line
+upstream. FOP's `OpenFont.convertTTFUnit2PDFUnit` converts a font's advance
+widths to 1/1000 em by integer division —
+
+```java
+ret = (n / upem) * 1000 + ((n % upem) * 1000) / upem;   // truncates
+```
+
+— so every advance is up to one unit short, and every line FOP measures is up to
+about 0.1% narrow: on 12pt Liberation Serif a 30-character line measures 139.164pt
+where the font's own metrics give 139.295, and a 74-character one 376.284 against
+376.559. Word measures with the font's exact advances, and writes *rounded* widths
+into its own PDFs' `/Widths` (CR-001 §10 has the measurement). **The upstream fix is
+that one expression, rounded**:
+
+```java
+ret = (int) (((long) n * 1000L + upem / 2) / upem);      // rounds
+```
+
+docx4j's own copy of that class (`org.docx4j.fonts.fop.fonts.truetype.OpenFont`, in
+docx4j-core) does exactly that, which is what its `TextMeasurer` and the table autofit
+pass measure with. FOP loads its own fonts with its own copy, so
+`org.docx4j.fop.fonts.WordGlyphWidths` corrects the width table of each font FOP
+loads, reading the same font file through docx4j's copy
+(`org.docx4j.fonts.GlyphAdvances`). `WordWidthsFontCollection` — FOP's
+`CustomFontCollection`, registering a `WordWidthsLazyFont` — installs it, and
+`NonCachingPdfDocumentHandlerConfigurator` uses it in place of FOP's. Because the
+correction goes into the array both FOP's line measure and the PDF renderer's
+`/Widths` read, the text layer stays consistent with the glyph positions; after it the
+`/Widths` docx4j writes for Liberation Serif are Word's own. It is applied when a font
+is first loaded, so a font the document never uses is never read.
+`docx4j.convert.out.fo.glyphWidths.round=false` turns it off. Drop the whole package if
+FOP fixes the conversion.
+
 The copy is tied to FOP 2.11 internals. When FOP is upgraded, re-derive it:
 copy the new `LineLayoutManager.java`, rename, extend `LineLayoutManager`,
 route `LineBreakPosition` and `AlignmentContext` construction through `LBP`,

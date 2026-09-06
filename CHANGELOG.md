@@ -8,6 +8,12 @@ Changes in Version 17.0.6
 --------------------------
 
 PDF via XSL FO:
+- text is measured with the font's rounded glyph advances, as Word measures it.  FOP
+truncates each advance to 1/1000 em, which ran every line up to 0.1% narrow and broke lines
+Word keeps; the PDF's /Widths are corrected with them, so they are now Word's own
+(docx4j.convert.out.fo.glyphWidths.round=false restores FOP's)
+- a vertically aligned section whose content ends with a table now aligns the empty
+paragraph after the table with it, as Word does
 - automatic hyphenation now follows the document's own settings and Word's rules:
 w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit, w:doNotHyphenateCaps and
 w:suppressAutoHyphens.  FOP still needs hyphenation patterns, which docx4j does not ship;

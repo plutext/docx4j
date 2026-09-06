@@ -155,6 +155,7 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.wordLayout.emergencyBreak` | `true` | A word too long for a line of its own is broken inside it, at the last character that fits, as Word breaks one (§4.3). `false` paints it whole, off the page, as FOP does. |
 | `docx4j.fonts.wordLineMetrics.deviceGrid` | `false` | `true` rounds a font's single line height to Word's 600 dpi layout grid, 1/600 inch, which is what Word does (§2.1) - but measured over the corpora it moves page breaks and costs more than the 0.02pt a line it wins. |
 | `docx4j.convert.out.fo.wordLayoutFixups` | `true` | The DOM pass over the generated FO (`WordLayoutFixups`): Word's spacing edge rules, the line-box attributes, exact-height rows, anchored pictures, text boxes. `false` gives the FO docx4j 17.0.4 produced. |
+| `docx4j.convert.out.fo.glyphWidths.round` | `true` | Glyph advances are rounded to the nearest 1/1000 em, as Word measures and as Word's own PDFs record them; FOP truncates them, which runs every line it measures up to 0.1% narrow ([§10](#s10advances)). `false` leaves FOP's width table - and the `/Widths` written from it - alone. |
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
 | `docx4j.convert.out.fo.tables.position` | `true` | A floating table's `w:tblpPr`: the grid edge at `tblpX`/`tblpXSpec`, and a page- or margin-anchored table which opens its section placed absolutely (§6.8). `false` lays every table out in the flow, as 17.0.5 did. |
@@ -471,14 +472,21 @@ carries both through `w:basedOn` as `w:ind w:left="227" w:hanging="227"`, Word d
 label at x=72.0 and the wrapped line at 83.3 where docx4j used the level's 720/360 and
 drew them at 90.0 and 108.0.
 
-A paragraph whose **own** `w:numPr` names the numbering keeps the level's indent, because
-the effective one is not Word's merge for it: `StyleUtil`'s `w:ind` merge takes the
-hanging indent whole from whichever `w:ind` states either of `w:hanging` and
-`w:firstLine`, so a style stating only `w:ind w:left` wipes the level's hanging indent.
-Measured on two corpus documents whose bulleted items carry a direct `w:numPr`: Word puts
-their wrapped lines at x=89.3, the level's 198-twip hanging indent, and reading the
-effective indent for them drew every one at the bullet's own 79.4 and cost the first
-0.085 and the second 0.05 of line parity. Fixing the merge is a rule of its own
+A paragraph whose **own** `w:numPr` names the numbering keeps the **level's** indent, and
+the reason is *not* the `w:ind` merge, which was 17.0.6's first reading of it. `StyleUtil`
+merges two `w:ind` attribute by attribute except that `w:firstLine` and `w:hanging` are one
+property, so a `w:ind` stating only `w:left` leaves an inherited hanging indent exactly
+where it was - which is Word's own rule, since its Paragraph dialog offers "Special: (none)
+/ First line / Hanging" rather than two boxes. `IndMergeTest` records it.
+
+What the direct case actually costs was measured again with the glyph advances rounded
+([§10](#s10advances)): the two documents that first motivated the gate (0.085 and 0.05 of
+line parity, their wrapped lines drawn at the bullet's own x=79.4 where Word puts them at
+89.3, the level's 198-twip hanging indent) no longer move at all, but two documents of a
+second corpus fall 0.068 and 0.053 - and in one of them the effective indent is **right**
+for some of the document's direct-`w:numPr` bullets (x=458.98 against Word's 458.83, where
+the level's indent draws them at 522.66) and 361pt out for others of the same document.
+What separates the two is not settled, so the gate stays
 (`XsltFOFunctions.numberingIndent`).
 
 **`w:numId 0` takes the level's `w:ind` with its label** (ECMA-376 17.9.18). That rule was
@@ -1932,15 +1940,14 @@ With **separate** borders (`w:tblCellSpacing`, §6.6) Word charges what FOP char
 same probe's three cell-spacing tables wrap all three rows in Word and here alike, which
 is two whole border widths. Nothing is given back there.
 
-<a id="s63guard"></a>**A tenth of a point is held back** where the width came from the
-grid, because FOP's line measure runs that much narrow: its glyph advances are truncated
-to 1/1000 em (`OpenFont.convertTTFUnit2PDFUnit` divides where it should round), which on
-a 30-character line of 12pt Liberation Serif loses 0.13pt - 139.164 against the font's own
-139.295 - and on a 74-character one 0.27pt. That is what `table-fixed`'s 150pt column
-measures: Word breaks a line whose advance is 139.295 in a measure of 139.2, and FOP,
-given the whole allowance back, keeps it. A content-sized column is exempt, because
-docx4j sized it from the same truncated advances. `WordLayoutFixups.MEASURE_GUARD_PT`;
-the truncation itself is §10's.
+<a id="s63guard"></a>**No allowance is held back.** Until 17.0.6 a tenth of a point was,
+where the width came from the grid, because FOP's line measure ran that much narrow - its
+glyph advances were truncated to 1/1000 em rather than rounded, which on a 30-character
+line of 12pt Liberation Serif loses 0.13pt and on a 74-character one 0.27pt. They are
+rounded now ([§10](#s10advances)), and with the whole allowance given back `table-fixed`,
+`table-cellspacing` and `table-cell-measure` all keep exactly the lines Word keeps: with
+the guard still in place the rounded measure broke three of `table-cell-measure`'s lines
+Word does not break (100% -> 97%), and without it all three probes are at 100%.
 
 A content-sized column also carries **two twips of slack**
 (`AbstractTableWriter.COLUMN_SLACK_TWIPS`), because the cell margin the FO writer emits is
@@ -2413,10 +2420,16 @@ space-before closes where the control does. `WordLayoutFixups.retainSpaceAfterIn
 marks the last block of an aligned flow `retain`; the probe's median dy went from 7.77 to
 -0.01.
 
-Not settled, and not implemented: where the section's last block is a **table**, Word's
-aligned content also holds the empty paragraph a table must be followed by - its three
-table sections sit 15.7pt higher than ours, 7.9pt for the centred one - but docx4j drops a
-paragraph whose only content is the `w:sectPr`, so there is nothing left here to retain.
+<a id="s75tbl"></a>**Where the section's last block is a table**, Word's aligned content
+also holds the empty paragraph a table must be followed by. docx4j drops a paragraph whose
+only content is the `w:sectPr` - Word gives it no line anywhere else, and adding one at the
+end of an unaligned flow only pushes the flow's last line off the page - so since 17.0.6 it
+is kept for a vertically aligned section whose content ends with a `w:tbl`, and nowhere
+else (`ConversionSectionWrapperFactory.closesAlignedTable`). On the probe's three table
+sections Word closed 15.69pt above us and 7.67pt on the centred one; with the paragraph's
+line back, 2.26 and 0.95. The `both` section does not move, since vertical justification
+takes the region's default alignment (above). What is left is that our empty block is
+13.4pt tall where Word's line is 15.7.
 
 <a id="s7gutter"></a>**The gutter.** `w:pgMar/@w:gutter` is the binding margin, and Word
 adds it to the **left** margin - to the top with `w:settings/w:gutterAtTop`, and to the
@@ -3142,17 +3155,41 @@ Worked around here, and worth knowing about:
   docx4j now writes; before it, zeroing a 10pt `space-after` on the last block of a
   centred flow moved the page not at all (first line y=281.7 before and after, against
   Word's 275.9), which had been read as evidence that Word did not count it either.
+<a id="s10advances"></a>
 - **Glyph advances are truncated to 1/1000 em, not rounded**, so every line FOP measures
   is up to about 0.1% narrow, and a line Word breaks by a hair is kept.
   `OpenFont.convertTTFUnit2PDFUnit` computes `(n / upem) * 1000 + ((n % upem) * 1000) /
   upem`, integer division throughout. Measured on 12pt Liberation Serif (2048 units per
   em): "incididunt ut labore et dolore" is 139.295pt by the font's own metrics and
-  139.164 by FOP's, and a 74-character line is 376.559 against 376.284. It is what
-  `table-fixed`'s 150pt column and `table-grid-pct`'s last unmatched line both come down
-  to, and §6.3's `MEASURE_GUARD_PT` holds a tenth of a point back from the border
-  allowance to cover it. Rounding instead would change the measure of every line of every
-  document - and the `/Widths` FOP writes with them - so it wants a corpus batch of its
-  own; it is the largest single measurement defect left.
+  139.164 by FOP's, and a 74-character line is 376.559 against 376.284.
+
+  **Word measures with the font's exact advances**, which is the measurement that settles
+  it. Word's own PDF of `line-auto` writes rounded widths in `/Widths` (Liberation
+  Serif's `e` is 443.85 units of 2048 and Word writes 444, `i` 277.83 and it writes 278,
+  `L` 610.84 and it writes 611 - all of which FOP wrote one lower) and then corrects the
+  accumulated position with `TJ` adjustments, so the glyph positions are recoverable:
+  over the ragged lines of `line-auto` and `break-ragged`, Word's advance for a whole
+  line tracks the exact metric sum to 0.003 - 0.13pt over 70 to 84 characters, where
+  truncation is 0.31 - 0.39pt short of it. Rounding is unbiased where truncation loses
+  half a unit per glyph.
+
+  **Fixed since 17.0.6**, in both copies. docx4j's own copy of that code rounds, so
+  `TextMeasurer` and the table autofit pass measure as Word does; FOP loads its fonts
+  with its own copy, so `org.docx4j.fop.fonts.WordGlyphWidths` corrects the width table
+  of each font FOP loads, from the same font file read through docx4j's
+  (`org.docx4j.fonts.GlyphAdvances`). The correction goes in at the one place both the
+  line measure and the `/Widths` the PDF renderer writes read from, so the text layer
+  stays consistent with the glyph positions: after it, the `/Widths` docx4j writes for
+  Liberation Serif are Word's own. `WordWidthsFontCollection` (a copy of FOP's
+  `CustomFontCollection`) registers a `LazyFont` which applies it when the font is first
+  loaded, so a font the document never uses is never read;
+  `docx4j.convert.out.fo.glyphWidths.round=false` turns it off. A font embedded in the
+  docx is corrected too. Upstream report candidate: one expression in `OpenFont`.
+
+  What it moved: the aggregates rose on all three corpora (mean line parity 0.8781 ->
+  0.8801, 0.8421 -> 0.8477 and 0.8738 -> 0.8802; lines matching Word exactly 86.6 ->
+  86.8%, 76.3 -> 77.0% and 88.5 -> 90.0%), 37 documents improved and 5 fell, and
+  §6.3's `MEASURE_GUARD_PT` went with it.
 - **A word has no intra-word break at all** (§4.3), so a token wider than the measure
   overruns the column instead of breaking where Word breaks it. Worked around by
   splitting such a word into per-character glyph mappings in the line manager.

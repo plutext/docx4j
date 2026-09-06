@@ -127,6 +127,76 @@ public class SectionVerticalAlignTest extends AbstractXSLFOTest {
 		checkSpaceAfterRetained(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
+	private static final String TABLE =
+			"<w:tbl><w:tblPr><w:tblW w:w=\"0\" w:type=\"auto\"/></w:tblPr>"
+			+ "<w:tblGrid><w:gridCol w:w=\"4675\"/></w:tblGrid>"
+			+ "<w:tr><w:tc><w:tcPr><w:tcW w:w=\"4675\" w:type=\"dxa\"/></w:tcPr>"
+			+ "<w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>";
+
+	/** a table, then the empty paragraph carrying the section break */
+	private org.w3c.dom.Document foTableThenBreak(String vAlign, int flags) throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:r><w:t>Title</w:t></w:r></w:p>"
+				+ TABLE
+				+ "<w:p><w:pPr><w:sectPr>"
+				+ (vAlign == null ? "" : "<w:vAlign w:val=\"" + vAlign + "\"/>")
+				+ "<w:pgSz w:w=\"11906\" w:h=\"16838\"/>"
+				+ "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\"/>"
+				+ "</w:sectPr></w:pPr></w:p>"
+				+ "<w:p><w:r><w:t>next section</w:t></w:r></w:p>"
+				+ "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/>"
+				+ "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		FOSettings foSettings = Docx4J.createFOSettings();
+		foSettings.setOpcPackage(pkg);
+		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, baos, flags);
+		return w3cDomDocumentFromByteArray(baos.toByteArray());
+	}
+
+	/** the local name of the last element child of the first fo:flow */
+	private String lastInFirstFlow(org.w3c.dom.Document doc) {
+		Element flow = (Element) doc.getElementsByTagNameNS(FO, "flow").item(0);
+		String name = "";
+		NodeList children = flow.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			if (children.item(i) instanceof Element) name = children.item(i).getLocalName();
+		}
+		return name;
+	}
+
+	/**
+	 * Where a vertically aligned section's content ends with a table, the empty
+	 * paragraph a table must be followed by is part of what Word aligns, even though
+	 * all it carries is the section break: measured on {@code section-valign-bottom},
+	 * whose three table sections Word closes 15.7pt higher than docx4j did, and 7.9pt -
+	 * half of it - for the centred one.  Everywhere else that paragraph is given no
+	 * line at all, and adding one only pushes the flow's last line off the page.
+	 */
+	private void checkParagraphAfterTable(int flags) throws Exception {
+		assertEquals("bottom-aligned: the paragraph after the table is aligned with it",
+				"block", lastInFirstFlow(foTableThenBreak("bottom", flags)));
+		assertEquals("centre-aligned too",
+				"block", lastInFirstFlow(foTableThenBreak("center", flags)));
+		assertEquals("an unaligned section renders nothing for it",
+				"table", lastInFirstFlow(foTableThenBreak(null, flags)));
+		assertEquals("nor does a top-aligned one",
+				"table", lastInFirstFlow(foTableThenBreak("top", flags)));
+	}
+
+	@Test
+	public void paragraphAfterTableIsAlignedVisitor() throws Exception {
+		checkParagraphAfterTable(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void paragraphAfterTableIsAlignedXslt() throws Exception {
+		checkParagraphAfterTable(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	@Test
 	public void visitor() throws Exception {
 		check(Docx4J.FLAG_NONE);

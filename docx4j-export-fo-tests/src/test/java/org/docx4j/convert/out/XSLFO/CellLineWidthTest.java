@@ -128,23 +128,25 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 	}
 
 	/**
-	 * A grid-sized cell gets the allowance too, less a tenth of a point.  Word charges
-	 * a collapsed border nothing at all against the text measure, in a grid-sized cell
-	 * as much as in a content-sized one (measured on {@code table-cell-measure}, whose
-	 * three collapsed tables of 0.5, 1.5 and 3pt borders wrap no row in Word); the
-	 * tenth of a point covers FOP's line measure, whose glyph advances are truncated
-	 * to 1/1000 em and so run that much narrow.
+	 * A grid-sized cell gets the whole allowance.  Word charges a collapsed border
+	 * nothing at all against the text measure, in a grid-sized cell as much as in a
+	 * content-sized one (measured on {@code table-cell-measure}, whose three collapsed
+	 * tables of 0.5, 1.5 and 3pt borders wrap no row in Word).  A tenth of a point of it
+	 * used to be held back to cover FOP's line measure, whose glyph advances were
+	 * truncated to 1/1000 em and so ran that much narrow; they are rounded since 17.0.6
+	 * ({@code org.docx4j.fop.fonts.WordGlyphWidths}), and with the guard still in place
+	 * the rounded measure broke three of that probe's lines Word does not break.
 	 */
 	@Test
-	public void aGridSizedCellGetsTheAllowanceLessTheMeasureGuard() throws Exception {
+	public void aGridSizedCellGetsTheWholeAllowance() throws Exception {
 		for (int flags : FLAGS) {
 			Element cell = firstCell(fo(pkg(true), flags));
 			double start = pt(cell.getAttribute("padding-left"));
 			double end = pt(cell.getAttribute("padding-right"));
 			assertEquals(flagName(flags) + ": the start padding places the text and must not move",
 					5.4, start, 0.05);
-			assertEquals(flagName(flags) + ": one whole 0.5pt border back, less the 0.1pt guard",
-					start - 0.4, end, 0.01);
+			assertEquals(flagName(flags) + ": one whole 0.5pt border back",
+					start - 0.5, end, 0.01);
 		}
 	}
 

@@ -290,7 +290,8 @@ public class ConversionSectionWrapperFactory {
 							// is all it is), and the empty block otherwise ends the flow -
 							// and where it does not fit, starts a page of its own carrying
 							// only the running header.
-							if (sectionContent.isEmpty() || !rendersNothing((org.docx4j.wml.P)o)) {
+							if (sectionContent.isEmpty() || !rendersNothing((org.docx4j.wml.P)o)
+									|| closesAlignedTable(ppr.getSectPr(), sectionContent)) {
 								sectionContent.add(o);
 							}
 							Merged merged = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
@@ -383,6 +384,27 @@ public class ConversionSectionWrapperFactory {
 	 *
 	 * @since 17.0.5
 	 */
+	/**
+	 * Where a <b>vertically aligned</b> section's content ends with a table, the empty
+	 * paragraph the table must be followed by is part of what Word aligns, even though
+	 * all it carries is the section break.
+	 *
+	 * <p>Measured on {@code section-valign-bottom}, whose three table sections Word
+	 * closes 15.7pt higher than docx4j did (7.9pt, half of it, for the centred one) -
+	 * one line of the paragraph after the table.  Everywhere else Word gives that
+	 * paragraph no line at all, so it is dropped as before: adding it at the end of an
+	 * unaligned flow only pushes the flow's last line off the page.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static boolean closesAlignedTable(SectPr sectPr, List<Object> sectionContent) {
+		if (sectPr == null || sectPr.getVAlign() == null || sectPr.getVAlign().getVal() == null) return false;
+		org.docx4j.wml.STVerticalJc vAlign = sectPr.getVAlign().getVal();
+		if (vAlign == org.docx4j.wml.STVerticalJc.TOP) return false;
+		if (sectionContent.isEmpty()) return false;
+		return XmlUtils.unwrap(sectionContent.get(sectionContent.size() - 1)) instanceof org.docx4j.wml.Tbl;
+	}
+
 	private static boolean rendersNothing(org.docx4j.wml.P p) {
 		if (p.getContent() == null) return true;
 		for (Object child : p.getContent()) {

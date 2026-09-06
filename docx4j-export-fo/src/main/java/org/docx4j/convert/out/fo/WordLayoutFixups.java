@@ -3307,12 +3307,6 @@ public final class WordLayoutFixups {
 	 *  (TableWriter.applyTableCustomAttributes). */
 	public static final String HINT_CONTENT_SIZED = "docx4j-content-sized";
 
-	/** How much narrower than the font's own metrics FOP's line measure runs, in
-	 *  points, on a line of a hundred characters or so: its glyph advances are
-	 *  truncated to 1/1000 em rather than rounded.  See {@link #cellLineWidth}.
-	 *  @since 17.0.6 */
-	private static final double MEASURE_GUARD_PT = 0.1;
-
 	/** On an fo:table whose start-indent took the compatibility-mode-14 grid-edge shift
 	 *  (TableWriter.applyStartIndent): the left cell margin it was moved back by.
 	 *  @since 17.0.6 */
@@ -3382,15 +3376,12 @@ public final class WordLayoutFixups {
 	 * charges: the same probe's three cell-spacing tables wrap all three rows in Word
 	 * and here alike, which is two whole border widths.  Nothing is given back there.
 	 *
-	 * <p>{@link #MEASURE_GUARD_PT} of the allowance is held back where the width came
-	 * from the grid rather than from the content, because FOP's line measure runs that
-	 * much narrow: its glyph advances are truncated to 1/1000 em
-	 * ({@code OpenFont.convertTTFUnit2PDFUnit} divides), which on a 30-character line
-	 * of 12pt Liberation Serif loses 0.13pt - 139.164 against the font's own 139.295 -
-	 * and on a 74-character one 0.27pt.  That is what {@code table-fixed}'s 150pt
-	 * column measures: Word breaks a line whose advance is 139.295 in a measure of
-	 * 139.2, and FOP would keep it.  A content-sized column is exempt because docx4j
-	 * sized it from the same truncated advances.
+	 * <p>Until 17.0.6 a tenth of a point of the allowance was held back where the width
+	 * came from the grid, because FOP's line measure ran that much narrow - its glyph
+	 * advances were truncated to 1/1000 em rather than rounded.  They are rounded now
+	 * ({@code org.docx4j.fop.fonts.WordGlyphWidths}), so the whole allowance is given
+	 * back, and {@code table-fixed}, {@code table-cellspacing} and
+	 * {@code table-cell-measure} all keep the lines Word keeps without it.
 	 *
 	 * @since 17.0.6
 	 */
@@ -3403,7 +3394,6 @@ public final class WordLayoutFixups {
 			if ("separate".equals(tbl.getAttribute("border-collapse"))) continue;
 			double give = 0.5 * (lengthPt(cell.getAttribute("border-left-width"))
 					+ lengthPt(cell.getAttribute("border-right-width")));
-			if (!"1".equals(tbl.getAttribute(HINT_CONTENT_SIZED))) give -= MEASURE_GUARD_PT;
 			if (give <= 0) continue;
 			// the end side is the one to take it from: the start padding places the text
 			String end = "rl-tb".equals(writingMode(cell)) ? "padding-left" : "padding-right";

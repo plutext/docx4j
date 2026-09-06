@@ -378,21 +378,43 @@ public abstract class OpenFont {
     /**
      * Convert from truetype unit to pdf unit based on the
      * unitsPerEm field in the "head" table
+     *
+     * docx4j: rounds to the nearest 1/1000 em.  Upstream FOP truncates -
+     * <code>(n / upem) * 1000 + ((n % upem) * 1000) / upem</code>, integer
+     * division throughout - which makes every advance up to one unit short and
+     * every line it measures up to about 0.1% narrow: on 12pt Liberation Serif
+     * (2048 units per em) a 30-character line is 139.164pt where the font's own
+     * metrics give 139.295, and a 74-character one 376.284 against 376.559.
+     * Word measures with the font's exact advances (measured against Word 365's
+     * own PDFs: the glyph positions on a ragged line track the exact metric sum
+     * to within 0.1pt over 70 characters, where truncation is 0.3pt short), and
+     * writes rounded widths into the PDF's <code>/Widths</code> (Liberation
+     * Serif's <code>e</code> is 443.85 units, and Word writes 444).
+     *
      * @param n truetype unit
      * @return pdf unit
      */
     public int convertTTFUnit2PDFUnit(int n) {
-        int ret;
-        if (n < 0) {
-            long rest1 = n % upem;
-            long storrest = 1000 * rest1;
-            long ledd2 = (storrest != 0 ? rest1 / storrest : 0);
-            ret = -((-1000 * n) / upem - (int)ledd2);
-        } else {
-            ret = (n / upem) * 1000 + ((n % upem) * 1000) / upem;
-        }
+        return convertUnit2PDFUnit(n, upem);
+    }
 
-        return ret;
+    /**
+     * The same conversion for a stated units-per-em, so it can be exercised without a
+     * font file.
+     *
+     * @param n truetype unit
+     * @param upem the font's units per em
+     * @return pdf unit
+     * @since 17.0.6
+     */
+    public static int convertUnit2PDFUnit(int n, int upem) {
+        if (upem <= 0) {
+            return n;
+        }
+        if (n < 0) {
+            return -(int) ((-(long) n * 1000L + upem / 2) / upem);
+        }
+        return (int) (((long) n * 1000L + upem / 2) / upem);
     }
 
     /**
