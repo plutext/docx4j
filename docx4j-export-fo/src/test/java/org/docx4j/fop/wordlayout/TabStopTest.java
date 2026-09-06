@@ -44,6 +44,15 @@ public class TabStopTest {
 	 *  them keeps it (@since 17.0.6) */
 	private static final String DOT_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
 
+	/** what tabToFO writes for a paragraph whose leader is a rule (w:leader hyphen,
+	 *  underscore or heavy) */
+	private static final String RULE_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"rule\"/>";
+
+	/** the same as DOT_TAB, with dots of 6pt rather than 7.2pt, so that a tab starting on a
+	 *  multiple of the text's own advance need not start on the dots' grid */
+	private static final String DOT_TAB_10 =
+			"<fo:leader docx4j:tab=\"1\" font-size=\"10pt\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
+
 	/** @param tabs docx4j:tabs, "pos:align:leader;..." in twips; "" for none
 	 *  @param ind  docx4j:tab-ind, "left:firstLine:separator" in twips */
 	private static String fo(String tabs, String ind, String blockAttrs, String content) {
@@ -148,6 +157,32 @@ public class TabStopTest {
 		return found;
 	}
 
+	/** The blank each dot leader opens with, in points: Word's dots sit on a grid fixed to
+	 *  the reference area, so the leader's area is that blank followed by the dots
+	 *  (LBP.PhasedLeaderArea, written by the area tree as an inlineparent of the two).
+	 *  A leader already on the grid is not wrapped and contributes nothing here. */
+	private static List<Double> leaderPhases(String fo) throws Exception {
+		List<Double> out = new ArrayList<>();
+		NodeList parents = area(fo).getElementsByTagName("inlineparent");
+		for (int i = 0; i < parents.getLength(); i++) {
+			List<Element> kids = childElements((Element) parents.item(i));
+			if (kids.size() == 2 && "space".equals(kids.get(0).getLocalName())
+					&& "inlineparent".equals(kids.get(1).getLocalName())) {
+				out.add(round(ipd(kids.get(0), "ipd")));
+			}
+		}
+		return out;
+	}
+
+	private static List<Element> childElements(Element el) {
+		List<Element> out = new ArrayList<>();
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			if (children.item(i) instanceof Element) out.add((Element) children.item(i));
+		}
+		return out;
+	}
+
 	private static List<String> list(String... names) {
 		List<String> out = new ArrayList<>();
 		for (String n : names) out.add(n);
@@ -226,11 +261,75 @@ public class TabStopTest {
 
 	@Test
 	public void aStopPastTheRightIndentIsStillHonoured() throws Exception {
-		// the only stop is at 9000 twips = 450pt, past the 400pt right edge: Word puts the
-		// text on it anyway and the line runs into the indent rather than wrapping
-		// (measured on a w:ind right=360 footer whose right stop is the full text width)
-		assertEquals(at(0, 450),
+		// the only stop is at 7600 twips = 380pt, past the 340pt right edge of a line with
+		// a 60pt right indent but inside the 400pt reference area: Word puts the text on it
+		// anyway and the line runs into the indent rather than wrapping (measured on a
+		// w:ind right=360 footer whose right stop is the full text width).  Past the
+		// reference area the stop is unreachable instead; see
+		// aTabThatReachesNoStopBreaksTheLine.  @since 17.0.6 (the indent)
+		assertEquals(at(0, 380),
+				wordStarts(fo("7600:left:none", "0:0:.", "end-indent=\"60pt\"", "abc" + TAB + "x")));
+	}
+
+	/**
+	 * A tab which can reach no stop before the end of the reference area breaks the line:
+	 * the text after it starts the next one, with the tab measured again from there.
+	 *
+	 * <p>Measured on the {@code tab-clamp-right} probe, whose left stop at 9355 twips is
+	 * 16.4pt past an A4 page's text column: Word writes "left stop 9355:" on one line and
+	 * "SHORT" on the next at the left indent, with an empty line between them holding the
+	 * tab (which reaches nothing from the line's start either).  On the
+	 * {@code tab-leader-trailing} probe the second of two trailing tabs reaches nothing,
+	 * and the "12" after it lands on the first stop the re-measured tab reaches on the
+	 * next line - 360 twips, x=90.05 with a 72pt margin, not the left indent.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aTabThatReachesNoStopBreaksTheLine() throws Exception {
+		// "abcdefghij" is 72pt; the only stop is at 450pt, past the 400pt edge, so the tab
+		// breaks the line and from its start reaches the 36pt one instead
+		assertEquals(at(0, 36),
+				wordStarts(fo("720:left:none;9000:left:none", "0:0:.", null,
+						"abcdefghij" + TAB + "x")));
+		// with no stop reachable from the line's start either, the tab has a line to
+		// itself and the text starts the one after it
+		assertEquals(at(0, 0),
 				wordStarts(fo("9000:left:none", "0:0:.", null, "abc" + TAB + "x")));
+	}
+
+	/**
+	 * Two tabs which reach no stop nonetheless keep their line.
+	 *
+	 * <p>A tab whose stop draws a <b>leader</b> fills to the end of the line: measured on a
+	 * corpus prospectus whose table-of-contents entries sit in cells 443pt wide against a
+	 * 12000-twip left stop with dots, 150pt past the cell, Word draws each entry's dots to
+	 * the cell's edge on the entry's own line.  A tab with <b>nothing after it</b> has
+	 * nothing to move to the next line: measured on a corpus header of a picture and seven
+	 * tabs whose last two reach nothing, where Word's header is shorter than one line of
+	 * that paragraph.  And where what precedes the tab does not itself fit, the ordinary
+	 * greedy break wins - measured on a corpus form whose cell holds
+	 * {@code 1.1<tab>Technische Freigabe erteilt<tab>o}, which Word breaks before
+	 * "erteilt".</p>
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aLeaderTabAndAnOverfullLineDoNotBreakAtTheTab() throws Exception {
+		// the stop at 450pt is past the 400pt edge, but its leader runs to the edge rather
+		// than taking the text to the next line (a rule leader, so that the leader's own
+		// area is one and wordStarts does not count its dots as words)
+		assertEquals(at(0, 450),
+				wordStarts(fo("9000:left:hyphen", "0:0:.", null, "abcdefghij" + RULE_TAB + "x")));
+		// 60 glyphs are 432pt, past the 400pt line before the tab is even reached: the tab
+		// does not break a line which is over-full already, and runs on to its stop
+		assertEquals(at(0, 450),
+				wordStarts(fo("9000:left:none", "0:0:.", null,
+						"abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij"
+						+ TAB + "x")));
+		// and a trailing tab has nothing to move: it stays on the line it is on
+		assertEquals(at(0),
+				wordStarts(fo("9000:left:none", "0:0:.", null, "abc" + TAB)));
 	}
 
 	/**
@@ -277,10 +376,10 @@ public class TabStopTest {
 	 */
 	@Test
 	public void aLineRunningPastTheEdgeIsNotMovedByJc() throws Exception {
-		assertEquals(at(0, 450),
-				wordStarts(fo("9000:left:none", "0:0:.", "text-align=\"center\"", "abc" + TAB + "x")));
-		assertEquals(at(0, 450),
-				wordStarts(fo("9000:left:none", "0:0:.", "text-align=\"end\"", "abc" + TAB + "x")));
+		assertEquals(at(0, 380), wordStarts(fo("7600:left:none", "0:0:.",
+				"end-indent=\"60pt\" text-align=\"center\"", "abc" + TAB + "x")));
+		assertEquals(at(0, 380), wordStarts(fo("7600:left:none", "0:0:.",
+				"end-indent=\"60pt\" text-align=\"end\"", "abc" + TAB + "x")));
 	}
 
 	/**
@@ -339,6 +438,33 @@ public class TabStopTest {
 	}
 
 	/**
+	 * Word draws a tab's leader dots on a grid fixed to the reference area, not from the
+	 * end of the text, so a dot leader opens with a blank of less than one dot.
+	 *
+	 * <p>Measured on the {@code tab-leader-trailing} and {@code tab-leader-resolved}
+	 * goldens, whose dots step 3.121pt: all seven leader runs across the two documents
+	 * begin and end on one grid anchored at the 72.02pt left margin (to within the 0.05pt
+	 * the PDF's rounding allows), and each holds exactly the grid cells falling inside its
+	 * tab.  {@code leader-alignment="reference-area"} is what XSL FO offers for it, but
+	 * FOP 2.11 honours that in its RTF renderer alone.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void aDotLeaderStartsOnWordsGrid() throws Exception {
+		// dots of 6pt (Courier 10pt) after "abc", which ends at 21.6pt: the first grid
+		// point at or after that is 24pt, so the leader opens with 2.4pt of blank
+		assertEquals(at(2.4),
+				leaderPhases(fo("4000:right:dot", "0:0:.", null, "abc" + DOT_TAB_10 + "wxyz")));
+		// "abcde" ends at 36pt, already on the grid: no blank, and the area is FOP's own
+		assertEquals(at(),
+				leaderPhases(fo("4000:right:dot", "0:0:.", null, "abcde" + DOT_TAB_10 + "wxyz")));
+		// the dots of a leader whose own advance divides the text's need none either
+		assertEquals(at(),
+				leaderPhases(fo("4000:right:dot", "0:0:.", null, "abc" + DOT_TAB + "wxyz")));
+	}
+
+	/**
 	 * Word clamps a centre, right or decimal stop so that the text it aligns ends on the
 	 * right indent: unlike a left stop, such a stop does not take the line past the
 	 * indent (measured on a centred footer whose centre stop would have taken its text
@@ -358,9 +484,10 @@ public class TabStopTest {
 				wordStarts(fo("9000:right:none", "0:0:.", null, "abc" + TAB + "wxyz")));
 		assertEquals(at(0, 400 - 5 * CHAR),
 				wordStarts(fo("9000:decimal:none", "0:0:.", null, "abc" + TAB + "12345")));
-		// a left stop past the edge is still honoured (§4.4), and one that fits is
+		// a left stop past the indent is still honoured (§4.4), and one that fits is
 		// unaffected by the clamp
-		assertEquals(at(0, 450), wordStarts(fo("9000:left:none", "0:0:.", null, "abc" + TAB + "x")));
+		assertEquals(at(0, 380),
+				wordStarts(fo("7600:left:none", "0:0:.", "end-indent=\"60pt\"", "abc" + TAB + "x")));
 		assertEquals(at(0, 200 - 4 * CHAR),
 				wordStarts(fo("4000:right:none", "0:0:.", null, "abc" + TAB + "wxyz")));
 	}

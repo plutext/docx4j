@@ -2173,7 +2173,20 @@ public final class WordLayoutFixups {
 			// followed by one, Word keeps that line, and dropping it lost a page.
 			// @since 17.0.6
 			if (next == null || !(isFo(next, "block") || takesNoSpace(next))) {
-				continue; // last thing in the flow: the break has nothing to move to; keep it
+				// Nothing left in this section for the break to move to.  Where another
+				// section follows, its own page-sequence starts a page anyway and Word
+				// does not add one for the break as well: measured on the tab-toc-pageref
+				// probe, whose third section ends "page break paragraph, section-break
+				// paragraph" - Word 6 pages, and the section after it opens page 4 at the
+				// top; ours had a page 4 holding nothing but that empty block.  At the end
+				// of the document the page is Word's (the page-blank probe ends in a page
+				// break and Word gives it a ninth page), so the break stays there.
+				// @since 17.0.6
+				if (next == null && empty.getParentNode() instanceof Element
+						&& isFo((Element) empty.getParentNode(), "flow") && sectionFollows(empty)) {
+					empty.removeAttribute("break-before");
+				}
+				continue;
 			}
 			if (!next.hasAttribute("break-before") || "auto".equals(next.getAttribute("break-before"))) {
 				next.setAttribute("break-before", "page");
@@ -2183,6 +2196,21 @@ public final class WordLayoutFixups {
 			}
 			empty.getParentNode().removeChild(empty);
 		}
+	}
+
+	/** Whether another fo:page-sequence - another Word section - follows the one this
+	 *  block is in, so that a page is started for it whatever this block asks for.
+	 *  @since 17.0.6 */
+	private static boolean sectionFollows(Element block) {
+		Node seq = block;
+		while (seq instanceof Element && !isFo((Element) seq, "page-sequence")) {
+			seq = seq.getParentNode();
+		}
+		if (!(seq instanceof Element)) return false;
+		for (Node n = seq.getNextSibling(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && isFo((Element) n, "page-sequence")) return true;
+		}
+		return false;
 	}
 
 	// ------------------------------------------------------------ 2. flow start

@@ -270,6 +270,7 @@ final class LBP {
 	 * @since 17.0.6
 	 */
 	static void setLeaderPattern(org.apache.fop.layoutmgr.LayoutManager lm, int kind) {
+		unphase(lm);
 		if (kind == LEADER_NONE) {
 			blankLeaderArea(lm);
 			return;
@@ -345,6 +346,96 @@ final class LBP {
 		filled.setBPD(dot.getBPD());
 		if (level >= 0) filled.setBidiLevel(level);
 		return filled;
+	}
+
+	// ---- Word's fixed dot grid ------------------------------------------------
+
+	/**
+	 * The area a tab's dot leader is drawn as, wrapping the blank Word's grid puts before
+	 * the first dot around FOP's own repeating area.  A {@code FilledArea} repeats its unit
+	 * from its own left edge, and {@code leader-alignment="reference-area"} - which is what
+	 * XSL FO offers for the grid - is inert in FOP 2.11's PDF output, so the phase is a
+	 * space of its own (see {@code WordLineLayoutManager.dotLeaderPhase}).
+	 *
+	 * <p>The dots, not this wrapper, are what a {@code TabPageNumberWidth} widens when the
+	 * page number after the tab resolves: the growth then reaches this area through
+	 * {@code notifyIPDVariation} and on to the line, so nothing else has to know.
+	 *
+	 * @since 17.0.6
+	 */
+	static final class PhasedLeaderArea extends org.apache.fop.area.inline.InlineParent {
+
+		private static final long serialVersionUID = 1L;
+
+		private final org.apache.fop.area.inline.InlineArea leader;
+
+		PhasedLeaderArea(int phase, org.apache.fop.area.inline.InlineArea leader) {
+			this.leader = leader;
+			org.apache.fop.area.inline.Space gap = new org.apache.fop.area.inline.Space();
+			gap.setIPD(phase);
+			gap.setBPD(leader.getBPD());
+			if (leader.getBidiLevel() >= 0) gap.setBidiLevel(leader.getBidiLevel());
+			addChildArea(gap);
+			addChildArea(leader);
+			setBPD(leader.getBPD());
+		}
+
+		org.apache.fop.area.inline.InlineArea getLeader() {
+			return leader;
+		}
+	}
+
+	/** Take a leader area back out of its {@link PhasedLeaderArea}, so that a line laid out
+	 *  again is not wrapped twice. */
+	private static void unphase(org.apache.fop.layoutmgr.LayoutManager lm) {
+		try {
+			Object area = LNLM_CUR_AREA.get(lm);
+			if (area instanceof PhasedLeaderArea) {
+				LNLM_CUR_AREA.set(lm, ((PhasedLeaderArea) area).getLeader());
+			}
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/** The width of the unit a dot leader repeats - Word's dot grid period - or 0 where
+	 *  this tab's area does not repeat one. */
+	static int leaderUnitWidth(org.apache.fop.layoutmgr.LayoutManager lm) {
+		try {
+			Object area = LNLM_CUR_AREA.get(lm);
+			if (area instanceof PhasedLeaderArea) area = ((PhasedLeaderArea) area).getLeader();
+			return (area instanceof org.apache.fop.area.inline.FilledArea)
+					? ((org.apache.fop.area.inline.FilledArea) area).getUnitWidth() : 0;
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/**
+	 * Start this tab's dot leader a blank of {@code phase} in, so that its dots fall on
+	 * Word's grid; {@code phase} 0 leaves the area as FOP built it.
+	 *
+	 * @param width the tab's whole width, of which the leader keeps what the blank leaves
+	 * @since 17.0.6
+	 */
+	static void setLeaderPhase(org.apache.fop.layoutmgr.LayoutManager lm, int phase, int width) {
+		unphase(lm);
+		if (phase <= 0 || phase >= width) return;
+		try {
+			Object area = LNLM_CUR_AREA.get(lm);
+			if (!(area instanceof org.apache.fop.area.inline.FilledArea)) return;
+			org.apache.fop.area.inline.InlineArea dots = (org.apache.fop.area.inline.InlineArea) area;
+			dots.setIPD(width - phase);
+			LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(phase, dots));
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/** The area a page number's width transfer must reach (WordLineLayoutManager's
+	 *  TabPageNumberWidth): the dots themselves, inside their phase wrapper. */
+	static org.apache.fop.area.inline.InlineArea phasedLeader(org.apache.fop.area.inline.InlineArea area) {
+		return (area instanceof PhasedLeaderArea) ? ((PhasedLeaderArea) area).getLeader() : area;
 	}
 
 	/** Replace a leader's area with a plain space of the same height: the tab reached

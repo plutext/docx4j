@@ -301,6 +301,20 @@ page-anchored table began with an empty line docx4j put 25.5pt above Word's firs
 It does not move to a **table**: measured on a corpus document whose hard break is followed
 by one, Word keeps that line, and dropping it lost a page of the nineteen.
 
+<a id="s33sect"></a>**A page break at the end of a section costs no page.** Where the break
+has nothing left in its section to move onto - the paragraph holding it and the
+section-break paragraph are the last two, which is what a document whose every section ends
+in a page break looks like - the section that follows opens a page anyway, and Word does not
+add one for the break as well. Measured on `tab-toc-pageref`, whose third section ends that
+way: Word's document is 6 pages and its fourth section opens page 4 at the top (its first
+heading at y=84.3, the same as on every other page), where docx4j had a blank page 4
+carrying nothing but the empty block the break had been moved onto, and 7 pages. At the end
+of the **document** the page is Word's own - `page-blank` ends in a page break and Word
+gives it a ninth page - so a break with no section after it keeps its page
+(`WordLayoutFixups.mergePageBreakParagraphs`). The blank page was not
+`force-page-count`: docx4j writes `no-force` on every page-sequence already, and Word's own
+`w:pgNumType w:start` restart (98 in that probe) costs no page either.
+
 **A page break inside a table** belongs to the table, not to the paragraph: Word takes a
 `w:pageBreakBefore` on the paragraph which opens the table, and ignores one anywhere else in
 it. Measured on two documents: a mail-merge template with sixteen of them spread over the
@@ -478,22 +492,73 @@ is right-aligned on it.
 
 Word cannot move backwards: a stop the text has already passed, and a right or centre stop
 whose text does not fit before it, advance nothing. A **left** stop beyond the paragraph's
-right indent is still honoured, and the line runs into the indent rather than wrapping.
+right indent - but still inside the text column - is honoured, and the line runs into the
+indent rather than wrapping.
 
-<a id="s44clamp"></a>A **centre, right or decimal** stop beyond it is **clamped** instead,
-so that the text it aligns ends on the right indent. Measured on a centred footer whose
+<a id="s44break"></a>**A tab which can reach no stop breaks the line.** Beyond the end of
+the **reference area** - the text column, or the table cell - there is no stop for a tab to
+reach, and Word ends the line there: the content after the tab starts the next line, with
+the tab measured again from that line's start. Measured on `tab-clamp-right`, whose left
+stop at 9355 twips is 539.75pt from the page's left edge, 16.4pt past an A4 page's 523.35pt
+text column: Word writes "left stop 9355:" on one line and "SHORT" on the next at x=72, and
+between them is a line of its own carrying nothing but the tab (which reaches nothing from
+the line's start either) - the paragraph's two visible lines are 22.6pt apart where its
+pitch is 9.1, and the trace shows the tab's glyph on a baseline 12.1pt below the first, in
+the tab run's own font (the run has no `w:rPr`, so Word draws it in the document default,
+11pt against the paragraph's 8pt). docx4j ran the text into the margin instead, to
+539.8..567.7. The same golden's **centre and right** lines do not break: such a stop is
+clamped at the right indent instead ([below](#s44clamp)).
+
+`tab-leader-trailing` measures where the tab lands after the break. Its third entry is
+"Two trailing tabs and a number`<tab><tab>`12" against stops `360:left;540:left;851:left;
+9000:right:dot`: the first tab reaches the dot stop and its dots end at 521.3, the second
+can reach nothing (the next default stop past 522.0 is 540pt, and the column ends at 523.35)
+and so breaks the line, and the "12" after it is drawn at **x=90.0** - not at the left
+indent, but on the 360-twip stop (72 + 18) which the re-measured tab reaches from the start
+of the new line. docx4j had broken a word earlier, before "number".
+
+Three kinds of tab do **not** break the line, each measured on a corpus document the rule
+first cost a page:
+
+- a tab whose stop draws a **leader** fills to the end of the line instead. A prospectus
+  whose table-of-contents entries sit in cells 443pt wide against a `12000:left:dot` stop
+  150pt past the cell: Word draws every entry's dots to the cell's edge (x=651.0) on the
+  entry's own line, and breaking there put the dots on a line of their own and cost a page
+  of the 23.
+- a tab with **nothing after it** has nothing to move to the next line. A header whose
+  paragraph is a picture and seven tabs, the last two of which reach nothing (the grid past
+  the last custom stop is 14.5pt past the header's width): Word's header is shorter than one
+  line of that paragraph, so it gives them no line; breaking made the header 38pt taller and
+  pushed the document onto a second page. Word *does* give a trailing tab a line in
+  `tab-leader-trailing`, whose second trailing tab starts 1.35pt short of the line's end
+  rather than on it - not enough of a difference to rest a rule on, so the probe keeps a
+  13.2pt gap there.
+- where what precedes the tab **does not itself fit**, the ordinary break wins: the line
+  breaks at the last opportunity that did and the tab is measured again on the line it lands
+  on. Measured on a form whose cell holds `1.1<tab>Technische Freigabe erteilt<tab>o`, which
+  Word breaks before "erteilt". (The allowance an earlier tab's stop past the available
+  width bought the line is not room for more text, so it does not count towards the fit.)
+
+In the line manager: a tab whose stop lies past `lineWidth + endIndent` commits the line
+before the tab's own Knuth elements, re-measures it, and - where it reaches nothing from
+there either - commits again after it, so the tab has a line to itself. A line holding only
+a tab takes its height from the block's font rather than from the leader's rule thickness
+(which is a hairline; a form whose section rules are leader-only paragraphs was 12.7pt above
+Word's lines at the top of its first page and is now 1.6pt below them).
+
+<a id="s44clamp"></a>A **centre, right or decimal** stop beyond the right indent is **clamped**
+instead, so that the text it aligns ends on the indent. Measured on a centred footer whose
 stops are `4252:clear;8504:clear;9355:center` on a 595.35pt page with 56.7pt margins - a
 481.95pt content width, and a centre stop at 467.75pt from the margin, so the centred text
 would end 11.3pt past the content edge: Word draws **one** line filling the width, 56.7 to
-538.6, where the unclamped tab overflowed and wrapped a fragment onto a second line (18
-Word pages against our 20, the footer region 18.4pt tall instead of 9.2). In the line
-manager: `width = min(stop - x - alignedOffset, lineWidth - x - followingWidth)`, and a
-clamped tab does not raise the overhang that lets a line run past the indent. A line
-holding a tab is **sized** from the left indent whatever the paragraph's `w:jc` - the stop
-a tab reaches is the same one it would reach on a left-aligned line - and the line, its
-tabs' widths counted in, is then **aligned as a whole** by the `w:jc`. Measured: six
-consecutive tabs advance 216pt in Word, where the former three-no-break-space stand-in
-advanced 54pt.
+538.6, where the unclamped tab overflowed and wrapped a fragment onto a second line (18 Word
+pages against our 20, the footer region 18.4pt tall instead of 9.2). In the line manager:
+`width = min(stop - x - alignedOffset, lineWidth - x - followingWidth)`, and a clamped tab does
+not raise the overhang that lets a line run past the indent. A line holding a tab is **sized**
+from the left indent whatever the paragraph's `w:jc` - the stop a tab reaches is the same one
+it would reach on a left-aligned line - and the line, its tabs' widths counted in, is then
+**aligned as a whole** by the `w:jc`. Measured: six consecutive tabs advance 216pt in Word,
+where the former three-no-break-space stand-in advanced 54pt.
 
 <a id="s44jc"></a>**Alignment.** Measured on the `tab-jc` probe (A4, Times New Roman 12pt,
 1in margins: a 451.3pt line, centred on 297.65, ending at 523.35). A trailing tab after
@@ -531,12 +596,22 @@ or, in the rare paragraph mixing dot and rule stops, builds the other kind
 (`LBP.setLeaderPattern`). `docx4j:tabs` on the block, which carries every stop's leader, is
 the single source of truth.
 
-**Where the dots start** is FOP's business and not Word's: Word's dots sit on a fixed grid
-(measured: the last dot of every line of one document's TOC is at x=524.35, and the runs
-are whole multiples of the 2.881pt period), while FOP begins each leader's dots at the
-leader's own left edge. `leader-alignment="reference-area"` is what XSL FO offers for it and
-docx4j now writes it, but FOP 2.11 reads that property in its RTF renderer alone, so it is
-inert in PDF output. Sub-dot-width phase, no effect on where anything else falls.
+<a id="s44phase"></a>**Where the dots start.** Word's leader dots sit on a **grid fixed to
+the reference area**, not on the end of the text: a leader holds exactly the whole grid
+cells which fall inside its tab, so it opens with a blank of between nothing and one dot and
+ends the same distance short of the stop. Measured on `tab-leader-trailing` and
+`tab-leader-resolved`, whose dots step 3.121pt: all seven leader runs across the two
+documents begin and end on one grid anchored at the 72.02pt left margin, to within the
+0.05pt the PDF's own rounding allows, and every run's dot count is exactly the cells inside
+it. So Word writes "1. Scope ....." where docx4j wrote "1. Scope.....".
+
+`leader-alignment="reference-area"` is what XSL FO offers for this and docx4j writes it, but
+FOP 2.11 reads the property in its RTF renderer alone (§10) and begins each leader's dots at
+the leader's own left edge. The phase is therefore applied in the line manager: a dot
+leader's area becomes a blank of `(-x) mod period` followed by FOP's own repeating area
+(`LBP.PhasedLeaderArea`; `period` is the `FilledArea`'s unit width, and `x` the tab's start
+from the left margin). The dots then land within 0.1pt of Word's on the corpus TOC lines
+measured. A **rule** leader is continuous and has no phase.
 
 **A leading tab** - one before any visible content on the line - is instead an `fo:leader`
 of fixed length to the next stop, computed at FO-generation time, so code blocks and
@@ -1596,8 +1671,8 @@ Worked around here, and worth knowing about:
 - **`ToUnicode` maps one character per CID**, so a ligature glyph with no cmap entry cannot
   be mapped back to the characters it stands for.
 - **`leader-alignment` is ignored** outside the RTF renderer, so a dot leader's dots start
-  at the leader's own left edge rather than on a grid shared by the lines of a block, as
-  Word's do ([§4.4](#s44leader)). Sub-dot-width, and nothing else moves with them.
+  at the leader's own left edge rather than on the grid Word puts them on. docx4j writes the
+  property and applies the phase itself, in the line manager ([§4.4](#s44phase)).
 
 Limitations that remain in docx4j's output:
 

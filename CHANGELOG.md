@@ -81,6 +81,14 @@ gives up when it resolves is now taken from the tab
 - a PAGEREF or table-of-contents field whose bookmark the document no longer contains now
 keeps the result Word cached for it, in PDF and HTML alike; the reference resolved to
 nothing and the page number was painted as nothing at all
+- a tab which can reach no stop before the end of the text column now breaks the line, as
+Word breaks it, and is measured again from the start of the next one; the text after it used
+to run into the margin (a stop beyond the paragraph's right indent is still honoured, and a
+tab whose stop draws a leader still fills the line)
+- a tab's leader dots now sit on the grid Word draws them on, fixed to the reference area,
+so a dot leader opens with a gap of less than one dot instead of starting on the text
+- a page break at the end of a section no longer costs a blank page: the section which
+follows starts one anyway.  A break at the end of the document keeps its page, as in Word
 - a cell in a table whose columns docx4j sized from their content now fits the line that
 sized the column, instead of re-breaking it: Word's fit width is the column less the cell
 margins, the borders not taken off

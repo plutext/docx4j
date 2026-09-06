@@ -582,10 +582,123 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 super.handleGlueAt(glue, position, previousIsBox, allowedBreaks);
                 return;
             }
+            // Word does not break a line at a tab whose stop it can reach, but a tab that
+            // can reach none breaks it (see noStopReachable)
+            boolean unreachable = noStopReachable(position, tab);
+            if (unreachable && totalWidth > active.totalWidth) {
+                // (with nothing before it on the line there is no break to make: the tab
+                // would reach no more from a line of its own)
+                int breakAt = leaderFirstIndex(position, tab) - 1;
+                // and the tab's break gives way to the ordinary one: where what precedes
+                // the tab does not itself fit, the line breaks at the last opportunity
+                // that did (the greedy loop's own, at the next legal break past the tab)
+                // and the tab is measured again on the line it lands on
+                if (breakAt >= active.position && fitsAt(breakAt)) {
+                    commitAt(breakAt);          // the tab starts the next line
+                    unreachable = noStopReachable(position, tab);   // measured again there
+                } else {
+                    unreachable = false;
+                }
+            }
             int width = tabWidth(position, tab);
             LBP.setLeafIPD(tab, width);
             par.set(position, new KnuthGlue(width, 0, 0, glue.getPosition(), false));
             totalWidth += width;
+            if (unreachable) {
+                // no stop from the start of the line either: the tab has that line to
+                // itself and what follows begins the next one
+                commitAt(leaderLastIndex(position, tab));
+            }
+        }
+
+        /**
+         * Whether the tab at this element index can reach no tab stop on what is left of
+         * the line, which is where Word breaks it.
+         *
+         * <p>Measured on the {@code tab-clamp-right} probe (A4, 1in margins, so a text
+         * column ending at 523.35pt): a left stop at 9355 twips, 539.75pt from the page's
+         * left edge, is past the column, and Word puts the text before the tab on one line
+         * and the text after it on the next, at the left indent, with the tab re-measured
+         * from there - and, where it reaches nothing from there either, on a line of its
+         * own (the empty line the golden shows between them, 13.4pt of the tab run's own
+         * font).  On the {@code tab-leader-trailing} probe the second of two trailing tabs
+         * cannot reach a stop, so "12" goes to the next line and lands on the first stop
+         * (360 twips = 90.05pt) the re-measured tab reaches there.  Beyond the paragraph's
+         * right <em>indent</em> but inside the column the stop is still honoured and the
+         * line runs into the indent (see {@link #tabOverhang}); the edge of the reference
+         * area - the text column, or the table cell - is where Word gives up.
+         *
+         * <p>Only a left stop: a centre, right or decimal stop past the column is clamped
+         * instead, so that the text it aligns ends on the right indent (§4.4), which the
+         * same golden shows on its centre and right lines.
+         *
+         * @since 17.0.6
+         */
+        private boolean noStopReachable(int position, LayoutManager leader) {
+            if (isPtabRight(leader)) return false;
+            int x = totalWidth - active.totalWidth;      // from the line's start
+            int stop = nextTabStop(tabLeftMpt + x);      // sets stopAlignment/stopLeader
+            if (stopAlignment != TAB_LEFT) return false;
+            // nor a stop which draws a leader: that runs to the end of the line instead.
+            // Measured on a corpus prospectus whose table-of-contents entries sit in cells
+            // 443pt wide against a 12000-twip left stop with dots, 150pt past the cell:
+            // Word draws each entry's dots to the cell's edge on the entry's own line
+            // (x=651.0 on every one of them), where breaking there put the dots on a line
+            // of their own and cost a page of 23.
+            if (stopLeader != LBP.LEADER_NONE) return false;
+            // nor a tab with nothing after it to move to the next line: measured on a
+            // corpus header whose paragraph is an image and seven tabs, the last two of
+            // which reach nothing (the grid past the last custom stop is 14.5pt past the
+            // header's width), Word's header is shorter than one line of it, so it gives
+            // them no line of their own; breaking there made the header 38pt taller and
+            // pushed the document onto a second page.
+            if (!hasFollowingContent(position)) return false;
+            // the reference area's end edge, from the line's start: the available width
+            // plus the paragraph's right indent
+            return (stop - tabLeftMpt) > getLineWidth() + endIndentMpt();
+        }
+
+        /** Whether anything is left of the paragraph after this tab for a break at it to
+         *  move to the next line. */
+        private boolean hasFollowingContent(int position) {
+            for (int i = position + 1; i < par.size(); i++) {
+                KnuthElement e = getElement(i);
+                if (e.isPenalty() && e.isForcedBreak()) break;
+                if (e.isBox() && !e.isAuxiliary() && e.getWidth() > 0) return true;
+            }
+            return false;
+        }
+
+        /** Whether the line would still fit if it ended at this element.  The allowance an
+         *  earlier tab's stop past the available width bought the line (tabOverhang) is not
+         *  room for more text, so it does not count here. */
+        private boolean fitsAt(int idx) {
+            int difference = computeDifference(active, getElement(idx), idx) - tabOverhang;
+            return difference >= 0 || fitsByShrinkingSpaces(idx, difference);
+        }
+
+        /** Commit the line ending at this element, as the greedy loop's own breaks do. */
+        private void commitAt(int idx) {
+            int difference = computeDifference(active, getElement(idx), idx);
+            commit(idx, difference, computeAdjustmentRatio(active, difference),
+                    totalShrink - active.totalShrink, totalStretch - active.totalStretch,
+                    totalWidth, totalStretch, totalShrink, false);
+        }
+
+        /** The first element of the four an fo:leader contributes (an auxiliary box, an
+         *  infinite penalty, the glue, another auxiliary box): breaking before the glue
+         *  alone would leave the leader's area to be added to both lines. */
+        private int leaderFirstIndex(int position, LayoutManager leader) {
+            int i = position;
+            while (i > 0 && elementLM(getElement(i - 1)) == leader) i--;
+            return i;
+        }
+
+        /** The last of the elements an fo:leader contributes; see {@link #leaderFirstIndex}. */
+        private int leaderLastIndex(int position, LayoutManager leader) {
+            int i = position;
+            while (i + 1 < par.size() && elementLM(getElement(i + 1)) == leader) i++;
+            return i;
         }
 
         /**
@@ -643,6 +756,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
             // the FO could not know which stop the tab would reach, so the leader of the
             // stop it did reach is set on the area now (blanked where that stop has none)
             LBP.setLeaderPattern(leader, stopLeader);
+            // Word's leader dots sit on a fixed grid, so a dot leader opens with a gap of
+            // less than one dot (see dotLeaderPhase)
+            LBP.setLeaderPhase(leader, stopLeader == LBP.LEADER_DOTS
+                    ? dotLeaderPhase(tabLeftMpt + x, leader, width) : 0, width);
             // a right/centre/decimal stop measured an unresolved page number as FOP's
             // "MMM" placeholder; the width it loses when it resolves is the tab's, not
             // the line's (see pageNumberTabs)
@@ -1000,6 +1117,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 for (int j = firstElementIndex; j <= lastElementIndex; j++) {
                     KnuthElement element = (KnuthElement) inlineIterator.next();
                     if (!(element instanceof KnuthInlineBox)) continue;
+                    // an fo:leader's own boxes carry the rule thickness, not a font's
+                    // height: a line Word broke at a tab and which holds that tab alone
+                    // takes its height from the block's font, not from a hairline
+                    // (@since 17.0.6)
+                    if (elementLM(element) instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager) continue;
                     AlignmentContext ac = ((KnuthInlineBox) element).getAlignmentContext();
                     if (ac == null || lastAC == ac) continue;
                     lastAC = ac;
@@ -1352,6 +1474,65 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return (x / tabDefaultMpt + 1) * tabDefaultMpt;
     }
 
+    /**
+     * The blank a dot leader opens with, so that its dots land on Word's grid.
+     *
+     * <p>Word draws a tab's leader dots on a grid fixed to the reference area rather than
+     * from the end of the text: measured on the {@code tab-leader-trailing} and
+     * {@code tab-leader-resolved} goldens, whose dots step 3.121pt, every one of the seven
+     * leader runs across the two documents begins and ends on the same grid, anchored
+     * 71.80pt from the page's left edge - the 72.02pt left margin, to within the 0.05pt the
+     * PDF's own rounding allows - and each holds exactly the whole cells of that grid which
+     * fall inside the tab.  So a leader opens with a gap of between nothing and one dot
+     * ("1. Scope ....." in the golden against our "1. Scope.....") and ends short of the
+     * stop by the same kind of remainder.
+     *
+     * <p>{@code leader-alignment="reference-area"} is the XSL FO property for exactly this
+     * and docx4j writes it, but FOP 2.11 reads it in its RTF renderer alone (§10), so the
+     * phase is applied here: the leader area becomes a blank of this width followed by the
+     * dots, which FOP then starts on the grid.
+     *
+     * @param from the tab's start, in millipoints from the left margin
+     * @return the blank's width in millipoints, 0 where the dots already start on the grid
+     * @since 17.0.6
+     */
+    private int dotLeaderPhase(int from, LayoutManager leader, int width) {
+        int period = LBP.leaderUnitWidth(leader);
+        if (period <= 0 || width <= period) return 0;
+        int phase = (period - (from % period)) % period;
+        return phase < width ? phase : 0;
+    }
+
+    /**
+     * The paragraph's right indent in millipoints: the distance from the end of a line to
+     * the end edge of the reference area (the text column, or the table cell).  FOP's
+     * end-indent is measured from that edge and the line width is what is left after both
+     * indents, so their sum is that distance.  A tab stop inside it is still honoured
+     * (the line breaking algorithm's tabOverhang); one past it reaches nothing
+     * ({@code noStopReachable}).
+     *
+     * @since 17.0.6
+     */
+    private int endIndentMpt() {
+        try {
+            if (fobj == null || fobj.getCommonMarginBlock() == null
+                    || fobj.getCommonMarginBlock().endIndent == null) return 0;
+            int v = fobj.getCommonMarginBlock().endIndent.getValue(this);
+            return v > 0 ? v : 0;
+        } catch (RuntimeException e) {
+            return 0;
+        }
+    }
+
+    /** The leaf layout manager a Knuth element came from, or null. */
+    private static LayoutManager elementLM(KnuthElement e) {
+        Position leaf = e.getPosition();
+        while (leaf != null && !(leaf instanceof LeafPosition)) {
+            leaf = leaf.getPosition();
+        }
+        return leaf == null ? null : leaf.getLM();
+    }
+
     /** The layout manager of the fo:leader standing in for a w:tab, or null.  The
      *  leader is usually inside the run's fo:inline, whose manager wraps its positions,
      *  so unwrap to the leaf as fixLetterSpaces does. */
@@ -1453,7 +1634,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
             if (!(o instanceof KnuthGlue)) continue;
             LayoutManager lm = tabLeader((KnuthGlue) o);
             if (lm == null || !pageNumberTabs.contains(lm)) continue;
-            InlineArea tabArea = LBP.leafArea(lm);
+            // a dot leader is wrapped in the blank Word's grid starts it with: the dots
+            // themselves are what has to grow, and the wrapper and the line follow
+            InlineArea tabArea = LBP.phasedLeader(LBP.leafArea(lm));
             if (tabArea == null) continue;
             int at = -1;
             for (int j = 0; j < flat.size(); j++) {
@@ -2669,7 +2852,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
         KnuthElement lastElement = (KnuthElement) seqIterator.next();
         // the TLM which created the last KnuthElement in this line
         LayoutManager lastLM = lastElement.getLayoutManager();
-        if (lastElement.isGlue()) {
+        if (lastElement.isGlue() && tabLeader((KnuthGlue) lastElement) == null) {
+            // (a line ending in a tab keeps it: the tab is not a space, and dropping it
+            // would take the leader of a line broken at the tab after it - @since 17.0.6)
             // Remove trailing spaces if allowed so
             if (whiteSpaceTreament == EN_IGNORE_IF_SURROUNDING_LINEFEED
                     || whiteSpaceTreament == EN_IGNORE
@@ -2690,7 +2875,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
             // ignore KnuthGlue and KnuthPenalty objects
             // at the beginning of the line
             seqIterator = seq.listIterator(startElementIndex);
-            while (seqIterator.hasNext() && !((KnuthElement) seqIterator.next()).isBox()) {
+            while (seqIterator.hasNext()) {
+                KnuthElement e = (KnuthElement) seqIterator.next();
+                if (e.isBox()) break;
+                // a line Word broke at a tab begins with that tab, which is measured from
+                // the line's start and is not a space to be dropped (@since 17.0.6)
+                if (e.isGlue() && tabLeader((KnuthGlue) e) != null) break;
                 startElementIndex++;
             }
         }
