@@ -36,4 +36,19 @@ public interface ConversionImageHandler {
 	 * @throws Docx4JException this exception will be logged, but not propagated
 	 */
 	public String handleImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) throws Docx4JException;
+
+	/**
+	 * Whether this handler embeds the image in the output document (an RFC 2397
+	 * data URI, a cid: reference) rather than writing a file beside it.
+	 *
+	 * <p>It decides how a Windows metafile is represented in HTML: a handler which
+	 * embeds gets an inline {@code <svg>} - vectors, no extra round trip - and one
+	 * which writes files gets a PNG it can write like any other picture (CR-011).
+	 * Defaults to false, so a third-party handler behaves as it did.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	default boolean isInline() {
+		return false;
+	}
 }

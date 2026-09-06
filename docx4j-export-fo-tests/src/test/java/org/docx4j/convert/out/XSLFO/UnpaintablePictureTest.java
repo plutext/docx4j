@@ -30,9 +30,13 @@ import org.w3c.dom.NodeList;
  * <p>Two kinds of picture hit that in a real corpus: EMF, which FOP can size but not
  * paint (there is no EMF loader for PDF output), and parts whose bytes are no image at
  * all - Word stores the web server's 404 page as the picture when a linked picture
- * cannot be fetched, and one document in 157 had eighteen of those.  Both are now
+ * cannot be fetched, and one document in 157 had eighteen of those.  Such a picture is
  * pointed at a transparent 1x1 PNG and scaled non-uniformly, so the extent the
  * document declares is reserved, which is what the layout needs.</p>
+ *
+ * <p>Since 17.0.6 a metafile is <em>drawn</em> instead, by docx4j itself (CR-011), so
+ * the reservation is now the fallback for one that cannot be parsed - and for bytes
+ * which are no image at all, which is what it was really for.</p>
  *
  * <p>The formats FOP does paint with what docx4j depends on are also checked here:
  * PNG, JPEG (baseline, progressive and CMYK), GIF, BMP and TIFF all reach the area
@@ -197,14 +201,34 @@ public class UnpaintablePictureTest extends AbstractXSLFOTest {
 		assertEquals("75pt", g.getAttribute("content-height"));
 	}
 
-	@Test
-	public void emfSpaceIsReservedVisitor() throws Exception {
-		spaceIsReserved(emf(), ContentTypes.IMAGE_EMF, "emf", Docx4J.FLAG_NONE);
+	/**
+	 * Since 17.0.6 an EMF is drawn rather than reserved: docx4j replays it onto Batik's
+	 * SVGGraphics2D and hands FOP the SVG (CR-011 phase 2).  This one is a valid but
+	 * empty EMF - a header and EMR_EOF, nothing drawn - so what it proves is that the
+	 * frame the document declares survives the change; the pictures which actually
+	 * contain something are in MetafilePictureTest.  The reservation below is now
+	 * reached only by a metafile the renderer cannot parse at all.
+	 */
+	private void emfIsDrawnAsSvg(int flags) throws Exception {
+		org.w3c.dom.Document doc = fo(pkg(emf(), ContentTypes.IMAGE_EMF, "emf"), flags);
+		assertEquals("the EMF should be drawn, not left for FOP to fail on",
+				0, doc.getElementsByTagNameNS(FO, "external-graphic").getLength());
+		NodeList nl = doc.getElementsByTagNameNS(FO, "instream-foreign-object");
+		assertEquals("the EMF should be one fo:instream-foreign-object", 1, nl.getLength());
+		Element g = (Element)nl.item(0);
+		assertEquals("svg", ((Element)g.getFirstChild()).getLocalName());
+		assertEquals("100pt", g.getAttribute("content-width"));
+		assertEquals("75pt", g.getAttribute("content-height"));
 	}
 
 	@Test
-	public void emfSpaceIsReservedXslt() throws Exception {
-		spaceIsReserved(emf(), ContentTypes.IMAGE_EMF, "emf", Docx4J.FLAG_EXPORT_PREFER_XSL);
+	public void emfIsDrawnAsSvgVisitor() throws Exception {
+		emfIsDrawnAsSvg(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void emfIsDrawnAsSvgXslt() throws Exception {
+		emfIsDrawnAsSvg(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	@Test
@@ -220,7 +244,8 @@ public class UnpaintablePictureTest extends AbstractXSLFOTest {
 	/** The point of it: the declared extent is on the page, so nothing below moves up. */
 	@Test
 	public void theReservedSpaceIsOnThePage() throws Exception {
-		org.w3c.dom.Document areaTree = areaTree(pkg(emf(), ContentTypes.IMAGE_EMF, "emf"), Docx4J.FLAG_NONE);
+		org.w3c.dom.Document areaTree = areaTree(
+				pkg(notAnImage(), ContentTypes.IMAGE_PNG, "png"), Docx4J.FLAG_NONE);
 		Element viewport = null;
 		NodeList nl = areaTree.getElementsByTagName("viewport");
 		for (int i = 0; i < nl.getLength(); i++) {

@@ -181,6 +181,52 @@
 		</dependency>
 		-->
 
+		<!-- batik-gvt: Batik's graphics vector tree, which batik-bridge builds from an
+		     SVG DOM and FOP's PDFSVGHandler then paints.  It was excluded from both
+		     batik-bridge and fop (below) when the module path was first made to work,
+		     and nothing noticed because until 17.0.6 docx4j never put SVG in its FO -
+		     with it missing, FOP silently drew nothing at all for an
+		     fo:instream-foreign-object holding SVG (measured: a red rectangle and a
+		     line of text came out as a blank page).  Declared here rather than by
+		     dropping the exclusions, so the version stays pinned; it has no split
+		     packages and its own Automatic-Module-Name.  CR-011. -->
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-gvt</artifactId>
+			<version>1.19</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis-ext</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- batik-svggen: Batik's SVGGraphics2D, which docx4j records a WMF / EMF /
+		     EMF+ picture onto to produce the SVG that goes into
+		     fo:instream-foreign-object, and into HTML as an inline <svg>
+		     (BatikMetafileSvgProvider, CR-011).  Declared rather than relied on
+		     transitively, since docx4j compiles against it. -->
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-svggen</artifactId>
+			<version>1.19</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis-ext</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 		<!-- Need to declare this explicitly, since fop 2.11 doesn't; it pulls in lots of batik deps -->
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>

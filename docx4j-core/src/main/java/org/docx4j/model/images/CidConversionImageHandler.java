@@ -133,6 +133,14 @@ public class CidConversionImageHandler extends AbstractConversionImageHandler {
 		throw new Docx4JException("CidConversionImageHandler never stores images");
 	}
 
+	/** False, although nothing is written to disk: mail clients widely strip an
+	 *  inline &lt;svg&gt;, so a WMF/EMF picture is better attached as a PNG.
+	 *  @since 17.0.6 */
+	@Override
+	public boolean isInline() {
+		return false;
+	}
+
 	/** The images referenced so far, one per distinct image, in the order
 	 *  first encountered */
 	public List<CidImage> getImages() {

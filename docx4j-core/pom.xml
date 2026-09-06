@@ -134,12 +134,6 @@
                             org.xml.sax.helpers,
                             antlr,
                             antlr.*,
-                            net.arnx.wmf2svg,
-                            net.arnx.wmf2svg.gdi,
-                            net.arnx.wmf2svg.gdi.svg,
-                            net.arnx.wmf2svg.gdi.wmf,
-                            net.arnx.wmf2svg.io,
-                            net.arnx.wmf2svg.util,
                             com.thedeanda.lorem
                         </Import-Package>
                         <Export-Package>
@@ -356,11 +350,9 @@
 	</dependency>
 	-->
 	
-	<dependency>
-	    <groupId>net.arnx</groupId>
-	    <artifactId>wmf2svg</artifactId>
-	    <version>0.10.6</version>
-	</dependency>
+	<!-- wmf2svg was dropped in 17.0.6 (CR-011): docx4j now draws WMF, EMF and EMF+
+	     itself, with the repackaged Apache POI HWMF/HEMF code in
+	     org.docx4j.org.apache.poi.h{w,e}mf.  wmf2svg had no EMF support. -->
 
 		<dependency>
     		<groupId>org.antlr</groupId>

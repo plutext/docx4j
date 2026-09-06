@@ -14,8 +14,16 @@
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
     xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
     version="1.0"
         exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
+
+        <!-- xmlns:xlink is deliberate, and must not be added to
+             exclude-result-prefixes: it puts the declaration on the <html> element,
+             which is what keeps a metafile picture's inline SVG well-formed.  Batik
+             writes an embedded bitmap as <image xlink:href="data:..."> and reads back
+             only that attribute, and Xalan drops the SVG's own xmlns:xlink when
+             copy-of brings it in here.  CR-011. -->
         
         <!--  Note definition of xmlns:r is different 
               from the definition in an _rels file

@@ -45,7 +45,15 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 
 	@Override
 	protected Element createDocumentRoot(FOConversionContext conversionContext, Document document) throws Docx4JException {
-    	return document.createElementNS(XSL_FO, "root");
+    	Element root = document.createElementNS(XSL_FO, "root");
+    	/* A metafile picture is drawn as SVG in an fo:instream-foreign-object, and Batik
+    	 * writes an embedded bitmap in it as <image xlink:href="data:...">.  Binding the
+    	 * prefix here keeps the FO well-formed even where a serializer drops the SVG's own
+    	 * declaration, which is what the XSLT pathway's does (see docx2fo.xslt).
+    	 * @since 17.0.6, CR-011 */
+    	root.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink",
+    			"http://www.w3.org/1999/xlink");
+    	return root;
 	}
 	
 	@Override

@@ -41,7 +41,15 @@ public class HTMLExporterVisitorDelegate extends AbstractVisitorExporterDelegate
 
 	@Override
 	protected Element createDocumentRoot(HTMLConversionContext conversionContext, Document document) throws Docx4JException {
-		return document.createElement("html");
+		Element html = document.createElement("html");
+		/* A metafile picture is drawn as an inline <svg>, and Batik writes an embedded
+		 * bitmap in it as <image xlink:href="data:...">.  Binding the prefix here keeps
+		 * the output well-formed (which XHTML output has to be) even where a serializer
+		 * drops the SVG's own declaration, which is what the XSLT pathway's does - see
+		 * docx2xhtml-core.xslt.  @since 17.0.6, CR-011 */
+		html.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink",
+				"http://www.w3.org/1999/xlink");
+		return html;
 	}
 
 	@Override

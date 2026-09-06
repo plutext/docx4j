@@ -229,7 +229,10 @@ public class XsltFOFunctions {
 
 	    	Element graphic = null;
 	    	for (Node n = frag.getFirstChild(); n!=null; n = n.getNextSibling()) {
-	    		if (n instanceof Element && "external-graphic".equals(n.getLocalName())) {
+	    		// instream-foreign-object too: a WMF/EMF picture is drawn as SVG inside
+	    		// one of those since 17.0.6 (CR-011)
+	    		if (n instanceof Element && ("external-graphic".equals(n.getLocalName())
+	    				|| "instream-foreign-object".equals(n.getLocalName()))) {
 	    			graphic = (Element)n;
 	    			break;
 	    		}

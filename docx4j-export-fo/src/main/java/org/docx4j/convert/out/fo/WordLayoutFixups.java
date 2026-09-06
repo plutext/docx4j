@@ -577,7 +577,11 @@ public final class WordLayoutFixups {
 	 * wrapping.</p>
 	 */
 	static void anchorImages(Document doc) {
-		for (Element g : elements(doc, "external-graphic")) {
+		// instream-foreign-object as well as external-graphic: since 17.0.6 a WMF/EMF
+		// picture is drawn as SVG inside one of those (CR-011), and it anchors the same
+		List<Element> graphics = elements(doc, "external-graphic");
+		graphics.addAll(elements(doc, "instream-foreign-object"));
+		for (Element g : graphics) {
 			String kind = g.getAttribute(HINT_ANCHOR);
 			if (kind == null || kind.length() == 0) continue;
 			try {

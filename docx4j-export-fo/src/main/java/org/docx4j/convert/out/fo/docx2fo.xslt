@@ -15,9 +15,16 @@
 	xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     version="1.0"
         exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic wps r m">
+
+  <!-- xmlns:xlink above is deliberate, and must not be added to
+       exclude-result-prefixes: it puts the declaration on fo:root, which is what
+       keeps a metafile picture's SVG well-formed.  Batik writes an embedded bitmap
+       as <image xlink:href="data:..."> and reads back only that attribute, and Xalan
+       drops the SVG's own xmlns:xlink when copy-of brings it in here.  CR-011. -->
 
   <!-- 
     Copyright 200?-2012, Plutext Pty Ltd.

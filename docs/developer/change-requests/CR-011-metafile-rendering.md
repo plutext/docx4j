@@ -1,7 +1,8 @@
 # CR: WMF / EMF / EMF+ rendering via repackaged Apache POI HWMF and HEMF
 
-Status: IN PROGRESS (2026-09-06) — phase 1 landed (repackaging only; no change to docx4j's
-output yet), see git log. Phases 2-4 not started.
+Status: IN PROGRESS (2026-09-06) — phases 1 and 2 landed: WMF/EMF/EMF+ pictures are
+now drawn in PDF (via FO) and HTML, and the parts carry a converter API. Phases 3
+(OlePres000) and 4 (the missing EMF/EMF+ records) not started.
 Converted from the maintainer's analysis note of 2026-09-04/06 (verified against
 POI trunk at `../poi` and the 5.3.0 release jars, and this tree at 451f05172).
 Scope: rendering Windows metafiles (WMF, EMF, EMF+) held in a package — inline and
@@ -370,6 +371,96 @@ Wiring, in order of value:
    the layout-fidelity corpora paint in PDF and HTML; the fidelity
    scoreboards do not fall; font names in metafile text map through
    `PhysicalFonts` (`Drawable.FONT_HANDLER`).
+
+   **DONE 2026-09-06.** What landed, and the decisions taken:
+
+   - **`org.docx4j.model.images.MetafileRenderer`** (interface, docx4j-core) with
+     `canRender(contentType)`, `getSizeInPoints`, `draw(bytes, Graphics2D, bounds)`
+     and `toImage(bytes, dpi)`, implemented by **`PoiMetafileRenderer`** over the
+     repackaged HWMF/HEMF. It installs `Docx4jDrawFontManager` through
+     `Drawable.FONT_HANDLER` (so GDI face names resolve through `PhysicalFonts`) and
+     sets `EMF_FORCE_HEADER_BOUNDS` where the EMF header's frame has the same shape
+     as the frame the document declares — the case where the header is what the
+     producer sized the picture from, and POI's "which of the three rectangles"
+     heuristic can otherwise crop or letterbox a picture that was right.
+   - Content type comes from the **bytes**, not the part: `sniff(byte[])` recognises
+     the Aldus placeable header, a bare WMF header and " EMF" at offset 40, and
+     `normalize(String)` maps the several spellings of image/x-wmf and image/x-emf.
+     Only 44 bytes are read from the part's buffer per picture before deciding.
+   - **Everything catches `Throwable`**, not `Exception`: as phase 1's README warned,
+     the copied parsers use bare `assert` in ~20 places, so a malformed metafile
+     raises `AssertionError` under `-ea` (which Surefire enables) where in production
+     it would reach a bounds check instead. A file that cannot be parsed yields null
+     and the caller falls back; one that fails part way through a draw keeps whatever
+     was painted (`file-45.wmf`).
+   - **SVG: `MetafileSvgProvider`** (an SPI in docx4j-core, found through
+     `ServiceLoader`) with **`BatikMetafileSvgProvider`** in docx4j-export-fo. The SPI
+     exists because `batik-svggen` is a dependency of docx4j-export-fo, not of
+     docx4j-core; with core alone, HTML falls back to PNG (which ImageIO can do) and
+     `MetafilePart.toSVG()` says which module to add.
+   - **`AbstractWordXmlPicture`**: the dead `metaFile` branch is replaced. The field is
+     now assigned in `handleImageRel`, which renders the metafile before the image
+     handler ever sees the bytes. FO gets the SVG in an `fo:instream-foreign-object`
+     at the picture's content-width/height (`scaling="non-uniform"`, as for bitmaps).
+     HTML gets an inline `<svg>` where the handler embeds images
+     (`ConversionImageHandler.isInline()`, a new default method: true where
+     `imageDirPath` is empty, ie `DataUriConversionImageHandler`), and otherwise a PNG
+     which is put through that same handler wrapped as a `BinaryPart` named
+     `<original>.png` — so a file-writing handler writes a .png beside the other
+     pictures and needs no change. Both FO pathways and both HTML pathways share this
+     code, so inline, anchored (`WordLayoutFixups.anchorImages`) and VML `w:pict`
+     pictures are all covered.
+   - **Decision, SVG text: `<text>`, not outlines.** Measured: a metafile's text comes
+     out of the PDF through PDFBox's text stripper, so it is searchable, and the
+     picture renders correctly either way (Batik paints outlines itself where FOP
+     cannot resolve the font). `docx4j.convert.out.metafile.textAsShapes=true` switches
+     to outlines for anyone who would rather have AWT-identical rendering.
+   - **Decision, HTML: inline `<svg>` only where the handler already embeds.** A
+     file-writing handler gets a PNG, because a caller who set an image directory
+     expects files; `CidConversionImageHandler` overrides `isInline()` to false, since
+     mail clients widely strip inline SVG. `docx4j.convert.out.metafile.dpi` (default
+     96, the resolution metafiles are authored at) sets the raster resolution.
+   - **Fallbacks kept, and demoted.** A metafile the renderer cannot draw still becomes
+     the `fo:external-graphic` it always was, so `reserveUnpaintablePictures`'
+     transparent placeholder and the ImageMagick `convertDensity` path still hold the
+     space open — but they are now reached only in that case.
+   - **wmf2svg retired**: dropped from `docx4j-core/pom.xml`, its OSGi `Import-Package`
+     entries, `module-info.java` (`requires wmf2svg`), `feature.xml` and
+     `etc/build.xml`. `MetafileWmfPart.toSVG()` keeps its signature and its
+     `SvgDocument` return type (`MetafileEmfPart` inherits both), so callers compile;
+     `toPNG(dpi)` and `toPNGBytes(dpi)` are new on `MetafilePart`.
+
+   Two things this turned up that were not in the plan:
+
+   - **FOP could not paint SVG at all.** `batik-gvt` was excluded from
+     `docx4j-export-fo`'s `batik-bridge` and `fop` dependencies when the module path
+     was first made to work; nothing noticed, because until now docx4j never put SVG
+     in its FO (the MathML path uses jeuclid's own renderer). A hand-written FO with a
+     red rectangle and a line of text rendered as a blank page. Restored as an explicit
+     pinned dependency.
+   - **Xalan drops namespace declarations from a copied SVG.** Batik references an
+     embedded bitmap as `<image xlink:href="data:...">`; in the XSLT pathway,
+     `xsl:copy-of` dropped `xmlns:xlink` — from the `<svg>` root *and* from the
+     `<image>` element itself. The FO was then not well-formed, which silently skipped
+     every Word layout fixup (`WordLayoutFixups.apply` catches and returns its input)
+     and left FOP to reject the hint attributes those fixups remove. Rewriting the
+     attribute to SVG 2's plain `href` does not work either: Batik's own
+     `SVGImageElementBridge` reads only the XLink attribute and threw a
+     `BridgeException`, abandoning the whole picture. So the prefix is bound on
+     `fo:root` in both pathways (docx2fo.xslt and `FOExporterVisitorDelegate`), and the
+     provider also declares it on each element that uses it, which is what makes the
+     SVG self-contained for `MetafilePart.toSVG()`.
+
+   Not done, and why: **`w:object` is still not rendered by either FO exporter** —
+   nothing in `AbstractVisitorExporterGenerator` or `docx2fo.xslt` matches it, so an
+   object preview only reaches the picture pipeline through `w:pict`. That is a wiring
+   gap in the exporters rather than a metafile one; it is what §4.2 item 1 assumed
+   already worked. Worth its own change.
+
+   Tests: `MetafilePictureTest` (8) and `MetafileHtmlSvgTest` (5) in
+   docx4j-export-fo-tests, over docx4j's own `EMF.docx`/`WMF.docx` plus metafiles built
+   into packages programmatically; `MetafileConversionApiTest` (8) and
+   `MetafileHtmlTest` (2) in docx4j-core-tests. Every one runs both pathways.
 3. **OLE presentation fallback** (§4.2 item 3): `OleObjectBinaryPart
    .getPresentation()` parsing `OlePres000` per MS-OLEDS for objects without a
    `v:imagedata` preview. Acceptance: a document with such an object renders
@@ -388,7 +479,10 @@ Wiring, in order of value:
   fixes in May–June 2026. The copy must keep the allocation limits and track
   upstream security fixes (§4.1 step 8).
 - Searchable text in PDF from metafile `<text>` depends on FOP resolving the
-  font; unverified until phase 2.
+  font. **Verified in phase 2**: the text comes back out of the PDF through
+  PDFBox's text stripper, and where FOP cannot resolve the font Batik paints
+  the glyph outlines, so the picture is right either way.
+  `docx4j.convert.out.metafile.textAsShapes=true` forces outlines.
 - Licence: ASL 2.0 clauses 4(b)–4(d) as for the POIFS copy; the one-line
   `legals/NOTICE` entry remains sufficient, extending it to name the two
   packages and the POI version is a courtesy.

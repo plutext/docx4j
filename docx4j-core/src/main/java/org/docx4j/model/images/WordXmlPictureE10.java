@@ -159,8 +159,20 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		ConversionImageHandler imageHandler,
     		Object wpict,
     		Part sourcePart) {
+    	return createWordXmlPictureFromE10(wmlPackage, imageHandler, wpict, sourcePart, false);
+    }
+
+    /** @param forXslFo true for the XSL-FO exporters: a Windows metafile picture is
+     *  represented differently in FO than in HTML (CR-011).  @since 17.0.6 */
+    private static WordXmlPictureE10 createWordXmlPictureFromE10(
+    		WordprocessingMLPackage wmlPackage,
+    		ConversionImageHandler imageHandler,
+    		Object wpict,
+    		Part sourcePart,
+    		boolean forXslFo) {
 
     	WordXmlPictureE10 converter = new WordXmlPictureE10(wmlPackage, wpict);
+    	converter.forXslFo = forXslFo;
 
 //	  	<xsl:variable name="shape" select="./v:shape"/>
 //	  	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
@@ -243,7 +255,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	
     	WordXmlPictureE10 converter = createWordXmlPictureFromE10(context.getWmlPackage(),
         		 context.getImageHandler(),
-        		 wpict, sourcePart);
+        		 wpict, sourcePart, true);
     	
     	//log.debug("imageDirPath: " + imageDirPath);
     	
@@ -280,7 +292,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	WordXmlPictureE10 converter = createWordXmlPictureFromE10(
     			 context.getWmlPackage(),
         		 context.getImageHandler(),
-        		 wpict, sourcePart);
+        		 wpict, sourcePart, true);
     	
     	//log.debug("imageDirPath: " + imageDirPath);
     	

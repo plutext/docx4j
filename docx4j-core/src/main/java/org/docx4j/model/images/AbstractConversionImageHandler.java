@@ -67,6 +67,14 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 		return relationship.getTarget();
 	}
 
+	/** True where the images are embedded in the output rather than stored: that is
+	 *  what an empty imageDirPath means to {@link #handleInternalImage}.
+	 *  @since 17.0.6 */
+	@Override
+	public boolean isInline() {
+		return imageDirPath != null && imageDirPath.equals("");
+	}
+
 	protected String doHandleImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) throws Docx4JException {
 	String uri = null;
 		if (isInternalImage(picture, relationship, part)) {

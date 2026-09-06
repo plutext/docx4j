@@ -5,7 +5,6 @@ module org.docx4j.core {
 //    requires jcl.over.slf4j;
     requires org.apache.commons.compress;
     requires org.apache.commons.lang3;
-    requires wmf2svg;
     
     requires transitive org.docx4j.generated_objects;
     

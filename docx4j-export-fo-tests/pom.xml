@@ -90,6 +90,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- to read back the PDF a test produced (MetafilePictureTest) -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>3.0.8</version>
+			<scope>test</scope>
+		</dependency>
+
 <!-- 	
 		<dependency>
 		  <groupId>ch.qos.logback</groupId>

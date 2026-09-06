@@ -25,6 +25,14 @@ convert such a picture with ImageMagick/GraphicsMagick and paint it (density:
 docx4j.convert.out.fo.pictures.convertDensity, default 300).  PNG, JPEG (baseline,
 progressive and CMYK), GIF, BMP, TIFF, EPS, SVG and WMF are painted as before, with no extra
 ImageIO plugin
+- WMF, EMF and EMF+ pictures are now drawn, in pure Java, as vectors: docx4j replays the
+metafile's GDI records (repackaged Apache POI HWMF/HEMF) onto Batik's SVGGraphics2D and puts
+the SVG in an fo:instream-foreign-object.  Their text stays text in the PDF, so an equation
+or chart preview is searchable.  Inline, anchored and VML w:pict pictures alike; the
+ImageMagick and transparent-placeholder fallbacks above now apply only to a metafile the
+renderer cannot draw (CR-011 phase 2)
+- FOP could not paint SVG at all: batik-gvt was excluded from docx4j-export-fo's
+dependencies, so an fo:instream-foreign-object holding SVG came out blank.  Restored
 
 - an autofit table (no w:tblW of its own, no fixed layout) whose w:tblGrid is far wider than
 the text column is now fitted to it, as Word refits such a grid; a grid up to a quarter over
@@ -167,6 +175,10 @@ formatting (and no longer logs "null currentSpan!")
 HTML output:
 - a hard page break which follows content in its own paragraph now breaks the page where it
 is, as in the PDF output above
+- WMF, EMF and EMF+ pictures are now drawn: as an inline <svg> where the image handler
+embeds images in the document (a data URI handler, and docx4j-export-fo is on the classpath
+for the SVG generator), otherwise as a PNG put through that same handler.  Until now the
+<img src> named the .wmf/.emf, which no browser shows (CR-011 phase 2)
 
 Other:
 - loading: the zip-bomb guard's FileTooLargeException (total uncompressed size over
@@ -183,7 +195,16 @@ as empty, so a floating table lost its position when the effective table style w
 switches off the style's "1"; XJC's getters cannot tell an absent attribute from a false
 one, so org.docx4j.wml.AutospacingAccess reports the three states
 - Apache POI 5.5.1's HWMF/HEMF (WMF/EMF/EMF+ parsing and Graphics2D rendering) repackaged
-into org.docx4j.org.apache.poi.{hwmf,hemf}; not yet wired into output (CR-011 phase 1)
+into org.docx4j.org.apache.poi.{hwmf,hemf}, and wired into the PDF and HTML output (CR-011
+phases 1 and 2)
+- metafile conversion API: MetafilePart.toPNG(dpi)/toPNGBytes(dpi) (WMF and EMF alike), and
+toSVG() reimplemented over HWMF - unchanged signature, but it now needs docx4j-export-fo on
+the classpath, for Batik's SVGGraphics2D.  org.docx4j.model.images.MetafileRenderer is the
+entry point for drawing a metafile onto any Graphics2D
+- the wmf2svg dependency is dropped: it had no EMF support, and the docx4j code calling it
+was unreachable
+- ConversionImageHandler.isInline() (a default method) says whether a handler embeds images
+in the output rather than writing files; it decides how a metafile is represented in HTML
 
 
 Version 17.0.5

@@ -237,9 +237,21 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		ConversionImageHandler imageHandler,
     		Object anchorOrInline,
     		Part sourcePart) {
+    	return createWordXmlPictureFromE20(wmlPackage, imageHandler, anchorOrInline, sourcePart, false);
+    }
+
+    /** @param forXslFo true for the XSL-FO exporters: a Windows metafile picture is
+     *  represented differently in FO than in HTML (CR-011).  @since 17.0.6 */
+    private static WordXmlPictureE20 createWordXmlPictureFromE20(
+    		WordprocessingMLPackage wmlPackage,
+    		ConversionImageHandler imageHandler,
+    		Object anchorOrInline,
+    		Part sourcePart,
+    		boolean forXslFo) {
 
     	WordXmlPictureE20 converter = new WordXmlPictureE20(wmlPackage, anchorOrInline);
-    	
+    	converter.forXslFo = forXslFo;
+
     	converter.readDimensions();
     	converter.readHyperlink();
     	
@@ -361,7 +373,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	Part sourcePart = context.getCurrentPart();
     	
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
-        		 context.getImageHandler(), wpInline, sourcePart);
+        		 context.getImageHandler(), wpInline, sourcePart, true);
     	
         Document d = converter.createXslFoImageElement();
         converter.stampAnchorHints(d, context);
@@ -383,7 +395,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	Part sourcePart = context.getCurrentPart();
     	
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
-        		 context.getImageHandler(), wpInline, sourcePart);
+        		 context.getImageHandler(), wpInline, sourcePart, true);
     	
         Document d = converter.createXslFoImageElement();
         converter.stampAnchorHints(d, context);

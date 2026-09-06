@@ -5,16 +5,12 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart.SvgDocument;
 import org.docx4j.relationships.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 /**
@@ -26,14 +22,25 @@ public abstract class AbstractWordXmlPicture {
 	
 	WordprocessingMLPackage wmlPackage;
     protected Dimensions dimensions;
-    
-    // TODO: partially implemented
-    private BinaryPart metaFile;
-	
+
+	/** The picture's bytes, where they are a Windows metafile this build can draw
+	 *  (see {@link #renderMetafile}); null otherwise.  Until 17.0.6 this field was
+	 *  declared and tested but never assigned, so the WMF branch below was dead code
+	 *  and both WMF and EMF fell through to an &lt;img&gt;/fo:external-graphic naming
+	 *  a file neither a browser nor FOP can decode (CR-011 §2). */
+	protected BinaryPart metaFile;
+
+	/** The metafile rendered as SVG, where that succeeded.  @since 17.0.6 */
+	protected Document metaFileSvg;
+
+	/** Set on the pictures the XSL-FO exporters build, not the HTML ones: the two
+	 *  want a metafile represented differently.  @since 17.0.6 */
+	protected boolean forXslFo;
+
 	protected final static String IMAGE_URL = "http://docxwave.appspot.com/image?";
-	
+
     public static DocumentFragment getHtmlDocumentFragment(AbstractWordXmlPicture picture) {
-    	
+
     	DocumentFragment docfrag=null;
     	Document d=null;
     	try {
@@ -43,31 +50,16 @@ public abstract class AbstractWordXmlPicture {
     			Element span = d.createElement("span");
     			span.setAttribute("style", "color:red;");
     			d.appendChild(span);
-    			
+
     			Text err = d.createTextNode( "[null img]" );
     			span.appendChild(err);
-    		
-        	} else if (picture.metaFile==null) {
-				// Usual case    	
-			    d = picture.createHtmlImageElement();
-			} else if (picture.metaFile instanceof MetafileWmfPart) {
-				
-				SvgDocument svgdoc = ((MetafileWmfPart)picture.metaFile).toSVG();
-				d = svgdoc.getDomDocument();
-				
-			} 
-			else if (picture.metaFile instanceof MetafileEmfPart) {
-				
-				 d = XmlUtils.getNewDocumentBuilder().newDocument();
-				
-				//log.info("Document: " + document.getClass().getName() );
 
-				Node span = d.createElement("span");			
-				d.appendChild(span);
-				
-				Text err = d.createTextNode( "[TODO emf image]" );
-				span.appendChild(err);
-				
+        	} else if (picture.metaFileSvg!=null) {
+				// A metafile, drawn as inline SVG: vectors, and text a browser can select.
+				d = picture.metaFileSvg;
+			} else {
+				// Usual case; also a metafile represented as a PNG (@src is the PNG)
+			    d = picture.createHtmlImageElement();
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -173,8 +165,22 @@ public abstract class AbstractWordXmlPicture {
         try {
             // Create a DOM builder and parse the fragment
             Document document = XmlUtils.getNewDocumentBuilder().newDocument();
-            Element imageElement  = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
-			"fo:external-graphic"); 	
+
+            if (metaFileSvg!=null) {
+            	/* A Windows metafile, replayed as SVG: FOP draws it into the PDF as
+            	 * vectors (and its text as text, where it can resolve the font).
+            	 * Until 17.0.6 an fo:external-graphic named the .wmf/.emf itself,
+            	 * which FOP has no loader for.  @since 17.0.6, CR-011 */
+            	Element ifo = document.createElementNS("http://www.w3.org/1999/XSL/Format",
+            			"fo:instream-foreign-object");
+            	document.appendChild(ifo);
+            	sizeGraphic(ifo);
+            	ifo.appendChild(document.importNode(metaFileSvg.getDocumentElement(), true));
+            	return document;
+            }
+
+            Element imageElement  = document.createElementNS("http://www.w3.org/1999/XSL/Format",
+			"fo:external-graphic");
 
             if (src !=null && !src.equals(""))
             {
@@ -198,6 +204,47 @@ public abstract class AbstractWordXmlPicture {
 //                setAttribute("style", style);
 //            }
 //
+            sizeGraphic(imageElement);
+//
+//            if (hlinkRef !=null && !hlinkRef.equals(""))
+//            {
+//                linkElement = document.createElement("a");
+//
+//                setAttribute(linkElement, "href", hlinkRef);
+//
+//                if (targetFrame !=null && !targetFrame.equals(""))
+//                {
+//                    setAttribute(linkElement, "target", targetFrame);
+//                }
+//
+//                if (tooltip !=null && !tooltip.equals(""))
+//                {
+//                    setAttribute(linkElement, "title", tooltip);
+//                }
+//
+//                linkElement.appendChild(imageElement);
+//
+//                imageElement = linkElement;
+//            }
+
+            document.appendChild(imageElement);
+
+            return document;
+
+        } catch (Exception e) {
+        	log.error(e.getMessage(), e);
+            return null;
+        }
+
+    }
+
+	/** content-width / content-height / scaling on an fo:external-graphic or
+	 *  fo:instream-foreign-object: the frame the document gives the picture.
+	 *  (WordLayoutFixups and TableWriter read these back.)  @since 17.0.6 */
+	private void sizeGraphic(Element imageElement) {
+
+            if (dimensions==null) return;
+
             if (dimensions.width>0)
             {
             	imageElement.setAttribute("content-width",  length(dimensions.width)+dimensions.widthUnit);
@@ -224,50 +271,19 @@ public abstract class AbstractWordXmlPicture {
             	 */
             	imageElement.setAttribute("scaling", "non-uniform");
             }
-//
-//            if (hlinkRef !=null && !hlinkRef.equals(""))
-//            {
-//                linkElement = document.createElement("a");
-//
-//                setAttribute(linkElement, "href", hlinkRef);
-//
-//                if (targetFrame !=null && !targetFrame.equals(""))
-//                {
-//                    setAttribute(linkElement, "target", targetFrame);
-//                }
-//
-//                if (tooltip !=null && !tooltip.equals(""))
-//                {
-//                    setAttribute(linkElement, "title", tooltip);
-//                }
-//
-//                linkElement.appendChild(imageElement);
-//
-//                imageElement = linkElement;
-//            }
-            
-            document.appendChild(imageElement);
-            
-            return document;
-            
-        } catch (Exception e) {
-        	log.error(e.getMessage(), e);
-            return null;
-        }
-        
     }
-	
+
 	protected void handleImageRel(ConversionImageHandler imageHandler, String imgRelId, Part sourcePart) {
 	Relationship rel = sourcePart.getRelationshipsPart().getRelationshipByID(imgRelId);
 	Part part = null;
 	String uri = null;
 	boolean ignoreImage = false;
-		setID(imgRelId);            	
-		
+		setID(imgRelId);
+
 		part = sourcePart.getRelationshipsPart().getPart(rel);
-		/* a part == null is ok if it is an external image, 
+		/* a part == null is ok if it is an external image,
 		 * and hasn't been loaded (loadExternalTargets == false)
-		 * but the relationship can be external, 
+		 * but the relationship can be external,
 		 * but the part avaiable (loadExternalTargets == true)
 		 */
 		if ((part != null) && (!(part instanceof BinaryPart))) {
@@ -275,11 +291,147 @@ public abstract class AbstractWordXmlPicture {
 			ignoreImage = true;
 		}
 		if (!ignoreImage) {
+			if (renderMetafile(imageHandler, rel, (BinaryPart)part)) {
+				return; // drawn as SVG, or rasterised through the image handler
+			}
 			uri = handlePart(imageHandler, this, rel, (BinaryPart)part);
 			if (uri != null) {
 				this.setSrc(uri);
 			}
 		}
+	}
+
+	// ------------------------------------------------------- Windows metafiles (CR-011)
+
+	/** Pixels per inch a metafile is rasterised at where SVG is not available. */
+	private static final String METAFILE_DPI_PROPERTY = "docx4j.convert.out.metafile.dpi";
+
+	/**
+	 * A WMF / EMF / EMF+ picture, drawn rather than handed on as bytes nothing
+	 * downstream can decode.
+	 *
+	 * <p>Word draws every picture; before 17.0.6 docx4j passed a metafile through to
+	 * the output untouched, so the HTML named a {@code .wmf}/{@code .emf} a browser
+	 * cannot show and the FO named one FOP has no loader for (CR-011 §2).  Now the
+	 * bytes are replayed:</p>
+	 * <ul>
+	 * <li><b>XSL-FO</b>: as SVG in {@code fo:instream-foreign-object}, so the picture
+	 *     reaches the PDF as vectors.</li>
+	 * <li><b>HTML</b>: as an inline {@code <svg>} where the image handler embeds
+	 *     images in the document anyway (a data URI handler), and otherwise as a PNG
+	 *     put through that same handler - so a handler which writes files writes a
+	 *     {@code .png} beside the others, and the {@code <img>} points at it.</li>
+	 * </ul>
+	 *
+	 * <p>Everything degrades: no SVG provider on the classpath (docx4j-core without
+	 * docx4j-export-fo) means a PNG, and a metafile that cannot be drawn at all means
+	 * this returns false and the caller emits what it always did - which, for the FO
+	 * pathway, is the {@code fo:external-graphic} that
+	 * {@code WordLayoutFixups.reserveUnpaintablePictures} converts with ImageMagick or
+	 * replaces with a transparent placeholder of the right size.</p>
+	 *
+	 * @return true if the picture has been dealt with (@src set, or SVG built)
+	 * @since 17.0.6
+	 */
+	private boolean renderMetafile(ConversionImageHandler imageHandler, Relationship rel, BinaryPart part) {
+
+		if (part == null) return false;
+		byte[] data = metafileBytes(part);
+		if (data == null) return false;
+
+		this.metaFile = part;
+		double w = lengthInPoints(dimensions == null ? 0 : dimensions.width,
+				dimensions == null ? null : dimensions.widthUnit);
+		double h = lengthInPoints(dimensions == null ? 0 : dimensions.height,
+				dimensions == null ? null : dimensions.heightUnit);
+
+		if (forXslFo || inlines(imageHandler)) {
+			metaFileSvg = MetafileSvgProvider.toSvg(data, w, h);
+			if (metaFileSvg != null) return true;
+		}
+		if (forXslFo) {
+			// no SVG: leave it to the existing fo:external-graphic fallbacks
+			this.metaFile = null;
+			return false;
+		}
+
+		// HTML, as PNG
+		int dpi = org.docx4j.Docx4jProperties.getProperty(METAFILE_DPI_PROPERTY, 96);
+		byte[] png = PoiMetafileRenderer.getInstance().toPngBytes(data, dpi);
+		if (png == null) {
+			this.metaFile = null;
+			return false;
+		}
+		String uri = handlePart(imageHandler, this, rel, pngPart(part, png));
+		if (uri == null) {
+			this.metaFile = null;
+			return false;
+		}
+		setSrc(uri);
+		return true;
+	}
+
+	/**
+	 * The part's bytes if they are a metafile this build can draw, else null.
+	 *
+	 * <p>The declared content type is only a hint - Word writes it from the file
+	 * extension it was given - so the bytes themselves decide, and a part typed
+	 * {@code image/x-emf} holding a PNG is left alone as much as the reverse is
+	 * picked up.  The signature is read from the buffer without copying it, so a
+	 * document full of JPEGs pays four bytes a picture for the check.</p>
+	 */
+	private static byte[] metafileBytes(BinaryPart part) {
+		try {
+			java.nio.ByteBuffer bb = part.getBuffer();
+			if (bb == null) return null;
+			bb = bb.duplicate();
+			int n = Math.min(bb.remaining(), PoiMetafileRenderer.SNIFF_LENGTH);
+			if (n < 4) return null;
+			byte[] head = new byte[n];
+			bb.get(head);
+			if (PoiMetafileRenderer.sniff(head) == null) return null;
+			return part.getBytes();
+		} catch (Exception e) {
+			log.warn("Could not read picture bytes: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/** Whether this handler embeds images in the output document rather than writing
+	 *  files - in which case an inline &lt;svg&gt; is what it would want. */
+	private static boolean inlines(ConversionImageHandler imageHandler) {
+		return imageHandler != null && imageHandler.isInline();
+	}
+
+	/** The rendered PNG dressed as a part, so it goes through the caller's own
+	 *  {@link ConversionImageHandler} - which writes the file, or encodes the data
+	 *  URI, exactly as it does for a real PNG in the package. */
+	private static BinaryPart pngPart(BinaryPart source, byte[] png) {
+		try {
+			String name = (source.getPartName() == null)
+					? "/word/media/metafile.png"
+					: source.getPartName().getName() + ".png";
+			BinaryPart p = new BinaryPart(new org.docx4j.openpackaging.parts.PartName(name));
+			p.setContentType(new org.docx4j.openpackaging.contenttype.ContentType(
+					org.docx4j.openpackaging.contenttype.ContentTypes.IMAGE_PNG));
+			p.setBinaryData(png);
+			return p;
+		} catch (Exception e) {
+			log.warn("Could not wrap the rendered metafile: " + e.getMessage());
+			return source;
+		}
+	}
+
+	/** A length as XSL-FO/CSS states it, in points; 0 where it is not stated. */
+	protected static double lengthInPoints(double v, String unit) {
+		if (!(v > 0)) return 0;
+		if (unit == null) return v;
+		if (unit.equals("pt") || unit.equals("px")) return v; // px: docx4j's 72dpi convention
+		if (unit.equals("in")) return v * 72d;
+		if (unit.equals("cm")) return v * 72d / 2.54d;
+		if (unit.equals("mm")) return v * 72d / 25.4d;
+		if (unit.equals("pc")) return v * 12d;
+		return v;
 	}
 
 	/**

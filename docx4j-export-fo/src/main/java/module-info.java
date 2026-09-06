@@ -18,6 +18,7 @@ module org.docx4j.export_fo {
 //			requires org.apache.xmlgraphics.batik.shared.resources;
 //			requires org.apache.xmlgraphics.batik.svg.dom;
 		requires org.apache.xmlgraphics.batik.util;
+		requires org.apache.xmlgraphics.batik.svggen; // WMF/EMF/EMF+ -> SVG (CR-011)
 		requires org.apache.xmlgraphics.batik.constants;
 		requires org.apache.xmlgraphics.batik.i18n;
 		requires jakarta.xml.bind;
@@ -34,6 +35,12 @@ module org.docx4j.export_fo {
 	opens org.docx4j.convert.out.fo.renderers;
 
 	uses org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer;
+
+	// WMF / EMF / EMF+ pictures drawn as SVG, for fo:instream-foreign-object and
+	// for inline <svg> in HTML.  docx4j-core declares the interface; Batik's
+	// SVGGraphics2D, which implements it, is a dependency of this module.  CR-011.
+	provides org.docx4j.model.images.MetafileSvgProvider
+		with org.docx4j.convert.out.fo.BatikMetafileSvgProvider;
 
 	// Word-style line breaking and line placement (see README-word-layout.md)
 	provides org.docx4j.convert.out.fo.renderers.FopFactoryCustomizer

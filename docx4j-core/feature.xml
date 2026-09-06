@@ -41,7 +41,6 @@
 	    <bundle>wrap:mvn:org.apache.xmlgraphics/xmlgraphics-commons/2.3</bundle>
 
 	    <bundle>wrap:mvn:com.thedeanda/lorem/2.1</bundle>
-	    <bundle>wrap:mvn:net.arnx/wmf2svg/0.9.8</bundle>
 
 	    
 <!-- 	    
