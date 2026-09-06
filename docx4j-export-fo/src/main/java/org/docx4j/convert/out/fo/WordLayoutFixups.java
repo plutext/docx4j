@@ -157,6 +157,7 @@ public final class WordLayoutFixups {
 		syncContainerSpacing(doc);
 		mergeBorderContainers(doc);
 		retainSpaceBeforeAtFlowStart(doc);
+		spaceBeforePageNumber(doc);
 		retainSpacingAtStaticContentEnd(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		cellLineWidth(doc);
@@ -365,6 +366,13 @@ public final class WordLayoutFixups {
 						|| "space".equals(child.getAttribute("leader-pattern")))) {
 				continue;
 			}
+			/* A nested fo:block is not allowed through even when it paints nothing: the
+			 * one XsltFOFunctions writes for a w:br carries
+			 * linefeed-treatment="preserve" and a newline, and it is a line break, so the
+			 * paragraph has a line the picture is not on.  Measured on the corpus
+			 * document whose 400x311pt inline picture sits in a w:line="360"
+			 * w:lineRule="auto" paragraph (J13's twin): letting it through changed
+			 * nothing at all, because that paragraph's break is real.  @since 17.0.6 */
 			state[1] = 1; // a painting leader, a page-number, a nested block, ...
 		}
 	}
@@ -3644,6 +3652,58 @@ public final class WordLayoutFixups {
 				listBlock.setAttribute("space-before.conditionality", "retain");
 			}
 		}
+	}
+
+	/**
+	 * A space immediately in front of a page number survives.
+	 *
+	 * <p>FOP treats the end of an {@code fo:inline} as a place where a trailing space
+	 * can be collapsed away, so {@code <w:t xml:space="preserve">Seite </w:t>} followed
+	 * by a {@code PAGE} field lost its space.  Measured against Word 365 in a corpus
+	 * footer: Word's "Seite ii" runs 526.1..547.6 = 21.5pt and ours read "Seiteii" at
+	 * 527.6..547.4 = 19.8 - exactly the 1.81pt an 8pt Carlito space is.</p>
+	 *
+	 * <p>A zero-width space after it, so that the space is no longer the last character,
+	 * is what keeps it - the same workaround FldSimpleWriter already uses at the other
+	 * end of a {@code fo:page-number-citation-last}, and it leaves the text a reader (or
+	 * a text extractor) sees unchanged.  A no-break space would keep the space too, and
+	 * measured the same geometry, but it <em>is</em> the text: a footer that already had
+	 * its space came out as "Page\u00a01 / 3", which is not what Word wrote.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void spaceBeforePageNumber(Document doc) {
+		for (String name : new String[] { "page-number", "page-number-citation",
+				"page-number-citation-last" }) {
+			for (Element pn : elements(doc, name)) {
+				Node text = previousTextNodeInBlock(pn);
+				if (text == null) continue;
+				String v = text.getNodeValue();
+				if (v == null || v.length() == 0 || v.charAt(v.length() - 1) != ' ') continue;
+				text.setNodeValue(v + '\u200b'); // zero-width space: the space is no longer last
+			}
+		}
+	}
+
+	/** The text node just before this element in document order, without leaving the
+	 *  block it is in (so a page number at the start of a block picks nothing up). */
+	private static Node previousTextNodeInBlock(Element el) {
+		Node n = el;
+		while (n != null) {
+			Node prev = n.getPreviousSibling();
+			if (prev == null) {
+				Node parent = n.getParentNode();
+				if (!(parent instanceof Element) || isFo((Element) parent, "block")
+						|| isFo((Element) parent, "block-container")) return null;
+				n = parent;
+				continue;
+			}
+			Node deepest = prev;
+			while (deepest.getLastChild() != null) deepest = deepest.getLastChild();
+			if (deepest.getNodeType() == Node.TEXT_NODE) return deepest;
+			n = prev;
+		}
+		return null;
 	}
 
 	static void retainSpacingAtStaticContentEnd(Document doc) {

@@ -31,6 +31,17 @@ public final class PdfLayout {
 		 * <p>Measured over the corpora: worth up to +0.085 of line parity on a
 		 * table-of-contents-heavy document.  {@code -Dfidelity.leaderNormalise=false}
 		 * restores the raw text.</p>
+		 *
+		 * <p>A date or a time is collapsed to a placeholder for the same reason.  A
+		 * {@code DATE}, {@code CREATEDATE}, {@code PRINTDATE}, {@code SAVEDATE} or
+		 * {@code TIME} field prints the day the PDF was made, so a golden cut on one
+		 * day never pairs with a render made on the next: the line drifts out of the
+		 * LCS and takes its neighbours with it, and the document's score falls by a
+		 * line a day for reasons that have nothing to do with layout.  Both sides go
+		 * through this, so nothing is hidden that is not equally hidden on Word's
+		 * side - and the geometry of a paired line is still compared in full, so a
+		 * date we lay out in the wrong place is still counted against us.
+		 * {@code -Dfidelity.dateNormalise=false} restores the raw text.</p>
 		 */
 		public String key() {
 			// cached: the LCS asks every reference line for its key against every
@@ -39,6 +50,7 @@ public final class PdfLayout {
 			String k = key;
 			if (k == null) {
 				k = NORMALISE_LEADERS ? LEADER_RUN.matcher(text).replaceAll("\u2026") : text;
+				if (NORMALISE_DATES) k = normaliseDates(k);
 				key = k;
 			}
 			return k;
@@ -53,6 +65,65 @@ public final class PdfLayout {
 
 		private static final boolean NORMALISE_LEADERS =
 				!"false".equalsIgnoreCase(System.getProperty("fidelity.leaderNormalise", "true"));
+
+		private static final boolean NORMALISE_DATES =
+				!"false".equalsIgnoreCase(System.getProperty("fidelity.dateNormalise", "true"));
+
+		/**
+		 * Month names, full and abbreviated, of the locales the corpora are written in
+		 * (en, de, fr, es, it, nl, pt, ru, hu, tr, sk).  Russian is in the genitive,
+		 * which is the form a date takes.  Matched case-insensitively.
+		 */
+		private static final String MONTHS =
+				"jan(?:uary|uar|vier|eiro)?|feb(?:ruary|ruar)?|f[e\u00e9]v(?:rier|ereiro)?|"
+				+ "mar(?:ch|ch|s|zo|\u00e7o|z|ec)?|apr(?:il|ile)?|avr(?:il)?|abr(?:il)?|"
+				+ "ma[yiej]|mei|mai|mag(?:gio)?|maj|"
+				+ "jun[ie]?|jun(?:e|io|ho)?|juin|giu(?:gno)?|"
+				+ "jul[iy]?|jul(?:y|io|ho)?|juil(?:let)?|lug(?:lio)?|"
+				+ "aug(?:ust|usti)?|ao\u00fbt|ago(?:sto)?|"
+				+ "sep(?:t|tember|tembre|tiembre|tembro)?|set(?:tembre|embro)?|"
+				+ "o[ck]t(?:ober|obre|ubre|ubro|obar)?|"
+				+ "nov(?:ember|embre|iembre|embro)?|"
+				+ "de[czs](?:ember|embre|iembre|embro|zember)?|"
+				+ "\u044f\u043d\u0432\u0430\u0440\u044f|\u0444\u0435\u0432\u0440\u0430\u043b\u044f|\u043c\u0430\u0440\u0442\u0430|\u0430\u043f\u0440\u0435\u043b\u044f|\u043c\u0430\u044f|\u0438\u044e\u043d\u044f|"
+				+ "\u0438\u044e\u043b\u044f|\u0430\u0432\u0433\u0443\u0441\u0442\u0430|\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044f|\u043e\u043a\u0442\u044f\u0431\u0440\u044f|\u043d\u043e\u044f\u0431\u0440\u044f|\u0434\u0435\u043a\u0430\u0431\u0440\u044f";
+
+		/** {@code 05.09.2026}, {@code 2026-09-05}, {@code 9/5/2026}.  A four-digit year
+		 *  is required, so a section number ("1.2.34") is not a date. */
+		private static final java.util.regex.Pattern NUMERIC_DATE = java.util.regex.Pattern
+				.compile("\\b(?:\\d{4}[./-]\\d{1,2}[./-]\\d{1,2}|\\d{1,2}[./-]\\d{1,2}[./-]\\d{4})\\b");
+
+		/** {@code 5 September 2026}, {@code 5. September 2026}, {@code 5 sept. 2026}. */
+		private static final java.util.regex.Pattern DMY_DATE = java.util.regex.Pattern
+				.compile("\\b\\d{1,2}\\.?\\s+(?:de\\s+)?(?:" + MONTHS + ")\\.?\\s+(?:de\\s+)?\\d{4}\\b",
+						java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE);
+
+		/** {@code September 5, 2026}, {@code September 5 2026}. */
+		private static final java.util.regex.Pattern MDY_DATE = java.util.regex.Pattern
+				.compile("(?<!\\p{L})(?:" + MONTHS + ")\\.?\\s+\\d{1,2},?\\s+\\d{4}\\b",
+						java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE);
+
+		/** {@code 14:05}, {@code 14:05:32}, {@code 2:05 PM}. */
+		private static final java.util.regex.Pattern CLOCK_TIME = java.util.regex.Pattern
+				.compile("\\b\\d{1,2}:\\d{2}(?::\\d{2})?(?:\\s*[AaPp]\\.?[Mm]\\.?)?");
+
+		static final String DATE_TOKEN = "\uFFFCd";
+		static final String TIME_TOKEN = "\uFFFCt";
+
+		/** Package-visible so a test can assert what is and is not a date. */
+		static String normaliseDates(String s) {
+			// cheap pre-filter: a line with no digit can hold no date or time
+			boolean digit = false;
+			for (int i = 0; i < s.length(); i++) {
+				if (s.charAt(i) >= '0' && s.charAt(i) <= '9') { digit = true; break; }
+			}
+			if (!digit) return s;
+			String out = NUMERIC_DATE.matcher(s).replaceAll(DATE_TOKEN);
+			out = DMY_DATE.matcher(out).replaceAll(DATE_TOKEN);
+			out = MDY_DATE.matcher(out).replaceAll(DATE_TOKEN);
+			out = CLOCK_TIME.matcher(out).replaceAll(TIME_TOKEN);
+			return out;
+		}
 
 		@Override
 		public String toString() {

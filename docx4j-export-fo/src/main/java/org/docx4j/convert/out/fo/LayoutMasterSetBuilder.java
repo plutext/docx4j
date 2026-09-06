@@ -96,6 +96,7 @@ public class LayoutMasterSetBuilder {
 			// since TOC functionality uses that.
 		{
 			fixExtents( lms, context, true);
+			addMirroredEvenMasters( lms, context );
 		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
@@ -214,6 +215,7 @@ public class LayoutMasterSetBuilder {
 			// since TOC functionality uses that.
 		{
 			fixExtents( lms, context, false);
+			addMirroredEvenMasters( lms, context );
 		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
@@ -232,7 +234,11 @@ public class LayoutMasterSetBuilder {
 		 * they decide which edge w:pgMar/@w:gutter is added to.  @since 17.0.6 */
 		boolean gutterAtTop = settingIsOn(context, "gutterAtTop");
 		boolean mirrorMargins = settingIsOn(context, "mirrorMargins");
-		
+
+		/* Whether FOP's folio number and Word's page number have opposite parity from
+		 * this section on - see foliosInverted.  @since 17.0.6 */
+		boolean foliosInverted = false;
+
 		for(int i=0; i<sections.size(); i++) {
 			
 			section = sections.get(i);
@@ -302,8 +308,9 @@ public class LayoutMasterSetBuilder {
 			}
 			
 			// SECOND, create page-sequence-masters
+			foliosInverted = foliosInverted(section, foliosInverted);
 			lms.getSimplePageMasterOrPageSequenceMaster().add(
-					createPageSequenceMaster(hf, sectionName )  );
+					createPageSequenceMaster(hf, sectionName, foliosInverted )  );
 		}
 		
 		// 
@@ -311,9 +318,178 @@ public class LayoutMasterSetBuilder {
 		return lms;
 	}
 	
-	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf, 
-			String sectionName ) {
-		
+	/**
+	 * Whether FOP's folio number is of the opposite parity to Word's page number, from
+	 * this section on.
+	 *
+	 * <p>{@code fo:page-sequence/@initial-page-number} must be at least 1 (XSL 1.1
+	 * &#xa7;6.4.5: "a positive integer"), and FOP clamps anything smaller.  A section
+	 * with {@code <w:pgNumType w:start="0"/>} - Word's usual way of writing a cover page
+	 * that is "page 0" so that the first numbered page is 1 - therefore lays out as
+	 * folio 1 where Word calls it page 0, and every {@code odd-or-even} page master
+	 * alternative after it selects the wrong one.  Measured on a document whose
+	 * {@code sectPr} has {@code w:evenAndOddHeaders}, an even header with no
+	 * {@code w:jc} and a right-aligned default (odd) header: Word's page 2 header is
+	 * right-aligned at x=430.3..524.7 and ours was the even one at x=70.9..162.9, page 3
+	 * the mirror image - the whole document's headers on the wrong side.</p>
+	 *
+	 * <p>Only the parity can be repaired here, by swapping the ODD and EVEN
+	 * alternatives.  The printed number cannot: {@code fo:page-number} is formatted by
+	 * FOP from the folio it clamped, and nothing in XSL-FO offsets it, so a
+	 * {@code PAGE} field in such a section still prints one too high.  (The two-pass
+	 * literal that carries NUMPAGES is one value for the whole section, and PAGE
+	 * differs on every page of it, so it cannot carry PAGE.)  Recorded as an FOP
+	 * limitation in word-layout-rules.md &#xa7;10.</p>
+	 *
+	 * @param inheritedInversion whether the sections before this one already inverted it
+	 * @since 17.0.6
+	 */
+	private static boolean foliosInverted(ConversionSectionWrapper section, boolean inheritedInversion) {
+		if (!oddEvenParityFix()) return false;
+		int start = section.getPageNumberInformation().getPageStart();
+		if (start < 0) return inheritedInversion;  // numbering continues from the section before
+		// FOP renders this section's first page as folio max(1, start)
+		return ((Math.max(1, start) - start) % 2) != 0;
+	}
+
+	/**
+	 * With {@code w:settings/w:mirrorMargins}, every page master that is not already
+	 * chosen by page parity gains a mirrored twin for the even (left-hand) pages, whose
+	 * left and right margins are the other way round.
+	 *
+	 * <p>The twin is a copy of the finished master - taken <em>after</em> the extent
+	 * pre-pass, so it carries the measured header and footer extents and, keeping the
+	 * region names, is served by the same {@code fo:static-content}.  (Building it
+	 * before the pre-pass would have left it with no measurement of its own: the
+	 * pre-pass renders one page per section, so a master only an even page uses is
+	 * never exercised and keeps the dummy half-page extent.)</p>
+	 *
+	 * <p>Where the section already has an even master - {@code w:evenAndOddHeaders} -
+	 * the alternatives select on parity already and
+	 * {@link #createSimplePageMaster} has mirrored that master's margins itself.</p>
+	 *
+	 * <p>Measured against Word 365 on a 42-page document whose three {@code sectPr} all
+	 * say {@code w:left="2268" w:right="1418"}: Word's even pages start at x=70.8 and
+	 * ours at 113.4 - 42.6pt out on half the document.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static void addMirroredEvenMasters(LayoutMasterSet lms, AbstractWmlConversionContext context) {
+
+		if (!settingIsOn(context, "mirrorMargins")) return;
+		if (!org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.mirrorMargins", true)) return;
+
+		List<Object> items = lms.getSimplePageMasterOrPageSequenceMaster();
+		Map<String, SimplePageMaster> byName = new HashMap<String, SimplePageMaster>();
+		for (Object o : items) {
+			if (o instanceof SimplePageMaster) byName.put(((SimplePageMaster)o).getMasterName(), (SimplePageMaster)o);
+		}
+
+		List<ConversionSectionWrapper> sections = context.getSections().getList();
+		List<Object> added = new java.util.ArrayList<Object>();
+		boolean foliosInverted = false;
+
+		for (int i=0; i<sections.size(); i++) {
+			String sectionName = "s" + Integer.toString(i + 1);
+			boolean inverted = foliosInverted(sections.get(i), foliosInverted);
+			foliosInverted = inverted;
+			if (byName.containsKey(sectionName + "-evenpage")) continue; // parity already decides
+
+			for (Object o : items) {
+				if (!(o instanceof PageSequenceMaster)) continue;
+				PageSequenceMaster psm = (PageSequenceMaster)o;
+				if (!sectionName.equals(psm.getMasterName())) continue;
+				for (Object alt : psm.getSinglePageMasterReferenceOrRepeatablePageMasterReferenceOrRepeatablePageMasterAlternatives()) {
+					if (!(alt instanceof RepeatablePageMasterAlternatives)) continue;
+					List<ConditionalPageMasterReference> refs =
+							((RepeatablePageMasterAlternatives)alt).getConditionalPageMasterReference();
+					List<ConditionalPageMasterReference> rebuilt =
+							new java.util.ArrayList<ConditionalPageMasterReference>(refs.size() + 1);
+					for (ConditionalPageMasterReference ref : refs) {
+						// the first-page master and anything already chosen by parity stand
+						SimplePageMaster src = byName.get(ref.getMasterReference());
+						if (src == null || ref.getPagePosition() != null || ref.getOddOrEven() != null) {
+							rebuilt.add(ref);
+							continue;
+						}
+						SimplePageMaster mirror = mirrorOf(src);
+						added.add(mirror);
+
+						ConditionalPageMasterReference even = getFactory().createConditionalPageMasterReference();
+						even.setMasterReference(mirror.getMasterName());
+						even.setOddOrEven(inverted ? OddOrEvenType.ODD : OddOrEvenType.EVEN);
+						rebuilt.add(even);
+
+						ref.setOddOrEven(inverted ? OddOrEvenType.EVEN : OddOrEvenType.ODD);
+						rebuilt.add(ref);
+					}
+					refs.clear();
+					refs.addAll(rebuilt);
+				}
+			}
+		}
+		items.addAll(added);
+	}
+
+	/**
+	 * A copy of this page master with its left and right margins the other way round,
+	 * named "&lt;name&gt;-mirrored".  Built field by field rather than by marshalling:
+	 * the XSL-FO model's page masters are not root elements, so a JAXB round-trip copy
+	 * of one fails (measured: three corpus documents came out as an export exception).
+	 * The regions are new objects too, so the two masters share no JAXB node, but they
+	 * keep the <em>same</em> region names - which is the point, since that is what makes
+	 * one {@code fo:static-content} serve both.
+	 *
+	 * @since 17.0.6
+	 */
+	private static SimplePageMaster mirrorOf(SimplePageMaster src) {
+
+		SimplePageMaster mirror = getFactory().createSimplePageMaster();
+		mirror.setMasterName(src.getMasterName() + "-mirrored");
+		mirror.setPageHeight(src.getPageHeight());
+		mirror.setPageWidth(src.getPageWidth());
+		mirror.setMarginTop(src.getMarginTop());
+		mirror.setMarginBottom(src.getMarginBottom());
+		mirror.setMarginLeft(src.getMarginRight());
+		mirror.setMarginRight(src.getMarginLeft());
+
+		RegionBody srcBody = src.getRegionBody();
+		if (srcBody!=null) {
+			RegionBody rb = getFactory().createRegionBody();
+			rb.setMarginTop(srcBody.getMarginTop());
+			rb.setMarginBottom(srcBody.getMarginBottom());
+			rb.setMarginLeft(srcBody.getMarginLeft());
+			rb.setMarginRight(srcBody.getMarginRight());
+			rb.setColumnCount(srcBody.getColumnCount());
+			rb.setColumnGap(srcBody.getColumnGap());
+			rb.setDisplayAlign(srcBody.getDisplayAlign());
+			rb.setRegionName(srcBody.getRegionName());
+			mirror.setRegionBody(rb);
+		}
+		if (src.getRegionBefore()!=null) {
+			RegionBefore rBefore = getFactory().createRegionBefore();
+			rBefore.setRegionName(src.getRegionBefore().getRegionName());
+			rBefore.setExtent(src.getRegionBefore().getExtent());
+			mirror.setRegionBefore(rBefore);
+		}
+		if (src.getRegionAfter()!=null) {
+			RegionAfter rAfter = getFactory().createRegionAfter();
+			rAfter.setRegionName(src.getRegionAfter().getRegionName());
+			rAfter.setExtent(src.getRegionAfter().getExtent());
+			mirror.setRegionAfter(rAfter);
+		}
+		return mirror;
+	}
+
+	/** @since 17.0.6 */
+	private static boolean oddEvenParityFix() {
+		return org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.pgNumType.oddEvenParityFix", true);
+	}
+
+	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf,
+			String sectionName, boolean foliosInverted ) {
+
 		boolean noHeadersFootersAfterFirstPage = true;
 		
 		PageSequenceMaster psm = getFactory().createPageSequenceMaster();
@@ -336,15 +512,15 @@ public class LayoutMasterSetBuilder {
 			ConditionalPageMasterReference cpmr2 = getFactory().createConditionalPageMasterReference();
 			cpmr2.setMasterReference(sectionName+"-evenpage");
 			//cpmr2.setPagePosition(PagePositionType.FIRST);
-			cpmr2.setOddOrEven(OddOrEvenType.EVEN);
-			rpma.getConditionalPageMasterReference().add(cpmr2);			
-			
+			cpmr2.setOddOrEven(foliosInverted ? OddOrEvenType.ODD : OddOrEvenType.EVEN);
+			rpma.getConditionalPageMasterReference().add(cpmr2);
+
 			// the xslt outputs a "-default" page as the odd-page
 			ConditionalPageMasterReference cpmr3 = getFactory().createConditionalPageMasterReference();
 			cpmr3.setMasterReference(sectionName+"-default");
 			//cpmr3.setPagePosition(PagePositionType.FIRST);
-			cpmr3.setOddOrEven(OddOrEvenType.ODD);
-			rpma.getConditionalPageMasterReference().add(cpmr3);			
+			cpmr3.setOddOrEven(foliosInverted ? OddOrEvenType.EVEN : OddOrEvenType.ODD);
+			rpma.getConditionalPageMasterReference().add(cpmr3);
 			
 			noHeadersFootersAfterFirstPage = false;
 		} else if (hf.getDefaultHeader()!=null || hf.getDefaultFooter()!=null) {
@@ -393,6 +569,19 @@ public class LayoutMasterSetBuilder {
 			String masterName, PageDimensions page, String appendRegionName, 
 			boolean needBefore, boolean needAfter,
 			boolean gutterAtTop, boolean mirrorMargins) {
+		return createSimplePageMaster(masterName, page, appendRegionName, needBefore, needAfter,
+				gutterAtTop, mirrorMargins, masterName!=null && masterName.endsWith("-evenpage"));
+	}
+
+	/**
+	 * @param evenPage whether this master lays out Word's even (left-hand) pages, which
+	 *        decides which edge the gutter goes on and, with mirrored margins, which of
+	 *        w:pgMar's left and right is the inside one (@since 17.0.6)
+	 */
+	private static SimplePageMaster createSimplePageMaster( 
+			String masterName, PageDimensions page, String appendRegionName, 
+			boolean needBefore, boolean needAfter,
+			boolean gutterAtTop, boolean mirrorMargins, boolean evenPage) {
 		
 		// This method uses dummy large extents
 		// A later step fixes them.
@@ -415,12 +604,21 @@ public class LayoutMasterSetBuilder {
 		 * x=70.9 (851 + 567 twips) where ours was at 42.5, -28.35pt on 222 pages.
 		 * @since 17.0.6 */
 		int gutterTwips = page.getGutter();
-		boolean gutterOnRight = !gutterAtTop && mirrorMargins
-				&& masterName!=null && masterName.endsWith("-evenpage");
+		boolean gutterOnRight = !gutterAtTop && mirrorMargins && evenPage;
 
-		int marginLeftTwips = page.getPgMar().getLeft().intValue()
+		/* w:settings/w:mirrorMargins: Word calls w:pgMar/@w:left the inside margin and
+		 * @w:right the outside one, so on an even (left-hand) page they swap - and the
+		 * binding edge, which is what @w:gutter widens, swaps with them.  Measured
+		 * against Word 365 on a document whose three sectPr all say w:left="2268"
+		 * w:right="1418": Word's even pages start at x=70.8 (the 1418-twip margin) and
+		 * ours at 113.4 - 42.6pt out, on half the document's 42 pages.  @since 17.0.6 */
+		boolean mirrored = mirrorMargins && evenPage;
+		int insideTwips = page.getPgMar().getLeft().intValue();
+		int outsideTwips = page.getPgMar().getRight().intValue();
+
+		int marginLeftTwips = (mirrored ? outsideTwips : insideTwips)
 				+ ((gutterAtTop || gutterOnRight) ? 0 : gutterTwips);
-		int marginRightTwips = page.getPgMar().getRight().intValue()
+		int marginRightTwips = (mirrored ? insideTwips : outsideTwips)
 				+ (gutterOnRight ? gutterTwips : 0);
 
 		/* A section whose w:cols declares a single w:col narrower than the margin box

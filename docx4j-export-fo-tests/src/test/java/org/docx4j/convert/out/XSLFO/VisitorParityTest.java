@@ -401,10 +401,15 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
 				"<w:document " + W + " " + MC + " " + V + " " + O + "><w:body>"
-				// only the Fallback should be rendered
+				// a Choice we can draw wins over the Fallback (17.0.6, docx4j.jaxb.mc.preferChoice)
 				+ "<mc:AlternateContent>"
 				+   "<mc:Choice Requires=\"wps\"><w:p><w:r><w:t>choice text</w:t></w:r></w:p></mc:Choice>"
 				+   "<mc:Fallback><w:p><w:r><w:t>fallback text</w:t></w:r></w:p></mc:Fallback>"
+				+ "</mc:AlternateContent>"
+				// a Choice we cannot draw does not: the Fallback still wins
+				+ "<mc:AlternateContent>"
+				+   "<mc:Choice Requires=\"cx1\"><w:p><w:r><w:t>exotic choice</w:t></w:r></w:p></mc:Choice>"
+				+   "<mc:Fallback><w:p><w:r><w:t>exotic fallback</w:t></w:r></w:p></mc:Fallback>"
 				+ "</mc:AlternateContent>"
 				// a textbox hosted in v:rect (as Word writes for some textboxes)
 				+ "<w:p><w:r><w:pict>"
@@ -431,14 +436,52 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 			String text = doc.getDocumentElement().getTextContent();
 			String impl = flagName(flag) + ": ";
 
+			// docx4j.jaxb.mc.preferChoice is empty by default, so the mc:Fallback wins
+			// as it always has (see XSLTUtils.mcPreferredChoiceRequires for what
+			// choosing the Choice measured); testChoicePreferred covers the other way
 			assertTrue(impl + "mc:Fallback content lost", text.contains("fallback text"));
 			assertTrue(impl + "mc:Choice content rendered (should be Fallback only)",
 					!text.contains("choice text"));
+			assertTrue(impl + "mc:Fallback content lost", text.contains("exotic fallback"));
+			assertTrue(impl + "an unsupported mc:Choice was rendered",
+					!text.contains("exotic choice"));
 
 			assertTrue(impl + "v:rect textbox content lost", text.contains("rect box"));
 
 			// the o:hr rule paragraph must not have broken the conversion
 			assertTrue(impl + "content after the horizontal rule lost", text.contains("after hr"));
+		}
+	}
+
+	/**
+	 * With {@code docx4j.jaxb.mc.preferChoice} naming a namespace, the first
+	 * {@code mc:Choice} requiring only that namespace wins over the {@code mc:Fallback},
+	 * as it does in Word (ECMA-376 Part 3 &#xa7;10.2.1) - and a Choice requiring something
+	 * else still does not.  Both pathways.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void testChoicePreferred() throws Exception {
+
+		String before = org.docx4j.Docx4jProperties.getProperty("docx4j.jaxb.mc.preferChoice", "");
+		org.docx4j.Docx4jProperties.setProperty("docx4j.jaxb.mc.preferChoice", "wps");
+		try {
+			for (int flag : FLAGS) {
+				org.w3c.dom.Document doc = w3cDomDocumentFromByteArray(toFO(phase5Pkg(), flag));
+				String text = doc.getDocumentElement().getTextContent();
+				String impl = flagName(flag) + ": ";
+
+				assertTrue(impl + "mc:Choice[wps] content lost", text.contains("choice text"));
+				assertTrue(impl + "mc:Fallback rendered as well as the Choice",
+						!text.contains("fallback text"));
+				// a Requires we do not claim still takes the Fallback
+				assertTrue(impl + "mc:Fallback content lost", text.contains("exotic fallback"));
+				assertTrue(impl + "an unsupported mc:Choice was rendered",
+						!text.contains("exotic choice"));
+			}
+		} finally {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.jaxb.mc.preferChoice", before);
 		}
 	}
 

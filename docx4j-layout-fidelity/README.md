@@ -190,6 +190,31 @@ well as to docx4j's; four knobs are worth knowing about.
   extracted `duty ...... 5` and `duty......5` although the geometry agreed to
   0.2pt. Measured, it is worth +0.113, +0.031, +0.021, +0.017 and +0.014 of
   line parity on five documents.
+- **`-Dfidelity.dateNormalise=false`** turns off the date/time normalisation in
+  `PdfLayout.Line.key()`. A `DATE`, `CREATEDATE`, `PRINTDATE`, `SAVEDATE` or
+  `TIME` field prints the day the PDF was made, so a golden cut on one day never
+  pairs with a render made on the next: the line drifts out of the LCS, takes
+  its neighbours with it, and the document's score falls by a line a day for
+  reasons that have nothing to do with layout. A date - `05.09.2026`,
+  `2026-09-05`, `9/5/2026`, `5 September 2026`, `5. September 2026`,
+  `5 de septiembre de 2026`, `5 сентября 2026`, `September 5, 2026` - therefore
+  collapses to one placeholder token, and a clock time (`14:05`, `14:05:32`,
+  `2:05 PM`) to another. Month names cover the locales the corpora are written
+  in; a four-digit year is required, so a section number (`1.2.34`) or a money
+  amount is not a date. Both sides go through it, so nothing is hidden that is
+  not equally hidden on Word's side, and the geometry of a paired line is still
+  compared in full — a date we lay out in the wrong place is still counted
+  against us.
+
+  It touches **1111 of 71610 golden lines in 105 of 156 documents** on batch 2
+  (1121 of 71818 in our renders), **503 of 40308 in 103 of 191** on batch 1
+  (498 of 40048), and **12732 of 185685 in 73 of 102** on batch 3 (12686 of
+  190751). Re-baselining the three corpora on it moved the aggregate very
+  little, which is the point — it removes a drift rather than adding a score:
+  batch 2 lines matched 54510 -> 54516 and mean parity 0.8393 -> 0.8394, batch 1
+  34546 -> 34547 and 0.8751 -> 0.8752, batch 3 161321 -> 161430 and
+  0.8644 -> 0.8649 (one document +0.030, `parity >= 0.98` 14 -> 15). Without it
+  those numbers would have fallen again the next day.
 - **`-Dfidelity.rowTolerancePt=`** (default `3`, `0` turns it off) is how far
   apart two lines' baselines may be and still be read as one row, which is
   ordered left to right rather than by baseline. The comparison is an LCS over

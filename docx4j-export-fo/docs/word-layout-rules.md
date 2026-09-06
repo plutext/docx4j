@@ -82,6 +82,48 @@ nowhere legal to carry it. Only a **direct** child is matched: a `w:r` deeper in
 the three corpora hold the shape; the one measured above went from 0.383 to 0.463 of
 Word's lines and from 44 pages to 51 of Word's 54.
 
+**`mc:AlternateContent`: Word draws the first `mc:Choice` it understands.** ECMA-376
+Part 3 §10.2.1 makes the `mc:Fallback` the last resort, not the first choice, and docx4j
+always took it. For `Requires="wps"` - a DrawingML shape, whose text box both FO pathways
+do render (`wps:wsp/wps:txbx/w:txbxContent`) - that meant taking the VML `w:pict` twin
+Word never looks at, with the position it carries: measured on a corpus header holding
+one such pair, Word draws the box at x=528.0..581.8 and the fallback's
+`style="left:605.25pt"` put ours at 519.9..803.5, most of it off the page. The prefix
+list is `docx4j.jaxb.mc.preferChoice`, and it is applied in three places which have to
+agree: the visitor exporters (`AbstractVisitorExporterGenerator.walkJAXBElements`, so
+HTML takes it too), `docx2fo.xslt`, and the unmarshalling preprocessor for the
+`mc:AlternateContent` that is not inside a `w:r` (which the docx4j content model does not
+keep).
+
+**It ships off** (the list is empty), because that is what measured better. Of the 25
+documents of the three corpora that carry an `mc:Choice Requires="wps"`, choosing it
+moved two and left 23 untouched, and both of those two fell - 0.932 -> 0.894 and
+0.927 -> 0.897, a sum of -0.067. In each, the Choice's DrawingML box lands within 0.6pt
+of the fallback's and of Word's (Word's page-number box y=791.3 x=474.7..524.8, the
+fallback's 790.7 x=476.5..524.5, the Choice's 791.0), so nothing visible is gained, while
+the header text and the page-number box then share one baseline where Word's are 4.8pt
+apart. `docx4j.jaxb.mc.preferChoice=wps` takes the Choice where a document's fallback is
+missing or wrong.
+
+**White space in a `w:t` with no `xml:space="preserve"`.** `xml:space` is what makes an
+element's leading and trailing white space significant, and Word writes it whenever the
+space matters - so a `w:t` without it whose text has leading or trailing space came from
+another producer, and Word trims it. Measured against Word 365: a centred paragraph of
+`<w:t>Chantier\nd'enlèvement d'amiante</w:t>` then `<w:t>\n${caze.descriptive}</w:t>`,
+neither with `xml:space`, is 136.6..458.6 = 322.0pt in Word and was 132.7..458.5 = 325.9
+for us, and being centred it also started 3.9pt to the left; `<w:t>WEIGHT: </w:t>` is
+72.0..218.6 in Word and was 72.0..220.4 (that document 0.967 -> 1.000). The rule is in
+the `w:t` emission path both the FO and the HTML exporters share
+(`RunFontSelector.fontSelector(PPr, RPr, Text)`), so the load path is untouched and a
+document read and written back is unchanged. Property
+`docx4j.fonts.runFontSelector.trimUnpreservedWhitespace`.
+
+*A `w:t` of nothing but white space keeps it.* Emptying one changes what the paragraph
+is rather than how wide it is, and the FO layer then treats the block as having no
+content at all and gives it a line of its own: measured, page 12 of an 80-page corpus
+document opened 20.6pt below Word's (133.8 against 113.3) because one such paragraph
+gained a line. Word paints no glyph for it either way.
+
 ### 1.4 Compatibility modes
 
 Several of Word's rules changed with its 2013 layout engine. Word records which engine
@@ -115,6 +157,11 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.pictures.convertDensity` | `300` | Pixels per inch that converter rasterises a metafile at. |
 | `docx4j.fonts.altName.enabled` | `true` | Whether a font this machine does not have may be resolved through the `w:altName` its own font table gives it (§5.1). `false` goes straight to the class-based fallback. |
 | `docx4j.convert.out.printHiddenText` | `false` | Hidden text (`w:vanish`) is not rendered and takes no space, as Word prints it. `true` renders it. PDF and HTML. |
+| `docx4j.convert.out.fo.pgNumType.oddEvenParityFix` | `true` | A section whose `w:pgNumType/@w:start` FOP has to clamp (0, which XSL-FO forbids) gets its ODD and EVEN page-master alternatives swapped, so the headers land on the side Word puts them (§7). |
+| `docx4j.convert.out.fo.mirrorMargins` | `true` | `w:settings/w:mirrorMargins`: each page master gains a mirrored twin, chosen on even pages, whose left and right margins are the other way round (§7). |
+| `docx4j.convert.out.fields.dropResultlessIf` | `true` | An `IF` field with no `w:fldChar w:fldCharType="separate"` has no result and paints nothing, its branches being field instruction (§7). Also HTML. |
+| `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
+| `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
 
 The foreign attributes the layout managers read are in the namespace
@@ -1620,6 +1667,13 @@ inside an `fo:table-cell`.
 A `w:jc="center"` table wider than the text column is **centred by Word, overhanging both
 margins**; its start-indent is the negative half of the overflow.
 
+**A centred table narrower than the column is centred too.** `w:tblPr/w:jc="center"`
+centres a table whatever its width; the rule used to fire only where the table was
+*wider* than the text column, so a narrower one fell through to `start-indent` 0 and sat
+at the left margin. Measured on a corpus document whose centred 5690-twip table sits on a
+9638-twip column: Word draws its label "1" at x=174.3 and ours was at 75.7, 99pt out; it
+is at 179.8 now.
+
 ### 6.2 Cell margins
 
 Word applies default cell margins of 0.08in (108 twips) left and right when neither the
@@ -2288,6 +2342,74 @@ reserved the 36pt footer distance and ended the body at 805.9. Twenty-one of the
 sections spilled that one line onto a page of its own for that reason alone: Word's 24
 pages came out as 44, and are 26 now.
 
+**A complex field with no `w:fldChar w:fldCharType="separate"` has no result**
+(ECMA-376 17.16.18: the result is what lies between the separate and the end), so Word
+paints nothing for it - everything from the begin to the end is field instruction. For an
+`IF` field that is how Word writes a conditional block of a footer,
+`IF { PAGE } = { NUMPAGES } "…" ""`, with the true branch - which may be a whole table -
+sitting in `w:instrText`. We kept the structure, so the operands' own `PAGE` and
+`NUMPAGES` fields (which *do* have a separate, so FieldsCombiner turns them into live
+fields) were painted, and the true branch's table reserved its height. Measured against
+Word 365 on an 8-page document whose footer is exactly that: Word's footer is the page
+number alone ("1/8" at y=811.2) and ours had a stray "19" at y=724.4 and a
+`region-after extent="112.251pt"` against Word's ~47 - 65pt of body lost on every page,
+which is the 6 missing lines and the 9th page (9 pages -> Word's 8).
+
+The whole span therefore goes, paragraph marks apart. Restricted to `IF` deliberately:
+measured over the 435 corpus documents, a field with no separate is most often `PAGE`
+(24 occurrences in 21 documents), `FORMCHECKBOX`, `MERGEFIELD` or `XE` - all of which we
+do render and Word renders too once it updates the field on print. Only `IF` carries its
+branches in the instruction, so only `IF` loses content by being kept (10 occurrences in
+3 documents). Property `docx4j.convert.out.fields.dropResultlessIf`.
+
+*The condition is not evaluated, and does not need to be.* The branch Word chooses on all
+but the last page of these documents is the empty one, and neither branch could be
+painted conditionally anyway: FOP resolves `fo:page-number` at layout time, long after
+the FO is written, so an `IF` whose operand is `PAGE` cannot be decided per page (§10).
+
+**`w:pgNumType/@w:start` and the odd/even page masters.** XSL 1.1 §6.4.5 makes
+`initial-page-number` a positive integer and FOP clamps anything smaller, so a section
+whose `sectPr` says `<w:pgNumType w:start="0"/>` - Word's usual way of writing a cover
+page that is "page 0" so the first numbered page is 1 - lays out as folio 1 where Word
+calls it page 0, and every `odd-or-even` alternative after it selects the wrong master.
+The alternatives are therefore built with ODD and EVEN swapped from such a section on
+(and the swap carries into the sections that follow, since their numbering continues).
+Measured against Word 365 on a document with `w:evenAndOddHeaders`, an even header of no
+`w:jc` and a right-aligned default one: Word's page 2 header is right-aligned at
+x=430.3..524.7 and ours was the even one at 70.9..162.9, page 3 the mirror image; it is
+now 432.4..524.4. Property `docx4j.convert.out.fo.pgNumType.oddEvenParityFix`.
+
+*The printed number cannot be repaired the same way*: `fo:page-number` is formatted by
+FOP from the folio it clamped, and nothing in XSL-FO offsets it, so a `PAGE` field in
+such a section still prints one too high (§10). The two-pass literal that carries
+`NUMPAGES` is one value for a whole section, and `PAGE` differs on every page of it.
+
+**`w:settings/w:mirrorMargins`.** Word calls `w:pgMar/@w:left` the *inside* margin and
+`@w:right` the *outside* one, so on an even (left-hand) page they swap - and so does the
+binding edge `@w:gutter` widens. Every page master that is not already chosen by page
+parity therefore gains a mirrored twin for the even pages. The twin is a copy of the
+finished master, taken *after* the extent pre-pass so that it carries the measured header
+and footer extents, and it keeps the same region names, so one `fo:static-content` serves
+both. (Built before the pre-pass it would have no measurement of its own: the pre-pass
+renders one page per section, so a master only an even page uses is never exercised and
+keeps the dummy half-page extent - measured, three corpus documents came out as an export
+exception when the twin was made by a JAXB round-trip copy, which the XSL-FO model's
+non-root page masters do not survive either.) Measured against Word 365 on a 42-page
+document whose three `sectPr` all say `w:left="2268" w:right="1418"`: Word's even pages
+start at x=70.8 and ours at 113.4 - 42.6pt out on half the document; they are at 70.9
+now. 4 documents of the three corpora. Property
+`docx4j.convert.out.fo.mirrorMargins`.
+
+**A space in front of a page number.** FOP treats the end of an `fo:inline` as a place
+where a trailing space can be collapsed away, so `<w:t xml:space="preserve">Seite </w:t>`
+followed by a `PAGE` field lost its space: Word's "Seite ii" runs 526.1..547.6 = 21.5pt
+and ours read "Seiteii" at 527.6..547.4 = 19.8, exactly the 1.81pt an 8pt Carlito space
+is. A zero-width space after it - the workaround FldSimpleWriter already uses at the
+other end of an `fo:page-number-citation-last` - keeps it. A no-break space keeps it too
+and measures the same, but it *is* the text: a footer that already had its space came out
+as `"Page\u00a01 / 3"`, which is not what Word wrote (0.82 -> 0.77 on that document
+before the zero-width space replaced it).
+
 ---
 
 ## 8. Footnotes
@@ -2690,6 +2812,28 @@ Worked around here, and worth knowing about:
   (URW's Nimbus Sans Narrow for Arial Narrow, Source Sans 3 for Segoe UI Light) still gets
   FOP's ligatures, and its text layer carries U+FB01 or an unmapped private-use code
   point. Not worked around; the fix belongs upstream.
+- **`initial-page-number` is clamped to 1.** XSL 1.1 §6.4.5 makes it a positive integer,
+  so `<w:pgNumType w:start="0"/>` cannot be reproduced: the section's folios all run one
+  too high and a `PAGE` field in it prints one too high with them. The `odd-or-even`
+  master alternatives are swapped to compensate for the *parity* (§7), which is what
+  costs whole-page geometry; the printed number is one character and stays wrong. Nothing
+  in XSL-FO offsets `fo:page-number`, and the two-pass literal that carries `NUMPAGES`
+  cannot carry `PAGE`, which differs on every page of a section.
+- **`display-align` does not count the flow's last block's `space-after`** — so the
+  hypothesis that it is what puts a `w:sectPr/w:vAlign="center"` section low is wrong.
+  Measured: zeroing a 10pt `space-after` on the last block of a centred flow moved the
+  page not at all (first line y=281.7 before and after, against Word's 275.9). The
+  residual +5.8pt on such a page has some other cause and is still open.
+- **A word has no intra-word break at all** (§4.3), so a token wider than the measure
+  overruns the column instead of breaking where Word breaks it. Worked around by
+  splitting such a word into per-character glyph mappings in the line manager.
+- **An empty `fo:inline` carrying a `font-size` sizes the line.** FOP builds an empty
+  inline area of that size and takes the line's height from it, so a bookmark anchor
+  given a size of its own makes the line taller. Only elements that paint text are
+  pinned (§2.4).
+- **`padding-left` on a positioned `fo:block-container` does not offset its children**
+  (`padding-right` is subtracted), and `end-indent` likewise, so a text box's start inset
+  has to be `start-indent` and only its end inset can be padding (§9.2).
 - **`fo:float` throws.** A side float of any height followed by content that overflows the
   page (a table row taller than the space left, say) makes FOP throw
   `java.util.NoSuchElementException` from `LMiter.next` under

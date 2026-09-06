@@ -999,16 +999,39 @@
   <!--  +++++++++++++++++++  alternate content     ++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
+	<!-- Word draws the first mc:Choice whose @Requires names a namespace it understands,
+	     and reaches the mc:Fallback only when it understands none of them; docx4j always
+	     took the fallback.  See XSLTUtils.mcPreferredChoiceRequires (property
+	     docx4j.jaxb.mc.preferChoice) for what we claim to understand and what it
+	     measured.  The visitor pathway does the same in
+	     AbstractVisitorExporterGenerator.walkJAXBElements.  @since 17.0.6 -->
 	<xsl:template match="mc:AlternateContent" >
-		<xsl:variable name="info" 
-			select="concat('mc:AlternateContent selecting Fallback ie ignoring mc:Choice Requires ', 
-					mc:Choice/@Requires, 
-					' containing ', 
-					local-name(mc:Choice/*[1]))"/>
-		<xsl:variable name="dummy"
-			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, 
-			$info)" />
-		<xsl:apply-templates select="mc:Fallback/*" />
+		<xsl:variable name="preferred"
+			select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
+		<xsl:choose>
+			<xsl:when test="$preferred">
+				<xsl:variable name="info"
+					select="concat('mc:AlternateContent selecting Choice Requires ',
+							$preferred/@Requires,
+							' containing ',
+							local-name($preferred/*[1]))"/>
+				<xsl:variable name="dummy"
+					select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext,
+					$info)" />
+				<xsl:apply-templates select="$preferred/*" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:variable name="info" 
+					select="concat('mc:AlternateContent selecting Fallback ie ignoring mc:Choice Requires ', 
+							mc:Choice/@Requires, 
+							' containing ', 
+							local-name(mc:Choice/*[1]))"/>
+				<xsl:variable name="dummy"
+					select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, 
+					$info)" />
+				<xsl:apply-templates select="mc:Fallback/*" />
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->

@@ -2409,7 +2409,33 @@ public class StyleUtil {
 		if (!isEmpty(source)) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createPPrBaseInd();
-			
+
+			/* w:firstLine and w:hanging are two spellings of one property - Word's
+			 * Paragraph dialog offers "Special: (none) / First line / Hanging", not two
+			 * boxes - and ECMA-376 17.3.1.12 says w:firstLine "is ignored if the hanging
+			 * attribute is also specified".  Merged attribute by attribute, an inherited
+			 * hanging therefore survived a direct firstLine and won, because hanging is
+			 * the one that is honoured when both are present.
+			 *
+			 * Measured against Word 365 on a paragraph whose direct formatting is
+			 * <w:ind w:left="0" w:firstLine="709"/> over a style stating
+			 * <w:ind w:left="283" w:hanging="283"/>: Word starts the first line at
+			 * x=120.6 (85.05pt margin + 35.45pt = 709 twips) and the FO said
+			 * start-indent="0in" text-indent="-14.15pt", putting it at 70.9 - 49.7pt
+			 * left, on every such paragraph of the document.
+			 *
+			 * Whichever of the two the higher-priority w:ind states replaces both.
+			 * @since 17.0.6 */
+			boolean sourceFirstLine = source.getFirstLine() != null || source.getFirstLineChars() != null;
+			boolean sourceHanging = source.getHanging() != null || source.getHangingChars() != null;
+			if (sourceFirstLine && !sourceHanging) {
+				destination.setHanging(null);
+				destination.setHangingChars(null);
+			} else if (sourceHanging && !sourceFirstLine) {
+				destination.setFirstLine(null);
+				destination.setFirstLineChars(null);
+			}
+
 			destination.setFirstLine(apply(source.getFirstLine(), destination.getFirstLine()));
 			destination.setFirstLineChars(apply(source.getFirstLineChars(), destination.getFirstLineChars()));
 			destination.setHanging(apply(source.getHanging(), destination.getHanging()));

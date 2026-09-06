@@ -307,7 +307,8 @@
   	<xsl:choose>
   	
 	    <xsl:when test="parent::w:r">
-				<!--  v3.3.8 is OK with mc:AlternateContent in a run  -->
+				<!--  v3.3.8 is OK with mc:AlternateContent in a run; the exporters choose
+				      the branch (AbstractVisitorExporterGenerator, docx2fo.xslt)  -->
 			<xsl:variable name="dummyRetain" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn('mc:AlternateContent present in run; retaining')" />
 		    <xsl:copy>
@@ -328,21 +329,24 @@
 
   		</xsl:when>   -->
 
-			<!--  wps:txbx/w:txbxContent .. this works
-  		      So TODO make choosing this configurable via docx4j.properties 
-  		
-  		<xsl:when test="mc:Choice[@Requires='wps']">
-  		
-  			<xsl:variable name="message" 
-  				select="string('Selecting mc:Choice[@Requires=wps]')" />  			
-			<xsl:variable name="logging" 
-				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
-				
-  			<xsl:copy-of select="mc:Choice[@Requires='wps']/*"/>
+		<!-- Word draws the first mc:Choice whose @Requires names a namespace it
+		     understands (ECMA-376 Part 3 10.2.1), and reaches the mc:Fallback only when
+		     it understands none of them.  Which prefixes we claim - wps by default,
+		     whose wps:txbx/w:txbxContent both exporters do draw - is
+		     docx4j.jaxb.mc.preferChoice; see XSLTUtils.mcPreferredChoiceRequires for the
+		     measurement.  Empty restores the pre-17.0.6 fallback-always behaviour.
+		     @since 17.0.6 -->
+  		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
+
+  			<xsl:variable name="chosen"
+  				select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
+			<xsl:variable name="logging"
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('Selecting mc:Choice Requires=', $chosen/@Requires))" />
+
+  			<xsl:apply-templates select="$chosen/*"/>
 
   		</xsl:when>
-  		 -->
-  		   
+
   		<xsl:when test="mc:Fallback">
   		
   			<xsl:variable name="message" 

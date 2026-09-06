@@ -1199,10 +1199,62 @@ public class RunFontSelector {
     	} else {
     		text = wmlText.getValue();
         	spacePreserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
+        	if (!spacePreserve) text = trimUnpreservedWhitespace(text);
     	}
     	
     	return fontSelector( pPr,  rPr,  text);
     }
+
+    /**
+     * The leading and trailing white space of a {@code w:t} which does not ask for it to
+     * be preserved, which Word discards.
+     *
+     * <p>{@code xml:space} is the XML mechanism (ECMA-376 Part 1 uses it on
+     * {@code ST_String}, and the schema's whiteSpace facet is "preserve" only with it):
+     * without {@code xml:space="preserve"} the leading and trailing white space of the
+     * element is not significant, and Word - which writes the attribute itself whenever
+     * the space matters - drops it.  A {@code w:t} whose text has leading or trailing
+     * space and no {@code xml:space} therefore came from some other producer, and Word
+     * renders it trimmed.
+     *
+     * <p>Measured against Word 365.  A centred paragraph built out of
+     * {@code <w:t>Chantier\nd'enl&#232;vement d'amiante</w:t>} then
+     * {@code <w:t>\n${caze.descriptive}</w:t>}, neither with {@code xml:space}: Word's
+     * line runs 136.6..458.6 = 322.0pt and ours ran 132.7..458.5 = 325.9 - +3.9pt, and
+     * being centred it also started 3.9pt to the left.  The trailing-space form,
+     * {@code <w:t>WEIGHT: </w:t>}: Word 72.0..218.6, ours 72.0..220.4.  (A newline
+     * <em>inside</em> the text is collapsed to a space by both, and stays.)
+     *
+     * <p>This is the {@code w:t} emission path both the FO and the HTML exporters share,
+     * so both take it; the load path is untouched, so a document read and written back
+     * is unchanged.  Set {@code docx4j.fonts.runFontSelector.trimUnpreservedWhitespace}
+     * to false to restore the old behaviour.
+     *
+     * @since 17.0.6
+     */
+    private static String trimUnpreservedWhitespace(String text) {
+    	if (text==null || text.length()==0) return text;
+    	if (!TRIM_UNPRESERVED) return text;
+    	int from = 0, to = text.length();
+    	while (from < to && isXmlSpace(text.charAt(from))) from++;
+    	// A w:t of nothing but white space keeps it.  Emptying one changes what the
+    	// paragraph is rather than how wide it is, and the FO layer then treats the
+    	// block as having no content at all and gives it a line of its own: measured on
+    	// a corpus document, page 12 of 80 opened 20.6pt below Word's (133.8 against
+    	// 113.3) because one such paragraph gained a line.  Word paints no glyph for it
+    	// either way, so nothing is lost by leaving it.
+    	if (from == to) return text;
+    	while (to > from && isXmlSpace(text.charAt(to-1))) to--;
+    	return (from==0 && to==text.length()) ? text : text.substring(from, to);
+    }
+
+    /** The four characters XML's S production covers; a no-break space is not one. */
+    private static boolean isXmlSpace(char c) {
+    	return c==' ' || c=='\t' || c=='\n' || c=='\r';
+    }
+
+    private static final boolean TRIM_UNPRESERVED = Docx4jProperties.getProperty(
+    		"docx4j.fonts.runFontSelector.trimUnpreservedWhitespace", true);
     
     /**
      * Apply font selection algorithm to this Text, based on supplied PPr, RPr

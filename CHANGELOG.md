@@ -326,6 +326,15 @@ scaling, which travels as letter-spacing on the inner font inline, replaced the 
 - w:contextualSpacing now pairs two paragraphs which state no w:pStyle (both are of the
 default style); at a cell's top and bottom edges it applies only where the cell holds a
 single paragraph, since Word applies the last of several paragraphs' space-after there
+- a section whose w:pgNumType/@w:start XSL FO forbids (0, Word's "page 0" cover page) now
+gets its odd and even page masters swapped, so its headers land on the side Word puts them:
+FOP clamps initial-page-number to 1, which inverted the odd-or-even selection.  The printed
+PAGE number is still one too high; nothing in XSL FO offsets fo:page-number
+- w:settings/w:mirrorMargins: an even (left-hand) page now takes w:pgMar/@w:left as its
+right margin, as Word does, instead of the same margins as an odd page
+- w:tblPr/w:jc="center" now centres a table narrower than the text column, not only one
+wider than it
+- a space in front of a PAGE or NUMPAGES field is no longer collapsed away by FOP
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's
@@ -393,6 +402,25 @@ entry point for drawing a metafile onto any Graphics2D
 was unreachable
 - ConversionImageHandler.isInline() (a default method) says whether a handler embeds images
 in the output rather than writing files; it decides how a metafile is represented in HTML
+- an IF field with no w:fldChar w:fldCharType="separate" has no result (ECMA-376 17.16.18)
+and now paints nothing, as Word paints nothing for it: its branches are field instruction,
+and we were painting the operands' own PAGE and NUMPAGES fields and reserving the true
+branch's height.  PDF and HTML; docx4j.convert.out.fields.dropResultlessIf=false restores
+the old behaviour
+- mc:AlternateContent: docx4j.jaxb.mc.preferChoice names the mc:Choice/@Requires prefixes
+we can draw, and the first mc:Choice naming only those is then rendered rather than the
+mc:Fallback, as Word renders it (PDF and HTML, and the unmarshalling preprocessor).  It
+ships empty - always the fallback, as before - because that measured better: of the 25
+corpus documents carrying an mc:Choice Requires="wps", choosing it moved two and both fell,
+its box landing within 0.6pt of the fallback's in each
+- the leading and trailing white space of a w:t with no xml:space="preserve" is no longer
+rendered: XML makes it insignificant without the attribute and Word writes the attribute
+whenever the space matters.  The rule is in the w:t emission path, so loading and saving a
+document is unchanged; docx4j.fonts.runFontSelector.trimUnpreservedWhitespace=false
+restores the old behaviour.  PDF and HTML
+- StyleUtil: a w:ind stating w:firstLine now clears an inherited w:hanging and vice versa -
+they are two spellings of one property (ECMA-376 17.3.1.12), and merged attribute by
+attribute the inherited hanging won
 
 
 Version 17.0.5

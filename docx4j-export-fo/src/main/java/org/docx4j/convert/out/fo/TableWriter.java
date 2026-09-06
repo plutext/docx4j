@@ -213,7 +213,14 @@ public class TableWriter extends AbstractTableWriter {
 		int available = writableWidthTwips(context);
 		int indent;
 		int gridShift = 0;
-		if (centred && width > 0 && available > 0 && width > available) {
+		/* A centred table is centred whether it is wider than the text column or
+		 * narrower.  The test used to be width > available, so a table narrower than the
+		 * column fell through to indent = 0 and sat at the left margin: measured on a
+		 * corpus document whose one-column table carries w:tblPr/w:jc="center", Word puts
+		 * the cell's "1" at x=174.3 and ours was at 75.7 - 99pt out, the whole table.
+		 * (available - width) is negative for a wider table and positive for a narrower
+		 * one, and half of it is the centring offset in both directions.  @since 17.0.6 */
+		if (centred && width > 0 && available > 0) {
 			indent = (available - width) / 2;
 		} else {
 			// Word ignores w:tblInd on a centred or right aligned table (as PropertyFactory does)
