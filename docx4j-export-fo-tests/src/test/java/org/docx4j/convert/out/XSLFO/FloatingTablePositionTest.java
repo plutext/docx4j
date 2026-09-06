@@ -364,6 +364,71 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	@Test public void midFlowVisitor() throws Exception { midFlowTableStaysInFlow(Docx4J.FLAG_NONE); }
 	@Test public void midFlowXslt() throws Exception { midFlowTableStaysInFlow(Docx4J.FLAG_EXPORT_PREFER_XSL); }
 
+	/**
+	 * A page-anchored table too wide for anything to fit beside it, with content before
+	 * it: Word draws it at its anchor and puts what follows below it, so it is positioned
+	 * <em>and</em> its band is reserved in the flow by an invisible copy left where it
+	 * was (&#xa7;9.5's w:wrap trick, &#xa7;6.8).  Before 17.0.6 it was left in the flow
+	 * entirely, because the flow closing over it drew the two on top of each other.
+	 */
+	private void aWideMidFlowTableIsPositionedAndReserved(int flags) throws Exception {
+		String wide = "<w:tbl><w:tblPr>"
+				+ "<w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\" w:tblpX=\"0\" w:tblpY=\"12000\"/>"
+				+ "<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"8800\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"8800\"/></w:tblGrid>"
+				+ "<w:tr><w:tc><w:tcPr><w:tcW w:type=\"dxa\" w:w=\"8800\"/></w:tcPr>"
+				+ "<w:p><w:r><w:t>one</w:t></w:r></w:p></w:tc></w:tr></w:tbl>";
+		org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>before</w:t></w:r></w:p>"
+				+ wide + "<w:p><w:r><w:t>after</w:t></w:r></w:p>", flags);
+		NodeList tables = doc.getElementsByTagNameNS(FO_NS, "table");
+		assertEquals("the table and its invisible band", 2, tables.getLength());
+		int hidden = 0, positioned = 0;
+		for (int i = 0; i < tables.getLength(); i++) {
+			Element t = (Element) tables.item(i);
+			if ("hidden".equals(t.getAttribute("visibility"))) hidden++;
+			for (Node n = t.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+				Element e = (Element) n;
+				if (FO_NS.equals(e.getNamespaceURI()) && "block-container".equals(e.getLocalName())
+						&& e.hasAttribute("absolute-position")) {
+					positioned++;
+					assertEquals("tblpY from the page top", 600.0, pt(e.getAttribute("top")), 0.01);
+					break;
+				}
+			}
+		}
+		assertEquals("one invisible copy reserves the band", 1, hidden);
+		assertEquals("one copy is positioned at the anchor", 1, positioned);
+	}
+
+	@Test public void wideMidFlowVisitor() throws Exception {
+		aWideMidFlowTableIsPositionedAndReserved(Docx4J.FLAG_NONE);
+	}
+
+	@Test public void wideMidFlowXslt() throws Exception {
+		aWideMidFlowTableIsPositionedAndReserved(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/** docx4j.convert.out.fo.tables.reserveBand=false leaves it in the flow, as b2-batch18
+	 *  did. */
+	@Test public void reserveBandCanBeTurnedOff() throws Exception {
+		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.tables.reserveBand", false);
+		try {
+			org.w3c.dom.Document doc = fo("<w:p><w:r><w:t>before</w:t></w:r></w:p>"
+					+ "<w:tbl><w:tblPr><w:tblpPr w:vertAnchor=\"page\" w:horzAnchor=\"margin\""
+					+ " w:tblpX=\"0\" w:tblpY=\"12000\"/><w:tblLayout w:type=\"fixed\"/>"
+					+ "<w:tblW w:type=\"dxa\" w:w=\"8800\"/></w:tblPr>"
+					+ "<w:tblGrid><w:gridCol w:w=\"8800\"/></w:tblGrid>"
+					+ "<w:tr><w:tc><w:tcPr><w:tcW w:type=\"dxa\" w:w=\"8800\"/></w:tcPr>"
+					+ "<w:p><w:r><w:t>one</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
+					+ "<w:p><w:r><w:t>after</w:t></w:r></w:p>", Docx4J.FLAG_NONE);
+			assertEquals("one table, in the flow", 1,
+					doc.getElementsByTagNameNS(FO_NS, "table").getLength());
+			assertNull(positioningContainer(doc));
+		} finally {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.tables.reserveBand", true);
+		}
+	}
+
 	/** An empty paragraph before it is still the cover-page shape. */
 	private void emptyParagraphBeforeIsStillTheStart(int flags) throws Exception {
 		org.w3c.dom.Document doc = fo("<w:p/>"

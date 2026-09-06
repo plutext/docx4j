@@ -628,8 +628,8 @@ public final class WordLayoutFixups {
 	// ------------------------------------------------------------ 0e. text frames
 
 	/** On a paragraph's fo:block (XsltFOFunctions.applyFrameHint): its w:framePr, as
-	 *  {@code hAnchor:vAnchor:x:y:xAlign:yAlign:w:h:hRule:wrap:dropCap} with the lengths
-	 *  in twips.  @since 17.0.6 */
+	 *  {@code hAnchor:vAnchor:x:y:xAlign:yAlign:w:h:hRule:wrap:dropCap:hSpace:vSpace:lines}
+	 *  with the lengths in twips.  @since 17.0.6 */
 	public static final String HINT_FRAME = "docx4j-frame";
 
 	/** docx4j.convert.out.fo.frames.position (default <b>true</b>): whether w:framePr is
@@ -743,13 +743,12 @@ public final class WordLayoutFixups {
 		String[] f = spec.split(":", -1);
 		if (f.length < 11) return;
 		String hAnchor = f[0], vAnchor = f[1], xAlign = f[4], yAlign = f[5];
-		String hRule = f[8], dropCap = f[10];
+		String hRule = f[8], wrap = f[9], dropCap = f[10];
 		double x = twips(f[2]), y = twips(f[3]), w = twips(f[6]), h = twips(f[7]);
+		double hSpace = f.length > 11 ? twips(f[11]) : 0;
+		double vSpace = f.length > 12 ? twips(f[12]) : 0;
+		int capLines = f.length > 13 ? intOrZero(f[13]) : 0;
 		Element first = group.get(0);
-
-		// a drop cap is a frame set into the paragraph beside it, not a positioned box:
-		// left in the flow until it can be a float (see the class comment)
-		if (dropCap.length() > 0 && !"none".equals(dropCap)) return;
 
 		Element rb = regionBody(first);
 		double marginLeft = 0, marginTop = 0, pageWidth = 0;
@@ -763,6 +762,12 @@ public final class WordLayoutFixups {
 				- (rb == null ? 0 : lengthPt(((Element) rb.getParentNode()).getAttribute("margin-right"))
 						+ lengthPt(rb.getAttribute("margin-right")));
 
+		// a drop cap is a frame set into the paragraph beside it, not a positioned box
+		if (dropCap.length() > 0 && !"none".equals(dropCap)) {
+			dropCapFrame(doc, group, dropCap, capLines, hSpace, marginLeft);
+			return;
+		}
+
 		// the frame's left edge, from the page's own left edge
 		double left;
 		if ("page".equals(hAnchor)) left = x;
@@ -774,24 +779,23 @@ public final class WordLayoutFixups {
 			else if ("right".equals(xAlign) || "outside".equals(xAlign)) left = base + Math.max(0, frame - w);
 			else left = base;                    // left, inside
 		}
-		if (w <= 0) w = Math.max(0, measure - (left - marginLeft));
-		if (w <= 0) return;
 
 		Node parent = first.getParentNode();
 		if (parent == null) return;
 		Node after = group.get(group.size() - 1).getNextSibling();
 
-		// Only a frame anchored to the page or to the margin is taken out of the flow.
-		// A w:vAnchor="text" frame is positioned against the paragraph it belongs to and
-		// Word wraps the body text around it (w:wrap="around"); putting it in a
-		// block-container of its own width was measured a clear loss - on a document of
-		// 499 such frames line parity went 0.954 -> 0.573, and on three more 0.911 ->
-		// 0.804, 0.933 -> 0.867 and 0.899 -> 0.858 - so those stay where they fall until
-		// the float route (§9.1's) is measured for them.  Where the frames are absolute,
-		// the gain is the same size: 0.824 -> 0.960 on a document of 25 of them.
+		// A frame anchored to the page or to the margin is taken out of the flow into a
+		// positioned container; a w:vAnchor="text" frame is positioned against the
+		// paragraph it belongs to, with the body text running beside it, which is an
+		// fo:float ({@link #floatFrame}).
 		boolean absolute = ("page".equals(vAnchor) || "margin".equals(vAnchor))
 				&& !"inline".equals(yAlign);
-		if (!absolute) return;
+		if (!absolute) {
+			floatFrame(doc, group, w, left - marginLeft, y, measure, hSpace, vSpace, wrap);
+			return;
+		}
+		if (w <= 0) w = Math.max(0, measure - (left - marginLeft));
+		if (w <= 0) return;
 		{
 			double top = "page".equals(vAnchor) ? y : marginTop + y;
 			if (yAlign.length() > 0) {
@@ -882,6 +886,238 @@ public final class WordLayoutFixups {
 		} catch (NumberFormatException e) {
 			return 0;
 		}
+	}
+
+	/** An integer string, or 0 where it is absent or unparseable. */
+	private static int intOrZero(String v) {
+		if (v == null || v.length() == 0) return 0;
+		try {
+			return Integer.parseInt(v.trim());
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
+
+	/** A frame taking more than this share of the column has no room for text beside it,
+	 *  so it is left in the flow - which is where the text after it goes in Word too.
+	 *  The same cut as a floating table's ({@code TableWriter.FLOAT_MAX_SHARE}). */
+	static final double FLOAT_MAX_SHARE = 0.6;
+
+	/**
+	 * A {@code w:vAnchor="text"} frame: Word draws it at the anchor paragraph's own
+	 * position offset by {@code w:x} / {@code w:y}, and flows the text that follows
+	 * <em>beside</em> it, {@code w:hSpace} / {@code w:vSpace} away.  That is an
+	 * {@code fo:float} at the edge the frame is nearer, exactly as &#xa7;9.1 floats a
+	 * picture Word wraps text around and &#xa7;6.8 a text-anchored floating table.
+	 *
+	 * <p>FOP gives a float the ipd of its content and ignores the padding of the block
+	 * inside it, so - as for the floating table - the float holds a <b>one-row table
+	 * whose columns are the offset from the column edge, the frame, and the gap to the
+	 * text</b>: that reserves exactly the band Word keeps clear and puts the frame at
+	 * {@code w:x} within it.  {@code w:y} is padding above the frame inside the float,
+	 * and {@code w:vSpace} padding below it.  FOP anchors a side float to a line and
+	 * drops one which has none, so the float goes inside the first block after the frame
+	 * - the paragraph that now begins where the framed paragraph was, which is what Word
+	 * measures {@code w:y} from.</p>
+	 *
+	 * <p><b>Left in the flow</b>, where the text follows the frame rather than running
+	 * beside it, and which is what docx4j did with every text-anchored frame before
+	 * 17.0.6:</p>
+	 * <ul>
+	 * <li>a frame with no {@code w:w} at all, which fills the rest of the measure - the
+	 *     shape of all 499 frames of the corpus document that is the acid test here
+	 *     (0.954 of Word's lines in the flow, 0.573 in a container of its own width);</li>
+	 * <li>one over {@value #FLOAT_MAX_SHARE} of the column, where nothing useful fits
+	 *     beside it (&#xa7;6.8's cut, measured there);</li>
+	 * <li>{@code w:wrap="notBeside"} or {@code "none"}, which say no text may run beside
+	 *     the frame: in the flow the frame already reserves its own band;</li>
+	 * <li>one whose band falls outside the column, one in a table cell, a header, a
+	 *     footer or a footnote, and one in a multi-column region - FOP lays out no side
+	 *     float in any of those, and paints nothing at all for one (&#xa7;10);</li>
+	 * <li>one which an {@code fo:block} inside an {@code fo:inline} follows - a line
+	 *     break inside a run - since that combination throws in FOP
+	 *     ({@link #hoistFloats}) and a float holding a table cannot be hoisted;</li>
+	 * <li>one with no following block to anchor the float to.</li>
+	 * </ul>
+	 *
+	 * @param w      the frame's width, {@code w:w}
+	 * @param x      its left edge within the column
+	 * @param y      {@code w:y}, the drop from the anchor paragraph's top
+	 * @param measure the column's width
+	 * @since 17.0.6
+	 */
+	private static void floatFrame(Document doc, List<Element> group, double w, double x,
+			double y, double measure, double hSpace, double vSpace, String wrap) {
+		if (!FOConversionContext.useFloats()) return;
+		// no w:w: the frame fills the rest of the measure, so nothing runs beside it
+		if (w <= 0 || measure <= 0) return;
+		if (w > FLOAT_MAX_SHARE * measure) return;
+		// no text may run beside it: in the flow the frame reserves its own band already
+		if ("notBeside".equals(wrap) || "none".equals(wrap)) return;
+		Element first = group.get(0), last = group.get(group.size() - 1);
+		if (!floatsAllowed(first)) return;
+		if (x < -0.5 || x + w > measure + 0.5) return;
+		if (blockInsideInlineAfter(doc, last)) return;
+
+		// the block the float anchors to: the first one after the frame that is not
+		// itself framed (a following frame is moved out of the flow in its turn)
+		Element anchor = null;
+		for (Node n = last.getNextSibling(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			if (isFo(el, "block") && el.getAttribute(HINT_FRAME).length() == 0) anchor = el;
+			else if (isFo(el, "block") || takesNoSpace(el)) continue;
+			break;
+		}
+		if (anchor == null) return;
+
+		double padLeft, padRight;
+		if (x + w / 2 > measure / 2) {           // the frame is nearer the right edge
+			padLeft = hSpace;
+			padRight = Math.max(0, measure - x - w);
+		} else {
+			padLeft = Math.max(0, x);
+			padRight = hSpace;
+		}
+		Element wrapper = doc.createElementNS(FO_NS, "fo:float");
+		wrapper.setAttribute("float", x + w / 2 > measure / 2 ? "right" : "left");
+		Element holder = doc.createElementNS(FO_NS, "fo:block");
+		holder.setAttribute("start-indent", "0pt");
+		holder.setAttribute("end-indent", "0pt");
+		if (y > 0) holder.setAttribute("padding-top", pt(y));
+		if (vSpace > 0) holder.setAttribute("padding-bottom", pt(vSpace));
+		wrapper.appendChild(holder);
+		Element cell = bandTable(doc, holder, padLeft, w, padRight);
+		for (Element block : group) dropPagination(block);
+		moveInto(cell, group);
+		anchor.insertBefore(wrapper, anchor.getFirstChild());
+	}
+
+	/**
+	 * The one-row fixed-layout table a float uses to reserve a band: columns of
+	 * {@code before}, {@code width} and {@code after}, the middle cell returned for the
+	 * content.  FOP takes a float's ipd from its content and ignores the padding of the
+	 * block inside it, so the gaps have to be columns (&#xa7;6.8).
+	 */
+	private static Element bandTable(Document doc, Element holder, double before, double width,
+			double after) {
+		Element outer = doc.createElementNS(FO_NS, "fo:table");
+		outer.setAttribute("table-layout", "fixed");
+		outer.setAttribute("width", pt(before + width + after));
+		outer.setAttribute("start-indent", "0pt");
+		outer.setAttribute("end-indent", "0pt");
+		holder.appendChild(outer);
+		Element body = doc.createElementNS(FO_NS, "fo:table-body");
+		Element row = doc.createElementNS(FO_NS, "fo:table-row");
+		double[] widths = { before, width, after };
+		Element content = null;
+		for (int i = 0; i < widths.length; i++) {
+			if (widths[i] <= 0) continue;
+			Element col = doc.createElementNS(FO_NS, "fo:table-column");
+			col.setAttribute("column-width", pt(widths[i]));
+			outer.appendChild(col);
+			Element cell = doc.createElementNS(FO_NS, "fo:table-cell");
+			row.appendChild(cell);
+			if (i == 1) content = cell;
+			else {
+				Element blank = doc.createElementNS(FO_NS, "fo:block");
+				blank.setAttribute("font-size", "0.1pt");
+				blank.setAttribute("line-height", "0pt");
+				cell.appendChild(blank);
+			}
+		}
+		outer.appendChild(body);
+		body.appendChild(row);
+		return content;
+	}
+
+	/**
+	 * {@code w:dropCap}: the framed paragraph <em>is</em> the cap - Word puts the
+	 * paragraph's first character(s) in a frame of their own and runs the first
+	 * {@code w:lines} lines of the paragraph that follows beside it.  Word writes the
+	 * enlarged size into the run itself ({@code w:sz}), so nothing here computes a font
+	 * size: what has to be reproduced is the band, which is {@code w:lines} lines of the
+	 * following paragraph's pitch by the cap's own advance width.
+	 *
+	 * <p>{@code w:dropCap="drop"} sets the cap into the text, so it is an
+	 * {@code fo:float} at the start edge, the same machinery as {@link #floatFrame};
+	 * {@code "margin"} hangs it in the margin, which is a positioned container at the
+	 * column's left edge less the cap's width, taking no space.</p>
+	 *
+	 * <p><b>Not measured against a Word golden</b>: no document of the three corpora
+	 * (1,238 frames in 53 of them) carries a {@code w:dropCap} at all, and no probe has a
+	 * golden for one, so the geometry here is the rule as ECMA-376 17.3.1.11 states it
+	 * and as Word's own markup implies, not a measurement.  It changes no corpus
+	 * document.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static void dropCapFrame(Document doc, List<Element> group, String dropCap,
+			int capLines, double hSpace, double marginLeft) {
+		Element first = group.get(0), last = group.get(group.size() - 1);
+		if (!floatsAllowed(first)) return;
+
+		Element anchor = null;
+		for (Node n = last.getNextSibling(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element el = (Element) n;
+			if (isFo(el, "block") && el.getAttribute(HINT_FRAME).length() == 0) anchor = el;
+			else if (isFo(el, "block") || takesNoSpace(el)) continue;
+			break;
+		}
+		if (anchor == null) return;
+
+		// the cap's own advance, from the font its run is set in
+		double width = 0;
+		for (Element block : group) {
+			NodeList inlines = block.getElementsByTagNameNS(FO_NS, "inline");
+			double w = textWidthPt(block, inlines.getLength() > 0 ? (Element) inlines.item(0) : block);
+			if (w < 0) return;                   // the font could not be measured
+			width = Math.max(width, w);
+		}
+		if (width <= 0) return;
+
+		boolean margin = "margin".equals(dropCap);
+		if (!margin && (!FOConversionContext.useFloats() || blockInsideInlineAfter(doc, last))) {
+			return;                              // no float to be had: leave it in the flow
+		}
+
+		// the band is w:lines lines of the paragraph the cap is set into
+		double pitch = lengthPt(anchor.getAttribute("line-height"));
+		if (capLines > 1 && pitch > 0) {
+			for (Element block : group) block.setAttribute("line-height", pt(capLines * pitch));
+		}
+		for (Element block : group) dropPagination(block);
+
+		if (margin) {
+			// hung in the margin: it takes no space in the flow
+			Element wrapper = doc.createElementNS(FO_NS, "fo:block-container");
+			wrapper.setAttribute("height", "0pt");
+			wrapper.setAttribute("overflow", "visible");
+			wrapper.setAttribute("start-indent", "0pt");
+			wrapper.setAttribute("end-indent", "0pt");
+			Element abs = doc.createElementNS(FO_NS, "fo:block-container");
+			abs.setAttribute("absolute-position", "absolute");
+			abs.setAttribute("top", "0pt");
+			abs.setAttribute("left", pt(-(width + hSpace)));
+			abs.setAttribute("width", pt(width));
+			abs.setAttribute("overflow", "visible");
+			abs.setAttribute("start-indent", "0pt");
+			abs.setAttribute("end-indent", "0pt");
+			wrapper.appendChild(abs);
+			moveInto(abs, group);
+			insertAnchorWrapper(anchor, wrapper);
+			return;
+		}
+		Element wrapper = doc.createElementNS(FO_NS, "fo:float");
+		wrapper.setAttribute("float", "left");
+		Element holder = doc.createElementNS(FO_NS, "fo:block");
+		holder.setAttribute("start-indent", "0pt");
+		holder.setAttribute("end-indent", "0pt");
+		wrapper.appendChild(holder);
+		Element cell = bandTable(doc, holder, 0, width, hSpace);
+		moveInto(cell, group);
+		anchor.insertBefore(wrapper, anchor.getFirstChild());
 	}
 
 	// ------------------------------------------------------------ 0f. floating tables
@@ -1301,7 +1537,8 @@ public final class WordLayoutFixups {
 	private static void anchorFloatingTable(Document doc, Element tbl) {
 		Node parent = tbl.getParentNode();
 		if (!(parent instanceof Element) || !isFo((Element) parent, "flow")) return;
-		if (!opensThePage(tbl)) return;
+		boolean reserve = !opensThePage(tbl);
+		if (reserve && !reservesItsBand(tbl)) return;
 
 		double left = lengthPt(tbl.getAttribute(HINT_TBLP_LEFT));
 		double width = tableWidthPt(tbl);
@@ -1338,10 +1575,68 @@ public final class WordLayoutFixups {
 		wrapper.appendChild(abs);
 
 		parent.insertBefore(wrapper, tbl);
+		if (reserve) {
+			// the band the table occupies in the flow, so what follows is pushed down
+			Element copy = (Element) tbl.cloneNode(true);
+			copy.setAttribute("visibility", "hidden");
+			for (String hint : TBLP_HINTS) copy.removeAttribute(hint);
+			copy.removeAttribute("break-before");
+			stripIds(copy);
+			parent.insertBefore(copy, tbl);
+		}
 		parent.removeChild(tbl);
 		tbl.setAttribute("start-indent", "0pt");
 		tbl.setAttribute("end-indent", "0pt");
 		abs.appendChild(tbl);
+	}
+
+	/**
+	 * Whether a page- or margin-anchored floating table which content <em>precedes</em>
+	 * is positioned at its anchor with its band reserved in the flow by an invisible copy
+	 * (&#xa7;9.5's {@code w:wrap} trick, which FOP honours: {@code visibility="hidden"}
+	 * keeps the area's size and paints nothing), rather than being left in the flow as
+	 * 17.0.5 and b2-batch18 left it.
+	 *
+	 * <p>Reserving the band is right only where the flow has <b>not already passed</b>
+	 * the table's anchor - there Word must put what follows below the table, which is
+	 * what the reservation does.  Where the anchor is above the flow, Word draws the
+	 * table over ground the flow has already covered and the reservation is pure error.
+	 * The fixups cannot know where the flow has reached, and the measured cut is the
+	 * anchor's own place on the page:</p>
+	 * <ul>
+	 * <li>a corpus letterhead whose table is anchored at {@code tblpY=15027} - 751.4pt
+	 *     down an 841.9pt page, with 16 paragraphs before it and the letter's body after
+	 *     it - goes from 0.645 to <b>0.839</b> of Word's lines;</li>
+	 * <li>three anchored in the top quarter fall: 203.3pt of a 792pt page 0.933 to 0.853,
+	 *     66.7pt of a 1190.7pt page 0.830 to 0.801, and 94.6pt of an 841.9pt page 0.839
+	 *     to 0.833.</li>
+	 * </ul>
+	 * <p>So the band is reserved only for a table anchored in the <b>lower half</b> of
+	 * the page.  A <b>narrow</b> table is left in the flow whatever its anchor: Word runs
+	 * the text beside it, and reserving the whole band pushes down text Word keeps level
+	 * (measured on the table-floating-anchor probe, whose page 6 has a narrow table beside
+	 * the text - reserving its band cost the probe 0.84 -> 0.83 of Word's lines).</p>
+	 *
+	 * <p>{@code docx4j.convert.out.fo.tables.reserveBand=false} leaves every such table in
+	 * the flow.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static boolean reservesItsBand(Element tbl) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.tables.reserveBand", true)) {
+			return false;
+		}
+		if ("true".equals(tbl.getAttribute(HINT_TBLP_NARROW))) return false;
+		// a w:tblpYSpec gives the frame, not the table's top edge - the table's height is
+		// not known before layout - so where its band falls is guesswork (measured: the
+		// one corpus table with a tblpYSpec and content before it lost a line)
+		if (!tbl.hasAttribute(HINT_TBLP_TOP)) return false;
+		double top = lengthPt(tbl.getAttribute(HINT_TBLP_TOP));
+		Element rb = regionBody(tbl);
+		double pageHeight = rb != null && rb.getParentNode() instanceof Element
+				? lengthPt(((Element) rb.getParentNode()).getAttribute("page-height")) : 0;
+		return pageHeight > 0 && top > pageHeight / 2;
 	}
 
 	/**

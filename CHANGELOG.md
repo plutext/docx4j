@@ -85,6 +85,10 @@ flow.  Set docx4j.convert.out.fo.tables.float=false for the old behaviour
 - a page- or margin-anchored floating table which opens a page, and is narrow enough for
 text to fit beside it, is now positioned at its anchor as one which opens a section is: Word
 puts the text that fits above the frame at the top of the page, not below the table
+- a page- or margin-anchored floating table which content precedes, too wide for text
+beside it and anchored in the lower half of the page, is now positioned at its anchor with
+its band reserved in the flow, so what follows is pushed past it as Word pushes it
+(docx4j.convert.out.fo.tables.reserveBand=false leaves it in the flow)
 - an empty paragraph carrying a hard page break before an out-of-flow object - a floating
 table or a picture Word positions itself - no longer takes a line at the top of the new page
 - unequal columns which the document does not divide with a w:br w:type="column" are now
@@ -292,8 +296,12 @@ ignored, where one still opens the table on a new page
 the margin: it becomes a positioned block-container at w:x/w:y of width w:w, consecutive
 paragraphs carrying the same w:framePr forming one frame, and where w:wrap lets no text run
 beside it (notBeside, none) the flow keeps the frame's band.  On by default
-(docx4j.convert.out.fo.frames.position=false turns it off); a text-anchored frame and
-w:dropCap are laid out in the flow
+(docx4j.convert.out.fo.frames.position=false turns it off)
+- a text-anchored w:framePr frame narrow enough for text beside it is now an fo:float at
+its w:x, with the following text flowing past it w:hSpace/w:vSpace away, as Word draws it;
+wider frames, and those with no w:w, stay in the flow
+- w:dropCap is now drawn as Word draws it: the cap floats at the start of the paragraph
+that follows, spanning w:lines of its lines (w:dropCap="margin" hangs it in the margin)
 - a rotated table cell (w:textDirection) now gets the dimensions a turned reference area
 needs - the cell's content width and the row's height - so its text is painted inside the
 cell instead of past the page edge, and the row is not inflated

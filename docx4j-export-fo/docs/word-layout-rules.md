@@ -1713,10 +1713,11 @@ its bottom edge on the **bottom margin**, so the frame for a `tblpYSpec` without
 `vertAnchor="page"` is the margin box.
 
 Nothing flows beside a positioned container, so where the flow needs the band the table is
-drawn in, the two are drawn on top of each other, and only two shapes are positioned: a
-table which **opens its section's flow** (the cover page, the letterhead), and one which
+drawn in, the two are drawn on top of each other. Three shapes are positioned: a
+table which **opens its section's flow** (the cover page, the letterhead); one which
 **opens a page** - everything before it on the page is empty, back to a hard break - and is
-narrow enough (60% of the column) for text to fit beside it. Measured on
+narrow enough (60% of the column) for text to fit beside it; and, since 17.0.6, one which
+content **precedes** whose band is reserved in the flow ([below](#s68reserve)). Measured on
 `table-floating-anchor`, whose page-anchored tables each follow a page break: Word puts the
 paragraph after the table at the top of the page (y=83.1) and the table at its anchor
 (168.3 for `tblpY=3136`, 697.4 for `tblpYSpec="bottom"`, 390.4 for `tblpYSpec="center"` on
@@ -1728,6 +1729,36 @@ A page-anchored table **mid-page** stays in the flow for the same reason - measu
 floats a narrow one beside the text (probe page 6: the table at y=225.9 x=368.5, the lines
 beside it stopping at 339.6), which a container cannot do and a float cannot be put at an
 absolute y.
+
+<a id="s68reserve"></a>**A table which content precedes can be positioned with its band
+reserved.** The reason it could not was that the flow closing over it drew the two on top
+of each other; §9.5's `w:wrap` trick fixes exactly that - an invisible copy of the table
+left where it was (FOP honours `visibility="hidden"`: the area keeps its size and paints
+nothing) reserves the height in the flow, so what follows is pushed down while the table
+itself goes to its anchor. It is right only where the flow has **not already passed** the
+table's anchor; where the anchor is above the flow, Word draws the table over ground the
+flow has already covered and the reservation is pure error. The fixups cannot know where
+the flow has reached, and the measured cut is the anchor's own place on the page:
+
+* a corpus letterhead whose table is anchored at `tblpY=15027` - 751.4pt down an 841.9pt
+  page, with 16 paragraphs before it and the letter's body after it - goes from **0.645 to
+  0.839** of Word's lines;
+* three anchored in the top quarter fall: 203.3pt of a 792pt page 0.933 to 0.853, 66.7pt
+  of a 1190.7pt page 0.830 to 0.801, and 94.6pt of an 841.9pt page 0.839 to 0.833.
+
+So the band is reserved only for a table anchored in the **lower half of the page** by a
+`tblpY` of its own. A **narrow** table is left in the flow whatever its anchor: Word runs
+the text beside it, and reserving the whole band pushes down text Word keeps level -
+measured on `table-floating-anchor`, whose page 6 has a narrow table beside the text,
+reserving its band cost the probe 0.84 to 0.83 of Word's lines. So is one placed by a
+`tblpYSpec`, which gives the frame rather than the table's top edge - the height is not
+known before layout, so where the band falls is guesswork, and the one corpus table of
+that shape with content before it lost a line.
+
+Two more corpus documents gain lines they were losing under the positioned table
+(candidate lines 108 to 151 and 43 to 52, at unchanged parity).
+`docx4j.convert.out.fo.tables.reserveBand=false` leaves every such table in the flow, as
+17.0.5 did.
 
 A positioned table keeps its columns, cell margins and borders; its own `start-indent` is
 reset, because the container (or the float's one-row table) carries the position.
@@ -2272,16 +2303,65 @@ Measured against Word's own PDFs:
 * A document of 25 such frames went from 0.824 to 0.960 of Word's lines, and from 5 pages
   to Word's 4.
 
-**A `w:vAnchor="text"` frame is left in the flow**, and so is `w:dropCap`. Its vertical
-position is relative to the paragraph it belongs to and Word wraps the body text around it
-(`w:wrap="around"`); moving it into a block-container of its own width, without text
-beside it, was measured a clear loss - on a document of 499 such frames line parity went
-0.954 to 0.573, and on three more 0.911 to 0.804, 0.933 to 0.867 and 0.899 to 0.858, while
-a fourth went from Word's 2 pages to 10. They need the `fo:float` route §9.1 uses for a
-picture Word wraps text around, with the same measure test, and that is not yet measured.
+<a id="s95float"></a>**A `w:vAnchor="text"` frame is an `fo:float`.** Word draws it at its
+anchor paragraph's own position offset by `w:x`/`w:y`, and flows the text that follows
+*beside* it, `w:hSpace`/`w:vSpace` away - which is the float route §9.1 uses for a picture
+Word wraps text around and §6.8 for a text-anchored floating table, with the same
+construction: FOP gives a float the ipd of its content and ignores the padding of the
+block inside it, so the float holds a **one-row table whose columns are the offset from
+the column edge, the frame's `w:w`, and the gap to the text**, which reserves exactly the
+band Word keeps clear and puts the frame at `w:x` within it. `w:y` is padding above the
+frame inside the float and `w:vSpace` padding below it. FOP anchors a side float to a line
+and drops one which has none, so the float goes inside the first block after the frame -
+the paragraph that now begins where the framed paragraph was, which is what Word measures
+`w:y` from.
+
+Measured on a corpus cover whose page margins are all 0 and whose frame is
+`w:framePr w:w=5281 w:hAnchor=text w:x=1441 w:y=3177` (264.05pt at 72.05pt into a 595.25pt
+column, 158.85pt below the flow position): Word's text is at (72.0, 169.5), where docx4j
+had it at (0.0, 10.5). The document went **0.727 to 0.864** of Word's lines.
+
+**Left in the flow**, which is what every text-anchored frame did before 17.0.6:
+
+* a frame with **no `w:w`** at all, which fills the rest of the measure, so nothing runs
+  beside it. That is the shape of all 499 frames of the document that is this rule's acid
+  test (0.954 of Word's lines in the flow, 0.573 in a container of its own width, 0.954
+  still with this rule), and of 4 more frames in three other documents;
+* one over **60%** of the column, where nothing useful fits beside it - §6.8's cut,
+  measured there;
+* `w:wrap="notBeside"` or `"none"`, which say no text may run beside the frame: in the
+  flow the frame already reserves its own band (386 of the corpora's 1,238 frames);
+* one whose band falls **outside the column** - measured, two corpus documents put a frame
+  at `w:x=8545 w:w=2581` in a 9751-twip column and at `w:x=9633 w:w=2086` in a 10392-twip
+  one, i.e. hanging into the right margin, which a float cannot do;
+* one in a **table cell**, a header, a footer, a footnote or a multi-column region, and one
+  inside a borders/shading container: FOP lays out no side float in any of those and paints
+  nothing at all for one (§10). Nine frames of one corpus document are in cells;
+* one which an `fo:block` inside an `fo:inline` **follows** - a line break inside a run -
+  since that combination throws in FOP (§10) and a float holding a table cannot be hoisted
+  out of the way;
+* one with no following block for the float to anchor to.
+
+Of the corpora's 716 text-anchored frames that may have text beside them, 41 in 14
+documents state a `w:w` narrow enough to be floated at all, and 18 floats in one document
+survive every test above. Over the three corpora (449 documents) one document changes and
+none falls; the 60 probe goldens are unchanged.
+
+**`w:dropCap`** is a frame of the same kind: the framed paragraph *is* the cap - Word puts
+the paragraph's first character(s) in a frame of their own and runs the first `w:lines`
+lines of the paragraph that follows beside it. Word writes the enlarged size into the run
+itself (`w:sz`), so nothing computes a font size here; what is reproduced is the band,
+which is `w:lines` lines of the following paragraph's pitch by the cap's own advance width
+(measured from the physical font, as §4.4's tab widths are). `w:dropCap="drop"` sets the
+cap into the text, so it is a float at the start edge; `"margin"` hangs it in the margin,
+which is a positioned container at the column's left edge less the cap's width, taking no
+space. **Not measured against a Word golden**: no document of the three corpora carries a
+`w:dropCap` at all and no probe has a golden for one, so this is the rule as ECMA-376
+17.3.1.11 states it and as Word's own markup implies, not a measurement. It changes no
+corpus document.
+
 `w:xAlign`/`w:yAlign` other than `left`/`top` (and `w:yAlign="inline"`, which keeps the
-paragraph in the flow), `w:hSpace`/`w:vSpace` and `w:anchorLock` are not implemented
-either.
+paragraph in the flow) and `w:anchorLock` are not implemented.
 
 **The frame Word applies is the effective one.** A paragraph style may carry a
 `w:framePr`, and each of its attributes inherits on its own: a paragraph stating only
@@ -2313,10 +2393,11 @@ the frames-in-the-flow layout it replaces already stood.
 
 **On by default** since 17.0.6 (`docx4j.convert.out.fo.frames.position=false` turns it
 off). Three corpus documents change and none falls: 0.804 to 0.873, 0.824 to 0.960 and
-Word's page count, 0.840 to 0.848. The letterhead keeps its 20 of Word's 31 lines either
-way while its frames move to where Word draws them - median dy 58.2 to 22.4 - and its
-residual is its page-anchored table, which the floating-table pass declines to position
-because content precedes it (§6.8). The nesting defect 17.0.5 reported was the
+Word's page count, 0.840 to 0.848. The letterhead kept its 20 of Word's 31 lines either
+way while its frames moved to where Word draws them - median dy 58.2 to 22.4 - and its
+residual was its page-anchored table, which the floating-table pass then declined to
+position because content precedes it; §6.8's reserved band takes that document to
+**0.839**. The nesting defect 17.0.5 reported was the
 borders/shading container:
 `Containerization` builds it from its *first* paragraph's `pPr`, so the frame hint landed
 on both the container and the paragraph inside it, the container was positioned and then

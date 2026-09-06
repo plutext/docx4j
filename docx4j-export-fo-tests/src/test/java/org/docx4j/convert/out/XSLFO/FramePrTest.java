@@ -130,17 +130,194 @@ public class FramePrTest extends AbstractXSLFOTest {
 	}
 
 	/**
-	 * A {@code w:vAnchor="text"} frame is positioned against the paragraph it belongs to
-	 * and Word wraps the body text around it: it is left in the flow, since moving it
-	 * into a container of its own width was measured a clear loss (see
-	 * {@code WordLayoutFixups.positionFrame}).
+	 * A {@code w:vAnchor="text"} frame is drawn at its anchor paragraph's position
+	 * offset by {@code w:x}/{@code w:y}, with the text that follows running beside it:
+	 * an {@code fo:float} holding a one-row table whose columns are the offset from the
+	 * column edge, the frame's {@code w:w}, and the {@code w:hSpace} gap to the text
+	 * (&#xa7;9.5, the machinery &#xa7;6.8 uses for a text-anchored floating table).
+	 *
+	 * <p>The column here is 451.3pt (A4 less 72pt margins): {@code w:w=2880} is 144pt of
+	 * it, at {@code w:x=720} = 36pt, {@code w:hSpace=180} = 9pt.</p>
+	 */
+	private static final String TEXT_ANCHORED =
+			"<w:framePr w:w=\"2880\" w:hSpace=\"180\" w:vSpace=\"120\" w:wrap=\"around\""
+			+ " w:vAnchor=\"text\" w:hAnchor=\"text\" w:x=\"720\" w:y=\"240\"/>";
+
+	private void textAnchoredIsAFloat(int flags) throws Exception {
+		org.w3c.dom.Document fo = fo(pkg(TEXT_ANCHORED, 1), flags);
+		assertEquals("no positioned container for a text-anchored frame", null, absoluteContainer(fo));
+		Element fl = theFloat(fo);
+		assertNotNull("the frame was left in the flow", fl);
+		assertEquals("the nearer edge", "left", fl.getAttribute("float"));
+		Element block = (Element) fl.getElementsByTagNameNS(FO, "block").item(0);
+		assertEquals("w:y is padding above the frame", 12.0, pt(block.getAttribute("padding-top")), 0.05);
+		assertEquals("w:vSpace below it", 6.0, pt(block.getAttribute("padding-bottom")), 0.05);
+		Element band = (Element) fl.getElementsByTagNameNS(FO, "table").item(0);
+		assertNotNull("no band table", band);
+		assertEquals("the band: w:x + w:w + w:hSpace", 189.0, pt(band.getAttribute("width")), 0.05);
+		NodeList columns = band.getElementsByTagNameNS(FO, "table-column");
+		assertEquals("three columns", 3, columns.getLength());
+		assertEquals("w:x", 36.0, pt(((Element) columns.item(0)).getAttribute("column-width")), 0.05);
+		assertEquals("w:w", 144.0, pt(((Element) columns.item(1)).getAttribute("column-width")), 0.05);
+		assertEquals("w:hSpace", 9.0, pt(((Element) columns.item(2)).getAttribute("column-width")), 0.05);
+		// the float anchors inside the paragraph that follows the frame, which is where
+		// FOP has a line to hang it on
+		Element anchor = (Element) fl.getParentNode();
+		assertEquals("fo:block", "block", anchor.getLocalName());
+		assertTrue("the float is not at the paragraph after the frame",
+				anchor.getTextContent().contains("after the frame"));
+	}
+
+	@Test
+	public void textAnchoredIsAFloatVisitor() throws Exception {
+		textAnchoredIsAFloat(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void textAnchoredIsAFloatXslt() throws Exception {
+		textAnchoredIsAFloat(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/** A frame nearer the right edge of the column floats to it. */
+	@Test
+	public void textAnchoredFloatsToTheNearerEdge() throws Exception {
+		Element fl = theFloat(fo(pkg(TEXT_ANCHORED.replace("w:x=\"720\"", "w:x=\"6000\""), 1),
+				Docx4J.FLAG_NONE));
+		assertNotNull(fl);
+		assertEquals("right", fl.getAttribute("float"));
+		Element band = (Element) fl.getElementsByTagNameNS(FO, "table").item(0);
+		// w:hSpace + w:w + what is left of the column: 9 + 144 + (451.3 - 300 - 144)
+		assertEquals(160.3, pt(band.getAttribute("width")), 0.05);
+	}
+
+	/**
+	 * A frame with no {@code w:w} fills the rest of the measure, so nothing runs beside
+	 * it: it stays in the flow.  That is the shape of all 499 frames of the corpus
+	 * document that is this rule's acid test.
 	 */
 	@Test
-	public void textAnchoredIsLeftInTheFlow() throws Exception {
+	public void textAnchoredWithNoWidthStaysInTheFlow() throws Exception {
 		org.w3c.dom.Document fo = fo(pkg(
-				"<w:framePr w:w=\"5197\" w:vAnchor=\"text\" w:hAnchor=\"page\" w:x=\"4170\" w:y=\"48\"/>",
-				1), Docx4J.FLAG_NONE);
-		assertEquals("no positioned container for a text-anchored frame", null, absoluteContainer(fo));
+				"<w:framePr w:hSpace=\"141\" w:wrap=\"around\" w:hAnchor=\"text\""
+				+ " w:vAnchor=\"text\" w:x=\"108\" w:y=\"1\"/>", 1), Docx4J.FLAG_NONE);
+		assertEquals("no float", null, theFloat(fo));
+		assertEquals("no positioned container", null, absoluteContainer(fo));
+	}
+
+	/** A frame over 60% of the column has no useful measure beside it: in the flow. */
+	@Test
+	public void textAnchoredTooWideStaysInTheFlow() throws Exception {
+		assertEquals(null, theFloat(fo(pkg(TEXT_ANCHORED.replace("w:w=\"2880\"", "w:w=\"7000\""), 1),
+				Docx4J.FLAG_NONE)));
+	}
+
+	/** w:wrap="notBeside" says no text may run beside the frame; in the flow it already
+	 *  reserves its own band. */
+	@Test
+	public void textAnchoredNotBesideStaysInTheFlow() throws Exception {
+		assertEquals(null, theFloat(fo(pkg(
+				TEXT_ANCHORED.replace("w:wrap=\"around\"", "w:wrap=\"notBeside\""), 1),
+				Docx4J.FLAG_NONE)));
+	}
+
+	/** The float holds the frame's own paragraphs, and they are out of the flow. */
+	@Test
+	public void theFrameLeavesTheFlow() throws Exception {
+		org.w3c.dom.Document fo = fo(pkg(TEXT_ANCHORED, 2), Docx4J.FLAG_NONE);
+		Element fl = theFloat(fo);
+		assertNotNull(fl);
+		assertTrue("both paragraphs went into the one float",
+				fl.getTextContent().contains("frame line 1") && fl.getTextContent().contains("frame line 2"));
+		Element flow = (Element) fo.getElementsByTagNameNS(FO, "flow").item(0);
+		int inFlow = 0;
+		for (org.w3c.dom.Node n = flow.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && "block".equals(((Element) n).getLocalName())) inFlow++;
+		}
+		assertEquals("only the two unframed paragraphs are left at flow level", 2, inFlow);
+	}
+
+	/** FOP lays the float out, and the lines beside it are held off the frame. */
+	@Test
+	public void theFloatNarrowsTheLinesBesideIt() throws Exception {
+		StringBuilder body = new StringBuilder("<w:p><w:r><w:t>before the frame</w:t></w:r></w:p>");
+		body.append("<w:p><w:pPr>").append(TEXT_ANCHORED).append("</w:pPr>")
+			.append("<w:r><w:t>in the frame</w:t></w:r></w:p>");
+		for (int i = 0; i < 8; i++) {
+			body.append("<w:p><w:r><w:t>Lorem ipsum dolor sit amet, consectetur adipiscing"
+					+ " elit, sed do eiusmod tempor incididunt ut labore et dolore magna"
+					+ " aliqua. Ut enim ad minim veniam, quis nostrud.</w:t></w:r></w:p>");
+		}
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));
+		org.w3c.dom.Document areaTree = areaTree(pkg, Docx4J.FLAG_NONE);
+		assertTrue("nothing was laid out", lineCount(areaTree) > 10);
+		// FOP narrows a line beside a side float by taking the float's ipd off it (it
+		// does not serialise the float's own areas): the 451.3pt column less the 189pt
+		// band the frame reserves is 262.3pt
+		int narrowed = 0, full = 0;
+		NodeList lines = areaTree.getElementsByTagName("lineArea");
+		for (int i = 0; i < lines.getLength(); i++) {
+			String ipd = ((Element) lines.item(i)).getAttribute("ipd");
+			if ("262300".equals(ipd)) narrowed++;
+			else if ("451300".equals(ipd)) full++;
+		}
+		assertTrue("no line was narrowed by the frame's float", narrowed > 0);
+		assertTrue("every line was narrowed", full > 0);
+	}
+
+	/**
+	 * {@code w:dropCap="drop"}: the framed paragraph is the cap, and the first
+	 * {@code w:lines} lines of the paragraph that follows run beside it.  Word writes
+	 * the enlarged size into the run itself, so what is reproduced here is the band -
+	 * the cap's own advance by {@code w:lines} lines of the following paragraph's pitch.
+	 */
+	@Test
+	public void dropCapIsAFloat() throws Exception {
+		Element fl = theFloat(dropCap("drop"));
+		assertNotNull("the drop cap was left in the flow", fl);
+		assertEquals("left", fl.getAttribute("float"));
+		assertNotNull("no band table", fl.getElementsByTagNameNS(FO, "table").item(0));
+		assertTrue("the cap is not in the float", fl.getTextContent().contains("D"));
+		Element cap = null;
+		NodeList blocks = fl.getElementsByTagNameNS(FO, "block");
+		for (int i = 0; i < blocks.getLength(); i++) {
+			if (((Element) blocks.item(i)).getTextContent().startsWith("D")) cap = (Element) blocks.item(i);
+		}
+		assertNotNull(cap);
+		assertTrue("the cap's band is not three lines deep",
+				pt(cap.getAttribute("line-height")) > 30);
+	}
+
+	/** {@code w:dropCap="margin"} hangs the cap in the margin: it takes no space. */
+	@Test
+	public void dropCapInTheMarginIsPositioned() throws Exception {
+		org.w3c.dom.Document fo = dropCap("margin");
+		assertEquals("a margin drop cap is not a float", null, theFloat(fo));
+		Element abs = absoluteContainer(fo);
+		assertNotNull("the drop cap was left in the flow", abs);
+		assertTrue("the cap is not hung to the left of the column",
+				pt(abs.getAttribute("left")) < 0);
+	}
+
+	private static org.w3c.dom.Document dropCap(String kind) throws Exception {
+		StringBuilder body = new StringBuilder();
+		body.append("<w:p><w:pPr><w:framePr w:dropCap=\"").append(kind)
+			.append("\" w:lines=\"3\" w:hSpace=\"142\" w:wrap=\"around\" w:vAnchor=\"text\""
+					+ " w:hAnchor=\"text\"/></w:pPr>")
+			.append("<w:r><w:rPr><w:sz w:val=\"116\"/></w:rPr><w:t>D</w:t></w:r></w:p>");
+		body.append("<w:p><w:r><w:t>rop caps set the paragraph's first letter into the"
+				+ " text beside it, spanning three lines of the paragraph that"
+				+ " follows.</w:t></w:r></w:p>");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));
+		return fo(pkg, Docx4J.FLAG_NONE);
+	}
+
+	private static Element theFloat(org.w3c.dom.Document fo) {
+		NodeList floats = fo.getElementsByTagNameNS(FO, "float");
+		return floats.getLength() == 0 ? null : (Element) floats.item(0);
 	}
 
 	/** The hint never reaches FOP. */

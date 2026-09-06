@@ -1348,7 +1348,12 @@ public class XsltFOFunctions {
 		sb.append(f.getH() == null ? "" : f.getH().toString()).append(':');
 		sb.append(f.getHRule() == null ? "" : f.getHRule().value()).append(':');
 		sb.append(f.getWrap() == null ? "" : f.getWrap().value()).append(':');
-		sb.append(f.getDropCap() == null ? "" : f.getDropCap().value());
+		sb.append(f.getDropCap() == null ? "" : f.getDropCap().value()).append(':');
+		// w:hSpace / w:vSpace, the gaps the text keeps from the frame, and w:lines, the
+		// number of lines a drop cap spans (§9.5's float route).  @since 17.0.6
+		sb.append(f.getHSpace() == null ? "" : f.getHSpace().toString()).append(':');
+		sb.append(f.getVSpace() == null ? "" : f.getVSpace().toString()).append(':');
+		sb.append(f.getLines() == null ? "" : f.getLines().toString());
 		foBlockElement.setAttribute(WordLayoutFixups.HINT_FRAME, sb.toString());
 	}
 
