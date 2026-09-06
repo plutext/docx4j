@@ -278,6 +278,21 @@ text starts at the first tab stop past the label, or after one space (w:suff)
 a literal: FOP reserves the width of "MMM" for an unresolved fo:page-number-citation-last,
 which wrapped a footer line Word keeps on one and cost the body 53.5pt on every page
 (docx4j.convert.out.fo.twoPassForNumpages=false to keep the single pass)
+- the table grid edge below compatibility mode 15 is now taken whatever w:tblInd is: it was
+capped at w:tblInd below mode 14, which put a table with a negative indent, or with none, one
+cell margin right of Word.  A content-autofit table's grid is one cell margin wider than the
+text column at each end, since it is the cell content Word fits to the column
+- consecutive hard page breaks now each cost a page, as in Word, so the material between two
+of them - a paragraph mark - is a page with nothing on it; a w:pageBreakBefore paragraph after
+a page break still costs none.  Two page breaks at the head of a paragraph in a table cell are
+ignored, where one still opens the table on a new page
+- a picture-only paragraph at a line-spacing multiple now gets the leading Word gives it,
+(multiple - 1) x the paragraph font's own pitch, rather than none
+- a paragraph's w:framePr can now be honoured where the frame is anchored to the page or to
+the margin: it becomes a positioned block-container at w:x/w:y of width w:w, consecutive
+paragraphs carrying the same w:framePr forming one frame.  Off by default
+(docx4j.convert.out.fo.frames.position=true) while a wrapping defect stands; a text-anchored
+frame and w:dropCap are laid out in the flow either way
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

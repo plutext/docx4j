@@ -34,7 +34,7 @@ line-break parity, page-break parity, baseline deltas and x deltas are reported,
 rasterised overlay per page.
 
 The harness is `docx4j-layout-fidelity` (in the repository, not in the reactor, not
-deployed; see its README). 53 probes have Word goldens:
+deployed; see its README). 60 probes have Word goldens:
 
 `spacing-adjacent`, `spacing-contextual`, `spacing-autospacing`,
 `spacing-autospacing-context`, `spacing-page-top`, `spacing-section-start`,
@@ -50,7 +50,8 @@ deployed; see its README). 53 probes have Word goldens:
 `tab-toc-pageref`, `pbdr-space`, `table-grid-edge-compat11`,
 `table-grid-edge-compat12`, `table-grid-edge-compat14`, `table-grid-edge-compat15`,
 `table-grid-overwide`, `table-autofit-wrap`, `table-floating-anchor`,
-`columns-unequal`.
+`columns-unequal`, `table-grid-edge-signed-compat12`, `-compat14`, `-compat15`,
+`page-empty`, `picture-header-cell`, `tab-run-font`, `picture-anchor-negative`.
 
 A rule a probe could not settle on its own was checked against a corpus of 194 real
 documents scored against Word's own PDFs of them, so a change is accepted only when the
@@ -106,6 +107,7 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
 | `docx4j.convert.out.fo.tables.position` | `true` | A floating table's `w:tblpPr`: the grid edge at `tblpX`/`tblpXSpec`, and a page- or margin-anchored table which opens its section placed absolutely (§6.8). `false` lays every table out in the flow, as 17.0.5 did. |
+| `docx4j.convert.out.fo.frames.position` | `false` | `true` lifts a paragraph whose `w:framePr` is anchored to the page or to the margin into a positioned block-container (§9.5). Off by default while one measured defect stands. |
 | `docx4j.convert.out.fo.pictures.float` | `true` | Whether a picture Word wraps text around may be an `fo:float`. `false` lays such pictures out in the flow (no text beside them, but immune to the FOP float defect, §10). Text boxes are never floats whatever this says. |
 | `docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable` | unset | Names an ImageMagick/GraphicsMagick executable. Set, a picture FOP cannot paint (EMF) is converted to PNG and painted; unset, its space is reserved but it is not drawn (§9.4). |
 | `docx4j.convert.out.fo.pictures.convertDensity` | `300` | Pixels per inch that converter rasterises a metafile at. |
@@ -211,6 +213,16 @@ on each of ours; 88 Word pages came out as 105, and are 83 now. The multiple is 
 cancelled where there is one to cancel (a `line-height` beyond the box); a single-spaced
 paragraph's `line-height` is its box, and raising that grew a header holding a picture by
 10.3pt, which re-centred the picture in its vertically-centred cell 5.1pt below Word's.
+
+<a id="s24picmult"></a>**The multiple still adds its own leading, though - `(m - 1)` times
+the paragraph font's *natural* pitch.** Measured on `picture-header-cell`: an 11pt
+paragraph (natural pitch 13.428pt) at `w:spacing w:line="276" w:lineRule="auto"`
+(m = 1.15) holding a 24pt picture puts the next baseline 40.1pt below the previous one,
+against 26.1 for the same picture on an exact 12pt line - so its line is 26.0pt =
+24 + 0.15 x 13.428 (2.01). Cancelling the multiple outright gave 24.0 and 37.8, 2.3pt
+short of Word on every such paragraph. The line box stays the picture (that is what tells
+the line manager the line has no descent) and the leading is carried as the `line-height`
+the manager reads as a factor over it.
 An **exact** line rule still clips a picture as it clips anything else. A block whose only content is a
 `external-graphic` taller than its own line box occurs in 142 documents of the three
 corpora, 961 blocks.
@@ -441,6 +453,34 @@ child ate its first-line indent - Word's page 2 heading at `y=97.0 x=72.0` again
 block-level content controls; it still does not descend into a **table**, where a page
 break belongs to the table (below).
 
+<a id="s33each"></a>**Every break costs a page boundary of its own.** Where two of them
+are consecutive, what lies between them - nothing but a paragraph mark - is a page with
+nothing on it. Measured on `page-empty`, where Word has 13 pages and docx4j had 11:
+Word gives an empty page to two `w:br w:type="page"` in one paragraph, to two paragraphs
+each holding one, and to an empty paragraph carrying a **typeless `w:sectPr`** followed by
+a break-only paragraph - the section break opens the page, the break paragraph's mark is
+the whole of it, and its own break opens the next. The paragraph is split at each of its
+breaks now (`convert/out/common/preprocess/PageBreak` used to convert the first and leave
+the rest nested in an `fo:inline`, where FOP ignores them), and
+`WordLayoutFixups.mergePageBreakParagraphs` folds a break paragraph into what follows it
+only where that is not itself an empty break paragraph, and - for the flow-opening case -
+only where what follows does not break the page on its own account (a section whose first
+paragraph holds a break with text after it is split in two, and the second half carries
+the one page Word gives).
+
+**A `w:pageBreakBefore` paragraph after a page break is not one of them**: it is already
+at the top of a page and Word adds none for it (`page-empty`'s S6). Reading any
+`break-before="page"` on the next block as a second break cost two spurious pages of
+fourteen on a corpus document whose Heading 1 style carries `w:pageBreakBefore`, and one
+of seven on another.
+
+One corpus document disagrees with the probe and has not been reconciled: its two
+consecutive break-only paragraphs cost it a page Word does not give (Word's 22 pages
+became 23), while its line parity rose from 0.613 to 0.682 on the same change. Over the
+three corpora the rule is a clear gain - 97 more matched lines and +0.0010 mean parity on
+that corpus, a page-count match gained on another, no document regressing - so it stands,
+and what makes Word skip that one page is open.
+
 A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there **from
 compatibility mode 15**, and kept below mode 15. The break moves to the next paragraph, or
@@ -449,6 +489,16 @@ out of the flow, §6.8 and §9.1) - measured on `table-floating-anchor`, where t
 page-anchored table began with an empty line docx4j put 25.5pt above Word's first paragraph.
 It does not move to a **table**: measured on a corpus document whose hard break is followed
 by one, Word keeps that line, and dropping it lost a page of the nineteen.
+
+<a id="s33cell"></a>**Two page breaks at the head of a cell's paragraph are ignored
+altogether.** A single `w:br w:type="page"` there opens the table on a new page, as
+`w:pageBreakBefore` on the paragraph that opens the table does (measured on a corpus
+document whose first cell's paragraph begins with one: Word puts the table's first line
+at the top of page 2). But `page-empty`'s one-row table, whose first cell opens with
+**two**, stays on the page its introduction is on - Word starts no page for either of
+them, where promoting one put the table on a page of its own. What separates the two has
+not been isolated, so the narrower reading is taken: nothing changes for a cell holding
+one break (`WordLayoutFixups.dropPageBreaksInTableCells`).
 
 <a id="s33sect"></a>**A page break at the end of a section costs no page.** Where the break
 has nothing left in its section to move onto - the paragraph holding it and the
@@ -1350,14 +1400,30 @@ Word's first cell text is at 77.3pt in both modes, exactly where mode 14 puts it
 left of where mode 15 would. 17.0.6 briefly restricted the shift to mode 14 alone, on the
 strength of the corpus document in the next paragraph, and those two goldens settled it.
 
-**Below mode 14 the shift is capped at `w:tblInd`**, so the grid edge never moves left of
-the text margin and a table with no `w:tblInd` (or one of 0) sits on the margin. The
-measurement is a corpus document with no `compatibilityMode` setting at all (so mode 12,
-§1.4) whose first table row is a single `w:gridSpan="3"` cell holding a centred paragraph
-and whose table has no `w:tblInd`: Word centres that text on 297.65pt, the exact centre of
-a 595.3pt page and of its text column, where taking the shift centred it on 292.25 - 5.4pt,
-one cell margin, left, and cost the document two of Word's fifteen pages. Mode 14 has no
-such cap, which is what its own probe's 72.0pt for no `w:tblInd` says.
+**The shift is unconditional in every mode below 15**, whatever the sign of `w:tblInd`
+and whether or not the table has one. Measured on `table-grid-edge-signed-compat12`, a
+72pt text margin and Word's default cell margins: Word's first cell text is at 66.5pt for
+`w:tblInd` -108, at 54.0 for -360, and at 72.0 for no `w:tblInd` at all - fixed layout and
+autofit alike - which is margin + `w:tblInd` exactly, so the grid edge is
+margin + `w:tblInd` - one cell margin throughout. Modes 14 and 15 of the same probe match
+what was already implemented. 17.0.6 briefly capped the shift at `min(shift, max(0,
+tblInd))` below mode 14, which put those three at 72.3 / 59.7 / 77.7.
+
+<a id="s61autofit"></a>**A content-autofit table's grid is one cell margin wider than the
+text column at each end**, because below mode 15 it is the cell *content* that spans the
+column. That is the corpus document the cap was taken from - mode 12, `w:tblW` auto,
+every `w:tcW` auto, `w:tcMar` 41 twips, first row a single `w:gridSpan="3"` cell holding a
+centred paragraph. On a 70.85..524.45pt text column Word draws the table's borders
+68.66..526.78, so the cell content runs exactly 70.85..524.45 and the centred paragraph
+lands on 297.65pt, the column's own centre; sizing the grid to the column instead centred
+it on 292.25 and cost the document two of Word's fifteen pages. The autofit pass adds the
+two cell margins to the width it distributes (`AbstractTableWriter.autofitGridAllowanceTwips`,
+zero for HTML), and the centre then comes out right whatever the cell margin is.
+
+**The margin the shift is measured with is the first cell's own**: `w:tcMar/w:left` where
+it has one, else `w:tblCellMar/w:left`, else Word's default 108. In the document above
+the cells carry `w:tcMar w:left="41"` (2.05pt) while the table declares no `w:tblCellMar`,
+and Word's grid sits 2.19pt outside the column at each end, not 5.4.
 
 <a id="s61nested"></a>**A nested table takes no shift either.** Word puts the grid edge of
 a table inside a `w:tc` on the containing cell's **content** edge, and adds the nested
@@ -1372,8 +1438,7 @@ one cell margin. Whether a table is nested is not known where the indent is comp
 the XSLT pathway the `w:tbl` reaching the table writer was unmarshalled on its own, so it
 has no parent - so the shift is stamped on the `fo:table` and
 `WordLayoutFixups.nestedTableGridEdge` gives it back to the tables that turn out to be
-inside an `fo:table-cell`. Below mode 14 the cap does that on its own: a nested table
-carries no `w:tblInd`, so it takes no shift to give back.
+inside an `fo:table-cell`.
 
 A `w:jc="center"` table wider than the text column is **centred by Word, overhanging both
 margins**; its start-indent is the negative half of the overflow.
@@ -2128,6 +2193,52 @@ extra ImageIO plugin is needed for any of them; measured, not assumed. A palette
 LZW compression is the one gap: the JDK's own TIFF reader throws
 `UnsupportedOperationException` from `TIFFImageReader.readRaster` on it, which fails the
 whole export; the TwelveMonkeys `imageio-tiff` plugin on the classpath reads it.
+
+<a id="s95"></a>
+### 9.5 `w:framePr`, Word's positioned text frames
+
+A paragraph carrying `w:pPr/w:framePr` (ECMA-376 17.3.1.11) is not in the flow: Word puts
+it in a box `w:w` wide at `w:x` / `w:y` measured from whatever `w:hAnchor` / `w:vAnchor`
+name, and flows the body text past it. docx4j laid such a paragraph out where it fell.
+53 documents of the three corpora carry 1,238 frames; it is the first divergence in four
+of them and the whole of two.
+
+**Frames anchored to the page or to the margin are positioned**, through the same
+machinery an anchored picture uses (§9.1): a zero-height wrapper holding an
+`fo:block-container` with `absolute-position="fixed"`, `left` and `top` in page
+coordinates - `w:x` where `w:hAnchor="page"`, the text margin plus `w:x` otherwise; `w:y`
+where `w:vAnchor="page"`, the top margin plus `w:y` for `w:vAnchor="margin"` - `width` from
+`w:w` (the rest of the measure where it is 0 or absent) and `height` from `w:h` where
+`w:hRule="exact"`. **Consecutive paragraphs carrying the same `w:framePr` are one frame**,
+as Word treats them, and go into one container.
+
+Measured against Word's own PDFs:
+
+* `w:w=2926 w:h=748 w:hRule=exact w:vAnchor=page w:hAnchor=page w:x=8563 w:y=1702` on a
+  68.05pt page margin: Word draws the frame's text at x=428.3 y=95.3, i.e. its box at
+  428.15 / 85.1 from the page's top left corner - `w:x` and `w:y` exactly - where docx4j
+  drew it in the flow at x=68.1 y=81.2.
+* A document of 25 such frames went from 0.824 to 0.960 of Word's lines, and from 5 pages
+  to Word's 4.
+
+**A `w:vAnchor="text"` frame is left in the flow**, and so is `w:dropCap`. Its vertical
+position is relative to the paragraph it belongs to and Word wraps the body text around it
+(`w:wrap="around"`); moving it into a block-container of its own width, without text
+beside it, was measured a clear loss - on a document of 499 such frames line parity went
+0.954 to 0.573, and on three more 0.911 to 0.804, 0.933 to 0.867 and 0.899 to 0.858, while
+a fourth went from Word's 2 pages to 10. They need the `fo:float` route §9.1 uses for a
+picture Word wraps text around, with the same measure test, and that is not yet measured.
+`w:xAlign`/`w:yAlign` other than `left`/`top` (and `w:yAlign="inline"`, which keeps the
+paragraph in the flow), `w:hSpace`/`w:vSpace` and `w:anchorLock` are not implemented
+either.
+
+**It is off by default** (`docx4j.convert.out.fo.frames.position=true` turns it on), on
+one measured defect: on a corpus letterhead with four page-anchored frames the positioned
+container comes out *nested inside a second copy of itself*, and the two paragraphs after
+the frame are then drawn at the frame's x rather than on the margin - line parity 0.645 to
+0.548. The gain where it works is the same size (0.824 to 0.960 and a page, on a document
+of 25 absolute frames), and no other document of the three corpora changes either way, so
+the rule is right and the wrapping is what has to be found.
 
 ---
 

@@ -137,6 +137,7 @@ public final class WordLayoutFixups {
 		inlineLabelGaps(doc);
 		listLabelLines(doc);
 		lineBoxAttributes(doc, compatibilityMode, hyphenation);
+		positionFrames(doc);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
 		anchorFloatingTables(doc);
@@ -214,6 +215,19 @@ public final class WordLayoutFixups {
 			// @since 17.0.6
 			double box = lengthPt(block.getAttribute(HINT_LINE_BOX));
 			if (height <= box) continue;
+			// A line-spacing multiple still adds its own leading to the picture's line -
+			// it does not multiply the picture.  Word's multiple m adds (m - 1) x the
+			// paragraph font's *natural* pitch, not (m - 1) x the picture: measured on
+			// the picture-header-cell golden, an 11pt paragraph (natural pitch 13.428pt)
+			// at w:spacing line=276 lineRule=auto (m = 1.15) holding a 24pt picture puts
+			// the next baseline 40.1pt below the previous one, against 26.1 for the same
+			// picture on an exact 12pt line - so its line is 26.0pt = 24 + 0.15 x 13.428
+			// (2.01), where cancelling the multiple outright gave 24.0 and 37.8.  An
+			// exact line rule still clips the picture, and is left alone above.
+			// @since 17.0.6
+			double extraLeading = 0;
+			double lineHeight = lengthPt(block.getAttribute("line-height"));
+			if (box > 0 && lineHeight > box) extraLeading = lineHeight - box;
 			block.setAttribute(HINT_LINE_BOX, org.docx4j.fonts.WordLineMetrics.format(height));
 			block.setAttribute(HINT_BASELINE, org.docx4j.fonts.WordLineMetrics.format(height));
 			block.setAttribute(HINT_LINE_RULE, "auto");
@@ -227,9 +241,14 @@ public final class WordLayoutFixups {
 			// multiple to cancel (line-height beyond the box): a single-spaced
 			// paragraph's line-height is its box, and raising it grew a header holding
 			// a picture by 10.3pt, which re-centred the picture in its cell 5.1pt below
-			// Word's.  @since 17.0.6
-			if (box > 0 && lengthPt(block.getAttribute("line-height")) > box) {
-				block.setAttribute("line-height", org.docx4j.fonts.WordLineMetrics.format(height));
+			// Word's.  Only the multiple's *own* leading survives, as a line-height the
+			// line manager reads as a factor over the (picture-sized) line box: its
+			// default rule makes the line ascent + descent = the picture, then adds
+			// box x (line-height / line-box - 1), which is exactly extraLeading here.
+			// @since 17.0.6
+			if (extraLeading > 0) {
+				block.setAttribute("line-height",
+						org.docx4j.fonts.WordLineMetrics.format(height + extraLeading));
 			}
 		}
 	}
@@ -605,6 +624,194 @@ public final class WordLayoutFixups {
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
 			HINT_ANCHOR_COL, HINT_ANCHOR_ML };
+
+	// ------------------------------------------------------------ 0e. text frames
+
+	/** On a paragraph's fo:block (XsltFOFunctions.applyFrameHint): its w:framePr, as
+	 *  {@code hAnchor:vAnchor:x:y:xAlign:yAlign:w:h:hRule:wrap:dropCap} with the lengths
+	 *  in twips.  @since 17.0.6 */
+	public static final String HINT_FRAME = "docx4j-frame";
+
+	/** docx4j.convert.out.fo.frames.position (default <b>false</b>): whether w:framePr is
+	 *  honoured at all.  Off until the open defect in {@link #positionFrames} is settled.
+	 *  @since 17.0.6 */
+	static boolean framesEnabled() {
+		return org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.frames.position", false);
+	}
+
+	/**
+	 * {@code w:pPr/w:framePr}: Word's positioned text frames (ECMA-376 17.3.1.11).  A
+	 * paragraph carrying one is not in the flow: Word puts it in a box {@code w:w} wide
+	 * at {@code w:x} / {@code w:y} measured from what {@code w:hAnchor} /
+	 * {@code w:vAnchor} name, and flows the body text past it.  docx4j laid such a
+	 * paragraph out where it fell, which is the first divergence in four corpus
+	 * documents and the whole of two; 53 documents of the three corpora carry 1,238 of
+	 * them.
+	 *
+	 * <p>Measured against Word's own PDFs:</p>
+	 * <ul>
+	 * <li>{@code w:w=2926 w:h=748 w:hRule=exact w:vAnchor=page w:hAnchor=page w:x=8563
+	 *     w:y=1702} on a page-margin 68.05pt document: Word draws the frame's text at
+	 *     x=428.3 y=95.3, i.e. its box at 428.15 / 85.1 from the page's top left corner
+	 *     - w:x and w:y exactly - where docx4j drew it in the flow at x=68.1 y=81.2.</li>
+	 * <li>{@code w:framePr w:w=5281 w:hAnchor=text w:x=1441 w:y=3177} on a cover whose
+	 *     page margins are all 0: Word's text is at (72.0, 169.5), which is the text
+	 *     column's own left edge + 72.05 and the flow position + 158.85 - so an absent
+	 *     w:vAnchor is "text", the offset being taken from where the paragraph would
+	 *     have been.  docx4j had it at (0.0, 10.5).</li>
+	 * </ul>
+	 *
+	 * <p>Consecutive paragraphs carrying the same {@code w:framePr} are one frame, as
+	 * Word treats them, so they go into one container.</p>
+	 *
+	 * <p>What is implemented here is the <b>absolute</b> case: a frame anchored to the
+	 * page or to the margin becomes an absolutely positioned block-container (the
+	 * machinery {@link #anchorImages} uses for a picture Word positions).  A
+	 * {@code w:vAnchor="text"} frame - Word wraps the body text around it, and its
+	 * vertical position is relative to the paragraph it belongs to - is left in the flow,
+	 * and so is {@code w:dropCap}: both need the float route of &#xa7;9.1 and both were
+	 * measured a loss without it.</p>
+	 *
+	 * <p><b>Off by default</b> ({@code docx4j.convert.out.fo.frames.position=true} turns
+	 * it on) until one measured defect is settled: on a corpus letterhead with four
+	 * page-anchored frames the positioned container comes out <em>nested inside a second
+	 * copy of itself</em>, and the two paragraphs after the frame are drawn at the
+	 * frame's x rather than on the margin - line parity 0.645 -> 0.548.  With it on, the
+	 * gain elsewhere is the same size (0.824 -> 0.960 and a page, on a document of 25
+	 * absolute frames) and no other document of the three corpora changes.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void positionFrames(Document doc) {
+		if (!framesEnabled()) return;
+		List<Element> framed = new ArrayList<Element>();
+		for (Element block : elements(doc, "block")) {
+			if (block.getAttribute(HINT_FRAME).length() > 0) framed.add(block);
+		}
+		int i = 0;
+		while (i < framed.size()) {
+			Element first = framed.get(i);
+			String spec = first.getAttribute(HINT_FRAME);
+			// consecutive paragraphs carrying the same w:framePr are one frame
+			List<Element> group = new ArrayList<Element>();
+			group.add(first);
+			int j = i + 1;
+			while (j < framed.size()) {
+				Element next = framed.get(j);
+				if (!spec.equals(next.getAttribute(HINT_FRAME))) break;
+				if (next.getParentNode() != first.getParentNode()) break;
+				if (nextElementSibling(group.get(group.size() - 1)) != next) break;
+				group.add(next);
+				j++;
+			}
+			i = j;
+			try {
+				positionFrame(doc, group, spec);
+			} catch (RuntimeException e) {
+				log.warn("Text frame left in the flow: " + e.getMessage(), e);
+			}
+			for (Element block : group) block.removeAttribute(HINT_FRAME);
+		}
+	}
+
+	private static void positionFrame(Document doc, List<Element> group, String spec) {
+		String[] f = spec.split(":", -1);
+		if (f.length < 11) return;
+		String hAnchor = f[0], vAnchor = f[1], xAlign = f[4], yAlign = f[5];
+		String hRule = f[8], dropCap = f[10];
+		double x = twips(f[2]), y = twips(f[3]), w = twips(f[6]), h = twips(f[7]);
+		Element first = group.get(0);
+
+		// a drop cap is a frame set into the paragraph beside it, not a positioned box:
+		// left in the flow until it can be a float (see the class comment)
+		if (dropCap.length() > 0 && !"none".equals(dropCap)) return;
+
+		Element rb = regionBody(first);
+		double marginLeft = 0, marginTop = 0, pageWidth = 0;
+		if (rb != null && rb.getParentNode() instanceof Element) {
+			Element spm = (Element) rb.getParentNode();
+			pageWidth = lengthPt(spm.getAttribute("page-width"));
+			marginLeft = lengthPt(spm.getAttribute("margin-left")) + lengthPt(rb.getAttribute("margin-left"));
+			marginTop = lengthPt(spm.getAttribute("margin-top")) + lengthPt(rb.getAttribute("margin-top"));
+		}
+		double measure = pageWidth - marginLeft
+				- (rb == null ? 0 : lengthPt(((Element) rb.getParentNode()).getAttribute("margin-right"))
+						+ lengthPt(rb.getAttribute("margin-right")));
+
+		// the frame's left edge, from the page's own left edge
+		double left;
+		if ("page".equals(hAnchor)) left = x;
+		else left = marginLeft + x;              // "margin", "text" (the column) and the default
+		if (xAlign.length() > 0) {
+			double frame = "page".equals(hAnchor) ? pageWidth : Math.max(0, measure);
+			double base = "page".equals(hAnchor) ? 0 : marginLeft;
+			if ("center".equals(xAlign)) left = base + Math.max(0, (frame - w) / 2);
+			else if ("right".equals(xAlign) || "outside".equals(xAlign)) left = base + Math.max(0, frame - w);
+			else left = base;                    // left, inside
+		}
+		if (w <= 0) w = Math.max(0, measure - (left - marginLeft));
+		if (w <= 0) return;
+
+		Node parent = first.getParentNode();
+		if (parent == null) return;
+		Node after = group.get(group.size() - 1).getNextSibling();
+
+		// Only a frame anchored to the page or to the margin is taken out of the flow.
+		// A w:vAnchor="text" frame is positioned against the paragraph it belongs to and
+		// Word wraps the body text around it (w:wrap="around"); putting it in a
+		// block-container of its own width was measured a clear loss - on a document of
+		// 499 such frames line parity went 0.954 -> 0.573, and on three more 0.911 ->
+		// 0.804, 0.933 -> 0.867 and 0.899 -> 0.858 - so those stay where they fall until
+		// the float route (§9.1's) is measured for them.  Where the frames are absolute,
+		// the gain is the same size: 0.824 -> 0.960 on a document of 25 of them.
+		boolean absolute = ("page".equals(vAnchor) || "margin".equals(vAnchor))
+				&& !"inline".equals(yAlign);
+		if (!absolute) return;
+		{
+			double top = "page".equals(vAnchor) ? y : marginTop + y;
+			if (yAlign.length() > 0) {
+				double frameTop = "page".equals(vAnchor) ? 0 : marginTop;
+				top = frameTop;                  // top; centre and bottom need the page height
+			}
+			Element wrapper = doc.createElementNS(FO_NS, "fo:block-container");
+			wrapper.setAttribute("height", "0pt");
+			wrapper.setAttribute("overflow", "visible");
+			wrapper.setAttribute("start-indent", "0pt");
+			wrapper.setAttribute("end-indent", "0pt");
+			Element abs = doc.createElementNS(FO_NS, "fo:block-container");
+			abs.setAttribute("absolute-position", "fixed");
+			abs.setAttribute("top", pt(top));
+			abs.setAttribute("left", pt(left));
+			abs.setAttribute("width", pt(w));
+			if (h > 0 && "exact".equals(hRule)) abs.setAttribute("height", pt(h));
+			abs.setAttribute("overflow", "visible");
+			abs.setAttribute("start-indent", "0pt");
+			abs.setAttribute("end-indent", "0pt");
+			wrapper.appendChild(abs);
+			moveInto(abs, group);
+			parent.insertBefore(wrapper, after); // insertBefore(w, null) appends
+		}
+	}
+
+	/** Moves the blocks out of the flow and into the container, keeping their order. */
+	private static void moveInto(Element container, List<Element> group) {
+		for (Element block : group) {
+			block.getParentNode().removeChild(block);
+			block.setAttribute("start-indent", "0pt");
+			block.setAttribute("end-indent", "0pt");
+			container.appendChild(block);
+		}
+	}
+
+	/** A twip string as points; 0 where it is absent or unparseable. */
+	private static double twips(String v) {
+		if (v == null || v.length() == 0) return 0;
+		try {
+			return Double.parseDouble(v.trim()) / 20d;
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
 
 	// ------------------------------------------------------------ 0f. floating tables
 
@@ -1845,6 +2052,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
 			block.removeAttribute(HINT_COLUMN_BREAK);
+			block.removeAttribute(HINT_FRAME);
 			for (String hint : TAB_HINTS) block.removeAttribute(hint);
 			block.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
 		}
@@ -2391,15 +2599,54 @@ public final class WordLayoutFixups {
 	 */
 	static void dropPageBreaksInTableCells(Document doc) {
 		for (Element cell : elements(doc, "table-cell")) {
+			java.util.Set<Element> ignored = doubledCellBreaks(cell);
 			for (Element block : descendants(cell, "block")) {
 				if (!"page".equals(block.getAttribute("break-before"))) continue;
 				block.removeAttribute("break-before");
+				if (ignored.contains(block)) continue;
 				Element table = ancestorTable(block);
 				if (table != null && ancestorTable(table) == null && opensTable(table, block)) {
 					table.setAttribute("break-before", "page");
 				}
 			}
 		}
+	}
+
+	/**
+	 * The page breaks in this cell Word ignores altogether: <b>two or more consecutive
+	 * {@code w:br w:type="page"} at the head of one paragraph</b>.  A single one is the
+	 * rule above - measured on a corpus document whose first cell's paragraph opens with
+	 * one, where Word puts the table's first line at the top of page 2 - but the
+	 * page-empty golden's one-row table, whose first cell opens with <em>two</em>, stays
+	 * on the page its introduction is on: Word starts no page for either of them, where
+	 * promoting one put the table on a page of its own.  What separates the two has not
+	 * been isolated further, so the narrower reading is taken: nothing changes for a
+	 * cell holding one break.  A {@code w:br} reaches the FO as a block nested in the
+	 * run's {@code fo:inline}, which is how it is told from a {@code w:pageBreakBefore}
+	 * on the paragraph's own block.
+	 *
+	 * @since 17.0.6
+	 */
+	private static java.util.Set<Element> doubledCellBreaks(Element cell) {
+		java.util.Set<Element> out = new java.util.HashSet<Element>();
+		for (Element para : descendants(cell, "block")) {
+			if (insideInline(para, cell)) continue; // a w:br, not a paragraph
+			List<Element> breaks = new ArrayList<Element>();
+			for (Element inner : descendants(para, "block")) {
+				if (!"page".equals(inner.getAttribute("break-before"))) continue;
+				if (insideInline(inner, para)) breaks.add(inner);
+			}
+			if (breaks.size() > 1) out.addAll(breaks);
+		}
+		return out;
+	}
+
+	/** Whether an fo:inline stands between this element and the given ancestor. */
+	private static boolean insideInline(Element el, Element ancestor) {
+		for (Node n = el.getParentNode(); n instanceof Element && n != ancestor; n = n.getParentNode()) {
+			if (isFo((Element) n, "inline")) return true;
+		}
+		return false;
 	}
 
 	/** Whether this block is the first thing the table holds, descending through any
@@ -2628,6 +2875,41 @@ public final class WordLayoutFixups {
 				}
 				continue;
 			}
+			// Every break costs a page boundary of its own, so where the break paragraph
+			// is not the only thing between two pages it keeps its page rather than
+			// being folded into what follows.  Two shapes, both measured on the
+			// page-empty golden, where Word has 13 pages and folding gave 11:
+			//   - the next block is itself a break paragraph with nothing on it (two
+			//     break-only paragraphs, or two w:br in one paragraph, which PageBreak
+			//     splits into two blocks): the material between the two breaks - here
+			//     nothing but this paragraph's mark - is a page with nothing on it.
+			//     Only where the next block is *empty*: a w:pageBreakBefore paragraph
+			//     that follows a page break is already at the top of a page and Word
+			//     adds none for it (page-empty's S6, and measured on two corpus
+			//     documents whose Heading 1 style carries w:pageBreakBefore, where
+			//     counting it cost two spurious pages of fourteen and one of seven);
+			//   - this block opens the flow, i.e. a section break has just started a
+			//     page: Word puts the mark on that page and the break makes another, so
+			//     a typeless w:sectPr followed by a break-only paragraph is an empty
+			//     page.  Merging moved the break onto the flow's first block, where FO
+			//     ignores it.  Only where the block after it does not break the page on
+			//     its own account: where the section's first paragraph holds a break
+			//     with text after it, PageBreak has already split it in two and the
+			//     second half carries the break, which is the one page Word gives
+			//     (measured on a corpus document where counting both cost it Word's
+			//     page count, 22 -> 23).
+			// @since 17.0.6
+			boolean nextAlreadyBreaks = "page".equals(next.getAttribute("break-before"));
+			boolean nextBreaks = nextAlreadyBreaks && isFo(next, "block") && isEmpty(next);
+			if (nextBreaks || (opensFlow(empty) && !nextAlreadyBreaks)) {
+				if (!nextBreaks) next.setAttribute("break-before", "page");
+				if (!empty.hasChildNodes()) {
+					// FOP builds no page for a block with no area: give it the mark's line
+					empty.setAttribute("white-space-treatment", "preserve");
+					empty.appendChild(doc.createTextNode(" "));
+				}
+				continue;
+			}
 			if (!next.hasAttribute("break-before") || "auto".equals(next.getAttribute("break-before"))) {
 				next.setAttribute("break-before", "page");
 			}
@@ -2636,6 +2918,25 @@ public final class WordLayoutFixups {
 			}
 			empty.getParentNode().removeChild(empty);
 		}
+	}
+
+	/** Whether this block is the first thing its fo:flow holds, so that the section's own
+	 *  page has just been started for it.  (A continuous section is merged into the
+	 *  page-sequence before it, so a flow start is always a page start.)  @since 17.0.6 */
+	private static boolean opensFlow(Element block) {
+		Node parent = block.getParentNode();
+		Element child = block;
+		while (parent instanceof Element) {
+			for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (!(n instanceof Element)) continue;
+				if (n != child) return false;
+				break;
+			}
+			if (isFo((Element) parent, "flow")) return true;
+			child = (Element) parent;
+			parent = parent.getParentNode();
+		}
+		return false;
 	}
 
 	/** Whether another fo:page-sequence - another Word section - follows the one this

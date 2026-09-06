@@ -140,23 +140,25 @@ public class TablePositionTest {
 		}
 
 		// Modes 11 and 12 (and a document with no compatibilityMode setting at all, which
-		// Word opens as mode 12) take the shift as mode 14 does - measured on the
+		// Word opens as mode 12) take the shift exactly as mode 14 does - measured on the
 		// table-grid-edge-compat11 / -compat12 probes, where Word puts the first cell's
-		// text at 77.3pt for w:tblInd 108, the mode-14 position - but capped at w:tblInd,
-		// so the grid edge never goes left of the margin: measured on a mode-12 document
-		// whose first row is a single centred w:gridSpan="3" cell with no w:tblInd, which
-		// Word centres on the exact page centre (297.65 of a 595.3pt page), 5.4pt right
-		// of where an uncapped shift put it.  @since 17.0.6
+		// text at 77.3pt for w:tblInd 108, and on table-grid-edge-signed-compat12, where
+		// it puts it at 72.0pt for no w:tblInd at all and at 66.5 / 54.0 for w:tblInd
+		// -108 / -360, i.e. on margin + w:tblInd whatever its sign.  17.0.6 briefly
+		// capped the shift at max(0, w:tblInd) here, which put those at 77.7 / 72.3 /
+		// 59.7.  @since 17.0.6
 		String indentedFar = table("<w:tblInd w:type=\"dxa\" w:w=\"288\"/>",
 				"<w:gridCol w:w=\"2000\"/><w:gridCol w:w=\"2000\"/>", cell(null, "one") + cell(null, "two"));
-		for (Integer mode : new Integer[] { null, 11, 12 }) {
-			assertEquals("compatibilityMode " + mode, 0.0, startIndentPt(fo(plain, flags, mode)), 0.01);
+		String indentedNegative = table("<w:tblInd w:type=\"dxa\" w:w=\"-108\"/>",
+				"<w:gridCol w:w=\"2000\"/><w:gridCol w:w=\"2000\"/>", cell(null, "one") + cell(null, "two"));
+		for (Integer mode : new Integer[] { null, 11, 12, 14 }) {
+			assertEquals("compatibilityMode " + mode, -5.4, startIndentPt(fo(plain, flags, mode)), 0.01);
 			assertEquals("compatibilityMode " + mode, 0.0, startIndentPt(fo(indented, flags, mode)), 0.01);
 			// 288 twips = 14.4pt of indent, less the 5.4pt default cell margin
 			assertEquals("compatibilityMode " + mode, 9.0, startIndentPt(fo(indentedFar, flags, mode)), 0.01);
+			assertEquals("compatibilityMode " + mode, -10.8,
+					startIndentPt(fo(indentedNegative, flags, mode)), 0.01);
 		}
-		// mode 14 has no cap: 14.4 - 5.4 there too, but 0 - 5.4 for a table with no indent
-		assertEquals("compatibilityMode 14", 9.0, startIndentPt(fo(indentedFar, flags, 14)), 0.01);
 	}
 
 	private void checkCentredOverflow(int flags) throws Exception {

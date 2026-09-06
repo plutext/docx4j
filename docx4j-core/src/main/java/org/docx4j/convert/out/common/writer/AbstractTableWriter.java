@@ -423,6 +423,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			if (gridIsAuthoritative(table, tblPr, cols, pref, declared)) return null;
 			int available = availableWidthTwips(context, tblPr);
 			if (available <= 0) return null;
+			if (preferredTableWidthTwips(context, tblPr) <= 0) {
+				available += autofitGridAllowanceTwips(context, table, tblPr);
+			}
 			int[] mi = new int[cols], ma = new int[cols];
 			for (int i = 0; i < cols; i++) {
 				mi[i] = (int) Math.ceil(min[i]);
@@ -438,6 +441,20 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			log.warn("Autofit skipped: " + e.getMessage(), e);
 			return null;
 		}
+	}
+
+	/**
+	 * How much wider than the text column a content-autofit table's <em>grid</em> may be,
+	 * in twips.  Zero here; the FO writer returns the cell margins the grid edge is
+	 * shifted by below compatibility mode 15, where it is the cell <em>content</em>, not
+	 * the grid, that spans the text column (see {@code TableWriter.applyStartIndent}).
+	 * Only consulted for a table with no preferred width of its own.
+	 *
+	 * @since 17.0.6
+	 */
+	protected int autofitGridAllowanceTwips(AbstractWmlConversionContext context,
+			AbstractTableWriterModel table, org.docx4j.wml.CTTblPrBase tblPr) {
+		return 0;
 	}
 
 	/**

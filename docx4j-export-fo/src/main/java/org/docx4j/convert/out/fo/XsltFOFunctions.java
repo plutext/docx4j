@@ -1154,6 +1154,15 @@ public class XsltFOFunctions {
 			// paragraph's w:suppressAutoHyphens.  @since 17.0.6
 			applyHyphenation(wmlPackage, pPr, foBlockElement);
 
+			// w:pPr/w:framePr: a positioned text frame (§9.5).  WordLayoutFixups reads
+			// this and lifts the paragraph out of the flow.  The paragraph's *own*
+			// w:framePr, not the effective one: a style which carries a frame would
+			// otherwise take every paragraph of that style into it, and consecutive
+			// paragraphs sharing a frame are one frame - measured on a corpus letterhead
+			// where that swept three unframed paragraphs into a page-anchored frame and
+			// took line parity from 0.645 to 0.548.  @since 17.0.6
+			applyFrameHint(foBlockElement, pPrDirect);
+
 			// the tab stops this paragraph's tabs are laid out against (only where it
 			// has one: the line manager needs them, nothing else does).  @since 17.0.5
 			if (realTabs() && containsTabLeader(childResults)) {
@@ -1304,6 +1313,39 @@ public class XsltFOFunctions {
 			log.error(e.getMessage(), e);
 		}
         return null;
+	}
+
+	/**
+	 * {@code w:pPr/w:framePr} (ECMA-376 17.3.1.11): the paragraph is a text frame, which
+	 * Word takes out of the flow and puts at {@code w:x} / {@code w:y} against
+	 * {@code w:hAnchor} / {@code w:vAnchor} in a box {@code w:w} wide.  The properties
+	 * are stamped on the block for {@link WordLayoutFixups#positionFrames}, which is
+	 * where the page geometry (and the paragraph's neighbours, since consecutive
+	 * paragraphs carrying the same {@code w:framePr} are one frame) can be seen.
+	 *
+	 * <p>The value is {@code hAnchor:vAnchor:x:y:xAlign:yAlign:w:h:hRule:wrap:dropCap},
+	 * lengths in twips, an empty field where the attribute is absent.  Written for both
+	 * pathways, since both build their paragraph blocks here.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	protected static void applyFrameHint(Element foBlockElement, PPr pPr) {
+		if (!WordLayoutFixups.isEnabled()) return;
+		if (pPr == null || pPr.getFramePr() == null) return;
+		org.docx4j.wml.CTFramePr f = pPr.getFramePr();
+		StringBuilder sb = new StringBuilder();
+		sb.append(f.getHAnchor() == null ? "" : f.getHAnchor().value()).append(':');
+		sb.append(f.getVAnchor() == null ? "" : f.getVAnchor().value()).append(':');
+		sb.append(f.getX() == null ? "" : f.getX().toString()).append(':');
+		sb.append(f.getY() == null ? "" : f.getY().toString()).append(':');
+		sb.append(f.getXAlign() == null ? "" : f.getXAlign().value()).append(':');
+		sb.append(f.getYAlign() == null ? "" : f.getYAlign().value()).append(':');
+		sb.append(f.getW() == null ? "" : f.getW().toString()).append(':');
+		sb.append(f.getH() == null ? "" : f.getH().toString()).append(':');
+		sb.append(f.getHRule() == null ? "" : f.getHRule().value()).append(':');
+		sb.append(f.getWrap() == null ? "" : f.getWrap().value()).append(':');
+		sb.append(f.getDropCap() == null ? "" : f.getDropCap().value());
+		foBlockElement.setAttribute(WordLayoutFixups.HINT_FRAME, sb.toString());
 	}
 
 		/**

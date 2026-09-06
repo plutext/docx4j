@@ -174,18 +174,27 @@ public class TableWriter extends AbstractTableWriter {
 	 * and -compat11 probes (w:tblInd 108, Word's default cell margins and the table's
 	 * own w:tblCellMar 108): Word's first cell text is at 77.3pt in both, exactly as in
 	 * mode 14, where the mode-15 geometry would put it at 83.1.  17.0.6 briefly
-	 * restricted the shift to mode 14 alone, on one corpus document; that document is
-	 * the measurement behind the clamp below.</p>
+	 * restricted the shift to mode 14 alone, and then capped it at w:tblInd below mode
+	 * 14, on the strength of one corpus document; the table-grid-edge-signed-compat12
+	 * golden settled both.</p>
 	 *
-	 * <p><b>Below mode 14 the grid edge does not move left of the margin</b>: the shift
-	 * is capped at w:tblInd, so a table with no w:tblInd (or one of 0) sits on the
-	 * margin.  Measured on a mode-12 document with no w:tblInd whose first row is a
-	 * single w:gridSpan="3" cell holding a centred paragraph: Word centres that text on
-	 * 297.65pt, the exact centre of the 595.3pt page and of its text column, so the grid
-	 * edge is on the margin; taking the shift centred it on 292.25, one cell margin left,
-	 * and cost that document two of Word's fifteen pages.  Mode 14 has no such cap - the
-	 * table-indent-compat14 probe puts the first cell's text at 72.0pt for no w:tblInd
-	 * and for w:tblInd 0 alike, so there the grid edge is at margin - cell margin.</p>
+	 * <p><b>The shift is unconditional in every mode below 15</b>, whatever the sign of
+	 * w:tblInd and whether or not the table has one.  Measured on
+	 * table-grid-edge-signed-compat12: Word's first cell text is at 66.5pt for
+	 * w:tblInd -108, at 54.0 for -360, and at 72.0 for no w:tblInd at all (fixed layout
+	 * and autofit alike) on a 72pt margin - that is margin + tblInd exactly, so the grid
+	 * edge is margin + tblInd - cellMargin throughout.  The cap min(shift, max(0, tblInd))
+	 * 17.0.6 briefly took put them at 72.3 / 59.7 / 77.7.  Modes 14 and 15 of the same
+	 * probe match the geometry already implemented.</p>
+	 *
+	 * <p>The corpus document behind that cap - mode 12, no w:tblInd, whose first row is a
+	 * single w:gridSpan="3" cell holding a paragraph Word centres on 297.65pt, the exact
+	 * centre of its 453.6pt text column - is a <em>content-autofit</em> table (w:tblW
+	 * auto, every w:tcW auto), and what it really shows is where such a table's grid goes:
+	 * Word's borders run 68.66..526.78 on a text column of 70.85..524.45, so the grid is
+	 * one cell margin wider than the column at each end and it is the cell <em>content</em>
+	 * that spans the column.  That is {@link #autofitGridAllowanceTwips}; with it the
+	 * centre is the column's whatever the cell margin, and the shift needs no cap.</p>
 	 *
 	 * <p>A w:jc="center" table wider than the text column is a separate case: Word
 	 * centres it, letting it overhang both margins, where we left-aligned it at the
@@ -219,12 +228,7 @@ public class TableWriter extends AbstractTableWriter {
 			}
 			int mode = compatibilityMode(context);
 			if (mode < 15) {
-				int shift = leftCellMarginTwips(tblPr);
-				// Below mode 14 the shift never takes the grid edge left of the margin
-				// (measured; see the class comment above): it is capped at w:tblInd.
-				if (mode < 14) {
-					shift = Math.min(shift, Math.max(0, indent));
-				}
+				int shift = leftCellMarginTwips(table, tblPr);
 				indent -= shift;
 				// Word does not shift a table nested in a w:tc (see isNested); whether
 				// this one is is not known until the FO is assembled, since in the XSLT
@@ -485,8 +489,62 @@ public class TableWriter extends AbstractTableWriter {
 		}
 	}
 
-	/** The effective left cell margin in twips: w:tblPr/w:tblCellMar/w:left (the table
-	 *  style's is already merged into the effective tblPr), else Word's default 108. */
+	/**
+	 * Below compatibility mode 15 the grid edge sits one left cell margin back from the
+	 * text margin (see {@link #applyStartIndent}), and it is the cell <em>content</em>
+	 * that spans the text column: measured on a mode-12 corpus table (w:tblW auto, every
+	 * w:tcW auto, w:tcMar 41 twips) on a 70.85..524.45pt text column, Word's grid runs
+	 * 68.66..526.78 - one cell margin outside the column at each end - so a paragraph its
+	 * gridSpan row centres lands on 297.65pt, the column's own centre.  Sizing the grid to
+	 * the column instead centred it on 292.25 and cost that document two of Word's fifteen
+	 * pages, which is what the (now removed) cap on the shift was papering over.
+	 *
+	 * @since 17.0.6
+	 */
+	@Override
+	protected int autofitGridAllowanceTwips(AbstractWmlConversionContext context,
+			AbstractTableWriterModel table, org.docx4j.wml.CTTblPrBase tblPr) {
+		if (compatibilityMode(context) >= 15) return 0;
+		return 2 * leftCellMarginTwips(table, tblPr);
+	}
+
+	/**
+	 * The left cell margin the grid edge is measured from, in twips: the <em>first
+	 * cell's</em> own w:tcMar/w:left where it has one, else w:tblPr/w:tblCellMar/w:left
+	 * (the table style's is already merged into the effective tblPr), else Word's
+	 * default 108.
+	 *
+	 * <p>The first cell wins because it is that cell's text the shift puts on
+	 * margin + w:tblInd: measured on a mode-12 corpus table whose cells carry
+	 * w:tcMar w:left="41" while the table declares no w:tblCellMar, Word's grid runs
+	 * 68.66..526.78 on a 70.85..524.45 text column - 2.19pt outside it at each end,
+	 * which is the cell's 41 twips (2.05pt) and not the default 108 (5.4pt).</p>
+	 */
+	private static int leftCellMarginTwips(AbstractTableWriterModel table,
+			org.docx4j.wml.CTTblPrBase tblPr) {
+		Integer own = firstCellLeftMarginTwips(table);
+		if (own != null) return own.intValue();
+		return leftCellMarginTwips(tblPr);
+	}
+
+	/** w:tcMar/w:left on the table's very first cell, or null where it declares none. */
+	private static Integer firstCellLeftMarginTwips(AbstractTableWriterModel table) {
+		try {
+			if (table == null || table.getRows() == null || table.getRows().isEmpty()) return null;
+			org.docx4j.model.table.TableModelRow row = table.getRows().get(0);
+			if (row == null || row.size() == 0) return null;
+			org.docx4j.model.table.TableModelCell cell = row.get(0);
+			if (cell == null || cell.getTcPr() == null || cell.getTcPr().getTcMar() == null) return null;
+			org.docx4j.wml.TblWidth left = cell.getTcPr().getTcMar().getLeft();
+			if (left == null || left.getW() == null) return null;
+			if (left.getType() != null && !"dxa".equals(left.getType())) return null;
+			return Integer.valueOf(left.getW().intValue());
+		} catch (Exception e) {
+			logger.debug("No first-cell margin: " + e.getMessage());
+			return null;
+		}
+	}
+
 	private static int leftCellMarginTwips(org.docx4j.wml.CTTblPrBase tblPr) {
 		if (tblPr != null && tblPr.getTblCellMar() != null && tblPr.getTblCellMar().getLeft() != null) {
 			org.docx4j.wml.TblWidth left = tblPr.getTblCellMar().getLeft();

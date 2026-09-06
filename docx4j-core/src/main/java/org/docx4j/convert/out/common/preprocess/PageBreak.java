@@ -129,29 +129,39 @@ public class PageBreak {
 	 */
 	static void updateParagraph(P paragraph, List<Object> siblings, int index) {
 
-		List<Object> content = paragraph.getContent();
-		int[] at = firstPageBreak(content);
-		if (at==null) return;
+		while (true) {
+			List<Object> content = paragraph.getContent();
+			int[] at = firstPageBreak(content);
+			if (at==null) return;
 
-		if (siblings!=null && contentPrecedes(content, at)) {
-			split(paragraph, at, siblings, index);
-			return;
+			// Every break costs a page boundary, so a paragraph which already breaks
+			// before itself cannot absorb a second one: it is split there instead, and
+			// the empty half between the two breaks is Word's empty page.  Measured on
+			// the page-empty golden, whose "two page breaks in one paragraph" and "two
+			// break-only paragraphs" shapes each give Word a page with nothing on it;
+			// folding the second break into the first gave 11 pages against Word's 13.
+			// @since 17.0.6
+			if (siblings!=null && (contentPrecedes(content, at) || breaksBefore(paragraph))) {
+				split(paragraph, at, siblings, index);
+				return; // the continuation is at index+1, and the caller visits it in turn
+			}
+
+			// nothing before the break: it is the paragraph's own break-before, which is
+			// what docx4j has always made of it
+			if (breaksBefore(paragraph)) return; // nowhere to split it to
+			removeBreak(content, at);
+			if (paragraph.getPPr() == null) {
+				paragraph.setPPr(new PPr());
+			}
+			paragraph.getPPr().setPageBreakBefore(new BooleanDefaultTrue());
+			// another break may follow in the same paragraph
 		}
+	}
 
-		// nothing before the break: it is the paragraph's own break-before, which is
-		// what docx4j has always made of it.  A paragraph which already breaks before
-		// itself keeps this one as a break of its own - two consecutive breaks are an
-		// empty page in Word, which one break-before would not give.
-		if (paragraph.getPPr()!=null
+	private static boolean breaksBefore(P paragraph) {
+		return paragraph.getPPr()!=null
 				&& paragraph.getPPr().getPageBreakBefore()!=null
-				&& paragraph.getPPr().getPageBreakBefore().isVal()) {
-			return;
-		}
-		removeBreak(content, at);
-		if (paragraph.getPPr() == null) {
-			paragraph.setPPr(new PPr());
-		}
-		paragraph.getPPr().setPageBreakBefore(new BooleanDefaultTrue());
+				&& paragraph.getPPr().getPageBreakBefore().isVal();
 	}
 
 	/** Where the paragraph's first {@code w:br w:type="page"} is: {@code {i}} for one

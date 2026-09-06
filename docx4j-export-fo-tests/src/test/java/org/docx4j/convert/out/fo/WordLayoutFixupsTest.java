@@ -29,6 +29,75 @@ public class WordLayoutFixupsTest {
 				|| out.replace(" ", "").contains("space-before=\"36pt\"space-before.conditionality=\"retain\""));
 	}
 
+	/**
+	 * Consecutive page breaks each cost a page, so a break paragraph followed by another
+	 * empty one keeps its own (page-empty: Word 13 pages, docx4j had 11).
+	 */
+	@Test
+	public void consecutiveBreakParagraphsEachKeepAPage() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\"/>"
+				+ "<fo:block break-before=\"page\"/>"
+				+ "<fo:block>two</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("two page boundaries", 2, count(out, "break-before=\"page\""));
+	}
+
+	/**
+	 * But a w:pageBreakBefore paragraph after a page break is already at the top of a
+	 * page and Word adds none for it: only an <em>empty</em> break block counts as a
+	 * second break.
+	 */
+	@Test
+	public void pageBreakBeforeParagraphAfterABreakCostsNoPage() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ "<fo:block break-before=\"page\"/>"
+				+ "<fo:block break-before=\"page\">a heading whose style breaks before</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("one page boundary", 1, count(out, "break-before=\"page\""));
+	}
+
+	/** A break paragraph which opens the flow keeps its page: the section break has
+	 *  already started one, so the break makes another. */
+	@Test
+	public void breakParagraphOpeningAFlowKeepsItsPage() {
+		String in = flow("<fo:block break-before=\"page\"/><fo:block>two</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("two page boundaries", 2, count(out, "break-before=\"page\""));
+	}
+
+	/**
+	 * A picture-only paragraph's line is the picture, plus (multiple - 1) x the
+	 * paragraph font's natural pitch - not (multiple - 1) x the picture (&#xa7;2.4).
+	 * Measured on picture-header-cell: an 11pt paragraph (pitch 13.428pt) at
+	 * w:line=276 auto with a 24pt picture has a 26.0pt line, not 24.0 and not 27.6.
+	 */
+	@Test
+	public void pictureLineTakesTheMultiplesOwnLeading() {
+		String in = flow("<fo:block docx4j-pstyle=\"\" docx4j-linebox=\"13.428pt\""
+				+ " docx4j-baseline=\"10.474pt\" docx4j-linerule=\"auto\" line-height=\"15.442pt\">"
+				+ "<fo:external-graphic content-height=\"24pt\" content-width=\"60pt\" src=\"x.png\"/>"
+				+ "</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		// the line box is the picture (that is what says the line has no descent)
+		assertTrue("line box is not the picture: " + out, out.contains("line-box=\"24pt\""));
+		// and the line-height carries the picture plus 0.15 x 13.428 = 26.01pt
+		assertTrue("the multiple's own leading was not added: " + out,
+				out.contains("line-height=\"26.014pt\"") || out.contains("line-height=\"26.01pt\""));
+	}
+
+	/** A single-spaced picture-only paragraph gets no leading at all. */
+	@Test
+	public void singleSpacedPictureLineTakesNoLeading() {
+		String in = flow("<fo:block docx4j-pstyle=\"\" docx4j-linebox=\"13.428pt\""
+				+ " docx4j-baseline=\"10.474pt\" docx4j-linerule=\"auto\" line-height=\"13.428pt\">"
+				+ "<fo:external-graphic content-height=\"24pt\" content-width=\"60pt\" src=\"x.png\"/>"
+				+ "</fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue(out.contains("line-box=\"24pt\""));
+		assertTrue("the line-height was raised: " + out, out.contains("line-height=\"13.428pt\""));
+	}
+
 	@Test
 	public void pageBreakParagraphKeepsSpaceBefore_mode14() {
 		String in = flow("<fo:block>one</fo:block>"
