@@ -63,8 +63,14 @@ public class NumberingLabelTest extends AbstractXSLFOTest {
 			+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr>"
 			+ "<w:rPr><w:rFonts w:ascii=\"Wingdings\" w:hAnsi=\"Wingdings\" w:hint=\"default\"/></w:rPr>"
 			+ "</w:lvl></w:abstractNum>"
+			// abstractNum 2: a decimal level whose own w:rPr is bold and red
+			+ "<w:abstractNum w:abstractNumId=\"2\"><w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/>"
+			+ "<w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+			+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr>"
+			+ "<w:rPr><w:b/><w:color w:val=\"FF0000\"/></w:rPr></w:lvl></w:abstractNum>"
 			+ "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"0\"/></w:num>"
 			+ "<w:num w:numId=\"2\"><w:abstractNumId w:val=\"1\"/></w:num>"
+			+ "<w:num w:numId=\"3\"><w:abstractNumId w:val=\"2\"/></w:num>"
 			+ "</w:numbering>";
 
 	private static String item(String numId, String ilvl, String text) {
@@ -73,6 +79,13 @@ public class NumberingLabelTest extends AbstractXSLFOTest {
 				+ "<w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\"/><w:b/></w:rPr></w:pPr>"
 				+ "<w:r><w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\"/><w:b/></w:rPr>"
 				+ "<w:t>" + text + "</w:t></w:r></w:p>";
+	}
+
+	/** an item whose paragraph states no formatting of its own */
+	private static String plainItem(String numId, String text) {
+		return "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/>"
+				+ "<w:numId w:val=\"" + numId + "\"/></w:numPr></w:pPr>"
+				+ "<w:r><w:t>" + text + "</w:t></w:r></w:p>";
 	}
 
 	private static org.w3c.dom.Document fo(String body, int flags) throws Exception {
@@ -133,5 +146,35 @@ public class NumberingLabelTest extends AbstractXSLFOTest {
 	@Test
 	public void xslt() throws Exception {
 		check(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/**
+	 * A numbering level's {@code w:rPr} formats the <b>number</b> alone (ECMA-376
+	 * 17.9.24); the paragraph's text keeps the paragraph's own formatting.  Until 17.0.6
+	 * docx4j gave label and body one rPr, so a level {@code <w:b/>} made the whole
+	 * paragraph bold - measured on a real document, Word draws the number in Tahoma-Bold
+	 * and the text after it in Tahoma, and reading the level's rPr for both cost that
+	 * document 0.074 of line parity.
+	 *
+	 * @since 17.0.6
+	 */
+	@Test
+	public void levelRPrFormatsTheLabelAlone() throws Exception {
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			org.w3c.dom.Document doc = fo(plainItem("3", "not bold"), flags);
+
+			Element labelHolder = (Element) doc.getElementsByTagNameNS(FO, "list-item-label").item(0);
+			assertEquals("bold", labelHolder.getAttribute("font-weight"));
+			assertEquals("#ff0000", labelHolder.getAttribute("color").toLowerCase());
+
+			// nothing of the level's rPr reaches the item's text
+			Element bodyHolder = (Element) doc.getElementsByTagNameNS(FO, "list-item-body").item(0);
+			assertEquals("", bodyHolder.getAttribute("font-weight"));
+			assertEquals("", bodyHolder.getAttribute("color"));
+			Element bodyBlock = body(doc, 0);
+			assertEquals("", bodyBlock.getAttribute("font-weight"));
+			assertEquals("", bodyBlock.getAttribute("color"));
+			assertEquals("not bold", bodyBlock.getTextContent().trim());
+		}
 	}
 }

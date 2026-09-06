@@ -659,8 +659,11 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		}
 		
 		if ((br.getType()!=null
-				  && br.getType().equals(STBrType.PAGE))) {
-			currentSpan=null;			
+				  && (br.getType().equals(STBrType.PAGE)
+				      || br.getType().equals(STBrType.COLUMN)))) {
+			// the break is a block, so the inline it would otherwise continue is finished
+			// (a column break as much as a page break; @since 17.0.6)
+			currentSpan=null;
 		}
 	}
 	

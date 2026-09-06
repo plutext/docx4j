@@ -85,6 +85,16 @@ public class BrWriter extends AbstractBrWriter {
 			//ret.setAttribute("space-after", "0in"); // doesn't help
 			ret.setAttribute("line-height", "0pt"); // suits FOP 1.1
 			ret.setTextContent("\n");
+
+			/* A column break is a line break only where there is no next column to go to.
+			 * Where the section has columns, WordLayoutFixups.columnBreaks takes the hint
+			 * off this block and puts break-before="column" on the paragraph, which the
+			 * section wrapper has already divided at the break (ColumnBreaks, §7.3).
+			 * @since 17.0.6 */
+			if (modelData.getType()!=null && modelData.getType().equals(STBrType.COLUMN)
+					&& WordLayoutFixups.isEnabled()) {
+				ret.setAttribute(WordLayoutFixups.HINT_COLUMN_BREAK, "1");
+			}
 		}
 		return ret;
 	}

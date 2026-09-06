@@ -307,13 +307,20 @@ with `<w:ind w:left="397" w:hanging="113"/>`: Word puts the bullet at 14.2pt and
 text at 19.85pt, where docx4j had no list indent at all to work from, fell back to the
 paragraph's tab stops and gave the label a width of **453.6pt** - the list text then ran off
 the page and Word's two pages came out as four. Where the override states no indent the
-abstract level's stands. Its **formatting** is a separate question, not yet settled here:
-the label and the item's text are given one `w:rPr` (the level's), so taking an override's
-`<w:b/>` set the whole paragraph bold, where Word draws the number bold and the text after
-it in the regular face - measured, Tahoma-Bold then Tahoma on one line. Word's rule is that
-a level's `w:rPr` formats the number alone (ECMA-376 17.9.24); splitting the two is a change
-for every numbered paragraph, so the override's `w:rPr` is left unread for now. 20 documents
+abstract level's stands. 20 documents
 of the three corpora carry a `w:lvlOverride/w:lvl` at all.
+
+<a id="s28rpr"></a>**A level's `w:rPr` formats the number alone** (ECMA-376 17.9.24); the
+paragraph's text is formatted by the paragraph. docx4j wrote the level's rPr on the
+`fo:list-item-body` as well as on the label, so a level `<w:b/>` made the whole paragraph
+bold - measured on a real document, Word draws the number in Tahoma-Bold and the text after
+it in Tahoma on one line, and reading the level's rPr for both cost that document 0.074 of
+line parity. Only the label carries it now; the body keeps the **paragraph mark's** rPr,
+which is what it had before any level rPr was read. Merging the two for the label is
+unchanged - the level's, with the paragraph mark's applied over it, the font excepted (it
+comes from the numbering, since anything else would change the bullet). The other order
+was tried against the corpora and dropped: it cost three documents 0.002 to 0.065 of line
+parity and two of them their page count, and gained nothing.
 
 <a id="s28ind"></a>**A partial `w:ind` merges with the level's, attribute by attribute.**
 A paragraph stating only `<w:ind w:right="22"/>` keeps the level's `w:left` and
@@ -331,6 +338,27 @@ numbering, whose ilvl 1 is `decimalZero` with `w:isLgl`, prints "Section 1.01" -
 document whose abstractNum carries `<w:isLgl/>` at ilvl 1, 2 and 3 with `w:lvlText`
 `%1.%2.` and `%1.%2.%3.` over an `upperRoman` ilvl 0, Word prints "3.6.2." where docx4j
 printed "III.6.2.", so every second- and third-level heading failed to match.
+
+<a id="s28inline"></a>**A centred or right-aligned numbered paragraph** is laid out by Word
+as **one line, number included**: the number, the `w:suff` separator, and the text are
+centred (or right-aligned) together. An `fo:list-block` cannot do that - it puts the label
+in a column of its own at the list's start-indent - so such a paragraph is written as a
+plain `fo:block` with the number as an `fo:inline` at the head of it
+(`XsltFOFunctions.createInlineLabel`), the block keeping the list's own geometry: it begins
+at the level's number position (`w:left` less `w:hanging`) and its first line is not
+indented again. The separator is `w:suff` (ECMA-376 17.9.29): a tab, which is an
+`fo:leader` of the level's hanging width less the label's measured width, so that the text
+starts at the level's text position; a space; or nothing.
+
+Measured on three corpus documents. On a centred TOC entry in a 4920tw cell Word puts "1."
+at x=**129.4** and the entry's text at **147.5** - 18.1pt apart, the level's 18pt hanging
+indent - and the three entries' first lines all share one centre, 198.6, which is the
+centre of the whole cell rather than of the cell less the list indent. docx4j put every
+label at the cell's content edge, x=**90.0**, while centring the text alone: -39.4, -26.0
+and -77.8pt on the three labels. On a right-aligned Cyrillic heading the label was
+**152.1pt** left of Word's, and in a third document's table cell 5.2pt outside the page's
+own left margin. Left-aligned and justified paragraphs keep the hanging-indent geometry,
+where the label does stand at the list indent.
 
 <a id="s28font"></a>**A level `w:rPr` which names no font** - Word writes
 `<w:rFonts w:hint="default"/>`, which says only how to choose between fonts it does not
@@ -1618,6 +1646,33 @@ Columns within 5% of each other (4716/4715, 4680/4860 in the corpora) are Word's
 rounding of equal columns and are left to the region body.
 `org.docx4j.convert.out.common.wrappers.UnequalColumns` builds the table.
 
+<a id="s73equal"></a>**A column break in columns of equal width**, which the region body
+lays out, is the same rule and is taken the same way: the paragraph is divided at the break
+(`ConversionSectionWrapperFactory` via `ColumnBreaks`, only for a section whose `w:cols`
+declares more than one column), the half which follows it carries the break, and the FO
+exporter turns that into `break-before="column"` on its block
+(`WordLayoutFixups.columnBreaks`, which also gives the half a line where the break ended
+the paragraph). The spacing is the divided paragraph's above: the space-after goes with the
+half which ends it and the space-before stays on both. Until 17.0.6 the break was emitted
+as an ordinary line break and the column was never taken at all.
+
+Where the section has **one** column there is nowhere to break to, so the break stays the
+line break docx4j has always made of it; a break with content before it in its block is one
+docx4j did not divide, and is left alone as well.
+
+Two things had to be fixed for FOP to take it. `WordFlowLayoutManager` moves each
+paragraph's trailing leading-glue behind the break possibility that follows it (§2.3);
+where that possibility is a **forced** break which *ends* the element list - which is how a
+break between two blocks reaches the flow - the glue after it makes FOP's
+`ElementListUtils.endsWithForcedBreak` false, `AbstractBreaker` does not end the block
+sequence, and the break is silently dropped. A forced break discards glue at the start of
+the column it opens anyway, so the glue is now removed rather than moved, which is the same
+thing on the page and leaves the list ending in the break. Measured on a two-column corpus
+document: Word's column 2 opens with "Epsum factorial" at x=315.4, where ours carried on in
+column 1 at x=72.0 and spilled Word's one page onto two. (Stock FOP took the break; only
+docx4j's line-and-flow managers lost it, and only for a block carrying
+`docx4j:line-box` - i.e. every block docx4j writes.)
+
 <a id="s74"></a>**Margins of merged sections.** A page master can carry only one set of
 margins, so a merged run of continuous sections takes the **first** section's `w:pgMar`, as
 Word starts the page, and the difference is added to the indents of the paragraphs and
@@ -1808,6 +1863,19 @@ An absolutely positioned container is placed relative to its own zero-height wra
 `fo:block-container` is a reference area), so the wrappers which take no space go ahead of
 those which reserve height at the head of the paragraph; with the reservation first the
 logo above came out at 179.9 rather than 81.5, one reserved height low.
+
+<a id="s91indent"></a>**A paragraph which begins with such a wrapper keeps its first-line
+indent.** The wrapper is block-level, so FOP puts the inline content after it into an
+anonymous block, which starts at the block's `start-indent` whatever `text-indent` says.
+Measured on a corpus document whose "Dear Sir," paragraph is
+`<w:ind w:left="60" w:firstLine="360"/>` (3pt + 18pt) and begins with a `w:pict`: our FO
+carried both properties and Word drew the text at x=**21.1** where we drew it at **3.0**.
+The indent is now reserved by an `fo:leader` of exactly its width at the head of the inline
+content - which is what a leading tab and leading whitespace already are ([§4.4](#44-tab-stops),
+[§4.5](#45-runs-of-spaces)) - and the property is taken off the block, so the lines after
+the first are not indented too. A hanging indent (a negative `text-indent`) is left alone:
+there is nothing to reserve, and FOP puts the first line at the start-indent, which is where
+Word puts it.
 
 <a id="s91cols"></a>**In a multi-column region a wrapped object is always positioned**,
 whatever its width, and so is a text box. FOP paints nothing at all for an `fo:float` in a

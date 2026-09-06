@@ -41,6 +41,12 @@ import org.apache.fop.layoutmgr.PageSequenceLayoutManager;
  * (the one the line manager ends its list with, FOP's own from space
  * resolution) are passed over on the way to the penalty.
  *
+ * <p>At a <b>forced</b> break the glue is dropped rather than moved: a forced
+ * break discards glue at the start of the page or column it opens, so the two
+ * come to the same thing on the page, but a glue after a forced break which
+ * ends the element list makes FOP's {@code ElementListUtils.endsWithForcedBreak}
+ * false and the break is then not taken at all (17.0.6).</p>
+ *
  * @since 17.0.5
  */
 public class WordFlowLayoutManager extends FlowLayoutManager {
@@ -82,7 +88,20 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 					break;
 				}
 			}
-			if (target > glueIndex + 1 || target == glueIndex + 1) {
+			if (target >= glueIndex + 1 && forcedBreak(elements.get(target))) {
+				/* A forced break - a w:br type="page" or type="column", or a section
+				 * break - discards glue at the start of the page or column it opens, so
+				 * moving the leading behind it and dropping it come to the same thing on
+				 * the page.  They are not the same to FOP: where the forced break ends
+				 * the element list (which is how a break between two blocks reaches the
+				 * flow), a glue after it makes ElementListUtils.endsWithForcedBreak false,
+				 * AbstractBreaker does not end the block sequence there, and the break is
+				 * not taken at all.  Measured on a two-column corpus document whose
+				 * w:br w:type="column" was ignored: Word's column 2 opens with "Epsum
+				 * factorial" at x=315.4, ours carried on in column 1 at x=72.0 and spilled
+				 * Word's one page onto two.  @since 17.0.6 */
+				it.remove();
+			} else if (target > glueIndex + 1 || target == glueIndex + 1) {
 				elements.remove(glueIndex);
 				elements.add(target, el); // target shifted down by one: now right after the penalty
 				it = elements.listIterator(target + 1);
@@ -93,5 +112,11 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 				it.remove();
 			}
 		}
+	}
+
+	/** Whether this element is a break which is always taken. */
+	private static boolean forcedBreak(ListElement e) {
+		return e instanceof KnuthPenalty
+				&& ((KnuthPenalty) e).getPenalty() == -KnuthElement.INFINITE;
 	}
 }

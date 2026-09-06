@@ -728,7 +728,7 @@
 			 -->			
 		
 		<xsl:choose>
-			<xsl:when test="$predecessor='br' and not(@w:type='page')">
+			<xsl:when test="$predecessor='br' and not(@w:type='page') and not(@w:type='column')">
 				<!-- special case; see discussion in BrWriter -->
 				<fo:block white-space-treatment="preserve" linefeed-treatment="preserve"><xsl:text> <!-- one carriage return -->				
 </xsl:text></fo:block>
@@ -749,7 +749,7 @@
 
 		<!-- Word gives a break at the end of a paragraph an empty line of its own
 		     (measured, CR-001 §6.10); a no-break space in the run's font makes one -->
-		<xsl:if test="not(@w:type='page')
+		<xsl:if test="not(@w:type='page') and not(@w:type='column')
 				and count(following-sibling::*[self::w:t or self::w:tab or self::w:br or self::w:drawing or self::w:pict or self::w:sym or self::w:footnoteReference or self::w:endnoteReference])=0
 				and count(../following-sibling::*[self::w:r or self::w:hyperlink or self::w:fldSimple or self::w:sdt or self::w:smartTag or self::w:ins][.//w:t or .//w:tab or .//w:br or .//w:drawing or .//w:pict or .//w:sym or .//w:footnoteReference or .//w:endnoteReference])=0">
 			<xsl:variable name="brP" select="ancestor::*[self::w:p][1]" />

@@ -552,6 +552,7 @@ public class ConversionSectionWrapperFactory {
 		// a stretch of unequal columns becomes a one-row table, and so one column
 		int[] cols = new int[parts.size()];
 		boolean asTables = false;
+		boolean split = false;
 		for (int i = 0; i < parts.size(); i++) {
 			cols[i] = colsNum(sectPrs.get(i));
 			List<Object> table = UnequalColumns.asOneRowTable(parts.get(i), sectPrs.get(i));
@@ -559,13 +560,17 @@ public class ConversionSectionWrapperFactory {
 				parts.set(i, table);
 				cols[i] = 1;
 				asTables = true;
+			} else if (cols[i] > 1) {
+				// equal columns: the region body lays them out, and a w:br w:type="column"
+				// divides the paragraph it is in (§7.3).  @since 17.0.6
+				split |= ColumnBreaks.split(parts.get(i));
 			}
 		}
 		int max = 1;
 		for (int c : cols) max = Math.max(max, c);
 
 		if (columnParts.isEmpty()) {
-			if (asTables) {
+			if (asTables || split) {
 				content.clear();
 				content.addAll(parts.get(0));
 			}
@@ -582,7 +587,7 @@ public class ConversionSectionWrapperFactory {
 
 		boolean uniformCols = true;
 		for (int c : cols) if (c != max) uniformCols = false;
-		if (uniformCols && sameMargins && !asTables) return new Merged(max, ref);
+		if (uniformCols && sameMargins && !asTables && !split) return new Merged(max, ref);
 
 		List<Object> result = new ArrayList<Object>();
 		for (int i = 0; i < parts.size(); i++) {

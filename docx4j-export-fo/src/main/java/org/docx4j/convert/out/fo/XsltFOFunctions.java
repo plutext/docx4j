@@ -38,6 +38,7 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.Bidi;
+import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
@@ -1034,22 +1035,33 @@ public class XsltFOFunctions {
 			} else if (numIdVal(pPr)!=null
 					&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
 					) {
-				
-				foListBlock = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-block");
-				document.appendChild(foListBlock);
-				
-				// Its a list item.  At present we make a new list-block for
-				// each list-item. This is not great; DocumentModel will ultimately
-				// allow us to use fo:list-block properly.
 
-				indentHandledByNumbering = createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
-						rPrParagraphMark, document, foBlockElement, foListBlock, listInd);
-				
-				if (log.isDebugEnabled()) {
-					log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
+				if (labelDrawnInline(pPr)) {
+
+					// Word draws a centred or right-aligned number on the line with the
+					// paragraph's text, where an fo:list-block would pin it at the list
+					// indent (§2.8).  @since 17.0.6
+					document.appendChild(foBlockElement);
+					indentHandledByNumbering = createInlineLabel(wmlPackage, runFontSelector, pStyleVal,
+							pPrDirect, pPr, rPr, rPrParagraphMark, document, foBlockElement, listInd);
+
+				} else {
+
+					foListBlock = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-block");
+					document.appendChild(foListBlock);
+
+					// Its a list item.  At present we make a new list-block for
+					// each list-item. This is not great; DocumentModel will ultimately
+					// allow us to use fo:list-block properly.
+
+					indentHandledByNumbering = createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
+							rPrParagraphMark, document, foBlockElement, foListBlock, listInd);
+
+					if (log.isDebugEnabled()) {
+						log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
+					}
 				}
-				
-				
+
 			} else /* its not a list item */ {
 				document.appendChild(foBlockElement);
 			}
@@ -1113,7 +1125,9 @@ public class XsltFOFunctions {
 			Node n = childResults;
 
 			// Handle empty case - want the block to be preserved!
-			if (n.getChildNodes().getLength()==0) {
+			// (an inline label is content of its own: the paragraph mark's placeholder
+			//  would overwrite it, @since 17.0.6)
+			if (n.getChildNodes().getLength()==0 && !foBlockElement.hasChildNodes()) {
 				
 				((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
 				
@@ -1565,6 +1579,82 @@ public class XsltFOFunctions {
 		return pPr.getNumPr().getNumId().getVal().toString();
 	}
 
+	/**
+	 * The number or bullet this paragraph is numbered with, from its own w:numPr where it
+	 * has one and from the effective properties otherwise.
+	 *
+	 * <p>w:ilvl is optional (and so is its w:val); a paragraph numbered with just a
+	 * w:numId is at level 0.  Likewise w:numId/@w:val: without it there is no numbering
+	 * to apply.</p>
+	 *
+	 * @since 17.0.6 (extracted from createListBlock, which the inline label shares)
+	 */
+	protected static ResultTriple numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
+			PPr pPrDirect, PPr pPr) {
+
+		String directNumId = numIdVal(pPrDirect);
+		if (directNumId != null) {
+			return org.docx4j.model.listnumbering.Emulator.getNumber(
+					wmlPackage, pStyleVal, directNumId, ilvlVal(pPrDirect.getNumPr()) );
+		}
+		// Get the effective values; since we already know this,
+		// save the effort of doing this again in Emulator
+		String numIdString = numIdVal(pPr);
+		if (numIdString == null) return null;
+		return org.docx4j.model.listnumbering.Emulator.getNumber(
+				wmlPackage, pStyleVal, numIdString, ilvlVal(pPr.getNumPr()) );
+	}
+
+	/**
+	 * The level's own w:rPr, as it is read for the label: a w:rFonts which names no font
+	 * - Word writes {@code <w:rFonts w:hint="default"/>} on a level whose label is in the
+	 * paragraph's own font - is not a font of its own, and reading it as one reset the
+	 * label to the document default.  Measured on a document whose level rPr is
+	 * {@code <w:rFonts w:hint="default"/><w:b/><w:i w:val="0"/>} in Arial headings: Word
+	 * draws the whole line in Arial-BoldMT where docx4j drew the label in Tinos-Bold
+	 * beside an Arimo-Bold heading.
+	 *
+	 * @return a copy, so the level definition is never altered; null where the level
+	 *         states no rPr
+	 * @since 17.0.6
+	 */
+	protected static RPr levelRPr(ResultTriple triple, RPr rPr, RPr rPrParagraphMark) {
+
+		if (triple==null || triple.getRPr()==null) return null;
+		RPr actual = XmlUtils.deepCopy(triple.getRPr()); // clone, so the ilvl rpr is not altered
+		if (namesNoFont(actual.getRFonts())) {
+			org.docx4j.wml.RFonts inherited = null;
+			if (rPrParagraphMark!=null && !namesNoFont(rPrParagraphMark.getRFonts())) {
+				inherited = rPrParagraphMark.getRFonts();
+			} else if (rPr!=null && !namesNoFont(rPr.getRFonts())) {
+				inherited = rPr.getRFonts();
+			}
+			actual.setRFonts(inherited==null ? null : XmlUtils.deepCopy(inherited));
+		}
+		return actual;
+	}
+
+	/**
+	 * What the number is drawn with: the level's rPr with the paragraph mark's applied
+	 * over it, which is how docx4j has always merged the two (the font excepted: it comes
+	 * from the numbering, since anything else would change the bullet, and is taken from
+	 * the level before this).  The level's rPr formats the <b>number</b> alone (ECMA-376
+	 * 17.9.24), so what this returns never reaches the paragraph's text.
+	 *
+	 * <p>The other order - the level's over the paragraph mark's - was tried and dropped:
+	 * it cost three corpus documents 0.002 to 0.065 of line parity and two of them their
+	 * page count, and gained nothing.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	protected static RPr labelRPr(RPr level, RPr rPrParagraphMark) {
+
+		if (level==null) return rPrParagraphMark;
+		RPr merged = XmlUtils.deepCopy(level);
+		StyleUtil.apply(rPrParagraphMark, merged);
+		return merged;
+	}
+
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
 			Element foBlockElement, Element foListBlock) {
@@ -1623,30 +1713,8 @@ public class XsltFOFunctions {
 		foListItem.appendChild(foListItemBody);	
 		foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
 		
-		ResultTriple triple;
-		// w:ilvl is optional (and so is its w:val); a paragraph numbered with just a
-		// w:numId is at level 0.  Likewise w:numId/@w:val: without it there is no
-		// numbering to apply.  @since 17.0.5
-		String directNumId = numIdVal(pPrDirect);
-		if (directNumId != null) {
-			triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-					wmlPackage, pStyleVal,
-				directNumId,
-				ilvlVal(pPrDirect.getNumPr()) );
-		} else {
-			// Get the effective values; since we already know this,
-			// save the effort of doing this again in Emulator
-			String ilvlString = ilvlVal(pPr.getNumPr());
-			triple = null;
-			String numIdString = numIdVal(pPr);
-			if (numIdString != null) {
-				triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-						wmlPackage, pStyleVal,
-		    			numIdString,
-		    			ilvlString );
-			}
-		}
-		
+		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr);
+
 		if (triple==null) {
 			log.warn("computed number ResultTriple was null");
 			if (log.isDebugEnabled() ) {
@@ -1657,14 +1725,19 @@ public class XsltFOFunctions {
 
 			/* Format the list item label
 			 * 
-			 * Since it turns out (in FOP at least) that the label and the body 
-			 * don't have the same vertical alignment 
+			 * Since it turns out (in FOP at least) that the label and the body
+			 * don't have the same vertical alignment
 			 * unless font size is applied at the same level
-			 * (ie to both -label and -body, or to the block inside each), 
+			 * (ie to both -label and -body, or to the block inside each),
 			 * we have to format the list-item-body as well.
 			 * This issue only manifests itself if the font size on
 			 * the outer list-block is larger than the font sizes
 			 * set inside it.
+			 *
+			 * What goes on the body is the paragraph mark's rPr; the numbering level's
+			 * formats the number alone (ECMA-376 17.9.24), and since 17.0.6 reaches the
+			 * label only.  The body's own fo:block carries the paragraph's font size,
+			 * so the alignment above still holds.
 			 */
 			
 			// OK just to override specific values
@@ -1688,38 +1761,24 @@ public class XsltFOFunctions {
 				}
 				
 			} else {
-				RPr actual = XmlUtils.deepCopy(triple.getRPr()); // clone, so the ilvl rpr is not altered
-				/* A w:rFonts which names no font - Word writes <w:rFonts w:hint="default"/>
-				 * on a level whose label is in the paragraph's own font - is not a font
-				 * of its own, and reading it as one reset the label to the document
-				 * default.  Measured on a document whose level rPr is
-				 * <w:rFonts w:hint="default"/><w:b/><w:i w:val="0"/> in Arial headings:
-				 * Word draws the whole line in Arial-BoldMT where docx4j drew the label
-				 * in Tinos-Bold beside an Arimo-Bold heading.  @since 17.0.6 */
-				if (namesNoFont(actual.getRFonts())) {
-					org.docx4j.wml.RFonts inherited = null;
-					if (rPrParagraphMark!=null && !namesNoFont(rPrParagraphMark.getRFonts())) {
-						inherited = rPrParagraphMark.getRFonts();
-					} else if (rPr!=null && !namesNoFont(rPr.getRFonts())) {
-						inherited = rPr.getRFonts();
-					}
-					actual.setRFonts(inherited==null ? null : XmlUtils.deepCopy(inherited));
-				}
-//	        			System.out.println(XmlUtils.marshaltoString(rPrParagraphMark));
-				
-				// pMark overrides numbering, except for font
-				// (which makes sense, since that would change the bullet)
-				// so set the font
+				RPr actual = levelRPr(triple, rPr, rPrParagraphMark);
+
+				// the font comes from the numbering (anything else would change the bullet)
 				rfsFrag = (DocumentFragment)runFontSelector.fontSelector(pPr, actual, triple.getNumString());
 				applyRunFontSelection(rfsFrag, foListItemLabelBody);
-				
-				// .. before taking rPrParagraphMark into account
-				StyleUtil.apply(rPrParagraphMark, actual); 
-//	        			System.out.println(XmlUtils.marshaltoString(actual));
-				
-				createFoAttributes(wmlPackage, actual, foListItemLabel );
-				createFoAttributes(wmlPackage, actual, foListItemBody );
-				
+
+				/* The level's w:rPr formats the <b>number</b> alone (ECMA-376 17.9.24);
+				 * the paragraph's text is formatted by the paragraph.  Until 17.0.6 the
+				 * merged rPr was written on the fo:list-item-body as well, so a level
+				 * <w:b/> made the whole paragraph bold - measured on a real document,
+				 * Word draws the number in Tahoma-Bold and the text after it in Tahoma,
+				 * and reading the level's rPr for both cost that document 0.074 of line
+				 * parity.  @since 17.0.6 */
+				createFoAttributes(wmlPackage, labelRPr(actual, rPrParagraphMark), foListItemLabel );
+				if (rPrParagraphMark!=null) {
+					createFoAttributes(wmlPackage, rPrParagraphMark, foListItemBody );
+				}
+
 			}
 				        		
 			
@@ -1774,6 +1833,122 @@ public class XsltFOFunctions {
 		}
 		foListItemBody.appendChild(foBlockElement);
 		return indentHandledByNumbering;
+	}
+
+	/**
+	 * Whether Word draws this paragraph's number <b>on the line with its text</b> rather
+	 * than at the list indent: a centred or right-aligned numbered paragraph.
+	 *
+	 * <p>Measured on three corpus documents (CR-001 &#xa7;2.8).  On a centred TOC entry in a
+	 * 4920tw cell Word puts "1." at x=129.4 and the entry's text at 147.5 - 18.1pt apart,
+	 * which is the level's hanging indent - and the three entries' first lines all share
+	 * one centre, 198.6, the centre of the cell.  The label and the gap after it are part
+	 * of what is centred.  Ours, in an fo:list-block, pinned every label at the cell's
+	 * content edge, x=90.0, while centring the text alone: -39.4, -26.0 and -77.8pt on the
+	 * three labels.  On a right-aligned Cyrillic heading the label was 152.1pt left of
+	 * Word's, and in one table cell 5.2pt outside the page's own left margin.</p>
+	 *
+	 * <p>Justified ({@code w:jc="both"}) and left-aligned paragraphs keep the hanging-indent
+	 * geometry, where the label does stand at the list indent.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	protected static boolean labelDrawnInline(PPr pPr) {
+
+		if (pPr==null || pPr.getJc()==null || pPr.getJc().getVal()==null) return false;
+		org.docx4j.wml.JcEnumeration jc = pPr.getJc().getVal();
+		return jc==org.docx4j.wml.JcEnumeration.CENTER
+				|| jc==org.docx4j.wml.JcEnumeration.RIGHT
+				|| jc==org.docx4j.wml.JcEnumeration.END;
+	}
+
+	/**
+	 * The number drawn inline, at the head of the paragraph's own block: what
+	 * {@link #labelDrawnInline} describes.  The block keeps the list's geometry - it
+	 * begins where the number does, at the level's number position - so that the label,
+	 * the gap after it and the text are centred (or right-aligned) together, as Word
+	 * does.
+	 *
+	 * <p>The gap is the {@code w:suff} separator (ECMA-376 17.9.29): a tab, which takes
+	 * the text to the level's text position, so the label and the gap together are the
+	 * hanging width; a space; or nothing.  The tab is an {@code fo:leader} whose length
+	 * WordLayoutFixups sets once the label's font is settled and its width can be
+	 * measured.</p>
+	 *
+	 * @return whether the block's indents have been set here
+	 * @since 17.0.6
+	 */
+	protected static boolean createInlineLabel(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
+			Document document, Element foBlockElement, PPrBase.Ind[] indOut) {
+
+		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr);
+		if (triple==null) {
+			log.warn("computed number ResultTriple was null");
+			return false;
+		}
+
+		Element label = document.createElementNS(XSL_FO, "fo:inline");
+		RPr level = levelRPr(triple, rPr, rPrParagraphMark);
+		RPr forFont = level!=null ? level : (pPr.getRPr()!=null ? rPrParagraphMark : rPr);
+		DocumentFragment rfsFrag = (DocumentFragment)runFontSelector.fontSelector(pPr, forFont, triple.getNumString());
+		applyRunFontSelection(rfsFrag, label);
+		if (level!=null) {
+			createFoAttributes(wmlPackage, labelRPr(level, rPrParagraphMark), label );
+		} else if (pPr.getRPr()!=null) {
+			createFoAttributes(wmlPackage, rPrParagraphMark, label );
+		}
+
+		String text = triple.getBullet()!=null
+				? (rfsFrag==null ? triple.getBullet() : rfsFrag.getTextContent())
+				: triple.getNumString();
+		if (text==null || text.length()==0) return false;
+		label.setTextContent(text);
+		foBlockElement.appendChild(label);
+
+		Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
+		if (indOut!=null && indent.getObject() instanceof PPrBase.Ind) {
+			indOut[0] = (PPrBase.Ind)indent.getObject();
+		}
+
+		String suff = triple.getLvl()!=null && triple.getLvl().getSuff()!=null
+				&& triple.getLvl().getSuff().getVal()!=null
+				? triple.getLvl().getSuff().getVal() : "tab";
+		if ("space".equals(suff)) {
+			foBlockElement.appendChild(document.createTextNode(" "));
+		} else if (!"nothing".equals(suff)) {
+			int gap = labelGapTwips(wmlPackage, indent, indOut==null ? null : indOut[0],
+					pPrDirect, text.length());
+			if (gap > 0 && WordLayoutFixups.isEnabled()) {
+				Element leader = document.createElementNS(XSL_FO, "fo:leader");
+				leader.setAttribute("leader-pattern", "space");
+				leader.setAttribute("leader-length", "0pt"); // sized in WordLayoutFixups
+				leader.setAttribute(WordLayoutFixups.HINT_LABEL_GAP,
+						UnitsOfMeasurement.twipToBest(gap));
+				foBlockElement.appendChild(leader);
+			} else {
+				foBlockElement.appendChild(document.createTextNode(" "));
+			}
+		}
+
+		// the block begins where the number does, and its first line is not indented
+		// again: that is the list-block's own geometry
+		indent.setXslFOListBlock(foBlockElement, indent.isHanging() ? -1 : 0);
+		return true;
+	}
+
+	/** From the number's position to the text's: the level's hanging indent, or where the
+	 *  level has none, the distance to the tab stop the label's width reaches (as
+	 *  createListBlock computes it for provisional-distance-between-starts). */
+	private static int labelGapTwips(WordprocessingMLPackage wmlPackage, Indent indent,
+			PPrBase.Ind resolved, PPr pPrDirect, int numChars) {
+
+		if (indent.isHanging() && resolved!=null && resolved.getHanging()!=null) {
+			return resolved.getHanging().intValue();
+		}
+		if (wmlPackage==null) return 0;
+		return getDistanceToNextTabStop(indent.getNumberPosition(), 90 * numChars,
+				pPrDirect.getTabs(), wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
 	}
     
     

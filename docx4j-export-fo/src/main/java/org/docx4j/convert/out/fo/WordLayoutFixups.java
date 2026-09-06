@@ -134,13 +134,16 @@ public final class WordLayoutFixups {
 			org.docx4j.model.HyphenationSettings hyphenation) {
 		disregardBaselineShifts(doc);
 		imageOnlyLineBox(doc);
+		inlineLabelGaps(doc);
 		listLabelLines(doc);
 		lineBoxAttributes(doc, compatibilityMode, hyphenation);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
 		anchorFloatingTables(doc);
 		hoistFloats(doc);
+		firstLineIndentAfterLeadingBlock(doc);
 		reserveUnpaintablePictures(doc);
+		columnBreaks(doc); // before emptyLineForBlockWithNoContent: what follows the break takes a line
 		emptyLineForBlockWithNoContent(doc);
 		leadingWhitespaceLeader(doc);
 		containWhitespaceTreatment(doc);
@@ -294,6 +297,15 @@ public final class WordLayoutFixups {
 
 	private static final String[] TAB_HINTS = { HINT_TABS, HINT_TAB_DEFAULT, HINT_TAB_IND };
 
+	/** on the block a {@code w:br w:type="column"} makes (BrWriter): where the section
+	 *  has columns to go to, it is a column break and not a line break.  @since 17.0.6 */
+	public static final String HINT_COLUMN_BREAK = "docx4j-colbreak";
+
+	/** on the fo:leader which is the {@code w:suff} tab after an inline numbering label
+	 *  (XsltFOFunctions.createInlineLabel): the label's number position to its text
+	 *  position, from which the label's own measured width is taken.  @since 17.0.6 */
+	public static final String HINT_LABEL_GAP = "docx4j-label-gap";
+
 	// ------------------------------------------------------------ 0a. list labels
 
 	/**
@@ -307,6 +319,63 @@ public final class WordLayoutFixups {
 	 * block the label's natural ascent for the line manager to fold into its
 	 * first line.
 	 */
+	/**
+	 * The gap after an inline numbering label (&#xa7;2.8): Word's tab there takes the text
+	 * to the level's text position, so what the leader has to be is that distance less the
+	 * label's own width.  Measured on a centred TOC entry, Word's "1." at x=129.4 and its
+	 * text at 147.5, 18.1pt apart, which is the level's 18pt hanging indent.
+	 *
+	 * <p>Here, rather than where the label is written, because the label's font is not
+	 * settled until its block is finished.  Where it cannot be measured - no font, or a
+	 * font FOP does not have - the leader stays at zero and the number abuts the text,
+	 * which is nearer Word than the whole gap would be.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void inlineLabelGaps(Document doc) {
+		for (Element leader : elements(doc, "leader")) {
+			String gap = leader.getAttribute(HINT_LABEL_GAP);
+			if (gap.length() == 0) continue;
+			leader.removeAttribute(HINT_LABEL_GAP);
+			double gapPt = lengthPt(gap);
+			Element block = enclosingBlock(leader);
+			Node prev = leader.getPreviousSibling();
+			if (block == null || !(prev instanceof Element)) continue;
+			double width = textWidthPt(block, (Element) prev);
+			if (width < 0) continue;
+			leader.setAttribute("leader-length", pt(Math.max(0, gapPt - width)));
+		}
+	}
+
+	/** The width of the text under this element, in the font each part of it is set in,
+	 *  or -1 where any of it cannot be measured.  @since 17.0.6 */
+	private static double textWidthPt(Element block, Element el) {
+		String text = el.getTextContent();
+		if (text == null || text.length() == 0) return 0;
+		String family = null, size = null;
+		for (Node p = el; p instanceof Element; p = p.getParentNode()) {
+			Element e = (Element) p;
+			if (family == null && e.getAttribute("font-family").length() > 0) {
+				family = e.getAttribute("font-family");
+			}
+			if (size == null && e.getAttribute("font-size").length() > 0) {
+				size = e.getAttribute("font-size");
+			}
+			if (e == block) break;
+		}
+		if (family == null || size == null) return -1;
+		double sizePt = lengthPt(size);
+		if (sizePt <= 0) return -1;
+		org.docx4j.fonts.PhysicalFont pf = org.docx4j.fonts.PhysicalFonts.get(family);
+		if (pf == null) return -1;
+		try {
+			double w = org.docx4j.fonts.TextMeasurer.widthPt(text, pf, sizePt);
+			return w >= 0 ? w : -1;
+		} catch (RuntimeException e) {
+			return -1;
+		}
+	}
+
 	static void listLabelLines(Document doc) {
 		for (Element item : elements(doc, "list-item")) {
 			Element labelEl = firstChildElement(item, "list-item-label");
@@ -1229,6 +1298,53 @@ public final class WordLayoutFixups {
 	 *
 	 * @since 17.0.6
 	 */
+	/**
+	 * A paragraph which begins with a <b>block-level child</b> - the wrapper an anchored
+	 * picture, a text box or a floating table is put in - loses its first-line indent:
+	 * FOP puts the inline content which follows into an anonymous block, which starts at
+	 * the block's start-indent whatever {@code text-indent} says.
+	 *
+	 * <p>Measured on a corpus document whose "Dear Sir," paragraph is
+	 * {@code <w:ind w:left="60" w:firstLine="360"/>} (3pt + 18pt) and begins with a
+	 * {@code w:pict}: our FO carries both properties, Word draws the text at x=21.1 and we
+	 * drew it at x=3.0.  The indent is therefore reserved by an {@code fo:leader} of
+	 * exactly its width - which is what a leading tab and leading whitespace already are
+	 * (&#xa7;4.4, &#xa7;4.5) - put at the head of the inline content, and the property is
+	 * taken off the block so the following lines are not indented too.</p>
+	 *
+	 * <p>A hanging indent (a negative text-indent) is left alone: there is nothing to
+	 * reserve, and FOP places the first line at the start-indent, which is where Word
+	 * puts it.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void firstLineIndentAfterLeadingBlock(Document doc) {
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			double indent = lengthPt(block.getAttribute("text-indent"));
+			if (indent <= 0) continue;
+			Node at = block.getFirstChild();
+			boolean leading = false;
+			while (at instanceof Element && isBlockLevel((Element) at)) {
+				leading = true;
+				at = at.getNextSibling();
+			}
+			if (!leading || at == null) continue;
+			block.removeAttribute("text-indent");
+			Element leader = doc.createElementNS(FO_NS, "fo:leader");
+			leader.setAttribute("leader-pattern", "space");
+			leader.setAttribute("leader-length", pt(indent));
+			block.insertBefore(leader, at);
+		}
+	}
+
+	/** Whether this element is one FOP lays out as a block, so that the inline content
+	 *  after it becomes an anonymous block of its own.  @since 17.0.6 */
+	private static boolean isBlockLevel(Element el) {
+		return isFo(el, "block") || isFo(el, "block-container") || isFo(el, "float")
+				|| isFo(el, "table") || isFo(el, "list-block");
+	}
+
 	static void reserveUnpaintablePictures(Document doc) {
 		java.util.Map<String, String> converted = new java.util.HashMap<String, String>();
 		java.util.Map<String, Integer> reserved = new java.util.TreeMap<String, Integer>();
@@ -1715,11 +1831,13 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_BASELINE);
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
+			block.removeAttribute(HINT_COLUMN_BREAK);
 			for (String hint : TAB_HINTS) block.removeAttribute(hint);
 			block.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
 		}
 		for (Element leader : elements(doc, "leader")) {
 			leader.removeAttribute(HINT_TAB);
+			leader.removeAttribute(HINT_LABEL_GAP);
 		}
 		for (Element g : elements(doc, "external-graphic")) {
 			for (String hint : ANCHOR_HINTS) g.removeAttribute(hint);
@@ -2382,6 +2500,88 @@ public final class WordLayoutFixups {
 		return null;
 	}
 
+	/**
+	 * A {@code w:br w:type="column"} in a section which <em>has</em> another column to go
+	 * to is a column break, not the line break docx4j made of it until 17.0.6: Word takes
+	 * the break there, and what follows it opens the next column (&#xa7;7.3).  The
+	 * paragraph has already been divided at the break by
+	 * {@code ConversionSectionWrapperFactory} (via {@code ColumnBreaks}), which leaves the
+	 * break at the head of the half which follows it, so all that is left here is to move
+	 * it off the inline it may sit in and onto that half's block.
+	 *
+	 * <p>Where the section has one column there is nowhere to break to - Word's own
+	 * columns are the region body's - and the break stays the line break it was.  A break
+	 * with content before it in its block is one such (nothing divided it), and is left
+	 * alone as well.</p>
+	 *
+	 * <p>The half which follows the break takes a line even where the break ends the
+	 * paragraph and nothing is left of it but its mark; that is
+	 * {@link #emptyLineForBlockWithNoContent}'s doing, which is why this runs first.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void columnBreaks(Document doc) {
+		List<Element> breaks = new ArrayList<Element>();
+		for (Element block : elements(doc, "block")) {
+			if (block.getAttribute(HINT_COLUMN_BREAK).length() > 0) breaks.add(block);
+		}
+		for (Element block : breaks) {
+			block.removeAttribute(HINT_COLUMN_BREAK);
+			Element para = enclosingParagraph(block);
+			if (para == null || columnCount(para) <= 1) continue;
+			// not inside a table: a break there belongs to the table, as a page break
+			// does (§3.3), and FOP would break the table where it found it
+			if (insideTableCell(para)) continue;
+			if (contentPrecedesInBlock(para, block)) continue;
+			block.getParentNode().removeChild(block);
+			String existing = para.getAttribute("break-before");
+			if (existing.length() == 0 || "auto".equals(existing)) {
+				para.setAttribute("break-before", "column");
+			}
+			// where the break ended the paragraph, all that is left of the half which
+			// opens the column is its mark, which takes a line of its own (§7.3).  The
+			// block was not empty when createBlock wrote it, so it has no placeholder of
+			// its own and emptyLineForBlockWithNoContent leaves it alone.
+			if (!para.hasChildNodes()) {
+				para.setAttribute("white-space-treatment", "preserve");
+				para.appendChild(doc.createTextNode(" "));
+			}
+		}
+	}
+
+	/** Whether anything which draws comes before this element in the block, in document
+	 *  order.  (The element is a descendant of the block.)  @since 17.0.6 */
+	private static boolean contentPrecedesInBlock(Element block, Element before) {
+		return !scanUntil(block, before, new boolean[1]);
+	}
+
+	/** @return true where the scan reached {@code stop} without finding content; state[0]
+	 *  records whether it has been reached. */
+	private static boolean scanUntil(Node n, Element stop, boolean[] reached) {
+		for (Node c = n.getFirstChild(); c != null; c = c.getNextSibling()) {
+			if (c == stop) {
+				reached[0] = true;
+				return true;
+			}
+			if (c.getNodeType() == Node.TEXT_NODE || c.getNodeType() == Node.CDATA_SECTION_NODE) {
+				String v = c.getNodeValue();
+				if (v != null && v.trim().length() > 0) return false;
+				continue;
+			}
+			if (!(c instanceof Element)) continue;
+			Element e = (Element) c;
+			if (isFo(e, "inline") || isFo(e, "basic-link") || isFo(e, "wrapper")
+					|| isFo(e, "bidi-override") || isFo(e, "block")) {
+				if (!scanUntil(e, stop, reached)) return false;
+				if (reached[0]) return true;
+				continue;
+			}
+			if (isFo(e, "block-container") || isFo(e, "float")) continue; // out of the flow
+			return false; // external-graphic, leader, page-number, ...
+		}
+		return true;
+	}
+
 	static void mergePageBreakParagraphs(Document doc, int compatibilityMode) {
 		List<Element> empties = new ArrayList<>();
 		for (Element block : elements(doc, "block")) {
@@ -2648,7 +2848,8 @@ public final class WordLayoutFixups {
 	static void listItemPageBreaks(Document doc) {
 		for (Element block : elements(doc, "block")) {
 			String br = block.getAttribute("break-before");
-			if (!"page".equals(br) && !"even-page".equals(br) && !"odd-page".equals(br)) continue;
+			if (!"page".equals(br) && !"even-page".equals(br) && !"odd-page".equals(br)
+					&& !"column".equals(br)) continue;
 			Element listBlock = null;
 			for (Node n = block.getParentNode(); n instanceof Element; n = n.getParentNode()) {
 				Element e = (Element) n;

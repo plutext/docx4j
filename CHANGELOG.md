@@ -235,6 +235,17 @@ default
 (PDF and HTML)
 - a hard page break inside a numbered paragraph now breaks before the whole list block, and
 the paragraph's space-before is applied at the top of the new page as Word applies it
+- a w:br w:type="column" in a section whose columns are equal is now taken: the paragraph is
+divided at the break, as it already was for columns of different widths, and the half after
+it opens the next column.  It was emitted as an ordinary line break
+- a numbering level's w:rPr now formats the number alone (ECMA-376 17.9.24) instead of the
+whole paragraph: a level w:b no longer sets the item's text bold
+- a centred or right-aligned numbered paragraph now draws its number on the line with the
+text, centred (or right-aligned) with it as Word draws it, rather than in the list block's
+own column at the list indent
+- a paragraph which begins with an anchored picture, a text box or a floating table now
+keeps its first-line indent: the object's wrapper is block-level, and FOP indents no
+anonymous block after one
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

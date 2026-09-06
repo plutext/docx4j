@@ -166,8 +166,8 @@ class UnequalColumns {
 			// block is one paragraph with the break in the middle of it)
 			P before = XmlUtils.deepCopy(p);
 			P after = XmlUtils.deepCopy(p);
-			truncateAtColumnBreak(before, true);
-			truncateAtColumnBreak(after, false);
+			truncateAtColumnBreak(before, true, false);
+			truncateAtColumnBreak(after, false, false);
 			// it is one paragraph, and its space-after goes with the half that ends it:
 			// measured on the columns-unequal probe, where the break ends the paragraph,
 			// Word starts the next section 13.9pt below the last line of column one, ie
@@ -232,8 +232,12 @@ class UnequalColumns {
 	 * it; the break itself goes either way (it is the division, and left in it would
 	 * take a line of its own).  The paragraph is a copy: the document is converted more
 	 * than once, so nothing of it may be modified.
+	 *
+	 * @param keepBreak keep the break itself at the head of the half which follows it,
+	 *        which is where the equal-columns pathway reads it ({@link ColumnBreaks});
+	 *        the table pathway divides the content itself and does not need it.
 	 */
-	private static void truncateAtColumnBreak(P p, boolean keepBefore) {
+	static void truncateAtColumnBreak(P p, boolean keepBefore, boolean keepBreak) {
 		List<Object> content = p.getContent();
 		int runIndex = -1, breakIndex = -1;
 		for (int i = 0; i < content.size() && runIndex < 0; i++) {
@@ -255,7 +259,7 @@ class UnequalColumns {
 			while (runContent.size() > breakIndex) runContent.remove(runContent.size() - 1);
 			while (content.size() > runIndex + 1) content.remove(content.size() - 1);
 		} else {
-			for (int j = breakIndex; j >= 0; j--) {
+			for (int j = keepBreak ? breakIndex - 1 : breakIndex; j >= 0; j--) {
 				if (!(XmlUtils.unwrap(runContent.get(j)) instanceof org.docx4j.wml.RPr)) runContent.remove(j);
 			}
 			for (int i = runIndex - 1; i >= 0; i--) {
