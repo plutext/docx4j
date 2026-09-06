@@ -218,6 +218,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     if (autofit != null) {
     	table.setAutofitColumnWidths(autofit);
     	table.setContentSizedColumns(true);
+    } else {
+    	int[] scaled = scaleGridToPercentageWidth(context, table);
+    	if (scaled != null) table.setAutofitColumnWidths(scaled);
     }
     int[] fitted = fitToAvailableWidth(context, table);
     if (fitted != null) {
@@ -460,8 +463,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			}
 			int[] mi = new int[cols], ma = new int[cols];
 			for (int i = 0; i < cols; i++) {
-				mi[i] = (int) Math.ceil(min[i]);
-				ma[i] = (int) Math.ceil(max[i]);
+				mi[i] = (int) Math.ceil(min[i]) + COLUMN_SLACK_TWIPS;
+				ma[i] = (int) Math.ceil(max[i]) + COLUMN_SLACK_TWIPS;
 			}
 			int[] widths = org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
 			boolean anyDeclared = false;
@@ -583,6 +586,20 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					&& tblPr.getTblLayout().getType() == org.docx4j.wml.STTblLayoutType.FIXED) {
 				return null; // Word overflows a fixed-layout table
 			}
+			/* A w:tblW in pct is a width Word gives the table exactly, and lets it
+			 * overhang the right margin.  Measured on table-grid-pct: a w:tblW of 6000
+			 * pct - 120 per cent of the 9026-twip text column - is drawn by Word 541.2pt
+			 * wide, from the left margin to x=613.2 on a 523.2pt column, and a 100 per
+			 * cent table indented by w:tblInd 720 is the full 9026 twips wide starting
+			 * at the indent, so the percentage is of the column and not of what a
+			 * w:tblInd leaves of it.  An absolute w:tblW does not buy that exemption:
+			 * one corpus table whose w:tblW asks for 117pt more than the column is kept
+			 * inside it by Word.  @since 17.0.6 */
+			org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
+			if (tblW != null && "pct".equals(tblW.getType())
+					&& preferredTableWidthTwips(context, tblPr) > 0) {
+				return null;
+			}
 			int[] widths = table.getAutofitColumnWidths();
 			boolean ownGrid = widths == null;
 			if (ownGrid) {
@@ -633,6 +650,58 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	}
 
 	/**
+	 * A {@code w:tblW} in <b>pct</b> is a width Word gives the table exactly, and the
+	 * {@code w:tblGrid} is scaled to it - the percentage wins over the grid, where an
+	 * absolute {@code w:tblW} does not (&#xa7;6.5).
+	 *
+	 * <p>Measured on {@code table-grid-pct}, whose text column is 9026 twips.  A
+	 * {@code w:tblLayout="fixed"} table stating {@code w:tblW 5000 pct} with a grid of
+	 * 4614+4614 = 9228 (2.2 per cent over) is drawn by Word with its two columns at
+	 * 224.98 and 225.22pt - the grid scaled by 9026/9228 - and the twin whose grid is
+	 * 3000+3000 = 6000 comes out at the same two widths, the grid scaled <em>up</em> by
+	 * 1.504.  docx4j used the grid as it stood in both, so the first table's cells were
+	 * 6pt wide of Word's and the second's 75pt narrow, which broke three extra lines.
+	 * A grid which already sums to the percentage width is left alone.</p>
+	 *
+	 * <p>Only where the grid is what decides the layout: a table whose columns the
+	 * content-based autofit pass sized has already been given the percentage width as
+	 * its target ({@code availableWidthTwips}).</p>
+	 *
+	 * @return column widths in twips, or null to leave the grid alone
+	 * @since 17.0.6
+	 */
+	protected int[] scaleGridToPercentageWidth(AbstractWmlConversionContext context,
+			AbstractTableWriterModel table) {
+		if (!fitsTableToPage()) return null;   // in HTML the percentage is the browser's
+		try {
+			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+			org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
+			if (tblW == null || !"pct".equals(tblW.getType())) return null;
+			int target = preferredTableWidthTwips(context, tblPr);
+			if (target <= 0) return null;
+			int[] grid = gridWidths(table, table.getColCount());
+			if (grid == null || grid.length == 0) return null;
+			long total = 0;
+			for (int w : grid) total += w;
+			if (total <= 0 || total == target) return null;
+			int[] out = new int[grid.length];
+			long given = 0;
+			for (int i = 0; i < grid.length; i++) {
+				out[i] = (int) Math.max(1, (long) grid[i] * target / total);
+				given += out[i];
+			}
+			int widest = 0;
+			for (int i = 1; i < out.length; i++) if (out[i] > out[widest]) widest = i;
+			out[widest] += (int) (target - given);
+			if (out[widest] < 1) out[widest] = 1;
+			return out;
+		} catch (Exception e) {
+			log.warn("Percentage table width skipped: " + e.getMessage(), e);
+			return null;
+		}
+	}
+
+	/**
 	 * How far past the text column an <em>autofit</em> table's own w:tblGrid may reach
 	 * before {@link #fitToAvailableWidth} scales it down.  Measured over the
 	 * real-document corpus: Word draws autofit grids up to about a fifth over at their
@@ -641,6 +710,19 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * @since 17.0.6
 	 */
 	protected static final double GRID_OVERHANG_LIMIT = 1.25;
+
+	/**
+	 * Slack, in twips, added to every column the content-based autofit pass sizes, so
+	 * that the line which sized the column still fits once the FO writer has rounded
+	 * the cell padding.  Measured on {@code table-cell-measure}: a column of the line's
+	 * advance rounded up to a whole twip plus the two 108-twip cell margins came out
+	 * 0.03pt short, because 5.4pt of cell margin is written as {@code 1.91mm} =
+	 * 5.4152pt at each side, and the line which the column exists to hold broke in two
+	 * in all three of that probe's content-autofit tables.
+	 *
+	 * @since 17.0.6
+	 */
+	private static final int COLUMN_SLACK_TWIPS = 2;
 
 	/** Whether this output format should scale an over-wide table down to the page,
 	 *  as Word does; true for paginated output.  @since 17.0.5 */

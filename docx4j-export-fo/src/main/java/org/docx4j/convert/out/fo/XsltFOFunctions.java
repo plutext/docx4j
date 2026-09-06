@@ -1762,8 +1762,60 @@ public class XsltFOFunctions {
 		// save the effort of doing this again in Emulator
 		String numIdString = numIdVal(pPr);
 		if (numIdString == null) return null;
+		// not the paragraph's own w:numPr: a level linked to another paragraph style
+		// does not number it (§2.8)
 		return org.docx4j.model.listnumbering.Emulator.getNumber(
-				wmlPackage, pStyleVal, numIdString, ilvlVal(pPr.getNumPr()) );
+				wmlPackage, pStyleVal, numIdString, ilvlVal(pPr.getNumPr()), false );
+	}
+
+	/**
+	 * The indent a numbered paragraph's label and body are laid out on: the
+	 * <em>effective</em> one, which style resolution has already built from the level's
+	 * {@code w:ind}, the paragraph style's own, and the paragraph's direct formatting,
+	 * in that order of precedence (&#xa7;2.8).  The level's indent alone was used until
+	 * 17.0.6, so a style which states a {@code w:ind} beside its {@code w:numPr} lost
+	 * it.  Measured on {@code numbering-label-ilvl0}, whose style carries the
+	 * {@code w:numPr} and {@code w:ind w:left="227" w:hanging="227"} through
+	 * {@code w:basedOn}: Word draws the label at x=72.0 and the wrapped line at 83.3 -
+	 * the style's 227 twips - where docx4j used the level's 720/360 and drew them at
+	 * 90.0 and 108.0.
+	 *
+	 * <p>Only where a <em>style</em> brought the numbering.  A paragraph whose own
+	 * {@code w:numPr} names it keeps the level's indent, because the effective one is
+	 * not Word's merge for it: {@link org.docx4j.model.styles.StyleUtil}'s {@code w:ind}
+	 * merge takes the hanging indent whole from whichever {@code w:ind} states either of
+	 * {@code w:hanging} and {@code w:firstLine}, so a style stating only {@code w:left}
+	 * wipes the level's hanging indent.  Measured on two corpus documents whose bulleted
+	 * items carry a direct {@code w:numPr}: Word puts their wrapped lines at x=89.3, the
+	 * level's 198-twip hanging indent, and reading the effective indent for them drew
+	 * every one at the bullet's own 79.4 and cost the first 0.085 and the second 0.05 of
+	 * line parity.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	private static PPrBase.Ind numberingIndent(PPr pPr, ResultTriple triple, PPr pPrDirect) {
+		// the paragraph's own w:numPr brings the level's indent with it; only where a
+		// style contributed the numbering can that style's own w:ind outrank the level
+		if (numIdVal(pPrDirect) != null) return triple.getIndent();
+		PPrBase.Ind effective = pPr == null ? null : pPr.getInd();
+		PPrBase.Ind level = triple == null ? null : triple.getIndent();
+		if (effective == null) return level;
+		if (level == null) return effective;
+		PPrBase.Ind merged = Context.getWmlObjectFactory().createPPrBaseInd();
+		merged.setLeft(effective.getLeft() != null ? effective.getLeft() : level.getLeft());
+		merged.setRight(effective.getRight() != null ? effective.getRight() : level.getRight());
+		merged.setStart(effective.getStart() != null ? effective.getStart() : level.getStart());
+		merged.setEnd(effective.getEnd() != null ? effective.getEnd() : level.getEnd());
+		/* hanging and firstLine are alternatives, so the pair is taken whole from
+		 * whichever states either of them */
+		if (effective.getHanging() != null || effective.getFirstLine() != null) {
+			merged.setHanging(effective.getHanging());
+			merged.setFirstLine(effective.getFirstLine());
+		} else {
+			merged.setHanging(level.getHanging());
+			merged.setFirstLine(level.getFirstLine());
+		}
+		return merged;
 	}
 
 	/**
@@ -1967,7 +2019,7 @@ public class XsltFOFunctions {
 			// which trumps indent specified in a style's numbering.  
 			// Well, not exactly, components which aren't set in
 			// the direct formatting will be contributed by the numbering's indent settings
-			Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
+			Indent indent = new Indent(pPrDirect.getInd(), numberingIndent(pPr, triple, pPrDirect));
 			if (indOut!=null && indent.getObject() instanceof PPrBase.Ind) {
 				indOut[0] = (PPrBase.Ind)indent.getObject();
 			}
@@ -2061,7 +2113,7 @@ public class XsltFOFunctions {
 		label.setTextContent(text);
 		foBlockElement.appendChild(label);
 
-		Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
+		Indent indent = new Indent(pPrDirect.getInd(), numberingIndent(pPr, triple, pPrDirect));
 		if (indOut!=null && indent.getObject() instanceof PPrBase.Ind) {
 			indOut[0] = (PPrBase.Ind)indent.getObject();
 		}

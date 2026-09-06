@@ -161,6 +161,7 @@ public final class WordLayoutFixups {
 		retainSpaceBeforeAtFlowStart(doc);
 		spaceBeforePageNumber(doc);
 		retainSpacingAtStaticContentEnd(doc);
+		retainSpaceAfterInAlignedFlow(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
@@ -2596,6 +2597,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
 			block.removeAttribute(HINT_COLUMN_BREAK);
+			block.removeAttribute(HINT_BREAK_RUN);
 			block.removeAttribute(HINT_TOC_STOP);
 			block.removeAttribute(HINT_FRAME);
 			for (String hint : TAB_HINTS) block.removeAttribute(hint);
@@ -3256,63 +3258,38 @@ public final class WordLayoutFixups {
 	 * the first paragraph of each of two tables has five pages in Word, which are the
 	 * two breaks taken at the tables.</p>
 	 *
-	 * <p>A break on the opening paragraph is therefore moved to the fo:table, and any
-	 * other break inside a cell is dropped.  A nested table cannot carry it (the break
-	 * would land inside the outer table, which is the behaviour being removed), so
-	 * there it is dropped as well.</p>
+	 * <p>A {@code w:pageBreakBefore} on the opening paragraph is therefore moved to the
+	 * fo:table, and any other break inside a cell is dropped.  A nested table cannot
+	 * carry it (the break would land inside the outer table, which is the behaviour
+	 * being removed), so there it is dropped as well.</p>
+	 *
+	 * <p><b>A {@code w:br w:type="page"} inside a cell is ignored outright</b>, wherever
+	 * it stands and however many of them there are: Word paginates on the paragraph
+	 * property, not on the break run.  Measured on {@code page-break-in-cell}, which
+	 * varies the position and the count one at a time - a single break at the head of
+	 * the first cell's first paragraph, two of them there, one in a later paragraph of
+	 * the cell, one in a cell which is not the first, and one in the second row - and
+	 * Word gives none of them a page: its table shares a page with the paragraph
+	 * introducing it in every case, and its seventh and last page is the one
+	 * {@code w:pageBreakBefore} opens.  17.0.6 promoted a single head break to the
+	 * table and had eight pages.  A {@code w:br} reaches the FO as a block nested in the
+	 * run's {@code fo:inline}, which is how it is told from a {@code w:pageBreakBefore}
+	 * on the paragraph's own block.</p>
 	 *
 	 * @since 17.0.6
 	 */
 	static void dropPageBreaksInTableCells(Document doc) {
 		for (Element cell : elements(doc, "table-cell")) {
-			java.util.Set<Element> ignored = doubledCellBreaks(cell);
 			for (Element block : descendants(cell, "block")) {
 				if (!"page".equals(block.getAttribute("break-before"))) continue;
 				block.removeAttribute("break-before");
-				if (ignored.contains(block)) continue;
+				if (block.hasAttribute(HINT_BREAK_RUN)) continue; // a w:br, which Word ignores
 				Element table = ancestorTable(block);
 				if (table != null && ancestorTable(table) == null && opensTable(table, block)) {
 					table.setAttribute("break-before", "page");
 				}
 			}
 		}
-	}
-
-	/**
-	 * The page breaks in this cell Word ignores altogether: <b>two or more consecutive
-	 * {@code w:br w:type="page"} at the head of one paragraph</b>.  A single one is the
-	 * rule above - measured on a corpus document whose first cell's paragraph opens with
-	 * one, where Word puts the table's first line at the top of page 2 - but the
-	 * page-empty golden's one-row table, whose first cell opens with <em>two</em>, stays
-	 * on the page its introduction is on: Word starts no page for either of them, where
-	 * promoting one put the table on a page of its own.  What separates the two has not
-	 * been isolated further, so the narrower reading is taken: nothing changes for a
-	 * cell holding one break.  A {@code w:br} reaches the FO as a block nested in the
-	 * run's {@code fo:inline}, which is how it is told from a {@code w:pageBreakBefore}
-	 * on the paragraph's own block.
-	 *
-	 * @since 17.0.6
-	 */
-	private static java.util.Set<Element> doubledCellBreaks(Element cell) {
-		java.util.Set<Element> out = new java.util.HashSet<Element>();
-		for (Element para : descendants(cell, "block")) {
-			if (insideInline(para, cell)) continue; // a w:br, not a paragraph
-			List<Element> breaks = new ArrayList<Element>();
-			for (Element inner : descendants(para, "block")) {
-				if (!"page".equals(inner.getAttribute("break-before"))) continue;
-				if (insideInline(inner, para)) breaks.add(inner);
-			}
-			if (breaks.size() > 1) out.addAll(breaks);
-		}
-		return out;
-	}
-
-	/** Whether an fo:inline stands between this element and the given ancestor. */
-	private static boolean insideInline(Element el, Element ancestor) {
-		for (Node n = el.getParentNode(); n instanceof Element && n != ancestor; n = n.getParentNode()) {
-			if (isFo((Element) n, "inline")) return true;
-		}
-		return false;
 	}
 
 	/** Whether this block is the first thing the table holds, descending through any
@@ -3329,6 +3306,12 @@ public final class WordLayoutFixups {
 	/** "1" on an fo:table whose columns docx4j's content-based autofit pass sized
 	 *  (TableWriter.applyTableCustomAttributes). */
 	public static final String HINT_CONTENT_SIZED = "docx4j-content-sized";
+
+	/** How much narrower than the font's own metrics FOP's line measure runs, in
+	 *  points, on a line of a hundred characters or so: its glyph advances are
+	 *  truncated to 1/1000 em rather than rounded.  See {@link #cellLineWidth}.
+	 *  @since 17.0.6 */
+	private static final double MEASURE_GUARD_PT = 0.1;
 
 	/** On an fo:table whose start-indent took the compatibility-mode-14 grid-edge shift
 	 *  (TableWriter.applyStartIndent): the left cell margin it was moved back by.
@@ -3383,23 +3366,44 @@ public final class WordLayoutFixups {
 	 * - exactly where it was, and lets the content reach as far past the right cell
 	 * margin as Word lets it.
 	 *
-	 * <p>Only for a table whose columns docx4j sized from the content.  Where the
-	 * w:tblGrid decides the width (a fixed layout, or a table stating a width of its
-	 * own) Word charges the border too: measured on {@code table-fixed} and
-	 * {@code table-cellspacing}, a 150pt column with 5.4pt margins broke a 139.2pt line
-	 * that fits in 150 - 10.8 = 139.2 but not in 139.2 less the 0.5pt border.
+	 * <p><b>A collapsed border costs a cell's text measure nothing, in a grid-sized cell
+	 * as much as in a content-sized one.</b>  Measured on {@code table-cell-measure},
+	 * whose every table holds one line in a column that line's own advance sized (its
+	 * advance rounded up to a whole twip, plus two twips, plus the two 108-twip cell
+	 * margins) and whose three rows give their end cell margin back nothing, half the
+	 * border width and the whole border width: Word wraps <em>no</em> row of the
+	 * collapsed 0.5, 1.5 and 3pt tables, where FOP's half-of-each-border charge wrapped
+	 * the first row of the 0.5pt table and the first two of the others.  That settles
+	 * H12 and generalises 17.0.6's content-sized rule, which the {@code table-fixed} and
+	 * {@code table-cellspacing} goldens had appeared to contradict - their lines had no
+	 * slack at all, so all they said was that <em>something</em> was charged.
+	 *
+	 * <p>With <b>separate</b> borders ({@code w:tblCellSpacing}) Word charges what FOP
+	 * charges: the same probe's three cell-spacing tables wrap all three rows in Word
+	 * and here alike, which is two whole border widths.  Nothing is given back there.
+	 *
+	 * <p>{@link #MEASURE_GUARD_PT} of the allowance is held back where the width came
+	 * from the grid rather than from the content, because FOP's line measure runs that
+	 * much narrow: its glyph advances are truncated to 1/1000 em
+	 * ({@code OpenFont.convertTTFUnit2PDFUnit} divides), which on a 30-character line
+	 * of 12pt Liberation Serif loses 0.13pt - 139.164 against the font's own 139.295 -
+	 * and on a 74-character one 0.27pt.  That is what {@code table-fixed}'s 150pt
+	 * column measures: Word breaks a line whose advance is 139.295 in a measure of
+	 * 139.2, and FOP would keep it.  A content-sized column is exempt because docx4j
+	 * sized it from the same truncated advances.
 	 *
 	 * @since 17.0.6
 	 */
 	static void cellLineWidth(Document doc) {
 		for (Element cell : elements(doc, "table-cell")) {
 			Element tbl = ancestorTable(cell);
-			if (tbl == null || !"1".equals(tbl.getAttribute(HINT_CONTENT_SIZED))) continue;
-			// FOP charges a collapsed border half to each of the two cells it separates,
-			// a separate border wholly to its own cell
-			double share = "separate".equals(tbl.getAttribute("border-collapse")) ? 1 : 0.5;
-			double give = share * (lengthPt(cell.getAttribute("border-left-width"))
+			if (tbl == null) continue;
+			// a separate border is Word's charge as well as FOP's; only a collapsed one
+			// (which FOP charges half of to each of the two cells it separates) is free
+			if ("separate".equals(tbl.getAttribute("border-collapse"))) continue;
+			double give = 0.5 * (lengthPt(cell.getAttribute("border-left-width"))
 					+ lengthPt(cell.getAttribute("border-right-width")));
+			if (!"1".equals(tbl.getAttribute(HINT_CONTENT_SIZED))) give -= MEASURE_GUARD_PT;
 			if (give <= 0) continue;
 			// the end side is the one to take it from: the start padding places the text
 			String end = "rl-tb".equals(writingMode(cell)) ? "padding-left" : "padding-right";
@@ -3408,6 +3412,11 @@ public final class WordLayoutFixups {
 			cell.setAttribute(end, pt(Math.max(0, padding - give)));
 		}
 	}
+
+	/** BrWriter's mark on the fo:block a {@code w:br w:type="page"} became, which tells
+	 *  it from the break a {@code w:pageBreakBefore} puts on the paragraph's own block.
+	 *  @since 17.0.6 */
+	public static final String HINT_BREAK_RUN = "docx4j-break-run";
 
 	/** The nearest writing-mode in force on this element, or null. */
 	private static String writingMode(Element el) {
@@ -3655,6 +3664,73 @@ public final class WordLayoutFixups {
 			Element last = lastBlock(flow);
 			prevAfter = (last == null || !hasSpace(last, "space-after")) ? 0 : lengthPt(last.getAttribute("space-after"));
 		}
+	}
+
+	/**
+	 * A vertically aligned section counts its last paragraph's space-after as part of
+	 * the block it aligns, so a bottom-aligned section's last line sits that much above
+	 * the bottom margin.  {@code space-after.conditionality} defaults to discard at the
+	 * end of a reference area, so FOP dropped it and put the last line on the margin.
+	 *
+	 * <p>Measured on {@code section-valign-bottom}, whose sections pair a last
+	 * paragraph carrying 24pt of space-after with a control carrying none: Word's
+	 * bottom-aligned pages close at y=743.7 and 767.5 - 23.8pt apart - where docx4j put
+	 * both at 767.4, and its centre-aligned pair is 11.8pt apart, half of the same
+	 * 24pt.  The controls already matched.  A section whose <em>first</em> paragraph
+	 * carries 24pt of space-before is not moved by it (Word closes it at 767.5, the
+	 * same as the control), so only the end is retained.</p>
+	 *
+	 * <p>Not settled, and not implemented: where the section's last block is a table,
+	 * Word's aligned content also holds the empty paragraph a table must be followed
+	 * by - its three table sections sit 15.7pt higher than ours, and 7.9pt for the
+	 * centred one - but docx4j drops a paragraph whose only content is the
+	 * {@code w:sectPr}, so there is nothing here to retain.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void retainSpaceAfterInAlignedFlow(Document doc) {
+		java.util.Set<String> aligned = verticallyAlignedMasters(doc);
+		if (aligned.isEmpty()) return;
+		for (Element seq : elements(doc, "page-sequence")) {
+			if (!aligned.contains(seq.getAttribute("master-reference"))) continue;
+			for (Element flow : descendants(seq, "flow")) {
+				Element last = lastBlock(flow);
+				if (last != null && hasSpace(last, "space-after")) {
+					last.setAttribute("space-after.conditionality", "retain");
+				}
+			}
+		}
+	}
+
+	/** The master names whose region-body is display-aligned other than at the top,
+	 *  page-sequence-masters included through the masters they reference. */
+	private static java.util.Set<String> verticallyAlignedMasters(Document doc) {
+		java.util.Set<String> out = new java.util.HashSet<String>();
+		for (Element spm : elements(doc, "simple-page-master")) {
+			for (Element rb : descendants(spm, "region-body")) {
+				String da = rb.getAttribute("display-align");
+				if ("center".equals(da) || "after".equals(da)) {
+					out.add(spm.getAttribute("master-name"));
+					break;
+				}
+			}
+		}
+		if (out.isEmpty()) return out;
+		for (Element psm : elements(doc, "page-sequence-master")) {
+			for (Element ref : descendants(psm, "conditional-page-master-reference")) {
+				if (out.contains(ref.getAttribute("master-reference"))) {
+					out.add(psm.getAttribute("master-name"));
+					break;
+				}
+			}
+			for (Element ref : descendants(psm, "single-page-master-reference")) {
+				if (out.contains(ref.getAttribute("master-reference"))) {
+					out.add(psm.getAttribute("master-name"));
+					break;
+				}
+			}
+		}
+		return out;
 	}
 
 	/** Whether this block's space-before is HTML auto spacing (w:beforeAutospacing),

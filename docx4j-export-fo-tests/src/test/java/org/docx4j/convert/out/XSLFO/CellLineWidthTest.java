@@ -25,9 +25,12 @@ import org.w3c.dom.NodeList;
  * which leaves the text's start (the grid edge plus half the border plus the left cell
  * margin) where it was.</p>
  *
- * <p>Only for a table docx4j sized from its content: where the w:tblGrid decides the
- * width, Word charges the border too (measured on {@code table-fixed} and
- * {@code table-cellspacing}).</p>
+ * <p>17.0.6 generalised it: {@code table-cell-measure} shows Word charging a collapsed
+ * border nothing against the measure in a grid-sized cell either, so the allowance is
+ * given back for every collapsed-border cell.  A grid-sized one keeps back a tenth of a
+ * point, which is how much narrower FOP's own line measure runs (its glyph advances are
+ * truncated to 1/1000 em).  A <b>separate</b> border ({@code w:tblCellSpacing}) is
+ * Word's charge as well as FOP's, and gets nothing back.</p>
  *
  * <p>Both FO pathways.</p>
  *
@@ -124,12 +127,24 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/**
+	 * A grid-sized cell gets the allowance too, less a tenth of a point.  Word charges
+	 * a collapsed border nothing at all against the text measure, in a grid-sized cell
+	 * as much as in a content-sized one (measured on {@code table-cell-measure}, whose
+	 * three collapsed tables of 0.5, 1.5 and 3pt borders wrap no row in Word); the
+	 * tenth of a point covers FOP's line measure, whose glyph advances are truncated
+	 * to 1/1000 em and so run that much narrow.
+	 */
 	@Test
-	public void aGridSizedTableKeepsItsPadding() throws Exception {
+	public void aGridSizedCellGetsTheAllowanceLessTheMeasureGuard() throws Exception {
 		for (int flags : FLAGS) {
 			Element cell = firstCell(fo(pkg(true), flags));
-			assertEquals(flagName(flags) + ": w:tblLayout=fixed is the grid's layout, not autofit",
-					pt(cell.getAttribute("padding-left")), pt(cell.getAttribute("padding-right")), 0.001);
+			double start = pt(cell.getAttribute("padding-left"));
+			double end = pt(cell.getAttribute("padding-right"));
+			assertEquals(flagName(flags) + ": the start padding places the text and must not move",
+					5.4, start, 0.05);
+			assertEquals(flagName(flags) + ": one whole 0.5pt border back, less the 0.1pt guard",
+					start - 0.4, end, 0.01);
 		}
 	}
 

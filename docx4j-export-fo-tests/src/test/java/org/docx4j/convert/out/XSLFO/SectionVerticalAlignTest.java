@@ -32,8 +32,14 @@ public class SectionVerticalAlignTest extends AbstractXSLFOTest {
 	private static final String FO = "http://www.w3.org/1999/XSL/Format";
 
 	private static String body(String vAlign) {
+		return body(vAlign, 0);
+	}
+
+	private static String body(String vAlign, int spaceAfter) {
 		return "<w:document " + W + "><w:body>"
-				+ "<w:p><w:r><w:t>Title</w:t></w:r></w:p>"
+				+ "<w:p>"
+				+ (spaceAfter > 0 ? "<w:pPr><w:spacing w:after=\"" + spaceAfter + "\"/></w:pPr>" : "")
+				+ "<w:r><w:t>Title</w:t></w:r></w:p>"
 				+ "<w:sectPr>"
 				+ (vAlign == null ? "" : "<w:vAlign w:val=\"" + vAlign + "\"/>")
 				+ "<w:pgSz w:w=\"11906\" w:h=\"16838\"/>"
@@ -42,8 +48,12 @@ public class SectionVerticalAlignTest extends AbstractXSLFOTest {
 	}
 
 	private org.w3c.dom.Document fo(String vAlign, int flags) throws Exception {
+		return fo(vAlign, 0, flags);
+	}
+
+	private org.w3c.dom.Document fo(String vAlign, int spaceAfter, int flags) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
-		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(body(vAlign)));
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(body(vAlign, spaceAfter)));
 		FOSettings foSettings = Docx4J.createFOSettings();
 		foSettings.setOpcPackage(pkg);
 		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
@@ -67,9 +77,54 @@ public class SectionVerticalAlignTest extends AbstractXSLFOTest {
 		assertEquals("|", displayAlign(fo(null, flags)));
 		assertEquals("center|", displayAlign(fo("center", flags)));
 		assertEquals("after|", displayAlign(fo("bottom", flags)));
-		assertEquals("XSL-FO has no justified equivalent; centre is the closest",
-				"center|", displayAlign(fo("both", flags)));
+		/* "both" is vertical justification: Word holds the first block at the top of
+		 * the text area and the last at its bottom, sharing the slack between them.
+		 * XSL-FO has no property for that, so the top - which is the half of it FO can
+		 * express - is what the region keeps.  Measured on section-valign-bottom, whose
+		 * "both" sections Word opens at y=83.1 like an unaligned one, where
+		 * display-align="center" put every line up to 300pt out. */
+		assertEquals("no FO equivalent for vertical justification; Word's top is kept",
+				"|", displayAlign(fo("both", flags)));
 		assertEquals("top is the default", "|", displayAlign(fo("top", flags)));
+	}
+
+	/** the space-after.conditionality of the flow's last fo:block */
+	private String lastBlockConditionality(org.w3c.dom.Document doc) {
+		NodeList blocks = doc.getElementsByTagNameNS(FO, "block");
+		assertTrue("no blocks", blocks.getLength() > 0);
+		return ((Element) blocks.item(blocks.getLength() - 1)).getAttribute("space-after.conditionality");
+	}
+
+	/**
+	 * A vertically aligned section counts its last paragraph's space-after as part of
+	 * the block it aligns, so a bottom-aligned section's last line sits that much above
+	 * the bottom margin.  FO's space-after.conditionality defaults to discard at the end
+	 * of a reference area, so FOP dropped it.
+	 *
+	 * <p>Measured on the {@code section-valign-bottom} probe, which pairs a last
+	 * paragraph carrying 24pt of space-after with a control carrying none: Word's
+	 * bottom-aligned pages close at y=743.7 and 767.5 - 23.8pt apart - where docx4j put
+	 * both at 767.4; its centre-aligned pair is 11.8pt apart, half of the same 24pt.</p>
+	 */
+	private void checkSpaceAfterRetained(int flags) throws Exception {
+		assertEquals("bottom-aligned: the last space-after is part of the aligned block",
+				"retain", lastBlockConditionality(fo("bottom", 480, flags)));
+		assertEquals("centre-aligned too",
+				"retain", lastBlockConditionality(fo("center", 480, flags)));
+		assertEquals("an unaligned section keeps FO's default",
+				"", lastBlockConditionality(fo(null, 480, flags)));
+		assertEquals("and so does a top-aligned one",
+				"", lastBlockConditionality(fo("top", 480, flags)));
+	}
+
+	@Test
+	public void spaceAfterIsRetainedInAnAlignedFlowVisitor() throws Exception {
+		checkSpaceAfterRetained(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void spaceAfterIsRetainedInAnAlignedFlowXslt() throws Exception {
+		checkSpaceAfterRetained(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	@Test

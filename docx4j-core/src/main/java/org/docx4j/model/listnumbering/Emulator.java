@@ -158,10 +158,23 @@ public class Emulator {
     /* Get the computed list number for the given list at this point in the
      * document.
      */
-    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal, 
+    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal,
     		String numId, String levelId) {
-    	
-    	
+    	// a numId given here is the paragraph's own unless the caller says otherwise
+    	return getNumber(wmlPackage, pStyleVal, numId, levelId, numId != null && !numId.equals(""));
+    }
+
+    /**
+     * @param directNumPr whether the {@code w:numId} is the paragraph's own direct
+     *        formatting, rather than one its paragraph style contributed.  A level
+     *        which names a paragraph style of its own numbers only that style
+     *        (&#xa7;2.8): see {@link #styleLinkedElsewhere}.
+     * @since 17.0.6
+     */
+    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal,
+    		String numId, String levelId, boolean directNumPr) {
+
+
     	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
     		wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
     	
@@ -269,6 +282,10 @@ public class Emulator {
 		}
 
 
+		if (!directNumPr && styleLinkedElsewhere(numberingPart, propertyResolver, numId, levelId, pStyleVal)) {
+			return null;
+		}
+
 		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
 				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
 						levelId)) {
@@ -339,11 +356,48 @@ public class Emulator {
 
     
     /**
+     * Whether this level belongs to a <em>different</em> paragraph style than the one
+     * which brought the numbering to this paragraph, in which case Word paints no label
+     * and does not count the paragraph.
+     *
+     * <p>ECMA-376 17.9.24's {@code w:pStyle} inside a {@code w:lvl} names the paragraph
+     * style the level is linked to.  Where a paragraph reaches that level through a
+     * {@code w:numPr} its <em>style</em> declares, and that style is not the one the
+     * level names (nor a style it is based on), the level does not apply.  Measured on
+     * {@code numbering-label-ilvl0}, whose level 0 of numId 20 is linked to the style
+     * "NumLinked": a paragraph using a second style which carries the same
+     * {@code w:numPr} gets no number at all from Word, and the next paragraph of the
+     * list is numbered 6 where docx4j had counted it and reached 7.  Paragraphs using
+     * the linked style itself are numbered, and so is a paragraph whose <em>own</em>
+     * {@code w:numPr} names a numbering whose level is linked to a style it does not
+     * use - direct formatting always applies.</p>
+     *
+     * @since 17.0.6
+     */
+    private static boolean styleLinkedElsewhere(
+    		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart,
+    		PropertyResolver propertyResolver, String numId, String levelId, String pStyleVal) {
+
+    	String linked = numberingPart.getLinkedStyleId(numId, levelId);
+    	if (linked == null || linked.equals("")) return false;
+    	if (pStyleVal == null) return true;
+    	// the style itself, or any style it is based on, is the level's own
+    	java.util.Set<String> seen = new java.util.HashSet<String>();
+    	String id = pStyleVal;
+    	while (id != null && seen.add(id)) {
+    		if (linked.equals(id)) return false;
+    		org.docx4j.wml.Style s = propertyResolver == null ? null : propertyResolver.getStyle(id);
+    		id = (s == null || s.getBasedOn() == null) ? null : s.getBasedOn().getVal();
+    	}
+    	return true;
+    }
+
+    /**
      * Used in HTML output (XsltHTMLFunctions) only.
-     * 
+     *
      * @since 3.0.0
      */
-    public static Ind getInd(WordprocessingMLPackage wmlPackage, String pStyleVal, 
+    public static Ind getInd(WordprocessingMLPackage wmlPackage, String pStyleVal,
     		String numId, String levelId) {
     	
     	// TODO refactor.  Remove duplicated code.

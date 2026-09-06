@@ -351,8 +351,28 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		return em;
 	}
 	
+	/**
+	 * The paragraph style this level is linked to - the {@code w:pStyle} of
+	 * ECMA-376 17.9.24, on the instance's {@code w:lvlOverride/w:lvl} where it has one
+	 * and on the abstract level otherwise - or null where the level names none.
+	 *
+	 * @since 17.0.6
+	 */
+	public String getLinkedStyleId(String numId, String ilvl) {
+
+		ListNumberingDefinition lnd = getInstanceListDefinitions().get(numId);
+		if (lnd == null) return null;
+		org.docx4j.model.listnumbering.ListLevel ll = lnd.getLevel(ilvl == null || ilvl.length() == 0 ? "0" : ilvl);
+		if (ll == null) return null;
+		Lvl override = ll.getJaxbOverrideLvl();
+		if (override != null && override.getPStyle() != null) return override.getPStyle().getVal();
+		Lvl abstractLvl = ll.getJaxbAbstractLvl();
+		if (abstractLvl != null && abstractLvl.getPStyle() != null) return abstractLvl.getPStyle().getVal();
+		return null;
+	}
+
 	public Ind getInd(NumPr numPr) { //, StyleDefinitionsPart sdp, String styleId) {
-		
+
 		// w:ilvl (and its w:val) is optional; its absence means level 0
 		String ilvlString = "0";
 		if (numPr.getIlvl()!=null && numPr.getIlvl().getVal()!=null) ilvlString = numPr.getIlvl().getVal().toString();

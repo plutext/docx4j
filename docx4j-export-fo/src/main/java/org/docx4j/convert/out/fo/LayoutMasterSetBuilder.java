@@ -673,11 +673,19 @@ public class LayoutMasterSetBuilder {
 		 * area (Page Setup > Layout > Vertical alignment).  display-align on
 		 * fo:region-body is XSL 1.1's equivalent and FOP applies it, so a title page
 		 * whose section says "center" is centred rather than sitting at the top:
-		 * measured, every line of one such page was 112.5pt above Word's.  "both"
-		 * (justified) has no FO equivalent - the closest is "center".  @since 17.0.6 */
+		 * measured, every line of one such page was 112.5pt above Word's.
+		 *
+		 * "both" is vertical justification, which XSL-FO has no property for: Word
+		 * keeps the first block at the top of the text area and the last at its
+		 * bottom, sharing the slack between the blocks.  Measured on
+		 * section-valign-bottom, whose three "both" sections Word opens at y=83.1 -
+		 * the same as an unaligned section - and closes at the bottom margin, where
+		 * display-align="center" put every line 300pt out.  The top is the half of it
+		 * FO can express, so "both" is left at the region's default alignment.
+		 * @since 17.0.6 */
 		String vAlign = page.getVerticalAlign();
 		if (vAlign!=null) {
-			if ("center".equals(vAlign) || "both".equals(vAlign)) {
+			if ("center".equals(vAlign)) {
 				rb.setDisplayAlign(org.plutext.jaxb.xslfo.DisplayAlignType.CENTER);
 			} else if ("bottom".equals(vAlign)) {
 				rb.setDisplayAlign(org.plutext.jaxb.xslfo.DisplayAlignType.AFTER);

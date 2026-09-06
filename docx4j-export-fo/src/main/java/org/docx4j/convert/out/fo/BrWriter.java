@@ -49,6 +49,14 @@ public class BrWriter extends AbstractBrWriter {
 		
 			ret = doc.createElementNS(XSL_FO, "block");
 			ret.setAttribute("break-before", "page");
+			/* Word ignores a w:br w:type="page" inside a table cell, where it honours a
+			 * w:pageBreakBefore on the paragraph which opens the table (§3.3).  The two
+			 * arrive here as the same break-before, so the run's own is marked: the
+			 * nesting that used to tell them apart differs between the two exporters.
+			 * @since 17.0.6 */
+			if (WordLayoutFixups.isEnabled()) {
+				ret.setAttribute(WordLayoutFixups.HINT_BREAK_RUN, "1");
+			}
 		
 		} else {
 			

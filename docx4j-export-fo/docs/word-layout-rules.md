@@ -447,6 +447,46 @@ the page and Word's two pages came out as four. Where the override states no ind
 abstract level's stands. 20 documents
 of the three corpora carry a `w:lvlOverride/w:lvl` at all.
 
+<a id="s28pstyle"></a>**A level which names a paragraph style numbers only that style.**
+`w:pStyle` inside a `w:lvl` (ECMA-376 17.9.24) links the level to a paragraph style.
+Where the numbering reaches a paragraph through a *different* style's `w:numPr`, Word
+paints no label at all and does not count the paragraph. Measured on
+`numbering-label-ilvl0`, whose level 0 of numId 20 is linked to the style `NumLinked`: a
+paragraph using a second style which carries the same `w:numPr` gets no number from Word
+and no indent from the level (every one of its lines starts at the margin, x=72.0), and
+the next paragraph of the list is numbered 6 where docx4j had counted it and reached 7.
+Direct formatting is never suppressed - a paragraph whose **own** `w:numPr` names a
+numbering whose level is linked to a style it does not use is numbered (the probe's numId
+22, linked to a style nothing uses, prints "1."), and neither is a style the level names
+or one it is based on. `Emulator.styleLinkedElsewhere`; the FO writer tells the two apart
+by whether the `w:numId` came from the paragraph's own `w:pPr`
+(`XsltFOFunctions.numberFor`), and HTML already passed the direct value.
+
+<a id="s28effind"></a>**Where a style brought the numbering, the label sits on the *effective*
+indent**, which style resolution has already built from the level's `w:ind`, the paragraph
+style's own and the paragraph's direct formatting, in that order of precedence. The FO
+writer used the **level's** indent with the paragraph's direct one over it, so a style
+stating a `w:ind` beside its `w:numPr` lost it: measured on the same probe, whose style
+carries both through `w:basedOn` as `w:ind w:left="227" w:hanging="227"`, Word draws the
+label at x=72.0 and the wrapped line at 83.3 where docx4j used the level's 720/360 and
+drew them at 90.0 and 108.0.
+
+A paragraph whose **own** `w:numPr` names the numbering keeps the level's indent, because
+the effective one is not Word's merge for it: `StyleUtil`'s `w:ind` merge takes the
+hanging indent whole from whichever `w:ind` states either of `w:hanging` and
+`w:firstLine`, so a style stating only `w:ind w:left` wipes the level's hanging indent.
+Measured on two corpus documents whose bulleted items carry a direct `w:numPr`: Word puts
+their wrapped lines at x=89.3, the level's 198-twip hanging indent, and reading the
+effective indent for them drew every one at the bullet's own 79.4 and cost the first
+0.085 and the second 0.05 of line parity. Fixing the merge is a rule of its own
+(`XsltFOFunctions.numberingIndent`).
+
+**`w:numId 0` takes the level's `w:ind` with its label** (ECMA-376 17.9.18). That rule was
+written for 17.0.6 and never fired: `StyleUtil.apply(NumPr, NumPr)` writes into the
+destination object, so the inherited `w:numPr` it read to find the level had already become
+the `w:numId 0`. On the probe, a paragraph switching its numbered style's numbering off
+kept a 567-twip hanging indent Word does not draw.
+
 <a id="s28rpr"></a>**A level's `w:rPr` formats the number alone** (ECMA-376 17.9.24); the
 paragraph's text is formatted by the paragraph. docx4j wrote the level's rPr on the
 `fo:list-item-body` as well as on the label, so a level `<w:b/>` made the whole paragraph
@@ -624,15 +664,25 @@ page-anchored table began with an empty line docx4j put 25.5pt above Word's firs
 It does not move to a **table**: measured on a corpus document whose hard break is followed
 by one, Word keeps that line, and dropping it lost a page of the nineteen.
 
-<a id="s33cell"></a>**Two page breaks at the head of a cell's paragraph are ignored
-altogether.** A single `w:br w:type="page"` there opens the table on a new page, as
-`w:pageBreakBefore` on the paragraph that opens the table does (measured on a corpus
-document whose first cell's paragraph begins with one: Word puts the table's first line
-at the top of page 2). But `page-empty`'s one-row table, whose first cell opens with
-**two**, stays on the page its introduction is on - Word starts no page for either of
-them, where promoting one put the table on a page of its own. What separates the two has
-not been isolated, so the narrower reading is taken: nothing changes for a cell holding
-one break (`WordLayoutFixups.dropPageBreaksInTableCells`).
+<a id="s33cell"></a>**A `w:br w:type="page"` inside a table cell is ignored outright** -
+wherever it stands, and however many of them there are. Word paginates on the paragraph
+property, not on the break run. `page-break-in-cell` varies the position and the count one
+at a time, each case a table of its own introduced by a paragraph: a single break at the
+head of the first cell's first paragraph, two of them there, one in a later paragraph of
+the cell, one in a cell which is not the first, and one in the second row. Word gives none
+of them a page - every table shares a page with its introduction - and its seventh and
+last page is the one the `w:pageBreakBefore` case opens. 17.0.6 had promoted a single head
+break to the table, on the strength of two corpus documents whose page 1 had looked short,
+and had eight pages (`WordLayoutFixups.dropPageBreaksInTableCells`). H10's two corpus
+measurements the other way stand: their tables share page 1 with the paragraph above them
+in Word, and both those documents gained Word's page count on the change. One document of
+corpus 3 lost a page to it (Word's 19 against our 18) and is the residual; its break is
+the only one in the document, and what replaces the page there is not established.
+
+Whether a break run is a `w:br` or a paragraph property is not visible in the FO - both
+are `break-before="page"` - and the nesting that used to tell them apart differs between
+the two exporters, so `BrWriter` marks the block it writes for a `w:br`
+(`WordLayoutFixups.HINT_BREAK_RUN`, stripped before FOP sees it).
 
 <a id="s33sect"></a>**A page break at the end of a section costs no page.** Where the break
 has nothing left in its section to move onto - the paragraph holding it and the
@@ -1864,12 +1914,39 @@ grid edge plus half the border plus the left cell margin (§6.2) - does not move
 content may reach as far past the right cell margin as Word lets it. Probe line parity 88%
 -> 100% and 75% -> 100%.
 
-Only for a table whose columns docx4j sized from the content. Where the `w:tblGrid`
-decides the width - `w:tblLayout="fixed"`, every cell with a preferred width, or a grid
-scaled to the page (§6.5) - Word charges the borders too: measured on `table-fixed` and
-`table-cellspacing`, a 150pt column with 5.4pt margins breaks a 139.2pt line, which fits
-in 150 - 10.8 = 139.2 but not in that less the 0.5pt border. The FO table writer stamps
-`docx4j-content-sized` on the `fo:table` for the fixup to read.
+<a id="s63collapsed"></a>**A collapsed border costs a cell's text measure nothing** - in a
+grid-sized cell as much as in a content-sized one. `table-cell-measure` is the
+measurement: every table holds one line in a column that line's own advance sized (the
+advance rounded up to a whole twip, plus two twips, plus the two 108-twip cell margins),
+and its three rows give the end cell margin back nothing, half the border width and the
+whole border width, so the rung the wrapping stops at says what was charged. Word wraps
+**no** row of the collapsed 0.5, 1.5 and 3pt tables - and its text simply starts half a
+border further in and runs half a border past the right cell margin, its three tables
+opening at x=77.8 / 78.3 / 79.0 and closing at 454.0 / 454.5 / 455.2, the same 376.2pt
+line shifted. FOP's half-of-each-border charge wrapped the first row of the 0.5pt table
+and the first two of the others. That settles H12 against the reading `table-fixed` and
+`table-cellspacing` had suggested; their lines had no slack at all, so all they said was
+that *something* was charged.
+
+With **separate** borders (`w:tblCellSpacing`, §6.6) Word charges what FOP charges: the
+same probe's three cell-spacing tables wrap all three rows in Word and here alike, which
+is two whole border widths. Nothing is given back there.
+
+<a id="s63guard"></a>**A tenth of a point is held back** where the width came from the
+grid, because FOP's line measure runs that much narrow: its glyph advances are truncated
+to 1/1000 em (`OpenFont.convertTTFUnit2PDFUnit` divides where it should round), which on
+a 30-character line of 12pt Liberation Serif loses 0.13pt - 139.164 against the font's own
+139.295 - and on a 74-character one 0.27pt. That is what `table-fixed`'s 150pt column
+measures: Word breaks a line whose advance is 139.295 in a measure of 139.2, and FOP,
+given the whole allowance back, keeps it. A content-sized column is exempt, because
+docx4j sized it from the same truncated advances. `WordLayoutFixups.MEASURE_GUARD_PT`;
+the truncation itself is §10's.
+
+A content-sized column also carries **two twips of slack**
+(`AbstractTableWriter.COLUMN_SLACK_TWIPS`), because the cell margin the FO writer emits is
+rounded to `1.91mm` = 5.4152pt where Word's is 5.4: without it the line the column exists
+to hold broke in two in all three of that probe's content-autofit tables, 0.03pt short.
+The FO table writer stamps `docx4j-content-sized` on the `fo:table` for the fixup to read.
 
 ### 6.4 Widening to the preferred width
 
@@ -1892,6 +1969,32 @@ A table's **own `w:tblGrid`** is left alone even when it is wider than the text 
 measured over the corpus, Word draws tables whose grid is 3% to 19% wider than the text
 column overhanging the right margin, at their grid width, and fitting them cost line parity
 on eight documents.
+
+<a id="s65pct"></a>**A `w:tblW` in `pct` is a width Word gives the table exactly**, and the
+`w:tblGrid` is scaled to it - the percentage wins over the grid, where an absolute
+`w:tblW` does not. Measured on `table-grid-pct`, whose text column is 9026 twips:
+
+* `w:tblW 5000 pct`, `w:tblLayout="fixed"`, grid 4614+4614 = 9228 (2.2% over): Word's two
+  columns are 224.98 and 225.22pt, the grid scaled by 9026/9228. The twin whose grid is
+  3000+3000 = 6000 comes out at the same two widths, the grid scaled **up** by 1.504.
+  docx4j used the grid as it stood in both, so the first table's cells were 6pt wide of
+  Word's and the second's 75pt narrow, which broke three extra lines.
+* `w:tblW 6000 pct` - 120% - is drawn 541.2pt wide, from the left margin to x=613.2 on a
+  523.2pt column. docx4j clamped it to the column.
+* `w:tblW 5000 pct` with `w:tblInd 720` is the full 9026 twips wide **starting at the
+  indent**, overhanging the right margin by the indent: the percentage is of the text
+  column, not of what the indent leaves of it.
+* An autofit table with auto cells keeps Word's content-based distribution *within* that
+  width (the 120% table's two columns are 254.0 and 286.2pt, the same 0.888 ratio as
+  ours), so only the total is the percentage's.
+
+`AbstractTableWriter.scaleGridToPercentageWidth` scales the grid, and
+`fitToAvailableWidth` no longer clamps a **percentage**-width table's autofit columns to
+the column. An absolute `w:tblW` buys no such exemption - one corpus table whose
+`w:tblW` asks for 117pt more than the column is kept inside it by Word - so only `pct`
+overhangs. Paginated output only; in HTML the percentage is the browser's. The probe went
+from 86% to 98% of Word's lines; what is left is a prose line Word breaks and FOP keeps,
+by 0.1pt of the same truncated advances §10 records.
 
 That exemption is unconditional only for a table which states a width of its own - a
 `w:tblW` in `dxa` or `pct`, or `w:tblLayout="fixed"`. For an **autofit** table (`w:tblW`
@@ -2283,12 +2386,37 @@ every cell, which then ran that far past the cell's edge; `fo:table-body` now re
 `end-indent` as well as `start-indent`.
 
 <a id="s75"></a>**Vertical alignment of a section.** `w:sectPr/w:vAlign` - Word's Page Setup
-"Vertical alignment" - is `display-align` on `fo:region-body`: `center` for `center` and for
-`both` (XSL-FO has no justified equivalent), `after` for `bottom`, nothing for `top`. It
+"Vertical alignment" - is `display-align` on `fo:region-body`: `center` for `center`,
+`after` for `bottom`, nothing for `top`. It
 costs nothing on a full page, so it applies to the whole section as Word applies it.
 Measured on a 179-page specification whose title section carries
 `<w:vAlign w:val="center"/>`: every line of page 1 was 112.5pt above Word's (Word's first
 line at y=275.9, docx4j's at 163.4), and is now within 6pt.
+
+<a id="s75both"></a>**`both` is vertical justification, and FO has no property for it.**
+Word keeps the first block at the top of the text area and the last at its bottom, sharing
+the slack between the blocks. Measured on `section-valign-bottom`, whose three `both`
+sections Word opens at y=83.1 - the same as an unaligned section - and closes at 743.7 and
+767.5, the bottom margin: with `display-align="center"` docx4j put the first paragraph
+384.8 and the last 465.8, up to 302pt out on every line. The top is the half of it FO can
+express, so `both` now takes the region's default alignment; the residual is the spread
+between the blocks, and reproducing it needs FOP.
+
+<a id="s75after"></a>**An aligned section counts its last paragraph's `space-after`** as
+part of the block it aligns. `space-after.conditionality` defaults to `discard` at the end
+of a reference area, so FOP dropped it and put the last line on the bottom margin. The
+probe pairs a last paragraph carrying 24pt of space-after with a control carrying none:
+Word's two bottom-aligned pages close at y=743.7 and 767.5, 23.8pt apart, where docx4j put
+both at 767.4, and its centre-aligned pair is 11.8pt apart, half of the same 24pt. The
+other end does not: a bottom-aligned section whose **first** paragraph carries 24pt of
+space-before closes where the control does. `WordLayoutFixups.retainSpaceAfterInAlignedFlow`
+marks the last block of an aligned flow `retain`; the probe's median dy went from 7.77 to
+-0.01.
+
+Not settled, and not implemented: where the section's last block is a **table**, Word's
+aligned content also holds the empty paragraph a table must be followed by - its three
+table sections sit 15.7pt higher than ours, 7.9pt for the centred one - but docx4j drops a
+paragraph whose only content is the `w:sectPr`, so there is nothing left here to retain.
 
 <a id="s7gutter"></a>**The gutter.** `w:pgMar/@w:gutter` is the binding margin, and Word
 adds it to the **left** margin - to the top with `w:settings/w:gutterAtTop`, and to the
@@ -3009,11 +3137,22 @@ Worked around here, and worth knowing about:
   costs whole-page geometry; the printed number is one character and stays wrong. Nothing
   in XSL-FO offsets `fo:page-number`, and the two-pass literal that carries `NUMPAGES`
   cannot carry `PAGE`, which differs on every page of a section.
-- **`display-align` does not count the flow's last block's `space-after`** — so the
-  hypothesis that it is what puts a `w:sectPr/w:vAlign="center"` section low is wrong.
-  Measured: zeroing a 10pt `space-after` on the last block of a centred flow moved the
-  page not at all (first line y=281.7 before and after, against Word's 275.9). The
-  residual +5.8pt on such a page has some other cause and is still open.
+- **`display-align` does not count the flow's last block's `space-after`**, which Word
+  does (§7). `space-after.conditionality="retain"` on that block is the fix, and is what
+  docx4j now writes; before it, zeroing a 10pt `space-after` on the last block of a
+  centred flow moved the page not at all (first line y=281.7 before and after, against
+  Word's 275.9), which had been read as evidence that Word did not count it either.
+- **Glyph advances are truncated to 1/1000 em, not rounded**, so every line FOP measures
+  is up to about 0.1% narrow, and a line Word breaks by a hair is kept.
+  `OpenFont.convertTTFUnit2PDFUnit` computes `(n / upem) * 1000 + ((n % upem) * 1000) /
+  upem`, integer division throughout. Measured on 12pt Liberation Serif (2048 units per
+  em): "incididunt ut labore et dolore" is 139.295pt by the font's own metrics and
+  139.164 by FOP's, and a 74-character line is 376.559 against 376.284. It is what
+  `table-fixed`'s 150pt column and `table-grid-pct`'s last unmatched line both come down
+  to, and §6.3's `MEASURE_GUARD_PT` holds a tenth of a point back from the border
+  allowance to cover it. Rounding instead would change the measure of every line of every
+  document - and the `/Widths` FOP writes with them - so it wants a corpus batch of its
+  own; it is the largest single measurement defect left.
 - **A word has no intra-word break at all** (§4.3), so a token wider than the measure
   overruns the column instead of breaking where Word breaks it. Worked around by
   splitting such a word into per-character glyph mappings in the line manager.

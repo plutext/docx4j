@@ -357,6 +357,22 @@ where that lies outside the text column, overhanging the margin as Word does
 - a DATE, TIME or PRINTDATE field is now formatted in the document's own language
 (w:docDefaults/w:rPrDefault/w:rPr/w:lang), and an abbreviated month name loses the trailing
 period the format string supplies
+- a w:br w:type="page" inside a table cell is now ignored wherever it stands, as Word
+ignores it; only w:pageBreakBefore on the paragraph which opens the table moves the table
+- a collapsed cell border no longer costs the cell's text measure anything, in a
+grid-sized table as well as a content-sized one, which is how Word measures it; a separate
+border (w:tblCellSpacing) still costs one, as it does in Word
+- a w:tblW in pct is now the width the table gets, its w:tblGrid scaled to it: a
+percentage over 100 overhangs the right margin as Word draws it, and a w:tblInd does not
+come off the percentage
+- a numbering level which names a paragraph style (w:pStyle in w:lvl) now numbers only
+that style: a paragraph reaching it through another style's w:numPr gets no label and is
+not counted, as in Word.  A numbered paragraph's label now sits on the effective indent,
+so a style stating a w:ind beside its w:numPr keeps it, and w:numId 0 takes the level's
+indent away with its label (HTML too)
+- a section with w:vAlign now counts its last paragraph's space-after inside the block it
+aligns, as Word does; w:vAlign="both" is laid out from the top of the text area rather
+than centred, XSL-FO having no vertical justification
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's

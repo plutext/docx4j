@@ -1950,7 +1950,15 @@ public class StyleUtil {
 			destination.setFramePr(apply(source.getFramePr(), destination.getFramePr()));	
 			destination.setWidowControl(apply(source.getWidowControl(), destination.getWidowControl()));
 
-			NumPr inheritedNumPr = destination.getNumPr();
+			/* A snapshot: apply(NumPr, NumPr) writes into the destination object, so
+			 * holding a reference to it here would hand the numbering-off rule below
+			 * the w:numId 0 it is looking past.  @since 17.0.6 */
+			NumPr inheritedNumPr = null;
+			if (destination.getNumPr() != null) {
+				inheritedNumPr = Context.getWmlObjectFactory().createPPrBaseNumPr();
+				inheritedNumPr.setNumId(destination.getNumPr().getNumId());
+				inheritedNumPr.setIlvl(destination.getNumPr().getIlvl());
+			}
 			destination.setNumPr(apply(source.getNumPr(), destination.getNumPr()));
 
 			/* ECMA-376 17.9.18: w:numId w:val="0" takes the paragraph out of the list, so
@@ -1963,7 +1971,8 @@ public class StyleUtil {
 			 * Only the components the inherited level contributed are dropped, so a
 			 * w:ind the style states itself survives.  @since 17.0.6 */
 			if (numberingDefinitionsPart != null && numberingOff(source.getNumPr())
-					&& inheritedNumPr != null && destination.getInd() != null) {
+					&& inheritedNumPr != null && inheritedNumPr.getNumId() != null
+					&& !numberingOff(inheritedNumPr) && destination.getInd() != null) {
 				Ind fromLevel = numberingDefinitionsPart.getInd(inheritedNumPr);
 				if (fromLevel != null) {
 					Ind own = XmlUtils.deepCopy(destination.getInd());
