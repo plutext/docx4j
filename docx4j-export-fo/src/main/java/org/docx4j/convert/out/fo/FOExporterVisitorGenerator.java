@@ -543,10 +543,12 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			switch (imgType) {
 			case IMAGE_E10:
 				DocumentFragment e10 = WordXmlPictureE10.createXslFoImgE10(conversionContext, anchorOrInline);
-				if (anchorOrInline instanceof org.docx4j.wml.Pict) {
+				if (anchorOrInline instanceof org.docx4j.wml.CTPictureBase) {
 					// an absolutely positioned VML picture is placed as Word places it,
 					// instead of taking a line at the end of its paragraph.  @since 17.0.6
-					org.docx4j.vml.VmlShapeElements shape = vmlShape((org.docx4j.wml.Pict)anchorOrInline);
+					// (w:pict and, since 17.0.6, w:object alike)
+					org.docx4j.vml.VmlShapeElements shape
+							= vmlShape((org.docx4j.wml.CTPictureBase)anchorOrInline);
 					if (shape instanceof org.docx4j.vml.VmlAllCoreAttributes) {
 						e10 = XsltFOFunctions.anchorVmlPicture(conversionContext, e10,
 								((org.docx4j.vml.VmlAllCoreAttributes)shape).getStyle(), vmlWrapType(shape));
@@ -559,30 +561,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		return null;
 	}
 
-	/** The v:shape (or v:rect etc, but not the v:shapetype) of this w:pict, or null.
-	 *  @since 17.0.6 */
-	private static org.docx4j.vml.VmlShapeElements vmlShape(org.docx4j.wml.Pict pict) {
-		for (Object o : pict.getAnyAndAny()) {
-			o = org.docx4j.XmlUtils.unwrap(o);
-			if (o instanceof org.docx4j.vml.VmlShapeElements && !(o instanceof org.docx4j.vml.CTShapetype)) {
-				return (org.docx4j.vml.VmlShapeElements)o;
-			}
-		}
-		return null;
-	}
-
-	/** The shape's w10:wrap type ("square", "topAndBottom", ...), or "" where it has none.
-	 *  @since 17.0.6 */
-	private static String vmlWrapType(org.docx4j.vml.VmlShapeElements shape) {
-		for (Object o : shape.getEGShapeElements()) {
-			o = org.docx4j.XmlUtils.unwrap(o);
-			if (o instanceof org.docx4j.vml.wordprocessingDrawing.CTWrap) {
-				org.docx4j.vml.wordprocessingDrawing.CTWrap w = (org.docx4j.vml.wordprocessingDrawing.CTWrap)o;
-				if (w.getType()!=null) return w.getType().value();
-			}
-		}
-		return "";
-	}
+	// vmlShape and vmlWrapType moved to AbstractVisitorExporterGenerator in 17.0.6,
+	// so the w:object branch there can use them too.
 
 	@Override
 	protected Element createNode(Document doc, int nodeType) {

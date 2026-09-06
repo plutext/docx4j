@@ -29,6 +29,8 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.vml.CTImageData;
 import org.docx4j.vml.CTShape;
+import org.docx4j.wml.CTObject;
+import org.docx4j.wml.CTPictureBase;
 import org.docx4j.wml.Pict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,45 +72,56 @@ import org.w3c.dom.traversal.NodeIterator;
  *
  */
 public class WordXmlPictureE10 extends AbstractWordXmlPicture {
-	
+
 	protected static Logger log = LoggerFactory.getLogger(WordXmlPictureE10.class);
-	
-	Pict pict;
-	    
-    private WordXmlPictureE10(WordprocessingMLPackage wmlPackage, 
+
+	/** The w:pict or w:object holding the VML picture.  w:object was added here in
+	 *  17.0.6; both are CT_PictureBase, so the VML children are found the same way.
+	 *  Word draws an embedded object (an equation, an embedded workbook, an OLE
+	 *  icon) as the preview picture its v:imagedata points at. */
+	CTPictureBase pict;
+
+    private WordXmlPictureE10(WordprocessingMLPackage wmlPackage,
     		Object wpict) {
-    	
+
     	this.wmlPackage = wmlPackage;
-    	    	
+
     	if (wpict!=null) {
-    		
-			if (wpict instanceof org.docx4j.wml.Pict) {
-				this.pict = (org.docx4j.wml.Pict)wpict;
+
+			if (wpict instanceof CTPictureBase) {
+				// w:pict (Pict) or w:object (CTObject)
+				this.pict = (CTPictureBase)wpict;
 			} else if (wpict instanceof NodeIterator) {
 				Node n = ((NodeIterator)wpict).nextNode();
 				if (n != null) {
+					// w:object and w:pict share a content model, but not a class:
+					// unmarshal each as itself
+					Class<? extends CTPictureBase> declaredType
+							= "object".equals(n.getLocalName()) ? CTObject.class : Pict.class;
 					Object jaxb = null;
 					try {
-						jaxb = XmlUtils.unmarshal(n, Context.jc, Pict.class);
+						jaxb = XmlUtils.unmarshal(n, Context.jc, declaredType);
 					} catch (JAXBException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						log.error(e1.getMessage(), e1);
 					}
 					try {
-						this.pict = (Pict) jaxb;
+						this.pict = (CTPictureBase) jaxb;
 					} catch (ClassCastException e) {
 						log.error("Couldn't cast " + jaxb.getClass().getName()
-								+ " to PPr!");
+								+ " to " + declaredType.getName() + "!");
 					}
 				}
+			} else {
+				log.error("Unexpected " + wpict.getClass().getName());
 			}
     	}
-    	
+
     }
-    
+
 	CTShape shape=null;
-	
+
 	private void findShape() {
+		if (pict==null) return;
     	if (pict.getAnyAndAny()!=null) {
     		for (Object o : pict.getAnyAndAny() ) {
     			if (o instanceof JAXBElement ) {

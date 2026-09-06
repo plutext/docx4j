@@ -33,6 +33,10 @@ ImageMagick and transparent-placeholder fallbacks above now apply only to a meta
 renderer cannot draw (CR-011 phase 2)
 - FOP could not paint SVG at all: batik-gvt was excluded from docx4j-export-fo's
 dependencies, so an fo:instream-foreign-object holding SVG came out blank.  Restored
+- an embedded object's preview picture (w:object/v:shape/v:imagedata - an Equation Editor or
+MathType equation, an embedded workbook or Visio drawing, an OLE icon) is now rendered, as
+Word draws it.  Neither FO exporter matched w:object before, so the preview was dropped
+unless the document wrapped it in w:pict; the HTML exporters gain it too (CR-011)
 
 - an autofit table (no w:tblW of its own, no fixed layout) whose w:tblGrid is far wider than
 the text column is now fitted to it, as Word refits such a grid; a grid up to a quarter over

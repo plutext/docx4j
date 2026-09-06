@@ -596,11 +596,39 @@
 			<xsl:copy-of 
 				select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., ' without v:imagedata ' )" />  	  		
 		</xsl:otherwise>
-	</xsl:choose>  			
+	</xsl:choose>
 
 </xsl:template>
-  
-  
+
+
+<!--  An embedded object (Equation Editor or MathType, an embedded workbook or
+      Visio drawing, an OLE icon).  Word draws it as the preview picture its
+      v:imagedata points at, so it takes exactly the w:pict path above - including
+      the metafile renderer for the WMF/EMF an equation preview usually is, and
+      the anchored placement of a position:absolute shape.  Until 17.0.6 neither
+      FO exporter matched w:object at all, so the preview was simply lost (CR-011).
+      Where there is no v:imagedata, nothing is emitted (as for w:pict).  -->
+<xsl:template match="w:object">
+
+	<xsl:choose>
+		<xsl:when test="./v:shape/v:imagedata">
+
+	  		<xsl:variable name="wobject" select="."/>
+
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createVmlPicture(
+		  	$conversionContext,
+  			$wobject,
+  			string(./v:shape/@style),
+  			string(./v:shape/w10:wrap/@type))" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:comment>TODO: handle w:object containing other than ./v:shape/v:imagedata</xsl:comment>
+		</xsl:otherwise>
+	</xsl:choose>
+
+</xsl:template>
+
+
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++ table support +++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->

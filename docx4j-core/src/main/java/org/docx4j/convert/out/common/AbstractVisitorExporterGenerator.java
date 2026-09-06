@@ -105,6 +105,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			(o instanceof org.docx4j.wml.P.Hyperlink) ||
 			(o instanceof org.docx4j.wml.CTSimpleField) ||
 			(o instanceof org.docx4j.vml.CTTextbox) ||
+			// w:object: apply() renders its preview picture whole, as the XSLT's
+			// w:object template does; descending would only reach the v:shape and
+			// its o:OLEObject, for which there is nothing to emit.  @since 17.0.6
+			(o instanceof org.docx4j.wml.CTObject) ||
 			(o instanceof org.docx4j.wml.FldChar)) {
 			return false;
 		} else {
@@ -472,15 +476,42 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				}
 				
 			} else {
-				
-				convertToNode(conversionContext, 
+
+				convertToNode(conversionContext,
 				  o, AbstractPictWriter.WRITER_ID,
 				  document, getCurrentParent());
-				
-			}
-			
 
-			
+			}
+
+
+		} else if (o instanceof org.docx4j.wml.CTObject) {
+		  /*<w:object w:dxaOrig="1520" w:dyaOrig="680">
+		      <v:shape id="_x0000_i1025" type="#_x0000_t75" style="width:76pt;height:34pt" o:ole="">
+		        <v:imagedata r:id="rId5" o:title=""/>
+		      </v:shape>
+		      <o:OLEObject Type="Embed" ProgID="Equation.3" ShapeID="_x0000_i1025" .../>
+		    </w:object>
+
+		    Word draws an embedded object as the preview picture v:imagedata points
+		    at - an Equation Editor or MathType picture (usually WMF/EMF), the
+		    thumbnail of an embedded workbook or Visio drawing, or an OLE icon.  So
+		    it goes through the same VML picture path as w:pict.  Until 17.0.6
+		    neither FO exporter matched w:object at all (CR-011).  Where there is no
+		    v:imagedata (an inline control, say) nothing is emitted, as in the XSLT. */
+
+			org.docx4j.vml.VmlShapeElements shape = vmlShape((org.docx4j.wml.CTPictureBase)o);
+			if (hasImageData(shape)) {
+				DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
+				if (foreignFragment==null) {
+					log.warn("createImage returned null for w:object");
+				} else {
+					getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
+				}
+			} else {
+				log.debug("w:object without v:imagedata: nothing to render");
+			}
+
+
 		} else if (o instanceof Br) {
 			
 			handleBr((Br)o);
@@ -568,22 +599,55 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	}
 	
 	
-	private org.docx4j.vml.CTTextbox getTextBox(org.docx4j.wml.Pict pict) {
+	/**
+	 * The VML shape of this w:pict or w:object: v:shape, but also v:rect (as Word
+	 * uses for certain textboxes and horizontal rules), v:oval etc, and never the
+	 * v:shapetype.  Null where there is none.
+	 *
+	 * @since 17.0.6 (w:object as well as w:pict, and shared with the FO generator)
+	 */
+	protected static org.docx4j.vml.VmlShapeElements vmlShape(org.docx4j.wml.CTPictureBase pict) {
 
-		// any VML shape can host the textbox: v:shape, but also v:rect (as Word
-		// uses for certain textboxes and horizontal rules), v:oval etc; the same
-		// approach as FOPictWriterAbstract
-		org.docx4j.vml.VmlShapeElements shape = null;
 		for (Object o2 : pict.getAnyAndAny() ) {
 
 			o2 = XmlUtils.unwrap(o2);
-//			System.out.println(o.getClass().getName());
 			if (o2 instanceof org.docx4j.vml.VmlShapeElements
 					&& !(o2 instanceof org.docx4j.vml.CTShapetype)) {
-				shape = (org.docx4j.vml.VmlShapeElements)o2;
-				break;
+				return (org.docx4j.vml.VmlShapeElements)o2;
 			}
 		}
+		return null;
+	}
+
+	/** Whether this shape has a v:imagedata, ie a picture to draw.  @since 17.0.6 */
+	protected static boolean hasImageData(org.docx4j.vml.VmlShapeElements shape) {
+
+		if (shape==null) return false;
+		for (Object o2 : shape.getEGShapeElements() ) {
+			if (XmlUtils.unwrap(o2) instanceof org.docx4j.vml.CTImageData) return true;
+		}
+		return false;
+	}
+
+	/** The shape's w10:wrap type ("square", "topAndBottom", ...), or "" where it has
+	 *  none.  @since 17.0.6 */
+	protected static String vmlWrapType(org.docx4j.vml.VmlShapeElements shape) {
+
+		if (shape==null) return "";
+		for (Object o2 : shape.getEGShapeElements()) {
+			o2 = XmlUtils.unwrap(o2);
+			if (o2 instanceof org.docx4j.vml.wordprocessingDrawing.CTWrap) {
+				org.docx4j.vml.wordprocessingDrawing.CTWrap w
+						= (org.docx4j.vml.wordprocessingDrawing.CTWrap)o2;
+				if (w.getType()!=null) return w.getType().value();
+			}
+		}
+		return "";
+	}
+
+	private org.docx4j.vml.CTTextbox getTextBox(org.docx4j.wml.Pict pict) {
+
+		org.docx4j.vml.VmlShapeElements shape = vmlShape(pict);
 		if (shape==null) {
 			log.warn("no shape in pict " );
 			return null;

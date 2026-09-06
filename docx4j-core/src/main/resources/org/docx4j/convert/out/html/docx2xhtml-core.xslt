@@ -412,13 +412,35 @@
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
-			<xsl:copy-of 
-				select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., ' without v:imagedata ' )" />  	  		
+			<xsl:copy-of
+				select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., ' without v:imagedata ' )" />
 			</xsl:otherwise>
-		</xsl:choose>  			
-	
+		</xsl:choose>
+
 	</xsl:template>
-  
+
+	<!--  An embedded object (Equation Editor or MathType, an embedded workbook or
+	      Visio drawing, an OLE icon): Word draws it as the preview picture its
+	      v:imagedata points at, so it takes the same path as w:pict above.
+	      @since 17.0.6 (CR-011)  -->
+	<xsl:template match="w:object">
+
+		<xsl:choose>
+			<xsl:when test="./v:shape/v:imagedata">
+
+			  	<xsl:variable name="wobject" select="."/>
+
+			  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createHtmlImgE10(
+			  			$conversionContext,
+			  			$wobject)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:comment>TODO: handle w:object containing other than ./v:shape/v:imagedata</xsl:comment>
+			</xsl:otherwise>
+		</xsl:choose>
+
+	</xsl:template>
+
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++ table support +++++++++++++++++++++++ -->

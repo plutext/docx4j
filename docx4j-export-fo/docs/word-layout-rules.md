@@ -1543,6 +1543,16 @@ y=34.3 x=510.5 and docx4j's at y=94.3 x=255.1 - 60pt down and off its alignment 
 header's measured extent (§7) was 203.4pt against Word's ~111. A picture whose shape states
 no position is still laid out in the line, as Word lays it out.
 
+**An embedded object** (`w:object` holding the same `v:shape`/`v:imagedata`) is drawn as its
+preview picture, by that same path: Word draws an Equation Editor or MathType equation, an
+embedded workbook or Visio drawing, or an object shown as an icon, as the picture stored for
+it, never as a placeholder or a label. So the preview's size comes from the VML style, a
+`position:absolute` shape is anchored as above, and a metafile preview - which is what Word
+writes for an equation - is drawn by the metafile renderer (§9.4). Until 17.0.6 neither FO
+exporter matched `w:object` at all, so an object's preview was simply dropped; the same
+preview inside a `w:pict` rendered, which is what hid it. Where the object carries no
+`v:imagedata`, nothing is emitted.
+
 ### 9.2 Text boxes
 
 Both VML text boxes (`w:pict/v:shape/v:textbox`) and DrawingML shape text
@@ -1592,6 +1602,11 @@ everything below moves up the page. Two kinds hit that: **EMF** (FOP can size it
 metafile header but there is no EMF loader for PDF output) and **bytes that are no image at
 all** - Word stores the web server's error page as the picture part when a linked picture
 cannot be fetched, and one document of a 157-document corpus held eighteen of those.
+
+From 17.0.6 a WMF, EMF or EMF+ is not handed to FOP as a graphic at all: docx4j replays its
+GDI records itself and puts the result in an `fo:instream-foreign-object` as SVG, which FOP
+paints (CR-011). What follows is therefore the fallback, reached by a metafile the renderer
+cannot parse and by bytes that are no image.
 
 Such a picture is pointed at a transparent 1x1 PNG (a `data:` URI, which FOP resolves) and
 given `scaling="non-uniform"`, so the extent the document declares is reserved exactly -

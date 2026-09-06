@@ -89,10 +89,10 @@ public class MetafilePictureTest extends AbstractXSLFOTest {
 	 * metafile - the shape Word writes for an embedded object's preview (an Equation
 	 * Editor or MathType equation, a pasted Excel range, an OLE icon).
 	 *
-	 * <p>Word wraps such a preview in {@code w:object} as often as in {@code w:pict};
-	 * neither FO exporter renders {@code w:object} at all (nothing in
-	 * {@code AbstractVisitorExporterGenerator} or {@code docx2fo.xslt} matches it), so
-	 * this covers the {@code w:pict} form.  The metafile pipeline is the same one.</p>
+	 * <p>Word wraps such a preview in {@code w:object} as often as in {@code w:pict}.
+	 * This covers the {@code w:pict} form; {@code w:object}, which neither FO exporter
+	 * matched until 17.0.6, is covered by {@link VmlObjectPictureTest}.  The metafile
+	 * pipeline is the same one.</p>
 	 */
 	private static WordprocessingMLPackage vmlPkg(String metafile) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();

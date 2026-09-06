@@ -1,7 +1,8 @@
 # CR: WMF / EMF / EMF+ rendering via repackaged Apache POI HWMF and HEMF
 
-Status: IN PROGRESS (2026-09-06) — phases 1 and 2 landed: WMF/EMF/EMF+ pictures are
-now drawn in PDF (via FO) and HTML, and the parts carry a converter API. Phases 3
+Status: IN PROGRESS (2026-09-06) — phases 1, 2 and 2b landed: WMF/EMF/EMF+ pictures are
+now drawn in PDF (via FO) and HTML, embedded objects' preview pictures (`w:object`) are
+rendered by all four exporters, and the parts carry a converter API. Phases 3
 (OlePres000) and 4 (the missing EMF/EMF+ records) not started.
 Converted from the maintainer's analysis note of 2026-09-04/06 (verified against
 POI trunk at `../poi` and the 5.3.0 release jars, and this tree at 451f05172).
@@ -157,6 +158,9 @@ Verified against this tree (commit 451f05172, 2026-09-06):
 - VML: `WordXmlPictureE10` resolves `v:imagedata/@r:id` to the image part, so `w:object` / `w:pict`
   previews already reach the same picture pipeline. Geometry comes from VML; the picture bytes are
   whatever the part holds, so today an object preview stored as WMF or EMF is lost the same way.
+  **Correction (phase 2b):** only `w:pict` reached it. No exporter — neither FO one, and neither
+  HTML one — matched `w:object` at all, so an object's preview was dropped whatever its format.
+  Closed in phase 2b below.
 - OLE: `OleObjectBinaryPart` wraps the repackaged POIFS and understands `Ole10Native` and
   `CompObj`. Neither docx4j nor POI parses `OlePres000` presentation streams (MS-OLEDS
   `OLEPresentationStream`). POI's only nearby code is `hpsf.Thumbnail`, which decodes the
@@ -461,6 +465,69 @@ Wiring, in order of value:
    docx4j-export-fo-tests, over docx4j's own `EMF.docx`/`WMF.docx` plus metafiles built
    into packages programmatically; `MetafileConversionApiTest` (8) and
    `MetafileHtmlTest` (2) in docx4j-core-tests. Every one runs both pathways.
+
+2b. **`w:object` previews** (the gap phase 2 recorded). **DONE 2026-09-06.**
+
+   The gap was wider than phase 2 said: **all four** exporters missed `w:object`, not
+   only the two FO ones. `docx2xhtml-core.xslt` had a `w:pict` template and no
+   `w:object` one, so the object fell to its `*[ancestor::w:body]` no-match template;
+   the visitor pathways (both, since the branch is in the shared
+   `AbstractVisitorExporterGenerator`) fell to the catch-all that warns "Need to
+   handle org.docx4j.wml.CTObject" and then descended into the object, warning again
+   on the `v:shape`. Word draws an embedded object as the preview picture its
+   `v:imagedata` points at — an Equation Editor 3 or MathType equation (a WMF or EMF,
+   which is why this belongs to CR-011), the thumbnail of an embedded workbook or Visio
+   drawing, the icon of an object shown as an icon — so what was lost was the picture
+   itself, not a placeholder.
+
+   - `w:pict` and `w:object` are both `CT_PictureBase`, so the VML children are reached
+     the same way: **`WordXmlPictureE10` now holds a `CTPictureBase`**, and its
+     `NodeIterator` constructor unmarshals a node whose local name is `object` as
+     `CTObject` rather than `Pict`. Everything downstream — `readStandardAttributes`,
+     `readDimensions` from the VML style, `handleImageRel`, the metafile renderer — is
+     unchanged, so an object preview gets exactly what a `w:pict` preview gets.
+   - **Visitor pathways**: a `CTObject` branch beside the `Pict` one in
+     `AbstractVisitorExporterGenerator`, dispatching `IMAGE_E10`; `CTObject` added to
+     `shouldTraverse`'s exclusions so the object is rendered whole (as the XSLT
+     templates do) rather than also being descended into. `vmlShape` and `vmlWrapType`
+     moved up from `FOExporterVisitorGenerator` so both branches share them, and its
+     `anchorVmlPicture` call now tests `CTPictureBase`, which is what makes a
+     `position:absolute` object anchored rather than laid out in the line.
+   - **XSLT pathways**: a `w:object` template in `docx2fo.xslt` (calling the same
+     `XsltFOFunctions.createVmlPicture`, with the shape's `@style` and `w10:wrap/@type`)
+     and one in `docx2xhtml-core.xslt` (calling the same
+     `WordXmlPictureE10.createHtmlImgE10`), each guarded on `./v:shape/v:imagedata`.
+   - **No `v:imagedata`, no output.** Word draws no placeholder for an object with no
+     preview, and neither does docx4j: no "[OLE object]" text, no box. The `o:OLEObject`
+     child is not rendered either — it names the embedded object, and the preview is
+     what Word paints.
+
+   Tests: `VmlObjectPictureTest` (4) in docx4j-export-fo-tests — a metafile preview as
+   SVG in an `fo:instream-foreign-object`, a bitmap preview as `fo:external-graphic`,
+   both at the size the VML style declares; a `position:absolute` object in the
+   `fo:block-container` `WordLayoutFixups` places, with the shape's margins; an object
+   without `v:imagedata` emitting nothing. Ink is measured against the same document
+   with the object removed, so the assertion is about the picture and not the text.
+   `VmlObjectHtmlTest` (2) in docx4j-core-tests: the `<img>` appears in both HTML
+   pathways, for a bitmap preview and for a metafile one (a PNG data URI in that module,
+   which has no `MetafileSvgProvider`). Both classes run both pathways.
+   Fidelity: the 53 probes are unchanged (none of them holds a `w:object`). Across the
+   three real-document corpora, **17 of 453 documents hold a `w:object`** — 71 of them,
+   every one with a `v:imagedata` — and every one of those 17 gained its previews:
+   metafile previews as `fo:instream-foreign-object`, bitmap ones as
+   `fo:external-graphic`. Eight of the 17 moved on line parity, seven of them up, three
+   of those to Word's own page count (10/9 → 10/10, 78/75 → 78/78, 8/7 → 8/8): the
+   previews had been taking no space at all, so everything below them sat too high. The
+   one that moved down (0.868 → 0.856, 65/65 → 65/66 pages) is the same effect in the
+   other direction — its previews now take the space the VML style declares and push one
+   page. The third corpus's aggregate rose (mean line parity 0.8190 → 0.8204, same page
+   count 50 → 52 of 102); the other two fell slightly, and that fall is **not this
+   change**: five documents there differ from the phase-2 scoreboard only in
+   `hyphenate="true"` / `docx4j:hyphenation-zone` (verified by diffing the `.fo`: no
+   other difference at all, and none of the five holds a `w:object`), so those baselines
+   were scored with a harness `target/lib` predating f17801ebf, the per-document
+   hyphenation work. The README's warning about stale jars in `target/lib` applies to
+   the baselines as much as to the run.
 3. **OLE presentation fallback** (§4.2 item 3): `OleObjectBinaryPart
    .getPresentation()` parsing `OlePres000` per MS-OLEDS for objects without a
    `v:imagedata` preview. Acceptance: a document with such an object renders
