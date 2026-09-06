@@ -1155,13 +1155,17 @@ public class XsltFOFunctions {
 			applyHyphenation(wmlPackage, pPr, foBlockElement);
 
 			// w:pPr/w:framePr: a positioned text frame (§9.5).  WordLayoutFixups reads
-			// this and lifts the paragraph out of the flow.  The paragraph's *own*
-			// w:framePr, not the effective one: a style which carries a frame would
-			// otherwise take every paragraph of that style into it, and consecutive
-			// paragraphs sharing a frame are one frame - measured on a corpus letterhead
-			// where that swept three unframed paragraphs into a page-anchored frame and
-			// took line parity from 0.645 to 0.548.  @since 17.0.6
-			applyFrameHint(foBlockElement, pPrDirect);
+			// this and lifts the paragraph out of the flow.  The *effective* w:framePr:
+			// a style which carries a frame does put every paragraph of that style into
+			// one, and the attributes inherit singly (a paragraph stating only w:w keeps
+			// its style's anchors and x/y), which is what the corpus letterhead needs.
+			// Not on a borders/shading container: Containerization builds it from the
+			// *first* paragraph's pPr, so the frame hint landed on both the wrapper and
+			// the paragraph inside it - the wrapper was positioned, then the paragraph
+			// was positioned again inside it (a container nested in a copy of itself),
+			// dragging the container's other, unframed, paragraphs to the frame's x.
+			// @since 17.0.6
+			if (!sdt) applyFrameHint(foBlockElement, pPr);
 
 			// the tab stops this paragraph's tabs are laid out against (only where it
 			// has one: the line manager needs them, nothing else does).  @since 17.0.5

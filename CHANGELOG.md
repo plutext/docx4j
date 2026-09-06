@@ -288,11 +288,15 @@ a page break still costs none.  Two page breaks at the head of a paragraph in a 
 ignored, where one still opens the table on a new page
 - a picture-only paragraph at a line-spacing multiple now gets the leading Word gives it,
 (multiple - 1) x the paragraph font's own pitch, rather than none
-- a paragraph's w:framePr can now be honoured where the frame is anchored to the page or to
+- a paragraph's w:framePr is now honoured where the frame is anchored to the page or to
 the margin: it becomes a positioned block-container at w:x/w:y of width w:w, consecutive
-paragraphs carrying the same w:framePr forming one frame.  Off by default
-(docx4j.convert.out.fo.frames.position=true) while a wrapping defect stands; a text-anchored
-frame and w:dropCap are laid out in the flow either way
+paragraphs carrying the same w:framePr forming one frame, and where w:wrap lets no text run
+beside it (notBeside, none) the flow keeps the frame's band.  On by default
+(docx4j.convert.out.fo.frames.position=false turns it off); a text-anchored frame and
+w:dropCap are laid out in the flow
+- a rotated table cell (w:textDirection) now gets the dimensions a turned reference area
+needs - the cell's content width and the row's height - so its text is painted inside the
+cell instead of past the page edge, and the row is not inflated
 
 HTML output, visitor pathway (the default):
 - a line break in the middle of a run no longer ends the run: text after it keeps the run's
@@ -317,6 +321,11 @@ it as part of toPDF/toFO (with page numbers) or toHTML (without)
 - StyleUtil: a w:tblPr/w:tblpPr whose only properties were an anchor or a *Spec was treated
 as empty, so a floating table lost its position when the effective table style was built
 - PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
+- PropertyResolver: a paragraph whose only direct formatting is a w:framePr (a Word text
+frame) no longer loses it from getEffectivePPr
+- StyleUtil: w:framePr's attributes now inherit one at a time, so a paragraph stating only
+w:w keeps the anchors and w:x/w:y its style gives; w:wrap, the anchors, the aligns, w:hRule
+and w:dropCap were taken from the more specific frame even when it did not state them
 - StyleUtil: w:beforeAutospacing="0" / w:afterAutospacing="0" in direct formatting now
 switches off the style's "1"; XJC's getters cannot tell an absent attribute from a false
 one, so org.docx4j.wml.AutospacingAccess reports the three states

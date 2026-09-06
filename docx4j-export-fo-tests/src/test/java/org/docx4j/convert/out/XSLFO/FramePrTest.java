@@ -29,18 +29,6 @@ import org.w3c.dom.NodeList;
  */
 public class FramePrTest extends AbstractXSLFOTest {
 
-	/** The rule is off by default (see WordLayoutFixups.positionFrames); these tests are
-	 *  about what it does when it is on. */
-	@org.junit.Before
-	public void on() {
-		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.frames.position", true);
-	}
-
-	@org.junit.After
-	public void off() {
-		org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.frames.position", false);
-	}
-
 	private static final String W = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";
 	private static final String FO = "http://www.w3.org/1999/XSL/Format";
 
@@ -164,5 +152,75 @@ public class FramePrTest extends AbstractXSLFOTest {
 			assertEquals("docx4j-frame left on the FO", "",
 					((Element) blocks.item(i)).getAttribute("docx4j-frame"));
 		}
+	}
+
+	/**
+	 * {@code w:wrap="notBeside"} lets no text run beside the frame, so Word's flow steps
+	 * over the frame's band and resumes below it.  The band is an invisible copy of the
+	 * frame's own blocks, left where they were: FOP honours {@code visibility="hidden"},
+	 * so the area keeps its size and paints nothing, which reserves exactly the height
+	 * the frame occupies where {@code w:h} cannot (w:hRule="auto" is the common case).
+	 */
+	private void notBesideReservesItsBand(int flags) throws Exception {
+		org.w3c.dom.Document fo = fo(pkg(PAGE_ANCHORED, 1), flags);
+		assertNotNull(absoluteContainer(fo));
+		assertEquals("one invisible copy in the flow", 1, hiddenCopies(fo));
+	}
+
+	@Test
+	public void notBesideReservesItsBandVisitor() throws Exception {
+		notBesideReservesItsBand(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void notBesideReservesItsBandXslt() throws Exception {
+		notBesideReservesItsBand(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/** w:wrap="around" does let text run beside the frame, so nothing is reserved. */
+	@Test
+	public void aroundReservesNothing() throws Exception {
+		org.w3c.dom.Document fo = fo(pkg(
+				PAGE_ANCHORED.replace("w:wrap=\"notBeside\"", "w:wrap=\"around\""), 1),
+				Docx4J.FLAG_NONE);
+		assertNotNull(absoluteContainer(fo));
+		assertEquals("nothing reserved", 0, hiddenCopies(fo));
+	}
+
+	/** Two frames at the same w:y share one band: Word steps over the pair once. */
+	@Test
+	public void framesAtOneAnchorShareTheirBand() throws Exception {
+		StringBuilder body = new StringBuilder();
+		body.append("<w:p><w:pPr>").append(PAGE_ANCHORED).append("</w:pPr>")
+			.append("<w:r><w:t>left of the pair</w:t></w:r></w:p>");
+		// the same w:y, a different w:x: a second frame in the same band
+		body.append("<w:p><w:pPr>")
+			.append(PAGE_ANCHORED.replace("w:x=\"8563\"", "w:x=\"1362\""))
+			.append("</w:pPr><w:r><w:t>right of the pair</w:t></w:r></w:p>");
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));
+		org.w3c.dom.Document fo = fo(pkg, Docx4J.FLAG_NONE);
+		assertEquals("both frames positioned", 2, positionedContainers(fo));
+		assertEquals("but only one band reserved", 1, hiddenCopies(fo));
+	}
+
+	/** fo:blocks left in the flow with visibility="hidden": the reserved bands. */
+	private static int hiddenCopies(org.w3c.dom.Document fo) {
+		int n = 0;
+		NodeList blocks = fo.getElementsByTagNameNS(FO, "block");
+		for (int i = 0; i < blocks.getLength(); i++) {
+			if ("hidden".equals(((Element) blocks.item(i)).getAttribute("visibility"))) n++;
+		}
+		return n;
+	}
+
+	private static int positionedContainers(org.w3c.dom.Document fo) {
+		int n = 0;
+		NodeList containers = fo.getElementsByTagNameNS(FO, "block-container");
+		for (int i = 0; i < containers.getLength(); i++) {
+			if (((Element) containers.item(i)).getAttribute("absolute-position").length() > 0) n++;
+		}
+		return n;
 	}
 }

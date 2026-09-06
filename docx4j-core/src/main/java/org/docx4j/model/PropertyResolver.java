@@ -830,6 +830,14 @@ public class PropertyResolver {
 		}
 	
 		//CTFramePr framePr;
+		/* A paragraph whose only direct formatting is a text frame really is directly
+		 * formatted: without this its w:framePr never reached the effective pPr, so a
+		 * frame stated only on the paragraph (with the anchors coming from its style)
+		 * was lost.  @since 17.0.6 */
+		if (pPrToApply.getFramePr()!=null) {
+			return true;
+		}
+
 		//BooleanDefaultTrue widowControl;
 		if (pPrToApply.getWidowControl()!=null) {
 			return true;		

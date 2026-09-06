@@ -780,32 +780,96 @@ public class TableWriter extends AbstractTableWriter {
   			// usual case
   			return cellNode;
   		} else {
-  			
+
   			/* We need block-container, something like:
-  			 * 
+  			 *
 	          <table-cell>
 	            <block-container reference-orientation="90">
 	              <block>Hello</block>
 	            </block-container>
 	          </table-cell>
             */
-  			
+
   			Element ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block-container");
-  			
+
   			TextDir textDir = new TextDir(tcPr.getTextDirection());
   			textDir.setXslFO(ret);
-  			
+
   			cellNode.appendChild(ret);
-  			
+
   			if (cellNode.hasAttribute("reference-orientation")) {
   				// remove it, since it doesn't work at that level
   				cellNode.removeAttribute("reference-orientation");
   			}
-  			
+
   			return ret;
-  			
+
   		}
     }
+
+	/**
+	 * {@code w:textDirection}: a cell whose text Word turns on its side.  The container
+	 * carrying {@code reference-orientation} is a <b>reference area</b>, and a reference
+	 * area turned 90&#xb0; has to be given both of its dimensions: without them FOP gives
+	 * the rotated area an inline-progression-dimension of 0 and the viewport a
+	 * block-progression-dimension of 0 (measured on the area tree: {@code <block ipd="0"
+	 * bpd="28800" is-reference-area="true">} inside {@code <block ipd="28800" bpd="0"
+	 * is-viewport-area="true">}), so the text is laid out on a line of no measure, takes
+	 * no width in the cell and is painted past the page edge - a corpus certificate whose
+	 * table has {@code w:textDirection btLr} in its stub column had Word's first line at
+	 * {@code y=53.5 x=99.9..494.8} and ours at {@code y=76.1 x=323.5..672.7} on a 595.3pt
+	 * page.
+	 *
+	 * <p>The two properties are stated in the container's <em>own</em> (rotated) frame,
+	 * and FOP swaps them onto the viewport: {@code inline-progression-dimension} becomes
+	 * the viewport's height (how far the rotated line may run down the page) and
+	 * {@code block-progression-dimension} its width in the cell.  So the
+	 * block-progression-dimension is the cell's content width - its grid width less the
+	 * cell margins - and the inline-progression-dimension is how tall the cell is: the
+	 * row's {@code w:trHeight} where it states one, and otherwise the cell's minimum
+	 * content width, the height the rotated text can always be wrapped into.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	@Override
+	protected Element interposeBlockContainer(AbstractWmlConversionContext context, Document doc,
+			Element cellNode, AbstractTableWriterModel table, AbstractTableWriterModelCell cell,
+			int cellWidthTwips) {
+
+		TcPr tcPr = cell.getTcPr();
+		Element ret = interposeBlockContainer(doc, cellNode, tcPr);
+		if (ret == cellNode || !WordLayoutFixups.isEnabled()) return ret;
+
+		double width = cellWidthTwips / 20d
+				- WordLayoutFixups.lengthPt(cellNode.getAttribute("padding-left"))
+				- WordLayoutFixups.lengthPt(cellNode.getAttribute("padding-right"));
+		if (width > 0) {
+			ret.setAttribute("block-progression-dimension", WordLayoutFixups.pt(width));
+		}
+
+		// how far down the page the rotated line may run
+		Element row = (cellNode.getParentNode() instanceof Element) ? (Element)cellNode.getParentNode() : null;
+		double height = row == null ? 0 : WordLayoutFixups.lengthPt(row.getAttribute("height"));
+		if (height <= 0) {
+			// no w:trHeight: the row is as tall as the rotated text needs, and how much
+			// that is depends on how many rotated lines the cell's width takes - which is
+			// not known here.  The cell's *minimum* content width (its longest unbreakable
+			// unit) is the row height the text can always be wrapped into, and measures
+			// better across the corpus than its whole content on one line, which inflates
+			// every row whose text Word wraps.  Capped at the page's text height, which no
+			// row can exceed.
+			double[] measured = measureCellContent(context, cell);
+			height = measured == null ? 0 : measured[0];
+			org.docx4j.model.structure.PageDimensions dims = pageDimensions(context);
+			if (dims != null && dims.getWritableHeightTwips() > 0) {
+				height = Math.min(height, dims.getWritableHeightTwips() / 20d);
+			}
+		}
+		if (height > 0) {
+			ret.setAttribute("inline-progression-dimension", WordLayoutFixups.pt(height));
+		}
+		return ret;
+	}
   	
 	
 }

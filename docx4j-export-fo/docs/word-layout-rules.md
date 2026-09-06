@@ -107,7 +107,7 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
 | `docx4j.convert.out.fo.tables.position` | `true` | A floating table's `w:tblpPr`: the grid edge at `tblpX`/`tblpXSpec`, and a page- or margin-anchored table which opens its section placed absolutely (§6.8). `false` lays every table out in the flow, as 17.0.5 did. |
-| `docx4j.convert.out.fo.frames.position` | `false` | `true` lifts a paragraph whose `w:framePr` is anchored to the page or to the margin into a positioned block-container (§9.5). Off by default while one measured defect stands. |
+| `docx4j.convert.out.fo.frames.position` | `true` | A paragraph whose `w:framePr` is anchored to the page or to the margin is lifted into a positioned block-container, and the flow keeps the band of a frame no text may run beside (§9.5). `false` lays every framed paragraph out where it falls, as 17.0.5 did. |
 | `docx4j.convert.out.fo.pictures.float` | `true` | Whether a picture Word wraps text around may be an `fo:float`. `false` lays such pictures out in the flow (no text beside them, but immune to the FOP float defect, §10). Text boxes are never floats whatever this says. |
 | `docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable` | unset | Names an ImageMagick/GraphicsMagick executable. Set, a picture FOP cannot paint (EMF) is converted to PNG and painted; unset, its space is reserved but it is not drawn (§9.4). |
 | `docx4j.convert.out.fo.pictures.convertDensity` | `300` | Pixels per inch that converter rasterises a metafile at. |
@@ -1149,6 +1149,22 @@ difference. Line parity on the probe 29% -> 79%, `kern-title` 93% -> 100%; a cor
 document of 620 letter-spaced space runs went 0.39 -> 0.98. Upstream FOP report candidate
 (two: `SpaceVal.makeWordSpacing` and `GlyphMapping.processWordMapping`).
 
+**What is left on `spacing-char` (64%) is not the letter-space count.** Glyph by glyph
+against the golden, the count is confirmed on both a word's last character and a space -
+at 3pt spacing the golden's space advance is 5.988 (3.0 + one space) and ours is 6.000, and
+a 6.0pt glyph advances 8.988 against our 9.000. The residual is a **sub-font-unit
+difference in the advances themselves**, about 0.0075pt per character, and it is *not*
+proportional to the spacing: at 0.25pt spacing the line is 0.6pt wider than Word's and at
+3pt it is 0.5pt wider, while the unspaced control lines match to 0.2pt. Word's glyph
+positions are exact multiples of one font unit (0.012pt at 12pt), so Word rounds each
+advance while FOP accumulates exact fractions, and Word's *measure* rounds the other way
+from its painting: on the 1pt paragraph Word ends line 2 at 469.8 with "of", refusing
+"dividing", which by the golden's own advances would end at 522.68 against a text column
+of 451.32 + 72 = 523.32 - Word is 0.64pt short of taking a word we take, and one word
+lost cascades through the rest of the paragraph (the probe's whole 36%). Making this match
+means reproducing Word's per-character rounding in the measure, which touches every line of
+every document rather than letter-spaced text; it is not attempted here.
+
 <a id="s46w"></a>**`w:w`, character scaling** (ECMA-376 17.3.2.43) multiplies the run's
 glyph advances by a percentage. Neither XSL-FO nor FOP can scale text horizontally: there
 is no property for it, `font-stretch` is CSS and picks a different face rather than
@@ -1721,6 +1737,41 @@ did.
 `leftFromText` and `rightFromText` are the gaps the float leaves; `topFromText` and
 `bottomFromText` are not used, and nothing wraps beside a *positioned* table (§10).
 
+### 6.9 `w:textDirection`: cells whose text Word turns on its side
+
+`w:tcPr/w:textDirection` `btLr` turns the cell's text 90° anticlockwise
+(`reference-orientation="90"`) and `tbRl` turns it clockwise (`-90`). The
+`fo:block-container` that carries `reference-orientation` is a **reference area**, and a
+reference area turned 90° has to be given *both* of its dimensions: without them FOP
+gives the rotated area an inline-progression-dimension of 0 and its viewport a
+block-progression-dimension of 0 (area tree: `<block ipd="0" bpd="28800"
+is-reference-area="true">` inside `<block ipd="28800" bpd="0" is-viewport-area="true">`),
+so the text is set on a line of no measure, takes no width in the cell and is painted past
+the page edge. Measured on a corpus certificate whose stub column is `btLr`: Word's first
+line at y=53.5 x=99.9..494.8, ours at y=76.1 x=**323.5..672.7** on a 595.3pt page, with the
+rows inflated to match.
+
+The two properties are stated in the container's *own* (rotated) frame, and FOP swaps them
+onto the viewport - `inline-progression-dimension` becomes the viewport's height and
+`block-progression-dimension` its width in the cell. So:
+
+* **`block-progression-dimension` = the cell's content width**: its grid width (its own
+  column plus the ones a `w:gridSpan` covers) less the cell margins.
+* **`inline-progression-dimension` = how tall the cell is**: the row's `w:trHeight` where
+  it states one, and otherwise the cell's *minimum* content width - its longest unbreakable
+  unit, the height the rotated text can always be wrapped into - capped at the page's text
+  height, which no row can exceed. How tall Word actually makes an auto row depends on how
+  many rotated lines the cell's width takes, which is not known before layout; the two
+  bounds are that minimum and the whole content on one line, and the minimum measures
+  better. Taking the whole content inflates every row whose text Word wraps: where a
+  `w:trHeight` is stated it took two documents from 17 pages to 22 and from 39 to 42 (Word
+  draws those rows at exactly the stated 148.55pt and 119.5pt), and where none is stated it
+  cost a third 0.883 -> 0.878 against 0.884 for the minimum.
+
+Corpus: 15 documents, 160 rotated cells. Five improve - 0.711 -> 0.747, 0.749 -> 0.773,
+0.628 -> 0.647, 0.883 -> 0.884, 0.827 -> 0.830 - and two fall a line each, 0.941 -> 0.940
+and 0.813 -> 0.807, on rows whose final height Word decides differently from either bound.
+
 ---
 
 ## 7. Sections, columns, headers and footers
@@ -2232,13 +2283,45 @@ picture Word wraps text around, with the same measure test, and that is not yet 
 paragraph in the flow), `w:hSpace`/`w:vSpace` and `w:anchorLock` are not implemented
 either.
 
-**It is off by default** (`docx4j.convert.out.fo.frames.position=true` turns it on), on
-one measured defect: on a corpus letterhead with four page-anchored frames the positioned
-container comes out *nested inside a second copy of itself*, and the two paragraphs after
-the frame are then drawn at the frame's x rather than on the margin - line parity 0.645 to
-0.548. The gain where it works is the same size (0.824 to 0.960 and a page, on a document
-of 25 absolute frames), and no other document of the three corpora changes either way, so
-the rule is right and the wrapping is what has to be found.
+**The frame Word applies is the effective one.** A paragraph style may carry a
+`w:framePr`, and each of its attributes inherits on its own: a paragraph stating only
+`w:framePr w:w="3600"` keeps the anchors and the `w:x`/`w:y` its style gives. Measured on
+a corpus letterhead whose `Adresse` style carries
+`w:framePr w:w=3629 w:h=2427 w:vAnchor=page w:hAnchor=page w:x=1362 w:y=2042` while its
+four address paragraphs carry only `w:framePr w:w=3600 w:wrap=notBeside`: Word draws them
+as one frame at (68.1, 102.1) - the style's `w:x`/`w:y` - 180pt (the paragraph's `w:w`)
+wide, its lines at y=112.3 / 125.1 / 137.6. Two core defects hid this: `StyleUtil`'s
+`apply(CTFramePr, CTFramePr)` took `w:wrap`, the two anchors, the two aligns, `w:hRule`
+and `w:dropCap` from the more specific frame *unconditionally*, clearing whatever the
+style gave whenever the paragraph's frame omitted them; and `PropertyResolver`'s
+`hasDirectPPrFormatting` did not count `w:framePr` at all, so a paragraph whose only
+direct formatting was a frame never reached `applyPPr` and lost it.
+
+**`w:wrap` decides whether the flow keeps the frame's band.** `notBeside` and `none` let
+no text run beside the frame, so Word's flow steps over it and resumes below; `auto` (the
+default), `around`, `tight` and `through` let text run beside it, and the flow keeps
+nothing. The band is reproduced by leaving an invisible copy of the frame's own blocks
+where they were (FOP honours `visibility="hidden"`: the area keeps its size and paints
+nothing), which reserves exactly the height the frame occupies - `w:h` cannot, since
+`w:hRule="auto"` is the common case. What Word skips is the **union** of the bands, not
+the sum of the heights: the letterhead sets its frames out in pairs at `w:y=3743` and
+`w:y=4821` and Word steps over each pair once, so a frame whose top is not below the last
+one reserved in the same flow reserves nothing (reserving both put the body text 58pt too
+low; reserving neither put it 125pt too high, against Word's first body line at y=310.2).
+On that document the reservation is worth 0.548 -> 0.645 of Word's lines, which is where
+the frames-in-the-flow layout it replaces already stood.
+
+**On by default** since 17.0.6 (`docx4j.convert.out.fo.frames.position=false` turns it
+off). Three corpus documents change and none falls: 0.804 to 0.873, 0.824 to 0.960 and
+Word's page count, 0.840 to 0.848. The letterhead keeps its 20 of Word's 31 lines either
+way while its frames move to where Word draws them - median dy 58.2 to 22.4 - and its
+residual is its page-anchored table, which the floating-table pass declines to position
+because content precedes it (§6.8). The nesting defect 17.0.5 reported was the
+borders/shading container:
+`Containerization` builds it from its *first* paragraph's `pPr`, so the frame hint landed
+on both the container and the paragraph inside it, the container was positioned and then
+the paragraph was positioned again inside it, dragging the container's other, unframed,
+paragraphs to the frame's x. The hint is no longer written on such a container.
 
 ---
 

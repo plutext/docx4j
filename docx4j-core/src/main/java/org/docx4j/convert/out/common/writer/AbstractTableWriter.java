@@ -316,8 +316,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					} else {
 						log.debug("copying cell contents..");
 						
-						cellNode = interposeBlockContainer(doc, cellNode, cell.getTcPr());
-						
+						cellNode = interposeBlockContainer(context, doc, cellNode, table,
+								(AbstractTableWriterModelCell)cell, cellWidthTwips(table, cell));
+
 						XmlUtils.treeCopy( ((AbstractTableWriterModelCell)cell).getContent().getChildNodes(),
 								cellNode);
 					}
@@ -338,8 +339,39 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
      * @return
      */
     protected Element interposeBlockContainer(Document doc, Element cellNode, TcPr tcPr) {
-    	
-    	return cellNode;    	
+
+    	return cellNode;
+    }
+
+    /**
+     * As {@link #interposeBlockContainer(Document, Element, TcPr)}, with the geometry a
+     * rotated ({@code w:textDirection}) cell needs: a rotated reference area must be
+     * given both of its dimensions, which means knowing how wide the cell is.
+     *
+     * @param cellWidthTwips the cell's width from the grid (its own column plus the ones
+     *        a w:gridSpan covers), or 0 where the widths are not known
+     * @since 17.0.6
+     */
+    protected Element interposeBlockContainer(AbstractWmlConversionContext context, Document doc,
+    		Element cellNode, AbstractTableWriterModel table, AbstractTableWriterModelCell cell,
+    		int cellWidthTwips) {
+
+    	return interposeBlockContainer(doc, cellNode, cell.getTcPr());
+    }
+
+    /** The cell's width in twips from the effective column widths (autofit, else the
+     *  w:tblGrid), summed over the columns a w:gridSpan covers; 0 where unknown.
+     *  @since 17.0.6 */
+    protected static int cellWidthTwips(AbstractTableWriterModel table, TableModelCell cell) {
+    	int[] widths = table.getAutofitColumnWidths();
+    	if (widths == null) widths = gridWidths(table, table.getColCount());
+    	if (widths == null) return 0;
+    	int from = cell.getColumn();
+    	if (from < 0 || from >= widths.length) return 0;
+    	int to = Math.min(widths.length, from + Math.max(1, cell.getColspan()));
+    	int sum = 0;
+    	for (int i = from; i < to; i++) sum += widths[i];
+    	return sum;
     }
   	
   	protected Element createNode(Document doc, Element parent, int nodeType) {

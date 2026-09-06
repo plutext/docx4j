@@ -632,11 +632,11 @@ public final class WordLayoutFixups {
 	 *  in twips.  @since 17.0.6 */
 	public static final String HINT_FRAME = "docx4j-frame";
 
-	/** docx4j.convert.out.fo.frames.position (default <b>false</b>): whether w:framePr is
-	 *  honoured at all.  Off until the open defect in {@link #positionFrames} is settled.
-	 *  @since 17.0.6 */
+	/** docx4j.convert.out.fo.frames.position (default <b>true</b>): whether w:framePr is
+	 *  honoured at all.  @since 17.0.6 */
 	static boolean framesEnabled() {
-		return org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.frames.position", false);
+		return isEnabled()
+				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.frames.position", true);
 	}
 
 	/**
@@ -672,13 +672,21 @@ public final class WordLayoutFixups {
 	 * and so is {@code w:dropCap}: both need the float route of &#xa7;9.1 and both were
 	 * measured a loss without it.</p>
 	 *
-	 * <p><b>Off by default</b> ({@code docx4j.convert.out.fo.frames.position=true} turns
-	 * it on) until one measured defect is settled: on a corpus letterhead with four
-	 * page-anchored frames the positioned container comes out <em>nested inside a second
-	 * copy of itself</em>, and the two paragraphs after the frame are drawn at the
-	 * frame's x rather than on the margin - line parity 0.645 -> 0.548.  With it on, the
-	 * gain elsewhere is the same size (0.824 -> 0.960 and a page, on a document of 25
-	 * absolute frames) and no other document of the three corpora changes.</p>
+	 * <p>The frame Word applies is the <b>effective</b> one: a style may carry a
+	 * {@code w:framePr}, and its attributes inherit one at a time, so a paragraph stating
+	 * only {@code w:w="3600"} keeps its style's anchors and {@code w:x}/{@code w:y} (see
+	 * {@code StyleUtil.apply(CTFramePr, CTFramePr)} and
+	 * {@code PropertyResolver.hasDirectPPrFormatting}, both of which lost it before
+	 * 17.0.6).  On the letterhead above, that is what puts its address block at Word's
+	 * (68.1, 102.1) rather than in the flow.</p>
+	 *
+	 * <p>On by default ({@code docx4j.convert.out.fo.frames.position=false} turns it
+	 * off).  Corpus: three documents change and none falls - 0.804 -> 0.873 on one of 25
+	 * absolute frames, 0.824 -> 0.960 and Word's page count on another, 0.840 -> 0.848 on
+	 * a third.  The letterhead keeps its 20 of Word's 31 lines either way while its frames
+	 * move to where Word draws them (median dy 58.2 -> 22.4); its residual is its
+	 * page-anchored table, which {@link #anchorFloatingTables} declines to position
+	 * because content precedes it.</p>
 	 *
 	 * @since 17.0.6
 	 */
@@ -686,9 +694,17 @@ public final class WordLayoutFixups {
 		if (!framesEnabled()) return;
 		List<Element> framed = new ArrayList<Element>();
 		for (Element block : elements(doc, "block")) {
-			if (block.getAttribute(HINT_FRAME).length() > 0) framed.add(block);
+			if (block.getAttribute(HINT_FRAME).length() == 0) continue;
+			// only the outermost block of a frame: a block nested in another carrying the
+			// same hint would be positioned a second time, inside its own container
+			if (hasFramedAncestor(block)) {
+				block.removeAttribute(HINT_FRAME);
+				continue;
+			}
+			framed.add(block);
 		}
 		int i = 0;
+		java.util.Map<Node, Double> reservedTo = new java.util.HashMap<Node, Double>();
 		while (i < framed.size()) {
 			Element first = framed.get(i);
 			String spec = first.getAttribute(HINT_FRAME);
@@ -706,7 +722,7 @@ public final class WordLayoutFixups {
 			}
 			i = j;
 			try {
-				positionFrame(doc, group, spec);
+				positionFrame(doc, group, spec, reservedTo);
 			} catch (RuntimeException e) {
 				log.warn("Text frame left in the flow: " + e.getMessage(), e);
 			}
@@ -714,7 +730,16 @@ public final class WordLayoutFixups {
 		}
 	}
 
-	private static void positionFrame(Document doc, List<Element> group, String spec) {
+	/** Whether some ancestor of this block carries {@link #HINT_FRAME} too. */
+	private static boolean hasFramedAncestor(Element block) {
+		for (Node n = block.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			if (((Element) n).getAttribute(HINT_FRAME).length() > 0) return true;
+		}
+		return false;
+	}
+
+	private static void positionFrame(Document doc, List<Element> group, String spec,
+			java.util.Map<Node, Double> reservedTo) {
 		String[] f = spec.split(":", -1);
 		if (f.length < 11) return;
 		String hAnchor = f[0], vAnchor = f[1], xAlign = f[4], yAlign = f[5];
@@ -788,8 +813,54 @@ public final class WordLayoutFixups {
 			abs.setAttribute("start-indent", "0pt");
 			abs.setAttribute("end-indent", "0pt");
 			wrapper.appendChild(abs);
+			reserveBand(parent, after, group, f[9], top, reservedTo);
 			moveInto(abs, group);
 			parent.insertBefore(wrapper, after); // insertBefore(w, null) appends
+		}
+	}
+
+	/**
+	 * {@code w:wrap}: whether the body text may run beside the frame.  {@code notBeside}
+	 * and {@code none} say it may not, so Word skips the frame's band - the flow resumes
+	 * below it.  The band is reproduced by leaving an invisible copy of the frame's own
+	 * blocks where they were: they reserve exactly the height Word's frame occupies (FOP
+	 * honours {@code visibility="hidden"} - the area keeps its size and paints nothing),
+	 * which the frame's {@code w:h} does not give, since {@code w:hRule="auto"} is the
+	 * common case.
+	 *
+	 * <p>Measured on the corpus letterhead of {@link #positionFrames}: its seven
+	 * page-anchored frames tile the top of the page, and without the reservation the body
+	 * text moved up 125pt - Word starts it at y=310.2, where the frames end.  With it the
+	 * frames go where Word draws them <em>and</em> the flow keeps its place.</p>
+	 *
+	 * <p>{@code around}, {@code tight} and {@code through} - and the default,
+	 * {@code auto} - do let text run beside the frame, so they reserve nothing.</p>
+	 *
+	 * <p>What Word skips is the <b>union</b> of the frames' bands, not the sum of their
+	 * heights: the letterhead sets its frames out in pairs, two at {@code w:y=3743} and
+	 * two at {@code w:y=4821}, and Word's flow steps over each pair once.  A frame whose
+	 * top is not below the last one reserved in this flow therefore shares its band and
+	 * reserves nothing (reserving both put the body text 58pt too low).</p>
+	 */
+	private static void reserveBand(Node parent, Node after, List<Element> group, String wrap,
+			double top, java.util.Map<Node, Double> reservedTo) {
+		if (!"notBeside".equals(wrap) && !"none".equals(wrap)) return;
+		Double last = reservedTo.get(parent);
+		if (last != null && top <= last.doubleValue()) return;
+		reservedTo.put(parent, Double.valueOf(top));
+		for (Element block : group) {
+			Element copy = (Element) block.cloneNode(true);
+			copy.setAttribute("visibility", "hidden");
+			stripIds(copy);
+			parent.insertBefore(copy, after);
+		}
+	}
+
+	/** An id must not appear twice in the FO, so the invisible copy loses them all. */
+	private static void stripIds(Element el) {
+		el.removeAttribute("id");
+		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element) stripIds((Element) n);
 		}
 	}
 
@@ -1932,7 +2003,7 @@ public final class WordLayoutFixups {
 		return null;
 	}
 
-	private static String pt(double v) {
+	static String pt(double v) {
 		String s = String.format(java.util.Locale.ROOT, "%.2f", v);
 		if (s.endsWith("0")) s = s.substring(0, s.length() - 1);
 		if (s.endsWith("0")) s = s.substring(0, s.length() - 1);

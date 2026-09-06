@@ -2556,21 +2556,29 @@ public class StyleUtil {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createCTFramePr();
 			
-			destination.setDropCap(source.getDropCap());
+			/* w:framePr's attributes each inherit on their own: a paragraph whose direct
+			 * w:framePr gives only w:x/w:y keeps the anchors its style states.  Measured
+			 * on a Word letterhead whose "Adresse" style carries
+			 * w:framePr w:w=3629 w:vAnchor=page w:hAnchor=page w:x=1362 w:y=2042 and
+			 * whose paragraphs carry only w:framePr w:w=3600: Word draws them at
+			 * (68.1, 102.1) - the style's x/y, the paragraph's width.  Taking each of
+			 * these unconditionally from the source cleared the inherited value whenever
+			 * the more specific w:framePr omitted it.  @since 17.0.6 */
+			destination.setDropCap(source.getDropCap()==null ? destination.getDropCap() : source.getDropCap());
 			destination.setLines(apply(source.getLines(), destination.getLines()));
 			destination.setW(apply(source.getW(), destination.getW()));
 			destination.setH(apply(source.getH(), destination.getH()));
-			destination.setVSpace(apply(source.getVSpace(), destination.getVSpace())); 
+			destination.setVSpace(apply(source.getVSpace(), destination.getVSpace()));
 			destination.setHSpace(apply(source.getHSpace(), destination.getHSpace()));
-			destination.setWrap(source.getWrap());
-			destination.setHAnchor(source.getHAnchor());
-			destination.setVAnchor(source.getVAnchor());
+			destination.setWrap(source.getWrap()==null ? destination.getWrap() : source.getWrap());
+			destination.setHAnchor(source.getHAnchor()==null ? destination.getHAnchor() : source.getHAnchor());
+			destination.setVAnchor(source.getVAnchor()==null ? destination.getVAnchor() : source.getVAnchor());
 			destination.setX(apply(source.getX(), destination.getX()));
-			destination.setXAlign(source.getXAlign()); 
+			destination.setXAlign(source.getXAlign()==null ? destination.getXAlign() : source.getXAlign());
 			destination.setY(apply(source.getY(), destination.getY()));
-			destination.setYAlign(source.getYAlign());
-			destination.setHRule(source.getHRule());
-			destination.setAnchorLock(source.isAnchorLock());
+			destination.setYAlign(source.getYAlign()==null ? destination.getYAlign() : source.getYAlign());
+			destination.setHRule(source.getHRule()==null ? destination.getHRule() : source.getHRule());
+			destination.setAnchorLock(apply(source.isAnchorLock(), destination.isAnchorLock()));
 		}
 		return destination;
 	}

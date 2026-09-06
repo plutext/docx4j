@@ -57,6 +57,13 @@ public final class Fidelity {
 			org.docx4j.Docx4jProperties.setProperty(
 					"docx4j.openpackaging.package.MAX_UNCOMPRESSED_SIZE.unzip.error", "1073741824");
 		}
+		// any -Ddocx4j.xxx=yyy on the command line becomes a docx4j property, so a
+		// behaviour toggle can be measured without editing docx4j.properties
+		for (String name : System.getProperties().stringPropertyNames()) {
+			if (name.startsWith("docx4j.")) {
+				org.docx4j.Docx4jProperties.setProperty(name, System.getProperty(name));
+			}
+		}
 		switch (args[0]) {
 		case "generate":
 			Corpus.generate(new File(args[1]));
@@ -91,6 +98,7 @@ public final class Fidelity {
 		System.out.println("             and outDir/scoreboard.txt, and diffs against a previous scoreboard.csv.");
 		System.out.println("       -Dfidelity.only=id,id       restricts render/compare/run/score to those documents");
 		System.out.println("       -Dfidelity.timeoutSeconds=N per-document conversion timeout in score (default 120)");
+		System.out.println("       -Ddocx4j.xxx=yyy            sets that docx4j property, to measure a behaviour toggle");
 	}
 
 	public static void render(File corpusDir, File pdfDir) throws Exception {
