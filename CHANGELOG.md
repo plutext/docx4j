@@ -1,71 +1,52 @@
 CHANGELOG
 =========
 
-Version 17.0.6
+Version 17.1.0
 ===============
 
-Changes in Version 17.0.6
+Release date
+------------
+
+7 September 2026
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Fable 5.1 supervising Opus 5.
+
+Changes in Version 17.1.0
 --------------------------
 
-PDF via XSL FO:
-- a justified line ending in a soft return (w:br with no type) is now justified, as Word
-justifies it unless w:compat/w:doNotExpandShiftReturn is set
-(docx4j.convert.out.fo.wordLayout.justifySoftReturn=false restores 17.0.5's behaviour)
-- the w:settings/w:compat layout switches are now read: w:doNotExpandShiftReturn,
-w:splitPgBreakAndParaMark, w:suppressSpBfAfterPgBrk, w:noTabHangInd and
-w:allowSpaceOfSameStyleInTable (resolved, but measured to change nothing in Word 365 and so not applied) each switch the rule they govern
-- new org.docx4j.model.CompatibilityOptions resolves a w:compat flag as Word does: the
-document's value where it states one, else the value its compatibilityMode implies (for
-the legacy flags, measured, that is off - the mode says what Word writes, not what its
-engine applies to a document which leaves the flag out)
-- a numbered paragraph is laid out on its effective indent whether its own w:numPr or its
-style brought the numbering, and a numbering level's own w:ind is no longer read from a
-paragraph style its w:pStyle merely names
-- a continuous section break which changes the page size or orientation now starts a page,
-as Word does, instead of merging onto the previous section's page master
-- an empty paragraph is measured in its paragraph mark's font, not in FOP's base-14
-Helvetica: 137 of 449 test renders had one, each 10.2pt short per line
-- a bullet stated as a code point of a symbol font is drawn as the glyph rather than as
-FOP's not-found box, where run font selection did not map it
-- arrows, box drawing, geometric shapes and dingbats (U+2190-U+2BFF) set in a text font
-without the glyph are drawn in a substitute that has it, instead of as FOP's not-found box:
-the range was looking for one Windows-only face and, failing it, named no font at all
-- a keep-with-next chain taller than a page no longer runs off the bottom of one page: its
-keeps become breakable, as Word drops a keep it cannot satisfy
-(docx4j.convert.out.fo.wordLayout.boundKeepChains=false restores FOP's behaviour)
-- w:tblCellSpacing is no longer subtracted twice from a content-autofit column's width
-- a block whose only content is a small-caps run takes its line height from the run's
-declared size, as Word does, not from the 80% inline the glyphs are drawn at
-- the /Widths a simple font writes are now correct at the codes where FOP's width table and
-the encoding the PDF declares disagree (grave and small tilde)
-- text is measured with the font's rounded glyph advances, as Word measures it.  FOP
-truncates each advance to 1/1000 em, which ran every line up to 0.1% narrow and broke lines
-Word keeps; the PDF's /Widths are corrected with them, so they are now Word's own
-(docx4j.convert.out.fo.glyphWidths.round=false restores FOP's)
-- a vertically aligned section whose content ends with a table now aligns the empty
-paragraph after the table with it, as Word does
-- automatic hyphenation now follows the document's own settings and Word's rules:
-w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit, w:doNotHyphenateCaps and
-w:suppressAutoHyphens.  FOP still needs hyphenation patterns, which docx4j does not ship;
-docx4j.convert.out.fo.hyphenate now overrides the document (true: all, false: none)
-- documents which failed to export at all now export: a repeated bookmark name (which Word
-allows, FOP does not) is given an id only once; and an anchored picture's fo:float is moved
-to flow level where a line break inside a run follows it, a combination which threw
-NullPointerException in FOP's BlockLayoutManager
-- a picture FOP cannot paint (EMF, or bytes which are no image at all - Word stores the web
-server's error page when a linked picture cannot be fetched) now reserves the space the
-document declares for it, instead of collapsing and moving everything below it up the page.
-One line is logged per document rather than an error per picture.  Set
-docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable to
-convert such a picture with ImageMagick/GraphicsMagick and paint it (density:
-docx4j.convert.out.fo.pictures.convertDensity, default 300).  PNG, JPEG (baseline,
-progressive and CMYK), GIF, BMP, TIFF, EPS, SVG and WMF are painted as before, with no extra
-ImageIO plugin
-- WMF, EMF and EMF+ pictures are now drawn, in pure Java, as vectors: docx4j replays the
+Labeled 17.1.0 because:
+
+- New public surfaces: 
+  - two new exported packages (org.docx4j.org.apache.poi.hwmf and .hemf), MetafileRenderer, the parts' toSVG/toPNG API, 
+  - Docx4J.updateToc and FLAG_EXPORT_UPDATE_TOC
+  - CompatibilityOptions. 
+- Dependency changes: wmf2svg is gone from docx4j-core; batik-svggen and batik-gvt are added to docx4j-export-fo; the module descriptors changed accordingly. 
+- Substantial improvements to PDF via XSL FO, including default behaviour changes
+
+Further substantial improvements to PDF via XSL FO - far too many to itemise here, but
+includes tab support and better handling of text boxes etc etc.  Each rule, with the
+Word measurement behind it, is in docx4j-export-fo/docs/word-layout-rules.md; the
+document settings it depends on are in docx4j-export-fo/docs/word-layout-settings.md.
+Every rule which changes the default output has an opt-out property, documented in
+docx4j-samples-resources/src/main/resources/docx4j.properties and in
+word-layout-rules.md section 1.5.
+Many fixes in other parts of docx4j to achieve this.
+
+Apache POI 5.5.1's HWMF/HEMF (WMF/EMF/EMF+ parsing and Graphics2D rendering) repackaged
+into org.docx4j.org.apache.poi.{hwmf,hemf}, and wired into the PDF and HTML output (CR-011
+phases 1 and 2)
+- docx4j wmf2svg dependency is dropped
+
+WMF, EMF and EMF+ pictures are now drawn, in pure Java, as vectors: docx4j replays the
 metafile's GDI records (repackaged Apache POI HWMF/HEMF) onto Batik's SVGGraphics2D and puts
 the SVG in an fo:instream-foreign-object.  Their text stays text in the PDF, so an equation
 or chart preview is searchable.  Inline, anchored and VML w:pict pictures alike; the
-ImageMagick and transparent-placeholder fallbacks above now apply only to a metafile the
+ImageMagick and transparent-placeholder fallbacks now apply only to a metafile the
 renderer cannot draw (CR-011 phase 2)
 - FOP could not paint SVG at all: batik-gvt was excluded from docx4j-export-fo's
 dependencies, so an fo:instream-foreign-object holding SVG came out blank.  Restored
@@ -74,362 +55,13 @@ MathType equation, an embedded workbook or Visio drawing, an OLE icon) is now re
 Word draws it.  Neither FO exporter matched w:object before, so the preview was dropped
 unless the document wrapped it in w:pict; the HTML exporters gain it too (CR-011)
 
-- a table whose cells declare widths of their own is now laid out on its w:tblGrid, not on
-row 1's w:tcW: Word treats a cell width as a preferred one, and row 1 is often stale or
-partial (one table came out 404.4pt wide against Word's 729pt, wrapping every cell)
-- w:pgMar/@w:gutter is no longer added to the left margin of a landscape section, nor taken
-off its text column: measured against Word, which applies it to portrait sections only
-- malformed nesting some producers write and Word renders - a w:r directly inside a w:r, a
-w:p directly inside a w:r or a w:hyperlink - is no longer discarded on load: the content is
-hoisted into the legal position around it (one document recovered 412 lines)
-- a floating table below compatibility mode 15 with no w:tblpX is no longer refused its
-float by the grid-edge shift, which is about the grid rather than where Word puts the frame
-- docx4j.convert.out.fo.wordLayout.tocStretchingLeader=false lays a table-of-contents
-entry's tabs out against its stops, so its dots get Word's grid phase; the default is still
-the stretching leader, since the two measure the same against Word
-- an autofit table (no w:tblW of its own, no fixed layout) whose w:tblGrid is far wider than
-the text column is now fitted to it, as Word refits such a grid; a grid up to a quarter over
-still overhangs the margin, as Word draws it
-- a paragraph whose runs produced nothing to put on a line - an empty w:t, or a run holding
-only an anchored picture - now gets the empty line Word gives it
-- an absolutely positioned VML picture (w:pict/v:shape with position:absolute) is now placed
-where Word places it, instead of taking a line at the end of its paragraph
-- a borders/shading container no longer keeps space-before or space-after which the spacing
-rules removed from the paragraphs inside it
-- w:pageBreakBefore inside a table now applies to the table, as it does in Word: taken where
-it opens the table, ignored anywhere else in it
-- w:sectPr/w:vAlign ("center", "both", "bottom") is now applied, as display-align on the
-region body
-- font substitutes: Verdana now prefers DejaVu Sans, Comic Sans MS Noto Sans, and Georgia,
-Book Antiqua and Palatino Linotype P052 - each measured 8-15% closer to Word's line widths
-than the Arial or Times clone they had
-- a font this machine does not have is now resolved through the w:altName the document's own
-fontTable.xml gives it (ECMA-376 17.8.3.1), as Word does, before the class-based fallback;
-its line metrics come from the alternate too (docx4j.fonts.altName.enabled=false to skip)
-- a floating table (w:tblPr/w:tblpPr) now goes where Word puts it horizontally (its grid
-edge at w:tblpX, or centred/right within the page or the text column per w:tblpXSpec); one
-anchored to the page or the margin box which opens its section - a cover page or a
-letterhead - is also placed vertically, out of the flow.  Set
-docx4j.convert.out.fo.tables.position=false for the old behaviour
-- a section whose w:cols declares columns of different widths (w:equalWidth="0") is now
-rendered as a one-row table whose cells are the columns, divided where the document's
-w:br w:type="column" divides them; XSL FO's own columns are all the same width
-- a floating table anchored to the text (w:tblpPr with the default w:vertAnchor="text") now
-floats, with the text running beside it as it does in Word, w:leftFromText/w:rightFromText
-away; one too wide for text to fit beside it, or in a multi-column section, stays in the
-flow.  Set docx4j.convert.out.fo.tables.float=false for the old behaviour
-- a page- or margin-anchored floating table which opens a page, and is narrow enough for
-text to fit beside it, is now positioned at its anchor as one which opens a section is: Word
-puts the text that fits above the frame at the top of the page, not below the table
-- a page- or margin-anchored floating table which content precedes, too wide for text
-beside it and anchored in the lower half of the page, is now positioned at its anchor with
-its band reserved in the flow, so what follows is pushed past it as Word pushes it
-(docx4j.convert.out.fo.tables.reserveBand=false leaves it in the flow)
-- an empty paragraph carrying a hard page break before an out-of-flow object - a floating
-table or a picture Word positions itself - no longer takes a line at the top of the new page
-- unequal columns which the document does not divide with a w:br w:type="column" are now
-divided by estimated line count, as Word balances them, rather than falling back to XSL FO's
-equal columns; and the half of a divided paragraph which opens the next column now takes the
-line Word gives it even when the break ends the paragraph
-- a merged run of continuous sections whose page margins differ now builds its page masters
-on the part whose columns need the widest text column, and a negative end-indent on a table
-no longer widens every paragraph in its cells past the cell's edge
-- a line holding a tab is now aligned by the paragraph's w:jc, the tab's own width counted
-in, as Word aligns it; the tab is still sized as if the line began at the left indent.  Such
-lines were drawn flush left whatever the w:jc
-- a tab now draws the leader (w:leader dot, hyphen, ...) of the stop it reaches, decided
-when the line is laid out; the n-th tab used to take the n-th stop's leader, so a table of
-contents whose entries have fewer tabs than stops, or trailing ones, lost its dots
-- a centre, right or decimal tab stop beyond the right indent is now clamped so that the
-text it aligns ends on the indent, as Word clamps it, rather than overflowing and wrapping
-(a left stop beyond the indent is still honoured)
-- a right, centre or decimal tab whose text ends in a page reference now puts the number on
-the stop: FOP measures an unresolved fo:page-number-citation as "MMM", and the width it
-gives up when it resolves is now taken from the tab
-- a PAGEREF or table-of-contents field whose bookmark the document no longer contains now
-keeps the result Word cached for it, in PDF and HTML alike; the reference resolved to
-nothing and the page number was painted as nothing at all
-- a tab which can reach no stop before the end of the text column now breaks the line, as
-Word breaks it, and is measured again from the start of the next one; the text after it used
-to run into the margin (a stop beyond the paragraph's right indent is still honoured, and a
-tab whose stop draws a leader still fills the line)
-- a tab's leader dots now sit on the grid Word draws them on, fixed to the reference area,
-so a dot leader opens with a gap of less than one dot instead of starting on the text
-- a page break at the end of a section no longer costs a blank page: the section which
-follows starts one anyway.  A break at the end of the document keeps its page, as in Word
-- a cell in a table whose columns docx4j sized from their content now fits the line that
-sized the column, instead of re-breaking it: Word's fit width is the column less the cell
-margins, the borders not taken off
-- automatic hyphenation, measured against Word 365's own PDFs: w:hyphenationZone does not
-in fact stop Word hyphenating, so it is no longer applied (docx4j.convert.out.fo.wordLayout
-.hyphenationZone=true restores it); a longer hyphenation fragment buys much less space
-compression than a whole word does (docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink,
-default 0.10); and a word in capitals now breaks where its lower-case form breaks, FOP's
-pattern lookup being lossy for capitals
-- whitespace a paragraph begins with is now painted, as Word paints it: turning
-white-space-collapse off is not enough, since FOP deletes whitespace at the start of a block
-- the empty line an empty paragraph gets no longer makes the positioned pictures and text
-boxes inside that paragraph keep their own leading whitespace (white-space-treatment is an
-inherited property)
-- an inline picture's size is no longer rounded to a whole point, and a line holding only a
-picture is now the picture's height, with no descent below it
-- bold and italic are now found for a substituted font family (DejaVu Sans, Noto Sans, P052,
-Carlito, the Liberation and URW families), so a bold run is no longer set in the regular
-face's widths - it was 11-18% narrow
-- the table grid edge Word uses below compatibility mode 15 (the first column's text on the
-margin + w:tblInd) is now applied in modes 11 and 12 as well as 14, capped at w:tblInd below
-mode 14 so the grid never starts left of the margin, and not applied to a table nested in a
-w:tc: Word puts a nested table's grid edge on the containing cell's content edge
-- the w:p OOXML requires after a nested table in a w:tc now takes no line, as in Word,
-including the shape Word writes it in - a paragraph holding a run whose text is empty
-- w:contextualSpacing now cancels the space at a cell's edges for a cell holding a single
-paragraph, which was never examined
-- w:pgMar w:bottom="0" no longer reserves w:footer as the bottom margin where the section
-has no footer part
-- a hard page break which follows content in its own paragraph now breaks the page where it
-is, not before the paragraph: Word leaves the text (or picture) before it on the page it is
-on
-- text in an absolutely positioned text box is no longer aligned or indented by the
-paragraph the box is anchored in, and pagination properties (w:pageBreakBefore, keep-*)
-inside a text box are dropped: FOP paints only the last of a run of positioned containers
-which carry a page break
-- a metrically compatible substitute is now used only for the characters it can draw:
-Caladea, which stands in for Cambria, has no Greek and no Cyrillic, so a Greek document set
-in Cambria came out 48% notdef
-- w:w character scaling is now applied, as a measured letter-spacing: FOP cannot scale text
-horizontally, but the run's total advance - which is what decides where the lines break -
-is reproduced exactly
-- the line height of a document font docx4j has no metrics for, and Windows itself
-substitutes, now comes from the font Windows substitutes: a Helvetica document's lines were
-24.6% too tall, having taken the substitute's own OS/2 win metrics
-- Sylfaen's Georgian now uses DejaVu Serif Condensed, measured 10% closer to Word's line
-widths than DejaVu Serif
-- whitespace a paragraph begins with is now a leader of its measured width rather than
-whitespace preserved on the block, which also kept the space at every line-wrap point and
-moved every wrapped line 3-5pt right
-- HTML auto spacing (w:beforeAutospacing) is now dropped at the top of a page-sequence, as a
-margin collapses at the top of an HTML body; an explicit w:spacing w:before is still applied
-there
-- documents which failed to export at all now export: a table cell whose every paragraph is
-hidden text no longer produces an empty fo:table-cell, which is invalid FO; and a line
-broken beside a wide fo:float no longer throws NullPointerException (FOP 2.11's
-LineLayoutManager reads a null layout manager when reporting the overflow)
-- a square/tight-wrapped anchored picture inside a table cell (or a header, footnote or
-multi-column region, where FOP has no working fo:float) is now positioned where Word puts it
-when it is narrower than 60% of the cell, instead of reserving its full height; two such
-pictures in one cell no longer stack their reservations
-- a square/tight-wrapped picture which leaves no room beside it (over 90% of the column) is
-no longer given to fo:float: Word puts the text below it, and two full-page pictures were
-being drawn on top of each other at the foot of one page instead of on a page each
-- a picture is now drawn filling the frame the document declares (wp:extent), as Word draws
-it: FOP's uniform scaling left a picture whose crop or stretch changed its aspect ratio
-smaller than the document asks for, which re-paginated documents full of photographs
-- a row of w:trHeight w:hRule="exact" is now exactly that tall, borders included as Word
-counts them: FOP added the cell's border on top of the height, making every such row half a
-point too tall (16pt over a page of 32 rows)
-- a paragraph whose only content is an inline picture is now the picture's height even when
-the paragraph already has a line box of its own, and a line-spacing multiple is no longer
-charged against the picture
-- a header's or footer's height now includes its last paragraph's space-after, as Word
-measures it, so the body no longer starts that much too high nor ends that much too low
-- a cell's last paragraph now keeps its space-after below compatibility mode 15 as well as
-at 15, which is what Word does
-- a negative w:pgMar w:top (or w:bottom) is now honoured: Word starts the body |top| from the
-page edge and lets the header overlap it
-- w:pgMar w:gutter is now added to the left margin (to the top with w:gutterAtTop, and to the
-right of an even page with w:mirrorMargins)
-- a section whose w:cols declares a single w:col narrower than the margin box now uses that
-width for its text
-- a PAGE or NUMPAGES field whose w:fldChar begin, w:instrText and w:fldChar separate share
-one run - which is how Word writes a page number in a footer, in a content control or not -
-is now a live fo:page-number instead of the field's cached result painted on every page
-- a NUMPAGES in any section but the last now takes the 2-pass path, since FOP cannot resolve
-a forward fo:page-number-citation-last and painted nothing
-- a hard page break in a paragraph inside a w:sdt is now handled as one at body level is:
-the preprocess pass only walked the body's own children, so a break inside a table of
-contents or a cover page stayed nested in an fo:inline, where FOP ignores it
-- a run of consecutive paragraphs whose borders are identical is one box, as Word draws it:
-a shading change inside the run no longer repeats the border and its w:space, which added
-3pt of height at each change (and 3pt to a lone paragraph carrying both a border and
-shading)
-- a numbering instance's own level definition (w:num/w:lvlOverride/w:lvl) now supplies the
-list's indent; only the abstract level was read, so an overridden indent was lost and the
-label took its width from a tab stop instead - one list label came out 453.6pt wide.  PDF
-and HTML
-- where a list label's width does come from the paragraph's tab stops, a w:val="clear"
-entry is no longer counted as a stop (it removes one), and the nearest stop past the label
-is taken whatever order w:tabs states them in
-- an anchored picture or a text box which Word wraps text around is now positioned where
-Word puts it, rather than floated or reserved, when it is in a multi-column section: FOP
-paints nothing at all for an fo:float in a multi-column region, and a reservation is charged
-to the column the anchor is in - where Word draws the object in the column it occupies, and
-wraps the text beside it there.  A picture Word puts in a later column no longer pushes the
-first column's text down by its height
-- w:isLgl (Word's "legal style numbering") is now applied at whatever level states it, and
-to every level the number inherits rather than to %1 alone: "3.6.2." where docx4j printed
-"III.6.2.".  The level carrying it keeps its own w:numFmt, as Word does.  PDF and HTML
-- a numbering level whose w:rPr names no font (Word writes w:rFonts with only a w:hint)
-now leaves the label in the paragraph's own font instead of resetting it to the document
-default
-- the Wingdings check mark (0xFC) is U+2713, not U+2714, as Word's own PDF output shows
-(PDF and HTML)
-- a hard page break inside a numbered paragraph now breaks before the whole list block, and
-the paragraph's space-before is applied at the top of the new page as Word applies it
-- a w:br w:type="column" in a section whose columns are equal is now taken: the paragraph is
-divided at the break, as it already was for columns of different widths, and the half after
-it opens the next column.  It was emitted as an ordinary line break
-- a numbering level's w:rPr now formats the number alone (ECMA-376 17.9.24) instead of the
-whole paragraph: a level w:b no longer sets the item's text bold
-- a centred or right-aligned numbered paragraph now draws its number on the line with the
-text, centred (or right-aligned) with it as Word draws it, rather than in the list block's
-own column at the list indent
-- a paragraph which begins with an anchored picture, a text box or a floating table now
-keeps its first-line indent: the object's wrapper is block-level, and FOP indents no
-anonymous block after one
-- a run's character spacing (w:spacing) is now measured once: FOP adds the letter space to a
-word space twice, and counts one letter space fewer per word than Word, so a line of
-letter-spaced runs came out 11pt wide of Word's
-- a justified line is compressed to pull one more word onto it only where the line it would
-otherwise leave is very loose; being inside the shrink cap is not enough
-(docx4j.convert.out.fo.wordLayout.minStretchToCompress, default 0.30)
-- the header/footer extent pre-pass no longer leaves half-page regions behind when it fails:
-the extents fall back to nothing.  A document whose w:docDefaults hide every run (w:vanish)
-no longer produces the empty fo:flow which made it fail - 3 Word pages had come out as 35
-- margin-top/margin-bottom on a shading container no longer cancels the paragraph's
-space-before/space-after, which FOP lets the shorthand win over
-- a w:br which opens a paragraph now takes a line of its own, as one which ends it does
-- w:tblBorders is now resolved per cell: top/bottom/left/right apply to the table's edges and
-insideH/insideV between cells.  The outer definition used to go on every cell, so a table
-whose outer borders are nil lost the rules its insideV draws
-- a section with no header part no longer reserves w:header as its top margin; likewise the
-footer distance where docx4j invents an empty part for w:titlePg or w:evenAndOddHeaders
-- w:numId w:val="0" now takes the paragraph out of the list entirely (ECMA-376 17.9.18): the
-level's indent no longer applies, only the paragraph's own w:ind
-- Word breaks before a word which begins with "/", where UAX #14 forbids it; the space in
-front of such a word is no longer unbreakable.  The rule that Word does not break after a
-"/" is unchanged
-- a borders/shading container no longer passes its first paragraph's indents to the
-paragraphs which follow it inside the container
-- font substitutes: Arial Black now prefers Noto Sans Black (1.11x Arimo, against Word's
-1.13x) and Tw Cen MT is treated as the sans it is instead of falling through to Times
-- a list label wider than its hanging indent no longer overprints the text: as in Word the
-text starts at the first tab stop past the label, or after one space (w:suff)
-- a NUMPAGES field now takes the 2-pass path wherever it appears, so the count is written as
-a literal: FOP reserves the width of "MMM" for an unresolved fo:page-number-citation-last,
-which wrapped a footer line Word keeps on one and cost the body 53.5pt on every page
-(docx4j.convert.out.fo.twoPassForNumpages=false to keep the single pass)
-- the table grid edge below compatibility mode 15 is now taken whatever w:tblInd is: it was
-capped at w:tblInd below mode 14, which put a table with a negative indent, or with none, one
-cell margin right of Word.  A content-autofit table's grid is one cell margin wider than the
-text column at each end, since it is the cell content Word fits to the column
-- consecutive hard page breaks now each cost a page, as in Word, so the material between two
-of them - a paragraph mark - is a page with nothing on it; a w:pageBreakBefore paragraph after
-a page break still costs none.  Two page breaks at the head of a paragraph in a table cell are
-ignored, where one still opens the table on a new page
-- a picture-only paragraph at a line-spacing multiple now gets the leading Word gives it,
-(multiple - 1) x the paragraph font's own pitch, rather than none
-- a paragraph's w:framePr is now honoured where the frame is anchored to the page or to
-the margin: it becomes a positioned block-container at w:x/w:y of width w:w, consecutive
-paragraphs carrying the same w:framePr forming one frame, and where w:wrap lets no text run
-beside it (notBeside, none) the flow keeps the frame's band.  On by default
-(docx4j.convert.out.fo.frames.position=false turns it off)
-- a text-anchored w:framePr frame narrow enough for text beside it is now an fo:float at
-its w:x, with the following text flowing past it w:hSpace/w:vSpace away, as Word draws it;
-wider frames, and those with no w:w, stay in the flow
-- w:dropCap is now drawn as Word draws it: the cap floats at the start of the paragraph
-that follows, spanning w:lines of its lines (w:dropCap="margin" hangs it in the margin)
-- a rotated table cell (w:textDirection) now gets the dimensions a turned reference area
-needs - the cell's content width and the row's height - so its text is painted inside the
-cell instead of past the page edge, and the row is not inflated
-- a table in a header or footer now takes its table style's w:pPr and w:rPr, as a table in
-the body does: a letterhead table's paragraphs were spaced by docDefaults, which made the
-header too tall on every page
-- a header or footer part holding one empty paragraph - which is what Word writes for one
-you have cleared - now reserves nothing, as Word reserves nothing for it: the header/footer
-distance alone no longer moves the body
-- an anchored (floating) drawing in a header or footer no longer counts towards that
-region's height: Word positions it out of the flow (set
-docx4j.convert.out.fo.headerExtent.ignoreFloatingObjects=false for the old behaviour)
-- the first paragraph of a header or footer now keeps its space-before, which XSL FO's
-default conditionality discards at the start of a reference area
-- a text box's inset now puts its text inside the shape: an explicit start-indent of 0 on
-the positioned container threw the inset away and every line began on the border edge; and
-a text box at a negative horizontal offset is no longer clamped to the column edge
-- a paragraph whose only line content is one inline picture now takes the picture's line
-where a tab or an anchored picture shares the paragraph with it
-- w:spacing character spacing and w:w character scaling now combine on the same run: the
-scaling, which travels as letter-spacing on the inner font inline, replaced the spacing
-- w:contextualSpacing now pairs two paragraphs which state no w:pStyle (both are of the
-default style); at a cell's top and bottom edges it applies only where the cell holds a
-single paragraph, since Word applies the last of several paragraphs' space-after there
-- a section whose w:pgNumType/@w:start XSL FO forbids (0, Word's "page 0" cover page) now
-gets its odd and even page masters swapped, so its headers land on the side Word puts them:
-FOP clamps initial-page-number to 1, which inverted the odd-or-even selection.  The printed
-PAGE number is still one too high; nothing in XSL FO offsets fo:page-number
-- w:settings/w:mirrorMargins: an even (left-hand) page now takes w:pgMar/@w:left as its
-right margin, as Word does, instead of the same margins as an odd page
-- w:tblPr/w:jc="center" now centres a table narrower than the text column, not only one
-wider than it
-- a space in front of a PAGE or NUMPAGES field is no longer collapsed away by FOP
-- w:pgNumType/@w:fmt now reaches the page sequence: a PAGE field's \* switch which names no
-number format (a bare PAGE, or \* MERGEFORMAT) no longer masks the section's own format
-- an empty footer *part* still stops the body at w:pgMar/@w:footer, as Word does; only a
-document with no footer part at all reserves nothing.  A footer distance past a quarter of
-the page is ignored, as Word ignores it
-- a section declaring a single w:col *wider* than its margin box now uses that width, and
-overhangs the right margin as Word does (the other half of the narrow-column rule)
-- the content-autofit column sizer now reads a cell's own w:tcMar, not only the table's
-w:tblCellMar, so a line which sized its column still fits in it
-- a w:br whose new line holds nothing that paints - an empty run, a field with no result -
-now takes a line box, as Word gives it; docx4j.convert.out.fo.wordLayout.emptyLineAfterBreak
-turns this off
-- a justified line holding a tab is stretched again where text follows the last tab, which
-is what Word does; only a line whose tab absorbs the slack is laid out from the start
-- a table-of-contents entry's stretching leader now ends on the entry's own right dot stop
-where that lies outside the text column, overhanging the margin as Word does
-- wp:anchor/@behindDoc="1": a picture Word draws behind the text no longer displaces it
-- Cambria's Greek is now set in P052, measured at 1.0281 x Tinos-Bold against Word's 1.0834
-(Caladea, Cambria's metric twin in Latin, has no Greek at all)
-- a DATE, TIME or PRINTDATE field is now formatted in the document's own language
-(w:docDefaults/w:rPrDefault/w:rPr/w:lang), and an abbreviated month name loses the trailing
-period the format string supplies
-- a w:br w:type="page" inside a table cell is now ignored wherever it stands, as Word
-ignores it; only w:pageBreakBefore on the paragraph which opens the table moves the table
-- a collapsed cell border no longer costs the cell's text measure anything, in a
-grid-sized table as well as a content-sized one, which is how Word measures it; a separate
-border (w:tblCellSpacing) still costs one, as it does in Word
-- a w:tblW in pct is now the width the table gets, its w:tblGrid scaled to it: a
-percentage over 100 overhangs the right margin as Word draws it, and a w:tblInd does not
-come off the percentage
-- a numbering level which names a paragraph style (w:pStyle in w:lvl) now numbers only
-that style: a paragraph reaching it through another style's w:numPr gets no label and is
-not counted, as in Word.  A numbered paragraph's label now sits on the effective indent,
-so a style stating a w:ind beside its w:numPr keeps it, and w:numId 0 takes the level's
-indent away with its label (HTML too)
-- a section with w:vAlign now counts its last paragraph's space-after inside the block it
-aligns, as Word does; w:vAlign="both" is laid out from the top of the text area rather
-than centred, XSL-FO having no vertical justification
-
-HTML output, visitor pathway (the default):
-- a line break in the middle of a run no longer ends the run: text after it keeps the run's
-formatting (and no longer logs "null currentSpan!")
-
 HTML output:
-- a hard page break which follows content in its own paragraph now breaks the page where it
-is, as in the PDF output above
 - WMF, EMF and EMF+ pictures are now drawn: as an inline <svg> where the image handler
 embeds images in the document (a data URI handler, and docx4j-export-fo is on the classpath
 for the SVG generator), otherwise as a PNG put through that same handler.  Until now the
 <img src> named the .wmf/.emf, which no browser shows (CR-011 phase 2)
 
 Other:
-- fields: a DOCPROPERTY now keeps the result the document cached, which is what Word paints
-until the field is updated; docx4j.convert.out.fields.docPropertyCachedResult=false
-evaluates the property instead
-- fields: a legacy form field now paints the state its w:ffData holds, as Word does - a
-FORMDROPDOWN the w:listEntry its w:result selects, a FORMTEXT with nothing typed into it its
-w:default; both were rendered as nothing.  PDF and HTML;
-docx4j.convert.out.fields.formFieldResults=false restores the old behaviour
 - loading: malformed nesting (a w:r or a w:p directly inside a w:r) now *splits* the outer
 run rather than flattening its content into it, so each nested run keeps its own w:rPr and
 the lone-space runs between words survive
@@ -440,71 +72,7 @@ unpack to 95MB trips the 50MB default
 - Docx4J facade: Docx4J.updateToc(pkg[, skipPageNumbering]) updates a document's table of
 contents in place (returning false if it has none), and Docx4J.FLAG_EXPORT_UPDATE_TOC does
 it as part of toPDF/toFO (with page numbers) or toHTML (without)
-- StyleUtil: a w:tblPr/w:tblpPr whose only properties were an anchor or a *Spec was treated
-as empty, so a floating table lost its position when the effective table style was built
-- PropertyResolver: w:suppressAutoHyphens is now applied as direct paragraph formatting
-- StyleUtil: a paragraph's w:tabs now merge with the stops it inherits instead of replacing
-them (ECMA-376 17.3.1.38), and a w:val="clear" removes the inherited stop at that position
-rather than being copied through as a stop of its own
-- the tbl-p-style-fix preprocessing step (ConversionFeatures.PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX)
-now covers header and footer parts as well as the body
-- a word too long for a line of its own is now broken inside it, at the last character
-that fits, as Word breaks one: FOP offers no break inside such a word, so a long token or
-a rule of underscores was painted whole, off the page.  Word moves the word to a line of
-its own first, and does not break one that overruns by less than an inch (nor do we, since
-a narrower overrun is usually a column docx4j fitted too tightly).  Turn it off with
-docx4j.convert.out.fo.wordLayout.emergencyBreak=false
-- a tab which begins a paragraph and reaches a right, centre or decimal stop is now laid
-out against that stop: it was advanced to the stop's own position, so the text after it
-began where Word ends it
-- a run with no w:rPr now keeps the size its style chain gives it, instead of taking the
-size of whichever run owns most of the paragraph's text (a paragraph mark's w:sz, in
-particular, sizes the mark alone)
-- docx4j.fonts.wordLineMetrics.deviceGrid=true rounds a font's single line height to Word's
-600 dpi layout grid (Carlito at 11pt is 13.44pt, not 13.428), which is what Word does.  Off
-by default: measured over a 156-document corpus it moves page breaks and costs more than
-the 0.02pt a line it wins
-- HeaderFooterPolicy.reservesNothing(part) reports whether a header or footer takes any
-space on the page: the part docx4j invents for w:titlePg / w:evenAndOddHeaders, or a real
-one holding a single empty paragraph
-- PropertyResolver: a paragraph whose only direct formatting is a w:framePr (a Word text
-frame) no longer loses it from getEffectivePPr
-- StyleUtil: w:framePr's attributes now inherit one at a time, so a paragraph stating only
-w:w keeps the anchors and w:x/w:y its style gives; w:wrap, the anchors, the aligns, w:hRule
-and w:dropCap were taken from the more specific frame even when it did not state them
-- StyleUtil: w:beforeAutospacing="0" / w:afterAutospacing="0" in direct formatting now
-switches off the style's "1"; XJC's getters cannot tell an absent attribute from a false
-one, so org.docx4j.wml.AutospacingAccess reports the three states
-- Apache POI 5.5.1's HWMF/HEMF (WMF/EMF/EMF+ parsing and Graphics2D rendering) repackaged
-into org.docx4j.org.apache.poi.{hwmf,hemf}, and wired into the PDF and HTML output (CR-011
-phases 1 and 2)
-- metafile conversion API: MetafilePart.toPNG(dpi)/toPNGBytes(dpi) (WMF and EMF alike), and
-toSVG() reimplemented over HWMF - unchanged signature, but it now needs docx4j-export-fo on
-the classpath, for Batik's SVGGraphics2D.  org.docx4j.model.images.MetafileRenderer is the
-entry point for drawing a metafile onto any Graphics2D
-- the wmf2svg dependency is dropped: it had no EMF support, and the docx4j code calling it
-was unreachable
-- ConversionImageHandler.isInline() (a default method) says whether a handler embeds images
-in the output rather than writing files; it decides how a metafile is represented in HTML
-- an IF field with no w:fldChar w:fldCharType="separate" has no result (ECMA-376 17.16.18)
-and now paints nothing, as Word paints nothing for it: its branches are field instruction,
-and we were painting the operands' own PAGE and NUMPAGES fields and reserving the true
-branch's height.  PDF and HTML; docx4j.convert.out.fields.dropResultlessIf=false restores
-the old behaviour
-- mc:AlternateContent: docx4j.jaxb.mc.preferChoice names the mc:Choice/@Requires prefixes
-we can draw, and the first mc:Choice naming only those is then rendered rather than the
-mc:Fallback, as Word renders it (PDF and HTML, and the unmarshalling preprocessor).  It
-ships empty - always the fallback, as before - because that measured better: of the 25
-corpus documents carrying an mc:Choice Requires="wps", choosing it moved two and both fell,
-its box landing within 0.6pt of the fallback's in each
-- the leading and trailing white space of a w:t with no xml:space="preserve" is no longer
-rendered: XML makes it insignificant without the attribute and Word writes the attribute
-whenever the space matters.  The rule is in the w:t emission path, so loading and saving a
-document is unchanged; docx4j.fonts.runFontSelector.trimUnpreservedWhitespace=false
-restores the old behaviour.  PDF and HTML
-- StyleUtil: a w:ind stating w:firstLine now clears an inherited w:hanging and vice versa -
-they are two spellings of one property (ECMA-376 17.3.1.12), and merged attribute by
-attribute the inherited hanging won
+
 
 
 Version 17.0.5
