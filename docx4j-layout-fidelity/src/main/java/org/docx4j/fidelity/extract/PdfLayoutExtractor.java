@@ -69,6 +69,81 @@ public final class PdfLayoutExtractor {
 	private static final float MIN_SPLIT_PT =
 			Float.parseFloat(System.getProperty("fidelity.minSplitPt", "20"));
 
+	/**
+	 * How wide a band of the page has to be free of ink, and how many lines have to lie
+	 * on each side of it, before it is read as a <b>column gutter</b> - a boundary the
+	 * text on every line is divided at, whatever that line's own word gaps look like.
+	 *
+	 * <p>The per-line rules below cannot see a two-column page.  A gap splits a baseline
+	 * only where it is more than three times that line's median word gap, and a
+	 * <em>justified</em> line's word gaps are stretched - on the two-column page which
+	 * motivated this, to 4.7pt against the 2.5pt of the same font's natural space - so
+	 * the 51pt gutter between the columns is under three of them and the two columns are
+	 * read as one line.  Word's PDF of that page has the two columns' baselines a
+	 * fraction of a point apart, so its own extraction separates them, and every line of
+	 * the page then failed to match ours.
+	 *
+	 * <p>The page's geometry says where the columns are without reference to any one
+	 * line: a run of x where no glyph on the page puts ink, wide enough and with enough
+	 * lines either side of it, is a gutter.  It is measured from the same glyph boxes on
+	 * both sides, so Word's PDF and ours find the same bands, and it can only ever split
+	 * a line further - never merge two.
+	 *
+	 * <p>10pt is above the widest inter-word gap seen on a justified line (5.2pt) and
+	 * below the narrowest real gutter in the corpora (a 12pt {@code w:cols} space); 8
+	 * lines each side keeps a two-line letterhead or a single right-tabbed heading from
+	 * declaring one.  {@code -Dfidelity.columnGutterPt=} and
+	 * {@code -Dfidelity.columnGutterLines=} override them; 0 disables the rule.
+	 *
+	 * @since 17.0.6
+	 */
+	private static final float COLUMN_GUTTER_PT =
+			Float.parseFloat(System.getProperty("fidelity.columnGutterPt", "10"));
+
+	/** @see #COLUMN_GUTTER_PT */
+	private static final int COLUMN_GUTTER_LINES =
+			Integer.parseInt(System.getProperty("fidelity.columnGutterLines", "8"));
+
+	/**
+	 * How much of the page's ink each side of a gutter has to span before the two are
+	 * read as columns, as a fraction of the whole.
+	 *
+	 * <p>Without it the rule fires on every hanging indent: the band between a bullet
+	 * and the text beside it is 13pt wide and repeats on every line of the list, so it
+	 * passes both tests above - and splitting there costs, because Word's PDF writes the
+	 * label separator as space glyphs and reads the two as one line.  Two text columns
+	 * span about 0.47 of the page's ink each; a bullet column spans 0.01 and a label
+	 * column 0.15.  Measured over the three corpora, 0.3 leaves the label columns
+	 * unsplit and still finds the two-column pages.  {@code -Dfidelity.columnSideFraction=}
+	 * overrides it.
+	 *
+	 * @see #COLUMN_GUTTER_PT
+	 */
+	private static final float COLUMN_SIDE_FRACTION =
+			Float.parseFloat(System.getProperty("fidelity.columnSideFraction", "0.3"));
+
+	/**
+	 * How alike the two sides of a gutter have to be, as the narrower's span over the
+	 * wider's, before they are read as columns rather than as an indent.
+	 *
+	 * <p>What is left over after the fraction above is the shape where a page of
+	 * full-width prose has a narrow left-hand column of labels beside part of it: the
+	 * label side spans 0.45 to 0.51 of the text side, and whether the band is clear of
+	 * ink on any given page is then decided by one long line, so Word's PDF and ours
+	 * find it on different pages and the split is one-sided - which loses lines rather
+	 * than winning them (two corpus documents, -0.084 and -0.051, where every document
+	 * whose columns are alike gained).  Word's own columns are equal unless
+	 * {@code w:cols/@w:equalWidth="0"}, and the measured pairs are 0.76 to 0.99.
+	 *
+	 * <p>The cost is that a genuinely unequal two-column section - &#xa7;7's 157/318pt
+	 * certificate is 0.49 - is left to the per-line rules.  {@code -Dfidelity.columnBalance=}
+	 * overrides it.
+	 *
+	 * @see #COLUMN_GUTTER_PT
+	 */
+	private static final float COLUMN_BALANCE =
+			Float.parseFloat(System.getProperty("fidelity.columnBalance", "0.6"));
+
 	public static PdfLayout extract(File pdf) throws IOException {
 		try (PDDocument doc = Loader.loadPDF(pdf)) {
 			PdfLayout out = new PdfLayout();
@@ -145,6 +220,8 @@ public final class PdfLayoutExtractor {
 	 * horizontal gap exceeds 0.7 x the font size (table cells, tab stops, columns).
 	 * PDFTextStripper's own line grouping merges table cells that share a baseline.
 	 */
+	private static final float[] NO_GUTTERS = new float[0];
+
 	private static final class TextCollector extends PDFTextStripper {
 		private final PdfLayout out;
 		private final List<TextPosition> pagePositions = new ArrayList<>();
@@ -169,28 +246,109 @@ public final class PdfLayoutExtractor {
 			List<TextPosition> ps = new ArrayList<>(pagePositions);
 			ps.sort((a, b) -> Math.abs(a.getYDirAdj() - b.getYDirAdj()) > 0.01f
 					? Float.compare(a.getYDirAdj(), b.getYDirAdj()) : Float.compare(a.getXDirAdj(), b.getXDirAdj()));
+			List<List<TextPosition>> clusters = new ArrayList<>();
 			List<TextPosition> cluster = new ArrayList<>();
 			float clusterY = 0;
 			for (TextPosition tp : ps) {
 				float tol = Math.max(1f, 0.3f * tp.getFontSizeInPt());
 				if (!cluster.isEmpty() && Math.abs(tp.getYDirAdj() - clusterY) > tol) {
-					emit(pageIndex, cluster);
+					clusters.add(cluster);
 					cluster = new ArrayList<>();
 				}
 				if (cluster.isEmpty()) clusterY = tp.getYDirAdj();
 				cluster.add(tp);
 			}
-			if (!cluster.isEmpty()) emit(pageIndex, cluster);
+			if (!cluster.isEmpty()) clusters.add(cluster);
+			// the page's own column geometry, which no single line can show
+			float[] gutters = gutters(clusters);
+			for (List<TextPosition> c : clusters) emit(pageIndex, c, gutters);
+		}
+
+		/**
+		 * The column gutters of this page: an even-length array of x pairs, each the
+		 * low and high edge of a band no glyph on the page puts ink in.
+		 *
+		 * @see #COLUMN_GUTTER_PT
+		 */
+		private static float[] gutters(List<List<TextPosition>> clusters) {
+			if (COLUMN_GUTTER_PT <= 0 || clusters.size() < 2 * COLUMN_GUTTER_LINES) return NO_GUTTERS;
+			List<float[]> ink = new ArrayList<>();
+			for (List<TextPosition> c : clusters) {
+				for (TextPosition tp : c) {
+					if (isBlank(tp)) continue; // a space does not fill a gutter
+					ink.add(new float[] { tp.getXDirAdj(), tp.getXDirAdj() + tp.getWidthDirAdj() });
+				}
+			}
+			if (ink.isEmpty()) return NO_GUTTERS;
+			ink.sort((a, b) -> Float.compare(a[0], b[0]));
+			// the empty bands between the runs of ink, in order
+			List<float[]> bands = new ArrayList<>();
+			float hi = ink.get(0)[1];
+			for (float[] iv : ink) {
+				if (iv[0] - hi >= COLUMN_GUTTER_PT) bands.add(new float[] { hi, iv[0] });
+				hi = Math.max(hi, iv[1]);
+			}
+			if (bands.isEmpty()) return NO_GUTTERS;
+			float inkFrom = ink.get(0)[0], inkTo = hi;
+			float minSide = COLUMN_SIDE_FRACTION * (inkTo - inkFrom);
+			// and only those with enough lines on both sides, each side spanning enough
+			// of the page's ink to be a column: the band between a bullet and its text
+			// repeats on every line of a list but has 5pt of ink to its left, and one
+			// heading tabbed to the right of a page of body text is not a boundary either
+			List<Float> keep = new ArrayList<>();
+			for (float[] band : bands) {
+				int left = 0, right = 0;
+				float lFrom = Float.MAX_VALUE, lTo = -Float.MAX_VALUE;
+				float rFrom = Float.MAX_VALUE, rTo = -Float.MAX_VALUE;
+				for (List<TextPosition> c : clusters) {
+					boolean l = false, r = false;
+					for (TextPosition tp : c) {
+						if (isBlank(tp)) continue;
+						float x0 = tp.getXDirAdj(), x1 = x0 + tp.getWidthDirAdj();
+						if (x1 <= band[0] + 0.01f) {
+							l = true;
+							lFrom = Math.min(lFrom, x0);
+							lTo = Math.max(lTo, x1);
+						} else if (x0 >= band[1] - 0.01f) {
+							r = true;
+							rFrom = Math.min(rFrom, x0);
+							rTo = Math.max(rTo, x1);
+						}
+					}
+					if (l) left++;
+					if (r) right++;
+				}
+				float lSpan = lTo - lFrom, rSpan = rTo - rFrom;
+				boolean alike = Math.min(lSpan, rSpan) >= COLUMN_BALANCE * Math.max(lSpan, rSpan);
+				if (left >= COLUMN_GUTTER_LINES && right >= COLUMN_GUTTER_LINES
+						&& lSpan >= minSide && rSpan >= minSide && alike) {
+					keep.add(band[0]);
+					keep.add(band[1]);
+				}
+			}
+			if (keep.isEmpty()) return NO_GUTTERS;
+			float[] out = new float[keep.size()];
+			for (int i = 0; i < out.length; i++) out[i] = keep.get(i);
+			return out;
+		}
+
+		/** Whether the gap from {@code from} to {@code to} contains a column gutter. */
+		private static boolean crossesGutter(float[] gutters, float from, float to) {
+			for (int i = 0; i < gutters.length; i += 2) {
+				if (from <= gutters[i] + 0.01f && to >= gutters[i + 1] - 0.01f) return true;
+			}
+			return false;
 		}
 
 		/**
 		 * Split a baseline cluster into lines (a) at a gap of at least {@link #MIN_SPLIT_PT}
 		 * which is also wider than 0.7 em and more than three times the cluster's median
-		 * word gap (tab stops, borderless cells), or (b) at any gap crossed by a vertical
-		 * rule (table borders). Justified text has uniformly wide word gaps, so (a) keeps
-		 * such lines together.
+		 * word gap (tab stops, borderless cells), (b) at any gap crossed by a vertical
+		 * rule (table borders), or (c) at any gap containing one of the page's column
+		 * gutters. Justified text has uniformly wide word gaps, so (a) keeps such lines
+		 * together - which is what (c) is for.
 		 */
-		private void emit(int pageIndex, List<TextPosition> cluster) {
+		private void emit(int pageIndex, List<TextPosition> cluster, float[] gutters) {
 			cluster.sort((a, b) -> Float.compare(a.getXDirAdj(), b.getXDirAdj()));
 			List<Float> gaps = new ArrayList<>();
 			for (int i = 1; i < cluster.size(); i++) {
@@ -207,7 +365,8 @@ public final class PdfLayoutExtractor {
 					float gap = tp.getXDirAdj() - from;
 					float em = Math.max(prev.getFontSizeInPt(), 1f);
 					boolean wide = gap >= MIN_SPLIT_PT && gap > 0.7f * em && gap > 3f * medianWordGap;
-					if (wide || (gap > 0 && verticalRuleBetween(pageIndex, from, tp.getXDirAdj(), tp.getYDirAdj(), em))) {
+					if (wide || crossesGutter(gutters, from, tp.getXDirAdj())
+							|| (gap > 0 && verticalRuleBetween(pageIndex, from, tp.getXDirAdj(), tp.getYDirAdj(), em))) {
 						addLine(pageIndex, run);
 						run = new ArrayList<>();
 					}

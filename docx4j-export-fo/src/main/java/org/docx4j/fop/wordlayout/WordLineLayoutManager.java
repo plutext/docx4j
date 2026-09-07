@@ -1193,6 +1193,21 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     }
                     int h = ac.getHeight();
                     if (h <= 0) continue;
+                    /* A small-caps run's glyphs are drawn at 80% of the run's size, but
+                     * Word's line is the declared size's: measured on a table cell whose
+                     * only content is such a span, Word puts it on the same baseline as
+                     * the two cells beside it (123.2) where FOP took the ascent from the
+                     * 8pt inline and put it 3pt high, splitting one row into three.  The
+                     * span says what it was scaled by, so the line reads its height at
+                     * the size the run declares.  @since 17.0.6 */
+                    String smallCaps = foreignAttribute(element.getLayoutManager().getFObj(),
+                            org.docx4j.fop.wordlayout.WordLayoutElementMapping.SMALL_CAPS);
+                    if (smallCaps != null) {
+                        try {
+                            double scale = Double.parseDouble(smallCaps);
+                            if (scale > 0 && scale < 1) h = (int) Math.round(h / scale);
+                        } catch (NumberFormatException e) { /* leave h alone */ }
+                    }
                     if (ac.getDepth() == 0) {
                         // bottom on the baseline (a picture): FOP's altitude is the height
                         ascent = Math.max(ascent, ac.getAltitude());

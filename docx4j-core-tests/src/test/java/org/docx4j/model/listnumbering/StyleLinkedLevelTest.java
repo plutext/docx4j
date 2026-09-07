@@ -70,8 +70,23 @@ public class StyleLinkedLevelTest {
 			+ "<w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
 			+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl>"
 			+ "</w:abstractNum>"
+			// level 0 linked to NumLinkedInd0 - whose own w:ind is left 0, firstLine 0 -
+			// but stating an indent of its own, which is the level's indent
+			+ "<w:abstractNum w:abstractNumId=\"22\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+			+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"bullet\"/>"
+			+ "<w:pStyle w:val=\"NumLinkedInd0\"/><w:lvlText w:val=\"›\"/><w:lvlJc w:val=\"left\"/>"
+			+ "<w:pPr><w:ind w:left=\"198\" w:hanging=\"198\"/></w:pPr></w:lvl>"
+			+ "</w:abstractNum>"
+			// level 0 linked to NumLinkedInd0 and stating no indent of its own
+			+ "<w:abstractNum w:abstractNumId=\"23\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+			+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"bullet\"/>"
+			+ "<w:pStyle w:val=\"NumLinkedInd0\"/><w:lvlText w:val=\"›\"/><w:lvlJc w:val=\"left\"/>"
+			+ "</w:lvl>"
+			+ "</w:abstractNum>"
 			+ "<w:num w:numId=\"20\"><w:abstractNumId w:val=\"20\"/></w:num>"
 			+ "<w:num w:numId=\"21\"><w:abstractNumId w:val=\"21\"/></w:num>"
+			+ "<w:num w:numId=\"22\"><w:abstractNumId w:val=\"22\"/></w:num>"
+			+ "<w:num w:numId=\"23\"><w:abstractNumId w:val=\"23\"/></w:num>"
 			+ "</w:numbering>";
 
 	/** a paragraph style holding a w:numPr for numId 20, plus an optional own w:ind */
@@ -157,5 +172,49 @@ public class StyleLinkedLevelTest {
 				.getEffectivePPr(numbered).getInd();
 		assertNotNull("the level's indent applies to a numbered paragraph", still);
 		assertEquals(567, still.getLeft().intValue());
+	}
+
+	/**
+	 * A level's own {@code w:pPr/w:ind} is the level's indent; the style its
+	 * {@code w:pStyle} names does not supply one in its place.
+	 *
+	 * <p>Reading the linked style's {@code w:ind} first (which is what docx4j did from
+	 * 2.7) put an indent from a style the paragraph does not use into every paragraph
+	 * whose own {@code w:numPr} named the numbering.  Measured on a corpus document of
+	 * exactly this shape - a List Bullet style carrying
+	 * {@code <w:ind w:left="0" w:firstLine="0"/>} named by a level whose own indent is
+	 * 198/198 - Word draws the bullets 198 twips from the margin, and reading the style
+	 * left the label with no hanging indent at all, so the label column fell back to the
+	 * default tab stop and the bullet went 14pt further left again.</p>
+	 */
+	@Test
+	public void aLinkedLevelStatingAnIndentKeepsItsOwn() throws Exception {
+		WordprocessingMLPackage p = pkg();
+		NumberingDefinitionsPart ndp = p.getMainDocumentPart().getNumberingDefinitionsPart();
+
+		PPrBase.Ind own = ndp.getInd("22", "0");
+		assertNotNull(own);
+		assertEquals("the level's own w:ind, not the linked style's 0", 198, own.getLeft().intValue());
+		assertEquals(198, own.getHanging().intValue());
+		assertNull("the linked style's w:firstLine must not leak in", own.getFirstLine());
+
+		// and a paragraph whose own w:numPr names it is laid out on that indent
+		PPr direct = (PPr) XmlUtils.unmarshalString(
+				"<w:pPr " + W + "><w:numPr><w:numId w:val=\"22\"/></w:numPr></w:pPr>");
+		PPrBase.Ind effective = p.getMainDocumentPart().getPropertyResolver()
+				.getEffectivePPr(direct).getInd();
+		assertNotNull(effective);
+		assertEquals(198, effective.getLeft().intValue());
+		assertEquals(198, effective.getHanging().intValue());
+	}
+
+	/** Where the level states no indent, the style it names still supplies one. */
+	@Test
+	public void aLinkedLevelStatingNoIndentFallsBackToTheStyle() throws Exception {
+		WordprocessingMLPackage p = pkg();
+		PPrBase.Ind ind = p.getMainDocumentPart().getNumberingDefinitionsPart().getInd("23", "0");
+		assertNotNull("the linked style's w:ind is the fallback", ind);
+		assertEquals(0, ind.getLeft().intValue());
+		assertEquals(0, ind.getFirstLine().intValue());
 	}
 }

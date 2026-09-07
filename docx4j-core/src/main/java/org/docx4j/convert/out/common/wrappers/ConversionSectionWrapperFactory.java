@@ -236,24 +236,31 @@ public class ConversionSectionWrapperFactory {
 						          <w:type w:val="continuous"/>
 						          <w:pgSz <---- different values from previous sectPr
 						 *
-						 * In this case, Word will render a page break, 
+						 * In this case, Word will render a page break,
 						 * but:
 						 * 1. still show it as continuous
 						 * 2. still use the headers/footers from this section
-						 *  
+						 *
+						 * A page-sequence has one page master, so the two parts cannot
+						 * be merged: this section ends here and keeps its own page size,
+						 * which is what Word starts a page for.  See insertPageBreak.
 						 */
-						
+
 						boolean ignoreThisSection = false;
 						SectPr followingSectPr = sectPrs.get(++sectPrIndex);
 						if ( followingSectPr.getType()!=null
 								     && followingSectPr.getType().getVal().equals("continuous")) {
 
-							log.info("following sectPr is continuous; this section wrapper must include its contents ");
-							ignoreThisSection = true;
-							
-						} 
-						
-						
+							if (insertPageBreak(ppr.getSectPr().getPgSz(), followingSectPr.getPgSz())) {
+								log.info("following sectPr is continuous but changes the page size or orientation; Word starts a page, so this section is not merged into it");
+							} else {
+								log.info("following sectPr is continuous; this section wrapper must include its contents ");
+								ignoreThisSection = true;
+							}
+
+						}
+
+
 						if (ignoreThisSection) {
 							// In case there are some headers/footers that apply to both this content and the 
 							// content before the continuous sectPr,
@@ -261,17 +268,12 @@ public class ConversionSectionWrapperFactory {
 							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders);
 
 							
-							PgSz pgSzThis = ppr.getSectPr().getPgSz();
-							PgSz pgSzNext = followingSectPr.getPgSz();
-							boolean pageBreak = insertPageBreak( pgSzThis,  pgSzNext);
-							if (pageBreak) {
-								ppr.setPageBreakBefore(new BooleanDefaultTrue());
-							}
+							// (a continuous break which changes the page size is not merged,
+							// so the parts merged here all share one page size)
 							// Word gives the section break mark no line of its own where the
 							// paragraph carrying it is otherwise empty; keep the paragraph
-							// only where it has content, where it is all this section has,
-							// or where it carries the page break inserted just above.
-							boolean drop = !pageBreak && !sectionContent.isEmpty()
+							// only where it has content or where it is all this section has.
+							boolean drop = !sectionContent.isEmpty()
 									&& rendersNothing((org.docx4j.wml.P)o);
 							// this section's content (up to and including this paragraph) is
 							// one part of the merged page-sequence, with its own column
@@ -652,11 +654,26 @@ public class ConversionSectionWrapperFactory {
 		return wrapped;
 	}
 
+	/**
+	 * Whether Word starts a page at this continuous section break: it does whenever the
+	 * break changes the page size or the orientation (&#xa7;7).
+	 *
+	 * <p>Measured on a 22-page corpus document whose first four {@code w:sectPr} are
+	 * {@code w:type="continuous"} and whose first three declare
+	 * {@code <w:pgSz w:w="23814" w:h="16840" w:orient="landscape"/>} - A3 landscape -
+	 * against a final A4: Word's page 1 is 1190.6 x 841.9pt and its content sits at
+	 * x=76.6..396.3.  docx4j merged the whole continuous run onto one page master, on
+	 * which the <em>last</em> part's A4 won, so page 1 came out 841.7 x 595.5 and the
+	 * content ran to x=881.9 - 40pt past our own page edge, one column overprinting
+	 * another.  A page-sequence carries one page master, so such a break now ends the
+	 * section rather than merging into it; the headers and footers are still this
+	 * section's, which is what Word keeps.</p>
+	 */
 	private static boolean insertPageBreak(PgSz pgSzThis, PgSz pgSzNext) {
 
 		boolean insertPageBreak = false;
-		
-		// If the w:pgSz on the two sections differs, 
+
+		// If the w:pgSz on the two sections differs,
 		// then Word inserts a page break (ie doesn't treat it as continuous).
 		// If no w:pgSz element is present, then Word defaults
 		// (presumably to Legal? TODO CHECK. There is no default setting in the docx).

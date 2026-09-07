@@ -44,8 +44,17 @@ public class ListNumberIndTest {
 		"abstract_nostyle_noppr.xml", 
 		"override_nostyle_ppr.xml"};  
 	
+	/* @since 17.0.6 the first is 2880, the level's own w:ind, where it used to be 11, the
+	 * w:ind of the paragraph style the level's w:pStyle names.  A w:lvl/w:pPr states the
+	 * properties applied to a paragraph at that level (ECMA-376 17.9.24); the w:pStyle
+	 * only links the level to a style, and reading the style's w:ind in place of the
+	 * level's put an indent from a style the paragraph does not use into every paragraph
+	 * whose own w:numPr named the numbering.  Measured against Word (CR-001 §2.8), which
+	 * draws such a bullet on the level's indent.  Where the level states none - the second
+	 * document here - the linked style's is still the fallback.  A paragraph which does use
+	 * the style gets the style's w:ind over the level's from the style chain anyway. */
 	final static String[] expected = { 
-		"11", 
+		"2880", 
 		"12", 
 		"13", 
 		null, 

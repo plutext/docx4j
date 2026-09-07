@@ -986,7 +986,41 @@ public class XsltFOFunctions {
 				XsltCommonFunctions.fontSelectorForGeneratedText(context, pPr, rPr, "."));
 	}
 
+	/**
+	 * The font a block's own content is to be measured in.
+	 *
+	 * <p>Where the sample is <b>only a space</b> - which is what an empty paragraph's
+	 * content is - {@code RunFontSelector} adds the character to the span it is building
+	 * without ever firing a font action (a space belongs to whatever run it falls in), so
+	 * for text that is nothing else there is no span and no font, and this returned "".
+	 * The block then carried no {@code font-family} at all, and FOP's own default for the
+	 * property - {@code sans-serif}, which its base-14 collection answers with
+	 * <b>Helvetica</b> - both measured the line and was written into the PDF.  Measured:
+	 * a document's first, empty paragraph in Helvetica has a line box <b>10.2pt short</b>
+	 * of the one Word gives it, and every line of that page carried the -10.2 (Word
+	 * 143.1 / 340.7 / 472.9, docx4j 132.9 / 330.5 / 462.9).  <b>137 of the three
+	 * corpora's 449 renders referenced base-14 Helvetica</b>, 121 of them drawing nothing
+	 * but blanks in it, and every one of the 137 has such a block; 465 of 465 of those
+	 * blocks also carried no {@code docx4j:line-box}, because
+	 * {@link #applyEmptyParagraphLineHeight} has no font to take metrics from either.
+	 *
+	 * <p>So a whitespace-only sample falls back to a character the selector does act on.
+	 * The font is the same one the paragraph mark would set any other character in; only
+	 * the sample differs.
+	 *
+	 * @since 17.0.6 the whitespace fallback
+	 */
 	private static String resolveFontFamily(WordprocessingMLPackage wmlPackage,
+			RunFontSelector runFontSelector, PPr pPr, RPr rPr, String sampleText) {
+
+		String family = resolveFontFamilyFor(wmlPackage, runFontSelector, pPr, rPr, sampleText);
+		if (family.length()==0 && sampleText!=null && sampleText.trim().isEmpty()) {
+			family = resolveFontFamilyFor(wmlPackage, runFontSelector, pPr, rPr, ".");
+		}
+		return family;
+	}
+
+	private static String resolveFontFamilyFor(WordprocessingMLPackage wmlPackage,
 			RunFontSelector runFontSelector, PPr pPr, RPr rPr, String sampleText) {
 
 		if (runFontSelector==null) return "";
@@ -1780,26 +1814,26 @@ public class XsltFOFunctions {
 	 * the style's 227 twips - where docx4j used the level's 720/360 and drew them at
 	 * 90.0 and 108.0.
 	 *
-	 * <p>Only where a <em>style</em> brought the numbering.  A paragraph whose own
-	 * {@code w:numPr} names it keeps the level's indent, and the reason is <b>not</b> the
-	 * {@code w:ind} merge, which was 17.0.6's first reading of it:
-	 * {@link org.docx4j.model.styles.StyleUtil} merges two {@code w:ind} attribute by
-	 * attribute except that {@code w:firstLine} and {@code w:hanging} are one property, so
-	 * a {@code w:ind} stating only {@code w:left} leaves an inherited hanging indent
-	 * exactly where it was, which is Word's own rule ({@code IndMergeTest} records it).
-	 * Measured again with the glyph advances rounded (&#xa7;10), the two documents that
-	 * first motivated the gate no longer move, but two others of a second corpus fall
-	 * 0.068 and 0.053, and in one of them the effective indent is <em>right</em> for some
-	 * of the document's direct-{@code w:numPr} bullets (x=458.98 against Word's 458.83,
-	 * where the level's indent gives 522.66) and 361pt out for others.  What separates
-	 * the two is not yet known, so the gate stays.</p>
+	 * <p>It applies to a paragraph's own {@code w:numPr} as well.  A gate which sent a
+	 * direct {@code w:numPr} to the level's indent instead was carried through several
+	 * rounds of 17.0.6 because the effective indent was wrong on two documents; the cause
+	 * turned out to be
+	 * {@link org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart#getInd(String, String)}
+	 * reading a <em>style-linked</em> level's indent from the style it names rather than
+	 * from the level, which put a style the paragraph does not use into its effective
+	 * indent.  With that fixed the effective indent is right in both, measured glyph by
+	 * glyph against Word (&#xa7;2.8).</p>
+	 *
+	 * <p>The paragraph's direct {@code w:ind} is merged over the result by
+	 * {@link org.docx4j.model.styles.Indent}, and {@code w:firstLine} and
+	 * {@code w:hanging} are one property there, so a {@code w:ind} stating only
+	 * {@code w:left} leaves an inherited hanging indent exactly where it was - Word's own
+	 * rule, since its Paragraph dialog offers "Special: (none) / First line / Hanging"
+	 * rather than two boxes ({@code IndMergeTest} records it).</p>
 	 *
 	 * @since 17.0.6
 	 */
 	private static PPrBase.Ind numberingIndent(PPr pPr, ResultTriple triple, PPr pPrDirect) {
-		// the paragraph's own w:numPr brings the level's indent with it; only where a
-		// style contributed the numbering can that style's own w:ind outrank the level
-		if (numIdVal(pPrDirect) != null) return triple.getIndent();
 		PPrBase.Ind effective = pPr == null ? null : pPr.getInd();
 		PPrBase.Ind level = triple == null ? null : triple.getIndent();
 		if (effective == null) return level;
@@ -1996,12 +2030,14 @@ public class XsltFOFunctions {
 				}
 
 			}
-				        		
-			
+
 			int numChars=1;
 			if (triple.getBullet()!=null ) {
 //				foListItemLabelBody.setTextContent(triple.getBullet() );  
-		    	foListItemLabelBody.setTextContent(rfsFrag.getTextContent());  // give effect to any character mapping performed by RFS
+		    	// give effect to any character mapping performed by RFS; where it made
+		    	// none for a symbol font, symbolLabelFallback does (@since 17.0.6)
+		    	foListItemLabelBody.setTextContent(
+		    			symbolLabelFallback(triple, rfsFrag.getTextContent(), foListItemLabelBody));
 				
 			} else if (triple.getNumString()==null) {
 				log.debug("computed NumString was null!");
@@ -2198,6 +2234,87 @@ public class XsltFOFunctions {
     /**
      * Use RunFontSelector result to set the correct font for the list item label.
      */
+	/** The fonts {@link org.docx4j.convert.out.common.writer.SymbolMapper} knows. */
+	private static final java.util.Set<String> SYMBOL_LABEL_FONTS = new java.util.HashSet<String>(
+			java.util.Arrays.asList("Symbol", "Wingdings", "Wingdings 2", "Wingdings 3", "Webdings"));
+
+	/**
+	 * A bullet the level states as a code point of a symbol font, where run font selection
+	 * did not map it (&#xa7;5.7).
+	 *
+	 * <p>{@code RunFontSelector.fontSelector} maps such a character to its Unicode
+	 * equivalent and draws it in the substitute font that has the glyph - the same thing it
+	 * does for a {@code w:sym} run - which is why most of these bullets are already right
+	 * (a Wingdings 0xF0A7 comes out {@code &#x25AA;} in Noto Sans Symbols 2).  It is
+	 * reached through the run's {@code w:rFonts/@w:hAnsi}, though, and a numbering label's
+	 * comes from the level's {@code w:rPr}, which does not always survive to it: where it
+	 * does not, the private-use code point reaches FOP unmapped, no installed face can draw
+	 * it, and FOP paints its {@code NOT_FOUND} glyph, {@code #}.  Measured, Word's PDF has
+	 * U+F0A8 in SymbolMT at x=144.05..297.82 where ours had {@code #} in Arimo at
+	 * 144.00..297.54 - the geometry agreed and the glyph did not - and <b>923 lines of 116
+	 * of the three corpora's 449 documents</b> carried such a {@code #}, none of which
+	 * Word's own PDF has.
+	 *
+	 * <p>This is the fallback for exactly that case, and it can only fire there: a label
+	 * which still holds a private-use character after run font selection is one the symbol
+	 * path did not take.  Mapping every such label ahead of run font selection instead -
+	 * &#xa7;5.7's first reading of the fix - was measured over the three corpora and is
+	 * much worse: it bypasses the mapping that works, turning correct {@code &#x25AA;}
+	 * labels into the missing-symbol box, and cost 0.025 of mean line parity on each
+	 * corpus over 111 documents with no document improved.
+	 *
+	 * @param rendered the label as run font selection left it
+	 * @return the label to draw, mapped where this could map it
+	 * @since 17.0.6
+	 */
+	protected static String symbolLabelFallback(ResultTriple triple, String rendered, Element foListItemLabelBody) {
+
+		if (rendered==null || rendered.isEmpty() || triple==null) return rendered;
+		boolean unmapped = false;
+		for (int i = 0; i < rendered.length(); i++) {
+			char c = rendered.charAt(i);
+			if (c >= '\uF000' && c <= '\uF8FF') { unmapped = true; break; }
+		}
+		if (!unmapped) return rendered; // run font selection mapped it, and chose the font
+		String font = triple.getNumFont();
+		if (font==null || !SYMBOL_LABEL_FONTS.contains(font)) return rendered;
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < rendered.length(); i++) {
+			char c = rendered.charAt(i);
+			String mapped = (c >= '\uF000' && c <= '\uF8FF')
+					? org.docx4j.convert.out.common.writer.SymbolMapper.getUnicodeReplacementChar(font, (short)(c - 0xF000))
+					: String.valueOf(c);
+			if (mapped==null) {
+				log.debug(font + " has no replacement for U+" + Integer.toHexString(c) + "; leaving the label alone");
+				return rendered;
+			}
+			sb.append(mapped);
+		}
+		String mapped = sb.toString();
+
+		org.docx4j.fonts.PhysicalFont pf = "Symbol".equals(font)
+				? org.docx4j.fonts.PhysicalFonts.getSymbolFont()
+				: org.docx4j.fonts.PhysicalFonts.getWDingsFont();
+		org.docx4j.fonts.PhysicalFont pf2 = "Symbol".equals(font)
+				? null : org.docx4j.fonts.PhysicalFonts.getWDingsFont2();
+		try {
+			if (pf!=null && org.docx4j.fonts.GlyphCheck.hasCodepoint(pf, mapped.codePointAt(0))) {
+				// good, it is there
+			} else if (pf2!=null && org.docx4j.fonts.GlyphCheck.hasCodepoint(pf2, mapped.codePointAt(0))) {
+				pf = pf2;
+			} else {
+				log.debug("no substitute font has " + font + " " + mapped + "; leaving the label alone");
+				return rendered;
+			}
+		} catch (java.util.concurrent.ExecutionException e) {
+			log.error(e.getMessage(), e);
+			return rendered;
+		}
+		foListItemLabelBody.setAttribute("font-family", pf.getName());
+		return mapped;
+	}
+
     protected static void applyRunFontSelection(DocumentFragment frag, Element foListItemLabelBody) {
     	
     	if (log.isDebugEnabled()) {

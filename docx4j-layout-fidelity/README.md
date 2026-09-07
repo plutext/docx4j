@@ -245,6 +245,43 @@ well as to docx4j's; four knobs are worth knowing about.
   asymmetry it closes is systematic, and it can only merge, on both sides
   alike. The vertical-rule split (a real cell boundary) is not subject to it.
 
+- **`-Dfidelity.columnGutterPt=`** (default `10`, `0` turns it off), with
+  **`-Dfidelity.columnGutterLines=`** (`8`), **`-Dfidelity.columnSideFraction=`**
+  (`0.3`) and **`-Dfidelity.columnBalance=`** (`0.6`), splits a line at the
+  page's **column gutters**. The per-line tests cannot see a two-column page: a
+  gap splits a baseline only where it is more than three times *that line's*
+  median word gap, and a justified line's word gaps are stretched - on the page
+  which motivated this, to 4.7pt against the same font's natural 2.5pt space -
+  so the 51pt gutter between the columns is under three of them and the two
+  columns are read as one line, where Word's PDF (whose two columns' baselines
+  are a fraction of a point apart) reads them separately and every line of the
+  page fails to match.
+
+  The page's geometry says where the columns are without reference to any one
+  line: a run of x that no glyph on the page puts ink in, at least 10pt wide,
+  with at least 8 lines each side, each side spanning at least 0.3 of the page's
+  ink and at least 0.6 of the other side's. It is measured from the same glyph
+  boxes on both sides, so Word's PDF and ours find the same bands, and it can
+  only ever split a line further - never merge two.
+
+  Each guard earns its place. Without the *side fraction* the rule fires on
+  every hanging indent (the band between a bullet and its text is 13pt wide and
+  repeats on every line): two columns span about 0.47 of the page's ink each, a
+  bullet column 0.01 and a label column 0.15, and without it the aggregate fell
+  on all three corpora. Without the *balance* it fires where a narrow label
+  column sits beside full-width prose (0.45-0.51), and there whether the band is
+  clear on a given page is decided by one long line, so the two PDFs find it on
+  different pages and the split is one-sided, which loses lines rather than
+  winning them (-0.084 and -0.051 on two documents). Word's own columns are
+  equal unless `w:cols/@w:equalWidth="0"`, and the measured pairs are 0.76 to
+  0.99; the cost is that a genuinely unequal section (157/318pt is 0.49) is left
+  to the per-line tests.
+
+  Re-baselining the three corpora on it: mean parity 0.8802 -> **0.8812** on
+  batch 1 and 0.8473 -> **0.8487** on batch 2, both with no page count moved,
+  and 0.8808 -> 0.8802 on batch 3 - where the whole of the fall is one document
+  whose render has four pages to Word's five, so the gutter on Word's page 5 has
+  no counterpart in ours. Ten documents gained, up to +0.17 and +0.15; six lost.
 - **An invisible rule is not a rule.** `PdfLayoutExtractor.verticalRuleBetween`
   splits a baseline cluster at a thin vertical box, which is how a table row is
   read as one line per cell on both sides. Word paints its cell borders as
@@ -260,7 +297,7 @@ well as to docx4j's; four knobs are worth knowing about.
   document's table, are unaffected; measured, one document gained 0.26 of line
   parity and one lost 0.07 (its rows now pair whole rather than cell by cell).
 
-All five are measuring, not rendering: **re-baseline** (rescore the corpora with
+All six are measuring, not rendering: **re-baseline** (rescore the corpora with
 the harness change alone) before scoring a rendering change against them.
 
 ## Reading the report

@@ -8,6 +8,20 @@ Changes in Version 17.0.6
 --------------------------
 
 PDF via XSL FO:
+- a numbered paragraph is laid out on its effective indent whether its own w:numPr or its
+style brought the numbering, and a numbering level's own w:ind is no longer read from a
+paragraph style its w:pStyle merely names
+- a continuous section break which changes the page size or orientation now starts a page,
+as Word does, instead of merging onto the previous section's page master
+- an empty paragraph is measured in its paragraph mark's font, not in FOP's base-14
+Helvetica: 137 of 449 test renders had one, each 10.2pt short per line
+- a bullet stated as a code point of a symbol font is drawn as the glyph rather than as
+FOP's not-found box, where run font selection did not map it
+- w:tblCellSpacing is no longer subtracted twice from a content-autofit column's width
+- a block whose only content is a small-caps run takes its line height from the run's
+declared size, as Word does, not from the 80% inline the glyphs are drawn at
+- the /Widths a simple font writes are now correct at the codes where FOP's width table and
+the encoding the PDF declares disagree (grave and small tilde)
 - text is measured with the font's rounded glyph advances, as Word measures it.  FOP
 truncates each advance to 1/1000 em, which ran every line up to 0.1% narrow and broke lines
 Word keeps; the PDF's /Widths are corrected with them, so they are now Word's own

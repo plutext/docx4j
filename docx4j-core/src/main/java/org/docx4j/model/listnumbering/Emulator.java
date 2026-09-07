@@ -308,7 +308,7 @@ public class Emulator {
 				//triple.isBullet = true;
 				triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 			}
-			
+
 			/* The indent the instance's own level definition gives
 			 * (w:num/w:lvlOverride/w:lvl, ECMA-376 17.9.8), which until 17.0.6 was lost:
 			 * only the abstract level was read here, so the list-block had neither

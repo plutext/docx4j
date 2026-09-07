@@ -808,6 +808,13 @@ public class RunFontSelector {
      *  substitute renders it; removed by WordLayoutFixups.  @since 17.0.5 */
     public static final String HINT_FONT = "docx4j-font";
 
+    /** Hint on the fo:inline holding a small-caps run's originally-lower-case stretch,
+     *  naming the fraction of the run's size the glyphs are drawn at.  The <em>line</em>
+     *  is Word's at the run's declared size - Word scales the glyphs, not the line - and
+     *  without it FOP takes the line's ascent from the 80% inline where that inline is a
+     *  block's only content.  @since 17.0.6 */
+    public static final String HINT_SMALL_CAPS = "docx4j-small-caps";
+
     private void applyLineHeight(Element el, String documentFontName, String physicalFontName) {
     	if (outputType!=RunFontActionType.XSL_FO || currentSizePt<=0 || el==null) return;
     	    	PhysicalFont pf = physicalFontName==null ? null : PhysicalFonts.get(physicalFontName);
@@ -1161,6 +1168,9 @@ public class RunFontSelector {
     	if (small) {
     		Element inline = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
     		inline.setAttribute("font-size", SMALL_CAPS_SIZE);
+    		if (outputType==RunFontActionType.XSL_FO) {
+    			inline.setAttribute(HINT_SMALL_CAPS, "0.8");
+    		}
     		inline.appendChild(doc.createTextNode(seg.toString()));
     		out.add(inline);
     	} else {

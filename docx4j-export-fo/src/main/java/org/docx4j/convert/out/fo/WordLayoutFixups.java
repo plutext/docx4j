@@ -626,6 +626,19 @@ public final class WordLayoutFixups {
 			}
 			span.setAttributeNS(ns, "docx4j:font", font);
 		}
+		// and the small-caps spans' scale (RunFontSelector.HINT_SMALL_CAPS), so the line
+		// manager can size the line from the run's declared size.  @since 17.0.6
+		for (Element span : elements(doc, "inline")) {
+			String scale = span.getAttribute(org.docx4j.fonts.RunFontSelector.HINT_SMALL_CAPS);
+			if (scale.length() == 0) continue;
+			span.removeAttribute(org.docx4j.fonts.RunFontSelector.HINT_SMALL_CAPS);
+			if (ns == null) continue;
+			if (!declared) {
+				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+			}
+			span.setAttributeNS(ns, "docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.SMALL_CAPS, scale);
+		}
 		// the tab leaders and, on their paragraph's block, the stops they are laid out
 		// against (XsltFOFunctions.tabToFO / applyTabStopHints).  @since 17.0.5
 		for (Element leader : elements(doc, "leader")) {
@@ -3402,6 +3415,32 @@ public final class WordLayoutFixups {
 			cell.setAttribute(end, pt(Math.max(0, padding - give)));
 		}
 	}
+
+	/*
+	 * Held back: <b>Word reserves a collapsed top border above the first row's content;
+	 * FOP reserves half of it.</b>  A collapsed border is centred on the boundary it
+	 * draws, so FOP charges each of the two cells it separates half - and at the top of a
+	 * table the outer half falls outside the table.  Two measurements, which do not agree
+	 * on how much: a table whose outer border-top-width is 0.5pt opening with a nested
+	 * table carrying its own 0.5pt has Word's first header baseline at 23.5 against ours
+	 * 22.2 (-1.3pt), and a body table with two stacked 0.5pt borders has Word's first four
+	 * baselines 43.9 / 53.5 / 63.4 / 72.5 against ours 42.9 / 52.6 / 62.3 / 71.5 (a flat
+	 * -1.0pt = 2 x 0.5).
+	 *
+	 * Adding the border to the first row's cells' padding-top was measured over the three
+	 * corpora both ways, and neither is a clear gain: the whole width is +0.0003 and
+	 * +0.0004 of mean line parity on two corpora, with a page count reached on one, but
+	 * -0.0001 on the third and a page count lost there; half the width is +0.0001 and
+	 * +0.0003, page count reached on one and kept everywhere, but still -0.0001 (12 of
+	 * 40340 lines, no document moved by 0.005) on the third.  Which of the two Word
+	 * actually reserves is what the corpus cannot settle - the two measurements above
+	 * disagree - so this wants a probe golden made in Word: a two-row table with
+	 * w:tblBorders all sz="4" at the very top of the body, and the row-2 first baseline
+	 * compared.  padding-top on the cell is the mechanism when it lands (an fo:table-cell
+	 * is a reference area, so space-before on its first block is conditional and FOP
+	 * discards it); it is the block-progression counterpart of cellLineWidth, which is
+	 * about the inline measure, and does not contradict it.
+	 */
 
 	/** BrWriter's mark on the fo:block a {@code w:br w:type="page"} became, which tells
 	 *  it from the break a {@code w:pageBreakBefore} puts on the paragraph's own block.

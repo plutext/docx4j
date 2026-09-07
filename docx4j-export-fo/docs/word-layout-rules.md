@@ -379,6 +379,30 @@ wrapped the heading, made the header two lines on every page, and made 8 Word pa
 ours. The block still takes the dominant run's size for its lines; its children keep the
 size they were measured at.
 
+<a id="s25emptyfont"></a>**An empty paragraph is measured in its paragraph mark's font.**
+The block's content is a single space standing for the mark, and the font for it was asked
+for with that space as the sample - but `RunFontSelector` adds a space to whatever span it is
+building without ever firing a font action (a space belongs to the run it falls in), so for
+text that is *only* a space there is no span and no font, and the block went out with no
+`font-family` at all. FOP's initial value for the property is `sans-serif`, which its base-14
+collection answers with **Helvetica**: that measured the line and was written into the PDF.
+Measured on a document whose first paragraph is empty, its line box is **10.2pt short** of
+Word's and every line of page 1 carried the -10.2 (Word 143.1 / 340.7 / 472.9 against 132.9 /
+330.5 / 462.9). **137 of the three corpora's 449 renders referenced base-14 Helvetica** (121
+of them drawing nothing but blanks in it), every one of the 137 has such a block, and 465 of
+465 of those blocks carried no `docx4j:line-box` either, since the line-box pass has no font
+to read metrics from. A whitespace-only sample now falls back to a character the selector
+does act on (`XsltFOFunctions.resolveFontFamily`, `EmptyParagraphFontTest`).
+
+A separate base-14 fallback, **Times**, is what FOP renders a `font-family` it cannot resolve
+in. Across the same 449 documents exactly one document font name reaches it - a corporate
+sans whose `w:altName` is itself absent and whose name matches none of `FontFallback`'s class
+keywords, so it gets no class default, and whose own theme names it, so even the last-resort
+document default is circular. A measured substitute for it is
+[held back](#s5nokia). The other 17 documents drawing base-14 Times draw it inside `<svg>`,
+where Batik resolves the AWT logical family `Dialog` itself and docx4j's mapper is never
+consulted.
+
 ### 2.6 Superscripts and subscripts
 
 `w:vertAlign` is drawn at 65% of the run's size, raised by 0.36 of that size, or lowered by
@@ -463,31 +487,42 @@ or one it is based on. `Emulator.styleLinkedElsewhere`; the FO writer tells the 
 by whether the `w:numId` came from the paragraph's own `w:pPr`
 (`XsltFOFunctions.numberFor`), and HTML already passed the direct value.
 
-<a id="s28effind"></a>**Where a style brought the numbering, the label sits on the *effective*
-indent**, which style resolution has already built from the level's `w:ind`, the paragraph
-style's own and the paragraph's direct formatting, in that order of precedence. The FO
-writer used the **level's** indent with the paragraph's direct one over it, so a style
-stating a `w:ind` beside its `w:numPr` lost it: measured on the same probe, whose style
-carries both through `w:basedOn` as `w:ind w:left="227" w:hanging="227"`, Word draws the
-label at x=72.0 and the wrapped line at 83.3 where docx4j used the level's 720/360 and
-drew them at 90.0 and 108.0.
+<a id="s28effind"></a>**The label sits on the *effective* indent**, which style resolution
+has built from the level's `w:ind`, the paragraph style's own and the paragraph's direct
+formatting, in that order of precedence. The FO writer used the **level's** indent with the
+paragraph's direct one over it, so a style stating a `w:ind` beside its `w:numPr` lost it:
+measured on `numbering-label-ilvl0`, whose style carries both through `w:basedOn` as
+`w:ind w:left="227" w:hanging="227"`, Word draws the label at x=72.0 and the wrapped line at
+83.3 where docx4j used the level's 720/360 and drew them at 90.0 and 108.0.
 
-A paragraph whose **own** `w:numPr` names the numbering keeps the **level's** indent, and
-the reason is *not* the `w:ind` merge, which was 17.0.6's first reading of it. `StyleUtil`
-merges two `w:ind` attribute by attribute except that `w:firstLine` and `w:hanging` are one
-property, so a `w:ind` stating only `w:left` leaves an inherited hanging indent exactly
-where it was - which is Word's own rule, since its Paragraph dialog offers "Special: (none)
-/ First line / Hanging" rather than two boxes. `IndMergeTest` records it.
+It applies to a paragraph's **own** `w:numPr` as well. A gate which sent a direct `w:numPr`
+to the level's indent instead was carried through several rounds of 17.0.6 because the
+effective indent was wrong on two documents; the cause is
+[the rule below](#s28lvlpstyleind) - `NumberingDefinitionsPart.getInd` read a *style-linked*
+level's indent from the style it names rather than from the level, so a style the paragraph
+does not use reached its effective indent. With that fixed the effective indent is right in
+both, measured glyph by glyph: on a level whose own `w:ind` is 198/198 beside a `w:pStyle`
+naming a List Bullet style whose `w:ind` is `left="0" firstLine="0"`, Word draws the bullets
+at x=79.46 and docx4j now at 79.40, where the style's indent has no hanging indent at all,
+so the label column fell back to the default tab stop and put the bullet at 13.05; and on a
+level with no `w:ind` of its own, where the paragraph style's applies, Word puts the label at
+27.12 and its text at 32.90 against our 27.25 and 32.90 exactly, where the level's (absent)
+indent had given 13.05 and 34.35. The change moved four documents of the three corpora, two
+of them 21pt of x closer to Word.
 
-What the direct case actually costs was measured again with the glyph advances rounded
-([§10](#s10advances)): the two documents that first motivated the gate (0.085 and 0.05 of
-line parity, their wrapped lines drawn at the bullet's own x=79.4 where Word puts them at
-89.3, the level's 198-twip hanging indent) no longer move at all, but two documents of a
-second corpus fall 0.068 and 0.053 - and in one of them the effective indent is **right**
-for some of the document's direct-`w:numPr` bullets (x=458.98 against Word's 458.83, where
-the level's indent draws them at 522.66) and 361pt out for others of the same document.
-What separates the two is not settled, so the gate stays
-(`XsltFOFunctions.numberingIndent`).
+The paragraph's direct `w:ind` is merged over the result by `StyleUtil`/`Indent` attribute by
+attribute, except that `w:firstLine` and `w:hanging` are one property, so a `w:ind` stating
+only `w:left` leaves an inherited hanging indent exactly where it was - which is Word's own
+rule, since its Paragraph dialog offers "Special: (none) / First line / Hanging" rather than
+two boxes. `IndMergeTest` records it.
+
+<a id="s28lvlpstyleind"></a>**A level's own `w:pPr/w:ind` is the level's indent**, and the
+paragraph style its `w:pStyle` names does not supply one in its place (ECMA-376 17.9.24: a
+`w:lvl/w:pPr` states the properties applied to a paragraph *at this level*; the `w:pStyle`
+only links the level to a style). `NumberingDefinitionsPart.getIndFromLvl` read the linked
+style first, which put that style's `w:ind` into every paragraph whose own `w:numPr` named
+the numbering - measured above. Where the level states no indent of its own the linked
+style's is still used, which is what this did from 2.7. `StyleLinkedLevelTest`.
 
 **`w:numId 0` takes the level's `w:ind` with its label** (ECMA-376 17.9.18). That rule was
 written for 17.0.6 and never fired: `StyleUtil.apply(NumPr, NumPr)` writes into the
@@ -1659,6 +1694,18 @@ since a whole URW family reports one name and is told apart only by its file
 so a family which really has no such face still gets none - and the `+noliga` and `+kern`
 twins follow, because each declaration gets its own.
 
+<a id="s5nokia"></a>**Held back: a substitute for the one unresolved corporate face.**
+`addFirstAvailableSubstitute("Nokia Pure Text", "Source Sans 3", "Source Sans Pro",
+"Arimo Regular", "Liberation Sans")` - Segoe UI Light's substitute, and the family is a
+humanist sans by its own `w:family="swiss"` and panose serif-style 11 - was measured on the
+one corpus document that uses it. It draws the document in the right class instead of base-14
+Times and moves its page count towards Word's (63 of Word's 87 to 65), and its body lines are
+closer (Word's title line is 266.9pt, base-14 Times 274.4, Source Sans 269.9), but its
+headings are further out (115.2 against Times' 120.6 and Source Sans' 104.6) and it cost that
+document 0.045 of line parity - the whole of the batch's fall on that corpus. Without a
+measurement of Nokia Pure's own advances there is nothing to choose the substitute by, so it
+waits for one; the entry and its measurements are recorded in `Mapper`.
+
 ### 5.3 Families whose faces all report one name
 
 In the URW base 35, URW Gothic Book, Demi, Book Oblique and Demi Oblique all call
@@ -1758,22 +1805,45 @@ character, the drawn widths agree to 0.1pt either way (Word 90.0..213.9, docx4j
 90.0..213.8) and only the PDF's text layer differed, so every one of those lines failed to
 match.
 
-<a id="s57lvlsym"></a>**A numbering label's own symbol is not mapped, and shows as `#`
-(open).** `SymbolMapper` is applied to a `w:sym` run, not to a `w:lvlText`, so a bullet
-stated as a Symbol or Wingdings code point in the private-use area (`w:lvlText` U+F0A8 with
-the level's `w:rFonts` naming Symbol) reaches `RunFontSelector` as that code point. No
-installed face can draw it, the label falls back to the paragraph's own text font, and FOP
+<a id="s57lvlsym"></a>**A numbering label's own symbol.** `RunFontSelector.fontSelector`
+maps a character of a symbol font to its Unicode equivalent and draws it in the substitute
+font that has the glyph - the same thing it does for a `w:sym` run - which is why most
+bullets stated as a symbol code point are already right (a Wingdings 0xF0A7 comes out
+U+25AA in Noto Sans Symbols 2). It is reached through the run's `w:rFonts/@w:hAnsi`,
+though, and a numbering label's font comes from the level's `w:rPr`, which does not always
+survive to it. Where it does not, the private-use code point reaches FOP unmapped, no
+installed face can draw it, the label falls back to the paragraph's own text font and FOP
 paints its `NOT_FOUND` glyph, `#`: measured, Word's PDF has U+F0A8 in `SymbolMT` at
-x=144.05..297.82 where ours has `#` in Arimo at 144.00..297.54 - the geometry agrees but the
-glyph does not. Mapping the label through `SymbolMapper` (U+F0A8 -> U+2666 DIAMOND SUIT for
-Symbol) is the fix, but it would also change every bullet that currently resolves through
-FOP's own 0xF020-0xF0FF remapping of a symbol font, so it wants measuring over the corpora
-before it ships. ~50 lines in 6 documents of the three corpora.
+x=144.05..297.82 where ours had `#` in Arimo at 144.00..297.54 - the geometry agrees and the
+glyph does not. **923 lines of 116 of the three corpora's 449 documents** carried such a `#`,
+and Word's own PDFs have none of them.
+
+`XsltFOFunctions.symbolLabelFallback` maps a label which is **still** in the private-use area
+after run font selection - which is exactly the case the symbol path did not take - and gives
+it the substitute font, checked for the glyph first (`PhysicalFonts.getSymbolFont` and the two
+Wingdings ones, which is what `w:sym` uses). Applying `SymbolMapper` to every such
+`w:lvlText` *ahead* of run font selection - 17.0.6's first reading of the fix - was measured
+over the three corpora and is much worse: it bypasses the mapping that works, turning correct
+U+25AA labels into the missing-symbol box, and cost **0.025 of mean line parity on each
+corpus over 111 documents with none improved**. The fallback as shipped fixed 109 of real2's
+383 excess `#` lines and moved no document's score by 0.005 either way (real1 +21 matched
+lines with one document +0.076, real2 +14, real3 exactly unchanged).
 
 `w:caps` and `w:smallCaps` have no XSL-FO equivalent (`text-transform` and `font-variant`
 are CSS), so the text itself is upper-cased, in the run's `w:lang`, since Turkish and
 Lithuanian case differently; for small caps the originally lower-case stretches go in an
 inline at 80% of the size. HTML gets `text-transform` / `font-variant`.
+
+<a id="s57smallcapsline"></a>**Word scales a small-caps run's glyphs, not its line.** FOP
+takes a line's ascent from the areas on it, so where that 80% inline is a block's **only**
+content the line came out 80% high and the block's own `docx4j:baseline` could not win
+against a measurable smaller area. Measured on a letterhead whose CONTACT block is nothing
+but a small-caps run, Word puts it and the two cells beside it on one baseline (123.2) where
+docx4j split the row into 120.3 / 122.0 / 122.0. The span now carries `docx4j:small-caps`
+naming what it was scaled by (`RunFontSelector.HINT_SMALL_CAPS`, promoted by
+`WordLayoutFixups.lineBoxAttributes`) and `WordLineLayoutManager` reads its height at the
+size the run declares. Scaling the height rather than skipping the area keeps a line correct
+where a small-caps run shares it with others (`SmallCapsLineHeightTest`).
 
 ---
 
@@ -2044,6 +2114,19 @@ gap at the edges instead. Padding on the `fo:table` plus columns narrowed by the
 reproduce Word's geometry with the table width unchanged: measured, cell text 3.6pt further
 in for 72 twips of spacing.
 
+**The gap is charged against a grid width, not against a content-autofit one.** FOP's
+separate border model takes one gap per column where Word takes a whole gap and half of each
+outer one, so docx4j gives the extra half back by taking the spacing off each column - which
+is right for a grid width, since Word's grid includes the gaps. A content-autofit width is
+built from the measured content plus `w:tblCellMar` and never had a gap in it, so taking one
+out charged the spacing a second time. Measured on a letterhead with `w:tblW auto`,
+`<w:tblCellSpacing w:w="15"/>`, `w:tblCellMar` 15 twips and one 2799-twip grid column: the
+autofit width 2736tw (136.8pt) became a 136.05pt column and, less the cell's own 0.75pt of
+padding either side, a 134.57pt measure, where the cell's line needs 135.3pt and is one line
+in Word (377.4..512.5); 136.8 less the 1.5pt of `border-separation` is exactly Word's 135.3.
+`TableWriter.applyColumnCustomAttributes` now takes the gap off only where the columns are
+not content-sized (`CellSpacingAutofitTest`).
+
 ### 6.7 Rows
 
 - A `w:tr` with nothing of its own to write - every cell continuing a vertical merge, or no
@@ -2263,6 +2346,23 @@ flow cost a line height at every mid-page break, and where it did not fit made F
 page carrying only the running header. A paragraph with content of its own is still
 rendered, as is one which is all the section has (a flow with no block is invalid FO); the
 section break still decides the next page master.
+
+<a id="s7pgsz"></a>**A continuous section break which changes the page size or the
+orientation starts a page.** Word promotes such a break to a page break and gives each part
+its own page, and a `fo:page-sequence` carries one page master, so the two parts cannot be
+merged. Measured on a 22-page document whose first four `w:sectPr` are `w:type="continuous"`
+and whose first three declare `<w:pgSz w:w="23814" w:h="16840" w:orient="landscape"/>` - A3
+landscape - against a final A4: Word's page 1 is 1190.6 x 841.9pt with its content at
+x=76.6..396.3, where docx4j merged the whole continuous run onto one master, the **last**
+part's A4 won, page 1 came out 841.7 x 595.5 and the content ran to x=881.9 - 40pt past our
+own page edge, one column overprinting another. Such a break now ends the section instead;
+the headers and footers are still this section's, which is what Word keeps, and sections
+whose page size agrees are merged as before. `ConversionSectionWrapperFactory.insertPageBreak`
+(which already detected the change, and inserted a `w:pageBreakBefore` on the wrong
+paragraph - the last of the section rather than the first of the next - which did nothing on
+a shared master). That document's page 1 is now 1190.7 x 842.0 and its line parity 0.6494 ->
+0.6928; a second document's page count reached Word's. Corpus: 7 documents carry the shape,
+2 of them where it changes the output.
 
 **Continuous sections with different column counts.** XSL-FO fixes the column count on the
 page master, so a run of continuous sections has to share one. The page-sequence takes the
@@ -3185,6 +3285,29 @@ Worked around here, and worth knowing about:
   loaded, so a font the document never uses is never read;
   `docx4j.convert.out.fo.glyphWidths.round=false` turns it off. A font embedded in the
   docx is corrected too. Upstream report candidate: one expression in `OpenFont`.
+<a id="s10ansiwidths"></a>
+- **A simple font's width table is built from the wrong encoding vector.**
+  `OpenFont.initAnsiWidths` keys the 256-entry table off `Glyphs.WINANSI_ENCODING`, which is
+  Adobe's *original PostScript* WinAnsi vector: its code 96 is `quoteleft` and its 0x98
+  `asciitilde`, where the `/WinAnsiEncoding` FOP declares in the PDF - and which
+  `CodePointMapping` uses to decide which code to emit, and which the viewer reads a code by
+  - has `grave` and `tilde`. Because `initAnsiWidths` indexes by unicode, U+2018's advance
+  lands at both 0x60 and 0x91 and U+0060's is never stored at all, so the viewer paints
+  `grave` at `quoteleft`'s width. Measured over the 449 renders of the three corpora,
+  **1403 of the 2514 embedded simple-font width arrays hold quoteleft's advance at code 96**
+  (Carlito 42/1000 em out, Arimo 111, Caladea -70, DejaVu 183, Noto Sans 106) and nearly all
+  hold asciitilde's at 0x98 (Arimo 251 out, Tinos 208, DejaVu 338, Caladea 399); Word's own
+  PDFs write the real glyph's advance in both. Those two are the only live disagreements -
+  the rest of the two tables agree, and the eight codes where they do not are codes nothing
+  maps to. **Fixed since 17.0.6**: `WordGlyphWidths` writes the advance of the character the
+  *declared* encoding gives each code, whether or not FOP's value is a truncation of it, for
+  `WinAnsiEncoding`, `StandardEncoding` and `MacRomanEncoding`; a symbol-encoded or custom
+  font keeps the truncation-only rule, since there docx4j's glyph lookup and FOP's may not
+  agree on the glyph. What it costs on real documents is small: only 4 of the 449 paint a
+  grave or a small tilde at all (25 and 23 occurrences), and there the line is 0.46 to 1.10pt
+  out, up to 4.3% of a short line - enough to tip a knife-edge break, not enough to move a
+  batch mean. What it fixes outright is the `/Widths` docx4j writes. Upstream report
+  candidate, with the advance rounding above.
 
   What it moved: the aggregates rose on all three corpora (mean line parity 0.8781 ->
   0.8801, 0.8421 -> 0.8477 and 0.8738 -> 0.8802; lines matching Word exactly 86.6 ->

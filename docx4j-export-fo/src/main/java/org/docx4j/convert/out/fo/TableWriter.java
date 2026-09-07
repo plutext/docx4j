@@ -713,10 +713,21 @@ public class TableWriter extends AbstractTableWriter {
 					(table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
 					(table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null)) ?
 					table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW().intValue() : 0;
-			if (cellSpacing > 0) {
+			if (cellSpacing > 0 && !table.isContentSizedColumns()) {
 				// Word: each column loses a whole gap and a half of the outer gaps (a 150pt
 				// column with 3.6pt spacing holds a 139.2pt cell); FOP's separate model
 				// takes one gap per column, so give up the extra half here.
+				//
+				// Only against a *grid* width, which is what includes the gaps.  A
+				// content-autofit width is built from the measured content plus w:tblCellMar
+				// and never had the gap in it, so taking it out here charged the spacing a
+				// second time: measured on a w:tblW auto letterhead with
+				// <w:tblCellSpacing w:w="15"/>, w:tblCellMar 15 and one 2799-twip grid
+				// column, the autofit width 2736tw (136.8pt) became a 136.05pt column and,
+				// less the cell's own 0.75pt of padding either side, a 134.57pt measure,
+				// where the cell's one line needs 135.3 and is one line in Word.
+				// 136.8 - the 1.5pt of border-separation is exactly Word's 135.3.
+				// (@since 17.0.6)
 				columnWidth = Math.max(1, columnWidth - cellSpacing);
 			}
 	        column.setAttribute("column-width", UnitsOfMeasurement.twipToBest(columnWidth) );

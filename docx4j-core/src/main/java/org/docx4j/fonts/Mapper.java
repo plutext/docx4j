@@ -386,6 +386,28 @@ public abstract class Mapper {
     		addMetricallyCompatibleSubstitute(serif, "Tinos Regular", "Liberation Serif");
     	}
 
+
+    	/* Held back: the Nokia Pure family, the only document font name of the three
+    	 * corpora's 449 documents which reaches FOP unresolved.  Its w:altName is Meiryo -
+    	 * itself absent, so the alt-name pass cannot resolve it - and its name matches none
+    	 * of FontFallback's class keywords, so it gets no class default either; because the
+    	 * document's own theme names Nokia Pure Text Light, even the last-resort document
+    	 * default is circular.  FOP renders an unknown family in its base-14 Times, so the
+    	 * whole of that document (a 26pt title, 85 table headings, 5253 TOC leader dots)
+    	 * comes out in a non-embedded serif where the face is a humanist sans
+    	 * (w:family="swiss", panose serif-style 11).
+    	 *
+    	 * addFirstAvailableSubstitute("Nokia Pure Text", "Source Sans 3", "Source Sans Pro",
+    	 * "Arimo Regular", "Liberation Sans") - Segoe UI Light's substitute, for the same
+    	 * reasons - was measured: it draws that document in the right class and moves its
+    	 * page count towards Word's (63 of Word's 87 to 65), and its body lines are closer
+    	 * (Word's "Acceptance Test Manual" is 266.9pt, base-14 Times 274.4, Source Sans
+    	 * 269.9), but its headings are further out (115.2 against 120.6 and 104.6) and it
+    	 * cost that document 0.045 of line parity, which is the whole of the batch's fall on
+    	 * that corpus.  Without a measurement of Nokia Pure's own advances there is nothing
+    	 * to choose the substitute by, so it waits for one.  @since 17.0.6 */
+
+
     	// The Palatino family, and Georgia, are wider than Times, so a Times clone
     	// re-breaks their lines.  P052 is URW's Palladio, the Palatino clone, and is in
     	// the URW base 35 (ghostscript-fonts).  Measured against Word's own PDFs:

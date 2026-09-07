@@ -102,11 +102,23 @@ public class GlyphAdvanceRoundingPdfTest {
 		assertTrue("no font widths in the PDF", truncated.size() > 0);
 		assertEquals("the same fonts", truncated.keySet(), rounded.keySet());
 
-		int larger = 0;
+		/* Codes 96 and 0x98 are the two where FOP's width table and the WinAnsiEncoding
+		 * it declares name different glyphs - FOP builds the table from Adobe's original
+		 * PostScript vector, whose 96 is quoteleft and whose 0x98 is asciitilde, where
+		 * /WinAnsiEncoding has grave and tilde - so there the correction is the other
+		 * glyph's advance outright, not a truncation (CR-001 §10).  Everywhere else the
+		 * two agree and the write only undoes the truncation.  @since 17.0.6 */
+		final int GRAVE = 96, SMALL_TILDE = 0x98;
+
+		int larger = 0, reglyphed = 0;
 		for (String font : truncated.keySet()) {
 			List<Integer> t = truncated.get(font), r = rounded.get(font);
 			assertEquals(font + ": the same number of widths", t.size(), r.size());
 			for (int i = 0; i < r.size(); i++) {
+				if (i == GRAVE || i == SMALL_TILDE) {
+					if (!r.get(i).equals(t.get(i))) reglyphed++;
+					continue;
+				}
 				assertTrue(font + ": rounding never narrows an advance: " + r.get(i)
 						+ " against " + t.get(i), r.get(i) >= t.get(i));
 				assertTrue(font + ": and never by more than a unit at " + i + ": " + r.get(i)
@@ -115,5 +127,6 @@ public class GlyphAdvanceRoundingPdfTest {
 			}
 		}
 		assertTrue("no advance was rounded up at all", larger > 0);
+		assertTrue("the declared encoding's glyph did not reach code 96 or 0x98", reglyphed > 0);
 	}
 }

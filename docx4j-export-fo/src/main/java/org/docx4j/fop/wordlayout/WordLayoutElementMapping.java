@@ -63,6 +63,11 @@ public class WordLayoutElementMapping extends ElementMapping {
 	public static final String LINE_RULE = "line-rule";
 	/** on a list item's first block: the label's natural ascent, part of its first line */
 	public static final String LABEL_ASCENT = "label-ascent";
+	/** on a small-caps span: the fraction of the run's size its glyphs are drawn at.
+	 *  Word scales a small-caps run's glyphs, not its line, so the line is sized from the
+	 *  declared size; without this FOP takes a line's ascent from the 80% inline where
+	 *  that inline is a block's only content.  @since 17.0.6 */
+	public static final String SMALL_CAPS = "small-caps";
 	/** on fo:root: how far this document's Word engine may compress the spaces of a
 	 *  justified line to pull a word in, as a fraction of their natural width.  Word
 	 *  only does that from compatibility mode 15 (the Word 2013 layout engine); for

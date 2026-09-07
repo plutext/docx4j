@@ -425,13 +425,38 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		return ind;
 	}
 	
+	/**
+	 * The indent this level contributes.
+	 *
+	 * <p><b>The level's own {@code w:pPr/w:ind} comes first</b> (ECMA-376 17.9.24: a
+	 * {@code w:lvl/w:pPr} states the paragraph properties applied to a paragraph at this
+	 * level).  A {@code w:lvl/w:pStyle} only <em>links</em> the level to a paragraph
+	 * style; it does not make that style's indent the level's.  Reading the style first
+	 * put an indent from a style the paragraph does not use into every paragraph whose
+	 * own {@code w:numPr} named the numbering: measured on a document whose level
+	 * overrides ilvl 0 with {@code <w:ind w:left="198" w:hanging="198"/>} beside a
+	 * {@code w:pStyle} naming a List Bullet style carrying
+	 * {@code <w:ind w:left="0" w:firstLine="0"/>}, Word draws the bullets at x=79.46 -
+	 * the level's 198 twips from a 79.4pt margin - where the style's indent has no
+	 * hanging indent at all, so the label column fell back to the default tab stop and
+	 * put the bullet 14pt further left again.  Where the level states no indent of its
+	 * own the linked style's is still used, which is what this did since 2.7.
+	 *
+	 * @since 17.0.6 the level's own indent is preferred
+	 */
 	private Ind getIndFromLvl(Lvl lvl) {
-		
-		// If there is a style reference in the instance,
+
+		// A w:ind the level states itself is the level's indent
+		if (lvl.getPPr()!=null
+				&& lvl.getPPr().getInd() !=null ) {
+			return lvl.getPPr().getInd();
+		}
+
+		// Otherwise, if there is a style reference in the instance,
 		// as a sibling of pPr,
 		// use any w:ind in it (or TODO styles it is based on)
 		if (lvl.getPStyle()!=null) {
-			
+
 			log.debug("override level has linked style: " + lvl.getPStyle().getVal() );
 
 			// Get the style
@@ -483,17 +508,11 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		// If there is a style reference in pPr,
 		// but not also one as a sibling of pPr,
 		// then no number appears at all!
-		
+
 			// TODO: throw ShouldNotBeNumbered??
-		
-		// If there is a w:ind in the instance use that
-		if ( lvl.getPPr()!=null
-				&& lvl.getPPr().getInd() !=null ) {
-			return lvl.getPPr().getInd();
-		}
-		
-		return null;		
-		
+
+		return null;
+
 	}
 	
 	/**
