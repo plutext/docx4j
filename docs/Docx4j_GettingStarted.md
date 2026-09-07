@@ -2,151 +2,153 @@ Docx4j - Getting Started
 
 Contents
 
-[What is docx4j?	4](#_Toc85469886)
+[What is docx4j?	4](#_Toc627286)
 
-[What sorts of things can you do with docx4j?	5](#_Toc85469887)
+[What sorts of things can you do with docx4j?	5](#_Toc627287)
 
-[Is docx4j for you?	5](#_Toc85469888)
+[Is docx4j for you?	5](#_Toc627288)
 
-[GraalVM	6](#_Toc85469889)
+[GraalVM	6](#_Toc627289)
 
-[docx4j.NET	6](#_Toc85469890)
+[docx4j.NET	6](#_Toc627290)
 
-[What Word documents does it support?	6](#_Toc85469891)
+[What Word documents does it support?	6](#_Toc627291)
 
-[Handling legacy binary .doc files	7](#_Toc85469892)
+[Handling legacy binary .doc files	7](#_Toc627292)
 
-[A word about Jaxb	7](#_Toc85469893)
+[A word about Jaxb	7](#_Toc627293)
 
-[Using docx4j via Maven	8](#_Toc85469894)
+[Using docx4j via Maven	8](#_Toc627294)
 
-[Using docx4j binaries	8](#_Toc85469895)
+[Using docx4j binaries	8](#_Toc627295)
 
-[docx4j dependencies	8](#_Toc85469896)
+[docx4j dependencies	8](#_Toc627296)
 
-[slf4j	8](#_Toc85469897)
+[slf4j	8](#_Toc627297)
 
-[other dependencies	9](#_Toc85469898)
+[other dependencies	9](#_Toc627298)
 
-[Docx4j source code	10](#_Toc85469899)
+[Docx4j source code	10](#_Toc627299)
 
-[Javadoc	10](#_Toc854698100)
+[Javadoc	10](#_Toc6272100)
 
-[Building docx4j from source	10](#_Toc854698101)
+[Building docx4j from source	10](#_Toc6272101)
 
-[Command line -via Maven	10](#_Toc854698102)
+[Command line -via Maven	10](#_Toc6272102)
 
-[Eclipse	10](#_Toc854698103)
+[Eclipse	10](#_Toc6272103)
 
-[Using a different IDE?	11](#_Toc854698104)
+[Using a different IDE?	11](#_Toc6272104)
 
-[Open an existing docx/pptx/xlsx document	11](#_Toc854698105)
+[Open an existing docx/pptx/xlsx document	11](#_Toc6272105)
 
-[OpenXML concepts	12](#_Toc854698106)
+[OpenXML concepts	12](#_Toc6272106)
 
-[Specification versions	12](#_Toc854698107)
+[Specification versions	12](#_Toc6272107)
 
-[Architecture	13](#_Toc854698108)
+[Architecture	13](#_Toc6272108)
 
-[Jaxb: marshalling and unmarshalling	14](#_Toc854698109)
+[Jaxb: marshalling and unmarshalling	14](#_Toc6272109)
 
-[Parts List	15](#_Toc854698110)
+[Parts List	15](#_Toc6272110)
 
-[MainDocumentPart	17](#_Toc854698111)
+[MainDocumentPart	17](#_Toc6272111)
 
-[Samples	19](#_Toc854698112)
+[Samples	19](#_Toc6272112)
 
-[Creating a new docx	21](#_Toc854698113)
+[Creating a new docx	21](#_Toc6272113)
 
-[docx4j.properties	21](#_Toc854698114)
+[docx4j.properties	21](#_Toc6272114)
 
-[Adding a paragraph of text	22](#_Toc854698115)
+[Adding a paragraph of text	22](#_Toc6272115)
 
-[General strategy/approach for creating stuff	23](#_Toc854698116)
+[General strategy/approach for creating stuff	23](#_Toc6272116)
 
-[Formatting Properties	25](#_Toc854698117)
+[Formatting Properties	25](#_Toc6272117)
 
-[Creating and adding a table	25](#_Toc854698118)
+[Creating and adding a table	25](#_Toc6272118)
 
-[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc854698119)
+[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc6272119)
 
-[Traversing a document	26](#_Toc854698120)
+[Traversing a document	26](#_Toc6272120)
 
-[Adding a Part	27](#_Toc854698121)
+[Adding a Part	27](#_Toc6272121)
 
-[Importing XHTML	27](#_Toc854698122)
+[Importing XHTML	27](#_Toc6272122)
 
-[Markdown import and export	28](#_Toc854698123)
+[Markdown import and export	28](#_Toc6272123)
 
-[docx4j for AI agents (MCP)	28](#_Toc854698124)
+[docx4j for AI agents (MCP)	28](#_Toc6272124)
 
-[Using an LLM with docx4j	28](#_Toc854698125)
+[Using an LLM with docx4j	28](#_Toc6272125)
 
-[docx to (X)HTML	29](#_Toc854698126)
+[docx to (X)HTML	29](#_Toc6272126)
 
-[docx to PDF	29](#_Toc854698127)
+[docx to PDF	30](#_Toc6272127)
 
-[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc854698128)
+[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc6272128)
 
-[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc854698129)
+[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc6272129)
 
-[docx to PDF via XSL FO	31](#_Toc854698130)
+[docx to PDF via XSL FO	31](#_Toc6272130)
 
-[Image Handling - DOCX	33](#_Toc854698131)
+[Image Handling - DOCX	33](#_Toc6272131)
 
-[Manual Image Manipulation	35](#_Toc854698132)
+[Windows metafiles (WMF, EMF, EMF+)	35](#_Toc6272132)
 
-[Image Handling – PPTX	35](#_Toc854698133)
+[Manual Image Manipulation	35](#_Toc6272133)
 
-[Adding Headers/Footers	36](#_Toc854698134)
+[Image Handling – PPTX	36](#_Toc6272134)
 
-[Protection Settings	36](#_Toc854698135)
+[Adding Headers/Footers	36](#_Toc6272135)
 
-[docx Table of Contents	36](#_Toc854698136)
+[Protection Settings	36](#_Toc6272136)
 
-[Introduction	37](#_Toc854698137)
+[docx Table of Contents	37](#_Toc6272137)
 
-[Field background	37](#_Toc854698138)
+[Introduction	37](#_Toc6272138)
 
-[TOC Content Control	38](#_Toc854698139)
+[Field background	38](#_Toc6272139)
 
-[TOC Field Syntax	38](#_Toc854698140)
+[TOC Content Control	38](#_Toc6272140)
 
-[Inserting/generating a TOC – "pure Java" considerations	40](#_Toc854698141)
+[TOC Field Syntax	39](#_Toc6272141)
 
-[Text extraction	40](#_Toc854698142)
+[Inserting/generating a TOC – "pure Java" considerations	41](#_Toc6272142)
 
-[Text substitution/document generation/reporting	41](#_Toc854698143)
+[Text extraction	41](#_Toc6272143)
 
-[Text substitution – document surface	41](#_Toc854698144)
+[Text substitution/document generation/reporting	41](#_Toc6272144)
 
-[Text substitution via data bound content controls	42](#_Toc854698145)
+[Text substitution – document surface	42](#_Toc6272145)
 
-[Binding extensions for repeats and conditionals	43](#_Toc854698146)
+[Text substitution via data bound content controls	43](#_Toc6272146)
 
-[Binding escaped XHTML (XML + CSS)	43](#_Toc854698147)
+[Binding extensions for repeats and conditionals	44](#_Toc6272147)
 
-[Binding other rich content	43](#_Toc854698148)
+[Binding escaped XHTML (XML + CSS)	44](#_Toc6272148)
 
-[Authoring	43](#_Toc854698149)
+[Binding other rich content	44](#_Toc6272149)
 
-[Mailmerge	43](#_Toc854698150)
+[Authoring	44](#_Toc6272150)
 
-[SmartArt	44](#_Toc854698151)
+[Mailmerge	44](#_Toc6272151)
 
-[JAXB stuff	44](#_Toc854698152)
+[SmartArt	44](#_Toc6272152)
 
-[Cloning	44](#_Toc854698153)
+[JAXB stuff	45](#_Toc6272153)
 
-[javax.xml.bind.JAXBElement	44](#_Toc854698154)
+[Cloning	45](#_Toc6272154)
 
-[@XmlRootElement	45](#_Toc854698155)
+[javax.xml.bind.JAXBElement	45](#_Toc6272155)
 
-[Merging Documents and Presentations	45](#_Toc854698156)
+[@XmlRootElement	45](#_Toc6272156)
 
-[Appendix 1 – Font Mapping	47](#_Toc854698157)
+[Merging Documents and Presentations	46](#_Toc6272157)
 
-[Appendix 2 – Office font solutions	50](#_Toc854698158)
+[Appendix 1 – Font Mapping	48](#_Toc6272158)
+
+[Appendix 2 – Office font solutions	51](#_Toc6272159)
 
   
 
@@ -1608,6 +1610,18 @@ Finally, with docx4j, you can convert images from formats unsupported by Word (e
 
 
 Note the name **imconvert**, which is used so that we don't have to supply a full path to exec.  You'll need to accommodate that.  
+
+## Windows metafiles (WMF, EMF, EMF+)
+
+From 17.0.6, docx4j draws Windows metafiles itself, in pure Java, by replaying the metafile's recorded GDI calls (Apache POI's HWMF and HEMF, repackaged into org.docx4j.org.apache.poi).  This covers inline and floating pictures, and the previews Word stores for embedded objects (w:object and w:pict): Equation Editor 3 and MathType equations, pasted Excel ranges, OLE icons.
+
+In PDF output via XSL FO, the picture goes into the FO as SVG inside an fo:instream-foreign-object, so it reaches the PDF as vectors and its text stays text (searchable and selectable).  In HTML output it becomes an inline \<svg\> where your ConversionImageHandler embeds images (for example the data URI handler), and otherwise a PNG, written or embedded by that same handler.
+
+The SVG generator is Batik's, which ships with docx4j-export-fo.  With docx4j-core alone, metafiles in HTML output are PNGs, and MetafilePart.toSVG() will tell you to add that module.
+
+The parts offer toSVG(), toPNG(dpi) and toPNGBytes(dpi) on MetafileWmfPart and MetafileEmfPart, and org.docx4j.model.images.MetafileRenderer draws a metafile onto any Graphics2D.
+
+Limits: a few EMF+-only constructs written by GDI+ (.NET) applications - ellipses, arcs, curves, DrawString text and container transforms - are not implemented yet; Office's own "dual" EMF+ files render through their EMF records.  A metafile docx4j cannot draw falls back to the previous behaviour: its space is reserved, or ImageMagick converts it if configured.  The wmf2svg dependency has been dropped.
 
 # Manual Image Manipulation
 
