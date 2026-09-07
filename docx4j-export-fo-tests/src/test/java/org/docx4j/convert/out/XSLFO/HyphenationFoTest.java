@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * What the line manager then does with them is
  * org.docx4j.fop.wordlayout.HyphenationTest.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class HyphenationFoTest {
 

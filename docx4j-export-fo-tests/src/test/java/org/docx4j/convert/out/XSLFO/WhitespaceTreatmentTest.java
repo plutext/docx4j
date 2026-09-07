@@ -44,7 +44,7 @@ import org.w3c.dom.NodeList;
  * x=72.0 to 74.2, exactly one 8pt Arimo space, and the narrower measure re-broke the
  * text; 174 such blocks in 53 of 156 corpus documents.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class WhitespaceTreatmentTest extends AbstractXSLFOTest {
 

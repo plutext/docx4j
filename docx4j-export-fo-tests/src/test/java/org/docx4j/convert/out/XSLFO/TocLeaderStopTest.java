@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
  * three corpora declare a TOC stop more than 2pt from their text column; in the rest the
  * stop is the right edge and nothing changes.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class TocLeaderStopTest {
 

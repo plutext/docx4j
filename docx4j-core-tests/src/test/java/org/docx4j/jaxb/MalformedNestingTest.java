@@ -24,7 +24,7 @@ import org.junit.Test;
  * from 302 occurrences to 466 and another from 11 to 21, and the FO had held none of
  * the first at all.  10 documents of three corpora hold the shape.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class MalformedNestingTest {
 
@@ -73,7 +73,7 @@ public class MalformedNestingTest {
 	/**
 	 * The nested runs keep their own w:rPr - and their own whitespace.
 	 *
-	 * <p>17.0.6 first flattened the nested runs' content into the outer run, which lost
+	 * <p>17.1.0 first flattened the nested runs' content into the outer run, which lost
 	 * both.  Measured against Word 365 on a document whose hyperlinks hold
 	 * {@code w:hyperlink/w:r/(w:rPr, w:r, w:r, ...)} with the words in
 	 * {@code w:rStyle="Highlight"} runs and the spaces between them in runs of their own:

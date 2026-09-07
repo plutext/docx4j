@@ -30,7 +30,7 @@ import org.junit.Test;
  * font is a better answer) and before the class-based ones (which are only a guess from
  * the name); CR-001 &#xa7;5.1.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class AltNameSubstituteTest {
 

@@ -64,7 +64,7 @@ public class WordLineMetricsTest {
 
 	/**
 	 * Word's single line height is a whole number of 1/600 inch units - it lays a page out
-	 * at 600 dpi - and 17.0.6 rounds to that grid.  What w:spacing then makes of it is
+	 * at 600 dpi - and 17.1.0 rounds to that grid.  What w:spacing then makes of it is
 	 * <b>not</b> rounded again: Word's own pitch alternates between the two units either
 	 * side of the exact value (Liberation Serif 12pt at w:line="276" is 132.25 units, and
 	 * the line-auto golden's four pitches are 15.96 / 15.84 / 15.87 / 15.84), so it is the

@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
  * <p>Word writes an embedded object as a {@code w:object} holding the VML shape whose
  * {@code v:imagedata} points at the picture it draws for the object - an Equation
  * Editor 3 or MathType equation (usually a WMF or EMF), the thumbnail of an embedded
- * workbook or Visio drawing, or the icon of an object shown as an icon.  Until 17.0.6
+ * workbook or Visio drawing, or the icon of an object shown as an icon.  Until 17.1.0
  * <em>neither</em> FO exporter matched {@code w:object}: nothing in
  * {@code AbstractVisitorExporterGenerator} and no template in {@code docx2fo.xslt}, so
  * the object reached the visitor's catch-all ("Need to handle
@@ -36,7 +36,7 @@ import org.w3c.dom.NodeList;
  * previews get the {@code fo:external-graphic} they always got, the VML style supplies
  * the size, and a {@code position:absolute} shape is placed where Word places it.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class VmlObjectPictureTest extends AbstractXSLFOTest {
 

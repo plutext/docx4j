@@ -15,7 +15,7 @@ import org.w3c.dom.Document;
  * A Windows metafile picture part: WMF ({@link MetafileWmfPart}) or EMF / EMF+
  * ({@link MetafileEmfPart}).
  *
- * <p>Since 17.0.6 both can be converted, by replaying the recorded GDI calls onto
+ * <p>Since 17.1.0 both can be converted, by replaying the recorded GDI calls onto
  * a {@code Graphics2D} - see {@link org.docx4j.model.images.MetafileRenderer} and
  * CR-011.  {@link #toSVG()} keeps the picture as vectors; {@link #toPNG(double)}
  * rasterises it.</p>
@@ -45,13 +45,13 @@ public abstract class MetafilePart extends BinaryPartAbstractImage {
 	 * {@link #toPNG(double)}, which needs nothing beyond the JDK.</p>
 	 *
 	 * <p>The return type is {@link MetafileWmfPart.SvgDocument} for both subclasses,
-	 * because that is what {@code MetafileWmfPart.toSVG()} returned before 17.0.6
+	 * because that is what {@code MetafileWmfPart.toSVG()} returned before 17.1.0
 	 * (when it was implemented with wmf2svg, now retired) and callers compile
 	 * unchanged.  Its {@code getDomDocument()} is the SVG.</p>
 	 *
 	 * @throws Docx4JException if there is no SVG provider, or the metafile cannot be
 	 *         drawn
-	 * @since 17.0.6 on this class (previously WMF only)
+	 * @since 17.1.0 on this class (previously WMF only)
 	 */
 	public MetafileWmfPart.SvgDocument toSVG() throws Docx4JException {
 
@@ -73,7 +73,7 @@ public abstract class MetafilePart extends BinaryPartAbstractImage {
 	 * @param dpi pixels per inch; 96 is the Windows screen resolution metafiles are
 	 *            usually authored at
 	 * @throws Docx4JException if the metafile cannot be drawn
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public BufferedImage toPNG(double dpi) throws Docx4JException {
 
@@ -89,7 +89,7 @@ public abstract class MetafilePart extends BinaryPartAbstractImage {
 	 * This picture as the bytes of a PNG file, at the given resolution.
 	 *
 	 * @throws Docx4JException if the metafile cannot be drawn
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public byte[] toPNGBytes(double dpi) throws Docx4JException {
 

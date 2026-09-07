@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
  * Install a different implementation per {@link Graphics2D} with the
  * {@link Drawable#FONT_HANDLER} rendering hint.
  *
- * @since 17.0.6 (CR-011 phase 1)
+ * @since 17.1.0 (CR-011 phase 1)
  */
 public class Docx4jDrawFontManager extends DrawFontManagerDefault {
 

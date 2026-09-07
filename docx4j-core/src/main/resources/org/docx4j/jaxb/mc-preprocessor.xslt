@@ -334,8 +334,8 @@
 		     it understands none of them.  Which prefixes we claim - wps by default,
 		     whose wps:txbx/w:txbxContent both exporters do draw - is
 		     docx4j.jaxb.mc.preferChoice; see XSLTUtils.mcPreferredChoiceRequires for the
-		     measurement.  Empty restores the pre-17.0.6 fallback-always behaviour.
-		     @since 17.0.6 -->
+		     measurement.  Empty restores the pre-17.1.0 fallback-always behaviour.
+		     @since 17.1.0 -->
   		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
 
   			<xsl:variable name="chosen"
@@ -486,7 +486,7 @@
 	     The run holding the nested content is *split*: each nested run becomes a sibling
 	     run, keeping its own w:rPr, and each of the outer run's own children is wrapped in
 	     a run carrying the outer w:rPr.  Flattening the nested runs' content into the outer
-	     run instead - which is what 17.0.6 first did - loses their character formatting and
+	     run instead - which is what 17.1.0 first did - loses their character formatting and
 	     their whitespace: on a document whose hyperlinks hold
 	     w:hyperlink/w:r/(w:rPr, w:r, w:r, ...) with the words in w:rStyle="Highlight" runs
 	     and the spaces between them in runs of their own, Word paints
@@ -494,7 +494,7 @@
 	     "OrbanViktor>> Mondatok" - the lone-space runs gone - on 466 lines.
 	     Only a direct child is matched: a w:r deeper inside a w:r is the ordinary shape of
 	     a text box (w:r/w:pict/v:textbox/w:txbxContent/w:p/w:r), which is perfectly legal.
-	     @since 17.0.6 -->
+	     @since 17.1.0 -->
 
 	<xsl:template match="w:r[w:r or w:p]">
 		<xsl:variable name="logging"

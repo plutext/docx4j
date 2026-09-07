@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * ({@code w:equalWidth="0"} with {@code w:col} children), rendered as a one-row table
  * whose cells are the columns.
  *
- * <p>XSL-FO's region-body columns are all the same width, so until 17.0.6 such a section
+ * <p>XSL-FO's region-body columns are all the same width, so until 17.1.0 such a section
  * was laid out as equal columns with the first column's gap - measured, a certificate
  * whose columns are 157 and 318pt with a 24pt gap came out as two 237.5pt columns, so
  * every line of the second column started 80pt left of Word's and broke differently.  A
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * <p>The table takes no borders, no cell margins and no indent, so the only geometry it
  * adds is the columns themselves: a spacer column carries each {@code w:col/@w:space}.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 class UnequalColumns {
 

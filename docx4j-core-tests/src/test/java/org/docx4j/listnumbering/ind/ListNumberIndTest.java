@@ -44,7 +44,7 @@ public class ListNumberIndTest {
 		"abstract_nostyle_noppr.xml", 
 		"override_nostyle_ppr.xml"};  
 	
-	/* @since 17.0.6 the first is 2880, the level's own w:ind, where it used to be 11, the
+	/* @since 17.1.0 the first is 2880, the level's own w:ind, where it used to be 11, the
 	 * w:ind of the paragraph style the level's w:pStyle names.  A w:lvl/w:pPr states the
 	 * properties applied to a paragraph at that level (ECMA-376 17.9.24); the w:pStyle
 	 * only links the level to a style, and reading the style's w:ind in place of the

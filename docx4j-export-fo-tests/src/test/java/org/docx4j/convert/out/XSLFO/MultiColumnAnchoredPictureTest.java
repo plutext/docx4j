@@ -23,14 +23,14 @@ import org.w3c.dom.NodeList;
  * picture nor the indent beside it is painted - so a wrapped picture there takes the
  * no-float treatment: positioned where Word puts it when it is narrower than 60% of the
  * <b>column</b>, reserving its height otherwise.  The share was measured against the
- * section's whole text column until 17.0.6, which is twice the measure Word uses.
+ * section's whole text column until 17.1.0, which is twice the measure Word uses.
  * Measured on a landscape two-column document (columns 360.675pt): {@code mutool draw -F
  * trace} counts two pictures on Word's page 1 and one on ours - the 87.75 x 48pt logo's
  * float was never painted - and a 340.15pt picture anchored 406.0pt from the margin, ie
  * in column 2, reserved 278.4pt at the head of column 1, putting the title at y=323.0
  * against Word's 37.0.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class MultiColumnAnchoredPictureTest extends AbstractXSLFOTest {
 

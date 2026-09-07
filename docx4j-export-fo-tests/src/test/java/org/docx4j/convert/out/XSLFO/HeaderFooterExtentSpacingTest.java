@@ -36,7 +36,7 @@ import org.w3c.dom.NodeList;
  * and Word's footer line at 722.6 where ours was 731.9 - 20.6pt more body on every one of
  * 311 pages.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class HeaderFooterExtentSpacingTest extends AbstractXSLFOTest {
 

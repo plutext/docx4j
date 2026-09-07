@@ -14,7 +14,7 @@ import org.junit.Test;
 /**
  * A WMF / EMF / EMF+ picture reaches HTML as something a browser can show.
  *
- * <p>Until 17.0.6 the {@code <img src>} named the {@code .wmf}/{@code .emf} itself,
+ * <p>Until 17.1.0 the {@code <img src>} named the {@code .wmf}/{@code .emf} itself,
  * which no browser renders - and the branch in {@code AbstractWordXmlPicture} that
  * was meant to convert it had never been reachable, because the field it tested was
  * never assigned (CR-011 §2).  docx4j now replays the metafile: as an inline
@@ -29,7 +29,7 @@ import org.junit.Test;
  *
  * <p>Both HTML pathways are asserted, the XSLT one and the visitor one.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class MetafileHtmlTest {
 

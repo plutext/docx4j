@@ -348,7 +348,7 @@ public abstract class Mapper {
     	// through to the serif default and its labels came out 3-4% narrow (measured
     	// against Word's own PDF of a corpus document, every y and x within 0.3pt and
     	// the text 1.03-1.04x ours).  Arimo is 1.0605x Tinos, so the residual is 2%.
-    	// @since 17.0.6
+    	// @since 17.1.0
     	for (String sans : new String[] { "Tahoma", "Trebuchet MS", "Segoe UI",
     			"Gadugi", "Helvetica", "Helvetica Neue", "Tw Cen MT" }) {
     		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
@@ -358,7 +358,7 @@ public abstract class Mapper {
     	// PDF of a corpus document, its centred title is 281.2pt against our Arimo's
     	// 247.9 on the same centre - 1.134x.  Noto Sans Black measures 1.1122x Arimo
     	// over a mixed Latin sample, so the residual is 2% instead of 13.4%.  Arimo
-    	// remains the last resort.  @since 17.0.6
+    	// remains the last resort.  @since 17.1.0
     	addFirstAvailableSubstitute("Arial Black", "Noto Sans Black", "Noto Sans Display Black",
     			"Arimo Regular", "Liberation Sans");
 
@@ -369,7 +369,7 @@ public abstract class Mapper {
     	// Latin sample; Word's Comic Sans lines are 1.153x our Carlito ones (Comic Sans
     	// reached Carlito through the class-based fallback), and Noto Sans is 1.15x
     	// Carlito.  Tahoma is left where it is: on an all-Tahoma document the median
-    	// ratio to our Arimo output is 1.006.  @since 17.0.6
+    	// ratio to our Arimo output is 1.006.  @since 17.1.0
     	addFirstAvailableSubstitute("Verdana", "DejaVu Sans", "Arimo Regular", "Liberation Sans");
     	addFirstAvailableSubstitute("Comic Sans MS", "Noto Sans Regular", "DejaVu Sans",
     			"Arimo Regular", "Liberation Sans");
@@ -405,7 +405,7 @@ public abstract class Mapper {
     	 * 269.9), but its headings are further out (115.2 against 120.6 and 104.6) and it
     	 * cost that document 0.045 of line parity, which is the whole of the batch's fall on
     	 * that corpus.  Without a measurement of Nokia Pure's own advances there is nothing
-    	 * to choose the substitute by, so it waits for one.  @since 17.0.6 */
+    	 * to choose the substitute by, so it waits for one.  @since 17.1.0 */
 
 
     	// The Palatino family, and Georgia, are wider than Times, so a Times clone
@@ -413,7 +413,7 @@ public abstract class Mapper {
     	// the URW base 35 (ghostscript-fonts).  Measured against Word's own PDFs:
     	// Word's Book Antiqua lines are 1.087-1.114x our Tinos ones and its Georgia
     	// lines 1.076-1.112x, where P052 is 1.09x Tinos over a mixed Latin sample.
-    	// @since 17.0.6
+    	// @since 17.1.0
     	for (String palatino : new String[] { "Georgia", "Book Antiqua", "Palatino Linotype" }) {
     		addFirstAvailableSubstitute(palatino, "P052", "Tinos Regular", "Liberation Serif");
     	}
@@ -470,7 +470,7 @@ public abstract class Mapper {
      *
      * @param documentFontNames the fonts the document uses; null for every font in the table
      * @param wmlFonts the font table part's content
-     * @since 17.0.6
+     * @since 17.1.0
      */
     public void addAltNameSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {
 

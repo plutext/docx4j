@@ -24,7 +24,7 @@ import org.junit.Test;
  * but finite penalty - the breaker may then break inside the chain, but only where it
  * must.  A chain which fits on a page is left exactly as it was.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class KeepChainBoundTest {
 

@@ -60,7 +60,7 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 		// result the field cached, and so do we.  A reference to an id that is never
 		// emitted resolves to nothing at all in FO (fo:page-number-citation) and to a
 		// dead link in HTML, which cost one corpus document all 150 of its table of
-		// contents page numbers.  @since 17.0.6
+		// contents page numbers.  @since 17.1.0
 		if (!context.hasBookmark(bookmarkId)) {
 			if (log.isDebugEnabled()) {
 				log.debug("PAGEREF target '" + bookmarkId + "' is not in the document; keeping the field's cached result");

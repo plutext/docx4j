@@ -27,7 +27,7 @@ import org.junit.Test;
  * documents whose Heading 1 style carries it, where counting it cost two spurious pages
  * of fourteen and one of seven).</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class ConsecutivePageBreakTest extends AbstractXSLFOTest {
 

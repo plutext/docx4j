@@ -31,7 +31,7 @@ import org.docx4j.toc.TocGenerator;
  * 
  * For page numbers, this example has export-fo on your classpath
  *
- * Since 17.0.6, the simple case is a one liner: Docx4J.updateToc(wordMLPackage)
+ * Since 17.1.0, the simple case is a one liner: Docx4J.updateToc(wordMLPackage)
  * (and Docx4J.FLAG_EXPORT_UPDATE_TOC does it as part of toPDF/toFO/toHTML).
  * Use TocGenerator directly, as here, when you want the options.
  *

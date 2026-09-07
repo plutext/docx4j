@@ -24,17 +24,17 @@ public abstract class AbstractWordXmlPicture {
     protected Dimensions dimensions;
 
 	/** The picture's bytes, where they are a Windows metafile this build can draw
-	 *  (see {@link #renderMetafile}); null otherwise.  Until 17.0.6 this field was
+	 *  (see {@link #renderMetafile}); null otherwise.  Until 17.1.0 this field was
 	 *  declared and tested but never assigned, so the WMF branch below was dead code
 	 *  and both WMF and EMF fell through to an &lt;img&gt;/fo:external-graphic naming
 	 *  a file neither a browser nor FOP can decode (CR-011 §2). */
 	protected BinaryPart metaFile;
 
-	/** The metafile rendered as SVG, where that succeeded.  @since 17.0.6 */
+	/** The metafile rendered as SVG, where that succeeded.  @since 17.1.0 */
 	protected Document metaFileSvg;
 
 	/** Set on the pictures the XSL-FO exporters build, not the HTML ones: the two
-	 *  want a metafile represented differently.  @since 17.0.6 */
+	 *  want a metafile represented differently.  @since 17.1.0 */
 	protected boolean forXslFo;
 
 	protected final static String IMAGE_URL = "http://docxwave.appspot.com/image?";
@@ -150,7 +150,7 @@ public abstract class AbstractWordXmlPicture {
 
 	/** A length for XSL-FO: as many decimals as it takes, at most two, and no trailing
 	 *  zeros.  Word states a picture's size in EMU, so 857250 EMU is 67.5pt, not 67.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	protected static String length(double v) {
 		String s = String.format(java.util.Locale.ROOT, "%.2f", v);
 		while (s.contains(".") && (s.endsWith("0") || s.endsWith("."))) {
@@ -169,8 +169,8 @@ public abstract class AbstractWordXmlPicture {
             if (metaFileSvg!=null) {
             	/* A Windows metafile, replayed as SVG: FOP draws it into the PDF as
             	 * vectors (and its text as text, where it can resolve the font).
-            	 * Until 17.0.6 an fo:external-graphic named the .wmf/.emf itself,
-            	 * which FOP has no loader for.  @since 17.0.6, CR-011 */
+            	 * Until 17.1.0 an fo:external-graphic named the .wmf/.emf itself,
+            	 * which FOP has no loader for.  @since 17.1.0, CR-011 */
             	Element ifo = document.createElementNS("http://www.w3.org/1999/XSL/Format",
             			"fo:instream-foreign-object");
             	document.appendChild(ifo);
@@ -240,7 +240,7 @@ public abstract class AbstractWordXmlPicture {
 
 	/** content-width / content-height / scaling on an fo:external-graphic or
 	 *  fo:instream-foreign-object: the frame the document gives the picture.
-	 *  (WordLayoutFixups and TableWriter read these back.)  @since 17.0.6 */
+	 *  (WordLayoutFixups and TableWriter read these back.)  @since 17.1.0 */
 	private void sizeGraphic(Element imageElement) {
 
             if (dimensions==null) return;
@@ -310,7 +310,7 @@ public abstract class AbstractWordXmlPicture {
 	 * A WMF / EMF / EMF+ picture, drawn rather than handed on as bytes nothing
 	 * downstream can decode.
 	 *
-	 * <p>Word draws every picture; before 17.0.6 docx4j passed a metafile through to
+	 * <p>Word draws every picture; before 17.1.0 docx4j passed a metafile through to
 	 * the output untouched, so the HTML named a {@code .wmf}/{@code .emf} a browser
 	 * cannot show and the FO named one FOP has no loader for (CR-011 §2).  Now the
 	 * bytes are replayed:</p>
@@ -331,7 +331,7 @@ public abstract class AbstractWordXmlPicture {
 	 * replaces with a transparent placeholder of the right size.</p>
 	 *
 	 * @return true if the picture has been dealt with (@src set, or SVG built)
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private boolean renderMetafile(ConversionImageHandler imageHandler, Relationship rel, BinaryPart part) {
 
@@ -483,13 +483,13 @@ public abstract class AbstractWordXmlPicture {
      */
     public class Dimensions {
     	
-    	/** @since 17.0.6 a fractional length: Word's wp:extent is in EMU, and rounding it
+    	/** @since 17.1.0 a fractional length: Word's wp:extent is in EMU, and rounding it
     	 *  to a whole unit lost up to half a point per picture (an image declared 67.5pt
     	 *  tall came out 67), which moves every line below it. */
     	public double height;
     	public String heightUnit;
     	
-    	/** @since 17.0.6 fractional; see {@link #height} */
+    	/** @since 17.1.0 fractional; see {@link #height} */
     	public double width;
     	public String widthUnit;
     	

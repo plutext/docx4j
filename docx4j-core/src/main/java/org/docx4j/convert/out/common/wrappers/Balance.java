@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * <p>Measured on the columns-unequal probe, whose third section is one paragraph in columns
  * of 157 and 318pt: Word gives each column eight lines, breaking inside the paragraph ("...
  * quis nostrud" ends column 1, "exercitation ..." opens column 2).  A one-row table cannot
- * flow its content from one cell into the next, so until 17.0.6 such a section fell back to
+ * flow its content from one cell into the next, so until 17.1.0 such a section fell back to
  * FOP's equal columns, whose widths are nothing like Word's (measured, 237.5pt each where
  * Word's are 157 and 318).</p>
  *
@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * stretch which would not fit the page at that estimate is left alone, since a one-row
  * table cannot break into columns across a page.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 final class Balance {
 

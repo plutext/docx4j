@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
  * bypasses the mapping that works, turning correct bullets into the missing-symbol box,
  * and cost 0.025 of mean line parity on each corpus over 111 documents.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SymbolNumberingLabelTest extends AbstractXSLFOTest {
 

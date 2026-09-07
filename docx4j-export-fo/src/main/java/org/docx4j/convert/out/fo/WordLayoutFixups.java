@@ -106,7 +106,7 @@ public final class WordLayoutFixups {
 	/**
 	 * @param hyphenation the document's hyphenation settings, which go on fo:root
 	 *        for the line manager; null for a document which is not hyphenated.
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static String apply(String foDocument, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
@@ -118,7 +118,7 @@ public final class WordLayoutFixups {
 	 * @param compat the document's w:compat switches, each resolved to the value the
 	 *        document states or, where it states none, to its compatibility mode's
 	 *        default (see {@link org.docx4j.model.CompatibilityOptions}).
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static String apply(String foDocument, org.docx4j.model.CompatibilityOptions compat,
 			org.docx4j.model.HyphenationSettings hyphenation) {
@@ -141,13 +141,13 @@ public final class WordLayoutFixups {
 		apply(doc, compatibilityMode, null);
 	}
 
-	/** @since 17.0.6 */
+	/** @since 17.1.0 */
 	public static void apply(Document doc, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
 		apply(doc, org.docx4j.model.CompatibilityOptions.ofMode(compatibilityMode), hyphenation);
 	}
 
-	/** @since 17.0.6 */
+	/** @since 17.1.0 */
 	public static void apply(Document doc, org.docx4j.model.CompatibilityOptions compat,
 			org.docx4j.model.HyphenationSettings hyphenation) {
 		int compatibilityMode = compat.mode();
@@ -229,7 +229,7 @@ public final class WordLayoutFixups {
 	 * <p>Each explicit value therefore becomes the sum of itself and the nearest
 	 * ancestor's.  Working in document order makes that cumulative over any depth.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void combineLetterSpacing(Document doc) {
 		List<Element> scaled = new ArrayList<>();
@@ -278,7 +278,7 @@ public final class WordLayoutFixups {
 	 * that paragraph gets the paragraph mark's line instead
 	 * ({@link #emptyLineForBlockWithNoContent}).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void imageOnlyLineBox(Document doc) {
 		for (Element block : elements(doc, "block")) {
@@ -292,7 +292,7 @@ public final class WordLayoutFixups {
 			// rule used to skip exactly the paragraphs it was written for, leaving the
 			// picture's line the paragraph's height *plus* the picture.  Word's line is
 			// the picture's own height with no descent, so the larger of the two wins.
-			// @since 17.0.6
+			// @since 17.1.0
 			double box = lengthPt(block.getAttribute(HINT_LINE_BOX));
 			if (height <= box) continue;
 			// A line-spacing multiple still adds its own leading to the picture's line -
@@ -304,7 +304,7 @@ public final class WordLayoutFixups {
 			// picture on an exact 12pt line - so its line is 26.0pt = 24 + 0.15 x 13.428
 			// (2.01), where cancelling the multiple outright gave 24.0 and 37.8.  An
 			// exact line rule still clips the picture, and is left alone above.
-			// @since 17.0.6
+			// @since 17.1.0
 			double extraLeading = 0;
 			double lineHeight = lengthPt(block.getAttribute("line-height"));
 			if (box > 0 && lineHeight > box) extraLeading = lineHeight - box;
@@ -325,7 +325,7 @@ public final class WordLayoutFixups {
 			// line manager reads as a factor over the (picture-sized) line box: its
 			// default rule makes the line ascent + descent = the picture, then adds
 			// box x (line-height / line-box - 1), which is exactly extraLeading here.
-			// @since 17.0.6
+			// @since 17.1.0
 			if (extraLeading > 0) {
 				block.setAttribute("line-height",
 						org.docx4j.fonts.WordLineMetrics.format(height + extraLeading));
@@ -363,7 +363,7 @@ public final class WordLayoutFixups {
 				 * 29.2pt top margin - the paragraph is the inline picture's 25.5pt -
 				 * where ours was 29.2, the picture plus the 13pt run's descent and line
 				 * gap.  Where the anchored picture is the only one, the height stays 0
-				 * and the rule still does nothing.  @since 17.0.6 */
+				 * and the rule still does nothing.  @since 17.1.0 */
 				if (child.hasAttribute(HINT_ANCHOR)) continue;
 				double h = lengthPt(child.getAttribute("content-height"));
 				if (h <= 0) { // unsized
@@ -385,7 +385,7 @@ public final class WordLayoutFixups {
 			 * logo]: Word's first baseline is 63.1 with a 29.2pt top margin, ie the
 			 * paragraph is exactly the picture's 25.5pt, where ours was 29.2 - the
 			 * picture plus the 13pt run's descent and line gap.  A leader that does
-			 * paint (dots, a rule) still disqualifies the line.  @since 17.0.6 */
+			 * paint (dots, a rule) still disqualifies the line.  @since 17.1.0 */
 			if (isFo(child, "leader")
 					&& (!child.hasAttribute("leader-pattern")
 						|| "space".equals(child.getAttribute("leader-pattern")))) {
@@ -397,7 +397,7 @@ public final class WordLayoutFixups {
 			 * paragraph has a line the picture is not on.  Measured on the corpus
 			 * document whose 400x311pt inline picture sits in a w:line="360"
 			 * w:lineRule="auto" paragraph (J13's twin): letting it through changed
-			 * nothing at all, because that paragraph's break is real.  @since 17.0.6 */
+			 * nothing at all, because that paragraph's break is real.  @since 17.1.0 */
 			state[1] = 1; // a painting leader, a page-number, a nested block, ...
 		}
 	}
@@ -429,16 +429,16 @@ public final class WordLayoutFixups {
 
 	/** on a table-of-contents entry's block (XsltFOFunctions.applyTocStopHint): the
 	 *  entry's own right dot stop in twips from the left margin, which is where its
-	 *  stretching leader ends.  @since 17.0.6 */
+	 *  stretching leader ends.  @since 17.1.0 */
 	public static final String HINT_TOC_STOP = "docx4j-toc-stop";
 
 	/** on the block a {@code w:br w:type="column"} makes (BrWriter): where the section
-	 *  has columns to go to, it is a column break and not a line break.  @since 17.0.6 */
+	 *  has columns to go to, it is a column break and not a line break.  @since 17.1.0 */
 	public static final String HINT_COLUMN_BREAK = "docx4j-colbreak";
 
 	/** on the fo:leader which is the {@code w:suff} tab after an inline numbering label
 	 *  (XsltFOFunctions.createInlineLabel): the label's number position to its text
-	 *  position, from which the label's own measured width is taken.  @since 17.0.6 */
+	 *  position, from which the label's own measured width is taken.  @since 17.1.0 */
 	public static final String HINT_LABEL_GAP = "docx4j-label-gap";
 
 	// ------------------------------------------------------------ 0a. list labels
@@ -465,7 +465,7 @@ public final class WordLayoutFixups {
 	 * font FOP does not have - the leader stays at zero and the number abuts the text,
 	 * which is nearer Word than the whole gap would be.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void inlineLabelGaps(Document doc) {
 		for (Element leader : elements(doc, "leader")) {
@@ -483,7 +483,7 @@ public final class WordLayoutFixups {
 	}
 
 	/** The width of the text under this element, in the font each part of it is set in,
-	 *  or -1 where any of it cannot be measured.  @since 17.0.6 */
+	 *  or -1 where any of it cannot be measured.  @since 17.1.0 */
 	private static double textWidthPt(Element block, Element el) {
 		String text = el.getTextContent();
 		if (text == null || text.length() == 0) return 0;
@@ -565,7 +565,7 @@ public final class WordLayoutFixups {
 
 	/** Whether any block asks to be hyphenated (XsltFOFunctions.applyHyphenation):
 	 *  only then are the document's hyphenation settings worth writing on fo:root.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	private static boolean anyBlockHyphenates(Document doc) {
 		for (Element block : elements(doc, "block")) {
 			if ("true".equals(block.getAttribute("hyphenate"))) return true;
@@ -607,7 +607,7 @@ public final class WordLayoutFixups {
 	 *        w:consecutiveHyphenLimit, w:doNotHyphenateCaps), which the line
 	 *        manager applies to the paragraphs whose block carries
 	 *        hyphenate="true"; null, or a document which does not hyphenate,
-	 *        writes none of them.  @since 17.0.6
+	 *        writes none of them.  @since 17.1.0
 	 */
 	static void lineBoxAttributes(Document doc, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
@@ -615,7 +615,7 @@ public final class WordLayoutFixups {
 				org.docx4j.model.CompatibilityOptions.ofMode(compatibilityMode));
 	}
 
-	/** @since 17.0.6 */
+	/** @since 17.1.0 */
 	static void lineBoxAttributes(Document doc, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation,
 			org.docx4j.model.CompatibilityOptions compat) {
@@ -645,7 +645,7 @@ public final class WordLayoutFixups {
 			}
 			/* w:compat/w:noTabHangInd, which the line manager reads: off in every
 			 * compatibility mode, so it is written only for a document which states it.
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			if (compat.is(org.docx4j.model.CompatibilityOptions.Flag.NO_TAB_HANG_IND)) {
 				if (!declared) {
 					root.setAttributeNS(XMLNS, "xmlns:docx4j", ns);
@@ -668,7 +668,7 @@ public final class WordLayoutFixups {
 			span.setAttributeNS(ns, "docx4j:font", font);
 		}
 		// and the small-caps spans' scale (RunFontSelector.HINT_SMALL_CAPS), so the line
-		// manager can size the line from the run's declared size.  @since 17.0.6
+		// manager can size the line from the run's declared size.  @since 17.1.0
 		for (Element span : elements(doc, "inline")) {
 			String scale = span.getAttribute(org.docx4j.fonts.RunFontSelector.HINT_SMALL_CAPS);
 			if (scale.length() == 0) continue;
@@ -777,11 +777,11 @@ public final class WordLayoutFixups {
 
 	/** On a paragraph's fo:block (XsltFOFunctions.applyFrameHint): its w:framePr, as
 	 *  {@code hAnchor:vAnchor:x:y:xAlign:yAlign:w:h:hRule:wrap:dropCap:hSpace:vSpace:lines}
-	 *  with the lengths in twips.  @since 17.0.6 */
+	 *  with the lengths in twips.  @since 17.1.0 */
 	public static final String HINT_FRAME = "docx4j-frame";
 
 	/** docx4j.convert.out.fo.frames.position (default <b>true</b>): whether w:framePr is
-	 *  honoured at all.  @since 17.0.6 */
+	 *  honoured at all.  @since 17.1.0 */
 	static boolean framesEnabled() {
 		return isEnabled()
 				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.frames.position", true);
@@ -825,7 +825,7 @@ public final class WordLayoutFixups {
 	 * only {@code w:w="3600"} keeps its style's anchors and {@code w:x}/{@code w:y} (see
 	 * {@code StyleUtil.apply(CTFramePr, CTFramePr)} and
 	 * {@code PropertyResolver.hasDirectPPrFormatting}, both of which lost it before
-	 * 17.0.6).  On the letterhead above, that is what puts its address block at Word's
+	 * 17.1.0).  On the letterhead above, that is what puts its address block at Word's
 	 * (68.1, 102.1) rather than in the flow.</p>
 	 *
 	 * <p>On by default ({@code docx4j.convert.out.fo.frames.position=false} turns it
@@ -836,7 +836,7 @@ public final class WordLayoutFixups {
 	 * page-anchored table, which {@link #anchorFloatingTables} declines to position
 	 * because content precedes it.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void positionFrames(Document doc) {
 		if (!framesEnabled()) return;
@@ -1070,7 +1070,7 @@ public final class WordLayoutFixups {
 	 *
 	 * <p><b>Left in the flow</b>, where the text follows the frame rather than running
 	 * beside it, and which is what docx4j did with every text-anchored frame before
-	 * 17.0.6:</p>
+	 * 17.1.0:</p>
 	 * <ul>
 	 * <li>a frame with no {@code w:w} at all, which fills the rest of the measure - the
 	 *     shape of all 499 frames of the corpus document that is the acid test here
@@ -1092,7 +1092,7 @@ public final class WordLayoutFixups {
 	 * @param x      its left edge within the column
 	 * @param y      {@code w:y}, the drop from the anchor paragraph's top
 	 * @param measure the column's width
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void floatFrame(Document doc, List<Element> group, double w, double x,
 			double y, double measure, double hSpace, double vSpace, String wrap) {
@@ -1198,7 +1198,7 @@ public final class WordLayoutFixups {
 	 * and as Word's own markup implies, not a measurement.  It changes no corpus
 	 * document.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void dropCapFrame(Document doc, List<Element> group, String dropCap,
 			int capLines, double hSpace, double marginLeft) {
@@ -1271,25 +1271,25 @@ public final class WordLayoutFixups {
 	// ------------------------------------------------------------ 0f. floating tables
 
 	/** On an fo:table (TableWriter): the grid edge's distance from the page's left edge.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String HINT_TBLP_LEFT = "docx4j-tblp-left";
-	/** On an fo:table: the top edge's distance from the page's top edge. @since 17.0.6 */
+	/** On an fo:table: the top edge's distance from the page's top edge. @since 17.1.0 */
 	public static final String HINT_TBLP_TOP = "docx4j-tblp-top";
 	/** On an fo:table: "top height" of the box the table is aligned in, from the page's
-	 *  top edge, where the docx gives a w:tblpYSpec rather than a w:tblpY. @since 17.0.6 */
+	 *  top edge, where the docx gives a w:tblpYSpec rather than a w:tblpY. @since 17.1.0 */
 	public static final String HINT_TBLP_FRAME = "docx4j-tblp-frame";
-	/** With {@link #HINT_TBLP_FRAME}: before, center or after. @since 17.0.6 */
+	/** With {@link #HINT_TBLP_FRAME}: before, center or after. @since 17.1.0 */
 	public static final String HINT_TBLP_ALIGN = "docx4j-tblp-align";
 
 	/** On an fo:table: "left" or "right", the edge a text-anchored floating table floats
-	 *  to (TableWriter.floatBesideText).  @since 17.0.6 */
+	 *  to (TableWriter.floatBesideText).  @since 17.1.0 */
 	public static final String HINT_TBLP_FLOAT = "docx4j-tblp-float";
 	/** With {@link #HINT_TBLP_FLOAT}: the float holder's padding, left right top, which
-	 *  is what puts the table where Word puts it.  @since 17.0.6 */
+	 *  is what puts the table where Word puts it.  @since 17.1.0 */
 	public static final String HINT_TBLP_PAD = "docx4j-tblp-pad";
 
 	/** On an fo:table: "true" where text could fit beside the table in its column, which
-	 *  is the case in which Word's wrapping is worth reproducing.  @since 17.0.6 */
+	 *  is the case in which Word's wrapping is worth reproducing.  @since 17.1.0 */
 	public static final String HINT_TBLP_NARROW = "docx4j-tblp-narrow";
 
 	private static final String[] TBLP_HINTS = { HINT_TBLP_LEFT, HINT_TBLP_TOP,
@@ -1334,7 +1334,7 @@ public final class WordLayoutFixups {
 	 * wrapping.</p>
 	 */
 	static void anchorImages(Document doc) {
-		// instream-foreign-object as well as external-graphic: since 17.0.6 a WMF/EMF
+		// instream-foreign-object as well as external-graphic: since 17.1.0 a WMF/EMF
 		// picture is drawn as SVG inside one of those (CR-011), and it anchors the same
 		List<Element> graphics = elements(doc, "external-graphic");
 		graphics.addAll(elements(doc, "instream-foreign-object"));
@@ -1367,7 +1367,7 @@ public final class WordLayoutFixups {
 		if (para == null) return; // leave it inline
 
 		// in a multi-column section the anchor hints' "column" is the section's whole
-		// text column; Word's is the column the object is anchored in (@since 17.0.6)
+		// text column; Word's is the column the object is anchored in (@since 17.1.0)
 		double oneColumn = columnWidthPt(para);
 		if (oneColumn > 0) col = oneColumn;
 
@@ -1390,7 +1390,7 @@ public final class WordLayoutFixups {
 		 * its height from what is in it, and a picture drawn behind that region's text is
 		 * still what gives it that height - measured, letting a behindDoc anchor in a
 		 * footer reserve nothing took a document's region-body margin-bottom from 73.7 to
-		 * 50.2pt and cost it a page of 27.  @since 17.0.6 */
+		 * 50.2pt and cost it a page of 27.  @since 17.1.0 */
 		if ("1".equals(g.getAttribute("docx4j-anchor-behind")) && floatsAllowed(para)) kind = "none";
 		if ("square".equals(kind) && !FOConversionContext.useFloats()) {
 			kind = "topAndBottom"; // the property asks for the picture to be in the flow
@@ -1402,7 +1402,7 @@ public final class WordLayoutFixups {
 			 * two-column page whose 186.75pt text box sits in a 213pt column, reserving
 			 * its height cost a page and took line parity from 0.478 to 0.087, and on a
 			 * landscape two-column document the reservation put the title at y=323.0
-			 * against Word's 37.0.  @since 17.0.6 */
+			 * against Word's 37.0.  @since 17.1.0 */
 			kind = "none";
 		} else if ("square".equals(kind)) {
 			double measure = anchorMeasure(para, col);
@@ -1424,7 +1424,7 @@ public final class WordLayoutFixups {
 		 * anchored at 406.0pt from the margin: Word draws it at x=448.5 in column 2 and
 		 * keeps its title at y=37.0, where the 278.4pt reservation at the head of
 		 * column 1 put ours at 323.0.  An absolutely positioned container is measured
-		 * from the same origin, so it lands where Word puts it.  @since 17.0.6 */
+		 * from the same origin, so it lands where Word puts it.  @since 17.1.0 */
 		if (oneColumn > 0 && x >= oneColumn && !"none".equals(kind)) kind = "none";
 
 		Element wrapper;
@@ -1475,7 +1475,7 @@ public final class WordLayoutFixups {
 	 * paragraph's top: with the reservation first, the small picture came out at 179.9
 	 * where Word has it at 81.5, one reserved height (98.6pt) low.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void insertAnchorWrapper(Element para, Element wrapper) {
 		Node at = para.getFirstChild();
@@ -1494,7 +1494,7 @@ public final class WordLayoutFixups {
 	 * @param para the paragraph's block
 	 * @param col  the section's text column width, from the anchor hints
 	 * @return the measure in points, or 0 where it is not known
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static double anchorMeasure(Element para, double col) {
 		Element cell = ancestorCell(para);
@@ -1579,7 +1579,7 @@ public final class WordLayoutFixups {
 	 * (an absolutely positioned container there would leave the cell's own geometry
 	 * wrong, and Word's frame rules differ inside a cell).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void anchorFloatingTables(Document doc) {
 		for (Element tbl : elements(doc, "table")) {
@@ -1611,7 +1611,7 @@ public final class WordLayoutFixups {
 	 * A float only lays out in the main flow, so a table in a cell, a header, a footer or
 	 * a footnote is left where it is.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void floatFloatingTable(Document doc, Element tbl) {
 		Node parent = tbl.getParentNode();
@@ -1780,7 +1780,7 @@ public final class WordLayoutFixups {
 	 * <p>{@code docx4j.convert.out.fo.tables.reserveBand=false} leaves every such table in
 	 * the flow.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static boolean reservesItsBand(Element tbl) {
 		if (!org.docx4j.Docx4jProperties.getProperty(
@@ -1932,7 +1932,7 @@ public final class WordLayoutFixups {
 	 * those are left alone (FOP ignores them there in any case, and
 	 * {@link #anchorImage} does not create them).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void hoistFloats(Document doc) {
 		List<Element> floats = elements(doc, "float");
@@ -2029,7 +2029,7 @@ public final class WordLayoutFixups {
 	 * {@value #CONVERTER_PROPERTY} names an ImageMagick/GraphicsMagick executable, a
 	 * metafile is converted to PNG and painted instead.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	/**
 	 * A paragraph which begins with a <b>block-level child</b> - the wrapper an anchored
@@ -2049,7 +2049,7 @@ public final class WordLayoutFixups {
 	 * reserve, and FOP places the first line at the start-indent, which is where Word
 	 * puts it.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void firstLineIndentAfterLeadingBlock(Document doc) {
 		for (Element block : elements(doc, "block")) {
@@ -2072,7 +2072,7 @@ public final class WordLayoutFixups {
 	}
 
 	/** Whether this element is one FOP lays out as a block, so that the inline content
-	 *  after it becomes an anonymous block of its own.  @since 17.0.6 */
+	 *  after it becomes an anonymous block of its own.  @since 17.1.0 */
 	private static boolean isBlockLevel(Element el) {
 		return isFo(el, "block") || isFo(el, "block-container") || isFo(el, "float")
 				|| isFo(el, "table") || isFo(el, "list-block");
@@ -2234,7 +2234,7 @@ public final class WordLayoutFixups {
 			log.warn("No block to place a text box in; it will not be painted");
 			return;
 		}
-		double oneColumn = columnWidthPt(para); // the column, not the section (@since 17.0.6)
+		double oneColumn = columnWidthPt(para); // the column, not the section (@since 17.1.0)
 		if (oneColumn > 0) col = oneColumn;
 
 		// a box narrow enough for Word to flow text beside it is placed where Word
@@ -2245,7 +2245,7 @@ public final class WordLayoutFixups {
 		// multi-column region, where a reservation is charged to the column the anchor
 		// is in and Word wraps the text beside the box within its own column: measured,
 		// reserving a 186.75pt box's height in a 213pt column cost a page and took line
-		// parity from 0.478 to 0.087 (@since 17.0.6)
+		// parity from 0.478 to 0.087 (@since 17.1.0)
 		if ("square".equals(kind) && oneColumn > 0) kind = "none";
 		if ("square".equals(kind) && col > 0 && w < 0.6 * col) kind = "none";
 
@@ -2270,7 +2270,7 @@ public final class WordLayoutFixups {
 			 * it back to the column edge.  Measured: a landscape planner whose text box
 			 * is anchored at -41.0pt has Word's box content rect at 31.0..1141.7 - its
 			 * border rect starting 48.2pt left of the column - where ours started at
-			 * 72.0, a constant +41.0pt on every line of the page.  @since 17.0.6 */
+			 * 72.0, a constant +41.0pt on every line of the page.  @since 17.1.0 */
 			wrapper.setAttribute("start-indent", pt(x));
 		}
 		resetTextBox(box);
@@ -2298,7 +2298,7 @@ public final class WordLayoutFixups {
 	 * w:pageBreakBefore, came out with one line a page against Word's nine (3167
 	 * reference lines against our 335).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void resetTextBox(Element box) {
 		box.setAttribute("text-align", "start");
@@ -2370,7 +2370,7 @@ public final class WordLayoutFixups {
 	 * anchored picture: {@code mutool draw -F trace} counts two images on Word's page 1
 	 * and one on ours - the float was never painted at all.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static int columnCount(Element el) {
 		Element rb = regionBody(el);
@@ -2395,7 +2395,7 @@ public final class WordLayoutFixups {
 	 * from one in this one ([&#xa7;9.1]); the 60% and 90% share tests do not arise in a
 	 * multi-column region, where a wrapped object is always positioned.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static double columnWidthPt(Element el) {
 		Element rb = regionBody(el);
@@ -2431,7 +2431,7 @@ public final class WordLayoutFixups {
 	 * <p>Only in the flow: inside a table cell the block's reference area is the cell,
 	 * which the stop - measured from the page's left margin - says nothing about.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void tocLeaderEndIndent(Document doc) {
 		for (Element block : elements(doc, "block")) {
@@ -2616,7 +2616,7 @@ public final class WordLayoutFixups {
 	 * copy, fails with it: measured, one corpus document was rendered with the
 	 * half-page default extents that failure leaves behind, 35 pages for Word's 3.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void blockForEmptyCell(Document doc) {
 		blockForEmptyContainers(doc, "table-cell");
@@ -2754,7 +2754,7 @@ public final class WordLayoutFixups {
 	 *        every row its 10pt space-after back (23.7pt).  Word 365 ignores the flag,
 	 *        so the cell-edge rule is unconditional; the parameter stays for the day a
 	 *        flag is found to matter.
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void applyContextualSpacing(Document doc, org.docx4j.model.CompatibilityOptions compat) {
 		boolean cellEdges = true;
@@ -2805,7 +2805,7 @@ public final class WordLayoutFixups {
 		 * the cell bottom - there is no next paragraph for the "same style" test to be
 		 * about: measured on a document whose cells end in a bulleted List Paragraph
 		 * with w:contextualSpacing and w:after="200", Word's row pitch is 25.0pt and
-		 * suppressing it gave us 19.9.  @since 17.0.6 */
+		 * suppressing it gave us 19.9.  @since 17.1.0 */
 		if (cellEdges && paras.size() == 1) {
 			Element only = paras.get(0);
 			if ("1".equals(only.getAttribute(HINT_CONTEXTUAL))) {
@@ -2823,7 +2823,7 @@ public final class WordLayoutFixups {
 			 * w:contextualSpacing with 10pt of docDefaults space-after, Word's grid of
 			 * baselines is 93.9 / 103.0 / 112.3 / 121.5 where ours split into 93.6 /
 			 * 102.8 / 112.0 against 92.8 / 102.0 / 111.2 - +9.9pt - and 37 Word pages
-			 * came out as 39.  @since 17.0.6 */
+			 * came out as 39.  @since 17.1.0 */
 			if (sa == null || sb == null || !sa.equals(sb)) continue;
 			// Measured (Word 365): the gap is zero when EITHER paragraph has it, not
 			// just the side the spec's wording suggests: a contextual paragraph followed
@@ -2882,7 +2882,7 @@ public final class WordLayoutFixups {
 	 * <p>The wrapper's spacing is therefore made to follow the paragraphs it holds:
 	 * space-before from the first, space-after from the last.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void syncContainerSpacing(Document doc) {
 		for (Element wrapper : elements(doc, "block")) {
@@ -2933,7 +2933,7 @@ public final class WordLayoutFixups {
 	 * so they cost no width (&#xa7;3), and the outer box's own left/right border is in the
 	 * same place.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void mergeBorderContainers(Document doc) {
 		for (Element inner : elements(doc, "block")) {
@@ -2982,7 +2982,7 @@ public final class WordLayoutFixups {
 	 * containers (an anchored picture or a text box) do not count as content, since
 	 * Word gives the paragraph its line as well as placing the object.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void emptyLineForBlockWithNoContent(Document doc) {
 		for (Element block : elements(doc, "block")) {
@@ -3021,10 +3021,10 @@ public final class WordLayoutFixups {
 	 * left alone: the postprocessor takes the 0pt line-height off the second of a
 	 * contiguous pair, so the pair measures the two lines Word draws.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	/**
-	 * <b>A justified line that ends in a soft return is justified</b> (&#xa7;4.2, 17.0.6).
+	 * <b>A justified line that ends in a soft return is justified</b> (&#xa7;4.2, 17.1.0).
 	 *
 	 * <p>Word stretches the spaces of a line ending in a <code>w:br</code> with no type,
 	 * in a <code>w:jc="both"</code> paragraph, exactly as it stretches any other line of
@@ -3048,7 +3048,7 @@ public final class WordLayoutFixups {
 	 * <p>Property {@code docx4j.convert.out.fo.wordLayout.justifySoftReturn=false}
 	 * restores 17.0.5's behaviour for every document.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void justifySoftReturns(Document doc, org.docx4j.model.CompatibilityOptions compat) {
 		if (compat.is(org.docx4j.model.CompatibilityOptions.Flag.DO_NOT_EXPAND_SHIFT_RETURN)) return;
@@ -3196,7 +3196,7 @@ public final class WordLayoutFixups {
 	 * <p>The empty-paragraph placeholder (&#xa7;2.5), whose whole content is one space, is
 	 * left alone: that space is the line, not an indent.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void leadingWhitespaceLeader(Document doc) {
 		for (Element block : elements(doc, "block")) {
@@ -3338,7 +3338,7 @@ public final class WordLayoutFixups {
 	 * on the XSL-FO default.  A block inside one that really wants preserved whitespace
 	 * states it for itself.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void containWhitespaceTreatment(Document doc) {
 		for (Element block : elements(doc, "block")) {
@@ -3409,12 +3409,12 @@ public final class WordLayoutFixups {
 	 * the cell, one in a cell which is not the first, and one in the second row - and
 	 * Word gives none of them a page: its table shares a page with the paragraph
 	 * introducing it in every case, and its seventh and last page is the one
-	 * {@code w:pageBreakBefore} opens.  17.0.6 promoted a single head break to the
+	 * {@code w:pageBreakBefore} opens.  17.1.0 promoted a single head break to the
 	 * table and had eight pages.  A {@code w:br} reaches the FO as a block nested in the
 	 * run's {@code fo:inline}, which is how it is told from a {@code w:pageBreakBefore}
 	 * on the paragraph's own block.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void dropPageBreaksInTableCells(Document doc) {
 		for (Element cell : elements(doc, "table-cell")) {
@@ -3447,7 +3447,7 @@ public final class WordLayoutFixups {
 
 	/** On an fo:table whose start-indent took the compatibility-mode-14 grid-edge shift
 	 *  (TableWriter.applyStartIndent): the left cell margin it was moved back by.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String HINT_GRID_SHIFT = "docx4j-grid-shift";
 
 	/**
@@ -3463,7 +3463,7 @@ public final class WordLayoutFixups {
 	 * pathway the w:tbl reaching the table writer was unmarshalled on its own, so it has
 	 * no parent - but it is plain here, which also keeps the two pathways identical.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void nestedTableGridEdge(Document doc) {
 		for (Element tbl : elements(doc, "table")) {
@@ -3506,7 +3506,7 @@ public final class WordLayoutFixups {
 	 * border width and the whole border width: Word wraps <em>no</em> row of the
 	 * collapsed 0.5, 1.5 and 3pt tables, where FOP's half-of-each-border charge wrapped
 	 * the first row of the 0.5pt table and the first two of the others.  That settles
-	 * H12 and generalises 17.0.6's content-sized rule, which the {@code table-fixed} and
+	 * H12 and generalises 17.1.0's content-sized rule, which the {@code table-fixed} and
 	 * {@code table-cellspacing} goldens had appeared to contradict - their lines had no
 	 * slack at all, so all they said was that <em>something</em> was charged.
 	 *
@@ -3514,14 +3514,14 @@ public final class WordLayoutFixups {
 	 * charges: the same probe's three cell-spacing tables wrap all three rows in Word
 	 * and here alike, which is two whole border widths.  Nothing is given back there.
 	 *
-	 * <p>Until 17.0.6 a tenth of a point of the allowance was held back where the width
+	 * <p>Until 17.1.0 a tenth of a point of the allowance was held back where the width
 	 * came from the grid, because FOP's line measure ran that much narrow - its glyph
 	 * advances were truncated to 1/1000 em rather than rounded.  They are rounded now
 	 * ({@code org.docx4j.fop.fonts.WordGlyphWidths}), so the whole allowance is given
 	 * back, and {@code table-fixed}, {@code table-cellspacing} and
 	 * {@code table-cell-measure} all keep the lines Word keeps without it.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void cellLineWidth(Document doc) {
 		for (Element cell : elements(doc, "table-cell")) {
@@ -3569,7 +3569,7 @@ public final class WordLayoutFixups {
 
 	/** BrWriter's mark on the fo:block a {@code w:br w:type="page"} became, which tells
 	 *  it from the break a {@code w:pageBreakBefore} puts on the paragraph's own block.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String HINT_BREAK_RUN = "docx4j-break-run";
 
 	/** The nearest writing-mode in force on this element, or null. */
@@ -3591,7 +3591,7 @@ public final class WordLayoutFixups {
 
 	/**
 	 * A {@code w:br w:type="column"} in a section which <em>has</em> another column to go
-	 * to is a column break, not the line break docx4j made of it until 17.0.6: Word takes
+	 * to is a column break, not the line break docx4j made of it until 17.1.0: Word takes
 	 * the break there, and what follows it opens the next column (&#xa7;7.3).  The
 	 * paragraph has already been divided at the break by
 	 * {@code ConversionSectionWrapperFactory} (via {@code ColumnBreaks}), which leaves the
@@ -3607,7 +3607,7 @@ public final class WordLayoutFixups {
 	 * paragraph and nothing is left of it but its mark; that is
 	 * {@link #emptyLineForBlockWithNoContent}'s doing, which is why this runs first.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void columnBreaks(Document doc) {
 		List<Element> breaks = new ArrayList<Element>();
@@ -3639,7 +3639,7 @@ public final class WordLayoutFixups {
 	}
 
 	/** Whether anything which draws comes before this element in the block, in document
-	 *  order.  (The element is a descendant of the block.)  @since 17.0.6 */
+	 *  order.  (The element is a descendant of the block.)  @since 17.1.0 */
 	private static boolean contentPrecedesInBlock(Element block, Element before) {
 		return !scanUntil(block, before, new boolean[1]);
 	}
@@ -3681,7 +3681,7 @@ public final class WordLayoutFixups {
 	 *        the break moves onto keeps its space-before.  The flag resolves on from
 	 *        compatibility mode 15 and off below it, which is the polarity measured
 	 *        against Word's goldens; a document which states it either way is honoured.
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void mergePageBreakParagraphs(Document doc, org.docx4j.model.CompatibilityOptions compat) {
 		boolean suppressSpaceBefore = compat.is(
@@ -3701,7 +3701,7 @@ public final class WordLayoutFixups {
 			// table-floating-anchor probe: Word's first paragraph at y=83.1, docx4j's at
 			// 108.6).  Not a table: measured on a corpus document whose page break is
 			// followed by one, Word keeps that line, and dropping it lost a page.
-			// @since 17.0.6
+			// @since 17.1.0
 			if (next == null || !(isFo(next, "block") || takesNoSpace(next))) {
 				// Nothing left in this section for the break to move to.  Where another
 				// section follows, its own page-sequence starts a page anyway and Word
@@ -3711,7 +3711,7 @@ public final class WordLayoutFixups {
 				// top; ours had a page 4 holding nothing but that empty block.  At the end
 				// of the document the page is Word's (the page-blank probe ends in a page
 				// break and Word gives it a ninth page), so the break stays there.
-				// @since 17.0.6
+				// @since 17.1.0
 				if (next == null && empty.getParentNode() instanceof Element
 						&& isFo((Element) empty.getParentNode(), "flow") && sectionFollows(empty)) {
 					empty.removeAttribute("break-before");
@@ -3741,7 +3741,7 @@ public final class WordLayoutFixups {
 			//     second half carries the break, which is the one page Word gives
 			//     (measured on a corpus document where counting both cost it Word's
 			//     page count, 22 -> 23).
-			// @since 17.0.6
+			// @since 17.1.0
 			boolean nextAlreadyBreaks = "page".equals(next.getAttribute("break-before"));
 			boolean nextBreaks = nextAlreadyBreaks && isFo(next, "block") && isEmpty(next);
 			if (nextBreaks || (opensFlow(empty) && !nextAlreadyBreaks)) {
@@ -3765,7 +3765,7 @@ public final class WordLayoutFixups {
 
 	/** Whether this block is the first thing its fo:flow holds, so that the section's own
 	 *  page has just been started for it.  (A continuous section is merged into the
-	 *  page-sequence before it, so a flow start is always a page start.)  @since 17.0.6 */
+	 *  page-sequence before it, so a flow start is always a page start.)  @since 17.1.0 */
 	private static boolean opensFlow(Element block) {
 		Node parent = block.getParentNode();
 		Element child = block;
@@ -3784,7 +3784,7 @@ public final class WordLayoutFixups {
 
 	/** Whether another fo:page-sequence - another Word section - follows the one this
 	 *  block is in, so that a page is started for it whatever this block asks for.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	private static boolean sectionFollows(Element block) {
 		Node seq = block;
 		while (seq instanceof Element && !isFo((Element) seq, "page-sequence")) {
@@ -3818,7 +3818,7 @@ public final class WordLayoutFixups {
 				// Word 73.5 / 86.7 / 98.2 / 109.7, docx4j 87.5 / 100.7 / 112.2 / 123.7.
 				// An explicit w:spacing w:before is honoured there (the spacing-page-top
 				// probe: 36pt before on the first paragraph of a document), so only the
-				// automatic value goes.  @since 17.0.6
+				// automatic value goes.  @since 17.1.0
 				first.setAttribute("space-before", "0pt");
 			} else if (first != null && hasSpace(first, "space-before")) {
 				double before = Math.max(0, lengthPt(first.getAttribute("space-before")) - prevAfter);
@@ -3854,7 +3854,7 @@ public final class WordLayoutFixups {
 	 * centred one - but docx4j drops a paragraph whose only content is the
 	 * {@code w:sectPr}, so there is nothing here to retain.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void retainSpaceAfterInAlignedFlow(Document doc) {
 		java.util.Set<String> aligned = verticallyAlignedMasters(doc);
@@ -3973,7 +3973,7 @@ public final class WordLayoutFixups {
 	 * into four.  Only the <em>cell-final</em> paragraph that follows the table: an
 	 * empty paragraph anywhere else in a cell keeps its line, as Word gives it one.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void dropParagraphAfterNestedTable(Document doc) {
 		for (Element cell : elements(doc, "table-cell")) {
@@ -4049,7 +4049,7 @@ public final class WordLayoutFixups {
 	 * invisible either way, since a static-content is laid out from the region's top
 	 * edge and nothing follows the last block.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	/**
 	 * A hard page break inside a numbered paragraph belongs to the paragraph, not to the
@@ -4067,7 +4067,7 @@ public final class WordLayoutFixups {
 	 * after an <em>explicit</em> break, and drops it after an automatic one - and an
 	 * automatic break never writes {@code break-before} here).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void listItemPageBreaks(Document doc) {
 		for (Element block : elements(doc, "block")) {
@@ -4106,7 +4106,7 @@ public final class WordLayoutFixups {
 	 * measured the same geometry, but it <em>is</em> the text: a footer that already had
 	 * its space came out as "Page\u00a01 / 3", which is not what Word wrote.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void spaceBeforePageNumber(Document doc) {
 		for (String name : new String[] { "page-number", "page-number-citation",
@@ -4155,7 +4155,7 @@ public final class WordLayoutFixups {
 			// the body up by the footer distance plus the space.  Measured: a document
 			// whose 44 sectPr say w:bottom="0" w:footer="720" with no footerReference
 			// spilled each section's last line onto a page of its own, 24 Word pages
-			// coming out as 89.  @since 17.0.6
+			// coming out as 89.  @since 17.1.0
 			if (!hasVisibleContent(sc)) continue;
 			/* The same at the other end: space-before.conditionality also defaults to
 			 * discard at the start of a reference area, so FOP drops the first
@@ -4164,7 +4164,7 @@ public final class WordLayoutFixups {
 			 * baseline, with w:header=426 (21.3pt), puts Word's first header baseline at
 			 * 21.3 + 3.3 + 8.004 = 32.6 exactly, where ours was 28.3 - -4.3pt on all 16
 			 * pages; a second document, whose header style carries w:before="153"
-			 * (7.65pt), has Word at 59.5 and ours at 50.9.  @since 17.0.6 */
+			 * (7.65pt), has Word at 59.5 and ours at 50.9.  @since 17.1.0 */
 			Element first = firstBlock(sc);
 			if (first != null && hasSpace(first, "space-before") && hasVisibleContent(first)) {
 				first.setAttribute("space-before.conditionality", "retain");
@@ -4177,7 +4177,7 @@ public final class WordLayoutFixups {
 	}
 
 	/** Whether this region draws anything: text beyond white space, or a graphic, a
-	 *  leader, a page number, a table.  @since 17.0.6 */
+	 *  leader, a page number, a table.  @since 17.1.0 */
 	private static boolean hasVisibleContent(Element el) {
 		String text = el.getTextContent();
 		if (text != null && text.trim().length() > 0) return true;
@@ -4212,7 +4212,7 @@ public final class WordLayoutFixups {
 				// w:spacing w:before="60" w:after="60" (3pt each), Word's row pitch is
 				// 119.6 -> 137.6 -> 155.6 = 18.0pt = 3 + 11.5 + 3, where ours was
 				// 110.7 -> 125.7 -> 139.2 (the space-before only) and the deficit grew
-				// to -25.4pt by y=360 on page 1.  @since 17.0.6
+				// to -25.4pt by y=360 on page 1.  @since 17.1.0
 				last.setAttribute("space-after.conditionality", "retain");
 			}
 		}

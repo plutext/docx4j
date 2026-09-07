@@ -5,7 +5,7 @@ from Apache POI. This README covers **both** the `hwmf` and the `hemf` package
 trees, and the support classes copied alongside them.
 
 Landed by CR-011 phase 1 (`docs/developer/change-requests/CR-011-metafile-rendering.md`),
-docx4j 17.0.6. Phase 1 is repackaging only: nothing in docx4j calls this code yet.
+docx4j 17.1.0. Phase 1 is repackaging only: nothing in docx4j calls this code yet.
 
 ## Upstream baseline
 

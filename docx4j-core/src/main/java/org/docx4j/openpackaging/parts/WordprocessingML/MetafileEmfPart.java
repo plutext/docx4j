@@ -8,7 +8,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 /**
  * An EMF (or EMF+) picture part.
  *
- * <p>Since 17.0.6 docx4j draws EMF and EMF+ itself, in pure Java, by replaying the
+ * <p>Since 17.1.0 docx4j draws EMF and EMF+ itself, in pure Java, by replaying the
  * recorded GDI calls onto a {@code Graphics2D}: see
  * {@link org.docx4j.model.images.MetafileRenderer} and the repackaged Apache POI
  * HEMF code in {@code org.docx4j.org.apache.poi.hemf}.  Conversion to SVG
@@ -23,7 +23,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * transforms - do not yet.  The package README in
  * {@code org/docx4j/org/apache/poi/hwmf} lists them; CR-011 phase 4 closes the gap.</p>
  *
- * <p>Historical note.  Until 17.0.6 this class could not convert anything at all, and
+ * <p>Historical note.  Until 17.1.0 this class could not convert anything at all, and
  * carried a survey of the options as at February 2010 (com.adobe.dp.office, wmf2svg,
  * batik, freehep, imagemagick, openoffice), concluding that OpenOffice was then the
  * only workable EMF converter.  That is no longer so.</p>

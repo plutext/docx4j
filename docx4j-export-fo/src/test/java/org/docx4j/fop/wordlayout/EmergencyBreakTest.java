@@ -42,7 +42,7 @@ import org.w3c.dom.NodeList;
  *
  * <p>Courier 12pt on a 200pt line is 27 characters (7.2pt each).
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class EmergencyBreakTest {
 

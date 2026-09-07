@@ -102,7 +102,7 @@ public class AbstractTableWriterModel extends TableModel {
 	}
 
 	/** Whether the column widths came from Word's content-based autofit pass, as opposed
-	 *  to the w:tblGrid (scaled to the page or not).  @since 17.0.6 */
+	 *  to the w:tblGrid (scaled to the page or not).  @since 17.1.0 */
 	private boolean contentSizedColumns;
 
 	public boolean isContentSizedColumns() {

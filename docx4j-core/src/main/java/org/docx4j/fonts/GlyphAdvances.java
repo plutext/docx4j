@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * with its own copy of that code, which truncates; see
  * {@code org.docx4j.fop.fonts.WordGlyphWidths}.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class GlyphAdvances {
 

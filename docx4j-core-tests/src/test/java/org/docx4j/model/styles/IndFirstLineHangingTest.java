@@ -21,7 +21,7 @@ import org.junit.Test;
  * {@code <w:ind w:left="283" w:hanging="283"/>} starts its first line at x=120.6
  * (85.05pt margin + 35.45pt) and ours put it at 70.9.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class IndFirstLineHangingTest {
 

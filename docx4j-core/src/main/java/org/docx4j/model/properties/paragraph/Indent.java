@@ -317,7 +317,7 @@ public class Indent extends AbstractParagraphProperty {
 			 * <w:tab w:val="left" w:pos="358"/> and a "(%1)" label: Word draws "(" at
 			 * x=56.66 and the text's "M" at 72.98 - the 358tw stop - where our 0.3pt
 			 * label column gave "(M2i)tverpachtet".  A caller which has not measured
-			 * passes -1.  @since 17.0.6 */
+			 * passes -1.  @since 17.1.0 */
 			int labelGap = pdbs > hangingInt ? pdbs : hangingInt;
 			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(labelGap));
 

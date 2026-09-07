@@ -13,7 +13,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Three things {@code w:sectPr} says about where the text sits which docx4j did not
- * honour until 17.0.6 (CR-001 &#xa7;7).
+ * honour until 17.1.0 (CR-001 &#xa7;7).
  *
  * <ul>
  * <li><b>A negative {@code w:pgMar/@w:top}</b> means "the body starts |top| from the page
@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
  * on every centred line) and puts the right edge at 504 where ours was 523.45.</li>
  * </ul>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PageMarginsTest extends AbstractXSLFOTest {
 

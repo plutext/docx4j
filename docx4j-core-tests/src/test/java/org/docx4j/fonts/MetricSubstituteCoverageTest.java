@@ -23,14 +23,14 @@ import org.w3c.dom.Node;
  * <p>The clone is chosen for its advance widths, and several of them carry the Latin
  * alphabet alone: Caladea, which stands in for Cambria, has neither Greek nor Cyrillic
  * (fc-query: {@code 20-7e a0-161 164-17f 192 1fa-1ff 218-21b 237 2c6-2c7 ...}).  Until
- * 17.0.6 the glyph-aware per-script pass skipped Greek and Cyrillic altogether, on the
+ * 17.1.0 the glyph-aware per-script pass skipped Greek and Cyrillic altogether, on the
  * assumption that any conventional stand-in covers them, so step 1's substitute was never
  * questioned.  Measured on a 68-page Greek document set in Cambria: 48% of the glyphs
  * docx4j painted were notdef, and its line parity was 0.0719, the worst in a
  * 103-document corpus - while Carlito, already loaded for the same document's Calibri,
  * covers both scripts.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class MetricSubstituteCoverageTest {
 

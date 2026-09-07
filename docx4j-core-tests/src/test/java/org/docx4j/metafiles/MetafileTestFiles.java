@@ -17,7 +17,7 @@ import java.util.Locale;
  *
  * See that directory's README.md for where each file came from.
  *
- * @since 17.0.6 (CR-011 phase 1)
+ * @since 17.1.0 (CR-011 phase 1)
  */
 public class MetafileTestFiles {
 

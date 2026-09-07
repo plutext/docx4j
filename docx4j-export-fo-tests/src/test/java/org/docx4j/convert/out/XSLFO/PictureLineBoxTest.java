@@ -35,7 +35,7 @@ import org.w3c.dom.NodeList;
  * one diagram per page where Word draws two.</li>
  * </ul>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PictureLineBoxTest extends AbstractXSLFOTest {
 

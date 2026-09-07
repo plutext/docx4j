@@ -166,7 +166,7 @@ public class HtmlVisitorParityTest {
 
 	/* ------------------------------------------------------------------
 	 * A break in the middle of a run: the text after it stays in the run
-	 * (17.0.6; the visitor used to close the run span at the break, so the
+	 * (17.1.0; the visitor used to close the run span at the break, so the
 	 * following w:t got a bare span with none of the run's formatting, and
 	 * logged "null currentSpan!")
 	 * ------------------------------------------------------------------ */

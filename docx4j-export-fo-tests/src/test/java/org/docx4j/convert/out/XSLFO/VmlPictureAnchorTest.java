@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
  *
  * <p>A picture whose shape has no position is still laid out inline, as Word does.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class VmlPictureAnchorTest extends AbstractXSLFOTest {
 

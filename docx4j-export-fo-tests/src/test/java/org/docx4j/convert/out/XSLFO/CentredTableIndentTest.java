@@ -21,7 +21,7 @@ import org.w3c.dom.NodeList;
  * sat at the left margin: measured on a corpus document whose centred one-column table
  * carries the label "1", Word draws it at x=174.3 and ours was at 75.7 - 99pt out.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class CentredTableIndentTest {
 

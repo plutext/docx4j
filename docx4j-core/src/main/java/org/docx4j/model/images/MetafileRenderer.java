@@ -41,7 +41,7 @@ import java.awt.image.BufferedImage;
  *
  * @see PoiMetafileRenderer the implementation over the repackaged Apache POI
  *      HWMF/HEMF code
- * @since 17.0.6 (CR-011 phase 2)
+ * @since 17.1.0 (CR-011 phase 2)
  */
 public interface MetafileRenderer {
 

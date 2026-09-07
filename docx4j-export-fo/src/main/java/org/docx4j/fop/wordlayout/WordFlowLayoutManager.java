@@ -45,7 +45,7 @@ import org.apache.fop.layoutmgr.PageSequenceLayoutManager;
  * break discards glue at the start of the page or column it opens, so the two
  * come to the same thing on the page, but a glue after a forced break which
  * ends the element list makes FOP's {@code ElementListUtils.endsWithForcedBreak}
- * false and the break is then not taken at all (17.0.6).</p>
+ * false and the break is then not taken at all (17.1.0).</p>
  *
  * @since 17.0.5
  */
@@ -112,7 +112,7 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 	 *
 	 * @param available the page's available block-progression dimension, in millipoints;
 	 *                  zero or less leaves the list alone
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void boundKeepChains(List<ListElement> elements, int available) {
 
@@ -221,7 +221,7 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 				 * not taken at all.  Measured on a two-column corpus document whose
 				 * w:br w:type="column" was ignored: Word's column 2 opens with "Epsum
 				 * factorial" at x=315.4, ours carried on in column 1 at x=72.0 and spilled
-				 * Word's one page onto two.  @since 17.0.6 */
+				 * Word's one page onto two.  @since 17.1.0 */
 				it.remove();
 			} else if (target > glueIndex + 1 || target == glueIndex + 1) {
 				elements.remove(glueIndex);

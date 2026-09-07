@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * on one line (70.8..149.5).  10 documents of three corpora set a {@code w:tcMar} where
  * the table's own margins are narrower.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class CellMarginAutofitTest {
 

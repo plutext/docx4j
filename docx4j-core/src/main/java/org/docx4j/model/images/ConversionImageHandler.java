@@ -46,7 +46,7 @@ public interface ConversionImageHandler {
 	 * which writes files gets a PNG it can write like any other picture (CR-011).
 	 * Defaults to false, so a third-party handler behaves as it did.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	default boolean isInline() {
 		return false;

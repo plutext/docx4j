@@ -397,7 +397,7 @@ public class ConversionSectionWrapperFactory {
 	 * paragraph no line at all, so it is dropped as before: adding it at the end of an
 	 * unaligned flow only pushes the flow's last line off the page.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static boolean closesAlignedTable(SectPr sectPr, List<Object> sectionContent) {
 		if (sectPr == null || sectPr.getVAlign() == null || sectPr.getVAlign().getVal() == null) return false;
@@ -485,7 +485,7 @@ public class ConversionSectionWrapperFactory {
 	}
 
 	/** What merging a run of continuous sections into one page-sequence came to.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	private static class Merged {
 		/** the column count the page-sequence must use */
 		final int cols;
@@ -512,7 +512,7 @@ public class ConversionSectionWrapperFactory {
 	 * it was 257pt and the two columns came out 116.5pt wide, with the blocks' negative
 	 * end-indents letting the text overflow them.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static SectPr marginReference(List<SectPr> sectPrs, int[] cols, int max) {
 		SectPr first = sectPrs.get(0);
@@ -548,7 +548,7 @@ public class ConversionSectionWrapperFactory {
 	 * </ul>
 	 * Sections that agree in both are left alone.
 	 *
-	 * <p>Since 17.0.6 a part whose w:cols declares columns of different widths becomes a
+	 * <p>Since 17.1.0 a part whose w:cols declares columns of different widths becomes a
 	 * one-row table instead ({@link UnequalColumns}), and so counts as one column here;
 	 * and the margins the masters take are {@link #marginReference}'s rather than always
 	 * the first part's.</p>
@@ -586,7 +586,7 @@ public class ConversionSectionWrapperFactory {
 				asTables = true;
 			} else if (cols[i] > 1) {
 				// equal columns: the region body lays them out, and a w:br w:type="column"
-				// divides the paragraph it is in (§7.3).  @since 17.0.6
+				// divides the paragraph it is in (§7.3).  @since 17.1.0
 				split |= ColumnBreaks.split(parts.get(i));
 			}
 		}

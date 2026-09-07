@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  * draws the text at x=21.1 (3pt + 18pt) and docx4j drew it at x=3.0.  The indent is now an
  * {@code fo:leader} of its width at the head of the inline content.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class FirstLineIndentAfterPictureTest extends AbstractXSLFOTest {
 

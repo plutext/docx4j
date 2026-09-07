@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
 /**
  * A justified line holding a tab: Word justifies the text after the last tab.
  *
- * <p>17.0.6 first made every line holding a tab start-aligned when the paragraph is
+ * <p>17.1.0 first made every line holding a tab start-aligned when the paragraph is
  * {@code w:jc="both"}, on the {@code tab-jc} probe, whose tab is the last thing on the
  * line - there the tab absorbs the slack and Word does lay the line out from the start.
  * Where text <em>follows</em> the tab, Word justifies it to the right indent as it would
@@ -45,7 +45,7 @@ import org.w3c.dom.NodeList;
  * ordinary shape, a label or a number and then the tab.  Otherwise the tab's settled
  * width would no longer put the text on its stop.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class JustifiedTabLineTest {
 

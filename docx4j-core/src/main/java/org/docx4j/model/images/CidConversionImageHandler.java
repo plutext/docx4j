@@ -135,7 +135,7 @@ public class CidConversionImageHandler extends AbstractConversionImageHandler {
 
 	/** False, although nothing is written to disk: mail clients widely strip an
 	 *  inline &lt;svg&gt;, so a WMF/EMF picture is better attached as a PNG.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	@Override
 	public boolean isInline() {
 		return false;

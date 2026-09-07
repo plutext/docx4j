@@ -300,7 +300,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 			 * cannot resolve while it lays that section out - so it painted nothing at
 			 * all where Word prints the total on every page.  The 2-pass path resolves
 			 * the count from the area tree first, which is what it exists for.
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			if (wrapper.getPageNumberInformation().isNumpagesPresent()
 					&& (i < wrapperList.size()-1 || twoPassForNumpages())) {
 				numPagesUsed = true;
@@ -324,7 +324,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	 * <p>Set {@code docx4j.convert.out.fo.twoPassForNumpages} to false to keep the
 	 * single pass (and the citation) where the second render costs too much.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static boolean twoPassForNumpages() {
 		return org.docx4j.Docx4jProperties.getProperty(

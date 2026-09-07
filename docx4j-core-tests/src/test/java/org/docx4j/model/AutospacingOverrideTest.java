@@ -26,7 +26,7 @@ import org.junit.Test;
  * paragraphs: 17 came out 14pt low (Word's first divergence at y=171.4, docx4j's at
  * 186.2) and the error compounded down the page.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class AutospacingOverrideTest {
 

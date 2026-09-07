@@ -558,7 +558,7 @@
 	  		<xsl:variable name="wpict" select="."/>
 
 		  	<!--  an absolutely positioned VML picture is placed as Word places it,
-		  	      instead of taking a line at the end of its paragraph (17.0.6) -->
+		  	      instead of taking a line at the end of its paragraph (17.1.0) -->
 		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createVmlPicture(
 		  	$conversionContext,
   			$wpict,
@@ -605,7 +605,7 @@
       Visio drawing, an OLE icon).  Word draws it as the preview picture its
       v:imagedata points at, so it takes exactly the w:pict path above - including
       the metafile renderer for the WMF/EMF an equation preview usually is, and
-      the anchored placement of a position:absolute shape.  Until 17.0.6 neither
+      the anchored placement of a position:absolute shape.  Until 17.1.0 neither
       FO exporter matched w:object at all, so the preview was simply lost (CR-011).
       Where there is no v:imagedata, nothing is emitted (as for w:pict).  -->
 <xsl:template match="w:object">
@@ -1004,7 +1004,7 @@
 	     took the fallback.  See XSLTUtils.mcPreferredChoiceRequires (property
 	     docx4j.jaxb.mc.preferChoice) for what we claim to understand and what it
 	     measured.  The visitor pathway does the same in
-	     AbstractVisitorExporterGenerator.walkJAXBElements.  @since 17.0.6 -->
+	     AbstractVisitorExporterGenerator.walkJAXBElements.  @since 17.1.0 -->
 	<xsl:template match="mc:AlternateContent" >
 		<xsl:variable name="preferred"
 			select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>

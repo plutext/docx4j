@@ -92,7 +92,7 @@ public class FOTextBoxes {
 		 * indent, which leaves the same content measure (297.9 - 2 x 7.2 = 283.5) and
 		 * starts it in the right place.  (The end inset stays padding: FOP does take
 		 * padding-right off the measure, and taking it off twice - once as padding and
-		 * again as end-indent - fitted a word too few on every line.)  @since 17.0.6 */
+		 * again as end-indent - fitted a word too few on every line.)  @since 17.1.0 */
 		if (w > in[2]) container.setAttribute("width", pt(w - in[2]));
 		if (h > in[1] + in[3]) container.setAttribute("height", pt(h - in[1] - in[3]));
 		container.setAttribute("overflow", "visible");
@@ -123,7 +123,7 @@ public class FOTextBoxes {
 	 * A property with no value, or with more colons than one, is skipped rather than
 	 * throwing.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static Map<String, String> parseStyle(String style) {
 		Map<String, String> map = new java.util.HashMap<String, String>();
@@ -141,7 +141,7 @@ public class FOTextBoxes {
 	 * the line ("position:absolute", which is what Word writes for every floating
 	 * picture and text box).
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean isPositioned(Map<String, String> props) {
 		return "absolute".equals(props.get("position"))
@@ -154,7 +154,7 @@ public class FOTextBoxes {
 	 * instead of taking a line in the flow.  Same geometry as a VML text box, with no
 	 * inset: the shape's box is the picture.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static Element createVmlPictureContainer(Document doc, Map<String, String> props,
 			String wrapType, PageDimensions pd) {

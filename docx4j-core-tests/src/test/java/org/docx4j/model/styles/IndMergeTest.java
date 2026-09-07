@@ -34,7 +34,7 @@ import org.junit.Test;
  * of them the higher-priority <code>w:ind</code> states replaces both - and a
  * <code>w:ind</code> which states neither leaves the inherited one alone (CR-001 §2.8).
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class IndMergeTest {
 

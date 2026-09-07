@@ -51,7 +51,7 @@ import org.w3c.dom.NodeList;
  * the height rather than skipping the area keeps a small-caps run correct where it shares
  * a line with others.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SmallCapsLineHeightTest extends AbstractXSLFOTest {
 

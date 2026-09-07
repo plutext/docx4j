@@ -27,7 +27,7 @@ import org.w3c.dom.NodeList;
  * was 72.0..220.4.  Both FO pathways, and (being in RunFontSelector) the HTML exporter
  * too.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class UnpreservedWhitespaceTest {
 

@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * 765.35pt (their full {@code w:tblGrid}).  Nor is it moved to the top: Word's table on
  * that page begins at y=52.85, above the 70.9pt a top gutter would give.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class GutterLandscapeTest {
 

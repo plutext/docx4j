@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
  * MARK (the drawn widths agree to 0.1pt either way, so only the text layer differed).</li>
  * </ul>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class NumberingLabelTest extends AbstractXSLFOTest {
 
@@ -150,13 +150,13 @@ public class NumberingLabelTest extends AbstractXSLFOTest {
 
 	/**
 	 * A numbering level's {@code w:rPr} formats the <b>number</b> alone (ECMA-376
-	 * 17.9.24); the paragraph's text keeps the paragraph's own formatting.  Until 17.0.6
+	 * 17.9.24); the paragraph's text keeps the paragraph's own formatting.  Until 17.1.0
 	 * docx4j gave label and body one rPr, so a level {@code <w:b/>} made the whole
 	 * paragraph bold - measured on a real document, Word draws the number in Tahoma-Bold
 	 * and the text after it in Tahoma, and reading the level's rPr for both cost that
 	 * document 0.074 of line parity.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void levelRPrFormatsTheLabelAlone() throws Exception {

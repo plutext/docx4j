@@ -28,7 +28,7 @@ package org.docx4j.toc;
  * couldn't be updated".  Docx4J.updateToc uses it to return false rather
  * than to throw.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class NoTocFoundException extends TocException {
 

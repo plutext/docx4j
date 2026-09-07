@@ -22,7 +22,7 @@ import org.w3c.dom.NodeList;
  *
  * <p>FOP does not implement fo:float in a table - it logs "the following feature isn't
  * implemented by Apache FOP, yet: fo:float (on fo:table)" and paints nothing at all -
- * so a wrapped picture in a cell cannot float, and until 17.0.6 it fell through to the
+ * so a wrapped picture in a cell cannot float, and until 17.1.0 it fell through to the
  * top-and-bottom treatment and reserved its full height in the cell.  Where a cell held
  * two of them (a banner and a logo overlaying it) the two reservations stacked and every
  * line of the page moved down by the smaller picture's height.</p>
@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
  * height.  With that, the document's first text line moved from 28.0pt below Word's to
  * 0.8pt, its 57 pages became Word's 56, and the logo landed within 0.05pt of Word.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class AnchoredPictureInCellTest extends AbstractXSLFOTest {
 

@@ -21,7 +21,7 @@ import org.junit.Test;
  * abbreviation, which carries a period Word's does not, so the format string's own
  * period doubled it.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class DateFieldLanguageTest {
 

@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * other end of an {@code fo:page-number-citation-last} - keeps the space and leaves the
  * text a reader or a text extractor sees unchanged.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SpaceBeforePageNumberTest {
 

@@ -41,7 +41,7 @@ import org.junit.Test;
  * width may be smaller with it on, and their sum must be larger (any TrueType font has
  * advances which are not whole thousandths of an em).</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class GlyphAdvanceRoundingPdfTest {
 
@@ -107,7 +107,7 @@ public class GlyphAdvanceRoundingPdfTest {
 		 * PostScript vector, whose 96 is quoteleft and whose 0x98 is asciitilde, where
 		 * /WinAnsiEncoding has grave and tilde - so there the correction is the other
 		 * glyph's advance outright, not a truncation (CR-001 §10).  Everywhere else the
-		 * two agree and the write only undoes the truncation.  @since 17.0.6 */
+		 * two agree and the write only undoes the truncation.  @since 17.1.0 */
 		final int GRAVE = 96, SMALL_TILDE = 0x98;
 
 		int larger = 0, reglyphed = 0;

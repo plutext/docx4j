@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
  * 200.5 to 247.3 - three lines, 46.5pt, lost.  748 such breaks in 50 documents of three
  * corpora.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class LineBreakEmptyLineTest extends AbstractXSLFOTest {
 

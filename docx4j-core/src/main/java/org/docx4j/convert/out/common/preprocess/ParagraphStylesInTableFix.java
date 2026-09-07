@@ -100,7 +100,7 @@ public class ParagraphStylesInTableFix {
 		 * mode-11 documents which state it apply the table style's properties anyway, and
 		 * skipping this step for them cost 0.951 -> 0.105, 0.948 -> 0.248 and
 		 * 0.930 -> 0.842 of Word's lines.  See word-layout-settings.md §4(e).
-		 * @since 17.0.6 */
+		 * @since 17.1.0 */
 
 		/* Are we invoked from FOPAreaTreeHelper?
 		 * 
@@ -191,7 +191,7 @@ public class ParagraphStylesInTableFix {
 			 * pitch of 12.7pt, the line box alone - where ours were 147.0 / 167.7 /
 			 * 188.3 / 208.9, a pitch of 20.7pt, because docDefaults' w:after="200" (8pt)
 			 * survived on all 16 header paragraphs.  That is 128pt of drift, and it also
-			 * made the header extent 341.3pt.  @since 17.0.6 */
+			 * made the header extent 341.3pt.  @since 17.1.0 */
 			RelationshipsPart relPart = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 			if (relPart!=null) {
 				for (Relationship rs : relPart.getRelationships().getRelationship()) {

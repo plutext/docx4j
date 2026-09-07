@@ -28,7 +28,7 @@ import org.junit.Test;
  * exercised.  docx4j-core-tests pins the core-only behaviour (a PNG) for the same
  * inputs.  See CR-011.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class MetafileHtmlSvgTest {
 
@@ -126,7 +126,7 @@ public class MetafileHtmlSvgTest {
 
 	/**
 	 * {@code MetafileWmfPart.toSVG()} keeps the signature it had when it was
-	 * implemented with wmf2svg (retired in 17.0.6), and {@code MetafileEmfPart} - which
+	 * implemented with wmf2svg (retired in 17.1.0), and {@code MetafileEmfPart} - which
 	 * could convert nothing at all before - now has it too.
 	 */
 	@Test

@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * the bare Arial 8pt line box, so Word adds nothing at the change) where docx4j went
  * 61.3 -&gt; 70.5 -&gt; 82.7; 16 Word pages came out as 21, and are 16.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class BorderContainerMergeTest extends AbstractXSLFOTest {
 

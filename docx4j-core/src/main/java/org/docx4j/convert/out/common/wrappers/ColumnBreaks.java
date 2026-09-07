@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * {@link UnequalColumns} divides those at the same breaks).
  *
  * <p>Word divides the paragraph the break is <em>in</em>: what precedes the break ends
- * the column and what follows it opens the next (&#xa7;7.3).  Until 17.0.6 the break was
+ * the column and what follows it opens the next (&#xa7;7.3).  Until 17.1.0 the break was
  * emitted as an ordinary line break, so the column was never taken.  The paragraph is
  * therefore split in two here, the same shape of change as the hard page break's
  * ({@code convert/out/common/preprocess/PageBreak}); the break itself opens the second
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * numbering label - Word numbers the paragraph once - nor the first-line indent, and the
  * {@code w:sectPr}, which belongs to the paragraph's end, goes with it.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 class ColumnBreaks {
 

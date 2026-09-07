@@ -178,7 +178,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         // space at the end of the last line (in millipoints)
         private MinOptMax lineFiller;
         private final int textAlignment;
-        /** Not final since 17.0.6: a paragraph which ends at a <b>soft return</b> has its
+        /** Not final since 17.1.0: a paragraph which ends at a <b>soft return</b> has its
          *  last line justified, and whether it does is only known when the break's block
          *  sequence arrives (see {@code docx4j:justify-soft-return}, &#xa7;4.2). */
         private int textAlignmentLast;
@@ -200,7 +200,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         /** This paragraph ends at a soft return, so Word justifies its last line
          *  (&#xa7;4.2).  Must be called before {@link #endSequence()}, which is what puts
          *  the infinite-stretch filler glue in for a last line that is not justified.
-         *  @since 17.0.6 */
+         *  @since 17.1.0 */
         void justifyLastLine() {
             textAlignmentLast = EN_JUSTIFY;
         }
@@ -502,7 +502,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
          * short of the measure rather than taking the word's head, so the ordinary break
          * before the word has to win while anything else is on the line.
          *
-         * @since 17.0.6
+         * @since 17.1.0
          */
         private boolean emergencyUsable(KnuthElement element, int elementIdx) {
             Object word = emergencyElement.get(element);
@@ -561,7 +561,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
          * each compressed line was far looser again.  The threshold is
          * {@link WordLayoutCustomizer#MIN_STRETCH_TO_COMPRESS} (0.30).
          *
-         * @since 17.0.6
+         * @since 17.1.0
          */
         private boolean worthCompressing() {
             if (minStretchToCompress <= 0) return true;
@@ -580,7 +580,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
          * rejected 13.5%, 14.5%, 22.0% and 25.6% (see
          * {@link WordLayoutCustomizer#MAX_HYPHEN_SPACE_SHRINK}).
          *
-         * @since 17.0.6
+         * @since 17.1.0
          */
         private boolean hyphenFits(int elementIdx, int difference) {
             return difference >= 0
@@ -708,7 +708,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
          * instead, so that the text it aligns ends on the right indent (§4.4), which the
          * same golden shows on its centre and right lines.
          *
-         * @since 17.0.6
+         * @since 17.1.0
          */
         private boolean noStopReachable(int position, LayoutManager leader) {
             if (isPtabRight(leader)) return false;
@@ -850,7 +850,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
          * {@code AbstractPageNumberCitationLayoutManager} measures one as the placeholder
          * "MMM", so {@link #followingWidth} subtracted a width the line will not have.
          *
-         * @since 17.0.6
+         * @since 17.1.0
          */
         private boolean followingHasUnresolvedPageNumber(int position) {
             for (int i = position + 1; i < par.size(); i++) {
@@ -1044,7 +1044,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                  * NullPointerException here and the whole export fails.  Plain FOP 2.11
                  * throws the same on the same FO, so it is an upstream defect; two
                  * documents of a 103-document corpus were lost to it, and this is only
-                 * the event which reports the overflow.  @since 17.0.6 */
+                 * the event which reports the overflow.  @since 17.1.0 */
                 if (curChildLM == null || curChildLM.getFObj() == null) {
                     eventProducer.lineOverflows(this, getFObj().getName(), bestActiveNode.line,
                             -lack, getFObj().getLocator());
@@ -1196,7 +1196,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     // an fo:leader's own boxes carry the rule thickness, not a font's
                     // height: a line Word broke at a tab and which holds that tab alone
                     // takes its height from the block's font, not from a hairline
-                    // (@since 17.0.6)
+                    // (@since 17.1.0)
                     if (elementLM(element) instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager) continue;
                     AlignmentContext ac = ((KnuthInlineBox) element).getAlignmentContext();
                     if (ac == null || lastAC == ac) continue;
@@ -1214,7 +1214,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                      * the two cells beside it (123.2) where FOP took the ascent from the
                      * 8pt inline and put it 3pt high, splitting one row into three.  The
                      * span says what it was scaled by, so the line reads its height at
-                     * the size the run declares.  @since 17.0.6 */
+                     * the size the run declares.  @since 17.1.0 */
                     String smallCaps = foreignAttribute(element.getLayoutManager().getFObj(),
                             org.docx4j.fop.wordlayout.WordLayoutElementMapping.SMALL_CAPS);
                     if (smallCaps != null) {
@@ -1273,7 +1273,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // (docx4j:line-box == docx4j:baseline is written nowhere else).  The
                 // run the picture sits in still contributes its font's descent here,
                 // which put every line of one document a flat 2.6pt below Word's.
-                // @since 17.0.6
+                // @since 17.1.0
                 descent = 0;
             }
             // the list label shares the item's first line: Word adds what its ascent
@@ -1433,7 +1433,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
     }
 
-    /** A docx4j foreign attribute on fo:root: a document-level setting.  @since 17.0.6 */
+    /** A docx4j foreign attribute on fo:root: a document-level setting.  @since 17.1.0 */
     private static String rootAttribute(org.apache.fop.fo.FObj block, String name) {
         org.apache.fop.fo.FONode node = block;
         while (node != null && node.getParent() != null) {
@@ -1448,22 +1448,22 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** w:hyphenationZone in millipoints: the largest gap Word is said to tolerate at the
      *  end of a line before it hyphenates the next word.  Measured against Word 365 it
      *  never fires, so it is applied only when
-     *  {@link WordLayoutCustomizer#ENFORCE_HYPHENATION_ZONE} is set.  @since 17.0.6 */
+     *  {@link WordLayoutCustomizer#ENFORCE_HYPHENATION_ZONE} is set.  @since 17.1.0 */
     private final int hyphenationZone;
 
-    /** Whether {@link #hyphenationZone} is applied at all (default false).  @since 17.0.6 */
+    /** Whether {@link #hyphenationZone} is applied at all (default false).  @since 17.1.0 */
     private final boolean enforceHyphenationZone = WordLayoutCustomizer.enforceHyphenationZone();
     /** w:consecutiveHyphenLimit: how many lines in a row may end in a hyphen; 0 = no
-     *  limit.  @since 17.0.6 */
+     *  limit.  @since 17.1.0 */
     private final int hyphenLimit;
     /** w:doNotHyphenateCaps inverted: false means a word in all capitals is left
-     *  whole.  @since 17.0.6 */
+     *  whole.  @since 17.1.0 */
     private final boolean hyphenateCaps;
 
     /** Whether this word may be hyphenated at all: with w:doNotHyphenateCaps, a word
      *  written entirely in capitals is not.  Measured against Word's definition: at
      *  least one letter, and no lower-case one (digits and punctuation, as in
-     *  "ISO-9001", do not make a word mixed case).  @since 17.0.6 */
+     *  "ISO-9001", do not make a word mixed case).  @since 17.1.0 */
     private boolean hyphenatable(CharSequence word) {
         if (hyphenateCaps) return true;
         boolean anyLetter = false;
@@ -1492,7 +1492,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * ({@link WordLayoutCustomizer#maxHyphenSpaceShrink()}, default 0.10).  Capped by
      * the document's own docx4j:space-shrink, like maxSpaceShrink.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private final double maxHyphenSpaceShrink;
 
@@ -1501,7 +1501,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * one more word on ({@link WordLayoutCustomizer#minStretchToCompress()}, default
      * 0.90 of the spaces' natural width).
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private final double minStretchToCompress = WordLayoutCustomizer.minStretchToCompress();
 
@@ -1547,26 +1547,26 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** a hanging indent (a negative first-line offset) makes an implicit stop at the
      *  left indent */
     private final boolean tabHanging;
-    /** w:compat/w:noTabHangInd: a hanging indent makes no implicit tab stop.  @since 17.0.6 */
+    /** w:compat/w:noTabHangInd: a hanging indent makes no implicit tab stop.  @since 17.1.0 */
     private final boolean noTabHangInd;
     /** the paragraph's line that ends at a soft return is justified (&#xa7;4.2;
-     *  w:compat/w:doNotExpandShiftReturn is not set).  @since 17.0.6 */
+     *  w:compat/w:doNotExpandShiftReturn is not set).  @since 17.1.0 */
     private final boolean justifySoftReturn;
     /** whether this line sequence is followed by a soft return, i.e. the break's block is
      *  the next block-level child of the paragraph.  That is the XSLT pathway's shape; in
      *  the visitor pathway the break is nested in the run's fo:inline and splits this
      *  manager's own knuthParagraphs instead.  Set by
-     *  {@link WordBlockLayoutManager}.  @since 17.0.6 */
+     *  {@link WordBlockLayoutManager}.  @since 17.1.0 */
     private boolean followedBySoftReturn;
     /** the decimal separator a decimal stop aligns (w:decimalSymbol; "." by default) */
     private final char decimalSeparator;
 
-    /** @see #followedBySoftReturn  @since 17.0.6 */
+    /** @see #followedBySoftReturn  @since 17.1.0 */
     public void setFollowedBySoftReturn(boolean b) {
         this.followedBySoftReturn = b;
     }
 
-    /** Whether this block's soft returns end a justified line (&#xa7;4.2).  @since 17.0.6 */
+    /** Whether this block's soft returns end a justified line (&#xa7;4.2).  @since 17.1.0 */
     public boolean isJustifySoftReturn() {
         return justifySoftReturn;
     }
@@ -1626,7 +1626,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *
      * @param from the tab's start, in millipoints from the left margin
      * @return the blank's width in millipoints, 0 where the dots already start on the grid
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private int dotLeaderPhase(int from, LayoutManager leader, int width) {
         int period = LBP.leaderUnitWidth(leader);
@@ -1643,7 +1643,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * (the line breaking algorithm's tabOverhang); one past it reaches nothing
      * ({@code noStopReachable}).
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private int endIndentMpt() {
         try {
@@ -1699,7 +1699,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * follows it and a {@link TabPageNumberWidth} moves the width across when the
      * number resolves.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private final java.util.Set<LayoutManager> pageNumberTabs
             = Collections.newSetFromMap(new java.util.IdentityHashMap<LayoutManager, Boolean>());
@@ -1720,7 +1720,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * that the number still ends on its stop; see {@link #pageNumberTabs}.  The area's
      * own notification puts the line back the width the number's did take off it.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private static final class TabPageNumberWidth implements org.apache.fop.area.Resolvable {
 
@@ -1816,7 +1816,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * counted in, by the paragraph's <code>w:jc</code> (measured on the
      * <code>tab-jc</code> probe; §4.4).
      *
-     * <p>A justified line is the exception, and 17.0.6 first made every such line
+     * <p>A justified line is the exception, and 17.1.0 first made every such line
      * start-aligned.  Measured, Word draws the distinction at what follows the
      * <em>last</em> tab: where a tab is the last thing on the line, or the words after it
      * do not reach the end, the tab absorbs the slack and the line is laid out from the
@@ -1835,7 +1835,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * settled width would no longer put the text on its stop, and the line goes back to
      * being laid out from the start.</p>
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private int alignmentForTabLine(int textAlign, KnuthSequence par, int from, int to) {
         if (textAlign != Constants.EN_JUSTIFY) return textAlign;
@@ -1883,7 +1883,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return false;
     }
 
-    /** What {@code w:leader} draws: nothing, dots or a rule.  @since 17.0.6 */
+    /** What {@code w:leader} draws: nothing, dots or a rule.  @since 17.1.0 */
     private static int tabLeaderKind(String v) {
         if ("dot".equals(v) || "middleDot".equals(v)) return LBP.LEADER_DOTS;
         if ("hyphen".equals(v) || "underscore".equals(v) || "heavy".equals(v)) return LBP.LEADER_RULE;
@@ -2095,7 +2095,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // on the spacing-char probe's golden, Times New Roman 12pt, w:spacing 20
                 // (1pt): "expanded" advances 6.228 6.948 7.068 6.228 6.948 7.068 6.228
                 // 7.068 - the final "d" is 6.0 + 1.068, and the space that follows is
-                // 3.0 + 0.948.  (Until 17.0.6 this counted wordLength - 1, which was
+                // 3.0 + 0.948.  (Until 17.1.0 this counted wordLength - 1, which was
                 // right only while FOP's doubled word space, now corrected, made up the
                 // difference.)  FOP paints one after every glyph, so measure and paint
                 // now agree.
@@ -2281,7 +2281,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * penalty is relaxed instead.  &#xa7;4.3's rule that Word does not break
      * <em>after</em> a solidus is unchanged.</p>
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private void solidusLeadingBreaks(List<KnuthSequence> seqs) {
         if (seqs == null) return;
@@ -2329,7 +2329,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * tell an emergency break from an ordinary one, and to tell whether the line it
      * would end holds nothing but that word.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private final java.util.IdentityHashMap<Object, Object> emergencyElement
             = new java.util.IdentityHashMap<Object, Object>();
@@ -2369,7 +2369,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *
      * @param available the widest line the paragraph can have, in millipoints: a word
      *        narrower than that can always be moved to a line where it fits
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private void emergencyBreaks(Paragraph par, int available) {
         if (!emergencyBreakEnabled || available <= 0 || par == null) return;
@@ -2417,7 +2417,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * Word does break overflow by 78 to 345pt.  The {@code table-autofit} probe's 23.976pt
      * column against a 23.988pt word - 0.012pt - is the smallest of them.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private static final int OVERRUN_TOLERANCE = 72000;
 
@@ -2533,7 +2533,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * is nothing but the over-long word holds no auxiliary element to borrow a position
      * from, and a bare leaf would be routed past the inline managers the word sits in.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private static Position auxiliaryLike(Position p, org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
         return positionLike(p, tlm, -1);
@@ -2546,7 +2546,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * straight to the text manager, past the inline managers the text sits in, and they
      * then have no area for it to be added to.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private static Position positionLike(Position p, org.apache.fop.layoutmgr.inline.TextLayoutManager tlm,
             int leafPos) {
@@ -2623,7 +2623,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                      * whose soft returns Word justifies (docx4j:justify-soft-return is
                      * written only for a justified paragraph whose sole block-level
                      * content is soft returns), so the line this sequence ends is
-                     * justified like any other of the paragraph.  @since 17.0.6 */
+                     * justified like any other of the paragraph.  @since 17.1.0 */
                     if (justifySoftReturn && textAlignment == EN_JUSTIFY) {
                         lastPar.justifyLastLine();
                     }
@@ -2782,7 +2782,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         lineLayouts = new LineLayoutPossibilities();
         /* The paragraph's own text-align-last, which is the block's except where the
          * paragraph ends at a soft return: Word justifies that line (§4.2), and
-         * collectInlineKnuthElements has marked it.  @since 17.0.6 */
+         * collectInlineKnuthElements has marked it.  @since 17.1.0 */
         LineBreakingAlgorithm alg = new LineBreakingAlgorithm(alignment,
                                         textAlignment, currPar.textAlignmentLast(),
                                         textIndent.getValue(this), currPar.lineFiller.getOpt(),
@@ -3347,7 +3347,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * changed the length (Turkish dotted I, German sharp S in some locales) is
      * discarded, leaving the offsets valid.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private static String forPatternLookup(StringBuffer sbChars) {
         String word = sbChars.toString();
@@ -3358,7 +3358,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private HyphContext getHyphenContext(StringBuffer sbChars) {
         // w:doNotHyphenateCaps: Word leaves a word in capitals whole.  Done here, where
         // the whole word is to hand, rather than at the penalty: FOP then inserts no
-        // hyphenation point in it at all.  @since 17.0.6
+        // hyphenation point in it at all.  @since 17.1.0
         if (!hyphenatable(sbChars)) {
             return null;
         }
@@ -3490,7 +3490,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         LayoutManager lastLM = lastElement.getLayoutManager();
         if (lastElement.isGlue() && tabLeader((KnuthGlue) lastElement) == null) {
             // (a line ending in a tab keeps it: the tab is not a space, and dropping it
-            // would take the leader of a line broken at the tab after it - @since 17.0.6)
+            // would take the leader of a line broken at the tab after it - @since 17.1.0)
             // Remove trailing spaces if allowed so
             if (whiteSpaceTreament == EN_IGNORE_IF_SURROUNDING_LINEFEED
                     || whiteSpaceTreament == EN_IGNORE
@@ -3515,7 +3515,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 KnuthElement e = (KnuthElement) seqIterator.next();
                 if (e.isBox()) break;
                 // a line Word broke at a tab begins with that tab, which is measured from
-                // the line's start and is not a space to be dropped (@since 17.0.6)
+                // the line's start and is not a space to be dropped (@since 17.1.0)
                 if (e.isGlue() && tabLeader((KnuthGlue) e) != null) break;
                 startElementIndex++;
             }
@@ -3543,7 +3543,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
 
         // a right/centre/decimal tab measured an unresolved page number as "MMM": give
-        // the width back to the tab when it resolves (@since 17.0.6)
+        // the width back to the tab when it resolves (@since 17.1.0)
         if (!pageNumberTabs.isEmpty()) {
             fixPageNumberTabs(seq, startElementIndex, endElementIndex, lineArea);
         }

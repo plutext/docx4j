@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
  * <p>Both halves are covered here: the filler runs override the default, and a flow (or
  * static-content) with nothing in it gets one empty <code>fo:block</code>.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class HiddenDocDefaultsExtentTest extends AbstractXSLFOTest {
 

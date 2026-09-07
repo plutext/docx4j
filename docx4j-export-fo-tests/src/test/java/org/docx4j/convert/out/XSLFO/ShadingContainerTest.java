@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
  * after it at x=126.0 where Word draws them at 72.0.</li>
  * </ul>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class ShadingContainerTest extends AbstractXSLFOTest {
 

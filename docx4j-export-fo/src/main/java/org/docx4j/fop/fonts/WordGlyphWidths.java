@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  *
  * Off with <code>docx4j.convert.out.fo.glyphWidths.round=false</code>.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class WordGlyphWidths {
 
@@ -102,7 +102,7 @@ public class WordGlyphWidths {
 	 * grave or a small tilde at all, and there the line is 0.46 to 1.10pt out (up to 4.3%
 	 * of a short line).  What it fixes outright is the {@code /Widths} docx4j writes.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static boolean declaredEncoding(org.apache.fop.fonts.SingleByteEncoding enc) {
 		if (enc == null || enc.getName() == null) return false;
@@ -137,7 +137,7 @@ public class WordGlyphWidths {
 				if (widths == null || chars == null) return;
 
 				// the encoding the PDF declares settles which glyph a code stands for;
-				// elsewhere only the truncation is undone (@since 17.0.6)
+				// elsewhere only the truncation is undone (@since 17.1.0)
 				boolean declared = declaredEncoding(enc);
 				// getWidths() is offset by getFirstChar(), setWidth(code, w) is not
 				int first = sbf.getFirstChar();

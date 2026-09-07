@@ -24,7 +24,7 @@ import org.w3c.dom.NodeList;
  * <p>XSL 1.1's display-align on fo:region-body is the equivalent, and it costs nothing
  * on a full page, so it applies to the whole section as Word applies it.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SectionVerticalAlignTest extends AbstractXSLFOTest {
 

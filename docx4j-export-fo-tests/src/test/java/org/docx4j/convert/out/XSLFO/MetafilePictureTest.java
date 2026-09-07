@@ -20,7 +20,7 @@ import org.w3c.dom.NodeList;
  * metafile's GDI records onto Batik's SVGGraphics2D and puts the SVG in an
  * {@code fo:instream-foreign-object}, which FOP paints.
  *
- * <p>Before 17.0.6 the FO named the {@code .wmf}/{@code .emf} in an
+ * <p>Before 17.1.0 the FO named the {@code .wmf}/{@code .emf} in an
  * {@code fo:external-graphic}: FOP has a loader for neither (Batik's WMF loader
  * covers some WMF), so the picture was drawn as nothing at all, or - with
  * {@code WordLayoutFixups.reserveUnpaintablePictures} - as a transparent placeholder
@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
  * serialize the SVG differently and one of them (Xalan) drops namespace
  * declarations, which is the kind of difference this pairing exists to catch.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class MetafilePictureTest extends AbstractXSLFOTest {
 
@@ -91,7 +91,7 @@ public class MetafilePictureTest extends AbstractXSLFOTest {
 	 *
 	 * <p>Word wraps such a preview in {@code w:object} as often as in {@code w:pict}.
 	 * This covers the {@code w:pict} form; {@code w:object}, which neither FO exporter
-	 * matched until 17.0.6, is covered by {@link VmlObjectPictureTest}.  The metafile
+	 * matched until 17.1.0, is covered by {@link VmlObjectPictureTest}.  The metafile
 	 * pipeline is the same one.</p>
 	 */
 	private static WordprocessingMLPackage vmlPkg(String metafile) throws Exception {

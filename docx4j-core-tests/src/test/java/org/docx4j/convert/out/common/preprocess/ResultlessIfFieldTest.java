@@ -22,7 +22,7 @@ import org.junit.Test;
  * at y=724.4 and a {@code region-after extent="112.251pt"} against Word's ~47 - 65pt of
  * body lost on every page.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class ResultlessIfFieldTest {
 

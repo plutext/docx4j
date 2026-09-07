@@ -19,7 +19,7 @@ import org.junit.Test;
  * DejaVu Serif Condensed measures 0.900 - the only Georgian-covering face within 3% -
  * where Noto Serif Georgian is 0.999 of DejaVu Serif, i.e. no better.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class GeorgianSubstituteTest {
 

@@ -135,7 +135,7 @@ public class WordLayoutFixupsTest {
 		assertEquals(1, count(out14, "space-before.conditionality=\"retain\""));
 		// Word keeps a cell's last paragraph's space-after below mode 15 too: measured on
 		// a mode-14 document whose cell paragraphs carry w:before=60 w:after=60, Word's
-		// row pitch is 3 + 11.5 + 3 = 18.0pt where ours was 15.0.  @since 17.0.6
+		// row pitch is 3 + 11.5 + 3 = 18.0pt where ours was 15.0.  @since 17.1.0
 		assertEquals("bottom spacing in cells applies below mode 15 too", 1,
 				count(out14, "space-after.conditionality=\"retain\""));
 	}
@@ -224,7 +224,7 @@ public class WordLayoutFixupsTest {
 	 * Word's exact row height is the whole row, borders included, where FOP reads
 	 * {@code height} as the cell's content height and adds the border it charges the
 	 * cell on top - half of each collapsed border, all of a separate one.  So the
-	 * height comes down by that allowance.  @since 17.0.6
+	 * height comes down by that allowance.  @since 17.1.0
 	 */
 	@Test
 	public void exactRowHeightAllowsForTheBorderFopAdds() {
@@ -518,7 +518,7 @@ public class WordLayoutFixupsTest {
 	 * an empty w:t lost 33.7pt of Word's row height, and a paragraph holding only a
 	 * wrapNone anchored picture cost its whole 15.44pt line.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aParagraphWithNoInlineContentStillGetsALine() {
@@ -552,7 +552,7 @@ public class WordLayoutFixupsTest {
 	 * first paragraph of each of two tables has Word's five pages only because those
 	 * two breaks are taken.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void pageBreakBeforeInATableAppliesToTheTable() {
@@ -580,7 +580,7 @@ public class WordLayoutFixupsTest {
 	 * carry w:contextualSpacing with 10pt of docDefaults space-after had every row 9.5pt
 	 * too tall, and 37 Word pages came out as 43.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void containerWrapperFollowsItsParagraphsSpacing() {
@@ -610,7 +610,7 @@ public class WordLayoutFixupsTest {
 	 * the other cells.  One document of a 103-document corpus has eleven such cells and
 	 * lost its whole export to them.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void anEmptyCellGetsABlock() {
@@ -649,7 +649,7 @@ public class WordLayoutFixupsTest {
 	 * whose letterhead box is anchored in a right-aligned cell paragraph: Word starts
 	 * all seven of its lines at x=346.0, where ours ran from 312.4 to 438.9.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aTextBoxDoesNotInheritTheParagraphsAlignment() {
@@ -671,7 +671,7 @@ public class WordLayoutFixupsTest {
 	 * paragraph carrying w:pageBreakBefore, came out with one line a page against Word's
 	 * nine.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aTextBoxIsNotPaginated() {
@@ -691,7 +691,7 @@ public class WordLayoutFixupsTest {
 	 * spacing-page-top probe measured 36pt on the first paragraph of a document - so
 	 * only the automatic value goes.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void autoSpaceBeforeGoesAtTheStartOfAFlow() {
@@ -754,7 +754,7 @@ public class WordLayoutFixupsTest {
 		assertFalse(out.contains("<fo:flow flow-name=\"xsl-region-body\"><fo:float"));
 	}
 
-	// ------------------------------------------------------------ 17.0.6, b2-batch20
+	// ------------------------------------------------------------ 17.1.0, b2-batch20
 
 	/**
 	 * A space leader (a tab, or the leader leadingWhitespaceLeader writes) and an

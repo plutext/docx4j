@@ -59,7 +59,7 @@ import org.w3c.dom.Element;
  * rendering identical to AWT's whatever fonts are installed, at the cost of
  * searchable text and a larger file.
  *
- * @since 17.0.6 (CR-011 phase 2)
+ * @since 17.1.0 (CR-011 phase 2)
  */
 public class BatikMetafileSvgProvider implements MetafileSvgProvider {
 

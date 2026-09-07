@@ -35,7 +35,7 @@ import org.w3c.dom.NodeList;
  *
  * Both FO pathways.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class TableGridAuthoritativeTest {
 

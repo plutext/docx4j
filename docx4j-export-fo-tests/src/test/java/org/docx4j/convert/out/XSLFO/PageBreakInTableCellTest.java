@@ -26,12 +26,12 @@ import org.w3c.dom.NodeList;
  * paragraph, two of them there, one in a later paragraph of the cell, one in a cell
  * which is not the first, and one in the second row: Word gives none of them a page and
  * its table shares a page with the paragraph introducing it in every case, so Word's
- * document is 7 pages where 17.0.6's was 8.  FOP otherwise breaks the table wherever it
+ * document is 7 pages where 17.1.0's was 8.  FOP otherwise breaks the table wherever it
  * finds a break-before in a cell, which put one line on a page of its own.</p>
  *
  * <p>Both FO pathways.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PageBreakInTableCellTest extends AbstractXSLFOTest {
 

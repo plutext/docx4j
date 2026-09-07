@@ -48,7 +48,7 @@ public class XSLTUtils {
 	 * deliberately not suggested: a Choice we cannot in fact draw is worse than the
 	 * fallback, and the fallback is what the producer wrote for exactly this case.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static String mcPreferredChoiceRequires() {
 		return org.docx4j.Docx4jProperties.getProperty("docx4j.jaxb.mc.preferChoice", "");
@@ -58,7 +58,7 @@ public class XSLTUtils {
 	 * Whether an {@code mc:Choice} with this {@code @Requires} is one we prefer to the
 	 * {@code mc:Fallback}; see {@link #mcPreferredChoiceRequires()}.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean mcPrefersChoice(String requires) {
 		if (requires == null || requires.length() == 0) return false;

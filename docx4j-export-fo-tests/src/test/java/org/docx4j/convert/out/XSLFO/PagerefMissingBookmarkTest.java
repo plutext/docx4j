@@ -21,7 +21,7 @@ import org.junit.Test;
  * corpus document all 150 of its page numbers (its TOC hyperlinks point at headings
  * that have been deleted).  Both FO pathways.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PagerefMissingBookmarkTest {
 

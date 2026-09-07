@@ -548,7 +548,7 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		//
 		// getCurrentParent, so the br goes INSIDE the run's span, as it does in the
 		// XSLT pathway (where w:br is just another child of w:r, so it lands inside
-		// whatever createBlockForRPr wraps the run's children in).  Before 17.0.6
+		// whatever createBlockForRPr wraps the run's children in).  Before 17.1.0
 		// this appended to currentP and then set currentSpan=null, which closed the
 		// run early: any w:t after the break in the same run - the shape Word writes
 		// for a soft return mid-run - got a bare span with none of the run's

@@ -143,7 +143,7 @@ public class Docx4J {
 	 *  If the document contains no ToC, the export proceeds unchanged.
 	 *
 	 *  @see #updateToc(WordprocessingMLPackage, boolean)
-	 *  @since 17.0.6
+	 *  @since 17.1.0
 	 */
 	public static final int FLAG_EXPORT_UPDATE_TOC = 4;
 
@@ -738,7 +738,7 @@ public class Docx4J {
 	 *
 	 * @return true if a ToC was found and updated; false if the document
 	 * contains no ToC (in which case nothing is changed)
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean updateToc(WordprocessingMLPackage wmlPackage) throws Docx4JException {
 		return updateToc(wmlPackage, false);
@@ -769,7 +769,7 @@ public class Docx4J {
 	 * @throws org.docx4j.toc.TocException if there is a ToC, but it can't be
 	 * updated (for example, page numbers were asked for, but no page numbering
 	 * implementation is available, or the document's bookmarks are broken)
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean updateToc(WordprocessingMLPackage wmlPackage, boolean skipPageNumbering) throws Docx4JException {
 
@@ -813,7 +813,7 @@ public class Docx4J {
 	 * the flags it understands (and so we don't update the ToC twice, when one
 	 * facade method delegates to another).
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static int updateTocIfRequested(OpcPackage pkg, int flags, boolean skipPageNumbering) throws Docx4JException {
 

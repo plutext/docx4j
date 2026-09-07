@@ -17,7 +17,7 @@ import org.junit.Test;
  * <code>&lt;w:p&gt;&lt;w:r&gt;&lt;w:br/&gt;&lt;/w:r&gt;&lt;w:r&gt;...</code> is 25.7pt -
  * two 12.85pt lines - where docx4j's was 13.1pt, so everything below it was 12.6pt high.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class LeadingBreakLineTest extends AbstractXSLFOTest {
 

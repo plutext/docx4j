@@ -21,7 +21,7 @@ import org.junit.Test;
  * Measured on a 9pt single-spaced Helvetica document: Word's line pitch is 10.34pt and
  * docx4j's was 12.89pt, +24.6% on every line, five Word pages against our six.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SubstituteLineMetricsTest {
 

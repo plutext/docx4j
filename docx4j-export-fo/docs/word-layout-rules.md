@@ -3,7 +3,7 @@
 How Word lays out a page, as measured against Word 365, and what docx4j does about it when
 converting a docx to PDF via XSL-FO and Apache FOP. A reference, organised by topic: each
 rule is stated once, with the measurement that established it and the property that turns
-it off where there is one. Describes docx4j 17.0.6 with FOP 2.11.
+it off where there is one. Describes docx4j 17.1.0 with FOP 2.11.
 
 For what to do when FOP is upgraded, see [README-word-layout.md](../README-word-layout.md),
 which documents the copied `LineLayoutManager` and how to re-derive it.
@@ -77,7 +77,7 @@ The preprocessor now hoists such content into the legal position around it. The 
 it is **split**: each nested run becomes a sibling run keeping its own `w:rPr`, each of the
 outer run's own children is wrapped in a run carrying the outer `w:rPr`, and a nested
 paragraph contributes the runs it holds (its `w:pPr` goes, since there is nowhere legal to
-carry it). Flattening the nested content into the outer run instead - which is what 17.0.6
+carry it). Flattening the nested content into the outer run instead - which is what 17.1.0
 first did - loses both the nested runs' character formatting and their whitespace: measured
 on the document above, whose hyperlinks hold `w:hyperlink/w:r/(w:rPr, w:r, w:r, …)` with
 the words in `w:rStyle="Highlight"` runs and the spaces between them in runs of their own,
@@ -172,7 +172,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.mirrorMargins` | `true` | `w:settings/w:mirrorMargins`: each page master gains a mirrored twin, chosen on even pages, whose left and right margins are the other way round (§7). |
 | `docx4j.convert.out.fields.docPropertyCachedResult` | `true` | A `DOCPROPERTY` keeps the result the document cached, which is what Word paints until the field is updated (&sect;7). `false` evaluates the property. Also HTML. |
 | `docx4j.convert.out.fields.dropResultlessIf` | `true` | An `IF` field with no `w:fldChar w:fldCharType="separate"` has no result and paints nothing, its branches being field instruction (§7). Also HTML. |
-| `docx4j.convert.out.fields.formFieldResults` | `true` | A legacy form field paints the state its `w:ffData` holds: a `FORMDROPDOWN` the `w:listEntry` its `w:result` selects, a `FORMTEXT` with nothing typed into it its `w:default` ([§7](#s7formfield)). `false` paints nothing, as before 17.0.6. Also HTML. |
+| `docx4j.convert.out.fields.formFieldResults` | `true` | A legacy form field paints the state its `w:ffData` holds: a `FORMDROPDOWN` the `w:listEntry` its `w:result` selects, a `FORMTEXT` with nothing typed into it its `w:default` ([§7](#s7formfield)). `false` paints nothing, as before 17.1.0. Also HTML. |
 | `docx4j.convert.out.fo.wordLayout.boundKeepChains` | `true` | A `keep-with-next` chain taller than a page has its keeps reduced to a finite penalty, so the breaker may break inside it as Word does, instead of FOP running the whole chain off the bottom of one page ([§3](#s39keepchain)). |
 | `docx4j.convert.out.fo.wordLayout.keepChainPenalty` | `900` | The penalty such a keep is reduced to, against FOP's infinite 1000: high enough that the breaker still keeps the blocks together wherever they fit. |
 | `docx4j.convert.out.fo.wordLayout.keepChainTolerance` | `3.0` | How many times the page a keep chain must exceed before it is bounded. The flow-level height sum over-estimates what the page must hold, and a chain 12% over is one Word fits ([§3](#s39keepchain)). |
@@ -190,7 +190,7 @@ compatibility-mode bundle each flag's default comes from.
 
 **The policy is: a rule keys on the flag, and the compatibility mode supplies the flag's
 default where the document does not state one - which, measured, is "off".** The settings
-document's §2 tabulates what Word *writes* at each mode, and 17.0.6 measured that neither
+document's §2 tabulates what Word *writes* at each mode, and 17.1.0 measured that neither
 half of that implies a behaviour: a mode-11 corpus document which omits
 `useWord2002TableStyleRules` from an otherwise complete Word-2003 compat block has Word
 applying the modern table style rules to it, and so do two more which *state* the flag.
@@ -244,7 +244,7 @@ five multiples. Sizing lines as a percentage of the block's font size instead (1
 came out at ~11.7pt) put 15-20% more lines on a page than Word has.
 
 <a id="s21grid"></a>**Word's `single` is a whole number of 1/600 inch, and ours is not**
-(measured 17.0.6, **not** applied by default). Word lays a page out in 600 dpi device units
+(measured 17.1.0, **not** applied by default). Word lays a page out in 600 dpi device units
 - its A4 page is 595.32 x 841.92pt, which is 4961 x 7016 of them - and a single line is a
 whole number of them. All four of the `line-auto` golden's fonts confirm it, and the
 arithmetic above is 0.001 to 0.021pt short of every one of them:
@@ -380,7 +380,7 @@ Word ignores the paragraph mark's size when sizing the lines of a **non-empty** 
 mark's font and size, and is one line high.
 
 <a id="s25brline"></a>**A `w:br` whose new line holds nothing that paints still takes a
-line** (17.0.6) - the same rule one level down. `BrWriter` writes a line break as a nested
+line** (17.1.0) - the same rule one level down. `BrWriter` writes a line break as a nested
 `fo:block line-height="0pt" linefeed-treatment="preserve"`, so where what follows on the new
 line is empty (an empty run, a field with no result) nothing sizes the line and the 0pt
 line-height stands. Measured on a paragraph reading
@@ -408,7 +408,7 @@ line of the document. `WordLayoutFixups` gives such a block the same
 mark's font and line-box attributes. A paragraph all of whose runs and whose mark are
 hidden text still gets no line ([§9.3](#93-hidden-text)).
 
-**And a run takes no size from the mark either** (17.0.6). A `w:r` with no `w:rPr` gets no
+**And a run takes no size from the mark either** (17.1.0). A `w:r` with no `w:rPr` gets no
 `font-size` of its own in the FO - the XSLT pathway does not even wrap it in an
 `fo:inline` - so it inherits the block's, which starts as the paragraph's effective size
 (docDefaults, then the paragraph style's `w:rPr`). That was right until
@@ -538,7 +538,7 @@ measured on `numbering-label-ilvl0`, whose style carries both through `w:basedOn
 83.3 where docx4j used the level's 720/360 and drew them at 90.0 and 108.0.
 
 It applies to a paragraph's **own** `w:numPr` as well. A gate which sent a direct `w:numPr`
-to the level's indent instead was carried through several rounds of 17.0.6 because the
+to the level's indent instead was carried through several rounds of 17.1.0 because the
 effective indent was wrong on two documents; the cause is
 [the rule below](#s28lvlpstyleind) - `NumberingDefinitionsPart.getInd` read a *style-linked*
 level's indent from the style it names rather than from the level, so a style the paragraph
@@ -567,7 +567,7 @@ the numbering - measured above. Where the level states no indent of its own the 
 style's is still used, which is what this did from 2.7. `StyleLinkedLevelTest`.
 
 **`w:numId 0` takes the level's `w:ind` with its label** (ECMA-376 17.9.18). That rule was
-written for 17.0.6 and never fired: `StyleUtil.apply(NumPr, NumPr)` writes into the
+written for 17.1.0 and never fired: `StyleUtil.apply(NumPr, NumPr)` writes into the
 destination object, so the inherited `w:numPr` it read to find the level had already become
 the `w:numId 0`. On the probe, a paragraph switching its numbered style's numbering off
 kept a 567-twip hanging indent Word does not draw.
@@ -637,7 +637,7 @@ column under 5pt.
 *And it is unconditional*, `w:compat/w:doNotUseIndentAsNumberingTabStop` notwithstanding.
 That flag ("Ignore Hanging Indent When Creating Tab Stop After Numbering") would send the
 text to the first real stop past the label instead, and keying the rule on it was measured
-over the three corpora in 17.0.6: **all eight documents it moved got worse and none
+over the three corpora in 17.1.0: **all eight documents it moved got worse and none
 better** - 0.922 to 0.778 of Word's lines, 0.855 to 0.702, and six more losing 0.02 to
 0.04 - so Word's own PDFs of them show the hanging indent standing. See
 word-layout-settings.md §4(d).
@@ -715,7 +715,7 @@ to the paragraph's end, so it goes with the second half.
 
 Both of those - the split, and the plain `w:pageBreakBefore` conversion where the break
 comes first - are done by a walk which visited the **body's own children only** until
-17.0.6, so a paragraph inside a `w:sdt` (a table of contents, a cover page, any building
+17.1.0, so a paragraph inside a `w:sdt` (a table of contents, a cover page, any building
 block) was missed and its break stayed nested in an `fo:inline`, where FOP ignores it.
 Measured on a document whose contents control wraps two such paragraphs: FOP laid the
 paragraph's 12pt space-before down on the **previous** page and the leading block-level
@@ -770,7 +770,7 @@ at a time, each case a table of its own introduced by a paragraph: a single brea
 head of the first cell's first paragraph, two of them there, one in a later paragraph of
 the cell, one in a cell which is not the first, and one in the second row. Word gives none
 of them a page - every table shares a page with its introduction - and its seventh and
-last page is the one the `w:pageBreakBefore` case opens. 17.0.6 had promoted a single head
+last page is the one the `w:pageBreakBefore` case opens. 17.1.0 had promoted a single head
 break to the table, on the strength of two corpus documents whose page 1 had looked short,
 and had eight pages (`WordLayoutFixups.dropPageBreaksInTableCells`). H10's two corpus
 measurements the other way stand: their tables share page 1 with the paragraph above them
@@ -797,7 +797,7 @@ gives it a ninth page - so a break with no section after it keeps its page
 `force-page-count`: docx4j writes `no-force` on every page-sequence already, and Word's own
 `w:pgNumType w:start` restart (98 in that probe) costs no page either.
 
-The rule was re-measured in 17.0.6 against the real documents which hold that shape, since
+The rule was re-measured in 17.1.0 against the real documents which hold that shape, since
 its page counts had been read as a regression. It is right, and the page count was the
 coincidence: on a 26-page document with four such section ends, the **old** output was 26
 pages with **four** blank pages (12, 22, 24 and 26) where Word has 26 pages with **one**
@@ -829,7 +829,7 @@ An explicit `w:beforeAutospacing="0"` in direct formatting switches off the
 `w:afterAutospacing`. That needs the attribute's three states - true, false, absent - which
 XJC's `isBeforeAutospacing()` cannot report, since it returns a primitive `boolean`
 (`org.docx4j.wml.AutospacingAccess` reads the field itself). Style resolution carried only
-true until 17.0.6, so the override did nothing: measured on a document whose `NormalWeb`
+true until 17.1.0, so the override did nothing: measured on a document whose `NormalWeb`
 style carries it and which overrides it on 20 paragraphs, 17 came out 14pt low - Word's
 first divergence at y=171.4, docx4j's at 186.2, and the next gap 30.7pt against 58.9.
 
@@ -847,7 +847,7 @@ documents of the three corpora have autospacing inside a cell.
 
 <a id="s35"></a>**Table cells.** A paragraph's space-before applies at the cell top, and its
 space-after at the cell bottom - **in every compatibility mode**. docx4j pinned the
-space-after only from mode 15 until 17.0.6; measured on a mode-14 document whose cell
+space-after only from mode 15 until 17.1.0; measured on a mode-14 document whose cell
 paragraphs carry `w:spacing w:before="60" w:after="60"` (3pt each), Word's row pitch is
 119.6 -> 137.6 -> 155.6 = **18.0pt** = 3 + 11.5 + 3, where docx4j's was 110.7 -> 125.7 ->
 139.2 (15.0 / 13.5, the space-before only) and the deficit grew to -25.4pt by y=360 on page
@@ -1084,7 +1084,7 @@ documents carrying those lines (77.5% -> 80.2% of lines matched). 0 restores 17.
 behaviour.
 
 <a id="s42shiftreturn"></a>**A line that ends in a soft return is justified**
-(`w:compat/w:doNotExpandShiftReturn`, 17.0.6). Word stretches the spaces of a line ending
+(`w:compat/w:doNotExpandShiftReturn`, 17.1.0). Word stretches the spaces of a line ending
 in a `w:br` with no type, inside a `w:jc="both"` paragraph, exactly as it stretches any
 other line of it - unless the document sets that flag, which is one of the seven the Word
 2007 default block writes and which no Word 2010 or later document carries: 21 documents of
@@ -1143,7 +1143,7 @@ most fonts have no glyph for one, so it was painted as a notdef box in the middl
 word. Word shows one only where it breaks the line there. A `w:br` at the end of a
 paragraph gets the empty line Word gives it.
 
-#### The emergency break: a word too long for any line (17.0.6)
+#### The emergency break: a word too long for any line (17.1.0)
 
 When no legal break will do, Word breaks the word itself. UAX #14, which FOP follows,
 offers no break inside `KONS_ADATOK_SZERZODO_ADATAI_TERM_SZEMELY_LAKCIM_VAROS` or a rule of
@@ -1320,13 +1320,13 @@ paragraph is the exception: the tab absorbs the slack and Word lays the line out
 start (x=72 in the probe). A stop that reaches past the available width fills the line, so
 `w:jc` cannot move it any further - Word cannot move backwards.
 
-docx4j drew every such line flush left before 17.0.6 (`tab-jc` max dx 372.4pt -> 0.36pt).
+docx4j drew every such line flush left before 17.1.0 (`tab-jc` max dx 372.4pt -> 0.36pt).
 Three documents of a 40-document corpus slice have a centred or right-aligned paragraph
 containing a tab.
 
 **`w:compat/w:forgetLastTabAlignment`** ("Ignore Width of Last Tab Stop When Aligning
 Paragraph If It Is Not Left Aligned") is exactly what would turn this rule off, and reading
-it was measured and rejected in 17.0.6: the one corpus document which states it fell when
+it was measured and rejected in 17.1.0: the one corpus document which states it fell when
 §4.4jc was switched off for it ([settings §4(e)](word-layout-settings.md)). The rule is
 unconditional, and the `compat-breaks` probe pair carries the shape for a golden.
 
@@ -1348,7 +1348,7 @@ both a tab and `w:jc="both"`.**
 <a id="s44leader"></a>**Leaders.** `w:leader` `dot` and `middleDot` draw dots (FOP repeats
 the font's own dot, as Word does; a dotted rule does not match); `hyphen`, `underscore` and
 `heavy` draw a rule; anything else nothing. The leader a tab draws is the leader of **the
-stop it reaches**, which is settled at layout time like the width. Until 17.0.6 the n-th
+stop it reaches**, which is settled at layout time like the width. Until 17.1.0 the n-th
 tab of a paragraph took the leader of the n-th stop, which is right only where the tabs and
 the stops correspond one to one: a table of contents whose stops are
 `360:left;540:left;851:left;9990:right:dot` gives its one-tab entries ("Foreword" then the
@@ -1386,7 +1386,7 @@ of fixed length to the next stop, computed at FO-generation time, so code blocks
 hanging first lines indent as Word indents them. A fixed-length leader does not set
 `text-align-last="justify"`; only a stretching one needs it.
 
-**...but only where the stop it reaches is a left one** (17.0.6). A fixed leader of the
+**...but only where the stop it reaches is a left one** (17.1.0). A fixed leader of the
 stop's own offset lays a right stop out as a left one: the text after the tab *begins* on
 the stop where Word makes it *end* there. Measured on a corpus footer whose only content is
 `<w:tab w:val="right" w:pos="9356"/>` then "Page 1 von 2": Word ends that text at x=540.3,
@@ -1406,7 +1406,7 @@ right margin, and a stretching leader absorbs the width an unresolved
 `fo:page-number-citation` loses when it resolves.
 
 <a id="s44tocstop"></a>**...but the leader ends on the entry's own stop, not on the
-paragraph's right indent** (17.0.6). `text-align-last="justify"` stretches to the block's
+paragraph's right indent** (17.1.0). `text-align-last="justify"` stretches to the block's
 end-indent; Word stretches to the stop the tab reaches, and where that stop lies outside
 the text column Word lets the entry overhang the margin. Measured on an A4 document with
 72pt margins - a right edge at x=523.35 - whose `TOC1` style declares
@@ -1423,7 +1423,7 @@ the right edge and nothing changes.
 <a id="s44toc"></a>Its one cost is the phase above: a stretching leader's width is settled
 by FOP's justification, after the line manager has been and gone, so its dots begin on the
 text where Word's begin on the grid. 18 documents of the three corpora and about 797
-lines carry the shape. Since 17.0.6 moves the page number's width to the tab itself
+lines carry the shape. Since 17.1.0 moves the page number's width to the tab itself
 ([below](#s44pageref)), such an entry can go through the ordinary resolved-tab path
 instead - and get the phase with it -
 and `docx4j.convert.out.fo.wordLayout.tocStretchingLeader=false` does that.
@@ -1485,7 +1485,7 @@ manager then applies, all of them Word's:
 
 <a id="s47zone"></a>**The hyphenation zone does not fire.** `w:hyphenationZone` is
 documented as the largest gap Word tolerates at a line end before it hyphenates, and
-docx4j applied it that way until 17.0.6. Measured against Word 365's goldens for the
+docx4j applied it that way until 17.1.0. Measured against Word 365's goldens for the
 `hyphenation` (zone 360 twips = 18pt) and `hyphenation-zone` (zone 720 = 36pt) probes,
 which hold the same prose: Word's line breaks are **identical** in the two documents
 except where `w:consecutiveHyphenLimit=2` or `w:doNotHyphenateCaps` - the other two
@@ -1587,7 +1587,7 @@ in-flow content is spaces as well (typically one which also anchors a text box):
 gives it a line, and FOP built none, since the spaces were gone before layout.
 
 <a id="s45nbsp"></a>**But not with `white-space-treatment="preserve"`**, which docx4j set
-on the block until 17.0.6: it also keeps the space that falls at a **line-break
+on the block until 17.1.0: it also keeps the space that falls at a **line-break
 opportunity**, so every wrapped line starts one space to the right of Word's, and on a
 justified line that space is stretched too. Measured on a document whose first body
 paragraph is justified and begins with ten literal spaces, Word's continuation lines all
@@ -1650,7 +1650,7 @@ character, the word's last and the spaces included**. Measured on the `spacing-c
 Times New Roman 12pt, `w:spacing w:val="20"` (1pt): "expanded" advances 6.228 6.948 7.068
 6.228 6.948 7.068 6.228 7.068 - the final "d" is 6.0 + 1.068 - and the space after it is
 3.0 + 0.948. So the line manager brings both of FOP's paths (the complex one, which counts
-none, and the plain one, which counts `wordLength - 1`) to `wordLength`. Until 17.0.6 it
+none, and the plain one, which counts `wordLength - 1`) to `wordLength`. Until 17.1.0 it
 used the plain path's count, which was right only while the doubled word space made up the
 difference. Line parity on the probe 29% -> 79%, `kern-title` 93% -> 100%; a corpus
 document of 620 letter-spaced space runs went 0.39 -> 0.98. Upstream FOP report candidate
@@ -1744,7 +1744,7 @@ For a font the machine does not have, docx4j chooses in this order:
 <a id="s51cover"></a>Step 4 applies to a step-1 substitute too. A metric clone is chosen
 for its advance widths, and several of them carry the Latin alphabet alone: Caladea, which
 stands in for Cambria, has neither Greek nor Cyrillic (`fc-query`:
-`20-7e a0-161 164-17f 192 1fa-1ff 218-21b 237 2c6-2c7 ...`). Until 17.0.6 the coverage check
+`20-7e a0-161 164-17f 192 1fa-1ff 218-21b 237 2c6-2c7 ...`). Until 17.1.0 the coverage check
 skipped Greek and Cyrillic outright, on the assumption that any conventional stand-in
 covers them, so step 1's choice was never questioned. Measured on a 68-page Greek document
 set in Cambria: **48% of the glyphs docx4j painted were notdef** and its line parity was
@@ -1791,7 +1791,7 @@ consulted before the class defaults. Sylfaen's *Cyrillic* has no such answer her
 measures closest to it (1.0288 against Tinos's 1.041) but has no Cyrillic at all, so Tinos
 stands and the residual is 4%.
 
-<a id="s52measurednochange"></a>**Three substitutions were re-measured in 17.0.6 and left
+<a id="s52measurednochange"></a>**Three substitutions were re-measured in 17.1.0 and left
 as they are.** Each had been reported from a single corpus line, and the aggregate does not
 bear it out. **Tahoma** stays on Arimo: over five Tahoma documents of two corpora, pairing
 lines whose extracted width our own render reproduces from Arimo's advance widths (so the
@@ -1964,7 +1964,7 @@ and Word's own PDFs have none of them.
 after run font selection - which is exactly the case the symbol path did not take - and gives
 it the substitute font, checked for the glyph first (`PhysicalFonts.getSymbolFont` and the two
 Wingdings ones, which is what `w:sym` uses). Applying `SymbolMapper` to every such
-`w:lvlText` *ahead* of run font selection - 17.0.6's first reading of the fix - was measured
+`w:lvlText` *ahead* of run font selection - 17.1.0's first reading of the fix - was measured
 over the three corpora and is much worse: it bypasses the mapping that works, turning correct
 U+25AA labels into the missing-symbol box, and cost **0.025 of mean line parity on each
 corpus over 111 documents with none improved**. The fallback as shipped fixed 109 of real2's
@@ -1983,7 +1983,7 @@ Geometric Shapes, Miscellaneous Symbols, Dingbats, Braille - is
 `Character.UnicodeScript.COMMON`, which `FontFallback.needsCoverage` treats as always
 covered, so the coverage pass would have skipped them even with a family to work from.
 
-Both halves are fixed since 17.0.6: the branch names the run's own font whatever happens,
+Both halves are fixed since 17.1.0: the branch names the run's own font whatever happens,
 `needsCoverage` is true for a symbol code point, and the coverage pass groups the symbol
 blocks under a class of their own (`FontFallback.isSymbol` / `coverageGroupOf`) rather than
 under COMMON. The class matters twice: it gets the range its own measured candidate order -
@@ -2036,7 +2036,7 @@ Measured with `table-indent-compat14` / `-compat15`: the first cell's text at 72
 `table-grid-edge-compat12` and `-compat11` (`w:tblInd` 108, at the top level with Word's
 default cell margins and with the table's own `w:tblCellMar` 108, and nested in a cell),
 Word's first cell text is at 77.3pt in both modes, exactly where mode 14 puts it and 5.8pt
-left of where mode 15 would. 17.0.6 briefly restricted the shift to mode 14 alone, on the
+left of where mode 15 would. 17.1.0 briefly restricted the shift to mode 14 alone, on the
 strength of the corpus document in the next paragraph, and those two goldens settled it.
 
 **The shift is unconditional in every mode below 15**, whatever the sign of `w:tblInd`
@@ -2045,7 +2045,7 @@ and whether or not the table has one. Measured on `table-grid-edge-signed-compat
 `w:tblInd` -108, at 54.0 for -360, and at 72.0 for no `w:tblInd` at all - fixed layout and
 autofit alike - which is margin + `w:tblInd` exactly, so the grid edge is
 margin + `w:tblInd` - one cell margin throughout. Modes 14 and 15 of the same probe match
-what was already implemented. 17.0.6 briefly capped the shift at `min(shift, max(0,
+what was already implemented. 17.1.0 briefly capped the shift at `min(shift, max(0,
 tblInd))` below mode 14, which put those three at 72.3 / 59.7 / 77.7.
 
 <a id="s61autofit"></a>**A content-autofit table's grid is one cell margin wider than the
@@ -2097,7 +2097,7 @@ docx4j's own default styles part does not. Measured: cell text starts at the bor
 + half the border width + 5.4pt. Applies to HTML output too.
 
 <a id="s62tcmar"></a>A cell's **own** `w:tcMar` overrides the table's `w:tblCellMar`, and
-the content-autofit sizer ([§6.3](#63-autofit-column-widths)) reads it too (17.0.6): where
+the content-autofit sizer ([§6.3](#63-autofit-column-widths)) reads it too (17.1.0): where
 a table sets `w:tblCellMar` 0 left and right and every cell overrides with `w:tcMar` 30
 twips, the columns were sized to the bare text width and the cell writer then emitted 1.5pt
 of padding each side - so the very line that sized the column no longer fitted. Measured
@@ -2184,7 +2184,7 @@ With **separate** borders (`w:tblCellSpacing`, §6.6) Word charges what FOP char
 same probe's three cell-spacing tables wrap all three rows in Word and here alike, which
 is two whole border widths. Nothing is given back there.
 
-<a id="s63guard"></a>**No allowance is held back.** Until 17.0.6 a tenth of a point was,
+<a id="s63guard"></a>**No allowance is held back.** Until 17.1.0 a tenth of a point was,
 where the width came from the grid, because FOP's line measure ran that much narrow - its
 glyph advances were truncated to 1/1000 em rather than rounded, which on a 30-character
 line of 12pt Liberation Serif loses 0.13pt and on a 74-character one 0.27pt. They are
@@ -2255,7 +2255,7 @@ grids 1.35 to 2.7 times the text column are drawn by Word *inside* it (one 956.4
 a 453.6pt column came out 505.3pt wide), while docx4j painted half that document past the
 page edge and lost 7 of Word's 15 pages. Such a grid is scaled to the column. **`w:compat/w:growAutofit`** ("Allow Tables to
 AutoFit Into Page Margins") is the flag that would switch that off, and reading it was
-measured and rejected in 17.0.6: the two corpus documents which state it have Word 365
+measured and rejected in 17.1.0: the two corpus documents which state it have Word 365
 fitting their grids to the column anyway, and honouring the flag cost them 0.948 -> 0.248
 and 0.930 -> 0.842 of Word's lines ([settings §4(e)](word-layout-settings.md)). The
 `compat-tables` probe pair carries the shape for a golden. The cut is at
@@ -2359,7 +2359,7 @@ says (`left`/`inside`, `center`, `right`/`outside`). Measured on `table-floating
 compatibility-mode adjustment - unlike `w:tblInd` (§6.1). Measured on a real cover page
 (`horzAnchor="margin" tblpXSpec="center"`, a 450.05pt table on a 594pt page with no
 margins): Word's first cell text is at 77.8 = (594 - 450.05)/2 + 5.4. This applies to every
-floating table, whether or not it is taken out of the flow; before 17.0.6 the probe's table
+floating table, whether or not it is taken out of the flow; before 17.1.0 the probe's table
 sat at the margin, 225pt left of Word's.
 
 **Vertically** Word measures the position from the page (`vertAnchor="page"`), from the
@@ -2426,7 +2426,7 @@ Nothing flows beside a positioned container, so where the flow needs the band th
 drawn in, the two are drawn on top of each other. Three shapes are positioned: a
 table which **opens its section's flow** (the cover page, the letterhead); one which
 **opens a page** - everything before it on the page is empty, back to a hard break - and is
-narrow enough (60% of the column) for text to fit beside it; and, since 17.0.6, one which
+narrow enough (60% of the column) for text to fit beside it; and, since 17.1.0, one which
 content **precedes** whose band is reserved in the flow ([below](#s68reserve)). Measured on
 `table-floating-anchor`, whose page-anchored tables each follow a page break: Word puts the
 paragraph after the table at the top of the page (y=83.1) and the table at its anchor
@@ -2619,7 +2619,7 @@ dividing the paragraph inside itself ("... quis nostrud" ends column 1), and so 
 one word short of Word's division. A paragraph is divided only where every one of its runs
 is plain text; a stretch holding a table, a break of its own, or more content than fits the
 page is left to the region body, whose balancing can do what a one-row table cannot
-(`Balance.java`). Before 17.0.6 every such section was.
+(`Balance.java`). Before 17.1.0 every such section was.
 
 Columns within 5% of each other (4716/4715, 4680/4860 in the corpora) are Word's own
 rounding of equal columns and are left to the region body.
@@ -2632,7 +2632,7 @@ declares more than one column), the half which follows it carries the break, and
 exporter turns that into `break-before="column"` on its block
 (`WordLayoutFixups.columnBreaks`, which also gives the half a line where the break ended
 the paragraph). The spacing is the divided paragraph's above: the space-after goes with the
-half which ends it and the space-before stays on both. Until 17.0.6 the break was emitted
+half which ends it and the space-before stays on both. Until 17.1.0 the break was emitted
 as an ordinary line break and the column was never taken at all.
 
 Where the section has **one** column there is nowhere to break to, so the break stays the
@@ -2702,7 +2702,7 @@ marks the last block of an aligned flow `retain`; the probe's median dy went fro
 <a id="s75tbl"></a>**Where the section's last block is a table**, Word's aligned content
 also holds the empty paragraph a table must be followed by. docx4j drops a paragraph whose
 only content is the `w:sectPr` - Word gives it no line anywhere else, and adding one at the
-end of an unaligned flow only pushes the flow's last line off the page - so since 17.0.6 it
+end of an unaligned flow only pushes the flow's last line off the page - so since 17.1.0 it
 is kept for a vertically aligned section whose content ends with a `w:tbl`, and nowhere
 else (`ConversionSectionWrapperFactory.closesAlignedTable`). On the probe's three table
 sections Word closed 15.69pt above us and 7.67pt on the centred one; with the paragraph's
@@ -2713,7 +2713,7 @@ takes the region's default alignment (above). What is left is that our empty blo
 <a id="s7gutter"></a>**The gutter.** `w:pgMar/@w:gutter` is the binding margin, and Word
 adds it to the **left** margin - to the top with `w:settings/w:gutterAtTop`, and to the
 right of an even page where `w:mirrorMargins` is set. `PageDimensions.getWritableWidthTwips()`
-already subtracts it, so until 17.0.6 the text column was the right width and started in the
+already subtracts it, so until 17.1.0 the text column was the right width and started in the
 wrong place: measured on a document with `w:pgMar w:left="851" w:gutter="567"`, Word puts
 every portrait line at **x=70.9** (851 + 567 twips) where docx4j's was at 42.5, -28.35pt on
 all 222 pages. Two documents of the three corpora set a gutter.
@@ -2795,7 +2795,7 @@ nothing put ours at 70.85 and every line 19.8pt above Word's. 7 documents of the
 corpora have `w:footer` greater than `w:pgMar/@w:bottom` with every footer part empty, and
 70 have a header that is only empty paragraphs.
 
-<a id="s7emptyftr"></a>**Settled, and at the foot the rule is different (17.0.6).** The two
+<a id="s7emptyftr"></a>**Settled, and at the foot the rule is different (17.1.0).** The two
 documents which disagreed with the paragraph above are the discriminator: an *empty footer
 part* is not the same as **no** footer part. With no `footerReference` at all Word reserves
 nothing, not even the distance - a document whose 44 `w:sectPr` say `w:bottom="0"` with
@@ -2857,7 +2857,7 @@ whether the default paragraph style's size and `w:jc` override the table style's
 `PStyle11PtInTableOverrideFalseTest` / `PStyle12PtInTableGridOverride*Test` measure it.
 **`w:compat/w:useWord2002TableStyleRules`** ("Emulate Word 2002 Table Style Rules") would
 switch the whole step off - Word 2002 did not put a table style's `w:pPr` and `w:rPr` above
-`docDefaults` at all - and reading it was measured and rejected in 17.0.6. Three mode-11
+`docDefaults` at all - and reading it was measured and rejected in 17.1.0. Three mode-11
 corpus documents carry a Word-2003 compat block, one without the flag and two with it, and
 Word 365's own PDFs of all three apply the table style's properties: skipping this step for
 them cost 0.951 -> 0.105 (with eleven of fifty pages), 0.948 -> 0.248 and 0.930 -> 0.842 of
@@ -3095,7 +3095,7 @@ end of its paragraph:
 | position relative to page or margins | fixed on the page, no wrapping |
 | any wrap, with `@behindDoc="1"` | positioned and taking no space: the wrap is not applied |
 
-<a id="s91behind"></a>**`wp:anchor/@behindDoc="1"` displaces nothing** (17.0.6): Word draws
+<a id="s91behind"></a>**`wp:anchor/@behindDoc="1"` displaces nothing** (17.1.0): Word draws
 the picture behind the text, the wrap element is not applied, and nothing is reserved.
 Measured on a document whose 155.25pt logo carries `wrapSquare` and `behindDoc="1"`: Word
 puts the caption beside it at x=**85.0** where the float put ours at 249.3 - +164.3 =
@@ -3210,7 +3210,7 @@ preview picture, by that same path: Word draws an Equation Editor or MathType eq
 embedded workbook or Visio drawing, or an object shown as an icon, as the picture stored for
 it, never as a placeholder or a label. So the preview's size comes from the VML style, a
 `position:absolute` shape is anchored as above, and a metafile preview - which is what Word
-writes for an equation - is drawn by the metafile renderer (§9.4). Until 17.0.6 neither FO
+writes for an equation - is drawn by the metafile renderer (§9.4). Until 17.1.0 neither FO
 exporter matched `w:object` at all, so an object's preview was simply dropped; the same
 preview inside a `w:pict` rendered, which is what hid it. Where the object carries no
 `v:imagedata`, nothing is emitted.
@@ -3291,7 +3291,7 @@ metafile header but there is no EMF loader for PDF output) and **bytes that are 
 all** - Word stores the web server's error page as the picture part when a linked picture
 cannot be fetched, and one document of a 157-document corpus held eighteen of those.
 
-From 17.0.6 a WMF, EMF or EMF+ is not handed to FOP as a graphic at all: docx4j replays its
+From 17.1.0 a WMF, EMF or EMF+ is not handed to FOP as a graphic at all: docx4j replays its
 GDI records itself and puts the result in an `fo:instream-foreign-object` as SVG, which FOP
 paints (CR-011). What follows is therefore the fallback, reached by a metafile the renderer
 cannot parse and by bytes that are no image.
@@ -3356,7 +3356,7 @@ Measured on a corpus cover whose page margins are all 0 and whose frame is
 column, 158.85pt below the flow position): Word's text is at (72.0, 169.5), where docx4j
 had it at (0.0, 10.5). The document went **0.727 to 0.864** of Word's lines.
 
-**Left in the flow**, which is what every text-anchored frame did before 17.0.6:
+**Left in the flow**, which is what every text-anchored frame did before 17.1.0:
 
 * a frame with **no `w:w`** at all, which fills the rest of the measure, so nothing runs
   beside it. That is the shape of all 499 frames of the document that is this rule's acid
@@ -3426,7 +3426,7 @@ low; reserving neither put it 125pt too high, against Word's first body line at 
 On that document the reservation is worth 0.548 -> 0.645 of Word's lines, which is where
 the frames-in-the-flow layout it replaces already stood.
 
-**On by default** since 17.0.6 (`docx4j.convert.out.fo.frames.position=false` turns it
+**On by default** since 17.1.0 (`docx4j.convert.out.fo.frames.position=false` turns it
 off). Three corpus documents change and none falls: 0.804 to 0.873, 0.824 to 0.960 and
 Word's page count, 0.840 to 0.848. The letterhead kept its 20 of Word's 31 lines either
 way while its frames moved to where Word draws them - median dy 58.2 to 22.4 - and its
@@ -3497,7 +3497,7 @@ Worked around here, and worth knowing about:
   truncation is 0.31 - 0.39pt short of it. Rounding is unbiased where truncation loses
   half a unit per glyph.
 
-  **Fixed since 17.0.6**, in both copies. docx4j's own copy of that code rounds, so
+  **Fixed since 17.1.0**, in both copies. docx4j's own copy of that code rounds, so
   `TextMeasurer` and the table autofit pass measure as Word does; FOP loads its fonts
   with its own copy, so `org.docx4j.fop.fonts.WordGlyphWidths` corrects the width table
   of each font FOP loads, from the same font file read through docx4j's
@@ -3523,7 +3523,7 @@ Worked around here, and worth knowing about:
   hold asciitilde's at 0x98 (Arimo 251 out, Tinos 208, DejaVu 338, Caladea 399); Word's own
   PDFs write the real glyph's advance in both. Those two are the only live disagreements -
   the rest of the two tables agree, and the eight codes where they do not are codes nothing
-  maps to. **Fixed since 17.0.6**: `WordGlyphWidths` writes the advance of the character the
+  maps to. **Fixed since 17.1.0**: `WordGlyphWidths` writes the advance of the character the
   *declared* encoding gives each code, whether or not FOP's value is a truncation of it, for
   `WinAnsiEncoding`, `StandardEncoding` and `MacRomanEncoding`; a symbol-encoded or custom
   font keeps the truncation-only rule, since there docx4j's glyph lookup and FOP's may not
@@ -3635,7 +3635,7 @@ Limitations that remain in docx4j's output:
   and no rule has been derived for them yet.
 - **Page references in tabbed text**: FOP measures an unresolved
   `fo:page-number-citation` as an `MMM` placeholder, and its own redistribution can give
-  the difference back only on a justified line. Worked around since 17.0.6 by moving the
+  the difference back only on a justified line. Worked around since 17.1.0 by moving the
   width to the tab when the citation resolves ([§4.4](#s44pageref)); upstream report
   candidate (the placeholder is a fixed private constant, and `resolveIDRef` notifies the
   line but nothing that could re-place the text).

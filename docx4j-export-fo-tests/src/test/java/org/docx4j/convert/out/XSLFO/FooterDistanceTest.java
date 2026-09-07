@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * the 22 sections spilled their last line onto a page of its own, and Word's 24 pages
  * came out as 44.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class FooterDistanceTest extends AbstractXSLFOTest {
 

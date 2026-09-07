@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  * <em>document</em> the page is Word's own, which the {@code page-blank} probe measures
  * (it ends in a page break and Word gives it a ninth page), so the break stays there.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SectionBreakAfterPageBreakTest extends AbstractXSLFOTest {
 

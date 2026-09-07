@@ -218,7 +218,7 @@ final class LBP {
 
 	/** Move a position on to a different glyph mapping: splitting one mapping into
 	 *  several shifts every later index, and a position is what carries the index.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	static void setLeafPos(org.apache.fop.layoutmgr.LeafPosition p, int value) {
 		try {
 			LEAF_POS.setInt(p, value);
@@ -261,7 +261,7 @@ final class LBP {
 
 	/** The area a leaf inline manager (an fo:leader standing in for a tab) will add to
 	 *  the line, so that it can be found again once the line's areas exist.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	static org.apache.fop.area.inline.InlineArea leafArea(org.apache.fop.layoutmgr.LayoutManager lm) {
 		try {
 			Object area = LNLM_CUR_AREA.get(lm);
@@ -301,7 +301,7 @@ final class LBP {
 	 * rather than on their own height.
 	 *
 	 * @param kind one of {@link #LEADER_NONE}, {@link #LEADER_DOTS}, {@link #LEADER_RULE}
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void setLeaderPattern(org.apache.fop.layoutmgr.LayoutManager lm, int kind) {
 		unphase(lm);
@@ -395,7 +395,7 @@ final class LBP {
 	 * page number after the tab resolves: the growth then reaches this area through
 	 * {@code notifyIPDVariation} and on to the line, so nothing else has to know.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static final class PhasedLeaderArea extends org.apache.fop.area.inline.InlineParent {
 
@@ -450,7 +450,7 @@ final class LBP {
 	 * Word's grid; {@code phase} 0 leaves the area as FOP built it.
 	 *
 	 * @param width the tab's whole width, of which the leader keeps what the blank leaves
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void setLeaderPhase(org.apache.fop.layoutmgr.LayoutManager lm, int phase, int width) {
 		unphase(lm);

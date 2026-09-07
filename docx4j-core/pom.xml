@@ -350,7 +350,7 @@
 	</dependency>
 	-->
 	
-	<!-- wmf2svg was dropped in 17.0.6 (CR-011): docx4j now draws WMF, EMF and EMF+
+	<!-- wmf2svg was dropped in 17.1.0 (CR-011): docx4j now draws WMF, EMF and EMF+
 	     itself, with the repackaged Apache POI HWMF/HEMF code in
 	     org.docx4j.org.apache.poi.h{w,e}mf.  wmf2svg had no EMF support. -->
 

@@ -349,11 +349,11 @@ public class ListNumberingDefinition {
          * number inherits are shown in decimal whatever their own w:numFmt, while this
          * level keeps its own (Word's built-in Article/Section numbering, whose ilvl 1
          * is decimalZero with w:isLgl, prints "Section 1.01" - IsLglTest).  Until
-         * 17.0.6 it was honoured at ilvl 1 alone: measured on a document whose
+         * 17.1.0 it was honoured at ilvl 1 alone: measured on a document whose
          * abstractNum carries <w:isLgl/> at ilvl 1, 2 and 3 with w:lvlText "%1.%2." and
          * "%1.%2.%3." over an upperRoman ilvl 0, Word prints "3.6.2." where docx4j
          * printed "III.6.2.".  The instance's own level definition (w:lvlOverride/w:lvl)
-         * carries it too, where there is one.  @since 17.0.6 */
+         * carries it too, where there is one.  @since 17.1.0 */
         Lvl controllingDefinition = (controllingLvl.getJaxbOverrideLvl()!=null)
         					? controllingLvl.getJaxbOverrideLvl() : controllingLvl.getJaxbAbstractLvl();
         boolean isLegal = controllingDefinition!=null
@@ -416,7 +416,7 @@ public class ListNumberingDefinition {
          * *inherits*: each of them is shown in decimal, whatever its own
          * w:numFmt, while the level carrying w:isLgl keeps its own (which
          * is why the example prints "Section 1.01" and not "Section 1.1").
-         * Measured at ilvl 2 and 3 as well as at ilvl 1 (@since 17.0.6;
+         * Measured at ilvl 2 and 3 as well as at ilvl 1 (@since 17.1.0;
          * before, it was read at ilvl 1 only).
          */
     	
@@ -445,7 +445,7 @@ public class ListNumberingDefinition {
                     ListLevel lvl = this.levels.get( Integer.toString(levelId) );
                     if (isLegal && levelId < thisLevel) {
                     	// Special case: Use normal decimal numbering, for every level
-                    	// above this one (@since 17.0.6; ilvl 0 only before)
+                    	// above this one (@since 17.1.0; ilvl 0 only before)
                     	result.append(lvl.getCurrentValueUnformatted() );
 
                     } else {

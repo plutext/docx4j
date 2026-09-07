@@ -94,7 +94,7 @@ public class WordBlockLayoutManager extends BlockLayoutManager {
 				 * return, so this sequence's last line is justified.  In the visitor
 				 * pathway the break is nested in the run's fo:inline and never reaches
 				 * here; there the line manager's own knuthParagraphs carry the split.
-				 * @since 17.0.6 */
+				 * @since 17.1.0 */
 				if (llm.isJustifySoftReturn()) llm.setFollowedBySoftReturn(true);
 				break;
 			}

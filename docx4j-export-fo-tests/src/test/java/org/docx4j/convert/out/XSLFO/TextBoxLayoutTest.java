@@ -108,7 +108,7 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 		 * less the top and bottom insets, which are padding.  Across the line only the
 		 * end inset is padding: the start inset is start-indent, because FOP measures a
 		 * block-container's children from its content rectangle and would otherwise
-		 * throw a padding-left away (@since 17.0.6 - Word's text starts at the shape
+		 * throw a padding-left away (@since 17.1.0 - Word's text starts at the shape
 		 * edge plus the inset, and ours started on the edge). */
 		assertEquals(width, container.getAttribute("width"));
 		assertEquals(height, container.getAttribute("height"));

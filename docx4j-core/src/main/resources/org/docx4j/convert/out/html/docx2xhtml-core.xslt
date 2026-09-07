@@ -422,7 +422,7 @@
 	<!--  An embedded object (Equation Editor or MathType, an embedded workbook or
 	      Visio drawing, an OLE icon): Word draws it as the preview picture its
 	      v:imagedata points at, so it takes the same path as w:pict above.
-	      @since 17.0.6 (CR-011)  -->
+	      @since 17.1.0 (CR-011)  -->
 	<xsl:template match="w:object">
 
 		<xsl:choose>

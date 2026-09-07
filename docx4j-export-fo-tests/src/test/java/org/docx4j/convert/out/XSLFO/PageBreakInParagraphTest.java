@@ -35,7 +35,7 @@ import org.w3c.dom.NodeList;
  * keeps the space-before and loses the space-after, the second the other way about, and
  * the second takes neither the numbering label nor the first-line indent.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PageBreakInParagraphTest extends AbstractXSLFOTest {
 

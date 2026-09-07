@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
  * export of a document in this state failed completely, so only the first bookmark of
  * a name is now given an id; a reference resolves to it, which is what Word does too.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class DuplicateBookmarkNameTest extends AbstractXSLFOTest {
 

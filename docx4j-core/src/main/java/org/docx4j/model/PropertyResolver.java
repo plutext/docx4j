@@ -833,7 +833,7 @@ public class PropertyResolver {
 		/* A paragraph whose only direct formatting is a text frame really is directly
 		 * formatted: without this its w:framePr never reached the effective pPr, so a
 		 * frame stated only on the paragraph (with the anchors coming from its style)
-		 * was lost.  @since 17.0.6 */
+		 * was lost.  @since 17.1.0 */
 		if (pPrToApply.getFramePr()!=null) {
 			return true;
 		}
@@ -912,7 +912,7 @@ public class PropertyResolver {
 			return true;
 		}
 		//BooleanDefaultTrue suppressAutoHyphens;
-		if (pPrToApply.getSuppressAutoHyphens()!=null) { // @since 17.0.6: it exempts the paragraph from automatic hyphenation
+		if (pPrToApply.getSuppressAutoHyphens()!=null) { // @since 17.1.0: it exempts the paragraph from automatic hyphenation
 			return true;
 		}
 		//PPrBase.DivId divId;

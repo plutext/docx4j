@@ -20,7 +20,7 @@ import org.junit.Test;
  * Word's body top is 25.5 - neither the empty paragraph's line box nor the header
  * distance moves it.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class HeaderFooterReservesNothingTest {
 

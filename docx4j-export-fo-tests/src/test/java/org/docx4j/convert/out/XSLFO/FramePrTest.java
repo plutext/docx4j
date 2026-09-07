@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * the page's top left corner - {@code w:x} and {@code w:y} exactly - where docx4j drew it
  * in the flow at x=68.1 y=81.2.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class FramePrTest extends AbstractXSLFOTest {
 

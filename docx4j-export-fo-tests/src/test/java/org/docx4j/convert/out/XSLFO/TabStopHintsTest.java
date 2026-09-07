@@ -84,7 +84,7 @@ public class TabStopHintsTest {
 			assertTrue("no tab stops on the block", block!=null);
 			// a w:val="clear" removes the inherited stop at that position and is not
 			// itself a stop (ECMA-376 17.3.1.37/.38): here there is nothing at 5000 to
-			// remove, so it simply disappears.  Until 17.0.6 StyleUtil copied clears
+			// remove, so it simply disappears.  Until 17.1.0 StyleUtil copied clears
 			// through as ordinary stops.
 			assertEquals("1000:left:none;4000:right:dot",
 					block.getAttributeNS(NS, "tabs"));
@@ -96,7 +96,7 @@ public class TabStopHintsTest {
 			assertEquals("0pt", leader.getAttribute("leader-length"));
 			// which stop a tab reaches is decided at layout time, so every tab of the
 			// paragraph gets the paragraph's own leader and the line manager keeps it
-			// only on the tabs whose resolved stop draws one (@since 17.0.6; until then
+			// only on the tabs whose resolved stop draws one (@since 17.1.0; until then
 			// the n-th tab took the n-th stop's leader, which lost the dots of a TOC
 			// entry whose tab count differs from its stop count)
 			NodeList leaders = doc.getElementsByTagNameNS(FO, "leader");
@@ -156,7 +156,7 @@ public class TabStopHintsTest {
 	 * A tab which begins a paragraph and reaches a <em>left</em> stop is a fixed leader
 	 * of the distance to that stop: nothing about it depends on layout.
 	 *
-	 * @since 17.0.6 (the assertion; the behaviour is 17.0.5's)
+	 * @since 17.1.0 (the assertion; the behaviour is 17.0.5's)
 	 */
 	@Test
 	public void aLeadingTabToALeftStopIsAFixedLeader() throws Exception {
@@ -179,7 +179,7 @@ public class TabStopHintsTest {
 	 * text <i>began</i> on the stop instead of <i>ending</i> there (a corpus footer's
 	 * "Page 1 von 2" began at 539.8 where Word ends it at 540.3, 46pt past the margin).
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aLeadingTabToARightOrCentreStopIsLaidOut() throws Exception {

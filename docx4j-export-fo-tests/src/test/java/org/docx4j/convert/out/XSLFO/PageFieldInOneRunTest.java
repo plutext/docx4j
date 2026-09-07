@@ -38,7 +38,7 @@ import org.w3c.dom.NodeList;
  * printed "1" on all 23 - one wrong line on every page of the document.  Twelve documents
  * of one corpus and 52 across three.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PageFieldInOneRunTest extends AbstractXSLFOTest {
 

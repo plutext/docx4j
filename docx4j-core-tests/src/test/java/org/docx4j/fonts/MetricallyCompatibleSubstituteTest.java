@@ -64,7 +64,7 @@ public class MetricallyCompatibleSubstituteTest {
 		 * Arimo's 247.9 on the same centre - 1.134x - where Noto Sans Black measures
 		 * 1.1122x Arimo over a mixed Latin sample.  Tw Cen MT is a geometric sans, and
 		 * without an entry fell through to the serif default: its labels came out 3-4%
-		 * narrow against Word.  @since 17.0.6 */
+		 * narrow against Word.  @since 17.1.0 */
 		assertSubstitute(mapper, "Arial Black", "noto sans black", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Tw Cen MT", "arimo", "liberation sans");
 
@@ -136,7 +136,7 @@ public class MetricallyCompatibleSubstituteTest {
 	 * Palladio, is 1.09x Tinos).  Each falls back through the old choice, so a machine
 	 * with only the Liberation jar behaves as before.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void widerFacesPreferAWiderSubstitute() throws Exception {
@@ -166,7 +166,7 @@ public class MetricallyCompatibleSubstituteTest {
 	 * Where P052 is not installed the order is what it was, so a machine with only the
 	 * Liberation jar behaves as before.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void cambriasGreekPrefersP052() throws Exception {

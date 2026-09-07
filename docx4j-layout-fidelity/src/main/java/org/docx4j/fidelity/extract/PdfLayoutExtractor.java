@@ -95,7 +95,7 @@ public final class PdfLayoutExtractor {
 	 * declaring one.  {@code -Dfidelity.columnGutterPt=} and
 	 * {@code -Dfidelity.columnGutterLines=} override them; 0 disables the rule.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static final float COLUMN_GUTTER_PT =
 			Float.parseFloat(System.getProperty("fidelity.columnGutterPt", "10"));
@@ -191,7 +191,7 @@ public final class PdfLayoutExtractor {
 	 * the densest of those tables.  {@code -Dfidelity.rowTolerancePt=} overrides it; 0
 	 * restores the strict baseline order.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static final double ROW_TOLERANCE_PT =
 			Double.parseDouble(System.getProperty("fidelity.rowTolerancePt", "3"));

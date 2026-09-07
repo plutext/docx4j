@@ -107,7 +107,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			(o instanceof org.docx4j.vml.CTTextbox) ||
 			// w:object: apply() renders its preview picture whole, as the XSLT's
 			// w:object template does; descending would only reach the v:shape and
-			// its o:OLEObject, for which there is nothing to emit.  @since 17.0.6
+			// its o:OLEObject, for which there is nothing to emit.  @since 17.1.0
 			(o instanceof org.docx4j.wml.CTObject) ||
 			(o instanceof org.docx4j.wml.FldChar)) {
 			return false;
@@ -236,7 +236,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			 * understands, and reaches the mc:Fallback only when it understands none of
 			 * them; docx4j always took the fallback.  See
 			 * XSLTUtils.mcPreferredChoiceRequires (property docx4j.jaxb.mc.preferChoice)
-			 * for what we claim to understand and what it measured.  @since 17.0.6 */
+			 * for what we claim to understand and what it measured.  @since 17.1.0 */
 			for (org.docx4j.mce.AlternateContent.Choice choice
 					: ((org.docx4j.mce.AlternateContent)o).getChoice()) {
 				if (org.docx4j.utils.XSLTUtils.mcPrefersChoice(choice.getRequires())) {
@@ -362,7 +362,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 					// inline), and w:t is legal outside w:r at all (the XSLT has
 					// its own w:t[not(parent::w:r)] template for that).  Either
 					// way the text is kept: we just open an inline for it here.
-					// (Until 17.0.6 the HTML generator also got here for a soft
+					// (Until 17.1.0 the HTML generator also got here for a soft
 					// return mid-run, which WAS a defect - see its handleBr.)
 					log.debug("null currentSpan; opening one for: " + ((Text)o).getValue() );
 					Element spanEl = createNode(document, NODE_INLINE);
@@ -508,7 +508,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		    Word draws an embedded object as the preview picture v:imagedata points
 		    at - an Equation Editor or MathType picture (usually WMF/EMF), the
 		    thumbnail of an embedded workbook or Visio drawing, or an OLE icon.  So
-		    it goes through the same VML picture path as w:pict.  Until 17.0.6
+		    it goes through the same VML picture path as w:pict.  Until 17.1.0
 		    neither FO exporter matched w:object at all (CR-011).  Where there is no
 		    v:imagedata (an inline control, say) nothing is emitted, as in the XSLT. */
 
@@ -617,7 +617,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	 * uses for certain textboxes and horizontal rules), v:oval etc, and never the
 	 * v:shapetype.  Null where there is none.
 	 *
-	 * @since 17.0.6 (w:object as well as w:pict, and shared with the FO generator)
+	 * @since 17.1.0 (w:object as well as w:pict, and shared with the FO generator)
 	 */
 	protected static org.docx4j.vml.VmlShapeElements vmlShape(org.docx4j.wml.CTPictureBase pict) {
 
@@ -632,7 +632,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		return null;
 	}
 
-	/** Whether this shape has a v:imagedata, ie a picture to draw.  @since 17.0.6 */
+	/** Whether this shape has a v:imagedata, ie a picture to draw.  @since 17.1.0 */
 	protected static boolean hasImageData(org.docx4j.vml.VmlShapeElements shape) {
 
 		if (shape==null) return false;
@@ -643,7 +643,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	}
 
 	/** The shape's w10:wrap type ("square", "topAndBottom", ...), or "" where it has
-	 *  none.  @since 17.0.6 */
+	 *  none.  @since 17.1.0 */
 	protected static String vmlWrapType(org.docx4j.vml.VmlShapeElements shape) {
 
 		if (shape==null) return "";

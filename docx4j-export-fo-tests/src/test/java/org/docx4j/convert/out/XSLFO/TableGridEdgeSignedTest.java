@@ -24,11 +24,11 @@ import org.w3c.dom.NodeList;
  * <p>Measured on the {@code table-grid-edge-signed-compat12} golden, a 72pt text margin
  * and Word's default 108-twip cell margins: Word's first cell text is at 66.5pt for
  * {@code w:tblInd -108}, 54.0pt for {@code -360} and 72.0pt for no {@code w:tblInd} at
- * all - margin + tblInd exactly - so the grid edge is margin + tblInd - 5.4pt.  17.0.6
+ * all - margin + tblInd exactly - so the grid edge is margin + tblInd - 5.4pt.  17.1.0
  * briefly capped the shift at {@code max(0, w:tblInd)}, which put those at 72.3 / 59.7 /
  * 77.7.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class TableGridEdgeSignedTest extends AbstractXSLFOTest {
 

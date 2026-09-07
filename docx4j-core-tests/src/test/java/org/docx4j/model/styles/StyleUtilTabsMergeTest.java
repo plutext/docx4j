@@ -14,9 +14,9 @@ import org.junit.Test;
 /**
  * ECMA-376 &#xa7;17.3.1.38: a paragraph's custom tab stops are the union of the ones it
  * declares and the ones it inherits, and <code>w:val="clear"</code> removes the
- * inherited stop at that position.  Until 17.0.6 StyleUtil replaced the set outright.
+ * inherited stop at that position.  Until 17.1.0 StyleUtil replaced the set outright.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class StyleUtilTabsMergeTest {
 

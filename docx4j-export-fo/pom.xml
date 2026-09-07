@@ -184,7 +184,7 @@
 		<!-- batik-gvt: Batik's graphics vector tree, which batik-bridge builds from an
 		     SVG DOM and FOP's PDFSVGHandler then paints.  It was excluded from both
 		     batik-bridge and fop (below) when the module path was first made to work,
-		     and nothing noticed because until 17.0.6 docx4j never put SVG in its FO -
+		     and nothing noticed because until 17.1.0 docx4j never put SVG in its FO -
 		     with it missing, FOP silently drew nothing at all for an
 		     fo:instream-foreign-object holding SVG (measured: a red rectangle and a
 		     line of text came out as a blank page).  Declared here rather than by

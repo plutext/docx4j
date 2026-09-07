@@ -32,7 +32,7 @@ import org.apache.fop.fonts.LazyFont;
  * for each declared font so that its glyph advances are rounded rather than
  * truncated ({@link WordGlyphWidths}).
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class WordWidthsFontCollection implements FontCollection {
 

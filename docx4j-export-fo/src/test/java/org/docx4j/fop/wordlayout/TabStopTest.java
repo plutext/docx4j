@@ -41,7 +41,7 @@ public class TabStopTest {
 
 	/** what XsltFOFunctions.tabToFO writes for a paragraph one of whose stops has a dot
 	 *  leader: every tab of the paragraph gets it, and the line manager decides which of
-	 *  them keeps it (@since 17.0.6) */
+	 *  them keeps it (@since 17.1.0) */
 	private static final String DOT_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
 
 	/** what tabToFO writes for a paragraph whose leader is a rule (w:leader hyphen,
@@ -266,7 +266,7 @@ public class TabStopTest {
 		// anyway and the line runs into the indent rather than wrapping (measured on a
 		// w:ind right=360 footer whose right stop is the full text width).  Past the
 		// reference area the stop is unreachable instead; see
-		// aTabThatReachesNoStopBreaksTheLine.  @since 17.0.6 (the indent)
+		// aTabThatReachesNoStopBreaksTheLine.  @since 17.1.0 (the indent)
 		assertEquals(at(0, 380),
 				wordStarts(fo("7600:left:none", "0:0:.", "end-indent=\"60pt\"", "abc" + TAB + "x")));
 	}
@@ -283,7 +283,7 @@ public class TabStopTest {
 	 * and the "12" after it lands on the first stop the re-measured tab reaches on the
 	 * next line - 360 twips, x=90.05 with a 72pt margin, not the left indent.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aTabThatReachesNoStopBreaksTheLine() throws Exception {
@@ -312,7 +312,7 @@ public class TabStopTest {
 	 * {@code 1.1<tab>Technische Freigabe erteilt<tab>o}, which Word breaks before
 	 * "erteilt".</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aLeaderTabAndAnOverfullLineDoNotBreakAtTheTab() throws Exception {
@@ -325,7 +325,7 @@ public class TabStopTest {
 		// does not break a line which is over-full already, and runs on to its stop.
 		// (Word's emergency break is off here: a 432pt word on a 400pt line is exactly
 		// what it breaks, and this case is about the tab, not the word - see
-		// EmergencyBreakTest.  @since 17.0.6)
+		// EmergencyBreakTest.  @since 17.1.0)
 		System.setProperty(WordLayoutCustomizer.EMERGENCY_BREAK, "false");
 		try {
 			assertEquals(at(0, 450),
@@ -398,10 +398,10 @@ public class TabStopTest {
 	 * <p>Measured on Word 365's PDF of a table of contents whose stops are
 	 * 360/540/851 left with no leader and 9990 right with a dot leader: every entry's
 	 * dots run to the right stop, whether the entry has one tab or two.  docx4j gave
-	 * the n-th tab the n-th stop's leader until 17.0.6, so a one-tab entry took the
+	 * the n-th tab the n-th stop's leader until 17.1.0, so a one-tab entry took the
 	 * first stop's (none) and painted nothing.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void theLeaderIsTheOneOfTheStopTheTabReaches() throws Exception {
@@ -417,7 +417,7 @@ public class TabStopTest {
 	 * runs on to the next default stop, which has no leader.  (Measured on a Word TOC
 	 * whose entries end {@code <w:tab/><w:t/><w:tab/>}: the dots stop at the right stop.)
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aTrailingTabDrawsTheLeaderOfTheStopItReaches() throws Exception {
@@ -433,7 +433,7 @@ public class TabStopTest {
 	 * baseline rather than their own; measured against the leader FOP builds itself,
 	 * both land on the line's baseline, 7.548pt.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aLeaderReplacedWithDotsSitsWhereFopsOwnDotsSit() throws Exception {
@@ -456,7 +456,7 @@ public class TabStopTest {
 	 * tab.  {@code leader-alignment="reference-area"} is what XSL FO offers for it, but
 	 * FOP 2.11 honours that in its RTF renderer alone.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aDotLeaderStartsOnWordsGrid() throws Exception {
@@ -479,7 +479,7 @@ public class TabStopTest {
 	 * 11.3pt past the content width - Word draws one line filling the width, where the
 	 * unclamped tab overflowed and wrapped onto a second).
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aCentreOrRightStopIsClampedAtTheRightIndent() throws Exception {
@@ -510,7 +510,7 @@ public class TabStopTest {
 	 * every line, where docx4j's line ended 10.7pt short - "MMM" 20.71pt against "61"
 	 * 10.18pt in DejaVu Sans 8pt.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void aRightStopPutsAnUnresolvedPageNumberOnTheStop() throws Exception {

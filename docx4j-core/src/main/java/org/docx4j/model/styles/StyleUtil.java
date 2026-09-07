@@ -1601,7 +1601,7 @@ public class StyleUtil {
 			isEmpty(tblpPr.getBottomFromText()) &&
 			// (isEmpty(x==null) reads as "empty when x is set": inverted, so a floating
 			// table whose only properties were an anchor or a *Spec lost its w:tblpPr
-			// when the effective table style was built.  @since 17.0.6)
+			// when the effective table style was built.  @since 17.1.0)
 			(tblpPr.getVertAnchor() == null) &&
 			(tblpPr.getHorzAnchor() == null) &&
 			(tblpPr.getTblpXSpec() == null) &&
@@ -1916,13 +1916,13 @@ public class StyleUtil {
 		apply(source, destination, null);
 	}
 
-	/** Whether this w:numPr says "not numbered" - w:numId w:val="0".  @since 17.0.6 */
+	/** Whether this w:numPr says "not numbered" - w:numId w:val="0".  @since 17.1.0 */
 	public static boolean numberingOff(NumPr numPr) {
 		return numPr != null && numPr.getNumId() != null && numPr.getNumId().getVal() != null
 				&& numPr.getNumId().getVal().signum() == 0;
 	}
 
-	/** Take out of an indent the components a numbering level contributed. @since 17.0.6 */
+	/** Take out of an indent the components a numbering level contributed. @since 17.1.0 */
 	private static void dropNumberingInd(Ind ind, Ind fromLevel) {
 		if (ind == null || fromLevel == null) return;
 		if (fromLevel.getLeft() != null && fromLevel.getLeft().equals(ind.getLeft())) ind.setLeft(null);
@@ -1952,7 +1952,7 @@ public class StyleUtil {
 
 			/* A snapshot: apply(NumPr, NumPr) writes into the destination object, so
 			 * holding a reference to it here would hand the numbering-off rule below
-			 * the w:numId 0 it is looking past.  @since 17.0.6 */
+			 * the w:numId 0 it is looking past.  @since 17.1.0 */
 			NumPr inheritedNumPr = null;
 			if (destination.getNumPr() != null) {
 				inheritedNumPr = Context.getWmlObjectFactory().createPPrBaseNumPr();
@@ -1969,7 +1969,7 @@ public class StyleUtil {
 			 * <w:ind w:left="720"/>: Word draws it at x=78.5..541.2 and we drew the same
 			 * 462pt of text at 20.9..483.1, exactly 57.6pt left, on ten paragraphs.
 			 * Only the components the inherited level contributed are dropped, so a
-			 * w:ind the style states itself survives.  @since 17.0.6 */
+			 * w:ind the style states itself survives.  @since 17.1.0 */
 			if (numberingDefinitionsPart != null && numberingOff(source.getNumPr())
 					&& inheritedNumPr != null && inheritedNumPr.getNumId() != null
 					&& !numberingOff(inheritedNumPr) && destination.getInd() != null) {
@@ -2434,7 +2434,7 @@ public class StyleUtil {
 			 * left, on every such paragraph of the document.
 			 *
 			 * Whichever of the two the higher-priority w:ind states replaces both.
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			boolean sourceFirstLine = source.getFirstLine() != null || source.getFirstLineChars() != null;
 			boolean sourceHanging = source.getHanging() != null || source.getHangingChars() != null;
 			if (sourceFirstLine && !sourceHanging) {
@@ -2464,7 +2464,7 @@ public class StyleUtil {
 		public static Spacing apply(Spacing source, Spacing destination) {
 		/* beforeAutospacing/afterAutospacing (HTML auto spacing) are attributes in their
 		 * own right and must survive the merge.  XJC's getters report an absent attribute
-		 * and an explicit w:beforeAutospacing="0" alike as false, so until 17.0.6 only
+		 * and an explicit w:beforeAutospacing="0" alike as false, so until 17.1.0 only
 		 * true was carried - and a paragraph whose direct formatting says
 		 * <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0"/> could not switch
 		 * off the w:beforeAutospacing="1" of the style it uses: PropertyFactory then gave
@@ -2472,7 +2472,7 @@ public class StyleUtil {
 		 * style carries it and which overrides it on 20 paragraphs: 17 of them came out
 		 * 14pt low and the drift compounded (Word's first divergence y=171.4, docx4j's
 		 * 186.2; the next gap 30.7pt against 58.9).  AutospacingAccess reports the
-		 * attribute as the docx states it.  @since 17.0.6 */
+		 * attribute as the docx states it.  @since 17.1.0 */
 		Boolean before = org.docx4j.wml.AutospacingAccess.getBeforeAutospacing(source);
 		Boolean after = org.docx4j.wml.AutospacingAccess.getAfterAutospacing(source);
 		if (before != null || after != null) {
@@ -2505,7 +2505,7 @@ public class StyleUtil {
 	 * <p>ECMA-376 &#xa7;17.3.1.38 (<code>w:tabs</code>): the custom tab stops of a
 	 * paragraph are the union of those it declares and those it inherits, and a stop
 	 * with <code>w:val="clear"</code> removes the inherited stop at that
-	 * <code>w:pos</code> (17.3.1.37).  Until 17.0.6 the source set simply replaced the
+	 * <code>w:pos</code> (17.3.1.37).  Until 17.1.0 the source set simply replaced the
 	 * destination, on the reasoning that "tabs are relative to each other" - which also
 	 * left every <code>clear</code> in the result as an ordinary stop.</p>
 	 *
@@ -2520,7 +2520,7 @@ public class StyleUtil {
 	 * "1.&lt;tab&gt;Artikelbezogene ..." as one line with the text at x=42.5 (stop
 	 * 284), where we jumped to 283.5.</p>
 	 *
-	 * @since 17.0.6 merges rather than replaces
+	 * @since 17.1.0 merges rather than replaces
 	 */
 	public static Tabs apply(Tabs source, Tabs destination) {
 		if (isEmpty(source)) return destination;
@@ -2635,7 +2635,7 @@ public class StyleUtil {
 			 * whose paragraphs carry only w:framePr w:w=3600: Word draws them at
 			 * (68.1, 102.1) - the style's x/y, the paragraph's width.  Taking each of
 			 * these unconditionally from the source cleared the inherited value whenever
-			 * the more specific w:framePr omitted it.  @since 17.0.6 */
+			 * the more specific w:framePr omitted it.  @since 17.1.0 */
 			destination.setDropCap(source.getDropCap()==null ? destination.getDropCap() : source.getDropCap());
 			destination.setLines(apply(source.getLines(), destination.getLines()));
 			destination.setW(apply(source.getW(), destination.getW()));

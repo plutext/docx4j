@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * exact: the median width ratio of our lines to Word's over twenty long matched lines was
  * 0.9516, e.g. a line Word draws 72.5..520.3 (447.8pt) was 72.4..497.2 (424.8pt).</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class CharacterScalingTest extends AbstractXSLFOTest {
 

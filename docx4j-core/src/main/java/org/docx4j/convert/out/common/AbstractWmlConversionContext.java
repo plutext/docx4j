@@ -141,7 +141,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	 * can reach lives; where it cannot be searched the answer is yes, leaving the
 	 * behaviour as it was.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public boolean hasBookmark(String name) {
 		if (!bookmarkNamesCollected) {
@@ -169,7 +169,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	 * value the document states or, where it states none, to the value its
 	 * {@code compatibilityMode} implies.  Read once per conversion.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public org.docx4j.model.CompatibilityOptions getCompatibilityOptions() {
 		if (compatibilityOptions == null) {

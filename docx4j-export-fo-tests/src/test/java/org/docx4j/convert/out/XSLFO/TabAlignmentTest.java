@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
  * <p>Both FO pathways; what the line manager does with the stops themselves is
  * org.docx4j.fop.wordlayout.TabStopTest.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class TabAlignmentTest extends AbstractXSLFOTest {
 

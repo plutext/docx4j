@@ -545,8 +545,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				DocumentFragment e10 = WordXmlPictureE10.createXslFoImgE10(conversionContext, anchorOrInline);
 				if (anchorOrInline instanceof org.docx4j.wml.CTPictureBase) {
 					// an absolutely positioned VML picture is placed as Word places it,
-					// instead of taking a line at the end of its paragraph.  @since 17.0.6
-					// (w:pict and, since 17.0.6, w:object alike)
+					// instead of taking a line at the end of its paragraph.  @since 17.1.0
+					// (w:pict and, since 17.1.0, w:object alike)
 					org.docx4j.vml.VmlShapeElements shape
 							= vmlShape((org.docx4j.wml.CTPictureBase)anchorOrInline);
 					if (shape instanceof org.docx4j.vml.VmlAllCoreAttributes) {
@@ -561,7 +561,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		return null;
 	}
 
-	// vmlShape and vmlWrapType moved to AbstractVisitorExporterGenerator in 17.0.6,
+	// vmlShape and vmlWrapType moved to AbstractVisitorExporterGenerator in 17.1.0,
 	// so the w:object branch there can use them too.
 
 	@Override
@@ -670,7 +670,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				  && (br.getType().equals(STBrType.PAGE)
 				      || br.getType().equals(STBrType.COLUMN)))) {
 			// the break is a block, so the inline it would otherwise continue is finished
-			// (a column break as much as a page break; @since 17.0.6)
+			// (a column break as much as a page break; @since 17.1.0)
 			currentSpan=null;
 		}
 	}

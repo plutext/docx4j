@@ -430,7 +430,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 			/* Then the document's own answer for a font this machine does not have:
 			 * w:altName in the font table (ECMA-376 17.8.3.1), which is what Word uses.
 			 * Before the class-based pass below, which is only a guess from the name.
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			if (Docx4jProperties.getProperty("docx4j.fonts.altName.enabled", true)) {
 				fontMapper.addAltNameSubstitutes(fontsInUse, fonts);
 			}

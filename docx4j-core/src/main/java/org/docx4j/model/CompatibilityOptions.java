@@ -61,7 +61,7 @@ import org.docx4j.wml.CTSettings;
  * rides the same route (built beside it in the FO exporter, put on the conversion context,
  * passed into the FO fixups pass).</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public final class CompatibilityOptions {
 

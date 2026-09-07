@@ -28,7 +28,7 @@ import org.w3c.dom.NodeList;
  * not a stop at all - and gave the label a width of 453.6pt.  The list text then ran off
  * the page and Word's two pages came out as four.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class NumberingLevelOverrideTest extends AbstractXSLFOTest {
 

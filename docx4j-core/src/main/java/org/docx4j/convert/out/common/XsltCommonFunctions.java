@@ -352,7 +352,7 @@ public class XsltCommonFunctions {
      * <code>&lt;w:r&gt;&lt;w:br/&gt;&lt;/w:r&gt;</code> leaves Word a 25.7pt gap - two
      * 12.85pt lines - where ours was 13.1pt, and the text below it 13.8pt high.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     public static boolean isLeadingBreak(Br br) {
     	P p = paragraphOf(br);

@@ -33,7 +33,7 @@ import org.junit.Test;
  *
  * The values below are Liberation Serif's, whose units per em is 2048.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class GlyphAdvanceRoundingTest {
 

@@ -141,7 +141,7 @@ public class XsltFOFunctions {
 	 * whose row-1 cells Word puts on baseline 145.3 and we put at 142.0; the -3.3pt
 	 * grew to -14.0pt by y=695 and moved the closing paragraph onto the wrong page.
 	 * So the shorthand is written only where there is no space of that side to lose.
-	 * @since 17.0.6</p>
+	 * @since 17.1.0</p>
 	 */
 	private static void applySdtContainerMargins(DocumentFragment docfrag, String tag) {
 
@@ -171,7 +171,7 @@ public class XsltFOFunctions {
 	 * text-indent), on eight such blocks in one document.  The paragraphs inside keep
 	 * their own indents, so the wrapper is reset.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void resetContainerIndents(DocumentFragment docfrag, String tag) {
 		if (!Containerization.TAG_SHADING.equals(tag) || docfrag == null) return;
@@ -258,7 +258,7 @@ public class XsltFOFunctions {
      * address lines had Word's first header line at y=34.3 and ours at y=94.3, with the
      * alignment lost as well.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     public static DocumentFragment createVmlPicture(FOConversionContext context,
     		NodeIterator wpict, String style, String wrapType) {
@@ -274,7 +274,7 @@ public class XsltFOFunctions {
      * fragment which is not a picture, is returned unchanged.
      *
      * @param style the v:shape's @style; @param wrapType the w10:wrap type, or ""
-     * @since 17.0.6
+     * @since 17.1.0
      */
     public static DocumentFragment anchorVmlPicture(AbstractWmlConversionContext context,
     		DocumentFragment frag, String style, String wrapType) {
@@ -287,7 +287,7 @@ public class XsltFOFunctions {
 	    	Element graphic = null;
 	    	for (Node n = frag.getFirstChild(); n!=null; n = n.getNextSibling()) {
 	    		// instream-foreign-object too: a WMF/EMF picture is drawn as SVG inside
-	    		// one of those since 17.0.6 (CR-011)
+	    		// one of those since 17.1.0 (CR-011)
 	    		if (n instanceof Element && ("external-graphic".equals(n.getLocalName())
 	    				|| "instream-foreign-object".equals(n.getLocalName()))) {
 	    			graphic = (Element)n;
@@ -1008,7 +1008,7 @@ public class XsltFOFunctions {
 	 * The font is the same one the paragraph mark would set any other character in; only
 	 * the sample differs.
 	 *
-	 * @since 17.0.6 the whitespace fallback
+	 * @since 17.1.0 the whitespace fallback
 	 */
 	private static String resolveFontFamily(WordprocessingMLPackage wmlPackage,
 			RunFontSelector runFontSelector, PPr pPr, RPr rPr, String sampleText) {
@@ -1076,7 +1076,7 @@ public class XsltFOFunctions {
 	 * only by the paragraph mark does not reach the effective rPr at all, because
 	 * StyleUtil.isEmpty(RPr) does not count w:lang.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void applyHyphenation(WordprocessingMLPackage wmlPackage, PPr pPr, Element foBlockElement) {
 
@@ -1130,7 +1130,7 @@ public class XsltFOFunctions {
 
 					// Word draws a centred or right-aligned number on the line with the
 					// paragraph's text, where an fo:list-block would pin it at the list
-					// indent (§2.8).  @since 17.0.6
+					// indent (§2.8).  @since 17.1.0
 					document.appendChild(foBlockElement);
 					indentHandledByNumbering = createInlineLabel(wmlPackage, runFontSelector, pStyleVal,
 							pPrDirect, pPr, rPr, rPrParagraphMark, document, foBlockElement, listInd);
@@ -1185,7 +1185,7 @@ public class XsltFOFunctions {
 			}
 
 			// automatic hyphenation, from w:settings/w:autoHyphenation and the
-			// paragraph's w:suppressAutoHyphens.  @since 17.0.6
+			// paragraph's w:suppressAutoHyphens.  @since 17.1.0
 			applyHyphenation(wmlPackage, pPr, foBlockElement);
 
 			// w:pPr/w:framePr: a positioned text frame (§9.5).  WordLayoutFixups reads
@@ -1198,7 +1198,7 @@ public class XsltFOFunctions {
 			// the paragraph inside it - the wrapper was positioned, then the paragraph
 			// was positioned again inside it (a container nested in a copy of itself),
 			// dragging the container's other, unframed, paragraphs to the frame's x.
-			// @since 17.0.6
+			// @since 17.1.0
 			if (!sdt) applyFrameHint(foBlockElement, pPr);
 
 			// the tab stops this paragraph's tabs are laid out against (only where it
@@ -1235,7 +1235,7 @@ public class XsltFOFunctions {
 
 			// Handle empty case - want the block to be preserved!
 			// (an inline label is content of its own: the paragraph mark's placeholder
-			//  would overwrite it, @since 17.0.6)
+			//  would overwrite it, @since 17.1.0)
 			if (n.getChildNodes().getLength()==0 && !foBlockElement.hasChildNodes()) {
 				
 				((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
@@ -1311,7 +1311,7 @@ public class XsltFOFunctions {
 	             * tab already is - and takes the property off again.  It runs there
 	             * because the block's font-family is not settled until this method
 	             * returns.  Where the width cannot be measured the property stands.
-	             * @since 17.0.6 */
+	             * @since 17.1.0 */
 	//				log.info("Node we are importing: " + n.getClass().getName() );
 	//				foBlockElement.appendChild(
 	//						document.importNode(n, true) );
@@ -1371,7 +1371,7 @@ public class XsltFOFunctions {
 	 * lengths in twips, an empty field where the attribute is absent.  Written for both
 	 * pathways, since both build their paragraph blocks here.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static void applyFrameHint(Element foBlockElement, PPr pPr) {
 		if (!WordLayoutFixups.isEnabled()) return;
@@ -1390,7 +1390,7 @@ public class XsltFOFunctions {
 		sb.append(f.getWrap() == null ? "" : f.getWrap().value()).append(':');
 		sb.append(f.getDropCap() == null ? "" : f.getDropCap().value()).append(':');
 		// w:hSpace / w:vSpace, the gaps the text keeps from the frame, and w:lines, the
-		// number of lines a drop cap spans (§9.5's float route).  @since 17.0.6
+		// number of lines a drop cap spans (§9.5's float route).  @since 17.1.0
 		sb.append(f.getHSpace() == null ? "" : f.getHSpace().toString()).append(':');
 		sb.append(f.getVSpace() == null ? "" : f.getVSpace().toString()).append(':');
 		sb.append(f.getLines() == null ? "" : f.getLines().toString());
@@ -1532,7 +1532,7 @@ public class XsltFOFunctions {
 	 * Word and were 45 x 5.42 = 244.1pt for us, which wrapped the heading, made the
 	 * header two lines on every page and 8 Word pages 10 of ours.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void pinInheritedFontSize(Element foBlockElement, String newSize) {
 		String old = foBlockElement.getAttribute("font-size");
@@ -1674,7 +1674,7 @@ public class XsltFOFunctions {
 	 * delete.  Out-of-flow children (a positioned fo:block-container, an fo:float) are
 	 * skipped: they are not on the block's own line.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static boolean startsWithWhitespace(Node childResults) {
 		boolean[] state = new boolean[] { true, false }; // atBoundary, leading whitespace found
@@ -1782,7 +1782,7 @@ public class XsltFOFunctions {
 	 * w:numId is at level 0.  Likewise w:numId/@w:val: without it there is no numbering
 	 * to apply.</p>
 	 *
-	 * @since 17.0.6 (extracted from createListBlock, which the inline label shares)
+	 * @since 17.1.0 (extracted from createListBlock, which the inline label shares)
 	 */
 	protected static ResultTriple numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
 			PPr pPrDirect, PPr pPr) {
@@ -1807,7 +1807,7 @@ public class XsltFOFunctions {
 	 * <em>effective</em> one, which style resolution has already built from the level's
 	 * {@code w:ind}, the paragraph style's own, and the paragraph's direct formatting,
 	 * in that order of precedence (&#xa7;2.8).  The level's indent alone was used until
-	 * 17.0.6, so a style which states a {@code w:ind} beside its {@code w:numPr} lost
+	 * 17.1.0, so a style which states a {@code w:ind} beside its {@code w:numPr} lost
 	 * it.  Measured on {@code numbering-label-ilvl0}, whose style carries the
 	 * {@code w:numPr} and {@code w:ind w:left="227" w:hanging="227"} through
 	 * {@code w:basedOn}: Word draws the label at x=72.0 and the wrapped line at 83.3 -
@@ -1816,7 +1816,7 @@ public class XsltFOFunctions {
 	 *
 	 * <p>It applies to a paragraph's own {@code w:numPr} as well.  A gate which sent a
 	 * direct {@code w:numPr} to the level's indent instead was carried through several
-	 * rounds of 17.0.6 because the effective indent was wrong on two documents; the cause
+	 * rounds of 17.1.0 because the effective indent was wrong on two documents; the cause
 	 * turned out to be
 	 * {@link org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart#getInd(String, String)}
 	 * reading a <em>style-linked</em> level's indent from the style it names rather than
@@ -1831,7 +1831,7 @@ public class XsltFOFunctions {
 	 * rule, since its Paragraph dialog offers "Special: (none) / First line / Hanging"
 	 * rather than two boxes ({@code IndMergeTest} records it).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static PPrBase.Ind numberingIndent(PPr pPr, ResultTriple triple, PPr pPrDirect) {
 		PPrBase.Ind effective = pPr == null ? null : pPr.getInd();
@@ -1866,7 +1866,7 @@ public class XsltFOFunctions {
 	 *
 	 * @return a copy, so the level definition is never altered; null where the level
 	 *         states no rPr
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static RPr levelRPr(ResultTriple triple, RPr rPr, RPr rPrParagraphMark) {
 
@@ -1895,7 +1895,7 @@ public class XsltFOFunctions {
 	 * it cost three corpus documents 0.002 to 0.065 of line parity and two of them their
 	 * page count, and gained nothing.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static RPr labelRPr(RPr level, RPr rPrParagraphMark) {
 
@@ -1985,7 +1985,7 @@ public class XsltFOFunctions {
 			 * set inside it.
 			 *
 			 * What goes on the body is the paragraph mark's rPr; the numbering level's
-			 * formats the number alone (ECMA-376 17.9.24), and since 17.0.6 reaches the
+			 * formats the number alone (ECMA-376 17.9.24), and since 17.1.0 reaches the
 			 * label only.  The body's own fo:block carries the paragraph's font size,
 			 * so the alignment above still holds.
 			 */
@@ -2018,12 +2018,12 @@ public class XsltFOFunctions {
 				applyRunFontSelection(rfsFrag, foListItemLabelBody);
 
 				/* The level's w:rPr formats the <b>number</b> alone (ECMA-376 17.9.24);
-				 * the paragraph's text is formatted by the paragraph.  Until 17.0.6 the
+				 * the paragraph's text is formatted by the paragraph.  Until 17.1.0 the
 				 * merged rPr was written on the fo:list-item-body as well, so a level
 				 * <w:b/> made the whole paragraph bold - measured on a real document,
 				 * Word draws the number in Tahoma-Bold and the text after it in Tahoma,
 				 * and reading the level's rPr for both cost that document 0.074 of line
-				 * parity.  @since 17.0.6 */
+				 * parity.  @since 17.1.0 */
 				createFoAttributes(wmlPackage, labelRPr(actual, rPrParagraphMark), foListItemLabel );
 				if (rPrParagraphMark!=null) {
 					createFoAttributes(wmlPackage, rPrParagraphMark, foListItemBody );
@@ -2035,7 +2035,7 @@ public class XsltFOFunctions {
 			if (triple.getBullet()!=null ) {
 //				foListItemLabelBody.setTextContent(triple.getBullet() );  
 		    	// give effect to any character mapping performed by RFS; where it made
-		    	// none for a symbol font, symbolLabelFallback does (@since 17.0.6)
+		    	// none for a symbol font, symbolLabelFallback does (@since 17.1.0)
 		    	foListItemLabelBody.setTextContent(
 		    			symbolLabelFallback(triple, rfsFrag.getTextContent(), foListItemLabelBody));
 				
@@ -2097,7 +2097,7 @@ public class XsltFOFunctions {
 	 * <p>Justified ({@code w:jc="both"}) and left-aligned paragraphs keep the hanging-indent
 	 * geometry, where the label does stand at the list indent.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static boolean labelDrawnInline(PPr pPr) {
 
@@ -2122,7 +2122,7 @@ public class XsltFOFunctions {
 	 * measured.</p>
 	 *
 	 * @return whether the block's indents have been set here
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static boolean createInlineLabel(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
@@ -2212,7 +2212,7 @@ public class XsltFOFunctions {
 	 * text at 72.98 - the 358tw stop - where our 0.3pt label column produced
 	 * "(M2i)tverpachtet".</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static int labelColumnTwips(WordprocessingMLPackage wmlPackage, Indent indent,
 			PPr pPrDirect, ResultTriple triple, int numWidth) {
@@ -2226,7 +2226,7 @@ public class XsltFOFunctions {
 		 * and every document it moved got worse, none better - eight of them, the largest
 		 * losses 0.922 -> 0.778 and 0.855 -> 0.702 of Word's lines - so Word's own PDFs of
 		 * documents that state the flag show the hanging indent standing anyway.  See
-		 * word-layout-settings.md §4(d).  @since 17.0.6 */
+		 * word-layout-settings.md §4(d).  @since 17.1.0 */
 		if (hanging >= numWidth) return -1;   // the label fits: the hanging indent stands
 
 		String suff = triple!=null && triple.getLvl()!=null && triple.getLvl().getSuff()!=null
@@ -2273,7 +2273,7 @@ public class XsltFOFunctions {
 	 *
 	 * @param rendered the label as run font selection left it
 	 * @return the label to draw, mapped where this could map it
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static String symbolLabelFallback(ResultTriple triple, String rendered, Element foListItemLabelBody) {
 
@@ -2392,7 +2392,7 @@ public class XsltFOFunctions {
 	 * content is {@code <w:tab w:val="right" w:pos="9356"/>} then "Page 1 von 2": Word
 	 * ends that text at x=540.3, and a leader of the stop's full 467.8pt began it at
 	 * 539.8, 46pt past the margin.  It went unnoticed while such a line merely
-	 * overflowed; 17.0.6's rule that a tab which can reach no stop breaks the line turns
+	 * overflowed; 17.1.0's rule that a tab which can reach no stop breaks the line turns
 	 * the overflow into a wrap, and cost a footer line on every page of three documents.
 	 * It is masked wherever the block is itself {@code text-align="right"}.
 	 *
@@ -2402,7 +2402,7 @@ public class XsltFOFunctions {
 	 * the line.  A left stop (and the hanging indent's implicit stop, and the default
 	 * grid, which are left) keeps the fixed leader: nothing about it depends on layout.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static boolean leadingTabNeedsLayout(FOConversionContext context, PPr effectivePPr,
 			int precedingTabs, int precedingText) {
@@ -2608,12 +2608,12 @@ public class XsltFOFunctions {
 	/**
 	 * {@code docx4j.convert.out.fo.wordLayout.tocStretchingLeader}: whether a
 	 * table-of-contents entry keeps the stretching {@code fo:leader} and
-	 * {@code text-align-last="justify"} docx4j gave it before 17.0.6, rather than being
+	 * {@code text-align-last="justify"} docx4j gave it before 17.1.0, rather than being
 	 * laid out against its tab stops like any other tab.
 	 *
 	 * <p>The stretching leader was kept for one reason: FOP measures an unresolved
 	 * {@code fo:page-number-citation} as the placeholder "MMM", and only a leader that
-	 * can stretch gives that width back when the citation resolves.  17.0.6 moves the
+	 * can stretch gives that width back when the citation resolves.  17.1.0 moves the
 	 * difference to the tab itself ({@code TabPageNumberWidth}, &#xa7;4.4), so a resolved
 	 * tab now lands on its stop too - and it gets the dot grid's phase with it, which a
 	 * stretching leader cannot have: its width is settled by FOP's justification, after
@@ -2631,7 +2631,7 @@ public class XsltFOFunctions {
 	 * 0.9220).  The parity these lines had been losing was the harness pairing them on
 	 * a dot count, which its leader-run normalisation now settles.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static boolean tocStretchingLeader() {
 		return org.docx4j.Docx4jProperties.getProperty(
@@ -2666,7 +2666,7 @@ public class XsltFOFunctions {
 	 * their text column.  {@link WordLayoutFixups#tocLeaderEndIndent} does the sum, since
 	 * the page masters are what the text column has to be measured against.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void applyTocStopHint(Element foBlockElement, PPr pPr) {
 		if (!isTocDotLeader(pPr)) return;
@@ -2687,10 +2687,10 @@ public class XsltFOFunctions {
 	 * this only decides which area FOP builds, and an unused one costs nothing (a
 	 * leader of no width paints no dots).
 	 *
-	 * <p>Until 17.0.6 the n-th tab took the n-th stop's leader, which lost the dots of
+	 * <p>Until 17.1.0 the n-th tab took the n-th stop's leader, which lost the dots of
 	 * every TOC entry whose tab count differs from its stop count.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static String tabLeaderPattern(PPr pPr) {
 
@@ -2852,7 +2852,7 @@ public class XsltFOFunctions {
      * choose between the fonts it does not state.  Such an element is not a font of its
      * own, so whatever carries it inherits the font it would otherwise have.
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     static boolean namesNoFont(org.docx4j.wml.RFonts rFonts) {
     	if (rFonts==null) return false;
@@ -2877,7 +2877,7 @@ public class XsltFOFunctions {
 			 * <w:tabs><w:tab w:val="clear" w:pos="9072"/><w:tab w:val="left"
 			 * w:pos="4536"/>...: the label came out 453.6pt wide (the cleared stop, and
 			 * the first in document order) where Word's list text starts at 19.85pt.
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			int best = Integer.MAX_VALUE;
 			for ( CTTabStop tabStop : pprTabs.getTab() ) {
 					if (tabStop.getPos()==null) continue;

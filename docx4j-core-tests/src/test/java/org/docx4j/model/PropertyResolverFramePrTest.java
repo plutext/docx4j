@@ -40,7 +40,7 @@ import org.junit.Test;
  * and whose paragraphs carry only {@code w:framePr w:w="3600"}: Word draws them at
  * (68.1pt, 102.1pt) - the style's x and y - in a box 180pt (3600 twips) wide.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PropertyResolverFramePrTest {
 

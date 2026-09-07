@@ -232,7 +232,7 @@ public class HeaderFooterPolicy {
 	 * which is not in the document, so a caller sizing the page's regions must not
 	 * treat one of these as a real, if empty, part.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean isDummy(org.docx4j.openpackaging.parts.Part part) {
 		return part != null && part.getPartName() != null
@@ -249,7 +249,7 @@ public class HeaderFooterPolicy {
 	 * foot of the page: with no footer part the body runs to the bottom margin, while an
 	 * empty footer part still stops it at <code>w:footer</code>.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean isAbsent(org.docx4j.openpackaging.parts.Part part) {
 		return part == null || isDummy(part);
@@ -272,7 +272,7 @@ public class HeaderFooterPolicy {
 	 * <code>margin-bottom="290.55pt"</code> ended the body at 551.4 and made 3 Word
 	 * pages 5.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean reservesNothing(org.docx4j.openpackaging.parts.Part part) {
 		if (part == null) return true;

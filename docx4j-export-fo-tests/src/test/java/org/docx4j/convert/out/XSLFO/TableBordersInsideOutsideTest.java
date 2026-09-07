@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
  * white 2.25pt rule between the columns (<code>fill_path x=186.1..188.2</code>) and every
  * one of our cells came out <code>border-*-style="none"</code>.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class TableBordersInsideOutsideTest extends AbstractXSLFOTest {
 

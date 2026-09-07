@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * WordLayoutFixups moves it there - but only where the crash is in prospect, since the
  * paragraph is where the picture measures closest to Word.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class AnchoredPictureFloatTest extends AbstractXSLFOTest {
 

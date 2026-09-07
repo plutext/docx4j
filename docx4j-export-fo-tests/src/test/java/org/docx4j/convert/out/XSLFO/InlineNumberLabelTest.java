@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  * labels were 39.4, 26.0 and 77.8pt left of Word's.  A right-aligned Cyrillic heading in a
  * second document had its label 152.1pt left of Word's.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class InlineNumberLabelTest extends AbstractXSLFOTest {
 

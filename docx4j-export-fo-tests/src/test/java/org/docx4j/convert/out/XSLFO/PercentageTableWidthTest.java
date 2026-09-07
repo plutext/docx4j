@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
  *
  * <p>Both FO pathways.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PercentageTableWidthTest extends AbstractXSLFOTest {
 

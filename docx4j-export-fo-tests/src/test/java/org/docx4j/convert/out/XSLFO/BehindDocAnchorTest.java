@@ -24,7 +24,7 @@ import org.junit.Test;
  * everything after it +92.6pt.  9 documents of three corpora carry a wrapped
  * {@code behindDoc} anchor.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class BehindDocAnchorTest extends AbstractXSLFOTest {
 

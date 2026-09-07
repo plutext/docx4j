@@ -73,7 +73,7 @@ public class PageNumberInformation {
 	 * formatting when it is updated and name no number format, so neither overrides
 	 * <code>w:pgNumType/@w:fmt</code>.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static boolean isNumberFormat(String formatSwitch) {
 		if (formatSwitch == null) return false;

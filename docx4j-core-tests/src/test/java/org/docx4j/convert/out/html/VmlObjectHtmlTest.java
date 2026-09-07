@@ -20,7 +20,7 @@ import org.junit.Test;
  * <p>Word writes an embedded object (an Equation Editor or MathType equation, an
  * embedded workbook or Visio drawing, an object shown as an icon) as a
  * {@code w:object} holding the VML shape whose {@code v:imagedata} points at the
- * picture it draws.  Until 17.0.6 neither HTML pathway matched {@code w:object}
+ * picture it draws.  Until 17.1.0 neither HTML pathway matched {@code w:object}
  * either - {@code docx2xhtml-core.xslt} had a {@code w:pict} template and no
  * {@code w:object} one, so the object fell to the no-match template, and the visitor
  * fell to its catch-all - so the preview was lost.  Both now take the same path as
@@ -30,7 +30,7 @@ import org.junit.Test;
  * becomes a PNG here rather than an inline {@code <svg>}; see {@code MetafileHtmlTest}
  * for why.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class VmlObjectHtmlTest {
 

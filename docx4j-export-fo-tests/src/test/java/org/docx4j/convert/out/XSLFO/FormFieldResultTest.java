@@ -23,7 +23,7 @@ import org.junit.Test;
  * {@code end}: Word paints the first of them, so its line runs 297.7..413.6 where ours
  * began at 302.7 and ended at 378.3.  With the fix ours begins at 297.7 too.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class FormFieldResultTest extends AbstractXSLFOTest {
 

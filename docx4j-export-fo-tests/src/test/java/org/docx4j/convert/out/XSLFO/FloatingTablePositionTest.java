@@ -368,7 +368,7 @@ public class FloatingTablePositionTest extends AbstractXSLFOTest {
 	 * A page-anchored table too wide for anything to fit beside it, with content before
 	 * it: Word draws it at its anchor and puts what follows below it, so it is positioned
 	 * <em>and</em> its band is reserved in the flow by an invisible copy left where it
-	 * was (&#xa7;9.5's w:wrap trick, &#xa7;6.8).  Before 17.0.6 it was left in the flow
+	 * was (&#xa7;9.5's w:wrap trick, &#xa7;6.8).  Before 17.1.0 it was left in the flow
 	 * entirely, because the flow closing over it drew the two on top of each other.
 	 */
 	private void aWideMidFlowTableIsPositionedAndReserved(int flags) throws Exception {

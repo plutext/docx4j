@@ -238,7 +238,7 @@ public class SymbolMapper {
 			m.put((short)251, "\uD83D\uDDF6");
 			// U+2713 CHECK MARK, not U+2714 HEAVY CHECK MARK: measured against Word's
 			// own PDF of a document whose w:lvlText is Wingdings 0xFC, which paints
-			// U+2713 (the widths agree to 0.1pt either way).  @since 17.0.6
+			// U+2713 (the widths agree to 0.1pt either way).  @since 17.1.0
 			m.put((short)252, "\u2713");
 			m.put((short)253, "\uD83D\uDDF7");
 			m.put((short)254, "\uD83D\uDDF9");

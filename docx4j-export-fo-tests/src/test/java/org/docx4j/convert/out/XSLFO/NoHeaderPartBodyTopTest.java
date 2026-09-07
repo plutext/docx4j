@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
  * ours was 35.3 + 13.799 = 49.1, and every line and the logo came out +26.5 to +27.5pt
  * low.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class NoHeaderPartBodyTopTest extends AbstractXSLFOTest {
 

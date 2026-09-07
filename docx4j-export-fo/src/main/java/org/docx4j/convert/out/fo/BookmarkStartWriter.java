@@ -53,7 +53,7 @@ public class BookmarkStartWriter extends AbstractBookmarkStartWriter {
 
 		// Word tolerates the same bookmark name twice (copy/paste, merges); FOP refuses to
 		// render a document with a repeated id at all, so only the first one is emitted.
-		// @since 17.0.6
+		// @since 17.1.0
 		if (!context.claimId(modelData.getName())) {
 			log.debug("Bookmark name used more than once; ignoring the later one.");
 			return null;

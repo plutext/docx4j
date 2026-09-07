@@ -124,7 +124,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 * "6 Eyl&uuml;l 2026" (270.1..325.1) where docx4j's read "7 September 2026"
 	 * (256.5..338.8).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static String documentLanguage(AbstractWmlConversionContext context) {
 		try {
@@ -154,7 +154,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			 * text on all three of the lines involved, and printing the evaluated one was
 			 * that document's whole parity loss.
 			 * Set docx4j.convert.out.fields.docPropertyCachedResult to false to evaluate
-			 * the property instead.  @since 17.0.6 */
+			 * the property instead.  @since 17.1.0 */
 			if (org.docx4j.Docx4jProperties.getProperty(
 					"docx4j.convert.out.fields.docPropertyCachedResult", true)) {
 				String cached = cachedResultText(model);

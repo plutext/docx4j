@@ -31,7 +31,7 @@ import org.w3c.dom.NodeList;
  * docx4j drew the same 462pt of text at 20.9..483.1, exactly 57.6pt left, on ten
  * paragraphs.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class NumIdZeroIndentTest extends AbstractXSLFOTest {
 

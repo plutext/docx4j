@@ -31,7 +31,7 @@ import org.junit.Test;
  * <code>org.docx4j.model.CompatibilityOptions</code>, so re-keying it is one line the day a
  * Word golden says which way.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class UseWord2002TableStyleRulesTest {
 

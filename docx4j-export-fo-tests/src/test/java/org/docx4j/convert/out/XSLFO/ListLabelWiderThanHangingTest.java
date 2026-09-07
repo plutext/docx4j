@@ -31,7 +31,7 @@ import org.w3c.dom.NodeList;
  * <b>72.98</b> - the 358tw stop - where our 0.3pt label column produced
  * "(M2i)tverpachtet".</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class ListLabelWiderThanHangingTest extends AbstractXSLFOTest {
 

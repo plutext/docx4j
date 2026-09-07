@@ -241,7 +241,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     }
 
     /** @param forXslFo true for the XSL-FO exporters: a Windows metafile picture is
-     *  represented differently in FO than in HTML (CR-011).  @since 17.0.6 */
+     *  represented differently in FO than in HTML (CR-011).  @since 17.1.0 */
     private static WordXmlPictureE20 createWordXmlPictureFromE20(
     		WordprocessingMLPackage wmlPackage,
     		ConversionImageHandler imageHandler,
@@ -565,7 +565,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	 * threw the fraction away, so a picture Word sizes at 67.5pt was declared 67
     	 * (as "67px", which FOP reads as 67pt at its default 72dpi) and everything below
     	 * it moved up half a point; 291 such attributes in 75 of 156 corpus documents.
-    	 * The unit is now stated as what it has always really been.  @since 17.0.6 */
+    	 * The unit is now stated as what it has always really been.  @since 17.1.0 */
     	if (size2d.getCx()!=0) {
     		dimensions.width= size2d.getCx() / (double)extentToPixelConversionFactor;
     		dimensions.widthUnit = "pt";

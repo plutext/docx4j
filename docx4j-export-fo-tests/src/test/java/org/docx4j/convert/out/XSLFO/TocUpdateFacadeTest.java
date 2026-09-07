@@ -28,7 +28,7 @@ import org.docx4j.wml.Text;
 import org.junit.Test;
 
 /**
- * The ToC pathway in the Docx4J facade (17.0.6): Docx4J.updateToc, and
+ * The ToC pathway in the Docx4J facade (17.1.0): Docx4J.updateToc, and
  * FLAG_EXPORT_UPDATE_TOC on toFO/toPDF.
  *
  * The page numbers come from laying the document out with FOP, which is why

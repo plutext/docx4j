@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * adds the paragraph font's descent below the picture.  Measured against Word: a 67.5pt
  * logo above a 14pt paragraph put the next baseline 4.8pt below Word's.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class InlinePictureLineTest extends AbstractXSLFOTest {
 

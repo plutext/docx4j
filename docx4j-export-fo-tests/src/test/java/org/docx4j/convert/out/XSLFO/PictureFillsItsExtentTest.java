@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * <p>The crop itself is not reproduced: the picture is stretched into the frame rather
  * than cropped to it, which is the same geometry.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PictureFillsItsExtentTest extends AbstractXSLFOTest {
 

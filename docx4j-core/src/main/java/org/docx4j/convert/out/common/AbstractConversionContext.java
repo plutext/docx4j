@@ -179,7 +179,7 @@ public abstract class AbstractConversionContext {
 	 * occurrence, which is what Word does with it too.
 	 *
 	 * @return true the first time this id is claimed in this conversion
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public boolean claimId(String id) {
 		return claimedIds.add(id);

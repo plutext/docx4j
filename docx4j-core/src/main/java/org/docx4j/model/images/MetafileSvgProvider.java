@@ -40,7 +40,7 @@ import org.w3c.dom.Document;
  * falls back to a PNG, which core can produce with ImageIO alone
  * ({@link MetafileRenderer#toImage}), and {@code MetafilePart.toSVG()} throws.</p>
  *
- * @since 17.0.6 (CR-011 phase 2)
+ * @since 17.1.0 (CR-011 phase 2)
  */
 public interface MetafileSvgProvider {
 

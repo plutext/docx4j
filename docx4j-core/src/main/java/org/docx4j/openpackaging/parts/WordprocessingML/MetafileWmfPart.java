@@ -20,7 +20,7 @@ import org.w3c.dom.Document;
  * from {@link MetafilePart}; the pictures in a document are converted for you by
  * the PDF (via XSL-FO) and HTML exporters.</p>
  *
- * <p>Until 17.0.6 this class used the wmf2svg library, which has no EMF support and
+ * <p>Until 17.1.0 this class used the wmf2svg library, which has no EMF support and
  * is no longer a dependency (CR-011).  The signature of {@link #toSVG()} is
  * unchanged, but it now needs {@code docx4j-export-fo} on the classpath, for
  * Batik's SVG generator - see {@link MetafilePart#toSVG()}.</p>
@@ -61,7 +61,7 @@ public class MetafileWmfPart extends MetafilePart {
 			return doc;
 		}
 
-		/** @since 17.0.6 */
+		/** @since 17.1.0 */
 		public SvgDocument(Document doc) {
 			this.doc = doc;
 		}

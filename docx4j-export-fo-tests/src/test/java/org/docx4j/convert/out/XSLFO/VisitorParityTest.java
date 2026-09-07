@@ -401,7 +401,7 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
 				"<w:document " + W + " " + MC + " " + V + " " + O + "><w:body>"
-				// a Choice we can draw wins over the Fallback (17.0.6, docx4j.jaxb.mc.preferChoice)
+				// a Choice we can draw wins over the Fallback (17.1.0, docx4j.jaxb.mc.preferChoice)
 				+ "<mc:AlternateContent>"
 				+   "<mc:Choice Requires=\"wps\"><w:p><w:r><w:t>choice text</w:t></w:r></w:p></mc:Choice>"
 				+   "<mc:Fallback><w:p><w:r><w:t>fallback text</w:t></w:r></w:p></mc:Fallback>"
@@ -459,7 +459,7 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 	 * as it does in Word (ECMA-376 Part 3 &#xa7;10.2.1) - and a Choice requiring something
 	 * else still does not.  Both pathways.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Test
 	public void testChoicePreferred() throws Exception {

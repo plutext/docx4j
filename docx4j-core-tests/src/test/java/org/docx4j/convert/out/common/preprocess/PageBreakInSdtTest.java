@@ -20,7 +20,7 @@ import org.junit.Test;
 /**
  * {@code PageBreak} walked the body's own children only, so a paragraph inside a
  * {@code w:sdt} - a table of contents, a cover page, any building block - was never
- * visited: neither the {@code w:pageBreakBefore} conversion nor the 17.0.6 split at the
+ * visited: neither the {@code w:pageBreakBefore} conversion nor the 17.1.0 split at the
  * break reached it, and the {@code w:br w:type="page"} stayed nested in an
  * {@code fo:inline}, where FOP ignores it.
  *
@@ -31,7 +31,7 @@ import org.junit.Test;
  * block-level child ate the first-line indent.  Word's page 2 heading is at y=97.0 x=72.0
  * against ours at 85.1 / 89.8, and every line of the page carried the -11.9.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PageBreakInSdtTest {
 

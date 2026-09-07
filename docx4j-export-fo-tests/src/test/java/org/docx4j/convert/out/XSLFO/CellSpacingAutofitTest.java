@@ -48,7 +48,7 @@ import org.w3c.dom.NodeList;
  * side, a 134.57pt measure, where the cell's line needs 135.3pt and is one line in Word
  * (377.4..512.5).  136.8 less the 1.5pt of {@code border-separation} is exactly 135.3.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class CellSpacingAutofitTest extends AbstractXSLFOTest {
 

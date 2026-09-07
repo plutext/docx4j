@@ -53,7 +53,7 @@ public class BrWriter extends AbstractBrWriter {
 			 * w:pageBreakBefore on the paragraph which opens the table (§3.3).  The two
 			 * arrive here as the same break-before, so the run's own is marked: the
 			 * nesting that used to tell them apart differs between the two exporters.
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			if (WordLayoutFixups.isEnabled()) {
 				ret.setAttribute(WordLayoutFixups.HINT_BREAK_RUN, "1");
 			}
@@ -98,7 +98,7 @@ public class BrWriter extends AbstractBrWriter {
 			 * Where the section has columns, WordLayoutFixups.columnBreaks takes the hint
 			 * off this block and puts break-before="column" on the paragraph, which the
 			 * section wrapper has already divided at the break (ColumnBreaks, §7.3).
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			if (modelData.getType()!=null && modelData.getType().equals(STBrType.COLUMN)
 					&& WordLayoutFixups.isEnabled()) {
 				ret.setAttribute(WordLayoutFixups.HINT_COLUMN_BREAK, "1");

@@ -29,7 +29,7 @@ package org.docx4j.wml;
  * fields are protected, so only a class in this package can tell one from the other -
  * hence this one, rather than reflection on generated code.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class AutospacingAccess {
 

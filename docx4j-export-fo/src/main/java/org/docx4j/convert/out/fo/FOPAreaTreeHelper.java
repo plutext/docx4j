@@ -164,7 +164,7 @@ public class FOPAreaTreeHelper {
      * <p>Only the measurement is affected - hfPkg is the pre-pass's own copy, and the
      * real render still paints and positions the picture.</p>
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     static void dropFloatingDrawingsFromHeadersFooters(WordprocessingMLPackage hfPkg) {
 
@@ -325,7 +325,7 @@ public class FOPAreaTreeHelper {
     	             * half-page defaults survived - 3 Word pages came out as 35, each
     	             * holding two or three lines in a 24pt strip.  These paragraphs are
     	             * ours and only their height matters, so the defaults are overridden
-    	             * here.  @since 17.0.6 */
+    	             * here.  @since 17.1.0 */
     	            BooleanDefaultTrue notHidden = wmlObjectFactory.createBooleanDefaultTrue();
     	            notHidden.setVal(Boolean.FALSE);
     	            rpr.setVanish(notHidden);
@@ -662,10 +662,10 @@ public class FOPAreaTreeHelper {
 
     /** Whether the header this page master's region-before shows reserves nothing:
      *  the dummy part docx4j invents for w:titlePg / w:evenAndOddHeaders, or a real
-     *  part with nothing in it (@since 17.0.6). */
+     *  part with nothing in it (@since 17.1.0). */
 
     /** Whether a w:footer distance is one Word honours: a distance past a quarter of
-     *  the page is treated as absurd and ignored (see the body-bottom rule).  @since 17.0.6 */
+     *  the page is treated as absurd and ignored (see the body-bottom rule).  @since 17.1.0 */
     private static boolean plausibleFooterDistance(org.docx4j.model.structure.PageDimensions page, float footerMarginPts) {
         if (footerMarginPts <= 0) return false;
         try {
@@ -702,7 +702,7 @@ public class FOPAreaTreeHelper {
     /** Whether the document has no footer for this page master at all - no part, or the
      *  empty one docx4j invents - as against a real footer part which paints nothing.
      *  Word reserves the footer distance for the second and nothing for the first.
-     *  @since 17.0.6 */
+     *  @since 17.1.0 */
     private static boolean isAbsentFooter(org.docx4j.model.structure.HeaderFooterPolicy hf, String pageKind) {
     	if ("firstpage".equals(pageKind)) {
     		return org.docx4j.model.structure.HeaderFooterPolicy.isAbsent(hf.getFirstFooter());
@@ -760,7 +760,7 @@ public class FOPAreaTreeHelper {
     			 * headerReference at all, w:pgMar/@w:top=432 (21.6pt) and w:header=706
     			 * (35.3pt): Word's body top is 21.6, ours was 35.3 + a 13.799pt dummy
     			 * extent = 49.1, so every line and the logo was +26.5 to +27.5pt low.
-    			 * @since 17.0.6 */
+    			 * @since 17.1.0 */
     			String pageKind = simplePageMasterName.substring(simplePageMasterName.indexOf("-") + 1);
     			boolean headerIsDummy = hfPolicy != null && isDummyHeader(hfPolicy, pageKind);
     			boolean footerIsDummy = hfPolicy != null && isDummyFooter(hfPolicy, pageKind);
@@ -796,7 +796,7 @@ public class FOPAreaTreeHelper {
 		    			 * body top is 15.55pt, where max(top, header + header height) put
 		    			 * ours at 49.25 - +33.7pt on the table header, on page 2 and on
 		    			 * every one of six pictures.  A second document, w:top="-993",
-		    			 * was +97.5pt throughout.  @since 17.0.6 */
+		    			 * was +97.5pt throughout.  @since 17.1.0 */
 		    			float headerReserve = headerIsDummy ? 0f : hBpdaPts;
 		    			float bodyTop = topMarginPts < 0 ? -topMarginPts
 		    					: Math.max(topMarginPts,
@@ -827,7 +827,7 @@ public class FOPAreaTreeHelper {
 		    			 * all had its body end 36pt above the page bottom, where Word ran
 		    			 * it to 841.9pt on an A4 page.  Every section's last line - Word
 		    			 * puts it at y=827.3..828.2 - then spilled onto a page of its own,
-		    			 * 21 times: 24 Word pages came out as 44.  @since 17.0.6 */
+		    			 * 21 times: 24 Word pages came out as 44.  @since 17.1.0 */
 		    			float footerMarginPts = page.getFooterMargin()/20f; // twips to points
 		    			float bottomMarginPts = page.getPgMar().getBottom().intValue()/20f;
 		    			/* ...but an empty footer part is not the same as no footer at all:
@@ -846,7 +846,7 @@ public class FOPAreaTreeHelper {
 		    			 * document has no footer part at all (or only the one docx4j invents
 		    			 * for w:titlePg): there Word reserves nothing, which is what J2's
 		    			 * own measurement says and FooterDistanceTest holds.  15 documents
-		    			 * of three corpora have an empty footer part.  @since 17.0.6 */
+		    			 * of three corpora have an empty footer part.  @since 17.1.0 */
 		    			float footerReserve = footerIsDummy ? 0f : fBpdaPts;
 		    			float footerFloor = footerReserve > 0 ? footerMarginPts + footerReserve
 		    					: (footerIsDummy && !footerIsAbsent

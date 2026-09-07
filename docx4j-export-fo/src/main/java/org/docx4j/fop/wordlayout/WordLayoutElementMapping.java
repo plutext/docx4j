@@ -66,7 +66,7 @@ public class WordLayoutElementMapping extends ElementMapping {
 	/** on a small-caps span: the fraction of the run's size its glyphs are drawn at.
 	 *  Word scales a small-caps run's glyphs, not its line, so the line is sized from the
 	 *  declared size; without this FOP takes a line's ascent from the 80% inline where
-	 *  that inline is a block's only content.  @since 17.0.6 */
+	 *  that inline is a block's only content.  @since 17.1.0 */
 	public static final String SMALL_CAPS = "small-caps";
 	/** on fo:root: how far this document's Word engine may compress the spaces of a
 	 *  justified line to pull a word in, as a fraction of their natural width.  Word
@@ -76,22 +76,22 @@ public class WordLayoutElementMapping extends ElementMapping {
 
 	/** on fo:root: w:hyphenationZone in twips - the largest gap this document's Word
 	 *  engine tolerates at the end of a line before it hyphenates the next word.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String HYPHENATION_ZONE = "hyphenation-zone";
 	/** on fo:root: w:consecutiveHyphenLimit - how many lines in a row may end in a
-	 *  hyphen.  Absent, or 0, means no limit.  @since 17.0.6 */
+	 *  hyphen.  Absent, or 0, means no limit.  @since 17.1.0 */
 	public static final String HYPHEN_LIMIT = "hyphen-limit";
 	/** on fo:root: "false" for w:doNotHyphenateCaps - a word in all capitals is not
-	 *  hyphenated.  @since 17.0.6 */
+	 *  hyphenated.  @since 17.1.0 */
 	public static final String HYPHENATE_CAPS = "hyphenate-caps";
 
 	/** on fo:root: "true" for w:compat/w:noTabHangInd - a hanging indent makes no
 	 *  implicit tab stop at the paragraph's left indent.  Off in every compatibility
-	 *  mode, so it is written only for a document which states the flag.  @since 17.0.6 */
+	 *  mode, so it is written only for a document which states the flag.  @since 17.1.0 */
 	public static final String NO_TAB_HANG_IND = "no-tab-hang-ind";
 	/** on a justified paragraph's fo:block: the line that ends at each of its soft returns
 	 *  is justified, as Word justifies it unless w:compat/w:doNotExpandShiftReturn is set.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String JUSTIFY_SOFT_RETURN = "justify-soft-return";
 
 	/** on an fo:leader: it stands in for a w:tab, and {@link WordLineLayoutManager}

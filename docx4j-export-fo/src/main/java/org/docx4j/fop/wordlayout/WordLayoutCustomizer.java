@@ -64,7 +64,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 *  22.0% and 25.6%, where it will compress by up to 20.5% to pull a whole word on
 	 *  (see {@link #MAX_SPACE_SHRINK}).  docx4j property or system property
 	 *  docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink; default 0.10.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String MAX_HYPHEN_SPACE_SHRINK
 			= "docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink";
 
@@ -88,7 +88,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 *  lines matched).  docx4j property or system property
 	 *  docx4j.convert.out.fo.wordLayout.minStretchToCompress; 0 restores 17.0.5's
 	 *  behaviour of compressing whenever the shrink is within the cap.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String MIN_STRETCH_TO_COMPRESS
 			= "docx4j.convert.out.fo.wordLayout.minStretchToCompress";
 
@@ -106,7 +106,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 *  36pt zone - so the zone never fired.  Off by default; set the docx4j property or
 	 *  system property docx4j.convert.out.fo.wordLayout.hyphenationZone to true to
 	 *  restore the behaviour docx4j had in 17.0.5.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public static final String ENFORCE_HYPHENATION_ZONE
 			= "docx4j.convert.out.fo.wordLayout.hyphenationZone";
 
@@ -135,7 +135,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.emergencyBreak=false turns it off.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static final String EMERGENCY_BREAK
 			= "docx4j.convert.out.fo.wordLayout.emergencyBreak";

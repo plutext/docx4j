@@ -89,13 +89,13 @@ public class PageDimensions {
 	 * area; the FO exporter renders "center" and "bottom" as display-align on the
 	 * region body.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public String getVerticalAlign() {
 		return verticalAlign;
 	}
 
-	/** @since 17.0.6 */
+	/** @since 17.1.0 */
 	public void setVerticalAlign(String verticalAlign) {
 		this.verticalAlign = verticalAlign;
 	}
@@ -479,7 +479,7 @@ public class PageDimensions {
 	 * either: Word's table on that page begins at y=52.85, above the 70.9pt a top gutter
 	 * would give.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public int getGutter() {
 		if (pgMar == null || pgMar.getGutter() == null) return 0;
@@ -488,7 +488,7 @@ public class PageDimensions {
 	}
 
 	/** Whether this section's page is landscape: w:pgSz/@w:orient, else w &gt; h.
-	 *  @since 17.0.6 */
+	 *  @since 17.1.0 */
 	public boolean isLandscape() {
 		if (pgSz == null) return false;
 		if (pgSz.getOrient() != null) return STPageOrientation.LANDSCAPE.equals(pgSz.getOrient());
@@ -506,7 +506,7 @@ public class PageDimensions {
 	 * less than 1% of the margin box is ignored, as {@link #hasUnequalCols()} ignores
 	 * a 5% difference between columns.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public int getSingleColumnNarrowing() {
 		if (singleColumnNarrowing == 0) return 0;
@@ -521,7 +521,7 @@ public class PageDimensions {
 	 *  which would otherwise measure a column stated for quite different margins against
 	 *  quite different ones: on a document whose sections alternate w:left="760" and
 	 *  w:left="9560", each with a w:col of exactly its own writable width, that made the
-	 *  text column 80pt wide and 24 Word pages came out as 89.  @since 17.0.6 */
+	 *  text column 80pt wide and 24 Word pages came out as 89.  @since 17.1.0 */
 	private int singleColumnNarrowing = 0;
 	private int singleColumnWritableWidth = 0;
 

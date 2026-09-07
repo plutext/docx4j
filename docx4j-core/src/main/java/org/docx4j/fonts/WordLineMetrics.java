@@ -150,7 +150,7 @@ public final class WordLineMetrics {
 	 * (&#xa7;2.7).  Registered only for a font this machine does not have, so nothing
 	 * an installed font would answer is displaced.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static void registerAlias(String documentFont, String substituteFont) {
 		if (documentFont == null || substituteFont == null) return;
@@ -161,7 +161,7 @@ public final class WordLineMetrics {
 		DOCUMENT_ALIASES.put(key, value);
 	}
 
-	/** @since 17.0.6 */
+	/** @since 17.1.0 */
 	private static final Map<String, String> DOCUMENT_ALIASES = new java.util.concurrent.ConcurrentHashMap<String, String>();
 
 	/**
@@ -176,7 +176,7 @@ public final class WordLineMetrics {
 	 * 9pt single-spaced Helvetica document: Word's line pitch is 10.34pt (1.149 em) and
 	 * docx4j's was 12.89pt, +24.6% on every line, five Word pages against our six.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static final Map<String, String> ALIASES;
 	static {
@@ -255,7 +255,7 @@ public final class WordLineMetrics {
 	 * is rounded too: 20pt is 166.67 units, and Word's pitch for
 	 * {@code w:line="400" w:lineRule="atLeast"} is 20.04, not 20.00.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static final double GRID_PT = 72.0 / 600.0;
 
@@ -266,7 +266,7 @@ public final class WordLineMetrics {
 	 * Serif 12pt at {@code w:line="360"} is 115 x 1.5 = 172.5 units and Word paints
 	 * 20.64 (172) on two of the golden's three pitches, not 20.76 (173).
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static double onGrid(double pt) {
 		return deviceGrid() ? fromUnits(gridUnits(pt)) : pt;
@@ -287,7 +287,7 @@ public final class WordLineMetrics {
 	 * here, switchable, for a round which can measure it against a corpus whose page
 	 * breaks are not already decided by other errors.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static final String DEVICE_GRID = "docx4j.fonts.wordLineMetrics.deviceGrid";
 
@@ -312,7 +312,7 @@ public final class WordLineMetrics {
 	 * 600 dpi grid ({@link #GRID_PT}).  Everything the {@code w:spacing} rules do is
 	 * done to this value, not to the raw factor.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static double singleLineHeightPt(String documentFont, PhysicalFont pf, double sizePt) {
 		return fromUnits(singleUnits(documentFont, pf, sizePt));

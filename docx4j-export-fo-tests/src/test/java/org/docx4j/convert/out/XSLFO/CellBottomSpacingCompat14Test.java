@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * 110.7 -&gt; 125.7 -&gt; 139.2 = 15.0 / 13.5, the space-before only, and the deficit grew
  * to -25.4pt by y=360 on page 1.  x matched to 0.3pt throughout.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class CellBottomSpacingCompat14Test extends AbstractXSLFOTest {
 

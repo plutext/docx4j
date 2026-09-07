@@ -73,7 +73,7 @@ public class FontFallback {
 	 * Scripts every conventional stand-in covers, so that text using only these needs no
 	 * coverage check at all.
 	 *
-	 * <p>Greek and Cyrillic are <b>not</b> among them, although they were until 17.0.6.
+	 * <p>Greek and Cyrillic are <b>not</b> among them, although they were until 17.1.0.
 	 * A metric-compatible clone is chosen for its advance widths, and several of them
 	 * carry the Latin alphabet alone: Caladea, which stands in for Cambria, has no Greek
 	 * and no Cyrillic at all.  Measured on a Greek document set in Cambria, 48% of the
@@ -110,14 +110,14 @@ public class FontFallback {
 	 * dragged into the symbol font with it (a shared COMMON character follows whatever
 	 * precedes it; see {@code RunFontSelector.isShared}).</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean isSymbol(int cp) {
 		return cp>=0x2190 && cp<=0x2BFF;
 	}
 
 	/** The key the coverage pass groups a code point under: its script, except that the
-	 *  symbol blocks are their own group.  @since 17.0.6 */
+	 *  symbol blocks are their own group.  @since 17.1.0 */
 	public static String coverageGroupOf(int cp) {
 		return isSymbol(cp) ? SYMBOL_GROUP : scriptOf(cp).name();
 	}
@@ -462,7 +462,7 @@ public class FontFallback {
 	 * <p>Sylfaen's <em>Cyrillic</em> has no such answer here: Caladea measures closest to
 	 * it (1.0288 against Tinos's 1.041) but has no Cyrillic at all, so Tinos stands.</p>
 	 *
-	 * <p><b>Cambria's Greek</b> is the second entry, and a consequence of 17.0.6's rule
+	 * <p><b>Cambria's Greek</b> is the second entry, and a consequence of 17.1.0's rule
 	 * that a metric substitute stands in only for the characters it can draw: Caladea,
 	 * which is Cambria's metric twin in Latin, has no Greek at all, so Greek fell through
 	 * to the document default serif.  Measured on 27 lines of a Greek document whose
@@ -472,7 +472,7 @@ public class FontFallback {
 	 * DejaVu Serif 1.3643.  P052 is therefore preferred for Cambria's Greek; where it is
 	 * not installed the order falls through to what it was.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static List<String> measuredForScript(String documentFontName, int[] codePoints) {
 
@@ -490,7 +490,7 @@ public class FontFallback {
 		 * face.  Word 2016 uses Segoe UI Symbol, which no Linux box has; of what is
 		 * installed, Noto Sans Symbols 2 carries the geometric shapes, box drawing and
 		 * dingbats, Noto Sans Symbols the arrows and maths, and DejaVu Sans is the wide
-		 * net behind them.  @since 17.0.6 */
+		 * net behind them.  @since 17.1.0 */
 		if (symbol) {
 			result.add("Segoe UI Symbol");
 			result.add("Noto Sans Symbols 2 Regular");

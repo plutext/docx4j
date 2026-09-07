@@ -191,7 +191,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * w:autoHyphenation: whether Word hyphenates this document's contents
 	 * automatically (ECMA-376 17.15.1.10).  Off where the element is absent.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean isAutoHyphenation(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
 		CTSettings s = getSettings(pkg);
@@ -203,7 +203,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * tolerates at the end of a line before it hyphenates the next word.  Where
 	 * the element is absent, Word's US default of 0.25 inch (360 twips).
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static int getHyphenationZone(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
 		CTSettings s = getSettings(pkg);
@@ -217,7 +217,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * w:consecutiveHyphenLimit (ECMA-376 17.15.1.22): how many lines in a row may
 	 * end in a hyphen.  0, which is also the absent case, means no limit.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static int getConsecutiveHyphenLimit(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
 		CTSettings s = getSettings(pkg);
@@ -233,14 +233,14 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * w:doNotHyphenateCaps (ECMA-376 17.15.1.37): words in all capital letters
 	 * are not hyphenated.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static boolean isDoNotHyphenateCaps(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
 		CTSettings s = getSettings(pkg);
 		return s != null && s.getDoNotHyphenateCaps() != null && s.getDoNotHyphenateCaps().isVal();
 	}
 
-	/** This package's w:settings, or null where it has none. @since 17.0.6 */
+	/** This package's w:settings, or null where it has none. @since 17.1.0 */
 	private static CTSettings getSettings(org.docx4j.openpackaging.packages.WordprocessingMLPackage pkg) {
 		try {
 			if (pkg == null || pkg.getMainDocumentPart() == null) return null;

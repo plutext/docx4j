@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  * grid on a 453.6pt column, which Word drew 505.3pt wide), and docx4j painted half the
  * document past the page edge and lost 7 of Word's 15 pages.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class AutofitTableOverWideGridTest extends AbstractXSLFOTest {
 

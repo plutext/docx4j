@@ -405,7 +405,7 @@ public abstract class OpenFont {
      * @param n truetype unit
      * @param upem the font's units per em
      * @return pdf unit
-     * @since 17.0.6
+     * @since 17.1.0
      */
     public static int convertUnit2PDFUnit(int n, int upem) {
         if (upem <= 0) {

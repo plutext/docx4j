@@ -15,7 +15,7 @@ import org.w3c.dom.NodeList;
  * A section whose {@code w:cols} declares a single {@code w:col} uses that column's
  * width for its text, whether it is narrower <em>or wider</em> than the margin box.
  *
- * <p>The narrow half landed in 17.0.6 and took a corpus document from 0.557 to 0.951.
+ * <p>The narrow half landed in 17.1.0 and took a corpus document from 0.557 to 0.951.
  * Where the declared column is <em>wider</em>, Word lets the section overhang the right
  * margin: measured on a 595.35pt page with 72pt margins (a 451.35pt margin box) whose
  * {@code <w:cols w:equalWidth="0"><w:col w:w="9560"/>} declares 478pt, Word centres a
@@ -24,7 +24,7 @@ import org.w3c.dom.NodeList;
  * absorbed into our page 1.  14 documents of three corpora declare a single
  * {@code w:col} more than 1% from their margin box.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SingleColumnWidthTest extends AbstractXSLFOTest {
 

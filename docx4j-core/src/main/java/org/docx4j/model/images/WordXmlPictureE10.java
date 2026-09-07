@@ -76,7 +76,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	protected static Logger log = LoggerFactory.getLogger(WordXmlPictureE10.class);
 
 	/** The w:pict or w:object holding the VML picture.  w:object was added here in
-	 *  17.0.6; both are CT_PictureBase, so the VML children are found the same way.
+	 *  17.1.0; both are CT_PictureBase, so the VML children are found the same way.
 	 *  Word draws an embedded object (an equation, an embedded workbook, an OLE
 	 *  icon) as the preview picture its v:imagedata points at. */
 	CTPictureBase pict;
@@ -176,7 +176,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     }
 
     /** @param forXslFo true for the XSL-FO exporters: a Windows metafile picture is
-     *  represented differently in FO than in HTML (CR-011).  @since 17.0.6 */
+     *  represented differently in FO than in HTML (CR-011).  @since 17.1.0 */
     private static WordXmlPictureE10 createWordXmlPictureFromE10(
     		WordprocessingMLPackage wmlPackage,
     		ConversionImageHandler imageHandler,
@@ -436,7 +436,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	//int endIndex = style.indexOf("pt", beginIndex);
     	
     	if (name.equals("height")) {
-    		dimensions.height = f; // fractional: rounding a VML shape's height moved the lines below it (@since 17.0.6)
+    		dimensions.height = f; // fractional: rounding a VML shape's height moved the lines below it (@since 17.1.0)
     		dimensions.heightUnit = unit;
     	} else if (name.equals("width")) {
     		dimensions.width = f;

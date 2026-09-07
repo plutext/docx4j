@@ -54,7 +54,7 @@ import org.w3c.dom.NodeList;
  * carried no {@code docx4j:line-box}, since the line-box pass has no font to take
  * metrics from either.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class EmptyParagraphFontTest extends AbstractXSLFOTest {
 

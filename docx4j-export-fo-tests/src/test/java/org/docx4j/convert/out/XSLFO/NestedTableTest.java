@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
  * pitch: Word's next outer row starts 10.8pt later, where docx4j left room for an 11.5pt
  * line as well - which turned Word's two pages into four.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class NestedTableTest extends AbstractXSLFOTest {
 
@@ -136,7 +136,7 @@ public class NestedTableTest extends AbstractXSLFOTest {
 	 * tables land on the same edges: measured on the table-grid-edge-compat12 and
 	 * -compat11 probes, Word's top-level cell text is at 77.3 (margin 72 + w:tblInd 5.4)
 	 * and the nested table's at 83.1, the containing cell's content edge plus its own
-	 * cell margin.  @since 17.0.6
+	 * cell margin.  @since 17.1.0
 	 */
 	private void theGridEdgeBelowModeFourteen(int flags) throws Exception {
 		for (int mode : new int[] { 11, 12 }) {
@@ -182,7 +182,7 @@ public class NestedTableTest extends AbstractXSLFOTest {
 	 * fired on it - measured on the table-grid-edge-compat12 probe, where Word's next
 	 * paragraph is 27.4pt below the nested row's baseline and docx4j left 40.0pt, one
 	 * 11.5pt line and its spacing too many, after each of the probe's two nested tables.
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private void theMandatoryParagraphWithARunTakesNoLine(int flags) throws Exception {
 		Element cell = firstCell(fo(pkg(14, NESTED + MANDATORY_P_EMPTY_RUN), flags));

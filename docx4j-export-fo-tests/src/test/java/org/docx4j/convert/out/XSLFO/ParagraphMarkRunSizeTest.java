@@ -22,7 +22,7 @@ import org.w3c.dom.NodeList;
  * <p>Such a run gets no {@code font-size} of its own - the XSLT pathway does not wrap it
  * in an {@code fo:inline} at all - so it inherits the block's.  The block starts with the
  * paragraph's effective size and then takes the size of the run owning most of its text
- * ({@code applyBlockLineHeight}, which is how a line gets Word's pitch), and until 17.0.6
+ * ({@code applyBlockLineHeight}, which is how a line gets Word's pitch), and until 17.1.0
  * the sizeless runs changed size with it.  Measured on a corpus header of
  * {@code [image][45 spaces][24pt text]} whose paragraph mark carries {@code w:sz="48"}:
  * the spaces were 45 x 5.42 = 244.1pt where Word's are 45 x 2.5 = 111.6, which wrapped
@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  *
  * <p>Both FO pathways.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class ParagraphMarkRunSizeTest {
 

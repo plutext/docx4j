@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * which leaves the text's start (the grid edge plus half the border plus the left cell
  * margin) where it was.</p>
  *
- * <p>17.0.6 generalised it: {@code table-cell-measure} shows Word charging a collapsed
+ * <p>17.1.0 generalised it: {@code table-cell-measure} shows Word charging a collapsed
  * border nothing against the measure in a grid-sized cell either, so the allowance is
  * given back for every collapsed-border cell.  A grid-sized one keeps back a tenth of a
  * point, which is how much narrower FOP's own line measure runs (its glyph advances are
@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
  *
  * <p>Both FO pathways.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class CellLineWidthTest extends AbstractXSLFOTest {
 
@@ -133,7 +133,7 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 	 * content-sized one (measured on {@code table-cell-measure}, whose three collapsed
 	 * tables of 0.5, 1.5 and 3pt borders wrap no row in Word).  A tenth of a point of it
 	 * used to be held back to cover FOP's line measure, whose glyph advances were
-	 * truncated to 1/1000 em and so ran that much narrow; they are rounded since 17.0.6
+	 * truncated to 1/1000 em and so ran that much narrow; they are rounded since 17.1.0
 	 * ({@code org.docx4j.fop.fonts.WordGlyphWidths}), and with the guard still in place
 	 * the rounded measure broke three of that probe's lines Word does not break.
 	 */

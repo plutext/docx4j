@@ -25,7 +25,7 @@ import org.junit.Test;
  * whole parity loss.  8 documents of three corpora hold a DOCPROPERTY whose cached
  * result and current value differ.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class DocPropertyCachedResultTest {
 

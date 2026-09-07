@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Chooses an {@link ImageRenderer} for a content type.
  *
- * @since 17.0.6 (CR-011 phase 1)
+ * @since 17.1.0 (CR-011 phase 1)
  */
 public final class ImageRendererFactory {
 

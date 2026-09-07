@@ -114,7 +114,7 @@ public class FieldsCombiner {
 	 * <p>Set <code>docx4j.convert.out.fields.formFieldResults</code> to false to keep
 	 * the old behaviour.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void expandFormFieldResults(WordprocessingMLPackage wmlPackage) {
 		if (!org.docx4j.Docx4jProperties.getProperty(
@@ -286,7 +286,7 @@ public class FieldsCombiner {
 	 * <p>Set <code>docx4j.convert.out.fields.dropResultlessIf</code> to false to keep
 	 * the old behaviour.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void removeResultlessIfFields(WordprocessingMLPackage wmlPackage) {
 		if (!org.docx4j.Docx4jProperties.getProperty(
@@ -467,7 +467,7 @@ public class FieldsCombiner {
 		 * each keeping the run properties, renders identically and lets the state
 		 * machine see the field.
 		 *
-		 * @since 17.0.6
+		 * @since 17.1.0
 		 */
 		static void normaliseFieldRuns(List<Object> pContent) {
 

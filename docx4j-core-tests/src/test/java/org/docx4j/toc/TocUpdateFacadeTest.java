@@ -22,7 +22,7 @@ import org.junit.Test;
  * The page-numbering behaviour is tested in docx4j-export-fo-tests
  * (TocUpdateFacadeTest there).
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class TocUpdateFacadeTest {
 

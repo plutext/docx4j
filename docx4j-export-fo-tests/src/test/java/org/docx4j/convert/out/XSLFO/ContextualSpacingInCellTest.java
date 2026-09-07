@@ -28,7 +28,7 @@ import org.w3c.dom.NodeList;
  * box plus w:trHeight 199) and docx4j's was 19.9pt - +9.0pt on the first row and +9.5 on
  * every row after it, turning Word's 37 pages into 43.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class ContextualSpacingInCellTest extends AbstractXSLFOTest {
 

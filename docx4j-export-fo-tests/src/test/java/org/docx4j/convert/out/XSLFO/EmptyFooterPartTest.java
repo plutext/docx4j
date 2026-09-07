@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
  * states {@code w:footer="5811"} (290.55pt, a third of the page) and Word ignores it
  * entirely.  15 documents of three corpora have an empty footer part.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class EmptyFooterPartTest extends AbstractXSLFOTest {
 

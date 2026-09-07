@@ -631,7 +631,7 @@ public class PhysicalFonts {
 	 * P052-Bold.otf).  Both are exact lookups in the maps discovery built, so a family
 	 * which really has no such face still gets none.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static PhysicalFont siblingFace(PhysicalFont pf, boolean bold, boolean italic) {
 

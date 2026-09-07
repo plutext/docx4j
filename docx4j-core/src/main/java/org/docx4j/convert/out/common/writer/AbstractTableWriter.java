@@ -353,7 +353,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
      *
      * @param cellWidthTwips the cell's width from the grid (its own column plus the ones
      *        a w:gridSpan covers), or 0 where the widths are not known
-     * @since 17.0.6
+     * @since 17.1.0
      */
     protected Element interposeBlockContainer(AbstractWmlConversionContext context, Document doc,
     		Element cellNode, AbstractTableWriterModel table, AbstractTableWriterModelCell cell,
@@ -364,7 +364,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
     /** The cell's width in twips from the effective column widths (autofit, else the
      *  w:tblGrid), summed over the columns a w:gridSpan covers; 0 where unknown.
-     *  @since 17.0.6 */
+     *  @since 17.1.0 */
     protected static int cellWidthTwips(AbstractTableWriterModel table, TableModelCell cell) {
     	int[] widths = table.getAutofitColumnWidths();
     	if (widths == null) widths = gridWidths(table, table.getColCount());
@@ -485,7 +485,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * the grid, that spans the text column (see {@code TableWriter.applyStartIndent}).
 	 * Only consulted for a table with no preferred width of its own.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected int autofitGridAllowanceTwips(AbstractWmlConversionContext context,
 			AbstractTableWriterModel table, org.docx4j.wml.CTTblPrBase tblPr) {
@@ -521,7 +521,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * <p>A table whose cells are all auto-width is untouched, so Word's content-based
 	 * autofit (&#xa7;6.3) and the widening of &#xa7;6.4 still apply to it.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static boolean gridIsAuthoritative(AbstractTableWriterModel table,
 			org.docx4j.wml.CTTblPrBase tblPr, int cols, int[] pref, boolean[] declared) {
@@ -594,7 +594,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * at the indent, so the percentage is of the column and not of what a
 			 * w:tblInd leaves of it.  An absolute w:tblW does not buy that exemption:
 			 * one corpus table whose w:tblW asks for 117pt more than the column is kept
-			 * inside it by Word.  @since 17.0.6 */
+			 * inside it by Word.  @since 17.1.0 */
 			org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
 			if (tblW != null && "pct".equals(tblW.getType())
 					&& preferredTableWidthTwips(context, tblPr) > 0) {
@@ -606,13 +606,13 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * the three corpora, Word 365's own PDFs of the mode-11 documents which state
 			 * it show the modern layout, and honouring it cost two of them 0.948 -> 0.248
 			 * and 0.930 -> 0.842 of Word's lines.  See word-layout-settings.md §4(e).
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			int[] widths = table.getAutofitColumnWidths();
 			boolean ownGrid = widths == null;
 			if (ownGrid) {
 				// The document's own grid.  Word keeps an over-wide one only where the
 				// table states a width of its own; an autofit table's grid is a cached
-				// layout Word recomputes and clamps to the text column.  @since 17.0.6
+				// layout Word recomputes and clamps to the text column.  @since 17.1.0
 				if (preferredTableWidthTwips(context, tblPr) > 0) return null;
 				widths = gridWidths(table, table.getColCount());
 				if (widths == null) return null;
@@ -675,7 +675,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * its target ({@code availableWidthTwips}).</p>
 	 *
 	 * @return column widths in twips, or null to leave the grid alone
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected int[] scaleGridToPercentageWidth(AbstractWmlConversionContext context,
 			AbstractTableWriterModel table) {
@@ -714,7 +714,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * real-document corpus: Word draws autofit grids up to about a fifth over at their
 	 * grid width (&#xa7;6.5), and re-fits ones 1.35 to 2.7 times the column.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected static final double GRID_OVERHANG_LIMIT = 1.25;
 
@@ -727,7 +727,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * 5.4152pt at each side, and the line which the column exists to hold broke in two
 	 * in all three of that probe's content-autofit tables.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static final int COLUMN_SLACK_TWIPS = 2;
 
@@ -766,7 +766,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * broke in two, on every such cell of the table.  Word keeps it on one line
 	 * (70.8..149.5).
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static int cellMarginsTwips(org.docx4j.wml.CTTblPrBase tblPr, org.docx4j.wml.TcPr tcPr) {
 		org.docx4j.wml.TcMar m = tcPr == null ? null : tcPr.getTcMar();
@@ -1067,12 +1067,12 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		/* w:tblBorders is no longer applied here: its top/bottom/left/right describe the
 		 * table's outer edge and insideH/insideV the rules between cells (ECMA-376
 		 * 17.4.39), so it has to be resolved per cell - createCellBorderProperties.
-		 * Until 17.0.6 the outer definition went on every cell whenever insideH or
+		 * Until 17.1.0 the outer definition went on every cell whenever insideH or
 		 * insideV existed, which is right only where the two agree: measured on a table
 		 * whose outer borders are nil and whose insideV is single sz=18 color=FFFFFF,
 		 * Word draws a 2.25pt white rule between the columns (fill_path
 		 * x=186.1..188.2) and every one of our cells came out border-*-style="none".
-		 * @since 17.0.6 */
+		 * @since 17.1.0 */
 
 				if (tblCellMargin != null) {
 			if (tblCellMargin.getTop() != null)
@@ -1115,7 +1115,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * insideH/insideV to the sides which face another cell (ECMA-376 17.4.39).  The
 	 * cell's own w:tcBorders, applied after this, overrides.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	protected void createCellBorderProperties(List<Property> properties, TblBorders tblBorders,
 			int rowIndex, int rowCount, TableModelCell cell, int colCount) {

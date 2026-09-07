@@ -169,7 +169,7 @@ public class Emulator {
      *        formatting, rather than one its paragraph style contributed.  A level
      *        which names a paragraph style of its own numbers only that style
      *        (&#xa7;2.8): see {@link #styleLinkedElsewhere}.
-     * @since 17.0.6
+     * @since 17.1.0
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal,
     		String numId, String levelId, boolean directNumPr) {
@@ -310,7 +310,7 @@ public class Emulator {
 			}
 
 			/* The indent the instance's own level definition gives
-			 * (w:num/w:lvlOverride/w:lvl, ECMA-376 17.9.8), which until 17.0.6 was lost:
+			 * (w:num/w:lvlOverride/w:lvl, ECMA-376 17.9.8), which until 17.1.0 was lost:
 			 * only the abstract level was read here, so the list-block had neither
 			 * indent nor hanging indent to work from.  Measured on a document whose
 			 * w:num 32 overrides ilvl 0 with <w:ind w:left="397" w:hanging="113"/>:
@@ -326,7 +326,7 @@ public class Emulator {
 			 * the text after it in the regular face (measured).  Splitting the two is a
 			 * change for every numbered paragraph, not only for the 20 documents of the
 			 * three corpora which carry a w:lvlOverride/w:lvl, so it is left for a
-			 * batch of its own.  @since 17.0.6 */
+			 * batch of its own.  @since 17.1.0 */
 			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
 			triple.lvl = listLevel.getJaxbAbstractLvl();
 
@@ -372,7 +372,7 @@ public class Emulator {
      * {@code w:numPr} names a numbering whose level is linked to a style it does not
      * use - direct formatting always applies.</p>
      *
-     * @since 17.0.6
+     * @since 17.1.0
      */
     private static boolean styleLinkedElsewhere(
     		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart,
@@ -539,7 +539,7 @@ public class Emulator {
 			// don't IncrementCounter here
 
 			// the instance's own level definition (w:lvlOverride/w:lvl) first, as
-			// getNumber does since 17.0.6, then the abstract one
+			// getNumber does since 17.1.0, then the abstract one
 			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
 			Ind ind = indOf(listLevel.getJaxbOverrideLvl());
 			return (ind!=null) ? ind : indOf(listLevel.getJaxbAbstractLvl());
@@ -549,7 +549,7 @@ public class Emulator {
     }
 
     /** A level definition's w:ind, or null (the level, its w:pPr or its w:ind absent).
-     *  @since 17.0.6 */
+     *  @since 17.1.0 */
     private static Ind indOf(Lvl lvl) {
     	if (lvl==null) return null;
     	PPr ppr = lvl.getPPr();

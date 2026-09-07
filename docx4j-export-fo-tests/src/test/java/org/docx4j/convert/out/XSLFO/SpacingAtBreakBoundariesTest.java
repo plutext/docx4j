@@ -28,7 +28,7 @@ import org.w3c.dom.NodeList;
  * the -18.2.</li>
  * </ul>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SpacingAtBreakBoundariesTest extends AbstractXSLFOTest {
 

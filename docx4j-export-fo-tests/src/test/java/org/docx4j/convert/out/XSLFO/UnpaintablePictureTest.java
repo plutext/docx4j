@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
  * pointed at a transparent 1x1 PNG and scaled non-uniformly, so the extent the
  * document declares is reserved, which is what the layout needs.</p>
  *
- * <p>Since 17.0.6 a metafile is <em>drawn</em> instead, by docx4j itself (CR-011), so
+ * <p>Since 17.1.0 a metafile is <em>drawn</em> instead, by docx4j itself (CR-011), so
  * the reservation is now the fallback for one that cannot be parsed - and for bytes
  * which are no image at all, which is what it was really for.</p>
  *
@@ -42,7 +42,7 @@ import org.w3c.dom.NodeList;
  * PNG, JPEG (baseline, progressive and CMYK), GIF, BMP and TIFF all reach the area
  * tree, so no extra ImageIO plugin is needed for them.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class UnpaintablePictureTest extends AbstractXSLFOTest {
 
@@ -195,14 +195,14 @@ public class UnpaintablePictureTest extends AbstractXSLFOTest {
 		assertEquals("a 1x1 stand-in would be scaled square without this",
 				"non-uniform", g.getAttribute("scaling"));
 		// the declared extent is untouched.  wp:extent is in EMU and 12700 EMU is one
-		// point, so from 17.0.6 the size is written in points, and fractionally: it used
+		// point, so from 17.1.0 the size is written in points, and fractionally: it used
 		// to be rounded to a whole "px" (FOP reads px at 72dpi, so a px was a point).
 		assertEquals("100pt", g.getAttribute("content-width"));
 		assertEquals("75pt", g.getAttribute("content-height"));
 	}
 
 	/**
-	 * Since 17.0.6 an EMF is drawn rather than reserved: docx4j replays it onto Batik's
+	 * Since 17.1.0 an EMF is drawn rather than reserved: docx4j replays it onto Batik's
 	 * SVGGraphics2D and hands FOP the SVG (CR-011 phase 2).  This one is a valid but
 	 * empty EMF - a header and EMR_EOF, nothing drawn - so what it proves is that the
 	 * frame the document declares survives the change; the pictures which actually

@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  * printed 1, 2, ... - essentially that document's whole parity loss.  9 documents of
  * three corpora declare a non-decimal {@code w:fmt}.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PageNumberFormatTest {
 

@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * {@link org.docx4j.fonts.PhysicalFonts}, the same machinery the rest of docx4j
  * uses, rather than silently degrading to AWT's Dialog.
  *
- * @since 17.0.6 (CR-011 phase 2)
+ * @since 17.1.0 (CR-011 phase 2)
  */
 public class PoiMetafileRenderer implements MetafileRenderer {
 

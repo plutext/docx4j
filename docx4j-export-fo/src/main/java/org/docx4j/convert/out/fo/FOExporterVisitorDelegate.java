@@ -50,7 +50,7 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
     	 * writes an embedded bitmap in it as <image xlink:href="data:...">.  Binding the
     	 * prefix here keeps the FO well-formed even where a serializer drops the SVG's own
     	 * declaration, which is what the XSLT pathway's does (see docx2fo.xslt).
-    	 * @since 17.0.6, CR-011 */
+    	 * @since 17.1.0, CR-011 */
     	root.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink",
     			"http://www.w3.org/1999/xlink");
     	return root;

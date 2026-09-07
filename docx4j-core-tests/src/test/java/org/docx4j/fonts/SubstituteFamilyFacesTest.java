@@ -24,7 +24,7 @@ import org.junit.Test;
  * that, by file name, since a whole URW family reports one name and is told apart only by
  * its file (P052-Roman.otf -> P052-Bold.otf).</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SubstituteFamilyFacesTest {
 

@@ -54,7 +54,7 @@ import org.w3c.dom.NodeList;
  * <p>Sections whose page size agrees are still merged, which is what keeps a run of
  * continuous column changes on one page.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class ContinuousSectionPageSizeTest extends AbstractXSLFOTest {
 

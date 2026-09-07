@@ -51,7 +51,7 @@ import org.junit.Test;
  * {@code StyleUtil.apply(NumPr, NumPr)} writes into the destination object and the
  * inherited {@code w:numPr} it was reading had already become the {@code w:numId 0}.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class StyleLinkedLevelTest {
 

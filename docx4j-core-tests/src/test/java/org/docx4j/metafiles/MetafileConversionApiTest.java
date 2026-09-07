@@ -29,7 +29,7 @@ import org.junit.Test;
  * docx4j-export-fo-tests.  Rasterising needs nothing beyond the JDK, so
  * {@code toPNG} works either way.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class MetafileConversionApiTest {
 

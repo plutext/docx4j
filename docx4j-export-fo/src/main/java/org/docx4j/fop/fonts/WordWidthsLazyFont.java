@@ -34,7 +34,7 @@ import org.apache.fop.fonts.Typeface;
  * FOP's line measure, and the <code>/Widths</code> the PDF renderer writes from
  * the same array - sees the corrected table.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class WordWidthsLazyFont extends LazyFont {
 

@@ -130,7 +130,7 @@ public class TableWriter extends AbstractTableWriter {
 
 		// Word's content-based autofit sized these columns to hold their widest cell on
 		// one line, so a line must not be re-broken by the width FOP charges for the
-		// cell borders; WordLayoutFixups.cellLineWidth gives it back.  @since 17.0.6
+		// cell borders; WordLayoutFixups.cellLineWidth gives it back.  @since 17.1.0
 		if (table.isContentSizedColumns() && WordLayoutFixups.isEnabled()) {
 			tableRoot.setAttribute(WordLayoutFixups.HINT_CONTENT_SIZED, "1");
 		}
@@ -173,7 +173,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * <p><b>Modes 11 and 12 take it too</b>, measured on the table-grid-edge-compat12
 	 * and -compat11 probes (w:tblInd 108, Word's default cell margins and the table's
 	 * own w:tblCellMar 108): Word's first cell text is at 77.3pt in both, exactly as in
-	 * mode 14, where the mode-15 geometry would put it at 83.1.  17.0.6 briefly
+	 * mode 14, where the mode-15 geometry would put it at 83.1.  17.1.0 briefly
 	 * restricted the shift to mode 14 alone, and then capped it at w:tblInd below mode
 	 * 14, on the strength of one corpus document; the table-grid-edge-signed-compat12
 	 * golden settled both.</p>
@@ -184,7 +184,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * w:tblInd -108, at 54.0 for -360, and at 72.0 for no w:tblInd at all (fixed layout
 	 * and autofit alike) on a 72pt margin - that is margin + tblInd exactly, so the grid
 	 * edge is margin + tblInd - cellMargin throughout.  The cap min(shift, max(0, tblInd))
-	 * 17.0.6 briefly took put them at 72.3 / 59.7 / 77.7.  Modes 14 and 15 of the same
+	 * 17.1.0 briefly took put them at 72.3 / 59.7 / 77.7.  Modes 14 and 15 of the same
 	 * probe match the geometry already implemented.</p>
 	 *
 	 * <p>The corpus document behind that cap - mode 12, no w:tblInd, whose first row is a
@@ -219,7 +219,7 @@ public class TableWriter extends AbstractTableWriter {
 		 * corpus document whose one-column table carries w:tblPr/w:jc="center", Word puts
 		 * the cell's "1" at x=174.3 and ours was at 75.7 - 99pt out, the whole table.
 		 * (available - width) is negative for a wider table and positive for a narrower
-		 * one, and half of it is the centring offset in both directions.  @since 17.0.6 */
+		 * one, and half of it is the centring offset in both directions.  @since 17.1.0 */
 		if (centred && width > 0 && available > 0) {
 			indent = (available - width) / 2;
 		} else {
@@ -270,17 +270,17 @@ public class TableWriter extends AbstractTableWriter {
 	 * on the containing cell's content edge, and this pass then has nothing to give
 	 * back; in mode 14, where the shift is unconditional, it has.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	/** docx4j.convert.out.fo.tables.position (default true): whether a table's w:tblpPr
-	 *  is honoured at all.  @since 17.0.6 */
+	 *  is honoured at all.  @since 17.1.0 */
 	static boolean floatingTablesEnabled() {
 		return WordLayoutFixups.isEnabled()
 				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.tables.position", true);
 	}
 
 	/** docx4j.convert.out.fo.tables.float (default true): whether a text-anchored floating
-	 *  table becomes an fo:float with the text flowing beside it.  @since 17.0.6 */
+	 *  table becomes an fo:float with the text flowing beside it.  @since 17.1.0 */
 	static boolean floatingTablesWrap() {
 		return org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.tables.float", true);
 	}
@@ -319,7 +319,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * @param indent the start-indent (twips, from the text margin) the non-floating
 	 *        rules chose
 	 * @return the start-indent to use
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private int applyFloatingPosition(AbstractWmlConversionContext context, AbstractTableWriterModel table,
 			Element tableRoot, org.docx4j.wml.CTTblPPr tblpPr, int indent, int gridShift) {
@@ -435,7 +435,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * multi-column region silently.</p>
 	 *
 	 * @return the start-indent to use
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private int floatBesideText(org.docx4j.model.structure.PageDimensions dims,
 			org.docx4j.wml.CTTblPPr tblpPr, Element tableRoot, int indent, int width, int gridShift) {
@@ -448,7 +448,7 @@ public class TableWriter extends AbstractTableWriter {
 		/* Below mode 15 applyStartIndent has already moved the grid edge back by one cell
 		 * margin (§6.1), which is about the grid and not about where Word puts the frame;
 		 * a table with no w:tblpX therefore arrived here at -108 twips and was declined the
-		 * float outright.  The band is measured from the unshifted position.  @since 17.0.6 */
+		 * float outright.  The band is measured from the unshifted position.  @since 17.1.0 */
 		int bandStart = indent + gridShift;
 		if (bandStart < 0 || bandStart + width > column) return indent;
 
@@ -506,7 +506,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * the column instead centred it on 292.25 and cost that document two of Word's fifteen
 	 * pages, which is what the (now removed) cap on the shift was papering over.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Override
 	protected int autofitGridAllowanceTwips(AbstractWmlConversionContext context,
@@ -727,7 +727,7 @@ public class TableWriter extends AbstractTableWriter {
 				// less the cell's own 0.75pt of padding either side, a 134.57pt measure,
 				// where the cell's one line needs 135.3 and is one line in Word.
 				// 136.8 - the 1.5pt of border-separation is exactly Word's 135.3.
-				// (@since 17.0.6)
+				// (@since 17.1.0)
 				columnWidth = Math.max(1, columnWidth - cellSpacing);
 			}
 	        column.setAttribute("column-width", UnitsOfMeasurement.twipToBest(columnWidth) );
@@ -779,7 +779,7 @@ public class TableWriter extends AbstractTableWriter {
   		// end-indent likewise: a table given a negative one (a merged continuous section
   		// carrying its own page margins, ConversionSectionWrapperFactory) passed it down to
   		// every paragraph in every cell, which then ran that far past the cell's edge.
-  		// @since 17.0.6
+  		// @since 17.1.0
   		rowContainer.setAttribute("end-indent", "0in");
 
   	}
@@ -847,7 +847,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * row's {@code w:trHeight} where it states one, and otherwise the cell's minimum
 	 * content width, the height the rotated text can always be wrapped into.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	@Override
 	protected Element interposeBlockContainer(AbstractWmlConversionContext context, Document doc,

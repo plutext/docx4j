@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  * these tests state the flag explicitly: what they check is that stating it changes the FO
  * the way the rule says, in <b>both</b> exporter pathways.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class CompatFlagsTest extends AbstractXSLFOTest {
 
@@ -209,7 +209,7 @@ public class CompatFlagsTest extends AbstractXSLFOTest {
 	 * "Do Not Use Space Before On First Line After a Page Break": the 24pt space-before of
 	 * the paragraph the break moves onto is dropped where the flag is on and kept where it
 	 * is off.  The flag's default is the compatibility mode's (on from 15), which is what
-	 * the mode-keyed rule did before 17.0.6.
+	 * the mode-keyed rule did before 17.1.0.
 	 */
 	@Test
 	public void suppressSpBfAfterPgBrkDropsTheSpace() throws Exception {

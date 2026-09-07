@@ -31,7 +31,7 @@ import org.w3c.dom.NodeList;
  * <p>Measured over the 449 renders of three corpora, 430 excess {@code #} in 39 documents
  * against Word's own PDFs, which have none of them.</p>
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class SymbolRangeFallbackTest extends AbstractXSLFOTest {
 

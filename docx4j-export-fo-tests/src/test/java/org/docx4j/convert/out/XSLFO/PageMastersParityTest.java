@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
  * ({@code w:mirrorMargins}).  Both FO pathways build them in LayoutMasterSetBuilder, so
  * one assertion covers both.
  *
- * @since 17.0.6
+ * @since 17.1.0
  */
 public class PageMastersParityTest {
 

@@ -46,7 +46,7 @@ public class HTMLExporterVisitorDelegate extends AbstractVisitorExporterDelegate
 		 * bitmap in it as <image xlink:href="data:...">.  Binding the prefix here keeps
 		 * the output well-formed (which XHTML output has to be) even where a serializer
 		 * drops the SVG's own declaration, which is what the XSLT pathway's does - see
-		 * docx2xhtml-core.xslt.  @since 17.0.6, CR-011 */
+		 * docx2xhtml-core.xslt.  @since 17.1.0, CR-011 */
 		html.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink",
 				"http://www.w3.org/1999/xlink");
 		return html;

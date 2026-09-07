@@ -161,13 +161,13 @@ public class LayoutMasterSetBuilder {
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			/* The pre-pass could not measure the headers and footers, and until 17.0.6
+			/* The pre-pass could not measure the headers and footers, and until 17.1.0
 			 * the dummy extents it started with survived: each region then took about
 			 * half the page, leaving a body strip a couple of lines high.  One corpus
 			 * document (whose docDefaults carry w:vanish, so the trimmed package
 			 * produced an invalid empty fo:flow) came out as 35 pages for Word's 3.
 			 * A header or footer we could not measure is much better treated as absent.
-			 * @since 17.0.6 */
+			 * @since 17.1.0 */
 			try {
 				zeroExtents(lms, context.getSections());
 			} catch (Exception e2) {
@@ -187,7 +187,7 @@ public class LayoutMasterSetBuilder {
 	 * w:pgMar asks for: what {@link FOPAreaTreeHelper#adjustLayoutMasterSet} would do
 	 * had it measured every region as empty.  Used only when the extent pre-pass fails.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void zeroExtents(LayoutMasterSet lms, ConversionSectionWrappers sections) {
 		Map<String, Integer> zeroes = new HashMap<String, Integer>();
@@ -231,12 +231,12 @@ public class LayoutMasterSetBuilder {
 		ConversionSectionWrapper section = null;
 
 		/* w:gutterAtTop and w:mirrorMargins are document settings, not section ones;
-		 * they decide which edge w:pgMar/@w:gutter is added to.  @since 17.0.6 */
+		 * they decide which edge w:pgMar/@w:gutter is added to.  @since 17.1.0 */
 		boolean gutterAtTop = settingIsOn(context, "gutterAtTop");
 		boolean mirrorMargins = settingIsOn(context, "mirrorMargins");
 
 		/* Whether FOP's folio number and Word's page number have opposite parity from
-		 * this section on - see foliosInverted.  @since 17.0.6 */
+		 * this section on - see foliosInverted.  @since 17.1.0 */
 		boolean foliosInverted = false;
 
 		for(int i=0; i<sections.size(); i++) {
@@ -342,7 +342,7 @@ public class LayoutMasterSetBuilder {
 	 * limitation in word-layout-rules.md &#xa7;10.</p>
 	 *
 	 * @param inheritedInversion whether the sections before this one already inverted it
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static boolean foliosInverted(ConversionSectionWrapper section, boolean inheritedInversion) {
 		if (!oddEvenParityFix()) return false;
@@ -372,7 +372,7 @@ public class LayoutMasterSetBuilder {
 	 * say {@code w:left="2268" w:right="1418"}: Word's even pages start at x=70.8 and
 	 * ours at 113.4 - 42.6pt out on half the document.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static void addMirroredEvenMasters(LayoutMasterSet lms, AbstractWmlConversionContext context) {
 
@@ -440,7 +440,7 @@ public class LayoutMasterSetBuilder {
 	 * keep the <em>same</em> region names - which is the point, since that is what makes
 	 * one {@code fo:static-content} serve both.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static SimplePageMaster mirrorOf(SimplePageMaster src) {
 
@@ -481,7 +481,7 @@ public class LayoutMasterSetBuilder {
 		return mirror;
 	}
 
-	/** @since 17.0.6 */
+	/** @since 17.1.0 */
 	private static boolean oddEvenParityFix() {
 		return org.docx4j.Docx4jProperties.getProperty(
 				"docx4j.convert.out.fo.pgNumType.oddEvenParityFix", true);
@@ -544,7 +544,7 @@ public class LayoutMasterSetBuilder {
 	}
 	
 	
-	/** @since 17.0.6 */
+	/** @since 17.1.0 */
 	private static boolean settingIsOn(AbstractWmlConversionContext context, String name) {
 		try {
 			org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart dsp =
@@ -563,7 +563,7 @@ public class LayoutMasterSetBuilder {
 	/**
 	 * @param gutterAtTop w:settings/w:gutterAtTop
 	 * @param mirrorMargins w:settings/w:mirrorMargins - together these decide which edge
-	 *        w:pgMar/@w:gutter is added to (@since 17.0.6)
+	 *        w:pgMar/@w:gutter is added to (@since 17.1.0)
 	 */
 	private static SimplePageMaster createSimplePageMaster( 
 			String masterName, PageDimensions page, String appendRegionName, 
@@ -576,7 +576,7 @@ public class LayoutMasterSetBuilder {
 	/**
 	 * @param evenPage whether this master lays out Word's even (left-hand) pages, which
 	 *        decides which edge the gutter goes on and, with mirrored margins, which of
-	 *        w:pgMar's left and right is the inside one (@since 17.0.6)
+	 *        w:pgMar's left and right is the inside one (@since 17.1.0)
 	 */
 	private static SimplePageMaster createSimplePageMaster( 
 			String masterName, PageDimensions page, String appendRegionName, 
@@ -602,7 +602,7 @@ public class LayoutMasterSetBuilder {
 		 * text column was the right width and started in the wrong place: measured on a
 		 * document with w:left="851" w:gutter="567", Word puts every portrait line at
 		 * x=70.9 (851 + 567 twips) where ours was at 42.5, -28.35pt on 222 pages.
-		 * @since 17.0.6 */
+		 * @since 17.1.0 */
 		int gutterTwips = page.getGutter();
 		boolean gutterOnRight = !gutterAtTop && mirrorMargins && evenPage;
 
@@ -611,7 +611,7 @@ public class LayoutMasterSetBuilder {
 		 * binding edge, which is what @w:gutter widens, swaps with them.  Measured
 		 * against Word 365 on a document whose three sectPr all say w:left="2268"
 		 * w:right="1418": Word's even pages start at x=70.8 (the 1418-twip margin) and
-		 * ours at 113.4 - 42.6pt out, on half the document's 42 pages.  @since 17.0.6 */
+		 * ours at 113.4 - 42.6pt out, on half the document's 42 pages.  @since 17.1.0 */
 		boolean mirrored = mirrorMargins && evenPage;
 		int insideTwips = page.getPgMar().getLeft().intValue();
 		int outsideTwips = page.getPgMar().getRight().intValue();
@@ -627,14 +627,14 @@ public class LayoutMasterSetBuilder {
 		 * 288 where ours was 297.7 (+9.7pt on every centred line) and puts the right
 		 * edge at 504 where ours was 523.45 (+19.45pt).  §7's unequal-columns table is
 		 * only built for several w:col children, so a single narrow one fell through.
-		 * @since 17.0.6 */
+		 * @since 17.1.0 */
 		/* The other half: a single w:col <em>wider</em> than the margin box widens the
 		 * text past the right margin, and Word lets it overhang.  Measured on a 595.35pt
 		 * page with 72pt margins (a 451.35pt margin box) whose w:cols says
 		 * <w:col w:w="9560"/> (478pt): Word centres a heading on 311.15 where ours was
 		 * 297.5, and puts a right-tabbed line's end at 535.4 where ours was 508.0 - a
 		 * flat -27.4pt, which is 550 - 522.6 - and Word's page 2 was absorbed into our
-		 * page 1.  The overhang is clamped at the page edge. @since 17.0.6 */
+		 * page 1.  The overhang is clamped at the page edge. @since 17.1.0 */
 		int narrowing = page.getSingleColumnNarrowing();
 		if (narrowing != 0) {
 			marginRightTwips = Math.max(0, marginRightTwips + narrowing);
@@ -682,7 +682,7 @@ public class LayoutMasterSetBuilder {
 		 * the same as an unaligned section - and closes at the bottom margin, where
 		 * display-align="center" put every line 300pt out.  The top is the half of it
 		 * FO can express, so "both" is left at the region's default alignment.
-		 * @since 17.0.6 */
+		 * @since 17.1.0 */
 		String vAlign = page.getVerticalAlign();
 		if (vAlign!=null) {
 			if ("center".equals(vAlign)) {
@@ -719,7 +719,7 @@ public class LayoutMasterSetBuilder {
 		} else {
 			// No header.  A negative w:pgMar/@w:top means the body starts |top| from the
 			// page edge (§7, FOPAreaTreeHelper); a negative FO margin would put it off
-			// the page.  @since 17.0.6
+			// the page.  @since 17.1.0
 			spm.setMarginTop( UnitsOfMeasurement.twipToBest(
 					Math.abs(page.getPgMar().getTop().intValue()) + (gutterAtTop ? gutterTwips : 0) ) );
 		}

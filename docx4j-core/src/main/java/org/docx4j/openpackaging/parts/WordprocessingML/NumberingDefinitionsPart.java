@@ -356,7 +356,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	 * ECMA-376 17.9.24, on the instance's {@code w:lvlOverride/w:lvl} where it has one
 	 * and on the abstract level otherwise - or null where the level names none.
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public String getLinkedStyleId(String numId, String ilvl) {
 
@@ -442,7 +442,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	 * put the bullet 14pt further left again.  Where the level states no indent of its
 	 * own the linked style's is still used, which is what this did since 2.7.
 	 *
-	 * @since 17.0.6 the level's own indent is preferred
+	 * @since 17.1.0 the level's own indent is preferred
 	 */
 	private Ind getIndFromLvl(Lvl lvl) {
 

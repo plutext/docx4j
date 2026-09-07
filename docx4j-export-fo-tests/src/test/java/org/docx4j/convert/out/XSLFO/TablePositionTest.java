@@ -144,9 +144,9 @@ public class TablePositionTest {
 		// table-grid-edge-compat11 / -compat12 probes, where Word puts the first cell's
 		// text at 77.3pt for w:tblInd 108, and on table-grid-edge-signed-compat12, where
 		// it puts it at 72.0pt for no w:tblInd at all and at 66.5 / 54.0 for w:tblInd
-		// -108 / -360, i.e. on margin + w:tblInd whatever its sign.  17.0.6 briefly
+		// -108 / -360, i.e. on margin + w:tblInd whatever its sign.  17.1.0 briefly
 		// capped the shift at max(0, w:tblInd) here, which put those at 77.7 / 72.3 /
-		// 59.7.  @since 17.0.6
+		// 59.7.  @since 17.1.0
 		String indentedFar = table("<w:tblInd w:type=\"dxa\" w:w=\"288\"/>",
 				"<w:gridCol w:w=\"2000\"/><w:gridCol w:w=\"2000\"/>", cell(null, "one") + cell(null, "two"));
 		String indentedNegative = table("<w:tblInd w:type=\"dxa\" w:w=\"-108\"/>",
@@ -209,7 +209,7 @@ public class TablePositionTest {
 		assertEquals(480.0, pt(foTable(fo(autofitJustOver, flags)).getAttribute("width")), 0.01);
 
 		// but an autofit grid far wider than the column is a layout Word cached for a
-		// wider page and recomputes: 600pt on 451.3 (1.33x) is fitted.  @since 17.0.6
+		// wider page and recomputes: 600pt on 451.3 (1.33x) is fitted.  @since 17.1.0
 		String autofitFarOver = table("", "<w:gridCol w:w=\"6000\"/><w:gridCol w:w=\"6000\"/>",
 				cell("6000", "one") + cell("6000", "two"));
 		assertEquals(COLUMN_TWIPS / 20.0, pt(foTable(fo(autofitFarOver, flags)).getAttribute("width")), 0.01);

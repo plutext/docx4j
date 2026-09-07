@@ -49,7 +49,7 @@ import org.docx4j.wml.Text;
  * A hard page break inside a paragraph.
  *
  * <p>A {@code w:br w:type="page"} which reaches the FO inside an {@code fo:inline} is
- * ignored by FOP, so the break has to be expressed on a block.  Until 17.0.6 this class
+ * ignored by FOP, so the break has to be expressed on a block.  Until 17.1.0 this class
  * simply removed the break and set {@code w:pageBreakBefore} on the paragraph holding it,
  * which is right only where the break comes <em>first</em>: where anything precedes it,
  * the text before the break moved to the next page with the rest of the paragraph.</p>
@@ -90,7 +90,7 @@ public class PageBreak {
 		 * whole, which is what docx4j did to 17.0.5.  The flag resolves on in every mode
 		 * (CompatibilityOptions), which is Word 365's measured behaviour for both a
 		 * mode-12 and a mode-15 golden; a document stating w:val="0" takes the old route.
-		 * @since 17.0.6 */
+		 * @since 17.1.0 */
 		movePageBreaks(body.getContent(),
 				org.docx4j.model.CompatibilityOptions.of(wmlPackage)
 					.is(org.docx4j.model.CompatibilityOptions.Flag.SPLIT_PG_BREAK_AND_PARA_MARK));
@@ -100,7 +100,7 @@ public class PageBreak {
 	/**
 	 * @param elts a list of block-level content: the body's, or that of a content
 	 *        control standing at block level.  A paragraph inside a {@code w:sdt} was
-	 *        not visited at all until 17.0.6, so neither the split above nor the
+	 *        not visited at all until 17.1.0, so neither the split above nor the
 	 *        {@code w:pageBreakBefore} conversion reached it and the break stayed
 	 *        nested in an {@code fo:inline}, where FOP ignores it: measured on a
 	 *        document whose contents control wraps two such paragraphs, FOP laid the
@@ -131,7 +131,7 @@ public class PageBreak {
 	/**
 	 * @param siblings the list the paragraph is in, so that a continuation can be
 	 *        inserted after it; null where there is nowhere to put one (the paragraph is
-	 *        then treated as it was before 17.0.6)
+	 *        then treated as it was before 17.1.0)
 	 * @param index the paragraph's position in that list
 	 */
 	static void updateParagraph(P paragraph, List<Object> siblings, int index) {
@@ -143,7 +143,7 @@ public class PageBreak {
 	 *        content before its page break is split there (the flag's resolved value; see
 	 *        {@link #process}).  False takes the whole paragraph to the next page, as
 	 *        docx4j did to 17.0.5.
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	static void updateParagraph(P paragraph, List<Object> siblings, int index, boolean splitAtBreaks) {
 
@@ -158,7 +158,7 @@ public class PageBreak {
 			// the page-empty golden, whose "two page breaks in one paragraph" and "two
 			// break-only paragraphs" shapes each give Word a page with nothing on it;
 			// folding the second break into the first gave 11 pages against Word's 13.
-			// @since 17.0.6
+			// @since 17.1.0
 			if (siblings!=null && splitAtBreaks
 					&& (contentPrecedes(content, at) || breaksBefore(paragraph))) {
 				split(paragraph, at, siblings, index);

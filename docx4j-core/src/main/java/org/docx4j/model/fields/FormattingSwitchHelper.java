@@ -956,7 +956,7 @@ public class FormattingSwitchHelper {
 	 * both, which is why the extent rather than the text is the measurement.</p>
 	 *
 	 * @param lang a BCP&nbsp;47 / {@code w:lang} tag, or null for the platform default
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	public static String formatDate(FldSimpleModel model, Date date, String lang) {
 
@@ -1075,7 +1075,7 @@ public class FormattingSwitchHelper {
 	 * the document's own language.  Trimming the abbreviation is what Word does; the full
 	 * names ({@code MMMM}) are untouched.</p>
 	 *
-	 * @since 17.0.6
+	 * @since 17.1.0
 	 */
 	private static java.text.DateFormatSymbols wordMonthAbbreviations(java.text.DateFormatSymbols symbols) {
 		String[] months = symbols.getShortMonths();

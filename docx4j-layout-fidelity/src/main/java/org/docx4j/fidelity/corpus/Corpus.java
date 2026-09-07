@@ -762,7 +762,7 @@ public final class Corpus {
 		 * C2: a floating table (w:tblpPr) whose position Word measures from the page or
 		 * from the margin box.  One case per page, each with a paragraph after it, so
 		 * the golden shows both where Word puts the table and what it does with the text
-		 * that follows: 17.0.6 places such a table absolutely only where it opens the
+		 * that follows: 17.1.0 places such a table absolutely only where it opens the
 		 * section, because Word wraps the following text around it and XSL-FO cannot.
 		 * The existing table-floating probe covers the common w:vertAnchor="text" case.
 		 */
@@ -829,7 +829,7 @@ public final class Corpus {
 
 		/*
 		 * C6: a section whose w:cols declares columns of different widths, and a run of
-		 * merged continuous sections whose w:pgMar differ by a lot.  17.0.6 renders an
+		 * merged continuous sections whose w:pgMar differ by a lot.  17.1.0 renders an
 		 * unequal-column stretch as a one-row table, split at the w:br w:type="column";
 		 * this probe has the same stretch with the break and without it, and a following
 		 * continuous section whose margins are 100pt wider, so the golden shows both what
@@ -908,7 +908,7 @@ public final class Corpus {
 		}));
 
 		/*
-		 * §6.1's grid-edge shift is applied in compatibility mode 14 alone since 17.0.6,
+		 * §6.1's grid-edge shift is applied in compatibility mode 14 alone since 17.1.0,
 		 * on the strength of one corpus document with no compatibilityMode setting at all
 		 * (mode 12).  These two probes are the Word measurement for modes 12 and 11, and
 		 * they carry the nested case (§6.1's nested rule was measured in mode 14 only).
@@ -970,7 +970,7 @@ public final class Corpus {
 
 		/*
 		 * Which stop's leader a tab draws.  docx4j gave the n-th tab the n-th stop's
-		 * leader until 17.0.6, which loses the dots of every table of contents entry
+		 * leader until 17.1.0, which loses the dots of every table of contents entry
 		 * whose tab count differs from its stop count; the rule the goldens are to
 		 * confirm is that the leader is the one of the stop the tab REACHES.  The stops
 		 * are a corpus TOC's (360/540/851 left with no leader, 9990 right with dots) and
@@ -1458,7 +1458,7 @@ public final class Corpus {
 		 * 1.5 and 3pt tables are the ones to read where the two disagree.  T0 is the
 		 * borderless control, which must read 1/1/1 whatever the answer.
 		 *
-		 * 17.0.6 renders 1/1/1 for T0, 2/1/1 for T1 (the 0.5pt tight rung), 2/2/1 for T2
+		 * 17.1.0 renders 1/1/1 for T0, 2/1/1 for T1 (the 0.5pt tight rung), 2/2/1 for T2
 		 * and T3, and 2/2/2 for the three w:tblCellSpacing tables - FOP's charge exactly.
 		 *
 		 * Row 1 of every table also answers the second half of H12 on its own, without any
@@ -1472,7 +1472,7 @@ public final class Corpus {
 		 * w:tcW auto) should hold their line whatever the answer, since the content is
 		 * what sized the column, so they are read the other way: the right border's x says
 		 * whether Word's content-preferred width is the line's advance plus the two
-		 * margins, or that plus the border.  17.0.6 wraps them all the same: cellLineWidth
+		 * margins, or that plus the border.  17.1.0 wraps them all the same: cellLineWidth
 		 * does give the allowance back (padding-right 4.91pt against 5.4), but our own
 		 * autofit pass sizes the column 0.4pt narrower than the line's measured advance,
 		 * which is a second thing for the golden to settle.
@@ -2158,7 +2158,7 @@ public final class Corpus {
 	}
 	/**
 	 * §6.1's grid edge below mode 14: w:tblInd 108 with Word's default cell margins and
-	 * with the table's own, at the top level and nested in a cell.  Since 17.0.6 the
+	 * with the table's own, at the top level and nested in a cell.  Since 17.1.0 the
 	 * shift is applied in mode 14 alone, which no Word golden has confirmed for the older
 	 * modes (§6.1); this is that measurement.
 	 */
