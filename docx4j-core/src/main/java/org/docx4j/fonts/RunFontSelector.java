@@ -894,26 +894,27 @@ public class RunFontSelector {
     	PhysicalFont current = PhysicalFonts.get(family); // strips the kerned suffix itself
     	if (current==null && documentFont.length()>0) current = physicalFontFor(documentFont);
 
-    	// what the current font can't render, by script
-    	java.util.Map<Character.UnicodeScript, java.util.List<Integer>> missing
-    			= new java.util.LinkedHashMap<Character.UnicodeScript, java.util.List<Integer>>();
+    	// what the current font can't render, by script (the symbol blocks their own
+    	// group, since they are COMMON but are not shared; FontFallback.isSymbol)
+    	java.util.Map<String, java.util.List<Integer>> missing
+    			= new java.util.LinkedHashMap<String, java.util.List<Integer>>();
     	boolean[] covered = new boolean[cps.length];
     	for (int i=0; i<cps.length; i++) {
     		covered[i] = current!=null && GlyphCheck.hasCodepoint(current, cps[i]);
     		if (covered[i]) continue;
-    		Character.UnicodeScript script = FontFallback.scriptOf(cps[i]);
-    		java.util.List<Integer> list = missing.get(script);
+    		String group = FontFallback.coverageGroupOf(cps[i]);
+    		java.util.List<Integer> list = missing.get(group);
     		if (list==null) {
     			list = new java.util.ArrayList<Integer>();
-    			missing.put(script, list);
+    			missing.put(group, list);
     		}
     		if (!list.contains(cps[i]) && list.size()<32) list.add(cps[i]);
     	}
     	if (missing.isEmpty()) return;
 
-    	java.util.Map<Character.UnicodeScript, PhysicalFont> chosen
-    			= new java.util.HashMap<Character.UnicodeScript, PhysicalFont>();
-    	for (java.util.Map.Entry<Character.UnicodeScript, java.util.List<Integer>> e : missing.entrySet()) {
+    	java.util.Map<String, PhysicalFont> chosen
+    			= new java.util.HashMap<String, PhysicalFont>();
+    	for (java.util.Map.Entry<String, java.util.List<Integer>> e : missing.entrySet()) {
     		chosen.put(e.getKey(), fallbackFor(documentFont, e.getKey(), e.getValue()));
     	}
 
@@ -923,17 +924,19 @@ public class RunFontSelector {
     	PhysicalFont previous = null;
     	boolean any = false;
     	for (int i=0; i<cps.length; i++) {
-    		Character.UnicodeScript script = FontFallback.scriptOf(cps[i]);
+    		String group = FontFallback.coverageGroupOf(cps[i]);
     		PhysicalFont pf;
     		if (covered[i]) {
-    			pf = isShared(script) ? previous : null;
+    			pf = isShared(group) ? previous : null;
     			if (pf!=null && !GlyphCheck.hasCodepoint(pf, cps[i])) pf = null;
     		} else {
-    			pf = chosen.get(script);
+    			pf = chosen.get(group);
     		}
     		assigned[i] = pf;
     		if (pf!=null) any = true;
-    		previous = pf;
+    		// a symbol does not carry the space after it into the symbol font: the run
+    		// around it is ordinary text, and its space is that text's
+    		previous = FontFallback.SYMBOL_GROUP.equals(group) ? null : pf;
     	}
     	if (!any) return;
 
@@ -971,8 +974,9 @@ public class RunFontSelector {
     }
 
     /** Characters a script shares with its neighbours (spaces, digits, punctuation). */
-    private static boolean isShared(Character.UnicodeScript script) {
-    	return script==Character.UnicodeScript.COMMON || script==Character.UnicodeScript.INHERITED;
+    private static boolean isShared(String coverageGroup) {
+    	return Character.UnicodeScript.COMMON.name().equals(coverageGroup)
+    			|| Character.UnicodeScript.INHERITED.name().equals(coverageGroup);
     }
 
     private Node segmentNode(Document doc, Element span, String text, PhysicalFont pf,
@@ -998,10 +1002,10 @@ public class RunFontSelector {
 
     /** The font to render this script in, for text the document sets in this font; null
      *  where nothing installed can. */
-    private PhysicalFont fallbackFor(String documentFont, Character.UnicodeScript script,
+    private PhysicalFont fallbackFor(String documentFont, String coverageGroup,
     		java.util.List<Integer> codePoints) {
 
-    	String key = documentFont + " " + script;
+    	String key = documentFont + " " + coverageGroup;
     	if (fallbackByScript.containsKey(key)) return fallbackByScript.get(key);
 
     	int[] cps = new int[codePoints.size()];
@@ -1011,7 +1015,7 @@ public class RunFontSelector {
     	if (pf==null) {
     		FontFallback.warnNoCoverage(documentFont, cps);
     	} else if (log.isDebugEnabled()) {
-    		log.debug(script + " set in " + documentFont + " rendered in " + pf.getName());
+    		log.debug(coverageGroup + " set in " + documentFont + " rendered in " + pf.getName());
     	}
     	fallbackByScript.put(key, pf);
     	return pf;
@@ -2109,6 +2113,17 @@ public class RunFontSelector {
         							if (gothicSubs!=null && GlyphCheck.hasChar(gothicSubs, c)) {
 	        							vis.fontAction(FONT_WORD_2016_USES);
 	        						} else {
+	        							/* Segoe UI Symbol is a Windows face, so on any other box
+	        							 * this was the end of it: no fontAction at all, so the
+	        							 * character took whatever font the span already had, no
+	        							 * span carried a font-family for the glyph-coverage pass
+	        							 * to work on (glyphFallback returns early without one),
+	        							 * and FOP painted its NOT_FOUND glyph, '#'.  Naming the
+	        							 * run's own font still gets the span a family, and the
+	        							 * coverage pass then substitutes a face which has the
+	        							 * glyph - the same measured order the Wingdings bullets
+	        							 * use (FontFallback.isSymbol).  @since 17.0.6 */
+	        							vis.fontAction(hAnsi);
 	                	    			/* In the discovery pass we are only collecting font names, and
 	                	    			 * nothing can be resolved yet anyway: fontsInUse() runs before
 	                	    			 * processEmbeddings and populateFontMappings (see

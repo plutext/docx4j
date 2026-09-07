@@ -1984,6 +1984,83 @@ public final class Corpus {
 			d.para("V" + s + " last paragraph, w:after 24pt. " + prose(1, s)).after(480).add();
 			return d.pkg();
 		}));
+
+		/* How much of a collapsed top border Word reserves above the first row's
+		 * content.  A collapsed border is centred on the boundary it draws, so FOP
+		 * charges half of it to each of the two cells it separates - and at the top of a
+		 * table the outer half falls outside the table, leaving ~0 reserved.  Two
+		 * independent measurements of real documents disagree on the amount (one a flat
+		 * 2 x half the width, one 1.3 x it), which is why nothing is shipped for it: page
+		 * 1's first four baselines here settle it.
+		 *
+		 * A: one 0.5pt border, the table the very first block of the body - the plain
+		 *    case, and the one FOP under-reserves most visibly.
+		 * B: the same table after a paragraph - is the top of the body special at all?
+		 * C: two tables stacked with nothing between them, so their bottom and top
+		 *    borders coincide; and the second one's row-1 baseline says whether Word
+		 *    reserves one border there or two.
+		 * D: an outer 0.5pt-bordered table whose first cell opens with a nested table
+		 *    carrying its own 0.5pt borders - two coincident borders in the other
+		 *    arrangement.
+		 * E: the same as A at 1pt (sz 8), so the reserve can be read as a proportion of
+		 *    the border width rather than as a constant. */
+		PROBES.add(new Probe("table-first-row-border",
+				"a collapsed 0.5pt table border at the very top of the body, the same "
+				+ "after a paragraph, two tables stacked, a nested table's border on the "
+				+ "outer one's, and a 1pt border", () -> {
+			Doc d = Doc.create(15);
+
+			// A: the table is the first block of the body
+			Doc.Table a = new Doc.Table(4000, 4000).fixedLayout().borders(4);
+			a.row(SERIF, 24, false, "A1 top of body sz4", "A1 right");
+			a.row(SERIF, 24, false, "A2 second row", "A2 right");
+			d.add(a.build());
+			d.para("A after the table. " + prose(1)).before(240).after(240).add();
+
+			// B: a paragraph first, then the same table
+			d.pageBreak();
+			d.para("B before the table, one line. " + prose(1, 1)).after(240).add();
+			Doc.Table b = new Doc.Table(4000, 4000).fixedLayout().borders(4);
+			b.row(SERIF, 24, false, "B1 after a paragraph", "B1 right");
+			b.row(SERIF, 24, false, "B2 second row", "B2 right");
+			d.add(b.build());
+			d.para("B after the table. " + prose(1, 2)).before(240).add();
+
+			// C: two tables stacked, their borders coincident
+			d.pageBreak();
+			Doc.Table c1 = new Doc.Table(4000, 4000).fixedLayout().borders(4);
+			c1.row(SERIF, 24, false, "C1 upper table", "C1 right");
+			c1.row(SERIF, 24, false, "C2 upper second", "C2 right");
+			d.add(c1.build());
+			Doc.Table c2 = new Doc.Table(4000, 4000).fixedLayout().borders(4);
+			c2.row(SERIF, 24, false, "C3 lower table", "C3 right");
+			c2.row(SERIF, 24, false, "C4 lower second", "C4 right");
+			d.add(c2.build());
+			d.para("C after the tables. " + prose(1, 3)).before(240).add();
+
+			// D: a nested table's top border on the outer table's own
+			d.pageBreak();
+			Doc.Table inner = new Doc.Table(1800, 1800).fixedLayout().borders(4);
+			inner.row(SERIF, 24, false, "D1 nested", "D1 right");
+			inner.row(SERIF, 24, false, "D2 nested", "D2 right");
+			Doc.Table outer = new Doc.Table(4000, 4000).fixedLayout().borders(4);
+			outer.rowOf(null, null,
+					outer.cellWith(inner.build(), "D3 after the nested table", SERIF, 24),
+					outer.cell("D3 outer right", SERIF, 24, 1, 4000));
+			outer.row(SERIF, 24, false, "D4 outer second row", "D4 right");
+			d.add(outer.build());
+			d.para("D after the table. " + prose(1, 4)).before(240).add();
+
+			// E: the same as A, at twice the border width
+			d.pageBreak();
+			Doc.Table e = new Doc.Table(4000, 4000).fixedLayout().borders(8);
+			e.row(SERIF, 24, false, "E1 sz8 border", "E1 right");
+			e.row(SERIF, 24, false, "E2 second row", "E2 right");
+			d.add(e.build());
+			d.para("E after the table. " + prose(1, 5)).before(240).add();
+
+			return d.pkg();
+		}));
 	}
 
 

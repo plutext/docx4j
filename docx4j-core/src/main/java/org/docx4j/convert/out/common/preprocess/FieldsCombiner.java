@@ -33,6 +33,9 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.TraversalUtilVisitor;
+import org.docx4j.wml.CTFFDDList;
+import org.docx4j.wml.CTFFData;
+import org.docx4j.wml.CTFFTextInput;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
@@ -56,6 +59,10 @@ public class FieldsCombiner {
 	 */
 	public static void process(WordprocessingMLPackage wmlPackage) {
 		log.info("starting");
+		// before combining: a legacy form field's result is not in the document at all,
+		// it is in the w:ffData of its begin, so it has to be written out as a result
+		// run while the begin/separate/end structure is still there
+		expandFormFieldResults(wmlPackage);
 		// before combining: the operands of a resultless IF are themselves fields, and
 		// combining them first would turn them into live fldSimples we then paint
 		removeResultlessIfFields(wmlPackage);
@@ -68,6 +75,179 @@ public class FieldsCombiner {
 		
 	}
 	
+	// -------------------------------------------------- legacy (w:ffData) form fields
+
+	/**
+	 * A legacy form field - <code>FORMDROPDOWN</code>, <code>FORMTEXT</code>,
+	 * <code>FORMCHECKBOX</code> - keeps its state in the <code>w:ffData</code> of its
+	 * <code>w:fldChar w:fldCharType="begin"</code>, and Word paints that state, not the
+	 * field result: for a drop-down the <code>w:listEntry</code> the
+	 * <code>w:ddList/w:result</code> index selects (0 where there is no
+	 * <code>w:result</code>, ECMA-376 17.16.20), for a text field its
+	 * <code>w:textInput/w:default</code> where nothing has been typed into it.  Neither
+	 * FO pathway nor HTML reads <code>w:ffData</code> at all, and both emit nothing for
+	 * a <code>w:fldChar</code>, so a drop-down came out as the empty
+	 * <code>fo:inline</code> of its bookmark.
+	 *
+	 * <p>Measured against Word 365: a drop-down offering four honorifics, with no
+	 * <code>w:result</code> and whose <code>separate</code> is immediately followed by
+	 * its <code>end</code>, is painted by Word as the first of them - its line runs
+	 * 297.7..413.6 where ours began at 302.7 and ended at 378.3, the whole entry
+	 * missing.</p>
+	 *
+	 * <p>Where the field has no <code>separate</code> at all one is synthesised, since
+	 * ECMA-376 17.16.18 puts the field result between the separate and the end and
+	 * {@link CombineVisitor} will not combine a field without one.  A field which
+	 * already paints something between its separate and its end keeps what it has: that
+	 * is the value the user typed, and Word paints it over the default.</p>
+	 *
+	 * <p><strong>A checkbox is deliberately left alone.</strong>  Word does not draw it
+	 * with a glyph: measured over the goldens of the 15 documents of three corpora which
+	 * hold one, every <code>FORMCHECKBOX</code> in Word's own PDF is a <em>stroked
+	 * square path</em> - 0.72pt line, side 7.44 to 11.28pt with the field's font size -
+	 * and the PDF's text layer has nothing at all where it sits.  Writing a
+	 * <code>&#x2610;</code> would put a character on the line that Word's line does not
+	 * have.  What is lost is only the advance: measured on three documents, the text
+	 * after the box starts 9.68, 12.4 and 12.76pt left of Word's, on 772 fields.
+	 * Recorded in word-layout-rules.md &#xa7;5.7.</p>
+	 *
+	 * <p>Set <code>docx4j.convert.out.fields.formFieldResults</code> to false to keep
+	 * the old behaviour.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void expandFormFieldResults(WordprocessingMLPackage wmlPackage) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fields.formFieldResults", true)) return;
+		try {
+			TraversalUtil.visit(wmlPackage, false, new FormFieldVisitor());
+		} catch (RuntimeException e) {
+			log.warn("Couldn't expand a form field result: " + e.getMessage(), e);
+		}
+	}
+
+	private static class FormFieldVisitor extends TraversalUtilVisitor<P> {
+		@Override
+		public void apply(P element) {
+			expandFormFieldResults(element.getContent());
+		}
+	}
+
+	static void expandFormFieldResults(List<Object> pContent) {
+
+		if (pContent == null) return;
+		// the begin's w:fldChar may share a run with the instruction (see
+		// normaliseFieldRuns), and the separate we insert has to be a run of its own
+		CombineVisitor.normaliseFieldRuns(pContent);
+
+		for (int i = 0; i < pContent.size(); i++) {
+			Object item = XmlUtils.unwrap(pContent.get(i));
+			if (!(item instanceof R)) continue;
+			R begin = (R)item;
+			CTFFData ffData = ffDataOfBegin(begin);
+			if (ffData == null) continue;
+			String result = formFieldResult(ffData);
+
+			int level = 0, sep = -1, end = -1;
+			for (int j = i; j < pContent.size() && end < 0; j++) {
+				Object o = XmlUtils.unwrap(pContent.get(j));
+				if (!(o instanceof R)) continue;
+				STFldCharType t = fldCharTypeOf((R)o);
+				if (t == null) continue;
+				if (STFldCharType.BEGIN.equals(t)) level++;
+				else if (STFldCharType.SEPARATE.equals(t)) { if (level == 1) sep = j; }
+				else if (STFldCharType.END.equals(t)) { if (--level == 0) end = j; }
+			}
+			if (end < 0) continue;			// unbalanced; leave it alone
+			if (result == null || (sep >= 0 && paintsSomething(pContent, sep + 1, end))) {
+				i = end;
+				continue;
+			}
+
+			R resultRun = Context.getWmlObjectFactory().createR();
+			if (begin.getRPr() != null) resultRun.setRPr(XmlUtils.deepCopy(begin.getRPr()));
+			resultRun.setParent(begin.getParent());
+			Text t = Context.getWmlObjectFactory().createText();
+			t.setValue(result);
+			t.setSpace("preserve");
+			resultRun.getContent().add(t);
+
+			if (sep < 0) {
+				R sepRun = Context.getWmlObjectFactory().createR();
+				if (begin.getRPr() != null) sepRun.setRPr(XmlUtils.deepCopy(begin.getRPr()));
+				sepRun.setParent(begin.getParent());
+				FldChar separate = Context.getWmlObjectFactory().createFldChar();
+				separate.setFldCharType(STFldCharType.SEPARATE);
+				sepRun.getContent().add(separate);
+				pContent.add(end, sepRun);
+				pContent.add(end + 1, resultRun);
+				i = end + 2;
+			} else {
+				pContent.add(sep + 1, resultRun);
+				i = end + 1;
+			}
+		}
+	}
+
+	/** The w:ffData of a run which begins a complex field, or null. */
+	private static CTFFData ffDataOfBegin(R run) {
+		for (Object c : run.getContent()) {
+			Object u = XmlUtils.unwrap(c);
+			if (u instanceof FldChar) {
+				FldChar fc = (FldChar)u;
+				return STFldCharType.BEGIN.equals(fc.getFldCharType()) ? fc.getFfData() : null;
+			}
+		}
+		return null;
+	}
+
+	private static STFldCharType fldCharTypeOf(R run) {
+		for (Object c : run.getContent()) {
+			Object u = XmlUtils.unwrap(c);
+			if (u instanceof FldChar) return ((FldChar)u).getFldCharType();
+		}
+		return null;
+	}
+
+	/** What Word paints for this form field, or null where it paints nothing of its own
+	 *  (a checkbox, or a text field with no default). */
+	private static String formFieldResult(CTFFData ffData) {
+		if (ffData.getNameOrEnabledOrCalcOnExit() == null) return null;
+		for (JAXBElement<?> e : ffData.getNameOrEnabledOrCalcOnExit()) {
+			Object v = (e == null ? null : e.getValue());
+			if (v instanceof CTFFDDList) {
+				CTFFDDList dd = (CTFFDDList)v;
+				List<CTFFDDList.ListEntry> entries = dd.getListEntry();
+				if (entries == null || entries.isEmpty()) return null;
+				int idx = 0;
+				if (dd.getResult() != null && dd.getResult().getVal() != null) {
+					idx = dd.getResult().getVal().intValue();
+				}
+				if (idx < 0 || idx >= entries.size()) idx = 0;
+				return entries.get(idx).getVal();
+			} else if (v instanceof CTFFTextInput) {
+				CTFFTextInput ti = (CTFFTextInput)v;
+				return (ti.getDefault() == null ? null : ti.getDefault().getVal());
+			}
+		}
+		return null;
+	}
+
+	/** Whether the field result already holds something Word would paint. */
+	private static boolean paintsSomething(List<Object> pContent, int from, int to) {
+		for (int i = from; i < to && i < pContent.size(); i++) {
+			Object u = XmlUtils.unwrap(pContent.get(i));
+			if (!(u instanceof R)) return true;	// a hyperlink, an SDT, a picture ...
+			for (Object c : ((R)u).getContent()) {
+				Object x = XmlUtils.unwrap(c);
+				if (x instanceof FldChar) continue;
+				if (c instanceof JAXBElement && INSTR_TEXT_QNAME.equals(((JAXBElement)c).getName())) continue;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// ------------------------------------------------------------ a resultless IF field
 
 	/**

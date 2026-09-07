@@ -17,6 +17,12 @@ as Word does, instead of merging onto the previous section's page master
 Helvetica: 137 of 449 test renders had one, each 10.2pt short per line
 - a bullet stated as a code point of a symbol font is drawn as the glyph rather than as
 FOP's not-found box, where run font selection did not map it
+- arrows, box drawing, geometric shapes and dingbats (U+2190-U+2BFF) set in a text font
+without the glyph are drawn in a substitute that has it, instead of as FOP's not-found box:
+the range was looking for one Windows-only face and, failing it, named no font at all
+- a keep-with-next chain taller than a page no longer runs off the bottom of one page: its
+keeps become breakable, as Word drops a keep it cannot satisfy
+(docx4j.convert.out.fo.wordLayout.boundKeepChains=false restores FOP's behaviour)
 - w:tblCellSpacing is no longer subtracted twice from a content-autofit column's width
 - a block whose only content is a small-caps run takes its line height from the run's
 declared size, as Word does, not from the 80% inline the glyphs are drawn at
@@ -410,6 +416,10 @@ Other:
 - fields: a DOCPROPERTY now keeps the result the document cached, which is what Word paints
 until the field is updated; docx4j.convert.out.fields.docPropertyCachedResult=false
 evaluates the property instead
+- fields: a legacy form field now paints the state its w:ffData holds, as Word does - a
+FORMDROPDOWN the w:listEntry its w:result selects, a FORMTEXT with nothing typed into it its
+w:default; both were rendered as nothing.  PDF and HTML;
+docx4j.convert.out.fields.formFieldResults=false restores the old behaviour
 - loading: malformed nesting (a w:r or a w:p directly inside a w:r) now *splits* the outer
 run rather than flattening its content into it, so each nested run keeps its own w:rPr and
 the lone-space runs between words survive

@@ -51,6 +51,9 @@ import org.apache.fop.layoutmgr.PageSequenceLayoutManager;
  */
 public class WordFlowLayoutManager extends FlowLayoutManager {
 
+	private static final org.slf4j.Logger LOG =
+			org.slf4j.LoggerFactory.getLogger(WordFlowLayoutManager.class);
+
 	public WordFlowLayoutManager(PageSequenceLayoutManager pslm, Flow node) {
 		super(pslm, node);
 	}
@@ -59,7 +62,126 @@ public class WordFlowLayoutManager extends FlowLayoutManager {
 	public List<ListElement> getNextKnuthElements(LayoutContext context, int alignment) {
 		List<ListElement> elements = super.getNextKnuthElements(context, alignment);
 		moveLeadingBehindBreaks(elements);
+		boundKeepChains(elements, availableBPD());
 		return elements;
+	}
+
+	// ---------------------------------------------------- an infeasible keep chain
+
+	/**
+	 * <b>Word drops a keep it cannot satisfy; FOP overflows the page.</b>  A
+	 * {@code w:keepNext} becomes {@code keep-with-next.within-page="always"}, which
+	 * {@code BlockStackingLayoutManager.addInBetweenBreak} writes as a penalty of
+	 * {@link KnuthElement#INFINITE} between the two blocks.  Where a whole run of
+	 * paragraphs carries it - a numbered clause list whose every item keeps with the
+	 * next, which is how a contract template is written - the breaker has no legal break
+	 * anywhere in the run, and rather than break it FOP puts the lot on one page and
+	 * lets it run off the bottom.  Measured on a corpus document with 88
+	 * {@code keep-with-next="always"}: <b>one page held 1037 lines and ran to
+	 * y=7693.5 on a 792pt page</b>, where Word spreads that content over 14 pages; a
+	 * second, with 10011 of them, is 42 pages short of Word (Word's page 50 ends at
+	 * y=521.7, ours at 675.2).  Between them, 52 pages of the corpus's page deficit.
+	 *
+	 * <p>Word applies {@code w:keepNext} locally: the paragraph is kept with the next
+	 * one where the two fit on a page together, and where they do not the keep is
+	 * simply ignored at that point - the heading stays with the first lines of its
+	 * paragraph and the rest flows on.  So a keep chain is bounded here: where the
+	 * height accumulated since the last break the breaker may take is several times
+	 * the page's available BPD (below), the infinite penalties of that chain are
+	 * reduced to a large but finite one.  The breaker can then break inside the chain, and because the
+	 * penalty is still large it breaks there only where it must - which is Word's
+	 * rule.  Nothing changes for a keep chain that fits, and that is every keep in a
+	 * document Word lays out the same way.</p>
+	 *
+	 * <p><b>The chain has to exceed the page several times over.</b>  The height summed
+	 * here is an over-estimate of what the page must hold - it is the flow's own
+	 * element list, where a table's rows are boxes beside the block they are in, and
+	 * where line heights that are each a little taller than Word's accumulate - so a
+	 * chain only somewhat over the page is one Word (and FOP) does fit.  Measured on a
+	 * document of 71 Word pages: its widest keep chain sums to 726859 against a 650900
+	 * body, 12% over, and Word puts all 166 lines of it on one page; bounding that
+	 * chain gave the document a 72nd page.  At three times the page both that document
+	 * and the 1037-line overflow come out at Word's own page count exactly (45/45,
+	 * where it was 35), and 2.5x, 4x and 6x are each worse on one of the two.  The
+	 * tolerance is {@code docx4j.convert.out.fo.wordLayout.keepChainTolerance},
+	 * default 3.0.</p>
+	 *
+	 * <p>{@code docx4j.convert.out.fo.wordLayout.boundKeepChains=false} turns it off;
+	 * {@code docx4j.convert.out.fo.wordLayout.keepChainPenalty} is the penalty the
+	 * keep is reduced to (default 900, against FOP's infinite 1000).</p>
+	 *
+	 * @param available the page's available block-progression dimension, in millipoints;
+	 *                  zero or less leaves the list alone
+	 * @since 17.0.6
+	 */
+	static void boundKeepChains(List<ListElement> elements, int available) {
+
+		if (available <= 0 || elements == null || elements.isEmpty()) return;
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.boundKeepChains", true)) return;
+		int reduced;
+		try {
+			reduced = Integer.parseInt(org.docx4j.Docx4jProperties.getProperty(
+					"docx4j.convert.out.fo.wordLayout.keepChainPenalty", "900").trim());
+		} catch (NumberFormatException e) {
+			reduced = 900;
+		}
+		if (reduced >= KnuthElement.INFINITE) reduced = KnuthElement.INFINITE - 1;
+		double tolerance;
+		try {
+			tolerance = Double.parseDouble(org.docx4j.Docx4jProperties.getProperty(
+					"docx4j.convert.out.fo.wordLayout.keepChainTolerance", "3.0").trim());
+		} catch (NumberFormatException e) {
+			tolerance = 3.0;
+		}
+		if (tolerance < 1.0) tolerance = 1.0;
+		long limit = (long) (available * tolerance);
+
+		// the infinite penalties passed since the last break the breaker may take, and
+		// the height accumulated over them
+		List<KnuthPenalty> chain = new java.util.ArrayList<KnuthPenalty>();
+		int height = 0;
+
+		for (ListElement el : elements) {
+			if (!(el instanceof KnuthElement)) continue;
+			KnuthElement k = (KnuthElement) el;
+			if (k.isBox() || k.isGlue()) {
+				height += k.getWidth();
+				continue;
+			}
+			if (!k.isPenalty()) continue;
+			KnuthPenalty p = (KnuthPenalty) k;
+			if (p.getPenalty() < KnuthElement.INFINITE) {
+				// a legal break: everything before it can be left behind
+				chain.clear();
+				height = 0;
+				continue;
+			}
+			chain.add(p);
+			if (height > limit) {
+				// this chain cannot be satisfied on any page; let the breaker into it
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("keep chain of " + chain.size() + " bounded: " + height
+							+ " > " + limit + " (page " + available + ")");
+				}
+				for (KnuthPenalty each : chain) {
+					each.setPenalty(reduced);
+				}
+				chain.clear();
+				height = 0;
+			}
+		}
+	}
+
+	/** The block-progression dimension of the page body, in millipoints; 0 where the
+	 *  page is not available yet (the pass is then skipped). */
+	private int availableBPD() {
+		try {
+			org.apache.fop.area.PageViewport pv = getCurrentPV();
+			return pv == null || pv.getBodyRegion() == null ? 0 : pv.getBodyRegion().getBPD();
+		} catch (RuntimeException e) {
+			return 0;
+		}
 	}
 
 	/**

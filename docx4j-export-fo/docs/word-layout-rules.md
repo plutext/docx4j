@@ -169,6 +169,10 @@ justified lines (§4.2).
 | `docx4j.convert.out.fo.mirrorMargins` | `true` | `w:settings/w:mirrorMargins`: each page master gains a mirrored twin, chosen on even pages, whose left and right margins are the other way round (§7). |
 | `docx4j.convert.out.fields.docPropertyCachedResult` | `true` | A `DOCPROPERTY` keeps the result the document cached, which is what Word paints until the field is updated (&sect;7). `false` evaluates the property. Also HTML. |
 | `docx4j.convert.out.fields.dropResultlessIf` | `true` | An `IF` field with no `w:fldChar w:fldCharType="separate"` has no result and paints nothing, its branches being field instruction (§7). Also HTML. |
+| `docx4j.convert.out.fields.formFieldResults` | `true` | A legacy form field paints the state its `w:ffData` holds: a `FORMDROPDOWN` the `w:listEntry` its `w:result` selects, a `FORMTEXT` with nothing typed into it its `w:default` ([§7](#s7formfield)). `false` paints nothing, as before 17.0.6. Also HTML. |
+| `docx4j.convert.out.fo.wordLayout.boundKeepChains` | `true` | A `keep-with-next` chain taller than a page has its keeps reduced to a finite penalty, so the breaker may break inside it as Word does, instead of FOP running the whole chain off the bottom of one page ([§3](#s39keepchain)). |
+| `docx4j.convert.out.fo.wordLayout.keepChainPenalty` | `900` | The penalty such a keep is reduced to, against FOP's infinite 1000: high enough that the breaker still keeps the blocks together wherever they fit. |
+| `docx4j.convert.out.fo.wordLayout.keepChainTolerance` | `3.0` | How many times the page a keep chain must exceed before it is bounded. The flow-level height sum over-estimates what the page must hold, and a chain 12% over is one Word fits ([§3](#s39keepchain)). |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
@@ -937,6 +941,40 @@ built-in heading style sets, maps to `keep-together.within-page="always"` in FO 
 `page-break-inside: avoid` in CSS. Without it a heading broken over two lines by a `w:br`
 could straddle a page, because the `w:br` is a nested block, which ends FOP's line sequence
 and puts widow control out of reach (§10).
+
+<a id="s39keepchain"></a>**A keep Word cannot satisfy it drops; FOP overflows the page.**
+`w:keepNext` becomes `keep-with-next.within-page="always"`, which FOP writes as a penalty
+of `KnuthElement.INFINITE` between the two blocks. Where a whole run of paragraphs carries
+it - a numbered clause list whose every item keeps with the next, which is how a contract
+template is written - the breaker has no legal break anywhere in the run, and rather than
+break it FOP puts the lot on one page and lets it run off the bottom. Measured on a
+document with 88 `keep-with-next="always"`: **one page held 1,037 lines and ran to
+y=7693.5 on a 792pt page**, where Word spreads that content over fourteen; a second, with
+10,011 of them, ends 42 pages short of Word (Word's page 50 ends at y=521.7, ours at
+675.2). Between them, **52 pages** - the largest single page deficit of the three corpora.
+
+Word applies `w:keepNext` locally: the paragraph is kept with the next where the two fit
+on a page together, and where they do not the keep is simply ignored at that point - the
+heading stays with the first lines of its paragraph and the rest flows on. So the keep
+chain is bounded (`WordFlowLayoutManager.boundKeepChains`, on the element list the flow
+returns, after space resolution has turned the `BreakElement`s into penalties): where the
+height accumulated since the last break the breaker may take is more than three times the
+page's available BPD, the infinite penalties of that chain are reduced to a large but
+finite one (900 against FOP's 1000). The breaker can then break inside the chain, and
+because the penalty is still large it breaks there only where it must. Nothing changes for
+a keep chain that fits, and that is every keep in a document Word lays out the same way.
+
+**Three times the page, not one.** The height summed there is the flow's own element list,
+where a table's rows are boxes beside the block that holds them and where line heights each
+a little taller than Word's accumulate, so it over-estimates what the page must hold.
+Measured on a 71-page document: its widest keep chain sums to 726859 against a 650900 body
+- 12% over - and Word puts all 166 lines of it on one page; bounding that chain gave the
+document a 72nd page and cost the corpus a page-exact document. At three times the page
+that document and the 1037-line overflow above are both at Word's own page count exactly
+(**45/45**, where the overflow gave 35), and 2.5x, 4x and 6x are each worse on one of the
+two (46, 44 and 42 pages). Properties
+`docx4j.convert.out.fo.wordLayout.boundKeepChains`, `...keepChainPenalty` and
+`...keepChainTolerance`.
 
 <a id="s310"></a>**Space-after against a footnote area (open).** One measured data point,
 not yet a rule docx4j applies: where a paragraph's last line would fit at the foot of a
@@ -1828,6 +1866,38 @@ U+25AA labels into the missing-symbol box, and cost **0.025 of mean line parity 
 corpus over 111 documents with none improved**. The fallback as shipped fixed 109 of real2's
 383 excess `#` lines and moved no document's score by 0.005 either way (real1 +21 matched
 lines with one document +0.076, real2 +14, real3 exactly unchanged).
+
+<a id="s57symbolrange"></a>**The symbol range needs a fallback chain, not one Windows face.**
+`RunFontSelector`'s U+2190-U+2BFF branch asked the run's own font for the glyph and, where
+it lacked it, asked exactly one substitute - `Segoe UI Symbol`, which is what Word 2016
+uses and which no Linux or macOS box has. Failing that it called no `fontAction` at all, so
+the character took whatever font the span already carried, **and the span carried no
+`font-family` for the glyph-coverage pass to work on** - `glyphFallback` returns at once
+without one. FOP then painted its `NOT_FOUND` glyph, `#`. The second half of the same gap
+is that every code point of those blocks - Arrows, Mathematical Operators, Box Drawing,
+Geometric Shapes, Miscellaneous Symbols, Dingbats, Braille - is
+`Character.UnicodeScript.COMMON`, which `FontFallback.needsCoverage` treats as always
+covered, so the coverage pass would have skipped them even with a family to work from.
+
+Both halves are fixed since 17.0.6: the branch names the run's own font whatever happens,
+`needsCoverage` is true for a symbol code point, and the coverage pass groups the symbol
+blocks under a class of their own (`FontFallback.isSymbol` / `coverageGroupOf`) rather than
+under COMMON. The class matters twice: it gets the range its own measured candidate order -
+`Segoe UI Symbol`, then Noto Sans Symbols 2, Noto Sans Symbols, Symbola, DejaVu Sans,
+FreeSerif, which is the order `PhysicalFonts.getWDingsFont` already picks a symbol-font
+bullet by, so an arrow in a text font and the same arrow in a Wingdings bullet are drawn by
+the same face - and it stops the space after a symbol being dragged into the symbol font
+with it (a *shared* COMMON character follows whatever precedes it, which is right for a
+space inside a Georgian phrase and wrong for the space after an arrow). Where nothing
+installed covers the character the span is left as it was, with one warning, exactly as for
+any other script.
+
+Measured over the 449 renders of the three corpora, the excess `#` in our PDFs against
+Word's - Word's own PDFs have none - fell from **93 / 180 / 157, 430 in 39 documents**, to
+**93 / 139 / 81, 313 in 26 documents**. What is left is a different cause on each corpus
+and not this range: fullwidth CJK punctuation (U+FF0C, U+FF1A, U+3002), the soft hyphen
+U+00AD, and private-use code points a symbol font's own `w:sym` did not reach - the first
+corpus's 93 are all of those and did not move at all.
 
 `w:caps` and `w:smallCaps` have no XSL-FO equivalent (`text-transform` and `font-variant`
 are CSS), so the text itself is upper-cased, in the run's `w:lang`, since Turkish and
@@ -2751,6 +2821,37 @@ do render and Word renders too once it updates the field on print. Only `IF` car
 branches in the instruction, so only `IF` loses content by being kept (10 occurrences in
 3 documents). Property `docx4j.convert.out.fields.dropResultlessIf`.
 
+<a id="s7formfield"></a>**A legacy form field paints what its `w:ffData` says, not its field
+result.** `FORMDROPDOWN`, `FORMTEXT` and `FORMCHECKBOX` keep their state in the `w:ffData`
+of their `w:fldChar w:fldCharType="begin"`, which neither FO pathway nor HTML read at all;
+both emit nothing for a `w:fldChar`, so a drop-down came out as the empty `fo:inline` of
+its bookmark. Measured against Word 365 on a document whose drop-down offers four
+honorifics with no `w:result`, and whose `separate` is immediately followed by its `end`:
+Word paints the first of them, so its line runs 297.7..413.6 where ours began at 302.7
+and ended at 378.3 - the whole entry, 35.3pt of it, missing. The
+selected entry is `w:ddList/w:result` as a zero-based index into the `w:listEntry` list,
+0 where there is none (ECMA-376 17.16.20); a `FORMTEXT` with nothing typed into it paints
+its `w:textInput/w:default`, and one with a result keeps the result, which is what the
+user typed. A `FieldsCombiner` step writes the value out as the field's result run, ahead
+of the pass which combines complex fields to `w:fldSimple`, and synthesises a `separate`
+where the field has none (17.16.18 puts the result between the separate and the end).
+Property `docx4j.convert.out.fields.formFieldResults`; HTML gains it too. Over the three
+corpora there are 4 such drop-downs in 2 documents, and no `FORMTEXT` whose default is
+unused - 61 of the 288 carry one and every one of those already has a result.
+
+<a id="s7formcheckbox"></a>*A checkbox is deliberately left alone, and this is why.* Word
+does not draw one with a glyph. Measured with `mutool draw -F trace` over the goldens of
+the 15 documents of the three corpora which hold a `FORMCHECKBOX`, every checkbox in
+Word's own PDF is a **stroked square path** - a 0.72pt line, side 7.44 / 7.92 / 8.64 /
+9.84 / 10.32 / 11.04 / 11.28pt with the field's font size - and the PDF's text layer has
+nothing at all where it sits. Writing a `☐` or `☒` for it, which is what one would
+expect from the way Word's own UI draws it, would put a character on the line that Word's
+line does not have. What docx4j does lose is the box's **advance**: measured on three
+documents by the shift of the text after the box, Word's line continues 9.68, 12.4 and
+12.76pt further right than ours (the box side plus about 2.4pt), on 772 fields in 15
+documents. Reserving that width without painting anything is what would close it; FO has
+no inline box (`fo:inline-container` is not implemented in FOP, §10), so it is not shipped.
+
 *The condition is not evaluated, and does not need to be.* The branch Word chooses on all
 but the last page of these documents is the empty one, and neither branch could be
 painted conditionally anyway: FOP resolves `fo:page-number` at layout time, long after
@@ -3313,6 +3414,15 @@ Worked around here, and worth knowing about:
   0.8801, 0.8421 -> 0.8477 and 0.8738 -> 0.8802; lines matching Word exactly 86.6 ->
   86.8%, 76.3 -> 77.0% and 88.5 -> 90.0%), 37 documents improved and 5 fell, and
   §6.3's `MEASURE_GUARD_PT` went with it.
+- **An infeasible `keep-with-next` chain overflows the page rather than breaking.** FOP's
+  `BlockStackingLayoutManager.addInBetweenBreak` writes a keep as a penalty of
+  `KnuthElement.INFINITE`, and the breaking algorithm has no rule for a run of them longer
+  than a page: it puts the whole run on one page and lets it overrun (measured, 1,037 lines
+  to y=7693.5 on a 792pt page). Word drops a keep it cannot satisfy. Worked around in
+  docx4j's flow manager ([§3](#s39keepchain)). Upstream report candidate.
+- **`fo:inline-container` is not implemented**, so there is no way to put a box of a given
+  block-progression dimension in a line - which is what Word's legacy form-field checkbox
+  is (a stroked square, [§7](#s7formcheckbox)).
 - **A word has no intra-word break at all** (§4.3), so a token wider than the measure
   overruns the column instead of breaking where Word breaks it. Worked around by
   splitting such a word into per-character glyph mappings in the line manager.

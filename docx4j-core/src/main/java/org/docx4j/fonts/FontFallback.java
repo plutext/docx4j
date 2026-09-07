@@ -91,10 +91,38 @@ public class FontFallback {
 	public static boolean needsCoverage(int[] codePoints) {
 		if (codePoints==null) return false;
 		for (int cp : codePoints) {
+			if (isSymbol(cp)) return true;
 			if (!ALWAYS_COVERED.contains(scriptOf(cp))) return true;
 		}
 		return false;
 	}
+
+	/**
+	 * U+2190-U+2BFF, the symbol blocks: Arrows, Mathematical Operators, Miscellaneous
+	 * Technical, Box Drawing, Block Elements, Geometric Shapes, Miscellaneous Symbols,
+	 * Dingbats, Braille and the supplemental arrow/maths blocks.
+	 *
+	 * <p>Every one of them is {@code Character.UnicodeScript.COMMON}, so the coverage
+	 * pass - which asks only about scripts a Latin font may not carry - passed straight
+	 * over them, and a text font which lacks the glyph got no substitute at all and FOP
+	 * painted its {@code NOT_FOUND} glyph, <code>#</code>.  They are their own class
+	 * here rather than COMMON, so that the space and the digits beside an arrow are not
+	 * dragged into the symbol font with it (a shared COMMON character follows whatever
+	 * precedes it; see {@code RunFontSelector.isShared}).</p>
+	 *
+	 * @since 17.0.6
+	 */
+	public static boolean isSymbol(int cp) {
+		return cp>=0x2190 && cp<=0x2BFF;
+	}
+
+	/** The key the coverage pass groups a code point under: its script, except that the
+	 *  symbol blocks are their own group.  @since 17.0.6 */
+	public static String coverageGroupOf(int cp) {
+		return isSymbol(cp) ? SYMBOL_GROUP : scriptOf(cp).name();
+	}
+
+	public static final String SYMBOL_GROUP = "SYMBOL";
 
 	public static Character.UnicodeScript scriptOf(int cp) {
 		try {
@@ -449,14 +477,32 @@ public class FontFallback {
 	private static List<String> measuredForScript(String documentFontName, int[] codePoints) {
 
 		List<String> result = new ArrayList<String>();
-		if (documentFontName==null) return result;
-		String name = documentFontName.trim().toLowerCase();
-		boolean georgian = false, greek = false;
+		boolean georgian = false, greek = false, symbol = false;
 		for (int cp : codePoints) {
+			if (isSymbol(cp)) { symbol = true; continue; }
 			Character.UnicodeScript script = scriptOf(cp);
 			if (script==Character.UnicodeScript.GEORGIAN) georgian = true;
 			else if (script==Character.UnicodeScript.GREEK) greek = true;
 		}
+		/* U+2190-U+2BFF: the order Word's own substitute is chosen by, and the same
+		 * order PhysicalFonts.getWDingsFont uses for a symbol-font bullet, so an arrow
+		 * in a text font and the same arrow in a Wingdings bullet are drawn by the same
+		 * face.  Word 2016 uses Segoe UI Symbol, which no Linux box has; of what is
+		 * installed, Noto Sans Symbols 2 carries the geometric shapes, box drawing and
+		 * dingbats, Noto Sans Symbols the arrows and maths, and DejaVu Sans is the wide
+		 * net behind them.  @since 17.0.6 */
+		if (symbol) {
+			result.add("Segoe UI Symbol");
+			result.add("Noto Sans Symbols 2 Regular");
+			result.add("Noto Sans Symbols 2");
+			result.add("Noto Sans Symbols Regular");
+			result.add("Noto Sans Symbols");
+			result.add("Symbola");
+			result.add("DejaVu Sans");
+			result.add("FreeSerif");
+		}
+		if (documentFontName==null) return result;
+		String name = documentFontName.trim().toLowerCase();
 		if (georgian && name.startsWith("sylfaen")) {
 			result.add("DejaVu Serif Condensed");
 			result.add("DejaVu Serif Condensed Book");
