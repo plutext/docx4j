@@ -35,7 +35,6 @@ public class RunFontSelectorJapaneseTest {
 	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
 	
 	static String[] expectedFont = { "MS Gothic", "MS Mincho"};
-	static String[] win10Base = { "MS Gothic", "Century"};
 	
 	@Test
 	public  void testFont() throws Exception {
@@ -101,19 +100,25 @@ public class RunFontSelectorJapaneseTest {
 			Element foInline = (Element)df.getFirstChild();
 			System.out.println(i + ": " + foInline.getAttribute("font-family"));
 			
-			if (PhysicalFonts.get("MS Mincho")==null) {
+			String selected = plain(foInline.getAttribute("font-family"));
+			if (i==1 && PhysicalFonts.get("MS Mincho")==null) {
 				/* MS Mincho, the expected result, is not installed by default on
-				 * Windows 10+ (it comes with the Japanese language pack); where it
-				 * is absent, RunFontSelector falls back to Century for the minchō
-				 * paragraph.  See further http://answers.microsoft.com/en-us/windows/forum/windows_10-start/some-fonts-are-missing-after-upgrade/95839dfa-0df2-4bc0-875a-fd6b57e61fe4?auth=1
-				 * (This branch was previously ALSO gated on os.version 6.2 — ie
-				 * Windows 8 — so it never applied on the Windows 10+ boxes it
-				 * describes; verified against a real Windows 11 run 2026-09-03.)
+				 * Windows 10+ (it comes with the Japanese language pack).  Where it
+				 * is absent, the minchō paragraph goes to whatever installed font
+				 * covers its characters (Mapper via FontFallback.selectCovering,
+				 * serif preferred): Yu Mincho, Source Han Serif, SimSun ... it
+				 * depends on the machine, so assert the contract - the selected
+				 * font can draw the text - rather than a name.  (Until 17.1.0 the
+				 * fallback was Century, the docDefaults ascii font, which has no
+				 * CJK at all; the old expectation documented that defect.)
+				 * See http://answers.microsoft.com/en-us/windows/forum/windows_10-start/some-fonts-are-missing-after-upgrade/95839dfa-0df2-4bc0-875a-fd6b57e61fe4?auth=1
 				 * */
-
-				assertEquals(win10Base[i], plain(foInline.getAttribute("font-family")));
+				PhysicalFont pf = PhysicalFonts.get(selected);
+				org.junit.Assert.assertNotNull("fallback font not a physical font: " + selected, pf);
+				org.junit.Assert.assertTrue("fallback font " + selected + " cannot draw "
+						+ wmlText.getValue(), GlyphCheck.hasChar(pf, wmlText.getValue().charAt(0)));
 			} else {
-				assertEquals(expectedFont[i], plain(foInline.getAttribute("font-family")));				
+				assertEquals(expectedFont[i], selected);
 			}
 		}
 		
