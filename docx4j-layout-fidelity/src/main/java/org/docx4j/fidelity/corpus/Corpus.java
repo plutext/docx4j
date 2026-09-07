@@ -2334,6 +2334,195 @@ public final class Corpus {
 		return t.build();
 	}
 
+	// ------------------------------------------------- w:compat, one family per flag group
+	//
+	// Every w:compat flag is document-level, so a probe pair is two otherwise identical
+	// documents: the plain one states nothing (and so takes its compatibility mode's
+	// default) and the "-set" twin states the flag(s) explicitly.  What the goldens have
+	// to show is whether Word's own layout differs between the two.
+
+	/** Justified prose whose lines end in a soft return (w:br with no type). */
+	private static WordprocessingMLPackage shiftReturn(int mode, Boolean flag) throws Exception {
+		Doc d = Doc.create(mode);
+		if (flag != null) d.compat("doNotExpandShiftReturn", flag.booleanValue());
+		d.para("P01 doNotExpandShiftReturn = " + (flag == null ? "absent" : flag)
+				+ ", compatibilityMode " + mode).add();
+		// two full lines then a soft return, three times: what is measured is the right
+		// edge of each line that ends at the break
+		for (int i = 0; i < 3; i++) {
+			d.para().jc(JcEnumeration.BOTH)
+					.text("P0" + (i + 2) + " " + longProse(3, i))
+					.softReturn()
+					.text(longProse(3, i + 4))
+					.softReturn()
+					.text(prose(1, i + 8))
+					.add();
+		}
+		// a control: the same prose with no soft return in it at all
+		d.para("P05 control " + longProse(6, 2)).jc(JcEnumeration.BOTH).add();
+		// and one whose break falls where the line is nearly full anyway
+		d.para().jc(JcEnumeration.BOTH).text("P06 " + prose(1)).softReturn()
+				.text(longProse(4, 1)).add();
+		return d.pkg();
+	}
+
+	/** A numbered paragraph with a hanging indent and a later tab stop. */
+	private static WordprocessingMLPackage numberingTab(int mode, Boolean flags) throws Exception {
+		Doc d = Doc.create(mode);
+		if (flags != null) {
+			d.compat("doNotUseIndentAsNumberingTabStop", flags.booleanValue());
+			d.compat("noTabHangInd", flags.booleanValue());
+		}
+		d.para("P01 doNotUseIndentAsNumberingTabStop / noTabHangInd = "
+				+ (flags == null ? "absent" : flags) + ", compatibilityMode " + mode).add();
+		d.numberingXml(
+				"<w:abstractNum w:abstractNumId=\"70\">"
+				+ Doc.decimalLevel(0, null, 720, 360)
+				+ "</w:abstractNum>"
+				+ "<w:num w:numId=\"70\"><w:abstractNumId w:val=\"70\"/></w:num>");
+		for (int i = 0; i < 3; i++) {
+			d.para().numPr(70, 0)
+					.tabStop(2880, org.docx4j.wml.STTabJc.LEFT)
+					.text("P0" + (i + 2) + " label text")
+					.tab()
+					.text("after the tab " + prose(1, i))
+					.add();
+		}
+		// a hanging indent with no numbering at all: noTabHangInd's own case
+		for (int i = 0; i < 2; i++) {
+			d.para().indent(1440, 0, 720)
+					.tabStop(2880, org.docx4j.wml.STTabJc.LEFT)
+					.text("P0" + (i + 5) + " hanging")
+					.tab()
+					.text("after the tab " + prose(1, i + 3))
+					.add();
+		}
+		return d.pkg();
+	}
+
+	/** One over-wide autofit table, one grid-versus-w:tcW table, and one styled table. */
+	private static WordprocessingMLPackage compatTables(int mode, Boolean flags) throws Exception {
+		Doc d = Doc.create(mode);
+		if (flags != null) {
+			d.compat("growAutofit", flags.booleanValue());
+			d.compat("doNotAutofitConstrainedTables", flags.booleanValue());
+			d.compat("layoutRawTableWidth", flags.booleanValue());
+			d.compat("useWord2002TableStyleRules", flags.booleanValue());
+		}
+		d.para("P01 growAutofit / doNotAutofitConstrainedTables / layoutRawTableWidth / "
+				+ "useWord2002TableStyleRules = " + (flags == null ? "absent" : flags)
+				+ ", compatibilityMode " + mode).add();
+		// T1: an autofit table whose own grid is far wider than the text column
+		Doc.Table wide = new Doc.Table(4600, 4600, 4600).autoWidth().borders(4);
+		wide.row(SERIF, 20, false, "T1C1 " + prose(1), "T1C2 " + prose(1, 1), "T1C3 " + prose(1, 2));
+		wide.row(SERIF, 20, false, "T1C1 " + prose(1, 3), "T1C2 " + prose(1, 4), "T1C3 " + prose(1, 5));
+		d.add(wide.build());
+		d.para("P02 between the tables").add();
+		// T2: a grid the row's w:tcW disagree with
+		Doc.Table grid = new Doc.Table(3000, 3000, 3000).tableWidth(9000, "dxa").borders(4);
+		grid.rowOf(null, null,
+				grid.cell("T2C1 " + prose(1), SERIF, 20, 1, 1200),
+				grid.cell("T2C2 " + prose(1, 1), SERIF, 20, 1, 1200),
+				grid.cell("T2C3 " + prose(1, 2), SERIF, 20, 1, 1200));
+		grid.rowOf(null, null,
+				grid.cell("T2C1 " + prose(1, 3), SERIF, 20, 1, 3000),
+				grid.cell("T2C2 " + prose(1, 4), SERIF, 20, 1, 3000),
+				grid.cell("T2C3 " + prose(1, 5), SERIF, 20, 1, 3000));
+		d.add(grid.build());
+		return d.pkg();
+	}
+
+	/** Page breaks, a tab on a right-aligned line, and contextual paragraphs in cells. */
+	private static WordprocessingMLPackage compatBreaks(int mode, Boolean flags) throws Exception {
+		Doc d = Doc.create(mode);
+		if (flags != null) {
+			d.compat("splitPgBreakAndParaMark", flags.booleanValue());
+			d.compat("suppressSpBfAfterPgBrk", flags.booleanValue());
+			d.compat("forgetLastTabAlignment", flags.booleanValue());
+			d.compat("allowSpaceOfSameStyleInTable", flags.booleanValue());
+		}
+		d.para("P01 splitPgBreakAndParaMark / suppressSpBfAfterPgBrk / forgetLastTabAlignment / "
+				+ "allowSpaceOfSameStyleInTable = " + (flags == null ? "absent" : flags)
+				+ ", compatibilityMode " + mode).add();
+		// splitPgBreakAndParaMark: content before the break in the same paragraph
+		d.para().text("P02 before the break " + prose(2)).pageBreakRun()
+				.text("P02 after the break " + prose(2, 2)).add();
+		// suppressSpBfAfterPgBrk: a break-only paragraph then 24pt of space-before
+		d.para().pageBreakRun().add();
+		d.para("P03 24pt of space-before at the top of the page " + prose(1, 4)).before(480).add();
+		// forgetLastTabAlignment: a right-aligned and a centred line ending in a tab
+		d.para().jc(JcEnumeration.RIGHT).text("P04 right ").tab().add();
+		d.para().jc(JcEnumeration.CENTER).text("P05 centre ").tab().add();
+		d.para().jc(JcEnumeration.RIGHT).tabStop(6000, org.docx4j.wml.STTabJc.LEFT)
+				.text("P06 right, custom stop ").tab().text("tail").add();
+		// allowSpaceOfSameStyleInTable: one contextual paragraph per cell, against
+		// space-after that the cell edge would otherwise cancel
+		Doc.Table t = new Doc.Table(2400, 2400).borders(4);
+		for (int r = 0; r < 3; r++) {
+			t.rowOf(null, null,
+					t.cellOf(Doc.plainParagraph("T1R" + (r + 1) + "C1", SERIF, 20)),
+					t.cellOf(Doc.plainParagraph("T1R" + (r + 1) + "C2", SERIF, 20)));
+		}
+		org.docx4j.wml.Tbl tbl = t.build();
+		contextualCells(tbl);
+		d.add(tbl);
+		return d.pkg();
+	}
+
+	/** Gives every paragraph of every cell w:contextualSpacing and 10pt of space-after. */
+	private static void contextualCells(org.docx4j.wml.Tbl tbl) {
+		for (Object ro : tbl.getContent()) {
+			org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr) org.docx4j.XmlUtils.unwrap(ro);
+			for (Object co : tr.getContent()) {
+				Object u = org.docx4j.XmlUtils.unwrap(co);
+				if (!(u instanceof org.docx4j.wml.Tc)) continue;
+				for (Object po : ((org.docx4j.wml.Tc) u).getContent()) {
+					Object pu = org.docx4j.XmlUtils.unwrap(po);
+					if (!(pu instanceof org.docx4j.wml.P)) continue;
+					org.docx4j.wml.P p = (org.docx4j.wml.P) pu;
+					if (p.getPPr() == null) p.setPPr(Doc.F.createPPr());
+					p.getPPr().setContextualSpacing(new org.docx4j.wml.BooleanDefaultTrue());
+					PPrBase.Spacing sp = Doc.F.createPPrBaseSpacing();
+					sp.setAfter(BigInteger.valueOf(200));
+					p.getPPr().setSpacing(sp);
+				}
+			}
+		}
+	}
+
+	static {
+		PROBES.add(new Probe("compat-shift-return",
+				"justified paragraphs ending in a soft return, mode 15, w:doNotExpandShiftReturn absent",
+				() -> shiftReturn(15, null)));
+		PROBES.add(new Probe("compat-shift-return-set",
+				"the same, with w:doNotExpandShiftReturn stated",
+				() -> shiftReturn(15, Boolean.TRUE)));
+
+		PROBES.add(new Probe("compat-numbering-tab",
+				"a numbered hanging indent and a later tab stop, mode 15, the two flags absent",
+				() -> numberingTab(15, null)));
+		PROBES.add(new Probe("compat-numbering-tab-set",
+				"the same, with w:doNotUseIndentAsNumberingTabStop and w:noTabHangInd stated",
+				() -> numberingTab(15, Boolean.TRUE)));
+		PROBES.add(new Probe("compat-numbering-tab-compat12",
+				"the same, mode 12, the two flags absent",
+				() -> numberingTab(12, null)));
+
+		PROBES.add(new Probe("compat-tables",
+				"an over-wide autofit grid and a grid the w:tcW disagree with, mode 15, the table flags absent",
+				() -> compatTables(15, null)));
+		PROBES.add(new Probe("compat-tables-set",
+				"the same, with w:growAutofit, w:doNotAutofitConstrainedTables, w:layoutRawTableWidth and w:useWord2002TableStyleRules stated",
+				() -> compatTables(15, Boolean.TRUE)));
+
+		PROBES.add(new Probe("compat-breaks",
+				"a split page break, space-before after a break, tabs on aligned lines and contextual cells, mode 15, the flags absent",
+				() -> compatBreaks(15, null)));
+		PROBES.add(new Probe("compat-breaks-set",
+				"the same, with w:splitPgBreakAndParaMark, w:suppressSpBfAfterPgBrk, w:forgetLastTabAlignment and w:allowSpaceOfSameStyleInTable stated",
+				() -> compatBreaks(15, Boolean.TRUE)));
+	}
+
 	public static List<Probe> all() {
 		return Collections.unmodifiableList(PROBES);
 	}

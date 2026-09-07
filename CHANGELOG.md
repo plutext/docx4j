@@ -8,6 +8,16 @@ Changes in Version 17.0.6
 --------------------------
 
 PDF via XSL FO:
+- a justified line ending in a soft return (w:br with no type) is now justified, as Word
+justifies it unless w:compat/w:doNotExpandShiftReturn is set
+(docx4j.convert.out.fo.wordLayout.justifySoftReturn=false restores 17.0.5's behaviour)
+- the w:settings/w:compat layout switches are now read: w:doNotExpandShiftReturn,
+w:splitPgBreakAndParaMark, w:suppressSpBfAfterPgBrk, w:noTabHangInd and
+w:allowSpaceOfSameStyleInTable each switch the rule they govern
+- new org.docx4j.model.CompatibilityOptions resolves a w:compat flag as Word does: the
+document's value where it states one, else the value its compatibilityMode implies (for
+the legacy flags, measured, that is off - the mode says what Word writes, not what its
+engine applies to a document which leaves the flag out)
 - a numbered paragraph is laid out on its effective indent whether its own w:numPr or its
 style brought the numbering, and a numbering level's own w:ind is no longer read from a
 paragraph style its w:pStyle merely names

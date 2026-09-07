@@ -469,6 +469,40 @@ public final class Doc {
 		sectPr().setVAlign(jc);
 	}
 
+	// ------------------------------------------------------------ w:compat
+
+	/**
+	 * A {@code w:settings/w:compat} flag, by its element name
+	 * ("growAutofit", "doNotExpandShiftReturn", ...), written explicitly as
+	 * {@code w:val="1"} or {@code w:val="0"}.
+	 *
+	 * <p>Every {@code w:compat} child is a {@code CT_OnOff} and the docx4j model gives
+	 * each of them its own setter, so the name is turned into
+	 * {@code setXxx(BooleanDefaultTrue)} by reflection: that keeps this helper as short as
+	 * the schema is long.  An unknown name throws.</p>
+	 *
+	 * <p>The value docx4j resolves for a flag the document does <em>not</em> state comes
+	 * from the compatibility mode; see
+	 * {@link org.docx4j.model.CompatibilityOptions}.</p>
+	 */
+	public void compat(String flag, boolean value) throws Exception {
+		DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
+		if (dsp == null) {
+			dsp = new DocumentSettingsPart();
+			dsp.setContents(F.createCTSettings());
+			mdp.addTargetPart(dsp);
+		}
+		CTCompat compat = dsp.getContents().getCompat();
+		if (compat == null) {
+			compat = F.createCTCompat();
+			dsp.getContents().setCompat(compat);
+		}
+		String setter = "set" + Character.toUpperCase(flag.charAt(0)) + flag.substring(1);
+		BooleanDefaultTrue b = new BooleanDefaultTrue();
+		b.setVal(Boolean.valueOf(value));
+		CTCompat.class.getMethod(setter, BooleanDefaultTrue.class).invoke(compat, b);
+	}
+
 	// ------------------------------------------------------------ hyphenation
 
 	/**
@@ -1456,6 +1490,14 @@ public final class Doc {
 			Br br = F.createBr();
 			br.setType(STBrType.PAGE);
 			r.getContent().add(br);
+			return run(r);
+		}
+
+		/** A run holding one w:br with no type: a soft return, which ends the line
+		 *  without ending the paragraph. */
+		public Para softReturn() {
+			R r = F.createR();
+			r.getContent().add(F.createBr());
 			return run(r);
 		}
 

@@ -87,6 +87,15 @@ public class WordBlockLayoutManager extends BlockLayoutManager {
 				inlines.add(lm);
 			} else {
 				proxyLMiter.previous();
+				/* The block that ends this run of inlines is what the line before it ends
+				 * at.  Where the paragraph is one whose soft returns Word justifies
+				 * (docx4j:justify-soft-return, written only for a justified paragraph
+				 * whose only block-level content is soft returns), that block is a soft
+				 * return, so this sequence's last line is justified.  In the visitor
+				 * pathway the break is nested in the run's fo:inline and never reaches
+				 * here; there the line manager's own knuthParagraphs carry the split.
+				 * @since 17.0.6 */
+				if (llm.isJustifySoftReturn()) llm.setFollowedBySoftReturn(true);
 				break;
 			}
 		}

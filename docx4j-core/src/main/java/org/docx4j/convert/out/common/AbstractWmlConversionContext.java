@@ -161,6 +161,23 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		return bookmarkNames == null || bookmarkNames.contains(name);
 	}
 	
+	/** {@link #getCompatibilityOptions()}, read once per conversion. */
+	private org.docx4j.model.CompatibilityOptions compatibilityOptions = null;
+
+	/**
+	 * The document's {@code w:settings/w:compat} layout switches, each resolved to the
+	 * value the document states or, where it states none, to the value its
+	 * {@code compatibilityMode} implies.  Read once per conversion.
+	 *
+	 * @since 17.0.6
+	 */
+	public org.docx4j.model.CompatibilityOptions getCompatibilityOptions() {
+		if (compatibilityOptions == null) {
+			compatibilityOptions = org.docx4j.model.CompatibilityOptions.of(getWmlPackage());
+		}
+		return compatibilityOptions;
+	}
+
 	public PropertyResolver getPropertyResolver() throws Docx4JException {
 		return getWmlPackage().getMainDocumentPart().getPropertyResolver();
 	}

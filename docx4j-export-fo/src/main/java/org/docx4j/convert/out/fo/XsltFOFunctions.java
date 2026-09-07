@@ -2219,6 +2219,14 @@ public class XsltFOFunctions {
 
 		PPrBase.Ind ind = indent.getObject() instanceof PPrBase.Ind ? (PPrBase.Ind)indent.getObject() : null;
 		int hanging = (ind!=null && ind.getHanging()!=null) ? ind.getHanging().intValue() : -1;
+		/* w:compat/w:doNotUseIndentAsNumberingTabStop, "Ignore Hanging Indent When Creating
+		 * Tab Stop After Numbering" (ECMA-376-1 17.15.1), would send the label's text to
+		 * the first real tab stop past the label rather than to the hanging indent.  It is
+		 * deliberately NOT read: keying this rule on it was measured over the three corpora
+		 * and every document it moved got worse, none better - eight of them, the largest
+		 * losses 0.922 -> 0.778 and 0.855 -> 0.702 of Word's lines - so Word's own PDFs of
+		 * documents that state the flag show the hanging indent standing anyway.  See
+		 * word-layout-settings.md §4(d).  @since 17.0.6 */
 		if (hanging >= numWidth) return -1;   // the label fits: the hanging indent stands
 
 		String suff = triple!=null && triple.getLvl()!=null && triple.getLvl().getSuff()!=null

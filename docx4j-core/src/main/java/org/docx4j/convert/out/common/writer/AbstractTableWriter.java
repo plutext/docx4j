@@ -600,6 +600,13 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					&& preferredTableWidthTwips(context, tblPr) > 0) {
 				return null;
 			}
+			/* w:compat/w:growAutofit, "Allow Tables to AutoFit Into Page Margins"
+			 * (ECMA-376-1 17.15.1), would let an autofit table grow past the text column
+			 * rather than being scaled into it.  It is deliberately NOT read: measured over
+			 * the three corpora, Word 365's own PDFs of the mode-11 documents which state
+			 * it show the modern layout, and honouring it cost two of them 0.948 -> 0.248
+			 * and 0.930 -> 0.842 of Word's lines.  See word-layout-settings.md §4(e).
+			 * @since 17.0.6 */
 			int[] widths = table.getAutofitColumnWidths();
 			boolean ownGrid = widths == null;
 			if (ownGrid) {

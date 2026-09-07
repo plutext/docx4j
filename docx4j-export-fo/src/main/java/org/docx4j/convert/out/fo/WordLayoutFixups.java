@@ -110,9 +110,21 @@ public final class WordLayoutFixups {
 	 */
 	public static String apply(String foDocument, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
+		return apply(foDocument, org.docx4j.model.CompatibilityOptions.ofMode(compatibilityMode),
+				hyphenation);
+	}
+
+	/**
+	 * @param compat the document's w:compat switches, each resolved to the value the
+	 *        document states or, where it states none, to its compatibility mode's
+	 *        default (see {@link org.docx4j.model.CompatibilityOptions}).
+	 * @since 17.0.6
+	 */
+	public static String apply(String foDocument, org.docx4j.model.CompatibilityOptions compat,
+			org.docx4j.model.HyphenationSettings hyphenation) {
 		try {
 			Document doc = XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(foDocument)));
-			apply(doc, compatibilityMode, hyphenation);
+			apply(doc, compat, hyphenation);
 			Transformer t = XmlUtils.getTransformerFactory().newTransformer();
 			t.setOutputProperty(OutputKeys.INDENT, "no");
 			t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
@@ -132,17 +144,27 @@ public final class WordLayoutFixups {
 	/** @since 17.0.6 */
 	public static void apply(Document doc, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
+		apply(doc, org.docx4j.model.CompatibilityOptions.ofMode(compatibilityMode), hyphenation);
+	}
+
+	/** @since 17.0.6 */
+	public static void apply(Document doc, org.docx4j.model.CompatibilityOptions compat,
+			org.docx4j.model.HyphenationSettings hyphenation) {
+		int compatibilityMode = compat.mode();
 		disregardBaselineShifts(doc);
 		combineLetterSpacing(doc);
 		imageOnlyLineBox(doc);
 		inlineLabelGaps(doc);
 		listLabelLines(doc);
-		lineBoxAttributes(doc, compatibilityMode, hyphenation);
+		lineBoxAttributes(doc, compatibilityMode, hyphenation, compat);
 		positionFrames(doc);
 		anchorImages(doc);
 		anchorTextBoxes(doc);
 		anchorFloatingTables(doc);
 		hoistFloats(doc);
+		// after the anchoring passes: a paragraph which gains a positioned container is
+		// not one whose only block-level content is soft returns
+		justifySoftReturns(doc, compat);
 		firstLineIndentAfterLeadingBlock(doc);
 		reserveUnpaintablePictures(doc);
 		columnBreaks(doc); // before emptyLineForBlockWithNoContent: what follows the break takes a line
@@ -153,8 +175,8 @@ public final class WordLayoutFixups {
 		containWhitespaceTreatment(doc);
 		dropParagraphAfterNestedTable(doc);
 		dropPageBreaksInTableCells(doc);
-		mergePageBreakParagraphs(doc, compatibilityMode);
-		applyContextualSpacing(doc);
+		mergePageBreakParagraphs(doc, compat);
+		applyContextualSpacing(doc, compat);
 		applyAutoSpacingBetweenListItems(doc);
 		syncContainerSpacing(doc);
 		mergeBorderContainers(doc);
@@ -589,6 +611,14 @@ public final class WordLayoutFixups {
 	 */
 	static void lineBoxAttributes(Document doc, int compatibilityMode,
 			org.docx4j.model.HyphenationSettings hyphenation) {
+		lineBoxAttributes(doc, compatibilityMode, hyphenation,
+				org.docx4j.model.CompatibilityOptions.ofMode(compatibilityMode));
+	}
+
+	/** @since 17.0.6 */
+	static void lineBoxAttributes(Document doc, int compatibilityMode,
+			org.docx4j.model.HyphenationSettings hyphenation,
+			org.docx4j.model.CompatibilityOptions compat) {
 		String ns = extensionNamespace();
 		boolean declared = false;
 		Element root = doc.getDocumentElement();
@@ -612,6 +642,17 @@ public final class WordLayoutFixups {
 				if (hyphenation.isDoNotHyphenateCaps()) {
 					root.setAttributeNS(ns, "docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.HYPHENATE_CAPS, "false");
 				}
+			}
+			/* w:compat/w:noTabHangInd, which the line manager reads: off in every
+			 * compatibility mode, so it is written only for a document which states it.
+			 * @since 17.0.6 */
+			if (compat.is(org.docx4j.model.CompatibilityOptions.Flag.NO_TAB_HANG_IND)) {
+				if (!declared) {
+					root.setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+					declared = true;
+				}
+				root.setAttributeNS(ns, "docx4j:"
+						+ org.docx4j.fop.wordlayout.WordLayoutElementMapping.NO_TAB_HANG_IND, "true");
 			}
 		}
 		// the runs' document fonts (RunFontSelector.HINT_FONT), for the line manager's per-run metrics
@@ -2701,9 +2742,23 @@ public final class WordLayoutFixups {
 	 * item's paragraph is the block inside its list-item-body.
 	 */
 	static void applyContextualSpacing(Document doc) {
+		applyContextualSpacing(doc, org.docx4j.model.CompatibilityOptions.ofMode(15));
+	}
+
+	/**
+	 * @param compat w:compat/w:allowSpaceOfSameStyleInTable ("Allow Contextual Spacing of
+	 *        Paragraphs in Tables", ECMA-376-1 17.15.1): where it is on, the space a
+	 *        contextual paragraph would otherwise lose at a cell's edges is kept.  The
+	 *        flag resolves off in every mode, which is what docx4j has always done and
+	 *        what Word 365 was measured doing; a document which states it is honoured.
+	 * @since 17.0.6
+	 */
+	static void applyContextualSpacing(Document doc, org.docx4j.model.CompatibilityOptions compat) {
+		boolean cellEdges = !compat.is(
+				org.docx4j.model.CompatibilityOptions.Flag.ALLOW_SPACE_OF_SAME_STYLE_IN_TABLE);
 		for (Element flow : elements(doc, "flow")) contextualSpacingAmong(flow, false);
 		for (Element span : spanAllBlocks(doc)) contextualSpacingAmong(span, false);
-		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell, true);
+		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell, cellEdges);
 	}
 
 	/** The blocks spanning all columns of a multi-column page-sequence (a merged
@@ -2966,6 +3021,74 @@ public final class WordLayoutFixups {
 	 *
 	 * @since 17.0.6
 	 */
+	/**
+	 * <b>A justified line that ends in a soft return is justified</b> (&#xa7;4.2, 17.0.6).
+	 *
+	 * <p>Word stretches the spaces of a line ending in a <code>w:br</code> with no type,
+	 * in a <code>w:jc="both"</code> paragraph, exactly as it stretches any other line of
+	 * it - unless the document sets
+	 * <code>w:compat/w:doNotExpandShiftReturn</code> ("Don't Justify Lines Ending in Soft
+	 * Line Break", ECMA-376-1 17.15.1), which is one of the seven flags Word 2007 and
+	 * earlier write and which no Word 2010 or later document carries.  docx4j had the
+	 * flag-on behaviour hard-wired for every document: {@code BrWriter} writes the break as
+	 * a nested {@code fo:block}, so the line before it is the last line of a line sequence
+	 * and FOP aligns it by <code>text-align-last</code>, whose default for a justified
+	 * block is <code>start</code>.</p>
+	 *
+	 * <p>The paragraph's block is marked here and
+	 * {@code WordLineLayoutManager} justifies the last line of each of its line sequences
+	 * bar the paragraph's own last one - which is the same rule in both exporter pathways,
+	 * where the break's block is a sibling of the paragraph's content (XSLT) or nested in
+	 * the run's {@code fo:inline} (visitor).  Only a paragraph whose <em>only</em>
+	 * block-level content is soft returns is marked, so that a line before a positioned
+	 * picture or a text box is not justified as well.</p>
+	 *
+	 * <p>Property {@code docx4j.convert.out.fo.wordLayout.justifySoftReturn=false}
+	 * restores 17.0.5's behaviour for every document.</p>
+	 *
+	 * @since 17.0.6
+	 */
+	static void justifySoftReturns(Document doc, org.docx4j.model.CompatibilityOptions compat) {
+		if (compat.is(org.docx4j.model.CompatibilityOptions.Flag.DO_NOT_EXPAND_SHIFT_RETURN)) return;
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.justifySoftReturn", true)) return;
+		String ns = extensionNamespace();
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			if (!"justify".equals(block.getAttribute("text-align"))) continue;
+			int[] counts = new int[2]; // [0] soft returns, [1] anything else block-level
+			countSoftReturns(block, counts);
+			if (counts[0] == 0 || counts[1] > 0) continue;
+			if (ns == null) continue; // Word layout off: FOP would reject the attribute
+			doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+			block.setAttributeNS(ns, "docx4j:"
+					+ org.docx4j.fop.wordlayout.WordLayoutElementMapping.JUSTIFY_SOFT_RETURN, "1");
+		}
+	}
+
+	/** The block-level content of a paragraph's block, without descending into any of it:
+	 *  soft returns in counts[0], everything else in counts[1]. */
+	private static void countSoftReturns(Element parent, int[] counts) {
+		for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element e = (Element) n;
+			if (isFo(e, "block")) {
+				/* A column break is written as the same nested block and is turned into a
+				 * break-before by columnBreaks (which runs after this pass), so it must not
+				 * be read as a soft return. */
+				if (isLineBreak(e) && !e.hasAttribute(HINT_COLUMN_BREAK)) counts[0]++;
+				else counts[1]++;
+				continue;
+			}
+			if (isFo(e, "block-container") || isFo(e, "float") || isFo(e, "table")
+					|| isFo(e, "list-block") || isFo(e, "footnote")) {
+				counts[1]++;
+				continue;
+			}
+			countSoftReturns(e, counts); // fo:inline, fo:basic-link, ...
+		}
+	}
+
 	static void emptyLineAfterLineBreak(Document doc) {
 		if (!org.docx4j.Docx4jProperties.getProperty(
 				"docx4j.convert.out.fo.wordLayout.emptyLineAfterBreak", true)) return;
@@ -3547,6 +3670,20 @@ public final class WordLayoutFixups {
 	}
 
 	static void mergePageBreakParagraphs(Document doc, int compatibilityMode) {
+		mergePageBreakParagraphs(doc, org.docx4j.model.CompatibilityOptions.ofMode(compatibilityMode));
+	}
+
+	/**
+	 * @param compat w:compat/w:suppressSpBfAfterPgBrk ("Do Not Use Space Before On First
+	 *        Line After a Page Break", ECMA-376-1 17.15.1) decides whether the paragraph
+	 *        the break moves onto keeps its space-before.  The flag resolves on from
+	 *        compatibility mode 15 and off below it, which is the polarity measured
+	 *        against Word's goldens; a document which states it either way is honoured.
+	 * @since 17.0.6
+	 */
+	static void mergePageBreakParagraphs(Document doc, org.docx4j.model.CompatibilityOptions compat) {
+		boolean suppressSpaceBefore = compat.is(
+				org.docx4j.model.CompatibilityOptions.Flag.SUPPRESS_SP_BF_AFTER_PG_BRK);
 		List<Element> empties = new ArrayList<>();
 		for (Element block : elements(doc, "block")) {
 			if ("page".equals(block.getAttribute("break-before")) && isEmpty(block)) {
@@ -3617,7 +3754,7 @@ public final class WordLayoutFixups {
 			if (!next.hasAttribute("break-before") || "auto".equals(next.getAttribute("break-before"))) {
 				next.setAttribute("break-before", "page");
 			}
-			if (compatibilityMode < 15 && hasSpace(next, "space-before")) {
+			if (!suppressSpaceBefore && hasSpace(next, "space-before")) {
 				next.setAttribute("space-before.conditionality", "retain");
 			}
 			empty.getParentNode().removeChild(empty);

@@ -85,6 +85,15 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  hyphenated.  @since 17.0.6 */
 	public static final String HYPHENATE_CAPS = "hyphenate-caps";
 
+	/** on fo:root: "true" for w:compat/w:noTabHangInd - a hanging indent makes no
+	 *  implicit tab stop at the paragraph's left indent.  Off in every compatibility
+	 *  mode, so it is written only for a document which states the flag.  @since 17.0.6 */
+	public static final String NO_TAB_HANG_IND = "no-tab-hang-ind";
+	/** on a justified paragraph's fo:block: the line that ends at each of its soft returns
+	 *  is justified, as Word justifies it unless w:compat/w:doNotExpandShiftReturn is set.
+	 *  @since 17.0.6 */
+	public static final String JUSTIFY_SOFT_RETURN = "justify-soft-return";
+
 	/** on an fo:leader: it stands in for a w:tab, and {@link WordLineLayoutManager}
 	 *  gives it the width from the x it starts at to the tab stop it reaches. */
 	public static final String TAB = "tab";

@@ -178,7 +178,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
         // space at the end of the last line (in millipoints)
         private MinOptMax lineFiller;
         private final int textAlignment;
-        private final int textAlignmentLast;
+        /** Not final since 17.0.6: a paragraph which ends at a <b>soft return</b> has its
+         *  last line justified, and whether it does is only known when the break's block
+         *  sequence arrives (see {@code docx4j:justify-soft-return}, &#xa7;4.2). */
+        private int textAlignmentLast;
         private final int textIndent;
         private final int lastLineEndIndent;
         // the LM which created the paragraph
@@ -192,6 +195,18 @@ public class WordLineLayoutManager extends LineLayoutManager {
             textAlignmentLast = alignmentLast;
             textIndent = indent;
             lastLineEndIndent = endIndent;
+        }
+
+        /** This paragraph ends at a soft return, so Word justifies its last line
+         *  (&#xa7;4.2).  Must be called before {@link #endSequence()}, which is what puts
+         *  the infinite-stretch filler glue in for a last line that is not justified.
+         *  @since 17.0.6 */
+        void justifyLastLine() {
+            textAlignmentLast = EN_JUSTIFY;
+        }
+
+        int textAlignmentLast() {
+            return textAlignmentLast;
         }
 
         @Override
@@ -1396,6 +1411,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
         int def = twipsToMpt(foreignAttribute(block, WordLayoutElementMapping.TAB_DEFAULT));
         tabDefaultMpt = def > 0 ? def : 720 * 50;
+        noTabHangInd = "true".equals(rootAttribute(block, WordLayoutElementMapping.NO_TAB_HANG_IND));
+        justifySoftReturn = foreignAttribute(block, WordLayoutElementMapping.JUSTIFY_SOFT_RETURN) != null;
         String ind = foreignAttribute(block, WordLayoutElementMapping.TAB_IND);
         String[] indParts = ind == null ? new String[0] : ind.split(":", -1);
         tabLeftMpt = indParts.length > 0 ? twipsToMpt(indParts[0]) : 0;
@@ -1530,8 +1547,29 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** a hanging indent (a negative first-line offset) makes an implicit stop at the
      *  left indent */
     private final boolean tabHanging;
+    /** w:compat/w:noTabHangInd: a hanging indent makes no implicit tab stop.  @since 17.0.6 */
+    private final boolean noTabHangInd;
+    /** the paragraph's line that ends at a soft return is justified (&#xa7;4.2;
+     *  w:compat/w:doNotExpandShiftReturn is not set).  @since 17.0.6 */
+    private final boolean justifySoftReturn;
+    /** whether this line sequence is followed by a soft return, i.e. the break's block is
+     *  the next block-level child of the paragraph.  That is the XSLT pathway's shape; in
+     *  the visitor pathway the break is nested in the run's fo:inline and splits this
+     *  manager's own knuthParagraphs instead.  Set by
+     *  {@link WordBlockLayoutManager}.  @since 17.0.6 */
+    private boolean followedBySoftReturn;
     /** the decimal separator a decimal stop aligns (w:decimalSymbol; "." by default) */
     private final char decimalSeparator;
+
+    /** @see #followedBySoftReturn  @since 17.0.6 */
+    public void setFollowedBySoftReturn(boolean b) {
+        this.followedBySoftReturn = b;
+    }
+
+    /** Whether this block's soft returns end a justified line (&#xa7;4.2).  @since 17.0.6 */
+    public boolean isJustifySoftReturn() {
+        return justifySoftReturn;
+    }
 
     /** set by {@link #nextTabStop}: the alignment of the stop it found, and what
      *  leader that stop draws (LBP.LEADER_NONE/-DOTS/-RULE) */
@@ -1558,7 +1596,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 stopLeader = tabStopLeader[i];
             }
         }
-        if (tabHanging && tabLeftMpt > x && tabLeftMpt < best) {
+        if (tabHanging && !noTabHangInd && tabLeftMpt > x && tabLeftMpt < best) {
             best = tabLeftMpt;
             stopAlignment = TAB_LEFT;
             stopLeader = LBP.LEADER_NONE;
@@ -2581,6 +2619,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
                 // finish last paragraph before a new block sequence
                 if (!firstSeq.isInlineSequence()) {
+                    /* That block sequence is a soft return where the paragraph is one
+                     * whose soft returns Word justifies (docx4j:justify-soft-return is
+                     * written only for a justified paragraph whose sole block-level
+                     * content is soft returns), so the line this sequence ends is
+                     * justified like any other of the paragraph.  @since 17.0.6 */
+                    if (justifySoftReturn && textAlignment == EN_JUSTIFY) {
+                        lastPar.justifyLastLine();
+                    }
                     lastPar.endParagraph();
                     ElementListObserver.observe(lastPar, "line", null);
                     lastPar = null;
@@ -2666,6 +2712,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
 
         if (lastPar != null) {
+            // the XSLT pathway's shape: the break is the paragraph's next block-level
+            // child, so this manager's own last line is the one that ends at it
+            if (justifySoftReturn && textAlignment == EN_JUSTIFY && followedBySoftReturn) {
+                lastPar.justifyLastLine();
+            }
             lastPar.endParagraph();
             ElementListObserver.observe(lastPar, "line", fobj.getId());
             if (WordLineLayoutManager.log.isTraceEnabled()) {
@@ -2729,8 +2780,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private LineLayoutPossibilities findOptimalBreakingPoints(int alignment, Paragraph currPar,
                                                               boolean isLastPar) {
         lineLayouts = new LineLayoutPossibilities();
+        /* The paragraph's own text-align-last, which is the block's except where the
+         * paragraph ends at a soft return: Word justifies that line (§4.2), and
+         * collectInlineKnuthElements has marked it.  @since 17.0.6 */
         LineBreakingAlgorithm alg = new LineBreakingAlgorithm(alignment,
-                                        textAlignment, textAlignmentLast,
+                                        textAlignment, currPar.textAlignmentLast(),
                                         textIndent.getValue(this), currPar.lineFiller.getOpt(),
                                         lineHeight.getValue(this), lead, follow,
                                         (knuthParagraphs.indexOf(currPar) == 0),

@@ -92,6 +92,16 @@ public class ParagraphStylesInTableFix {
 
 	public static void process(WordprocessingMLPackage wmlPackage) {
 
+		/* w:compat/w:useWord2002TableStyleRules ("Emulate Word 2002 Table Style Rules",
+		 * ECMA-376-1 17.15.1) would switch this whole step off: Word 2002 did not put a
+		 * table style's w:pPr and w:rPr above docDefaults for the paragraphs of the table,
+		 * which is exactly what the synthetic style built below does.  It is deliberately
+		 * NOT read: measured over the three corpora, Word 365's own PDFs of the three
+		 * mode-11 documents which state it apply the table style's properties anyway, and
+		 * skipping this step for them cost 0.951 -> 0.105, 0.948 -> 0.248 and
+		 * 0.930 -> 0.842 of Word's lines.  See word-layout-settings.md §4(e).
+		 * @since 17.0.6 */
+
 		/* Are we invoked from FOPAreaTreeHelper?
 		 * 
 		 * 	at org.docx4j.convert.out.fo.FOPAreaTreeHelper.getAreaTreeViaFOP(FOPAreaTreeHelper.java:187)

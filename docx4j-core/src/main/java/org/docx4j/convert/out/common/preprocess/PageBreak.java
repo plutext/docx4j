@@ -83,12 +83,19 @@ public class PageBreak {
 	public static void process(WordprocessingMLPackage wmlPackage) {
 	Body body = wmlPackage.getMainDocumentPart().getJaxbElement().getBody();
 		//TODO: Convert to visitor
-		movePageBreaks(body);
+		/* w:compat/w:splitPgBreakAndParaMark ("Always Move Paragraph Mark to Page after a
+		 * Page Break", ECMA-376-1 17.15.1): whether a paragraph holding a page break with
+		 * content before it is split at the break - what precedes it staying on the page
+		 * it is on, its mark and what follows opening the next - or goes to the next page
+		 * whole, which is what docx4j did to 17.0.5.  The flag resolves on in every mode
+		 * (CompatibilityOptions), which is Word 365's measured behaviour for both a
+		 * mode-12 and a mode-15 golden; a document stating w:val="0" takes the old route.
+		 * @since 17.0.6 */
+		movePageBreaks(body.getContent(),
+				org.docx4j.model.CompatibilityOptions.of(wmlPackage)
+					.is(org.docx4j.model.CompatibilityOptions.Flag.SPLIT_PG_BREAK_AND_PARA_MARK));
 	}
 
-	private static void movePageBreaks(Body body) {
-		movePageBreaks(body.getContent());
-	}
 
 	/**
 	 * @param elts a list of block-level content: the body's, or that of a content
@@ -103,19 +110,19 @@ public class PageBreak {
 	 *        Tables are deliberately not descended into: a page break inside one
 	 *        belongs to the table (&#xa7;3.3) and is handled in the FO.
 	 */
-	private static void movePageBreaks(List<Object> elts) {
+	private static void movePageBreaks(List<Object> elts, boolean splitAtBreaks) {
 
 		for (int i=0; i<elts.size(); i++) {
 			Object o = XmlUtils.unwrap(elts.get(i));
 			if (o instanceof P) {
-				updateParagraph((P)o, elts, i);
+				updateParagraph((P)o, elts, i, splitAtBreaks);
 				// where the paragraph was split, the continuation is now at i+1 and is
 				// visited by the loop in its turn, so a paragraph with several breaks
 				// is split at each of them
 			} else if (o instanceof org.docx4j.wml.SdtBlock) {
 				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock)o;
 				if (sdt.getSdtContent()!=null && sdt.getSdtContent().getContent()!=null) {
-					movePageBreaks(sdt.getSdtContent().getContent());
+					movePageBreaks(sdt.getSdtContent().getContent(), splitAtBreaks);
 				}
 			}
 		}
@@ -128,6 +135,17 @@ public class PageBreak {
 	 * @param index the paragraph's position in that list
 	 */
 	static void updateParagraph(P paragraph, List<Object> siblings, int index) {
+		updateParagraph(paragraph, siblings, index, true);
+	}
+
+	/**
+	 * @param splitAtBreaks w:compat/w:splitPgBreakAndParaMark: whether a paragraph with
+	 *        content before its page break is split there (the flag's resolved value; see
+	 *        {@link #process}).  False takes the whole paragraph to the next page, as
+	 *        docx4j did to 17.0.5.
+	 * @since 17.0.6
+	 */
+	static void updateParagraph(P paragraph, List<Object> siblings, int index, boolean splitAtBreaks) {
 
 		while (true) {
 			List<Object> content = paragraph.getContent();
@@ -141,7 +159,8 @@ public class PageBreak {
 			// break-only paragraphs" shapes each give Word a page with nothing on it;
 			// folding the second break into the first gave 11 pages against Word's 13.
 			// @since 17.0.6
-			if (siblings!=null && (contentPrecedes(content, at) || breaksBefore(paragraph))) {
+			if (siblings!=null && splitAtBreaks
+					&& (contentPrecedes(content, at) || breaksBefore(paragraph))) {
 				split(paragraph, at, siblings, index);
 				return; // the continuation is at index+1, and the caller visits it in turn
 			}
