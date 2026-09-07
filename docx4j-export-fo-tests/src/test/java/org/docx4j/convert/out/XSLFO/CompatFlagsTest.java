@@ -249,17 +249,17 @@ public class CompatFlagsTest extends AbstractXSLFOTest {
 
 	/**
 	 * docx4j cancels a lone contextual paragraph's space at a cell's edges, which is what
-	 * Word 365 was measured doing; "Allow Contextual Spacing of Paragraphs in Tables"
-	 * keeps it.
+	 * Word 365 was measured doing - and Word 365 does the same with "Allow Contextual
+	 * Spacing of Paragraphs in Tables" stated: the compat-breaks probe pair renders
+	 * identically (row pitch 13.7pt either way), so the flag changes nothing here.
 	 */
 	@Test
-	public void allowSpaceOfSameStyleInTableKeepsTheCellSpace() throws Exception {
+	public void allowSpaceOfSameStyleInTableChangesNothing() throws Exception {
 		for (int flag : FLAGS) {
 			int cancelled = tableHeight(areaTree(pkg(CONTEXTUAL_CELL), flag));
-			int kept = tableHeight(areaTree(
+			int stated = tableHeight(areaTree(
 					pkg(CONTEXTUAL_CELL, "allowSpaceOfSameStyleInTable", "1"), flag));
-			assertTrue(flagName(flag) + ": the flag must keep the 20pt space-after ("
-					+ cancelled + " -> " + kept + " mpt)", kept - cancelled > 19000);
+			assertEquals(flagName(flag) + ": Word 365 ignores the flag", cancelled, stated);
 		}
 	}
 

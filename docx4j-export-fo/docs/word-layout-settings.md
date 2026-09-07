@@ -165,7 +165,7 @@ Status:
 | --- | --- | --- | --- | --- | --- |
 | `adjustLineHeightInTable` | "Add Document Grid Line Pitch To Lines in Table Cells" | §2.1, §2.2, [§3.5](word-layout-rules.md#s35) | NO RULE - `w:sectPr/w:docGrid` is not implemented at all | 22 | yes, but needs a document grid first |
 | `alignTablesRowByRow` | "Align Table Rows Independently" (each row wraps floating objects on its own) | §6.7, [§3.3rowtop](word-layout-rules.md#s33rowtop) | IGNORED - and a candidate discriminator for the open row-levelling question | 5 | yes: a two-cell row whose cells carry different `w:before`, with and without |
-| `allowSpaceOfSameStyleInTable` | "Allow Contextual Spacing of Paragraphs in Tables" | [§3.5](word-layout-rules.md#s35) (the "only paragraph of a cell" rule) | **HONOURED** (17.0.6) - `WordLayoutFixups.applyContextualSpacing`; off in every mode, so the measured behaviour is unchanged and a document stating it keeps the space. **32 documents of the three corpora state it and none moves** (measured on the 17 of one corpus), so honouring it is neutral | 32 stated (the count of 0 was a miscount) | `compat-breaks` (no golden) |
+| `allowSpaceOfSameStyleInTable` | "Allow Contextual Spacing of Paragraphs in Tables" | [§3.5](word-layout-rules.md#s35) (the "only paragraph of a cell" rule) | **IGNORED** (17.0.6) - resolved by `CompatibilityOptions` but not applied: the compat-breaks probe pair, identical but for the flag, renders identically in Word 365 (row pitch 13.7pt either way) | 32 stated (the count of 0 was a miscount) | `compat-breaks` (no golden) |
 | `applyBreakingRules` | Legacy Ethiopic/Amharic line breaking | §4.1, §4.3 | NO RULE | 0 | no (out of scope) |
 | `autoSpaceLikeWord95` | Word 95 full-width character spacing | §4.6 | NO RULE | 0 | no (CJK) |
 | `autofitToFirstFixedWidthCell` | "Allow Table Columns To Exceed Preferred Widths of Constituent Cells" | [§6.3grid](word-layout-rules.md#s63grid), §6.4 | IGNORED - the grid-outranks-`w:tcW` rule is unconditional. **Deferred in 17.0.6**: [§6.3grid](word-layout-rules.md#s63grid) measured that rule as Word 365's behaviour on documents which do **not** state the flag, i.e. as the flag's own default, so its polarity cannot be settled without a golden that states it | 0 | `compat-tables` carries the shape |
@@ -326,7 +326,7 @@ corpus count against the importance of the rule the flag would switch.
    indent makes a stop at all.
 8. **`doNotBreakWrappedTables`** (8) - *deferred*, there being no floating-table breaking
    rule for it to switch - [§6.8](word-layout-rules.md#s69).
-9. **`allowSpaceOfSameStyleInTable`** (0 stated) - *done* - [§3.5](word-layout-rules.md#s35). The
+9. **`allowSpaceOfSameStyleInTable`** (0 stated) - *wired, then taken out: Word 365 ignores it (compat-breaks probe)* - [§3.5](word-layout-rules.md#s35). The
    cell contextual-spacing rule cost 37 Word pages against 43 on one document; the flag
    switches it.
 10. **`noLeading`** (0 stated) - *deferred*: `WordLineMetrics` is a static font-metric

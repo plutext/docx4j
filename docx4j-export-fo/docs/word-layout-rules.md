@@ -198,7 +198,7 @@ So every legacy flag defaults off, and the three rules keyed on one that a real 
 states - `growAutofit`, `useWord2002TableStyleRules`, `forgetLastTabAlignment` - were
 measured and unkeyed again ([settings §4(e)](word-layout-settings.md)). The rules that do
 read a flag are `doNotExpandShiftReturn` (§4.2), `noTabHangInd` (§4.4),
-`allowSpaceOfSameStyleInTable` (§3.5), `splitPgBreakAndParaMark` and
+`allowSpaceOfSameStyleInTable` (§3.5 - resolved, but measured to change nothing in Word 365), `splitPgBreakAndParaMark` and
 `suppressSpBfAfterPgBrk` (§3.3); the last two have defaults which are themselves
 measurements of Word 365.
 
@@ -861,8 +861,9 @@ row now spills. XSL-FO drops space at the end of a
 reference area, so `WordLayoutFixups` pins it there with
 `space-after.conditionality="retain"` - and the cell's edges are boundaries
 `w:contextualSpacing` cancels the space at, the **only** paragraph of a cell included,
-unless **`w:compat/w:allowSpaceOfSameStyleInTable`** is set, which keeps it
-([§1.6](#s16settings); the flag resolves off in every mode, which is what was measured).
+whatever **`w:compat/w:allowSpaceOfSameStyleInTable`** says: the compat-breaks probe
+pair, identical but for that flag, renders identically in Word 365 (row pitch 13.7pt
+either way), so the flag is resolved but ignored ([§1.6](#s16settings)).
 Cancelling it walked the cell's paragraphs in pairs, so a single-paragraph cell was never
 examined at all: measured on a planner whose cells hold one contextual paragraph each
 against docDefaults `w:after="200"`, Word's row pitch is 10.1pt (the 9.199pt line box plus

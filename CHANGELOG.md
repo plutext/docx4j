@@ -13,7 +13,7 @@ justifies it unless w:compat/w:doNotExpandShiftReturn is set
 (docx4j.convert.out.fo.wordLayout.justifySoftReturn=false restores 17.0.5's behaviour)
 - the w:settings/w:compat layout switches are now read: w:doNotExpandShiftReturn,
 w:splitPgBreakAndParaMark, w:suppressSpBfAfterPgBrk, w:noTabHangInd and
-w:allowSpaceOfSameStyleInTable each switch the rule they govern
+w:allowSpaceOfSameStyleInTable (resolved, but measured to change nothing in Word 365 and so not applied) each switch the rule they govern
 - new org.docx4j.model.CompatibilityOptions resolves a w:compat flag as Word does: the
 document's value where it states one, else the value its compatibilityMode implies (for
 the legacy flags, measured, that is off - the mode says what Word writes, not what its

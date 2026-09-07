@@ -2746,16 +2746,18 @@ public final class WordLayoutFixups {
 	}
 
 	/**
-	 * @param compat w:compat/w:allowSpaceOfSameStyleInTable ("Allow Contextual Spacing of
-	 *        Paragraphs in Tables", ECMA-376-1 17.15.1): where it is on, the space a
-	 *        contextual paragraph would otherwise lose at a cell's edges is kept.  The
-	 *        flag resolves off in every mode, which is what docx4j has always done and
-	 *        what Word 365 was measured doing; a document which states it is honoured.
+	 * @param compat resolved for the document; w:compat/w:allowSpaceOfSameStyleInTable
+	 *        ("Allow Contextual Spacing of Paragraphs in Tables", ECMA-376-1 17.15.1)
+	 *        was wired here and taken out again: the compat-breaks probe pair, identical
+	 *        but for the flag, renders identically in Word 365 - the table's rows stay
+	 *        at the bare 13.7pt pitch with the flag stated - where honouring it gave
+	 *        every row its 10pt space-after back (23.7pt).  Word 365 ignores the flag,
+	 *        so the cell-edge rule is unconditional; the parameter stays for the day a
+	 *        flag is found to matter.
 	 * @since 17.0.6
 	 */
 	static void applyContextualSpacing(Document doc, org.docx4j.model.CompatibilityOptions compat) {
-		boolean cellEdges = !compat.is(
-				org.docx4j.model.CompatibilityOptions.Flag.ALLOW_SPACE_OF_SAME_STYLE_IN_TABLE);
+		boolean cellEdges = true;
 		for (Element flow : elements(doc, "flow")) contextualSpacingAmong(flow, false);
 		for (Element span : spanAllBlocks(doc)) contextualSpacingAmong(span, false);
 		for (Element cell : elements(doc, "table-cell")) contextualSpacingAmong(cell, cellEdges);
