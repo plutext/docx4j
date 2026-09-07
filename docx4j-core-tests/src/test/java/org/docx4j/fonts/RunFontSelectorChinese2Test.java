@@ -105,7 +105,7 @@ public class RunFontSelectorChinese2Test {
 			Element foInline = (Element)df.getFirstChild();
 //			System.out.println(foInline.getAttribute("font-family"));
 			
-			assertEquals("iteration "+i, foInline.getAttribute("font-family"), expectedFont[i]);
+			assertEquals("iteration "+i, expectedFont[i], plain(foInline.getAttribute("font-family")));
 		}
 		
 	}	
@@ -683,4 +683,18 @@ public class RunFontSelectorChinese2Test {
 			}, RunFontActionType.XSL_FO);
 
 	}	
+
+	/** the font-family without the variant suffix (the kerned or no-ligature twin
+	 *  FopConfigUtil declares); both test documents set w:kern in docDefaults, so
+	 *  every run here is kerned, and the twin is the same physical font */
+	static String plain(String fontFamily) {
+		if (fontFamily==null) return null;
+		if (fontFamily.endsWith(RunFontSelector.NOLIGA_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length() - RunFontSelector.NOLIGA_SUFFIX.length());
+		}
+		if (fontFamily.endsWith(RunFontSelector.KERNED_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length() - RunFontSelector.KERNED_SUFFIX.length());
+		}
+		return fontFamily;
+	}
 }

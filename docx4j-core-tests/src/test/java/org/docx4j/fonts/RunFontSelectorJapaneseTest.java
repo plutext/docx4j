@@ -111,9 +111,9 @@ public class RunFontSelectorJapaneseTest {
 				 * describes; verified against a real Windows 11 run 2026-09-03.)
 				 * */
 
-				assertEquals(win10Base[i], foInline.getAttribute("font-family"));
+				assertEquals(win10Base[i], plain(foInline.getAttribute("font-family")));
 			} else {
-				assertEquals(expectedFont[i], foInline.getAttribute("font-family"));				
+				assertEquals(expectedFont[i], plain(foInline.getAttribute("font-family")));				
 			}
 		}
 		
@@ -636,4 +636,18 @@ public class RunFontSelectorJapaneseTest {
 			}, RunFontActionType.XSL_FO);
 
 	}	
+
+	/** the font-family without the variant suffix (the kerned or no-ligature twin
+	 *  FopConfigUtil declares); both test documents set w:kern in docDefaults, so
+	 *  every run here is kerned, and the twin is the same physical font */
+	static String plain(String fontFamily) {
+		if (fontFamily==null) return null;
+		if (fontFamily.endsWith(RunFontSelector.NOLIGA_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length() - RunFontSelector.NOLIGA_SUFFIX.length());
+		}
+		if (fontFamily.endsWith(RunFontSelector.KERNED_SUFFIX)) {
+			return fontFamily.substring(0, fontFamily.length() - RunFontSelector.KERNED_SUFFIX.length());
+		}
+		return fontFamily;
+	}
 }
