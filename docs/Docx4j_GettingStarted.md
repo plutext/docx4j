@@ -2,153 +2,153 @@ Docx4j - Getting Started
 
 Contents
 
-[What is docx4j?	4](#_Toc63582386)
+[What is docx4j?	4](#_Toc6939586)
 
-[What sorts of things can you do with docx4j?	5](#_Toc63582387)
+[What sorts of things can you do with docx4j?	5](#_Toc6939587)
 
-[Is docx4j for you?	5](#_Toc63582388)
+[Is docx4j for you?	5](#_Toc6939588)
 
-[GraalVM	6](#_Toc63582389)
+[GraalVM	6](#_Toc6939589)
 
-[docx4j.NET	6](#_Toc63582390)
+[docx4j.NET	6](#_Toc6939590)
 
-[What Word documents does it support?	6](#_Toc63582391)
+[What Word documents does it support?	6](#_Toc6939591)
 
-[Handling legacy binary .doc files	7](#_Toc63582392)
+[Handling legacy binary .doc files	7](#_Toc6939592)
 
-[A word about Jaxb	7](#_Toc63582393)
+[A word about Jaxb	7](#_Toc6939593)
 
-[Using docx4j via Maven	8](#_Toc63582394)
+[Using docx4j via Maven	8](#_Toc6939594)
 
-[Using docx4j binaries	8](#_Toc63582395)
+[Using docx4j binaries	8](#_Toc6939595)
 
-[docx4j dependencies	8](#_Toc63582396)
+[docx4j dependencies	8](#_Toc6939596)
 
-[slf4j	8](#_Toc63582397)
+[slf4j	8](#_Toc6939597)
 
-[other dependencies	9](#_Toc63582398)
+[other dependencies	9](#_Toc6939598)
 
-[Docx4j source code	10](#_Toc63582399)
+[Docx4j source code	10](#_Toc6939599)
 
-[Javadoc	10](#_Toc635823100)
+[Javadoc	10](#_Toc69395100)
 
-[Building docx4j from source	10](#_Toc635823101)
+[Building docx4j from source	10](#_Toc69395101)
 
-[Command line -via Maven	10](#_Toc635823102)
+[Command line -via Maven	10](#_Toc69395102)
 
-[Eclipse	10](#_Toc635823103)
+[Eclipse	10](#_Toc69395103)
 
-[Using a different IDE?	11](#_Toc635823104)
+[Using a different IDE?	11](#_Toc69395104)
 
-[Open an existing docx/pptx/xlsx document	11](#_Toc635823105)
+[Open an existing docx/pptx/xlsx document	11](#_Toc69395105)
 
-[OpenXML concepts	12](#_Toc635823106)
+[OpenXML concepts	12](#_Toc69395106)
 
-[Specification versions	12](#_Toc635823107)
+[Specification versions	12](#_Toc69395107)
 
-[Architecture	13](#_Toc635823108)
+[Architecture	13](#_Toc69395108)
 
-[Jaxb: marshalling and unmarshalling	14](#_Toc635823109)
+[Jaxb: marshalling and unmarshalling	14](#_Toc69395109)
 
-[Parts List	15](#_Toc635823110)
+[Parts List	15](#_Toc69395110)
 
-[MainDocumentPart	17](#_Toc635823111)
+[MainDocumentPart	17](#_Toc69395111)
 
-[Samples	19](#_Toc635823112)
+[Samples	19](#_Toc69395112)
 
-[Creating a new docx	21](#_Toc635823113)
+[Creating a new docx	21](#_Toc69395113)
 
-[docx4j.properties	21](#_Toc635823114)
+[docx4j.properties	21](#_Toc69395114)
 
-[Adding a paragraph of text	22](#_Toc635823115)
+[Adding a paragraph of text	22](#_Toc69395115)
 
-[General strategy/approach for creating stuff	23](#_Toc635823116)
+[General strategy/approach for creating stuff	23](#_Toc69395116)
 
-[Formatting Properties	25](#_Toc635823117)
+[Formatting Properties	25](#_Toc69395117)
 
-[Creating and adding a table	25](#_Toc635823118)
+[Creating and adding a table	25](#_Toc69395118)
 
-[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc635823119)
+[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc69395119)
 
-[Traversing a document	26](#_Toc635823120)
+[Traversing a document	26](#_Toc69395120)
 
-[Adding a Part	27](#_Toc635823121)
+[Adding a Part	27](#_Toc69395121)
 
-[Importing XHTML	27](#_Toc635823122)
+[Importing XHTML	27](#_Toc69395122)
 
-[Markdown import and export	28](#_Toc635823123)
+[Markdown import and export	28](#_Toc69395123)
 
-[docx4j for AI agents (MCP)	28](#_Toc635823124)
+[docx4j for AI agents (MCP)	28](#_Toc69395124)
 
-[Using an LLM with docx4j	28](#_Toc635823125)
+[Using an LLM with docx4j	28](#_Toc69395125)
 
-[docx to (X)HTML	29](#_Toc635823126)
+[docx to (X)HTML	29](#_Toc69395126)
 
-[docx to PDF	30](#_Toc635823127)
+[docx to PDF	30](#_Toc69395127)
 
-[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc635823128)
+[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc69395128)
 
-[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc635823129)
+[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc69395129)
 
-[docx to PDF via XSL FO	31](#_Toc635823130)
+[docx to PDF via XSL FO	31](#_Toc69395130)
 
-[Image Handling - DOCX	33](#_Toc635823131)
+[Image Handling - DOCX	34](#_Toc69395131)
 
-[Windows metafiles (WMF, EMF, EMF+)	35](#_Toc635823132)
+[Windows metafiles (WMF, EMF, EMF+)	35](#_Toc69395132)
 
-[Manual Image Manipulation	35](#_Toc635823133)
+[Manual Image Manipulation	36](#_Toc69395133)
 
-[Image Handling – PPTX	36](#_Toc635823134)
+[Image Handling – PPTX	37](#_Toc69395134)
 
-[Adding Headers/Footers	36](#_Toc635823135)
+[Adding Headers/Footers	37](#_Toc69395135)
 
-[Protection Settings	36](#_Toc635823136)
+[Protection Settings	37](#_Toc69395136)
 
-[docx Table of Contents	37](#_Toc635823137)
+[docx Table of Contents	38](#_Toc69395137)
 
-[Introduction	37](#_Toc635823138)
+[Introduction	38](#_Toc69395138)
 
-[Field background	38](#_Toc635823139)
+[Field background	38](#_Toc69395139)
 
-[TOC Content Control	38](#_Toc635823140)
+[TOC Content Control	39](#_Toc69395140)
 
-[TOC Field Syntax	39](#_Toc635823141)
+[TOC Field Syntax	39](#_Toc69395141)
 
-[Inserting/generating a TOC – "pure Java" considerations	41](#_Toc635823142)
+[Inserting/generating a TOC – "pure Java" considerations	41](#_Toc69395142)
 
-[Text extraction	41](#_Toc635823143)
+[Text extraction	42](#_Toc69395143)
 
-[Text substitution/document generation/reporting	41](#_Toc635823144)
+[Text substitution/document generation/reporting	42](#_Toc69395144)
 
-[Text substitution – document surface	42](#_Toc635823145)
+[Text substitution – document surface	42](#_Toc69395145)
 
-[Text substitution via data bound content controls	43](#_Toc635823146)
+[Text substitution via data bound content controls	43](#_Toc69395146)
 
-[Binding extensions for repeats and conditionals	44](#_Toc635823147)
+[Binding extensions for repeats and conditionals	44](#_Toc69395147)
 
-[Binding escaped XHTML (XML + CSS)	44](#_Toc635823148)
+[Binding escaped XHTML (XML + CSS)	45](#_Toc69395148)
 
-[Binding other rich content	44](#_Toc635823149)
+[Binding other rich content	45](#_Toc69395149)
 
-[Authoring	44](#_Toc635823150)
+[Authoring	45](#_Toc69395150)
 
-[Mailmerge	44](#_Toc635823151)
+[Mailmerge	45](#_Toc69395151)
 
-[SmartArt	44](#_Toc635823152)
+[SmartArt	45](#_Toc69395152)
 
-[JAXB stuff	45](#_Toc635823153)
+[JAXB stuff	45](#_Toc69395153)
 
-[Cloning	45](#_Toc635823154)
+[Cloning	45](#_Toc69395154)
 
-[javax.xml.bind.JAXBElement	45](#_Toc635823155)
+[javax.xml.bind.JAXBElement	46](#_Toc69395155)
 
-[@XmlRootElement	45](#_Toc635823156)
+[@XmlRootElement	46](#_Toc69395156)
 
-[Merging Documents and Presentations	46](#_Toc635823157)
+[Merging Documents and Presentations	47](#_Toc69395157)
 
-[Appendix 1 – Font Mapping	48](#_Toc635823158)
+[Appendix 1 – Font Mapping	48](#_Toc69395158)
 
-[Appendix 2 – Office font solutions	51](#_Toc635823159)
+[Appendix 2 – Office font solutions	51](#_Toc69395159)
 
   
 
@@ -1408,6 +1408,22 @@ PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.0.6: l
 See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
 These jars are in the zip file, in dir optional/export-fo  
+
+**Hyphenation.  **From 17.0.6, hyphenation in PDF output is driven by the document, as in Word: docx4j reads w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit and w:doNotHyphenateCaps from settings.xml (and w:suppressAutoHyphens on a paragraph), and hyphenates only where the document asks for it.  Nothing needs configuring per document.
+
+FOP hyphenates from TeX pattern files and ships none, and the usual set is not under the Apache licence, so docx4j-export-fo does not depend on it.  To get hyphenated output, add the patterns to your own classpath:
+
+&#9;	\<dependency\>
+
+&#9;		\<groupId\>net.sf.offo\</groupId\>
+
+&#9;		\<artifactId\>fop-hyph\</artifactId\>
+
+&#9;		\<version\>2.0\</version\>
+
+&#9;	\</dependency\>
+
+Without patterns the document's setting is honoured but nothing can be hyphenated (FOP logs that no pattern was found for the language).  The property docx4j.convert.out.fo.hyphenate overrides the document: true or false forces hyphenation on or off; leave it unset to let each document decide.  Two things to know: Word hyphenates a language only where its proofing tools are installed on the machine that laid the document out, which the docx does not record, so Word's PDF and docx4j's can differ for a language the author did not have installed; and the patterns are TeX's rather than Word's dictionary, so an occasional break point differs.
 
 **Bullet/symbol handling.  **docx4j-export-fo 11.5.7 introduced better handling of the symbols in the following fonts:
 
