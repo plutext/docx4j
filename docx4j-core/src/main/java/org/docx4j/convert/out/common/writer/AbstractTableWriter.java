@@ -411,6 +411,21 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			// column does, widening to the table's preferred width follows the w:tblGrid
 			// rather than the columns' content (see widenToPreferredTableWidth)
 			boolean[] declared = new boolean[cols];
+			int tablePreferred = preferredTableWidthTwips(context, tblPr);
+			/* A w:tcW in pct is a preferred width like a dxa one, stated as a fraction of
+			 * the table's own width rather than in twips, and reading only dxa left a pct
+			 * table with no column preferences at all: it failed the "every column has a
+			 * preferred width" test, fell through to the content pass, and was laid out on
+			 * its content rather than on the grid Word cached.  61 documents and 661 tables
+			 * of the three corpora state w:tblW pct with w:tcW pct.
+			 *
+			 * Read per cell, exactly as a dxa w:tcW is.  Requiring the cells to describe
+			 * every column instead removes the one document this costs - a table whose
+			 * rows are mostly gridSpan cells, which declares two of its nine columns and
+			 * whose other seven are better content-sized (0.989 -> 0.940, and a page over
+			 * Word's count) - but it also gives back two of the five documents it wins on
+			 * that corpus, which is a wash, and it would treat pct more strictly than dxa
+			 * for no reason the documents support.  @since 17.1.1 */
 			double[] min = new double[cols], max = new double[cols];
 			boolean anyAuto = false;
 			// Pass 1: single-column cells set the columns' minima and maxima.
@@ -436,6 +451,12 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 						if (tcW != null && tcW.getW() != null && tcW.getW().intValue() > 0
 								&& !"auto".equals(tcW.getType())) {
 							declared[c] = true;
+						}
+						if (!hasPref && tcW != null && "pct".equals(tcW.getType())
+								&& tcW.getW() != null && tcW.getW().intValue() > 0
+								&& tablePreferred > 0) {
+							int tw = (int) ((long) tablePreferred * tcW.getW().intValue() / 5000);
+							if (tw > 0) pref[c] = Math.max(pref[c], tw);
 						}
 						if (hasPref) pref[c] = Math.max(pref[c], tcW.getW().intValue());
 						else anyAuto = true;

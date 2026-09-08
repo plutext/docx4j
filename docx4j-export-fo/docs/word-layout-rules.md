@@ -2183,43 +2183,53 @@ recovered (a table that took four pages of Word's three now takes three) and one
 no document down. A table which states no width of its own and has all-auto cells is still
 untouched, so the content-based pass and §6.4's widening still apply to it.
 
-<a id="s63pctcells"></a>**Open: which wins in a `pct` table, the grid or `pct` cells?** The
-rule above is stated for every unit, but the only measurements behind it are `dxa`, and a
-corpus table pointed the other way for `pct`: its `w:tblW` is `5000 pct` with a grid which,
-scaled to the 523.3pt the pct asks for, gives column 8 = **80.7pt**, while the widest row's
-`w:tcW` of `1296/5000` gives **135.6pt** - and Word measures about **133.4** (gridline 426.5
-to 559.9). `w:tblW pct` with `w:tcW pct` is **61 documents and 661 tables**.
+<a id="s63pctcells"></a>**A `w:tcW` in `pct` is a preferred width, exactly as a `dxa` one
+is** (17.1.1). Reading only `dxa` left a `pct` table with *no* column preferences at all: it
+failed the "every column has a preferred width" test above, fell through to the content pass,
+and was laid out on its content rather than on the grid Word cached. `w:tblW pct` with
+`w:tcW pct` is **61 documents and 661 tables** of the three corpora. A percentage is of the
+table's own width (fiftieths of a per cent), so it needs the table to state one. Measured over
+all three corpora: mean line parity 0.8826 to 0.8844, 0.8511 to 0.8523 and 0.8816 to 0.8841,
+**+1183 lines matched**, the medians up on all three, `parity >= 0.98` net +1, and **twelve
+documents up against one down** - one long document goes 0.914 to 0.981 with its page count
+landing exactly on Word's 161, and another 0.804 to 0.929. It is read per cell, as `dxa` is;
+requiring the cells to describe every column removes the one document it costs - a table whose
+rows are mostly `gridSpan` cells, which declares two of its nine columns and whose other seven
+are better content-sized (0.989 to 0.940) - but gives back two of the five it wins on that
+corpus, which is a wash, and would treat `pct` more strictly than `dxa` for no reason the
+documents support.
 
-The `table-cell-pct` probe (17.1.1) was built to settle it, and Word's answer on a *clean*
-table is unambiguous. Each table is `w:tblW 5000 pct` = 451.3pt and states its proportions
-twice, in the grid and in the cells; column 1's width by each reading, against Word:
+**The `table-cell-pct` probe, and why a generated probe cannot answer this.** The probe
+(17.1.1) was built to ask which wins when the grid and the cells disagree. Each table is
+`w:tblW 5000 pct` = 451.3pt and states its proportions twice; column 1's width by each reading,
+against Word:
 
 | case | grid says | cells say | **Word** |
 |---|---|---|---|
 | P1 grid 66.5% against cells 25% | 300.1pt | 112.8pt | **113.0pt** |
 | P2 the two agree (control) | 112.8pt | 112.8pt | **113.0pt** |
 | P3 cells state 20% + 40%, summing to 60% | 225.7pt | 90.3pt | **150.7pt** = 33.4% |
-| P4 the corpus shape, grid 50% against cells 25.92% | 225.7pt | 117.0pt | **117.1pt** |
+| P4 grid 50% against cells 25.92% | 225.7pt | 117.0pt | **117.1pt** |
 | P5 the same disagreement stated in `dxa` | 300.0pt | 112.8pt | **113.2pt** |
 
-So on a clean table the **cells beat the grid, in `dxa` as well as `pct`**, and cells whose
-percentages do not add up are **scaled to fill the table** rather than abandoned for the grid.
+Read literally that says the cells beat the grid in either unit, and that cells whose
+percentages do not add up are scaled to fill the table. Implemented, it takes the probe from
+43% to 100% - and costs an unbiased quarter of the 191-document corpus **0.8967 to 0.8771**,
+seven documents down against one up.
 
-**And that does not generalise to real documents, which is why nothing here changed yet.**
-Implemented as written, over an unbiased quarter of the 191-document corpus, "the cells are
-the layout" costs mean line parity 0.8967 to 0.8771 - seven documents down against one up,
-two page counts lost - because a real table states `w:tcW` on many rows and a stale or
-partial one then beats the grid, which is the defect [the rule above](#s63grid) was measured
-to fix. Restricted to `pct` cells the rows agree on, and fed to the content pass as a
-preferred width rather than as the layout, it reaches 0.8966 - one document up 0.879 to 0.939
-and one down **1.000 to 0.933**, a wash. That counter-example is a `w:tblW 5000 pct` table
-whose writable width (9638tw) the grid sums to, exactly the probe's shape, whose cells ask
-for 13.78% of column 1 where the grid says 19.41% - and Word draws the grid's, the opposite
-of P1. Content does not explain it: the column's content fits the smaller width.
+The reason is that **the probe's `w:tblGrid` carries no authority**. A `w:tblGrid` in a
+Word-authored autofit table is Word's own cached layout, so it is what Word draws; a grid this
+harness generated is whatever the generator wrote, and Word recomputes from the cells on open.
+So the probe measures "what Word does with a grid it did not write", which is not the corpus's
+question. The corpus counter-example is direct: a `w:tblW 5000 pct` table whose writable width
+(9638tw) its grid sums to - the probe's shape exactly - asks for 13.78% of column 1 where the
+grid says 19.41%, and **Word draws the grid's**, the opposite of P1. It is not a compatibility
+setting: that document and the probe are both `compatibilityMode 15`. Content does not explain
+it either - the column's content fits the smaller width.
 
-The next probe has to isolate what the corpus table has and P1 has not - **more than one
-row**, and the grid giving column 1 *more* than the cells rather than less - before this is
-worth changing. The probe and its golden are in place to build on.
+So the change above deliberately leaves the grid winning where the two disagree, and any future
+probe about a grid must either use `w:tblLayout fixed` (which Word does not recompute) or be
+round-tripped through Word before it can be read as evidence.
 
 **Column-spanning cells.** Non-spanning cells size their columns first; a spanning cell
 widens the columns it spans only when their sum falls short of what it needs, sharing by

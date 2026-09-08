@@ -15,6 +15,8 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   72) sets how far past the measure such a word may run before it is broken.
 - A table which states an absolute w:tblW its w:tblGrid sums to is laid out on that grid
   even when every cell is w:tcW auto; it used to fall through to content autofit.
+- A w:tcW in pct is now a preferred column width, as a dxa one is; a pct table used to have
+  no column preferences at all and was laid out on its content.
 
 Version 17.1.0
 ===============
