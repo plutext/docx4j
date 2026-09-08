@@ -584,14 +584,16 @@ public class TableWriter extends AbstractTableWriter {
 		Node content = cell.getContent();
 		if (content == null) return new double[] { 0, 0 };
 		double[] out = new double[2];
+		org.docx4j.fonts.Mapper mapper = context.getWmlPackage() == null ? null
+				: context.getWmlPackage().getFontMapper();
 		NodeList children = content.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
-			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out);
+			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out, mapper);
 		}
 		return out;
 	}
 
-	private static void measureBlockTree(Element el, double[] out) {
+	private static void measureBlockTree(Element el, double[] out, org.docx4j.fonts.Mapper mapper) {
 		String ln = el.getLocalName();
 		if ("table".equals(ln)) {
 			// a nested table: treat as unbreakable at its own width if known, else ignore
@@ -604,7 +606,7 @@ public class TableWriter extends AbstractTableWriter {
 		if ("block".equals(ln) || "list-block".equals(ln) || "block-container".equals(ln)) {
 			// a paragraph (or a container of them): measure its inline content as one line
 			double[] line = new double[3]; // {maxWord, total, currentWord}
-			measureInline(el, line, true);
+			measureInline(el, line, true, mapper);
 			line[0] = Math.max(line[0], line[2]);
 			out[0] = Math.max(out[0], line[0]);
 			out[1] = Math.max(out[1], line[1]);
@@ -612,17 +614,17 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		NodeList children = el.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
-			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out);
+			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out, mapper);
 		}
 	}
 
 	/** Walk inline content; nested blocks (paragraphs inside a list item) each count as a line. */
-	private static void measureInline(Element el, double[] line, boolean top) {
+	private static void measureInline(Element el, double[] line, boolean top, org.docx4j.fonts.Mapper mapper) {
 		NodeList children = el.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			Node n = children.item(i);
 			if (n.getNodeType() == Node.TEXT_NODE) {
-				measureText(n.getNodeValue(), fontFor(el), sizeFor(el), line);
+				measureText(n.getNodeValue(), fontFor(el, mapper), sizeFor(el), line);
 			} else if (n instanceof Element) {
 				Element c = (Element) n;
 				String ln = c.getLocalName();
@@ -646,12 +648,12 @@ public class TableWriter extends AbstractTableWriter {
 					line[2] = 0;
 				} else if ("block".equals(ln) && !top) {
 					double[] inner = new double[3];
-					measureInline(c, inner, false);
+					measureInline(c, inner, false, mapper);
 					inner[0] = Math.max(inner[0], inner[2]);
 					line[0] = Math.max(line[0], inner[0]);
 					line[1] = Math.max(line[1], inner[1]);
 				} else {
-					measureInline(c, line, false);
+					measureInline(c, line, false, mapper);
 				}
 			}
 		}
@@ -689,12 +691,60 @@ public class TableWriter extends AbstractTableWriter {
 		}
 	}
 
-	private static org.docx4j.fonts.PhysicalFont fontFor(Element el) {
-		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
-			String f = ((Element) n).getAttribute("font-family");
-			if (f != null && f.length() > 0) return org.docx4j.fonts.PhysicalFonts.get(f);
+	/**
+	 * The face FOP will set this element's text in: the nearest {@code font-family}
+	 * names the family (RunFontSelector writes the regular face's name for all four
+	 * faces), and the nearest {@code font-weight} and {@code font-style} pick the
+	 * face, resolved as FOP's own configuration resolves them.  Until 17.1.1 only the
+	 * family was consulted, so every bold cell was measured in the regular face -
+	 * 79.6pt for a heading FOP then drew at 89.1 - and the columns of a table with bold
+	 * headings were split some 11-13% narrow, with the difference handed to a
+	 * neighbour whose text then stayed on one line where Word wraps it.  A family
+	 * without the face is measured, as it is drawn, in the regular one.
+	 */
+	private static org.docx4j.fonts.PhysicalFont fontFor(Element el, org.docx4j.fonts.Mapper mapper) {
+		org.docx4j.fonts.PhysicalFont regular = null;
+		boolean familySeen = false, weightSeen = false, styleSeen = false;
+		boolean bold = false, italic = false;
+		for (Node n = el; n instanceof Element && !(familySeen && weightSeen && styleSeen); n = n.getParentNode()) {
+			Element e = (Element) n;
+			if (!familySeen) {
+				String f = e.getAttribute("font-family");
+				if (f != null && f.length() > 0) {
+					familySeen = true;
+					regular = org.docx4j.fonts.PhysicalFonts.get(f);
+				}
+			}
+			if (!weightSeen) {
+				String w = e.getAttribute("font-weight");
+				if (w != null && w.length() > 0) {
+					weightSeen = true;
+					bold = isBoldWeight(w);
+				}
+			}
+			if (!styleSeen) {
+				String s = e.getAttribute("font-style");
+				if (s != null && s.length() > 0) {
+					styleSeen = true;
+					italic = "italic".equalsIgnoreCase(s) || "oblique".equalsIgnoreCase(s);
+				}
+			}
 		}
-		return null;
+		if (regular == null || (!bold && !italic)) return regular;
+		org.docx4j.fonts.PhysicalFont face = org.docx4j.fonts.fop.util.FopConfigUtil.renderedFace(mapper, regular, bold, italic);
+		return face == null ? regular : face;
+	}
+
+	/** "bold", "bolder", or a number FOP resolves to the bold face (it tries 700 and up before
+	 *  400 for anything over 500). */
+	private static boolean isBoldWeight(String w) {
+		w = w.trim();
+		if ("bold".equalsIgnoreCase(w) || "bolder".equalsIgnoreCase(w)) return true;
+		try {
+			return Integer.parseInt(w) >= 600;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
 	private static double sizeFor(Element el) {

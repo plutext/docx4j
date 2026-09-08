@@ -23,6 +23,11 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   having it scaled to the percentage: measured against the grid Word writes on a re-save,
   Word keeps the authored grid in 213 of the corpora's 215 such tables. One landscape
   document's tables were being drawn 3.07 times too wide.
+- The autofit column sizer measures bold and italic cell text in the face FOP draws it in.
+  It measured all four faces with the regular one, so a table with bold headings had its
+  columns split some 11-13% narrow (an 8pt heading measured 79.6pt where FOP sets it at
+  89.1) and the difference handed to a neighbour, whose text then stayed on one line where
+  Word wraps it.
 
 Other:
 

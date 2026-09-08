@@ -507,6 +507,60 @@ public class FopConfigUtil {
 	}
 
 	/**
+	 * The face FOP will draw a run of this family in, given the configuration
+	 * {@link #declareRendererFonts} builds from the same mapper - so that a width docx4j
+	 * measures before FOP sees the document (the table autofit pass) is the width FOP
+	 * lays out.
+	 *
+	 * <p>RunFontSelector writes the regular face's name as {@code font-family} for all
+	 * four faces of a family, and {@code font-weight} / {@code font-style} say which one;
+	 * this reproduces what the declaration above and FOP's own lookup
+	 * ({@code FontInfo.fuzzyFontLookup}) make of that:</p>
+	 * <ul>
+	 * <li><b>bold</b>, or <b>italic</b>: that face where the mapper has one, else the
+	 * regular file - FOP re-strokes or skews the regular glyphs when
+	 * {@code simulate-style} is on, and matches the nearest declared weight when it is
+	 * off, and either way the advances are the regular face's;</li>
+	 * <li><b>bold italic</b>: the bold-italic face.  Failing that, with
+	 * {@code simulate-style} on (the default) the family's variants are only declared at
+	 * all when it has <i>both</i> a bold and an italic face, in which case FOP adjusts the
+	 * weight and lands on the italic; otherwise the bold-italic triplet is the regular
+	 * file, synthesised.  With it off, FOP's lookup tries the italic at weight 400 before
+	 * the bold at style normal, before the regular.</li>
+	 * </ul>
+	 *
+	 * <p>Never null when {@code regular} is not - a family without the face is drawn in
+	 * the regular file, and that is what is returned.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static PhysicalFont renderedFace(Mapper fontMapper, PhysicalFont regular, boolean bold, boolean italic) {
+
+		if (regular==null || (!bold && !italic)) return regular;
+
+		String name = regular.getName();
+		PhysicalFont pfBold = fontMapper==null ? PhysicalFonts.getBoldForm(regular)
+				: fontMapper.getBoldForm(name, regular);
+		PhysicalFont pfItalic = fontMapper==null ? PhysicalFonts.getItalicForm(regular)
+				: fontMapper.getItalicForm(name, regular);
+
+		if (bold && !italic) return pfBold!=null ? pfBold : regular;
+		if (italic && !bold) return pfItalic!=null ? pfItalic : regular;
+
+		// bold italic
+		boolean simulate = Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", true);
+		if (simulate && (pfBold==null || pfItalic==null)) {
+			return regular; // createFontEntrySimulateStyles declares (name, italic, bold) on the regular file
+		}
+		PhysicalFont pfBoldItalic = fontMapper==null ? PhysicalFonts.getBoldItalicForm(regular)
+				: fontMapper.getBoldItalicForm(name, regular);
+		if (pfBoldItalic!=null) return pfBoldItalic;
+		if (pfItalic!=null) return pfItalic;
+		if (pfBold!=null) return pfBold;
+		return regular;
+	}
+
+	/**
 	 * Declare the fonts RunFontSelector chose as a last resort while generating the FO.
 	 *
 	 * <p>The configuration is built from the fonts the document names, before the FO

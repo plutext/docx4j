@@ -2314,6 +2314,27 @@ rounded to `1.91mm` = 5.4152pt where Word's is 5.4: without it the line the colu
 to hold broke in two in all three of that probe's content-autofit tables, 0.03pt short.
 The FO table writer stamps `docx4j-content-sized` on the `fo:table` for the fixup to read.
 
+<a id="s63face"></a>**Bold and italic cell text is measured in the face it is set in.**
+`RunFontSelector` writes the regular face's name as `font-family` for all four faces of a
+family, and `font-weight` / `font-style` say which one; until 17.1.1 the sizer read only
+the family, so every bold cell was measured in the regular face. `FopConfigUtil` declares
+the family's bold, italic and bold-italic files to FOP under that one name, so the face
+FOP draws is a settled question, and `FopConfigUtil.renderedFace` answers it the way the
+declaration and FOP's own lookup do: the mapper's bold (or italic) face where the family
+has one, else the regular file - which is also what FOP draws then, re-stroked when
+`simulate-style` is on and weight-matched when it is off, with the regular advances either
+way; bold italic is that face, or the italic, or (with `simulate-style` on and one of the
+two faces missing) the regular. Measured at 8pt: a two-word heading is 88.0pt in Verdana
+Bold, which Word used, 89.1 in DejaVu Sans Bold, which FOP draws it in, and 79.6 in
+DejaVu Sans - the width the column was being sized to. In one corpus document a label
+column Word gives 172.9pt was given 163.9, and the 9pt went to the neighbouring column,
+whose text then stayed on one line where Word wraps it, 64 times. A family without the
+face is measured, as it is drawn, in the regular one, so nothing is measured narrower than
+before. The probes are unchanged by it (none sets a heading in bold), and the effect on
+the real-document corpora is small: the bold most of their tables carry comes from
+`w:tblStylePr` conditional formatting, which docx4j does not yet apply, so there is no
+bold on the span for the sizer to see until that lands.
+
 ### 6.4 Widening to the preferred width
 
 A preferred table width (`w:tblW` in dxa, or as a percentage of the text column) wider than
