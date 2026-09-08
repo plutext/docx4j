@@ -13,6 +13,8 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default
   72) sets how far past the measure such a word may run before it is broken.
+- A table which states an absolute w:tblW its w:tblGrid sums to is laid out on that grid
+  even when every cell is w:tcW auto; it used to fall through to content autofit.
 
 Version 17.1.0
 ===============

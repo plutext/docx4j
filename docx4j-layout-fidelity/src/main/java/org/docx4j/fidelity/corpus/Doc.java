@@ -1252,6 +1252,36 @@ public final class Doc {
 			return this;
 		}
 
+		/**
+		 * A row whose cells declare a {@code w:tcW} in <b>pct</b> - fiftieths of a per
+		 * cent of the table's own width - rather than in dxa or auto.  A table can then
+		 * state column proportions which disagree with its {@code w:tblGrid}, which is
+		 * the only way to read off which of the two Word lays the table out on.
+		 */
+		public Table rowPct(String font, int halfPts, int[] pcts, String... cellTexts) {
+			return rowOfWidths(font, halfPts, "pct", pcts, cellTexts);
+		}
+
+		/** A row whose cells declare a {@code w:tcW} in dxa which need not be the grid's. */
+		public Table rowDxa(String font, int halfPts, int[] twips, String... cellTexts) {
+			return rowOfWidths(font, halfPts, "dxa", twips, cellTexts);
+		}
+
+		private Table rowOfWidths(String font, int halfPts, String type, int[] widths,
+				String... cellTexts) {
+			Tr tr = F.createTr();
+			for (int i = 0; i < cellTexts.length; i++) {
+				Tc tc = F.createTc();
+				TcPr tcPr = F.createTcPr();
+				tcPr.setTcW(width(widths[Math.min(i, widths.length - 1)], type));
+				tc.setTcPr(tcPr);
+				tc.getContent().add(plainParagraph(cellTexts[i], font, halfPts));
+				tr.getContent().add(tc);
+			}
+			tbl.getContent().add(tr);
+			return this;
+		}
+
 		public Tbl build() {
 			return tbl;
 		}

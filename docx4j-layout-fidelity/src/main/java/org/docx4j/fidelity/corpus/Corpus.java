@@ -1726,6 +1726,73 @@ public final class Corpus {
 		 * prose, so the width Word gave the column can be read off where the lines wrap as
 		 * well as off the borders. One table a page.
 		 */
+		/*
+		 * L1: which of the two does Word lay a pct table out on when they disagree - the
+		 * w:tblGrid, or the cells' own w:tcW in pct?  The dxa answer is settled and is the
+		 * grid (a stale row 1 loses to it, measured on a landscape report), and the shipped
+		 * gate reads it that way for every unit.  Two corpus measurements say the pct
+		 * answer is the opposite: one table's w:tblW is 5000 pct with a grid which, scaled
+		 * to the 523.3pt the pct asks for, gives column 8 = 80.7pt, while the widest row's
+		 * w:tcW of 1296/5000 gives 135.6pt - and Word measures about 133.4 (gridline
+		 * 426.5 to 559.9).  A second has every cell at exactly the grid's proportions and
+		 * so cannot tell them apart.  This probe puts the two readings 187pt apart.
+		 */
+		PROBES.add(new Probe("table-cell-pct",
+				"a w:tblW 5000 pct table whose cells declare w:tcW in pct which disagree "
+				+ "with the w:tblGrid: the grid and the cells as the layout are 187pt "
+				+ "apart on P1, agree on P2, and P3 asks what Word does when the cells' "
+				+ "percentages sum to less than 5000; P4 is the corpus shape, a grid which "
+				+ "sums to the table width against cells which do not share its "
+				+ "proportions, and P5 asks whether dxa cells behave as pct ones do", () -> {
+			Doc d = Doc.create(15);
+			d.para("The text column of this page is 9026 twips, so a w:tblW of 5000 pct is "
+					+ "9026 twips = 451.3pt wide. Each table below states its column "
+					+ "proportions twice - once in the w:tblGrid and once in the cells' "
+					+ "w:tcW - and the two disagree except on P2. Read column 1's right "
+					+ "gridline to see which Word used. " + prose(1)).after(240).add();
+
+			// gridA, gridB, pctA, pctB (pct = fiftieths of a per cent of the table width),
+			// or dxaA/dxaB where pct is 0
+			int[][] cases = {
+				{ 6000, 3026, 1250, 3750 },  // grid 66.5/33.5 against cells 25/75: 187pt apart
+				{ 2256, 6770, 1250, 3750 },  // control: the two agree, column 1 = 112.8pt
+				{ 4513, 4513, 1000, 2000 },  // the cells sum to 60 per cent: is the rest used?
+				{ 4513, 4513, 1296, 3704 },  // the corpus shape: grid 50/50, cells 25.92/74.08
+			};
+			for (int i = 0; i < cases.length; i++) {
+				int[] c = cases[i];
+				if (i > 0) d.pageBreak();
+				double gridPc = 100.0 * c[0] / (c[0] + c[1]);
+				d.para("Table P" + (i + 1) + ": w:tblGrid " + c[0] + "+" + c[1]
+						+ " (column 1 is " + Math.round(gridPc * 10) / 10.0 + " per cent = "
+						+ Math.round(451.3 * gridPc) / 100.0 + "pt of the table), cells "
+						+ "w:tcW " + c[2] + " and " + c[3] + " pct (column 1 is "
+						+ (c[2] / 50.0) + " per cent = " + Math.round(451.3 * c[2] / 50.0) / 100.0
+						+ "pt). " + prose(1, i)).after(240).add();
+				Doc.Table t = new Doc.Table(c[0], c[1]);
+				t.tableWidth(5000, "pct");
+				t.rowPct(SERIF, 24, new int[] { c[2], c[3] },
+						"P" + (i + 1) + " left. " + prose(1, i + 1),
+						"P" + (i + 1) + " right. " + prose(1, i + 2));
+				d.add(t.build());
+				d.para("after P" + (i + 1) + ". " + prose(1, i + 3)).before(240).add();
+			}
+
+			// P5: the same disagreement stated in dxa rather than pct
+			d.pageBreak();
+			d.para("Table P5: w:tblGrid 6000+3026 against cells w:tcW 2256 and 6770 dxa - "
+					+ "the same disagreement as P1, stated in dxa. If Word answers P1 with "
+					+ "the cells and P5 with the grid, the unit is what decides it. "
+					+ prose(1, 5)).after(240).add();
+			Doc.Table t5 = new Doc.Table(6000, 3026);
+			t5.tableWidth(5000, "pct");
+			t5.rowDxa(SERIF, 24, new int[] { 2256, 6770 },
+					"P5 left. " + prose(1, 6), "P5 right. " + prose(1, 7));
+			d.add(t5.build());
+			d.para("after P5. " + prose(1, 8)).before(240).add();
+			return d.pkg();
+		}));
+
 		PROBES.add(new Probe("table-grid-pct",
 				"w:tblW of type pct at 100, 120 and 80 per cent against a w:tblGrid which "
 				+ "does not sum to it (2.2 per cent over, 33 per cent over, 33 per cent "

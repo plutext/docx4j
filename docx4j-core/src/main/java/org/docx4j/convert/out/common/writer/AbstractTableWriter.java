@@ -529,21 +529,31 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		int[] grid = gridWidths(table, cols);
 		if (grid == null) return false;
 
-		boolean anyDeclared = false, everyColumnPreferred = cols > 0;
+		boolean everyColumnPreferred = cols > 0;
 		for (int i = 0; i < cols; i++) {
 			if (pref[i] <= 0) everyColumnPreferred = false;
-			if (declared[i]) anyDeclared = true;
 		}
-		if (!anyDeclared) return false; // a wholly auto-width table is Word's autofit
 		if (everyColumnPreferred) return true;
 
+		/* A table which states an absolute width its grid sums to was written for that
+		 * grid, whether or not any cell repeats it: the cells of such a table are
+		 * commonly all w:tcW auto, and reading "at least one cell declares a width" as a
+		 * precondition sent them to the content pass.  Measured on a corpus document
+		 * whose w:tblW is 8691 dxa - 434.55pt, the grid exactly - with every cell auto:
+		 * the content pass gave 73.6 / 40.9 / 242.35 / 77.7pt against the grid's 79.2 /
+		 * 47.65 / 222.4 / 85.3, and its "Booked By:" label does not fit a 40.9pt column
+		 * where Word's 47.65pt holds it.  12 documents of the three corpora, 35 tables.
+		 * @since 17.1.1 */
 		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
-		if (tblW == null || tblW.getW() == null || !"dxa".equals(tblW.getType())) return false;
-		long stated = tblW.getW().longValue();
-		if (stated <= 0) return false;
-		long sum = 0;
-		for (int w : grid) sum += w;
-		return Math.abs(sum - stated) * 100 <= stated;
+		if (tblW != null && tblW.getW() != null && "dxa".equals(tblW.getType())) {
+			long stated = tblW.getW().longValue();
+			if (stated > 0) {
+				long sum = 0;
+				for (int w : grid) sum += w;
+				if (Math.abs(sum - stated) * 100 <= stated) return true;
+			}
+		}
+		return false; // a wholly auto-width table is Word's autofit
 	}
 
 	/**
