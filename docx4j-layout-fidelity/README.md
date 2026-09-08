@@ -183,6 +183,33 @@ error, worst first, then an aggregate split by whether Word kept the declared gr
 it did, an error is docx4j declining to use a grid Word was happy with; where it did not,
 it is one sizer against the other. The optional CSV lets two runs be diffed.
 
+**What a number from it is, and is not.** A grid Word kept is a real reference - checked
+against the table's container it is consistent with it, a nested table's kept grid being
+the containing cell's width (or that less one pair of cell margins) and a top-level one
+the section's text column or the percentage of it the table asks for. What a kept grid
+does *not* license is reading the twips as a cost. **Column error in twips is close to
+uncorrelated with the line parity a document loses**: joined to the `b28-l1b` scoreboards
+over 350 documents, Pearson r between a document's kept-grid error and its line-parity
+deficit is 0.05. Three reasons, all measured:
+
+- **A column only costs lines if its content can wrap.** One corpus document is a form of
+  nested digit boxes - one character per cell - and carries 39,888 tw of error over 22
+  tables at line parity 0.9286. Its cells cannot wrap at any width, so the whole of that
+  error is free. (docx4j is genuinely wrong there - it resolves a nested table's
+  `w:tblW pct` against the page rather than the containing cell - but that document is the
+  wrong place to look for what fixing it would be worth.)
+- **`maxAbsRatioErr` is a ratio, so a hairline column dominates it.** One table scores 29.6
+  on a 7-twip column while the table as a whole is 781 tw out. Rank by `sumAbsDiffTwips`;
+  use `maxAbsRatioErr` only to see the *shape* of a disagreement.
+- **The aggregate is dominated by single documents.** 45% of all the column error over the
+  three real-document corpora is one document, and 705 of the 719 tables in the largest
+  single error class are that same document. A rule inferred from the totals is often a
+  rule inferred from one author's template; count the documents a class spans before
+  believing it.
+
+So use it to say *which sizing rule* docx4j has wrong and over how many documents, and go
+to the scoreboard - never to this CSV - for what fixing it is worth.
+
 ## Hyphenation patterns (licence note)
 
 FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`

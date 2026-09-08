@@ -59,6 +59,37 @@ import org.w3c.dom.Node;
  * grid, any error is docx4j declining to use a grid Word was happy with; where Word rewrote
  * it, both sides computed a layout and the error is one sizer against the other.
  *
+ * <p><b>What a number here is and is not.</b>  A grid Word kept says Word agreed with it, and
+ * that is a real reference: checked against the table's container, a kept grid is consistent
+ * with it - over the corpora, a nested table's kept grid is the containing cell's width, or
+ * that width less one pair of cell margins, and a top-level one is the section's text column
+ * or the percentage of it the table asks for.  What a kept grid does <em>not</em> license is
+ * reading the twips as a cost.  <b>Column error in twips is close to uncorrelated with the
+ * line parity the document loses</b>: over 350 scored documents, Pearson r between a
+ * document's kept-grid error and its line-parity deficit is 0.05.  Three reasons, all
+ * measured:
+ *
+ * <ul>
+ * <li><b>A column only costs lines if its content can wrap.</b>  One corpus document is a form
+ * of nested digit boxes - one character per cell - and carries 39,888 tw of error over 22
+ * tables at line parity 0.9286.  Its cells cannot wrap at any width, so the whole of that
+ * error is free.  (docx4j is genuinely wrong there - it resolves a nested table's
+ * {@code w:tblW pct} against the page rather than the containing cell - but the document is
+ * the wrong place to see it.)</li>
+ * <li><b>{@code maxAbsRatioErr} is a ratio, so a hairline column dominates it.</b>  One table
+ * scores 29.6 on a 7-twip column while the table as a whole is 781 tw out.  Rank by
+ * {@code sumAbsDiffTwips}, and use {@code maxAbsRatioErr} only to find the shape of a
+ * disagreement.</li>
+ * <li><b>The aggregate is dominated by single documents.</b>  45% of all the column error over
+ * the three real-document corpora is one document, and 705 of the 719 tables in the largest
+ * error class are that same document.  A rule inferred from the totals is often a rule
+ * inferred from one author's template; check how many documents a class spans before
+ * believing it.</li>
+ * </ul>
+ *
+ * <p>So: use this to say <em>which sizing rule</em> docx4j has wrong and on how many documents,
+ * and go to the scoreboard - never to this CSV - for what fixing it is worth.
+ *
  * <p>Prints the tables worst first by {@code maxAbsRatioErr}, then an aggregate, split by that
  * flag.  A third argument writes the same rows as CSV so two runs can be diffed.
  */
