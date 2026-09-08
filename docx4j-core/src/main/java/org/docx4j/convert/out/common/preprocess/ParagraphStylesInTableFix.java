@@ -24,8 +24,12 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.finders.TcFinder;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.model.table.TableModel;
+import org.docx4j.model.table.TableStyleConditions;
+import org.docx4j.model.table.TableStyleConditions.Look;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -36,6 +40,9 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTCompatSetting;
+import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.CTTblStylePr;
+import org.docx4j.wml.CTTrPrBase;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.Jc;
 import org.docx4j.wml.JcEnumeration;
@@ -43,18 +50,23 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.PStyle;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STTblStyleOverrideType;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblPr;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.Tr;
 import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +88,18 @@ import java.util.Set;
  * paragraph style, with DocDefaults given lower priority 
  * than table style.  This created style has no w:basedOn setting.
  * This preprocessor is required if paragraphs in tables are being styled incorrectly.
+ *
+ * <p>Since 17.1.1 the synthetic style also carries the table style's <em>conditional</em>
+ * formatting ({@code w:tblStylePr}: the bold of a header row or first column, the
+ * properties of a band) - one synthetic style per combination of the conditions a paragraph
+ * is under, resolved by {@link TableStyleConditions} from the table's {@code w:tblLook},
+ * the {@code w:cnfStyle} caches and the paragraph's position, and applied between the
+ * table style's own {@code w:pPr}/{@code w:rPr} and the paragraph style, in the order
+ * ECMA-376-1 &#xa7;17.7.6 fixes.  This is the only place the conditional {@code w:pPr}
+ * and {@code w:rPr} are applied: {@code PropertyResolver} knows nothing of tables, so
+ * there is nothing for this to double up with, and both the FO and the HTML exporters (and
+ * both pathways of each) resolve the paragraph through the style this writes.</p>
+ *
  * @since 3.0.2
  */
 public class ParagraphStylesInTableFix {
@@ -255,9 +279,114 @@ public class ParagraphStylesInTableFix {
 //	    private String docDefaultsCharacterStyle="DocDefaultsChar";
 	    
 		
-	    private LinkedList<Tbl> tblStack = new LinkedList<Tbl>();
+	    private LinkedList<TableContext> tblStack = new LinkedList<TableContext>();
 	    // We don’t have to treat nested tables in any special way, 
 	    // since a nested table does not inherit any of the properties of its parent table.
+
+	    /**
+	     * What a table's paragraphs need to know about it: the table style it resolves to
+	     * (the w:basedOn chain merged), the conditional formats its w:tblLook asks for, its
+	     * band sizes, and where each row and cell sits, so that a paragraph's conditions
+	     * can be worked out (TableStyleConditions.resolve) as the walk reaches it.
+	     * @since 17.1.1
+	     */
+	    private class TableContext {
+
+	    	final Tbl tbl;
+	    	/** the table style id, or null where the table has none to apply */
+	    	final String tableStyleId;
+	    	/** the merged w:basedOn chain, or an empty style */
+	    	final Style tableStyle;
+	    	final Look look;
+	    	final int rowBandSize;
+	    	final int colBandSize;
+	    	final int rowCount;
+	    	final int colCount;
+	    	final IdentityHashMap<Tr, Integer> rowIndex = new IdentityHashMap<Tr, Integer>();
+	    	/** {first grid column, span} per cell */
+	    	final IdentityHashMap<Tc, int[]> cellColumns = new IdentityHashMap<Tc, int[]>();
+	    	Tr currentTr;
+	    	Tc currentTc;
+
+	    	TableContext(Tbl tbl) {
+	    		this.tbl = tbl;
+	    		this.tableStyleId = tableStyleId(tbl.getTblPr());
+	    		this.tableStyle = tableStyleContrib(tableStyleId);
+
+	    		// the table's own tblPr decides the look and band sizes; the style's is the fallback
+	    		CTTblPrBase tblPr = tbl.getTblPr();
+	    		CTTblPrBase stylePr = tableStyle.getTblPr();
+	    		if (tblPr != null && tblPr.getTblLook() != null) {
+	    			look = TableStyleConditions.look(tblPr);
+	    		} else if (stylePr != null && stylePr.getTblLook() != null) {
+	    			look = TableStyleConditions.look(stylePr);
+	    		} else {
+	    			look = Look.DEFAULT;
+	    		}
+	    		rowBandSize = (tblPr != null && tblPr.getTblStyleRowBandSize() != null)
+	    				? TableStyleConditions.rowBandSize(tblPr) : TableStyleConditions.rowBandSize(stylePr);
+	    		colBandSize = (tblPr != null && tblPr.getTblStyleColBandSize() != null)
+	    				? TableStyleConditions.colBandSize(tblPr) : TableStyleConditions.colBandSize(stylePr);
+
+	    		// rows and their cells, as TableModel counts them: nested tables excluded,
+	    		// a cell's column its w:gridBefore plus the spans before it
+	    		TableModel.TrFinder trFinder = new TableModel.TrFinder();
+	    		new TraversalUtil(tbl, trFinder);
+	    		List<Tr> rows = trFinder.getTrList();
+	    		int cols = 0;
+	    		for (int r = 0; r < rows.size(); r++) {
+	    			Tr tr = rows.get(r);
+	    			rowIndex.put(tr, Integer.valueOf(r));
+	    			int c = gridBeforeOrAfter(tr, "gridBefore");
+	    			TcFinder tcFinder = new TcFinder();
+	    			new TraversalUtil(tr, tcFinder);
+	    			for (Tc tc : tcFinder.tcList) {
+	    				int span = 1;
+	    				if (tc.getTcPr() != null && tc.getTcPr().getGridSpan() != null
+	    						&& tc.getTcPr().getGridSpan().getVal() != null) {
+	    					span = Math.max(1, tc.getTcPr().getGridSpan().getVal().intValue());
+	    				}
+	    				cellColumns.put(tc, new int[] { c, span });
+	    				c += span;
+	    			}
+	    			c += gridBeforeOrAfter(tr, "gridAfter");
+	    			if (c > cols) cols = c;
+	    		}
+	    		rowCount = rows.size();
+	    		colCount = cols;
+	    	}
+
+	    	/** The conditions this paragraph (in the current row and cell) is under. */
+	    	EnumSet<STTblStyleOverrideType> conditionsFor(P p) {
+	    		Integer r = currentTr == null ? null : rowIndex.get(currentTr);
+	    		int[] cc = currentTc == null ? null : cellColumns.get(currentTc);
+	    		if (r == null || cc == null) {
+	    			return EnumSet.noneOf(STTblStyleOverrideType.class);
+	    		}
+	    		return TableStyleConditions.resolve(look, rowBandSize, colBandSize,
+	    				r.intValue(), rowCount, cc[0], cc[1], colCount,
+	    				TableStyleConditions.rowCnf(currentTr.getTrPr()),
+	    				currentTc.getTcPr() == null ? null : currentTc.getTcPr().getCnfStyle(),
+	    				p.getPPr() == null ? null : p.getPPr().getCnfStyle());
+	    	}
+	    }
+
+	    private static int gridBeforeOrAfter(Tr tr, String name) {
+	    	if (tr.getTrPr() == null) return 0;
+	    	for (jakarta.xml.bind.JAXBElement<?> el : tr.getTrPr().getCnfStyleOrDivIdOrGridBefore()) {
+	    		if (name.equals(el.getName().getLocalPart())) {
+	    			Object v = el.getValue();
+	    			java.math.BigInteger val = null;
+	    			if (v instanceof CTTrPrBase.GridBefore) val = ((CTTrPrBase.GridBefore) v).getVal();
+	    			else if (v instanceof CTTrPrBase.GridAfter) val = ((CTTrPrBase.GridAfter) v).getVal();
+	    			return val == null ? 0 : Math.max(0, val.intValue());
+	    		}
+	    	}
+	    	return 0;
+	    }
+
+	    /** The merged w:basedOn chain of each table style, by id (null id: an empty style). */
+	    private Map<String, Style> tableStyleContribs = new HashMap<String, Style>();
 		
 //	    private Styles newStyles=null;
 	    private Map<String,Style> allStyles=null;
@@ -309,6 +438,121 @@ public class ParagraphStylesInTableFix {
 		}
 	    
 		/**
+		 * The id of the table style a table resolves to - its own w:tblStyle, else the
+		 * document's default table style - or null where there is none to apply (no
+		 * default, or one named "Normal Table", which Word ignores).
+		 */
+		private String tableStyleId(TblPr tblPr) {
+			if (tblPr!=null && tblPr.getTblStyle()!=null) {
+				return tblPr.getTblStyle().getVal();
+			} else if (defaultTableStyle==null) {
+				log.warn("No default table style defined in docx Style Definitions part"); 
+				return null;						
+			} else {
+				if (defaultTableStyle.getName()!=null
+						&& defaultTableStyle.getName().getVal()!=null
+						&& defaultTableStyle.getName().getVal().equals("Normal Table")) {
+					// Word 2010 x64 ignores any table style with that name!
+					log.debug("Ignoring style with name 'Normal Table' (mimicking Word)"); 
+					return null;
+				} else {
+					// We have a default table style
+					String tableStyle = defaultTableStyle.getStyleId();
+					// shouldn't happen, but just in case..
+					if (tableStyle==null) {
+                        if(log.isErrorEnabled()) {
+                            log.error("Default table style has no ID!");
+                            log.error(XmlUtils.marshaltoString(defaultTableStyle));
+                        }
+						return null;						
+					}
+					return tableStyle;
+				}
+			}
+		}
+
+		/**
+		 * The table style's w:basedOn chain merged into one style (root first, so a child
+		 * overrides its parent; conditional formats merge per condition, see
+		 * StyleUtil.apply(List, List)), cached by id.  An empty style for a null id, a
+		 * missing style, or a chain ending in "Normal Table".
+		 */
+		private Style tableStyleContrib(String tableStyle) {
+
+			Style cached = tableStyleContribs.get(tableStyle);
+			if (cached != null) return cached;
+
+			Style tableStyleContrib = null;
+			List<Style> tblStyles = new ArrayList<Style>();
+			if (tableStyle!=null) {
+				String currentStyle = tableStyle;
+	    		do {
+	    			log.debug(currentStyle);			    			
+	    			Style thisStyle = allStyles.get(currentStyle);
+	    			
+	    			if (thisStyle==null) {
+	    				log.info("Missing " + currentStyle);
+	    				currentStyle = null;
+	    			} else {
+	    			
+	    				try {
+							if (isCyclic(thisStyle, tblStyles)) {
+								log.warn("Cycle above detected in style basedOn hierarchy for: " + thisStyle.getStyleId() + " - stopping");						    					
+								break;
+							}
+						} catch (CyclicStylesException e) {
+							throw new RuntimeException(e);
+						}
+	    				
+		    			if ( thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element 
+		    					&& "Normal Table".equals(thisStyle.getName().getVal())) {
+		    				// Very surprising, but testing using Word 2010 SP1,
+		    				// it turns out that table style with name "Normal Table" 
+		    				// is IGNORED (whatever its ID, and whether default or not)!! 
+		    				// Change the name to something
+		    				// else, and it is given effect! GO figure..
+		    				//TBD how localisation affects this.
+		    				// In theory, this style could be based on
+		    				// another.  Haven't tested to see whether that is
+		    				// honoured or not. Assume not.
+		    				break;
+		    			}
+		    			
+		    			tblStyles.add(thisStyle);
+		    			
+		    			if (thisStyle.getBasedOn()!=null) {
+		    				currentStyle = thisStyle.getBasedOn().getVal();
+		    			} else {
+		    				currentStyle = null;
+		    			}
+	    			
+	    			}
+	    		} while (currentStyle != null);
+
+	    		for (int i = tblStyles.size()-1; i>=0; i--) {
+	    			Style styleToApply = tblStyles.get(i);
+                    if(log.isDebugEnabled()) {
+                        log.debug("Applying " + styleToApply.getStyleId() + "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
+
+                    }
+	    			
+	    			tableStyleContrib = StyleUtil.apply(styleToApply, tableStyleContrib);
+                    if(log.isDebugEnabled()) {
+                        log.debug(XmlUtils.marshaltoString(tableStyleContrib, true, true));
+                    }
+	    		}
+			}
+			
+			if (tableStyleContrib==null) {
+				// will happen if the style was Normal Table, since we break above..
+				// .. so just make an empty object, to avoid having to do isNull tests below..
+				tableStyleContrib = Context.getWmlObjectFactory().createStyle();
+			}
+			tableStyleContribs.put(tableStyle, tableStyleContrib);
+			return tableStyleContrib;
+		}
+
+		/**
 		 * In a cell, a paragraph uses the table's paragraph properties,
 		 * plus the relevant paragraph style (Normal, by default).
 		 * The relevant paragraph style trumps the values from the
@@ -318,9 +562,17 @@ public class ParagraphStylesInTableFix {
 		 * TO avoid this, we create a new style, which encapsulates the
 		 * paragraph style, with DocDefaults given lower priority 
 		 * than table style.  This created style has no w:basedOn setting.
+		 *
+		 * Since 17.1.1 the table style's contribution includes the conditional formats
+		 * (w:tblStylePr) the paragraph is under, so there is one such style per
+		 * (paragraph style, table style, applicable conditions).
+		 *
+		 * @param conditions the conditional formats the paragraph is under
+		 *        (TableStyleConditions), possibly empty
 		 * @throws CyclicStylesException 
 		 */
-		private String getCellPStyle(String styleVal, boolean pStyleIsDefault) throws CyclicStylesException {
+		private String getCellPStyle(String styleVal, boolean pStyleIsDefault,
+				Set<STTblStyleOverrideType> conditions) throws CyclicStylesException {
 			
 			// Font size and jc for the style (which could be the default style), 
 			// without following its based on values
@@ -347,35 +599,34 @@ public class ParagraphStylesInTableFix {
 				effectiveFontSize=effectiveRPr.getSz();
 			}
 			
-			String tableStyle=null;
-			TblPr tblPr = tblStack.peek().getTblPr(); 
-			if (tblPr!=null && tblPr.getTblStyle()!=null) {
-				tableStyle = tblPr.getTblStyle().getVal();
-			} else if (defaultTableStyle==null) {
-				log.warn("No default table style defined in docx Style Definitions part"); 
-				return null;						
-			} else {
-				if (defaultTableStyle.getName()!=null
-						&& defaultTableStyle.getName().getVal()!=null
-						&& defaultTableStyle.getName().getVal().equals("Normal Table")) {
-					// Word 2010 x64 ignores any table style with that name!
-					log.debug("Ignoring style with name 'Normal Table' (mimicking Word)"); 
-					return null;
-				} else {
-					// We have a default table style
-					tableStyle = defaultTableStyle.getStyleId();
-					// shouldn't happen, but just in case..
-					if (tableStyle==null) {
-                        if(log.isErrorEnabled()) {
-                            log.error("Default table style has no ID!");
-                            log.error(XmlUtils.marshaltoString(tableStyle));
-                        }
-						return null;						
-					}
+			TableContext ctx = tblStack.peek();
+			String tableStyle = ctx.tableStyleId;
+			if (tableStyle == null) {
+				return null;
+			}
+			// The table style's w:basedOn chain, merged
+			Style tableStyleContrib = ctx.tableStyle;
+
+			/* The conditional formats this paragraph is under, restricted to the ones the
+			 * table style actually gives a w:pPr or w:rPr - in precedence order, so that
+			 * the same set always names the same style.  A paragraph under none of them
+			 * keeps the pre-17.1.1 style id, so nothing changes for a table style without
+			 * conditional formatting. */
+			List<CTTblStylePr> applicable = new ArrayList<CTTblStylePr>();
+			EnumSet<STTblStyleOverrideType> named = EnumSet.noneOf(STTblStyleOverrideType.class);
+			for (CTTblStylePr pr : TableStyleConditions.applicable(tableStyleContrib, conditions)) {
+				if (TableStyleConditions.formatsText(pr)) {
+					applicable.add(pr);
+					if (pr.getType() != STTblStyleOverrideType.WHOLE_TABLE) named.add(pr.getType());
 				}
 			}
+			String conditionKey = TableStyleConditions.key(named);
+
 			String resultStyleID = styleVal+"-"+tableStyle;
-			if (tableStyle.endsWith("-BR")) {
+			if (conditionKey.length() > 0) {
+				resultStyleID = resultStyleID + "-" + conditionKey;
+			}
+			if (tableStyle.endsWith("-BR") && conditionKey.length() == 0) {
 				// don't want to add this twice
 			} else {
 				resultStyleID = resultStyleID +"-BR";
@@ -423,82 +674,31 @@ public class ParagraphStylesInTableFix {
 			// or we could have just cloned those thing, and used the clones
 			
 			
-			// Next, table style - first/temporarily in tableStyleContrib
-			Style tableStyleContrib = null;
-			List<Style> tblStyles = new ArrayList<Style>();
-			if (tableStyle!=null) {
-				currentStyle = tableStyle;
-	    		do {
-	    			log.debug(currentStyle);			    			
-	    			Style thisStyle = allStyles.get(currentStyle);
-	    			
-	    			if (thisStyle==null) {
-	    				log.info("Missing " + currentStyle);
-	    				currentStyle = null;
-	    			} else {
-	    			
-	    				if (isCyclic(thisStyle, tblStyles)) {
-	    					log.warn("Cycle above detected in style basedOn hierarchy for: " + thisStyle.getStyleId() + " - stopping");						    					
-	    					break;
-	    				}
-	    				
-		    			if ( thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element 
-		    					&& "Normal Table".equals(thisStyle.getName().getVal())) {
-		    				// Very surprising, but testing using Word 2010 SP1,
-		    				// it turns out that table style with name "Normal Table" 
-		    				// is IGNORED (whatever its ID, and whether default or not)!! 
-		    				// Change the name to something
-		    				// else, and it is given effect! GO figure..
-		    				//TBD how localisation affects this.
-		    				// In theory, this style could be based on
-		    				// another.  Haven't tested to see whether that is
-		    				// honoured or not. Assume not.
-		    				break;
-		    			}
-		    			
-		    			tblStyles.add(thisStyle);
-		    			
-		    			if (thisStyle.getBasedOn()!=null) {
-		    				currentStyle = thisStyle.getBasedOn().getVal();
-		    			} else {
-		    				currentStyle = null;
-		    			}
-	    			
-	    			}
-	    		} while (currentStyle != null);
-
-	    		for (int i = tblStyles.size()-1; i>=0; i--) {
-	    			styleToApply = tblStyles.get(i);
-                    if(log.isDebugEnabled()) {
-                        log.debug("Applying " + styleToApply.getStyleId() + "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
-
-                    }
-	    			
-	    			tableStyleContrib = StyleUtil.apply(styleToApply, tableStyleContrib);
-                    if(log.isDebugEnabled()) {
-                        log.debug(XmlUtils.marshaltoString(tableStyleContrib, true, true));
-                    }
-	    		}
-			}
-			
-			if (tableStyleContrib==null) {
-				// will happen if the style was Normal Table, since we break above..
-				// .. so just make an empty object, to avoid having to do isNull tests below..
-				tableStyleContrib = Context.getWmlObjectFactory().createStyle();
+			// Next, the table style: its own w:pPr/w:rPr (the whole table), then the
+			// conditional formats this paragraph is under, in precedence order
+			// (ECMA-376-1 17.7.6; TableStyleConditions.PRECEDENCE)
+			PPr tableStylePPr = StyleUtil.apply(tableStyleContrib.getPPr(), (PPr)null);
+			RPr tableStyleRPr = StyleUtil.apply(tableStyleContrib.getRPr(), (RPr)null);
+			for (CTTblStylePr pr : applicable) {
+				if (log.isDebugEnabled()) {
+					log.debug("Applying conditional " + pr.getType() + "\n" + XmlUtils.marshaltoString(pr, true, true));
+				}
+				tableStylePPr = StyleUtil.apply(pr.getPPr(), tableStylePPr);
+				tableStyleRPr = StyleUtil.apply(pr.getRPr(), tableStyleRPr);
 			}
 
 			// What do the table styles contribute?
-			Jc tableStyleJc = tableStyleContrib.getPPr()==null ? null : tableStyleContrib.getPPr().getJc();
+			Jc tableStyleJc = tableStylePPr==null ? null : tableStylePPr.getJc();
 			
 			HpsMeasure tableStyleFontSize = null;
-			if (tableStyleContrib.getRPr()!=null) {
-				tableStyleFontSize=tableStyleContrib.getRPr().getSz();
+			if (tableStyleRPr!=null) {
+				tableStyleFontSize=tableStyleRPr.getSz();
 			}
 			
 			// Now we can apply to table style contrib on top of docDefaults
 			// As these are different style types:-
-			newStyle.setPPr(StyleUtil.apply(tableStyleContrib.getPPr(), newStyle.getPPr()));
-			newStyle.setRPr(StyleUtil.apply(tableStyleContrib.getRPr(), newStyle.getRPr()));
+			newStyle.setPPr(StyleUtil.apply(tableStylePPr, newStyle.getPPr()));
+			newStyle.setRPr(StyleUtil.apply(tableStyleRPr, newStyle.getRPr()));
             if(log.isDebugEnabled()) {
                 log.debug(XmlUtils.marshaltoString(newStyle, true, true));
                 log.debug("hierarchy.size(): " + hierarchy.size());
@@ -680,7 +880,7 @@ public class ParagraphStylesInTableFix {
 							// We're in a table
 							String resultStyle;
 							try {
-								resultStyle = getCellPStyle(newStyle, true);
+								resultStyle = getCellPStyle(newStyle, true, tblStack.peek().conditionsFor(p));
 							} catch (CyclicStylesException e) {
 								throw new RuntimeException(e);
 							}
@@ -700,7 +900,8 @@ public class ParagraphStylesInTableFix {
 							String newStyle;
 							try {
 								newStyle = getCellPStyle(styleVal, 
-														styleVal.equals(defaultParagraphStyle));
+														styleVal.equals(defaultParagraphStyle),
+														tblStack.peek().conditionsFor(p));
 							} catch (CyclicStylesException e) {
 								throw new RuntimeException(e);
 							}
@@ -730,8 +931,16 @@ public class ParagraphStylesInTableFix {
 					
 					this.apply(o);
 					
+					// the table this row or cell belongs to: a nested table pushes its own
+					// context before its rows are reached, and pops it before its parent's next
+					TableContext enclosing = tblStack.peek();
 					if (o instanceof Tbl) {
-						tblStack.push((Tbl)o);
+						tblStack.push(new TableContext((Tbl)o));
+					} else if (enclosing != null && o instanceof Tr) {
+						enclosing.currentTr = (Tr)o;
+						enclosing.currentTc = null;
+					} else if (enclosing != null && o instanceof Tc) {
+						enclosing.currentTc = (Tc)o;
 					}
 
 					if (this.shouldTraverse(o)) {
@@ -740,6 +949,11 @@ public class ParagraphStylesInTableFix {
 
 					if (o instanceof Tbl) {
 						tblStack.pop();
+					} else if (enclosing != null && o instanceof Tr) {
+						enclosing.currentTr = null;
+						enclosing.currentTc = null;
+					} else if (enclosing != null && o instanceof Tc) {
+						enclosing.currentTc = null;
 					}
 					
 				}

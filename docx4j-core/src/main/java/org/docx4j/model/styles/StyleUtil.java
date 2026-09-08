@@ -1311,6 +1311,7 @@ public class StyleUtil {
 				 isEmpty(ctTblStylePr.getRPr()) &&
 				 isEmpty(ctTblStylePr.getTblPr()) &&
 				 isEmpty(ctTblStylePr.getTrPr()) &&
+				 isEmpty(ctTblStylePr.getTcPr()) &&
 				 (ctTblStylePr.getType() == null)
 			)
 		   );
@@ -1817,6 +1818,7 @@ public class StyleUtil {
 			else if (TABLE_STYLE.equals(source.getType())) {
 				
 				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
+				destination.setTrPr(apply(source.getTrPr(), destination.getTrPr())); // @since 17.1.1: was never carried
 				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
 				
 				apply(source.getTblStylePr(), destination.getTblStylePr());
@@ -1829,6 +1831,7 @@ public class StyleUtil {
 				log.warn("source style type is currently unknown or null");
 				
 				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
+				destination.setTrPr(apply(source.getTrPr(), destination.getTrPr())); // @since 17.1.1: was never carried
 				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
 				
 				apply(source.getTblStylePr(), destination.getTblStylePr());
@@ -2321,17 +2324,37 @@ public class StyleUtil {
 		return destination;
 	}
 
+	/**
+	 * Merge a table style's conditional formatting ({@code w:tblStylePr}) into another's,
+	 * <em>per condition</em>: an entry for a condition the destination already has is
+	 * applied on top of it, and one it lacks is added.  So a style {@code w:basedOn}
+	 * another inherits the conditions it does not restate, and restating a condition
+	 * overrides only the properties it names - which is how Word resolves it (one corpus
+	 * style based on PlainTable1 restates {@code firstRow} as {@code <w:b w:val="0"/>} and
+	 * keeps its parent's {@code w:tblHeader}).  Until 17.1.1 a source with any entries
+	 * replaced the destination's list wholesale, so a child style that restated one
+	 * condition lost every other one its parent defined.
+	 *
+	 * @since 17.1.1 merges per type
+	 */
 	public static void apply(List<CTTblStylePr> source, List<CTTblStylePr> destination) {
-		CTTblStylePr destinationTblStylePr = null;
-		if (!isEmpty(source)) {
-			// not sure about this, but if the source defines a content model it should
-			// replace the destination as a whole, and not parts of it.
-			destination.clear();
-			for (int i=0; i<source.size(); i++) {
-				destinationTblStylePr = apply(source.get(i), null);
-				if (destinationTblStylePr != null) {
-					destination.add(destinationTblStylePr);
+		if (isEmpty(source) || destination == null) return;
+		for (CTTblStylePr sourcePr : source) {
+			if (sourcePr == null) continue;
+			CTTblStylePr existing = null;
+			if (sourcePr.getType() != null) {
+				for (CTTblStylePr d : destination) {
+					if (d != null && d.getType() == sourcePr.getType()) {
+						existing = d;
+						break;
+					}
 				}
+			}
+			if (existing == null) {
+				CTTblStylePr copy = apply(sourcePr, null);
+				if (copy != null) destination.add(copy);
+			} else {
+				apply(sourcePr, existing);
 			}
 		}
 	}
@@ -3025,22 +3048,27 @@ public class StyleUtil {
 	JAXBElement<?> defsSourceElement = null;
 		if (isEmpty(source))
 			return destination;
-		if (!isEmpty(destination)) {
-			defsSource = source.getCnfStyleOrDivIdOrGridBefore();
-			defsDestination = destination.getCnfStyleOrDivIdOrGridBefore();
+		/* Until 17.1.1 a null or empty destination was returned untouched, so nothing was
+		 * ever applied into a fresh TrPr - and a table style's w:trPr (its own, or a
+		 * w:tblStylePr's, with the w:tblHeader that makes a first row repeat) never reached
+		 * the effective style.  A copy is made into a new one as the other apply methods do. */
+		if (destination == null) {
+			destination = Context.getWmlObjectFactory().createTrPr();
+		}
+		defsSource = source.getCnfStyleOrDivIdOrGridBefore();
+		defsDestination = destination.getCnfStyleOrDivIdOrGridBefore();
 
-			for (int i=0; i<defsSource.size(); i++) {
-				defsSourceElement = defsSource.get(i);
-				// If there's an element with this name already, remove it
-				for (int j=0; j<defsDestination.size(); j++) {
-					if (defsSourceElement.getName().equals(defsDestination.get(j).getName())) {
-						defsDestination.remove(j);
-						break;
-					}
+		for (int i=0; i<defsSource.size(); i++) {
+			defsSourceElement = defsSource.get(i);
+			// If there's an element with this name already, remove it
+			for (int j=0; j<defsDestination.size(); j++) {
+				if (defsSourceElement.getName().equals(defsDestination.get(j).getName())) {
+					defsDestination.remove(j);
+					break;
 				}
-				// Now add the element
-				defsDestination.add(XmlUtils.deepCopy(defsSourceElement));
 			}
+			// Now add the element
+			defsDestination.add(XmlUtils.deepCopy(defsSourceElement));
 		}
 		
 		return destination;

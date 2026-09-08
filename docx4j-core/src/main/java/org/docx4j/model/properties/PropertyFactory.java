@@ -162,13 +162,19 @@ public class PropertyFactory {
 		return properties;		
 	}
 
+	/**
+	 * A table style's conditional formatting ({@code w:tblStylePr}) is not a property of
+	 * the table as a whole: which entries apply depends on the row and column a cell is in
+	 * and on the table's {@code w:tblLook}, so nothing here can be expressed as a table-wide
+	 * property (or a CSS class on the table).  It is resolved per row, cell and paragraph
+	 * instead - see {@link org.docx4j.model.table.TableStyleConditions}, applied by
+	 * {@code ParagraphStylesInTableFix} (the {@code w:pPr}/{@code w:rPr}) and by the table
+	 * writers (the {@code w:trPr}/{@code w:tcPr}).  Deliberately empty (since 17.1.1; it
+	 * used to warn "TODO").
+	 */
 	public static List<Property> createProperties(List<CTTblStylePr> tblStylePrList) {
 		
-		List<Property> properties = new ArrayList<Property>();
-		if (!tblStylePrList.isEmpty()) {
-			log.warn("TODO - implement for CTTblStylePr!");
-		}
-		return properties;		
+		return new ArrayList<Property>();
 	}
 
 	public static List<Property> createProperties(TrPr trPr) {
