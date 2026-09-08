@@ -2374,7 +2374,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private void emergencyBreaks(Paragraph par, int available) {
         if (!emergencyBreakEnabled || available <= 0 || par == null) return;
         // collect first, split from the end backwards, so the indices stay valid
-        List<Integer> overlong = null;
+        List<int[]> overlong = null;
         for (int i = 0; i < par.size(); i++) {
             KnuthElement e = (KnuthElement) par.get(i);
             if (!e.isBox() || e.isAuxiliary()) continue;
@@ -2389,15 +2389,28 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         && ((KnuthPenalty) el).getPenalty() >= KnuthElement.INFINITE) continue;
                 break;      // a glue or a real break opportunity: the word ends here
             }
-            if (boxes == 1 && width > available + OVERRUN_TOLERANCE) {
-                if (overlong == null) overlong = new ArrayList<Integer>();
-                overlong.add(Integer.valueOf(i));
+            if (boxes >= 1 && width > available + OVERRUN_TOLERANCE) {
+                if (overlong == null) overlong = new ArrayList<int[]>();
+                overlong.add(new int[] { i, j });
             }
             i = j - 1;
         }
         if (overlong == null) return;
         for (int k = overlong.size() - 1; k >= 0; k--) {
-            splitForEmergencyBreak(par, overlong.get(k).intValue());
+            int[] range = overlong.get(k);
+            // one token for the whole word, however many boxes it is: emergencyUsable
+            // asks whether the line holds anything but this word, and the head of a
+            // punctuation-led token or of a URL is part of it
+            Object word = new Object();
+            for (int idx = range[1] - 1; idx >= range[0]; idx--) {
+                KnuthElement el = (KnuthElement) par.get(idx);
+                if (!el.isBox() || el.isAuxiliary()) continue;
+                if (!splitForEmergencyBreak(par, idx, word)) {
+                    // not splittable (a shaped mapping, say), but still this word's:
+                    // a break inside one of its neighbours must not be blocked by it
+                    emergencyElement.put(el, word);
+                }
+            }
         }
     }
 
@@ -2417,37 +2430,66 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * Word does break overflow by 78 to 345pt.  The {@code table-autofit} probe's 23.976pt
      * column against a 23.988pt word - 0.012pt - is the smallest of them.
      *
+     * <p><b>Measured again over all three corpora (b2-batch28), and it is worth a great
+     * deal - but not yet.</b>  At 8pt instead of 72 the mean line parity rises 0.8816 to
+     * 0.8879 on the 191-document corpus, 0.8496 to 0.8532 on the 156 and 0.8810 to
+     * 0.8836 on the 102 long ones, with 1013 more lines matched, the medians up on all
+     * three and the probes byte-identical; the corpus's largest single deficit goes 0.626
+     * to 0.738 and four documents rise by 0.12 to 0.26.  An unbiased quarter of the first
+     * corpus shows it is monotone - 0.8967 at 72pt, 0.9005 at 36, 0.9011 at 18, 0.9051 at
+     * 8, 0.9052 at 1 - with four documents up and none down.
+     *
+     * <p>What stops it is three documents whose page count it breaks, and they break
+     * because the measure it is handed is wrong rather than because the word is long.
+     * Instrumented, the worst of them fires <b>166 times</b> into measures of
+     * <b>5.2pt and 23.2pt</b> and gains 529 lines and five pages: a column that narrow
+     * holds one character, so breaking into it shatters the word instead of wrapping it.
+     * The documents this rule is for fire 3 to 21 times into measures of 36 to 268pt.
+     * Neither an absolute threshold (36pt leaves both page counts broken) nor a relative
+     * one (the largest win overflows its measure by 6.7%) separates the two, because the
+     * difference is not in the word at all - it is that we sized those columns wrongly.
+     * That document is the one the triage ledger names for the content-autofit defect
+     * (Word refits the grid rather than scaling it proportionally).  <b>Lower this to 8pt
+     * once that is fixed</b>, and the tolerance is a property so it can be measured
+     * without a build.
+     *
      * @since 17.1.0
      */
-    private static final int OVERRUN_TOLERANCE = 72000;
+    private static final int OVERRUN_TOLERANCE
+            = (int) Math.round(1000 * WordLayoutCustomizer.emergencyBreakTolerance(72));
 
-    /** Split the single-mapping word whose box is at this index into one mapping and
-     *  one box per character, with a zero-width break between each pair. */
-    private void splitForEmergencyBreak(Paragraph par, int index) {
+    /** Split the single-mapping box at this index into one mapping and one box per
+     *  character, with a zero-width break between each pair, all of them marked as
+     *  belonging to {@code word}.
+     *
+     *  @return whether the box was split; a caller which is told no must mark the box
+     *          as this word's itself, so that a break inside a neighbouring box of the
+     *          same word is not refused because this one is on the line */
+    private boolean splitForEmergencyBreak(Paragraph par, int index, Object word) {
         KnuthElement box = (KnuthElement) par.get(index);
-        if (!(box instanceof KnuthInlineBox)) return;
+        if (!(box instanceof KnuthInlineBox)) return false;
         org.apache.fop.layoutmgr.inline.TextLayoutManager tlm = tlmOf(box);
-        if (tlm == null) return;
+        if (tlm == null) return false;
         org.apache.fop.fonts.GlyphMapping m = mappingOf(box);
-        if (m == null || m.isSpace || m.font == null) return;
+        if (m == null || m.isSpace || m.font == null) return false;
         // a mapping which carries a substituted glyph sequence (a complex script, or an
         // OpenType feature FOP applied) cannot be rebuilt from the characters, and the
         // fragments would render unshaped: leave such a word whole
-        if (m.mapping != null || m.associations != null || m.gposAdjustments != null) return;
+        if (m.mapping != null || m.associations != null || m.gposAdjustments != null) return false;
         List<org.apache.fop.fonts.GlyphMapping> mappings = LBP.mappings(tlm);
         int idx = ((LeafPosition) leafPositionOf(box)).getLeafPos();
-        if (idx < 0 || idx >= mappings.size() || mappings.get(idx) != m) return;
+        if (idx < 0 || idx >= mappings.size() || mappings.get(idx) != m) return false;
         org.apache.fop.fo.FOText foText = LBP.foText(tlm);
-        if (m.endIndex > foText.length() || m.endIndex - m.startIndex < 2) return;
+        if (m.endIndex > foText.length() || m.endIndex - m.startIndex < 2) return false;
         MinOptMax letterSpace = LBP.letterSpaceIPD(tlm);
-        if (letterSpace == null || !letterSpace.isStiff()) return;   // adjustable: leave it to FOP
+        if (letterSpace == null || !letterSpace.isStiff()) return false;   // adjustable: leave it to FOP
         // the breaks need a position which stands for no glyph, or the text manager
         // would build the word's areas twice
         // the break's position must stand for no glyph, and must be wrapped exactly as
         // the word's own is, or the inline managers it sits in are given a position they
         // did not make and never build their area
         Position aux = auxiliaryLike(box.getPosition(), tlm);
-        if (aux == null) return;
+        if (aux == null) return false;
 
         // one fragment per character (a surrogate pair stays whole)
         List<int[]> spans = new ArrayList<int[]>();
@@ -2458,7 +2500,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             spans.add(new int[] { c, next, cp });
             c = next;
         }
-        if (spans.size() < 2) return;
+        if (spans.size() < 2) return false;
 
         List<org.apache.fop.fonts.GlyphMapping> fragments
                 = new ArrayList<org.apache.fop.fonts.GlyphMapping>(spans.size());
@@ -2485,7 +2527,6 @@ public class WordLineLayoutManager extends LineLayoutManager {
         shiftLeafPositions(tlm, idx, added);
 
         // and the box becomes a box per fragment, with a break between each pair
-        Object word = new Object();
         List<KnuthElement> replacement = new ArrayList<KnuthElement>(2 * fragments.size());
         for (int j = 0; j < fragments.size(); j++) {
             if (j > 0) {
@@ -2505,6 +2546,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             log.debug("emergency break: " + foText.subSequence(m.startIndex, m.endIndex)
                     + " (" + m.areaIPD.getOpt() + "mpt) split into " + fragments.size() + " characters");
         }
+        return true;
     }
 
     /** Every LeafPosition of this text manager at or past {@code from} moves on by

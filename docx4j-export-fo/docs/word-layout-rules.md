@@ -156,6 +156,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.wordLayout.justifySoftReturn` | `true` | A justified line that ends in a soft return (`w:br` with no type) is justified, as Word justifies it unless `w:compat/w:doNotExpandShiftReturn` is set (§4.2). `false` restores 17.0.5's behaviour, which was the flag-on behaviour for every document. |
 | `docx4j.convert.out.fo.wordLayout.emptyLineAfterBreak` | `true` | A `w:br` whose new line holds nothing that paints still takes a line box, as Word gives it (&sect;2.5). `false` restores 17.0.5's behaviour. |
 | `docx4j.convert.out.fo.wordLayout.emergencyBreak` | `true` | A word too long for a line of its own is broken inside it, at the last character that fits, as Word breaks one (§4.3). `false` paints it whole, off the page, as FOP does. |
+| `docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance` | `72` | How far past the measure, in points, such a word may run before it is broken. 8 is worth about +0.004 of mean line parity but breaks three documents' page counts, whose columns we size wrongly (§4.3). |
 | `docx4j.fonts.wordLineMetrics.deviceGrid` | `false` | `true` rounds a font's single line height to Word's 600 dpi layout grid, 1/600 inch, which is what Word does (§2.1) - but measured over the corpora it moves page breaks and costs more than the 0.02pt a line it wins. |
 | `docx4j.convert.out.fo.wordLayoutFixups` | `true` | The DOM pass over the generated FO (`WordLayoutFixups`): Word's spacing edge rules, the line-box attributes, exact-height rows, anchored pictures, text boxes. `false` gives the FO docx4j 17.0.4 produced. |
 | `docx4j.convert.out.fo.glyphWidths.round` | `true` | Glyph advances are rounded to the nearest 1/1000 em, as Word measures and as Word's own PDFs record them; FOP truncates them, which runs every line it measures up to 0.1% narrow ([§10](#s10advances)). `false` leaves FOP's width table - and the `/Widths` written from it - alone. |
@@ -1168,11 +1169,17 @@ then the ordinary break before the word is the last one that fitted.
 
 Three limits:
 
-- A word which is more than one glyph mapping (several fonts, or an `fo:inline` boundary
-  inside it) is left alone.
-- So is one whose mapping carries a **substituted glyph sequence** - a complex script, or an
-  OpenType feature FOP applied: such a word cannot be rebuilt from its characters and the
-  fragments would render unshaped. (Inert on every corpus document the rule touches.)
+- A word may be **several boxes** - a punctuation-led token like `«${(entries.…`, or a URL,
+  which FOP maps to a run of boxes joined by infinite penalties - and every splittable box
+  in the run is broken, all of them marked as one word so that "only once the word has a
+  line to itself" still means the whole word (17.1.1). Before that the rule required a
+  word to be a single box and such tokens were never seen as over-long at all: one ran to
+  x=623.0 on a 595.3pt page. A box whose mapping cannot be split is left whole but still
+  counted as part of the word, so it does not block a break in its neighbours.
+- A mapping which carries a **substituted glyph sequence** - a complex script, or an
+  OpenType feature FOP applied - is left alone: such a word cannot be rebuilt from its
+  characters and the fragments would render unshaped. (Inert on every corpus document the
+  rule touches.)
 - **The word must be over the measure by more than an inch.** The rule has to be
   conservative, because a word which does not fit is very often a measure *we* got wrong
   rather than a word Word breaks, and breaking it then hides the real defect and costs a
@@ -1188,6 +1195,26 @@ Three limits:
 Kerning and glyph positioning inside the word are lost, which is the price of breaking it;
 the word's total width is preserved exactly (the residual goes on the last character).
 `docx4j.convert.out.fo.wordLayout.emergencyBreak=false` turns the rule off.
+
+**The inch is now known to be the single most valuable number left in this rule, and why it
+cannot yet be lowered** (b2-batch28). At 8pt instead of 72 the mean line parity rises 0.8816
+to 0.8879 on the 191-document corpus, 0.8496 to 0.8532 on the 156 and 0.8810 to 0.8836 on
+the 102 long ones - 1013 more lines matched, the medians up on all three, the probes
+byte-identical, the corpus's largest single deficit 0.626 to 0.738 and four documents up by
+0.12 to 0.26. On an unbiased quarter of the first corpus it is monotone (0.8967 at 72pt,
+0.9005 at 36, 0.9011 at 18, 0.9051 at 8, 0.9052 at 1) with four documents up and none down.
+
+What stops it is three documents whose **page count** it breaks, and they break because the
+measure it is handed is wrong, not because the word is long. Instrumented, the worst fires
+**166 times into measures of 5.2pt and 23.2pt**, gaining 529 lines and five pages: a column
+that narrow holds one character, so breaking into it shatters the word rather than wrapping
+it. The documents the rule is *for* fire 3 to 21 times into measures of 36 to 268pt. Neither
+an absolute threshold (36pt leaves two of the three page counts broken) nor a relative one
+(the largest win overflows its measure by only 6.7%) separates them, because the difference
+is not in the word - it is that we sized those columns wrongly, and that document is the one
+the triage ledger names for the content-autofit defect. **Lower the tolerance to 8pt once
+that is fixed**; `docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance` sets it in
+points, so it can be re-measured without a build.
 
 Measured over the three corpora, the conservative rule takes the lines painted outside their
 page from 1959 in 73 documents to 1915 in 70, against Word's 207 in 20. Most of what remains

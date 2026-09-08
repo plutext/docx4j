@@ -148,6 +148,28 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return Boolean.parseBoolean(v.trim());
 	}
 
+	/**
+	 * How far past the measure, in points, a word may run before it is broken rather
+	 * than left to overflow.
+	 *
+	 * <p>The rule has to be conservative, because a word which does not fit is often a
+	 * measure <em>we</em> got wrong rather than a word Word breaks, and breaking it then
+	 * hides the real defect and costs a line.  See
+	 * {@code WordLineLayoutManager.overrunTolerance} for what was measured at each value.
+	 *
+	 * <p>docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance sets it.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String EMERGENCY_BREAK_TOLERANCE
+			= "docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance";
+
+	public static double emergencyBreakTolerance(double dflt) {
+		Double v = doubleProperty(EMERGENCY_BREAK_TOLERANCE);
+		return v == null ? dflt : v.doubleValue();
+	}
+
 	private static Double doubleProperty(String name) {
 		String v = System.getProperty(name);
 		if (v == null) v = Docx4jProperties.getProperty(name);

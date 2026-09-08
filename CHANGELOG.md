@@ -1,6 +1,19 @@
 CHANGELOG
 =========
 
+Version 17.1.1
+===============
+
+Changes in Version 17.1.1
+--------------------------
+
+PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
+
+- The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
+  or a URL - which it previously never recognised as over-long at all.
+- New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default
+  72) sets how far past the measure such a word may run before it is broken.
+
 Version 17.1.0
 ===============
 
