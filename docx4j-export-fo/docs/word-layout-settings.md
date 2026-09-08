@@ -28,6 +28,26 @@ column derived from Word rather than from the spec.  Where Word **changes**
 settings which are not the ones in the docx, and any rule measured on it has to be re-read;
 `CompatDiff` names those documents.
 
+### What it says, run over 191 real documents (2026-09-09)
+
+**Word changed no `w:compat` flag on any document that declared one.**  That is the result
+this table most needed: the assumption behind every rule below - that the document Word laid
+out is the document we read - holds across the whole corpus, and no golden was cut under
+settings other than the ones its docx states.
+
+Word made exactly two additions, and only two:
+
+- **`compatibilityMode` where the document has none: Word writes 12** (31 of the 32 documents
+  which declare no mode; the remaining one it gave 11).  So "absent" defaults to **mode 12**,
+  measured rather than assumed - which is what the MODE-DEFAULTED status below rests on.  The
+  documents concerned genuinely have no `compatibilityMode` in their own `settings.xml`
+  (checked directly, so this is not something the round trip dropped).
+- `useWord2013TrackBottomHyphenation="1"` on every document, whatever its mode - Word 2016
+  recording its own housekeeping rather than a layout default.
+
+Nothing else moved: no flag added, none removed, none changed value, at any of modes 11, 12,
+14 and 15.
+
 ## 1. What settings.xml governs, and the policy
 
 `word/settings.xml` (`CT_Settings`, ECMA-376-1 §17.15.1) carries the document-wide

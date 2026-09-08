@@ -2231,6 +2231,35 @@ So the change above deliberately leaves the grid winning where the two disagree,
 probe about a grid must either use `w:tblLayout fixed` (which Word does not recompute) or be
 round-tripped through Word before it can be read as evidence.
 
+**Resolved by round-tripping both, 2026-09-09.** `WordGoldenRunner`'s third directory has Word
+re-save each document, and a `w:tblGrid` Word writes back *is* Word's layout in twips, so this
+no longer has to be inferred from a page image.
+
+On the probe - whose grid Word did not write - Word **recomputes from the cells**, in either
+unit, normalising percentages which do not add up: P1's grid of 66.5/33.5 comes back
+25.0/75.0 against cells of 25/75, P3's cells of 20% and 40% come back 33.3/66.7, P4 comes back
+25.92/74.08 exactly as its cells state, and P5, stated in `dxa`, comes back 25.0/75.0. That is
+the page geometry above, confirmed in the file.
+
+On the 191-document corpus, 18 documents and 36 of 727 tables had their grid rewritten, and the
+split is by unit: where the cells are **`pct`**, Word's new grid matches the **cells** - the
+table this section was written from goes from a cached 15.38% for column 8 to Word's 25.90%,
+against the cells' 25.92% - and where they are **`dxa`** it matches the **old grid**, 3 of 4.
+
+The reconciliation is that a grid in a Word-authored document is Word's own cached layout from
+a previous session, which Word keeps; a grid this harness generated is not, so Word recomputes.
+Hence the rule as it stands - the grid is authoritative, and a `pct` `w:tcW` informs the content
+pass rather than overruling it. It is still not universal: one corpus table's `pct` cells
+disagree with its grid and Word kept the grid, and what decides that case is open.
+
+**The resaved grid is ground truth for every table**, which is the measurement to build on:
+comparing docx4j's computed columns against it over all 727 corpus tables and 145 probe tables
+gives the autofit sizer a per-table error in twips instead of a proxy read off a page. The
+`table-grid-pct` probe now carries Word's answer for grids deliberately 33% over and under the
+column (6000+6000 comes back 4448+4569; 3000+3000 comes back 4671+4346), including the
+`w:tblLayout fixed` twins, which Word refits too - and the refit is **not** uniform
+(x0.741 against x0.762), which is J28's question answered in Word's own numbers.
+
 **Column-spanning cells.** Non-spanning cells size their columns first; a spanning cell
 widens the columns it spans only when their sum falls short of what it needs, sharing by
 flexibility. Word kept 31 / 385 / 30pt outer columns under two two-column spans, where
