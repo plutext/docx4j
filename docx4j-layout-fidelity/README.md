@@ -84,6 +84,14 @@ that is already cut without `--force` re-cutting every PDF. The golden PDF is al
 made from the **original** docx: rendering Word's own output would be measuring Word
 against Word.
 
+The runner disables documents4j's PowerPoint bridge, because it converts nothing but
+docx and PowerPoint has to run in the foreground: a PowerPoint first-run or activation
+dialog stops the run before Word has been asked anything, and looks exactly like a hang.
+`-Dpptx4j.documents4j.MicrosoftPowerpointBridge.enabled=true` puts it back. Each document
+is named before it is handed to Word (`[2/194] resaving <id> (18 KB)`), so a stall says
+which one, and a document Word refuses is named, recorded in the manifest with its whole
+cause chain, and stepped over rather than ending the run.
+
 Two things to know before reading a diff. Word rewrites a great deal that is not a
 computation - `w:rsid`s, attribute order, `w:proofState`, its own `w:compat` block - so
 diff the elements you are asking about rather than the file. And the resave goes through
