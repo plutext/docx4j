@@ -134,9 +134,24 @@ public final class WordGoldenRunner {
 						progress("resaving", id, n, files.length, docx);
 						Throwable last = null;
 						for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
+							File local = null;
 							try {
+								/* Word is given a copy on a local disk, never the corpus
+								 * file itself.  The corpus lives on a VirtualBox share, and
+								 * Documents.Open of a share path returns an empty handle -
+								 * which documents4j reports as "the input file seems to be
+								 * corrupt".  The PDF side never met this because it does
+								 * not hand Word the corpus file either: export(pkg, os)
+								 * saves the package to a local temp file first and converts
+								 * that.  The bytes are copied rather than round-tripped
+								 * through docx4j, so what Word is asked to open is the
+								 * document itself and a diff against it is Word's doing
+								 * alone. */
+								local = File.createTempFile("resave_", ".docx");
+								java.nio.file.Files.copy(docx.toPath(), local.toPath(),
+										java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 								try (FileOutputStream os = new FileOutputStream(resaved)) {
-									converter().updateDocx(docx, os);
+									converter().updateDocx(local, os);
 								}
 								if (resaved.length() == 0) throw new IllegalStateException("Word produced an empty docx");
 								last = null;
@@ -156,6 +171,8 @@ public final class WordGoldenRunner {
 											+ rootCause(t) + "), retrying");
 									Thread.sleep(2000);
 								}
+							} finally {
+								if (local != null) local.delete();
 							}
 						}
 						if (last == null) {
