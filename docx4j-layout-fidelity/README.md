@@ -160,6 +160,29 @@ from the specification. Grouped by the mode the document declared, the additions
 table, derived from Word rather than from the spec. Reflection over `CTCompat`'s getters
 means a flag nobody has thought about yet is still reported.
 
+`ColumnError` turns the same comparison into a number:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.golden.ColumnError <corpusDir> <resavedDir> [out.csv]
+```
+
+`GridDiff` says *whether* Word rewrote a grid; this says how far docx4j's own answer is
+from Word's. The reference is the resaved document's `w:tblGrid` — what Word computed,
+in twips — and the candidate is the `fo:table-column` set docx4j produces for the same
+table, read out of an in-process render of the **original** to XSL-FO. Neither side is a
+rendering, so it measures the column sizer on its own: no fonts, no FOP, no page.
+
+Tables are paired by index, Word's in document order against ours in FO pre-order, with
+the same `ClassFinder` traversal `GridDiff` uses so nested tables line up. A document
+whose two counts differ is skipped whole rather than compared out of step (a table in a
+header, a footnote or a text box is in the FO but not in the main document part), and the
+wrapper tables `WordLayoutFixups` builds around a floating table or an image are not
+counted — only the table writer puts `column-number` on a column, which is how they are
+told apart. It reports each table's per-column ratio, `maxAbsRatioErr` and total twip
+error, worst first, then an aggregate split by whether Word kept the declared grid: where
+it did, an error is docx4j declining to use a grid Word was happy with; where it did not,
+it is one sizer against the other. The optional CSV lets two runs be diffed.
+
 ## Hyphenation patterns (licence note)
 
 FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`
