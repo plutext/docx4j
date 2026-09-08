@@ -89,6 +89,25 @@ import org.w3c.dom.NodeList;
  */
 public class AbstractTableWriterModel extends TableModel {
 
+	/**
+	 * The {@code w:tbl} this model was built from, so that a writer can ask where in the
+	 * document the table sits - in particular which cell a nested table is in
+	 * (AbstractTableWriter.containingCellWidthTwips).
+	 *
+	 * <p>Its parent pointers ({@code org.jvnet.jaxb.lang.Child}) are set only where the
+	 * table was reached through the document's own object tree, which is the visitor
+	 * pathway; in the XSLT pathway the {@code w:tbl} was unmarshalled on its own from the
+	 * DOM and has none.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private Tbl tbl;
+
+	/** @since 17.1.1 */
+	public Tbl getTbl() {
+		return tbl;
+	}
+
 	/** Column widths in twips decided by autofit (see AbstractTableWriter.computeAutofitColumnWidths),
 	 *  or null to use the grid.  @since 17.0.5 */
 	private int[] autofitColumnWidths;
@@ -173,12 +192,14 @@ public class AbstractTableWriterModel extends TableModel {
 			throw new TransformerException("Node is not of the type Tbl it is " + node.getClass().getName());
 		}
 
+		this.tbl = tbl;
+
 		if (tbl.getTblPr()!=null
 				&& tbl.getTblPr().getTblStyle()!=null) {
-			styleId = tbl.getTblPr().getTblStyle().getVal();			
+			styleId = tbl.getTblPr().getTblStyle().getVal();
 		}
-		
-		
+
+
 		this.tblGrid = tbl.getTblGrid();
 		
 		this.tblPr = tbl.getTblPr();

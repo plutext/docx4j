@@ -411,7 +411,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			// column does, widening to the table's preferred width follows the w:tblGrid
 			// rather than the columns' content (see widenToPreferredTableWidth)
 			boolean[] declared = new boolean[cols];
-			int tablePreferred = preferredTableWidthTwips(context, tblPr);
+			int container = containingCellWidthTwips(table, tblPr);
+			int tablePreferred = preferredTableWidthTwips(context, tblPr, container);
 			/* A w:tcW in pct is a preferred width like a dxa one, stated as a fraction of
 			 * the table's own width rather than in twips, and reading only dxa left a pct
 			 * table with no column preferences at all: it failed the "every column has a
@@ -477,9 +478,11 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			}
 			if (!anyAuto) return null; // every column has a preferred width: the grid is what Word uses
 			if (gridIsAuthoritative(table, tblPr, cols, pref, declared)) return null;
-			int available = availableWidthTwips(context, tblPr);
+			int available = availableWidthTwips(context, tblPr, container);
 			if (available <= 0) return null;
-			if (preferredTableWidthTwips(context, tblPr) <= 0) {
+			// the grid-edge allowance is the text column's; a nested table's grid is not
+			// shifted off its container's edge (see TableWriter.isNested), so it gets none
+			if (tablePreferred <= 0 && container <= 0) {
 				available += autofitGridAllowanceTwips(context, table, tblPr);
 			}
 			int[] mi = new int[cols], ma = new int[cols];
@@ -492,7 +495,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			for (boolean d : declared) anyDeclared |= d;
 			int[] basis = anyDeclared ? gridWidths(table, cols) : null;
 			return widenToPreferredTableWidth(widths, pref, basis == null ? widths : basis,
-					preferredTableWidthTwips(context, tblPr));
+					tablePreferred);
 		} catch (Exception e) {
 			log.warn("Autofit skipped: " + e.getMessage(), e);
 			return null;
@@ -626,9 +629,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * w:tblInd leaves of it.  An absolute w:tblW does not buy that exemption:
 			 * one corpus table whose w:tblW asks for 117pt more than the column is kept
 			 * inside it by Word.  @since 17.1.0 */
+			int container = containingCellWidthTwips(table, tblPr);
 			org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
 			if (tblW != null && "pct".equals(tblW.getType())
-					&& preferredTableWidthTwips(context, tblPr) > 0) {
+					&& preferredTableWidthTwips(context, tblPr, container) > 0) {
 				return null;
 			}
 			/* w:compat/w:growAutofit, "Allow Tables to AutoFit Into Page Margins"
@@ -644,7 +648,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				// The document's own grid.  Word keeps an over-wide one only where the
 				// table states a width of its own; an autofit table's grid is a cached
 				// layout Word recomputes and clamps to the text column.  @since 17.1.0
-				if (preferredTableWidthTwips(context, tblPr) > 0) return null;
+				if (preferredTableWidthTwips(context, tblPr, container) > 0) return null;
 				widths = gridWidths(table, table.getColCount());
 				if (widths == null) return null;
 			}
@@ -652,12 +656,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			for (int w : widths) total += w;
 			if (total <= 0) return null;
 
-			int writable = -1;
-			try {
-				writable = context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
-			} catch (Exception e) {
-				log.debug("No section page dimensions to fit the table to: " + e.getMessage());
-			}
+			// what the table has to fit in: the cell a nested table is in, else the page
+			int writable = container > 0 ? container : containerWidthTwips(context);
 			if (writable <= 0) return null;
 			org.docx4j.wml.TblWidth ind = tblPr == null ? null : tblPr.getTblInd();
 			if (ind != null && ind.getW() != null && "dxa".equals(ind.getType()) && ind.getW().intValue() > 0) {
@@ -737,7 +737,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					&& tblPr.getTblLayout().getType() == org.docx4j.wml.STTblLayoutType.FIXED) {
 				return null;
 			}
-			int target = preferredTableWidthTwips(context, tblPr);
+			int target = preferredTableWidthTwips(context, tblPr, containingCellWidthTwips(table, tblPr));
 			if (target <= 0) return null;
 			int[] grid = gridWidths(table, table.getColCount());
 			if (grid == null || grid.length == 0) return null;
@@ -860,16 +860,13 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	}
 
 	/** The width the table may take: w:tblW when absolute or a percentage, else the
-	 *  writable page width less the table indent. */
-	private static int availableWidthTwips(AbstractWmlConversionContext context, org.docx4j.wml.CTTblPrBase tblPr) {
-		int preferred = preferredTableWidthTwips(context, tblPr);
+	 *  container (the page's text column, or the cell a nested table sits in) less the
+	 *  table indent. */
+	private static int availableWidthTwips(AbstractWmlConversionContext context,
+			org.docx4j.wml.CTTblPrBase tblPr, int container) {
+		int preferred = preferredTableWidthTwips(context, tblPr, container);
 		if (preferred > 0) return preferred;
-		int writable = -1;
-		try {
-			writable = context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
-		} catch (Exception e) {
-			log.debug("No section page dimensions for autofit: " + e.getMessage());
-		}
+		int writable = container > 0 ? container : containerWidthTwips(context);
 		if (writable <= 0) return -1;
 		org.docx4j.wml.TblWidth ind = tblPr == null ? null : tblPr.getTblInd();
 		if (ind != null && ind.getW() != null && "dxa".equals(ind.getType()) && ind.getW().intValue() > 0) {
@@ -878,27 +875,174 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		return writable;
 	}
 
+	/** The section's text column in twips, or -1 when there is no section to ask. */
+	private static int containerWidthTwips(AbstractWmlConversionContext context) {
+		try {
+			return context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
+		} catch (Exception e) {
+			log.debug("No section page dimensions: " + e.getMessage());
+			return -1;
+		}
+	}
+
 	/**
 	 * The table's own preferred width in twips: w:tblW as "dxa" (twips) or as "pct"
-	 * (fiftieths of a percent of the text column), or -1 when the table has none
+	 * (fiftieths of a percent of the container), or -1 when the table has none
 	 * (w:tblW absent, or "auto", which is what Word writes for a table sized purely
 	 * by its content).
 	 *
+	 * @param container the width the percentage is of - the cell a nested table sits in,
+	 *        or -1 for the section's text column
 	 * @since 17.0.5
 	 */
-	private static int preferredTableWidthTwips(AbstractWmlConversionContext context, org.docx4j.wml.CTTblPrBase tblPr) {
+	private static int preferredTableWidthTwips(AbstractWmlConversionContext context,
+			org.docx4j.wml.CTTblPrBase tblPr, int container) {
 		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
 		if (tblW == null || tblW.getW() == null || tblW.getW().intValue() <= 0) return -1;
 		if ("dxa".equals(tblW.getType())) return tblW.getW().intValue();
 		if ("pct".equals(tblW.getType())) {
-			try {
-				int writable = context.getSections().getCurrentSection().getPageDimensions().getWritableWidthTwips();
-				if (writable > 0) return (int) ((long) writable * tblW.getW().intValue() / 5000);
-			} catch (Exception e) {
-				log.debug("No section page dimensions for the table's preferred width: " + e.getMessage());
-			}
+			int base = container > 0 ? container : containerWidthTwips(context);
+			if (base > 0) return (int) ((long) base * tblW.getW().intValue() / 5000);
 		}
 		return -1;
+	}
+
+	/**
+	 * The width in twips a table nested in a {@code w:tc} has to lay itself out in - the
+	 * containing cell's width less that cell's margins - or -1 where the table is not
+	 * nested, the container cannot be worked out, or the table states an absolute width
+	 * of its own.
+	 *
+	 * <p>Word resolves a nested table's {@code w:tblW pct} against the cell it is in and
+	 * autofits it into the same width; docx4j resolved both against the page, so a nested
+	 * table came out as wide as the text column however narrow its cell.  Measured
+	 * against the {@code w:tblGrid} Word writes when it re-saves the corpora, over their
+	 * 631 nested tables: of the 438 which state {@code w:tblW pct}, the grid Word computed
+	 * is (cell - the cell's margins) &#xd7; the percentage in every one of them to within
+	 * 1%, where the cell alone matches 424 and (cell - 216) 12.  The other two cases stay
+	 * as they were:</p>
+	 * <ul>
+	 * <li>an <em>absolute</em> {@code w:tblW} is a width Word gives the table and lets it
+	 *     overhang the cell - of the corpora's 141 such nested tables Word keeps the
+	 *     stated width in 133, and in 20 the grid it wrote is wider than the cell;
+	 * <li>the 52 nested tables with no preferred width of their own are Word's
+	 *     content-based autofit, for which the cell is the target rather than the answer.
+	 * </ul>
+	 *
+	 * <p>Only the visitor pathway can answer this: it walks the document's own object
+	 * tree, so the {@code w:tbl}'s parent pointers lead to the cell.  In the XSLT pathway
+	 * the {@code w:tbl} was unmarshalled from the DOM on its own, has no parent, and
+	 * keeps the page-based behaviour (as does a table this cannot place).</p>
+	 *
+	 * @since 17.1.1
+	 */
+	protected static int containingCellWidthTwips(AbstractTableWriterModel table,
+			org.docx4j.wml.CTTblPrBase tblPr) {
+		try {
+			org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
+			if (tblW != null && tblW.getW() != null && tblW.getW().intValue() > 0
+					&& "dxa".equals(tblW.getType())) {
+				return -1;   // an absolute width Word honours, cell or no cell
+			}
+			org.docx4j.wml.Tbl tbl = table.getTbl();
+			if (tbl == null) return -1;
+			org.docx4j.wml.Tc cell = (org.docx4j.wml.Tc) ancestorOfType(tbl, org.docx4j.wml.Tc.class);
+			if (cell == null) return -1;   // not nested in a cell
+			org.docx4j.wml.Tr row = (org.docx4j.wml.Tr) ancestorOfType(cell, org.docx4j.wml.Tr.class);
+			org.docx4j.wml.Tbl outer = row == null ? null
+					: (org.docx4j.wml.Tbl) ancestorOfType(row, org.docx4j.wml.Tbl.class);
+			int width = cellWidthFromOuterGrid(outer, row, cell);
+			if (width <= 0) width = declaredCellWidthTwips(cell);
+			if (width <= 0) return -1;
+			int available = width - cellMarginsTwips(outer == null ? null : outer.getTblPr(), cell.getTcPr());
+			return available > 0 ? available : -1;
+		} catch (Exception e) {
+			log.debug("Containing cell not determined: " + e.getMessage());
+			return -1;
+		}
+	}
+
+	/**
+	 * The nearest ancestor of the given type, following the JAXB parent pointers, or null
+	 * where there is none before the containing story (body, header, footer, note or text
+	 * box) - so that a table at the top of its story is not given a container from some
+	 * cell it is not in.
+	 */
+	private static Object ancestorOfType(Object from, Class<?> type) {
+		Object o = (from instanceof org.jvnet.jaxb.lang.Child)
+				? ((org.jvnet.jaxb.lang.Child) from).getParent() : null;
+		for (int guard = 0; o != null && guard < 64; guard++) {
+			if (type.isInstance(o)) return o;
+			if (o instanceof org.docx4j.wml.Body
+					|| o instanceof org.docx4j.wml.Hdr
+					|| o instanceof org.docx4j.wml.Ftr
+					|| o instanceof org.docx4j.wml.CTFtnEdn
+					|| o instanceof org.docx4j.wml.CTTxbxContent
+					|| o instanceof org.docx4j.wml.Document) {
+				return null;
+			}
+			o = (o instanceof org.jvnet.jaxb.lang.Child)
+					? ((org.jvnet.jaxb.lang.Child) o).getParent() : null;
+		}
+		return null;
+	}
+
+	/** The cell's width from the enclosing table's w:tblGrid: its position in the row
+	 *  (after any w:gridBefore) expanded by its w:gridSpan.  -1 where the row holds a cell
+	 *  this cannot count, so that a mis-counted position is never used. */
+	private static int cellWidthFromOuterGrid(org.docx4j.wml.Tbl outer, org.docx4j.wml.Tr row,
+			org.docx4j.wml.Tc cell) {
+		if (outer == null || row == null || outer.getTblGrid() == null) return -1;
+		List<TblGridCol> cols = outer.getTblGrid().getGridCol();
+		if (cols == null || cols.isEmpty()) return -1;
+		int start = gridBefore(row);
+		int span = -1;
+		for (Object o : row.getContent()) {
+			Object v = XmlUtils.unwrap(o);
+			if (v instanceof org.docx4j.wml.Tc) {
+				org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc) v;
+				if (tc == cell) { span = gridSpan(tc); break; }
+				start += gridSpan(tc);
+			} else if (v instanceof org.docx4j.wml.CTSdtCell
+					|| v instanceof org.docx4j.wml.CTCustomXmlCell) {
+				return -1;   // cells this loop cannot see: the position would be wrong
+			}
+		}
+		if (span < 0 || start < 0 || start + span > cols.size()) return -1;
+		int sum = 0;
+		for (int i = start; i < start + span; i++) {
+			java.math.BigInteger w = cols.get(i).getW();
+			if (w == null || w.intValue() <= 0) return -1;
+			sum += w.intValue();
+		}
+		return sum;
+	}
+
+	/** The cell's w:gridSpan, at least 1. */
+	private static int gridSpan(org.docx4j.wml.Tc tc) {
+		if (tc.getTcPr() != null && tc.getTcPr().getGridSpan() != null
+				&& tc.getTcPr().getGridSpan().getVal() != null) {
+			return Math.max(1, tc.getTcPr().getGridSpan().getVal().intValue());
+		}
+		return 1;
+	}
+
+	/** The row's w:gridBefore: grid columns no cell of the row occupies. */
+	private static int gridBefore(org.docx4j.wml.Tr row) {
+		if (row.getTrPr() == null) return 0;
+		JAXBElement<?> el = XmlUtils.getListItemByQName(row.getTrPr().getCnfStyleOrDivIdOrGridBefore(),
+				new QName(Namespaces.NS_WORD12, "gridBefore"));
+		if (el == null || !(el.getValue() instanceof org.docx4j.wml.CTTrPrBase.GridBefore)) return 0;
+		java.math.BigInteger val = ((org.docx4j.wml.CTTrPrBase.GridBefore) el.getValue()).getVal();
+		return val == null ? 0 : Math.max(0, val.intValue());
+	}
+
+	/** The cell's own w:tcW where it is absolute, else -1. */
+	private static int declaredCellWidthTwips(org.docx4j.wml.Tc cell) {
+		org.docx4j.wml.TblWidth tcW = cell.getTcPr() == null ? null : cell.getTcPr().getTcW();
+		if (tcW == null || tcW.getW() == null || tcW.getW().intValue() <= 0) return -1;
+		if (tcW.getType() != null && !"dxa".equals(tcW.getType())) return -1;
+		return tcW.getW().intValue();
 	}
 
 	/**

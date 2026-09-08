@@ -2362,6 +2362,52 @@ overhangs. Paginated output only; in HTML the percentage is the browser's. The p
 from 86% to 98% of Word's lines; what is left is a prose line Word breaks and FOP keeps,
 by 0.1pt of the same truncated advances §10 records.
 
+<a id="s65nestedcontainer"></a>**A nested table's container is the cell it sits in, not the
+page.** The percentage above is of the text column only for a table in the flow; a table
+nested in a `w:tc` gets its width from that cell, and autofits into it. docx4j resolved
+both against the section's text column whatever the table was in, so a nested table came
+out as wide as the page however narrow its cell - one table in a 4647-twip cell was given
+12753 twips.
+
+Measured against the `w:tblGrid` Word itself wrote when it re-saved the three corpora, over
+their **631 nested tables in 37 documents** (`ColumnError`, as [above](#s65fixedpct)):
+
+* **438 state a `w:tblW` in `pct`.** Word's saved grid is *(the containing cell, less that
+  cell's margins)* × the percentage in **all 438** to within 1%. The cell width on its own
+  matches 424 of them and the cell less a flat 216 twips only 12, so the margins are the
+  cell's own and not a constant.
+* **141 state an absolute `w:tblW`,** and Word keeps the width stated in 133 of them - in
+  20 the grid Word wrote is **wider than the cell the table is in**. An absolute width is
+  therefore not resolved against the container at all, exactly as it is not resolved
+  against the text column ([§6.5](#s65pct)); such a table is left to overhang its cell.
+* The remaining **52** have no preferred width of their own. For those the cell is the
+  autofit *target* rather than the answer, the same role the text column plays in
+  [§6.3](#s63grid), and none of the grid-edge allowance of [§6.1](#s61autofit) is added to
+  it: a nested table's grid is not shifted off its container's edge either
+  ([§6.1](#s61nested)).
+
+The container is the cell's width taken from the **enclosing** table's `w:tblGrid` - the
+cell's position in its row, after any `w:gridBefore`, expanded by its `w:gridSpan` - less
+that cell's margins (its own `w:tcMar` where the table declares none, else the enclosing
+table's `w:tblCellMar`, else Word's 108+108), falling back to the cell's own `dxa` `w:tcW`
+where the grid does not describe it. `AbstractTableWriter.containingCellWidthTwips` finds
+it by following the `w:tbl`'s JAXB parent pointers up to the cell, which means **only the
+visitor pathway can answer it**: in the XSLT pathway the `w:tbl` reaching the writer was
+unmarshalled from the DOM on its own and has no parent, and keeps the page-based
+behaviour, as does any table whose container cannot be worked out.
+
+Over the four sets this takes the total column error from 625767 to 565088 twips, of which
+60427 of the 60679 is nested tables (280293 -> 219866); no table's error rises, and the
+nested tables docx4j sizes wider than the cell they are in fall from 36 to 22, the
+remainder being the absolute-width case Word overhangs too. **Line parity barely moves**:
+the probe report is line for line what it was, no document of the three corpora changes by
+the 0.02 the scoreboard reports on, no page count moves, and the only aggregate that moves
+at all is one corpus's matched lines, 55656 -> 55675 of 71789. That is expected rather than
+disappointing - the documents this corrects are grids of one character per cell, which
+cannot wrap at any width, so the whole of that error was free. It is a correctness fix
+these corpora have no way to reward; see the harness README on why a twip of column error
+is not a cost.
+
 <a id="s65fixedpct"></a>**Under `w:tblLayout="fixed"` the grid is the layout, and the
 percentage is not resolved against anything.** Measured against the `w:tblGrid` Word itself
 wrote when it re-saved the three corpora (the harness's `ColumnError`, which compares the

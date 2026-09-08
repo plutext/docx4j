@@ -17,6 +17,8 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   even when every cell is w:tcW auto; it used to fall through to content autofit.
 - A w:tcW in pct is now a preferred column width, as a dxa one is; a pct table used to have
   no column preferences at all and was laid out on its content.
+- A table nested in a cell is now sized against that cell - its w:tblW pct is resolved
+  against the cell and its autofit fits it - rather than against the page's text column.
 - A percentage-width table whose w:tblLayout is "fixed" keeps its w:tblGrid, instead of
   having it scaled to the percentage: measured against the grid Word writes on a re-save,
   Word keeps the authored grid in 213 of the corpora's 215 such tables. One landscape
