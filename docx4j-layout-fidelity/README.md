@@ -54,6 +54,76 @@ java -cp "%CP%" org.docx4j.fidelity.golden.WordGoldenRunner <sharedFolder>\corpu
 Commit the goldens and `golden-manifest.properties` together. Regenerate them
 only when the corpus changes or Word on the VM is updated.
 
+## Having Word save the docx too
+
+Give the runner a third directory and it also opens each document in Word and saves
+it back as a docx there:
+
+```
+java -cp "%CP%" org.docx4j.fidelity.golden.WordGoldenRunner <shared>\corpus <shared>\goldens <shared>\resaved
+```
+
+The PDF says where Word *put* the text; the resaved docx says what Word *computed*,
+and some questions can only be answered by the second. The `w:tblGrid` is the case
+that forced this. In a Word-authored autofit table the grid is Word's own cached
+layout, so where the grid and the cells disagree the grid is what Word draws - but in
+a document this harness generated, the grid is whatever the generator wrote and Word
+recomputes it on open. **A probe's grid therefore proves nothing about what Word does
+with a grid until Word has written one**, which cost this project a wrong conclusion:
+`table-cell-pct` says the cells beat the grid, implementing that took the probe from
+43% to 100%, and it cost a quarter of the real-document corpus 0.8967 to 0.8771 of
+mean line parity.
+
+Word recomputes more than tables - the section's `w:sectPr`, style and numbering
+normalisation, field results, fonts it substitutes - so the resaved corpus is worth
+having for any "what does Word actually compute here" question, and a diff against the
+original is a measurement in twips rather than one read off a page image.
+
+The resave is checked *before* the PDF's own skip, so it can be added to a golden set
+that is already cut without `--force` re-cutting every PDF. The golden PDF is always
+made from the **original** docx: rendering Word's own output would be measuring Word
+against Word.
+
+Two things to know before reading a diff. Word rewrites a great deal that is not a
+computation - `w:rsid`s, attribute order, `w:proofState`, its own `w:compat` block - so
+diff the elements you are asking about rather than the file. And the resave goes through
+the same conversion script as the PDF, so if
+`com.documents4j.conversion.msoffice.word_convert.vbs` points at the ToC-updating script
+in `docx4j-samples-resources`, the resaved docx has its fields updated too; that is
+usually what you want from a round trip, but it means field results in the resave are
+Word's, not the document's.
+
+`GridDiff` reads the table half of it, and is the direct way to ask what Word thinks a
+column should be:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.golden.GridDiff <corpusDir> <resavedDir>
+```
+
+It prints one line per table whose grid Word rewrote, the widths before and after and
+the per-column ratio, then how many documents and tables were affected. A table Word
+leaves alone is one whose grid it agrees with.
+
+`CompatDiff` does the same for `w:compat`, and it cuts two ways:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.golden.CompatDiff <corpusDir> <resavedDir>
+```
+
+**As a check on every measurement made from a golden.** The settings-sensitivity table
+in `docx4j-export-fo/docs/word-layout-settings.md` assumes the document Word laid out is
+the document we read. If Word changes `compatibilityMode` on open, or drops a flag, then
+the golden PDF was produced under settings which are not the ones in the docx, and a rule
+keyed on the declared flag was measured against the wrong thing. Such a document is called
+out by name.
+
+**And as Word's own mode defaults, measured rather than inferred.** Where Word *adds* a
+flag the document did not state, it has written down the value it was already using -
+which is exactly what that table records as MODE-DEFAULTED and has so far had to take
+from the specification. Grouped by the mode the document declared, the additions are that
+table, derived from Word rather than from the spec. Reflection over `CTCompat`'s getters
+means a flag nobody has thought about yet is still reported.
+
 ## Hyphenation patterns (licence note)
 
 FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`

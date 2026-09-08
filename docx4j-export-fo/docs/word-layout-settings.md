@@ -9,6 +9,25 @@ Describes docx4j 17.1.0.
 
 ---
 
+## Checking this table against Word itself
+
+Every status below that reads MODE-DEFAULTED is taken from the specification: the flag is
+absent from the document and the compatibility mode is assumed to supply its value.  That
+assumption can now be measured instead.  `WordGoldenRunner` takes a third directory and has
+Word open and save each document into it, and `CompatDiff` (both in `docx4j-layout-fidelity`,
+see its README) reports what Word's `w:compat` says against the document's:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.golden.CompatDiff <corpusDir> <resavedDir>
+```
+
+Where Word **adds** a flag the document did not state, it has written down the value it was
+already using, so the additions grouped by compatibility mode are this table's MODE-DEFAULTED
+column derived from Word rather than from the spec.  Where Word **changes**
+`compatibilityMode`, or drops a flag, the golden PDF for that document was produced under
+settings which are not the ones in the docx, and any rule measured on it has to be re-read;
+`CompatDiff` names those documents.
+
 ## 1. What settings.xml governs, and the policy
 
 `word/settings.xml` (`CT_Settings`, ECMA-376-1 §17.15.1) carries the document-wide
