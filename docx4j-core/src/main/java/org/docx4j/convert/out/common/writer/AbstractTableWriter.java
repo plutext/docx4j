@@ -58,11 +58,14 @@ import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblPrEx;
+import org.docx4j.wml.CTTblStylePr;
+import org.docx4j.wml.STTblStyleOverrideType;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.STShd;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblGridCol;
 import org.docx4j.wml.TcPr;
+import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -274,11 +277,18 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			row = createNode(doc, rowContainer, (inHeader ? NODE_TABLE_HEADER_ROW : NODE_TABLE_BODY_ROW));
 			TrPr trPr = rowModel.getRowProperties();
 			CTTblPrEx tblPrEx = rowModel.getRowPropertiesExceptions();
+
+			// the table style's conditional formatting for this row (firstRow, a band, ...):
+			// below the row's own w:trPr, which is applied after it.  @since 17.1.1
+			TrPr conditionalTrPr = org.docx4j.model.table.TableStyleConditions.conditionalTrPr(
+					table.applicable(table.rowConditions(rowIndex, trPr)));
 			
+			createRowProperties(rowProperties, conditionalTrPr, false);
 			createRowProperties(rowProperties, trPr, false);
 			processAttributes(context, rowProperties, row);
 			applyTableRowCustomAttributes(context, table, transformState, row, rowIndex, inHeader);
 			
+			createCellProperties(cellProperties, conditionalTrPr);
 			createCellProperties(cellProperties, trPr);
 			createCellProperties(cellProperties, tblPrEx);
 			cellPropertiesRowSize = cellProperties.size();
@@ -306,6 +316,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					//Apply cell style
 					createCellBorderProperties(cellProperties, tableBorders,
 							rowIndex, table.getRows().size(), cell, table.getColCount());
+					// the table style's conditional formatting for this cell, in precedence
+					// order, between the table's own borders and the cell's own w:tcPr
+					createConditionalCellProperties(cellProperties, table, rowIndex, cell,
+							table.applicable(table.cellConditions(rowIndex, cell, trPr)));
 					createCellProperties(cellProperties, cell.getTcPr());
 					processAttributes(context, cellProperties, cellNode);
 					applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, false);
@@ -1338,6 +1352,121 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		if (tcPr != null) {
 			PropertyFactory.createProperties(properties, tcPr);
 		}
+	}
+
+	/**
+	 * The table style's conditional formatting for one cell: the {@code w:tblPr} and
+	 * {@code w:tcPr} of each {@code w:tblStylePr} the cell is under, applied in precedence
+	 * order (ECMA-376-1 17.7.6, {@link org.docx4j.model.table.TableStyleConditions}).
+	 *
+	 * <p>Borders are those of the condition's <em>region</em> - the first row, the first
+	 * column, the rows of a band, the whole table, one corner cell - resolved for the cell
+	 * as the table's own w:tblBorders are ({@link #createCellBorderProperties}): the outer
+	 * definitions on the edges of the cell which lie on the region's edges, insideH /
+	 * insideV on the edges which face another cell of the region.  That is what Word's
+	 * built-in styles are written for: Light List's {@code firstRow} states left, right
+	 * and {@code insideV="nil"}, which makes the header one box with no rules between its
+	 * cells; its {@code band1Horz} states top and bottom with {@code insideV="nil"}, a row
+	 * ruled above and below.  Read per cell instead, every header cell would get a left and
+	 * a right rule.  Shading, margins, vertical alignment and text direction are the
+	 * cell's own.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	protected void createConditionalCellProperties(List<Property> properties, AbstractTableWriterModel table,
+			int rowIndex, TableModelCell cell, List<CTTblStylePr> applicable) {
+		if (applicable == null || applicable.isEmpty()) return;
+		int rowCount = table.getRows().size();
+		int colCount = table.getColCount();
+		int r0 = rowIndex, r1 = rowIndex + cell.getExtraRows();
+		int c0 = cell.getColumn(), c1 = c0 + cell.getExtraCols();
+		for (CTTblStylePr pr : applicable) {
+			int[] region = regionOf(table, pr.getType(), rowIndex, cell, rowCount, colCount);
+			CTTblPrBase tblPr = pr.getTblPr();
+			if (tblPr != null) {
+				if (tblPr.getTblBorders() != null && region != null) {
+					TblBorders b = tblPr.getTblBorders();
+					addRegionBorders(properties, region, r0, r1, c0, c1,
+							b.getTop(), b.getBottom(), b.getLeft(), b.getRight(), b.getInsideH(), b.getInsideV());
+				}
+				if (tblPr.getShd() != null) {
+					properties.add(new Shading(tblPr.getShd()));
+				}
+				if (tblPr.getTblCellMar() != null) {
+					CTTblCellMar m = tblPr.getTblCellMar();
+					if (m.getTop() != null) properties.add(new CellMarginTop(m.getTop()));
+					if (m.getBottom() != null) properties.add(new CellMarginBottom(m.getBottom()));
+					if (m.getLeft() != null) properties.add(new CellMarginLeft(m.getLeft()));
+					if (m.getRight() != null) properties.add(new CellMarginRight(m.getRight()));
+				}
+			}
+			TcPr tcPr = pr.getTcPr();
+			if (tcPr != null) {
+				if (tcPr.getTcBorders() != null && region != null) {
+					TcPrInner.TcBorders b = tcPr.getTcBorders();
+					addRegionBorders(properties, region, r0, r1, c0, c1,
+							b.getTop(), b.getBottom(), b.getLeft(), b.getRight(), b.getInsideH(), b.getInsideV());
+				}
+				if (tcPr.getShd() != null) {
+					properties.add(new Shading(tcPr.getShd()));
+				}
+				if (tcPr.getVAlign() != null) {
+					properties.add(new TextAlignmentVertical(tcPr.getVAlign()));
+				}
+				if (tcPr.getTextDirection() != null) {
+					properties.add(new org.docx4j.model.properties.table.tc.TextDir(tcPr.getTextDirection()));
+				}
+				if (tcPr.getTcMar() != null) {
+					org.docx4j.wml.TcMar m = tcPr.getTcMar();
+					if (m.getTop() != null) properties.add(new CellMarginTop(m.getTop()));
+					if (m.getBottom() != null) properties.add(new CellMarginBottom(m.getBottom()));
+					if (m.getLeft() != null) properties.add(new CellMarginLeft(m.getLeft()));
+					if (m.getRight() != null) properties.add(new CellMarginRight(m.getRight()));
+				}
+			}
+		}
+	}
+
+	/**
+	 * The rows and columns a conditional format covers, as {firstRow, lastRow, firstCol,
+	 * lastCol} inclusive, for the cell it is being applied to; null where it cannot be told.
+	 */
+	private static int[] regionOf(AbstractTableWriterModel table, STTblStyleOverrideType type,
+			int rowIndex, TableModelCell cell, int rowCount, int colCount) {
+		if (type == null) return null;
+		int r0 = rowIndex, r1 = rowIndex + cell.getExtraRows();
+		int c0 = cell.getColumn(), c1 = c0 + cell.getExtraCols();
+		switch (type) {
+			case WHOLE_TABLE: return new int[] { 0, rowCount - 1, 0, colCount - 1 };
+			case FIRST_ROW: return new int[] { 0, 0, 0, colCount - 1 };
+			case LAST_ROW: return new int[] { rowCount - 1, rowCount - 1, 0, colCount - 1 };
+			case FIRST_COL: return new int[] { 0, rowCount - 1, 0, 0 };
+			case LAST_COL: return new int[] { 0, rowCount - 1, colCount - 1, colCount - 1 };
+			case BAND_1_HORZ: case BAND_2_HORZ: {
+				int[] rows = table.bandRows(rowIndex);
+				return rows == null ? new int[] { r0, r1, 0, colCount - 1 } : new int[] { rows[0], rows[1], 0, colCount - 1 };
+			}
+			case BAND_1_VERT: case BAND_2_VERT: {
+				int[] cols = table.bandCols(c0);
+				return cols == null ? new int[] { 0, rowCount - 1, c0, c1 } : new int[] { 0, rowCount - 1, cols[0], cols[1] };
+			}
+			default: // the corners: the cell itself
+				return new int[] { r0, r1, c0, c1 };
+		}
+	}
+
+	/** The region's borders resolved onto one cell's four edges (see createConditionalCellProperties). */
+	private static void addRegionBorders(List<Property> properties, int[] region,
+			int r0, int r1, int c0, int c1,
+			CTBorder top, CTBorder bottom, CTBorder left, CTBorder right, CTBorder insideH, CTBorder insideV) {
+		CTBorder t = (r0 <= region[0]) ? top : insideH;
+		CTBorder b = (r1 >= region[1]) ? bottom : insideH;
+		CTBorder l = (c0 <= region[2]) ? left : insideV;
+		CTBorder r = (c1 >= region[3]) ? right : insideV;
+		if (t != null) properties.add(new BorderTop(t));
+		if (b != null) properties.add(new BorderBottom(b));
+		if (l != null) properties.add(new BorderLeft(l));
+		if (r != null) properties.add(new BorderRight(r));
 	}
 
 	protected void createCellProperties(List<Property> properties, CTTblPrEx tblPrEx) {

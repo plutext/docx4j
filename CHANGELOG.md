@@ -28,8 +28,18 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   columns split some 11-13% narrow (an 8pt heading measured 79.6pt where FOP sets it at
   89.1) and the difference handed to a neighbour, whose text then stayed on one line where
   Word wraps it.
+- A table style's conditional formatting (w:tblStylePr: header-row and first-column bold,
+  band shading, a repeating header row, region borders) is now applied, in PDF and HTML,
+  following w:tblLook, the w:cnfStyle caches and ECMA-376-1 17.7.6 precedence (issue #546).
+  A 311-page corpus document renders 7,360 bold lines where it rendered 1,242 (Word:
+  10,196) and repeats the header of all 727 of its styled tables. See word-layout-rules.md
+  §6.10.
 
 Other:
+
+- StyleUtil: a table style w:basedOn another now inherits its conditional formats per
+  condition (the list was replaced wholesale), and its w:trPr is carried at all;
+  apply(TrPr, TrPr) copies into a null or empty destination.
 
 - docx4j now deletes the image files a conversion writes to java.io.tmpdir (where it put
   one per picture per run, and never removed it); for HTML and fo output, which point at

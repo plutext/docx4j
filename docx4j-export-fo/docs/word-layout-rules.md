@@ -2718,6 +2718,120 @@ Corpus: 15 documents, 160 rotated cells. Five improve - 0.711 -> 0.747, 0.749 ->
 0.628 -> 0.647, 0.883 -> 0.884, 0.827 -> 0.830 - and two fall a line each, 0.941 -> 0.940
 and 0.813 -> 0.807, on rows whose final height Word decides differently from either bound.
 
+<a id="s610"></a>
+### 6.10 Table styles: conditional formatting (`w:tblStylePr`)
+
+A table style carries much of its appearance in its *conditions* - the bold of a header
+row or first column, the shading of a band, the borders of the last row - and until 17.1.1
+docx4j applied none of it (issue #546): `ParagraphStylesInTableFix` folded only the style's
+own `w:pPr`/`w:rPr` into the paragraphs of a table, the writers took only its table-wide
+`w:tblPr`/`w:trPr`/`w:tcPr`, and `PropertyFactory` warned "TODO" at the list. Word's
+built-in `PlainTable1` is almost entirely conditional (`firstRow` and `firstCol` bold, a
+repeating header, shaded odd bands). Measured on one 311-page corpus document using it for
+724 tables: Word renders **9,245 lines bold, docx4j 837**; bold is 11-13% wider, so **Word
+wraps 320 table rows we fit on one line**; Word repeats the header of every table and we
+repeat none; Word 311 pages, docx4j 269. 30 of the 446 corpus documents use a table style
+with a conditional `w:rPr`.
+
+**Which conditions a cell is under** (`org.docx4j.model.table.TableStyleConditions`):
+
+- **`w:tblLook` gates everything.** Read from the six attributes where any is present, else
+  from the legacy `w:val` bitmask (0x0020 firstRow, 0x0040 lastRow, 0x0080 firstColumn,
+  0x0100 lastColumn, 0x0200 noHBand, 0x0400 noVBand); absent altogether, Word's own default
+  `04A0`. Of the corpora's 5,802 `w:tblLook`, 4,007 are `04A0`, 811 `0000` (which is *both
+  bandings on* and nothing else), 432 `01E0`; 91 of the 369 documents with tables carry
+  only the bitmask. The one document whose tables have no `w:tblLook` uses no table style,
+  so the default has no corpus measurement behind it.
+- **`w:cnfStyle` is Word's cache, split by axis.** Over the corpora Word writes the *row*
+  bits (`firstRow`, `lastRow`, `oddHBand`/`evenHBand`) on the `w:tr` and again on each
+  `w:p`, the *column* bits (`firstColumn`, `lastColumn`, `oddVBand`/`evenVBand`) on the
+  `w:tc`, and never a corner bit: all 5,308 cell caches are column bits, all 3,392 row
+  caches and 1,737 non-empty paragraph caches are row bits (`100000000000`,
+  `000000100000`, `010000000000`), and 1,485 paragraphs carry `000000000000`. So the row's
+  cache decides the row axis, the cell's the column axis, a paragraph's bits join whichever
+  axis they name, an axis with no cache is computed from the position, and the corners are
+  derived (`nwCell` = firstRow and firstCol, etc). A cache is still gated by the look, so
+  a stale one cannot switch on a format the table has turned off.
+- **Band arithmetic**, where there is no cache: bands count from the first row (column)
+  which has no condition of its own - with `firstRow` on, row 1 is the first `band1Horz` -
+  in steps of `w:tblStyleRowBandSize` / `w:tblStyleColBandSize` (default 1), and a last
+  row or column with its own condition is left out of the bands. A cell spanning several
+  columns is placed by its first column and is in the last column where its span reaches it.
+- **Precedence** (ECMA-376-1 §17.7.6): `wholeTable`, `band1Vert`, `band2Vert`, `band1Horz`,
+  `band2Horz`, `firstCol`, `lastCol`, `firstRow`, `lastRow`, `nwCell`, `neCell`, `swCell`,
+  `seCell`, later overriding earlier - and the lot below the paragraph's own style and
+  below direct formatting.
+- **Inheritance.** A table style `w:basedOn` another inherits its conditions *per
+  condition*: `StyleUtil.apply(List<CTTblStylePr>, ...)` used to replace the whole list
+  when the child had any, so a child restating one condition lost every other one. The
+  corpus document above also has a custom style based on `PlainTable1` which restates
+  `firstRow` as `<w:b w:val="0"/>` and keeps its parent's `w:tblHeader` and bands. Two
+  more inheritance gaps went with it: `StyleUtil.apply(Style, Style)` never carried
+  `w:trPr` for a table style, and `apply(TrPr, TrPr)` returned a null or empty destination
+  untouched, so no style's `w:trPr` ever reached the effective style.
+
+**Where the paragraph properties are applied: the preprocess, not `PropertyResolver`.**
+The resolver is handed a `w:pPr` and knows nothing of the table around it, and its callers
+- both FO pathways, both HTML pathways, the TOC generator, markdown, binding - have no row
+and column to hand; the XSLT pathway cannot even find them, its `w:tbl` having been
+unmarshalled from the DOM without parents. `ParagraphStylesInTableFix` already walks the
+document with the table on a stack, is already what carries the table style's own
+`w:pPr`/`w:rPr` into a synthetic paragraph style per table, and runs for FO and HTML alike.
+It now keeps a per-table context (the look, the band sizes, the grid column of every cell)
+and emits one synthetic style per *(paragraph style, table style, applicable conditions)* -
+`Normal-PlainTable1-firstCol-firstRow-nwCell-BR` - with the conditions applied in
+precedence order between the table style's own properties and the paragraph style's chain.
+A paragraph under no condition the style defines keeps the pre-17.1.1 style id, so a table
+style without conditional formatting is untouched. Nothing else applies these properties,
+so there is nothing for it to double up with, and `PropertyFactory`'s list method is now
+deliberately empty.
+
+**The row and cell properties go through the writers.** `AbstractTableWriterModel` resolves
+each row's and cell's conditions and `AbstractTableWriter` applies the matching entries'
+`w:trPr` (before the row's own) and `w:tblPr`/`w:tcPr` (after the table's own borders,
+before the cell's own `w:tcPr`). A `w:tblHeader` under `firstRow` makes the row a header
+row - `fo:table-header`, repeated on every page, `thead` in HTML - unless a cell of it
+spans into the body, which FOP rejects, or it is the last row. **Conditional borders are
+those of the condition's region**, resolved onto a cell as the table's own `w:tblBorders`
+are (§6.5): `top`/`bottom`/`left`/`right` on the edges which lie on the region's edges,
+`insideH`/`insideV` on the ones which face another cell of the region - the first row, the
+first column, the rows of a band, one corner cell. Word's built-in styles are written for
+that reading: Light List's `firstRow` states `left`, `right` and `insideV="nil"`, the header
+one box with no rules between its cells, and its `band1Horz` states `top` and `bottom` with
+`insideV="nil"`, a row ruled above and below; read per cell, every header cell would get a
+left and a right rule.
+
+**Measured**, phase 1 (the paragraph properties alone), against the baseline which has the
+bold-face column sizer (§6.3): probes unchanged (none uses a conditional table style);
+batch 1 lines matched 35108 -> 35117 and mean line parity 0.8844 -> 0.8848, one document
+0.8333 -> 0.8889, none down; batch 2 55682 -> 55696, mean 0.8526 unchanged; batch 3
+168938 -> 169065, mean 0.8861 -> 0.8862; no document moved beyond the 0.02 floor in
+batches 2 and 3. The 311-page document goes 0.7866 -> 0.7941 (13126 -> 13251 matched
+lines) and is still 269 pages. That the bold reaches the runs is checked directly: its FO
+carries `font-weight="bold"` on 5,893 cell blocks where it carried it on none, and counting
+the lines of the three PDFs by the face they are set in (mutool), Word's has 10,196 bold
+lines of 18,762, ours had 1,242 and now has 7,360. The bold lines Word has and we do not are
+almost all one-character fragments (`2`, `1`, `.`, `e`, `o` - 288, 272, 272, 149, 98 of them)
+and headings which pair with a differently broken line of ours: Word breaks a bold word
+character by character in a column too narrow for it (§4), which is the separate defect
+that holds the page count, not a run the bold failed to reach. The 42 extra lines are that
+document's bold rewrapping within its columns; `ColumnError` on its content-autofit tables
+is mixed, 343 tables closer to Word's grid (-61,847 tw) and 376 further (+120,314 tw), the
+bold first column now measured in DejaVu Sans Bold where Word measured Verdana Bold.
+`ColumnError` is unchanged on the probes and batch 1, moves one batch-2 table (252 -> 216
+twips), and on batch 3 it is the document above alone: within 1% of Word's grid 3,029 ->
+3,136 of 3,772 tables, within 5% 3,442 -> 3,352.
+
+**Phases 2 and 3** (the row and cell properties, on top of phase 1): probes unchanged; batch 1
+unchanged to the line; batch 2 lines matched 55696 -> 55704, mean 0.8526 -> 0.8527; batch 3
+169065 -> 169191, mean 0.8862 -> 0.8866, median 0.9245 -> 0.9246, one document 0.9022 ->
+0.9446 and none down. The 311-page document goes 0.7941 -> 0.7946 and **269 -> 270 pages**:
+every one of its 727 PlainTable1-family tables now repeats its header (318 top-level and 409
+nested), its shaded cells go 89 -> 6,722, and the +129 candidate lines are the repeated
+headers. `ColumnError` does not move, as row and cell properties change no column. The page
+count Word reaches (311) is held by the narrow-column character breaking above, which is a
+separate change.
+
 ---
 
 ## 7. Sections, columns, headers and footers

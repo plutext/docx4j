@@ -1,5 +1,6 @@
 package org.docx4j.model.table;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -261,6 +262,31 @@ public class TableStyleConditionsTest {
 		trPr.getCnfStyleOrDivIdOrGridBefore().add(
 				Context.getWmlObjectFactory().createCTTrPrBaseTblHeader(Context.getWmlObjectFactory().createBooleanDefaultTrue()));
 		assertTrue(TableStyleConditions.hasTblHeader(trPr));
+	}
+
+	// ---- the row axis and band extents, for the row and cell writers
+
+	@Test
+	public void rowConditionsAndBandExtents() {
+		// 6 rows, default look, band size 2: rows 1,2 band1; 3,4 band2; 5 band1
+		assertEquals(set(STTblStyleOverrideType.FIRST_ROW), TableStyleConditions.rowConditions(Look.DEFAULT, 2, 0, 6, null));
+		assertEquals(set(STTblStyleOverrideType.BAND_1_HORZ), TableStyleConditions.rowConditions(Look.DEFAULT, 2, 2, 6, null));
+		assertEquals(set(STTblStyleOverrideType.BAND_2_HORZ), TableStyleConditions.rowConditions(Look.DEFAULT, 2, 4, 6, null));
+		// a row cache is believed, and gated
+		assertEquals(set(STTblStyleOverrideType.FIRST_ROW), TableStyleConditions.rowConditions(Look.DEFAULT, 2, 4, 6, cnf("100000000000")));
+		assertTrue(TableStyleConditions.rowConditions(Look.NONE, 2, 4, 6, cnf("100000000000")).isEmpty());
+		// column bits never come back from the row axis
+		assertTrue(TableStyleConditions.rowConditions(Look.DEFAULT, 2, 4, 6, cnf("001000000000")).isEmpty());
+
+		assertNull(TableStyleConditions.hBandRows(Look.DEFAULT, 2, 0, 6));               // the header is not banded
+		assertArrayEquals(new int[] { 1, 2 }, TableStyleConditions.hBandRows(Look.DEFAULT, 2, 1, 6));
+		assertArrayEquals(new int[] { 1, 2 }, TableStyleConditions.hBandRows(Look.DEFAULT, 2, 2, 6));
+		assertArrayEquals(new int[] { 3, 4 }, TableStyleConditions.hBandRows(Look.DEFAULT, 2, 3, 6));
+		assertArrayEquals(new int[] { 5, 5 }, TableStyleConditions.hBandRows(Look.DEFAULT, 2, 5, 6)); // a short last band
+		assertNull(TableStyleConditions.hBandRows(ALL, 1, 5, 6));                        // nor a last row with its own condition
+		assertArrayEquals(new int[] { 0, 0 }, TableStyleConditions.hBandRows(Look.NONE, 1, 0, 6)); // no header: row 0 is a band
+		assertNull(TableStyleConditions.vBandCols(Look.DEFAULT, 1, 0, 4));
+		assertArrayEquals(new int[] { 3, 4 }, TableStyleConditions.vBandCols(new Look(true, false, true, false, true, true), 2, 3, 6)); // cols 1,2 band1; 3,4 band2
 	}
 
 	// ---- precedence

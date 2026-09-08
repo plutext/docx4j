@@ -34,12 +34,18 @@ import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.table.TableModelCell;
 import org.docx4j.model.table.TableModelRow;
+import org.docx4j.model.table.TableStyleConditions;
+import org.docx4j.model.table.TableStyleConditions.Look;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTCnf;
 import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.CTTblStylePr;
+import org.docx4j.wml.STTblStyleOverrideType;
 import org.docx4j.wml.CTTrPrBase;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
@@ -130,6 +136,117 @@ public class AbstractTableWriterModel extends TableModel {
 
 	public void setContentSizedColumns(boolean contentSized) {
 		this.contentSizedColumns = contentSized;
+	}
+
+	/* The table style's conditional formatting (w:tblStylePr), resolved for this table:
+	 * the look its w:tblLook asks for, its band sizes, and where each w:tr sits, so that a
+	 * row's or cell's conditions can be worked out (TableStyleConditions).  @since 17.1.1 */
+	private Look look = Look.DEFAULT;
+	private int rowBandSize = 1;
+	private int colBandSize = 1;
+	private java.util.IdentityHashMap<Tr, Integer> trIndex;
+	private int trCount;
+	/** whether the header rows come from a conditional w:tblHeader rather than the rows' own */
+	private boolean headerFromStyle;
+
+	/** The conditional formats the table's w:tblLook asks for.  @since 17.1.1 */
+	public Look getLook() {
+		return look;
+	}
+
+	/** Whether the effective table style has any conditional formatting at all. */
+	private boolean hasConditionalFormatting() {
+		return effectiveTableStyle != null && effectiveTableStyle.getTblStylePr() != null
+				&& !effectiveTableStyle.getTblStylePr().isEmpty();
+	}
+
+	/**
+	 * The conditions the row at this index is under (first row, last row, a band), for its
+	 * row properties.
+	 * @since 17.1.1
+	 */
+	public java.util.EnumSet<STTblStyleOverrideType> rowConditions(int rowIndex, TrPr trPr) {
+		return TableStyleConditions.rowConditions(look, rowBandSize, rowIndex, rows.size(),
+				TableStyleConditions.rowCnf(trPr));
+	}
+
+	/**
+	 * The conditions the cell is under, from the row's and the cell's w:cnfStyle caches
+	 * where they have them and from the position where they do not.
+	 * @since 17.1.1
+	 */
+	public java.util.EnumSet<STTblStyleOverrideType> cellConditions(int rowIndex, TableModelCell cell, TrPr trPr) {
+		CTCnf cellCnf = cell.getTcPr() == null ? null : cell.getTcPr().getCnfStyle();
+		return TableStyleConditions.resolve(look, rowBandSize, colBandSize,
+				rowIndex, rows.size(), cell.getColumn(), Math.max(1, cell.getColspan()), getColCount(),
+				TableStyleConditions.rowCnf(trPr), cellCnf, null);
+	}
+
+	/**
+	 * The effective table style's w:tblStylePr entries which apply under these conditions,
+	 * in the order they are to be applied; empty where the style has none.
+	 * @since 17.1.1
+	 */
+	public List<CTTblStylePr> applicable(java.util.Set<STTblStyleOverrideType> conditions) {
+		if (!hasConditionalFormatting()) return new ArrayList<CTTblStylePr>();
+		return TableStyleConditions.applicable(effectiveTableStyle, conditions);
+	}
+
+	/**
+	 * The rows of the horizontal band containing the row, or null; the columns of the
+	 * vertical band containing the column, or null (TableStyleConditions).
+	 * @since 17.1.1
+	 */
+	public int[] bandRows(int rowIndex) {
+		return TableStyleConditions.hBandRows(look, rowBandSize, rowIndex, rows.size());
+	}
+
+	public int[] bandCols(int col) {
+		return TableStyleConditions.vBandCols(look, colBandSize, col, getColCount());
+	}
+
+	/**
+	 * A row is a header row if its own w:trPr says w:tblHeader, or - since 17.1.1 - if the
+	 * table style's conditional formatting for its position does: Word's built-in styles
+	 * give the first row {@code <w:trPr><w:tblHeader/></w:trPr>} under {@code firstRow}, so
+	 * the header of every table using them repeats across pages, where docx4j repeated
+	 * none.  The last row is never a conditional header (fo:table-body needs a row, see
+	 * ensureFoTableBody), nor is any row where the style's w:tblLook has the condition off.
+	 */
+	@Override
+	protected boolean isHeaderRow(Tr tr) {
+		if (super.isHeaderRow(tr)) return true;
+		if (trIndex == null || !hasConditionalFormatting()) return false;
+		Integer r = trIndex.get(tr);
+		if (r == null || r.intValue() >= trCount - 1) return false;
+		java.util.EnumSet<STTblStyleOverrideType> conditions = TableStyleConditions.rowConditions(
+				look, rowBandSize, r.intValue(), trCount, TableStyleConditions.rowCnf(tr.getTrPr()));
+		TrPr conditional = TableStyleConditions.conditionalTrPr(
+				TableStyleConditions.applicable(effectiveTableStyle, conditions));
+		if (TableStyleConditions.hasTblHeader(conditional)) {
+			headerFromStyle = true;
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * A header row which a cell spans out of cannot be written: FOP rejects a
+	 * fo:table-cell whose number-rows-spanned runs past the end of the fo:table-header.  A
+	 * row's own w:tblHeader is left as it always was; where the header status came from
+	 * the table style alone, it is given up for such a table.
+	 */
+	private void dropConditionalHeaderIfSpanned() {
+		if (!headerFromStyle || headerMaxRow < 0) return;
+		for (int r = 0; r <= headerMaxRow && r < rows.size(); r++) {
+			for (TableModelCell cell : rows.get(r).getRowContents()) {
+				if (!cell.isDummy() && r + cell.getExtraRows() > headerMaxRow) {
+					log.debug("a cell of conditional header row " + r + " spans into the body; not repeating the header");
+					headerMaxRow = -1;
+					return;
+				}
+			}
+		}
 	}
 
 	/** The table width in twips: the sum of the autofit widths when set, else the grid's. */
@@ -241,6 +358,18 @@ public class AbstractTableWriterModel extends TableModel {
 		
 		TrFinder trFinder = new TrFinder();
 		new TraversalUtil(tbl, trFinder);
+
+		// the table's w:tblLook and band sizes (the effective tblPr has the table's own
+		// merged over the style's), and where each row sits, for the conditional formatting
+		CTTblPrBase effectiveTblPr = effectiveTableStyle.getTblPr();
+		look = TableStyleConditions.look(effectiveTblPr);
+		rowBandSize = TableStyleConditions.rowBandSize(effectiveTblPr);
+		colBandSize = TableStyleConditions.colBandSize(effectiveTblPr);
+		trIndex = new java.util.IdentityHashMap<Tr, Integer>();
+		trCount = trFinder.getTrList().size();
+		for (int i = 0; i < trCount; i++) {
+			trIndex.put(trFinder.getTrList().get(i), Integer.valueOf(i));
+		}
 		
 		ensureFoTableBody(trFinder.getTrList()); // this is currently applied to HTML etc as well
 		
@@ -260,6 +389,9 @@ public class AbstractTableWriterModel extends TableModel {
 
 		// rows which are wholly covered by merges from elsewhere can't be written
 		dropFullySpannedRows();
+
+		// and a conditional header row a cell spans out of can't be a header
+		dropConditionalHeaderIfSpanned();
 
 		// and where the rows are wider than w:tblGrid, the grid follows the rows
 		extendGridToWidestRow();
@@ -300,7 +432,7 @@ public class AbstractTableWriterModel extends TableModel {
 		
 		// Req 1: Make sure the last row is not a header row
 		Tr lastRow = rows.get(numRows-1);
-		if (isHeaderRow(lastRow)) {
+		if (isHeaderRow(lastRow) && lastRow.getTrPr() != null) {
 			List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = lastRow.getTrPr().getCnfStyleOrDivIdOrGridBefore();
 			JAXBElement tblHeader = getElement(cnfStyleOrDivIdOrGridBefore, "tblHeader");
 			cnfStyleOrDivIdOrGridBefore.remove(tblHeader);

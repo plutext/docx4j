@@ -365,6 +365,48 @@ public final class TableStyleConditions {
 		return out;
 	}
 
+	/**
+	 * The row-axis conditions a row is under - first row, last row, or a horizontal band -
+	 * for the row's own properties ({@code w:trPr}): the row's {@code w:cnfStyle} where it
+	 * has one, else its position, gated by the look.
+	 */
+	public static EnumSet<STTblStyleOverrideType> rowConditions(Look look, int rowBandSize,
+			int row, int rowCount, CTCnf rowCnf) {
+		if (look == null) look = Look.DEFAULT;
+		EnumSet<STTblStyleOverrideType> out = (rowCnf == null)
+				? atPosition(look, rowBandSize, 1, row, rowCount, 1, 1, 3)
+				: fromCnf(rowCnf);
+		out.retainAll(ROW_AXIS);
+		return gate(out, look);
+	}
+
+	/**
+	 * The rows of the horizontal band the row is in, as {first, last} (inclusive), or null
+	 * where the row is not banded (a first or last row with a condition of its own).  The
+	 * extent of a conditional format's region is what decides which of its borders a cell
+	 * gets (see the table writers).
+	 */
+	public static int[] hBandRows(Look look, int rowBandSize, int row, int rowCount) {
+		if (look == null) look = Look.DEFAULT;
+		int first = look.firstRow ? 1 : 0;
+		int last = rowCount - 1 - (look.lastRow ? 1 : 0);
+		if (row < first || row > last) return null;
+		int size = Math.max(1, rowBandSize);
+		int band = (row - first) / size;
+		return new int[] { first + band * size, Math.min(last, first + (band + 1) * size - 1) };
+	}
+
+	/** As {@link #hBandRows}, for the vertical band a column is in. */
+	public static int[] vBandCols(Look look, int colBandSize, int col, int colCount) {
+		if (look == null) look = Look.DEFAULT;
+		int first = look.firstColumn ? 1 : 0;
+		int last = colCount - 1 - (look.lastColumn ? 1 : 0);
+		if (col < first || col > last) return null;
+		int size = Math.max(1, colBandSize);
+		int band = (col - first) / size;
+		return new int[] { first + band * size, Math.min(last, first + (band + 1) * size - 1) };
+	}
+
 	/** Remove the conditions the look does not allow (in place), and return the set. */
 	public static EnumSet<STTblStyleOverrideType> gate(EnumSet<STTblStyleOverrideType> conditions, Look look) {
 		if (look == null) look = Look.DEFAULT;
