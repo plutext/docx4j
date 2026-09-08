@@ -2362,6 +2362,29 @@ overhangs. Paginated output only; in HTML the percentage is the browser's. The p
 from 86% to 98% of Word's lines; what is left is a prose line Word breaks and FOP keeps,
 by 0.1pt of the same truncated advances §10 records.
 
+<a id="s65fixedpct"></a>**Under `w:tblLayout="fixed"` the grid is the layout, and the
+percentage is not resolved against anything.** Measured against the `w:tblGrid` Word itself
+wrote when it re-saved the three corpora (the harness's `ColumnError`, which compares the
+`fo:table-column` widths docx4j emits against Word's own grid in twips): of the 215
+top-level tables stating a `pct` `w:tblW` under a fixed layout, Word's saved grid is the
+authored one in **213** and the percentage width in 2. That holds in both directions - 108
+of the 110 whose grid is **wider** than the percentage asks for, and all 10 of those whose
+grid is narrower - and Word rewrote only 8 of the corpora's 1442 fixed-layout tables of any
+width. Scaling such a grid was one of the largest single errors left: one landscape
+document's three tables state 98% of a 20978-twip text column against a 6693-twip grid
+their cells repeat in `dxa`, and docx4j drew them 3.07 times too wide - 13865 twips a table,
+51 rows of prose left unwrapped, `medianDy` -118.9pt. Standing aside for the grid took that
+document from 0.6928 to 0.8807 of Word's lines, with nothing else on that corpus moving.
+
+This is the one place `table-grid-pct` and the real documents part company, and the probe is
+the side which cannot be believed on it: P7's and P8's grids are the harness's own, so Word
+has no cached layout to keep and falls back to the `w:tblW` - the trap the harness README
+records about any question asked of a grid Word did not write. A grid Word wrote is a layout
+Word keeps; nothing in the file tells the two apart, so this follows the documents. The cost
+is measured and accepted: `table-grid-pct` goes from 100% to 92% of Word's lines (P7, whose
+grid is 2.2% over, is refitted by Word), and one 11-page corpus document goes 0.9265 ->
+0.9060 while its `medianDy` improves from 10.54pt to -0.07pt.
+
 That exemption is unconditional only for a table which states a width of its own - a
 `w:tblW` in `dxa` or `pct`, or `w:tblLayout="fixed"`. For an **autofit** table (`w:tblW`
 absent or `auto`, layout not fixed) the grid is only the layout Word cached the last time it

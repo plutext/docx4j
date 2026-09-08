@@ -703,7 +703,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 *
 	 * <p>Only where the grid is what decides the layout: a table whose columns the
 	 * content-based autofit pass sized has already been given the percentage width as
-	 * its target ({@code availableWidthTwips}).</p>
+	 * its target ({@code availableWidthTwips}).  And only where the layout is not
+	 * {@code w:tblLayout="fixed"}, under which the grid <em>is</em> the layout and Word
+	 * does not resolve the percentage at all (&#xa7;6.5).</p>
 	 *
 	 * @return column widths in twips, or null to leave the grid alone
 	 * @since 17.1.0
@@ -715,6 +717,26 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
 			org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
 			if (tblW == null || !"pct".equals(tblW.getType())) return null;
+			/* Under w:tblLayout "fixed" the w:tblGrid is the layout and the percentage is
+			 * not resolved against anything: measured over the three corpora against the
+			 * grid Word wrote on a re-save, of 218 fixed-layout percentage tables Word's
+			 * grid total is the authored grid's in 204 and the percentage of the container
+			 * in 9, and Word rewrote only 8 of the corpora's 1442 fixed-layout tables at
+			 * all.  Scaling such a grid to the percentage was the largest single error in
+			 * the corpora after the one-document cases: one landscape document's three
+			 * tables state 98% of a 20978-twip text column with a 6693-twip grid the cells
+			 * repeat in dxa, and were drawn 3.07 times too wide, 13865 twips per table.
+			 *
+			 * This is the one place the table-grid-pct probe and the real documents part
+			 * company, and the reason is the probe's own warning (see the harness README):
+			 * Word refits a percentage table's grid there because the grid is the
+			 * harness's, so Word has no cached layout of its own to keep and falls back to
+			 * the w:tblW.  A grid Word wrote is a layout it keeps.  Nothing in the file
+			 * distinguishes the two, so this follows the documents.  @since 17.1.1 */
+			if (tblPr != null && tblPr.getTblLayout() != null
+					&& tblPr.getTblLayout().getType() == org.docx4j.wml.STTblLayoutType.FIXED) {
+				return null;
+			}
 			int target = preferredTableWidthTwips(context, tblPr);
 			if (target <= 0) return null;
 			int[] grid = gridWidths(table, table.getColCount());
