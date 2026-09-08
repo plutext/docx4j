@@ -42,6 +42,32 @@ public final class WordGoldenRunner {
 
 	private static final String PPT_BRIDGE = "pptx4j.documents4j.MicrosoftPowerpointBridge.enabled";
 
+	/** How many times a resave is attempted before it is called a failure of the document.
+	 *  {@code -Dfidelity.wordAttempts=} overrides it. */
+	private static final int ATTEMPTS = Integer.parseInt(System.getProperty("fidelity.wordAttempts", "3"));
+
+	private static Documents4jLocalServices word;
+
+	private static synchronized Documents4jLocalServices converter() {
+		if (word == null) word = new Documents4jLocalServices();
+		return word;
+	}
+
+	/** Drop the converter so the next call builds a new one, with a new Word behind it. */
+	private static synchronized void resetConverter() {
+		word = null;
+	}
+
+	/** Whether documents4j refused the work because its pool had already been shut down,
+	 *  which says nothing about this document. */
+	private static boolean isRejected(Throwable t) {
+		for (Throwable c = t; c != null; c = c.getCause()) {
+			if (c instanceof java.util.concurrent.RejectedExecutionException) return true;
+			if (c.getCause() == c) break;
+		}
+		return false;
+	}
+
 	public static void main(String[] args) throws Exception {
 		File corpusDir = new File(args[0]);
 		File goldenDir = new File(args[1]);
@@ -62,7 +88,6 @@ public final class WordGoldenRunner {
 		if (System.getProperty(PPT_BRIDGE) == null) {
 			org.docx4j.Docx4jProperties.setProperty(PPT_BRIDGE, "false");
 		}
-		Documents4jLocalServices word = new Documents4jLocalServices();
 		int failed = 0;
 		int done = 0;
 		int skipped = 0;
@@ -76,54 +101,74 @@ public final class WordGoldenRunner {
 				n++;
 				String id = docx.getName().replaceAll("\\.docx$", "");
 				File pdf = new File(goldenDir, id + ".pdf");
-				/* The resave is checked before the PDF's own skip, so that a resaved
-				 * directory can be added to a golden set that is already cut without
-				 * --force re-cutting every PDF.  It has its own try: a document Word
-				 * refuses (a ConversionInputException) must be named and stepped over,
-				 * not left to end the run several hundred documents in. */
+				/* The PDF is the primary artefact and goes first, so that a resave which
+				 * puts Word in a bad state can never cost a golden.  The resave is still
+				 * attempted when the PDF was skipped, so a resaved directory can be added
+				 * to a golden set that is already cut without --force re-cutting every
+				 * PDF. */
+				if (pdf.length() > 0 && !force) {
+					skipped++;
+				} else {
+					progress("converting", id, n, files.length, docx);
+					try {
+						WordprocessingMLPackage pkg = Docx4J.load(docx);
+						try (FileOutputStream os = new FileOutputStream(pdf)) {
+							converter().export(pkg, os);
+						}
+						if (pdf.length() == 0) throw new IllegalStateException("Word produced an empty PDF");
+						m.println(id + ".compatibilityMode=" + compatMode(pkg));
+						m.println(id + ".generated=" + ZonedDateTime.now());
+						done++;
+						System.out.println("  golden " + id);
+					} catch (Throwable t) {
+						failed++;
+						pdf.delete();
+						m.println(id + ".FAILED=" + rootCause(t));
+						System.out.println("  FAILED " + id + ": " + rootCause(t));
+					}
+					m.flush();
+				}
 				if (resavedDir != null) {
 					File resaved = new File(resavedDir, id + ".docx");
 					if (resaved.length() == 0 || force) {
 						progress("resaving", id, n, files.length, docx);
-						try {
-							try (FileOutputStream os = new FileOutputStream(resaved)) {
-								word.updateDocx(docx, os);
+						Throwable last = null;
+						for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
+							try {
+								try (FileOutputStream os = new FileOutputStream(resaved)) {
+									converter().updateDocx(docx, os);
+								}
+								if (resaved.length() == 0) throw new IllegalStateException("Word produced an empty docx");
+								last = null;
+								break;
+							} catch (Throwable t) {
+								last = t;
+								resaved.delete();
+								/* documents4j shuts its worker pool down once it decides
+								 * Word is unusable, and every conversion after that is
+								 * rejected out of hand - 22 of them in the run which found
+								 * this.  A terminated pool is not a fact about the
+								 * document, so the converter is rebuilt and the document
+								 * tried again. */
+								if (isRejected(t)) resetConverter();
+								if (attempt < ATTEMPTS) {
+									System.out.println("    attempt " + attempt + " failed ("
+											+ rootCause(t) + "), retrying");
+									Thread.sleep(2000);
+								}
 							}
-							if (resaved.length() == 0) throw new IllegalStateException("Word produced an empty docx");
+						}
+						if (last == null) {
 							m.println(id + ".resaved=" + ZonedDateTime.now());
 							System.out.println("  resaved " + id);
-						} catch (Throwable t) {
+						} else {
 							failed++;
-							resaved.delete();
-							m.println(id + ".RESAVE_FAILED=" + rootCause(t));
-							System.out.println("  RESAVE FAILED " + id + ": " + rootCause(t));
+							m.println(id + ".RESAVE_FAILED=" + rootCause(last));
+							System.out.println("  RESAVE FAILED " + id + ": " + rootCause(last));
 						}
 						m.flush();
 					}
 				}
-				if (pdf.length() > 0 && !force) {
-					skipped++;
-					continue;
-				}
-				progress("converting", id, n, files.length, docx);
-				try {
-					WordprocessingMLPackage pkg = Docx4J.load(docx);
-					try (FileOutputStream os = new FileOutputStream(pdf)) {
-						word.export(pkg, os);
-					}
-					if (pdf.length() == 0) throw new IllegalStateException("Word produced an empty PDF");
-					m.println(id + ".compatibilityMode=" + compatMode(pkg));
-					m.println(id + ".generated=" + ZonedDateTime.now());
-					done++;
-					System.out.println("  golden " + id);
-				} catch (Throwable t) {
-					failed++;
-					pdf.delete();
-					m.println(id + ".FAILED=" + t);
-					System.out.println("  FAILED " + id + ": " + t);
-					t.printStackTrace(System.out);
-				}
-				m.flush();
 			}
 		}
 		System.out.printf("done %d, skipped (already present) %d, failed %d%n", done, skipped, failed);
