@@ -46,6 +46,11 @@ public final class WordGoldenRunner {
 	 *  {@code -Dfidelity.wordAttempts=} overrides it. */
 	private static final int ATTEMPTS = Integer.parseInt(System.getProperty("fidelity.wordAttempts", "3"));
 
+	/** Hand Word the corpus file itself rather than docx4j's re-save of it.  Truer, but
+	 *  most of the corpus fails that way; see the resave block. */
+	private static final boolean RESAVE_ORIGINAL_BYTES =
+			Boolean.parseBoolean(System.getProperty("fidelity.resaveOriginalBytes", "false"));
+
 	private static Documents4jLocalServices word;
 
 	private static synchronized Documents4jLocalServices converter() {
@@ -136,22 +141,37 @@ public final class WordGoldenRunner {
 						for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
 							File local = null;
 							try {
-								/* Word is given a copy on a local disk, never the corpus
-								 * file itself.  The corpus lives on a VirtualBox share, and
-								 * Documents.Open of a share path returns an empty handle -
-								 * which documents4j reports as "the input file seems to be
-								 * corrupt".  The PDF side never met this because it does
-								 * not hand Word the corpus file either: export(pkg, os)
-								 * saves the package to a local temp file first and converts
-								 * that.  The bytes are copied rather than round-tripped
-								 * through docx4j, so what Word is asked to open is the
-								 * document itself and a diff against it is Word's doing
-								 * alone. */
-								local = File.createTempFile("resave_", ".docx");
-								java.nio.file.Files.copy(docx.toPath(), local.toPath(),
-										java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+								/* The resave goes through the same mechanism as the golden
+								 * PDF, which works on every document in the corpus: the
+								 * package is loaded by docx4j and handed to documents4j,
+								 * which saves it to a local temp file for Word to open
+								 * (Documents4jLocalServices.export(pkg, ...)).  Handing
+								 * Word the corpus file instead - which is what
+								 * updateDocx(File, ...) does - fails on most of the corpus
+								 * with documents4j's "the input file seems to be corrupt",
+								 * identically on every retry and whether the file is on the
+								 * share or copied to a local disk first, while the same
+								 * document converts to PDF without complaint.  The two
+								 * paths differ in nothing else that we have been able to
+								 * find: the content parts are byte-identical between the
+								 * corpus file and docx4j's re-save of it, and the three
+								 * package-metadata parts differ only in attribute order.
+								 *
+								 * It does mean Word is shown docx4j's re-save rather than
+								 * the corpus bytes - but so is the golden PDF, so the two
+								 * are at least consistent, and docx4j's save marshals the
+								 * w:tblGrid it read without recomputing it, which is what
+								 * GridDiff asks about.  -Dfidelity.resaveOriginalBytes=true
+								 * hands Word a local copy of the file itself instead. */
 								try (FileOutputStream os = new FileOutputStream(resaved)) {
-									converter().updateDocx(local, os);
+									if (RESAVE_ORIGINAL_BYTES) {
+										local = File.createTempFile("resave_", ".docx");
+										java.nio.file.Files.copy(docx.toPath(), local.toPath(),
+												java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+										converter().updateDocx(local, os);
+									} else {
+										converter().updateDocx(Docx4J.load(docx), os);
+									}
 								}
 								if (resaved.length() == 0) throw new IllegalStateException("Word produced an empty docx");
 								last = null;

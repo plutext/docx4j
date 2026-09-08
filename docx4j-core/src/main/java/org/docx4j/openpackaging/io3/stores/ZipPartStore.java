@@ -110,6 +110,7 @@ public class ZipPartStore implements PartStore {
 			ioe.printStackTrace() ;
 			throw new Docx4JException("Couldn't get ZipFile", ioe);
 		}
+		warnIfBytesAfterCentralDirectory(f);
 
 		partByteArrays = new HashMap<String, ByteArray>();
 		long totalUncompressedSize = 0;
@@ -168,6 +169,59 @@ public class ZipPartStore implements PartStore {
 		 }
 	}
 	
+	/**
+	 * Warn if the file has any bytes after the ZIP end of central directory record.
+	 *
+	 * <p>Word will not open such a package: it reports "Word found unreadable content"
+	 * and offers to recover it.  docx4j will, and so will most zip libraries, because
+	 * they find the end of central directory by scanning backwards from the end of the
+	 * file and simply ignore whatever follows it - which means the damage is invisible
+	 * until someone tries to open the file in Word.  Measured on a corpus of real
+	 * documents: 137 of 454 had six bytes appended reading "Upload" (one, from a
+	 * Spanish-language site, read "Subir"), an upload form's button label concatenated
+	 * onto the body of the file it posted.  Every one of them loaded in docx4j, rendered
+	 * correctly, and was refused by Word.
+	 *
+	 * <p>Truncating the file at the end of the record repairs it exactly: no zip record
+	 * is touched and every part is byte-identical afterwards.
+	 *
+	 * <p>Only a diagnostic - nothing is thrown, and a file which cannot be inspected is
+	 * passed over in silence, since by this point the package has already opened.
+	 *
+	 * @since 17.1.1
+	 */
+	private static void warnIfBytesAfterCentralDirectory(File f) {
+
+		final byte[] EOCD = { 0x50, 0x4b, 0x05, 0x06 };  // "PK\005\006"
+		try {
+			long length = f.length();
+			if (length < 22) return;
+			// the record is 22 bytes plus a comment of at most 64K, so it is in the tail
+			int tail = (int) Math.min(length, 22 + 0xFFFF);
+			byte[] buf = new byte[tail];
+			try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(f, "r")) {
+				raf.seek(length - tail);
+				raf.readFully(buf);
+			}
+			for (int i = buf.length - 22; i >= 0; i--) {
+				if (buf[i] != EOCD[0] || buf[i + 1] != EOCD[1]
+						|| buf[i + 2] != EOCD[2] || buf[i + 3] != EOCD[3]) continue;
+				int commentLength = (buf[i + 20] & 0xFF) | ((buf[i + 21] & 0xFF) << 8);
+				long trailing = (length - tail) + buf.length - ((long) i + 22 + commentLength);
+				if (trailing > 0) {
+					log.warn(f.getName() + " has " + trailing + " byte(s) after the zip "
+							+ "end of central directory record. docx4j ignores them, but "
+							+ "Word will refuse to open this file (\"Word found unreadable "
+							+ "content\"). Truncating the file to remove them repairs it "
+							+ "without altering any part.");
+				}
+				return;
+			}
+		} catch (Exception e) {
+			log.debug("Could not check " + f.getName() + " for trailing bytes: " + e.getMessage());
+		}
+	}
+
 	private void policePartSize(File f, long length, String entryName) throws PartTooLargeException {
 
 		if (MAX_BYTES_Unzip_Error>-1

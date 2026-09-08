@@ -92,6 +92,34 @@ is named before it is handed to Word (`[2/194] resaving <id> (18 KB)`), so a sta
 which one, and a document Word refuses is named, recorded in the manifest with its whole
 cause chain, and stepped over rather than ending the run.
 
+**The resave goes through the same mechanism as the golden PDF**, which succeeds on every
+document in the corpus: docx4j loads the package and documents4j saves it to a local temp
+file for Word to open. Handing Word the corpus file instead - `updateDocx(File, ...)` -
+fails on most of the corpus with `ConversionInputException: The input file seems to be
+corrupt` (documents4j's report of `Documents.Open` returning an empty handle), identically
+on every retry, whether the file is on the share or copied to a local disk first, and while
+the very same document converts to PDF without complaint.
+
+Nothing else separates the two paths. The content parts are **byte-identical** between a
+corpus file and docx4j's re-save of it - `document.xml`, `styles.xml`, `settings.xml`, the
+media - and the three package-metadata parts (`[Content_Types].xml` and the two `.rels`)
+differ only in attribute order. So this is not docx4j repairing a broken document, and the
+cause is still unknown; `-Dfidelity.resaveOriginalBytes=true` hands Word a local copy of
+the file itself, for anyone who wants to chase it.
+
+It does mean Word is shown docx4j's re-save rather than the corpus bytes - but so is the
+golden PDF, so the two are consistent, and docx4j's save marshals the `w:tblGrid` it read
+without recomputing it, which is what `GridDiff` asks about.
+
+**Which means the goldens are Word's rendering of docx4j's re-save, not of the corpus
+file.** `WordGoldenRunner` loads the docx with docx4j and passes the *package*, and
+`Documents4jLocalServices.export(pkg, ...)` calls `Docx4J.save` into a temp file before
+Word sees it. For comparing layout that is arguably the fairer reference - both sides
+start from the same XML - but it does mean a defect in docx4j's *save* path is baked into
+the reference and can never be scored against. Left as it is, because changing it would
+invalidate every number measured so far; worth knowing before trusting a golden on a
+question about what docx4j writes.
+
 Two things to know before reading a diff. Word rewrites a great deal that is not a
 computation - `w:rsid`s, attribute order, `w:proofState`, its own `w:compat` block - so
 diff the elements you are asking about rather than the file. And the resave goes through

@@ -18,6 +18,12 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 - A w:tcW in pct is now a preferred column width, as a dxa one is; a pct table used to have
   no column preferences at all and was laid out on its content.
 
+Other:
+
+- ZipPartStore warns when a package has bytes after the zip end of central directory
+  record. docx4j ignores them, but Word refuses to open such a file ("Word found
+  unreadable content"), so the damage is otherwise invisible until someone tries.
+
 Version 17.1.0
 ===============
 
