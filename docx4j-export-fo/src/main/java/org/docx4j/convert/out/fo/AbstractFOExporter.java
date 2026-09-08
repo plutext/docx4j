@@ -180,6 +180,25 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 	}
 
 
+	/**
+	 * Whether the caller is handed something which still points at the image files
+	 * docx4j wrote (by {@code file:} URL, from {@code fo:external-graphic}).
+	 *
+	 * <p>False for PDF (or any other format FOP renders here): FOP has read the
+	 * images and embedded them in the output by the time postprocess returns, so
+	 * the files can go now.  True where the FO document itself is the output
+	 * ({@link FOSettings#INTERNAL_FO_MIME}), or where a copy of it was dumped for
+	 * the caller: it is those files' only reader, and we can't know when it is
+	 * finished with them, so they wait for JVM exit instead.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	@Override
+	protected boolean outputReferencesImageFiles(FOSettings conversionSettings) {
+		return FOSettings.INTERNAL_FO_MIME.equals(conversionSettings.getApacheFopMime())
+				|| conversionSettings.getFoDumpFile() != null;
+	}
+
 	protected List<SectionPageInformation> createPageNumberInformation(FOConversionContext conversionContext) {
 		
 		List<ConversionSectionWrapper> wrapperList = null;

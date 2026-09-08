@@ -22,6 +22,7 @@ package org.docx4j.convert.out.common;
 import java.io.OutputStream;
 
 import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -102,7 +103,47 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			}
 		} catch (Exception e) {
 			throw new Docx4JException("Exception exporting package", e);
-		} 
+		} finally {
+			cleanupTemporaryImages(conversionSettings, conversionContext);
+		}
+	}
+
+	/**
+	 * Delete the image files the conversion wrote into a directory docx4j chose
+	 * itself (java.io.tmpdir); nothing used to, so a long running process doing
+	 * conversions filled its temp directory.  Where the caller supplied an
+	 * imageDirPath the files are theirs, and the handler leaves them alone.
+	 *
+	 * <p>Runs whether the export succeeded or threw, and never itself throws.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	protected void cleanupTemporaryImages(CS conversionSettings, CC conversionContext) {
+
+		if (conversionContext == null) return; // we didn't get as far as writing any
+
+		try {
+			ConversionImageHandler imageHandler = conversionContext.getImageHandler();
+			if (imageHandler != null) {
+				imageHandler.cleanupTemporaryImages(outputReferencesImageFiles(conversionSettings));
+			}
+		} catch (Exception e) {
+			LocalLog.warn("Couldn't clean up temporary images: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Whether what we just wrote to the caller's OutputStream still points at the
+	 * image files on disk, so that they can't be deleted when this returns.
+	 *
+	 * <p>True here, since HTML refers to them from {@code <img src>}; the FO
+	 * exporter answers false where FOP rendered the document (to PDF, say) in
+	 * process, which puts the images in the output and finishes with the files.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	protected boolean outputReferencesImageFiles(CS conversionSettings) {
+		return true;
 	}
 
 	protected long logDebugStep(Logger log, String stepLabel, long startTime) {

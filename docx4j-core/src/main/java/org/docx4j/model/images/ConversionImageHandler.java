@@ -51,4 +51,38 @@ public interface ConversionImageHandler {
 	default boolean isInline() {
 		return false;
 	}
+
+	/**
+	 * Delete the image files this handler wrote, where docx4j chose the directory
+	 * they went into (that is, where no imageDirPath was supplied, so they were
+	 * written to {@code java.io.tmpdir}).  Called at the end of a conversion.
+	 *
+	 * <p>Files written to a directory the <b>caller</b> named are the caller's
+	 * output, and are never deleted.</p>
+	 *
+	 * <p>Whether the files can go now depends on what docx4j handed back:</p>
+	 * <ul>
+	 * <li><b>PDF</b> ({@code deferToJvmExit} false): FOP rendered the FO in
+	 * process, and the images are in the PDF; nothing refers to the files any
+	 * more, so they are deleted at once.</li>
+	 * <li><b>An FO document</b> ({@link org.docx4j.convert.out.FOSettings#INTERNAL_FO_MIME},
+	 * or a dumped FO file) <b>or HTML</b> ({@code deferToJvmExit} true): the
+	 * document the caller receives still points at those files, by
+	 * {@code file:} URL or {@code <img src>}, and deleting them would break it.
+	 * docx4j cannot know when the caller has finished with them, so the files are
+	 * registered with {@link java.io.File#deleteOnExit()} instead: they survive
+	 * as long as the JVM, but they don't accumulate across restarts.</li>
+	 * </ul>
+	 *
+	 * <p>Does nothing by default, so a handler implemented outside docx4j is
+	 * unaffected (and keeps compiling).</p>
+	 *
+	 * @param deferToJvmExit whether the output still references the files, so
+	 * that deletion must wait until the JVM exits
+	 *
+	 * @since 17.1.1
+	 */
+	default void cleanupTemporaryImages(boolean deferToJvmExit) {
+		// nothing to do
+	}
 }

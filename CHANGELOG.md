@@ -26,6 +26,11 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 Other:
 
+- docx4j now deletes the image files a conversion writes to java.io.tmpdir (where it put
+  one per picture per run, and never removed it); for HTML and fo output, which point at
+  those files, they are registered with File.deleteOnExit() instead. Images written to an
+  imageDirPath you named are untouched. New property
+  docx4j.convert.out.images.deleteTemporary (default true) opts out.
 - ZipPartStore warns when a package has bytes after the zip end of central directory
   record. docx4j ignores them, but Word refuses to open such a file ("Word found
   unreadable content"), so the damage is otherwise invisible until someone tries.
