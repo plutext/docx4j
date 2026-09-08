@@ -245,6 +245,37 @@ well as to docx4j's; four knobs are worth knowing about.
   asymmetry it closes is systematic, and it can only merge, on both sides
   alike. The vertical-rule split (a real cell boundary) is not subject to it.
 
+  Both ways of resolving that same asymmetry have now been measured over a
+  whole corpus and neither pays, so **do not re-open it without new evidence**.
+  Merging harder - raising this threshold - is inert: over an unbiased quarter
+  of the 191-document corpus, mean line parity is 0.8967 at 20pt, 0.8973 at
+  32pt and 0.8950 at 72pt, and turning the column-gutter rule off moves it by
+  0.0001. Splitting instead - `-Dfidelity.inkGap=true`, below - wins big on the
+  documents the hypothesis was written from and loses across the corpus.
+
+- **`-Dfidelity.inkGap=`** (default `false`) measures the gap that decides a
+  split from the last glyph that put *ink* on the page rather than from the
+  last glyph of any kind, which is symmetric: a tab Word writes as a space
+  glyph and one we write as nothing are then read alike. On the twelve
+  documents the triage ledgers named for this it is a clear win (lines matched
+  91.6% -> 93.2%, mean parity 0.9147 -> 0.9235, four documents to 1.0,
+  including the one whose 278-against-362 line inflation motivated it, which
+  becomes 362/362). Over the whole corpus it costs: reference lines
+  40339 -> 41840, matched 35053 -> 36251, so the newly separated lines match at
+  80% against the corpus's 86.9%, mean parity falls 0.8816 -> 0.8711 and 34
+  documents fall against 22 that rise. The extra splits are real cell
+  boundaries and the exposure is honest, but it moves the yardstick without
+  improving the layout and breaks comparability with every earlier scoreboard.
+  Kept, off, so the measurement can be repeated.
+
+- **`-Dfidelity.clusterTolerancePt=`** (default `1`) is the floor on how far
+  apart two glyphs' baselines may be and still be read as one line; the
+  tolerance actually used is the larger of it and 0.3 em. It is **inert**,
+  because 0.3 em already exceeds it for any body text: 1, 1.5 and 2pt score
+  identically and 2.5pt and above are worse. Line-grouping instability at ~2pt
+  was reported by all three corpora, and this is the measurement that says it
+  is not the cause - the inflation is horizontal, and is `inkGap` above.
+
 - **`-Dfidelity.columnGutterPt=`** (default `10`, `0` turns it off), with
   **`-Dfidelity.columnGutterLines=`** (`8`), **`-Dfidelity.columnSideFraction=`**
   (`0.3`) and **`-Dfidelity.columnBalance=`** (`0.6`), splits a line at the

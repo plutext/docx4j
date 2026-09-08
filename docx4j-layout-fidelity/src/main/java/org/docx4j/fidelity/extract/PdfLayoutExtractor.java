@@ -70,6 +70,40 @@ public final class PdfLayoutExtractor {
 			Float.parseFloat(System.getProperty("fidelity.minSplitPt", "20"));
 
 	/**
+	 * Whether the gap which decides a line split is measured from the last glyph that
+	 * put ink on the page, rather than from the last glyph of any kind.
+	 *
+	 * <p>The two renders disagree about how a tab is written, not about where the text
+	 * goes: Word's PDF writes the tab between a list label and its text as a space
+	 * glyph, so the gap after it is measured from the space's right edge, where ours
+	 * writes no glyph at all and the gap is measured from the label's.  The same tab
+	 * therefore splits one side's line and not the other's, and the LCS loses both.
+	 * Measuring ink to ink is symmetric, and is applied to the median word gap as well
+	 * as to the split test.
+	 *
+	 * <p><b>Measured, and rejected as a default.</b>  It is symmetric, but it resolves
+	 * the disagreement in the splitting direction rather than the merging one: Word's
+	 * side gains the splits ours already had.  On the twelve documents three triage
+	 * ledgers named for this asymmetry it is a clear win - lines matched 91.6% to 93.2%,
+	 * mean line parity 0.9147 to 0.9235, four documents reaching 1.0 - but those are the
+	 * documents the hypothesis was written from.  Over a whole corpus of 191 it costs:
+	 * reference lines 40339 to 41840 and matched 35053 to 36251, so the 1501 lines it
+	 * newly separates match at only 80% against the corpus's 86.9%, and mean line parity
+	 * falls 0.8816 to 0.8711 with 34 documents down against 22 up.  The extra splits are
+	 * real cell boundaries and the exposure is honest, but it moves the yardstick without
+	 * improving the layout, and it breaks comparability with every earlier scoreboard.
+	 * Raising {@link #MIN_SPLIT_PT} - the same disagreement resolved the other way, by
+	 * merging - was measured over an unbiased quarter of the same corpus and is inert
+	 * (mean 0.8967 at 20pt, 0.8973 at 32pt, 0.8950 at 72pt), and so is switching the
+	 * column-gutter rule off (0.8967 against 0.8966).
+	 *
+	 * <p>{@code -Dfidelity.inkGap=true} turns it on; the default is the per-glyph
+	 * measure.
+	 */
+	private static final boolean INK_GAP =
+			Boolean.parseBoolean(System.getProperty("fidelity.inkGap", "false"));
+
+	/**
 	 * How wide a band of the page has to be free of ink, and how many lines have to lie
 	 * on each side of it, before it is read as a <b>column gutter</b> - a boundary the
 	 * text on every line is divided at, whatever that line's own word gaps look like.
@@ -242,6 +276,29 @@ public final class PdfLayoutExtractor {
 			super.endPage(page);
 		}
 
+		/**
+		 * The floor on how far apart, in points, two glyphs' baselines may be and still
+		 * be read as one line.  The tolerance is the larger of this and 0.3 em, and the
+		 * comparison is against the baseline of the glyph which opened the cluster.
+		 *
+		 * <p>Below the floor the grouping is unstable where a row's cells are aligned a
+		 * fraction of a point apart: on one corpus document Word's own PDF spreads five
+		 * table headings over 2.16pt and is read as one line, where our render spreads
+		 * the same five over 1.95pt - the <em>smaller</em> spread - and is read as
+		 * several, so the LCS loses every one of them.
+		 *
+		 * <p><b>Measured, and the floor is not the cause.</b>  The tolerance is the
+		 * larger of this and 0.3 em, and 0.3 em already exceeds it for any body text, so
+		 * the floor never binds: 1, 1.5 and 2pt score identically, and 2.5pt and above
+		 * are worse (mean line parity 0.9147 at 1-2pt, 0.9127 at 2.5pt, 0.9140 at 4pt).
+		 * That document's inflation is horizontal, not vertical - it is the tab-gap
+		 * asymmetry of {@link #INK_GAP}, which takes it from 278 reference lines against
+		 * 362 of ours to 362 against 362.  Kept as a knob so the measurement can be
+		 * repeated.  {@code -Dfidelity.clusterTolerancePt=} overrides it.
+		 */
+		private static final float CLUSTER_TOLERANCE_PT =
+				Float.parseFloat(System.getProperty("fidelity.clusterTolerancePt", "1"));
+
 		private void formLines(int pageIndex) {
 			List<TextPosition> ps = new ArrayList<>(pagePositions);
 			ps.sort((a, b) -> Math.abs(a.getYDirAdj() - b.getYDirAdj()) > 0.01f
@@ -250,7 +307,7 @@ public final class PdfLayoutExtractor {
 			List<TextPosition> cluster = new ArrayList<>();
 			float clusterY = 0;
 			for (TextPosition tp : ps) {
-				float tol = Math.max(1f, 0.3f * tp.getFontSizeInPt());
+				float tol = Math.max(CLUSTER_TOLERANCE_PT, 0.3f * tp.getFontSizeInPt());
 				if (!cluster.isEmpty() && Math.abs(tp.getYDirAdj() - clusterY) > tol) {
 					clusters.add(cluster);
 					cluster = new ArrayList<>();
@@ -351,15 +408,30 @@ public final class PdfLayoutExtractor {
 		private void emit(int pageIndex, List<TextPosition> cluster, float[] gutters) {
 			cluster.sort((a, b) -> Float.compare(a.getXDirAdj(), b.getXDirAdj()));
 			List<Float> gaps = new ArrayList<>();
-			for (int i = 1; i < cluster.size(); i++) {
-				float g = cluster.get(i).getXDirAdj() - (cluster.get(i - 1).getXDirAdj() + cluster.get(i - 1).getWidthDirAdj());
-				if (g > WORD_GAP_EM * cluster.get(i - 1).getFontSizeInPt()) gaps.add(g);
+			TextPosition gapFrom = null;
+			for (TextPosition tp : cluster) {
+				if (INK_GAP && isBlank(tp)) continue;
+				if (gapFrom != null) {
+					float g = tp.getXDirAdj() - (gapFrom.getXDirAdj() + gapFrom.getWidthDirAdj());
+					if (g > WORD_GAP_EM * gapFrom.getFontSizeInPt()) gaps.add(g);
+				}
+				gapFrom = tp;
 			}
 			Collections.sort(gaps);
 			float medianWordGap = gaps.isEmpty() ? 0f : gaps.get(gaps.size() / 2);
 			List<TextPosition> run = new ArrayList<>();
 			TextPosition prev = null;
 			for (TextPosition tp : cluster) {
+				/* A glyph which puts no ink on the page neither opens a line nor closes
+				 * one: Word writes the tab between a list label and its text as a space
+				 * glyph, so the gap on its side of the comparison is measured from the
+				 * space's right edge and ours from the label's, and the same tab splits
+				 * one render's line and not the other's.  Measuring ink to ink puts both
+				 * sides on the same footing.  @see #INK_GAP */
+				if (INK_GAP && isBlank(tp)) {
+					run.add(tp);
+					continue;
+				}
 				if (prev != null) {
 					float from = prev.getXDirAdj() + prev.getWidthDirAdj();
 					float gap = tp.getXDirAdj() - from;
@@ -427,6 +499,13 @@ public final class PdfLayoutExtractor {
 				}
 				prev = tp;
 			}
+			/* A line which puts no ink on the page is not a line.  String.trim() only
+			 * strips characters <= U+0020, so a run of U+2002 EN SPACE or NBSP survived
+			 * it and read out as a line with x0 = Double.MAX_VALUE: 54 such phantom
+			 * lines in 4 documents of one corpus, 44 of them 24% of a single document's
+			 * extracted lines, where Word's PDF of the same document has none.  isBlank()
+			 * already knows every whitespace glyph, so firstInk == null is the test. */
+			if (firstInk == null) return;
 			String t = text.toString().trim().replaceAll("\\s+", " ");
 			if (t.isEmpty()) return;
 			Collections.sort(ys);
@@ -435,7 +514,7 @@ public final class PdfLayoutExtractor {
 			l.y = ys.get(ys.size() / 2);
 			l.x0 = x0;
 			l.x1 = x1;
-			TextPosition first = firstInk != null ? firstInk : run.get(0);
+			TextPosition first = firstInk;
 			l.size = first.getFontSizeInPt();
 			l.font = first.getFont() == null ? "" : String.valueOf(first.getFont().getName());
 			l.text = t;
