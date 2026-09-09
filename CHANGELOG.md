@@ -34,6 +34,27 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   A 311-page corpus document renders 7,360 bold lines where it rendered 1,242 (Word:
   10,196) and repeats the header of all 727 of its styled tables. See word-layout-rules.md
   §6.10.
+- Workaround for FOP's missing intra-word break, extended to table cells: a word wider than
+  the cell it is in is now broken as soon as it exceeds the cell (one twip past the measure),
+  where the 17.1.0 emergency break waited for an inch of overrun, so a narrow column's word
+  ran across its neighbours and off the page. Word breaks a word at whatever character
+  reaches the cell edge: a 21.55pt column breaks "Categorizador/Período" down 15 lines. The
+  line manager splits the word; no character is added to the text. New property
+  docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance (points, default 0.05; 72
+  restores 17.1.0). Measured: mean line parity +0.007, +0.003 and +0.004 on the three
+  corpora and 2,235 more lines matched, but a cell we size narrower than Word did now breaks
+  a word Word fitted, and the same-page-count figure falls by two documents on two of the
+  three corpora; a 2% band, 2pt and 3pt floors and two ways of not squeezing tables were
+  measured against that and none recovers a page count without giving the gain back. It
+  ships regardless: read line by line, 1,158 of the 1,655 lines it adds across the nine
+  documents whose page count moved are in Word's own PDF, and the losses are column-width
+  errors that used to paint their text over the next cell and off the page (§6.11). Goes
+  when FOP grows an emergency break. See word-layout-rules.md §6.11 and §10.
+- Two properties carry those measurements so they can be repeated without a build:
+  docx4j.convert.out.fo.wordLayout.cellEmergencyBreakToleranceRatio (default 0) and
+  docx4j.convert.out.fo.tables.scaleContentAutofit (default true: Word's own kept w:tblGrid
+  squeezes a 26,129-twip content minimum into the 9,360-twip text column, so the scaling
+  stays; §6.5).
 
 Other:
 

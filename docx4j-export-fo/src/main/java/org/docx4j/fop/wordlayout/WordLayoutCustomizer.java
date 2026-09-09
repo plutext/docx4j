@@ -170,6 +170,54 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return v == null ? dflt : v.doubleValue();
 	}
 
+	/**
+	 * The same inside a table cell, in points: how far past the cell's measure a word may
+	 * run before it is broken.  Word breaks a word as soon as it exceeds the cell it is in
+	 * - measured, a 21.55pt column breaks {@code Categorizador/Período} down 15 lines of
+	 * one or two characters - so the default is one twip (0.05pt), Word's own unit of
+	 * layout, rather than the inch body text gets.  The general tolerance caps it: a value
+	 * above {@link #EMERGENCY_BREAK_TOLERANCE} gives cells no special treatment.
+	 *
+	 * <p>A workaround for FOP, which has no intra-word break at all (docx4j's own line
+	 * manager splits the word, see {@code WordLineLayoutManager.emergencyBreaks}); it
+	 * goes when FOP grows one.  72 breaks in cells as sparingly as in body text, which is
+	 * 17.1.0's behaviour.
+	 *
+	 * <p>docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance sets it.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String CELL_EMERGENCY_BREAK_TOLERANCE
+			= "docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance";
+
+	public static double cellEmergencyBreakTolerance(double dflt) {
+		Double v = doubleProperty(CELL_EMERGENCY_BREAK_TOLERANCE);
+		return v == null ? dflt : v.doubleValue();
+	}
+
+	/**
+	 * The cell tolerance as a fraction of the cell's measure, the larger of it and
+	 * {@link #CELL_EMERGENCY_BREAK_TOLERANCE} applying.  Written for the hypothesis that
+	 * a word within a couple of per cent of its column is inside our own measurement
+	 * error (substitute fonts, the column sizer against FOP); measured at 0.02 over the
+	 * three corpora it recovers no page count the twip loses, because the words those
+	 * documents break are 5 to 60 points over their columns, not a few per cent
+	 * (word-layout-rules.md &#xa7;6.11).  Kept at 0 so the measurement can be repeated.
+	 *
+	 * <p>docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.cellEmergencyBreakToleranceRatio sets it.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String CELL_EMERGENCY_BREAK_TOLERANCE_RATIO
+			= "docx4j.convert.out.fo.wordLayout.cellEmergencyBreakToleranceRatio";
+
+	public static double cellEmergencyBreakToleranceRatio(double dflt) {
+		Double v = doubleProperty(CELL_EMERGENCY_BREAK_TOLERANCE_RATIO);
+		return v == null ? dflt : v.doubleValue();
+	}
+
 	private static Double doubleProperty(String name) {
 		String v = System.getProperty(name);
 		if (v == null) v = Docx4jProperties.getProperty(name);

@@ -1216,6 +1216,13 @@ the triage ledger names for the content-autofit defect. **Lower the tolerance to
 that is fixed**; `docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance` sets it in
 points, so it can be re-measured without a build.
 
+**Inside a table cell the tolerance is one twip** (17.1.1, [§6.11](#s611)). A column that
+narrow is not always one we sized wrongly: read against the `w:tblGrid` Word kept on
+re-save, one corpus table's first column is 21.55pt in Word too, and Word shatters its word
+down fifteen lines. The inch stays for body text, where a wrong measure still hides behind a
+break; `docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance` sets the cell's, and
+the general tolerance caps it.
+
 Measured over the three corpora, the conservative rule takes the lines painted outside their
 page from 1959 in 73 documents to 1915 in 70, against Word's 207 in 20. Most of what remains
 is not this rule's to fix: it is text beside a picture whose wrap we do not narrow (E24), a
@@ -2352,6 +2359,24 @@ Widths **docx4j chooses for itself** are scaled down to the text column, since a
 pass sizing columns to a `w:tblW` wider than the column could run a table off the page
 (117pt past the edge on one document, where Word kept it inside).
 
+<a id="s65squeeze"></a>**Word squeezes a content-autofit table below its minima too** (measured
+17.1.1, against the hypothesis that it keeps such columns at their minima and lets the table
+overhang, which would have made the scaling ours alone). A 36-column corpus table whose
+content minima sum to 26,129 twips has a `w:tblGrid` Word wrote and kept on re-save summing
+to **9,356** - the 9,360-twip text column - so Word squeezes it into the column exactly as
+`fitToAvailableWidth` does, and breaks the words inside ([§6.11](#s611)). Not scaling
+(`docx4j.convert.out.fo.tables.scaleContentAutofit=false`) ran that table off the page again
+and gave back the whole of the document's gain from the cell break, 0.8462 -> 0.7953; over
+the three corpora it moved the same-page-count figure +1, +1, 0 and lines matched +32, -14,
+-838 against scaling. Kept as a property so the measurement can be repeated. Where the
+proportional squeeze and Word's part company is the **distribution**: Word's kept grid gives
+that table's first column 431 twips and each of the other 35 exactly 255 - the 431 holds
+`Categorizador / Período`, whose minimum is some 1,400 twips, the 255s hold `sep.` and
+`2012`, some 400 - which is far flatter than proportion to the minima, and a template of
+`${...}` tokens beside prose gains six pages under the cell break because its token columns
+are squeezed as hard as its prose ones. How Word shares a shortfall among columns whose
+content cannot fit is the open measurement, and the one that would recover those pages.
+
 A table's **own `w:tblGrid`** is left alone even when it is wider than the text column:
 measured over the corpus, Word draws tables whose grid is 3% to 19% wider than the text
 column overhanging the right margin, at their grid width, and fitting them cost line parity
@@ -2831,6 +2856,161 @@ nested), its shaded cells go 89 -> 6,722, and the +129 candidate lines are the r
 headers. `ColumnError` does not move, as row and cell properties change no column. The page
 count Word reaches (311) is held by the narrow-column character breaking above, which is a
 separate change.
+
+<a id="s611"></a>
+### 6.11 A word wider than its cell
+
+Word breaks a word as soon as it exceeds the cell it is in, at whatever character reaches
+the edge, with no hyphen. Measured on a 311-page corpus document: a table whose `w:tblGrid`
+Word wrote and kept on re-save - 431 twips then 35 columns of 255 - has Word drawing the
+first column 21.55pt wide, about 10.75pt of content after the cell margins, and breaking
+`Categorizador/Período` down 15 lines, `C / at / e / g / or / iz / a / d / or / / / P / er /
+ío / d / o`, a 157pt header row; the 255-twip columns hold one character a line (`s / e / p
+/ .`). That table takes Word 8.4 pages. We set the word on one line, in the 39pt of content
+our 49.35pt column gives it, running to x=559 where the text column ends at 540 - text
+printed past the right margin - and the narrow columns' text across their neighbours: 2.3
+pages, and 2,059 of the document's 3,571 unmatched reference lines were those one-character
+lines.
+
+FOP offers no break inside a word at all (§10), and until 17.1.1 docx4j's own emergency
+break (§4.3) waited for an inch of overrun before splitting one - the inch that keeps a
+measure *we* got wrong from hiding behind a break, and which here kept a 31pt overrun
+whole. **A block set directly in a table cell now has a tolerance of one twip** - Word's own
+unit of layout, and below the disagreement between the column sizer's width and FOP's (the
+`table-autofit` probe's 23.976pt column holds a 23.988pt word Word set on one line). The
+word is split into one glyph mapping per character by the line manager, exactly as in body
+text: **no character is added to the text**, so nothing reaches the PDF's text layer, and
+Word's first step - the word gets a line of its own - is kept. A rotated cell (§6.9, whose
+measure is a row height we only bound), a positioned frame or text box in a cell and a
+footnote keep the inch, as does body text: a long word in a narrow section column is the
+same defect, but the inch's reason still stands there and it wants measuring on its own.
+`docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance` sets the tolerance in points;
+72 is 17.1.0's behaviour.
+
+**Zero-width spaces were the alternative, and were measured, not taken.** XSL-FO has no
+`word-break: break-all`; a U+200B between the characters of an over-wide word is the one
+break opportunity the FO itself can carry (docx4j writes one before a page number, and
+`FldSimpleWriter` one in a field result), and FOP 2.11 treats it as a break, not a glyph:
+`TextLayoutManager.addSpaces` adds every space to the text area *except* a zero-width one.
+Verified on a rendered PDF - a narrow-column table with the word laced with U+200B, and a
+body paragraph with the same, extracted with PDFBox, `mutool draw -F txt` and `pdftotext`:
+**no U+200B in any of the three extractions**, no character of the general-punctuation block
+at all, the body word extracted as `Categorizador` and the cell word as its lines `Cat / ego
+/ riza / dor`, and no missing-glyph warning from FOP. So the character is safe for
+copy-paste, search and a screen reader. It was not used because the line manager's split
+already does the same without putting a character into the text stream that the author did
+not write, and because a break opportunity the FO carries is an ordinary one: FOP fills the
+line before the word with the word's head, where Word (and the line manager) give the word a
+line of its own first. With Word layout off (`docx4j.convert.out.fo.wordLayout=false`)
+neither exists and the word overflows as FOP paints it.
+
+**Measured** (b31-wordbreak against the same build with the inch; three corpora, probes
+byte-identical): mean line parity 0.8848 -> **0.8916**, 0.8527 -> **0.8554** and 0.8866 ->
+**0.8903**; medians 0.9273 -> 0.9298, 0.9144 -> 0.9182, 0.9246 -> 0.9286; lines matched
+35117 -> 35985, 55704 -> 56009 and 169191 -> 170253 (+2,235); 21 documents up, five of them
+to 1.000 and one 0.6257 -> 0.9628 with its page count 23 -> 25, Word's. The 311-page
+document goes 0.7946 -> **0.8462** and 270 -> 271 pages: the narrow columns' characters now
+break as Word's do, but its first column is still our 49.35pt against the 21.55pt of the grid
+Word kept, so its header is two lines where Word's is fifteen - that is the grid (§6.3), not
+the break, and is measured on its own.
+
+**What it costs, and what was measured against it.** The same-page-count figure falls on
+two corpora, 119 -> 117 and 65 -> 63 (and rises 164 -> 166 on the first), and nine
+documents lose line parity. Instrumented - the line manager logs every break with its
+measure and overrun at debug - the losses are of two kinds, and neither is marginal.
+
+Four documents break words 0.1 to 2.2pt over their columns. The certificate §4.3 names goes
+1.000 -> 0.826 on `BALES` (Carlito 11pt, 27.39pt in a 25.23pt content measure, 8.6% over)
+and `'A'` (11.23pt in 10.33, 8.8%), and Word's own PDF says why: it sets `BALES` at
+x 211.8..239.4, inside a 56.3pt cell laid out on the row's own `w:tcW` (1126 twips), where
+we lay the row on the table's `w:tblGrid` and give that cell the grid's 721-twip column,
+36.05pt at x 245.3. That is §6.3's grid-versus-`w:tcW` choice - right over the corpus, wrong
+for this row - and a break tolerance is not the instrument for it. The other five break
+words 5 to 60pt over columns we size far narrower than Word does: a template of `${...}`
+placeholder tokens beside prose, whose tables we squeeze from 19,000-24,000 twips into
+9,072, goes 15 to 21 pages (0.3083 -> 0.2950); a five-page document gains a page on three
+words 42-51pt wide broken into a column we collapsed to 0.2pt (0.9286 either way, page
+parity 93% -> 16%); a one-page document becomes two on words 6.8-64.6pt over; and two whose
+line parity *rises* overshoot the page count, 8/8 -> 8/10 at 0.7690 -> 0.8477 and 85/85 ->
+85/86 at 0.8738 -> 0.8828. These are column errors the break now shows as lines, where
+before it showed them as text painted over the next cell.
+
+Five ways of not paying were measured, each on the probes (byte-identical in every case) and
+the three corpora, against the same build with the inch:
+
+| corpus | run | same page count | lines matched | median | mean | >= 0.98 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 191 docs | the inch (before) | 164 | 35117 | 0.9273 | 0.8848 | 50 |
+| | **a twip** | 166 | **35985** | 0.9298 | 0.8916 | 52 |
+| | a twip or 2% of the measure | 165 | 35893 | 0.9298 | 0.8916 | 52 |
+| | 2pt | 165 | 35916 | 0.9318 | **0.8920** | **53** |
+| | 3pt | 164 | 35559 | 0.9318 | 0.8911 | 53 |
+| | a twip, but not in a table we scaled to the page | 166 | 36005 | 0.9318 | 0.8919 | 52 |
+| | a twip, and no scaling of content-autofit tables | **167** | **36017** | **0.9333** | **0.8920** | 52 |
+| 156 docs | the inch (before) | **119** | 55704 | 0.9144 | 0.8527 | 28 |
+| | a twip | 117 | **56009** | 0.9182 | 0.8554 | 28 |
+| | a twip or 2% | 117 | 56011 | 0.9182 | 0.8554 | 28 |
+| | 2pt | 117 | 55954 | 0.9182 | 0.8555 | 28 |
+| | 3pt | 117 | 55966 | **0.9184** | **0.8561** | **29** |
+| | not in a scaled table | 118 | 55997 | 0.9182 | 0.8548 | 28 |
+| | no scaling | 118 | 55995 | 0.9182 | 0.8553 | 28 |
+| 102 docs | the inch (before) | **65** | 169191 | 0.9246 | 0.8866 | 21 |
+| | a twip | 63 | 170253 | 0.9286 | **0.8903** | 21 |
+| | a twip or 2% | 63 | **170265** | 0.9286 | 0.8903 | 21 |
+| | 2pt | 63 | 170265 | 0.9286 | 0.8903 | 21 |
+| | 3pt | 63 | 170259 | 0.9286 | 0.8901 | 21 |
+| | not in a scaled table | 63 | 169406 | 0.9286 | 0.8897 | 21 |
+| | no scaling | 63 | 169415 | 0.9286 | 0.8898 | 21 |
+
+The certificate: 1.000 before; 0.8261 at a twip, at 2% and under both table rules; 0.9130 at
+2pt; 1.000 at 3pt. The 311-page document: 0.7946 and 270 pages before; 0.8462 / 271 at a
+twip, 2%, 2pt and 3pt; **0.7952 / 270 and 0.7953 / 269 under the two table rules.**
+
+- **A tolerance recovers no page count**, because the words those documents break are 5 to
+  60pt over. 3pt recovers the certificate by hiding an 8.6% column error behind the
+  threshold, and pays 426 lines and both page counts gained on the first corpus for it.
+- **Both table rules recover the template's 15 pages** - its tables are scaled - **and both
+  give back the whole of the 311-page document's gain**, because its table is scaled too:
+  content minima of 26,129 twips into the 9,360-twip text column. And there Word's kept
+  `w:tblGrid` sums to **9,356**: Word squeezes that table below its minima exactly as we do,
+  and breaks the words. "We do not break a word to fit a width we invented" fails because
+  Word invents the same width; "leave a content pass's columns at their minima and let the
+  table overhang" fails because Word does not. The certificate is untouched by either, its
+  columns being its own grid. (§6.5 has the scaling measurement.)
+
+So the twip stands alone. `docx4j.convert.out.fo.wordLayout.cellEmergencyBreakToleranceRatio`
+and `docx4j.convert.out.fo.tables.scaleContentAutofit` remain as properties so that the two
+measurements can be repeated without a build. What would recover the page counts is the
+columns: the row a `w:tcW` lays out where the grid does not, the column collapsed to 0.2pt,
+and how Word shares a shortfall among columns when the content cannot fit (§6.5).
+
+**Why it ships with the same-page-count figure down.** Page-count equality is a binary, and
+cannot tell a table that genuinely grew from a line that spilled past the bottom, so the nine
+documents whose page count moved (five lost equality, three gained it, one moved without
+either) were read line by line against Word's PDF. Across the nine, **1,158 of the 1,655
+lines the break adds exist in Word's own PDF**: the break is not inventing lines on its own
+account. The largest gain is a 25-page document that goes 0.6257 -> 0.9628 and 23 -> 25
+pages, Word's count, on 469 new lines every one of which is in Word's PDF, its per-page line
+counts now tracking Word's page for page on 20 of the 25 - Word breaks the same word on its
+repeated header on every page, 4.2pt over the cell. Two of the five lost page counts are
+line-level improvements: an 8-page document goes 0.7690 -> 0.8477 (39 of its 53 new lines are
+Word's; its two extra pages are near-empty, on a document whose first page already held 12
+lines to Word's 52), and an 85-page one 0.8738 -> 0.8828 (47 of 64 new lines Word's; the 86th
+page is 33 lines accumulated over 85). One document is genuinely worse, by 0.013: the 15-page
+template above, 15 -> 21 pages, whose eight tables we squeeze from 19,000-24,000 twips into
+9,072 so that 140 of its 520 breaks fall into cells 3 to 5pt wide, where Word's refit gives
+near-equal columns. The other two expose width bugs rather than cause them: a one-page
+document whose placeholders Word draws several to a line in a cell we make 103-150pt wide,
+and a five-page one whose table states `w:tblW w:w="1" w:type="pct"` - 0.02% of the column,
+which Word ignores and we honour, scaling its grid to four 0.05pt columns. And of the three
+gained page counts, two are Word's layout reached (the 25-page document above and a 4-page
+one whose `${…}` placeholder Word shatters in an 11.4pt cell exactly as we now do) and one
+is an artefact, a 2-page document whose second page is one spilled line in Word and one line
+pushed by two invented ones in ours (a ~2% column error). What the figure measures, then, is
+this: a hidden width error used to paint its text over the next cell and off the page, which
+a line-matching metric reads as fewer, longer, wrong lines and a page count that happens to
+agree; the break turns it into lines on the page, which reads worse on the count and better
+on paper. Accepted on that basis, with the width errors it exposes recorded above.
 
 ---
 
@@ -3866,8 +4046,31 @@ Worked around here, and worth knowing about:
   block-progression dimension in a line - which is what Word's legacy form-field checkbox
   is (a stroked square, [§7](#s7formcheckbox)).
 - **A word has no intra-word break at all** (§4.3), so a token wider than the measure
-  overruns the column instead of breaking where Word breaks it. Worked around by
-  splitting such a word into per-character glyph mappings in the line manager.
+  overruns the column instead of breaking where Word breaks it: measured, Word breaks
+  `Categorizador/Período` down 15 lines in a 21.55pt column where we set it on one line
+  running to x=559 on a text column that ends at 540. Worked around by splitting such a
+  word into per-character glyph mappings in the line manager - an inch past the measure in
+  body text, one twip in a table cell ([§6.11](#s611), 17.1.1). The costs, so they are on
+  the record: the split loses the word's kerning and glyph positioning; a measure we got
+  wrong is hidden behind a break instead of showing as an overrun, which is why body text
+  keeps the inch and why nine corpus documents whose columns we size narrow lost line
+  parity when cells went to a twip - and the five ways of not paying that were measured
+  (§6.11: a 2% band, 2pt and 3pt floors, no break in a table we scaled, no scaling) recover
+  no page count without giving the gain back, because the words those documents break are
+  5-60pt over columns we size wrongly, and the certificate that goes 1.000 -> 0.826 is a
+  row Word lays out on its `w:tcW` where we use the grid (§6.3); and with Word layout off
+  nothing breaks at all. The cell rule ships with the same-page-count figure down by two
+  documents on two corpora, and that is accepted: read line by line, 1,158 of the 1,655
+  lines it adds across the nine documents whose page count moved are in Word's own PDF, and
+  the losses are width errors that used to paint their text over the next cell and off the
+  page - which a line-matching metric reads as fewer wrong lines and a count that happens
+  to agree, and paper reads as worse (§6.11). The
+  zero-width space (U+200B) was measured as the alternative and not taken - verified
+  invisible to PDFBox, mutool and pdftotext, no missing glyph, the word extracting whole
+  (§6.11) - because it would put a character into the text that the author did not write,
+  and a break the FO carries cannot give the word a line of its own first. **All of this
+  goes when FOP grows an emergency break of its own**; only the line-of-its-own rule would
+  stay.
 - **An empty `fo:inline` carrying a `font-size` sizes the line.** FOP builds an empty
   inline area of that size and takes the line's height from it, so a bookmark anchor
   given a size of its own makes the line taller. Only elements that paint text are

@@ -1380,6 +1380,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         lineHeight = lh;
         lead = l;
         follow = f;
+        inCell = inTableCell(block);
         wordLineBox = foreignLength(block, WordLayoutElementMapping.LINE_BOX);
         wordBaseline = foreignLength(block, WordLayoutElementMapping.BASELINE);
         String rule = foreignAttribute(block, WordLayoutElementMapping.LINE_RULE);
@@ -2336,6 +2337,17 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
     private final boolean emergencyBreakEnabled = WordLayoutCustomizer.emergencyBreak();
 
+    /** Whether this block is set directly in a table cell ({@link #inTableCell}), where
+     *  the overrun tolerance is {@link #cellOverrunTolerance(int)} rather than
+     *  {@link #OVERRUN_TOLERANCE}.  @since 17.1.1 */
+    private final boolean inCell;
+
+    /** How far past the measure {@code available} a word of this block may run before
+     *  it is broken, in millipoints.  @since 17.1.1 */
+    private int overrunTolerance(int available) {
+        return inCell ? Math.min(OVERRUN_TOLERANCE, cellOverrunTolerance(available)) : OVERRUN_TOLERANCE;
+    }
+
     /**
      * Word's last resort: a word too long for a line of its own is broken inside it, at
      * the last character that fits.
@@ -2373,6 +2385,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private void emergencyBreaks(Paragraph par, int available) {
         if (!emergencyBreakEnabled || available <= 0 || par == null) return;
+        int overrunTolerance = overrunTolerance(available);
         // collect first, split from the end backwards, so the indices stay valid
         List<int[]> overlong = null;
         for (int i = 0; i < par.size(); i++) {
@@ -2389,9 +2402,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         && ((KnuthPenalty) el).getPenalty() >= KnuthElement.INFINITE) continue;
                 break;      // a glue or a real break opportunity: the word ends here
             }
-            if (boxes >= 1 && width > available + OVERRUN_TOLERANCE) {
+            if (boxes >= 1 && width > available + overrunTolerance) {
                 if (overlong == null) overlong = new ArrayList<int[]>();
                 overlong.add(new int[] { i, j });
+                if (log.isDebugEnabled()) {
+                    log.debug("emergency break: a word of " + width / 1000.0 + "pt exceeds a"
+                            + (inCell ? " cell" : "") + " measure of " + available / 1000.0
+                            + "pt by " + (width - available) / 1000.0 + "pt (tolerance "
+                            + overrunTolerance / 1000.0 + "pt)");
+                }
             }
             i = j - 1;
         }
@@ -2457,6 +2476,74 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private static final int OVERRUN_TOLERANCE
             = (int) Math.round(1000 * WordLayoutCustomizer.emergencyBreakTolerance(72));
+
+    /**
+     * The tolerance inside a table cell: one twip, Word's own unit of layout (millipoints).
+     *
+     * <p>Word breaks a word as soon as it exceeds the cell it is in, at whatever character
+     * reaches the edge.  Measured on a 311-page corpus document, a table whose
+     * {@code w:tblGrid} Word wrote and kept on re-save - 431 twips then 35 columns of 255 -
+     * has Word drawing the first column 21.55pt wide, about 10.75pt of content after the
+     * cell margins, and breaking {@code Categorizador/Período} down 15 lines as
+     * {@code C / at / e / g / or / iz / a / d / or / / / P / er / ío / d / o}, a 157pt
+     * header row; the 255-twip columns hold one character a line.  With the inch above
+     * we set the word on one line running to x=559 where the text column ends at 540 -
+     * text printed past the right margin - and every one of those columns' words across
+     * its neighbours: that table took Word 8.4 pages and us 2.3.  The inch is what stopped
+     * the general rule firing there - the word overruns our 39pt column by 31pt.  The 8pt
+     * experiment above read a narrow column that shatters a word as a column we had sized
+     * wrongly; Word's kept grid says the column is that narrow, and the word is shattered
+     * in Word too.
+     *
+     * <p>The tolerance is not zero because the cell's measure and the word's width come
+     * from two measurements of ours (the column sizer's and FOP's), which disagree in the
+     * last place: the {@code table-autofit} probe's 23.976pt column holds a 23.988pt word
+     * Word set on one line.  A twip is below what Word can lay out.
+     *
+     * <p>What is deliberately not done: the rule is scoped to a block whose nearest
+     * container is the cell itself ({@link #inTableCell}).  A rotated cell
+     * (w:textDirection, a reference-oriented block-container) has for its measure a row
+     * height we only bound, a positioned frame or text box has its own, and a footnote
+     * the page's; those keep the inch.  Nor is it applied to body text: a long word in a
+     * narrow section column is the same defect, but the inch's reason - a measure we got
+     * wrong hides behind a break - still stands there, and it wants measuring on its own.
+     *
+     * <p>All of this is a workaround for FOP, which offers no break inside a word at all
+     * (§10 of word-layout-rules.md); when FOP grows an emergency break of its own the
+     * per-character split goes, and this tolerance with it.
+     *
+     * <p>Read per paragraph rather than once, so that the properties can be set and
+     * cleared within one JVM (as {@link #emergencyBreakEnabled} is).
+     *
+     * @param available the cell's measure, in millipoints
+     * @since 17.1.1
+     */
+    private static int cellOverrunTolerance(int available) {
+        int absolute = (int) Math.round(1000 * WordLayoutCustomizer.cellEmergencyBreakTolerance(0.05));
+        int relative = (int) Math.round(available * WordLayoutCustomizer.cellEmergencyBreakToleranceRatio(0));
+        return Math.max(absolute, relative);
+    }
+
+    /**
+     * Whether this block is set directly in a table cell: its nearest enclosing
+     * container is an {@code fo:table-cell}, with no {@code fo:block-container},
+     * footnote, flow or static content between.  Such a block's measure is the cell's
+     * content width, which is the measure Word breaks a word against.
+     *
+     * @since 17.1.1
+     */
+    static boolean inTableCell(org.apache.fop.fo.FONode block) {
+        for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
+                n != null; n = n.getParent()) {
+            if (n instanceof org.apache.fop.fo.flow.table.TableCell) return true;
+            if (n instanceof org.apache.fop.fo.flow.BlockContainer
+                    || n instanceof org.apache.fop.fo.flow.Footnote
+                    || n instanceof org.apache.fop.fo.flow.FootnoteBody
+                    || n instanceof org.apache.fop.fo.pagination.Flow
+                    || n instanceof org.apache.fop.fo.pagination.StaticContent) return false;
+        }
+        return false;
+    }
 
     /** Split the single-mapping box at this index into one mapping and one box per
      *  character, with a zero-width break between each pair, all of them marked as

@@ -628,6 +628,20 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 */
 	protected int[] fitToAvailableWidth(AbstractWmlConversionContext context, AbstractTableWriterModel table) {
 		if (!fitsTableToPage()) return null;
+		return fitToAvailableWidth(context, table, scaleContentAutofitToPage());
+	}
+
+	/** docx4j.convert.out.fo.tables.scaleContentAutofit: whether the columns the
+	 *  content-autofit pass computed are scaled down to the page when they overflow it.
+	 *  See {@link #fitToAvailableWidth}.  @since 17.1.1 */
+	public static final String SCALE_CONTENT_AUTOFIT = "docx4j.convert.out.fo.tables.scaleContentAutofit";
+
+	private static boolean scaleContentAutofitToPage() {
+		return org.docx4j.Docx4jProperties.getProperty(SCALE_CONTENT_AUTOFIT, true);
+	}
+
+	private int[] fitToAvailableWidth(AbstractWmlConversionContext context, AbstractTableWriterModel table,
+			boolean scaleContentAutofit) {
 		try {
 			org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
 			if (tblPr != null && tblPr.getTblLayout() != null
@@ -658,6 +672,18 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * @since 17.1.0 */
 			int[] widths = table.getAutofitColumnWidths();
 			boolean ownGrid = widths == null;
+			/* Measured and kept (&#xa7;6.5): the hypothesis that Word never squeezes the
+			 * columns a content pass has computed - that it keeps them at their minima and
+			 * lets the table overhang - is contradicted by Word's own kept w:tblGrid.  A
+			 * 36-column corpus table whose content minima sum to 26129 twips has a grid Word
+			 * wrote and kept summing to 9356, the text column: Word squeezed every column
+			 * below its minimum and broke the words inside (&#xa7;6.11).  Not scaling such
+			 * a table (docx4j.convert.out.fo.tables.scaleContentAutofit=false) ran it off
+			 * the page again and gave back the whole of that document's gain, 0.8462 ->
+			 * 0.7953; over the three corpora it moved the same-page-count figure +1, +1, 0
+			 * and lines matched +32, -14, -838 against scaling.  The property stays so the
+			 * measurement can be repeated without a build.  @since 17.1.1 */
+			if (!ownGrid && table.isContentSizedColumns() && !scaleContentAutofit) return null;
 			if (ownGrid) {
 				// The document's own grid.  Word keeps an over-wide one only where the
 				// table states a width of its own; an autofit table's grid is a cached
