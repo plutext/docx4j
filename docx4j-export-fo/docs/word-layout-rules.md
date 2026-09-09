@@ -164,6 +164,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
 | `docx4j.convert.out.fo.tables.shortfallByText` | `true` | Where a content-sized table's minima do not fit the width it has, each column keeps its cell margins and any picture and the shortfall comes out of the text, in proportion ([§6.5](#s65shortfall)). `false` scales every column in proportion, as 17.1.0 did. |
 | `docx4j.convert.out.fo.tables.refitGridByContent` | `true` | An autofit table whose cached `w:tblGrid` is beyond `GRID_OVERHANG_LIMIT` and whose measured minima do not fit the column either is laid out on those minima, squeezed as above, rather than on its grid scaled ([§6.5](#s65shortfall)). `false` scales the grid, as 17.1.0 did. |
+| `docx4j.convert.out.fo.tables.minimumAtBreakOpportunities` | `true` | The autofit sizer takes a column's minimum to be its widest run between the **line manager's break opportunities** - UAX #14 as FOP applies it, with Word's solidus rules - so a URL is measured to its `?` and its hyphens, where it will be broken ([§6.3](#s63breaks)). `false` measures the widest white-space-delimited token, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.dumpAutofit` | unset | A file to which the column sizer appends one record per table - the minima, maxima, preferred widths and floors it measured, the width it fitted them into and what it chose - for the harness's `ShortfallFit`. Unset, nothing is written; set, the output is unchanged. |
 | `docx4j.convert.out.fo.tables.position` | `true` | A floating table's `w:tblpPr`: the grid edge at `tblpX`/`tblpXSpec`, and a page- or margin-anchored table which opens its section placed absolutely (§6.8). `false` lays every table out in the flow, as 17.0.5 did. |
 | `docx4j.convert.out.fo.frames.position` | `true` | A paragraph whose `w:framePr` is anchored to the page or to the margin is lifted into a positioned block-container, and the flow keeps the band of a frame no text may run beside (§9.5). `false` lays every framed paragraph out where it falls, as 17.0.5 did. |
@@ -1137,6 +1138,26 @@ Number" was painted "Roll" and then a 93.5pt "Number /Registration" running 6pt 
 table, where Word sets "Roll Number " and "/Registration ". FOP's elements for it are
 `box("Number") box(" ") box("/")` - the space is a non-breaking box - so the line manager
 puts a zero penalty after it (and relaxes the infinite penalty in the justified form).
+<a id="s43prefix"></a>**Nor between a letter and a backslash** (17.1.1). FOP's pair table
+(`LineBreakUtils`) is generated from a Unicode version before 8.0, whose LB24 added
+`(AL|HL) × (PR|PO)` - no break between a letter and a prefix or postfix character - so FOP
+breaks `Quejas|\Clientes`, `US|$100` and `a|+b`. Measured on a 311-page corpus document whose
+category column holds `Quejas\Clientes\Minoristas`: Word's line holds the token whole, three
+times over; ours set `Quejas\Clientes` and put `\Minoristas` on the next line. It was found by
+[§6.3's sizer](#s63breaks), which measured the column to the broken token and made it 18.95pt
+where the whole token gives 21.35 (Word: 21.55).
+
+Unicode 8's whole rule was tried first and is **not** Word's: implemented for every PR and PO
+character it cost two corpus templates 1.000 -> 0.9643 and 1.000 -> 0.9685, on
+`$table.temps_ligne$` tokens whose trailing `$` **Word puts on a line of its own** - Word
+breaks between a letter and a dollar sign, exactly as FOP's older table does. So the rule is
+the backslash's alone; a currency sign, a plus, a per cent sign and the rest of PR and PO
+are left as UAX #14 has them, as is a backslash after a colon (`C:|\Program`) or a digit,
+there being no measurement of those.
+
+All three rules are stated once, in `WordBreakOpportunities`, which the autofit column sizer
+measures with as well ([§6.3](#s63breaks)), so the sizer and the line manager cannot disagree
+about where a token may break.
 
 A `w:br` which **opens** a paragraph gets a line of its own, as one which ends it does:
 measured, Word's gap after a one-line paragraph followed by
@@ -1225,6 +1246,30 @@ re-save, one corpus table's first column is 21.55pt in Word too, and Word shatte
 down fifteen lines. The inch stays for body text, where a wrong measure still hides behind a
 break; `docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance` sets the cell's, and
 the general tolerance caps it.
+
+<a id="s43join"></a>**A suppressed break inside a word is not the end of the word** (17.1.1).
+Around a break opportunity inside a word - after a solidus, before a backslash - FOP builds
+`box, penalty(INF), glue, penalty, glue, box`, and where the line manager has made that
+penalty infinite ([above](#s43prefix)) the glue behind it is no break either (Knuth: a glue
+breaks only after a box). The emergency break's word detection stopped at the glue, so
+`Contactos\Chicos` in a 21pt column was split as **two** words, each with its own token, and
+`emergencyUsable` - which lets a break inside a word be taken only once the word has a line
+to itself - then refused every break inside the second half while the first half's last
+character shared its line: the corpus column that sets every other line at two characters
+painted `s\Chicos` on one line, overflowing. The same shape had been there since the solidus
+rule (`Contactos/Chicos` painted `s` and then `/Chicos` whole); the backslash rule brought it
+into a column narrow enough to show. The detection now runs on past the join - but only a
+join whose penalty is one the line manager itself suppressed (it keeps them), so the halves
+are one word and one token, and the token is broken at the cell's edge through the join -
+`Contactos\Chi` / `cos\Grandes` in the 100pt test cell, as any other 23-character word is.
+"Only that join" was measured, not assumed: FOP puts the same `penalty(INF), glue` before
+other things - a non-breaking space in justified text, a list label's tab - and a first
+version that ran on past any glue behind an infinite penalty merged a checklist's `1.`
+with what followed it and broke it `1` / `.` (1.000 -> 0.906). What the fix does cost is
+the certificate §6.11 names: its `M/TONS` used to paint `TONS` whole past the cell, which
+read as Word's line, and is now broken `M/TON` / `S` as its 36pt column calls for (Word's
+row is 56pt, the grid-versus-`w:tcW` case), 0.826 -> 0.739 - the width error shown as
+lines, as §6.11 accepts.
 
 Measured over the three corpora, the conservative rule takes the lines painted outside their
 page from 1959 in 73 documents to 1915 in 70, against Word's 207 in 20. Most of what remains
@@ -2345,6 +2390,111 @@ the real-document corpora is small: the bold most of their tables carry comes fr
 `w:tblStylePr` conditional formatting, which docx4j does not yet apply, so there is no
 bold on the span for the sizer to see until that lands.
 
+<a id="s63breaks"></a>**A column's minimum is measured at the line manager's break
+opportunities, not at white space** (17.1.1). The measurement must agree with the engine
+that will lay the text out - the principle [the face rule above](#s63face) rests on - and
+the sizer took a column's minimum to be its widest white-space-delimited token, where the
+line manager breaks inside a token wherever UAX #14 lets it and Word's solidus rules (§4.3)
+allow. Measured on a corpus template: a 117-character URL, which Word breaks after its `?`
+and after the hyphens in its query string and the line manager breaks at the same places,
+was measured whole. Its column was sized to it - **286.25pt where Word's re-saved grid gives
+216.3** - and the width it took starved the four columns beside it: 40.9 / 36.6 / 46.3 /
+43.55pt against Word's 50.45 / 44.3 / 72.7 / 77.35, the last of them a `Conclusions` column
+whose text then broke a letter to a line. The document was 24 pages against Word's 15.
+
+`WordBreakOpportunities` states the opportunities once for both users. They are FOP's own:
+`LineBreakStatus`, the table-driven UAX #14 implementation FOP's text managers consult
+character by character, consulted the same way, so the two cannot drift; plus the
+adjustments the line manager makes for Word, which now go through the same predicates - no
+break after a solidus, none between a letter and a backslash, and a break before a
+solidus-led word after a space (§4.3). Consecutive
+text nodes are one text, as they are one `FOText` to FOP, and a unit may run across two
+`fo:inline`s, because FOP's text managers cannot break at the seam of two (a fresh
+`LineBreakStatus` for each, and no break opportunity at the end of a word); a trailing
+space is the one thing that breaks there, as FOP gives the whitespace ending an `FOText` a
+break unconditionally. A run of ordinary spaces before a break is dropped from the unit,
+as FOP drops that glue at the line end and, with the default `white-space-treatment`, the
+next line starts flush; a space no break separates from what follows - the one before a lone
+solidus, which FOP sets as a non-breaking box - is counted. So a URL is measured to its `?`
+and its hyphens (but not after a hyphen digits follow, LB25's `HY × NU`, nor at a dot, nor
+after a solidus), a hyphenated compound to its hyphens, a run of ideographs to one
+character, and a plain word is what it was.
+
+Two things the line manager also does are deliberately **not** opportunities for the sizer:
+
+- **Hyphenation.** FOP inserts hyphenation points only where the block asks for them, and
+  whether Word lets automatic hyphenation narrow a column is unmeasured: the four corpus
+  documents which set `w:autoHyphenation` were laid out by a reference machine with no
+  proofing tools for their languages (§4.7), so their goldens and re-saved grids say nothing
+  about it, and the harness scores with hyphenation off. The minimum stays the whole word,
+  so a column is never narrower than its text needs with hyphenation off; a document that
+  does hyphenate then has a column at least as wide as it needs, never one it must
+  hyphenate to fit.
+- **The emergency break** (§4.3, §6.11). Inside a cell a word wider than its measure is
+  now broken at whatever character reaches the edge, so in principle every minimum could
+  fall to one character. That is a consequence of the width, not an input to it - Word's
+  minimum is its own break opportunities, and its columns are squeezed below them only
+  when the table does not fit (§6.5) - so the break does not feed back: the sizer reads the
+  FO, and the emergency break lives in the line manager's own pass over the Knuth
+  sequence, after the columns exist.
+
+**What measuring at the layout's opportunities showed about the layout.** Built on UAX #14
+alone (plus the solidus rules), the sizer was line for line on the probes and the first two
+corpora, and the 311-page document fell 0.9115 -> 0.8869 (277 -> 279 pages): its 36-column
+table's first column went 21.4 -> 18.95pt against Word's 21.55, because its widest content
+is `Quejas\Clientes\Mayoristas` and FOP's pair table breaks before each backslash - which the
+line manager had always done in that column, and Word does not ([§4.3](#s43prefix)). With
+the whole-word measurement the sizer had been *right by accident* there, disagreeing with
+the layout it fed. The backslash rule was added to `WordBreakOpportunities`, for the line
+manager and the sizer alike, and the measurement repeated - twice, since the first attempt
+took Unicode 8's whole LB24 and the first corpus said Word breaks before a `$` (§4.3); what
+is reported below is the backslash-only build. One place the layout and Word still differ, and the sizer follows the layout: a word
+split across two runs at a break opportunity - `foo-` in one `fo:inline`, `bar` in the next -
+cannot break at the seam in FOP, while Word breaks after the hyphen. And the solidus-led
+predicate is now the text's rather than the mapping's, so `/123` after a space is a
+solidus-led word for the line manager too, where until 17.1.1 it read the character after
+the mapping and, UAX #14 keeping the solidus with the digits, did not break there.
+
+**Measured**, against the shortfall build, probes and corpora, sequentially - the sizer at
+the line manager's opportunities, the backslash rule, and the emergency break's join fix
+together, since each was found by the one before it and each was re-measured on all four
+sets (four runs in all; the intermediate ones are in [§4.3](#s43prefix) and
+[§4.3](#s43join)). The 36 probes and the 76 on the share are line for line what they were,
+in every run. The first corpus gains **+59 lines matched** (35985 -> 36044 of 40339), mean
+line parity 0.8916 -> 0.8923 and one more document at or above 0.98 (52 -> 53), twelve
+documents up and none down. The second gains **+111 lines** (56168 -> 56279 of 71789),
+the template **0.4130 -> 0.4779 and 24 -> 19 pages** against Word's 15, its URL column now
+203.55pt (Word 216.3) and the columns beside it 60.95 / 53.75 / 69.95 / 65.4 (Word 50.45 /
+44.3 / 72.7 / 77.35); its mean is 0.8562 -> 0.8561, which is the certificate's four lines
+([§4.3](#s43join)) against seven documents up. The third gains **+63 lines** (171349 ->
+171412 of 186262), 0.8915 -> 0.8922, and one more page count equal (64 -> 65), nine
+documents up and one down; the 311-page document is 0.9115 -> 0.9118 at 277 pages, its
+36-column table's first column 21.4pt as before (Word 21.55). The backslash-only run's
+nine-line fall on this corpus (171349 -> 171340: the 311-page document -35 on the
+`s\Chicos` overflow above, a 47-page document +26) was the emergency-break interaction,
+and does not survive its fix. `docx4j.convert.out.fo.tables.minimumAtBreakOpportunities=false`
+restores the white-space measurement.
+
+**The direct check.** `ColumnError` against Word's re-saved grids: the first corpus
+unchanged, the second 127,241 -> 125,211 twips (the tables Word rewrote 75,463 -> 73,463),
+the third 372,825 -> 371,409, no table worse. `ShortfallFit`: the content-shortfall population
+is untouched (none of its seven tables holds a breakable token), and on the grid-refit
+population - which holds the URL table - the shipped squeeze rule's per-column error against
+Word's grid goes **0.0525 -> 0.0307** and 3,770 -> 1,634 twips, with plain proportion to the
+minima 0.0601 -> 0.0290: the new minima are the closer ones.
+
+**Next, with its evidence, not implemented.** The one document down on the third corpus
+(0.8228 -> 0.8173, six lines of 887) is a lesson plan whose resources column holds YouTube
+and owlcation URLs: measured whole they claimed a share of the table's shortfall that held
+`http://www.youtube.com/watch?` / `v=...` on two lines; measured to their opportunities the
+column's share shrinks below even that unit, and the emergency break sets `watc` / `h?v=...`.
+The minimum is now right and the share is the open question: what §6.5's squeeze gives a
+column whose minimum is one unit of a long URL, against what Word gives it, is the
+measurement to make next, on that document's re-saved grid. Two more, smaller: a word split
+across two runs at a break opportunity cannot break at the seam in FOP (above), which Word
+does; and whether Word breaks between a letter and `+`, `%` or a currency sign other than
+`$` is unmeasured (it does before `$`, it does not before `\`).
+
 ### 6.4 Widening to the preferred width
 
 A preferred table width (`w:tblW` in dxa, or as a percentage of the text column) wider than
@@ -2479,9 +2629,9 @@ template document, **0.2950 -> 0.4130** - its page-1 token table is now Word's, 
 column - though its page count goes 21 -> 24 against Word's 15, because the URL table above
 now gives its URL column 286pt (Word: 216) and starves the `Conclusions` column beside it
 to 44pt (Word: 77), which breaks `Pas soumis à Audit` a letter to a line; that is the
-measurement residual, not the rule, and the next thing to fix is the sizer measuring a word
-at the line manager's own break opportunities (Word and the line manager both break that
-URL after its `?` and its hyphens; the sizer splits at white space only). The third corpus
+measurement residual, not the rule - the sizer split at white space only, where Word and the
+line manager both break that URL after its `?` and its hyphens - and it is what
+[§6.3's break-opportunity measurement](#s63breaks) then fixed (24 -> 19 pages). The third corpus
 gains **+1088 lines** (170261 -> 171349 of 186262) and 0.8909 -> 0.8915, again one
 document: the 311-page one goes **0.8462 -> 0.9115** and 271 -> 277 pages against Word's
 311, its 36-column table's first column now 21.35pt against Word's 21.55 (it was 49.35).

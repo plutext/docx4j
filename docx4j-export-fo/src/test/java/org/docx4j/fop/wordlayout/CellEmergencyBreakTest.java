@@ -144,6 +144,29 @@ public class CellEmergencyBreakTest {
 		assertEquals(WIDE.substring(13), got.get(1));
 	}
 
+	/**
+	 * A word holding a break opportunity the line manager has suppressed - after a
+	 * solidus, or before a backslash (WordBreakOpportunities) - is one word to the
+	 * emergency break, and is broken at the cell's edge through the join.  FOP builds
+	 * "box, penalty(INF), glue, penalty, glue" around such an opportunity, and until
+	 * 17.1.1 the glue ended the word: the two halves were split as two words whose
+	 * emergency breaks blocked each other, and a 21pt corpus column set "s\Chicos" on
+	 * one line, overflowing, where every other line held two characters.
+	 */
+	@Test
+	public void aSuppressedBreakInsideAWordDoesNotStopTheEmergencyBreak() throws Exception {
+		String backslashed = "Contactos\\Chicos\\Grandes";   // 23 characters, 165.6pt
+		List<String> got = lines(cellFo(backslashed));
+		assertEquals(got.toString(), 2, got.size());
+		assertEquals(backslashed.substring(0, 13), got.get(0));
+		assertEquals(backslashed.substring(13), got.get(1));
+		String slashed = "Contactos/Chicos/Grandes";   // 24 characters, 172.8pt
+		got = lines(cellFo(slashed));
+		assertEquals(got.toString(), 2, got.size());
+		assertEquals(slashed.substring(0, 13), got.get(0));
+		assertEquals(slashed.substring(13), got.get(1));
+	}
+
 	/** Word gives the word a line of its own first, in a cell as in body text. */
 	@Test
 	public void theWordFirstMovesToALineOfItsOwn() throws Exception {

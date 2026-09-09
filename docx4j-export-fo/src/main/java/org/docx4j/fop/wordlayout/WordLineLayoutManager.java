@@ -2198,13 +2198,19 @@ public class WordLineLayoutManager extends LineLayoutManager {
     }
 
     /**
-     * Word does not break a line after a solidus.  Measured on the Getting
-     * Started guide (CR-001 §6.10): "http://schemas.openxmlformats.org/..." and
-     * "OpenOffice/jodconverter" go whole to the next line where UAX #14, which
-     * FOP's text managers follow, allows a break after the "/".  Those break
-     * opportunities are made infinite penalties here.
+     * Break opportunities inside a token which UAX #14, as FOP's text managers apply
+     * it, offers and Word does not take ({@link WordBreakOpportunities#noBreakBetween})
+     * are made infinite penalties here.  Two so far.  Word does not break a line after
+     * a solidus: measured on the Getting Started guide (CR-001 §6.10),
+     * "http://schemas.openxmlformats.org/..." and "OpenOffice/jodconverter" go whole
+     * to the next line where FOP breaks after the "/".  And it does not break between
+     * a letter and a backslash, where FOP's pair table, generated from a Unicode
+     * version before 8.0's LB24, does: measured on a 311-page corpus document, Word sets
+     * {@code Quejas\Clientes\Minoristas} whole on a line where ours broke it before each
+     * backslash (17.1.1; until then only the solidus was suppressed).  Only the
+     * backslash: Word breaks between a letter and a dollar sign, as FOP does.
      */
-    private void suppressSolidusBreaks(List<KnuthSequence> seqs) {
+    private void suppressWordBreaks(List<KnuthSequence> seqs) {
         if (seqs == null) return;
         for (KnuthSequence seq : seqs) {
             for (int i = 1; i < seq.size(); i++) {
@@ -2234,8 +2240,26 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 if (idx < 0 || idx >= mappings.size()) continue;
                 org.apache.fop.fonts.GlyphMapping m = mappings.get(idx);
                 org.apache.fop.fo.FOText foText = LBP.foText(tlm);
-                if (m.endIndex <= 0 || m.endIndex > foText.length() || foText.charAt(m.endIndex - 1) != '/') continue;
-                seq.set(i, new KnuthPenalty(p.getWidth(), KnuthElement.INFINITE, false, p.getPosition(), p.isAuxiliary()));
+                if (m.endIndex <= 0 || m.endIndex > foText.length()) continue;
+                // and forward to the box the opportunity precedes, for its first character
+                int after = -1;
+                for (int k = i + 1; k < seq.size(); k++) {
+                    Object next = seq.get(k);
+                    if (next instanceof KnuthInlineBox && !((KnuthInlineBox) next).isAuxiliary()) {
+                        org.apache.fop.fonts.GlyphMapping nm = mappingOf(next);
+                        org.apache.fop.layoutmgr.inline.TextLayoutManager ntlm = tlmOf(next);
+                        if (nm != null && ntlm != null && nm.startIndex < LBP.foText(ntlm).length()) {
+                            after = LBP.foText(ntlm).charAt(nm.startIndex);
+                        }
+                        break;
+                    }
+                    if (next instanceof KnuthInlineBox && ((KnuthInlineBox) next).getWidth() != 0) break;
+                    if (next instanceof KnuthGlue && ((KnuthGlue) next).getWidth() != 0) break;
+                }
+                if (!WordBreakOpportunities.noBreakBetween(foText.charAt(m.endIndex - 1), after)) continue;
+                KnuthPenalty suppressed = new KnuthPenalty(p.getWidth(), KnuthElement.INFINITE, false, p.getPosition(), p.isAuxiliary());
+                suppressedBreaks.put(suppressed, Boolean.TRUE);
+                seq.set(i, suppressed);
             }
         }
     }
@@ -2302,9 +2326,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 org.apache.fop.layoutmgr.inline.TextLayoutManager tlm = tlmOf(seq.get(nextIdx));
                 if (tlm == null) continue;
                 org.apache.fop.fo.FOText foText = LBP.foText(tlm);
-                if (next.startIndex >= foText.length() || foText.charAt(next.startIndex) != '/') continue;
-                if (next.endIndex >= foText.length()
-                        || !Character.isLetterOrDigit(foText.charAt(next.endIndex))) continue;
+                // the same predicate the autofit sizer measures with (WordBreakOpportunities):
+                // until 17.1.1 this read the character after the mapping, so "/123" - a
+                // solidus UAX #14 keeps with the digits after it - was not a solidus-led word
+                if (!WordBreakOpportunities.startsSolidusLedWord(foText, next.startIndex)) continue;
                 if (o instanceof KnuthGlue) {
                     // justified: relax the infinite penalty in front of the space glue
                     if (i > 0 && seq.get(i - 1) instanceof KnuthPenalty
@@ -2332,6 +2357,23 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *
      * @since 17.1.0
      */
+    /** The penalties {@link #suppressWordBreaks} made infinite: break opportunities inside
+     *  a word that Word does not take, which {@link #emergencyBreaks} must read as part of
+     *  the word rather than its end.  @since 17.1.1 */
+    private final java.util.IdentityHashMap<Object, Object> suppressedBreaks
+            = new java.util.IdentityHashMap<Object, Object>();
+
+    /** Whether the next non-auxiliary element after a glue is a penalty of
+     *  {@link #suppressedBreaks}: the glue is then the first half of that join. */
+    private boolean suppressedBreakFollows(Paragraph par, int glueIdx) {
+        for (int k = glueIdx + 1; k < par.size(); k++) {
+            KnuthElement el = (KnuthElement) par.get(k);
+            if (el.isAuxiliary()) continue;
+            return el instanceof KnuthPenalty && suppressedBreaks.containsKey(el);
+        }
+        return false;
+    }
+
     private final java.util.IdentityHashMap<Object, Object> emergencyElement
             = new java.util.IdentityHashMap<Object, Object>();
 
@@ -2394,13 +2436,33 @@ public class WordLineLayoutManager extends LineLayoutManager {
             int width = e.getWidth();
             int boxes = 1;
             int j = i + 1;
+            boolean afterSuppressed = false;
             for (; j < par.size(); j++) {
                 KnuthElement el = (KnuthElement) par.get(j);
-                if (el.isBox() && !el.isAuxiliary()) { width += el.getWidth(); boxes++; continue; }
+                if (el.isBox() && !el.isAuxiliary()) { width += el.getWidth(); boxes++; afterSuppressed = false; continue; }
                 if (el.isAuxiliary()) continue;
-                if (el instanceof KnuthPenalty
-                        && ((KnuthPenalty) el).getPenalty() >= KnuthElement.INFINITE) continue;
-                break;      // a glue or a real break opportunity: the word ends here
+                if (el instanceof KnuthPenalty) {
+                    if (suppressedBreaks.containsKey(el)) { afterSuppressed = true; continue; }
+                    if (((KnuthPenalty) el).getPenalty() >= KnuthElement.INFINITE) continue;
+                    break;  // a real break opportunity: the word ends here
+                }
+                if (el.isGlue() && (afterSuppressed || suppressedBreakFollows(par, j))) {
+                    // the join FOP builds around a break opportunity inside a word -
+                    // "box, penalty(INF), glue, penalty, glue, box" - whose penalty
+                    // suppressWordBreaks has made infinite: neither glue is a break
+                    // (Knuth: a glue breaks only after a box), so the word goes on past
+                    // it.  Until 17.1.1 the word ended at the first glue, and the two
+                    // halves were split as two words whose emergency breaks blocked each
+                    // other (emergencyUsable): a 20pt cell set "s\Chicos" on one line,
+                    // overflowing, where every other line held two characters.  Only
+                    // that join: FOP puts the same "penalty(INF), glue" before other
+                    // things - a non-breaking space in justified text, a list label's
+                    // tab - and running on past those merged "1." with what followed it
+                    // and broke it "1" / "." (measured, a corpus checklist 1.000 -> 0.906).
+                    width += el.getWidth();
+                    continue;
+                }
+                break;      // a glue: the word ends here
             }
             if (boxes >= 1 && width > available + overrunTolerance) {
                 if (overlong == null) overlong = new ArrayList<int[]>();
@@ -2734,7 +2796,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             List<KnuthSequence> inlineElements = curLM.getNextKnuthElements(inlineLC, effectiveAlignment);
             fixLetterSpaces(curLM, inlineElements);
             fixSpaceLetterSpaces(inlineElements);
-            suppressSolidusBreaks(inlineElements);
+            suppressWordBreaks(inlineElements);
             solidusLeadingBreaks(inlineElements);
             if (inlineElements == null || inlineElements.size() == 0) {
                 /* curLM.getNextKnuthElements() returned null or an empty list;

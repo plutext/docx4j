@@ -571,11 +571,31 @@ public class TableWriter extends AbstractTableWriter {
 		}
 	}
 
-		/**
+	/** docx4j.convert.out.fo.tables.minimumAtBreakOpportunities: whether the autofit
+	 *  sizer takes a cell's minimum width to be its widest run between the line
+	 *  manager's break opportunities ({@link org.docx4j.fop.wordlayout.WordBreakOpportunities})
+	 *  - a URL measured to its {@code ?} and its hyphens, where it will be broken - or,
+	 *  {@code false}, its widest white-space-delimited token, as 17.1.0 measured.
+	 *  @since 17.1.1 */
+	public static final String MINIMUM_AT_BREAK_OPPORTUNITIES = "docx4j.convert.out.fo.tables.minimumAtBreakOpportunities";
+
+	private static boolean minimumAtBreakOpportunities() {
+		return org.docx4j.Docx4jProperties.getProperty(MINIMUM_AT_BREAK_OPPORTUNITIES, true);
+	}
+
+	/**
 	 * Measure the cell's converted FO content: every span carries the physical
 	 * font-family and (via its ancestors) the font-size that FOP will use, so the
-	 * widths are FOP's own.  Words are split at white space; a word may run across
-	 * spans.  Nested tables and leaders end a word.
+	 * widths are FOP's own.  The minimum is the widest run between the line manager's
+	 * break opportunities - UAX #14 as FOP applies it, with Word's solidus rules
+	 * ({@link org.docx4j.fop.wordlayout.WordBreakOpportunities}), so that the
+	 * measurement agrees with the engine that lays the text out.  Until 17.1.1 it was
+	 * the widest white-space-delimited token: a 117-character URL which Word and the
+	 * line manager both break after its {@code ?} and its hyphens was measured whole,
+	 * its column sized to it (286pt where Word gives 216) and the column beside it
+	 * starved to 44pt (Word: 77), which then broke a word a letter to a line.  A unit
+	 * may run across spans, since FOP's text managers cannot break at the seam of two
+	 * fo:inlines; nested tables and leaders end one.
 	 *
 	 * @since 17.0.5
 	 */
@@ -586,14 +606,44 @@ public class TableWriter extends AbstractTableWriter {
 		double[] out = new double[3];   // {min, max, widest picture}
 		org.docx4j.fonts.Mapper mapper = context.getWmlPackage() == null ? null
 				: context.getWmlPackage().getFontMapper();
+		boolean atBreaks = minimumAtBreakOpportunities();
 		NodeList children = content.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
-			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out, mapper);
+			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out, mapper, atBreaks);
 		}
 		return out;
 	}
 
-	private static void measureBlockTree(Element el, double[] out, org.docx4j.fonts.Mapper mapper) {
+	/**
+	 * One paragraph's measurement in progress: the widest unit so far, the whole
+	 * content on one line, the unit being built, the ordinary spaces after it (dropped
+	 * if a break comes next), and the widest picture, which cannot be squeezed.
+	 * @since 17.1.1
+	 */
+	private static final class LineMeasure {
+		double maxUnit, total, unit, pendingSpace, widestPicture;
+
+		/** A break opportunity: the unit is complete, and the spaces after it fall at
+		 *  the line end, where FOP drops them. */
+		void endUnit() {
+			maxUnit = Math.max(maxUnit, unit);
+			unit = 0;
+			pendingSpace = 0;
+		}
+
+		/** A character that stays with the unit - and so do the spaces before it that
+		 *  no break separated from it (the space before a lone solidus, say). */
+		void add(double w) {
+			unit += pendingSpace + w;
+			pendingSpace = 0;
+		}
+
+		double widest() {
+			return Math.max(maxUnit, unit);
+		}
+	}
+
+	private static void measureBlockTree(Element el, double[] out, org.docx4j.fonts.Mapper mapper, boolean atBreaks) {
 		String ln = el.getLocalName();
 		if ("table".equals(ln)) {
 			// a nested table: treat as unbreakable at its own width if known, else ignore
@@ -605,27 +655,32 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		if ("block".equals(ln) || "list-block".equals(ln) || "block-container".equals(ln)) {
 			// a paragraph (or a container of them): measure its inline content as one line
-			double[] line = new double[4]; // {maxWord, total, currentWord, widestPicture}
-			measureInline(el, line, true, mapper);
-			line[0] = Math.max(line[0], line[2]);
-			out[0] = Math.max(out[0], line[0]);
-			out[1] = Math.max(out[1], line[1]);
-			if (out.length > 2) out[2] = Math.max(out[2], line[3]);
+			LineMeasure line = new LineMeasure();
+			measureInline(el, line, true, mapper, atBreaks);
+			out[0] = Math.max(out[0], line.widest());
+			out[1] = Math.max(out[1], line.total);
+			if (out.length > 2) out[2] = Math.max(out[2], line.widestPicture);
 			return;
 		}
 		NodeList children = el.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
-			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out, mapper);
+			if (children.item(i) instanceof Element) measureBlockTree((Element) children.item(i), out, mapper, atBreaks);
 		}
 	}
 
 	/** Walk inline content; nested blocks (paragraphs inside a list item) each count as a line. */
-	private static void measureInline(Element el, double[] line, boolean top, org.docx4j.fonts.Mapper mapper) {
+	private static void measureInline(Element el, LineMeasure line, boolean top, org.docx4j.fonts.Mapper mapper, boolean atBreaks) {
 		NodeList children = el.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			Node n = children.item(i);
 			if (n.getNodeType() == Node.TEXT_NODE) {
-				measureText(n.getNodeValue(), fontFor(el, mapper), sizeFor(el), line);
+				// consecutive text nodes are one FOText to FOP (FObjMixed appends
+				// characters until a child element flushes them), so one text here
+				StringBuilder text = new StringBuilder(n.getNodeValue());
+				while (i + 1 < children.getLength() && children.item(i + 1).getNodeType() == Node.TEXT_NODE) {
+					text.append(children.item(++i).getNodeValue());
+				}
+				measureText(text, fontFor(el, mapper), sizeFor(el), line, atBreaks);
 			} else if (n instanceof Element) {
 				Element c = (Element) n;
 				String ln = c.getLocalName();
@@ -636,27 +691,24 @@ public class TableWriter extends AbstractTableWriter {
 					 * every w:tcW is auto left the text columns to take the whole width, one
 					 * word per line.  An anchored picture is taken out of the flow (see
 					 * WordLayoutFixups), so it does not widen anything. */
-					line[0] = Math.max(line[0], line[2]);
-					line[2] = 0;
+					line.endUnit();
 					double gw = c.hasAttribute(org.docx4j.model.images.WordXmlPictureE20.HINT_ANCHOR) ? 0
 							: graphicWidthPt(c);
 					if (gw > 0) {
-						line[0] = Math.max(line[0], gw);
-						line[1] += gw;
-						line[3] = Math.max(line[3], gw);   // a picture cannot be squeezed
+						line.maxUnit = Math.max(line.maxUnit, gw);
+						line.total += gw;
+						line.widestPicture = Math.max(line.widestPicture, gw);   // a picture cannot be squeezed
 					}
 				} else if ("leader".equals(ln) || "table".equals(ln)) {
-					line[0] = Math.max(line[0], line[2]);
-					line[2] = 0;
+					line.endUnit();
 				} else if ("block".equals(ln) && !top) {
-					double[] inner = new double[4];
-					measureInline(c, inner, false, mapper);
-					inner[0] = Math.max(inner[0], inner[2]);
-					line[0] = Math.max(line[0], inner[0]);
-					line[1] = Math.max(line[1], inner[1]);
-					line[3] = Math.max(line[3], inner[3]);
+					LineMeasure inner = new LineMeasure();
+					measureInline(c, inner, false, mapper, atBreaks);
+					line.maxUnit = Math.max(line.maxUnit, inner.widest());
+					line.total = Math.max(line.total, inner.total);
+					line.widestPicture = Math.max(line.widestPicture, inner.widestPicture);
 				} else {
-					measureInline(c, line, false, mapper);
+					measureInline(c, line, false, mapper, atBreaks);
 				}
 			}
 		}
@@ -678,20 +730,45 @@ public class TableWriter extends AbstractTableWriter {
 		return WordLayoutFixups.lengthPt(w);
 	}
 
-	private static void measureText(String text, org.docx4j.fonts.PhysicalFont pf, double sizePt, double[] line) {
+	/**
+	 * Measure one text node's characters into the line.  With {@code atBreaks} the
+	 * unit ends wherever {@link org.docx4j.fop.wordlayout.WordBreakOpportunities#breakBefore}
+	 * says a line may break; a run of ordinary spaces is held back and dropped when a
+	 * break follows it (FOP drops that glue at the line end, and with the default
+	 * white-space-treatment the next line starts flush), or counted into the unit when
+	 * none does - the space before a lone solidus, say.  A trailing run of spaces is a
+	 * break: FOP's text manager gives the whitespace that ends an FOText a break
+	 * opportunity unconditionally.  Without {@code atBreaks} any white space ends the
+	 * unit, as 17.1.0 measured.  A zero-width space (U+200B, U+2060, U+FEFF) is zero
+	 * wide in either mode, as FOP has it, rather than the half em a font without the
+	 * glyph would otherwise be charged.
+	 */
+	private static void measureText(CharSequence text, org.docx4j.fonts.PhysicalFont pf, double sizePt,
+			LineMeasure line, boolean atBreaks) {
 		org.docx4j.fonts.fop.fonts.Typeface tf = org.docx4j.fonts.TextMeasurer.typeface(pf);
-		for (int i = 0; i < text.length(); ) {
-			int cp = text.codePointAt(i);
+		boolean[] brk = atBreaks ? org.docx4j.fop.wordlayout.WordBreakOpportunities.breakBefore(text) : null;
+		int n = text.length();
+		for (int i = 0; i < n; ) {
+			int cp = Character.codePointAt(text, i);
+			int at = i;
 			i += Character.charCount(cp);
-			double w = org.docx4j.fonts.TextMeasurer.glyphWidthPt(tf, cp, sizePt);
-			line[1] += w;
-			if (Character.isWhitespace(cp) || cp == ' ' && false) {
-				line[0] = Math.max(line[0], line[2]);
-				line[2] = 0;
+			double w = org.apache.fop.util.CharUtilities.isZeroWidthSpace(cp) ? 0
+					: org.docx4j.fonts.TextMeasurer.glyphWidthPt(tf, cp, sizePt);
+			line.total += w;
+			if (brk == null) {
+				if (Character.isWhitespace(cp)) line.endUnit(); else line.add(w);
+				continue;
+			}
+			if (brk[at]) line.endUnit();
+			if (cp == ' ' || cp == '\t') {
+				line.pendingSpace += w;
+			} else if (org.apache.fop.util.CharUtilities.isExplicitBreak(cp)) {
+				line.endUnit();
 			} else {
-				line[2] += w;
+				line.add(w);
 			}
 		}
+		if (brk != null && line.pendingSpace > 0) line.endUnit();
 	}
 
 	/**

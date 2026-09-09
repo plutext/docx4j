@@ -120,6 +120,30 @@ public class SolidusBreakTest {
 				"aaaa bbbb cccc dddd /", got.get(0));
 	}
 
+	/**
+	 * Word does not break between a letter and a backslash (nor a plus or a currency
+	 * sign): FOP's UAX #14 pair table predates Unicode 8.0's LB24, so it does.
+	 * Measured on a 311-page corpus document whose category column holds
+	 * {@code Quejas\Clientes\Minoristas}: Word's line holds it whole, ours broke it
+	 * before each backslash (17.1.1).
+	 */
+	@Test
+	public void noBreakBeforeABackslash() throws Exception {
+		// "aaaa bbbb cccc" = 14 chars; the 26-character token cannot follow it and goes whole to line 2
+		List<String> got = lines(fo("aaaa bbbb cccc Quejas\\Clientes\\Minoristas end"), true);
+		assertEquals("aaaa bbbb cccc", got.get(0));
+		assertEquals("Quejas\\Clientes\\Minoristas", got.get(1));
+		for (String l : got) assertFalse(l, l.startsWith("\\"));
+	}
+
+	@Test
+	public void fopItselfBreaksBeforeABackslash() throws Exception {
+		List<String> got = lines(fo("aaaa bbbb cccc Quejas\\Clientes\\Minoristas end"), false);
+		boolean broken = false;
+		for (String l : got) broken |= l.startsWith("\\");
+		assertEquals("FOP (pre-Unicode-8 UAX #14) breaks before a backslash", true, broken);
+	}
+
 	@Test
 	public void slashJoinedWordsStayTogether() throws Exception {
 		// "aaaa bbbb cccc dddd eeee" = 24 chars; "OpenOffice/jodconverter" (23) must go whole to line 2

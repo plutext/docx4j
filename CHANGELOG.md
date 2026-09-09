@@ -77,6 +77,31 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   tables paired with a Word grid, of which only 7 multi-column content-sized tables in 4
   documents and 6 grid-refit tables in 3 have minima that do not fit - so the population is
   the two documents above, and the fit is in word-layout-rules.md §6.5.
+- The autofit column sizer measures a column's minimum at the line manager's break
+  opportunities - FOP's own UAX #14 table, with Word's solidus rules, stated once in the new
+  WordBreakOpportunities for the sizer and the line manager alike - rather than at white
+  space. A 117-character URL that Word and the line manager both break after its ? and its
+  hyphens was measured whole, its column sized to it (286pt where Word gives 216) and the
+  columns beside it starved (44pt where Word gives 77), one of them breaking a word a letter
+  to a line. Hyphenation points and the emergency break are deliberately not opportunities
+  for the sizer. Measuring at the layout's own opportunities exposed one the layout had wrong:
+  FOP's UAX #14 pair table predates Unicode 8.0's LB24, so it breaks between a letter and a
+  backslash (Quejas|\Clientes), where Word sets the token whole; the line manager now
+  suppresses that break as it does the one after a solidus. Only the backslash: Word does
+  break between a letter and a dollar sign, as FOP's table does (§4.3). And the emergency
+  break now sees a word with such a suppressed break inside it as one word: it stopped at
+  the glue FOP puts after the suppressed penalty, split the halves as two words whose breaks
+  blocked each other, and a 21pt column that sets two characters a line painted "s\Chicos"
+  on one line, overflowing (the same shape as "s" then "/Chicos" whole, since 17.1.0).
+  New property docx4j.convert.out.fo.tables.minimumAtBreakOpportunities
+  (default true; false restores the white-space measurement). Measured, the three changes
+  together: probes identical; corpus 1 +59 lines matched and mean line parity 0.8916 ->
+  0.8923, twelve documents up and none down; corpus 2 +111 lines (the template 0.4130 ->
+  0.4779 and 24 -> 19 of Word's 15 pages, its URL column now 203.55pt against Word's 216.3)
+  and mean 0.8562 -> 0.8561, the certificate above; corpus 3 +63 lines, 0.8915 -> 0.8922 and
+  one more page count equal, the 311-page document 0.9115 -> 0.9118. Against Word's re-saved
+  grids the URL table's column error falls by more than half. See word-layout-rules.md §6.3
+  and §4.3.
 - OpcPackage.clone() now carries the package's name across, so a converted copy is the same
   document for logging (and for the dump above).
 - New diagnostic property docx4j.convert.out.fo.wordLayout.dumpAutofit=<file>: the column
