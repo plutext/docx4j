@@ -31,6 +31,9 @@ import org.docx4j.convert.out.common.writer.HyperlinkUtil;
 import org.docx4j.convert.out.common.writer.RefHandler;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.wml.CTSimpleField;
 import org.docx4j.model.properties.Property;
 import org.docx4j.utils.FoNumberFormatUtil;
 import org.w3c.dom.Document;
@@ -58,6 +61,46 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	protected static String pageNumberSample(AbstractWmlConversionContext context) {
 		String pageFormat = context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
 		return FoNumberFormatUtil.format(1, FormattingSwitchHelper.getFoPageNumberFormat(pageFormat));
+	}
+
+	/**
+	 * {@code STYLEREF} in a header or footer becomes an {@code fo:retrieve-marker}, which
+	 * FOP resolves page by page as Word does ({@link StyleRefMarkers}); every other field
+	 * takes the handlers' route.
+	 *
+	 * @since 17.1.1
+	 */
+	@Override
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, Node content,
+			TransformState state, Document doc) throws TransformerException {
+		Node retrieved = styleRefMarker(context, (CTSimpleField) unmarshalledNode, content, doc);
+		if (retrieved != null) return retrieved;
+		return super.toNode(context, unmarshalledNode, content, state, doc);
+	}
+
+	private Node styleRefMarker(AbstractWmlConversionContext context, CTSimpleField field, Node content,
+			Document doc) throws TransformerException {
+		boolean inHeaderOrFooter = context.getCurrentPart() instanceof HeaderPart
+				|| context.getCurrentPart() instanceof FooterPart;
+		if (!inHeaderOrFooter) return null;
+		FldSimpleModel model = new FldSimpleModel();
+		model.build(field, content);
+		String styleId = StyleRefMarkers.retrievedStyleId(context.getWmlPackage(), true,
+				model.getFldName(), model.getFldParameters());
+		if (styleId == null) return null;
+		Element retrieve = doc.createElementNS(FO_NS, "fo:retrieve-marker");
+		retrieve.setAttribute("retrieve-class-name",
+				StyleRefMarkers.className(styleId, StyleRefMarkers.wantsNumber(model.getFldParameters())));
+		retrieve.setAttribute("retrieve-position",
+				StyleRefMarkers.wantsLast(model.getFldParameters()) ? "last-starting-within-page"
+						: "first-starting-within-page");
+		retrieve.setAttribute("retrieve-boundary", "document");
+		Node ret = wrap(context, retrieve, doc);
+		// the field's run formatting (which \* MERGEFORMAT keeps), and a font chosen on
+		// the stored result, which is text of the same kind as what will be retrieved
+		String sample = (content == null ? null : content.getTextContent());
+		applyStyle(context, model, ret, (sample == null || sample.trim().isEmpty()) ? "A" : sample);
+		return ret;
 	}
 
 	protected static class PageHandler implements FldSimpleNodeWriterHandler {

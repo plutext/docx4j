@@ -3955,10 +3955,41 @@ so docx4j's clock matches neither on any other day: property
 `docx4j.convert.out.fields.dateCachedResult` (default `false`, the clock, as always) paints a
 `DATE` or `TIME` as the file stores it, which is the reference's date when the reference was
 cut from that file, and which makes a conversion reproducible. A field with no stored result
-at all is still evaluated. Two things no switch can reach, for the record: a `FILENAME` in a
+at all is still evaluated. One thing no switch can reach, for the record: a `FILENAME` in a
 footer, which Word paints as the name of the temporary file it converted (a different one on
-every cut, 8 documents), and a `STYLEREF`, which Word evaluates per page and docx4j paints
-stored (7 documents).
+every cut, 8 documents). A `STYLEREF` in a header or footer, which Word evaluates per page,
+is evaluated per page too since 17.1.1 (below); one in the body is painted stored.
+
+<a id="s7styleref"></a>**`STYLEREF` in a running header or footer is evaluated page by
+page.** Word paints the text of the first paragraph of the named style on the page, or of
+the nearest one before it where the page has none (the last on the page with `\l`; the
+paragraph's number with `\n`, `\r` or `\w`); docx4j painted the stored result - whatever
+page the author last saved on - on every page. XSL-FO has exactly this: an `fo:marker` on
+each paragraph of the style and an `fo:retrieve-marker` in the static content, whose
+`retrieve-position="first-starting-within-page"` takes the page's first marker and, where
+the page has none, the last one before it, `retrieve-boundary="document"` letting that reach
+back across page-sequences - probed with FOP 2.11: a page with no heading, and a second
+page-sequence, both retrieve the heading before them. The marker's text inherits its
+formatting from the retrieve point, so the field's own run formatting applies, as
+`\* MERGEFORMAT` intends. The style is named as Word writes it - the name, with its aliases
+(`"Heading 1,h1,Level 1 Topic Heading"`), quoted or not, or an outline level (`STYLEREF 1`
+is "heading 1") - and matched case-insensitively against the styles' names, aliases and ids;
+a name no paragraph style has leaves the stored result alone. Measured on the 179-page
+document of [§7](#s7startspage), whose running header carries `STYLEREF "Unnumbered
+Heading"` and `STYLEREF "Heading 1"`: the stored "Introduction" was painted on some 167
+pages where Word shows the chapter the page is in. Five corpus documents carry the shape.
+`FldSimpleWriter` writes the retrieve-marker; `StyleRefMarkers.apply` puts the markers on the
+flow's blocks of that style (never in static content, which XSL-FO forbids, nor in a
+footnote, which Word does not search - a text box or a floating table on the page counts,
+as it does for Word: a cover title in a table cell's text box is what one document's running
+header shows on every later page; a heading's own footnote is left out of its text), reading the
+paragraph-style hint, so it is one of the `WordLayoutFixups` and needs them on; and the
+header/footer extent pre-pass, whose body is filler, measures the stored result instead, so
+that a header line holding only the field still measures as a line. The space in front of
+the field survives as it does in front of a page number (a zero-width space after it, below):
+"Extarct Tool - HLD 1.1" had come out "HLD1.1". Not done: `\p` ("above"/"below"), `\t`
+(suppress non-delimiter characters), and the formatting switches other than `MERGEFORMAT`.
+
 
 **A `DATE`, `TIME` or `PRINTDATE` field is formatted in the document's own language**
 (`w:docDefaults/w:rPrDefault/w:rPr/w:lang`), not in the platform default. Measured on two

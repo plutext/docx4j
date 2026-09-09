@@ -137,6 +137,7 @@ public class LayoutMasterSetBuilder {
 			
 			FOPAreaTreeHelper.trimContent(hfPkg);
 			FOPAreaTreeHelper.dropFloatingDrawingsFromHeadersFooters(hfPkg);
+			StyleRefMarkers.paintStoredResults(hfPkg); // its body is filler: nothing to retrieve
 			
 			FOSettings foSettings = (FOSettings)context.getConversionSettings();
 			org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg, useXSLT, foSettings);

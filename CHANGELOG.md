@@ -21,6 +21,10 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 - A merged run of continuous sections takes its page-number start and format from the first
   part declaring them, not the last; and where two parts share the column count but not the
   gap, the gap with the most text across the parts sharing it supplies it.
+- STYLEREF in a running header or footer is evaluated page by page, as Word does (the first
+  paragraph of the named style on the page, else the nearest before it; \l, \n): an
+  fo:marker on each such paragraph and an fo:retrieve-marker in the header. It used to paint
+  the stored result on every page. See word-layout-rules.md §7.
 - The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default

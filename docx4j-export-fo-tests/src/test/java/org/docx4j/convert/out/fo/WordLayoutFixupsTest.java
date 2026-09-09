@@ -499,6 +499,69 @@ public class WordLayoutFixupsTest {
 		assertTrue(lb, lb.contains("break-before=\"column\"") && lb.contains("space-before.conditionality=\"retain\""));
 	}
 
+	// ---- STYLEREF markers (§7)
+
+	/** A retrieve-marker in the header asks for markers on every flow block of that
+	 *  style: text markers, and label markers for the \n form; never in static content. */
+	@Test
+	public void styleRefMarkersOnEveryBlockOfTheStyle() {
+		String in = "<fo:root " + NS + "><fo:page-sequence>"
+				+ "<fo:static-content flow-name=\"xsl-region-before\"><fo:block docx4j-pstyle=\"Heading1\">"
+				+ "<fo:inline><fo:retrieve-marker retrieve-class-name=\"docx4j-styleref-Heading1\" retrieve-position=\"first-starting-within-page\" retrieve-boundary=\"document\"/></fo:inline>"
+				+ "<fo:retrieve-marker retrieve-class-name=\"docx4j-styleref-Heading1-n\" retrieve-position=\"first-starting-within-page\" retrieve-boundary=\"document\"/>"
+				+ "</fo:block></fo:static-content>"
+				+ "<fo:flow flow-name=\"xsl-region-body\">"
+				+ "<fo:block docx4j-pstyle=\"Heading1\"><fo:inline>Scope</fo:inline><fo:footnote><fo:inline>1</fo:inline><fo:footnote-body><fo:block>note</fo:block></fo:footnote-body></fo:footnote></fo:block>"
+				+ "<fo:block docx4j-pstyle=\"Normal\">body</fo:block>"
+				+ "<fo:list-block><fo:list-item><fo:list-item-label><fo:block>2.</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body><fo:block docx4j-pstyle=\"Heading1\" docx4j-list=\"1\">Terms</fo:block></fo:list-item-body></fo:list-item></fo:list-block>"
+				+ "</fo:flow></fo:page-sequence></fo:root>";
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("two text markers and two label markers", 4, count(out, "<fo:marker "));
+		assertTrue(out.contains("marker-class-name=\"docx4j-styleref-Heading1\">Scope</fo:marker>"));
+		assertTrue("the footnote's text is not the heading's: " + out, !out.contains("Scope note"));
+		assertTrue(out.contains("marker-class-name=\"docx4j-styleref-Heading1\">Terms</fo:marker>"));
+		assertTrue("the label marker carries the number", out.contains("marker-class-name=\"docx4j-styleref-Heading1-n\">2.</fo:marker>"));
+		assertTrue("an unnumbered heading has an empty label marker", out.contains("marker-class-name=\"docx4j-styleref-Heading1-n\"/>")
+				|| out.contains("marker-class-name=\"docx4j-styleref-Heading1-n\"></fo:marker>"));
+		assertTrue("no marker in the static content", out.indexOf("<fo:marker ") > out.indexOf("</fo:static-content>"));
+		assertTrue("the marker must be the block's initial child",
+				out.contains("<fo:block><fo:marker ") || out.contains("<fo:block docx4j-list") || out.indexOf("<fo:marker ") < out.indexOf("Scope"));
+		assertFalse("no hint left for FOP", out.contains("docx4j-pstyle"));
+	}
+
+	/** A cover title in a text box in a table cell is what Word's STYLEREF finds; only
+	 *  static content and footnotes are out of bounds. */
+	@Test
+	public void styleRefMarkerInATextBoxInACell() {
+		String in = "<fo:root " + NS + "><fo:page-sequence>"
+				+ "<fo:static-content flow-name=\"xsl-region-before\"><fo:block>"
+				+ "<fo:retrieve-marker retrieve-class-name=\"docx4j-styleref-Title1frontpage\" retrieve-position=\"first-starting-within-page\" retrieve-boundary=\"document\"/>"
+				+ "</fo:block></fo:static-content>"
+				+ "<fo:flow flow-name=\"xsl-region-body\">"
+				+ "<fo:table><fo:table-body><fo:table-row><fo:table-cell><fo:block-container>"
+				+ "<fo:block docx4j-pstyle=\"Title1frontpage\">Release Notes</fo:block>"
+				+ "</fo:block-container></fo:table-cell></fo:table-row></fo:table-body></fo:table>"
+				+ "<fo:block docx4j-pstyle=\"Normal\">body<fo:footnote><fo:inline>1</fo:inline><fo:footnote-body>"
+				+ "<fo:block docx4j-pstyle=\"Title1frontpage\">not this</fo:block></fo:footnote-body></fo:footnote></fo:block>"
+				+ "</fo:flow></fo:page-sequence></fo:root>";
+		String out = WordLayoutFixups.apply(in, 15);
+		assertEquals("the title in the cell's text box, not the footnote's", 1, count(out, "<fo:marker "));
+		assertTrue(out.contains("marker-class-name=\"docx4j-styleref-Title1frontpage\">Release Notes</fo:marker>"));
+	}
+
+	/** The space in front of the field survives, as it does in front of a page number. */
+	@Test
+	public void spaceBeforeAStyleRefSurvives() {
+		String in = "<fo:root " + NS + "><fo:page-sequence>"
+				+ "<fo:static-content flow-name=\"xsl-region-before\"><fo:block>"
+				+ "<fo:inline>Extarct Tool - HLD </fo:inline><fo:inline><fo:retrieve-marker retrieve-class-name=\"docx4j-styleref-Document_Version_Number\" retrieve-position=\"first-starting-within-page\" retrieve-boundary=\"document\"/></fo:inline>"
+				+ "</fo:block></fo:static-content>"
+				+ "<fo:flow flow-name=\"xsl-region-body\"><fo:block docx4j-pstyle=\"Document_Version_Number\">1.1</fo:block></fo:flow></fo:page-sequence></fo:root>";
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue("zero-width space after the trailing space: " + out, out.contains("HLD \u200b</fo:inline>"));
+	}
+
 	// ---- columns and span-all parts (merged continuous sections)
 
 	/** FOP loses a break-before on the first block inside a span="all" wrapper (the

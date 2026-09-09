@@ -192,6 +192,7 @@ public final class WordLayoutFixups {
 		spanWrapperBreaks(doc); // after listItemPageBreaks: the break may now be on the list-block
 		blockForEmptyCell(doc);
 		clipExactRows(doc);
+		StyleRefMarkers.apply(doc); // before stripHints: it reads the paragraph-style hint
 		stripHints(doc);
 	}
 
@@ -4169,8 +4170,10 @@ public final class WordLayoutFixups {
 	 * @since 17.1.0
 	 */
 	static void spaceBeforePageNumber(Document doc) {
+		// and before a STYLEREF's fo:retrieve-marker (StyleRefMarkers), for the same
+		// reason: measured, "Extarct Tool - HLD 1.1" came out "HLD1.1".  @since 17.1.1
 		for (String name : new String[] { "page-number", "page-number-citation",
-				"page-number-citation-last" }) {
+				"page-number-citation-last", "retrieve-marker" }) {
 			for (Element pn : elements(doc, name)) {
 				Node text = previousTextNodeInBlock(pn);
 				if (text == null) continue;
