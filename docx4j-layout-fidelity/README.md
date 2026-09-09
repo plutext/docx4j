@@ -122,12 +122,18 @@ question about what docx4j writes.
 
 Two things to know before reading a diff. Word rewrites a great deal that is not a
 computation - `w:rsid`s, attribute order, `w:proofState`, its own `w:compat` block - so
-diff the elements you are asking about rather than the file. And the resave goes through
-the same conversion script as the PDF, so if
-`com.documents4j.conversion.msoffice.word_convert.vbs` points at the ToC-updating script
-in `docx4j-samples-resources`, the resaved docx has its fields updated too; that is
-usually what you want from a round trip, but it means field results in the resave are
-Word's, not the document's.
+diff the elements you are asking about rather than the file. And **the resave does not
+carry Word's updated field results**, although the PDF does. An earlier version of this
+note said the opposite - that because the resave goes through the same conversion script
+as the PDF, a ToC-updating `word_convert.vbs` would update the fields in the resaved docx
+too. Verified, it does not: the re-saved `document.xml` holds the same stored results as
+the original - a 179-page corpus document whose golden PDF prints `Error! Bookmark not
+defined.` on every line of its table of contents has none of that string in either file,
+and the stored `NUMPAGES` result is unchanged in every corpus document that has one. The
+field update is done to the document Word converts, and what it saves back is the stored
+result. So the field floor (a document's stored results against Word's recomputed ones)
+is still there on the re-saved basis, and a question about what Word computed for a field
+has to be asked of the PDF.
 
 `GridDiff` reads the table half of it, and is the direct way to ask what Word thinks a
 column should be:
@@ -290,6 +296,83 @@ A stand-in reference for plumbing checks (never the target):
 soffice --headless --convert-to pdf --outdir target/goldens-lo target/corpus/*.docx
 ```
 
+## What to score: the re-saved docx, not the corpus file
+
+**Score docx4j's rendering of the docx Word itself wrote.** The question the harness exists to
+answer is whether docx4j lays out a Word-produced document the way Word lays it out; that a
+third-party corpus file also renders well is a bonus, not the test. `score` takes the corpus
+directory as an argument, so this is a matter of pointing it at the `resaved` directory beside
+the goldens rather than at `corpus`:
+
+```bash
+java -cp "$CP" -Dfidelity.hyphenate=false org.docx4j.fidelity.Fidelity score \
+    <shared>/real2/resaved <shared>/real2/goldens <outDir> <baseline.csv>
+```
+
+What follows from it is that Word's re-save normalises styles, numbering, the `w:tblGrid` and
+`w:compat`, which removes docx4j's *interpretation of ambiguous input* from the comparison and
+leaves the layout engine on its own. The corollary is that a defect which only bites on
+unnormalised input no longer shows up, so a finding of that kind is worth recording where it
+will not be lost.
+
+What does **not** follow - and an earlier draft of this section said it did - is that the field
+floor goes away. The re-save does not carry Word's updated field results: the re-saved
+`document.xml` holds the same stored results as the original (see "Having Word save the docx
+too" for the verification), so a TOC or a `NUMPAGES` that the document stored stale is still
+scored against the value Word recomputed for the PDF, on this basis as on the old one.
+
+One asymmetry to know about: the golden PDF was cut from docx4j's re-save of the **original** (see
+"Having Word save the docx too"), while the `resaved` docx is Word's save of that same package. The
+two are very close but not literally the same bytes, so a discrepancy that looks like it comes from
+that gap rather than from layout is a reason to re-cut the goldens from the re-saved files with
+`WordGoldenRunner`, not a reason to chase it in the exporter.
+
+### The b35-resaved baseline, and what the change of basis was worth
+
+Every baseline up to b34 scored the corpus file and is void on this basis. `b35-resaved` is the new
+zero: the re-saved documents against the same goldens, with the NBSP and line-number normalisations
+below in, hyphenation off for the corpora (their goldens were cut without proofing tools) and as the
+document asks for the probes (theirs were not - `-Dfidelity.hyphenate=false` on the probes wrecks the
+two hyphenation probes, 0.95 and 1.00 to 0.25 and 0.30, and is an artefact of the flag, not of the
+basis). The three documents Word refused to re-save have no row.
+
+| | scored | same page count | lines matched | median | mean | >= 0.98 |
+| --- | --- | --- | --- | --- | --- | --- |
+| corpus 1 | 191 | 167 (87.4%) | 36317/40339 (90.0%) | 0.9318 | 0.8958 | 57 |
+| corpus 2 | 156 | 120 (76.9%) | 60860/71695 (84.9%) | 0.9231 | 0.8721 | 29 |
+| corpus 3 | 102 | 67 (65.7%) | 172191/186225 (92.5%) | 0.9293 | 0.9034 | 24 |
+| probes | 76 | 75 (98.7%) | 4581/4670 (98.1%) | 1.0000 | 0.9784 | 64 |
+
+What the basis alone was worth - the same documents, the same harness, the corpus file rendered
+against the re-saved one (`rescore` of the b34-seam renders against `score` of the re-saved files,
+so the extractor is the same on both sides):
+
+| | same page count | lines matched | mean parity | >= 0.98 | moved > 0.02 |
+| --- | --- | --- | --- | --- | --- |
+| corpus 1 | 165 -> 167 | 36216 -> 36317 | 0.8947 -> 0.8958 | 54 -> 57 | 7 up, 3 down |
+| corpus 2 | 117 -> 120 | 60328 -> 60860 | 0.8691 -> 0.8721 | 30 -> 29 | 6 up, 5 down |
+| corpus 3 | 65 -> 67 | 171852 -> 172191 | 0.9015 -> 0.9034 | 24 -> 24 | 3 up, 1 down |
+| probes | 76 -> 75 | 4526 -> 4581 | 0.9695 -> 0.9784 | 58 -> 64 | 5 up, 1 down |
+
+So the change of basis is worth about +0.001 to +0.003 of mean parity and one to three page counts
+per corpus - small in aggregate, and that is the finding: most of the gap to Word is layout, not our
+reading of the input. It is not uniform, though, and the documents that moved are the list of places
+where the input was being mis-read rather than mis-laid-out. Sixteen documents rose by more than
+0.02 (up to +0.36 on one whose page count went 19 to 16 against Word's 15, and +0.15 on one that
+went 51 to 54 pages against Word's 54): re-saved, their `w:tblGrid`, numbering and compatibility
+settings are Word's, and our rendering of Word's version is closer. Nine fell (up to -0.11 on a
+one-page table document, and one that was 1.0000 on the corpus file and is 0.9427 on the re-save):
+those are the documents where Word's normalisation exposes a rule we get wrong on *normalised*
+input while an accident of the original hid it, and they are the ones to look at next. Among the
+probes, `table-cell-pct` goes 0.53 to 1.00 - the grid Word wrote is the one it draws, exactly the
+finding "Having Word save the docx too" was built on - and `table-floating-anchor` loses a page.
+
+For the two normalisations that shipped with it, measured on their own over the old renders, see
+`-Dfidelity.nbspNormalise` and `-Dfidelity.lineNumberNormalise` under "How a line is extracted and
+paired". Together they were worth corpus 1 0.8937 -> 0.8947, corpus 2 0.8589 -> 0.8691 and corpus 3
+0.8929 -> 0.9015 of mean parity, almost all of it the two line-numbered documents, with no document
+down and no line lost anywhere but the number-only lines those two drop from the reference.
+
 ## Is Word's rendering invariant under its own re-save? (`ResaveInvariance`)
 
 Two questions this harness cannot answer from what it has already measured, and one tool
@@ -449,6 +532,18 @@ The aggregate is: documents scored / errors / timeouts / no-reference; documents
 with the same page count; lines matched over lines total; median and mean line
 parity; and documents at line parity >= 0.98.
 
+`rescore` is `score` without the render:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.Fidelity rescore <corpusDir> <refPdfDir> <candPdfDir> <outDir> [baseline.csv]
+```
+
+`candPdfDir` is a previous run's `fop` directory, so a change to the extractor or the pairing
+- a measuring change, not a rendering one - can be re-baselined on the very renders the
+baseline was cut from, and its worth read on its own. That is how the two normalisations
+below were separated from the change of basis they shipped with. A document with no
+candidate PDF is one `error` row.
+
 The loop for a layout change:
 
 ```bash
@@ -527,6 +622,37 @@ well as to docx4j's; four knobs are worth knowing about.
   34546 -> 34547 and 0.8751 -> 0.8752, batch 3 161321 -> 161430 and
   0.8644 -> 0.8649 (one document +0.030, `parity >= 0.98` 14 -> 15). Without it
   those numbers would have fallen again the next day.
+- **`-Dfidelity.nbspNormalise=false`** turns off the folding of the three no-break
+  spaces (U+00A0, U+2007, U+202F) to an ordinary space before a line's whitespace
+  is collapsed. `\s+` is exactly the set `Character.isWhitespace` accepts, which
+  excludes those three by definition, so a `1 000` written with the document's own
+  U+00A0 on our side and with a plain space in Word's PDF read identically and never
+  paired. It is done to both sides in the text assembly, so the reported text is the
+  folded one too. Measured by `rescore` over the b34-seam renders: on the 95 corpus
+  documents holding ten or more of them, mean parity 0.8351 -> 0.8478, +145 lines
+  matched, ten documents up and none down, one of them 0.105 -> 0.947; 173 documents
+  contain at least one.
+- **`-Dfidelity.lineNumberNormalise=false`** keeps Word's **line numbers**
+  (`w:lnNumType`) in the reference. **This one is a declared floor, not a
+  measurement fix.** docx4j cannot render line numbering - there is no support for
+  it, and XSL-FO and FOP have no facility for it - so a document that numbers its
+  lines has a number in Word's margin on every line and nothing on ours; the
+  extractor reads Word's number as a prefix on every line (or as a line of its own
+  where the gap to the text is 20pt or more, and always on an empty paragraph), and
+  not one line pairs. Dropping the numbers is the harness choosing not to count a
+  defect it knows about. On each page the text's left edge is the leftmost ink that
+  is not a leading run of one to three digits; a leading run whose glyphs lie wholly
+  left of that edge is dropped from its line, and a number-only line there is
+  dropped whole - but only where the page has at least two such lines, their numbers
+  increase down the page and their right edges agree, which is what line numbers do
+  (Word sets them flush right at a fixed distance from the text) and a column of
+  data or a page of `1 Scope` entries does not. A heading that starts with a number
+  sits at the edge, not left of it, and is untouched. Symmetric, as the rest are:
+  ours never has a number to drop, but the same test runs on both sides. The two
+  corpus documents that set it score **0.1661 and 0.1158 with the numbers counted,
+  0.7386 and 0.9913 with them dropped** (b34-seam renders, `rescore`); the rest of
+  the corpora is untouched by it. Anyone measuring what line-numbering support
+  would be worth should switch it off first.
 - **`-Dfidelity.rowTolerancePt=`** (default `3`, `0` turns it off) is how far
   apart two lines' baselines may be and still be read as one row, which is
   ordered left to right rather than by baseline. The comparison is an LCS over
@@ -640,8 +766,9 @@ well as to docx4j's; four knobs are worth knowing about.
   document's table, are unaffected; measured, one document gained 0.26 of line
   parity and one lost 0.07 (its rows now pair whole rather than cell by cell).
 
-All six are measuring, not rendering: **re-baseline** (rescore the corpora with
-the harness change alone) before scoring a rendering change against them.
+All of these are measuring, not rendering: **re-baseline** (`rescore` the corpora
+over the previous baseline's renders with the harness change alone) before scoring a
+rendering change against them.
 
 ## Reading the report
 

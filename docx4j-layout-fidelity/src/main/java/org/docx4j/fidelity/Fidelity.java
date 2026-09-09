@@ -34,6 +34,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  *   compare  &lt;refPdfDir&gt; &lt;candPdfDir&gt; &lt;reportDir&gt; [dpi]  compare PDFs with the same basename, write report
  *   run      &lt;corpusDir&gt; &lt;refPdfDir&gt; &lt;reportDir&gt; [dpi]  render into reportDir/fop, then compare
  *   score    &lt;corpusDir&gt; &lt;refPdfDir&gt; &lt;outDir&gt; [baseline.csv]  score a large corpus, CSV + delta
+ *   rescore  &lt;corpusDir&gt; &lt;refPdfDir&gt; &lt;candPdfDir&gt; &lt;outDir&gt; [baseline.csv]  score existing renders
  * </pre>
  */
 public final class Fidelity {
@@ -85,6 +86,10 @@ public final class Fidelity {
 			score(new File(args[1]), new File(args[2]), new File(args[3]),
 					args.length > 4 ? new File(args[4]) : null);
 			break;
+		case "rescore":
+			rescore(new File(args[1]), new File(args[2]), new File(args[3]), new File(args[4]),
+					args.length > 5 ? new File(args[5]) : null);
+			break;
 		default:
 			usage();
 		}
@@ -96,6 +101,9 @@ public final class Fidelity {
 		System.out.println("             renders and compares every docx that has a <id>.pdf in refPdfDir,");
 		System.out.println("             one row per document; survives failures, writes outDir/scoreboard.csv");
 		System.out.println("             and outDir/scoreboard.txt, and diffs against a previous scoreboard.csv.");
+		System.out.println("       rescore <corpusDir> <refPdfDir> <candPdfDir> <outDir> [baseline.csv]");
+		System.out.println("             score without rendering: candPdfDir is a previous run's fop directory, so a");
+		System.out.println("             change to the extractor or the pairing can be re-baselined on the old renders.");
 		System.out.println("       -Dfidelity.only=id,id       restricts render/compare/run/score to those documents");
 		System.out.println("       -Dfidelity.timeoutSeconds=N per-document conversion timeout in score (default 120)");
 		System.out.println("       -Ddocx4j.xxx=yyy            sets that docx4j property, to measure a behaviour toggle");
@@ -199,6 +207,61 @@ public final class Fidelity {
 			rows.add(scored);
 		}
 
+		writeScoreboard(outDir, rows, baselineCsv);
+		return rows;
+	}
+
+	/**
+	 * {@link #score} without the render: the candidate PDFs are taken from
+	 * {@code candPdfDir} - a previous run's {@code fop} directory - so a change to the
+	 * extractor or the pairing (a measuring change, not a rendering one) can be
+	 * re-baselined on the renders a baseline was cut from, and its worth read on its
+	 * own.  A document with no candidate PDF is one {@code error} row.  The docx is
+	 * still read, for the size and the compatibility mode the row carries.
+	 */
+	public static List<Scoreboard.Row> rescore(File corpusDir, File refPdfDir, File candPdfDir, File outDir,
+			File baselineCsv) throws Exception {
+		outDir.mkdirs();
+		File[] docs = docxFiles(corpusDir);
+		Arrays.sort(docs, Comparator.comparingLong(File::length).thenComparing(File::getName));
+		List<Scoreboard.Row> rows = new ArrayList<>();
+		int n = 0;
+		for (File docx : docs) {
+			n++;
+			String id = docx.getName().replaceAll("\\.docx$", "");
+			File ref = new File(refPdfDir, id + ".pdf");
+			File cand = new File(candPdfDir, id + ".pdf");
+			Scoreboard.Row row;
+			if (!ref.exists()) {
+				row = new Scoreboard.Row(id, docx.length(), "noref");
+				row.error = "no reference PDF " + ref.getName();
+			} else if (!cand.exists()) {
+				row = new Scoreboard.Row(id, docx.length(), "error");
+				row.error = "no candidate PDF " + cand.getName();
+			} else {
+				try {
+					PdfLayout a = PdfLayoutExtractor.extract(ref);
+					PdfLayout b = PdfLayoutExtractor.extract(cand);
+					row = Scoreboard.Row.of(LayoutComparison.compare(id, a, b), docx.length());
+				} catch (Throwable t) {
+					row = errorRow(id, docx.length(), t);
+				}
+			}
+			row.compatMode = compatMode(docx);
+			rows.add(row);
+			if (row.scored()) {
+				System.out.printf(Locale.ROOT, "[%d/%d] %-44s ok       parity %.0f%%  pages %d/%d%n", n, docs.length,
+						id, row.lineParity * 100, row.refPages, row.candPages);
+			} else {
+				System.out.printf(Locale.ROOT, "[%d/%d] %-44s %-8s %s%n", n, docs.length, id, row.status, row.error);
+			}
+		}
+		writeScoreboard(outDir, rows, baselineCsv);
+		return rows;
+	}
+
+	/** The CSV, the text report and the delta against the baseline, if one was given. */
+	private static void writeScoreboard(File outDir, List<Scoreboard.Row> rows, File baselineCsv) throws Exception {
 		List<String> deltaLines = null;
 		if (baselineCsv != null) {
 			List<Scoreboard.Row> before = Scoreboard.readCsv(baselineCsv);
@@ -218,7 +281,6 @@ public final class Fidelity {
 		}
 		System.out.println();
 		System.out.println("scoreboard: " + csv + " and " + new File(outDir, "scoreboard.txt"));
-		return rows;
 	}
 
 	/**

@@ -19,6 +19,15 @@ public final class PdfLayout {
 		public String text;       // whitespace-collapsed
 
 		/**
+		 * Right edge of a leading run of one to three digit glyphs followed by a space
+		 * or the end of the line, and the x of the first ink glyph after it (NaN where
+		 * the digits are the whole line).  Set by the extractor for the line-number
+		 * rule, {@code PdfLayoutExtractor.dropLineNumbers}; NaN where the line does not
+		 * start with such a run.
+		 */
+		double leadNumberEnd = Double.NaN, restX0 = Double.NaN;
+
+		/**
 		 * The text a line is paired on.  Runs of leader characters are collapsed to a
 		 * single token, with the whitespace around them, so that a dot leader whose dots
 		 * differ by one - which is what a phase difference of less than one dot's advance
@@ -68,6 +77,34 @@ public final class PdfLayout {
 
 		private static final boolean NORMALISE_DATES =
 				!"false".equalsIgnoreCase(System.getProperty("fidelity.dateNormalise", "true"));
+
+		/**
+		 * The three no-break spaces, folded to an ordinary space before a line's
+		 * whitespace is collapsed.  Java's {@code \\s} is exactly the set
+		 * {@link Character#isWhitespace} accepts, which excludes U+00A0, U+2007 and
+		 * U+202F by definition, so a {@code "1\u00a0000"} on our side and a
+		 * {@code "1 000"} on Word's read identically and never paired: docx4j writes
+		 * the document's own U+00A0 glyph where Word's PDF writes a plain space.
+		 * Measured over the 95 corpus documents holding ten or more of them, mean
+		 * line parity 0.8351 to 0.8478 and 145 more lines matched, ten documents up
+		 * and none down (one from 0.105 to 0.947).  Both sides go through it;
+		 * {@code -Dfidelity.nbspNormalise=false} keeps the glyphs distinct.
+		 */
+		static String foldSpaces(String s) {
+			if (!NORMALISE_NBSP) return s;
+			StringBuilder sb = null;
+			for (int i = 0; i < s.length(); i++) {
+				char c = s.charAt(i);
+				if (c == '\u00a0' || c == '\u2007' || c == '\u202f') {
+					if (sb == null) sb = new StringBuilder(s);
+					sb.setCharAt(i, ' ');
+				}
+			}
+			return sb == null ? s : sb.toString();
+		}
+
+		private static final boolean NORMALISE_NBSP =
+				!"false".equalsIgnoreCase(System.getProperty("fidelity.nbspNormalise", "true"));
 
 		/**
 		 * Month names, full and abbreviated, of the locales the corpora are written in

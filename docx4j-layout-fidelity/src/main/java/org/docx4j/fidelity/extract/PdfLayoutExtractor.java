@@ -194,6 +194,7 @@ public final class PdfLayoutExtractor {
 			TextCollector tc = new TextCollector(out);
 			tc.setSortByPosition(true);
 			tc.getText(doc);
+			dropLineNumbers(out);
 			out.lines.sort((a, b) -> a.page != b.page ? Integer.compare(a.page, b.page)
 					: (Math.abs(a.y - b.y) > 0.01 ? Double.compare(a.y, b.y) : Double.compare(a.x0, b.x0)));
 			orderByRow(out);
@@ -246,6 +247,162 @@ public final class PdfLayoutExtractor {
 			}
 			i = j;
 		}
+	}
+
+	/**
+	 * Whether Word's <b>line numbers</b> ({@code w:lnNumType}) are dropped from the
+	 * reference before pairing.
+	 *
+	 * <p>This one is a declared floor, not a measurement fix.  docx4j cannot render
+	 * line numbering - there is no support for it, and XSL-FO and FOP have no facility
+	 * for it - so a document that numbers its lines has a number in Word's margin on
+	 * every line and nothing on ours, the extractor reads Word's number as a prefix on
+	 * every line (or as a line of its own where the gap to the text is wide), and not
+	 * one line pairs: the two corpus documents that set it scored 0.166 and 0.116.
+	 * Dropping the numbers is the harness choosing not to count a defect it knows
+	 * about, and it is recorded as such in the README beside the other knobs.  With it
+	 * the same two documents score 0.729 and 0.895, which is what the rest of their
+	 * layout is worth.
+	 *
+	 * <p>The rule is geometric, and symmetric - ours never has a number to drop, but
+	 * the same test runs on both sides.  The text's left edge is the document's
+	 * body margin: the most common start x over every line of the document, a
+	 * line's start being the first ink after a leading run of one to three digits
+	 * where it has one.  A page's <em>zone</em> is its lines whose leading run lies
+	 * wholly left of that edge, provided the numbers increase down the page and
+	 * share a right edge.  <b>The document qualifies only where some page's zone
+	 * holds numbers of two digit counts</b> - {@code 9} and {@code 10} on one right
+	 * edge is flush right, which is how Word sets line numbers (a fixed distance
+	 * into the margin) and how no list is set (a list's {@code 9} and {@code 10}
+	 * share a left edge).  In a document that qualifies, every page's zone is
+	 * dropped: the number from its line, a number-only line whole.
+	 *
+	 * <p>Each guard was needed.  A heading that starts with a number sits at the
+	 * edge, not left of it.  Measured per page against the page's own leftmost ink,
+	 * without the digit-count proof, the rule read a page that is all single-digit
+	 * list as line-numbered - its labels are flush right by accident, increase, and
+	 * lie left of everything else on the page - and dropped 97 of one document's
+	 * lines on both sides, and 17 on one side of another.  With the proof, one
+	 * document remained: a payment schedule whose right-aligned "No." column runs 1
+	 * to 24 in 7pt left of the document's dominant line start.  What it is not left
+	 * of is the paragraph above the table, so the zone is also required to lie left
+	 * of every other line on its page - which a margin number is by construction.
+	 * {@code -Dfidelity.lineNumberNormalise=false} keeps them.
+	 */
+	private static final boolean NORMALISE_LINE_NUMBERS =
+			!"false".equalsIgnoreCase(System.getProperty("fidelity.lineNumberNormalise", "true"));
+
+	private static final java.util.regex.Pattern LEADING_NUMBER =
+			java.util.regex.Pattern.compile("^(\\d{1,3})(?: |$)");
+
+	/**
+	 * Drops Word's margin line numbers, page by page, once the document has shown
+	 * that it has them.  Package visible so it can be tested on synthetic lines.
+	 *
+	 * @see #NORMALISE_LINE_NUMBERS
+	 */
+	static void dropLineNumbers(PdfLayout out) {
+		if (!NORMALISE_LINE_NUMBERS || out.lines.isEmpty()) return;
+		double edge = textEdge(out.lines);
+		if (Double.isNaN(edge)) return;
+		// lines are appended page by page, so a page is a run of the list
+		List<List<PdfLayout.Line>> pages = new ArrayList<>();
+		for (int i = 0; i < out.lines.size(); ) {
+			int j = i + 1;
+			while (j < out.lines.size() && out.lines.get(j).page == out.lines.get(i).page) j++;
+			pages.add(new ArrayList<>(out.lines.subList(i, j)));
+			i = j;
+		}
+		boolean numbered = false;
+		for (List<PdfLayout.Line> page : pages) {
+			if (digitCounts(zone(page, edge)) >= 2) {
+				numbered = true;
+				break;
+			}
+		}
+		if (!numbered) return;
+		java.util.Set<PdfLayout.Line> dropped = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+		for (List<PdfLayout.Line> page : pages) {
+			for (PdfLayout.Line l : zone(page, edge)) {
+				if (Double.isNaN(l.restX0)) {
+					dropped.add(l);
+				} else {
+					l.text = LEADING_NUMBER.matcher(l.text).replaceFirst("");
+					l.x0 = l.restX0;
+				}
+				l.leadNumberEnd = Double.NaN;
+			}
+		}
+		out.lines.removeIf(dropped::contains);
+	}
+
+	/**
+	 * The document's text left edge: the most common line start, to the half
+	 * point, over every line - the start of a line with a leading digit run being
+	 * the first ink after it.  NaN where there is none.
+	 */
+	static double textEdge(List<PdfLayout.Line> lines) {
+		java.util.Map<Long, Integer> counts = new java.util.HashMap<>();
+		for (PdfLayout.Line l : lines) {
+			double x = Double.isNaN(l.leadNumberEnd) ? l.x0 : l.restX0;
+			if (Double.isNaN(x)) continue;
+			counts.merge(Math.round(x * 2), 1, Integer::sum);
+		}
+		long best = 0;
+		int bestCount = 0;
+		for (java.util.Map.Entry<Long, Integer> e : counts.entrySet()) {
+			if (e.getValue() > bestCount || (e.getValue() == bestCount && e.getKey() < best)) {
+				best = e.getKey();
+				bestCount = e.getValue();
+			}
+		}
+		return bestCount == 0 ? Double.NaN : best / 2.0;
+	}
+
+	/**
+	 * A page's margin zone: its lines whose leading number lies wholly left of the
+	 * edge - provided the numbers increase down the page and share a right edge,
+	 * which is what line numbers do and a column of data does not.  Empty
+	 * otherwise.
+	 */
+	static List<PdfLayout.Line> zone(List<PdfLayout.Line> page, double edge) {
+		// nothing but a line number lives in the margin: the page's other ink is all
+		// right of them, where a table's right-aligned "No." column has the paragraph
+		// above the table to its left
+		double pageEdge = Double.MAX_VALUE;
+		for (PdfLayout.Line l : page) {
+			if (Double.isNaN(l.leadNumberEnd) || l.leadNumberEnd >= edge - 1.0) pageEdge = Math.min(pageEdge, l.x0);
+		}
+		edge = Math.min(edge, pageEdge);
+		List<PdfLayout.Line> zone = new ArrayList<>();
+		int previous = -1;
+		double endMin = Double.MAX_VALUE, endMax = -Double.MAX_VALUE;
+		for (PdfLayout.Line l : page) {
+			if (Double.isNaN(l.leadNumberEnd) || l.leadNumberEnd >= edge - 1.0) continue;
+			java.util.regex.Matcher m = LEADING_NUMBER.matcher(l.text);
+			if (!m.find()) continue;
+			int n = Integer.parseInt(m.group(1));
+			if (n <= previous) return java.util.Collections.emptyList(); // not line numbers
+			previous = n;
+			endMin = Math.min(endMin, l.leadNumberEnd);
+			endMax = Math.max(endMax, l.leadNumberEnd);
+			zone.add(l);
+		}
+		// Word sets them flush right at a fixed distance from the text, so their right
+		// edges agree; a column of data, or a page of "1 Scope" entries, is left-aligned
+		if (endMax - endMin > 1.0) return java.util.Collections.emptyList();
+		return zone;
+	}
+
+	/** How many different digit counts a zone's numbers have: two on one right
+	 *  edge proves flush right, which a list's labels never are. */
+	private static int digitCounts(List<PdfLayout.Line> zone) {
+		int seen = 0;
+		for (PdfLayout.Line l : zone) {
+			java.util.regex.Matcher m = LEADING_NUMBER.matcher(l.text);
+			if (m.find()) seen |= 1 << m.group(1).length();
+		}
+		return Integer.bitCount(seen);
 	}
 
 	/**
@@ -506,7 +663,7 @@ public final class PdfLayoutExtractor {
 			 * extracted lines, where Word's PDF of the same document has none.  isBlank()
 			 * already knows every whitespace glyph, so firstInk == null is the test. */
 			if (firstInk == null) return;
-			String t = text.toString().trim().replaceAll("\\s+", " ");
+			String t = PdfLayout.Line.foldSpaces(text.toString()).trim().replaceAll("\\s+", " ");
 			if (t.isEmpty()) return;
 			Collections.sort(ys);
 			PdfLayout.Line l = new PdfLayout.Line();
@@ -518,7 +675,37 @@ public final class PdfLayoutExtractor {
 			l.size = first.getFontSizeInPt();
 			l.font = first.getFont() == null ? "" : String.valueOf(first.getFont().getName());
 			l.text = t;
+			leadingNumber(run, l);
 			out.lines.add(l);
+		}
+
+		/**
+		 * Where the run opens with one to three digit glyphs followed by a blank or by
+		 * nothing, records the digits' right edge and the x of the first ink after
+		 * them on the line, for {@link #dropLineNumbers}.  Done here because the
+		 * glyph positions are gone once the line is assembled.
+		 */
+		private static void leadingNumber(List<TextPosition> run, PdfLayout.Line l) {
+			int i = 0;
+			while (i < run.size() && isBlank(run.get(i))) i++;
+			int digits = 0;
+			double end = Double.NaN;
+			for (; i < run.size(); i++) {
+				TextPosition tp = run.get(i);
+				String u = tp.getUnicode();
+				boolean allDigits = u != null && !u.isEmpty();
+				for (int k = 0; allDigits && k < u.length(); k++) {
+					allDigits = u.charAt(k) >= '0' && u.charAt(k) <= '9';
+				}
+				if (!allDigits) break;
+				digits += u.length();
+				end = tp.getXDirAdj() + tp.getWidthDirAdj();
+			}
+			if (digits < 1 || digits > 3) return;
+			if (i < run.size() && !isBlank(run.get(i))) return; // "12pt", "3rd"
+			while (i < run.size() && isBlank(run.get(i))) i++;
+			l.leadNumberEnd = end;
+			l.restX0 = i < run.size() ? run.get(i).getXDirAdj() : Double.NaN;
 		}
 
 		/** Whether this glyph puts no ink on the page (a space, or a tab written as one). */
@@ -527,7 +714,7 @@ public final class PdfLayoutExtractor {
 			if (u == null || u.isEmpty()) return true;
 			for (int i = 0; i < u.length(); i++) {
 				char c = u.charAt(i);
-				if (!Character.isWhitespace(c) && c != '\u00a0' && c != '\u200b') return false;
+				if (!Character.isWhitespace(c) && c != '\u00a0' && c != '\u2007' && c != '\u202f' && c != '\u200b') return false;
 			}
 			return true;
 		}
