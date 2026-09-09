@@ -1970,6 +1970,173 @@ public final class Corpus {
 		}));
 
 		/*
+		 * Word's row-level keep.  Word has no keep property for a table row; the
+		 * paragraphs' w:keepNext does the work, and applied to every paragraph of a row it
+		 * keeps the row with the next row (Microsoft's guidance: within a table, keep with
+		 * next works only when applied to the whole row), while on the last row it keeps
+		 * the table with the paragraph after it.  Measured on a 311-page report whose
+		 * 1,183 tables carry it on every paragraph (word-layout-rules.md §3), which says
+		 * nothing about a row only SOME of whose paragraphs keep, or which paragraph of
+		 * the row Word consults.  Each case is a three-row table of exact 30pt rows on a
+		 * page of its own, after a filler table of exact 20pt rows sized so that one row
+		 * of the case's table fits at the foot of the page and two do not: where Word
+		 * keeps the row, the whole table opens the next page; where it does not, the
+		 * first row stays.  R4 and R5 leave room for the whole table but not for the
+		 * paragraph after it.
+		 */
+		PROBES.add(new Probe("table-row-keepnext",
+				"w:keepNext on every paragraph of a row, on the first cell's only, on the last "
+				+ "cell's only, on the second paragraph of a cell only; on the last row, with a "
+				+ "paragraph after the table; and on a table nested in a one-row table", () -> {
+			Doc d = Doc.create(15);
+			String[] ids = {"R1", "R2", "R3", "R4", "R5", "R6"};
+			// one line each (the generator prefixes a label): the filler below is sized
+			// against a one-line introduction; a second line eats the room one row needs
+			String[] what = {
+				"R1: keepNext on every paragraph of rows one and two.",
+				"R2: keepNext on the first cell's paragraph only, rows one and two.",
+				"R3: keepNext on the last cell's paragraph only, rows one and two.",
+				"R4: cell one has two paragraphs, only the second keeps; cell two keeps.",
+				"R5: keepNext on every paragraph of every row; a paragraph follows.",
+				"R6: R5's table nested in a one-row table, then a keepNext paragraph."
+			};
+			// A4, 1in margins: 698pt of body.  The intro paragraph is one line of 12pt
+			// serif with 240 twips after (about 26pt); 32 filler rows of 20pt leave about
+			// 32pt: one 30pt row fits, two do not.  R5/R6: 29 rows leave about 92pt: three
+			// rows (90pt) fit, a line after them does not.  (Rendered through docx4j: R1
+			// whole on the next page, R2 and R3 split after row one, R5 and R6 whole.)
+			int[] fillerRows = {32, 32, 32, 32, 29, 29};
+			for (int c = 0; c < ids.length; c++) {
+				if (c > 0) d.pageBreak();
+				d.para(what[c]).after(240).add();
+				Doc.Table filler = new Doc.Table(4500, 4500);
+				for (int i = 0; i < fillerRows[c]; i++) {
+					filler.rowOf(400, org.docx4j.wml.STHeightRule.EXACT,
+							filler.cell(ids[c] + " filler " + (i + 1), SERIF, 24, 1, 4500),
+							filler.cell("value " + (i + 1), SERIF, 24, 1, 4500));
+				}
+				d.add(filler.build());
+				Doc.Table t = new Doc.Table(4500, 4500);
+				for (int r = 1; r <= 3; r++) {
+					boolean keepRow = r < 3 || c >= 4; // R5/R6: the last row keeps too
+					boolean first, last;
+					switch (c) {
+						case 1: first = keepRow; last = false; break;   // R2
+						case 2: first = false; last = keepRow; break;   // R3
+						default: first = keepRow; last = keepRow;       // R1, R4, R5, R6
+					}
+					org.docx4j.wml.P[] firstCell;
+					if (c == 3) {
+						firstCell = new org.docx4j.wml.P[] {
+							d.para().noLabel().text(ids[c] + " row " + r + " first paragraph").build(),
+							(first ? d.para().noLabel().keepNext() : d.para().noLabel())
+									.text(ids[c] + " row " + r + " second paragraph").build() };
+					} else {
+						firstCell = new org.docx4j.wml.P[] {
+							(first ? d.para().noLabel().keepNext() : d.para().noLabel())
+									.text(ids[c] + " row " + r + " cell one").build() };
+					}
+					t.rowOf(600, org.docx4j.wml.STHeightRule.EXACT,
+							t.cellOf(4500, null, firstCell),
+							t.cellOf(4500, null, (last ? d.para().noLabel().keepNext() : d.para().noLabel())
+									.text(ids[c] + " row " + r + " cell two").build()));
+				}
+				if (c == 5) {
+					Doc.Table outer = new Doc.Table(9000);
+					org.docx4j.wml.Tc tc = outer.cellOf(9000, null, d.para().noLabel().keepNext().build());
+					tc.getContent().add(0, t.build());
+					outer.rowOf(null, null, tc);
+					d.add(outer.build());
+				} else {
+					d.add(t.build());
+				}
+				d.para(ids[c] + " after the table. " + prose(1, c + 1)).after(0).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * Two seams of the 311-page report the rules doc (§3) cannot yet explain, each
+		 * measured there on more than a hundred instances of one structure and nowhere
+		 * else, so each needs a control before it can be a rule.
+		 *
+		 * 1. An EMPTY paragraph (Normal, 10pt after) between a table and a heading with
+		 *    10pt before: Word's gap is the row, 11.3, 10 AND 10 - the two spaces add -
+		 *    where "larger of" (§3) predicts one 10.  A paragraph of two w:br before the
+		 *    same heading shows larger-of.  Cases: text paragraph (after 200) then before
+		 *    200; empty paragraph then before 200; a two-w:br paragraph then before 200;
+		 *    and the report's own shape, table, empty paragraph, heading.
+		 * 2. A trailing tab in a table cell: "Avances y Demora del Proyecto<tab>" in a
+		 *    3458-twip column is two lines in Word (the second holds only the tab; §4.4
+		 *    says a tab reaching nothing takes no line, measured on a header) and one in
+		 *    docx4j; "Configuración de Avance del Proyecto<tab>" wraps its last word.
+		 *    Three column widths bracket the text's width, with and without the tab.
+		 */
+		PROBES.add(new Probe("spacing-empty-before",
+				"space-after of an empty paragraph, of a text paragraph and of a w:br-only "
+				+ "paragraph against the 10pt space-before of the paragraph after it, and a "
+				+ "table followed by an empty paragraph and a spaced paragraph", () -> {
+			Doc d = Doc.create(15);
+			d.para("S1: a text paragraph with 200 twips after, then a paragraph with 200 before. "
+					+ prose(1)).after(200).add();
+			d.para("S1 spaced paragraph. " + prose(1, 1)).before(200).after(200).add();
+			d.para("S2: an EMPTY paragraph with 200 after follows this one, then a paragraph "
+					+ "with 200 before.").after(200).add();
+			d.para().noLabel().after(200).add();
+			d.para("S2 spaced paragraph. " + prose(1, 2)).before(200).after(200).add();
+			d.para("S3: a paragraph of two w:br and nothing else follows, then a paragraph "
+					+ "with 200 before.").after(200).add();
+			d.para().noLabel().softReturn().softReturn().after(200).add();
+			d.para("S3 spaced paragraph. " + prose(1, 3)).before(200).after(200).add();
+			d.para("S4: a one-row table, an empty paragraph with 200 after, then a paragraph "
+					+ "with 200 before.").after(200).add();
+			Doc.Table t = new Doc.Table(4500, 4500);
+			t.rowOf(null, null,
+					t.cellOf(4500, null, Doc.plainParagraph("S4 cell one", SERIF, 24)),
+					t.cellOf(4500, null, Doc.plainParagraph("S4 cell two", SERIF, 24)));
+			d.add(t.build());
+			d.para().noLabel().after(200).add();
+			d.para("S4 spaced paragraph. " + prose(1, 4)).before(200).after(200).add();
+			d.para("S5: control, the table then the spaced paragraph directly.").after(200).add();
+			Doc.Table t2 = new Doc.Table(4500, 4500);
+			t2.rowOf(null, null,
+					t2.cellOf(4500, null, Doc.plainParagraph("S5 cell one", SERIF, 24)),
+					t2.cellOf(4500, null, Doc.plainParagraph("S5 cell two", SERIF, 24)));
+			d.add(t2.build());
+			d.para("S5 spaced paragraph. " + prose(1, 5)).before(200).after(200).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("tab-trailing-cell",
+				"a cell whose paragraph ends in a tab, at three column widths bracketing the "
+				+ "text's width, and the same text without the tab", () -> {
+			Doc d = Doc.create(15);
+			d.para("Each table below has one column of the stated width and a second of the "
+					+ "rest. Rows one to three end their text in a tab; rows four to six are "
+					+ "the same text without it. Where Word gives the trailing tab a line, the "
+					+ "row is two lines tall.").after(240).add();
+			int[] widths = {2200, 2600, 3000};
+			for (int w : widths) {
+				d.para("T" + w + ": first column " + w + " twips.").after(120).add();
+				Doc.Table t = new Doc.Table(w, 9000 - w);
+				for (int r = 0; r < 2; r++) {
+					boolean tab = r == 0;
+					Doc.Para p1 = d.para().noLabel().text("Avance esperado del proyecto");
+					if (tab) p1 = p1.tab();
+					Doc.Para p2 = d.para().noLabel().text("Demora proyectada del control");
+					if (tab) p2 = p2.tab();
+					t.rowOf(null, null, t.cellOf(w, null, p1.build()),
+							t.cellOf(9000 - w, null, Doc.plainParagraph(tab ? "with tab" : "no tab", SERIF, 24)));
+					t.rowOf(null, null, t.cellOf(w, null, p2.build()),
+							t.cellOf(9000 - w, null, Doc.plainParagraph(tab ? "with tab" : "no tab", SERIF, 24)));
+				}
+				d.add(t.build());
+				d.para("after T" + w + ".").before(120).after(240).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
 		 * J14: what a section's w:vAlign counts as the block it aligns.  §7's s75 makes
 		 * w:vAlign a display-align on fo:region-body, and a corpus document's
 		 * centred title section is then a uniform +5.9pt low over every line, with an

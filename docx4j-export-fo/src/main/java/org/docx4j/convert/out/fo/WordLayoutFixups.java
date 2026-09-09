@@ -170,6 +170,7 @@ public final class WordLayoutFixups {
 		columnBreaks(doc); // before emptyLineForBlockWithNoContent: what follows the break takes a line
 		emptyLineForBlockWithNoContent(doc);
 		emptyLineAfterLineBreak(doc);
+		keepBreakOnlyParagraphsTogether(doc); // after emptyLineAfterLineBreak: it counts the same nested blocks
 		tocLeaderEndIndent(doc);
 		leadingWhitespaceLeader(doc);
 		containWhitespaceTreatment(doc);
@@ -3092,6 +3093,78 @@ public final class WordLayoutFixups {
 			}
 			countSoftReturns(e, counts); // fo:inline, fo:basic-link, ...
 		}
+	}
+
+	/**
+	 * <b>A paragraph of nothing but line breaks is one paragraph to Word's widow control;
+	 * to FOP each of its lines is a block of its own.</b>  {@code BrWriter} writes a
+	 * {@code w:br} as a nested {@code fo:block}, so the paragraph's lines are separate
+	 * line sequences and the break between any two of them is a legal one - widow and
+	 * orphan control, which FOP applies within a line sequence, cannot see across it.
+	 * Word applies {@code w:widowControl} (on by default) to the paragraph's lines
+	 * whatever made them: a paragraph of two or three lines cannot be split at all, since
+	 * either part would be a single line.
+	 *
+	 * <p>Measured on a 311-page report whose every table is followed by a paragraph of
+	 * one or two {@code w:br} and nothing else, kept with the table by its last row's
+	 * {@code w:keepNext}: FOP took the keep as far as the paragraph's <em>first</em> line
+	 * and broke after it, so 22 of our pages began with the rest of such a paragraph
+	 * (their first text at y=127.4 or 138.6 against the page's 106.2) where Word, unable
+	 * to split it, moved the table and the paragraph together and began every page with
+	 * text.  On an extracted seam FOP with the paragraph marked keep-together moves the
+	 * table exactly as Word does.</p>
+	 *
+	 * <p>The rule marks {@code keep-together.within-page="always"} on a paragraph whose
+	 * block-level content is soft returns only, which paints no text (whitespace only,
+	 * no graphic, leader or field), whose widow control is on, and whose line count -
+	 * the breaks plus one, exact since nothing can wrap - is two or three.  A longer such
+	 * paragraph Word may split two and two; it is left alone.  A paragraph <em>with</em>
+	 * text between its breaks is left alone too: how many lines each part takes is not
+	 * known until layout, so its widow control across the breaks is still open (§10).
+	 * Property {@code docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph}.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	static void keepBreakOnlyParagraphsTogether(Document doc) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph", true)) return;
+		for (Element block : elements(doc, "block")) {
+			if (!block.hasAttribute(HINT_PSTYLE)) continue;
+			if ("1".equals(block.getAttribute("widows")) || "1".equals(block.getAttribute("orphans"))) continue;
+			int[] counts = new int[2];
+			countSoftReturns(block, counts);
+			if (counts[0] == 0 || counts[1] > 0) continue;
+			if (counts[0] + 1 > 3) continue;
+			if (paintsAnything(block)) continue;
+			block.setAttribute("keep-together.within-page", "always");
+		}
+	}
+
+	/** Whether anything in this paragraph paints: text other than white space, or any
+	 *  element which is not an inline wrapper or a soft return's block. */
+	private static boolean paintsAnything(Element el) {
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
+				String t = n.getNodeValue();
+				if (t == null) continue;
+				for (int k = 0; k < t.length(); k++) {
+					char c = t.charAt(k);
+					if (!Character.isWhitespace(c) && c != '\u00a0' && c != '\u200b' && c != '\ufeff') return true;
+				}
+				continue;
+			}
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			if (isFo(child, "inline") || isFo(child, "basic-link") || isFo(child, "wrapper")
+					|| isFo(child, "bidi-override") || isLineBreak(child)) {
+				if (paintsAnything(child)) return true;
+				continue;
+			}
+			return true; // external-graphic, leader, page-number, footnote, character, ...
+		}
+		return false;
 	}
 
 	static void emptyLineAfterLineBreak(Document doc) {

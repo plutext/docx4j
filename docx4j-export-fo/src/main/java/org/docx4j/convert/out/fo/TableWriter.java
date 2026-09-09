@@ -913,6 +913,143 @@ public class TableWriter extends AbstractTableWriter {
   		rowContainer.setAttribute("end-indent", "0in");
 
   	}
+
+	/**
+	 * {@code docx4j.convert.out.fo.tables.rowKeepWithNext} (default {@code true}): a row
+	 * every paragraph of which carries {@code w:keepNext} is kept with the next row, and
+	 * the last such row keeps the table with the paragraph after it, as Word does.
+	 * {@code false} restores 17.1.0, where the keep lived only on the cells' blocks and
+	 * FOP dropped it at the table's last row.  See {@link #applyTableRowCustomAttributes}.
+	 * @since 17.1.1
+	 */
+	public static final String ROW_KEEP_WITH_NEXT = "docx4j.convert.out.fo.tables.rowKeepWithNext";
+
+	/**
+	 * <b>A row whose every paragraph keeps with the next keeps with the next row; the last
+	 * such row keeps the table with what follows it.</b>  Word has no row-level keep: the
+	 * paragraph's {@code w:keepNext} does the work, and applied to every paragraph of a row
+	 * it keeps the row with the row after it - which is how a table is kept on one page -
+	 * and, on the last row, keeps the table with the paragraph after the table.
+	 *
+	 * <p>docx4j writes {@code w:keepNext} as {@code keep-with-next="always"} on each
+	 * paragraph's {@code fo:block}.  Between two rows FOP honours that: the cell's last
+	 * block's keep becomes the cell's ({@code TableCellLayoutManager}), the cells' the
+	 * step's ({@code TableStepper}), so the penalty between the rows is infinite.  At the
+	 * <b>last row</b> it is lost: {@code TableContentLayoutManager} removes the break
+	 * element after the last row group ("the breaking after the table will be handled by
+	 * TableLM"), and what the table's layout manager passes on is the last
+	 * <i>row's</i> own {@code keep-with-next} ({@code RowGroupLayoutManager}), never its
+	 * cells'.  So a table whose last row keeps with next could break from the paragraph
+	 * after it, and a nested table from the rest of its cell.</p>
+	 *
+	 * <p>Measured on a 311-page report of 1,183 tables and 10,188 {@code w:keepNext}, most
+	 * of them six-row tables every paragraph of which keeps with the next and the last row
+	 * with an empty paragraph after the table.  docx4j gave the document 277 pages: our
+	 * pages began with the invisible paragraph Word kept on the page before 22 times to
+	 * Word's twice, and with the kept unit that much shorter it fit the remaining space
+	 * where Word's did not - Word pushed a unit to the next page, leaving its space unused,
+	 * some 170 times to our 59.  Word's kept units are the table <i>and</i> the paragraph
+	 * after it.</p>
+	 *
+	 * <p>The rule marks the {@code fo:table-row} itself {@code keep-with-next="always"}
+	 * where every block of every cell of the row (a nested table by its own last row)
+	 * carries it.  Header rows are not marked: a repeated header keeps with the row after
+	 * it by construction.  The keep on the row is what FOP propagates out of the table and
+	 * up through the cell of a table nested in another, so the outer row's own rule then
+	 * sees it.</p>
+	 *
+	 * <p>The row rule Word applies where only <i>some</i> of a row's paragraphs keep with
+	 * next is not measured; "every paragraph" is the rule Microsoft's own guidance gives
+	 * ("keep with next works within a table only when it is applied to the whole row").
+	 * The {@code table-row-keepnext} probe varies it.</p>
+	 *
+	 * @since 17.1.1
+	 */
+  	@Override
+  	protected void applyTableRowCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table,
+  			TransformState transformState, Element row, int rowIndex, boolean isHeader) {
+
+  		if (isHeader) return;
+  		if (!org.docx4j.Docx4jProperties.getProperty(ROW_KEEP_WITH_NEXT, true)) return;
+  		if (rowIndex < 0 || rowIndex >= table.getRows().size()) return;
+  		if (rowKeepsWithNext(table.getRows().get(rowIndex))) {
+  			row.setAttribute("keep-with-next", "always");
+  		}
+  	}
+
+  	/** Every block of every cell of the row keeps with next (and there is at least one). */
+  	static boolean rowKeepsWithNext(org.docx4j.model.table.TableModelRow rowModel) {
+  		boolean any = false;
+  		for (TableModelCell cell : rowModel.getRowContents()) {
+  			if (cell.isDummy()) continue;
+  			Node content = ((AbstractTableWriterModelCell) cell).getContent();
+  			if (content == null) return false;
+  			int verdict = blocksKeepWithNext(content.getChildNodes());
+  			if (verdict < 0) return false;
+  			if (verdict > 0) any = true;
+  		}
+  		return any;
+  	}
+
+  	/** -1: a block which does not keep; 1: every block keeps, one at least; 0: no block. */
+  	private static int blocksKeepWithNext(NodeList children) {
+  		int seen = 0;
+  		for (int i = 0; i < children.getLength(); i++) {
+  			Node n = children.item(i);
+  			if (n.getNodeType() != Node.ELEMENT_NODE) continue;
+  			Element e = (Element) n;
+  			String name = e.getLocalName();
+  			if (name == null) name = e.getNodeName().replaceFirst("^fo:", "");
+  			int verdict;
+  			if ("block".equals(name)) {
+  				verdict = "always".equals(e.getAttribute("keep-with-next")) ? 1 : -1;
+  			} else if ("list-block".equals(name)) {
+  				// the paragraph's keep is on the list-item-body's block
+  				Element body = firstDescendant(e, "list-item-body");
+  				verdict = body == null ? -1 : blocksKeepWithNext(body.getChildNodes());
+  			} else if ("table".equals(name)) {
+  				// a nested table keeps with next by its own last row (this rule, applied
+  				// when it was written)
+  				Element lastRow = lastRow(e);
+  				verdict = lastRow != null && "always".equals(lastRow.getAttribute("keep-with-next")) ? 1 : -1;
+  			} else if ("block-container".equals(name) || "wrapper".equals(name)) {
+  				verdict = blocksKeepWithNext(e.getChildNodes());
+  			} else {
+  				continue; // not block-level content (a marker, a float): no vote
+  			}
+  			if (verdict < 0) return -1;
+  			if (verdict > 0) seen++;
+  		}
+  		return seen > 0 ? 1 : 0;
+  	}
+
+  	private static Element firstDescendant(Element e, String localName) {
+  		NodeList all = e.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", localName);
+  		return all.getLength() == 0 ? null : (Element) all.item(0);
+  	}
+
+  	/** The last fo:table-row of the last fo:table-body of this table (not a nested one's). */
+  	private static Element lastRow(Element tbl) {
+  		Element body = null;
+  		NodeList kids = tbl.getChildNodes();
+  		for (int i = 0; i < kids.getLength(); i++) {
+  			Node n = kids.item(i);
+  			if (n.getNodeType() == Node.ELEMENT_NODE && "table-body".equals(localName((Element) n))) body = (Element) n;
+  		}
+  		if (body == null) return null;
+  		Element last = null;
+  		kids = body.getChildNodes();
+  		for (int i = 0; i < kids.getLength(); i++) {
+  			Node n = kids.item(i);
+  			if (n.getNodeType() == Node.ELEMENT_NODE && "table-row".equals(localName((Element) n))) last = (Element) n;
+  		}
+  		return last;
+  	}
+
+  	private static String localName(Element e) {
+  		String name = e.getLocalName();
+  		return name == null ? e.getNodeName().replaceFirst("^fo:", "") : name;
+  	}
   	
     /**
      * In the FO case, if we need to rotate the text, we do that
