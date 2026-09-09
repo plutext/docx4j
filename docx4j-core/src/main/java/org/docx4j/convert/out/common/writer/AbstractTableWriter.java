@@ -29,6 +29,7 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.jaxb.Context;
@@ -230,6 +231,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     	table.setAutofitColumnWidths(fitted);
     	// scaled to the page: the columns no longer hold their content by construction
     	table.setContentSizedColumns(false);
+    }
+    if (Docx4jProperties.getProperty(DUMP_AUTOFIT) != null) {
+    	dumpAutofit(context, table, autofit, fitted);
     }
     createRowProperties(rowProperties, table.getEffectiveTableStyle().getTrPr(), true);
     rowPropertiesTableSize = rowProperties.size();
@@ -442,6 +446,13 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * that corpus, which is a wash, and it would treat pct more strictly than dxa
 			 * for no reason the documents support.  @since 17.1.1 */
 			double[] min = new double[cols], max = new double[cols];
+			// the incompressible part of each column: its cell margins and the widest
+			// picture it holds (what a shortfall cannot take); a column no single cell describes
+			// gets the table's margins
+			int[] margin = new int[cols];
+			java.util.Arrays.fill(margin, cellMarginsTwips(tblPr));
+			boolean[] marginSeen = new boolean[cols];
+			double[] hard = new double[cols];
 			boolean anyAuto = false;
 			// Pass 1: single-column cells set the columns' minima and maxima.
 			// Pass 2: a spanning cell only widens the columns it spans when their sum
@@ -477,6 +488,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 						else anyAuto = true;
 						min[c] = Math.max(min[c], mn);
 						max[c] = Math.max(max[c], mx);
+						margin[c] = marginSeen[c] ? Math.max(margin[c], cellMargins) : cellMargins;
+						marginSeen[c] = true;
+						if (mm.length > 2) hard[c] = Math.max(hard[c], mm[2] * 20);
 					} else {
 						spanning.add(new Object[] { c, span, mn, mx });
 					}
@@ -490,20 +504,24 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				spreadShortfall(max, c, end, needMax, max);
 				for (int k = c; k < end; k++) max[k] = Math.max(max[k], min[k]);
 			}
-			if (!anyAuto) return null; // every column has a preferred width: the grid is what Word uses
-			if (gridIsAuthoritative(table, tblPr, cols, pref, declared)) return null;
 			int available = availableWidthTwips(context, tblPr, container);
-			if (available <= 0) return null;
 			// the grid-edge allowance is the text column's; a nested table's grid is not
 			// shifted off its container's edge (see TableWriter.isNested), so it gets none
-			if (tablePreferred <= 0 && container <= 0) {
+			if (available > 0 && tablePreferred <= 0 && container <= 0) {
 				available += autofitGridAllowanceTwips(context, table, tblPr);
 			}
-			int[] mi = new int[cols], ma = new int[cols];
+			int[] mi = new int[cols], ma = new int[cols], floor = new int[cols];
 			for (int i = 0; i < cols; i++) {
 				mi[i] = (int) Math.ceil(min[i]) + COLUMN_SLACK_TWIPS;
 				ma[i] = (int) Math.ceil(max[i]) + COLUMN_SLACK_TWIPS;
+				floor[i] = Math.min(mi[i], margin[i] + (int) Math.ceil(hard[i]));
 			}
+			// kept whether or not the pass goes on to size the columns: the page fit and the
+			// diagnostic dump (DUMP_AUTOFIT) both read it
+			table.setAutofitInputs(new AbstractTableWriterModel.AutofitInputs(mi, ma, pref, floor, available));
+			if (!anyAuto) return null; // every column has a preferred width: the grid is what Word uses
+			if (gridIsAuthoritative(table, tblPr, cols, pref, declared)) return null;
+			if (available <= 0) return null;
 			int[] widths = org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
 			boolean anyDeclared = false;
 			for (boolean d : declared) anyDeclared |= d;
@@ -592,6 +610,92 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			}
 		}
 		return false; // a wholly auto-width table is Word's autofit
+	}
+
+	/**
+	 * docx4j.convert.out.fo.wordLayout.dumpAutofit: a file to which one line per table is
+	 * appended recording what the column sizer saw and chose, for measuring the sizer
+	 * against the {@code w:tblGrid} Word writes on a re-save (the layout-fidelity harness's
+	 * {@code ShortfallFit}).  Unset - the default - nothing is written, and the output is
+	 * unaffected either way.  CSV, one record per table the writer lays out:
+	 * <pre>
+	 * document,table,columns,contentSized,fitted,available,min,max,pref,floor,content,final
+	 * </pre>
+	 * where {@code document} is the package's name (the file it was loaded from),
+	 * {@code table} counts the tables of that package in the order the writer met them
+	 * (nested before enclosing), {@code min}/{@code max}/{@code pref}/{@code floor} are the
+	 * content pass's measurements in twips ({@link AbstractTableWriterModel.AutofitInputs};
+	 * empty where it could not measure), {@code available} the width it would fit them into,
+	 * {@code contentSized} whether it sized the columns (else the grid did), {@code content}
+	 * the widths it chose, and {@code final} the widths the table was given after the page
+	 * fit - the {@code fo:table-column} widths, in twips.  Arrays are space-separated.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String DUMP_AUTOFIT = "docx4j.convert.out.fo.wordLayout.dumpAutofit";
+
+	/** Per package, how many tables have been dumped: the record's table index. */
+	private static final Map<Object, int[]> dumpCounters =
+			java.util.Collections.synchronizedMap(new java.util.WeakHashMap<Object, int[]>());
+
+	/** See {@link #DUMP_AUTOFIT}.
+	 *  @param content the widths the content pass chose, or null where it did not run
+	 *  @param fitted the widths the page fit replaced them with, or null where it did not */
+	private static void dumpAutofit(AbstractWmlConversionContext context, AbstractTableWriterModel table,
+			int[] content, int[] fitted) {
+		try {
+			String path = Docx4jProperties.getProperty(DUMP_AUTOFIT);
+			if (path == null || path.trim().isEmpty()) return;
+			Object pkg = context.getWmlPackage();
+			String name = pkg == null ? null : context.getWmlPackage().name();
+			Object key = pkg == null ? dumpCounters : pkg;
+			int[] counter;
+			synchronized (dumpCounters) {
+				counter = dumpCounters.get(key);
+				if (counter == null) {
+					counter = new int[1];
+					dumpCounters.put(key, counter);
+				}
+			}
+			int index = ++counter[0];
+			AbstractTableWriterModel.AutofitInputs in = table.getAutofitInputs();
+			int cols = table.getColCount();
+			int[] fin = table.getAutofitColumnWidths();
+			if (fin == null) fin = gridWidths(table, cols);
+			StringBuilder sb = new StringBuilder(256);
+			sb.append(csvCell(name == null ? "" : name)).append(',').append(index).append(',').append(cols)
+				.append(',').append(content != null).append(',').append(fitted != null)
+				.append(',').append(in == null ? "" : String.valueOf(in.available))
+				.append(',').append(in == null ? "" : join(in.min))
+				.append(',').append(in == null ? "" : join(in.max))
+				.append(',').append(in == null ? "" : join(in.preferred))
+				.append(',').append(in == null ? "" : join(in.floor))
+				.append(',').append(join(content))
+				.append(',').append(join(fin))
+				.append('\n');
+			synchronized (dumpCounters) {
+				try (java.io.Writer w = new java.io.OutputStreamWriter(
+						new java.io.FileOutputStream(path, true), java.nio.charset.StandardCharsets.UTF_8)) {
+					w.write(sb.toString());
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Autofit dump skipped: " + e.getMessage(), e);
+		}
+	}
+
+	private static String join(int[] a) {
+		if (a == null) return "";
+		StringBuilder sb = new StringBuilder();
+		for (int v : a) {
+			if (sb.length() > 0) sb.append(' ');
+			sb.append(v);
+		}
+		return sb.toString();
+	}
+
+	private static String csvCell(String s) {
+		return s.indexOf(',') < 0 && s.indexOf('"') < 0 ? s : '"' + s.replace("\"", "\"\"") + '"';
 	}
 
 	/**
@@ -1180,7 +1284,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	/**
 	 * Minimum and maximum content widths of a cell in points: {widest unbreakable
-	 * unit, content unwrapped}; null when this output format cannot measure.
+	 * unit, content unwrapped}; null when this output format cannot measure.  A third
+	 * element, where present, is the widest <em>incompressible</em> unit - a picture,
+	 * which Word does not shrink when the column is squeezed.
 	 * @since 17.0.5
 	 */
 	protected double[] measureCellContent(AbstractWmlConversionContext context, AbstractTableWriterModelCell cell) {

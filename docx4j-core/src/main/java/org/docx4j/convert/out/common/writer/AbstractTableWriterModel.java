@@ -138,6 +138,50 @@ public class AbstractTableWriterModel extends TableModel {
 		this.contentSizedColumns = contentSized;
 	}
 
+	/**
+	 * What the content-based autofit pass worked from: the per-column minimum and maximum
+	 * content widths and preferred widths it measured, in twips, and the width it fitted
+	 * them into.  Kept so that the page fit can share a shortfall by the columns' content
+	 * rather than by proportion ({@code AbstractTableWriter.fitToAvailableWidth}) and so
+	 * that the diagnostic dump can record them.  All arrays are one entry per column.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final class AutofitInputs {
+		/** Widest unbreakable content plus cell margins, per column. */
+		public final int[] min;
+		/** Content unwrapped plus cell margins, per column. */
+		public final int[] max;
+		/** w:tcW per column, or -1 for an auto column. */
+		public final int[] preferred;
+		/** The incompressible part of each column: its cell margins plus the widest picture
+		 *  it holds - what a shortfall cannot take. */
+		public final int[] floor;
+		/** The width the pass fitted the columns into. */
+		public final int available;
+
+		public AutofitInputs(int[] min, int[] max, int[] preferred, int[] floor, int available) {
+			this.min = min;
+			this.max = max;
+			this.preferred = preferred;
+			this.floor = floor;
+			this.available = available;
+		}
+	}
+
+	/** Null where the content pass did not measure the table (a fixed layout, or content this
+	 *  output format cannot measure).  Set whether or not the pass went on to size the columns:
+	 *  {@link #isContentSizedColumns()} says whether it did.  @since 17.1.1 */
+	private AutofitInputs autofitInputs;
+
+	public AutofitInputs getAutofitInputs() {
+		return autofitInputs;
+	}
+
+	public void setAutofitInputs(AutofitInputs inputs) {
+		this.autofitInputs = inputs;
+	}
+
 	/* The table style's conditional formatting (w:tblStylePr), resolved for this table:
 	 * the look its w:tblLook asks for, its band sizes, and where each w:tr sits, so that a
 	 * row's or cell's conditions can be worked out (TableStyleConditions).  @since 17.1.1 */

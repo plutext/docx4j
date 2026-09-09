@@ -582,8 +582,8 @@ public class TableWriter extends AbstractTableWriter {
 	@Override
 	protected double[] measureCellContent(AbstractWmlConversionContext context, org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell cell) {
 		Node content = cell.getContent();
-		if (content == null) return new double[] { 0, 0 };
-		double[] out = new double[2];
+		if (content == null) return new double[] { 0, 0, 0 };
+		double[] out = new double[3];   // {min, max, widest picture}
 		org.docx4j.fonts.Mapper mapper = context.getWmlPackage() == null ? null
 				: context.getWmlPackage().getFontMapper();
 		NodeList children = content.getChildNodes();
@@ -605,11 +605,12 @@ public class TableWriter extends AbstractTableWriter {
 		}
 		if ("block".equals(ln) || "list-block".equals(ln) || "block-container".equals(ln)) {
 			// a paragraph (or a container of them): measure its inline content as one line
-			double[] line = new double[3]; // {maxWord, total, currentWord}
+			double[] line = new double[4]; // {maxWord, total, currentWord, widestPicture}
 			measureInline(el, line, true, mapper);
 			line[0] = Math.max(line[0], line[2]);
 			out[0] = Math.max(out[0], line[0]);
 			out[1] = Math.max(out[1], line[1]);
+			if (out.length > 2) out[2] = Math.max(out[2], line[3]);
 			return;
 		}
 		NodeList children = el.getChildNodes();
@@ -642,16 +643,18 @@ public class TableWriter extends AbstractTableWriter {
 					if (gw > 0) {
 						line[0] = Math.max(line[0], gw);
 						line[1] += gw;
+						line[3] = Math.max(line[3], gw);   // a picture cannot be squeezed
 					}
 				} else if ("leader".equals(ln) || "table".equals(ln)) {
 					line[0] = Math.max(line[0], line[2]);
 					line[2] = 0;
 				} else if ("block".equals(ln) && !top) {
-					double[] inner = new double[3];
+					double[] inner = new double[4];
 					measureInline(c, inner, false, mapper);
 					inner[0] = Math.max(inner[0], inner[2]);
 					line[0] = Math.max(line[0], inner[0]);
 					line[1] = Math.max(line[1], inner[1]);
+					line[3] = Math.max(line[3], inner[3]);
 				} else {
 					measureInline(c, line, false, mapper);
 				}
