@@ -1,0 +1,662 @@
+package org.docx4j.fidelity.golden;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.docx4j.Docx4J;
+import org.docx4j.documents4j.local.Documents4jLocalServices;
+import org.docx4j.fidelity.compare.LayoutComparison;
+import org.docx4j.fidelity.extract.PdfLayout;
+import org.docx4j.fidelity.extract.PdfLayoutExtractor;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+
+/**
+ * Runs on the Windows VM that has Word installed. Has Word render a handful of the
+ * <b>re-saved</b> documents to PDF and diffs each against the golden Word cut from the
+ * original, then counts the field-error text on each side. Two questions, one run.
+ *
+ * <pre>java -cp ... org.docx4j.fidelity.golden.ResaveInvariance &lt;resavedDir&gt; &lt;goldensDir&gt; &lt;outDir&gt; [count]</pre>
+ *
+ * <p><b>Question one: is Word's rendering invariant under its own re-save?</b> Word normalises
+ * a document as it loads it - styles, numbering, the autofit grid, {@code w:compat} - and it
+ * writes both the PDF and the re-saved docx out of that same in-memory model, so
+ * {@code PDF(original)} and {@code PDF(resaved)} ought to be the same pages. If they are, the
+ * goldens already cut stay valid now that the harness scores docx4j's rendering of the
+ * <em>re-saved</em> file (see the README, "What to score"), and nothing has to be re-cut.
+ * If they are not, then whatever differs is something Word computes at render time and does
+ * not persist into the docx - which is worth knowing precisely, because docx4j can only work
+ * from what was persisted.</p>
+ *
+ * <p><b>Question two: what does Word do with fields here?</b> The goldens were cut through a
+ * conversion script that updates fields, so Word's PDF carries recomputed field results while
+ * both the original and the re-saved docx carry the stored ones. That gap is not hypothetical:
+ * one corpus document has lost its bookmarks altogether, so its golden is full of
+ * {@code Error! Reference source not found.} text which appears nowhere in the docx - about
+ * 1,160 lines of it in that one document, all of them unmatchable. So each side's field-error
+ * lines are counted separately and the two counts compared. A document where the two sides
+ * disagree is one where a field was recomputed between them.</p>
+ *
+ * <p>Which makes the field update itself the measurement, so this tool can turn it on and off:
+ * {@code -Dfidelity.updateFields=true|false} (see {@link #configureScript}). Cut the same
+ * documents twice into two output directories, once each way, and the difference is exactly
+ * what Word's field update does to the page.</p>
+ *
+ * <p>The documents are picked by size - smallest, largest and an even spread between - rather
+ * than alphabetically, because the first five of anything sorted by name are as likely as not
+ * all short, and a one-page document answers neither question. {@code count} overrides the
+ * default of five. Each PDF is cut by the same route {@link WordGoldenRunner} uses (docx4j
+ * loads the package and documents4j hands Word a temp file; handing Word the corpus file
+ * itself fails on most of the corpus), each document is named before Word is given it so a
+ * stall says which one, and a document Word refuses is stepped over rather than ending the
+ * run. A PDF already in {@code outDir} is kept unless {@code --force} is given, and
+ * {@code --no-word} skips the conversion entirely and just re-reads an output directory that
+ * is already full - which is how a finished run is read again on a machine without Word.</p>
+ */
+public final class ResaveInvariance {
+
+	private static final String PPT_BRIDGE = "pptx4j.documents4j.MicrosoftPowerpointBridge.enabled";
+
+	/** How many times a conversion is attempted before it is called a failure of the document.
+	 *  {@code -Dfidelity.wordAttempts=} overrides it, as in {@link WordGoldenRunner}. */
+	private static final int ATTEMPTS = Integer.parseInt(System.getProperty("fidelity.wordAttempts", "3"));
+
+	/** How many documents are picked when the command line does not say. */
+	private static final int DEFAULT_COUNT = 5;
+
+	private static Documents4jLocalServices word;
+
+	private static synchronized Documents4jLocalServices converter() {
+		if (word == null) word = new Documents4jLocalServices();
+		return word;
+	}
+
+	/** Drop the converter so the next call builds a new one, with a new Word behind it. */
+	private static synchronized void resetConverter() {
+		word = null;
+	}
+
+	/** Whether documents4j refused the work because its pool had already been shut down,
+	 *  which says nothing about this document. */
+	private static boolean isRejected(Throwable t) {
+		for (Throwable c = t; c != null; c = c.getCause()) {
+			if (c instanceof java.util.concurrent.RejectedExecutionException) return true;
+			if (c.getCause() == c) break;
+		}
+		return false;
+	}
+
+	public static void main(String[] args) throws Exception {
+		if (args.length < 3) {
+			System.out.println("usage: ResaveInvariance <resavedDir> <goldensDir> <outDir> [count]"
+					+ " [--force] [--no-word]");
+			System.exit(2);
+		}
+		File resavedDir = new File(args[0]);
+		File goldensDir = new File(args[1]);
+		File outDir = new File(args[2]);
+		int count = DEFAULT_COUNT;
+		for (int i = 3; i < args.length; i++) {
+			if (!args[i].startsWith("--")) count = Integer.parseInt(args[i]);
+		}
+		boolean force = Arrays.asList(args).contains("--force");
+		boolean noWord = Arrays.asList(args).contains("--no-word");
+		outDir.mkdirs();
+
+		if (!noWord) configureScript(outDir);
+
+		/* documents4j starts PowerPoint as well as Word unless it is told not to, and
+		 * PowerPoint has to run in the foreground, so a first-run or activation dialog
+		 * stops the run before Word has been asked anything and looks exactly like a hang.
+		 * Nothing here is a pptx. */
+		if (System.getProperty(PPT_BRIDGE) == null) {
+			org.docx4j.Docx4jProperties.setProperty(PPT_BRIDGE, "false");
+		}
+
+		List<File> picked = pick(resavedDir, goldensDir, count);
+		if (picked.isEmpty()) {
+			throw new IllegalArgumentException("no <id>.docx in " + resavedDir
+					+ " with a matching <id>.pdf in " + goldensDir);
+		}
+
+		int identical = 0, differing = 0, failed = 0;
+		int totalPagesDiffering = 0, totalLinesDiffering = 0;
+		int fieldErrGolden = 0, fieldErrNew = 0, fieldDisagreements = 0;
+		int n = 0;
+		for (File docx : picked) {
+			n++;
+			String id = docx.getName().replaceAll("\\.docx$", "");
+			File golden = new File(goldensDir, id + ".pdf");
+			File fresh = new File(outDir, id + ".pdf");
+			if (!noWord && (fresh.length() == 0 || force)) {
+				progress("converting", id, n, picked.size(), docx);
+				if (!convert(docx, fresh)) {
+					failed++;
+					continue;
+				}
+			} else if (fresh.length() == 0) {
+				System.out.println("[" + n + "/" + picked.size() + "] " + id + ": no PDF in outDir, skipped");
+				failed++;
+				continue;
+			} else {
+				System.out.println("[" + n + "/" + picked.size() + "] " + id + ": PDF already present");
+			}
+
+			PdfLayout a, b;
+			try {
+				a = PdfLayoutExtractor.extract(golden);
+				b = PdfLayoutExtractor.extract(fresh);
+			} catch (IOException e) {
+				System.out.println("  cannot read a PDF: " + e);
+				failed++;
+				continue;
+			}
+			Diff d = diff(id, a, b);
+			report(id, d);
+			if (d.identical()) {
+				identical++;
+			} else {
+				differing++;
+				totalPagesDiffering += d.pagesDiffering;
+				totalLinesDiffering += d.linesDiffering;
+			}
+
+			Errors ea = fieldErrors(a), eb = fieldErrors(b);
+			fieldErrGolden += ea.lines;
+			fieldErrNew += eb.lines;
+			if (ea.lines != eb.lines) fieldDisagreements++;
+			System.out.println("  field errors: golden " + ea + "; new " + eb
+					+ (ea.lines == eb.lines ? "  (agree)" : "  DISAGREE by " + (eb.lines - ea.lines) + " lines"));
+			System.out.flush();
+		}
+
+		System.out.println();
+		System.out.println("== question one: is Word's rendering invariant under its own re-save? ==");
+		System.out.printf("%d of %d documents rendered identically; %d differed (%d pages, %d lines in total); %d failed%n",
+				identical, identical + differing, differing, totalPagesDiffering, totalLinesDiffering, failed);
+		if (differing == 0 && identical > 0) {
+			System.out.println("So the goldens cut from the original are Word's rendering of the re-saved file too,");
+			System.out.println("and scoring the re-saved docx against them compares like with like.");
+		} else if (differing > 0) {
+			System.out.println("So Word computes something at render time that it does not write into the docx.");
+			System.out.println("The differing lines above are that thing; the goldens are not valid for those documents");
+			System.out.println("as a reference for the re-saved file, and should be re-cut from it.");
+		}
+		System.out.println();
+		System.out.println("== question two: field errors ==");
+		System.out.printf("golden %d lines, new %d lines; the two sides disagree on %d of %d documents%n",
+				fieldErrGolden, fieldErrNew, fieldDisagreements, identical + differing);
+		System.out.println("field update this run: " + scriptDescription);
+		System.out.println(Errors.LIMITATION);
+		// documents4j keeps worker threads; do not wait for them
+		System.exit(failed == 0 ? 0 : 1);
+	}
+
+	// ------------------------------------------------------------------ the field update
+
+	/** What the run did about field updating, for the summary - the question is unanswerable
+	 *  from a PDF alone, so the tool says which script cut it. */
+	private static String scriptDescription = "none - no PDF was cut by this run";
+
+	/** The property documents4j reads, and which {@code Documents4jLocalServices} sets from
+	 *  {@code docx4j.properties} when it is not already a system property. */
+	private static final String SCRIPT_PROPERTY = "com.documents4j.conversion.msoffice.word_convert.vbs";
+
+	/**
+	 * Decides which VBS Word will run, and says so.
+	 *
+	 * <p>documents4j materialises its conversion script <em>once</em>, in the bridge
+	 * constructor ({@code AbstractMicrosoftOfficeBridge}), which is to say when the
+	 * {@code LocalConverter} is built - so the choice has to be made before the first
+	 * conversion, and cannot be changed within a run. Hence one mode per run, and two runs
+	 * into two output directories to compare.</p>
+	 *
+	 * <ul>
+	 * <li>{@code -Dfidelity.updateFields=true} - fields are updated. The script is the one
+	 *     named by {@code -Dfidelity.fieldUpdateScript=<path>} if given; otherwise this class
+	 *     writes one into {@code outDir}. Writing our own is not gold-plating: the sample
+	 *     script in {@code docx4j-samples-resources} updates {@code TablesOfContents(1)}
+	 *     inside the {@code On Error Resume Next} block that precedes its {@code Err} check,
+	 *     so a document with <em>no</em> table of contents quits -2 and is reported as
+	 *     "The input file seems to be corrupt". The generated script updates every story
+	 *     range's fields and every TOC, and clears {@code Err} afterwards, so a document with
+	 *     neither is converted rather than failed.</li>
+	 * <li>{@code -Dfidelity.updateFields=false} - fields are not updated. Clearing the system
+	 *     property is not enough, because {@code Documents4jLocalServices} would then fall
+	 *     back to {@code docx4j.properties} and put the configured script back; so
+	 *     documents4j's own bundled {@code word_convert.vbs} is unpacked from the classpath
+	 *     into {@code outDir} and pointed at explicitly. That script opens, saves and closes,
+	 *     and touches no field.</li>
+	 * <li>unset - whatever the machine is configured for is left alone, and the resolved
+	 *     script is printed so the run says what it did.</li>
+	 * </ul>
+	 */
+	private static void configureScript(File outDir) throws IOException {
+		String want = System.getProperty("fidelity.updateFields");
+		if (want == null) {
+			String configured = System.getProperty(SCRIPT_PROPERTY);
+			if (configured == null) {
+				configured = org.docx4j.Docx4jProperties.getProperty(SCRIPT_PROPERTY);
+				scriptDescription = configured == null
+						? "as configured: documents4j's default script (no field update)"
+						: "as configured: " + configured + " (from docx4j.properties)";
+			} else {
+				scriptDescription = "as configured: " + configured + " (from -D)";
+			}
+			System.out.println("field update: not specified; " + scriptDescription);
+			System.out.println("  -Dfidelity.updateFields=true|false to decide it here");
+			return;
+		}
+		if (Boolean.parseBoolean(want)) {
+			String named = System.getProperty("fidelity.fieldUpdateScript");
+			File script;
+			if (named != null) {
+				script = new File(named);
+				if (!script.isFile()) throw new IOException("no such script: " + script);
+			} else {
+				script = new File(outDir, "word_convert-updatefields.vbs");
+				Files.write(script.toPath(), UPDATING_SCRIPT.getBytes(StandardCharsets.US_ASCII));
+			}
+			System.setProperty(SCRIPT_PROPERTY, script.getAbsolutePath());
+			scriptDescription = "ON, via " + script.getAbsolutePath();
+		} else {
+			File script = new File(outDir, "word_convert-nofields.vbs");
+			try (InputStream in = ResaveInvariance.class.getClassLoader().getResourceAsStream("word_convert.vbs")) {
+				if (in == null) {
+					throw new IOException("documents4j's word_convert.vbs is not on the classpath;"
+							+ " name a no-op script with -Dfidelity.fieldUpdateScript= instead");
+				}
+				Files.copy(in, script.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
+			System.setProperty(SCRIPT_PROPERTY, script.getAbsolutePath());
+			scriptDescription = "OFF, via documents4j's own script at " + script.getAbsolutePath();
+		}
+		System.out.println("field update: " + scriptDescription);
+	}
+
+	/**
+	 * documents4j's default conversion script with a field update added: every story range's
+	 * fields (the body, but also the headers, footers and footnotes, which
+	 * {@code Document.Fields} alone does not reach) and every table of contents, with
+	 * {@code Err} cleared afterwards so that a document holding neither is still converted.
+	 * CRLF, because it is handed to {@code cscript}.
+	 */
+	private static final String UPDATING_SCRIPT = String.join("\r\n",
+			"' generated by org.docx4j.fidelity.golden.ResaveInvariance - documents4j's default",
+			"' word_convert.vbs, plus a field update, so that the effect of the field update can be",
+			"' measured by cutting the same document with and without it.",
+			"Const WdDoNotSaveChanges = 0",
+			"Const WdExportFormatPDF = 17",
+			"Const MagicFormatPDFA = 999",
+			"Const MagicFormatFilteredHTML = 10",
+			"Const msoEncodingUTF8 = 65001",
+			"",
+			"Function ConvertFile( inputFile, outputFile, formatEnumeration )",
+			"",
+			"  Dim fileSystemObject",
+			"  Dim wordApplication",
+			"  Dim wordDocument",
+			"",
+			"  On Error Resume Next",
+			"  Set wordApplication = GetObject(, \"Word.Application\")",
+			"  If Err <> 0 Then",
+			"    WScript.Quit -6",
+			"  End If",
+			"  On Error GoTo 0",
+			"",
+			"  Set fileSystemObject = CreateObject(\"Scripting.FileSystemObject\")",
+			"  inputFile = fileSystemObject.GetAbsolutePathName(inputFile)",
+			"",
+			"  If fileSystemObject.FileExists(inputFile) Then",
+			"",
+			"    On Error Resume Next",
+			"    Set wordDocument = wordApplication.Documents.Open(inputFile, False, True, False)",
+			"    If wordDocument = \"\" OR Err <> 0 Then",
+			"      WScript.Quit -2",
+			"    End If",
+			"    On Error GoTo 0",
+			"",
+			"    ' Update the fields.  A document with no fields and no table of contents is not a",
+			"    ' failure, so Err is cleared rather than checked.",
+			"    On Error Resume Next",
+			"    Dim story",
+			"    For Each story In wordDocument.StoryRanges",
+			"      story.Fields.Update",
+			"    Next",
+			"    Dim toc",
+			"    For Each toc In wordDocument.TablesOfContents",
+			"      toc.Update",
+			"    Next",
+			"    Err.Clear",
+			"    On Error GoTo 0",
+			"",
+			"    If formatEnumeration = MagicFormatFilteredHTML Then",
+			"      wordDocument.WebOptions.Encoding = msoEncodingUTF8",
+			"    End If",
+			"",
+			"    On Error Resume Next",
+			"    If formatEnumeration = MagicFormatPDFA Then",
+			"      wordDocument.ExportAsFixedFormat outputFile, WdExportFormatPDF, False, , , , , , , , , , , True",
+			"    Else",
+			"      wordDocument.SaveAs outputFile, formatEnumeration",
+			"    End If",
+			"",
+			"    wordDocument.Close WdDoNotSaveChanges",
+			"    If Err <> 0 Then",
+			"      WScript.Quit -3",
+			"    End If",
+			"    On Error GoTo 0",
+			"",
+			"    WScript.Quit 2",
+			"",
+			"  Else",
+			"",
+			"    WScript.Quit -4",
+			"",
+			"  End If",
+			"",
+			"End Function",
+			"",
+			"Call ConvertFile( WScript.Arguments.Unnamed.Item(0), WScript.Arguments.Unnamed.Item(1),"
+					+ " CInt(WScript.Arguments.Unnamed.Item(2)) )",
+			"");
+
+	// ------------------------------------------------------------------ picking
+
+	/**
+	 * The documents which have both a re-saved docx and a golden PDF, sampled by size:
+	 * the smallest, the largest, and an even spread of ranks between them. Alphabetical
+	 * order carries no information about a document, so the first five of it can easily be
+	 * five short ones - and a document of one page cannot show a page break moving. Size
+	 * ranking is deterministic, so two runs pick the same documents and can be compared.
+	 */
+	private static List<File> pick(File resavedDir, File goldensDir, int count) {
+		File[] all = resavedDir.listFiles((d, name) -> name.endsWith(".docx") && !name.startsWith("~"));
+		if (all == null) throw new IllegalArgumentException("cannot list " + resavedDir);
+		List<File> eligible = new ArrayList<>();
+		for (File f : all) {
+			String id = f.getName().replaceAll("\\.docx$", "");
+			if (new File(goldensDir, id + ".pdf").length() > 0) eligible.add(f);
+		}
+		// by size, then by name so that two documents of identical size still order the same way
+		eligible.sort((x, y) -> {
+			int c = Long.compare(x.length(), y.length());
+			return c != 0 ? c : x.getName().compareTo(y.getName());
+		});
+		int n = eligible.size();
+		System.out.println(n + " documents have both a re-saved docx and a golden PDF");
+		LinkedHashSet<File> out = new LinkedHashSet<>();
+		if (count >= n) {
+			out.addAll(eligible);
+		} else if (count == 1) {
+			out.add(eligible.get(n / 2));
+		} else {
+			for (int k = 0; k < count; k++) {
+				out.add(eligible.get((int) Math.round(k * (n - 1) / (double) (count - 1))));
+			}
+		}
+		List<File> picked = new ArrayList<>(out);
+		for (File f : picked) {
+			int rank = eligible.indexOf(f);
+			String why = rank == 0 ? "smallest"
+					: rank == n - 1 ? "largest"
+					: String.format("%d%% of the way up by size", Math.round(100.0 * rank / (n - 1)));
+			System.out.printf("  picked %s (%d KB, rank %d of %d) - %s%n",
+					f.getName().replaceAll("\\.docx$", ""), f.length() / 1024, rank + 1, n, why);
+		}
+		return picked;
+	}
+
+	// ------------------------------------------------------------------ conversion
+
+	/**
+	 * Has Word render the document to {@code pdf}, by {@link WordGoldenRunner}'s route:
+	 * docx4j loads the package and documents4j saves it to a temp file for Word, because
+	 * handing Word the file itself fails on most of the corpus. Returns false, having said
+	 * why, for a document Word refuses - the run steps over it rather than ending.
+	 */
+	private static boolean convert(File docx, File pdf) {
+		Throwable last = null;
+		for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
+			try {
+				WordprocessingMLPackage pkg = Docx4J.load(docx);
+				try (OutputStream os = new FileOutputStream(pdf)) {
+					converter().export(pkg, os);
+				}
+				if (pdf.length() == 0) throw new IllegalStateException("Word produced an empty PDF");
+				return true;
+			} catch (Throwable t) {
+				last = t;
+				pdf.delete();
+				/* documents4j shuts its worker pool down once it decides Word is unusable,
+				 * and rejects everything afterwards out of hand. A terminated pool is not a
+				 * fact about the document, so the converter is rebuilt and this one retried. */
+				if (isRejected(t)) resetConverter();
+				if (attempt < ATTEMPTS) {
+					System.out.println("    attempt " + attempt + " failed (" + rootCause(t) + "), retrying");
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException ie) {
+						Thread.currentThread().interrupt();
+						break;
+					}
+				}
+			}
+		}
+		System.out.println("  FAILED " + pdf.getName() + ": " + rootCause(last));
+		return false;
+	}
+
+	/** documents4j nests the reason several deep - a ConversionInputException says only that
+	 *  Word refused the input - so the whole chain is printed. */
+	private static String rootCause(Throwable t) {
+		StringBuilder sb = new StringBuilder();
+		for (Throwable c = t; c != null && sb.length() < 500; c = c.getCause()) {
+			if (sb.length() > 0) sb.append(" <- ");
+			sb.append(c.getClass().getSimpleName()).append(": ").append(c.getMessage());
+			if (c.getCause() == c) break;
+		}
+		return sb.toString().replace('\n', ' ');
+	}
+
+	/** Names the document <em>before</em> Word is handed it, so a run which stops - or which
+	 *  is simply slow on a long document - says which one it is on. */
+	private static void progress(String what, String id, int n, int total, File docx) {
+		System.out.printf("[%d/%d] %s %s (%d KB)%n", n, total, what, id, docx.length() / 1024);
+		System.out.flush();
+	}
+
+	// ------------------------------------------------------------------ the diff
+
+	/** What one document's two renderings came to. */
+	private static final class Diff {
+		int goldenPages, newPages;
+		int pagesDiffering;
+		int linesDiffering;
+		int goldenLines, newLines;
+		String pageCounts = "";
+		String firstDiff = "";
+		LayoutComparison.Result lcs;
+
+		boolean identical() {
+			return goldenPages == newPages && pagesDiffering == 0 && linesDiffering == 0;
+		}
+	}
+
+	/**
+	 * The same comparison {@code score} makes, on the same extraction: both PDFs go through
+	 * {@link PdfLayoutExtractor}, so whatever it normalises is normalised on both sides, and
+	 * the lines are then walked in order. Two lines are the same when their
+	 * {@link PdfLayout.Line#key()}s are - the key being what the scoring LCS pairs on, so
+	 * that a date field which prints the day the PDF was cut does not read as a difference
+	 * between two renderings made on different days.
+	 *
+	 * <p>The positional walk is what answers question one (are these the same pages?), and
+	 * {@link LayoutComparison} is run alongside it so that a document which is <em>not</em>
+	 * identical is described in the same numbers the scoreboard uses.</p>
+	 */
+	private static Diff diff(String id, PdfLayout golden, PdfLayout fresh) {
+		Diff d = new Diff();
+		d.goldenPages = golden.pageCount();
+		d.newPages = fresh.pageCount();
+		d.goldenLines = golden.lines.size();
+		d.newLines = fresh.lines.size();
+
+		int[] a = perPage(golden), b = perPage(fresh);
+		StringBuilder counts = new StringBuilder();
+		for (int p = 0; p < Math.max(a.length, b.length); p++) {
+			int x = p < a.length ? a[p] : -1, y = p < b.length ? b[p] : -1;
+			if (x == y) continue;
+			d.pagesDiffering++;
+			if (counts.length() < 200) {
+				if (counts.length() > 0) counts.append(", ");
+				counts.append("p").append(p + 1).append(' ')
+						.append(x < 0 ? "-" : String.valueOf(x)).append('/')
+						.append(y < 0 ? "-" : String.valueOf(y));
+			}
+		}
+		d.pageCounts = counts.toString();
+
+		List<PdfLayout.Line> ga = golden.lines, fb = fresh.lines;
+		int common = Math.min(ga.size(), fb.size());
+		for (int i = 0; i < common; i++) {
+			PdfLayout.Line x = ga.get(i), y = fb.get(i);
+			if (x.key().equals(y.key())) continue;
+			d.linesDiffering++;
+			if (d.firstDiff.isEmpty()) {
+				d.firstDiff = String.format("golden p%d y=%.2f \"%s\"%n            new    p%d y=%.2f \"%s\"",
+						x.page + 1, x.y, abbreviate(x.text), y.page + 1, y.y, abbreviate(y.text));
+			}
+		}
+		int surplus = Math.abs(ga.size() - fb.size());
+		if (surplus > 0) {
+			d.linesDiffering += surplus;
+			if (d.firstDiff.isEmpty()) {
+				PdfLayout.Line x = ga.size() > fb.size() ? ga.get(common) : fb.get(common);
+				d.firstDiff = String.format("%s has %d line(s) the other does not, from p%d y=%.2f \"%s\"",
+						ga.size() > fb.size() ? "golden" : "new", surplus, x.page + 1, x.y, abbreviate(x.text));
+			}
+		}
+		d.lcs = LayoutComparison.compare(id, golden, fresh);
+		return d;
+	}
+
+	private static int[] perPage(PdfLayout layout) {
+		int[] counts = new int[layout.pageCount()];
+		for (PdfLayout.Line l : layout.lines) {
+			if (l.page >= 0 && l.page < counts.length) counts[l.page]++;
+		}
+		return counts;
+	}
+
+	private static String abbreviate(String s) {
+		return s.length() > 60 ? s.substring(0, 57) + "..." : s;
+	}
+
+	private static void report(String id, Diff d) {
+		if (d.identical()) {
+			System.out.printf("  %s: identical - %d pages, %d lines%n", id, d.goldenPages, d.goldenLines);
+			return;
+		}
+		System.out.printf("  %s: pages %d golden / %d new; lines %d / %d%n",
+				id, d.goldenPages, d.newPages, d.goldenLines, d.newLines);
+		if (d.pagesDiffering > 0) {
+			System.out.printf("      %d page(s) differ in line count: %s%n", d.pagesDiffering, d.pageCounts);
+		}
+		if (d.linesDiffering > 0) {
+			System.out.printf("      %d line(s) differ; first: %s%n", d.linesDiffering, d.firstDiff);
+		}
+		System.out.printf("      as score pairs them: matched %d of %d, line parity %.4f, page parity %.4f%n",
+				d.lcs.matched, d.lcs.refLines, d.lcs.lineParity(), d.lcs.pageParity());
+		if (!d.lcs.firstDivergence.isEmpty()) {
+			System.out.println("      first divergence: " + d.lcs.firstDivergence);
+		}
+	}
+
+	// ------------------------------------------------------------------ field errors
+
+	/** One side's field-error census. */
+	private static final class Errors {
+		int lines, hits, markerOnly;
+
+		static final String LIMITATION =
+				"(a line carrying a field error is counted once; an error string which wrapped onto a"
+				+ " second line counts once, not twice. Only the English and French wordings are known"
+				+ " exactly - a line in another language is counted separately as \"marker\", on the"
+				+ " Error!/Erreur ! it opens with, and may be an ordinary sentence.)";
+
+		@Override
+		public String toString() {
+			return lines + " lines / " + hits + " hits"
+					+ (markerOnly > 0 ? " (+" + markerOnly + " marker)" : "");
+		}
+	}
+
+	/**
+	 * How many lines carry a field-error string. Word writes one where a {@code REF},
+	 * {@code PAGEREF} or {@code NOTEREF} field can no longer find its bookmark, so it is text
+	 * the PDF holds and the docx does not - and a document whose bookmarks are gone can carry
+	 * over a thousand of them, all of which score as unmatched lines against a docx4j render
+	 * that (correctly) shows the stored result instead. Counting them on both sides says
+	 * whether the two renderings agree about the document's fields, which is the half of
+	 * question two a PDF can answer.
+	 *
+	 * <p>The English and French wordings are matched exactly; anything else is caught only if
+	 * it opens with one of the error markers, which is stated in the output rather than
+	 * guessed at.</p>
+	 */
+	private static Errors fieldErrors(PdfLayout layout) {
+		Errors e = new Errors();
+		for (PdfLayout.Line l : layout.lines) {
+			int hits = 0;
+			for (Pattern p : FIELD_ERROR) {
+				Matcher m = p.matcher(l.text);
+				while (m.find()) hits++;
+			}
+			if (hits > 0) {
+				e.lines++;
+				e.hits += hits;
+			} else if (MARKER.matcher(l.text).find()) {
+				e.markerOnly++;
+			}
+		}
+		return e;
+	}
+
+	/**
+	 * A space, in any of the forms one can arrive in. The extractor folds U+00A0, U+2007 and
+	 * U+202F to an ordinary space and collapses runs of whitespace, so an ordinary
+	 * {@code \s} would do - but only while {@code -Dfidelity.nbspNormalise} is left on, and
+	 * French puts a no-break space before its "!", which Java's {@code \s} does not match by
+	 * definition. Spelling the no-break spaces out costs nothing and keeps the census right
+	 * whatever the extractor is told to do.
+	 */
+	private static final String SP = "[\\s\\u00a0\\u2007\\u202f]";
+
+	/** Word's own wordings, English and French. */
+	private static final Pattern[] FIELD_ERROR = {
+			Pattern.compile("Error" + SP + "*!" + SP + "*Reference" + SP + "+source" + SP + "+not" + SP + "+found\\."),
+			Pattern.compile("Error" + SP + "*!" + SP + "*Bookmark" + SP + "+not" + SP + "+defined\\."),
+			Pattern.compile("Erreur" + SP + "*!" + SP + "*Source" + SP + "+du" + SP + "+renvoi" + SP + "+introuvable\\."),
+			Pattern.compile("Erreur" + SP + "*!" + SP + "*Signet" + SP + "+non" + SP + "+d\\u00e9fini\\."),
+	};
+
+	/** What a localised field error opens with, for the languages the corpora are written in.
+	 *  Counted apart from the exact wordings, and reported apart, because on its own it is
+	 *  weak evidence: an ordinary sentence can begin "Error!" too. */
+	private static final Pattern MARKER =
+			Pattern.compile("(?:Error|Erreur|Fehler|Errore|Fout)" + SP + "*!");
+
+	private ResaveInvariance() {}
+}

@@ -290,6 +290,113 @@ A stand-in reference for plumbing checks (never the target):
 soffice --headless --convert-to pdf --outdir target/goldens-lo target/corpus/*.docx
 ```
 
+## Is Word's rendering invariant under its own re-save? (`ResaveInvariance`)
+
+Two questions this harness cannot answer from what it has already measured, and one tool
+that answers both. It runs on the Windows VM, because it needs Word:
+
+```
+java -cp "%CP%" org.docx4j.fidelity.golden.ResaveInvariance <resavedDir> <goldensDir> <outDir> [count] [--force] [--no-word]
+```
+
+**Question one: is `PDF(original)` the same as `PDF(resaved)`?** Word normalises a document as
+it loads it - styles, numbering, the autofit grid, `w:compat` - and it writes both the PDF and
+the re-saved docx out of that one in-memory model, so the two renderings ought to be the same
+pages. They had better be: the harness now scores docx4j's rendering of the **re-saved** file
+against goldens cut from the **original** (see "Having Word save the docx too"), which is only
+like-for-like if Word's rendering is invariant under its own round trip. If it is, nothing has
+to be re-cut. If it is not, then whatever differs is something Word computes at render time and
+does not persist into the docx - which is worth knowing precisely, because a docx4j render can
+only work from what was persisted.
+
+**Question two: what does Word do with fields here?** The goldens carry Word's recomputed field
+results if the conversion script updated them; the docx on both bases carries the stored ones
+(the resave does *not* carry the updated results - see the same section). The visible form of
+that gap is field-error text: one corpus document has lost its bookmarks, so its golden is full
+of `Error! Reference source not found.` - about 1,160 lines of it - which appears nowhere in the
+docx and can never match. So the tool counts the field-error lines on each side and says whether
+they agree.
+
+It picks a handful of documents (five, or `count`) that have both an `<id>.docx` in `resavedDir`
+and an `<id>.pdf` in `goldensDir`, **by size**: the smallest, the largest and an even spread of
+ranks between, printed with the reason each was picked. Alphabetical order carries no information
+about a document, so the first five of it can easily be five short ones, and a one-page document
+cannot show a page break moving. The ranking is deterministic, so two runs pick the same
+documents and can be compared.
+
+Each PDF is cut by the route `WordGoldenRunner` uses - docx4j loads the package and documents4j
+hands Word a temp file, because handing Word the corpus file itself fails on most of the corpus -
+into `outDir`. Each document is named before Word is given it, so a stall says which one, and a
+document Word refuses is stepped over rather than ending the run. A PDF already in `outDir` is
+kept unless `--force`; `--no-word` skips the conversion and just re-reads a finished run, which
+works on a machine with no Word.
+
+Reading the output. Per document, either
+
+```
+  <id>: identical - 24 pages, 1204 lines
+```
+
+or the three things that differ, from the coarsest in: page count, the pages whose line count
+differs, and the first line that differs with its page, y and text on each side. Then the same
+document scored the way `score` scores it (`LayoutComparison` over `PdfLayoutExtractor`'s lines,
+which is literally the scoreboard's own comparison), so a document that is *not* identical is
+described in the numbers the scoreboard uses. Then the field-error census for that document.
+Finally a total per question: how many documents rendered identically, and whether the two sides
+agreed about field errors.
+
+Two limits on the field census, both stated in its output. A line carrying an error string is
+counted once, so an error that wrapped onto a second line counts once and not twice; and only the
+English and French wordings are matched exactly (`Error! Reference source not found.`,
+`Error! Bookmark not defined.`, `Erreur ! Source du renvoi introuvable.`,
+`Erreur ! Signet non défini.`). A line in another language is counted separately as a *marker*,
+on the `Error!` / `Erreur !` / `Fehler!` it opens with, which is weak evidence on its own - an
+ordinary sentence can begin that way too.
+
+### Turning the field update on and off
+
+Which is the measurement that decides the field question, so the tool selects the conversion
+script itself:
+
+```
+rem with Word's field update
+java -cp "%CP%" -Dfidelity.updateFields=true  org.docx4j.fidelity.golden.ResaveInvariance <resaved> <goldens> <out>\fields-on 5
+rem without it
+java -cp "%CP%" -Dfidelity.updateFields=false org.docx4j.fidelity.golden.ResaveInvariance <resaved> <goldens> <out>\fields-off 5
+```
+
+Two PDFs of the same document, and the difference between them is exactly what Word's field
+update does to the page. (Use two output directories: the PDF is named `<id>.pdf` in both.)
+Every run prints which script it used, whichever way it was chosen.
+
+The mechanism, because it has three traps in it:
+
+- The script is `com.documents4j.conversion.msoffice.word_convert.vbs`, a **system** property.
+  `Documents4jLocalServices` sets it from `docx4j.properties` if it is not already set, so
+  a value in `docx4j.properties` is the fallback, not the winner: a system property beats it.
+- documents4j materialises the conversion script **once**, in the bridge constructor
+  (`AbstractMicrosoftOfficeBridge`), which is to say when the `LocalConverter` is built. So the
+  choice has to be made before the first conversion and cannot be changed within a run - hence
+  one mode per run and two runs to compare, rather than a flag per document.
+- `-Dfidelity.updateFields=false` therefore cannot simply clear the property: `docx4j.properties`
+  would put the configured script back. Instead documents4j's own bundled `word_convert.vbs` is
+  unpacked from the classpath into `outDir` and pointed at explicitly. That script opens, saves
+  and closes, and touches no field.
+
+`-Dfidelity.updateFields=true` uses the script named by `-Dfidelity.fieldUpdateScript=<path>` if
+you give one, and otherwise writes one into `outDir` - documents4j's default plus a field update.
+Writing our own rather than using the sample in `docx4j-samples-resources` is deliberate: that
+sample calls `wordDocument.TablesOfContents(1).Update` inside the `On Error Resume Next` block
+that precedes its `Err` check, so **a document with no table of contents quits -2**, which
+documents4j reports as `The input file seems to be corrupt`. The generated script updates every
+story range's fields (the body, but also the headers, footers and footnotes, which
+`Document.Fields` alone does not reach) and every TOC, then clears `Err`, so a document with
+neither is converted rather than failed.
+
+Leaving `fidelity.updateFields` unset changes nothing about the machine's configuration and
+prints what that resolves to - which is itself worth running once, since **whether the goldens
+were cut with a field-updating script has never been checked**, only assumed.
+
 ## Scoring a real-document corpus
 
 `run` is for the hand-built probes: it renders everything, stops at the first
