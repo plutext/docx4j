@@ -447,7 +447,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * for no reason the documents support.  @since 17.1.1 */
 			double[] min = new double[cols], max = new double[cols];
 			// the incompressible part of each column: its cell margins and the widest
-			// picture it holds (what a shortfall cannot take); a column no single cell describes
+			// picture it holds (see AutofitLayout.squeeze); a column no single cell describes
 			// gets the table's margins
 			int[] margin = new int[cols];
 			java.util.Arrays.fill(margin, cellMarginsTwips(tblPr));
@@ -701,7 +701,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	/**
 	 * Keep the widths this class chose inside the page: where the autofit pass
 	 * (which sizes columns from their content, and so can be wrong) came out wider
-	 * than the text column, every column is scaled down in proportion.
+	 * than the text column, the shortfall is shared as Word shares it - each column
+	 * keeps its cell margins and any picture, and the text is squeezed in proportion
+	 * ({@link org.docx4j.model.table.AutofitLayout#squeeze}; {@link #SHORTFALL_BY_TEXT}
+	 * restores 17.1.0's scaling of every column in proportion).
 	 *
 	 * <p>A table's own w:tblGrid is left alone even when it is wider, because that is
 	 * what Word does: measured over the real-document corpus, Word draws tables whose
@@ -742,6 +745,28 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	private static boolean scaleContentAutofitToPage() {
 		return org.docx4j.Docx4jProperties.getProperty(SCALE_CONTENT_AUTOFIT, true);
+	}
+
+	/** docx4j.convert.out.fo.tables.shortfallByText: where the columns a content pass sized
+	 *  do not fit the width the table has, the shortfall is shared in proportion to each
+	 *  column's <em>text</em> minimum, its cell margins and any picture kept whole
+	 *  ({@link org.docx4j.model.table.AutofitLayout#squeeze}).  {@code false} scales every
+	 *  column in proportion, as 17.1.0 did.  @since 17.1.1 */
+	public static final String SHORTFALL_BY_TEXT = "docx4j.convert.out.fo.tables.shortfallByText";
+
+	private static boolean shortfallByText() {
+		return org.docx4j.Docx4jProperties.getProperty(SHORTFALL_BY_TEXT, true);
+	}
+
+	/** docx4j.convert.out.fo.tables.refitGridByContent: an autofit table whose cached
+	 *  w:tblGrid is wider than {@link #GRID_OVERHANG_LIMIT} allows, and whose measured content
+	 *  minima do not fit the column either, is laid out on those minima squeezed into the
+	 *  column - as Word, which re-runs its autofit on open, lays it out - rather than on its
+	 *  grid scaled in proportion.  {@code false} scales the grid, as 17.1.0 did.  @since 17.1.1 */
+	public static final String REFIT_GRID_BY_CONTENT = "docx4j.convert.out.fo.tables.refitGridByContent";
+
+	private static boolean refitGridByContent() {
+		return org.docx4j.Docx4jProperties.getProperty(REFIT_GRID_BY_CONTENT, true);
 	}
 
 	private int[] fitToAvailableWidth(AbstractWmlConversionContext context, AbstractTableWriterModel table,
@@ -809,6 +834,36 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			}
 			if (writable <= 0 || total <= writable) return null;
 			if (ownGrid && total < writable * GRID_OVERHANG_LIMIT) return null;
+
+			/* How the shortfall is shared (§6.5).  Word re-runs its content autofit on an
+			 * autofit table whose cached grid is far wider than the column, so where the
+			 * content pass measured the table and its minima do not fit either, the
+			 * columns are those minima squeezed into the column rather than the grid
+			 * scaled: measured on a template document whose 956pt grids Word refits to
+			 * the 461pt column, Word's grid is the content minima's proportions to within
+			 * 1% on three of its four such tables (five equal token columns come back
+			 * equal, where the scaled grid gave 113 / 69 / 96 / 70 / 105pt), and the
+			 * fourth is a URL our measurement cannot break.  And a shortfall is shared by
+			 * the text, the cell margins being a fixed cost (AutofitLayout.squeeze).  Both
+			 * are properties so the measurement can be repeated.  @since 17.1.1 */
+			AbstractTableWriterModel.AutofitInputs in = table.getAutofitInputs();
+			boolean byContent = false;
+			if (ownGrid && refitGridByContent() && in != null && in.min.length == widths.length) {
+				long minTotal = 0;
+				for (int m : in.min) minTotal += m;
+				if (minTotal > writable) {
+					widths = in.min;
+					total = minTotal;
+					byContent = true;
+				}
+			}
+			if ((byContent || (!ownGrid && table.isContentSizedColumns())) && shortfallByText()
+					&& in != null && in.floor.length == widths.length) {
+				if (log.isDebugEnabled()) {
+					log.debug("Table squeezed from " + total + " to " + writable + " twips by its text minima");
+				}
+				return org.docx4j.model.table.AutofitLayout.squeeze(widths, in.floor, writable);
+			}
 
 			int[] out = new int[widths.length];
 			long given = 0;
@@ -1286,7 +1341,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * Minimum and maximum content widths of a cell in points: {widest unbreakable
 	 * unit, content unwrapped}; null when this output format cannot measure.  A third
 	 * element, where present, is the widest <em>incompressible</em> unit - a picture,
-	 * which Word does not shrink when the column is squeezed.
+	 * which Word does not shrink when the column is squeezed
+	 * ({@link org.docx4j.model.table.AutofitLayout#squeeze}).
 	 * @since 17.0.5
 	 */
 	protected double[] measureCellContent(AbstractWmlConversionContext context, AbstractTableWriterModelCell cell) {

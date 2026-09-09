@@ -61,6 +61,29 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   docx4j.convert.out.fo.tables.scaleContentAutofit (default true: Word's own kept w:tblGrid
   squeezes a 26,129-twip content minimum into the 9,360-twip text column, so the scaling
   stays; §6.5).
+- How a shortfall is shared, derived from the w:tblGrid Word writes on a re-save: where a
+  table's content minima do not fit, each column keeps its cell margins (and any picture) and
+  only the text is squeezed, in proportion (AutofitLayout.squeeze). Scaling every column in
+  proportion gave a 36-column corpus table's first column 49.35pt where Word gives 21.55; the
+  new rule gives 21.35. The same rule lays out an autofit table whose cached grid is far wider
+  than the column and whose minima do not fit it either, as Word re-lays it out, in place of
+  the grid scaled: a template's five equal token columns come back equal where the scaled
+  grid gave 113 / 69 / 96 / 70 / 105pt. New properties docx4j.convert.out.fo.tables.shortfallByText
+  and docx4j.convert.out.fo.tables.refitGridByContent (both default true; false restores
+  17.1.0). Measured: probes identical; corpus 1 unchanged to the line; corpus 2 +159 lines
+  matched and mean line parity 0.8554 -> 0.8562 (the template 0.2950 -> 0.4130); corpus 3
+  +1088 lines and 0.8909 -> 0.8915 (the 311-page document 0.8462 -> 0.9115, 271 -> 277 of
+  Word's 311 pages); nothing down. Derived over the probes and the three corpora - 5,740
+  tables paired with a Word grid, of which only 7 multi-column content-sized tables in 4
+  documents and 6 grid-refit tables in 3 have minima that do not fit - so the population is
+  the two documents above, and the fit is in word-layout-rules.md §6.5.
+- OpcPackage.clone() now carries the package's name across, so a converted copy is the same
+  document for logging (and for the dump above).
+- New diagnostic property docx4j.convert.out.fo.wordLayout.dumpAutofit=<file>: the column
+  sizer appends one record per table (minima, maxima, preferred widths, floors, the width it
+  fitted them into and what it chose), for the layout-fidelity harness's ShortfallFit, which
+  joins them to Word's re-saved grids and scores candidate distribution rules. Unset (the
+  default) nothing is written.
 
 Other:
 

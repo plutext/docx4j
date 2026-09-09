@@ -2,6 +2,7 @@ package org.docx4j.model.table;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -37,5 +38,64 @@ public class AutofitLayoutTest {
 		assertEquals(500, w[0]);
 		assertEquals(2000, w[0] + w[1] + w[2]);
 		assertEquals(w[1], w[2]);
+	}
+
+	// ---- squeeze: how a shortfall is shared (word-layout-rules.md §6.5) ----
+
+	/** The 36-column corpus table Word's kept grid was measured on: 2672 / 664 x 34 / 881
+	 *  twips of minima, 216 of cell margins each, 9350 to share.  Word: 431 / 255,254 / 271. */
+	@Test
+	public void squeezeKeepsMarginsAndSharesByText() {
+		int n = 36;
+		int[] min = new int[n], floor = new int[n];
+		java.util.Arrays.fill(min, 664);
+		java.util.Arrays.fill(floor, 216);
+		min[0] = 2672;
+		min[35] = 881;
+		int[] w = AutofitLayout.squeeze(min, floor, 9350);
+		int sum = 0;
+		for (int v : w) sum += v;
+		assertEquals(9350, sum);
+		assertEquals(431, w[0], 5);       // Word 431; scaling in proportion gives 987
+		assertEquals(271, w[35], 3);      // Word 271
+		for (int i = 1; i < 35; i++) assertEquals(254, w[i], 1);   // Word 255 and 254
+	}
+
+	/** A picture beside a text column: the picture is incompressible.  Word keeps its
+	 *  403 twips of a 1198 table and breaks the text into the 795 left. */
+	@Test
+	public void squeezeKeepsAPictureWhole() {
+		int[] w = AutofitLayout.squeeze(new int[] { 1462, 405 }, new int[] { 30, 405 }, 1198);
+		assertEquals(1198, w[0] + w[1]);
+		assertEquals(405, w[1]);
+		assertEquals(793, w[0]);
+	}
+
+	@Test
+	public void squeezeLeavesFittingWidthsAlone() {
+		assertArrayEquals(new int[] { 300, 400 },
+				AutofitLayout.squeeze(new int[] { 300, 400 }, new int[] { 216, 216 }, 700));
+		assertArrayEquals(new int[] { 300, 400 },
+				AutofitLayout.squeeze(new int[] { 300, 400 }, new int[] { 216, 216 }, 1000));
+	}
+
+	/** Where not even the margins fit, or nothing stands above them, every column is
+	 *  scaled in proportion - the rule the squeeze replaces. */
+	@Test
+	public void squeezeFallsBackToProportion() {
+		assertArrayEquals(new int[] { 100, 300 },
+				AutofitLayout.squeeze(new int[] { 500, 1500 }, new int[] { 216, 216 }, 400));
+		assertArrayEquals(new int[] { 250, 250 },
+				AutofitLayout.squeeze(new int[] { 300, 300 }, new int[] { 300, 300 }, 500));
+		assertArrayEquals(new int[] { 100, 300 },
+				AutofitLayout.squeeze(new int[] { 500, 1500 }, null, 400));
+	}
+
+	@Test
+	public void squeezeSumsExactlyAndKeepsEveryColumnPositive() {
+		int[] w = AutofitLayout.squeeze(new int[] { 217, 218, 219, 5000 }, new int[] { 216, 216, 216, 216 }, 1000);
+		assertEquals(1000, w[0] + w[1] + w[2] + w[3]);
+		for (int v : w) assertTrue(v >= 216);
+		assertTrue(w[3] > w[2]);
 	}
 }

@@ -985,6 +985,9 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		try {
 			saver.save(baos);
 			result = load(new ByteArrayInputStream(baos.toByteArray()));
+			// the clone is the same document for logging purposes (the FO exporter works
+			// on one, and its table sizer's dump names the package)
+			if (result != null && name != null) result.setName(name);
 		} catch (Docx4JException e) {
 			// Shouldn't happen
 			log.error(e.getMessage(), e);

@@ -162,6 +162,9 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.glyphWidths.round` | `true` | Glyph advances are rounded to the nearest 1/1000 em, as Word measures and as Word's own PDFs record them; FOP truncates them, which runs every line it measures up to 0.1% narrow ([§10](#s10advances)). `false` leaves FOP's width table - and the `/Widths` written from it - alone. |
 | `docx4j.convert.out.fo.kerning` | `false` | `false`: fonts are declared unkerned, with a kerned twin that only the runs Word kerns are sent to (§5.4). `true`: every font kerns, as before 17.0.5. |
 | `docx4j.convert.out.fo.ligatures` | `false` | `false`: Latin runs asking for neither ligatures nor kerning are set in a `+noliga` declaration to which FOP applies no OpenType feature (§5.5). `true`: FOP's own behaviour, GSUB `liga` everywhere. |
+| `docx4j.convert.out.fo.tables.shortfallByText` | `true` | Where a content-sized table's minima do not fit the width it has, each column keeps its cell margins and any picture and the shortfall comes out of the text, in proportion ([§6.5](#s65shortfall)). `false` scales every column in proportion, as 17.1.0 did. |
+| `docx4j.convert.out.fo.tables.refitGridByContent` | `true` | An autofit table whose cached `w:tblGrid` is beyond `GRID_OVERHANG_LIMIT` and whose measured minima do not fit the column either is laid out on those minima, squeezed as above, rather than on its grid scaled ([§6.5](#s65shortfall)). `false` scales the grid, as 17.1.0 did. |
+| `docx4j.convert.out.fo.wordLayout.dumpAutofit` | unset | A file to which the column sizer appends one record per table - the minima, maxima, preferred widths and floors it measured, the width it fitted them into and what it chose - for the harness's `ShortfallFit`. Unset, nothing is written; set, the output is unchanged. |
 | `docx4j.convert.out.fo.tables.position` | `true` | A floating table's `w:tblpPr`: the grid edge at `tblpX`/`tblpXSpec`, and a page- or margin-anchored table which opens its section placed absolutely (§6.8). `false` lays every table out in the flow, as 17.0.5 did. |
 | `docx4j.convert.out.fo.frames.position` | `true` | A paragraph whose `w:framePr` is anchored to the page or to the margin is lifted into a positioned block-container, and the flow keeps the band of a frame no text may run beside (§9.5). `false` lays every framed paragraph out where it falls, as 17.0.5 did. |
 | `docx4j.convert.out.fo.pictures.float` | `true` | Whether a picture Word wraps text around may be an `fo:float`. `false` lays such pictures out in the flow (no text beside them, but immune to the FOP float defect, §10). Text boxes are never floats whatever this says. |
@@ -2370,12 +2373,119 @@ and gave back the whole of the document's gain from the cell break, 0.8462 -> 0.
 the three corpora it moved the same-page-count figure +1, +1, 0 and lines matched +32, -14,
 -838 against scaling. Kept as a property so the measurement can be repeated. Where the
 proportional squeeze and Word's part company is the **distribution**: Word's kept grid gives
-that table's first column 431 twips and each of the other 35 exactly 255 - the 431 holds
-`Categorizador / Período`, whose minimum is some 1,400 twips, the 255s hold `sep.` and
-`2012`, some 400 - which is far flatter than proportion to the minima, and a template of
-`${...}` tokens beside prose gains six pages under the cell break because its token columns
-are squeezed as hard as its prose ones. How Word shares a shortfall among columns whose
-content cannot fit is the open measurement, and the one that would recover those pages.
+that table's first column 431 twips, the next 34 columns 255 and then 254, and the last 271 -
+the 431 holds `Categorizador / Período`, the 255s `sep.` and `2012`, the 271 `Totales` -
+which is far flatter than proportion to the minima, and a template of `${...}` tokens beside
+prose gained six pages under the cell break because its token columns were squeezed as hard
+as its prose ones.
+
+<a id="s65shortfall"></a>**How Word shares a shortfall: the cell margins are a fixed cost, and
+only the text is squeezed** (17.1.1). Derived from Word's re-saved grids rather than guessed
+at: `docx4j.convert.out.fo.wordLayout.dumpAutofit` has the column sizer write what it measured
+for every table - the per-column content minima, maxima, preferred widths and floors - and the
+harness's `ShortfallFit` joins those records to the `w:tblGrid` Word wrote for the same table and
+keeps the tables whose minima exceed the width Word gave them. **The population is tiny.** Of
+the 5,740 tables paired with a Word grid across the probes and the three corpora, the sizer
+measured 4,276 and sized 1,275 from their content; of those, **7 multi-column tables in 4
+documents** have minima that do not fit (plus 414 single-column ones, 411 of them the same
+document's nested table measured two twips over its cell, which is noise), and a further **6
+autofit tables in 3 documents** have a cached grid Word rewrote narrower than their minima - the
+template document above is 4 of the 6. So no rule can be worth more than those documents, and
+the earlier "divide equally" attempt failed because it was fitted to two tables, one of which
+(the token template) is a grid-refit case its rule never reached.
+
+The decisive table is the 36-column one, because it has three distinct column classes. With
+docx4j's measurements - minima of 2672 twips for column 1, 664 for the next 34 and 881 for the
+last, 216 twips of cell margins on each (the table style's 108 + 108) - and Word's 9350 to
+share, *proportional to the minima* gives 987 / 237 / 315 and an equal division 260 each, where
+Word wrote **431 / 255,254 / 271**. Take the margins out first and the numbers fall into place:
+the text minima are 2454 / 446 / 663, the text space is 9350 - 36 x 216 = 1574, and sharing
+that in proportion to the text gives 211 / 38 / 57, which with the margins back is
+**427 / 254 / 273** - within 1% of Word on every column. (Word's twelve 255s and then 254s are
+34 equal shares of 8648 rounded by largest remainder, and `AutofitLayout.squeeze` rounds the
+same way.) On the table of a text column beside a picture, Word keeps the picture's 403 twips
+of the 1198 and breaks the text into what is left: a picture is a floor too, so the FO cell
+measurer now reports the widest picture with the minimum and maximum, and a column's floor is
+its margins plus that. The rule is the **floor-plus-proportional** hybrid, with the floor
+measured rather than fitted.
+
+Scored on shares (the total is the page fit's business) against Word's grid, per column
+|ours / Word's - 1|; "within" counts tables whose worst column is inside the band:
+
+| rule | content shortfall, 7 tables: col mean / table median / within 1% / 5% | grid refit, 6 tables: col mean / table median / within 1% / 5% |
+|---|---|---|
+| proportional to the minima | 0.181 / 0.224 / 2 / 2 | 0.060 / 0.001 / 4 / 4 |
+| proportional to the grid (17.1.0, grid refit) | - | 0.169 / 0.194 / 1 / 2 |
+| equal | 0.246 / 0.366 / 1 / 1 | 0.250 / 0.228 / 2 / 2 |
+| equal, a column below its share takes its max | 0.122 / 0.032 / 3 / 3 | 0.193 / 0.113 / 2 / 2 |
+| minima ^ 0.5 | 0.124 / 0.070 / 1 / 2 | 0.113 / 0.104 / 2 / 2 |
+| minima ^ 0.8 | 0.140 / 0.163 / 1 / 2 | 0.061 / 0.043 / 2 / 3 |
+| floor = 1/4 of the equal share, remainder by (min - floor) | 0.161 / 0.200 / 2 / 2 | 0.043 / 0.002 / 3 / 4 |
+| **floor = margins + picture, remainder by (min - floor)** | **0.106 / 0.002 / 4 / 4** | **0.053 / 0.002 / 3 / 4** |
+
+The three content tables the rule misses are not distribution errors but measurement ones,
+and the same on the grid side: one column holds a 117-character URL, which Word breaks after
+its slashes and docx4j measures whole, so Word's minimum there is a third of ours; another is
+a `pct` table whose second column Word gives a third of the width we measure as its minimum;
+and two five-column tables of the same document have minima Word plainly measured differently
+(it gives one column more than our *maximum*). Where the measurements agree - the 36-column
+table, and on the grid side five equal token columns (Word: five equal), an eight-column one
+(within 1%) and four of the five columns of another (within 1.6%) - the rule holds. On the
+grid side plain proportion to the minima is the same rule to within the margins' share of
+those minima (12%), which is why it lands one more table inside 1% there while the floor rule
+has the lower mean; the 36-column table, where the margins are a third of the minima, is what
+decides between them, by 2.3x on its first column. The powers and the fractional floors are
+the rule's competitors only because they approximate it: a fixed floor is a power below one
+for every column, and the fraction that fits best is the one closest to the margins' share of
+the minima. Simpler rules were preferred wherever they were close, and none is.
+
+What the rule reaches (both are properties, so either can be switched off to repeat the
+measurement):
+
+* `docx4j.convert.out.fo.tables.shortfallByText` (default `true`): a content-sized table whose
+  minima do not fit is squeezed by `AutofitLayout.squeeze` in `fitToAvailableWidth`. `false`
+  scales every column in proportion, as 17.1.0 did.
+* `docx4j.convert.out.fo.tables.refitGridByContent` (default `true`): an autofit table whose
+  cached grid is beyond `GRID_OVERHANG_LIMIT`, and whose measured minima do not fit the column
+  either, is laid out on those minima squeezed - Word re-runs its autofit on such a table, and
+  the grid population above is its answer - rather than on the grid scaled: the template's
+  five equal token columns, which the scaled grid gave 113 / 69 / 96 / 70 / 105pt, come back
+  equal. `false` scales the grid, as 17.1.0 did. A grid whose minima *do* fit is still scaled;
+  content-sizing those was measured and rejected (candidate F, 17.1.1: too wide far more often
+  than not).
+
+**Squeezing a `pct` table into its percentage was measured and set aside.** The page fit
+exempts a `pct` table ([above](#s65pct)), so one whose minima do not fit the percentage width
+overhangs at its minima, where Word's grid is exactly the percentage (the 311-page document's
+two-column `pct` table: minima 9355, Word 9350). Squeezing it in the content pass instead was
+right on that total and wrong on two documents: a 43-page mode-12 document whose only table
+states `w:tblW 5000 pct` on an 8504-twip text column with 60-twip cell margins has a grid
+Word wrote of **4312 + 4312 = 8624** - the text column plus one pair of its cell margins, the
+grid-edge shift of [§6.1](#s61autofit) applied to a percentage - so the squeeze into 8504 was
+1.4% narrow and cost it a page (0.9493 -> 0.9293, 43 -> 44 pages against Word's 43); and a
+twelve-column `pct` table whose grid Word kept, with six columns preferred and six auto,
+was squeezed by the text where Word's cache gives the preferred columns their widths in
+full and the auto ones as little as 7 twips (one line lost). It did win one document, a
+31-page one whose single-column `pct` tables hold text wider than the percentage (0.9766 ->
+0.9868), but over the corpora it was lines matched -1 on the first and the same-page-count
+figure 64 -> 63 on the third, so it does not ship; the 43-page document says the `pct`
+resolution below mode 15 is what to fix first.
+
+Measured against the cell-break build, probes and corpora, sequentially: the 36 probes are
+line for line what they were, and so are the 40 newer table probes on the share, with the
+rule on and off; the first corpus is unchanged to the line; the second gains **+159 lines
+matched** (56009 -> 56168 of 71789) and 0.8554 -> 0.8562 of mean line parity, all of it the
+template document, **0.2950 -> 0.4130** - its page-1 token table is now Word's, column for
+column - though its page count goes 21 -> 24 against Word's 15, because the URL table above
+now gives its URL column 286pt (Word: 216) and starves the `Conclusions` column beside it
+to 44pt (Word: 77), which breaks `Pas soumis à Audit` a letter to a line; that is the
+measurement residual, not the rule, and the next thing to fix is the sizer measuring a word
+at the line manager's own break opportunities (Word and the line manager both break that
+URL after its `?` and its hyphens; the sizer splits at white space only). The third corpus
+gains **+1088 lines** (170261 -> 171349 of 186262) and 0.8909 -> 0.8915, again one
+document: the 311-page one goes **0.8462 -> 0.9115** and 271 -> 277 pages against Word's
+311, its 36-column table's first column now 21.35pt against Word's 21.55 (it was 49.35).
+No aggregate figure falls, no document moves down, and no probe loses a line.
 
 A table's **own `w:tblGrid`** is left alone even when it is wider than the text column:
 measured over the corpus, Word draws tables whose grid is 3% to 19% wider than the text
