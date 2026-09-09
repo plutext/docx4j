@@ -42,6 +42,7 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SectPr;
@@ -212,7 +213,15 @@ public class ConversionSectionWrapperFactory {
 		// Now go through the document content,
 		
 		int sectPrIndex = 0; // includes continuous ones
-		for (Object o : document.getBody().getContent() ) {
+		List<Object> bodyContent = document.getBody().getContent();
+		org.docx4j.model.PropertyResolver propertyResolver = null;
+		try {
+			propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.warn("no property resolver; a style's w:pageBreakBefore will not be seen: " + e.getMessage());
+		}
+		for (int bodyIndex = 0; bodyIndex < bodyContent.size(); bodyIndex++) {
+			Object o = bodyContent.get(bodyIndex);
 			
 			if (o instanceof org.docx4j.wml.P) {
 				
@@ -253,6 +262,9 @@ public class ConversionSectionWrapperFactory {
 
 							if (insertPageBreak(ppr.getSectPr().getPgSz(), followingSectPr.getPgSz())) {
 								log.info("following sectPr is continuous but changes the page size or orientation; Word starts a page, so this section is not merged into it");
+							} else if (startsPage(bodyIndex + 1 < bodyContent.size() ? bodyContent.get(bodyIndex + 1) : null,
+									propertyResolver)) {
+								log.info("following sectPr is continuous but its first paragraph breaks the page; Word starts a page there anyway, so this section is not merged into it");
 							} else {
 								log.info("following sectPr is continuous; this section wrapper must include its contents ");
 								ignoreThisSection = true;
@@ -296,11 +308,13 @@ public class ConversionSectionWrapperFactory {
 									|| closesAlignedTable(ppr.getSectPr(), sectionContent)) {
 								sectionContent.add(o);
 							}
+							int[] weights = partWeights(sectionContent, columnParts);
 							Merged merged = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
 							currentSectionWrapper = createSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
 									++conversionSectionIndex, sectionContent, dummyPageNumbering);
-							useWinningPartCols(currentSectionWrapper, columnParts, ppr.getSectPr(), merged.cols);
+							usePartPageNumbering(currentSectionWrapper, columnParts);
+							useWinningPartCols(currentSectionWrapper, columnParts, ppr.getSectPr(), merged.cols, weights);
 							if (merged.cols != colsNum(ppr.getSectPr())) {
 								currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 							}
@@ -330,11 +344,13 @@ public class ConversionSectionWrapperFactory {
 			return conversionSections;
 		}
 
+		int[] weights = partWeights(sectionContent, columnParts);
 		Merged merged = spanColumnParts(sectionContent, columnParts, document.getBody().getSectPr());
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
 				++conversionSectionIndex, sectionContent, dummyPageNumbering);
-		useWinningPartCols(currentSectionWrapper, columnParts, document.getBody().getSectPr(), merged.cols);
+		usePartPageNumbering(currentSectionWrapper, columnParts);
+		useWinningPartCols(currentSectionWrapper, columnParts, document.getBody().getSectPr(), merged.cols, weights);
 		if (merged.cols != colsNum(document.getBody().getSectPr())) {
 			currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 		}
@@ -442,20 +458,195 @@ public class ConversionSectionWrapperFactory {
 	 * and the count must come from the same section, so copy that part's whole
 	 * w:cols across.
 	 *
+	 * <p>Where several parts have that count they may still differ in their gap, which
+	 * the page master can carry only once: since 17.1.1 the <b>gap with the most text
+	 * across the parts sharing it</b> supplies it, since that is where most of the lines
+	 * are laid out.  It used to be the sequence's own section if it had the count, else
+	 * the first part that did.  Measured on a mode-15 document whose two-column
+	 * training text ({@code w:cols w:num="2" w:space="284"}) is followed, in the same
+	 * page-sequence, by a five-line two-column section at {@code w:space="708"}: the
+	 * master took 35.4pt, the columns came out 244pt instead of Word's 255, and the text
+	 * overflowed onto extra pages (4 of Word's 7 matched).  Summed over the parts, not
+	 * the single largest: a six-page document alternating ten short two-column parts at
+	 * {@code w:space="146"} with two longer ones at 428 lost 0.26 of line parity to the
+	 * largest part's gap, and is right on the summed one.</p>
+	 *
 	 * @param lastSectPr the sectPr that ends the page-sequence
 	 * @param cols the column count the wrapper will use
+	 * @param weights the text length of each part, the sequence's own last
+	 *        ({@link #partWeights})
 	 * @since 17.0.5
 	 */
 	private static void useWinningPartCols(ConversionSectionWrapper wrapper, List<MergedPart> columnParts,
-			SectPr lastSectPr, int cols) {
+			SectPr lastSectPr, int cols, int[] weights) {
 		if (wrapper == null || columnParts.isEmpty() || cols < 2) return;
-		if (colsNum(lastSectPr) == cols) return; // the wrapper's own w:cols already won
-		for (MergedPart part : columnParts) {
-			if (colsNum(part.sectPr) == cols && part.sectPr.getCols() != null) {
-				wrapper.getPageDimensions().setCols(part.sectPr.getCols());
-				return;
+		java.util.Map<String, Integer> weightByGap = new java.util.LinkedHashMap<String, Integer>();
+		java.util.Map<String, SectPr> firstWithGap = new java.util.HashMap<String, SectPr>();
+		for (int i = 0; i <= columnParts.size(); i++) {
+			SectPr sectPr = (i < columnParts.size() ? columnParts.get(i).sectPr : lastSectPr);
+			if (sectPr == null || colsNum(sectPr) != cols || sectPr.getCols() == null) continue;
+			String gap = gapKey(sectPr.getCols());
+			weightByGap.merge(gap, weights[i], Integer::sum);
+			firstWithGap.putIfAbsent(gap, sectPr);
+		}
+		SectPr winner = null;
+		int best = -1;
+		for (java.util.Map.Entry<String, Integer> e : weightByGap.entrySet()) {
+			if (e.getValue() > best) { // ties: the earliest part
+				best = e.getValue();
+				winner = firstWithGap.get(e.getKey());
 			}
 		}
+		if (winner == null || winner == lastSectPr) return; // the wrapper's own w:cols already won
+		wrapper.getPageDimensions().setCols(winner.getCols());
+	}
+
+	/** What tells one w:cols' gap from another's: the equal-columns space, or the
+	 *  columns' own widths and spaces where w:col children declare them. */
+	private static String gapKey(org.docx4j.wml.CTColumns cols) {
+		if (cols.getCol() != null && !cols.getCol().isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			for (org.docx4j.wml.CTColumn col : cols.getCol()) {
+				sb.append(col.getW()).append('/').append(col.getSpace()).append(';');
+			}
+			return sb.toString();
+		}
+		return String.valueOf(cols.getSpace());
+	}
+
+	/** The text length of each merged part, the sequence's own part last: the weight
+	 *  {@link #useWinningPartCols} settles a column-gap tie by.  Taken before
+	 *  spanColumnParts wraps the parts, whose ends index the unwrapped content.
+	 *  @since 17.1.1 */
+	private static int[] partWeights(List<Object> content, List<MergedPart> columnParts) {
+		int[] weights = new int[columnParts.size() + 1];
+		int start = 0;
+		for (int i = 0; i < columnParts.size(); i++) {
+			int end = Math.max(start, Math.min(columnParts.get(i).end, content.size()));
+			weights[i] = textLength(content.subList(start, end));
+			start = end;
+		}
+		weights[columnParts.size()] = textLength(content.subList(start, content.size()));
+		return weights;
+	}
+
+	private static int textLength(List<Object> content) {
+		int n = 0;
+		for (Object o : content) {
+			o = XmlUtils.unwrap(o);
+			if (o instanceof org.docx4j.wml.Text) {
+				String v = ((org.docx4j.wml.Text) o).getValue();
+				n += (v == null ? 0 : v.length());
+			} else if (o instanceof org.docx4j.wml.SdtElement) {
+				org.docx4j.wml.SdtElement sdt = (org.docx4j.wml.SdtElement) o;
+				if (sdt.getSdtContent() != null) n += textLength(sdt.getSdtContent().getContent());
+			} else if (o instanceof ContentAccessor) {
+				n += textLength(((ContentAccessor) o).getContent());
+			}
+		}
+		return n;
+	}
+
+	/**
+	 * A page-sequence made of merged continuous sections is built on the sectPr which
+	 * ends it, so its page numbering was that last part's: a section restarting the
+	 * numbering ({@code w:pgNumType/@w:start}) which then ran into a continuous section
+	 * lost the restart, and its folios continued from the section before.  The sequence
+	 * starts with its first part, so the start and the format come from the first of its
+	 * parts to declare them; the wrapper's own, which is the last, still supplies
+	 * whatever no earlier part did.
+	 *
+	 * @since 17.1.1
+	 */
+	private static void usePartPageNumbering(ConversionSectionWrapper wrapper, List<MergedPart> columnParts) {
+		if (wrapper == null || columnParts.isEmpty() || wrapper.getPageNumberInformation() == null) return;
+		PageNumberInformation info = wrapper.getPageNumberInformation();
+		boolean startFound = false, formatFound = false;
+		for (MergedPart part : columnParts) {
+			CTPageNumber pgNumType = (part.sectPr == null ? null : part.sectPr.getPgNumType());
+			if (pgNumType == null) continue;
+			if (!startFound && pgNumType.getStart() != null) {
+				info.setPageStart(pgNumType.getStart().intValue());
+				startFound = true;
+			}
+			if (!formatFound && pgNumType.getFmt() != null) {
+				info.setDefaultNumberFormat(pgNumType.getFmt().value());
+				formatFound = true;
+			}
+		}
+	}
+
+	/**
+	 * Whether Word starts a page at this continuous section break for a reason of the
+	 * content's own: the block which opens the next section is a paragraph carrying
+	 * {@code w:pageBreakBefore} - its own or its style's - or a table whose first
+	 * paragraph does, which Word applies to the table (&#xa7;3.3).  The break is then a
+	 * next-page break as far as layout goes, and the section keeps its own page master,
+	 * page numbering and headers rather than being merged into the sequence before it
+	 * (where its first part would be spanned and indented to approximate them, and its
+	 * numbering restart lost).
+	 *
+	 * <p>Measured on a 179-page mode-12 document whose body section - continuous,
+	 * {@code w:pgNumType w:start="1"}, opened by a {@code Heading 1} whose style breaks
+	 * before - was merged into the roman-numbered front matter's page-sequence: its
+	 * folios ran 7, 8, 9... where Word's run viii, 1, 2..., 179 footer lines.</p>
+	 *
+	 * <p>A break-only paragraph does not count: Word puts its mark on the page the
+	 * section break opens and the break makes another (WordLayoutFixups.
+	 * mergePageBreakParagraphs), so merging is what reproduces that.</p>
+	 *
+	 * @param next the body's block after the paragraph carrying the section break, or null
+	 * @since 17.1.1
+	 */
+	public static boolean startsPage(WordprocessingMLPackage wmlPackage, Object next) {
+		org.docx4j.model.PropertyResolver propertyResolver = null;
+		try {
+			propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+		} catch (Docx4JException e) {
+			log.warn("no property resolver; a style's w:pageBreakBefore will not be seen: " + e.getMessage());
+		}
+		return startsPage(next, propertyResolver);
+	}
+
+	private static boolean startsPage(Object next, org.docx4j.model.PropertyResolver propertyResolver) {
+		next = XmlUtils.unwrap(next);
+		P p = null;
+		if (next instanceof P) {
+			p = (P) next;
+			if (rendersNothing(p)) return false;
+		} else if (next instanceof org.docx4j.wml.Tbl) {
+			p = firstParagraph((org.docx4j.wml.Tbl) next);
+		}
+		if (p == null || p.getPPr() == null) return false;
+		PPr pPr = p.getPPr();
+		if (propertyResolver != null) {
+			try {
+				PPr effective = propertyResolver.getEffectivePPr(pPr);
+				if (effective != null) pPr = effective;
+			} catch (Exception e) {
+				log.warn("effective pPr not resolved: " + e.getMessage());
+			}
+		}
+		return pPr.getPageBreakBefore() != null && pPr.getPageBreakBefore().isVal();
+	}
+
+	/** The first paragraph of the table's first cell, or null. */
+	private static P firstParagraph(org.docx4j.wml.Tbl tbl) {
+		for (Object r : tbl.getContent()) {
+			r = XmlUtils.unwrap(r);
+			if (!(r instanceof org.docx4j.wml.Tr)) continue;
+			for (Object c : ((org.docx4j.wml.Tr) r).getContent()) {
+				c = XmlUtils.unwrap(c);
+				if (!(c instanceof org.docx4j.wml.Tc)) continue;
+				for (Object o : ((org.docx4j.wml.Tc) c).getContent()) {
+					o = XmlUtils.unwrap(o);
+					if (o instanceof P) return (P) o;
+				}
+				return null;
+			}
+			return null;
+		}
+		return null;
 	}
 
 	/**

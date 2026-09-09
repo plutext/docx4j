@@ -109,14 +109,38 @@ public class FOPAreaTreeHelper {
 		// Now generate content; let's use
 		P filler = createFillerP();
 		List<Object> contents = hfPkg.getMainDocumentPart().getContent();
+
+		/* The page masters this pass measures must be the ones the real pass builds,
+		 * and ConversionSectionWrapperFactory decides whether a continuous section
+		 * is merged into the sequence before it partly on the paragraph which opens it
+		 * (startsPage: one which breaks the page keeps its section apart).  The
+		 * fillers below carry no such break, so the trimmed package merged where the
+		 * document does not, its masters were named differently, and the real masters
+		 * were left with the half-page defaults: measured, a 179-page document came
+		 * out as 1,429 pages.  So a section which opens with a page break in the
+		 * document opens with one here too.  @since 17.1.1 */
+		java.util.Set<SectPr> followedByPageStart = java.util.Collections.newSetFromMap(
+				new java.util.IdentityHashMap<SectPr, Boolean>());
+		List<Object> flat = new ArrayList<Object>();
+		flatten(contents, flat);
+		for (int i = 0; i + 1 < flat.size(); i++) {
+			Object o = XmlUtils.unwrap(flat.get(i));
+			if (o instanceof P && ((P) o).getPPr() != null && ((P) o).getPPr().getSectPr() != null
+					&& org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory
+							.startsPage(hfPkg, flat.get(i + 1))) {
+				followedByPageStart.add(((P) o).getPPr().getSectPr());
+			}
+		}
 		contents.clear();
+		boolean breakFirst = false;
 		
 		for (SectPr sectPr : sectPrList) {
 			
+			contents.add(breakFirst ? createBreakingFillerP() : filler);
 			contents.add(filler);
 			contents.add(filler);
 			contents.add(filler);
-			contents.add(filler);
+			breakFirst = followedByPageStart.contains(sectPr);
 			
 			// We expect to cause, in due course, something like:
 			// WARN org.apache.fop.apps.FOUserAgent .processEvent line 97 - 
@@ -137,7 +161,7 @@ public class FOPAreaTreeHelper {
 		// Add content before the body level sectPr
 		if (hfPkg.getMainDocumentPart().getJaxbElement().getBody().getSectPr()!=null) {
 
-			contents.add(filler);
+			contents.add(breakFirst ? createBreakingFillerP() : filler);
 			contents.add(filler);
 			contents.add(filler);
 			contents.add(filler);
@@ -290,6 +314,28 @@ public class FOPAreaTreeHelper {
 			}
 			return false;
 		}
+    }
+
+    /** The block-level content, with block-level content controls unwrapped (the
+     *  section factory removes them before it looks at the body).  @since 17.1.1 */
+    private static void flatten(List<Object> content, List<Object> out) {
+    	for (Object o : content) {
+    		Object u = XmlUtils.unwrap(o);
+    		if (u instanceof org.docx4j.wml.SdtBlock) {
+    			org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) u;
+    			if (sdt.getSdtContent() != null) flatten(sdt.getSdtContent().getContent(), out);
+    		} else {
+    			out.add(o);
+    		}
+    	}
+    }
+
+    /** A filler which opens a page, standing in for a paragraph whose
+     *  w:pageBreakBefore keeps its continuous section its own page-sequence.  @since 17.1.1 */
+    private static P createBreakingFillerP() {
+    	P p = createFillerP();
+    	p.getPPr().setPageBreakBefore(Context.getWmlObjectFactory().createBooleanDefaultTrue());
+    	return p;
     }
 
     private static P createFillerP() {

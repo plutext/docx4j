@@ -453,7 +453,88 @@ public class WordLayoutFixupsTest {
 		}
 	}
 
+	// ---- page breaks in list items (§3.3)
+
+	private static String listItem(String bodyBlock) {
+		return "<fo:list-block space-before=\"8pt\"><fo:list-item><fo:list-item-label><fo:block>1.</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body>" + bodyBlock + "</fo:list-item-body></fo:list-item></fo:list-block>";
+	}
+
+	/** A hard break (w:br at the head of the paragraph, which arrives as the paragraph's own
+	 *  w:pageBreakBefore) moves to the list-block and keeps the item's space-before at the
+	 *  top of the page: Word measured at the top margin + 18pt + ascent. */
+	@Test
+	public void hardBreakInAListItemMovesToTheListBlockAndKeepsItsSpace() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ listItem("<fo:block docx4j-pstyle=\"Heading1\" docx4j-list=\"1\" docx4j-break-direct=\"1\" break-before=\"page\">heading</fo:block>"));
+		String out = WordLayoutFixups.apply(in, 15);
+		String lb = out.substring(out.indexOf("<fo:list-block"), out.indexOf(">", out.indexOf("<fo:list-block")));
+		assertTrue("break not moved to the list-block: " + lb, lb.contains("break-before=\"page\""));
+		assertTrue("space-before not retained after a hard break: " + lb, lb.contains("space-before.conditionality=\"retain\""));
+		assertEquals("the break must not stay on the inner block too", 1, count(out, "break-before=\"page\""));
+		assertFalse("hint must not reach FOP", out.contains("docx4j-break-direct"));
+	}
+
+	/** A style's w:pageBreakBefore is not a hard break: the break still moves to the
+	 *  list-block, but the space-before is discarded at the top of the page, as Word does
+	 *  in every mode (mode-12 chapter headings at y=94.8 where ours sat at 102.8). */
+	@Test
+	public void styleBreakInAListItemGetsNoSpaceAtThePageTop() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ listItem("<fo:block docx4j-pstyle=\"Heading1\" docx4j-list=\"1\" break-before=\"page\">heading</fo:block>"));
+		String out = WordLayoutFixups.apply(in, 12);
+		String lb = out.substring(out.indexOf("<fo:list-block"), out.indexOf(">", out.indexOf("<fo:list-block")));
+		assertTrue("break not moved to the list-block: " + lb, lb.contains("break-before=\"page\""));
+		assertFalse("a style's break must not retain the space: " + lb, lb.contains("space-before.conditionality=\"retain\""));
+	}
+
+	/** A column break is always a hard break (there is no paragraph property for one),
+	 *  and keeps the item's space at the top of its column. */
+	@Test
+	public void columnBreakInAListItemKeepsItsSpace() {
+		String in = flow("<fo:block>one</fo:block>"
+				+ listItem("<fo:block docx4j-pstyle=\"Heading1\" docx4j-list=\"1\" break-before=\"column\">heading</fo:block>"));
+		String out = WordLayoutFixups.apply(in, 15);
+		String lb = out.substring(out.indexOf("<fo:list-block"), out.indexOf(">", out.indexOf("<fo:list-block")));
+		assertTrue(lb, lb.contains("break-before=\"column\"") && lb.contains("space-before.conditionality=\"retain\""));
+	}
+
 	// ---- columns and span-all parts (merged continuous sections)
+
+	/** FOP loses a break-before on the first block inside a span="all" wrapper (the
+	 *  narrower part of a merged continuous run, §7): a chapter heading which opens such
+	 *  a part started mid-page.  The break moves onto the wrapper, where FOP takes it. */
+	@Test
+	public void aBreakOnTheFirstBlockOfASpanWrapperMovesToTheWrapper() {
+		String in = flow("<fo:block>two columns</fo:block>"
+				+ "<fo:block span=\"all\">"
+				+ "<fo:block break-before=\"page\">1. Scope</fo:block>"
+				+ "<fo:block>body</fo:block>"
+				+ "</fo:block>");
+		String out = WordLayoutFixups.apply(in, 12);
+		int w = out.indexOf("span=\"all\"");
+		String wrapper = out.substring(out.lastIndexOf("<fo:block", w), out.indexOf(">", w));
+		assertTrue("break not on the wrapper: " + wrapper, wrapper.contains("break-before=\"page\""));
+		assertEquals("one break in all", 1, count(out, "break-before=\"page\""));
+		assertTrue(out.contains(">1. Scope<"));
+	}
+
+	/** The same where the part opens with a numbered heading, whose break
+	 *  listItemPageBreaks has just moved onto its fo:list-block. */
+	@Test
+	public void aListBlockBreakAtTheHeadOfASpanWrapperMovesToTheWrapper() {
+		String in = flow("<fo:block>two columns</fo:block>"
+				+ "<fo:block span=\"all\">"
+				+ listItem("<fo:block docx4j-pstyle=\"Heading1\" docx4j-list=\"1\" break-before=\"page\">Scope</fo:block>")
+				+ "<fo:block>body</fo:block>"
+				+ "</fo:block>");
+		String out = WordLayoutFixups.apply(in, 12);
+		int w = out.indexOf("span=\"all\"");
+		String wrapper = out.substring(out.lastIndexOf("<fo:block", w), out.indexOf(">", w));
+		assertTrue("break not on the wrapper: " + wrapper, wrapper.contains("break-before=\"page\""));
+		assertEquals("one break in all", 1, count(out, "break-before=\"page\""));
+	}
+
 
 	@Test
 	public void paragraphsInsideASpanAllBlockAreNeighbours() {

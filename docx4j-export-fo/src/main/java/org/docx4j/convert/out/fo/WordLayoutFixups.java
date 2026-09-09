@@ -189,6 +189,7 @@ public final class WordLayoutFixups {
 		nestedTableGridEdge(doc);
 		fixLists(doc);
 		listItemPageBreaks(doc); // after fixLists, which is what puts the item's space-before on the list-block
+		spanWrapperBreaks(doc); // after listItemPageBreaks: the break may now be on the list-block
 		blockForEmptyCell(doc);
 		clipExactRows(doc);
 		stripHints(doc);
@@ -2652,6 +2653,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_LABEL_ASCENT);
 			block.removeAttribute(HINT_COLUMN_BREAK);
 			block.removeAttribute(HINT_BREAK_RUN);
+			block.removeAttribute(HINT_BREAK_DIRECT);
 			block.removeAttribute(HINT_TOC_STOP);
 			block.removeAttribute(HINT_FRAME);
 			for (String hint : TAB_HINTS) block.removeAttribute(hint);
@@ -3572,6 +3574,16 @@ public final class WordLayoutFixups {
 	 *  @since 17.1.0 */
 	public static final String HINT_BREAK_RUN = "docx4j-break-run";
 
+	/** XsltFOFunctions' mark on the block of a paragraph whose <em>own</em> {@code w:pPr}
+	 *  carries {@code w:pageBreakBefore}, as against one its style gives it.  A
+	 *  {@code w:br w:type="page"} at the head of a paragraph is turned into exactly that
+	 *  by the PageBreak preprocess, so this is how a hard break is told from a style's
+	 *  break once the FO is built ({@link #listItemPageBreaks}).  A {@code w:pageBreakBefore}
+	 *  a user applied to the paragraph directly looks the same, and is read as a hard
+	 *  break too - the one shape this cannot tell apart.
+	 *  @since 17.1.1 */
+	public static final String HINT_BREAK_DIRECT = "docx4j-break-direct";
+
 	/** The nearest writing-mode in force on this element, or null. */
 	private static String writingMode(Element el) {
 		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
@@ -4056,16 +4068,29 @@ public final class WordLayoutFixups {
 	 * block inside its {@code fo:list-item-body}: FOP lays the list block's space-before
 	 * down on the page the break leaves, so Word's space above the heading is lost.
 	 *
-	 * <p>Measured on a document whose {@code Heading1} carries
+	 * <p>Measured on a mode-15 document whose {@code Heading1} carries
 	 * {@code <w:spacing w:before="360" w:after="240"/>} and whose first run is
 	 * {@code <w:br w:type="page"/>}: Word's heading is at y=85.0 = the top margin (56.7)
 	 * plus 18pt of space-before plus its ascent, where docx4j's block top was 56.75 - the
 	 * top margin exactly - and every line of the page carried the -18.2.  The break moves
 	 * to the {@code fo:list-block}, which then needs
 	 * {@code space-before.conditionality="retain"}, since XSL-FO discards space at the
-	 * start of a reference area (&#xa7;3.3: Word honours space-before at the top of a page
-	 * after an <em>explicit</em> break, and drops it after an automatic one - and an
-	 * automatic break never writes {@code break-before} here).</p>
+	 * start of a reference area.</p>
+	 *
+	 * <p>Only after a <em>hard</em> break, though.  A numbered heading whose page break is
+	 * its style's {@code w:pageBreakBefore} gets no space at the top of its page, in every
+	 * mode: measured on a mode-12 document whose {@code Titre1} carries
+	 * {@code w:before="160"}, Word's chapter headings sit at y=94.8 and ours sat at 102.8 -
+	 * the 8pt retained here, on every chapter page, cascading to +40.8 and +71.5 where it
+	 * pushed a line over; a mode-14 document +6.0 on six chapter pages and a mode-15 one
+	 * +12.1.  That is the class's rule 2 ({@code w:pageBreakBefore} keeps the FO default,
+	 * discard), which 17.1.0 contradicted for list items alone.  The two breaks arrive
+	 * here as the same {@code break-before}; {@link #HINT_BREAK_DIRECT} tells them apart.
+	 * (The mode-15 measurement above shows the hard break inside a paragraph keeping its
+	 * space where {@code w:suppressSpBfAfterPgBrk} drops it after a break-only paragraph,
+	 * &#xa7;3.3, so the compatibility flag is not consulted here.)  A column break is
+	 * always a hard one - there is no paragraph property for it - and keeps its space:
+	 * measured, taking it away cost a five-page document 0.02 of line parity.</p>
 	 *
 	 * @since 17.1.0
 	 */
@@ -4084,9 +4109,44 @@ public final class WordLayoutFixups {
 			if (listBlock == null) continue;
 			block.removeAttribute("break-before");
 			listBlock.setAttribute("break-before", br);
-			if (hasSpace(listBlock, "space-before")) {
+			boolean hardBreak = block.hasAttribute(HINT_BREAK_DIRECT) || "column".equals(br);
+			if (hardBreak && hasSpace(listBlock, "space-before")) {
 				listBlock.setAttribute("space-before.conditionality", "retain");
 			}
+		}
+	}
+
+	/**
+	 * A page break on the first block inside a {@code span="all"} wrapper is lost: FOP
+	 * changes span at the wrapper and never takes the {@code break-before} on the block
+	 * which opens it.  The wrapper is what ConversionSectionWrapperFactory puts round a
+	 * part of a merged continuous run which has fewer columns than the page-sequence
+	 * (&#xa7;7), so the paragraph which opens such a part - a chapter heading whose style
+	 * breaks before, typically - started mid-page.
+	 *
+	 * <p>Measured on a 179-page mode-12 document whose sections 3-6 share a two-column
+	 * page-sequence (the index is two-column): its "1. Scope" heading, a
+	 * {@code w:pageBreakBefore} list item and the first child of the second wrapper, sat
+	 * at y=380 where Word starts the page with it, and every page after it was one off
+	 * until the count recovered.  The same FO fragment with the break on the wrapper,
+	 * through docx4j's own FOP set-up, gives the heading its page; so the break is moved
+	 * there.  (A break on the first block of a <em>flow</em> is ignored by FO either way,
+	 * and moving it onto a wrapper which opens the flow changes nothing.)</p>
+	 *
+	 * @since 17.1.1
+	 */
+	static void spanWrapperBreaks(Document doc) {
+		for (Element wrapper : spanAllBlocks(doc)) {
+			Element first = null;
+			for (Node n = wrapper.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (n instanceof Element) { first = (Element) n; break; }
+			}
+			if (first == null) continue;
+			if (!isFo(first, "block") && !isFo(first, "list-block") && !isFo(first, "table")) continue;
+			String br = first.getAttribute("break-before");
+			if (!"page".equals(br) && !"even-page".equals(br) && !"odd-page".equals(br)) continue;
+			first.removeAttribute("break-before");
+			wrapper.setAttribute("break-before", br);
 		}
 	}
 

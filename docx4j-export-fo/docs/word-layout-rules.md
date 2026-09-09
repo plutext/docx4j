@@ -995,6 +995,25 @@ page carried the -18.2. The `break-before` moves to the `fo:list-block`, which t
 reference area and [§3.3](#s33) is Word's rule here: space-before is honoured at the top of
 a page after an *explicit* break (an automatic one never writes `break-before`).
 
+<a id="s33listpbb"></a>Only after a **hard** break, though. A numbered heading whose page
+break is its *style's* `w:pageBreakBefore` gets no space at the top of its page, in every
+mode - the `w:pageBreakBefore` rule everywhere else in this section: measured on a mode-12
+document whose `Titre1` carries `w:before="160"`, Word's chapter headings sit at y=94.8
+where ours sat at 102.8, +8pt on every chapter page (cascading to +40.8 and +71.5 where a
+line was pushed over); a mode-14 document +6.0 on six chapter pages, a mode-15 one +12.1.
+17.1.0 retained the space for every list-item break. The two breaks arrive in the FO as the
+same `break-before`, but a `w:br` at the head of a paragraph has become the paragraph's
+*own* `w:pageBreakBefore` by then (the `PageBreak` preprocess), so the paragraph's own
+`w:pageBreakBefore` is the mark of a hard break (`docx4j-break-direct`,
+`WordLayoutFixups.listItemPageBreaks`) and the style's is not. A `w:pageBreakBefore` a
+user applied directly to a numbered paragraph reads as a hard break too - the one shape
+this cannot tell apart (one corpus document, nine paragraphs). The hard-break measurement
+above is a mode-15 document: the space is kept after a hard break *inside* the paragraph
+where `w:suppressSpBfAfterPgBrk` drops it after a break-only paragraph (above), so the
+flag is not consulted for this case. A column break in a list item is always a hard one
+(there is no paragraph property for it) and keeps its space: taking it away cost a
+five-page corpus document 0.02 of line parity.
+
 **Widow control.** `w:widowControl` off maps to `widows="1" orphans="1"`; on is the default
 on both sides. Word's widow and orphan decisions match FOP's once the line breaking does
 (`widow-orphan`).
@@ -3412,6 +3431,34 @@ a shared master). That document's page 1 is now 1190.7 x 842.0 and its line pari
 0.6928; a second document's page count reached Word's. Corpus: 7 documents carry the shape,
 2 of them where it changes the output.
 
+<a id="s7startspage"></a>**A continuous section whose first paragraph breaks the page is
+its own page-sequence.** Where the block opening the section is a paragraph carrying
+`w:pageBreakBefore` - its own or its style's - or a table whose first paragraph does
+([§3.3](#s33)), Word starts a page there whatever the break's type says, so the break is a
+next-page break as far as layout goes: the section is not merged into the sequence before
+it, and keeps its own page master, page numbering and headers instead of having them
+approximated by a spanning block and indents (below). Measured on a 179-page mode-12
+document whose body section - continuous, `w:pgNumType w:start="1"`, opened by a
+`Heading 1` whose style breaks before - was merged into the roman-numbered front matter's
+sequence: its folios ran 7, 8, 9... for Word's viii, 1, 2..., 179 footer lines, and the
+heading's own break was lost to the spanning block ([§10](#10-known-fop-defects-and-limitations)).
+A break-only paragraph does not count: Word puts its mark on the page the section break
+opens and the break makes another ([§3.3](#s33each)), which merging reproduces.
+`ConversionSectionWrapperFactory.startsPage`. Three corpus documents carry the shape. The
+header/footer extent pre-pass measures a trimmed copy of the document (four filler
+paragraphs per section), and the page masters it measures must be the ones the real pass
+builds: its fillers now open with a page break wherever the document's section does
+(`FOPAreaTreeHelper.trimContent`) - without that the pre-pass merged where the document did
+not, named its masters differently, and the real masters kept the half-page defaults:
+the 179-page document came out as 1,429 pages.
+
+**A merged sequence numbers its pages as its first part does.** The sequence is built on
+the `w:sectPr` which ends it, so its `w:pgNumType` was the last part's, and a section which
+restarts the numbering and then runs into a continuous section lost the restart. The start
+and the format now come from the first part to declare them; the sequence's own section,
+which is the last, still supplies whatever no earlier part did
+(`ConversionSectionWrapperFactory.usePartPageNumbering`).
+
 **Continuous sections with different column counts.** XSL-FO fixes the column count on the
 page master, so a run of continuous sections has to share one. The page-sequence takes the
 **largest** count, and each narrower part is wrapped in a container both FO exporters
@@ -3451,7 +3498,16 @@ ignored, and §7's unequal-columns table is built only for several `w:col` child
 columns of different widths the container's value is commonly nothing like the real gap -
 measured, 7.7pt where the real gap was 51.25pt - so every line in the section broke
 differently. Where a run of continuous sections is merged, the count and the gap come from
-the same section.
+the same section - and where several parts have the sequence's count but not the same gap,
+from the gap with the **most text across the parts sharing it**, since that is where most
+of the lines are laid out. It used to be the sequence's own section whenever that had the
+count: measured on a mode-15 document whose two-column training text (`w:space="284"`) is
+followed in the same sequence by a five-line two-column section at `w:space="708"`, the
+master took 35.4pt, the columns came out 244pt for Word's 255, and the text overflowed onto
+extra pages (4 of Word's 7 matched). Summed over the parts, not the single largest one: a
+six-page document alternating ten short two-column parts at `w:space="146"` with two longer
+ones at 428 lost 0.26 of line parity to the largest part's gap, and is right on the summed
+one (`ConversionSectionWrapperFactory.useWinningPartCols`).
 
 **Columns of different widths.** XSL-FO's region-body columns are all the same width, so a
 section with `w:cols/@w:equalWidth="0"` and `w:col` children of different widths is
@@ -4568,6 +4624,13 @@ Worked around here, and worth knowing about:
   the float). So a floating table's float goes inside the paragraph it is anchored to, and
   a floating table which the defect above would move to flow level is left in the flow
   instead - losing the wrap rather than the table ([§6.8](#s69)).
+- **A `break-before` on the first block inside a `span="all"` block is lost**: FOP changes
+  span at the block and never takes the break on the child which opens it, so the chapter
+  heading opening the narrower part of a merged continuous run started mid-page (measured on
+  the 179-page document of [§7](#s7startspage): "1. Scope" at y=380 where Word starts the
+  page with it, every page after it one off). The same fragment with the break on the
+  spanning block itself gives the heading its page, so `WordLayoutFixups.spanWrapperBreaks`
+  moves it there.
 - **A block-container in a multi-column flow** makes FOP throw when it balances the last
   page's columns, which is why merged sections carry their margin differences as indents
   ([§7](#s74)).

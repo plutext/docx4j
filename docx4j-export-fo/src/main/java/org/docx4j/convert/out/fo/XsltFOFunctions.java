@@ -1182,6 +1182,14 @@ public class XsltFOFunctions {
 				if (foListBlock!=null) {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_LIST, "1");
 				}
+				// a w:pageBreakBefore the paragraph states itself, as against one its style
+				// gives it: a w:br w:type="page" at the head of the paragraph reaches here in
+				// that form (the PageBreak preprocess), and listItemPageBreaks tells the two
+				// apart by it (§3.3).  @since 17.1.1
+				if (pPrDirect!=null && pPrDirect.getPageBreakBefore()!=null
+						&& pPrDirect.getPageBreakBefore().isVal()) {
+					foBlockElement.setAttribute(WordLayoutFixups.HINT_BREAK_DIRECT, "1");
+				}
 			}
 
 			// automatic hyphenation, from w:settings/w:autoHyphenation and the

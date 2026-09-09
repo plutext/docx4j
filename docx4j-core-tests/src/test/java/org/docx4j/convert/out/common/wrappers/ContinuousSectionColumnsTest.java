@@ -200,4 +200,133 @@ public class ContinuousSectionColumnsTest {
 			assertTrue(!(XmlUtils.unwrap(o) instanceof SdtBlock));
 		}
 	}
+
+	// ---- a continuous section which starts a page anyway (§7)
+
+	/**
+	 * Where the paragraph opening a continuous section breaks the page itself
+	 * (w:pageBreakBefore, its own or its style's), Word starts a page there and the
+	 * break is a next-page one as far as layout goes: the section keeps its own
+	 * page-sequence - its page master, its numbering, its headers - instead of being
+	 * merged into the one before it.  Measured on a 179-page document whose body
+	 * section (continuous, w:pgNumType w:start="1", opened by a Heading 1 which
+	 * breaks before) ran its folios on from the roman front matter: 7, 8, 9... for
+	 * Word's viii, 1, 2...
+	 */
+	@Test
+	public void aContinuousSectionWhoseFirstParagraphBreaksThePageIsNotMerged() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ p("front matter")
+				+ "<w:p><w:pPr><w:sectPr><w:pgNumType w:fmt=\"lowerRoman\"/><w:cols w:space=\"708\"/></w:sectPr></w:pPr></w:p>"
+				+ "<w:p><w:pPr><w:pageBreakBefore/></w:pPr><w:r><w:t>1. Scope</w:t></w:r></w:p>"
+				+ p("body")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:pgNumType w:start=\"1\"/><w:cols w:space=\"708\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		List<ConversionSectionWrapper> list = ConversionSectionWrapperFactory.process(pkg, false, false).getList();
+		assertEquals("two page-sequences", 2, list.size());
+		assertEquals("lowerRoman", list.get(0).getPageNumberInformation().getPageFormat());
+		assertEquals("the body restarts at 1", 1, list.get(1).getPageNumberInformation().getPageStart());
+		assertEquals(2, list.get(1).getContent().size());
+	}
+
+	/** The break may be the paragraph style's rather than the paragraph's own. */
+	@Test
+	public void aStylesPageBreakBeforeCountsToo() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement().getStyle().add(
+				(org.docx4j.wml.Style)XmlUtils.unmarshalString(
+						"<w:style " + W + " w:type=\"paragraph\" w:styleId=\"Chapter\"><w:name w:val=\"Chapter\"/>"
+						+ "<w:pPr><w:pageBreakBefore/></w:pPr></w:style>"));
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ p("front matter")
+				+ "<w:p><w:pPr><w:sectPr><w:cols w:space=\"708\"/></w:sectPr></w:pPr></w:p>"
+				+ "<w:p><w:pPr><w:pStyle w:val=\"Chapter\"/></w:pPr><w:r><w:t>1. Scope</w:t></w:r></w:p>"
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:space=\"708\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		assertEquals(2, ConversionSectionWrapperFactory.process(pkg, false, false).getList().size());
+	}
+
+	/** A break-only paragraph is not a paragraph which starts the page: Word puts its
+	 *  mark on the page the section break opens and the break makes another, which
+	 *  merging (and WordLayoutFixups.mergePageBreakParagraphs) reproduces. */
+	@Test
+	public void aBreakOnlyParagraphDoesNotStopTheMerge() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ p("a")
+				+ "<w:p><w:pPr><w:sectPr><w:cols w:space=\"708\"/></w:sectPr></w:pPr></w:p>"
+				+ "<w:p><w:pPr><w:pageBreakBefore/></w:pPr></w:p>"
+				+ p("b")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:space=\"708\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		assertEquals(1, ConversionSectionWrapperFactory.process(pkg, false, false).getList().size());
+	}
+
+	/**
+	 * A merged sequence is built on the sectPr which ends it, so a section restarting
+	 * the page numbering which runs into a continuous section lost its restart: the
+	 * start and the format now come from the first part to declare them.
+	 */
+	@Test
+	public void aMergedSequenceNumbersItsPagesAsItsFirstPartDoes() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ p("one column")
+				+ "<w:p><w:pPr><w:sectPr><w:pgNumType w:fmt=\"lowerRoman\" w:start=\"5\"/><w:cols w:space=\"708\"/></w:sectPr></w:pPr></w:p>"
+				+ p("two columns")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:num=\"2\" w:space=\"708\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		List<ConversionSectionWrapper> list = ConversionSectionWrapperFactory.process(pkg, false, false).getList();
+		assertEquals(1, list.size());
+		assertEquals(5, list.get(0).getPageNumberInformation().getPageStart());
+		assertEquals("lowerRoman", list.get(0).getPageNumberInformation().getPageFormat());
+	}
+
+	/** Where two merged parts both have the sequence's column count but differ in
+	 *  their gap, the part with the most content supplies it (it used to be the
+	 *  sequence's own section whenever that had the count). */
+	@Test
+	public void theColumnGapComesFromTheColumnPartWithTheMostContent() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ p("a") + p("b") + p("c") + p("d") + p("e")
+				+ "<w:p><w:pPr><w:sectPr><w:cols w:num=\"2\" w:space=\"284\"/></w:sectPr></w:pPr></w:p>"
+				+ p("f")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:num=\"2\" w:space=\"708\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		ConversionSectionWrapper merged = ConversionSectionWrapperFactory.process(pkg, false, false).getList().get(0);
+		assertEquals(2, merged.getPageDimensions().getColsNum());
+		assertEquals(284, merged.getPageDimensions().getColsSpacing());
+	}
+
+	/** Summed over the parts which share a gap, not the single largest part: several
+	 *  short two-column stretches at one gap outweigh one longer stretch at another. */
+	@Test
+	public void theColumnGapIsWeighedAcrossThePartsSharingIt() throws Exception {
+		String twoCols146 = "<w:p><w:pPr><w:sectPr><w:type w:val=\"continuous\"/><w:cols w:num=\"2\" w:space=\"146\"/></w:sectPr></w:pPr></w:p>";
+		String twoCols428 = "<w:p><w:pPr><w:sectPr><w:type w:val=\"continuous\"/><w:cols w:num=\"2\" w:space=\"428\"/></w:sectPr></w:pPr></w:p>";
+		String oneCol = "<w:p><w:pPr><w:sectPr><w:type w:val=\"continuous\"/><w:cols w:space=\"720\"/></w:sectPr></w:pPr></w:p>";
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ p("short one") + twoCols146
+				+ p("x") + oneCol
+				+ p("a longer part") + twoCols428
+				+ p("x") + oneCol
+				+ p("short two") + twoCols146
+				+ p("x") + oneCol
+				+ p("short three") + twoCols146
+				+ p("x")
+				+ "<w:sectPr><w:type w:val=\"continuous\"/><w:cols w:space=\"720\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		ConversionSectionWrapper merged = ConversionSectionWrapperFactory.process(pkg, false, false).getList().get(0);
+		assertEquals(2, merged.getPageDimensions().getColsNum());
+		assertEquals("three short parts at 146 outweigh one long part at 428", 146, merged.getPageDimensions().getColsSpacing());
+	}
 }

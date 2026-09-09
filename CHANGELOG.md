@@ -9,6 +9,18 @@ Changes in Version 17.1.1
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbered heading whose page break is its style's w:pageBreakBefore no longer keeps its
+  space-before at the top of the page (Word drops it in every mode); a hard break at the
+  head of the paragraph still does. Ten corpus documents, a few points per chapter page.
+- A page break on the paragraph opening the narrower part of a merged continuous run (a
+  chapter heading in a document whose index is two-column) was lost by FOP; it is now
+  moved onto the spanning block, which FOP honours.
+- A continuous section whose first paragraph breaks the page anyway is rendered as its own
+  page-sequence, keeping its page-number restart and headers: a 179-page document's folios
+  ran 7, 8, 9... for Word's viii, 1, 2...
+- A merged run of continuous sections takes its page-number start and format from the first
+  part declaring them, not the last; and where two parts share the column count but not the
+  gap, the gap with the most text across the parts sharing it supplies it.
 - The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default

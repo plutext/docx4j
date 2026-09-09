@@ -88,6 +88,11 @@ public class PageNumberInformation {
 	public void setPageFormat(String pageFormat) {
 		this.pageFormat = pageFormat;
 	}
+	/** The format {@code w:pgNumType/@w:fmt} declares, which a PAGE field's own switch
+	 *  still overrides ({@link #getPageFormat}).  @since 17.1.1 */
+	public void setDefaultNumberFormat(String defaultNumberFormat) {
+		this.defaultNumberFormat = defaultNumberFormat;
+	}
 	public boolean hasPageStart() {
 		return pageStart != -1;
 	}
