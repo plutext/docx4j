@@ -329,4 +329,32 @@ public class ContinuousSectionColumnsTest {
 		assertEquals(2, merged.getPageDimensions().getColsNum());
 		assertEquals("three short parts at 146 outweigh one long part at 428", 146, merged.getPageDimensions().getColsSpacing());
 	}
+
+	/** And it keeps the headers and footers it declares itself, which a continuous
+	 *  section beginning mid-page does not (Word's page takes the headers of the
+	 *  section it begins in). */
+	@Test
+	public void aContinuousSectionWhichStartsAPageKeepsItsOwnHeader() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart hp =
+				new org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart(
+						new org.docx4j.openpackaging.parts.PartName("/word/header1.xml"));
+		hp.setPackage(pkg);
+		hp.setJaxbElement((org.docx4j.wml.Hdr) XmlUtils.unmarshalString(
+				"<w:hdr " + W + "><w:p><w:r><w:t>body header</w:t></w:r></w:p></w:hdr>",
+				org.docx4j.jaxb.Context.jc, org.docx4j.wml.Hdr.class));
+		String rId = pkg.getMainDocumentPart().addTargetPart(hp).getId();
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><w:body>"
+				+ p("front matter")
+				+ "<w:p><w:pPr><w:sectPr><w:cols w:space=\"708\"/></w:sectPr></w:pPr></w:p>"
+				+ "<w:p><w:pPr><w:pageBreakBefore/></w:pPr><w:r><w:t>1. Scope</w:t></w:r></w:p>"
+				+ "<w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + rId + "\"/>"
+				+ "<w:type w:val=\"continuous\"/><w:cols w:space=\"708\"/></w:sectPr>"
+				+ "</w:body></w:document>"));
+		List<ConversionSectionWrapper> list = ConversionSectionWrapperFactory.process(pkg, false, false).getList();
+		assertEquals(2, list.size());
+		assertEquals("/word/header1.xml",
+				list.get(1).getHeaderFooterPolicy().getDefaultHeader().getPartName().getName());
+	}
 }

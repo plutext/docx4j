@@ -94,7 +94,29 @@ public class HeaderFooterPolicy {
 	 *  as required.
 	 */
 	public HeaderFooterPolicy(SectPr sectPr, HeaderFooterPolicy previousHF, 
-			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders) 
+			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders) {
+		this(sectPr, previousHF, rels, evenAndOddHeaders, false);
+	}
+
+	/**
+	 * @param startsPage whether the section begins on a page of its own even though
+	 *        its type is continuous (its first paragraph breaks the page), in which
+	 *        case the headers and footers it declares itself apply to it, as they do to
+	 *        a next-page section.  Word's page takes the headers of the section it begins
+	 *        in: a continuous section beginning mid-page has no page of its own, and its
+	 *        own references show only on a page which begins inside it - which docx4j's
+	 *        one page-sequence per run of merged sections cannot do, so there they are
+	 *        ignored and the first part's inherited, as they always were.  Measured on a
+	 *        179-page document whose body section is continuous, breaks the page and
+	 *        declares its own running header: Word paints that header on every body page,
+	 *        where docx4j painted the front matter's on all 170 of them; and honouring a
+	 *        continuous section's references unconditionally cost six corpus documents
+	 *        up to 0.20 of line parity, every one a section beginning mid-page or an
+	 *        empty tail.
+	 * @since 17.1.1
+	 */
+	public HeaderFooterPolicy(SectPr sectPr, HeaderFooterPolicy previousHF, 
+			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean startsPage) 
 //		throws Exception
 		{
 		// Grab what headers and footers have been defined		
@@ -106,7 +128,7 @@ public class HeaderFooterPolicy {
 		List<CTRel> hdrFtrRefs = null;
 		BooleanDefaultTrue titlePage = null;
 		
-		if (sectPr.getType()!=null 
+		if (!startsPage && sectPr.getType()!=null 
 				&& "continuous".equals(sectPr.getType().getVal())) {
 			// If this is a continuous section, use the headers/footers from the previous section!
 			log.debug("this is a continuous section");

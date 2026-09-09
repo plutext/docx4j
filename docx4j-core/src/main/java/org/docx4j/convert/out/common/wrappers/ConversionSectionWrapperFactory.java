@@ -181,10 +181,21 @@ public class ConversionSectionWrapperFactory {
 			SectPr sectPr, HeaderFooterPolicy headerFooterPolicy, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, 
 			int conversionSectionIndex, List<Object> content,
 			boolean dummyPageNumbering) {
+		return createSectionWrapper(sectPr, headerFooterPolicy, rels, evenAndOddHeaders,
+				conversionSectionIndex, content, dummyPageNumbering, false);
+	}
+
+	/** @param startsPage whether the section this sectPr ends is a continuous one which
+	 *  begins a page of its own ({@link #startsPage}), so that its own headers and footers
+	 *  apply to it.  @since 17.1.1 */
+	protected static ConversionSectionWrapper createSectionWrapper(
+			SectPr sectPr, HeaderFooterPolicy headerFooterPolicy, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, 
+			int conversionSectionIndex, List<Object> content,
+			boolean dummyPageNumbering, boolean startsPage) {
 		
 		ConversionSectionWrapper csw = 
 					new ConversionSectionWrapper(sectPr, headerFooterPolicy, rels, evenAndOddHeaders,
-					"s" + Integer.toString(conversionSectionIndex), content);
+					"s" + Integer.toString(conversionSectionIndex), content, startsPage);
 		
 		PageNumberInformation pageNumberInformation = 
 				PageNumberInformationCollector.process(csw, dummyPageNumbering);
@@ -220,6 +231,9 @@ public class ConversionSectionWrapperFactory {
 		} catch (Docx4JException e) {
 			log.warn("no property resolver; a style's w:pageBreakBefore will not be seen: " + e.getMessage());
 		}
+		// whether the section the next sectPr ends began a page of its own although
+		// continuous (startsPage), so that its own headers and footers apply to it
+		boolean thisSectionStartsPage = false;
 		for (int bodyIndex = 0; bodyIndex < bodyContent.size(); bodyIndex++) {
 			Object o = bodyContent.get(bodyIndex);
 			
@@ -256,6 +270,7 @@ public class ConversionSectionWrapperFactory {
 						 */
 
 						boolean ignoreThisSection = false;
+						boolean followingStartsPage = false;
 						SectPr followingSectPr = sectPrs.get(++sectPrIndex);
 						if ( followingSectPr.getType()!=null
 								     && followingSectPr.getType().getVal().equals("continuous")) {
@@ -265,6 +280,7 @@ public class ConversionSectionWrapperFactory {
 							} else if (startsPage(bodyIndex + 1 < bodyContent.size() ? bodyContent.get(bodyIndex + 1) : null,
 									propertyResolver)) {
 								log.info("following sectPr is continuous but its first paragraph breaks the page; Word starts a page there anyway, so this section is not merged into it");
+								followingStartsPage = true;
 							} else {
 								log.info("following sectPr is continuous; this section wrapper must include its contents ");
 								ignoreThisSection = true;
@@ -277,7 +293,9 @@ public class ConversionSectionWrapperFactory {
 							// In case there are some headers/footers that apply to both this content and the 
 							// content before the continuous sectPr,
 							// or that need to get inherited by the section after the continuous sectPr 
-							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders);
+							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
+									thisSectionStartsPage);
+							thisSectionStartsPage = followingStartsPage;
 
 							
 							// (a continuous break which changes the page size is not merged,
@@ -312,7 +330,9 @@ public class ConversionSectionWrapperFactory {
 							Merged merged = spanColumnParts(sectionContent, columnParts, ppr.getSectPr());
 							currentSectionWrapper = createSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders,
-									++conversionSectionIndex, sectionContent, dummyPageNumbering);
+									++conversionSectionIndex, sectionContent, dummyPageNumbering,
+									thisSectionStartsPage);
+							thisSectionStartsPage = followingStartsPage;
 							usePartPageNumbering(currentSectionWrapper, columnParts);
 							useWinningPartCols(currentSectionWrapper, columnParts, ppr.getSectPr(), merged.cols, weights);
 							if (merged.cols != colsNum(ppr.getSectPr())) {
@@ -348,7 +368,7 @@ public class ConversionSectionWrapperFactory {
 		Merged merged = spanColumnParts(sectionContent, columnParts, document.getBody().getSectPr());
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
-				++conversionSectionIndex, sectionContent, dummyPageNumbering);
+				++conversionSectionIndex, sectionContent, dummyPageNumbering, thisSectionStartsPage);
 		usePartPageNumbering(currentSectionWrapper, columnParts);
 		useWinningPartCols(currentSectionWrapper, columnParts, document.getBody().getSectPr(), merged.cols, weights);
 		if (merged.cols != colsNum(document.getBody().getSectPr())) {

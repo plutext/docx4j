@@ -3989,6 +3989,16 @@ that a header line holding only the field still measures as a line. The space in
 the field survives as it does in front of a page number (a zero-width space after it, below):
 "Extarct Tool - HLD 1.1" had come out "HLD1.1". Not done: `\p` ("above"/"below"), `\t`
 (suppress non-delimiter characters), and the formatting switches other than `MERGEFORMAT`.
+<a id="s7conthf"></a>**A page's headers and footers are those of the section it begins
+in.** A continuous section beginning mid-page therefore shows the previous section's,
+whatever `w:headerReference`/`w:footerReference` it declares itself - honouring those
+unconditionally was measured and cost six corpus documents up to 0.20 of line parity, every
+one a section beginning mid-page or an empty tail - and docx4j's one page-sequence per run
+of merged sections keeps inheriting there. But a continuous section which begins a page of
+its own ([above](#s7startspage)) shows its own: measured on the 179-page document, whose
+body section is continuous, breaks the page and declares its own running header, Word
+paints it on every body page, where docx4j painted the front matter's on all 170 of them
+(`HeaderFooterPolicy`, told so by the section factory).
 
 
 **A `DATE`, `TIME` or `PRINTDATE` field is formatted in the document's own language**

@@ -31,12 +31,18 @@ public class SectionWrapper {
 	protected static Logger log = LoggerFactory.getLogger(SectionWrapper.class);		
 	
 	protected SectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders) {
+		this(sectPr, previousHF, rels, evenAndOddHeaders, false);
+	}
+
+	/** @param startsPage see {@link HeaderFooterPolicy#HeaderFooterPolicy(SectPr, HeaderFooterPolicy, RelationshipsPart, BooleanDefaultTrue, boolean)}
+	 *  @since 17.1.1 */
+	protected SectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean startsPage) {
 		// This should work even if sectPr is null
 		this.sectPr = sectPr;
 		if (sectPr==null) {
 			log.warn("No (document level?) sectPr!");
 		}
-		this.headerFooterPolicy = new HeaderFooterPolicy(sectPr, previousHF, rels, evenAndOddHeaders); 
+		this.headerFooterPolicy = new HeaderFooterPolicy(sectPr, previousHF, rels, evenAndOddHeaders, startsPage); 
 		
 		page = new PageDimensions(sectPr);
 		

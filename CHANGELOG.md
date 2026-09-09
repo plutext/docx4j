@@ -25,6 +25,8 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   paragraph of the named style on the page, else the nearest before it; \l, \n): an
   fo:marker on each such paragraph and an fo:retrieve-marker in the header. It used to paint
   the stored result on every page. See word-layout-rules.md §7.
+- A continuous section which begins a page of its own keeps the headers and footers it
+  declares itself; they used to be ignored, the section inheriting the previous section's.
 - The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default

@@ -34,7 +34,13 @@ public class ConversionSectionWrapper extends SectionWrapper {
 	protected PageNumberInformation pageNumberInformation = null;
 	
 	public ConversionSectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, String id, List<Object> content) {
-		super(sectPr, previousHF, rels, evenAndOddHeaders);
+		this(sectPr, previousHF, rels, evenAndOddHeaders, id, content, false);
+	}
+
+	/** @param startsPage whether a continuous section begins a page of its own, so that
+	 *  the headers and footers it declares apply (HeaderFooterPolicy).  @since 17.1.1 */
+	public ConversionSectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, String id, List<Object> content, boolean startsPage) {
+		super(sectPr, previousHF, rels, evenAndOddHeaders, startsPage);
 		this.id = id;
 		this.content = content;
 	}
