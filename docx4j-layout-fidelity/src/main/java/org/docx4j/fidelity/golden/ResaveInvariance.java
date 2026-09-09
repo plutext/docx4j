@@ -267,6 +267,7 @@ public final class ResaveInvariance {
 		System.out.printf("%d document(s) differ (a field update recomputed them - the reference holds"
 				+ " what the docx does not)%n", updatedErrors);
 		System.out.println("field update this run: " + ConversionScript.description());
+		System.out.println("review markup this run: " + ConversionScript.markup());
 		System.out.println(Errors.LIMITATION);
 		// documents4j keeps worker threads; do not wait for them
 		System.exit(failed == 0 ? 0 : 1);

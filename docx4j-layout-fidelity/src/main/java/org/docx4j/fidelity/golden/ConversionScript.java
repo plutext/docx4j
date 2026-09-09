@@ -2,29 +2,40 @@ package org.docx4j.fidelity.golden;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 
 /**
  * Which VBS documents4j has Word run - shared by every tool here that drives Word, because
  * {@link WordGoldenRunner} and {@link ResaveInvariance} must not drift apart on it.
  *
- * <p>It decides whether Word updates a document's fields on the way through, which is not a
- * detail. Measured on the corpus: a document rendered with the field update reproduces its
- * golden <em>exactly</em>, and the same document rendered without it differs by hundreds of
- * lines over almost every page. So the goldens already cut were cut with the update ON, and
- * every field-bearing document in the corpora is being scored against a reference holding
- * Word's recomputed field text - which docx4j, rendering the stored result the docx carries,
- * never produces. A set cut with the update off has both sides showing the stored result, and
- * the comparison is then layout alone.</p>
+ * <p>It decides two things that are not details, because each is a property of the golden
+ * set rather than of a run, and a set has to say which it is ({@link #mode()},
+ * {@link #markup()} and {@link #path()} go into the manifest written beside it):</p>
  *
- * <p>That is a property of a golden set rather than of a run, so a set has to say which it is:
- * {@link #mode()} and {@link #path()} go into the manifest written beside it.</p>
+ * <ul>
+ * <li><b>Whether Word updates the document's fields</b> on the way through
+ *     ({@code -Dfidelity.updateFields}). Measured on the corpus: a document rendered with the
+ *     update reproduces its golden <em>exactly</em>, and the same document rendered without it
+ *     differs by hundreds of lines over almost every page. Cut with the update off, both sides
+ *     show what the file holds. (Measured since: the fields Word evaluates without an update -
+ *     PAGE, NUMPAGES, PAGEREF, PRINTDATE, and DATE/TIME on open - are exactly the ones docx4j
+ *     evaluates, so the difference the update makes is a regenerated TOC's text and little
+ *     else; see the README.)</li>
+ * <li><b>Whether Word prints its review markup</b> ({@code -Dfidelity.showMarkup}). Word paints
+ *     comment balloons - and tracked changes - into a PDF according to the <em>application's</em>
+ *     "display for review" state, not the document's, so a set cut on a machine where someone
+ *     last looked at a document with markup showing holds balloon text in its text layer and a
+ *     page scaled to make room for them. That cost one corpus's eight commented documents their
+ *     baseline. docx4j renders no balloons, so a golden with them cannot be matched; the script
+ *     therefore turns the markup display off itself, whatever the machine happens to be set to,
+ *     unless told to keep it.</li>
+ * </ul>
  *
- * <p>The resolution has three parts that are each easy to get wrong, which is the other reason
- * it lives in one place:</p>
+ * <p>Both scripts are generated here from documents4j's own {@code word_convert.vbs} (an open,
+ * a save, a close), so the two modes differ only in the field-update block and the same markup
+ * handling reaches both. The resolution has three parts that are each easy to get wrong, which
+ * is the other reason it lives in one place:</p>
  *
  * <ul>
  * <li>The script is named by a <b>system</b> property, {@link #SCRIPT_PROPERTY}.
@@ -35,8 +46,8 @@ import java.nio.file.StandardCopyOption;
  *     is built. So {@link #configure} has to run before the first conversion, and the mode
  *     cannot change within a run.</li>
  * <li>Turning the update <b>off</b> therefore cannot simply clear the property, because
- *     {@code docx4j.properties} would put the configured script back. documents4j's own
- *     bundled script is unpacked and pointed at instead.</li>
+ *     {@code docx4j.properties} would put the configured script back. A script is written
+ *     and pointed at instead.</li>
  * </ul>
  */
 final class ConversionScript {
@@ -89,11 +100,22 @@ final class ConversionScript {
 	 *  that has to be read back by something other than a human. */
 	private static String mode = "none";
 
+	/** {@code off} (the script hides the review markup before it converts), {@code on} (it
+	 *  leaves the display as it finds it), or {@code as-scripted} where a script this class did
+	 *  not write is in charge and nothing here can say what it does. */
+	private static String markup = "none";
+
 	/** The script Word will run, absolute, or documents4j's own where none was named. */
 	private static String path = "documents4j default (bundled)";
 
-	/** The system property that decides the mode. */
+	/** The system property that decides the field-update mode. */
 	static final String MODE_PROPERTY = "fidelity.updateFields";
+
+	/** The system property that decides whether Word's review markup (comment balloons, tracked
+	 *  changes) is printed: {@code true} leaves the machine's display-for-review state in charge,
+	 *  as every set before this line was cut; unset or {@code false} has the script turn the
+	 *  markup display off before it converts. */
+	static final String MARKUP_PROPERTY = "fidelity.showMarkup";
 
 	static String description() {
 		return description;
@@ -101,6 +123,10 @@ final class ConversionScript {
 
 	static String mode() {
 		return mode;
+	}
+
+	static String markup() {
+		return markup;
 	}
 
 	static String path() {
@@ -132,15 +158,21 @@ final class ConversionScript {
 	 *     neither is converted rather than failed.</li>
 	 * <li>{@code -Dfidelity.updateFields=false} - fields are not updated. Clearing the system
 	 *     property is not enough, because {@code Documents4jLocalServices} would then fall
-	 *     back to {@code docx4j.properties} and put the configured script back; so
-	 *     documents4j's own bundled {@code word_convert.vbs} is unpacked from the classpath
-	 *     into {@code dir} and pointed at explicitly. That script opens, saves and closes,
-	 *     and touches no field.</li>
+	 *     back to {@code docx4j.properties} and put the configured script back; so a script
+	 *     is written into {@code dir} and pointed at explicitly: documents4j's own
+	 *     {@code word_convert.vbs} - an open, a save and a close, touching no field - plus
+	 *     the markup handling below.</li>
 	 * <li>unset - whatever the machine is configured for is left alone, and the resolved
 	 *     script is printed so the run says what it did.</li>
 	 * </ul>
+	 *
+	 * <p>Either generated script turns Word's review-markup display off before converting,
+	 * unless {@code -Dfidelity.showMarkup=true}: see {@link #MARKUP_PROPERTY}. A script named
+	 * with {@code -Dfidelity.fieldUpdateScript} or by the machine's configuration does whatever
+	 * it does, and the manifest says so ({@code markup=as-scripted}).</p>
 	 */
 	static void configure(File dir) throws IOException {
+		boolean showMarkup = Boolean.parseBoolean(System.getProperty(MARKUP_PROPERTY, "false"));
 		String want = System.getProperty(MODE_PROPERTY);
 		if (want == null) {
 			String configured = System.getProperty(SCRIPT_PROPERTY);
@@ -155,57 +187,84 @@ final class ConversionScript {
 				path = configured;
 			}
 			mode = "as-configured";
+			markup = "as-scripted";
 			System.out.println("field update: not specified; " + description);
 			System.out.println("  -Dfidelity.updateFields=true|false to decide it here");
+			System.out.println("review markup: as the machine's script leaves it (" + MARKUP_PROPERTY
+					+ " applies only to a script written here)");
 			return;
 		}
-		if (Boolean.parseBoolean(want)) {
-			String named = System.getProperty("fidelity.fieldUpdateScript");
-			File script;
-			if (named != null) {
-				script = new File(named);
-				if (!script.isFile()) throw new IOException("no such script: " + script);
-			} else {
-				script = new File(dir, "word_convert-updatefields.vbs");
-				Files.write(script.toPath(), UPDATING_SCRIPT.getBytes(StandardCharsets.US_ASCII));
-			}
-			System.setProperty(SCRIPT_PROPERTY, script.getAbsolutePath());
-			mode = "on";
-			path = script.getAbsolutePath();
-			description = "ON, via " + path;
+		boolean update = Boolean.parseBoolean(want);
+		String named = update ? System.getProperty("fidelity.fieldUpdateScript") : null;
+		File script;
+		if (named != null) {
+			script = new File(named);
+			if (!script.isFile()) throw new IOException("no such script: " + script);
+			markup = "as-scripted";
 		} else {
-			File script = new File(dir, "word_convert-nofields.vbs");
-			try (InputStream in = ConversionScript.class.getClassLoader().getResourceAsStream("word_convert.vbs")) {
-				if (in == null) {
-					throw new IOException("documents4j's word_convert.vbs is not on the classpath;"
-							+ " name a no-op script with -Dfidelity.fieldUpdateScript= instead");
-				}
-				Files.copy(in, script.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			}
-			System.setProperty(SCRIPT_PROPERTY, script.getAbsolutePath());
-			mode = "off";
-			path = script.getAbsolutePath();
-			description = "OFF, via documents4j's own script at " + path;
+			script = new File(dir, update ? "word_convert-updatefields.vbs" : "word_convert-nofields.vbs");
+			Files.write(script.toPath(), script(update, showMarkup).getBytes(StandardCharsets.US_ASCII));
+			markup = showMarkup ? "on" : "off";
 		}
+		System.setProperty(SCRIPT_PROPERTY, script.getAbsolutePath());
+		mode = update ? "on" : "off";
+		path = script.getAbsolutePath();
+		description = (update ? "ON" : "OFF") + ", via " + path;
 		System.out.println("field update: " + description);
+		System.out.println("review markup: " + ("off".equals(markup)
+				? "off - the script hides comment balloons and tracked changes before converting"
+				: "on".equals(markup)
+						? "ON - " + MARKUP_PROPERTY + "=true leaves the machine's display-for-review state in charge"
+						: "as the named script leaves it"));
 	}
 
 	/**
-	 * documents4j's default conversion script with a field update added: every story range's
-	 * fields (the body, but also the headers, footers and footnotes, which
-	 * {@code Document.Fields} alone does not reach) and every table of contents, with
-	 * {@code Err} cleared afterwards so that a document holding neither is still converted.
-	 * CRLF, because it is handed to {@code cscript}.
+	 * The conversion script: documents4j's default {@code word_convert.vbs} - which opens,
+	 * converts and closes - with, in order, the markup display turned off (unless
+	 * {@code showMarkup}) and a field update (if {@code updateFields}) inserted between the open
+	 * and the conversion.  Generated rather than copied from documents4j's jar so that the two
+	 * field modes share one text and one markup handling.
+	 *
+	 * <p>The markup block sets three things, each in its own {@code On Error Resume Next} so
+	 * that a document without a window, or an older Word, costs nothing: the window's
+	 * {@code View.ShowRevisionsAndComments}, which is the "display for review" state Word's
+	 * PDF output follows; its {@code View.RevisionsFilter.Markup} ({@code wdRevisionsMarkupNone},
+	 * 0), for a Word whose view honours the filter rather than the flag; and the document's
+	 * {@code PrintRevisions}, the "print markup" print option, which the PDF path also
+	 * consults.  The conversion itself stays {@code SaveAs ... 17}, as documents4j's own script
+	 * does, so a set cut by this script is on the same footing as the sets already cut
+	 * (moving to {@code ExportAsFixedFormat} would be a second change of basis).  The field
+	 * update, where asked for, reaches every story range's fields (the body, but also the
+	 * headers, footers and footnotes, which {@code Document.Fields} alone does not reach) and
+	 * every table of contents, with {@code Err} cleared afterwards so that a document holding
+	 * neither is still converted.  CRLF, because it is handed to {@code cscript}.</p>
 	 */
-	private static final String UPDATING_SCRIPT = String.join("\r\n",
-			"' generated by org.docx4j.fidelity.golden.ConversionScript - documents4j's default",
-			"' word_convert.vbs, plus a field update, so that the effect of the field update can be",
-			"' measured by cutting the same document with and without it.",
+	static String script(boolean updateFields, boolean showMarkup) {
+		StringBuilder s = new StringBuilder();
+		for (String line : HEAD) s.append(line).append("\r\n");
+		s.append("' generated by org.docx4j.fidelity.golden.ConversionScript: documents4j's default\r\n");
+		s.append("' word_convert.vbs" + (updateFields ? " plus a field update" : "")
+				+ (showMarkup ? ", leaving the review-markup display as the machine has it"
+						: ", with the review-markup display turned off") + "\r\n");
+		s.append("' (fidelity.updateFields=" + updateFields + ", fidelity.showMarkup=" + showMarkup + ")\r\n");
+		for (String line : OPEN) s.append(line).append("\r\n");
+		if (!showMarkup) for (String line : HIDE_MARKUP) s.append(line).append("\r\n");
+		if (updateFields) for (String line : UPDATE_FIELDS) s.append(line).append("\r\n");
+		for (String line : CONVERT) s.append(line).append("\r\n");
+		return s.toString();
+	}
+
+	private static final String[] HEAD = {
 			"Const WdDoNotSaveChanges = 0",
 			"Const WdExportFormatPDF = 17",
 			"Const MagicFormatPDFA = 999",
 			"Const MagicFormatFilteredHTML = 10",
 			"Const msoEncodingUTF8 = 65001",
+			"Const WdRevisionsMarkupNone = 0",
+			"",
+	};
+
+	private static final String[] OPEN = {
 			"",
 			"Function ConvertFile( inputFile, outputFile, formatEnumeration )",
 			"",
@@ -232,6 +291,25 @@ final class ConversionScript {
 			"    End If",
 			"    On Error GoTo 0",
 			"",
+	};
+
+	private static final String[] HIDE_MARKUP = {
+			"    ' Hide the review markup (comment balloons, tracked changes) before converting: Word's",
+			"    ' PDF follows the application's display-for-review state, not the document's, so",
+			"    ' without this a set depends on what the machine was last left showing.  Each on its",
+			"    ' own so that a document with no window, or an older Word, costs nothing.",
+			"    On Error Resume Next",
+			"    wordDocument.ActiveWindow.View.ShowRevisionsAndComments = False",
+			"    Err.Clear",
+			"    wordDocument.ActiveWindow.View.RevisionsFilter.Markup = WdRevisionsMarkupNone",
+			"    Err.Clear",
+			"    wordDocument.PrintRevisions = False",
+			"    Err.Clear",
+			"    On Error GoTo 0",
+			"",
+	};
+
+	private static final String[] UPDATE_FIELDS = {
 			"    ' Update the fields.  A document with no fields and no table of contents is not a",
 			"    ' failure, so Err is cleared rather than checked.",
 			"    On Error Resume Next",
@@ -246,6 +324,9 @@ final class ConversionScript {
 			"    Err.Clear",
 			"    On Error GoTo 0",
 			"",
+	};
+
+	private static final String[] CONVERT = {
 			"    If formatEnumeration = MagicFormatFilteredHTML Then",
 			"      wordDocument.WebOptions.Encoding = msoEncodingUTF8",
 			"    End If",
@@ -275,7 +356,7 @@ final class ConversionScript {
 			"",
 			"Call ConvertFile( WScript.Arguments.Unnamed.Item(0), WScript.Arguments.Unnamed.Item(1),"
 					+ " CInt(WScript.Arguments.Unnamed.Item(2)) )",
-			"");
+	};
 
 	private ConversionScript() {}
 }

@@ -50,6 +50,13 @@ import org.docx4j.wml.CTCompatSetting;
  * written into {@code golden-manifest.properties} (and into
  * {@code resaved-manifest.properties} beside a resaved directory), so a set says how it was
  * cut instead of leaving the next person to measure it.</p>
+ *
+ * <p><b>Whether Word prints its review markup is chosen here too</b>: the generated scripts
+ * turn the display of comment balloons and tracked changes off before converting, since Word's
+ * PDF follows the <em>application's</em> display-for-review state and a set otherwise depends
+ * on what the machine was last left showing - which is what put balloon text into one corpus's
+ * commented documents. {@code -Dfidelity.showMarkup=true} leaves the display alone; the
+ * manifest records it as {@code markup=off|on}.</p>
  */
 public final class WordGoldenRunner {
 
@@ -130,6 +137,7 @@ public final class WordGoldenRunner {
 			 * existed, whether Word had updated its fields; it took a pair of runs of
 			 * ResaveInvariance to find out, and that is not a thing to rediscover. */
 			m.println("fieldUpdate=" + ConversionScript.mode());
+			m.println("markup=" + ConversionScript.markup());
 			m.println("wordConvertScript=" + ConversionScript.path());
 			if (resavedDir != null) writeResavedManifest(resavedDir);
 			int n = 0;
@@ -258,6 +266,7 @@ public final class WordGoldenRunner {
 			r.println("os=" + System.getProperty("os.name") + " " + System.getProperty("os.version"));
 			r.println("java=" + System.getProperty("java.version"));
 			r.println("fieldUpdate=" + ConversionScript.mode());
+			r.println("markup=" + ConversionScript.markup());
 			r.println("wordConvertScript=" + ConversionScript.path());
 		} catch (Exception e) {
 			// a manifest is a record, not the work; never let it cost a run

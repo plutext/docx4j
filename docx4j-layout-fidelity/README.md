@@ -297,12 +297,12 @@ java -cp "target\classes;target\lib\*" -Dfidelity.updateFields=false ^
 New directories rather than overwriting: the existing set survives for comparison, and nothing is
 lost if the run is interrupted (a run resumes, skipping the PDFs already cut).
 
-- `-Dfidelity.updateFields=false` - documents4j's own bundled `word_convert.vbs`, which opens,
-  saves and closes and touches no field. It is unpacked into the goldens directory, so the script
-  that cut the set sits beside it.
+- `-Dfidelity.updateFields=false` - a script written into the goldens directory, so the script
+  that cut the set sits beside it: documents4j's own `word_convert.vbs` (an open, a save and a
+  close, touching no field) plus the markup handling below.
 - `-Dfidelity.updateFields=true` - a field-updating script: the one named by
   `-Dfidelity.fieldUpdateScript=<path>`, or, failing that, one written into the goldens directory
-  (documents4j's default plus an update of every story range's fields and every TOC; see the
+  (the same text plus an update of every story range's fields and every TOC; see the
   `ResaveInvariance` section for why it is not the sample script from `docx4j-samples-resources`).
 - Left unset, the machine's own configuration decides - `docx4j.properties`, under
   `com.documents4j.conversion.msoffice.word_convert.vbs` - and the run prints what that resolved
@@ -314,6 +314,7 @@ Either way the run prints the mode and the script path at startup and writes the
 
 ```
 fieldUpdate=off
+markup=off
 wordConvertScript=X:\fidelity\real2\goldens-nofields\word_convert-nofields.vbs
 ```
 
@@ -325,6 +326,27 @@ did not, and it took a pair of `ResaveInvariance` runs to find out.
 Score the new set against the new re-save, and re-cut the baseline with it: a scoreboard made
 against goldens with the field update on is not comparable with one made against goldens without,
 because the reference text itself changed. Two bases, two baselines.
+
+### The review markup: the script decides it, not the machine
+
+Word paints comment balloons (and tracked changes) into a PDF according to the *application's*
+"display for review" state, not the document's - so a set cut on a machine where someone last
+looked at a document with markup showing holds `Commented [X1]: ...` in its text layer beside
+the body lines, and the page scaled to make room for the margin. That was found the expensive
+way: a re-cut of corpus 1 printed balloons for every one of its eight commented documents
+(corpora 2 and 3 have none, and were untouched), every line of those documents moved, and the
+ten rows that moved were first read as a field effect.
+
+**Both generated scripts now turn the markup display off before converting**, whatever the
+machine happens to be set to: `ActiveWindow.View.ShowRevisionsAndComments = False`, the view's
+`RevisionsFilter.Markup` to none, and the document's `PrintRevisions` (the print dialog's "print
+markup"), each guarded so a document with no window costs nothing. The conversion itself stays
+`SaveAs ... 17`, as documents4j's own script does, so a set cut this way is on the same footing as
+the sets already cut. `-Dfidelity.showMarkup=true` leaves the display alone (a golden with
+balloons cannot be matched by docx4j, which draws none, so this is for measuring the balloons
+themselves); the manifest records which, as `markup=off|on`, or `markup=as-scripted` where a
+script this harness did not write is in charge. Re-cutting a contaminated set is the same
+command as cutting it; only the rows of documents that have a `comments.xml` can change.
 
 ### What the update actually changes, and what else a re-cut can change
 
@@ -342,22 +364,12 @@ reached:
   entries, not its numbers) and a `SAVEDATE`. So the "field floor" is not a floor: the fields
   docx4j evaluates are the fields Word evaluates at print, and a TOC page number we get wrong is
   a page we broke somewhere else, which is layout.
-- What the second cut changed instead was **Word's own state on the VM**. Word prints comment
-  balloons when its "display for review" state says so - a per-application setting, not a
-  per-document one - and the second cut printed them for every document that has comments (all
-  eight in corpus 1, none in corpora 2 and 3, which have no commented document). The balloon text
-  ("Commented [X1]: ...") lands in the reference PDF's text layer beside the body lines, and the
-  page is scaled to make room for the margin, so every line of such a document moves. And **fonts
-  installed on the VM between cuts** change the substitution Word makes: a document asking for a
-  face the VM did not have on the first cut and did on the second reflows completely (Ebrima to
-  Nyala on one Ethiopic document, Calibri to Lato on another); 18 documents changed a face between
-  the two cuts, most of them the balloon font.
-
-So before adopting a re-cut set as the baseline: `pdffonts` and a grep for `Commented [` over the
-old and new PDFs will show what changed besides the fields; and cut with `ExportAsFixedFormat`'s
-`Item` argument (`wdExportDocumentContent`, 0) rather than `SaveAs ... 17`, or turn the markup
-display off in the script (`ActiveWindow.View.ShowRevisionsAndComments = False`), if balloons are
-not wanted in a reference.
+- The other thing a re-cut can change is **the fonts installed on the VM between cuts**, which
+  change the substitution Word makes: a document asking for a face the VM did not have on the
+  first cut and did on the second reflows completely (Ebrima to Nyala on one Ethiopic document,
+  Calibri to Lato on another); 18 documents changed a face between the two cuts, most of them
+  the balloon font that the markup handling above now keeps out. `pdffonts` over the old and new
+  PDFs shows it; a grep for `Commented [` shows a set cut before the markup handling existed.
 
 The date is the one field worth a switch: what the file stores is the day Word last touched it,
 what the golden paints is the day of the cut, and docx4j's clock matches neither on any other
@@ -599,9 +611,9 @@ The mechanism, because it has three traps in it:
   choice has to be made before the first conversion and cannot be changed within a run - hence
   one mode per run and two runs to compare, rather than a flag per document.
 - `-Dfidelity.updateFields=false` therefore cannot simply clear the property: `docx4j.properties`
-  would put the configured script back. Instead documents4j's own bundled `word_convert.vbs` is
-  unpacked from the classpath into `outDir` and pointed at explicitly. That script opens, saves
-  and closes, and touches no field.
+  would put the configured script back. Instead a script is written into `outDir` and pointed at
+  explicitly: documents4j's own `word_convert.vbs` - an open, a save and a close, touching no
+  field - with the review-markup display turned off first (see "Cutting a golden set").
 
 `-Dfidelity.updateFields=true` uses the script named by `-Dfidelity.fieldUpdateScript=<path>` if
 you give one, and otherwise writes one into `outDir` - documents4j's default plus a field update.
