@@ -2148,6 +2148,71 @@ public final class Corpus {
 		}));
 
 		/*
+		 * The paragraph after a nested table.  A cell whose last content is a table must
+		 * end with a paragraph; docx4j drops it (WordLayoutFixups.dropParagraphAfterNestedTable,
+		 * measured on a corpus document where Word gives it no line).  The 311-page report
+		 * (rules doc §3, open) says otherwise for its shape: outer one-row table, nested
+		 * table whose every paragraph keeps with next, an EMPTY trailing paragraph with
+		 * w:keepNext, then an empty body paragraph, then a numbered keep-with-next heading
+		 * with 10pt before - Word's gap from the last row's text to the heading's is 53.8pt,
+		 * which reads as the row (21.2), TWO bare 11.15pt lines and the heading's 10, where
+		 * docx4j draws one line and one 10.  The spacing-empty-before probe rules the
+		 * spacing model out (larger-of everywhere), so the question is which paragraphs get
+		 * a line and which get their space-after.  Spacing values are distinct - the
+		 * trailing paragraph 20pt after, the body's empty paragraph 30pt after, the spaced
+		 * paragraph 10pt before - so every combination decodes from the gap.
+		 */
+		PROBES.add(new Probe("table-nested-trailing",
+				"a one-row table holding a nested table and its trailing paragraph (empty, "
+				+ "empty with w:keepNext, with text), with and without an empty body paragraph "
+				+ "after the outer table, before a paragraph with space-before; and a plain "
+				+ "table control", () -> {
+			Doc d = Doc.create(15);
+			d.para("Each case: a one-row table (no cell margins) holding a two-row table, "
+					+ "then what the case says, then a paragraph with 200 twips before. "
+					+ "Trailing paragraphs have 400 after; an empty body paragraph 600 after.")
+					.after(240).add();
+			String[] what = {
+				"N1: trailing paragraph empty, no keepNext; spaced paragraph directly after the outer table.",
+				"N2: trailing paragraph empty WITH keepNext; spaced paragraph directly after.",
+				"N3: trailing paragraph empty, no keepNext; then an EMPTY body paragraph, then the spaced paragraph.",
+				"N4: the report's shape: nested rows and trailing paragraph all keepNext; empty body paragraph; spaced keepNext paragraph.",
+				"N5: trailing paragraph holds text; spaced paragraph directly after.",
+				"N6: control: a plain two-row table (no nesting), empty body paragraph, spaced paragraph."
+			};
+			for (int c = 0; c < what.length; c++) {
+				d.para(what[c]).after(240).add();
+				boolean kn = c == 1 || c == 3;
+				Doc.Table t = new Doc.Table(4000, 4000);
+				for (int r = 1; r <= 2; r++) {
+					t.rowOf(null, null,
+							t.cellOf(4000, null, (c == 3 ? d.para().noLabel().keepNext() : d.para().noLabel())
+									.text("N" + (c + 1) + " row " + r + " cell one").build()),
+							t.cellOf(4000, null, (c == 3 ? d.para().noLabel().keepNext() : d.para().noLabel())
+									.text("N" + (c + 1) + " row " + r + " cell two").build()));
+				}
+				if (c == 5) {
+					d.add(t.build());
+				} else {
+					Doc.Table outer = new Doc.Table(9000);
+					outer.cellMargins(0, 0);
+					Doc.Para trailing = d.para().noLabel().after(400);
+					if (kn) trailing = trailing.keepNext();
+					if (c == 4) trailing = trailing.text("N5 trailing text");
+					org.docx4j.wml.Tc tc = outer.cellOf(9000, null, trailing.build());
+					tc.getContent().add(0, t.build());
+					outer.rowOf(null, null, tc);
+					d.add(outer.build());
+				}
+				if (c == 2 || c == 3 || c == 5) d.para().noLabel().after(600).add();
+				Doc.Para spaced = d.para("N" + (c + 1) + " spaced paragraph. " + prose(1, c + 1)).before(200).after(240);
+				if (c == 3) spaced = spaced.keepNext();
+				spaced.add();
+			}
+			return d.pkg();
+		}));
+
+		/*
 		 * J14: what a section's w:vAlign counts as the block it aligns.  §7's s75 makes
 		 * w:vAlign a display-align on fo:region-body, and a corpus document's
 		 * centred title section is then a uniform +5.9pt low over every line, with an

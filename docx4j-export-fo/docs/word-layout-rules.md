@@ -1113,9 +1113,12 @@ report's seam is not a spacing rule: its 53.8 reads as the row, **two** bare 11.
 the heading's 10 - the cell's trailing empty paragraph after the nested table *and* the body's
 empty paragraph, neither with its space-after - where docx4j drops the cell's trailing
 paragraph (`dropParagraphAfterNestedTable`) and draws one line and one 10. The same two bare
-lines fit the report's table-then-table seam (43.5 = 21.2 + 22.3). A probe of a nested
-table's trailing paragraph, with and without `w:keepNext` and before a spaced paragraph, is
-the next measurement. 10.9pt a section, about 2.6 pages of the report's remaining 22.
+lines fit the report's table-then-table seam (43.5 = 21.2 + 22.3). The
+`table-nested-trailing` probe measures it: a one-row table holding a nested table and its
+trailing paragraph (empty; empty with `w:keepNext`; with text; the report's own shape with
+every paragraph keeping), with and without an empty body paragraph after the outer table,
+before a paragraph with space-before, and a plain table as control - spacing values 20, 30
+and 10pt so that each combination of lines and spaces decodes from the gap. 10.9pt a section, about 2.6 pages of the report's remaining 22.
 
 <a id="s310"></a>**Space-after against a footnote area (open).** One measured data point,
 not yet a rule docx4j applies: where a paragraph's last line would fit at the foot of a
