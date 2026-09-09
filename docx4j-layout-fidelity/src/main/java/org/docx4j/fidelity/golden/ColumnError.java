@@ -115,7 +115,7 @@ public final class ColumnError {
 	}
 
 	/** docx4j's columns for one table, or the reason there are none to compare. */
-	private static final class FoTable {
+	static final class FoTable {
 		final double[] twips;
 		final String reason;
 		FoTable(double[] twips) { this.twips = twips; this.reason = null; }
@@ -195,7 +195,7 @@ public final class ColumnError {
 	}
 
 	/** null where the two sides cannot be compared; the reason is added to {@code skips}. */
-	private static Row compare(String id, int index, List<int[]> declared, int[] word, FoTable ours,
+	static Row compare(String id, int index, List<int[]> declared, int[] word, FoTable ours,
 			List<String> skips) {
 		if (ours.twips == null) {
 			skips.add(id + " table " + index + ": " + ours.reason);
@@ -295,11 +295,11 @@ public final class ColumnError {
 		}
 	}
 
-	private static String csvCell(String s) {
+	static String csvCell(String s) {
 		return s.indexOf(',') < 0 && s.indexOf('"') < 0 ? s : '"' + s.replace("\"", "\"\"") + '"';
 	}
 
-	private static String join(int[] a) {
+	static String join(int[] a) {
 		StringBuilder sb = new StringBuilder();
 		for (int v : a) {
 			if (sb.length() > 0) sb.append(' ');
@@ -308,7 +308,7 @@ public final class ColumnError {
 		return sb.toString();
 	}
 
-	private static String ratios(double[] a) {
+	static String ratios(double[] a) {
 		StringBuilder sb = new StringBuilder("[");
 		for (int i = 0; i < a.length; i++) {
 			if (i > 0) sb.append(", ");
@@ -318,7 +318,7 @@ public final class ColumnError {
 	}
 
 	/** Each table's w:tblGrid, in document order; an empty array where it has none. */
-	private static List<int[]> grids(File docx) throws Exception {
+	static List<int[]> grids(File docx) throws Exception {
 		WordprocessingMLPackage pkg = Docx4J.load(docx);
 		ClassFinder finder = new ClassFinder(Tbl.class);
 		new TraversalUtil(pkg.getMainDocumentPart().getContent(), finder);
@@ -345,7 +345,7 @@ public final class ColumnError {
 	 * in memory - the same call {@code Fidelity.renderOne} makes for the {@code .fo} half, so
 	 * what is measured is what the harness renders - and the columns are read back off it.
 	 */
-	private static List<FoTable> render(File docx) throws Exception {
+	static List<FoTable> render(File docx) throws Exception {
 		ExecutorService exec = Executors.newSingleThreadExecutor();
 		try {
 			Future<List<FoTable>> f = exec.submit(() -> {
@@ -464,7 +464,7 @@ public final class ColumnError {
 		}
 	}
 
-	private static String firstLine(Throwable t) {
+	static String firstLine(Throwable t) {
 		String msg = t.getMessage();
 		if (msg != null) {
 			int nl = msg.indexOf('\n');

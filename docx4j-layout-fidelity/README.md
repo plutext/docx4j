@@ -210,6 +210,30 @@ deficit is 0.05. Three reasons, all measured:
 So use it to say *which sizing rule* docx4j has wrong and over how many documents, and go
 to the scoreboard - never to this CSV - for what fixing it is worth.
 
+`ShortfallFit` goes one step further in, for the tables Word had to *squeeze*:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.golden.ShortfallFit out.csv <corpusDir> <resavedDir> [<corpusDir> <resavedDir> ...]
+```
+
+`ColumnError` sees only what docx4j chose; this sees what the column sizer *saw*. It renders
+each document with `docx4j.convert.out.fo.wordLayout.dumpAutofit` set, which has
+`AbstractTableWriter` append one record per table - the per-column content minima, maxima,
+preferred widths and floors (cell margins plus any picture) it measured, the width it fitted
+them into, and what it chose - joins each record to the Word grid `ColumnError` pairs it with
+(by the final widths, which are the `fo:table-column` widths in twips exactly), and keeps the
+tables whose measured minima exceed the width Word gave the table. Two populations come out:
+the tables docx4j's content pass sized, and the autofit tables whose cached grid Word rewrote
+narrower on re-save. Over both it scores a list of candidate distribution rules - proportional
+to the minima, equal, powers of the minima, floor-plus-proportional, `AutofitLayout.squeeze` -
+on *shares*, so the total (which the page fit decides) does not enter, and prints per rule
+the per-column and per-table error against Word's grid and how many tables land within 1% and
+5%. The dump property costs nothing when unset and changes no output when set; the CSV holds
+both populations so a new rule can be tried without re-rendering. The finding it was built
+for is in `docx4j-export-fo/docs/word-layout-rules.md` §6.5: the population is tiny (seven
+multi-column tables in four documents, and six in three), and Word keeps each column's cell
+margins whole and squeezes only the text.
+
 ## Hyphenation patterns (licence note)
 
 FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`
