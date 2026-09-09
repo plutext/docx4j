@@ -364,12 +364,23 @@ reached:
   entries, not its numbers) and a `SAVEDATE`. So the "field floor" is not a floor: the fields
   docx4j evaluates are the fields Word evaluates at print, and a TOC page number we get wrong is
   a page we broke somewhere else, which is layout.
-- The other thing a re-cut can change is **the fonts installed on the VM between cuts**, which
-  change the substitution Word makes: a document asking for a face the VM did not have on the
-  first cut and did on the second reflows completely (Ebrima to Nyala on one Ethiopic document,
-  Calibri to Lato on another); 18 documents changed a face between the two cuts, most of them
-  the balloon font that the markup handling above now keeps out. `pdffonts` over the old and new
-  PDFs shows it; a grep for `Commented [` shows a set cut before the markup handling existed.
+- The other thing a re-cut can change is **the fonts on the VM, and nobody installs them: Word
+  fetches them itself.** Office's cloud fonts and Windows' on-demand supplemental fonts arrive
+  when a document that asks for them is opened on a machine that is online, so the first cut of
+  a corpus is what changes the environment for the second. Measured: two cuts four days apart
+  embed Calibri and Ebrima in one and Lato and Nyala in the other, both documents having asked
+  for Lato and Nyala all along and neither embedding a font, and each reflows completely; 18
+  documents changed a face between the cuts (most of them the balloon font, which the markup
+  handling above now keeps out). **A golden set therefore records its fonts**: the runner writes
+  `<id>.fonts=` (the distinct faces its PDF embeds, subset prefixes stripped, sorted) beside
+  each document's manifest lines, a run-level `fonts=` over the whole set so two manifests diff
+  at a glance, and `fontsChangedSincePreviousRun=n/m` against the record already in the
+  manifest, printing `FONTS MOVED <id>` as it goes; `ResaveInvariance` compares the faces of the
+  golden and its fresh cut before it compares a line, and says `FONTS DIFFER` first, since that
+  is then the explanation. A corpus meant to be stable over months wants Office's optional
+  connected experiences turned off (File > Options > Trust Center > Privacy Options), or the
+  machine kept offline while it cuts. A grep for `Commented [` over a set shows one cut before
+  the markup handling existed.
 
 The date is the one field worth a switch: what the file stores is the day Word last touched it,
 what the golden paints is the day of the cut, and docx4j's clock matches neither on any other

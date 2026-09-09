@@ -170,6 +170,7 @@ public final class ResaveInvariance {
 		int totalPagesDiffering = 0, totalLinesDiffering = 0;
 		int fieldErrGolden = 0, fieldErrNew = 0, fieldDisagreements = 0;
 		int storedErrors = 0, updatedErrors = 0;
+		int fontsMoved = 0;
 		int n = 0;
 		for (File docx : picked) {
 			n++;
@@ -198,6 +199,19 @@ public final class ResaveInvariance {
 				System.out.println("  cannot read a PDF: " + e);
 				failed++;
 				continue;
+			}
+			/* The faces each PDF embeds. Word fetches cloud and supplemental fonts on its own
+			 * between cuts, and a document whose golden and fresh render use different faces
+			 * has reflowed for that reason before any other; say so here rather than leave it
+			 * to be worked out from the line counts below. */
+			String fontsGolden = PdfFonts.record(golden), fontsFresh = PdfFonts.record(fresh);
+			if (fontsGolden.equals(fontsFresh)) {
+				System.out.println("  fonts: same faces in both PDFs (" + fontsGolden + ")");
+			} else {
+				fontsMoved++;
+				System.out.println("  FONTS DIFFER: golden " + fontsGolden + "; new " + fontsFresh
+						+ " - Word fetched or lost a face since the golden was cut, which is almost"
+						+ " certainly what any difference reported below is");
 			}
 			Scrubbed sa = scrub(a), sb = scrub(b);
 			if (sa.lines + sb.lines > 0) {
@@ -250,6 +264,10 @@ public final class ResaveInvariance {
 		System.out.println("== question one: is Word's rendering invariant under its own re-save? ==");
 		System.out.printf("%d of %d documents rendered identically; %d differed (%d pages, %d lines in total); %d failed%n",
 				identical, identical + differing, differing, totalPagesDiffering, totalLinesDiffering, failed);
+		if (fontsMoved > 0) {
+			System.out.println(fontsMoved + " document(s) embed different faces in the golden and in this run:"
+					+ " the environment moved (Word fetches fonts on demand), and those differences are its, not the re-save's");
+		}
 		if (differing == 0 && identical > 0) {
 			System.out.println("So the goldens cut from the original are Word's rendering of the re-saved file too,");
 			System.out.println("and scoring the re-saved docx against them compares like with like.");

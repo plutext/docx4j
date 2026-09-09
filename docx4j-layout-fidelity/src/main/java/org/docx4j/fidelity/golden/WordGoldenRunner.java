@@ -128,7 +128,14 @@ public final class WordGoldenRunner {
 		int failed = 0;
 		int done = 0;
 		int skipped = 0;
-		try (PrintWriter m = new PrintWriter(new FileWriter(new File(goldenDir, "golden-manifest.properties"), true))) {
+		File manifest = new File(goldenDir, "golden-manifest.properties");
+		/* The previous cut's per-document font record, read before this run appends its own,
+		 * so the run can say how many documents' faces moved (see PdfFonts for why a set has
+		 * to record this at all). */
+		java.util.Map<String, String> previousFonts = PdfFonts.previous(manifest);
+		java.util.SortedSet<String> runFonts = new java.util.TreeSet<String>();
+		int fontsChanged = 0, fontsCompared = 0;
+		try (PrintWriter m = new PrintWriter(new FileWriter(manifest, true))) {
 			m.println("# run " + ZonedDateTime.now());
 			m.println("source=documents4j-local (desktop Word)");
 			m.println("os=" + System.getProperty("os.name") + " " + System.getProperty("os.version"));
@@ -162,6 +169,23 @@ public final class WordGoldenRunner {
 						if (pdf.length() == 0) throw new IllegalStateException("Word produced an empty PDF");
 						m.println(id + ".compatibilityMode=" + compatMode(pkg));
 						m.println(id + ".generated=" + ZonedDateTime.now());
+						/* The faces the PDF embeds: Word fetches cloud and supplemental fonts on
+						 * its own, so the environment that cut a set is part of the set. */
+						String fonts = PdfFonts.record(pdf);
+						m.println(id + ".fonts=" + fonts);
+						if (!fonts.startsWith("unreadable")) {
+							for (String f : fonts.split(",")) {
+								if (f.length() > 0) runFonts.add(f);
+							}
+						}
+						String before = previousFonts.get(id);
+						if (before != null) {
+							fontsCompared++;
+							if (!before.equals(fonts)) {
+								fontsChanged++;
+								System.out.println("  FONTS MOVED " + id + ": was " + before + "; now " + fonts);
+							}
+						}
 						done++;
 						System.out.println("  golden " + id);
 					} catch (Throwable t) {
@@ -248,6 +272,19 @@ public final class WordGoldenRunner {
 			}
 		}
 		System.out.printf("done %d, skipped (already present) %d, failed %d%n", done, skipped, failed);
+		System.out.println("fonts embedded across the PDFs cut this run: " + PdfFonts.join(runFonts));
+		try (PrintWriter m = new PrintWriter(new FileWriter(manifest, true))) {
+			/* Run-level, after the per-document lines, so two manifests diff at a glance. */
+			m.println("fonts=" + PdfFonts.join(runFonts));
+			if (fontsCompared > 0) m.println("fontsChangedSincePreviousRun=" + fontsChanged + "/" + fontsCompared);
+		} catch (Exception e) {
+			System.out.println("  could not append the font summary to golden-manifest.properties: " + e);
+		}
+		if (fontsCompared > 0) {
+			System.out.println("fonts moved since the previous cut recorded here: " + fontsChanged
+					+ " of " + fontsCompared + " document(s)"
+					+ (fontsChanged > 0 ? " - Word fetched or lost a face between the cuts; those rows are not comparable" : ""));
+		}
 		// documents4j keeps worker threads; do not wait for them
 		System.exit(failed == 0 ? 0 : 1);
 	}
