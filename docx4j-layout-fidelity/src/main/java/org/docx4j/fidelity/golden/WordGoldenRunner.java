@@ -37,6 +37,19 @@ import org.docx4j.wml.CTCompatSetting;
  *
  * Probes whose PDF already exists (non-empty) are skipped unless --force is given, so a
  * failed run can be resumed. Failures are reported per file and the exit code is 1 if any.
+ *
+ * <p><b>Whether Word updates the document's fields on the way through is chosen here</b>, with
+ * {@code -Dfidelity.updateFields=true|false} (and {@code -Dfidelity.fieldUpdateScript=<path>}
+ * to name a script), resolved by {@link ConversionScript} - the same helper
+ * {@link ResaveInvariance} uses, so the two cannot drift. It is not a detail of the run but a
+ * property of the golden set: a document rendered with the update reproduces the goldens
+ * already cut <em>exactly</em>, and the same document rendered without it differs by hundreds
+ * of lines, so those goldens hold Word's recomputed field text, which docx4j - rendering the
+ * stored result - never produces. Cut with the update off, both sides show the stored result
+ * and the comparison is layout alone. The mode and the script path are printed at startup and
+ * written into {@code golden-manifest.properties} (and into
+ * {@code resaved-manifest.properties} beside a resaved directory), so a set says how it was
+ * cut instead of leaving the next person to measure it.</p>
  */
 public final class WordGoldenRunner {
 
@@ -93,6 +106,18 @@ public final class WordGoldenRunner {
 		if (System.getProperty(PPT_BRIDGE) == null) {
 			org.docx4j.Docx4jProperties.setProperty(PPT_BRIDGE, "false");
 		}
+
+		/* Which script Word runs, and therefore whether it updates the document's fields on the
+		 * way through, decides what a golden set *is*: measured, a document rendered with the
+		 * update reproduces its golden exactly and the same document rendered without it differs
+		 * by hundreds of lines, so the set already cut was cut with the update on, and every
+		 * field-bearing document is scored against Word's recomputed field text. Since that is a
+		 * property of the set rather than of a run, it is resolved here - before the converter is
+		 * built, which is when documents4j materialises the script - and recorded in the manifest
+		 * beside the PDFs. -Dfidelity.updateFields=true|false decides it; see ConversionScript. */
+		ConversionScript.warnAboutProperties();
+		ConversionScript.configure(goldenDir);
+
 		int failed = 0;
 		int done = 0;
 		int skipped = 0;
@@ -101,6 +126,12 @@ public final class WordGoldenRunner {
 			m.println("source=documents4j-local (desktop Word)");
 			m.println("os=" + System.getProperty("os.name") + " " + System.getProperty("os.version"));
 			m.println("java=" + System.getProperty("java.version"));
+			/* So the set says how it was cut. Nobody could tell, of the set before this line
+			 * existed, whether Word had updated its fields; it took a pair of runs of
+			 * ResaveInvariance to find out, and that is not a thing to rediscover. */
+			m.println("fieldUpdate=" + ConversionScript.mode());
+			m.println("wordConvertScript=" + ConversionScript.path());
+			if (resavedDir != null) writeResavedManifest(resavedDir);
 			int n = 0;
 			for (File docx : files) {
 				n++;
@@ -211,6 +242,27 @@ public final class WordGoldenRunner {
 		System.out.printf("done %d, skipped (already present) %d, failed %d%n", done, skipped, failed);
 		// documents4j keeps worker threads; do not wait for them
 		System.exit(failed == 0 ? 0 : 1);
+	}
+
+	/**
+	 * The same environment record beside the re-saved documents, because a resaved directory
+	 * travels separately from the goldens - it is scored on its own - and the field-update mode
+	 * matters to it for the same reason: Word runs one script for both, so a resave cut with the
+	 * update on has had Word's recomputed results written through it wherever a field result is
+	 * stored. A reader of that directory should not have to find the golden manifest to learn it.
+	 */
+	private static void writeResavedManifest(File resavedDir) {
+		try (PrintWriter r = new PrintWriter(new FileWriter(new File(resavedDir, "resaved-manifest.properties"), true))) {
+			r.println("# run " + ZonedDateTime.now());
+			r.println("source=documents4j-local (desktop Word), opened and saved back as docx");
+			r.println("os=" + System.getProperty("os.name") + " " + System.getProperty("os.version"));
+			r.println("java=" + System.getProperty("java.version"));
+			r.println("fieldUpdate=" + ConversionScript.mode());
+			r.println("wordConvertScript=" + ConversionScript.path());
+		} catch (Exception e) {
+			// a manifest is a record, not the work; never let it cost a run
+			System.out.println("  could not write resaved-manifest.properties: " + e);
+		}
 	}
 
 	/** documents4j nests the reason several deep - a ConversionInputException says only

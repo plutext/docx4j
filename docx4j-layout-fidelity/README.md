@@ -51,6 +51,10 @@ any docx4j font module; use the host's `/usr/share/fonts/TTF/DejaVuSans*.ttf`):
 java -cp "%CP%" org.docx4j.fidelity.golden.WordGoldenRunner <sharedFolder>\corpus <sharedFolder>\goldens
 ```
 
+`-Dfidelity.updateFields=true|false` decides whether Word updates the document's fields as it
+converts, which decides what the set *is*; see "Cutting a golden set" below, and read the
+`fieldUpdate=` line of a set's manifest before trusting it as a reference.
+
 Commit the goldens and `golden-manifest.properties` together. Regenerate them
 only when the corpus changes or Word on the VM is updated.
 
@@ -265,6 +269,63 @@ and the row's widths scaled to Word's total, by Hausdorff distance in twips. The
 for 1,443 of them, and it changed a grid's column count in two - one geometry per table,
 always.
 
+## Cutting a golden set: with or without Word's field update
+
+**The goldens cut so far were cut with Word's field update ON.** Measured, not inferred: rendering
+one corpus file through Word with `-Dfidelity.updateFields=true` reproduces its existing golden
+*exactly* - same 22 pages, same 1,242 lines - while the same file with no field update differs by
+583 lines over 20 of its 22 pages. (That measurement also answered the older question: Word's
+rendering is invariant under its own re-save, and the re-save was never the variable.)
+
+What follows from it is the whole of the field floor. Word's PDF holds the results it recomputed
+as it converted; both the corpus file and Word's re-save of it hold the results the author stored
+(the resave does not carry the update - see "Having Word save the docx too"). So every
+field-bearing document in the corpora - a TOC, a `PAGEREF`, a `NUMPAGES`, a `REF` whose bookmark
+is gone - is scored against reference text docx4j does not produce and should not be expected to.
+Cut the set with the update **off** and both sides render the stored result, so what is left in
+the comparison is layout.
+
+`WordGoldenRunner` therefore takes the same switch `ResaveInvariance` does, resolved by the one
+shared helper (`ConversionScript`) so the two cannot drift:
+
+```
+java -cp "target\classes;target\lib\*" -Dfidelity.updateFields=false ^
+  org.docx4j.fidelity.golden.WordGoldenRunner ^
+  X:\fidelity\real2\corpus X:\fidelity\real2\goldens-nofields X:\fidelity\real2\resaved-nofields
+```
+
+New directories rather than overwriting: the existing set survives for comparison, and nothing is
+lost if the run is interrupted (a run resumes, skipping the PDFs already cut).
+
+- `-Dfidelity.updateFields=false` - documents4j's own bundled `word_convert.vbs`, which opens,
+  saves and closes and touches no field. It is unpacked into the goldens directory, so the script
+  that cut the set sits beside it.
+- `-Dfidelity.updateFields=true` - a field-updating script: the one named by
+  `-Dfidelity.fieldUpdateScript=<path>`, or, failing that, one written into the goldens directory
+  (documents4j's default plus an update of every story range's fields and every TOC; see the
+  `ResaveInvariance` section for why it is not the sample script from `docx4j-samples-resources`).
+- Left unset, the machine's own configuration decides - `docx4j.properties`, under
+  `com.documents4j.conversion.msoffice.word_convert.vbs` - and the run prints what that resolved
+  to. Only in that case does the missing-`docx4j.properties` warning appear; once the switch is
+  given, the configuration is decided and the warning would be noise.
+
+Either way the run prints the mode and the script path at startup and writes them into
+`golden-manifest.properties`:
+
+```
+fieldUpdate=off
+wordConvertScript=X:\fidelity\real2\goldens-nofields\word_convert-nofields.vbs
+```
+
+and, when a third directory is given, into a `resaved-manifest.properties` beside the re-saved
+documents - which travel separately, and to which the mode matters for the same reason. **A
+golden set now says how it was cut**, which is the point: the set that existed before this line
+did not, and it took a pair of `ResaveInvariance` runs to find out.
+
+Score the new set against the new re-save, and re-cut the baseline with it: a scoreboard made
+against goldens with the field update on is not comparable with one made against goldens without,
+because the reference text itself changed. Two bases, two baselines.
+
 ## Hyphenation patterns (licence note)
 
 FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`
@@ -393,7 +454,8 @@ does not persist into the docx - which is worth knowing precisely, because a doc
 only work from what was persisted.
 
 **Question two: what does Word do with fields here?** The goldens carry Word's recomputed field
-results if the conversion script updated them; the docx on both bases carries the stored ones
+results if the conversion script updated them - and, measured with this tool, they do: see
+"Cutting a golden set: with or without Word's field update"; the docx on both bases carries the stored ones
 (the resave does *not* carry the updated results - see the same section). The visible form of
 that gap is field-error text: one corpus document has lost its bookmarks, so its golden is full
 of `Error! Reference source not found.` - about 1,160 lines of it - which appears nowhere in the

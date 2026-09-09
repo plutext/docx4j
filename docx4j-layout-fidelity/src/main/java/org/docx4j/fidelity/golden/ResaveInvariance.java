@@ -3,11 +3,7 @@ package org.docx4j.fidelity.golden;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -64,9 +60,10 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * the same finding.</p>
  *
  * <p>Which makes the field update itself the measurement, so this tool can turn it on and off:
- * {@code -Dfidelity.updateFields=true|false} (see {@link #configureScript}). Cut the same
- * documents twice into two output directories, once each way, and the difference is exactly
- * what Word's field update does to the page.</p>
+ * {@code -Dfidelity.updateFields=true|false} (see {@link ConversionScript}, which
+ * {@link WordGoldenRunner} shares). Cut the same documents twice into two output directories,
+ * once each way, and the difference is exactly what Word's field update does to the page - the
+ * measurement which established that the goldens were cut with the update on.</p>
  *
  * <p>The documents are picked by size - smallest, largest and an even spread between - rather
  * than alphabetically, because the first five of anything sorted by name are as likely as not
@@ -148,8 +145,8 @@ public final class ResaveInvariance {
 		boolean noWord = Arrays.asList(args).contains("--no-word");
 		outDir.mkdirs();
 
-		warnAboutProperties();
-		if (!noWord) configureScript(outDir);
+		ConversionScript.warnAboutProperties();
+		if (!noWord) ConversionScript.configure(outDir);
 		System.out.println("ignored as run-dependent: documents4j's temp file name (a FILENAME field"
 				+ " prints it, and it is random per conversion), and dates and times, through the"
 				+ " extractor's own normalisation" + (DATES_NORMALISED ? "" : " - WHICH IS TURNED OFF"
@@ -269,214 +266,11 @@ public final class ResaveInvariance {
 				+ " document is broken)%n", storedErrors);
 		System.out.printf("%d document(s) differ (a field update recomputed them - the reference holds"
 				+ " what the docx does not)%n", updatedErrors);
-		System.out.println("field update this run: " + scriptDescription);
+		System.out.println("field update this run: " + ConversionScript.description());
 		System.out.println(Errors.LIMITATION);
 		// documents4j keeps worker threads; do not wait for them
 		System.exit(failed == 0 ? 0 : 1);
 	}
-
-	// ------------------------------------------------------------------ the configuration
-
-	/**
-	 * Says loudly when there is no {@code docx4j.properties} on the classpath, because the
-	 * consequence is easy to miss and it goes to the heart of question two: the field-updating
-	 * conversion script is named <em>in</em> {@code docx4j.properties}, so without that file
-	 * {@code Documents4jLocalServices} has nothing to fall back to and Word runs documents4j's
-	 * default script, which updates no field. A run configured that way may not reproduce the
-	 * configuration the goldens were cut under, and would report a field difference that is an
-	 * artefact of its own setup. The warning names the fix rather than only the problem.
-	 */
-	private static void warnAboutProperties() {
-		java.net.URL url = ResaveInvariance.class.getClassLoader().getResource("docx4j.properties");
-		if (url != null) {
-			System.out.println("docx4j.properties: " + url);
-			return;
-		}
-		System.out.println("****************************************************************");
-		System.out.println("*  WARNING: no docx4j.properties on the classpath               *");
-		System.out.println("****************************************************************");
-		System.out.println("The field-updating conversion script is named in docx4j.properties, under");
-		System.out.println("  " + SCRIPT_PROPERTY);
-		System.out.println("so without that file Word runs documents4j's default script, which updates no");
-		System.out.println("field - which may not be how the goldens were cut. This run may therefore not");
-		System.out.println("reproduce the golden's configuration, and a field difference it reports may be");
-		System.out.println("an artefact of this run rather than a fact about the document.");
-		System.out.println("Fix it by putting a directory that holds docx4j.properties FIRST on the");
-		System.out.println("classpath, ahead of target\\classes and target\\lib\\*, e.g.");
-		System.out.println("  java -cp \"conf;target\\classes;target\\lib\\*\" ...");
-		System.out.println("(docx4j-samples-resources holds a reference copy), or name the script here");
-		System.out.println("with -Dfidelity.updateFields=true -Dfidelity.fieldUpdateScript=<path>.");
-		System.out.println();
-	}
-
-	// ------------------------------------------------------------------ the field update
-
-	/** What the run did about field updating, for the summary - the question is unanswerable
-	 *  from a PDF alone, so the tool says which script cut it. */
-	private static String scriptDescription = "none - no PDF was cut by this run";
-
-	/** The property documents4j reads, and which {@code Documents4jLocalServices} sets from
-	 *  {@code docx4j.properties} when it is not already a system property. */
-	private static final String SCRIPT_PROPERTY = "com.documents4j.conversion.msoffice.word_convert.vbs";
-
-	/**
-	 * Decides which VBS Word will run, and says so.
-	 *
-	 * <p>documents4j materialises its conversion script <em>once</em>, in the bridge
-	 * constructor ({@code AbstractMicrosoftOfficeBridge}), which is to say when the
-	 * {@code LocalConverter} is built - so the choice has to be made before the first
-	 * conversion, and cannot be changed within a run. Hence one mode per run, and two runs
-	 * into two output directories to compare.</p>
-	 *
-	 * <ul>
-	 * <li>{@code -Dfidelity.updateFields=true} - fields are updated. The script is the one
-	 *     named by {@code -Dfidelity.fieldUpdateScript=<path>} if given; otherwise this class
-	 *     writes one into {@code outDir}. Writing our own is not gold-plating: the sample
-	 *     script in {@code docx4j-samples-resources} updates {@code TablesOfContents(1)}
-	 *     inside the {@code On Error Resume Next} block that precedes its {@code Err} check,
-	 *     so a document with <em>no</em> table of contents quits -2 and is reported as
-	 *     "The input file seems to be corrupt". The generated script updates every story
-	 *     range's fields and every TOC, and clears {@code Err} afterwards, so a document with
-	 *     neither is converted rather than failed.</li>
-	 * <li>{@code -Dfidelity.updateFields=false} - fields are not updated. Clearing the system
-	 *     property is not enough, because {@code Documents4jLocalServices} would then fall
-	 *     back to {@code docx4j.properties} and put the configured script back; so
-	 *     documents4j's own bundled {@code word_convert.vbs} is unpacked from the classpath
-	 *     into {@code outDir} and pointed at explicitly. That script opens, saves and closes,
-	 *     and touches no field.</li>
-	 * <li>unset - whatever the machine is configured for is left alone, and the resolved
-	 *     script is printed so the run says what it did.</li>
-	 * </ul>
-	 */
-	private static void configureScript(File outDir) throws IOException {
-		String want = System.getProperty("fidelity.updateFields");
-		if (want == null) {
-			String configured = System.getProperty(SCRIPT_PROPERTY);
-			if (configured == null) {
-				configured = org.docx4j.Docx4jProperties.getProperty(SCRIPT_PROPERTY);
-				scriptDescription = configured == null
-						? "as configured: documents4j's default script (no field update)"
-						: "as configured: " + configured + " (from docx4j.properties)";
-			} else {
-				scriptDescription = "as configured: " + configured + " (from -D)";
-			}
-			System.out.println("field update: not specified; " + scriptDescription);
-			System.out.println("  -Dfidelity.updateFields=true|false to decide it here");
-			return;
-		}
-		if (Boolean.parseBoolean(want)) {
-			String named = System.getProperty("fidelity.fieldUpdateScript");
-			File script;
-			if (named != null) {
-				script = new File(named);
-				if (!script.isFile()) throw new IOException("no such script: " + script);
-			} else {
-				script = new File(outDir, "word_convert-updatefields.vbs");
-				Files.write(script.toPath(), UPDATING_SCRIPT.getBytes(StandardCharsets.US_ASCII));
-			}
-			System.setProperty(SCRIPT_PROPERTY, script.getAbsolutePath());
-			scriptDescription = "ON, via " + script.getAbsolutePath();
-		} else {
-			File script = new File(outDir, "word_convert-nofields.vbs");
-			try (InputStream in = ResaveInvariance.class.getClassLoader().getResourceAsStream("word_convert.vbs")) {
-				if (in == null) {
-					throw new IOException("documents4j's word_convert.vbs is not on the classpath;"
-							+ " name a no-op script with -Dfidelity.fieldUpdateScript= instead");
-				}
-				Files.copy(in, script.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			}
-			System.setProperty(SCRIPT_PROPERTY, script.getAbsolutePath());
-			scriptDescription = "OFF, via documents4j's own script at " + script.getAbsolutePath();
-		}
-		System.out.println("field update: " + scriptDescription);
-	}
-
-	/**
-	 * documents4j's default conversion script with a field update added: every story range's
-	 * fields (the body, but also the headers, footers and footnotes, which
-	 * {@code Document.Fields} alone does not reach) and every table of contents, with
-	 * {@code Err} cleared afterwards so that a document holding neither is still converted.
-	 * CRLF, because it is handed to {@code cscript}.
-	 */
-	private static final String UPDATING_SCRIPT = String.join("\r\n",
-			"' generated by org.docx4j.fidelity.golden.ResaveInvariance - documents4j's default",
-			"' word_convert.vbs, plus a field update, so that the effect of the field update can be",
-			"' measured by cutting the same document with and without it.",
-			"Const WdDoNotSaveChanges = 0",
-			"Const WdExportFormatPDF = 17",
-			"Const MagicFormatPDFA = 999",
-			"Const MagicFormatFilteredHTML = 10",
-			"Const msoEncodingUTF8 = 65001",
-			"",
-			"Function ConvertFile( inputFile, outputFile, formatEnumeration )",
-			"",
-			"  Dim fileSystemObject",
-			"  Dim wordApplication",
-			"  Dim wordDocument",
-			"",
-			"  On Error Resume Next",
-			"  Set wordApplication = GetObject(, \"Word.Application\")",
-			"  If Err <> 0 Then",
-			"    WScript.Quit -6",
-			"  End If",
-			"  On Error GoTo 0",
-			"",
-			"  Set fileSystemObject = CreateObject(\"Scripting.FileSystemObject\")",
-			"  inputFile = fileSystemObject.GetAbsolutePathName(inputFile)",
-			"",
-			"  If fileSystemObject.FileExists(inputFile) Then",
-			"",
-			"    On Error Resume Next",
-			"    Set wordDocument = wordApplication.Documents.Open(inputFile, False, True, False)",
-			"    If wordDocument = \"\" OR Err <> 0 Then",
-			"      WScript.Quit -2",
-			"    End If",
-			"    On Error GoTo 0",
-			"",
-			"    ' Update the fields.  A document with no fields and no table of contents is not a",
-			"    ' failure, so Err is cleared rather than checked.",
-			"    On Error Resume Next",
-			"    Dim story",
-			"    For Each story In wordDocument.StoryRanges",
-			"      story.Fields.Update",
-			"    Next",
-			"    Dim toc",
-			"    For Each toc In wordDocument.TablesOfContents",
-			"      toc.Update",
-			"    Next",
-			"    Err.Clear",
-			"    On Error GoTo 0",
-			"",
-			"    If formatEnumeration = MagicFormatFilteredHTML Then",
-			"      wordDocument.WebOptions.Encoding = msoEncodingUTF8",
-			"    End If",
-			"",
-			"    On Error Resume Next",
-			"    If formatEnumeration = MagicFormatPDFA Then",
-			"      wordDocument.ExportAsFixedFormat outputFile, WdExportFormatPDF, False, , , , , , , , , , , True",
-			"    Else",
-			"      wordDocument.SaveAs outputFile, formatEnumeration",
-			"    End If",
-			"",
-			"    wordDocument.Close WdDoNotSaveChanges",
-			"    If Err <> 0 Then",
-			"      WScript.Quit -3",
-			"    End If",
-			"    On Error GoTo 0",
-			"",
-			"    WScript.Quit 2",
-			"",
-			"  Else",
-			"",
-			"    WScript.Quit -4",
-			"",
-			"  End If",
-			"",
-			"End Function",
-			"",
-			"Call ConvertFile( WScript.Arguments.Unnamed.Item(0), WScript.Arguments.Unnamed.Item(1),"
-					+ " CInt(WScript.Arguments.Unnamed.Item(2)) )",
-			"");
 
 	// ------------------------------------------------------------------ picking
 
