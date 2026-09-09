@@ -40,6 +40,53 @@ public class AutofitLayoutTest {
 		assertEquals(w[1], w[2]);
 	}
 
+	// ---- preferences as maxima: a grid Word did not compute (word-layout-rules.md §6.3) ----
+
+	/** The corpus certificate Word's re-saved grid was measured on: every cell states a
+	 *  width, 10450 twips of them on a 9020-twip column; Word wrote 1778 / 905 / 1027 / 1998 /
+	 *  1540 / 776 / 986 (9010).  The last column is widened past its 948 to what M/TONS needs. */
+	@Test
+	public void preferredAsMaximumReproducesWordsGrid() {
+		int[] min = { 877, 320, 766, 1363, 443, 320, 987 };
+		int[] pref = { 2116, 1125, 1126, 2236, 1951, 948, 948 };
+		int[] word = { 1778, 905, 1027, 1998, 1540, 776, 986 };
+		int[] w = AutofitLayout.distributePreferredAsMaximum(min, pref, 9010);
+		int sum = 0;
+		for (int i = 0; i < w.length; i++) {
+			assertEquals("column " + i, word[i], w[i], 1);
+			sum += w[i];
+		}
+		assertEquals(9010, sum);
+	}
+
+	@Test
+	public void preferredAsMaximumTakesThePreferencesWhereTheyFit() {
+		int[] w = AutofitLayout.distributePreferredAsMaximum(new int[] { 100, 200, 300 },
+				new int[] { 1000, 2000, 3000 }, 6500);
+		assertArrayEquals(new int[] { 1000, 2000, 3000 }, w);
+	}
+
+	@Test
+	public void preferredAsMaximumWidensAColumnToItsContent() {
+		// the middle column's content needs 800: its preference of 500 is not enough, and
+		// the excess comes out of the others' slack
+		int[] w = AutofitLayout.distributePreferredAsMaximum(new int[] { 100, 800, 100 },
+				new int[] { 1000, 500, 1000 }, 2000);
+		assertEquals(800, w[1]);
+		assertEquals(2000, w[0] + w[1] + w[2]);
+		assertEquals(w[0], w[2]);
+	}
+
+	@Test
+	public void preferredAsMaximumFallsBackToTheMinima() {
+		int[] w = AutofitLayout.distributePreferredAsMaximum(new int[] { 600, 600 },
+				new int[] { 1000, 1000 }, 1000);
+		assertArrayEquals(new int[] { 600, 600 }, w);
+		// and treats a column with no preference as fixed at its minimum
+		w = AutofitLayout.distributePreferredAsMaximum(new int[] { 100, 100 }, new int[] { 500, -1 }, 400);
+		assertArrayEquals(new int[] { 300, 100 }, w);
+	}
+
 	// ---- squeeze: how a shortfall is shared (word-layout-rules.md §6.5) ----
 
 	/** The 36-column corpus table Word's kept grid was measured on: 2672 / 664 x 34 / 881

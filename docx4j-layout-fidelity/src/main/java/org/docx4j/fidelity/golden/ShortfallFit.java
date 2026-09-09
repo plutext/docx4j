@@ -106,6 +106,14 @@ public final class ShortfallFit {
 
 	public static void main(String[] args) throws Exception {
 		File csv = new File(args[0]);
+		// -Dfidelity.allTablesCsv=<file>: every table paired with a Word grid and joined to a
+		// dump record, shortfall or not, with the sizer's inputs and Word's grid side by side
+		String allPath = System.getProperty("fidelity.allTablesCsv");
+		PrintWriter allCsv = allPath == null ? null : new PrintWriter(new File(allPath), "UTF-8");
+		if (allCsv != null) {
+			allCsv.println("id,tableIndex,columns,fixed,tblWType,contentSized,wordRewroteGrid,available,"
+					+ "declaredTotal,wordTotal,min,max,pref,floor,content,declared,docx4j,word");
+		}
 		List<Sample> all = new ArrayList<Sample>();
 		int docs = 0, docsWithDump = 0, tablesPaired = 0, tablesContentSized = 0, tablesUnjoined = 0,
 				tablesMeasured = 0;
@@ -178,6 +186,15 @@ public final class ShortfallFit {
 					s.fixed = p.fixed;
 					s.tblWType = p.tblWType;
 					boolean autofit = !p.fixed && (p.tblWType == null || "auto".equals(p.tblWType));
+					if (allCsv != null) {
+						// every joined table, whether or not it is a shortfall: what the sizer saw
+						// beside what Word kept or wrote (RowGridDiff's question, with the minima)
+						allCsv.printf(Locale.ROOT, "%s,%d,%d,%s,%s,%s,%s,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s,%s%n",
+								ColumnError.csvCell(id), s.tableIndex, s.word.length, s.fixed,
+								s.tblWType == null ? "" : s.tblWType, s.contentSized, r.wordRewroteGrid,
+								s.available, s.declaredTotal, s.wordTotal, j(s.min), j(s.max), j(s.pref),
+								j(s.floor), j(s.content), j(s.declared), j(s.ours), j(s.word));
+					}
 					if (d.contentSized && s.minTotal > r.wordTotal) {
 						s.population = "content";
 						content++;
@@ -196,6 +213,10 @@ public final class ShortfallFit {
 			}
 		}
 
+		if (allCsv != null) {
+			allCsv.close();
+			System.out.println("all joined tables: " + allPath);
+		}
 		System.out.println();
 		System.out.printf(Locale.ROOT, "%d documents, %d produced a dump; %d tables paired with Word's grid,"
 				+ " %d measured by the content pass (%d sized by it), %d could not be joined to a dump record%n",

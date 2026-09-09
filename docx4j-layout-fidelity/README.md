@@ -234,6 +234,31 @@ for is in `docx4j-export-fo/docs/word-layout-rules.md` §6.5: the population is 
 multi-column tables in four documents, and six in three), and Word keeps each column's cell
 margins whole and squeezes only the text.
 
+`-Dfidelity.allTablesCsv=<file>` has `ShortfallFit` also write every table it paired and
+joined - shortfall or not - with the sizer's inputs beside Word's grid and whether Word
+rewrote it, so a question about the whole population (does a candidate rule reproduce the
+grids Word *kept*?) can be asked of one CSV without rendering again.
+
+`RowGridDiff` asks about the rows rather than the table:
+
+```bash
+java -cp "$CP" org.docx4j.fidelity.golden.RowGridDiff out.csv <corpusDir> <resavedDir> [<corpusDir> <resavedDir> ...]
+```
+
+A row's `w:tcW` need not agree with the `w:tblGrid`, and the question was whether Word then
+lays that row out on its own widths - which would give a table more than one column geometry,
+and XSL-FO none of the means to draw it. For every table it computes each row's boundaries
+from its `dxa` `w:tcW` (with `w:gridBefore`/`w:wBefore` and the spans) against the grid
+columns the cells cover, counts the rows that disagree (by more than max(10 twips, 1%)) and
+the distinct geometries among them, and reads what Word drew off the re-saved grid - which
+has one geometry per table, so a row laid out on its own widths would show as a grid of more
+columns carrying the union of the rows' boundaries. Word's grid is compared, as a set of
+interior boundaries, with the declared grid, the widest disagreeing row, the union of the rows
+and the row's widths scaled to Word's total, by Hausdorff distance in twips. The finding is in
+`word-layout-rules.md` §6.3: 1,474 of 5,866 tables have a disagreeing row, Word draws the grid
+for 1,443 of them, and it changed a grid's column count in two - one geometry per table,
+always.
+
 ## Hyphenation patterns (licence note)
 
 FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`

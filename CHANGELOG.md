@@ -102,6 +102,21 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   one more page count equal, the 311-page document 0.9115 -> 0.9118. Against Word's re-saved
   grids the URL table's column error falls by more than half. See word-layout-rules.md §6.3
   and §4.3.
+- How Word lays a table out on its cells' w:tcW, derived from Word's re-saved grids: each
+  column's maximum is its preference (or its content minimum where wider), its minimum its
+  content minimum, and the classic auto layout applies (AutofitLayout.distributePreferredAsMaximum;
+  within a twip of Word on the certificate it was fitted on, within 1% on 1,644 of the
+  corpora's 1,699 all-preferred autofit tables). A table every cell of which states a width
+  is laid out on that rule instead of its w:tblGrid only where the grid cannot be a layout of
+  those widths - a column 1.2x wider than its w:tcW though its content needs less - which is
+  three tables of the corpora and no grid Word keeps; a stale grid from a generator had a
+  36pt column where Word draws 51pt. Word never lays a row out on its own widths while
+  another row of the same table has different ones (measured over 1,474 tables whose rows
+  disagree with their grid: one geometry per table, always), so nothing needed per-row
+  column geometry. New property docx4j.convert.out.fo.tables.refitStaleGrid (default true).
+  Measured: probes identical; corpus 1 +8 lines matched, mean line parity 0.8923 -> 0.8926;
+  corpus 2 +19 lines, 0.8561 -> 0.8579, the certificate 0.7391 -> 1.0000; corpus 3 unchanged;
+  three documents up, none down. See word-layout-rules.md §6.3.
 - OpcPackage.clone() now carries the package's name across, so a converted copy is the same
   document for logging (and for the dump above).
 - New diagnostic property docx4j.convert.out.fo.wordLayout.dumpAutofit=<file>: the column

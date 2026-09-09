@@ -519,7 +519,19 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			// kept whether or not the pass goes on to size the columns: the page fit and the
 			// diagnostic dump (DUMP_AUTOFIT) both read it
 			table.setAutofitInputs(new AbstractTableWriterModel.AutofitInputs(mi, ma, pref, floor, available));
-			if (!anyAuto) return null; // every column has a preferred width: the grid is what Word uses
+			if (!anyAuto) {
+				// every cell states a width: the grid is what Word uses - unless the grid
+				// cannot be a layout of those widths, in which case Word lays the table out
+				// on them afresh (see gridContradictsPreferences)
+				if (refitStaleGrid() && container <= 0 && tablePreferred <= 0 && available > 0) {
+					int[] grid = gridWidths(table, cols);
+					if (grid != null && gridContradictsPreferences(grid, pref, mi, available)) {
+						log.debug("w:tblGrid contradicts the cells' w:tcW; laying the table out on the preferences");
+						return org.docx4j.model.table.AutofitLayout.distributePreferredAsMaximum(mi, pref, available);
+					}
+				}
+				return null;
+			}
 			if (gridIsAuthoritative(table, tblPr, cols, pref, declared)) return null;
 			if (available <= 0) return null;
 			int[] widths = org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
@@ -610,6 +622,62 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			}
 		}
 		return false; // a wholly auto-width table is Word's autofit
+	}
+
+	/** docx4j.convert.out.fo.tables.refitStaleGrid: an autofit table of auto width, every
+	 *  cell of which states a {@code w:tcW}, whose {@code w:tblGrid} cannot be a layout of
+	 *  those widths ({@link #gridContradictsPreferences}) is laid out on the widths, as Word
+	 *  lays it out, rather than on the grid.  {@code false} keeps the grid, as 17.1.0 did.
+	 *  @since 17.1.1 */
+	public static final String REFIT_STALE_GRID = "docx4j.convert.out.fo.tables.refitStaleGrid";
+
+	private static boolean refitStaleGrid() {
+		return org.docx4j.Docx4jProperties.getProperty(REFIT_STALE_GRID, true);
+	}
+
+	/** How much wider than its {@code w:tcW} a grid column may be, where the content does
+	 *  not call for the excess, before the grid is read as no layout of the preferences. */
+	static final double STALE_GRID_EXCESS = 1.2;
+
+	/**
+	 * Whether a {@code w:tblGrid} cannot be the layout Word made of the cells' preferred
+	 * widths, so that the table is laid out on the preferences instead
+	 * ({@link org.docx4j.model.table.AutofitLayout#distributePreferredAsMaximum}).
+	 *
+	 * <p>A {@code w:tcW} is a column's <em>maximum</em> in Word's autofit: a column comes
+	 * out wider than its preference only where its content minimum forces it.  So a grid
+	 * column more than {@link #STALE_GRID_EXCESS} times its preference, in a column whose
+	 * measured minimum is no wider than that preference, is a grid Word did not compute
+	 * from these cells - a generator's, or one left over from an earlier state of the
+	 * table - and Word, which recomputes an autofit table's layout on open, does not draw
+	 * it.  Measured on the three real-document corpora re-saved by Word ({@code RowGridDiff}):
+	 * of 1474 tables whose rows state widths disagreeing with the grid, Word draws the grid
+	 * in 1443, and this test fires on none of those; it fires on three tables in three
+	 * documents, in all of which Word's re-saved grid is the preferences-as-maxima layout
+	 * to within 0.2%, and the grid docx4j drew was 30%, 46% and 129% out on a column.  A
+	 * looser reading - any grid the rule does not reproduce within 2% - would also fire on
+	 * nine grids Word keeps (eight documents, three of them at 1.000 of Word's lines),
+	 * where the disagreement is between Word's content minima and ours.</p>
+	 *
+	 * <p>A grid wider than the width available is left to the page fit
+	 * ({@link #fitToAvailableWidth}), which has its own measured rules for over-wide grids.</p>
+	 *
+	 * @param grid the declared w:tblGrid, one entry per column
+	 * @param pref per-column preferred width in twips, -1 where a column has none
+	 * @param min per-column content minimum in twips (cell margins included)
+	 * @param available the width the table has
+	 * @since 17.1.1
+	 */
+	static boolean gridContradictsPreferences(int[] grid, int[] pref, int[] min, int available) {
+		if (grid == null || pref == null || min == null) return false;
+		long sum = 0;
+		for (int g : grid) sum += g;
+		if (sum > available) return false;
+		for (int i = 0; i < grid.length && i < pref.length && i < min.length; i++) {
+			if (pref[i] <= 0 || min[i] > pref[i]) continue;
+			if (grid[i] > pref[i] * STALE_GRID_EXCESS) return true;
+		}
+		return false;
 	}
 
 	/**

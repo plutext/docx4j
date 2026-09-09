@@ -165,6 +165,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.tables.shortfallByText` | `true` | Where a content-sized table's minima do not fit the width it has, each column keeps its cell margins and any picture and the shortfall comes out of the text, in proportion ([§6.5](#s65shortfall)). `false` scales every column in proportion, as 17.1.0 did. |
 | `docx4j.convert.out.fo.tables.refitGridByContent` | `true` | An autofit table whose cached `w:tblGrid` is beyond `GRID_OVERHANG_LIMIT` and whose measured minima do not fit the column either is laid out on those minima, squeezed as above, rather than on its grid scaled ([§6.5](#s65shortfall)). `false` scales the grid, as 17.1.0 did. |
 | `docx4j.convert.out.fo.tables.minimumAtBreakOpportunities` | `true` | The autofit sizer takes a column's minimum to be its widest run between the **line manager's break opportunities** - UAX #14 as FOP applies it, with Word's solidus rules - so a URL is measured to its `?` and its hyphens, where it will be broken ([§6.3](#s63breaks)). `false` measures the widest white-space-delimited token, as 17.1.0 did. |
+| `docx4j.convert.out.fo.tables.refitStaleGrid` | `true` | A table every cell of which states a `w:tcW`, of auto width, whose `w:tblGrid` cannot be a layout of those widths (a column 1.2x wider than its preference though its content needs less) is laid out on the preferences as Word lays it out - each column's maximum its preference, its minimum its content, the slack shared by what the preference is above the minimum ([§6.3](#s63stalegrid)). `false` keeps the grid, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.dumpAutofit` | unset | A file to which the column sizer appends one record per table - the minima, maxima, preferred widths and floors it measured, the width it fitted them into and what it chose - for the harness's `ShortfallFit`. Unset, nothing is written; set, the output is unchanged. |
 | `docx4j.convert.out.fo.tables.position` | `true` | A floating table's `w:tblpPr`: the grid edge at `tblpX`/`tblpXSpec`, and a page- or margin-anchored table which opens its section placed absolutely (§6.8). `false` lays every table out in the flow, as 17.0.5 did. |
 | `docx4j.convert.out.fo.frames.position` | `true` | A paragraph whose `w:framePr` is anchored to the page or to the margin is lifted into a positioned block-container, and the flow keeps the band of a frame no text may run beside (§9.5). `false` lays every framed paragraph out where it falls, as 17.0.5 did. |
@@ -2483,17 +2484,106 @@ population - which holds the URL table - the shipped squeeze rule's per-column e
 Word's grid goes **0.0525 -> 0.0307** and 3,770 -> 1,634 twips, with plain proportion to the
 minima 0.0601 -> 0.0290: the new minima are the closer ones.
 
-**Next, with its evidence, not implemented.** The one document down on the third corpus
-(0.8228 -> 0.8173, six lines of 887) is a lesson plan whose resources column holds YouTube
-and owlcation URLs: measured whole they claimed a share of the table's shortfall that held
-`http://www.youtube.com/watch?` / `v=...` on two lines; measured to their opportunities the
-column's share shrinks below even that unit, and the emergency break sets `watc` / `h?v=...`.
-The minimum is now right and the share is the open question: what §6.5's squeeze gives a
-column whose minimum is one unit of a long URL, against what Word gives it, is the
-measurement to make next, on that document's re-saved grid. Two more, smaller: a word split
-across two runs at a break opportunity cannot break at the seam in FOP (above), which Word
-does; and whether Word breaks between a letter and `+`, `%` or a currency sign other than
-`$` is unmeasured (it does before `$`, it does not before `\`).
+**The one document down on the third corpus was measured, and is not a defect.** It went
+0.8228 -> 0.8173 (six lines of 887) and is a lesson plan whose resources column holds YouTube
+and owlcation URLs, which the emergency break now sets as `http://www.youtube.com/watc` /
+`h?v=...`. Word's PDF sets them at exactly those characters - `watc|h?v=`, `S|cience-Fair-`
+`Project-Which-`, `wat|ch?v=`, `lea|rning_cultures.pdf` - because the column is a
+`w:tblLayout fixed` grid column of 3119 twips which Word draws at its stated width (its
+nested table overhangs the text column by 7%, and its rule centres in Word's PDF are the grid
+to a twip), so no share of a shortfall is involved and the concern that §6.5's squeeze had
+given the column less than its widest breakable unit does not arise. Set against the golden
+line by line, the new render matches eight URL lines the old one did not and loses two
+(`BEST/GREAT/GOOD/` | `AVERAGE/EFFORT`, where Word's emergency break falls after the third
+solidus and ours before it - a width a fraction of a character apart); the scoreboard's six
+are the LCS re-pairing rows whose cells moved by a point. Nor is there a population to fit a
+floor to: of the seven content-shortfall tables in the corpora (§6.5) none holds a breakable
+token. Whether Word breaks between a letter and `+`, `%` or a currency sign other than `$`
+remains unmeasured (it does before `$`, it does not before `\`). A word split across two
+runs at a break opportunity cannot break at the seam in FOP (above), which Word does; that is
+measured next.
+
+<a id="s63stalegrid"></a>**A grid the cells' preferences contradict, and how Word lays a
+table out on its `w:tcW`** (17.1.1). The certificate §6.11 names - the one document the
+break-opportunity measurement above cost - is a seven-column autofit table (`w:tblW auto`)
+every cell of which states a `dxa` width, 2116 / 1125 / 1126 / 2236 / 1951 / 948 / 948
+twips, on a `w:tblGrid` of 1603 / 1863 / 721 / 1702 / 423 / 1773 / 925. docx4j drew the grid,
+[as above](#s63grid), and its `BALES` column was 721 twips; Word's PDF draws that cell 51.4pt
+wide, and its rule centres - 72.26 / 161.11 / 206.50 / 257.88 / 357.74 / 434.83 / 473.71 /
+522.94pt - are **1777 / 908 / 1028 / 1997 / 1542 / 778 / 985** twips, the same on every row,
+which is the grid Word wrote back on re-save (1778 / 905 / 1027 / 1998 / 1540 / 776 / 986)
+to within the width of a rule. That is neither the grid nor the row's own widths (which sum
+to 10450 on a 9020-twip column). The working hypothesis had been that Word lays such a row
+out on its own `w:tcW`, so that a table's rows need not share one geometry - which, as FO
+fixes `fo:table-column` widths for the whole table, would have meant synthesising a grid from
+the union of every row's boundaries. It was measured first, over the three corpora and the
+probes re-saved by Word (the harness's `RowGridDiff`, 5,866 tables in 406 documents):
+
+- **1,474 tables in 91 documents** have a row whose `dxa` `w:tcW` disagree with the grid
+  columns they cover by more than max(10 twips, 1%); in 1,458 of them every such row does,
+  in 6 exactly one row (5 documents) and in 10 some rows. Among the disagreeing rows the
+  boundaries are one geometry in 1,435 tables and several in 39 (32 documents).
+- **Word drew the grid in 1,443 of the 1,474** (75 documents) and rewrote 31 (22 documents),
+  29 of them with the same column count. It changed the count in **two** tables of the 1,474,
+  and neither is a union of its rows' boundaries: a row is never laid out on its own widths
+  while another row of the same table is laid out on different ones. **One geometry per
+  table, always** - so nothing here needs per-row column geometry, and no row of any table
+  in the corpora has more cells than its grid has columns.
+- Neither the size of the disagreement (Word keeps grids a row's widths differ from by 121%
+  and rewrites ones they differ from by under 1%) nor a content minimum wider than its
+  column (kept 19 such grids, rewrote 4, against 1,748 kept and 45 rewritten where the minima
+  fit) says which grids Word rewrites.
+
+What does say what Word *draws*, in either case, is the layout rule. Fitted on the
+certificate with docx4j's own content minima (877 / 320 / 766 / 1363 / 443 / 320 / 987, cell
+margins in): **each column's maximum is its `w:tcW` - or its content minimum where that is
+wider - and its minimum is its content minimum, and the classic auto layout of the [first
+paragraph of this section](#63-autofit-column-widths) applies**: the preferences where they
+fit, otherwise each column's minimum plus a share of the slack in proportion to what its
+preference is above its minimum. That gives **1777 / 905 / 1028 / 1997 / 1539 / 776 / 987** -
+within a twip of Word on every column, the `M/TONS` column widened past its 948 to the 987
+its one word needs. The reading docx4j's `distribute` had used for a preferred column, a
+*fixed* width (which is right where the preferences fit, since then the rule gives each column
+exactly its preference), leaves that column at 948 and is 0.5% out elsewhere.
+`AutofitLayout.distributePreferredAsMaximum` is the rule. Applied to **every** autofit table
+of the corpora and probes whose columns all carry a preference - 1,699 tables, the grids Word
+kept and the ones it rewrote alike - it reproduces Word's re-saved grid within 1% on 1,644
+and within 5% on 1,662, with our minima as input. A kept grid is Word's own earlier answer to
+the same rule, which is why the rule and the grid agree there; where they do not (24 kept
+grids), it is the minima that differ - a column Word gives 2883 twips where our widest word
+measures 1872, an e-mail address measured as one 171pt token in a column Word sets at 77pt.
+The tables with a mix of preferred and auto columns are too few to settle (22; the fixed
+reading is within 1% of Word on 5, this one on 1), so `distribute` keeps the fixed reading for
+them.
+
+**Why the rule does not simply replace the grid.** A grid Word kept is exact, and the rule
+with our minima is not, so the question is only *when* the grid is not Word's layout. The
+loose test - lay the table out on the rule wherever the rule and the grid differ by more than
+2% - was scored on the same data: it fires on 10 rewritten grids (9 documents) of which it
+fixes 6 (docx4j's columns 3.4% / 5.1% / 30% / 4.0% / 46% / 129% out, the rule under 0.2%) and
+worsens 3 (0.4% -> 26%, 1.9% -> 16%, 0.3% -> 6.8%), and on **9 grids Word keeps** in 8
+documents, three of them at 1.000 of Word's lines today, where it would move a column by 2%
+to 65%. Net negative, and not shipped. The test that ships reads the *shape*: a `w:tcW` is a
+column's maximum, so a grid column can exceed its preference only where the content forces it,
+and **a grid column more than 1.2 times its preference, in a column whose measured minimum is
+no wider than that preference, is a grid Word did not make from these cells**
+(`AbstractTableWriter.gridContradictsPreferences`, `STALE_GRID_EXCESS`). Over the same 1,474
+disagreeing tables it fires on none Word kept - the nearest kept grid has a column 11% over
+its preference - and on three tables in three documents, in each of which Word's re-saved grid
+is the rule's layout within 0.2% and the grid docx4j drew was 30%, 46% and 129% out on a
+column. It applies to a table every cell of which states a width, of auto width, not nested,
+and only where the grid fits the width available: an over-wide grid keeps §6.5's measured
+rules. `docx4j.convert.out.fo.tables.refitStaleGrid=false` restores the grid.
+
+**Measured** (b34-tcw against the break-opportunity build, probes and the three corpora,
+hyphenation off as the baselines were): the 36 probes and the 76 on the share are line for
+line what they were. The first corpus gains 8 lines matched (36044 -> 36052 of 40339), mean
+line parity 0.8923 -> 0.8926, one document up (0.8438 -> 0.9063, the 30% column) and none
+down; the second gains 19 lines (56279 -> 56298 of 71789), 0.8561 -> **0.8579**, median
+0.9182 -> 0.9184 and one more document at or above 0.98 (28 -> 29): the certificate
+**0.7391 -> 1.0000** and the 46% table's document 0.8590 -> 0.8820, nothing down; the third
+is unchanged to the line. No page count moves. Three documents, exactly the three the
+predicate names.
 
 ### 6.4 Widening to the preferred width
 
