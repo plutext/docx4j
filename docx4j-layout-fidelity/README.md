@@ -67,6 +67,14 @@ it back as a docx there:
 java -cp "%CP%" org.docx4j.fidelity.golden.WordGoldenRunner <shared>\corpus <shared>\goldens <shared>\resaved
 ```
 
+The probe set in use since September 2026 is the fields-off one, goldens and resaves
+together (the share is `X:\fidelity` on the VM; the runner skips a document whose PDF is
+already in the golden directory, so a new probe is cut on its own):
+
+```
+java -Dfidelity.updateFields=false -cp "%CP%" org.docx4j.fidelity.golden.WordGoldenRunner X:\fidelity\corpus X:\fidelity\goldens-nofields X:\fidelity\resaved-nofields
+```
+
 The PDF says where Word *put* the text; the resaved docx says what Word *computed*,
 and some questions can only be answered by the second. The `w:tblGrid` is the case
 that forced this. In a Word-authored autofit table the grid is Word's own cached

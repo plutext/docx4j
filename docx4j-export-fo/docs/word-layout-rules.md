@@ -184,7 +184,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.wordLayout.boundKeepChains` | `true` | A `keep-with-next` chain taller than a page has its keeps reduced to a finite penalty, so the breaker may break inside it as Word does, instead of FOP running the whole chain off the bottom of one page ([§3](#s39keepchain)). |
 | `docx4j.convert.out.fo.wordLayout.keepChainPenalty` | `900` | The penalty such a keep is reduced to, against FOP's infinite 1000: high enough that the breaker still keeps the blocks together wherever they fit. |
 | `docx4j.convert.out.fo.wordLayout.keepChainTolerance` | `3.0` | How many times the page a keep chain must exceed before it is bounded. The flow-level height sum over-estimates what the page must hold, and a chain 12% over is one Word fits ([§3](#s39keepchain)). |
-| `docx4j.convert.out.fo.tables.rowKeepWithNext` | `true` | A table row every paragraph of which carries `w:keepNext` is written with `keep-with-next="always"` on the `fo:table-row`, so it keeps with the next row and, on the last row, keeps the table with the paragraph after it ([§3](#s39rowkeep)). `false` leaves the keep on the cells' blocks alone, as 17.1.0 did, where FOP drops it at the last row. |
+| `docx4j.convert.out.fo.tables.rowKeepWithNext` | `true` | A table row whose first paragraph (first cell) carries `w:keepNext` is written with `keep-with-next="always"` on the `fo:table-row`, so it keeps with the next row and, on the last row, keeps the table with the paragraph after it ([§3](#s39rowkeep)). `false` leaves the keep on the cells' blocks alone, as 17.1.0 did, where FOP drops it at the last row. |
 | `docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph` | `true` | A paragraph of one or two `w:br` and nothing that paints is marked `keep-together.within-page="always"`: Word's widow control cannot split a two- or three-line paragraph, where FOP breaks between the nested blocks the breaks are written as ([§3](#s39brkeep)). `false` leaves it breakable, as 17.1.0 did. |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
@@ -1061,21 +1061,29 @@ two (46, 44 and 42 pages). Properties
 `...keepChainTolerance`.
 
 <a id="s39rowkeep"></a>**A table row keeps with the next row, and the last row with the
-paragraph after the table, where every paragraph of the row has `w:keepNext`.** Word has no
-row-level keep; the paragraph property applied to a whole row is how a table is kept on one
-page, and on the last row it keeps the table with what follows (Microsoft's guidance: within a
-table, keep-with-next works only when applied to the entire row). docx4j writes each
-paragraph's keep on its `fo:block`, and between two rows FOP honours it: the cell's last
-block's keep becomes the cell's (`TableCellLayoutManager`), the cells' the step's
-(`TableStepper`), and the penalty between the rows is infinite. **At the last row it is
-lost**: `TableContentLayoutManager` removes the break element after the last row group
-("the breaking after the table will be handled by TableLM"), and what the table's layout
-manager then passes out is the last *row's* own `keep-with-next` (`RowGroupLayoutManager`),
-never its cells'. So the table could break from the paragraph after it, and a nested
-table from the rest of its cell.
+paragraph after the table, where the first paragraph of the row's first cell has
+`w:keepNext`.** Word has no row-level keep; the paragraph property does the work. Measured on
+the `table-row-keepnext` probe (three-row tables of exact 30pt rows at the foot of a page
+with room for one row): a row whose **first cell's** paragraph keeps and whose last cell's
+does not is kept - the whole table opens the next page (R2), exactly as a row every paragraph
+of which keeps (R1); a row whose **last cell's** paragraph keeps and whose first cell's does
+not is not kept - its first row stays behind (R3); nor is a row whose first cell's *second*
+paragraph keeps while its first does not, though every other paragraph of the row keeps (R4).
+Applied to the last row it keeps the table with the paragraph after the table (R5), and a
+one-row table holding a kept table and a keeping paragraph moves whole (R6). (Microsoft's own
+guidance, "apply keep with next to the whole row", is the safe instruction, not the rule.)
 
-Measured on a 311-page report of 1,183 tables and 10,188 `w:keepNext` - most of them
-six-row tables every paragraph of which keeps with the next, the last row with the empty (or
+docx4j writes each paragraph's keep on its `fo:block`, and between two rows FOP honours it:
+the cell's last block's keep becomes the cell's (`TableCellLayoutManager`), the cells' the
+step's (`TableStepper`), and the penalty between the rows is infinite. **At the last row it is
+lost**: `TableContentLayoutManager` removes the break element after the last row group ("the
+breaking after the table will be handled by TableLM"), and what the table's layout manager
+then passes out is the last *row's* own `keep-with-next` (`RowGroupLayoutManager`), never its
+cells'. So the table could break from the paragraph after it, and a nested table from the
+rest of its cell.
+
+Measured on a 311-page report of 1,183 tables and 10,188 `w:keepNext` - most of them six-row
+tables every paragraph of which keeps with the next, the last row with the empty (or
 line-break-only) paragraph after the table, each preceded by a heading without the keep.
 Neither side ever broke inside such a table, and Word ends 46 pages on the orphaned heading
 to leave the table whole on the next. docx4j gave the document 277 pages: our pages began
@@ -1084,31 +1092,10 @@ and with the kept unit that much shorter (the table without its trailing 21.6 or
 fit the space left at the foot of the page where Word's did not. Word pushed a unit to the
 next page, leaving a median 110pt of the page unused, some 170 times to our 59; the 34 pages
 are that slack (23 pages of it) and the units' own heights. `TableWriter` now marks the
-`fo:table-row` `keep-with-next="always"` where every block of every cell of the row carries
-it - a nested table by its own last row, so the keep climbs through the cell of the table it
-sits in. Header rows are not marked. Property `docx4j.convert.out.fo.tables.rowKeepWithNext`.
-Which paragraphs of a *mixed* row decide is not measured (the corpus document's 31 mixed rows
-never meet a page end); the `table-row-keepnext` probe varies it.
-
-<a id="s39brkeep"></a>**A paragraph of nothing but line breaks is one paragraph to Word's
-widow control; to FOP each of its lines is a block of its own.** `BrWriter` writes a `w:br` as
-a nested `fo:block`, so the paragraph's lines are separate line sequences and the break
-between any two of them is legal: FOP's widow and orphan control works within a line sequence
-and cannot see across it. Word applies `w:widowControl` (on by default) to the paragraph's
-lines whatever made them, so a two- or three-line paragraph cannot be split at all. Measured
-on the same 311-page report, whose every table is followed by a paragraph of one or two `w:br`
-and nothing else, kept with the table by its last row's `w:keepNext`: with the row keep in
-place FOP still took the keep only as far as the paragraph's *first* line and broke after
-it, so 22 of our pages began with the rest of such a paragraph (first text at y=127.4 or
-138.6 against the page's 106.2) where Word began every page with text. On an extracted seam
-run through FOP alone, the paragraph marked `keep-together.within-page="always"` moves the
-table with it exactly as Word does. The rule marks a paragraph whose block-level content is
-soft returns only, which paints nothing (white space only; no graphic, leader or field),
-whose widow control is on, and whose line count - breaks plus one, exact since nothing can
-wrap - is two or three; a longer one Word may split two and two, and one *with* text between
-its breaks is left alone, since how many lines each part takes is not known until layout
-(§10, widow control across `w:br`). Property
-`docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph`.
+`fo:table-row` `keep-with-next="always"` where the first block of its first cell carries it -
+a numbered paragraph by its list body's block, a nested table by its own first row, so the
+keep climbs through the cell of the table it sits in. Header rows are not marked. Property
+`docx4j.convert.out.fo.tables.rowKeepWithNext`.
 
 <a id="s3emptyadd"></a>**Space-after of an empty paragraph before a space-before (open).** One
 structure, measured 152 times in the 311-page report and nowhere else: a table, then an
@@ -1118,8 +1105,12 @@ and **both** 10pt spaces - where "larger of" above gives 43.8 and docx4j draws 4
 report's paragraph of two `w:br` before a heading with 10pt before measures 65.0 - three lines
 of 11.27 and one 10 - which *is* larger-of. Whether an empty paragraph's space-after is exempt
 from the combining, or the heading's numbering or `w:keepNext` is what differs, the
-`spacing-empty-before` probe measures with a text, an empty and a break-only paragraph before
-the same spaced paragraph. Not a rule yet: 10.9pt a section, about 2.6 pages of the report's
+`spacing-empty-before` probe measures. Its first cut (10pt after against 10pt before): a text,
+an empty and a two-`w:br` paragraph before the spaced paragraph all combine by **larger of**
+(gaps of 10.0, 9.4 and 8.8 over the lines), so an empty paragraph is *not* exempt; the
+table-then-empty-paragraph cases could not tell the models apart with equal values and are
+re-cut with 20pt after against 10pt before (larger-of 20, additive 30, an empty paragraph
+losing its space-after 10). Not a rule yet: 10.9pt a section, about 2.6 pages of the report's
 remaining 22.
 
 <a id="s310"></a>**Space-after against a footnote area (open).** One measured data point,
@@ -1445,7 +1436,9 @@ first cost a page:
   3458-twip column is two lines in Word, the second holding only the tab, 64 times (and
   `Configuración de Avance del Proyecto<tab>` wraps its last word where ours fits it, the
   column re-laid at 176.9pt against the grid's 172.9). The `tab-trailing-cell` probe brackets
-  the text's width with and without the tab; until it is cut the header measurement stands. A header whose
+  the text's width with and without the tab; its first cut's columns (2200-3000 twips) were
+  all narrower than the 12pt text, which wrapped with or without the tab, so it is re-cut at
+  3200-4000. Until then the header measurement stands. A header whose
   paragraph is a picture and seven tabs, the last two of which reach nothing (the grid past
   the last custom stop is 14.5pt past the header's width): Word's header is shorter than one
   line of that paragraph, so it gives them no line; breaking made the header 38pt taller and

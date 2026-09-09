@@ -916,7 +916,7 @@ public class TableWriter extends AbstractTableWriter {
 
 	/**
 	 * {@code docx4j.convert.out.fo.tables.rowKeepWithNext} (default {@code true}): a row
-	 * every paragraph of which carries {@code w:keepNext} is kept with the next row, and
+	 * whose first paragraph carries {@code w:keepNext} is kept with the next row, and
 	 * the last such row keeps the table with the paragraph after it, as Word does.
 	 * {@code false} restores 17.1.0, where the keep lived only on the cells' blocks and
 	 * FOP dropped it at the table's last row.  See {@link #applyTableRowCustomAttributes}.
@@ -925,11 +925,18 @@ public class TableWriter extends AbstractTableWriter {
 	public static final String ROW_KEEP_WITH_NEXT = "docx4j.convert.out.fo.tables.rowKeepWithNext";
 
 	/**
-	 * <b>A row whose every paragraph keeps with the next keeps with the next row; the last
-	 * such row keeps the table with what follows it.</b>  Word has no row-level keep: the
-	 * paragraph's {@code w:keepNext} does the work, and applied to every paragraph of a row
-	 * it keeps the row with the row after it - which is how a table is kept on one page -
-	 * and, on the last row, keeps the table with the paragraph after the table.
+	 * <b>A row whose first paragraph keeps with the next keeps with the next row; the
+	 * last such row keeps the table with what follows it.</b>  Word has no row-level keep:
+	 * the paragraph's {@code w:keepNext} does the work.  Measured on the
+	 * {@code table-row-keepnext} probe, Word consults the <b>first paragraph of the
+	 * row's first cell</b> and nothing else: a row whose first cell's paragraph keeps and
+	 * whose last cell's does not is kept (R2, the whole table moves to the next page);
+	 * one whose last cell's paragraph keeps and whose first cell's does not is not (R3,
+	 * its first row stays behind); nor is one whose first cell's <i>second</i> paragraph
+	 * keeps while its first does not, though every other paragraph of the row keeps (R4).
+	 * Applied to the last row it keeps the table with the paragraph after the table
+	 * (R5), and a one-row table holding a kept table and a keeping paragraph moves
+	 * whole (R6).
 	 *
 	 * <p>docx4j writes {@code w:keepNext} as {@code keep-with-next="always"} on each
 	 * paragraph's {@code fo:block}.  Between two rows FOP honours that: the cell's last
@@ -952,16 +959,12 @@ public class TableWriter extends AbstractTableWriter {
 	 * after it.</p>
 	 *
 	 * <p>The rule marks the {@code fo:table-row} itself {@code keep-with-next="always"}
-	 * where every block of every cell of the row (a nested table by its own last row)
-	 * carries it.  Header rows are not marked: a repeated header keeps with the row after
-	 * it by construction.  The keep on the row is what FOP propagates out of the table and
-	 * up through the cell of a table nested in another, so the outer row's own rule then
-	 * sees it.</p>
-	 *
-	 * <p>The row rule Word applies where only <i>some</i> of a row's paragraphs keep with
-	 * next is not measured; "every paragraph" is the rule Microsoft's own guidance gives
-	 * ("keep with next works within a table only when it is applied to the whole row").
-	 * The {@code table-row-keepnext} probe varies it.</p>
+	 * where the first block of the row's first cell carries it - a paragraph by its block,
+	 * a numbered paragraph by its list body's block, a nested table by its own first row
+	 * (which this rule marked when that table was written, so the keep climbs through the
+	 * cell of the table it sits in).  Header rows are not marked: a repeated header keeps
+	 * with the row after it by construction.  The keep on the row is what FOP propagates
+	 * out of the table.</p>
 	 *
 	 * @since 17.1.1
 	 */
@@ -977,50 +980,39 @@ public class TableWriter extends AbstractTableWriter {
   		}
   	}
 
-  	/** Every block of every cell of the row keeps with next (and there is at least one). */
+  	/** The first paragraph of the row's first cell keeps with next (Word's rule). */
   	static boolean rowKeepsWithNext(org.docx4j.model.table.TableModelRow rowModel) {
-  		boolean any = false;
   		for (TableModelCell cell : rowModel.getRowContents()) {
   			if (cell.isDummy()) continue;
   			Node content = ((AbstractTableWriterModelCell) cell).getContent();
-  			if (content == null) return false;
-  			int verdict = blocksKeepWithNext(content.getChildNodes());
-  			if (verdict < 0) return false;
-  			if (verdict > 0) any = true;
+  			return content != null && firstBlockKeepsWithNext(content.getChildNodes());
   		}
-  		return any;
+  		return false;
   	}
 
-  	/** -1: a block which does not keep; 1: every block keeps, one at least; 0: no block. */
-  	private static int blocksKeepWithNext(NodeList children) {
-  		int seen = 0;
+  	/** Whether the first block-level element among these children keeps with next. */
+  	private static boolean firstBlockKeepsWithNext(NodeList children) {
   		for (int i = 0; i < children.getLength(); i++) {
   			Node n = children.item(i);
   			if (n.getNodeType() != Node.ELEMENT_NODE) continue;
   			Element e = (Element) n;
-  			String name = e.getLocalName();
-  			if (name == null) name = e.getNodeName().replaceFirst("^fo:", "");
-  			int verdict;
+  			String name = localName(e);
   			if ("block".equals(name)) {
-  				verdict = "always".equals(e.getAttribute("keep-with-next")) ? 1 : -1;
+  				return "always".equals(e.getAttribute("keep-with-next"));
   			} else if ("list-block".equals(name)) {
   				// the paragraph's keep is on the list-item-body's block
   				Element body = firstDescendant(e, "list-item-body");
-  				verdict = body == null ? -1 : blocksKeepWithNext(body.getChildNodes());
+  				return body != null && firstBlockKeepsWithNext(body.getChildNodes());
   			} else if ("table".equals(name)) {
-  				// a nested table keeps with next by its own last row (this rule, applied
-  				// when it was written)
-  				Element lastRow = lastRow(e);
-  				verdict = lastRow != null && "always".equals(lastRow.getAttribute("keep-with-next")) ? 1 : -1;
+  				// a nested table: its first row, marked by this rule when it was written
+  				Element first = firstRow(e);
+  				return first != null && "always".equals(first.getAttribute("keep-with-next"));
   			} else if ("block-container".equals(name) || "wrapper".equals(name)) {
-  				verdict = blocksKeepWithNext(e.getChildNodes());
-  			} else {
-  				continue; // not block-level content (a marker, a float): no vote
+  				return firstBlockKeepsWithNext(e.getChildNodes());
   			}
-  			if (verdict < 0) return -1;
-  			if (verdict > 0) seen++;
+  			// not block-level content (a marker, a float): look on
   		}
-  		return seen > 0 ? 1 : 0;
+  		return false;
   	}
 
   	private static Element firstDescendant(Element e, String localName) {
@@ -1028,29 +1020,26 @@ public class TableWriter extends AbstractTableWriter {
   		return all.getLength() == 0 ? null : (Element) all.item(0);
   	}
 
-  	/** The last fo:table-row of the last fo:table-body of this table (not a nested one's). */
-  	private static Element lastRow(Element tbl) {
-  		Element body = null;
+  	/** The first fo:table-row of this table's first body (header rows are never marked). */
+  	private static Element firstRow(Element tbl) {
   		NodeList kids = tbl.getChildNodes();
   		for (int i = 0; i < kids.getLength(); i++) {
   			Node n = kids.item(i);
-  			if (n.getNodeType() == Node.ELEMENT_NODE && "table-body".equals(localName((Element) n))) body = (Element) n;
+  			if (n.getNodeType() != Node.ELEMENT_NODE || !"table-body".equals(localName((Element) n))) continue;
+  			NodeList rows = n.getChildNodes();
+  			for (int k = 0; k < rows.getLength(); k++) {
+  				Node r = rows.item(k);
+  				if (r.getNodeType() == Node.ELEMENT_NODE && "table-row".equals(localName((Element) r))) return (Element) r;
+  			}
   		}
-  		if (body == null) return null;
-  		Element last = null;
-  		kids = body.getChildNodes();
-  		for (int i = 0; i < kids.getLength(); i++) {
-  			Node n = kids.item(i);
-  			if (n.getNodeType() == Node.ELEMENT_NODE && "table-row".equals(localName((Element) n))) last = (Element) n;
-  		}
-  		return last;
+  		return null;
   	}
 
   	private static String localName(Element e) {
   		String name = e.getLocalName();
   		return name == null ? e.getNodeName().replaceFirst("^fo:", "") : name;
   	}
-  	
+
     /**
      * In the FO case, if we need to rotate the text, we do that
      * by inserting a block-container.

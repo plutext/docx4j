@@ -1977,7 +1977,9 @@ public final class Corpus {
 		 * the table with the paragraph after it.  Measured on a 311-page report whose
 		 * 1,183 tables carry it on every paragraph (word-layout-rules.md §3), which says
 		 * nothing about a row only SOME of whose paragraphs keep, or which paragraph of
-		 * the row Word consults.  Each case is a three-row table of exact 30pt rows on a
+		 * the row Word consults.  CUT 2026-09-10: R1 kept, R2 KEPT, R3 split, R4 split,
+		 * R5 and R6 whole - the FIRST paragraph of the FIRST cell decides, alone.
+		 * Each case is a three-row table of exact 30pt rows on a
 		 * page of its own, after a filler table of exact 20pt rows sized so that one row
 		 * of the case's table fits at the foot of the page and two do not: where Word
 		 * keeps the row, the whole table opens the next page; where it does not, the
@@ -2071,39 +2073,43 @@ public final class Corpus {
 		 *    says a tab reaching nothing takes no line, measured on a header) and one in
 		 *    docx4j; "Configuración de Avance del Proyecto<tab>" wraps its last word.
 		 *    Three column widths bracket the text's width, with and without the tab.
+		 *    (First cut at 2200-3000 twips wrapped the text at every width; re-cut at
+		 *    3200-4000.  First cut of the spacing probe with 200 after against 200 before
+		 *    showed larger-of after a text, an empty and a br-only paragraph, but could
+		 *    not separate the models for the table cases; re-cut with 400 after.)
 		 */
 		PROBES.add(new Probe("spacing-empty-before",
-				"space-after of an empty paragraph, of a text paragraph and of a w:br-only "
+				"20pt space-after of an empty paragraph, of a text paragraph and of a w:br-only "
 				+ "paragraph against the 10pt space-before of the paragraph after it, and a "
 				+ "table followed by an empty paragraph and a spaced paragraph", () -> {
 			Doc d = Doc.create(15);
-			d.para("S1: a text paragraph with 200 twips after, then a paragraph with 200 before. "
-					+ prose(1)).after(200).add();
-			d.para("S1 spaced paragraph. " + prose(1, 1)).before(200).after(200).add();
-			d.para("S2: an EMPTY paragraph with 200 after follows this one, then a paragraph "
-					+ "with 200 before.").after(200).add();
-			d.para().noLabel().after(200).add();
-			d.para("S2 spaced paragraph. " + prose(1, 2)).before(200).after(200).add();
+			d.para("S1: a text paragraph with 400 twips after, then a paragraph with 200 before. "
+					+ prose(1)).after(400).add();
+			d.para("S1 spaced paragraph. " + prose(1, 1)).before(200).after(400).add();
+			d.para("S2: an EMPTY paragraph with 400 after follows this one, then a paragraph "
+					+ "with 200 before.").after(400).add();
+			d.para().noLabel().after(400).add();
+			d.para("S2 spaced paragraph. " + prose(1, 2)).before(200).after(400).add();
 			d.para("S3: a paragraph of two w:br and nothing else follows, then a paragraph "
-					+ "with 200 before.").after(200).add();
-			d.para().noLabel().softReturn().softReturn().after(200).add();
-			d.para("S3 spaced paragraph. " + prose(1, 3)).before(200).after(200).add();
-			d.para("S4: a one-row table, an empty paragraph with 200 after, then a paragraph "
-					+ "with 200 before.").after(200).add();
+					+ "with 200 before.").after(400).add();
+			d.para().noLabel().softReturn().softReturn().after(400).add();
+			d.para("S3 spaced paragraph. " + prose(1, 3)).before(200).after(400).add();
+			d.para("S4: a one-row table, an empty paragraph with 400 after, then a paragraph "
+					+ "with 200 before.").after(400).add();
 			Doc.Table t = new Doc.Table(4500, 4500);
 			t.rowOf(null, null,
 					t.cellOf(4500, null, Doc.plainParagraph("S4 cell one", SERIF, 24)),
 					t.cellOf(4500, null, Doc.plainParagraph("S4 cell two", SERIF, 24)));
 			d.add(t.build());
-			d.para().noLabel().after(200).add();
-			d.para("S4 spaced paragraph. " + prose(1, 4)).before(200).after(200).add();
-			d.para("S5: control, the table then the spaced paragraph directly.").after(200).add();
+			d.para().noLabel().after(400).add();
+			d.para("S4 spaced paragraph. " + prose(1, 4)).before(200).after(400).add();
+			d.para("S5: control, the table then the spaced paragraph directly.").after(400).add();
 			Doc.Table t2 = new Doc.Table(4500, 4500);
 			t2.rowOf(null, null,
 					t2.cellOf(4500, null, Doc.plainParagraph("S5 cell one", SERIF, 24)),
 					t2.cellOf(4500, null, Doc.plainParagraph("S5 cell two", SERIF, 24)));
 			d.add(t2.build());
-			d.para("S5 spaced paragraph. " + prose(1, 5)).before(200).after(200).add();
+			d.para("S5 spaced paragraph. " + prose(1, 5)).before(200).after(400).add();
 			return d.pkg();
 		}));
 
@@ -2115,7 +2121,7 @@ public final class Corpus {
 					+ "rest. Rows one to three end their text in a tab; rows four to six are "
 					+ "the same text without it. Where Word gives the trailing tab a line, the "
 					+ "row is two lines tall.").after(240).add();
-			int[] widths = {2200, 2600, 3000};
+			int[] widths = {3200, 3600, 4000}; // the 12pt text is about 154pt: wraps, fits with no room for a tab, fits with a stop
 			for (int w : widths) {
 				d.para("T" + w + ": first column " + w + " twips.").after(120).add();
 				Doc.Table t = new Doc.Table(w, 9000 - w);

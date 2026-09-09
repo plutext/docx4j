@@ -27,11 +27,12 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   the stored result on every page. See word-layout-rules.md §7.
 - A continuous section which begins a page of its own keeps the headers and footers it
   declares itself; they used to be ignored, the section inheriting the previous section's.
-- A table row every paragraph of which has w:keepNext keeps with the next row, and the last
-  such row keeps the table with the paragraph after it, as Word does: the keep is now on the
-  fo:table-row, which FOP propagates out of the table (a keep on the cells' blocks is dropped
-  at the last row). A 311-page report of 1,183 kept tables rendered 277 pages. Property
-  docx4j.convert.out.fo.tables.rowKeepWithNext. See word-layout-rules.md §3.
+- A table row whose first paragraph has w:keepNext keeps with the next row, and the last such
+  row keeps the table with the paragraph after it, as Word does (measured: the first cell's
+  first paragraph decides): the keep is now on the fo:table-row, which FOP propagates out of
+  the table (a keep on the cells' blocks is dropped at the last row). A 311-page report of
+  1,183 kept tables rendered 277 pages. Property docx4j.convert.out.fo.tables.rowKeepWithNext.
+  See word-layout-rules.md §3.
 - A paragraph of one or two w:br and nothing else is kept together, as Word's widow control
   keeps a two- or three-line paragraph whole; FOP broke between the nested blocks the breaks
   are written as, so a table kept with such a paragraph kept only its first line. Property

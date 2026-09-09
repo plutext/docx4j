@@ -20,7 +20,7 @@ import org.junit.After;
 import org.junit.Test;
 
 /**
- * A table row every paragraph of which carries {@code w:keepNext} is written with
+ * A table row whose first paragraph carries {@code w:keepNext} is written with
  * {@code keep-with-next="always"} on the {@code fo:table-row} itself, which is the keep
  * FOP propagates out of the table (a keep on the cells' blocks is dropped at the last
  * row).  See {@link TableWriter#applyTableRowCustomAttributes} and word-layout-rules.md
@@ -113,16 +113,20 @@ public class TableRowKeepWithNextTest {
 		assertFalse(rows.get(1), kept(rows.get(1)));
 	}
 
-	/** Only some of the row's paragraphs keep: the first cell's, the second cell's
-	 *  second paragraph.  Not the whole row, so not kept. */
+	/** Word consults the first paragraph of the row's first cell and nothing else
+	 *  (the table-row-keepnext probe: R2 kept, R3 and R4 not). */
 	@Test
-	public void aRowOnlySomeOfWhoseParagraphsKeepIsNot() throws Exception {
+	public void theFirstParagraphOfTheFirstCellDecides() throws Exception {
 		List<String> rows = rows(convert(tbl(
 				tr(null, tc(p("first cell keeps", true)), tc(p("second does not", false))),
 				tr(null, tc(p("first does not", false)), tc(p("second keeps", true))),
-				tr(null, tc(p("both", true)), tc(p("first para no", false), p("second para yes", true))))));
-		assertEquals(3, rows.size());
-		for (String row : rows) assertFalse(row, kept(row));
+				tr(null, tc(p("first para no", false), p("second para yes", true)), tc(p("keeps", true))),
+				tr(null, tc(p("first keeps", true), p("second does not", false)), tc(p("does not", false))))));
+		assertEquals(4, rows.size());
+		assertTrue(rows.get(0), kept(rows.get(0)));
+		assertFalse(rows.get(1), kept(rows.get(1)));
+		assertFalse(rows.get(2), kept(rows.get(2)));
+		assertTrue(rows.get(3), kept(rows.get(3)));
 	}
 
 	/** An empty paragraph with w:keepNext is a paragraph like any other. */
@@ -133,10 +137,8 @@ public class TableRowKeepWithNextTest {
 		assertTrue(kept(rows.get(0)));
 	}
 
-	/** A table nested in a one-row table: the nested table's last row keeps, and the cell's
-	 *  paragraph after it keeps, so the outer row keeps too.  Without the paragraph after
-	 *  the nested table the cell's only block is the nested table, which keeps by its own
-	 *  last row. */
+	/** A table nested in a one-row table: the outer cell's first block is the nested
+	 *  table, which keeps by its own first row, so the outer row keeps. */
 	@Test
 	public void aNestedTableKeepsThroughItsCell() throws Exception {
 		String nested = tbl(keptRow("n1"), keptRow("n2"));
@@ -150,8 +152,8 @@ public class TableRowKeepWithNextTest {
 		assertTrue(kept(rows.get(1)));
 		assertTrue(kept(rows.get(2)));
 
-		// the nested table's last row does NOT keep: neither does the outer row
-		String nestedLoose = tbl(keptRow("n1"), tr(null, tc(p("n2 one", false)), tc(p("n2 two", false))));
+		// the nested table's FIRST row does not keep: neither does the outer row
+		String nestedLoose = tbl(tr(null, tc(p("n1 one", false)), tc(p("n1 two", false))), keptRow("n2"));
 		String outerLoose = outer.replace(nested, nestedLoose);
 		rows = rows(convert(outerLoose));
 		assertEquals(3, rows.size());
