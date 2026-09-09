@@ -27,7 +27,14 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * <b>re-saved</b> documents to PDF and diffs each against the golden Word cut from the
  * original, then counts the field-error text on each side. Two questions, one run.
  *
- * <pre>java -cp ... org.docx4j.fidelity.golden.ResaveInvariance &lt;resavedDir&gt; &lt;goldensDir&gt; &lt;outDir&gt; [count]</pre>
+ * <pre>java -cp ... org.docx4j.fidelity.golden.ResaveInvariance &lt;docxDir&gt; &lt;goldensDir&gt; &lt;outDir&gt; [count | --only=&lt;id&gt;,&lt;id&gt;]</pre>
+ *
+ * <p>{@code docxDir} is the re-saved directory for the question and the corpus directory for
+ * the control: run the same document from both against the one golden, and if the corpus
+ * rendering is identical while the re-saved one differs, the re-save is proven to be the
+ * variable. That comparison needs {@code --only}, because the size sampling ranks by file
+ * size and Word's re-save changes it - the first control run picked five different documents
+ * from the run it was meant to control.</p>
  *
  * <p><b>Question one: is Word's rendering invariant under its own re-save?</b> Word normalises
  * a document as it loads it - styles, numbering, the autofit grid, {@code w:compat} - and it
@@ -45,8 +52,16 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * one corpus document has lost its bookmarks altogether, so its golden is full of
  * {@code Error! Reference source not found.} text which appears nowhere in the docx - about
  * 1,160 lines of it in that one document, all of them unmatchable. So each side's field-error
- * lines are counted separately and the two counts compared. A document where the two sides
- * disagree is one where a field was recomputed between them.</p>
+ * lines are counted separately and the two counts compared.</p>
+ *
+ * <p>The two outcomes of that count mean opposite things, and are reported apart. Where both
+ * sides carry the <em>same</em> errors, they are the document's own: an error string the
+ * author saved as the stored result, which every renderer prints because it is what the docx
+ * says - one control document shows fifteen of them on both sides with no field update
+ * configured at all. Where the golden carries <em>more</em>, a field update recomputed them
+ * when the golden was cut, and the reference is then showing text the docx does not contain,
+ * which docx4j can never match. "The document is broken" and "the reference is wrong" are not
+ * the same finding.</p>
  *
  * <p>Which makes the field update itself the measurement, so this tool can turn it on and off:
  * {@code -Dfidelity.updateFields=true|false} (see {@link #configureScript}). Cut the same
@@ -63,6 +78,11 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * run. A PDF already in {@code outDir} is kept unless {@code --force} is given, and
  * {@code --no-word} skips the conversion entirely and just re-reads an output directory that
  * is already full - which is how a finished run is read again on a machine without Word.</p>
+ *
+ * <p>Two values in a PDF depend on the run rather than on the document, and both are masked
+ * before the comparison, on both sides, and said out loud rather than silently dropped: the
+ * temp file name a {@code FILENAME} field prints (see {@link #TEMP_NAME}) and the day a
+ * {@code DATE} field prints, which the extractor's own normalisation collapses.</p>
  */
 public final class ResaveInvariance {
 
@@ -99,22 +119,41 @@ public final class ResaveInvariance {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 3) {
-			System.out.println("usage: ResaveInvariance <resavedDir> <goldensDir> <outDir> [count]"
-					+ " [--force] [--no-word]");
+			System.out.println("usage: ResaveInvariance <docxDir> <goldensDir> <outDir>"
+					+ " [count | --only=<id>[,<id>...] | <id> ...] [--force] [--no-word]");
+			System.out.println("  <docxDir> is the resaved directory for the question, or the corpus"
+					+ " directory for the control");
 			System.exit(2);
 		}
-		File resavedDir = new File(args[0]);
+		File docxDir = new File(args[0]);
 		File goldensDir = new File(args[1]);
 		File outDir = new File(args[2]);
 		int count = DEFAULT_COUNT;
+		List<String> only = new ArrayList<>();
 		for (int i = 3; i < args.length; i++) {
-			if (!args[i].startsWith("--")) count = Integer.parseInt(args[i]);
+			String a = args[i];
+			if (a.startsWith("--only=")) {
+				for (String s : a.substring("--only=".length()).split(",")) {
+					if (!s.trim().isEmpty()) only.add(s.trim().replaceAll("\\.docx$", ""));
+				}
+			} else if (a.startsWith("--")) {
+				continue;
+			} else if (a.matches("\\d+")) {
+				count = Integer.parseInt(a);
+			} else {
+				only.add(a.replaceAll("\\.docx$", ""));
+			}
 		}
 		boolean force = Arrays.asList(args).contains("--force");
 		boolean noWord = Arrays.asList(args).contains("--no-word");
 		outDir.mkdirs();
 
+		warnAboutProperties();
 		if (!noWord) configureScript(outDir);
+		System.out.println("ignored as run-dependent: documents4j's temp file name (a FILENAME field"
+				+ " prints it, and it is random per conversion), and dates and times, through the"
+				+ " extractor's own normalisation" + (DATES_NORMALISED ? "" : " - WHICH IS TURNED OFF"
+				+ " by -Dfidelity.dateNormalise=false, so a DATE field will read as a difference"));
 
 		/* documents4j starts PowerPoint as well as Word unless it is told not to, and
 		 * PowerPoint has to run in the foreground, so a first-run or activation dialog
@@ -124,15 +163,16 @@ public final class ResaveInvariance {
 			org.docx4j.Docx4jProperties.setProperty(PPT_BRIDGE, "false");
 		}
 
-		List<File> picked = pick(resavedDir, goldensDir, count);
+		List<File> picked = pick(docxDir, goldensDir, count, only);
 		if (picked.isEmpty()) {
-			throw new IllegalArgumentException("no <id>.docx in " + resavedDir
+			throw new IllegalArgumentException("no <id>.docx in " + docxDir
 					+ " with a matching <id>.pdf in " + goldensDir);
 		}
 
 		int identical = 0, differing = 0, failed = 0;
 		int totalPagesDiffering = 0, totalLinesDiffering = 0;
 		int fieldErrGolden = 0, fieldErrNew = 0, fieldDisagreements = 0;
+		int storedErrors = 0, updatedErrors = 0;
 		int n = 0;
 		for (File docx : picked) {
 			n++;
@@ -162,6 +202,12 @@ public final class ResaveInvariance {
 				failed++;
 				continue;
 			}
+			Scrubbed sa = scrub(a), sb = scrub(b);
+			if (sa.lines + sb.lines > 0) {
+				System.out.printf("  %d line(s) golden / %d new carry documents4j's temp file name and"
+						+ " are compared with it masked; first: \"%s\"%n",
+						sa.lines, sb.lines, abbreviate(sa.first != null ? sa.first : sb.first));
+			}
 			Diff d = diff(id, a, b);
 			report(id, d);
 			if (d.identical()) {
@@ -178,6 +224,28 @@ public final class ResaveInvariance {
 			if (ea.lines != eb.lines) fieldDisagreements++;
 			System.out.println("  field errors: golden " + ea + "; new " + eb
 					+ (ea.lines == eb.lines ? "  (agree)" : "  DISAGREE by " + (eb.lines - ea.lines) + " lines"));
+			/* Which of the two kinds of field error this is - and they mean opposite things.
+			 * Equal counts on both sides are the document's own: an error string the author
+			 * saved as the stored result, which every renderer prints because it is what the
+			 * docx says. A golden which carries more of them than the new render printed them
+			 * because a field update recomputed a REF whose bookmark is gone - the reference
+			 * is then showing something the docx does not contain, and docx4j can never match
+			 * it. "The document is broken" and "the reference is wrong" are not the same
+			 * finding, so the tool does not report them as one number. */
+			if (ea.lines > 0 && ea.lines == eb.lines) {
+				storedErrors++;
+				System.out.println("      both sides agree, so these are stored results the document"
+						+ " itself carries - the document, not the reference");
+			} else if (ea.lines > eb.lines) {
+				updatedErrors++;
+				System.out.println("      the golden carries " + (ea.lines - eb.lines) + " more, so a"
+						+ " field update recomputed them when it was cut - the reference shows what"
+						+ " the docx does not contain");
+			} else if (eb.lines > ea.lines) {
+				updatedErrors++;
+				System.out.println("      this run carries " + (eb.lines - ea.lines) + " more than the"
+						+ " golden, so this run updated fields the golden's did not");
+			}
 			System.out.flush();
 		}
 
@@ -197,10 +265,48 @@ public final class ResaveInvariance {
 		System.out.println("== question two: field errors ==");
 		System.out.printf("golden %d lines, new %d lines; the two sides disagree on %d of %d documents%n",
 				fieldErrGolden, fieldErrNew, fieldDisagreements, identical + differing);
+		System.out.printf("%d document(s) carry the same errors on both sides (stored results - the"
+				+ " document is broken)%n", storedErrors);
+		System.out.printf("%d document(s) differ (a field update recomputed them - the reference holds"
+				+ " what the docx does not)%n", updatedErrors);
 		System.out.println("field update this run: " + scriptDescription);
 		System.out.println(Errors.LIMITATION);
 		// documents4j keeps worker threads; do not wait for them
 		System.exit(failed == 0 ? 0 : 1);
+	}
+
+	// ------------------------------------------------------------------ the configuration
+
+	/**
+	 * Says loudly when there is no {@code docx4j.properties} on the classpath, because the
+	 * consequence is easy to miss and it goes to the heart of question two: the field-updating
+	 * conversion script is named <em>in</em> {@code docx4j.properties}, so without that file
+	 * {@code Documents4jLocalServices} has nothing to fall back to and Word runs documents4j's
+	 * default script, which updates no field. A run configured that way may not reproduce the
+	 * configuration the goldens were cut under, and would report a field difference that is an
+	 * artefact of its own setup. The warning names the fix rather than only the problem.
+	 */
+	private static void warnAboutProperties() {
+		java.net.URL url = ResaveInvariance.class.getClassLoader().getResource("docx4j.properties");
+		if (url != null) {
+			System.out.println("docx4j.properties: " + url);
+			return;
+		}
+		System.out.println("****************************************************************");
+		System.out.println("*  WARNING: no docx4j.properties on the classpath               *");
+		System.out.println("****************************************************************");
+		System.out.println("The field-updating conversion script is named in docx4j.properties, under");
+		System.out.println("  " + SCRIPT_PROPERTY);
+		System.out.println("so without that file Word runs documents4j's default script, which updates no");
+		System.out.println("field - which may not be how the goldens were cut. This run may therefore not");
+		System.out.println("reproduce the golden's configuration, and a field difference it reports may be");
+		System.out.println("an artefact of this run rather than a fact about the document.");
+		System.out.println("Fix it by putting a directory that holds docx4j.properties FIRST on the");
+		System.out.println("classpath, ahead of target\\classes and target\\lib\\*, e.g.");
+		System.out.println("  java -cp \"conf;target\\classes;target\\lib\\*\" ...");
+		System.out.println("(docx4j-samples-resources holds a reference copy), or name the script here");
+		System.out.println("with -Dfidelity.updateFields=true -Dfidelity.fieldUpdateScript=<path>.");
+		System.out.println();
 	}
 
 	// ------------------------------------------------------------------ the field update
@@ -375,15 +481,41 @@ public final class ResaveInvariance {
 	// ------------------------------------------------------------------ picking
 
 	/**
-	 * The documents which have both a re-saved docx and a golden PDF, sampled by size:
-	 * the smallest, the largest, and an even spread of ranks between them. Alphabetical
+	 * The documents which have both a docx in {@code docxDir} and a golden PDF, sampled by
+	 * size: the smallest, the largest, and an even spread of ranks between them. Alphabetical
 	 * order carries no information about a document, so the first five of it can easily be
 	 * five short ones - and a document of one page cannot show a page break moving. Size
 	 * ranking is deterministic, so two runs pick the same documents and can be compared.
+	 *
+	 * <p>Deterministic is not the same as <em>comparable across bases</em>, though, and the
+	 * first pair of runs proved it: the control run over the corpus files picked five
+	 * different documents from the run over the re-saved ones, because Word's re-save changes
+	 * a document's size and so its rank. The control was then a control over nothing - the
+	 * document that differed was never run on the other basis. So {@code only} names the
+	 * documents outright ({@code --only=<id>,<id>} or the ids as positional arguments), which
+	 * is how the same document is run from {@code corpus} and from {@code resaved} against the
+	 * one golden: if the corpus rendering is identical and the re-saved one differs, the
+	 * re-save is proven to be the variable.</p>
 	 */
-	private static List<File> pick(File resavedDir, File goldensDir, int count) {
-		File[] all = resavedDir.listFiles((d, name) -> name.endsWith(".docx") && !name.startsWith("~"));
-		if (all == null) throw new IllegalArgumentException("cannot list " + resavedDir);
+	private static List<File> pick(File docxDir, File goldensDir, int count, List<String> only) {
+		if (!only.isEmpty()) {
+			List<File> named = new ArrayList<>();
+			for (String id : only) {
+				File docx = new File(docxDir, id + ".docx");
+				File pdf = new File(goldensDir, id + ".pdf");
+				if (docx.length() == 0) {
+					System.out.println("  asked for " + id + ", but there is no such docx in " + docxDir);
+				} else if (pdf.length() == 0) {
+					System.out.println("  asked for " + id + ", but there is no golden for it in " + goldensDir);
+				} else {
+					named.add(docx);
+					System.out.printf("  picked %s (%d KB) - named on the command line%n", id, docx.length() / 1024);
+				}
+			}
+			return named;
+		}
+		File[] all = docxDir.listFiles((d, name) -> name.endsWith(".docx") && !name.startsWith("~"));
+		if (all == null) throw new IllegalArgumentException("cannot list " + docxDir);
 		List<File> eligible = new ArrayList<>();
 		for (File f : all) {
 			String id = f.getName().replaceAll("\\.docx$", "");
@@ -395,7 +527,10 @@ public final class ResaveInvariance {
 			return c != 0 ? c : x.getName().compareTo(y.getName());
 		});
 		int n = eligible.size();
-		System.out.println(n + " documents have both a re-saved docx and a golden PDF");
+		System.out.println(n + " documents have both a docx here and a golden PDF");
+		System.out.println("sampling by size; a run over corpus and a run over resaved will NOT pick the"
+				+ " same documents, because Word's re-save changes a document's size and so its rank."
+				+ " Use --only=<id> to compare the two bases.");
 		LinkedHashSet<File> out = new LinkedHashSet<>();
 		if (count >= n) {
 			out.addAll(eligible);
@@ -475,6 +610,57 @@ public final class ResaveInvariance {
 	private static void progress(String what, String id, int n, int total, File docx) {
 		System.out.printf("[%d/%d] %s %s (%d KB)%n", n, total, what, id, docx.length() / 1024);
 		System.out.flush();
+	}
+
+	// ------------------------------------------------------------------ run-dependent text
+
+	/** What one side's masking came to: how many lines carried a temp file name, and the first
+	 *  of them as it was written, so the output says what was masked rather than hiding it. */
+	private static final class Scrubbed {
+		int lines;
+		String first;
+	}
+
+	/**
+	 * documents4j's temp file name, which is random per conversion:
+	 * {@code Documents4jLocalServices} saves the package to {@code docx_<random>.docx} before
+	 * Word is given it, so a {@code FILENAME} field prints a different name in every PDF ever
+	 * cut of the same document. That is a fact about the conversion, not about the layout, and
+	 * it cost the first run a false positive - a document whose one "difference" was
+	 * {@code docx_12277429448431206055.docx} against {@code docx_3404776806619476754.docx}.
+	 */
+	private static final Pattern TEMP_NAME =
+			Pattern.compile("(?:docx|xlsx|pptx|resave)_\\d+\\.(?:docx|xlsx|pptx)");
+
+	/** What a masked temp name is compared as. Readable rather than a sentinel, because it is
+	 *  printed back in the first-difference report. */
+	private static final String TEMP_MASK = "docx_<temp>.docx";
+
+	/** Whether the extractor is normalising dates, which is the other run-dependent value: a
+	 *  {@code DATE} field prints the day the PDF was cut, so a golden and a render made on
+	 *  different days differ on it. {@link PdfLayout.Line#key()} - what {@code score} pairs on,
+	 *  and what this tool compares on - collapses it, unless it has been turned off. */
+	private static final boolean DATES_NORMALISED =
+			!"false".equalsIgnoreCase(System.getProperty("fidelity.dateNormalise", "true"));
+
+	/**
+	 * Masks the temp file name in every line, <b>before</b> anything asks a line for its
+	 * {@link PdfLayout.Line#key()} - the key is computed once and cached, so this has to
+	 * happen first, and doing it here means the positional diff and {@link LayoutComparison}
+	 * both see the same masked text. Dates need no equivalent: the key normalises them
+	 * already, on both sides, which is exactly what {@code score} does.
+	 */
+	private static Scrubbed scrub(PdfLayout layout) {
+		Scrubbed s = new Scrubbed();
+		for (PdfLayout.Line l : layout.lines) {
+			if (l.text == null) continue;
+			Matcher m = TEMP_NAME.matcher(l.text);
+			if (!m.find()) continue;
+			s.lines++;
+			if (s.first == null) s.first = l.text;
+			l.text = m.reset().replaceAll(TEMP_MASK);
+		}
+		return s;
 	}
 
 	// ------------------------------------------------------------------ the diff

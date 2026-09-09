@@ -379,7 +379,7 @@ Two questions this harness cannot answer from what it has already measured, and 
 that answers both. It runs on the Windows VM, because it needs Word:
 
 ```
-java -cp "%CP%" org.docx4j.fidelity.golden.ResaveInvariance <resavedDir> <goldensDir> <outDir> [count] [--force] [--no-word]
+java -cp "%CP%" org.docx4j.fidelity.golden.ResaveInvariance <docxDir> <goldensDir> <outDir> [count | --only=<id>[,<id>...]] [--force] [--no-word]
 ```
 
 **Question one: is `PDF(original)` the same as `PDF(resaved)`?** Word normalises a document as
@@ -400,12 +400,29 @@ of `Error! Reference source not found.` - about 1,160 lines of it - which appear
 docx and can never match. So the tool counts the field-error lines on each side and says whether
 they agree.
 
-It picks a handful of documents (five, or `count`) that have both an `<id>.docx` in `resavedDir`
-and an `<id>.pdf` in `goldensDir`, **by size**: the smallest, the largest and an even spread of
-ranks between, printed with the reason each was picked. Alphabetical order carries no information
-about a document, so the first five of it can easily be five short ones, and a one-page document
-cannot show a page break moving. The ranking is deterministic, so two runs pick the same
-documents and can be compared.
+It picks a handful of documents (five, or `count`) that have both an `<id>.docx` in `docxDir` and
+an `<id>.pdf` in `goldensDir`, **by size**: the smallest, the largest and an even spread of ranks
+between, printed with the reason each was picked. Alphabetical order carries no information about
+a document, so the first five of it can easily be five short ones, and a one-page document cannot
+show a page break moving.
+
+**`docxDir` is the re-saved directory for the question and the corpus directory for the control**,
+and `--only=<id>[,<id>...]` (or the ids as positional arguments) names the documents outright
+instead of sampling. Use it whenever the two bases are being compared: size sampling is
+deterministic but *not* comparable across bases, because Word's re-save changes a document's size
+and so its rank, and the first control run therefore picked five different documents from the run
+it was meant to control - the document that differed was never controlled at all. Running one
+named document from `corpus` and from `resaved` against the same golden settles it: if the corpus
+rendering is identical and the re-saved one differs, the re-save is the variable.
+
+Two values in a PDF belong to the run rather than to the document, and both are masked on both
+sides before the comparison - and reported, because silently dropping content is worse than
+saying what was dropped. One is documents4j's temp file name: the package is saved to
+`docx_<random>.docx` before Word is given it, so a `FILENAME` field prints a different name in
+every PDF ever cut, and one of the first run's two "differences" was nothing but that (plus a
+`DATE` field). The other is the date itself, collapsed by the extractor's own normalisation, the
+same one `score` relies on - so `-Dfidelity.dateNormalise=false` will make a `DATE` field read as
+a divergence, and the run says so when it is set.
 
 Each PDF is cut by the route `WordGoldenRunner` uses - docx4j loads the package and documents4j
 hands Word a temp file, because handing Word the corpus file itself fails on most of the corpus -
@@ -427,6 +444,24 @@ which is literally the scoreboard's own comparison), so a document that is *not*
 described in the numbers the scoreboard uses. Then the field-error census for that document.
 Finally a total per question: how many documents rendered identically, and whether the two sides
 agreed about field errors.
+
+A run also warns, loudly, when there is **no `docx4j.properties` on the classpath**. That matters
+more than it looks: the field-updating conversion script is named in `docx4j.properties`, so
+without it the tool reports "documents4j's default script (no field update)" and Word updates
+nothing - which may not be how the goldens were cut, and would make any field difference the run
+reports an artefact of the run. Put a directory holding `docx4j.properties` first on the
+classpath (`-cp "conf;target\classes;target\lib\*"`), or name the script with
+`-Dfidelity.fieldUpdateScript=`.
+
+**A field error is not by itself evidence that Word updated anything**, which is why the two
+outcomes are counted apart. Where both sides carry the *same* errors they are the document's own:
+an error string the author saved as the stored result, which every renderer prints because it is
+what the docx says - one control document showed fifteen of them on both sides with no field
+update configured at all. Where the golden carries *more*, a field update recomputed them when it
+was cut, and the reference is showing text the docx does not contain, which docx4j can never
+match: the document whose golden holds some 770 of them against stored results that are not
+errors is that case. "The document is broken" and "the reference is wrong" are opposite findings,
+so the run reports them as two numbers.
 
 Two limits on the field census, both stated in its output. A line carrying an error string is
 counted once, so an error that wrapped onto a second line counts once and not twice; and only the
