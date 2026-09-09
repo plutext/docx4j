@@ -942,7 +942,23 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		if ("dxa".equals(tblW.getType())) return tblW.getW().intValue();
 		if ("pct".equals(tblW.getType())) {
 			int base = container > 0 ? container : containerWidthTwips(context);
-			if (base > 0) return (int) ((long) base * tblW.getW().intValue() / 5000);
+			if (base > 0) {
+				int w = (int) ((long) base * tblW.getW().intValue() / 5000);
+				/* A percentage which resolves to less than one pair of Word's default cell
+				 * margins is not a width, and Word does not treat it as one.  Measured on a
+				 * corpus document whose table states w:tblW w:w="1" w:type="pct" - 0.02%
+				 * of the text column, 1.9 twips - with a w:tblCellMar of 0: Word draws the
+				 * table full width and its "Personal Protective Equipment" on one line,
+				 * where docx4j scaled the grid to the percentage and drew four 0.05pt
+				 * columns, and once a word wider than its cell is broken (§6.11) the
+				 * document gained a page of one-letter lines.  Of the 1,855 pct table
+				 * widths in the three corpora the next-smallest is in the 30-39% band, so
+				 * a floor of 216 twips (10.8pt, below 3% of any text column) fires on
+				 * that one alone.  It is Word's default margins rather than the table's
+				 * own because that table's are zero.  @since 17.1.1 */
+				if (w < 2 * WORD_DEFAULT_CELL_MARGIN_TWIPS) return -1;
+				return w;
+			}
 		}
 		return -1;
 	}

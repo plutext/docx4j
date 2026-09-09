@@ -2400,6 +2400,24 @@ on eight documents.
   width (the 120% table's two columns are 254.0 and 286.2pt, the same 0.888 ratio as
   ours), so only the total is the percentage's.
 
+<a id="s65degenerate"></a>**A percentage which resolves to less than one pair of Word's default
+cell margins is not a width** (17.1.1). One corpus document states `w:tblW w:w="1"
+w:type="pct"` - 0.02% of the text column, 1.9 twips - on a five-row table with a
+`w:tblCellMar` of 0. Word draws the table full width, its `Personal Protective Equipment`
+on one line; docx4j scaled the grid to the percentage and drew four 0.05pt columns, painting
+that text across the page, and once a word wider than its cell is broken ([§6.11](#s611))
+the document gained a page of one-letter lines. The floor is 216 twips (10.8pt), Word's
+default margins rather than the table's own, which are zero there. It is chosen from the
+corpora: of their **1,855** `pct` table widths the next-smallest is in the 30-39% band
+(then two at 80-89%, 47 at 90-99%, 1,798 at 100-109% and two above), so the floor - under 3%
+of any text column - fires on that one value alone. `preferredTableWidthTwips` returns "no
+preferred width" for it, so the table is laid out as one that states none: content autofit,
+no scaling of its grid to the percentage, no percentage exemption from the page fit.
+Measured on top of the cell break: probes byte-identical, the first two corpora unchanged to
+the line, and on the third that one document 0.9286 -> **0.9857** and 6 -> 5 pages, Word's
+count - same page count 63 -> 64, lines matched 170253 -> 170261, median 0.9286 -> 0.9293,
+mean 0.8903 -> 0.8909, documents at or above 0.98 21 -> 22 - with nothing else moved.
+
 `AbstractTableWriter.scaleGridToPercentageWidth` scales the grid, and
 `fitToAvailableWidth` no longer clamps a **percentage**-width table's autofit columns to
 the column. An absolute `w:tblW` buys no such exemption - one corpus table whose
@@ -3002,7 +3020,8 @@ template above, 15 -> 21 pages, whose eight tables we squeeze from 19,000-24,000
 near-equal columns. The other two expose width bugs rather than cause them: a one-page
 document whose placeholders Word draws several to a line in a cell we make 103-150pt wide,
 and a five-page one whose table states `w:tblW w:w="1" w:type="pct"` - 0.02% of the column,
-which Word ignores and we honour, scaling its grid to four 0.05pt columns. And of the three
+which Word ignores and we honoured, scaling its grid to four 0.05pt columns (guarded since,
+[§6.5](#s65degenerate)). And of the three
 gained page counts, two are Word's layout reached (the 25-page document above and a 4-page
 one whose `${…}` placeholder Word shatters in an 11.4pt cell exactly as we now do) and one
 is an artefact, a 2-page document whose second page is one spilled line in Word and one line

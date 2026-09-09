@@ -50,6 +50,12 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   documents whose page count moved are in Word's own PDF, and the losses are column-width
   errors that used to paint their text over the next cell and off the page (§6.11). Goes
   when FOP grows an emergency break. See word-layout-rules.md §6.11 and §10.
+- A w:tblW in pct which resolves to less than one pair of Word's default cell margins (216
+  twips) is no longer treated as a width: a corpus table stating w:w="1" (0.02% of the text
+  column) had its grid scaled to four 0.05pt columns, where Word draws it full width. Of
+  the corpora's 1,855 pct table widths the next-smallest is in the 30-39% band, so the
+  floor fires on that value alone: that document goes 0.9286 -> 0.9857 and 6 -> 5 pages,
+  Word's count, and nothing else in the three corpora moves. See word-layout-rules.md §6.5.
 - Two properties carry those measurements so they can be repeated without a build:
   docx4j.convert.out.fo.wordLayout.cellEmergencyBreakToleranceRatio (default 0) and
   docx4j.convert.out.fo.tables.scaleContentAutofit (default true: Word's own kept w:tblGrid
