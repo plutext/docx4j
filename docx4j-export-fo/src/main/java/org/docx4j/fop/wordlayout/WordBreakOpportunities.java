@@ -94,6 +94,38 @@ public final class WordBreakOpportunities {
 		return after == '\\' && isLetter(before);
 	}
 
+	/**
+	 * Whether a line may break between the last character of one text and the first of
+	 * the next - the seam of two runs - as it may between the same two characters inside
+	 * one text.  Each {@code FOText} gets its own {@link LineBreakStatus}, and UAX #14
+	 * decides a break before a character from the pair it makes with the one before it,
+	 * so the opportunity after a hyphen which ends one {@code fo:inline} is not seen
+	 * when the next begins; what FOP puts at such a seam instead is a <em>flagged</em>
+	 * penalty after a {@code -} or {@code /}, which the breaking algorithm ignores with
+	 * hyphenation off and would take after a solidus with it on.  Word breaks after the
+	 * hyphen whichever run it is in, and never after the solidus.  The same pair table,
+	 * with Word's adjustments, gives the answer for the seam
+	 * ({@code WordLineLayoutManager.seamBreaks}) - but only for a run ending in a
+	 * <b>hyphen or dash</b>, which is the population that was measured (107 lines Word
+	 * breaks at such a seam over three corpora).  Reading every pair the table allows
+	 * was measured too and costs two documents: Word keeps {@code 4፡30} - an Ethiopic
+	 * word space, class BA, between digits - and {@code $${{...}}} whole where the pair
+	 * table breaks after the {@code ፡} and between the two {@code $} (0.4627 -> 0.3881
+	 * and 0.9570 -> 0.9355 of Word's lines), so a seam at any other character is left
+	 * as FOP has it.  A space on either side is FOP's own business and is not a seam.
+	 *
+	 * @since 17.1.1
+	 */
+	public static boolean breakAtSeam(char before, char after) {
+		if (!isHyphenOrDash(before) || GlyphMapping.isSpace(after)) return false;
+		return breakBefore(new String(new char[] { before, after }))[1];
+	}
+
+	/** A hyphen-minus, hyphen, figure dash, en dash, em dash or horizontal bar. */
+	private static boolean isHyphenOrDash(char c) {
+		return c == '-' || c == '\u2010' || c == '\u2012' || c == '\u2013' || c == '\u2014' || c == '\u2015';
+	}
+
 	/** Class AL, including what LB1 resolves to it (AI, SG, XX, an unassigned code point,
 	 *  and SA where it is not a combining mark). */
 	private static boolean isLetter(char c) {

@@ -117,6 +117,17 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   Measured: probes identical; corpus 1 +8 lines matched, mean line parity 0.8923 -> 0.8926;
   corpus 2 +19 lines, 0.8561 -> 0.8579, the certificate 0.7391 -> 1.0000; corpus 3 unchanged;
   three documents up, none down. See word-layout-rules.md §6.3.
+- A word split across two runs at a hyphen (foo- in one run, bar in the next) can now break
+  after the hyphen, as Word breaks it: FOP flags the penalty it puts at such a seam like a
+  hyphenation point, so it was never taken with hyphenation off (and would have been taken
+  after a solidus with it on). The line manager unflags it after a hyphen and suppresses it
+  after a solidus (WordBreakOpportunities.breakAtSeam); only a run ending in a hyphen or
+  dash is read this way. Over the three corpora Word breaks at 107 such seams and we missed
+  45 of them, in 17 documents. New property
+  docx4j.convert.out.fo.wordLayout.seamBreak (default true). Measured: probes identical; corpus 1 +119 lines matched, mean line parity 0.8926 -> 0.8937,
+  four documents up; corpus 2 +115 lines, 0.8579 -> 0.8589; corpus 3 +143 lines, 0.8922 ->
+  0.8929; no document down, one page count moved (a document whose parity rose).
+  See word-layout-rules.md §10.
 - OpcPackage.clone() now carries the package's name across, so a converted copy is the same
   document for logging (and for the dump above).
 - New diagnostic property docx4j.convert.out.fo.wordLayout.dumpAutofit=<file>: the column

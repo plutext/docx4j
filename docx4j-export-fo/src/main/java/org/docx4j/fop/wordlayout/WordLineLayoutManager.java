@@ -2347,6 +2347,124 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
     }
 
+    // ---- a break opportunity at the seam of two runs ----------------------------------
+
+    private final boolean seamBreakEnabled = WordLayoutCustomizer.seamBreak();
+
+    /**
+     * A word split across two runs at a break opportunity - {@code foo-} in one
+     * {@code fo:inline}, {@code bar} in the next - does not break at the seam in FOP, and
+     * Word breaks after the hyphen whichever run it is in.  FOP does see the seam: when
+     * the line manager joins two boxes from consecutive text managers
+     * ({@code Paragraph.addALetterSpace}), a text ending in one of its
+     * {@code BREAK_CHARS} ({@code -} and {@code /}) gets a break penalty after it - but a
+     * <em>flagged</em> one, {@code KnuthPenalty.FLAGGED_PENALTY} as for a hyphenation
+     * point, and with hyphenation off the breaking algorithm runs with
+     * {@code NO_FLAGGED_PENALTIES} and never considers it; with hyphenation on it would
+     * be taken after a solidus too, which Word does not do.  Any other seam inside a word
+     * gets an infinite penalty and a letter-space glue, or nothing.  Measured on FOP
+     * 2.11's area tree, {@code <fo:inline>aaaa bbbb-</fo:inline><fo:inline>cccc
+     * dddd</fo:inline>} on a 62pt measure sets {@code aaaa} / {@code bbbb-cccc} /
+     * {@code dddd}, where the same text in one inline sets {@code aaaa bbbb-} /
+     * {@code cccc dddd} (word-layout-rules.md &#xa7;10).  A {@code w:r} boundary falls
+     * inside a hyphenated word wherever an author edited one half of it: over the FO
+     * emitted for three corpora, 608 such seams in 128 documents, at 107 of which Word's
+     * PDF breaks the line and at 45 of which (17 documents) ours did not.
+     *
+     * <p>Where a non-auxiliary box from one text manager is followed by one from another
+     * with nothing between them but what FOP puts inside a word - that flagged penalty,
+     * an infinite penalty, a letter-space glue, an auxiliary box - the seam is decided by
+     * {@link WordBreakOpportunities#breakAtSeam} on the last character of the one and the
+     * first of the other: allowed, the flagged penalty is unflagged (or an infinite one
+     * relaxed to zero, or a zero penalty inserted where there is none); not allowed, a
+     * flagged penalty is made infinite and recorded with {@link #suppressedBreaks}, so
+     * that neither hyphenation nor the emergency break reads it as a break.  A space on
+     * either side, a penalty the line manager itself suppressed
+     * ({@link #suppressWordBreaks}) and a seam FOP can already break at are left alone.
+     * Runs before {@link #emergencyBreaks}, which would otherwise read the two halves as
+     * one over-long word.</p>
+     *
+     * @since 17.1.1
+     */
+    private void seamBreaks(Paragraph par) {
+        if (!seamBreakEnabled || par == null) return;
+        for (int i = 0; i + 1 < par.size(); i++) {
+            KnuthElement a = (KnuthElement) par.get(i);
+            if (!a.isBox() || a.isAuxiliary()) continue;
+            org.apache.fop.fonts.GlyphMapping ma = mappingOf(a);
+            org.apache.fop.layoutmgr.inline.TextLayoutManager ta = tlmOf(a);
+            if (ma == null || ta == null || ma.isSpace) continue;
+            int j = i + 1;
+            int infiniteAt = -1, flaggedAt = -1;
+            boolean seam = true;
+            for (; j < par.size(); j++) {
+                KnuthElement e = (KnuthElement) par.get(j);
+                org.apache.fop.fonts.GlyphMapping m = mappingOf(e);
+                if (m != null && m.isSpace) { seam = false; break; }
+                if (e.isBox()) {
+                    if (!e.isAuxiliary()) break;             // the next word box
+                    if (e.getWidth() != 0) { seam = false; break; }
+                    continue;
+                }
+                if (e instanceof KnuthPenalty) {
+                    KnuthPenalty p = (KnuthPenalty) e;
+                    if (suppressedBreaks.containsKey(p)) { seam = false; break; }   // by design no break
+                    if (p.getPenalty() >= KnuthElement.INFINITE) {
+                        if (infiniteAt < 0) infiniteAt = j;
+                        continue;
+                    }
+                    if (p.isPenaltyFlagged() && p.getWidth() == 0 && !p.isAuxiliary() && flaggedAt < 0) {
+                        flaggedAt = j;                        // FOP's own, flagged, seam penalty
+                        continue;
+                    }
+                    seam = false;                             // a legal break of FOP's own
+                    break;
+                }
+                if (e.isGlue()) {
+                    if (infiniteAt < 0 && flaggedAt < 0 && !e.isAuxiliary()) { seam = false; break; }
+                    continue;
+                }
+                seam = false;
+                break;
+            }
+            if (!seam || j >= par.size()) continue;
+            KnuthElement b = (KnuthElement) par.get(j);
+            org.apache.fop.fonts.GlyphMapping mb = mappingOf(b);
+            org.apache.fop.layoutmgr.inline.TextLayoutManager tb = tlmOf(b);
+            if (mb == null || tb == null || tb == ta || mb.isSpace) continue;
+            org.apache.fop.fo.FOText fa = LBP.foText(ta), fb = LBP.foText(tb);
+            if (fa == null || fb == null || ma.endIndex <= 0 || ma.endIndex > fa.length()
+                    || mb.startIndex < 0 || mb.startIndex >= fb.length()) continue;
+            char last = fa.charAt(ma.endIndex - 1), first = fb.charAt(mb.startIndex);
+            boolean allowed = WordBreakOpportunities.breakAtSeam(last, first);
+            if (flaggedAt >= 0) {
+                KnuthPenalty f = (KnuthPenalty) par.get(flaggedAt);
+                if (allowed) {
+                    par.set(flaggedAt, new KnuthPenalty(0, 0, false, f.getPosition(), f.isAuxiliary()));
+                } else {
+                    // a break char Word does not break after (a solidus): no break, with
+                    // hyphenation on either, and one word to the emergency break
+                    KnuthPenalty suppressed = new KnuthPenalty(0, KnuthElement.INFINITE, false, f.getPosition(), f.isAuxiliary());
+                    suppressedBreaks.put(suppressed, Boolean.TRUE);
+                    par.set(flaggedAt, suppressed);
+                }
+            } else if (allowed) {
+                if (infiniteAt >= 0) {
+                    KnuthPenalty inf = (KnuthPenalty) par.get(infiniteAt);
+                    par.set(infiniteAt, new KnuthPenalty(inf.getWidth(), 0, false, inf.getPosition(), inf.isAuxiliary()));
+                } else {
+                    Position aux = auxiliaryPosition(par, i);
+                    if (aux == null) continue;
+                    par.add(i + 1, new KnuthPenalty(0, 0, false, aux, true));
+                    i++;
+                }
+            }
+            if (allowed && log.isDebugEnabled()) {
+                log.debug("break opportunity added at the seam of two runs after '" + last + "'");
+            }
+        }
+    }
+
     // ---- Word's emergency break (E10) --------------------------------------------
 
     /**
@@ -2988,6 +3106,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
         if (canHyphenate && !hyphenationPerformed) {
             hyphenationPerformed = isLastPar;
             findHyphenationPoints(currPar);
+        }
+        // the opportunity FOP lacks at the seam of two runs (see seamBreaks), before the
+        // emergency break, which must not see a seam it could break at as an over-long word
+        if (canWrap) {
+            seamBreaks(currPar);
         }
         // Word's last resort, after every legal break the document itself offers:
         // a word too long for any line is broken inside it (see emergencyBreaks)

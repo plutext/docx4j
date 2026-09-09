@@ -157,6 +157,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.wordLayout.emptyLineAfterBreak` | `true` | A `w:br` whose new line holds nothing that paints still takes a line box, as Word gives it (&sect;2.5). `false` restores 17.0.5's behaviour. |
 | `docx4j.convert.out.fo.wordLayout.emergencyBreak` | `true` | A word too long for a line of its own is broken inside it, at the last character that fits, as Word breaks one (§4.3). `false` paints it whole, off the page, as FOP does. |
 | `docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance` | `72` | How far past the measure, in points, such a word may run before it is broken. 8 is worth about +0.004 of mean line parity but breaks three documents' page counts, whose columns we size wrongly (§4.3). |
+| `docx4j.convert.out.fo.wordLayout.seamBreak` | `true` | A word split across two runs at a hyphen (`foo-` in one `fo:inline`, `bar` in the next) may break after the hyphen, as Word breaks it: FOP flags the penalty it puts at such a seam like a hyphenation point, so it is never taken with hyphenation off ([§10](#s10inlineseam)). `false` leaves the seam to FOP. |
 | `docx4j.fonts.wordLineMetrics.deviceGrid` | `false` | `true` rounds a font's single line height to Word's 600 dpi layout grid, 1/600 inch, which is what Word does (§2.1) - but measured over the corpora it moves page breaks and costs more than the 0.02pt a line it wins. |
 | `docx4j.convert.out.fo.wordLayoutFixups` | `true` | The DOM pass over the generated FO (`WordLayoutFixups`): Word's spacing edge rules, the line-box attributes, exact-height rows, anchored pictures, text boxes. `false` gives the FO docx4j 17.0.4 produced. |
 | `docx4j.convert.out.fo.glyphWidths.round` | `true` | Glyph advances are rounded to the nearest 1/1000 em, as Word measures and as Word's own PDFs record them; FOP truncates them, which runs every line it measures up to 0.1% narrow ([§10](#s10advances)). `false` leaves FOP's width table - and the `/Widths` written from it - alone. |
@@ -2500,8 +2501,7 @@ are the LCS re-pairing rows whose cells moved by a point. Nor is there a populat
 floor to: of the seven content-shortfall tables in the corpora (§6.5) none holds a breakable
 token. Whether Word breaks between a letter and `+`, `%` or a currency sign other than `$`
 remains unmeasured (it does before `$`, it does not before `\`). A word split across two
-runs at a break opportunity cannot break at the seam in FOP (above), which Word does; that is
-measured next.
+runs at a break opportunity is [§10](#s10inlineseam).
 
 <a id="s63stalegrid"></a>**A grid the cells' preferences contradict, and how Word lays a
 table out on its `w:tcW`** (17.1.1). The certificate §6.11 names - the one document the
@@ -4440,6 +4440,54 @@ Worked around here, and worth knowing about:
   and a break the FO carries cannot give the word a line of its own first. **All of this
   goes when FOP grows an emergency break of its own**; only the line-of-its-own rule would
   stay.
+<a id="s10inlineseam"></a>
+- **The break after a hyphen ending an `fo:inline` is flagged like a hyphenation point, and
+  so is never taken with hyphenation off.** Each `FOText` gets its own `LineBreakStatus`,
+  and UAX #14 decides a break *before* a character from the pair it makes with the one
+  before it, so the text managers never see the opportunity after a hyphen that ends one
+  inline. The line manager does: joining two boxes from consecutive inlines
+  (`Paragraph.addALetterSpace` → `TextLayoutManager.addALetterSpaceTo`), a text ending in
+  one of `BREAK_CHARS` (`-` and `/`) gets `new KnuthPenalty(0, KnuthPenalty.FLAGGED_PENALTY,
+  true, ...)` after it - "the last character could be used as a line break" - which is the
+  element a hyphenation point gets, and `BreakingAlgorithm.findBreakingPoints` runs with
+  `NO_FLAGGED_PENALTIES` whenever the block does not hyphenate, so the penalty is never a
+  legal break; with hyphenation on it would be, after a solidus as well. Inside one text the
+  penalty after a hyphen is unflagged and always legal. So `<fo:inline>aaaa
+  bbbb-</fo:inline><fo:inline>cccc dddd</fo:inline>` on a 62pt measure lays out as `aaaa` /
+  `bbbb-cccc` / `dddd`, where the same text in one inline (and, since the second text then
+  holds the hyphen, `<fo:inline>aaaa bbbb</fo:inline><fo:inline>-cccc dddd</fo:inline>`)
+  gives `aaaa bbbb-` / `cccc dddd` (FOP 2.11, area tree). Word breaks after the hyphen
+  whichever run it is in, and never after the solidus (§4.3). A `w:r` boundary falls inside
+  a hyphenated word wherever an author edited one half of it, so the seam is common and the
+  cost is small: over the FO docx4j emits for the three corpora, 608 such seams in 128
+  documents, at 107 of which Word's PDF breaks the line (31 documents), and at 45 of those
+  ours did not - 17 documents, one to nine lines each, about 0.015% of the corpora's
+  reference lines. **Worked around** in the line manager (17.1.1,
+  `WordLineLayoutManager.seamBreaks`, `docx4j.convert.out.fo.wordLayout.seamBreak=false`
+  turns it off): where two word boxes from different text managers meet with nothing between
+  them but what FOP puts inside a word, `WordBreakOpportunities.breakAtSeam` decides the
+  pair as it would inside one text - the flagged penalty after a hyphen is unflagged, the
+  one after a solidus made infinite (and recorded as a suppressed break for the emergency
+  break), and a seam FOP gave no penalty at all, such as after an en dash, gets a zero one -
+  **for a run ending in a hyphen or dash only**. Deciding *every* pair the table allows was
+  measured first and costs two documents: Word keeps `4፡30` (an Ethiopic word space, class
+  BA, between digits) and a mail-merge `$${{...}}` token whole where the pair table breaks
+  after the `፡` and between the two `$` (0.4627 -> 0.3881 and 0.9570 -> 0.9355), so a seam
+  at any other character stays as FOP has it. A space on either side is left to FOP.
+  **Measured** (b34-seam against the stale-grid build, probes and the three corpora,
+  hyphenation off): the 36 probes and the 76 on the share line for line what they were; the
+  first corpus +119 lines matched (36052 -> 36171 of 40339), mean line parity 0.8926 ->
+  0.8937, median 0.9298 -> 0.9318, at-or-above-0.98 53 -> 54, four documents up and none
+  down; the second +115 lines (56298 -> 56413), 0.8579 -> 0.8589, median 0.9184 -> 0.9227,
+  29 -> 30 at or above 0.98, one document up (0.8971 -> 0.9412); the third +143 lines
+  (171412 -> 171555), 0.8922 -> 0.8929, 22 -> 23, one up (0.9741 -> 0.9975, a 336-page
+  document). **One aggregate falls**: the first corpus's same-page-count, 166 -> 165, on a
+  22-page document that goes 0.9896 -> 0.9942 and 22 -> 23 pages - its `Маш-ч/ед.` header
+  cell now breaks at the `-` where Word, whose column is wider, holds it whole, and the
+  taller header row spills a page. That is a column width the break exposes rather than a
+  break Word does not make (§6.11's shape), and it is the reason this is recorded here
+  rather than assumed accepted. Upstream report candidate: an unflagged penalty for a `-` at the seam,
+  none for a `/`.
 - **An empty `fo:inline` carrying a `font-size` sizes the line.** FOP builds an empty
   inline area of that size and takes the line's height from it, so a bookmark anchor
   given a size of its own makes the line taller. Only elements that paint text are

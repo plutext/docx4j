@@ -218,6 +218,27 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return v == null ? dflt : v.doubleValue();
 	}
 
+	/**
+	 * Whether the line manager adds the break opportunity FOP lacks at the seam of two
+	 * runs - {@code foo-} in one {@code fo:inline} and {@code bar} in the next - where
+	 * UAX #14 and Word's rules allow one between those two characters
+	 * ({@code WordBreakOpportunities.breakAtSeam}; word-layout-rules.md &#xa7;10).
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.seamBreak=false turns it off.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String SEAM_BREAK = "docx4j.convert.out.fo.wordLayout.seamBreak";
+
+	public static boolean seamBreak() {
+		String v = System.getProperty(SEAM_BREAK);
+		if (v == null) {
+			return Docx4jProperties.getProperty(SEAM_BREAK, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
 	private static Double doubleProperty(String name) {
 		String v = System.getProperty(name);
 		if (v == null) v = Docx4jProperties.getProperty(name);
