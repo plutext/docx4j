@@ -335,9 +335,39 @@ public class TabStopTest {
 		} finally {
 			System.clearProperty(WordLayoutCustomizer.EMERGENCY_BREAK);
 		}
-		// and a trailing tab has nothing to move: it stays on the line it is on
-		assertEquals(at(0),
-				wordStarts(fo("9000:left:none", "0:0:.", null, "abc" + TAB)));
+		// and a trailing tab in a header has nothing to move: it stays on the line it is
+		// on (one line); in the flow it takes a line of its own (two) - the
+		// tab-trailing-cell probe, whose rows with the tab are two lines tall in Word
+		// where the next default stop is past the cell, and one without it.  @since 17.1.1
+		assertEquals(1, lineCount(foStatic("9000:left:none", "0:0:.", "abc" + TAB)));
+		assertEquals(2, lineCount(fo("9000:left:none", "0:0:.", null, "abc" + TAB)));
+		assertEquals(1, lineCount(fo("9000:left:none", "0:0:.", null, "abc")));
+	}
+
+	/** The same block set as a header (fo:static-content of a region-before). */
+	private static String foStatic(String tabs, String ind, String content) {
+		return "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\" xmlns:docx4j=\"" + NS + "\">"
+				+ "<fo:layout-master-set><fo:simple-page-master master-name=\"m\" page-width=\"400pt\" page-height=\"400pt\" margin=\"0pt\">"
+				+ "<fo:region-body margin-top=\"100pt\"/><fo:region-before extent=\"100pt\"/></fo:simple-page-master></fo:layout-master-set>"
+				+ "<fo:page-sequence master-reference=\"m\">"
+				+ "<fo:static-content flow-name=\"xsl-region-before\">"
+				+ "<fo:block font-family=\"Courier\" font-size=\"12pt\" line-height=\"14pt\""
+				+ " docx4j:tabs=\"" + tabs + "\" docx4j:tab-default=\"720\" docx4j:tab-ind=\"" + ind + "\">" + content + "</fo:block>"
+				+ "</fo:static-content>"
+				+ "<fo:flow flow-name=\"xsl-region-body\"><fo:block>body</fo:block></fo:flow></fo:page-sequence></fo:root>";
+	}
+
+	/** The number of line areas of the first block laid out (the header's, or the flow's
+	 *  first). */
+	private static int lineCount(String fo) throws Exception {
+		Document doc = area(fo);
+		NodeList blocks = doc.getElementsByTagName("block");
+		for (int i = 0; i < blocks.getLength(); i++) {
+			Element b = (Element) blocks.item(i);
+			int n = b.getElementsByTagName("lineArea").getLength();
+			if (n > 0) return n;
+		}
+		return 0;
 	}
 
 	/**

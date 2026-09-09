@@ -1105,13 +1105,17 @@ and **both** 10pt spaces - where "larger of" above gives 43.8 and docx4j draws 4
 report's paragraph of two `w:br` before a heading with 10pt before measures 65.0 - three lines
 of 11.27 and one 10 - which *is* larger-of. Whether an empty paragraph's space-after is exempt
 from the combining, or the heading's numbering or `w:keepNext` is what differs, the
-`spacing-empty-before` probe measures. Its first cut (10pt after against 10pt before): a text,
-an empty and a two-`w:br` paragraph before the spaced paragraph all combine by **larger of**
-(gaps of 10.0, 9.4 and 8.8 over the lines), so an empty paragraph is *not* exempt; the
-table-then-empty-paragraph cases could not tell the models apart with equal values and are
-re-cut with 20pt after against 10pt before (larger-of 20, additive 30, an empty paragraph
-losing its space-after 10). Not a rule yet: 10.9pt a section, about 2.6 pages of the report's
-remaining 22.
+`spacing-empty-before` probe measures, cut with 20pt after against 10pt before (larger-of
+20, additive 30, an empty paragraph losing its space-after 10): a text paragraph, an empty
+paragraph, a two-`w:br` paragraph, and an empty paragraph after a table all give **20** (19.7,
+19.2, 18.5, 20.0 over the lines) - larger-of, and an empty paragraph is *not* exempt. So the
+report's seam is not a spacing rule: its 53.8 reads as the row, **two** bare 11.15pt lines and
+the heading's 10 - the cell's trailing empty paragraph after the nested table *and* the body's
+empty paragraph, neither with its space-after - where docx4j drops the cell's trailing
+paragraph (`dropParagraphAfterNestedTable`) and draws one line and one 10. The same two bare
+lines fit the report's table-then-table seam (43.5 = 21.2 + 22.3). A probe of a nested
+table's trailing paragraph, with and without `w:keepNext` and before a spaced paragraph, is
+the next measurement. 10.9pt a section, about 2.6 pages of the report's remaining 22.
 
 <a id="s310"></a>**Space-after against a footnote area (open).** One measured data point,
 not yet a rule docx4j applies: where a paragraph's last line would fit at the foot of a
@@ -1431,14 +1435,18 @@ first cost a page:
   150pt past the cell: Word draws every entry's dots to the cell's edge (x=651.0) on the
   entry's own line, and breaking there put the dots on a line of their own and cost a page
   of the 23.
-- a tab with **nothing after it** has nothing to move to the next line - measured in a header;
-  in a **table cell** the 311-page report's `Avances y Demora del Proyecto<tab>` in a
-  3458-twip column is two lines in Word, the second holding only the tab, 64 times (and
-  `Configuración de Avance del Proyecto<tab>` wraps its last word where ours fits it, the
-  column re-laid at 176.9pt against the grid's 172.9). The `tab-trailing-cell` probe brackets
-  the text's width with and without the tab; its first cut's columns (2200-3000 twips) were
-  all narrower than the 12pt text, which wrapped with or without the tab, so it is re-cut at
-  3200-4000. Until then the header measurement stands. A header whose
+- a tab with **nothing after it** takes a line of its own **in the flow** and none **in a
+  header or footer**. Measured on the `tab-trailing-cell` probe: `Avance esperado del
+  proyecto<tab>` (145pt of 12pt serif) in cells 149 and 169pt wide, whose next default stop
+  (36pt grid from the cell's edge) is past the cell, is two lines tall in Word and one
+  without the tab; in a 189pt cell, where the stop fits, one line. The 311-page report has
+  that row 128 times (`Avances y Demora del Proyecto<tab>` in a 3458-twip column, two lines
+  in Word, one in ours before this). The header case was measured first, on a corpus header
+  whose paragraph is a picture and seven tabs, the last two of which reach nothing (the grid
+  past the last custom stop is 14.5pt past the header's width): Word's header is shorter than
+  one line of that paragraph, so it gives them no line; breaking there made the header 38pt
+  taller and pushed the document onto a second page. Whether the header's exemption is the
+  region or the picture is not separated; the rule follows the region. A header whose
   paragraph is a picture and seven tabs, the last two of which reach nothing (the grid past
   the last custom stop is 14.5pt past the header's width): Word's header is shorter than one
   line of that paragraph, so it gives them no line; breaking made the header 38pt taller and

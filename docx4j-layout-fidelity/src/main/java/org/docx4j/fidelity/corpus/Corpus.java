@@ -2077,6 +2077,11 @@ public final class Corpus {
 		 *    3200-4000.  First cut of the spacing probe with 200 after against 200 before
 		 *    showed larger-of after a text, an empty and a br-only paragraph, but could
 		 *    not separate the models for the table cases; re-cut with 400 after.)
+		 *    CUT 2 (2026-09-10): spacing - larger-of in every case, 20pt (an empty
+		 *    paragraph, and one after a table, keep their space-after; nothing adds).
+		 *    Tab - at 3200 and 3600 twips the rows with the tab are two lines, without it
+		 *    one; at 4000 (the stop fits) one line: a trailing tab past the cell takes a
+		 *    line.  Rules doc §3 (open) and §4.4.
 		 */
 		PROBES.add(new Probe("spacing-empty-before",
 				"20pt space-after of an empty paragraph, of a text paragraph and of a w:br-only "

@@ -680,9 +680,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
             LBP.setLeafIPD(tab, width);
             par.set(position, new KnuthGlue(width, 0, 0, glue.getPosition(), false));
             totalWidth += width;
-            if (unreachable) {
+            if (unreachable && hasFollowingContent(position)) {
                 // no stop from the start of the line either: the tab has that line to
-                // itself and what follows begins the next one
+                // itself and what follows begins the next one.  (A trailing tab's line is
+                // the paragraph's last: closing it here gave the paragraph an empty line
+                // after it.  @since 17.1.1)
                 commitAt(leaderLastIndex(position, tab));
             }
         }
@@ -722,13 +724,18 @@ public class WordLineLayoutManager extends LineLayoutManager {
             // (x=651.0 on every one of them), where breaking there put the dots on a line
             // of their own and cost a page of 23.
             if (stopLeader != LBP.LEADER_NONE) return false;
-            // nor a tab with nothing after it to move to the next line: measured on a
-            // corpus header whose paragraph is an image and seven tabs, the last two of
-            // which reach nothing (the grid past the last custom stop is 14.5pt past the
-            // header's width), Word's header is shorter than one line of it, so it gives
-            // them no line of their own; breaking there made the header 38pt taller and
-            // pushed the document onto a second page.
-            if (!hasFollowingContent(position)) return false;
+            // A tab with nothing after it: in a header, Word gives it no line - measured
+            // on a corpus header whose paragraph is an image and seven tabs, the last two
+            // of which reach nothing (the grid past the last custom stop is 14.5pt past
+            // the header's width), Word's header is shorter than one line of it;
+            // breaking there made the header 38pt taller and pushed the document onto a
+            // second page.  In the flow it takes a line of its own: measured on the
+            // tab-trailing-cell probe, "Avance esperado del proyecto<tab>" (145pt of
+            // 12pt serif) in cells 149 and 169pt wide, whose next default stop is past
+            // the cell, is two lines tall in Word and one without the tab; in a 189pt
+            // cell, where the stop fits, one line.  A 311-page corpus report has that
+            // row 128 times (word-layout-rules.md §4.4).  @since 17.1.1
+            if (!hasFollowingContent(position) && inStaticContent) return false;
             // the reference area's end edge, from the line's start: the available width
             // plus the paragraph's right indent
             return (stop - tabLeftMpt) > getLineWidth() + endIndentMpt();
@@ -1381,6 +1388,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         lead = l;
         follow = f;
         inCell = inTableCell(block);
+        inStaticContent = inStaticContent(block);
         wordLineBox = foreignLength(block, WordLayoutElementMapping.LINE_BOX);
         wordBaseline = foreignLength(block, WordLayoutElementMapping.BASELINE);
         String rule = foreignAttribute(block, WordLayoutElementMapping.LINE_RULE);
@@ -2501,6 +2509,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *  the overrun tolerance is {@link #cellOverrunTolerance(int)} rather than
      *  {@link #OVERRUN_TOLERANCE}.  @since 17.1.1 */
     private final boolean inCell;
+    /** Whether this block is set in a header or footer (an fo:static-content), where a
+     *  trailing tab which reaches no stop takes no line.  @since 17.1.1 */
+    private final boolean inStaticContent;
 
     /** How far past the measure {@code available} a word of this block may run before
      *  it is broken, in millipoints.  @since 17.1.1 */
@@ -2721,6 +2732,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     || n instanceof org.apache.fop.fo.flow.FootnoteBody
                     || n instanceof org.apache.fop.fo.pagination.Flow
                     || n instanceof org.apache.fop.fo.pagination.StaticContent) return false;
+        }
+        return false;
+    }
+
+    /** Whether this block is set in an fo:static-content (a header or footer). */
+    static boolean inStaticContent(org.apache.fop.fo.FONode block) {
+        for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
+                n != null; n = n.getParent()) {
+            if (n instanceof org.apache.fop.fo.pagination.StaticContent) return true;
+            if (n instanceof org.apache.fop.fo.pagination.Flow) return false;
         }
         return false;
     }
