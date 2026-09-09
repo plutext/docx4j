@@ -50,8 +50,60 @@ import org.w3c.dom.Node;
 
 public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	public static final String WRITER_ID = "w:fldSimple";
-	private static Logger log = LoggerFactory.getLogger(AbstractFldSimpleWriter.class);			
-	
+	private static Logger log = LoggerFactory.getLogger(AbstractFldSimpleWriter.class);
+
+	/**
+	 * Property {@code docx4j.convert.out.fields.dateCachedResult}: whether a {@code DATE}
+	 * or {@code TIME} field is painted as the result the document stores for it
+	 * ({@code true}) or evaluated from the clock at conversion ({@code false}, the
+	 * default, as docx4j has always done).
+	 *
+	 * <p>Word rewrites both whenever it opens a document, update or no update (measured:
+	 * the files Word re-saved without a field update carry the day's date in body and
+	 * footer alike), so what the file stores is the date Word last touched it and what
+	 * Word's PDF paints is the date of the conversion.  A comparison of docx4j's output
+	 * against a Word PDF cut on another day therefore differs on every such line for no
+	 * reason of layout; with the property on, docx4j paints the file's own date, which is
+	 * the reference's date when the reference was cut from that file.  It is also what
+	 * makes a conversion reproducible.</p>
+	 *
+	 * <p>It is deliberately narrow.  Every other field docx4j evaluates - {@code PAGE},
+	 * {@code NUMPAGES}, {@code SECTIONPAGES}, {@code PAGEREF} and {@code PRINTDATE} - is
+	 * one Word evaluates whatever its update setting: a 14-page document whose header
+	 * field stores one number prints "Page 1" to "Page 14" with the update off, a footer
+	 * storing {@code 00. XXX. 0000} prints the day's date, and a table of contents whose
+	 * 17 entries all store "3" prints 3, 4, 4, 4, 5, 5, ... - so their stored result is
+	 * not what any Word output shows, and a switch that painted it would move docx4j away
+	 * from every Word rendering.  {@code DOCPROPERTY}, which Word paints stored even when
+	 * it updates, has its own property ({@code docPropertyCachedResult}).  A field with
+	 * no stored result at all is still evaluated.  PDF and HTML.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String PROPERTY_DATE_CACHED_RESULT = "docx4j.convert.out.fields.dateCachedResult";
+
+	/**
+	 * The field types {@link #PROPERTY_DATE_CACHED_RESULT} governs.
+	 *
+	 * @since 17.1.1
+	 */
+	protected static final java.util.Set<String> DATE_FIELDS =
+			java.util.Collections.unmodifiableSet(new java.util.HashSet<String>(
+					java.util.Arrays.asList("DATE", "TIME")));
+
+	/**
+	 * Whether this field is to be painted as its stored result rather than evaluated:
+	 * {@link #PROPERTY_DATE_CACHED_RESULT} is on, the field is one of {@link #DATE_FIELDS},
+	 * and it has a stored result to paint.
+	 *
+	 * @since 17.1.1
+	 */
+	protected static boolean paintStoredResult(FldSimpleModel model) {
+		if (model == null || !DATE_FIELDS.contains(model.getFldName())) return false;
+		if (!org.docx4j.Docx4jProperties.getProperty(PROPERTY_DATE_CACHED_RESULT, false)) return false;
+		return cachedResultText(model).trim().length() > 0;
+	}
+
 	public interface FldSimpleWriterHandler {
 		public String getName();
 	}
@@ -264,6 +316,12 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		FldSimpleNodeWriterHandler nodeHandler = null;
 		Node ret = null;
 		String value = null;
+		if (handler != null && paintStoredResult(fldSimpleModel)) {
+			// docx4j.convert.out.fields.dateCachedResult: the stored result, as the
+			// default handler paints it for a field type we have no handler for
+			log.debug(".. painting the stored result (" + PROPERTY_DATE_CACHED_RESULT + ")");
+			handler = null;
+		}
 		if (handler == null) {
 			handler = defaultHandler;
 			log.debug(".. using  defaultHandler" );

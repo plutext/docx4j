@@ -326,6 +326,46 @@ Score the new set against the new re-save, and re-cut the baseline with it: a sc
 against goldens with the field update on is not comparable with one made against goldens without,
 because the reference text itself changed. Two bases, two baselines.
 
+### What the update actually changes, and what else a re-cut can change
+
+Measured on the three corpora, cut both ways four days apart. The text of only 35 of 449 Word PDFs
+differs between the two cuts at all, and almost none of the difference is a field the update
+reached:
+
+- `PAGE`, `NUMPAGES`, `SECTIONPAGES` and `PAGEREF` are painted from Word's pagination either way
+  (a table of contents whose entries all store "3" prints 3, 4, 4, 5, ... with the update off, and
+  the same numbers with it on), `PRINTDATE` from the clock either way, and `DATE` and `TIME` are
+  rewritten whenever Word opens the file (the re-saved documents carry the cut's date in body and
+  footer, update or no update). A `FILENAME` in a footer is painted as the name of the temporary
+  file documents4j handed Word - different on every cut, and matched by neither cut nor docx4j.
+  What the update *does* change is the text of a regenerated table of contents (its leaders and
+  entries, not its numbers) and a `SAVEDATE`. So the "field floor" is not a floor: the fields
+  docx4j evaluates are the fields Word evaluates at print, and a TOC page number we get wrong is
+  a page we broke somewhere else, which is layout.
+- What the second cut changed instead was **Word's own state on the VM**. Word prints comment
+  balloons when its "display for review" state says so - a per-application setting, not a
+  per-document one - and the second cut printed them for every document that has comments (all
+  eight in corpus 1, none in corpora 2 and 3, which have no commented document). The balloon text
+  ("Commented [X1]: ...") lands in the reference PDF's text layer beside the body lines, and the
+  page is scaled to make room for the margin, so every line of such a document moves. And **fonts
+  installed on the VM between cuts** change the substitution Word makes: a document asking for a
+  face the VM did not have on the first cut and did on the second reflows completely (Ebrima to
+  Nyala on one Ethiopic document, Calibri to Lato on another); 18 documents changed a face between
+  the two cuts, most of them the balloon font.
+
+So before adopting a re-cut set as the baseline: `pdffonts` and a grep for `Commented [` over the
+old and new PDFs will show what changed besides the fields; and cut with `ExportAsFixedFormat`'s
+`Item` argument (`wdExportDocumentContent`, 0) rather than `SaveAs ... 17`, or turn the markup
+display off in the script (`ActiveWindow.View.ShowRevisionsAndComments = False`), if balloons are
+not wanted in a reference.
+
+The date is the one field worth a switch: what the file stores is the day Word last touched it,
+what the golden paints is the day of the cut, and docx4j's clock matches neither on any other
+day. `-Ddocx4j.convert.out.fields.dateCachedResult=true` paints a `DATE` or `TIME` as the
+re-saved file stores it, which is the golden's date; it leaves everything else evaluated. Painting
+a `PAGEREF` stored was tried and measured, and is what a stale file looks like (`tab-toc-pageref`
+0.98 -> 0.93): the harness renders TOC page numbers live, as Word does. See word-layout-rules.md §7.
+
 ## Hyphenation patterns (licence note)
 
 FOP ships no hyphenation patterns, so the `hyphenation` and `hyphenation-zone`

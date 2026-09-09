@@ -135,6 +135,13 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   fitted them into and what it chose), for the layout-fidelity harness's ShortfallFit, which
   joins them to Word's re-saved grids and scores candidate distribution rules. Unset (the
   default) nothing is written.
+- New property docx4j.convert.out.fields.dateCachedResult (default false): true paints a
+  DATE or TIME as the result the document stores rather than from the clock, so a
+  conversion is reproducible and a comparison against a Word PDF cut on another day does
+  not differ on every dated line. Only those two: measured with Word's field update off,
+  PAGE, NUMPAGES, SECTIONPAGES, PAGEREF (a TOC whose entries all store "3" prints 3, 4, 4,
+  5, ...) and PRINTDATE are all evaluated by Word whatever its update setting, so they stay
+  evaluated here. PDF and HTML. See word-layout-rules.md §7.
 
 Other:
 

@@ -178,6 +178,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.pgNumType.oddEvenParityFix` | `true` | A section whose `w:pgNumType/@w:start` FOP has to clamp (0, which XSL-FO forbids) gets its ODD and EVEN page-master alternatives swapped, so the headers land on the side Word puts them (§7). |
 | `docx4j.convert.out.fo.mirrorMargins` | `true` | `w:settings/w:mirrorMargins`: each page master gains a mirrored twin, chosen on even pages, whose left and right margins are the other way round (§7). |
 | `docx4j.convert.out.fields.docPropertyCachedResult` | `true` | A `DOCPROPERTY` keeps the result the document cached, which is what Word paints until the field is updated (&sect;7). `false` evaluates the property. Also HTML. |
+| `docx4j.convert.out.fields.dateCachedResult` | `false` | `true` paints a `DATE` or `TIME` as the result the document stores rather than from the clock, so that a conversion is reproducible and a comparison against a Word PDF cut on another day does not differ on every dated line ([§7](#s7storedfields)). Only those two: `PAGE`, `NUMPAGES`, `SECTIONPAGES`, `PAGEREF` and `PRINTDATE` are evaluated whatever this says, as Word evaluates them whatever its update setting. Also HTML. |
 | `docx4j.convert.out.fields.dropResultlessIf` | `true` | An `IF` field with no `w:fldChar w:fldCharType="separate"` has no result and paints nothing, its branches being field instruction (§7). Also HTML. |
 | `docx4j.convert.out.fields.formFieldResults` | `true` | A legacy form field paints the state its `w:ffData` holds: a `FORMDROPDOWN` the `w:listEntry` its `w:result` selects, a `FORMTEXT` with nothing typed into it its `w:default` ([§7](#s7formfield)). `false` paints nothing, as before 17.1.0. Also HTML. |
 | `docx4j.convert.out.fo.wordLayout.boundKeepChains` | `true` | A `keep-with-next` chain taller than a page has its keeps reduced to a finite penalty, so the breaker may break inside it as Word does, instead of FOP running the whole chain off the bottom of one page ([§3](#s39keepchain)). |
@@ -3872,6 +3873,36 @@ Word prints the cached text on all three of the lines involved, and printing the
 one was that document's whole parity loss. Property
 `docx4j.convert.out.fields.docPropertyCachedResult`; a field with no cached result at all is
 still evaluated. **8 documents of the three corpora.**
+
+<a id="s7storedfields"></a>**Which fields Word evaluates without a field update - all of the
+ones docx4j evaluates.** Measured by cutting the three corpora through Word twice, with and
+without the field update, and reading the re-saved files: `PAGE`, `NUMPAGES` and
+`SECTIONPAGES` are painted from Word's pagination either way (a 14-page document whose header
+field stores one number prints "Page 1" to "Page 14" with the update off); so is `PAGEREF`,
+every entry of a table of contents (a TOC whose 17 entries all store "3" prints 3, 4, 4, 4, 5,
+5, ...; one storing 3 3 3 4 5 5 7 9 10 prints 5 5 5 6 7 7 9 11 12; the update-on cut paints
+the same numbers); `PRINTDATE` is painted from the clock either way (a footer storing
+`00. XXX. 0000` prints the day's date); and `DATE` and `TIME` are rewritten whenever Word
+opens the document (the re-saved files carry the day's date in body and footer alike, update
+or no update). So the fields docx4j evaluates are exactly the fields Word evaluates at print,
+and the "field floor" of a comparison against a no-update golden is not a floor: a TOC page
+number we get wrong is a page we broke in a different place, which is layout. Painting a
+`PAGEREF` stored instead was measured, and it is a bet on the file's staleness, not a rule: the
+TOC probe 0.98 -> 0.93 (its stored numbers are placeholders), two documents of corpus 3 storing
+one number for every entry 0.98 -> 0.90 and 0.98 -> 0.91, and two documents of corpus 1 whose
+stored numbers happened to be fresh *up* by 0.05 and 0.09 - because on those our pagination
+drifts from Word's and the stale-looking number was the right one. Mean parity 0.8913 -> 0.8920,
+0.8721 -> 0.8713, 0.9034 -> 0.9029 over the three corpora, which is the layout drift the TOC
+line was measuring, moved from one place to another. The one thing worth a switch is the date, since what a
+file stores is the day Word last touched it and what a Word PDF paints is the day of the cut,
+so docx4j's clock matches neither on any other day: property
+`docx4j.convert.out.fields.dateCachedResult` (default `false`, the clock, as always) paints a
+`DATE` or `TIME` as the file stores it, which is the reference's date when the reference was
+cut from that file, and which makes a conversion reproducible. A field with no stored result
+at all is still evaluated. Two things no switch can reach, for the record: a `FILENAME` in a
+footer, which Word paints as the name of the temporary file it converted (a different one on
+every cut, 8 documents), and a `STYLEREF`, which Word evaluates per page and docx4j paints
+stored (7 documents).
 
 **A `DATE`, `TIME` or `PRINTDATE` field is formatted in the document's own language**
 (`w:docDefaults/w:rPrDefault/w:rPr/w:lang`), not in the platform default. Measured on two
