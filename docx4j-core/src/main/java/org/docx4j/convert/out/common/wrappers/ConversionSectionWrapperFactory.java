@@ -880,6 +880,19 @@ public class ConversionSectionWrapperFactory {
 	 * section rather than merging into it; the headers and footers are still this
 	 * section's, which is what Word keeps.</p>
 	 */
+	/*
+	 * A continuous break which changes only the margins or the header/footer distance is
+	 * NOT promoted.  The section-continuous-geometry probe (17.1.1) seemed to show Word
+	 * starting a page for a top-margin, bottom-margin and footer-distance change in mode
+	 * 15, but its first section's page size differs from the rest by a twip (the
+	 * page-size rule above), and its 3-line paragraphs let widow/orphan control account
+	 * for the other two; four mode-15 corpus documents whose continuous sections vary
+	 * their top and bottom margins on one page (a one-page flyer of eleven sections
+	 * among them) went to 9, 3, 4 and 7 pages when it was tried.  A mode-12 letter shows
+	 * the page a continuous section begins on keeping the previous section's footer
+	 * distance and the next page taking the new one, which one page master cannot
+	 * express either way.
+	 */
 	private static boolean insertPageBreak(PgSz pgSzThis, PgSz pgSzNext) {
 
 		boolean insertPageBreak = false;

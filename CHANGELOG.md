@@ -57,6 +57,9 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   to the next page and the break to the one after, an empty page (measured on one document whose
   break paragraph carries a 28pt mark: 7 Word pages were 6). Off until a probe settles it, since
   over the corpora it cost more pages than it gave. See word-layout-rules.md §3.3.
+- A list item inside a table cell keeps its HTML auto spacing after, at the foot of the cell
+  and between two items, where a plain paragraph's is dropped there (probe measured): a
+  document of about a hundred such rows was 13.3pt a row short. See word-layout-rules.md §3.5.
 - An empty footer part reserves its own line as well as w:footer, which is what the 17.1.0
   measurement already said (792.5 = 36 + 13.43): a landscape document whose eight trailing
   empty paragraphs Word puts on a second page kept them on its first. See word-layout-rules.md §7.

@@ -798,15 +798,19 @@ which opens with a break and goes on with text keeps its `w:pageBreakBefore` con
 since splitting it put the numbering label on the empty half (a numbered corpus document
 fell from 0.97 to 0.70 of line parity). An 11pt mark's 13.43pt line would have fitted that
 page by 0.6pt, which is why the shape had not shown before. The `page-break-line` probe (A, B)
-carries the two marks against a page filled to 25.9pt of its foot, and is awaiting its
-golden. **Until it answers the rule is off by default** (`PageBreakParagraphLineTest` turns
+carries the two marks against a page filled to 25.9pt of its foot. **Word confirms the
+rule**: A (11pt mark) has no empty page and B (28pt mark) has one, its page 4 empty and
+"B after" opening page 5; and the probe's C and D - an empty nextPage section-break
+paragraph in the same place with the two marks - have no empty page either way, so the
+section-break paragraph takes no line there (the 32-page cover page in §3 has another
+cause). **The rule is nonetheless off by default** (`PageBreakParagraphLineTest` turns
 it on): scored over the three corpora it gave that document its page and two others theirs
 (a 7-page form and an 88-page report), but cost eight documents a page or more - each a
 break-only paragraph at the foot of a page which docx4j had already filled a few points
 fuller than Word, so that a line Word had room for tipped over into an empty page - and
-one such document three pages. Whether Word moves the line at all, or only a tall one, is
-the probe's question; what is settled is that the line's cost when it is wrong is a page,
-where the density errors it rides on are points.
+one such document three pages. Word does move the line; what decides is that the line's
+cost when our page is a few points too full is a page, where the density errors it rides
+on are points. It should go on once those are down.
 
 A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there where
@@ -889,17 +893,22 @@ true until 17.1.0, so the override did nothing: measured on a document whose `No
 style carries it and which overrides it on 20 paragraphs, 17 came out 14pt low - Word's
 first divergence at y=171.4, docx4j's at 186.2, and the next gap 30.7pt against 58.9.
 
-<a id="s35autospacecell"></a>**A cell disagrees, and is not settled.** The rule above drops
-auto spacing at the top and bottom of a table cell, which is measured. One corpus document
-disagrees: its `Data Updated` cells hold bulleted paragraphs carrying
+<a id="s35autospacecell"></a>**A list item in a cell keeps its auto spacing after, and
+between items (17.1.1).** The rule above drops auto spacing at the top and bottom of a table
+cell, which is measured for a plain paragraph. One corpus document disagreed: its `Data
+Updated` cells hold bulleted paragraphs carrying
 `<w:spacing w:before="100" w:beforeAutospacing="1" w:after="100" w:afterAutospacing="1"/>`
-and Word's event-row pitch is **34.8pt** (Oct 13 at y=277.3, Oct 14 at 312.1) where ours is
-21.5 - **-13.3pt per row** over about 100 rows, which is a page of its five. Our FO writes
-`space-before="14pt" space-after="0pt"` on the `fo:list-block` there: the *after*-autospace
-comes out zero, and the 14pt before-space is then discarded by FOP at the start of the
-cell's reference area. Whether the discriminator is the list, the mode, or the explicit
-`w:before`/`w:after` beside the autospacing is not established, so nothing is changed; 9
-documents of the three corpora have autospacing inside a cell.
+and Word's event-row pitch is **34.8pt** (Oct 13 at y=277.3, Oct 14 at 312.1) where ours was
+21.5 - **-13.3pt per row** over about 100 rows, a page of its five. The discriminator is the
+list: measured on `spacing-autospacing-cell-list`, which varies the cell's paragraph one
+thing at a time, the row after a cell ending in an auto-spaced list item begins 14.6-14.8pt
+below the item's last line whether or not an explicit `w:before`/`w:after` stands beside
+the autospacing, two such items in one cell sit 14.3pt apart, and the row after a plain
+auto-spaced paragraph follows at 1.2pt. At the *top* of the cell the item's line sits level
+with a plain neighbour's, so nothing is kept before. `retainSpacingAtCellEdges` keeps the
+after-space of a last block marked as a list item, and `applyAutoSpacingBetweenListItems`
+no longer visits cells. (Between list items outside a cell the 14pt is still dropped, as
+`spacing-autospacing-context` measured.)
 
 <a id="s35"></a>**Table cells.** A paragraph's space-before applies at the cell top, and its
 space-after at the cell bottom - **in every compatibility mode**. docx4j pinned the
@@ -3572,7 +3581,20 @@ the headers and footers are still this section's, which is what Word keeps, and 
 whose page size agrees are merged as before. `ConversionSectionWrapperFactory.insertPageBreak`
 (which already detected the change, and inserted a `w:pageBreakBefore` on the wrong
 paragraph - the last of the section rather than the first of the next - which did nothing on
-a shared master). That document's page 1 is now 1190.7 x 842.0 and its line parity 0.6494 ->
+a shared master). **A change of the margins or the header/footer distance alone is not
+promoted (re-measured 17.1.1).** The `section-continuous-geometry` probe seemed to show Word
+starting a page for a 2in top margin, a bottom-margin-and-footer change and a
+footer-distance change in mode 15, but its first section's page size differs from the rest
+by a twip (this rule), and its 3-line paragraphs let widow/orphan control account for the
+other two pages; tried on the corpora, four mode-15 documents whose continuous sections vary
+their top and bottom margins on one page (a one-page flyer of eleven sections went to 9)
+said no. What the probe does show is that a 2in left margin continues on the page it falls
+on, its lines moving to x=144.1, and a mode-12 letter shows the page a continuous section
+begins on keeping the previous section's footer distance (its last line at y=529 under
+`w:footer="5811"`) and the next page taking the new one (762) - which one page master
+cannot express, so a merged run still takes its last part's geometry. A 29-page mode-15
+proposal whose last section says `w:top="1417"` against `w:top="0"` has a last page Word
+alone gives, and is unexplained. That document's page 1 is now 1190.7 x 842.0 and its line parity 0.6494 ->
 0.6928; a second document's page count reached Word's. Corpus: 7 documents carry the shape,
 2 of them where it changes the output.
 
@@ -3893,9 +3915,11 @@ few lines down page 1, a second saying 709 - and Word ends its pages 1 and 2 at 
 529, which is 841.95 - 290.55 - the empty footer's line, and only page 3 at 762. The 5811
 is honoured on the pages the first section's geometry governs, and the 756.2 / 767.0
 baselines read as "ignored" are page 3's, the second section's. Which pages a continuous
-section's geometry governs is the open question (the second section begins on page 1, yet
-page 2 keeps the first's footer), and the `section-continuous-geometry` probe puts it to
-Word; until it answers, the clamp stands and that letter is one page short of Word's four.
+section's geometry governs was the open question; the letter answers it for itself - Word
+continues on the page and gives each page the section in force at its start, so page 2
+keeps the 5811 - which one page master cannot express ([§7](#s7pgsz)). So the clamp stands
+as the lesser error for a run merged onto its last part's master, and that letter is one
+page short of Word's four.
 `HeaderFooterPolicy.isAbsent` tells the two cases apart. The head of the page keeps the
 rule above unchanged - there an empty part reserves neither the distance nor a line box,
 which is what its own measurement says. **15 documents of the three corpora have an empty

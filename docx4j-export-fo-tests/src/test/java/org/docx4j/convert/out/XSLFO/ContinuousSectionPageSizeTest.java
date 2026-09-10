@@ -88,8 +88,27 @@ public class ContinuousSectionPageSizeTest extends AbstractXSLFOTest {
 	}
 
 	private org.w3c.dom.Document fo(String first, String second, int flags) throws Exception {
+		return foOf(body(first, second), null, flags);
+	}
+
+	/** Two sections of the same page size: the first continuous with margins
+	 *  {@code marFirst}, the body's with margins {@code marSecond}.  @since 17.1.1 */
+	private static String bodyMar(String marFirst, String marSecond) {
+		return "<w:document " + W + "><w:body>"
+				+ "<w:p><w:r><w:t>one</w:t></w:r></w:p>"
+				+ "<w:p><w:pPr><w:sectPr>" + A4P + marFirst + "</w:sectPr></w:pPr></w:p>"
+				+ "<w:p><w:r><w:t>two</w:t></w:r></w:p>"
+				+ "<w:sectPr><w:type w:val=\"continuous\"/>" + A4P + marSecond
+				+ "</w:sectPr></w:body></w:document>";
+	}
+
+	private org.w3c.dom.Document foOf(String document, String compatibilityMode, int flags) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
-		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(body(first, second)));
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(document));
+		if (compatibilityMode != null) {
+			pkg.getMainDocumentPart().getDocumentSettingsPart(true)
+					.setWordCompatSetting("compatibilityMode", compatibilityMode);
+		}
 		FOSettings foSettings = Docx4J.createFOSettings();
 		foSettings.setOpcPackage(pkg);
 		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
@@ -142,5 +161,35 @@ public class ContinuousSectionPageSizeTest extends AbstractXSLFOTest {
 	@Test
 	public void aContinuousPageSizeChangeSplitsTheSequenceXslt() throws Exception {
 		check(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/** 2in top margin on the second section, against 1in on the first. */
+	private static final String MAR_TOP2 =
+			"<w:pgMar w:top=\"2880\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\"/>";
+	private static final String MAR_1 =
+			"<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\"/>";
+	/** the footer distance alone changes */
+	private static final String MAR_FOOTER =
+			"<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"5811\"/>";
+	/** the left margin alone changes */
+	private static final String MAR_LEFT2 =
+			"<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"2880\" w:header=\"708\" w:footer=\"708\"/>";
+
+	/**
+	 * A continuous break which changes only the margins or the footer distance is still
+	 * merged, in every mode: the probe which seemed to show Word starting a page for it
+	 * changed the page size by a twip as well, and four mode-15 corpus documents whose
+	 * continuous sections vary their vertical margins on one page went to many when it
+	 * was tried.  @since 17.1.1
+	 */
+	@Test
+	public void marginOrFooterDistanceChangeStillMerges() throws Exception {
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			for (String mode : new String[] { "12", "15" }) {
+				assertEquals("top margin change, mode " + mode, 1, pageSequences(foOf(bodyMar(MAR_1, MAR_TOP2), mode, flags)));
+				assertEquals("footer distance change, mode " + mode, 1, pageSequences(foOf(bodyMar(MAR_1, MAR_FOOTER), mode, flags)));
+				assertEquals("left margin change, mode " + mode, 1, pageSequences(foOf(bodyMar(MAR_1, MAR_LEFT2), mode, flags)));
+			}
+		}
 	}
 }
