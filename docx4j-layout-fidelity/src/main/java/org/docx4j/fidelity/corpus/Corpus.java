@@ -18,9 +18,13 @@ import java.util.List;
 
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.Br;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase;
+import org.docx4j.wml.R;
+import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STLineSpacingRule;
 import org.docx4j.wml.Tbl;
 
@@ -30,6 +34,8 @@ import org.docx4j.wml.Tbl;
  * document. Ids are stable: they name the golden PDFs.
  */
 public final class Corpus {
+
+	private static final org.docx4j.wml.ObjectFactory F = org.docx4j.jaxb.Context.getWmlObjectFactory();
 
 	private static final List<Probe> PROBES = new ArrayList<>();
 
@@ -138,6 +144,60 @@ public final class Corpus {
 			t.build().getContent().add(tr);
 			d.add(t.build());
 			d.para("plain after table. " + prose(1, 5)).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * §3.5's "a cell disagrees, and is not settled": a corpus document whose cells hold
+		 * bulleted paragraphs carrying w:before="100" w:beforeAutospacing="1" w:after="100"
+		 * w:afterAutospacing="1" has Word event rows 34.8pt apart where ours are 21.5 -
+		 * about a page of its five, and it is one page short of Word on b54.  Whether the
+		 * discriminator is the list, the explicit w:before/w:after beside the autospacing,
+		 * or neither is what the rows here vary one at a time: R1 the corpus shape, R2 the
+		 * list item with autospacing alone, R3 a plain paragraph with autospacing and the
+		 * explicit values, R4 two list items with autospacing, R5 a plain control.
+		 */
+		PROBES.add(new Probe("spacing-autospacing-cell-list",
+				"HTML auto spacing on a bulleted paragraph inside a table cell, with and without "
+				+ "explicit w:before/w:after beside it; a plain paragraph the same; two items; a "
+				+ "control", () -> {
+			Doc d = Doc.create(15);
+			d.para("Rows vary the paragraph inside a fixed 2-column table cell. " + prose(1)).add();
+			Doc.Table t = new Doc.Table(4000, 4000).fixedLayout();
+			t.build().getContent().clear();
+			for (int r = 1; r <= 5; r++) {
+				org.docx4j.wml.Tr tr = Doc.F.createTr();
+				org.docx4j.wml.Tc left = Doc.F.createTc();
+				left.getContent().add(d.para("R" + r).noLabel().build());
+				org.docx4j.wml.Tc right = Doc.F.createTc();
+				switch (r) {
+				case 1:
+					right.getContent().add(d.para("list item, auto before+after, explicit 100/100. " + prose(1, 1))
+							.noLabel().autospacing(true, true).before(100).after(100).listItem().build());
+					break;
+				case 2:
+					right.getContent().add(d.para("list item, auto before+after only. " + prose(1, 2))
+							.noLabel().autospacing(true, true).listItem().build());
+					break;
+				case 3:
+					right.getContent().add(d.para("plain, auto before+after, explicit 100/100. " + prose(1, 3))
+							.noLabel().autospacing(true, true).before(100).after(100).build());
+					break;
+				case 4:
+					right.getContent().add(d.para("first of two list items, auto before+after, explicit 100/100. " + prose(1, 4))
+							.noLabel().autospacing(true, true).before(100).after(100).listItem().build());
+					right.getContent().add(d.para("second list item, the same. " + prose(1, 5))
+							.noLabel().autospacing(true, true).before(100).after(100).listItem().build());
+					break;
+				default:
+					right.getContent().add(d.para("plain control, no spacing. " + prose(1, 6)).noLabel().build());
+				}
+				tr.getContent().add(left);
+				tr.getContent().add(right);
+				t.build().getContent().add(tr);
+			}
+			d.add(t.build());
+			d.para("after the table. " + prose(1, 7)).add();
 			return d.pkg();
 		}));
 
@@ -1227,6 +1287,117 @@ public final class Corpus {
 			d.addHeader(SANS, 20, "S7 running header");
 			d.addFooter(SANS, 20, "S7 running footer");
 			d.emptyParagraph();
+			return d.pkg();
+		}));
+
+		/*
+		 * The line a page break ends is on the page before the break, and the paragraph
+		 * mark sizes it: a 7-page corpus document whose break-only paragraph carries the
+		 * Title style's 28pt mark ends its page 4 17.5pt short of the margin, and Word's
+		 * page 5 is empty (the 34.18pt line went there, and the break opened page 6).
+		 * docx4j had folded the break paragraph into what follows it, losing the line and
+		 * the page.  A and B are that shape with an 11pt mark (fits) and a 28pt one (does
+		 * not); C and D put an empty section-break paragraph in the same place, with the
+		 * same two marks, since §3 records Word giving that paragraph no line at a
+		 * continuous break and a 32-page cover page (14pt marks, 1pt from the margin)
+		 * suggests it takes one at a nextPage break; E and F are the mid-page controls, a
+		 * continuous section-break paragraph and a plain empty paragraph with 28pt marks
+		 * between two prose paragraphs, so the line each takes can be read off the gap.
+		 */
+		PROBES.add(new Probe("page-break-line",
+				"a page filled to 25.9pt of its foot by 28 exact 24pt lines, then a break-only "
+				+ "paragraph whose mark is 11pt (A) or 28pt (B); the same page then an empty "
+				+ "nextPage section-break paragraph with an 11pt (C) or 28pt (D) mark; and "
+				+ "mid-page, a continuous section-break paragraph (E) and an empty paragraph "
+				+ "(F) each with a 28pt mark", () -> {
+			Doc d = Doc.create(15);
+			String[] cases = { "A", "B", "C", "D" };
+			int[] marks = { 22, 56, 22, 56 };
+			for (int c = 0; c < cases.length; c++) {
+				// 28 lines of exactly 24pt: 672pt of the A4 body's 697.9pt, 25.9pt left
+				for (int i = 0; i < 28; i++) {
+					String t = i == 0
+							? cases[c] + ". 28 exact 24pt lines, then a " + (marks[c] / 2)
+									+ "pt-mark " + (c < 2 ? "page-break" : "nextPage section-break")
+									+ " paragraph"
+							: cases[c] + " line " + (i + 1) + " of 28";
+					d.para(t).noLabel().font(SERIF, 24).line(480, STLineSpacingRule.EXACT).add();
+				}
+				if (c < 2) {
+					P brk = F.createP();
+					PPr ppr = F.createPPr();
+					PPrBase.Spacing sp = F.createPPrBaseSpacing();
+					sp.setBefore(BigInteger.ZERO);
+					sp.setAfter(BigInteger.ZERO);
+					sp.setLine(BigInteger.valueOf(240));
+					sp.setLineRule(STLineSpacingRule.AUTO);
+					ppr.setSpacing(sp);
+					brk.setPPr(ppr);
+					R r = F.createR();
+					Br br = F.createBr();
+					br.setType(STBrType.PAGE);
+					r.getContent().add(br);
+					brk.getContent().add(r);
+					markSize(brk, marks[c]);
+					d.add(brk);
+				} else {
+					d.sectionBreakHere("nextPage", 0);
+					P sect = (P) d.mdp().getContent().get(d.mdp().getContent().size() - 1);
+					markSize(sect, marks[c]);
+				}
+				d.para(cases[c] + " after: the paragraph after the break. " + prose(1, c))
+						.noLabel().font(SERIF, 24).after(240).add();
+				d.pageBreak();
+			}
+			d.para("E. A continuous section-break paragraph with a 28pt mark follows this "
+					+ "paragraph. " + prose(2, 4)).noLabel().font(SERIF, 24).after(240).add();
+			d.sectionBreakHere("continuous", 0);
+			markSize((P) d.mdp().getContent().get(d.mdp().getContent().size() - 1), 56);
+			d.para("E after. " + prose(2, 5)).noLabel().font(SERIF, 24).after(240).add();
+			d.para("F. An empty paragraph with a 28pt mark follows this paragraph. "
+					+ prose(2, 6)).noLabel().font(SERIF, 24).after(240).add();
+			markSize(d.emptyParagraph(), 56);
+			d.para("F after. " + prose(2, 7)).noLabel().font(SERIF, 24).after(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * Which pages take which geometry across a continuous section break that changes
+		 * it.  A 29-page corpus document (w:top="0" then w:top="1417", both continuous)
+		 * has a last page holding nothing but its footer, where docx4j runs the trailing
+		 * paragraphs on with the page before; and a 4-page letter whose letterhead
+		 * section says w:footer="5811" (290.55pt) and whose second, continuous, section
+		 * says 709 ends its pages 1 and 2 at y=531 and 529 - the first section's footer
+		 * distance plus its empty footer's line - and page 3 at 762, the second's, though
+		 * the second section begins on page 1.  §7 had read that document's page 3 as
+		 * Word ignoring an absurd footer distance, which FOPAreaTreeHelper still clamps.
+		 * S1 to S5 change one thing at a time across a continuous break: the top margin,
+		 * the footer distance with an empty footer part (5811, then 709), and the left
+		 * margin; each part is more than a page long, so the page a change takes effect
+		 * on can be read from where its lines fall.
+		 */
+		PROBES.add(new Probe("section-continuous-geometry",
+				"five continuous sections each over a page long: S1 default margins; S2 a "
+				+ "2in top margin; S3 w:footer=5811 with an empty footer part and w:bottom="
+				+ "1418; S4 w:footer=709 with another empty footer part; S5 a 2in left margin",
+				() -> {
+			Doc d = Doc.create(15);
+			for (int i = 0; i < 20; i++) d.para("S1 " + prose(2, i)).noLabel().font(SERIF, 24).after(160).add();
+			d.endSection("continuous", 0);
+			d.pageGeometry(11906, 16838, false, 2880, 1440, 1440, 1440);
+			for (int i = 0; i < 20; i++) d.para("S2 " + prose(2, i + 3)).noLabel().font(SERIF, 24).after(160).add();
+			d.endSection("continuous", 0);
+			d.pageGeometry(11906, 16838, false, 1440, 1440, 1418, 1440);
+			d.headerFooterDistance(708, 5811);
+			d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.Collections.singletonList(F.createP()));
+			for (int i = 0; i < 20; i++) d.para("S3 " + prose(2, i + 6)).noLabel().font(SERIF, 24).after(160).add();
+			d.endSection("continuous", 0);
+			d.headerFooterDistance(708, 709);
+			d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.Collections.singletonList(F.createP()));
+			for (int i = 0; i < 20; i++) d.para("S4 " + prose(2, i + 9)).noLabel().font(SERIF, 24).after(160).add();
+			d.endSection("continuous", 0);
+			d.pageGeometry(11906, 16838, false, 1440, 1440, 1440, 2880);
+			for (int i = 0; i < 20; i++) d.para("S5 " + prose(2, i + 12)).noLabel().font(SERIF, 24).after(160).add();
 			return d.pkg();
 		}));
 
@@ -2987,6 +3158,19 @@ public final class Corpus {
 			if (p.id.equals(id)) return p;
 		}
 		return null;
+	}
+
+	/** Gives the paragraph mark (w:pPr/w:rPr) the given size in half-points; an empty
+	 *  paragraph's line is sized by it.  @since 17.1.1 */
+	private static P markSize(P p, int halfPts) {
+		if (p.getPPr() == null) p.setPPr(F.createPPr());
+		org.docx4j.wml.ParaRPr rpr = p.getPPr().getRPr() == null ? F.createParaRPr() : p.getPPr().getRPr();
+		org.docx4j.wml.HpsMeasure sz = F.createHpsMeasure();
+		sz.setVal(BigInteger.valueOf(halfPts));
+		rpr.setSz(sz);
+		rpr.setSzCs(sz);
+		p.getPPr().setRPr(rpr);
+		return p;
 	}
 
 	/** Writes every probe as {@code <id>.docx} into dir, plus corpus.txt and corpus-manifest.properties. */

@@ -922,6 +922,23 @@ public final class Doc {
 		addFooter(HdrFtrRef.DEFAULT, font, halfPts, lines);
 	}
 
+	/** A footer part holding exactly these paragraphs - an empty {@code w:p} for the
+	 *  empty-part shape.  @since 17.1.1 */
+	public void addFooter(HdrFtrRef type, List<P> paragraphs) throws Exception {
+		if (type == HdrFtrRef.FIRST) sectPr().setTitlePg(new BooleanDefaultTrue());
+		if (type == HdrFtrRef.EVEN) evenAndOddHeaders();
+		hdrFtrCounter++;
+		FooterPart fp = new FooterPart(new PartName("/word/footer" + hdrFtrCounter + ".xml"));
+		Ftr ftr = F.createFtr();
+		for (P para : paragraphs) ftr.getContent().add(para);
+		fp.setJaxbElement(ftr);
+		Relationship rel = mdp.addTargetPart(fp);
+		FooterReference ref = F.createFooterReference();
+		ref.setId(rel.getId());
+		ref.setType(type);
+		sectPr().getEGHdrFtrReferences().add(ref);
+	}
+
 	public void addFooter(HdrFtrRef type, String font, int halfPts, String... lines) throws Exception {
 		if (type == HdrFtrRef.FIRST) sectPr().setTitlePg(new BooleanDefaultTrue());
 		if (type == HdrFtrRef.EVEN) evenAndOddHeaders();
