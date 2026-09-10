@@ -40,6 +40,8 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 - A tab with nothing after it whose stop lies past the line takes a line of its own in the
   flow, as Word gives it (measured in a table cell); in a header or footer it still takes
   none, which is where that was measured. See word-layout-rules.md §4.4.
+- A paragraph of a single w:br and nothing else is two lines, as Word draws it: the line before
+  the break was lost (a paragraph of two breaks was right). A 311-page report has 152 of them.
 - The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default

@@ -1097,37 +1097,23 @@ a numbered paragraph by its list body's block, a nested table by its own first r
 keep climbs through the cell of the table it sits in. Header rows are not marked. Property
 `docx4j.convert.out.fo.tables.rowKeepWithNext`.
 
-<a id="s3emptyadd"></a>**Space-after of an empty paragraph before a space-before (open).** One
-structure, measured 152 times in the 311-page report and nowhere else: a table, then an
-empty paragraph (Normal, 10pt after), then a numbered heading with 10pt before. Word's gap
-from the last row's text to the heading's is 53.8pt - the row's 21.2, the empty line's 11.3,
-and **both** 10pt spaces - where "larger of" above gives 43.8 and docx4j draws 42.9. The same
-report's paragraph of two `w:br` before a heading with 10pt before measures 65.0 - three lines
-of 11.27 and one 10 - which *is* larger-of. Whether an empty paragraph's space-after is exempt
-from the combining, or the heading's numbering or `w:keepNext` is what differs, the
-`spacing-empty-before` probe measures, cut with 20pt after against 10pt before (larger-of
-20, additive 30, an empty paragraph losing its space-after 10): a text paragraph, an empty
-paragraph, a two-`w:br` paragraph, and an empty paragraph after a table all give **20** (19.7,
-19.2, 18.5, 20.0 over the lines) - larger-of, and an empty paragraph is *not* exempt. So the
-report's seam is not a spacing rule: its 53.8 reads as the row, **two** bare 11.15pt lines and
-the heading's 10 - the cell's trailing empty paragraph after the nested table *and* the body's
-empty paragraph, neither with its space-after - where docx4j drops the cell's trailing
-paragraph (`dropParagraphAfterNestedTable`) and draws one line and one 10. The same two bare
-lines fit the report's table-then-table seam (43.5 = 21.2 + 22.3). The
-`table-nested-trailing` probe measures it: a one-row table holding a nested table and its
-trailing paragraph (empty; empty with `w:keepNext`; with text; the report's own shape with
-every paragraph keeping), with and without an empty body paragraph after the outer table,
-before a paragraph with space-before, and a plain table as control - spacing values 20, 30
-and 10pt so that each combination of lines and spaces decodes from the gap. **Cut**: Word gives
-the trailing paragraph no line and no space, with or without `w:keepNext` (N1, N2), and the
-empty body paragraph its line and its space-after (N3, N4, as the plain-table control N6);
-docx4j matches every case (1.000, median dy -1.5). So the drop is right, and the report's seam
-is the heading's 10pt before **adding** to the empty paragraph's 10pt after, which the plain
-target of `spacing-empty-before` did not show. The `spacing-empty-heading` probe adds the
-heading's properties one at a time - numbering, `w:keepNext`, spacing from the style, a
-Heading 3 clone with all three, and that clone after an empty paragraph spaced by its own
-style, with and without the report's `w:ind` - so the gap over the empty line (10 larger-of,
-20 additive) names the property. 10.9pt a section, about 2.6 pages of the report's remaining 22.
+<a id="s3emptyadd"></a>**The report's heading seam, resolved.** Its 53.8pt from a table's last
+row to the heading after it was read here for a day as an empty paragraph's space-after
+*adding* to the heading's space-before, against the "larger of" rule above. Three probes said
+otherwise - `spacing-empty-before` (larger-of after a text, an empty and a break-only
+paragraph, and after a table), `table-nested-trailing` (the paragraph after a nested table gets
+no line, the empty body paragraph keeps its line and its space-after, as docx4j draws them)
+and `spacing-empty-heading` (larger-of whether the target is plain, numbered, keep-with-next,
+spaced by its style, a Heading 3 clone, or after an empty paragraph spaced by its own style,
+with or without `w:ind`; 9.4 to 9.9pt over the empty line in every case, 11.6 where the style's
+line spacing makes the line taller). The paragraph before the report's headings is not empty:
+it is a **single `w:br`** and nothing else, which Word draws as two lines - the row 21.6, two
+11.15pt lines and the heading's 10 are 53.9. docx4j drew one: the leading-break rule of §4.3
+gave a break which opens a paragraph its empty line only where something visible followed it,
+so a paragraph of one break had the mark's line and not the one before the break (a paragraph
+of two breaks was already right, the first break being followed by the second). It now opens
+the paragraph whether or not anything follows. The probes' page-break seams were all
+measured with `pdftotext` positions, the report's with the same tool over 152 instances.
 
 <a id="s310"></a>**Space-after against a footnote area (open).** One measured data point,
 not yet a rule docx4j applies: where a paragraph's last line would fit at the foot of a

@@ -89,6 +89,25 @@ public class BreakOnlyParagraphKeepTest {
 		assertEquals(0, keptBlocks(convert(breaks(2, "<w:widowControl w:val=\"0\"/>", null))));
 	}
 
+	/** A paragraph of one w:br is two lines in Word: the line before the break gets the
+	 *  no-break space the leading-break rule writes (as a break with text after it does),
+	 *  and the line after it the one the trailing-break rule writes - two in all, as a
+	 *  paragraph of two breaks has (before the first, after the last).  A break followed by
+	 *  text gets the leading one only; an empty paragraph none. */
+	@Test
+	public void aLoneBreakOpensWithItsOwnLine() throws Exception {
+		assertEquals(2, nbsp(convert(breaks(1, null, null))));
+		assertEquals(2, nbsp(convert(breaks(2, null, null))));
+		assertEquals(1, nbsp(convert(breaks(1, null, "text after"))));
+		assertEquals(0, nbsp(convert("<w:p/>")));
+	}
+
+	private static int nbsp(String fo) {
+		int n = 0;
+		for (int i = 0; i < fo.length(); i++) if (fo.charAt(i) == '\u00a0') n++;
+		return n;
+	}
+
 	@Test
 	public void thePropertyTurnsItOff() throws Exception {
 		Docx4jProperties.setProperty(PROPERTY, "false");

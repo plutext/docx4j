@@ -365,7 +365,16 @@ public class XsltCommonFunctions {
     		if (!seen) return false;   // something visible before it
     		followed = true;
     	}
-    	return seen && followed;
+    	/* A paragraph of nothing but this break is two lines in Word - the empty line
+    	 * before the break and the paragraph mark's line after it - so the break opens
+    	 * the paragraph whether or not anything follows it.  Measured on a 311-page
+    	 * corpus report whose every table is followed by such a paragraph, 152 of them
+    	 * before a heading: Word's gap from the table's last row to the heading is the
+    	 * row, two 11.15pt lines and the heading's 10pt before (53.8pt); with the line
+    	 * before the break missing, ours was one line short (42.9).  A break which ends
+    	 * a paragraph after text is not this case (something visible precedes it).
+    	 * @since 17.1.1 */
+    	return seen;
     }
 
     private static PPr toPPr(NodeIterator pPrNodeIt) {

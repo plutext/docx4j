@@ -2222,7 +2222,10 @@ public final class Corpus {
 		 * after AND the heading's before, 20 not 10.  Each case below is a one-row table,
 		 * an empty paragraph with 200 after, then the target paragraph with 200 before; the
 		 * cases add the heading's properties one at a time.  Gap over the empty line: 10 is
-		 * larger-of, 20 is additive.
+		 * larger-of, 20 is additive.  CUT (2026-09-10): 9.4-9.9 in every case (11.6 for
+		 * E6/E7, whose style line spacing makes the empty line taller) - larger-of
+		 * throughout; the report's paragraph turned out to be a single w:br, two lines
+		 * in Word, which docx4j had drawn as one (rules doc §3, §4.3).
 		 */
 		PROBES.add(new Probe("spacing-empty-heading",
 				"an empty paragraph with 200 after before a paragraph with 200 before which is, "
