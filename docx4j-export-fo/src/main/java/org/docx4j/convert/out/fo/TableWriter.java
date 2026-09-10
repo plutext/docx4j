@@ -896,7 +896,84 @@ public class TableWriter extends AbstractTableWriter {
 		if (tableCell.getExtraRows() > 0) {
 			cellNode.setAttribute("number-rows-spanned", Integer.toString(tableCell.getExtraRows() + 1));
 		}
+		hideMark(tableCell);
   	}
+
+	/**
+	 * {@code docx4j.convert.out.fo.tables.hideMark} (default {@code true}): a cell with
+	 * {@code w:hideMark} whose last paragraph paints nothing takes no line for it, as
+	 * Word sizes the row.  {@code false} gives the mark its line, as 17.1.0 did.
+	 * @since 17.1.1
+	 */
+	public static final String HIDE_MARK = "docx4j.convert.out.fo.tables.hideMark";
+
+	/**
+	 * <b>{@code w:hideMark}: the cell mark's height is ignored when the row is sized</b>
+	 * (ECMA-376 17.4.23).  Word writes it on every cell of a table it imports from HTML,
+	 * and an empty row of such cells is then as tall as its margins and borders alone.
+	 * Measured on the {@code table-hidemark} probe (cell margins 15 twips, 12pt marks):
+	 * three empty rows with the flag are 8.4pt together, 2.8 each, and the same with 6pt
+	 * marks is identical - the mark's size plays no part; with 15 twips of cell spacing
+	 * 5pt each; without the flag a full 13.8pt line each; a cell with text and the flag
+	 * is unchanged.  A corpus letter template's three empty rows are 25.9pt in Word (its
+	 * own margins, spacing and borders) and were 41.4 in docx4j, at four places in each
+	 * of two documents, each a page too long.  107 corpus documents carry the flag on
+	 * 13,977 cells, 1,792 of them empty.
+	 *
+	 * <p>The cell's last paragraph is the one whose mark is the cell mark.  Where it
+	 * paints nothing - white space only, no graphic, leader or field - its block is
+	 * taken out of the cell's content before it is written, so the row is sized by the
+	 * cell's padding and borders (and a cell left with no block gets FOP's empty one
+	 * from {@code WordLayoutFixups.blockForEmptyCell}).  Earlier empty paragraphs of the
+	 * cell keep their lines: only the mark is hidden.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static void hideMark(TableModelCell tableCell) {
+		if (tableCell.isDummy() || tableCell.getTcPr() == null) return;
+		org.docx4j.wml.BooleanDefaultTrue flag = tableCell.getTcPr().getHideMark();
+		if (flag == null || !flag.isVal()) return;
+		if (!org.docx4j.Docx4jProperties.getProperty(HIDE_MARK, true)) return;
+		Node content = ((AbstractTableWriterModelCell) tableCell).getContent();
+		if (content == null) return;
+		Element last = null;
+		NodeList kids = content.getChildNodes();
+		for (int i = 0; i < kids.getLength(); i++) {
+			Node n = kids.item(i);
+			if (n.getNodeType() != Node.ELEMENT_NODE) continue;
+			String name = localName((Element) n);
+			if ("block".equals(name) || "list-block".equals(name) || "table".equals(name) || "block-container".equals(name)) last = (Element) n;
+		}
+		if (last == null || !"block".equals(localName(last))) return;
+		if (paintsAnything(last)) return;
+		content.removeChild(last);
+	}
+
+	/** Whether anything in this block paints: text other than white space, or any
+	 *  element which is not an inline wrapper. */
+	private static boolean paintsAnything(Element el) {
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
+				String t = n.getNodeValue();
+				if (t == null) continue;
+				for (int k = 0; k < t.length(); k++) {
+					char c = t.charAt(k);
+					if (!Character.isWhitespace(c) && c != '\u00a0' && c != '\u200b' && c != '\ufeff') return true;
+				}
+				continue;
+			}
+			if (n.getNodeType() != Node.ELEMENT_NODE) continue;
+			String name = localName((Element) n);
+			if ("inline".equals(name) || "basic-link".equals(name) || "wrapper".equals(name) || "bidi-override".equals(name)) {
+				if (paintsAnything((Element) n)) return true;
+				continue;
+			}
+			return true;
+		}
+		return false;
+	}
 	
   	@Override
   	protected void applyTableRowContainerCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, 

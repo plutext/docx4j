@@ -48,6 +48,9 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   docx4j.convert.out.fo.wordLayout.spacingOutsideBorders. See word-layout-rules.md §3.
 - w:contextualSpacing now pairs paragraphs through a borders/shading container: the seams inside
   the container kept their space (10pt at each of 91 clauses of a shaded charter).
+- w:hideMark is honoured: a cell whose last paragraph is empty takes no line for its mark, so an
+  empty row is its margins and borders (2.8pt in Word, measured) rather than a full line. 107
+  corpus documents carry it on 13,977 cells. Property docx4j.convert.out.fo.tables.hideMark.
 - The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default

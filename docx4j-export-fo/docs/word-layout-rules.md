@@ -185,6 +185,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.wordLayout.keepChainPenalty` | `900` | The penalty such a keep is reduced to, against FOP's infinite 1000: high enough that the breaker still keeps the blocks together wherever they fit. |
 | `docx4j.convert.out.fo.wordLayout.keepChainTolerance` | `3.0` | How many times the page a keep chain must exceed before it is bounded. The flow-level height sum over-estimates what the page must hold, and a chain 12% over is one Word fits ([§3](#s39keepchain)). |
 | `docx4j.convert.out.fo.tables.rowKeepWithNext` | `true` | A table row whose first paragraph (first cell) carries `w:keepNext` is written with `keep-with-next="always"` on the `fo:table-row`, so it keeps with the next row and, on the last row, keeps the table with the paragraph after it ([§3](#s39rowkeep)). `false` leaves the keep on the cells' blocks alone, as 17.1.0 did, where FOP drops it at the last row. |
+| `docx4j.convert.out.fo.tables.hideMark` | `true` | A cell with `w:hideMark` whose last paragraph paints nothing takes no line for it: the row is as tall as its margins and borders, as Word sizes it ([§6](#s6hidemark)). `false` gives the mark its line, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph` | `true` | A paragraph of one or two `w:br` and nothing that paints is marked `keep-together.within-page="always"`: Word's widow control cannot split a two- or three-line paragraph, where FOP breaks between the nested blocks the breaks are written as ([§3](#s39brkeep)). `false` leaves it breakable, as 17.1.0 did. |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
@@ -2617,6 +2618,20 @@ floor to: of the seven content-shortfall tables in the corpora (§6.5) none hold
 token. Whether Word breaks between a letter and `+`, `%` or a currency sign other than `$`
 remains unmeasured (it does before `$`, it does not before `\`). A word split across two
 runs at a break opportunity is [§10](#s10inlineseam).
+
+<a id="s6hidemark"></a>**`w:hideMark`: the cell mark's height is ignored when the row is
+sized** (ECMA-376 17.4.23). Word writes it on every cell of a table it imports from HTML, and
+an empty row of such cells is then as tall as its margins and borders alone. Measured on the
+`table-hidemark` probe (cell margins 15 twips, 12pt marks): three empty rows with the flag are
+8.4pt together, 2.8 each, and the same rows with 6pt marks are identical, so the mark's size
+plays no part; with 15 twips of cell spacing 5pt each; without the flag a full 13.8pt line
+each; a cell holding text with the flag is unchanged. A corpus letter template's three empty
+rows are 25.9pt in Word (its own margins, spacing and borders) and were 41.4 in docx4j, at
+four places in each of two documents, each a page too long; 107 corpus documents carry the flag
+on 13,977 cells, 1,792 of them empty. `TableWriter` takes the cell's last paragraph's block
+out of the cell where it paints nothing, so the row is sized by padding and borders; earlier
+empty paragraphs keep their lines, only the mark is hidden. Property
+`docx4j.convert.out.fo.tables.hideMark`.
 
 <a id="s63stalegrid"></a>**A grid the cells' preferences contradict, and how Word lays a
 table out on its `w:tcW`** (17.1.1). The certificate §6.11 names - the one document the

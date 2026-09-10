@@ -2303,6 +2303,9 @@ public final class Corpus {
 		 * tblCellSpacing 15): three consecutive empty hideMark rows are 25.9pt in Word,
 		 * 8.6 each, against our 41.4.  What that 8.6 is made of - margins, spacing, a
 		 * minimum, or a fraction of the mark's line - is what this probe separates.
+		 * CUT (2026-09-10): M1 three empty hideMark rows 8.4pt together (2.8 each), M4 with
+		 * 6pt marks identical, M2 with cell spacing 5pt each, M3/M5 controls a full line
+		 * each, M6 text cells unchanged: the mark takes no line at all.  Rules doc §6.
 		 */
 		PROBES.add(new Probe("table-hidemark",
 				"empty rows whose cells carry w:hideMark, with and without cell spacing, at 12pt "
