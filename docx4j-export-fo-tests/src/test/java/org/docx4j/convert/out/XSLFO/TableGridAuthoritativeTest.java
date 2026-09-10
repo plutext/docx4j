@@ -111,17 +111,25 @@ public class TableGridAuthoritativeTest {
 		assertEquals(444.5, cols[5], 0.05);
 	}
 
-	/** A table whose cells are all auto-width still gets Word's content-based autofit,
-	 *  widened to w:tblW in the columns' content proportions. */
-	private void checkAutoWidthTableStillAutofits(int flags) throws Exception {
+	/**
+	 * A table whose cells are all auto-width takes its w:tblGrid where the table's own
+	 * absolute w:tblW is what the grid sums to: such a grid is the layout Word cached
+	 * for that width (badc8d883, 8 Sep 2026, measured on a corpus document whose 8691
+	 * dxa table's "Booked By:" label needs the grid's 47.65pt where the content pass
+	 * gave 40.9; 12 documents, 35 tables).  Until 2026-09-11 this test asserted the
+	 * content-based autofit for that shape, the rule badc8d883 replaced; a generated
+	 * grid such as this one cannot say otherwise, since Word recomputes a grid it did
+	 * not write and keeps one it did.
+	 */
+	private void checkAutoWidthTableTakesTheGridItsWidthSumsTo(int flags) throws Exception {
 		String auto = "<w:tbl><w:tblPr><w:tblW w:type=\"dxa\" w:w=\"8000\"/></w:tblPr>"
 				+ "<w:tblGrid><w:gridCol w:w=\"4000\"/><w:gridCol w:w=\"4000\"/></w:tblGrid>"
 				+ "<w:tr><w:tc><w:p><w:r><w:t>i</w:t></w:r></w:p></w:tc>"
 				+ "<w:tc><w:p><w:r><w:t>wide content in the second column</w:t></w:r></w:p></w:tc></w:tr></w:tbl>";
 		double[] cols = columnsPt(fo(auto, flags));
 		assertEquals(400.0, cols[0] + cols[1], 0.05);
-		assertTrue("content proportions, not the grid's halves: " + cols[0] + " / " + cols[1],
-				cols[1] > cols[0] * 2);
+		assertEquals("the grid's first half", 200.0, cols[0], 0.05);
+		assertEquals("the grid's second half", 200.0, cols[1], 0.05);
 	}
 
 	@Test
@@ -135,12 +143,12 @@ public class TableGridAuthoritativeTest {
 	}
 
 	@Test
-	public void autoWidthTableStillAutofitsVisitor() throws Exception {
-		checkAutoWidthTableStillAutofits(Docx4J.FLAG_NONE);
+	public void autoWidthTableTakesTheGridItsWidthSumsToVisitor() throws Exception {
+		checkAutoWidthTableTakesTheGridItsWidthSumsTo(Docx4J.FLAG_NONE);
 	}
 
 	@Test
-	public void autoWidthTableStillAutofitsXslt() throws Exception {
-		checkAutoWidthTableStillAutofits(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	public void autoWidthTableTakesTheGridItsWidthSumsToXslt() throws Exception {
+		checkAutoWidthTableTakesTheGridItsWidthSumsTo(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 }

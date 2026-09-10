@@ -100,31 +100,33 @@ public class TableAutofitPictureTest extends AbstractXSLFOTest {
 		return Double.parseDouble(v.substring(0, v.length() - 2));
 	}
 
-	private void pictureColumnsAreNotCollapsed(int flags) throws Exception {
+	/**
+	 * The table states w:tblW 8691 dxa and its grid sums to 8691, which since badc8d883
+	 * (8 Sep 2026) makes the grid the layout even with every cell auto: it is the layout
+	 * Word cached for that width (measured on the corpus document this table copies,
+	 * whose "Booked By:" label needs the grid's 47.65pt where the content pass gave 40.9).
+	 * So the picture columns are the grid's 79.2 and 85.3pt.  Until 2026-09-11 this test
+	 * asserted the content pass (columns at least the 80pt picture wide, four lines in
+	 * all), which was right against 17.0.5's collapse to the cell margins and is the
+	 * rule badc8d883 replaced; a picture wider than its Word-written grid column cannot
+	 * occur in a real document, since Word sized that grid with the picture in it.
+	 */
+	private void pictureColumnsAreTheGrids(int flags) throws Exception {
 		NodeList cols = fo(flags).getElementsByTagNameNS(FO, "table-column");
 		assertEquals(4, cols.getLength());
-		double first = lengthPt(((Element) cols.item(0)).getAttribute("column-width"));
-		double last = lengthPt(((Element) cols.item(3)).getAttribute("column-width"));
-		assertTrue("the picture's column collapsed to the cell margins: " + first + "pt",
-				first >= 80);
-		assertTrue("the picture's column collapsed to the cell margins: " + last + "pt",
-				last >= 80);
+		assertEquals("the grid's 1584 twips", 79.2, lengthPt(((Element) cols.item(0)).getAttribute("column-width")), 0.05);
+		assertEquals("the grid's 953 twips", 47.65, lengthPt(((Element) cols.item(1)).getAttribute("column-width")), 0.05);
+		assertEquals("the grid's 4448 twips", 222.4, lengthPt(((Element) cols.item(2)).getAttribute("column-width")), 0.05);
+		assertEquals("the grid's 1706 twips", 85.3, lengthPt(((Element) cols.item(3)).getAttribute("column-width")), 0.05);
 	}
 
 	@Test
 	public void visitor() throws Exception {
-		pictureColumnsAreNotCollapsed(Docx4J.FLAG_NONE);
+		pictureColumnsAreTheGrids(Docx4J.FLAG_NONE);
 	}
 
 	@Test
 	public void xslt() throws Exception {
-		pictureColumnsAreNotCollapsed(Docx4J.FLAG_EXPORT_PREFER_XSL);
-	}
-
-	/** and the text column is then wide enough not to wrap one word per line:
-	 *  one line per cell, four cells */
-	@Test
-	public void theTextColumnStillFits() throws Exception {
-		assertEquals(4, lineCount(areaTree(pkg(), Docx4J.FLAG_NONE)));
+		pictureColumnsAreTheGrids(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 }

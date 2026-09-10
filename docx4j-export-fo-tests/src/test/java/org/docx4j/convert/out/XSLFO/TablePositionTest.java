@@ -172,21 +172,26 @@ public class TablePositionTest {
 	}
 
 	private void checkFitToPage(int flags) throws Exception {
-		// w:tblW asks for 600pt of a 451.3pt column and the columns are auto, so the
-		// autofit pass sizes them to 600pt; docx4j's own widths are fitted to the page
+		// w:tblW asks for 600pt of a 451.3pt column and the columns are auto: Word draws
+		// the table at its w:tblW, overhanging the margin, and shares the width by
+		// content.  Measured on the table-grid-overwide-auto probe (2026-09-11): all-auto
+		// tables whose dxa w:tblW is 1.7%, 10% and 29% wider than the column are drawn at
+		// exactly that width (the 29% table's first two columns 398.8pt against 306.4 in
+		// the w:tblW-less control), and docx4j matches it line for line.  Until then this
+		// test asserted a clamp to the column, which is the 7 Sep rule badc8d883 replaced.
 		String wide = table("<w:tblW w:type=\"dxa\" w:w=\"12000\"/>",
 				"<w:gridCol w:w=\"6000\"/><w:gridCol w:w=\"6000\"/>",
 				cell(null, "one two three four five six seven eight nine ten eleven twelve")
 				+ cell(null, "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda"));
 		org.w3c.dom.Document doc = fo(wide, flags);
-		assertEquals(COLUMN_TWIPS / 20.0, pt(foTable(doc).getAttribute("width")), 0.01);
+		assertEquals("drawn at its w:tblW, not fitted to the column", 600.0, pt(foTable(doc).getAttribute("width")), 0.01);
 		NodeList cols = doc.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "table-column");
 		assertEquals(2, cols.getLength());
 		double sum = 0;
 		for (int i = 0; i < cols.getLength(); i++) {
 			sum += pt(((Element) cols.item(i)).getAttribute("column-width"));
 		}
-		assertEquals(COLUMN_TWIPS / 20.0, sum, 0.02);
+		assertEquals(600.0, sum, 0.02);
 
 		// a w:tblLayout of "fixed" is left to overflow, as Word leaves it
 		String fixed = table("<w:tblLayout w:type=\"fixed\"/><w:tblW w:type=\"dxa\" w:w=\"12000\"/>",
