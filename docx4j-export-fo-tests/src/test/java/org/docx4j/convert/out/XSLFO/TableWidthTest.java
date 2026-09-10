@@ -112,19 +112,27 @@ public class TableWidthTest {
 		assertTrue("the wordier column is the wider one: " + cols[0] + " / " + cols[1], cols[1] > cols[0] * 2);
 	}
 
+	/**
+	 * Cells declaring pct widths make every column preferred (a98854400, 8 Sep 2026),
+	 * and the grid is then the layout: 50 and 100pt, the 3000 twips as written, not
+	 * widened to the 8000-twip w:tblW.  The widening this test asserted until
+	 * 2026-09-11 (section 6.4, "in the grid's proportions where any cell declares a
+	 * width") was measured on probe goldens whose 154pt grid the harness generated
+	 * under a 400pt w:tblW - a grid Word did not write, which Word refits on open.  In
+	 * Word-written documents the shape does not occur: of the three corpora's 1280
+	 * tables with an absolute w:tblW, none is more than 2 per cent wider than its grid
+	 * (446 documents, 5146 tables), since Word writes the grid to the width it laid the
+	 * table out at.  So the grid rule costs nothing there and this pins it.
+	 */
 	private void checkDeclaredWidthsWidenOnTheGrid(int flags) throws Exception {
-		// where the cells declare widths of their own - a w:tcW in "pct" is the common
-		// case - Word lays the table out on its w:tblGrid, however little content a
-		// column holds; the content proportions here would put nearly all of the table
-		// in the second column
 		String pct = table("<w:tblW w:type=\"dxa\" w:w=\"8000\"/>",
 				"<w:gridCol w:w=\"1000\"/><w:gridCol w:w=\"2000\"/>",
 				cell("1667", "pct", "") + cell("3333", "pct", "wide content in the second column"));
 		double[] cols = columnsPt(fo(pct, flags));
 		assertEquals(2, cols.length);
-		assertEquals(400.0, cols[0] + cols[1], 0.05);
-		assertEquals("the grid's 1/3", 133.3, cols[0], 0.1);
-		assertEquals("the grid's 2/3", 266.7, cols[1], 0.1);
+		assertEquals("the grid as written, not widened to w:tblW", 150.0, cols[0] + cols[1], 0.05);
+		assertEquals("the grid's 1000 twips", 50.0, cols[0], 0.1);
+		assertEquals("the grid's 2000 twips", 100.0, cols[1], 0.1);
 	}
 
 	private void checkFixedLayoutKeepsTheGrid(int flags) throws Exception {

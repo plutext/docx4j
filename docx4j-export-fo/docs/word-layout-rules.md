@@ -2770,6 +2770,20 @@ lays such a table out on its grid however little content a column holds. A colum
 absolute `w:tcW` keeps it and the rest share what is left; `w:tblLayout="fixed"` uses the
 grid as it stands.
 
+**The declared-width case is a probe artefact (re-read 2026-09-11).** Where any cell
+declares a width the grid is authoritative from 8 Sep (§6.3; a `pct` `w:tcW` is a preferred
+width since a98854400), so no widening reaches such a table, and the measurement behind "in
+the grid's proportions" was the `table-indent-compat14/15` goldens, whose 154pt grid under a
+400pt `w:tblW` the harness generated - a grid Word did not write and refits on open, the trap
+§6.3 records for `table-cell-pct`. In Word-written documents the shape does not occur: of the
+three corpora's 1,280 tables with an absolute `w:tblW`, none is more than 2% wider than its
+grid (446 documents, 5,146 tables), because Word writes the grid to the width it laid the
+table out at. `TableWidthTest.declaredWidthsWidenOnTheGrid` now pins the grid. The all-auto
+widening above stands, and `table-grid-overwide-auto` (2026-09-11) shows it running past the
+text column at the stated width: all-auto tables whose dxa `w:tblW` is 1.7%, 10% and 29% wider
+than the column are drawn at exactly that width, the 29% table's first two columns 398.8pt
+against 306.4 in the `w:tblW`-less control, shared by content.
+
 ### 6.5 Over-wide tables
 
 Widths **docx4j chooses for itself** are scaled down to the text column, since an autofit
