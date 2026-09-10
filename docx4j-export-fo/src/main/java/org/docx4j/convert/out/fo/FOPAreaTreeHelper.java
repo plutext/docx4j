@@ -893,11 +893,22 @@ public class FOPAreaTreeHelper {
 		    			 * for w:titlePg): there Word reserves nothing, which is what J2's
 		    			 * own measurement says and FooterDistanceTest holds.  15 documents
 		    			 * of three corpora have an empty footer part.  @since 17.1.0 */
+		    			/* ...and the empty part's own line counts as well as the distance:
+		    			 * the measurement above is 841.95 - 36 - 13.43 = 792.5, the distance
+		    			 * plus the empty paragraph's line, and reserving the distance alone
+		    			 * (a body bottom of 805.95) had kept the 12pt block on page 1.
+		    			 * Measured again on a landscape corpus document (612pt high,
+		    			 * w:bottom="561" = 28pt, w:footer="720" = 36pt, footer2.xml one
+		    			 * empty w:p of the Footer style) whose body ends at y=469 and is
+		    			 * followed by eight empty paragraphs of 12.65pt: Word puts them on a
+		    			 * second page, which only a body bottom of 562 (612 - 36 - 13.8)
+		    			 * explains - 576 (the distance alone) holds all eight.
+		    			 * @since 17.1.1 */
 		    			float footerReserve = footerIsDummy ? 0f : fBpdaPts;
 		    			float footerFloor = footerReserve > 0 ? footerMarginPts + footerReserve
 		    					: (footerIsDummy && !footerIsAbsent
 		    							&& plausibleFooterDistance(page, footerMarginPts)
-		    						? footerMarginPts : 0f);
+		    						? footerMarginPts + fBpdaPts : 0f);
 		    			float bodyBottom = bottomMarginPts < 0 ? -bottomMarginPts
 		    					: Math.max(bottomMarginPts, footerFloor);
 		    			float spmBottom = Math.min(footerMarginPts, bodyBottom);
