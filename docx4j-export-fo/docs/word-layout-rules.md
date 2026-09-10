@@ -1118,7 +1118,16 @@ lines fit the report's table-then-table seam (43.5 = 21.2 + 22.3). The
 trailing paragraph (empty; empty with `w:keepNext`; with text; the report's own shape with
 every paragraph keeping), with and without an empty body paragraph after the outer table,
 before a paragraph with space-before, and a plain table as control - spacing values 20, 30
-and 10pt so that each combination of lines and spaces decodes from the gap. 10.9pt a section, about 2.6 pages of the report's remaining 22.
+and 10pt so that each combination of lines and spaces decodes from the gap. **Cut**: Word gives
+the trailing paragraph no line and no space, with or without `w:keepNext` (N1, N2), and the
+empty body paragraph its line and its space-after (N3, N4, as the plain-table control N6);
+docx4j matches every case (1.000, median dy -1.5). So the drop is right, and the report's seam
+is the heading's 10pt before **adding** to the empty paragraph's 10pt after, which the plain
+target of `spacing-empty-before` did not show. The `spacing-empty-heading` probe adds the
+heading's properties one at a time - numbering, `w:keepNext`, spacing from the style, a
+Heading 3 clone with all three, and that clone after an empty paragraph spaced by its own
+style, with and without the report's `w:ind` - so the gap over the empty line (10 larger-of,
+20 additive) names the property. 10.9pt a section, about 2.6 pages of the report's remaining 22.
 
 <a id="s310"></a>**Space-after against a footnote area (open).** One measured data point,
 not yet a rule docx4j applies: where a paragraph's last line would fit at the foot of a

@@ -2213,6 +2213,86 @@ public final class Corpus {
 		}));
 
 		/*
+		 * The 311-page report's heading seam, one property at a time.  table-nested-trailing
+		 * settled that the paragraph after the nested table gets no line and the empty body
+		 * paragraph keeps its line and its 10pt after; spacing-empty-before settled that
+		 * space-after and space-before combine by larger-of after an empty paragraph.  The
+		 * report's gap from the empty paragraph to its numbered, keep-with-next Heading 3
+		 * (200 before from the style, line 271 auto) is nonetheless the empty paragraph's
+		 * after AND the heading's before, 20 not 10.  Each case below is a one-row table,
+		 * an empty paragraph with 200 after, then the target paragraph with 200 before; the
+		 * cases add the heading's properties one at a time.  Gap over the empty line: 10 is
+		 * larger-of, 20 is additive.
+		 */
+		PROBES.add(new Probe("spacing-empty-heading",
+				"an empty paragraph with 200 after before a paragraph with 200 before which is, "
+				+ "in turn, plain; numbered; keep-with-next; spaced by its style; a Heading 3 "
+				+ "clone (numbered, keep-with-next, style spacing, line 271); and that clone "
+				+ "after an empty paragraph whose own spacing comes from a style", () -> {
+			Doc d = Doc.create(15);
+			d.addParagraphStyle("SpacedHead", "Normal", ppr -> {
+				org.docx4j.wml.PPrBase.Spacing sp = new org.docx4j.wml.PPrBase.Spacing();
+				sp.setBefore(java.math.BigInteger.valueOf(200)); sp.setAfter(java.math.BigInteger.ZERO);
+				sp.setLine(java.math.BigInteger.valueOf(271)); sp.setLineRule(org.docx4j.wml.STLineSpacingRule.AUTO);
+				ppr.setSpacing(sp);
+			});
+			d.addParagraphStyle("Head3Clone", "Normal", ppr -> {
+				org.docx4j.wml.PPrBase.Spacing sp = new org.docx4j.wml.PPrBase.Spacing();
+				sp.setBefore(java.math.BigInteger.valueOf(200)); sp.setAfter(java.math.BigInteger.ZERO);
+				sp.setLine(java.math.BigInteger.valueOf(271)); sp.setLineRule(org.docx4j.wml.STLineSpacingRule.AUTO);
+				ppr.setSpacing(sp);
+				ppr.setKeepNext(new org.docx4j.wml.BooleanDefaultTrue());
+				org.docx4j.wml.PPrBase.NumPr numPr = new org.docx4j.wml.PPrBase.NumPr();
+				org.docx4j.wml.PPrBase.NumPr.Ilvl ilvl = new org.docx4j.wml.PPrBase.NumPr.Ilvl();
+				ilvl.setVal(java.math.BigInteger.ZERO); numPr.setIlvl(ilvl);
+				org.docx4j.wml.PPrBase.NumPr.NumId numId = new org.docx4j.wml.PPrBase.NumPr.NumId();
+				numId.setVal(java.math.BigInteger.ONE); numPr.setNumId(numId);
+				ppr.setNumPr(numPr);
+			});
+			d.addParagraphStyle("EmptyAfter", "Normal", ppr -> {
+				org.docx4j.wml.PPrBase.Spacing sp = new org.docx4j.wml.PPrBase.Spacing();
+				sp.setAfter(java.math.BigInteger.valueOf(200)); sp.setLine(java.math.BigInteger.valueOf(276));
+				sp.setLineRule(org.docx4j.wml.STLineSpacingRule.AUTO);
+				ppr.setSpacing(sp);
+			});
+			d.para("Each case: a one-row table, an empty paragraph with 200 twips after, then "
+					+ "the target paragraph with 200 before. The gap over the empty line is 10pt "
+					+ "where the spaces combine by larger-of and 20pt where they add.").after(240).add();
+			String[] what = {
+				"E1: the target is a plain paragraph, 200 before direct.",
+				"E2: the target is numbered (w:numPr), 200 before direct.",
+				"E3: the target has w:keepNext, 200 before direct.",
+				"E4: the target's 200 before and line 271 come from its style.",
+				"E5: the target is a Heading 3 clone: style spacing, w:keepNext, numbered.",
+				"E6: E5 after an empty paragraph whose 200 after comes from ITS style.",
+				"E7: E6 with w:ind left and right 29 on the empty paragraph."
+			};
+			for (int c = 0; c < what.length; c++) {
+				if (c == 5) d.pageBreak(); // E6 and E7 on a page of their own: no seam may straddle a page
+				d.para(what[c]).after(240).add();
+				Doc.Table t = new Doc.Table(4000, 4000);
+				t.rowOf(null, null,
+						t.cellOf(4000, null, Doc.plainParagraph("E" + (c + 1) + " cell one", SERIF, 24)),
+						t.cellOf(4000, null, Doc.plainParagraph("E" + (c + 1) + " cell two", SERIF, 24)));
+				d.add(t.build());
+				Doc.Para empty = d.para().noLabel();
+				if (c >= 5) empty = empty.style("EmptyAfter").inheritSpacing(); else empty = empty.after(200);
+				if (c == 6) empty = empty.indent(29, 0, 0);
+				empty.add();
+				Doc.Para target = d.para("E" + (c + 1) + " target paragraph. " + prose(1, c + 1)).after(240);
+				switch (c) {
+					case 0: target = target.before(200); break;
+					case 1: target = target.before(200).listItem(); break;
+					case 2: target = target.before(200).keepNext(); break;
+					case 3: target = target.style("SpacedHead").inheritSpacing(); break;
+					default: target = target.style("Head3Clone").inheritSpacing().noIndent();
+				}
+				target.add();
+			}
+			return d.pkg();
+		}));
+
+		/*
 		 * J14: what a section's w:vAlign counts as the block it aligns.  §7's s75 makes
 		 * w:vAlign a display-align on fo:region-body, and a corpus document's
 		 * centred title section is then a uniform +5.9pt low over every line, with an
