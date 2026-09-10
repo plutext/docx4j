@@ -166,7 +166,9 @@ public class Preprocess extends ConversionFeatures {
 		}
 		if (features.contains(PP_COMMON_MOVE_PAGEBREAK)) {
 			log.debug("PP_COMMON_MOVE_PAGEBREAK");
-			PageBreak.process(ret);
+			PageBreak.process(ret, features.contains(PP_PDF_PAGEBREAK_PARAGRAPH_LINE)
+					&& org.docx4j.Docx4jProperties.getProperty(
+							"docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine", false));
 //			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_PDF_COVERPAGE_MOVE_SECTPR)) {

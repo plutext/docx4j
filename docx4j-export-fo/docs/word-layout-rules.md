@@ -187,6 +187,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.tables.rowKeepWithNext` | `true` | A table row whose first paragraph (first cell) carries `w:keepNext` is written with `keep-with-next="always"` on the `fo:table-row`, so it keeps with the next row and, on the last row, keeps the table with the paragraph after it ([§3](#s39rowkeep)). `false` leaves the keep on the cells' blocks alone, as 17.1.0 did, where FOP drops it at the last row. |
 | `docx4j.convert.out.fo.tables.hideMark` | `true` | A cell with `w:hideMark` whose last paragraph paints nothing takes no line for it: the row is as tall as its margins and borders, as Word sizes it ([§6](#s6hidemark)). `false` gives the mark its line, as 17.1.0 did. |
 | `docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph` | `true` | A paragraph of one or two `w:br` and nothing that paints is marked `keep-together.within-page="always"`: Word's widow control cannot split a two- or three-line paragraph, where FOP breaks between the nested blocks the breaks are written as ([§3](#s39brkeep)). `false` leaves it breakable, as 17.1.0 did. |
+| `docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine` | `false` | `true`: a paragraph holding only a page break keeps the line before its break, sized by its mark, at the foot of the page it is on; where the page has no room for it the line goes to the next page and the break to the one after ([§3.3](#s33line)). Off by default: over the corpora it costs more pages than it gives, and the probe behind it is with Word. |
 | `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
@@ -772,6 +773,40 @@ became 23), while its line parity rose from 0.613 to 0.682 on the same change. O
 three corpora the rule is a clear gain - 97 more matched lines and +0.0010 mean parity on
 that corpus, a page-count match gained on another, no document regressing - so it stands,
 and what makes Word skip that one page is open.
+
+<a id="s33line"></a>**The line the break ends is on the page before it, and the
+paragraph mark sizes it.** A paragraph holding only a page break is a line - the one the
+break character ends - and that line belongs to the page the paragraph is on, at its foot,
+where it costs nothing visible; the break opens the next page. Where the page has no room
+left for the line, it goes to the next page and the break to the one after, which is a
+page with nothing on it. Measured on a 7-page corpus document whose break-only paragraph
+carries the Title style's 28pt mark (`w:sz="56"`, on `w:line="240"`): its page 4 ends
+17.5pt short of the margin - the last line box 735.9..756.1 of a 770.1pt body - the
+34.18pt line does not fit, and Word's page 5 is empty with "Reference list" opening page
+6. docx4j had folded the break paragraph into the paragraph after it (the paragraph after
+took the break, and the empty block went), which loses the line, and lost that page: 7
+Word pages came out as 6. A paragraph holding nothing but its break is now split there
+like one with text before it (`convert/out/common/preprocess/PageBreak`, for the PDF
+exporter's `PP_PDF_PAGEBREAK_PARAGRAPH_LINE` feature; property
+`docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine`): its empty first half is the
+line, on this page, and its second half - the mark, on the next - is folded into what
+follows as before. Only the first half is a line: giving the second one as well cost three
+corpus documents a page each at breaks ending a text paragraph (`...в более старшем
+возрасте.<w:br w:type="page"/>`), whose empty continuation is that same shape and which
+Word gives no line and no page. And only a paragraph with nothing after its break: one
+which opens with a break and goes on with text keeps its `w:pageBreakBefore` conversion,
+since splitting it put the numbering label on the empty half (a numbered corpus document
+fell from 0.97 to 0.70 of line parity). An 11pt mark's 13.43pt line would have fitted that
+page by 0.6pt, which is why the shape had not shown before. The `page-break-line` probe (A, B)
+carries the two marks against a page filled to 25.9pt of its foot, and is awaiting its
+golden. **Until it answers the rule is off by default** (`PageBreakParagraphLineTest` turns
+it on): scored over the three corpora it gave that document its page and two others theirs
+(a 7-page form and an 88-page report), but cost eight documents a page or more - each a
+break-only paragraph at the foot of a page which docx4j had already filled a few points
+fuller than Word, so that a line Word had room for tipped over into an empty page - and
+one such document three pages. Whether Word moves the line at all, or only a tall one, is
+the probe's question; what is settled is that the line's cost when it is wrong is a page,
+where the density errors it rides on are points.
 
 A paragraph holding only a page break leaves no empty
 line at the top of the new page. The next paragraph's space-before is dropped there where
@@ -3840,11 +3875,27 @@ three footer parts are each a single empty `w:p`, with `w:pgMar w:bottom="274"` 
 `w:footer="720"` (36pt), Word's body ends at y=792.5 - the distance plus the empty footer's
 own 13.43pt line - and puts the next, 12pt, block on the following page, where the bottom
 margin alone (a body bottom of 828.25) kept it; our page 1 held content Word puts on two.
+**Both the distance and the line are reserved (17.1.1)**: 17.1.0 had reserved the
+distance alone, which that measurement does not support (805.95 would have kept the 12pt
+block on page 1 too), and a landscape corpus document showed the difference - 612pt high,
+`w:bottom="561"` (28pt), `w:footer="720"` (36pt), one empty Footer-style `w:p` in the part,
+its body text ending at y=469 and eight empty 12.65pt paragraphs after it: Word puts them on
+a second page, which a body bottom of 562 (612 - 36 - 13.8) explains and 576 (the distance
+alone) does not, as 576 holds all eight. `EmptyFooterPartTest`.
 The clamp the "reserves nothing" rule really needed was against an **absurd** `w:footer`:
 the document it was measured on states `w:footer="5811"` (290.55pt, a third of an 841.95pt
 page) and Word ignores it entirely, its last baselines 756.2 and 767.0 against a 70.9pt
 bottom margin. So a footer distance past **a quarter of the page** is not honoured, and
-otherwise an empty footer part holds the body off at `w:footer`.
+otherwise an empty footer part holds the body off at `w:footer`. **That clamp is in
+question (17.1.1)**: re-read page by page, the document it was measured on is a 4-page letter
+of two *continuous* sections - a letterhead section saying `w:footer="5811"` and, from a
+few lines down page 1, a second saying 709 - and Word ends its pages 1 and 2 at y=531 and
+529, which is 841.95 - 290.55 - the empty footer's line, and only page 3 at 762. The 5811
+is honoured on the pages the first section's geometry governs, and the 756.2 / 767.0
+baselines read as "ignored" are page 3's, the second section's. Which pages a continuous
+section's geometry governs is the open question (the second section begins on page 1, yet
+page 2 keeps the first's footer), and the `section-continuous-geometry` probe puts it to
+Word; until it answers, the clamp stands and that letter is one page short of Word's four.
 `HeaderFooterPolicy.isAbsent` tells the two cases apart. The head of the page keeps the
 rule above unchanged - there an empty part reserves neither the distance nor a line box,
 which is what its own measurement says. **15 documents of the three corpora have an empty

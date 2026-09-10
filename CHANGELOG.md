@@ -51,6 +51,15 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 - w:hideMark is honoured: a cell whose last paragraph is empty takes no line for its mark, so an
   empty row is its margins and borders (2.8pt in Word, measured) rather than a full line. 107
   corpus documents carry it on 13,977 cells. Property docx4j.convert.out.fo.tables.hideMark.
+- New property docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine (default false): true
+  gives a paragraph holding only a page break the line before its break, sized by its paragraph
+  mark, at the foot of the page it is on, so that where the page has no room for it the line goes
+  to the next page and the break to the one after, an empty page (measured on one document whose
+  break paragraph carries a 28pt mark: 7 Word pages were 6). Off until a probe settles it, since
+  over the corpora it cost more pages than it gave. See word-layout-rules.md §3.3.
+- An empty footer part reserves its own line as well as w:footer, which is what the 17.1.0
+  measurement already said (792.5 = 36 + 13.43): a landscape document whose eight trailing
+  empty paragraphs Word puts on a second page kept them on its first. See word-layout-rules.md §7.
 - The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default

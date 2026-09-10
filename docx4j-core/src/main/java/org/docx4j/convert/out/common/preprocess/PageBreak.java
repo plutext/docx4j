@@ -81,6 +81,26 @@ public class PageBreak {
 	 * moves the page-breaks to the enclosing block.
 	 */
 	public static void process(WordprocessingMLPackage wmlPackage) {
+		process(wmlPackage, false);
+	}
+
+	/**
+	 * @param keepBreakLine whether a paragraph holding nothing but its page break is
+	 *        split there all the same, so that its empty first half is the line the break
+	 *        ends, at the foot of the page the paragraph is on, sized by the paragraph
+	 *        mark.  Where the page has no room left for that line it goes to
+	 *        the next page and the break to the one after, which is a page with nothing on
+	 *        it.  Measured on a 7-page corpus document whose break-only paragraph carries
+	 *        the Title style's 28pt mark: its page 4 ends 17.5pt short of the margin, the
+	 *        34.18pt line does not fit, and Word's page 5 is empty; converting the
+	 *        paragraph to w:pageBreakBefore, as this class did, lost the line and the
+	 *        page.  Only the empty first half of a paragraph <em>split</em> at its break
+	 *        is a line: the empty second half - the mark Word moves to the page after the
+	 *        break - takes none, which the FO exporter's WordLayoutFixups keeps to.  The
+	 *        PDF exporter's ConversionFeatures.PP_PDF_PAGEBREAK_PARAGRAPH_LINE turns this
+	 *        on; HTML output keeps the plain conversion.  @since 17.1.1
+	 */
+	public static void process(WordprocessingMLPackage wmlPackage, boolean keepBreakLine) {
 	Body body = wmlPackage.getMainDocumentPart().getJaxbElement().getBody();
 		//TODO: Convert to visitor
 		/* w:compat/w:splitPgBreakAndParaMark ("Always Move Paragraph Mark to Page after a
@@ -93,7 +113,8 @@ public class PageBreak {
 		 * @since 17.1.0 */
 		movePageBreaks(body.getContent(),
 				org.docx4j.model.CompatibilityOptions.of(wmlPackage)
-					.is(org.docx4j.model.CompatibilityOptions.Flag.SPLIT_PG_BREAK_AND_PARA_MARK));
+					.is(org.docx4j.model.CompatibilityOptions.Flag.SPLIT_PG_BREAK_AND_PARA_MARK),
+				keepBreakLine);
 	}
 
 
@@ -110,19 +131,19 @@ public class PageBreak {
 	 *        Tables are deliberately not descended into: a page break inside one
 	 *        belongs to the table (&#xa7;3.3) and is handled in the FO.
 	 */
-	private static void movePageBreaks(List<Object> elts, boolean splitAtBreaks) {
+	private static void movePageBreaks(List<Object> elts, boolean splitAtBreaks, boolean keepBreakLine) {
 
 		for (int i=0; i<elts.size(); i++) {
 			Object o = XmlUtils.unwrap(elts.get(i));
 			if (o instanceof P) {
-				updateParagraph((P)o, elts, i, splitAtBreaks);
+				updateParagraph((P)o, elts, i, splitAtBreaks, keepBreakLine);
 				// where the paragraph was split, the continuation is now at i+1 and is
 				// visited by the loop in its turn, so a paragraph with several breaks
 				// is split at each of them
 			} else if (o instanceof org.docx4j.wml.SdtBlock) {
 				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock)o;
 				if (sdt.getSdtContent()!=null && sdt.getSdtContent().getContent()!=null) {
-					movePageBreaks(sdt.getSdtContent().getContent(), splitAtBreaks);
+					movePageBreaks(sdt.getSdtContent().getContent(), splitAtBreaks, keepBreakLine);
 				}
 			}
 		}
@@ -146,6 +167,12 @@ public class PageBreak {
 	 * @since 17.1.0
 	 */
 	static void updateParagraph(P paragraph, List<Object> siblings, int index, boolean splitAtBreaks) {
+		updateParagraph(paragraph, siblings, index, splitAtBreaks, false);
+	}
+
+	/** @param keepBreakLine see {@link #process(WordprocessingMLPackage, boolean)}.  @since 17.1.1 */
+	static void updateParagraph(P paragraph, List<Object> siblings, int index, boolean splitAtBreaks,
+			boolean keepBreakLine) {
 
 		while (true) {
 			List<Object> content = paragraph.getContent();
@@ -159,8 +186,16 @@ public class PageBreak {
 			// break-only paragraphs" shapes each give Word a page with nothing on it;
 			// folding the second break into the first gave 11 pages against Word's 13.
 			// @since 17.1.0
+			// With keepBreakLine a paragraph holding nothing but its break is split there
+			// too: the empty first half is the line the break ends, on this page (see
+			// process(WordprocessingMLPackage, boolean)).  Only where nothing draws after
+			// the break either - a paragraph which opens with a break and goes on with
+			// text keeps its label and indent on that text, so it stays a
+			// w:pageBreakBefore (splitting it moved the numbering label onto an empty
+			// first half and cost a corpus document 0.27 of line parity).  @since 17.1.1
 			if (siblings!=null && splitAtBreaks
-					&& (contentPrecedes(content, at) || breaksBefore(paragraph))) {
+					&& (contentPrecedes(content, at) || breaksBefore(paragraph)
+							|| (keepBreakLine && !contentFollows(content, at)))) {
 				split(paragraph, at, siblings, index);
 				return; // the continuation is at index+1, and the caller visits it in turn
 			}
@@ -207,6 +242,20 @@ public class PageBreak {
 	}
 
 	/** Whether anything which draws precedes the break. */
+	/** Whether anything which draws follows the break at {@code at}.  @since 17.1.1 */
+	private static boolean contentFollows(List<Object> content, int[] at) {
+		if (at.length>1) {
+			List<Object> rc = ((R)content.get(at[0])).getContent();
+			for (int j=at[1]+1; j<rc.size(); j++) {
+				if (drawsInRun(rc.get(j))) return true;
+			}
+		}
+		for (int i=at[0]+1; i<content.size(); i++) {
+			if (draws(content.get(i))) return true;
+		}
+		return false;
+	}
+
 	private static boolean contentPrecedes(List<Object> content, int[] at) {
 
 		for (int i=0; i<at[0]; i++) {

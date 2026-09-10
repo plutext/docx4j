@@ -119,6 +119,20 @@ public abstract class ConversionFeatures {
 	 * @since 3.0.1
 	 */
 	public static final String PP_PDF_COVERPAGE_MOVE_SECTPR = "pp.common.coverpagemovesectpr";
+
+	/** A paragraph holding a page break keeps the line the break ends, at the foot of the
+	 * page it is on, and the paragraph mark sizes it: a paragraph holding nothing but the
+	 * break is split there, so that its empty first half is that line.
+	 * Where the page has no room left for the line it goes to the next page and the
+	 * break to the one after, which is a page with nothing on it, as Word gives it.
+	 * Honoured only with PP_COMMON_MOVE_PAGEBREAK, and only where property
+	 * docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine is true: it is off by
+	 * default, since over the corpora the line tips a page whose content is already a
+	 * few points fuller than Word's into an empty page more often than it gives the one
+	 * Word has (measured on one document with a 28pt mark; a probe is with Word).
+	 * @since 17.1.1
+	 */
+	public static final String PP_PDF_PAGEBREAK_PARAGRAPH_LINE = "pp.pdf.pagebreakparagraphline";
 	
 	/**
 	 * In a cell, a paragraph uses the table's paragraph properties,
@@ -143,6 +157,7 @@ public abstract class ConversionFeatures {
 		PP_COMMON_DEEP_COPY, 
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
+		PP_PDF_PAGEBREAK_PARAGRAPH_LINE,
 		PP_PDF_COVERPAGE_MOVE_SECTPR, 
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,

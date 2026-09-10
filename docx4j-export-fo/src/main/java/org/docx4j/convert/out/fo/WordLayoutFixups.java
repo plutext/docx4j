@@ -3941,9 +3941,19 @@ public final class WordLayoutFixups {
 			if (!suppressSpaceBefore && hasSpace(next, "space-before")) {
 				next.setAttribute("space-before.conditionality", "retain");
 			}
+			// The empty block here is the paragraph mark Word moves to the page after the
+			// break, which takes no line there.  The line the break itself ends - on the
+			// page before it, sized by the mark - is the empty *first* half of the
+			// paragraph, which PageBreak.process(pkg, true) splits off even where nothing
+			// precedes the break (PP_PDF_PAGEBREAK_PARAGRAPH_LINE); that block carries no
+			// break and is not visited here.  Giving this one a line as well cost three
+			// corpus documents a page each, at breaks ending a text paragraph, whose
+			// continuation is this same shape.  @since 17.1.1
 			empty.getParentNode().removeChild(empty);
 		}
 	}
+
+
 
 	/** Whether this block is the first thing its fo:flow holds, so that the section's own
 	 *  page has just been started for it.  (A continuous section is merged into the
