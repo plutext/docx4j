@@ -189,6 +189,7 @@ public final class WordLayoutFixups {
 		cellLineWidth(doc);
 		nestedTableGridEdge(doc);
 		fixLists(doc);
+		spacingOutsideBorders(doc); // after syncContainerSpacing (the wrapper carries the spacing) and fixLists (which puts a numbered paragraph's onto its list-block)
 		listItemPageBreaks(doc); // after fixLists, which is what puts the item's space-before on the list-block
 		spanWrapperBreaks(doc); // after listItemPageBreaks: the break may now be on the list-block
 		blockForEmptyCell(doc);
@@ -2911,6 +2912,86 @@ public final class WordLayoutFixups {
 		if (!to.hasAttribute(name)) return; // the wrapper never had any
 		if (from.hasAttribute(name)) to.setAttribute(name, from.getAttribute(name));
 		else to.removeAttribute(name);
+	}
+
+	/**
+	 * <b>A bordered paragraph's space-before and space-after lie outside its border.</b>
+	 * Word draws the border around the text and the {@code w:space} padding, and the
+	 * paragraph's spacing above and below that box.  The borders/shading container is
+	 * built from the paragraph's properties, spacing included, and wraps the paragraph's
+	 * own block, which carries the spacing too.  Between siblings that costs nothing -
+	 * space-before and space-after combine by "larger of" - but a wrapper <em>with a
+	 * border</em> puts its border and padding between its own space and the paragraph's,
+	 * so the paragraph's copy is drawn a second time, inside the box.
+	 *
+	 * <p>Measured on a corpus contract whose every clause is a bordered, numbered
+	 * paragraph with 6pt before and after: Word's pitch from the previous line to the
+	 * clause is 19.0pt (the line, one 6, the border and its 1pt space), docx4j's 26.0 -
+	 * the 6pt twice - at 173 seams, and Word's 18 pages were 19.  Across the three
+	 * corpora 64 documents hold 843 paragraphs with a top or bottom border (one of them
+	 * 297).  The {@code pbdr-space} probe, which measures the border and its padding to
+	 * 0.1pt, has no spacing on its bordered paragraphs and so never saw this.</p>
+	 *
+	 * <p>Where a wrapper draws a top border, the first block inside it (the paragraph's
+	 * block, or a numbered paragraph's list-block, through any inner shading wrapper)
+	 * loses its space-before; where it draws a bottom border, the last loses its
+	 * space-after.  The wrapper's own copies, kept in step with those paragraphs by
+	 * {@link #syncContainerSpacing}, are the ones drawn.  A run of paragraphs sharing one
+	 * box keeps the spacing between them.  Property
+	 * {@code docx4j.convert.out.fo.wordLayout.spacingOutsideBorders}.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	static void spacingOutsideBorders(Document doc) {
+		if (!org.docx4j.Docx4jProperties.getProperty(
+				"docx4j.convert.out.fo.wordLayout.spacingOutsideBorders", true)) return;
+		for (Element wrapper : elements(doc, "block")) {
+			if (wrapper.hasAttribute(HINT_PSTYLE)) continue;
+			boolean top = drawsBorder(wrapper, "top"), bottom = drawsBorder(wrapper, "bottom");
+			if (!top && !bottom) continue;
+			List<Element> inner = blockLevelChildren(wrapper);
+			if (inner.isEmpty()) continue;
+			if (top) stripSpace(innermost(inner.get(0), true), "space-before");
+			if (bottom) stripSpace(innermost(inner.get(inner.size() - 1), false), "space-after");
+		}
+	}
+
+	private static boolean drawsBorder(Element el, String side) {
+		String style = el.getAttribute("border-" + side + "-style");
+		String width = el.getAttribute("border-" + side + "-width");
+		if (style.isEmpty() && width.isEmpty()) return false;
+		if ("none".equals(style) || "hidden".equals(style)) return false;
+		return !(width.startsWith("0pt") || width.startsWith("0mm") || width.startsWith("0in"));
+	}
+
+	private static List<Element> blockLevelChildren(Element el) {
+		List<Element> out = new ArrayList<>();
+		NodeList children = el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (!(n instanceof Element)) continue;
+			Element c = (Element) n;
+			if (isFo(c, "block") || isFo(c, "list-block") || isFo(c, "table") || isFo(c, "block-container")) out.add(c);
+		}
+		return out;
+	}
+
+	/** The paragraph block or list-block at this edge, through inner wrapper blocks
+	 *  (a shading container inside a border container). */
+	private static Element innermost(Element el, boolean first) {
+		while (isFo(el, "block") && !el.hasAttribute(HINT_PSTYLE)) {
+			List<Element> inner = blockLevelChildren(el);
+			if (inner.isEmpty()) break;
+			el = first ? inner.get(0) : inner.get(inner.size() - 1);
+		}
+		return el;
+	}
+
+	private static void stripSpace(Element el, String name) {
+		if (el == null) return;
+		if (!(isFo(el, "block") || isFo(el, "list-block"))) return;
+		el.removeAttribute(name);
+		el.removeAttribute(name + ".conditionality");
 	}
 
 	/**

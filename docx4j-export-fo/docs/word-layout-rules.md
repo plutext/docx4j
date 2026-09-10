@@ -931,6 +931,23 @@ groups; adjacent baselines wobble by up to 0.3pt in either direction, which is t
 goldens' own rounding - Word draws a 0.5pt border 0.48pt wide. (A real document had
 suggested Word adds nothing at all in a cell; it does.)
 
+<a id="s3pbdrspace"></a>**A bordered paragraph's space-before and space-after lie outside the
+border.** The borders/shading container is built from the paragraph's properties, spacing
+included, and wraps the paragraph's own block, which carries the spacing too; between siblings
+that costs nothing (larger-of), but a wrapper with a border puts its border and `w:space`
+between its own space and the paragraph's, so the paragraph's copy was drawn a second time
+inside the box. Measured on a corpus contract whose every clause is a bordered, numbered
+paragraph with 6pt before and after: Word's pitch from the previous line to the clause is
+19.0pt - the line, one 6, the border and its 1pt space - and docx4j's was 26.0, the 6 twice, at
+173 seams; Word's 18 pages were 19. The `pbdr-space` probe above has no spacing on its bordered
+paragraphs, which is why it measured the border to 0.1pt and never saw this. 64 corpus
+documents hold 843 top- or bottom-bordered paragraphs, one of them 297.
+`WordLayoutFixups.spacingOutsideBorders`: where a wrapper draws a top border the first block
+inside it (through an inner shading wrapper; a numbered paragraph's list-block) loses its
+space-before, where it draws a bottom border the last loses its space-after; the wrapper's
+copies, kept in step by `syncContainerSpacing`, are drawn. Paragraphs sharing one box keep the
+spacing between them. Property `docx4j.convert.out.fo.wordLayout.spacingOutsideBorders`.
+
 **Left and right borders cost no text width.** Word draws a paragraph's left and right
 borders **outside** the text area and `w:space` widens that gap rather than narrowing the
 text: measured on the same probe, the bordered paragraph's text starts at x=72.0 in the
