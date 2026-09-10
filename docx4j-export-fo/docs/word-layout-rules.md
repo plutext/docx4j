@@ -695,6 +695,16 @@ two same-style paragraphs when **either** carries it, not only on the flagged pa
 side: a contextual paragraph followed by a non-contextual one of the same style with 12pt
 before gets no gap.
 
+<a id="s3ctxcontainer"></a>**Contextual spacing pairs paragraphs through a borders/shading
+container.** The `Containerization` preprocess puts a run of paragraphs sharing a border or
+shading into one wrapper block, and the pairing above read only the wrapper's first paragraph,
+so every seam inside the wrapper, and the seam from its last paragraph to the paragraph after
+it, kept its space. Measured on a corpus charter whose clauses are white-shaded contextual
+paragraphs: Word's pitch between them is the bare 14.6pt line, ours 24.5 - the docDefaults
+10pt after - at 91 seams, and Word's 17 pages were 18. Eight corpus documents hold 465
+shaded or bordered contextual paragraphs. The container's paragraphs are now read in order,
+nested containers too; `syncContainerSpacing` keeps the wrapper's own copies in step.
+
 <a id="s3ctxdefault"></a>**Two paragraphs which state no `w:pStyle` are of the same
 style** - the default paragraph style - so the rule pairs them. `docx4j:pstyle` is `""` for
 such a paragraph and the comparison read `""` as "unknown" and skipped it, so a document

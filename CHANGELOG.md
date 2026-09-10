@@ -46,6 +46,8 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   paragraph inside the border carried a second copy, 6pt twice per bordered clause in a
   contract of 173 of them (64 corpus documents hold 843 such paragraphs). Property
   docx4j.convert.out.fo.wordLayout.spacingOutsideBorders. See word-layout-rules.md §3.
+- w:contextualSpacing now pairs paragraphs through a borders/shading container: the seams inside
+  the container kept their space (10pt at each of 91 clauses of a shaded charter).
 - The emergency break now sees a word FOP maps to several boxes - a punctuation-led token
   or a URL - which it previously never recognised as over-long at all.
 - New property docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance (points, default

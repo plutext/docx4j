@@ -2296,6 +2296,65 @@ public final class Corpus {
 		}));
 
 		/*
+		 * w:hideMark: "ignore the end-of-cell mark when sizing the row" (ECMA-376
+		 * 17.4.23).  107 corpus documents carry it on 13,977 cells, 1,792 of them empty,
+		 * and docx4j ignores it, so an empty row is a full line tall.  Measured on a
+		 * corpus letter template (Times New Roman 12pt marks, tblCellMar 15 all round,
+		 * tblCellSpacing 15): three consecutive empty hideMark rows are 25.9pt in Word,
+		 * 8.6 each, against our 41.4.  What that 8.6 is made of - margins, spacing, a
+		 * minimum, or a fraction of the mark's line - is what this probe separates.
+		 */
+		PROBES.add(new Probe("table-hidemark",
+				"empty rows whose cells carry w:hideMark, with and without cell spacing, at 12pt "
+				+ "and 6pt marks, beside the same rows without the flag; and a hideMark cell "
+				+ "holding text", () -> {
+			Doc d = Doc.create(15);
+			d.para("Each table below: a text row, three empty rows, a text row. Where the cells "
+					+ "carry w:hideMark Word ignores the cell mark's height when sizing the row.")
+					.after(240).add();
+			String[][] cases = {
+				{"M1", "hideMark, no cell spacing, 12pt marks", "1", "0", "24"},
+				{"M2", "hideMark, cell spacing 15, 12pt marks", "1", "15", "24"},
+				{"M3", "no hideMark, no cell spacing, 12pt marks (control)", "0", "0", "24"},
+				{"M4", "hideMark, no cell spacing, 6pt marks", "1", "0", "12"},
+				{"M5", "no hideMark, cell spacing 15, 12pt marks (control)", "0", "15", "24"}
+			};
+			for (String[] c : cases) {
+				boolean hide = c[2].equals("1"); int spacing = Integer.parseInt(c[3]); int sz = Integer.parseInt(c[4]);
+				d.para(c[0] + ": " + c[1] + ".").before(240).after(120).add();
+				Doc.Table t = new Doc.Table(4500, 4500);
+				if (spacing > 0) t.cellSpacing(spacing);
+				t.cellMargins(15, 15);
+				for (int r = 0; r < 5; r++) {
+					boolean text = r == 0 || r == 4;
+					org.docx4j.wml.Tc[] tcs = new org.docx4j.wml.Tc[2];
+					for (int k = 0; k < 2; k++) {
+						Doc.Para p = d.para().noLabel().after(0).noLine().markSize(sz);
+						if (text) p = p.text(c[0] + (r == 0 ? " top row" : " bottom row") + " cell " + (k + 1));
+						tcs[k] = t.cellOf(4500, null, p.build());
+						if (hide) tcs[k].getTcPr().setHideMark(new org.docx4j.wml.BooleanDefaultTrue());
+					}
+					t.rowOf(null, null, tcs);
+				}
+				d.add(t.build());
+			}
+			d.para("M6: a hideMark cell holding text beside an empty hideMark cell, no spacing, "
+					+ "12pt marks.").before(240).after(120).add();
+			Doc.Table t6 = new Doc.Table(4500, 4500);
+			t6.cellMargins(15, 15);
+			for (int r = 0; r < 3; r++) {
+				org.docx4j.wml.Tc a = t6.cellOf(4500, null, d.para().noLabel().after(0).noLine().markSize(24).text("M6 row " + (r + 1) + " text").build());
+				org.docx4j.wml.Tc b = t6.cellOf(4500, null, d.para().noLabel().after(0).noLine().markSize(24).build());
+				a.getTcPr().setHideMark(new org.docx4j.wml.BooleanDefaultTrue());
+				b.getTcPr().setHideMark(new org.docx4j.wml.BooleanDefaultTrue());
+				t6.rowOf(null, null, a, b);
+			}
+			d.add(t6.build());
+			d.para("after the tables. " + prose(1)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
 		 * J14: what a section's w:vAlign counts as the block it aligns.  §7's s75 makes
 		 * w:vAlign a display-align on fo:region-body, and a corpus document's
 		 * centred title section is then a uniform +5.9pt low over every line, with an

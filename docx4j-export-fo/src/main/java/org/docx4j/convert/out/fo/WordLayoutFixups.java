@@ -2786,7 +2786,22 @@ public final class WordLayoutFixups {
 		for (int i = 0; i < children.getLength(); i++) {
 			Node n = children.item(i);
 			if (!(n instanceof Element)) continue;
-			Element p = paragraphBlock((Element) n);
+			Element el = (Element) n;
+			/* A borders/shading container (Containerization) holds a RUN of paragraphs
+			 * in one plain block.  Reading only its first paragraph left every seam inside
+			 * it, and the seam from its last paragraph to what follows, unpaired:
+			 * measured on a corpus charter whose clauses are white-shaded contextual
+			 * paragraphs, Word's pitch between them is the bare 14.6pt line and ours was
+			 * 24.5 - the 10pt of docDefaults space-after nothing had dropped - at 91
+			 * seams; 8 corpus documents hold 465 shaded or bordered contextual paragraphs.
+			 * The container's paragraphs are read in order, nested containers too, and
+			 * syncContainerSpacing (which runs after this) then keeps the container's own
+			 * copies in step with its first and last.  @since 17.1.1 */
+			if (isFo(el, "block") && !el.hasAttribute(HINT_PSTYLE) && !"all".equals(el.getAttribute("span"))) {
+				List<Element> inner = paragraphBlocks(el);
+				if (!inner.isEmpty()) { paras.addAll(inner); continue; }
+			}
+			Element p = paragraphBlock(el);
 			if (p != null) paras.add(p);
 		}
 		return paras;
