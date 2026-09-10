@@ -2685,11 +2685,18 @@ public final class WordLayoutFixups {
 	 * Word drops HTML auto spacing between consecutive list items (measured:
 	 * 14pt before the first item and after the last, 0 between items), the way
 	 * contextual spacing works.
+	 *
+	 * <p>Not inside a table cell: there Word keeps the 14pt between two list items,
+	 * and after the last (see {@link #retainSpacingAtCellEdges}).  Measured on the
+	 * {@code spacing-autospacing-cell-list} probe: two items with auto spacing in one
+	 * cell sit 14.3pt apart, and the row after each list-item row begins 14.6-14.8pt
+	 * below the item's last line, where a plain auto-spaced paragraph's row is followed
+	 * at 1.2pt.  A corpus document of about a hundred such rows was 13.3pt a row short
+	 * ([§3.5](word-layout-rules.md)).  @since 17.1.1</p>
 	 */
 	static void applyAutoSpacingBetweenListItems(Document doc) {
 		for (Element flow : elements(doc, "flow")) autoSpacingAmong(flow);
 		for (Element span : spanAllBlocks(doc)) autoSpacingAmong(span);
-		for (Element cell : elements(doc, "table-cell")) autoSpacingAmong(cell);
 	}
 
 	private static void autoSpacingAmong(Element container) {
@@ -4433,6 +4440,23 @@ public final class WordLayoutFixups {
 
 	static void retainSpacingAtCellEdges(Document doc, int compatibilityMode) {
 		for (Element cell : elements(doc, "table-cell")) {
+			// A list item closing the cell is an fo:list-block, not a child block: its
+			// paragraph's auto space-after is kept at the cell's foot (the
+			// spacing-autospacing-cell-list probe: the next row begins 14.6-14.8pt below
+			// the item's last line), and fixLists carries the conditionality up to the
+			// list-block with the value.  @since 17.1.1
+			Element lastChild = null;
+			for (Node n = cell.getLastChild(); n != null; n = n.getPreviousSibling()) {
+				if (n instanceof Element) { lastChild = (Element) n; break; }
+			}
+			if (lastChild != null && isFo(lastChild, "list-block")) {
+				for (Element b : descendants(lastChild, "block")) {
+					if ("1".equals(b.getAttribute(HINT_LIST)) && hasSpace(b, "space-after")) {
+						b.setAttribute("space-after.conditionality", "retain");
+						break;
+					}
+				}
+			}
 			List<Element> blocks = childBlocks(cell);
 			if (blocks.isEmpty()) continue;
 						Element first = blocks.get(0);
@@ -4446,9 +4470,16 @@ public final class WordLayoutFixups {
 				first.setAttribute("space-before.conditionality", "retain");
 			}
 			Element last = blocks.get(blocks.size() - 1);
-			if (last.getAttribute(HINT_AUTOSPACING).indexOf('a') >= 0) {
+			if (last.getAttribute(HINT_AUTOSPACING).indexOf('a') >= 0
+					&& !"1".equals(last.getAttribute(HINT_LIST))) {
 				last.setAttribute("space-after", "0pt");
 			} else if (hasSpace(last, "space-after")) {
+				// ...and a list item's auto spacing after it is kept at the cell's foot:
+				// measured on the spacing-autospacing-cell-list probe, where the row
+				// after a cell ending in an auto-spaced list item begins 14.6-14.8pt
+				// below its last line (a plain auto-spaced paragraph's: 1.2pt).  The
+				// value is the 14pt PropertyFactory wrote; only the conditionality is
+				// needed, so that FOP keeps it at the end of the cell.  @since 17.1.1
 				// Word keeps a cell's last paragraph's space-after below mode 15 too:
 				// measured on a mode-14 document whose cell paragraphs carry
 				// w:spacing w:before="60" w:after="60" (3pt each), Word's row pitch is
