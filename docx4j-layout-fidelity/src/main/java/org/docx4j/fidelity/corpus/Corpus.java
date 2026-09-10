@@ -968,6 +968,47 @@ public final class Corpus {
 		}));
 
 		/*
+		 * The all-auto twin of table-grid-overwide: the same grids, but every w:tcW auto
+		 * and a w:tblW in dxa which is the grid's own sum, which since 17.1.1 makes the
+		 * grid authoritative (§6.3, "a grid the table's own w:tblW sums to wins").  A
+		 * 7 Sep unit test (TablePositionTest.fitToPage) had such a table - 12000 twips
+		 * of grid on a 9026-twip column - clamped to the column, and the grid rule now
+		 * draws it at 600pt; §6.5's corpus measurement has Word overhanging the margin
+		 * for grids 3-19% wide, but with dxa cells.  Variants: tblInd 0, tblInd -1300,
+		 * and w:tblW absent (an autofit table, whose grid Word recomputes).
+		 */
+		PROBES.add(new Probe("table-grid-overwide-auto",
+				"the table-grid-overwide grids (1.7%, 10% and 29% wider than the text column) "
+				+ "with every w:tcW auto: w:tblW in dxa equal to the grid's sum at w:tblInd 0 "
+				+ "and -1300, and w:tblW absent", () -> {
+			Doc d = Doc.create(15);
+			int[][] grids = { { 2200, 3400, 3580 },    // 9180tw = 1.7% over
+			                  { 2400, 3700, 3829 },    // 9929tw = 10% over
+			                  { 2800, 4400, 4444 } };  // 11644tw = 29% over
+			String[] over = { "1.7%", "10%", "29%" };
+			int page = 0;
+			for (int g = 0; g < grids.length; g++) {
+				int sum = grids[g][0] + grids[g][1] + grids[g][2];
+				for (int variant = 0; variant < 3; variant++) {
+					if (page++ > 0) d.pageBreak();
+					// variant 0: w:tblW = grid sum, tblInd 0; 1: the same at tblInd -1300;
+					// 2: no w:tblW (autofit), tblInd 0
+					String what = over[g] + " over, every w:tcW auto, "
+							+ (variant == 2 ? "w:tblW absent" : "w:tblW " + sum + " dxa")
+							+ ", w:tblInd " + (variant == 1 ? "-1300" : "0");
+					d.para(what + ". " + prose(1, g)).after(240).add();
+					Doc.Table t = new Doc.Table(grids[g]).indent(variant == 1 ? -1300 : 0);
+					if (variant == 2) t.autoWidth(); else t.tableWidth(sum, "dxa");
+					t.row(SERIF, 20, true, "A " + over[g], "B " + over[g], "C " + over[g]);
+					t.row(SERIF, 20, true, prose(1, g + 1), prose(1, g + 2), prose(1, g + 3));
+					d.add(t.build());
+					d.para("after the table. " + prose(2, g + 4)).before(240).add();
+				}
+			}
+			return d.pkg();
+		}));
+
+		/*
 		 * §6.1's grid-edge shift is applied in compatibility mode 14 alone since 17.1.0,
 		 * on the strength of one corpus document with no compatibilityMode setting at all
 		 * (mode 12).  These two probes are the Word measurement for modes 12 and 11, and
