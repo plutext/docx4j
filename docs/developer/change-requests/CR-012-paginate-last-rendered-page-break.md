@@ -400,7 +400,7 @@ numbers have had for years.
 3. **TOC over Paginate.** `TocGenerator` uses `Paginate.compute`; `TocPageNumbersHandler`
    removed or reduced. Existing TOC tests unchanged.
 
-   **Shipped 2026-09-11.** `TocGenerator.getPageNumbersMapViaFOP` (the default, non-XSLT
+   **Shipped 2026-09-11, commit a8d33bac8.** `TocGenerator.getPageNumbersMapViaFOP` (the default, non-XSLT
    pathway) is `Paginate.bookmarkKeys` (bookmark name to the key of the paragraph it opens
    in, or of the next paragraph for one opening between paragraphs) plus
    `Paginate.compute` and `PaginationMap.getPage` (FOP's formatted number, as before).
