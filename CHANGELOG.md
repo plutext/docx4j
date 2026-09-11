@@ -243,6 +243,8 @@ Other:
   those files, they are registered with File.deleteOnExit() instead. Images written to an
   imageDirPath you named are untouched. New property
   docx4j.convert.out.images.deleteTemporary (default true) opts out.
+- Regression test for #613 (ExternalLinkPart's generic, fixed in 11.5.10; the fix is
+  backported to 8.3.16).
 - Regression test for #623 (w:numPicBullet written by recent Word as mc:AlternateContent,
   whose w:drawing fallback needs the drawing property added in 11.5.10 for #618), using the
   reporter's documents; the fix itself is backported to 8.3.16.
