@@ -1,7 +1,8 @@
 # CR: Configurable XHTMLImporter formatting options for OpenDoPE XHTML binding
 
-Status: PROPOSED (2026-09-11) — options surveyed below; decisions pending
-(see "Decisions needed")
+Status: IN PROGRESS — phases 1 and 2 SHIPPED 2026-09-11 (commit hash below);
+phase 3 (ImportXHTML-side test) and phase 4 (8.3.x backport) open; phase 5 out
+(see "Decisions")
 Scope: how the OpenDoPE binding traversers configure the `XHTMLImporterImpl`
 they construct for `od:ContentType=application/xhtml+xml` content controls.
 Primarily the three `FormattingOption` setters; a general extension point is
@@ -301,6 +302,20 @@ Do not touch the `PrioritiseRPr` visitors (interaction 2) beyond documenting.
 
 ### Phase 1 — property-driven setters (docx4j-core, current line)
 
+**SHIPPED 2026-09-11** (commit: recorded below once committed).  As planned,
+with one refinement: the wrapper guard is per level, not all-or-nothing —
+`ParagraphFormatting=CLASS_TO_STYLE_ONLY` drops the pPr-derived CSS,
+`RunFormatting=CLASS_TO_STYLE_ONLY` drops the rPr-derived CSS (fonts
+included), and the wrapper element is omitted only when nothing is left; so
+paragraph CSS still reaches a `CLASS_PLUS_OTHER` paragraph level when only
+runs are styles-only.  Helper is `XHTMLImporterFormatting` (public, so the
+altChunk site can reuse it if phase 5 is ever wanted).  Covered by
+`XHTMLImporterFormattingTest` (6 cases) using a fake importer and a
+test-only `org.docx4j.convert.in.xhtml.FormattingOption` stand-in in
+docx4j-core-tests — deliberately no stand-in `XHTMLImporterImpl`, since
+`TextBindParityTest` relies on that class being absent for the altChunk
+fallback (re-run: still green).
+
 - `BindingTraverserXSLT.convertXHTML`: apply the three keys via a new
   package-private helper (`XHTMLImporterFormatting.apply(Object importer,
   Class<?> importerClass)` or similar; name to taste) after the
@@ -315,6 +330,11 @@ Do not touch the `PrioritiseRPr` visitors (interaction 2) beyond documenting.
   that the ImportXHTML-side test in phase 3 is the real coverage.
 
 ### Phase 2 — `XHTMLImporterCustomizer` hook (optional)
+
+**SHIPPED 2026-09-11** with phase 1 (same commit).  `customize(Object
+importer, SdtPr sdtPr, boolean inTableCell)`; static get/set on
+`BindingHandler`; invoked after `setHyperlinkStyle`, immediately before
+`convert`; exceptions from it are logged, not propagated.
 
 - Interface in `org.docx4j.model.datastorage`; static get/set on
   `BindingHandler`; call site immediately before `convert`.
@@ -357,15 +377,15 @@ BIRT `.mht` output) is a product decision; if wanted, prefer distinct keys
 (e.g. `docx4j.openpackaging.parts.AltChunk.XHTML.*`) defaulting to the
 binding keys' values.  Out of scope unless asked.
 
-## Decisions needed
+## Decisions
 
-1. Ship A alone, or A + C?  (Recommendation: A + C; C optional.)
-2. Wrapper guard when `RunFormatting=CLASS_TO_STYLE_ONLY` (interaction 1):
-   skip the CSS wrapper, or keep it?  (Recommendation: skip — but note the
-   font behaviour is fixed by ImportXHTML CR-001 (17.1.1), not by this
-   guard; the property comment should say fonts need ImportXHTML ≥ 17.1.1.)
-3. Phase 5 (altChunk): in or out?  (Recommendation: out for now.)
-4. Backport target version: 8.3.16?
+1. A + C: Jason, 2026-09-11 ("good to implement phases 1 and 2").
+2. Wrapper guard: implemented, per level (see phase 1); the property comment
+   says fonts need ImportXHTML ≥ 17.1.1 (that fix is ImportXHTML CR-001, not
+   this guard).
+3. Phase 5 (altChunk): out for now, per the recommendation; nobody has
+   asked for it.
+4. Backport target version: 8.3.16 assumed; not yet confirmed (phase 4 open).
 
 ## Risks
 

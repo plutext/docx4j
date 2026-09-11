@@ -788,6 +788,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.error("setMaxWidth method not found. ");				
 		} 
 		
+		// since 17.1.1 (CR-013): docx4j.properties may set the importer's FormattingOptions
+		XHTMLImporterFormatting.apply(xHTMLImporter, xhtmlImporterClass);
+		
 		// If we are in a table cell, ensure oversized images are scaled
 		if (bindingTraverserState.tcStack.peek() != null) {
 		    log.debug("inserting in a tc" );
@@ -894,16 +897,23 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 						log.warn("Attempting to insert <span> in " + sdtParent + "/w:sdt. Incompatible.");					
 				}
 				
+				// since 17.1.1 (CR-013): under CLASS_TO_STYLE_ONLY the importer ignores @style
+				// at that level, so don't generate CSS it would only discard
+				boolean paragraphCssWanted = !XHTMLImporterFormatting.isClassToStyleOnly(XHTMLImporterFormatting.PARAGRAPH);
+				boolean runCssWanted = !XHTMLImporterFormatting.isClassToStyleOnly(XHTMLImporterFormatting.RUN);
+				
 				String css = null;
 				StringBuilder result = new StringBuilder();
-				if (!r.startsWith("<span")) {
+				if (!r.startsWith("<span") && paragraphCssWanted) {
 					HtmlCssHelper.createCss(pkg, effectivePPr, result, true, false);  // honour indent.  TODO: Consider list item case.
 				}
-				HtmlCssHelper.createCss(pkg, effectiveRPr, result); 
+				if (runCssWanted) {
+					HtmlCssHelper.createCss(pkg, effectiveRPr, result); 
+				}
 				// that method intentionally skips rFonts, so handle it here for now
-				RFonts rFonts = effectiveRPr.getRFonts();
+				RFonts rFonts = runCssWanted ? effectiveRPr.getRFonts() : null;
 				if (rFonts==null) {
-					log.info("No rFonts known.");
+					if (runCssWanted) log.info("No rFonts known.");
 				} else {
 					// eg <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia" w:cstheme="minorBidi"/>
 					// TODO, we really should we using the full RunFontSelector algorithm, applied to each text node in the HTML
@@ -934,7 +944,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				}
 				
 				css = result.toString();
-				if (r.startsWith("<span")) {
+				if (css.isEmpty()) {
+					log.debug("No CSS to add (FormattingOption CLASS_TO_STYLE_ONLY); XHTML left as is");
+				} else if (r.startsWith("<span")) {
 					r = "<span style=\"" + css + "\">" + r + "</span>";
 				} else {
 					r = "<div style=\"" + css + "\">" + r + "</div>";					
@@ -1015,6 +1027,16 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
 	        setHyperlinkStyleMethod.invoke(xHTMLImporter, 
 	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+			
+			// since 17.1.1 (CR-013): user hook; last, so whatever it sets wins
+			XHTMLImporterCustomizer customizer = BindingHandler.getXHTMLImporterCustomizer();
+			if (customizer!=null) {
+				try {
+					customizer.customize(xHTMLImporter, sdtPr, bindingTraverserState.tcStack.peek()!=null);
+				} catch (Exception e) {
+					log.error("XHTMLImporterCustomizer failed for " + sdtPr.getTag().getVal() + ": " + e.getMessage(), e);
+				}
+			}
 			
 			String baseUrl = null;
 			List<Object> results = null;

@@ -221,6 +221,17 @@ Pagination (CR-012, phase 1):
   serves only the XSLT pathway (pageNumbersViaXSLT). So a TOC is now laid out on the
   accepted view of tracked changes, as Paginate is.
 
+
+OpenDoPE XHTML binding (CR-013):
+
+- The XHTML importer's FormattingOption for runs, paragraphs and tables can be set in
+  docx4j.properties (docx4j.model.datastorage.BindingTraverser.XHTML.RunFormatting,
+  .ParagraphFormatting, .TableFormatting); binding previously always ran with the
+  importer's default.  Under CLASS_TO_STYLE_ONLY the CSS wrapper derived from the content
+  control's rPr/pPr is no longer generated.  Fonts need docx4j-ImportXHTML 17.1.1+.
+- BindingHandler.setXHTMLImporterCustomizer: a hook invoked on each XHTMLImporterImpl
+  immediately before convert, for any other importer setting, per content control.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per
