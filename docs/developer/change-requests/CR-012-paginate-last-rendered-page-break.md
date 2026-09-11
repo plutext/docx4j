@@ -105,8 +105,14 @@ are not keyed (their pages follow the body).
 
 `PaginateSettings` wraps `FOSettings` (font mapper, features) plus `boolean lineBreaks`
 (phase 2; off gives paragraph granularity only) and `boolean writeParaIds` (assign
-`w14:paraId` to paragraphs lacking one, so the keys are stable in the file; off by default,
-as it changes the document).
+`w14:paraId` to paragraphs lacking one, so the keys are stable in the file).
+
+**Decision (Jason, 2026-09-11): `writeParaIds` is on by default for `paginate` and
+`applyLastRenderedPageBreaks`**, which rewrite the document's runs anyway, so that the keys
+the markers were written against are in the file; `compute` alone is a query and assigns
+transient `P<n>` keys without touching the document unless the caller sets it. Assigned ids
+follow ECMA-376 17.3.1.20 as Word writes them: eight hex digits, below `0x80000000`, unique
+in the document, on `w:p` (`w14:paraId` and `w14:textId` alike, the way Word pairs them).
 
 ### 3.2 Ids into the FO
 
@@ -210,8 +216,10 @@ numbers have had for years.
 - The markers are advisory; consumers must treat them as "last rendering", not truth, and
   Word will replace them. The TypeScript editor draws them muted after an edit until the
   next `Paginate`.
-- Documents with no `w14:paraId` get transient `P<n>` keys unless `writeParaIds` is set;
-  callers that need stable keys across calls set it and accept the document change.
+- Documents with no `w14:paraId` get transient `P<n>` keys from `compute`; `paginate` and
+  `applyLastRenderedPageBreaks` assign ids by default (§3.1), so a document that has been
+  paginated once keys stably from then on. Assigning ids needs the `w14` namespace declared
+  and listed in `mc:Ignorable` on `w:document`, which docx4j's marshalling handles.
 
 ## 8. References
 
