@@ -132,10 +132,25 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 		} else if (o instanceof R.NoBreakHyphen) {
 
-			// There is no glyph for NON-BREAKING HYPHEN U+2011 in many fonts, so use
-			// an ordinary hyphen with a zero-width no-break space
+			/* An ordinary hyphen, and nothing else.  There is no glyph for NON-BREAKING
+			 * HYPHEN U+2011 in many of the fonts these documents use, and the
+			 * zero-width no-break space (U+FEFF) that used to follow the hyphen here is
+			 * worse than nothing: FOP charges it the font's notdef advance wherever the
+			 * glyph path is taken (an embedded TrueType with complex-script features on,
+			 * which is every document in the corpora) and paints no ink for it, so every
+			 * non-breaking hyphen opened a hole - measured 7.99pt at 10pt Tinos, 0.8em -
+			 * and PDF text extraction read a word space in it: "Table 1-1 : Terms"
+			 * against Word's "Table 1-1: Terms" (CR-001 ledger4 cause M44).
+			 *
+			 * Nothing is lost by dropping it.  FOP offers no break opportunity at a
+			 * hyphen inside a word in the first place - the corpora's standing G15 gap,
+			 * where Word breaks "multi-source" at its hyphen and we do not - so the
+			 * joiner was suppressing a break that was never offered.  Should FOP's
+			 * UAX #14 support gain that break, the non-breaking hyphen will need
+			 * expressing some other way (U+2011 where the font has it, else a
+			 * keep-together on the run). */
 			if (!conversionContext.isInComplexFieldDefinition()) {
-				getCurrentParent().appendChild(document.createTextNode("-\uFEFF"));
+				getCurrentParent().appendChild(document.createTextNode("-"));
 			}
 			return null;
 

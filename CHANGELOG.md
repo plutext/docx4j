@@ -9,6 +9,15 @@ Changes in Version 17.1.1
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A PAGEREF whose cached result is empty is computed rather than dropped: a complex field
+  with nothing at all between its separate and its end was discarded whole, instruction
+  included, so a table of contents built of 23 of them printed no page numbers (CR-001
+  batch 41).
+- w:noBreakHyphen is written as a plain hyphen. The zero-width no-break space (U+FEFF) that
+  followed it is charged the font's notdef advance wherever FOP takes the glyph path and
+  paints no ink, so every non-breaking hyphen opened a 0.8em hole (7.99pt at 10pt) and PDF
+  text extraction read a word space in it. FOP offers no break at an intra-word hyphen, so
+  the joiner was suppressing a break that was never on offer.
 - A list label no taller than the text around it no longer raises the item's first line:
   its excess ascent is measured against the paragraph's own (the document font's), not
   against the smaller share a substitute font reports. Eight corpus documents gain Word's

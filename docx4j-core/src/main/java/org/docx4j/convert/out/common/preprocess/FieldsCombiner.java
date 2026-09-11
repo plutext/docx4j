@@ -503,6 +503,39 @@ public class FieldsCombiner {
 			}
 		}
 
+		/**
+		 * The field types worth combining even when the document stores no result for
+		 * them at all, because their result is computed from the layout rather than
+		 * read from the file.
+		 *
+		 * <p>A field with nothing between its {@code separate} and its {@code end} was
+		 * dropped whole - instruction, result and all - and the line lost the value
+		 * Word paints there.  Measured on a corpus document whose table of contents is
+		 * 23 {@code PAGEREF _Toc... \h} fields with an empty cached result: Word prints
+		 * every page number, we printed none, the dot leader simply ran on to the margin
+		 * (21 of that document's 55 unmatched lines; CR-001 ledger4 cause M60).  The
+		 * empty {@code w:fldSimple} the comment above warns about is one whose result
+		 * <em>stays</em> empty - an {@code XE} index entry, a bookmark-only field - and
+		 * those are untouched.
+		 *
+		 * @since 17.1.1
+		 */
+		private static final java.util.Set<String> COMPUTED_WITHOUT_RESULT =
+				java.util.Collections.unmodifiableSet(new java.util.HashSet<String>(
+						java.util.Arrays.asList("PAGEREF", "PAGE", "NUMPAGES", "SECTIONPAGES")));
+
+		/** Whether this instruction names a field whose result we compute.
+		 *  @see #COMPUTED_WITHOUT_RESULT */
+		static boolean computedWithoutResult(CharSequence instrText) {
+			if (instrText == null) return false;
+			int i = 0, n = instrText.length();
+			while (i < n && Character.isWhitespace(instrText.charAt(i))) i++;
+			int start = i;
+			while (i < n && !Character.isWhitespace(instrText.charAt(i))) i++;
+			return i > start && COMPUTED_WITHOUT_RESULT.contains(
+					instrText.subSequence(start, i).toString().toUpperCase(java.util.Locale.ROOT));
+		}
+
 		protected void processContent(List<Object> pContent) {
 		List<Object> pResult = null;
 		boolean haveChanges = false;
@@ -542,7 +575,7 @@ public class FieldsCombiner {
 									//Having empty (eg. XE) fldSimple causes interesting effects to the
 									//layout in word - for the conversion process it probably makes sense,
 									//but if you try to open the resulting document in word it's pure chaos.
-									if ((!resultList.isEmpty()) &&
+									if ((!resultList.isEmpty() || computedWithoutResult(instrTextBuffer)) &&
 										(instrTextBuffer.length() > 0)) {
 										pResult.add(createFldSimple(instrTextBuffer.toString(), resultList));
 										haveChanges = true;

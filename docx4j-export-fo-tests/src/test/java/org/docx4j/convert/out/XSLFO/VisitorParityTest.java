@@ -1,5 +1,6 @@
 package org.docx4j.convert.out.XSLFO;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -78,8 +79,12 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 
 			assertTrue(impl + "soft hyphen lost",
 					text.contains("be\u00ADfore"));
+			// a plain hyphen: the zero-width no-break space that used to follow it is
+			// charged the font's notdef advance by FOP and paints nothing (CR-001 batch 41)
 			assertTrue(impl + "no-break hyphen lost",
-					text.contains("non-\uFEFFbreaking"));
+					text.contains("non-breaking"));
+			assertEquals(impl + "the zero-width no-break space is back",
+					-1, text.indexOf('\uFEFF'));
 			assertTrue(impl + "w:cr line break lost",
 					isPresent(doc, "//fo:block[contains(.,'line one')]"
 							+ "//fo:block[@white-space-treatment='preserve']"));

@@ -693,10 +693,14 @@
 	</xsl:template>
 
 	<xsl:template match="w:noBreakHyphen">
-		<!-- There is no glyph for NON-BREAKING HYPHEN &#x2011; in many fonts, so 
-		     use an ordinary hyphen with a zero-width no-break space character &#xFEFF; 
-		     as suggested at http://www.sagehill.net/docbookxsl/PrintCustomEx.html#Hyphenation  -->
-		<xsl:text disable-output-escaping="yes">-&#xFEFF;</xsl:text>
+		<!-- An ordinary hyphen, and nothing else.  There is no glyph for NON-BREAKING
+		     HYPHEN &#x2011; in many fonts, and the zero-width no-break space &#xFEFF;
+		     that used to follow the hyphen here (as suggested at
+		     http://www.sagehill.net/docbookxsl/PrintCustomEx.html#Hyphenation) is worse
+		     than nothing: FOP charges it the font's notdef advance on the glyph path
+		     and paints no ink, opening a 0.8em hole after every non-breaking hyphen.
+		     See FOExporterVisitorGenerator, which measured it.  -->
+		<xsl:text>-</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="w:br">
