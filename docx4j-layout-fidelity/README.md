@@ -934,6 +934,59 @@ well as to docx4j's; four knobs are worth knowing about.
   document's table, are unaffected; measured, one document gained 0.26 of line
   parity and one lost 0.07 (its rows now pair whole rather than cell by cell).
 
+- **An em is the size a glyph was drawn at, not the size the `Tf` names.**
+  `TextPosition.getFontSizeInPt()` is the `Tf` size scaled by the *text* matrix, and
+  a PDF may put the scale in the *graphics* matrix instead: an SVG picture drawn
+  through a scaled `Graphics2D` - a Windows metafile rendered by CR-011, which is how
+  41 of the 449 corpus documents draw their diagrams - arrives as `/F5 0.25 Tf` under
+  a CTM scaled by 72, so `getFontSizeInPt()` reads **0.0** where the glyph is painted
+  at 18pt. Every em-relative rule above then degenerates - the word-gap test becomes
+  "any gap at all" - and a diagram label extracts as `M A I S 2 I D M` against Word's
+  `MAIS2IDM`: 170 unmatched lines in four documents of corpus 3 alone, on geometry
+  the two renders agree on to within a point (ledger4 cause M13). The extractor
+  therefore takes the larger of that and `getXScale()`, which is the same size read
+  off the text *rendering* matrix and so carries the CTM. For ordinary text the two
+  are equal to the last digit (measured on a corpus render: every body glyph reports
+  `sizePt=14.0000 xscale=14.000`), so it changes nothing except where the nominal
+  size is not the drawn one, and it runs on both sides. Worth, on the b61-labelascent
+  renders: sum line parity **+0.4525 / +0.0853 / +0.1483** over the three corpora and the
+  probes unchanged, with **16 documents down**, the worst by 0.031 - Word's own PDFs have
+  scaled-matrix text too, so its reference line counts move by one or two as well, which
+  is the symmetry doing its job rather than a defect exposed or hidden.
+
+- **`-Dfidelity.window=false`** turns off the **windowed pass**, which is the one
+  rule here that pairs lines out of document order; `-Dfidelity.windowPages=`
+  (default `0`), `-Dfidelity.windowXPt=` (`2`) and `-Dfidelity.windowYPt=` (`3`) are
+  its tolerances. The LCS is a longest *common subsequence*, so it already pairs as
+  many lines as any monotone pairing can - but it cannot pair two lines the renders
+  put in the opposite order, and one such pair costs two lines however identical they
+  are. A document whose cells repeat short strings is where that bites: once the two
+  sides differ by a page, only one occurrence of each repeated string can be bound
+  and the rest are dropped, although every one of them is painted where Word paints
+  it (`12_ru-RU_fields1_num_tbl_13383`: 177 of its 232 unmatched reference lines have
+  an unmatched candidate line with the same text at the same x).
+
+  After the LCS, then, each unmatched reference line is offered the unmatched
+  candidate lines with the same text and takes the nearest one that is **in the very
+  place it should be**: on the page the matched lines around it say this reference
+  page landed on - a page map built from the LCS's own pairs, the median candidate
+  page per reference page carried across pages that have none, so the window follows
+  the real pagination - starting within 2pt of the same x, and on a baseline within
+  3pt. At those tolerances the pair is the same line in the same place on the same
+  page, differing only in which of the two the reading order reaches first: the same
+  disagreement `rowTolerancePt` settles where it can see it. **Nothing that is laid
+  out differently is rescued**, which is what makes it a matcher fix rather than a
+  score.
+
+  The looser windows were measured and rejected. A page of slack lets a running
+  *page number* pair with the neighbouring page's - exactly the defect a document
+  whose numbering is one out should be scored for (`12_en-US_fields1_num_tbl_4899`:
+  121 lines rescued at one page of slack against 16 at none, 80 of them its page
+  numbers). No baseline bound lets a line pair with a copy of itself 600pt up the
+  same page (13383, 0.9462 against 0.9352). Worth, on the b61-labelascent renders:
+  sum line parity **+0.4180 / +0.5884 / +0.3742** over the three corpora, **not one
+  document down** (it can only add pairs), the probes unchanged to four decimal places.
+
 All of these are measuring, not rendering: **re-baseline** (`rescore` the corpora
 over the previous baseline's renders with the harness change alone) before scoring a
 rendering change against them.

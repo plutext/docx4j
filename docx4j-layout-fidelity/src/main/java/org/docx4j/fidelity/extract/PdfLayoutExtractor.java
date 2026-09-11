@@ -456,6 +456,35 @@ public final class PdfLayoutExtractor {
 		private static final float CLUSTER_TOLERANCE_PT =
 				Float.parseFloat(System.getProperty("fidelity.clusterTolerancePt", "1"));
 
+		/**
+		 * The size, in points, at which a glyph was actually drawn - which is what every
+		 * rule below means by an em.
+		 *
+		 * <p>{@code TextPosition.getFontSizeInPt()} is the {@code Tf} size scaled by the
+		 * <em>text</em> matrix, and a PDF may put the scale in the <em>graphics</em>
+		 * matrix instead: an SVG picture drawn through a scaled {@code Graphics2D} - a
+		 * Windows metafile rendered by CR-011, which is how 41 of the 449 corpus
+		 * documents draw their diagrams - arrives as {@code /F5 0.25 Tf} under a CTM
+		 * scaled by 72, so {@code getFontSizeInPt()} reads <b>0.0</b> where the glyph is
+		 * painted at 18pt.  Every em-relative rule then degenerates: the word-gap test
+		 * becomes "any gap at all", and a diagram label extracts as
+		 * {@code "M A I S 2 I D M"} against Word's {@code "MAIS2IDM"} - 170 unmatched
+		 * lines in four documents of one corpus, all of them geometry the two renders
+		 * agree on to within a point (ledger4 cause M13).
+		 *
+		 * <p>{@code getXScale()} is the same size taken from the text <em>rendering</em>
+		 * matrix, which carries the CTM, so it is the size the reader sees.  For ordinary
+		 * text the two are equal to the last digit - measured on a corpus render, every
+		 * body glyph reports {@code sizePt=14.0000 xscale=14.000} - so the larger of them
+		 * changes nothing except where the nominal size is not the drawn one.  Both sides
+		 * of the comparison go through it.
+		 *
+		 * @since 17.1.1
+		 */
+		private static float em(TextPosition tp) {
+			return Math.max(tp.getFontSizeInPt(), tp.getXScale());
+		}
+
 		private void formLines(int pageIndex) {
 			List<TextPosition> ps = new ArrayList<>(pagePositions);
 			ps.sort((a, b) -> Math.abs(a.getYDirAdj() - b.getYDirAdj()) > 0.01f
@@ -464,7 +493,7 @@ public final class PdfLayoutExtractor {
 			List<TextPosition> cluster = new ArrayList<>();
 			float clusterY = 0;
 			for (TextPosition tp : ps) {
-				float tol = Math.max(CLUSTER_TOLERANCE_PT, 0.3f * tp.getFontSizeInPt());
+				float tol = Math.max(CLUSTER_TOLERANCE_PT, 0.3f * em(tp));
 				if (!cluster.isEmpty() && Math.abs(tp.getYDirAdj() - clusterY) > tol) {
 					clusters.add(cluster);
 					cluster = new ArrayList<>();
@@ -570,7 +599,7 @@ public final class PdfLayoutExtractor {
 				if (INK_GAP && isBlank(tp)) continue;
 				if (gapFrom != null) {
 					float g = tp.getXDirAdj() - (gapFrom.getXDirAdj() + gapFrom.getWidthDirAdj());
-					if (g > WORD_GAP_EM * gapFrom.getFontSizeInPt()) gaps.add(g);
+					if (g > WORD_GAP_EM * em(gapFrom)) gaps.add(g);
 				}
 				gapFrom = tp;
 			}
@@ -592,7 +621,7 @@ public final class PdfLayoutExtractor {
 				if (prev != null) {
 					float from = prev.getXDirAdj() + prev.getWidthDirAdj();
 					float gap = tp.getXDirAdj() - from;
-					float em = Math.max(prev.getFontSizeInPt(), 1f);
+					float em = Math.max(em(prev), 1f);
 					boolean wide = gap >= MIN_SPLIT_PT && gap > 0.7f * em && gap > 3f * medianWordGap;
 					if (wide || crossesGutter(gutters, from, tp.getXDirAdj())
 							|| (gap > 0 && verticalRuleBetween(pageIndex, from, tp.getXDirAdj(), tp.getYDirAdj(), em))) {
@@ -643,7 +672,7 @@ public final class PdfLayoutExtractor {
 			for (TextPosition tp : run) {
 				if (prev != null) {
 					float gap = tp.getXDirAdj() - (prev.getXDirAdj() + prev.getWidthDirAdj());
-					if (gap > WORD_GAP_EM * prev.getFontSizeInPt() && text.length() > 0 && text.charAt(text.length() - 1) != ' ') {
+					if (gap > WORD_GAP_EM * em(prev) && text.length() > 0 && text.charAt(text.length() - 1) != ' ') {
 						text.append(' ');
 					}
 				}
@@ -672,7 +701,7 @@ public final class PdfLayoutExtractor {
 			l.x0 = x0;
 			l.x1 = x1;
 			TextPosition first = firstInk;
-			l.size = first.getFontSizeInPt();
+			l.size = em(first);
 			l.font = first.getFont() == null ? "" : String.valueOf(first.getFont().getName());
 			l.text = t;
 			leadingNumber(run, l);
