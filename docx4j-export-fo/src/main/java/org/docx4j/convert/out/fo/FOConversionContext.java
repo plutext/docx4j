@@ -258,6 +258,9 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	private static final class ParagraphFrame {
 		final String foId;
 		int offset = 0;
+		/** runs standing for no text share an offset with the run after them: a counter keeps the ids unique */
+		int lastIdOffset = -1;
+		int sameOffset = 0;
 		ParagraphFrame(String foId) { this.foId = foId; }
 	}
 	private final java.util.ArrayDeque<ParagraphFrame> paragraphFrames = new java.util.ArrayDeque<ParagraphFrame>();
@@ -284,7 +287,10 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	 * The id for this run's inline: {@code r-<paragraph id>-<offset>}, the offset being
 	 * how many characters of the paragraph's text ({@link org.docx4j.model.pagination.RunText})
 	 * the runs before it stand for; null where the paragraph has no id.  Counts the run
-	 * off either way.
+	 * off either way.  A run standing for no text (a field character's, a picture's)
+	 * shares its offset with the run after it, so the second and later runs at an offset
+	 * get {@code .<n>} appended, which keeps the ids unique in the FO document; the area
+	 * tree reader ignores the suffix.
 	 *
 	 * @since 17.1.1
 	 */
@@ -293,6 +299,12 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 		if (frame == null || frame.foId == null) return null; // no ids: nothing to count
 		String id = PaginationAreaTreeHandler.FO_RUN_ID_PREFIX
 				+ frame.foId.substring(PaginationAreaTreeHandler.FO_ID_PREFIX.length()) + "-" + frame.offset;
+		if (frame.offset == frame.lastIdOffset) {
+			id += "." + (++frame.sameOffset);
+		} else {
+			frame.lastIdOffset = frame.offset;
+			frame.sameOffset = 0;
+		}
 		frame.offset += org.docx4j.model.pagination.RunText.length(r);
 		return id;
 	}

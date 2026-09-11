@@ -28,6 +28,12 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Reads the TOC's page numbers off FOP's area tree: the page viewport each TOC entry's
+ * internal link points at.  Since 17.1.1 (CR-012 phase 3) only the XSLT pathway
+ * ({@link TocGenerator#pageNumbersViaXSLT}) uses it; the default pathway asks
+ * {@link org.docx4j.model.pagination.Paginate}, which keys the paragraphs themselves.
+ */
 public class TocPageNumbersHandler extends DefaultHandler {
 	
 	private static Logger log = LoggerFactory.getLogger(TocPageNumbersHandler.class);	

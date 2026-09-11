@@ -343,13 +343,16 @@ public class PaginationAreaTreeHandler extends DefaultHandler {
 		PaginationMap.RawBreak raw = pending.remove(key);
 		if (raw == null) return;
 
-		// r-<key>[~part]-<offset>
+		// r-<key>[~part]-<offset>[.<n>]
 		String body = prodId.substring(FO_RUN_ID_PREFIX.length());
 		int dash = body.lastIndexOf('-');
 		if (dash <= 0) return;
+		String number = body.substring(dash + 1);
+		int dot = number.indexOf('.');
+		if (dot >= 0) number = number.substring(0, dot); // a later run at the same offset
 		int offset;
 		try {
-			offset = Integer.parseInt(body.substring(dash + 1));
+			offset = Integer.parseInt(number);
 		} catch (NumberFormatException e) {
 			return;
 		}

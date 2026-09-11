@@ -1,6 +1,6 @@
 # CR: Paginate: rewrite `w:lastRenderedPageBreak` from Apache FOP's area tree
 
-Status: IN PROGRESS. Phases 1 and 2 shipped 2026-09-11 (§6). Requested by the docx4j-core-ts editor design
+Status: IN PROGRESS. Phases 1, 2 and 3 shipped 2026-09-11 (§6); phase 4 is in the docx4j-mcp repository. Requested by the docx4j-core-ts editor design
 (`plutext/docx4j-core-ts`, CR-003 appendix D): a browser editor that does not paginate shows
 page boundaries from the `w:lastRenderedPageBreak` markers Word leaves in a file, and needs a
 "re-paginate" service to refresh them after edits. docx4j has the machinery in substance
@@ -399,6 +399,20 @@ numbers have had for years.
      their tracked changes as marked up (their space is what it is).
 3. **TOC over Paginate.** `TocGenerator` uses `Paginate.compute`; `TocPageNumbersHandler`
    removed or reduced. Existing TOC tests unchanged.
+
+   **Shipped 2026-09-11.** `TocGenerator.getPageNumbersMapViaFOP` (the default, non-XSLT
+   pathway) is `Paginate.bookmarkKeys` (bookmark name to the key of the paragraph it opens
+   in, or of the next paragraph for one opening between paragraphs) plus
+   `Paginate.compute` and `PaginationMap.getPage` (FOP's formatted number, as before).
+   `TocPageNumbersHandler` stays for the XSLT pathway only (`pageNumbersViaXSLT`), which
+   writes no paragraph ids. The existing TOC tests (docx4j-core-tests, docx4j-export-fo-tests)
+   pass unchanged; `PaginateTest.tocPageNumbersComeFromPaginate` checks the entries against
+   the map. Two consequences: a TOC is now laid out on the accepted view of tracked
+   changes (a deletion takes no space), which the old pass did not do; and a paragraph's
+   runs that stand for no text (a field's `w:fldChar` and `w:instrText` runs, a picture's)
+   share their offset with the run after them, which FOP's id uniqueness rejected on the
+   TOC's own PAGEREF fields, so a later run at the same offset gets `.<n>` on its id
+   (`FOConversionContext.runFoId`; the reader strips it).
 4. **docx4j-mcp `paginate` tool** (that repository).
 
 ## 7. Risks and notes

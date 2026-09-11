@@ -199,6 +199,18 @@ public class PaginationAreaTreeHandlerTest {
 	}
 
 	@Test
+	public void aLaterRunAtTheSameOffsetCarriesACounter() throws Exception {
+		// a field character's run stands for no text: the result run after it shares its
+		// offset, and its id is suffixed to stay unique
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", blockOf("p-A", anchored("r-A-0", "text")))
+				+ page(2, "2", blockOf("p-A", anchored("r-A-5.2", "result")))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertArrayEquals(new int[] { 5 }, map.getBreaks("A"));
+	}
+
+	@Test
 	public void aTabIsAnEmptySpaceArea_oneCharacter() throws Exception {
 		String at = "<areaTree><pageSequence>"
 				+ page(1, "1", blockOf("p-A", "<inlineparent prod-id=\"r-A-0\"><inlineparent><text><word>ab</word></text></inlineparent>"

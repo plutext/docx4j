@@ -216,6 +216,10 @@ Pagination (CR-012, phase 1):
   PDF and HTML, where deletions stay struck through) removes deleted and moved-from
   content, unwraps insertions, joins paragraphs whose mark is deleted and drops deleted
   rows on the export's working copy (preprocess.AcceptTrackedChanges).
+- Phase 3: TocGenerator's page numbers come from Paginate.compute (the bookmark's
+  paragraph's page) instead of its own reading of FOP's area tree; TocPageNumbersHandler
+  serves only the XSLT pathway (pageNumbersViaXSLT). So a TOC is now laid out on the
+  accepted view of tracked changes, as Paginate is.
 
 Other:
 

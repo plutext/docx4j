@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.docx4j.Docx4J;
@@ -445,6 +446,64 @@ public class PaginateTest {
 
 		PaginationMap map = Paginate.parse(baos.toByteArray());
 		assertEquals(Integer.valueOf(1), map.getPageIndex("1234ABCD"));
+	}
+
+	// ---------------------------------------------------------------- phase 3: the TOC
+
+	/** The TOC's page numbers come from Paginate (the TocGenerator's own area-tree pass
+	 *  is gone from the default pathway) and agree with the map. */
+	@Test
+	public void tocPageNumbersComeFromPaginate() throws Exception {
+
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		MainDocumentPart mdp = pkg.getMainDocumentPart();
+		for (int i = 1; i < 10; i++) {
+			mdp.getPropertyResolver().activateStyle(String.format(org.docx4j.toc.TocHelper.TOC_STYLE_MASK, i));
+		}
+		pageBreak(mdp);                                        // the TOC is page 1
+		mdp.addStyledParagraphOfText("Heading1", "Alpha Chapter");
+		pageBreak(mdp);
+		mdp.addStyledParagraphOfText("Heading1", "Beta Chapter");
+		mdp.addParagraphOfText(repeat(SENTENCE, 300).trim());
+		mdp.addStyledParagraphOfText("Heading2", "Gamma Section");
+
+		// with page numbers
+		new org.docx4j.toc.TocGenerator(pkg).generateToc(0, org.docx4j.toc.TocHelper.DEFAULT_TOC_INSTRUCTION, false);
+
+		PaginationMap map = Paginate.compute(pkg, null);
+		Map<String, String> bookmarks = Paginate.bookmarkKeys(mdp);
+		List<P> paragraphs = paragraphs(pkg);
+		List<String> keys = Paginate.keys(paragraphs);
+		int found = 0;
+		for (Object o : ((org.docx4j.wml.SdtBlock) XmlUtils.unwrap(mdp.getContent().get(0))).getSdtContent().getContent()) {
+			Object p = XmlUtils.unwrap(o);
+			if (!(p instanceof P)) continue;
+			String text = org.docx4j.TextUtils.getText(p); // entry text, PAGEREF code, the number
+			for (String heading : new String[] { "Alpha Chapter", "Beta Chapter", "Gamma Section" }) {
+				if (!text.contains(heading)) continue;
+				String number = text.replaceAll("(?s).*?(\\d+)\\s*$", "$1");
+				String key = keys.get(indexOfHeading(paragraphs, heading));
+				assertEquals(heading + " in " + map, map.getPage(key), Integer.valueOf(number));
+				String bookmark = null;
+				for (Map.Entry<String, String> e : bookmarks.entrySet()) {
+					if (e.getValue().equals(key)) bookmark = e.getKey();
+				}
+				assertNotNull("the heading's bookmark is keyed", bookmark);
+				assertTrue("the entry's PAGEREF names it: " + text, text.contains(bookmark));
+				found++;
+			}
+		}
+		assertEquals(3, found);
+		assertEquals("Alpha on page 2 after the TOC", Integer.valueOf(2), map.getPage(keys.get(indexOfHeading(paragraphs, "Alpha Chapter"))));
+		assertEquals("Beta on page 3", Integer.valueOf(3), map.getPage(keys.get(indexOfHeading(paragraphs, "Beta Chapter"))));
+		assertTrue("Gamma after the long paragraph", map.getPage(keys.get(indexOfHeading(paragraphs, "Gamma Section"))) > 3);
+	}
+
+	private static int indexOfHeading(List<P> paragraphs, String heading) {
+		for (int i = 0; i < paragraphs.size(); i++) {
+			if (heading.equals(textOf(paragraphs.get(i)))) return i;
+		}
+		return -1;
 	}
 
 	// ---------------------------------------------------------------- phase 2: inside paragraphs

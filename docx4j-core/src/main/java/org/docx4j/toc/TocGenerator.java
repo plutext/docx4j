@@ -42,6 +42,9 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.FopReflective;
+import org.docx4j.model.pagination.Paginate;
+import org.docx4j.model.pagination.PaginateSettings;
+import org.docx4j.model.pagination.PaginationMap;
 import org.docx4j.finders.SectPrFindFirst;
 import org.docx4j.model.bookmarks.BookmarksIntegrity;
 import org.docx4j.model.bookmarks.BookmarksIntegrity.BookmarksStatus;
@@ -755,9 +758,15 @@ public class TocGenerator {
     
     
     /**
-     * Invoke FOP to calculate page numbers
+     * Invoke FOP to calculate page numbers: since 17.1.1 (CR-012 phase 3) through
+     * {@link Paginate#compute}, the general pagination query, of which the page a
+     * bookmark's paragraph starts on is the part a TOC needs; the map is keyed by the
+     * bookmark name, as before.  The layout is of the accepted view of tracked changes
+     * (a deletion takes no space), as Paginate's is.  The XSLT pathway
+     * ({@link #pageNumbersViaXSLT}) writes no paragraph ids, so it keeps the TOC's own
+     * reading of the area tree, {@link TocPageNumbersHandler}.
      * 
-     * @return
+     * @return bookmark name to page number (FOP's formatted number)
      * @throws TocException
      */
     private Map<String, Integer> getPageNumbersMapViaFOP() throws TocException {
@@ -772,46 +781,47 @@ public class TocGenerator {
   		} catch (Docx4JException e1) {
   			throw new TocException(e1.getMessage(), e1);
   		};
+        if (log.isDebugEnabled()) {
+        	foSettings.setFoDumpFile(new java.io.File(System.getProperty("user.dir") + "/Toc.fo"));
+        }
+
+        if (!foViaXSLT) {
+        	try {
+        		Map<String, String> bookmarkKeys = Paginate.bookmarkKeys(wordMLPackage.getMainDocumentPart());
+        		PaginationMap pages = Paginate.compute(wordMLPackage,
+        				new PaginateSettings().setFoSettings(foSettings).setWriteParaIds(Boolean.FALSE));
+        		Map<String, Integer> pageNumbers = new HashMap<String, Integer>();
+        		for (Map.Entry<String, String> e : bookmarkKeys.entrySet()) {
+        			Integer page = pages.getPage(e.getValue());
+        			if (page != null) pageNumbers.put(e.getKey(), page);
+        		}
+        		log.debug("Time taken (Paginate): " + Math.round((System.currentTimeMillis()-start)/1000f) + " sec");
+        		return pageNumbers;
+        	} catch (Docx4JException e) {
+        		throw new TocException(e.getMessage(), e);
+        	}
+        }
+
         String MIME_FOP_AREA_TREE   = "application/X-fop-areatree"; // org.apache.fop.apps.MimeConstants
         foSettings.setApacheFopMime(MIME_FOP_AREA_TREE);
         
         foSettings.getFeatures().add(ConversionFeatures.PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM); // in 3.0.1, this is off by default
         
-        if (log.isDebugEnabled()) {
-        	foSettings.setFoDumpFile(new java.io.File(System.getProperty("user.dir") + "/Toc.fo"));
-        }
-
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         try {
 			FopReflective.invokeFORendererApacheFOP(foSettings);
-
-        	if (foViaXSLT) {        		
-        		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
-        	} else {
-        		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL); // best since 17.0.4       		
-        	}
+       		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
             
             long end = System.currentTimeMillis();
             float timing = (end-start)/1000;
-        	if (foViaXSLT) {
-                log.debug("Time taken (AT via XSLT): " + Math.round(timing) + " sec");
-        	} else {
-                log.debug("Time taken (AT via non XSLT): " + Math.round(timing) + " sec");
-        	}
+            log.debug("Time taken (AT via XSLT): " + Math.round(timing) + " sec");
             
-//            start = System.currentTimeMillis();
             InputStream is = new ByteArrayInputStream(os.toByteArray());
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
             TocPageNumbersHandler tpnh = new TocPageNumbersHandler();
 			saxParser.parse(is, tpnh);
-			
-			// Negligible 
-//            end = System.currentTimeMillis();
-//            timing = (end-start)/1000;
-//            log.debug("Time taken (parse step): " + Math.round(timing) + " sec");
-			
 	        return tpnh.getPageNumbers();
 	        
 		} catch (Exception e) {

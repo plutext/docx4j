@@ -48,6 +48,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Br;
+import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.ObjectFactory;
@@ -361,6 +362,53 @@ public final class Paginate {
 			}
 		});
 		return paragraphs;
+	}
+
+	/**
+	 * The paragraph each bookmark of the main document part starts in, by bookmark name,
+	 * as {@link #keys}: a bookmark that opens inside a keyed paragraph belongs to it (a
+	 * TOC's {@code _Toc} bookmarks wrap the heading text), one that opens between
+	 * paragraphs to the next keyed paragraph.  Bookmarks in text boxes, and any after the
+	 * last paragraph, are left out.  For the TOC generator, whose entries point at
+	 * bookmarks and need their pages (CR-012 phase 3).
+	 *
+	 * @since 17.1.1
+	 */
+	public static Map<String, String> bookmarkKeys(MainDocumentPart mdp) {
+
+		List<P> paragraphs = bodyParagraphs(mdp);
+		final List<String> keys = keys(paragraphs);
+		final Map<P, Integer> index = new IdentityHashMap<P, Integer>();
+		for (int i = 0; i < paragraphs.size(); i++) index.put(paragraphs.get(i), Integer.valueOf(i));
+
+		final Map<String, String> result = new java.util.LinkedHashMap<String, String>();
+		final List<String> pending = new ArrayList<String>();
+		new TraversalUtil(mdp.getContent(), new TraversalUtil.CallbackImpl() {
+			@Override
+			public List<Object> apply(Object o) {
+				if (o instanceof P) {
+					Integer i = index.get(o);
+					if (i != null) {
+						for (String name : pending) result.put(name, keys.get(i.intValue()));
+						pending.clear();
+					}
+				} else if (o instanceof CTBookmark && ((CTBookmark) o).getName() != null) {
+					CTBookmark bookmark = (CTBookmark) o;
+					Integer i = (bookmark.getParent() instanceof P ? index.get(bookmark.getParent()) : null);
+					if (i != null) {
+						result.put(bookmark.getName(), keys.get(i.intValue()));
+					} else if (!(bookmark.getParent() instanceof P)) {
+						pending.add(bookmark.getName());
+					}
+				}
+				return null;
+			}
+			@Override
+			public boolean shouldTraverse(Object o) {
+				return !(o instanceof R);
+			}
+		});
+		return result;
 	}
 
 	/**
