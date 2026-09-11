@@ -1919,6 +1919,212 @@ public final class Corpus {
 		}));
 
 		/*
+		 * CR-014's probe set (docs/developer/change-requests/CR-014-list-numbering-model.md,
+		 * "Are the comments accurate?").  Each probe prints labels only - one short
+		 * paragraph per item - so the golden's text layer is the answer.  numId 1 is
+		 * left alone (Doc.listItem's default); these use 10 and up.
+		 */
+		PROBES.add(new Probe("numbering-shared-abstract",
+				"two w:num over one w:abstractNum with no overrides, three items each, "
+				+ "interleaved A A B B A B: one sequence 1-6 in document order if the counter "
+				+ "belongs to the abstract list, 1 2 1 2 3 3 if to the w:num", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(abstractDecimal(10) + num(10, 10) + num(11, 10));
+			d.para("w:num 10 and w:num 11 both name abstractNum 10; the items below are "
+					+ "in the order A A B B A B.").after(120).add();
+			int[] order = { 10, 10, 11, 11, 10, 11 };
+			for (int numId : order) {
+				d.para("item of list " + (numId == 10 ? "A (w:num 10)" : "B (w:num 11)")).numPr(numId, 0).add();
+			}
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("numbering-numstylelink-separate",
+				"a numbering style ProbeList (w:num 20 over abstractNum 20, whose w:styleLink "
+				+ "names it) and abstractNum 21 carrying w:numStyleLink to it, used through w:num "
+				+ "21: three items of 20, three of 21, three of 20 again - Y 1 2 3, X 1 2 3, Y 4 5 6 "
+				+ "if the numStyleLink list counts separately, 1-9 if it is the same list", () -> {
+			Doc d = Doc.create(15);
+			d.addNumberingStyle("ProbeList", 20);
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"20\"><w:multiLevelType w:val=\"multilevel\"/>"
+					+ "<w:styleLink w:val=\"ProbeList\"/>"
+					+ Doc.decimalLevel(0, null, 720, 360) + Doc.decimalLevel(1, null, 1440, 360)
+					+ "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"21\"><w:multiLevelType w:val=\"multilevel\"/>"
+					+ "<w:numStyleLink w:val=\"ProbeList\"/>"
+					+ "</w:abstractNum>"
+					+ num(20, 20) + num(21, 21));
+			d.para("abstractNum 20 is the numbering style's own list (w:styleLink ProbeList, "
+					+ "w:num 20); abstractNum 21 has only a w:numStyleLink to that style "
+					+ "(w:num 21).").after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("item, w:num 20 (Y)").numPr(20, 0).add();
+			for (int k = 1; k <= 3; k++) d.para("item, w:num 21 (X, via numStyleLink)").numPr(21, 0).add();
+			for (int k = 1; k <= 3; k++) d.para("item, w:num 20 again (Y)").numPr(20, 0).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("numbering-override-rpr",
+				"label run properties from a w:lvlOverride: abstract level 0 with no w:rPr and "
+				+ "w:num 30's override level carrying w:b + w:sz 36 (bold 18pt label, 12pt text?); "
+				+ "then abstract level 0 with w:rPr w:i and the same override (bold italic = merged, "
+				+ "bold only = the override replaces the abstract's rPr)", () -> {
+			Doc d = Doc.create(15);
+			String overrideLvl = "<w:lvlOverride w:ilvl=\"0\"><w:lvl w:ilvl=\"0\">"
+					+ "<w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/>"
+					+ "<w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr>"
+					+ "<w:rPr><w:b/><w:sz w:val=\"36\"/></w:rPr>"
+					+ "</w:lvl></w:lvlOverride>";
+			d.numberingXml(
+					abstractDecimal(30)
+					+ "<w:abstractNum w:abstractNumId=\"31\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+					+ "<w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr><w:rPr><w:i/></w:rPr></w:lvl>"
+					+ "</w:abstractNum>"
+					+ "<w:num w:numId=\"30\"><w:abstractNumId w:val=\"30\"/>" + overrideLvl + "</w:num>"
+					+ "<w:num w:numId=\"31\"><w:abstractNumId w:val=\"31\"/>" + overrideLvl + "</w:num>");
+			d.para("w:num 30: abstract level 0 has no w:rPr; the override level says w:b and "
+					+ "w:sz 36. The text runs are regular 12pt.").after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("regular text, w:num 30").numPr(30, 0).add();
+			d.para("w:num 31: abstract level 0 says w:i; the override level says w:b and "
+					+ "w:sz 36.").before(240).after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("regular text, w:num 31").numPr(31, 0).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("numbering-level-pstyle-in-ppr",
+				"a level whose w:pPr carries a w:pStyle (LevelStyle) but which has no w:lvl/w:pStyle: "
+				+ "used by direct w:numPr from a paragraph of OtherStyle (is the label painted, and "
+				+ "indented by the level?), then by a LevelStyle paragraph with no w:numPr (does the "
+				+ "w:pPr/w:pStyle link the style to the list?); a plain level as the control", () -> {
+			Doc d = Doc.create(15);
+			d.addParagraphStyle("LevelStyle", "Normal", ppr -> { });
+			d.addParagraphStyle("OtherStyle", "Normal", ppr -> { });
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"40\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+					+ "<w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:pStyle w:val=\"LevelStyle\"/><w:ind w:left=\"1080\" w:hanging=\"540\"/></w:pPr></w:lvl>"
+					+ "</w:abstractNum>"
+					+ abstractDecimal(41)
+					+ num(40, 40) + num(41, 41));
+			d.para("abstractNum 40's level 0 has w:pPr/w:pStyle LevelStyle and w:ind left 1080 "
+					+ "hanging 540, and no w:lvl/w:pStyle; abstractNum 41 is plain (720/360).")
+					.style("OtherStyle").after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("OtherStyle, direct w:numPr 40").style("OtherStyle").numPr(40, 0).add();
+			d.para("LevelStyle paragraphs with no w:numPr:").style("OtherStyle").before(240).after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("LevelStyle, no w:numPr").style("LevelStyle").add();
+			d.para("Control: OtherStyle with direct w:numPr 41.").style("OtherStyle").before(240).after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("OtherStyle, direct w:numPr 41").style("OtherStyle").numPr(41, 0).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("numbering-level-vs-style-indent",
+				"a style-linked level stating only w:hanging 360 with the style stating only w:left "
+				+ "1440 (IndStyleA), then the reverse (IndStyleB): the label and text x positions say "
+				+ "whether the level's w:ind and the style's combine attribute by attribute or one "
+				+ "replaces the other as a block; the second item of each wraps", () -> {
+			Doc d = Doc.create(15);
+			d.addParagraphStyle("IndStyleA", "Normal", ppr -> {
+				ppr.setNumPr(numPr(50));
+				PPrBase.Ind ind = Doc.F.createPPrBaseInd();
+				ind.setLeft(BigInteger.valueOf(1440));
+				ppr.setInd(ind);
+			});
+			d.addParagraphStyle("IndStyleB", "Normal", ppr -> {
+				ppr.setNumPr(numPr(51));
+				PPrBase.Ind ind = Doc.F.createPPrBaseInd();
+				ind.setHanging(BigInteger.valueOf(360));
+				ppr.setInd(ind);
+			});
+			d.addParagraphStyle("IndPlain", "Normal", ppr -> { });
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"50\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+					+ "<w:pStyle w:val=\"IndStyleA\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:hanging=\"360\"/></w:pPr></w:lvl>"
+					+ "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"51\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+					+ "<w:pStyle w:val=\"IndStyleB\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:left=\"1440\"/></w:pPr></w:lvl>"
+					+ "</w:abstractNum>"
+					+ num(50, 50) + num(51, 51));
+			String wrap = "This item is long enough to wrap onto a second line, so the golden "
+					+ "shows the continuation indent as well as the label and first-line positions.";
+			d.para("IndStyleA: the level says w:hanging 360 only; the style says w:left 1440 only.")
+					.style("IndPlain").after(120).add();
+			d.para("IndStyleA item").style("IndStyleA").add();
+			d.para(wrap).style("IndStyleA").add();
+			d.para("IndStyleA item").style("IndStyleA").add();
+			d.para("IndStyleB: the level says w:left 1440 only; the style says w:hanging 360 only.")
+					.style("IndPlain").before(240).after(120).add();
+			d.para("IndStyleB item").style("IndStyleB").add();
+			d.para(wrap).style("IndStyleB").add();
+			d.para("IndStyleB item").style("IndStyleB").add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("numbering-default-style-numbered",
+				"the w:default=1 paragraph style carries w:numPr (w:num 60): three paragraphs "
+				+ "with no w:pStyle at all - are they numbered? - and a control paragraph of a "
+				+ "style based on nothing", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(abstractDecimal(60) + num(60, 60));
+			org.docx4j.wml.Style normal = d.mdp().getStyleDefinitionsPart().getDefaultParagraphStyle();
+			if (normal.getPPr() == null) normal.setPPr(Doc.F.createPPr());
+			normal.getPPr().setNumPr(numPr(60));
+			d.addParagraphStyle("Unlinked", null, ppr -> { });
+			d.para("The default paragraph style (" + normal.getStyleId() + ") carries w:numPr 60. "
+					+ "The next three paragraphs have no w:pStyle; this one and the last use "
+					+ "Unlinked, a style based on nothing.").style("Unlinked").after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("no w:pStyle").add();
+			d.para("Unlinked control").style("Unlinked").before(240).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("numbering-stories",
+				"one w:num (70) numbering three items in each story: body, default header, "
+				+ "default footer, two footnotes, an endnote, a comment, a text box, then three "
+				+ "more body items - which stories restart at 1, and does the body continue "
+				+ "past the notes? (the comment's labels are visible only in Word, not the PDF)", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(abstractDecimal(70) + num(70, 70));
+			d.para("Every numbered paragraph in this document uses w:num 70.").after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("body item").numPr(70, 0).add();
+			d.para("Two footnotes")
+					.run(d.footnoteRef(items(d, "footnote one item")))
+					.run(Doc.run(" and", SERIF, 24, null))
+					.run(d.footnoteRef(items(d, "footnote two item")))
+					.before(240).add();
+			d.para("An endnote").run(d.endnoteRef(items(d, "endnote item"))).add();
+			d.para("A comment").run(d.commentRef(items(d, "comment item"))).add();
+			d.para("A text box: ").run(d.textBox(5000, 1800, items(d, "text box item"))).add();
+			for (int k = 1; k <= 3; k++) d.para("body item after the notes").numPr(70, 0).add();
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, items(d, "header item"));
+			d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, items(d, "footer item"));
+			d.finishFootnotes();
+			d.finishEndnotes();
+			d.finishComments();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("numbering-lvlrestart",
+				"w:lvlRestart on level 2 of a three-level list: w:val 0 in list A (never restarts) "
+				+ "and w:val 1 in list B; each list walks the levels 0 1 2 2 1 2 0 2, labels "
+				+ "%1. / %1.%2. / %1.%2.%3.", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(restartAbstract(80, 0) + restartAbstract(81, 1) + num(80, 80) + num(81, 81));
+			int[] walk = { 0, 1, 2, 2, 1, 2, 0, 2 };
+			d.para("List A (w:num 80): level 2 carries w:lvlRestart w:val 0.").after(120).add();
+			for (int ilvl : walk) d.para("list A, level " + ilvl).numPr(80, ilvl).add();
+			d.para("List B (w:num 81): level 2 carries w:lvlRestart w:val 1.").before(240).after(120).add();
+			for (int ilvl : walk) d.para("list B, level " + ilvl).numPr(81, ilvl).add();
+			return d.pkg();
+		}));
+
+		/*
 		 * E4/E5's remaining clause: what a w:tblW of type pct means when the w:tblGrid
 		 * disagrees with it.  §6.5's exemption for a table stating a width of its own is
 		 * unconditional, and a corpus document confirms it for pct - w:tblW 5000
@@ -2953,6 +3159,42 @@ public final class Corpus {
 
 	/** A w:numPr naming {@code numId} and no w:ilvl at all - the shape Word writes on a
 	 *  paragraph style linked to a list. */
+	/** A three-level decimal w:abstractNum, Word's usual indents, no rPr and no style links. */
+	private static String abstractDecimal(int abstractNumId) {
+		return "<w:abstractNum w:abstractNumId=\"" + abstractNumId + "\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+				+ Doc.decimalLevel(0, null, 720, 360)
+				+ Doc.decimalLevel(1, null, 1440, 360)
+				+ Doc.decimalLevel(2, null, 2160, 360)
+				+ "</w:abstractNum>";
+	}
+
+	/** A w:num with no overrides. */
+	private static String num(int numId, int abstractNumId) {
+		return "<w:num w:numId=\"" + numId + "\"><w:abstractNumId w:val=\"" + abstractNumId + "\"/></w:num>";
+	}
+
+	/** A three-level list whose labels show every counter (%1. / %1.%2. / %1.%2.%3.) and
+	 *  whose level 2 carries {@code w:lvlRestart} with the given value. */
+	private static String restartAbstract(int abstractNumId, int lvlRestart) {
+		StringBuilder sb = new StringBuilder("<w:abstractNum w:abstractNumId=\"" + abstractNumId
+				+ "\"><w:multiLevelType w:val=\"multilevel\"/>");
+		String[] text = { "%1.", "%1.%2.", "%1.%2.%3." };
+		for (int ilvl = 0; ilvl < 3; ilvl++) {
+			sb.append("<w:lvl w:ilvl=\"" + ilvl + "\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>");
+			if (ilvl == 2) sb.append("<w:lvlRestart w:val=\"" + lvlRestart + "\"/>");
+			sb.append("<w:lvlText w:val=\"" + text[ilvl] + "\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:left=\"" + (720 + 720 * ilvl) + "\" w:hanging=\"720\"/></w:pPr></w:lvl>");
+		}
+		return sb.append("</w:abstractNum>").toString();
+	}
+
+	/** Three one-line numbered paragraphs (w:num 70, level 0) for the stories probe. */
+	private static List<P> items(Doc d, String text) throws Exception {
+		List<P> list = new ArrayList<>();
+		for (int k = 1; k <= 3; k++) list.add(d.para(text).numPr(70, 0).build());
+		return list;
+	}
+
 	private static PPrBase.NumPr numPr(int numId) {
 		PPrBase.NumPr np = Doc.F.createPPrBaseNumPr();
 		PPrBase.NumPr.NumId id = Doc.F.createPPrBaseNumPrNumId();

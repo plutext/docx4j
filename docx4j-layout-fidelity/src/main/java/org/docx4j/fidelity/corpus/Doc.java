@@ -918,6 +918,201 @@ public final class Doc {
 		mdp.addTargetPart(fp);
 	}
 
+	// ---------------------------------------------------------------- notes, comments, text boxes holding real paragraphs
+	//
+	// The String-built footnoteRef above writes a note of plain text.  CR-014's story
+	// probe (numbering-stories) needs NUMBERED paragraphs in every story - footnote,
+	// endnote, comment, text box - so these take the paragraphs themselves, built with
+	// para(...).build(), and marshal them into the part.  @since 17.1.1
+
+	private static final String SUPERSCRIPT_RPR = "<w:rPr><w:vertAlign w:val=\"superscript\"/></w:rPr>";
+
+	/** The paragraphs as XML, with {@code firstRunXml} (the note's reference mark, say)
+	 *  inserted as the first run of the first paragraph, after its w:pPr. */
+	private static String paragraphsXml(List<P> paragraphs, String firstRunXml) {
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (P p : paragraphs) {
+			String xml = XmlUtils.marshaltoString(p, true, false, Context.jc);
+			if (first && !firstRunXml.isEmpty()) {
+				int at = xml.indexOf("</w:pPr>");
+				at = at < 0 ? xml.indexOf('>') + 1 : at + "</w:pPr>".length();
+				xml = xml.substring(0, at) + firstRunXml + xml.substring(at);
+			}
+			first = false;
+			sb.append(xml);
+		}
+		return sb.toString();
+	}
+
+	private void ensureFootnotePr() throws Exception {
+		if (footnotesXml != null) return;
+		footnotesXml = new StringBuilder();
+		DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
+		org.docx4j.wml.CTFtnDocProps fp = F.createCTFtnDocProps();
+		org.docx4j.wml.CTFtnEdnSepRef sep = F.createCTFtnEdnSepRef(); sep.setId(BigInteger.valueOf(-1));
+		org.docx4j.wml.CTFtnEdnSepRef cont = F.createCTFtnEdnSepRef(); cont.setId(BigInteger.ZERO);
+		fp.getFootnote().add(sep); fp.getFootnote().add(cont);
+		dsp.getContents().setFootnotePr(fp);
+	}
+
+	/** A footnote made of these paragraphs (the reference mark goes first in the first
+	 *  one); returns the superscript reference run.  finishFootnotes() writes the part. */
+	public R footnoteRef(List<P> paragraphs) throws Exception {
+		ensureFootnotePr();
+		footnoteCounter++;
+		footnotesXml.append("<w:footnote w:id=\"" + footnoteCounter + "\">"
+				+ paragraphsXml(paragraphs, "<w:r>" + SUPERSCRIPT_RPR + "<w:footnoteRef/></w:r>")
+				+ "</w:footnote>");
+		org.docx4j.wml.CTFtnEdnRef ref = F.createCTFtnEdnRef();
+		ref.setId(BigInteger.valueOf(footnoteCounter));
+		return noteReferenceRun(F.createRFootnoteReference(ref));
+	}
+
+	private int endnoteCounter = 0;
+	private StringBuilder endnotesXml;
+
+	/** An endnote made of these paragraphs; returns the superscript reference run.
+	 *  finishEndnotes() writes the part. */
+	public R endnoteRef(List<P> paragraphs) throws Exception {
+		if (endnotesXml == null) {
+			endnotesXml = new StringBuilder();
+			DocumentSettingsPart dsp = mdp.getDocumentSettingsPart();
+			org.docx4j.wml.CTEdnDocProps ep = F.createCTEdnDocProps();
+			org.docx4j.wml.CTFtnEdnSepRef sep = F.createCTFtnEdnSepRef(); sep.setId(BigInteger.valueOf(-1));
+			org.docx4j.wml.CTFtnEdnSepRef cont = F.createCTFtnEdnSepRef(); cont.setId(BigInteger.ZERO);
+			ep.getEndnote().add(sep); ep.getEndnote().add(cont);
+			dsp.getContents().setEndnotePr(ep);
+		}
+		endnoteCounter++;
+		endnotesXml.append("<w:endnote w:id=\"" + endnoteCounter + "\">"
+				+ paragraphsXml(paragraphs, "<w:r>" + SUPERSCRIPT_RPR + "<w:endnoteRef/></w:r>")
+				+ "</w:endnote>");
+		org.docx4j.wml.CTFtnEdnRef ref = F.createCTFtnEdnRef();
+		ref.setId(BigInteger.valueOf(endnoteCounter));
+		return noteReferenceRun(F.createREndnoteReference(ref));
+	}
+
+	private static R noteReferenceRun(Object reference) {
+		R r = F.createR();
+		RPr rp = F.createRPr();
+		CTVerticalAlignRun va = F.createCTVerticalAlignRun(); va.setVal(STVerticalAlignRun.SUPERSCRIPT); rp.setVertAlign(va);
+		r.setRPr(rp);
+		r.getContent().add(reference);
+		return r;
+	}
+
+	/** Must be called after all endnoteRef() calls: writes the endnotes part. */
+	public void finishEndnotes() throws Exception {
+		if (endnotesXml == null) return;
+		String xml = "<w:endnotes xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+				+ "<w:endnote w:type=\"separator\" w:id=\"-1\"><w:p><w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr><w:r><w:separator/></w:r></w:p></w:endnote>"
+				+ "<w:endnote w:type=\"continuationSeparator\" w:id=\"0\"><w:p><w:pPr><w:spacing w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/></w:pPr><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>"
+				+ endnotesXml + "</w:endnotes>";
+		org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart ep = new org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart();
+		Object o = XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.wml.CTEndnotes.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		ep.setJaxbElement((org.docx4j.wml.CTEndnotes) o);
+		mdp.addTargetPart(ep);
+	}
+
+	private int commentCounter = 0;
+	private StringBuilder commentsXml;
+
+	/** A comment made of these paragraphs, anchored at the returned w:commentReference
+	 *  run (no range).  finishComments() writes the part.  Word does not put comments
+	 *  in the PDF it exports, so what a comment's paragraphs look like is a question
+	 *  for Word's own window, not the golden. */
+	public R commentRef(List<P> paragraphs) throws Exception {
+		if (commentsXml == null) commentsXml = new StringBuilder();
+		commentCounter++;
+		commentsXml.append("<w:comment w:id=\"" + commentCounter + "\" w:author=\"probe\" w:date=\"2026-09-12T00:00:00Z\" w:initials=\"p\">"
+				+ paragraphsXml(paragraphs, "<w:r><w:annotationRef/></w:r>")
+				+ "</w:comment>");
+		R r = F.createR();
+		R.CommentReference ref = F.createRCommentReference();
+		ref.setId(BigInteger.valueOf(commentCounter));
+		r.getContent().add(F.createRCommentReference(ref));
+		return r;
+	}
+
+	/** Must be called after all commentRef() calls: writes the comments part. */
+	public void finishComments() throws Exception {
+		if (commentsXml == null) return;
+		String xml = "<w:comments xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+				+ commentsXml + "</w:comments>";
+		org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart cp = new org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart();
+		Object o = XmlUtils.unmarshalString(xml, Context.jc, org.docx4j.wml.Comments.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		cp.setJaxbElement((org.docx4j.wml.Comments) o);
+		mdp.addTargetPart(cp);
+	}
+
+	private int shapeCounter = 0;
+
+	/**
+	 * An inline text box of the given size holding these paragraphs, in the shape Word
+	 * 2010+ writes: {@code mc:AlternateContent} with a {@code wps} drawing as the choice
+	 * and a VML {@code v:textbox} as the fallback, the same {@code w:txbxContent} in each.
+	 * Returns the run to put in a paragraph.
+	 */
+	public R textBox(int wTwips, int hTwips, List<P> paragraphs) throws Exception {
+		shapeCounter++;
+		int n = shapeCounter;
+		long cx = wTwips * 635L, cy = hTwips * 635L;
+		String inner = "<w:txbxContent>" + paragraphsXml(paragraphs, "") + "</w:txbxContent>";
+		String xml = "<w:r xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+				+ " xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\""
+				+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+				+ " xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\""
+				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
+				+ " xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+				+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\">"
+				+ "<mc:AlternateContent><mc:Choice Requires=\"wps\"><w:drawing>"
+				+ "<wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">"
+				+ "<wp:extent cx=\"" + cx + "\" cy=\"" + cy + "\"/>"
+				+ "<wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+				+ "<wp:docPr id=\"" + (100 + n) + "\" name=\"Text Box " + n + "\"/>"
+				+ "<a:graphic><a:graphicData uri=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\">"
+				+ "<wps:wsp><wps:cNvSpPr txBox=\"1\"/>"
+				+ "<wps:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"" + cx + "\" cy=\"" + cy + "\"/></a:xfrm>"
+				+ "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
+				+ "<a:solidFill><a:srgbClr val=\"FFFFFF\"/></a:solidFill>"
+				+ "<a:ln w=\"6350\"><a:solidFill><a:srgbClr val=\"000000\"/></a:solidFill></a:ln></wps:spPr>"
+				+ "<wps:txbx>" + inner + "</wps:txbx>"
+				+ "<wps:bodyPr rot=\"0\" vert=\"horz\" wrap=\"square\" lIns=\"91440\" tIns=\"45720\" rIns=\"91440\" bIns=\"45720\" anchor=\"t\" anchorCtr=\"0\"><a:noAutofit/></wps:bodyPr>"
+				+ "</wps:wsp></a:graphicData></a:graphic></wp:inline></w:drawing></mc:Choice>"
+				+ "<mc:Fallback><w:pict>"
+				+ "<v:shape id=\"Text Box " + n + "\" o:spid=\"_x0000_s" + (1025 + n) + "\" type=\"#_x0000_t202\""
+				+ " style=\"width:" + (wTwips / 20.0) + "pt;height:" + (hTwips / 20.0) + "pt;mso-position-horizontal-relative:char;mso-position-vertical-relative:line\""
+				+ " filled=\"t\" stroked=\"t\">"
+				+ "<v:textbox>" + inner + "</v:textbox><w10:anchorlock/></v:shape>"
+				+ "</w:pict></mc:Fallback></mc:AlternateContent></w:r>";
+		Object o = XmlUtils.unmarshalString(xml, Context.jc, R.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		return (R) o;
+	}
+
+	/** A numbering style ({@code w:style w:type="numbering"}) whose w:pPr/w:numPr names
+	 *  numId - the target of a w:abstractNum's w:styleLink / w:numStyleLink. */
+	public void addNumberingStyle(String styleId, int numId) {
+		Style s = F.createStyle();
+		s.setType("numbering");
+		s.setStyleId(styleId);
+		Style.Name n = F.createStyleName();
+		n.setVal(styleId);
+		s.setName(n);
+		PPr ppr = F.createPPr();
+		PPrBase.NumPr np = F.createPPrBaseNumPr();
+		PPrBase.NumPr.NumId id = F.createPPrBaseNumPrNumId();
+		id.setVal(BigInteger.valueOf(numId));
+		np.setNumId(id);
+		ppr.setNumPr(np);
+		s.setPPr(ppr);
+		mdp.getStyleDefinitionsPart().getJaxbElement().getStyle().add(s);
+	}
+
 		public void addFooter(String font, int halfPts, String... lines) throws Exception {
 		addFooter(HdrFtrRef.DEFAULT, font, halfPts, lines);
 	}

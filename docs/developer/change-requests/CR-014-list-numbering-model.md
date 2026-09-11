@@ -218,20 +218,20 @@ Word once, before phase 2.
 
 | # | claim (source) | code does (inspected) | Word evidence | status |
 |---|---|---|---|---|
-| 1 | Every `w:num` referencing one `w:abstractNum` continues a single sequence (`ListLevel` copy ctor) | `ListLevel(ListLevel)` assigns `this.counter = masterCopy.counter`; `AbstractListNumberingDefinition.readLevel` creates one `Counter` per abstract level | none in corpus; ECMA-376 17.9.15/17.9.16 imply it, the built-in "Continue numbering" UI relies on it | CODE CONFIRMED; Word: probe P1 |
+| 1 | Every `w:num` referencing one `w:abstractNum` continues a single sequence (`ListLevel` copy ctor) | `ListLevel(ListLevel)` assigns `this.counter = masterCopy.counter`; `AbstractListNumberingDefinition.readLevel` creates one `Counter` per abstract level | none in corpus; ECMA-376 17.9.15/17.9.16 imply it, the built-in "Continue numbering" UI relies on it | CODE CONFIRMED; Word: probe P1 (cut 2026-09-12, awaiting Word) |
 | 2 | `w:startOverride` applies once, on the first encounter of that `w:num` (`ListNumberingDefinition` ctor; `ListLevel.IncrementCounter`) | `setStartValue` clears `startAtUsed`; `IncrementCounter` resets the shared counter to the start value the first time and sets `encounteredAlready`; `StartOverrideTest` covers it with `startOverride.docx` (a Word document) | `StartOverrideTest` asserts the labels Word shows for that docx | CONFIRMED (code + test docx) |
-| 3 | A `w:numStyleLink` abstractNum is a separate list with independent counters (`NumberingDefinitionsPart.resolveLinkedAbstractNum`) | `updateDefinitionFromLinkedStyle` calls `readListLevelsFromAbsNode(linkedNum)`, which builds fresh `ListLevel` objects (fresh `Counter`s) for the referencing abstractNum; the JAXB `w:lvl`s are copied into it. `StyleLinkedLevelTest` exercises the resolution but not counter independence | none | CODE CONFIRMED; Word: probe P2 |
-| 4 | The override level's `w:rPr` is deliberately not returned; Word bolds the number only, not the text (`Emulator.getNumber`, 17.1.0, "measured") | `triple.lvl = listLevel.getJaxbAbstractLvl()`; `triple.rPr = triple.getLvl().getRPr()` — abstract level only | the 17.1.0 measurement was on a corpus document (not redistributable); no probe golden | CODE CONFIRMED; Word: probe P3 |
+| 3 | A `w:numStyleLink` abstractNum is a separate list with independent counters (`NumberingDefinitionsPart.resolveLinkedAbstractNum`) | `updateDefinitionFromLinkedStyle` calls `readListLevelsFromAbsNode(linkedNum)`, which builds fresh `ListLevel` objects (fresh `Counter`s) for the referencing abstractNum; the JAXB `w:lvl`s are copied into it. `StyleLinkedLevelTest` exercises the resolution but not counter independence | none | CODE CONFIRMED; Word: probe P2 (cut 2026-09-12, awaiting Word) |
+| 4 | The override level's `w:rPr` is deliberately not returned; Word bolds the number only, not the text (`Emulator.getNumber`, 17.1.0, "measured") | `triple.lvl = listLevel.getJaxbAbstractLvl()`; `triple.rPr = triple.getLvl().getRPr()` — abstract level only | the 17.1.0 measurement was on a corpus document (not redistributable); no probe golden | CODE CONFIRMED; Word: probe P3 (cut 2026-09-12, awaiting Word) |
 | 5 | A level whose `w:lvl/w:pStyle` names a different style than the one that brought the numbering paints no label and is not counted (`Emulator.styleLinkedElsewhere`) | implemented 17.1.0; returns null before `IncrementCounter` | golden `numbering-label-ilvl0.pdf` on the share (probe in `Corpus.java` line 1803); b62-batch41 scores it parity 1.0000, 3/3 pages | CONFIRMED (golden) |
-| 6 | "style reference in pPr but not as a sibling of pPr → no number appears at all; TODO ShouldNotBeNumbered" (`NumberingDefinitionsPart.getInd`) | the method returns null, which callers read as *no indent*, not *not numbered*; the numbering decision is made in `Emulator`, where #5 now covers the style-linked case | none for the pPr-vs-sibling wording; it predates #5 and reads as an earlier description of the same rule | SUPERSEDED by #5 pending probe P4 (a level with `w:pPr/w:pStyle` only) |
-| 7 | Level's own `w:ind` before the linked style's (`NumberingDefinitionsPart.getIndFromLvl`, 17.1.0, "measured") | as documented: `lvl.getPPr().getInd()` first, then the style's | 17.1.0 measurement on a corpus document; `IndentationTest` / `ListNumberIndTest` cover the code paths against saved XML, not Word | CODE CONFIRMED; Word: probe P5 |
+| 6 | "style reference in pPr but not as a sibling of pPr → no number appears at all; TODO ShouldNotBeNumbered" (`NumberingDefinitionsPart.getInd`) | the method returns null, which callers read as *no indent*, not *not numbered*; the numbering decision is made in `Emulator`, where #5 now covers the style-linked case | none for the pPr-vs-sibling wording; it predates #5 and reads as an earlier description of the same rule | SUPERSEDED by #5 pending probe P4 (a level with `w:pPr/w:pStyle` only; cut 2026-09-12, awaiting Word) |
+| 7 | Level's own `w:ind` before the linked style's (`NumberingDefinitionsPart.getIndFromLvl`, 17.1.0, "measured") | as documented: `lvl.getPPr().getInd()` first, then the style's | 17.1.0 measurement on a corpus document; `IndentationTest` / `ListNumberIndTest` cover the code paths against saved XML, not Word | CODE CONFIRMED; Word: probe P5 (cut 2026-09-12, awaiting Word) |
 | 8 | `Emulator.getInd` 2024 TODO: style indent should trump the level's, attribute by attribute | not implemented (a TODO) | contradicted by #7's measurement for the case measured | REJECTED by #7; P5 also settles the attribute-by-attribute variant (style with `w:left` only, level with `w:hanging` only) |
-| 9 | `getNumber(pkg, pPr)` assumes the default paragraph style is not numbered | `pStyleVal` stays null when `pPr.getPStyle()` is null; the style branch is never entered | none | CODE CONFIRMED (the assumption is real); Word: probe P6 |
-| 10 | Numbering in headers/footers/footnotes/comments needs per-story counters (2011 TODO; 2012 per-part note) | nothing partitions by part; the only reset is `TocGenerator` | none | CODE CONFIRMED (gap is real); Word: probe P7 (the phase 4 probe) |
+| 9 | `getNumber(pkg, pPr)` assumes the default paragraph style is not numbered | `pStyleVal` stays null when `pPr.getPStyle()` is null; the style branch is never entered | none | CODE CONFIRMED (the assumption is real); Word: probe P6 (cut 2026-09-12, awaiting Word) |
+| 10 | Numbering in headers/footers/footnotes/comments needs per-story counters (2011 TODO; 2012 per-part note) | nothing partitions by part; the only reset is `TocGenerator` | none | CODE CONFIRMED (gap is real); Word: probe P7 (the phase 4 probe; cut 2026-09-12, awaiting Word) |
 | 11 | `w:isLgl` applies at any level and decimalises inherited levels (`GetCurrentNumberString`, 17.1.0) | as documented | `IsLglTest` with `article-section-isLgl.docx` / `-NotIsLgl.docx` (Word documents) | CONFIRMED (code + test docx) |
 | 12 | `LevelExists` guards Word referential-integrity bugs | returns false and logs when `levels` is null or the ilvl is absent | n/a (tolerance) | CODE CONFIRMED |
 | 13 | `w:styleLink` is ignored on purpose | not read anywhere | n/a: it is the inverse pointer, informational | CODE CONFIRMED |
-| 14 | (this CR) `w:lvlRestart` semantics per ECMA-376 17.9.11 | not read | none | Word: probe P8 |
+| 14 | (this CR) `w:lvlRestart` semantics per ECMA-376 17.9.11 | not read | none | Word: probe P8 (cut 2026-09-12, awaiting Word) |
 
 **Probe set `numbering-model` (one docx per line, generated by the harness,
 copied with `corpus.txt` to `$S/corpus/`; Jason runs Word; goldens back to
@@ -262,6 +262,43 @@ so the golden's text layer is the answer:**
   three items each).  Which restart?
 - P8 `numbering-lvlrestart`: three-level list; in list A level 2 carries
   `w:lvlRestart w:val="0"`, in list B `w:val="1"`; sequence 0 1 2 2 1 2 0 2.
+
+**Probe status (2026-09-12):** all eight are generated by the harness
+(`Corpus.java`, ids `numbering-shared-abstract`, `-numstylelink-separate`,
+`-override-rpr`, `-level-pstyle-in-ppr`, `-level-vs-style-indent`,
+`-default-style-numbered`, `-stories`, `-lvlrestart`) and are on the share
+with `corpus.txt` (94 ids), awaiting the Word run (`WordGoldenRunner`, fields
+off).  `Doc` gained footnote/endnote/comment/text-box helpers that take real
+paragraphs, and a numbering-style helper, for P7 and P2.  Two probes carry a
+case beyond the list above: P3 also runs the same override over an abstract
+level carrying `w:rPr/w:i` (bold italic = merged, bold only = replaced); P4
+also has LevelStyle paragraphs with no `w:numPr` (does the level's
+`w:pPr/w:pStyle` link the style to the list?) and a plain-level control.
+P7's comment labels are visible only in Word's own window: Word does not
+export markup to PDF, so that story is read by eye.
+
+What docx4j prints today (harness `render`, 17.1.1-SNAPSHOT, before any of
+the phases), for comparison when the goldens land:
+
+- P1: 1 2 3 4 5 6 (the counter is the abstract list's).
+- P2: Y 1 2 3, X 1 2 3, Y 4 5 6 (the `numStyleLink` list is separate).
+- P3: "1. 2. 3." at the text's size in both lists: the override's `w:rPr` is
+  not applied to the label (claim #4 as implemented).
+- P4: direct `w:numPr` on the pStyle-in-pPr level paints 1 2 3 at the
+  level's indent; LevelStyle paragraphs with no `w:numPr` paint nothing; the
+  control paints 1 2 3.
+- P5: labels painted in both lists; the positions are read off the PDF.
+- P6: the three `w:pStyle`-less paragraphs are numbered 1 2 3 by the FO
+  exporter (which resolves the effective pPr), the Unlinked control is not.
+- P7: one counter across every story, in the order the exporter meets the
+  parts: header 1-3, footer 4-6, body 7-9, footnotes 10-15, text box 16-18,
+  body after the notes 19-21, endnote 22-24; the comment is not traversed.
+  (The inline `wps` text box is also drawn over the body lines that follow
+  it - a rendering defect outside this CR, noted for CR-001.)
+- P8: list A prints 1. / 1.1. / 1.1.1. / 1.1.2. / 1.2. / 1.2.1. / 2. / 2.0.1.
+  and list B the same: `w:lvlRestart` is unread, level 2 restarts whenever
+  level 1 is used, and a level-2 item straight after a level-0 one prints
+  the untouched level-1 counter as 0.
 
 Status is updated in the table as goldens land; a claim still "Word: probe"
 when its phase starts is implemented per the code-confirmed behaviour and
@@ -456,6 +493,8 @@ deprecation before removal (i.e. remove no earlier than 17.2).
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-09-12: phase 0b probes P1-P8 cut and copied to the share (see
+  "Probe status" above); Word run pending.  Phases 1 and 3 start meanwhile.
 - 2026-09-12: phase 0 done (55c5475e1, whitespace-only, 14 files: the four
   main-source files, five test classes and the five `ind/*.xml` fixtures).
   Hash recorded in `.git-blame-ignore-revs`; `.gitattributes` pins the
