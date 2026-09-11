@@ -331,7 +331,7 @@ numbers have had for years.
    no space. About one focused session; the risk is the split-paragraph numbering, which
    the fallback keeps safe.
 
-   **Shipped 2026-09-11** (`RunText`, the run anchors in `FOConversionContext.runFoId` and
+   **Shipped 2026-09-11, commit e6bc0f60d** (`RunText`, the run anchors in `FOConversionContext.runFoId` and
    `AbstractVisitorExporterGenerator.runFoId`, `PaginationAreaTreeHandler` reading them,
    `Paginate.resolveBreaks` and the in-paragraph writer, `AcceptTrackedChanges` behind
    `PP_COMMON_ACCEPT_TRACKED_CHANGES`, `PageBreak.splitPositions`; tests `PaginateTest` (20,
