@@ -1,9 +1,9 @@
 # CR: Configurable XHTMLImporter formatting options for OpenDoPE XHTML binding
 
-Status: IN PROGRESS — phases 1 and 2 SHIPPED 2026-09-11 (bd072179d);
-phase 3 (ImportXHTML-side test) DONE 2026-09-11 in the ImportXHTML working
-tree (uncommitted); phase 4 (8.3.x backport) open; phase 5 out
-(see "Decisions")
+Status: DONE (2026-09-11) — phases 1 and 2 SHIPPED (bd072179d); phase 3
+DONE in the ImportXHTML working tree (test uncommitted there at the time);
+phase 4 SHIPPED on local branch `VERSION_8_3_16` (557d4b77f, not pushed);
+phase 5 out by decision
 Scope: how the OpenDoPE binding traversers configure the `XHTMLImporterImpl`
 they construct for `od:ContentType=application/xhtml+xml` content controls.
 Primarily the three `FormattingOption` setters; a general extension point is
@@ -369,6 +369,28 @@ SNAPSHOT) — lands after the core release, or against the snapshot.
 
 ### Phase 4 — backport to `VERSION_8_3_15` (→ 8.3.16)
 
+**SHIPPED 2026-09-11**: commit 557d4b77f on local branch `VERSION_8_3_16`,
+created from `origin/VERSION_8_3_15` in a git worktree at
+`~/git/docx4j-VERSION_8_3_16` (branch not pushed).  Same helper, hook,
+call sites, properties text and unit test as 17.1.1, with `@since 8.3.16`;
+no wrapper guard (no `PrioritiseRPr` on this line).  The pom was bumped to
+`8.3.16-SNAPSHOT` so that `mvn install` does not overwrite the released
+8.3.15 in `~/.m2` — Jason to confirm 8.3.16 is the intended next version.
+Gotcha: the 8.3.x line builds only on **JDK 8** (`docx4j-openxml-objects`
+declares no JAXB dependency and expects the JDK's `javax.xml.bind`); with
+JDK 21 the reactor fails at that module.  Verification, all on JDK 8:
+`XHTMLImporterFormattingTest` 6/6 in that tree's core-tests; end to end
+against **ImportXHTML 8.3.15** by temporarily pointing the
+`docx4j-ImportXHTML-8_3_x` checkout's pom at `docx4j-core` and
+`docx4j-JAXB-Internal` 8.3.16-SNAPSHOT (both, else the DependencyConvergence
+enforcer rule fails) and running an adapted copy of phase 3's test — 4/4
+(unset keys; all three CLASS_TO_STYLE_ONLY; run-only; unknown value).  The
+XSLT-traverser case is the default there and the only XHTML-capable
+traverser, so the explicit-XSLT case was dropped; and the `w:rFonts`
+assertions were inverted to *expect* the leak, which they confirmed.  The
+temporary pom change and test were then reverted; nothing committed in the
+ImportXHTML 8.3.x checkout.
+
 - Same helper + call in the 8.3.15 `convertXHTML` (line ~667, after the
   `getMethods()` loop); no `PrioritiseRPr` code there so the wrapper guard
   does not apply — instead confirm interaction 3 (the `Block.rStyle.Adopt`
@@ -402,7 +424,8 @@ binding keys' values.  Out of scope unless asked.
    this guard).
 3. Phase 5 (altChunk): out for now, per the recommendation; nobody has
    asked for it.
-4. Backport target version: 8.3.16 assumed; not yet confirmed (phase 4 open).
+4. Backport target version: 8.3.16 assumed and used for the branch name and
+   pom (phase 4); Jason to confirm before release.
 
 ## Risks
 
