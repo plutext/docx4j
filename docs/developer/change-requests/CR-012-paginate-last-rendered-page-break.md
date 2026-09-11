@@ -107,6 +107,22 @@ are not keyed (their pages follow the body).
 (phase 2; off gives paragraph granularity only) and `boolean writeParaIds` (assign
 `w14:paraId` to paragraphs lacking one, so the keys are stable in the file).
 
+**Decision (Jason, 2026-09-11): `lineBreaks` defaults on.** The editor is the consumer and
+wants the in-paragraph markers; a caller wanting paragraph granularity turns it off.
+
+**Decision (Jason, 2026-09-11): the layout is made as if all tracked changes were
+accepted.** Word's marker records "the previous rendering", which is whichever markup view
+Word was showing (with All Markup, deletions are laid out inline and take space; with No
+Markup they do not); no Word-written document in the test corpus has both tracked changes
+and markers, so its choice is not evidenced here, and the accepted view is the one that is
+right for the editor. Consequences: deleted content (`w:del` runs, deleted paragraph marks,
+deleted table rows, `w:moveFrom`) is removed and insertions (`w:ins`, `w:moveTo`) unwrapped
+on the export's working copy before the layout (a conversion feature in the common
+preprocess, phase 2: today the FO exporter draws `w:delText` red and struck through, which
+takes space); the writer, which already passes over deleted runs, never puts a marker inside
+`w:del`; a paragraph whose mark is deleted merges into the next in the layout, so its key is
+absent from the map, which the writer treats as "continues the page" (§3.4).
+
 **Decision (Jason, 2026-09-11): `writeParaIds` is on by default for `paginate` and
 `applyLastRenderedPageBreaks`**, which rewrite the document's runs anyway, so that the keys
 the markers were written against are in the file; `compute` alone is a query and assigns
@@ -145,6 +161,33 @@ reconciles it against the paragraph's `TextUtils` text by aligning on the longes
 prefix of the line's first word, which is exact in the common case (plain runs) and lands
 within a word otherwise.
 
+**Revised for phase 2 (2026-09-11, after phase 1).** Aligning FOP's line text against the
+paragraph's text is fragile: FOP's lines carry list labels, field results as FOP computed
+them, footnote reference numbers and the hyphens it inserted, and drop the space at a line
+end and the tab characters (rendered as leaders). Instead the offset is anchored per run:
+
+- The exporter already writes an outer `fo:inline` per run (the area tree shows
+  `lineArea > inlineparent > inlineparent > text > word`, the inner one being the font
+  span), and FOP writes traits on inline areas as it does on blocks (the TOC reads
+  `internal-link` there). With `PP_FO_PARAGRAPH_IDS` on, that inline gets
+  `id="r-<key>-<n>"`, `n` the run's index among the paragraph's run items.
+- The handler tracks the open run anchor as it does the open paragraph and records a
+  break as (run `n`, characters of that run seen before the page boundary). The
+  alignment problem shrinks to the one run's own `w:t` text, where FOP's text is exact
+  except for a hyphen FOP appended at a line end and the trailing space it dropped, both
+  corrected by looking at the run's text.
+- The map still reports offsets in the paragraph's text; the writer maps them back to run
+  and offset by walking the run items the same way.
+- `TextUtils` is not the text model: it concatenates every text node of the marshalled
+  XML, so it includes `w:instrText` and `w:delText` and gives nothing for a tab or break.
+  Phase 2 defines its own per-run-item model, shared by exporter, handler and writer:
+  `w:t` characters, one character for `w:tab`, `w:br`, `w:sym`, `w:noBreakHyphen`,
+  `w:softHyphen`; nothing for drawings, pictures and field characters; field codes and
+  deleted text excluded.
+- Field results (PAGE, NUMPAGES, PAGEREF) render as FOP computed them, not as cached in
+  the file, so an offset inside a field result can be off by the length difference.
+  Documented, not corrected.
+
 ### 3.4 Writing the markers
 
 `applyLastRenderedPageBreaks` walks the main document part's paragraphs in document order
@@ -157,6 +200,27 @@ only when the previous paragraph did not end with a page break or `w:pageBreakBe
 (Word writes no marker after an explicit break). Runs inside hyperlinks, content controls
 and insertions are reached the same way; `w:del` content is skipped, as Word does not
 render it. The part is marked changed as any edit does.
+
+**Phase 2 writer, detailed (2026-09-11):** the split copies `w:rPr` and sets
+`xml:space="preserve"` on both halves; the marker goes before the first character of the
+new page's line, not after the space FOP dropped at the end of the previous one (Word:
+`<w:t xml:space="preserve">end of line </w:t></w:r><w:r><w:lastRenderedPageBreak/><w:t>start`);
+an offset at a run boundary puts the marker at the next run's start without a split; a
+run inside a hyperlink, content control or insertion is split in its own parent's content
+list (`Child.getParent()`); no split inside a field's code. The two shapes phase 1 left:
+a paragraph "page break then text" gets the marker between the two (a split after the
+`w:br`), and of two break-only paragraphs in a row the second gets one in its run, as
+Word writes it. Table rows split across pages need nothing extra: each cell paragraph is
+keyed and gets its own break.
+
+**A paragraph split by the preprocessing** (`PageBreak.split`, a page break inside it)
+becomes two `fo:block`s; today the second half is a `new P()` without a paraId, so the
+`p-<key>~<n>` continuation ids of phase 1 never fire in practice. Phase 2 copies the paraId
+onto the second half; its runs are numbered per part (`r-<key>~<part>-<n>`), and the
+writer segments the paragraph's run items at its page breaks the same way. If the number
+of parts in the map and in the document disagree (the preprocessing has more nuanced
+rules than "split at every break": `keepBreakLine`, the compat setting, a break in first
+position), that paragraph falls back to a paragraph-level marker.
 
 ### 3.5 Use from the TOC generator and from docx4j-mcp
 
@@ -253,6 +317,19 @@ numbers have had for years.
 2. **Line granularity.** Break offsets from line areas, run splitting in the writer, the
    alignment against `TextUtils` text. Tests: a long paragraph across two pages, a paragraph
    with a tab and a field, a run inside a hyperlink.
+
+   **Plan revised 2026-09-11** (see §3.1, §3.3 and §3.4 as revised): run anchors
+   `r-<key>-<n>` on the run's `fo:inline` in the exporter (~30 lines); the handler
+   records (run, characters) per break and reads the continuation parts (~80 lines); the
+   per-run-item text model and the writer's split (~200 lines); the accepted-view
+   preprocess feature (deletions removed, insertions unwrapped, on the working copy);
+   `PaginateSettings.lineBreaks`, default on; the paraId copied onto `PageBreak.split`'s
+   second half. Tests: a long paragraph across pages (the two halves of the split run
+   concatenate to the original text, `xml:space` kept), a tab and a field, a run inside a
+   hyperlink, a hyphenated line end (fop-hyph is in test scope), a table row split across
+   pages, "page break then text", two break-only paragraphs in a row, deleted text taking
+   no space. About one focused session; the risk is the split-paragraph numbering, which
+   the fallback keeps safe.
 3. **TOC over Paginate.** `TocGenerator` uses `Paginate.compute`; `TocPageNumbersHandler`
    removed or reduced. Existing TOC tests unchanged.
 4. **docx4j-mcp `paginate` tool** (that repository).
