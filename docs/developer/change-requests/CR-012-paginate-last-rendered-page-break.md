@@ -50,13 +50,18 @@ destinations, at paragraph granularity, and it writes nothing back.
 
 FOP's area tree XML (`org.apache.fop.render.xml.XMLRenderer`; read back by
 `AreaTreeParser`) is a page-by-page tree: `pageViewport` → `page` → `regionViewport` →
-`regionBody` → `mainReference` → `span` → `flow` → `block` → `lineArea` → `text` / `space` /
-`word` / `inlineparent` / `viewport`. An area produced by a formatting object that had an
-`id` attribute carries `prod-id="<id>"` (to be verified against the FOP version in the
-tree at implementation; the attribute name is what `AreaTreeParser` reads). A block split
-across pages appears as block areas with the same `prod-id` on both pages; its line areas
-hold the text of each line as `text` elements (`word` and `space` in newer versions), which
-is the information for in-paragraph breaks.
+`regionBody` → `mainReference` → `span` → `flow` → `block` → `lineArea` → `text` (holding
+`word` and `space`) / `inlineparent` / `viewport`. An area produced by a formatting object
+that had an `id` attribute carries `prod-id="<id>"` (the `Trait.PROD_ID` name, which
+`XMLRenderer.addTraitAttributes` writes and `AreaTreeParser` reads). A block split across
+pages appears as block areas with the same `prod-id` on both pages; its line areas hold the
+text of each line, which is the information for in-paragraph breaks.
+
+**Decision (Jason, 2026-09-11): the CR targets the FOP version in the tree, 2.9, and does
+not support older FOP versions.** The names above are 2.9's, checked in its jar
+(`org.apache.fop.area.Trait` names the trait `prod-id`; `XMLRenderer` emits `pageViewport`,
+`formatted-nr`, `lineArea`, `text`, `word`, `space`, `inlineparent`); nothing in the design
+hedges for the older renderer's `text`-only line areas.
 
 ## 2. Gap and value
 
@@ -193,9 +198,9 @@ numbers have had for years.
 
 ## 7. Risks and notes
 
-- The area tree attribute names (`prod-id`, `formatted-nr`, `key`) are FOP's XML renderer's
-  and may differ across FOP versions; the handler is written against the version in the
-  tree and covered by a test that fails loudly on a missing attribute.
+- The area tree names (`prod-id`, `formatted-nr`, `key`, `word`, `space`) are FOP 2.9's XML
+  renderer's; the handler is written against that version only (§1.3) and covered by a
+  test that fails loudly on a missing attribute, which is what a future FOP upgrade trips.
 - Fonts: FOP paginates with the fonts its font mapper resolves, so pages drift from Word's
   where fonts differ in metrics. This CR does not change that; `PaginateSettings` exposes the
   font mapper so callers with the document's fonts get closer.
