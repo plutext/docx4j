@@ -1,7 +1,8 @@
 # CR: Configurable XHTMLImporter formatting options for OpenDoPE XHTML binding
 
 Status: IN PROGRESS — phases 1 and 2 SHIPPED 2026-09-11 (bd072179d);
-phase 3 (ImportXHTML-side test) and phase 4 (8.3.x backport) open; phase 5 out
+phase 3 (ImportXHTML-side test) DONE 2026-09-11 in the ImportXHTML working
+tree (uncommitted); phase 4 (8.3.x backport) open; phase 5 out
 (see "Decisions")
 Scope: how the OpenDoPE binding traversers configure the `XHTMLImporterImpl`
 they construct for `od:ContentType=application/xhtml+xml` content controls.
@@ -12,7 +13,7 @@ Phases: 1. property-driven setters in docx4j-core; 2. programmatic hook
 5. (optional) same for altChunk conversion
 Related: docx4j-ImportXHTML CR-001 (fonts honour the run FormattingOption) —
 required for "styles only" fonts; see interaction 1.  IMPLEMENTED 2026-09-11
-on ImportXHTML `VERSION_17_1_1` (ships in ImportXHTML 17.1.1; verified here:
+on ImportXHTML `VERSION_17_1_1`, commit a8ec734 (ships in ImportXHTML 17.1.1; verified here:
 `RunFormattingFontTest` 5/5 green against docx4j 17.1.1-SNAPSHOT; not
 backported to ImportXHTML 8.3.x — Jason)
 
@@ -341,6 +342,22 @@ importer, SdtPr sdtPr, boolean inTableCell)`; static get/set on
 - Javadoc example showing the cast to `XHTMLImporterImpl`.
 
 ### Phase 3 — test (docx4j-ImportXHTML repo, `docx4j-ImportXHTML-core-tests`)
+
+**DONE 2026-09-11**: `BindingFormattingOptionsTest`
+(`org.docx4j.convert.in.xhtml.tests`), 5 cases, green against docx4j
+17.1.1-SNAPSHOT.  Builds its package programmatically (custom XML part holding
+the escaped XHTML, an XPaths part with one entry, and an
+`od:xpath=x1&od:ContentType=application/xhtml+xml` block sdt with a matching
+`w:dataBinding`), so no binary resource.  The XHTML has `@class` naming a
+paragraph, a character and a table style, each element also carrying inline
+CSS.  Cases: keys unset → `pStyle`/`rStyle`/`tblStyle` *plus* direct `ind`,
+`jc`, `color`, `rFonts`, `b` (today's behaviour); all three keys
+`CLASS_TO_STYLE_ONLY` → the styles and none of that direct formatting, under
+the default (NonXSLT) traverser and again with
+`BindingHandler.Implementation=BindingTraverserXSLT`; `RunFormatting` alone
+→ run CSS gone, paragraph `ind` kept (the keys are independent); an unknown
+value → ignored, behaves as unset.  Keys are removed from `Docx4jProperties`
+in `@After`.  (ImportXHTML commit hash: to be recorded when committed.)
 
 That module has both docx4j-core and ImportXHTML on the classpath.  A
 binding test: template with an XHTML-bound control, XHTML with `@class`
