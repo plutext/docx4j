@@ -253,6 +253,62 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	/** paraId to the number of blocks written for it (CR-012); null until the first. */
 	private Map<String, Integer> paragraphFoIds;
 
+	/** The paragraph being converted: its block id (null: no ids for it) and how much of
+	 *  its text the runs met so far stand for (CR-012). */
+	private static final class ParagraphFrame {
+		final String foId;
+		int offset = 0;
+		ParagraphFrame(String foId) { this.foId = foId; }
+	}
+	private final java.util.ArrayDeque<ParagraphFrame> paragraphFrames = new java.util.ArrayDeque<ParagraphFrame>();
+
+	/**
+	 * The generator is about to convert this paragraph's content: returns the id for its
+	 * block (see {@link #paragraphFoId(String)}), and opens the count its runs' ids are
+	 * taken from.  Pair with {@link #endParagraph()}.  Nested paragraphs (a note's, a
+	 * text box's) keep their own count.
+	 *
+	 * @since 17.1.1
+	 */
+	public String beginParagraph(String paraId) {
+		String foId = paragraphFoId(paraId);
+		paragraphFrames.push(new ParagraphFrame(foId));
+		return foId;
+	}
+
+	public void endParagraph() {
+		if (!paragraphFrames.isEmpty()) paragraphFrames.pop();
+	}
+
+	/**
+	 * The id for this run's inline: {@code r-<paragraph id>-<offset>}, the offset being
+	 * how many characters of the paragraph's text ({@link org.docx4j.model.pagination.RunText})
+	 * the runs before it stand for; null where the paragraph has no id.  Counts the run
+	 * off either way.
+	 *
+	 * @since 17.1.1
+	 */
+	public String runFoId(org.docx4j.wml.R r) {
+		ParagraphFrame frame = paragraphFrames.peek();
+		if (frame == null || frame.foId == null) return null; // no ids: nothing to count
+		String id = PaginationAreaTreeHandler.FO_RUN_ID_PREFIX
+				+ frame.foId.substring(PaginationAreaTreeHandler.FO_ID_PREFIX.length()) + "-" + frame.offset;
+		frame.offset += org.docx4j.model.pagination.RunText.length(r);
+		return id;
+	}
+
+	@Override
+	public void enterTextBox() {
+		super.enterTextBox();
+		paragraphFrames.push(new ParagraphFrame(null)); // its runs are not the paragraph's
+	}
+
+	@Override
+	public void exitTextBox() {
+		super.exitTextBox();
+		if (!paragraphFrames.isEmpty()) paragraphFrames.pop();
+	}
+
 	/**
 	 * The {@code id} for this paragraph's fo:block, or null for none: the paragraph's
 	 * {@code w14:paraId} prefixed, when {@link ConversionFeatures#PP_FO_PARAGRAPH_IDS} is

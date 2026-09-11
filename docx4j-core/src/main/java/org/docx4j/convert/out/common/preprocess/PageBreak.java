@@ -212,6 +212,87 @@ public class PageBreak {
 		}
 	}
 
+	/**
+	 * Where {@link #process(WordprocessingMLPackage, boolean)} would split a paragraph
+	 * with this content, without splitting it: the positions of the page breaks that
+	 * open a continuation, in the coordinates of {@code content} ({@code {i}} for a
+	 * break which is a direct child, {@code {i,j}} for one in the i-th item's run), in
+	 * order.  For org.docx4j.model.pagination.Paginate (CR-012), which lays the document
+	 * out through this preprocessing and has to know which part of a paragraph an offset
+	 * the layout reports belongs to.  Kept in step with {@link #updateParagraph}.
+	 *
+	 * @param breaksBefore the paragraph's own w:pageBreakBefore
+	 * @param splitAtBreaks the resolved w:splitPgBreakAndParaMark (see process)
+	 * @since 17.1.1
+	 */
+	public static List<int[]> splitPositions(List<Object> content, boolean breaksBefore,
+			boolean splitAtBreaks, boolean keepBreakLine) {
+
+		List<int[]> splits = new ArrayList<int[]>();
+		int[] segmentStart = null;   // the last split; null for the paragraph's start
+		int[] at = nextPageBreak(content, null);
+		while (at != null) {
+			if (splitAtBreaks
+					&& (drawsBetween(content, segmentStart, at) || breaksBefore
+							|| (keepBreakLine && !contentFollows(content, at)))) {
+				splits.add(at);
+				segmentStart = at;
+				breaksBefore = true;
+			} else if (breaksBefore) {
+				break;             // left in place: nowhere to split it to
+			} else {
+				breaksBefore = true; // the break becomes the paragraph's break-before
+			}
+			at = nextPageBreak(content, at);
+		}
+		return splits;
+	}
+
+	/** The first page break after {@code after} (null: from the start), as firstPageBreak. */
+	private static int[] nextPageBreak(List<Object> content, int[] after) {
+
+		if (content == null) return null;
+		int i0 = (after == null ? 0 : after[0]);
+		for (int i = i0; i < content.size(); i++) {
+			Object ce = content.get(i);
+			if (after == null || i > after[0] || after.length == 1) {
+				if (isPageBreak(ce)) {
+					if (after == null || i != after[0]) return new int[] { i };
+				}
+			}
+			if (ce instanceof R) {
+				List<Object> rc = ((R) ce).getContent();
+				int j0 = (after != null && after.length > 1 && i == after[0] ? after[1] + 1 : 0);
+				for (int j = j0; rc != null && j < rc.size(); j++) {
+					if (isPageBreak(rc.get(j))) return new int[] { i, j };
+				}
+			}
+		}
+		return null;
+	}
+
+	/** Whether anything which draws lies after {@code from} (exclusive; null: the start)
+	 *  and before {@code to}. */
+	private static boolean drawsBetween(List<Object> content, int[] from, int[] to) {
+
+		int i0 = (from == null ? 0 : from[0]);
+		for (int i = i0; i <= to[0] && i < content.size(); i++) {
+			Object ce = content.get(i);
+			if (ce instanceof R) {
+				List<Object> rc = ((R) ce).getContent();
+				int j0 = (from != null && from.length > 1 && i == from[0] ? from[1] + 1 : 0);
+				int j1 = (to.length > 1 && i == to[0] ? to[1] : (rc == null ? 0 : rc.size()));
+				if (i == to[0] && to.length == 1) j1 = 0;
+				for (int j = j0; rc != null && j < j1; j++) {
+					if (drawsInRun(rc.get(j))) return true;
+				}
+			} else if (i != to[0] && !(from != null && i == from[0] && from.length == 1)) {
+				if (draws(ce)) return true;
+			}
+		}
+		return false;
+	}
+
 	private static boolean breaksBefore(P paragraph) {
 		return paragraph.getPPr()!=null
 				&& paragraph.getPPr().getPageBreakBefore()!=null
@@ -369,6 +450,7 @@ public class PageBreak {
 
 		if (paragraph.getPPr()==null) paragraph.setPPr(new PPr());
 		P second = new P();
+		second.setParaId(paragraph.getParaId()); // the same paragraph, to Paginate (CR-012)
 		second.setPPr(continuationProperties(paragraph.getPPr()));
 		second.getContent().addAll(tail);
 		siblings.add(index+1, second);

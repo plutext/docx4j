@@ -357,6 +357,11 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	}
 
 	@Override
+	protected String runFoId(R r) {
+		return conversionContext.runFoId(r);
+	}
+
+	@Override
 	public boolean shouldTraverse(Object o) {
 
 		if (o instanceof P) {
@@ -404,6 +409,18 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 	private void handleP(P p) {
 
+		// CR-012: the paragraph's id (null unless PP_FO_PARAGRAPH_IDS), and the count its
+		// runs' ids are taken from, open while its content is converted
+		String foId = conversionContext.beginParagraph(p.getParaId());
+		try {
+			handleP(p, foId);
+		} finally {
+			conversionContext.endParagraph();
+		}
+	}
+
+	private void handleP(P p, String foId) {
+
 		DocumentFragment childResults = document.createDocumentFragment();
 		FOExporterVisitorGenerator generator = childGenerator(childResults);
 		try {
@@ -429,8 +446,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		if (block!=null) {
 			// CR-012: the paragraph's id on its outermost block (fo:block, fo:list-block
 			// or the bidi fo:block-container), so that FOP's area tree names, in prod-id,
-			// the paragraph each block area came from; null unless PP_FO_PARAGRAPH_IDS
-			String foId = conversionContext.paragraphFoId(p.getParaId());
+			// the paragraph each block area came from
 			if (foId!=null && block.getFirstChild() instanceof Element) {
 				((Element)block.getFirstChild()).setAttribute("id", foId);
 			}

@@ -155,6 +155,108 @@ public class PaginationAreaTreeHandlerTest {
 		assertEquals(3, map.getPageCount());
 	}
 
+	private static String anchored(String anchor, String... words) {
+		StringBuilder sb = new StringBuilder("<inlineparent prod-id=\"" + anchor + "\"><inlineparent><text>");
+		for (int i = 0; i < words.length; i++) {
+			if (i > 0) sb.append("<space> </space>");
+			sb.append("<word>").append(words[i]).append("</word>");
+		}
+		return sb.append("</text></inlineparent></inlineparent>").toString();
+	}
+
+	private static String blockOf(String prodId, String inner) {
+		return "<block prod-id=\"" + prodId + "\"><lineArea>" + inner + "</lineArea></block>";
+	}
+
+	@Test
+	public void aRunAnchorPlacesTheBoundaryInsideTheRun() throws Exception {
+		// the run r-A-0 spans the boundary: 9 characters of it were on page 1, on one
+		// line, at whose end FOP dropped the space: "Long text continues" breaks at 10
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", blockOf("p-A", anchored("r-A-0", "Long", "text")))
+				+ page(2, "2", blockOf("p-A", anchored("r-A-0", "continues") + anchored("r-A-20", "more")))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertArrayEquals(new int[] { 10 }, map.getBreaks("A"));
+		assertEquals(0, map.raw("A").get(0).part);
+		assertFalse("placed by the anchor, not the fallback count", map.raw("A").get(0).absolute);
+		assertEquals(0, map.raw("A").get(0).hyphenEnds);
+		assertEquals("the new page's line, as far as it goes", "continuesmore", map.raw("A").get(0).lineStart.toString());
+	}
+
+	@Test
+	public void everyLineTheRunWasOnDroppedACharacter() throws Exception {
+		// three lines on page 1 (the anchor appears once per line): 3 dropped spaces
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", "<block prod-id=\"p-A\">"
+						+ "<lineArea>" + anchored("r-A-0", "one") + "</lineArea>"
+						+ "<lineArea>" + anchored("r-A-0", "two") + "</lineArea>"
+						+ "<lineArea>" + anchored("r-A-0", "three") + "</lineArea></block>")
+				+ page(2, "2", blockOf("p-A", anchored("r-A-0", "four")))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertArrayEquals("3 + 3 + 5 characters and 3 line ends", new int[] { 14 }, map.getBreaks("A"));
+	}
+
+	@Test
+	public void aTabIsAnEmptySpaceArea_oneCharacter() throws Exception {
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", blockOf("p-A", "<inlineparent prod-id=\"r-A-0\"><inlineparent><text><word>ab</word></text></inlineparent>"
+						+ "<space/><inlineparent><text><word>cd</word></text></inlineparent></inlineparent>"))
+				+ page(2, "2", blockOf("p-A", anchored("r-A-0", "ef")))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertArrayEquals("2 + 1 (tab) + 2, and the line end", new int[] { 6 }, map.getBreaks("A"));
+	}
+
+	@Test
+	public void aNewRunOnTheNewPageIsTheBoundary() throws Exception {
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", blockOf("p-A", anchored("r-A-0", "Long", "text")))
+				+ page(2, "2", blockOf("p-A", anchored("r-A-14", "next", "run")))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertArrayEquals(new int[] { 14 }, map.getBreaks("A"));
+	}
+
+	@Test
+	public void aHyphenFopAddedIsReported() throws Exception {
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", blockOf("p-A", anchored("r-A-0", "incompre-")))
+				+ page(2, "2", blockOf("p-A", anchored("r-A-0", "hensible")))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertArrayEquals("as counted: the hyphen, and no dropped space at that line end", new int[] { 9 }, map.getBreaks("A"));
+		assertEquals("for Paginate to settle against the text", 1, map.raw("A").get(0).hyphenEnds);
+		assertEquals("hensible", map.raw("A").get(0).lineStart.toString());
+	}
+
+	@Test
+	public void aContinuationPartIsRelativeToThatPart() throws Exception {
+		// the preprocessing split the paragraph at a page break inside it: the second
+		// part's runs count from 0 again
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", blockOf("p-A", anchored("r-A-0", "before")))
+				+ page(2, "2", blockOf("p-A~1", anchored("r-A~1-0", "after")))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertEquals(1, map.raw("A").size());
+		assertEquals(1, map.raw("A").get(0).part);
+		assertEquals(0, map.raw("A").get(0).offset);
+		assertFalse(map.raw("A").get(0).absolute);
+	}
+
+	@Test
+	public void withoutAnAnchorTheCharacterCountStands() throws Exception {
+		String at = "<areaTree><pageSequence>"
+				+ page(1, "1", blockOf("p-A", anchored("r-A-0", "Long", "text")))
+				+ page(2, "2", block("p-A", "continues"))
+				+ "</pageSequence></areaTree>";
+		PaginationMap map = parse(at);
+		assertArrayEquals(new int[] { 9 }, map.getBreaks("A"));
+		assertTrue(map.raw("A").get(0).absolute);
+	}
+
 	@Test
 	public void aViewportWithoutANumberIsNotTheExpectedFormat() throws Exception {
 		try {

@@ -322,6 +322,9 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 		} else if (o instanceof org.docx4j.wml.R) {
 
+			// every run counts off the paragraph's text, converted or not (CR-012)
+			String runId = runFoId((R)o);
+
 			if (isHiddenRun((R)o)) {
 				// Word prints nothing for hidden text, and leaves no space for it
 				skipHiddenRun = true;
@@ -330,6 +333,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				// Convert run to span
 				Element spanEl = createNode(document, NODE_INLINE);
+				if (runId!=null) spanEl.setAttribute("id", runId);
 				currentSpan = spanEl;
 				
 				rPr = ((R)o).getRPr();
@@ -577,6 +581,18 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	 *
 	 * @since 17.0.5
 	 */
+	/**
+	 * An id for this run's inline, or null for none.  Called for every run the
+	 * generator meets in a paragraph, in order, whether or not it is converted; the FO
+	 * generator counts the paragraph's text off with it, so that FOP's area tree can
+	 * report where in the paragraph a page boundary fell (CR-012).
+	 *
+	 * @since 17.1.1
+	 */
+	protected String runFoId(R r) {
+		return null;
+	}
+
 	protected boolean isHiddenRun(R r) {
 		if (r.getRPr()==null) return false;
 		try {

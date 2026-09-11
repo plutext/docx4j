@@ -21,8 +21,9 @@ package org.docx4j.model.pagination;
 import org.docx4j.convert.out.FOSettings;
 
 /**
- * Settings for {@link Paginate}: the FO export settings the layout is made with, and
- * whether paragraphs lacking a {@code w14:paraId} are given one.
+ * Settings for {@link Paginate}: the FO export settings the layout is made with, whether
+ * paragraphs lacking a {@code w14:paraId} are given one, and whether markers go inside
+ * paragraphs.
  *
  * @since 17.1.1
  */
@@ -30,6 +31,7 @@ public class PaginateSettings {
 
 	private FOSettings foSettings;
 	private Boolean writeParaIds;
+	private Boolean lineBreaks;
 
 	/**
 	 * The export-fo settings the document is laid out with: font mapper, conversion
@@ -62,7 +64,27 @@ public class PaginateSettings {
 		return this;
 	}
 
+	/**
+	 * Whether {@link Paginate#paginate} writes markers inside paragraphs that span pages
+	 * (splitting the run at the boundary, as Word does), or at paragraph boundaries only.
+	 * Null (the default) means on.
+	 *
+	 * @since 17.1.1 (CR-012 phase 2)
+	 */
+	public Boolean getLineBreaks() {
+		return lineBreaks;
+	}
+
+	public PaginateSettings setLineBreaks(Boolean lineBreaks) {
+		this.lineBreaks = lineBreaks;
+		return this;
+	}
+
 	boolean writeParaIds(boolean defaultValue) {
 		return writeParaIds == null ? defaultValue : writeParaIds.booleanValue();
+	}
+
+	boolean lineBreaks() {
+		return lineBreaks == null ? true : lineBreaks.booleanValue();
 	}
 }

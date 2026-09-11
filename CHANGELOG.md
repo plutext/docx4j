@@ -207,6 +207,15 @@ Pagination (CR-012, phase 1):
 - ConversionFeatures.PP_FO_PARAGRAPH_IDS (off by default): the non-XSLT FO exporter puts
   "p-" + the paraId on each main-document paragraph's fo:block, which FOP's area tree
   reports as prod-id.
+- Phase 2: markers inside paragraphs that span pages, at the character where the new page
+  begins (the run split there, as Word does); PaginateSettings.lineBreaks (default on)
+  turns it off. The offsets come from run anchors the exporter writes ("r-" + paraId +
+  "-" + the run's offset in the paragraph's text, on its fo:inline), corrected for the
+  character FOP drops at each line end. The layout is of the accepted view of tracked
+  changes: new ConversionFeatures.PP_COMMON_ACCEPT_TRACKED_CHANGES (off by default for
+  PDF and HTML, where deletions stay struck through) removes deleted and moved-from
+  content, unwraps insertions, joins paragraphs whose mark is deleted and drops deleted
+  rows on the export's working copy (preprocess.AcceptTrackedChanges).
 
 Other:
 

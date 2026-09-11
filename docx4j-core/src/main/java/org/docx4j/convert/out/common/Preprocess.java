@@ -26,6 +26,7 @@ import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.common.preprocess.BookmarkMover;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.convert.out.common.preprocess.CoverPageSectPrMover;
+import org.docx4j.convert.out.common.preprocess.AcceptTrackedChanges;
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundDisablePageBreakOnFirstParagraph;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInEachList;
@@ -83,6 +84,16 @@ public class Preprocess extends ConversionFeatures {
 		return ret;
 	}
 
+	/** Whether PageBreak.process keeps a break-only paragraph's line (see there): the
+	 *  PP_PDF_PAGEBREAK_PARAGRAPH_LINE feature and the property both say so.  Public so
+	 *  that org.docx4j.model.pagination.Paginate can replay the split (CR-012).
+	 *  @since 17.1.1 */
+	public static boolean keepBreakLine(Set<String> features) {
+		return features.contains(PP_PDF_PAGEBREAK_PARAGRAPH_LINE)
+				&& org.docx4j.Docx4jProperties.getProperty(
+						"docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine", false);
+	}
+
 	/** Check what parts might be changed by the preprocessing, 
 	 *  those parts need to be deep copied.
 	 * 
@@ -95,7 +106,8 @@ public class Preprocess extends ConversionFeatures {
 		
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS) || 
 			features.contains(PP_COMMON_CONTAINERIZATION) ||
-			features.contains(PP_COMMON_COMBINE_FIELDS)) {
+			features.contains(PP_COMMON_COMBINE_FIELDS) ||
+			features.contains(PP_COMMON_ACCEPT_TRACKED_CHANGES)) {
 			
 			relationshipTypes.add(Namespaces.DOCUMENT);
 			relationshipTypes.add(Namespaces.HEADER);
@@ -154,6 +166,11 @@ public class Preprocess extends ConversionFeatures {
 
 //		log.debug(ret.getMainDocumentPart().getXML());
 	
+		if (features.contains(PP_COMMON_ACCEPT_TRACKED_CHANGES)) {
+			// first: the other steps see the accepted content
+			log.debug("PP_COMMON_ACCEPT_TRACKED_CHANGES");
+			AcceptTrackedChanges.process(ret);
+		}
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
 			log.debug("PP_COMMON_COMBINE_FIELDS");
 			FieldsCombiner.process(ret);
@@ -166,9 +183,7 @@ public class Preprocess extends ConversionFeatures {
 		}
 		if (features.contains(PP_COMMON_MOVE_PAGEBREAK)) {
 			log.debug("PP_COMMON_MOVE_PAGEBREAK");
-			PageBreak.process(ret, features.contains(PP_PDF_PAGEBREAK_PARAGRAPH_LINE)
-					&& org.docx4j.Docx4jProperties.getProperty(
-							"docx4j.convert.out.fo.wordLayout.pageBreakParagraphLine", false));
+			PageBreak.process(ret, keepBreakLine(features));
 //			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_PDF_COVERPAGE_MOVE_SECTPR)) {

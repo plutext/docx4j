@@ -42,17 +42,36 @@ import java.util.Map;
  * unique when the document never restarts its numbering, and it is the plain number
  * where the format is not decimal.</p>
  *
- * <p>A paragraph the layout did not place (hidden text, say, or a paragraph the FO
- * preprocessing folded into its neighbour) has no page; the getters return null for it.</p>
+ * <p>A paragraph the layout did not place (hidden text, say, a paragraph the FO
+ * preprocessing folded into its neighbour, or one joined to the paragraph before it
+ * because that one's mark is deleted) has no page; the getters return null for it.</p>
  *
  * @since 17.1.1
  */
 public final class PaginationMap {
 
+	/** A page boundary inside a paragraph as the area tree reader saw it, before
+	 *  {@link Paginate} resolves it to an offset in the paragraph's text. */
+	static final class RawBreak {
+		/** Which part of the paragraph (the preprocessing splits one at a page break inside it). */
+		int part;
+		/** Characters: into the part if a run anchor placed it, else all the paragraph's so far. */
+		int offset;
+		boolean absolute;
+		/** How many of the run's line ends before the boundary ended in a hyphen: at each,
+		 *  either the document's own (counted right) or one FOP added (counted one too
+		 *  many), which the resolver settles against the text. */
+		int hyphenEnds;
+		/** The first characters FOP put on the new page's line, for the resolver to
+		 *  settle the hyphen question by. */
+		final StringBuilder lineStart = new StringBuilder();
+	}
+
 	private final List<String> keys = new ArrayList<String>();
 	private final Map<String, Integer> pageIndexOf = new LinkedHashMap<String, Integer>();
 	private final Map<String, Integer> lastPageIndexOf = new LinkedHashMap<String, Integer>();
 	private final Map<String, Integer> pageOf = new LinkedHashMap<String, Integer>();
+	private final Map<String, List<RawBreak>> rawBreaks = new LinkedHashMap<String, List<RawBreak>>();
 	private final Map<String, int[]> breaksIn = new LinkedHashMap<String, int[]>();
 	private int pageCount = 0;
 
@@ -85,26 +104,35 @@ public final class PaginationMap {
 	}
 
 	/**
-	 * For a paragraph that spans pages, the character offsets in its text at which each
-	 * later page begins, ascending; an empty array otherwise.
+	 * For a paragraph that spans pages, the offsets in its text ({@link RunText}: the
+	 * characters of its {@code w:t}s, one for a symbol or non-breaking hyphen, none for
+	 * tabs, breaks and the rest) at which each later page begins, ascending; an empty
+	 * array otherwise.  Their number is the number of page boundaries inside the
+	 * paragraph.  Where a run spans the boundary the offset is inside it, at the first
+	 * character of the new page's line (the space FOP dropped at the line end before it
+	 * is stepped over by the writer); a hyphen FOP added at the line end is corrected for.
+	 * In a run holding a field result the offset can be off by the difference between
+	 * the cached result and what FOP printed.
 	 *
-	 * <p>The offsets count the characters FOP put on the lines before the break, after its
-	 * own hyphenation and with tabs and leaders expanded, so in a paragraph with tabs,
-	 * fields or images they are approximate (phase 2 of CR-012 reconciles them against the
-	 * paragraph's own text).  Their number is exact: it is the number of page boundaries
-	 * inside the paragraph.</p>
+	 * <p>For a map from {@link Paginate#parse} alone (no document to resolve against) the
+	 * offsets are as the area tree reader counted them: relative to the paragraph part
+	 * they are in, or, without a run anchor, the paragraph's characters so far.</p>
 	 */
 	public int[] getBreaks(String key) {
 		int[] breaks = breaksIn.get(key);
-		return breaks == null ? new int[0] : breaks.clone();
+		if (breaks != null) return breaks.clone();
+		List<RawBreak> raw = rawBreaks.get(key);
+		if (raw == null) return new int[0];
+		breaks = new int[raw.size()];
+		for (int i = 0; i < breaks.length; i++) breaks[i] = raw.get(i).offset;
+		return breaks;
 	}
 
 	/** The keys of the paragraphs that span pages, in document order. */
 	public List<String> getKeysWithBreaks() {
 		List<String> ret = new ArrayList<String>();
-		for (String key : (keys.isEmpty() ? breaksIn.keySet() : keys)) {
-			int[] breaks = breaksIn.get(key);
-			if (breaks != null && breaks.length > 0) ret.add(key);
+		for (String key : (keys.isEmpty() ? rawBreaks.keySet() : keys)) {
+			if (getBreaks(key).length > 0) ret.add(key);
 		}
 		return ret;
 	}
@@ -133,14 +161,26 @@ public final class PaginationMap {
 		pageOf.put(key, pageNumber);
 	}
 
-	/** A later sighting, on a later page: the paragraph continues there from this offset. */
-	void continueOn(String key, int pageIndex, int offset) {
-		int[] old = breaksIn.get(key);
-		int[] breaks = new int[old == null ? 1 : old.length + 1];
-		if (old != null) System.arraycopy(old, 0, breaks, 0, old.length);
-		breaks[breaks.length - 1] = offset;
-		breaksIn.put(key, breaks);
+	/** A later sighting, on a later page: the paragraph continues there. */
+	void continueOn(String key, int pageIndex, RawBreak raw) {
+		List<RawBreak> list = rawBreaks.get(key);
+		if (list == null) {
+			list = new ArrayList<RawBreak>();
+			rawBreaks.put(key, list);
+		}
+		list.add(raw);
 		lastPageIndexOf.put(key, pageIndex);
+	}
+
+	/** The boundaries as read, for {@link Paginate} to resolve. */
+	List<RawBreak> raw(String key) {
+		List<RawBreak> list = rawBreaks.get(key);
+		return list == null ? Collections.<RawBreak>emptyList() : list;
+	}
+
+	/** The resolved boundaries: offsets in the paragraph's text. */
+	void setBreaks(String key, int[] breaks) {
+		breaksIn.put(key, breaks);
 	}
 
 	void setPageCount(int pageCount) {
@@ -158,6 +198,7 @@ public final class PaginationMap {
 		pageIndexOf.keySet().retainAll(wanted);
 		lastPageIndexOf.keySet().retainAll(wanted);
 		pageOf.keySet().retainAll(wanted);
+		rawBreaks.keySet().retainAll(wanted);
 		breaksIn.keySet().retainAll(wanted);
 	}
 
@@ -171,9 +212,10 @@ public final class PaginationMap {
 				sb.append("?");
 			} else {
 				sb.append(index);
-				int[] breaks = breaksIn.get(key);
-				if (breaks != null && breaks.length > 0) {
-					sb.append("-").append(lastPageIndexOf.get(key));
+				int[] breaks = getBreaks(key);
+				if (breaks.length > 0) {
+					sb.append("-").append(lastPageIndexOf.get(key)).append("@");
+					for (int i = 0; i < breaks.length; i++) sb.append(i == 0 ? "" : ",").append(breaks[i]);
 				}
 			}
 		}

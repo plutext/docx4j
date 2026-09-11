@@ -159,6 +159,14 @@ public abstract class ConversionFeatures {
 	 *  @since 17.1.1 */
 	public static final String PP_FO_PARAGRAPH_IDS = "pp.fo.paragraphids";
 
+	/** Lay out the accepted view of the main document part's tracked changes: deleted
+	 *  and moved-from content removed, insertions and moved-to content unwrapped, joined
+	 *  paragraphs whose mark is deleted, deleted rows gone (AcceptTrackedChanges).  Off
+	 *  by default: the exporters show deletions struck through.  Used by
+	 *  {@code org.docx4j.model.pagination.Paginate} (CR-012).
+	 *  @since 17.1.1 */
+	public static final String PP_COMMON_ACCEPT_TRACKED_CHANGES = "pp.common.accepttrackedchanges";
+
 	
 	/** Default features, that get applied to a PDF conversion
 	 */

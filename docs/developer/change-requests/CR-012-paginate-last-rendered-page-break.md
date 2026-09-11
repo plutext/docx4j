@@ -1,6 +1,6 @@
 # CR: Paginate: rewrite `w:lastRenderedPageBreak` from Apache FOP's area tree
 
-Status: IN PROGRESS. Phase 1 shipped 2026-09-11 (§6). Requested by the docx4j-core-ts editor design
+Status: IN PROGRESS. Phases 1 and 2 shipped 2026-09-11 (§6). Requested by the docx4j-core-ts editor design
 (`plutext/docx4j-core-ts`, CR-003 appendix D): a browser editor that does not paginate shows
 page boundaries from the `w:lastRenderedPageBreak` markers Word leaves in a file, and needs a
 "re-paginate" service to refresh them after edits. docx4j has the machinery in substance
@@ -330,6 +330,73 @@ numbers have had for years.
    pages, "page break then text", two break-only paragraphs in a row, deleted text taking
    no space. About one focused session; the risk is the split-paragraph numbering, which
    the fallback keeps safe.
+
+   **Shipped 2026-09-11** (`RunText`, the run anchors in `FOConversionContext.runFoId` and
+   `AbstractVisitorExporterGenerator.runFoId`, `PaginationAreaTreeHandler` reading them,
+   `Paginate.resolveBreaks` and the in-paragraph writer, `AcceptTrackedChanges` behind
+   `PP_COMMON_ACCEPT_TRACKED_CHANGES`, `PageBreak.splitPositions`; tests `PaginateTest` (20,
+   through FOP), `PaginationAreaTreeHandlerTest`, `PaginateResolveBreaksTest`,
+   `AcceptTrackedChangesTest`, `PageBreakSplitPositionsTest`). What the implementation
+   settled, where it departs from the plan above:
+
+   - **Run anchors carry the run's offset, not its ordinal.** The preprocessing changes
+     the run count (`FieldsCombiner` turns a complex field into a `w:fldSimple`, whose
+     result the exporter writes as text straight into the enclosing inline; the accepted
+     view unwraps `w:ins`), so an ordinal agreed between exporter and writer was not to be
+     had. The anchor is `r-<paragraph id>-<offset>`, the offset being how much of the
+     paragraph's text (`RunText`) the runs before it stand for, counted on the exporter's
+     side over the document it lays out and on the writer's over the document the markers
+     go into; the two agree as long as `RunText` does, and a preprocessing step that
+     changes the runs without changing the text is harmless. Every run met counts, hidden
+     or in a field code, converted or not.
+   - **FOP drops a character at every line end, not only at the page boundary.** Measured
+     (area tree, one run of 300 sentences): page 1 holds 4291 rendered characters over 45
+     lines and page 2 opens at offset 4336 of the text, one dropped space per line. So a
+     boundary inside a run is the anchor's offset, plus the characters FOP put on lines
+     for that run, plus one per line the run appeared on (its inline area recurs once per
+     line), less the lines that ended in a hyphen. The text model counts a tab and a
+     wrapping `w:br` or `w:cr` as one character for the same reason: FOP renders a tab as
+     an empty space area (counted as one by the reader) and ends a line at a break, so
+     what it drops there is one character either way. A page or column `w:br` counts
+     nothing: the preprocessing takes it out of the paragraph before the exporter counts.
+   - **Hyphens.** A line ending in a hyphen dropped nothing, and the hyphen is either the
+     document's (counted right) or FOP's (one too many). The reader records how many such
+     line ends the run had and the first characters of the new page's line; the resolver
+     tries the offset and the `hyphenEnds` below it for one at which the document's text
+     begins with that line's first word. With automatic hyphenation off (the usual case)
+     there is nothing to settle.
+   - **Field results.** PAGE and the like print what FOP computed, the model counts the
+     cached result; same length in the common case, else the boundary in that run is off
+     by the difference. Documented, not corrected (as planned).
+   - **A document opening with a break-only paragraph.** FOP ignores a break-before at the
+     start of the flow and places the paragraph on page 1 with what follows, so its
+     content is taken to end on page 1, not "page 0", and the next paragraph is not
+     marked; the markers follow FOP's layout here, not Word's (which would start page 2).
+   - **The split paragraph.** `PageBreak.split` now copies the paraId onto the second
+     half, so the `~n` continuation ids of phase 1 are live; `PageBreak.splitPositions`
+     replays `updateParagraph`'s rules without splitting, and `Paginate.resolveBreaks`
+     bases each part's offsets on it, dropping (with a warning) a boundary in a part the
+     document's page breaks cannot account for.
+   - **Word's marker placement, as written.** Before the first character of the new page's
+     line (the reader's count lands on the dropped space, the resolver steps past it, and
+     the writer steps past spaces, tabs and breaks too); the run split there into two, the
+     second with a copy of the run properties, opening with the marker, both `w:t`s
+     `xml:space="preserve"`; at a run boundary the marker opens the next run without a
+     split; a boundary that resolves to the paragraph's start or end writes nothing inside.
+     "Page break then text" gets the marker after the break; of two break-only paragraphs
+     in a row the second gets one in its run; a row split across pages is marked in the
+     cell paragraph (nothing special: it is keyed like any paragraph).
+   - **The accepted view.** `AcceptTrackedChanges` runs first in the preprocessing, on the
+     working copy, main document part only (text boxes reached through their runs;
+     headers, footers and notes untouched): `w:del` and `w:moveFrom` content removed,
+     `w:ins` and `w:moveTo` unwrapped, a paragraph whose mark is deleted joined with the
+     next (the first's content first and its paraId, the second's properties: the mark
+     that survives is the second's), a `w:trPr/w:del` row removed. On the writer's side
+     `LayoutParagraph` chains the document paragraphs the same way, so an offset past the
+     first paragraph's text resolves into the second's runs; the second's key is absent
+     from the map. Formatting revisions need nothing.
+   - **Not done:** the XSLT pathway still writes no ids; headers, footers and notes keep
+     their tracked changes as marked up (their space is what it is).
 3. **TOC over Paginate.** `TocGenerator` uses `Paginate.compute`; `TocPageNumbersHandler`
    removed or reduced. Existing TOC tests unchanged.
 4. **docx4j-mcp `paginate` tool** (that repository).
