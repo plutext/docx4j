@@ -1,13 +1,15 @@
 package org.docx4j.openpackaging.parts.SpreadsheetML;
 
-import javax.xml.bind.JAXBElement;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.xlsx4j.sml.CTExternalLink;
 
-public class ExternalLinkPart  extends JaxbSmlPart<JAXBElement<CTExternalLink>> {
+public class ExternalLinkPart  extends JaxbSmlPart<CTExternalLink> {
+	// since 8.3.16: JaxbSmlPart<CTExternalLink>, not JaxbSmlPart<JAXBElement<CTExternalLink>>;
+	// unmarshalling unwraps the root JAXBElement, so the old generic was a ClassCastException
+	// waiting to happen (#613; backport of 0da500025, 11.5.10)
 	
 	
 	public ExternalLinkPart(PartName partName) throws InvalidFormatException {

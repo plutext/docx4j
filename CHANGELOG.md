@@ -26,6 +26,11 @@ mc:AlternateContent (mc:Choice w:pict / mc:Fallback w:drawing); docx4j keeps the
 without a drawing property it was dropped, leaving an empty w:numPicBullet Word can't open.
 Backport of ec5fed5fe (11.5.10, #618).  Fixes #623.
 
+ExternalLinkPart (xlsx) is now JaxbSmlPart<CTExternalLink>, not JaxbSmlPart<JAXBElement<CTExternalLink>>:
+unmarshalling unwraps the root element, so getJaxbElement() through the declared type always threw
+ClassCastException.  Source-incompatible for code written against the old generic, but no such
+code could have worked.  Backport of 0da500025 (11.5.10).  Fixes #613.
+
 OpenDoPE XHTML binding (backported from 17.1.1; docx4j CR-013):
 
 - The XHTML importer's FormattingOption for runs, paragraphs and tables can be set in
