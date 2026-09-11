@@ -1,6 +1,6 @@
 # CR: Paginate: rewrite `w:lastRenderedPageBreak` from Apache FOP's area tree
 
-Status: PROPOSED (2026-09-11). Requested by the docx4j-core-ts editor design
+Status: IN PROGRESS. Phase 1 shipped 2026-09-11 (§6). Requested by the docx4j-core-ts editor design
 (`plutext/docx4j-core-ts`, CR-003 appendix D): a browser editor that does not paginate shows
 page boundaries from the `w:lastRenderedPageBreak` markers Word leaves in a file, and needs a
 "re-paginate" service to refresh them after edits. docx4j has the machinery in substance
@@ -196,6 +196,60 @@ numbers have had for years.
    visitor exporter, `PaginationAreaTreeHandler`. Tests: a fixture with known pages (the
    TOC tests' documents), round trip (markers written, document still opens in Word, TOC
    pages unchanged), a paragraph in a table cell.
+
+   **Shipped 2026-09-11** (`org.docx4j.model.pagination` in docx4j-core; the id emission in
+   `FOConversionContext.paragraphFoId` and `FOExporterVisitorGenerator.handleP`; tests
+   `PaginationAreaTreeHandlerTest` in docx4j-core-tests and `PaginateTest` in
+   docx4j-export-fo's own tests, in package `org.docx4j.convert.out.fo` because under JPMS
+   a test in that module cannot join the core module's package). What the implementation
+   settled, where it departs from the text above:
+
+   - **Markers after explicit breaks (§3.4 corrected).** Word *does* write a marker after
+     an explicit page break or section break: `header-no-rels.docx` has
+     `<w:br w:type="page"/></w:r></w:p><w:p><w:r><w:lastRenderedPageBreak/><w:t>Second page`
+     and the same after a `w:sectPr` paragraph; `odd_even_different_first_page.docx` has a
+     marker in a paragraph whose only content is a page break. Its rule is run-based: the
+     marker goes in the first run that starts on the page. The writer follows that.
+   - **Where FOP puts a break paragraph.** The export's `PageBreak` preprocessing moves a
+     break at the head of a paragraph in front of its block (break-before), or onto the
+     next block when the paragraph holds nothing else, so the map has a break-only
+     paragraph on the page *after* its break, or not at all; Word renders the break as the
+     last line of the page before. Measured (`PaginateTest`): breaks before text vanish
+     from the map, a break before a table or before another break paragraph is placed on
+     the next page. So the writer gives no marker to a paragraph beginning with a page
+     break (its first run starts on the page before) and takes a break-only paragraph to
+     end on the page before the map's, so the following paragraph gets the marker, as in
+     Word. Two break-only paragraphs in a row: Word marks the second (its break run is the
+     first on its page); phase 1 does not, the page after is marked. A paragraph "break
+     then text" needs its marker between the two, inside the run: phase 2.
+   - **Page index and page number.** `PaginationMap` reports both: `getPageIndex` (1-based
+     rendering order, what page boundaries are decided from) and `getPage` (FOP's
+     formatted number, as the TOC shows it; not unique across numbering restarts).
+     `getLastPageIndex` and `getBreaks` describe a paragraph that spans pages; the offsets
+     are already populated (§3.3's character count), approximate until phase 2.
+   - **Repeated blocks.** Where the preprocessing writes a paragraph twice (split at a
+     page break inside it), the later blocks get `p-<key>~<n>` (`PaginationAreaTreeHandler.foId`),
+     which FOP accepts (ids must be unique; strict validation is on) and the handler reads
+     as the same paragraph, so the split records as a break. Two *different* paragraphs
+     sharing a paraId (copy-paste) are handled before the layout: `compute` keys the
+     second `P<n>` for the call, `paginate` gives it its own id.
+   - **Text boxes.** Excluded in the exporter, not the handler: `AbstractWmlConversionContext`
+     counts text-box nesting (`enterTextBox`/`exitTextBox`, around the VML and DrawingML
+     text box traversals) and `paragraphFoId` writes no id inside one. The handler's first
+     cut skipped absolutely positioned blocks instead, which dropped every table: the
+     export wraps tables in a positioned block-container too.
+   - **Empty paragraph starting a page** gets a `w:r` to hold its marker (Word writes none
+     there, having no run; a consumer drawing boundaries needs it).
+   - **`writeParaIds`** is a `Boolean` on `PaginateSettings`: null takes the entry point's
+     default (§3.1 decision), and `applyLastRenderedPageBreaks(pkg, map)` assigns ids while
+     the three-argument form lets a caller decline. `compute` sets the transient `P<n>`
+     keys as the paragraphs' paraId for the duration of the layout only (the exporter
+     reads the paraId), restoring them after. A map is refused (`IllegalArgumentException`)
+     when the document's paragraphs no longer line up with its keys.
+   - **Not done in this phase:** `PaginateSettings.lineBreaks` (phase 2 adds it with the
+     in-paragraph writer); the `docx2fo.xslt` template change (the visitor pathway is the
+     one required; the XSLT pathway emits no ids). `Paginate.parse(byte[])` is public for a
+     caller with an area tree of their own.
 2. **Line granularity.** Break offsets from line areas, run splitting in the writer, the
    alignment against `TextUtils` text. Tests: a long paragraph across two pages, a paragraph
    with a tab and a field, a run inside a hyperlink.

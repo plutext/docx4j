@@ -154,7 +154,12 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				
 				childResults = document.createDocumentFragment();
 				AbstractVisitorExporterGenerator<CC> generator = getFactory().createInstance(conversionContext, document, childResults);
-				new TraversalUtil(textBox.getTxbxContent().getContent(), generator);
+				conversionContext.enterTextBox();
+				try {
+					new TraversalUtil(textBox.getTxbxContent().getContent(), generator);
+				} finally {
+					conversionContext.exitTextBox();
+				}
 			}
 			
 		}

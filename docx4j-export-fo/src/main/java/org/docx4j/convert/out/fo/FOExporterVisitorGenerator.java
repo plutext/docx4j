@@ -332,7 +332,12 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		getCurrentParent().appendChild(container);
 		org.docx4j.wml.CTTxbxContent txbx = XsltFOFunctions.shapeTextBox(anchorOrInline);
 		if (txbx!=null) {
-			new TraversalUtil(txbx.getContent(), childGenerator(container));
+			conversionContext.enterTextBox();
+			try {
+				new TraversalUtil(txbx.getContent(), childGenerator(container));
+			} finally {
+				conversionContext.exitTextBox();
+			}
 		}
 	}
 
@@ -422,6 +427,13 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		DocumentFragment block = XsltFOFunctions.createBlockForPPr(
 				conversionContext, p.getPPr(), pStyleVal, childResults);
 		if (block!=null) {
+			// CR-012: the paragraph's id on its outermost block (fo:block, fo:list-block
+			// or the bidi fo:block-container), so that FOP's area tree names, in prod-id,
+			// the paragraph each block area came from; null unless PP_FO_PARAGRAPH_IDS
+			String foId = conversionContext.paragraphFoId(p.getParaId());
+			if (foId!=null && block.getFirstChild() instanceof Element) {
+				((Element)block.getFirstChild()).setAttribute("id", foId);
+			}
 			(tc.peek()!=null ? tc.peek() : parentNode)
 					.appendChild(document.importNode(block, true));
 		}

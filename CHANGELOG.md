@@ -197,6 +197,17 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   5, ...) and PRINTDATE are all evaluated by Word whatever its update setting, so they stay
   evaluated here. PDF and HTML. See word-layout-rules.md §7.
 
+Pagination (CR-012, phase 1):
+
+- New org.docx4j.model.pagination.Paginate: lays the document out with FOP (docx4j-export-fo
+  on the classpath) and reports which page each paragraph of the main document part starts
+  on, keyed by w14:paraId (PaginationMap); paginate() also rewrites the document's
+  w:lastRenderedPageBreak markers at paragraph boundaries, as Word records its last
+  rendering, assigning paraIds where missing. In-paragraph markers are phase 2.
+- ConversionFeatures.PP_FO_PARAGRAPH_IDS (off by default): the non-XSLT FO exporter puts
+  "p-" + the paraId on each main-document paragraph's fo:block, which FOP's area tree
+  reports as prod-id.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

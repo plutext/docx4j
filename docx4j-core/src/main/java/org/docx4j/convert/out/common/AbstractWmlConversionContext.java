@@ -196,6 +196,25 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
     	return footnoteNumberCounter;
     }
 
+	/** How many text boxes the content being converted is nested in (CR-012). */
+	private int textBoxDepth = 0;
+
+	/** The generator is about to convert a text box's content (VML or DrawingML). @since 17.1.1 */
+	public void enterTextBox() {
+		textBoxDepth++;
+	}
+
+	/** ... and has finished with it. @since 17.1.1 */
+	public void exitTextBox() {
+		textBoxDepth--;
+	}
+
+	/** Whether the content being converted is inside a text box, whose paragraphs are laid
+	 *  out where the box is anchored, not in the flow. @since 17.1.1 */
+	public boolean isInTextBox() {
+		return textBoxDepth > 0;
+	}
+
 	public void setCurrentPart(Part currentPart) {
 		this.currentPart = currentPart;
 	}

@@ -19,9 +19,12 @@
  */
 package org.docx4j.convert.out.fo;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
@@ -35,8 +38,10 @@ import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.model.pagination.PaginationAreaTreeHandler;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -245,6 +250,37 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 		return handler;
 	}
 	
+	/** paraId to the number of blocks written for it (CR-012); null until the first. */
+	private Map<String, Integer> paragraphFoIds;
+
+	/**
+	 * The {@code id} for this paragraph's fo:block, or null for none: the paragraph's
+	 * {@code w14:paraId} prefixed, when {@link ConversionFeatures#PP_FO_PARAGRAPH_IDS} is
+	 * on and the paragraph is the main document part's (a header or footer paragraph
+	 * would recur on every page, and a note's paragraphs are not keyed) and not in a text
+	 * box (laid out where the box is, not in the flow; not keyed either).  A paragraph
+	 * written more than once (the preprocessing splits one at a page break inside it)
+	 * gets a counter on its later ids, since ids must be unique in the FO document.
+	 *
+	 * @see PaginationAreaTreeHandler#foId(String, int)
+	 * @since 17.1.1
+	 */
+	public String paragraphFoId(String paraId) {
+
+		if (paraId == null || paraId.isEmpty()
+				|| getConversionSettings() == null
+				|| !getConversionSettings().getFeatures().contains(ConversionFeatures.PP_FO_PARAGRAPH_IDS)
+				|| !(getCurrentPart() instanceof MainDocumentPart)
+				|| isInTextBox()) {
+			return null;
+		}
+		if (paragraphFoIds == null) paragraphFoIds = new HashMap<String, Integer>();
+		Integer n = paragraphFoIds.get(paraId);
+		int occurrence = (n == null ? 0 : n.intValue());
+		paragraphFoIds.put(paraId, Integer.valueOf(occurrence + 1));
+		return PaginationAreaTreeHandler.foId(paraId, occurrence);
+	}
+
 	public FORenderer getFORenderer() {
 		return foRenderer;
 	}

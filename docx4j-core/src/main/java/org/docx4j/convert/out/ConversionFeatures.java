@@ -150,6 +150,15 @@ public abstract class ConversionFeatures {
 	 */
 	public static final String PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX = "pp.common.tbl-p-style-fix";
 
+	/** Give each paragraph of the main document part an {@code id} on its fo:block
+	 *  ({@code p-} + its {@code w14:paraId}), so that FOP's area tree reports, via
+	 *  {@code prod-id}, which page each paragraph landed on.  Off by default: ids must be
+	 *  unique in the FO document, and the attribute is one more per paragraph.  Read by
+	 *  {@code org.docx4j.model.pagination.Paginate} (CR-012); the non-XSLT (visitor)
+	 *  pathway honours it.
+	 *  @since 17.1.1 */
+	public static final String PP_FO_PARAGRAPH_IDS = "pp.fo.paragraphids";
+
 	
 	/** Default features, that get applied to a PDF conversion
 	 */

@@ -82,6 +82,7 @@ module org.docx4j.core {
     exports org.docx4j.model.fields.seq;
     exports org.docx4j.model.images;
     exports org.docx4j.model.listnumbering;
+    exports org.docx4j.model.pagination;
     exports org.docx4j.model.properties;
     exports org.docx4j.model.properties.paragraph;
     exports org.docx4j.model.properties.run;
