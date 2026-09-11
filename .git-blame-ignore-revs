@@ -1,0 +1,6 @@
+# Commits to skip in `git blame` (whitespace-only reformatting, e.g. CRLF -> LF).
+# Enable once per clone:
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# CR-014 phase 0: org.docx4j.model.listnumbering and its tests, CRLF -> LF
+55c5475e1feb54e3f96a9125bb52e5888d7684e9

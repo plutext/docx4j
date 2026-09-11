@@ -87,4 +87,7 @@ are welcome, subject to the following conditions:
   practical.
 - **Changelog**: add a line to `CHANGELOG.md` for user-visible changes.
 - **Style**: match the conventions of the surrounding code; use Unix (LF)
-  line endings.
+  line endings. Whitespace-only conversions of legacy files are listed in
+  `.git-blame-ignore-revs`; run
+  `git config blame.ignoreRevsFile .git-blame-ignore-revs` once per clone so
+  `git blame` looks through them.

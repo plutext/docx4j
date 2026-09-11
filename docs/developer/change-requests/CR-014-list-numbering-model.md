@@ -1,6 +1,6 @@
 # CR: List numbering model (`org.docx4j.model.listnumbering`) — line endings, correctness, and separating definitions from counter state
 
-Status: PROPOSED (2026-09-12)
+Status: IN PROGRESS (2026-09-12) — phase 0 (LF line endings) landed in 55c5475e1; next 0b, 1, 3
 Scope: the package `docx4j-core/src/main/java/org/docx4j/model/listnumbering`
 (15 files, ~2,200 lines), its driver `NumberingDefinitionsPart` (maps,
 `getEmulator`, `restart`), and the tests under
@@ -456,6 +456,10 @@ deprecation before removal (i.e. remove no earlier than 17.2).
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-09-12: phase 0 done (55c5475e1, whitespace-only, 14 files: the four
+  main-source files, five test classes and the five `ind/*.xml` fixtures).
+  Hash recorded in `.git-blame-ignore-revs`; `.gitattributes` pins the
+  package and its test directories to LF.
 
 ## Risks
 
