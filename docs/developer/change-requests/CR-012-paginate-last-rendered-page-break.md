@@ -57,8 +57,9 @@ that had an `id` attribute carries `prod-id="<id>"` (the `Trait.PROD_ID` name, w
 pages appears as block areas with the same `prod-id` on both pages; its line areas hold the
 text of each line, which is the information for in-paragraph breaks.
 
-**Decision (Jason, 2026-09-11): the CR targets the FOP version in the tree, 2.9, and does
-not support older FOP versions.** The names above are 2.9's, checked in its jar
+**Decision (Jason, 2026-09-11): the CR targets the FOP version in the tree, 2.11
+(`docx4j-export-fo/pom.xml`), and does not support older FOP versions.** The names above
+are 2.11's, checked in its jar
 (`org.apache.fop.area.Trait` names the trait `prod-id`; `XMLRenderer` emits `pageViewport`,
 `formatted-nr`, `lineArea`, `text`, `word`, `space`, `inlineparent`); nothing in the design
 hedges for the older renderer's `text`-only line areas.
@@ -198,7 +199,7 @@ numbers have had for years.
 
 ## 7. Risks and notes
 
-- The area tree names (`prod-id`, `formatted-nr`, `key`, `word`, `space`) are FOP 2.9's XML
+- The area tree names (`prod-id`, `formatted-nr`, `key`, `word`, `space`) are FOP 2.11's XML
   renderer's; the handler is written against that version only (§1.3) and covered by a
   test that fails loudly on a missing attribute, which is what a future FOP upgrade trips.
 - Fonts: FOP paginates with the fonts its font mapper resolves, so pages drift from Word's
