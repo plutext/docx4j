@@ -1,6 +1,6 @@
 # CR: Configurable XHTMLImporter formatting options for OpenDoPE XHTML binding
 
-Status: IN PROGRESS — phases 1 and 2 SHIPPED 2026-09-11 (commit hash below);
+Status: IN PROGRESS — phases 1 and 2 SHIPPED 2026-09-11 (bd072179d);
 phase 3 (ImportXHTML-side test) and phase 4 (8.3.x backport) open; phase 5 out
 (see "Decisions")
 Scope: how the OpenDoPE binding traversers configure the `XHTMLImporterImpl`
@@ -302,7 +302,7 @@ Do not touch the `PrioritiseRPr` visitors (interaction 2) beyond documenting.
 
 ### Phase 1 — property-driven setters (docx4j-core, current line)
 
-**SHIPPED 2026-09-11** (commit: recorded below once committed).  As planned,
+**SHIPPED 2026-09-11** (bd072179d).  As planned,
 with one refinement: the wrapper guard is per level, not all-or-nothing —
 `ParagraphFormatting=CLASS_TO_STYLE_ONLY` drops the pPr-derived CSS,
 `RunFormatting=CLASS_TO_STYLE_ONLY` drops the rPr-derived CSS (fonts
