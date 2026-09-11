@@ -21,6 +21,11 @@ Claude Fable 5.1
 Changes in Version 8.3.16
 --------------------------
 
+w:numPicBullet now allows w:drawing as well as w:pict.  Recent Word writes picture bullets as
+mc:AlternateContent (mc:Choice w:pict / mc:Fallback w:drawing); docx4j keeps the fallback, and
+without a drawing property it was dropped, leaving an empty w:numPicBullet Word can't open.
+Backport of ec5fed5fe (11.5.10, #618).  Fixes #623.
+
 OpenDoPE XHTML binding (backported from 17.1.1; docx4j CR-013):
 
 - The XHTML importer's FormattingOption for runs, paragraphs and tables can be set in

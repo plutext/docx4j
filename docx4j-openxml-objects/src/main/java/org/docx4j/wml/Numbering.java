@@ -1617,9 +1617,10 @@ public class Numbering implements Child
      * &lt;complexType>
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
+     *       &lt;choice>
      *         &lt;element name="pict" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Picture"/>
-     *       &lt;/sequence>
+     *         &lt;element name="drawing" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Drawing"/>
+     *       &lt;/choice>
      *       &lt;attribute name="numPicBulletId" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
@@ -1630,14 +1631,18 @@ public class Numbering implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-        "pict"
+        "pict",
+        "drawing"
     })
     @XmlRootElement(name="numPicBullet")
     public static class NumPicBullet implements Child
     {
 
-        @XmlElement(required = true)
+        // Since 8.3.16 (backport of 11.5.10's ec5fed5fe, #618 / #623): recent Word writes
+        // mc:AlternateContent here, whose mc:Fallback is a w:drawing; without this field
+        // the drawing was dropped, leaving an empty w:numPicBullet Word can't open.
         protected Pict pict;
+        protected Drawing drawing;
         @XmlAttribute(name = "numPicBulletId", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger numPicBulletId;
         @XmlTransient
@@ -1665,6 +1670,32 @@ public class Numbering implements Child
          */
         public void setPict(Pict value) {
             this.pict = value;
+        }
+
+        /**
+         * Gets the value of the drawing property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Drawing }
+         *     
+         * @since 8.3.16
+         */
+        public Drawing getDrawing() {
+            return drawing;
+        }
+
+        /**
+         * Sets the value of the drawing property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Drawing }
+         *     
+         * @since 8.3.16
+         */
+        public void setDrawing(Drawing value) {
+            this.drawing = value;
         }
 
         /**
