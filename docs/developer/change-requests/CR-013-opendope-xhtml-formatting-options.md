@@ -1,7 +1,7 @@
 # CR: Configurable XHTMLImporter formatting options for OpenDoPE XHTML binding
 
 Status: DONE (2026-09-11) — phases 1 and 2 SHIPPED (bd072179d); phase 3
-DONE in the ImportXHTML working tree (test uncommitted there at the time);
+DONE (ImportXHTML cd244ba);
 phase 4 SHIPPED on local branch `VERSION_8_3_16` (557d4b77f, not pushed);
 phase 5 out by decision
 Scope: how the OpenDoPE binding traversers configure the `XHTMLImporterImpl`
@@ -357,7 +357,7 @@ the default (NonXSLT) traverser and again with
 `BindingHandler.Implementation=BindingTraverserXSLT`; `RunFormatting` alone
 → run CSS gone, paragraph `ind` kept (the keys are independent); an unknown
 value → ignored, behaves as unset.  Keys are removed from `Docx4jProperties`
-in `@After`.  (ImportXHTML commit hash: to be recorded when committed.)
+in `@After`.  ImportXHTML commit cd244ba.
 
 That module has both docx4j-core and ImportXHTML on the classpath.  A
 binding test: template with an XHTML-bound control, XHTML with `@class`
