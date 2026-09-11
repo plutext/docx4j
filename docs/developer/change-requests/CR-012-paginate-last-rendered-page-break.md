@@ -197,7 +197,7 @@ numbers have had for years.
    TOC tests' documents), round trip (markers written, document still opens in Word, TOC
    pages unchanged), a paragraph in a table cell.
 
-   **Shipped 2026-09-11** (`org.docx4j.model.pagination` in docx4j-core; the id emission in
+   **Shipped 2026-09-11, commit bf2a8c908** (`org.docx4j.model.pagination` in docx4j-core; the id emission in
    `FOConversionContext.paragraphFoId` and `FOExporterVisitorGenerator.handleP`; tests
    `PaginationAreaTreeHandlerTest` in docx4j-core-tests and `PaginateTest` in
    docx4j-export-fo's own tests, in package `org.docx4j.convert.out.fo` because under JPMS
