@@ -8,7 +8,7 @@ Version 8.3.16
 Release date
 ------------
 
-TBD
+11 September 2026
 
 
 Contributors to this release
@@ -21,6 +21,16 @@ Claude Fable 5.1
 Changes in Version 8.3.16
 --------------------------
 
+OpenDoPE XHTML binding (backported from 17.1.1; docx4j CR-013):
+
+- The XHTML importer's FormattingOption for runs, paragraphs and tables can be set in
+  docx4j.properties (docx4j.model.datastorage.BindingTraverser.XHTML.RunFormatting,
+  .ParagraphFormatting, .TableFormatting); binding previously always ran with the
+  importer's default.  Note: docx4j-ImportXHTML 8.3.x still emits w:rFonts whatever the
+  option (fixed in ImportXHTML 17.1.1 only).
+- BindingHandler.setXHTMLImporterCustomizer: a hook invoked on each XHTMLImporterImpl
+  immediately before convert, for any other importer setting, per content control.
+
 w:numPicBullet now allows w:drawing as well as w:pict.  Recent Word writes picture bullets as
 mc:AlternateContent (mc:Choice w:pict / mc:Fallback w:drawing); docx4j keeps the fallback, and
 without a drawing property it was dropped, leaving an empty w:numPicBullet Word can't open.
@@ -31,15 +41,6 @@ unmarshalling unwraps the root element, so getJaxbElement() through the declared
 ClassCastException.  Source-incompatible for code written against the old generic, but no such
 code could have worked.  Backport of 0da500025 (11.5.10).  Fixes #613.
 
-OpenDoPE XHTML binding (backported from 17.1.1; docx4j CR-013):
-
-- The XHTML importer's FormattingOption for runs, paragraphs and tables can be set in
-  docx4j.properties (docx4j.model.datastorage.BindingTraverser.XHTML.RunFormatting,
-  .ParagraphFormatting, .TableFormatting); binding previously always ran with the
-  importer's default.  Note: docx4j-ImportXHTML 8.3.x still emits w:rFonts whatever the
-  option (fixed in ImportXHTML 17.1.1 only).
-- BindingHandler.setXHTMLImporterCustomizer: a hook invoked on each XHTMLImporterImpl
-  immediately before convert, for any other importer setting, per content control.
 
 
 Version 8.3.15   
