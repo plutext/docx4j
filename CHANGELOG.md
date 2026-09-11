@@ -2,6 +2,36 @@ CHANGELOG
 =========
 
 
+Version 8.3.16
+===============
+
+Release date
+------------
+
+TBD
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+Claude Fable 5.1
+
+
+Changes in Version 8.3.16
+--------------------------
+
+OpenDoPE XHTML binding (backported from 17.1.1; docx4j CR-013):
+
+- The XHTML importer's FormattingOption for runs, paragraphs and tables can be set in
+  docx4j.properties (docx4j.model.datastorage.BindingTraverser.XHTML.RunFormatting,
+  .ParagraphFormatting, .TableFormatting); binding previously always ran with the
+  importer's default.  Note: docx4j-ImportXHTML 8.3.x still emits w:rFonts whatever the
+  option (fixed in ImportXHTML 17.1.1 only).
+- BindingHandler.setXHTMLImporterCustomizer: a hook invoked on each XHTMLImporterImpl
+  immediately before convert, for any other importer setting, per content control.
+
+
 Version 8.3.15   
 ===============
 

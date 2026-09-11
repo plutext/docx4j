@@ -719,6 +719,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.error("setMaxWidth method not found. ");				
 		} 
 		
+		// since 8.3.16 (CR-013): docx4j.properties may set the importer's FormattingOptions
+		XHTMLImporterFormatting.apply(xHTMLImporter, xhtmlImporterClass);
+		
 		// If we are in a table cell, ensure oversized images are scaled
 		if (bindingTraverserState.tcStack.peek() != null) {
 		    log.debug("inserting in a tc" );
@@ -883,6 +886,16 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
 	        setHyperlinkStyleMethod.invoke(xHTMLImporter, 
 	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+			
+			// since 8.3.16 (CR-013): user hook; last, so whatever it sets wins
+			XHTMLImporterCustomizer customizer = BindingHandler.getXHTMLImporterCustomizer();
+			if (customizer!=null) {
+				try {
+					customizer.customize(xHTMLImporter, sdtPr, bindingTraverserState.tcStack.peek()!=null);
+				} catch (Exception e) {
+					log.error("XHTMLImporterCustomizer failed for " + sdtPr.getTag().getVal() + ": " + e.getMessage(), e);
+				}
+			}
 			
 			String baseUrl = null;
 			List<Object> results = null;

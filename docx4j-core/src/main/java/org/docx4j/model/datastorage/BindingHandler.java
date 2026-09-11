@@ -121,6 +121,30 @@ public class BindingHandler {
 		BindingHandler.valueInserterPlainText = valueInserterPlainText;
 	}
 	
+	private static XHTMLImporterCustomizer xhtmlImporterCustomizer;
+
+	/**
+	 * @return the hook applied to each XHTML importer before convert; null (the default) for none
+	 * @since 8.3.16
+	 */
+	public static XHTMLImporterCustomizer getXHTMLImporterCustomizer() {
+		return xhtmlImporterCustomizer;
+	}
+
+	/**
+	 * Configure the docx4j-ImportXHTML importer used for XHTML content controls
+	 * (any setter, per content control); see {@link XHTMLImporterCustomizer}.
+	 * For the three FormattingOptions alone, the
+	 * docx4j.model.datastorage.BindingTraverser.XHTML.*Formatting properties suffice.
+	 * Static, like the other hooks here: applies to all subsequent binds.
+	 *
+	 * @param customizer the hook, or null to remove it
+	 * @since 8.3.16
+	 */
+	public static void setXHTMLImporterCustomizer(XHTMLImporterCustomizer customizer) {
+		BindingHandler.xhtmlImporterCustomizer = customizer;
+	}
+	
 	
 	private DomToXPathMap domToXPathMap = null;
 	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
