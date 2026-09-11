@@ -1283,13 +1283,27 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // @since 17.1.0
                 descent = 0;
             }
-            // the list label shares the item's first line: Word adds what its ascent
-            // exceeds the text's by, and does not multiply that by the auto factor
-            // (a Symbol bullet on Calibri 11pt at 1.15: 16.04 = 15.44 + 0.59, not 16.11)
+            /* The list label shares the item's first line: Word adds what its ascent
+             * exceeds the text's by, and does not multiply that by the auto factor
+             * (a Symbol bullet on Calibri 11pt at 1.15: 16.04 = 15.44 + 0.59, not 16.11).
+             *
+             * The text's ascent here is the paragraph's own (docx4j:baseline, which the
+             * exporter measured from the document font and measured the label against,
+             * WordLayoutFixups.listLabelLines), never a lower one the line's runs report:
+             * a run rendered by a substitute whose document font the span does not name
+             * gets the substitute's share of the pitch, which is smaller than Word's for
+             * the font it stands in for (Arimo 0.728, Arial 0.815), and a label in the
+             * very font of the text then looked 1pt taller than its line.  Only where the
+             * line is the paragraph's own size: a line of smaller runs is genuinely
+             * shorter than the paragraph's ascent, and the label does raise it.
+             * @since 17.1.1 */
             int labelExtra = 0;
-            if (labelAscent > ascent && wordLineRule != RULE_EXACT && knuthParagraphs.indexOf(par) == 0
+            boolean fullSizeLine = wordLineBox > 0 && Math.abs(ascent + descent - wordLineBox) <= 1;
+            int labelAgainst = labelAscentAgainstBaseline && fullSizeLine && wordBaseline > 0
+                    ? Math.max(ascent, wordBaseline) : ascent;
+            if (labelAscent > labelAgainst && wordLineRule != RULE_EXACT && knuthParagraphs.indexOf(par) == 0
                     && firstElementIndex <= ((Paragraph) par).ignoreAtStart) {
-                labelExtra = labelAscent - ascent;
+                labelExtra = labelAscent - labelAgainst;
             }
             if (WordLineLayoutManager.log.isDebugEnabled()) {
                 WordLineLayoutManager.log.debug("wordLine: box=" + wordLineBox + " baseline=" + wordBaseline + " lineHeight=" + lineHeight
@@ -1534,6 +1548,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** a list label's natural ascent (millipoints), on the item's first line; Word
      *  counts the label's ascent, not its descent (WordLayoutFixups.listLabelLines) */
     private final int labelAscent;
+
+    /** whether the label's excess ascent is measured against the paragraph's own ascent
+     *  (docx4j:baseline) rather than the line's runtime ascent;
+     *  {@link WordLayoutCustomizer#LABEL_ASCENT_AGAINST_BASELINE}.  @since 17.1.1 */
+    private final boolean labelAscentAgainstBaseline
+            = WordLayoutCustomizer.labelAscentAgainstBaseline();
 
     // ---- Word's tab stops (docx4j:tabs, docx4j:tab-default, docx4j:tab-ind) ------
 

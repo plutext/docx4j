@@ -34,6 +34,10 @@ public class WordListItemTest {
 	private static final String WORD = "docx4j:line-box=\"14pt\" docx4j:baseline=\"11pt\" docx4j:line-rule=\"auto\"";
 
 	private static String fo(int items, String labelAttrs, String bodyAttrs) {
+		return fo(items, labelAttrs, bodyAttrs, null);
+	}
+
+	private static String fo(int items, String labelAttrs, String bodyAttrs, String span) {
 		StringBuilder sb = new StringBuilder("<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\" " + NS + ">"
 				+ "<fo:layout-master-set><fo:simple-page-master master-name=\"m\" page-width=\"200pt\" page-height=\"235pt\" margin=\"0pt\">"
 				+ "<fo:region-body/></fo:simple-page-master></fo:layout-master-set>"
@@ -41,12 +45,29 @@ public class WordListItemTest {
 				+ "<fo:list-block provisional-distance-between-starts=\"20pt\" font-family=\"Courier\" font-size=\"12pt\" line-height=\"24pt\">");
 		for (int i = 0; i < items; i++) {
 			sb.append("<fo:list-item><fo:list-item-label end-indent=\"label-end()\"><fo:block " + labelAttrs + ">-</fo:block></fo:list-item-label>"
-					+ "<fo:list-item-body start-indent=\"body-start()\"><fo:block " + bodyAttrs + ">item " + i + "</fo:block></fo:list-item-body></fo:list-item>");
+					+ "<fo:list-item-body start-indent=\"body-start()\"><fo:block " + bodyAttrs + ">"
+					+ (span == null ? "item " + i : span + "item " + i + "</fo:inline>")
+					+ "</fo:block></fo:list-item-body></fo:list-item>");
 		}
 		return sb.append("</fo:list-block></fo:flow></fo:page-sequence></fo:root>").toString();
 	}
 
 	private static int pages(String fo, boolean word) throws Exception {
+		return pages(fo, word, true);
+	}
+
+	private static int pages(String fo, boolean word, boolean labelAgainstBaseline) throws Exception {
+		String key = WordLayoutCustomizer.LABEL_ASCENT_AGAINST_BASELINE;
+		String was = System.getProperty(key);
+		System.setProperty(key, Boolean.toString(labelAgainstBaseline));
+		try {
+			return render(fo, word);
+		} finally {
+			if (was == null) System.clearProperty(key); else System.setProperty(key, was);
+		}
+	}
+
+	private static int render(String fo, boolean word) throws Exception {
 		FopFactoryBuilder b = new FopFactoryBuilder(new File(".").toURI());
 		if (word) b.setLayoutManagerMakerOverride(new WordLayoutManagerMaker());
 		FopFactory factory = b.build();
@@ -68,6 +89,26 @@ public class WordListItemTest {
 		assertEquals(1, pages(fo(10, WORD, WORD), true));
 		// and the leading between items is kept: an eleventh item (254) needs a second page
 		assertEquals(2, pages(fo(11, WORD, WORD), true));
+	}
+
+	/**
+	 * The label's excess is measured against the paragraph's own ascent
+	 * (its docx4j:baseline), not against the ascent the line's runs report: a run a
+	 * substitute renders reports the substitute's share of the pitch, which is smaller
+	 * than the document font's, and a label no taller than the text then looked taller
+	 * than its line and grew every item by the difference (CR-001 batch 40).
+	 *
+	 * Gautami's share is 0.532 of its line (1892/3556) against the 11/14 = 0.786 the
+	 * block declares, so a span naming it reports an ascent of 7.45pt on the 14pt line.
+	 */
+	@Test
+	public void aLabelNoTallerThanTheParagraphAddsNothingToAFullSizeLine() throws Exception {
+		String body = WORD + " docx4j:label-ascent=\"11pt\"";
+		String span = "<fo:inline docx4j:font=\"Gautami\">";
+		// ten 14pt boxes with nine 10pt leadings (230) fit the 235pt page; measured
+		// against the span's 7.45pt the label would add 3.55pt to each and need two
+		assertEquals(1, pages(fo(10, WORD, body, span), true));
+		assertEquals(2, pages(fo(10, WORD, body, span), true, false));
 	}
 
 	@Test

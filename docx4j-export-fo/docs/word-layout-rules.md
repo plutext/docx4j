@@ -151,6 +151,7 @@ no `w:compat` flag at all, so the mode is their only key.
 | `docx4j.convert.out.fo.wordLayout` | `true` | Word's layout managers: greedy line breaking, Word's line box and leading placement, tab-stop resolution, justified-space compression. `false` restores plain FOP layout, and the `docx4j:` foreign attributes are then not written either. |
 | `docx4j.convert.out.fo.wordLayout.maxSpaceShrink` | `0.24` | How far the spaces of a justified line may be compressed to pull one more word in, as a fraction of their natural width. Only read when `wordLayout` is on; set explicitly, it applies whatever the compatibility mode. |
 | `docx4j.convert.out.fo.wordLayout.maxHyphenSpaceShrink` | `0.10` | The same, for taking a longer **hyphenation fragment** rather than a whole word; Word pays much less for one (§4.7). Capped by `maxSpaceShrink`. |
+| `docx4j.convert.out.fo.wordLayout.labelAscentAgainstBaseline` | `true` | A list label's excess ascent is measured against the paragraph's own ascent (`docx4j:baseline`), not against the ascent the line's runs report, wherever the line is the paragraph's own size ([§2.8](#s28against)). `false` restores 17.1.0's behaviour, which grew every numbered paragraph by the difference between a substitute's ascent share and the document font's. |
 | `docx4j.convert.out.fo.wordLayout.tocStretchingLeader` | `true` | A table-of-contents entry (first stop right-aligned with a dot leader) keeps the stretching `fo:leader` and `text-align-last="justify"`. `false` lays its tabs out against the stops like any other tab, which also gives its dots Word's grid phase; measured, the two are a wash (§4.4). |
 | `docx4j.convert.out.fo.wordLayout.hyphenationZone` | `false` | `true` enforces `w:hyphenationZone` as the largest gap tolerated before hyphenating, which is what docx4j did to 17.0.5. Measured against Word, the zone never fires (§4.7). |
 | `docx4j.convert.out.fo.wordLayout.justifySoftReturn` | `true` | A justified line that ends in a soft return (`w:br` with no type) is justified, as Word justifies it unless `w:compat/w:doNotExpandShiftReturn` is set (§4.2). `false` restores 17.0.5's behaviour, which was the flag-on behaviour for every document. |
@@ -514,6 +515,23 @@ label's descent**. Measured: a Symbol bullet on Calibri 11pt makes the line 16.0
 than 15.44pt; a Courier New `o`, whose descent exceeds Calibri's but whose ascent does not,
 leaves it at 15.44pt. The label block gets the combined box and baseline, and the body
 block carries `docx4j:label-ascent` for the line manager to add after the multiple.
+
+<a id="s28against"></a>**What the label's ascent is measured against** is the paragraph's
+own ascent - the `docx4j:baseline` the exporter wrote from the document font's metrics, and
+the value it measured the label against - and not the ascent the line's runs report at
+layout time, wherever the line is the paragraph's own size. The two differ when a
+substitute renders a run whose document font the span does not name: the run's ascent is
+then the substitute's share of its pitch, which is smaller than Word's for the font it
+stands in for (Arimo 0.728 against Arial's 0.815), so a label set in the very font of the
+text looked a point taller than its line and every numbered paragraph grew by that much.
+Measured on a corpus contract in Arial 10pt with 6pt before and after: Word's gap from the
+last line of one item to the first line of the next is 17.52pt (11.52 + 6.00) and ours was
+18.51pt, over 89 such boundaries; the item's first line was 12.505pt where its other lines
+were 11.499pt. A line of *smaller* runs than the paragraph's is genuinely shorter than the
+paragraph's ascent, and the label does raise that one, so the rule applies only where the
+line's box is the paragraph's (`docx4j.convert.out.fo.wordLayout.labelAscentAgainstBaseline`,
+on by default; CR-001 batch 40, scored +8 documents on Word's page count over the three
+corpora with nothing worse).
 
 <a id="s28def"></a>**Which level definition the label comes from.** A numbering instance may
 carry a level definition of its own (`w:num/w:lvlOverride/w:lvl`, ECMA-376 17.9.8), which

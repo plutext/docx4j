@@ -119,6 +119,40 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	}
 
 	/**
+	 * Whether a list label's excess ascent is measured against the paragraph's own
+	 * ascent (the {@code docx4j:baseline} the FO exporter wrote from the document
+	 * font's metrics) rather than against whatever ascent the line's runs report at
+	 * layout time.
+	 *
+	 * <p>The two differ when a substitute renders the run and its document font is
+	 * not the one the span names: the run's ascent is then the substitute's own share
+	 * of the pitch (Arimo 1.043/1.432 = 0.728) where the exporter measured the label
+	 * against the document font's (Arial 0.938/1.150 = 0.815), so a label in the very
+	 * font of the text looked 1pt taller than the line and every numbered paragraph
+	 * grew by that much.  Measured on a corpus contract set in Arial 10pt with 6pt
+	 * before and after: Word's gap from the last line of one item to the first of the
+	 * next is 17.52pt (11.52 + 6.00) and ours was 18.51pt, 89 such boundaries in the
+	 * document; with the label's excess measured against the block's baseline the
+	 * first line is 11.499pt again, not 12.505pt.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.labelAscentAgainstBaseline=false restores
+	 * 17.1.0's behaviour.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LABEL_ASCENT_AGAINST_BASELINE
+			= "docx4j.convert.out.fo.wordLayout.labelAscentAgainstBaseline";
+
+	public static boolean labelAscentAgainstBaseline() {
+		String v = System.getProperty(LABEL_ASCENT_AGAINST_BASELINE);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LABEL_ASCENT_AGAINST_BASELINE, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
 	 * Whether a word too long for a line of its own is broken inside it, at the last
 	 * character that fits - Word's last resort, and the only way such a word does not
 	 * run off the page.  UAX #14, which FOP follows, offers no break inside a word like

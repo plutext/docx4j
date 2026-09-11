@@ -9,6 +9,10 @@ Changes in Version 17.1.1
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A list label no taller than the text around it no longer raises the item's first line:
+  its excess ascent is measured against the paragraph's own (the document font's), not
+  against the smaller share a substitute font reports. Eight corpus documents gain Word's
+  page count (CR-001 batch 40).
 - A numbered heading whose page break is its style's w:pageBreakBefore no longer keeps its
   space-before at the top of the page (Word drops it in every mode); a hard break at the
   head of the paragraph still does. Ten corpus documents, a few points per chapter page.
