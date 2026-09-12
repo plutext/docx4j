@@ -1,7 +1,7 @@
 # CR-016: Font selection and mapping (`RunFontSelector`, `Mapper` and its subpackages) — line endings, one resolution, the character-range rules, the mapping order, discovery, cost, API
 
-Status: PROPOSED (2026-09-12) — Jason reads and adjusts before any code
-change, as for CR-014 and CR-015.  The review below was written the same day
+Status: IN PROGRESS (2026-09-12) — phase 0 done (d643638ad); Jason read the CR
+the same day and started the work.  The review below was written that day
 against 7563277a0 (CR-015 tidy-up), with every "measured" claim taken from a
 scratch test that was run and then deleted (`ScratchFontsProbeTest`, not
 committed; the phase tests reproduce each case as an assertion).
@@ -700,7 +700,7 @@ representation decision, not a mapping one.
 
 ## Plan
 
-### Phase 0 — Unix line endings (preliminary; no code change)
+### Phase 0 — Unix line endings (preliminary; no code change) — DONE 2026-09-12 (d643638ad)
 
     sed -i 's/\r$//' docx4j-core/src/main/java/org/docx4j/fonts/{CJKToEnglish,IdentityPlusMapper,GlyphCheck}.java \
         docx4j-core/src/main/java/org/docx4j/fonts/substitutions/{FontSubstitutions,ObjectFactory}.java \

@@ -25,3 +25,11 @@ docx4j-core/src/main/java/org/docx4j/model/styles/** text eol=lf
 docx4j-core-tests/src/test/java/org/docx4j/model/*.java text eol=lf
 docx4j-core-tests/src/test/java/org/docx4j/model/styles/** text eol=lf
 docx4j-core-tests/src/test/resources/org/docx4j/model/styles-simple.xml text eol=lf
+
+# Font selection and mapping: converted to LF in CR-016 phase 0; keep it so.
+docx4j-core/src/main/java/org/docx4j/fonts/*.java text eol=lf
+docx4j-core/src/main/java/org/docx4j/fonts/substitutions/** text eol=lf
+docx4j-core/src/main/java/org/docx4j/fonts/microsoft/** text eol=lf
+docx4j-core-tests/src/test/java/org/docx4j/fonts/*.java text eol=lf
+docx4j-core/src/main/resources/org/docx4j/fonts/substitutions/FontSubstitutions.xsd text eol=lf
+docx4j-core/src/main/resources/org/docx4j/fonts/microsoft/MicrosoftFonts.xsd text eol=lf

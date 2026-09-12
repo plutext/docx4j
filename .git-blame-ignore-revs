@@ -8,3 +8,7 @@
 # CR-015 phase 0: org.docx4j.model.PropertyResolver's neighbours (styles package,
 # ImmutablePropertyResolver), their tests and styles-simple.xml, CRLF -> LF
 6f4763d70a7e954cc1a9cd18eb84eb49e1eaeba9
+
+# CR-016 phase 0: org.docx4j.fonts (with substitutions/ and microsoft/), three of its
+# tests and the two font schemas, CRLF -> LF
+d643638ad5d42e14e2b5df01e4ae58b862a8d2bf
