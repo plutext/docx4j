@@ -347,6 +347,21 @@ Property resolution (CR-015, phase 2):
   were. Inside a table the synthetic style carrying the table style's conditional formatting
   is still applied.
 
+Property resolution (CR-015, phase 3):
+
+- Resolution no longer writes into the styles part: the document defaults are the resolver's
+  private copy (until now an rPrDefault with no w:sz gained w:sz 20, and a docx saved after
+  an export carried it); a built-in heading's outline level is computed from its w:name
+  ("heading 2", the same in every locale, where the old rule keyed on the English styleId
+  prefix) into the resolved pPr, not written into the style; and a style whose w:numPr
+  names no w:numId gets the inherited id in the effective pPr, not injected into the style.
+- Effective objects share no leaf with the style definitions (an effective w:b used to be
+  the style's own w:b object, so editing an effective rPr edited the styles part).
+- One PropertyResolver can be used from several threads (two exports of one package at
+  once): its caches are concurrent, resolution is read-only, and MainDocumentPart creates it
+  under a lock. A missing style no longer costs a rescan of the styles part per lookup: the
+  part is rescanned only when its style count has changed.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

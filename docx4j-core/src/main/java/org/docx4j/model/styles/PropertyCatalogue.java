@@ -200,9 +200,9 @@ public final class PropertyCatalogue {
 
 	// ---------------------------------------------------------------- merges
 
-	/** The source's value where it has one, else the inherited: for members with no per-attribute rule. */
+	/** A copy of the source's value where it has one, else the inherited: for members with no per-attribute rule. */
 	private static <V> BinaryOperator<V> replace() {
-		return (source, destination) -> source == null ? destination : source;
+		return (source, destination) -> source == null ? destination : org.docx4j.XmlUtils.deepCopy(source);
 	}
 
 	private static <V> Predicate<V> isNull() {

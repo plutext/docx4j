@@ -157,7 +157,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	return this.getJaxbElement().getContent();
     }	
 	
-	private PropertyResolver propertyResolver;
+	private volatile PropertyResolver propertyResolver;
 
 	/**
 	 * get the PropertyResolver, creating if necessary
@@ -185,7 +185,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		 * PropertyResolver.getLiveStyle); for a style modified or removed, use
 		 * PropertyResolver.refresh(). */
 		if (create && propertyResolver == null) {
-			propertyResolver = new PropertyResolver((WordprocessingMLPackage) this.pack);
+			synchronized (this) { // two threads exporting at once share one resolver (CR-015 phase 3)
+				if (propertyResolver == null) {
+					propertyResolver = new PropertyResolver((WordprocessingMLPackage) this.pack);
+				}
+			}
 		}
 		return propertyResolver;
 	}

@@ -8,7 +8,8 @@ catalogue and the merge rules; 21 corpus documents improved, none regressed);
 phase 2 DONE (the resolution order; zero corpus delta bar one improvement);
 phase 2b DONE (the default-pStyle shield out of the preprocess outside
 tables, zero corpus delta; the font-size pin kept for the XSLT pathway
-only); phase 3 next
+only); phase 3 DONE (no mutation, no aliasing, thread safety; zero corpus
+delta); phase 4 next
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -674,9 +675,34 @@ resolver like any other.  Gate: corpus zero-delta against the phase 2 score
 resolver, not by restoring the shield); `pinInheritedFontSize` removed if the
 corpus agrees it is redundant.
 
-### Phase 3 — no mutation, no aliasing, thread safety
+### Phase 3 — no mutation, no aliasing, thread safety — DONE 2026-09-12
 
-As designed.  Gate: the two new tests; corpus zero-delta; the CR-014
+As designed: the defaults are a `deepCopy` at init with the 10pt default on
+the copy; `fillPPrStackInternal` pushes a copy of a heading style's pPr with
+the level from `headingLevelByName(Style)` ("heading N" by `w:name`, any
+locale) where the declared level differs, and the numId injection is gone
+(phase 1's per-element `NumPr` merge carries the inherited id); the leaf
+merges that returned the source object (`BooleanDefaultTrue`, the `NumPr`
+children, the catalogue's `replace()` for the w14 members) return a copy
+(`XmlUtils.deepCopy`, the generated fast copy); the four caches and
+`liveStyles` are `ConcurrentHashMap`s with a sentinel key for "no default
+style", the miss-path rescan runs only when the styles list's size has
+changed, and `MainDocumentPart.getPropertyResolver` creates under a lock.
+Tests: `PropertyResolverNoMutationTest` (5: the styles part byte-equal after
+resolving everything; the default size, the heading level and the inherited
+numId each present in the resolved object and absent from the part; no
+shared leaf, and editing an effective object changes nothing in the part),
+`PropertyResolverConcurrencyTest` (2: eight threads' 400-step walks equal
+the single-threaded answers while a style is added underneath; lazy
+creation under contention yields one resolver).  Not covered: a caller
+adding to the styles part's list while another thread's miss rescans it -
+the JAXB list is not thread-safe and that is the caller's synchronisation.
+
+Gate (2026-09-12): core-tests 975 run, 0 failures; export-fo-tests 600/0;
+corpora `p3-nomutation` vs `p2b-shield`: real, real2, real3 all 0 changed
+(the heading rule by name fires on no corpus document differently from the
+id rule, and the injected numId was equivalent to the merged one); probes
+unchanged.  Gate: the two new tests; corpus zero-delta; the CR-014
 numbering tests and the `numbering-*` probes unchanged (numId injection
 removed); a saved docx byte-equal in its styles part after an export.
 

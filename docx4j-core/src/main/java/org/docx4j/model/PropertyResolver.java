@@ -122,7 +122,10 @@ public class PropertyResolver {
 	 * Access it via getLiveStyle, which falls back to rescanning the styles part,
 	 * so a style added to the part after this map was built is still found.
 	 */
-	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
+	private final java.util.Map<String, org.docx4j.wml.Style>  liveStyles = new java.util.concurrent.ConcurrentHashMap<String, org.docx4j.wml.Style>();
+
+	/** How many styles the part held when liveStyles was last scanned; a miss rescans only when that has changed. */
+	private volatile int scannedStyleCount = -1;
 	
 	
 	private ThemePart themePart;
@@ -134,13 +137,29 @@ public class PropertyResolver {
 	 * keyed by styleId (CR-015 phase 2).  These are the units every effective value is
 	 * composed from, so nothing cached depends on what a caller asked for first.
 	 */
-	private java.util.Map<String, PPr> chainPPr = new HashMap<String, PPr>();
-	private java.util.Map<String, RPr> chainRPr = new HashMap<String, RPr>();
+	private final java.util.Map<String, PPr> chainPPr = new java.util.concurrent.ConcurrentHashMap<String, PPr>();
+	private final java.util.Map<String, RPr> chainRPr = new java.util.concurrent.ConcurrentHashMap<String, RPr>();
 
 	/** Document defaults with the chain applied over them, keyed by styleId: what
 	 *  getEffectivePPr(String) and getEffectiveRPr(String) return. */
-	private java.util.Map<String, PPr> effectivePPrByStyle = new HashMap<String, PPr>();
-	private java.util.Map<String, RPr> effectiveRPrByStyle = new HashMap<String, RPr>();
+	private final java.util.Map<String, PPr> effectivePPrByStyle = new java.util.concurrent.ConcurrentHashMap<String, PPr>();
+	private final java.util.Map<String, RPr> effectiveRPrByStyle = new java.util.concurrent.ConcurrentHashMap<String, RPr>();
+
+	/** The cache key for "no style" (a styles part with no default paragraph style). */
+	private static final String NO_STYLE = "";
+
+	private static String key(String styleId) {
+		return styleId == null ? NO_STYLE : styleId;
+	}
+
+	/*
+	 * Thread safety (CR-015 phase 3): one PropertyResolver is shared by everything that
+	 * touches the package for its lifetime.  Resolution reads the styles part and writes
+	 * nothing into it (the document defaults are a private copy; the heading outline level
+	 * and an inherited w:numId are computed in the resolved objects, not written into the
+	 * styles), so two threads computing the same entry do duplicate work and store equal
+	 * values; the caches are ConcurrentHashMaps, and refresh() clears them.
+	 */
 
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
@@ -201,6 +220,9 @@ public class PropertyResolver {
             log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
         }
 
+		// private copies: the resolver's defaults are its own, so nothing below writes into
+		// the styles part (until 17.1.1 the w:sz 20 default went into the part, and a docx
+		// saved after an export carried it)
 		documentDefaultPPr = new PPr();
 		documentDefaultRPr = new RPr();        	
 
@@ -208,19 +230,19 @@ public class PropertyResolver {
 				&& docDefaults.getPPrDefault()!=null
 				&& docDefaults.getPPrDefault().getPPr()!=null) {
 			
-			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+			documentDefaultPPr = XmlUtils.deepCopy(docDefaults.getPPrDefault().getPPr());
         }
 		
 		if (docDefaults!=null
 				&& docDefaults.getRPrDefault()!=null
 				&& docDefaults.getRPrDefault().getRPr()!=null) {
 			
-			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+			documentDefaultRPr = XmlUtils.deepCopy(docDefaults.getRPrDefault().getRPr());
         }
 		
 		if (documentDefaultRPr.getSz()==null) {
-			// Make Word default explicit: 10pt where nothing states a size (measured, CR-015
-			// probe styles-no-size-anywhere).  TODO phase 3: on a private copy, not the part.
+			// Make Word's default explicit: 10pt where nothing states a size (measured, CR-015
+			// probe styles-no-size-anywhere: identical to an explicit 10pt run)
 			HpsMeasure sz20 = new HpsMeasure(); 
 			sz20.setVal(BigInteger.valueOf(20));
 			documentDefaultRPr.setSz(sz20);
@@ -395,14 +417,14 @@ public class PropertyResolver {
 	 */
 	public PPr getEffectivePPr(String styleId) throws CyclicStylesException {
 		
-		String key = existingParagraphStyle(styleId);
-		PPr resolved = effectivePPrByStyle.get(key);
+		String existing = existingParagraphStyle(styleId);
+		PPr resolved = effectivePPrByStyle.get(key(existing));
 		if (resolved!=null) {
 			return resolved;
 		}
 		resolved = (PPr)XmlUtils.deepCopy(documentDefaultPPr);
-		applyPPr(chainPPr(key), resolved);
-		effectivePPrByStyle.put(key, resolved);
+		applyPPr(chainPPr(existing), resolved);
+		effectivePPrByStyle.put(key(existing), resolved);
 		return resolved;
 	}
 
@@ -497,7 +519,7 @@ public class PropertyResolver {
 	 */
 	public RPr getEffectiveRPr(String styleId) throws CyclicStylesException {
 
-		RPr resolved = effectiveRPrByStyle.get(styleId);
+		RPr resolved = effectiveRPrByStyle.get(key(styleId));
 		if (resolved!=null) {
 			return resolved;
 		}
@@ -509,7 +531,7 @@ public class PropertyResolver {
 		}
 		resolved = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
 		applyRPr(chainRPr(styleId), resolved);
-		effectiveRPrByStyle.put(styleId, resolved);
+		effectiveRPrByStyle.put(key(styleId), resolved);
 		return resolved;
 	}
 	
@@ -626,13 +648,6 @@ public class PropertyResolver {
 	
 	org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
 	
-	private BooleanDefaultTrue newBooleanDefaultTrue(boolean val) {
-		
-		BooleanDefaultTrue newBooleanDefaultTrue = factory.createBooleanDefaultTrue();
-		newBooleanDefaultTrue.setVal(Boolean.valueOf(val));
-		return newBooleanDefaultTrue;
-	}
-	
 	/**
 	 * Whether the paragraph states any formatting of its own: {@link StyleUtil#hasDirectFormatting(PPrBase)}
 	 * over every member of {@link org.docx4j.model.styles.PropertyCatalogue#PARAGRAPH}.
@@ -727,6 +742,20 @@ public class PropertyResolver {
 	}	
 	
     private static final String HEADING_STYLE = "Heading";
+
+    private static final java.util.regex.Pattern HEADING_NAME = java.util.regex.Pattern.compile("heading ([1-9])", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /**
+     * The outline level (1-9) of a built-in heading style, from its w:name ("heading 1"
+     * ... "heading 9"), or -1.  Word identifies built-in styles by name, so this holds in
+     * every locale; {@link #getLvlFromHeadingStyle(String)} keys on the English styleId.
+     * @since 17.1.1
+     */
+    public static int headingLevelByName(Style style) {
+    	if (style == null || style.getName() == null || style.getName().getVal() == null) return -1;
+    	java.util.regex.Matcher m = HEADING_NAME.matcher(style.getName().getVal().trim());
+    	return m.matches() ? Integer.parseInt(m.group(1)) : -1;
+    }
 	
     /*
      * @since 3.0.2
@@ -816,43 +845,28 @@ public class PropertyResolver {
 			return;
 		}
 
-		// For heading styles, check the outline level is as expected
-		if (styleId.startsWith(HEADING_STYLE)) {
-
-			int level = getLvlFromHeadingStyle(styleId);
-			if (level>0
-					&& style.getPPr()!=null
-					&& style.getPPr().getOutlineLvl()!=null
-					&& style.getPPr().getOutlineLvl().getVal()!=null
-					&& style.getPPr().getOutlineLvl().getVal().intValue()!=(level-1)) {
-
-				// must use the outline level appropriate to this heading!
-				log.info(styleId + " - reset actual outline level with " + (level-1));
-				style.getPPr().getOutlineLvl().setVal(BigInteger.valueOf(level-1));
-			}
-
-			pPrStack.push(style.getPPr());
-		} else {
-			pPrStack.push(style.getPPr());
+		/* The built-in heading styles have a fixed outline level, which Word takes from the
+		 * style's built-in NAME ("heading 1" ... "heading 9", the same in every locale; the
+		 * styleId is localised: "berschrift1", "Titre1"), whatever w:outlineLvl the style
+		 * declares.  Until 17.1.1 this keyed on the id prefix "Heading" and wrote the level
+		 * into the style; it is now computed by name, on a copy, so the styles part is not
+		 * touched (CR-015 phase 3). */
+		PPr layer = style.getPPr();
+		int headingLevel = headingLevelByName(style);
+		if (headingLevel > 0 && layer != null
+				&& layer.getOutlineLvl() != null && layer.getOutlineLvl().getVal() != null
+				&& layer.getOutlineLvl().getVal().intValue() != headingLevel - 1) {
+			log.debug(styleId + " - outline level " + (headingLevel - 1) + " from its name, not the declared " + layer.getOutlineLvl().getVal());
+			layer = XmlUtils.deepCopy(layer);
+			layer.getOutlineLvl().setVal(BigInteger.valueOf(headingLevel - 1));
 		}
-
+		pPrStack.push(layer);
 		log.debug("Added " + styleId + " to pPr stack");
-		
-		// Some styles contain numPr, without specifying
-		// their numId!  In this case you have to get it
-		// from the numPr in their basedOn style.
-		// To save numbering emulator from having to do
-		// that work, we make the numId explicit here.
-		boolean ascertainNumId = false;
-		if (style.getPPr()!=null
-				&& style.getPPr().getNumPr()!=null
-				&& style.getPPr().getNumPr().getNumId()==null) {
 
-			ascertainNumId = true;
-			log.debug(styleId +" ascertainNumId: " + ascertainNumId);
-		} else {
-			log.debug(styleId +" ascertainNumId: " + ascertainNumId);
-		}
+		// (A style whose w:numPr names no w:numId inherits it from the style it is based
+		// on: since 17.1.1 StyleUtil.apply(NumPr) merges the two elements separately, so
+		// the inherited id reaches the effective pPr without being written into the style,
+		// which is what happened here until then.)
 
 		// if it is based on, recurse
 		if (style.getBasedOn()==null) {
@@ -861,22 +875,6 @@ public class PropertyResolver {
 			String basedOnStyleName = style.getBasedOn().getVal();
 			log.debug("Style " + styleId + " is based on " + basedOnStyleName);
         	fillPPrStackInternal(basedOnStyleName, pPrStack, seen);
-        	Style basedOnStyle = getLiveStyle(basedOnStyleName);
-        	if (ascertainNumId && basedOnStyle!=null) {
-        		// This works via recursion        		
-        		//log.debug( XmlUtils.marshaltoString(basedOnStyle, true, true));
-        		if (basedOnStyle.getPPr()!=null 
-        				&& basedOnStyle.getPPr().getNumPr()!=null
-        				&& basedOnStyle.getPPr().getNumPr().getNumId()!=null) {
-        			NumId numId = basedOnStyle.getPPr().getNumPr().getNumId();
-        			// Attach it at this level - for this to work,
-        			// you can't have a style in the basedOn hierarchy
-        			// which doesn't have a numPr element, because
-        			// in that case there is nowhere to hang the style					
-					style.getPPr().getNumPr().setNumId(numId);
-					log.info("Injected numId " + numId);
-				}
-			}
 		} else {
 			log.debug("No basedOn set for: " + style.getStyleId() );
 		}
@@ -943,12 +941,21 @@ public class PropertyResolver {
     private void initialiseLiveStyles() {
 
     	log.debug("initialiseLiveStyles()");
-		liveStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
+		liveStyles.clear();
+		scanStyles();
+    }
 
-		for ( org.docx4j.wml.Style s : styles.getStyle() ) {
-			liveStyles.put(s.getStyleId(), s);
-			log.debug("live style: " + s.getStyleId() );
+    /** (Re)read the styles part into liveStyles.  A style with no id is skipped (it can be
+     *  neither referenced nor keyed). */
+    private void scanStyles() {
+		java.util.List<org.docx4j.wml.Style> list = styles.getStyle();
+		for ( org.docx4j.wml.Style s : list ) {
+			if (s.getStyleId() == null) continue;
+			if (liveStyles.put(s.getStyleId(), s) == null) {
+				log.debug("live style: " + s.getStyleId() );
+			}
 		}
+		scannedStyleCount = list.size();
 
     }
 
@@ -959,8 +966,9 @@ public class PropertyResolver {
      * MainDocumentPart for the life of the package (see
      * MainDocumentPart.getPropertyResolver), so without the rescan a style added to the
      * styles part afterwards would be invisible to style resolution.  The rescan is on
-     * the miss path only; a style which is genuinely absent costs one pass over the
-     * styles list per lookup.
+     * the miss path only, and only when the styles list's size has changed since it was
+     * last scanned (since 17.1.1; a style which is genuinely absent used to cost one pass
+     * over the styles list per lookup).
      *
      * Note that this handles styles *added* since construction, not styles modified or
      * removed: resolved properties are cached (the chain and effective maps), so a
@@ -974,15 +982,10 @@ public class PropertyResolver {
     	if (styleId==null) return null;
 
     	Style result = liveStyles.get(styleId);
-    	if (result==null) {
+    	if (result==null && styles.getStyle().size() != scannedStyleCount) {
     		// styles is the styles part's own JAXB element (not a copy),
     		// so this picks up styles added since the map was built
-    		for ( org.docx4j.wml.Style s : styles.getStyle() ) {
-    			if (!liveStyles.containsKey(s.getStyleId())) {
-    				liveStyles.put(s.getStyleId(), s);
-    				log.debug("live style (late): " + s.getStyleId() );
-    			}
-    		}
+    		scanStyles();
     		result = liveStyles.get(styleId);
     	}
     	return result;

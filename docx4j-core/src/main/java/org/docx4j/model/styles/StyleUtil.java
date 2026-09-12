@@ -2429,10 +2429,10 @@ public class StyleUtil {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createPPrBaseNumPr();
 			if (source.getNumId() != null && !isEmpty(source.getNumId().getVal())) {
-				destination.setNumId(source.getNumId());
+				destination.setNumId(XmlUtils.deepCopy(source.getNumId()));
 			}
 			if (source.getIlvl() != null && !isEmpty(source.getIlvl().getVal())) {
-				destination.setIlvl(source.getIlvl());
+				destination.setIlvl(XmlUtils.deepCopy(source.getIlvl()));
 			}
 		}
 		return destination;
@@ -2961,8 +2961,11 @@ public class StyleUtil {
 		return (source == null  ? destination : source);
 	}
 	
+	/** A copy of the source where it states one, else the inherited (17.1.1: was the source
+	 *  object itself, so an effective rPr's w:b WAS the style's w:b, and a caller editing
+	 *  the effective object edited the styles part). */
 	public static BooleanDefaultTrue apply(BooleanDefaultTrue source, BooleanDefaultTrue destination) {
-		return (source == null ? destination : source);
+		return (source == null ? destination : XmlUtils.deepCopy(source));
 	}
 
 	public static Boolean apply(Boolean source, Boolean destination) {
