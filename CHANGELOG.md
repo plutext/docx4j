@@ -300,6 +300,27 @@ List numbering (CR-014, phase 1):
   indenting), and a level with no w:ind of its own takes the linked style's, following
   w:basedOn - which NumberingDefinitionsPart.getInd now does for every caller, PDF included.
 
+Property resolution (CR-015, phase 1):
+
+- One property catalogue per properties element (org.docx4j.model.styles.PropertyCatalogue)
+  now drives StyleUtil.apply, isEmpty and unset and the resolver's direct-formatting test,
+  which were four hand-kept lists that had drifted: a run whose only direct formatting was
+  w:rtl, w:position, w:szCs, w:w, w:kern or w:cs (21 of the 40 members) resolved as having
+  none; a paragraph's w:mirrorIndents or w:textDirection alone likewise; a style whose w:rPr
+  states only w:lang (or w14:ligatures) was never applied; the w14 text-effect and OpenType
+  members were not carried at all.
+- w:numId and w:ilvl each inherit: a direct w:numPr stating only w:ilvl takes that level of the
+  style's list (measured: 1.1.), where it was dropped whole and the paragraph stayed at the
+  style's level.
+- w:lineRule qualifies w:line, so a direct w:spacing stating only w:after keeps a style's
+  exact or atLeast rule (measured: a 24pt exact pitch stayed 24pt in Word and became 480
+  auto, double-spaced, in docx4j); a w:line without a rule is auto, as before.
+- w:lang, w:u and w:tblpPr merge per attribute (a w:lang w:bidi no longer wipes the inherited
+  w:val and w:eastAsia; an underline colour survives a restated w:u w:val; a w:tblpPr stating
+  only w:tblpX keeps its inherited anchors), and w:shd/w:bdr theme colours are cleared only
+  when restated.
+- An effective w:rPr no longer carries an empty w:rFonts when nothing supplied one.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

@@ -796,138 +796,21 @@ public class PropertyResolver {
 		return newBooleanDefaultTrue;
 	}
 	
+	/**
+	 * Whether the paragraph states any formatting of its own: {@link StyleUtil#hasDirectFormatting(PPrBase)}
+	 * over every member of {@link org.docx4j.model.styles.PropertyCatalogue#PARAGRAPH}.
+	 * Any rPr is intentionally ignored, since pPr/rPr is not applicable to anything
+	 * except the paragraph mark.  (Until 17.1.1 this was a hand-kept list of 17 of the
+	 * 34 members, to which each fidelity batch added one more: w:framePr, w:contextualSpacing,
+	 * w:suppressAutoHyphens; a paragraph whose only direct formatting was w:mirrorIndents
+	 * or w:textDirection resolved as having none.)
+	 */
 	private boolean hasDirectPPrFormatting(PPr pPrToApply) {
-		
-		// NB, any rPr is intentionally ignored,
-		// since pPr/rPr is not applicable to anything
-		// except the paragraph mark
-		
-		if (pPrToApply==null) {
-			return false;
-		}
-		
-		// Here is where we do the real work.  
-		// There are a lot of paragraph properties
-		// The below list is taken directly from PPrBase.
-		
-		//PPrBase.PStyle pStyle;
-		
-			// Ignore
-
-		if (pPrToApply.getBidi()!=null) {
-			return true;		
-		}
-		
-		
-		//BooleanDefaultTrue keepNext;
-		if (pPrToApply.getKeepNext()!=null) {
-			return true;		
-		}
-		
-	
-		//BooleanDefaultTrue keepLines;
-		if (pPrToApply.getKeepLines()!=null) {
-			return true;		
-		}
-	
-		//BooleanDefaultTrue pageBreakBefore;
-		if (pPrToApply.getPageBreakBefore()!=null) {
-			return true;		
-		}
-	
-		//CTFramePr framePr;
-		/* A paragraph whose only direct formatting is a text frame really is directly
-		 * formatted: without this its w:framePr never reached the effective pPr, so a
-		 * frame stated only on the paragraph (with the anchors coming from its style)
-		 * was lost.  @since 17.1.0 */
-		if (pPrToApply.getFramePr()!=null) {
-			return true;
-		}
-
-		//BooleanDefaultTrue widowControl;
-		if (pPrToApply.getWidowControl()!=null) {
-			return true;		
-		}
-	
-		//PPrBase.NumPr numPr;
-		//NumPr numPr;
-		if (pPrToApply.getNumPr()!=null) {
-			return true;		
-		}
-	
-		//BooleanDefaultTrue suppressLineNumbers;
-		if (pPrToApply.getSuppressLineNumbers()!=null) {
-			return true;		
-		}
-		
-		// PBdr pBdr;
-		if (pPrToApply.getPBdr()!=null) {
-			return true;		
-		}
-	
-		//CTShd shd;
-		if (pPrToApply.getShd()!=null) {
-			return true;		
-		}
-			
-		//Tabs tabs;
-		if (pPrToApply.getTabs()!=null) {
-			return true;		
-		}
-	
-		//BooleanDefaultTrue suppressAutoHyphens;
-		//BooleanDefaultTrue kinsoku;
-		//BooleanDefaultTrue wordWrap;
-		//BooleanDefaultTrue overflowPunct;
-		//BooleanDefaultTrue topLinePunct;
-		//BooleanDefaultTrue autoSpaceDE;
-		//BooleanDefaultTrue autoSpaceDN;
-		//BooleanDefaultTrue bidi;
-		//BooleanDefaultTrue adjustRightInd;
-		//BooleanDefaultTrue snapToGrid;
-		//PPrBase.Spacing spacing;
-		if (pPrToApply.getSpacing()!=null) {
-			return true;		
-		}
-	
-		//PPrBase.Ind ind;
-		if (pPrToApply.getInd()!=null) {
-			return true;		
-		}
-	
-		//BooleanDefaultTrue contextualSpacing;
-		if (pPrToApply.getContextualSpacing()!=null) { // @since 17.0.5: it affects spacing (see WordLayoutFixups)
-			return true;
-		}
-		//BooleanDefaultTrue mirrorIndents;
-		//BooleanDefaultTrue suppressOverlap;
-		//Jc jc;
-		if (pPrToApply.getJc()!=null) {
-			return true;		
-		}
-	
-		//TextDirection textDirection;
-		//PPrBase.TextAlignment textAlignment;
-		if (pPrToApply.getTextAlignment()!=null ) {
-			return true;		
-		}
-	
-		//CTTextboxTightWrap textboxTightWrap;
-		//PPrBase.OutlineLvl outlineLvl;
-		if (pPrToApply.getOutlineLvl()!=null ) {
-			return true;
-		}
-		//BooleanDefaultTrue suppressAutoHyphens;
-		if (pPrToApply.getSuppressAutoHyphens()!=null) { // @since 17.1.0: it exempts the paragraph from automatic hyphenation
-			return true;
-		}
-		//PPrBase.DivId divId;
-		//CTCnf cnfStyle;
-		return false;
-		
+		return StyleUtil.hasDirectFormatting(pPrToApply);
 	}
 	
 	
+
 	protected void applyPPr(PPr pPrToApply, PPr effectivePPr) {
         if(log.isDebugEnabled()) {
             log.debug("apply " + XmlUtils.marshaltoString(pPrToApply, true, true)
@@ -954,218 +837,23 @@ public class PropertyResolver {
     	
 	}
 	
+	/**
+	 * Whether the run states any formatting of its own: {@link StyleUtil#hasDirectFormatting(RPr)}
+	 * over every member of {@link org.docx4j.model.styles.PropertyCatalogue#RUN} but the
+	 * style reference.  (Until 17.1.1 this was a hand-kept list of 19 of the 40 members -
+	 * "taken directly from RPr, and so is comprehensive", it said - so a run whose only
+	 * direct formatting was w:rtl, w:position, w:szCs, w:w, w:kern or w:cs resolved as
+	 * having none.)
+	 */
 	public boolean hasDirectRPrFormatting(RPr rPrToApply) {
-		
-		if (rPrToApply==null) {
-			return false;
-		}
-		
-		// Here is where we do the real work.  
-		// There are a lot of run properties
-		// The below list is taken directly from RPr, and so
-		// is comprehensive.
-		
-		//RStyle rStyle;
-		//RFonts rFonts;
-		if (rPrToApply.getRFonts()!=null ) {
-			return true;
-		}
-
-		//BooleanDefaultTrue b;
-		if (rPrToApply.getB()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue bCs;
-		//BooleanDefaultTrue i;
-		if (rPrToApply.getI()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue iCs;
-		//BooleanDefaultTrue caps;
-		if (rPrToApply.getCaps()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue smallCaps;
-		if (rPrToApply.getSmallCaps()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue strike;
-		if (rPrToApply.getStrike()!=null) {
-			return true;			
-		}
-		//BooleanDefaultTrue dstrike;
-		//BooleanDefaultTrue outline;
-		//BooleanDefaultTrue shadow;
-		//BooleanDefaultTrue emboss;
-		//BooleanDefaultTrue imprint;
-		//BooleanDefaultTrue noProof;
-		//BooleanDefaultTrue snapToGrid;
-		//BooleanDefaultTrue vanish;
-		// hidden text: a run whose only direct formatting is w:vanish was treated as
-		// having none, so the effective rPr came back without it and it was rendered
-		// (@since 17.0.5)
-		if (rPrToApply.getVanish()!=null) {
-			return true;
-		}
-		//BooleanDefaultTrue webHidden;
-		//Color color;
-		if (rPrToApply.getColor()!=null ) {
-			return true;			
-		}
-
-		//CTSignedTwipsMeasure spacing;
-		if (rPrToApply.getSpacing()!=null ) {
-			return true;			
-		}
-		//CTTextScale w;
-		//HpsMeasure kern;
-		//CTSignedHpsMeasure position;
-		//HpsMeasure sz;
-		if (rPrToApply.getSz()!=null ) {
-			return true;			
-		}
-
-		//HpsMeasure szCs;
-		//Highlight highlight;
-		if (rPrToApply.getHighlight()!=null ) {
-			return true;			
-		}
-		//U u;
-		if (rPrToApply.getU()!=null ) {
-			return true;			
-		}
-
-		//CTTextEffect effect;
-		//CTBorder bdr;
-		if (rPrToApply.getBdr()!=null ) {
-			return true;			
-		}
-		//CTShd shd;
-		if (rPrToApply.getShd()!=null ) {
-			return true;			
-		}
-		//CTFitText fitText;
-		//CTVerticalAlignRun vertAlign;
-		if (rPrToApply.getVertAlign()!=null ) {
-			return true;			
-		}
-		//BooleanDefaultTrue rtl;
-		//BooleanDefaultTrue cs;
-		//CTEm em;
-		//CTLanguage lang;
-		if (rPrToApply.getLang()!=null ) {
-			return true;			
-		}
-		//CTEastAsianLayout eastAsianLayout;
-		//BooleanDefaultTrue specVanish;
-		//BooleanDefaultTrue oMath;
-		//CTRPrChange rPrChange;
-		
-		// If we got here...
-		return false;
+		return StyleUtil.hasDirectFormatting(rPrToApply);
 	}
 	
 	private boolean hasDirectRPrFormatting(ParaRPr rPrToApply) {
-		
-		if (rPrToApply==null) {
-			return false;
-		}
-		
-		// Here is where we do the real work.  
-		// There are a lot of run properties
-		// The below list is taken directly from RPr, and so
-		// is comprehensive.
-		
-		//RStyle rStyle;
-		//RFonts rFonts;
-		if (rPrToApply.getRFonts()!=null ) {
-			return true;
-		}
-
-		//BooleanDefaultTrue b;
-		if (rPrToApply.getB()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue bCs;
-		//BooleanDefaultTrue i;
-		if (rPrToApply.getI()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue iCs;
-		//BooleanDefaultTrue caps;
-		if (rPrToApply.getCaps()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue smallCaps;
-		if (rPrToApply.getSmallCaps()!=null) {
-			return true;			
-		}
-
-		//BooleanDefaultTrue strike;
-		if (rPrToApply.getStrike()!=null) {
-			return true;			
-		}
-		//BooleanDefaultTrue dstrike;
-		//BooleanDefaultTrue outline;
-		//BooleanDefaultTrue shadow;
-		//BooleanDefaultTrue emboss;
-		//BooleanDefaultTrue imprint;
-		//BooleanDefaultTrue noProof;
-		//BooleanDefaultTrue snapToGrid;
-		//BooleanDefaultTrue vanish;
-		// hidden text: a run whose only direct formatting is w:vanish was treated as
-		// having none, so the effective rPr came back without it and it was rendered
-		// (@since 17.0.5)
-		if (rPrToApply.getVanish()!=null) {
-			return true;
-		}
-		//BooleanDefaultTrue webHidden;
-		//Color color;
-		if (rPrToApply.getColor()!=null ) {
-			return true;			
-		}
-
-		//CTSignedTwipsMeasure spacing;
-		//CTTextScale w;
-		//HpsMeasure kern;
-		//CTSignedHpsMeasure position;
-		//HpsMeasure sz;
-		if (rPrToApply.getSz()!=null ) {
-			return true;			
-		}
-
-		//HpsMeasure szCs;
-		//Highlight highlight;
-		//U u;
-		if (rPrToApply.getU()!=null ) {
-			return true;			
-		}
-
-		//CTTextEffect effect;
-		//CTBorder bdr;
-		//CTShd shd;
-		//CTFitText fitText;
-		//CTVerticalAlignRun vertAlign;
-		//BooleanDefaultTrue rtl;
-		//BooleanDefaultTrue cs;
-		//CTEm em;
-		//CTLanguage lang;
-		//CTEastAsianLayout eastAsianLayout;
-		//BooleanDefaultTrue specVanish;
-		//BooleanDefaultTrue oMath;
-		//CTRPrChange rPrChange;
-		
-		// If we got here...
-		return false;
+		return StyleUtil.hasDirectFormatting(rPrToApply);
 	}
 	
+
 	protected void applyRPr(RPr rPrToApply, RPr effectiveRPr) {
 		
 		if (rPrToApply==null) {

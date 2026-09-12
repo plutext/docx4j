@@ -1133,127 +1133,53 @@ public class StyleUtil {
 	}
 
 	public static boolean isEmpty(PPrBase pPrBase) {
-		return (pPrBase == null) ||
-			(   isEmpty(pPrBase.getPStyle()) &&	
-				isEmpty(pPrBase.getKeepNext()) &&	
-				isEmpty(pPrBase.getKeepLines()) &&	
-				isEmpty(pPrBase.getPageBreakBefore()) &&	
-				isEmpty(pPrBase.getFramePr()) &&	
-				isEmpty(pPrBase.getWidowControl()) &&	
-				isEmpty(pPrBase.getNumPr()) &&	
-				isEmpty(pPrBase.getSuppressLineNumbers()) &&	
-				isEmpty(pPrBase.getPBdr()) &&	
-				isEmpty(pPrBase.getShd()) &&	
-				isEmpty(pPrBase.getTabs()) &&	
-				isEmpty(pPrBase.getSuppressAutoHyphens()) &&	
-				isEmpty(pPrBase.getKinsoku()) &&	
-				isEmpty(pPrBase.getWordWrap()) &&	
-				isEmpty(pPrBase.getOverflowPunct()) &&	
-				isEmpty(pPrBase.getTopLinePunct()) &&	
-				isEmpty(pPrBase.getAutoSpaceDE()) &&	
-				isEmpty(pPrBase.getAutoSpaceDN()) &&	
-				isEmpty(pPrBase.getBidi()) &&	
-				isEmpty(pPrBase.getAdjustRightInd()) &&	
-				isEmpty(pPrBase.getSnapToGrid()) &&	
-				isEmpty(pPrBase.getSpacing()) &&	
-				isEmpty(pPrBase.getInd()) &&	
-				isEmpty(pPrBase.getContextualSpacing()) &&	
-				isEmpty(pPrBase.getMirrorIndents()) &&	
-				isEmpty(pPrBase.getSuppressOverlap()) &&	
-				isEmpty(pPrBase.getJc()) &&	
-				isEmpty(pPrBase.getTextDirection()) &&	
-				isEmpty(pPrBase.getTextAlignment()) &&	
-				isEmpty(pPrBase.getTextboxTightWrap()) &&	
-				isEmpty(pPrBase.getOutlineLvl()) &&
-				isEmpty(pPrBase.getCnfStyle())	
-			);
+		return PropertyCatalogue.isEmpty(PropertyCatalogue.PARAGRAPH, pPrBase);
 	}
 
 	/**
-	 * isEmpty returns true if rPr is null, or each of its
-	 * properties is in turn, empty 
-	 * 
+	 * isEmpty returns true if rPr is null, or each of its properties is in turn empty.
+	 * Every member of {@link PropertyCatalogue#RUN} counts (until 17.1.1 {@code w:lang} and
+	 * the w14 members did not, so a style stating only a language was never applied).
+	 *
 	 * @param rPr
 	 * @return
 	 */
 	public static boolean isEmpty(RPr rPr) {
-		return ((rPr == null) ||
-				(isEmpty(rPr.getRStyle()) &&
-				 isEmpty(rPr.getRFonts()) &&
-				 isEmpty(rPr.getB()) &&
-				 isEmpty(rPr.getBCs()) &&
-				 isEmpty(rPr.getI()) &&
-				 isEmpty(rPr.getICs()) &&
-				 isEmpty(rPr.getCaps()) &&
-				 isEmpty(rPr.getSmallCaps()) &&
-				 isEmpty(rPr.getStrike()) &&
-				 isEmpty(rPr.getDstrike()) &&
-				 isEmpty(rPr.getOutline()) &&
-				 isEmpty(rPr.getShadow()) &&
-				 isEmpty(rPr.getEmboss()) &&
-				 isEmpty(rPr.getImprint()) &&
-				 isEmpty(rPr.getSnapToGrid()) &&
-				 isEmpty(rPr.getVanish()) &&
-				 isEmpty(rPr.getColor()) &&
-			 	 isEmpty(rPr.getSpacing()) &&
-				 isEmpty(rPr.getW()) &&
-				 isEmpty(rPr.getKern()) &&
-				 isEmpty(rPr.getPosition()) &&
-				 isEmpty(rPr.getSz()) &&
-				 isEmpty(rPr.getSzCs()) &&
-				 isEmpty(rPr.getHighlight()) &&
-				 isEmpty(rPr.getU()) &&
-				 isEmpty(rPr.getEffect()) &&
-				 isEmpty(rPr.getBdr()) &&
-				 isEmpty(rPr.getShd()) &&
-				 isEmpty(rPr.getVertAlign()) &&
-				 isEmpty(rPr.getRtl()) &&
-				 isEmpty(rPr.getCs()) &&
-				 isEmpty(rPr.getEm()) &&
-				 isEmpty(rPr.getSpecVanish()) &&
-				 isEmpty(rPr.getOMath())
-				 )
-			    );
+		return PropertyCatalogue.isEmpty(PropertyCatalogue.RUN, rPr);
 	}
 
 	public static boolean isEmpty(ParaRPr rPr) {
-		return ((rPr == null) ||
-				(isEmpty(rPr.getRStyle()) &&
-				 isEmpty(rPr.getRFonts()) &&
-				 isEmpty(rPr.getB()) &&
-				 isEmpty(rPr.getBCs()) &&
-				 isEmpty(rPr.getI()) &&
-				 isEmpty(rPr.getICs()) &&
-				 isEmpty(rPr.getCaps()) &&
-				 isEmpty(rPr.getSmallCaps()) &&
-				 isEmpty(rPr.getStrike()) &&
-				 isEmpty(rPr.getDstrike()) &&
-				 isEmpty(rPr.getOutline()) &&
-				 isEmpty(rPr.getShadow()) &&
-				 isEmpty(rPr.getEmboss()) &&
-				 isEmpty(rPr.getImprint()) &&
-				 isEmpty(rPr.getSnapToGrid()) &&
-				 isEmpty(rPr.getVanish()) &&
-				 isEmpty(rPr.getColor()) &&
-			 	 isEmpty(rPr.getSpacing()) &&
-				 isEmpty(rPr.getW()) &&
-				 isEmpty(rPr.getKern()) &&
-				 isEmpty(rPr.getPosition()) &&
-				 isEmpty(rPr.getSz()) &&
-				 isEmpty(rPr.getSzCs()) &&
-				 isEmpty(rPr.getHighlight()) &&
-				 isEmpty(rPr.getU()) &&
-				 isEmpty(rPr.getEffect()) &&
-				 isEmpty(rPr.getBdr()) &&
-				 isEmpty(rPr.getShd()) &&
-				 isEmpty(rPr.getVertAlign()) &&
-				 isEmpty(rPr.getRtl()) &&
-				 isEmpty(rPr.getCs()) &&
-				 isEmpty(rPr.getEm()) &&
-				 isEmpty(rPr.getSpecVanish()) &&
-				 isEmpty(rPr.getOMath())
-				 )
-			    );
+		return PropertyCatalogue.isEmpty(PropertyCatalogue.RUN, rPr);
+	}
+
+	/**
+	 * Whether a run's {@code w:rPr} states any formatting of its own - any member of
+	 * {@link PropertyCatalogue#RUN} other than the style reference is present (an element
+	 * with no attributes counts: it was stated).  The test PropertyResolver used until
+	 * 17.1.1 listed 19 of the 40 members, so a run whose only direct formatting was
+	 * {@code w:rtl} or {@code w:position} resolved as having none.
+	 *
+	 * @since 17.1.1
+	 */
+	public static boolean hasDirectFormatting(RPr rPr) {
+		return PropertyCatalogue.hasDirectFormatting(PropertyCatalogue.RUN, rPr);
+	}
+
+	/** The paragraph mark's {@code w:rPr}: as {@link #hasDirectFormatting(RPr)}.  @since 17.1.1 */
+	public static boolean hasDirectFormatting(ParaRPr rPr) {
+		return PropertyCatalogue.hasDirectFormatting(PropertyCatalogue.RUN, rPr);
+	}
+
+	/**
+	 * Whether a paragraph's {@code w:pPr} states any formatting of its own - any member of
+	 * {@link PropertyCatalogue#PARAGRAPH} other than {@code w:pStyle}, {@code w:divId},
+	 * {@code w:cnfStyle} and {@code w14:collapsed} is present.  The paragraph mark's
+	 * {@code w:rPr} and a {@code w:sectPr} are not formatting of the paragraph.
+	 *
+	 * @since 17.1.1
+	 */
+	public static boolean hasDirectFormatting(PPrBase pPr) {
+		return PropertyCatalogue.hasDirectFormatting(PropertyCatalogue.PARAGRAPH, pPr);
 	}
 
 	public static boolean isEmpty(CTTblPrBase tblPr) {
@@ -1364,7 +1290,10 @@ public class StyleUtil {
 				 isEmpty(spacing.getBefore()) &&
 				 isEmpty(spacing.getBeforeLines()) &&
 				 isEmpty(spacing.getLine()) &&
-				 (spacing.getLineRule() == null)
+				 (spacing.getLineRule() == null) &&
+				 // an explicit w:beforeAutospacing/w:afterAutospacing (either value) is a statement too (@since 17.1.1)
+				 org.docx4j.wml.AutospacingAccess.getBeforeAutospacing(spacing) == null &&
+				 org.docx4j.wml.AutospacingAccess.getAfterAutospacing(spacing) == null
 				 )
 				);
 	}
@@ -1428,13 +1357,17 @@ public class StyleUtil {
 			   );
 	}
 
+	/**
+	 * A {@code w:numPr} is empty only when it states neither {@code w:numId} nor
+	 * {@code w:ilvl}: each inherits on its own (ECMA-376 17.9.3, 17.9.18; measured, CR-015
+	 * probe styles-numpr-ilvl-only: a direct {@code w:numPr} of {@code w:ilvl 1} alone puts
+	 * the paragraph at level 1 of its style's list).  Until 17.1.1 only the id was checked,
+	 * so an {@code ilvl}-only {@code w:numPr} was dropped.
+	 */
 	public static boolean isEmpty(NumPr numPr) {
-		// Comparing the numbering format would require looking into the 
-		// numbering definitions part, for this reason only the id is 
-		// checked
-		return (numPr == null) || 
-			   (numPr.getNumId() == null) || 
-			   (isEmpty(numPr.getNumId().getVal()));
+		return (numPr == null) ||
+			   ((numPr.getNumId() == null || isEmpty(numPr.getNumId().getVal()))
+			    && (numPr.getIlvl() == null || isEmpty(numPr.getIlvl().getVal())));
 	}
 
 	public static boolean isEmpty(CTFramePr framePr) {
@@ -1524,6 +1457,12 @@ public class StyleUtil {
 
 	public static boolean isEmpty(Highlight highlight) {
 		return (highlight == null) || isEmpty(highlight.getVal());
+	}
+
+	/** @since 17.1.1 */
+	public static boolean isEmpty(CTLanguage lang) {
+		return (lang == null) ||
+				(isEmpty(lang.getVal()) && isEmpty(lang.getEastAsia()) && isEmpty(lang.getBidi()));
 	}
 
 	public static boolean isEmpty(CTSignedHpsMeasure measure) {
@@ -1943,15 +1882,9 @@ public class StyleUtil {
 	 * @since 11.5.1
 	 */
 	public static void apply(PPrBase source, PPrBase destination, NumberingDefinitionsPart numberingDefinitionsPart) {
-		
+
 	//PPrBase as a Base class isn't instantiated
 		if (!isEmpty((PPrBase)source)) {
-			destination.setPStyle(apply(source.getPStyle(), destination.getPStyle()));	
-			destination.setKeepNext(apply(source.getKeepNext(), destination.getKeepNext()));	
-			destination.setKeepLines(apply(source.getKeepLines(), destination.getKeepLines()));	
-			destination.setPageBreakBefore(apply(source.getPageBreakBefore(), destination.getPageBreakBefore()));	
-			destination.setFramePr(apply(source.getFramePr(), destination.getFramePr()));	
-			destination.setWidowControl(apply(source.getWidowControl(), destination.getWidowControl()));
 
 			/* A snapshot: apply(NumPr, NumPr) writes into the destination object, so
 			 * holding a reference to it here would hand the numbering-off rule below
@@ -1962,7 +1895,10 @@ public class StyleUtil {
 				inheritedNumPr.setNumId(destination.getNumPr().getNumId());
 				inheritedNumPr.setIlvl(destination.getNumPr().getIlvl());
 			}
-			destination.setNumPr(apply(source.getNumPr(), destination.getNumPr()));
+
+			// every member but w:ind, which goes last, after the numbering level's (@since 17.1.1 catalogue-driven)
+			PropertyCatalogue.apply(PropertyCatalogue.PARAGRAPH, source, destination,
+					java.util.Collections.singleton(PropertyCatalogue.IND));
 
 			/* ECMA-376 17.9.18: w:numId w:val="0" takes the paragraph out of the list, so
 			 * neither the level's label nor its w:ind applies - only the paragraph's own.
@@ -2007,34 +1943,6 @@ public class StyleUtil {
 			}
 			// Indent in style overrides any set in numPr
 			destination.setInd(apply(source.getInd(), destination.getInd()));
-			
-			destination.setSuppressLineNumbers(apply(source.getSuppressLineNumbers(), destination.getSuppressLineNumbers()));	
-			destination.setPBdr(apply(source.getPBdr(), destination.getPBdr()));	
-			destination.setShd(apply(source.getShd(), destination.getShd()));	
-			destination.setTabs(apply(source.getTabs(), destination.getTabs()));	
-			destination.setSuppressAutoHyphens(apply(source.getSuppressAutoHyphens(), destination.getSuppressAutoHyphens()));	
-			destination.setKinsoku(apply(source.getKinsoku(), destination.getKinsoku()));	
-			destination.setWordWrap(apply(source.getWordWrap(), destination.getWordWrap()));	
-			destination.setOverflowPunct(apply(source.getOverflowPunct(), destination.getOverflowPunct()));	
-			destination.setTopLinePunct(apply(source.getTopLinePunct(), destination.getTopLinePunct()));	
-			destination.setAutoSpaceDE(apply(source.getAutoSpaceDE(), destination.getAutoSpaceDE()));	
-			destination.setAutoSpaceDN(apply(source.getAutoSpaceDN(), destination.getAutoSpaceDN()));	
-			destination.setBidi(apply(source.getBidi(), destination.getBidi()));	
-			destination.setAdjustRightInd(apply(source.getAdjustRightInd(), destination.getAdjustRightInd()));	
-			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));
-			
-			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));	
-			
-			
-			destination.setContextualSpacing(apply(source.getContextualSpacing(), destination.getContextualSpacing()));	
-			destination.setMirrorIndents(apply(source.getMirrorIndents(), destination.getMirrorIndents()));	
-			destination.setSuppressOverlap(apply(source.getSuppressOverlap(), destination.getSuppressOverlap()));	
-			destination.setJc(apply(source.getJc(), destination.getJc()));	
-			destination.setTextDirection(apply(source.getTextDirection(), destination.getTextDirection()));	
-			destination.setTextAlignment(apply(source.getTextAlignment(), destination.getTextAlignment()));	
-			destination.setTextboxTightWrap(apply(source.getTextboxTightWrap(), destination.getTextboxTightWrap()));	
-			destination.setOutlineLvl(apply(source.getOutlineLvl(), destination.getOutlineLvl()));
-			destination.setCnfStyle(apply(source.getCnfStyle(), destination.getCnfStyle()));	
 		}
 	}
 	
@@ -2083,200 +1991,63 @@ public class StyleUtil {
 	}	
 
 	public static RPr apply(RPr source, RPr destination) {
-		
-		boolean hint = false;
-		if (source!=null
-				&& source.getRFonts()!=null
-				&& !isEmpty(source.getRFonts().getHint())) {
-			hint = true; 
-			log.debug("source rPr contains rFonts with hint");
-		}
-
-		if (isEmpty(source) && !hint ) {
-			log.debug("no source rPr to apply");			
-		} else {
-			if (destination == null) 
-				destination = Context.getWmlObjectFactory().createRPr();
-			
-			destination.setLang(apply(source.getLang(), destination.getLang()));
-			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
-			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
-			destination.setB(apply(source.getB(), destination.getB()));
-			destination.setBCs(apply(source.getBCs(), destination.getBCs()));
-			destination.setI(apply(source.getI(), destination.getI()));
-			destination.setICs(apply(source.getICs(), destination.getICs()));
-			destination.setCaps(apply(source.getCaps(), destination.getCaps()));
-			destination.setSmallCaps(apply(source.getSmallCaps(), destination.getSmallCaps()));
-			destination.setStrike(apply(source.getStrike(), destination.getStrike()));
-			destination.setDstrike(apply(source.getDstrike(), destination.getDstrike()));
-			destination.setOutline(apply(source.getOutline(), destination.getOutline()));
-			destination.setShadow(apply(source.getShadow(), destination.getShadow()));
-			destination.setEmboss(apply(source.getEmboss(), destination.getEmboss()));
-			destination.setImprint(apply(source.getImprint(), destination.getImprint()));
-			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));
-			destination.setVanish(apply(source.getVanish(), destination.getVanish()));
-			destination.setColor(apply(source.getColor(), destination.getColor()));
-			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));
-			destination.setW(apply(source.getW(), destination.getW()));
-			destination.setKern(apply(source.getKern(), destination.getKern()));
-			destination.setPosition(apply(source.getPosition(), destination.getPosition()));
-			destination.setSz(apply(source.getSz(), destination.getSz()));
-			destination.setSzCs(apply(source.getSzCs(), destination.getSzCs()));
-			destination.setHighlight(apply(source.getHighlight(), destination.getHighlight()));
-			destination.setU(apply(source.getU(), destination.getU()));
-			destination.setEffect(apply(source.getEffect(), destination.getEffect()));
-			destination.setBdr(apply(source.getBdr(), destination.getBdr()));
-			destination.setShd(apply(source.getShd(), destination.getShd()));
-			destination.setVertAlign(apply(source.getVertAlign(), destination.getVertAlign()));
-			destination.setRtl(apply(source.getRtl(), destination.getRtl()));
-			destination.setCs(apply(source.getCs(), destination.getCs()));
-			destination.setEm(apply(source.getEm(), destination.getEm()));
-			destination.setSpecVanish(apply(source.getSpecVanish(), destination.getSpecVanish()));
-			destination.setOMath(apply(source.getOMath(), destination.getOMath()));
-			// Word's ligature setting, which decides whether the run's OpenType
-			// ligatures are applied at all (RunFontSelector).  @since 17.0.5
-			destination.setLigatures(source.getLigatures()==null
-					? destination.getLigatures() : source.getLigatures());
-		}
+		if (skipRun(source)) return destination;
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createRPr();
+		PropertyCatalogue.apply(PropertyCatalogue.RUN, source, destination);
 		return destination;
 	}
-	
-	public static CTLanguage apply(CTLanguage source, CTLanguage destination) {
-		// TODO refine this?
-		return ((source == null) ? destination : source);
-	}
-	
 
 	public static RPr apply(ParaRPr source, RPr destination) {
-		if (!isEmpty(source)) {
-			if (destination == null) 
-				destination = Context.getWmlObjectFactory().createRPr();
-			
-			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
-			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
-			destination.setB(apply(source.getB(), destination.getB()));
-			destination.setBCs(apply(source.getBCs(), destination.getBCs()));
-			destination.setI(apply(source.getI(), destination.getI()));
-			destination.setICs(apply(source.getICs(), destination.getICs()));
-			destination.setCaps(apply(source.getCaps(), destination.getCaps()));
-			destination.setSmallCaps(apply(source.getSmallCaps(), destination.getSmallCaps()));
-			destination.setStrike(apply(source.getStrike(), destination.getStrike()));
-			destination.setDstrike(apply(source.getDstrike(), destination.getDstrike()));
-			destination.setOutline(apply(source.getOutline(), destination.getOutline()));
-			destination.setShadow(apply(source.getShadow(), destination.getShadow()));
-			destination.setEmboss(apply(source.getEmboss(), destination.getEmboss()));
-			destination.setImprint(apply(source.getImprint(), destination.getImprint()));
-			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));
-			destination.setVanish(apply(source.getVanish(), destination.getVanish()));
-			destination.setColor(apply(source.getColor(), destination.getColor()));
-			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));
-			destination.setW(apply(source.getW(), destination.getW()));
-			destination.setKern(apply(source.getKern(), destination.getKern()));
-			destination.setPosition(apply(source.getPosition(), destination.getPosition()));
-			destination.setSz(apply(source.getSz(), destination.getSz()));
-			destination.setSzCs(apply(source.getSzCs(), destination.getSzCs()));
-			destination.setHighlight(apply(source.getHighlight(), destination.getHighlight()));
-			destination.setU(apply(source.getU(), destination.getU()));
-			destination.setEffect(apply(source.getEffect(), destination.getEffect()));
-			destination.setBdr(apply(source.getBdr(), destination.getBdr()));
-			destination.setShd(apply(source.getShd(), destination.getShd()));
-			destination.setVertAlign(apply(source.getVertAlign(), destination.getVertAlign()));
-			destination.setRtl(apply(source.getRtl(), destination.getRtl()));
-			destination.setCs(apply(source.getCs(), destination.getCs()));
-			destination.setEm(apply(source.getEm(), destination.getEm()));
-			destination.setSpecVanish(apply(source.getSpecVanish(), destination.getSpecVanish()));
-			destination.setOMath(apply(source.getOMath(), destination.getOMath()));
-		}
+		if (skipRun(source)) return destination;
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createRPr();
+		PropertyCatalogue.apply(PropertyCatalogue.RUN, source, destination);
 		return destination;
 	}
 
 	public static ParaRPr apply(RPr source, ParaRPr destination) {
-		if (!isEmpty(source)) {
-			if (destination == null) 
-				destination = Context.getWmlObjectFactory().createParaRPr();
-			
-			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
-			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
-			destination.setB(apply(source.getB(), destination.getB()));
-			destination.setBCs(apply(source.getBCs(), destination.getBCs()));
-			destination.setI(apply(source.getI(), destination.getI()));
-			destination.setICs(apply(source.getICs(), destination.getICs()));
-			destination.setCaps(apply(source.getCaps(), destination.getCaps()));
-			destination.setSmallCaps(apply(source.getSmallCaps(), destination.getSmallCaps()));
-			destination.setStrike(apply(source.getStrike(), destination.getStrike()));
-			destination.setDstrike(apply(source.getDstrike(), destination.getDstrike()));
-			destination.setOutline(apply(source.getOutline(), destination.getOutline()));
-			destination.setShadow(apply(source.getShadow(), destination.getShadow()));
-			destination.setEmboss(apply(source.getEmboss(), destination.getEmboss()));
-			destination.setImprint(apply(source.getImprint(), destination.getImprint()));
-			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));
-			destination.setVanish(apply(source.getVanish(), destination.getVanish()));
-			destination.setColor(apply(source.getColor(), destination.getColor()));
-			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));
-			destination.setW(apply(source.getW(), destination.getW()));
-			destination.setKern(apply(source.getKern(), destination.getKern()));
-			destination.setPosition(apply(source.getPosition(), destination.getPosition()));
-			destination.setSz(apply(source.getSz(), destination.getSz()));
-			destination.setSzCs(apply(source.getSzCs(), destination.getSzCs()));
-			destination.setHighlight(apply(source.getHighlight(), destination.getHighlight()));
-			destination.setU(apply(source.getU(), destination.getU()));
-			destination.setEffect(apply(source.getEffect(), destination.getEffect()));
-			destination.setBdr(apply(source.getBdr(), destination.getBdr()));
-			destination.setShd(apply(source.getShd(), destination.getShd()));
-			destination.setVertAlign(apply(source.getVertAlign(), destination.getVertAlign()));
-			destination.setRtl(apply(source.getRtl(), destination.getRtl()));
-			destination.setCs(apply(source.getCs(), destination.getCs()));
-			destination.setEm(apply(source.getEm(), destination.getEm()));
-			destination.setSpecVanish(apply(source.getSpecVanish(), destination.getSpecVanish()));
-			destination.setOMath(apply(source.getOMath(), destination.getOMath()));
-		}
+		if (skipRun(source)) return destination;
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createParaRPr();
+		PropertyCatalogue.apply(PropertyCatalogue.RUN, source, destination);
 		return destination;
 	}
 
 	public static ParaRPr apply(ParaRPr source, ParaRPr destination) {
-
-		if (!isEmpty(source)) {
-			if (destination == null) 
-				destination = Context.getWmlObjectFactory().createParaRPr();
-			
-			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
-			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
-			destination.setB(apply(source.getB(), destination.getB()));
-			destination.setBCs(apply(source.getBCs(), destination.getBCs()));
-			destination.setI(apply(source.getI(), destination.getI()));
-			destination.setICs(apply(source.getICs(), destination.getICs()));
-			destination.setCaps(apply(source.getCaps(), destination.getCaps()));
-			destination.setSmallCaps(apply(source.getSmallCaps(), destination.getSmallCaps()));
-			destination.setStrike(apply(source.getStrike(), destination.getStrike()));
-			destination.setDstrike(apply(source.getDstrike(), destination.getDstrike()));
-			destination.setOutline(apply(source.getOutline(), destination.getOutline()));
-			destination.setShadow(apply(source.getShadow(), destination.getShadow()));
-			destination.setEmboss(apply(source.getEmboss(), destination.getEmboss()));
-			destination.setImprint(apply(source.getImprint(), destination.getImprint()));
-			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));
-			destination.setVanish(apply(source.getVanish(), destination.getVanish()));
-			destination.setColor(apply(source.getColor(), destination.getColor()));
-			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));
-			destination.setW(apply(source.getW(), destination.getW()));
-			destination.setKern(apply(source.getKern(), destination.getKern()));
-			destination.setPosition(apply(source.getPosition(), destination.getPosition()));
-			destination.setSz(apply(source.getSz(), destination.getSz()));
-			destination.setSzCs(apply(source.getSzCs(), destination.getSzCs()));
-			destination.setHighlight(apply(source.getHighlight(), destination.getHighlight()));
-			destination.setU(apply(source.getU(), destination.getU()));
-			destination.setEffect(apply(source.getEffect(), destination.getEffect()));
-			destination.setBdr(apply(source.getBdr(), destination.getBdr()));
-			destination.setShd(apply(source.getShd(), destination.getShd()));
-			destination.setVertAlign(apply(source.getVertAlign(), destination.getVertAlign()));
-			destination.setRtl(apply(source.getRtl(), destination.getRtl()));
-			destination.setCs(apply(source.getCs(), destination.getCs()));
-			destination.setEm(apply(source.getEm(), destination.getEm()));
-			destination.setSpecVanish(apply(source.getSpecVanish(), destination.getSpecVanish()));
-			destination.setOMath(apply(source.getOMath(), destination.getOMath()));
-		}
+		if (skipRun(source)) return destination;
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createParaRPr();
+		PropertyCatalogue.apply(PropertyCatalogue.RUN, source, destination);
 		return destination;
 	}
-	
+
+	/** A run properties source with nothing to say - except that a w:rFonts carrying only
+	 *  a w:hint still says something (apply(RFonts, RFonts) carries the hint). */
+	private static boolean skipRun(Object source) {
+		if (source == null) return true;
+		RFonts rFonts = source instanceof RPr ? ((RPr) source).getRFonts() : ((ParaRPr) source).getRFonts();
+		boolean hint = rFonts != null && !isEmpty(rFonts.getHint());
+		if (hint) log.debug("source rPr contains rFonts with hint");
+		return PropertyCatalogue.isEmpty(PropertyCatalogue.RUN, source) && !hint;
+	}
+
+	/**
+	 * {@code w:val}, {@code w:eastAsia} and {@code w:bidi} each inherit on their own
+	 * (ECMA-376 17.3.2.20: each names the language of one script range).  Until 17.1.1 the
+	 * element was replaced whole, so a style stating only {@code w:bidi} wiped an inherited
+	 * {@code w:val}.
+	 */
+	public static CTLanguage apply(CTLanguage source, CTLanguage destination) {
+		if (isEmpty(source)) return destination;
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createCTLanguage();
+		destination.setVal(apply(source.getVal(), destination.getVal()));
+		destination.setEastAsia(apply(source.getEastAsia(), destination.getEastAsia()));
+		destination.setBidi(apply(source.getBidi(), destination.getBidi()));
+		return destination;
+	}
+
 	public static CTTblPrBase apply(CTTblPrBase source, CTTblPrBase destination) {
 		if (!isEmpty(source)) {
 			if (destination == null) 
@@ -2511,15 +2282,28 @@ public class StyleUtil {
 			destination.setAfterLines(apply(source.getAfterLines(), destination.getAfterLines()));
 			destination.setBefore(apply(source.getBefore(), destination.getBefore()));
 			destination.setBeforeLines(apply(source.getBeforeLines(), destination.getBeforeLines()));
-			destination.setLine(apply(source.getLine(), destination.getLine()));
-			destination.setLineRule(apply(source.getLineRule(), destination.getLineRule()));
+			/* w:lineRule qualifies w:line: ECMA-376 17.3.1.33 makes auto its default only
+			 * "if a line attribute value is present".  So a source stating w:line states a
+			 * rule too (auto when it names none), and a source stating no w:line leaves
+			 * both inherited.  Until 17.1.1 a missing rule became auto whatever the source
+			 * said, so a style's <w:spacing w:line="480" w:lineRule="exact"/> under a direct
+			 * <w:spacing w:after="0"/> came out double-spaced (measured, CR-015 probe
+			 * styles-linerule: Word keeps the 24pt pitch). */
+			if (source.getLine() != null) {
+				destination.setLine(source.getLine());
+				destination.setLineRule(source.getLineRule() == null ? STLineSpacingRule.AUTO : source.getLineRule());
+			} else if (source.getLineRule() != null) {
+				destination.setLineRule(source.getLineRule());
+			}
 		}
 		return destination;
 	}
 
+	/** The source's rule where it states one, else the inherited.  (Until 17.1.1 a null
+	 *  source meant auto, which is only right beside a w:line the source states; see
+	 *  {@link #apply(Spacing, Spacing)}.) */
 	public static STLineSpacingRule apply(STLineSpacingRule source, STLineSpacingRule destination) {
-		// defaults to auto
-		return (source == null ? STLineSpacingRule.AUTO : source);
+		return (source == null ? destination : source);
 	}
 	
 	/**
@@ -2596,8 +2380,9 @@ public class StyleUtil {
 			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
 			destination.setThemeFillTint(apply(source.getThemeFillTint(), destination.getThemeFillTint()));
 			destination.setThemeFillShade(apply(source.getThemeFillShade(), destination.getThemeFillShade()));
-			destination.setThemeColor(source.getThemeColor()); //enum
-			destination.setThemeFill(source.getThemeFill()); //enum
+			// enums only when the source states them (until 17.1.1 a null source value cleared the inherited one)
+			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor()));
+			destination.setThemeFill(apply(source.getThemeFill(), destination.getThemeFill()));
 		}
 		return destination;
 	}
@@ -2625,7 +2410,7 @@ public class StyleUtil {
 			destination.setColor(apply(source.getColor(), destination.getColor()));
 			destination.setSpace(apply(source.getSpace(), destination.getSpace())); 
 			destination.setSz(apply(source.getSz(), destination.getSz())); 
-			destination.setThemeColor(source.getThemeColor()); 
+			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor())); // when stated (17.1.1)
 			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade())); 
 			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
 			destination.setVal(apply(source.getVal(), destination.getVal()));
@@ -2633,13 +2418,15 @@ public class StyleUtil {
 		return destination;
 	}
 
+	/** {@code w:numId} and {@code w:ilvl} each inherit on their own; see {@link #isEmpty(NumPr)}. */
 	public static NumPr apply(NumPr source, NumPr destination) {
 		if (!isEmpty(source)) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createPPrBaseNumPr();
-			
-			if ((source.getNumId() != null) || (source.getIlvl() != null)) {
+			if (source.getNumId() != null && !isEmpty(source.getNumId().getVal())) {
 				destination.setNumId(source.getNumId());
+			}
+			if (source.getIlvl() != null && !isEmpty(source.getIlvl().getVal())) {
 				destination.setIlvl(source.getIlvl());
 			}
 		}
@@ -2698,7 +2485,11 @@ public class StyleUtil {
 	}
 
 	public static RFonts apply(RFonts source, RFonts destination) {
-		
+
+		// nothing at all to apply leaves the destination as it is (until 17.1.1 it was given
+		// an empty w:rFonts, so every merged w:rPr carried one and read as directly formatted)
+		if (source == null) return destination;
+
 		if (destination == null)
 			destination = Context.getWmlObjectFactory().createRFonts();
 		
@@ -2798,12 +2589,16 @@ public class StyleUtil {
 		return destination;
 	}
 
+	/** {@code w:val} and the colour attributes each inherit on their own (17.1.1; was the value alone, replaced whole). */
 	public static U apply(U source, U destination) {
 		if (!isEmpty(source)) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createU();
-			
-			destination.setVal(source.getVal());
+			destination.setVal(apply(source.getVal(), destination.getVal()));
+			destination.setColor(apply(source.getColor(), destination.getColor()));
+			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor()));
+			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
+			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
 		}
 		return destination;
 	}
@@ -2952,11 +2747,14 @@ public class StyleUtil {
 			destination.setRightFromText(apply(source.getRightFromText(), destination.getRightFromText()));
 			destination.setTopFromText(apply(source.getTopFromText(), destination.getTopFromText()));
 			destination.setBottomFromText(apply(source.getBottomFromText(), destination.getBottomFromText()));
-			destination.setVertAnchor(source.getVertAnchor());
-			destination.setHorzAnchor(source.getHorzAnchor());
-			destination.setTblpXSpec(source.getTblpXSpec());
+			// the anchors and specs only when the source states them: a w:tblpPr stating only
+			// w:tblpX kept its inherited anchors in Word (until 17.1.1 they were nulled; the
+			// 17.0.5 fix d5f067249 repaired isEmpty(CTTblPPr), not this)
+			if (source.getVertAnchor() != null) destination.setVertAnchor(source.getVertAnchor());
+			if (source.getHorzAnchor() != null) destination.setHorzAnchor(source.getHorzAnchor());
+			if (source.getTblpXSpec() != null) destination.setTblpXSpec(source.getTblpXSpec());
 			destination.setTblpX(apply(source.getTblpX(), destination.getTblpX()));
-			destination.setTblpYSpec(source.getTblpYSpec());
+			if (source.getTblpYSpec() != null) destination.setTblpYSpec(source.getTblpYSpec());
 			destination.setTblpY(apply(source.getTblpY(), destination.getTblpY()));		
 		}
 		return destination;
@@ -3186,284 +2984,17 @@ public class StyleUtil {
 	 * @since 11.5.12
 	 */
 	public static void unset(RPr source, RPr destination) {
-		
-		if (source.getLang()!=null) {
-			destination.setLang(null);
-		}
-		
-		if(source.getRStyle()!=null) {
-			destination.setRStyle(null);
-		}
-				
-		if(source.getRFonts()!=null) {
-			destination.setRFonts(null);
-		}
-		
-		if (source.getB()!=null) {
-			destination.setB(null);
-		}
-		
-		if (source.getBCs()!=null) {
-			destination.setBCs(null);
-		}
-		
-		if (source.getI()!=null) {
-			destination.setI(null);
-		}
-		
-		if (source.getICs()!=null) {
-			destination.setICs(null);
-		}
-		
-		if (source.getCaps()!=null) {
-			destination.setCaps(null);
-		}
-		
-		if (source.getSmallCaps()!=null) {
-			destination.setSmallCaps(null);
-		}
-		
-		if (source.getStrike()!=null) {
-				destination.setStrike(null);
-		}
-		
-		if (source.getDstrike()!=null) {
-			destination.setDstrike(null);
-		}
-		
-		if (source.getOutline()!=null) {
-			destination.setOutline(null);
-		}
-		
-		if (source.getShadow()!=null) {
-			destination.setShadow(null);
-		}
-		
-		if (source.getEmboss()!=null) {
-			destination.setEmboss(null);
-		}
-		
-		if (source.getImprint()!=null) {
-			destination.setImprint(null);
-		}
-		
-		if (source.getSnapToGrid()!=null) {
-			destination.setSnapToGrid(null);
-		}
-		
-		if (source.getVanish()!=null) {		
-			destination.setVanish(null);
-		}
-		
-		if (source.getColor()!=null) {
-			destination.setColor(null);
-		}
-		
-		if (source.getSpacing()!=null) {
-			destination.setSpacing(null);
-		}
-		
-		if (source.getW()!=null) {
-			destination.setW(null);
-		}
-		
-		if (source.getKern()!=null) {
-			destination.setKern(null);
-		}
-		
-		if (source.getPosition()!=null) {
-			destination.setPosition(null);
-		}
-		
-		if (source.getSz()!=null) {
-			destination.setSz(null);
-		}
-		
-		if (source.getSzCs()!=null) {
-			destination.setSzCs(null);
-		}
-		
-		if (source.getHighlight()!=null) {
-			destination.setHighlight(null);
-		}
-		
-		if (source.getU()!=null) {
-			destination.setU(null);
-		}
-		
-		if (source.getEffect()!=null) {
-			destination.setEffect(null);
-		}
-		
-		if (source.getBdr()!=null) {
-			destination.setBdr(null);
-		}
-		
-		if (source.getShd()!=null) {
-			destination.setShd(null);
-		}
-		
-		if (source.getVertAlign()!=null) {
-			destination.setVertAlign(null);
-		}
-		
-		if (source.getRtl()!=null) {
-			destination.setRtl(null);
-		}
-		
-		if (source.getCs()!=null) {
-			destination.setCs(null);
-		}
-		
-		if (source.getEm()!=null) {
-			destination.setEm(null);
-		}
-		
-		if (source.getSpecVanish()!=null) {
-			destination.setSpecVanish(null);
-		}
-		
-		if (source.getOMath()!=null) {
-			destination.setOMath(null);
-		}			
-	}	
-	
+		PropertyCatalogue.unset(PropertyCatalogue.RUN, source, destination);
+	}
+
 	/**
 	 * Unset any property in destination which is in source
 	 * @param source
 	 * @param destination
 	 * @since 11.5.12
 	 */	
-	public static void unset(PPrBase source, PPrBase destination) {	
-		
-		if (source.getPStyle()!=null) {
-			destination.setPStyle(null);
-		}
-
-		if (source.getKeepNext()!=null) {
-			destination.setKeepNext(null);
-		}
-		
-		if (source.getKeepLines()!=null) {
-			destination.setKeepLines(null);
-		}
-
-		if (source.getPageBreakBefore()!=null) {
-			destination.setPageBreakBefore(null);
-		}
-		
-		if (source.getFramePr()!=null) {
-			destination.setFramePr(null);
-		}
-
-		if (source.getWidowControl()!=null) {
-			destination.setWidowControl(null);
-		}
-		
-		if (source.getNumPr()!=null) {
-			destination.setNumPr(null);
-		}
-
-		if (source.getInd()!=null) {
-			destination.setInd(null);
-		}
-		
-		if (source.getSuppressLineNumbers()!=null) {
-			destination.setSuppressLineNumbers(null);
-		}
-
-		if (source.getPBdr()!=null) {
-			destination.setPBdr(null);
-		}
-		
-		if (source.getShd()!=null) {
-			destination.setShd(null);
-		}
-
-		if (source.getTabs()!=null) {
-			destination.setTabs(null);
-		}
-		
-		if (source.getSuppressAutoHyphens()!=null) {
-			destination.setSuppressAutoHyphens(null);
-		}
-
-		if (source.getKinsoku()!=null) {
-			destination.setKinsoku(null);
-		}
-		
-		if (source.getWordWrap()!=null) {
-			destination.setWordWrap(null);
-		}
-
-		if (source.getOverflowPunct()!=null) {
-			destination.setOverflowPunct(null);
-		}
-
-		if (source.getTopLinePunct()!=null) {
-			destination.setTopLinePunct(null);
-		}
-
-		if (source.getAutoSpaceDE()!=null) {
-			destination.setAutoSpaceDE(null);
-		}
-		
-		if (source.getAutoSpaceDN()!=null) {
-			destination.setAutoSpaceDN(null);
-		}
-
-		if (source.getBidi()!=null) {
-			destination.setBidi(null);
-		}
-		
-		if (source.getAdjustRightInd()!=null) {
-			destination.setAdjustRightInd(null);
-		}
-
-		if (source.getSnapToGrid()!=null) {
-			destination.setSnapToGrid(null);
-		}
-		
-		if (source.getSpacing()!=null) {
-			destination.setSpacing(null);
-		}
-
-		if (source.getContextualSpacing()!=null) {
-			destination.setContextualSpacing(null);
-		}
-		
-		if (source.getMirrorIndents()!=null) {
-			destination.setMirrorIndents(null);
-		}
-
-		if (source.getSuppressOverlap()!=null) {
-			destination.setSuppressOverlap(null);
-		}
-		
-		if (source.getJc()!=null) {
-			destination.setJc(null);
-		}
-
-		if (source.getTextDirection()!=null) {
-			destination.setTextDirection(null);
-		}
-		
-		if (source.getTextAlignment()!=null) {
-			destination.setTextAlignment(null);
-		}
-
-		if (source.getTextboxTightWrap()!=null) {
-			destination.setTextboxTightWrap(null);
-		}
-		
-		if (source.getOutlineLvl()!=null) {
-			destination.setOutlineLvl(null);
-		}
-
-		if (source.getCnfStyle()!=null) {
-			destination.setCnfStyle(null);
-		}
-				
+	public static void unset(PPrBase source, PPrBase destination) {
+		PropertyCatalogue.unset(PropertyCatalogue.PARAGRAPH, source, destination);
 	}
 
 	public static boolean isCyclic(String styleId, List<String> seen, Logger logger) throws CyclicStylesException  {

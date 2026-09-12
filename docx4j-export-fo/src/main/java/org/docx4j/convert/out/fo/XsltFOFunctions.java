@@ -1072,9 +1072,9 @@ public class XsltFOFunctions {
 	 * effective w:lang (org.docx4j.model.properties.run.Lang), so nothing is done
 	 * about them here.  Two limitations follow: Word chooses its patterns per run,
 	 * while FOP reads the hyphenation properties from the block, so a paragraph
-	 * mixing languages is hyphenated in the paragraph's own; and a w:lang carried
-	 * only by the paragraph mark does not reach the effective rPr at all, because
-	 * StyleUtil.isEmpty(RPr) does not count w:lang.
+	 * mixing languages is hyphenated in the paragraph's own.  (Until 17.1.1 a w:lang
+	 * carried only by the paragraph mark did not reach the effective rPr at all,
+	 * because StyleUtil.isEmpty(RPr) did not count w:lang; CR-015 phase 1.)
 	 *
 	 * @since 17.1.0
 	 */

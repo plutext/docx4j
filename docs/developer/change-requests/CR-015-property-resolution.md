@@ -3,7 +3,9 @@
 Status: IN PROGRESS (2026-09-12) — approved by Jason 2026-09-12; phase 0 DONE
 (6f4763d70, LF; 21890c36e pins the line endings and blame-ignores the
 conversion); phase 0b DONE (five `styles-*` probes, goldens in and read back
-into the table the same day); phase 1 next
+into the table the same day, 83c6865b8); phase 1 DONE (the property
+catalogue and the merge rules; 21 corpus documents improved, none regressed);
+phase 2 next
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -500,6 +502,52 @@ Deprecations (nothing removed): the four-flag `getEffectiveRPr`,
 order, the live-object contract, thread safety and `refresh()`;
 `package-info` for `org.docx4j.model.styles`; CHANGELOG.
 
+## Layering (Jason, 2026-09-12: "we should be getting it right in the resolver so we are not layering fix upon fix")
+
+What kept the FO output right while the resolver's answers were wrong is not
+a layout fix-up but two accidents and a second resolver:
+`ParagraphStylesInTableFix` writes `w:pStyle` = the default style onto every
+paragraph lacking one (a resolver rule implemented in a preprocess); the
+visitor never asks the resolver about a run with no `w:rPr`
+(`AbstractVisitorExporterGenerator` 339-342), so such runs inherit the block
+and the paragraph-mark hack never fires; and `RunFontSelector` walks the
+paragraph style for fonts, size and `w:kern` itself, from the effective pPr
+with the pStyle re-attached (`FOExporterVisitorGenerator` 451-459).
+
+The rule for where a rule lives, from that discussion:
+
+1. **What properties apply to a paragraph or run** - given the document
+   defaults, the styles, the numbering, and where it sits - is
+   `PropertyResolver`'s, always.  Where a rule needs context the resolver is
+   not handed today, hand it the context (as the numbering part already is)
+   rather than rewrite the document to suit the resolver.
+2. **How Word lays out given those properties** is the FO layout layer's
+   (the line manager, `WordLayoutFixups`); not resolution.
+3. **How resolved properties are represented in an output format** is the
+   exporter's or a preprocess's.  That is `ParagraphStylesInTableFix`'s
+   legitimate job: HTML output uses style ids as CSS classes, so
+   table-conditional formatting has to become a named style there.  Computing
+   those properties itself, and shielding the resolver's default-style gap,
+   are not.
+
+Consequences for this CR and after it:
+
+- **Phase 2 also has the visitor resolve every run**, `w:rPr` or not, once the
+  mark is an explicit call.  Each inline then carries its own resolved size,
+  which should make `XsltFOFunctions.pinInheritedFontSize` unnecessary;
+  verified on the corpus, not assumed.
+- **Phase 2b (new): the default-`w:pStyle` injection comes out for paragraphs
+  outside tables**, with its own corpus gate, so the corpus measures the
+  resolver rather than the shield.  (Was decision 2, "a later release".)
+- **Table conditions behind the resolver** - `getEffectivePPr(pPr, tableContext)`
+  and the rPr counterpart, `TableStyleConditions` supplying the context;
+  `ParagraphStylesInTableFix` keeps naming synthetic styles for HTML but takes
+  their content from the resolver, and the FO pathway needs no synthetic
+  styles at all.  Reopens 67ab3b831's placement, so it is a CR of its own
+  after this one, not phase 4.
+- **`RunFontSelector` consumes the effective rPr** and does script and glyph
+  selection only: the fonts review, which is why it follows phase 2.
+
 ## Plan
 
 ### Phase 0 — Unix line endings (preliminary; no code change) — DONE 2026-09-12 (6f4763d70)
@@ -526,9 +574,37 @@ table's status column.  Phase 1 depends on P3 and P4 only for its expected
 values (the spec answers are implemented meanwhile); phase 3 on P6 for the
 default size; phase 4 on P5.
 
-### Phase 1 — the property catalogue and the merge rules
+### Phase 1 — the property catalogue and the merge rules — DONE 2026-09-12
 
-As designed.  Gate: `docx4j-core-tests` and `docx4j-export-fo-tests` green
+As designed, with two things learned in the doing: `apply(RFonts)` gave a
+null source an empty `w:rFonts` in the destination (so every merged rPr read
+as directly formatted once `hasDirectFormatting` was catalogue-driven); it now
+leaves the destination alone for a null source and keeps the empty-element
+behaviour for a non-null empty one (the `RunFontSelectorChinese2Test` case the
+comment names).  `isEmpty(Spacing)` now counts an explicit autospacing
+attribute, as `apply(Spacing)` already carried it.  The catalogue-coverage
+test (`PropertyCatalogueTest.cataloguesCoverTheGeneratedMembers`) reflects
+over the generated setters, so a member added to the schema classes and not to
+the catalogue fails the build.  `CTTblPrBase` and `TcPr` keep their existing
+`apply`/`isEmpty` pairs (no drift found there; a later phase may fold them in).
+Tests: `PropertyCatalogueTest` (4), `StyleUtilMergeRulesTest` (13).
+
+Gate (2026-09-12): `docx4j-core-tests` 958 run, 0 failures;
+`docx4j-export-fo-tests` 600 run, 0 failures; corpus score `p1-catalogue`
+against `p4-stories-h2`, `-Dfidelity.hyphenate=false`:
+
+| corpus | changed documents | mean line parity | lines matched |
+|---|---|---|---|
+| real (191) | 6 improved, 0 regressed | 0.9032 -> 0.9051 | 36486 -> 36634 of 40299 |
+| real2 (156) | 7 improved, 0 regressed | 0.8763 -> 0.8794 | 61784 -> 61925 of 71671 |
+| real3 (102) | 8 improved, 0 regressed | 0.9105 -> 0.9162 | 172717 -> 173367 of 186199 |
+
+The improved documents are the `num_tbl` population the rules predicted
+(exact line spacing under a direct `w:after`, `ilvl`-only numbering, `w:rtl`
+in the ru-RU set).  One document to watch: `12_ru-RU_sdt_fields1_num_tbl_11928`
+gains a page (Word 32, docx4j 32 -> 33) while its line parity rises 0.9491 ->
+0.9526; the extra page is a keep or spacing consequence of a line now
+correctly taller, to be read in the CR-001 way when that work resumes.  Gate: `docx4j-core-tests` and `docx4j-export-fo-tests` green
 (the `PStyle12PtInTable*` and CR-001 tests are the guard for the kept
 merges); corpus re-score against `b63-precr-h2` / `p4-stories-h2` with
 `-Dfidelity.hyphenate=false` — expected movement, all towards Word: documents
@@ -542,6 +618,16 @@ As designed; the three block-level callers migrate to
 `getEffectiveParagraphMarkRPr`.  Gate: as phase 1; the corpus should not move
 (the exporters were shielded), the markdown module's tests and
 `TocGenerateTest` are the consumers that can.
+
+### Phase 2b — the shield comes out (added 2026-09-12, see Layering)
+
+`ParagraphStylesInTableFix` stops writing the default `w:pStyle` onto
+paragraphs outside tables (inside tables the synthetic style ids remain the
+HTML mechanism), and the visitor resolves runs with no `w:rPr` through the
+resolver like any other.  Gate: corpus zero-delta against the phase 2 score
+(any movement is a resolver defect the shield was hiding, to be fixed in the
+resolver, not by restoring the shield); `pinInheritedFontSize` removed if the
+corpus agrees it is redundant.
 
 ### Phase 3 — no mutation, no aliasing, thread safety
 
@@ -566,9 +652,9 @@ Deprecations, javadoc, `package-info`, CHANGELOG, CR status.
    style leaves is removed instead of copying on every call.  Recommended;
    the alternative (a deep copy per `getEffective*` call) costs every
    exporter for the benefit of callers who ignore the javadoc.
-2. **`ParagraphStylesInTableFix` keeps writing the default `w:pStyle` onto
-   every paragraph in 17.1.1**, though phase 2 makes it unnecessary outside
-   tables; removing it is a separate, measurable change for a later release.
+2. ~~**`ParagraphStylesInTableFix` keeps writing the default `w:pStyle` onto
+   every paragraph in 17.1.1**~~ — superseded 2026-09-12 by phase 2b (Jason:
+   the resolver gets it right, the shield comes out, in this CR).
 3. **Probe set**: the five above; P2 (paragraph mark) omitted as already
    measured.  Jason to confirm or add.
 4. **Phase 1's spec-derived rules (lineRule, ilvl-only) ship before their
