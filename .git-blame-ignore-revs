@@ -4,3 +4,7 @@
 
 # CR-014 phase 0: org.docx4j.model.listnumbering and its tests, CRLF -> LF
 55c5475e1feb54e3f96a9125bb52e5888d7684e9
+
+# CR-015 phase 0: org.docx4j.model.PropertyResolver's neighbours (styles package,
+# ImmutablePropertyResolver), their tests and styles-simple.xml, CRLF -> LF
+6f4763d70a7e954cc1a9cd18eb84eb49e1eaeba9

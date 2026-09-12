@@ -1,7 +1,8 @@
 # CR-015: Property resolution (`PropertyResolver`, `StyleUtil.apply`) — line endings, one property catalogue, the default paragraph style, cache correctness, no mutation, thread safety
 
-Status: PROPOSED (2026-09-12) — written before any code change, for Jason to
-read and adjust; phases 0 and 0b can start on approval
+Status: IN PROGRESS (2026-09-12) — approved by Jason 2026-09-12; phase 0 DONE
+(6f4763d70, LF; follow-up commit pins the line endings and blame-ignores the
+conversion); phase 0b next
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -86,10 +87,14 @@ Consumers (main code): both FO pathways (`FOExporterVisitorGenerator`,
 | `docx4j-core-tests/.../model/PropertyResolverEffectivePPrFromStyleIdTest.java` | 57 (all) |
 | `docx4j-core-tests/.../model/PropertyResolverTestUtils.java` | 90 (all) |
 
-`PropertyResolver.java`, `StyleUtil.java` and `StyleTree.java` are LF.  As in
-CR-014: one whitespace-only commit before any code change, its hash into
-`.git-blame-ignore-revs`, and `.gitattributes` rules for the package and the
-test directory.
+Found on conversion (2026-09-12): `ImmutablePropertyResolver.java` (196 lines)
+and the test resource `styles-simple.xml` (96) were CRLF too; both went into
+the same commit.  `PropertyResolver.java`, `StyleUtil.java` and
+`StyleTree.java` are LF.  As in CR-014: one whitespace-only commit before any
+code change (6f4763d70, eight files, `git diff -w --stat` empty), its hash in
+`.git-blame-ignore-revs`, and `.gitattributes` rules for
+`org/docx4j/model/*.java`, `model/styles/**`, the test directory and the
+resource.
 
 ## Gaps found (review of 2026-09-12)
 
@@ -461,7 +466,7 @@ order, the live-object contract, thread safety and `refresh()`;
 
 ## Plan
 
-### Phase 0 — Unix line endings (preliminary; no code change)
+### Phase 0 — Unix line endings (preliminary; no code change) — DONE 2026-09-12 (6f4763d70)
 
     sed -i 's/\r$//' docx4j-core/src/main/java/org/docx4j/model/styles/{BrokenStyleRemediator,Node,Tree}.java \
         docx4j-core-tests/src/test/java/org/docx4j/model/{PropertyResolverEffectivePPrFromExpressTest,PropertyResolverEffectivePPrFromStyleIdTest,PropertyResolverTestUtils}.java

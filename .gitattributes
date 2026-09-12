@@ -18,3 +18,10 @@ docx4j-diffx-tests/src/test/resources/org/docx4j/diff/golden/** text eol=lf
 docx4j-core/src/main/java/org/docx4j/model/listnumbering/** text eol=lf
 docx4j-core-tests/src/test/java/org/docx4j/model/listnumbering/*.java text eol=lf
 docx4j-core-tests/src/test/java/org/docx4j/model/listnumbering/ind/** text eol=lf
+
+# Property resolution: converted to LF in CR-015 phase 0 (6f4763d70); keep it so.
+docx4j-core/src/main/java/org/docx4j/model/*.java text eol=lf
+docx4j-core/src/main/java/org/docx4j/model/styles/** text eol=lf
+docx4j-core-tests/src/test/java/org/docx4j/model/*.java text eol=lf
+docx4j-core-tests/src/test/java/org/docx4j/model/styles/** text eol=lf
+docx4j-core-tests/src/test/resources/org/docx4j/model/styles-simple.xml text eol=lf
