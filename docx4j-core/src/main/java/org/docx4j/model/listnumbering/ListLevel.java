@@ -91,42 +91,34 @@ import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.NumberFormat;
 
+/**
+ * One level ({@code w:lvl}) of a list: as defined by the abstract definition, and -
+ * for a level of an instance definition - with the instance's
+ * {@code w:lvlOverride} applied over it.  Holds the definition only; the count is in
+ * a {@link NumberingState}, keyed by {@link #getAbstractNumId()} and {@link #getID()}.
+ */
 public class ListLevel {
 		
-	/* TODO 2011 02 23: in addition to having numbering in the 
-	 * Main document part, you can have numbering in other 
-	 * stories:
-	 *   - headers/footers
-	 *   - comments
-	 *   - footnotes/endnotes
-	 * This means that ListLevel should have independent counters
-	 * for each story, or the there should be a ListLevel defined
-	 * for each story! 
-	 * 
-	 * 2012 01 10: numbering set up on a per-part basis
-	 * seems the most sensible approach.
-	 * 
-	 */
-	
 	protected static Logger log = LoggerFactory.getLogger(ListLevel.class);
 	
 	private Lvl jaxbAbstractLvl;
+	/** The {@code w:abstractNum/w:lvl} this level was read from. */
 	public Lvl getJaxbAbstractLvl() {
 		return jaxbAbstractLvl;
 	}
 
 	private Lvl jaxbOverrideLvl;
+	/** The instance's {@code w:lvlOverride/w:lvl} for this level, or null. */
 	public Lvl getJaxbOverrideLvl() {
 		return jaxbOverrideLvl;
 	}
 	
 	/*
-	 * Since 17.1.1 (CR-014 phase 4) a level holds no counter: the counters live in
-	 * a NumberingState, keyed by the referencing abstract list and the level - which
-	 * is the sharing every instance definition of one abstract level had through the
-	 * single Counter they used to reference - and a traversal passes its state in.
-	 * The no-state overloads use the NumberingDefinitionsPart's default state, as
-	 * they always did, through the supplier the part installs.
+	 * Since 17.1.1 a level holds no counter: the counters live in a NumberingState,
+	 * keyed by the referencing abstract list and the level (the sharing every instance
+	 * of one abstract level had through the single Counter they used to reference),
+	 * and a traversal passes its state in.  The no-state overloads use the numbering
+	 * part's default state, through the supplier the part installs.
 	 */
 
 	/** The referencing {@code w:abstractNum} this level belongs to (its counter's key). */
@@ -180,7 +172,7 @@ public class ListLevel {
 	
 
 	/**
-     * Constructor for a ListLevel in an abstract definition.
+     * A level of an abstract definition, read from its {@code w:lvl}.
      */
     public ListLevel(Lvl levelNode)
     {
@@ -208,15 +200,13 @@ public class ListLevel {
 
         org.docx4j.wml.RFonts fontNode = null;
         if (levelNode.getRPr() != null) {
-            //XmlNode fontNode = levelNode.SelectSingleNode(".//w:rFonts", nsm);
         	fontNode = levelNode.getRPr().getRFonts();
         }
         if (fontNode != null)
         {
-            this.font = fontNode.getHAnsi(); //getAttributeValue(fontNode, "w:hAnsi");
+            this.font = fontNode.getHAnsi();
         }
 
-        //XmlNode enumTypeNode = levelNode.SelectSingleNode("w:numFmt", nsm);
         
         NumFmt enumTypeNode = levelNode.getNumFmt();
         if (enumTypeNode != null)
@@ -226,13 +216,13 @@ public class ListLevel {
             // w:numFmt="bullet" indicates a bulleted list
         	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
         	
-            // this.isBullet = String.Compare(type, "bullet", StringComparison.OrdinalIgnoreCase) == 0;
         }
 
     }
 
     /** 
-     * Constructor for a ListLevel in an instance definition.
+     * A level of an instance definition: a copy of the abstract definition's, to
+     * which {@link #setOverrides} then applies the instance's {@code w:lvlOverride}.
      */
     public ListLevel(ListLevel masterCopy)
     {
@@ -250,8 +240,9 @@ public class ListLevel {
     }
 
     /**
-     * Get overridden values
-     * @param levelNode
+     * Applies the instance's {@code w:lvlOverride/w:lvl} for this level: its start,
+     * {@code w:lvlRestart}, label text, font and number format replace the abstract
+     * level's where stated.
      */
     public void setOverrides(Lvl levelNode)
     {
@@ -275,7 +266,6 @@ public class ListLevel {
             this.levelText = levelTextNode.getVal(); 
         }
 
-        //XmlNode fontNode = levelNode.SelectSingleNode(".//w:rFonts", nsm);
         org.docx4j.wml.RFonts fontNode =null;
         if (levelNode.getRPr() != null) {
         	fontNode = levelNode.getRPr().getRFonts();
@@ -286,7 +276,6 @@ public class ListLevel {
             this.font = fontNode.getHAnsi(); 
         }
 
-        //XmlNode enumTypeNode = levelNode.SelectSingleNode("w:numFmt", nsm);            
         NumFmt enumTypeNode = levelNode.getNumFmt();
         if (enumTypeNode != null)
         {
@@ -302,8 +291,7 @@ public class ListLevel {
     private String id;
 
     /**
-     * returns the ID of the level
-     * @return
+     * The level's {@code w:ilvl}, as a string ("0" to "8").
      */
     public String getID()
     {
@@ -312,6 +300,11 @@ public class ListLevel {
 
     private BigInteger startValue = BigInteger.ZERO;
 
+    /**
+     * Sets the value the count starts from, less one (the instance's
+     * {@code w:startOverride}): applied to the shared counter the first time this
+     * instance's {@code w:num} is met at this level in a story.
+     */
     public void setStartValue(BigInteger startValue) {
 		this.startValue = startValue;
     	startAtUsed = false;
@@ -323,8 +316,8 @@ public class ListLevel {
     private boolean hasStartOverride = false;
 
 	/**
-     * start value of that level
-     * @return
+     * The value the count starts from, <b>less one</b> ({@code w:start} - 1, since the
+     * first item increments it): 0 for a list starting at 1.
      */
     public BigInteger getStartValue()
     {
@@ -333,7 +326,8 @@ public class ListLevel {
 
 
     /**
-     * The current number, formatted using numFmt.
+     * The current count at this level in the default state, formatted with the
+     * level's {@code w:numFmt}.
      */
     public String getCurrentValueFormatted()
     {    	
@@ -361,6 +355,7 @@ public class ListLevel {
     	return NumberFormatter.getCurrentValueFormatted(numFmt, counter(state).getCurrentValue().intValue(),
     			where == null ? null : where + " ilvl " + id);
     }
+    /** The current count at this level in the default state, as a decimal. */
     public String getCurrentValueUnformatted()
     {        	
         return getCurrentValueUnformatted(defaultState());
@@ -372,7 +367,7 @@ public class ListLevel {
     }
     
     /**
-     * increments the current count of list items of that level 
+     * Increments the count of list items at this level, in the default state.
      */
     public void incrementCounter()
     {
@@ -469,8 +464,8 @@ public class ListLevel {
     private String levelText;
 
     /**
-     * returns the indicated lvlText value
-     * @return
+     * The level's {@code w:lvlText}: the label pattern ("%1.%2."), or the bullet
+     * character for a bullet level.
      */
     public String getLevelText()
     {
@@ -480,8 +475,8 @@ public class ListLevel {
     private String font;
 
     /**
-     * returns the font name
-     * @return
+     * The {@code w:hAnsi} font the level's rPr names, or null.
+     * @deprecated use the level's rPr ({@link Emulator.NumberingResult#getLabelRPr()})
      */
 	@Deprecated
     public String getFont()
@@ -489,12 +484,9 @@ public class ListLevel {
             return this.font;
     }
     
-    private NumberFormat numFmt; // TODO: alter schema 
-    // w:numFmt = RTF's \levelnfcN
+    private NumberFormat numFmt;
 
-//		private void setNumFmt(STNumberFormat numFmt) {
-//			this.numFmt = numFmt;
-//		}
+	/** The level's {@code w:numFmt}, or null where it states none. */
 	public NumberFormat getNumFmt() {
 		return numFmt;
 	}
@@ -502,9 +494,7 @@ public class ListLevel {
     private boolean isBullet;
 
     /**
-     * returns whether the enumeration type is a bulleted list or not
-     * 
-     * @return
+     * Whether the level's {@code w:numFmt} is bullet.
      */
     public boolean isBullet()
     {
@@ -570,18 +560,13 @@ public class ListLevel {
 			this.currentValue = currentValue;
 		}
 
-		/**
-         * returns the current count of list items of that level
-         * @return
-         */
+		/** The current count. */
         public BigInteger getCurrentValue()
         {        	
             return this.currentValue;
         }
     	
-        /**
-         * increments the current count of list items of that level 
-         */
+        /** Adds one to the count. */
         public void increment()
         {
         	setCurrentValue( currentValue.add(BigInteger.ONE)); 

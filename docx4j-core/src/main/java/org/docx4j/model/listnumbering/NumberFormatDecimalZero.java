@@ -4,9 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This format is 01, 02, 03 etc.
- * Not sure what Word does after 99?
- *
+ * {@code w:numFmt decimalZero}: 01, 02, ... 09, 10, 11 (a single digit gets a
+ * leading zero; nothing else changes).
  */
 public class NumberFormatDecimalZero extends LabelFormatter {
 	

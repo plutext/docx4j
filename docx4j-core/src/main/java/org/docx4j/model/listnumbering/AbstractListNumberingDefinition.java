@@ -92,34 +92,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents:
- * 
-	  <w:abstractNum w:abstractNumId="0">
-	    <w:nsid w:val="2DD860C0"/>
-	    <w:multiLevelType w:val="multilevel"/>
-	    <w:tmpl w:val="0409001D"/>
-	    <w:lvl w:ilvl="0">
-	      <w:start w:val="1"/>
-	      <w:numFmt w:val="decimal"/>
-	      <w:lvlText w:val="%1)"/>
-	      <w:lvlJc w:val="left"/>
-	      <w:pPr>
-	        <w:ind w:left="360" w:hanging="360"/>
-	      </w:pPr>
-	    </w:lvl>
-	    <w:lvl w:ilvl="1">
-	      <w:start w:val="1"/>
-	      <w:numFmt w:val="lowerLetter"/>
-	      <w:lvlText w:val="%2)"/>
-	      <w:lvlJc w:val="left"/>
-	      <w:pPr>
-	        <w:ind w:left="720" w:hanging="360"/>
-	      </w:pPr>
-	    </w:lvl>
-	    etc
-	    
-	    (layered on top of the JAXB object representing same)
-    
+ * An abstract list definition, a {@code w:abstractNum}: its levels ({@code w:lvl},
+ * up to nine), and - where it carries {@code w:numStyleLink} - the numbering style
+ * whose definition it takes its levels from.  Layered on the JAXB object; holds no
+ * counters (see {@link NumberingState}).
  */
 public class AbstractListNumberingDefinition {
 	
@@ -128,25 +104,21 @@ public class AbstractListNumberingDefinition {
         private HashMap<String, ListLevel> listLevels;
 
         private Numbering.AbstractNum abstractNumNode;
-        /**
-         * The underling org.docx4j JAXB object
-         * @return
-         */
+        /** The underlying {@code w:abstractNum}. */
         public Numbering.AbstractNum getAbstractNumNode() {
         	return abstractNumNode;
         }
         
-        /// <summary>
-        /// constructor
-        /// </summary>
-        /// <param name="abstractNumNode"></param>
-        /// <param name="nsm"></param>
+        /**
+         * Reads the definition's levels from its {@code w:abstractNum}; where it carries
+         * {@code w:numStyleLink} instead, the levels are read later from the linked
+         * numbering style's definition ({@link #updateDefinitionFromLinkedStyle}).
+         */
         public AbstractListNumberingDefinition(Numbering.AbstractNum abstractNumNode)
         {
 
         	this.abstractNumNode = abstractNumNode;
         	
-//            String abstractNumString = getAttributeValue(abstractNumNode, "w:abstractNumId");
             String abstractNumString = abstractNumNode.getAbstractNumId().toString();
 
             if (abstractNumString!=null && !abstractNumString.equals("") )
@@ -161,11 +133,16 @@ public class AbstractListNumberingDefinition {
 
                 if (linkedStyleNode != null)
                 {
-                    this.linkedStyleId = linkedStyleNode.getVal(); // getAttributeValue(linkedStyleNode, ValAttrName);
+                    this.linkedStyleId = linkedStyleNode.getVal();
                 }
             }
         }
 
+        /**
+         * The second pass for a definition carrying {@code w:numStyleLink}: reads its
+         * levels from the abstract definition the numbering style's own {@code w:num}
+         * names.  The levels count under this definition's id, not the linked one's.
+         */
         public void updateDefinitionFromLinkedStyle(Numbering.AbstractNum linkedNode)
         {
             if (!this.hasLinkedStyle() )
@@ -174,11 +151,8 @@ public class AbstractListNumberingDefinition {
             this.readListLevelsFromAbsNode(linkedNode);
         }
 
-        /// <id guid="0e05c34c-f257-4c76-8916-3059af84e333" />
-        /// <owner alias="ROrleth" />
         private void readListLevelsFromAbsNode(Numbering.AbstractNum abstractNumNode)
         {
-            //XmlNodeList levelNodes = absNumNode.SelectNodes("./w:lvl", nsm);
 
         	List<Lvl> levelNodes = abstractNumNode.getLvl(); 
             if (this.listLevels == null)
@@ -187,14 +161,13 @@ public class AbstractListNumberingDefinition {
             }
 
             // loop through the levels it defines and instantiate those
-            //foreach (XmlNode levelNode in levelNodes)
             for ( Lvl levelNode : levelNodes )  {
             	readLevel(levelNode);
             }
         }
         
         /**
-         * @param levelNode
+         * Adds (or replaces) the level read from this {@code w:lvl}.
          * @since 3.3.6
          */
         public void readLevel(Lvl levelNode) {
@@ -207,10 +180,13 @@ public class AbstractListNumberingDefinition {
         }
 
         private String linkedStyleId;
+        /** The {@code w:numStyleLink} value: the numbering style this definition takes
+         *  its levels from, or null. */
         public String getLinkedStyleId() {
             return this.linkedStyleId;
         }
 
+        /** Whether this definition carries {@code w:numStyleLink}. */
         public boolean hasLinkedStyle()
         {
         	if (this.linkedStyleId!=null && !this.linkedStyleId.equals("")  ) {
@@ -223,19 +199,19 @@ public class AbstractListNumberingDefinition {
 
         private String abstractNumDefId;
 
-        /// <summary>
-        /// returns the ID of this abstract number list definition
-        /// </summary>
+        /** The {@code w:abstractNumId}. */
         public String getID() 
         {
                 return this.abstractNumDefId;
         }
 
+        /** The levels, keyed by {@code w:ilvl} ("0" to "8"). */
         public HashMap<String, ListLevel> getListLevels()
         {
                 return this.listLevels;
         }
 
+        /** How many levels are defined (0 for an unresolved {@code w:numStyleLink} definition). */
         public int getLevelCount() 
         {
                 if (this.listLevels != null)

@@ -97,35 +97,26 @@ import org.docx4j.wml.RPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Emulates Word's list numbering: given a paragraph, the number (or bullet) Word
+ * would put in front of it.  Static methods; the numbering part holds one
+ * instance as a marker of its definitions having been read, and the counters live
+ * in a {@link NumberingState} (see the package description).
+ */
 public class Emulator {
-	
-	/* There should be only one Emulator object per 
-	 * WordprocessingML package.  It is set on the 
-	 * numbering part.
-	 * 
-	 * TODO 2011 02 23: in addition to having numbering in the 
-	 * Main document part, you can have numbering in other 
-	 * stories:
-	 *   - headers/footers
-	 *   - comments
-	 *   - footnotes/endnotes
-	 * This means that ListLevel should have independent counters
-	 * for each story, or the there should be a ListLevel defined
-	 * for each story! 
-	 * 
-	 */
 	
 	protected static Logger log = LoggerFactory.getLogger(Emulator.class);
 			
     public Emulator()
     {
     }
-    
 
     /**
-     * @param wmlPackage
-     * @param pPr
-     * @return
+     * The next number for a paragraph, from its {@code w:pPr} (its own
+     * {@code w:numPr}, else its style's), counted in the numbering part's default
+     * state.
+     *
+     * @return the number, or null where the paragraph is not numbered
      * @since 3.0.1
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr) {
@@ -188,12 +179,15 @@ public class Emulator {
     	return getNumber(wmlPackage, pPr, state.copy());
     }
     
-    /* Get the computed list number for the given list at this point in the
-     * document.
+    /**
+     * The next number for a paragraph given its style and, where it has one, its own
+     * numId and ilvl; a numId given here is taken as the paragraph's own.
+     *
+     * @param numId the paragraph's own numId, or null/empty to read the style's
+     * @param levelId the paragraph's own ilvl, or null/empty for the style's, else 0
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal,
     		String numId, String levelId) {
-    	// a numId given here is the paragraph's own unless the caller says otherwise
     	return getNumber(wmlPackage, pStyleVal, numId, levelId, numId != null && !numId.equals(""));
     }
 
@@ -225,14 +219,9 @@ public class Emulator {
     		return null;
     	}
 
-//    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
-//        		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
-//    	numberingPart.setStyleDefinitionsPart(stylesPart);
-    	
-    	Emulator em = numberingPart.getEmulator();
+    	numberingPart.getEmulator(); // ensures the definitions are read
     	if (state == null) state = numberingPart.getNumberingState();
     	
-    	// Object to hold results
     	ResultTriple triple = new ResultTriple();    	
     	    	
     	PropertyResolver propertyResolver;
@@ -270,7 +259,6 @@ public class Emulator {
 			}
 
 			if (numberingPart.getInstanceListDefinitions().get(numId).isBullet(levelId)) {
-				//triple.isBullet = true;
 				triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 			}
 
@@ -284,14 +272,7 @@ public class Emulator {
 			 * width of 453.6pt, running the text off the page and turning Word's two
 			 * pages into four.  Where the override states no indent the abstract
 			 * level's stands, as NumberingDefinitionsPart.getInd resolves it.
-			 *
-			 * The override's *formatting* (its w:rPr) is deliberately not taken: the
-			 * label and the item's text share one rPr here, so a level w:rPr carrying
-			 * w:b sets the whole paragraph bold, where Word draws the number bold and
-			 * the text after it in the regular face (measured).  Splitting the two is a
-			 * change for every numbered paragraph, not only for the 20 documents of the
-			 * three corpora which carry a w:lvlOverride/w:lvl, so it is left for a
-			 * batch of its own.  @since 17.1.0 */
+			 * @since 17.1.0 (the override's rPr followed in 17.1.1: labelRPr below) */
 			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
 			triple.lvl = listLevel.getJaxbAbstractLvl();
 
@@ -317,8 +298,6 @@ public class Emulator {
 				log.debug("Couldn't find list " + numId);
 			} else {
 				log.warn("Couldn't find list " + numId);
-//				Throwable t = new Throwable();
-//				t.printStackTrace();
 			}
 			
 		} else if (!numberingPart.getInstanceListDefinitions().get(numId).levelExists(
@@ -529,36 +508,6 @@ public class Emulator {
     	return (ppr==null) ? null : ppr.getInd();
     }
     
-//    public ListLevel getListNumberingDefinition(NumberingDefinitionsPart numberingPart, NumPr numPr) {
-//    	
-//		if (numPr.getNumId()==null) {
-//			return null; 	    			
-//		}
-//		
-//		String numId = null;
-//		if (numPr.getNumId()==null) {
-//			log.error("numId was null or empty!");
-//			return null;
-//		} else {
-//			numId = numPr.getNumId().getVal().toString();
-//		}
-//		
-//		String levelId = "0";
-//		if (numPr.getIlvl() != null ) {
-//			levelId = numPr.getIlvl().getVal().toString();
-//		}
-//	
-//		// Get the list
-//		ListNumberingDefinition listNumberingDefinition
-//			= numberingPart.getInstanceListDefinitions().get(numId);
-//    	
-//		if (listNumberingDefinition==null) {
-//			return null;
-//		} else {
-//			return listNumberingDefinition.getLevel(levelId);
-//		}
-//    }
-    
     
     /**
      * What a paragraph is numbered with: the label text (or the bullet), the level
@@ -572,43 +521,42 @@ public class Emulator {
     public static class NumberingResult {
     	
     	String numString;
+    	/** The label text, the level's {@code w:lvlText} with its counters filled in
+    	 *  ("1.2.", "(c)"); null for a list or level with no definition. */
 		public String getNumString() {
 			return numString;
 		}
     	
     	String numFont;
+    	/** The {@code w:hAnsi} font the level's rPr names, or null.
+    	 *  @deprecated use {@link #getLabelRPr()} and its {@code w:rFonts}. */
     	@Deprecated
 		public String getNumFont() {
 			return numFont;
 		}
-    	
-//    	boolean isBullet = false;
-//		public boolean isBullet() {
-//			return isBullet;
-//		}
 		
 		String bullet = null;
+		/** The level's {@code w:lvlText} where its {@code w:numFmt} is bullet, else null. */
 		public String getBullet() {
 			return bullet;
 		}
 		
 		Ind ind = null;
     	/**
-    	 * Use getLvl().getPPr().getInd() instead
-    	 * @return
+    	 * The level's own {@code w:ind}: the instance's override level's where it states
+    	 * one, else the abstract level's.
+    	 * @deprecated use {@link #getLvl()}{@code .getPPr().getInd()}, or better
+    	 *   {@link org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart#getInd(String, String)},
+    	 *   which also follows the linked style
     	 */
-    	@Deprecated // consider whether to add getPpr and access via that.  
+    	@Deprecated
 		public Ind getIndent() {
-    		// set from getLvl().getPPr().getInd() 
 			return ind;
 		}
-		
 	    
 	    RPr rPr;
 	    /**
 	     * The abstract level's rPr (never the override's: see {@link #getLabelRPr()}).
-	     * 
-	     * @return
 	     */
 	    public RPr getRPr() {
 			return rPr;
@@ -629,7 +577,8 @@ public class Emulator {
 	    
 	    Lvl lvl;
 		/**
-		 * @return
+		 * The abstract level definition ({@code w:abstractNum/w:lvl}) this number came
+		 * from.
 		 * @since 3.2.0
 		 */
 		public Lvl getLvl() {

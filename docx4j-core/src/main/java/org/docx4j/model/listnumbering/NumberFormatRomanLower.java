@@ -1,15 +1,10 @@
 package org.docx4j.model.listnumbering;
 
 
-//File   : gui/componenents/calculators/Roman.java
-//Description: A static method for converting binary integers to Roman numbers.
-//Illustrates: Static inner value class, StringBuffer, throw exceptions.
-//Author : Fred Swartz - 2006-12-29 - Placed in public domain
+// After Roman.java by Fred Swartz, 2006-12-29, placed in the public domain (MIT
+// licence per the footer at
+// http://leepoint.net/notes-java/examples/components/romanNumerals/romanNumeral.html).
 
-//JH comment - under the MIT license, according to the footer at
-// http://leepoint.net/notes-java/examples/components/romanNumerals/romanNumeral.html
-
-/////////////////////////////////////////////////////////////////// class Roman
 public class NumberFormatRomanLower extends NumberFormatRomanAbstract {
 	
 	
@@ -18,7 +13,6 @@ public class NumberFormatRomanLower extends NumberFormatRomanAbstract {
 		ROMAN_VALUE_TABLE = ROMAN_VALUE_TABLE_LOWER;
 	}
 	
-	 //================================================================ constant
 	 // This could be alternatively be done with parallel arrays.
 	 // Another alternative would be Pair<Integer, String>
  static RomanValue[] ROMAN_VALUE_TABLE_LOWER = {

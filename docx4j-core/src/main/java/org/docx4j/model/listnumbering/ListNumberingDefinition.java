@@ -97,28 +97,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents:
- * 
-	  <w:num w:numId="1">
-	    <w:abstractNumId w:val="0"/>
-	  </w:num>
-	  
-	  or 
-	  
-	  <w:num w:numId="2">
-	    <w:abstractNumId w:val="0"/>
-	    <w:lvlOverride w:ilvl="0">
-	      <w:startOverride w:val="10"/>
-	    </w:lvlOverride>
-	  </w:num>
-	  	    
-	    (layered on top of the JAXB object representing same)
-    
+ * An instance list definition, a {@code w:num}: the abstract definition it names,
+ * with its {@code w:lvlOverride}s applied to copies of that definition's levels.
+ * <pre>
+ *   &lt;w:num w:numId="2"&gt;
+ *     &lt;w:abstractNumId w:val="0"/&gt;
+ *     &lt;w:lvlOverride w:ilvl="0"&gt;
+ *       &lt;w:startOverride w:val="10"/&gt;
+ *     &lt;/w:lvlOverride&gt;
+ *   &lt;/w:num&gt;
+ * </pre>
+ * Layered on the JAXB object; holds no counters (see {@link NumberingState}).
  */
 public class ListNumberingDefinition {
 		
-	// The underlying JAXB object 
 	private Numbering.Num numNode;
+	/** The underlying {@code w:num}. */
 	public Numbering.Num getNumNode() {
 		return numNode;
 	}
@@ -126,10 +120,11 @@ public class ListNumberingDefinition {
 	protected static Logger log = LoggerFactory.getLogger(ListNumberingDefinition.class);
 	
     /**
-     * Set up a concrete list numbering definition, by reference to the abstract lists
-     * 
-     * @param numNode
-     * @param abstractListDefinitions
+     * Builds the instance definition from its {@code w:num} and the abstract
+     * definitions it may name.
+     *
+     * @param resolveLinkedStyle whether this is the second pass, in which an abstract
+     *        definition carrying {@code w:numStyleLink} has been resolved
      */
     public ListNumberingDefinition(Numbering.Num numNode, 
     		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions,
@@ -137,27 +132,18 @@ public class ListNumberingDefinition {
     {
     	this.numNode = numNode;
     	
-        this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
-//        if (log.isDebugEnabled()) {
-//	    	log.debug("Constructing model for numId=" + listNumberId);
-//	    	log.debug(XmlUtils.marshaltoString(numNode));
-////        	new Throwable().printStackTrace();
-//        }
+        this.listNumberId =  numNode.getNumId().toString();
 
-        //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
         Numbering.Num.AbstractNumId abstractNumId = numNode.getAbstractNumId();
         if (abstractNumId == null) {
         	log.warn("No abstractNumId on w:numId=" + listNumberId);
         } else {
         	log.debug("concrete " + listNumberId + " points to abstract list " + abstractNumId.getVal().toString());
-            this.abstractListDefinition = abstractListDefinitions.get(abstractNumId.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
+            this.abstractListDefinition = abstractListDefinitions.get(abstractNumId.getVal().toString() );
             if (abstractListDefinition==null) {
             	log.warn("No abstractListDefinition for w:numId=" + listNumberId);  
             	return;
             }
-//            if (log.isDebugEnabled()) {
-//            	log.debug(XmlUtils.marshaltoString(abstractListDefinition.getAbstractNumNode()));
-//            }
 
             if (this.abstractListDefinition.getLevelCount()==0 
             		&& this.abstractListDefinition.hasLinkedStyle()) {
@@ -196,11 +182,9 @@ public class ListNumberingDefinition {
     	        ListLevel instanceLevel = new ListLevel( (ListLevel)pairs.getValue() );
     	        instanceLevel.setOwnerNumId(listNumberId);
     	        this.levels.put( (String)pairs.getKey(), instanceLevel ); 
-    	        //log.debug("init'd level " + pairs.getKey());
     	    }
 
             // propagate the level overrides into the current list number level definition
-            // XmlNodeList levelOverrideNodes = numNode.SelectNodes("./w:lvlOverride", nsm);
 
             List<Numbering.Num.LvlOverride> levelOverrideNodes = numNode.getLvlOverride(); 
 			if (levelOverrideNodes != null) {
@@ -312,10 +296,10 @@ public class ListNumberingDefinition {
 	}
     
 
-    /// <summary>
-    /// increment the occurrence count of the specified level, reset the occurrence count of derived levels
-    /// </summary>
-    /// <param name="level"></param>
+    /**
+     * Increments the count at the given level in the default state, and resets the
+     * deeper levels that restart after it.
+     */
     public void incrementCounter(String level)
     {
     	incrementCounter(level, defaultState());
@@ -364,19 +348,15 @@ public class ListNumberingDefinition {
 
     private String listNumberId;
 
-    /// <summary>
-    /// numId of this list numbering schema
-    /// </summary>
+    /** The {@code w:numId}. */
     public String getListNumberId() 
         {
             return this.listNumberId;
         }
 
     /**
-     * returns a String containing the current state of the counters, up to the indicated level
-     * 
-     * @param level
-     * @return
+     * The label of the given level from the counters of the default state: its
+     * {@code w:lvlText} with every level's count filled in ("1.2.", "(c)").
      */
     public String getCurrentNumberString(String level)
     {
@@ -406,7 +386,7 @@ public class ListNumberingDefinition {
         /*
          * Explanation of <w:isLgl/>
          * 
-         * COnsider Word (2010)'s built-in legal numbering:
+         * Consider Word (2010)'s built-in legal numbering:
          * 
          *   <w:abstractNum w:abstractNumId="2">
 			    <w:nsid w:val="78220137"/>
@@ -472,9 +452,9 @@ public class ListNumberingDefinition {
         }
 
         String formatString = controllingLvl.getLevelText();
-        log.debug("levelText: " + formatString );
+        if (log.isDebugEnabled()) log.debug("levelText: " + formatString );
         StringBuilder result = new StringBuilder();
-        String temp = ""; //String.Empty;
+        String temp = "";
 
         for (int i = 0; i < formatString.length(); i++)
         {
@@ -508,35 +488,26 @@ public class ListNumberingDefinition {
         return result.toString();
     }
 
-    /// <summary>
-    /// retrieve the font name that was specified for the list String
-    /// </summary>
-    /// <param name="level"></param>
-    /// <returns></returns>
+    /**
+     * The {@code w:hAnsi} font the level's rPr names, or null.
+     * @deprecated use the level's rPr ({@link Emulator.NumberingResult#getLabelRPr()})
+     */
+    @Deprecated
     public String getFont(String level)
     {
         return this.levels.get(level).getFont();
     }
 
-    /// <summary>
-    /// retrieve whether the level was a bullet list type
-    /// </summary>
-    /// <param name="level"></param>
-    /// <returns></returns>
+    /** Whether the level's {@code w:numFmt} is bullet. */
     public boolean isBullet(String level)
     {
         return this.levels.get(level).isBullet();
     }
 
-    /// <summary>
-    /// returns whether the specific level ID exists - in testing we've seen some referential integrity issues due to Word bugs
-    /// </summary>
-    /// <param name="level">
-    /// </param>
-    /// <returns>
-    /// </returns>
-    /// <id guid="b94c13b8-7273-4f6a-927b-178d685fbe0f" />
-    /// <owner alias="ROrleth" />
+    /**
+     * Whether the level exists: Word has been seen to write a {@code w:num} whose
+     * abstract definition is missing, or lacks the level, so callers check.
+     */
     public boolean levelExists(String level)
     {
     	if (this.levels==null) {
