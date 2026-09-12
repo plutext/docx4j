@@ -7,7 +7,7 @@ Version 17.1.1
 Changes in Version 17.1.1
 --------------------------
 
-Fonts (CR-016, the font selection and mapping review, phases 0-3):
+Fonts (CR-016, the font selection and mapping review, phases 0-4):
 
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
@@ -75,6 +75,36 @@ Fonts (CR-016, the font selection and mapping review, phases 0-3):
 - docx4j-layout-fidelity: -Dfidelity.fontMapper=identity|best and -Dfidelity.fonts=all|jars|<dir>
   score a font mapper under a chosen font environment; docs/developer/change-requests/CR-016
   records the mapper matrix and the enumerated font sets of the popular distributions.
+- Font discovery (MainDocumentPart.fontsInUse) is a walk for names: every slot of every w:rFonts
+  on the runs, the paragraph marks and the styles in use (with what they are based on), in the
+  body, headers, footers, notes and comments; the numbering levels' four slots; w:sym; the
+  document defaults; theme references resolved for the document's theme language.  It used to
+  run RunFontSelector in a discovery mode over every run, deciding among the run's fonts by
+  glyph checks it could not yet answer, taking w:ascii alone from numbering, and missing a font
+  reached only through a paragraph mark or a run with no text; 165 ms -> 8 ms on a 311-page
+  document.  RunFontActionType.DISCOVERY is deprecated; a caller wanting the document font the
+  selector picks for a character uses the new RunFontSelector.documentFontFor(pPr, rPr,
+  codePoint) - docx4j-docx-anon's ScrambleText does (it read the font from a visitor the
+  selector never spoke to, so it never learnt one).
+- RunFontSelector builds every run's fragment in one scratch DOM Document rather than a new one
+  per run.  A Wingdings run whose characters need both substitute faces no longer fails
+  (HIERARCHY_REQUEST_ERR: the second span was appended to the Document beside the first).
+- The line-height, space-kerning, character-scaling and ligature passes resolve a span's font
+  through the document's Mapper (new Mapper.physicalFontNamed), so a run in a font embedded in
+  the document gets the embedded file's own line metrics and its no-ligature twin; they looked
+  the name up in PhysicalFonts, where an embedded font never is, and got the 1.2 fallback.
+- The face Word 2016 uses for a symbol the run's font lacks (Segoe UI Symbol) and the configured
+  emoji font are mapped on demand when the machine has them; discovery never named them.
+- A font the machine cannot map is warned once per conversion, not once per run; a symbol with
+  no replacement once per font and character; an unreadable theme part once, without the stack
+  trace.
+- A family one document had mapped through its w:altName or Word's default no longer counts as
+  a "known" family for the next document converted in the same JVM (the alias registry is
+  per JVM), which used to skip Word's default for it and leave it unmapped: the same document
+  mapped a font in a fresh JVM and not after another document.
+- The no-bold alias is not given to a font Word itself could not find: Word substitutes such a
+  font whole, w:b in the substitute's real bold ("EnBW DIN Pro Light" is Calibri Bold in Word,
+  not a synthesised Calibri).
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

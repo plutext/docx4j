@@ -208,16 +208,11 @@ public class XsltCommonFunctions {
      *
      *  A font embedded in the document is deliberately NOT added to PhysicalFonts (those are
      *  available to all documents; see ObfuscatedFontPart.extract), so it has to be found via
-     *  this document's Mapper.  The Mapper is keyed by the name the document uses, whereas what
-     *  we have is the name of the physical font it was mapped to, so we look at the values.
+     *  this document's Mapper, by the physical name we have ({@link Mapper#physicalFontNamed}).
      */
     private static PhysicalFont physicalFontFor(Mapper fontMapper, String physicalFontName) {
 
-    	if (fontMapper!=null) {
-    		for (PhysicalFont pf : fontMapper.getFontMappings().values()) {
-    			if ((pf!=null) && physicalFontName.equals(pf.getName())) return pf;
-    		}
-    	}
+    	if (fontMapper!=null) return fontMapper.physicalFontNamed(physicalFontName);
     	return PhysicalFonts.get(physicalFontName);
     }
 

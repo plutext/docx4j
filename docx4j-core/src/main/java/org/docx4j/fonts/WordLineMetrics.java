@@ -128,9 +128,30 @@ public final class WordLineMetrics {
 		return new Metrics(winA / upem, winD / upem, ext / upem, physical.fopAscent, physical.fopDescent, false);
 	}
 
-	/** whether the table knows this document font */
+	/** Whether the table knows this document font - itself, through a built-in alias
+	 *  (Helvetica) or through an alias a document registered ({@link #registerAlias}):
+	 *  the line box is the table's. */
 	public static boolean hasTableEntry(String documentFont) {
 		return documentFont != null && lookup(documentFont) != null;
+	}
+
+	/**
+	 * Whether this document font is a family the table lists (itself or a built-in alias),
+	 * <em>not</em> counting an alias a document registered: {@link Mapper#isKnownFamily}
+	 * asks this.  The document aliases are per JVM, so with {@link #hasTableEntry} the
+	 * family a document's altName or Word-default mapping had aliased to Calibri became a
+	 * "known" family for every later document, which then skipped the Word-default pass
+	 * and left the font unmapped (found by the CR-016 phase 4 gate: the same document
+	 * mapped Vrinda to Carlito in a fresh JVM and to nothing after another document).
+	 *
+	 * @since 17.1.1
+	 */
+	public static boolean isTableFamily(String documentFont) {
+		if (documentFont == null) return false;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		if (TABLE.get().containsKey(key)) return true;
+		String alias = ALIASES.get(key);
+		return alias != null && TABLE.get().containsKey(alias);
 	}
 
 	private static int[] lookup(String documentFont) {

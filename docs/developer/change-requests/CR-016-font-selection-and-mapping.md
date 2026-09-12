@@ -4,7 +4,9 @@ Status: IN PROGRESS (2026-09-12) — phases 0 (d643638ad), 0b (the eight probes
 and their goldens, the verification table settled), 0c (the mapper matrix and
 the font environments; the jar-discovery fix b1eb9e61e), 1 (one resolution,
 `w:cs` by value, the theme language, the Office theme faces; b999477be), 2 (the
-dispatch; 613c44b1c) and 3 (the mapping order) done; 4 and 5 open.
+dispatch; 613c44b1c), 3 (the mapping order; fd4eb61b8) and 4 (discovery as a
+names walk, one scratch Document, the embedded-font blind spots, logging;
+gaps 16 and 17 found and fixed) done; 5 open.
 Jason read the CR the same day and started the work.  The review below was written that day
 against 7563277a0 (CR-015 tidy-up), with every "measured" claim taken from a
 scratch test that was run and then deleted (`ScratchFontsProbeTest`, not
@@ -369,6 +371,34 @@ javadoc cites), ECMA-376, or one of the probes below.
     eight DejaVu files (Sans, Sans Mono, Serif; no italics) - so Times New
     Roman, Arial and Courier New had no metric substitute there.
     `JarFontDiscoveryTest` pins it.
+16. **A document's alias made a family "known" for every later document in
+    the JVM** (found by the phase 4 gate, in phase 3's code).
+    `addWordDefaultSubstitutes` and `addAltNameSubstitutes` register the
+    alias they resolve with `WordLineMetrics.registerAlias`, a static per-JVM
+    map, so that the line box is the alias's; `isKnownFamily` asked
+    `WordLineMetrics.hasTableEntry`, which answers through that map.  So once
+    one document had mapped Vrinda to Calibri's clone, Vrinda was a "known"
+    family for the next document, which therefore skipped the Word-default
+    pass and left it unmapped.  Seen as three documents whose mapping differed
+    between the before and after dumps of the FOP configuration (the same
+    document maps Vrinda to Carlito in a fresh JVM); bisected to
+    `15_pt-BR_num_tbl_4055` preceding `12_en-US_num_tbl_1426`.  Fixed in
+    phase 4: `isKnownFamily` asks `WordLineMetrics.isTableFamily`, the table
+    and its built-in aliases only.  `MapperPrecedenceTest` pins it.
+17. **The no-bold alias was given to fonts Word does not have** (found by the
+    phase 4 gate, in phase 3's rule).  `addNoBoldFaceAliases` took every family
+    whose name ends in a weight word; a font Word itself could not find is
+    substituted whole in Word - "EnBW DIN Pro Light" is Calibri, and its `w:b`
+    Calibri Bold - so the alias (bold synthesised at the regular advances) is
+    wrong for a Word-defaulted font.  Measured on the one corpus document in
+    that font: 0.8441 with the alias, 0.8783 without.  Phase 3's own gate had
+    not seen it because of gap 16: the harness converts each document twice in
+    one JVM and the second pass, the one scored, had lost the Word-default
+    mapping to the alias leak and fallen to the default font.  Fixed in phase
+    4: the Word-default pass records what it mapped and the alias pass skips
+    it; `MapperPrecedenceTest.aWordDefaultedFontKeepsTheSubstitutesBold`.
+    Four corpus documents' mappings change (EnBW DIN Pro Light and Medium,
+    Nokia Pure Headline Light and Text Light), one of them scored.
 
 ## What the code's own comments record (read 2026-09-12)
 
@@ -1083,11 +1113,126 @@ where the matrix had it 0.010 to 0.021 behind.  Probes: `fonts-light-bold` 50%
 (Trebuchet MS, Cambria's Greek, a Light face) are *not* in this phase
 (Decisions 3); the rules they need are.
 
-### Phase 4 — discovery, cost, blind spots, logging
+### Phase 4 — discovery, cost, blind spots, logging — DONE 2026-09-12
 
-As designed.  Gate: FOP-configuration diff over the corpus (zero-delta
-expected apart from fonts the late registration now declares), the
-311-page timing, the `FontEmbedded.docx` test, both test modules.
+As designed, with what the measurements added:
+
+- **Discovery** (`MainDocumentPart.fontsInUse`) is the names walk: the
+  `FontAndStyleFinder` collects every `w:rFonts` on runs, paragraph marks and
+  `w:sdtPr`, and `w:sym`, over the body, headers, footers, notes and
+  comments (one traversal, which also yields the styles in use); then the
+  styles in use with their `basedOn` chain (table styles' `tblStylePr` run
+  properties included), the document defaults, the numbering levels (all
+  four slots), and the default font.  A `FontNames` collector resolves each
+  rFonts through `RunFontSelector.documentFontsOf(rFonts, themePart,
+  themeFontLang)` - the selector's own resolution, extracted as a static -
+  and maps a CJK name to its English name as the old visitor did.
+  `RunFontSelector.defaultFontOf` is the static form of `getDefaultFont`.
+  The `FontDiscoveryCharacterVisitor` and the DISCOVERY branches of the
+  selector are gone; `DISCOVERY` is `@Deprecated` (Decisions 5), and a
+  selector in that mode produces no output but still tells its visitor each
+  span's font, which is what `RunFontSelectorIndicTest` and `-KhmerTest` use
+  it for.  `fontsInUse` no longer creates the `PropertyResolver` as a side
+  effect (the walk needs none).
+- **`documentFontFor(pPr, rPr, codePoint)`**: the resolution of
+  `fontSelector` without a visitor - the symbol font by canonical name, the
+  cs font where `w:cs`/`w:rtl` is on and names one, the preamble rule, else
+  `fontFor`.  The body of `fontSelector` is now `effectiveRPr` + `rFontsOf` +
+  `symbolRun` | `complexScriptFont` | `resolvedSlots` + `preambleRule` +
+  `singleFont` | `unicodeRangeToFont`, and both entry points use the same
+  helpers.  The cs-font and preamble cases go through the visitor
+  (`singleFont`) as the dispatch does, instead of building their span
+  directly; measured identical FO on the 311-page document (16,983,089
+  bytes before and after, byte for byte).  `docx4j-docx-anon`'s
+  `ScrambleText` calls it; it had been reading the font from a visitor it
+  never gave the selector (a second `RunFontCharVisitorMinimal`), so its
+  glyph check never had a font.  `RunFontSelectorDocumentFontForTest`.
+- **The FOP configuration, before and after**, dumped for the 561 documents
+  of the four corpora (`FopConfigDump`, a scratch tool: the discovered names
+  with their mapping, and every declared triplet with its file): 273
+  documents identical; 288 gained names and 240 gained declarations; **no
+  document lost a name**.  What was gained is what the old pass could not
+  see: `Times New Roman` in 123 documents, `Arial` in 62, `Calibri` in 37,
+  `Cambria` 24, `MS Mincho` 22, `SimSun` 19, `Arial Unicode MS` 19 - the
+  fonts of paragraph marks and runs with no `w:t` (an example document has
+  its three Times New Roman runs there and nowhere else), of the eastAsia
+  and cs slots, and of styles' `basedOn` chains.  The declarations are
+  `Tinos`/`Arimo`/`Carlito`/`Caladea` faces in the same proportions.  FOP
+  loads a declared font lazily (`LazyFont`: metrics read on first use), so a
+  declaration the FO never names costs a configuration entry and nothing
+  else; the corpora's render time did not move (see the gate).  Three
+  documents whose *mapping* changed turned out to be gap 16, pre-existing and
+  order-dependent; fixed, and the dump re-run over the 561 documents shows no name removed and
+  no mapping changed other than the four the no-bold correction below makes.
+- **Cost**: one scratch `Document` per selector (`scratchDocument`, any
+  stale element dropped on entry).  The 311-page corpus document
+  (`15_es-AR_sdt_num_tbl_12301`, five timed runs after a warm-up):
+  `fontsInUse` 165 ms -> 8 ms median; `Docx4J.toFO` 4,502 ms -> 4,082 ms
+  median (4,214 -> 3,650 min), the difference being mostly the discovery
+  pass the mapper set-up no longer runs and the per-run `Document`.
+- **The symbol run**: found while moving it onto the scratch document - a
+  Wingdings run whose characters need both substitute faces appended its
+  second span to the `Document` beside the first, which Xerces refuses
+  (`HIERARCHY_REQUEST_ERR`), so phase 2's per-face split had never worked for
+  a mixed run.  `symbolRun` builds the spans into a fragment.
+  `SymbolRunSubstituteFacesTest` (in `docx4j-export-fo-tests`, where the
+  symbol jar is on the classpath) renders Wingdings `a`-`z` through the
+  visitor exporter: two families, 26 characters.
+- **The embedded-font blind spots**: `applyLineHeight` takes the
+  `PhysicalFont` its callers already hold (`setAttribute`'s resolved font,
+  the fallback's, `symbolSetAttribute`'s, `setFallbackFamily`'s); `kernSpaces`,
+  `applyScaling`, `noLigatures` and `glyphFallback` resolve a span's
+  font-family through the new `Mapper.physicalFontNamed` (the document's
+  mappings, embedded faces and last-resort fallbacks by physical name, then
+  `PhysicalFonts`; the suffix stripping moved to
+  `PhysicalFonts.stripSuffixes`); `XsltCommonFunctions.fontCanRender` uses
+  the same.  `EmbeddedFontMetricsTest` loads `FontEmbedded.docx`, renames its
+  embedded Calibri to a name no table knows, and asserts the run's
+  line-height is the embedded file's metrics, not the 1.2 fallback, and that
+  the run got the no-ligature twin.
+- **The selector's own fonts**: `Segoe UI Symbol` (the face Word 2016 uses
+  for a symbol the run's font lacks) and the configured emoji font are never
+  among the document's names, so the mapper never mapped them and
+  `symbolBlockFont` could not find them; `ownFont` maps either on demand
+  where the machine has it (and `registerUsedFont` declares it late).
+- **Logging**: `warnedOnce` per selector - a font not mapped once (it was
+  once per run: `physicalFontResolved`), a symbol with no replacement once
+  per font and code point, the theme part unreadable once at WARN without
+  the stack trace (it was `log.error` with the trace per run);
+  `getCssProperty`'s `printStackTrace` and the discovery visitor's "Got
+  null" trace are gone.
+- **Line endings**: `ScrambleText.java` was CRLF; converted in its own
+  commit (26a46491b, in `.git-blame-ignore-revs`; `.gitattributes` keeps it)
+  before the change.
+
+- **The no-bold alias for a Word-defaulted font** (gap 17, found by this
+  gate): `addWordDefaultSubstitutes` records the names it maps and
+  `addNoBoldFaceAliases` leaves them alone.
+
+Gate (2026-09-12), run twice - before and after the gap 17 correction, the
+second the one that stands: `docx4j-core-tests` 1012/0 (the fonts package
+104/0 after the correction), `docx4j-export-fo-tests` 601/0.  Three corpora
+against `p3b-mapping` (phase 3's end state), IdentityPlusMapper: 0.9053 ->
+0.9051, 0.8804 -> 0.8805, 0.9182 -> 0.9181; two documents changed.
+`15_ru-RU_tbl_5218` improved 0.9730 -> 1.0000 (both mappers): the preamble
+path used to emit an empty inline for an empty run, and the block-font choice
+counted it; through the visitor it emits nothing, as the range path always
+did.  `15_en-US_sdt_num_3475` 0.9592 -> 0.9184, the one regression, is gap
+16 in the baseline: the harness renders each document twice in one JVM and
+phase 3's second pass had lost `USPSIMBCompact` (a barcode font Word does not
+have, `w:family` modern) to the alias leak - unmapped, so the default font's
+Carlito, 37 characters a line - where the rule gives Courier New's clone
+Cousine, 32 a line; Word's own line is 37, so the accident scored better than
+the rule.  The rule stands (the document is the only one in that font; the
+FO is byte-identical before and after, only the mapping differs).  Before the
+gap 17 correction `14_de-DE_sdt_num_tbl_278` showed the same shape (0.8783 ->
+0.8441, its baseline the second pass without the alias); with it the document
+is unchanged.  BestMatchingMapper against its own cells: 0.9008, 0.8761 ->
+0.8762, 0.9174, the same improvement and no regression.  Probes: unchanged
+from phase 3 (92/29/83/100/17/17/100) except `fonts-unresolvable` 75% -> 88%
+(16/16 lines, worst offset 15.8pt -> 1.3pt), gap 16 again - the probes render
+in one JVM too.  Corpus baseline for phase 5: `p4b-nobold` (identity) and
+`c4b-best-all` (best).
 
 ### Phase 5 — API hygiene and the HTML decision
 
@@ -1118,7 +1263,8 @@ As designed; CHANGELOG entries for the HTML change and the deprecations.
    table and Word differ).
 5. **`RunFontActionType.DISCOVERY` is deprecated, not removed**, for
    `docx4j-docx-anon` and user code; `fontsInUse()` keeps its signature and
-   its meaning (document names).
+   its meaning (document names).  Done in phase 4: `docx4j-docx-anon` itself
+   no longer uses it (`documentFontFor`).
 6. **Order against CR-001**: batch 42 (fonts) waits for phase 3 of this CR;
    batch 41's harness items and batch 43 are independent of it.
 7. **No decision on `BestMatchingMapper`'s future until it has been scored**

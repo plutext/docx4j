@@ -35,8 +35,6 @@ import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.CJKToEnglish;
 import org.docx4j.fonts.RunFontSelector;
-import org.docx4j.fonts.RunFontSelector.RunFontActionType;
-import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.model.PropertyResolver;
@@ -46,6 +44,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -64,6 +63,8 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.CTLanguage;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
 import org.docx4j.wml.SdtElement;
@@ -236,85 +237,126 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
     
     /**
-     * Traverse the document, looking for fonts which have been applied, either
-     * directly, or via a style. 
-     * 
-     * @return
+     * The fonts the document uses, by name: what the font mapper is populated with and
+     * the FOP configuration is built from.
+     *
+     * <p>A walk for names, since 17.1.1: the four slots of every {@code w:rFonts} on the
+     * runs, the paragraph marks and the styles in use (with what they are based on), in
+     * the body, headers, footers, footnotes, endnotes and comments; {@code w:sym} fonts;
+     * the numbering levels' fonts; the document defaults; the default font.  Each theme
+     * reference is resolved through the theme part for the document's themeFontLang, as
+     * the selector resolves it ({@link RunFontSelector#documentFontsOf}); a CJK font name
+     * is collected by its English name ({@link CJKToEnglish}).</p>
+     *
+     * <p>Until 17.1.1 this ran a {@link RunFontSelector} in its DISCOVERY mode over every
+     * run, which decided among the run's fonts by glyph checks it could not yet answer
+     * (the mapper is populated from this list, so nothing was mapped), took
+     * {@code w:ascii} alone from the numbering levels, and cost a selection per run
+     * (165 ms on a 311-page document).  The conversion declares the fonts it actually
+     * reaches to FOP itself, late (see FopConfigUtil.declareFallbackFonts), so discovery
+     * needs no selection; what it needs is every name the document could ask for, so
+     * that the mapper can map it.</p>
+     *
+     * @return the names, never null
      */
     public Set<String> fontsInUse() {
     	
     	log.debug("fontsInUse..");
     	
-    	try {
-			getPropertyResolver();
-		} catch (Docx4JException e) {
-			log.error(e.getMessage(), e);
-		}
-    	// ie create the resolver, which the font discovery below resolves through.
-    	// (Until 17.1.1 creating it also wrote the w:sz 20 document default into the
-    	//  styles part; since CR-015 phase 3 resolution writes nothing into the part.)
-    	
-    // Setup 
-    	
     	Set<String> fontsDiscovered = new java.util.HashSet<String>();
+    	CTLanguage themeFontLang = null;
+    	if (getDocumentSettingsPart()!=null) {
+    		try {
+    			themeFontLang = getDocumentSettingsPart().getContents().getThemeFontLang();
+    		} catch (Docx4JException e) {
+    			log.warn("Settings part unreadable: " + e.getMessage());
+    		}
+    	}
+    	FontNames names = new FontNames(fontsDiscovered, getThemePart(), themeFontLang);
+    	StyleDefinitionsPart sdp = getStyleDefinitionsPart();
+
+    	// the runs, paragraph marks and w:sym of the body and the other story parts, and
+    	// the styles they use
+		Set<String> stylesInUse = new java.util.HashSet<String>();
+		FontAndStyleFinder finder = new FontAndStyleFinder(names, stylesInUse);
+		if (sdp!=null) {
+			finder.defaultCharacterStyle = sdp.getDefaultCharacterStyle();
+			finder.defaultParagraphStyle = sdp.getDefaultParagraphStyle();	
+			finder.defaultTableStyle = sdp.getDefaultTableStyle();
+			finder.styleDefinitionsPart = sdp;
+		}
+		walkStories(finder);
+		finder.finish();
+
+		RFonts docDefaultsRFonts = null;
+		if (sdp!=null && sdp.getJaxbElement()!=null) {
+			org.docx4j.wml.Styles styles = sdp.getJaxbElement();
+			if (styles.getDocDefaults()!=null && styles.getDocDefaults().getRPrDefault()!=null
+					&& styles.getDocDefaults().getRPrDefault().getRPr()!=null) {
+				docDefaultsRFonts = styles.getDocDefaults().getRPrDefault().getRPr().getRFonts();
+			}
+			names.add(docDefaultsRFonts);
+
+			// the styles in use, each with the chain it is based on
+			for (String styleId : stylesInUse) {
+				Style style = sdp.getStyleById(styleId);
+				int guard = 0;
+				while (style!=null && guard++ < 64) {
+					if (style.getRPr()!=null) names.add(style.getRPr().getRFonts());
+					for (org.docx4j.wml.CTTblStylePr tblStylePr : style.getTblStylePr()) {
+						if (tblStylePr.getRPr()!=null) names.add(tblStylePr.getRPr().getRFonts());
+					}
+					style = style.getBasedOn()==null ? null : sdp.getStyleById(style.getBasedOn().getVal());
+				}
+			}
+		}
+	    
+	    // Fonts can also be used in the numbering part.
+	    // For now, treat any font mentioned in that part as in use.
+	    // Ideally, we'd only register fonts used in numbering levels
+	    // that were actually used in the document
+    	if (getNumberingDefinitionsPart()!=null) {
+    		Numbering numbering = getNumberingDefinitionsPart().getJaxbElement();
+            for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() ) {
+            	for (Lvl lvl : abstractNumNode.getLvl() ) {
+            		if (lvl.getRPr()!=null) {
+            			names.add(lvl.getRPr().getRFonts());
+            		}
+            	}
+            }    		
+    	}	
+
+    	fontsDiscovered.add(RunFontSelector.defaultFontOf(docDefaultsRFonts, getThemePart(), themeFontLang));
     	
-//    	// Keep track of styles we encounter, so we can
-//    	// inspect these for fonts
-//    	Set<String> stylesInUse = new java.util.HashSet<String>();
-//
-//		org.docx4j.wml.Styles styles = null;
-//		if (this.getStyleDefinitionsPart()!=null) {
-//			styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();			
-//		}
-//		// It is convenient to have a HashMap of styles
-//		Map<String, Style> stylesDefined = new java.util.HashMap<String, Style>();
-//		if (styles!=null) {
-//		     for (Iterator<Style> iter = styles.getStyle().iterator(); iter.hasNext();) {
-//		            Style s = iter.next();
-//		            stylesDefined.put(s.getStyleId(), s);
-//		     }
-//		}
-//    // We need to know what fonts and styles are used in the document
-    	
+    	if (log.isDebugEnabled()) {
+    		for (String fontName : fontsDiscovered) {
+    			log.debug(fontName);
+    		}
+    	}
+		    	
+		return fontsDiscovered;
+    }
+
+    /** The body, then the headers and footers, the endnotes, footnotes and comments. */
+    private void walkStories(FontAndStyleFinder finder) {
+
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
-
-		List <Object> bodyChildren = body.getContent();
+		new TraversalUtil(body.getContent(), finder);
 		
-		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
-		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, RunFontActionType.DISCOVERY); 
-		
-		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, null);
-		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
-		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();	
-		finder.defaultTableStyle = this.getStyleDefinitionsPart().getDefaultTableStyle();
-		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
-		
-		new TraversalUtil(bodyChildren, finder);
-//		finder.finish();
-		
-		fontsDiscovered.add(
-				runFontSelector.getDefaultFont() );
-		
-		// fonts in headers, footers?
 		RelationshipsPart rp = this.getRelationshipsPart();
 		if (rp!=null) {
 			for ( Relationship r : rp.getRelationships().getRelationship() ) {
 				Part part = rp.getPart(r);
 				if ( part instanceof FooterPart ) {
-					
 					Ftr ftr = ((FooterPart)part).getJaxbElement();
 					finder.walkJAXBElements(ftr);
-					
 				} else if (part instanceof HeaderPart) {
-					
 					Hdr hdr = ((HeaderPart)part).getJaxbElement();
 					finder.walkJAXBElements(hdr);
 				}
 			}
 		}
-		
-		// Styles in endnotes, footnotes?
 		if (this.getEndNotesPart()!=null) {
 			log.debug("Looking at endnotes");
 			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement();
@@ -325,98 +367,47 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement();
 			finder.walkJAXBElements(footnotes);
 		}
-		
-		// Comments
 		if (this.getCommentsPart()!=null) {
 			log.debug("Looking at comments");			
 			Comments comments = this.getCommentsPart().getJaxbElement();
 			finder.walkJAXBElements(comments);
 		}
-		
-		// Add fonts used in the styles we discovered
-		// .. 2013 03 10: no longer necessary
-	    
-	    // Fonts can also be used in the numbering part
-	    // For now, treat any font mentioned in that part as in use.
-	    // Ideally, we'd only register fonts used in numbering levels
-	    // that were actually used in the document
-    	if (getNumberingDefinitionsPart()!=null) {
-    		Numbering numbering = getNumberingDefinitionsPart().getJaxbElement();
-            for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() ) {
-            	for (Lvl lvl : abstractNumNode.getLvl() ) {
-            		if (lvl.getRPr()!=null
-            				&& lvl.getRPr().getRFonts()!=null ) {
-            			String fontName = lvl.getRPr().getRFonts().getAscii();            			
-            			if (fontName!=null) {
-            				fontsDiscovered.add(fontName);	
-            				log.debug("Registered " + fontName + " for abstract list " + abstractNumNode.getAbstractNumId() + " lvl " + lvl.getIlvl() );
-            			}
-            		}
-            	}
-            }    		
-    	}	
-    	
-    	if (log.isDebugEnabled()) {
-    		for (String fontName : fontsDiscovered) {
-    			log.debug(fontName);
+    }
+
+    /**
+     * Collects the document font names a walk finds: each w:rFonts' four slots with the
+     * theme references resolved ({@link RunFontSelector#documentFontsOf}), a CJK name by
+     * its English name ({@link CJKToEnglish}, as the discovery visitor did until 17.1.1),
+     * blanks skipped.
+     */
+    private static class FontNames {
+
+    	private final Set<String> names;
+    	private final ThemePart themePart;
+    	private final CTLanguage themeFontLang;
+
+    	FontNames(Set<String> names, ThemePart themePart, CTLanguage themeFontLang) {
+    		this.names = names;
+    		this.themePart = themePart;
+    		this.themeFontLang = themeFontLang;
+    	}
+
+    	void add(RFonts rFonts) {
+    		if (rFonts==null) return;
+    		for (String name : RunFontSelector.documentFontsOf(rFonts, themePart, themeFontLang)) {
+    			add(name);
     		}
     	}
-		    	
-		return fontsDiscovered;
+
+    	void add(String fontName) {
+    		if (fontName==null) return;
+    		fontName = fontName.trim();
+    		if (fontName.length()==0) return;
+			String englishFromCJK = CJKToEnglish.toEnglish(fontName);
+			// where there is an English name, no point adding the original CJK name
+			names.add(englishFromCJK==null ? fontName : englishFromCJK);
+    	}
     }
-    
-	private class FontDiscoveryCharacterVisitor implements RunFontCharacterVisitor {
-		
-		FontDiscoveryCharacterVisitor(Set<String> fontsDiscovered) {
-			this.fontsDiscovered = fontsDiscovered;
-		}
-			
-    	private Set<String> fontsDiscovered; // same set 
-
-    	// look here
-		public void fontAction(String fontname) {
-			
-			if (fontname==null) {
-				log.warn("Got null", new Throwable());
-				return;
-			}
-			
-			String englishFromCJK = CJKToEnglish.toEnglish( fontname);
-			if (englishFromCJK==null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Adding " + fontname);
-				}
-				fontsDiscovered.add(fontname); 
-			} else {
-				fontsDiscovered.add(englishFromCJK);
-				if (log.isDebugEnabled()) {
-					log.debug("Adding " + englishFromCJK);
-				}
-				// No point adding the original CJK name
-			}
-			
-		}
-
-		
-		private boolean spanReusable = true;
-		public boolean isReusable() {
-			return spanReusable;
-		}
-		public void setMustCreateNewFlag(boolean val) {
-			spanReusable = !val;
-		}
-
-		public void setDocument(Document document) {}
-		public void addCharacterToCurrent(char c) {}
-		public void addCodePointToCurrent(int cp) {}
-		public void finishPrevious() {}
-		public void createNew() {}
-		public void setRunFontSelector(RunFontSelector runFontSelector) {}
-		public Object getResult() {return null;}
-		@Override
-		public void setFallbackFont(String fontname) {}
-				
-	}
     
 
 	/**
@@ -434,7 +425,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		List <Object> bodyChildren = body.getContent();
 		
 		Set<String> stylesInUse = new HashSet<String>();
-		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		finder.defaultTableStyle = this.getStyleDefinitionsPart().getDefaultTableStyle();
@@ -492,16 +483,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      */
     private static class FontAndStyleFinder extends CallbackImpl {
 		
-    	Set<String> fontsDiscovered;
-    	Set<String> stylesInUse; // by ID
+    	FontNames fontsDiscovered; // null: not collecting fonts
+    	Set<String> stylesInUse; // by ID; null: not collecting styles
     	
-    	RunFontSelector runFontSelector;
-    	
-    	FontAndStyleFinder(RunFontSelector runFontSelector, 
-    			Set<String> fontsDiscovered, 
+    	FontAndStyleFinder(FontNames fontsDiscovered, 
     			Set<String> stylesInUse) {
     		
-    		this.runFontSelector = runFontSelector;
     		this.fontsDiscovered = fontsDiscovered;
     		this.stylesInUse = stylesInUse;
     	}
@@ -545,6 +532,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			
 			if (o instanceof org.docx4j.wml.P) {
 				pPr = ((P)o).getPPr();
+				if (fontsDiscovered != null && pPr != null && pPr.getRPr() != null) {
+					fontsDiscovered.add(pPr.getRPr().getRFonts()); // the paragraph mark's
+				}
 				if (stylesInUse != null) { //do the styles
 					boolean customPStyle = false;
 					if (pPr != null) {
@@ -565,6 +555,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 			} else if ( o instanceof org.docx4j.wml.R) {
 				rPr = ((R)o).getRPr();
+				if (fontsDiscovered != null && rPr != null) {
+					fontsDiscovered.add(rPr.getRFonts());
+				}
 				if (stylesInUse != null) {
 					if (rPr != null) {
 						if (rPr.getRStyle() == null) {
@@ -574,14 +567,6 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 							stylesInUse.add(rPr.getRStyle().getVal());
 						}
 					}
-				}
-				
-			} else if ( o instanceof org.docx4j.wml.Text) {
-								
-				if (runFontSelector != null) {
-					// discover the fonts which apply to this text
-					log.debug(((Text)o).getValue());
-					runFontSelector.fontSelector(pPr, rPr, ((Text)o) );
 				}
 				
 			} else if (o instanceof org.docx4j.wml.R.Sym ) { 
@@ -623,6 +608,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 					Object o2 = sdtPr.getByClass(RPr.class);
 					if (o2!=null) {
 						RPr rPr = (RPr)o2;
+						if (fontsDiscovered != null) {
+							fontsDiscovered.add(rPr.getRFonts());
+						}
 						RStyle rStyle = rPr.getRStyle();
 						if (rStyle!=null) {
 							// Add it
@@ -799,7 +787,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
         	return;
         }
 		
-		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();		

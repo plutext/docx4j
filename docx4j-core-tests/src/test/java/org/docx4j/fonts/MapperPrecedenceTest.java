@@ -172,4 +172,38 @@ public class MapperPrecedenceTest {
 		assertSame("Calibri keeps its real bold", PhysicalFonts.get(SANS), m.get("Calibri"));
 		assertFalse(m.get("Calibri").isNoBoldFace());
 	}
+
+	/**
+	 * An alias a document registered with WordLineMetrics (its altName, or the Word
+	 * default it was mapped to) must not make that family "known" for the next document
+	 * in the JVM, which would then skip the Word-default pass and leave it unmapped
+	 * (found by the CR-016 phase 4 gate).
+	 */
+	@Test
+	public void anotherDocumentsAliasDoesNotMakeAFamilyKnown() {
+		String family = "Zqxjk Nonesuch"; // no class word in the name (the heuristic would know "Sans")
+		assertFalse(Mapper.isKnownFamily(family));
+		WordLineMetrics.registerAlias(family, "Calibri");
+		assertTrue("the line box is the alias's", WordLineMetrics.hasTableEntry(family));
+		assertFalse("but the family is still one Word could not find", Mapper.isKnownFamily(family));
+	}
+
+	/**
+	 * A font Word could not find is substituted whole, its w:b in the substitute's real
+	 * bold, so the no-bold alias (for a weight-word family Word has) does not apply to a
+	 * Word-defaulted font (the phase 4 gate: "EnBW DIN Pro Light", Calibri Bold in Word).
+	 */
+	@Test
+	public void aWordDefaultedFontKeepsTheSubstitutesBold() throws Exception {
+		Assume.assumeTrue("no bold face for " + SANS, PhysicalFonts.getBoldForm(PhysicalFonts.get(SANS)) != null);
+		Mapper m = new IdentityPlusMapper();
+		m.getFontMappings().clear();
+		m.put("Calibri", PhysicalFonts.get(SANS));
+		Fonts table = fontTable("<w:font w:name=\"Docx4j Probe Light\"><w:family w:val=\"swiss\"/></w:font>");
+		Set<String> names = names("Docx4j Probe Light");
+		m.addWordDefaultSubstitutes(names, table);
+		assertSame(PhysicalFonts.get(SANS), m.get("Docx4j Probe Light"));
+		m.addNoBoldFaceAliases(names);
+		assertFalse("Word substitutes Calibri whole, bold face included", m.get("Docx4j Probe Light").isNoBoldFace());
+	}
 }

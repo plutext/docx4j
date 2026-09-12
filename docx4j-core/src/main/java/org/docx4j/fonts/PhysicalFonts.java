@@ -84,11 +84,21 @@ public class PhysicalFonts {
 	 */
 	public static PhysicalFont get(String key) {
 		if (key==null) return null;
-		/* A font-family may carry one or more of the suffixes the FO layer adds for a
-		 * twin FopConfigUtil declares from the same file - the kerned twin (per-run
-		 * kerning), the twin with no OpenType features (per-run ligatures, 17.0.5), the
-		 * alias for a document font with no bold face (17.1.1) - and they stack
-		 * ("+nobold+noliga"), so every one of them is stripped. */
+		return physicalFontMap.get(stripSuffixes(key).toLowerCase());
+	}
+
+	/**
+	 * The physical font name without the suffixes the FO layer adds: a font-family may
+	 * carry one or more of the suffixes for a twin FopConfigUtil declares from the same
+	 * file - the kerned twin (per-run kerning), the twin with no OpenType features
+	 * (per-run ligatures, 17.0.5), the alias for a document font with no bold face
+	 * (17.1.1) - and they stack ("+nobold+noliga"), so every one of them is stripped.
+	 *
+	 * @since 17.1.1 (the stripping itself since 17.0.5; here so that the Mapper's
+	 *        lookup by physical name strips the same way)
+	 */
+	public static String stripSuffixes(String key) {
+		if (key==null) return null;
 		boolean stripped = true;
 		while (stripped) {
 			stripped = false;
@@ -99,7 +109,7 @@ public class PhysicalFonts {
 				}
 			}
 		}
-		return physicalFontMap.get(key.toLowerCase());
+		return key;
 	}
 	/**
 	 * Put a PhysicalFont 

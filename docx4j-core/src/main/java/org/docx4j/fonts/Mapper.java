@@ -123,6 +123,42 @@ public abstract class Mapper {
 	public int size() {
 		return fontMappings.size();
 	}
+
+	/**
+	 * The PhysicalFont behind a <em>physical</em> font name - a font-family the FO layer
+	 * wrote, with or without the twin suffixes ({@link PhysicalFonts#stripSuffixes}).
+	 *
+	 * <p>The Mapper is keyed by the document's names, and {@link PhysicalFonts} by the
+	 * installed fonts' names; a font embedded in the document is in neither key set (it is
+	 * deliberately not added to PhysicalFonts, which every document shares; see
+	 * ObfuscatedFontPart.extract), so a post-process holding only the name it wrote must
+	 * look through this document's mappings - what the runs mapped to, the embedded faces,
+	 * the last-resort fallbacks - before the installed fonts.  Until 17.1.1 the line-height,
+	 * space-kerning, character-scaling and ligature passes looked the name up in
+	 * PhysicalFonts alone, and so never saw an embedded font (CR-016 gap 7).</p>
+	 *
+	 * @return the font, or null where nothing this document knows or the machine has
+	 *         carries that name
+	 * @since 17.1.1
+	 */
+	public PhysicalFont physicalFontNamed(String physicalFontName) {
+		if (physicalFontName==null) return null;
+		String name = PhysicalFonts.stripSuffixes(physicalFontName);
+		PhysicalFont pf = named(fontMappings, name);
+		if (pf==null) pf = named(regularForms, name);
+		if (pf==null) pf = named(boldForms, name);
+		if (pf==null) pf = named(italicForms, name);
+		if (pf==null) pf = named(boldItalicForms, name);
+		if (pf==null) pf = named(lastResortFallbacks, name);
+		return pf!=null ? pf : PhysicalFonts.get(name);
+	}
+
+	private static PhysicalFont named(Map<String, PhysicalFont> fonts, String name) {
+		for (PhysicalFont pf : fonts.values()) {
+			if (pf!=null && name.equalsIgnoreCase(pf.getName())) return pf;
+		}
+		return null;
+	}
 	
 	public final static String FONT_FALLBACK = "Times New Roman"; 
 	
@@ -685,9 +721,15 @@ public abstract class Mapper {
     			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (Word's default for an unknown font: " + wordFont + ")");
     		}
     		put(documentFontName, pf);
+    		wordDefaulted.add(documentFontName.trim().toLowerCase());
     		WordLineMetrics.registerAlias(documentFontName, wordFont);
     	}
     }
+
+    /** The document fonts {@link #addWordDefaultSubstitutes} mapped, lower-cased: Word
+     *  substitutes such a font whole, bold face included, so {@link #addNoBoldFaceAliases}
+     *  leaves them alone.  @since 17.1.1 */
+    private final java.util.Set<String> wordDefaulted = ConcurrentHashMap.newKeySet();
 
     /** The font Word draws an unknown font in, by its fontTable entry (see
      *  {@link #addWordDefaultSubstitutes}). */
@@ -722,7 +764,8 @@ public abstract class Mapper {
     	if (documentFontName==null) return false;
     	String name = documentFontName.trim();
     	if (org.docx4j.fonts.microsoft.MicrosoftFontsRegistry.getMsFonts().containsKey(name)) return true;
-    	if (WordLineMetrics.hasTableEntry(name)) return true;
+    	// the table's own families, not an alias another document registered in this JVM
+    	if (WordLineMetrics.isTableFamily(name)) return true;
     	if (FontFallback.classOf(name)!=FontFallback.FontClass.UNKNOWN) return true;
     	return false;
     }
@@ -766,6 +809,12 @@ public abstract class Mapper {
     		if (documentFontName==null || documentFontName.trim().length()==0) continue;
     		if (hasBoldFace(documentFontName)) continue;
     		if (isEmbedded(documentFontName)) continue; // the embedded forms say what the document has
+    		/* A font Word itself could not find is substituted whole - Calibri's real bold
+    		 * for its w:b - however its name reads: "EnBW DIN Pro Light" is Calibri Bold in
+    		 * Word, not a synthesised Calibri.  Measured (CR-016 phase 4 gate): with the
+    		 * alias that document scored 0.8441, without it 0.8783.  The alias is for a font
+    		 * Word has (or a clone of one) which has no bold face of its own. */
+    		if (wordDefaulted.contains(documentFontName.trim().toLowerCase())) continue;
     		PhysicalFont pf = get(documentFontName);
     		if (pf==null || pf.isNoBoldFace()) continue;
     		if (PhysicalFonts.getBoldForm(pf)==null && boldForms.get(documentFontName)==null) continue; // nothing to withhold
