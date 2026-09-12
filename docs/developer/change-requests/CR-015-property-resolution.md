@@ -774,22 +774,72 @@ change).
    starts after phase 2 at the earliest.  CR-015 is complete; the fonts
    review can start.
 
-## Risks
+## Risks (as written 2026-09-12, with what each turned out to be)
 
 - **Behaviour change in the exporters from phase 1's merge rules** —
   intended (towards Word) but the lineRule fix touches most documents with
   exact or atLeast spacing in a style.  The corpus gate is the control;
   P3's golden settles the rule.
+  *Learnt:* the golden confirmed the rule before the code shipped, and the
+  corpus moved only upward: 21 documents improved, none regressed, all of
+  them in the numbered-table population the rules predicted.  The one thing
+  the gate could not tell apart is a document that gains a page while its
+  line parity rises (`12_ru-RU_sdt_fields1_num_tbl_11928`, 32 -> 33): the
+  scoreboard classes it as improved.  A page-count column in the "changed
+  documents" list would have made that visible without reading the log.
 - **Consumers relying on the mutations**: a caller reading a style's
   `w:numPr/w:numId` after resolution (injection), or a heading style's
   rewritten `w:outlineLvl`.  Grepped: none in main code beyond the two
   named in the design; user code may.  CHANGELOG notes it.
+  *Learnt:* none surfaced.  The injected numId was equivalent to the merged
+  one for every corpus document (phase 3 was zero-delta), and the heading
+  rule by name fires on no corpus document differently from the id rule.
+  The no-mutation test marshals the styles part before and after a full
+  resolution, so the next mutation cannot creep back in unnoticed.
 - **Performance**: leaf copies in every merge (small objects, many calls) and
   the `deepCopy` of docDefaults at init.  Measure phase 1 and 3 on the
   311-page corpus document used for 67ab3b831 before and after.
+  *Learnt:* the per-document measurement was NOT done.  What was observed:
+  the three-corpus scoring run (449 documents rendered) took the same
+  wall-clock at every phase, within the minute the log timestamps resolve
+  to (real3's 102 long documents: about five minutes on every run, before
+  and after the leaf copies), so the copies are not measurable at that
+  grain.  The `deepCopy` of the defaults happens once per resolver.  The
+  cost that did go away is the miss-path rescan of the styles part on every
+  lookup of a missing style, which was O(paragraphs x styles) on documents
+  that reference a deleted style.
 - **`ConcurrentHashMap` and null keys**: `defaultParagraphStyleId` can be
   null (a styles part with no default); today's `HashMap` tolerates the null
   key.  The new code uses an explicit sentinel.
+  *Learnt:* as planned (`NO_STYLE`); no corpus document lacks a default
+  paragraph style, so the sentinel path is exercised by the unit tests only.
+  The real concurrency hazard is elsewhere: the styles part's JAXB list is
+  not thread-safe, and a caller who adds a style while another thread's
+  miss rescans it races on the list, not on the resolver.  The concurrency
+  test synchronises its adder on the part for that reason; the javadoc says
+  it is the caller's synchronisation.
 - **The shield in `ParagraphStylesInTableFix`** hides row 6 from the corpus;
   phase 2's correctness rests on its unit tests and the markdown/TOC
   consumers, not on the corpus.
+  *Learnt:* the shield came out in phase 2b (Jason's layering decision)
+  and the corpus did not move, which is the evidence the risk asked for:
+  the resolver carries the case alone.  Two further shields were found on
+  the way and are recorded under Layering: the visitor's "no rPr, no
+  resolver call" guard (removed in phase 2, one document improved) and
+  RunFontSelector's own walk of the paragraph style (the fonts review).
+  The general lesson: a workaround in a later layer hides a defect in an
+  earlier one from every measurement; the corpus can only judge the layer
+  that is allowed to fail.
+
+Two risks that were not on the list:
+
+- **A probe answering the opposite of the design.**  P5 (the default table
+  style) contradicted the TODO the phase was written to implement: Word
+  applies its built-in Normal Table and ignores the document's definition.
+  The CR's shape absorbed it (the table row and the phase 4 design were
+  rewritten before the code was), which is the point of writing the probes
+  before the phases.
+- **Harness artefacts read as fidelity loss.**  `styles-numpr-ilvl-only`
+  scores 50% with every position at Word's, because the level-1 label fills
+  its hanging indent and pdftotext joins "1.1.(b)".  Known from CR-001
+  (label-join), recorded here so the number is not chased again.

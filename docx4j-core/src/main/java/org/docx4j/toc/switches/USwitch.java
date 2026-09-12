@@ -149,8 +149,10 @@ public class USwitch extends SelectorSwitch {
     		if (outlineLvl==null) { 
     			
 		        PPr effectivePPr = sp.getPropertyResolver().getEffectivePPr(s.getStyleId());
-		        	// that takes care of any unexpected outline level found in a heading style,
-		        	// by overwriting it (see fillPPrStack)
+		        	// that takes care of any unexpected outline level found in a heading style:
+		        	// the resolved pPr carries the level the style's w:name implies
+		        	// (PropertyResolver.headingLevelByName).  Until 17.1.1 the level was
+		        	// written into the style itself, and only ids starting "Heading" were seen.
 	        	outlineLvl = effectivePPr.getOutlineLvl();
 	        	if (outlineLvl==null) {
 	        		outlineLvl = LEVEL_9;

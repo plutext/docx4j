@@ -202,8 +202,9 @@ public class ParagraphStylesInTableFix {
         
 		try {
 	        styleRenamer.propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
-	        // do that first, since it creates virtual styles for DocDefaults,
-	        // which we need to include in the below
+	        // the resolver the walk below resolves paragraph and table styles through.
+	        // (Until 17.1.1 creating it wrote into the styles part - the w:sz 20 document
+	        //  default - so it had to be done before the styles were read here.)
 	        styleRenamer.setStyles(styles);
 			new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer);
 

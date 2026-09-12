@@ -518,8 +518,8 @@ public class TableWriter extends AbstractTableWriter {
 	/**
 	 * The left cell margin the grid edge is measured from, in twips: the <em>first
 	 * cell's</em> own w:tcMar/w:left where it has one, else w:tblPr/w:tblCellMar/w:left
-	 * (the table style's is already merged into the effective tblPr), else Word's
-	 * default 108.
+	 * (the table style's is already merged into the effective tblPr, and since 17.1.1
+	 * that includes the built-in Normal Table's 108 wherever it applies), else none.
 	 *
 	 * <p>The first cell wins because it is that cell's text the shift puts on
 	 * margin + w:tblInd: measured on a mode-12 corpus table whose cells carry

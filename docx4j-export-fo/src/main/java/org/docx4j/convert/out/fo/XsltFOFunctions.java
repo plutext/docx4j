@@ -898,8 +898,9 @@ public class XsltFOFunctions {
 				}
 
 				// rPr in pPr direct formatting only applies to paragraph mark,
-				// and by virtue of that, to list item label,
-				// so pass null here.
+				// and by virtue of that, to list item label, so it is not passed here.
+				// (Since 17.1.1 getEffectiveRPr never applies it in any case; the mark
+				//  itself is getEffectiveParagraphMarkRPr, used for rPrParagraphMark below.)
 				// 2018 05 .. 17.0.4: the paragraph mark's sz was applied to the block too,
         		// on the theory that a 12pt mark on 11pt runs gives more line spacing.
         		// Measured against Word 365 (CR-001 harness, line-mixed probe): it does
@@ -1542,9 +1543,9 @@ public class XsltFOFunctions {
 	 * Keep the size the block's own children were measured at, before the block takes
 	 * the size of the run that owns most of its text.
 	 *
-	 * <p>A {@code w:r} with no {@code w:rPr} gets no {@code font-size} of its own - the
-	 * XSLT pathway does not even wrap it in an {@code fo:inline}, and the visitor's is
-	 * bare - so it inherits the block's, which is the paragraph's effective size
+	 * <p>In the XSLT pathway a {@code w:r} with no {@code w:rPr} gets no
+	 * {@code font-size} of its own - it is not even wrapped in an {@code fo:inline} - so
+	 * it inherits the block's, which is the paragraph's effective size
 	 * (docDefaults, then the paragraph style's {@code w:rPr}).  That is right until
 	 * {@link #applyBlockLineHeight} replaces the block's size with the dominant run's,
 	 * at which point the sizeless runs silently change size with it.  Word does not: a
@@ -1555,6 +1556,10 @@ public class XsltFOFunctions {
 	 * paragraph mark carries {@code w:sz="48"}: the 45 spaces are 45 x 2.5 = 111.6pt in
 	 * Word and were 45 x 5.42 = 244.1pt for us, which wrapped the heading, made the
 	 * header two lines on every page and 8 Word pages 10 of ours.
+	 *
+	 * <p>The visitor pathway no longer depends on this: since 17.1.1 it resolves every
+	 * run, {@code w:rPr} or not, so its inlines carry their own size (CR-015 phase 2b,
+	 * evaluated on the corpora).  The pin stays for the XSLT pathway; see the call.</p>
 	 *
 	 * @since 17.1.0
 	 */

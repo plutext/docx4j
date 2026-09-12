@@ -481,7 +481,9 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 			} catch (Docx4JException e) {
 				log.error(e.getMessage(), e);
 			} 
-				/* avoids invoking it during init:
+				/* avoids invoking it during init - the recursion below, as traced in 17.0.x
+				   (PropertyResolver's internals have been renamed since: it has no
+				   addNormalToResolvedStylePPrComponent, and init does not resolve styles):
 					at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getPropertyResolver(MainDocumentPart.java:163)
 					at org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.getIndFromLvl(NumberingDefinitionsPart.java:417)
 					at org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.getInd(NumberingDefinitionsPart.java:401)

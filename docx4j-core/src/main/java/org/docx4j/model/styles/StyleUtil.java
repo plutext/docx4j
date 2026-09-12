@@ -1652,8 +1652,10 @@ public class StyleUtil {
 /////////////////////////////////////////////
 //apply-Methods
 //
-// see similar ImmutablePropertyResolver
-//	
+// A more specific value over an inherited one: per member, and per attribute where
+// Word does so.  Which members an element has, and how each merges, is
+// PropertyCatalogue (@since 17.1.1); the methods here are the leaves it calls.
+// (ImmutablePropertyResolver keeps its own copy of the rPr/pPr lists; deprecated 17.1.1.)
 /////////////////////////////////////////////
 
 	

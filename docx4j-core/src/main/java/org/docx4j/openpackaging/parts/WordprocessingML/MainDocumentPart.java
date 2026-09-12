@@ -249,7 +249,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			getPropertyResolver();
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
-		}  // this inits our virtual DocDefaults style
+		}
+    	// ie create the resolver, which the font discovery below resolves through.
+    	// (Until 17.1.1 creating it also wrote the w:sz 20 document default into the
+    	//  styles part; since CR-015 phase 3 resolution writes nothing into the part.)
     	
     // Setup 
     	

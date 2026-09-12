@@ -643,7 +643,7 @@ public class PropertyResolver {
 	org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
 	
 	/**
-	 * Whether the paragraph states any formatting of its own: {@link StyleUtil#hasDirectFormatting(PPrBase)}
+	 * Whether the paragraph states any formatting of its own: {@link StyleUtil#hasDirectFormatting(org.docx4j.wml.PPrBase)}
 	 * over every member of {@link org.docx4j.model.styles.PropertyCatalogue#PARAGRAPH}.
 	 * Any rPr is intentionally ignored, since pPr/rPr is not applicable to anything
 	 * except the paragraph mark.  (Until 17.1.1 this was a hand-kept list of 17 of the

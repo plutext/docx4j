@@ -1075,8 +1075,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	/**
 	 * Left + right cell margins in twips for one cell: the cell's own
-	 * {@code w:tcMar} where it declares them, else the table's {@code w:tblCellMar},
-	 * else Word's default.
+	 * {@code w:tcMar} where it declares them, else the table's {@code w:tblCellMar}
+	 * (which since 17.1.1 carries Word's built-in Normal Table margins wherever they
+	 * apply), else none.
 	 *
 	 * <p>Measured against Word 365 on a table whose {@code w:tblCellMar} is 0 left and
 	 * right and whose every cell overrides with {@code w:tcMar} 30 twips: sizing the

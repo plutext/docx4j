@@ -772,14 +772,13 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
     
     /**
-     * On a block representing a run, we just put run properties
-     * from this rPr node. The paragraph style rPr's have been
-     * taken care of on the fo block which represents the paragraph.
-     * 
-     * @param wmlPackage
-     * @param rPrNodeIt
-     * @param childResults
-     * @return
+     * The run's effective properties as attributes of its fo:inline: the document
+     * defaults, the paragraph style's run properties, the run's character style and its
+     * direct formatting.  Called for every run since 17.1.1, rPr or not, so each inline
+     * carries its own size and font instead of inheriting the block's.
+     *
+     * @param pPrDirect the paragraph's own w:pPr, or null
+     * @param rPrDirect the run's own w:rPr, or null
      * @throws Docx4JException 
      */
     @Override

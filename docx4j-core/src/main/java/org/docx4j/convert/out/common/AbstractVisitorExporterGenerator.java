@@ -708,10 +708,14 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
     
     /**
-     * On a block representing a run, we just put run properties
-     * from this rPr node. The paragraph style rPr's have been
-     * taken care of on the fo block which represents the paragraph.
-     * @return
+     * Put on the element representing a run the properties which apply to it.  Called
+     * for every run since 17.1.1, whether or not it has a w:rPr of its own: what applies
+     * is resolved from the document defaults, the paragraph's style, and the run's own
+     * character style and direct formatting, so the element can carry them itself rather
+     * than inherit them from the block.  (Until 17.1.1 a run without a w:rPr was not
+     * resolved at all, and took the block's.)
+     *
+     * @param rPrDirect the run's own w:rPr, or null
      * @throws Docx4JException 
      */
     protected abstract void handleRPr(CC conversionContext, PPr pPrDirect, RPr rPrDirect, Element currentParent ) throws Docx4JException;
