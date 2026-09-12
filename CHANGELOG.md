@@ -119,6 +119,10 @@ Fonts (CR-016, the font selection and mapping review):
   (no caller), PhysicalFonts.getPhysicalFont(OpcPackage, String) (no caller).  A package-info for
   org.docx4j.fonts describes the two steps, the mapping precedence and the properties the package
   reads.
+- IdentityPlusMapper (the default) is the mapper to use everywhere, Windows or not: measured on
+  three real-document corpora in six font environments it is ahead of BestMatchingMapper in every
+  one.  BestMatchingMapper is kept for compatibility; the samples and the Getting Started guide,
+  which recommended it for Linux, now say so.
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

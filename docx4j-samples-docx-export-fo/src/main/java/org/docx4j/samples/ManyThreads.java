@@ -21,7 +21,6 @@ import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.fo.FOExporterVisitor;
 import org.docx4j.convert.out.fo.FOExporterXslt;
 import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
-import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
@@ -103,10 +102,7 @@ public class ManyThreads {
         WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
 		// Set up font mapper (optional)
-//		Mapper fontMapper = new IdentityPlusMapper();  // Best where the fonts in the docx are installed, 
-													   // though we do have metrically compatible substitutes for
-													   // the automapped fonts described below.
-		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+		Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
 		wordMLPackage.setFontMapper(fontMapper);
 
 		
@@ -175,10 +171,7 @@ public class ManyThreads {
         System.out.println(id + " : " + filename);
         WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
-        //		Mapper fontMapper = new IdentityPlusMapper();  // Best where the fonts in the docx are installed, 
-															   // though we do have metrically compatible substitutes for
-															   // the automapped fonts described below.
-        Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+        Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
         wordMLPackage.setFontMapper(fontMapper);        
         
         // Configure FO Settings

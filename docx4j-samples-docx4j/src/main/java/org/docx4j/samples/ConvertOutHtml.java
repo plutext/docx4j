@@ -30,7 +30,6 @@ import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.html.SdtToListSdtTagHandler;
 import org.docx4j.convert.out.html.SdtWriter;
-import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -148,11 +147,10 @@ public class ConvertOutHtml extends AbstractSample {
 //		updater = new FieldUpdater(wordMLPackage);
 //		updater.update(true);
 		
-		// Set up font mapper (optional)
-		// We don't add CSS for a font which isn't physically present.
-		// TODO: consider web fonts?
-//		Mapper fontMapper = new IdentityPlusMapper(); // better for Windows
-		Mapper fontMapper = new BestMatchingMapper(); // better for Linux
+		// Set up font mapper (optional: the package creates an IdentityPlusMapper when none is set)
+		// The CSS names the document font first, then the physical font it maps to here,
+		// then the generic class (since 17.1.1), so the reader's browser gets a stack.
+		Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
 		wordMLPackage.setFontMapper(fontMapper);
 		
 		// .. example of mapping font Times New Roman which doesn't have certain Arabic glyphs

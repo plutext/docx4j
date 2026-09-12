@@ -1323,6 +1323,10 @@ The review is complete: seventeen gaps, all closed or decided.
    give it the shared passes; or recommend IdentityPlusMapper everywhere and
    keep BestMatchingMapper for compatibility; and what the samples and the
    Getting Started text should say) is decided then, not now.
+   **Decided by Jason 2026-09-13, as recommended: BestMatchingMapper is kept,
+   IdentityPlusMapper is the advice everywhere - its class javadoc, the six
+   samples that chose a mapper (three of them BestMatchingMapper "for
+   Linux") and the Getting Started guide's font-mapping appendix say so.**
 
 ## Risks (as written 2026-09-12)
 

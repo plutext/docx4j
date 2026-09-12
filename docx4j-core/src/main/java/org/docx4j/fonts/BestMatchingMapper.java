@@ -55,9 +55,10 @@ import org.docx4j.wml.Fonts;
  * environments - this developer's box, docx4j's font jars alone, eclipse-temurin,
  * and the Ubuntu, Debian and Fedora desktop font sets - it is behind
  * {@link IdentityPlusMapper} in every one of them, including those without any
- * Microsoft font.  It is kept for compatibility; with the measured passes in front of
- * its panose step it is now within 0.001 to 0.005 of line parity, where it had been
- * 0.010 to 0.021 behind.
+ * Microsoft font.  Use {@link IdentityPlusMapper}, the default, everywhere (CR-016
+ * Decisions 7, 2026-09-13); this class is kept for compatibility.  With the measured
+ * passes in front of its panose step it is now within 0.001 to 0.005 of line parity,
+ * where it had been 0.010 to 0.021 behind.
  *
  * @author jharrop
  *

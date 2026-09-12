@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -63,8 +62,7 @@ public class FontsUsed {
 		// Specify your font mapper
 		// Note, you can turn on DEBUG level logging for org.docx4j.fonts.PhysicalFonts
 		// to see the fonts discovered and their names
-		Mapper fontMapper = new IdentityPlusMapper();  // Only for Windows, unless you have Microsoft's fonts installed
-//		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+		Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
 		
 		wordMLPackage.setFontMapper(fontMapper);
 		

@@ -36,10 +36,7 @@ public class ConvertUsingExporter  {
         WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
 		// Set up font mapper (optional)
-		Mapper fontMapper = new IdentityPlusMapper();  // Best where the fonts in the docx are installed, 
-													   // though we do have metrically compatible substitutes for
-													   // the automapped fonts described below.
-//		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+		Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
 		wordMLPackage.setFontMapper(fontMapper);
 
         // Configure FO Settings

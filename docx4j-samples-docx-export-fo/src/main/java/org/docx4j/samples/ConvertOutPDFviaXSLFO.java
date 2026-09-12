@@ -35,7 +35,6 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
-import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -156,10 +155,9 @@ public class ConvertOutPDFviaXSLFO {
 //		updater.update(true);
 		
 		// Set up font mapper (optional)
-		Mapper fontMapper = new IdentityPlusMapper();  // Best where the fonts in the docx are installed, 
-													   // though we do have metrically compatible substitutes for
-													   // the automapped fonts described below.
-//		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+		Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
+		// (the installed font by its name, else the document's embedded form, else the
+		// metrically compatible substitutes, the document's altName, a face of the same class)
 		wordMLPackage.setFontMapper(fontMapper);
 		
 		

@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import org.docx4j.Docx4J;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
-import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 
 import org.docx4j.fonts.Mapper;
@@ -114,8 +113,7 @@ public class ConvertOutViaFacade {
 		}
 		
 		// Set up font mapper (optional)
-//		Mapper fontMapper = new IdentityPlusMapper();  // Only for Windows, unless you have Microsoft's fonts installed
-		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
+		Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
 		wordMLPackage.setFontMapper(fontMapper);		
 		
 		// exporter writes to an OutputStream.		
