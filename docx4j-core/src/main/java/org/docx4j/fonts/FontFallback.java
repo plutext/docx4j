@@ -91,10 +91,16 @@ public class FontFallback {
 	public static boolean needsCoverage(int[] codePoints) {
 		if (codePoints==null) return false;
 		for (int cp : codePoints) {
-			if (isSymbol(cp)) return true;
+			if (isSymbol(cp) || isEmoji(cp)) return true;
 			if (!ALWAYS_COVERED.contains(scriptOf(cp))) return true;
 		}
 		return false;
+	}
+
+	/** U+1F000-U+1FAFF, the emoji blocks (COMMON, like the symbols, and like them a
+	 *  group of their own so the text beside one keeps its font).  @since 17.1.1 */
+	public static boolean isEmoji(int cp) {
+		return cp>=0x1F000 && cp<=0x1FAFF;
 	}
 
 	/**
@@ -119,10 +125,14 @@ public class FontFallback {
 	/** The key the coverage pass groups a code point under: its script, except that the
 	 *  symbol blocks are their own group.  @since 17.1.0 */
 	public static String coverageGroupOf(int cp) {
-		return isSymbol(cp) ? SYMBOL_GROUP : scriptOf(cp).name();
+		if (isSymbol(cp)) return SYMBOL_GROUP;
+		if (isEmoji(cp)) return EMOJI_GROUP;
+		return scriptOf(cp).name();
 	}
 
 	public static final String SYMBOL_GROUP = "SYMBOL";
+	/** @since 17.1.1 */
+	public static final String EMOJI_GROUP = "EMOJI";
 
 	public static Character.UnicodeScript scriptOf(int cp) {
 		try {
@@ -477,9 +487,10 @@ public class FontFallback {
 	private static List<String> measuredForScript(String documentFontName, int[] codePoints) {
 
 		List<String> result = new ArrayList<String>();
-		boolean georgian = false, greek = false, symbol = false;
+		boolean georgian = false, greek = false, symbol = false, emoji = false;
 		for (int cp : codePoints) {
 			if (isSymbol(cp)) { symbol = true; continue; }
+			if (isEmoji(cp)) { emoji = true; continue; }
 			Character.UnicodeScript script = scriptOf(cp);
 			if (script==Character.UnicodeScript.GEORGIAN) georgian = true;
 			else if (script==Character.UnicodeScript.GREEK) greek = true;
@@ -491,6 +502,17 @@ public class FontFallback {
 		 * installed, Noto Sans Symbols 2 carries the geometric shapes, box drawing and
 		 * dingbats, Noto Sans Symbols the arrows and maths, and DejaVu Sans is the wide
 		 * net behind them.  @since 17.1.0 */
+		/* The emoji blocks: Word's face (CR-016 probe fonts-symbol-and-emoji (c)), then the
+		 * monochrome faces a Linux box may have; Noto Color Emoji is bitmap-only (CBDT) and
+		 * FOP cannot load it, so it never reaches PhysicalFonts.  @since 17.1.1 */
+		if (emoji) {
+			result.add("Segoe UI Emoji");
+			result.add("Noto Emoji");
+			result.add("Noto Emoji Regular");
+			result.add("Symbola");
+			result.add("Twemoji Mozilla");
+			result.add("OpenMoji");
+		}
 		if (symbol) {
 			result.add("Segoe UI Symbol");
 			result.add("Noto Sans Symbols 2 Regular");

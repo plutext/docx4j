@@ -56,10 +56,24 @@ public class RunFontSelectorIndicTest {
 					((R)p.getContent().get(0)).getRPr(),
 					(Text)XmlUtils.unwrap(((R)p.getContent().get(0)).getContent().get(0)));
 
-			assertEquals("paragraph " + i, 1, vis.spansCreated);
-			for (String font : vis.fontsUsed) {
-				assertEquals("paragraph " + i, expectedFonts[i], font);
+			/* Every stretch of Indic characters is one span in the cs font (FOP needs the
+			 * conjuncts and vowel signs together); the spaces between the words are ASCII
+			 * and take the ascii font, in a span of their own, as [MS-OI29500] 17.3.2.26
+			 * says and Word does (CR-016 phase 2; until 17.1.1 a space joined the span
+			 * before it, so the whole text was one span). */
+			String text = ((Text)XmlUtils.unwrap(((R)p.getContent().get(0)).getContent().get(0))).getValue();
+			int words = text.trim().split("\\s+").length;
+			int indicSpans = 0;
+			for (int k=0; k<vis.spanTexts.size(); k++) {
+				String spanText = vis.spanTexts.get(k);
+				boolean indic = false;
+				for (int c=0; c<spanText.length(); c++) if (spanText.charAt(c) > 0x7F) indic = true;
+				if (indic) {
+					indicSpans++;
+					assertEquals("paragraph " + i + " span " + k + " '" + spanText + "'", expectedFonts[i], vis.fontsUsed.get(k));
+				}
 			}
+			assertEquals("paragraph " + i + ": one span per Indic word", words, indicSpans);
 		}
 	}
 
@@ -145,12 +159,16 @@ public class RunFontSelectorIndicTest {
 
 	static class FontRecordingVisitor implements RunFontCharacterVisitor {
 
-		List<String> fontsUsed = new ArrayList<String>();
+		List<String> fontsUsed = new ArrayList<String>();   // one per span, in order
+		List<String> spanTexts = new ArrayList<String>();   // one per span, in order
 		int spansCreated = 0;
+		private StringBuilder current;
 
 		void reset() {
 			fontsUsed.clear();
+			spanTexts.clear();
 			spansCreated = 0;
+			current = null;
 		}
 
 		private org.w3c.dom.Document document;
@@ -167,17 +185,27 @@ public class RunFontSelectorIndicTest {
 		}
 
 		@Override
-		public void addCharacterToCurrent(char c) {}
+		public void addCharacterToCurrent(char c) {
+			if (current!=null) current.append(c);
+		}
 
 		@Override
-		public void addCodePointToCurrent(int cp) {}
+		public void addCodePointToCurrent(int cp) {
+			if (current!=null) current.appendCodePoint(cp);
+		}
 
 		@Override
-		public void finishPrevious() {}
+		public void finishPrevious() {
+			if (current!=null) {
+				spanTexts.add(current.toString());
+				current = null;
+			}
+		}
 
 		@Override
 		public void createNew() {
 			spansCreated++;
+			current = new StringBuilder();
 		}
 
 		@Override

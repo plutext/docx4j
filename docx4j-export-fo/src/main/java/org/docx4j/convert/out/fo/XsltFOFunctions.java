@@ -1606,12 +1606,36 @@ public class XsltFOFunctions {
 				String size = inheritedAttribute(el, "font-size");
 				String docFont = el.getAttribute(org.docx4j.fonts.RunFontSelector.HINT_FONT);
 				String key = family + "|" + size + "|" + lh + "|" + docFont;
-				long chars = el.getTextContent()==null ? 0 : el.getTextContent().length();
+				// the characters this inline draws itself - not those of a nested inline with
+				// a line-height of its own, which is counted on its own visit.  Since CR-016
+				// phase 2 a run's span holds every character sharing a document font, with
+				// the stretches the coverage pass substituted for nested inside it, so
+				// getTextContent() credited the span's font with the Greek its P052 inlines
+				// draw and the block took the wrong face (measured: the corpus's Greek
+				// document, 68 pages -> 69).
+				long chars = ownTextLength(el);
 				weights.computeIfAbsent(key, k -> new long[1])[0] += Math.max(1, chars);
 				attrs.putIfAbsent(key, new String[] { family, size, lh, docFont.length()==0 ? null : docFont });
 			}
 			collectRunFonts(el, weights, attrs);
 		}
+	}
+
+	/** The length of the text an element draws in its own font: its text nodes, and those
+	 *  of nested elements which carry no line-height (so no font choice) of their own. */
+	private static long ownTextLength(Element el) {
+		long n = 0;
+		NodeList children = el.getChildNodes();
+		for (int i=0; i<children.getLength(); i++) {
+			Node c = children.item(i);
+			if (c.getNodeType()==Node.TEXT_NODE) {
+				n += c.getNodeValue()==null ? 0 : c.getNodeValue().length();
+			} else if (c instanceof Element) {
+				String lh = ((Element)c).getAttribute("line-height");
+				if (lh==null || !lh.endsWith("pt")) n += ownTextLength((Element)c);
+			}
+		}
+		return n;
 	}
 
 	/** The attribute on this element or its nearest ancestor within the fragment (font-size

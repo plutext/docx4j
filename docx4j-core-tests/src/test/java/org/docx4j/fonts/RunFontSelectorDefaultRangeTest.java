@@ -1,7 +1,6 @@
 package org.docx4j.fonts;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
@@ -23,8 +22,13 @@ import org.w3c.dom.Element;
  * for every one of its characters.  Until 17.0.5 that branch reset the current range
  * to an empty one, so each character started a new fo:inline: a Georgian word came
  * out as one span per letter, which also stopped FOP kerning and letter-spacing
- * across the letters.  Consecutive characters of such a script now share a span,
- * while a character of a listed range still starts a new one.
+ * across the letters.  Consecutive characters of such a script share a span.
+ *
+ * <p>Since 17.1.1 (CR-016 phase 2) a span is cut where the chosen font changes or
+ * where the script changes between two non-shared characters, not where a character's
+ * range does: the Cyrillic beside a Georgian word is its own span though both are
+ * hAnsi's, a run whose ascii and hAnsi fonts differ is cut between its Latin and its
+ * Georgian, and Latin with its accents and punctuation is one span.</p>
  *
  * @since 17.0.5
  */
@@ -33,6 +37,7 @@ public class RunFontSelectorDefaultRangeTest {
 	private static final String GEORGIAN = "გამარჯობა";
 	private static final String CYRILLIC = "да";
 	private static final String DOC_FONT = "Times New Roman";
+	private static final String OTHER_FONT = "Arial";
 
 	@Test
 	public void testGeorgianWordIsOneInline() throws Exception {
@@ -42,40 +47,52 @@ public class RunFontSelectorDefaultRangeTest {
 	}
 
 	@Test
-	public void testGeorgianWordsShareASpanAcrossASpace() throws Exception {
-		assertEquals(1, spans(GEORGIAN + " " + GEORGIAN).length);
+	public void testTheSpaceBetweenGeorgianWordsKeepsTheDocumentFont() throws Exception {
+		// the dispatch gives the phrase one span (one font, one script; the space is
+		// shared); where the document font lacks Georgian, the coverage pass then puts
+		// each word in a covering face and leaves the space in the document font's own,
+		// whose width Word uses (Sylfaen's space is 0.250em, measured on the corpus's
+		// Georgian golden; the substitute's is 0.286) - so three spans, or one where the
+		// document font has Georgian itself
+		Element[] spans = spans(GEORGIAN + " " + GEORGIAN);
+		if (spans.length == 1) {
+			assertEquals(GEORGIAN + " " + GEORGIAN, spans[0].getTextContent());
+		} else {
+			assertEquals(3, spans.length);
+			assertEquals(GEORGIAN, spans[0].getTextContent());
+			assertEquals(" ", spans[1].getTextContent());
+			assertEquals(GEORGIAN, spans[2].getTextContent());
+			assertEquals(spans[0].getAttribute("font-family"), spans[2].getAttribute("font-family"));
+		}
 	}
 
 	@Test
-	public void testListedRangeStillStartsANewInline() throws Exception {
+	public void testAScriptChangeStillCuts() throws Exception {
+		// Georgian and Cyrillic share the hAnsi font but not a script: two spans, so that
+		// the coverage pass substitutes each as one top-level span
 		Element[] spans = spans(GEORGIAN + CYRILLIC);
-		assertEquals("Cyrillic is a listed range and must not join the Georgian span",
-				2, spans.length);
+		assertEquals(2, spans.length);
 		assertEquals(GEORGIAN, spans[0].getTextContent());
 		assertEquals(CYRILLIC, spans[1].getTextContent());
 	}
 
-	/** The gap must never overlap a range the dispatch lists. */
 	@Test
-	public void testDefaultRangeStaysInsideItsGap() {
-		for (int i = 0; i <= 0xFFFF; i++) {
-			char c = (char) i;
-			char[] r = RunFontSelector.defaultRange(c);
-			assertTrue("0x" + Integer.toHexString(i), r[0] <= c && c <= r[1]);
-		}
-		char[] georgian = RunFontSelector.defaultRange('ა');
-		assertEquals('Ⴀ', georgian[0]);
-		assertEquals('ჿ', georgian[1]);
-		// a listed character gets only itself, so it can never widen a gap
-		char[] listed = RunFontSelector.defaultRange('a');
-		assertEquals('a', listed[0]);
-		assertEquals('a', listed[1]);
+	public void testDifferentFontsStillCut() throws Exception {
+		// ascii and hAnsi name different fonts: Latin (ascii) and Georgian (hAnsi) are two spans
+		Element[] spans = spans("abc " + GEORGIAN, DOC_FONT, OTHER_FONT);
+		assertEquals(2, spans.length);
+		assertEquals("abc ", spans[0].getTextContent());
+		assertEquals(GEORGIAN, spans[1].getTextContent());
 	}
 
 	private Element[] spans(String text) throws Exception {
+		return spans(text, DOC_FONT, DOC_FONT);
+	}
+
+	private Element[] spans(String text, String ascii, String hAnsi) throws Exception {
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
-		Document document = (Document)XmlUtils.unmarshalString(documentXML(text));
+		Document document = (Document)XmlUtils.unmarshalString(documentXML(text, ascii, hAnsi));
 		wordMLPackage.getMainDocumentPart().setJaxbElement(document);
 
 		RunFontSelector rfs = createRunFontSelector(wordMLPackage);
@@ -92,10 +109,10 @@ public class RunFontSelectorDefaultRangeTest {
 		return result.toArray(new Element[0]);
 	}
 
-	private String documentXML(String text) {
+	private String documentXML(String text, String ascii, String hAnsi) {
 		return "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body>"
 				+ "<w:p><w:r><w:rPr>"
-				+ "<w:rFonts w:ascii=\"" + DOC_FONT + "\" w:hAnsi=\"" + DOC_FONT + "\"/>"
+				+ "<w:rFonts w:ascii=\"" + ascii + "\" w:hAnsi=\"" + hAnsi + "\"/>"
 				+ "</w:rPr><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:p>"
 				+ "</w:body></w:document>";
 	}

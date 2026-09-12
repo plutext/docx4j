@@ -837,7 +837,9 @@ public class RunFontSelector {
     	if (outputType!=RunFontActionType.XSL_FO || !(fragment instanceof DocumentFragment)) {
     		return fragment;
     	}
-    	for (Node n = ((DocumentFragment)fragment).getFirstChild(); n!=null; n = n.getNextSibling()) {
+    	java.util.List<Node> spans = new java.util.ArrayList<Node>();
+    	for (Node n = ((DocumentFragment)fragment).getFirstChild(); n!=null; n = n.getNextSibling()) spans.add(n);
+    	for (Node n : spans) {
     		if (n instanceof Element) {
     			try {
     				glyphFallback((Element)n);
@@ -891,29 +893,46 @@ public class RunFontSelector {
     		chosen.put(e.getKey(), fallbackFor(documentFont, e.getKey(), e.getValue()));
     	}
 
-    	// assign a font per code point; a shared character (space, digit, punctuation) goes
-    	// with what precedes it, so a Georgian phrase doesn't come apart at its spaces
+    	/* Assign a font per code point.  A character the span's font covers keeps it, a
+    	 * shared character (a space, a digit, punctuation, a dot leader) included: Word
+    	 * draws it in the run's font (measured, CR-016: the space between two MS Gothic
+    	 * words is Carlito's 2.6pt at 12pt, not MS Gothic's 6; and Sylfaen's space is
+    	 * 0.250em, Tinos's, where the substitute for its Georgian, DejaVu Serif Condensed,
+    	 * has 0.286 - the 17.1.0 rule that sent a covered shared character with the
+    	 * substitute before it set the corpus's Greek document's dot leaders in P052 and
+    	 * cost it a page once the dispatch stopped cutting them into a span of their own).
+    	 * An uncovered shared character takes its neighbours' substitute where that has it
+    	 * (the ideographic comma, probe fonts-space-cjk (c)). */
     	PhysicalFont[] assigned = new PhysicalFont[cps.length];
     	PhysicalFont previous = null;
     	boolean any = false;
+    	boolean anyCoveredKept = false; // something the span's font draws itself
     	for (int i=0; i<cps.length; i++) {
     		String group = FontFallback.coverageGroupOf(cps[i]);
     		PhysicalFont pf;
     		if (covered[i]) {
-    			pf = isShared(group) ? previous : null;
-    			if (pf!=null && !GlyphCheck.hasCodepoint(pf, cps[i])) pf = null;
+    			pf = null;
+    			anyCoveredKept = true;
+    		} else if (isShared(group) && previous!=null && GlyphCheck.hasCodepoint(previous, cps[i])) {
+    			// an uncovered shared character (an ideographic comma between CJK words) goes
+    			// with its neighbours' substitute, not with whichever installed face covers it
+    			// first by name (Noto Sans Mongolian, measured: CR-016 probe fonts-space-cjk (c))
+    			pf = previous;
     		} else {
     			pf = chosen.get(group);
     		}
     		assigned[i] = pf;
     		if (pf!=null) any = true;
-    		// a symbol does not carry the space after it into the symbol font: the run
+    		// a symbol or an emoji does not carry the space after it into its font: the run
     		// around it is ordinary text, and its space is that text's
-    		previous = FontFallback.SYMBOL_GROUP.equals(group) ? null : pf;
+    		previous = (FontFallback.SYMBOL_GROUP.equals(group) || FontFallback.EMOJI_GROUP.equals(group)) ? null : pf;
     	}
     	if (!any) return;
 
-    	// the common case: one substitute, and it can render the whole span
+    	// the common case: one substitute, nothing the span's own font drew, and the
+    	// substitute can render the whole span (a span now holds every character of the
+    	// run that shares a document font, Latin beside CJK, so the shortcut must not
+    	// take the characters the font did cover along with it)
     	PhysicalFont single = null;
     	boolean one = true;
     	for (PhysicalFont pf : assigned) {
@@ -921,29 +940,35 @@ public class RunFontSelector {
     		if (single==null) single = pf;
     		else if (single!=pf) { one = false; break; }
     	}
-    	if (one && single!=null && FontFallback.covers(single, cps)) {
+    	if (one && single!=null && !anyCoveredKept && FontFallback.covers(single, cps)) {
     		setFallbackFamily(span, documentFont, single, kerned);
     		return;
     	}
 
-    	// mixed: wrap each stretch which needs a substitute in an inline of its own
-    	Document doc = span.getOwnerDocument();
-    	java.util.List<Node> children = new java.util.ArrayList<Node>();
+    	/* Mixed: one span per stretch, each a sibling cloned from the original (its
+    	 * line-height, hint and the rest), the substituted ones renamed - the structure the
+    	 * range cut used to produce for such text, and the one the block-font choice and
+    	 * FOP's line stacking were measured on.  Until 17.1.1 the stretches were nested
+    	 * inside the original span; measured on the corpus's Greek document once the
+    	 * dispatch joined Latin, Greek and leaders in one span, the nesting cost a page. */
+    	java.util.List<Node> siblings = new java.util.ArrayList<Node>();
     	StringBuilder seg = new StringBuilder();
     	PhysicalFont segFont = assigned[0];
     	for (int i=0; i<cps.length; i++) {
     		if (assigned[i]!=segFont) {
-    			children.add(segmentNode(doc, span, seg.toString(), segFont, documentFont, kerned));
+    			siblings.add(segmentSpan(span, seg.toString(), segFont, documentFont, kerned));
     			seg.setLength(0);
     			segFont = assigned[i];
     		}
     		seg.appendCodePoint(cps[i]);
     	}
     	if (seg.length()>0) {
-    		children.add(segmentNode(doc, span, seg.toString(), segFont, documentFont, kerned));
+    		siblings.add(segmentSpan(span, seg.toString(), segFont, documentFont, kerned));
     	}
-    	while (span.getFirstChild()!=null) span.removeChild(span.getFirstChild());
-    	for (Node c : children) span.appendChild(c);
+    	Node parent = span.getParentNode();
+    	if (parent==null) return;
+    	for (Node c : siblings) parent.insertBefore(c, span);
+    	parent.removeChild(span);
     }
 
     /** Characters a script shares with its neighbours (spaces, digits, punctuation). */
@@ -952,15 +977,14 @@ public class RunFontSelector {
     			|| Character.UnicodeScript.INHERITED.name().equals(coverageGroup);
     }
 
-    private Node segmentNode(Document doc, Element span, String text, PhysicalFont pf,
-    		String documentFont, boolean kerned) {
+    /** A copy of the span (its attributes, none of its content) holding this stretch, in
+     *  the substitute where there is one and in the span's own font where there is not. */
+    private Element segmentSpan(Element span, String text, PhysicalFont pf, String documentFont, boolean kerned) {
 
-    	if (pf==null) return doc.createTextNode(text);
-    	Element inline = doc.createElementNS(span.getNamespaceURI(),
-    			(span.getPrefix()==null ? "" : span.getPrefix() + ":") + "inline");
-    	setFallbackFamily(inline, documentFont, pf, kerned);
-    	inline.appendChild(doc.createTextNode(text));
-    	return inline;
+    	Element copy = (Element)span.cloneNode(false);
+    	if (pf!=null) setFallbackFamily(copy, documentFont, pf, kerned);
+    	copy.appendChild(span.getOwnerDocument().createTextNode(text));
+    	return copy;
     }
 
     private void setFallbackFamily(Element el, String documentFont, PhysicalFont pf, boolean kerned) {
@@ -1352,14 +1376,15 @@ public class RunFontSelector {
 		// Symbol handling
 		// @since 11.5.5
 		if (rFonts.getHAnsi()!=null) {  
-			String actualFontName = rFonts.getHAnsi();
-			if (actualFontName.equals("Symbol") || actualFontName.equals("Webdings") || actualFontName.equals("Wingdings") || actualFontName.equals("Wingdings 2") || actualFontName.equals("Wingdings 3") ) {
+			// by the canonical name: font names are case-insensitive (Word draws 'symbol' with
+			// Symbol; CR-016 probe fonts-symbol-and-emoji (a), (b)), and the mapper lower-cases
+			String actualFontName = symbolFontName(rFonts.getHAnsi());
+			if (actualFontName!=null) {
 				// For these fonts, we depart from the general approach outline in the class comment above,
 				// and map the char to a known Unicode replacement.
     			Element	span = createElement(document);
     			if (span!=null) {
     				// It will be null in MainDocumentPart$FontAndStyleFinder case
-	    			document.appendChild(span); 
 	    			
 	    			StringBuffer sb = new StringBuffer();
 	    			
@@ -1397,8 +1422,16 @@ public class RunFontSelector {
 		    			}
 	    			);
 	    			
-	    			span.setTextContent(sb.toString());  
-	    			this.symbolSetAttribute(span, actualFontName, span.getTextContent() ); 
+	    			/* One span per stretch the same substitute face can draw: the Wingdings
+	    			 * ranges are split across two substitutes (PhysicalFonts.getWDingsFont and
+	    			 * getWDingsFont2), and until 17.1.1 the first code point chose the face for
+	    			 * the whole run. */
+	    			for (String segment : symbolSegments(actualFontName, sb.toString())) {
+	    				Element seg = (segment==null) ? span : createElement(document);
+	    				document.appendChild(seg);
+	    				seg.setTextContent(segment==null ? sb.toString() : segment);
+	    				this.symbolSetAttribute(seg, actualFontName, seg.getTextContent());
+	    			}
     			}
     			if (outputType== RunFontActionType.DISCOVERY) {
     				vis.fontAction(actualFontName);
@@ -1556,6 +1589,48 @@ public class RunFontSelector {
 	    		 eastAsia,  ascii,  hAnsi,  cs );
     }
     
+    /** The canonical name of one of the fonts SymbolMapper knows, whatever case the
+     *  document wrote it in; null for any other font. */
+    static String symbolFontName(String documentFontName) {
+    	if (documentFontName==null) return null;
+    	for (String known : new String[] { "Symbol", "Webdings", "Wingdings", "Wingdings 2", "Wingdings 3" }) {
+    		if (known.equalsIgnoreCase(documentFontName.trim())) return known;
+    	}
+    	return null;
+    }
+
+    /**
+     * The mapped text of a symbol-font run cut where the substitute face changes; a
+     * single null element where one face draws it all (or the output is not XSL FO,
+     * where no substitute is chosen here).
+     */
+    private java.util.List<String> symbolSegments(String fontName, String mapped) {
+    	java.util.List<String> one = java.util.Collections.singletonList(null);
+    	if (outputType!=RunFontActionType.XSL_FO || mapped==null || mapped.isEmpty()) return one;
+    	PhysicalFont pf = fontName.equals("Symbol") ? PhysicalFonts.getSymbolFont() : PhysicalFonts.getWDingsFont();
+    	PhysicalFont pf2 = fontName.equals("Symbol") ? null : PhysicalFonts.getWDingsFont2();
+    	if (pf==null || pf2==null) return one;
+    	java.util.List<String> segments = new java.util.ArrayList<String>();
+    	StringBuilder seg = new StringBuilder();
+    	Boolean segInFirst = null;
+    	try {
+    		for (int i=0; i<mapped.length(); i=mapped.offsetByCodePoints(i, 1)) {
+    			int cp = mapped.codePointAt(i);
+    			boolean inFirst = GlyphCheck.hasCodepoint(pf, cp) || !GlyphCheck.hasCodepoint(pf2, cp);
+    			if (segInFirst!=null && inFirst!=segInFirst) {
+    				segments.add(seg.toString());
+    				seg.setLength(0);
+    			}
+    			segInFirst = inFirst;
+    			seg.appendCodePoint(cp);
+    		}
+    	} catch (ExecutionException e) {
+    		return one;
+    	}
+    	if (seg.length()>0) segments.add(seg.toString());
+    	return segments.size()<=1 ? one : segments;
+    }
+
     private int translateUnicode2SingleByte(int cp) {
 
 		switch (cp) {
@@ -1592,692 +1667,238 @@ public class RunFontSelector {
 
 
 	private boolean contains(String langEastAsia, String lang) {
-    	
     	// eg <w:lang w:eastAsia="zh-CN" .. />
     	if (langEastAsia==null) return false;
-    	
     	return langEastAsia.contains(lang);
     }
 
 	private static String EMOJI_FONT=null;
 	private static String getEmojiFont() {
-		
+
 		if (EMOJI_FONT==null) {
 			EMOJI_FONT = Docx4jProperties.getProperty("docx4j.fonts.RunFontSelector.EmojiFont");
 		}
 		return EMOJI_FONT;
 	}
-    
+
+	/** The emoji blocks - Mahjong, Domino and Playing Card tiles, the enclosed
+	 *  alphanumerics and ideographs, Miscellaneous Symbols and Pictographs, Emoticons,
+	 *  Transport and Map, the supplemental and extended symbol blocks (U+1F000-U+1FAFF).
+	 *  Word sets them in Segoe UI Emoji (CR-016 probe fonts-symbol-and-emoji (c)).
+	 *  @since 17.1.1 */
+	static boolean isEmoji(int cp) {
+		return cp>=0x1F000 && cp<=0x1FAFF;
+	}
+
+    /**
+     * Walk the text, choosing a font for each code point ({@link #fontFor}) and building
+     * one span per stretch of characters that share a font: a character joins the span
+     * being built when it is assigned the same font, whatever its range.
+     *
+     * <p>Until 17.1.1 spans were cut by <em>range</em> (a character joined the span while
+     * it fell in the range the previous one had been dispatched by), which cut a Latin
+     * run at every exception character, sent a space to the East Asian font of the word
+     * before it, and - the Latin-1 branch having reset the range to ASCII - kept the
+     * ASCII letters after an accented one in the hAnsi font.  Joining by chosen font gives
+     * the same span for the same font, and one span for a stretch of the same font
+     * however many ranges it crosses, which FOP kerns and letter-spaces as one.</p>
+     */
     private Object unicodeRangeToFont(String text, STHint hint, String langEastAsia,
     		String eastAsia, String ascii, String hAnsi, String cs) {
-    	
-//    	String hAnsi = hAnsiActual;
-//		if (hAnsi==null) {
-//			log.debug("No value for hAnsi, using default font");
-//			hAnsi = this.getDefaultFont();				
-//		}
-    	
-    	// See http://stackoverflow.com/questions/196830/what-is-the-easiest-best-most-correct-way-to-iterate-through-the-characters-of-a
-    	// and http://stackoverflow.com/questions/8894258/fastest-way-to-iterate-over-all-the-chars-in-a-string
-    	
-    	/* The range dispatch below follows the table in [MS-OI29500] section 17.3.2.26 (see
-    	 * the class javadoc for the reference), validated against it on 2026-08-19.
-    	 * Known deliberate divergences from that table:
-    	 * - the Indic, Thai, Lao, Myanmar and Khmer ranges use cs, not the table's hAnsi,
-    	 *   because that is what Word actually does (issues 666 and 622);
-    	 * - U+2190-U+2BFF glyph-checks the font and substitutes a symbol font where the
-    	 *   glyph is missing, which is beyond the table (observed Word 2016 behaviour);
-    	 * - Hebrew/Arabic U+0590-U+07BF use a Times New Roman heuristic where the table
-    	 *   says ascii (real bidi runs take the cs path before reaching this method);
-    	 * - hint=eastAsia sends U+03D0-U+03FF and U+27C0-U+2E7F to eastAsia, where the
-    	 *   table (by omission) says hAnsi - contrived cases, kept for continuity;
-    	 * - the table's preamble rule (where eastAsia is "Times New Roman" and ascii equals
-    	 *   hAnsi, use ascii) is not implemented.
-    	 * The table covers 0000-FFFF; we also handle astral characters (those outside the
-    	 * Unicode Basic Multilingual Plane). */
-    	
-    	char currentRangeLower='\u0000';
-    	char currentRangeUpper='\u0000';
-    	    	
+
     	if (text==null) {
-    		return null; 
+    		return null;
     	}
+    	String currentFont = null;
+    	String currentScript = null; // of the span's last non-shared character
+    	boolean open = false;
     	for (int i = 0; i < text.length(); i=text.offsetByCodePoints(i, 1)){
-    		
-    	    char c = text.charAt(i);
-//    		int cp = text.codePointAt(i);
-    	    
-    	    if (Character.isHighSurrogate(c)) {
-    	    	
-    	    	// Populate previous span
-    	    	vis.finishPrevious();
-    	    	
-    	    	// Create new span
-    		    vis.createNew();
-    		    vis.setMustCreateNewFlag(false);
-    		    
-    		    // Set the font
-    		    if (getEmojiFont()==null) {
-    		    	// Default
-    		    	vis.fontAction(hAnsi);
-    		    } else {
-    		    	
-    		    	// we know what to do with an emoji
-    		    	
-    		    	// Is it an emoji?  
-        	    	/* Use this in next major release, or
-        	    	 * better, TODO, use via reflection if present
-	       	    	 *
-	       	    	 * 		<dependency>
-								  <groupId>com.vdurmont</groupId>
-								  <artifactId>emoji-java</artifactId>
-								  <version>5.1.1</version>
-								</dependency>
-	
-	       	    	 * 
-	       	    	if (EmojiManager.isEmoji(
-	       	    			new String(
-	       	    					Character.toChars(
-	       	    							text.codePointAt(i))))) {
-	       	    		
-	       	    	}
-    		    	// For now, a quick n dirty check
-	       	    	
-	       	    	*/
-        	    	if (c=='\uD83D' || c=='\uD83D' || c=='\uD83E') {
-        	    		
-        	    		log.debug("assuming emoji " + Integer.toHexString(c));
-        		    	
-        		    	try {
-							if (hasGlyph(hAnsi, c)) {
-								// TODO: doubt this works for high surrogate 
-								log.debug("present in " + hAnsi);
-								vis.fontAction(hAnsi);        		    		
-							} else {
-								vis.fontAction(getEmojiFont());        		    		        		    		
-							}
-						} catch (ExecutionException e) {
-							log.error(e.getMessage(), e);
-						}
-        	    	} else {
-        		    	// Default
-        		    	vis.fontAction(hAnsi);        	    		
-        	    	}
-    		    }
-				
-    	    	//vis.addCharacterToCurrent(c);
-				vis.addCodePointToCurrent(text.codePointAt(i));
-				
-				log.debug("added as code point");
-    	    	
-    	    	currentRangeLower='\u0000';
-    	    	currentRangeUpper='\u0000';    		    
-    	    }
-    	    else 
-    	    	
-    	    	if (vis.isReusable() && 
-    	    		(c==' ' ||
-    	    		(c>=currentRangeLower && c<=currentRangeUpper))) {
-    	    	// Add it to existing
-    	    	vis.addCharacterToCurrent(c);
-    	    } else {
-    	    	
-    	    	// Populate previous span
-    	    	vis.finishPrevious();
-    	    	
-    	    	// Create new span
-    		    vis.createNew();
-    		    vis.setMustCreateNewFlag(false);
-    		    
-//    		    System.out.println(c);    		    
-    		    
-    		    /* .. Basic Latin
-    		     * 
-    		     * http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/rFonts.html says 
-    		     * @ascii (or @asciiTheme) is used to format all characters in the ASCII range 
-    		     * (0 - 127)
-    		     */
-        	    if (c>='\u0000' && c<='\u007F') 
-        	    {
-        	    	vis.fontAction(ascii); 
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u0000';
-        	    	currentRangeUpper = '\u007F';
-        	    } else 
-    		    // ..  Latin-1 Supplement
-        	    if (c>='\u00A0' && c<='\u00FF') 
-        	    {
-        	    	/* hAnsi (or hAnsiTheme if defined), with the following exceptions:
-    					If hint is eastAsia, the following characters use eastAsia (or eastAsiaTheme if defined): A1, A4, A7 – A8, AA, AD, AF, B0 – B4, B6 – BA, BC – BF, D7, F7
-    					If hint is eastAsia and the language of the run is either Chinese Traditional or Chinese Simplified, the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
-    					*/
-
-	    			if (hint == STHint.EAST_ASIA
-	    					&& eastAsia !=null) {
-        	    	
-    	    			if ( c=='\u00A1' || c=='\u00A4' 
-	    					|| (c>='\u00A7' && c<='\u00A8')         	    					
-	    					|| c=='\u00AA' 
-	    	    			|| c=='\u00AD' // Known issues with soft hyphen
-	    					|| c=='\u00AF'          	    					
-	    					|| (c>='\u00B0' && c<='\u00B4')         	    					
-	    					|| (c>='\u00B6' && c<='\u00BA') 
-	    					|| (c>='\u00BC' && c<='\u00BF') 
-	    					|| c=='\u00D7' || c=='\u00F7' ) {
-
-                	    		// Don't use east asia unless hint tells us to!
-        	    				vis.fontAction(eastAsia);
-        	    				
-    	    			} else if (contains(langEastAsia, "zh") &&
-
-        	    			// the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
-        	    			 ( (c>='\u00E0' && c<='\u00E1')         	    					
-        	    					|| (c>='\u00E8' && c<='\u00EA')         	    					
-        	    					|| (c>='\u00EC' && c<='\u00ED')         	    					
-        	    					|| (c>='\u00F2' && c<='\u00F3')         	    					
-        	    					|| (c>='\u00F9' && c<='\u00FA') 
-        	    					|| c=='\u00FC'))  {
-        	    				vis.fontAction(eastAsia);
-     	    				
-    	    			}  else if (hAnsi!=null) {
-        	    			vis.fontAction(hAnsi);
-        	    				
-        	    		} else {
-                			vis.fontAction(getDefaultFont());
-    	    			}  
-        	    		
-        	    	} else if (hAnsi!=null) {        	    		
-	    				vis.fontAction(hAnsi);
-
-        	    	} else {
-
-        	    		// .. Ignore ascii and east Asia 
-        				vis.fontAction(getDefaultFont());
-        	    		
-        	    	}
-        	    	
-        	    	vis.addCharacterToCurrent(c);
-        		    vis.setMustCreateNewFlag(false);
-        	    	
-        	    	currentRangeLower = '\u0000';
-        	    	currentRangeUpper = '\u007F';
-        	    } else 
-    		    // ..  Latin Extended-A, Latin Extended-B, IPA Extensions
-        	    if (c>='\u0100' && c<='\u02AF') 
-        	    {
-        	    	/* hAnsi (or hAnsiTheme if defined), with the following exception:
-    					If hint is eastAsia, and the language of the run is either Chinese Traditional or Chinese Simplified, 
-    					or the character set of the eastAsia (or eastAsiaTheme if defined) font is Chinese5 or GB2312 
-    					then eastAsia (or eastAsiaTheme if defined) font is used.
-    					*/
-        	    	if (hint == STHint.EAST_ASIA) {
-        	    		if (contains(langEastAsia, "zh") ) {
-    	    				vis.fontAction(eastAsia);
-    	    			    vis.setMustCreateNewFlag(true);
-        	    			
-        	    		// else TODO: "or the character set of the eastAsia (or eastAsiaTheme if defined) font is Chinese5 or GB2312" 
-        	    		// fetch the character set!?
-        	    			
-        	    		} else {
-    	    				vis.fontAction(hAnsi);
-    	    			    vis.setMustCreateNewFlag(true);
-    	    			} 
-        	    	} else {
-        	    		// Usual case
-        				vis.fontAction(hAnsi);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u0100';
-        	    	currentRangeUpper = '\u02AF';
-        	    } else 
-        	    if (c>='\u02B0' && c<='\u04FF') 
-        	    {
-        	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia);
-        	    	} else {
-        	    		// Usual case
-        	    		vis.fontAction(hAnsi); // checked with russian/cyrillic
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u02B0';
-        	    	currentRangeUpper = '\u04FF';
-        	    }
-        	    else if (c>='\u0590' && c<='\u07BF') 
-        	    {
-        	    	try {
-        	    		
-        	    		// This is complex script range,
-        	    		// so should we be using it??  
-        	    		// Word doesn't seem to be in these edge cases
-        	    		// (note that most of the real cs cases should
-        	    		//  be handled without this method being invoked)
-        	    		
-        	    		// Word doesn't use Arial Unicode MS (where specified),
-        	    		// so I assume it wouldn't use most other fonts either
-
-        	    		// It often uses TNR, so the following is good enough...
-        	    		// (NB the [MS-OI29500] table says ascii for 0590-07BF)
-						if (hasGlyph("Times New Roman", c)) {
-							vis.fontAction("Times New Roman");        	    		
-						}
-						
-					} catch (ExecutionException e) {
-						log.error(e.getMessage(), e);
-					}
-        	    	
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u0590';
-        	    	currentRangeUpper = '\u07BF';
-        	    }
-        	    /* The Indic, Thai, Lao, Myanmar and Khmer ranges below are complex
-        	     * script ranges not listed in the [MS-OI29500] table
-        	     * (which says hAnsi for unlisted ranges), but Word formats them
-        	     * with the cs (or cstheme if defined) font.  See issues 666 and 622.
-        	     * Setting currentRange also keeps consecutive characters in a
-        	     * single span, which FOP needs in order to shape them correctly. */
-        	    else if (c>='\u0900' && c<='\u0DFF')
-        	    {
-        	    	// The Indic scripts: Devanagari, Bengali, Gurmukhi, Gujarati,
-        	    	// Oriya, Tamil, Telugu, Kannada, Malayalam, Sinhala
-        	    	// (contiguous blocks, and the font action is the same,
-        	    	// so one range suffices)
-    				vis.fontAction(cs==null ? hAnsi : cs);
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u0900';
-        	    	currentRangeUpper = '\u0DFF';
-        	    }
-        	    else if (c>='\u0E00' && c<='\u0E7F')
-        	    {
-        	    	// Thai
-    				vis.fontAction(cs==null ? hAnsi : cs);
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u0E00';
-        	    	currentRangeUpper = '\u0E7F';
-        	    }
-        	    else if (c>='\u0E80' && c<='\u0EFF')
-        	    {
-        	    	// Lao
-    				vis.fontAction(cs==null ? hAnsi : cs);
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u0E80';
-        	    	currentRangeUpper = '\u0EFF';
-        	    }
-        	    else if (c>='\u1000' && c<='\u109F')
-        	    {
-        	    	// Myanmar
-    				vis.fontAction(cs==null ? hAnsi : cs);
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u1000';
-        	    	currentRangeUpper = '\u109F';
-        	    }
-        	    else if (c>='\u1100' && c<='\u11FF')
-        	    {
-        	    	if (eastAsia==null) {
-        	    		vis.fontAction("Gungsuh"); // TODO what if not present?
-        	    			// Why is it not found?  Its in batang.ttc
-        	    	} else {        	    	
-        	    		vis.fontAction(eastAsia);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u1100';
-        	    	currentRangeUpper = '\u11FF';
-        	    }
-        	    else if (c>='\u1780' && c<='\u17FF')
-        	    {
-        	    	// Khmer; see comment above (issue 666)
-    				vis.fontAction(cs==null ? hAnsi : cs);
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u1780';
-        	    	currentRangeUpper = '\u17FF';
-        	    }
-        	    else if (c>='\u19E0' && c<='\u19FF')
-        	    {
-        	    	// Khmer Symbols
-    				vis.fontAction(cs==null ? hAnsi : cs);
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u19E0';
-        	    	currentRangeUpper = '\u19FF';
-        	    } else if (c>='\u1E00' && c<='\u1EFF')
-        	    {
-        	    	if (hint == STHint.EAST_ASIA) {
-        	    		if (contains(langEastAsia, "zh") ) {
-    	    				vis.fontAction(eastAsia);	
-        	    		} else {
-    	    				vis.fontAction(hAnsi);
-    	    			} 
-        	    	} else {
-        	    		// Usual case
-        				vis.fontAction(hAnsi);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u1E00';
-        	    	currentRangeUpper = '\u1EFF';
-        	    }
-        	    /* U+2000-U+218F: General Punctuation (the curly quotes, the en and em dashes,
-        	     * the ellipsis, the bullet), Superscripts and Subscripts, Currency Symbols,
-        	     * Combining Diacritical Marks for Symbols, Letterlike Symbols, Number Forms.
-        	     * Ordinary text, which Word renders in the run's own font, so no glyph check
-        	     * here (until 17.0.4 this range was handled with the symbol blocks below, so a
-        	     * quotation mark the font lacked was set in a symbol font).  The whole-block
-        	     * hint=eastAsia handling matches the [MS-OI29500] table: it has no
-        	     * per-character exception lists for these blocks. */
-        	    else if (c>='\u2000' && c<='\u218F')
-        	    {
-        	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia);
-        	    	} else {
-        	    		// Usual case
-        	    		vis.fontAction(hAnsi);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u2000';
-        	    	currentRangeUpper = '\u218F';
-        	    }
-        	    /* U+2190-U+2BFF: the symbol blocks - Arrows, Mathematical Operators,
-        	     * Miscellaneous Technical, Control Pictures, OCR, Enclosed Alphanumerics,
-        	     * Box Drawing, Block Elements, Geometric Shapes, Miscellaneous Symbols,
-        	     * Dingbats, the supplemental arrow/math blocks, Braille.  Here a text font
-        	     * often lacks the glyph, so ask, and look for a substitute where it hasn't.
-        	     * (The substitution is beyond the [MS-OI29500] table, which just says hAnsi,
-        	     * or eastAsia on hint; it reflects observed Word 2016 behaviour.) */
-        	    else if (c>='\u2190' && c<='\u2BFF')
-        	    {
-        	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia);
-        	    	} else {
-        	    		// eg <w:rFonts w:ascii="Arial Unicode MS" w:hAnsi="Arial Unicode MS"
-        	    		//              w:eastAsia="Arial Unicode MS" w:cs="Arial Unicode MS"/>
-        	    		if (hAnsi==null) {
-        	    			log.warn("TODO: how to handle char '" + c + "' lacking hAnsi?");
-        	    		} else {
-
-        	    			try {
-        						if (hasGlyph(hAnsi, c)) {
-        							vis.fontAction(hAnsi);
-        						} else {
-
-        							// Note: what follows is based on what Word 2016
-        							// does for Calibri 0x2751 (checkbox)
-    								// but TODO explore what it does for the other symbol blocks
-
-        							// Microsoft Word 2016 uses Segoe UI Symbol
-        							// (earlier versions used MS Gothic?)
-
-        							final String FONT_WORD_2016_USES = "Segoe UI Symbol";
-                	    			Mapper fontMapper = wordMLPackage.getFontMapper();
-                	    			PhysicalFont gothicSubs = fontMapper.get(FONT_WORD_2016_USES);
-                	    			// You'll need to map a suitable font.
-                	    			// Glyph 10065 (0x2751) not available in font Noto Sans Regular
-                	    			// What we want is a dingbat font
-                	    			// It doesn't seem to be in Noto Sans Symbols,
-                	    			// but it is in DejaVu Sans.
-                	    			// Google eg: "Lower right shadowed white square" font
-                	    			// It is in Segoe UI Symbol, Wing Dings
-
-        							if (gothicSubs!=null && GlyphCheck.hasChar(gothicSubs, c)) {
-	        							vis.fontAction(FONT_WORD_2016_USES);
-	        						} else {
-	        							/* Segoe UI Symbol is a Windows face, so on any other box
-	        							 * this was the end of it: no fontAction at all, so the
-	        							 * character took whatever font the span already had, no
-	        							 * span carried a font-family for the glyph-coverage pass
-	        							 * to work on (glyphFallback returns early without one),
-	        							 * and FOP painted its NOT_FOUND glyph, '#'.  Naming the
-	        							 * run's own font still gets the span a family, and the
-	        							 * coverage pass then substitutes a face which has the
-	        							 * glyph - the same measured order the Wingdings bullets
-	        							 * use (FontFallback.isSymbol).  @since 17.0.6 */
-	        							vis.fontAction(hAnsi);
-	                	    			/* In the discovery pass we are only collecting font names, and
-	                	    			 * nothing can be resolved yet anyway: fontsInUse() runs before
-	                	    			 * processEmbeddings and populateFontMappings (see
-	                	    			 * WordprocessingMLPackage.setFontMapper), so every font looks
-	                	    			 * missing.  The conversion pass makes the real decision.
-	                	    			 * See the TODO in WordprocessingMLPackage.setFontMapper.
-	                	    			 * @since 17.0.3 */
-	                	    			String msg = "TODO: how to handle char '" + c + "' (0x" + Integer.toHexString(c)
-	                	    					+ ") in range c>='\\u2190' && c<='\\u2BFF'? hAnsi=" + hAnsi
-	                	    					+ ", which maps to " + physicalFontFor(hAnsi);
-	                	    			if (outputType==RunFontActionType.DISCOVERY) {
-	                	    				log.debug(msg + " (discovery pass; ignore)");
-	                	    			} else {
-	                	    				log.warn(msg);
-	                	    			}
-	        						}
-        						}
-
-        					} catch (ExecutionException e) {
-        						log.error(e.getMessage(), e);
-        					}
-        	    		}         	    	}
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u2190';
-        	    	currentRangeUpper = '\u2BFF';
-        	    }
-        	    /* U+2C00-U+2EFF: scripts and punctuation again - Glagolitic, Latin
-        	     * Extended-C, Coptic, Georgian Supplement, Tifinagh, Ethiopic Extended,
-        	     * Cyrillic Extended-A, Supplemental Punctuation, CJK Radicals Supplement -
-        	     * so ordinary text handling, as for U+2000-U+218F above. */
-        	    else if (c>='\u2C00' && c<='\u2EFF')
-        	    {
-        	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia);
-        	    	} else {
-        	    		// Usual case
-        	    		vis.fontAction(hAnsi);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-
-        	    	currentRangeLower = '\u2C00';
-        	    	currentRangeUpper = '\u2EFF';
-        	    }
-        	    else if (c>='\u2F00' && c<='\uDFFF') 
-        	    {
-        	    	/*
-        	    	 * NB, with contrived cases using
-        	    	 * Arial Unicode MS, Word substitutes
-        	    	 * fonts, including:
-        	    	 * - Meiryo
-        	    	 * - PMingLiU
-        	    	 * - Batang
-        	    	 * - MS Mincho
-        	    	 * depending on the char
-        	    	 */
-        	    	
-        	    	if (eastAsia==null) {
-        	    		
-	    				vis.fontAction(hAnsi); 
-	    				debugCheckGlyph(hAnsi, c);
-
-        	    	} else {
-        	    		// Japanese
-            	    	// 2014 02 18 - not necessarily!
-            	    	// eg 五、劳动报酬 is Chinese
-	    				vis.fontAction(eastAsia); 
-	    				debugCheckGlyph(eastAsia, c);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\u2F00';
-        	    	currentRangeUpper = '\uDFFF';
-        	    }
-        	    else if (c>='\uE000' && c<='\uF8FF') 
-        	    {
-        	    	
-        	    	/* NB, in contrived cases using
-        	    	 * Arial Unicode MS, 
-        	    	 * Word is generally unable to substitute 
-        	    	 * a suitable font!
-        	    	 */ 
-        	    	
-        	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia); 
-        	    	} else {
-        	    		// Usual case
-        	    		
-        	    		// F000 to F0FF expect to use symbol fonts
-        	    		if (hAnsi==null) {
-							log.warn("TODO: how to handle char '" + c + "' (0x"
-			                    + Integer.toHexString(c) 
-			                    + ") lacking hAnsi?");	        	    			
-        	    		} else {
-    	    				vis.fontAction(hAnsi); 										
-    	    				debugCheckGlyph(hAnsi, c);
-						}
-        	    	}
-        	    		
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\uE000';
-        	    	currentRangeUpper = '\uF8FF';
-        	    }
-        	    else if (c>='\uF900' && c<='\uFAFF') 
-        	    {
-    				vis.fontAction(eastAsia); 
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\uF900';
-        	    	currentRangeUpper = '\uFAFF';
-        	    } else 
-    		    // ..  Alphabetic Presentation Forms
-        	    if (c>='\uFB00' && c<='\uFB4F') 
-        	    {
-        	    	/* hAnsi (or hAnsiTheme if defined), with the following exceptions:
-        	    	 * 
-    							If the hint is eastAsia then eastAsia (or eastAsiaTheme if defined) is used for characters in the range FB00 – FB1C.
-    							For the range FB1D – FB4F, ascii (or asciiTheme if defined) is used.
-    					*/
-        	    	if (hint == STHint.EAST_ASIA) {
-    	    			if ( c>='\uFB00' && c<='\uFB1C') {
-    	    				vis.fontAction(eastAsia);
-    	    			    vis.setMustCreateNewFlag(true);
-    	    			} else {
-    	    				vis.fontAction(hAnsi);
-    	    			}
-        	    			
-        	    	} else if ( c>='\uFB1D' && c<='\uFB4F') {
-        	    				
-        				vis.fontAction(ascii);
-        			    vis.setMustCreateNewFlag(true);
-        				
-        	    	} else {
-        				vis.fontAction(hAnsi);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\uFB00';
-        	    	currentRangeUpper = '\uFB4F';
-        	    } else if (c>='\uFB50' && c<='\uFDFF') {
-    				    vis.fontAction(ascii);
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\uFB50';
-        	    	currentRangeUpper = '\uFDFF';	
-        	    } else if (c>='\uFE30' && c<='\uFE6F') {
-    				vis.fontAction(eastAsia); 
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\uFE30';
-        	    	currentRangeUpper = '\uFE6F';	
-        	    } else if (c>='\uFE70' && c<='\uFEFE') {
-    				vis.fontAction(ascii); 
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\uFE70';
-        	    	currentRangeUpper = '\uFEFE';	
-        	    } else if (c>='\uFF00' && c<='\uFFEF') {
-        	    	
-        	    	if (eastAsia==null) {
-        	    		// eg <w:rFonts w:ascii="SimSun" w:hAnsi="SimSun" w:cs="SimSun"/>
-        	    		// for "；" (0xff1b, semicolonmonospace)  and "，" (0xff0c, commamonospace) 
-	    				vis.fontAction(hAnsi); 
-        	    	} else {
-        	    		vis.fontAction(eastAsia);
-        	    	}
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	currentRangeLower = '\uFF00';
-        	    	currentRangeUpper = '\uFFEF';	
-        	    	
-//        	    } else if (c>=Character.toChar(0x1F600) && c<='\u1F64F') {
-        	    	
-        	    } else {
-        	    	// Per [MS-OI29500] section 17.3.2.26,
-        	    	// for all ranges not listed in the above, the hAnsi (or hAnsiTheme if defined) font shall be used.
-        	    	String hex = String.format("%04x", (int) c);
-        	    	log.debug("Defaulting to hAnsi for char " + hex);
-    				vis.fontAction(hAnsi); 
-    				debugCheckGlyph(hAnsi, c);
-    				
-        	    	vis.addCharacterToCurrent(c);
-        	    	
-        	    	/* Every character of this gap takes this branch and so gets hAnsi:
-        	    	 * remember the whole gap, so that the next character of the same
-        	    	 * script joins this span.  (Until 17.0.5 the range was reset to
-        	    	 * 0000-0000, which no character matches, so a Georgian or Ethiopic
-        	    	 * word became one fo:inline per character - and FOP kerns and
-        	    	 * letter-spaces within an inline, not across two.) */
-        	    	char[] gap = defaultRange(c);
-        	    	currentRangeLower = gap[0];
-        	    	currentRangeUpper = gap[1];
-        	    	
-        	    }
-    	    }
-    	} 
-    	
-    	// Handle final span
+    		int cp = text.codePointAt(i);
+    		String font = fontFor(cp, hint, langEastAsia, eastAsia, ascii, hAnsi, cs);
+    		/* A span is one font and one script: a character joins while it has the
+    		 * span's font and, unless it is shared (a space, a digit, punctuation), the
+    		 * span's script.  The script cut keeps the coverage pass's spans whole - a
+    		 * Greek stretch in a Latin font substituted as one top-level span, not nested
+    		 * inside the Latin one (measured: nesting it changed FOP's line stacking and
+    		 * cost the corpus's Greek document a page).  The CJK scripts are one group, so
+    		 * kanji and kana share a span as they did. */
+    		String script = spanScript(cp);
+    		boolean sameFont = font==null ? currentFont==null : font.equals(currentFont);
+    		boolean sameScript = script==null || currentScript==null || script.equals(currentScript);
+    		if (open && vis.isReusable() && sameFont && sameScript) {
+    			// it joins
+    		} else {
+    			vis.finishPrevious();
+    			vis.createNew();
+    			vis.setMustCreateNewFlag(false);
+    			vis.fontAction(font);
+    			currentFont = font;
+    			currentScript = null;
+    			open = true;
+    		}
+    		if (script!=null) currentScript = script;
+    		if (cp > 0xFFFF) {
+    			vis.addCodePointToCurrent(cp);
+    		} else {
+    			vis.addCharacterToCurrent((char)cp);
+    		}
+    	}
     	vis.finishPrevious();
     	return finish(vis.getResult());
     }
 
-    /* The ranges the dispatch above tests, in order.  Anything outside them falls
-     * through to its final else, which always uses hAnsi. */
-    private static final char[][] LISTED_RANGES = {
-    	{'\u0000','\u007F'}, {'\u00A0','\u00FF'}, {'\u0100','\u02AF'}, {'\u02B0','\u04FF'},
-    	{'\u0590','\u07BF'}, {'\u0900','\u0DFF'}, {'\u0E00','\u0E7F'}, {'\u0E80','\u0EFF'},
-    	{'\u1000','\u109F'}, {'\u1100','\u11FF'}, {'\u1780','\u17FF'}, {'\u19E0','\u19FF'},
-    	{'\u1E00','\u1EFF'}, {'\u2000','\u218F'}, {'\u2190','\u2BFF'}, {'\u2C00','\u2EFF'},
-    	{'\u2F00','\uDFFF'}, {'\uE000','\uF8FF'}, {'\uF900','\uFAFF'}, {'\uFB00','\uFB4F'},
-    	{'\uFB50','\uFDFF'}, {'\uFE30','\uFE6F'}, {'\uFE70','\uFEFE'}, {'\uFF00','\uFFEF'}
-    };
+    /** The group a span is cut by: the coverage group of the code point (its script, or
+     *  SYMBOL / EMOJI), the CJK scripts as one, and null for a shared character (COMMON,
+     *  INHERITED), which joins whatever it follows. */
+    private static String spanScript(int cp) {
+    	String group = FontFallback.coverageGroupOf(cp);
+    	if (Character.UnicodeScript.COMMON.name().equals(group)
+    			|| Character.UnicodeScript.INHERITED.name().equals(group)) return null;
+    	if (Character.UnicodeScript.HAN.name().equals(group)
+    			|| Character.UnicodeScript.HIRAGANA.name().equals(group)
+    			|| Character.UnicodeScript.KATAKANA.name().equals(group)
+    			|| Character.UnicodeScript.HANGUL.name().equals(group)
+    			|| Character.UnicodeScript.BOPOMOFO.name().equals(group)) return "CJK";
+    	return group;
+    }
 
     /**
-     * The gap between the ranges [MS-OI29500] 17.3.2.26 lists (see
-     * {@link #LISTED_RANGES}) that this character falls in: the run of characters
-     * which all take the dispatch's final else and so all get hAnsi, and which can
-     * therefore share one span.  Georgian (U+10A0-U+10FF), Armenian (U+0530-U+058F),
-     * Tibetan, Ethiopic, Mongolian and Greek Extended are the common ones.
+     * The document font which formats one code point, given the run's four fonts (each
+     * already resolved through the theme) and its hint: the table in [MS-OI29500]
+     * 17.3.2.26 (see the class javadoc), with these departures from it, each measured:
+     * <ul>
+     * <li>the Indic, Thai, Lao, Myanmar and Khmer ranges use cs, where the table says
+     *     hAnsi (issues 622 and 666);</li>
+     * <li>the symbol blocks U+2190-U+2BFF ask the hAnsi font for the glyph and name
+     *     Segoe UI Symbol where it lacks it (Word 2016; the coverage pass in
+     *     {@link #glyphFallback} then finds a face that has it on any box);</li>
+     * <li>an East Asian reference is "eastAsia (or eastAsiaTheme) if defined": a run
+     *     naming none gets hAnsi in those places, never nothing;</li>
+     * <li>characters outside the Basic Multilingual Plane, which the table does not
+     *     cover: the emoji font the docx4j.fonts.RunFontSelector.EmojiFont property
+     *     names, else hAnsi and the coverage pass (Word: Segoe UI Emoji).</li>
+     * </ul>
+     * What the table says and Word confirmed (CR-016 goldens, 2026-09-12): U+0020 is
+     * ASCII and takes the ascii font, so the space between two East Asian words is the
+     * Latin font's (2.6pt at 12pt in Carlito, not MS Gothic's 6); Hebrew, Arabic and
+     * the rest of U+0590-U+07BF in a run with no w:cs take the ascii font, and where
+     * that font lacks the script the coverage pass substitutes within its class, as
+     * Word does (Arial for Liberation Sans, Times New Roman for Liberation Serif) - until
+     * 17.1.1 this range tried Times New Roman for the glyph and set nothing where it
+     * lacked it; the preamble rule (eastAsia is Times New Roman and ascii equals hAnsi:
+     * use ascii) is applied by the caller before the walk.  The table's other condition
+     * for U+0100-U+02AF and U+1E00-U+1EFF under hint=eastAsia, "or the character set of
+     * the eastAsia font is Chinese5 or GB2312", needs the font's OS/2 code-page bits and
+     * is not implemented.
      *
-     * @since 17.0.5
+     * @return a document font name; null only where the run names no hAnsi font either
+     * @since 17.1.1 (the table as one function; it was the body of the walk)
      */
-    static char[] defaultRange(char c) {
-    	char lower = '\u0000';
-    	char upper = '\uFFFF';
-    	for (char[] r : LISTED_RANGES) {
-    		if (c >= r[0] && c <= r[1]) {
-    			// listed after all: only this character (the caller's branch is not used)
-    			return new char[] { c, c };
-    		}
-    		if (r[1] < c && r[1] >= lower) lower = (char)(r[1] + 1);
-    		if (r[0] > c && r[0] <= upper) upper = (char)(r[0] - 1);
+    String fontFor(int cp, STHint hint, String langEastAsia,
+    		String eastAsia, String ascii, String hAnsi, String cs) {
+
+    	// "eastAsia (or eastAsiaTheme if defined)": where the run names none, the table's hAnsi
+    	String ea = eastAsia!=null ? eastAsia : hAnsi;
+    	boolean hintEA = hint == STHint.EAST_ASIA;
+
+    	if (cp > 0xFFFF) {
+    		if (isEmoji(cp) && getEmojiFont()!=null) return getEmojiFont();
+    		return hAnsi;
     	}
-    	return new char[] { lower, upper };
+    	char c = (char)cp;
+    	// Basic Latin: "@ascii (or @asciiTheme) is used to format all characters in the ASCII range (0-127)"
+    	if (c<='\u007F') return ascii;
+    	// Latin-1 Supplement: hAnsi, with the table's exceptions under hint=eastAsia
+    	if (c>='\u00A0' && c<='\u00FF') {
+    		if (hintEA && eastAsia!=null) {
+    			// "If hint is eastAsia, the following characters use eastAsia: A1, A4, A7-A8, AA, AD, AF, B0-B4, B6-BA, BC-BF, D7, F7"
+    			if (c=='\u00A1' || c=='\u00A4' || (c>='\u00A7' && c<='\u00A8') || c=='\u00AA'
+    					|| c=='\u00AD' || c=='\u00AF' || (c>='\u00B0' && c<='\u00B4')
+    					|| (c>='\u00B6' && c<='\u00BA') || (c>='\u00BC' && c<='\u00BF')
+    					|| c=='\u00D7' || c=='\u00F7') return eastAsia;
+    			// "If hint is eastAsia and the language of the run is either Chinese Traditional or
+    			// Chinese Simplified, the following characters use eastAsia: E0-E1, E8-EA, EC-ED, F2-F3, F9-FA, FC"
+    			if (contains(langEastAsia, "zh") && ((c>='\u00E0' && c<='\u00E1') || (c>='\u00E8' && c<='\u00EA')
+    					|| (c>='\u00EC' && c<='\u00ED') || (c>='\u00F2' && c<='\u00F3')
+    					|| (c>='\u00F9' && c<='\u00FA') || c=='\u00FC')) return eastAsia;
+    		}
+    		return hAnsi;
+    	}
+    	// Latin Extended-A, Latin Extended-B, IPA Extensions
+    	if (c>='\u0100' && c<='\u02AF') return (hintEA && contains(langEastAsia, "zh")) ? ea : hAnsi;
+    	// Spacing Modifier Letters .. Cyrillic Supplement
+    	if (c>='\u02B0' && c<='\u04FF') return hintEA ? ea : hAnsi;
+    	// Hebrew, Arabic, Syriac, Thaana, NKo: ascii (measured, fonts-hebrew-no-cs)
+    	if (c>='\u0590' && c<='\u07BF') return ascii;
+    	// the Indic scripts, Thai, Lao, Myanmar, Khmer and the Khmer symbols: cs (issues 622, 666)
+    	if ((c>='\u0900' && c<='\u0DFF') || (c>='\u0E00' && c<='\u0EFF') || (c>='\u1000' && c<='\u109F')
+    			|| (c>='\u1780' && c<='\u17FF') || (c>='\u19E0' && c<='\u19FF')) {
+    		return cs!=null ? cs : hAnsi;
+    	}
+    	// Hangul Jamo
+    	if (c>='\u1100' && c<='\u11FF') return ea;
+    	// Latin Extended Additional
+    	if (c>='\u1E00' && c<='\u1EFF') return (hintEA && contains(langEastAsia, "zh")) ? ea : hAnsi;
+    	// General Punctuation .. Number Forms: ordinary text (until 17.0.4 the symbol path)
+    	if (c>='\u2000' && c<='\u218F') return hintEA ? ea : hAnsi;
+    	// the symbol blocks: Arrows .. Braille
+    	if (c>='\u2190' && c<='\u2BFF') return hintEA ? ea : symbolBlockFont(cp, hAnsi);
+    	// Glagolitic .. CJK Radicals Supplement
+    	if (c>='\u2C00' && c<='\u2EFF') return hintEA ? ea : hAnsi;
+    	// the CJK ranges (and the surrogate range, which a paired surrogate never reaches here)
+    	if (c>='\u2F00' && c<='\uDFFF') return ea;
+    	// Private Use Area; F000-F0FF is where the symbol fonts live
+    	if (c>='\uE000' && c<='\uF8FF') return hintEA ? ea : hAnsi;
+    	// CJK Compatibility Ideographs
+    	if (c>='\uF900' && c<='\uFAFF') return ea;
+    	// Alphabetic Presentation Forms: "If the hint is eastAsia then eastAsia is used for FB00-FB1C. For FB1D-FB4F, ascii is used."
+    	if (c>='\uFB00' && c<='\uFB4F') {
+    		if (c>='\uFB1D') return ascii;
+    		return hintEA ? ea : hAnsi;
+    	}
+    	// Arabic Presentation Forms-A
+    	if (c>='\uFB50' && c<='\uFDFF') return ascii;
+    	// CJK Compatibility Forms, Small Form Variants
+    	if (c>='\uFE30' && c<='\uFE6F') return ea;
+    	// Arabic Presentation Forms-B
+    	if (c>='\uFE70' && c<='\uFEFE') return ascii;
+    	// Halfwidth and Fullwidth Forms
+    	if (c>='\uFF00' && c<='\uFFEF') return ea;
+    	// "for all ranges not listed in the above, the hAnsi (or hAnsiTheme if defined) font shall be used"
+    	// (Georgian, Armenian, Ethiopic, Tibetan, Mongolian, Greek Extended, the C1 controls ...)
+    	return hAnsi;
     }
-    
+
+    /** the Word-2016 face for a symbol the hAnsi font lacks; Segoe UI Symbol is a Windows
+     *  face, so elsewhere the run's own font is named and the coverage pass finds one
+     *  (FontFallback.isSymbol, measured order: Segoe UI Symbol, Noto Sans Symbols 2, ...) */
+    private static final String FONT_WORD_2016_USES = "Segoe UI Symbol";
+
+    /**
+     * The font for a character of the symbol blocks U+2190-U+2BFF: the hAnsi font where
+     * it has the glyph (the table); else Segoe UI Symbol where that is mapped and has it
+     * (what Word 2016 does for Calibri's U+2751, RunFontSelectorCalibriCheckBoxTest);
+     * else the hAnsi font all the same, so that the span has a family for the coverage
+     * pass to work on.  Nothing can be resolved in the discovery pass (it runs before
+     * the mapper is populated), so its answer there is always the hAnsi font.
+     */
+    private String symbolBlockFont(int cp, String hAnsi) {
+    	if (hAnsi==null) return null;
+    	try {
+    		if (hasGlyph(hAnsi, cp)) return hAnsi;
+    		Mapper fontMapper = wordMLPackage.getFontMapper();
+    		PhysicalFont segoe = fontMapper==null ? null : fontMapper.get(FONT_WORD_2016_USES);
+    		if (segoe!=null && GlyphCheck.hasCodepoint(segoe, cp)) return FONT_WORD_2016_USES;
+    		if (log.isDebugEnabled() && outputType!=RunFontActionType.DISCOVERY) {
+    			log.debug("U+" + Integer.toHexString(cp) + " is not in " + hAnsi + " (" + physicalFontFor(hAnsi)
+    					+ "); the coverage pass will look for a face which has it");
+    		}
+    	} catch (ExecutionException e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	return hAnsi;
+    }
+
     /** The PhysicalFont this *document* font name maps to.
      *
      *  This must go via the Mapper, not PhysicalFonts: a font embedded in the document
@@ -2296,37 +1917,22 @@ public class RunFontSelector {
     	return (pf!=null ? pf : PhysicalFonts.get(documentFontName));
     }
 
-    /** Whether the font this document font name maps to has a glyph for c; false if
-     *  there is no such font, so that the caller falls back as it would have done.
+    /** Whether the font this document font name maps to has a glyph for this code point;
+     *  false if there is no such font, so that the caller falls back as it would have done.
      *
-     * @since 17.0.3
+     * @since 17.0.3; by code point since 17.1.1 (a char could not ask about an emoji)
      */
-    private boolean hasGlyph(String documentFontName, char c) throws ExecutionException {
+    private boolean hasGlyph(String documentFontName, int cp) throws ExecutionException {
 
     	PhysicalFont pf = physicalFontFor(documentFontName);
     	if (pf==null) {
     		log.debug("No physical font for " + documentFontName);
     		return false;
     	}
-    	return GlyphCheck.hasChar(pf, c);
+    	return GlyphCheck.hasCodepoint(pf, cp);
     }
 
-    private void debugCheckGlyph(String fontName, char c) {
-    	
-		if (log.isDebugEnabled()) {
-	    	try {
-				if (!hasGlyph(fontName, c)) {
-//					Throwable t = new Throwable();
-//					log.debug("FIXME", t);
-					log.debug(fontName + "'s PhysicalFont is missing char " + c);
-				}
-			} catch (ExecutionException e) {
-				log.error(e.getMessage(), e);
-			}
-	    }    	
-    }
-    
-	
+
 	private String getCssProperty(String fontName) {
 		
 		if (log.isDebugEnabled() && 
@@ -2490,10 +2096,9 @@ public class RunFontSelector {
 			    </w:pPr>
 
     	 */
-    	if (themeFontLang!=null
-    			&& themeFontLang.getBidi()!=null
-    			&& themeFontLang.getBidi().equals("ar-SA")) {
-    		// Do stuff in this method
+    	if (themeFontLang!=null && isArabicScriptLanguage(themeFontLang.getBidi())) {
+    		// Do stuff in this method (until 17.1.1 for "ar-SA" alone; Word's rule is its
+    		// Numeral option, which applies to every Arabic-script language)
     	} else {
     		// Do nothing if those conditions don't apply
     		return text;
@@ -2524,5 +2129,17 @@ public class RunFontSelector {
     	}
     	
     }	
+    /** whether this language tag's primary subtag is a language written in the Arabic script */
+    static boolean isArabicScriptLanguage(String tag) {
+    	if (tag==null) return false;
+    	String lang = tag.trim().toLowerCase();
+    	int dash = lang.indexOf('-');
+    	if (dash<0) dash = lang.indexOf('_');
+    	if (dash>-1) lang = lang.substring(0, dash);
+    	for (String l : new String[] { "ar", "fa", "ur", "ps", "ug", "sd", "ks", "ckb", "prs", "pnb", "bal" }) {
+    		if (l.equals(lang)) return true;
+    	}
+    	return false;
+    }
 	// end Arabic Numbering stuff 	
 }

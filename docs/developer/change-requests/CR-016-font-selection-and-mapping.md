@@ -951,10 +951,69 @@ document read (the cs-value fix is the only expected mover; the Estonian
 fix cannot show on this box).  Measure `fontSelector` per run before and
 after (the scratch number is 23 µs).
 
-### Phase 2 — the character-range dispatch
+### Phase 2 — the character-range dispatch — DONE 2026-09-12
 
-As designed, after P2, P3 and P8 are read.  Gate as phase 1; the span merge
-is expected zero-delta and is scored on its own commit.
+As designed, with one structural change beyond it: the walk no longer tracks a
+"current range" at all.  The table is one function, `fontFor(codePoint, hint,
+langEastAsia, eastAsia, ascii, hAnsi, cs)`, and the walk asks it for every code
+point and starts a new span only where the answer changes.  That is what the
+span merge was for, and it also removes the range-reset bug (P6 (c)) at its
+root: a character joins a span because it has the same font, never because it
+fell in the same range as its predecessor; the `defaultRange`/`LISTED_RANGES`
+gap machinery of 17.0.5 and the `setMustCreateNewFlag(true)` calls of the
+hint branches go with it.  The answers from the goldens: U+0020 is ascii
+(P2), U+0590-U+07BF is ascii and the Times New Roman heuristic is gone (P3),
+an East Asian reference with no East Asian font is hAnsi in every branch
+(never a null `fontAction`), the symbol-font names are matched case-
+insensitively through `symbolFontName` (P8), an emoji is checked by code
+point and is its own coverage group with Word's face first in the candidate
+list (`FontFallback.isEmoji`, `EMOJI_GROUP`), a symbol-font run is cut where
+the two Wingdings substitutes change (`symbolSegments`), and `arabicNumbering`
+gates on any Arabic-script `bidi` language.  In the coverage pass, two rule
+changes forced by the merge and by the goldens: a character the span's font
+covers keeps it - a space included (P2: the space between two substituted
+CJK words is the Latin font's; until 17.1.1 a covered shared character went
+with the substitute before it) - and the whole-span shortcut applies only
+where the font drew nothing, since a span now holds Latin beside CJK when
+both share a document font; an uncovered shared character goes with its
+neighbours' substitute (P2 (c), the ideographic comma).  `hasGlyph` asks by
+code point.  Tests: `RunFontSelectorDispatchTest` (10: the table's answers,
+the joins, the names, the groups, the gate), `RunFontSelectorDefaultRangeTest`
+rewritten for joining by font, `RunFontSelectorIndicTest` for one span per
+Indic word with the spaces in the ascii font.
+
+What the corpus gate taught, in three iterations on the same day (each
+scored on all three corpora):
+
+1. Joining by font alone put a run's Greek inside its Latin span, nested by
+   the coverage pass, and the Greek-in-Cambria document (8371) went from 68
+   pages to 69; the Georgian documents moved either way.  Two causes, both
+   in consumers of the span structure: `XsltFOFunctions.collectRunFonts`
+   credited a span's font with its nested inlines' text when choosing the
+   block's font (fixed: it counts the text an inline draws itself), and
+   FOP's line stacking differs for a nested inline.  So a span is cut where
+   the *script* changes between two non-shared characters as well as where
+   the font does (`spanScript`; the CJK scripts one group), and the
+   coverage pass emits its stretches as sibling spans cloned from the
+   original rather than nested inside it - the structure the range cut used
+   to produce.
+2. Whether a covered shared character (a space, a dot leader) keeps the
+   span's font or follows the substitute before it: the 17.1.0 rule sent it
+   with the substitute, measured then on the Georgian document; the P2
+   golden says the run's font.  The deciding measurement was Sylfaen's
+   space in the Georgian golden: **0.250 em**, Tinos's (the document font's
+   substitute) and not DejaVu Serif Condensed's 0.286 (the Georgian
+   substitute's), so the run's font is right; and the Greek document's dot
+   leaders, which are U+2026 (shared) after a Greek word, must stay in
+   Caladea (Cambria's clone) rather than P052.  The rule is now: a covered
+   character keeps the span's font; an uncovered shared one takes its
+   neighbours' substitute.
+3. With both, every corpus improved and nothing regressed: 0.9051 -> 0.9052
+   (Georgian 425: 0.9396 -> 0.9664), 0.8799 -> 0.8804 (two documents),
+   0.9162 -> 0.9179 (the Greek 8371: 0.4984 -> 0.6025 at 68 pages; 6864
+   0.8611 -> 0.9167).  Probes unchanged (their misses are faces this box
+   lacks, and the RTL text layer).  `docx4j-core-tests` and
+   `docx4j-export-fo-tests` green on the final code.
 
 ### Phase 3 — the mapping order
 

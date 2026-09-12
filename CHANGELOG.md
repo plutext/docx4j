@@ -7,7 +7,7 @@ Version 17.1.1
 Changes in Version 17.1.1
 --------------------------
 
-Fonts (CR-016, the font selection and mapping review, phases 0-1):
+Fonts (CR-016, the font selection and mapping review, phases 0-2):
 
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
@@ -32,6 +32,28 @@ Fonts (CR-016, the font selection and mapping review, phases 0-1):
   Word's built-in default, for its Latin slots), so non-Latin text in it reaches the
   glyph-coverage pass instead of the default font's notdef.  A complex-script run whose cs
   font resolves to nothing no longer throws (Mapper.get(null) returns null).
+- The character-range dispatch is the [MS-OI29500] 17.3.2.26 table as one function of the
+  code point, and a span is cut only where the chosen font changes (it was cut by range, so
+  a Latin run broke at every exception character, and the ASCII letters after an accented
+  one stayed in the hAnsi font).  With the answers Word gave to the CR-016 probes: the space
+  between two East Asian words is the ascii font's (2.6pt at 12pt in Calibri, not MS
+  Gothic's 6); Hebrew and Arabic in a run without w:cs take the ascii font, and where that
+  face lacks the script the coverage pass substitutes within its class, as Word does (it
+  used to try Times New Roman and set nothing where that lacked the glyph, so Arabic came
+  out as '#'); an East Asian reference in a run with no East Asian font is hAnsi, never the
+  fallback font; the symbol-font names are matched case-insensitively ('symbol' draws
+  Symbol); an emoji is glyph-checked by code point and finds a face with the glyph (Segoe UI
+  Emoji, Noto Emoji, Symbola) where it used to stay in the run's font as notdef; a Wingdings
+  run is cut where its two substitute faces change; native digits are shaped for every
+  Arabic-script bidi language, not "ar-SA" alone; a space the run's font covers keeps that
+  font in the coverage pass, and an uncovered shared character (an ideographic comma) takes
+  its neighbours' substitute rather than the first installed face that covers it.  Measured
+  over the three real-document corpora: every one improves, none regresses; the Greek document
+  set in Cambria goes from 0.50 to 0.60 line parity (its dot leaders stay in Caladea, its Greek
+  in P052 stretch by stretch).
+- The FO exporter's block-font choice counts the text an inline draws itself, not that of the
+  substituted stretches nested in it (a Greek paragraph's block took Caladea's line box for
+  P052's text).
 - docx4j-layout-fidelity: -Dfidelity.fontMapper=identity|best and -Dfidelity.fonts=all|jars|<dir>
   score a font mapper under a chosen font environment; docs/developer/change-requests/CR-016
   records the mapper matrix and the enumerated font sets of the popular distributions.
