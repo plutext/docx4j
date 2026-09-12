@@ -149,7 +149,9 @@ public class ParagraphStylesInTableFixConditionalTest {
 	public void oneStylePerConditionCombination() throws Exception {
 		WordprocessingMLPackage pkg = pkg();
 
-		assertEquals("Normal", pStyle(para(pkg, "outside")));
+		// outside a table a paragraph naming no style is left as written: the resolver
+		// answers for it (CR-015 phase 2b; until 17.1.1 the default style's id was written on)
+		assertEquals(null, pStyle(para(pkg, "outside")));
 		// the top-left cell is under firstCol, firstRow and nwCell, named in precedence order
 		assertEquals("Normal-Child-firstCol-firstRow-nwCell-BR", pStyle(para(pkg, "t1 r0 c0")));
 		assertEquals("Normal-Child-firstRow-BR", pStyle(para(pkg, "t1 r0 c1")));

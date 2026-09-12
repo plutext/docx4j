@@ -341,6 +341,11 @@ Property resolution (CR-015, phase 2):
   carries its own properties instead of inheriting the block's.
 - Deprecated: getEffectiveRPr(String, boolean, boolean, boolean) (computed per call now, no
   longer cached) and getEffectiveRPrUsingPStyleRPr.
+- The FO and HTML preprocess no longer writes the default paragraph style's id onto every
+  paragraph that names none (ParagraphStylesInTableFix, outside tables): the resolver answers
+  for such paragraphs itself, and a docx saved after an export keeps its paragraphs as they
+  were. Inside a table the synthetic style carrying the table style's conditional formatting
+  is still applied.
 
 Other:
 

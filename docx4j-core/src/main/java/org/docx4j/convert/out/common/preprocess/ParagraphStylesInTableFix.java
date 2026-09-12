@@ -868,15 +868,17 @@ public class ParagraphStylesInTableFix {
 				
 				if (p.getPPr().getPStyle()==null) {
 										
-//						String newStyle = styleMapping.get(defaultParagraphStyle); 
-//						if (newStyle==null) {
-//							newStyle=defaultParagraphStyle;
-//						}
+						/* A paragraph naming no style is the default paragraph style's: that is how
+						 * Word writes it, and since 17.1.1 (CR-015 phase 2) PropertyResolver resolves
+						 * it so for the paragraph AND its runs.  Until 17.1.1 this preprocess wrote the
+						 * default style's id onto every such paragraph, in a table or not, which
+						 * shielded the exporters from the resolver's run-properties gap - and hid it
+						 * from the corpus.  Outside a table the paragraph is now left as written
+						 * (CR-015 phase 2b); inside one it still gets the synthetic style that carries
+						 * the table style's conditional formatting, which the resolver cannot know. */
 						String newStyle=defaultParagraphStyle;
-						p.getPPr().setPStyle(Context.getWmlObjectFactory().createPPrBasePStyle() );	
-						if (tblStack.size()==0) {						
-							p.getPPr().getPStyle().setVal(newStyle);
-						} else {
+						if (tblStack.size()>0) {
+							p.getPPr().setPStyle(Context.getWmlObjectFactory().createPPrBasePStyle() );	
 							// We're in a table
 							String resultStyle;
 							try {

@@ -645,7 +645,14 @@ still scores it 50% because the level-1 label fills its 18pt hanging indent
 and pdftotext reads "1.1.(b)" with no space - the known label-join
 artefact, not layout).
 
-### Phase 2b — the shield comes out (added 2026-09-12, see Layering)
+### Phase 2b — the shield comes out (added 2026-09-12, see Layering) — IN PROGRESS
+
+Half 1 DONE 2026-09-12: `ParagraphStylesInTableFix` leaves a paragraph
+naming no style alone outside a table (`ParagraphStylesInTableFixConditionalTest`
+updated for it).  Gate: core-tests 968 (the one updated expectation),
+export-fo-tests 600/0; corpora `p2b-shield` vs `p2-ind`: real, real2, real3
+all 0 changed; the five probes unchanged.  Half 2 (`pinInheritedFontSize`)
+follows.
 
 `ParagraphStylesInTableFix` stops writing the default `w:pStyle` onto
 paragraphs outside tables (inside tables the synthetic style ids remain the
