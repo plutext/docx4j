@@ -64,7 +64,8 @@ public class RunFontSelectorMappedFontGlyphTest {
 
 		assertTrue("the run's own font has the glyph, so it should have been used;"
 				+ " instead the output was: " + html,
-				java.util.regex.Pattern.compile("font-family:\\s*'"
-						+ java.util.regex.Pattern.quote(dejaVu.getName()) + "'").matcher(html).find());
+				// the physical family, in the stack after the document font (CR-016 Decisions 1)
+				java.util.regex.Pattern.compile("font-family:[^;]*'"
+						+ java.util.regex.Pattern.quote(dejaVu.getFamilyName()) + "'").matcher(html).find());
 	}
 }

@@ -68,7 +68,9 @@ public class PhysicalFonts {
 	 * Do NOT add fonts embedded in a docx to physicalFontMap! */ 
 	private final static Map<String, PhysicalFont> physicalFontMap;
 	
-	@Deprecated // want to enforce case insensitive
+	/** @deprecated the live map, keyed by the lower-cased name; use {@link #get}, which
+	 *  is case-insensitive.  Fonts embedded in a document are never in it. */
+	@Deprecated
 	public static Map<String, PhysicalFont> getPhysicalFonts() {
 		return physicalFontMap;
 	}
@@ -805,6 +807,8 @@ public class PhysicalFonts {
 		
 	}
 	
+	/** @deprecated since 17.1.1: no caller; the package's {@link Mapper#get} answers it. */
+	@Deprecated
 	public static String getPhysicalFont(OpcPackage wmlPackage, String fontName) {
 		
 		log.debug("looking for: " + fontName);

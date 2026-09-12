@@ -165,8 +165,29 @@ final class FontsTestSupport {
 		return fontFamily;
 	}
 
+	/** The style attribute of the first span the XHTML selector produces for paragraph
+	 *  i's first run ("" where it has none). */
+	static String htmlStyle(WordprocessingMLPackage pkg, int i) throws Exception {
+		RunFontSelector rfs = selector(pkg, RunFontActionType.XHTML);
+		P p = (P) pkg.getMainDocumentPart().getContent().get(i);
+		R r = (R) p.getContent().get(0);
+		Text t = (Text) XmlUtils.unwrap(r.getContent().get(0));
+		Object o = rfs.fontSelector(p.getPPr(), r.getRPr(), t);
+		if (o instanceof DocumentFragment) {
+			for (Node n = ((DocumentFragment) o).getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (n instanceof Element) return ((Element) n).getAttribute("style");
+			}
+		}
+		return "";
+	}
+
 	/** The XSL FO character visitor, as FOConversionContext builds it. */
 	static RunFontSelector xslFoSelector(WordprocessingMLPackage pkg) {
+		return selector(pkg, RunFontActionType.XSL_FO);
+	}
+
+	/** The character visitor as FOConversionContext and HTMLConversionContext build it. */
+	static RunFontSelector selector(WordprocessingMLPackage pkg, RunFontActionType mode) {
 		return new RunFontSelector(pkg, new RunFontCharacterVisitor() {
 			DocumentFragment df; StringBuilder sb = new StringBuilder(); Element span; String lastFont; String fallbackFontName;
 			private org.w3c.dom.Document document; private boolean spanReusable = true; private RunFontSelector rfs;
@@ -189,6 +210,6 @@ final class FontsTestSupport {
 			public Object getResult() { span = null; return df; }
 			public void setRunFontSelector(RunFontSelector r) { rfs = r; }
 			public void setFallbackFont(String fontname) { fallbackFontName = fontname; }
-		}, RunFontActionType.XSL_FO);
+		}, mode);
 	}
 }

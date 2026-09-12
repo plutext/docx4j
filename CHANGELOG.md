@@ -7,7 +7,7 @@ Version 17.1.1
 Changes in Version 17.1.1
 --------------------------
 
-Fonts (CR-016, the font selection and mapping review, phases 0-4):
+Fonts (CR-016, the font selection and mapping review):
 
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
@@ -105,6 +105,20 @@ Fonts (CR-016, the font selection and mapping review, phases 0-4):
 - The no-bold alias is not given to a font Word itself could not find: Word substitutes such a
   font whole, w:b in the substitute's real bold ("EnBW DIN Pro Light" is Calibri Bold in Word,
   not a synthesised Calibri).
+- HTML: a run's span names the document font first, then the family of the physical font this
+  machine mapped it to, then the generic class - font-family: 'Calibri','Carlito',sans-serif; -
+  as Word's own HTML and every browser stack expect, and never nothing: the reader's browser is
+  not on the server.  It used to name the physical face alone ('Carlito Regular'), or nothing
+  where the document font mapped to none.  docx4j.convert.out.html.fontFamily=physical restores
+  the old output, for HTML rendered on the server itself.  New PhysicalFont.getFamilyName().
+- Generated text (a note number, a list label, a field's sample) no longer inherits
+  xml:space="preserve" from the last w:t the selector saw: the String overload of
+  RunFontSelector.fontSelector never preserves white space.
+- Deprecated: RunFontActionType.DISCOVERY, GlyphCheck.hasChar(String, char) (blind to embedded
+  and mapped fonts; use Mapper.get and GlyphCheck.hasCodepoint), Mapper.getSubstituteFontXsltExtension
+  (no caller), PhysicalFonts.getPhysicalFont(OpcPackage, String) (no caller).  A package-info for
+  org.docx4j.fonts describes the two steps, the mapping precedence and the properties the package
+  reads.
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

@@ -1,12 +1,13 @@
 # CR-016: Font selection and mapping (`RunFontSelector`, `Mapper` and its subpackages) — line endings, one resolution, the character-range rules, the mapping order, discovery, cost, API
 
-Status: IN PROGRESS (2026-09-12) — phases 0 (d643638ad), 0b (the eight probes
+Status: DONE (2026-09-13) — phases 0 (d643638ad), 0b (the eight probes
 and their goldens, the verification table settled), 0c (the mapper matrix and
 the font environments; the jar-discovery fix b1eb9e61e), 1 (one resolution,
 `w:cs` by value, the theme language, the Office theme faces; b999477be), 2 (the
 dispatch; 613c44b1c), 3 (the mapping order; fd4eb61b8) and 4 (discovery as a
 names walk, one scratch Document, the embedded-font blind spots, logging;
-gaps 16 and 17 found and fixed) done; 5 open.
+gaps 16 and 17 found and fixed) and 5 (API hygiene, the HTML font-family per
+Decisions 1) done.
 Jason read the CR the same day and started the work.  The review below was written that day
 against 7563277a0 (CR-015 tidy-up), with every "measured" claim taken from a
 scratch test that was run and then deleted (`ScratchFontsProbeTest`, not
@@ -1234,9 +1235,44 @@ from phase 3 (92/29/83/100/17/17/100) except `fonts-unresolvable` 75% -> 88%
 in one JVM too.  Corpus baseline for phase 5: `p4b-nobold` (identity) and
 `c4b-best-all` (best).
 
-### Phase 5 — API hygiene and the HTML decision
+### Phase 5 — API hygiene and the HTML decision — DONE 2026-09-13
 
-As designed; CHANGELOG entries for the HTML change and the deprecations.
+As designed.  Jason confirmed Decisions 1 on 2026-09-13 ("the document font
+first, the physical family second, the generic class last; never empty - as
+recommended").
+
+- **HTML `font-family`**: `getCssProperty` emits the document font, the
+  physical font's family where it differs (new `PhysicalFont.getFamilyName`,
+  the last of FOP's triplets: "Carlito" for the face "Carlito Regular"), and
+  the generic class (`FontFallback.classOf` of the document font, else of
+  the family: serif, sans-serif, monospace; none where the class is unknown)
+  - `font-family: 'Calibri','Carlito',sans-serif;`.  Never empty: an unmapped
+  font of unknown class is still named.  `docx4j.convert.out.html.fontFamily`
+  = `document` (default) | `physical` (the output until 17.1.1, including its
+  `CSS_NULL`); documented in the properties reference.
+  `XsltCommonFunctions.fontCanRender` reads the physical font out of the stack
+  (whichever entry this machine has), so the generated-text glyph check still
+  works for HTML.  `HtmlFontFamilyTest` (four cases); `FieldFontTest`'s HTML
+  half asks for Courier New whatever the machine has, its font hunt gone;
+  `RunFontSelectorMappedFontGlyphTest` finds the family in the stack.
+- **`spacePreserve`** is a parameter of the private worker (set into the
+  field the visitor's callbacks read, per call); the `String` overload passes
+  false, the `Text` overload the `w:t`'s `xml:space`.
+  `fontSelectorForGeneratedText` passes its String, and the 17.0.3 gotcha
+  comment is gone.
+- **Deprecated** with `@deprecated` text pointing at the replacement:
+  `GlyphCheck.hasChar(String, char)` (`docx4j-docx-anon` now resolves through
+  the package's mapper and asks `hasCodepoint`), both
+  `Mapper.getSubstituteFontXsltExtension`, `PhysicalFonts.getPhysicalFont(OpcPackage, String)`;
+  the two live maps' bare `@Deprecated` comments became javadoc.
+- **`package-info.java`** for `org.docx4j.fonts`: the two steps, the eight
+  passes of the mapping precedence in order, the selection's stages, the
+  fourteen properties the package reads, and where the review lives.
+
+Gate (2026-09-13): `docx4j-core-tests` 1017/0, `docx4j-export-fo-tests` 601/0;
+the three corpora against `p4b-nobold` zero-delta (0.9051, 0.8805, 0.9181; no
+document changed) - the phase touches HTML output and the API, not the FO.
+The review is complete: seventeen gaps, all closed or decided.
 
 ## Decisions
 
@@ -1245,7 +1281,8 @@ As designed; CHANGELOG entries for the HTML change and the deprecations.
    with a property to restore today's physical-only output.  Word's HTML,
    every browser stack and the reader's machine all argue for it; the one
    case for the physical name is HTML rendered *on the server* (a
-   headless browser for PDF), which the property keeps.  Jason to confirm.
+   headless browser for PDF), which the property keeps.  **Confirmed by Jason
+   2026-09-13, as recommended; done in phase 5.**
 2. **Embedded versus installed: the installed font wins, for all four
    faces, in both mappers** — recommended: it is `IdentityPlusMapper`'s
    order today (the default mapper), `getBoldForm`'s, and the reason its

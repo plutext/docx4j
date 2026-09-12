@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
 
 import jakarta.xml.bind.JAXBElement;
 
@@ -391,8 +390,11 @@ public class ScrambleText extends CallbackImpl {
 			
 			if (font!=null) {
     			try {
-					glyphOK = GlyphCheck.hasChar(font, result);
-				} catch (ExecutionException e) {
+    				// the document font through the package's mapper: an embedded font, or a
+    				// substitute of another name, is not in PhysicalFonts by this name
+    				org.docx4j.fonts.PhysicalFont pf = pkg.getFontMapper().get(font);
+					glyphOK = pf!=null && GlyphCheck.hasCodepoint(pf, result);
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				

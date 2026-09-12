@@ -1251,6 +1251,7 @@ public class RunFontSelector {
     	}
     }
 
+    /** whether the run being selected preserves its white space; see the worker */
     private boolean spacePreserve;
 
 
@@ -1281,15 +1282,16 @@ public class RunFontSelector {
     public Object fontSelector(PPr pPr, RPr rPr, Text wmlText, boolean rPrIsEffective) {
 
     	String text=null;
+    	boolean preserve = false;
     	if (wmlText==null) {
     		log.debug("Null Text object");
     	} else {
     		text = wmlText.getValue();
-        	spacePreserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
-        	if (!spacePreserve) text = trimUnpreservedWhitespace(text);
+    		preserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
+        	if (!preserve) text = trimUnpreservedWhitespace(text);
     	}
     	
-    	return fontSelector( pPr,  rPr,  text, rPrIsEffective);
+    	return fontSelector( pPr,  rPr,  text, rPrIsEffective, preserve);
     }
 
     /**
@@ -1353,10 +1355,20 @@ public class RunFontSelector {
      * @return
      */
     public Object fontSelector(PPr pPr, RPr rPr, String text) {
-    	return fontSelector(pPr, rPr, text, false);
+    	// text a caller generated (a note number, a list label, a field's sample), never
+    	// white-space preserved
+    	return fontSelector(pPr, rPr, text, false, false);
     }
 
-    private Object fontSelector(PPr pPr, RPr rPr, String text, boolean rPrIsEffective) {
+    /**
+     * @param spacePreserve whether the text's white space is to be preserved (the
+     *        {@code w:t}'s {@code xml:space}); an HTML span then gets
+     *        {@code white-space:pre-wrap}.  A parameter since 17.1.1: it was a field
+     *        the {@code Text} overload set and the {@code String} overload left as it
+     *        was, so generated text inherited the last {@code w:t}'s setting.
+     */
+    private Object fontSelector(PPr pPr, RPr rPr, String text, boolean rPrIsEffective, boolean spacePreserve) {
+    	this.spacePreserve = spacePreserve; // read by setAttribute, which the visitor calls back
     	
     	if (text==null) {
     		log.debug("w:t with null value"); 
@@ -2062,22 +2074,76 @@ public class RunFontSelector {
     }
 
 
+	/** {@code docx4j.convert.out.html.fontFamily}: {@code document} (the default since
+	 *  17.1.1) or {@code physical} (the output before it).  @since 17.1.1 */
+	public static final String HTML_FONT_FAMILY_PROPERTY = "docx4j.convert.out.html.fontFamily";
+
+	private static boolean htmlPhysicalOnly() {
+		return "physical".equalsIgnoreCase(Docx4jProperties.getProperty(HTML_FONT_FAMILY_PROPERTY, "document").trim());
+	}
+
+	/**
+	 * The {@code font-family} declaration for an HTML span in this document font: the
+	 * document's name first, then the family of the physical font this machine mapped it
+	 * to (where that differs), then the generic class, as Word's own HTML and every
+	 * browser stack expect - {@code font-family: 'Calibri','Carlito',sans-serif;} - and
+	 * never empty: the reader's browser is not on the server, and has Calibri and not
+	 * Carlito as often as the reverse.  (CR-016 Decisions 1.)
+	 *
+	 * <p>Until 17.1.1 it named the physical font alone ({@code 'Carlito Regular'}), or
+	 * nothing where the document font mapped to none; {@code docx4j.convert.out.html.fontFamily=physical}
+	 * restores that, for HTML rendered on the server itself.</p>
+	 */
 	private String getCssProperty(String fontName) {
 		
-		String font = getPhysicalFont(fontName);
-		if (font!=null && font.endsWith(PhysicalFont.NOBOLD_SUFFIX)) {
-			// the alias for a document font with no bold face is an XSL FO matter
-			font = font.substring(0, font.length() - PhysicalFont.NOBOLD_SUFFIX.length());
-		}
-
-		if (font!=null) {
-			return Property.composeCss(CSS_NAME, "'" + font + "'");
-		} else {
+		PhysicalFont pf = physicalFontResolved(fontName);
+		if (htmlPhysicalOnly()) {
+			if (pf!=null) {
+				String font = pf.getName();
+				if (font.endsWith(PhysicalFont.NOBOLD_SUFFIX)) {
+					// the alias for a document font with no bold face is an XSL FO matter
+					font = font.substring(0, font.length() - PhysicalFont.NOBOLD_SUFFIX.length());
+				}
+				return Property.composeCss(CSS_NAME, "'" + font + "'");
+			}
 			// We don't have this font, so don't specify it in our CSS
 			log.info("No physical font for " + fontName);
 			return Property.CSS_NULL;
 		}
-		
+
+		StringBuilder stack = new StringBuilder();
+		String document = fontName==null ? null : fontName.trim();
+		if (document!=null && document.length()>0) {
+			stack.append('\'').append(document.replace("'", "")).append('\'');
+		}
+		String family = pf==null ? null : pf.getFamilyName();
+		if (family!=null && family.length()>0 && !family.equalsIgnoreCase(document)) {
+			if (stack.length()>0) stack.append(',');
+			stack.append('\'').append(family.replace("'", "")).append('\'');
+		}
+		FontFallback.FontClass fontClass = FontFallback.classOf(document);
+		if (fontClass==FontFallback.FontClass.UNKNOWN && family!=null) fontClass = FontFallback.classOf(family);
+		String generic = genericFamily(fontClass);
+		if (generic!=null) {
+			if (stack.length()>0) stack.append(',');
+			stack.append(generic);
+		}
+		if (stack.length()==0) {
+			// nothing named anywhere: the default font, so that the declaration is never empty
+			stack.append('\'').append(getDefaultFont().replace("'", "")).append('\'');
+		}
+		return Property.composeCss(CSS_NAME, stack.toString());
+	}
+
+	/** The CSS generic family for a class, or null where the class is not known. */
+	static String genericFamily(FontFallback.FontClass fontClass) {
+		if (fontClass==null) return null;
+		switch (fontClass) {
+			case SERIF: return "serif";
+			case SANS: return "sans-serif";
+			case MONO: return "monospace";
+			default: return null;
+		}
 	}
 
 	

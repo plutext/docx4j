@@ -11,10 +11,6 @@ import java.util.regex.Pattern;
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
-import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.fonts.PhysicalFonts;
-import org.docx4j.fonts.GlyphCheck;
-import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -28,8 +24,6 @@ import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.junit.Test;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 
 /**
  * The runs of a PAGE or NUMPAGES field in a footer specify a font (w:rFonts).
@@ -40,44 +34,10 @@ import org.junit.BeforeClass;
  */
 public class FieldFontTest {
 
-	/** The font the test document asks for.  Chosen from what is actually installed:
-	 *  these tests are about the field's font matching the surrounding text's, and a
-	 *  font which resolves to nothing gets no font-family at all in html output (see
-	 *  RunFontSelector.getCssProperty), which would fail them for the wrong reason. */
-	private static String FONT;
-
-	@BeforeClass
-	public static void chooseAFontWhichExists() throws Exception {
-
-		new IdentityPlusMapper();  // triggers discovery of the physical fonts
-
-		PhysicalFont pf = firstUsable("Courier New", "DejaVu Sans Mono", "Liberation Mono",
-				"DejaVu Sans", "Liberation Sans", "Arimo Regular", "Noto Sans Regular");
-		if (pf==null) {
-			for (PhysicalFont candidate : PhysicalFonts.getPhysicalFonts().values()) {
-				if (canRenderTheTestText(candidate)) { pf = candidate; break; }
-			}
-		}
-		Assume.assumeTrue("no usable physical font on this machine", pf!=null);
-		FONT = pf.getName();
-	}
-
-	private static PhysicalFont firstUsable(String... names) throws Exception {
-		for (String name : names) {
-			PhysicalFont pf = PhysicalFonts.get(name);
-			if (canRenderTheTestText(pf)) return pf;
-		}
-		return null;
-	}
-
-	/** It must have the characters this test uses, or RunFontSelector may not choose it. */
-	private static boolean canRenderTheTestText(PhysicalFont pf) throws Exception {
-		if (pf==null || pf.getName()==null) return false;
-		for (char c : "Page of 1".toCharArray()) {
-			if (!GlyphCheck.hasCodepoint(pf, c)) return false;
-		}
-		return true;
-	}
+	/** The font the test document asks for.  Any name will do: since 17.1.1 the html span
+	 *  names the document font first (CR-016 Decisions 1), whatever this machine has, so
+	 *  the test no longer depends on the machine's fonts. */
+	private static final String FONT = "Courier New";
 
 	/** Where the font comes from in the test package. */
 	private enum FontSource { DIRECT_RFONTS, PARAGRAPH_STYLE, CHARACTER_STYLE }
@@ -115,11 +75,9 @@ public class FieldFontTest {
 		assertNotNull("no span for the surrounding text", textFont);
 		assertTrue("no font-family on the surrounding text", textFont.length() > 0);
 
-		// .. namely FONT's physical font - not the document default (were the style
-		// being ignored, text and field would still match, on the default font)
-		PhysicalFont expected = wordMLPackage.getFontMapper().get(FONT);
-		assertNotNull("no physical font for " + FONT + " on this machine", expected);
-		assertEquals("surrounding text isn't in " + FONT, "'" + expected.getName() + "'", textFont);
+		// .. namely FONT - not the document default (were the style being ignored, text
+		// and field would still match, on the default font)
+		assertTrue("surrounding text isn't in " + FONT + ": " + textFont, textFont.startsWith("'" + FONT + "'"));
 
 		// .. and so should the field results (in HTML, both PAGE and NUMPAGES are "1")
 		int fieldSpans = 0;

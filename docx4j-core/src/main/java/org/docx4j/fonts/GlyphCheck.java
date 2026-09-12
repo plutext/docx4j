@@ -141,6 +141,13 @@ public class GlyphCheck {
 	
 	private static Set<String> warnedAlready = ConcurrentHashMap.newKeySet();
 
+	/**
+	 * @deprecated since 17.1.1: this looks the name up in {@link PhysicalFonts}, where a
+	 *             font embedded in the document, or a document font mapped to a
+	 *             substitute of another name, is not.  Resolve the document font through
+	 *             the package's {@link Mapper#get} and ask {@link #hasCodepoint(PhysicalFont, int)}.
+	 */
+	@Deprecated
 	public static boolean hasChar(String fontName, char c) throws ExecutionException {
 
 		PhysicalFont pf = PhysicalFonts.get(fontName);

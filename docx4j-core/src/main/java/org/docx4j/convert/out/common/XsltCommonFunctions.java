@@ -137,15 +137,9 @@ public class XsltCommonFunctions {
     		RPr rPr,
     		String text) {
 
-    	/* Pass the text as a w:t with no xml:space, rather than as a String: the
-    	 * String overload doesn't reset RunFontSelector's spacePreserve flag, so
-    	 * generated text would otherwise inherit xml:space="preserve" from whatever
-    	 * w:t that instance (which lives for the conversion) was last used for. */
-    	Text wmlText = Context.getWmlObjectFactory().createText();
-    	wmlText.setValue(text);
-
+    	// the String overload: generated text, its white space never preserved
     	DocumentFragment df =
-    			(DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, wmlText);
+    			(DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
 
     	// the font we resolved may not actually have these characters; see fontCanRender
     	if (df!=null && df.getFirstChild() instanceof Element) {
@@ -180,7 +174,13 @@ public class XsltCommonFunctions {
     	String fontName = physicalFontNameOf(styled);
     	if ((fontName==null) || (fontName.length()==0)) return true;  // no font was set anyway
 
-    	PhysicalFont pf = physicalFontFor(fontMapper, fontName);
+    	PhysicalFont pf = null;
+    	// html names a stack since 17.1.1 ('Calibri','Carlito',sans-serif): the physical font
+    	// is whichever entry this machine has; fo names the physical font alone
+    	for (String candidate : fontName.split(",")) {
+    		pf = physicalFontFor(fontMapper, candidate.trim().replace("'", "").replace("\"", ""));
+    		if (pf!=null) break;
+    	}
     	if (pf==null) {
     		// We can't tell, so use the font: dropping it would be worse.
     		log.debug("Couldn't resolve " + fontName + "; assuming it can render " + text);
@@ -216,17 +216,18 @@ public class XsltCommonFunctions {
     	return PhysicalFonts.get(physicalFontName);
     }
 
-    /** The physical font name RunFontSelector put on this element: @font-family for fo,
-     *  or the font-family declaration in @style for html. */
+    /** The font-family RunFontSelector put on this element: @font-family for fo (the
+     *  physical font), or the font-family declaration in @style for html (a stack, since
+     *  17.1.1: the document font, the physical family, the generic class). */
     private static String physicalFontNameOf(Element styled) {
 
     	String fontFamily = styled.getAttribute("font-family");  // fo
     	if ((fontFamily!=null) && (fontFamily.length()>0)) return fontFamily;
 
-    	String style = styled.getAttribute("style");  // html, eg font-family:'Courier New';
+    	String style = styled.getAttribute("style");  // html, eg font-family: 'Courier New','Cousine',monospace;
     	if (style==null) return null;
     	Matcher m = FONT_FAMILY_IN_CSS.matcher(style);
-    	return (m.find() ? m.group(1).trim().replace("'", "") : null);
+    	return (m.find() ? m.group(1).trim() : null);
     }
 
     /** Undo the font RunFontSelector set, leaving the text in whatever font it inherits.

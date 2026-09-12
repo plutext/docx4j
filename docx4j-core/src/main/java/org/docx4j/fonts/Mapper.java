@@ -79,7 +79,10 @@ public abstract class Mapper {
 	 */
 	protected final ConcurrentHashMap<String, PhysicalFont> fontMappings = new ConcurrentHashMap<String, PhysicalFont>();
 	
-	@Deprecated // in order to avoid case sensitivity
+	/** @deprecated the live map, keyed by the lower-cased name; use {@link #get} and
+	 *  {@link #put}, which are case-insensitive, and {@link #physicalFontNamed} for a
+	 *  lookup by the physical name. */
+	@Deprecated
 	public Map<String, PhysicalFont> getFontMappings() {
 		return fontMappings;
 	}	
@@ -257,11 +260,16 @@ public abstract class Mapper {
 	
 	
 	// For Xalan
+	/** @deprecated since 17.1.1: no pathway calls it; the HTML font-family is
+	 *  RunFontSelector's (the document font, the physical family, the generic class). */
+	@Deprecated
 	public static String getSubstituteFontXsltExtension(Mapper s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
 		
 		return s.getSubstituteFontXsltExtension(documentStyleId, bolditalic, fontFamilyStack);
 	}
 	
+	/** @deprecated since 17.1.1: see the static form. */
+	@Deprecated
 	public String getSubstituteFontXsltExtension(String documentStyleId, 
 			String bolditalic, boolean fontFamilyStack) {
 		

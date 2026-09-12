@@ -92,13 +92,29 @@ public class PhysicalFont {
 	// // For example: Times New Roman - note this is an array;
 	// FOP doesn't ordinarily include it in EmbedFontInfo,
 	// instead it makes a font triplet to represent it
-//	String familyName;
-//	public String getFamilyName() {
-//		return familyName;
-//	}
-//	public void setFamilyName(String familyName) {
-//		this.familyName = familyName;
-//	}
+	/**
+	 * The font's family name, as a CSS {@code font-family} names it: "Carlito" for the
+	 * face "Carlito Regular", "Liberation Sans" for "Liberation Sans Bold".  FOP records
+	 * the family as the last of the font's triplets (after the full name and the
+	 * PostScript name); the physical name is the full name.  Where the font has no
+	 * family triplet of its own, the physical name without a twin suffix.
+	 *
+	 * @since 17.1.1
+	 */
+	public String getFamilyName() {
+		String plain = PhysicalFonts.stripSuffixes(name);
+		if (embedFontInfo==null || embedFontInfo.getFontTriplets()==null) return plain;
+		String postScript = plain.replaceAll("\\s", "");
+		java.util.List<?> triplets = embedFontInfo.getFontTriplets();
+		for (int i = triplets.size()-1; i >= 0; i--) {
+			String candidate = ((org.docx4j.fonts.fop.fonts.FontTriplet)triplets.get(i)).getName();
+			if (candidate==null || candidate.length()==0) continue;
+			// not the PostScript form (no spaces, or a -Style suffix)
+			if (candidate.equals(postScript) || candidate.indexOf(' ')<0 && candidate.indexOf('-')>=0) continue;
+			return candidate;
+		}
+		return plain;
+	}
 			
 	URI embeddedURI;
 	public URI getEmbeddedURI() {
