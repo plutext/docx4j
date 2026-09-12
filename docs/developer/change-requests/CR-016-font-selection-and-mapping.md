@@ -1,7 +1,8 @@
 # CR-016: Font selection and mapping (`RunFontSelector`, `Mapper` and its subpackages) — line endings, one resolution, the character-range rules, the mapping order, discovery, cost, API
 
-Status: IN PROGRESS (2026-09-12) — phase 0 done (d643638ad); Jason read the CR
-the same day and started the work.  The review below was written that day
+Status: IN PROGRESS (2026-09-12) — phase 0 done (d643638ad), phase 0b done (the
+eight probes and their goldens, the verification table settled); Jason read the
+CR the same day and started the work.  The review below was written that day
 against 7563277a0 (CR-015 tidy-up), with every "measured" claim taken from a
 scratch test that was run and then deleted (`ScratchFontsProbeTest`, not
 committed; the phase tests reproduce each case as an assertion).
@@ -466,19 +467,19 @@ javadoc cites), ECMA-376, or one of the probes below.
 | # | claim (source) | code does (inspected / measured 2026-09-12) | Word evidence | status |
 |---|---|---|---|---|
 | 1 | The preamble rule (eastAsia TNR, ascii = hAnsi) "is not implemented" (1718) | implemented at 1594-1597 | table | COMMENT STALE (phase 2 fixes the comment) |
-| 2 | `w:cs`/`w:rtl` present means the cs font (1439) | presence, not value; `w:val="0"` takes the cs path | ECMA 17.3.2.7/17.3.2.30 (a value); probe P1 | WRONG (phase 1) |
-| 3 | `themeFontLang` picks one theme font per bucket by language (javadoc) | via `LanguageTagToScriptMapping`, whose substring test sends `et`/`mn`/`wo` to Ethi/Beng | probe P4 (expect Calibri for `et-EE`) | MECHANISM RIGHT, MAPPING WRONG (phase 1) |
-| 4 | The ASCII font formats 0-127 (javadoc) | except U+0020, which joins the current span | probe P2 (the space's width) | PROBE |
-| 5 | Hebrew/Arabic without cs: "Word ... often uses TNR" (1944); table says ascii | Times New Roman if it has the glyph, else nothing (the fallback) | probe P3 (ascii, hAnsi, cs, TNR, or the theme's bidi font) | PROBE |
-| 6 | Emoji check "doubt this works for high surrogate" (1776) | confirmed: always false; and no coverage pass for astral | Word uses Segoe UI Emoji (P8 (c)) | CONFIRMED gap (phase 2) |
-| 7 | Symbol fonts recognised by name (1380) | case-sensitive | font names are case-insensitive (Word; `Mapper.get`); P8 (a) | GAP (phase 2) |
-| 8 | Default font: TNR when docDefaults name none; Calibri when a theme font has no theme part (202, 220) | as stated, and computed before `themeFontLang` is known | probe P6 | PROBE; the ordering is a CODE gap (phase 1) |
-| 9 | `hint=eastAsia` sends U+02B0-U+04FF to eastAsia (1920) | `fontAction(null)` when the run has no eastAsia font, i.e. the fallback | table: eastAsia "if defined", else hAnsi | GAP (phase 2) |
-| 10 | Space and shared characters follow the previous font in the coverage pass (`isShared`, 17.1.0) | as stated | right for shaping; width per P2 | PROBE (same answer as row 4) |
+| 2 | `w:cs`/`w:rtl` present means the cs font (1439) | presence, not value; `w:val="0"` takes the cs path | ECMA 17.3.2.7/17.3.2.30 (a value); golden P1: (b) `w:cs w:val=0`, (c) the style's cs overridden, (d) `w:rtl w:val=0` all Carlito; (a) `w:cs` and (e) `w:rtl` on Latin text Courier New | WRONG (golden; phase 1) - a false value is off, and `w:rtl` alone does take the cs font |
+| 3 | `themeFontLang` picks one theme font per bucket by language (javadoc) | via `LanguageTagToScriptMapping`, whose substring test sends `et`/`mn`/`wo` to Ethi/Beng | golden P4: Carlito on every line, with and without `w:lang` | MECHANISM RIGHT, MAPPING WRONG (golden; phase 1) |
+| 4 | The ASCII font formats 0-127 (javadoc) | except U+0020, which joins the current span | golden P2: the space between two MS Gothic words is 2.64-2.88pt at 12pt, Carlito's 0.22em space, not MS Gothic's half em (6pt); the digits are Carlito, the ideographic comma MS Gothic | CONFIRMED (golden): the space takes `w:ascii` (phase 2) |
+| 5 | Hebrew/Arabic without cs: "Word ... often uses TNR" (1944); table says ascii | Times New Roman if it has the glyph, else nothing (the fallback) | golden P3: Hebrew with nothing in **Liberation Sans, the `w:ascii` font**; `w:rtl` and `w:cs` in Liberation Serif (cs); Arabic with nothing in **Arial** and with `w:cs` in **Times New Roman** - Liberation Sans/Serif have no Arabic, and Word substitutes per script *within the class* (a sans for the sans, a serif for the serif) | WRONG (golden): the table's `ascii` is right, and coverage falls back by class (phase 2) |
+| 6 | Emoji check "doubt this works for high surrogate" (1776) | confirmed: always false; and no coverage pass for astral | golden P8 (c): Segoe UI Emoji; (d) `→` in Carlito, `❑` `✔` in Segoe UI Symbol | CONFIRMED gap (golden; phase 2) |
+| 7 | Symbol fonts recognised by name (1380) | case-sensitive | golden P8: `symbol` and `wingdings` in lower case draw SymbolMT and Wingdings exactly as the title-case controls | CONFIRMED gap (golden; phase 2) |
+| 8 | Default font: TNR when docDefaults name none; Calibri when a theme font has no theme part (202, 220) | as stated, and computed before `themeFontLang` is known | golden P6: (a) no `w:rFonts` anywhere: Times New Roman; (b) theme references with an explicit name and no theme part: **Calibri** (the explicit `w:ascii` is not the fallback; Word supplies the Office theme, Calibri/Cambria - not Word 365's own Aptos); (c) an absent `w:hAnsi` slot: Times New Roman for the Latin-1 characters, and the ASCII letters between them back in the `w:ascii` font; (d) an absent `w:ascii`: Times New Roman | CONFIRMED (golden): both constants right, and "theme trumps explicit" right; the ordering is a CODE gap (phase 1); (c) also shows the Latin-1 range reset (phase 2) |
+| 9 | `hint=eastAsia` sends U+02B0-U+04FF to eastAsia (1920) | `fontAction(null)` when the run has no eastAsia font, i.e. the fallback | table: eastAsia "if defined", else hAnsi; not probed | GAP (phase 2) |
+| 10 | Space and shared characters follow the previous font in the coverage pass (`isShared`, 17.1.0) | as stated | golden P2: the space is the ascii font's | SETTLED with row 4 (phase 2); shaping is unaffected |
 | 11 | "prefer the physical font if present" for bold forms (`Mapper` 294) vs the regular form's two orders | inconsistent between the mappers | no probe can decide it (needs a font absent from the VM) | DECISION 2 |
 | 12 | Face order regular, italic, bold (`IdentityPlusMapper` 147) | as stated; italic wins over bold | a missing plain face: bold upright is nearer than italic | GAP (phase 3) |
-| 13 | An absent face falls to the document default's class or font (`FontFallback`, 106) | as stated; the fontTable's `w:family`/`w:panose1` unread | ledger4: "UI font, per character" (7320, 12630); probe P5 varies the fontTable | PROBE (phase 3) |
-| 14 | A `w:b` run in Calibri Light is Carlito Bold | `renderedFace` takes the substitute's real bold | ledger4 M2: Word's line is one Calibri-Light font object; probe P7 | PROBE (phase 3) |
+| 13 | An absent face falls to the document default's class or font (`FontFallback`, 106) | as stated; the fontTable's `w:family`/`w:panose1` unread | golden P5 (docDefaults Liberation Serif): (a) no fontTable entry **Cambria**; (b) `w:family="swiss"` + Arial's panose **Calibri** (not Arial: panose is not matched, the family is); (c) `w:family="roman"` **Cambria**; (d) `w:altName="Arial"` Arial; (e) an entry with only an absent altName **Calibri**; (f) absent altName whose own entry says swiss: Calibri; (g) Cyrillic and Greek in Calibri, one face throughout; (h) Liberation Serif | SETTLED (golden): never the document default; `roman` and no-entry go to Word's default serif (Cambria), `swiss` and an entry without a family to its default sans (Calibri), an altName that resolves wins; per character only where the substitute lacks a script (P3) (phase 3) |
+| 14 | A `w:b` run in Calibri Light is Carlito Bold | `renderedFace` takes the substitute's real bold | golden P7: (c) is drawn by the **Calibri-Light** font object (synthetic bold): the sentence is 378.55pt against 377.50 unbolded, +0.3%; Word's Calibri Light is 0.9875 of its Calibri (377.50 / 382.28); docx4j's Carlito Bold for (c) measures 388.70, +2.7% | CONFIRMED (golden): a family with no bold face is emboldened at its own advances (phase 3) |
 | 15 | Embedded fonts' line metrics (17.0.5 `applyLineHeight`) | by name in `PhysicalFonts`: the table or the 1.2 fallback, never the embedded file | Word uses the embedded file's metrics (§2.7 of CR-001) | GAP (phase 4; unit test on `FontEmbedded.docx`) |
 | 16 | Discovery "can't resolve any font" (setFontMapper) | as stated; DISCOVERY mode and 12 branches exist for it | n/a | CODE CONFIRMED; phase 4 removes the need |
 | 17 | `arabicNumbering` for `bidi="ar-SA"` only (2578) | as stated | Word: the Numeral option, any Arabic-script language | GAP, no probe (phase 2 widens the gate) |
@@ -523,6 +524,38 @@ FO (`font-family` per inline) and PDF:
 | P6 | (a) Tinos (Times New Roman, the built-in default); (b) theme references *and* an explicit `w:ascii`, no theme part: **Tinos** - `StyleUtil.apply(RFonts)` keeps the theme attribute and drops the explicit name ("theme trumps non theme"), and with no theme part the theme attribute resolves to nothing; (c) `w:ascii` only with Latin-1 text: `caf` in Liberation Sans, then `é ` and **`über fa`, `çade na`** in Tinos - after a Latin-1 character the dispatch sets the current range to U+0000-U+007F, so the ASCII letters that follow join the hAnsi span instead of returning to `w:ascii` (a dispatch bug of its own, invisible while ascii and hAnsi name the same font); (d) `w:hAnsi` only: Tinos; (e) Liberation Sans |
 | P7 | all four in Carlito; (c) and (d) both in Carlito Bold (`pdffonts`): Calibri Light's `w:b` takes the substitute's real bold |
 | P8 | (a) `symbol` lower case: **`abgdpw` in Carlito** (not the symbol path); (b) `wingdings` lower case: the private-use code points left in Carlito; (c) the emoji in Carlito (notdef); (d) `→` in Carlito (it has it), `❑` and `✔` in Noto Sans Symbols 2; (e) `Symbol`: αβγδπω in DejaVu Serif; (f) `Wingdings`: ✓🗹▪ in Noto Sans Symbols 2 |
+
+**Goldens in (2026-09-12, Word run "done 8"; `docx4j-layout-fidelity/goldens/word/fonts-*.pdf`
+and the manifest).**  Word's answers, read with `mutool draw -F stext` (the face
+drawing each character) and `pdftotext -bbox-layout`, against docx4j's render
+(`Fidelity compare`, line parity):
+
+| probe | Word | parity today |
+|---|---|---|
+| P1 | (a) Courier New; (b) (c) (d) **Carlito**; (e) `w:rtl` on Latin text **Courier New**, set right to left; (f) Courier New; (g) Carlito | 46% |
+| P2 | the CJK words in MS Gothic, the **space between them 2.64-2.88pt** (Carlito's 0.22em at 12pt; MS Gothic's would be 6.0); digits Carlito; `、` MS Gothic; (d) each `日本` in MS Gothic, its trailing space Carlito | 17% (docx4j's spaces happen to measure 2.7pt because Source Han Sans has a proportional space; with MS Gothic mapped they would be 6pt) |
+| P3 | (a) Hebrew with nothing: **Liberation Sans** (`w:ascii`), width 321.5pt (docx4j's Tinos 303.1); (b) (c) Liberation Serif (docx4j the same, 284.6/286.1 both sides); (d) Arabic with nothing: **Arial**; (e) Arabic with `w:cs`: **Times New Roman** - the named faces have no Arabic, and Word's per-script substitute keeps the class | 29% |
+| P4 | Carlito throughout | 100% |
+| P5 | (a) Cambria; (b) Calibri; (c) Cambria; (d) Arial; (e) Calibri; (f) Calibri; (g) Calibri, one face for Cyrillic and Greek; (h) Liberation Serif.  Line boxes follow the face Word chose (12.94pt Cambria, 12.60 Calibri, 12.38 Arial, 12.22 Liberation Serif at 11pt) | 75% |
+| P6 | (a) Times New Roman; (b) **Calibri** (the theme reference resolved against the Office theme, the explicit name unused); (c) `caf` Liberation Sans, `é ü` Times New Roman, `ber fa` **Liberation Sans**, ... - every ASCII letter returns to `w:ascii`; (d) Times New Roman; (e) Liberation Sans | 100% (the faces differ in (b) and (c), the line breaks do not) |
+| P7 | (a) Calibri Light, sentence 377.50pt; (b) Calibri, 382.28 (Light = 0.9875 of regular); (c) **Calibri-Light**, 378.55 (synthetic bold, +0.3%); (d) Calibri Bold, 390.65 | 50% |
+| P8 | (a) SymbolMT; (b) Wingdings; (c) Segoe UI Emoji; (d) `→` Carlito, `❑` `✔` Segoe UI Symbol; (e) (f) as (a) (b) | 17% (docx4j's Noto Sans Symbols 2 stands in for Segoe UI Symbol; the misses are (a), (b), (c)) |
+
+What the goldens settle beyond the rows: Word's font for an unresolvable name
+is **not** the document default and not "the UI font" as such - it is Word's
+default serif or sans by the fontTable's `w:family` (Cambria/Calibri, the
+Office theme pair, on a Word 365 whose own theme is Aptos), Cambria when
+there is no entry at all, Calibri when there is an entry without a family;
+panose is not consulted (Arial's exact panose still gave Calibri); an altName
+that resolves wins, one that does not is ignored.  A document with no theme
+part gets the Office theme's Calibri for its theme references, which is what
+`RunFontSelector`'s "No theme part - default to Calibri" constant assumed and
+what `StyleUtil.apply(RFonts)`'s "theme trumps explicit" requires - so P6 (b)
+is a *selector* fix (resolve a theme reference to Calibri/Cambria when the
+theme part is absent, at every level, not only for the document default), not
+a merge-rule change.  Where the chosen face lacks a script, Word substitutes
+per script within the class (Arial for a sans, Times New Roman for a serif),
+which is `FontFallback.selectCovering`'s preference already.
 
 Three things the render found that the review had not: the Latin-1 range
 resets the current range to ASCII (P6 (c)), an uncovered *shared*
@@ -744,7 +777,7 @@ One commit, nothing else in it; hash into `.git-blame-ignore-revs`;
 `.xsd`.  Exit: no CR in those paths; `mvn -o -q -Dgpg.skip=true install -pl
 docx4j-core -DskipTests` unchanged.
 
-### Phase 0b — verification probes (no code change) — probes cut and on the share 2026-09-12; goldens pending
+### Phase 0b — verification probes (no code change) — DONE 2026-09-12 (goldens in, Word run "done 8", table settled)
 
 Add the eight `fonts-*` probes to `Corpus.java` (`Doc` has `documentDefaultRun`,
 `font`, `addParagraphStyle`, the run customisers; new helpers: a character
