@@ -282,6 +282,15 @@ List numbering (CR-014, phase 1):
   w:num overrides that level (it was never applied): measured, Word draws an override stating w:b
   and w:sz 36 as an 18pt bold label beside 12pt text. ResultTriple.getLabelRPr() carries it;
   getRPr() stays the abstract level's.
+- (phase 5) API hygiene in org.docx4j.model.listnumbering: Java-style names (incrementCounter,
+  resetCounter, getCurrentNumberString, isBullet, levelExists, getFont, setOverrides) beside the
+  C#-style ones of the original translation, which are deprecated; Emulator.ResultTriple is now a
+  deprecated, static, empty subclass of the new Emulator.NumberingResult (the getNumber overloads
+  keep returning ResultTriple for one release, so assign to either); int-keyed level lookups
+  (getLevel(int), levelExists(int)); hot-path debug logging guarded; a package-info explaining the
+  model. Removal of the deprecated names no earlier than 17.2. The exporters' own signatures that
+  named ResultTriple (XsltFOFunctions.numberFor and friends, TocEntry.numberEntry) now name
+  NumberingResult.
 - (phase 3) A paragraph naming no style is numbered through the default paragraph style's
   w:numPr, as Word does (measured): Emulator.getNumber(pkg, pPr), used by HTML output and the
   TOC generator, assumed that style unnumbered. PDF output already resolved it.

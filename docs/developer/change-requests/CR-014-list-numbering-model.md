@@ -1,6 +1,6 @@
 # CR: List numbering model (`org.docx4j.model.listnumbering`) — line endings, correctness, and separating definitions from counter state
 
-Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) 1 (LabelFormatter registry), 3 (one resolver), 2 (w:lvlRestart) and 4 (state per traversal and story) done; next 5
+Status: DONE (2026-09-12) — all phases shipped in 17.1.1: 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled), 1 (LabelFormatter registry), 3 (one resolver), 2 (w:lvlRestart), 4 (state per traversal and story, baea057b7) and 5 (API hygiene); see the per-phase notes
 Scope: the package `docx4j-core/src/main/java/org/docx4j/model/listnumbering`
 (15 files, ~2,200 lines), its driver `NumberingDefinitionsPart` (maps,
 `getEmulator`, `restart`), and the tests under
@@ -642,10 +642,24 @@ guard the debug logging; `package-info.java` explaining the model, the
 shared-counter rule, and the state-vs-definition split.  One release of
 deprecation before removal (i.e. remove no earlier than 17.2).
 
+Done 2026-09-12.  As designed, with one deviation: the level maps stay
+`String`-keyed (`getListLevels()` returns them, public API) and the int
+keys are `getLevel(int)`/`levelExists(int)` overloads, which
+`incrementCounter` now walks with instead of parsing strings in loops.
+`NumberingResult` is the static class; `ResultTriple` its deprecated empty
+subclass, still the declared return type of the `getNumber` overloads so
+`ResultTriple t = getNumber(...)` compiles for one more release; docx4j's
+own callers (FO, HTML, TOC) declare `NumberingResult`.  The C#-style
+names delegate to the new ones and carry `@deprecated since 17.1.1`;
+`Counter.IncrementCounter` is `increment()`.  Debug logging in
+`getNumber`, `incrementCounter` and `Counter` is guarded or gone (the
+per-read "counter: n" line is gone).  `package-info.java` written.
+
 ## Decisions
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-09-12: phase 5 done; the CR is complete.
 - 2026-09-12: phase 4 done (see the phase for particulars); the label
   precedence (level over paragraph mark) is a further behaviour change
   towards Word, from P3.

@@ -253,7 +253,7 @@ public class ListLevel {
      * Get overridden values
      * @param levelNode
      */
-    public void SetOverrides(Lvl levelNode)
+    public void setOverrides(Lvl levelNode)
     {
     	this.jaxbOverrideLvl = levelNode;
     	
@@ -374,9 +374,9 @@ public class ListLevel {
     /**
      * increments the current count of list items of that level 
      */
-    public void IncrementCounter()
+    public void incrementCounter()
     {
-    	IncrementCounter(defaultState());
+    	incrementCounter(defaultState());
     }
 
     /**
@@ -388,14 +388,14 @@ public class ListLevel {
      *
      * @since 17.1.1
      */
-    public void IncrementCounter(NumberingState state)
+    public void incrementCounter(NumberingState state)
     {
     	Counter counter = counter(state);
     	boolean overridePending = hasStartOverride && ownerNumId != null
     			&& !state.startOverrideApplied(ownerNumId, id);
     	if (overridePending || !counter.encounteredAlready) {
         	counter.setCurrentValue(this.startValue); 
-        	log.debug("not encounteredAlready; set to startValue " + startValue);
+        	if (log.isDebugEnabled()) log.debug("not encounteredAlready; set to startValue " + startValue);
         	counter.encounteredAlready = true;
         	counter.resetPending = false;
         	if (ownerNumId != null) state.markStartOverrideApplied(ownerNumId, id);
@@ -405,7 +405,7 @@ public class ListLevel {
     		counter.resetPending = false;
     		return;
     	}
-        counter.IncrementCounter();
+        counter.increment();
     }
     
 	/** @deprecated since 17.1.1: unused; whether a start override has been applied is
@@ -423,13 +423,13 @@ public class ListLevel {
      * a level-2 item straight after a level-0 one read "2.0.1" where Word reads
      * "2.1.1" (CR-014 probe P8, measured).</p>
      */
-    public void ResetCounter()
+    public void resetCounter()
     {
-        ResetCounter(defaultState());
+        resetCounter(defaultState());
     }
 
-    /** {@link #ResetCounter()}, in the given state.  @since 17.1.1 */
-    public void ResetCounter(NumberingState state)
+    /** {@link #resetCounter()}, in the given state.  @since 17.1.1 */
+    public void resetCounter(NumberingState state)
     {
     	Counter counter = counter(state);
         counter.setCurrentValue(this.startValue.add(BigInteger.ONE));
@@ -506,10 +506,32 @@ public class ListLevel {
      * 
      * @return
      */
-    public boolean IsBullet()
+    public boolean isBullet()
     {
             return this.isBullet;
     }
+
+    // ---- the names before 17.1.1 (from the C# original this was translated from);
+    //      removal no earlier than 17.2 (CR-014 phase 5)
+
+    /** @deprecated since 17.1.1, use {@link #setOverrides(Lvl)} */
+    @Deprecated
+    public void SetOverrides(Lvl levelNode) { setOverrides(levelNode); }
+    /** @deprecated since 17.1.1, use {@link #incrementCounter()} */
+    @Deprecated
+    public void IncrementCounter() { incrementCounter(); }
+    /** @deprecated since 17.1.1, use {@link #incrementCounter(NumberingState)} */
+    @Deprecated
+    public void IncrementCounter(NumberingState state) { incrementCounter(state); }
+    /** @deprecated since 17.1.1, use {@link #resetCounter()} */
+    @Deprecated
+    public void ResetCounter() { resetCounter(); }
+    /** @deprecated since 17.1.1, use {@link #resetCounter(NumberingState)} */
+    @Deprecated
+    public void ResetCounter(NumberingState state) { resetCounter(state); }
+    /** @deprecated since 17.1.1, use {@link #isBullet()} */
+    @Deprecated
+    public boolean IsBullet() { return isBullet(); }
     
     /** A level's count in one {@link NumberingState}.  Static since 17.1.1. */
     protected static class Counter {
@@ -554,20 +576,21 @@ public class ListLevel {
          */
         public BigInteger getCurrentValue()
         {        	
-        	log.debug("counter: " + currentValue.intValue() );
             return this.currentValue;
         }
     	
         /**
          * increments the current count of list items of that level 
          */
-        public void IncrementCounter()
+        public void increment()
         {
         	setCurrentValue( currentValue.add(BigInteger.ONE)); 
-            
-            log.debug("counter now: " + currentValue.intValue() );
-            
+            if (log.isDebugEnabled()) log.debug("counter now: " + currentValue.intValue() );
         }
+
+        /** @deprecated since 17.1.1, use {@link #increment()} */
+        @Deprecated
+        public void IncrementCounter() { increment(); }
     	
     }
 

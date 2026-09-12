@@ -467,7 +467,7 @@ class WmlToMarkdown {
 
 	private ListBlock createListBlock(BigInteger numId, int level, boolean tight) {
 		ListLevel listLevel = listLevel(numId, level);
-		boolean bullet = (listLevel == null) || listLevel.IsBullet();
+		boolean bullet = (listLevel == null) || listLevel.isBullet();
 		ListBlock listBlock;
 		if (bullet) {
 			listBlock = new BulletList();

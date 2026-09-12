@@ -70,7 +70,7 @@ public class NumberingStoriesTest {
 		StringBuilder sb = new StringBuilder();
 		for (P p : ps) {
 			if (sb.length() > 0) sb.append(' ');
-			Emulator.ResultTriple t = Emulator.getNumber(pkg, p.getPPr(), state);
+			Emulator.NumberingResult t = Emulator.getNumber(pkg, p.getPPr(), state);
 			sb.append(t == null ? "null" : t.getNumString());
 		}
 		return sb.toString();

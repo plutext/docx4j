@@ -233,7 +233,7 @@ public class Emulator {
     	if (state == null) state = numberingPart.getNumberingState();
     	
     	// Object to hold results
-    	ResultTriple triple = em.new ResultTriple();    	
+    	ResultTriple triple = new ResultTriple();    	
     	    	
     	PropertyResolver propertyResolver;
 		try {
@@ -252,24 +252,24 @@ public class Emulator {
     	levelId = ref.ilvl;
 
 		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
-				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
+				&& numberingPart.getInstanceListDefinitions().get(numId).levelExists(
 						levelId)) {
 
-			numberingPart.getInstanceListDefinitions().get(numId).IncrementCounter(
+			numberingPart.getInstanceListDefinitions().get(numId).incrementCounter(
 					levelId, state);
 			triple.numString = numberingPart.getInstanceListDefinitions().get(numId)
-					.GetCurrentNumberString(levelId, state);
+					.getCurrentNumberString(levelId, state);
 			
-			log.debug("Got number: " + triple.numString);
+			if (log.isDebugEnabled()) log.debug("Got number: " + triple.numString);
 
 			String font = numberingPart.getInstanceListDefinitions().get(numId)
-					.GetFont(levelId);
+					.getFont(levelId);
 
 			if (font != null && !font.equals("")) {
 				triple.numFont = font;
 			}
 
-			if (numberingPart.getInstanceListDefinitions().get(numId).IsBullet(levelId)) {
+			if (numberingPart.getInstanceListDefinitions().get(numId).isBullet(levelId)) {
 				//triple.isBullet = true;
 				triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 			}
@@ -321,7 +321,7 @@ public class Emulator {
 //				t.printStackTrace();
 			}
 			
-		} else if (!numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
+		} else if (!numberingPart.getInstanceListDefinitions().get(numId).levelExists(
 				levelId)){
 			
 			log.error("Couldn't find level " + levelId + " in list " + numId);					
@@ -507,7 +507,7 @@ public class Emulator {
     			}
     		}
     	}
-    	log.debug("Using numId: " + numId);
+    	if (log.isDebugEnabled()) log.debug("Using numId: " + numId);
 
     	if (levelId == null || levelId.equals("")) {
     		log.warn("No level id?! Default to 0.");
@@ -560,9 +560,16 @@ public class Emulator {
 //    }
     
     
-    public class ResultTriple {
-    	// If we had our time again, wouldn't include 'Triple' in the name of this class,
-    	// since its become a misnomer
+    /**
+     * What a paragraph is numbered with: the label text (or the bullet), the level
+     * definition it came from, the indent and the rPr that level contributes.  The
+     * {@code getNumber} overloads return its deprecated subclass {@link ResultTriple}
+     * until 17.2, so assign to either.
+     *
+     * @since 17.1.1 (CR-014 phase 5; the class was {@code ResultTriple}, a name that had
+     *        become a misnomer)
+     */
+    public static class NumberingResult {
     	
     	String numString;
 		public String getNumString() {
@@ -628,6 +635,17 @@ public class Emulator {
 		public Lvl getLvl() {
 			return lvl;
 		}
+    }
+
+    /**
+     * The old name of {@link NumberingResult}, kept as an empty subclass so that
+     * {@code Emulator.ResultTriple} still compiles.  Static since 17.1.1 (it was an
+     * inner class); the {@code getNumber} overloads keep returning it for one release.
+     *
+     * @deprecated since 17.1.1, use {@link NumberingResult}.  Removal no earlier than 17.2.
+     */
+    @Deprecated
+    public static class ResultTriple extends NumberingResult {
     }
 
 }

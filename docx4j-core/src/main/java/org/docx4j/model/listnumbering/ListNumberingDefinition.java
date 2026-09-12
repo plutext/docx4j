@@ -260,7 +260,7 @@ public class ListNumberingDefinition {
 
 						Lvl lvl = overrideNode.getLvl();
 						if (lvl != null && this.levels.get(overrideLevelId) != null) {
-							this.levels.get(overrideLevelId).SetOverrides(lvl);
+							this.levels.get(overrideLevelId).setOverrides(lvl);
 						}
 						
 					}
@@ -277,7 +277,12 @@ public class ListNumberingDefinition {
 
 	private HashMap<String, ListLevel> levels;
 	public ListLevel getLevel(String ilvl) {
-		return levels.get(ilvl);
+		return levels == null ? null : levels.get(ilvl);
+	}
+
+	/** The level with this ilvl, or null.  @since 17.1.1 */
+	public ListLevel getLevel(int ilvl) {
+		return levels == null ? null : levels.get(Integer.toString(ilvl));
 	}
 
 	private java.util.function.Supplier<NumberingState> defaultStateSupplier;
@@ -311,9 +316,9 @@ public class ListNumberingDefinition {
     /// increment the occurrence count of the specified level, reset the occurrence count of derived levels
     /// </summary>
     /// <param name="level"></param>
-    public void IncrementCounter(String level)
+    public void incrementCounter(String level)
     {
-    	IncrementCounter(level, defaultState());
+    	incrementCounter(level, defaultState());
     }
 
     /**
@@ -322,53 +327,38 @@ public class ListNumberingDefinition {
      *
      * @since 17.1.1
      */
-    public void IncrementCounter(String level, NumberingState state)
+    public void incrementCounter(String level, NumberingState state)
     {
-        int otherLevelInt;
-        String otherLevelStr;
-    	
-    	if (!this.levels.get(level).counter(state).isEncounteredAlready()) {
-    		// We haven't encountered this level before,
-    		// so check that the lower levels have been initialised
-            otherLevelInt = Integer.parseInt(level)-1;
-            otherLevelStr =  Integer.toString(otherLevelInt);
-            
-            while (this.levels.containsKey(otherLevelStr) // will fail once negative
-            		&& !this.levels.get(otherLevelStr).counter(state).isEncounteredAlready()) 
-            {
-            	log.debug("Increment lower level " + otherLevelStr);
-                this.levels.get(otherLevelStr).IncrementCounter(state);
-                otherLevelInt--;
-                otherLevelStr = Integer.toString(otherLevelInt);
-            }
-    	}    		
-    		
-    	
-    	log.debug("Increment level " + level);
-        this.levels.get(level).IncrementCounter(state);
+    	int levelInt = Integer.parseInt(level);
+    	ListLevel thisLevel = getLevel(levelInt);
+
+    	if (!thisLevel.counter(state).isEncounteredAlready()) {
+    		// We haven't encountered this level before, so check that the shallower
+    		// levels have been initialised
+    		for (int shallower = levelInt - 1; shallower >= 0; shallower--) {
+    			ListLevel l = getLevel(shallower);
+    			if (l == null || l.counter(state).isEncounteredAlready()) break;
+    			if (log.isDebugEnabled()) log.debug("Increment lower level " + shallower);
+    			l.incrementCounter(state);
+    		}
+    	}
+
+    	if (log.isDebugEnabled()) log.debug("Increment level " + level);
+        thisLevel.incrementCounter(state);
 
         // Now set the deeper levels back to their start - each unless its
         // w:lvlRestart says this level does not restart it (ECMA-376 17.9.11;
         // @since 17.1.1, CR-014 phase 2: unread before, so every deeper level
         // restarted)
-        
-        // here's a bit where the decision to use Strings as level IDs was bad 
-        // - I need to loop through the derived levels and reset their counters
-        int levelInt = Integer.parseInt(level);
-        otherLevelInt = levelInt+1;
-        otherLevelStr =  Integer.toString(otherLevelInt);
-
-        while (this.levels.containsKey(otherLevelStr))
-        {
-        	ListLevel deeper = this.levels.get(otherLevelStr);
+        for (int deeperIlvl = levelInt + 1; ; deeperIlvl++) {
+        	ListLevel deeper = getLevel(deeperIlvl);
+        	if (deeper == null) break;
         	if (deeper.restartsAfter(levelInt)) {
-        		log.debug("Reset level " + otherLevelInt);
-        		deeper.ResetCounter(state);
-        	} else {
-        		log.debug("Level " + otherLevelInt + " keeps counting (w:lvlRestart " + deeper.getLvlRestart() + ")");
+        		if (log.isDebugEnabled()) log.debug("Reset level " + deeperIlvl);
+        		deeper.resetCounter(state);
+        	} else if (log.isDebugEnabled()) {
+        		log.debug("Level " + deeperIlvl + " keeps counting (w:lvlRestart " + deeper.getLvlRestart() + ")");
         	}
-            otherLevelInt++;
-            otherLevelStr = Integer.toString(otherLevelInt);
         }
     }
 
@@ -388,13 +378,13 @@ public class ListNumberingDefinition {
      * @param level
      * @return
      */
-    public String GetCurrentNumberString(String level)
+    public String getCurrentNumberString(String level)
     {
-    	return GetCurrentNumberString(level, defaultState());
+    	return getCurrentNumberString(level, defaultState());
     }
 
     /** The label of the given level from the counters of the given state.  @since 17.1.1 */
-    public String GetCurrentNumberString(String level, NumberingState state)
+    public String getCurrentNumberString(String level, NumberingState state)
     {
         ListLevel controllingLvl = this.levels.get( level ); 
         
@@ -523,7 +513,7 @@ public class ListNumberingDefinition {
     /// </summary>
     /// <param name="level"></param>
     /// <returns></returns>
-    public String GetFont(String level)
+    public String getFont(String level)
     {
         return this.levels.get(level).getFont();
     }
@@ -533,9 +523,9 @@ public class ListNumberingDefinition {
     /// </summary>
     /// <param name="level"></param>
     /// <returns></returns>
-    public boolean IsBullet(String level)
+    public boolean isBullet(String level)
     {
-        return this.levels.get(level).IsBullet();
+        return this.levels.get(level).isBullet();
     }
 
     /// <summary>
@@ -547,7 +537,7 @@ public class ListNumberingDefinition {
     /// </returns>
     /// <id guid="b94c13b8-7273-4f6a-927b-178d685fbe0f" />
     /// <owner alias="ROrleth" />
-    public boolean LevelExists(String level)
+    public boolean levelExists(String level)
     {
     	if (this.levels==null) {
     		log.info("No levels present in abstractNumId");
@@ -564,6 +554,34 @@ public class ListNumberingDefinition {
         return this.levels.containsKey(level);
     }
 
+
+    /** Whether the level with this ilvl exists.  @since 17.1.1 */
+    public boolean levelExists(int ilvl) {
+    	return levelExists(Integer.toString(ilvl));
+    }
+
+    // ---- the names before 17.1.1 (from the C# original this was translated from);
+    //      removal no earlier than 17.2 (CR-014 phase 5)
+
+    /** @deprecated since 17.1.1, use {@link #incrementCounter(String)} */
+    @Deprecated
+    public void IncrementCounter(String level) { incrementCounter(level); }
+    /** @deprecated since 17.1.1, use {@link #incrementCounter(String, NumberingState)} */
+    @Deprecated
+    public void IncrementCounter(String level, NumberingState state) { incrementCounter(level, state); }
+    /** @deprecated since 17.1.1, use {@link #getCurrentNumberString(String)} */
+    @Deprecated
+    public String GetCurrentNumberString(String level) { return getCurrentNumberString(level); }
+    /** @deprecated since 17.1.1, use {@link #getCurrentNumberString(String, NumberingState)} */
+    @Deprecated
+    public String GetCurrentNumberString(String level, NumberingState state) { return getCurrentNumberString(level, state); }
+    /** @deprecated since 17.1.1, use {@link #getFont(String)} */
+    @Deprecated
+    public String GetFont(String level) { return getFont(level); }
+    /** @deprecated since 17.1.1, use {@link #isBullet(String)} */
+    @Deprecated
+    public boolean IsBullet(String level) { return isBullet(level); }
+    /** @deprecated since 17.1.1, use {@link #levelExists(String)} */
+    @Deprecated
+    public boolean LevelExists(String level) { return levelExists(level); }
 }
-
-

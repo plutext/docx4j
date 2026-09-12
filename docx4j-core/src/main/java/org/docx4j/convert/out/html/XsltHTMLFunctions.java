@@ -32,7 +32,7 @@ import org.docx4j.convert.out.common.HiddenText;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.listnumbering.Emulator.NumberingResult;
 import org.docx4j.model.properties.AdHocProperty;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -345,13 +345,13 @@ public class XsltHTMLFunctions {
         	        	
         	// counted in this conversion's state for the part (or text box) being
         	// converted, not the package's shared counters (@since 17.1.1, CR-014)
-        	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
+        	NumberingResult triple = org.docx4j.model.listnumbering.Emulator.getNumber(
         			context.getWmlPackage(), pStyleVal, numId, levelId,
         			numId != null && !numId.equals(""), context.getNumberingState());   
         	
 
 			if (triple==null) {
-				context.getLog().debug("computed number ResultTriple was null");
+				context.getLog().debug("computed number NumberingResult was null");
         		return null;
         	}
 			

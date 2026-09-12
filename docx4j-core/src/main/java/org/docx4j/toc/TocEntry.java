@@ -33,7 +33,7 @@ import org.docx4j.TextUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.listnumbering.Emulator.NumberingResult;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
@@ -618,7 +618,7 @@ public class TocEntry {
      * Number this entry, if necessary
      * @param numberTriple
      */
-    public void numberEntry(ResultTriple numberTriple) {
+    public void numberEntry(NumberingResult numberTriple) {
                 
         if (numberTriple!=null && numberTriple.getNumString()!=null) {
         	

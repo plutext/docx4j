@@ -29,7 +29,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.listnumbering.Emulator.NumberingResult;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -105,7 +105,7 @@ public class SwitchProcessor implements SwitchProcessorInterface {
      */
     public List<TocEntry> processSwitches(WordprocessingMLPackage wordMLPackage, List<P> pList, 
     		List<SwitchInterface> switchesList,
-    		Map<P, ResultTriple> pNumbersMap) throws Docx4JException{
+    		Map<P, NumberingResult> pNumbersMap) throws Docx4JException{
     	
         List<TocEntry> tocEntries = new ArrayList<TocEntry>();
         

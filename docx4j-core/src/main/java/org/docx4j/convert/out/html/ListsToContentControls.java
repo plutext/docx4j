@@ -209,7 +209,7 @@ public class ListsToContentControls {
 			return;			
 		}
 		
-		if (level.IsBullet()) {
+		if (level.isBullet()) {
 			if (level.getLevelText()==null ) {
 				tag.setVal("HTML_ELEMENT=UL");
 			} else {

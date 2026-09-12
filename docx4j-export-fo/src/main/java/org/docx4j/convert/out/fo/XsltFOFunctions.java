@@ -34,7 +34,7 @@ import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.fields.FormattingSwitchHelper;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.listnumbering.Emulator.NumberingResult;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.Bidi;
@@ -1802,7 +1802,7 @@ public class XsltFOFunctions {
 	 *
 	 * @since 17.1.0 (extracted from createListBlock, which the inline label shares)
 	 */
-	protected static ResultTriple numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
+	protected static NumberingResult numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
 			PPr pPrDirect, PPr pPr) {
 		return numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, null);
 	}
@@ -1813,7 +1813,7 @@ public class XsltFOFunctions {
 	 *        numbering part's shared default
 	 * @since 17.1.1 (CR-014 phase 4)
 	 */
-	protected static ResultTriple numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
+	protected static NumberingResult numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
 			PPr pPrDirect, PPr pPr, org.docx4j.model.listnumbering.NumberingState state) {
 
 		String directNumId = numIdVal(pPrDirect);
@@ -1862,7 +1862,7 @@ public class XsltFOFunctions {
 	 *
 	 * @since 17.1.0
 	 */
-	private static PPrBase.Ind numberingIndent(PPr pPr, ResultTriple triple, PPr pPrDirect) {
+	private static PPrBase.Ind numberingIndent(PPr pPr, NumberingResult triple, PPr pPrDirect) {
 		PPrBase.Ind effective = pPr == null ? null : pPr.getInd();
 		PPrBase.Ind level = triple == null ? null : triple.getIndent();
 		if (effective == null) return level;
@@ -1897,7 +1897,7 @@ public class XsltFOFunctions {
 	 *         states no rPr
 	 * @since 17.1.0
 	 */
-	protected static RPr levelRPr(ResultTriple triple, RPr rPr, RPr rPrParagraphMark) {
+	protected static RPr levelRPr(NumberingResult triple, RPr rPr, RPr rPrParagraphMark) {
 
 		if (triple==null || triple.getLabelRPr()==null) return null;
 		RPr actual = XmlUtils.deepCopy(triple.getLabelRPr()); // clone, so the ilvl rpr is not altered
@@ -2007,10 +2007,10 @@ public class XsltFOFunctions {
 		foListItem.appendChild(foListItemBody);	
 		foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
 		
-		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, state);
+		NumberingResult triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, state);
 
 		if (triple==null) {
-			log.warn("computed number ResultTriple was null");
+			log.warn("computed number NumberingResult was null");
 			if (log.isDebugEnabled() ) {
 				foListItemLabelBody.setAttribute("color", "red");
 				foListItemLabelBody.setTextContent("null#");
@@ -2182,9 +2182,9 @@ public class XsltFOFunctions {
 			Document document, Element foBlockElement, PPrBase.Ind[] indOut,
 			org.docx4j.model.listnumbering.NumberingState state) {
 
-		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, state);
+		NumberingResult triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, state);
 		if (triple==null) {
-			log.warn("computed number ResultTriple was null");
+			log.warn("computed number NumberingResult was null");
 			return false;
 		}
 
@@ -2269,7 +2269,7 @@ public class XsltFOFunctions {
 	 * @since 17.1.0
 	 */
 	private static int labelColumnTwips(WordprocessingMLPackage wmlPackage, Indent indent,
-			PPr pPrDirect, ResultTriple triple, int numWidth) {
+			PPr pPrDirect, NumberingResult triple, int numWidth) {
 
 		PPrBase.Ind ind = indent.getObject() instanceof PPrBase.Ind ? (PPrBase.Ind)indent.getObject() : null;
 		int hanging = (ind!=null && ind.getHanging()!=null) ? ind.getHanging().intValue() : -1;
@@ -2329,7 +2329,7 @@ public class XsltFOFunctions {
 	 * @return the label to draw, mapped where this could map it
 	 * @since 17.1.0
 	 */
-	protected static String symbolLabelFallback(ResultTriple triple, String rendered, Element foListItemLabelBody) {
+	protected static String symbolLabelFallback(NumberingResult triple, String rendered, Element foListItemLabelBody) {
 
 		if (rendered==null || rendered.isEmpty() || triple==null) return rendered;
 		boolean unmapped = false;

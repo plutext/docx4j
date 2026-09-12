@@ -49,7 +49,7 @@ import org.docx4j.finders.SectPrFindFirst;
 import org.docx4j.model.bookmarks.BookmarksIntegrity;
 import org.docx4j.model.bookmarks.BookmarksIntegrity.BookmarksStatus;
 import org.docx4j.model.listnumbering.Emulator;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.listnumbering.Emulator.NumberingResult;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -375,7 +375,7 @@ public class TocGenerator {
         List<P> pList = (List<P>)(List<?>) TocHelper.getAllElementsFromObject(body, P.class);
         
         // Work out paragraph numbering
-        Map<P, ResultTriple> pNumbersMap = numberParagraphs( pList);
+        Map<P, NumberingResult> pNumbersMap = numberParagraphs( pList);
         
         SwitchProcessor sp = new SwitchProcessor(pageDimensions, leader);
         sp.setStartingIdForNewBookmarks(bookmarkId);
@@ -430,12 +430,12 @@ public class TocGenerator {
 
     }
     
-    private  Map<P, ResultTriple> numberParagraphs(List<P> pList) {
+    private  Map<P, NumberingResult> numberParagraphs(List<P> pList) {
     	
     	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
     			wordMLPackage.getMainDocumentPart().getNumberingDefinitionsPart();
         	
-    	Map<P, ResultTriple> pNumbersMap = new HashMap<P, ResultTriple>(); 
+    	Map<P, NumberingResult> pNumbersMap = new HashMap<P, NumberingResult>(); 
     	if (numberingPart==null) {
     		return pNumbersMap;
     	}
@@ -451,7 +451,7 @@ public class TocGenerator {
     		
     		if (p.getPPr()!=null) {
     			
-    			ResultTriple triple = Emulator.getNumber(wordMLPackage, p.getPPr(), state);
+    			NumberingResult triple = Emulator.getNumber(wordMLPackage, p.getPPr(), state);
     			pNumbersMap.put(p, triple);
     		}
     	}
