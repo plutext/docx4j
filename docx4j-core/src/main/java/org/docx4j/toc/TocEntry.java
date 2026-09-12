@@ -556,12 +556,12 @@ public class TocEntry {
 		String runStyleId;
 		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();			
-			resolvedRPr = propertyResolver.getEffectiveRPr(runStyleId, false, false, false); 
+			resolvedRPr = propertyResolver.getChainRPr(runStyleId); // the style's chain, no document defaults (17.1.1)
 			StyleUtil.apply(resolvedRPr, effectiveRPr);
 		}
 				
 		//	Apply direct formatting (run properties not from styles).		
-		if (propertyResolver.hasDirectRPrFormatting(expressRPr) ) {			
+		if (StyleUtil.hasDirectFormatting(expressRPr) ) {			
 			StyleUtil.apply(expressRPr, effectiveRPr);
 		} 
 		return effectiveRPr;

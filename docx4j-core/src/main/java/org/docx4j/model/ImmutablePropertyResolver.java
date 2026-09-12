@@ -13,7 +13,13 @@ import org.docx4j.wml.RPr;
  *  @author Adam Schmideg
  *  
  *  @see also org.docx4j.model.styles.StyleUtil.apply methods
+ *
+ *  @deprecated since 17.1.1: its overrides are a fifth hand-kept copy of the property
+ *  lists which {@link org.docx4j.model.styles.PropertyCatalogue} replaced, they copy
+ *  references where the resolver now copies leaves (CR-015 phase 3), and nothing in
+ *  docx4j uses it.  Use {@link PropertyResolver}.
  */
+@Deprecated
 public class ImmutablePropertyResolver extends PropertyResolver {
 
 	public ImmutablePropertyResolver(WordprocessingMLPackage wordMLPackage)

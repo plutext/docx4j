@@ -1,16 +1,18 @@
 # CR-015: Property resolution (`PropertyResolver`, `StyleUtil.apply`) — line endings, one property catalogue, the default paragraph style, cache correctness, no mutation, thread safety
 
-Status: IN PROGRESS (2026-09-12) — approved by Jason 2026-09-12; phase 0 DONE
-(6f4763d70, LF; 21890c36e pins the line endings and blame-ignores the
-conversion); phase 0b DONE (five `styles-*` probes, goldens in and read back
-into the table the same day, 83c6865b8); phase 1 DONE (the property
-catalogue and the merge rules; 21 corpus documents improved, none regressed);
-phase 2 DONE (the resolution order; zero corpus delta bar one improvement);
-phase 2b DONE (the default-pStyle shield out of the preprocess outside
-tables, zero corpus delta; the font-size pin kept for the XSLT pathway
-only); phase 3 DONE (no mutation, no aliasing, thread safety; zero corpus
-delta); phase 4 DONE (the built-in Normal Table per P5, sectPr out of the
-merge, logging, one ancestry walk, dead code); phase 5 next
+Status: DONE (2026-09-12) — all phases shipped in 17.1.1, the same day the
+review was written: 0 (LF, 6f4763d70 + 21890c36e), 0b (five `styles-*`
+probes and their goldens, 66be92850 + 83c6865b8), 1 (the property catalogue
+and the merge rules, 505977b63), 2 (the resolution order, 489ce29f4 +
+9bc743361), 2b (the shield out, b3c57e815 + 94fa68c9e), 3 (no mutation, no
+aliasing, thread safety, 473522853), 4 (the built-in Normal Table, one
+ancestry walk, dead code, eec73ebf5), 5 (API hygiene).  Corpus effect over
+the CR: 21 documents improved on phase 1 (mean line parity real 0.9032 ->
+0.9051, real2 0.8763 -> 0.8794, real3 0.9105 -> 0.9162), one more on phase
+2, none regressed; the exporters' default-pStyle shield is gone, so the
+corpus now measures the resolver.  Still open, carried forward: table
+conditions behind the resolver (a CR of its own, see Layering); the fonts
+review (`RunFontSelector` consuming the effective rPr).
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -740,29 +742,37 @@ since the constant already matched; a document whose default table style
 says something other than 108 may); `TableStyleConditionsTest`,
 `ParagraphStylesInTableFixConditionalTest`.
 
-### Phase 5 — API hygiene
+### Phase 5 — API hygiene — DONE 2026-09-12
 
-Deprecations, javadoc, `package-info`, CHANGELOG, CR status.
+Deprecated (nothing removed): `ImmutablePropertyResolver`,
+`PropertyResolver.hasDirectRPrFormatting(RPr)`, the four-flag
+`getEffectiveRPr`, `getEffectiveRPrUsingPStyleRPr`, `StyleUtil.apply(SectPr,
+SectPr)`.  New public API: `getChainPPr(String)` / `getChainRPr(String)`
+(the chain without defaults, which `TocEntry` now uses in place of the
+flagged overload), `headingLevelByName(Style)`,
+`StyleUtil.hasDirectFormatting(...)`, `getEffectiveParagraphMarkRPr(PPr)`
+(phase 2).  The class javadoc states the composition, the live-object
+contract and the thread story; `org.docx4j.model.styles` has a
+`package-info`.  Gate: core-tests and export-fo-tests green (no behaviour
+change).
 
 ## Decisions
 
 1. **Live objects stay the contract** (clone before changing); aliasing of
-   style leaves is removed instead of copying on every call.  Recommended;
-   the alternative (a deep copy per `getEffective*` call) costs every
-   exporter for the benefit of callers who ignore the javadoc.
+   style leaves is removed instead of copying on every call.  DONE as
+   recommended (phase 3).
 2. ~~**`ParagraphStylesInTableFix` keeps writing the default `w:pStyle` onto
    every paragraph in 17.1.1**~~ — superseded 2026-09-12 by phase 2b (Jason:
    the resolver gets it right, the shield comes out, in this CR).
 3. **Probe set**: the five above; P2 (paragraph mark) omitted as already
-   measured.  Jason to confirm or add.
+   measured.  DONE (Jason ran them 2026-09-12).
 4. **Phase 1's spec-derived rules (lineRule, ilvl-only) ship before their
-   goldens if the Word run lags**, with the golden read back into the table
-   when it arrives; the corpus gate is the guard meanwhile.
-5. **`w:sectPr` leaves the effective pPr** (phase 4).  Any caller wanting it
-   reads the direct pPr, which every caller already does.
+   goldens if the Word run lags.**  Moot: the goldens arrived first and
+   confirmed both.
+5. **`w:sectPr` leaves the effective pPr** (phase 4).  DONE.
 6. **Order of the CR-015 phases against the fonts review**: the fonts review
-   starts after phase 2 at the earliest, since it consumes the effective rPr
-   (rows 4-6 change what `RunFontSelector` is handed).
+   starts after phase 2 at the earliest.  CR-015 is complete; the fonts
+   review can start.
 
 ## Risks
 

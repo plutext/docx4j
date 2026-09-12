@@ -377,6 +377,17 @@ Property resolution (CR-015, phase 4):
   paragraph at ERROR. PropertyResolver's three copies of the w:basedOn walk are one; its
   unused theme fields and 150 lines of commented-out font code are gone.
 
+Property resolution (CR-015, phase 5):
+
+- New: PropertyResolver.getChainPPr(String) and getChainRPr(String), a style's w:basedOn
+  chain merged without the document defaults (what a character style contributes over the
+  paragraph's run properties); PropertyResolver.headingLevelByName(Style);
+  StyleUtil.hasDirectFormatting(RPr | ParaRPr | PPrBase). Deprecated:
+  ImmutablePropertyResolver, PropertyResolver.hasDirectRPrFormatting, the four-flag
+  getEffectiveRPr overload, getEffectiveRPrUsingPStyleRPr, StyleUtil.apply(SectPr, SectPr).
+  The resolver's class javadoc states the resolution order, the live-object contract and
+  the thread story; org.docx4j.model.styles has a package-info.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

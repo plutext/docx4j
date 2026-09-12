@@ -29,63 +29,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class works out the actual set of properties (paragraph or run)
- * which apply, following the order specified in ECMA-376.
- * 
- * From ECMA-376 > Part3 > 2 Introduction to WordprocessingML > 2.8 Styles > 2.8.10 Style Application 
- * at http://www.documentinteropinitiative.org/implnotes/ecma-376/P3-2.8.10.aspx
- * 
- * (See also Part 4, 2.7.2 which is the normative bit...)
-
-	With the various flavors of styles available, multiple style types can be 
-	applied to the same content within a file, which means that properties must 
-	be applied in a specific deterministic order. As with inheritance, the 
-	resulting formatting properties set by one type can be unchanged, removed, 
-	or altered by following types.
-
-	The following table illustrates the order of application of these defaults, 
-	and which properties are impacted by each:
-
-	This process can be described as follows: 
-	
-	First, the document defaults are applied to all runs and paragraphs in 
-	the document. 
-	
-	Next, the table style properties are applied to each table in the document, 
-	following the conditional formatting inclusions and exclusions specified 
-	per table. 
-	
-	Next, numbered item and paragraph properties are applied to each paragraph 
-	formatted with a numbering style. 
-	
-	Next, paragraph and run properties are 
-	applied to each paragraph as defined by the paragraph style. 
-	
-	Next, run properties are applied to each run with a specific character style 
-	applied. 
-	
-	Finally, we apply direct formatting (paragraph or run properties not from 
-	styles).
-	
-	-----------
-	
-	Things which are unclear:
-	
-	 - the role of w:link on a paragraph style (eg Heading1 links to "Heading1char"),
-	   experimentation in Word 2007 suggests the w:link is not used at all
-	   
-	 - indeed, "Heading1char" is not used at all?
-	 
-	-----------
-
-	 docx4all does not use this; its org.docx4all.swing.text.StyleSheet
-	 uses MutableAttributeSet's resolve function to climb the style hierarchy.
-	   
-	 This is most relevant to XSLFO, which unlike CSS, doesn't have a concept of 
-	 style. HTML NG2 uses CSS inheritance, and so doesn't need it.
-
- * @author jharrop
+ * Works out the properties which actually apply to a paragraph, a run, a paragraph mark
+ * or a table, following the order ECMA-376 17.7.2 gives and Word applies:
  *
+ * <pre>
+ *   effectivePPr(direct)       = docDefaults.pPr + chainPPr(styleOf(direct)) + direct
+ *   effectiveRPr(direct, pPr)  = docDefaults.rPr + chainRPr(styleOf(pPr)) + chainRPr(direct.rStyle) + direct
+ *   paragraphMarkRPr(pPr)      = docDefaults.rPr + chainRPr(styleOf(pPr)) + pPr.rPr
+ *   tableStyle(tblPr)          = built-in Normal Table (where its chain reaches the default table style,
+ *                                or it names none) + the chain + tblPr
+ * </pre>
+ *
+ * where {@code styleOf(pPr)} is the paragraph's {@code w:pStyle} if it names a style that
+ * exists, else the {@code w:default="1"} paragraph style (Word writes no {@code w:pStyle}
+ * for it and treats a missing style as it), and {@code chainPPr}/{@code chainRPr} are a
+ * style's {@code w:basedOn} chain merged root-first without the document defaults
+ * ({@link #getChainPPr(String)}, {@link #getChainRPr(String)}).  The merging itself is
+ * {@link org.docx4j.model.styles.StyleUtil#apply}, driven by
+ * {@link org.docx4j.model.styles.PropertyCatalogue}.  Numbering level indents are folded
+ * in per layer through the numbering part; table styles are not applied to paragraphs
+ * here (the resolver is handed a {@code w:pPr} and does not know the table:
+ * {@code ParagraphStylesInTableFix} carries them for the exporters).
+ *
+ * <p><b>Live objects.</b>  What the style overloads and {@link #getEffectivePPr(PPr)}
+ * return is cached and shared: clone it before changing it.  The cached objects share no
+ * leaf with the styles part, and resolution writes nothing into the part.</p>
+ *
+ * <p><b>Threads.</b>  One resolver is cached on the MainDocumentPart for the life of the
+ * package ({@code MainDocumentPart.getPropertyResolver()}) and may be used from several
+ * threads at once; a style <em>added</em> to the styles part afterwards is found, a style
+ * <em>modified</em> or <em>removed</em> needs {@link #refresh()}.  Adding to the styles
+ * part's list while another thread resolves is the caller's synchronisation.</p>
+ *
+ * <p>The design and its measurements are in
+ * {@code docs/developer/change-requests/CR-015-property-resolution.md}.</p>
+ *
+ * @author jharrop
  */
 public class PropertyResolver {
 	
@@ -615,6 +594,26 @@ public class PropertyResolver {
 		return styleId;
 	}
 
+	/**
+	 * A paragraph style's w:basedOn chain merged root-first, WITHOUT the document
+	 * defaults: what the style contributes on its own.  An empty pPr for null or a
+	 * missing style.  A live, cached object: clone before changing.
+	 * @since 17.1.1
+	 */
+	public PPr getChainPPr(String styleId) throws CyclicStylesException {
+		return chainPPr(styleId);
+	}
+
+	/**
+	 * A style's w:basedOn chain merged root-first, WITHOUT the document defaults: for a
+	 * character style, what it contributes over the paragraph's run properties.  An empty
+	 * rPr for null or a missing style.  A live, cached object: clone before changing.
+	 * @since 17.1.1
+	 */
+	public RPr getChainRPr(String styleId) throws CyclicStylesException {
+		return chainRPr(styleId);
+	}
+
 	/** A style's w:basedOn chain merged root-first, without the document defaults; cached.  An empty pPr for null or a missing style. */
 	private PPr chainPPr(String styleId) throws CyclicStylesException {
 		if (styleId == null) return factory.createPPr();
@@ -690,7 +689,9 @@ public class PropertyResolver {
 	 * "taken directly from RPr, and so is comprehensive", it said - so a run whose only
 	 * direct formatting was w:rtl, w:position, w:szCs, w:w, w:kern or w:cs resolved as
 	 * having none.)
+	 * @deprecated since 17.1.1: {@link StyleUtil#hasDirectFormatting(RPr)}
 	 */
+	@Deprecated
 	public boolean hasDirectRPrFormatting(RPr rPrToApply) {
 		return StyleUtil.hasDirectFormatting(rPrToApply);
 	}
