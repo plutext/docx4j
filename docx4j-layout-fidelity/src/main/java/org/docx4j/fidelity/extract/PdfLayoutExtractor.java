@@ -672,7 +672,15 @@ public final class PdfLayoutExtractor {
 			for (TextPosition tp : run) {
 				if (prev != null) {
 					float gap = tp.getXDirAdj() - (prev.getXDirAdj() + prev.getWidthDirAdj());
-					if (gap > WORD_GAP_EM * em(prev) && text.length() > 0 && text.charAt(text.length() - 1) != ' ') {
+					/* The word gap is judged against the smaller of the two glyphs' ems, not
+					 * the preceding glyph's alone: an 18pt list label before 12pt text (a
+					 * w:lvlOverride rPr, CR-014 P3) is followed by a 4.4pt gap which is a
+					 * word space at 12pt and not at 18pt, so the label read "1.P02" on our
+					 * side and "1. P02" on Word's, whose PDF writes a space glyph there,
+					 * and the LCS lost every such line.  Symmetric: it is applied to both
+					 * renders alike, and it only adds spaces where the sizes differ. */
+					float gapEm = Math.min(em(prev), em(tp));
+					if (gap > WORD_GAP_EM * gapEm && text.length() > 0 && text.charAt(text.length() - 1) != ' ') {
 						text.append(' ');
 					}
 				}
