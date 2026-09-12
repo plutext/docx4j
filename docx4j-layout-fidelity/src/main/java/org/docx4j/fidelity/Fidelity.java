@@ -58,6 +58,15 @@ public final class Fidelity {
 			org.docx4j.Docx4jProperties.setProperty(
 					"docx4j.openpackaging.package.MAX_UNCOMPRESSED_SIZE.unzip.error", "1073741824");
 		}
+		// -Dfidelity.fonts=all|jars|<dir> (CR-016 phase 0c): the physical fonts the run may
+		// use.  "jars" is docx4j's own font jars alone (the headless-container deployment:
+		// ubuntu/debian/fedora/alpine images ship no fonts at all, measured 2026-09-12);
+		// a directory is a distribution's stock set extracted from its image, added
+		// explicitly (the system font directories are not searched), plus the jars.
+		String fontSet = System.getProperty("fidelity.fonts", "all").trim();
+		if (!fontSet.equals("all")) {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.fonts.discoverPhysicalFonts.enabled", "false");
+		}
 		// any -Ddocx4j.xxx=yyy on the command line becomes a docx4j property, so a
 		// behaviour toggle can be measured without editing docx4j.properties
 		for (String name : System.getProperties().stringPropertyNames()) {
@@ -65,6 +74,7 @@ public final class Fidelity {
 				org.docx4j.Docx4jProperties.setProperty(name, System.getProperty(name));
 			}
 		}
+		fontEnvironment(fontSet);
 		switch (args[0]) {
 		case "generate":
 			Corpus.generate(new File(args[1]));
@@ -109,6 +119,52 @@ public final class Fidelity {
 		System.out.println("       -Ddocx4j.xxx=yyy            sets that docx4j property, to measure a behaviour toggle");
 	}
 
+	/**
+	 * Establish the font set (see main) and record it: discovery runs in the Mapper's
+	 * static initialiser, so a Mapper is touched first; a directory's fonts are then
+	 * added one by one.  The inventory is printed so that every scoring log says what
+	 * fonts the run had.  @since CR-016 phase 0c
+	 */
+	static void fontEnvironment(String fontSet) throws Exception {
+		new org.docx4j.fonts.IdentityPlusMapper(); // triggers discovery (jars, and the system unless disabled)
+		if (!fontSet.equals("all") && !fontSet.equals("jars")) {
+			File dir = new File(fontSet);
+			if (!dir.isDirectory()) throw new IllegalArgumentException("-Dfidelity.fonts: not a directory: " + dir);
+			try (java.util.stream.Stream<java.nio.file.Path> paths = java.nio.file.Files.walk(dir.toPath())) {
+				for (java.nio.file.Path f : (Iterable<java.nio.file.Path>) paths::iterator) {
+					String n = f.getFileName().toString().toLowerCase();
+					if (n.endsWith(".ttf") || n.endsWith(".otf") || n.endsWith(".ttc")) {
+						try {
+							org.docx4j.fonts.PhysicalFonts.addPhysicalFont(f.toUri());
+						} catch (Exception e) {
+							System.out.println("font not added: " + f + " (" + e.getMessage() + ")");
+						}
+					}
+				}
+			}
+		}
+		java.util.TreeSet<String> names = new java.util.TreeSet<>(org.docx4j.fonts.PhysicalFonts.getPhysicalFonts().keySet());
+		System.out.println("font set '" + fontSet + "': " + names.size() + " physical fonts; mapper " + mapperName());
+		if (System.getProperty("fidelity.listFonts") != null) {
+			for (String n : names) System.out.println("  " + n);
+		}
+	}
+
+	/** -Dfidelity.fontMapper=identity|best (CR-016 phase 0c): identity is docx4j's default
+	 *  (the package creates an IdentityPlusMapper when none is set), and is what every score
+	 *  before 2026-09-12 measured. */
+	static String mapperName() {
+		return System.getProperty("fidelity.fontMapper", "identity").trim().toLowerCase();
+	}
+
+	static void applyFontMapper(WordprocessingMLPackage pkg) throws Exception {
+		if (mapperName().equals("best")) {
+			pkg.setFontMapper(new org.docx4j.fonts.BestMatchingMapper());
+		} else if (!mapperName().equals("identity")) {
+			throw new IllegalArgumentException("-Dfidelity.fontMapper: identity or best, not " + mapperName());
+		}
+	}
+
 	public static void render(File corpusDir, File pdfDir) throws Exception {
 		pdfDir.mkdirs();
 		for (File docx : docxFiles(corpusDir)) {
@@ -121,6 +177,7 @@ public final class Fidelity {
 	/** docx4j+FOP: writes pdfDir/id.fo and pdfDir/id.pdf. */
 	static void renderOne(File docx, File pdfDir, String id) throws Exception {
 		WordprocessingMLPackage pkg = Docx4J.load(docx);
+		applyFontMapper(pkg);
 		FOSettings fo = Docx4J.createFOSettings();
 		fo.setOpcPackage(pkg);
 		fo.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
@@ -130,6 +187,7 @@ public final class Fidelity {
 		// Explicitly the FO/FOP pathway: Docx4J.toPDF would silently prefer documents4j
 		// (Word) when docx4j-documents4j-local is on the classpath, as it is here.
 		pkg = Docx4J.load(docx);
+		applyFontMapper(pkg);
 		FOSettings pdf = Docx4J.createFOSettings();
 		pdf.setOpcPackage(pkg);
 		try (FileOutputStream os = new FileOutputStream(new File(pdfDir, id + ".pdf"))) {
