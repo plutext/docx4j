@@ -108,6 +108,40 @@ public class PhysicalFont {
 		this.embeddedURI = embeddedURI;
 	}
 	
+	/**
+	 * True for an alias of a physical font made for a document font which has no bold
+	 * face (Calibri Light, Franklin Gothic Book): FOP is to synthesise bold from this file
+	 * at its own advances, as Word does for such a family, rather than take the family's
+	 * real bold, whose advances are wider.  {@link PhysicalFonts#getBoldForm} and
+	 * {@link PhysicalFonts#getBoldItalicForm} answer null for it.  Measured (CR-016
+	 * probe fonts-light-bold): Word draws a w:b run in Calibri Light with the Calibri
+	 * Light font object, 378.55pt for a sentence its regular sets in 377.50, where
+	 * docx4j's Carlito Bold set it in 388.70.
+	 *
+	 * @since 17.1.1
+	 */
+	private boolean noBoldFace = false;
+
+	public boolean isNoBoldFace() {
+		return noBoldFace;
+	}
+
+	/** Suffix of an alias's name; {@link PhysicalFonts#get} strips it, so the alias
+	 *  resolves to its file's own entry wherever a name is looked up.  @since 17.1.1 */
+	public static final String NOBOLD_SUFFIX = "+nobold";
+
+	/**
+	 * This font again under {@code name + NOBOLD_SUFFIX}, reporting no bold face.  Not
+	 * registered in {@link PhysicalFonts} (it stands for one document's font, like an
+	 * embedded font); the Mapper holds it.  @since 17.1.1
+	 */
+	public PhysicalFont noBoldFaceAlias() {
+		PhysicalFont alias = new PhysicalFont(name + NOBOLD_SUFFIX, embedFontInfo, fontResolver);
+		alias.panose = panose;
+		alias.noBoldFace = true;
+		return alias;
+	}
+
 	org.docx4j.fonts.foray.font.format.Panose panose;
 	public org.docx4j.fonts.foray.font.format.Panose getPanose() {
 		return panose;

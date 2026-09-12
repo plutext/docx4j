@@ -55,8 +55,6 @@ public class BestMatchingMapper extends Mapper {
 	/*
 	 * TODO
 	 *   
-	 * - Exclude non latin fonts from Panose match eg Segoe UI matching file:/usr/share/fonts/truetype/ttf-tamil-fonts/TAMu_Kalyani.ttf
-	 * 
 	 * - Look at Unsupport CMap format: 6 in Sun's PDF stuff. 
 	 */
 	
@@ -68,14 +66,6 @@ public class BestMatchingMapper extends Mapper {
 		super();
 	}
 
-	/** This mapper reaches its own conclusions, from panose and from the explicit
-	 *  substitutions in FontSubstitutions.xml; the class-based step added in 17.0.5 is
-	 *  for the mappers which don't.  @since 17.0.5 */
-	@Override
-	public boolean wantsClassBasedSubstitutes() {
-		return false;
-	}
-
 	
 	/** The substitutions listed in FontSubstitutions.xml
 	 * Will be used only if there is no panose match.  */
@@ -85,8 +75,6 @@ public class BestMatchingMapper extends Mapper {
      * For purpose, see comments below. */
     private final static Map<String, PhysicalFont> physicalFontsByKey;
 
-
-	int lastSeenNumberOfPhysicalFonts = 0;
 
     
     /** Max difference for it to be considered an acceptable match.
@@ -198,353 +186,103 @@ public class BestMatchingMapper extends Mapper {
 	
 	
 	/**
-	 * Populate the fontMappings object. We make an entry for each
-	 * of the documentFontNames.
-	 * 
-	 * @param documentFontNames - the fonts used in the document
-	 * @param wmlFonts - the content model for the fonts part
-	 * @throws Exception
+	 * A panose match over the installed fonts (the closest within
+	 * {@link #MATCH_THRESHOLD}, ties broken on the name, and never a face which cannot
+	 * draw Basic Latin - the old TODO: Segoe UI matched a Tamil font), else the first
+	 * installed face FontSubstitutions.xml lists for the name - for what is still
+	 * unmapped after the installed font, the embedded forms, the metric clones,
+	 * w:altName and a face of the same class (the shared order, Mapper), and before
+	 * Word's default.  Until 17.1.1 the panose match came first of all, and a legacy
+	 * Indic face carrying Arial's panose took Myriad and CorpoS; the Calibri-to-Carlito
+	 * workaround that guarded against the same thing for Calibri is the metric table's
+	 * job now.
+	 *
+	 * @since 17.1.1 as this method; the same lookups were populateFontMappings' before
 	 */
-	public void populateFontMappings(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts ) throws Exception {
-				
-		/* org.docx4j.wml.Fonts fonts is obtained as follows:
-		 * 
-		 *     FontTablePart fontTablePart= wordMLPackage.getMainDocumentPart().getFontTablePart();
-		 *     org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
-		 *     
-		 * If the document doesn't have a font table, 
-		 *     
-		 *		org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart fontTable 
-		 *			= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
-		 *		fontTable.unmarshalDefaultFonts();
-		 */ 
-		
-		//  We need to make a map out of it.
-		List<Fonts.Font> fontList = wmlFonts.getFont();
-		Map<String, Fonts.Font> fontsInFontTable = new HashMap<String, Fonts.Font>();
-		for (Fonts.Font font : fontList ) {
-			fontsInFontTable.put( (font.getName()), font );
-		}
-			
-		log.info("\n\n Populating font mappings.");
-		
-		// Go through the font names, and determine which ones we can render!		
+	@Override
+	public void addMapperSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {
+		if (documentFontNames==null) return;
+		Map<String, org.docx4j.wml.Fonts.Font> table = fontTable(wmlFonts);
 		for (String documentFontName : documentFontNames) {
-			
-	    	PhysicalFont fontMatched = null;
+			if (documentFontName==null || documentFontName.trim().length()==0) continue;
+			if (get(documentFontName)!=null) continue;
+			if (isEmbedded(documentFontName)) continue;
+			PhysicalFont pf = panoseOrExplicit(documentFontName, table.get(documentFontName.trim().toLowerCase()));
+			if (pf!=null) put(documentFontName, pf);
+		}
+	}
 
-			log.debug("\n\n" + documentFontName);
-	        	        
-	        // Since docx4all invokes this method when opening
-	        // each new document, the mapping may have been done
-	        // last time.  We don't need to do it again
-	        if (get(documentFontName) != null ) {
-	        	log.info(documentFontName + " already mapped.");
-        		if ( lastSeenNumberOfPhysicalFonts == 
-        				PhysicalFonts.getPhysicalFonts().size() ) {
-        			// TODO - set this up properly!
-    	        	log.info(".. and no need to check again.");
-    	        	continue;
-    	        	
-    	        	// Assume bold, italic etc already mapped
-    	        	
-        		} else {
-    	        	log.info(".. but checking again, since physical fonts have changed.");
-        		}
-	        }
-	        // Embedded fonts - bypass panose for these
-	        if (regularForms.get(documentFontName)!=null) {
-        		put(documentFontName,         				 
-        				regularForms.get(documentFontName) );	
-    			log.debug(".. mapped to embedded regular form " );
-    			continue;
-	        } else if (boldForms.get(documentFontName)!=null) {
-        		put(documentFontName,         				 
-        				boldForms.get(documentFontName) );	
-    			log.debug(".. mapped to embedded bold form " );
-    			continue;
-	        } else if (italicForms.get(documentFontName)!=null) {
-        		put(documentFontName,         				 
-        				italicForms.get(documentFontName) );	
-    			log.debug(".. mapped to embedded italic form " );
-    			continue;
-	        } else if (boldItalicForms.get(documentFontName)!=null) {
-        		put(documentFontName,         				 
-        				boldItalicForms.get(documentFontName) );	
-    			log.debug(".. mapped to embedded bold italic form " );
-    			continue;
-	        }	        
-	
-//	        boolean normalFormFound = false;
-	        			
-			/* If we actually have this font, use it.
-			 *
-			 * Until 17.0.3 we went straight to the panose match, which meant an
-			 * installed font could be substituted away by something with a closer
-			 * (or equal) panose value - hence the Calibri/Carlito workaround above,
-			 * and the Verdana/Tahoma tie-break in findClosestPanoseMatch.  The
-			 * font the document asks for is always the best match for it.
-			 *
-			 * @since 17.0.3
-			 */
-			PhysicalFont exactMatch = PhysicalFonts.get(documentFontName);
-			if (exactMatch != null) {
-				put(documentFontName, exactMatch);
-				log.debug("Mapped " + documentFontName + " -->  " + exactMatch.getName()
-						+ " (exact name match)");
-				continue;
-			}
+	private PhysicalFont panoseOrExplicit(String documentFontName, org.docx4j.wml.Fonts.Font font) {
 
-			/* Temp workaround for Calibri to use Carlito Regular;
-			 * necessary since panose matches carlito bold italic!
-			 *
-			 * @since 11.5.5.  Until 17.0.3 this was done before the embedded font
-			 * forms and the exact name match above, so a Calibri embedded in the
-			 * document, or installed on the system, was passed over in favour of
-			 * Carlito.  It is only about avoiding a poor panose match.
-			 */
-			if (documentFontName.equals("Calibri")) {
-				PhysicalFont carlito = PhysicalFonts.get("Carlito Regular");
-				if (carlito != null) {
-					put(documentFontName, carlito);
-					log.debug("Mapped " + documentFontName + " -->  Carlito-Regular"
-							+ "( " + carlito.getEmbeddedURI());
-					continue;
-				} else {
-					log.debug("Can't override Calibri with Carlito-Regular");
-				}
-			}
-
-			// Panose setup
-			org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = null;
-			Fonts.Font font = fontsInFontTable.get(documentFontName);
-			if (font==null) {
-				log.error("Font " + documentFontName + "not found in font table!");
-			} else {
-				wmlFontPanoseForDocumentFont = font.getPanose1();
-			}
-			org.docx4j.fonts.foray.font.format.Panose documentFontPanose = null;
-			if (wmlFontPanoseForDocumentFont!=null && wmlFontPanoseForDocumentFont.getVal()!=null ) {
-				try {
-					documentFontPanose = org.docx4j.fonts.foray.font.format.Panose.makeInstance(wmlFontPanoseForDocumentFont.getVal() );
-				} catch (IllegalArgumentException e) {					
-					log.error(e.getMessage());
-					// For example:
-					// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-				}
-				if (documentFontPanose!=null) {
-					log.debug(".. " + documentFontPanose.toString() );
-				}
-				
-			} else {
-				log.debug(".. no panose info!!!");															
-			}
-			
-			
-			/* What about a panose match?
-			 * 
-			 * We rely on this almost exclusively at present.  It works very well, with the following exceptions:
-			 * 
-			 * Garamond-Bold .. [ 2 2 8 4 3 3 7 1 8 3 ]
-     				Looking for [ 2 2 8 4 3 3 1 1 8 3 ]
-                                              ^----------- stuffs us up
-                                              
-                                              
-			 * 
-			 */  
-	        // TODO - only do this for latin fonts!
-			if (documentFontPanose==null ) {
-				log.debug(" --> null Panose");								
-			} else {
-								
-				// Is the Panose value valid?
-				if (log.isDebugEnabled() &&  org.docx4j.fonts.foray.font.format.Panose.validPanose(documentFontPanose.getPanoseArray())!=null) {														
-					// NB org.apache.fop.fonts.Panose only exists in our patched FOP
-					log.debug(documentFontName + " : " + org.docx4j.fonts.foray.font.format.Panose.validPanose(documentFontPanose.getPanoseArray()));					
-					//This is the case for 'Impact' which has 
-					//Invalid value 9 > 8 in position 5 of 2 11 8 6 3 9 2 5 2 4 
-				}
-				
-				String panoseKey =  findClosestPanoseMatch(documentFontName, documentFontPanose,
-							PhysicalFonts.getPhysicalFonts() , MATCH_THRESHOLD);
-				
-				if ( panoseKey==null) {
-					log.debug(documentFontName + " -->  no panose match");					
-				} else {
-		        	
-					fontMatched = PhysicalFonts.getPhysicalFonts().get(panoseKey);
-					
-					if (fontMatched!=null) {
-					
-						put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
-						log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
-								+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedURI() );
-						//Mapped Calibri -->  carlito bold italic( file:/usr/share/fonts/carlito/Carlito-BoldItalic.ttf
-					} else {
-						
-						log.debug("font with key " + panoseKey + " doesn't exist!");
-					}
-
-					// Out of interest, is this match in font substitutions table?
-					FontSubstitutions.Replace rtmp 
-						= (FontSubstitutions.Replace) explicitSubstitutionsMap.get(documentFontName.toLowerCase());
-					if (rtmp == null) {
-						log.debug("Couldn't find " + documentFontName + " in SubstitutionsMap");
-					} else if (rtmp.getSubstFonts()!=null) {
-						log.debug("looking for " + panoseKey + " in " + rtmp.getSubstFonts());
-						//looking for carlito bold italic in calibri;carlito;tahoma;stradatf;alineasans;verdana;helvetica;trebuchet;arial
-						if (rtmp.getSubstFonts().contains(panoseKey) ) {
-							log.debug("(consistent with explicit substitutes)");
-						} else {
-							log.debug("(lucky, since this is missing from explicit substitutes)");							
-						}
-						
-					}
-				} 
-					
-//				// However we found our match for the normal form of
-//				// this document font, we still need to do
-//				// bold, italic, and bolditalic?
-//
-//				MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(documentFontName);
-//				
-//				if (msFont==null) {
-//					log.warn("Font not found in MicrosoftFonts.xml");
-//					continue; 
-//				} 
-//				
-////				PhysicalFont fmTmp;
-////				
-//				org.apache.fop.fonts.Panose seekingPanose = null; 
-//				if (msFont.getBold()!=null) {
-//					log.debug("this font has a bold form");
-//					seekingPanose = documentFontPanose.getBold();
-//					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose); 					
-//					if (fmTmp!=null) {
-//						fontMappings.put(documentFontName+BOLD, fmTmp);
-//					}
-//				} 
-//				
-//				fmTmp = null;
-//				seekingPanose = null; 
-//				if (msFont.getItalic()!=null) {
-//					log.debug("this font has an italic form");
-//					seekingPanose = documentFontPanose.getItalic();
-//					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose);
-//					if (fmTmp!=null) {
-//						fontMappings.put(documentFontName+ITALIC, fmTmp);
-//					}						
-//				} 
-//				
-//				fmTmp = null;
-//				seekingPanose = null; 
-//				if (msFont.getBolditalic()!=null) {
-//					log.debug("this font has a bold italic form");												
-//					seekingPanose = documentFontPanose.getBold();
-//					seekingPanose = seekingPanose.getItalic();
-//					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose);
-//					if (fmTmp!=null) {
-//						fontMappings.put(documentFontName+BOLD_ITALIC, fmTmp);
-//					}						
-//				}
-				
-				continue; // we're done with this document font
-				
-			} 
-	        
-			// Finally, try explicit font substitutions
-			// - most likely to be useful for a font that doesn't have panose entries
-//			if ( normalFormFound) {
-//				continue;
-//			}
-			
-			// Don't bother trying this for bold, italic if you've already
-			// got the normal form
-			
-			log.debug("So try explicit font substitutions table");					        
-			FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) explicitSubstitutionsMap
-					.get((generateFontKey(documentFontName)));
-			if (replacement != null) {
-				// log.debug( "\n" + fontName + " found." );
-				// String subsFonts = replacement.getSubstFonts();
-
-				// Is there anything in subsFonts we can use?
-				String[] tokens = StringUtils.stripAll(replacement.getSubstFonts().split(";"));
-				
-	        	boolean foundMapping = false;
-				for (int x = 0; x < tokens.length; x++) {
-					// log.debug(tokens[x]);
-                    fontMatched = getPhysicalFontByKey(tokens[x]);
-					if (fontMatched != null) {
-
-						String physicalFontFile = fontMatched.getEmbeddedURI().toString();
-						log.debug("PDF: " + documentFontName + " --> "
-								+ physicalFontFile);
-						foundMapping = true;
-						
-						// Out of interest, does this have a Panose value?
-						// And what is the distance?
-						if (fontMatched.getPanose() == null ) {
-							log.debug(".. as expected, lacking Panose");					
-						} else if (documentFontPanose!=null  ) {
-							org.docx4j.fonts.foray.font.format.Panose physicalFontPanose = null;
-							try {
-								physicalFontPanose = org.docx4j.fonts.foray.font.format.Panose.makeInstance(fontMatched
-												.getPanose()
-												.getPanoseArray());
-							} catch (IllegalArgumentException e) {					
-								log.error(e.getMessage());
-								// For example:
-								// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-							}
-							
-							if (physicalFontPanose != null) {
-								long pd = documentFontPanose
-										.difference(physicalFontPanose,
-												null);
-
-								if (pd >= MATCH_THRESHOLD) {
-									log
-											.debug(".. with a panose distance exceeding threshold: "
-													+ pd);
-								} else {
-									// Sanity check
-									log
-											.error(".. with a low panose distance (! How did we get here?) : "
-													+ pd);
-								}
-							} 
-						} 										        	
-						break;
-					} else {
-						// log.debug("no match on token " + x + ":"
-						// + tokens[x]);
-					}	
-				}
-				
-				if (!foundMapping) {
-					log.debug( documentFontName  + " -->  Couldn't find any of "
-							+ replacement.getSubstFonts());
-				}
-
-			} else {
-				log.debug("Nothing in FontSubstitutions.xml for: "
-						+ documentFontName);
-				
-				// TODO - add default fallback values
-				
-			}
-			
-			if (fontMatched!=null) {
-				put(documentFontName, fontMatched);
-				log.warn("Mapped " +  documentFontName  + " -->  " + fontMatched.getName() 
-						+ "( "+ fontMatched.getEmbeddedURI() );
-			} else {
-				log.debug("Nothing added for: " + documentFontName);
+		// Panose setup
+		org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = null;
+		if (font==null) {
+			log.debug("Font " + documentFontName + " not found in font table");
+		} else {
+			wmlFontPanoseForDocumentFont = font.getPanose1();
+		}
+		org.docx4j.fonts.foray.font.format.Panose documentFontPanose = null;
+		if (wmlFontPanoseForDocumentFont!=null && wmlFontPanoseForDocumentFont.getVal()!=null ) {
+			try {
+				documentFontPanose = org.docx4j.fonts.foray.font.format.Panose.makeInstance(wmlFontPanoseForDocumentFont.getVal() );
+			} catch (IllegalArgumentException e) {
+				log.error(e.getMessage());
+				// For example:
+				// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
 			}
 		}
-		
-	    lastSeenNumberOfPhysicalFonts = PhysicalFonts.getPhysicalFonts().size();
+
+		/* A panose match.  It works very well, with the following exceptions:
+		 *
+		 * Garamond-Bold .. [ 2 2 8 4 3 3 7 1 8 3 ]
+		 *      Looking for [ 2 2 8 4 3 3 1 1 8 3 ]
+		 *                               ^----------- stuffs us up
+		 */
+		if (documentFontPanose!=null) {
+			java.util.Map<String, PhysicalFont> space = new HashMap<String, PhysicalFont>(PhysicalFonts.getPhysicalFonts());
+			for (int attempt=0; attempt<8 && !space.isEmpty(); attempt++) {
+				String panoseKey = findClosestPanoseMatch(documentFontName, documentFontPanose, space, MATCH_THRESHOLD);
+				if (panoseKey==null) break;
+				PhysicalFont fontMatched = space.get(panoseKey);
+				if (fontMatched!=null && drawsBasicLatin(fontMatched)) {
+					log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey
+							+ " ( " + fontMatched.getEmbeddedURI() + ")");
+					return fontMatched;
+				}
+				// a face for another script with a nearby panose: not for a Latin document font
+				space.remove(panoseKey);
+			}
+			log.debug(documentFontName + " -->  no panose match");
+		}
+
+		// Finally, try explicit font substitutions - most likely to be useful for a font
+		// that doesn't have panose entries
+		FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) explicitSubstitutionsMap
+				.get((generateFontKey(documentFontName)));
+		if (replacement != null && replacement.getSubstFonts()!=null) {
+			String[] tokens = StringUtils.stripAll(replacement.getSubstFonts().split(";"));
+			for (int x = 0; x < tokens.length; x++) {
+				PhysicalFont fontMatched = getPhysicalFontByKey(tokens[x]);
+				if (fontMatched != null) {
+					log.debug(documentFontName + " --> " + fontMatched.getEmbeddedURI() + " (FontSubstitutions.xml)");
+					return fontMatched;
+				}
+			}
+			log.debug( documentFontName  + " -->  Couldn't find any of " + replacement.getSubstFonts());
+		} else {
+			log.debug("Nothing in FontSubstitutions.xml for: " + documentFontName);
+		}
+		return null;
+	}
+
+	/** Whether the face has the Latin letters a document font is asked for (a panose
+	 *  neighbour may be a Tamil or Hebrew face). */
+	private static boolean drawsBasicLatin(PhysicalFont pf) {
+		try {
+			return GlyphCheck.hasCodepoint(pf, 'a') && GlyphCheck.hasCodepoint(pf, 'A');
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private final static int MATCH_THRESHOLD_INTRA_FAMILY = 4;

@@ -94,183 +94,28 @@ public class IdentityPlusMapper extends Mapper {
 
 	
 	/**
-	 * Populate the fontMappings object. We make an entry for each
-	 * of the documentFontNames.
-	 * 
-	 * @param documentFontNames - the fonts used in the document
-	 * @param wmlFonts - the content model for the fonts part
-	 * @throws Exception
+	 * A variant of the name: "Noto Sans Symbols" is registered as "Noto Sans Symbols
+	 * Regular"; a family with no plain face is asked for in the order regular, bold,
+	 * italic, bold italic (until 17.1.1 italic came before bold, so "Franklin Gothic Demi"
+	 * with its regular absent was set upright in Franklin Gothic Demi Italic; Brush
+	 * Script MT, Lucida Calligraphy, Vivaldi and Magneto, which have only the one face,
+	 * are found either way).  Everything else - the metric clones, w:altName, a face of
+	 * the same class, Word's default - is the shared passes' (see Mapper).
+	 *
+	 * @since 17.1.1 as this method; the same lookups were populateFontMappings' before
 	 */
-	public void populateFontMappings(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts ) throws Exception {
-		
-		// documentFontNames comes from MDP's fontsInUse()
-		// which contains getPropertyResolver().getFontnameFromStyle
-				
-		/* org.docx4j.wml.Fonts fonts is obtained as follows:
-		 * 
-		 *     FontTablePart fontTablePart= wordMLPackage.getMainDocumentPart().getFontTablePart();
-		 *     org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
-		 *     
-		 * If the document doesn't have a font table, 
-		 *     
-		 *		org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart fontTable 
-		 *			= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
-		 *		fontTable.unmarshalDefaultFonts();
-		 */ 
-		
-		//  We need to make a map out of it.
-//		List<Fonts.Font> fontList = wmlFonts.getFont();
-//		Map<String, Fonts.Font> fontsInFontTable = new HashMap<String, Fonts.Font>();
-//		for (Fonts.Font font : fontList ) {
-//			fontsInFontTable.put( normalise(font.getName()), font );
-//		}
-		
-
-		for( String documentFontname : documentFontNames) {
-	        log.debug("Document font: " + documentFontname);
-	        PhysicalFont mappedTo = PhysicalFonts.get(documentFontname);
-	        if ( mappedTo!=null ) {
-	        	
-	        	// An identity mapping; that is all
-	        	// this class knows how to do!
-        		put(documentFontname,         				 
-        				mappedTo );	
-        			log.debug(".. mapped to " + mappedTo.getName() );
-	        } else if (PhysicalFonts.get(documentFontname + " regular")!=null) {
-	        	/*
-	        	 * Noto Sans Symbols vs Noto Sans Symbols Regular
-	        	 */
-        		put(documentFontname,         				 
-        				PhysicalFonts.get(documentFontname + " regular") );	
-        			log.debug(".. mismatch mapped to " + documentFontname + " regular" );
-	        } else if (PhysicalFonts.get(documentFontname + " italic")!=null) {
-	        	/*
-					Brush Script MT vs brush script mt italic
-					Lucida Calligraphy vs lucida calligraphy italic
-					Lucida Handwriting vs lucida handwriting italic
-					Vivaldi vs vivaldi italic
-	        	 */
-        		put(documentFontname,         				 
-        				PhysicalFonts.get(documentFontname + " italic") );	
-        			log.debug(".. mismatch mapped to " + documentFontname + " italic" );
-	        } else if (PhysicalFonts.get(documentFontname + " bold")!=null) {
-	        	/* Magneto vs magneto bold
-	        	 * Berlin Sans FB Demi vs Berlin Sans FB Demi Bold	        	
-	        	 */
-        		put(documentFontname,         				 
-        				PhysicalFonts.get(documentFontname + " bold") );	
-        			log.debug(".. mismatch mapped to " + documentFontname + " bold" );
-	        } 
-	        /* not in PhysicalFonts */
-	        else if (regularForms.get(documentFontname)!=null) {
-        		put(documentFontname,         				 
-        				regularForms.get(documentFontname) );	
-        			log.debug(".. mapped to embedded regular form " );
-	        } else if (boldForms.get(documentFontname)!=null) {
-        		put(documentFontname,         				 
-        				boldForms.get(documentFontname) );	
-        			log.debug(".. mapped to embedded bold form " );
-	        } else if (italicForms.get(documentFontname)!=null) {
-        		put(documentFontname,         				 
-        				italicForms.get(documentFontname) );	
-        			log.debug(".. mapped to embedded italic form " );
-	        } else if (boldItalicForms.get(documentFontname)!=null) {
-        		put(documentFontname,         				 
-        				boldItalicForms.get(documentFontname) );	
-        			log.debug(".. mapped to embedded bold italic form " );
-	        	
-	        } else {
-	        	log.warn("- - No physical font for: " + documentFontname + " so ensure it is mapped. ");
-	        	// user should configure a mapping for this
-	        }
-	    }	        	
-		
-		
-//		// Iterate through the physical fonts, since their key is their 
-//		// postscript name (non-normalised).  This way, we can do a single
-//		// pass.
-//		Iterator physicalFontMapIterator = physicalFontMap.entrySet().iterator();
-//	    while (physicalFontMapIterator.hasNext()) {
-//	        Map.Entry pairs = (Map.Entry)physicalFontMapIterator.next();
-//	        
-//	        if(pairs.getKey()==null) {
-//	        	log.info("Skipped null key");
-//	        	pairs = (Map.Entry)physicalFontMapIterator.next();
-//	        }
-//		
-//	        String physicalFontName = (String)pairs.getKey();
-//			//log.debug("\n\n" + physicalFontName);	        
-//	        //String normalisedFontName = normalise(physicalFontName);
-//			String fontPath = ((PhysicalFont)pairs.getValue()).getEmbeddedFile();
-//			String physicalFilename = fontPath.substring( fontPath.lastIndexOf("/") +1).toLowerCase();
-//			
-//			String msFontName = filenamesToMsFontNames.get(physicalFilename);
-//			
-//			if (msFontName!=null) {
-//			
-////				String msFontName = font.getName(); 
-//				
-//				String baseform = msFontName;
-//				if (msFontName.indexOf(SEPARATOR)>0) {
-//					baseform = msFontName.substring(0, msFontName.indexOf(SEPARATOR));
-//				}
-//				
-//		        // Add it to the mapping if it is present in the document
-//		        if ( documentFontNames.get(baseform)!=null ) {
-//		        	
-//					// for now, if the baseform is used, 
-//		        	// we say bold, italic, and bolditalic are as well
-//		        	
-//		        	if (pairs.getValue()==null) {
-//		        		log.debug("Handle that");
-//		        	} else {
-//		        		fontMappings.put((msFontName), 
-//			        			new FontMapping(msFontName, (PhysicalFont)pairs.getValue() ) );
-//		        		log.info("Added mapping for: " + (msFontName));		        		
-//		        	}
-//		        	
-//		        } else {
-//		        	log.debug("Ignoring physical font " + msFontName
-//		        			+ ((PhysicalFont)pairs.getValue()).getEmbeddedFile() );
-//		        	
-//		        }
-//			} else {
-//				
-//				log.info("Unknown font: " + physicalFontName + "(" + physicalFilename);
-//				
-//			}
-//				
-//	    }
-	        
+	@Override
+	protected PhysicalFont resolveDocumentFont(String documentFontName, org.docx4j.wml.Fonts.Font fontTableEntry) {
+		for (String variant : new String[] { " regular", " bold", " italic", " bold italic" }) {
+			PhysicalFont pf = PhysicalFonts.get(documentFontName + variant);
+			if (pf!=null) {
+				log.debug(documentFontName + " .. mismatch mapped to " + documentFontName + variant);
+				return pf;
+			}
+		}
+		return null;
 	}
 
-
-//	public static class PhysicalFontFamily {
-//
-//		String familyName; // For example: Times New Roman
-//		public String getFamilyName() {
-//			return familyName;
-//		}
-//
-//		PhysicalFontFamily(String familyName) {
-//			this.familyName = familyName;
-//		}
-//
-//		// We want this, so that when were are searching panose space
-//		// for bold, bolditalic, italic, we can restrict the search
-//		// to this list
-//		Map<String, PhysicalFont> physicalFonts = new HashMap<String, PhysicalFont> ();
-//		void addFont(PhysicalFont physicalFont){
-//			physicalFonts.put(physicalFont.getName(), physicalFont);
-//		}
-//		
-//		Map<String, PhysicalFont> getPhysicalFonts() {
-//			return physicalFonts;
-//		}
-//		
-//	}
-	
-	
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";

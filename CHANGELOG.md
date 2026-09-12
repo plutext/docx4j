@@ -7,7 +7,7 @@ Version 17.1.1
 Changes in Version 17.1.1
 --------------------------
 
-Fonts (CR-016, the font selection and mapping review, phases 0-2):
+Fonts (CR-016, the font selection and mapping review, phases 0-3):
 
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
@@ -54,6 +54,24 @@ Fonts (CR-016, the font selection and mapping review, phases 0-2):
 - The FO exporter's block-font choice counts the text an inline draws itself, not that of the
   substituted stretches nested in it (a Greek paragraph's block took Caladea's line box for
   P052's text).
+- One order of precedence for both font mappers: the installed font by its name, the
+  document's embedded form, the mapper's own answer (a name variant; a panose match - never a
+  face without Latin letters - or FontSubstitutions.xml), then the shared passes, which
+  BestMatchingMapper now takes as well, with its panose match moved behind them (a guess from
+  panose is worth less than a measured clone: a legacy Indic face with Arial's panose used to
+  take Myriad): the metric clones, the w:altName chain (an alternate's alternate is followed), a
+  face of the same class.  Measured over the corpora, BestMatchingMapper gains 0.007 to 0.018 of
+  mean line parity and is now within 0.005 of IdentityPlusMapper.  IdentityPlusMapper asks for a family's
+  bold before its italic when the plain face is absent (upright text came out italic).
+- A family none of docx4j's tables know goes where Word sends a font it cannot find (measured
+  on Word 365): Cambria for w:family roman or no fontTable entry, Calibri for swiss or an entry
+  naming no family, and the line box is that face's; the document's default font is no
+  longer used for it.  A font the tables know and the machine lacks keeps its class-based
+  substitute.
+- A document font with no bold face of its own (Calibri Light, Segoe UI Semibold, a family
+  the registry lists without one) keeps its regular advances when bold: FOP synthesises the
+  weight from the mapped file, as Word does, rather than taking the substitute's real bold
+  (Carlito Bold was 2.7% wide for Calibri Light's w:b, Word 0.3%).
 - docx4j-layout-fidelity: -Dfidelity.fontMapper=identity|best and -Dfidelity.fonts=all|jars|<dir>
   score a font mapper under a chosen font environment; docs/developer/change-requests/CR-016
   records the mapper matrix and the enumerated font sets of the popular distributions.

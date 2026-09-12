@@ -1942,8 +1942,12 @@ public class RunFontSelector {
 		}
 		
 		String font = getPhysicalFont(fontName);
-		
-		if (font!=null) {					
+		if (font!=null && font.endsWith(PhysicalFont.NOBOLD_SUFFIX)) {
+			// the alias for a document font with no bold face is an XSL FO matter
+			font = font.substring(0, font.length() - PhysicalFont.NOBOLD_SUFFIX.length());
+		}
+
+		if (font!=null) {
 			return Property.composeCss(CSS_NAME, "'" + font + "'");
 		} else {
 			// We don't have this font, so don't specify it in our CSS

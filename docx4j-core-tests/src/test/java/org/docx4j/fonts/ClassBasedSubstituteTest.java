@@ -128,10 +128,13 @@ public class ClassBasedSubstituteTest {
 				mapper("Wingdings").get("Wingdings"));
 	}
 
-	/** BestMatchingMapper reaches its own conclusions; this step is not for it. */
+	/** Both mappers take the shared passes since 17.1.1 (CR-016 phase 3): BestMatchingMapper's
+	 *  own panose step runs first, and what it leaves unmapped goes the same way as
+	 *  IdentityPlusMapper's (until then it was withheld from it, and the mapper matrix
+	 *  measured it 0.010-0.021 of mean line parity behind in every environment). */
 	@Test
-	public void bestMatchingMapperIsUnchanged() throws Exception {
-		org.junit.Assert.assertFalse(new BestMatchingMapper().wantsClassBasedSubstitutes());
+	public void bothMappersTakeTheSharedPasses() throws Exception {
+		org.junit.Assert.assertTrue(new BestMatchingMapper().wantsClassBasedSubstitutes());
 		org.junit.Assert.assertTrue(new IdentityPlusMapper().wantsClassBasedSubstitutes());
 	}
 }

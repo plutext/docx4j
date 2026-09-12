@@ -83,12 +83,21 @@ public class PhysicalFonts {
 	 * @return
 	 */
 	public static PhysicalFont get(String key) {
-		if (key.endsWith(RunFontSelector.KERNED_SUFFIX)) {
-			// the kerned twin FopConfigUtil registers for a font (per-run kerning)
-			key = key.substring(0, key.length() - RunFontSelector.KERNED_SUFFIX.length());
-		} else if (key.endsWith(RunFontSelector.NOLIGA_SUFFIX)) {
-			// its twin with no OpenType features (per-run ligatures); @since 17.0.5
-			key = key.substring(0, key.length() - RunFontSelector.NOLIGA_SUFFIX.length());
+		if (key==null) return null;
+		/* A font-family may carry one or more of the suffixes the FO layer adds for a
+		 * twin FopConfigUtil declares from the same file - the kerned twin (per-run
+		 * kerning), the twin with no OpenType features (per-run ligatures, 17.0.5), the
+		 * alias for a document font with no bold face (17.1.1) - and they stack
+		 * ("+nobold+noliga"), so every one of them is stripped. */
+		boolean stripped = true;
+		while (stripped) {
+			stripped = false;
+			for (String suffix : new String[] { RunFontSelector.KERNED_SUFFIX, RunFontSelector.NOLIGA_SUFFIX, PhysicalFont.NOBOLD_SUFFIX }) {
+				if (key.endsWith(suffix)) {
+					key = key.substring(0, key.length() - suffix.length());
+					stripped = true;
+				}
+			}
 		}
 		return physicalFontMap.get(key.toLowerCase());
 	}
@@ -687,6 +696,7 @@ public class PhysicalFonts {
 	}
 
 	public static PhysicalFont getBoldForm( PhysicalFont pf) {
+		if (pf.isNoBoldFace()) return null; // FOP synthesises it at the regular advances (17.1.1)
 
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
@@ -720,6 +730,7 @@ public class PhysicalFonts {
 	}
 	
 	public static PhysicalFont getBoldItalicForm( PhysicalFont pf) {
+		if (pf.isNoBoldFace()) return null; // as getBoldForm (17.1.1)
 		
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );

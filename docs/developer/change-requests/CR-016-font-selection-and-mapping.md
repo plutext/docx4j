@@ -2,8 +2,9 @@
 
 Status: IN PROGRESS (2026-09-12) — phases 0 (d643638ad), 0b (the eight probes
 and their goldens, the verification table settled), 0c (the mapper matrix and
-the font environments; the jar-discovery fix b1eb9e61e) and 1 (one resolution,
-`w:cs` by value, the theme language, the Office theme faces) done; 2 to 5 open.
+the font environments; the jar-discovery fix b1eb9e61e), 1 (one resolution,
+`w:cs` by value, the theme language, the Office theme faces; b999477be), 2 (the
+dispatch; 613c44b1c) and 3 (the mapping order) done; 4 and 5 open.
 Jason read the CR the same day and started the work.  The review below was written that day
 against 7563277a0 (CR-015 tidy-up), with every "measured" claim taken from a
 scratch test that was run and then deleted (`ScratchFontsProbeTest`, not
@@ -1015,11 +1016,70 @@ scored on all three corpora):
    lacks, and the RTL text layer).  `docx4j-core-tests` and
    `docx4j-export-fo-tests` green on the final code.
 
-### Phase 3 — the mapping order
+### Phase 3 — the mapping order — DONE 2026-09-12
 
-As designed, after P5 and P7 and after the phase 0c matrix is read.  Gate as
-phase 1, plus the FOP-configuration diff, and scored with *both* mappers from
-here on; the batch-42 documents read individually.  The measured substitutes
+As designed, with the goldens' answers in it:
+
+- **One precedence, in `Mapper.populateFontMappings`** (no longer abstract): the
+  installed font by its name, else the document's embedded form (regular, bold,
+  italic, bold italic), else the mapper's own `resolveDocumentFont` - the name
+  variants for `IdentityPlusMapper` (regular, bold, italic, bold italic: bold
+  before italic now), the panose match then `FontSubstitutions.xml` for
+  `BestMatchingMapper` (whose Calibri workaround and `lastSeenNumberOfPhysicalFonts`
+  re-check are gone, and whose panose match now skips a face that cannot draw
+  Basic Latin - the 2009 TODO about Segoe UI matching a Tamil font).  Decision 2
+  as recommended: the installed font wins over the embedded one in both.
+- **The shared passes for both mappers** (`wantsClassBasedSubstitutes` is true
+  for BestMatchingMapper now): the metric-compatible table, the `w:altName`
+  chain (the alternate's alternate, a few hops, never a cycle), a face of the
+  same class, and two new ones.
+- **`addWordDefaultSubstitutes`**: for a family none of docx4j's tables know
+  (`isKnownFamily`: MicrosoftFonts.xml, word-line-metrics, FontSubstitutions.xml,
+  the name heuristic), Word's own answer per P5 - Cambria for `w:family="roman"`
+  or no fontTable entry, Calibri for `swiss` or an entry naming no family (the
+  altName chain looked through for a family), Courier New for `modern`; mapped
+  to whatever the mapper maps that font to (Caladea, Carlito), and
+  `WordLineMetrics` told the alias so the line box is Cambria's or Calibri's.
+  A *known* family the machine merely lacks keeps the class-based substitute:
+  Word on the author's machine had it, so its widths are the target, not
+  Cambria's.
+- **`addNoBoldFaceAliases`** (P7): a document font with no bold face of its own
+  (`hasBoldFace`: the registry entry's `<bold>`, else a name ending in a weight
+  word - Light, Semilight, Semibold, Black, Thin ...) is re-mapped to an alias
+  of its physical font (`PhysicalFont.noBoldFaceAlias`, name `+nobold`,
+  stripped by `PhysicalFonts.get` like the kerned and no-ligature suffixes)
+  which reports no bold sibling, so `FopConfigUtil` declares it with
+  `simulate-style` and FOP synthesises the bold at the regular advances, as
+  Word does for Calibri Light (378.55pt against Carlito Bold's 388.70).  No
+  change in `fonts/fop`: the alias goes through the existing
+  `getBoldForm` path.  The HTML pathway strips the suffix.
+- `Mapper.get(null)` tolerates null (phase 1).  Not done: the family-name
+  alias in `PhysicalFonts` (optional; nothing in the corpus asked for it).
+
+Tests: `MapperPrecedenceTest` (the installed font over the embedded in both
+mappers, the embedded form where the machine lacks the font, the face order,
+the altName chain and a cycle, Word's default per P5's cases through the
+mapper with the line-box alias, the no-bold alias); `ClassBasedSubstituteTest`
+now asserts both mappers take the passes.
+
+Gate (2026-09-12), and what it taught: the first run found the no-bold alias
+losing its line boxes wherever the FO layer had stacked a second suffix on its
+name (`Tinos Regular+nobold+noliga`; `PhysicalFonts.get` stripped one), which
+cost four Calibri Light and Sylfaen documents; every suffix is stripped now.
+The BestMatchingMapper cells then showed its panose step, first in its order,
+claiming Myriad and CorpoS for a legacy Indic face carrying Arial's panose
+(the Basic-Latin check does not catch a font with glyphs *at* the Latin code
+points) before the metric and class passes could map them as IdentityPlusMapper
+does; so the panose match and FontSubstitutions.xml moved behind the measured
+passes as `addMapperSubstitutes`, a hook `setFontMapper` calls before Word's
+default.  Final numbers, three corpora: IdentityPlusMapper 0.9052 -> 0.9053,
+0.8804 -> 0.8804, 0.9179 -> 0.9182, no document regressed (the Calibri Light
+document 740 to Word's single page); **BestMatchingMapper 0.8941 -> 0.9008,
+0.8634 -> 0.8761, 0.8996 -> 0.9174** against its own matrix cells, 25 documents
+improved and one regressed - within 0.001 to 0.005 of IdentityPlusMapper now,
+where the matrix had it 0.010 to 0.021 behind.  Probes: `fonts-light-bold` 50%
+-> 83%, `fonts-unresolvable`'s worst offset 23pt -> 16pt (Cambria's line box).
+`docx4j-core-tests` 1004/0, `docx4j-export-fo-tests` 600/0.  The measured substitutes
 (Trebuchet MS, Cambria's Greek, a Light face) are *not* in this phase
 (Decisions 3); the rules they need are.
 
@@ -1066,8 +1126,10 @@ As designed; CHANGELOG entries for the HTML change and the deprecations.
    every environment, by 0.010-0.021.  The decision itself is still Jason's;
    the CR's recommendation now is IdentityPlusMapper everywhere, the samples
    and the Getting Started text to say so, BestMatchingMapper kept and given
-   the shared passes in phase 3 so that it stops losing what it need not,
-   and - the larger finding - the jars' own coverage for headless deployments
+   the shared passes in phase 3 so that it stops losing what it need not
+   (done: with them, and its panose step behind them, it scores within 0.001
+   to 0.005 of IdentityPlusMapper on all three corpora, where it was 0.010 to
+   0.021 behind), and - the larger finding - the jars' own coverage for headless deployments
    (a Liberation-or-croscore choice that leaves neither DejaVu Sans nor a
    condensed face nor the URW faces available) to be looked at as its own
    item.  Phase 0c measures how far behind IdentityPlusMapper

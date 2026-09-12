@@ -441,6 +441,19 @@ public class WordprocessingMLPackage extends OpcPackage {
 			if (fontMapper.wantsClassBasedSubstitutes()) {
 				fontMapper.addClassBasedSubstitutes(fontsInUse);
 			}
+
+			/* Then the mapper's own guesses (BestMatchingMapper's panose match and
+			 * FontSubstitutions.xml) for what the measured passes left.  @since 17.1.1 */
+			fontMapper.addMapperSubstitutes(fontsInUse, fonts);
+
+			/* Then a family none of docx4j's tables know, which is what Word itself could
+			 * not find: Cambria or Calibri by its fontTable family, as Word does (CR-016
+			 * probe fonts-unresolvable).  @since 17.1.1 */
+			fontMapper.addWordDefaultSubstitutes(fontsInUse, fonts);
+
+			/* Last, since it re-maps: a document font with no bold face of its own (Calibri
+			 * Light) keeps its mapped file's advances when bold, as Word does.  @since 17.1.1 */
+			fontMapper.addNoBoldFaceAliases(fontsInUse);
 		}
     }
 

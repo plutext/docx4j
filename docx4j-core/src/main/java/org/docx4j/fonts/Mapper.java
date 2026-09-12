@@ -127,15 +127,97 @@ public abstract class Mapper {
 	public final static String FONT_FALLBACK = "Times New Roman"; 
 	
 	/**
-	 * Populate the fontMappings object. We make an entry for each
-	 * of the documentFontNames.
-	 * 
+	 * Populate the fontMappings object: an entry for each of the documentFontNames.
+	 *
+	 * <p>One order of precedence for every mapper (CR-016 phase 3; until 17.1.1 the two
+	 * mappers disagreed, one preferring an installed font to the document's embedded one
+	 * and the other the reverse):</p>
+	 * <ol>
+	 * <li>the font itself where the machine has it, by its name;</li>
+	 * <li>the document's embedded form of it (regular, bold, italic, bold-italic, in that
+	 *     order);</li>
+	 * <li>the mapper's own answer, {@link #resolveDocumentFont} - a variant of the name
+	 *     for {@link IdentityPlusMapper}, a panose match or a FontSubstitutions.xml entry
+	 *     for {@link BestMatchingMapper}.</li>
+	 * </ol>
+	 * <p>What is still unmapped is then the business of the shared passes
+	 * {@link WordprocessingMLPackage#setFontMapper} runs after this: the metric-compatible
+	 * table, the document's own {@code w:altName}, a face of the same class, and Word's own
+	 * default for a font it cannot find.</p>
+	 *
 	 * @param documentFontNames - the fonts used in the document
 	 * @param wmlFonts - the content model for the fonts part
 	 * @throws Exception
 	 */
-	public abstract void populateFontMappings(Set<String> documentFontNames, 
-			org.docx4j.wml.Fonts wmlFonts ) throws Exception;
+	public void populateFontMappings(Set<String> documentFontNames,
+			org.docx4j.wml.Fonts wmlFonts ) throws Exception {
+
+		Map<String, org.docx4j.wml.Fonts.Font> table = fontTable(wmlFonts);
+		for (String documentFontName : documentFontNames) {
+			if (documentFontName==null || documentFontName.trim().length()==0) continue;
+			if (get(documentFontName)!=null) {
+				log.debug(documentFontName + " already mapped");
+				continue;
+			}
+			PhysicalFont pf = installedOrEmbedded(documentFontName);
+			if (pf==null) {
+				pf = resolveDocumentFont(documentFontName, table.get(documentFontName.trim().toLowerCase()));
+			}
+			if (pf==null) {
+				log.warn("- - No physical font for: " + documentFontName + " so ensure it is mapped. ");
+			} else {
+				put(documentFontName, pf);
+				if (log.isDebugEnabled()) log.debug(documentFontName + " -> " + pf.getName());
+			}
+		}
+	}
+
+	/** The installed font of this name, else the document's embedded form of it. */
+	protected PhysicalFont installedOrEmbedded(String documentFontName) {
+		PhysicalFont pf = PhysicalFonts.get(documentFontName);
+		if (pf!=null) return pf;
+		pf = regularForms.get(documentFontName);
+		if (pf==null) pf = boldForms.get(documentFontName);
+		if (pf==null) pf = italicForms.get(documentFontName);
+		if (pf==null) pf = boldItalicForms.get(documentFontName);
+		return pf;
+	}
+
+	/**
+	 * The mapper's own answer for a document font the machine has neither installed
+	 * under that name nor embedded; null where it has none.
+	 *
+	 * @param documentFontName the name as the document writes it
+	 * @param fontTableEntry the document's w:font entry for it, or null
+	 * @since 17.1.1
+	 */
+	protected PhysicalFont resolveDocumentFont(String documentFontName, org.docx4j.wml.Fonts.Font fontTableEntry) {
+		return null;
+	}
+
+	/**
+	 * The mapper's own substitutes for whatever is still unmapped after the shared passes
+	 * that follow measured tables (the metric clones, w:altName, a face of the same class)
+	 * and before Word's default: {@link BestMatchingMapper}'s panose match and
+	 * FontSubstitutions.xml.  A guess from panose is worth less than a measured clone,
+	 * so it comes after them (until 17.1.1 it came first, and a legacy Indic face with
+	 * Arial's panose took Myriad and CorpoS away from Arimo and Carlito).  Nothing here
+	 * by default.
+	 *
+	 * @since 17.1.1
+	 */
+	public void addMapperSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {
+	}
+
+	/** The font table keyed by lower-cased name. */
+	static Map<String, org.docx4j.wml.Fonts.Font> fontTable(org.docx4j.wml.Fonts wmlFonts) {
+		Map<String, org.docx4j.wml.Fonts.Font> table = new java.util.HashMap<String, org.docx4j.wml.Fonts.Font>();
+		if (wmlFonts==null || wmlFonts.getFont()==null) return table;
+		for (org.docx4j.wml.Fonts.Font f : wmlFonts.getFont()) {
+			if (f!=null && f.getName()!=null) table.put(f.getName().trim().toLowerCase(), f);
+		}
+		return table;
+	}
 	
 	
 	// For Xalan
@@ -441,9 +523,9 @@ public abstract class Mapper {
     	
     }
     
-    /** Whether {@link #addClassBasedSubstitutes} applies to this mapper.  False for
-     *  {@link BestMatchingMapper}, which reaches its own conclusions from panose and
-     *  from FontSubstitutions.xml, and whose behaviour is unchanged.
+    /** Whether {@link #addClassBasedSubstitutes} applies to this mapper.  True for both
+     *  since 17.1.1 (CR-016 phase 3): BestMatchingMapper's own step runs first, and what
+     *  it leaves unmapped goes through the same passes as IdentityPlusMapper's.
      *  @since 17.0.5 */
     public boolean wantsClassBasedSubstitutes() {
     	return true;
@@ -495,19 +577,27 @@ public abstract class Mapper {
     		if (isEmbedded(documentFontName)) continue;
     		if (PhysicalFonts.get(documentFontName)!=null) continue; // installed; identity
 
+    		/* Follow the chain: the alternate may itself be absent and name an alternate
+    		 * (CR-016 probe fonts-unresolvable (e), (f)); a few hops, never a cycle. */
     		String alt = altNames.get(documentFontName.trim().toLowerCase());
-    		if (alt==null || alt.equalsIgnoreCase(documentFontName.trim())) continue;
-
-    		PhysicalFont pf = PhysicalFonts.get(alt);
-    		if (pf==null) pf = PhysicalFonts.get(alt + " Regular");
-    		if (pf==null) pf = get(alt);
+    		java.util.Set<String> seen = new java.util.HashSet<String>();
+    		seen.add(documentFontName.trim().toLowerCase());
+    		PhysicalFont pf = null;
+    		String resolvedAlt = null;
+    		while (alt!=null && seen.add(alt.trim().toLowerCase())) {
+    			pf = PhysicalFonts.get(alt);
+    			if (pf==null) pf = PhysicalFonts.get(alt + " Regular");
+    			if (pf==null) pf = get(alt);
+    			if (pf!=null) { resolvedAlt = alt; break; }
+    			alt = altNames.get(alt.trim().toLowerCase());
+    		}
     		if (pf==null) continue;
 
     		if (log.isDebugEnabled()) {
-    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (w:altName " + alt + ")");
+    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (w:altName " + resolvedAlt + ")");
     		}
     		put(documentFontName, pf);
-    		WordLineMetrics.registerAlias(documentFontName, alt);
+    		WordLineMetrics.registerAlias(documentFontName, resolvedAlt);
     	}
     }
 
@@ -551,6 +641,139 @@ public abstract class Mapper {
     			}
     			put(documentFontName, pf);
     		}
+    	}
+    }
+
+    /**
+     * Word's own answer for a font it cannot find, for whatever is still unmapped after
+     * every other pass: measured (CR-016 probe fonts-unresolvable, Word 365), a face
+     * whose fontTable entry says {@code w:family="roman"} is drawn in <b>Cambria</b>, one
+     * saying {@code swiss} in <b>Calibri</b>, one with an entry that names no family in
+     * Calibri, one with no fontTable entry at all in Cambria; an exact panose does not
+     * change that (Arial's gave Calibri), and the document's default font is never used.
+     * A {@code w:altName} that resolves has already won ({@link #addAltNameSubstitutes});
+     * one that does not is looked through for its family.
+     *
+     * <p>Applied only to a family none of docx4j's tables know ({@link #isKnownFamily}):
+     * a real Microsoft or common font the machine merely lacks is closer to Word's output
+     * in a face of its own class (the passes before this one), since Word on the author's
+     * machine had the font; a name no table knows is one Word itself substituted.  The
+     * face is whatever this mapper maps Cambria or Calibri to (their metric clones where
+     * installed), and {@link WordLineMetrics} is told the alias, so the line box is
+     * Cambria's or Calibri's, as Word's is.</p>
+     *
+     * @since 17.1.1
+     */
+    public void addWordDefaultSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {
+
+    	if (documentFontNames==null) return;
+    	Map<String, org.docx4j.wml.Fonts.Font> table = fontTable(wmlFonts);
+    	for (String documentFontName : documentFontNames) {
+
+    		if (documentFontName==null || documentFontName.trim().length()==0) continue;
+    		if (get(documentFontName)!=null) continue;
+    		if (isEmbedded(documentFontName)) continue;
+    		if (PhysicalFonts.get(documentFontName)!=null) continue;
+    		if (isKnownFamily(documentFontName)) continue;
+
+    		String wordFont = wordDefaultFor(documentFontName, table);
+    		PhysicalFont pf = get(wordFont);
+    		if (pf==null) pf = PhysicalFonts.get(wordFont);
+    		if (pf==null) pf = FontFallback.selectByClass(wordFont);
+    		if (pf==null) continue;
+    		if (log.isDebugEnabled()) {
+    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (Word's default for an unknown font: " + wordFont + ")");
+    		}
+    		put(documentFontName, pf);
+    		WordLineMetrics.registerAlias(documentFontName, wordFont);
+    	}
+    }
+
+    /** The font Word draws an unknown font in, by its fontTable entry (see
+     *  {@link #addWordDefaultSubstitutes}). */
+    static String wordDefaultFor(String documentFontName, Map<String, org.docx4j.wml.Fonts.Font> table) {
+    	org.docx4j.wml.Fonts.Font entry = table.get(documentFontName.trim().toLowerCase());
+    	if (entry==null) return "Cambria";
+    	// the family: the entry's own, else the first along its altName chain
+    	java.util.Set<String> seen = new java.util.HashSet<String>();
+    	org.docx4j.wml.Fonts.Font e = entry;
+    	while (e!=null && e.getName()!=null && seen.add(e.getName().trim().toLowerCase())) {
+    		if (e.getFamily()!=null && e.getFamily().getVal()!=null) {
+    			String family = e.getFamily().getVal().trim().toLowerCase();
+    			if (family.equals("roman")) return "Cambria";
+    			if (family.equals("modern")) return "Courier New";
+    			return "Calibri"; // swiss, script, decorative, auto
+    		}
+    		e = (e.getAltName()==null || e.getAltName().getVal()==null) ? null
+    				: table.get(e.getAltName().getVal().trim().toLowerCase());
+    	}
+    	return "Calibri";
+    }
+
+    /**
+     * Whether docx4j's tables know this family: MicrosoftFonts.xml, word-line-metrics
+     * (512 Microsoft and Office cloud families), FontSubstitutions.xml, or the class
+     * heuristic on its name.  A known family the machine lacks is substituted for its
+     * widths; an unknown one is what Word could not find either.
+     *
+     * @since 17.1.1
+     */
+    public static boolean isKnownFamily(String documentFontName) {
+    	if (documentFontName==null) return false;
+    	String name = documentFontName.trim();
+    	if (org.docx4j.fonts.microsoft.MicrosoftFontsRegistry.getMsFonts().containsKey(name)) return true;
+    	if (WordLineMetrics.hasTableEntry(name)) return true;
+    	if (FontFallback.classOf(name)!=FontFallback.FontClass.UNKNOWN) return true;
+    	return false;
+    }
+
+    /**
+     * Whether this document font has a bold face of its own: the MicrosoftFonts.xml
+     * entry where there is one (Franklin Gothic Book has none), else a family whose name
+     * ends in a weight word (Calibri Light, Segoe UI Semibold, Arial Black) is a single
+     * weight in Windows' font model and has none; any other family is taken to have one.
+     *
+     * @since 17.1.1
+     */
+    public static boolean hasBoldFace(String documentFontName) {
+    	if (documentFontName==null) return true;
+    	String name = documentFontName.trim();
+    	org.docx4j.fonts.microsoft.MicrosoftFonts.Font ms = org.docx4j.fonts.microsoft.MicrosoftFontsRegistry.getMsFonts().get(name);
+    	if (ms!=null) return ms.getBold()!=null;
+    	String last = name.toLowerCase();
+    	int sp = last.lastIndexOf(' ');
+    	if (sp>0) last = last.substring(sp+1);
+    	for (String weight : new String[] { "light", "semilight", "semibold", "demibold", "medium", "black", "thin", "extralight", "ultralight", "heavy" }) {
+    		if (last.equals(weight)) return false;
+    	}
+    	return true;
+    }
+
+    /**
+     * For each document font which has no bold face of its own but whose mapped physical
+     * font has a real bold sibling, an alias of that font reporting none
+     * ({@link PhysicalFont#noBoldFaceAlias}), so that FOP synthesises the bold at the
+     * regular advances as Word does (probe fonts-light-bold: Calibri Light's w:b is the
+     * Calibri Light font object, +0.3% wide, where Carlito Bold is +2.7%).  Last of the
+     * passes: it re-maps.
+     *
+     * @since 17.1.1
+     */
+    public void addNoBoldFaceAliases(Set<String> documentFontNames) {
+
+    	if (documentFontNames==null) return;
+    	for (String documentFontName : documentFontNames) {
+    		if (documentFontName==null || documentFontName.trim().length()==0) continue;
+    		if (hasBoldFace(documentFontName)) continue;
+    		if (isEmbedded(documentFontName)) continue; // the embedded forms say what the document has
+    		PhysicalFont pf = get(documentFontName);
+    		if (pf==null || pf.isNoBoldFace()) continue;
+    		if (PhysicalFonts.getBoldForm(pf)==null && boldForms.get(documentFontName)==null) continue; // nothing to withhold
+    		PhysicalFont alias = pf.noBoldFaceAlias();
+    		if (log.isDebugEnabled()) {
+    			log.debug(documentFontName + " has no bold face: " + alias.getName() + " (bold synthesised at the regular advances)");
+    		}
+    		fontMappings.put(documentFontName.toLowerCase(), alias);
     	}
     }
 
