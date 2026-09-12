@@ -6,7 +6,9 @@ conversion); phase 0b DONE (five `styles-*` probes, goldens in and read back
 into the table the same day, 83c6865b8); phase 1 DONE (the property
 catalogue and the merge rules; 21 corpus documents improved, none regressed);
 phase 2 DONE (the resolution order; zero corpus delta bar one improvement);
-phase 2b next
+phase 2b DONE (the default-pStyle shield out of the preprocess outside
+tables, zero corpus delta; the font-size pin kept for the XSLT pathway
+only); phase 3 next
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -645,14 +647,24 @@ still scores it 50% because the level-1 label fills its 18pt hanging indent
 and pdftotext reads "1.1.(b)" with no space - the known label-join
 artefact, not layout).
 
-### Phase 2b — the shield comes out (added 2026-09-12, see Layering) — IN PROGRESS
+### Phase 2b — the shield comes out (added 2026-09-12, see Layering) — DONE 2026-09-12
 
 Half 1 DONE 2026-09-12: `ParagraphStylesInTableFix` leaves a paragraph
 naming no style alone outside a table (`ParagraphStylesInTableFixConditionalTest`
 updated for it).  Gate: core-tests 968 (the one updated expectation),
 export-fo-tests 600/0; corpora `p2b-shield` vs `p2-ind`: real, real2, real3
-all 0 changed; the five probes unchanged.  Half 2 (`pinInheritedFontSize`)
-follows.
+all 0 changed; the five probes unchanged.
+
+Half 2, `pinInheritedFontSize` (2026-09-12): evaluated by taking the call
+out.  `ParagraphMarkRunSizeTest` (which runs both FO pathways) passes
+without it under `FLAG_NONE` and fails under `FLAG_EXPORT_PREFER_XSL`: the
+visitor's inlines carry their own size since phase 2, but the XSLT pathway
+still emits no `fo:inline` for a run without a `w:rPr`, so its sizeless
+runs inherit the block and the pin is what keeps them at the style chain's
+size.  The pin STAYS, for that pathway, with the reason at the call; the
+corpora (visitor pathway) scored without it - `p2b-nopin` vs `p2b-shield`:
+real, real2, real3 all 0 changed, probes unchanged - are the evidence that
+the visitor no longer depends on it.
 
 `ParagraphStylesInTableFix` stops writing the default `w:pStyle` onto
 paragraphs outside tables (inside tables the synthetic style ids remain the

@@ -1454,6 +1454,12 @@ public class XsltFOFunctions {
 		String[] a = attrs.get(best);
 		if (a[0]!=null && a[0].length()>0) foBlockElement.setAttribute("font-family", a[0]);
 		if (a[1]!=null && a[1].length()>0) {
+			/* Since CR-015 phase 2 the visitor pathway resolves every run, w:rPr or not, so
+			 * its inlines carry their own font-size and the pin below is a no-op for them
+			 * (ParagraphMarkRunSizeTest passes without it under FLAG_NONE; the corpora are
+			 * unchanged without it).  The XSLT pathway still emits no fo:inline for a run
+			 * without a w:rPr, so for it the pin is what keeps such runs at the style
+			 * chain's size; it stays for that pathway. */
 			pinInheritedFontSize(foBlockElement, a[1]);
 			foBlockElement.setAttribute("font-size", a[1]);
 		}
