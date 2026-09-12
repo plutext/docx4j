@@ -227,7 +227,7 @@ Word once, before phase 2.
 | 7 | Level's own `w:ind` before the linked style's (`NumberingDefinitionsPart.getIndFromLvl`, 17.1.0, "measured") | as documented: `lvl.getPPr().getInd()` first, then the style's | 17.1.0 measurement on a corpus document; `IndentationTest` / `ListNumberIndTest` cover the code paths against saved XML, not Word | CONFIRMED (the 17.1.0 measurement for attributes both state; golden P5 for disjoint ones: level w:hanging + style w:left combine, both ways round, label 126pt / text 144pt, docx4j = Word) |
 | 8 | `Emulator.getInd` 2024 TODO: style indent should trump the level's, attribute by attribute | not implemented (a TODO) | contradicted by #7's measurement for the case measured | REJECTED by #7 for the precedence; golden P5 CONFIRMS the attribute-by-attribute half: the level's w:ind and the style's merge per attribute, the level winning where both state one (#7) |
 | 9 | `getNumber(pkg, pPr)` assumes the default paragraph style is not numbered | `pStyleVal` stays null when `pPr.getPStyle()` is null; the style branch is never entered | none | CODE CONFIRMED (the assumption is real) and WRONG for Word: golden P6 numbers pStyle-less paragraphs 1 2 3 through the default style's w:numPr (the FO exporter already does, via the effective pPr; `getNumber(pkg, pPr)` does not). Phase 3's resolver falls back to the default paragraph style |
-| 10 | Numbering in headers/footers/footnotes/comments needs per-story counters (2011 TODO; 2012 per-part note) | nothing partitions by part; the only reset is `TocGenerator` | none | CONFIRMED gap; golden P7 gives the story map: body 1 2 3 and 4 5 6 after the notes; header 1 2 3 and the same section's footer 4 5 6 (one counter for header and footer); the footnotes part one counter across notes (1 2 3, 4 5 6); the endnotes part its own (1 2 3); a text box its own (1 2 3) without touching the body's; the comment is not in the PDF. docx4j today runs one counter over everything in part order |
+| 10 | Numbering in headers/footers/footnotes/comments needs per-story counters (2011 TODO; 2012 per-part note) | nothing partitions by part; the only reset is `TocGenerator` | none | CONFIRMED gap; golden P7 gives the story map: body 1 2 3 and 4 5 6 after the notes; header 1 2 3 and the same section's footer 4 5 6 (one counter for header and footer); the footnotes part one counter across notes (1 2 3, 4 5 6); the endnotes part its own (1 2 3); a text box its own (1 2 3) without touching the body's; the comment its own too (1 2 3, read in Word's window, since Word exports no markup to PDF). docx4j today runs one counter over everything in part order |
 | 11 | `w:isLgl` applies at any level and decimalises inherited levels (`GetCurrentNumberString`, 17.1.0) | as documented | `IsLglTest` with `article-section-isLgl.docx` / `-NotIsLgl.docx` (Word documents) | CONFIRMED (code + test docx) |
 | 12 | `LevelExists` guards Word referential-integrity bugs | returns false and logs when `levels` is null or the ilvl is absent | n/a (tolerance) | CODE CONFIRMED |
 | 13 | `w:styleLink` is ignored on purpose | not read anywhere | n/a: it is the inverse pointer, informational | CODE CONFIRMED |
@@ -295,7 +295,10 @@ export markup to PDF, so that story is read by eye.
   control is not numbered. docx4j (FO) the same.
 - P7: Word: header 1 2 3, footer 4 5 6; body 1 2 3, then 4 5 6 after the
   notes; footnote one 1 2 3, footnote two 4 5 6; endnote 1 2 3; text box
-  1 2 3. docx4j: one counter over everything (below).
+  1 2 3; comment 1 2 3 (Jason read it in Word's balloon; Word's modern
+  comments pane flags a numbered paragraph in a comment as "missing
+  content", which is that pane's limitation, not the file's). docx4j: one
+  counter over everything (below).
 - P8: Word list A (val 0): 1. / 1.1. / 1.1.1. / 1.1.2. / 1.2. / 1.2.3. /
   2. / 2.1.4.; list B (val 1): ... / 1.2.3. / 2. / 2.1.1. docx4j (below)
   restarts level 2 after level 1 in both and prints 2.0.1.
@@ -366,7 +369,8 @@ footer share one counter (header 1 2 3, footer 4 5 6 - one section probed;
 whether every section's headers and footers form one story or one per
 section is unprobed, and `forPart` keys them together until a document
 says otherwise); each text box is its own story and the body's count runs
-past it untouched; comments were not measurable in the PDF.  So the key is
+past it untouched; the comment counts on its own as well (1 2 3, seen in
+Word's window).  So the key is
 the part (headers and footers folded into one), never part + note id, and
 text boxes get a fresh state each.
 
