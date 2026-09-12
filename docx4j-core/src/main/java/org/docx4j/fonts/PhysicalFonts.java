@@ -81,8 +81,9 @@ public class PhysicalFonts {
 	 * uses Title Case for font names, it is actually
 	 * case insensitive; the spec is silent on this.)  
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the font's name, with or without the suffix of a twin
+	 *        (see {@link #stripSuffixes}); null is tolerated
+	 * @return the font, or null where this machine has none of that name
 	 */
 	public static PhysicalFont get(String key) {
 		if (key==null) return null;
@@ -119,8 +120,8 @@ public class PhysicalFonts {
 	 * uses Title Case for font names, it is actually
 	 * case insensitive; the spec is silent on this.)  
 	 * 
-	 * @param key
-	 * @param pf
+	 * @param key the name to register the font under
+	 * @param pf the font.  Never one embedded in a docx: those are document specific
 	 */
 	public static void put(String key, PhysicalFont pf) {
 		if (physicalFontMap.get(key.toLowerCase())!=null) {
@@ -130,17 +131,6 @@ public class PhysicalFonts {
 	}
 
 	private final static Map<String, PhysicalFont> physicalFontMapByFilenameLowercase;
-	
-	
-	//	private final static Map<String, PhysicalFontFamily> physicalFontFamiliesMap;
-//	int lastSeenNumberOfPhysicalFonts = 0;
-//	
-//    
-//    /** Max difference for it to be considered an acceptable match.
-//     *  Note that this value will depend on the weights in the
-//     *  difference function.
-//     */ 
-//    public static final int MATCH_THRESHOLD = 30;
 
     private static InternalResourceResolver fontResolver;        
 	
@@ -163,8 +153,6 @@ public class PhysicalFonts {
 			physicalFontMap = new HashMap<String, PhysicalFont>();
 			physicalFontMapByFilenameLowercase 
 							= new HashMap<String, PhysicalFont>();
-			
-//			physicalFontFamiliesMap = new HashMap<String, PhysicalFontFamily>();
 
 			URI baseUri = new URI("/");  
 			fontResolver = new InternalResourceResolver(baseUri,
@@ -172,8 +160,6 @@ public class PhysicalFonts {
 			
             // parse font to ascertain font info
 			fontInfoFinder = new FontInfoFinder();			
-			
-			// setupPhysicalFonts();
 			
 		} catch (Exception exc) {
 			throw new RuntimeException(exc);
@@ -246,8 +232,7 @@ public class PhysicalFonts {
                 	if (pattern.matcher(fontUrl.toString()).matches()){
                 		addPhysicalFont( fontUrl);
                 	} else {
-//                    	log.debug("Ignoring " + fontUrl.toString() );
-
+                		// the regex excludes this font file
                 	}
             	} catch (Throwable t) {
             		logDiscoveryFailure(fontFile, t);
@@ -255,14 +240,8 @@ public class PhysicalFonts {
             }
         }
         
-
-// docx4j 3.2.2: no, these are document specific, so don't belong in PhysicalFonts        
-//        // Add fonts from our Temporary Embedded Fonts dir
-//        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
-//        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-//            URL fontUrl = getURL(iter.next());
-//            addPhysicalFont( fontUrl);
-//        }
+        // NB fonts embedded in a docx are deliberately not discovered here: they are
+        // document specific (docx4j 3.2.2), and live on the document's Mapper instead.
                 
 	}
 	
@@ -329,8 +308,11 @@ public class PhysicalFonts {
 	}
 
 	/**
-	 * @param nameAsInFontTablePart
-	 * @param physicalFonts
+	 * Register these fonts, which one font file yielded.
+	 *
+	 * @param nameAsInFontTablePart the document font name this file was fetched for, or
+	 *        null when discovering the machine's fonts
+	 * @param physicalFonts the faces the file yielded
 	 * @since 11.5.8
 	 */
 	public static void putPhysicalFonts(String nameAsInFontTablePart, List<PhysicalFont> physicalFonts) {
@@ -383,24 +365,9 @@ public class PhysicalFonts {
 	    		physicalFontMapByFilenameLowercase.put(filename, pf);
 	    		log.debug("added to filename map: " + filename);
 	        	
-//	        	String familyName = triplet.getName();
-//	        	pf.setFamilyName(familyName);
-//	        	
-//	        	PhysicalFontFamily pff;
-//	        	if (physicalFontFamiliesMap.get(familyName)==null) {
-//	        		pff = new PhysicalFontFamily(familyName);
-//	        		physicalFontFamiliesMap.put(familyName, pff);
-//	        	} else {
-//	        		pff = physicalFontFamiliesMap.get(familyName);
-//	        	}
-//	        	pff.addFont(pf);
-	        	
 	        }			
 		}
 	}
-	
-	//InternalResourceResolver fontResolver;
-
 	
 	/**
 	 * Get a physical font's EmbedFontInfo object.
@@ -474,7 +441,6 @@ public class PhysicalFonts {
 			
 			
 			if (fontInfo == null) {
-//				return;
 				continue;
 			}
 			
@@ -483,7 +449,6 @@ public class PhysicalFonts {
 			 try {
 				debug.append(fontInfo.getPostScriptName() + "\n" );
 				if (!fontInfo.isEmbeddable() ) {			        	
-//	        	log.info(tokens[x] + " is not embeddable; skipping.");
 					 
 						/*
 						 * No point looking at this font, since if we tried to use it,
@@ -501,7 +466,6 @@ public class PhysicalFonts {
 						 */
 				    	log.warn(fontInfo.getEmbedURI() + " is not embeddable; ignoring this font.");
 					 
-					 //return;
 				    continue;
 				 }
 			} catch (Exception e1) {
@@ -514,14 +478,10 @@ public class PhysicalFonts {
 				
 			PhysicalFont pf; 
 			
-//			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
-//				FontTriplet triplet = (FontTriplet)iterIn.next();
-			
 				FontTriplet triplet = (FontTriplet)fontInfo.getFontTriplets().get(0); 
-				// There is one triplet for each of the font family names
-				// this font has, and we create a PhysicalFont object 
-				// for each of them.  For our purposes though, each of
-				// these physical font objects contains the same info
+				// The first triplet only, ie the full name (see the note above): the
+				// family-name triplets are not registered, so a document which asks for a
+				// typographic family name alone does not find the face by it.
 		    	
 		        String lower = fontInfo.getEmbedURI().toString().toLowerCase();
 		        log.debug("Processing physical font: " + lower);
@@ -831,7 +791,7 @@ public class PhysicalFonts {
 	 * For XSL FO output of Webdings and the Wingdings fonts, 
 	 * substitute a font known to contain the appropriate glyphs
 	 * (if font is present). 
-	 * @return
+	 * @return the substitute, or null where this machine has none
 	 */
 	public static PhysicalFont getWDingsFont() {
 		
@@ -861,7 +821,7 @@ public class PhysicalFonts {
 	 * For XSL FO output of Webdings and the Wingdings fonts, 
 	 * most are in Noto Sans Symbols 2 Regular, but some ranges are not.
 	 * This returns the font containing the remainder. 
-	 * @return
+	 * @return the second substitute, or null where this machine has none
 	 */
 	public static PhysicalFont getWDingsFont2() {
 		
@@ -899,7 +859,7 @@ public class PhysicalFonts {
 	 * For XSL FO output of Symbol font, 
 	 * substitute a font known to contain the appropriate glyphs
 	 * (if font is present). 
-	 * @return
+	 * @return the substitute, or null where this machine has none
 	 */
 	public static PhysicalFont getSymbolFont() {
 		
@@ -933,10 +893,12 @@ public class PhysicalFonts {
 	}
 
 	/**
-	 * Detect fonts available in jars on classpath.  You need to invoke this specifically
-	 * if you want to do this.
-	 * @throws FOPException 
-	 * 
+	 * Detect fonts available in jars on classpath, under the path prefix
+	 * {@code docx4j.fonts.PhysicalFonts.Jars.PathPrefix} names ("fonts" by default).
+	 * You need to invoke this specifically if you want to do this.
+	 *
+	 * @return the number of font files walked
+	 * @throws FOPException where a font file cannot be processed
 	 * @since 11.5.8
 	 */ 
 	public final static int discoverJarFonts() throws URISyntaxException, IOException, FOPException {
@@ -945,10 +907,12 @@ public class PhysicalFonts {
 		return discoverJarFonts(pathPrefix);
 	}
 	/**
-	 * Detect fonts available in jars on classpath.  You need to invoke this specifically
-	 * if you want to do this.
-	 * @throws FOPException 
-	 * 
+	 * Detect fonts available in jars on classpath, under this path prefix.  Every
+	 * classpath root which has the folder is walked, not just the first.
+	 *
+	 * @param pathPrefix eg "fonts", or "fonts-symbol" for the symbol jar alone
+	 * @return the number of font files walked
+	 * @throws FOPException where a font file cannot be processed
 	 * @since 11.5.8
 	 */ 
 	public final static int discoverJarFonts(String pathPrefix) throws URISyntaxException, FOPException {

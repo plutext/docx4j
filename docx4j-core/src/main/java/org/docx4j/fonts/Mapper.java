@@ -38,22 +38,27 @@ import org.slf4j.LoggerFactory;
  * to include a mapping for the
  * new font.
  * 
- * There are 2 implementations:
- * 
- * - IndentityPlusMapper, which is best
- *   where most of the fonts used in the 
- *   document are physically present
- *   on the system
- *   
- * - BestMatchingMapper, useful on
- *   Linux and OSX systems on which
- *   Microsoft fonts have not been 
- *   installed.
- *   
- * Whichever one you use, you can 
+ * There are 2 implementations, which since 17.1.1 share one order of precedence (see
+ * {@link #populateFontMappings} and the passes WordprocessingMLPackage.setFontMapper
+ * runs after it) and differ only in {@link #resolveDocumentFont} and
+ * {@link #addMapperSubstitutes}:
+ *
+ * - IdentityPlusMapper, the default: the font of that name, else a variant of the
+ *   name ("Calibri Light Regular"), else the shared passes
+ *
+ * - BestMatchingMapper, which adds a panose match and FontSubstitutions.xml for
+ *   whatever the shared passes leave unmapped
+ *
+ * Measured on three real-document corpora in six font environments (CR-016 phase 0c,
+ * and again after phase 3): IdentityPlusMapper is ahead of BestMatchingMapper in every
+ * one of them, so it is the one to use; BestMatchingMapper is kept for compatibility,
+ * and with the shared passes it is now within 0.001 to 0.005 of line parity, where it
+ * had been 0.010 to 0.021 behind.
+ *
+ * Whichever one you use, you can
  * add/remove mappings programmatically
- * to customise to your needs. 
- * 
+ * to customise to your needs.
+ *
  * @author jharrop
  *
  */
@@ -91,10 +96,10 @@ public abstract class Mapper {
 	 * Get a PhysicalFont from FontMappings, 
 	 * by case-insensitive name.  (Although Word always
 	 * uses Title Case for font names, it is actually
-	 * case insensitive; the spec is silent on this.)  
-	 * 
-	 * @param key
-	 * @return
+	 * case insensitive; the spec is silent on this.)
+	 *
+	 * @param key the document font's name, or null for a slot nothing names
+	 * @return the physical font it is mapped to, or null
 	 */
 	public PhysicalFont get(String key) {
 		if (key==null) return null; // a slot nothing names (17.1.1; was a NullPointerException)
@@ -104,10 +109,10 @@ public abstract class Mapper {
 	 * Put a PhysicalFont into FontMappings, 
 	 * by case-insensitive name.  (Although Word always
 	 * uses Title Case for font names, it is actually
-	 * case insensitive; the spec is silent on this.)  
-	 * 
-	 * @param key
-	 * @param pf
+	 * case insensitive; the spec is silent on this.)
+	 *
+	 * @param key the document font's name
+	 * @param pf the physical font it is to be rendered in
 	 */
 	public void put(String key, PhysicalFont pf) {
 		
@@ -179,14 +184,18 @@ public abstract class Mapper {
 	 *     for {@link IdentityPlusMapper}, a panose match or a FontSubstitutions.xml entry
 	 *     for {@link BestMatchingMapper}.</li>
 	 * </ol>
-	 * <p>What is still unmapped is then the business of the shared passes
-	 * {@link WordprocessingMLPackage#setFontMapper} runs after this: the metric-compatible
-	 * table, the document's own {@code w:altName}, a face of the same class, and Word's own
-	 * default for a font it cannot find.</p>
+	 * <p>What is still unmapped is then the business of the passes
+	 * {@link WordprocessingMLPackage#setFontMapper} runs after this, in this order:
+	 * {@link #addMetricallyCompatibleSubstitutes()}, {@link #addAltNameSubstitutes} (the
+	 * document's own {@code w:altName}), {@link #addClassBasedSubstitutes} (a face of the
+	 * same class), {@link #addMapperSubstitutes} (the mapper's own guesses),
+	 * {@link #addWordDefaultSubstitutes} (what Word itself shows for a font it cannot find)
+	 * and last {@link #addNoBoldFaceAliases}, which re-maps a family which has no bold face
+	 * of its own.</p>
 	 *
 	 * @param documentFontNames - the fonts used in the document
 	 * @param wmlFonts - the content model for the fonts part
-	 * @throws Exception
+	 * @throws Exception where the mapper cannot be populated
 	 */
 	public void populateFontMappings(Set<String> documentFontNames,
 			org.docx4j.wml.Fonts wmlFonts ) throws Exception {
@@ -327,35 +336,9 @@ public abstract class Mapper {
 			 */
 			
 			return fontFamily;
-			
+
 		}
-		
-//		log.info(documentStyleId + " -> " + physicalFont.getName() );
-//		
-//		if (fontFamilyStack) {
-//			
-//			// TODO - if this is an HTML document intended
-//			// for viewing in a web browser, we need to add a 
-//			// font-family cascade (since the true type font
-//			// specified for PDF purposes won't necessarily be
-//			// present on web browser's system).
-//			
-//			// The easiest way to do it might be to just
-//			// see whether the substitute font is serif or
-//			// not, and add cascade entries accordingly.
-//			
-//			// If we matched it via FontSubstitutions.xml,
-//			// maybe that file contains an HTML match as well?
-//			
-//			// Either way, this stuff should be worked out in
-//			// populateFontMappings, and added to the 
-//			// FontMapping objects.
-//			
-//			return physicalFont.getName();
-//		} else {
-//			return physicalFont.getName();
-//		}
-		
+
 		/*
 		 * We want to return eg "Times New Roman" 
 		 * or "Arial Unicode MS" here, ie _with spaces_, since that is 
@@ -418,9 +401,10 @@ public abstract class Mapper {
 	
 	public PhysicalFont getBoldForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
 		if (pf==null) return boldForms.get(fontNameAsInFontTablePart); // for where eg Cambria-bold was embedded, but Cambria is not present
-		final PhysicalFont pfBold = PhysicalFonts.getBoldForm(pf); // prefer the physical font if present on the system (this potentially helps if we need a glyph which is not embedded) 
+		final PhysicalFont pfBold = PhysicalFonts.getBoldForm(pf); // prefer the physical font if present on the system (this potentially helps if we need a glyph which is not embedded)
 		return (pfBold != null) ? pfBold : boldForms.get(fontNameAsInFontTablePart); // otherwise, look for embedded
-		// (we could do this the other way around, or make it configurable)
+		// The installed font wins over the embedded one, for all four faces and in both
+		// mappers: CR-016 Decisions 2, which settled the question this comment used to ask.
 	}
 	
 	public PhysicalFont getItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
@@ -657,9 +641,10 @@ public abstract class Mapper {
      * {@link FontFallback#selectCovering}.</p>
      *
      * <p>The classes and the candidate lists come from FontSubstitutions.xml, which
-     * {@link BestMatchingMapper} already consults; this makes them available to
-     * {@link IdentityPlusMapper}, which is the default mapper, without changing what
-     * BestMatchingMapper does.</p>
+     * {@link BestMatchingMapper} already consults.  Both mappers take this pass since
+     * 17.1.1 (CR-016 phase 3; it was IdentityPlusMapper's alone when it was added in
+     * 17.0.5), BestMatchingMapper's own panose step having moved behind it - see
+     * {@link #wantsClassBasedSubstitutes}.</p>
      *
      * <p>Deliberately conservative: a condensed face (Arial Narrow) is left unmapped,
      * since measured over a real-document corpus the ordinary condensed faces a Linux
@@ -850,12 +835,6 @@ public abstract class Mapper {
     }
 
     /**
-     * @param proprietaryFont
-     * @param openSubstitute
-     * @param openSubstitute2
-     * @since 11.5.9
-     */
-    /**
      * As {@link #addMetricallyCompatibleSubstitute(String, String, String)}, but
      * choosing the first of any number of candidates which is installed, best first.
      *
@@ -870,6 +849,15 @@ public abstract class Mapper {
     	}
     }
 
+    /**
+     * Map this document font to the first of the two open substitutes the machine has,
+     * unless the machine has the font itself or the document embeds it.
+     *
+     * @param proprietaryFont the document font (Calibri, Times New Roman ...)
+     * @param openSubstitute the metric-compatible clone to prefer (Carlito, Tinos ...)
+     * @param openSubstitute2 a second choice, or null
+     * @since 11.5.9
+     */
     protected void addMetricallyCompatibleSubstitute(String proprietaryFont, String openSubstitute, String openSubstitute2) {
     	
     	if (isEmbedded(proprietaryFont)) {

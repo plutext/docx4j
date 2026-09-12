@@ -14,8 +14,8 @@ public class CJKToEnglish {
 	 * Convert a CJK font name (as used in docx) to an English font name
 	 * (as used on Win 7, English locale at least).
 	 * 
-	 * @param fontName
-	 * @return
+	 * @param fontName the name as the docx writes it
+	 * @return the English name, or null where this isn't one of the names we know
 	 */
 	public static String toEnglish(String fontName) {
 		

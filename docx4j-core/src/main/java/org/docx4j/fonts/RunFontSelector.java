@@ -29,8 +29,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
-//import com.vdurmont.emoji.EmojiManager;
-
 import java.awt.font.NumericShaper;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
@@ -47,8 +45,22 @@ import java.util.concurrent.ExecutionException;
  * without saying how; the old MSDN article ff533743 (link now dead) derived from the same
  * material as the implementer notes.
  *
- * The implementation was validated against the [MS-OI29500] table on 2026-08-19; for the
- * known deliberate divergences, see the comment at the top of unicodeRangeToFont.
+ * The implementation was validated against the [MS-OI29500] table on 2026-08-19.  The table
+ * itself is {@link #fontFor}, one function of the code point; the known deliberate
+ * divergences from it, each measured against Word, are listed there.
+ *
+ * How a run is handled (CR-016): its effective properties are resolved once - by the caller,
+ * which passes them with {@code rPrIsEffective}, or here through
+ * {@link PropertyResolver#getEffectiveRPr(RPr, PPr)} - and this class then decides script and
+ * glyph only.  A run whose hAnsi names one of the symbol fonts takes the SymbolMapper path;
+ * a run with w:cs or w:rtl on (by value: {@code w:val="0"} is off) is set whole in the cs
+ * font; otherwise each of the four slots is resolved through the theme part for the
+ * document's themeFontLang, and every code point is given a font by {@link #fontFor}, one
+ * span per stretch of the same font and script.  For XSL FO the fragment is then
+ * post-processed ({@link #finish}): a glyph-coverage pass sends what the font cannot draw to
+ * a face of the same class which can, then the line height ({@link WordLineMetrics}), kerned
+ * spaces, w:w scaling, small caps and the no-ligature twin.  For HTML the span's font-family
+ * names the document font, the physical family and the generic class.
  *
  * See also http://blogs.msdn.com/b/officeinteroperability/archive/2013/04/22/office-open-xml-themes-schemes-and-fonts.aspx
  * 
@@ -393,17 +405,14 @@ public class RunFontSelector {
     	} else if (outputType==RunFontActionType.XSL_FO) {
     		el = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
     	} 
-		/* Can't do document.appendChild(el) here, since its a problem if called multiple times!
-		 * 
-			org.w3c.dom.DOMException: HIERARCHY_REQUEST_ERR: An attempt was made to insert a node where it is not permitted. 
-				at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.insertBefore(Unknown Source)
-				at com.sun.org.apache.xerces.internal.dom.NodeImpl.appendChild(Unknown Source)
-				at org.docx4j.fonts.RunFontSelector.createElement(RunFontSelector.java:205)
-				at org.docx4j.convert.out.fo.FOConversionContext$3.createNew(FOConversionContext.java:139)
-				at org.docx4j.fonts.RunFontSelector.unicodeRangeToFont(RunFontSelector.java:462)
-				at org.docx4j.fonts.RunFontSelector.fontSelector(RunFontSelector.java:428)
-				at org.docx4j.convert.out.common.XsltCommonFunctions.fontSelector(XsltCommonFunctions.java:117)
-			 */
+		/* Can't do document.appendChild(el) here, since its a problem if called multiple
+		 * times - a run yielding more than one span would get
+		 *
+		 *   org.w3c.dom.DOMException: HIERARCHY_REQUEST_ERR: An attempt was made to insert
+		 *   a node where it is not permitted.
+		 *
+		 * The caller appends the elements to a DocumentFragment instead.
+		 */
     	return el;
     }
     
@@ -445,26 +454,20 @@ public class RunFontSelector {
     			el.setAttribute(MARK_DOCUMENT_FONT, fontName);
     		}
 
-			// NB, for PDF/FOP, white space handling on the parent fo:block, 
-    		// see XsltFOFunctions (for XSLT), and AbstractVisitorExporterGenerator (non XSLT)
-    		
-//    		if (spacePreserve) {
-//    			el.setAttribute("white-space-treatment","preserve");
-//    		}
-    		// NB, that on its own may stop FOP 1.x from line wrapping!
-    		
-    	} 
+			// NB, for PDF/FOP, white space handling on the parent fo:block,
+    		// see XsltFOFunctions (for XSLT), and AbstractVisitorExporterGenerator (non XSLT).
+    		// Not here: white-space-treatment="preserve" on the inline alone may stop
+    		// FOP 1.x from line wrapping.
+
+    	}
     }
 
     public void symbolSetAttribute(Element el, String fontName, String textValue) {
     	// We only pass the actual text here, so that we can do GlyphCheck
-    	// to ensure the correct font in the PDF case.
-    	// TODO: this assumes that each char in textValue uses the same font,
-    	// which may not be true.  Unlikely edge case though...
-    	// To fix this, we'd have to create a new span each time the font changed. 
-    	
-    	// could a document fragment contain just a #text node?
-    	
+    	// to ensure the correct font in the PDF case.  The first code point decides the
+    	// face for the whole of this span, which is why symbolRun cuts the run wherever
+    	// the substitute face changes (symbolSegments, since 17.1.1)
+
 		if (outputType== RunFontActionType.DISCOVERY) {
 			return;
 		} else if (outputType==RunFontActionType.XHTML) {
@@ -830,9 +833,6 @@ public class RunFontSelector {
     	currentSpacing = spacing;
     }
 
-    /** Set line-height on this FO span from the physical font's Word metrics, the run's
-     *  size and the paragraph's w:spacing.  Word sizes a line by the tallest run on it;
-     *  with these on every fo:inline, FOP's max-height line stacking does the same. */
     /** Hint on the FO span naming the document font (the one the docx asks for), so the
      *  block's line box and the line manager can size the line from its metrics when a
      *  substitute renders it; removed by WordLayoutFixups.  @since 17.0.5 */
@@ -845,11 +845,15 @@ public class RunFontSelector {
      *  block's only content.  @since 17.0.6 */
     public static final String HINT_SMALL_CAPS = "docx4j-small-caps";
 
-    /** The line box for this span: Word's for the document font where the table knows
-     *  it, else the physical font's own - the PhysicalFont the caller resolved, which for
-     *  an embedded font is the document's file (until 17.1.1 the name was looked up in
-     *  PhysicalFonts, where an embedded font never is, so an embedded font's line height
-     *  was the 1.2 fallback; CR-016 gap 7). */
+    /** Set line-height on this FO span from the physical font's Word metrics, the run's
+     *  size and the paragraph's w:spacing.  Word sizes a line by the tallest run on it;
+     *  with these on every fo:inline, FOP's max-height line stacking does the same.
+     *
+     *  <p>The line box is Word's for the document font where the table knows it, else the
+     *  physical font's own - the PhysicalFont the caller resolved, which for an embedded
+     *  font is the document's file (until 17.1.1 the name was looked up in PhysicalFonts,
+     *  where an embedded font never is, so an embedded font's line height was the 1.2
+     *  fallback; CR-016 gap 7).</p> */
     private void applyLineHeight(Element el, String documentFontName, PhysicalFont pf) {
     	if (outputType!=RunFontActionType.XSL_FO || currentSizePt<=0 || el==null) return;
     	    	el.setAttribute("line-height", WordLineMetrics.lineHeightPtString(documentFontName, pf, currentSizePt, currentSpacing));
@@ -1256,13 +1260,14 @@ public class RunFontSelector {
 
 
     /**
-     * Apply font selection algorithm to this Text, based on supplied PPr, RPr
-     * (and docDefaults, Theme part etc).
-     * 
-     * @param pPr
-     * @param rPr
-     * @param wmlText
-     * @return
+     * Apply the font selection algorithm to this Text, based on the supplied PPr and RPr
+     * (and the document defaults, theme part etc).
+     *
+     * @param pPr the paragraph's properties, or null
+     * @param rPr the run's properties (direct formatting), or null: resolved here
+     * @param wmlText the run's w:t (its xml:space decides whether white space is preserved)
+     * @return the DocumentFragment of spans for this run (XSL FO or XHTML); null in the
+     *         deprecated DISCOVERY mode, or where the text is null
      */
     public Object fontSelector(PPr pPr, RPr rPr, Text wmlText) {
     	return fontSelector(pPr, rPr, wmlText, false);
@@ -1346,13 +1351,13 @@ public class RunFontSelector {
     		"docx4j.fonts.runFontSelector.trimUnpreservedWhitespace", true);
     
     /**
-     * Apply font selection algorithm to this Text, based on supplied PPr, RPr
-     * (and docDefaults, Theme part etc).
-     * 
-     * @param pPr
-     * @param rPr
-     * @param wmlText
-     * @return
+     * As {@link #fontSelector(PPr, RPr, Text)}, for text a caller generated rather than a
+     * {@code w:t}: a note number, a list label, a field's sample.
+     *
+     * @param pPr the paragraph's properties, or null
+     * @param rPr the run's properties (direct formatting), or null: resolved here
+     * @param text the text; its white space is never preserved
+     * @return the DocumentFragment of spans for this text, as the Text overload
      */
     public Object fontSelector(PPr pPr, RPr rPr, String text) {
     	// text a caller generated (a note number, a list label, a field's sample), never
@@ -2157,11 +2162,7 @@ public class RunFontSelector {
 	private PhysicalFont physicalFontResolved(String fontName) {
 		
 		log.debug("looking for: " + fontName);
-//		if (log.isDebugEnabled()) {
-//			Throwable t = new Throwable();
-//			log.debug("Call stack", t);
-//		}		
-		
+
 		PhysicalFont pf = isOwnFont(fontName) ? ownFont(fontName) : wordMLPackage.getFontMapper().get(fontName);
 		if (pf!=null) {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
@@ -2221,7 +2222,9 @@ public class RunFontSelector {
 		
 		void setFallbackFont(String fontname);
 		
-		Object getResult();  // when used in output a DocumentFragment; when used to find fonts, a Set.
+		// a DocumentFragment for output; in the deprecated DISCOVERY mode, whatever the
+		// visitor itself collected (the document's fonts are MainDocumentPart.fontsInUse now)
+		Object getResult();
 
 	}
 	

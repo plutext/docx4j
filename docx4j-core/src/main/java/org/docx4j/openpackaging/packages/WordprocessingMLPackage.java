@@ -348,51 +348,14 @@ public class WordprocessingMLPackage extends OpcPackage {
 			return;
 		}
 		
-		/* 1.  Get a list of all the fonts in the document
-		 *
-		 * TODO: this pass can't resolve any font.  It walks the document with a
-		 * RunFontSelector (RunFontActionType.DISCOVERY), which asks questions like "has
-		 * this font a glyph for this character?" in order to decide between w:ascii,
-		 * w:hAnsi, w:eastAsia, w:cs and the various substitutes - but we haven't called
-		 * processEmbeddings or populateFontMappings yet (see just below), so the Mapper
-		 * is empty, and PhysicalFonts holds only the fonts installed under the name the
-		 * document happens to use.  A font which is embedded in the document, or which
-		 * is mapped to a substitute with a different name (Calibri to Carlito, say),
-		 * therefore looks entirely absent, and every glyph check comes back false.
-		 *
-		 * The result is that the font list we build the FOP config from is chosen
-		 * without knowing what any font can actually render: where a character looks
-		 * unrenderable we discover a substitute (Segoe UI Symbol, the emoji font)
-		 * instead of, or as well as, the font which would really be used.  It is not
-		 * wrong output - the conversion makes the decision again, properly - but the
-		 * config can name fonts we don't need and miss ones we do.
-		 *
-		 * Fixing it means resolving the fonts before discovering them, which is
-		 * circular as it stands: populateFontMappings takes fontsInUse as its input.
-		 *
-		 * Analysis (2026-08-19) of the options:
-		 *
-		 * - Reordering, ie doing processEmbeddings first, is not worth much: it would
-		 *   only let the *embedded* fonts resolve, and embedded fonts are comparatively
-		 *   uncommon.  It isn't even sufficient for them, since processEmbeddings
-		 *   registers them in regularForms etc, not in the fontMappings which Mapper.get
-		 *   (and so the glyph checks) consult.  It does nothing for the common case, the
-		 *   differently-named substitute.
-		 *
-		 * - The real fix is two passes: a cheap first pass collecting font *names* only
-		 *   (no glyph checks, no substitution) as input to populateFontMappings, then a
-		 *   second discovery pass, with resolution now available, to decide the FOP
-		 *   config list.  That is a restructure of this method.
-		 *
-		 * Not doing the two-pass fix unless a bug report shows the config gap mattering
-		 * (a needed font missing from the generated FOP config, or cost from fonts it
-		 * names unnecessarily).  Note the practical impact shrank in 17.0.4: discovery
-		 * only glyph-checks the symbol blocks U+2190-U+2BFF now, so unresolvable
-		 * ordinary punctuation no longer drags substitute fonts into the list.
-		 *
-		 * @since 17.0.3 - noted, not fixed.  See RunFontSelector.unicodeRangeToFont,
-		 * where the DISCOVERY pass no longer warns about what it can't resolve.
-		 */
+		/* 1.  The names the document uses: every slot of every w:rFonts it could ask
+		 * for (runs, paragraph marks, the styles in use, headers, footers, notes,
+		 * comments, numbering, w:sym, the defaults), theme references resolved.  A walk
+		 * for names since 17.1.1 (CR-016 phase 4): until then this ran RunFontSelector
+		 * in a discovery mode over every run, deciding by glyph checks it could not yet
+		 * answer, since the mapper is populated from this list.  The fonts the
+		 * conversion actually reaches are declared to FOP late, whatever this list
+		 * says (FopConfigUtil.declareFallbackFonts). */
 		Set<String> fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
 //		if ( fm.getClass().getName().equals("org.docx4j.fonts.BestMatchingMapper") ) {

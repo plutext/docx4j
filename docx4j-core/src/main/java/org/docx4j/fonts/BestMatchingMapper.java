@@ -42,11 +42,23 @@ import org.docx4j.wml.Fonts;
  * 
  * This mapper uses Panose to guess the physical font
  * which is a closest fit for the font used in the
- * document.  
- * 
- * It is most likely to be suitable on Linux or OSX
- * systems which don't have Microsoft's fonts installed.
- * 
+ * document.
+ *
+ * Since 17.1.1 that guess is not its first answer but its last but two: it takes the
+ * shared order of precedence in {@link Mapper} (the font itself, the document's
+ * embedded form, then the measured passes - the metric clones, w:altName, a face of
+ * the same class), and its own panose match and FontSubstitutions.xml are consulted
+ * after them, for what they leave unmapped ({@link #addMapperSubstitutes}).
+ *
+ * It was long described as the one for Linux or OSX systems without Microsoft's
+ * fonts.  Measured (CR-016 phase 0c) on three real-document corpora in six font
+ * environments - this developer's box, docx4j's font jars alone, eclipse-temurin,
+ * and the Ubuntu, Debian and Fedora desktop font sets - it is behind
+ * {@link IdentityPlusMapper} in every one of them, including those without any
+ * Microsoft font.  It is kept for compatibility; with the measured passes in front of
+ * its panose step it is now within 0.001 to 0.005 of line parity, where it had been
+ * 0.010 to 0.021 behind.
+ *
  * @author jharrop
  *
  */
@@ -288,39 +300,19 @@ public class BestMatchingMapper extends Mapper {
 	private final static int MATCH_THRESHOLD_INTRA_FAMILY = 4;
 
 	/**
-	 * @param fm
-	 * @param soughtPanose
+	 * The closest match in panose space over all the physical fonts.
+	 *
+	 * @param documentFontName the name the document uses, for the tie-break on the name
+	 * @param orignalKey unused: since 2009-03-22 there is no map of physical font families
+	 *                   to restrict the search to
+	 * @param soughtPanose the document font's panose value
 	 */
 	private PhysicalFont getAssociatedPhysicalFont(String documentFontName, String orignalKey, org.docx4j.fonts.foray.font.format.Panose soughtPanose) {
 
 		log.debug("Looking for " + soughtPanose);
-		
+
 		String resultingPanoseKey;
-		
-//		// First try panose space restricted to this font family
-//		2009 03 22 - we don't have physicalFontFamiliesMap any more		
-//		if (orignalKey!=null) {
-//			PhysicalFontFamily thisFamily = 
-//				physicalFontFamiliesMap.get( PhysicalFonts.getPhysicalFonts().get(orignalKey).getName() );					
-//			
-//			log.debug("Searching within family:" + thisFamily.getFamilyName() );
-//			
-//			resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, 
-//					thisFamily.getPhysicalFonts(), MATCH_THRESHOLD_INTRA_FAMILY);    
-//			if ( resultingPanoseKey!=null ) {
-//				log.info("--> " + PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey).getEmbeddedFile() );
-//	        	fm.setPhysicalFont( PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey) );													
-//				return fm;
-//			}  else {
-//				log.warn("No match in immediate font family");
-//			}
-//		} else {
-//			log.debug("originalKey was null.");
-//		}
-		
-		// Well, that failed, so search the whole space
-		
-		//fm.setDocumentFont(documentFontName); ???
+
 		resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, PhysicalFonts.getPhysicalFonts(),
 				MATCH_THRESHOLD); 
 		if ( resultingPanoseKey!=null ) {
@@ -363,14 +355,8 @@ public class BestMatchingMapper extends Mapper {
 	        PhysicalFont physicalFont = (PhysicalFont)mapPairs.getValue();
 	        	        
 	        if (physicalFont.getPanose() == null ) {
-//	        	if (log.isDebugEnabled()) {
-//	        		log.debug(physicalFontKey + " has no Panose data; skipping.");
-//	        	}
-	        	continue;
+	        	continue; // nothing to compare
 	        }
-//        	if (log.isDebugEnabled()) {
-//        		log.debug(physicalFontKey + " Panose data found.");
-//        	}
 			org.docx4j.fonts.foray.font.format.Panose physicalFontPanose = null;
 	        long panoseMatchValue = MATCH_THRESHOLD + 1; // initialize to a non-match
 			try {
@@ -428,17 +414,13 @@ public class BestMatchingMapper extends Mapper {
 	        	bestNameAffinity = affinity;
 	        	matchingPanoseString = physicalFont.getPanose().toString();
 	        	panoseKey = physicalFontKey;
-	        	
-	        	//log.debug("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
-	        	
-	        	// Verdana and Tahoma seem to have the same panose value
-	        	// so we can't use this optimisation
-	        	//if (bestPanoseMatchValue==0) {
-	        	//	// Can't do any better than this!
-	        	//	continue; // this is just the inner while
-	        	//}
+
+	        	// No short circuit on a distance of 0: Verdana and Tahoma seem to have the
+	        	// same panose value, so a perfect match is not necessarily the only one, and
+	        	// the name tie-break above has still to be applied to the rest.
 	        } else {
-	        	//log.debug("not small " + panoseMatchValue + "  " + fontInfo.getPanose().toString() );	        	
+	        	// further from the sought panose than the best so far, or an equal distance
+	        	// with no better name affinity: keep what we have
 	        }
 	    }
 
@@ -484,60 +466,17 @@ public class BestMatchingMapper extends Mapper {
 	}
 
 
-//	public static class PhysicalFontFamily {
-//
-//		String familyName; // For example: Times New Roman
-//		public String getFamilyName() {
-//			return familyName;
-//		}
-//
-//		PhysicalFontFamily(String familyName) {
-//			this.familyName = familyName;
-//		}
-//
-//		// We want this, so that when were are searching panose space
-//		// for bold, bolditalic, italic, we can restrict the search
-//		// to this list
-//		Map<String, PhysicalFont> physicalFonts = new HashMap<String, PhysicalFont> ();
-//		void addFont(PhysicalFont physicalFont){
-//			physicalFonts.put(physicalFont.getName(), physicalFont);
-//		}
-//		
-//		Map<String, PhysicalFont> getPhysicalFonts() {
-//			return physicalFonts;
-//		}
-//		
-//	}
-	
-	
 	public static void main(String[] args) throws Exception {
 
 		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
-		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
-		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
-		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
-		
+
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 				
 		FontTablePart fontTablePart= wordMLPackage.getMainDocumentPart().getFontTablePart();		
 		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
 	
 		BestMatchingMapper s = new BestMatchingMapper();
-				
-		///////////////
-		// Go through the FontsTable, and see what we have filenames for.
-//		for (Fonts.Font font : fontList ) {
-//			String fontName =  font.getName();
-//			MicrosoftFonts.Font msFontInfo = (MicrosoftFonts.Font)msFontsFilenames.get(fontName);
-//			if (msFontInfo!=null) {
-//				System.out.println( fontName + " at " + msFontInfo.getFilename() );				
-//			} else {
-//				System.out.println( "? " + fontName );								
-//			}
-//		}
-		
-		//panoseDebugReportOnMicrosoftFonts( fonts );
-		
+
 		s.populateFontMappings(wordMLPackage.getMainDocumentPart().fontsInUse(), fonts );
 	}
 	
@@ -570,58 +509,7 @@ public class BestMatchingMapper extends Mapper {
 				} else if (fopPanose!=null ) {
 					log.debug(fontName + " .. " + fopPanose);
 				}
-//				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
-//						System.out.println(".. panose distance: " + pd);					
 	    }
 	}
 
-//	private static void panoseDebugReportOnMicrosoftFonts(org.docx4j.wml.Fonts wmlFonts ) {
-//				
-//		List<Fonts.Font> fontList = wmlFonts.getFont();
-//		for (Fonts.Font font : fontList ) {
-//			
-//			org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = 
-//				wmlFontPanoseForDocumentFont = font.getPanose1();
-//			
-//			org.apache.fop.fonts.Panose documentFontPanose = null;
-//			if (wmlFontPanoseForDocumentFont!=null && wmlFontPanoseForDocumentFont.getVal()!=null ) {
-//				try {
-//					documentFontPanose = org.apache.fop.fonts.Panose.makeInstance(wmlFontPanoseForDocumentFont.getVal() );
-//					
-//					System.out.println( font.getName() + documentFontPanose);
-//					
-//				} catch (IllegalArgumentException e) {					
-//					log.error(e.getMessage());
-//					// For example:
-//					// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-//				}
-//				//log.debug(".. " + fopPanose.toString() );					
-//				
-//			} else {
-//				log.debug(".. no panose info!!!");															
-//			}
-//			
-//	    }
-//	}
-	
-//	private final static void setupAwtFontFamilyNames() {
-//		
-//		////////////////////////////////////////////////////////////////////////////////////
-//		// What fonts are available to AWT
-//		
-//		java.awt.GraphicsEnvironment ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
-//		//System.out.println(ge.getClass().getName());
-//		// sun.java2d.SunGraphicsEnvironment
-//		// on Ubuntu Gnome, sun.awt.X11GraphicsEnvironment, which extends SunGraphicsEnvironment 
-//		// But X11GraphicsEnvironment source code is not available.
-//		//((sun.awt.X11GraphicsEnvironment)ge).loadFontFiles();
-//		
-//		//java.awt.Font[] geFonts = ge.getAllFonts();
-//		//String[] geFonts = ge.getAvailableFontFamilyNames();
-//		//for (int i=0; i<geFonts.length; i++) {
-//			//System.out.println( geFonts[i] );
-//			//awtFontFamilyNames.put(normalise(geFonts[i]), geFonts[i]);
-//	   // }
-//	}
-	
 }

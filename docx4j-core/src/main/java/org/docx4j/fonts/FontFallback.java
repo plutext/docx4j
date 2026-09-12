@@ -40,12 +40,16 @@ import org.slf4j.LoggerFactory;
  * characters at all: Georgian text in a font the box lacks came out as a row of
  * notdef boxes even where the box had Noto Sans Georgian installed.</p>
  *
- * <p>Two users:</p>
+ * <p>Its users:</p>
  * <ul>
  * <li>{@link Mapper#addClassBasedSubstitutes} maps what is left unmapped after the
- *     metrically-compatible table, so that the substitute is declared to FOP with
- *     everything else;</li>
- * <li>{@link RunFontSelector} as a last resort during conversion, per script segment.</li>
+ *     metrically-compatible table and the document's own w:altName, so that the
+ *     substitute is declared to FOP with everything else;</li>
+ * <li>{@link RunFontSelector} as a last resort during conversion, per coverage group
+ *     (a script, or the symbol and emoji blocks);</li>
+ * <li>{@link #classOf} also answers "does docx4j know this family at all?"
+ *     ({@link Mapper#isKnownFamily}), and supplies the generic class the HTML
+ *     font-family stack ends with (serif, sans-serif, monospace).</li>
  * </ul>
  *
  * <p>Class information comes from FontSubstitutions.xml (the file
@@ -113,8 +117,9 @@ public class FontFallback {
 	 * over them, and a text font which lacks the glyph got no substitute at all and FOP
 	 * painted its {@code NOT_FOUND} glyph, <code>#</code>.  They are their own class
 	 * here rather than COMMON, so that the space and the digits beside an arrow are not
-	 * dragged into the symbol font with it (a shared COMMON character follows whatever
-	 * precedes it; see {@code RunFontSelector.isShared}).</p>
+	 * dragged into the symbol font with it (a character the span's own font can draw keeps
+	 * it, and an uncovered shared one follows its neighbours' substitute; see the coverage
+	 * pass's rule in {@code RunFontSelector.glyphFallback}).</p>
 	 *
 	 * @since 17.1.0
 	 */

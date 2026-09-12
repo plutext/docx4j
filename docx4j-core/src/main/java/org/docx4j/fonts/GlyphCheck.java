@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.docx4j.fonts;
 
 import java.util.Optional;
@@ -95,12 +92,13 @@ public class GlyphCheck {
 	}
 
 	/**
-	 * Check whether this PhysicalFont contains a glyph for a codepoint outside the Basic Multilingual Plane.
+	 * Check whether this PhysicalFont contains a glyph for a codepoint, including one
+	 * outside the Basic Multilingual Plane.
 	 *  
-	 * @param physicalFont
-	 * @param cp
-	 * @return
-	 * @throws ExecutionException
+	 * @param physicalFont the font
+	 * @param cp the code point
+	 * @return whether the font has a glyph for it (false where the font can't be loaded)
+	 * @throws ExecutionException where loading the typeface failed
 	 * @since 11.5.6
 	 */
 	public static boolean hasCodepoint(PhysicalFont physicalFont, int cp) throws ExecutionException {

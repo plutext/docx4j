@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.docx4j.fonts;
 
 import org.slf4j.Logger;
@@ -42,7 +39,6 @@ public class PhysicalFont {
 			// Sanity check
 			if (embedFontInfo.getPostScriptName()==null) {
 				log.error("Not set!");
-				//log.error(((org.apache.fop.fonts.FontTriplet)fontInfo.getFontTriplets().get(0)).getName());
 			}
 		} catch (Exception e1) {
 			// NB getPanose() only exists in our patched FOP
@@ -56,10 +52,6 @@ public class PhysicalFont {
 		this.fontResolver = fontResolver;
 		
     	setName(name);
-    	
-    	//familyName = embedFontInfo.
-    	
-//    	setName(fontInfo.getPostScriptName());
     	
 		setEmbeddedURI(embedFontInfo.getEmbedURI());
     	try {
@@ -75,7 +67,8 @@ public class PhysicalFont {
 	
 	private static boolean loggedWarningAlready = false;
 	
-	// postscript name eg 
+	// the font's full name, eg "Carlito Regular": the name of the first of FOP's
+	// triplets, which is what PhysicalFonts registers the font under
 	String name;
 	public String getName() {
 		return name;
@@ -89,9 +82,6 @@ public class PhysicalFont {
 		return embedFontInfo;
 	}
 	
-	// // For example: Times New Roman - note this is an array;
-	// FOP doesn't ordinarily include it in EmbedFontInfo,
-	// instead it makes a font triplet to represent it
 	/**
 	 * The font's family name, as a CSS {@code font-family} names it: "Carlito" for the
 	 * face "Carlito Regular", "Liberation Sans" for "Liberation Sans Bold".  FOP records

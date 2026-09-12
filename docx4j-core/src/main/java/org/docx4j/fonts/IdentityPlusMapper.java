@@ -38,14 +38,25 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
  * This mapper automatically maps
  * document fonts for which the exact
  * font is physically available.  Think
- * of this as an identity mapping.  For 
- * this reason, it will work best on 
- * Windows, or a system on which 
- * Microsoft fonts have been installed.
- * 
+ * of this as an identity mapping.  It
+ * therefore does best on Windows, or
+ * on a system on which Microsoft fonts
+ * have been installed - but it is the
+ * mapper to use anywhere: measured on
+ * three real-document corpora in six
+ * font environments, including boxes
+ * with no Microsoft fonts and headless
+ * images with no fonts at all, it is
+ * ahead of BestMatchingMapper in every
+ * one of them (CR-016 phase 0c), the
+ * shared passes in Mapper - the metric
+ * clones, w:altName, a face of the same
+ * class, Word's own default - doing the
+ * work for the fonts the machine lacks.
+ *
  * You can manually add your own
- * additional mappings if you wish. 
- * 
+ * additional mappings if you wish.
+ *
  * @author jharrop
  *
  */
@@ -56,10 +67,7 @@ public class IdentityPlusMapper extends Mapper {
 
 	public IdentityPlusMapper() {
 		super();
-		
-		//log.debug(System.getProperty("os.name")); // eg Linux
-		//log.debug(System.getProperty("os.arch")); // eg i386
-		
+
 		if (System.getProperty("os.name").toLowerCase().indexOf("windows")<0) {
 			log.warn("WARNING! IdentityPlusMapper works best " +
 					"on Windows.  To get good results on other platforms, you may  " +
@@ -118,10 +126,6 @@ public class IdentityPlusMapper extends Mapper {
 
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
-//		String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
-		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
-		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
 		String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\Downloads\\AUMS-easy.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
@@ -130,86 +134,8 @@ public class IdentityPlusMapper extends Mapper {
 		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
 	
 		IdentityPlusMapper s = new IdentityPlusMapper();
-				
-		///////////////
-		// Go through the FontsTable, and see what we have filenames for.
-//		for (Fonts.Font font : fontList ) {
-//			String fontName =  font.getName();
-//			MicrosoftFonts.Font msFontInfo = (MicrosoftFonts.Font)msFontsFilenames.get(fontName);
-//			if (msFontInfo!=null) {
-//				System.out.println( fontName + " at " + msFontInfo.getFilename() );				
-//			} else {
-//				System.out.println( "? " + fontName );								
-//			}
-//		}
-		
-		//panoseDebugReportOnMicrosoftFonts( fonts );
-		
+
 		s.populateFontMappings(wordMLPackage.getMainDocumentPart().fontsInUse(), fonts );
 	}
-	
-//	private static void panoseDebugReportOnPhysicalFonts( Map<String, PhysicalFont>physicalFontMap ) {
-//		Iterator fontIterator = physicalFontMap.entrySet().iterator();
-//	    while (fontIterator.hasNext()) {
-//	        Map.Entry pairs = (Map.Entry)fontIterator.next();
-//	        
-//	        if(pairs.getKey()==null) {
-//	        	log.info("Skipped null key");
-//	        	if (pairs.getValue()!=null) {
-//	        		log.error(((PhysicalFont)pairs.getValue()).getEmbeddedFile());
-//	        	}
-//	        	
-//	        	if (fontIterator.hasNext() ) {
-//	        		pairs = (Map.Entry)fontIterator.next();
-//	        	} else {
-//	        		return;
-//	        	}
-//	        }
-//	        
-//	        String fontName = (String)pairs.getKey();
-//
-//			PhysicalFont pf = (PhysicalFont)pairs.getValue();
-//			
-//			org.apache.fop.fonts.Panose fopPanose = pf.getPanose();
-//			
-//				if (fopPanose == null ) {
-//					System.out.println(fontName + " .. lacks Panose!");					
-//				} else if (fopPanose!=null ) {
-//					System.out.println(fontName + " .. " + fopPanose);
-//				}
-////				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
-////						System.out.println(".. panose distance: " + pd);					
-//	    }
-//	}
 
-//	private static void panoseDebugReportOnMicrosoftFonts(org.docx4j.wml.Fonts wmlFonts ) {
-//				
-//		List<Fonts.Font> fontList = wmlFonts.getFont();
-//		for (Fonts.Font font : fontList ) {
-//			
-//			org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = 
-//				wmlFontPanoseForDocumentFont = font.getPanose1();
-//			
-//			org.apache.fop.fonts.Panose documentFontPanose = null;
-//			if (wmlFontPanoseForDocumentFont!=null && wmlFontPanoseForDocumentFont.getVal()!=null ) {
-//				try {
-//					documentFontPanose = org.apache.fop.fonts.Panose.makeInstance(wmlFontPanoseForDocumentFont.getVal() );
-//					
-//					System.out.println( font.getName() + documentFontPanose);
-//					
-//				} catch (IllegalArgumentException e) {					
-//					log.error(e.getMessage());
-//					// For example:
-//					// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-//				}
-//				//log.debug(".. " + fopPanose.toString() );					
-//				
-//			} else {
-//				log.debug(".. no panose info!!!");															
-//			}
-//			
-//	    }
-//	}
-	
-	
 }

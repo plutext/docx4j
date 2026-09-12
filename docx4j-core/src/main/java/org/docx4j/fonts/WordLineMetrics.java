@@ -428,8 +428,7 @@ public final class WordLineMetrics {
 		return fopBaselinePt(pf, sizePt, lineHeightPt) - wordBaselinePt(pf, sizePt, spacing);
 	}
 
-	/** {@link #lineHeightPt} formatted as an FO/CSS length, e.g. "13.8pt". */
-	/** @since 17.0.5 */
+	/** {@link #lineHeightPt} formatted as an FO/CSS length, e.g. "13.8pt".  @since 17.0.5 */
 	public static String lineHeightPtString(String documentFont, PhysicalFont pf, double sizePt, PPrBase.Spacing spacing) {
 		return format(lineHeightPt(documentFont, pf, sizePt, spacing));
 	}
