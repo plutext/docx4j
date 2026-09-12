@@ -2,9 +2,8 @@
 
 Status: IN PROGRESS (2026-09-12) — approved by Jason 2026-09-12; phase 0 DONE
 (6f4763d70, LF; 21890c36e pins the line endings and blame-ignores the
-conversion); phase 0b probes CUT and on the share (five `styles-*` docx +
-`corpus.txt` in `$S/corpus/`), WAITING for the Word run; phases 1 and 3 can
-start meanwhile
+conversion); phase 0b DONE (five `styles-*` probes, goldens in and read back
+into the table the same day); phase 1 next
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -301,18 +300,18 @@ Design notes in the two classes that bind this CR, with what the code does:
 | 1 | Effective objects are live; clone before changing (`getEffectivePPr` javadoc) | the cached object is returned when nothing is direct; its leaves are the style definitions' own objects | n/a | CODE CONFIRMED; contract kept, aliasing removed (phase 3) |
 | 2 | `hasDirectRPrFormatting`'s list "is comprehensive" | 19 of 40 members tested; `w:rtl`-only and `w:position`-only direct rPr resolve as no direct formatting | direct formatting is the last layer for every property (17.7.2) | REJECTED (phase 1) |
 | 3 | `pPr/rPr` applies to the paragraph mark only (`hasDirectPPrFormatting`); the 2013 doubt about applying it to runs | applied to a run with no rPr in a paragraph with no `w:pStyle`; unreachable from the exporters' run paths by their own guards | ECMA 17.3.1.29; measured 17.0.5 (CR-001 line-mixed probe): the mark sizes an empty paragraph only | CONFIRMED for the block, WRONG as a run rule; phase 2 splits the API |
-| 4 | Doc-default rFonts/sz/lang must not override the paragraph style's (flags, 8.2.4) | true in `getEffectiveRPrUsingPStyleRPr`; the cache ignores the flags, so the public overloads poison it either way | 17.7.2 order; probe P1 (e) | INTENT CONFIRMED, IMPLEMENTATION WRONG (phase 2) |
-| 5 | The default character style's entry needs the default paragraph style's rPr ("default font size might be in there") | seeded so; a run with `w:rStyle="DefaultParagraphFont"` in a 20pt style resolves to Normal's 14pt | Default Paragraph Font adds nothing; probe P1 (f) | WRONG for runs, RIGHT for `getEffectiveRPr(RPr)` (no paragraph); phase 2 separates them |
-| 6 | Paragraphs naming no style use the default paragraph style (`getEffectivePPr`) | pPr yes; rPr no (11pt where Normal says 14pt); a missing style resolves to nothing | Word writes no `w:pStyle` for Normal; probe P1 (a-d) | HALF IMPLEMENTED (phase 2); exporters shielded by `ParagraphStylesInTableFix` |
-| 7 | numId injection saves the emulator work; `isEmpty(NumPr)` "only the id is checked" | injection mutates the style; an `ilvl`-only direct numPr is dropped | probe P4 | MUTATION CONFIRMED; per-element merge (phase 1), injection removed (phase 3) after P4 |
+| 4 | Doc-default rFonts/sz/lang must not override the paragraph style's (flags, 8.2.4) | true in `getEffectiveRPrUsingPStyleRPr`; the cache ignores the flags, so the public overloads poison it either way | golden P1 (e): the `w:rStyle="S"` run in H is 20pt Sans bold (glyph box 22.2pt, pitch 26.4), as (g) | INTENT CONFIRMED (golden), IMPLEMENTATION WRONG (phase 2) |
+| 5 | The default character style's entry needs the default paragraph style's rPr ("default font size might be in there") | seeded so; a run with `w:rStyle="DefaultParagraphFont"` in a 20pt style resolves to Normal's 14pt - and the FO exporter renders it so (P1 (f): a 14pt run after a 20pt lead-in) | golden P1 (f): every line of (f) is 20pt Sans (22.2pt boxes, 26.4 pitch); Default Paragraph Font adds nothing | WRONG (golden) for runs, RIGHT for `getEffectiveRPr(RPr)` (no paragraph); phase 2 separates them |
+| 6 | Paragraphs naming no style use the default paragraph style (`getEffectivePPr`) | pPr yes; rPr no (11pt where Normal says 14pt); a missing style resolves to nothing | golden P1: (a) no `w:pStyle`, (b) Normal, (c) a `w:b` run and (d) `w:pStyle="Missing"` are all 14pt Serif (15.4pt boxes, 18.5 pitch): Normal applies to a paragraph naming no style and to one naming a missing one | CONFIRMED (golden), HALF IMPLEMENTED (phase 2); exporters shielded by `ParagraphStylesInTableFix` for (a), not for (d) (docx4j: 11pt runs) |
+| 7 | numId injection saves the emulator work; `isEmpty(NumPr)` "only the id is checked" | injection mutates the style; an `ilvl`-only direct numPr is dropped (docx4j labels P4 (b) "2." at level 0) | golden P4: (b) direct `w:ilvl 1` only is level 1 ("1.1." at x=126, the level's 1440 indent); (c) `w:numId` only is level 0 ("2."); (d) L2 (style-level `w:ilvl` only) is level 1 ("2.1."); (e) control "2.2." | SETTLED (golden): `w:numId` and `w:ilvl` each inherit; per-element merge (phase 1), injection removed (phase 3) |
 | 8 | Heading level from the style *name* (`getLvlFromHeadingStyle`) | keyed on the id prefix "Heading"; rewrites `w:outlineLvl` in the style | Word matches built-in styles by `w:name`; no golden can show it (Word's PDF export of the goldens writes no `/Outlines`: 0 of 36) | CODE CONFIRMED as a mutation; by-name rule from Word's behaviour, no probe (phase 3) |
-| 9 | Word's default size is 10pt when nothing states one (`init`) | writes `w:sz 20` into the styles part | probe P6 | MUTATION CONFIRMED; value pending P6 |
-| 10 | `w:lineRule` "defaults to auto" (`apply(STLineSpacingRule)`) | a direct `w:after="0"` turns an inherited `exact` into `auto` | ECMA 17.3.1.33: auto only "if a line attribute value is present"; probe P3 | WRONG (phase 1) |
+| 9 | Word's default size is 10pt when nothing states one (`init`) | writes `w:sz 20` into the styles part | golden P6: (a) no `w:sz` anywhere has 12.1pt glyph boxes and 13.9pt pitch, identical to (b) explicit 10pt ((c) 11pt 13.3/15.4, (d) 12pt 14.4/16.8) | VALUE CONFIRMED (10pt, golden); the write into the styles part is the gap (phase 3) |
+| 10 | `w:lineRule` "defaults to auto" (`apply(STLineSpacingRule)`) | a direct `w:after="0"` turns an inherited `exact` into `auto`: docx4j renders P3 (b) at 26.85pt pitch | golden P3: (a) 24.00pt pitch, (b) direct `w:after 0` only **24.00pt** (the exact rule is inherited), (c) direct `w:line 240` only 13.44pt (auto) | WRONG (golden; phase 1) |
 | 11 | rFonts: theme trumps explicit within one element; a source with only `w:hint` still applies (`apply(RFonts)`) | as documented | `RunFontSelectorChinese2Test`; the fonts review | CODE CONFIRMED, unchanged |
 | 12 | Tabs cumulative, `clear` removes (17.1.0) | as documented | two corpus documents in the javadoc; `StyleUtilTabsMergeTest` | CONFIRMED (golden), unchanged |
 | 13 | `w:ind` firstLine/hanging one property; `w:framePr` per attribute; autospacing survives; `w:numId 0` drops the level indent; `w:tblStylePr` per condition (17.1.0-17.1.1) | as documented | measured on corpus documents; `IndFirstLineHangingTest`, `PropertyResolverFramePrTest`, `AutospacingOverrideTest`, `ParagraphStylesInTableFixConditionalTest` | CONFIRMED, unchanged |
 | 14 | "TODO - if the paragraph is in a table?" | not here; `ParagraphStylesInTableFix` (67ab3b831) | measured there (9,245 bold lines) | SETTLED by that decision; TODOs close |
-| 15 | "TODO, jump up to add default table style"; "Generated empty tblPr" | a style-less table gets nothing from `TableNormal`; the writer's constant 108 stands in | probe P5 | GAP pending P5 (phase 4) |
+| 15 | "TODO, jump up to add default table style"; "Generated empty tblPr" | a style-less table gets nothing from `TableNormal`; the writer's constant 108 stands in, for every table | golden P5, with the document's Table Normal saying `w:left 300`: (a) no `w:tblStyle` and (c) Grid2 based on Table Normal both start the first cell's text 5.76pt in (108 twips + the border; docx4j 5.64), **not** 15pt; (b) Custom, a table style with no `w:basedOn`, starts it 0.48pt in - no cell margin at all (docx4j 5.64) | SETTLED (golden), differently from the TODO: the 108 is Word's built-in Table Normal, applied whatever the document's definition says, to tables whose chain reaches the default table style or that name no style; a chain that does not reach it gets no margin. Phase 4 keeps the constant and withholds it from that case |
 | 16 | `apply(SectPr)` "implementation is incomplete" | WARN per direct pPr with a `w:sectPr`; merged sectPr unread | n/a | CODE CONFIRMED; dropped from the merge (phase 4) |
 | 17 | The resolver is kept for the life of the package (`MainDocumentPart`) | unsynchronised lazy creation; `HashMap` caches; mutation during resolution | n/a | CODE CONFIRMED gap (phase 3) |
 | 18 | `w:tblpPr` anchors merge per attribute (d5f067249 fixed `isEmpty`) | `apply(CTTblPPr)` still nulls the four enums when the source omits them | the b2-batch3 measurements | HALF FIXED (phase 1) |
@@ -348,6 +347,18 @@ harness render (`Fidelity render`, pdftotext line tops):
 | P4 | (a) 1. (b) **2.** at level 0 (the direct `w:ilvl` dropped, row 7); (c) 3. level 0; (d) 3.1. (numId injection); (e) 3.2. |
 | P5 | (a) and (b) first-cell text one character in (the writer's 108 constant); (c) three characters in (Grid2 inherits the 300) |
 | P6 | (a) 10pt Carlito, 14.04pt pitch, same as (b) |
+
+**Goldens in (2026-09-12, Word run "done 5"; `docx4j-layout-fidelity/goldens/word/styles-*.pdf`
+and the manifest).**  Word's answers, from the goldens' line boxes (pdftotext
+`-bbox-layout`), against docx4j's render (`Fidelity compare`, line parity):
+
+| probe | Word | parity today |
+|---|---|---|
+| P1 | (a) (b) (c) (d) all 14pt Serif: Normal applies with no `w:pStyle` and with a missing one; (e) 20pt Sans bold; (f) 20pt Sans on every line (Default Paragraph Font adds nothing); (g) 20pt Sans.  Two pages | 73% (Word 2 pages, docx4j 1: (d) and (f) are smaller) |
+| P3 | (a) 24.00pt; (b) **24.00pt**; (c) 13.44pt | 100% lines, but (b)'s pitch is 26.85 in docx4j |
+| P4 | (a) 1. (b) **1.1.** (c) 2. (d) 2.1. (e) 2.2. | 33% ((b) mislabelled, the rest shifted) |
+| P5 | (a) 5.76pt in, (b) **0.48pt** in, (c) 5.76pt in - the document's Table Normal `w:left 300` is not what Word applies | 100% lines; (b) is 5.2pt off |
+| P6 | (a) = 10pt exactly | 100% |
 
 ## Design
 
@@ -459,11 +470,20 @@ golden where it applies.
 
 ### The default table style, cost, dead code (phase 4)
 
-- `getEffectiveTableStyle`: the stack is rooted at the `w:default="1"` table
-  style when the chain does not already contain it — for a table with no
-  `w:tblStyle` certainly, and for a custom style with no `w:basedOn` if P5
-  says so.  `AbstractTableWriter`'s constant stays as the last fallback (a
-  document with no default table style).  "Generated empty tblPr" to DEBUG.
+- `getEffectiveTableStyle`: P5 answered the TODO the other way round.  Word
+  applies its *built-in* Table Normal (108 twips left and right, 0 top and
+  bottom, `w:tblInd 0`) to a table naming no style and to one whose chain
+  reaches the default table style, and not the document's own definition of
+  that style (left 300 was ignored); a style whose chain does not reach it
+  contributes no cell margin at all.  So the stack is not rooted at the
+  document's default table style; instead `getEffectiveTableStyle` reports
+  whether the chain reaches it (or there is no style), and
+  `AbstractTableWriter` applies `WORD_DEFAULT_CELL_MARGIN_TWIPS` only then
+  (today: always; P5 (b) is 5.2pt off).  "Generated empty tblPr" to DEBUG.
+  A follow-up probe (Table Normal restating `w:left 0`, and a style based on
+  it restating margins) would say whether the document's definition is
+  ignored entirely or only when it enlarges the margin; not needed for the
+  fix above.
 - `w:sectPr` leaves the pPr merge (`apply(PPr, PPr)` no longer calls
   `apply(SectPr)`; that method stays, deprecated, its WARN gone).
 - Missing-style lookups: logged once per styleId per resolver.
@@ -494,7 +514,7 @@ text eol=lf` and the test directory.  Exit: `grep -rl $'\r'` over the package
 and `docx4j-core-tests/.../model/` returns nothing; `mvn -o -q -Dgpg.skip=true
 install -pl docx4j-core -DskipTests` unchanged.
 
-### Phase 0b — verification probes (no code change) — probes cut 2026-09-12, awaiting Word
+### Phase 0b — verification probes (no code change) — DONE 2026-09-12 (goldens in, table settled)
 
 Add the five `styles-*` probes to `Corpus.java` (`Doc` already has
 `addParagraphStyle(id, basedOn, pPr, rPr)`, `documentDefaultRun`,
