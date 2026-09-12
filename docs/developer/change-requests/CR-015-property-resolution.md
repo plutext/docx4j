@@ -9,7 +9,8 @@ phase 2 DONE (the resolution order; zero corpus delta bar one improvement);
 phase 2b DONE (the default-pStyle shield out of the preprocess outside
 tables, zero corpus delta; the font-size pin kept for the XSLT pathway
 only); phase 3 DONE (no mutation, no aliasing, thread safety; zero corpus
-delta); phase 4 next
+delta); phase 4 DONE (the built-in Normal Table per P5, sectPr out of the
+merge, logging, one ancestry walk, dead code); phase 5 next
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -706,9 +707,35 @@ unchanged.  Gate: the two new tests; corpus zero-delta; the CR-014
 numbering tests and the `numbering-*` probes unchanged (numId injection
 removed); a saved docx byte-equal in its styles part after an export.
 
-### Phase 4 — default table style, cost, dead code
+### Phase 4 — default table style, cost, dead code — DONE 2026-09-12
 
-As designed.  Gate: corpus (tables without `w:tblStyle` should not move,
+As designed after P5: `getEffectiveTableStyle` starts from a built-in Normal
+Table (`builtInTableNormal()`: 108/108 left/right, 0 top/bottom, `w:tblInd`
+0) when the table names no style, names a missing one, or its chain reaches
+the default table style - whose own layer is then skipped, since Word
+applies the built-in and not the document's definition - and from nothing
+otherwise; the writers' 108 fallbacks (`AbstractTableWriter.createCellProperties`,
+`cellMarginsTwips`, the FO `TableWriter.leftCellMarginTwips`) become 0, so
+a chain that does not reach the default gets no margin, as measured.
+`WORD_DEFAULT_CELL_MARGIN_TWIPS` moves to the resolver (the writer's
+constant delegates).  `w:sectPr` leaves the pPr merge; `apply(SectPr)`
+deprecated, its WARN a DEBUG.  Missing styles logged once per id per
+resolver.  One `ancestry(styleId)` walk (root-first list, iterative,
+cycle-checked once, the "DocDefaults" virtual style tolerated) serves
+`chainPPr`, `chainRPr` and the table style; the heading-level copy is
+`headingLayer(Style)`.  Removed: `wordMLPackage`, `themePart`,
+`themeFontLang`, the commented constructor, the commented `applyPPr`/`applyRPr`
+bodies and the commented font-name code at the foot (PropertyResolver
+1,660 -> ~920 lines).  Tests: `PropertyResolverTableStyleTest` (5: the
+three P5 cases, a missing table style, the table's own margins over the
+built-in with the document untouched).
+
+Gate (2026-09-12): core-tests 980 run, 0 failures; export-fo-tests 600/0;
+corpora `p4-tables` vs `p3-nomutation`: real, real2, real3 all 0 changed
+(no corpus table has a style chain that misses the default table style -
+Word writes `w:basedOn` Table Normal on every style it saves); probe
+`styles-table-default`: (b)'s first cell now starts at x=72.25 against
+Word's 72.50 (was 77.66), (a) and (c) unchanged at Word's 77.78.  Gate: corpus (tables without `w:tblStyle` should not move,
 since the constant already matched; a document whose default table style
 says something other than 108 may); `TableStyleConditionsTest`,
 `ParagraphStylesInTableFixConditionalTest`.

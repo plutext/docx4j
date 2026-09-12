@@ -3,9 +3,8 @@ package org.docx4j.model;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -14,17 +13,13 @@ import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
-import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
@@ -96,7 +91,6 @@ public class PropertyResolver {
 	
 	private static Logger log = LoggerFactory.getLogger(PropertyResolver.class);
 	
-//	private DocDefaults docDefaults;	
 	private PPr documentDefaultPPr;
 	private RPr documentDefaultRPr;
 	
@@ -108,8 +102,6 @@ public class PropertyResolver {
 	}
 
 	private StyleDefinitionsPart styleDefinitionsPart;
-	
-	private WordprocessingMLPackage wordMLPackage;
 	
 	/**
 	 * All styles in the Style Definitions Part.
@@ -127,9 +119,17 @@ public class PropertyResolver {
 	/** How many styles the part held when liveStyles was last scanned; a miss rescans only when that has changed. */
 	private volatile int scannedStyleCount = -1;
 	
-	
-	private ThemePart themePart;
 	private NumberingDefinitionsPart numberingDefinitionsPart;
+
+	/** Missing styles are logged once each per resolver (a w:pStyle naming a deleted style
+	 *  is common in real documents, and used to log at ERROR per paragraph). */
+	private final java.util.Set<String> missingLogged = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+	private void logMissing(String styleId) {
+		if (missingLogged.add(styleId)) {
+			log.warn("Style definition not found: " + styleId + " (logged once)");
+		}
+	}
 
 
 	/**
@@ -163,31 +163,12 @@ public class PropertyResolver {
 
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
-		this.wordMLPackage = wordMLPackage;
-		
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 		
 		styleDefinitionsPart = mdp.getStyleDefinitionsPart(true);
-		themePart = mdp.getThemePart();
 		numberingDefinitionsPart = mdp.getNumberingDefinitionsPart();
-		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null
-				&& wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents()!=null) {
-			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
-		}
 		init();		
 	}
-	
-	CTLanguage themeFontLang = null;
-	
-//	public PropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
-//							ThemePart themePart,
-//							NumberingDefinitionsPart numberingDefinitionsPart) throws Docx4JException {
-//		
-//		this.styleDefinitionsPart= styleDefinitionsPart;
-//		this.themePart = themePart;
-//		this.numberingDefinitionsPart = numberingDefinitionsPart;
-//		init();
-//	}
 	
 	String defaultParagraphStyleId;  // "Normal" in English, but ...
 
@@ -197,6 +178,7 @@ public class PropertyResolver {
 		return defaultParagraphStyleId;
 	}
 	String defaultCharacterStyleId;
+	String defaultTableStyleId;
 	
 	private void init() throws Docx4JException {
 
@@ -210,6 +192,8 @@ public class PropertyResolver {
 		} catch (NullPointerException npe) {
 			log.warn("No default character style!!");
 		}
+		Style defaultTableStyle = this.styleDefinitionsPart.getDefaultTableStyle();
+		defaultTableStyleId = defaultTableStyle == null ? null : defaultTableStyle.getStyleId();
 
 		// Initialise styles
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
@@ -260,99 +244,116 @@ public class PropertyResolver {
 		}
 	}
 
+	/**
+	 * The table style which applies, merged root-first down its w:basedOn chain, then the
+	 * table's own w:tblPr over it.
+	 *
+	 * <p>Word's built-in "Normal Table" (w:tblInd 0; cell margins 108 twips left and
+	 * right, 0 top and bottom) underlies a table naming no style and a table whose chain
+	 * reaches the document's default table style - and it is the built-in that applies,
+	 * not the document's definition of that style: measured (CR-015 probe
+	 * styles-table-default) with the document's Table Normal stating w:left 300, Word
+	 * started the first cell's text 108 twips in for both, and a table style whose chain
+	 * does not reach the default style got no cell margin at all.  So the default style's
+	 * own layer is skipped in favour of the built-in, and a chain not reaching it starts
+	 * from nothing.  Until 17.1.1 a style-less table got an empty w:tblPr and the table
+	 * writers put 108 on every table.</p>
+	 *
+	 * @param tblPr the table's own w:tblPr; may be null
+	 * @return a new Style each call, with a non-null w:tblPr
+	 */
 	public Style getEffectiveTableStyle(TblPr tblPr) throws CyclicStylesException {
-		// OK to pass this a null tblPr.
-		
-		Stack<Style> tableStyleStack = new Stack<Style>();
-		
-		if (tblPr !=null && tblPr.getTblStyle()!=null) {
-			String styleId = tblPr.getTblStyle().getVal();
-			log.debug("Table style: " + styleId);
-			fillTableStyleStack(styleId, tableStyleStack);
-		} else {
-			log.debug("No table style specified");
+
+		String styleId = (tblPr != null && tblPr.getTblStyle() != null) ? tblPr.getTblStyle().getVal() : null;
+		List<Style> chain = styleId == null ? Collections.<Style>emptyList() : ancestry(styleId);
+		boolean builtIn = chain.isEmpty() || (defaultTableStyleId != null && containsId(chain, defaultTableStyleId));
+		log.debug(styleId == null ? "No table style specified" : "Table style: " + styleId);
+
+		Style result = builtIn ? builtInTableNormal() : emptyTableStyle();
+		for (Style layer : chain) {
+			if (defaultTableStyleId != null && defaultTableStyleId.equals(layer.getStyleId())) {
+				continue; // the built-in stands in for the document's definition of it
+			}
+			StyleUtil.apply(layer, result);
 		}
-		
-		Style result;
-		if (tableStyleStack.size()>0 ) {
-			result = XmlUtils.deepCopy(tableStyleStack.pop());
-		} else {
-			result = Context.getWmlObjectFactory().createStyle();
-			CTTblPrBase emptyPr = Context.getWmlObjectFactory().createCTTblPrBase();
-			result.setTblPr(emptyPr);
-			if (tblPr==null) {
-				// Return empty style object
-				log.info("Generated empty tblPr" );
-				return result;
-			}			
+		if (tblPr != null) {
+			result.setTblPr(StyleUtil.apply(tblPr, result.getTblPr()));
 		}
-		while (!tableStyleStack.empty() ) {
-			StyleUtil.apply(tableStyleStack.pop(), result);
+		if (result.getTblPr() == null) {
+			result.setTblPr(Context.getWmlObjectFactory().createCTTblPrBase());
 		}
-		
-		// Finally apply the tblPr we were passed
-		result.setTblPr(StyleUtil.apply(tblPr, result.getTblPr()));
-		
-		// Sanity check
-		if (result.getTblPr()==null) {
-			log.error("Null tblPr. FIXME" );
-		}
-		
 		return result;
 	}
 
-	private void fillTableStyleStack(String styleId, Stack<Style> tableStyleStack) throws CyclicStylesException {
-		// wrapper that starts a fresh seen set for cycle detection
-		List<String> seen = new ArrayList<String>();
-		fillTableStyleStackInternal(styleId, tableStyleStack, seen);
+	private static boolean containsId(List<Style> chain, String styleId) {
+		for (Style s : chain) if (styleId.equals(s.getStyleId())) return true;
+		return false;
 	}
-		
+
+	/** Word's built-in Normal Table, as a style: what it applies whatever the document's own definition says. */
+	private Style builtInTableNormal() {
+		org.docx4j.wml.ObjectFactory f = Context.getWmlObjectFactory();
+		Style s = emptyTableStyle();
+		s.setStyleId(defaultTableStyleId == null ? "TableNormal" : defaultTableStyleId);
+		Style.Name name = f.createStyleName();
+		name.setVal("Normal Table");
+		s.setName(name);
+		CTTblPrBase tblPr = s.getTblPr();
+		tblPr.setTblInd(twips(0));
+		org.docx4j.wml.CTTblCellMar mar = f.createCTTblCellMar();
+		mar.setTop(twips(0));
+		mar.setLeft(twips(WORD_DEFAULT_CELL_MARGIN_TWIPS));
+		mar.setBottom(twips(0));
+		mar.setRight(twips(WORD_DEFAULT_CELL_MARGIN_TWIPS));
+		tblPr.setTblCellMar(mar);
+		return s;
+	}
+
+	/** 108 twips (0.08in): the left and right cell margin of Word's built-in Normal Table. @since 17.1.1 */
+	public static final int WORD_DEFAULT_CELL_MARGIN_TWIPS = 108;
+
+	private static org.docx4j.wml.TblWidth twips(int w) {
+		org.docx4j.wml.TblWidth width = Context.getWmlObjectFactory().createTblWidth();
+		width.setType("dxa");
+		width.setW(BigInteger.valueOf(w));
+		return width;
+	}
+
+	private static Style emptyTableStyle() {
+		Style s = Context.getWmlObjectFactory().createStyle();
+		s.setType("table");
+		s.setTblPr(Context.getWmlObjectFactory().createCTTblPrBase());
+		return s;
+	}
+
 	/**
-	 * Ascend the style hierarchy, capturing the table styles
-	 *  
-	 * @param stylename
-	 * @param effectivePPr
-	 * @throws CyclicStylesException 
+	 * The style and the styles it is based on, root first (the base of the chain at index
+	 * 0, the style itself last); empty for a null or missing styleId.  A cycle, or a chain
+	 * deeper than StyleUtil.isCyclic's limit, ends the walk where it is detected (and
+	 * throws if docx4j.openpackaging.exceptions.CyclicStylesException.throw says so).
+	 * One walk serves paragraph, run and table resolution (until 17.1.1 each had its own).
 	 */
-	private void fillTableStyleStackInternal(String styleId, Stack<Style> tableStyleStack, List<String> seen) throws CyclicStylesException {
-		
-		if (StyleUtil.isCyclic(styleId, seen, log)) {
-			// TODO, jump up to add default table style (if not part of the cycle) and DocumentDefaults
-			return;
+	private List<Style> ancestry(String styleId) throws CyclicStylesException {
+		List<Style> leafFirst = new ArrayList<Style>();
+		List<String> seen = new ArrayList<String>();
+		String id = styleId;
+		while (id != null) {
+			if (StyleUtil.isCyclic(id, seen, log)) break;
+			seen.add(id);
+			Style style = getLiveStyle(id);
+			if (style == null) {
+				// "DocDefaults" is StyleTree's virtual style for the document defaults, which
+				// this resolver applies itself; anything else is a reference to nothing
+				if (!"DocDefaults".equals(id)) logMissing(id);
+				break;
+			}
+			leafFirst.add(style);
+			id = style.getBasedOn() == null ? null : style.getBasedOn().getVal();
 		}
-		seen.add(styleId);
-
-		// get the style
-		Style style = getLiveStyle(styleId);
-
-		// add it to the stack
-		if (style==null) {
-			// No such style!
-			// For now, just log it..
-			log.error("Style definition not found: " + styleId);
-			seen.remove(styleId);
-			return;
-		}
-		
-		
-		tableStyleStack.push(style);
-		log.debug("Added " + styleId + " to table style stack");
-		
-		// if it is based on, recurse
-    	if (style.getBasedOn()==null) {
-			log.debug("Style " + styleId + " is a root style.");
-    	} else if (style.getBasedOn().getVal()!=null) {
-        	String basedOnStyleName = style.getBasedOn().getVal();           	
-        	fillTableStyleStackInternal( basedOnStyleName, tableStyleStack, seen);
-    	} else {
-    		log.debug("No basedOn set for: " + style.getStyleId() );
-    	}
-		
-		// remove from seen so that other branches may traverse
-		seen.remove(styleId);    	
+		Collections.reverse(leafFirst);
+		return leafFirst;
 	}
-	
-	
+
 	/*
 	 * The resolution order (ECMA-376 17.7.2), as composed here since CR-015 phase 2:
 	 *
@@ -496,7 +497,7 @@ public class PropertyResolver {
 		if (expressRPr != null && expressRPr.getRStyle() != null && expressRPr.getRStyle().getVal() != null) {
 			String runStyleId = expressRPr.getRStyle().getVal();
 			if (getLiveStyle(runStyleId) == null) {
-				log.error("Couldn't find style: " + runStyleId);
+				logMissing(runStyleId);
 			} else {
 				applyRPr(chainRPr(runStyleId), effectiveRPr);
 			}
@@ -525,8 +526,7 @@ public class PropertyResolver {
 		}
 		Style s = getLiveStyle(styleId);
 		if (s==null) {
-			log.error("Couldn't find style: " + styleId);
-			log.debug("Couldn't find style: " + styleId, new Throwable());
+			logMissing(styleId);
 			return null;
 		}
 		resolved = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
@@ -570,8 +570,7 @@ public class PropertyResolver {
 
 		Style s = getLiveStyle(styleId);
 		if (s==null) {
-			log.error("Couldn't find style: " + styleId);
-			log.debug("Couldn't find style: " + styleId, new Throwable());
+			logMissing(styleId);
 			return null;
 		}
 		RPr resolvedRPr = factory.createRPr();
@@ -610,7 +609,7 @@ public class PropertyResolver {
 	private String existingParagraphStyle(String styleId) {
 		if (styleId == null) return defaultParagraphStyleId;
 		if (getLiveStyle(styleId) == null) {
-			log.error("Couldn't find style: " + styleId + "; using the default paragraph style");
+			logMissing(styleId);
 			return defaultParagraphStyleId;
 		}
 		return styleId;
@@ -621,11 +620,9 @@ public class PropertyResolver {
 		if (styleId == null) return factory.createPPr();
 		PPr chain = chainPPr.get(styleId);
 		if (chain != null) return chain;
-		Stack<PPr> pPrStack = new Stack<PPr>();
-		fillPPrStack(styleId, pPrStack);
 		chain = factory.createPPr();
-		while (!pPrStack.empty() ) {
-			applyPPr(pPrStack.pop(), chain);
+		for (Style style : ancestry(styleId)) {
+			applyPPr(headingLayer(style), chain);
 		}
 		chainPPr.put(styleId, chain);
 		return chain;
@@ -636,11 +633,9 @@ public class PropertyResolver {
 		if (styleId == null) return factory.createRPr();
 		RPr chain = chainRPr.get(styleId);
 		if (chain != null) return chain;
-		Stack<RPr> rPrStack = new Stack<RPr>();
-		fillRPrStack(styleId, rPrStack);
 		chain = factory.createRPr();
-		while (!rPrStack.empty() ) {
-			applyRPr(rPrStack.pop(), chain);
+		for (Style style : ancestry(styleId)) {
+			applyRPr(style.getRPr(), chain);
 		}
 		chainRPr.put(styleId, chain);
 		return chain;
@@ -668,26 +663,25 @@ public class PropertyResolver {
             log.debug("apply " + XmlUtils.marshaltoString(pPrToApply, true, true)
                     + "\n\r to " + XmlUtils.marshaltoString(effectivePPr, true, true));
         }
-		
 		StyleUtil.apply(pPrToApply, effectivePPr, this.numberingDefinitionsPart);
-		
-//		if (pPrToApply==null) {
-//			return;
-//		}
-//		
-//    	List<Property> properties = PropertyFactory.createProperties(wordMLPackage, pPrToApply); 
-//    	for( Property p :  properties ) {
-//			if (p!=null) {
-////				log.debug("applying pPr " + p.getClass().getName() );
-//				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
-//			}
-//    	}
-
         if(log.isDebugEnabled()) {
             log.debug("result " + XmlUtils.marshaltoString(effectivePPr, true, true));
         }
-    	
 	}
+	
+	protected void applyRPr(RPr rPrToApply, RPr effectiveRPr) {
+		if (rPrToApply==null) {
+			return;
+		}
+		StyleUtil.apply(rPrToApply, effectiveRPr);
+	}	
+	
+	protected void applyRPr(ParaRPr rPrToApply, RPr effectiveRPr) {
+		if (rPrToApply==null) {
+			return;
+		}
+		StyleUtil.apply(rPrToApply, effectiveRPr);
+	}	
 	
 	/**
 	 * Whether the run states any formatting of its own: {@link StyleUtil#hasDirectFormatting(RPr)}
@@ -704,42 +698,6 @@ public class PropertyResolver {
 	private boolean hasDirectRPrFormatting(ParaRPr rPrToApply) {
 		return StyleUtil.hasDirectFormatting(rPrToApply);
 	}
-	
-
-	protected void applyRPr(RPr rPrToApply, RPr effectiveRPr) {
-		
-		if (rPrToApply==null) {
-			return;
-		}
-		
-		StyleUtil.apply(rPrToApply, effectiveRPr);
-		
-//    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
-//    	
-//    	for( Property p :  properties ) {
-//			if (p!=null) {    		
-//				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
-//			}
-//    	}
-		
-	}	
-	
-	protected void applyRPr(ParaRPr rPrToApply, RPr effectiveRPr) {
-		
-		if (rPrToApply==null) {
-			return;
-		}
-
-		StyleUtil.apply(rPrToApply, effectiveRPr);
-		
-//    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
-//    	
-//    	for( Property p :  properties ) {
-//			if (p!=null) {    		
-//				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
-//			}
-//    	}
-	}	
 	
     private static final String HEADING_STYLE = "Heading";
 
@@ -774,170 +732,27 @@ public class PropertyResolver {
     }	
 	
 	/**
-	 * Ascend (recursively) the style hierarchy, capturing the pPr bit.
-	 * 
-	 * Doesn't use StyleTree.
-	 *  
-	 * @param stylename
-	 * @param effectivePPr
-	 * @throws CyclicStylesException 
+	 * A style's own w:pPr as a layer of its chain.  The built-in heading styles have a
+	 * fixed outline level, which Word takes from the style's built-in NAME ("heading 1"
+	 * ... "heading 9", the same in every locale; the styleId is localised:
+	 * "berschrift1", "Titre1"), whatever w:outlineLvl the style declares: where they
+	 * differ the layer is a copy with the level from the name, and the styles part is not
+	 * touched (until 17.1.1 this keyed on the id prefix "Heading" and wrote the level into
+	 * the style).
 	 */
-	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) throws CyclicStylesException {
-		// wrapper that starts a fresh seen set for cycle detection
-		List<String> seen = new ArrayList<String>();
-		fillPPrStackInternal(styleId, pPrStack, seen);
-	}
-
-	private void fillPPrStackInternal(String styleId, Stack<PPr> pPrStack, List<String> seen) throws CyclicStylesException {
-		// The return value is the style on which styleId is based.
-
-		// It is purely for the purposes of ascertainNumId (? no, its used by getEffectivePPr(styleId))
-
-		if (styleId==null) {
-			if (log.isDebugEnabled()) {
-				Throwable t = new Throwable();
-				log.debug("Null styleId produced by code path", t);
-			} else {
-				log.warn("Null styleId; Enable debug level logging to see code path");
-			}
-			return;
-		}
-
-		// Detect cycles
-		if (StyleUtil.isCyclic(styleId, seen, log)) {
-			// TODO, jump up to add default pStyle (if not part of the cycle) and DocumentDefaults
-			return;
-		}
-		seen.add(styleId);
-
-		// get the style
-		Style style = getLiveStyle(styleId);
-
-		// add it to the stack
-		if (style==null) {
-			// No such style!
-			// For now, just log it..
-			if (styleId!=null
-					&& styleId.equals("DocDefaults")) {
-
-				// Don't worry about this.
-				// SDP.createVirtualStylesForDocDefaults()
-				// creates a DocDefaults style, and makes Normal based on it
-				// (and so if a different approach to handling
-				//  DocDefaults ... we really should do it one
-				//  way consistently).
-				// The problem here is, that is typically done
-				// after the PropertyResolver is created,
-				// so as far as this PropertyResolver is 
-				// concerned, the style doesn't exist.
-				// And we don't really want to always
-				// do createVirtualStylesForDocDefaults() before
-				// or during init of PropertyResolver, since that
-				// mean any docx saved would contain those
-				// virtual styles.
-				// Anyway, we don't need to worry about it
-				// here, because the doc defaults are still handled...
-				
-			} else {
-				log.error("Style definition not found: " + styleId);
-			}
-			seen.remove(styleId);
-			return;
-		}
-
-		/* The built-in heading styles have a fixed outline level, which Word takes from the
-		 * style's built-in NAME ("heading 1" ... "heading 9", the same in every locale; the
-		 * styleId is localised: "berschrift1", "Titre1"), whatever w:outlineLvl the style
-		 * declares.  Until 17.1.1 this keyed on the id prefix "Heading" and wrote the level
-		 * into the style; it is now computed by name, on a copy, so the styles part is not
-		 * touched (CR-015 phase 3). */
+	private PPr headingLayer(Style style) {
 		PPr layer = style.getPPr();
 		int headingLevel = headingLevelByName(style);
 		if (headingLevel > 0 && layer != null
 				&& layer.getOutlineLvl() != null && layer.getOutlineLvl().getVal() != null
 				&& layer.getOutlineLvl().getVal().intValue() != headingLevel - 1) {
-			log.debug(styleId + " - outline level " + (headingLevel - 1) + " from its name, not the declared " + layer.getOutlineLvl().getVal());
+			log.debug(style.getStyleId() + " - outline level " + (headingLevel - 1) + " from its name, not the declared " + layer.getOutlineLvl().getVal());
 			layer = XmlUtils.deepCopy(layer);
 			layer.getOutlineLvl().setVal(BigInteger.valueOf(headingLevel - 1));
 		}
-		pPrStack.push(layer);
-		log.debug("Added " + styleId + " to pPr stack");
-
-		// (A style whose w:numPr names no w:numId inherits it from the style it is based
-		// on: since 17.1.1 StyleUtil.apply(NumPr) merges the two elements separately, so
-		// the inherited id reaches the effective pPr without being written into the style,
-		// which is what happened here until then.)
-
-		// if it is based on, recurse
-		if (style.getBasedOn()==null) {
-			log.debug("Style " + styleId + " is a root style.");
-		} else if (style.getBasedOn().getVal()!=null) {
-			String basedOnStyleName = style.getBasedOn().getVal();
-			log.debug("Style " + styleId + " is based on " + basedOnStyleName);
-        	fillPPrStackInternal(basedOnStyleName, pPrStack, seen);
-		} else {
-			log.debug("No basedOn set for: " + style.getStyleId() );
-		}
-
-		// remove from seen so that other branches may traverse
-		seen.remove(styleId);
+		return layer;
 	}
-	
 
-	private void fillRPrStack(String styleId, Stack<RPr> rPrStack) throws CyclicStylesException {
-		// wrapper that starts a fresh seen set for cycle detection
-		List<String> seen = new ArrayList<String>();
-		fillRPrStackInternal(styleId, rPrStack, seen);
-	}
-	
-	/**
-	 * Ascend the style hierarchy, capturing the rPr bit
-	 *  
-	 * @param stylename
-	 * @param effectivePPr
-	 * @throws CyclicStylesException 
-	 */
-	private void fillRPrStackInternal(String styleId, Stack<RPr> rPrStack, List<String> seen) throws CyclicStylesException {
-		
-		if (StyleUtil.isCyclic(styleId, seen, log)) {
-			// TODO, jump up to add default rStyle (if not part of the cycle) and DocumentDefaults			
-			return;
-		}
-		seen.add(styleId);
-
-		// get the style
-		Style style = getLiveStyle(styleId);
-
-		// add it to the stack
-		if (style==null) {
-			// No such style!
-			// For now, just log it..
-			log.error("Style definition not found: " + styleId);
-			seen.remove(styleId);
-			return;
-		}
-		rPrStack.push(style.getRPr());
-		log.debug("Added " + styleId + " to rPr stack");
-		
-		// if it is based on, recurse
-    	if (style.getBasedOn()==null) {
-			log.debug("Style " + styleId + " is a root style.");
-    	} else if (style.getBasedOn().getVal()!=null) {
-        	String basedOnStyleName = style.getBasedOn().getVal();
-//        	if (styleId.equals(basedOnStyleName)) {
-//    		log.error(XmlUtils.marshaltoString(style));
-//    		throw new RuntimeException(styleId + " is basedOn itself!");
-//    	} 
-        	fillRPrStackInternal( basedOnStyleName, rPrStack, seen);
-    	} else {
-    		log.debug("No basedOn set for: " + style.getStyleId() );
-    	}
-		
-		// remove from seen so that other branches may traverse
-		seen.remove(styleId);    	
-	}
-	
-	
     private void initialiseLiveStyles() {
 
     	log.debug("initialiseLiveStyles()");
@@ -1099,92 +914,5 @@ public class PropertyResolver {
 
     	return getLiveStyle(styleId);
     }
-	
-//		/*
-//		a paragraph style does not inherit anything from its linked character style.
-//
-//		A linked character style seems to be just a Word 2007 user interface
-//		hint.  ie if you select some characters in a paragraph and select to
-//		apply "Heading 1", what you are actually doing is applying "Heading 1
-//		char".  This is determined by looking at the definition of the
-//		"Heading 1" style to see what its linked style is.
-//		
-//		(Interestingly, in Word 2007, if you right click to modify something 
-//		 which is Heading 1 char, it modifies both the Heading 1 style and the
-//		 Heading 1 char style!.  Haven't looked to see what happens to Heading 1 char
-//		 style if you right click to modify a Heading 1 par.)
-//
-//		 The algorithm Word 2007 seems to use is:
-//		    look at the specified style:
-//		        1 does it have its own rPr which contains rFonts?
-//		        2 if not, what does this styles basedOn style say? (Ignore
-//		any linked char style)
-//				3 look at styles/rPrDefault 
-//				3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
-//				    in which case if there is no theme part, default to "internally stored settings"
-//					(there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
-//					in this case Calibri and Cambria)
-//				3.2 if there is no rFonts element, default to Times New Roman.
-//		
-
-    //        // 1 does it have its own rPr which contains rFonts?
-//    	org.docx4j.wml.RPr rPr = style.getRPr();
-//    	if (rPr!=null && rPr.getRFonts()!=null) {
-//    		if (rPr.getRFonts().getAscii()!=null) {
-//        		return rPr.getRFonts().getAscii();
-//    		} else if (rPr.getRFonts().getAsciiTheme()!=null 
-//    					&& themePart != null) {
-//    			log.debug("Encountered rFonts/AsciiTheme: " + rPr.getRFonts().getAsciiTheme() );
-//    			
-//				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)themePart.getJaxbElement();
-//				org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-//				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
-//					if (fontScheme != null && fontScheme.getMinorFont().getLatin() != null) {
-//						fontScheme = theme.getThemeElements().getFontScheme();
-//						org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
-//						log.info("minorFont/latin font is " + textFont.getTypeface());
-//						return (textFont.getTypeface());
-//					} else {
-//						// No minorFont/latin in theme part - default to Calibri
-//						log.info("No minorFont/latin in theme part - default to Calibri");
-//						return ("Calibri");
-//					}
-//				} else if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MAJOR_H_ANSI)) {
-//					if (fontScheme != null && fontScheme.getMajorFont().getLatin() != null) {
-//						fontScheme = theme.getThemeElements().getFontScheme();
-//						org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
-//						log.debug("majorFont/latin font is " + textFont.getTypeface());
-//						return (textFont.getTypeface());
-//					} else {
-//						// No minorFont/latin in theme part - default to Cambria
-//						log.info("No majorFont/latin in theme part - default to Cambria");
-//						return ("Cambria");
-//					}
-//				} else {
-//					log.error("Don't know how to handle: "
-//							+ rPr.getRFonts().getAsciiTheme());
-//				}
-//    		}
-//    	}
-//        		
-//        // 2 if not, what does this styles basedOn style say? (recursive)
-//    	
-//    	if (style.getBasedOn()!=null && style.getBasedOn().getVal()!=null) {
-//        	String basedOnStyleName = style.getBasedOn().getVal();    		
-//    		//log.debug("recursing into basedOn:" + basedOnStyleName);
-//            org.docx4j.wml.Style candidateStyle = (org.docx4j.wml.Style)stylesDefined.get(basedOnStyleName);
-//            if (candidateStyle != null && candidateStyle.getStyleId().equals(basedOnStyleName)) {
-//            	return getFontnameFromStyle(stylesDefined, themePart, candidateStyle);
-//            }
-//    	     // If we get here the style is missing!
-//     		log.error("couldn't find basedOn:" + basedOnStyleName);    	     
-//    	     return null;
-//    	} else {
-//    		//log.debug("No basedOn set for: " + style.getStyleId() );
-//    		return null;
-//    	}
-//    	
-//    }
-//
 	
 }

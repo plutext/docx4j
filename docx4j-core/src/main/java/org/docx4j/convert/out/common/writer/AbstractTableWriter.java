@@ -1115,9 +1115,10 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		return left + right;
 	}
 
-	/** Left + right cell margins in twips, from the effective tblPr or Word's default. */
+	/** Left + right cell margins in twips, from the effective tblPr (which carries Word's
+	 *  built-in Normal Table margins where they apply, since 17.1.1); none otherwise. */
 	private static int cellMarginsTwips(org.docx4j.wml.CTTblPrBase tblPr) {
-		int left = WORD_DEFAULT_CELL_MARGIN_TWIPS, right = WORD_DEFAULT_CELL_MARGIN_TWIPS;
+		int left = 0, right = 0;
 		if (tblPr != null && tblPr.getTblCellMar() != null) {
 			CTTblCellMar m = tblPr.getTblCellMar();
 			if (m.getLeft() != null && m.getLeft().getW() != null && "dxa".equals(m.getLeft().getType())) left = m.getLeft().getW().intValue();
@@ -1567,28 +1568,30 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			if (tblCellMargin.getRight() != null)
 				properties.add(new CellMarginRight(tblCellMargin.getRight()));
 		}
-		// Word's application default when neither the table nor its style says:
-		// 0.08in (108 twips) left and right, 0 top and bottom.  Word's built-in
-		// "Normal Table" style carries these, but a document need not define it
-		// (docx4j's default styles part does not), and Word applies them anyway.
-		// Measured (CR-001 harness, table-fixed): cell text starts at the border
-		// centre + half the border width + 5.4pt.  Without this, text sat on the
-		// border and every autofit width was 10.8pt too narrow.  @since 17.0.5
+		// Word's built-in Normal Table margins (108 twips left and right, 0 top and
+		// bottom) now arrive in the effective table style itself, for a table naming no
+		// style and for one whose style chain reaches the default table style
+		// (PropertyResolver.getEffectiveTableStyle, CR-015 phase 4).  A table whose chain
+		// does not reach it has no cell margin in Word (measured, probe
+		// styles-table-default: its first cell's text starts at the border), so nothing
+		// is added here any more; until 17.1.1 108 was put on every table lacking one.
+		// Measured earlier (CR-001 harness, table-fixed): cell text starts at the border
+		// centre + half the border width + 5.4pt, which the built-in still gives.
 		if (tblCellMargin == null || tblCellMargin.getLeft() == null) {
-			properties.add(new CellMarginLeft(defaultCellMargin()));
+			properties.add(new CellMarginLeft(noCellMargin()));
 		}
 		if (tblCellMargin == null || tblCellMargin.getRight() == null) {
-			properties.add(new CellMarginRight(defaultCellMargin()));
+			properties.add(new CellMarginRight(noCellMargin()));
 		}
 	}
 
-	/** 108 twips (0.08in), Word's default left/right cell margin. @since 17.0.5 */
-	public static final int WORD_DEFAULT_CELL_MARGIN_TWIPS = 108;
+	/** 108 twips (0.08in), the left/right cell margin of Word's built-in Normal Table. @since 17.0.5 */
+	public static final int WORD_DEFAULT_CELL_MARGIN_TWIPS = org.docx4j.model.PropertyResolver.WORD_DEFAULT_CELL_MARGIN_TWIPS;
 
-	private static org.docx4j.wml.TblWidth defaultCellMargin() {
+	private static org.docx4j.wml.TblWidth noCellMargin() {
 		org.docx4j.wml.TblWidth w = org.docx4j.jaxb.Context.getWmlObjectFactory().createTblWidth();
 		w.setType("dxa");
-		w.setW(java.math.BigInteger.valueOf(WORD_DEFAULT_CELL_MARGIN_TWIPS));
+		w.setW(java.math.BigInteger.ZERO);
 		return w;
 	}
 

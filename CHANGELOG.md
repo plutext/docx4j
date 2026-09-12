@@ -362,6 +362,21 @@ Property resolution (CR-015, phase 3):
   under a lock. A missing style no longer costs a rescan of the styles part per lookup: the
   part is rescanned only when its style count has changed.
 
+Property resolution (CR-015, phase 4):
+
+- The table style a table resolves to now starts from Word's built-in Normal Table (cell
+  margins 108 twips left and right, 0 top and bottom, w:tblInd 0) for a table naming no
+  style and for one whose style chain reaches the document's default table style - the
+  built-in, not the document's definition of that style, which Word ignores (measured: a
+  Table Normal stating a 300-twip left margin still gave 108). A table style whose chain does
+  not reach the default table style has no cell margin, as in Word (measured: the text starts
+  at the border); the table writers put 108 on every such table before.
+- A w:sectPr is no longer half-merged into an effective w:pPr (it is not a paragraph
+  property, and nothing read it); StyleUtil.apply(SectPr, SectPr) is deprecated and its WARN
+  per section is gone. A missing style is logged once per resolver, at WARN, not per
+  paragraph at ERROR. PropertyResolver's three copies of the w:basedOn walk are one; its
+  unused theme fields and 150 lines of commented-out font code are gone.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

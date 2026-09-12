@@ -1788,7 +1788,8 @@ public class StyleUtil {
 				destination = Context.getWmlObjectFactory().createPPr();
 			apply((PPrBase)source, (PPrBase)destination);
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
-			destination.setSectPr(apply(source.getSectPr(), destination.getSectPr()));
+			// w:sectPr is not a paragraph property and is not merged (since 17.1.1; it was
+			// half-copied, with a WARN per section, and read by nothing)
 		}
 		return destination;
 	}
@@ -1849,7 +1850,7 @@ public class StyleUtil {
 				destination = Context.getWmlObjectFactory().createPPr();
 			apply((PPrBase)source, (PPrBase)destination, numberingDefinitionsPart);
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
-			destination.setSectPr(apply(source.getSectPr(), destination.getSectPr()));
+			// w:sectPr is not merged; see apply(PPr, PPr)
 		}
 		return destination;
 	}
@@ -1956,7 +1957,10 @@ public class StyleUtil {
 	 * @param destination
 	 * @return
 	 * @since 3.2
+	 * @deprecated since 17.1.1: incomplete (seven of the section properties), and no longer
+	 * called by the pPr merge - a w:sectPr is not a paragraph property
 	 */
+	@Deprecated
 	public static SectPr apply(SectPr source, SectPr destination) {
 		
 		if (!isEmpty(source)) {
@@ -1973,7 +1977,7 @@ public class StyleUtil {
 			destination.setBidi(apply(source.getBidi(), destination.getBidi()) );
 			destination.setRtlGutter(apply(source.getRtlGutter(), destination.getRtlGutter() ));
 					
-			log.warn("TODO: implementation is incomplete");
+			log.debug("apply(SectPr) is incomplete (deprecated)");
 					
 // TODO						
 //						destination.setDocGrid(apply(source.getDocGrid() , destination.getDocGrid()) );

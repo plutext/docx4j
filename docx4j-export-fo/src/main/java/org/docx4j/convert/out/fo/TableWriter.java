@@ -559,7 +559,8 @@ public class TableWriter extends AbstractTableWriter {
 				return left.getW().intValue();
 			}
 		}
-		return AbstractTableWriter.WORD_DEFAULT_CELL_MARGIN_TWIPS;
+		// the built-in Normal Table's 108 is in the effective tblPr where it applies (17.1.1); none otherwise
+		return 0;
 	}
 
 	private static int writableWidthTwips(AbstractWmlConversionContext context) {
