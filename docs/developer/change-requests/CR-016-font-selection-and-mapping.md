@@ -1315,7 +1315,7 @@ The review is complete: seventeen gaps, all closed or decided.
    0.021 behind), and - the larger finding - the jars' own coverage for headless deployments
    (a Liberation-or-croscore choice that leaves neither DejaVu Sans nor a
    condensed face nor the URW faces available) to be looked at as its own
-   item.  Phase 0c measures how far behind IdentityPlusMapper
+   item: https://github.com/plutext/docx4j/issues/695 (2026-09-13).  Phase 0c measures how far behind IdentityPlusMapper
    it is on this box, and how both mappers fare with only the fonts docx4j
    ships and with the default English/European font sets of Ubuntu and the
    other popular distributions — the environments users actually convert
