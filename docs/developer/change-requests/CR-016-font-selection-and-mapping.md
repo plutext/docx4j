@@ -1328,39 +1328,123 @@ The review is complete: seventeen gaps, all closed or decided.
    samples that chose a mapper (three of them BestMatchingMapper "for
    Linux") and the Getting Started guide's font-mapping appendix say so.**
 
-## Risks (as written 2026-09-12)
+## Risks (as written 2026-09-12; each with its outcome, 2026-09-13)
 
 - **Behaviour change in the FO output from phases 1-3**, intended (towards
   Word) but broad: every run with `w:cs w:val="0"`, every mixed CJK line
   (the space), every Hebrew run without `w:cs`, every unresolvable face.
   The corpus gate is the control, read document by document; the probes
   settle each rule before its code ships.
+  *Outcome:* held.  Every phase was gated on the three corpora document by
+  document; the whole CR moved mean line parity 0.9051 / 0.8799 / 0.9162 ->
+  0.9051 / 0.8805 / 0.9181 with 740 (Calibri Light) and 5218 (Russian) to
+  Word's pages, one document (3475) lower for a reason that is the
+  baseline's, not the rule's (gap 16).  No probe went backwards; light-bold
+  50 -> 83%, unresolvable 75 -> 88%.
 - **The unresolvable-face rule may contradict the ledger's reading** ("the
-  UI font, per character") once the fontTable is varied — as CR-015's P5
+  UI font, per character") once the fontTable is varied - as CR-015's P5
   contradicted its TODO.  The CR's shape absorbs it: phase 3 implements what
   P5 says, and the design above names both candidates.
+  *Outcome:* it did contradict it.  P5 measured Cambria for roman or no
+  entry, Calibri for swiss or an entry without a family, altName winning,
+  panose unread; phase 3 implemented that and the ledger's reading was
+  dropped.
 - **HTML users** see different `font-family` values (Decisions 1).  A
   property restores the old output; CHANGELOG says so.
-- **The discovery restructure changes the FOP configuration** — fonts
+  *Outcome:* shipped in phase 5 as decided; `docx4j.convert.out.html.fontFamily=physical`
+  restores the old output.  A residual: any consumer parsing the span's
+  `font-family` for a single physical name (as `XsltCommonFunctions.fontCanRender`
+  did, and was changed to read the stack) must expect a list now.
+- **The discovery restructure changes the FOP configuration** - fonts
   declared that were not (theme fonts for scripts the document never uses,
   numbering levels' other slots) cost FOP a font parse each at
   `FopFactory` build.  The configuration diff over the corpus measures it;
   the walk declares styles *in use* only, as today.
+  *Outcome:* measured over 561 documents: 288 gained names (Times New Roman
+  in 123, Arial in 62 - paragraph marks, runs without text, the eastAsia and
+  cs slots, basedOn chains), none lost one.  The cost feared did not appear:
+  FOP wraps a configured font in a `LazyFont` and reads its metrics on first
+  use, so a declaration the FO never names costs an entry and nothing else;
+  the corpora's render time did not move between the phase 3 and phase 4
+  runs.
 - **The Windows VM's fonts**: P4 needs Nyala, P7 Calibri Light, P8 Segoe UI
-  Emoji and Symbol — all in a stock Windows 10 / Office 2016 install; P2's
+  Emoji and Symbol - all in a stock Windows 10 / Office 2016 install; P2's
   MS Gothic is in `msgothic.ttc`, present since Windows 7.  A missing font
   on the VM turns a probe into a substitution test of Word's own, which the
   golden's `pdffonts` would show.
+  *Outcome:* all present; `pdffonts` on the goldens confirmed each face.
+  The one surprise was the VM's Word being 365, not 2016: a resave carries
+  the Aptos theme, so a probe with no theme part gets Word's *current*
+  default theme (Calibri in the Office theme the VM supplied), which is what
+  phase 1 implements.
 - **Thread safety** is unchanged by this CR: one selector per conversion
   context, the Mapper's `ConcurrentHashMap`s, `GlyphCheck`'s cache;
   `PhysicalFonts`' static `HashMap` is written only during discovery (the
   Mapper static initialiser) and by `addPhysicalFont` callers, which is
   documented as not concurrent.  Not made worse; not fixed here.
+  *Outcome:* unchanged, as said.  Phase 4 added no static state (its
+  `warnedOnce` and scratch `Document` are per selector; `ownFont` puts into
+  the per-document mapper).  But see the new risk on per-JVM state below,
+  which the gate found and which is about correctness, not concurrency.
 - **Performance** is measured this time (phase 1 and 4), on the 311-page
   document CR-015 named and did not measure.
+  *Outcome:* measured in phase 4 on `15_es-AR_sdt_num_tbl_12301`: discovery
+  165 ms -> 8 ms, the conversion to FO 4,502 -> 4,082 ms median with a
+  byte-identical FO.  Phase 1's own cost (one resolution instead of the
+  paragraph-style walk) was not measured separately; it is inside that
+  figure.
 - **The mapper matrix is a lot of rendering** (two mappers x five or six
   font sets x three corpora, ten minutes a cell) and the stock font sets
   have to be enumerated from real images, not from memory.  Run as
   detached scripts; the headless images will mostly answer "no fonts",
   which is itself the finding (the jars are the whole font supply there),
   so those cells are cheap.
+  *Outcome:* a cell was two minutes, not ten, and the matrix took an
+  afternoon.  The headless images answered "no fonts" as expected, and that
+  finding became issue #695.
+
+### Risks the work uncovered (2026-09-13)
+
+- **Per-JVM static state leaks between documents** (gaps 16 and 17).
+  `WordLineMetrics.registerAlias` is a static registry, and through
+  `hasTableEntry` it made a family one document had aliased a "known" family
+  for every later document in the JVM, which then skipped Word's default and
+  fell to the default font.  The harness converts each document twice in one
+  JVM, so phase 3's *corpus baseline itself was scored on the second, leaked
+  pass*: the alias pass was invisible to phase 3's gate, and the rule it
+  shipped (the no-bold alias for every weight-word family) had a measurable
+  wrong case (a Word-defaulted font) that only the phase 4 gate could see.
+  Fixed for `isKnownFamily`; **residual**: the alias registry is still
+  per JVM, so a later document naming the same unknown family gets the line
+  box of the alias an earlier document registered (its own would be the same
+  alias in every case seen, since the alias is a function of the fontTable
+  entry, but a document whose fontTable says *roman* after one that said
+  *swiss* for the same name would get the wrong box).  The same class of
+  thing applies to `FontFallback`'s static caches and to `PhysicalFonts`.
+  A per-document line-metrics registry (on the Mapper, which is per
+  document) is the proper fix; noted, not done.  Any future gate that
+  compares a fresh-JVM tool against the harness must remember the harness
+  is a two-pass, one-JVM process.
+- **The DISCOVERY mode is deprecated, not removed.**  A third-party
+  `RunFontCharacterVisitor` run in that mode still gets `fontAction` per
+  span and no output, as before; the cs-font and preamble cases now reach it
+  through the visitor rather than a direct call, and `getResult` is whatever
+  the visitor collected.  Removal is for a major version.
+- **`fontsInUse` over-approximates by design.**  It names every slot the
+  document could ask for, so the mapper maps and FOP declares fonts no run
+  will use (the cs slot of a Latin-only document's headings, say).  Cost
+  measured as nil for FOP (lazy); for the mapper it is a lookup per name.
+  The HTML and FO output are unaffected; the FOP configuration XML is
+  larger.  If a deployment ever declares fonts to something that is not
+  lazy, this is where to look.
+- **The corpus is not the world.**  Every rule was settled against Word on
+  eight probes and three corpora of real documents (449), on one machine's
+  fonts plus six enumerated environments.  A document type the corpora lack
+  (a script none of them use, a font-embedding practice) may meet a rule the
+  probes did not test; the fidelity harness and the probe method are the
+  way to add the case.
+- **The HTML stack names the physical *family*, not the face** (`Carlito`,
+  not `Carlito Regular`), from FOP's family triplet.  A font whose triplets
+  carry no family entry falls back to its full name minus the twin suffix;
+  a browser will not match "Carlito Regular" as a family, which is the
+  pre-17.1.1 behaviour for that font, no worse.
