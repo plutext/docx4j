@@ -31,7 +31,9 @@ the *measured* substitutes CR-001 batch 42 wants (Trebuchet MS, Cambria's
 Greek, a lighter face for Calibri Light) — this CR settles the *rules* they
 plug into and cuts the probes, the measurements stay CR-001's (Decisions 3).
 Phases: 0. Unix line endings (preliminary, no code change); 0b. the
-`fonts-*` verification probe set to the share (Word run by Jason); 1. one
+`fonts-*` verification probe set to the share (Word run by Jason); 0c. the
+corpus scored with `BestMatchingMapper`, and with the font sets a
+deployment actually has (no code change); 1. one
 resolution: the selector consumes the effective rPr and decides script and
 glyph only, `w:cs`/`w:rtl` by value, the theme language, the default font;
 2. the character-range dispatch: shared characters, the symbol fonts,
@@ -323,6 +325,32 @@ javadoc cites), ECMA-376, or one of the probes below.
     generated-text caller has to know); the per-character `TODO` warning in
     the symbol block (2126-2134) is the only WARN in a document's conversion
     that fires per glyph.
+
+14. **The fidelity work has only ever measured one of the two mappers.**
+    The harness renders through `Docx4J.load` and `Docx4J.toFO` without
+    `setFontMapper`, so every corpus score, every ledger entry and every
+    "measured against Word's PDF" substitute of 17.0.5-17.1.1 is an
+    `IdentityPlusMapper` number (the default, `WordprocessingMLPackage`
+    453); the export-fo tests are the same (bar `PdfMultipleThreads`).  The
+    fidelity commits placed their logic accordingly: the metric-compatible
+    table and the `w:altName` pass in `Mapper`, shared by both (and the
+    table's unconditional `put` overwrites a panose answer for those
+    families, so the mappers agree there); the coverage pass, line metrics,
+    kerning and the late FOP declaration in `RunFontSelector`, mapper-
+    independent; and the class-based pass with its measured exclusions
+    withheld from `BestMatchingMapper` (a66cc1416: "BestMatchingMapper is
+    unchanged"; `wantsClassBasedSubstitutes` false).  So a BestMatchingMapper
+    user gets, for any family outside the metric table, a panose match or a
+    `FontSubstitutions.xml` entry and never the class fallback, and how far
+    that is behind the default mapper on the corpus is unknown — while the
+    samples still comment it "Good for Linux (and OSX?)"
+    (`ConvertOutPDFviaXSLFO` 162), a claim the fidelity work has quietly
+    overtaken on a box with the croscore, crosextra and Noto fonts.
+    `FontSubstitutions.xml`, once BestMatchingMapper's private data, now
+    serves `FontFallback` too, with different semantics (class and
+    candidate order there; substitute search here).  Phase 0c scores the
+    corpus with BestMatchingMapper, on this box and on the font sets a
+    deployment actually has (Decisions 7), before phase 3 touches either.
 
 ## What the code's own comments record (read 2026-09-12)
 
@@ -703,6 +731,40 @@ column.  Phase 1 needs P1 and P4 only for its expected values (the ECMA
 reading is implemented meanwhile); phase 2 waits for P2, P3 and P8; phase 3
 for P5 and P7; phase 4 needs none.
 
+### Phase 0c — score `BestMatchingMapper`, and the font environments (no docx4j code change)
+
+The harness gains `-Dfidelity.fontMapper=identity|best` (a `setFontMapper`
+before `toFO`; today's default stays `identity`) and a font-environment
+switch: `-Dfidelity.fonts=all` (this box, today's baseline),
+`-Dfidelity.fonts=jars` (`docx4j.fonts.discoverPhysicalFonts.enabled=false`,
+so the only fonts are the ones docx4j's own jars ship: Liberation and
+Symbol/DejaVu Serif/Noto Sans Symbols by default, croscore Arimo/Tinos/
+Cousine and crosextra Carlito/Caladea when those two jars are on the
+classpath), and `-Dfidelity.fonts=<dir>` (a directory of font files
+standing in for a distribution's stock set, through
+`PhysicalFonts.setRegex` or a private discovery path).  The stock sets are
+*enumerated, not assumed*: a script runs `fc-list : family file` in the
+official container images (`ubuntu:24.04`, `debian:12`, `fedora:40`,
+`alpine`, `eclipse-temurin` — the headless images most deployments start
+from, where the answer may well be no fonts at all) and on the desktop
+variants (`ubuntu-desktop`, Fedora Workstation: DejaVu, Liberation, Noto,
+Cantarell/Ubuntu and whatever else they carry), and copies the files into
+per-distribution directories on this box, with the inventory recorded in
+the CR.  Then the three corpora are scored in the matrix
+
+| mapper | this box | jars only | each stock desktop set | each headless image |
+|---|---|---|---|---|
+| IdentityPlusMapper | `p4-tables` (baseline) | | | |
+| BestMatchingMapper | | | | |
+
+against `p4-tables`, with `-Dfidelity.hyphenate=false`, one detached run
+per cell (about ten minutes each).  What the numbers answer: how far
+BestMatchingMapper is behind IdentityPlusMapper today (row 14); whether
+either mapper is usable on a box that has nothing but the jars, which is
+the deployment the samples never mention; and which of the panose answers
+are worth keeping when phase 3 merges the two precedence orders.  No code
+in this package changes until the matrix is read.
+
 ### Phase 1 — one resolution; `w:cs`/`w:rtl` by value; the theme language; the default font
 
 As designed.  Gate: the 27 fonts tests and both test modules green; corpus
@@ -718,8 +780,9 @@ is expected zero-delta and is scored on its own commit.
 
 ### Phase 3 — the mapping order
 
-As designed, after P5 and P7.  Gate as phase 1, plus the FOP-configuration
-diff; the batch-42 documents read individually.  The measured substitutes
+As designed, after P5 and P7 and after the phase 0c matrix is read.  Gate as
+phase 1, plus the FOP-configuration diff, and scored with *both* mappers from
+here on; the batch-42 documents read individually.  The measured substitutes
 (Trebuchet MS, Cambria's Greek, a Light face) are *not* in this phase
 (Decisions 3); the rules they need are.
 
@@ -761,6 +824,15 @@ As designed; CHANGELOG entries for the HTML change and the deprecations.
    its meaning (document names).
 6. **Order against CR-001**: batch 42 (fonts) waits for phase 3 of this CR;
    batch 41's harness items and batch 43 are independent of it.
+7. **No decision on `BestMatchingMapper`'s future until it has been scored**
+   (Jason, 2026-09-12).  Phase 0c measures how far behind IdentityPlusMapper
+   it is on this box, and how both mappers fare with only the fonts docx4j
+   ships and with the default English/European font sets of Ubuntu and the
+   other popular distributions — the environments users actually convert
+   in.  What follows from the matrix (keep it as the panose-first mapper and
+   give it the shared passes; or recommend IdentityPlusMapper everywhere and
+   keep BestMatchingMapper for compatibility; and what the samples and the
+   Getting Started text should say) is decided then, not now.
 
 ## Risks (as written 2026-09-12)
 
@@ -792,3 +864,9 @@ As designed; CHANGELOG entries for the HTML change and the deprecations.
   documented as not concurrent.  Not made worse; not fixed here.
 - **Performance** is measured this time (phase 1 and 4), on the 311-page
   document CR-015 named and did not measure.
+- **The mapper matrix is a lot of rendering** (two mappers x five or six
+  font sets x three corpora, ten minutes a cell) and the stock font sets
+  have to be enumerated from real images, not from memory.  Run as
+  detached scripts; the headless images will mostly answer "no fonts",
+  which is itself the finding (the jars are the whole font supply there),
+  so those cells are cheap.
