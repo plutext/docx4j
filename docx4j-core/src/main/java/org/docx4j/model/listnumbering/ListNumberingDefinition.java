@@ -193,7 +193,9 @@ public class ListNumberingDefinition {
     		Iterator listLevelIterator = this.abstractListDefinition.getListLevels().entrySet().iterator();
     	    while (listLevelIterator.hasNext()) {
     	        Map.Entry pairs = (Map.Entry)listLevelIterator.next();
-    	        this.levels.put( (String)pairs.getKey(), new ListLevel( (ListLevel)pairs.getValue() ) ); 
+    	        ListLevel instanceLevel = new ListLevel( (ListLevel)pairs.getValue() );
+    	        instanceLevel.setOwnerNumId(listNumberId);
+    	        this.levels.put( (String)pairs.getKey(), instanceLevel ); 
     	        //log.debug("init'd level " + pairs.getKey());
     	    }
 
@@ -277,6 +279,32 @@ public class ListNumberingDefinition {
 	public ListLevel getLevel(String ilvl) {
 		return levels.get(ilvl);
 	}
+
+	private java.util.function.Supplier<NumberingState> defaultStateSupplier;
+	private NumberingState orphanState;
+
+	/**
+	 * Where the no-state overloads find their {@link NumberingState}: the numbering
+	 * part installs its own.  Internal; a caller with a state of its own passes it to
+	 * the state-taking overloads instead.
+	 *
+	 * @since 17.1.1
+	 */
+	public void setDefaultStateSupplier(java.util.function.Supplier<NumberingState> supplier) {
+		this.defaultStateSupplier = supplier;
+		if (levels != null) {
+			for (ListLevel l : levels.values()) l.setDefaultStateSupplier(supplier);
+		}
+	}
+
+	NumberingState defaultState() {
+		if (defaultStateSupplier != null) {
+			NumberingState s = defaultStateSupplier.get();
+			if (s != null) return s;
+		}
+		if (orphanState == null) orphanState = new NumberingState();
+		return orphanState;
+	}
     
 
     /// <summary>
@@ -285,20 +313,31 @@ public class ListNumberingDefinition {
     /// <param name="level"></param>
     public void IncrementCounter(String level)
     {
+    	IncrementCounter(level, defaultState());
+    }
+
+    /**
+     * Increments the count at the given level in the given state, and resets the
+     * deeper levels that restart after it.
+     *
+     * @since 17.1.1
+     */
+    public void IncrementCounter(String level, NumberingState state)
+    {
         int otherLevelInt;
         String otherLevelStr;
     	
-    	if (!this.levels.get(level).getCounter().isEncounteredAlready()) {
+    	if (!this.levels.get(level).counter(state).isEncounteredAlready()) {
     		// We haven't encountered this level before,
     		// so check that the lower levels have been initialised
             otherLevelInt = Integer.parseInt(level)-1;
             otherLevelStr =  Integer.toString(otherLevelInt);
             
             while (this.levels.containsKey(otherLevelStr) // will fail once negative
-            		&& !this.levels.get(otherLevelStr).getCounter().isEncounteredAlready()) 
+            		&& !this.levels.get(otherLevelStr).counter(state).isEncounteredAlready()) 
             {
             	log.debug("Increment lower level " + otherLevelStr);
-                this.levels.get(otherLevelStr).IncrementCounter();
+                this.levels.get(otherLevelStr).IncrementCounter(state);
                 otherLevelInt--;
                 otherLevelStr = Integer.toString(otherLevelInt);
             }
@@ -306,7 +345,7 @@ public class ListNumberingDefinition {
     		
     	
     	log.debug("Increment level " + level);
-        this.levels.get(level).IncrementCounter();
+        this.levels.get(level).IncrementCounter(state);
 
         // Now set the deeper levels back to their start - each unless its
         // w:lvlRestart says this level does not restart it (ECMA-376 17.9.11;
@@ -324,7 +363,7 @@ public class ListNumberingDefinition {
         	ListLevel deeper = this.levels.get(otherLevelStr);
         	if (deeper.restartsAfter(levelInt)) {
         		log.debug("Reset level " + otherLevelInt);
-        		deeper.ResetCounter();
+        		deeper.ResetCounter(state);
         	} else {
         		log.debug("Level " + otherLevelInt + " keeps counting (w:lvlRestart " + deeper.getLvlRestart() + ")");
         	}
@@ -350,6 +389,12 @@ public class ListNumberingDefinition {
      * @return
      */
     public String GetCurrentNumberString(String level)
+    {
+    	return GetCurrentNumberString(level, defaultState());
+    }
+
+    /** The label of the given level from the counters of the given state.  @since 17.1.1 */
+    public String GetCurrentNumberString(String level, NumberingState state)
     {
         ListLevel controllingLvl = this.levels.get( level ); 
         
@@ -455,11 +500,11 @@ public class ListNumberingDefinition {
                     if (isLegal && levelId < thisLevel) {
                     	// Special case: Use normal decimal numbering, for every level
                     	// above this one (@since 17.1.0; ilvl 0 only before)
-                    	result.append(lvl.getCurrentValueUnformatted() );
+                    	result.append(lvl.getCurrentValueUnformatted(state) );
 
                     } else {
                     	// Usual case
-                    	result.append(lvl.getCurrentValueFormatted("numId " + listNumberId) );
+                    	result.append(lvl.getCurrentValueFormatted(state, "numId " + listNumberId) );
                     }
                     i++;
                 }

@@ -202,11 +202,52 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	/** The generator is about to convert a text box's content (VML or DrawingML). @since 17.1.1 */
 	public void enterTextBox() {
 		textBoxDepth++;
+		enterStory(getNumberingStates().newStory()); // a text box numbers on its own (CR-014 P7)
 	}
 
 	/** ... and has finished with it. @since 17.1.1 */
 	public void exitTextBox() {
+		exitStory();
 		textBoxDepth--;
+	}
+
+	private org.docx4j.model.listnumbering.NumberingStates numberingStates;
+	private final java.util.ArrayDeque<org.docx4j.model.listnumbering.NumberingState> storyStack =
+			new java.util.ArrayDeque<org.docx4j.model.listnumbering.NumberingState>();
+
+	/**
+	 * This conversion's list numbering counters, one state per story, so that the
+	 * counters belong to the traversal (two conversions of one package at once do
+	 * not interleave) and a header, footer, footnote, endnote or text box numbers
+	 * from its own start (CR-014 phase 4).
+	 *
+	 * @since 17.1.1
+	 */
+	public org.docx4j.model.listnumbering.NumberingStates getNumberingStates() {
+		if (numberingStates == null) numberingStates = new org.docx4j.model.listnumbering.NumberingStates();
+		return numberingStates;
+	}
+
+	/**
+	 * The numbering state for what is being converted now: the innermost story
+	 * entered with {@link #enterStory} (a text box's), else the one for
+	 * {@link #getCurrentPart()}.
+	 *
+	 * @since 17.1.1
+	 */
+	public org.docx4j.model.listnumbering.NumberingState getNumberingState() {
+		return storyStack.isEmpty() ? getNumberingStates().forPart(getCurrentPart()) : storyStack.peek();
+	}
+
+	/** Number what follows in the given story, until {@link #exitStory()}: a text box,
+	 *  or a footnote's content converted in place.  @since 17.1.1 */
+	public void enterStory(org.docx4j.model.listnumbering.NumberingState story) {
+		storyStack.push(story);
+	}
+
+	/** @since 17.1.1 */
+	public void exitStory() {
+		if (!storyStack.isEmpty()) storyStack.pop();
 	}
 
 	/** Whether the content being converted is inside a text box, whose paragraphs are laid

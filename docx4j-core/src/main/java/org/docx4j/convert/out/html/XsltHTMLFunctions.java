@@ -343,8 +343,11 @@ public class XsltHTMLFunctions {
     	
         try {
         	        	
+        	// counted in this conversion's state for the part (or text box) being
+        	// converted, not the package's shared counters (@since 17.1.1, CR-014)
         	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-        			context.getWmlPackage(), pStyleVal, numId, levelId);   
+        			context.getWmlPackage(), pStyleVal, numId, levelId,
+        			numId != null && !numId.equals(""), context.getNumberingState());   
         	
 
 			if (triple==null) {

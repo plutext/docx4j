@@ -211,7 +211,14 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 					generatorFactory.createInstance(conversionContext, document, flow);
 			// the number w:endnoteRef renders; cf the XSLT's count(preceding-sibling)-1
 			generator.endnoteNumber = i - 1;
-			new TraversalUtil(endnote.getContent(), generator);
+			// numbered paragraphs in endnotes count in the endnotes part's own story (CR-014 P7)
+			conversionContext.enterStory(conversionContext.getNumberingStates().forPart(
+					conversionContext.getWmlPackage().getMainDocumentPart().getEndNotesPart()));
+			try {
+				new TraversalUtil(endnote.getContent(), generator);
+			} finally {
+				conversionContext.exitStory();
+			}
 		}
 	}
 

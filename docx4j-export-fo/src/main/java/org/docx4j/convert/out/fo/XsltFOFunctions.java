@@ -941,7 +941,7 @@ public class XsltFOFunctions {
 		}
 
 		/* Now that we have pPr, we can format the block. */
-		return createBlock(context.getWmlPackage(), context.getRunFontSelector(), pStyleVal, childResults, sdt, pPrDirect, pPr, rPr, rPrParagraphMark);
+		return createBlock(context.getWmlPackage(), context.getRunFontSelector(), pStyleVal, childResults, sdt, pPrDirect, pPr, rPr, rPrParagraphMark, context.getNumberingState());
 
     }
 
@@ -1106,6 +1106,16 @@ public class XsltFOFunctions {
 	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, Node childResults,
 			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark) {
+		return createBlock(wmlPackage, runFontSelector, pStyleVal, childResults, sdt, pPrDirect, pPr, rPr,
+				rPrParagraphMark, null);
+	}
+
+	/** @param state the conversion's numbering state for the story being converted
+	 *  (null: the numbering part's shared default).  @since 17.1.1 */
+	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, Node childResults,
+			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
+			org.docx4j.model.listnumbering.NumberingState state) {
 
         try {
             // Create a DOM builder and parse the fragment			
@@ -1133,7 +1143,7 @@ public class XsltFOFunctions {
 					// indent (§2.8).  @since 17.1.0
 					document.appendChild(foBlockElement);
 					indentHandledByNumbering = createInlineLabel(wmlPackage, runFontSelector, pStyleVal,
-							pPrDirect, pPr, rPr, rPrParagraphMark, document, foBlockElement, listInd);
+							pPrDirect, pPr, rPr, rPrParagraphMark, document, foBlockElement, listInd, state);
 
 				} else {
 
@@ -1145,7 +1155,7 @@ public class XsltFOFunctions {
 					// allow us to use fo:list-block properly.
 
 					indentHandledByNumbering = createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
-							rPrParagraphMark, document, foBlockElement, foListBlock, listInd);
+							rPrParagraphMark, document, foBlockElement, foListBlock, listInd, state);
 
 					if (log.isDebugEnabled()) {
 						log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
@@ -1794,11 +1804,22 @@ public class XsltFOFunctions {
 	 */
 	protected static ResultTriple numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
 			PPr pPrDirect, PPr pPr) {
+		return numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, null);
+	}
+
+	/**
+	 * @param state the conversion's counters for the story being converted
+	 *        ({@link FOConversionContext#getNumberingState()}); null for the
+	 *        numbering part's shared default
+	 * @since 17.1.1 (CR-014 phase 4)
+	 */
+	protected static ResultTriple numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
+			PPr pPrDirect, PPr pPr, org.docx4j.model.listnumbering.NumberingState state) {
 
 		String directNumId = numIdVal(pPrDirect);
 		if (directNumId != null) {
 			return org.docx4j.model.listnumbering.Emulator.getNumber(
-					wmlPackage, pStyleVal, directNumId, ilvlVal(pPrDirect.getNumPr()) );
+					wmlPackage, pStyleVal, directNumId, ilvlVal(pPrDirect.getNumPr()), true, state );
 		}
 		// Get the effective values; since we already know this,
 		// save the effort of doing this again in Emulator
@@ -1807,7 +1828,7 @@ public class XsltFOFunctions {
 		// not the paragraph's own w:numPr: a level linked to another paragraph style
 		// does not number it (§2.8)
 		return org.docx4j.model.listnumbering.Emulator.getNumber(
-				wmlPackage, pStyleVal, numIdString, ilvlVal(pPr.getNumPr()), false );
+				wmlPackage, pStyleVal, numIdString, ilvlVal(pPr.getNumPr()), false, state );
 	}
 
 	/**
@@ -1878,8 +1899,8 @@ public class XsltFOFunctions {
 	 */
 	protected static RPr levelRPr(ResultTriple triple, RPr rPr, RPr rPrParagraphMark) {
 
-		if (triple==null || triple.getRPr()==null) return null;
-		RPr actual = XmlUtils.deepCopy(triple.getRPr()); // clone, so the ilvl rpr is not altered
+		if (triple==null || triple.getLabelRPr()==null) return null;
+		RPr actual = XmlUtils.deepCopy(triple.getLabelRPr()); // clone, so the ilvl rpr is not altered
 		if (namesNoFont(actual.getRFonts())) {
 			org.docx4j.wml.RFonts inherited = null;
 			if (rPrParagraphMark!=null && !namesNoFont(rPrParagraphMark.getRFonts())) {
@@ -1893,8 +1914,9 @@ public class XsltFOFunctions {
 	}
 
 	/**
-	 * What the number is drawn with: the level's rPr with the paragraph mark's applied
-	 * over it, which is how docx4j has always merged the two (the font excepted: it comes
+	 * What the number is drawn with: the paragraph mark's rPr with the level's applied
+	 * over it (the level wins where both state a property, as Word draws it - CR-014
+	 * probe P3; before 17.1.1 the mark won, the font excepted: it comes
 	 * from the numbering, since anything else would change the bullet, and is taken from
 	 * the level before this).  The level's rPr formats the <b>number</b> alone (ECMA-376
 	 * 17.9.24), so what this returns never reaches the paragraph's text.
@@ -1908,8 +1930,12 @@ public class XsltFOFunctions {
 	protected static RPr labelRPr(RPr level, RPr rPrParagraphMark) {
 
 		if (level==null) return rPrParagraphMark;
-		RPr merged = XmlUtils.deepCopy(level);
-		StyleUtil.apply(rPrParagraphMark, merged);
+		/* The level's rPr over the paragraph mark's, since 17.1.1: measured on CR-014
+		 * probe P3 (2026-09-12), an override level stating w:b and w:sz 36 gives Word an
+		 * 18pt bold label beside a 12pt paragraph mark, where the mark applied over the
+		 * level (the merge before 17.1.1) kept the label at the mark's 12pt. */
+		RPr merged = rPrParagraphMark==null ? XmlUtils.deepCopy(level) : XmlUtils.deepCopy(rPrParagraphMark);
+		if (rPrParagraphMark!=null) StyleUtil.apply(level, merged);
 		return merged;
 	}
 
@@ -1918,7 +1944,7 @@ public class XsltFOFunctions {
 			Element foBlockElement, Element foListBlock) {
 
 		return createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
-				rPrParagraphMark, document, foBlockElement, foListBlock, null);
+				rPrParagraphMark, document, foBlockElement, foListBlock, null, null);
 	}
 
 	/** @param indOut receives the item's resolved indent (the paragraph's, filled out by
@@ -1926,6 +1952,16 @@ public class XsltFOFunctions {
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
 			Element foBlockElement, Element foListBlock, PPrBase.Ind[] indOut) {
+		return createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
+				rPrParagraphMark, document, foBlockElement, foListBlock, indOut, null);
+	}
+
+	/** @param state the conversion's numbering state for the story being converted;
+	 *  null for the numbering part's shared default.  @since 17.1.1 */
+	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
+			Element foBlockElement, Element foListBlock, PPrBase.Ind[] indOut,
+			org.docx4j.model.listnumbering.NumberingState state) {
 		
 		/* Create something like:
 		 * 			
@@ -1971,7 +2007,7 @@ public class XsltFOFunctions {
 		foListItem.appendChild(foListItemBody);	
 		foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
 		
-		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr);
+		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, state);
 
 		if (triple==null) {
 			log.warn("computed number ResultTriple was null");
@@ -2001,7 +2037,7 @@ public class XsltFOFunctions {
 			// OK just to override specific values
 			// Values come from numbering rPr, unless overridden in p-level rpr
 			DocumentFragment rfsFrag = null;
-			if(triple.getRPr()==null) {
+			if(triple.getLabelRPr()==null) {
 				
 				if (pPr.getRPr()==null) {
 					// do nothing, since we're already inheriting the formatting in the style
@@ -2135,8 +2171,18 @@ public class XsltFOFunctions {
 	protected static boolean createInlineLabel(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
 			Document document, Element foBlockElement, PPrBase.Ind[] indOut) {
+		return createInlineLabel(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr, rPrParagraphMark,
+				document, foBlockElement, indOut, null);
+	}
 
-		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr);
+	/** @param state the conversion's numbering state for the story being converted;
+	 *  null for the numbering part's shared default.  @since 17.1.1 */
+	protected static boolean createInlineLabel(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
+			Document document, Element foBlockElement, PPrBase.Ind[] indOut,
+			org.docx4j.model.listnumbering.NumberingState state) {
+
+		ResultTriple triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, state);
 		if (triple==null) {
 			log.warn("computed number ResultTriple was null");
 			return false;

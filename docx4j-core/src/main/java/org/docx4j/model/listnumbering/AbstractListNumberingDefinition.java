@@ -200,6 +200,8 @@ public class AbstractListNumberingDefinition {
         public void readLevel(Lvl levelNode) {
 
             ListLevel level = new ListLevel(levelNode);
+            // the REFERENCING abstract list: a w:numStyleLink definition counts on its own
+            level.setAbstractNumId(this.abstractNumDefId);
             this.listLevels.put(level.getID(), level);
         	
         }

@@ -266,6 +266,22 @@ List numbering (CR-014, phase 1):
 - (phase 2) A level reset by a shallower one shows its start value in deeper labels until it is
   next used: a level-2 item straight after a level-0 one is "2.1.1", as Word labels it, where
   docx4j printed "2.0.1".
+- (phase 4) List counters belong to the conversion, not the package: NumberingState (one set of
+  counters), NumberingStates (one per story), Emulator.getNumber(pkg, pPr, state) and
+  Emulator.peek (what a paragraph's number would be, without taking it). PDF and HTML output and
+  the TOC generator each count in their own states, so two conversions of one package at once no
+  longer interleave their numbering, and generating a TOC no longer resets the package's counters.
+  The no-state overloads still count in the numbering part's default state, as before.
+- (phase 4) Each story numbers from its own start, as Word does (measured): a header and its
+  section's footer share one count, the footnotes part is one story, the endnotes part another,
+  and every text box counts on its own, while the body's count runs past all of them. A numbered
+  paragraph in a footer or footnote no longer continues the body's list from wherever the exporter
+  happened to be.
+- (phase 4) A list label is drawn with the level's rPr applied OVER the paragraph mark's (the mark
+  won before), and with the w:lvlOverride level's rPr in place of the abstract level's where the
+  w:num overrides that level (it was never applied): measured, Word draws an override stating w:b
+  and w:sz 36 as an 18pt bold label beside 12pt text. ResultTriple.getLabelRPr() carries it;
+  getRPr() stays the abstract level's.
 - (phase 3) A paragraph naming no style is numbered through the default paragraph style's
   w:numPr, as Word does (measured): Emulator.getNumber(pkg, pPr), used by HTML output and the
   TOC generator, assumed that style unnumbered. PDF output already resolved it.

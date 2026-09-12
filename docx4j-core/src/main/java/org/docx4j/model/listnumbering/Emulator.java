@@ -129,6 +129,19 @@ public class Emulator {
      * @since 3.0.1
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr) {
+    	return getNumber(wmlPackage, pPr, null);
+    }
+
+    /**
+     * The next number for a paragraph, counted in the given state: a traversal's
+     * own, one per story (see {@link NumberingStates}), so that two exports at
+     * once do not interleave and a footer's list does not continue the body's.
+     *
+     * @param state the counters to increment; null for the numbering part's
+     *        default state, which is what the no-state overloads use
+     * @since 17.1.1 (CR-014 phase 4)
+     */
+    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr, NumberingState state) {
     	
 		if (pPr==null) return null;
 		// a paragraph naming no style is resolved against the default paragraph
@@ -153,8 +166,26 @@ public class Emulator {
 			}
 		}
 			
-		return getNumber( wmlPackage,  pStyleVal, numIdStr,  levelIdStr);
+		return getNumber( wmlPackage,  pStyleVal, numIdStr,  levelIdStr,
+				numIdStr != null && !numIdStr.equals(""), state);
 
+    }
+
+    /**
+     * What {@link #getNumber(WordprocessingMLPackage, PPr, NumberingState)} would
+     * return, without taking the number: the given state is left as it was.
+     *
+     * @param state the traversal's state; null for the numbering part's default
+     * @since 17.1.1
+     */
+    public static ResultTriple peek(WordprocessingMLPackage wmlPackage, PPr pPr, NumberingState state) {
+    	if (state == null) {
+    		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart ndp =
+    				wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+    		if (ndp == null) return null;
+    		state = ndp.getNumberingState();
+    	}
+    	return getNumber(wmlPackage, pPr, state.copy());
     }
     
     /* Get the computed list number for the given list at this point in the
@@ -175,6 +206,16 @@ public class Emulator {
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal,
     		String numId, String levelId, boolean directNumPr) {
+    	return getNumber(wmlPackage, pStyleVal, numId, levelId, directNumPr, null);
+    }
+
+    /**
+     * @param state the counters to increment (a traversal's own; see
+     *        {@link NumberingStates}); null for the numbering part's default state
+     * @since 17.1.1 (CR-014 phase 4)
+     */
+    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal,
+    		String numId, String levelId, boolean directNumPr, NumberingState state) {
 
 
     	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
@@ -189,6 +230,7 @@ public class Emulator {
 //    	numberingPart.setStyleDefinitionsPart(stylesPart);
     	
     	Emulator em = numberingPart.getEmulator();
+    	if (state == null) state = numberingPart.getNumberingState();
     	
     	// Object to hold results
     	ResultTriple triple = em.new ResultTriple();    	
@@ -214,9 +256,9 @@ public class Emulator {
 						levelId)) {
 
 			numberingPart.getInstanceListDefinitions().get(numId).IncrementCounter(
-					levelId);
+					levelId, state);
 			triple.numString = numberingPart.getInstanceListDefinitions().get(numId)
-					.GetCurrentNumberString(levelId);
+					.GetCurrentNumberString(levelId, state);
 			
 			log.debug("Got number: " + triple.numString);
 
@@ -257,6 +299,16 @@ public class Emulator {
 			if (triple.ind==null) triple.ind = indOf(triple.getLvl());
 
 			triple.rPr = (triple.getLvl()==null) ? null : triple.getLvl().getRPr();
+
+			/* The label's own formatting: the override level's rPr where the w:num
+			 * overrides this level with one, else the abstract level's.  A replacement,
+			 * not a merge - measured on CR-014 probe P3 (2026-09-12): abstract w:i under
+			 * an override w:b + w:sz 36 gives Word a bold 18pt label with no italic
+			 * anywhere.  getRPr() above stays the abstract level's, as it always was.
+			 * @since 17.1.1 */
+			Lvl overrideLvl = listLevel.getJaxbOverrideLvl();
+			triple.labelRPr = (overrideLvl != null && overrideLvl.getRPr() != null)
+					? overrideLvl.getRPr() : triple.rPr;
 			
 		} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 			
@@ -547,12 +599,25 @@ public class Emulator {
 	    
 	    RPr rPr;
 	    /**
-	     * lvl rPr
+	     * The abstract level's rPr (never the override's: see {@link #getLabelRPr()}).
 	     * 
 	     * @return
 	     */
 	    public RPr getRPr() {
 			return rPr;
+		}
+
+	    RPr labelRPr;
+	    /**
+	     * The rPr the label is drawn with: the {@code w:lvlOverride/w:lvl}'s where the
+	     * instance overrides this level with one carrying an rPr, else the abstract
+	     * level's - one or the other, as Word applies them (CR-014 probe P3).  It
+	     * formats the number alone, never the paragraph's text (ECMA-376 17.9.24).
+	     *
+	     * @since 17.1.1
+	     */
+	    public RPr getLabelRPr() {
+			return labelRPr;
 		}
 	    
 	    Lvl lvl;

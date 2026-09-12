@@ -316,7 +316,15 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 					ref.getId().toString());
 			FOExporterVisitorGenerator generator = childGenerator(body);
 			generator.footnoteNumber = fn;
-			new TraversalUtil(ftn.getContent(), generator);
+			// numbered paragraphs in footnotes count in the footnotes part's own story,
+			// across all the footnotes (CR-014 P7), not the body's
+			conversionContext.enterStory(conversionContext.getNumberingStates().forPart(
+					conversionContext.getWmlPackage().getMainDocumentPart().getFootnotesPart()));
+			try {
+				new TraversalUtil(ftn.getContent(), generator);
+			} finally {
+				conversionContext.exitStory();
+			}
 		} catch (Exception e) {
 			log.error("Couldn't get footnote " + (ref.getId()==null ? "(no id)" : ref.getId())
 					+ ": " + e.getMessage(), e);

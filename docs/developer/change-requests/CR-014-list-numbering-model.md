@@ -1,6 +1,6 @@
 # CR: List numbering model (`org.docx4j.model.listnumbering`) — line endings, correctness, and separating definitions from counter state
 
-Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) 1 (LabelFormatter registry), 3 (one resolver) and 2 (w:lvlRestart) done; next 4, then 5
+Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) 1 (LabelFormatter registry), 3 (one resolver), 2 (w:lvlRestart) and 4 (state per traversal and story) done; next 5
 Scope: the package `docx4j-core/src/main/java/org/docx4j/model/listnumbering`
 (15 files, ~2,200 lines), its driver `NumberingDefinitionsPart` (maps,
 `getEmulator`, `restart`), and the tests under
@@ -565,6 +565,73 @@ probes) against the current baseline before pushing — labels are on the
 critical path of every numbered paragraph's width and keep behaviour; the
 expected delta is zero.
 
+Done 2026-09-12, smaller than the design's "new classes beside the old":
+the counters moved out and the definitions stayed.  `ListLevel` holds no
+`Counter`; `NumberingState` holds them, keyed by the referencing
+`abstractNumId` + ilvl (the sharing the old single `Counter` reference gave)
+plus the set of `numId/ilvl` start overrides already applied (the old
+`startAtUsed`).  `ListLevel`/`ListNumberingDefinition` gained state-taking
+overloads of `IncrementCounter`, `ResetCounter`, `GetCurrentNumberString`,
+`getCurrentValueFormatted/Unformatted`; the no-arg ones use the numbering
+part's default state through a supplier the part installs
+(`setDefaultStateSupplier`), or a private orphan state for a level built
+outside any part.  `NumberingDefinitionsPart.getNumberingState()` is that
+default; `getEmulator(true)` replaces it (and still re-reads the
+definitions, a superset of the old behaviour rather than the design's
+"state only", since callers have used it after editing the JAXB tree).
+`Emulator.getNumber(pkg, pPr, state)`, the six-argument
+`getNumber(..., directNumPr, state)` and `peek(pkg, pPr, state)` (a copy of
+the state, numbered) are the new entry points; `ResultTriple.getLabelRPr()`
+is the override level's rPr where the `w:num` overrides the level, else
+the abstract's (P3).  `NumberingStates.forPart(part)` folds every header
+and footer part into one story, keys the footnotes, endnotes and comments
+parts each on their own, and `newStory()` serves a text box.
+`AbstractWmlConversionContext` owns a `NumberingStates` per conversion,
+`getNumberingState()` picks the story for `getCurrentPart()` or the
+innermost `enterStory`/`exitStory` (which `enterTextBox` uses), and the
+FO and HTML delegates enter the notes' stories around the note content
+they convert in place.  `XsltFOFunctions.numberFor`/`createListBlock`/
+`createInlineLabel`/`createBlock` gained state parameters (old signatures
+delegate with null); `XsltHTMLFunctions.getNumberXmlNode` passes the
+context's state; `TocGenerator.numberParagraphs` counts in a state of its
+own.  `XsltFOFunctions.labelRPr` now applies the level's rPr over the
+paragraph mark's (the mark won before: P3's 18pt label came out 12pt).
+The text-box story is honoured by the visitor pathways (both call
+`enterTextBox`); the XSLT pathways number footnotes with the body still.
+
+Tests: `NumberingStoriesTest` (P7's document, every story's labels, `peek`,
+`reset`), `NumberingConcurrencyTest` (four threads, 200 traversals each,
+identical labels), the oracle tests unchanged.  Harness: numbering-stories
+38% -> 76% line parity (the remaining loss is the inline text box drawn
+over the body lines, CR-001's), numbering-override-rpr's label is now
+18pt at Word's y to 0.05pt (its parity figure fell to 33% only because
+the harness stops writing a space between an 18pt label and its text -
+Word's PDF has a space glyph there - which is a harness fix to make, not
+an exporter one); every other numbering and note probe unchanged at 100%.
+Corpus re-score, 2026-09-12: **no document regressed on any of the three
+corpora**.  The first pass against b62-batch41 showed 10/8/4 "regressions",
+every one of which turned out to be drift in that baseline, not this CR: a
+worktree at d710b8e27 (the commit before CR-014) renders each of those 18
+documents byte-for-byte as the phase-4 code does (0 differing text-layer
+lines, same page counts), while both differ from the b62 renders (autofit
+column widths, an SDT placeholder text, page counts) - so b62-batch41's
+renders came from some other tree or environment state and are not
+reproducible from the committed code.  The like-for-like gate is therefore
+a fresh baseline from that worktree, **b63-precr** (all three corpora, the
+same harness build), rescored alongside the phase-4 renders with the
+harness's word-gap fix (below) applied to both: real 191 docs, mean line
+parity 0.9032 -> 0.9032, 0 changed; real2 156 docs, 0.8761 -> 0.8763 (+52
+lines matched), 0 changed; real3 102 docs, 0.9106 -> 0.9105, 1 improved
+(12_ru-RU_num_tbl_2942 gains Word's page count, 139 -> 138), 0 regressions.
+The harness fix: `PdfLayoutExtractor.addLine` judges a word gap against the
+smaller of the two glyphs' ems rather than the preceding glyph's, so an
+18pt label before 12pt text reads "1. P02" on both sides (Word's PDF has a
+space glyph there, ours has a gap); numbering-override-rpr is 100% with it.
+Baselines from here: b63-precr-h2 (pre-CR-014 renders, fixed harness) and
+p4-stories-h2 (phase 4).  The three "no reference PDF" documents of real
+and the DATE-field golden drift (12_hu-HU_num_5507's reference went from 4
+pages to 3) are golden-side and pre-date this CR.
+
 ### Phase 5 — API hygiene
 
 Java-style aliases with `@Deprecated` on the old names; `ResultTriple`
@@ -579,6 +646,9 @@ deprecation before removal (i.e. remove no earlier than 17.2).
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-09-12: phase 4 done (see the phase for particulars); the label
+  precedence (level over paragraph mark) is a further behaviour change
+  towards Word, from P3.
 - 2026-09-12: phase 2 done (see the phase for particulars).  The
   never-used level's display value (0 today) is unmeasured: a probe
   candidate, not changed.

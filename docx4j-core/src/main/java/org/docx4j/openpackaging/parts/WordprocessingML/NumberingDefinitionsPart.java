@@ -29,6 +29,7 @@ import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.ListLevel;
 import org.docx4j.model.listnumbering.ListNumberingDefinition;
+import org.docx4j.model.listnumbering.NumberingState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
@@ -168,6 +169,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
             ListNumberingDefinition listDef 
             	= new ListNumberingDefinition(numNode, abstractListDefinitions, resolveNumStyleLink);
 
+            listDef.setDefaultStateSupplier(this::getNumberingState);
             instanceListDefinitions.put(listDef.getListNumberId(), listDef); // on pass 2, this overwrites the existing instance list
 //            log.debug("Added list: " + listDef.getListNumberId() );
         }
@@ -316,6 +318,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		((Numbering)getJaxbElement()).getNum().add(newNum);
         ListNumberingDefinition listDef 
     		= new ListNumberingDefinition(newNum, abstractListDefinitions, false);
+        listDef.setDefaultStateSupplier(this::getNumberingState);
         instanceListDefinitions.put(listDef.getListNumberId(), listDef);		
     	
     	// Return the new numId
@@ -326,6 +329,17 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	
 	
 	private Emulator em;
+
+	/** The counters the no-state overloads of {@link Emulator#getNumber} use: one
+	 *  set per part, as before 17.1.1.  A traversal that wants its own (per story,
+	 *  or side-effect free) passes a {@link NumberingState} instead.  @since 17.1.1 */
+	private NumberingState numberingState = new NumberingState();
+
+	/** The part's default numbering state; {@link #getEmulator(boolean)} with
+	 *  {@code true} replaces it with a fresh one.  @since 17.1.1 */
+	public NumberingState getNumberingState() {
+		return numberingState;
+	}
 //	public void setEmulator(Emulator em) {
 //		this.em = em;
 //	}
@@ -345,7 +359,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	if (em == null 
     			|| reset) { 
     		initialiseMaps();
-    		em = new Emulator();    		
+    		em = new Emulator();
+    		numberingState = new NumberingState(); // reset: every list starts again (@since 17.1.1)
     	}
 		
 		return em;
@@ -560,6 +575,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	
     	// Add it to our hashmap
         ListNumberingDefinition listDef = new ListNumberingDefinition(num, abstractListDefinitions, false);
+        listDef.setDefaultStateSupplier(this::getNumberingState);
         instanceListDefinitions.put(listDef.getListNumberId(), listDef);
         
         // 

@@ -242,7 +242,13 @@ public class HTMLExporterVisitorDelegate extends AbstractVisitorExporterDelegate
 			// the number w:footnoteRef/w:endnoteRef renders, linked back to the
 			// reference; cf the XSLT's count(preceding-sibling)-1
 			generator.noteNumber = i - 1;
-			new TraversalUtil(note.getContent(), generator);
+			// numbered paragraphs in the notes count in the part's own story (CR-014 P7)
+			conversionContext.enterStory(conversionContext.getNumberingStates().forPart(part));
+			try {
+				new TraversalUtil(note.getContent(), generator);
+			} finally {
+				conversionContext.exitStory();
+			}
 		}
 	}
 

@@ -440,7 +440,9 @@ public class TocGenerator {
     		return pNumbersMap;
     	}
 
-    	numberingPart.getEmulator(true); // reset counters
+    	// counted in a state of this generator's own, so the numbering part's default
+    	// state is neither reset nor advanced by generating a TOC (@since 17.1.1)
+    	org.docx4j.model.listnumbering.NumberingState state = new org.docx4j.model.listnumbering.NumberingState();
     	
     	//PropertyResolver propertyResolver =  wordMLPackage.getMainDocumentPart().getPropertyResolver();   
     	
@@ -449,7 +451,7 @@ public class TocGenerator {
     		
     		if (p.getPPr()!=null) {
     			
-    			ResultTriple triple = Emulator.getNumber(wordMLPackage, p.getPPr());
+    			ResultTriple triple = Emulator.getNumber(wordMLPackage, p.getPPr(), state);
     			pNumbersMap.put(p, triple);
     		}
     	}

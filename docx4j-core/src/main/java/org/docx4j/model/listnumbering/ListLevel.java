@@ -120,16 +120,62 @@ public class ListLevel {
 		return jaxbOverrideLvl;
 	}
 	
-	/**
-	 *  The counter is kept at the abstract level, since
-	 *  each instance definition shares a single counter.
-	 *  
+	/*
+	 * Since 17.1.1 (CR-014 phase 4) a level holds no counter: the counters live in
+	 * a NumberingState, keyed by the referencing abstract list and the level - which
+	 * is the sharing every instance definition of one abstract level had through the
+	 * single Counter they used to reference - and a traversal passes its state in.
+	 * The no-state overloads use the NumberingDefinitionsPart's default state, as
+	 * they always did, through the supplier the part installs.
 	 */
-	private Counter counter; 
-	
 
+	/** The referencing {@code w:abstractNum} this level belongs to (its counter's key). */
+	private String abstractNumId;
+
+	void setAbstractNumId(String abstractNumId) {
+		this.abstractNumId = abstractNumId;
+	}
+
+	/** The id of the referencing {@code w:abstractNum} this level was read for.  @since 17.1.1 */
+	public String getAbstractNumId() {
+		return abstractNumId;
+	}
+
+	/** The {@code w:num} this instance level belongs to; null for an abstract level. */
+	private String ownerNumId;
+
+	void setOwnerNumId(String numId) {
+		this.ownerNumId = numId;
+	}
+
+	private java.util.function.Supplier<NumberingState> defaultStateSupplier;
+	private NumberingState orphanState;
+
+	void setDefaultStateSupplier(java.util.function.Supplier<NumberingState> supplier) {
+		this.defaultStateSupplier = supplier;
+	}
+
+	/** The state the no-state overloads use: the numbering part's, or - for a level
+	 *  built outside any part - one of its own. */
+	NumberingState defaultState() {
+		if (defaultStateSupplier != null) {
+			NumberingState s = defaultStateSupplier.get();
+			if (s != null) return s;
+		}
+		if (orphanState == null) orphanState = new NumberingState();
+		return orphanState;
+	}
+
+	/** This level's counter in the given state. */
+	Counter counter(NumberingState state) {
+		return state.counter(abstractNumId, id, startValue);
+	}
+
+	/** This level's counter in the default state.
+	 *  @deprecated since 17.1.1: counters belong to a {@link NumberingState}; use {@link #counter}. */
+	@Deprecated
 	protected Counter getCounter() {
-		return counter;
+		return counter(defaultState());
 	}
 	
 
@@ -141,8 +187,6 @@ public class ListLevel {
     	this.jaxbAbstractLvl = levelNode;
     	
         this.id = levelNode.getIlvl().toString(); 
-        
-        counter = new Counter();
 
         Lvl.Start startValueNode = levelNode.getStart();
         if (startValueNode != null)
@@ -150,7 +194,6 @@ public class ListLevel {
         	this.startValue = startValueNode.getVal().subtract(BigInteger.ONE);
         		// Start value is one less than the user set it to,
         		// since whenever we fetch the number, we first increment it.
-            counter.setCurrentValue(this.startValue);                        
         }
 
         if (levelNode.getLvlRestart() != null && levelNode.getLvlRestart().getVal() != null) {
@@ -198,8 +241,8 @@ public class ListLevel {
         this.id = masterCopy.id;
         this.levelText = masterCopy.levelText;
         this.startValue = masterCopy.startValue;
-        //this.counter = this.startValue;
-        this.counter = masterCopy.counter;  // reference the abstract one, since this is shared
+        this.abstractNumId = masterCopy.abstractNumId;  // the counter is shared through the state, by this key
+        this.defaultStateSupplier = masterCopy.defaultStateSupplier;
         this.font = masterCopy.font;
         this.isBullet = masterCopy.isBullet;
         this.numFmt = masterCopy.numFmt;
@@ -220,7 +263,6 @@ public class ListLevel {
         	this.startValue = startValueNode.getVal().subtract(BigInteger.ONE);
     		// Start value is one less than the user set it to,
     		// since whenever we fetch the number, we first increment it.
-        	counter.setCurrentValue(this.startValue);                        
         }
 
         if (levelNode.getLvlRestart() != null && levelNode.getLvlRestart().getVal() != null) {
@@ -272,8 +314,13 @@ public class ListLevel {
 
     public void setStartValue(BigInteger startValue) {
 		this.startValue = startValue;
-    	startAtUsed = false;		
+    	startAtUsed = false;
+    	hasStartOverride = true;
 	}
+
+    /** This instance level carries a {@code w:startOverride}, to be applied to the
+     *  shared counter the first time its {@code w:num} is met at this level in a story. */
+    private boolean hasStartOverride = false;
 
 	/**
      * start value of that level
@@ -290,7 +337,7 @@ public class ListLevel {
      */
     public String getCurrentValueFormatted()
     {    	
-    	return NumberFormatter.getCurrentValueFormatted(numFmt, this.counter.getCurrentValue().intValue());
+    	return getCurrentValueFormatted(defaultState(), null);
     }    
     /**
      * The current number, formatted using numFmt; {@code where} (the numId this
@@ -300,30 +347,58 @@ public class ListLevel {
      */
     public String getCurrentValueFormatted(String where)
     {
-    	return NumberFormatter.getCurrentValueFormatted(numFmt, this.counter.getCurrentValue().intValue(),
-    			where + " ilvl " + id);
+    	return getCurrentValueFormatted(defaultState(), where);
+    }
+    /** The current number in the given state, formatted using numFmt.  @since 17.1.1 */
+    public String getCurrentValueFormatted(NumberingState state)
+    {
+    	return getCurrentValueFormatted(state, null);
+    }
+    /** The current number in the given state, formatted using numFmt; {@code where}
+     *  as for {@link #getCurrentValueFormatted(String)}.  @since 17.1.1 */
+    public String getCurrentValueFormatted(NumberingState state, String where)
+    {
+    	return NumberFormatter.getCurrentValueFormatted(numFmt, counter(state).getCurrentValue().intValue(),
+    			where == null ? null : where + " ilvl " + id);
     }
     public String getCurrentValueUnformatted()
     {        	
-        return this.counter.getCurrentValue().toString();
+        return getCurrentValueUnformatted(defaultState());
     }    
+    /** The current number in the given state, as a decimal.  @since 17.1.1 */
+    public String getCurrentValueUnformatted(NumberingState state)
+    {
+        return counter(state).getCurrentValue().toString();
+    }
     
     /**
      * increments the current count of list items of that level 
      */
     public void IncrementCounter()
     {
-    	if (startAtUsed==false
-    			|| (!counter.encounteredAlready)) {
-    		// Defer setting the startValue until the list
-    		// is actually encountered in the main document part,
-    		// since otherwise earlier numbering (using the
-    		// same abstract number) would use this startValue
+    	IncrementCounter(defaultState());
+    }
+
+    /**
+     * Increments the count of list items at this level in the given state.  The
+     * shared counter takes this level's start value the first time it is met in the
+     * state, and again the first time this instance level's {@code w:num} is met
+     * there when the {@code w:num} overrides the start (deferred until then, since
+     * otherwise earlier numbering over the same abstract list would use it).
+     *
+     * @since 17.1.1
+     */
+    public void IncrementCounter(NumberingState state)
+    {
+    	Counter counter = counter(state);
+    	boolean overridePending = hasStartOverride && ownerNumId != null
+    			&& !state.startOverrideApplied(ownerNumId, id);
+    	if (overridePending || !counter.encounteredAlready) {
         	counter.setCurrentValue(this.startValue); 
         	log.debug("not encounteredAlready; set to startValue " + startValue);
         	counter.encounteredAlready = true;
-        	startAtUsed = true;
         	counter.resetPending = false;
+        	if (ownerNumId != null) state.markStartOverrideApplied(ownerNumId, id);
     	}
     	if (counter.resetPending) {
     		// the reset already placed the counter at its start value (see ResetCounter)
@@ -333,6 +408,9 @@ public class ListLevel {
         counter.IncrementCounter();
     }
     
+	/** @deprecated since 17.1.1: unused; whether a start override has been applied is
+	 *  per {@link NumberingState}. */
+	@Deprecated
 	protected boolean startAtUsed = true;
     
 
@@ -347,6 +425,13 @@ public class ListLevel {
      */
     public void ResetCounter()
     {
+        ResetCounter(defaultState());
+    }
+
+    /** {@link #ResetCounter()}, in the given state.  @since 17.1.1 */
+    public void ResetCounter(NumberingState state)
+    {
+    	Counter counter = counter(state);
         counter.setCurrentValue(this.startValue.add(BigInteger.ONE));
         counter.resetPending = true;
     }
@@ -426,7 +511,8 @@ public class ListLevel {
             return this.isBullet;
     }
     
-    protected class Counter {
+    /** A level's count in one {@link NumberingState}.  Static since 17.1.1. */
+    protected static class Counter {
     	
     	protected boolean encounteredAlready = false;
 
@@ -443,6 +529,19 @@ public class ListLevel {
         
         Counter() {
         	currentValue = BigInteger.ZERO;
+        }
+
+        Counter copy() {
+        	Counter c = new Counter();
+        	c.currentValue = currentValue;
+        	c.encounteredAlready = encounteredAlready;
+        	c.resetPending = resetPending;
+        	return c;
+        }
+
+        @Override
+        public String toString() {
+        	return currentValue + (encounteredAlready ? "" : " (unused)") + (resetPending ? " (reset)" : "");
         }
 
         public void setCurrentValue(BigInteger currentValue) {
