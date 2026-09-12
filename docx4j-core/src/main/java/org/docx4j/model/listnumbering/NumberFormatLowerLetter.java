@@ -1,25 +1,13 @@
 package org.docx4j.model.listnumbering;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class NumberFormatLowerLetter extends NumberFormat
+/**
+ * {@code w:numFmt lowerLetter}: a, b, ... z, then aa, bb, cc (ECMA-376 17.18.59:
+ * the letter repeats, it is not a base-26 numeral - before 17.1.1 this class
+ * gave "ab" for 28 where Word gives "bb").
+ */
+public class NumberFormatLowerLetter extends NumberFormatAlphabet
 {
-	protected static Logger log = LoggerFactory.getLogger(NumberFormatLowerLetter.class);
-	
-	
-	// from https://stackoverflow.com/questions/11969840/how-to-convert-a-base-10-number-to-alphabetic-like-ordered-list-in-html
-	public String format( int num ) {
-
-	    String result = "";
-	    while (num > 0) {
-	      num--; // 1 => a, not 0 => a
-	      int remainder = num % 26;
-	      char digit = (char) (remainder + 97);
-	      result = digit + result;
-	      num = (num - remainder) / 26;
-	    }
-
-	    return result;
-	  }
+	public NumberFormatLowerLetter() {
+		super("abcdefghijklmnopqrstuvwxyz");
+	}
 }

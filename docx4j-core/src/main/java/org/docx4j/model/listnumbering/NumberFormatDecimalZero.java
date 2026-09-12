@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  * Not sure what Word does after 99?
  *
  */
-public class NumberFormatDecimalZero extends NumberFormat {
+public class NumberFormatDecimalZero extends LabelFormatter {
 	
 	protected static Logger log = LoggerFactory.getLogger(NumberFormatDecimalZero.class);
 	

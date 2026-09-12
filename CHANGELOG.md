@@ -245,6 +245,22 @@ OpenDoPE XHTML binding (CR-013):
 - BindingHandler.setXHTMLImporterCustomizer: a hook invoked on each XHTMLImporterImpl
   immediately before convert, for any other importer setting, per content control.
 
+List numbering (CR-014, phase 1):
+
+- A list label that its w:numFmt cannot express no longer ends the export with a
+  NumberFormatException (upperRoman/lowerRoman past 3999, decimalEnclosedCircle past 20): the
+  decimal label is used, as Word does, with one warning per format naming the first numId/ilvl
+  it happened at. A numFmt docx4j has no formatter for falls back the same way, with one warning
+  instead of an error per label.
+- 16 more w:numFmt values are formatted: ordinal, cardinalText, ordinalText, hex, chicago,
+  numberInDash, decimalFullWidth (and decimalFullWidth2), decimalHalfWidth, thaiNumbers,
+  hindiNumbers, russianLower, russianUpper, arabicAlpha, thaiLetters, hebrew1.
+  NumberFormatter.register adds or replaces a formatter for the rest.
+- lowerLetter and upperLetter past z follow Word and ECMA-376 17.18.59 (aa, bb, cc), not base 26
+  (aa, ab, ac).
+- The abstract formatter class is now LabelFormatter; the old NumberFormat name, which clashed
+  with org.docx4j.wml.NumberFormat, is a deprecated empty subclass for one release.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

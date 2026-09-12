@@ -9,7 +9,7 @@ package org.docx4j.model.listnumbering;
 // http://leepoint.net/notes-java/examples/components/romanNumerals/romanNumeral.html
 
 /////////////////////////////////////////////////////////////////// class Roman
-public abstract class NumberFormatRomanAbstract extends NumberFormat {
+public abstract class NumberFormatRomanAbstract extends LabelFormatter {
  //================================================================ constant
  // This could be alternatively be done with parallel arrays.
  // Another alternative would be Pair<Integer, String>

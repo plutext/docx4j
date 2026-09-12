@@ -1,6 +1,6 @@
 # CR: List numbering model (`org.docx4j.model.listnumbering`) — line endings, correctness, and separating definitions from counter state
 
-Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1) and 0b (probes P1-P8, goldens in, table settled) done; next 1 and 3, then 2, 4, 5
+Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) and 1 (LabelFormatter registry) done; next 3, then 2, 4, 5
 Scope: the package `docx4j-core/src/main/java/org/docx4j/model/listnumbering`
 (15 files, ~2,200 lines), its driver `NumberingDefinitionsPart` (maps,
 `getEmulator`, `restart`), and the tests under
@@ -477,6 +477,25 @@ warning; new formatters with a single table-driven test
 teens/hundreds).  `NumberFormatter.getCurrentValueFormatted` keeps its
 signature and delegates.  Ship with a CHANGELOG line.
 
+Done 2026-09-12.  As designed, with these particulars: the fail-soft catch
+lives in `NumberFormatter` (the formatters still throw
+`NumberFormatException` for a value they cannot express, so a caller can
+tell); the one-time warning names the numId/ilvl through a new
+`ListLevel.getCurrentValueFormatted(String where)` that
+`ListNumberingDefinition` calls; `register(numFmt, formatter)` is public for
+the CJK styles docx4j does not ship.  `lowerLetter` was base 26 past z
+("ab" for 28) and is now Word's and ECMA-376 17.18.59's repeated letter
+("bb"), the table's boundary rows being 26/27/28 and 52/53 rather than
+702/703; `upperLetter` is its own class on the same `NumberFormatAlphabet`,
+which also serves `russianLower/Upper`, `arabicAlpha` and `thaiLetters`
+(the letter sets Word's labels use, which omit some letters of each
+script).  `NumberFormatDigits` covers `decimalFullWidth`(2), `thaiNumbers`
+and `hindiNumbers`; `hebrew1` has the 15/16 exceptions and no gershayim.
+`cardinalText`/`ordinalText` capitalise every word (Twenty-One, One
+Hundred First), which is the shape Word gives list labels; the CARDTEXT
+field switch, which shares nothing with this code, lower-cases them.
+`LabelFormatterTest` is the table (120 rows).
+
 ### Phase 2 — `w:lvlRestart`
 
 As designed.  Needs Word verification of the two-case test document (put it
@@ -531,6 +550,9 @@ deprecation before removal (i.e. remove no earlier than 17.2).
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-09-12: phase 1 done (see the phase for particulars).  `lowerLetter`
+  past z changes from base 26 to Word's repeated letter; recorded in the
+  CHANGELOG as a behaviour change.
 - 2026-09-12: phase 0b probes P1-P8 cut, copied to the share, and the
   goldens read back the same day; every "Word: probe" row of the table is
   settled (see "Probe status").  Three facts the design did not have:

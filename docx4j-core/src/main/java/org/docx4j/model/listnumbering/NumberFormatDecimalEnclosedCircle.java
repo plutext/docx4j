@@ -1,6 +1,6 @@
 package org.docx4j.model.listnumbering;
 
-public class NumberFormatDecimalEnclosedCircle extends NumberFormat {
+public class NumberFormatDecimalEnclosedCircle extends LabelFormatter {
     String[] DECIMAL_ENCLOSED_CIRCLE_CHARACTERS = {"①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩",
             "⑪", "⑫", "⑬", "⑭", "⑮", "⑯", "⑰", "⑱", "⑲", "⑳"};
 

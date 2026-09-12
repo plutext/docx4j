@@ -1,6 +1,6 @@
 package org.docx4j.model.listnumbering;
 
-public class NumberFormatChineseAbstract extends NumberFormat {
+public class NumberFormatChineseAbstract extends LabelFormatter {
 
     String[] CHINESE_NUMBER_CHARACTERS;
     String[] CHINESE_NUMBER_UNITS;

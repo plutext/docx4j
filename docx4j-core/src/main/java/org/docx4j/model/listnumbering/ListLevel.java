@@ -283,6 +283,17 @@ public class ListLevel {
     {    	
     	return NumberFormatter.getCurrentValueFormatted(numFmt, this.counter.getCurrentValue().intValue());
     }    
+    /**
+     * The current number, formatted using numFmt; {@code where} (the numId this
+     * level is being formatted for) is named in the one-time warning if the
+     * format cannot express the value and the decimal label is used instead.
+     * @since 17.1.1
+     */
+    public String getCurrentValueFormatted(String where)
+    {
+    	return NumberFormatter.getCurrentValueFormatted(numFmt, this.counter.getCurrentValue().intValue(),
+    			where + " ilvl " + id);
+    }
     public String getCurrentValueUnformatted()
     {        	
         return this.counter.getCurrentValue().toString();

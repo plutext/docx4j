@@ -450,7 +450,7 @@ public class ListNumberingDefinition {
 
                     } else {
                     	// Usual case
-                    	result.append(lvl.getCurrentValueFormatted() );
+                    	result.append(lvl.getCurrentValueFormatted("numId " + listNumberId) );
                     }
                     i++;
                 }
