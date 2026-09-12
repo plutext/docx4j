@@ -975,32 +975,42 @@ public class PhysicalFonts {
 		if (cl==null) {
             return Collections.emptyList();
 		}
-		
-		// 1. Get the URL to the root folder (e.g., src/main/resources/fonts)		
-        URL rootUrl = cl.getResource(pathPrefix);
 
-        if (rootUrl == null) {
-            return Collections.emptyList();
-        }
-
-        URI rootUri = rootUrl.toURI();
-        List<URL> fontUrls;
-
-        // 2. Switch based on whether we are in a JAR or IDE
-        if ("jar".equals(rootUri.getScheme())) {
-            // JAR MODE: Create a FileSystem for the JAR structure
-            try (FileSystem fileSystem = FileSystems.newFileSystem(rootUri, Collections.emptyMap())) {
-                Path path = fileSystem.getPath(pathPrefix);
-                fontUrls = walkPathAndGetUrls(path);
-            }
-        } else {
-            // IDE MODE: Standard file system
-            Path path = Paths.get(rootUri);
-            fontUrls = walkPathAndGetUrls(path);
-        }
-        
-        return fontUrls;
-    }
+		/* Every classpath root which has the folder, not the first one.  Until 17.1.1
+		 * this used getResource(pathPrefix), which answers with ONE root - so of
+		 * docx4j-export-fo-fonts-croscore and -crosextra, both of which put their fonts
+		 * under fonts/, only whichever jar came first on the classpath was walked, and
+		 * Arimo, Tinos and Cousine (or Carlito and Caladea) were never discovered.  On a
+		 * headless deployment, where the jars are the whole font supply (the stock
+		 * ubuntu, debian, fedora and alpine images ship no fonts at all), that left Times
+		 * New Roman, Arial and Courier New with no metric substitute.  Found by CR-016
+		 * phase 0c (2026-09-12). */
+		List<URL> fontUrls = new ArrayList<URL>();
+		for (java.util.Enumeration<URL> roots = cl.getResources(pathPrefix); roots.hasMoreElements(); ) {
+			URI rootUri = roots.nextElement().toURI();
+			if ("jar".equals(rootUri.getScheme())) {
+				// JAR MODE: a FileSystem for the JAR structure (one may be open already if
+				// another prefix of the same jar was walked before)
+				FileSystem fileSystem;
+				boolean close = true;
+				try {
+					fileSystem = FileSystems.newFileSystem(rootUri, Collections.emptyMap());
+				} catch (java.nio.file.FileSystemAlreadyExistsException e) {
+					fileSystem = FileSystems.getFileSystem(rootUri);
+					close = false;
+				}
+				try {
+					fontUrls.addAll(walkPathAndGetUrls(fileSystem.getPath(pathPrefix)));
+				} finally {
+					if (close) fileSystem.close();
+				}
+			} else {
+				// IDE MODE: standard file system
+				fontUrls.addAll(walkPathAndGetUrls(Paths.get(rootUri)));
+			}
+		}
+		return fontUrls;
+	}
 
     private static List<URL> walkPathAndGetUrls(Path path) throws IOException {
         try (Stream<Path> stream = Files.walk(path, 4 /* 1 wouldn't look in subfolders */ )) { 
