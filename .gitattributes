@@ -33,3 +33,6 @@ docx4j-core/src/main/java/org/docx4j/fonts/microsoft/** text eol=lf
 docx4j-core-tests/src/test/java/org/docx4j/fonts/*.java text eol=lf
 docx4j-core/src/main/resources/org/docx4j/fonts/substitutions/FontSubstitutions.xsd text eol=lf
 docx4j-core/src/main/resources/org/docx4j/fonts/microsoft/MicrosoftFonts.xsd text eol=lf
+
+# Anonymiser: converted to LF in CR-016 phase 4; keep it so.
+docx4j-docx-anon/src/main/java/org/docx4j/anon/ScrambleText.java text eol=lf

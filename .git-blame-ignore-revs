@@ -12,3 +12,6 @@
 # CR-016 phase 0: org.docx4j.fonts (with substitutions/ and microsoft/), three of its
 # tests and the two font schemas, CRLF -> LF
 d643638ad5d42e14e2b5df01e4ae58b862a8d2bf
+
+# CR-016 phase 4 preliminary: docx4j-docx-anon ScrambleText.java, CRLF -> LF
+26a46491bdcdd038cfb6c3d5d1c78b53ae84d538
