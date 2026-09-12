@@ -416,7 +416,9 @@ public class XsltCommonFunctions {
     				if (jaxb instanceof RPr) {
     					rPr = (RPr)jaxb;
     				} else if (jaxb instanceof ParaRPr) {
-    					rPr = conversionContext.getPropertyResolver().getEffectiveRPr(null, pPr); 
+    					// the paragraph mark's properties (CR-015 phase 2: an explicit call, no longer
+    					// the run resolver's side effect for a null rPr)
+    					rPr = conversionContext.getPropertyResolver().getEffectiveParagraphMarkRPr(pPr); 
     	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
     				}    				
     				

@@ -3114,9 +3114,8 @@ public class XsltFOFunctions {
 //					log.debug("passed ParaRPr", t);
 //				}
 				
-				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
-//    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
-        		
+				// the paragraph mark's properties (CR-015 phase 2)
+				rPr = propertyResolver.getEffectiveParagraphMarkRPr(pPrDirect); 
         		StyleUtil.apply((ParaRPr)jaxbR, rPr); 				
 				
 			} else {

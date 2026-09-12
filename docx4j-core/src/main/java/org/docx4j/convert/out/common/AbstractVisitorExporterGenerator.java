@@ -337,12 +337,14 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				currentSpan = spanEl;
 				
 				rPr = ((R)o).getRPr();
-				if ( rPr!=null ) {
-					try {
-						handleRPr(conversionContext, pPr, rPr, currentSpan);
-					} catch (Docx4JException e) {
-						log.error(e.getMessage(), e);
-					}
+				// every run, w:rPr or not: a run with none still has effective properties (the
+				// paragraph style's, the document defaults') and its inline carries them itself
+				// rather than inheriting the block's (CR-015 phase 2; the FO block's size is later
+				// replaced by the dominant run's, see XsltFOFunctions.applyBlockLineHeight)
+				try {
+					handleRPr(conversionContext, pPr, rPr, currentSpan);
+				} catch (Docx4JException e) {
+					log.error(e.getMessage(), e);
 				}
 
 				if (currentP==null) {

@@ -321,6 +321,27 @@ Property resolution (CR-015, phase 1):
   when restated.
 - An effective w:rPr no longer carries an empty w:rFonts when nothing supplied one.
 
+Property resolution (CR-015, phase 2):
+
+- The default paragraph style's run properties reach the runs of a paragraph that names no
+  w:pStyle (which is how Word writes it) and of one naming a style the document does not
+  define (measured: Word treats both as Normal). getEffectivePPr(String) no longer returns
+  null for a missing style. The exporters were shielded from the first case by
+  ParagraphStylesInTableFix writing the default style onto every paragraph; markdown, TOC,
+  binding and user code were not.
+- A character style applied inside a styled paragraph keeps the paragraph style's font and
+  size (measured: Arial 20pt bold, not the document defaults' Calibri 11pt): the style-chain
+  caches no longer depend on which caller asked first, and DefaultParagraphFont contributes
+  nothing (a run styled with it inside a 20pt heading is 20pt, not Normal's size).
+- The paragraph mark's w:rPr is applied to the mark only, through the new
+  PropertyResolver.getEffectiveParagraphMarkRPr(PPr); getEffectiveRPr(RPr, PPr) never applies
+  it to a run (until now a run with no w:rPr in a paragraph naming no style took the mark's
+  bold and size).
+- The visitor exporters resolve runs that have no w:rPr like any other, so each inline
+  carries its own properties instead of inheriting the block's.
+- Deprecated: getEffectiveRPr(String, boolean, boolean, boolean) (computed per call now, no
+  longer cached) and getEffectiveRPrUsingPStyleRPr.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

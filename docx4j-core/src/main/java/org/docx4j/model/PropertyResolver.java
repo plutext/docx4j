@@ -129,13 +129,19 @@ public class PropertyResolver {
 	private NumberingDefinitionsPart numberingDefinitionsPart;
 
 
-	private java.util.Map<String, PPr>  resolvedStylePPrComponent = new HashMap<String, PPr>();
-
 	/**
-	 * This map also contains the rPr component of a pPr
+	 * A style's w:basedOn chain merged root-first, WITHOUT the document defaults,
+	 * keyed by styleId (CR-015 phase 2).  These are the units every effective value is
+	 * composed from, so nothing cached depends on what a caller asked for first.
 	 */
-	private java.util.Map<String, RPr>  resolvedStyleRPrComponent = new HashMap<String, RPr>();
-	
+	private java.util.Map<String, PPr> chainPPr = new HashMap<String, PPr>();
+	private java.util.Map<String, RPr> chainRPr = new HashMap<String, RPr>();
+
+	/** Document defaults with the chain applied over them, keyed by styleId: what
+	 *  getEffectivePPr(String) and getEffectiveRPr(String) return. */
+	private java.util.Map<String, PPr> effectivePPrByStyle = new HashMap<String, PPr>();
+	private java.util.Map<String, RPr> effectiveRPrByStyle = new HashMap<String, RPr>();
+
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
 		this.wordMLPackage = wordMLPackage;
@@ -175,8 +181,6 @@ public class PropertyResolver {
 	
 	private void init() throws Docx4JException {
 
-//		styleDefinitionsPart.createVirtualStylesForDocDefaults();
-		
 		try {
 			defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
 		} catch (NullPointerException npe) {
@@ -192,7 +196,6 @@ public class PropertyResolver {
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
 		initialiseLiveStyles();		
 		
-//		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
 		DocDefaults docDefaults = styleDefinitionsPart.getJaxbElement().getDocDefaults();
         if(log.isDebugEnabled()) {
             log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
@@ -216,68 +219,25 @@ public class PropertyResolver {
         }
 		
 		if (documentDefaultRPr.getSz()==null) {
-			// Make Word default explicit
+			// Make Word default explicit: 10pt where nothing states a size (measured, CR-015
+			// probe styles-no-size-anywhere).  TODO phase 3: on a private copy, not the part.
 			HpsMeasure sz20 = new HpsMeasure(); 
 			sz20.setVal(BigInteger.valueOf(20));
 			documentDefaultRPr.setSz(sz20);
 		}
-
-		addNormalToResolvedStylePPrComponent();
-		addDefaultParagraphFontToResolvedStyleRPrComponent();
 	}
 
-
-	/**
-	 * Add the effective properties of Normal style
-	 * to resolvedStylePPrComponent.
-	 * @throws CyclicStylesException 
-	 */
-	private void addNormalToResolvedStylePPrComponent() throws CyclicStylesException {
-		
-		Stack<PPr> pPrStack = new Stack<PPr>();
-//		String styleId = "Normal";
-		String styleId = defaultParagraphStyleId;
-		
-		fillPPrStack(styleId, pPrStack);
-		pPrStack.push(documentDefaultPPr);
-			
-		PPr effectivePPr = factory.createPPr();			
-		// Now, apply the properties starting at the top of the stack
-		while (!pPrStack.empty() ) {
-			PPr pPr = pPrStack.pop();
-			applyPPr(pPr, effectivePPr);
-		}
-		resolvedStylePPrComponent.put(styleId, effectivePPr);		
-	}
-	
+	/** The default paragraph style's effective pPr (document defaults included), as
+	 *  getEffectivePPr(String) gives it. */
 	public PPr getResolvedDefaultParagraphStyle() {
-		return resolvedStylePPrComponent.get(defaultParagraphStyleId);
-	}
-
-	private void addDefaultParagraphFontToResolvedStyleRPrComponent() throws CyclicStylesException {
-		
-		Stack<RPr> rPrStack = new Stack<RPr>();
-
-		fillRPrStack(defaultParagraphStyleId, rPrStack);
-			// Since default font size might be in there.
-		
-		fillRPrStack(defaultCharacterStyleId, rPrStack);
-		rPrStack.push(documentDefaultRPr);
-			
-		RPr effectiveRPr = factory.createRPr();
-		
-		// Now, apply the properties starting at the top of the stack
-		while (!rPrStack.empty() ) {
-			RPr rPr = rPrStack.pop();
-			applyRPr(rPr, effectiveRPr);
+		try {
+			return getEffectivePPr(defaultParagraphStyleId);
+		} catch (CyclicStylesException e) {
+			log.error(e.getMessage(), e);
+			return null;
 		}
-		resolvedStyleRPrComponent.put(defaultCharacterStyleId, effectiveRPr);		
-		
-		if (log.isDebugEnabled()) {
-			log.debug("defaultCharacterStyleId " + defaultCharacterStyleId + " resolved to " + XmlUtils.marshaltoString(effectiveRPr));
-		}		
 	}
-	
+
 	public Style getEffectiveTableStyle(TblPr tblPr) throws CyclicStylesException {
 		// OK to pass this a null tblPr.
 		
@@ -371,6 +331,22 @@ public class PropertyResolver {
 	}
 	
 	
+	/*
+	 * The resolution order (ECMA-376 17.7.2), as composed here since CR-015 phase 2:
+	 *
+	 *   effectivePPr(direct)       = docDefaults.pPr + chainPPr(styleOf(direct)) + direct
+	 *   effectiveRPr(direct, pPr)  = docDefaults.rPr + chainRPr(styleOf(pPr)) + chainRPr(direct.rStyle) + direct
+	 *   paragraphMarkRPr(pPr)      = docDefaults.rPr + chainRPr(styleOf(pPr)) + pPr.rPr
+	 *
+	 * where styleOf(pPr) is the paragraph's w:pStyle if it names a style that exists, else
+	 * the w:default="1" paragraph style (Word writes no w:pStyle for it, and treats a
+	 * missing style as it; measured, probe styles-default-pstyle), and chainPPr/chainRPr
+	 * are a style's w:basedOn chain merged root-first without the document defaults,
+	 * cached per styleId.  Table styles are not applied here: the resolver is handed a
+	 * w:pPr and does not know the table (ParagraphStylesInTableFix carries them for the
+	 * exporters; see CR-015 "Layering").
+	 */
+
 	/**
 	 * Follow the resolution rules to return the
 	 * paragraph properties which actually apply,
@@ -390,180 +366,84 @@ public class PropertyResolver {
 	 */
 	public PPr getEffectivePPr(PPr expressPPr) throws CyclicStylesException {
 		
-		// Used by docx4j-export-fo project.
-		
-		PPr effectivePPr = null;
-		//	First, the document defaults are applied
-		
-			// Done elsewhere
-			// PPr effectivePPr = (PPr)XmlUtils.deepCopy(documentDefaultPPr);
-		
-		//	Next, the table style properties are applied to each table in the document, 
-		//	following the conditional formatting inclusions and exclusions specified 
-		//	per table. 
-		
-			// TODO - if the paragraph is in a table?
-				
-		//	Next, numbered item and paragraph properties are applied to each paragraph 
-		//	formatted with a *numbering *style**.
-		
-			// TODO - who uses numbering styles (as opposed to numbering
-			// via a paragraph style or direct formatting)?
-		
-		//  Next, paragraph and run properties are 
-		//	applied to each paragraph as defined by the paragraph style.
-		PPr resolvedPPr = null;
-		String styleId;
-		if (expressPPr == null || expressPPr.getPStyle() == null ) {
-//			styleId = "Normal";
-			styleId = defaultParagraphStyleId;
-			
-		} else {
-			styleId = expressPPr.getPStyle().getVal();
-			if (styleId==null) {
-                if(log.isWarnEnabled()) {
-                    log.warn("Missing style id: " + XmlUtils.marshaltoString(expressPPr));
-                }
-				if (log.isDebugEnabled()) {
-					Throwable t = new Throwable();
-					log.debug("Null styleId produced by code path", t);
-				} else {
-					log.warn("Enable debug level logging to see code path");					
-				}
-				styleId = defaultParagraphStyleId;
-			}
-		}
-		resolvedPPr = getEffectivePPr(styleId);
-		
-				
-		//	Next, run properties are applied to each run with a specific character style 
-		//	applied. 
-		
-			// Not for pPr
-				
-		//	Finally, we apply direct formatting (paragraph or run properties not from 
-		//	styles).		
+		PPr resolvedPPr = getEffectivePPr(paragraphStyleOf(expressPPr));
+
+		//	Finally, we apply direct formatting (paragraph properties not from styles)
 		if (hasDirectPPrFormatting(expressPPr) ) {
-			if (resolvedPPr==null) {
-				log.warn("resolvedPPr was null. Look into this?");
-				effectivePPr = Context.getWmlObjectFactory().createPPr();
-			} else {
-				effectivePPr = (PPr)XmlUtils.deepCopy(resolvedPPr);
-			}
+			PPr effectivePPr = (PPr)XmlUtils.deepCopy(resolvedPPr);
 			applyPPr(expressPPr, effectivePPr);
 			return effectivePPr;
 		} else {
 			return resolvedPPr;
 		}
-		
 	}
 
 	/**
 	 * Follow the resolution rules to return the
 	 * paragraph properties which actually apply,
-	 * given this paragraph style
+	 * given this paragraph style (document defaults included).
 	 * 
-	 * Note 1:  the properties are not the definition
-	 * of any style name returned.
-	 * Note 2:  run properties are not resolved 
-	 * or returned by this method.
+	 * A styleId naming no style resolves as the default paragraph style does
+	 * (since 17.1.1; used to return null).
 	 * 
 	 * What is returned is a live object.  If you
 	 * want to change it, you should clone it first!
 	 *  
-	 * @param expressPPr
+	 * @param styleId
 	 * @return
 	 * @throws CyclicStylesException 
 	 */
 	public PPr getEffectivePPr(String styleId) throws CyclicStylesException {
 		
-		PPr resolvedPPr = resolvedStylePPrComponent.get(styleId);
-		
-		if (resolvedPPr!=null) {
-			return resolvedPPr;
+		String key = existingParagraphStyle(styleId);
+		PPr resolved = effectivePPrByStyle.get(key);
+		if (resolved!=null) {
+			return resolved;
 		}
-		
-		// Hmm, have to do the work
-		Style s = getLiveStyle(styleId);
-
-		if (s==null) {
-			log.error("Couldn't find style: " + styleId);
-			return null;
-		}
-		
-//		PPr expressPPr = s.getPPr();
-//		if (expressPPr==null) {
-//			// A paragraph style may have no w:pPr component
-//			log.debug("style: " + styleId + " has no PPr");
-//			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
-//			resolvedPPr = resolvedStylePPrComponent.get(normalId);
-//			return resolvedPPr;
-//		}
-		
-		//  Next, paragraph and run properties are 
-		//	applied to each paragraph as defined by the paragraph style.
-		Stack<PPr> pPrStack = new Stack<PPr>();
-		// Haven't done this one yet				
-		fillPPrStack(styleId, pPrStack);
-		// Finally, on top
-		pPrStack.push(documentDefaultPPr);
-						
-		resolvedPPr = factory.createPPr();			
-		// Now, apply the properties starting at the top of the stack
-		while (!pPrStack.empty() ) {
-			PPr pPr = pPrStack.pop();
-			applyPPr(pPr, resolvedPPr);
-		}
-		resolvedStylePPrComponent.put(styleId, resolvedPPr);
-		return resolvedPPr;
+		resolved = (PPr)XmlUtils.deepCopy(documentDefaultPPr);
+		applyPPr(chainPPr(key), resolved);
+		effectivePPrByStyle.put(key, resolved);
+		return resolved;
 	}
-	
+
 	/**
-	 * @param expressRPr
-	 * @param pPr - 
-	 * @return
+	 * The run properties which apply to a run, given its own rPr and the pPr of the
+	 * paragraph it is in: document defaults, the paragraph style's run properties, the
+	 * run's character style, then its direct formatting.  The paragraph mark's rPr
+	 * (pPr/rPr) is never applied to a run; for the mark itself see
+	 * {@link #getEffectiveParagraphMarkRPr(PPr)}.  (Until 17.1.1 a run with no rPr in a
+	 * paragraph naming no style got the mark's formatting, and a paragraph naming no
+	 * style - which is how Word writes the default style - got no paragraph-style run
+	 * properties at all.)
+	 * 
+	 * @param expressRPr the run's own w:rPr, or null
+	 * @param pPr the paragraph's own w:pPr, or null
+	 * @return a new object each call
 	 * @throws CyclicStylesException 
 	 */
 	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr) throws CyclicStylesException {
-		
-		// NB Currently used in PDF viaXSLFO only
-		
-		if (pPr==null) {
-			log.debug("pPr was null");
-		} else {
-			// At the pPr level, what rPr do we have?
-			// .. ascend the paragraph style tree
-			if (pPr.getPStyle()==null) {
-				if (log.isDebugEnabled()) {
-					log.debug("No pstyle:");
-					log.debug(XmlUtils.marshaltoString(pPr, true, true));
-				}
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("pstyle:" + pPr.getPStyle().getVal());
-				}
-				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
-				// .. and apply those
-				
-				if (log.isDebugEnabled()) {
-					log.debug("Resulting pPrLevelRunStyle: " + XmlUtils.marshaltoString(pPrLevelRunStyle));
-				}
-				
-				return getEffectiveRPrUsingPStyleRPr(expressRPr, pPrLevelRunStyle);
-			}
-			// Check Paragraph rPr (our special hack of using ParaRPr to format a fo:block)
-			// 2013 10 02: doubts whether this is right?
-			if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {
-				log.debug("No express rPr, using p level");
-				return getEffectiveRPrUsingPStyleRPr(expressRPr, 
-						StyleUtil.apply(pPr.getRPr(), Context.getWmlObjectFactory().createRPr()));
-			} 
-			log.debug("pPr not null, but falling through");
-			
-		}
 
-		return getEffectiveRPrUsingPStyleRPr( expressRPr, null);
-		
+		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+		applyRPr(chainRPr(paragraphStyleOf(pPr)), effectiveRPr);
+		applyCharacterStyleAndDirect(expressRPr, effectiveRPr);
+		return effectiveRPr;
+	}
+
+	/**
+	 * The run properties of the paragraph mark: document defaults, the paragraph style's
+	 * run properties, then the pPr's own rPr.  What sizes an empty paragraph, and what a
+	 * list label starts from.
+	 * 
+	 * @since 17.1.1
+	 */
+	public RPr getEffectiveParagraphMarkRPr(PPr pPr) throws CyclicStylesException {
+
+		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+		applyRPr(chainRPr(paragraphStyleOf(pPr)), effectiveRPr);
+		if (pPr!=null && pPr.getRPr()!=null) {
+			applyRPr(pPr.getRPr(), effectiveRPr);
+		}
+		return effectiveRPr;
 	}
 
 	/**
@@ -575,103 +455,41 @@ public class PropertyResolver {
 	 * @param rPrFromPStyle should be rPr from the paragraph style (as opposed to rPr in the direct pPr, which is only relevant to the paragraph mark)
 	 * @return
 	 * @throws CyclicStylesException 
+	 * @deprecated since 17.1.1: {@link #getEffectiveRPr(RPr, PPr)} composes the paragraph style itself
 	 */
+	@Deprecated
 	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr rPrFromPStyle) throws CyclicStylesException {
 		
-		// Note, RPr pPrLevelRunStyle should be rPr from the paragraph style
-		// (as opposed to rPr in the direct pPr, which is only
-		//  relevant to the paragraph mark)
-		
-		log.debug("in getEffectiveRPrUsingPStyle");
-//		Throwable t = new Throwable();
-//		t.printStackTrace();
-		
-		
-//		Idea is that you pass pPr if you are using this for XSL FO,
-//		since we need to take account of rPr in paragraph styles
-//		(but not the rPr in a pPr direct formatting, since
-//       that only applies to the paragraph mark). 
-//		 * For HTML/CSS, this would be null (since the pPr level rPr 
-//		 * is made into a separate style applied via a second value in
-//		 * the class attribute).  But, in the CSS case, this
-		// function is not used - since the rPr is made into a style as well.
-		
-
-		//	First, the document defaults are applied		
-		RPr effectiveRPr = null;
-		if (documentDefaultRPr==null) {
-			log.warn("documentDefaultRPr null");
-			effectiveRPr = Context.getWmlObjectFactory().createRPr();
-		} else {		
-			effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
-		}
-//			
-//			// Apply DefaultParagraphFont.  We only do it explicitly
-//			// here as per conditions, because if there is a run style,
-//			// walking the hierarchy will include this if it is needed
-//			if (expressRPr == null || expressRPr.getRStyle() == null ) {
-//				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
-//			}
-		
+		RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
 		if (rPrFromPStyle!=null) {
-			effectiveRPr=StyleUtil.apply(rPrFromPStyle, effectiveRPr);
+			applyRPr(rPrFromPStyle, effectiveRPr);
 		}		
-		
-		
-//    	System.out.println("start\n" + XmlUtils.marshaltoString(effectiveRPr, true, true));
-		
-		
-		//	Next, the table style properties are applied to each table in the document, 
-		//	following the conditional formatting inclusions and exclusions specified 
-		//	per table. 
-		
-			// TODO - if the paragraph is in a table?
-				
-		//	Next, numbered item and paragraph properties are applied to each paragraph 
-		//	formatted with a *numbering *style**.
-		
-//			 TODO - who uses numbering styles (as opposed to numbering
-			// via a paragraph style or direct formatting)?
-		
-		//  Next, paragraph and run properties are 
-		//	applied to each paragraph as defined by the paragraph style
-		// (this includes run properties defined in a paragraph style,
-		//  but not run properties directly included in a pPr in the
-		//  document (those only apply to a paragraph mark).
-//		applyRPr(pPrLevelRunStyle, effectiveRPr);
-					
-		//	Next, run properties are applied to each run with a specific character style 
-		//	applied. 		
-		RPr resolvedRPr = null;
-		String runStyleId;
-		if (expressRPr != null && expressRPr.getRStyle() != null ) {
-			runStyleId = expressRPr.getRStyle().getVal();
-			
-			// we want to ignore doc default contrib, if rFonts or sz is set in the pStyle
-			boolean rFontsMissing = effectiveRPr.getRFonts()==null;
-			boolean szMissing = effectiveRPr.getSz()==null;
-			boolean langMissing = effectiveRPr.getLang()==null;
-			resolvedRPr = getEffectiveRPr(runStyleId, rFontsMissing, szMissing, langMissing); 
-			StyleUtil.apply(resolvedRPr, effectiveRPr);
-//	    	System.out.println("resolved=\n" + XmlUtils.marshaltoString(resolvedRPr, true, true));
-			
-		}
-//    	System.out.println("effective is now\n" + XmlUtils.marshaltoString(effectiveRPr, true, true));
-				
-		//	Finally, we apply direct formatting (run properties not from 
-		//	styles).		
-		if (hasDirectRPrFormatting(expressRPr) ) {			
-			//effectiveRPr = (RPr)XmlUtils.deepCopy(effectiveRPr);			
-//	    	System.out.println("applying express\n" + XmlUtils.marshaltoString(expressRPr, true, true));
-			StyleUtil.apply(expressRPr, effectiveRPr);
-		} 
+		applyCharacterStyleAndDirect(expressRPr, effectiveRPr);
 		return effectiveRPr;
-		
 	}
 
+	/** The character style's chain (the style it names, if it exists), then the direct formatting. */
+	private void applyCharacterStyleAndDirect(RPr expressRPr, RPr effectiveRPr) throws CyclicStylesException {
+
+		if (expressRPr != null && expressRPr.getRStyle() != null && expressRPr.getRStyle().getVal() != null) {
+			String runStyleId = expressRPr.getRStyle().getVal();
+			if (getLiveStyle(runStyleId) == null) {
+				log.error("Couldn't find style: " + runStyleId);
+			} else {
+				applyRPr(chainRPr(runStyleId), effectiveRPr);
+			}
+		}
+		if (hasDirectRPrFormatting(expressRPr) ) {			
+			applyRPr(expressRPr, effectiveRPr);
+		} 
+	}
 
 	/**
-	 * apply the rPr in the stack of styles, including documentDefaultRPr
+	 * The run properties a style resolves to on its own: document defaults, then its
+	 * w:basedOn chain.  For a paragraph style, the run properties of its paragraphs
+	 * (the fo:block's); for a character style, what it contributes with nothing under it.
+	 * 
+	 * What is returned is a live object.  If you want to change it, clone it first.
 	 * 
 	 * @param styleId
 	 * @return
@@ -679,10 +497,27 @@ public class PropertyResolver {
 	 */
 	public RPr getEffectiveRPr(String styleId) throws CyclicStylesException {
 
-		return getEffectiveRPr(styleId, true, true, true); 
+		RPr resolved = effectiveRPrByStyle.get(styleId);
+		if (resolved!=null) {
+			return resolved;
+		}
+		Style s = getLiveStyle(styleId);
+		if (s==null) {
+			log.error("Couldn't find style: " + styleId);
+			log.debug("Couldn't find style: " + styleId, new Throwable());
+			return null;
+		}
+		resolved = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+		applyRPr(chainRPr(styleId), resolved);
+		effectiveRPrByStyle.put(styleId, resolved);
+		return resolved;
 	}
 	
 	/**
+	 * The run properties which apply to a run outside any paragraph: document
+	 * defaults, the default paragraph style's run properties, the character style the
+	 * rPr names, then its direct formatting.  A new object each call.
+	 * 
 	 * @param directRPr
 	 * @return
 	 * @throws CyclicStylesException 
@@ -690,101 +525,103 @@ public class PropertyResolver {
 	 */
 	public RPr getEffectiveRPr(RPr directRPr) throws CyclicStylesException {
 		
-		RPr result = null;
-		if (directRPr!=null && directRPr.getRStyle()!=null && directRPr.getRStyle().getVal()!=null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Using RStyle: " + directRPr.getRStyle().getVal());
-			}
-			RPr styleRPr =  getEffectiveRPr(directRPr.getRStyle().getVal(), true, true, true); 
-			result = XmlUtils.deepCopy(styleRPr);		
-			applyRPr(directRPr, result);
-		} else {
-			// No rStyle, so resolve against default
-			if (log.isDebugEnabled()) {
-				log.debug("No RStyle, using " + defaultCharacterStyleId);
-			}
-			result = XmlUtils.deepCopy(resolvedStyleRPrComponent.get(defaultCharacterStyleId));
-			applyRPr(directRPr, result);
-		}
-		return result;
+		return getEffectiveRPr(directRPr, (PPr)null);
 	}
 	
 	/**
 	 * apply the rPr in the stack of styles, optionally including documentDefaultRPr
+	 * (its rFonts, sz/szCs and lang).  Computed on each call.
 	 * 
 	 * @param styleId
 	 * @return
 	 * @throws CyclicStylesException 
 	 * @since 8.2.4
+	 * @deprecated since 17.1.1: the flags existed to keep the document defaults from
+	 * overriding the paragraph style's when a character style was applied over it, which
+	 * {@link #getEffectiveRPr(RPr, PPr)} now composes correctly; and the result used to be
+	 * cached under the styleId alone, so it depended on which caller came first.
 	 */
+	@Deprecated
 	public RPr getEffectiveRPr(String styleId, 
 			boolean applyDocDefaultsRFonts, boolean applyDocDefaultsSz,
 			boolean applyDocDefaultsLang) throws CyclicStylesException {
-		// styleId passed in could be a run style
-		// or a *paragraph* style
-		
-		// Check the cache
-		RPr resolvedRPr = resolvedStyleRPrComponent.get(styleId);
-		
-		if (resolvedRPr!=null) {
-			return resolvedRPr;
-		}
-		
-		// Hmm, have to do the work
-		Style s = getLiveStyle(styleId);
 
+		Style s = getLiveStyle(styleId);
 		if (s==null) {
 			log.error("Couldn't find style: " + styleId);
 			log.debug("Couldn't find style: " + styleId, new Throwable());
 			return null;
 		}
-
-		// Comment out - this style might not have rPr,
-		// but an ancestor might!
-		
-//		RPr expressRPr = s.getRPr();
-//		if (expressRPr==null) {
-//			log.error("style: " + runStyleId + " has no RPr");
-//			resolvedRPr = resolvedStyleRPrComponent.get(defaultCharacterStyleId);
-//			return resolvedRPr;
-//		}
-
-		
-		//	Next, run properties are applied to each run with a specific character style applied. 		
-		Stack<RPr> rPrStack = new Stack<RPr>();
-		fillRPrStack(styleId, rPrStack);
-		
-		// Finally, on top
-		// The intent is to be able to ignore doc default contrib, 
-		// where rFonts or sz is set in the pStyle
-		RPr defaultRPr = new RPr();
+		RPr resolvedRPr = factory.createRPr();
 		if (applyDocDefaultsRFonts) {
-			defaultRPr.setRFonts(this.documentDefaultRPr.getRFonts());
+			resolvedRPr.setRFonts(this.documentDefaultRPr.getRFonts());
 		}
 		if (applyDocDefaultsSz) {
-			defaultRPr.setSz(this.documentDefaultRPr.getSz());
-			defaultRPr.setSzCs(this.documentDefaultRPr.getSzCs());
+			resolvedRPr.setSz(this.documentDefaultRPr.getSz());
+			resolvedRPr.setSzCs(this.documentDefaultRPr.getSzCs());
 		}
 		if (applyDocDefaultsLang) {
-			defaultRPr.setLang(this.documentDefaultRPr.getLang());
+			resolvedRPr.setLang(this.documentDefaultRPr.getLang());
 		}
-		rPrStack.push(defaultRPr);
-		if (log.isDebugEnabled()) {
-			log.debug("Using defaultRPr: " + XmlUtils.marshaltoString(defaultRPr));
-		}
-		
-						
-		resolvedRPr = factory.createRPr();			
-		// Now, apply the properties starting at the top of the stack
-		while (!rPrStack.empty() ) {
-			RPr rPr = rPrStack.pop();
-            if(log.isDebugEnabled()) {
-                log.debug("applying " + XmlUtils.marshaltoString(rPr));
-            }
-			applyRPr(rPr, resolvedRPr);
-		}
-		resolvedStyleRPrComponent.put(styleId, resolvedRPr);
+		applyRPr(chainRPr(styleId), resolvedRPr);
 		return resolvedRPr;
+	}
+
+	// ---------------------------------------------------------------- the chains
+
+	/** The paragraph's style: its w:pStyle where that names a style that exists, else the default paragraph style. */
+	private String paragraphStyleOf(PPr pPr) {
+		if (pPr == null || pPr.getPStyle() == null) {
+			return defaultParagraphStyleId;
+		}
+		String styleId = pPr.getPStyle().getVal();
+		if (styleId == null) {
+			if (log.isWarnEnabled()) {
+				log.warn("Missing style id: " + XmlUtils.marshaltoString(pPr));
+			}
+			return defaultParagraphStyleId;
+		}
+		return existingParagraphStyle(styleId);
+	}
+
+	/** styleId if it names a style that exists, else the default paragraph style's id (logged). */
+	private String existingParagraphStyle(String styleId) {
+		if (styleId == null) return defaultParagraphStyleId;
+		if (getLiveStyle(styleId) == null) {
+			log.error("Couldn't find style: " + styleId + "; using the default paragraph style");
+			return defaultParagraphStyleId;
+		}
+		return styleId;
+	}
+
+	/** A style's w:basedOn chain merged root-first, without the document defaults; cached.  An empty pPr for null or a missing style. */
+	private PPr chainPPr(String styleId) throws CyclicStylesException {
+		if (styleId == null) return factory.createPPr();
+		PPr chain = chainPPr.get(styleId);
+		if (chain != null) return chain;
+		Stack<PPr> pPrStack = new Stack<PPr>();
+		fillPPrStack(styleId, pPrStack);
+		chain = factory.createPPr();
+		while (!pPrStack.empty() ) {
+			applyPPr(pPrStack.pop(), chain);
+		}
+		chainPPr.put(styleId, chain);
+		return chain;
+	}
+
+	/** A style's w:basedOn chain merged root-first, without the document defaults; cached.  An empty rPr for null or a missing style. */
+	private RPr chainRPr(String styleId) throws CyclicStylesException {
+		if (styleId == null) return factory.createRPr();
+		RPr chain = chainRPr.get(styleId);
+		if (chain != null) return chain;
+		Stack<RPr> rPrStack = new Stack<RPr>();
+		fillRPrStack(styleId, rPrStack);
+		chain = factory.createRPr();
+		while (!rPrStack.empty() ) {
+			applyRPr(rPrStack.pop(), chain);
+		}
+		chainRPr.put(styleId, chain);
+		return chain;
 	}
 	
 	org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
@@ -1126,7 +963,7 @@ public class PropertyResolver {
      * styles list per lookup.
      *
      * Note that this handles styles *added* since construction, not styles modified or
-     * removed: resolved properties are cached (resolvedStylePPrComponent etc), so a
+     * removed: resolved properties are cached (the chain and effective maps), so a
      * change to an existing style's definition is not picked up.  For that, see
      * {@link #refresh()}.
      *
@@ -1162,8 +999,10 @@ public class PropertyResolver {
      */
     public void refresh() throws Docx4JException {
 
-    	resolvedStylePPrComponent.clear();
-    	resolvedStyleRPrComponent.clear();
+    	chainPPr.clear();
+    	chainRPr.clear();
+    	effectivePPrByStyle.clear();
+    	effectiveRPrByStyle.clear();
     	init();
     }
 

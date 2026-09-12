@@ -5,7 +5,8 @@ Status: IN PROGRESS (2026-09-12) — approved by Jason 2026-09-12; phase 0 DONE
 conversion); phase 0b DONE (five `styles-*` probes, goldens in and read back
 into the table the same day, 83c6865b8); phase 1 DONE (the property
 catalogue and the merge rules; 21 corpus documents improved, none regressed);
-phase 2 next
+phase 2 DONE (the resolution order; zero corpus delta bar one improvement);
+phase 2b next
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -612,12 +613,33 @@ with `w:rtl`-only or `w:position`-only runs, exact line spacing under a direct
 `w:after`, `ilvl`-only direct numbering, `w:tblpPr` stating one attribute.
 Any document moving the other way is a finding to record before merging.
 
-### Phase 2 — the resolution order
+### Phase 2 — the resolution order — DONE 2026-09-12
 
-As designed; the three block-level callers migrate to
-`getEffectiveParagraphMarkRPr`.  Gate: as phase 1; the corpus should not move
-(the exporters were shielded), the markdown module's tests and
-`TocGenerateTest` are the consumers that can.
+As designed: `chainPPr`/`chainRPr` (the `w:basedOn` chain merged root-first,
+no document defaults) and `effectivePPrByStyle`/`effectiveRPrByStyle`
+(defaults plus chain) replace the two seeded maps; `paragraphStyleOf(pPr)`
+supplies the default paragraph style for a paragraph naming none or a
+missing one; `getEffectiveParagraphMarkRPr(PPr)` is the mark; the flagged
+overload computes per call and is deprecated, as is
+`getEffectiveRPrUsingPStyleRPr`.  Two of the three block-level callers
+migrate (`XsltCommonFunctions` and `XsltFOFunctions`'s ParaRPr branches);
+`XsltFOFunctions` 1657 wanted the run baseline of generated text, and keeps
+the run call.  The visitor calls `handleRPr` for every run (the HTML one is a
+no-op; the FO one now resolves rPr-less runs, whose inlines carry their own
+attributes).  Tests: `PropertyResolverOrderTest` (10; the P1 golden's cases
+a-g, both call orders, the mark, the other overloads).
+
+Gate (2026-09-12): `docx4j-core-tests` 968 run, 0 failures;
+`docx4j-export-fo-tests` 600 run, 0 failures; corpus score `p2-order`
+against `p1-catalogue`: real 0 changed, real2 1 improved / 0 regressed
+(`15_en-US_num_tbl_9888` 0.8865 -> 0.9555: a two-column compliance table
+whose rPr-less runs now carry their own size), real3 0 changed - the
+zero-delta the shield predicted.  Probes: `styles-default-pstyle` 73% -> 100%
+line parity, two pages as Word; `styles-numpr-ilvl-only` 33% -> 50%, every
+label now Word's (1. 1.1. 2. 2.1. 2.2.), the direct `ilvl`-only paragraph
+still at level 0's indent because `StyleUtil.apply(PPrBase)` looks the
+level indent up from the source's `w:numPr` alone (no `numId`) - a
+follow-up commit looks it up from the merged one.
 
 ### Phase 2b — the shield comes out (added 2026-09-12, see Layering)
 
