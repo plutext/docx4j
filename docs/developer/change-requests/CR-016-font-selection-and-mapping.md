@@ -506,6 +506,33 @@ Roman, MS Gothic, Nyala, Segoe UI Emoji, Symbol, Wingdings):**
 | P7 `fonts-light-bold` | (a) Calibri Light 11; (b) Calibri 11; (c) Calibri Light with `<w:b/>`; (d) Calibri with `<w:b/>`; same sentence | (a)/(b) widths (ledger: expect 0.975); (c)'s `pdffonts` face and advances (row 14) |
 | P8 `fonts-symbol-and-emoji` | (a) `w:ascii="symbol" w:hAnsi="symbol"` (lower case), text `abg`; (b) `wingdings`, U+F0FC; (c) `a😀b` in Calibri; (d) `a→b` and `a❑b` in Calibri (the U+2190-U+2BFF substitution, the existing behaviour) | (a) αβγ or abg (row 7); (c) Segoe UI Emoji (row 6); (d) Segoe UI Symbol |
 
+**Probe status (2026-09-12):** the eight probes are in `Corpus.java` (after
+the CR-015 set; helpers `fontsPara`, `rFonts`, `allFour`, `csOn`/`csOff`/
+`rtlOn`/`rtlOff`, `docDefaultsRFonts`, `fontTable`/`fontEntry`, `themePart`,
+`themeFontLang`), generated, and copied with `corpus.txt` (107 ids) to
+`$S/corpus/`.  docx4j's own answers today, read from the harness render's
+FO (`font-family` per inline) and PDF:
+
+| probe | docx4j today |
+|---|---|
+| P1 | (a) to (e) **all in Cousine** (the cs font): `w:cs w:val="0"`, the character-style override and `w:rtl w:val="0"` are read as on, and `w:rtl` on Latin text takes the cs font too; (f) the Arabic in DejaVu Sans Mono (Cousine has no Arabic; the coverage pass found a mono that has); (g) Carlito |
+| P2 | (a) and (b) one span: `日本 語 ` x8 wholly in the East Asian substitute (Source Han Sans), spaces included; (c) the digits in Carlito, the ideographic comma U+3001 in **Noto Sans Mongolian** (an uncovered shared character is sent to the first covering font by name, not to the substitute its CJK neighbours got); (d) each `日本 ` with its trailing space in Source Han Sans, `def abc ` in Carlito |
+| P3 | (a) Hebrew with nothing: **Tinos** (the Times New Roman heuristic), split at the ASCII comma and full stop into Liberation Sans; (b) `w:rtl` and (c) `w:cs`: Liberation Serif (the cs font); (d) Arabic with nothing: the span is left in Liberation Sans and **renders as `#` boxes** (FOP's not-found glyph; the coverage pass did not rescue it, though (e) shows it can: `w:cs` gives Noto Kufi Arabic); (f) Liberation Sans |
+| P4 | (a) and (b) Carlito - by accident: the run resolved to **Nyala** (sixteen "Font 'Nyala' is not mapped" warnings) and fell back to the default font, which is the theme's Carlito; on a box with Nyala the text is set in it |
+| P5 | (a), (b), (c), (e), (f) all **Liberation Serif**, the document default: the fontTable's `w:family` and `w:panose1` are unread and the made-up name has no class; (d) `w:altName="Arial"` gives Arimo; (g) Cyrillic and Greek in Liberation Serif; (h) Liberation Serif |
+| P6 | (a) Tinos (Times New Roman, the built-in default); (b) theme references *and* an explicit `w:ascii`, no theme part: **Tinos** - `StyleUtil.apply(RFonts)` keeps the theme attribute and drops the explicit name ("theme trumps non theme"), and with no theme part the theme attribute resolves to nothing; (c) `w:ascii` only with Latin-1 text: `caf` in Liberation Sans, then `é ` and **`über fa`, `çade na`** in Tinos - after a Latin-1 character the dispatch sets the current range to U+0000-U+007F, so the ASCII letters that follow join the hAnsi span instead of returning to `w:ascii` (a dispatch bug of its own, invisible while ascii and hAnsi name the same font); (d) `w:hAnsi` only: Tinos; (e) Liberation Sans |
+| P7 | all four in Carlito; (c) and (d) both in Carlito Bold (`pdffonts`): Calibri Light's `w:b` takes the substitute's real bold |
+| P8 | (a) `symbol` lower case: **`abgdpw` in Carlito** (not the symbol path); (b) `wingdings` lower case: the private-use code points left in Carlito; (c) the emoji in Carlito (notdef); (d) `→` in Carlito (it has it), `❑` and `✔` in Noto Sans Symbols 2; (e) `Symbol`: αβγδπω in DejaVu Serif; (f) `Wingdings`: ✓🗹▪ in Noto Sans Symbols 2 |
+
+Three things the render found that the review had not: the Latin-1 range
+resets the current range to ASCII (P6 (c)), an uncovered *shared*
+character is sent to whichever installed font covers it first rather than
+to its neighbours' substitute (P2 (c)), and a Hebrew/Arabic run without
+`w:cs` can reach FOP with no covering font at all (P3 (d)).  All three are
+phase 2's.  The theme+explicit case (P6 (b)) is a `StyleUtil.apply(RFonts)`
+question - whether Word keeps the explicit name as the fallback for a theme
+it cannot resolve - and its answer goes to CR-015's merge rule, not here.
+
 Not probed: embedded fonts (the harness cannot embed; row 15 gets a unit
 test on `docx4j-samples-docx4j/sample-docs/FontEmbedded.docx`, which embeds
 its three fonts as obfuscated parts), the Chinese code-page rule (needs the fonts), the
@@ -717,7 +744,7 @@ One commit, nothing else in it; hash into `.git-blame-ignore-revs`;
 `.xsd`.  Exit: no CR in those paths; `mvn -o -q -Dgpg.skip=true install -pl
 docx4j-core -DskipTests` unchanged.
 
-### Phase 0b — verification probes (no code change)
+### Phase 0b — verification probes (no code change) — probes cut and on the share 2026-09-12; goldens pending
 
 Add the eight `fonts-*` probes to `Corpus.java` (`Doc` has `documentDefaultRun`,
 `font`, `addParagraphStyle`, the run customisers; new helpers: a character

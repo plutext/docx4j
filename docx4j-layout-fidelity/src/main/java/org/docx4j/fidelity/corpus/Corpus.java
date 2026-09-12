@@ -39,6 +39,19 @@ public final class Corpus {
 
 	private static final List<Probe> PROBES = new ArrayList<>();
 
+	// CR-016 fonts-* constants (declared before the static block that uses them)
+	/** The sentence every fonts-* case sets, so widths compare across cases and probes. */
+	private static final String FONTS_SENTENCE =
+			"The quick brown fox jumps over the lazy dog while the farmer watches from the gate.";
+	private static final String ARABIC_SENTENCE = "مرحبا بالعالم، هذا نص تجريبي قصير لقياس الخط.";
+	private static final String HEBREW_SENTENCE = "שלום עולם, זהו משפט קצר לבדיקת הגופן.";
+	private static final String CYRILLIC_GREEK_SENTENCE = "Привет, мир: это короткое предложение. Γειά σου κόσμε, αβγδ εζηθ.";
+	private static final String LATIN1_SENTENCE = "café über façade naïve ñandú Ångström œuvre – ¿qué? ½ × ÷";
+	/** Arial's and Times New Roman's PANOSE-1, as Word writes them in fontTable.xml. */
+	private static final String PANOSE_ARIAL = "020B0604020202020204";
+	private static final String PANOSE_TIMES = "02020603050405020304";
+
+
 	static {
 		// ---------------------------------------------------------- spacing
 		PROBES.add(new Probe("spacing-adjacent",
@@ -2241,6 +2254,164 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+
+		/*
+		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
+		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
+		 * fonts (w:ascii, w:hAnsi, w:eastAsia, w:cs) formats each character, and what Word
+		 * does with a font the machine lacks.  Every case sets the same sentence, so the
+		 * golden's text layer (widths, pdffonts) decides; the case letters are in the text
+		 * and the runs carry no label.
+		 */
+		PROBES.add(new Probe("fonts-cs-off",
+				"docDefaults Carlito 11pt with w:cs Courier New; character style CsOn stating w:cs.  Runs of one "
+				+ "sentence: (a) w:cs (control: the cs font, Courier New); (b) w:cs w:val=0; (c) w:rStyle CsOn "
+				+ "with a direct w:cs w:val=0; (d) w:rtl w:val=0; (e) w:rtl on Latin text; (f) w:cs on Arabic "
+				+ "text (control) - which of (b)-(e) are set in Carlito, i.e. is a false value off?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 22);
+			docDefaultsRFonts(d).setCs("Courier New");
+			addCharacterStyle(d, "CsOn", csOn());
+			fontsPara(d, "(a) w:cs: ", FONTS_SENTENCE, csOn());
+			fontsPara(d, "(b) w:cs w:val=0: ", FONTS_SENTENCE, csOff());
+			fontsPara(d, "(c) w:rStyle CsOn, direct w:cs w:val=0: ", FONTS_SENTENCE, rStyle("CsOn").andThen(csOff()));
+			fontsPara(d, "(d) w:rtl w:val=0: ", FONTS_SENTENCE, rtlOff());
+			fontsPara(d, "(e) w:rtl: ", FONTS_SENTENCE, rtlOn());
+			fontsPara(d, "(f) w:cs, Arabic: ", ARABIC_SENTENCE, csOn());
+			fontsPara(d, "(g) nothing, the control: ", FONTS_SENTENCE, null);
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-space-cjk",
+				"ascii/hAnsi Carlito 12pt, eastAsia MS Gothic.  (a) '日本 語 ' repeated: does the space between "
+				+ "two CJK words take the ascii font (Carlito's 0.226em space) or the East Asian one (MS Gothic's "
+				+ "half em)?  (b) the same with w:hint eastAsia; (c) digits and an ideographic comma between CJK; "
+				+ "(d) a Latin word's trailing space before CJK; (e) Carlito only, the control", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 24);
+			fontsPara(d, "(a) ", "日本 語 ".repeat(8), rFonts(null, null, null, "MS Gothic", null));
+			fontsPara(d, "(b) hint eastAsia: ", "日本 語 ".repeat(8), rFonts(null, null, null, "MS Gothic", org.docx4j.wml.STHint.EAST_ASIA));
+			fontsPara(d, "(c) ", "日本2013年、語 ".repeat(6), rFonts(null, null, null, "MS Gothic", null));
+			fontsPara(d, "(d) ", "abc 日本 def ".repeat(6), rFonts(null, null, null, "MS Gothic", null));
+			fontsPara(d, "(e) control: ", "abc def ".repeat(8), null);
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-hebrew-no-cs",
+				"docDefaults w:ascii Liberation Sans, w:hAnsi DejaVu Sans, w:cs Liberation Serif, 12pt - three "
+				+ "faces which all have Hebrew.  Hebrew text (a) with no w:cs and no w:rtl; (b) w:rtl; (c) w:cs; "
+				+ "Arabic text (d) with neither, (e) w:cs; (f) Latin, the control - which slot draws (a) and (d): "
+				+ "the ascii font ([MS-OI29500]'s table), the cs font (as the Indic ranges), or something else?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SANS, 24);
+			docDefaultsRFonts(d).setHAnsi(DEJAVU);
+			docDefaultsRFonts(d).setCs(SERIF);
+			fontsPara(d, "(a) Hebrew, nothing: ", HEBREW_SENTENCE, null);
+			fontsPara(d, "(b) Hebrew, w:rtl: ", HEBREW_SENTENCE, rtlOn());
+			fontsPara(d, "(c) Hebrew, w:cs: ", HEBREW_SENTENCE, csOn());
+			fontsPara(d, "(d) Arabic, nothing: ", ARABIC_SENTENCE, null);
+			fontsPara(d, "(e) Arabic, w:cs: ", ARABIC_SENTENCE, csOn());
+			fontsPara(d, "(f) Latin, the control: ", FONTS_SENTENCE, null);
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-theme-lang",
+				"w:themeFontLang w:val et-EE (Estonian); docDefaults name the theme fonts (minorHAnsi); the theme's "
+				+ "minor Latin font is Carlito and it carries Office's script list (Ethi Nyala, Beng Vrinda, ...).  "
+				+ "(a) a paragraph of prose; (b) the same with w:lang et-EE on the run - Carlito, or Nyala (docx4j "
+				+ "maps 'et' to the Ethiopic script because 'eth' contains it)?", () -> {
+			Doc d = Doc.create(15);
+			themePart(d, CARLITO, CARLITO);
+			themeFontLang(d, "et-EE");
+			fontsPara(d, "(a) theme font, no w:lang: ", FONTS_SENTENCE + " " + prose(2, 1), null);
+			fontsPara(d, "(b) theme font, w:lang et-EE: ", FONTS_SENTENCE + " " + prose(2, 2),
+					rpr -> rpr.setLang(Doc.language("et-EE")));
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-unresolvable",
+				"docDefaults Liberation Serif 11pt.  Runs in made-up families no machine has, differing only in "
+				+ "their fontTable entry: (a) no entry; (b) w:family swiss, Arial's w:panose1, w:charset 00; (c) "
+				+ "w:family roman, Times New Roman's panose; (d) w:altName Arial; (e) w:altName naming another "
+				+ "absent family with no entry; (f) w:altName naming an absent family whose own entry says swiss + "
+				+ "Arial's panose; (g) as (b) with Cyrillic and Greek text; (h) Liberation Serif, the control - "
+				+ "which face draws each (pdffonts): the document default, the UI font, a panose/family match, the "
+				+ "altName, or the altName's class; and does (g) change face per character?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 22);
+			fontTable(d,
+					fontEntry("Docx4j Probe B", "swiss", PANOSE_ARIAL, null)
+					+ fontEntry("Docx4j Probe C", "roman", PANOSE_TIMES, null)
+					+ fontEntry("Docx4j Probe D", null, null, "Arial")
+					+ fontEntry("Docx4j Probe E", null, null, "Docx4j Probe X")
+					+ fontEntry("Docx4j Probe F", null, null, "Docx4j Probe Y")
+					+ fontEntry("Docx4j Probe Y", "swiss", PANOSE_ARIAL, null));
+			fontsPara(d, "(a) no fontTable entry: ", FONTS_SENTENCE, allFour("Docx4j Probe A"));
+			fontsPara(d, "(b) swiss, Arial panose: ", FONTS_SENTENCE, allFour("Docx4j Probe B"));
+			fontsPara(d, "(c) roman, Times panose: ", FONTS_SENTENCE, allFour("Docx4j Probe C"));
+			fontsPara(d, "(d) altName Arial: ", FONTS_SENTENCE, allFour("Docx4j Probe D"));
+			fontsPara(d, "(e) altName absent, no entry: ", FONTS_SENTENCE, allFour("Docx4j Probe E"));
+			fontsPara(d, "(f) altName absent, swiss entry: ", FONTS_SENTENCE, allFour("Docx4j Probe F"));
+			fontsPara(d, "(g) as (b), Cyrillic and Greek: ", CYRILLIC_GREEK_SENTENCE, allFour("Docx4j Probe B"));
+			fontsPara(d, "(h) Liberation Serif, the control: ", FONTS_SENTENCE, allFour(SERIF));
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-missing-slots",
+				"docDefaults with no w:rFonts at all (11pt), and no theme part.  (a) a run with no w:rPr; (b) a run "
+				+ "naming w:asciiTheme/w:hAnsiTheme minorHAnsi AND w:ascii/w:hAnsi Liberation Sans; (c) a run with "
+				+ "w:ascii Liberation Sans only, text with é ü ñ (the hAnsi range); (d) a run with w:hAnsi Liberation "
+				+ "Sans only, ASCII text; (e) Liberation Sans in all four slots, the control - Word's built-in "
+				+ "default font, its theme when the document has none, and its fallback for an empty slot", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 22);
+			docDefaultsRPr(d).setRFonts(null);
+			fontsPara(d, "(a) no w:rFonts anywhere: ", FONTS_SENTENCE, null);
+			fontsPara(d, "(b) theme refs and explicit Liberation Sans, no theme part: ", FONTS_SENTENCE, rpr -> {
+				org.docx4j.wml.RFonts rf = Doc.F.createRFonts();
+				rf.setAsciiTheme(org.docx4j.wml.STTheme.MINOR_H_ANSI);
+				rf.setHAnsiTheme(org.docx4j.wml.STTheme.MINOR_H_ANSI);
+				rf.setAscii(SANS);
+				rf.setHAnsi(SANS);
+				rpr.setRFonts(rf);
+			});
+			fontsPara(d, "(c) w:ascii only, hAnsi-range text: ", LATIN1_SENTENCE, rFonts(SANS, null, null, null, null));
+			fontsPara(d, "(d) w:hAnsi only, ASCII text: ", FONTS_SENTENCE, rFonts(null, SANS, null, null, null));
+			fontsPara(d, "(e) Liberation Sans, the control: ", FONTS_SENTENCE, allFour(SANS));
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-light-bold",
+				"the same sentence in (a) Calibri Light 11pt; (b) Calibri 11pt; (c) Calibri Light with w:b; (d) "
+				+ "Calibri with w:b - the Light face's advances against the regular's (CR-001 ledger4 M1: expect "
+				+ "about 0.975), and which face Word's PDF names for (c), Calibri Light with synthetic bold or "
+				+ "Calibri Bold (M2)", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 22);
+			d.para().noLabel().inheritSpacing().bareText("(a) Calibri Light: ").run(FONTS_SENTENCE, "Calibri Light", 22, null).add();
+			d.para().noLabel().inheritSpacing().bareText("(b) Calibri: ").run(FONTS_SENTENCE, "Calibri", 22, null).add();
+			d.para().noLabel().inheritSpacing().bareText("(c) Calibri Light, w:b: ").run(FONTS_SENTENCE, "Calibri Light", 22, Doc::bold).add();
+			d.para().noLabel().inheritSpacing().bareText("(d) Calibri, w:b: ").run(FONTS_SENTENCE, "Calibri", 22, Doc::bold).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-symbol-and-emoji",
+				"docDefaults Carlito 12pt.  (a) w:rFonts 'symbol' (lower case) with 'abgdpw'; (b) 'wingdings' "
+				+ "(lower case) with U+F0FC U+F0FE U+F0A7; (c) an emoji in Carlito; (d) an arrow, a shadowed "
+				+ "square and a check mark (U+2190-U+2BFF) in Carlito; (e) 'Symbol' and (f) 'Wingdings' in title "
+				+ "case, the controls - is the symbol-font name case-insensitive, and which face draws the emoji "
+				+ "and the symbols Carlito lacks?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 24);
+			fontsPara(d, "(a) 'symbol': ", "abgdpw", rFonts("symbol", "symbol", null, null, null));
+			fontsPara(d, "(b) 'wingdings': ", "", rFonts("wingdings", "wingdings", null, null, null));
+			fontsPara(d, "(c) emoji: ", "a😀b 😀😀 c", null);
+			fontsPara(d, "(d) symbols: ", "a→b ❑ c ✔ d", null);
+			fontsPara(d, "(e) 'Symbol': ", "abgdpw", rFonts("Symbol", "Symbol", null, null, null));
+			fontsPara(d, "(f) 'Wingdings': ", "", rFonts("Wingdings", "Wingdings", null, null, null));
+			return d.pkg();
+		}));
+
 		/*
 		 * E4/E5's remaining clause: what a w:tblW of type pct means when the w:tblGrid
 		 * disagrees with it.  §6.5's exemption for a table stating a width of its own is
@@ -3428,6 +3599,127 @@ public final class Corpus {
 		id.setVal(BigInteger.valueOf(numId));
 		np.setNumId(id);
 		return np;
+	}
+
+
+	// ---------------------------------------------------------------- CR-016 fonts-* helpers
+
+	private static org.docx4j.wml.RPr docDefaultsRPr(Doc d) {
+		return d.mdp().getStyleDefinitionsPart().getJaxbElement().getDocDefaults().getRPrDefault().getRPr();
+	}
+
+	private static org.docx4j.wml.RFonts docDefaultsRFonts(Doc d) {
+		org.docx4j.wml.RPr rpr = docDefaultsRPr(d);
+		if (rpr.getRFonts() == null) rpr.setRFonts(Doc.F.createRFonts());
+		return rpr.getRFonts();
+	}
+
+	/** One paragraph: a lead-in run with no w:rPr (the document default font), then the text in a run
+	 *  carrying exactly what the customiser sets (no w:rPr at all when it is null). */
+	private static P fontsPara(Doc d, String lead, String text, java.util.function.Consumer<org.docx4j.wml.RPr> customiser) {
+		return d.para().noLabel().inheritSpacing().bareText(lead).run(bareRun(text, customiser)).add();
+	}
+
+	/** A w:rFonts stating whichever slots are not null (the rest are inherited), and the hint. */
+	private static java.util.function.Consumer<org.docx4j.wml.RPr> rFonts(String ascii, String hAnsi, String cs,
+			String eastAsia, org.docx4j.wml.STHint hint) {
+		return rpr -> {
+			org.docx4j.wml.RFonts rf = Doc.F.createRFonts();
+			if (ascii != null) rf.setAscii(ascii);
+			if (hAnsi != null) rf.setHAnsi(hAnsi);
+			if (cs != null) rf.setCs(cs);
+			if (eastAsia != null) rf.setEastAsia(eastAsia);
+			if (hint != null) rf.setHint(hint);
+			rpr.setRFonts(rf);
+		};
+	}
+
+	private static java.util.function.Consumer<org.docx4j.wml.RPr> allFour(String font) {
+		return rFonts(font, font, font, font, null);
+	}
+
+	private static org.docx4j.wml.BooleanDefaultTrue flag(boolean on) {
+		org.docx4j.wml.BooleanDefaultTrue b = new org.docx4j.wml.BooleanDefaultTrue();
+		if (!on) b.setVal(false);
+		return b;
+	}
+
+	private static java.util.function.Consumer<org.docx4j.wml.RPr> csOn() { return rpr -> rpr.setCs(flag(true)); }
+	private static java.util.function.Consumer<org.docx4j.wml.RPr> csOff() { return rpr -> rpr.setCs(flag(false)); }
+	private static java.util.function.Consumer<org.docx4j.wml.RPr> rtlOn() { return rpr -> rpr.setRtl(flag(true)); }
+	private static java.util.function.Consumer<org.docx4j.wml.RPr> rtlOff() { return rpr -> rpr.setRtl(flag(false)); }
+
+	/** w:themeFontLang in the settings part. */
+	private static void themeFontLang(Doc d, String val) throws Exception {
+		org.docx4j.wml.CTLanguage l = Doc.F.createCTLanguage();
+		l.setVal(val);
+		d.mdp().getDocumentSettingsPart().getContents().setThemeFontLang(l);
+	}
+
+	/** A fontTable part holding exactly these w:font entries (the document otherwise has none). */
+	private static void fontTable(Doc d, String fontEntries) throws Exception {
+		org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart ftp =
+				new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
+		ftp.setJaxbElement((org.docx4j.wml.Fonts) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(
+				"<w:fonts xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+				+ fontEntries + "</w:fonts>")));
+		d.mdp().addTargetPart(ftp);
+	}
+
+	/** One w:font entry, as Word writes them: charset 00, variable pitch, and whichever of family, panose
+	 *  and altName are given. */
+	private static String fontEntry(String name, String family, String panose, String altName) {
+		StringBuilder sb = new StringBuilder("<w:font w:name=\"" + name + "\">");
+		if (altName != null) sb.append("<w:altName w:val=\"" + altName + "\"/>");
+		if (panose != null) sb.append("<w:panose1 w:val=\"" + panose + "\"/>");
+		sb.append("<w:charset w:val=\"00\"/>");
+		if (family != null) sb.append("<w:family w:val=\"" + family + "\"/>");
+		sb.append("<w:pitch w:val=\"variable\"/></w:font>");
+		return sb.toString();
+	}
+
+	/** A theme part whose font scheme names these Latin faces and carries Office's own per-script
+	 *  list (from a Word 365 resave: what a document's theme part says for Ethi, Beng, ...). */
+	private static void themePart(Doc d, String minorLatin, String majorLatin) throws Exception {
+		String scripts = "<a:font script=\"Jpan\" typeface=\"游明朝\"/><a:font script=\"Hang\" typeface=\"맑은 고딕\"/>"
+				+ "<a:font script=\"Hans\" typeface=\"等线\"/><a:font script=\"Hant\" typeface=\"新細明體\"/>"
+				+ "<a:font script=\"Arab\" typeface=\"Arial\"/><a:font script=\"Hebr\" typeface=\"Arial\"/>"
+				+ "<a:font script=\"Thai\" typeface=\"Cordia New\"/><a:font script=\"Ethi\" typeface=\"Nyala\"/>"
+				+ "<a:font script=\"Beng\" typeface=\"Vrinda\"/><a:font script=\"Gujr\" typeface=\"Shruti\"/>"
+				+ "<a:font script=\"Khmr\" typeface=\"DaunPenh\"/><a:font script=\"Knda\" typeface=\"Tunga\"/>"
+				+ "<a:font script=\"Guru\" typeface=\"Raavi\"/><a:font script=\"Cans\" typeface=\"Euphemia\"/>"
+				+ "<a:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><a:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/>"
+				+ "<a:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><a:font script=\"Thaa\" typeface=\"MV Boli\"/>"
+				+ "<a:font script=\"Deva\" typeface=\"Mangal\"/><a:font script=\"Telu\" typeface=\"Gautami\"/>"
+				+ "<a:font script=\"Taml\" typeface=\"Latha\"/><a:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/>"
+				+ "<a:font script=\"Orya\" typeface=\"Kalinga\"/><a:font script=\"Mlym\" typeface=\"Kartika\"/>"
+				+ "<a:font script=\"Laoo\" typeface=\"DokChampa\"/><a:font script=\"Sinh\" typeface=\"Iskoola Pota\"/>"
+				+ "<a:font script=\"Mong\" typeface=\"Mongolian Baiti\"/><a:font script=\"Viet\" typeface=\"Arial\"/>"
+				+ "<a:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/><a:font script=\"Geor\" typeface=\"Sylfaen\"/>"
+				+ "<a:font script=\"Armn\" typeface=\"Arial\"/>";
+		String fill = "<a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill>";
+		String ln = "<a:ln w=\"9525\">" + fill + "</a:ln>";
+		String xml = "<a:theme xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" name=\"Office\"><a:themeElements>"
+				+ "<a:clrScheme name=\"Office\"><a:dk1><a:sysClr val=\"windowText\" lastClr=\"000000\"/></a:dk1>"
+				+ "<a:lt1><a:sysClr val=\"window\" lastClr=\"FFFFFF\"/></a:lt1><a:dk2><a:srgbClr val=\"1F497D\"/></a:dk2>"
+				+ "<a:lt2><a:srgbClr val=\"EEECE1\"/></a:lt2><a:accent1><a:srgbClr val=\"4F81BD\"/></a:accent1>"
+				+ "<a:accent2><a:srgbClr val=\"C0504D\"/></a:accent2><a:accent3><a:srgbClr val=\"9BBB59\"/></a:accent3>"
+				+ "<a:accent4><a:srgbClr val=\"8064A2\"/></a:accent4><a:accent5><a:srgbClr val=\"4BACC6\"/></a:accent5>"
+				+ "<a:accent6><a:srgbClr val=\"F79646\"/></a:accent6><a:hlink><a:srgbClr val=\"0000FF\"/></a:hlink>"
+				+ "<a:folHlink><a:srgbClr val=\"800080\"/></a:folHlink></a:clrScheme>"
+				+ "<a:fontScheme name=\"Office\">"
+				+ "<a:majorFont><a:latin typeface=\"" + majorLatin + "\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/>" + scripts + "</a:majorFont>"
+				+ "<a:minorFont><a:latin typeface=\"" + minorLatin + "\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/>" + scripts + "</a:minorFont>"
+				+ "</a:fontScheme>"
+				+ "<a:fmtScheme name=\"Office\"><a:fillStyleLst>" + fill + fill + fill + "</a:fillStyleLst>"
+				+ "<a:lnStyleLst>" + ln + ln + ln + "</a:lnStyleLst>"
+				+ "<a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle>"
+				+ "<a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst>"
+				+ "<a:bgFillStyleLst>" + fill + fill + fill + "</a:bgFillStyleLst></a:fmtScheme>"
+				+ "</a:themeElements></a:theme>";
+		org.docx4j.openpackaging.parts.ThemePart tp = new org.docx4j.openpackaging.parts.ThemePart();
+		tp.setJaxbElement((org.docx4j.dml.Theme) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(xml)));
+		d.mdp().addTargetPart(tp);
 	}
 
 	/**
