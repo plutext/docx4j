@@ -310,8 +310,8 @@ Property resolution (CR-015, phase 1):
   states only w:lang (or w14:ligatures) was never applied; the w14 text-effect and OpenType
   members were not carried at all.
 - w:numId and w:ilvl each inherit: a direct w:numPr stating only w:ilvl takes that level of the
-  style's list (measured: 1.1.), where it was dropped whole and the paragraph stayed at the
-  style's level.
+  style's list, label and indent (measured: 1.1. at the level's indent), where it was dropped
+  whole and the paragraph stayed at the style's level.
 - w:lineRule qualifies w:line, so a direct w:spacing stating only w:after keeps a style's
   exact or atLeast rule (measured: a 24pt exact pitch stayed 24pt in Word and became 480
   auto, double-spaced, in docx4j); a w:line without a rule is auto, as before.

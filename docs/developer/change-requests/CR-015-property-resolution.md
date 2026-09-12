@@ -637,9 +637,13 @@ whose rPr-less runs now carry their own size), real3 0 changed - the
 zero-delta the shield predicted.  Probes: `styles-default-pstyle` 73% -> 100%
 line parity, two pages as Word; `styles-numpr-ilvl-only` 33% -> 50%, every
 label now Word's (1. 1.1. 2. 2.1. 2.2.), the direct `ilvl`-only paragraph
-still at level 0's indent because `StyleUtil.apply(PPrBase)` looks the
-level indent up from the source's `w:numPr` alone (no `numId`) - a
-follow-up commit looks it up from the merged one.
+was still at level 0's indent because `StyleUtil.apply(PPrBase)` looked the
+level indent up from the source's `w:numPr` alone (no `numId`); the
+follow-up commit looks it up from the merged one, after which every label
+and text x agrees with the golden to 0.05pt (corpora unchanged; the harness
+still scores it 50% because the level-1 label fills its 18pt hanging indent
+and pdftotext reads "1.1.(b)" with no space - the known label-join
+artefact, not layout).
 
 ### Phase 2b — the shield comes out (added 2026-09-12, see Layering)
 

@@ -1932,10 +1932,15 @@ public class StyleUtil {
 				Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
 			*/
 			
-			// Apply indent from source numPr
+			// Apply indent from the numbering this layer brings in: the level of the MERGED
+			// w:numPr, since a layer may state only w:ilvl (the list from the style) or only
+			// w:numId (the level from the style) - measured, CR-015 probe styles-numpr-ilvl-only:
+			// a direct w:ilvl 1 alone sits at level 1's indent.  Until 17.1.1 the source's own
+			// w:numPr was looked up, which without a w:numId gave no indent at all.
 			if (numberingDefinitionsPart !=null
-					&& source.getNumPr()!=null) {
-				Ind numInd = numberingDefinitionsPart.getInd(source.getNumPr());
+					&& source.getNumPr()!=null
+					&& destination.getNumPr()!=null && !numberingOff(destination.getNumPr())) {
+				Ind numInd = numberingDefinitionsPart.getInd(destination.getNumPr());
 				if (numInd!=null) {
 					destination.setInd(apply(numInd, destination.getInd()));	
 					// TODO: make apply more sophisticated; see code in Indent.
