@@ -7,6 +7,35 @@ Version 17.1.1
 Changes in Version 17.1.1
 --------------------------
 
+Fonts (CR-016, the font selection and mapping review, phases 0-1):
+
+- Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
+  docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
+  on a headless deployment - the stock ubuntu, debian, fedora and alpine images ship no font
+  files at all, so the jars are the whole supply - Times New Roman, Arial and Courier New (or
+  Calibri and Cambria) had no metric substitute.
+- w:cs and w:rtl are read as values: w:cs w:val="0", which turns an inherited complex-script
+  flag off, used to send the run to the complex-script font all the same (measured against
+  Word: a false value is off; w:rtl alone on Latin text does take the cs font).
+- The theme language is matched on its exact subtag: an Estonian document (w:themeFontLang
+  et-EE) resolved every theme-font run to the theme's Ethiopic face, Nyala, because "et" is a
+  substring of "eth"; Mongolian and Wolof likewise.  The document default font is now resolved
+  with the theme language known, not before it is read.
+- A theme font reference in a document with no theme part resolves to the Office theme's face
+  (Calibri for the minor font, Cambria for the major), which is what Word supplies to such a
+  document - at the run level as it already did for the document default; such a run used to
+  fall to the document default font.
+- RunFontSelector resolves a run's properties once, through PropertyResolver.getEffectiveRPr,
+  and the FO visitor exporter hands it the effective rPr it already holds (new
+  fontSelector(pPr, rPr, text, true)); it no longer walks the paragraph style itself.  A run
+  with no w:rFonts anywhere is dispatched by character range like any other (Times New Roman,
+  Word's built-in default, for its Latin slots), so non-Latin text in it reaches the
+  glyph-coverage pass instead of the default font's notdef.  A complex-script run whose cs
+  font resolves to nothing no longer throws (Mapper.get(null) returns null).
+- docx4j-layout-fidelity: -Dfidelity.fontMapper=identity|best and -Dfidelity.fonts=all|jars|<dir>
+  score a font mapper under a chosen font environment; docs/developer/change-requests/CR-016
+  records the mapper matrix and the enumerated font sets of the popular distributions.
+
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 - A PAGEREF whose cached result is empty is computed rather than dropped: a complex field

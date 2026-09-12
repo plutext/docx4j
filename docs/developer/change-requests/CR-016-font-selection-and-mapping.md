@@ -1,8 +1,10 @@
 # CR-016: Font selection and mapping (`RunFontSelector`, `Mapper` and its subpackages) — line endings, one resolution, the character-range rules, the mapping order, discovery, cost, API
 
-Status: IN PROGRESS (2026-09-12) — phase 0 done (d643638ad), phase 0b done (the
-eight probes and their goldens, the verification table settled); Jason read the
-CR the same day and started the work.  The review below was written that day
+Status: IN PROGRESS (2026-09-12) — phases 0 (d643638ad), 0b (the eight probes
+and their goldens, the verification table settled), 0c (the mapper matrix and
+the font environments; the jar-discovery fix b1eb9e61e) and 1 (one resolution,
+`w:cs` by value, the theme language, the Office theme faces) done; 2 to 5 open.
+Jason read the CR the same day and started the work.  The review below was written that day
 against 7563277a0 (CR-015 tidy-up), with every "measured" claim taken from a
 scratch test that was run and then deleted (`ScratchFontsProbeTest`, not
 committed; the phase tests reproduce each case as an assertion).
@@ -352,6 +354,20 @@ javadoc cites), ECMA-376, or one of the probes below.
     candidate order there; substitute search here).  Phase 0c scores the
     corpus with BestMatchingMapper, on this box and on the font sets a
     deployment actually has (Decisions 7), before phase 3 touches either.
+
+15. **Only one font jar was ever discovered** (found by phase 0c, fixed at once
+    since the matrix could not be run without it: b1eb9e61e).
+    `PhysicalFonts.getFontUrls` used `ClassLoader.getResource("fonts")`, which
+    answers with one classpath root, so of `docx4j-export-fo-fonts-croscore`
+    and `-crosextra` - both under `fonts/` - only the jar first on the
+    classpath was walked.  Measured with system fonts off: 15 physical fonts
+    (Carlito, Caladea, the symbol jar) and not one of Arimo, Tinos or Cousine;
+    27 after the fix.  On the deployments that matter most this was the whole
+    font supply: the stock `ubuntu:24.04`, `debian:12`, `fedora:41` and
+    `alpine:3.20` images ship **no font files at all**, and `eclipse-temurin:21`
+    eight DejaVu files (Sans, Sans Mono, Serif; no italics) - so Times New
+    Roman, Arial and Courier New had no metric substitute there.
+    `JarFontDiscoveryTest` pins it.
 
 ## What the code's own comments record (read 2026-09-12)
 
@@ -791,7 +807,7 @@ column.  Phase 1 needs P1 and P4 only for its expected values (the ECMA
 reading is implemented meanwhile); phase 2 waits for P2, P3 and P8; phase 3
 for P5 and P7; phase 4 needs none.
 
-### Phase 0c — score `BestMatchingMapper`, and the font environments (no docx4j code change)
+### Phase 0c — score `BestMatchingMapper`, and the font environments — DONE 2026-09-12 (one code change after all: the jar-discovery fix, gap 15)
 
 The harness gains `-Dfidelity.fontMapper=identity|best` (a `setFontMapper`
 before `toFO`; today's default stays `identity`) and a font-environment
@@ -812,10 +828,81 @@ Cantarell/Ubuntu and whatever else they carry), and copies the files into
 per-distribution directories on this box, with the inventory recorded in
 the CR.  Then the three corpora are scored in the matrix
 
-| mapper | this box | jars only | each stock desktop set | each headless image |
-|---|---|---|---|---|
-| IdentityPlusMapper | `p4-tables` (baseline) | | | |
-| BestMatchingMapper | | | | |
+**The font environments, enumerated 2026-09-12** (`docker run` on the official
+images; the desktop sets by installing the `fonts-*` packages
+`ubuntu-desktop-minimal` / `task-gnome-desktop` would pull in, and Fedora's
+`fonts` group, then copying `/usr/share/fonts` out to `~/fidelity-fonts/`):
+
+| environment | font files | what is there (families) |
+|---|---|---|
+| `ubuntu:24.04`, `debian:12`, `fedora:41`, `alpine:3.20` (headless) | **0** | nothing: docx4j's jars are the whole supply |
+| `eclipse-temurin:21` | 8 | DejaVu Sans, Sans Mono, Serif (regular and bold; no italics) |
+| docx4j's jars alone (`-Dfidelity.fonts=jars`) | 27 | Arimo, Tinos, Cousine (croscore), Carlito, Caladea (crosextra), DejaVu Serif, Noto Sans Symbols, Noto Sans Symbols 2 (symbol); the Liberation jar is the alternative to croscore, not on this classpath |
+| Ubuntu 24.04 desktop (11 packages: fonts-dejavu-core/-mono, -droid-fallback, -liberation, -liberation-sans-narrow, -noto-cjk/-color-emoji/-core/-mono, -ubuntu, -urw-base35) | 344 | Liberation Sans/Serif/Mono/Sans Narrow, DejaVu Sans/Serif/Mono, Noto Sans/Serif and ~150 per-script Noto faces, Noto Sans CJK, Ubuntu, URW base 35 (Nimbus Sans/Roman/Mono, C059, P052, URW Gothic, URW Bookman, Z003, D050000L), Droid Sans Fallback |
+| Debian 12 desktop (12 packages: fonts-cantarell, -dejavu/-core/-extra, -droid-fallback, -liberation2, -noto-color-emoji, -noto-mono, -opensymbol, -quicksand, -symbola, -urw-base35) | 85 | Liberation Sans/Serif/Mono (2.x), DejaVu Sans/Serif/Mono (+Condensed, Light), Cantarell, URW base 35, Quicksand, Symbola, OpenSymbol, Noto Mono, Droid Sans Fallback; **no Noto Sans/Serif** |
+| Fedora 41 Workstation (`fonts` group: 126 packages, mostly `default-fonts-<lang>` meta-packages) | 73 | Noto Sans/Serif and their CJK and per-script faces, Noto Sans Mono, Cantarell, STIX Two, Vazirmatn, Padauk, Jomolhari; **no Liberation, no DejaVu**, no URW |
+
+Two things this says before any scoring: a Fedora desktop has neither of
+the two families the class defaults lean on first (Liberation and DejaVu),
+so its Latin fallbacks come from the jars or from Noto; and a Debian desktop
+has no Noto Sans/Serif, so a document font whose only stand-in is Noto falls
+through.  The stock desktops all carry the URW base 35 (Ubuntu and Debian) or
+STIX (Fedora), which the measured substitutes (Century Gothic, Georgia, Book
+Antiqua, Palatino, Arial Narrow) already use.
+
+**The matrix, scored 2026-09-12** (mean line parity over the three corpora,
+191 / 156 / 102 documents, against `p4-tables` = IdentityPlusMapper on this
+box, 0.9051 / 0.8799 / 0.9162; one cell is about six minutes, not thirty):
+
+| environment | IdentityPlusMapper | BestMatchingMapper |
+|---|---|---|
+| this box (1,246 physical fonts) | **0.9051 / 0.8799 / 0.9162** (baseline) | 0.8941 / 0.8634 / 0.8996 |
+| docx4j's jars alone (27), the headless images | 0.8818 / 0.8597 / 0.9077 | 0.8682 / 0.8463 / 0.9005 |
+| eclipse-temurin:21 (jars + 8 DejaVu) | 0.8826 / 0.8639 / 0.9087 | 0.8688 / 0.8500 / 0.9026 |
+| Ubuntu 24.04 desktop (+ jars) | 0.9050 / 0.8796 / 0.9135 | 0.8906 / 0.8642 / 0.8973 |
+| Debian 12 desktop (+ jars) | 0.9035 / 0.8798 / 0.9160 | 0.8907 / 0.8685 / 0.9115 |
+| Fedora 41 Workstation (+ jars) | 0.8829 / 0.8608 / 0.9077 | 0.8680 / 0.8401 / 0.8895 |
+
+What it says:
+
+- **BestMatchingMapper is behind IdentityPlusMapper in every environment**, by
+  0.010 to 0.020 of mean line parity on this box and on the desktops, and by
+  0.014 to 0.021 on the bare sets - the panose step is a net loss against the
+  identity-then-shared-passes order everywhere it was measured.  Decision 7
+  now has its number.
+- **An Ubuntu or Debian desktop reproduces this box's baseline** with
+  IdentityPlusMapper (0.9050 / 0.8796 / 0.9135 and 0.9035 / 0.8798 / 0.9160):
+  everything the fidelity work relies on is in Liberation, DejaVu, the URW
+  base 35 and the jars, which both carry.
+- **The jars alone, eclipse-temurin and Fedora Workstation sit about 0.02
+  lower, and for one reason**: none of the three has Liberation Sans or DejaVu
+  Sans (Fedora ships Noto and Cantarell; temurin's DejaVu is Sans/Serif/Mono
+  regular and bold only), so the class defaults that follow Arimo/Tinos
+  (`FontFallback.SANS_DEFAULTS` ...) and the measured substitutes that name
+  DejaVu Sans (Verdana), Nimbus/URW faces (Century Gothic, Georgia, Palatino,
+  Arial Narrow) and Noto Sans find nothing.  Where the jars are the whole
+  supply the document falls to the metric clones or the default serif.  A
+  deployment on a headless image therefore gets the jars-only column, and the
+  thing to improve there is the jars' own coverage (Decisions 7 follow-up), not
+  the mapper.
+- **Named**: the jars-only and Fedora cells regress the same sixteen documents
+  of corpus 1, and the five worst (0.90 -> 0.12 and a page over, 0.88 -> 0.11
+  and a page over, 0.90 -> 0.46, 0.92 -> 0.48, 0.95 -> 0.53) all set text in
+  **Arial Narrow**, which the baseline draws in Nimbus Sans Narrow (352 to 601
+  inlines each) and the jars-only render in Tinos or Carlito - Arial Narrow is
+  left unmapped by design where no condensed face is installed (see
+  `FontFallback.isCondensed`), and a condensed face's lines overflow into pages
+  when set in a normal one.  Century Gothic (URW Gothic, 294 inlines in
+  14_es-MX_tbl_14140) and Georgia (P052, 270 in 16_es-ES_num_tbl_12308) are the
+  same loss.  All three stand-ins are the **URW base 35** (ghostscript-fonts),
+  which Ubuntu and Debian desktops carry and the jars, temurin and Fedora do
+  not.  So the jars' coverage question for headless deployments is, first, a
+  condensed sans, and then the URW faces the measured table already names
+  (a licensing question as much as a packaging one: the 2017 URW base 35
+  release is AGPL-3.0 with a font exception).
+- The `p4-tables` baseline is reproducible: identity-ubuntu's real2 figure is
+  0.8796 against 0.8799, within the scorer's noise.
+
 
 against `p4-tables`, with `-Dfidelity.hyphenate=false`, one detached run
 per cell (about ten minutes each).  What the numbers answer: how far
@@ -825,9 +912,40 @@ the deployment the samples never mention; and which of the panose answers
 are worth keeping when phase 3 merges the two precedence orders.  No code
 in this package changes until the matrix is read.
 
-### Phase 1 — one resolution; `w:cs`/`w:rtl` by value; the theme language; the default font
+### Phase 1 — one resolution; `w:cs`/`w:rtl` by value; the theme language; the default font — DONE 2026-09-12
 
-As designed.  Gate: the 27 fonts tests and both test modules green; corpus
+As designed, with these particulars: the FO visitor keeps the effective rPr
+`handleRPr` already computes (`AbstractVisitorExporterGenerator.effectiveRPr`)
+and passes it with the new `fontSelector(pPr, rPr, text, rPrIsEffective)`;
+the XSLT pathway and every other caller resolve inside the selector with one
+`getEffectiveRPr(rPr, pPr)`.  A `themeFont(STTheme)` helper answers every
+theme reference (the theme part for the document's language, or the Office
+theme's Calibri/Cambria where the document has no theme part - P6 (b)), and the
+explicit attribute stands where a reference resolves to nothing.  Two things
+learned in the doing: a run with no `w:rFonts` must not get the default font in
+its *eastAsia* slot, since a Times New Roman there fires the table's preamble
+rule and sets the whole run in one span (the synthesized rFonts names ascii and
+hAnsi only); and a complex-script run whose cs font resolves to nothing used to
+reach `Mapper.get(null)` and throw - it now falls through to the range
+dispatch, and `Mapper.get` tolerates null.  `RunFontSelector.java` carried a
+literal NUL byte in a string (the `fallbackFor` cache key), which made `grep`
+treat the file as binary; it is a space now.  Tests: `FontsTestSupport` (a
+package whose document fonts are names of our own mapped to the two Liberation
+faces), `RunFontSelectorCsValueTest`, `LanguageTagToScriptMappingTest`,
+`RunFontSelectorThemeLangTest` (Estonian; and the default font with
+`ja-JP`), `RunFontSelectorNoThemePartTest`, `RunFontSelectorNoRFontsTest`;
+the fonts package's 79 tests green.  Gate (2026-09-12): `docx4j-core-tests`
+988 run, 0 failures (one run of `TemporaryImageCleanupTest` failed while the
+matrix's scorer was writing temporary images beside it, and passed alone);
+`docx4j-export-fo-tests` 600 run, 0 failures; the three corpora against
+`p4-tables`: 0.9051 / 0.8799 / 0.9162 unchanged, **0 changed documents**
+(no corpus document carries a false `w:cs`, an Estonian theme language or a
+theme reference without a theme part where the line breaks would see it,
+and the one-resolution change is equivalent by construction); probes:
+`fonts-cs-off` 46% -> 92% (the remaining mismatch is the right-to-left
+case's line order), the other seven and the five `styles-*` unchanged.
+Per-run cost not re-measured (the DOM per run, phase 4's, is untouched).
+Original gate text: the 27 fonts tests and both test modules green; corpus
 scored against `p4-tables` with `-Dfidelity.hyphenate=false`, every changed
 document read (the cs-value fix is the only expected mover; the Estonian
 fix cannot show on this box).  Measure `fontSelector` per run before and
@@ -885,7 +1003,15 @@ As designed; CHANGELOG entries for the HTML change and the deprecations.
 6. **Order against CR-001**: batch 42 (fonts) waits for phase 3 of this CR;
    batch 41's harness items and batch 43 are independent of it.
 7. **No decision on `BestMatchingMapper`'s future until it has been scored**
-   (Jason, 2026-09-12).  Phase 0c measures how far behind IdentityPlusMapper
+   (Jason, 2026-09-12).  Scored the same day (the matrix above): behind in
+   every environment, by 0.010-0.021.  The decision itself is still Jason's;
+   the CR's recommendation now is IdentityPlusMapper everywhere, the samples
+   and the Getting Started text to say so, BestMatchingMapper kept and given
+   the shared passes in phase 3 so that it stops losing what it need not,
+   and - the larger finding - the jars' own coverage for headless deployments
+   (a Liberation-or-croscore choice that leaves neither DejaVu Sans nor a
+   condensed face nor the URW faces available) to be looked at as its own
+   item.  Phase 0c measures how far behind IdentityPlusMapper
    it is on this box, and how both mappers fare with only the fonts docx4j
    ships and with the default English/European font sets of Ubuntu and the
    other popular distributions — the environments users actually convert

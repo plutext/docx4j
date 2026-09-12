@@ -792,6 +792,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
     	
         try {
         	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect, pPrDirect);
+        	effectiveRPr = rPr; // for RunFontSelector: the run is resolved once (CR-016 phase 1)
         	
 				
 			if (getLog().isDebugEnabled() && rPr!=null) {					

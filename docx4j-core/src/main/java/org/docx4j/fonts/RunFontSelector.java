@@ -2,6 +2,7 @@ package org.docx4j.fonts;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.convert.out.common.writer.SymbolMapper;
 import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.model.PropertyResolver;
@@ -101,6 +102,17 @@ public class RunFontSelector {
 		this.outputType = outputType;
 				
 		vis.setRunFontSelector(this);
+
+		// the theme language first: the default font is a theme reference in most
+		// documents, and its resolution depends on it (until 17.1.1 it was read after
+		// the default font had been computed and cached, so the default font ignored it)
+		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
+			try {
+				themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
+			} catch (Docx4JException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
 		
 		fallbackPhysicalFont = physicalFontFor(getDefaultFont());
 		fallbackFont = getPhysicalFont(getDefaultFont());
@@ -114,16 +126,6 @@ public class RunFontSelector {
 		}
 		
 		vis.setFallbackFont(fallbackFont);
-		
-		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
-			try {
-				themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
-			} catch (Docx4JException e) {
-				// TODO Auto-generated catch block
-				log.error(e.getMessage(), e);
-			}
-		}
-		
 	}
 	
 	String fallbackFont = null;
@@ -169,21 +171,42 @@ public class RunFontSelector {
 		return wordMLPackage.getMainDocumentPart().getThemePart();
 	}
 	
-	private Style defaultParagraphStyle;
-	
-    private Style getDefaultPStyle() {
-    	
-    	if (defaultParagraphStyle==null) {
-			defaultParagraphStyle = 
-					(wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
-							wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle() :
-					null);
+    /**
+     * The font a theme reference names: the theme part's answer for the document's
+     * themeFontLang; or, where the document has no theme part, the Office theme's own
+     * Latin faces - Word supplies that theme to such a document (measured, CR-016 probe
+     * fonts-missing-slots (b): Calibri for minorHAnsi, the explicit w:ascii beside the
+     * reference unused; Cambria is its major face).  Its East Asian and complex-script
+     * faces are empty, so those references resolve to nothing here and the explicit
+     * attribute, if any, stands.  Null where neither the theme nor the default says.
+     *
+     * @since 17.1.1
+     */
+    private String themeFont(org.docx4j.wml.STTheme type) {
+    	if (type==null) return null;
+    	if (getThemePart()!=null) {
+    		try {
+    			return getThemePart().getFont(type, themeFontLang);
+    		} catch (Docx4JException e) {
+    			log.error(e.getMessage(), e);
+    			return null;
+    		}
     	}
-		return defaultParagraphStyle;
+    	switch (type) {
+    		case MINOR_ASCII: case MINOR_H_ANSI: return "Calibri";
+    		case MAJOR_ASCII: case MAJOR_H_ANSI: return "Cambria";
+    		default: return null;
+    	}
     }
-    
-    
+
     private String defaultFont = null;
+
+    /**
+     * The document's default font for Latin text: the document defaults' w:ascii (a
+     * theme reference resolved through {@link #themeFont}), else w:hAnsi; Times New
+     * Roman where the defaults name no font at all (Word's built-in default, measured:
+     * CR-016 probe fonts-missing-slots (a)).
+     */
 	public String getDefaultFont() {
 		
 		if (defaultFont == null) {
@@ -195,75 +218,29 @@ public class RunFontSelector {
 				log.error(e.getMessage(), e);
 			}
 			
-			org.docx4j.wml.RFonts rFonts = propertyResolver.getDocumentDefaultRPr().getRFonts();
-		
-			if (rFonts==null) {
-				log.info("No styles/docDefaults/rPrDefault/rPr/rFonts - default to Times New Roman");
-				// Yes, Times New Roman is still buried in Word 2007
-				defaultFont = "Times New Roman"; 						
-			} else {						
-				// Usual case
-				if (rFonts.getAsciiTheme()==null ) {
-					
-					if (rFonts.getAscii()==null ) {
-						// TODO
-						log.error("Neither ascii or asciTheme.  What to do? ");
-						defaultFont = "Times New Roman"; 						
-						
-					} else {
-						log.info("rPrDefault/rFonts referenced " + rFonts.getAscii());								
-						defaultFont = rFonts.getAscii(); 							
-					}	
-					
-				} else {
-					if (getThemePart()==null) {
-						// No theme part - default to Calibri
-						log.info("No theme part - default to Calibri");
-						defaultFont= "Calibri"; 
-					} else {
-						String font=null;
-						try {
-							font = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
-						} catch (Docx4JException e) {
-							// TODO Auto-generated catch block
-							log.error(e.getMessage(), e);
-						}
-						if (font!=null) {
-							defaultFont= font; 
-						} else {
-								// No minorFont/latin in theme part - default to Calibri
-								log.info("No minorFont/latin in theme part - default to Calibri");								
-								defaultFont= "Calibri"; 
-						}
-					}
-				}  				
-			} 
+			org.docx4j.wml.RFonts rFonts = propertyResolver==null ? null
+					: propertyResolver.getDocumentDefaultRPr().getRFonts();
+			String f = null;
+			if (rFonts!=null) {
+				if (rFonts.getAsciiTheme()!=null) f = themeFont(rFonts.getAsciiTheme());
+				if (f==null) f = rFonts.getAscii();
+				if (f==null && rFonts.getAsciiTheme()!=null) {
+					// a theme reference the theme part cannot answer (an empty typeface)
+					f = "Calibri";
+				}
+				if (f==null && rFonts.getHAnsiTheme()!=null) f = themeFont(rFonts.getHAnsiTheme());
+				if (f==null) f = rFonts.getHAnsi();
+			}
+			if (f==null) {
+				log.info("No font in styles/docDefaults/rPrDefault/rPr/rFonts - default to Times New Roman");
+				f = "Times New Roman";
+			}
+			defaultFont = f;
 		}
-//		System.out.println("!" + defaultFont);
 		return defaultFont;
 	}
 	
 	
-    private DocumentFragment nullRPr(Document document, String text) {
-    	
-		if (outputType== RunFontActionType.DISCOVERY) {
-			vis.fontAction(getDefaultFont());
-			return null;
-		} 
-
-		// TODO: At present, we set a font on each and every span; 
-		// if we set a default on eg body, this wouldn't be necessary.
-		// Similarly for the FO case.
-		Element	span = createElement(document);
-		if (span!=null) {
-			document.appendChild(span);  
-			this.setAttribute(span, getDefaultFont());
-			span.setTextContent(text);  
-		}
-		
-		return result(document);
-    }
-    
     private DocumentFragment result(Document document) {
     	
 		if (outputType== RunFontActionType.DISCOVERY) {
@@ -759,13 +736,9 @@ public class RunFontSelector {
     public String asciiFontName(RPr rPr) {
     	RFonts rFonts = rPr==null ? null : rPr.getRFonts();
     	if (rFonts!=null) {
-    		if (rFonts.getAsciiTheme()!=null && getThemePart()!=null) {
-    			try {
-    				String f = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
-    				if (f!=null && f.length()>0) return f;
-    			} catch (Exception e) {
-    				log.debug(e.getMessage());
-    			}
+    		if (rFonts.getAsciiTheme()!=null) {
+    			String f = themeFont(rFonts.getAsciiTheme());
+    			if (f!=null && f.length()>0) return f;
     		}
     		if (rFonts.getAscii()!=null) return rFonts.getAscii();
     		if (rFonts.getHAnsi()!=null) return rFonts.getHAnsi();
@@ -773,7 +746,7 @@ public class RunFontSelector {
     	return getDefaultFont();
     }
 
-    private void captureLineSpec(PropertyResolver propertyResolver, PPr pPr, RPr rPr) {
+    private void captureLineSpec(PropertyResolver propertyResolver, PPr pPr, RPr rPr, boolean pPrIsEffective) {
     	if (outputType!=RunFontActionType.XSL_FO) return;
     	currentKerned = isKerned(rPr);
     	currentScalingPct = (rPr!=null && rPr.getW()!=null && rPr.getW().getVal()!=null)
@@ -789,7 +762,7 @@ public class RunFontSelector {
     	}
     	PPrBase.Spacing spacing = null;
     	try {
-    		PPr effective = (propertyResolver==null) ? pPr : propertyResolver.getEffectivePPr(pPr);
+    		PPr effective = (propertyResolver==null || pPrIsEffective) ? pPr : propertyResolver.getEffectivePPr(pPr);
     		if (effective!=null) spacing = effective.getSpacing();
     	} catch (Exception e) {
     		log.warn("Couldn't resolve effective pPr for line height: " + e.getMessage());
@@ -1005,7 +978,7 @@ public class RunFontSelector {
     private PhysicalFont fallbackFor(String documentFont, String coverageGroup,
     		java.util.List<Integer> codePoints) {
 
-    	String key = documentFont + " " + coverageGroup;
+    	String key = documentFont + " " + coverageGroup;
     	if (fallbackByScript.containsKey(key)) return fallbackByScript.get(key);
 
     	int[] cps = new int[codePoints.size()];
@@ -1206,6 +1179,21 @@ public class RunFontSelector {
      * @return
      */
     public Object fontSelector(PPr pPr, RPr rPr, Text wmlText) {
+    	return fontSelector(pPr, rPr, wmlText, false);
+    }
+
+    /**
+     * As {@link #fontSelector(PPr, RPr, Text)}, for a caller which has already resolved
+     * the run's properties: with {@code rPrIsEffective} true, {@code rPr} is taken as the
+     * effective run properties (document defaults, styles and direct formatting merged,
+     * as {@link PropertyResolver#getEffectiveRPr(RPr, PPr)} gives them) and {@code pPr} as
+     * the effective paragraph properties, and nothing is resolved here.  The visitor
+     * exporters resolve every run for its other properties and pass the answer, so a run
+     * is resolved once (CR-016 phase 1).
+     *
+     * @since 17.1.1
+     */
+    public Object fontSelector(PPr pPr, RPr rPr, Text wmlText, boolean rPrIsEffective) {
 
     	String text=null;
     	if (wmlText==null) {
@@ -1216,7 +1204,7 @@ public class RunFontSelector {
         	if (!spacePreserve) text = trimUnpreservedWhitespace(text);
     	}
     	
-    	return fontSelector( pPr,  rPr,  text);
+    	return fontSelector( pPr,  rPr,  text, rPrIsEffective);
     }
 
     /**
@@ -1280,6 +1268,10 @@ public class RunFontSelector {
      * @return
      */
     public Object fontSelector(PPr pPr, RPr rPr, String text) {
+    	return fontSelector(pPr, rPr, text, false);
+    }
+
+    private Object fontSelector(PPr pPr, RPr rPr, String text, boolean rPrIsEffective) {
     	
     	if (text==null) {
     		log.debug("w:t with null value"); 
@@ -1296,47 +1288,24 @@ public class RunFontSelector {
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
 		}
-    	
-//    	Style pStyle = null;
-    	String pStyleId = null;
-    	RPr pRPr = null;
-    	if (pPr==null || pPr.getPStyle()==null) {
-//    		pStyle = getDefaultPStyle(); 
-    		if (getDefaultPStyle() == null) {
-    			log.warn("getDefaultPStyle() returned null");
-    		} else {
-//	        	log.debug("using default p style");
-//	        	pRPr = pStyle.getRPr();  // TODO pStyle.getRPr() should inherit from basedOn
-	        	pStyleId = getDefaultPStyle().getStyleId();
-    		}
-    	} else {
-    		pStyleId = pPr.getPStyle().getVal();
-    	}
-    		
-    	if (pStyleId!=null && wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
-    		// apply the rPr in the stack of styles, including documentDefaultRPr
-//    		log.debug(pStyleId);
+
+    	if (!rPrIsEffective && propertyResolver!=null) {
+    		/* One resolution: the document defaults, the paragraph style's run properties
+    		 * (the default paragraph style where the pPr names none, or names a missing
+    		 * one), the run's character style, its direct formatting - the resolver's
+    		 * order (CR-015).  Until 17.1.1 this walked the paragraph style itself and
+    		 * composed through getEffectiveRPrUsingPStyleRPr; a caller holding the
+    		 * effective rPr already passes it with rPrIsEffective (CR-016 phase 1).  The
+    		 * theme references survive the merge (StyleUtil.apply(RFonts) keeps them), which
+    		 * is what this method needs: they are resolved here, per document, through the
+    		 * theme part and themeFontLang. */
     		try {
-				pRPr = propertyResolver.getEffectiveRPr(pStyleId);
-			} catch (CyclicStylesException e) {
-				log.error(e.getMessage(), e);
-			}
-//        	log.debug("before getEffectiveRPrUsingPStyleRPr\n" + XmlUtils.marshaltoString(pRPr));
+    			rPr = propertyResolver.getEffectiveRPr(rPr, pPr);
+    		} catch (CyclicStylesException e) {
+    			log.error(e.getMessage(), e);
+    		}
     	}
-
-    	// Do we need boolean major??
-    	// Can work that out from pStyle
-
-    	
-    	// now apply the direct rPr
-    	try {
-			rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr);
-		} catch (CyclicStylesException e) {
-			log.error(e.getMessage(), e);
-		}
-    	captureLineSpec(propertyResolver, pPr, rPr);
-    	// TODO use effective rPr, but don't inherit theme val,
-    	// TODO, add cache?
+    	captureLineSpec(propertyResolver, pPr, rPr, rPrIsEffective);
 
     	text = capsAndSoftHyphens(rPr, text);
 
@@ -1357,21 +1326,28 @@ public class RunFontSelector {
 
 		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 		
-		// No rPr .. only happens if no documentDefaultRPr
 		if (rPr==null) {
-			
+			// only when there is no property resolver at all
 			log.warn("effective rPr is null");
-			return nullRPr(document, text);
+			rPr = Context.getWmlObjectFactory().createRPr();
 		}
 		
-//		System.out.println(XmlUtils.marshaltoString(rPr, true, true));
-		
-		
 		RFonts rFonts = rPr.getRFonts();
-		if (rFonts==null) // compare empty, which RunFontSelectorChinese2Test is sensitive to; with empty on a quick skim it looks like unicodeRangeToFont is used. 
-		{
-			return nullRPr(document, text);
-		}	
+		if (rFonts==null) {
+			/* Nothing anywhere names a font: the document default (Times New Roman when
+			 * the defaults are silent, see getDefaultFont) for the ascii and hAnsi slots,
+			 * the East Asian and complex-script slots left unnamed as for any run that
+			 * never named them, and then the range dispatch as for any other run, so that
+			 * East Asian or Georgian text still gets its own span and the glyph-coverage
+			 * pass.  (Until 17.1.1 the whole text was set in the default font with no
+			 * dispatch.  An rFonts which is present but empty - a w:hint alone - was
+			 * always dispatched; RunFontSelectorChinese2Test covers that.  Not the
+			 * eastAsia slot: a Times New Roman there would fire the table's preamble rule
+			 * and set the whole run in one span.) */
+			rFonts = Context.getWmlObjectFactory().createRFonts();
+			rFonts.setAscii(getDefaultFont());
+			rFonts.setHAnsi(getDefaultFont());
+		}
 		
 		// Symbol handling
 		// @since 11.5.5
@@ -1441,37 +1417,30 @@ public class RunFontSelector {
     	 * or the rtl element ("[ISO/IEC-29500-1] §17.3.2.30; rtl"), 
     	 * then the cs (or cstheme if defined) font is used, 
     	 * regardless of the Unicode character values of the run's content.
+    	 *
+    	 * "Has" means the property is on: both are ST_OnOff values, and w:cs w:val="0"
+    	 * is how a run turns an inherited complex-script flag off.  Measured (CR-016
+    	 * probe fonts-cs-off): a false w:cs or w:rtl leaves Latin text in the ascii
+    	 * font; w:rtl alone on Latin text does take the cs font.  Until 17.1.1 the
+    	 * elements' presence was tested, so a false value took the cs font too.
     	 */
-    	if (rPr.getCs()!=null || rPr.getRtl()!=null ) {
+    	if (isOn(rPr.getCs()) || isOn(rPr.getRtl()) ) {
     		    		
     		// use the cs (or cstheme if defined) font is used
     		if (rFonts.getCstheme()!=null) {
     			
-    			String fontName = null; 
-    			if (getThemePart()!=null) {
-    				
-    				try {
-						fontName = getThemePart().getFont(rFonts.getCstheme(), themeFontLang);
-					} catch (Docx4JException e) {
-						// TODO Auto-generated catch block
-						log.error(e.getMessage(), e);
-					}
-    			}
-    			if (fontName==null
-//    					|| fontName.trim().length()==0
-    					) {
+    			String fontName = themeFont(rFonts.getCstheme());
+    			if (fontName==null) {
     				fontName = rFonts.getCs();
     			} 
-    			if (fontName==null
-//    					|| fontName.trim().length()==0
-    					) {
-    				// then what?
-                    if(log.isWarnEnabled()) {
-                        log.warn("font name is null, for " + text);
-                        log.warn(XmlUtils.marshaltoString(rPr, true, true));
-                    }
-    				(new Throwable()).printStackTrace();
-    			}    		
+    			if (fontName==null) {
+    				// the reference resolves to nothing and there is no w:cs: nothing to
+    				// set the run in, so it is dispatched by range like any other
+    				if (log.isDebugEnabled()) {
+    					log.debug("No complex-script font for " + text + " (w:cstheme "
+    							+ rFonts.getCstheme() + " resolves to nothing, and no w:cs)");
+    				}
+    			} else {
     			
     			Element	span = createElement(document);
     			if (span!=null) {
@@ -1485,6 +1454,7 @@ public class RunFontSelector {
     			}
     			
     			return result(document);
+    			}
     			
     		} else if (rFonts.getCs()!=null) {
 
@@ -1516,71 +1486,18 @@ public class RunFontSelector {
 
 		STHint hint = rFonts.getHint();
 		
-		if (rFonts.getEastAsiaTheme()!=null
-				&& getThemePart()!=null) {
-			try {
-				eastAsia = getThemePart().getFont(rFonts.getEastAsiaTheme(), themeFontLang);
-			} catch (Docx4JException e) {
-				// TODO Auto-generated catch block
-				log.error(e.getMessage(), e);
-			}
-			
-			// ??
-			//if (getPhysicalFont(eastAsia)==null) {
-			//	log.info("theme font for lang " + themeFontLang + " is " + eastAsia + ", but we don't have that");
-	    	//	eastAsia = rFonts.getEastAsia();
-			//}
-			
-			if (eastAsia==null) {
-				log.info("theme font for lang " + themeFontLang + " is " + eastAsia + ", but we don't have that");
-	    		eastAsia = rFonts.getEastAsia();
-			}
-			
-		} else {
-			// No theme, so 
-    		eastAsia = rFonts.getEastAsia();
-		}
-		
-		if (rFonts.getAsciiTheme()!=null
-				&& getThemePart()!=null) {
-			try {
-				ascii = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
-			} catch (Docx4JException e) {
-				// TODO Auto-generated catch block
-				log.error(e.getMessage(), e);
-			}
-		} else {
-			// No theme, so 
-			ascii = rFonts.getAscii();
-		}
-		
-		if (rFonts.getHAnsiTheme()!=null
-				&& getThemePart()!=null) {
-			try {
-				hAnsi = getThemePart().getFont(rFonts.getHAnsiTheme(), themeFontLang);
-			} catch (Docx4JException e) {
-				// TODO Auto-generated catch block
-				log.error(e.getMessage(), e);
-			}
-		} else {
-			// No theme, so
-			hAnsi = rFonts.getHAnsi();
-		}
-
-		if (rFonts.getCstheme()!=null
-				&& getThemePart()!=null) {
-			try {
-				cs = getThemePart().getFont(rFonts.getCstheme(), themeFontLang);
-			} catch (Docx4JException e) {
-				log.error(e.getMessage(), e);
-			}
-			if (cs==null) {
-				cs = rFonts.getCs();
-			}
-		} else {
-			// No theme, so
-			cs = rFonts.getCs();
-		}
+		/* Each slot: the theme reference where there is one (resolved through the theme
+		 * part and themeFontLang, or the Office theme's face where the document has no
+		 * theme part; see themeFont), else the explicit attribute; the explicit attribute
+		 * also where the reference resolves to nothing (an empty typeface in the theme). */
+		eastAsia = themeFont(rFonts.getEastAsiaTheme());
+		if (eastAsia==null) eastAsia = rFonts.getEastAsia();
+		ascii = themeFont(rFonts.getAsciiTheme());
+		if (ascii==null) ascii = rFonts.getAscii();
+		hAnsi = themeFont(rFonts.getHAnsiTheme());
+		if (hAnsi==null) hAnsi = rFonts.getHAnsi();
+		cs = themeFont(rFonts.getCstheme());
+		if (cs==null) cs = rFonts.getCs();
 		if (cs!=null && cs.trim().length()==0) {
 			// eg LibreOffice writes w:cs="" in docDefaults
 			cs = null;

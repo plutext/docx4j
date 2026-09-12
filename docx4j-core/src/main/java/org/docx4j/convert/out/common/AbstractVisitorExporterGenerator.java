@@ -80,6 +80,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	//current paragraph style to inherit styles in rPr
 	protected PPr pPr = null;
 	protected RPr rPr = null;
+	/** The current run's effective properties, where the format's handleRPr resolved them
+	 *  (the FO one does); null otherwise.  Handed to RunFontSelector so that a run is
+	 *  resolved once (CR-016 phase 1).  @since 17.1.1 */
+	protected RPr effectiveRPr = null;
 	
 	// E20 image
 	protected Object anchorOrInline;
@@ -337,6 +341,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				currentSpan = spanEl;
 				
 				rPr = ((R)o).getRPr();
+				effectiveRPr = null;
 				// every run, w:rPr or not: a run with none still has effective properties (the
 				// paragraph style's, the document defaults') and its inline carries them itself
 				// rather than inheriting the block's (CR-015 phase 2; the FO block's size is later
@@ -388,7 +393,9 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
 				log.debug(((Text)o).getValue());
 				
-				DocumentFragment df = (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, ((Text)o));
+				DocumentFragment df = (DocumentFragment) (effectiveRPr!=null
+						? conversionContext.getRunFontSelector().fontSelector(pPr, effectiveRPr, ((Text)o), true)
+						: conversionContext.getRunFontSelector().fontSelector(pPr, rPr, ((Text)o)));
 				XmlUtils.treeCopy(df, currentSpan);
 				// TODO would be more efficient without the treeCopy
 				// but fontSelector would need to be refactored a bit

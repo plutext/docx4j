@@ -52,31 +52,62 @@ public class LanguageTagToScriptMapping {
 	 */
 	
 
+	/** The script a primary language subtag selects in a theme's font list (the
+	 *  {@code script} attribute of {@code a:font}), by exact subtag.  Until 17.1.1 this
+	 *  was a substring test over comma-separated lists, so Estonian ({@code et}) matched
+	 *  inside {@code eth} and took the Ethiopic face (Nyala), Mongolian ({@code mn})
+	 *  inside {@code mni} the Bengali one, Wolof ({@code wo}) inside {@code bwo};
+	 *  CR-016 probe fonts-theme-lang.  Chinese is decided on the region as well. */
+	private static final java.util.Map<String, String> SCRIPT_BY_LANGUAGE;
+	static {
+		java.util.Map<String, String> m = new java.util.HashMap<String, String>();
+		m.put("ja", "Jpan");
+		m.put("ko", "Hang");
+		m.put("ar", "Arab");
+		for (String l : new String[] { "he", "yi", "iw" }) m.put(l, "Hebr");
+		m.put("th", "Thai");
+		for (String l : new String[] { "ti", "bwo", "eth", "kxh", "mdy" }) m.put(l, "Ethi");
+		for (String l : new String[] { "bn", "as", "mni" }) m.put(l, "Beng");
+		m.put("gu", "Gujr");
+		m.put("km", "Khmr");
+		m.put("kn", "Knda");
+		m.put("pa", "Guru");
+		m.put("iu", "Cans");
+		m.put("chr", "Cher");
+		// Yiii (Microsoft Yi Baiti) omitted; see http://en.wikipedia.org/wiki/Yi_script
+		m.put("bo", "Tibt");
+		m.put("dv", "Thaa");
+		for (String l : new String[] { "hi", "ks", "kok", "mr", "ne", "sa", "sd" }) m.put(l, "Deva");
+		m.put("te", "Telu");
+		m.put("ta", "Taml");
+		m.put("syr", "Syrc");
+		m.put("or", "Orya");
+		m.put("ml", "Mlym");
+		m.put("lo", "Laoo");
+		m.put("si", "Sinh");
+		// Mong (Mongolian Baiti) and Uigh (Microsoft Uighur) omitted, as before
+		for (String l : new String[] { "vi", "lha", "nut" }) m.put(l, "Viet");
+		m.put("ka", "Geor");
+		SCRIPT_BY_LANGUAGE = java.util.Collections.unmodifiableMap(m);
+	}
+
 	public static String getScriptForLanguageTag(String langTag) {
 		
-		String lang = langTag;
+		if (langTag==null) return null;
+		String lang = langTag.trim();
 		int pos = lang.indexOf('-');
+		if (pos<0) pos = lang.indexOf('_');
 		if (pos>-1) {
 			lang = lang.substring(0, pos);
 		}
+		lang = lang.toLowerCase();
 		
 		log.debug("lang: " + lang);
 		
-		//    <a:font script="Jpan" typeface="ＭＳ 明朝"/>
-		if (lang.equals("ja")) {
-			return "Jpan";
-		}
-		
-		//    <a:font script="Hang" typeface="맑은 고딕"/>
-		if (lang.equals("ko")) {
-			return "Hang";
-		}
-
 		if (lang.equals("zh")) {
-		
 			//    <a:font script="Hans" typeface="宋体"/>
-			if (langTag.equals("zh-CN")
-					|| langTag.equals("zh-SG")) {
+			if (langTag.equalsIgnoreCase("zh-CN")
+					|| langTag.equalsIgnoreCase("zh-SG")) {
 				// Mainland China and Singapore both use simplified characters
 				return "Hans";
 			} else {
@@ -85,133 +116,7 @@ public class LanguageTagToScriptMapping {
 				return "Hant";				
 			}
 		}
-		
-		//    <a:font script="Arab" typeface="Arial"/>
-		if (lang.equals("ar")) {
-			return "Arab";
-		}
-		
-		//    <a:font script="Hebr" typeface="Arial"/>
-		if ("he,yi,iw".contains(lang)) {
-			return "Hebr";
-		}
-		
-		//    <a:font script="Thai" typeface="Cordia New"/>
-		if (lang.equals("th")) {
-			return "Thai";
-		}
-		
-		//    <a:font script="Ethi" typeface="Nyala"/>
-		if ("ti,bwo,eth,kxh,mdy".contains(lang)) {
-			return "Ethi";
-		}
-		
-		//    <a:font script="Beng" typeface="Vrinda"/>
-		if ("bn,as,mni".contains(lang)) {
-			return "Beng";
-		}
-		
-		//    <a:font script="Gujr" typeface="Shruti"/>
-		if (lang.equals("gu")) {
-			return "Gujr";			
-		}
-		
-		//    <a:font script="Khmr" typeface="DaunPenh"/>
-		if (lang.equals("km")) {
-			return "Khmr";
-		}
-		
-		//    <a:font script="Knda" typeface="Tunga"/>
-		if (lang.equals("kn")) {
-			return "Knda";
-		}
-		
-		//    <a:font script="Guru" typeface="Raavi"/>
-		if (lang.equals("pa")) {
-			return "Guru";
-		}
-		
-		//    <a:font script="Cans" typeface="Euphemia"/>
-		if (lang.equals("iu")) {
-			return "Cans";
-		}
-		
-		//    <a:font script="Cher" typeface="Plantagenet Cherokee"/>
-		if (lang.equals("chr")) {
-			return "Cher";
-		}
-		
-		// <a:font script="Yiii" typeface="Microsoft Yi Baiti"/> omitted
-		// see http://en.wikipedia.org/wiki/Yi_script
-		
-		//    <a:font script="Tibt" typeface="Microsoft Himalaya"/>
-		if (lang.equals("bo")) {
-			return "Tibt";
-		}
-		
-		//    <a:font script="Thaa" typeface="MV Boli"/>
-		if (lang.equals("dv")) {
-			return "Thaa";
-		}
-		
-		//    <a:font script="Deva" typeface="Mangal"/>
-		if ("hi,ks,kok,mr,ne,sa,sd".contains(lang)) {
-			return "Deva";
-		}
-		
-		//    <a:font script="Telu" typeface="Gautami"/>
-		if (lang.equals("te")) {
-			return "Telu";
-		}
-		
-		//    <a:font script="Taml" typeface="Latha"/>
-		if (lang.equals("ta")) {
-			return "Taml";
-		}
-		
-		//    <a:font script="Syrc" typeface="Estrangelo Edessa"/>
-		if (lang.equals("syr")) {
-			return "Syrc";
-		}
-		
-		//    <a:font script="Orya" typeface="Kalinga"/>
-		if (lang.equals("or")) {
-			return "Orya";
-		}
-		
-		//    <a:font script="Mlym" typeface="Kartika"/>
-		if (lang.equals("ml")) {
-			return "Mlym";
-		}
-		
-		//    <a:font script="Laoo" typeface="DokChampa"/>
-		if (lang.equals("lo")) {
-			return "Laoo";
-		}
-		
-		//    <a:font script="Sinh" typeface="Iskoola Pota"/>
-		if (lang.equals("si")) {
-			return "Sinh";
-		}
-		
-		//    <a:font script="Mong" typeface="Mongolian Baiti"/>
-		
-		//    <a:font script="Viet" typeface="Arial"/>
-		if (lang.equals("vi")
-				|| lang.equals("lha")
-				|| lang.equals("nut")
-				) {
-			return "Viet";
-		}
-		
-		//    <a:font script="Uigh" typeface="Microsoft Uighur"/>
-		
-		//    <a:font script="Geor" typeface="Sylfaen"/>
-		if (lang.equals("ka")) {
-			return "Geor";
-		}
-		
-		return null;
+		return SCRIPT_BY_LANGUAGE.get(lang);
 	}
 	
 }

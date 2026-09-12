@@ -94,6 +94,7 @@ public abstract class Mapper {
 	 * @return
 	 */
 	public PhysicalFont get(String key) {
+		if (key==null) return null; // a slot nothing names (17.1.1; was a NullPointerException)
 		return fontMappings.get(key.toLowerCase());
 	}
 	/**
