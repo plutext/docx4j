@@ -153,6 +153,10 @@ public class ListLevel {
             counter.setCurrentValue(this.startValue);                        
         }
 
+        if (levelNode.getLvlRestart() != null && levelNode.getLvlRestart().getVal() != null) {
+        	this.lvlRestart = levelNode.getLvlRestart().getVal().intValue();
+        }
+
         Lvl.LvlText levelTextNode = levelNode.getLvlText();
         if (levelTextNode != null)
         {
@@ -199,6 +203,7 @@ public class ListLevel {
         this.font = masterCopy.font;
         this.isBullet = masterCopy.isBullet;
         this.numFmt = masterCopy.numFmt;
+        this.lvlRestart = masterCopy.lvlRestart;
     }
 
     /**
@@ -216,6 +221,10 @@ public class ListLevel {
     		// Start value is one less than the user set it to,
     		// since whenever we fetch the number, we first increment it.
         	counter.setCurrentValue(this.startValue);                        
+        }
+
+        if (levelNode.getLvlRestart() != null && levelNode.getLvlRestart().getVal() != null) {
+        	this.lvlRestart = levelNode.getLvlRestart().getVal().intValue();
         }
 
         Lvl.LvlText levelTextNode = levelNode.getLvlText();
@@ -314,6 +323,12 @@ public class ListLevel {
         	log.debug("not encounteredAlready; set to startValue " + startValue);
         	counter.encounteredAlready = true;
         	startAtUsed = true;
+        	counter.resetPending = false;
+    	}
+    	if (counter.resetPending) {
+    		// the reset already placed the counter at its start value (see ResetCounter)
+    		counter.resetPending = false;
+    		return;
     	}
         counter.IncrementCounter();
     }
@@ -322,11 +337,48 @@ public class ListLevel {
     
 
     /**
-     * resets the counter to the start value
+     * Resets the counter, a shallower level having been used: the level shows its
+     * start value from now until it is next used, and that first use does not
+     * increment it.
+     *
+     * <p>Before 17.1.1 the counter went to start-1 and a deeper label printed it so:
+     * a level-2 item straight after a level-0 one read "2.0.1" where Word reads
+     * "2.1.1" (CR-014 probe P8, measured).</p>
      */
     public void ResetCounter()
     {
-        counter.setCurrentValue(this.startValue);
+        counter.setCurrentValue(this.startValue.add(BigInteger.ONE));
+        counter.resetPending = true;
+    }
+
+    private Integer lvlRestart;
+
+    /**
+     * The level's {@code w:lvlRestart} value (ECMA-376 17.9.11), or null where it
+     * states none: the 1-based number of the shallowest level whose use restarts
+     * this one; 0 means it never restarts.
+     *
+     * @since 17.1.1
+     */
+    public Integer getLvlRestart() {
+    	return lvlRestart;
+    }
+
+    /**
+     * Whether this level's counter restarts when the given shallower level
+     * ({@code shallowerIlvl}, 0-based) is used.  Without {@code w:lvlRestart} any
+     * shallower level restarts it; {@code w:lvlRestart w:val="0"} means none does;
+     * {@code w:val="n"} means levels 1..n (1-based, so ilvl 0..n-1) do and deeper
+     * ones do not.  Measured (CR-014 probe P8): with {@code w:val="1"} on level 2, a
+     * level-1 item leaves it counting (1.2.3) and a level-0 item restarts it
+     * (2.1.1); with {@code w:val="0"} neither does (1.2.3, 2.1.4).
+     *
+     * @since 17.1.1
+     */
+    public boolean restartsAfter(int shallowerIlvl) {
+    	if (lvlRestart == null) return true;
+    	if (lvlRestart.intValue() <= 0) return false;
+    	return shallowerIlvl <= lvlRestart.intValue() - 1;
     }
 
     private String levelText;
@@ -377,6 +429,10 @@ public class ListLevel {
     protected class Counter {
     	
     	protected boolean encounteredAlready = false;
+
+    	/** The counter was reset by a shallower level and holds its start value;
+    	 *  the next use of the level takes that value rather than incrementing. */
+    	protected boolean resetPending = false;
     	
         protected boolean isEncounteredAlready() {
     		return encounteredAlready;

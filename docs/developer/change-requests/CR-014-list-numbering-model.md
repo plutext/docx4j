@@ -1,6 +1,6 @@
 # CR: List numbering model (`org.docx4j.model.listnumbering`) — line endings, correctness, and separating definitions from counter state
 
-Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) 1 (LabelFormatter registry) and 3 (one resolver) done; next 2, then 4, 5
+Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) 1 (LabelFormatter registry), 3 (one resolver) and 2 (w:lvlRestart) done; next 4, then 5
 Scope: the package `docx4j-core/src/main/java/org/docx4j/model/listnumbering`
 (15 files, ~2,200 lines), its driver `NumberingDefinitionsPart` (maps,
 `getEmulator`, `restart`), and the tests under
@@ -502,6 +502,18 @@ As designed.  Needs Word verification of the two-case test document (put it
 on the fidelity share; Jason runs Word) — or rely on the spec wording plus
 a quick manual check in Word; decide when the phase starts.
 
+Done 2026-09-12, from P8's golden.  `ListLevel.lvlRestart` (abstract level,
+copied to the instance, overridable) and `restartsAfter(shallowerIlvl)`
+implement the rule; `ListNumberingDefinition.IncrementCounter` asks it for
+each deeper level instead of resetting all of them.  `ResetCounter` now
+places the counter AT the start value with `Counter.resetPending`, which
+the next `IncrementCounter` consumes without incrementing - the shape of
+`startAtUsed`, as planned - so a reset level shows its start in deeper
+labels (2.1.1, not 2.0.1).  A level never used at all still shows 0 in a
+deeper label: unmeasured (P8 reset one first), left as is and noted as a
+probe candidate.  `NumberingRestartTest` replays the walk against the
+golden's labels verbatim, plus a control list with no `w:lvlRestart`.
+
 ### Phase 3 — de-duplicate `Emulator` resolution
 
 As designed; move `ListNumberIndTest` to `org.docx4j.model.listnumbering`.
@@ -567,6 +579,9 @@ deprecation before removal (i.e. remove no earlier than 17.2).
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-09-12: phase 2 done (see the phase for particulars).  The
+  never-used level's display value (0 today) is unmeasured: a probe
+  candidate, not changed.
 - 2026-09-12: phase 3 done (see the phase for particulars).  Two behaviour
   changes, both towards Word: default-style numbering reaches HTML output
   and the TOC generator; numbering indents follow `w:basedOn`.

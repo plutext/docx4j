@@ -308,17 +308,26 @@ public class ListNumberingDefinition {
     	log.debug("Increment level " + level);
         this.levels.get(level).IncrementCounter();
 
-        // Now set all higher levels back to 1.
+        // Now set the deeper levels back to their start - each unless its
+        // w:lvlRestart says this level does not restart it (ECMA-376 17.9.11;
+        // @since 17.1.1, CR-014 phase 2: unread before, so every deeper level
+        // restarted)
         
         // here's a bit where the decision to use Strings as level IDs was bad 
         // - I need to loop through the derived levels and reset their counters
-        otherLevelInt = Integer.parseInt(level)+1;
+        int levelInt = Integer.parseInt(level);
+        otherLevelInt = levelInt+1;
         otherLevelStr =  Integer.toString(otherLevelInt);
 
         while (this.levels.containsKey(otherLevelStr))
         {
-        	log.debug("Reset level " + otherLevelInt);
-            this.levels.get(otherLevelStr).ResetCounter();
+        	ListLevel deeper = this.levels.get(otherLevelStr);
+        	if (deeper.restartsAfter(levelInt)) {
+        		log.debug("Reset level " + otherLevelInt);
+        		deeper.ResetCounter();
+        	} else {
+        		log.debug("Level " + otherLevelInt + " keeps counting (w:lvlRestart " + deeper.getLvlRestart() + ")");
+        	}
             otherLevelInt++;
             otherLevelStr = Integer.toString(otherLevelInt);
         }

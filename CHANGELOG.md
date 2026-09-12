@@ -260,6 +260,12 @@ List numbering (CR-014, phase 1):
   (aa, ab, ac).
 - The abstract formatter class is now LabelFormatter; the old NumberFormat name, which clashed
   with org.docx4j.wml.NumberFormat, is a deprecated empty subclass for one release.
+- (phase 2) w:lvlRestart is honoured (ECMA-376 17.9.11, measured against Word): w:val="0" on a
+  level means no shallower level restarts its count, w:val="n" that only levels 1..n (1-based)
+  do. It was unread, so every deeper level restarted; legal and technical templates use it.
+- (phase 2) A level reset by a shallower one shows its start value in deeper labels until it is
+  next used: a level-2 item straight after a level-0 one is "2.1.1", as Word labels it, where
+  docx4j printed "2.0.1".
 - (phase 3) A paragraph naming no style is numbered through the default paragraph style's
   w:numPr, as Word does (measured): Emulator.getNumber(pkg, pPr), used by HTML output and the
   TOC generator, assumed that style unnumbered. PDF output already resolved it.
