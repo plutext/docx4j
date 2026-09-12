@@ -1,8 +1,10 @@
 # CR-015: Property resolution (`PropertyResolver`, `StyleUtil.apply`) — line endings, one property catalogue, the default paragraph style, cache correctness, no mutation, thread safety
 
 Status: IN PROGRESS (2026-09-12) — approved by Jason 2026-09-12; phase 0 DONE
-(6f4763d70, LF; follow-up commit pins the line endings and blame-ignores the
-conversion); phase 0b next
+(6f4763d70, LF; 21890c36e pins the line endings and blame-ignores the
+conversion); phase 0b probes CUT and on the share (five `styles-*` docx +
+`corpus.txt` in `$S/corpus/`), WAITING for the Word run; phases 1 and 3 can
+start meanwhile
 Scope: `docx4j-core/src/main/java/org/docx4j/model/PropertyResolver.java`
 (1,660 lines) and `ImmutablePropertyResolver.java`; the merge half of
 `org/docx4j/model/styles/StyleUtil.java` (the `apply`, `isEmpty` and `unset`
@@ -333,6 +335,20 @@ harness's line positions decide it:**
 P2 is deliberately absent: the paragraph-mark rule is already measured
 (17.0.5) and is the definition of the mark (17.3.1.29).
 
+**Probe status (2026-09-12):** the five probes are in `Corpus.java` (after
+the CR-014 set; helpers `stylesPara`, `bareRun`, `addCharacterStyle`,
+`addTableStyle`, `numPrOf`, `twoLevelAbstract`), generated, and copied with
+`corpus.txt` (99 ids) to `$S/corpus/`.  docx4j's own answers today, from the
+harness render (`Fidelity render`, pdftotext line tops):
+
+| probe | docx4j today |
+|---|---|
+| P1 | (a) = (b) = 14pt Serif, 18.5pt pitch (the exporter's shield, gap 2); (c) bold at 14pt; (d) `Missing`: the run at 11pt (longer lines) under a 14pt block; (e) 20pt Sans bold; (f) the `DefaultParagraphFont` run at **14pt** after a 20pt lead-in (row 5, visible in the exporter); (g) 20pt Sans |
+| P3 | (a) 24.00pt pitch (exact); (b) **26.85pt** = 480 *auto* (row 10, visible in the exporter); (c) 13.43pt single |
+| P4 | (a) 1. (b) **2.** at level 0 (the direct `w:ilvl` dropped, row 7); (c) 3. level 0; (d) 3.1. (numId injection); (e) 3.2. |
+| P5 | (a) and (b) first-cell text one character in (the writer's 108 constant); (c) three characters in (Grid2 inherits the 300) |
+| P6 | (a) 10pt Carlito, 14.04pt pitch, same as (b) |
+
 ## Design
 
 ### One property catalogue per properties type (phase 1)
@@ -478,7 +494,7 @@ text eol=lf` and the test directory.  Exit: `grep -rl $'\r'` over the package
 and `docx4j-core-tests/.../model/` returns nothing; `mvn -o -q -Dgpg.skip=true
 install -pl docx4j-core -DskipTests` unchanged.
 
-### Phase 0b — verification probes (no code change)
+### Phase 0b — verification probes (no code change) — probes cut 2026-09-12, awaiting Word
 
 Add the five `styles-*` probes to `Corpus.java` (`Doc` already has
 `addParagraphStyle(id, basedOn, pPr, rPr)`, `documentDefaultRun`,

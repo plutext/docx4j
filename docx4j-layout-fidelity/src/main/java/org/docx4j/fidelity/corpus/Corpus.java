@@ -2125,6 +2125,123 @@ public final class Corpus {
 		}));
 
 		/*
+		 * CR-015's probe set (docs/developer/change-requests/CR-015-property-resolution.md,
+		 * "Are the comments accurate?").  Style resolution: unless a case says otherwise the
+		 * runs carry no w:rPr of their own and the paragraphs no direct w:spacing, so what a
+		 * paragraph inherits is the whole answer; the case letters are in the text.
+		 */
+		PROBES.add(new Probe("styles-default-pstyle",
+				"docDefaults Carlito 11pt; Normal (the w:default=1 paragraph style) w:rPr Liberation "
+				+ "Serif 14pt; style H Liberation Sans 20pt; character style S w:b only.  (a) no "
+				+ "w:pStyle, run without w:rPr; (b) w:pStyle Normal; (c) no w:pStyle, run with w:b "
+				+ "only; (d) w:pStyle names a style that does not exist; (e) H, run w:rStyle S; "
+				+ "(f) H, run w:rStyle DefaultParagraphFont; (g) H, run without w:rPr - does Normal's "
+				+ "14pt Serif reach (a), (c) and (d), and H's 20pt Sans reach (e) and (f)?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 22);
+			Doc.font(SERIF, 28).accept(styleRPr(d, "Normal"));
+			d.addParagraphStyle("H", "Normal", ppr -> { }, Doc.font(SANS, 40));
+			addCharacterStyle(d, "S", Doc::bold);
+			stylesPara(d, null, "(a) no w:pStyle, a run with no w:rPr. " + prose(2, 1));
+			stylesPara(d, "Normal", "(b) w:pStyle Normal, a run with no w:rPr. " + prose(2, 2));
+			d.para().noLabel().inheritSpacing().bareText("(c) no w:pStyle, a run with w:b only: ")
+					.run(bareRun("bold " + prose(2, 3), Doc::bold)).add();
+			stylesPara(d, "Missing", "(d) w:pStyle Missing, no such style. " + prose(2, 4));
+			d.para().noLabel().inheritSpacing().style("H").bareText("(e) H, a run with w:rStyle S: ")
+					.run(bareRun("styled " + prose(2, 5), rStyle("S"))).add();
+			d.para().noLabel().inheritSpacing().style("H")
+					.bareText("(f) H, a run with w:rStyle DefaultParagraphFont: ")
+					.run(bareRun("styled " + prose(2, 6), rStyle("DefaultParagraphFont"))).add();
+			stylesPara(d, "H", "(g) H, a run with no w:rPr. " + prose(2, 7));
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("styles-linerule",
+				"style X states w:spacing w:line 480 w:lineRule exact (24pt lines).  Paragraphs in X: "
+				+ "(a) no direct w:spacing; (b) direct w:spacing stating only w:after 0; (c) direct "
+				+ "w:spacing stating only w:line 240 - does (b) keep the exact 24pt pitch (the lineRule "
+				+ "is inherited) and does (c) go to single auto (a w:line without a w:lineRule means "
+				+ "auto)?", () -> {
+			Doc d = Doc.create(15);
+			d.addParagraphStyle("X", "Normal", ppr -> {
+				PPrBase.Spacing sp = Doc.F.createPPrBaseSpacing();
+				sp.setLine(BigInteger.valueOf(480));
+				sp.setLineRule(STLineSpacingRule.EXACT);
+				ppr.setSpacing(sp);
+			});
+			stylesPara(d, "X", "(a) X, no direct w:spacing. " + prose(4, 1));
+			PPrBase.Spacing after0 = Doc.F.createPPrBaseSpacing();
+			after0.setAfter(BigInteger.ZERO);
+			stylesPara(d, "X", "(b) X, direct w:spacing w:after 0 only. " + prose(4, 2)).getPPr().setSpacing(after0);
+			PPrBase.Spacing line240 = Doc.F.createPPrBaseSpacing();
+			line240.setLine(BigInteger.valueOf(240));
+			stylesPara(d, "X", "(c) X, direct w:spacing w:line 240 only. " + prose(4, 3)).getPPr().setSpacing(line240);
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("styles-numpr-ilvl-only",
+				"a two-level list (w:num 90: %1. at 720/360, %1.%2. at 1440/360); style L carries "
+				+ "w:numPr numId 90 ilvl 0; L2 is based on L and carries a w:numPr of w:ilvl 1 only.  "
+				+ "(a) L; (b) L with a direct w:numPr of w:ilvl 1 only; (c) L with a direct w:numPr of "
+				+ "w:numId 90 only; (d) L2; (e) L with a direct w:numPr of both (numId 90, ilvl 1), the "
+				+ "control - do (b) and (d) take level 1 (x.y.) and does (c) stay at level 0?", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(twoLevelAbstract(90) + num(90, 90));
+			d.addParagraphStyle("L", "Normal", ppr -> ppr.setNumPr(numPrOf(90, 0)));
+			d.addParagraphStyle("L2", "L", ppr -> ppr.setNumPr(numPrOf(null, 1)));
+			d.para("Style L numbers with w:num 90 at level 0; L2, based on L, states w:ilvl 1 only.")
+					.after(120).add();
+			stylesPara(d, "L", "(a) L");
+			stylesPara(d, "L", "(b) L, direct w:numPr of w:ilvl 1 only").getPPr().setNumPr(numPrOf(null, 1));
+			stylesPara(d, "L", "(c) L, direct w:numPr of w:numId 90 only").getPPr().setNumPr(numPrOf(90, null));
+			stylesPara(d, "L2", "(d) L2");
+			stylesPara(d, "L", "(e) L, direct w:numPr numId 90 ilvl 1 (control)").getPPr().setNumPr(numPrOf(90, 1));
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("styles-table-default",
+				"the w:default=1 table style (TableNormal) given w:tblCellMar left 300 (15pt) instead "
+				+ "of 108.  Three one-row tables: (a) no w:tblStyle; (b) w:tblStyle Custom, a table style "
+				+ "with no w:basedOn and no cell margins; (c) w:tblStyle Grid2, based on TableNormal - "
+				+ "where does each first cell's text start: margin + 15pt (Table Normal applies), + 5.4pt "
+				+ "(Word's built-in default), or + 0?", () -> {
+			Doc d = Doc.create(15);
+			org.docx4j.wml.Style tn = d.mdp().getStyleDefinitionsPart().getDefaultTableStyle();
+			tn.getTblPr().getTblCellMar().getLeft().setW(BigInteger.valueOf(300));
+			addTableStyle(d, "Custom", null);
+			addTableStyle(d, "Grid2", tn.getStyleId());
+			d.para("(a) no w:tblStyle").after(120).add();
+			d.add(new Doc.Table(4000, 4000).row(SERIF, 24, false, "a1 first cell", "a2").build());
+			d.para("(b) w:tblStyle Custom, no w:basedOn").before(240).after(120).add();
+			Tbl b = new Doc.Table(4000, 4000).row(SERIF, 24, false, "b1 first cell", "b2").build();
+			tableStyle(b, "Custom");
+			d.add(b);
+			d.para("(c) w:tblStyle Grid2, based on " + tn.getStyleId()).before(240).after(120).add();
+			Tbl c = new Doc.Table(4000, 4000).row(SERIF, 24, false, "c1 first cell", "c2").build();
+			tableStyle(c, "Grid2");
+			d.add(c);
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("styles-no-size-anywhere",
+				"no w:sz anywhere: docDefaults state w:rFonts Carlito but no w:sz, Normal has no "
+				+ "w:rPr.  (a) a paragraph whose run has no w:rPr; then the same text in explicit "
+				+ "(b) 10pt, (c) 11pt and (d) 12pt runs - which of them does (a) match (docx4j assumes "
+				+ "10pt)?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 22);
+			org.docx4j.wml.RPr dd = d.mdp().getStyleDefinitionsPart().getJaxbElement()
+					.getDocDefaults().getRPrDefault().getRPr();
+			dd.setSz(null);
+			dd.setSzCs(null);
+			stylesPara(d, null, "(a) no size anywhere. " + prose(3, 1));
+			d.para().noLabel().inheritSpacing().run("(b) explicit 10pt. " + prose(3, 1), CARLITO, 20, null).add();
+			d.para().noLabel().inheritSpacing().run("(c) explicit 11pt. " + prose(3, 1), CARLITO, 22, null).add();
+			d.para().noLabel().inheritSpacing().run("(d) explicit 12pt. " + prose(3, 1), CARLITO, 24, null).add();
+			return d.pkg();
+		}));
+
+		/*
 		 * E4/E5's remaining clause: what a w:tblW of type pct means when the w:tblGrid
 		 * disagrees with it.  §6.5's exemption for a table stating a width of its own is
 		 * unconditional, and a corpus document confirms it for pct - w:tblW 5000
@@ -3193,6 +3310,116 @@ public final class Corpus {
 		List<P> list = new ArrayList<>();
 		for (int k = 1; k <= 3; k++) list.add(d.para(text).numPr(70, 0).build());
 		return list;
+	}
+
+	// ---------------------------------------------------------------- CR-015 styles-* helpers
+
+	/** The w:rPr of a style in the styles part, created if the style has none. */
+	private static org.docx4j.wml.RPr styleRPr(Doc d, String styleId) {
+		org.docx4j.wml.Style s = d.mdp().getStyleDefinitionsPart().getStyleById(styleId);
+		if (s.getRPr() == null) s.setRPr(Doc.F.createRPr());
+		return s.getRPr();
+	}
+
+	/** A character style based on DefaultParagraphFont with the given run properties. */
+	private static void addCharacterStyle(Doc d, String styleId, java.util.function.Consumer<org.docx4j.wml.RPr> rPrCustomiser) {
+		org.docx4j.wml.Style s = Doc.F.createStyle();
+		s.setType("character");
+		s.setStyleId(styleId);
+		org.docx4j.wml.Style.Name n = Doc.F.createStyleName();
+		n.setVal(styleId);
+		s.setName(n);
+		org.docx4j.wml.Style.BasedOn b = Doc.F.createStyleBasedOn();
+		b.setVal("DefaultParagraphFont");
+		s.setBasedOn(b);
+		org.docx4j.wml.RPr rpr = Doc.F.createRPr();
+		rPrCustomiser.accept(rpr);
+		s.setRPr(rpr);
+		d.mdp().getStyleDefinitionsPart().getJaxbElement().getStyle().add(s);
+	}
+
+	/** A table style stating only w:tblInd 0 (so it is not empty), optionally based on another. */
+	private static void addTableStyle(Doc d, String styleId, String basedOn) {
+		org.docx4j.wml.Style s = Doc.F.createStyle();
+		s.setType("table");
+		s.setStyleId(styleId);
+		org.docx4j.wml.Style.Name n = Doc.F.createStyleName();
+		n.setVal(styleId);
+		s.setName(n);
+		if (basedOn != null) {
+			org.docx4j.wml.Style.BasedOn b = Doc.F.createStyleBasedOn();
+			b.setVal(basedOn);
+			s.setBasedOn(b);
+		}
+		org.docx4j.wml.CTTblPrBase tblPr = Doc.F.createCTTblPrBase();
+		org.docx4j.wml.TblWidth ind = Doc.F.createTblWidth();
+		ind.setW(BigInteger.ZERO);
+		ind.setType("dxa");
+		tblPr.setTblInd(ind);
+		s.setTblPr(tblPr);
+		d.mdp().getStyleDefinitionsPart().getJaxbElement().getStyle().add(s);
+	}
+
+	private static void tableStyle(Tbl tbl, String styleId) {
+		org.docx4j.wml.CTTblPrBase.TblStyle ts = Doc.F.createCTTblPrBaseTblStyle();
+		ts.setVal(styleId);
+		tbl.getTblPr().setTblStyle(ts);
+	}
+
+	/** A run carrying exactly the run properties the customiser sets, and no w:rPr at all when it is null. */
+	private static R bareRun(String text, java.util.function.Consumer<org.docx4j.wml.RPr> customiser) {
+		R r = Doc.F.createR();
+		if (customiser != null) {
+			org.docx4j.wml.RPr rpr = Doc.F.createRPr();
+			customiser.accept(rpr);
+			r.setRPr(rpr);
+		}
+		org.docx4j.wml.Text t = Doc.F.createText();
+		t.setValue(text);
+		t.setSpace("preserve");
+		r.getContent().add(t);
+		return r;
+	}
+
+	private static java.util.function.Consumer<org.docx4j.wml.RPr> rStyle(String styleId) {
+		return rpr -> {
+			org.docx4j.wml.RStyle rs = Doc.F.createRStyle();
+			rs.setVal(styleId);
+			rpr.setRStyle(rs);
+		};
+	}
+
+	/** One w:rPr-less run, no direct w:spacing, no list label, in the given style (none when null). */
+	private static P stylesPara(Doc d, String pStyle, String text) {
+		Doc.Para para = d.para().noLabel().inheritSpacing().bareText(text);
+		if (pStyle != null) para.style(pStyle);
+		return para.add();
+	}
+
+	/** A w:numPr stating whichever of w:numId and w:ilvl is not null. */
+	private static PPrBase.NumPr numPrOf(Integer numId, Integer ilvl) {
+		PPrBase.NumPr np = Doc.F.createPPrBaseNumPr();
+		if (ilvl != null) {
+			PPrBase.NumPr.Ilvl lvl = Doc.F.createPPrBaseNumPrIlvl();
+			lvl.setVal(BigInteger.valueOf(ilvl));
+			np.setIlvl(lvl);
+		}
+		if (numId != null) {
+			PPrBase.NumPr.NumId id = Doc.F.createPPrBaseNumPrNumId();
+			id.setVal(BigInteger.valueOf(numId));
+			np.setNumId(id);
+		}
+		return np;
+	}
+
+	/** A two-level decimal list: %1. at 720/360 and %1.%2. at 1440/360. */
+	private static String twoLevelAbstract(int abstractNumId) {
+		return "<w:abstractNum w:abstractNumId=\"" + abstractNumId + "\"><w:multiLevelType w:val=\"multilevel\"/>"
+				+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/>"
+				+ "<w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+				+ "<w:lvl w:ilvl=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.%2.\"/>"
+				+ "<w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+				+ "</w:abstractNum>";
 	}
 
 	private static PPrBase.NumPr numPr(int numId) {
