@@ -452,15 +452,14 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 			return lvl.getPPr().getInd();
 		}
 
-		// Otherwise, if there is a style reference in the instance,
-		// as a sibling of pPr,
-		// use any w:ind in it (or TODO styles it is based on)
+		// Otherwise, if there is a style reference in the instance, as a sibling of
+		// pPr, use any w:ind in it, or in the styles it is based on (@since 17.1.1:
+		// the w:basedOn chain is followed, as it is for every other property the
+		// style contributes)
 		if (lvl.getPStyle()!=null) {
 
 			log.debug("override level has linked style: " + lvl.getPStyle().getVal() );
 
-			// Get the style
-			org.docx4j.wml.Style style = null;
 			PropertyResolver propertyResolver = null;
 			try {
 				propertyResolver = ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getPropertyResolver(false);
@@ -479,38 +478,32 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 					at org.docx4j.model.PropertyResolver.init(PropertyResolver.java:212)
 					at org.docx4j.model.PropertyResolver.<init>(PropertyResolver.java:145)
 					at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getPropertyResolver(MainDocumentPart.java:163)
-				*/			
-			if (propertyResolver==null) {
-				// less efficient
-				StyleDefinitionsPart stylesPart = ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getStyleDefinitionsPart();
-				style = stylesPart.getStyleById(lvl.getPStyle().getVal());
-				
-			} else {
-				// use propertyResolver
-				style = propertyResolver.getStyle( lvl.getPStyle().getVal() );
-			}
-			
-			if (style==null) {
-				log.warn("Couldn't find style " + lvl.getPStyle().getVal());
-				return null;
-			} else {
-				log.debug(".. found it");
-			}
-			
-			// If the style has a w:ind, return it.
-			// Otherwise, continue
-			if (style.getPPr() != null
-					&& style.getPPr().getInd()!=null ) {
-				return style.getPPr().getInd();
+				*/
+			// less efficient, but usable during init
+			StyleDefinitionsPart stylesPart = propertyResolver == null
+					? ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getStyleDefinitionsPart() : null;
+
+			java.util.Set<String> seen = new java.util.HashSet<String>();
+			String id = lvl.getPStyle().getVal();
+			while (id != null && seen.add(id)) {
+				org.docx4j.wml.Style style = propertyResolver == null
+						? stylesPart.getStyleById(id) : propertyResolver.getStyle(id);
+				if (style==null) {
+					log.warn("Couldn't find style " + id);
+					return null;
+				}
+				// If the style has a w:ind, return it.  Otherwise, the style it is based on.
+				if (style.getPPr() != null
+						&& style.getPPr().getInd()!=null ) {
+					return style.getPPr().getInd();
+				}
+				id = style.getBasedOn() == null ? null : style.getBasedOn().getVal();
 			}
 		}
-		
-		// If there is a style reference in pPr,
-		// but not also one as a sibling of pPr,
-		// then no number appears at all!
 
-			// TODO: throw ShouldNotBeNumbered??
-
+		// A style reference in the level's pPr, but not also one as a sibling of pPr,
+		// contributes nothing here (and numbers nothing, CR-014 P4: Emulator.resolve
+		// is where "not numbered" is decided).
 		return null;
 
 	}

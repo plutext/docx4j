@@ -131,8 +131,10 @@ public class Emulator {
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr) {
     	
 		if (pPr==null) return null;
-			// Assumes default p style isn't numbered!
-			
+		// a paragraph naming no style is resolved against the default paragraph
+		// style, which may be numbered (CR-014 P6, measured; before 17.1.1 it was
+		// assumed not to be)
+
 		String pStyleVal = null;
 		if (pPr.getPStyle()!=null) {
 			pStyleVal = pPr.getPStyle().getVal();
@@ -199,92 +201,13 @@ public class Emulator {
 			return null;
 		}
     	    	
-    	// If numId is not provided explicitly, 
-    	// is it provided by the style?
-    	// (ie does this style have a list associated with it?)
-    	if (numId == null 
-    			|| numId.equals("")) {
-    		
-    		org.docx4j.wml.Style style = null;
-    		if (pStyleVal==null || pStyleVal.equals("") ) {
-        		log.debug("no explicit numId; no style either");
-    			return null;
-    		}
-    		
-    		log.debug("no explicit numId; looking in styles");
-			PPr ppr;
-			try {
-				ppr = propertyResolver.getEffectivePPr(pStyleVal);
-			} catch (CyclicStylesException e) {
-				log.error(e.getMessage(),e);
-				return null;
-			} 
-			
-	    	if (ppr == null) {
-		    		log.debug("Style '" + pStyleVal + "' has no pPr");
-//		    		System.out.println("Style '" + pStyleVal + "' has no pPr");
-//		        	System.out.println(
-//		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
-//		        			);
-		        	
-		    		return null;
-	    	} 
-
-	    	
-    		NumPr numPr = ppr.getNumPr();
-    		
-    		if (numPr==null) {
-	        	log.debug("Couldn't get NumPr from " +  pStyleVal);
-//	        	log.debug(
-//	        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
-//	        			);
-	        	// So there is no numbering set on the style either
-	        	// That's ok ..
-	        	return null;
-    		}
-    		
-    		if (numPr.getNumId()==null) {
-    			log.error("numId was null!");
-    			return null;    			
-    		}
-    		
-    		if (numPr.getNumId().getVal()==null) {
-    			log.error("numId had no val!");
-    			return null;
-    		}
-    		numId = numPr.getNumId().getVal().toString();
-    		if (numId.equals("")) {
-    			log.error("numId was empty!");
-    			return null;
-    		}
-
-    		if (levelId == null
-    				|| levelId.equals("") ) {
-
-    			// w:ilvl (and its w:val) is optional; its absence means level 0
-    			if (numPr.getIlvl() != null && numPr.getIlvl().getVal() != null ) {
-
-    				levelId = numPr.getIlvl().getVal().toString();
-    	    		log.info("levelId=" + levelId + " (from style)" );
-    			} else {
-    				// default
-    				levelId = "0";
-    			}
-    		}
+    	NumRef ref = resolve(numberingPart, propertyResolver, pStyleVal, numId, levelId, directNumPr);
+    	if (ref.notNumbered) {
+    		log.debug(ref.reason);
+    		return null;
     	}
-
-		log.debug("Using numId: " + numId);    		
-    	
-		if (levelId == null || levelId.equals("")) {
-			// String numId = getAttributeValue(numIdNode, ValAttrName);
-			log.warn("No level id?! Default to 0.");
-			levelId="0";
-		}
-
-
-		if (!directNumPr && styleLinkedElsewhere(numberingPart, propertyResolver, numId, levelId, pStyleVal)) {
-			return null;
-		}
+    	numId = ref.numId;
+    	levelId = ref.ilvl;
 
 		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
 				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
@@ -393,27 +316,30 @@ public class Emulator {
     }
 
     /**
-     * Used in HTML output (XsltHTMLFunctions) only.
+     * The indent a paragraph's numbering level contributes, resolved the way
+     * {@link #getNumber} resolves the level itself (same numId and ilvl, from the
+     * paragraph's own {@code w:numPr} or its style chain) and read as
+     * {@link org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart#getInd(String, String)}
+     * reads it: the level's own {@code w:ind} first, then the linked style's, following
+     * {@code w:basedOn}.  Null where the paragraph is not numbered or the level states
+     * none.  Used in HTML output (XsltHTMLFunctions).
+     *
+     * <p>Before 17.1.1 this had its own copy of the resolution, which read the raw
+     * style's {@code w:pPr} and followed {@code w:basedOn} only when the style carried
+     * a {@code w:numPr} without a {@code w:numId}, so a style numbered purely through
+     * its base got a number and no indent; and it read only the level's own
+     * {@code w:ind}, never the linked style's.</p>
      *
      * @since 3.0.0
      */
     public static Ind getInd(WordprocessingMLPackage wmlPackage, String pStyleVal,
     		String numId, String levelId) {
-    	
-    	// TODO refactor.  Remove duplicated code.
-    	// 2024:  indent in style should trump indent in style's numbering definition
-    	// (on an attribute by attribute basis) 
-    	
+
     	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
     		wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
-    	
     	if (numberingPart==null) {
     		return null;
     	}
-
-    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
-    		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
-
     	PropertyResolver propertyResolver;
     	try {
     		propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
@@ -421,131 +347,126 @@ public class Emulator {
 			log.error(e.getMessage(),e);
 			return null;
 		}
-    	    	
-    	// If numId is not provided explicitly, 
-    	// is it provided by the style?
-    	// (ie does this style have a list associated with it?)
-    	if (numId == null 
-    			|| numId.equals("")) {
-    		
-    		org.docx4j.wml.Style style = null;
-    		if (pStyleVal==null || pStyleVal.equals("") ) {
-        		log.debug("no explicit numId; no style either");
-    			return null;
-    		}
-    		
-    		log.debug("no explicit numId; looking in styles");
-			style = propertyResolver.getStyle(pStyleVal); 
-			
-	    	if (style == null) {
-	    		log.debug("Couldn't find style '" + pStyleVal + "'");
-	    		return null;
-	    	} 
-	    	
-	    	if (style.getPPr() == null) {
-		    		log.debug("Style '" + pStyleVal + "' has no pPr");
-//		    		System.out.println("Style '" + pStyleVal + "' has no pPr");
-//		        	System.out.println(
-//		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
-//		        			);
-		        	
-		    		return null;
-	    	} 
+    	NumRef ref = resolve(numberingPart, propertyResolver, pStyleVal, numId, levelId,
+    			numId != null && !numId.equals(""));
+    	if (ref.notNumbered) {
+    		log.debug(ref.reason);
+    		return null;
+    	}
+    	return numberingPart.getInd(ref.numId, ref.ilvl);
+    }
 
-	    	
-    		NumPr numPr = style.getPPr().getNumPr();
-    		
-    		if (numPr==null) {
-	        	log.debug("Couldn't get NumPr from " +  pStyleVal);
-//	        	log.debug(
-//	        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
-//	        			);
-	        	// So there is no numbering set on the style either
-	        	// That's ok ..
-	        	return null;
-    		}
-    		
-    		
-    		if (numPr.getNumId()==null) {
-    			log.debug("NumPr element has no numId");
-    			if (pStyleVal==null) {
-    				return null;
-    			} else {
-    	        	// use propertyResolver to follow <w:basedOn w:val="blagh"/>
-        			log.debug(pStyleVal + ".. use propertyResolver to follow basedOn");
-    				PPr ppr=null;
-					try {
-						ppr = propertyResolver.getEffectivePPr(pStyleVal);
-					} catch (CyclicStylesException e) {
-						log.error(e.getMessage(),e);
-						return null;
-					} 
-    				
-    				numPr = ppr.getNumPr();
-        			if (numPr==null) {	
-            			log.debug(pStyleVal + "NumPr element still has no numId (basedOn didn't help)");
-        				return null; // Is this the right thing to do? Check!
-        			} else {        				
-        				log.info("Got numId: " + numPr.getNumId() );
-        			}
-    				
+    /**
+     * Where a paragraph's numbering comes from once its own {@code w:numPr} and its
+     * style chain have been read: the numId and ilvl to count with, whether that numId
+     * is the paragraph's own direct formatting, and whether Word numbers the paragraph
+     * at all.  {@link #getNumber} and {@link #getInd} share one resolution,
+     * {@link Emulator#resolve}.
+     *
+     * @since 17.1.1 (CR-014 phase 3)
+     */
+    public static final class NumRef {
+    	/** The list, or null when not numbered. */
+    	public final String numId;
+    	/** The level (never null when numbered; "0" where nothing states one). */
+    	public final String ilvl;
+    	/** Whether the numId is the paragraph's own {@code w:numPr}, as opposed to one
+    	 *  its paragraph style contributed. */
+    	public final boolean direct;
+    	/** Word paints no label and does not count the paragraph: nothing names a list
+    	 *  (no {@code w:numPr}, and no paragraph style - not even the default - carrying
+    	 *  one), or the level is linked to a different paragraph style than the one that
+    	 *  brought the numbering (&#xa7;2.8, {@link Emulator#styleLinkedElsewhere}). */
+    	public final boolean notNumbered;
+    	/** Why not numbered; null otherwise. */
+    	public final String reason;
+
+    	NumRef(String numId, String ilvl, boolean direct) {
+    		this.numId = numId; this.ilvl = ilvl; this.direct = direct;
+    		this.notNumbered = false; this.reason = null;
+    	}
+    	NumRef(String reason) {
+    		this.numId = null; this.ilvl = null; this.direct = false;
+    		this.notNumbered = true; this.reason = reason;
+    	}
+    	@Override
+    	public String toString() {
+    		return notNumbered ? "not numbered: " + reason
+    				: "numId " + numId + " ilvl " + ilvl + (direct ? " (direct)" : " (from style)");
+    	}
+    }
+
+    /**
+     * The one resolution of numId and ilvl for a paragraph, from its own
+     * {@code w:numPr} where it has one and from the effective properties of its
+     * paragraph style otherwise - the default paragraph style when it names none,
+     * since that style may be numbered (measured, CR-014 P6) - then the &#xa7;2.8 rule
+     * for a style-contributed level linked to another style.
+     *
+     * @param numId the paragraph's numId, or null/empty to read the style
+     * @param levelId the paragraph's ilvl, or null/empty for the style's, else "0"
+     * @param directNumPr whether a numId given here is the paragraph's own
+     * @since 17.1.1
+     */
+    static NumRef resolve(
+    		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart,
+    		PropertyResolver propertyResolver, String pStyleVal, String numId, String levelId,
+    		boolean directNumPr) {
+
+    	String styleId = (pStyleVal == null || pStyleVal.equals("")) ? null : pStyleVal;
+
+    	if (numId == null || numId.equals("")) {
+    		// no explicit numId: is it provided by the style (ie does this style, or
+    		// the default paragraph style, have a list associated with it)?
+    		directNumPr = false;
+    		if (styleId == null) {
+    			styleId = propertyResolver == null ? null : propertyResolver.getDefaultParagraphStyleId();
+    			if (styleId == null) {
+    				return new NumRef("no numId, no paragraph style and no default paragraph style");
     			}
-    			
     		}
-    		
-    		if (numPr.getNumId()==null) {
-    			log.error("numId was null!");
-    			return null;    			
+    		PPr ppr;
+    		try {
+    			ppr = propertyResolver.getEffectivePPr(styleId);
+    		} catch (CyclicStylesException e) {
+    			log.error(e.getMessage(), e);
+    			return new NumRef("cyclic styles at " + styleId);
     		}
-    		
-    		if (numPr.getNumId().getVal()==null) {
-    			log.error("numId had no val!");
-    			return null;
+    		if (ppr == null) {
+    			return new NumRef("style '" + styleId + "' has no pPr");
+    		}
+    		NumPr numPr = ppr.getNumPr();
+    		if (numPr == null) {
+    			// no numbering set on the style either; that's ok
+    			return new NumRef("no numId, and style '" + styleId + "' is not numbered");
+    		}
+    		if (numPr.getNumId() == null || numPr.getNumId().getVal() == null) {
+    			log.error("style '" + styleId + "' has a w:numPr without a w:numId val");
+    			return new NumRef("style '" + styleId + "' has a w:numPr without a w:numId val");
     		}
     		numId = numPr.getNumId().getVal().toString();
-    		if (numId.equals("")) {
-    			log.error("numId was empty!");
-    			return null;
-    		}
-
-    		if (levelId == null
-    				|| levelId.equals("") ) {
-
+    		if (levelId == null || levelId.equals("")) {
     			// w:ilvl (and its w:val) is optional; its absence means level 0
-    			if (numPr.getIlvl() != null && numPr.getIlvl().getVal() != null ) {
-
+    			if (numPr.getIlvl() != null && numPr.getIlvl().getVal() != null) {
     				levelId = numPr.getIlvl().getVal().toString();
-    	    		log.info("levelId=" + levelId + " (from style)" );
+    				log.debug("levelId=" + levelId + " (from style)");
     			} else {
-    				// default
     				levelId = "0";
     			}
     		}
     	}
+    	log.debug("Using numId: " + numId);
 
-		log.debug("Using numId: " + numId);    		
-    	
-		if (levelId == null || levelId.equals("")) {
-			// String numId = getAttributeValue(numIdNode, ValAttrName);
-			log.warn("No level id?! Default to 0.");
-			levelId="0";
-		}
+    	if (levelId == null || levelId.equals("")) {
+    		log.warn("No level id?! Default to 0.");
+    		levelId = "0";
+    	}
 
-
-		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
-				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
-						levelId)) {
-
-			// don't IncrementCounter here
-
-			// the instance's own level definition (w:lvlOverride/w:lvl) first, as
-			// getNumber does since 17.1.0, then the abstract one
-			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
-			Ind ind = indOf(listLevel.getJaxbOverrideLvl());
-			return (ind!=null) ? ind : indOf(listLevel.getJaxbAbstractLvl());
-
-		}
-		return null;
+    	if (!directNumPr && styleLinkedElsewhere(numberingPart, propertyResolver, numId, levelId, styleId)) {
+    		return new NumRef("level " + levelId + " of numId " + numId + " is linked to a paragraph style other than '"
+    				+ styleId + "'");
+    	}
+    	return new NumRef(numId, levelId, directNumPr);
     }
 
     /** A level definition's w:ind, or null (the level, its w:pPr or its w:ind absent).

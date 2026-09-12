@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.listnumbering.ind;
+package org.docx4j.model.listnumbering;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,14 +35,16 @@ import org.junit.Test;
 
 public class ListNumberIndTest {
 	
-	final static String BASE_DIR = "src/test/java/org/docx4j/listnumbering/ind/";
+	final static String BASE_DIR = "src/test/java/org/docx4j/model/listnumbering/ind/";
 
 	final static String[] testdocs = { 
 		"abstract_style_with.xml", 
 		"abstract_style_without.xml", 
 		"abstract_nostyle_ppr.xml", 
 		"abstract_nostyle_noppr.xml", 
-		"override_nostyle_ppr.xml"};  
+		"override_nostyle_ppr.xml",
+		"abstract_style_ind_only.xml",
+		"abstract_style_basedon.xml"};  
 	
 	/* @since 17.1.0 the first is 2880, the level's own w:ind, where it used to be 11, the
 	 * w:ind of the paragraph style the level's w:pStyle names.  A w:lvl/w:pPr states the
@@ -53,12 +55,17 @@ public class ListNumberIndTest {
 	 * draws such a bullet on the level's indent.  Where the level states none - the second
 	 * document here - the linked style's is still the fallback.  A paragraph which does use
 	 * the style gets the style's w:ind over the level's from the style chain anyway. */
+	/* @since 17.1.1 (CR-014 phase 3) the last two: a level with no w:ind of its own takes
+	 * the linked style's (11), and follows w:basedOn to find one (31) - the style chain
+	 * is followed here as it is for every other property a style contributes. */
 	final static String[] expected = { 
 		"2880", 
 		"12", 
 		"13", 
 		null, 
-		"23"};  
+		"23",
+		"11",
+		"31"};  
 		
 	
 	public static void main(String[] args) throws Exception {

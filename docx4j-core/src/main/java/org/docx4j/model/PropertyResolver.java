@@ -165,6 +165,12 @@ public class PropertyResolver {
 //	}
 	
 	String defaultParagraphStyleId;  // "Normal" in English, but ...
+
+	/** The styleId of the {@code w:default="1"} paragraph style, or null if the
+	 *  styles part declares none.  @since 17.1.1 */
+	public String getDefaultParagraphStyleId() {
+		return defaultParagraphStyleId;
+	}
 	String defaultCharacterStyleId;
 	
 	private void init() throws Docx4JException {

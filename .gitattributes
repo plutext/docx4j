@@ -17,4 +17,4 @@ docx4j-diffx-tests/src/test/resources/org/docx4j/diff/golden/** text eol=lf
 # List numbering model: converted to LF in CR-014 phase 0 (55c5475e1); keep it so.
 docx4j-core/src/main/java/org/docx4j/model/listnumbering/** text eol=lf
 docx4j-core-tests/src/test/java/org/docx4j/model/listnumbering/*.java text eol=lf
-docx4j-core-tests/src/test/java/org/docx4j/listnumbering/** text eol=lf
+docx4j-core-tests/src/test/java/org/docx4j/model/listnumbering/ind/** text eol=lf

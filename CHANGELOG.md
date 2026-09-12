@@ -260,6 +260,14 @@ List numbering (CR-014, phase 1):
   (aa, ab, ac).
 - The abstract formatter class is now LabelFormatter; the old NumberFormat name, which clashed
   with org.docx4j.wml.NumberFormat, is a deprecated empty subclass for one release.
+- (phase 3) A paragraph naming no style is numbered through the default paragraph style's
+  w:numPr, as Word does (measured): Emulator.getNumber(pkg, pPr), used by HTML output and the
+  TOC generator, assumed that style unnumbered. PDF output already resolved it.
+- (phase 3) Emulator.getNumber and Emulator.getInd share one resolution of numId and ilvl
+  (Emulator.resolve, NumRef). HTML output's numbering indent therefore follows the same rules
+  as the number: a style numbered purely through w:basedOn now indents (it numbered without
+  indenting), and a level with no w:ind of its own takes the linked style's, following
+  w:basedOn - which NumberingDefinitionsPart.getInd now does for every caller, PDF included.
 
 Other:
 

@@ -1,6 +1,6 @@
 # CR: List numbering model (`org.docx4j.model.listnumbering`) — line endings, correctness, and separating definitions from counter state
 
-Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) and 1 (LabelFormatter registry) done; next 3, then 2, 4, 5
+Status: IN PROGRESS (2026-09-12) — phases 0 (LF, 55c5475e1), 0b (probes P1-P8, goldens in, table settled) 1 (LabelFormatter registry) and 3 (one resolver) done; next 2, then 4, 5
 Scope: the package `docx4j-core/src/main/java/org/docx4j/model/listnumbering`
 (15 files, ~2,200 lines), its driver `NumberingDefinitionsPart` (maps,
 `getEmulator`, `restart`), and the tests under
@@ -509,6 +509,23 @@ Behaviour change to record in CHANGELOG: indents for paragraphs whose
 numbering is inherited purely via `basedOn` now come from the same level the
 number does.
 
+Done 2026-09-12.  `Emulator.resolve(ndp, propertyResolver, pStyleVal, numId,
+ilvl, direct) -> NumRef` (package-private; `NumRef` public, with
+`notNumbered` + `reason`) is the one resolution: a paragraph naming no style
+resolves against `PropertyResolver.getDefaultParagraphStyleId()` (new
+getter), the style branch reads `getEffectivePPr`, and `styleLinkedElsewhere`
+is applied to any style-contributed numId.  `getNumber` keeps returning null
+for a not-numbered paragraph (its public contract; phase 4's `next`/`peek`
+carry the reason), and keeps today's empty `ResultTriple` for a numId with no
+definition, numId 0 included - that classification moves in phase 4.
+`getInd` is the wrapper: resolve, then `NumberingDefinitionsPart.getInd`,
+whose `getIndFromLvl` now walks `w:basedOn` from the linked style (also during
+`PropertyResolver` init, via the styles part).  The 2024 TODO is gone.
+`ListNumberIndTest` moved, with two new fixtures: a level with no `w:ind`
+takes the linked style's (`abstract_style_ind_only`, 11) and finds it through
+`w:basedOn` (`abstract_style_basedon`, 31); `DefaultStyleNumberedTest`
+covers P6's rule and `resolve` itself.
+
 ### Phase 4 — separate definitions from counter state
 
 The large one.  New classes beside the old; `Emulator`, `ListNumberingDefinition`
@@ -550,6 +567,9 @@ deprecation before removal (i.e. remove no earlier than 17.2).
 
 - 2026-09-12 (Jason): write the CR; phase 0 (Unix line endings) is the
   explicit preliminary step, done before any code change.
+- 2026-09-12: phase 3 done (see the phase for particulars).  Two behaviour
+  changes, both towards Word: default-style numbering reaches HTML output
+  and the TOC generator; numbering indents follow `w:basedOn`.
 - 2026-09-12: phase 1 done (see the phase for particulars).  `lowerLetter`
   past z changes from base 26 to Word's repeated letter; recorded in the
   CHANGELOG as a behaviour change.
