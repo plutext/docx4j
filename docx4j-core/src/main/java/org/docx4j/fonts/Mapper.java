@@ -168,7 +168,159 @@ public abstract class Mapper {
 		return null;
 	}
 	
-	public final static String FONT_FALLBACK = "Times New Roman"; 
+	// ---- the decisions: what each pass did, and why.  @since 17.1.1 (CR-017 phase 1)
+
+	/** Keyed by the lower-cased document font, as {@link #fontMappings} is. */
+	private final ConcurrentHashMap<String, FontDecision> decisions = new ConcurrentHashMap<String, FontDecision>();
+
+	/**
+	 * Record what a pass decided for this document font, replacing any earlier decision
+	 * (a later pass may re-map the font) but keeping the per-script choices the selector
+	 * has recorded against it.
+	 *
+	 * @param documentFont the name as the document has it
+	 * @param source which pass answered
+	 * @param via how it got there - the {@code w:altName} chain, the class, Word's
+	 *        default family - or null where the source says it all
+	 * @param widthError what is known of the substitute's width error, or null
+	 * @since 17.1.1
+	 */
+	protected FontDecision decide(String documentFont, FontDecision.Source source, String via, String widthError) {
+
+		if (documentFont==null) return null;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		FontDecision decision = new FontDecision(documentFont.trim(), source, via, widthError);
+		decision.copyScriptChoicesFrom(decisions.get(key));
+		decisions.put(key, decision);
+		return decision;
+	}
+
+	/**
+	 * Record that a script this document font is used for went to another face during the
+	 * conversion - {@link RunFontSelector}'s coverage pass, and the per-script substitutes
+	 * of {@code font-substitutes.xml}.  Keyed on (document font, coverage group), as the
+	 * selector's own cache is.
+	 *
+	 * @param face the face the script was drawn in, or null where nothing installed
+	 *        covers it
+	 * @since 17.1.1
+	 */
+	public void recordScriptChoice(String documentFont, String coverageGroup, PhysicalFont face) {
+
+		if (documentFont==null || documentFont.trim().length()==0 || coverageGroup==null) return;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		FontDecision decision = decisions.get(key);
+		if (decision==null) {
+			// a font no pass met (the selector reaches fonts a run names directly)
+			decision = decide(documentFont, get(documentFont)==null
+					? FontDecision.Source.UNMAPPED : FontDecision.Source.INSTALLED, null, null);
+		}
+		String faceName = face==null ? null : face.getName();
+		FontSubstitutionTable.Substitute measured = faceName==null ? null
+				: FontSubstitutionTable.scriptSubstitute(documentFont, coverageGroup, faceName);
+		decision.addScriptChoice(coverageGroup, faceName, measured==null ? null : measured.getError());
+	}
+
+	/**
+	 * Record that {@link RunFontSelector} drew a symbol font's characters in this face -
+	 * the one {@link PhysicalFonts#getWDingsFont} or {@link PhysicalFonts#getSymbolFont}
+	 * picks for the glyphs, whatever this mapper made of the name, since a {@code w:sym}
+	 * character is a code point in that face and not in the font the run asks for.
+	 *
+	 * @since 17.1.1
+	 */
+	public void recordSymbolFace(String documentFont, PhysicalFont face) {
+
+		if (documentFont==null || documentFont.trim().length()==0 || face==null) return;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		FontDecision existing = decisions.get(key);
+		if (existing!=null && existing.getSource()==FontDecision.Source.SYMBOL
+				&& face.equals(existing.getFixedPhysical())) {
+			return; // said once, not once per run
+		}
+		FontDecision decision = decide(documentFont, FontDecision.Source.SYMBOL,
+				"a symbol-font run, drawn in the face which has the glyphs", null);
+		if (decision!=null) decision.setFixedPhysical(face);
+	}
+
+	/**
+	 * What was decided for each of this document's fonts, and why, ordered by the
+	 * document font's name so that two runs of the same document give the same list.
+	 *
+	 * <p>The physical font, its faces and the line box are read off this mapper now, not
+	 * when the pass recorded its decision, so they are what the conversion will use.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public java.util.List<FontDecision> getDecisions() {
+
+		java.util.List<FontDecision> all = new java.util.ArrayList<FontDecision>(decisions.values());
+		for (FontDecision decision : all) complete(decision);
+		java.util.Collections.sort(all, new java.util.Comparator<FontDecision>() {
+			public int compare(FontDecision a, FontDecision b) {
+				return String.CASE_INSENSITIVE_ORDER.compare(a.getDocumentFont(), b.getDocumentFont());
+			}
+		});
+		return java.util.Collections.unmodifiableList(all);
+	}
+
+	/** What was decided for this document font, recording one where no pass met it (a
+	 *  font the selector reached directly): {@link FontsAnalysis} asks this, so that
+	 *  every font a report is about has a decision.  @since 17.1.1 */
+	FontDecision decisionFor(String documentFont) {
+		FontDecision decision = getDecision(documentFont);
+		if (decision==null) {
+			decide(documentFont, get(documentFont)==null
+					? FontDecision.Source.UNMAPPED : FontDecision.Source.INSTALLED, null, null);
+			decision = getDecision(documentFont);
+		}
+		return decision;
+	}
+
+	/** What was decided for this document font, or null where no pass met it.
+	 *  @since 17.1.1 */
+	public FontDecision getDecision(String documentFont) {
+		if (documentFont==null) return null;
+		FontDecision decision = decisions.get(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
+		if (decision!=null) complete(decision);
+		return decision;
+	}
+
+	/** The volatile half of a decision: the mapping as it now stands. */
+	private void complete(FontDecision decision) {
+
+		String documentFont = decision.getDocumentFont();
+		PhysicalFont pf = decision.getFixedPhysical()!=null ? decision.getFixedPhysical() : get(documentFont);
+		String bold = null, italic = null, boldItalic = null;
+		double factor = 1;
+		if (pf!=null) {
+			bold = pf.isNoBoldFace() ? SYNTHETIC : faceName(getBoldForm(documentFont, pf));
+			italic = faceName(getItalicForm(documentFont, pf));
+			boldItalic = faceName(getBoldItalicForm(documentFont, pf));
+			factor = WidthFactors.factorFor(documentFont, pf.getName());
+		}
+		decision.complete(pf, bold, italic, boldItalic, lineBox(documentFont), factor);
+	}
+
+	/** FOP synthesises the face from the regular one, which is what Word does for a
+	 *  family that has none of its own. */
+	public static final String SYNTHETIC = "synthetic";
+
+	private static String faceName(PhysicalFont pf) {
+		return pf==null ? SYNTHETIC : pf.getName();
+	}
+
+	/** Whose metrics the line box takes; see {@link FontDecision#getLineBox}. */
+	private String lineBox(String documentFont) {
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		String family = lineMetricsFamily(documentFont);
+		if (family!=null && !family.equalsIgnoreCase(documentFont)) {
+			return (wordDefaulted.contains(key) ? "wordDefault:" : "alias:") + family;
+		}
+		return WordLineMetrics.hasTableEntry(documentFont) ? "documentFont" : "substitute";
+	}
+
+	public final static String FONT_FALLBACK = "Times New Roman";
 	
 	/**
 	 * Populate the fontMappings object: an entry for each of the documentFontNames.
@@ -203,19 +355,28 @@ public abstract class Mapper {
 		Map<String, org.docx4j.wml.Fonts.Font> table = fontTable(wmlFonts);
 		for (String documentFontName : documentFontNames) {
 			if (documentFontName==null || documentFontName.trim().length()==0) continue;
-			if (get(documentFontName)!=null) {
-				log.debug(documentFontName + " already mapped");
-				continue;
-			}
+			if (get(documentFontName)!=null) continue; // already mapped; its decision stands
 			PhysicalFont pf = installedOrEmbedded(documentFontName);
+			FontDecision.Source source = pf==null ? null
+					: (PhysicalFonts.get(documentFontName)!=null ? FontDecision.Source.INSTALLED
+							: FontDecision.Source.EMBEDDED);
 			if (pf==null) {
 				pf = resolveDocumentFont(documentFontName, table.get(documentFontName.trim().toLowerCase()));
+				if (pf!=null) source = FontDecision.Source.MAPPER_OWN;
 			}
 			if (pf==null) {
 				log.warn("- - No physical font for: " + documentFontName + " so ensure it is mapped. ");
+				/* Recorded, not merely logged: a later pass will overwrite this decision
+				 * where it maps the font, and what is left says which fonts reached FOP
+				 * with nothing (CR-017 phase 1). */
+				decide(documentFontName, FontDecision.Source.UNMAPPED, null, null);
 			} else {
 				put(documentFontName, pf);
-				if (log.isDebugEnabled()) log.debug(documentFontName + " -> " + pf.getName());
+				decide(documentFontName, source,
+						source==FontDecision.Source.MAPPER_OWN
+								? (resolvedVia!=null ? resolvedVia : "the mapper's own answer: " + pf.getName())
+								: null,
+						null);
 			}
 		}
 	}
@@ -242,6 +403,11 @@ public abstract class Mapper {
 	protected PhysicalFont resolveDocumentFont(String documentFontName, org.docx4j.wml.Fonts.Font fontTableEntry) {
 		return null;
 	}
+
+	/** How the mapper's own answer was reached - a variant of the name, a panose match,
+	 *  a FontSubstitutions.xml entry - for the decision the caller records; a subclass
+	 *  sets it as it answers, and it is read straight afterwards.  @since 17.1.1 */
+	protected String resolvedVia;
 
 	/**
 	 * The mapper's own substitutes for whatever is still unmapped after the shared passes
@@ -420,105 +586,111 @@ public abstract class Mapper {
 	}
 	
     /**
-     * Auto-add mappings for Calibri, Cambria etc where possible and useful
+     * Auto-add mappings for Calibri, Cambria etc where possible and useful: for each
+     * document font the table knows, the first of its open substitutes this machine has.
+     *
+     * <p>The table itself is {@code font-substitutes.xml} since 17.1.1
+     * ({@link FontSubstitutionTable}, CR-017 phase 0), so that a report - and a port -
+     * can read the same rows this pass takes; it carries the same document fonts, in the
+     * same order, with the same substitutes.  <b>The measurements which chose each
+     * substitute stay here</b>, below, in the table's order: they are the record of why a
+     * row is what it is, and the table's {@code error} attributes quote them.</p>
+     *
      * @since 11.5.9
      */
     public void addMetricallyCompatibleSubstitutes() {
-		
-		// Croscore or Liberation.  NB Times New Roman is a serif and Arial a sans:
-		// the two second substitutes were the wrong way round until 17.0.5, so on a
-		// box with Liberation but not Croscore each became the other's class.
-    	addMetricallyCompatibleSubstitute("Times New Roman", "Tinos Regular", "Liberation Serif");
-    	addMetricallyCompatibleSubstitute("Arial", "Arimo Regular", "Liberation Sans");
-    	addMetricallyCompatibleSubstitute("Courier New", "Cousine Regular", "Liberation Mono");
 
-		// Crosextra
-    	// second choice where the crosextra clones are absent (a box with only the
-    	// Liberation jar, e.g. a build server): a font of the same class, so the
-    	// text is at least a sans / a serif; line heights still come from the
-    	// document font's own metrics (WordLineMetrics).  @since 17.0.5
-    	addMetricallyCompatibleSubstitute("Calibri", "Carlito Regular", "Liberation Sans");
-    	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", "Liberation Serif");
-    	addMetricallyCompatibleSubstitute("Calibri Light", "Carlito Regular", "Liberation Sans");
-
-    	// URW base 35 (ghostscript-fonts, on most Linux boxes).  Century Gothic was
-    	// drawn to ITC Avant Garde Gothic's widths, and URW Gothic is the Avant Garde
-    	// clone: measured against the Century Gothic Word embedded in a real document,
-    	// URW Gothic Book matches it to the unit over 6743 characters (0.00%), and
-    	// URW Gothic Demi likewise matches Century Gothic Bold.  Without this the
-    	// class-based fallback reached a Helvetica clone, 3.1% wider, which is enough
-    	// to break a full line differently.  @since 17.0.5
-    	addMetricallyCompatibleSubstitute("Century Gothic", "URW Gothic", "Liberation Sans");
-
-    	// Fonts with no metric-compatible clone, but where a stand-in of the right
-    	// class is much closer than the document's default font, which is what
-    	// RunFontSelector falls back to (a sans in Tinos, or Georgian in Carlito,
-    	// was the first divergence in a fifth of a real-document sample; CR-001).
-    	// The widths are not Word's, so lines still break differently.  @since 17.0.5
-    	// Tw Cen MT (Twentieth Century) is a geometric sans; without an entry it fell
-    	// through to the serif default and its labels came out 3-4% narrow (measured
-    	// against Word's own PDF of a corpus document, every y and x within 0.3pt and
-    	// the text 1.03-1.04x ours).  Arimo is 1.0605x Tinos, so the residual is 2%.
-    	// @since 17.1.0
-    	for (String sans : new String[] { "Tahoma", "Segoe UI",
-    			"Gadugi", "Helvetica", "Helvetica Neue", "Tw Cen MT" }) {
-    		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
+    	for (FontSubstitutionTable.Row row : FontSubstitutionTable.substitutes()) {
+    		PhysicalFont before = get(row.getDocumentFont());
+    		addFirstAvailableSubstitute(row.getDocumentFont(), row.substituteNames());
+    		PhysicalFont after = get(row.getDocumentFont());
+    		if (after!=null && after!=before) {
+    			// which candidate it took: the first the machine has, as the pass chooses
+    			FontSubstitutionTable.Substitute taken = null;
+    			for (String candidate : row.substituteNames()) {
+    				if (PhysicalFonts.get(candidate)!=null) { taken = row.substituteNamed(candidate); break; }
+    			}
+    			decide(row.getDocumentFont(), sourceOf(taken), null,
+    					taken==null ? null : (taken.getError()!=null ? taken.getError()
+    							: ("class".equals(taken.getQuality()) ? UNKNOWN_ERROR : null)));
+    		}
     	}
 
-    	// Trebuchet MS is not an Arial shape and an Arial clone is wrong for it in two
-    	// directions at once: its lower case is wider than Arial's and its capitals are
-    	// much narrower.  Measured against Word's own PDFs of three corpus documents, on
-    	// unjustified lines whose text matches exactly (Word's pen advance over the
-    	// candidate's advance for the same string at the same size), Word / Arimo is
-    	// 1.0273 over the mixed-case body but 0.9061 over the bold capitals of the
-    	// headings, so no single width factor can repair it - scaling Arimo to fit the
-    	// body makes the headings worse.  Droid Sans is the closest installed face in
-    	// every weight: 1.0096 body, 0.9449 bold capitals, 1.0246 italic, against Arimo's
-    	// 1.0273 / 0.9061 / 1.0504; on the two other Trebuchet documents its body ratio
-    	// is 1.0060 and 0.9889 where Arimo is 1.0212 and 0.9918, and on their all-capitals
-    	// lines 0.9703 / 1.0272 where Arimo is 0.8942 / 0.8822.  Noto Sans was measured
-    	// and rejected: 0.9678 body, 0.9133 bold capitals, 1.0382 italic - further from
-    	// Trebuchet than Arimo is on two of the three documents.  Droid Sans ships no
-    	// italic face, so FOP obliques the regular, whose advances are the ones measured
-    	// above; the line box stays Trebuchet's own (WordLineMetrics has it).  Arimo
-    	// remains the last resort, which is what a machine without Droid Sans keeps.
-    	// @since 17.1.1
-    	addFirstAvailableSubstitute("Trebuchet MS", "Droid Sans", "Arimo Regular", "Liberation Sans");
-
-    	// Arial Black is far heavier and wider than Arial: measured against Word's own
-    	// PDF of a corpus document, its centred title is 281.2pt against our Arimo's
-    	// 247.9 on the same centre - 1.134x.  Noto Sans Black measures 1.1122x Arimo
-    	// over a mixed Latin sample, so the residual is 2% instead of 13.4%.  Arimo
-    	// remains the last resort.  @since 17.1.0
-    	addFirstAvailableSubstitute("Arial Black", "Noto Sans Black", "Noto Sans Display Black",
-    			"Arimo Regular", "Liberation Sans");
-
-    	// Verdana and Comic Sans MS are much wider than Arial, so an Arial clone
-    	// re-breaks every line of a document set in them.  Measured against Word's own
-    	// PDFs of real documents, on lines whose text matches exactly: Word's Verdana
-    	// lines are 1.141x our Arimo ones, and DejaVu Sans is 1.14x Arimo over a mixed
-    	// Latin sample; Word's Comic Sans lines are 1.153x our Carlito ones (Comic Sans
-    	// reached Carlito through the class-based fallback), and Noto Sans is 1.15x
-    	// Carlito.  Tahoma is left where it is: on an all-Tahoma document the median
-    	// ratio to our Arimo output is 1.006.  @since 17.1.0
-    	addFirstAvailableSubstitute("Verdana", "DejaVu Sans", "Arimo Regular", "Liberation Sans");
-    	addFirstAvailableSubstitute("Comic Sans MS", "Noto Sans Regular", "DejaVu Sans",
-    			"Arimo Regular", "Liberation Sans");
-
-    	// Segoe UI Light has no metric clone, but Arimo is the wrong shape for it:
-    	// measured against the Segoe UI Light Word embeds, Arimo's advances are
-    	// systematically 11.8% wider, so every line breaks early.  Source Sans has
-    	// no systematic bias at all (+0.4% mean signed, 9.4% mean absolute), which is
-    	// what line breaking cares about.  Arimo remains the last resort.
-    	// @since 17.0.5
-    	addFirstAvailableSubstitute("Segoe UI Light",
-    			"Source Sans 3", "Source Sans Pro", "Arimo Regular", "Liberation Sans");
-    	for (String serif : new String[] { "Garamond", "Bookman Old Style" }) {
-    		addMetricallyCompatibleSubstitute(serif, "Tinos Regular", "Liberation Serif");
-    	}
-
-
-    	/* Held back: the Nokia Pure family, the only document font name of the three
+    	/* ---------------------------------------------------------------------------
+    	 * The measurements behind the rows, in the table's order.
+    	 * ---------------------------------------------------------------------------
+    	 *
+    	 * Times New Roman, Arial, Courier New - Croscore or Liberation.  NB Times New
+    	 * Roman is a serif and Arial a sans: the two second substitutes were the wrong way
+    	 * round until 17.0.5, so on a box with Liberation but not Croscore each became the
+    	 * other's class.
+    	 *
+    	 * Calibri, Cambria, Calibri Light - Crosextra.  Second choice where the crosextra
+    	 * clones are absent (a box with only the Liberation jar, e.g. a build server): a
+    	 * font of the same class, so the text is at least a sans / a serif; line heights
+    	 * still come from the document font's own metrics (WordLineMetrics).  @since 17.0.5
+    	 *
+    	 * Century Gothic - URW base 35 (ghostscript-fonts, on most Linux boxes).  Century
+    	 * Gothic was drawn to ITC Avant Garde Gothic's widths, and URW Gothic is the Avant
+    	 * Garde clone: measured against the Century Gothic Word embedded in a real
+    	 * document, URW Gothic Book matches it to the unit over 6743 characters (0.00%),
+    	 * and URW Gothic Demi likewise matches Century Gothic Bold.  Without this the
+    	 * class-based fallback reached a Helvetica clone, 3.1% wider, which is enough to
+    	 * break a full line differently.  @since 17.0.5
+    	 *
+    	 * Tahoma, Segoe UI, Gadugi, Helvetica, Helvetica Neue, Tw Cen MT - fonts with no
+    	 * metric-compatible clone, but where a stand-in of the right class is much closer
+    	 * than the document's default font, which is what RunFontSelector falls back to (a
+    	 * sans in Tinos, or Georgian in Carlito, was the first divergence in a fifth of a
+    	 * real-document sample; CR-001).  The widths are not Word's, so lines still break
+    	 * differently.  @since 17.0.5
+    	 * Tw Cen MT (Twentieth Century) is a geometric sans; without an entry it fell
+    	 * through to the serif default and its labels came out 3-4% narrow (measured
+    	 * against Word's own PDF of a corpus document, every y and x within 0.3pt and the
+    	 * text 1.03-1.04x ours).  Arimo is 1.0605x Tinos, so the residual is 2%.
+    	 * @since 17.1.0
+    	 *
+    	 * Trebuchet MS is not an Arial shape and an Arial clone is wrong for it in two
+    	 * directions at once: its lower case is wider than Arial's and its capitals are
+    	 * much narrower.  Measured against Word's own PDFs of three corpus documents, on
+    	 * unjustified lines whose text matches exactly (Word's pen advance over the
+    	 * candidate's advance for the same string at the same size), Word / Arimo is
+    	 * 1.0273 over the mixed-case body but 0.9061 over the bold capitals of the
+    	 * headings, so no single width factor can repair it - scaling Arimo to fit the
+    	 * body makes the headings worse.  Droid Sans is the closest installed face in
+    	 * every weight: 1.0096 body, 0.9449 bold capitals, 1.0246 italic, against Arimo's
+    	 * 1.0273 / 0.9061 / 1.0504; on the two other Trebuchet documents its body ratio
+    	 * is 1.0060 and 0.9889 where Arimo is 1.0212 and 0.9918, and on their all-capitals
+    	 * lines 0.9703 / 1.0272 where Arimo is 0.8942 / 0.8822.  Noto Sans was measured
+    	 * and rejected: 0.9678 body, 0.9133 bold capitals, 1.0382 italic - further from
+    	 * Trebuchet than Arimo is on two of the three documents.  Droid Sans ships no
+    	 * italic face, so FOP obliques the regular, whose advances are the ones measured
+    	 * above; the line box stays Trebuchet's own (WordLineMetrics has it).  Arimo
+    	 * remains the last resort, which is what a machine without Droid Sans keeps.
+    	 * @since 17.1.1
+    	 *
+    	 * Arial Black is far heavier and wider than Arial: measured against Word's own
+    	 * PDF of a corpus document, its centred title is 281.2pt against our Arimo's
+    	 * 247.9 on the same centre - 1.134x.  Noto Sans Black measures 1.1122x Arimo
+    	 * over a mixed Latin sample, so the residual is 2% instead of 13.4%.  Arimo
+    	 * remains the last resort.  @since 17.1.0
+    	 *
+    	 * Verdana and Comic Sans MS are much wider than Arial, so an Arial clone
+    	 * re-breaks every line of a document set in them.  Measured against Word's own
+    	 * PDFs of real documents, on lines whose text matches exactly: Word's Verdana
+    	 * lines are 1.141x our Arimo ones, and DejaVu Sans is 1.14x Arimo over a mixed
+    	 * Latin sample; Word's Comic Sans lines are 1.153x our Carlito ones (Comic Sans
+    	 * reached Carlito through the class-based fallback), and Noto Sans is 1.15x
+    	 * Carlito.  Tahoma is left where it is: on an all-Tahoma document the median
+    	 * ratio to our Arimo output is 1.006.  @since 17.1.0
+    	 *
+    	 * Segoe UI Light has no metric clone, but Arimo is the wrong shape for it:
+    	 * measured against the Segoe UI Light Word embeds, Arimo's advances are
+    	 * systematically 11.8% wider, so every line breaks early.  Source Sans has
+    	 * no systematic bias at all (+0.4% mean signed, 9.4% mean absolute), which is
+    	 * what line breaking cares about.  Arimo remains the last resort.  @since 17.0.5
+    	 *
+    	 * Held back: the Nokia Pure family, the only document font name of the three
     	 * corpora's 449 documents which reaches FOP unresolved.  Its w:altName is Meiryo -
     	 * itself absent, so the alt-name pass cannot resolve it - and its name matches none
     	 * of FontFallback's class keywords, so it gets no class default either; because the
@@ -528,49 +700,56 @@ public abstract class Mapper {
     	 * comes out in a non-embedded serif where the face is a humanist sans
     	 * (w:family="swiss", panose serif-style 11).
     	 *
-    	 * addFirstAvailableSubstitute("Nokia Pure Text", "Source Sans 3", "Source Sans Pro",
-    	 * "Arimo Regular", "Liberation Sans") - Segoe UI Light's substitute, for the same
-    	 * reasons - was measured: it draws that document in the right class and moves its
-    	 * page count towards Word's (63 of Word's 87 to 65), and its body lines are closer
-    	 * (Word's "Acceptance Test Manual" is 266.9pt, base-14 Times 274.4, Source Sans
-    	 * 269.9), but its headings are further out (115.2 against 120.6 and 104.6) and it
-    	 * cost that document 0.045 of line parity, which is the whole of the batch's fall on
-    	 * that corpus.  Without a measurement of Nokia Pure's own advances there is nothing
-    	 * to choose the substitute by, so it waits for one.  @since 17.1.0 */
-
-
-    	// The Palatino family, and Georgia, are wider than Times, so a Times clone
-    	// re-breaks their lines.  P052 is URW's Palladio, the Palatino clone, and is in
-    	// the URW base 35 (ghostscript-fonts).  Measured against Word's own PDFs:
-    	// Word's Book Antiqua lines are 1.087-1.114x our Tinos ones and its Georgia
-    	// lines 1.076-1.112x, where P052 is 1.09x Tinos over a mixed Latin sample.
-    	// @since 17.1.0
-    	for (String palatino : new String[] { "Georgia", "Book Antiqua", "Palatino Linotype" }) {
-    		addFirstAvailableSubstitute(palatino, "P052", "Tinos Regular", "Liberation Serif");
-    	}
-    	// Liberation Sans Narrow is metric-compatible with Arial Narrow, but neither the
-    	// Liberation nor the Croscore jar carries it, and it is no longer in the
-    	// Liberation package.  Nimbus Sans Narrow (URW's Helvetica Narrow, in
-    	// ghostscript-fonts) is the same 82% condensation and matches Arial Narrow's
-    	// advances to within one unit per 1000 over letters, digits and punctuation
-    	// (0.02% mean, bold likewise; the control pair Century Gothic / URW Gothic
-    	// measures 0.29% by the same method).  Where neither is installed, Arial Narrow
-    	// is still deliberately left unmapped: measured over the real-document corpus,
-    	// DejaVu Sans Condensed (the nearest condensed face on a typical Linux box) is
-    	// further from Arial Narrow than the document default is, and substituting it
-    	// cost line parity on three documents.
-    	addFirstAvailableSubstitute("Arial Narrow", "Liberation Sans Narrow", "Nimbus Sans Narrow");
-
-    	// Monospace fonts with no metric-compatible clone: a monospace stand-in keeps
-    	// code aligned, where the default (proportional) fallback would not.  Widths
-    	// differ (Consolas advances 0.55em, Cousine and Liberation Mono 0.6em); line
-    	// heights come from the document font's own metrics (WordLineMetrics).
-    	// @since 17.0.5
-    	addMetricallyCompatibleSubstitute("Consolas", "Cousine Regular", "Liberation Mono");
-    	addMetricallyCompatibleSubstitute("Lucida Console", "Cousine Regular", "Liberation Mono");
-    	
+    	 * A row "Nokia Pure Text" -> Source Sans 3, Source Sans Pro, Arimo Regular,
+    	 * Liberation Sans - Segoe UI Light's substitutes, for the same reasons - was
+    	 * measured: it draws that document in the right class and moves its page count
+    	 * towards Word's (63 of Word's 87 to 65), and its body lines are closer (Word's
+    	 * "Acceptance Test Manual" is 266.9pt, base-14 Times 274.4, Source Sans 269.9),
+    	 * but its headings are further out (115.2 against 120.6 and 104.6) and it cost
+    	 * that document 0.045 of line parity, which is the whole of the batch's fall on
+    	 * that corpus.  Without a measurement of Nokia Pure's own advances there is
+    	 * nothing to choose the substitute by, so it waits for one.  @since 17.1.0
+    	 *
+    	 * Georgia, Book Antiqua, Palatino Linotype - the Palatino family, and Georgia, are
+    	 * wider than Times, so a Times clone re-breaks their lines.  P052 is URW's
+    	 * Palladio, the Palatino clone, and is in the URW base 35 (ghostscript-fonts).
+    	 * Measured against Word's own PDFs: Word's Book Antiqua lines are 1.087-1.114x our
+    	 * Tinos ones and its Georgia lines 1.076-1.112x, where P052 is 1.09x Tinos over a
+    	 * mixed Latin sample.  @since 17.1.0
+    	 *
+    	 * Arial Narrow - Liberation Sans Narrow is metric-compatible with it, but neither
+    	 * the Liberation nor the Croscore jar carries it, and it is no longer in the
+    	 * Liberation package.  Nimbus Sans Narrow (URW's Helvetica Narrow, in
+    	 * ghostscript-fonts) is the same 82% condensation and matches Arial Narrow's
+    	 * advances to within one unit per 1000 over letters, digits and punctuation
+    	 * (0.02% mean, bold likewise; the control pair Century Gothic / URW Gothic
+    	 * measures 0.29% by the same method).  Where neither is installed, Arial Narrow
+    	 * is still deliberately left unmapped: measured over the real-document corpus,
+    	 * DejaVu Sans Condensed (the nearest condensed face on a typical Linux box) is
+    	 * further from Arial Narrow than the document default is, and substituting it
+    	 * cost line parity on three documents.
+    	 *
+    	 * Consolas, Lucida Console - monospace fonts with no metric-compatible clone: a
+    	 * monospace stand-in keeps code aligned, where the default (proportional) fallback
+    	 * would not.  Widths differ (Consolas advances 0.55em, Cousine and Liberation Mono
+    	 * 0.6em); line heights come from the document font's own metrics
+    	 * (WordLineMetrics).  @since 17.0.5
+    	 */
     }
     
+    /** What the report says where nothing was measured: a face chosen on class alone is
+     *  chosen because nothing closer exists, and no number describes how far off it is.
+     *  @since 17.1.1 */
+    public static final String UNKNOWN_ERROR = "unknown";
+
+    /** The source a table row's quality word says.  @since 17.1.1 */
+    private static FontDecision.Source sourceOf(FontSubstitutionTable.Substitute substitute) {
+    	if (substitute==null) return FontDecision.Source.CLASS;
+    	if ("metric".equals(substitute.getQuality())) return FontDecision.Source.METRIC_CLONE;
+    	if ("measured".equals(substitute.getQuality())) return FontDecision.Source.MEASURED_STAND_IN;
+    	return FontDecision.Source.CLASS;
+    }
+
     /** Whether {@link #addClassBasedSubstitutes} applies to this mapper.  True for both
      *  since 17.1.1 (CR-016 phase 3): BestMatchingMapper's own step runs first, and what
      *  it leaves unmapped goes through the same passes as IdentityPlusMapper's.
@@ -632,7 +811,10 @@ public abstract class Mapper {
     		seen.add(documentFontName.trim().toLowerCase());
     		PhysicalFont pf = null;
     		String resolvedAlt = null;
+    		StringBuilder chain = new StringBuilder("w:altName "); // hop by hop, for the decision
     		while (alt!=null && seen.add(alt.trim().toLowerCase())) {
+    			if (chain.length()>10) chain.append(" -> ");
+    			chain.append(alt);
     			pf = PhysicalFonts.get(alt);
     			if (pf==null) pf = PhysicalFonts.get(alt + " Regular");
     			if (pf==null) pf = get(alt);
@@ -641,11 +823,9 @@ public abstract class Mapper {
     		}
     		if (pf==null) continue;
 
-    		if (log.isDebugEnabled()) {
-    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (w:altName " + resolvedAlt + ")");
-    		}
     		put(documentFontName, pf);
     		registerLineMetricsAlias(documentFontName, resolvedAlt);
+    		decide(documentFontName, FontDecision.Source.ALT_NAME, chain.toString(), null);
     	}
     }
 
@@ -685,10 +865,10 @@ public abstract class Mapper {
 
     		PhysicalFont pf = FontFallback.selectByClass(documentFontName);
     		if (pf!=null) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (same class)");
-    			}
     			put(documentFontName, pf);
+    			decide(documentFontName, FontDecision.Source.CLASS,
+    					"a face of the same class: " + FontFallback.substitutionClass(documentFontName),
+    					UNKNOWN_ERROR);
     		}
     	}
     }
@@ -730,12 +910,11 @@ public abstract class Mapper {
     		if (pf==null) pf = PhysicalFonts.get(wordFont);
     		if (pf==null) pf = FontFallback.selectByClass(wordFont);
     		if (pf==null) continue;
-    		if (log.isDebugEnabled()) {
-    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (Word's default for an unknown font: " + wordFont + ")");
-    		}
     		put(documentFontName, pf);
     		wordDefaulted.add(documentFontName.trim().toLowerCase());
     		registerLineMetricsAlias(documentFontName, wordFont);
+    		decide(documentFontName, FontDecision.Source.WORD_DEFAULT,
+    				"Word's own default for a font it cannot find: " + wordFont, UNKNOWN_ERROR);
     	}
     }
 
@@ -832,10 +1011,10 @@ public abstract class Mapper {
     		if (pf==null || pf.isNoBoldFace()) continue;
     		if (PhysicalFonts.getBoldForm(pf)==null && boldForms.get(documentFontName)==null) continue; // nothing to withhold
     		PhysicalFont alias = pf.noBoldFaceAlias();
-    		if (log.isDebugEnabled()) {
-    			log.debug(documentFontName + " has no bold face: " + alias.getName() + " (bold synthesised at the regular advances)");
-    		}
     		fontMappings.put(documentFontName.toLowerCase(), alias);
+    		/* Not a source of its own: the pass re-maps the font to an alias of what an
+    		 * earlier pass chose, and the decision says so by reporting a synthetic bold
+    		 * face (FontDecision.getBoldFace).  @since 17.1.1 */
     	}
     }
 
@@ -936,26 +1115,20 @@ public abstract class Mapper {
     		 * to that.  Don't replace it with a substitute: the embedded font is what the
     		 * author intended, and it is the only thing which is certain to be available.
     		 * NB this runs after populateFontMappings; see
-    		 * WordprocessingMLPackage.setFontMapper.
+    		 * WordprocessingMLPackage.setFontMapper.  The decision populateFontMappings
+    		 * recorded (EMBEDDED) says so; nothing is logged here.
     		 * @since 17.0.3 */
-    		if (log.isDebugEnabled()) {
-    			log.debug("Not substituting for " + proprietaryFont + "; the document embeds it");
-    		}
     		return;
     	}
 
     	if (PhysicalFonts.get(proprietaryFont)==null) {
+    		// what was mapped, and why, is the caller's decision to record; see
+    		// addMetricallyCompatibleSubstitutes
     		if (PhysicalFonts.get(openSubstitute)!=null) {
-	    		if (log.isDebugEnabled()) {
-	    			log.debug("Mapping " + proprietaryFont + " to " + openSubstitute);
-	    		}
 	    		put(proprietaryFont, PhysicalFonts.get(openSubstitute));
     		} else if (openSubstitute2 !=null && PhysicalFonts.get(openSubstitute2)!=null) {
-	    		if (log.isDebugEnabled()) {
-	    			log.debug("Mapping " + proprietaryFont + " to " + openSubstitute2);
-	    		}
 	    		put(proprietaryFont, PhysicalFonts.get(openSubstitute2));
-    		} 
+    		}
     	}
     	
     }

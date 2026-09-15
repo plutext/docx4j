@@ -114,10 +114,11 @@ public class IdentityPlusMapper extends Mapper {
 	 */
 	@Override
 	protected PhysicalFont resolveDocumentFont(String documentFontName, org.docx4j.wml.Fonts.Font fontTableEntry) {
+		resolvedVia = null;
 		for (String variant : new String[] { " regular", " bold", " italic", " bold italic" }) {
 			PhysicalFont pf = PhysicalFonts.get(documentFontName + variant);
 			if (pf!=null) {
-				log.debug(documentFontName + " .. mismatch mapped to " + documentFontName + variant);
+				resolvedVia = "a variant of the name: " + documentFontName + variant;
 				return pf;
 			}
 		}

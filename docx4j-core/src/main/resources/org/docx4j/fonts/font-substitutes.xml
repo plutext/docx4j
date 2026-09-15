@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The substitutes docx4j draws a document font with when the machine lacks it, and what
+  a user can do about it.  Read by Mapper.addMetricallyCompatibleSubstitutes,
+  FontFallback (the per-script substitutes) and WidthFactors; it is the one place this
+  knowledge lives, so a report - and a port of docx4j - can cite it (CR-017 phase 0).
+
+  The measurements behind each row stay in the Java, beside the code that uses them:
+  Mapper.addMetricallyCompatibleSubstitutes, FontFallback.measuredForScript and
+  WidthFactors' comments are the measurement record, and the error attributes here quote
+  them.  Nothing here decides anything the code did not decide before: a row is the
+  ordered candidate list the pass already had.
+
+  Columns, per CR-017:
+
+    <font name=..>              the document font, as a docx writes it
+      <substitute font=..>      the open clone(s), best first - the pass takes the first
+                                one this machine has
+        quality                 metric   - a metric-compatible clone: Word's advances
+                                measured - no clone exists; this face was measured
+                                           against Word's own PDF and is the closest
+                                class    - a face of the same class only; the widths are
+                                           not the document font's and lines re-break
+        error                   what was measured, in the words of the comment it comes
+                                from.  Always present where quality="measured"; on a
+                                class substitute only where something is known about it
+                                (Consolas advances 0.55em, Cousine 0.60em)
+    <clone name=..>             where to get a substitute, and what it carries
+      licence                   read from the licence file the docx4j font jar ships,
+                                or from the packaging of the copy installed on the
+                                machine this file was written on
+      jar                       the docx4j Maven artifact carrying it, where there is
+                                one: that is the answer docx4j controls, so it is first
+      packages                  EXAMPLES, and they go stale: the names distributions use.
+                                Those marked (Arch) were read off a Manjaro box with
+                                pacman -Qo; the (Debian) names are given as the usual
+                                name for the same font and were not verified here.
+      scripts                   the scripts the face carries.  Read with fc-query (the
+                                language sets fontconfig reports) for every face this
+                                machine or a docx4j font jar has; FontSubstitutionTableTest
+                                re-checks each one against the installed font's cmap.
+
+  A substitute's font name is the name PhysicalFonts keys a font by - the face's full
+  name ("Carlito Regular"), or the family where the family is all FOP reports ("P052").
+-->
+<fontSubstitutes>
+
+  <!-- ==== the substitution table: Mapper.addMetricallyCompatibleSubstitutes ==== -->
+  <substitutes>
+
+    <!-- Croscore or Liberation.  NB Times New Roman is a serif and Arial a sans: the two
+         second substitutes were the wrong way round until 17.0.5. -->
+    <font name="Times New Roman">
+      <substitute font="Tinos Regular" quality="metric" error="0.05% over 1024 lines (7396)"/>
+      <substitute font="Liberation Serif" quality="metric"/>
+    </font>
+    <font name="Arial">
+      <substitute font="Arimo Regular" quality="metric"/>
+      <substitute font="Liberation Sans" quality="metric"/>
+    </font>
+    <font name="Courier New">
+      <substitute font="Cousine Regular" quality="metric"/>
+      <substitute font="Liberation Mono" quality="metric"/>
+    </font>
+
+    <!-- Crosextra; second choice where the crosextra clones are absent (a box with only
+         the Liberation jar): a face of the same class.  @since 17.0.5 -->
+    <font name="Calibri">
+      <substitute font="Carlito Regular" quality="metric" error="0.07% (probe fonts-light-bold)"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Cambria">
+      <substitute font="Caladea Regular" quality="metric"/>
+      <substitute font="Liberation Serif" quality="class"/>
+    </font>
+    <font name="Calibri Light">
+      <substitute font="Carlito Regular" quality="measured" error="1.3% wide before the 0.987 width factor below"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
+    <!-- URW base 35 (ghostscript fonts).  Century Gothic was drawn to ITC Avant Garde
+         Gothic's widths and URW Gothic is the Avant Garde clone.  @since 17.0.5 -->
+    <font name="Century Gothic">
+      <substitute font="URW Gothic" quality="metric" error="0.00% over 6743 characters"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
+    <!-- No metric clone, but a stand-in of the right class is much closer than the
+         document's default font, which is what RunFontSelector falls back to. -->
+    <font name="Tahoma">
+      <substitute font="Arimo Regular" quality="measured" error="median 1.006 on an all-Tahoma document"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Segoe UI">
+      <substitute font="Arimo Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Gadugi">
+      <substitute font="Arimo Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <!-- Helvetica is the one of these that is not a guess: Arial was drawn
+         metric-compatible with Helvetica, and Arimo is Arial's clone, so Arimo carries
+         Helvetica's advances by design (not by a measurement of ours).  WordLineMetrics
+         aliases helvetica to arial for the same reason, and that alias is measured: a 9pt
+         Helvetica document's line pitch is Arial's 1.150 em, where the substitute's own
+         OS/2 metrics gave 1.432 and every line was 24.6% too tall (its ALIASES comment).
+         Helvetica Neue is a different design and stays a class substitute. -->
+    <font name="Helvetica">
+      <substitute font="Arimo Regular" quality="metric" error="by design: Arial is metric-compatible with Helvetica and Arimo is Arial's clone"/>
+      <substitute font="Liberation Sans" quality="metric"/>
+    </font>
+    <font name="Helvetica Neue">
+      <substitute font="Arimo Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <!-- Tw Cen MT is a geometric sans; without an entry it fell through to the serif
+         default and its labels came out 3-4% narrow.  @since 17.1.0 -->
+    <font name="Tw Cen MT">
+      <substitute font="Arimo Regular" quality="measured" error="residual 2% (Arimo is 1.0605x Tinos)"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
+    <!-- Trebuchet MS is not an Arial shape: its lower case is wider than Arial's and its
+         capitals much narrower, so no single width factor repairs Arimo.  @since 17.1.1 -->
+    <font name="Trebuchet MS">
+      <substitute font="Droid Sans" quality="measured" error="1.0096 body, 0.9449 bold capitals, 1.0246 italic"/>
+      <substitute font="Arimo Regular" quality="measured" error="1.0273 body, 0.9061 bold capitals, 1.0504 italic"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
+    <!-- Arial Black is far heavier and wider than Arial.  @since 17.1.0 -->
+    <font name="Arial Black">
+      <substitute font="Noto Sans Black" quality="measured" error="residual 2% (1.1122x Arimo against Word's 1.134x)"/>
+      <substitute font="Noto Sans Display Black" quality="measured" error="residual 2%"/>
+      <substitute font="Arimo Regular" quality="measured" error="13.4% narrow"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
+    <!-- Verdana and Comic Sans MS are much wider than Arial, so an Arial clone re-breaks
+         every line of a document set in them.  @since 17.1.0 -->
+    <font name="Verdana">
+      <substitute font="DejaVu Sans" quality="measured" error="1.14x Arimo against Word's 1.141x"/>
+      <substitute font="Arimo Regular" quality="measured" error="14% narrow"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Comic Sans MS">
+      <substitute font="Noto Sans Regular" quality="measured" error="1.15x Carlito against Word's 1.153x"/>
+      <substitute font="DejaVu Sans" quality="class"/>
+      <substitute font="Arimo Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
+    <!-- Segoe UI Light has no metric clone, and Arimo is the wrong shape for it.
+         @since 17.0.5 -->
+    <font name="Segoe UI Light">
+      <substitute font="Source Sans 3" quality="measured" error="+0.4% mean signed, 9.4% mean absolute"/>
+      <substitute font="Source Sans Pro" quality="measured" error="+0.4% mean signed, 9.4% mean absolute"/>
+      <substitute font="Arimo Regular" quality="measured" error="11.8% wide"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
+    <font name="Garamond">
+      <substitute font="Tinos Regular" quality="class"/>
+      <substitute font="Liberation Serif" quality="class"/>
+    </font>
+    <font name="Bookman Old Style">
+      <substitute font="Tinos Regular" quality="class"/>
+      <substitute font="Liberation Serif" quality="class"/>
+    </font>
+
+    <!-- The Palatino family, and Georgia, are wider than Times, so a Times clone
+         re-breaks their lines.  P052 is URW's Palladio, the Palatino clone.
+         @since 17.1.0 -->
+    <font name="Georgia">
+      <substitute font="P052" quality="measured" error="1.09x Tinos against Word's 1.076-1.112x"/>
+      <substitute font="Tinos Regular" quality="class"/>
+      <substitute font="Liberation Serif" quality="class"/>
+    </font>
+    <font name="Book Antiqua">
+      <substitute font="P052" quality="measured" error="1.09x Tinos against Word's 1.087-1.114x"/>
+      <substitute font="Tinos Regular" quality="class"/>
+      <substitute font="Liberation Serif" quality="class"/>
+    </font>
+    <font name="Palatino Linotype">
+      <substitute font="P052" quality="measured" error="measured for Georgia and Book Antiqua; P052 is Palatino's own clone"/>
+      <substitute font="Tinos Regular" quality="class"/>
+      <substitute font="Liberation Serif" quality="class"/>
+    </font>
+
+    <!-- Arial Narrow: only a metric twin will do.  Where neither is installed it is
+         deliberately left unmapped - measured over the real-document corpus, the
+         condensed faces a Linux box has are further from it than the document default
+         is, and substituting one cost line parity on three documents. -->
+    <font name="Arial Narrow">
+      <substitute font="Liberation Sans Narrow" quality="metric"/>
+      <substitute font="Nimbus Sans Narrow" quality="metric" error="0.02% mean over letters, digits and punctuation"/>
+    </font>
+
+    <!-- Monospace fonts with no metric clone: a monospace stand-in keeps code aligned,
+         where the proportional default would not.  @since 17.0.5 -->
+    <font name="Consolas">
+      <substitute font="Cousine Regular" quality="class" error="Consolas advances 0.55em, Cousine 0.60em"/>
+      <substitute font="Liberation Mono" quality="class"/>
+    </font>
+    <font name="Lucida Console">
+      <substitute font="Cousine Regular" quality="class" error="Lucida Console advances 0.55em, Cousine 0.60em"/>
+      <substitute font="Liberation Mono" quality="class"/>
+    </font>
+
+  </substitutes>
+
+  <!-- ==== per script: FontFallback.measuredForScript ====
+       Tried before the class defaults when the text in question is in that script (or
+       is a symbol or an emoji).  script="*" applies to every document font; otherwise
+       the row applies to a document font whose name starts with font=.  The rows are
+       tried in the order they appear here. -->
+  <scriptSubstitutes>
+
+    <!-- The emoji blocks (U+1F000-U+1FAFF): Word's own face first (CR-016 probe
+         fonts-symbol-and-emoji (c)), then the monochrome faces a Linux box may have.
+         Noto Color Emoji is bitmap-only (CBDT) and FOP cannot load it, so it never
+         reaches PhysicalFonts.  @since 17.1.1 -->
+    <font name="*" script="EMOJI">
+      <substitute font="Segoe UI Emoji" quality="class"/>
+      <substitute font="Noto Emoji" quality="class"/>
+      <substitute font="Noto Emoji Regular" quality="class"/>
+      <substitute font="Symbola" quality="class"/>
+      <substitute font="Twemoji Mozilla" quality="class"/>
+      <substitute font="OpenMoji" quality="class"/>
+    </font>
+
+    <!-- U+2190-U+2BFF: the order Word's own substitute is chosen by, and the same order
+         PhysicalFonts.getWDingsFont uses for a symbol-font bullet.  @since 17.1.0 -->
+    <font name="*" script="SYMBOL">
+      <substitute font="Segoe UI Symbol" quality="class"/>
+      <substitute font="Noto Sans Symbols 2 Regular" quality="class"/>
+      <substitute font="Noto Sans Symbols 2" quality="class"/>
+      <substitute font="Noto Sans Symbols Regular" quality="class"/>
+      <substitute font="Noto Sans Symbols" quality="class"/>
+      <substitute font="Symbola" quality="class"/>
+      <substitute font="DejaVu Sans" quality="class"/>
+      <substitute font="FreeSerif" quality="class"/>
+    </font>
+
+    <!-- Sylfaen's Georgian: DejaVu Serif comes out 8.6% wide, and DejaVu Serif Condensed
+         is the only Georgian-covering face within 3%.  @since 17.1.0 -->
+    <font name="Sylfaen" script="GEORGIAN">
+      <substitute font="DejaVu Serif Condensed" quality="measured" error="0.900, the only Georgian-covering face within 3% (DejaVu Serif is 8.6% wide)"/>
+      <substitute font="DejaVu Serif Condensed Book" quality="measured" error="0.900"/>
+    </font>
+
+    <!-- Cambria's Greek: Caladea, Cambria's metric twin in Latin, has no Greek at all.
+         The two figures are the two weights, not a disagreement: batch 42 §5.2 measured
+         both on 80 unjustified 12pt Greek lines of the golden, and the FontFallback
+         comment's "1.0281 against 1.0834" is the bold against Tinos.  @since 17.1.0 -->
+    <font name="Cambria" script="GREEK">
+      <substitute font="P052" quality="measured" error="regular Word/P052 0.9744 (2.6% short); bold Word/P052-Bold 1.0656 (6.6% wide) - different weights, not a discrepancy (batch 42 §5.2; the FontFallback comment's 1.0281 against 1.0834 is the bold against Tinos)"/>
+    </font>
+
+  </scriptSubstitutes>
+
+  <!-- ==== measured width factors: WidthFactors ====
+       What the substitute's advances are multiplied by so that a run measures what the
+       document font measures.  substituteFamily is matched as a prefix of the physical
+       font's name, with the FO layer's suffixes stripped. -->
+  <widthFactors>
+    <widthFactor font="Calibri Light" substituteFamily="Carlito" factor="0.987"/>
+  </widthFactors>
+
+  <!-- ==== where to get a substitute, and what it carries ==== -->
+  <clones>
+
+    <clone name="Tinos" alsoKnownAs="Tinos Regular" licence="Apache-2.0"
+           jar="docx4j-export-fo-fonts-croscore"
+           packages="fonts-croscore (Debian); ttf-croscore (Arch)"
+           scripts="Latin, Greek, Cyrillic, Hebrew"/>
+    <clone name="Arimo" alsoKnownAs="Arimo Regular" licence="Apache-2.0"
+           jar="docx4j-export-fo-fonts-croscore"
+           packages="fonts-croscore (Debian); ttf-croscore (Arch)"
+           scripts="Latin, Greek, Cyrillic, Hebrew"/>
+    <clone name="Cousine" alsoKnownAs="Cousine Regular" licence="Apache-2.0"
+           jar="docx4j-export-fo-fonts-croscore"
+           packages="fonts-croscore (Debian); ttf-croscore (Arch)"
+           scripts="Latin, Greek, Cyrillic, Hebrew"/>
+
+    <clone name="Carlito" alsoKnownAs="Carlito Regular" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-crosextra"
+           packages="fonts-crosextra-carlito (Debian); ttf-carlito (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Caladea" alsoKnownAs="Caladea Regular" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-crosextra"
+           packages="fonts-crosextra-caladea (Debian); ttf-caladea (Arch)"
+           scripts="Latin"/>
+
+    <clone name="Liberation Serif" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-liberation"
+           packages="fonts-liberation (Debian); ttf-liberation (Arch)"
+           scripts="Latin, Greek, Cyrillic, Hebrew"/>
+    <clone name="Liberation Sans" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-liberation"
+           packages="fonts-liberation (Debian); ttf-liberation (Arch)"
+           scripts="Latin, Greek, Cyrillic, Hebrew"/>
+    <clone name="Liberation Mono" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-liberation"
+           packages="fonts-liberation (Debian); ttf-liberation (Arch)"
+           scripts="Latin, Greek, Cyrillic, Hebrew"/>
+    <!-- Neither font jar carries Liberation Sans Narrow, and recent Liberation packages
+         no longer ship it. -->
+    <clone name="Liberation Sans Narrow" licence="OFL-1.1"
+           packages="older fonts-liberation (Debian) only"
+           scripts="Latin, Greek, Cyrillic"/>
+
+    <clone name="DejaVu Serif" licence="Bitstream Vera / DejaVu (free, see the jar's LICENSE)"
+           jar="docx4j-export-fo-fonts-symbol"
+           packages="fonts-dejavu (Debian); ttf-dejavu (Arch)"
+           scripts="Latin, Greek, Cyrillic, Georgian, Armenian"/>
+    <clone name="DejaVu Sans" licence="Bitstream Vera / DejaVu (free)"
+           packages="fonts-dejavu (Debian); ttf-dejavu (Arch)"
+           scripts="Latin, Greek, Cyrillic, Georgian, Armenian, Hebrew, Arabic"/>
+    <clone name="DejaVu Sans Mono" licence="Bitstream Vera / DejaVu (free)"
+           packages="fonts-dejavu (Debian); ttf-dejavu (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="DejaVu Serif Condensed" alsoKnownAs="DejaVu Serif Condensed Book"
+           licence="Bitstream Vera / DejaVu (free)"
+           packages="fonts-dejavu (Debian); ttf-dejavu (Arch)"
+           scripts="Latin, Greek, Cyrillic, Georgian, Armenian"/>
+
+    <clone name="Noto Sans Symbols" alsoKnownAs="Noto Sans Symbols Regular" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-symbol"
+           packages="fonts-noto-core (Debian); noto-fonts (Arch)"
+           scripts="the arrow and mathematical blocks; no text script"/>
+    <clone name="Noto Sans Symbols 2" alsoKnownAs="Noto Sans Symbols 2 Regular" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-symbol"
+           packages="fonts-noto-core (Debian); noto-fonts (Arch)"
+           scripts="the geometric shapes, box drawing and dingbats; no text script"/>
+    <clone name="Noto Sans" alsoKnownAs="Noto Sans Regular" licence="OFL-1.1"
+           packages="fonts-noto-core (Debian); noto-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Noto Sans Black" licence="OFL-1.1"
+           packages="fonts-noto-core (Debian); noto-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Noto Sans Display Black" licence="OFL-1.1"
+           packages="fonts-noto-extra (Debian); noto-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Noto Serif" licence="OFL-1.1"
+           packages="fonts-noto-core (Debian); noto-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Noto Mono" licence="OFL-1.1"
+           packages="fonts-noto-core (Debian); noto-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Noto Emoji" alsoKnownAs="Noto Emoji Regular" licence="OFL-1.1"
+           packages="fonts-noto-emoji (Debian); noto-fonts-emoji-monochrome (Arch). The colour face (fonts-noto-color-emoji) is bitmap-only and FOP cannot load it"
+           scripts="the emoji blocks; no text script"/>
+
+    <clone name="Source Sans 3" licence="OFL-1.1"
+           packages="adobe-source-sans-fonts (Arch); github.com/adobe-fonts/source-sans"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Source Sans Pro" licence="OFL-1.1"
+           packages="adobe-source-sans-fonts (Arch); github.com/adobe-fonts/source-sans"
+           scripts="Latin, Greek, Cyrillic"/>
+
+    <clone name="Droid Sans" licence="Apache-2.0"
+           packages="ttf-droid (Arch); fonts-droid-fallback (Debian, the fallback face only)"
+           scripts="Latin, Greek, Cyrillic"/>
+
+    <!-- The URW base 35, ie the ghostscript fonts, on most Linux boxes. -->
+    <clone name="P052" licence="AGPL-3.0-only WITH PS-or-PDF-font-exception"
+           packages="fonts-urw-base35 (Debian); gsfonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="URW Gothic" licence="AGPL-3.0-only WITH PS-or-PDF-font-exception"
+           packages="fonts-urw-base35 (Debian); gsfonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Nimbus Sans Narrow" licence="AGPL-3.0-only WITH PS-or-PDF-font-exception"
+           packages="fonts-urw-base35 (Debian); gsfonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Nimbus Sans" licence="AGPL-3.0-only WITH PS-or-PDF-font-exception"
+           packages="fonts-urw-base35 (Debian); gsfonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Nimbus Roman" licence="AGPL-3.0-only WITH PS-or-PDF-font-exception"
+           packages="fonts-urw-base35 (Debian); gsfonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Nimbus Mono PS" licence="AGPL-3.0-only WITH PS-or-PDF-font-exception"
+           packages="fonts-urw-base35 (Debian); gsfonts (Arch)"
+           scripts="Latin, Greek, Cyrillic"/>
+
+    <clone name="FreeSerif" licence="GPL-3.0-or-later with font exception"
+           packages="fonts-freefont-ttf (Debian); gnu-free-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic and more"/>
+    <clone name="FreeSans" licence="GPL-3.0-or-later with font exception"
+           packages="fonts-freefont-ttf (Debian); gnu-free-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic and more"/>
+    <clone name="FreeMono" licence="GPL-3.0-or-later with font exception"
+           packages="fonts-freefont-ttf (Debian); gnu-free-fonts (Arch)"
+           scripts="Latin, Greek, Cyrillic and more"/>
+
+    <clone name="Symbola" licence="see the font's own notice (George Douros)"
+           packages="fonts-symbola (Debian); ttf-symbola (Arch)"
+           scripts="symbols and emoji; no text script"/>
+    <clone name="Twemoji Mozilla" licence="CC-BY 4.0 (see upstream)"
+           packages="shipped with Firefox; github.com/mozilla/twemoji-colr"
+           scripts="the emoji blocks; no text script"/>
+    <clone name="OpenMoji" licence="CC BY-SA 4.0 (see upstream)"
+           packages="openmoji.org"
+           scripts="the emoji blocks; no text script"/>
+
+    <!-- Microsoft's own faces: not substitutes anyone can install freely, but the ones
+         Word itself uses, so they are tried first where a machine has Office fonts. -->
+    <clone name="Segoe UI Emoji" licence="proprietary (Microsoft)"
+           packages="ships with Windows"
+           scripts="the emoji blocks; no text script"/>
+    <clone name="Segoe UI Symbol" licence="proprietary (Microsoft)"
+           packages="ships with Windows"
+           scripts="the symbol blocks; no text script"/>
+    <clone name="Arial Unicode MS" licence="proprietary (Microsoft)"
+           packages="shipped with older Office"
+           scripts="most scripts"/>
+
+  </clones>
+
+</fontSubstitutes>

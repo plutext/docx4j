@@ -437,9 +437,7 @@ public class RunFontSelector {
     		PhysicalFont resolved = physicalFontResolved(fontName);
     		String val = resolved==null ? null : resolved.getName();
     		if (val==null) {
-    			if (log.isDebugEnabled() ) {
-    				log.debug(fontName + " not mapped; using fallback " + fallbackFont);
-    			}
+    			// the font's decision (UNMAPPED) says this; see Mapper.getDecisions
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
     			applyLineHeight(el, fontName, fallbackPhysicalFont);
@@ -514,7 +512,15 @@ public class RunFontSelector {
 					log.warn("Missing symbol " + fontName + " " + textValue);
 				}
 			} catch (ExecutionException e) {}
-			
+
+			/* A symbol font is drawn in whatever face has the glyphs, whatever the mapper
+			 * made of its name (PhysicalFonts.getWDingsFont / getSymbolFont, which still
+			 * name their candidates in code).  Recorded as the decision for this document
+			 * font, since it is what the reader will see (CR-017 phase 1). */
+			if (pf!=null && wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
+				wordMLPackage.getFontMapper().recordSymbolFace(fontName, pf);
+			}
+
 			if (pf == null) {
 				pf = physicalFontResolved(fontName);
 			}
@@ -1173,8 +1179,12 @@ public class RunFontSelector {
     	PhysicalFont pf = FontFallback.selectCovering(documentFont, cps);
     	if (pf==null) {
     		FontFallback.warnNoCoverage(documentFont, cps);
-    	} else if (log.isDebugEnabled()) {
-    		log.debug(coverageGroup + " set in " + documentFont + " rendered in " + pf.getName());
+    	}
+    	/* The decision this conversion made for that script, so the report - and a bisect -
+    	 * can say which scripts left the document font's face, and for what (CR-017 phase
+    	 * 1).  Recorded once per pair, as this cache is. */
+    	if (wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
+    		wordMLPackage.getFontMapper().recordScriptChoice(documentFont, coverageGroup, pf);
     	}
     	fallbackByScript.put(key, pf);
     	return pf;
@@ -1588,8 +1598,20 @@ public class RunFontSelector {
      * @since 17.1.1
      */
     public String documentFontFor(PPr pPr, RPr rPr, int codePoint) {
+    	return documentFontFor(pPr, rPr, codePoint, false);
+    }
 
-    	rPr = effectiveRPr(propertyResolver(), pPr, rPr, false);
+    /**
+     * As {@link #documentFontFor(PPr, RPr, int)}, for a caller which has resolved the
+     * run's effective properties already - as {@link #fontSelector(PPr, RPr, Text,
+     * boolean)} takes them.  A walk asking per character (FontsAnalysis.usage) would
+     * otherwise resolve the same run's properties once per character.
+     *
+     * @since 17.1.1
+     */
+    public String documentFontFor(PPr pPr, RPr rPr, int codePoint, boolean rPrIsEffective) {
+
+    	rPr = effectiveRPr(propertyResolver(), pPr, rPr, rPrIsEffective);
     	RFonts rFonts = rFontsOf(rPr);
     	String symbolFont = symbolFontName(rFonts.getHAnsi());
     	if (symbolFont!=null) return symbolFont;

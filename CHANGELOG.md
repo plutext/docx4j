@@ -124,6 +124,43 @@ Fonts (CR-016, the font selection and mapping review):
   one.  BestMatchingMapper is kept for compatibility; the samples and the Getting Started guide,
   which recommended it for Linux, now say so.
 
+Fonts (CR-017, font decisions with their reasons):
+
+- The substitutes docx4j draws a missing font with are a resource, org/docx4j/fonts/font-substitutes.xml,
+  not code: 26 document fonts with their open clones in order, the per-script substitutes, the
+  measured width factor, and a catalogue of 40 substitutes saying under what licence each is
+  available and where to get it (the docx4j font jar first, then example distribution packages).
+  The passes read it; the measurements that chose each row stay in the comments beside the code.
+- Every pass that maps a font records why: Mapper.getDecisions() returns a FontDecision per
+  document font naming which pass answered (the font itself, the document's embedded form, a
+  metric clone, a measured stand-in, the w:altName, a face of the same class, Word's own default
+  for a font it cannot find, the mapper's own guess, a symbol face, or nothing), what it went
+  through to get there, what is known of the substitute's width error, which face draws its bold
+  and italic (or that FOP will synthesise them), whose metrics the line box takes, and which
+  scripts left that font's face during the conversion.  The passes' DEBUG lines go.
+- FontsAnalysis.usage(pkg) says what a document uses each font for - characters and runs by
+  script and by face, over the body, headers, footers, notes and comments - by asking the
+  selector which font each character goes to, so it is the conversion's own dispatch and not a
+  reading of w:rFonts.  Measured on a 311-page document it costs 0.3% of that document's
+  conversion, and on a 144-page one 0.06%.
+- FontsAnalysis.analyse(pkg) reports, per font the document uses and in order of the text it
+  carries: what it is used for, what docx4j draws it with and why, a grade (EXACT, NEAR, CLASS
+  or NONE), what the font table says about the machine that saved the document (embedded;
+  w:panose1 and w:sig, which Word reads off the font file; a name-only or w:notTrueType entry,
+  which says it had no such font; or no entry at all), and what to do about it - which font to
+  install, or which clone and which docx4j font jar or distribution package carries it.  As
+  text, as JSON, and from a command line: java org.docx4j.fonts.FontsAnalysis in.docx
+  [--jars-only] [--json].  FontEnvironment asks the same of another deployment's fonts: this
+  machine's, the docx4j font jars alone (issue #695), or a directory's.
+- A conversion via XSL FO says what it made of the document's fonts, once: one line per
+  document font naming what it is drawn in, how close that is and what to do about it - INFO
+  where the font itself, its embedded form or a metric clone draws it, WARN otherwise with the
+  action in the line.  docx4j.fonts.report.log=summary (the default) | full | off.  Until now a
+  conversion said nothing about its fonts but a DEBUG line per mapping and FOP's own "font not
+  found" warning, which names no action.  The face it names is the name a user would look for:
+  the FO layer's own suffixes (the kerned twin, the no-ligature twin, the no-bold alias) are
+  stripped from the report.
+
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 - Calibri Light is drawn at 0.987 of Carlito's advances, the two families' measured

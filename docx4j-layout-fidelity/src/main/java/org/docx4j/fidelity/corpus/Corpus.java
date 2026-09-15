@@ -50,6 +50,13 @@ public final class Corpus {
 	/** Arial's and Times New Roman's PANOSE-1, as Word writes them in fontTable.xml. */
 	private static final String PANOSE_ARIAL = "020B0604020202020204";
 	private static final String PANOSE_TIMES = "02020603050405020304";
+	/** A real sans's w:sig: Liberation Sans's own OS/2 unicode and code-page ranges, read
+	 *  from LiberationSans-Regular.ttf in docx4j-export-fo-fonts-liberation (its PANOSE is
+	 *  PANOSE_ARIAL above, Liberation Sans being Arial's metric clone).  Word writes these
+	 *  off the font file as it saves, which is what CR-017's authorHad reads. */
+	private static final String SIG_LIBERATION_SANS =
+			"w:usb0=\"E0000AFF\" w:usb1=\"500078FF\" w:usb2=\"00000021\" w:usb3=\"00000000\""
+			+ " w:csb0=\"600001BF\" w:csb1=\"DFF70000\"";
 
 
 	static {
@@ -2412,6 +2419,66 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/* ---------------------------------------------------------- CR-017 phase 5
+		 *
+		 * Two candidate clones to measure before either enters font-substitutes.xml, and
+		 * the one measurement the authorHad inference still needs.  "Metric-compatible"
+		 * on a project page is a claim, not a measurement (P052's own comment records
+		 * why), so each face is set beside a face Word itself will draw on the VM -
+		 * Carlito - which calibrates the golden's size grid: batch 42's method note
+		 * measured Word's Carlito against TextMeasurer's at the nominal size to 0.04%,
+		 * and reading the size off the PDF instead makes a candidate up to 1% too wide.
+		 */
+
+		PROBES.add(new Probe("fonts-segoe-ui",
+				"the same sentence in (a) Segoe UI 11pt; (b) Segoe UI with w:b; (c) Segoe UI with w:i; (d) Segoe "
+				+ "UI Light; (e) Carlito, the control Word draws itself (the size calibration) - Word's pen "
+				+ "advances for each face, to measure Selawik (Microsoft's own open metric-compatible "
+				+ "replacement for Segoe UI, OFL) against them.  docx4j sends Segoe UI to Arimo today and Segoe "
+				+ "UI Light to Source Sans (CR-017 gap 7)", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 22);
+			d.para().noLabel().inheritSpacing().bareText("(a) Segoe UI: ").run(FONTS_SENTENCE, "Segoe UI", 22, null).add();
+			d.para().noLabel().inheritSpacing().bareText("(b) Segoe UI, w:b: ").run(FONTS_SENTENCE, "Segoe UI", 22, Doc::bold).add();
+			d.para().noLabel().inheritSpacing().bareText("(c) Segoe UI, w:i: ").run(FONTS_SENTENCE, "Segoe UI", 22, Doc::italic).add();
+			d.para().noLabel().inheritSpacing().bareText("(d) Segoe UI Light: ").run(FONTS_SENTENCE, "Segoe UI Light", 22, null).add();
+			d.para().noLabel().inheritSpacing().bareText("(e) Carlito, the control: ").run(FONTS_SENTENCE, CARLITO, 22, null).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-georgia",
+				"the same sentence in (a) Georgia 11pt; (b) Georgia with w:b; (c) Georgia with w:i; (d) Carlito, "
+				+ "the control Word draws itself (the size calibration) - Word's pen advances for each face, to "
+				+ "measure Gelasio (metric-compatible with Georgia by its own description, OFL) against them.  "
+				+ "docx4j sends Georgia to P052 today, measured at 1.09x Tinos against Word's 1.076-1.112x", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(CARLITO, 22);
+			d.para().noLabel().inheritSpacing().bareText("(a) Georgia: ").run(FONTS_SENTENCE, "Georgia", 22, null).add();
+			d.para().noLabel().inheritSpacing().bareText("(b) Georgia, w:b: ").run(FONTS_SENTENCE, "Georgia", 22, Doc::bold).add();
+			d.para().noLabel().inheritSpacing().bareText("(c) Georgia, w:i: ").run(FONTS_SENTENCE, "Georgia", 22, Doc::italic).add();
+			d.para().noLabel().inheritSpacing().bareText("(d) Carlito, the control: ").run(FONTS_SENTENCE, CARLITO, 22, null).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("fonts-author-had",
+				"docDefaults Liberation Serif 11pt.  The same sentence in two made-up families no machine has, "
+				+ "differing only in their fontTable entry: (a) a bare w:font entry, name and nothing else; (b) an "
+				+ "entry carrying w:family swiss, w:charset and the w:panose1 and w:sig of a real sans (Liberation "
+				+ "Sans's own OS/2 values); (c) Liberation Serif, the control - does Word's substitution at render "
+				+ "time differ between the two, i.e. does Word read the entry when it lacks the font?  CR-017's "
+				+ "authorHad field infers from exactly that evidence, and turns its action round for a name-only "
+				+ "entry", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 22);
+			fontTable(d,
+					bareFontEntry("Docx4j Probe NameOnly")
+					+ signedFontEntry("Docx4j Probe Signed", "swiss", PANOSE_ARIAL, SIG_LIBERATION_SANS));
+			fontsPara(d, "(a) name-only entry: ", FONTS_SENTENCE, allFour("Docx4j Probe NameOnly"));
+			fontsPara(d, "(b) panose and sig: ", FONTS_SENTENCE, allFour("Docx4j Probe Signed"));
+			fontsPara(d, "(c) Liberation Serif, the control: ", FONTS_SENTENCE, allFour(SERIF));
+			return d.pkg();
+		}));
+
 		/*
 		 * E4/E5's remaining clause: what a w:tblW of type pct means when the w:tblGrid
 		 * disagrees with it.  §6.5's exemption for a table stating a width of its own is
@@ -3676,6 +3743,23 @@ public final class Corpus {
 		if (family != null) sb.append("<w:family w:val=\"" + family + "\"/>");
 		sb.append("<w:pitch w:val=\"variable\"/></w:font>");
 		return sb.toString();
+	}
+
+	/** A w:font entry with nothing but the name - what Word writes for a font the saving
+	 *  machine did not have (CR-017's authorHad: UNLIKELY). */
+	private static String bareFontEntry(String name) {
+		return "<w:font w:name=\"" + name + "\"/>";
+	}
+
+	/** A w:font entry as Word writes one for a font the saving machine <em>has</em>: the
+	 *  family, the charset, and the w:panose1 and w:sig it reads off the font file. */
+	private static String signedFontEntry(String name, String family, String panose, String sig) {
+		return "<w:font w:name=\"" + name + "\">"
+				+ "<w:panose1 w:val=\"" + panose + "\"/>"
+				+ "<w:charset w:val=\"00\"/>"
+				+ "<w:family w:val=\"" + family + "\"/>"
+				+ "<w:pitch w:val=\"variable\"/>"
+				+ "<w:sig " + sig + "/></w:font>";
 	}
 
 	/** A theme part whose font scheme names these Latin faces and carries Office's own per-script

@@ -116,16 +116,24 @@ does not say which one Word used:
   imitating a rendering that never existed, and "install Foo" would make the
   output *less* like the author's page.
 
-Two documents from batch 42 show both sides. In 9919, Word drew Meiryo, the
-`w:altName` of Nokia Pure Text, and the golden embeds Meiryo: the author
-lacked the named font and had the alternate. In the 17.1.1 CHANGELOG's EnBW
-case, "EnBW DIN Pro Light" came out as Calibri Bold in Word, so the no-bold
-rule for Light families must not fire there, because Word never treated it as
-a Light family at all. The mapping rules already encode a guess
-(`Mapper.addWordDefaultSubstitutes`, CR-016 phase 3): a family docx4j knows
-keeps the class substitute (assume the author had it, so its widths are the
-target), an unknown family gets Word's default (assume the author lacked it
-too).
+Two documents from batch 42 were first read as showing both sides, and read
+wrong: 9919's Nokia Pure Text and the EnBW document's EnBW DIN Pro Light both
+carry a real `w:panose1` and `w:sig`, so the machine that saved each document
+had the font. What the goldens show - Word drawing Meiryo for the one and
+Calibri Bold for the other - is what Word on the fidelity VM did when it lacked
+them, which is exactly docx4j's own situation on this machine, and is why
+CR-016's rules (the altName, the default for an unknown family, no no-bold alias
+for a font Word could not find) are right for the render even though the saving
+machine had the fonts. The fontTable evidence and the golden answer two
+different questions: the fontTable says what the saving machine had, which is
+the page the author saw; the golden says what the rendering machine had. For
+fidelity scoring the target is the golden's machine; for a user's document the
+report answers the first question, and its action turns round only where the
+saving machine itself lacked the font (a name-only entry, or `w:notTrueType`),
+because then the page the author saw was already drawn in Word's default. Phase
+3 found two refinements while reading real font tables: an all-zero
+`w:panose1`/`w:sig` is no evidence, and `w:notTrueType` is a direct statement
+that Word had no such font.
 
 It is less unknowable than the answer above says. The fontTable carries
 evidence that Word writes only from an installed font: `w:panose1`, `w:sig`
@@ -144,7 +152,9 @@ says "install Foo, or its clone". CR-016's P5 probe (d) to (f) are the
 verification cases for the rule (an altName that resolves wins; an entry with
 only an absent altName goes to Calibri), and a probe with a name-only entry
 against one carrying panose and sig for the same absent font, run through
-Word, would settle whether Word itself reads the entry that way — it is the
+Word, would settle whether Word's substitution at render time differs between
+a name-only entry and one carrying panose and sig for the same absent font -
+i.e. whether Word reads the entry when it lacks the font — it is the
 one measurement this section still needs.
 
 ### Where the evidence for that answer comes from
@@ -325,29 +335,160 @@ before it converts. Depends on CR-004's placement decisions.
    `FontFallback` and `WidthFactors` into the resource, with a test that the
    passes' answers do not change (the CR-016 `MapperPrecedenceTest` /
    `ClassBasedSubstituteTest` and the corpus at zero delta). No behaviour
-   change.
+   change. — **DONE** (bcd610d0b).
+   `org/docx4j/fonts/font-substitutes.xml`, beside `word-line-metrics.properties`,
+   read by `FontSubstitutionTable` with a plain DOM parser (no JAXB, no xsd:
+   nothing marshals it; XML rather than properties because four of the six
+   columns are lists carrying commas and parentheses, and a properties key
+   would have to escape its spaces). 31 `<font>` rows over 81 `<substitute>`
+   entries — the 26 document fonts of
+   `addMetricallyCompatibleSubstitutes` in its own order, the four
+   `FontFallback.measuredForScript` rows in theirs, the one `WidthFactors`
+   factor — plus a catalogue of 40 substitutes with licence, docx4j jar,
+   example packages and scripts. The measurements stay in the comments. Gate:
+   `docx4j-core-tests` 1052/0 (1042 + the 10 of the new
+   `FontSubstitutionTableTest`), `docx4j-export-fo-tests` 602/0; the three
+   corpora against `b65-nestedp` at **0 changed documents** with
+   byte-identical scoreboards; the five fonts probes at their CR-016 / batch 42
+   values (`fonts-light-bold` 100%, `fonts-unresolvable` 88%,
+   `fonts-missing-slots` 100%, `fonts-theme-lang` 100%,
+   `fonts-symbol-and-emoji` 17%).
 1. **`FontDecision` recorded by every pass**, `Mapper.getDecisions()`, the
    selector recording per-script answers. Tests: one decision per pass, with
-   its `via`. No behaviour change; corpus zero delta.
+   its `via`. No behaviour change; corpus zero delta. — **DONE**
+   (b3892457f). `FontDecision` carries the source, the `via`, the width
+   error (the table's, with the `WidthFactors` factor where one applies), the
+   physical font with its bold / italic / bold-italic faces or `synthetic`,
+   the line box (`documentFont` / `alias:` / `wordDefault:` / `substitute`)
+   and the per-script choices; the volatile half is read off the mapper when
+   the decision is handed out, since a later pass re-maps. A tenth source,
+   `SYMBOL`, was added for the face `PhysicalFonts.getWDingsFont` /
+   `getSymbolFont` picks inside the selector: no mapper pass chooses it, and
+   the decision has to name the face on the page. Six DEBUG lines gone. Gate:
+   `docx4j-core-tests` 1066/0 (1052 + the 14 of `FontDecisionTest`),
+   `docx4j-export-fo-tests` 602/0, the five fonts probes unchanged, the three
+   corpora at **0 changed documents** with byte-identical scoreboards.
 2. **The use walk** (`FontsAnalysis.usage(pkg)`): characters and runs per
    (font, script, face), measured for cost on the 311-page document of
    CR-016 phase 4 (fontsInUse was 8 ms there; this walks text, so expect
-   more, and it must stay well under the conversion's own time).
+   more, and it must stay well under the conversion's own time). — **DONE**
+   (a30b52450, with phase 3). One selector per part, the run's effective
+   properties resolved once per run (a new
+   `documentFontFor(pPr, rPr, codePoint, rPrIsEffective)` overload) and each
+   run's answers memoised by code point. Measured against each document's own
+   `toFO` in the same JVM: 12301 (311 pages, 196,093 characters in 15,572
+   runs) **166 ms cold / 137 ms warm against 54,989 ms, 0.30% / 0.25%**; 11875
+   (144 pages, 120,324 characters in 21,878 runs) **115 / 160 ms against
+   282,108 ms, 0.04% / 0.06%**.
 3. **`FontsAnalysis.analyse` and `FontReport`**, text and JSON, the `main`,
    the `jarsOnly` environment, the `authorHad` inference from the fontTable
    (9919 and the EnBW document as the worked examples). Tests on the CR-016 probe documents
    (`fonts-unresolvable`, `fonts-light-bold`, `fonts-symbol-and-emoji`,
-   `fonts-theme-lang`): each has a known answer and a known grade.
+   `fonts-theme-lang`): each has a known answer and a known grade. — **DONE**
+   (a30b52450). Built from the use walk's fonts plus any `UNMAPPED` or
+   `SYMBOL` decision, never the mapper's whole map. `FontEnvironment` (this
+   machine, the jars, a directory) is in core and docx4j-layout-fidelity calls
+   it. The `authorHad` rules gained two refinements read off real font tables:
+   an all-zero `w:panose1`/`w:sig` is no evidence, and `w:notTrueType` says
+   Word had no such font; and the worked examples were re-read (see "This
+   matters because"). docx4j-core-tests cannot depend on the harness, so the
+   probe cases are built in the test with the probes' own shapes and cite
+   them; the corpus documents are cited by id only. Gate:
+   `docx4j-core-tests` 1083/0 (1066 + the 17 of `FontsAnalysisTest`),
+   `docx4j-export-fo-tests` 602/0, the five fonts probes unchanged, the three
+   corpora at **0 changed documents** with byte-identical scoreboards.
 4. **The conversion log** rendering the summary, the property, the DEBUG
    lines removed. Gate: export-fo-tests, and the log of one corpus run read
-   for noise (one line per font, not per run).
+   for noise (one line per font, not per run). — **DONE** (9cc6e3314).
+   `Docx4J.toFO` calls `FontsAnalysis.logReport` after the export - so
+   `toPDF` through it, and so the report carries the per-script choices the
+   selector made during the conversion - at INFO for `EXACT` and WARN
+   otherwise, behind `docx4j.fonts.report.log=summary|full|off` (default
+   `summary`, documented in docx4j.properties). The logger is
+   `org.docx4j.fonts.FontsAnalysis`, so a deployment can silence it by name,
+   and the rendering is `FontReport`'s, so no log string is written anywhere
+   else. Three more DEBUG lines went (`populateFontMappings`' "already
+   mapped", the metric pass's "the document embeds it",
+   `RunFontSelector`'s "not mapped; using fallback"); BestMatchingMapper's
+   remain, since they report what was tried and failed, which no decision
+   records. Gate: `docx4j-core-tests` 1088/0 (1083 + the 5 of
+   `FontReportLogTest`), `docx4j-export-fo-tests` 602/0 with core and
+   export-fo both installed first, and real3 at **0 changed documents** with
+   a byte-identical scoreboard. Its log read for noise: 86 of the 102
+   documents report at all, 1 to 9 lines per conversion (median 3; the
+   harness converts each document twice, once to FO and once to PDF), and no
+   font twice within a conversion.
 5. **Selawik and Gelasio**, each measured against a Word golden before it
    enters the table (a probe per face on the share; Jason runs Word), then
    the corpus gate as batch 42 did it. Either may fail the measurement and
    stay out. The same Word run takes the `authorHad` probe: one absent font
    named by a name-only `w:font` entry and by an entry carrying `w:panose1`
-   and `w:sig`, to see whether Word's own substitution reads the entry.
+   and `w:sig`, to see whether Word's substitution at render time differs
+   between the two - i.e. whether Word reads the entry when it lacks the font.
+   — **probes on the share 2026-09-16** (188bc092b); **the measurement waits
+   on the Word run**. `fonts-segoe-ui`, `fonts-georgia` and `fonts-author-had`
+   are in `Corpus.java`, generated, and copied with their `corpus.txt` lines to
+   the share; Selawik 1.01 and Gelasio are downloaded but deliberately not
+   installed, so nothing can pick them up before they are measured. Neither is
+   in `font-substitutes.xml`. See "Phase 5's probes, and how their goldens will
+   be measured" above.
 6. **docx4j-mcp** `fonts` tool and the `describe` section.
+
+### Phase 5's probes, and how their goldens will be measured
+
+The three probes are in `docx4j-layout-fidelity`'s `Corpus.java` and on the
+share, waiting for a Word run:
+
+- **`fonts-segoe-ui`** — the same sentence in Segoe UI, Segoe UI with `w:b`,
+  Segoe UI with `w:i`, Segoe UI Light, and Carlito.
+- **`fonts-georgia`** — the same sentence in Georgia, Georgia with `w:b`,
+  Georgia with `w:i`, and Carlito.
+- **`fonts-author-had`** — the same sentence in two made-up families no machine
+  has, one with a bare `w:font` entry (name and nothing else) and one with
+  `w:family="swiss"`, `w:charset`, and the `w:panose1` and `w:sig` of a real
+  sans (Liberation Sans's own OS/2 values, read from the font file in
+  docx4j-export-fo-fonts-liberation), plus a Liberation Serif control.
+
+**What the first two are for.** Selawik is Microsoft's own open replacement for
+Segoe UI (OFL 1.1; its README says "an open source replacement for Segoe UI",
+and notes that it lacks Segoe UI's kerning), and Gelasio's README says it is
+"metrics compatible with Georgia in its Regular, Bold, Italic and Bold Italic
+weights" and deliberately carries no kerning (OFL 1.1). Both are claims on a
+project page, which is what P052's comment warns about, so neither enters
+`font-substitutes.xml` until a golden says otherwise. Today Segoe UI goes to
+Arimo, Segoe UI Light to Source Sans, and Georgia to P052.
+
+**How.** For each face, take Word's **pen advance** for the probe sentence from
+the golden PDF — the distance from the first glyph origin to the last, which
+carries no side bearing — and compare it with `TextMeasurer`'s advance for the
+same string in the candidate file, **at the nominal size, not the size the PDF
+reports**. That is batch 42's method note: `mutool` reports the text-matrix
+size, which Word writes on a 1/300 inch grid (10pt as 10.08, 11 as 11.04), so
+measuring a candidate at the reported size makes it up to 1 per cent too wide
+and the ratio correspondingly low — which is how that batch's first pass at the
+Calibri Light factor read 0.985 instead of 0.987. The Carlito line in each
+probe is the calibration: Word draws Carlito itself on the fidelity VM, and its
+pen advance agreed with `TextMeasurer`'s Carlito to 0.04 per cent, so a
+candidate's ratio can be trusted to about that. A face enters the table only if
+it beats what is there now on every face the probe sets (regular, bold, italic),
+and then the three corpora are re-scored as batch 42 did it, at zero changed
+documents or with every changed document read.
+
+**What the third is for.** `authorHad` infers from the fontTable that the
+machine which saved a document had the font (`w:panose1` and `w:sig`, which
+Word reads off the font file) or lacked it (a name-only entry, or
+`w:notTrueType`), and turns its action round in the second case. The probe
+answers the question that inference rests on: whether Word's substitution *at
+render time* differs between the two entries for the same absent font — i.e.
+whether Word reads the entry when it lacks the font. Read it from the golden
+with `pdffonts` (which face draws each paragraph) and from the line breaks.
+
+The two candidate font files are downloaded but **not installed** on the
+development machine, so no corpus or probe render can pick them up by accident
+before they are measured: Selawik 1.01 from
+`github.com/microsoft/Selawik/releases` (its `LICENSE.txt` is the OFL 1.1 with
+Reserved Font Name Selawik) and Gelasio from `github.com/SorkinType/Gelasio`
+(`OFL.txt`, Copyright 2022 The Gelasio Project Authors).
 
 Phases 0 to 4 are `docx4j-core` and `docx4j-export-fo`; each is its own
 commit with the corpus at zero delta (this CR changes nothing that renders,
