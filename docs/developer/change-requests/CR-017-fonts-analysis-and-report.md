@@ -93,6 +93,55 @@ What it cannot tell anyone is whether the author's machine had the font. The
 fontTable's altName and any embedded subset are the only evidence, and the
 report should say so rather than guess.
 
+### This matters because the target is what Word drew for the author
+
+Jason asked (2026-09-16) why it matters whether the author's machine had the
+font. Because the target of "fidelity" is what Word drew for the author, and
+Word draws a font the machine lacks with a substitute of its own. So for a
+font *this* machine lacks there are two different targets, and the docx alone
+does not say which one Word used:
+
+- **The author had it.** Word laid the text out in that font's real widths.
+  The right thing for docx4j is a clone of that font, or the closest measured
+  stand-in, and the action "install Foo" is correct.
+- **The author lacked it.** Word substituted by its own rule, which CR-016's
+  probe P5 pinned down: Cambria for a roman or unlisted family, Calibri for a
+  swiss one, the `w:altName` if it resolves. The author's PDF was drawn in
+  Calibri. If docx4j then finds a good stand-in for Foo, it is faithfully
+  imitating a rendering that never existed, and "install Foo" would make the
+  output *less* like the author's page.
+
+Two documents from batch 42 show both sides. In 9919, Word drew Meiryo, the
+`w:altName` of Nokia Pure Text, and the golden embeds Meiryo: the author
+lacked the named font and had the alternate. In the 17.1.1 CHANGELOG's EnBW
+case, "EnBW DIN Pro Light" came out as Calibri Bold in Word, so the no-bold
+rule for Light families must not fire there, because Word never treated it as
+a Light family at all. The mapping rules already encode a guess
+(`Mapper.addWordDefaultSubstitutes`, CR-016 phase 3): a family docx4j knows
+keeps the class substitute (assume the author had it, so its widths are the
+target), an unknown family gets Word's default (assume the author lacked it
+too).
+
+It is less unknowable than the answer above says. The fontTable carries
+evidence that Word writes only from an installed font: `w:panose1`, `w:sig`
+and `w:charset` are read off the font file when the document is saved, so a
+name-only `w:font` entry says the saving machine lacked it, while an entry
+with panose and signature says it had it; `w:embedRegular` (and the other
+three faces) says it had it and embedded it; and a `w:altName` is Word
+recording what it would fall back to. That is a three-way inference — had,
+lacked, embedded — with a stated basis, and the report carries it as a field
+(`authorHad`: `EMBEDDED`, `LIKELY` (panose/sig present), `UNLIKELY`
+(name-only entry), `UNKNOWN` (no fontTable entry at all)) with the evidence
+named, rather than a caveat. It also changes the action: for `UNLIKELY` the
+report says "Word drew this in <its default>; docx4j does the same; installing
+Foo would move the output away from the author's page", and for `LIKELY` it
+says "install Foo, or its clone". CR-016's P5 probe (d) to (f) are the
+verification cases for the rule (an altName that resolves wins; an entry with
+only an absent altName goes to Calibri), and a probe with a name-only entry
+against one carrying panose and sig for the same absent font, run through
+Word, would settle whether Word itself reads the entry that way — it is the
+one measurement this section still needs.
+
 ### Where the evidence for that answer comes from
 
 Every number above is from CR-016's probes and gates, the CR-001 corpus
@@ -158,7 +207,11 @@ repo):
 5. **The names walk is not a use walk.** `fontsInUse()` gives names; the
    grade needs scripts and faces per font. The selector's per-character
    answer exists but nothing aggregates it.
-6. **Two candidate clones are not in the table.** Selawik (Microsoft, OFL,
+6. **The author's fonts are inferred silently.** `addWordDefaultSubstitutes`
+   assumes the author lacked an unknown family and had a known one, and
+   nothing reports which assumption a mapping rests on, although the
+   fontTable's panose, signature, embedding and altName say so per font.
+7. **Two candidate clones are not in the table.** Selawik (Microsoft, OFL,
    metric-compatible with Segoe UI by its own description) and Gelasio
    (metric-compatible with Georgia). Segoe UI goes to Arimo today and Georgia
    to P052 (1.09x Tinos, measured). Both need measuring against a Word golden
@@ -236,9 +289,12 @@ For each document font, in order of how much text it carries:
   default for a font it lacks — if the author had Foo, line breaks and line
   heights will differ"; for a script, "Greek in a Cambria document: install
   Cambria; Caladea has no Greek and P052 is 2.6% out";
-- **caveat, always**: whether the author's machine had the font is not
-  knowable from the docx; `w:altName` and an embedded subset are the only
-  evidence, and both are reported as such.
+- **authorHad**: `EMBEDDED` / `LIKELY` / `UNLIKELY` / `UNKNOWN`, from the
+  fontTable evidence (embedded faces; `w:panose1` and `w:sig` present; a
+  name-only entry; no entry), with the evidence named — see "This matters
+  because" above. `UNLIKELY` turns the action round: Word drew the font in
+  its own default, docx4j does the same, and installing the named font would
+  move the output away from the author's page.
 
 A `main` (`java -cp ... org.docx4j.fonts.FontsAnalysis in.docx [--jars-only]
 [--json]`) prints it. The text form is the one the conversion logs.
@@ -273,7 +329,8 @@ before it converts. Depends on CR-004's placement decisions.
    CR-016 phase 4 (fontsInUse was 8 ms there; this walks text, so expect
    more, and it must stay well under the conversion's own time).
 3. **`FontsAnalysis.analyse` and `FontReport`**, text and JSON, the `main`,
-   the `jarsOnly` environment. Tests on the CR-016 probe documents
+   the `jarsOnly` environment, the `authorHad` inference from the fontTable
+   (9919 and the EnBW document as the worked examples). Tests on the CR-016 probe documents
    (`fonts-unresolvable`, `fonts-light-bold`, `fonts-symbol-and-emoji`,
    `fonts-theme-lang`): each has a known answer and a known grade.
 4. **The conversion log** rendering the summary, the property, the DEBUG
@@ -282,7 +339,9 @@ before it converts. Depends on CR-004's placement decisions.
 5. **Selawik and Gelasio**, each measured against a Word golden before it
    enters the table (a probe per face on the share; Jason runs Word), then
    the corpus gate as batch 42 did it. Either may fail the measurement and
-   stay out.
+   stay out. The same Word run takes the `authorHad` probe: one absent font
+   named by a name-only `w:font` entry and by an entry carrying `w:panose1`
+   and `w:sig`, to see whether Word's own substitution reads the entry.
 6. **docx4j-mcp** `fonts` tool and the `describe` section.
 
 Phases 0 to 4 are `docx4j-core` and `docx4j-export-fo`; each is its own
@@ -315,8 +374,11 @@ until phase 5).
 - **Cost of the use walk** on very large documents. Measured in phase 2
   before it is wired to the log; the log can use the names walk alone if the
   use walk is too slow, and grade "per script" only when asked.
-- **The report claims more than it knows** — the author's fonts. The caveat
-  line is mandatory in every rendering.
+- **The `authorHad` inference is wrong for some producers.** A non-Word
+  producer may write panose and signature it copied from somewhere, or none
+  at all for a font it had. The field always names its evidence, `UNKNOWN`
+  is a legitimate answer, and the probe in phase 5 tests Word's own reading
+  of the entry before the action is turned round on `UNLIKELY`.
 - **The DEBUG lines are someone's diagnostics.** Removed only once the
   decisions carry everything they said; the CR-016 gap-16 style bisect must
   still be possible from `getDecisions()`.
