@@ -157,7 +157,9 @@ Fonts (CR-017, font decisions with their reasons):
   where the font itself, its embedded form or a metric clone draws it, WARN otherwise with the
   action in the line.  docx4j.fonts.report.log=summary (the default) | full | off.  Until now a
   conversion said nothing about its fonts but a DEBUG line per mapping and FOP's own "font not
-  found" warning, which names no action.
+  found" warning, which names no action.  The face it names is the name a user would look for:
+  the FO layer's own suffixes (the kerned twin, the no-ligature twin, the no-bold alias) are
+  stripped from the report.
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

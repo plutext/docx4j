@@ -140,8 +140,11 @@ public final class FontReport {
 			}
 		}
 
+		/** The face's name as a user would look for it: the FO layer's suffixes (the
+		 *  kerned twin, the no-ligature twin, the no-bold alias) are docx4j's own
+		 *  bookkeeping and mean nothing to someone installing a font. */
 		private static String name(PhysicalFont pf) {
-			return pf==null ? "nothing" : pf.getName();
+			return pf==null ? "nothing" : PhysicalFonts.stripSuffixes(pf.getName());
 		}
 
 		@Override

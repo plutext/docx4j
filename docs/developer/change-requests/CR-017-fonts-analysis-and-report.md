@@ -425,7 +425,70 @@ before it converts. Depends on CR-004's placement decisions.
    named by a name-only `w:font` entry and by an entry carrying `w:panose1`
    and `w:sig`, to see whether Word's substitution at render time differs
    between the two - i.e. whether Word reads the entry when it lacks the font.
+   — **probes on the share 2026-09-16** (COMMIT_HASH); **the measurement waits
+   on the Word run**. `fonts-segoe-ui`, `fonts-georgia` and `fonts-author-had`
+   are in `Corpus.java`, generated, and copied with their `corpus.txt` lines to
+   the share; Selawik 1.01 and Gelasio are downloaded but deliberately not
+   installed, so nothing can pick them up before they are measured. Neither is
+   in `font-substitutes.xml`. See "Phase 5's probes, and how their goldens will
+   be measured" above.
 6. **docx4j-mcp** `fonts` tool and the `describe` section.
+
+### Phase 5's probes, and how their goldens will be measured
+
+The three probes are in `docx4j-layout-fidelity`'s `Corpus.java` and on the
+share, waiting for a Word run:
+
+- **`fonts-segoe-ui`** — the same sentence in Segoe UI, Segoe UI with `w:b`,
+  Segoe UI with `w:i`, Segoe UI Light, and Carlito.
+- **`fonts-georgia`** — the same sentence in Georgia, Georgia with `w:b`,
+  Georgia with `w:i`, and Carlito.
+- **`fonts-author-had`** — the same sentence in two made-up families no machine
+  has, one with a bare `w:font` entry (name and nothing else) and one with
+  `w:family="swiss"`, `w:charset`, and the `w:panose1` and `w:sig` of a real
+  sans (Liberation Sans's own OS/2 values, read from the font file in
+  docx4j-export-fo-fonts-liberation), plus a Liberation Serif control.
+
+**What the first two are for.** Selawik is Microsoft's own open replacement for
+Segoe UI (OFL 1.1; its README says "an open source replacement for Segoe UI",
+and notes that it lacks Segoe UI's kerning), and Gelasio's README says it is
+"metrics compatible with Georgia in its Regular, Bold, Italic and Bold Italic
+weights" and deliberately carries no kerning (OFL 1.1). Both are claims on a
+project page, which is what P052's comment warns about, so neither enters
+`font-substitutes.xml` until a golden says otherwise. Today Segoe UI goes to
+Arimo, Segoe UI Light to Source Sans, and Georgia to P052.
+
+**How.** For each face, take Word's **pen advance** for the probe sentence from
+the golden PDF — the distance from the first glyph origin to the last, which
+carries no side bearing — and compare it with `TextMeasurer`'s advance for the
+same string in the candidate file, **at the nominal size, not the size the PDF
+reports**. That is batch 42's method note: `mutool` reports the text-matrix
+size, which Word writes on a 1/300 inch grid (10pt as 10.08, 11 as 11.04), so
+measuring a candidate at the reported size makes it up to 1 per cent too wide
+and the ratio correspondingly low — which is how that batch's first pass at the
+Calibri Light factor read 0.985 instead of 0.987. The Carlito line in each
+probe is the calibration: Word draws Carlito itself on the fidelity VM, and its
+pen advance agreed with `TextMeasurer`'s Carlito to 0.04 per cent, so a
+candidate's ratio can be trusted to about that. A face enters the table only if
+it beats what is there now on every face the probe sets (regular, bold, italic),
+and then the three corpora are re-scored as batch 42 did it, at zero changed
+documents or with every changed document read.
+
+**What the third is for.** `authorHad` infers from the fontTable that the
+machine which saved a document had the font (`w:panose1` and `w:sig`, which
+Word reads off the font file) or lacked it (a name-only entry, or
+`w:notTrueType`), and turns its action round in the second case. The probe
+answers the question that inference rests on: whether Word's substitution *at
+render time* differs between the two entries for the same absent font — i.e.
+whether Word reads the entry when it lacks the font. Read it from the golden
+with `pdffonts` (which face draws each paragraph) and from the line breaks.
+
+The two candidate font files are downloaded but **not installed** on the
+development machine, so no corpus or probe render can pick them up by accident
+before they are measured: Selawik 1.01 from
+`github.com/microsoft/Selawik/releases` (its `LICENSE.txt` is the OFL 1.1 with
+Reserved Font Name Selawik) and Gelasio from `github.com/SorkinType/Gelasio`
+(`OFL.txt`, Copyright 2022 The Gelasio Project Authors).
 
 Phases 0 to 4 are `docx4j-core` and `docx4j-export-fo`; each is its own
 commit with the corpus at zero delta (this CR changes nothing that renders,

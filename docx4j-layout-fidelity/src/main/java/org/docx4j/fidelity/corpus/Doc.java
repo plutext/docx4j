@@ -1197,6 +1197,11 @@ public final class Doc {
 		rpr.setB(new BooleanDefaultTrue());
 	}
 
+	/** @since CR-017 phase 5 (the fonts-segoe-ui and fonts-georgia probes) */
+	public static void italic(RPr rpr) {
+		rpr.setI(new BooleanDefaultTrue());
+	}
+
 	/** w:spacing on the run: expanded (positive) or condensed character spacing, in twentieths of a point. */
 	public static java.util.function.Consumer<RPr> charSpacing(int twentieths) {
 		return rpr -> {

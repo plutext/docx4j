@@ -665,8 +665,10 @@ public final class FontsAnalysis {
 		return sb.toString();
 	}
 
+	/** The face's name as a user would look for it; see FontReport.Entry.name. */
 	private static String nameOf(FontDecision decision) {
-		return decision.getPhysicalFont()==null ? "" : decision.getPhysicalFont().getName();
+		return decision.getPhysicalFont()==null ? ""
+				: PhysicalFonts.stripSuffixes(decision.getPhysicalFont().getName());
 	}
 
 	/** What to call the document in the report: its title where the properties carry one
