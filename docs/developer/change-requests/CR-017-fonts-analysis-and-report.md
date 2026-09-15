@@ -116,16 +116,24 @@ does not say which one Word used:
   imitating a rendering that never existed, and "install Foo" would make the
   output *less* like the author's page.
 
-Two documents from batch 42 show both sides. In 9919, Word drew Meiryo, the
-`w:altName` of Nokia Pure Text, and the golden embeds Meiryo: the author
-lacked the named font and had the alternate. In the 17.1.1 CHANGELOG's EnBW
-case, "EnBW DIN Pro Light" came out as Calibri Bold in Word, so the no-bold
-rule for Light families must not fire there, because Word never treated it as
-a Light family at all. The mapping rules already encode a guess
-(`Mapper.addWordDefaultSubstitutes`, CR-016 phase 3): a family docx4j knows
-keeps the class substitute (assume the author had it, so its widths are the
-target), an unknown family gets Word's default (assume the author lacked it
-too).
+Two documents from batch 42 were first read as showing both sides, and read
+wrong: 9919's Nokia Pure Text and the EnBW document's EnBW DIN Pro Light both
+carry a real `w:panose1` and `w:sig`, so the machine that saved each document
+had the font. What the goldens show - Word drawing Meiryo for the one and
+Calibri Bold for the other - is what Word on the fidelity VM did when it lacked
+them, which is exactly docx4j's own situation on this machine, and is why
+CR-016's rules (the altName, the default for an unknown family, no no-bold alias
+for a font Word could not find) are right for the render even though the saving
+machine had the fonts. The fontTable evidence and the golden answer two
+different questions: the fontTable says what the saving machine had, which is
+the page the author saw; the golden says what the rendering machine had. For
+fidelity scoring the target is the golden's machine; for a user's document the
+report answers the first question, and its action turns round only where the
+saving machine itself lacked the font (a name-only entry, or `w:notTrueType`),
+because then the page the author saw was already drawn in Word's default. Phase
+3 found two refinements while reading real font tables: an all-zero
+`w:panose1`/`w:sig` is no evidence, and `w:notTrueType` is a direct statement
+that Word had no such font.
 
 It is less unknowable than the answer above says. The fontTable carries
 evidence that Word writes only from an installed font: `w:panose1`, `w:sig`
@@ -144,7 +152,9 @@ says "install Foo, or its clone". CR-016's P5 probe (d) to (f) are the
 verification cases for the rule (an altName that resolves wins; an entry with
 only an absent altName goes to Calibri), and a probe with a name-only entry
 against one carrying panose and sig for the same absent font, run through
-Word, would settle whether Word itself reads the entry that way — it is the
+Word, would settle whether Word's substitution at render time differs between
+a name-only entry and one carrying panose and sig for the same absent font -
+i.e. whether Word reads the entry when it lacks the font — it is the
 one measurement this section still needs.
 
 ### Where the evidence for that answer comes from
@@ -361,12 +371,32 @@ before it converts. Depends on CR-004's placement decisions.
 2. **The use walk** (`FontsAnalysis.usage(pkg)`): characters and runs per
    (font, script, face), measured for cost on the 311-page document of
    CR-016 phase 4 (fontsInUse was 8 ms there; this walks text, so expect
-   more, and it must stay well under the conversion's own time).
+   more, and it must stay well under the conversion's own time). — **DONE**
+   (COMMIT_HASH, with phase 3). One selector per part, the run's effective
+   properties resolved once per run (a new
+   `documentFontFor(pPr, rPr, codePoint, rPrIsEffective)` overload) and each
+   run's answers memoised by code point. Measured against each document's own
+   `toFO` in the same JVM: 12301 (311 pages, 196,093 characters in 15,572
+   runs) **166 ms cold / 137 ms warm against 54,989 ms, 0.30% / 0.25%**; 11875
+   (144 pages, 120,324 characters in 21,878 runs) **115 / 160 ms against
+   282,108 ms, 0.04% / 0.06%**.
 3. **`FontsAnalysis.analyse` and `FontReport`**, text and JSON, the `main`,
    the `jarsOnly` environment, the `authorHad` inference from the fontTable
    (9919 and the EnBW document as the worked examples). Tests on the CR-016 probe documents
    (`fonts-unresolvable`, `fonts-light-bold`, `fonts-symbol-and-emoji`,
-   `fonts-theme-lang`): each has a known answer and a known grade.
+   `fonts-theme-lang`): each has a known answer and a known grade. — **DONE**
+   (COMMIT_HASH). Built from the use walk's fonts plus any `UNMAPPED` or
+   `SYMBOL` decision, never the mapper's whole map. `FontEnvironment` (this
+   machine, the jars, a directory) is in core and docx4j-layout-fidelity calls
+   it. The `authorHad` rules gained two refinements read off real font tables:
+   an all-zero `w:panose1`/`w:sig` is no evidence, and `w:notTrueType` says
+   Word had no such font; and the worked examples were re-read (see "This
+   matters because"). docx4j-core-tests cannot depend on the harness, so the
+   probe cases are built in the test with the probes' own shapes and cite
+   them; the corpus documents are cited by id only. Gate:
+   `docx4j-core-tests` 1083/0 (1066 + the 17 of `FontsAnalysisTest`),
+   `docx4j-export-fo-tests` 602/0, the five fonts probes unchanged, the three
+   corpora at **0 changed documents** with byte-identical scoreboards.
 4. **The conversion log** rendering the summary, the property, the DEBUG
    lines removed. Gate: export-fo-tests, and the log of one corpus run read
    for noise (one line per font, not per run).
@@ -375,7 +405,8 @@ before it converts. Depends on CR-004's placement decisions.
    the corpus gate as batch 42 did it. Either may fail the measurement and
    stay out. The same Word run takes the `authorHad` probe: one absent font
    named by a name-only `w:font` entry and by an entry carrying `w:panose1`
-   and `w:sig`, to see whether Word's own substitution reads the entry.
+   and `w:sig`, to see whether Word's substitution at render time differs
+   between the two - i.e. whether Word reads the entry when it lacks the font.
 6. **docx4j-mcp** `fonts` tool and the `describe` section.
 
 Phases 0 to 4 are `docx4j-core` and `docx4j-export-fo`; each is its own

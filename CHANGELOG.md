@@ -138,6 +138,20 @@ Fonts (CR-017, font decisions with their reasons):
   through to get there, what is known of the substitute's width error, which face draws its bold
   and italic (or that FOP will synthesise them), whose metrics the line box takes, and which
   scripts left that font's face during the conversion.  The passes' DEBUG lines go.
+- FontsAnalysis.usage(pkg) says what a document uses each font for - characters and runs by
+  script and by face, over the body, headers, footers, notes and comments - by asking the
+  selector which font each character goes to, so it is the conversion's own dispatch and not a
+  reading of w:rFonts.  Measured on a 311-page document it costs 0.3% of that document's
+  conversion, and on a 144-page one 0.06%.
+- FontsAnalysis.analyse(pkg) reports, per font the document uses and in order of the text it
+  carries: what it is used for, what docx4j draws it with and why, a grade (EXACT, NEAR, CLASS
+  or NONE), what the font table says about the machine that saved the document (embedded;
+  w:panose1 and w:sig, which Word reads off the font file; a name-only or w:notTrueType entry,
+  which says it had no such font; or no entry at all), and what to do about it - which font to
+  install, or which clone and which docx4j font jar or distribution package carries it.  As
+  text, as JSON, and from a command line: java org.docx4j.fonts.FontsAnalysis in.docx
+  [--jars-only] [--json].  FontEnvironment asks the same of another deployment's fonts: this
+  machine's, the docx4j font jars alone (issue #695), or a directory's.
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

@@ -128,20 +128,11 @@ public final class Fidelity {
 	static void fontEnvironment(String fontSet) throws Exception {
 		new org.docx4j.fonts.IdentityPlusMapper(); // triggers discovery (jars, and the system unless disabled)
 		if (!fontSet.equals("all") && !fontSet.equals("jars")) {
+			// the walk is docx4j-core's since 17.1.1, so the harness and FontsAnalysis
+			// build a font environment the same way (CR-017 phase 3)
 			File dir = new File(fontSet);
 			if (!dir.isDirectory()) throw new IllegalArgumentException("-Dfidelity.fonts: not a directory: " + dir);
-			try (java.util.stream.Stream<java.nio.file.Path> paths = java.nio.file.Files.walk(dir.toPath())) {
-				for (java.nio.file.Path f : (Iterable<java.nio.file.Path>) paths::iterator) {
-					String n = f.getFileName().toString().toLowerCase();
-					if (n.endsWith(".ttf") || n.endsWith(".otf") || n.endsWith(".ttc")) {
-						try {
-							org.docx4j.fonts.PhysicalFonts.addPhysicalFont(f.toUri());
-						} catch (Exception e) {
-							System.out.println("font not added: " + f + " (" + e.getMessage() + ")");
-						}
-					}
-				}
-			}
+			org.docx4j.fonts.FontEnvironment.ofDirectory(dir);
 		}
 		java.util.TreeSet<String> names = new java.util.TreeSet<>(org.docx4j.fonts.PhysicalFonts.getPhysicalFonts().keySet());
 		System.out.println("font set '" + fontSet + "': " + names.size() + " physical fonts; mapper " + mapperName());

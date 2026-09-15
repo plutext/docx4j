@@ -1600,8 +1600,20 @@ public class RunFontSelector {
      * @since 17.1.1
      */
     public String documentFontFor(PPr pPr, RPr rPr, int codePoint) {
+    	return documentFontFor(pPr, rPr, codePoint, false);
+    }
 
-    	rPr = effectiveRPr(propertyResolver(), pPr, rPr, false);
+    /**
+     * As {@link #documentFontFor(PPr, RPr, int)}, for a caller which has resolved the
+     * run's effective properties already - as {@link #fontSelector(PPr, RPr, Text,
+     * boolean)} takes them.  A walk asking per character (FontsAnalysis.usage) would
+     * otherwise resolve the same run's properties once per character.
+     *
+     * @since 17.1.1
+     */
+    public String documentFontFor(PPr pPr, RPr rPr, int codePoint, boolean rPrIsEffective) {
+
+    	rPr = effectiveRPr(propertyResolver(), pPr, rPr, rPrIsEffective);
     	RFonts rFonts = rFontsOf(rPr);
     	String symbolFont = symbolFontName(rFonts.getHAnsi());
     	if (symbolFont!=null) return symbolFont;

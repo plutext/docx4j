@@ -99,9 +99,16 @@
       <substitute font="Arimo Regular" quality="class"/>
       <substitute font="Liberation Sans" quality="class"/>
     </font>
+    <!-- Helvetica is the one of these that is not a guess: Arial was drawn
+         metric-compatible with Helvetica, and Arimo is Arial's clone, so Arimo carries
+         Helvetica's advances by design (not by a measurement of ours).  WordLineMetrics
+         aliases helvetica to arial for the same reason, and that alias is measured: a 9pt
+         Helvetica document's line pitch is Arial's 1.150 em, where the substitute's own
+         OS/2 metrics gave 1.432 and every line was 24.6% too tall (its ALIASES comment).
+         Helvetica Neue is a different design and stays a class substitute. -->
     <font name="Helvetica">
-      <substitute font="Arimo Regular" quality="class"/>
-      <substitute font="Liberation Sans" quality="class"/>
+      <substitute font="Arimo Regular" quality="metric" error="by design: Arial is metric-compatible with Helvetica and Arimo is Arial's clone"/>
+      <substitute font="Liberation Sans" quality="metric"/>
     </font>
     <font name="Helvetica Neue">
       <substitute font="Arimo Regular" quality="class"/>

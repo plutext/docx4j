@@ -264,6 +264,19 @@ public abstract class Mapper {
 		return java.util.Collections.unmodifiableList(all);
 	}
 
+	/** What was decided for this document font, recording one where no pass met it (a
+	 *  font the selector reached directly): {@link FontsAnalysis} asks this, so that
+	 *  every font a report is about has a decision.  @since 17.1.1 */
+	FontDecision decisionFor(String documentFont) {
+		FontDecision decision = getDecision(documentFont);
+		if (decision==null) {
+			decide(documentFont, get(documentFont)==null
+					? FontDecision.Source.UNMAPPED : FontDecision.Source.INSTALLED, null, null);
+			decision = getDecision(documentFont);
+		}
+		return decision;
+	}
+
 	/** What was decided for this document font, or null where no pass met it.
 	 *  @since 17.1.1 */
 	public FontDecision getDecision(String documentFont) {
