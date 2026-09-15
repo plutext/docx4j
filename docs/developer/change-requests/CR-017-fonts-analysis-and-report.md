@@ -1,8 +1,13 @@
 # CR-017: Font decisions with their reasons — `FontsAnalysis`, the conversion log, and the actions a user can take
 
-Status: PROPOSED (2026-09-16). Written from Jason's question of 2026-09-16 and
-the answer to it (below, verbatim), after CR-016 (fonts review, DONE 2026-09-13)
-and CR-001 batch 42 (the measured substitutes, 2026-09-15). Nothing coded.
+Status: IN PROGRESS (2026-09-16). Jason read the CR and accepted the
+recommendations the same day ("I am good with your recommendations, please
+implement"); Decisions 1 to 5 below are taken as recommended. Phases 0 to 4
+are delegated to an Opus 5 agent in a worktree with Fable reviewing each
+phase before its commit; phase 5's measurement waits on a Word run; phase 6
+waits on CR-004. Written from Jason's question of 2026-09-16 and the answer
+to it (below, verbatim), after CR-016 (fonts review, DONE 2026-09-13) and
+CR-001 batch 42 (the measured substitutes, 2026-09-15).
 Owner: Jason Harrop. Drafted with Claude Fable 5.1.
 
 Scope: `org.docx4j.fonts` (`Mapper`, `RunFontSelector`, `FontFallback`,
@@ -348,7 +353,7 @@ Phases 0 to 4 are `docx4j-core` and `docx4j-export-fo`; each is its own
 commit with the corpus at zero delta (this CR changes nothing that renders,
 until phase 5).
 
-## Decisions (for Jason)
+## Decisions (recommended 2026-09-16; all five accepted by Jason the same day, as recommended)
 
 1. **Grades as four words** (`EXACT`, `NEAR`, `CLASS`, `NONE`) rather than a
    number: the measured errors are per face and per script and do not add
