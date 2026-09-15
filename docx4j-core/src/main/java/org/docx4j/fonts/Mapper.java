@@ -420,105 +420,99 @@ public abstract class Mapper {
 	}
 	
     /**
-     * Auto-add mappings for Calibri, Cambria etc where possible and useful
+     * Auto-add mappings for Calibri, Cambria etc where possible and useful: for each
+     * document font the table knows, the first of its open substitutes this machine has.
+     *
+     * <p>The table itself is {@code font-substitutes.xml} since 17.1.1
+     * ({@link FontSubstitutionTable}, CR-017 phase 0), so that a report - and a port -
+     * can read the same rows this pass takes; it carries the same document fonts, in the
+     * same order, with the same substitutes.  <b>The measurements which chose each
+     * substitute stay here</b>, below, in the table's order: they are the record of why a
+     * row is what it is, and the table's {@code error} attributes quote them.</p>
+     *
      * @since 11.5.9
      */
     public void addMetricallyCompatibleSubstitutes() {
-		
-		// Croscore or Liberation.  NB Times New Roman is a serif and Arial a sans:
-		// the two second substitutes were the wrong way round until 17.0.5, so on a
-		// box with Liberation but not Croscore each became the other's class.
-    	addMetricallyCompatibleSubstitute("Times New Roman", "Tinos Regular", "Liberation Serif");
-    	addMetricallyCompatibleSubstitute("Arial", "Arimo Regular", "Liberation Sans");
-    	addMetricallyCompatibleSubstitute("Courier New", "Cousine Regular", "Liberation Mono");
 
-		// Crosextra
-    	// second choice where the crosextra clones are absent (a box with only the
-    	// Liberation jar, e.g. a build server): a font of the same class, so the
-    	// text is at least a sans / a serif; line heights still come from the
-    	// document font's own metrics (WordLineMetrics).  @since 17.0.5
-    	addMetricallyCompatibleSubstitute("Calibri", "Carlito Regular", "Liberation Sans");
-    	addMetricallyCompatibleSubstitute("Cambria", "Caladea Regular", "Liberation Serif");
-    	addMetricallyCompatibleSubstitute("Calibri Light", "Carlito Regular", "Liberation Sans");
-
-    	// URW base 35 (ghostscript-fonts, on most Linux boxes).  Century Gothic was
-    	// drawn to ITC Avant Garde Gothic's widths, and URW Gothic is the Avant Garde
-    	// clone: measured against the Century Gothic Word embedded in a real document,
-    	// URW Gothic Book matches it to the unit over 6743 characters (0.00%), and
-    	// URW Gothic Demi likewise matches Century Gothic Bold.  Without this the
-    	// class-based fallback reached a Helvetica clone, 3.1% wider, which is enough
-    	// to break a full line differently.  @since 17.0.5
-    	addMetricallyCompatibleSubstitute("Century Gothic", "URW Gothic", "Liberation Sans");
-
-    	// Fonts with no metric-compatible clone, but where a stand-in of the right
-    	// class is much closer than the document's default font, which is what
-    	// RunFontSelector falls back to (a sans in Tinos, or Georgian in Carlito,
-    	// was the first divergence in a fifth of a real-document sample; CR-001).
-    	// The widths are not Word's, so lines still break differently.  @since 17.0.5
-    	// Tw Cen MT (Twentieth Century) is a geometric sans; without an entry it fell
-    	// through to the serif default and its labels came out 3-4% narrow (measured
-    	// against Word's own PDF of a corpus document, every y and x within 0.3pt and
-    	// the text 1.03-1.04x ours).  Arimo is 1.0605x Tinos, so the residual is 2%.
-    	// @since 17.1.0
-    	for (String sans : new String[] { "Tahoma", "Segoe UI",
-    			"Gadugi", "Helvetica", "Helvetica Neue", "Tw Cen MT" }) {
-    		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
+    	for (FontSubstitutionTable.Row row : FontSubstitutionTable.substitutes()) {
+    		addFirstAvailableSubstitute(row.getDocumentFont(), row.substituteNames());
     	}
 
-    	// Trebuchet MS is not an Arial shape and an Arial clone is wrong for it in two
-    	// directions at once: its lower case is wider than Arial's and its capitals are
-    	// much narrower.  Measured against Word's own PDFs of three corpus documents, on
-    	// unjustified lines whose text matches exactly (Word's pen advance over the
-    	// candidate's advance for the same string at the same size), Word / Arimo is
-    	// 1.0273 over the mixed-case body but 0.9061 over the bold capitals of the
-    	// headings, so no single width factor can repair it - scaling Arimo to fit the
-    	// body makes the headings worse.  Droid Sans is the closest installed face in
-    	// every weight: 1.0096 body, 0.9449 bold capitals, 1.0246 italic, against Arimo's
-    	// 1.0273 / 0.9061 / 1.0504; on the two other Trebuchet documents its body ratio
-    	// is 1.0060 and 0.9889 where Arimo is 1.0212 and 0.9918, and on their all-capitals
-    	// lines 0.9703 / 1.0272 where Arimo is 0.8942 / 0.8822.  Noto Sans was measured
-    	// and rejected: 0.9678 body, 0.9133 bold capitals, 1.0382 italic - further from
-    	// Trebuchet than Arimo is on two of the three documents.  Droid Sans ships no
-    	// italic face, so FOP obliques the regular, whose advances are the ones measured
-    	// above; the line box stays Trebuchet's own (WordLineMetrics has it).  Arimo
-    	// remains the last resort, which is what a machine without Droid Sans keeps.
-    	// @since 17.1.1
-    	addFirstAvailableSubstitute("Trebuchet MS", "Droid Sans", "Arimo Regular", "Liberation Sans");
-
-    	// Arial Black is far heavier and wider than Arial: measured against Word's own
-    	// PDF of a corpus document, its centred title is 281.2pt against our Arimo's
-    	// 247.9 on the same centre - 1.134x.  Noto Sans Black measures 1.1122x Arimo
-    	// over a mixed Latin sample, so the residual is 2% instead of 13.4%.  Arimo
-    	// remains the last resort.  @since 17.1.0
-    	addFirstAvailableSubstitute("Arial Black", "Noto Sans Black", "Noto Sans Display Black",
-    			"Arimo Regular", "Liberation Sans");
-
-    	// Verdana and Comic Sans MS are much wider than Arial, so an Arial clone
-    	// re-breaks every line of a document set in them.  Measured against Word's own
-    	// PDFs of real documents, on lines whose text matches exactly: Word's Verdana
-    	// lines are 1.141x our Arimo ones, and DejaVu Sans is 1.14x Arimo over a mixed
-    	// Latin sample; Word's Comic Sans lines are 1.153x our Carlito ones (Comic Sans
-    	// reached Carlito through the class-based fallback), and Noto Sans is 1.15x
-    	// Carlito.  Tahoma is left where it is: on an all-Tahoma document the median
-    	// ratio to our Arimo output is 1.006.  @since 17.1.0
-    	addFirstAvailableSubstitute("Verdana", "DejaVu Sans", "Arimo Regular", "Liberation Sans");
-    	addFirstAvailableSubstitute("Comic Sans MS", "Noto Sans Regular", "DejaVu Sans",
-    			"Arimo Regular", "Liberation Sans");
-
-    	// Segoe UI Light has no metric clone, but Arimo is the wrong shape for it:
-    	// measured against the Segoe UI Light Word embeds, Arimo's advances are
-    	// systematically 11.8% wider, so every line breaks early.  Source Sans has
-    	// no systematic bias at all (+0.4% mean signed, 9.4% mean absolute), which is
-    	// what line breaking cares about.  Arimo remains the last resort.
-    	// @since 17.0.5
-    	addFirstAvailableSubstitute("Segoe UI Light",
-    			"Source Sans 3", "Source Sans Pro", "Arimo Regular", "Liberation Sans");
-    	for (String serif : new String[] { "Garamond", "Bookman Old Style" }) {
-    		addMetricallyCompatibleSubstitute(serif, "Tinos Regular", "Liberation Serif");
-    	}
-
-
-    	/* Held back: the Nokia Pure family, the only document font name of the three
+    	/* ---------------------------------------------------------------------------
+    	 * The measurements behind the rows, in the table's order.
+    	 * ---------------------------------------------------------------------------
+    	 *
+    	 * Times New Roman, Arial, Courier New - Croscore or Liberation.  NB Times New
+    	 * Roman is a serif and Arial a sans: the two second substitutes were the wrong way
+    	 * round until 17.0.5, so on a box with Liberation but not Croscore each became the
+    	 * other's class.
+    	 *
+    	 * Calibri, Cambria, Calibri Light - Crosextra.  Second choice where the crosextra
+    	 * clones are absent (a box with only the Liberation jar, e.g. a build server): a
+    	 * font of the same class, so the text is at least a sans / a serif; line heights
+    	 * still come from the document font's own metrics (WordLineMetrics).  @since 17.0.5
+    	 *
+    	 * Century Gothic - URW base 35 (ghostscript-fonts, on most Linux boxes).  Century
+    	 * Gothic was drawn to ITC Avant Garde Gothic's widths, and URW Gothic is the Avant
+    	 * Garde clone: measured against the Century Gothic Word embedded in a real
+    	 * document, URW Gothic Book matches it to the unit over 6743 characters (0.00%),
+    	 * and URW Gothic Demi likewise matches Century Gothic Bold.  Without this the
+    	 * class-based fallback reached a Helvetica clone, 3.1% wider, which is enough to
+    	 * break a full line differently.  @since 17.0.5
+    	 *
+    	 * Tahoma, Segoe UI, Gadugi, Helvetica, Helvetica Neue, Tw Cen MT - fonts with no
+    	 * metric-compatible clone, but where a stand-in of the right class is much closer
+    	 * than the document's default font, which is what RunFontSelector falls back to (a
+    	 * sans in Tinos, or Georgian in Carlito, was the first divergence in a fifth of a
+    	 * real-document sample; CR-001).  The widths are not Word's, so lines still break
+    	 * differently.  @since 17.0.5
+    	 * Tw Cen MT (Twentieth Century) is a geometric sans; without an entry it fell
+    	 * through to the serif default and its labels came out 3-4% narrow (measured
+    	 * against Word's own PDF of a corpus document, every y and x within 0.3pt and the
+    	 * text 1.03-1.04x ours).  Arimo is 1.0605x Tinos, so the residual is 2%.
+    	 * @since 17.1.0
+    	 *
+    	 * Trebuchet MS is not an Arial shape and an Arial clone is wrong for it in two
+    	 * directions at once: its lower case is wider than Arial's and its capitals are
+    	 * much narrower.  Measured against Word's own PDFs of three corpus documents, on
+    	 * unjustified lines whose text matches exactly (Word's pen advance over the
+    	 * candidate's advance for the same string at the same size), Word / Arimo is
+    	 * 1.0273 over the mixed-case body but 0.9061 over the bold capitals of the
+    	 * headings, so no single width factor can repair it - scaling Arimo to fit the
+    	 * body makes the headings worse.  Droid Sans is the closest installed face in
+    	 * every weight: 1.0096 body, 0.9449 bold capitals, 1.0246 italic, against Arimo's
+    	 * 1.0273 / 0.9061 / 1.0504; on the two other Trebuchet documents its body ratio
+    	 * is 1.0060 and 0.9889 where Arimo is 1.0212 and 0.9918, and on their all-capitals
+    	 * lines 0.9703 / 1.0272 where Arimo is 0.8942 / 0.8822.  Noto Sans was measured
+    	 * and rejected: 0.9678 body, 0.9133 bold capitals, 1.0382 italic - further from
+    	 * Trebuchet than Arimo is on two of the three documents.  Droid Sans ships no
+    	 * italic face, so FOP obliques the regular, whose advances are the ones measured
+    	 * above; the line box stays Trebuchet's own (WordLineMetrics has it).  Arimo
+    	 * remains the last resort, which is what a machine without Droid Sans keeps.
+    	 * @since 17.1.1
+    	 *
+    	 * Arial Black is far heavier and wider than Arial: measured against Word's own
+    	 * PDF of a corpus document, its centred title is 281.2pt against our Arimo's
+    	 * 247.9 on the same centre - 1.134x.  Noto Sans Black measures 1.1122x Arimo
+    	 * over a mixed Latin sample, so the residual is 2% instead of 13.4%.  Arimo
+    	 * remains the last resort.  @since 17.1.0
+    	 *
+    	 * Verdana and Comic Sans MS are much wider than Arial, so an Arial clone
+    	 * re-breaks every line of a document set in them.  Measured against Word's own
+    	 * PDFs of real documents, on lines whose text matches exactly: Word's Verdana
+    	 * lines are 1.141x our Arimo ones, and DejaVu Sans is 1.14x Arimo over a mixed
+    	 * Latin sample; Word's Comic Sans lines are 1.153x our Carlito ones (Comic Sans
+    	 * reached Carlito through the class-based fallback), and Noto Sans is 1.15x
+    	 * Carlito.  Tahoma is left where it is: on an all-Tahoma document the median
+    	 * ratio to our Arimo output is 1.006.  @since 17.1.0
+    	 *
+    	 * Segoe UI Light has no metric clone, but Arimo is the wrong shape for it:
+    	 * measured against the Segoe UI Light Word embeds, Arimo's advances are
+    	 * systematically 11.8% wider, so every line breaks early.  Source Sans has
+    	 * no systematic bias at all (+0.4% mean signed, 9.4% mean absolute), which is
+    	 * what line breaking cares about.  Arimo remains the last resort.  @since 17.0.5
+    	 *
+    	 * Held back: the Nokia Pure family, the only document font name of the three
     	 * corpora's 449 documents which reaches FOP unresolved.  Its w:altName is Meiryo -
     	 * itself absent, so the alt-name pass cannot resolve it - and its name matches none
     	 * of FontFallback's class keywords, so it gets no class default either; because the
@@ -528,47 +522,41 @@ public abstract class Mapper {
     	 * comes out in a non-embedded serif where the face is a humanist sans
     	 * (w:family="swiss", panose serif-style 11).
     	 *
-    	 * addFirstAvailableSubstitute("Nokia Pure Text", "Source Sans 3", "Source Sans Pro",
-    	 * "Arimo Regular", "Liberation Sans") - Segoe UI Light's substitute, for the same
-    	 * reasons - was measured: it draws that document in the right class and moves its
-    	 * page count towards Word's (63 of Word's 87 to 65), and its body lines are closer
-    	 * (Word's "Acceptance Test Manual" is 266.9pt, base-14 Times 274.4, Source Sans
-    	 * 269.9), but its headings are further out (115.2 against 120.6 and 104.6) and it
-    	 * cost that document 0.045 of line parity, which is the whole of the batch's fall on
-    	 * that corpus.  Without a measurement of Nokia Pure's own advances there is nothing
-    	 * to choose the substitute by, so it waits for one.  @since 17.1.0 */
-
-
-    	// The Palatino family, and Georgia, are wider than Times, so a Times clone
-    	// re-breaks their lines.  P052 is URW's Palladio, the Palatino clone, and is in
-    	// the URW base 35 (ghostscript-fonts).  Measured against Word's own PDFs:
-    	// Word's Book Antiqua lines are 1.087-1.114x our Tinos ones and its Georgia
-    	// lines 1.076-1.112x, where P052 is 1.09x Tinos over a mixed Latin sample.
-    	// @since 17.1.0
-    	for (String palatino : new String[] { "Georgia", "Book Antiqua", "Palatino Linotype" }) {
-    		addFirstAvailableSubstitute(palatino, "P052", "Tinos Regular", "Liberation Serif");
-    	}
-    	// Liberation Sans Narrow is metric-compatible with Arial Narrow, but neither the
-    	// Liberation nor the Croscore jar carries it, and it is no longer in the
-    	// Liberation package.  Nimbus Sans Narrow (URW's Helvetica Narrow, in
-    	// ghostscript-fonts) is the same 82% condensation and matches Arial Narrow's
-    	// advances to within one unit per 1000 over letters, digits and punctuation
-    	// (0.02% mean, bold likewise; the control pair Century Gothic / URW Gothic
-    	// measures 0.29% by the same method).  Where neither is installed, Arial Narrow
-    	// is still deliberately left unmapped: measured over the real-document corpus,
-    	// DejaVu Sans Condensed (the nearest condensed face on a typical Linux box) is
-    	// further from Arial Narrow than the document default is, and substituting it
-    	// cost line parity on three documents.
-    	addFirstAvailableSubstitute("Arial Narrow", "Liberation Sans Narrow", "Nimbus Sans Narrow");
-
-    	// Monospace fonts with no metric-compatible clone: a monospace stand-in keeps
-    	// code aligned, where the default (proportional) fallback would not.  Widths
-    	// differ (Consolas advances 0.55em, Cousine and Liberation Mono 0.6em); line
-    	// heights come from the document font's own metrics (WordLineMetrics).
-    	// @since 17.0.5
-    	addMetricallyCompatibleSubstitute("Consolas", "Cousine Regular", "Liberation Mono");
-    	addMetricallyCompatibleSubstitute("Lucida Console", "Cousine Regular", "Liberation Mono");
-    	
+    	 * A row "Nokia Pure Text" -> Source Sans 3, Source Sans Pro, Arimo Regular,
+    	 * Liberation Sans - Segoe UI Light's substitutes, for the same reasons - was
+    	 * measured: it draws that document in the right class and moves its page count
+    	 * towards Word's (63 of Word's 87 to 65), and its body lines are closer (Word's
+    	 * "Acceptance Test Manual" is 266.9pt, base-14 Times 274.4, Source Sans 269.9),
+    	 * but its headings are further out (115.2 against 120.6 and 104.6) and it cost
+    	 * that document 0.045 of line parity, which is the whole of the batch's fall on
+    	 * that corpus.  Without a measurement of Nokia Pure's own advances there is
+    	 * nothing to choose the substitute by, so it waits for one.  @since 17.1.0
+    	 *
+    	 * Georgia, Book Antiqua, Palatino Linotype - the Palatino family, and Georgia, are
+    	 * wider than Times, so a Times clone re-breaks their lines.  P052 is URW's
+    	 * Palladio, the Palatino clone, and is in the URW base 35 (ghostscript-fonts).
+    	 * Measured against Word's own PDFs: Word's Book Antiqua lines are 1.087-1.114x our
+    	 * Tinos ones and its Georgia lines 1.076-1.112x, where P052 is 1.09x Tinos over a
+    	 * mixed Latin sample.  @since 17.1.0
+    	 *
+    	 * Arial Narrow - Liberation Sans Narrow is metric-compatible with it, but neither
+    	 * the Liberation nor the Croscore jar carries it, and it is no longer in the
+    	 * Liberation package.  Nimbus Sans Narrow (URW's Helvetica Narrow, in
+    	 * ghostscript-fonts) is the same 82% condensation and matches Arial Narrow's
+    	 * advances to within one unit per 1000 over letters, digits and punctuation
+    	 * (0.02% mean, bold likewise; the control pair Century Gothic / URW Gothic
+    	 * measures 0.29% by the same method).  Where neither is installed, Arial Narrow
+    	 * is still deliberately left unmapped: measured over the real-document corpus,
+    	 * DejaVu Sans Condensed (the nearest condensed face on a typical Linux box) is
+    	 * further from Arial Narrow than the document default is, and substituting it
+    	 * cost line parity on three documents.
+    	 *
+    	 * Consolas, Lucida Console - monospace fonts with no metric-compatible clone: a
+    	 * monospace stand-in keeps code aligned, where the default (proportional) fallback
+    	 * would not.  Widths differ (Consolas advances 0.55em, Cousine and Liberation Mono
+    	 * 0.6em); line heights come from the document font's own metrics
+    	 * (WordLineMetrics).  @since 17.0.5
+    	 */
     }
     
     /** Whether {@link #addClassBasedSubstitutes} applies to this mapper.  True for both

@@ -124,6 +124,14 @@ Fonts (CR-016, the font selection and mapping review):
   one.  BestMatchingMapper is kept for compatibility; the samples and the Getting Started guide,
   which recommended it for Linux, now say so.
 
+Fonts (CR-017, font decisions with their reasons):
+
+- The substitutes docx4j draws a missing font with are a resource, org/docx4j/fonts/font-substitutes.xml,
+  not code: 26 document fonts with their open clones in order, the per-script substitutes, the
+  measured width factor, and a catalogue of 40 substitutes saying under what licence each is
+  available and where to get it (the docx4j font jar first, then example distribution packages).
+  The passes read it; the measurements that chose each row stay in the comments beside the code.
+
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 - Calibri Light is drawn at 0.987 of Carlito's advances, the two families' measured

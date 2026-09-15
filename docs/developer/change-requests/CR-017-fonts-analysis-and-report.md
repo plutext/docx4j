@@ -325,7 +325,24 @@ before it converts. Depends on CR-004's placement decisions.
    `FontFallback` and `WidthFactors` into the resource, with a test that the
    passes' answers do not change (the CR-016 `MapperPrecedenceTest` /
    `ClassBasedSubstituteTest` and the corpus at zero delta). No behaviour
-   change.
+   change. — **DONE** (1da9ed97e).
+   `org/docx4j/fonts/font-substitutes.xml`, beside `word-line-metrics.properties`,
+   read by `FontSubstitutionTable` with a plain DOM parser (no JAXB, no xsd:
+   nothing marshals it; XML rather than properties because four of the six
+   columns are lists carrying commas and parentheses, and a properties key
+   would have to escape its spaces). 31 `<font>` rows over 81 `<substitute>`
+   entries — the 26 document fonts of
+   `addMetricallyCompatibleSubstitutes` in its own order, the four
+   `FontFallback.measuredForScript` rows in theirs, the one `WidthFactors`
+   factor — plus a catalogue of 40 substitutes with licence, docx4j jar,
+   example packages and scripts. The measurements stay in the comments. Gate:
+   `docx4j-core-tests` 1052/0 (1042 + the 10 of the new
+   `FontSubstitutionTableTest`), `docx4j-export-fo-tests` 602/0; the three
+   corpora against `b65-nestedp` at **0 changed documents** with
+   byte-identical scoreboards; the five fonts probes at their CR-016 / batch 42
+   values (`fonts-light-bold` 100%, `fonts-unresolvable` 88%,
+   `fonts-missing-slots` 100%, `fonts-theme-lang` 100%,
+   `fonts-symbol-and-emoji` 17%).
 1. **`FontDecision` recorded by every pass**, `Mapper.getDecisions()`, the
    selector recording per-script answers. Tests: one decision per pass, with
    its `via`. No behaviour change; corpus zero delta.

@@ -353,6 +353,26 @@ public class FontFallback {
 	private static final String[] MONO_DEFAULTS = { "Cousine Regular", "Cousine", "Liberation Mono",
 			"Nimbus Mono PS", "DejaVu Sans Mono", "Noto Mono", "FreeMono" };
 
+	/** The faces tried when nothing of the document font's class covers the text, before
+	 *  the sweep over everything installed ({@link #selectCovering}): the ones which
+	 *  carry the most scripts. */
+	private static final String[] WIDE_COVERAGE_FACES = { "Noto Sans", "Noto Serif", "DejaVu Sans",
+			"DejaVu Serif", "FreeSerif", "FreeSans", "Arial Unicode MS" };
+
+	/** The substitutes this class names for itself, rather than reading them from
+	 *  {@code font-substitutes.xml}: the class defaults and the wide-coverage faces.
+	 *  {@code FontSubstitutionTableTest} checks that the table's catalogue says where to
+	 *  get each of them, so a report can act on any answer the package gives.
+	 *  @since 17.1.1 */
+	static List<String> namedSubstitutes() {
+		List<String> names = new ArrayList<String>();
+		for (FontClass fontClass : new FontClass[] { FontClass.SANS, FontClass.SERIF, FontClass.MONO }) {
+			names.addAll(Arrays.asList(defaultsFor(fontClass)));
+		}
+		names.addAll(Arrays.asList(WIDE_COVERAGE_FACES));
+		return names;
+	}
+
 	private static String[] defaultsFor(FontClass fontClass) {
 		switch (fontClass) {
 			case SANS: return SANS_DEFAULTS;
@@ -449,8 +469,7 @@ public class FontFallback {
 				if (covers(pf, codePoints)) return pf;
 			}
 		}
-		for (String name : new String[] { "Noto Sans", "Noto Serif", "DejaVu Sans", "DejaVu Serif",
-				"FreeSerif", "FreeSans", "Arial Unicode MS" }) {
+		for (String name : WIDE_COVERAGE_FACES) {
 			PhysicalFont pf = PhysicalFonts.get(name);
 			if (pf!=null && covers(pf, codePoints)) return pf;
 		}
@@ -487,55 +506,43 @@ public class FontFallback {
 	 * DejaVu Serif 1.3643.  P052 is therefore preferred for Cambria's Greek; where it is
 	 * not installed the order falls through to what it was.</p>
 	 *
+	 * <p><b>The symbol blocks</b>, U+2190-U+2BFF: the order Word's own substitute is
+	 * chosen by, and the same order {@link PhysicalFonts#getWDingsFont} uses for a
+	 * symbol-font bullet, so an arrow in a text font and the same arrow in a Wingdings
+	 * bullet are drawn by the same face.  Word 2016 uses Segoe UI Symbol, which no Linux
+	 * box has; of what is installed, Noto Sans Symbols 2 carries the geometric shapes,
+	 * box drawing and dingbats, Noto Sans Symbols the arrows and maths, and DejaVu Sans
+	 * is the wide net behind them.  (@since 17.1.0)</p>
+	 *
+	 * <p><b>The emoji blocks</b>: Word's face (CR-016 probe fonts-symbol-and-emoji (c)),
+	 * then the monochrome faces a Linux box may have; Noto Color Emoji is bitmap-only
+	 * (CBDT) and FOP cannot load it, so it never reaches {@link PhysicalFonts}.
+	 * (@since 17.1.1)</p>
+	 *
+	 * <p>The rows themselves are {@code font-substitutes.xml}'s since 17.1.1
+	 * ({@link FontSubstitutionTable}, CR-017 phase 0), so a report can cite them; this
+	 * javadoc stays as the measurement record.</p>
+	 *
 	 * @since 17.1.0
 	 */
 	private static List<String> measuredForScript(String documentFontName, int[] codePoints) {
 
+		/* The rows are font-substitutes.xml's since 17.1.1 (FontSubstitutionTable, CR-017
+		 * phase 0); the measurements which chose them stay in the javadoc above.  A row
+		 * applies where the text has a code point of its coverage group and the row is
+		 * for this document font (or for every font, name="*"), and the rows are tried in
+		 * the order the file lists them - the emoji faces, the symbol faces, then the
+		 * per-font ones. */
+		Set<String> groups = new LinkedHashSet<String>();
+		for (int cp : codePoints) groups.add(coverageGroupOf(cp));
+
 		List<String> result = new ArrayList<String>();
-		boolean georgian = false, greek = false, symbol = false, emoji = false;
-		for (int cp : codePoints) {
-			if (isSymbol(cp)) { symbol = true; continue; }
-			if (isEmoji(cp)) { emoji = true; continue; }
-			Character.UnicodeScript script = scriptOf(cp);
-			if (script==Character.UnicodeScript.GEORGIAN) georgian = true;
-			else if (script==Character.UnicodeScript.GREEK) greek = true;
-		}
-		/* U+2190-U+2BFF: the order Word's own substitute is chosen by, and the same
-		 * order PhysicalFonts.getWDingsFont uses for a symbol-font bullet, so an arrow
-		 * in a text font and the same arrow in a Wingdings bullet are drawn by the same
-		 * face.  Word 2016 uses Segoe UI Symbol, which no Linux box has; of what is
-		 * installed, Noto Sans Symbols 2 carries the geometric shapes, box drawing and
-		 * dingbats, Noto Sans Symbols the arrows and maths, and DejaVu Sans is the wide
-		 * net behind them.  @since 17.1.0 */
-		/* The emoji blocks: Word's face (CR-016 probe fonts-symbol-and-emoji (c)), then the
-		 * monochrome faces a Linux box may have; Noto Color Emoji is bitmap-only (CBDT) and
-		 * FOP cannot load it, so it never reaches PhysicalFonts.  @since 17.1.1 */
-		if (emoji) {
-			result.add("Segoe UI Emoji");
-			result.add("Noto Emoji");
-			result.add("Noto Emoji Regular");
-			result.add("Symbola");
-			result.add("Twemoji Mozilla");
-			result.add("OpenMoji");
-		}
-		if (symbol) {
-			result.add("Segoe UI Symbol");
-			result.add("Noto Sans Symbols 2 Regular");
-			result.add("Noto Sans Symbols 2");
-			result.add("Noto Sans Symbols Regular");
-			result.add("Noto Sans Symbols");
-			result.add("Symbola");
-			result.add("DejaVu Sans");
-			result.add("FreeSerif");
-		}
-		if (documentFontName==null) return result;
-		String name = documentFontName.trim().toLowerCase();
-		if (georgian && name.startsWith("sylfaen")) {
-			result.add("DejaVu Serif Condensed");
-			result.add("DejaVu Serif Condensed Book");
-		}
-		if (greek && name.startsWith("cambria")) {
-			result.add("P052");
+		for (FontSubstitutionTable.Row row : FontSubstitutionTable.scriptSubstitutes()) {
+			if (!groups.contains(row.getScript())) continue;
+			if (!row.matches(documentFontName)) continue;
+			for (String name : row.substituteNames()) {
+				if (!result.contains(name)) result.add(name);
+			}
 		}
 		return result;
 	}
