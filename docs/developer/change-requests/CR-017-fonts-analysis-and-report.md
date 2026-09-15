@@ -399,7 +399,7 @@ before it converts. Depends on CR-004's placement decisions.
    corpora at **0 changed documents** with byte-identical scoreboards.
 4. **The conversion log** rendering the summary, the property, the DEBUG
    lines removed. Gate: export-fo-tests, and the log of one corpus run read
-   for noise (one line per font, not per run). — **DONE** (COMMIT_HASH).
+   for noise (one line per font, not per run). — **DONE** (9cc6e3314).
    `Docx4J.toFO` calls `FontsAnalysis.logReport` after the export - so
    `toPDF` through it, and so the report carries the per-script choices the
    selector made during the conversion - at INFO for `EXACT` and WARN
