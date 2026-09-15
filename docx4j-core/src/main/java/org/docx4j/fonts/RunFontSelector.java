@@ -452,6 +452,9 @@ public class RunFontSelector {
     		if (fontName!=null) {
     			// glyphFallback needs the font the document asked for; it removes this
     			el.setAttribute(MARK_DOCUMENT_FONT, fontName);
+    			// and the measured width factor for this pair, where there is one;
+    			// characterScaling spreads it and removes it.  @since 17.1.1
+    			markWidthFactor(el, fontName, val==null ? fallbackFont : val);
     		}
 
 			// NB, for PDF/FOP, white space handling on the parent fo:block,
@@ -689,30 +692,63 @@ public class RunFontSelector {
      * years of professional leather cleaning &amp; restoration..." is 447.8pt in Word and
      * was 424.8pt here.</p>
      *
+     * <p>Since 17.1.1 the same pass also carries the measured width factors
+     * ({@link WidthFactors}), which say what a substitute's advances have to be
+     * multiplied by to be the document font's.  The two are independent - Word's scaling
+     * is the author's instruction, the factor is docx4j's correction for the face it had
+     * to use - so they are multiplied, and a run with both gets one letter space for the
+     * product.  The spread is even over the characters where Word's difference is per
+     * glyph, so the word spaces shrink with the letters; what is exact is the run's
+     * total advance.</p>
+     *
      * @since 17.0.6
      */
     private Object characterScaling(Object fragment) {
 
-    	if (!(fragment instanceof DocumentFragment) || outputType!=RunFontActionType.XSL_FO
-    			|| currentScalingPct<=0 || currentScalingPct==100 || currentSizePt<=0) return fragment;
+    	if (!(fragment instanceof DocumentFragment) || outputType!=RunFontActionType.XSL_FO) return fragment;
 
-    	double factor = currentScalingPct/100.0 - 1;
     	for (Node n = ((DocumentFragment)fragment).getFirstChild(); n!=null; n = n.getNextSibling()) {
     		if (!(n instanceof Element)) continue;
-    		applyScaling((Element)n, factor);
+    		applyScaling((Element)n);
     	}
     	return fragment;
     }
 
-    private void applyScaling(Element span, double factor) {
+    /**
+     * The scale this span's advances are to be multiplied by: Word's own character
+     * scaling (<code>w:w</code>, the run's) times the measured width factor for the
+     * document font and the face which is drawing it ({@link WidthFactors}, the span's).
+     * Word applies the first to a face whose widths are already the document font's; the
+     * second is there because ours are not, so the two compose.  The mark is taken off
+     * whatever is decided, so that none of it reaches the FO.
+     *
+     * @since 17.1.1
+     */
+    private double scaleOf(Element span) {
+    	double scale = currentScalingPct/100.0;
+    	if (span.hasAttribute(MARK_WIDTH_FACTOR)) {
+    		try {
+    			scale *= Double.parseDouble(span.getAttribute(MARK_WIDTH_FACTOR));
+    		} catch (NumberFormatException e) {
+    			log.debug("Width factor not applied: " + span.getAttribute(MARK_WIDTH_FACTOR));
+    		}
+    		span.removeAttribute(MARK_WIDTH_FACTOR);
+    	}
+    	return scale;
+    }
+
+    private void applyScaling(Element span) {
 
     	String family = span.getAttribute("font-family");
     	if (family.length()==0) {
+    		span.removeAttribute(MARK_WIDTH_FACTOR); // nothing here to apply it to
     		for (Node n = span.getFirstChild(); n!=null; n = n.getNextSibling()) {
-    			if (n instanceof Element) applyScaling((Element)n, factor);
+    			if (n instanceof Element) applyScaling((Element)n);
     		}
     		return;
     	}
+    	double factor = scaleOf(span) - 1;
+    	if (currentScalingPct<=0 || currentSizePt<=0 || Math.abs(factor) < 1e-9) return;
     	// Word applies both w:spacing and w:w, and letter-spacing (the one XSL-FO
     	// property they share) is inherited, so this value has to be added to whatever
     	// the run's own inline carries rather than replacing it.  The span is marked so
@@ -875,6 +911,28 @@ public class RunFontSelector {
      * glyphFallback can consult its class and its line metrics; always removed there.
      */
     private static final String MARK_DOCUMENT_FONT = "docx4j-document-font";
+
+    /**
+     * Attribute in which setAttribute leaves the measured width factor for the document
+     * font and the physical font it resolved to ({@link WidthFactors}), so that
+     * {@link #characterScaling} can spread it over the span's characters as Word's own
+     * <code>w:w</code> is spread; always removed there.
+     *
+     * @since 17.1.1
+     */
+    private static final String MARK_WIDTH_FACTOR = "docx4j-width-factor";
+
+    /** Leave {@link #MARK_WIDTH_FACTOR} on this span where the pair has a measured
+     *  factor, and take any stale one off where it has not (the glyph-aware pass can
+     *  move a span to a different face after setAttribute ran).  @since 17.1.1 */
+    private void markWidthFactor(Element el, String documentFontName, String physicalFontName) {
+    	double factor = WidthFactors.factorFor(documentFontName, physicalFontName);
+    	if (factor==1) {
+    		el.removeAttribute(MARK_WIDTH_FACTOR);
+    	} else {
+    		el.setAttribute(MARK_WIDTH_FACTOR, Double.toString(factor));
+    	}
+    }
 
     /** The choice made for a (document font, script) pair, for this conversion.  A null
      *  value means nothing installed covers it (already warned about). */
@@ -1056,6 +1114,9 @@ public class RunFontSelector {
 
     	el.setAttribute("font-family", kerned && perRunKerning() ? pf.getName() + KERNED_SUFFIX : pf.getName());
     	applyLineHeight(el, documentFont.length()==0 ? null : documentFont, pf);
+    	// the face has changed, so the factor setAttribute left (if any) was measured
+    	// against a different one; re-ask for this pair.  @since 17.1.1
+    	markWidthFactor(el, documentFont, pf.getName());
     	if (wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
     		// so that the FOP configuration declares it; see FopConfigUtil
     		wordMLPackage.getFontMapper().registerLastResortFallback(pf);

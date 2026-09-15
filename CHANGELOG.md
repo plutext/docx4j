@@ -126,6 +126,10 @@ Fonts (CR-016, the font selection and mapping review):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Calibri Light is drawn at 0.987 of Carlito's advances, the two families' measured
+  difference: Carlito is Calibri's clone and ships no Light weight, so every Calibri Light
+  line came out 1.3% wide and re-wrapped. Two whole documents in it now take Word's exact
+  line count (CR-001 batch 42).
 - A PAGEREF whose cached result is empty is computed rather than dropped: a complex field
   with nothing at all between its separate and its end was discarded whole, instruction
   included, so a table of contents built of 23 of them printed no page numbers (CR-001

@@ -957,6 +957,22 @@ public class WordLayoutFixupsTest {
 				outSame.contains("letter-spacing=\"0.4pt\""));
 	}
 
+	/**
+	 * The same rule for a measured width factor (WidthFactors, CR-001 batch 42 item 3):
+	 * it reaches the FO as the same marked letter-spacing that w:w does, so a Calibri
+	 * Light run which also carries a w:spacing must end up with the sum.
+	 */
+	@Test
+	public void aWidthFactorsLetterSpacingIsAddedToTheRunsOwnSpacing() {
+		String in = flow("<fo:block docx4j-pstyle=\"\"><fo:inline letter-spacing=\"0.5pt\">"
+				+ "<fo:inline docx4j-font=\"Calibri Light\" docx4j-scaled-spacing=\"1\""
+				+ " letter-spacing=\"-0.069pt\">The quick brown fox</fo:inline>"
+				+ "</fo:inline></fo:block>");
+		String out = WordLayoutFixups.apply(in, 15);
+		assertTrue("0.5 + (-0.069) = 0.431: " + out, out.contains("letter-spacing=\"0.431pt\""));
+		assertFalse("the hint must be stripped: " + out, out.contains("docx4j-scaled-spacing"));
+	}
+
 	/** Word applies the first paragraph's space-before at the top of a header or
 	 *  footer, where XSL-FO's default conditionality discards it. */
 	@Test
