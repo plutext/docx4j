@@ -514,7 +514,15 @@ public class RunFontSelector {
 					log.warn("Missing symbol " + fontName + " " + textValue);
 				}
 			} catch (ExecutionException e) {}
-			
+
+			/* A symbol font is drawn in whatever face has the glyphs, whatever the mapper
+			 * made of its name (PhysicalFonts.getWDingsFont / getSymbolFont, which still
+			 * name their candidates in code).  Recorded as the decision for this document
+			 * font, since it is what the reader will see (CR-017 phase 1). */
+			if (pf!=null && wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
+				wordMLPackage.getFontMapper().recordSymbolFace(fontName, pf);
+			}
+
 			if (pf == null) {
 				pf = physicalFontResolved(fontName);
 			}
@@ -1173,8 +1181,12 @@ public class RunFontSelector {
     	PhysicalFont pf = FontFallback.selectCovering(documentFont, cps);
     	if (pf==null) {
     		FontFallback.warnNoCoverage(documentFont, cps);
-    	} else if (log.isDebugEnabled()) {
-    		log.debug(coverageGroup + " set in " + documentFont + " rendered in " + pf.getName());
+    	}
+    	/* The decision this conversion made for that script, so the report - and a bisect -
+    	 * can say which scripts left the document font's face, and for what (CR-017 phase
+    	 * 1).  Recorded once per pair, as this cache is. */
+    	if (wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
+    		wordMLPackage.getFontMapper().recordScriptChoice(documentFont, coverageGroup, pf);
     	}
     	fallbackByScript.put(key, pf);
     	return pf;

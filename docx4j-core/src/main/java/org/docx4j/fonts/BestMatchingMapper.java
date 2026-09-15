@@ -221,11 +221,16 @@ public class BestMatchingMapper extends Mapper {
 			if (get(documentFontName)!=null) continue;
 			if (isEmbedded(documentFontName)) continue;
 			PhysicalFont pf = panoseOrExplicit(documentFontName, table.get(documentFontName.trim().toLowerCase()));
-			if (pf!=null) put(documentFontName, pf);
+			if (pf!=null) {
+				put(documentFontName, pf);
+				decide(documentFontName, FontDecision.Source.MAPPER_OWN, resolvedVia, UNKNOWN_ERROR);
+			}
 		}
 	}
 
 	private PhysicalFont panoseOrExplicit(String documentFontName, org.docx4j.wml.Fonts.Font font) {
+
+		resolvedVia = null;
 
 		// Panose setup
 		org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = null;
@@ -258,8 +263,7 @@ public class BestMatchingMapper extends Mapper {
 				if (panoseKey==null) break;
 				PhysicalFont fontMatched = space.get(panoseKey);
 				if (fontMatched!=null && drawsBasicLatin(fontMatched)) {
-					log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey
-							+ " ( " + fontMatched.getEmbeddedURI() + ")");
+					resolvedVia = "a panose match: " + panoseKey;
 					return fontMatched;
 				}
 				// a face for another script with a nearby panose: not for a Latin document font
@@ -277,7 +281,7 @@ public class BestMatchingMapper extends Mapper {
 			for (int x = 0; x < tokens.length; x++) {
 				PhysicalFont fontMatched = getPhysicalFontByKey(tokens[x]);
 				if (fontMatched != null) {
-					log.debug(documentFontName + " --> " + fontMatched.getEmbeddedURI() + " (FontSubstitutions.xml)");
+					resolvedVia = "FontSubstitutions.xml: " + tokens[x];
 					return fontMatched;
 				}
 			}

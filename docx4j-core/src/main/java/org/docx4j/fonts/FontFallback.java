@@ -256,8 +256,9 @@ public class FontFallback {
 		return null;
 	}
 
-	/** The class to stand in for: the table's word, else what the name says for certain. */
-	private static FontClass substitutionClass(String documentFontName) {
+	/** The class to stand in for: the table's word, else what the name says for certain.
+	 *  Package-private since 17.1.1 so a CLASS decision can name it (CR-017 phase 1). */
+	static FontClass substitutionClass(String documentFontName) {
 
 		FontClass fromTable = classFromSubstitutionsTable(documentFontName);
 		return fromTable!=null ? fromTable : classFromName(documentFontName, false);

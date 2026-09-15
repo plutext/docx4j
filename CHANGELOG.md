@@ -131,6 +131,13 @@ Fonts (CR-017, font decisions with their reasons):
   measured width factor, and a catalogue of 40 substitutes saying under what licence each is
   available and where to get it (the docx4j font jar first, then example distribution packages).
   The passes read it; the measurements that chose each row stay in the comments beside the code.
+- Every pass that maps a font records why: Mapper.getDecisions() returns a FontDecision per
+  document font naming which pass answered (the font itself, the document's embedded form, a
+  metric clone, a measured stand-in, the w:altName, a face of the same class, Word's own default
+  for a font it cannot find, the mapper's own guess, a symbol face, or nothing), what it went
+  through to get there, what is known of the substitute's width error, which face draws its bold
+  and italic (or that FOP will synthesise them), whose metrics the line box takes, and which
+  scripts left that font's face during the conversion.  The passes' DEBUG lines go.
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

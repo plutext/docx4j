@@ -139,6 +139,19 @@ public final class FontSubstitutionTable {
 			return names;
 		}
 
+		/** This row's entry for that physical font, or null where the row does not name
+		 *  it.  Matched on the name the table writes, with the FO layer's suffixes
+		 *  stripped, and case-insensitively, since a face may be keyed under either its
+		 *  full name or its family.  @since 17.1.1 */
+		public Substitute substituteNamed(String physicalFontName) {
+			if (physicalFontName==null) return null;
+			String name = PhysicalFonts.stripSuffixes(physicalFontName).trim();
+			for (Substitute s : substitutes) {
+				if (s.getFont().equalsIgnoreCase(name)) return s;
+			}
+			return null;
+		}
+
 		/** Whether this row is for that document font: any font for {@code *}, else a
 		 *  name starting with the row's (so "Cambria Math" takes Cambria's row, as the
 		 *  code this was extracted from did). */
@@ -213,6 +226,23 @@ public final class FontSubstitutionTable {
 	public static Row rowFor(String documentFont) {
 		if (documentFont==null) return null;
 		return table().byDocumentFont.get(documentFont.trim().toLowerCase(Locale.ENGLISH));
+	}
+
+	/**
+	 * What the table records of this face as the substitute for that document font in
+	 * that script, or null where it records nothing: the entry of the first script row
+	 * which is for the font and the script and names the face.
+	 *
+	 * @since 17.1.1
+	 */
+	public static Substitute scriptSubstitute(String documentFont, String script, String physicalFontName) {
+		if (script==null) return null;
+		for (Row row : scriptSubstitutes()) {
+			if (!script.equals(row.getScript()) || !row.matches(documentFont)) continue;
+			Substitute s = row.substituteNamed(physicalFontName);
+			if (s!=null) return s;
+		}
+		return null;
 	}
 
 	/** The catalogue entry for a physical font, by its name or the other name it goes

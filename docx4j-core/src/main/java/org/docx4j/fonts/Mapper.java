@@ -168,7 +168,146 @@ public abstract class Mapper {
 		return null;
 	}
 	
-	public final static String FONT_FALLBACK = "Times New Roman"; 
+	// ---- the decisions: what each pass did, and why.  @since 17.1.1 (CR-017 phase 1)
+
+	/** Keyed by the lower-cased document font, as {@link #fontMappings} is. */
+	private final ConcurrentHashMap<String, FontDecision> decisions = new ConcurrentHashMap<String, FontDecision>();
+
+	/**
+	 * Record what a pass decided for this document font, replacing any earlier decision
+	 * (a later pass may re-map the font) but keeping the per-script choices the selector
+	 * has recorded against it.
+	 *
+	 * @param documentFont the name as the document has it
+	 * @param source which pass answered
+	 * @param via how it got there - the {@code w:altName} chain, the class, Word's
+	 *        default family - or null where the source says it all
+	 * @param widthError what is known of the substitute's width error, or null
+	 * @since 17.1.1
+	 */
+	protected FontDecision decide(String documentFont, FontDecision.Source source, String via, String widthError) {
+
+		if (documentFont==null) return null;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		FontDecision decision = new FontDecision(documentFont.trim(), source, via, widthError);
+		decision.copyScriptChoicesFrom(decisions.get(key));
+		decisions.put(key, decision);
+		return decision;
+	}
+
+	/**
+	 * Record that a script this document font is used for went to another face during the
+	 * conversion - {@link RunFontSelector}'s coverage pass, and the per-script substitutes
+	 * of {@code font-substitutes.xml}.  Keyed on (document font, coverage group), as the
+	 * selector's own cache is.
+	 *
+	 * @param face the face the script was drawn in, or null where nothing installed
+	 *        covers it
+	 * @since 17.1.1
+	 */
+	public void recordScriptChoice(String documentFont, String coverageGroup, PhysicalFont face) {
+
+		if (documentFont==null || documentFont.trim().length()==0 || coverageGroup==null) return;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		FontDecision decision = decisions.get(key);
+		if (decision==null) {
+			// a font no pass met (the selector reaches fonts a run names directly)
+			decision = decide(documentFont, get(documentFont)==null
+					? FontDecision.Source.UNMAPPED : FontDecision.Source.INSTALLED, null, null);
+		}
+		String faceName = face==null ? null : face.getName();
+		FontSubstitutionTable.Substitute measured = faceName==null ? null
+				: FontSubstitutionTable.scriptSubstitute(documentFont, coverageGroup, faceName);
+		decision.addScriptChoice(coverageGroup, faceName, measured==null ? null : measured.getError());
+	}
+
+	/**
+	 * Record that {@link RunFontSelector} drew a symbol font's characters in this face -
+	 * the one {@link PhysicalFonts#getWDingsFont} or {@link PhysicalFonts#getSymbolFont}
+	 * picks for the glyphs, whatever this mapper made of the name, since a {@code w:sym}
+	 * character is a code point in that face and not in the font the run asks for.
+	 *
+	 * @since 17.1.1
+	 */
+	public void recordSymbolFace(String documentFont, PhysicalFont face) {
+
+		if (documentFont==null || documentFont.trim().length()==0 || face==null) return;
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		FontDecision existing = decisions.get(key);
+		if (existing!=null && existing.getSource()==FontDecision.Source.SYMBOL
+				&& face.equals(existing.getFixedPhysical())) {
+			return; // said once, not once per run
+		}
+		FontDecision decision = decide(documentFont, FontDecision.Source.SYMBOL,
+				"a symbol-font run, drawn in the face which has the glyphs", null);
+		if (decision!=null) decision.setFixedPhysical(face);
+	}
+
+	/**
+	 * What was decided for each of this document's fonts, and why, ordered by the
+	 * document font's name so that two runs of the same document give the same list.
+	 *
+	 * <p>The physical font, its faces and the line box are read off this mapper now, not
+	 * when the pass recorded its decision, so they are what the conversion will use.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public java.util.List<FontDecision> getDecisions() {
+
+		java.util.List<FontDecision> all = new java.util.ArrayList<FontDecision>(decisions.values());
+		for (FontDecision decision : all) complete(decision);
+		java.util.Collections.sort(all, new java.util.Comparator<FontDecision>() {
+			public int compare(FontDecision a, FontDecision b) {
+				return String.CASE_INSENSITIVE_ORDER.compare(a.getDocumentFont(), b.getDocumentFont());
+			}
+		});
+		return java.util.Collections.unmodifiableList(all);
+	}
+
+	/** What was decided for this document font, or null where no pass met it.
+	 *  @since 17.1.1 */
+	public FontDecision getDecision(String documentFont) {
+		if (documentFont==null) return null;
+		FontDecision decision = decisions.get(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
+		if (decision!=null) complete(decision);
+		return decision;
+	}
+
+	/** The volatile half of a decision: the mapping as it now stands. */
+	private void complete(FontDecision decision) {
+
+		String documentFont = decision.getDocumentFont();
+		PhysicalFont pf = decision.getFixedPhysical()!=null ? decision.getFixedPhysical() : get(documentFont);
+		String bold = null, italic = null, boldItalic = null;
+		double factor = 1;
+		if (pf!=null) {
+			bold = pf.isNoBoldFace() ? SYNTHETIC : faceName(getBoldForm(documentFont, pf));
+			italic = faceName(getItalicForm(documentFont, pf));
+			boldItalic = faceName(getBoldItalicForm(documentFont, pf));
+			factor = WidthFactors.factorFor(documentFont, pf.getName());
+		}
+		decision.complete(pf, bold, italic, boldItalic, lineBox(documentFont), factor);
+	}
+
+	/** FOP synthesises the face from the regular one, which is what Word does for a
+	 *  family that has none of its own. */
+	public static final String SYNTHETIC = "synthetic";
+
+	private static String faceName(PhysicalFont pf) {
+		return pf==null ? SYNTHETIC : pf.getName();
+	}
+
+	/** Whose metrics the line box takes; see {@link FontDecision#getLineBox}. */
+	private String lineBox(String documentFont) {
+		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+		String family = lineMetricsFamily(documentFont);
+		if (family!=null && !family.equalsIgnoreCase(documentFont)) {
+			return (wordDefaulted.contains(key) ? "wordDefault:" : "alias:") + family;
+		}
+		return WordLineMetrics.hasTableEntry(documentFont) ? "documentFont" : "substitute";
+	}
+
+	public final static String FONT_FALLBACK = "Times New Roman";
 	
 	/**
 	 * Populate the fontMappings object: an entry for each of the documentFontNames.
@@ -208,14 +347,26 @@ public abstract class Mapper {
 				continue;
 			}
 			PhysicalFont pf = installedOrEmbedded(documentFontName);
+			FontDecision.Source source = pf==null ? null
+					: (PhysicalFonts.get(documentFontName)!=null ? FontDecision.Source.INSTALLED
+							: FontDecision.Source.EMBEDDED);
 			if (pf==null) {
 				pf = resolveDocumentFont(documentFontName, table.get(documentFontName.trim().toLowerCase()));
+				if (pf!=null) source = FontDecision.Source.MAPPER_OWN;
 			}
 			if (pf==null) {
 				log.warn("- - No physical font for: " + documentFontName + " so ensure it is mapped. ");
+				/* Recorded, not merely logged: a later pass will overwrite this decision
+				 * where it maps the font, and what is left says which fonts reached FOP
+				 * with nothing (CR-017 phase 1). */
+				decide(documentFontName, FontDecision.Source.UNMAPPED, null, null);
 			} else {
 				put(documentFontName, pf);
-				if (log.isDebugEnabled()) log.debug(documentFontName + " -> " + pf.getName());
+				decide(documentFontName, source,
+						source==FontDecision.Source.MAPPER_OWN
+								? (resolvedVia!=null ? resolvedVia : "the mapper's own answer: " + pf.getName())
+								: null,
+						null);
 			}
 		}
 	}
@@ -242,6 +393,11 @@ public abstract class Mapper {
 	protected PhysicalFont resolveDocumentFont(String documentFontName, org.docx4j.wml.Fonts.Font fontTableEntry) {
 		return null;
 	}
+
+	/** How the mapper's own answer was reached - a variant of the name, a panose match,
+	 *  a FontSubstitutions.xml entry - for the decision the caller records; a subclass
+	 *  sets it as it answers, and it is read straight afterwards.  @since 17.1.1 */
+	protected String resolvedVia;
 
 	/**
 	 * The mapper's own substitutes for whatever is still unmapped after the shared passes
@@ -435,7 +591,19 @@ public abstract class Mapper {
     public void addMetricallyCompatibleSubstitutes() {
 
     	for (FontSubstitutionTable.Row row : FontSubstitutionTable.substitutes()) {
+    		PhysicalFont before = get(row.getDocumentFont());
     		addFirstAvailableSubstitute(row.getDocumentFont(), row.substituteNames());
+    		PhysicalFont after = get(row.getDocumentFont());
+    		if (after!=null && after!=before) {
+    			// which candidate it took: the first the machine has, as the pass chooses
+    			FontSubstitutionTable.Substitute taken = null;
+    			for (String candidate : row.substituteNames()) {
+    				if (PhysicalFonts.get(candidate)!=null) { taken = row.substituteNamed(candidate); break; }
+    			}
+    			decide(row.getDocumentFont(), sourceOf(taken), null,
+    					taken==null ? null : (taken.getError()!=null ? taken.getError()
+    							: ("class".equals(taken.getQuality()) ? UNKNOWN_ERROR : null)));
+    		}
     	}
 
     	/* ---------------------------------------------------------------------------
@@ -559,6 +727,19 @@ public abstract class Mapper {
     	 */
     }
     
+    /** What the report says where nothing was measured: a face chosen on class alone is
+     *  chosen because nothing closer exists, and no number describes how far off it is.
+     *  @since 17.1.1 */
+    public static final String UNKNOWN_ERROR = "unknown";
+
+    /** The source a table row's quality word says.  @since 17.1.1 */
+    private static FontDecision.Source sourceOf(FontSubstitutionTable.Substitute substitute) {
+    	if (substitute==null) return FontDecision.Source.CLASS;
+    	if ("metric".equals(substitute.getQuality())) return FontDecision.Source.METRIC_CLONE;
+    	if ("measured".equals(substitute.getQuality())) return FontDecision.Source.MEASURED_STAND_IN;
+    	return FontDecision.Source.CLASS;
+    }
+
     /** Whether {@link #addClassBasedSubstitutes} applies to this mapper.  True for both
      *  since 17.1.1 (CR-016 phase 3): BestMatchingMapper's own step runs first, and what
      *  it leaves unmapped goes through the same passes as IdentityPlusMapper's.
@@ -620,7 +801,10 @@ public abstract class Mapper {
     		seen.add(documentFontName.trim().toLowerCase());
     		PhysicalFont pf = null;
     		String resolvedAlt = null;
+    		StringBuilder chain = new StringBuilder("w:altName "); // hop by hop, for the decision
     		while (alt!=null && seen.add(alt.trim().toLowerCase())) {
+    			if (chain.length()>10) chain.append(" -> ");
+    			chain.append(alt);
     			pf = PhysicalFonts.get(alt);
     			if (pf==null) pf = PhysicalFonts.get(alt + " Regular");
     			if (pf==null) pf = get(alt);
@@ -629,11 +813,9 @@ public abstract class Mapper {
     		}
     		if (pf==null) continue;
 
-    		if (log.isDebugEnabled()) {
-    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (w:altName " + resolvedAlt + ")");
-    		}
     		put(documentFontName, pf);
     		registerLineMetricsAlias(documentFontName, resolvedAlt);
+    		decide(documentFontName, FontDecision.Source.ALT_NAME, chain.toString(), null);
     	}
     }
 
@@ -673,10 +855,10 @@ public abstract class Mapper {
 
     		PhysicalFont pf = FontFallback.selectByClass(documentFontName);
     		if (pf!=null) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (same class)");
-    			}
     			put(documentFontName, pf);
+    			decide(documentFontName, FontDecision.Source.CLASS,
+    					"a face of the same class: " + FontFallback.substitutionClass(documentFontName),
+    					UNKNOWN_ERROR);
     		}
     	}
     }
@@ -718,12 +900,11 @@ public abstract class Mapper {
     		if (pf==null) pf = PhysicalFonts.get(wordFont);
     		if (pf==null) pf = FontFallback.selectByClass(wordFont);
     		if (pf==null) continue;
-    		if (log.isDebugEnabled()) {
-    			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (Word's default for an unknown font: " + wordFont + ")");
-    		}
     		put(documentFontName, pf);
     		wordDefaulted.add(documentFontName.trim().toLowerCase());
     		registerLineMetricsAlias(documentFontName, wordFont);
+    		decide(documentFontName, FontDecision.Source.WORD_DEFAULT,
+    				"Word's own default for a font it cannot find: " + wordFont, UNKNOWN_ERROR);
     	}
     }
 
@@ -820,10 +1001,10 @@ public abstract class Mapper {
     		if (pf==null || pf.isNoBoldFace()) continue;
     		if (PhysicalFonts.getBoldForm(pf)==null && boldForms.get(documentFontName)==null) continue; // nothing to withhold
     		PhysicalFont alias = pf.noBoldFaceAlias();
-    		if (log.isDebugEnabled()) {
-    			log.debug(documentFontName + " has no bold face: " + alias.getName() + " (bold synthesised at the regular advances)");
-    		}
     		fontMappings.put(documentFontName.toLowerCase(), alias);
+    		/* Not a source of its own: the pass re-maps the font to an alias of what an
+    		 * earlier pass chose, and the decision says so by reporting a synthetic bold
+    		 * face (FontDecision.getBoldFace).  @since 17.1.1 */
     	}
     }
 
@@ -933,17 +1114,13 @@ public abstract class Mapper {
     	}
 
     	if (PhysicalFonts.get(proprietaryFont)==null) {
+    		// what was mapped, and why, is the caller's decision to record; see
+    		// addMetricallyCompatibleSubstitutes
     		if (PhysicalFonts.get(openSubstitute)!=null) {
-	    		if (log.isDebugEnabled()) {
-	    			log.debug("Mapping " + proprietaryFont + " to " + openSubstitute);
-	    		}
 	    		put(proprietaryFont, PhysicalFonts.get(openSubstitute));
     		} else if (openSubstitute2 !=null && PhysicalFonts.get(openSubstitute2)!=null) {
-	    		if (log.isDebugEnabled()) {
-	    			log.debug("Mapping " + proprietaryFont + " to " + openSubstitute2);
-	    		}
 	    		put(proprietaryFont, PhysicalFonts.get(openSubstitute2));
-    		} 
+    		}
     	}
     	
     }

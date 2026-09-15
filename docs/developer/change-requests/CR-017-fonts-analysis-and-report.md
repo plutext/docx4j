@@ -345,7 +345,19 @@ before it converts. Depends on CR-004's placement decisions.
    `fonts-symbol-and-emoji` 17%).
 1. **`FontDecision` recorded by every pass**, `Mapper.getDecisions()`, the
    selector recording per-script answers. Tests: one decision per pass, with
-   its `via`. No behaviour change; corpus zero delta.
+   its `via`. No behaviour change; corpus zero delta. — **DONE**
+   (COMMIT_HASH). `FontDecision` carries the source, the `via`, the width
+   error (the table's, with the `WidthFactors` factor where one applies), the
+   physical font with its bold / italic / bold-italic faces or `synthetic`,
+   the line box (`documentFont` / `alias:` / `wordDefault:` / `substitute`)
+   and the per-script choices; the volatile half is read off the mapper when
+   the decision is handed out, since a later pass re-maps. A tenth source,
+   `SYMBOL`, was added for the face `PhysicalFonts.getWDingsFont` /
+   `getSymbolFont` picks inside the selector: no mapper pass chooses it, and
+   the decision has to name the face on the page. Six DEBUG lines gone. Gate:
+   `docx4j-core-tests` 1066/0 (1052 + the 14 of `FontDecisionTest`),
+   `docx4j-export-fo-tests` 602/0, the five fonts probes unchanged, the three
+   corpora at **0 changed documents** with byte-identical scoreboards.
 2. **The use walk** (`FontsAnalysis.usage(pkg)`): characters and runs per
    (font, script, face), measured for cost on the 311-page document of
    CR-016 phase 4 (fontsInUse was 8 ms there; this walks text, so expect
