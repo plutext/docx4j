@@ -128,21 +128,23 @@ public final class WordLineMetrics {
 		return new Metrics(winA / upem, winD / upem, ext / upem, physical.fopAscent, physical.fopDescent, false);
 	}
 
-	/** Whether the table knows this document font - itself, through a built-in alias
-	 *  (Helvetica) or through an alias a document registered ({@link #registerAlias}):
-	 *  the line box is the table's. */
+	/** Whether the table knows this document font - itself, or through a built-in alias
+	 *  (Helvetica, and the PostScript names): the line box is the table's.  A document's
+	 *  own alias is resolved before the name gets here; see {@link Mapper#lineMetricsFamily}. */
 	public static boolean hasTableEntry(String documentFont) {
 		return documentFont != null && lookup(documentFont) != null;
 	}
 
 	/**
-	 * Whether this document font is a family the table lists (itself or a built-in alias),
-	 * <em>not</em> counting an alias a document registered: {@link Mapper#isKnownFamily}
-	 * asks this.  The document aliases are per JVM, so with {@link #hasTableEntry} the
-	 * family a document's altName or Word-default mapping had aliased to Calibri became a
-	 * "known" family for every later document, which then skipped the Word-default pass
-	 * and left the font unmapped (found by the CR-016 phase 4 gate: the same document
-	 * mapped Vrinda to Carlito in a fresh JVM and to nothing after another document).
+	 * Whether this document font is a family the table lists (itself or a built-in alias):
+	 * {@link Mapper#isKnownFamily} asks this.  It is the same question as
+	 * {@link #hasTableEntry} now that a document's own aliases are per conversion
+	 * (17.1.1); while they were a static map it was not, and asking hasTableEntry here
+	 * made the family a document's altName had aliased to Calibri a "known" family for
+	 * every later document in the JVM, which then skipped the Word-default pass and left
+	 * the font unmapped (found by the CR-016 phase 4 gate: the same document mapped Vrinda
+	 * to Carlito in a fresh JVM and to nothing after another document).  Kept as its own
+	 * method because the two mean different things to a reader.
 	 *
 	 * @since 17.1.1
 	 */
@@ -159,31 +161,50 @@ public final class WordLineMetrics {
 		int[] t = TABLE.get().get(key);
 		if (t != null) return t;
 		String alias = ALIASES.get(key);
-		if (alias == null) alias = DOCUMENT_ALIASES.get(key);
 		return alias == null ? null : TABLE.get().get(alias);
 	}
 
 	/**
-	 * Aliases a document declared for itself, in {@code w:altName} (ECMA-376 17.8.3.1):
-	 * where docx4j resolves a missing font through its alternate name
-	 * ({@link Mapper#addAltNameSubstitutes}), Word is using the alternate font outright,
-	 * so its vertical metrics are the alternate's, not the physical substitute's
-	 * (&#xa7;2.7).  Registered only for a font this machine does not have, so nothing
-	 * an installed font would answer is displaced.
+	 * Whether this family has line metrics of its own here - the table's, or a built-in
+	 * alias to a family in the table.  A font which has them takes them, so
+	 * {@link Mapper#registerLineMetricsAlias} declines to alias it.
 	 *
-	 * @since 17.1.0
+	 * @since 17.1.1
 	 */
-	public static void registerAlias(String documentFont, String substituteFont) {
-		if (documentFont == null || substituteFont == null) return;
+	static boolean hasOwnLineMetrics(String documentFont) {
+		if (documentFont == null) return false;
 		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
-		String value = substituteFont.trim().toLowerCase(java.util.Locale.ROOT);
-		if (key.length() == 0 || value.length() == 0 || key.equals(value)) return;
-		if (TABLE.get().containsKey(key) || ALIASES.containsKey(key)) return; // it has its own
-		DOCUMENT_ALIASES.put(key, value);
+		return TABLE.get().containsKey(key) || ALIASES.containsKey(key);
 	}
 
-	/** @since 17.1.0 */
-	private static final Map<String, String> DOCUMENT_ALIASES = new java.util.concurrent.ConcurrentHashMap<String, String>();
+	/**
+	 * @deprecated since 17.1.1 this does nothing: a document's own alias is the
+	 *             conversion's, not the JVM's - call
+	 *             {@link Mapper#registerLineMetricsAlias} on the package's mapper.
+	 *             The static map it wrote to was never cleared, so one document's
+	 *             alternate font answered for every later document in the same process.
+	 */
+	@Deprecated
+	public static void registerAlias(String documentFont, String substituteFont) {
+		if (WARNED_REGISTER_ALIAS.compareAndSet(false, true)) {
+			log.warn("WordLineMetrics.registerAlias does nothing since 17.1.1 (it was a JVM-wide map);"
+					+ " call Mapper.registerLineMetricsAlias on the package's font mapper instead");
+		}
+	}
+
+	private static final java.util.concurrent.atomic.AtomicBoolean WARNED_REGISTER_ALIAS =
+			new java.util.concurrent.atomic.AtomicBoolean();
+
+	/*
+	 * An alias a *document* declares for itself, in w:altName (ECMA-376 17.8.3.1) or
+	 * through Word's answer for a font it cannot find, used to be registered above, in a
+	 * static map (registerAlias / DOCUMENT_ALIASES, 17.1.0).  It is per conversion since
+	 * 17.1.1 - Mapper.registerLineMetricsAlias and Mapper.lineMetricsFamily.  Nothing
+	 * downstream needs it: RunFontSelector resolves the alias while it still has the
+	 * package, and writes the *resolved* family into its docx4j-font hint, so the FO
+	 * exporter, WordLayoutFixups and the FOP fork's line layout manager - none of which
+	 * can reach a Mapper - all name a family this table answers for directly.
+	 */
 
 	/**
 	 * Document fonts Windows itself substitutes, whose line metrics Word therefore takes
@@ -205,6 +226,18 @@ public final class WordLineMetrics {
 		m.put("helvetica", "arial");
 		m.put("helvetica neue", "arial");
 		m.put("helveticaneue", "arial");
+		/* The PostScript and legacy names of the same three families, which documents
+		 * carry wherever a PDF or a PostScript printer driver has been round the text:
+		 * Word treats them as the family and gives them its line box.  They were reaching
+		 * that answer only by accident until 17.1.1 - through the per-JVM alias map, i.e.
+		 * only when some other document in the same process happened to have registered
+		 * them - and two corpus documents at 1.0000 line parity and page-exact measured
+		 * Helv on Arial's line box that way.  With the alias map now scoped to the
+		 * conversion (Mapper.registerLineMetricsAlias) they have to be here to keep it.
+		 * @since 17.1.1 */
+		m.put("helv", "arial");
+		m.put("arialmt", "arial");
+		m.put("timesnewromanpsmt", "times new roman");
 		ALIASES = java.util.Collections.unmodifiableMap(m);
 	}
 

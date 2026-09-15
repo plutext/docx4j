@@ -140,9 +140,12 @@ public class MapperPrecedenceTest {
 		assertSame(PhysicalFonts.get(SERIF), m.get("Docx4j Probe C"));
 		assertSame(PhysicalFonts.get(SANS), m.get("Docx4j Probe E"));
 		assertNull("a known family is not Word-defaulted", m.get("Arial Narrow"));
-		// and the line box is the face Word uses
+		// and the line box is the face Word uses.  The alias is this mapper's since
+		// 17.1.1, so it is asked for through it; RunFontSelector resolves it before any
+		// name reaches WordLineMetrics (see DocumentAliasScopeTest).
+		assertEquals("Cambria", m.lineMetricsFamily("Docx4j Probe A"));
 		assertEquals(WordLineMetrics.get("Cambria", null).lineHeightFactor(),
-				WordLineMetrics.get("Docx4j Probe A", null).lineHeightFactor(), 0.0001);
+				WordLineMetrics.get(m.lineMetricsFamily("Docx4j Probe A"), null).lineHeightFactor(), 0.0001);
 	}
 
 	@Test
@@ -174,18 +177,23 @@ public class MapperPrecedenceTest {
 	}
 
 	/**
-	 * An alias a document registered with WordLineMetrics (its altName, or the Word
-	 * default it was mapped to) must not make that family "known" for the next document
-	 * in the JVM, which would then skip the Word-default pass and leave it unmapped
-	 * (found by the CR-016 phase 4 gate).
+	 * An alias a document registered (its altName, or the Word default it was mapped to)
+	 * must not make that family "known": that would have the Word-default pass skipped and
+	 * the font left unmapped (found by the CR-016 phase 4 gate).  Since 17.1.1 the alias
+	 * is the Mapper's, so it cannot reach another document at all; the assertion that it
+	 * does not make the family known stands for this one.
 	 */
 	@Test
-	public void anotherDocumentsAliasDoesNotMakeAFamilyKnown() {
+	public void anAliasDoesNotMakeAFamilyKnown() {
 		String family = "Zqxjk Nonesuch"; // no class word in the name (the heuristic would know "Sans")
 		assertFalse(Mapper.isKnownFamily(family));
-		WordLineMetrics.registerAlias(family, "Calibri");
-		assertTrue("the line box is the alias's", WordLineMetrics.hasTableEntry(family));
+		Mapper m = new IdentityPlusMapper();
+		m.registerLineMetricsAlias(family, "Calibri");
+		assertEquals("Calibri", m.lineMetricsFamily(family));
+		assertTrue("the line box is the alias's",
+				WordLineMetrics.hasTableEntry(m.lineMetricsFamily(family)));
 		assertFalse("but the family is still one Word could not find", Mapper.isKnownFamily(family));
+		assertFalse("and it is not the table's own", WordLineMetrics.hasTableEntry(family));
 	}
 
 	/**

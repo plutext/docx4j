@@ -869,10 +869,40 @@ public class RunFontSelector {
     	currentSpacing = spacing;
     }
 
-    /** Hint on the FO span naming the document font (the one the docx asks for), so the
+    /** Hint on the FO span naming the font whose Word metrics size the line - the one the
+     *  docx asks for, or (since 17.1.1) the family this document aliased it to - so the
      *  block's line box and the line manager can size the line from its metrics when a
      *  substitute renders it; removed by WordLayoutFixups.  @since 17.0.5 */
     public static final String HINT_FONT = "docx4j-font";
+
+    /**
+     * The family whose Word line metrics a document font takes: its own name, unless this
+     * document declared an alternate for it - a {@code w:altName} docx4j resolved, or
+     * Word's own answer for a font it cannot find - in which case Word is using that
+     * family outright and the vertical metrics are its (&#xa7;2.7).
+     *
+     * <p>The alias lives on the {@link Mapper}, one per package, and is resolved here
+     * rather than downstream because here is the last place that has it: the FO exporter's
+     * line-box pass, {@code WordLayoutFixups} and the FOP fork's line layout manager all
+     * read the document font out of the {@link #HINT_FONT} attribute and none of them can
+     * reach a Mapper.  Writing the resolved family into the hint is what let the alias map
+     * stop being a JVM-wide static in 17.1.1, where one document's alternate font had been
+     * answering for every later document in the same process.</p>
+     *
+     * @since 17.1.1
+     */
+    public String lineMetricsFamily(String documentFontName) {
+    	if (documentFontName==null) return null;
+    	Mapper mapper = wordMLPackage==null ? null : wordMLPackage.getFontMapper();
+    	return mapper==null ? documentFontName : mapper.lineMetricsFamily(documentFontName);
+    }
+
+    /** The family whose Word line metrics this run's ASCII text takes: {@link #asciiFontName}
+     *  resolved through {@link #lineMetricsFamily}.  For generated text and paragraph marks,
+     *  whose document font the exporter names itself.  @since 17.1.1 */
+    public String lineMetricsFontName(RPr rPr) {
+    	return lineMetricsFamily(asciiFontName(rPr));
+    }
 
     /** Hint on the fo:inline holding a small-caps run's originally-lower-case stretch,
      *  naming the fraction of the run's size the glyphs are drawn at.  The <em>line</em>
@@ -892,10 +922,16 @@ public class RunFontSelector {
      *  fallback; CR-016 gap 7).</p> */
     private void applyLineHeight(Element el, String documentFontName, PhysicalFont pf) {
     	if (outputType!=RunFontActionType.XSL_FO || currentSizePt<=0 || el==null) return;
-    	    	el.setAttribute("line-height", WordLineMetrics.lineHeightPtString(documentFontName, pf, currentSizePt, currentSpacing));
-    	    	if (documentFontName!=null && WordLineMetrics.hasTableEntry(documentFontName)
+    			// the family whose Word metrics this font takes: its own, or the one this
+    			// document aliased it to (w:altName, or Word's answer for a font it cannot
+    			// find).  Resolved here, where the mapper is still in hand, and written out
+    			// resolved, so that nothing downstream needs the alias - see
+    			// lineMetricsFamily.  @since 17.1.1
+    			String metricsFont = lineMetricsFamily(documentFontName);
+    	    	el.setAttribute("line-height", WordLineMetrics.lineHeightPtString(metricsFont, pf, currentSizePt, currentSpacing));
+    	    	if (metricsFont!=null && WordLineMetrics.hasTableEntry(metricsFont)
     	    			&& Docx4jProperties.getProperty("docx4j.convert.out.fo.wordLayoutFixups", true)) {
-    	    		el.setAttribute(HINT_FONT, documentFontName);
+    	    		el.setAttribute(HINT_FONT, metricsFont);
     	    	}
     	// Not done: moving the text to where Word puts it within the line (FOP centres
     	// the leading, Word does not; see WordLineMetrics.baselineShiftPt).  Tried as

@@ -38,7 +38,7 @@ public class AltNameSubstituteTest {
 
 	/** a name no machine has a family for, so nothing but the altName can resolve it */
 	private static final String MADE_UP = "Docx4j Test Face LT 55";
-	/** a second such name, for the case with no altName (the metrics alias is a static map) */
+	/** a second such name, for the case with no altName */
 	private static final String MADE_UP_2 = "Docx4j Test Face LT 56";
 
 	private static Fonts fontTable(String fontName, String altName) throws Exception {
@@ -79,21 +79,24 @@ public class AltNameSubstituteTest {
 
 	/**
 	 * And Word takes the vertical metrics of the font it actually uses, so the alias is
-	 * registered with WordLineMetrics too (&#xa7;2.7): line heights follow Arial's
-	 * 1.150 em rather than the physical substitute's own (Arimo's is 1.432).
+	 * registered for the line box too (&#xa7;2.7): line heights follow Arial's 1.150 em
+	 * rather than the physical substitute's own (Arimo's is 1.432).  The alias is the
+	 * Mapper's since 17.1.1, so it is asked for through it; RunFontSelector resolves it
+	 * before any name reaches WordLineMetrics.
 	 */
 	@Test
 	public void altNameSuppliesTheLineMetrics() throws Exception {
 
-		mapper(MADE_UP, "Arial");
+		Mapper mapper = mapper(MADE_UP, "Arial");
 
-		assertTrue("the altName should give " + MADE_UP + " Arial's Word line metrics",
-				WordLineMetrics.hasTableEntry(MADE_UP));
+		assertEquals("the altName should give " + MADE_UP + " Arial's line metrics",
+				"Arial", mapper.lineMetricsFamily(MADE_UP));
+		assertTrue(WordLineMetrics.hasTableEntry(mapper.lineMetricsFamily(MADE_UP)));
 
 		PhysicalFont pf = PhysicalFonts.get("Arimo Regular");
 		assertEquals("Arial's single-spacing factor",
 				WordLineMetrics.get("Arial", pf).lineHeightFactor(),
-				WordLineMetrics.get(MADE_UP, pf).lineHeightFactor(), 0.0001);
+				WordLineMetrics.get(mapper.lineMetricsFamily(MADE_UP), pf).lineHeightFactor(), 0.0001);
 	}
 
 	/** With no altName there is nothing to resolve, and no metrics alias either. */
@@ -104,8 +107,9 @@ public class AltNameSubstituteTest {
 
 		assertNull("nothing should have mapped " + MADE_UP_2 + " at this stage",
 				mapper.get(MADE_UP_2));
-		assertFalse("no w:altName, so no WordLineMetrics alias",
-				WordLineMetrics.hasTableEntry(MADE_UP_2));
+		assertEquals("no w:altName, so no line-metrics alias",
+				MADE_UP_2, mapper.lineMetricsFamily(MADE_UP_2));
+		assertFalse(WordLineMetrics.hasTableEntry(MADE_UP_2));
 	}
 
 	/** And the step is wired into the package's font mapper setup. */

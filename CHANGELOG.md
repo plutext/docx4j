@@ -130,6 +130,15 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   difference: Carlito is Calibri's clone and ships no Light weight, so every Calibri Light
   line came out 1.3% wide and re-wrapped. Two whole documents in it now take Word's exact
   line count (CR-001 batch 42).
+- The line-metrics alias a document declares for itself (a w:altName docx4j resolved, or
+  Word's answer for a font it cannot find) belongs to that conversion. It was a JVM-wide
+  map, never cleared, so one document's alternate font answered for every later document in
+  the same process which named the same font; 93 of 449 corpus documents register one. It
+  now lives on the Mapper, and RunFontSelector resolves it into the FO, so nothing
+  downstream needs it. Helv, ArialMT and TimesNewRomanPSMT join Helvetica in the built-in
+  table, which is where three documents had been getting a right answer by accident.
+  WordLineMetrics.registerAlias is deprecated and does nothing: call
+  Mapper.registerLineMetricsAlias on the package's font mapper (CR-001 batch 42).
 - Trebuchet MS is drawn in Droid Sans where that is installed, not in an Arial clone. Its
   lower case is wider than Arial's and its capitals much narrower, so Arimo was 2.7% narrow
   over the body and 9.4% wide over the bold headings at once, which no width factor can

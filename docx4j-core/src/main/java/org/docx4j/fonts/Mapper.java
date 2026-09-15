@@ -645,7 +645,7 @@ public abstract class Mapper {
     			log.debug("Mapping " + documentFontName + " to " + pf.getName() + " (w:altName " + resolvedAlt + ")");
     		}
     		put(documentFontName, pf);
-    		WordLineMetrics.registerAlias(documentFontName, resolvedAlt);
+    		registerLineMetricsAlias(documentFontName, resolvedAlt);
     	}
     }
 
@@ -735,7 +735,7 @@ public abstract class Mapper {
     		}
     		put(documentFontName, pf);
     		wordDefaulted.add(documentFontName.trim().toLowerCase());
-    		WordLineMetrics.registerAlias(documentFontName, wordFont);
+    		registerLineMetricsAlias(documentFontName, wordFont);
     	}
     }
 
@@ -837,6 +837,57 @@ public abstract class Mapper {
     		}
     		fontMappings.put(documentFontName.toLowerCase(), alias);
     	}
+    }
+
+    /**
+     * The families whose Word line metrics this document's fonts take, keyed on the
+     * lower-cased document font name: a font docx4j resolved through its {@code w:altName}
+     * ({@link #addAltNameSubstitutes}) or through Word's answer for a font it cannot find
+     * ({@link #addWordDefaultSubstitutes}) is a font <em>Word itself</em> is not using, so
+     * its vertical metrics are the other family's (&#xa7;2.7).
+     *
+     * <p><b>Per conversion, and deliberately so.</b>  This lived in {@code WordLineMetrics}
+     * as a static map until 17.1.1, where it was JVM-wide and never cleared, so one
+     * document's {@code w:altName} answered for every later document in the same process
+     * which named the same font: measured over the three real-document corpora, <b>93 of
+     * 449 documents register at least one</b> (137 registrations, 116 distinct names), and
+     * four documents were reading an alias another document had left behind.  A server
+     * converting document after document is exactly the case that breaks, and the effect
+     * is order-dependent, which makes it hard to see.  A {@code Mapper} is created per
+     * package ({@code WordprocessingMLPackage.setFontMapper}), and both passes that
+     * register are this class's, so the map belongs here.</p>
+     *
+     * @since 17.1.1
+     */
+    private final Map<String, String> lineMetricsAliases = new ConcurrentHashMap<String, String>();
+
+    /**
+     * Record that this document font takes its Word line metrics from another family.
+     * Ignored where the document font has metrics of its own - then they are the ones
+     * Word uses.
+     *
+     * @since 17.1.1
+     */
+    public void registerLineMetricsAlias(String documentFont, String family) {
+    	if (documentFont==null || family==null) return;
+    	String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);
+    	String value = family.trim();
+    	if (key.length()==0 || value.length()==0 || key.equals(value.toLowerCase(java.util.Locale.ROOT))) return;
+    	if (WordLineMetrics.hasOwnLineMetrics(documentFont)) return; // it has its own
+    	lineMetricsAliases.put(key, value);
+    }
+
+    /**
+     * The family whose Word line metrics this document font takes: the alias where one was
+     * registered, else the name itself.  Never null for a non-null argument, so the caller
+     * can hand the answer straight to {@link WordLineMetrics}.
+     *
+     * @since 17.1.1
+     */
+    public String lineMetricsFamily(String documentFont) {
+    	if (documentFont==null) return null;
+    	String alias = lineMetricsAliases.get(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
+    	return alias==null ? documentFont : alias;
     }
 
     /** Physical fonts RunFontSelector chose as a last resort during conversion, which the

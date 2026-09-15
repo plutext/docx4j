@@ -190,4 +190,36 @@ public class WordLineMetricsTest {
 		assertEquals(2401 / 2048.0 * 18, WordLineMetrics.lineHeightPt("Cambria", null, 18, null), 1e-9);
 		assertEquals("21.103pt", WordLineMetrics.lineHeightPtString("Cambria", null, 18, null));
 	}
+
+	/**
+	 * The built-in aliases: families Word draws in another family's metrics.  Helvetica
+	 * and Helvetica Neue have been here since 17.1.0; Helv, ArialMT and TimesNewRomanPSMT
+	 * are the PostScript and legacy names of the same families, which documents pick up
+	 * wherever a PDF or a PostScript driver has been round the text.  They were answering
+	 * only by accident until 17.1.1 - through the per-JVM alias map, i.e. only when some
+	 * other document in the same process had registered them - and two corpus documents at
+	 * 1.0000 line parity and page-exact were measuring Helv on Arial's line box that way.
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void builtInAliases() {
+		double arial = WordLineMetrics.get("Arial", null).lineHeightFactor();
+		double times = WordLineMetrics.get("Times New Roman", null).lineHeightFactor();
+
+		for (String name : new String[] { "Helvetica", "Helvetica Neue", "HelveticaNeue",
+				"Helv", "ArialMT", "arialmt", "HELV" }) {
+			assertTrue(name + " should answer", WordLineMetrics.hasTableEntry(name));
+			assertEquals(name + " takes Arial's line box", arial,
+					WordLineMetrics.get(name, null).lineHeightFactor(), 1e-9);
+		}
+		for (String name : new String[] { "TimesNewRomanPSMT", "timesnewromanpsmt" }) {
+			assertTrue(name + " should answer", WordLineMetrics.hasTableEntry(name));
+			assertEquals(name + " takes Times New Roman's line box", times,
+					WordLineMetrics.get(name, null).lineHeightFactor(), 1e-9);
+		}
+		// and nothing else joined them
+		assertFalse(WordLineMetrics.hasTableEntry("Arial-BoldMT"));
+		assertFalse(WordLineMetrics.hasTableEntry("Myriad Pro"));
+	}
 }

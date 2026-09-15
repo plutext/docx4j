@@ -1274,7 +1274,7 @@ public class XsltFOFunctions {
 				foBlockElement.setTextContent(" ");
 				applyEmptyParagraphLineHeight(foBlockElement, fontFamily, pPr,
 						(rPrParagraphMark!=null ? rPrParagraphMark : rPr),
-						runFontSelector==null ? null : runFontSelector.asciiFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
+						runFontSelector==null ? null : runFontSelector.lineMetricsFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
 			} else {
 			
 	            /* Word renders every space in a run of spaces (documents use them to
@@ -1359,7 +1359,7 @@ public class XsltFOFunctions {
 					}
 					applyEmptyParagraphLineHeight(foBlockElement, fontFamily, pPr,
 							(rPrParagraphMark!=null ? rPrParagraphMark : rPr),
-							runFontSelector==null ? null : runFontSelector.asciiFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
+							runFontSelector==null ? null : runFontSelector.lineMetricsFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
 	            }
 			}
 			// FOP doesn't support "ignore-if-surrounding-linefeed", and "pre" is no good, since wrapping does not happen
