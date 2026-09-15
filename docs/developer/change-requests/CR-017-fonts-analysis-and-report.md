@@ -325,7 +325,7 @@ before it converts. Depends on CR-004's placement decisions.
    `FontFallback` and `WidthFactors` into the resource, with a test that the
    passes' answers do not change (the CR-016 `MapperPrecedenceTest` /
    `ClassBasedSubstituteTest` and the corpus at zero delta). No behaviour
-   change. — **DONE** (1da9ed97e).
+   change. — **DONE** (bcd610d0b).
    `org/docx4j/fonts/font-substitutes.xml`, beside `word-line-metrics.properties`,
    read by `FontSubstitutionTable` with a plain DOM parser (no JAXB, no xsd:
    nothing marshals it; XML rather than properties because four of the six
