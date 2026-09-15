@@ -130,6 +130,10 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   difference: Carlito is Calibri's clone and ships no Light weight, so every Calibri Light
   line came out 1.3% wide and re-wrapped. Two whole documents in it now take Word's exact
   line count (CR-001 batch 42).
+- Trebuchet MS is drawn in Droid Sans where that is installed, not in an Arial clone. Its
+  lower case is wider than Arial's and its capitals much narrower, so Arimo was 2.7% narrow
+  over the body and 9.4% wide over the bold headings at once, which no width factor can
+  repair; Droid Sans is 1.0% and 5.5%. Arimo remains the fallback (CR-001 batch 42).
 - A PAGEREF whose cached result is empty is computed rather than dropped: a complex field
   with nothing at all between its separate and its end was discarded whole, instruction
   included, so a table of contents built of 23 of them printed no page numbers (CR-001

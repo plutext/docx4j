@@ -58,6 +58,7 @@ public class MetricallyCompatibleSubstituteTest {
 		assertSubstitute(mapper, "Comic Sans MS", "noto sans", "dejavu sans", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Segoe UI", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Helvetica", "arimo", "liberation sans");
+		assertSubstitute(mapper, "Trebuchet MS", "droid sans", "arimo", "liberation sans");
 
 		/* Arial Black is far heavier and wider than Arial: measured against Word's own
 		 * PDF of a corpus document, a centred Arial Black title is 281.2pt against our
@@ -218,5 +219,45 @@ public class MetricallyCompatibleSubstituteTest {
 		} else {
 			assertSubstitute(mapper, "Segoe UI Light", "arimo", "liberation sans");
 		}
+	}
+
+	/**
+	 * Trebuchet MS is not an Arial shape, and an Arial clone is wrong for it in two
+	 * directions at once: measured against Word's own PDFs of three corpus documents,
+	 * Word / Arimo is 1.0273 over the mixed-case body (Arimo narrow) and 0.9061 over the
+	 * bold capitals of the headings (Arimo wide), so no single width factor repairs it.
+	 * Droid Sans is the closest installed face in every weight - 1.0096 body, 0.9449
+	 * bold capitals, 1.0246 italic.  Noto Sans was measured and rejected (0.9678 /
+	 * 0.9133 / 1.0382, further from Trebuchet than Arimo on two of the three documents).
+	 * Where Droid Sans is not installed the chain falls through to what it was, Arimo.
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void trebuchetPrefersDroidSansAndFallsBackToArimo() throws Exception {
+		Mapper mapper = mapper();
+		if (PhysicalFonts.get("Trebuchet MS") != null) return; // installed: identity
+		if (PhysicalFonts.get("Droid Sans") != null) {
+			assertSubstitute(mapper, "Trebuchet MS", "droid sans");
+		} else {
+			assertSubstitute(mapper, "Trebuchet MS", "arimo", "liberation sans");
+		}
+	}
+
+	/** The line box follows the document font, not the substitute: Word's Trebuchet
+	 *  metrics are in the table, so a Trebuchet paragraph drawn in Droid Sans still
+	 *  stacks on Trebuchet's line. */
+	@Test
+	public void trebuchetKeepsItsOwnLineBox() throws Exception {
+		assertTrue("word-line-metrics has no Trebuchet MS entry",
+				WordLineMetrics.hasTableEntry("Trebuchet MS"));
+		Mapper mapper = mapper();
+		if (PhysicalFonts.get("Trebuchet MS") != null) return;
+		PhysicalFont pf = mapper.get("Trebuchet MS");
+		assertNotNull(pf);
+		// the document font's metrics, not the substitute's
+		assertTrue(WordLineMetrics.lineHeightPtString("Trebuchet MS", pf, 12, null)
+				.equals(WordLineMetrics.lineHeightPtString("Trebuchet MS",
+						PhysicalFonts.get("Arimo Regular"), 12, null)));
 	}
 }

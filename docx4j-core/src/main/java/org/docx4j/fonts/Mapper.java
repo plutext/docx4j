@@ -460,10 +460,30 @@ public abstract class Mapper {
     	// against Word's own PDF of a corpus document, every y and x within 0.3pt and
     	// the text 1.03-1.04x ours).  Arimo is 1.0605x Tinos, so the residual is 2%.
     	// @since 17.1.0
-    	for (String sans : new String[] { "Tahoma", "Trebuchet MS", "Segoe UI",
+    	for (String sans : new String[] { "Tahoma", "Segoe UI",
     			"Gadugi", "Helvetica", "Helvetica Neue", "Tw Cen MT" }) {
     		addMetricallyCompatibleSubstitute(sans, "Arimo Regular", "Liberation Sans");
     	}
+
+    	// Trebuchet MS is not an Arial shape and an Arial clone is wrong for it in two
+    	// directions at once: its lower case is wider than Arial's and its capitals are
+    	// much narrower.  Measured against Word's own PDFs of three corpus documents, on
+    	// unjustified lines whose text matches exactly (Word's pen advance over the
+    	// candidate's advance for the same string at the same size), Word / Arimo is
+    	// 1.0273 over the mixed-case body but 0.9061 over the bold capitals of the
+    	// headings, so no single width factor can repair it - scaling Arimo to fit the
+    	// body makes the headings worse.  Droid Sans is the closest installed face in
+    	// every weight: 1.0096 body, 0.9449 bold capitals, 1.0246 italic, against Arimo's
+    	// 1.0273 / 0.9061 / 1.0504; on the two other Trebuchet documents its body ratio
+    	// is 1.0060 and 0.9889 where Arimo is 1.0212 and 0.9918, and on their all-capitals
+    	// lines 0.9703 / 1.0272 where Arimo is 0.8942 / 0.8822.  Noto Sans was measured
+    	// and rejected: 0.9678 body, 0.9133 bold capitals, 1.0382 italic - further from
+    	// Trebuchet than Arimo is on two of the three documents.  Droid Sans ships no
+    	// italic face, so FOP obliques the regular, whose advances are the ones measured
+    	// above; the line box stays Trebuchet's own (WordLineMetrics has it).  Arimo
+    	// remains the last resort, which is what a machine without Droid Sans keeps.
+    	// @since 17.1.1
+    	addFirstAvailableSubstitute("Trebuchet MS", "Droid Sans", "Arimo Regular", "Liberation Sans");
 
     	// Arial Black is far heavier and wider than Arial: measured against Word's own
     	// PDF of a corpus document, its centred title is 281.2pt against our Arimo's
