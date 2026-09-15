@@ -425,7 +425,7 @@ before it converts. Depends on CR-004's placement decisions.
    named by a name-only `w:font` entry and by an entry carrying `w:panose1`
    and `w:sig`, to see whether Word's substitution at render time differs
    between the two - i.e. whether Word reads the entry when it lacks the font.
-   — **probes on the share 2026-09-16** (COMMIT_HASH); **the measurement waits
+   — **probes on the share 2026-09-16** (188bc092b); **the measurement waits
    on the Word run**. `fonts-segoe-ui`, `fonts-georgia` and `fonts-author-had`
    are in `Corpus.java`, generated, and copied with their `corpus.txt` lines to
    the share; Selawik 1.01 and Gelasio are downloaded but deliberately not
