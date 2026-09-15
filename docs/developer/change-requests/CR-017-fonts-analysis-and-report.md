@@ -346,7 +346,7 @@ before it converts. Depends on CR-004's placement decisions.
 1. **`FontDecision` recorded by every pass**, `Mapper.getDecisions()`, the
    selector recording per-script answers. Tests: one decision per pass, with
    its `via`. No behaviour change; corpus zero delta. — **DONE**
-   (COMMIT_HASH). `FontDecision` carries the source, the `via`, the width
+   (b3892457f). `FontDecision` carries the source, the `via`, the width
    error (the table's, with the `WidthFactors` factor where one applies), the
    physical font with its bold / italic / bold-italic faces or `synthetic`,
    the line box (`documentFont` / `alias:` / `wordDefault:` / `substitute`)
