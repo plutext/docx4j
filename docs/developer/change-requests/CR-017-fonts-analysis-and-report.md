@@ -1,13 +1,17 @@
 # CR-017: Font decisions with their reasons — `FontsAnalysis`, the conversion log, and the actions a user can take
 
-Status: IN PROGRESS (2026-09-16). Jason read the CR and accepted the
-recommendations the same day ("I am good with your recommendations, please
-implement"); Decisions 1 to 5 below are taken as recommended. Phases 0 to 4
-are delegated to an Opus 5 agent in a worktree with Fable reviewing each
-phase before its commit; phase 5's measurement waits on a Word run; phase 6
-waits on CR-004. Written from Jason's question of 2026-09-16 and the answer
-to it (below, verbatim), after CR-016 (fonts review, DONE 2026-09-13) and
-CR-001 batch 42 (the measured substitutes, 2026-09-15).
+Status: IN PROGRESS (2026-09-16) - phases 0 to 4 DONE and merged to
+VERSION_17_1_1 (333cdb595): 0 the substitution table (bcd610d0b), 1
+`FontDecision` in every pass (b3892457f), 2 and 3 the use walk,
+`FontsAnalysis` and its report (a30b52450), 4 the conversion log (9cc6e3314),
+each at zero corpus delta; phase 5's probes are on the share (188bc092b) and
+its measurement waits on the Word run; phase 6 waits on CR-004. Jason read the
+CR and accepted the recommendations the same day ("I am good with your
+recommendations, please implement"); Decisions 1 to 5 below are taken as
+recommended. Phases 0 to 5 were done by an Opus 5 agent in a worktree with
+Fable reviewing each phase before its commit. Written from Jason's question of
+2026-09-16 and the answer to it (below, verbatim), after CR-016 (fonts review,
+DONE 2026-09-13) and CR-001 batch 42 (the measured substitutes, 2026-09-15).
 Owner: Jason Harrop. Drafted with Claude Fable 5.1.
 
 Scope: `org.docx4j.fonts` (`Mapper`, `RunFontSelector`, `FontFallback`,
