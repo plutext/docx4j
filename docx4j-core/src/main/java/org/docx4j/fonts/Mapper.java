@@ -355,10 +355,7 @@ public abstract class Mapper {
 		Map<String, org.docx4j.wml.Fonts.Font> table = fontTable(wmlFonts);
 		for (String documentFontName : documentFontNames) {
 			if (documentFontName==null || documentFontName.trim().length()==0) continue;
-			if (get(documentFontName)!=null) {
-				log.debug(documentFontName + " already mapped");
-				continue;
-			}
+			if (get(documentFontName)!=null) continue; // already mapped; its decision stands
 			PhysicalFont pf = installedOrEmbedded(documentFontName);
 			FontDecision.Source source = pf==null ? null
 					: (PhysicalFonts.get(documentFontName)!=null ? FontDecision.Source.INSTALLED
@@ -1118,11 +1115,9 @@ public abstract class Mapper {
     		 * to that.  Don't replace it with a substitute: the embedded font is what the
     		 * author intended, and it is the only thing which is certain to be available.
     		 * NB this runs after populateFontMappings; see
-    		 * WordprocessingMLPackage.setFontMapper.
+    		 * WordprocessingMLPackage.setFontMapper.  The decision populateFontMappings
+    		 * recorded (EMBEDDED) says so; nothing is logged here.
     		 * @since 17.0.3 */
-    		if (log.isDebugEnabled()) {
-    			log.debug("Not substituting for " + proprietaryFont + "; the document embeds it");
-    		}
     		return;
     	}
 

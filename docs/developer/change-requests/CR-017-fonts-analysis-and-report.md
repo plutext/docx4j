@@ -399,7 +399,25 @@ before it converts. Depends on CR-004's placement decisions.
    corpora at **0 changed documents** with byte-identical scoreboards.
 4. **The conversion log** rendering the summary, the property, the DEBUG
    lines removed. Gate: export-fo-tests, and the log of one corpus run read
-   for noise (one line per font, not per run).
+   for noise (one line per font, not per run). — **DONE** (COMMIT_HASH).
+   `Docx4J.toFO` calls `FontsAnalysis.logReport` after the export - so
+   `toPDF` through it, and so the report carries the per-script choices the
+   selector made during the conversion - at INFO for `EXACT` and WARN
+   otherwise, behind `docx4j.fonts.report.log=summary|full|off` (default
+   `summary`, documented in docx4j.properties). The logger is
+   `org.docx4j.fonts.FontsAnalysis`, so a deployment can silence it by name,
+   and the rendering is `FontReport`'s, so no log string is written anywhere
+   else. Three more DEBUG lines went (`populateFontMappings`' "already
+   mapped", the metric pass's "the document embeds it",
+   `RunFontSelector`'s "not mapped; using fallback"); BestMatchingMapper's
+   remain, since they report what was tried and failed, which no decision
+   records. Gate: `docx4j-core-tests` 1088/0 (1083 + the 5 of
+   `FontReportLogTest`), `docx4j-export-fo-tests` 602/0 with core and
+   export-fo both installed first, and real3 at **0 changed documents** with
+   a byte-identical scoreboard. Its log read for noise: 86 of the 102
+   documents report at all, 1 to 9 lines per conversion (median 3; the
+   harness converts each document twice, once to FO and once to PDF), and no
+   font twice within a conversion.
 5. **Selawik and Gelasio**, each measured against a Word golden before it
    enters the table (a probe per face on the share; Jason runs Word), then
    the corpus gate as batch 42 did it. Either may fail the measurement and

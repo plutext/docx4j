@@ -152,6 +152,12 @@ Fonts (CR-017, font decisions with their reasons):
   text, as JSON, and from a command line: java org.docx4j.fonts.FontsAnalysis in.docx
   [--jars-only] [--json].  FontEnvironment asks the same of another deployment's fonts: this
   machine's, the docx4j font jars alone (issue #695), or a directory's.
+- A conversion via XSL FO says what it made of the document's fonts, once: one line per
+  document font naming what it is drawn in, how close that is and what to do about it - INFO
+  where the font itself, its embedded form or a metric clone draws it, WARN otherwise with the
+  action in the line.  docx4j.fonts.report.log=summary (the default) | full | off.  Until now a
+  conversion said nothing about its fonts but a DEBUG line per mapping and FOP's own "font not
+  found" warning, which names no action.
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

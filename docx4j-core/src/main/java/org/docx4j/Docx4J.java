@@ -805,6 +805,13 @@ public class Docx4J {
 
 		Exporter<FOSettings> exporter = getFOExporter(flags);
 		exporter.export(settings, outputStream);
+
+		/* What this conversion made of the document's fonts: one line each, INFO where
+		 * the font itself or a metric clone drew it and WARN with an action where a user
+		 * could do something about it.  docx4j.fonts.report.log=summary|full|off, default
+		 * summary.  After the export, so the report carries the per-script choices the
+		 * selector made during it (CR-017 phase 4). */
+		org.docx4j.fonts.FontsAnalysis.logReport(settings.getOpcPackage());
 	}
 
 	/**

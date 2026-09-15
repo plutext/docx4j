@@ -437,9 +437,7 @@ public class RunFontSelector {
     		PhysicalFont resolved = physicalFontResolved(fontName);
     		String val = resolved==null ? null : resolved.getName();
     		if (val==null) {
-    			if (log.isDebugEnabled() ) {
-    				log.debug(fontName + " not mapped; using fallback " + fallbackFont);
-    			}
+    			// the font's decision (UNMAPPED) says this; see Mapper.getDecisions
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
     			applyLineHeight(el, fontName, fallbackPhysicalFont);

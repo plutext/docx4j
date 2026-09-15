@@ -421,11 +421,17 @@ public final class FontsAnalysis {
 	}
 
 	private static boolean alternateIsInstalled(FontDecision decision) {
+		String alternate = alternateOf(decision);
+		return alternate!=null && PhysicalFonts.get(alternate)!=null;
+	}
+
+	/** The last hop of an ALT_NAME decision's chain: the font the document says to use
+	 *  instead, and so the one to install. */
+	private static String alternateOf(FontDecision decision) {
 		String via = decision.getVia();
-		if (via==null) return false;
+		if (via==null || !via.startsWith("w:altName ")) return null;
 		int arrow = via.lastIndexOf("-> ");
-		String alternate = arrow>=0 ? via.substring(arrow+3) : via.substring("w:altName ".length());
-		return PhysicalFonts.get(alternate.trim())!=null;
+		return (arrow>=0 ? via.substring(arrow+3) : via.substring("w:altName ".length())).trim();
 	}
 
 	// ---- did the author have it?
@@ -550,6 +556,20 @@ public final class FontsAnalysis {
 			if (standIn!=null) sb.append(", and ").append(standIn);
 			return sb.toString();
 		}
+		if (decision.getSource()==FontDecision.Source.ALT_NAME) {
+			/* The document itself names the alternate, and Word uses it (ECMA-376
+			 * 17.8.3.1), so the font to install is the alternate, not the name the document
+			 * asks for. */
+			String alternate = alternateOf(decision);
+			sb.append("install ").append(alternate==null ? documentFont : alternate);
+			if (alternate!=null) {
+				sb.append(", which this document names as its alternate for ").append(documentFont);
+			}
+			if (elsewhere!=null && FontSubstitutionTable.cloneNamed(nameOf(decision))!=null) {
+				sb.append("; ").append(getIt(nameOf(decision), environment));
+			}
+			return sb.toString();
+		}
 		sb.append("install ").append(documentFont);
 		FontSubstitutionTable.Clone clone = FontSubstitutionTable.cloneNamed(nameOf(decision));
 		FontSubstitutionTable.Row row = FontSubstitutionTable.rowFor(documentFont);
@@ -564,9 +584,9 @@ public final class FontsAnalysis {
 			sb.append(", or ").append(metric.getFont()).append(" its metric clone");
 			if (metricClone!=null) sb.append(" (").append(where(metricClone)).append(")");
 		} else if (grade==FontReport.Grade.NEAR) {
-			sb.append(": no open clone of it exists, and ").append(nameOf(decision))
-					.append(" is the closest measured");
-			if (decision.getWidthError()!=null) sb.append(" (").append(decision.getWidthError()).append(")");
+			// the measurement is in the line already (Entry.describe names it)
+			sb.append(" for Word's line breaks: no open clone of it exists, and ")
+					.append(nameOf(decision)).append(" is the closest measured");
 		} else if (decision.getSource()==FontDecision.Source.SYMBOL) {
 			sb.append(": its characters are drawn in ").append(nameOf(decision))
 					.append(", whose symbols are not its own");
@@ -679,6 +699,51 @@ public final class FontsAnalysis {
 
 	private static String key(String name) {
 		return name==null ? "" : name.trim().toLowerCase(java.util.Locale.ROOT);
+	}
+
+	// ------------------------------------------------------------------ the conversion log
+
+	/** {@code docx4j.fonts.report.log} = {@code summary} (the default: one line per
+	 *  document font), {@code full} (the whole report) or {@code off}.  @since 17.1.1 */
+	public static final String LOG_PROPERTY = "docx4j.fonts.report.log";
+
+	/**
+	 * Log what this conversion made of the document's fonts, once: one line per document
+	 * font, at INFO where the font itself or a metric clone draws it and at WARN where a
+	 * user could do something about it, with what to do in the line.
+	 *
+	 * <p>Called by {@code Docx4J.toFO} (and so by {@code toPDF} through it) after the
+	 * export, so the per-script choices the selector made during it are in the report.
+	 * Until 17.1.1 a conversion said nothing about its fonts except a DEBUG line per
+	 * mapping and FOP's own "font not found" warning, which names no action (CR-017
+	 * gaps 2 and 3).</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static void logReport(Object pkg) {
+
+		String mode = org.docx4j.Docx4jProperties.getProperty(LOG_PROPERTY, "summary");
+		mode = mode==null ? "summary" : mode.trim().toLowerCase(java.util.Locale.ROOT);
+		if ("off".equals(mode)) return;
+		if (!(pkg instanceof WordprocessingMLPackage)) return;
+		if (!log.isInfoEnabled() && !log.isWarnEnabled()) return;
+
+		try {
+			FontReport report = analyse((WordprocessingMLPackage)pkg);
+			if ("full".equals(mode)) {
+				log.info(report.toText());
+				return;
+			}
+			for (FontReport.Entry entry : report.getEntries()) {
+				if (entry.getGrade()==FontReport.Grade.EXACT) {
+					log.info(entry.getSummaryLine());
+				} else {
+					log.warn(entry.getSummaryLine());
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Couldn't report on this document's fonts: " + e.getMessage());
+		}
 	}
 
 	// ------------------------------------------------------------------ the command line
