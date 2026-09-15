@@ -483,6 +483,10 @@
 	     lines that way, and 10 documents of three corpora hold the shape.  Word renders
 	     them, so the content is hoisted into the legal position around it.
 
+	     A nested *paragraph* is written as a paragraph of its own since 17.1.1 - see the
+	     w:p template further down; the hoisting here is the fallback for the shapes it
+	     does not reach.
+
 	     The run holding the nested content is *split*: each nested run becomes a sibling
 	     run, keeping its own w:rPr, and each of the outer run's own children is wrapped in
 	     a run carrying the outer w:rPr.  Flattening the nested runs' content into the outer
@@ -518,7 +522,179 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<!-- a w:hyperlink takes runs, so the nested paragraph's own content stands as it is -->
+	<!-- A paragraph nested in a w:hyperlink or a w:r is a paragraph of its own: Word gives
+	     it its own line and its own w:pPr - style, spacing, indent.  17.1.0 hoisted its runs
+	     into the paragraph around it (the templates below, kept for the shapes this one
+	     does not reach), which kept the text but lost the paragraph properties: a corpus
+	     document's 76 article summaries, each a w:p inside the w:hyperlink of the paragraph
+	     before it, in a style whose w:i is the only italic they have, came out roman, with
+	     no space after and no indent, where Word draws 45 italic lines - 0.60 to 0.47 of
+	     line parity and three pages.
+
+	     So the outer paragraph is split around each nested one: what precedes the nested
+	     paragraph stays in the outer paragraph (its containers - the hyperlink, a run -
+	     copied with only that part of their content), the nested paragraph follows as a
+	     sibling with its own w:pPr, and what follows it goes into a further paragraph
+	     carrying the outer w:pPr.  A segment with nothing but its containers in it is not
+	     written, so a nested paragraph that ends its hyperlink adds no empty line.  Only
+	     the shallow shapes are matched (a w:p one or two levels down, in a w:hyperlink or a
+	     w:r): a w:p deeper inside a run is a text box's, and legal.  @since 17.1.1 -->
+
+	<xsl:template match="w:p[w:hyperlink/w:p or w:r/w:p or w:hyperlink/w:r/w:p or w:r/w:r/w:p]">
+		<xsl:variable name="logging"
+			select="java:org.docx4j.utils.XSLTUtils.logWarn('w:p nested in w:hyperlink or w:r; split into paragraphs of its own')" />
+		<xsl:variable name="outer" select="." />
+		<xsl:variable name="nested" select="w:hyperlink/w:p | w:r/w:p | w:hyperlink/w:r/w:p | w:r/w:r/w:p" />
+		<!-- the outer content before the first nested paragraph -->
+		<xsl:variable name="lead">
+			<xsl:call-template name="paragraph-segment">
+				<xsl:with-param name="outer" select="$outer" />
+				<xsl:with-param name="nested" select="$nested" />
+				<xsl:with-param name="before" select="$nested[1]" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="leadHasContent">
+			<xsl:call-template name="segment-has-content">
+				<xsl:with-param name="segment" select="$lead" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:if test="string($leadHasContent)">
+			<w:p>
+				<xsl:apply-templates select="$outer/@*" />
+				<xsl:apply-templates select="$outer/w:pPr" />
+				<xsl:copy-of select="xalan:nodeset($lead)/node()" />
+			</w:p>
+		</xsl:if>
+		<xsl:for-each select="$nested">
+			<xsl:variable name="i" select="position()" />
+			<!-- the outer content between this nested paragraph and the next (or the end) -->
+			<xsl:variable name="tail">
+				<xsl:call-template name="paragraph-segment">
+					<xsl:with-param name="outer" select="$outer" />
+					<xsl:with-param name="nested" select="$nested" />
+					<xsl:with-param name="after" select="." />
+					<xsl:with-param name="before" select="$nested[$i + 1]" />
+				</xsl:call-template>
+			</xsl:variable>
+			<xsl:variable name="tailHasContent">
+				<xsl:call-template name="segment-has-content">
+					<xsl:with-param name="segment" select="$tail" />
+				</xsl:call-template>
+			</xsl:variable>
+			<w:p>
+				<xsl:apply-templates select="@*" />
+				<xsl:apply-templates select="w:pPr" />
+				<!-- a segment with no content of its own is not written as a paragraph (it
+				     would be an empty line Word does not draw); the bookmarks it holds, which
+				     are anchors, move into this paragraph instead -->
+				<xsl:if test="$i = 1 and not(string($leadHasContent))">
+					<xsl:copy-of select="xalan:nodeset($lead)//w:bookmarkStart | xalan:nodeset($lead)//w:bookmarkEnd" />
+				</xsl:if>
+				<xsl:apply-templates select="*[not(self::w:pPr)]" />
+				<xsl:if test="not(string($tailHasContent))">
+					<xsl:copy-of select="xalan:nodeset($tail)//w:bookmarkStart | xalan:nodeset($tail)//w:bookmarkEnd" />
+				</xsl:if>
+			</w:p>
+			<xsl:if test="string($tailHasContent)">
+				<w:p>
+					<xsl:apply-templates select="$outer/@*" />
+					<xsl:apply-templates select="$outer/w:pPr" />
+					<xsl:copy-of select="xalan:nodeset($tail)/node()" />
+				</w:p>
+			</xsl:if>
+		</xsl:for-each>
+	</xsl:template>
+
+	<!-- One segment of the split: the outer paragraph's content between the nested
+	     paragraph $after (or the start) and the nested paragraph $before (or the end),
+	     transformed, without the w:p around it. -->
+	<xsl:template name="paragraph-segment">
+		<xsl:param name="outer" />
+		<xsl:param name="nested" />
+		<xsl:param name="after" select="/.." />
+		<xsl:param name="before" select="/.." />
+		<xsl:variable name="afterSet" select="$after/following::*" />
+		<xsl:variable name="beforeSet" select="$before/preceding::*" />
+		<xsl:apply-templates select="$outer/*" mode="segment">
+			<xsl:with-param name="nested" select="$nested" />
+			<xsl:with-param name="after" select="$after" />
+			<xsl:with-param name="before" select="$before" />
+			<xsl:with-param name="afterSet" select="$afterSet" />
+			<xsl:with-param name="beforeSet" select="$beforeSet" />
+		</xsl:apply-templates>
+	</xsl:template>
+
+	<!-- 'y' if the segment holds anything beyond its containers, run properties,
+	     proofing marks and bookmarks - i.e. something Word would give a line to. -->
+	<xsl:template name="segment-has-content">
+		<xsl:param name="segment" />
+		<xsl:if test="xalan:nodeset($segment)//*[not(self::w:hyperlink or self::w:r or self::w:rPr or ancestor::w:rPr
+				or self::w:proofErr or self::w:bookmarkStart or self::w:bookmarkEnd)]">y</xsl:if>
+	</xsl:template>
+
+	<!-- The outer paragraph's children, restricted to the range: a nested paragraph is
+	     skipped (it is written on its own), a container holding one is copied with only
+	     the part of its content that lies in the range - a w:r so holding one is split as
+	     the w:r[w:r or w:p] template splits it - and anything else is copied whole if it
+	     lies in the range. -->
+	<xsl:template match="*" mode="segment">
+		<xsl:param name="nested" />
+		<xsl:param name="after" />
+		<xsl:param name="before" />
+		<xsl:param name="afterSet" />
+		<xsl:param name="beforeSet" />
+		<xsl:choose>
+			<xsl:when test="self::w:pPr or count(. | $nested) = count($nested)" />
+			<xsl:when test="descendant::*[count(. | $nested) = count($nested)]">
+				<xsl:choose>
+					<xsl:when test="self::w:r">
+						<xsl:variable name="outerRPr" select="w:rPr" />
+						<xsl:for-each select="*[not(self::w:rPr)]">
+							<xsl:choose>
+								<xsl:when test="count(. | $nested) = count($nested)" />
+								<xsl:when test="self::w:r or descendant::*[count(. | $nested) = count($nested)]">
+									<xsl:apply-templates select="." mode="segment">
+										<xsl:with-param name="nested" select="$nested" />
+										<xsl:with-param name="after" select="$after" />
+										<xsl:with-param name="before" select="$before" />
+										<xsl:with-param name="afterSet" select="$afterSet" />
+										<xsl:with-param name="beforeSet" select="$beforeSet" />
+									</xsl:apply-templates>
+								</xsl:when>
+								<xsl:when test="(not($after) or count(. | $afterSet) = count($afterSet))
+										and (not($before) or count(. | $beforeSet) = count($beforeSet))">
+									<w:r>
+										<xsl:apply-templates select="$outerRPr" />
+										<xsl:apply-templates select="." />
+									</w:r>
+								</xsl:when>
+							</xsl:choose>
+						</xsl:for-each>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:copy>
+							<xsl:apply-templates select="@*" />
+							<xsl:apply-templates select="*" mode="segment">
+								<xsl:with-param name="nested" select="$nested" />
+								<xsl:with-param name="after" select="$after" />
+								<xsl:with-param name="before" select="$before" />
+								<xsl:with-param name="afterSet" select="$afterSet" />
+								<xsl:with-param name="beforeSet" select="$beforeSet" />
+							</xsl:apply-templates>
+						</xsl:copy>
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:when>
+			<xsl:when test="(not($after) or count(. | $afterSet) = count($afterSet))
+					and (not($before) or count(. | $beforeSet) = count($beforeSet))">
+				<xsl:apply-templates select="." />
+			</xsl:when>
+		</xsl:choose>
+	</xsl:template>
+
+	<!-- The hoisting fallback for a nested paragraph the split above does not reach (one
+	     further down, or in a hyperlink that is not the paragraph's own child): a
+	     w:hyperlink takes runs, so the nested paragraph's own content stands as it is -->
 	<xsl:template match="w:hyperlink/w:p">
 		<xsl:variable name="logging"
 			select="java:org.docx4j.utils.XSLTUtils.logWarn('w:p nested directly in w:hyperlink; hoisting its content')" />

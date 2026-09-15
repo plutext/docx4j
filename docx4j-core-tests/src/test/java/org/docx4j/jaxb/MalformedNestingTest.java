@@ -7,9 +7,15 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.docx4j.TextUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.Document;
+import org.docx4j.wml.P;
+import org.docx4j.wml.R;
+import org.docx4j.wml.Text;
 import org.junit.Test;
 
 /**
@@ -97,6 +103,105 @@ public class MalformedNestingTest {
 		String marshalled = XmlUtils.marshaltoString(o, true, true);
 		assertTrue("the nested runs' own w:rPr was lost: " + marshalled,
 				marshalled.contains("<w:b/>"));
+	}
+
+	// ------------------------------------------------ a nested paragraph is a paragraph
+
+	private static List<P> paragraphs(String body) throws Exception {
+		String xml = "<w:document " + W + "><w:body>" + body + "</w:body></w:document>";
+		Object o = XmlUtils.unmarshal(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+		List<P> out = new ArrayList<P>();
+		for (Object c : ((Document) XmlUtils.unwrap(o)).getBody().getContent()) {
+			if (XmlUtils.unwrap(c) instanceof P) out.add((P) XmlUtils.unwrap(c));
+		}
+		return out;
+	}
+
+	private static String textOf(P p) throws Exception {
+		StringWriter sw = new StringWriter();
+		TextUtils.extractText(p, sw);
+		return sw.toString();
+	}
+
+	private static String pStyle(P p) {
+		return p.getPPr()==null || p.getPPr().getPStyle()==null ? null : p.getPPr().getPStyle().getVal();
+	}
+
+	private static final String INNER = "<w:p><w:pPr><w:pStyle w:val=\"Inner\"/><w:jc w:val=\"center\"/></w:pPr>"
+			+ "<w:r><w:t>inner</w:t></w:r></w:p>";
+
+	/**
+	 * A paragraph nested in a hyperlink is a paragraph of its own, with its own w:pPr
+	 * (since 17.1.1).  Hoisting its runs into the paragraph around it kept the text but
+	 * lost the style: a corpus document's 76 article summaries, each a w:p inside the
+	 * w:hyperlink of the paragraph before it, in a style whose w:i is their only italic,
+	 * came out roman where Word draws 45 italic lines.
+	 */
+	@Test
+	public void paragraphNestedInHyperlinkIsAParagraphOfItsOwn() throws Exception {
+		List<P> ps = paragraphs("<w:p><w:pPr><w:pStyle w:val=\"Outer\"/></w:pPr>"
+				+ "<w:hyperlink w:anchor=\"x\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r>"
+				+ INNER + "</w:hyperlink></w:p>");
+		assertEquals("two paragraphs, the nested one after the outer", 2, ps.size());
+		assertEquals("Outer", pStyle(ps.get(0)));
+		assertEquals("before ", textOf(ps.get(0)));
+		assertTrue("the hyperlink stays in the outer paragraph",
+				XmlUtils.marshaltoString(ps.get(0), true, false).contains("w:hyperlink"));
+		assertEquals("Inner", pStyle(ps.get(1)));
+		assertEquals("center", ps.get(1).getPPr().getJc().getVal().value());
+		assertEquals("inner", textOf(ps.get(1)));
+	}
+
+	/** What follows the nested paragraph in the hyperlink goes into a further paragraph
+	 *  carrying the outer w:pPr, in its own copy of the hyperlink. */
+	@Test
+	public void contentAfterTheNestedParagraphGoesIntoAThirdParagraph() throws Exception {
+		List<P> ps = paragraphs("<w:p><w:pPr><w:pStyle w:val=\"Outer\"/></w:pPr>"
+				+ "<w:hyperlink w:anchor=\"x\"><w:r><w:t xml:space=\"preserve\">before </w:t></w:r>"
+				+ INNER + "<w:r><w:t>after</w:t></w:r></w:hyperlink></w:p>");
+		assertEquals(3, ps.size());
+		assertEquals("before ", textOf(ps.get(0)));
+		assertEquals("inner", textOf(ps.get(1)));
+		assertEquals("Outer", pStyle(ps.get(2)));
+		assertEquals("after", textOf(ps.get(2)));
+		assertTrue(XmlUtils.marshaltoString(ps.get(2), true, false).contains("w:anchor=\"x\""));
+	}
+
+	/** A nested paragraph that ends its hyperlink adds no empty paragraph after itself. */
+	@Test
+	public void nothingAfterTheNestedParagraphMeansNoEmptyParagraph() throws Exception {
+		List<P> ps = paragraphs("<w:p><w:hyperlink w:anchor=\"x\"><w:r><w:t>before</w:t></w:r>"
+				+ INNER + "</w:hyperlink><w:bookmarkEnd w:id=\"0\"/></w:p>");
+		assertEquals("the trailing bookmarkEnd is not content", 2, ps.size());
+	}
+
+	/** A paragraph nested in a run: the run is split around it, each half keeping the
+	 *  run's own w:rPr, and the nested paragraph stands between the halves. */
+	@Test
+	public void paragraphNestedInRunSplitsTheRunAroundIt() throws Exception {
+		List<P> ps = paragraphs("<w:p><w:r><w:rPr><w:b/></w:rPr><w:t xml:space=\"preserve\">outer </w:t>"
+				+ INNER + "<w:t>tail</w:t></w:r></w:p>");
+		assertEquals(3, ps.size());
+		assertEquals("outer ", textOf(ps.get(0)));
+		assertEquals("inner", textOf(ps.get(1)));
+		assertEquals("Inner", pStyle(ps.get(1)));
+		assertEquals("tail", textOf(ps.get(2)));
+		R tail = (R) XmlUtils.unwrap(ps.get(2).getContent().get(0));
+		assertTrue("the outer run's w:rPr carries to the tail", tail.getRPr()!=null && tail.getRPr().getB()!=null);
+		assertTrue(XmlUtils.unwrap(tail.getContent().get(0)) instanceof Text);
+	}
+
+	/** Two nested paragraphs in one hyperlink, in order, with the outer content between. */
+	@Test
+	public void twoNestedParagraphsKeepTheirOrder() throws Exception {
+		List<P> ps = paragraphs("<w:p><w:hyperlink w:anchor=\"x\"><w:r><w:t>a</w:t></w:r>"
+				+ INNER.replace("inner", "b") + "<w:r><w:t>c</w:t></w:r>"
+				+ INNER.replace("inner", "d") + "</w:hyperlink></w:p>");
+		assertEquals(4, ps.size());
+		assertEquals("a", textOf(ps.get(0)));
+		assertEquals("b", textOf(ps.get(1)));
+		assertEquals("c", textOf(ps.get(2)));
+		assertEquals("d", textOf(ps.get(3)));
 	}
 
 	/** A run deeper inside a run is the ordinary shape of a text box, and must not be

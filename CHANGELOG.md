@@ -541,6 +541,11 @@ Other:
 - ZipPartStore warns when a package has bytes after the zip end of central directory
   record. docx4j ignores them, but Word refuses to open such a file ("Word found
   unreadable content"), so the damage is otherwise invisible until someone tries.
+- loading: a w:p nested in a w:hyperlink or a w:r (broken producers; Word renders it) is
+  now a paragraph of its own, with its own w:pPr, the paragraph around it split before and
+  after it. 17.1.0 hoisted its runs into the surrounding paragraph, which kept the text but
+  lost the paragraph's style: a document whose 76 article summaries sit in a style whose
+  w:i is their only italic came out roman.
 
 Version 17.1.0
 ===============
