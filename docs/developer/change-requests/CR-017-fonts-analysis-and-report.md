@@ -372,7 +372,7 @@ before it converts. Depends on CR-004's placement decisions.
    (font, script, face), measured for cost on the 311-page document of
    CR-016 phase 4 (fontsInUse was 8 ms there; this walks text, so expect
    more, and it must stay well under the conversion's own time). — **DONE**
-   (COMMIT_HASH, with phase 3). One selector per part, the run's effective
+   (a30b52450, with phase 3). One selector per part, the run's effective
    properties resolved once per run (a new
    `documentFontFor(pPr, rPr, codePoint, rPrIsEffective)` overload) and each
    run's answers memoised by code point. Measured against each document's own
@@ -385,7 +385,7 @@ before it converts. Depends on CR-004's placement decisions.
    (9919 and the EnBW document as the worked examples). Tests on the CR-016 probe documents
    (`fonts-unresolvable`, `fonts-light-bold`, `fonts-symbol-and-emoji`,
    `fonts-theme-lang`): each has a known answer and a known grade. — **DONE**
-   (COMMIT_HASH). Built from the use walk's fonts plus any `UNMAPPED` or
+   (a30b52450). Built from the use walk's fonts plus any `UNMAPPED` or
    `SYMBOL` decision, never the mapper's whole map. `FontEnvironment` (this
    machine, the jars, a directory) is in core and docx4j-layout-fidelity calls
    it. The `authorHad` rules gained two refinements read off real font tables:
