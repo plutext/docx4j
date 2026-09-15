@@ -174,12 +174,24 @@ signature except by adding getters/setters:
 - **Item 4:** `<xsd:anyAttribute processContents="lax"/>` on
   `ds:datastoreItem`'s anonymous type (JAXB generates
   `getOtherAttributes()`).
-- **Item 5:** see Decisions; the recommendation is **not** to change the
-  type in 17.1.1. `CTOnOff.getVal()` returns the `STOnOff` enum today, and
-  the four lexical values are all there; a convenience `isOn()` on
-  `org.docx4j.w14.CTOnOff` (via `annox`, or a hand-written interface in
-  `docx4j-generated-objects/src/main/java` as `ContentAccessor` is) gives
-  readers the boolean without breaking the type. The ports can do the same.
+- **Item 5 (decided by Jason 2026-09-16: change it):** w14's `CT_OnOff`
+  takes the formulation wml's `BooleanDefaultTrue` uses (`wml.xsd` 326-358):
+  `<xsd:attribute name="val" type="xsd:boolean" default="true"/>` in place
+  of `type="ST_OnOff"`. The attribute stays `w14:val` (the w14 schema is
+  `attributeFormDefault="qualified"`, so retyping the element to
+  `w:CT_OnOff` would have moved it into the `w:` namespace, which is why
+  the type is changed where it is rather than swapped); `xsd:boolean`'s
+  lexical space is exactly w14 `ST_OnOff`'s four values. The class stays
+  `org.docx4j.w14.CTOnOff`; its `val` becomes `Boolean` with `isVal()`
+  (default true) and `setVal(Boolean)`, as `BooleanDefaultTrue` has. The
+  same type serves `w14:conflictMode`, `w14:cntxtAlts` and
+  `w14:discardImageEditingData`, which change with it. Callers in this
+  repository: `BindingTraverserCommonImpl` line 588 (`setVal("1"/"0")`
+  becomes `setVal(true/false)`) and `TextBindParityTest` line 67. JAXB
+  marshals `true`/`false` where Word writes `1`/`0`; both are legal, and
+  the round-trip test asserts Word's reading, not the bytes. The
+  unused `w14:ST_OnOff` simple type stays for the `noSpellErr`-style
+  attributes that still name it.
 - **w16cex:** `xsd/wml/w16cex.xsd` from the [MS-DOCX] text above, with the
   `w16cid.xsd` additions (jaxb `schemaBindings` package `org.docx4j.w16cex`,
   `annox` `@XmlRootElement(name="commentsExtensible")` on
@@ -213,9 +225,10 @@ signature except by adding getters/setters:
    `docx4j-bundle` and OSGi manifests checked for the new packages
    (`docx4j-generated-objects`'s `Export-Package` if the OSGi profile lists
    packages by name).
-3. **Item 5**: per the decision. If the convenience method is chosen, the
-   `annox` annotation or the hand-written interface, with a test on the four
-   lexical values.
+3. **Item 5**: the `xsd:boolean` retype, the two callers, and a test that
+   the four lexical values (`true`, `false`, `1`, `0`) unmarshal to the right
+   boolean on `w14:checked` and that a checkbox bound through
+   `BindingTraverserCommonImpl` round-trips.
 4. CHANGELOG (17.1.1: a "Schema" heading), the CR marked DONE with the
    commit hashes, the registry updated, and a message back to the TypeScript
    objects repository with the CR number and commits so it regenerates.
@@ -226,11 +239,11 @@ corpus (no FO change), so the gate is the test modules, not the corpora.
 
 ## Decisions (for Jason)
 
-1. **Item 5, the checkbox type.** Recommended: keep `CTOnOff`; add a boolean
-   convenience rather than change the type in a point release. The break is
-   real (`getChecked().getVal()` callers), the gain is a nicer getter, and
-   the ports can offer the same convenience. If a type change is wanted, do
-   it in the next minor with a deprecation cycle.
+1. **Item 5, the checkbox type.** Recommended keeping `CTOnOff` with a
+   boolean convenience; **Jason decided 2026-09-16: change it.** Done as in
+   the Design: `val` becomes `xsd:boolean` on w14's own `CT_OnOff`, the class
+   name stays, `getVal()`/`setVal(String)` become `isVal()`/`setVal(Boolean)`.
+   An API change for 17.1.1, named in the CHANGELOG.
 2. **The minimal `w16.xsd`** (only `CT_ExtensionList`/`CT_Extension`) rather
    than the whole 2018/wordml schema. Recommended: the whole schema brings
    types nothing in `xsd/` references, and the precedent for a minimal
