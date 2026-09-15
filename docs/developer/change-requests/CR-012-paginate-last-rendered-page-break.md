@@ -1,7 +1,7 @@
 # CR: Paginate: rewrite `w:lastRenderedPageBreak` from Apache FOP's area tree
 
-Status: IN PROGRESS. Phases 1, 2 and 3 shipped 2026-09-11 (§6); phase 4 is in the docx4j-mcp repository. Requested by the docx4j-core-ts editor design
-(`plutext/docx4j-core-ts`, CR-003 appendix D): a browser editor that does not paginate shows
+Status: IN PROGRESS. Phases 1, 2 and 3 shipped 2026-09-11 (§6); phase 4 is in the docx4j-mcp repository (the `paginate` row of its phase 4 tools). Requested by the web editor design
+(`plutext/docx4j-ts-editor`, ED-001 appendix D; formerly `plutext/docx4j-core-ts` CR-003): a browser editor that does not paginate shows
 page boundaries from the `w:lastRenderedPageBreak` markers Word leaves in a file, and needs a
 "re-paginate" service to refresh them after edits. docx4j has the machinery in substance
 (`TocGenerator.getPageNumbersMapViaFOP`, export-fo, FOP's area tree); this CR turns it into a
@@ -440,4 +440,4 @@ numbers have had for years.
   `org.docx4j.convert.out.fo.renderers.FORendererApacheFOP` (`MIME_FOP_AREA_TREE`),
   `org.docx4j.convert.out.fo.FOPAreaTreeHelper`, `org.docx4j.convert.out.fo.BookmarkStartWriter`.
 - Apache FOP `org.apache.fop.render.xml.XMLRenderer` and `org.apache.fop.area.AreaTreeParser`.
-- `plutext/docx4j-core-ts` CR-003 appendix D (the consumer).
+- `plutext/docx4j-ts-editor` ED-001 appendix D (the consumer; formerly `plutext/docx4j-core-ts` CR-003).

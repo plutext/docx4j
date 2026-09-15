@@ -1,6 +1,8 @@
 # CR: docx4j MCP server (expose the engine to AI agents via Model Context Protocol)
 
-Status: PROPOSED (2026-09-01)
+Status: DONE (2026-09-03) — implemented in its own repository, `plutext/docx4j-mcp`, whose
+`CR-mcp-server.md` carries this design forward with the phase notes; v0.1.0 shipped and listed in
+the official MCP registry 2026-09-03.  (Status corrected 2026-09-15; it had read PROPOSED (2026-09-01).)
 Scope: a NEW satellite artifact (working name `docx4j-mcp`) — no changes to
 docx4j-core beyond what the tools need; repo/module placement is an open question (§7)
 Related: the "Why docx4j" website pages and Docx4j_from_Python.md (both answer

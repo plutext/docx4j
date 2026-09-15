@@ -1,6 +1,9 @@
 # CR: Math in PDF output (OMML → MathML → SVG → XSL-FO → FOP)
 
-Status: **PROPOSED** 2026-09-02. No code yet. Follow-on to CR-007-math-omml-mathml
+Status: **IN PROGRESS.** Phase 1 (plugin wiring) DONE 2026-09-02 (6e45920c7; XSLT pathway
+2c894ff1a, 2026-09-04); phase 2 largely satisfied; phase 3 (Route B) deferred; phase 4 (docs +
+CHANGELOG) open — see §5.  (Status corrected 2026-09-15; it had read PROPOSED, no code yet.)
+Proposed 2026-09-02 as a follow-on to CR-007-math-omml-mathml
 (which gave us native OMML⇄MathML with no Microsoft XSLT).
 
 **Spike result (2026-09-02): the `jeuclid-fop` plugin works with FOP 2.11

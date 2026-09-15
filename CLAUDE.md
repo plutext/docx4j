@@ -80,3 +80,19 @@ are fine on Opus. Prefer Fable 5 for:
 
 If you are a smaller model and an investigation keeps not converging, say so
 and suggest rerunning on a stronger model rather than guessing.
+
+## Portfolio task registry
+
+This repository's change requests are indexed, with their dependencies on work in the other
+docx4j repositories, in `../docx4j-portfolio/tasks.yaml` (ids `<repo>/<CR>[.<phase>]`; this
+repository's key is `docx4j`).
+
+- When a CR's status changes (a phase lands; a CR is proposed, deferred or abandoned) or its
+  dependencies change, update the matching entry in `tasks.yaml` in the same session (`status`,
+  `depends_on`; add an entry for a new CR or phase).
+- Then run `python3 ../docx4j-portfolio/scripts/tasks.py check`. It reports `CHANGED` for each CR
+  whose Status line was edited; once the registry entry agrees, run `tasks.py accept` (and
+  `tasks.py graph` if dependencies changed).
+- Before starting a CR or phase, check `python3 ../docx4j-portfolio/scripts/tasks.py blocked`: it
+  may be waiting on work in another repository. The TypeScript and Python ports treat this
+  repository as their behavioural oracle, so a CR here can unblock (or change) work there.
