@@ -200,6 +200,13 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- An over-wide table is no longer scaled into the text column where it is floating (it
+  carries a w:tblpPr, so it is out of the flow and the column does not bound it), and a
+  w:tblW in pct above 100% now keeps its declared w:tblGrid rather than re-deriving the
+  columns against the container. Measured: a floating table whose grid is 450.85pt on a
+  439.85pt column is painted by Word 21.85pt past its own right margin; and a header table at
+  113.12% had its second cell 0.2pt too narrow, so a 52.2pt string wrapped where Word sets it
+  on one line (CR-001 batch 43).
 - A w:altName chain which ends at an East Asian family this machine does not have carries
   that family's line box, while the chain goes on to find the face that renders the glyphs.
   Measured on a corpus document whose table-of-contents entries name a font no machine has,

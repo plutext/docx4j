@@ -863,6 +863,15 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					&& preferredTableWidthTwips(context, tblPr, container) > 0) {
 				return null;
 			}
+			/* A floating table - one with a w:tblpPr - is not clamped either.  It is out of
+			 * the flow, so the text column is not what bounds it, and Word draws it at its
+			 * grid width wherever the frame lands: measured on a corpus document whose grid
+			 * is 1862+1755+2830+2570 = 450.85pt on a 439.85pt column, where docx4j scaled
+			 * every column by 0.9756 and Word paints the frame out to x=543.85, 21.85pt
+			 * past its own right margin (its widest table line 417.8..533.0 against our
+			 * 415.6..528.8).  Recommended in ledger3 and again in ledger4.
+			 * @since 17.1.1 */
+			if (tblPr != null && tblPr.getTblpPr() != null) return null;
 			/* w:compat/w:growAutofit, "Allow Tables to AutoFit Into Page Margins"
 			 * (ECMA-376-1 17.15.1), would let an autofit table grow past the text column
 			 * rather than being scaled into it.  It is deliberately NOT read: measured over
@@ -1007,13 +1016,28 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					&& tblPr.getTblLayout().getType() == org.docx4j.wml.STTblLayoutType.FIXED) {
 				return null;
 			}
-			int target = preferredTableWidthTwips(context, tblPr, containingCellWidthTwips(table, tblPr));
+			int container = containingCellWidthTwips(table, tblPr);
+			int target = preferredTableWidthTwips(context, tblPr, container);
 			if (target <= 0) return null;
 			int[] grid = gridWidths(table, table.getColCount());
 			if (grid == null || grid.length == 0) return null;
 			long total = 0;
 			for (int w : grid) total += w;
 			if (total <= 0 || total == target) return null;
+			/* A percentage <b>over 100</b> is not resolved against the container at all:
+			 * the declared grid is laid out at its absolute widths and the table overhangs.
+			 * Measured on a corpus document's header table, w:tblW 5656 pct = 113.12% of a
+			 * 9026-twip column, grid 9161+1303 = 523.2pt with w:tblInd -736: Word starts
+			 * its second cell at 72 - 36.8 + 458.05 = 493.25 (measured 493.4) and gives it
+			 * 65.15pt, so the 52.2pt string fits on one line, where docx4j scaled the grid
+			 * by 10210/10464 = 0.9757, started the cell at 483.0 and left a 52.0pt measure
+			 * - 0.2pt short, and the string wrapped.  Under 100 per cent the scaling stands
+			 * (the table-grid-pct probe measures it at 50%).  The probe's 120% twin says
+			 * otherwise, and the documents are followed here for the reason the fixed-layout
+			 * note above gives: the probe's grid is the harness's, so Word has no cached
+			 * layout to keep and falls back to the w:tblW.  @since 17.1.1 */
+			int base = container > 0 ? container : containerWidthTwips(context);
+			if (base > 0 && target > base && total > base) return null;
 			int[] out = new int[grid.length];
 			long given = 0;
 			for (int i = 0; i < grid.length; i++) {
