@@ -200,6 +200,12 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The first line-metrics alias registered for a document font wins, where a later pass used
+  to replace it. Two passes register one - the document's own w:altName, and Word's answer
+  for a font it cannot find - and the first is the more specific. No document reaches the
+  case today (scanned over 454: 52 have an altName-pass alias, 65 names, none replaced,
+  because the two passes are disjoint), so this is a contract for the passes to come rather
+  than a fix with a visible effect (CR-001 batch 43).
 - An East Asian font's single line is 1.3 times its usWin box (usWinAscent + usWinDescent),
   and takes no external leading at all - which is how Word draws it, measured on five faces:
   MS Gothic and SimSun 12.96pt at 10pt, Yu Gothic 16.80, Malgun Gothic and Microsoft

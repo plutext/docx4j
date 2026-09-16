@@ -1062,7 +1062,14 @@ public abstract class Mapper {
     	String value = family.trim();
     	if (key.length()==0 || value.length()==0 || key.equals(value.toLowerCase(java.util.Locale.ROOT))) return;
     	if (WordLineMetrics.hasOwnLineMetrics(documentFont)) return; // it has its own
-    	lineMetricsAliases.put(key, value);
+    	/* The first registration wins, and the pass order is what makes that right: the
+    	 * document's own w:altName ({@link #addAltNameSubstitutes}) says which font Word
+    	 * had, where Word's answer for a font it cannot find
+    	 * ({@link #addWordDefaultSubstitutes}) is a guess of last resort.  They collide
+    	 * only where the altName pass registered a line box for a font it could not map -
+    	 * the East Asian chain hop - and the default pass then mapped it; before 17.1.1
+    	 * the later put silently replaced Meiryo's box with Calibri's.  @since 17.1.1 */
+    	lineMetricsAliases.putIfAbsent(key, value);
     }
 
     /**
