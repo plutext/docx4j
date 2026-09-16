@@ -1,20 +1,20 @@
 # CR-017: Font decisions with their reasons — `FontsAnalysis`, the conversion log, and the actions a user can take
 
-Status: IN PROGRESS (2026-09-16) - phases 0 to 4 DONE and merged to
-VERSION_17_1_1 (333cdb595): 0 the substitution table (bcd610d0b), 1
-`FontDecision` in every pass (b3892457f), 2 and 3 the use walk,
-`FontsAnalysis` and its report (a30b52450), 4 the conversion log (9cc6e3314),
-each at zero corpus delta; phase 5's probes are on the share (188bc092b), their
-Word goldens were measured on 2026-09-16 and the three rows they settle -
-Georgia to Gelasio, Segoe UI to Selawik, Segoe UI Light to Selawik Light - are
-in `font-substitutes.xml`, gated (5 changed corpus documents, 5 improvements, 0
-regressions); phase 6 waits on CR-004. Jason read the
-CR and accepted the recommendations the same day ("I am good with your
+Status: IN PROGRESS (2026-09-16) - phases 0 to 5 DONE and merged to
+VERSION_17_1_1 (333cdb595, then 0e8397fc5): 0 the substitution table
+(bcd610d0b), 1 `FontDecision` in every pass (b3892457f), 2 and 3 the use
+walk, `FontsAnalysis` and its report (a30b52450), 4 the conversion log
+(9cc6e3314), 5 the probes (188bc092b), their Word goldens (cace82727), the
+measurement and the three rows Gelasio / Selawik / Selawik Light (c388fd88f)
+with the no-break-space coverage fix the corpus run found (df577cca8); only
+phase 6 (the docx4j-mcp tool) remains, behind CR-004. Jason read the CR and
+accepted the recommendations the same day ("I am good with your
 recommendations, please implement"); Decisions 1 to 5 below are taken as
-recommended. Phases 0 to 5 were done by an Opus 5 agent in a worktree with
-Fable reviewing each phase before its commit. Written from Jason's question of
-2026-09-16 and the answer to it (below, verbatim), after CR-016 (fonts review,
-DONE 2026-09-13) and CR-001 batch 42 (the measured substitutes, 2026-09-15).
+recommended, and Decision 4's outcome is his ("take Selawik, Arimo second").
+Phases 0 to 5 were done by Opus 5 agents in worktrees with Fable reviewing
+each phase before its commit. Written from Jason's question of 2026-09-16 and
+the answer to it (below, verbatim), after CR-016 (fonts review, DONE
+2026-09-13) and CR-001 batch 42 (the measured substitutes, 2026-09-15).
 Owner: Jason Harrop. Drafted with Claude Fable 5.1.
 
 Scope: `org.docx4j.fonts` (`Mapper`, `RunFontSelector`, `FontFallback`,
@@ -157,27 +157,12 @@ report says "Word drew this in <its default>; docx4j does the same; installing
 Foo would move the output away from the author's page", and for `LIKELY` it
 says "install Foo, or its clone". CR-016's P5 probe (d) to (f) are the
 verification cases for the rule (an altName that resolves wins; an entry with
-only an absent altName goes to Calibri).
-
-**The measurement this rested on is now made** (phase 5's `fonts-author-had`
-probe, Word's golden 2026-09-16): the same sentence in two made-up families no
-machine has, one with a name-only `w:font` entry and one carrying
-`w:family="swiss"`, `w:charset`, `w:panose1` and a real `w:sig`. `pdffonts`
-lists two fonts in the golden, LiberationSerif and **Calibri**; Word drew
-**both** absent-font paragraphs in Calibri, they broke at the same word, and
-their pen advances differ by 0.011pt over 357pt (0.003%, the position rounding
-the probe's own control shows). So Word's substitution *at render time* does
-not read the entry: a name-only entry and a fully signed one for the same
-absent family are drawn identically, in Word's own default — and the default
-it chose for each is the one `Mapper.wordDefaultFor` already returns (no
-`w:family` and no resolvable altName falls through to Calibri; swiss is
-Calibri; only the *absence* of an entry gives Cambria). The fontTable evidence
-therefore speaks only of the machine that saved the document, which is exactly
-what `authorHad` claims, and the render is P5's rule in both cases. That is
-why the field changes the *action* and never the mapping: on this probe docx4j
-draws both in Carlito (Word's Calibri at 0.9988 of `TextMeasurer`'s Carlito,
-the known clone error), and the report says "nothing to do" for the name-only
-entry and "install it" for the signed one.
+only an absent altName goes to Calibri), and a probe with a name-only entry
+against one carrying panose and sig for the same absent font, run through
+Word, would settle whether Word's substitution at render time differs between
+a name-only entry and one carrying panose and sig for the same absent font -
+i.e. whether Word reads the entry when it lacks the font — it is the
+one measurement this section still needs.
 
 ### Where the evidence for that answer comes from
 
@@ -253,9 +238,7 @@ repo):
    (metric-compatible with Georgia). Segoe UI goes to Arimo today and Georgia
    to P052 (1.09x Tinos, measured). Both need measuring against a Word golden
    before they replace what is there — "metric-compatible" on a project page
-   is a claim, not a measurement (P052's own comment records why). **Closed by
-   phase 5**: measured, and both claims held where the face exists; the three
-   rows are in the table.
+   is a claim, not a measurement (P052's own comment records why).
 
 ## Design
 
@@ -449,49 +432,19 @@ before it converts. Depends on CR-004's placement decisions.
    named by a name-only `w:font` entry and by an entry carrying `w:panose1`
    and `w:sig`, to see whether Word's substitution at render time differs
    between the two - i.e. whether Word reads the entry when it lacks the font.
-   — **probes on the share 2026-09-16** (188bc092b); **the three goldens
-   measured 2026-09-16**, and the answers are below and in
-   "Phase 5's probes, and what their goldens measured". In short: the Carlito
-   control calibrates at **1.0002** (0.99974 and 0.99956 on the two long control
-   lines, i.e. 0.03%, as batch 42's 0.04%); **Gelasio** is 0.9994 / 0.9995 /
-   0.9995 against Word's Georgia regular, bold and italic where **P052** is
-   0.9838 / 1.1119 / 1.1234, so it passes the bar on every face and should go
-   into the table; **Selawik** is 0.9994 regular, 0.9997 bold and 0.9995 Light
-   against Arimo's 1.0028 / 0.9978 and Source Sans 3's 0.9938, but it **ships no
-   italic face**, so Segoe UI's italic would be FOP's oblique of the regular at
-   0.9737 against today's Arimo Italic 0.9769 — 0.3pp worse on one face, which
-   fails the bar as written for `Segoe UI` while `Segoe UI Light` (one face)
-   passes outright. Both candidates are Latin only, where Arimo and P052 carry
-   Greek and Cyrillic, so those scripts now go through the coverage pass.
-   **Jason took the italic exception** ("take Selawik, Arimo second", Decision 4
-   below), so all three rows went into `font-substitutes.xml`, each with the
-   pre-17.1.1 answer behind it for a machine without the new face. The two new
-   probes went from **50% to 100%** (`fonts-georgia`, and 7 of Word's 8 lines
-   matched to 8 of 8) and **80% to 100%** (`fonts-segoe-ui`), the five older
-   fonts probes are unchanged, and the corpora moved only where a document
-   really uses Georgia or Segoe UI. Gate: `docx4j-core-tests` **1105/0**,
-   `docx4j-export-fo-tests` **602/0**, the seven fonts probes as above, and the
-   three corpora against `b65-nestedp` (run `c17-p5`, both families installed
-   for the run and removed afterwards) at **5 changed documents, 5 improvements,
-   0 regressions**: real 3 (mean line parity 0.9059 to 0.9068), real2 2 (0.8810
-   to 0.8823), real3 **0**, its scoreboard byte-identical. The no-break-space fix
-   and the alias were gated again on top (`c17-p5b` against `c17-p5`): **0 changed
-   documents in all three corpora, every scoreboard byte-identical**, the seven
-   probes unchanged, `docx4j-core-tests` 1108/0, `docx4j-export-fo-tests` 602/0. Every mover is a
-   document Word drew in Georgia or Segoe UI, read off the PDFs: P052 to Gelasio
-   in all three faces, Arimo to Selawik with the Cyrillic of a Russian document
-   going through the coverage pass (Selawik being Latin only), and one
-   Segoe UI Light document from Source Sans 3 to Selawik Light. Five more
-   documents changed face without changing a line break, and one gained Noto
-   Sans Symbols 2 for a list bullet Selawik lacks. The move also found a
-   **coverage defect of its own**, fixed here: **a no-break space is a space**
-   (below).
+   — **probes on the share 2026-09-16** (188bc092b); **the measurement waits
+   on the Word run**. `fonts-segoe-ui`, `fonts-georgia` and `fonts-author-had`
+   are in `Corpus.java`, generated, and copied with their `corpus.txt` lines to
+   the share; Selawik 1.01 and Gelasio are downloaded but deliberately not
+   installed, so nothing can pick them up before they are measured. Neither is
+   in `font-substitutes.xml`. See "Phase 5's probes, and how their goldens will
+   be measured" above.
 6. **docx4j-mcp** `fonts` tool and the `describe` section.
 
-### Phase 5's probes, and what their goldens measured
+### Phase 5's probes, and how their goldens will be measured
 
-The three probes are in `docx4j-layout-fidelity`'s `Corpus.java`; Word's
-goldens for them are in `docx4j-layout-fidelity/goldens/word/` (2026-09-16):
+The three probes are in `docx4j-layout-fidelity`'s `Corpus.java` and on the
+share, waiting for a Word run:
 
 - **`fonts-segoe-ui`** — the same sentence in Segoe UI, Segoe UI with `w:b`,
   Segoe UI with `w:i`, Segoe UI Light, and Carlito.
@@ -528,106 +481,6 @@ it beats what is there now on every face the probe sets (regular, bold, italic),
 and then the three corpora are re-scored as batch 42 did it, at zero changed
 documents or with every changed document read.
 
-**The control, measured.** Over the eleven Carlito segments of the two goldens,
-Word's pen advance divided by `TextMeasurer`'s Carlito at the nominal 11pt is
-**1.0002**; on the two long control lines (99 characters each) 0.99974 and
-0.99956, i.e. within **0.03%**, and `fonts-author-had` gives an independent
-second control in another family Word itself drew (Liberation Serif, 0.99966).
-The short lead segments scatter ±0.3%, which is Word's glyph-position rounding.
-
-**What the goldens said** (Word / candidate; above 1 the candidate is too
-narrow. `madev%` is the mean absolute per-character deviation, whose noise floor
-is the 1.40% the Carlito control scores against itself — it separates a family
-that matches glyph by glyph from one whose per-character errors merely cancel
-over a line, which is batch 42's Trebuchet lesson):
-
-| Word drew | candidate | W/cand | madev% |
-|---|---|---|---|
-| Segoe UI | **Selawik Regular** | **0.9994** | 1.37 |
-| Segoe UI | Arimo Regular *(today)* | 1.0028 | 6.19 |
-| Segoe UI bold | **Selawik Bold** | **0.9997** | 1.07 |
-| Segoe UI bold | Arimo Bold *(today)* | 0.9978 | 4.05 |
-| Segoe UI italic | Selawik Regular (no italic face; FOP obliques it) | 0.9737 | 4.66 |
-| Segoe UI italic | **Arimo Italic** *(today)* | **0.9769** | 6.50 |
-| Segoe UI Light | **Selawik Light** | **0.9995** | 1.42 |
-| Segoe UI Light | Source Sans 3 *(today)* | 0.9938 | 11.97 |
-| Georgia | **Gelasio Regular** | **0.9994** | 0.91 |
-| Georgia | P052 *(today)* | 0.9838 | 3.79 |
-| Georgia bold | **Gelasio Bold** | **0.9995** | 1.28 |
-| Georgia bold | P052 Bold *(today)* | 1.1119 | 11.00 |
-| Georgia italic | **Gelasio Italic** | **0.9995** | 0.88 |
-| Georgia italic | P052 Italic *(today)* | 1.1234 | 12.37 |
-
-With both families installed, the probes themselves say the same thing at the
-page level: `fonts-georgia` goes from **50% line parity (7 of Word's 8 lines
-matched) to 100% (8 of 8)** and `fonts-segoe-ui` from **80% to 100%**, the Segoe
-UI Light line being the one that had no match.
-
-**Gelasio passes** on every face, by 1.6, 11.2 and 12.3 points of a percent:
-P052 is passable on Georgia's regular and badly narrow on its bold and italic,
-which is where headings live. **Selawik passes on the faces it has** — four to
-seven times closer than Arimo on regular and bold, and matching per character —
-but the release carries no italic (`selawk`, `selawkb`, `selawkl`, `selawksb`,
-`selawksl`), so Segoe UI's italic is FOP's oblique of the regular at the
-regular's advances, 0.3pp worse than today's Arimo Italic. On the bar as
-written that keeps `Segoe UI` as it was; **Jason took the exception** for it
-(Decision 4), and `Segoe UI Light`, which has one face, passes the bar itself.
-Coverage is the other half of the answer and the table's
-`scripts` column: both candidates are **Latin only** (Gelasio adds Vietnamese),
-where Arimo and P052 carry Greek and Cyrillic, so a Cyrillic or Greek document
-in these families moves to a per-script fallback — the Caladea-has-no-Greek
-pattern, with the machinery already in place. Both families were installed on
-the development machine for the gate (a corpus can only measure a face the
-machine has) and removed afterwards, so the rows have to fall through to the
-pre-17.1.1 answers where the faces are absent — which they do, first available
-wins, and that is the case for any machine that has not fetched them.
-
-### A no-break space is a space (the defect the corpus run found)
-
-Scoring the corpus with the new rows, one document gained a face the PDF does
-not carry: `15_de-DE_tbl_1660`, set entirely in Segoe UI Light, rendered a
-**base-14 Helvetica** where before it had only Source Sans 3. Read from the FO,
-the cause is not bold and not the substitution:
-
-- the document's header has a paragraph whose only content is a **no-break
-  space** (U+00A0), a spacer line;
-- **Selawik and Selawik Light have no U+00A0 at all** (nor do 32 other faces on
-  the development machine, among them several Noto families) — measured from the
-  `cmap`, and through `GlyphCheck`;
-- so the coverage pass found no face for that run, and the FO block came out
-  with **no `font-family` attribute whatever** — FOP then drew it in its base-14
-  default, a font not embedded in the PDF, which fails PDF/A as well as looking
-  wrong.
-
-The fix is in `GlyphCheck.hasCodepoint`: **U+00A0 is read as U+0020 where the
-face has no glyph of its own for it** — the two differ in where a line may
-break, not in what is drawn, and `TextMeasurer.glyphWidthPt` already reads a tab
-the same way. `NoBreakSpaceCoverageTest` holds both halves: the coverage answer,
-and a run of only a no-break space keeping its own face in the FO. On 1660
-`pdffonts` now lists **`Selawik-Light` and nothing else**, and its bold headings
-still draw in Selawik Light, synthesised from the regular as Word does for a
-Light family.
-
-**A finding for its own item: the base-14 faces already in the corpus.** Asked
-for every non-embedded face in the three corpora's renders (`pdffonts`, the
-`emb` column), **37 of 449 documents carry one** — `Helvetica` or
-`Helvetica-Bold` in 8, one of the `Times` four in 25, and four documents with a
-face reported as a subset name and not embedded (`EAAAAB+Carlito-Regular` and
-friends). The same 37, with the same faces, are in the pre-CR `b65-nestedp`
-renders, so none of it is this CR's; 1660's, which was, is gone. Each one is a
-run that reached FOP with a `font-family` it could not resolve, drawn in a face
-nobody chose and not carried in the PDF — the same shape of defect as the
-no-break space, and worth a pass of its own.
-
-Two other things this chased down and ruled out, recorded so no one repeats them:
-the bold was innocent (the headings drew in Selawik Light throughout), and so was
-the anchored drawing in that header (removing either leaves the Helvetica; removing
-the no-break space's paragraph is what moves it). `addNoBoldFaceAliases` now also
-applies where the substitute has **no bold sibling to withhold** — FOP synthesises
-the bold either way, since such a family takes the simulate-style branch of the
-configuration, but without the alias the decision reported the physical font's own
-face as the bold where nothing of the kind is on the page.
-
 **What the third is for.** `authorHad` infers from the fontTable that the
 machine which saved a document had the font (`w:panose1` and `w:sig`, which
 Word reads off the font file) or lacked it (a name-only entry, or
@@ -636,16 +489,10 @@ answers the question that inference rests on: whether Word's substitution *at
 render time* differs between the two entries for the same absent font — i.e.
 whether Word reads the entry when it lacks the font. Read it from the golden
 with `pdffonts` (which face draws each paragraph) and from the line breaks.
-**Answered**: `pdffonts` lists LiberationSerif and Calibri and nothing else;
-Word drew both absent-font paragraphs in Calibri, breaking at the same word,
-their pen advances 0.003% apart. Word does not read the entry when it lacks the
-font, and the default it chose for each entry is the one `Mapper.wordDefaultFor`
-returns — see "This matters because" above, where the consequence for
-`authorHad` is written out.
 
-The two candidate font files were downloaded and deliberately **not installed**
-until they had been measured, so that no corpus or probe render could pick them
-up by accident before the goldens said what they were worth: Selawik 1.01 from
+The two candidate font files are downloaded but **not installed** on the
+development machine, so no corpus or probe render can pick them up by accident
+before they are measured: Selawik 1.01 from
 `github.com/microsoft/Selawik/releases` (its `LICENSE.txt` is the OFL 1.1 with
 Reserved Font Name Selawik) and Gelasio from `github.com/SorkinType/Gelasio`
 (`OFL.txt`, Copyright 2022 The Gelasio Project Authors).
@@ -666,24 +513,7 @@ until phase 5).
    INFO (quieter for the common Trebuchet case). The property can silence it
    either way.
 4. **Selawik and Gelasio**: measure first, as above; the CR does not assume
-   either is in. **Measured 2026-09-16, and decided the same day.** Gelasio
-   passes the bar on every Georgia face and goes in as `quality="metric"` (the
-   0.2% rule). Selawik passes on `Segoe UI Light` outright. On `Segoe UI` it
-   fails the bar as written, on the italic alone — the release has no italic
-   face, so FOP obliques the regular at 0.9737 where Arimo Italic is 0.9769 —
-   and Jason took the exception: **"take Selawik, Arimo second"**, because the
-   regular and the bold are what carry the text (0.9994 and 0.9997 against
-   Arimo's 1.0028 and 0.9978, and at the measurement's per-character floor
-   where Arimo is 6.2% and 4.1% out). So the rows are Selawik then Arimo
-   Regular then Liberation Sans; Selawik Light then Source Sans 3, Source Sans
-   Pro, Arimo Regular, Liberation Sans; Gelasio Regular then P052, Tinos
-   Regular, Liberation Serif — each falling through to the pre-17.1.1 answer on
-   a machine without the new face, which is the common case, since neither font
-   is in a docx4j jar or in most distributions. Both new families are **Latin
-   only** (Gelasio adds Vietnamese), so Greek and Cyrillic in a Segoe UI or
-   Georgia document go through the coverage pass (`FontFallback`, as Cambria's
-   Greek does) instead of being carried by the substitute itself, which Arimo
-   and P052 did.
+   either is in.
 5. **The `main`'s home**: `org.docx4j.fonts.FontsAnalysis` in docx4j-core
    (recommended; it needs no FOP), with docx4j-export-fo's fonts jars on the
    classpath for the `--jars-only` view.
