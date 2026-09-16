@@ -178,7 +178,7 @@ for this channel — flagging, not designing, here.
   ImportXHTML pattern) vs a reactor module.  Separate repo keeps the Java 17
   floor, the MCP SDK's release cadence, and registry versioning out of the
   library's; reactor keeps CI simple.  Leaning separate repo, with this CR as
-  the planning home either way.  DECISION NEEDED (jharrop).
+  the planning home either way.  **DECIDED (Jason, 2026-09-17): the separate repository** - `../docx4j-mcp` locally, origin `https://github.com/plutext/docx4j-mcp.git`, its own `CR-mcp-server.md` as the planning home for the tools (v0.1.0 shipped there; the `anonymize` and `paginate` tools in its phase 4). Work that adds a tool - CR-017 phase 6 (the `fonts` tool and the `describe` section), CR-019 (`anonymize` once phase 1 ships) - lands in that repository and is recorded in its CR; this CR stays the record of the decision.
 - **JSON→XML for `fill_template`**: OpenDoPE binds XPaths against the custom
   XML part, so XML is the native payload.  Agents prefer JSON.  Options: (a)
   accept both, converting JSON with a documented canonical mapping; (b) XML
