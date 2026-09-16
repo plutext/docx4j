@@ -200,6 +200,19 @@ public final class WordLineMetrics {
 	 *
 	 * @since 17.1.1
 	 */
+	/**
+	 * Whether the table flags this family East Asian, so that its line is
+	 * {@link #EAST_ASIAN_FACTOR} x its usWin box. False for a family the table does not
+	 * know, which is the answer a caller wants: the question is only ever asked to decide
+	 * whether to take <em>this</em> family's line box.
+	 *
+	 * @since 17.1.1
+	 */
+	public static boolean isEastAsianFamily(String documentFont) {
+		int[] t = documentFont == null ? null : lookup(documentFont);
+		return t != null && t.length > 6 && t[6] != 0;
+	}
+
 	public static boolean isTableFamily(String documentFont) {
 		if (documentFont == null) return false;
 		String key = documentFont.trim().toLowerCase(java.util.Locale.ROOT);

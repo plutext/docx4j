@@ -200,6 +200,14 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A w:altName chain which ends at an East Asian family this machine does not have carries
+  that family's line box, while the chain goes on to find the face that renders the glyphs.
+  Measured on a corpus document whose table-of-contents entries name a font no machine has,
+  with Meiryo as their alternate: Word draws Meiryo and its pitch is 22.3pt at 10pt, where
+  docx4j drew Carlito with Calibri's box and got 14.0; it is 22.4 now, and the document goes
+  from 62 pages to 81 of Word's 87. Narrow by design - only an East Asian chain end, since a
+  Latin one's line box was measured already right on ten documents. Its harness line parity
+  falls all the same, for a reason recorded in the commit (CR-001 batch 43).
 - The first line-metrics alias registered for a document font wins, where a later pass used
   to replace it. Two passes register one - the document's own w:altName, and Word's answer
   for a font it cannot find - and the first is the more specific. No document reaches the
