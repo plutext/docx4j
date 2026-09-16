@@ -81,6 +81,18 @@ are fine on Opus. Prefer Fable 5 for:
 If you are a smaller model and an investigation keeps not converging, say so
 and suggest rerunning on a stronger model rather than guessing.
 
+## FOP defects and limitations
+
+Anything the XSL-FO/PDF work has to route around in Apache FOP is recorded, when found, as a
+numbered item in section 6.6 ("FOP limitations for Phase 6") of the Enterprise CR-001,
+`../Plutext-Enterprise-Java-11/docs/developer/change-requests/CR-001-word-layout-fidelity.md`,
+with the measurement, the docx4j-side workaround (named, so it can be dropped when a fixed FOP
+ships) and the upstream status; update that section's closing "Open:" tally. The fix itself goes
+into the fork at `../xmlgraphics-fop-plutext` on a branch named for it, with the JIRA text drafted
+for Jason to file (JIRA in project FOP, then a GitHub PR titled `FOP-####: ...`, as FOP-3328 and
+FOP-3330 were), and the commit subject takes the number once it exists. docx4j-export-fo builds
+against released FOP, so a docx4j workaround is still needed until the fix is released.
+
 ## Portfolio task registry
 
 This repository's change requests are indexed, with their dependencies on work in the other
