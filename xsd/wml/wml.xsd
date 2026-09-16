@@ -13750,6 +13750,7 @@ PRINCIPLES:
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
+			<xsd:attribute ref="mc:Ignorable" use="optional" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="CT_Footnotes">

@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
@@ -57,8 +58,30 @@ public final class PeoplePart extends JaxbXmlPart<org.docx4j.w15.CTPeople> {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.OFFICE_2011_PEOPLE);
 	}
-	
-	
-	
-	
+
+	/**
+	 * Hand this part's mc:Ignorable value to the prefix mapper, so that the
+	 * namespaces it names (w14 over w14:paraId, for example) are declared on
+	 * this part's root element.  Word requires that; see further
+	 * {@link org.docx4j.jaxb.McIgnorableNamespaceDeclarator}.
+	 *
+	 * NB it is up to you to jaxbElement.setIgnorable.
+	 *
+	 * @since 17.1.1
+	 */
+	@Override
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	/**
+	 * @since 17.1.1
+	 */
+	@Override
+	public String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }
+
 }

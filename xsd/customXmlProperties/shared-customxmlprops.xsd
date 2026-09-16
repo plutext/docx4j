@@ -64,6 +64,9 @@ o generate the classes (from the same directory)
   				</xsd:restriction>
   			</xsd:simpleType>
   		</xsd:attribute>
+  		<!-- CR-018 item 4: without this, anything Word adds here is dropped
+  		     on re-marshal.  JAXB generates getOtherAttributes(). -->
+  		<xsd:anyAttribute processContents="lax"/>
   	</xsd:complexType>
   </xsd:element>
 </xsd:schema>

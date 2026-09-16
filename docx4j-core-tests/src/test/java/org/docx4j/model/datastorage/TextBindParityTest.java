@@ -55,7 +55,7 @@ public class TextBindParityTest {
 	}
 
 	static class CheckboxCheckedFinder extends CallbackImpl {
-		String checkedVal = null;
+		Boolean checkedVal = null;
 		@Override
 		public List<Object> apply(Object o) {
 			if (o instanceof org.docx4j.wml.SdtRun || o instanceof org.docx4j.wml.SdtBlock) {
@@ -64,7 +64,7 @@ public class TextBindParityTest {
 					org.docx4j.w14.CTSdtCheckbox cb = (org.docx4j.w14.CTSdtCheckbox)
 							sdtPr.getByClass(org.docx4j.w14.CTSdtCheckbox.class);
 					if (cb!=null && cb.getChecked()!=null) {
-						checkedVal = cb.getChecked().getVal();
+						checkedVal = Boolean.valueOf(cb.getChecked().isVal());
 					}
 				}
 			}
@@ -211,7 +211,7 @@ public class TextBindParityTest {
 		assertFalse(implementation, allText.contains("CHKOLD"));
 		CheckboxCheckedFinder checkedFinder = new CheckboxCheckedFinder();
 		new TraversalUtil(pkg.getMainDocumentPart().getContent(), checkedFinder);
-		assertEquals(implementation + ": w14:checked not updated", "1", checkedFinder.checkedVal);
+		assertEquals(implementation + ": w14:checked not updated", Boolean.TRUE, checkedFinder.checkedVal);
 
 		// picture ccs (phase 4)
 		DrawingFinder drawingFinder = new DrawingFinder();
