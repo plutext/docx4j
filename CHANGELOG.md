@@ -200,6 +200,24 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The w:suff separator between a numbered paragraph's label and its text is a space character
+  in the PDF's text layer, as it is in Word's. Word paints label, separator, text on one line
+  and writes the separator - a tab, or a space - as one space glyph whose quad is its advance:
+  on one corpus report's first heading Word's label runs 127.49..134.45 with a space quad
+  134.45..138.53 before the text at 138.53, and on another's the label ends at 93.02 with a
+  space quad 93.02..97.01 before the text at 97.01. docx4j sets the label as an
+  fo:list-item-label beside an fo:list-item-body, so the separator was geometry and no
+  character at all, and the label fused with the word after it. The styles-numpr-ilvl-only
+  golden probe is the case with Word's own answer to hand: its item extracted as
+  "1.1.(b) L, direct w:numPr of w:ilvl 1 only" where Word's golden reads "1.1. (b) L, ...",
+  and it goes from 50% to 100% line parity. The space is added to the label's line with the
+  gap's own width, so no glyph moves (measured on every document that changed: identical
+  non-space glyph positions, identical page counts, identical pdftotext -bbox-layout boxes).
+  927 lines of the largest corpus carried the defect and 565 remain - most of them labels as
+  wide as their own column, which is a layout defect of its own, and the rest genuine tabs;
+  over the three corpora line parity goes 0.9143 to 0.9154, 0.8901 to 0.8920 and 0.9327 to
+  0.9351, with 13 documents improved and none worse (CR-001 batch 45).
+
 - A justified line's word spaces compress to 0.755 of their nominal width to bring the next
   word up, where the limit was 0.760. Two probes put Word's own floor in (0.7500, 0.7586]: each
   of their 32 cases is a two-line justified paragraph whose next word is built so that pulling

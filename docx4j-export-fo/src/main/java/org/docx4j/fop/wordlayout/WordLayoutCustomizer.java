@@ -204,6 +204,44 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	}
 
 	/**
+	 * Whether the {@code w:suff} separator between a list item's number and its text is
+	 * written into the PDF's text layer as a space glyph, as Word writes it.
+	 *
+	 * <p>Word paints the label, then the separator - a tab, or a space - and then the
+	 * text, and its PDF carries one <b>space character</b> for that separator whose quad
+	 * is the separator's advance.  Measured on one corpus report's first heading, Word's
+	 * label runs 127.49..134.45 and a space quad 134.45..138.53 precedes the text at
+	 * 138.53; on another's, the label ends at 93.02 and a space quad 93.02..97.01
+	 * precedes the text at 97.01.  docx4j lays the label out as an
+	 * {@code fo:list-item-label} beside an {@code fo:list-item-body}, so the gap between
+	 * them is geometry and no character is written at all, and the label fuses with the
+	 * word after it.  The {@code styles-numpr-ilvl-only} golden probe carries Word's own
+	 * answer: its item extracted as {@code 1.1.(b) L, direct w:numPr of w:ilvl 1 only}
+	 * where Word's golden reads {@code 1.1. (b) L, ...}, and it goes from 50% to 100%
+	 * line parity.  847 lines over the three real-document corpora differ from Word's by
+	 * that one space (CR-001 batch 45, ledger5 section 1f).
+	 *
+	 * <p>The space is appended to the label's line area with the gap's own width, so no
+	 * glyph moves: the body block is positioned from {@code body-start()}, not from the
+	 * label's width.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.labelSuffixSpace=false leaves the gap empty.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LABEL_SUFFIX_SPACE
+			= "docx4j.convert.out.fo.wordLayout.labelSuffixSpace";
+
+	public static boolean labelSuffixSpace() {
+		String v = System.getProperty(LABEL_SUFFIX_SPACE);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LABEL_SUFFIX_SPACE, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
 	 * Whether a word too long for a line of its own is broken inside it, at the last
 	 * character that fits - Word's last resort, and the only way such a word does not
 	 * run off the page.  UAX #14, which FOP follows, offers no break inside a word like

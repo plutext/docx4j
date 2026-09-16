@@ -2198,7 +2198,21 @@ public class XsltFOFunctions {
 			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth);
 			// -1 in the hanging case where the label fits, so the hanging indent stands
 			indent.setXslFOListBlock(foListBlock, pdbs);
-			indentHandledByNumbering = true; 
+			indentHandledByNumbering = true;
+
+			/* The w:suff separator (ECMA-376 17.9.29) between the number and the text.
+			 * Here the label and the body are separate blocks, so the separator is the
+			 * geometry between them and nothing is written for it; Word's PDF carries a
+			 * space glyph.  The label block records which separator the level asks for
+			 * and WordListItemLayoutManager writes the space, of exactly the gap's
+			 * width, into the label's line.  "nothing" is not recorded: Word writes no
+			 * character for it.  @since 17.1.1 */
+			String suff = triple.getLvl()!=null && triple.getLvl().getSuff()!=null
+					&& triple.getLvl().getSuff().getVal()!=null
+					? triple.getLvl().getSuff().getVal() : "tab";
+			if (WordLayoutFixups.isEnabled() && ("tab".equals(suff) || "space".equals(suff))) {
+				foListItemLabelBody.setAttribute(WordLayoutFixups.HINT_LABEL_SUFFIX, suff);
+			}
 			
 //	        		// Set the font
 //	        		if (triple.getNumFont()!=null) {

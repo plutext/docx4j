@@ -22,7 +22,19 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.fop.area.Area;
+import org.apache.fop.area.Block;
+import org.apache.fop.area.LineArea;
+import org.apache.fop.area.Trait;
+import org.apache.fop.area.inline.InlineArea;
+import org.apache.fop.area.inline.InlineParent;
+import org.apache.fop.area.inline.TextArea;
+import org.apache.fop.fo.FONode;
+import org.apache.fop.fo.FObj;
 import org.apache.fop.fo.flow.ListItem;
+import org.apache.fop.fonts.Font;
+import org.apache.fop.fonts.FontInfo;
+import org.apache.fop.fonts.FontTriplet;
 import org.apache.fop.layoutmgr.KnuthBox;
 import org.apache.fop.layoutmgr.KnuthElement;
 import org.apache.fop.layoutmgr.KnuthPenalty;
@@ -30,6 +42,7 @@ import org.apache.fop.layoutmgr.LayoutContext;
 import org.apache.fop.layoutmgr.LayoutManager;
 import org.apache.fop.layoutmgr.ListElement;
 import org.apache.fop.layoutmgr.Position;
+import org.apache.fop.layoutmgr.PositionIterator;
 import org.apache.fop.layoutmgr.list.ListItemLayoutManager;
 
 /**
@@ -47,6 +60,9 @@ import org.apache.fop.layoutmgr.list.ListItemLayoutManager;
  * @since 17.0.5
  */
 public class WordListItemLayoutManager extends ListItemLayoutManager {
+
+	private static final org.slf4j.Logger log
+			= org.slf4j.LoggerFactory.getLogger(WordListItemLayoutManager.class);
 
 	private static final Field BODY_LIST;
 	static {
@@ -95,6 +111,178 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 			result.add(new KnuthBox(0, null, true));
 			return;
 		}
+	}
+
+	// ---- the w:suff separator in the text layer ------------------------------------
+
+	/** the label's and the body's block areas of the fragment being added, in the order
+	 *  {@link ListItemLayoutManager#addAreas} adds them */
+	private Block labelArea, bodyArea;
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>Word paints a numbered paragraph as label, separator, text on one line, and its
+	 * PDF writes the {@code w:suff} separator - a tab, or a space - as a single space
+	 * character whose quad is the separator's advance.  Here the label and the text are
+	 * two blocks of an {@code fo:list-item} and the separator is the geometry between
+	 * them, so the text layer had no character there at all and a numbered paragraph's
+	 * label fused with the word after it: the {@code styles-numpr-ilvl-only} golden probe
+	 * extracted as {@code 1.1.(b) L, direct w:numPr of w:ilvl 1 only} where Word's golden
+	 * reads {@code 1.1. (b) L, ...}, and 847 lines over the three real-document corpora
+	 * differ from Word's by that one space (CR-001 batch 45).
+	 *
+	 * <p>The space is added to the label's line once both areas exist, with the measured
+	 * gap as its width, so it is the text layer alone that changes: the body block is
+	 * placed from {@code body-start()} and never from the label's width, and a line area
+	 * is rendered by walking its children, so no glyph moves.</p>
+	 */
+	@Override
+	public void addAreas(PositionIterator parentIter, LayoutContext layoutContext) {
+		labelArea = null;
+		bodyArea = null;
+		super.addAreas(parentIter, layoutContext);
+		try {
+			if (WordLayoutCustomizer.labelSuffixSpace()) addLabelSuffixSpace();
+		} catch (RuntimeException e) {
+			// the text layer is not worth failing a render for
+			log.warn("list label suffix space: " + e.getMessage(), e);
+		}
+		labelArea = null;
+		bodyArea = null;
+	}
+
+	@Override
+	public void addChildArea(Area childArea) {
+		super.addChildArea(childArea);
+		if (!(childArea instanceof Block)) return;
+		if (labelArea == null) {
+			labelArea = (Block) childArea;
+		} else if (bodyArea == null) {
+			bodyArea = (Block) childArea;
+		}
+	}
+
+	/** The space glyph Word writes for the level's {@code w:suff}, appended to the
+	 *  label's first line with the width of the gap to the text. */
+	private void addLabelSuffixSpace() {
+
+		if (labelArea == null || bodyArea == null) return;   // a body-only fragment
+		if (labelSuffix() == null) return;                   // "nothing", or not ours
+
+		LineAt label = firstLine(labelArea, 0);
+		LineAt body = firstLine(bodyArea, 0);
+		if (label == null || body == null) return;
+		// right to left is Word's own arrangement and is not measured here
+		if (label.line.getBidiLevel() > 0 || body.line.getBidiLevel() > 0) return;
+
+		int content = 0;
+		TextArea model = null;
+		for (Object o : label.line.getInlineAreas()) {
+			if (!(o instanceof InlineArea)) continue;
+			InlineArea ia = (InlineArea) o;
+			content += ia.getAllocIPD();
+			TextArea t = lastTextArea(ia);
+			if (t != null) model = t;
+		}
+		if (model == null) return;                           // a picture bullet, or empty
+
+		int gap = body.x - (label.x + content);
+		if (gap <= 0) return;                                // the label fills the column
+
+		TextArea space = space(model, gap);
+		if (space != null) label.line.addChildArea(space);
+	}
+
+	/** The {@code w:suff} the level asks for, from the label block's
+	 *  {@code docx4j:label-suffix}, or null where none was written. */
+	private String labelSuffix() {
+		ListItem item = getListItemFO();
+		if (item == null || item.getLabel() == null) return null;
+		for (FONode.FONodeIterator it = item.getLabel().getChildNodes(); it != null && it.hasNext(); ) {
+			FONode child = it.next();
+			if (!(child instanceof FObj)) continue;
+			String suffix = WordLineLayoutManager.foreignAttribute(
+					(FObj) child, WordLayoutElementMapping.LABEL_SUFFIX);
+			if (suffix != null && suffix.length() > 0) return suffix;
+		}
+		return null;
+	}
+
+	/** A text area of one space character, drawn in the label's font and given the gap's
+	 *  width by a character-spacing adjustment (PDF {@code Tc}), so that what the text
+	 *  layer reports for it is the separator Word wrote. */
+	private TextArea space(TextArea model, int gap) {
+
+		FontTriplet triplet = (FontTriplet) model.getTrait(Trait.FONT);
+		Object size = model.getTrait(Trait.FONT_SIZE);
+		if (triplet == null || !(size instanceof Integer)) return null;
+		FontInfo fontInfo = getFObj() == null || getFObj().getFOEventHandler() == null
+				? null : getFObj().getFOEventHandler().getFontInfo();
+		if (fontInfo == null) return null;
+		Font font = fontInfo.getFontInstance(triplet, ((Integer) size).intValue());
+		if (font == null || !font.hasChar(' ')) return null;
+
+		TextArea space = new TextArea();
+		space.addTrait(Trait.FONT, triplet);
+		space.addTrait(Trait.FONT_SIZE, size);
+		Object colour = model.getTrait(Trait.COLOR);
+		if (colour != null) space.addTrait(Trait.COLOR, colour);
+		// the label's own structure element, so that a tagged PDF has somewhere to put it
+		Object struct = model.getTrait(Trait.STRUCTURE_TREE_ELEMENT);
+		if (struct != null) space.addTrait(Trait.STRUCTURE_TREE_ELEMENT, struct);
+		space.setIPD(gap);
+		space.setBPD(model.getBPD());
+		space.setBlockProgressionOffset(model.getBlockProgressionOffset());
+		space.setBaselineOffset(model.getBaselineOffset());
+		if (model.getBidiLevel() >= 0) space.setBidiLevel(model.getBidiLevel());
+		// the glyph is blank, so the adjustment moves nothing: it makes the space's own
+		// quad the separator's advance, which is what Word's PDF reports for it
+		space.setTextLetterSpaceAdjust(gap - font.getCharWidth(' '));
+		space.addWord(" ", gap, null, null, null, 0);
+		return space;
+	}
+
+	/** a line area and the x it is rendered at, both in millipoints from the item's own
+	 *  start edge (AbstractRenderer.renderBlocks: a block's own start-indent reaches its
+	 *  line children, and a nested block starts again from its container's position) */
+	private static final class LineAt {
+		private final LineArea line;
+		private final int x;
+		LineAt(LineArea line, int x) {
+			this.line = line;
+			this.x = x;
+		}
+	}
+
+	private static LineAt firstLine(Block block, int x) {
+		List<?> children = block.getChildAreas();
+		if (children == null) return null;
+		int base = x + block.getXOffset();
+		for (Object child : children) {
+			if (child instanceof LineArea) {
+				LineArea line = (LineArea) child;
+				return new LineAt(line, base + block.getStartIndent() + line.getStartIndent());
+			}
+			if (child instanceof Block) {
+				LineAt found = firstLine((Block) child, base);
+				if (found != null) return found;
+			}
+		}
+		return null;
+	}
+
+	/** the last text area under an inline area, whose font and baseline the space takes */
+	private static TextArea lastTextArea(InlineArea area) {
+		if (area instanceof TextArea) return (TextArea) area;
+		if (!(area instanceof InlineParent)) return null;
+		TextArea found = null;
+		for (Object child : ((InlineParent) area).getChildAreas()) {
+			if (!(child instanceof InlineArea)) continue;
+			TextArea t = lastTextArea((InlineArea) child);
+			if (t != null) found = t;
+		}
+		return found;
 	}
 
 	/** the LeadingGlue a block's element list ends with (after any aux box or penalty), or 0 */

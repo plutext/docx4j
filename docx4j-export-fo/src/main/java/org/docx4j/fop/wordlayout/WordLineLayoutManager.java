@@ -2007,7 +2007,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private final int wordLineBox;
     private final int wordBaseline;
 
-    private static String foreignAttribute(org.apache.fop.fo.FObj block, String localName) {
+    static String foreignAttribute(org.apache.fop.fo.FObj block, String localName) {
         if (block == null) return null;
         java.util.Map<?, ?> attrs = block.getForeignAttributes();
         if (attrs == null) return null;
