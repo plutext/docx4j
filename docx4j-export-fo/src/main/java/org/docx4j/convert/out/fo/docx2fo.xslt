@@ -306,9 +306,8 @@
 					<xsl:if
 						test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasEndnotesPart($conversionContext)">
 						
-				        <fo:block space-before="44pt" font-weight="bold" font-size="14pt">
-				          <xsl:text>Endnotes</xsl:text>
-				        </fo:block>
+						<!-- built in XsltFOFunctions, so the visitor pathway writes the same one -->
+						<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.endnotesHeading($conversionContext)" />
 						
 						<xsl:apply-templates
 								select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getEndnotes($conversionContext)" />

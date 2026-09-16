@@ -391,7 +391,8 @@ public class FopConfigUtil {
     		
     		
     		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
-    		
+    		addFamilyTriplet(rendererFont, pf, "normal", "normal");
+
     	} else {
     		// If we don't have to simulate-style, fall back to the old way of doing things
     		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
@@ -401,7 +402,9 @@ public class FopConfigUtil {
     		rendererFont.getFontTriplet().add(
     				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
     						weightToCSS2FontWeight(fontTriplet.getWeight())));
-		    			    
+    		addFamilyTriplet(rendererFont, pf, fontTriplet.getStyle(),
+    				weightToCSS2FontWeight(fontTriplet.getWeight()));
+
 		    addVariations(fontMapper, fontEntries, fontName, pf, rendererFont.getSubFont());
     	}
 		
@@ -427,6 +430,8 @@ public class FopConfigUtil {
 		rendererFont.getFontTriplet().add(
 				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
 						weightToCSS2FontWeight(fontTriplet.getWeight())));
+		addFamilyTriplet(rendererFont, pf, fontTriplet.getStyle(),
+				weightToCSS2FontWeight(fontTriplet.getWeight()));
 
 	    addVariations(fontMapper, fontEntries, fontName, pf, 
 	    		pf.getEmbedFontInfo().getSubFontName());
@@ -440,6 +445,33 @@ public class FopConfigUtil {
 		triplet.setStyle(style);
 		triplet.setWeight(weight);
 		return triplet;
+	}
+
+	/**
+	 * Also declare this face under the font's <b>family</b> name - "Carlito" beside
+	 * "Carlito Regular" - where the two differ.
+	 *
+	 * <p>RunFontSelector writes the face name, so the document's own text needs nothing
+	 * more; but a picture does. A metafile's text is drawn through AWT and written out by
+	 * Batik as SVG, and what Batik puts in {@code font-family} is the AWT font's family.
+	 * FOP resolves the SVG's families against this same configuration, so without the
+	 * family name it reported "Font Carlito,normal,400 not found. Substituting with
+	 * any" - one of its base-14 fonts, which the PDF names and does not embed
+	 * (CR-001, non-embedded fonts; CR-011's pathway).</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static void addFamilyTriplet(org.docx4j.convert.out.fopconf.Fonts.Font entry,
+			PhysicalFont pf, String style, String weight) {
+		if (pf==null || entry==null) return;
+		String family = pf.getFamilyName();
+		if (family==null || family.length()==0) return;
+		for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : entry.getFontTriplet()) {
+			if (family.equals(t.getName()) && eq(style, t.getStyle()) && eq(weight, t.getWeight())) {
+				return;
+			}
+		}
+		entry.getFontTriplet().add(createFontTriplet(family, style, weight));
 	}
 
 	private static void addVariations(Mapper fontMapper, List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
@@ -480,6 +512,7 @@ public class FopConfigUtil {
     	rendererFont.setEmbedUrl(pfVariation.getEmbeddedURI().toString());
     	rendererFont.setSubFont(subFontAtt);
 		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), style, weight));
+		addFamilyTriplet(rendererFont, pfVariation, style, weight);
 
 		return rendererFont;
 	}
@@ -574,7 +607,7 @@ public class FopConfigUtil {
 	 */
 	public static void declareFallbackFonts(Fop fopConfig, Mapper fontMapper) {
 
-		if (fopConfig==null || fontMapper==null || fontMapper.getLastResortFallbacks().isEmpty()) return;
+		if (fopConfig==null || fontMapper==null) return;
 
 		Renderer renderer = (fopConfig.getRenderers()==null) ? null
 				: get(fopConfig.getRenderers(), "application/pdf");
@@ -582,6 +615,11 @@ public class FopConfigUtil {
 		if (renderer.getFonts()==null) {
 			renderer.setFonts(factory.createFonts());
 		}
+
+		// the names a metafile's SVG can carry for a face nothing resolved
+		declareSvgLogicalFamilies(renderer, fontMapper);
+
+		if (fontMapper.getLastResortFallbacks().isEmpty()) return;
 
 		List<Font> fontEntries = new ArrayList<Font>();
 		for (PhysicalFont pf : fontMapper.getLastResortFallbacks().values()) {
@@ -626,6 +664,82 @@ public class FopConfigUtil {
 				}
 			}
 		}
+	}
+
+	/**
+	 * The names a metafile's SVG can still carry when nothing resolved its face, mapped
+	 * to the document font whose substitute should draw them.
+	 *
+	 * <p>Batik writes the AWT font's family into the SVG.  Where the metafile names a
+	 * face neither the mapper nor AWT knows - a GDI stock name like "System", or a font
+	 * this machine simply has not got - AWT's family is {@code Dialog}, and where POI's
+	 * own guard replaces that it is {@code SansSerif}; a face whose AWT <i>name</i> is
+	 * "Symbol" comes out as {@code 'WingDings'}, which is Batik's own logical mapping.
+	 * None of those is a font FOP has been told about, so it drew them in one of its
+	 * base-14 fonts - which the PDF names and does not embed.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static final String[][] SVG_LOGICAL_FAMILIES = {
+		{ "Dialog", "Arial" },
+		{ "SansSerif", "Arial" },
+		{ "Serif", "Times New Roman" },
+		{ "Monospaced", "Courier New" },
+	};
+
+	/**
+	 * Declare those names, so that whatever a metafile's SVG asks for is a font the PDF
+	 * embeds.  Belt and braces: the pathway resolves the face through the mapper first
+	 * (Docx4jDrawFontManager), and this is for what it could not.
+	 *
+	 * @since 17.1.1
+	 */
+	private static void declareSvgLogicalFamilies(Renderer renderer, Mapper fontMapper) {
+
+		for (String[] pair : SVG_LOGICAL_FAMILIES) {
+			declareAlias(renderer, fontMapper, pair[0], fontMapper.get(pair[1]));
+		}
+		// Batik's logical mapping for an AWT font named "Symbol"
+		declareAlias(renderer, fontMapper, "WingDings", PhysicalFonts.getWDingsFont());
+	}
+
+	/** {@code family} as a name for this face and the mapper's bold/italic forms of it. */
+	private static void declareAlias(Renderer renderer, Mapper fontMapper, String family, PhysicalFont pf) {
+
+		if (pf==null || pf.getEmbeddedURI()==null || family==null || family.length()==0) return;
+
+		List<Font> entries = new ArrayList<Font>();
+		aliasEntry(entries, pf, family, "normal", "normal");
+		PhysicalFont bold = fontMapper.getBoldForm(pf.getName(), pf);
+		aliasEntry(entries, bold!=null ? bold : pf, family, "normal", "bold");
+		PhysicalFont italic = fontMapper.getItalicForm(pf.getName(), pf);
+		aliasEntry(entries, italic!=null ? italic : pf, family, "italic", "normal");
+		PhysicalFont boldItalic = fontMapper.getBoldItalicForm(pf.getName(), pf);
+		aliasEntry(entries, boldItalic!=null ? boldItalic : (italic!=null ? italic : pf),
+				family, "italic", "bold");
+
+		for (Font entry : mergeByEmbedUrl(entries)) {
+			Font existing = find(renderer.getFonts().getFont(), entry, null);
+			if (existing==null) {
+				renderer.getFonts().getFont().add(entry);
+			} else {
+				mergeTriplets(existing, entry);
+			}
+		}
+	}
+
+	private static void aliasEntry(List<Font> entries, PhysicalFont pf, String family,
+			String style, String weight) {
+		if (pf==null || pf.getEmbeddedURI()==null) return;
+		Font entry = factory.createFontsFont();
+		entry.setSimulateStyle(false);
+		entry.setKerning(kerning());
+		if (pf.getEmbedFontInfo()!=null && pf.getEmbedFontInfo().getSubFontName()!=null) {
+			entry.setSubFont(pf.getEmbedFontInfo().getSubFontName());
+		}
+		entry.setEmbedUrl(pf.getEmbeddedURI().toString());
+		entry.getFontTriplet().add(createFontTriplet(family, style, weight));
+		entries.add(entry);
 	}
 
 	/**

@@ -346,7 +346,8 @@ public abstract class AbstractWordXmlPicture {
 				dimensions == null ? null : dimensions.heightUnit);
 
 		if (forXslFo || inlines(imageHandler)) {
-			metaFileSvg = MetafileSvgProvider.toSvg(data, w, h);
+			metaFileSvg = MetafileSvgProvider.toSvg(data, w, h,
+					wmlPackage==null ? null : wmlPackage.getFontMapper());
 			if (metaFileSvg != null) return true;
 		}
 		if (forXslFo) {

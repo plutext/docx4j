@@ -189,12 +189,8 @@ public class FOExporterVisitorDelegate extends AbstractVisitorExporterDelegate<F
 			return;
 		}
 
-		Element heading = document.createElementNS(XSL_FO, "block");
-		heading.setAttribute("space-before", "44pt");
-		heading.setAttribute("font-weight", "bold");
-		heading.setAttribute("font-size", "14pt");
-		heading.setTextContent("Endnotes");
-		flow.appendChild(heading);
+		// the heading is built in XsltFOFunctions, so the XSLT pathway writes the same one
+		XmlUtils.treeCopy(XsltFOFunctions.endnotesHeading(conversionContext), flow);
 
 		List<CTFtnEdn> endnotes = conversionContext.getWmlPackage().getMainDocumentPart()
 				.getEndNotesPart().getJaxbElement().getEndnote();

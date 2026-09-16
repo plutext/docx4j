@@ -200,6 +200,35 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The text inside a WMF or EMF picture is drawn in the font docx4j would draw the document's
+  own text in, and the PDF embeds it. A metafile names its fonts by GDI face name - Calibri,
+  Times New Roman - which are document font names, and those reached AWT unresolved, so the
+  family degraded to Dialog; that is the family Batik wrote into the SVG, FOP could not
+  resolve it, and the picture's text came out in one of its base-14 fonts, named in the PDF
+  and not embedded. 18 of 449 corpus documents were in that state. The face now resolves
+  through the document's mapper, AWT draws it from docx4j's own font file where it must, and
+  the fonts a picture reaches are declared to FOP like any other (CR-001, non-embedded fonts).
+- A symbol-font character with no Unicode replacement is drawn as the missing-symbol box in a
+  font which has that box. It had no font-family at all, so it came out as notdef - and in a
+  numbering label, which is a block of its own outside the paragraph, that meant one of FOP's
+  base-14 fonts, named in the PDF and not embedded. Word draws a box here too: measured on its
+  own renderings, Symbol 0x7F and 0xFF are an open square and docx4j's is now the same size
+  (6.04pt against Word's 6.048pt at 10pt) (CR-001, non-embedded fonts).
+- The "Endnotes" heading docx4j writes above a section's endnotes is set in the document's
+  default font. It carried a weight and a size and no font-family at all, so FOP drew it in
+  the initial value of the property - one of its base-14 fonts, which it does not embed - and
+  the PDF then named a font it did not carry, for the sake of one word. 13 of 449 corpus
+  documents were in that state. Both pathways build the heading in XsltFOFunctions now
+  (CR-001, non-embedded fonts).
+- Every font the PDF names is embedded in it. FOP's subsetter reads two bytes past the end
+  of the file for a font whose last glyph is empty and whose glyf table ends the file, gives
+  up, and writes the font descriptor with no font file: the PDF then named a font it did not
+  embed, which fails PDF/A and leaves the reader to substitute. Five of the faces docx4j
+  ships are of that shape, their last glyph being U+00A0, so a run with a non-breaking space
+  in Arial or Calibri could lose its font altogether - 4 of 449 corpus documents. docx4j now
+  serves FOP the byte or two it reads, in memory, leaving the font files themselves alone
+  (docx4j.fonts.fop.padEmptyLastGlyph); the fix itself belongs in FOP
+  (CR-001, non-embedded fonts).
 - Calibri Light is drawn at 0.987 of Carlito's advances, the two families' measured
   difference: Carlito is Calibri's clone and ships no Light weight, so every Calibri Light
   line came out 1.3% wide and re-wrapped. Two whole documents in it now take Word's exact

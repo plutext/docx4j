@@ -476,7 +476,7 @@ public class HwmfGraphics implements HwmfCharsetAware {
         textString = fontHandler.mapFontCharset(graphicsCtx, fontInfo, textString);
 
         final AttributedString as = new AttributedString(textString);
-        addAttributes(as::addAttribute, font, fontInfo.getTypeface());
+        addAttributes(as::addAttribute, font, fontInfo);
         final FontRenderContext frc = graphicsCtx.getFontRenderContext();
 
         calculateDx(textString, dx, font, fontInfo, frc, as);
@@ -545,7 +545,7 @@ public class HwmfGraphics implements HwmfCharsetAware {
 
         Map<TextAttribute,Object> fontAtt = new HashMap<>();
         // Font tracking default (= 0)
-        addAttributes(fontAtt::put, font, fontInfo.getTypeface());
+        addAttributes(fontAtt::put, font, fontInfo);
         final GlyphVector gv0 = new Font(fontAtt).createGlyphVector(frc, textString);
         // Font tracking = 1
         fontAtt.put(TextAttribute.TRACKING, 1);
@@ -585,7 +585,8 @@ public class HwmfGraphics implements HwmfCharsetAware {
         }
     }
 
-    private void addAttributes(BiConsumer<TextAttribute,Object> attributes, HwmfFont font, String typeface) {
+    private void addAttributes(BiConsumer<TextAttribute,Object> attributes, HwmfFont font, FontInfo fontInfo) {
+        String typeface = fontInfo.getTypeface();
         Map<TextAttribute,Object> att = new HashMap<>();
         att.put(TextAttribute.FAMILY, typeface);
         att.put(TextAttribute.SIZE, getFontHeight(font));
@@ -609,9 +610,44 @@ public class HwmfGraphics implements HwmfCharsetAware {
             }
         }
         att.put(TextAttribute.WEIGHT, awtFW);
-        att.put(TextAttribute.FONT, new Font(att));
+
+        /* docx4j: the base font comes from the DrawFontManager, not from new Font(att).
+         * The manager is what knows docx4j's font substitution - a metafile names its
+         * fonts by GDI face name ("Calibri", "Times New Roman"), which are document font
+         * names - and it is also where POI's own guard against AWT's Dialog fallback
+         * lives (DrawFontManagerDefault.createAWTFont).  Building the font from the
+         * attribute map alone bypassed both: AWT does not know the face, the family
+         * degrades to Dialog, and that is the family Batik writes into the SVG and FOP
+         * cannot resolve.  See CR-001, non-embedded fonts. */
+        att.put(TextAttribute.FONT, awtFont(fontInfo, getFontHeight(font),
+                awtFW.floatValue() >= TextAttribute.WEIGHT_BOLD.floatValue(), font.isItalic()));
 
         att.forEach(attributes);
+    }
+
+    /**
+     * The AWT font for this metafile font, through the {@link DrawFontManager} installed
+     * on the graphics context; the font the attributes alone describe if that fails.
+     *
+     * <p>docx4j addition (CR-001, non-embedded fonts).</p>
+     */
+    private Font awtFont(FontInfo fontInfo, double size, boolean bold, boolean italic) {
+        String typeface = fontInfo.getTypeface();
+        try {
+            DrawFontManager fontHandler = DrawFactory.getInstance(graphicsCtx).getFontManager(graphicsCtx);
+            Font f = fontHandler.createAWTFont(graphicsCtx, fontInfo, size, bold, italic);
+            if (f != null) {
+                return f;
+            }
+        } catch (Throwable t) {
+            // a font manager which cannot answer must not take the picture down
+        }
+        Map<TextAttribute,Object> att = new HashMap<>();
+        att.put(TextAttribute.FAMILY, typeface);
+        att.put(TextAttribute.SIZE, size);
+        if (bold) att.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
+        if (italic) att.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
+        return new Font(att);
     }
 
     private double getFontHeight(HwmfFont font) {

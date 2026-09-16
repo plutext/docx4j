@@ -55,6 +55,23 @@ public interface MetafileSvgProvider {
 	 */
 	Document toSvgDocument(byte[] data, double widthPt, double heightPt);
 
+	/**
+	 * As {@link #toSvgDocument(byte[], double, double)}, with the document's font mapper.
+	 *
+	 * <p>A metafile names its fonts by GDI face name - "Calibri", "Times New Roman" -
+	 * which are <em>document</em> font names, so only the mapper resolves them to a face
+	 * that is installed.  Without it the name reached AWT unchanged and the family
+	 * degraded to Dialog, which is what Batik then wrote into the SVG and FOP could not
+	 * resolve (CR-001, non-embedded fonts).</p>
+	 *
+	 * @param fontMapper the document's font mapper, or null
+	 * @since 17.1.1
+	 */
+	default Document toSvgDocument(byte[] data, double widthPt, double heightPt,
+			org.docx4j.fonts.Mapper fontMapper) {
+		return toSvgDocument(data, widthPt, heightPt);
+	}
+
 	// ------------------------------------------------------------------ lookup
 
 	/** cache: null means "not looked up yet", NONE means "looked up, none there" */
@@ -120,10 +137,16 @@ public interface MetafileSvgProvider {
 	 * the metafile could not be rendered.  Never throws.
 	 */
 	static Document toSvg(byte[] data, double widthPt, double heightPt) {
+		return toSvg(data, widthPt, heightPt, null);
+	}
+
+	/** @param fontMapper the document's font mapper, or null.  @since 17.1.1 */
+	static Document toSvg(byte[] data, double widthPt, double heightPt,
+			org.docx4j.fonts.Mapper fontMapper) {
 		MetafileSvgProvider p = getProvider();
 		if (p == null || data == null) return null;
 		try {
-			return p.toSvgDocument(data, widthPt, heightPt);
+			return p.toSvgDocument(data, widthPt, heightPt, fontMapper);
 		} catch (Throwable t) {
 			Holder.log.warn("Metafile could not be rendered as SVG: " + t);
 			return null;

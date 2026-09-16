@@ -26,7 +26,6 @@ import java.awt.geom.Rectangle2D;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.docx4j.model.images.MetafileRenderer;
 import org.docx4j.model.images.MetafileSvgProvider;
 import org.docx4j.model.images.PoiMetafileRenderer;
 import org.slf4j.Logger;
@@ -75,8 +74,14 @@ public class BatikMetafileSvgProvider implements MetafileSvgProvider {
 
 	@Override
 	public Document toSvgDocument(byte[] data, double widthPt, double heightPt) {
+		return toSvgDocument(data, widthPt, heightPt, null);
+	}
 
-		MetafileRenderer renderer = PoiMetafileRenderer.getInstance();
+	@Override
+	public Document toSvgDocument(byte[] data, double widthPt, double heightPt,
+			org.docx4j.fonts.Mapper fontMapper) {
+
+		PoiMetafileRenderer renderer = PoiMetafileRenderer.getInstance();
 
 		double w = widthPt;
 		double h = heightPt;
@@ -104,7 +109,7 @@ public class BatikMetafileSvgProvider implements MetafileSvgProvider {
 			g.setSVGCanvasSize(new Dimension(
 					(int)Math.max(1, Math.ceil(w)), (int)Math.max(1, Math.ceil(h))));
 
-			renderer.draw(data, g, new Rectangle2D.Double(0, 0, w, h));
+			renderer.draw(data, g, new Rectangle2D.Double(0, 0, w, h), fontMapper);
 
 			Element root = doc.getDocumentElement();
 			g.getRoot(root);

@@ -486,9 +486,37 @@ public class RunFontSelector {
     	} else if (outputType==RunFontActionType.XSL_FO) {
     		
     		if (textValue.equals(SymbolUtils.MISSING_SYMBOL)) {
+    			/* The symbol font's code has no Unicode replacement, so what is drawn is
+    			 * docx4j's own missing-symbol box - not a character of that font, and no
+    			 * reason to look for a face which has the font's own glyphs.
+    			 *
+    			 * It still needs a font.  The box went out with no font-family at all, and
+    			 * glyphFallback declines to look at a span which has none, so it was drawn
+    			 * as notdef in whatever face the context supplied - and for a numbering
+    			 * label, which is an fo:block of its own outside the paragraph, that is
+    			 * FOP's base-14 default: a font the PDF names and does not embed
+    			 * (CR-001, non-embedded fonts).
+    			 *
+    			 * The box is the right mark.  Measured on Word's own renderings of three
+    			 * corpus documents: Symbol 0x7F and 0xFF are an open square, 0.60 and 0.50
+    			 * em (14_en-GB_num_tbl_4090, 16_en-AU_num_tbl_3493), and U+2B1A, which
+    			 * SymbolMT has no glyph for, Word draws as nothing at all
+    			 * (14_fr-FR_sdt_num_tbl_7357).  So it wanted a font which has U+25A1, not
+    			 * a different character: a bullet would be wrong for all three.
+    			 *
+    			 * The document's own font, then, and glyphFallback replaces that where it
+    			 * cannot draw the box - measured, Arimo and Carlito have U+25A1 and Droid
+    			 * Sans does not - which is why the document font is marked for it here, as
+    			 * setAttribute marks it for an ordinary run.  @since 17.1.1
+    			 */
+    			el.setAttribute("font-family", fallbackFont);
+    			registerUsedFont(fallbackFont, fallbackPhysicalFont);
+    			if (fontName!=null) {
+    				el.setAttribute(MARK_DOCUMENT_FONT, fontName);
+    			}
     			return;
     		}
-    		
+
 			PhysicalFont pf = null;
 			PhysicalFont pf2 = null;
 			if (fontName.equals("Webdings")
