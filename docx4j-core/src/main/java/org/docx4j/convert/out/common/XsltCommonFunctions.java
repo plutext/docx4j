@@ -329,6 +329,26 @@ public class XsltCommonFunctions {
     	return tabs;
     }
 
+    /**
+     * How many tabs follow this one in its paragraph.  The last tab of a
+     * table-of-contents entry is the one that reaches the entry's right dot-leader stop;
+     * an earlier one reaches whatever stop lies before it and paints no leader of its own
+     * (CR-001 batch 43, M21).
+     *
+     * @since 17.1.1
+     */
+    public static int followingTabs(R.Tab tab) {
+    	P p = paragraphOf(tab);
+    	if (p == null) return 0;
+    	int tabs = 0;
+    	boolean seen = false;
+    	for (Object leaf : paragraphLeaves(p)) {
+    		if (leaf == tab) { seen = true; continue; }
+    		if (seen && leaf instanceof R.Tab) tabs++;
+    	}
+    	return tabs;
+    }
+
     /** Whether nothing visible follows this break in its paragraph.  @since 17.0.5 */
     public static boolean isTrailingBreak(Br br) {
     	P p = paragraphOf(br);

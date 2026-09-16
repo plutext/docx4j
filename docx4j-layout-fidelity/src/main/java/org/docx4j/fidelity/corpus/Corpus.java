@@ -4035,6 +4035,358 @@ public final class Corpus {
 				() -> compatBreaks(15, Boolean.TRUE)));
 	}
 
+	// ------------------------------------------------- CR-001 batch 43 probes
+
+	/**
+	 * A right tab stop with a dot leader at the right margin of the A4 body
+	 * (595.3 - 144 = 451.3pt = 9026 twips), which is what a table-of-contents entry
+	 * carries.
+	 */
+	private static org.docx4j.wml.Tabs dotLeaderTabs() {
+		org.docx4j.wml.Tabs tabs = F.createTabs();
+		org.docx4j.wml.CTTabStop stop = F.createCTTabStop();
+		stop.setPos(BigInteger.valueOf(9026));
+		stop.setVal(org.docx4j.wml.STTabJc.RIGHT);
+		stop.setLeader(org.docx4j.wml.STTabTlc.DOT);
+		tabs.getTab().add(stop);
+		return tabs;
+	}
+
+	/** The w:spacing every frame-stacking entry carries: no before/after, w:line="276"
+	 *  auto (1.15 lines, which is where our 14.04pt pitch at 10pt Carlito comes from:
+	 *  10 x 1.2207 x 1.15). */
+	private static PPrBase.Spacing frameEntrySpacing() {
+		PPrBase.Spacing sp = F.createPPrBaseSpacing();
+		sp.setBefore(BigInteger.ZERO);
+		sp.setAfter(BigInteger.ZERO);
+		sp.setLine(BigInteger.valueOf(276));
+		sp.setLineRule(STLineSpacingRule.AUTO);
+		return sp;
+	}
+
+	/** One block of the frame-stacking probes: a lead-in paragraph, six dot-leader entries
+	 *  in {@code styleId}, and a trailing paragraph.  {@code perParagraph}, where it is
+	 *  not null, writes a frame on each entry itself over whatever the style says. */
+	private static void frameStackingBlock(Doc d, String tag, String styleId,
+			java.util.function.Consumer<Doc.Para> perParagraph) {
+		d.para(tag + ". lead-in paragraph, not framed, before the six entries. " + prose(1))
+				.font(SERIF, 24).add();
+		for (int i = 1; i <= 6; i++) {
+			Doc.Para p = d.para().style(styleId).inheritSpacing().font(CARLITO, 20)
+					.text(tag + " entry " + i + " of six, and a dot leader follows this text")
+					.tab().text(String.valueOf(i + 2));
+			if (perParagraph != null) perParagraph.accept(p);
+			p.add();
+		}
+		d.para(tag + ". trailing paragraph, not framed, after the six entries. " + prose(1, 3))
+				.font(SERIF, 24).add();
+	}
+
+	/** The two entry styles both frame-stacking probes use: {@code ProbeFrameEntry} carries
+	 *  the style-level frame, {@code ProbeFlowEntry} is the same style without one. */
+	private static Doc frameStackingDoc() throws Exception {
+		Doc d = Doc.create(15);
+		d.addParagraphStyle("ProbeFrameEntry", "Normal", ppr -> {
+			ppr.setSpacing(frameEntrySpacing());
+			ppr.setTabs(dotLeaderTabs());
+			styleFrame(ppr);
+		}, Doc.font(CARLITO, 20));
+		d.addParagraphStyle("ProbeFlowEntry", "Normal", ppr -> {
+			ppr.setSpacing(frameEntrySpacing());
+			ppr.setTabs(dotLeaderTabs());
+		}, Doc.font(CARLITO, 20));
+		return d;
+	}
+
+	// ------------------------------- CR-001 batch 43: the East Asian line box
+
+	/** The Latin sentence every fonts-cjk-linebox case sets, long enough to wrap to about
+	 *  five lines at 10pt in the A4 text column, and the same in every case so the pitch
+	 *  and the wrap are comparable across the faces. */
+	private static final String CJK_LATIN_TEXT = longProse(6, 0);
+
+	/** A short Japanese string, for the case which has to have East Asian text present. */
+	private static final String CJK_WORD = "日本語のテキスト";
+
+	/** The eight faces: seven East Asian, then Calibri as the control Word draws itself.
+	 *  These are Windows/Office faces, so unlike the rest of this corpus they are not
+	 *  installed on the Linux side - our render substitutes, and the question is Word's. */
+	private static final String[] CJK_FACES = {
+		"Meiryo", "Yu Gothic", "MS Gothic", "MS Mincho", "SimSun",
+		"Malgun Gothic", "Microsoft JhengHei", "Calibri"
+	};
+
+	/** The two-line Calibri paragraph which separates two cases, so each case's own
+	 *  baseline pitch can be read without its neighbours. */
+	private static void cjkSeparator(Doc d, int n) {
+		d.para("--- separator " + n + ", Calibri 10pt. " + prose(2, n))
+				.noLabel().font("Calibri", 20).line(240, STLineSpacingRule.AUTO).add();
+	}
+
+	/** The style-level frame of a corpus document's table-of-contents style. */
+	private static void styleFrame(PPr ppr) {
+		Doc.framePr(ppr, 180, "around", "text", "text", "center", 1);
+		Doc.suppressOverlap(ppr);
+	}
+
+	/** The frame that document's TOC paragraphs each write over that style: no hSpace,
+	 *  wrap auto, anchored to the margin, left, inline vertically, and suppressOverlap
+	 *  turned off.  Note there is no w:hAnchor and no w:y. */
+	private static void paragraphFrame(Doc.Para p) {
+		p.framePr(0, "auto", null, "margin", "left", null, "inline").suppressOverlap(false);
+	}
+
+	/** Its vertical half alone: wrap auto, vAnchor margin, yAlign inline. */
+	private static void paragraphFrameVerticalOnly(Doc.Para p) {
+		p.framePr(null, "auto", null, "margin", null, null, "inline");
+	}
+
+	/** A paragraph whose only content is one {@code w:br w:type="page"}, with a paragraph
+	 *  mark of the given size in half-points and no space before or after. */
+	private static P breakOnlyParagraph(int markHalfPts) {
+		P brk = F.createP();
+		PPr ppr = F.createPPr();
+		PPrBase.Spacing sp = F.createPPrBaseSpacing();
+		sp.setBefore(BigInteger.ZERO);
+		sp.setAfter(BigInteger.ZERO);
+		sp.setLine(BigInteger.valueOf(240));
+		sp.setLineRule(STLineSpacingRule.AUTO);
+		ppr.setSpacing(sp);
+		brk.setPPr(ppr);
+		R r = F.createR();
+		Br br = F.createBr();
+		br.setType(STBrType.PAGE);
+		r.getContent().add(br);
+		brk.getContent().add(r);
+		markSize(brk, markHalfPts);
+		return brk;
+	}
+
+	/** The paragraph whose space-before is in question: 24pt of {@code w:before} and a
+	 *  1pt {@code w:pBdr} with {@code w:space="1"}, the shape three corpus documents
+	 *  carry on the heading that opens a page. */
+	private static void spaceBeforeHeading(Doc d, String tag, String where) {
+		d.para(tag + ". heading, w:before=24pt and a 1pt w:pBdr: " + where)
+				.font(SERIF, 24).before(480).borders(8, 1).add();
+	}
+
+	/** n paragraphs of one exact 24pt line each, to fill a page to a known remainder. */
+	private static void exactLines(Doc d, String tag, int n, String firstText) {
+		for (int i = 0; i < n; i++) {
+			d.para(i == 0 ? tag + ". " + firstText : tag + " line " + (i + 1) + " of " + n)
+					.noLabel().font(SERIF, 24).line(480, STLineSpacingRule.EXACT).add();
+		}
+	}
+
+	private static WordprocessingMLPackage pageTopSpaceBefore(int mode, Boolean suppressSpBfAfterPgBrk)
+			throws Exception {
+		Doc d = Doc.create(mode);
+		if (suppressSpBfAfterPgBrk != null) {
+			d.compat("suppressSpBfAfterPgBrk", suppressSpBfAfterPgBrk.booleanValue());
+		}
+		// A: the control - the same heading mid-page, where the space-before certainly applies
+		d.para("A. the paragraph before the mid-page control heading. " + prose(2)).font(SERIF, 24).add();
+		spaceBeforeHeading(d, "A", "mid-page, the control");
+		d.para("A after. " + prose(2, 1)).font(SERIF, 24).add();
+
+		// B: a page top reached by an explicit w:br w:type="page"
+		d.pageBreak();
+		spaceBeforeHeading(d, "B", "first on a page opened by an explicit page break");
+		d.para("B after. " + prose(2, 2)).font(SERIF, 24).add();
+
+		// C: a page top reached by flow - 29 exact 24pt lines leave 1.9pt of the
+		// A4 body's 697.9, so the heading cannot fit and starts the next page itself
+		d.pageBreak();
+		exactLines(d, "C", 29, "29 exact 24pt lines fill this page to 1.9pt of its foot");
+		spaceBeforeHeading(d, "C", "first on a page reached by flow, no break before it");
+		d.para("C after. " + prose(2, 3)).font(SERIF, 24).add();
+
+		// D and E: the break-only paragraph's own line, at a page filled to 25.9pt of
+		// its foot, with an 11pt mark (fits in the remainder) and a 28pt one (does not)
+		for (int c = 0; c < 2; c++) {
+			String tag = c == 0 ? "D" : "E";
+			int mark = c == 0 ? 22 : 56;
+			d.pageBreak();
+			exactLines(d, tag, 28, "28 exact 24pt lines, then a break-only paragraph with a "
+					+ (mark / 2) + "pt mark");
+			d.add(breakOnlyParagraph(mark));
+			d.para(tag + " after: a plain paragraph, no space-before. " + prose(1, c))
+					.noLabel().font(SERIF, 24).add();
+		}
+
+		// F: both at once - the page filled to 25.9pt, an 11pt-mark break-only
+		// paragraph, and then the heading, which is the shape the corpus carries
+		d.pageBreak();
+		exactLines(d, "F", 28, "28 exact 24pt lines, then an 11pt-mark break-only paragraph "
+				+ "and then the heading");
+		d.add(breakOnlyParagraph(22));
+		spaceBeforeHeading(d, "F", "after a break-only paragraph at a filled page");
+		d.para("F after. " + prose(2, 5)).font(SERIF, 24).add();
+		return d.pkg();
+	}
+
+	static {
+		/*
+		 * Framed-paragraph stacking.  A corpus document's table-of-contents style carries
+		 * w:framePr together with w:suppressOverlap, so every one of its body paragraphs
+		 * is a text frame; Word's baseline pitch between consecutive entries is 22.3-22.6pt
+		 * at 10pt where ours is 14.04 (= 10pt x Carlito's 1.2207 x the style's w:line="276"
+		 * auto, i.e. single spacing at 1.15 lines and no frame at all), and the document
+		 * runs to 87 Word pages against our 62.  Whether consecutive paragraphs carrying
+		 * the same w:framePr are ONE frame - which is what the exporter's WordLayoutFixups
+		 * assumes, per its comment - or a stack of frames each positioned by its own w:y
+		 * against the one before, is what decides that pitch, and only Word can say.
+		 * A is the frame in the style, B the same entries with no frame (the control, which
+		 * must give 14.04), C the same w:framePr and w:suppressOverlap written on each
+		 * paragraph instead of on the style.
+		 */
+		PROBES.add(new Probe("frame-stacking",
+				"six consecutive dot-leader entries, 10pt Carlito, w:spacing w:line=\"276\" auto: "
+				+ "(A) in a style carrying w:framePr w:hSpace=\"180\" w:wrap=\"around\" "
+				+ "w:hAnchor=\"text\" w:vAnchor=\"text\" w:xAlign=\"center\" w:y=\"1\" and "
+				+ "w:suppressOverlap; (B) in the same style without the frame, the control; "
+				+ "(C) with that w:framePr and w:suppressOverlap on each paragraph rather than "
+				+ "on the style - what is Word's baseline pitch between consecutive framed "
+				+ "paragraphs, and are six same-frame paragraphs one frame or six?", () -> {
+			Doc d = frameStackingDoc();
+			frameStackingBlock(d, "A", "ProbeFrameEntry", null);
+			d.pageBreak();
+			frameStackingBlock(d, "B", "ProbeFlowEntry", null);
+			d.pageBreak();
+			frameStackingBlock(d, "C", "ProbeFlowEntry", p -> {
+				p.framePr(180, "around", "text", "text", "center", 1).suppressOverlap();
+			});
+			return d.pkg();
+		}));
+
+		/*
+		 * Where an East Asian font's line box comes from.  frame-stacking and
+		 * frame-stacking-2 between them ruled out w:framePr as the cause of a corpus
+		 * document's 22.4pt pitch at 10pt: Word's pitch is 14.04 for every frame shape
+		 * those two probes ask about, identical to the unframed control, so no form of
+		 * w:framePr changes the pitch.  What is left is the font.  That document's entries
+		 * are Meiryo at 10pt with w:line="276" auto and Word's pitch is 22.44 = 1.95 em;
+		 * its other entries are Yu Gothic at the same spacing and Word's pitch is 19.2 =
+		 * 1.67 em.  Meiryo's usWin line box is 1.5000 and Yu Gothic's 1.287, so both
+		 * measured pitches are 1.30 x the usWin box on two independent fonts - which
+		 * suggests Word gives an East Asian font a line box larger than usWin.  That is a
+		 * hypothesis to measure, not a rule, and it wants more than two faces before any
+		 * formula is believed.
+		 *
+		 * (a) and (b) separate the line multiplier from the box: single against the 1.15
+		 * the corpus document uses.  (a) states w:line="240" auto explicitly rather than
+		 * omitting w:line, because this corpus's docDefaults already carry w:line="276"
+		 * auto - an omitted w:line would inherit that and (a) would be (b).  (c) separates
+		 * "the face is in the Latin slot" from "East Asian text is present", which is the
+		 * other way round Word could be choosing the box.
+		 */
+		PROBES.add(new Probe("fonts-cjk-linebox",
+				"where an East Asian font's line box comes from: for each of Meiryo, Yu Gothic, "
+				+ "MS Gothic, MS Mincho, SimSun, Malgun Gothic, Microsoft JhengHei and Calibri "
+				+ "(the control), one paragraph of about five wrapped lines of the same Latin "
+				+ "sentence with the face in w:rFonts ascii/hAnsi/eastAsia/cs at 10pt, (a) at "
+				+ "w:spacing w:line=\"240\" w:lineRule=\"auto\" (single - stated, because this "
+				+ "corpus's docDefaults carry 276) and (b) at w:line=\"276\" auto; then, for "
+				+ "Meiryo and Yu Gothic only, (c) the same with Calibri in ascii/hAnsi and the "
+				+ "face in w:eastAsia alone, with a short Japanese string in the run, so that "
+				+ "\"the face is in the Latin slot\" and \"East Asian text is present\" are "
+				+ "separated.  A two-line Calibri paragraph between cases.  These are Windows "
+				+ "faces: the Linux side substitutes, and the question is Word's pitch", () -> {
+			Doc d = Doc.create(15);
+			int sep = 0;
+			for (String face : CJK_FACES) {
+				d.para("(a) " + face + " 10pt, single (w:line=240 auto). " + CJK_LATIN_TEXT)
+						.noLabel().font(face, 20).line(240, STLineSpacingRule.AUTO).add();
+				cjkSeparator(d, ++sep);
+				d.para("(b) " + face + " 10pt, w:line=276 auto. " + CJK_LATIN_TEXT)
+						.noLabel().font(face, 20).line(276, STLineSpacingRule.AUTO).add();
+				cjkSeparator(d, ++sep);
+			}
+			for (final String face : new String[] { "Meiryo", "Yu Gothic" }) {
+				d.para().noLabel().font("Calibri", 20).line(276, STLineSpacingRule.AUTO)
+						.run("(c) Calibri in ascii/hAnsi, " + face + " in w:eastAsia, w:line=276 "
+								+ "auto, East Asian text present: " + CJK_WORD + " " + CJK_LATIN_TEXT,
+								"Calibri", 20, rpr -> rpr.getRFonts().setEastAsia(face))
+						.add();
+				cjkSeparator(d, ++sep);
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * frame-stacking answered its own question and refuted the reading behind it:
+		 * Word's pitch between six paragraphs sharing the style's w:framePr is 14.04,
+		 * line for line identical to the unframed control, so consecutive same-frame
+		 * paragraphs are ONE frame drawn in the flow and that style-level frame is not
+		 * where the corpus document's 22.4pt pitch comes from.  What its TOC paragraphs
+		 * actually carry is a frame of their own OVER the style's - w:framePr w:hSpace="0"
+		 * w:wrap="auto" w:vAnchor="margin" w:xAlign="left" w:yAlign="inline" with no
+		 * w:hAnchor and no w:y, and w:suppressOverlap w:val="false" - and nothing at all
+		 * between consecutive entries.  D is that merge (the paragraph frame over a style
+		 * frame), E the paragraph frame alone, F its vertical half alone (wrap auto,
+		 * vAnchor margin, yAlign inline), and N repeats the unframed control so the pitch
+		 * can be read off this one document.
+		 */
+		PROBES.add(new Probe("frame-stacking-2",
+				"the same six dot-leader entries, 10pt Carlito, w:line=\"276\" auto, with the "
+				+ "frame a corpus document's TOC paragraphs write over their style: (D) "
+				+ "w:framePr w:hSpace=\"0\" w:wrap=\"auto\" w:vAnchor=\"margin\" w:xAlign=\"left\" "
+				+ "w:yAlign=\"inline\" and w:suppressOverlap w:val=\"false\" on each paragraph, "
+				+ "in a style which itself carries w:framePr w:hSpace=\"180\" w:wrap=\"around\" "
+				+ "w:hAnchor=\"text\" w:vAnchor=\"text\" w:xAlign=\"center\" w:y=\"1\" and "
+				+ "w:suppressOverlap - the merge Word computes; (E) the same paragraph frame "
+				+ "where the style carries none; (F) only w:framePr w:wrap=\"auto\" "
+				+ "w:vAnchor=\"margin\" w:yAlign=\"inline\" per paragraph; (N) no frame "
+				+ "anywhere, the control repeated from frame-stacking's B (pitch 14.04)", () -> {
+			Doc d = frameStackingDoc();
+			frameStackingBlock(d, "D", "ProbeFrameEntry", Corpus::paragraphFrame);
+			d.pageBreak();
+			frameStackingBlock(d, "E", "ProbeFlowEntry", Corpus::paragraphFrame);
+			d.pageBreak();
+			frameStackingBlock(d, "F", "ProbeFlowEntry", Corpus::paragraphFrameVerticalOnly);
+			d.pageBreak();
+			frameStackingBlock(d, "N", "ProbeFlowEntry", null);
+			return d.pkg();
+		}));
+
+		/*
+		 * Space-before at a page top, in both directions, together with the break-only
+		 * paragraph's own line.  Three corpus documents in modes 12 and 14, none of which
+		 * states w:suppressSpBfAfterPgBrk, show Word SUPPRESSING a paragraph's w:before at
+		 * a page top the document reached by an explicit w:br w:type="page"; a fourth, in
+		 * mode 15 with no page break anywhere, shows Word APPLYING it at a page top reached
+		 * by flow.  We do the opposite in both, and one of the four also shows the
+		 * break-only paragraph taking a line Word does not give it - the same paragraph
+		 * batch 39's PP_PDF_PAGEBREAK_PARAGRAPH_LINE gives a line to, seen from the other
+		 * side, which is why D and E repeat that probe's A/B here: both sides of the one
+		 * paragraph have to be read off one document.  A is the mid-page control, B the
+		 * break-reached page top, C the flow-reached page top, D and E the break-only
+		 * paragraph's line with an 11pt and a 28pt mark, F both rules at once.
+		 */
+		String pageTopDesc =
+				"space-before at a page top and the break-only paragraph's own line: (A) a "
+				+ "heading with w:spacing w:before=\"480\" and a 1pt w:pBdr mid-page, the "
+				+ "control; (B) the same heading first on a page opened by an explicit "
+				+ "w:br w:type=\"page\"; (C) the same heading first on a page reached by flow "
+				+ "(29 exact 24pt lines fill the page before it to 1.9pt); (D, E) a page "
+				+ "filled to 25.9pt of its foot then a break-only paragraph whose mark is "
+				+ "11pt (fits the remainder) or 28pt (does not); (F) both at once - a filled "
+				+ "page, an 11pt-mark break-only paragraph, then the heading";
+		PROBES.add(new Probe("page-top-space-before",
+				pageTopDesc + ", mode 15, w:suppressSpBfAfterPgBrk absent",
+				() -> pageTopSpaceBefore(15, null)));
+		PROBES.add(new Probe("page-top-space-before-compat14",
+				pageTopDesc + ", mode 14, w:suppressSpBfAfterPgBrk absent",
+				() -> pageTopSpaceBefore(14, null)));
+		PROBES.add(new Probe("page-top-space-before-compat12",
+				pageTopDesc + ", mode 12, w:suppressSpBfAfterPgBrk absent",
+				() -> pageTopSpaceBefore(12, null)));
+		PROBES.add(new Probe("page-top-space-before-set",
+				pageTopDesc + ", mode 15, with w:suppressSpBfAfterPgBrk stated - what the flag "
+				+ "itself does, which is what a rule gated on it has to be gated against",
+				() -> pageTopSpaceBefore(15, Boolean.TRUE)));
+	}
+
 	public static List<Probe> all() {
 		return Collections.unmodifiableList(PROBES);
 	}

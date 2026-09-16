@@ -50,10 +50,12 @@ import org.xml.sax.InputSource;
  *   (w:br type="page") was emitted as an empty block carrying break-before,
  *   which put an empty line at the top of the new page and kept the next
  *   paragraph's space-before (it was no longer at the start of the page).
- *   Word shows no such line, and in compatibility mode 15 (Word 2013+) drops
- *   the space-before of the paragraph after a hard break; earlier modes keep
- *   it.  The empty block is removed and its break moved to the next block,
- *   with space-before.conditionality="retain" in modes below 15.</li>
+ *   Word shows no such line, and it drops the space-before of the paragraph
+ *   the break moves onto - in every compatibility mode, and whatever
+ *   w:suppressSpBfAfterPgBrk says (CR-001 batch 43; until 17.1.1 the flag was
+ *   read here and the space kept below mode 15).  The empty block is removed
+ *   and its break moved to the next block, whose space-before then falls to
+ *   XSL-FO's own conditionality, discard.</li>
  * <li><b>Top of the first page of a section.</b> Word applies the first
  *   paragraph's space-before there (measured: 36pt before on the first
  *   paragraph of a document is honoured).  XSL FO discards it, so the first
@@ -3865,19 +3867,28 @@ public final class WordLayoutFixups {
 	}
 
 	/**
-	 * @param compat w:compat/w:suppressSpBfAfterPgBrk ("Do Not Use Space Before On First
-	 *        Line After a Page Break", ECMA-376-1 17.15.1) decides whether the paragraph
-	 *        the break moves onto keeps its space-before.  The flag resolves on from
-	 *        compatibility mode 15 and off below it, which is the polarity measured
-	 *        against Word's goldens; a document which states it either way is honoured.
+	 * @param compat kept for the signature's sake: until 17.1.1
+	 *        {@code w:compat/w:suppressSpBfAfterPgBrk} ("Do Not Use Space Before On First
+	 *        Line After a Page Break", ECMA-376-1 17.15.1) was read here to decide whether
+	 *        the paragraph the break moves onto keeps its space-before.  It does not:
+	 *        Word drops it whatever the flag says and whatever the compatibility mode is
+	 *        (CR-001 batch 43, M30 - the four page-top-space-before goldens are identical,
+	 *        and the one which states the flag is byte-for-byte the one which does not).
 	 * @since 17.1.0
 	 */
 	static void mergePageBreakParagraphs(Document doc, org.docx4j.model.CompatibilityOptions compat) {
-		boolean suppressSpaceBefore = compat.is(
-				org.docx4j.model.CompatibilityOptions.Flag.SUPPRESS_SP_BF_AFTER_PG_BRK);
 		List<Element> empties = new ArrayList<>();
 		for (Element block : elements(doc, "block")) {
-			if ("page".equals(block.getAttribute("break-before")) && isEmpty(block)) {
+			if (!"page".equals(block.getAttribute("break-before"))) continue;
+			// A break-only paragraph whose w:br run carries w:rPr leaves an empty fo:inline
+			// behind when the break moves to the block, and isEmpty - which looks for any
+			// element child - then refused the block.  Where such a block *opens* its flow
+			// it is the empty page a typeless w:sectPr followed by a break-only paragraph
+			// makes, and refusing it lost that page: measured on a corpus document with
+			// five of them, where Word has six blank pages and docx4j emitted one.  Only
+			// there: the collection is otherwise unchanged, so no block that paints
+			// nothing but is not a flow's first is newly moved or dropped.  @since 17.1.1
+			if (isEmpty(block) || (blankBlock(block) && opensFlow(block))) {
 				empties.add(block);
 			}
 		}
@@ -3901,8 +3912,27 @@ public final class WordLayoutFixups {
 				// of the document the page is Word's (the page-blank probe ends in a page
 				// break and Word gives it a ninth page), so the break stays there.
 				// @since 17.1.0
-				if (next == null && empty.getParentNode() instanceof Element
-						&& isFo((Element) empty.getParentNode(), "flow") && sectionFollows(empty)) {
+				// "nothing left in this section" is nothing left in the *flow*, not merely
+				// nothing left beside this block: a multi-column section wraps its
+				// trailing material in a span="all" block, and the test used to ask for
+				// the flow as the immediate parent.  Measured on a corpus document whose
+				// three-column A3 section ends in exactly this shape: its FO's first flow
+				// ended <block span="all">...<fo:block break-before="page"> </fo:block>
+				// </block></flow>, the break was kept, and our page 2 was a second A3 page
+				// carrying nothing but its running head, which Word does not emit.
+				// @since 17.1.1
+				// Only the break goes; the block stays.  Removing the block as well -
+				// it is the empty half PageBreak split off the paragraph the break ended,
+				// and its preserved space still opens a page of its own - was measured on
+				// that document and is NOT done: it takes the page (22/21 -> 22/20) and
+				// the geometry improves a lot (page parity 0.3410 -> 0.7506, max dy
+				// 479.79 -> 63.29), but line parity falls 0.8855 -> 0.8217, because the
+				// document is already a page short of Word - Word emits two wholly blank
+				// pages here which docx4j does not (the section-start blank page, a
+				// LayoutMasterSetBuilder matter), and taking a third page out moves every
+				// page further from its Word counterpart.  The two belong together.
+				// @since 17.1.1
+				if (next == null && lastInFlow(empty) && sectionFollows(empty)) {
 					empty.removeAttribute("break-before");
 				}
 				continue;
@@ -3945,9 +3975,21 @@ public final class WordLayoutFixups {
 			if (!next.hasAttribute("break-before") || "auto".equals(next.getAttribute("break-before"))) {
 				next.setAttribute("break-before", "page");
 			}
-			if (!suppressSpaceBefore && hasSpace(next, "space-before")) {
-				next.setAttribute("space-before.conditionality", "retain");
-			}
+			// The paragraph the break moves onto is first on its page and loses its
+			// space-before, in every compatibility mode and whatever w:compat says.
+			// Measured on the four page-top-space-before goldens (CR-001 batch 43, M30),
+			// which are IDENTICAL to the digit - modes 12, 14 and 15, and mode 15 with
+			// w:suppressSpBfAfterPgBrk stated, the last byte-for-byte the mode-15 one:
+			// the heading (w:spacing w:before="480" and a 1pt w:pBdr) has its first line
+			// at y=76.77 where an ordinary first line is at 74.61, the 2.16pt between
+			// them being its border and the border's space, and mid-page the same heading
+			// sits a full 24pt lower.  XSL-FO's own conditionality - discard at the start
+			// of a reference area - is that rule, so nothing is retained here now; until
+			// 17.1.1 w:suppressSpBfAfterPgBrk was consulted and the space was retained in
+			// modes 12 and 14, which put the heading 24pt too low on every such page.
+			// (A paragraph whose OWN first run is the break is a different shape and keeps
+			// its space - measured, see listItemPageBreaks - as is the first paragraph of
+			// a section, which retainSpaceBeforeAtFlowStart handles.)  @since 17.1.1
 			// The empty block here is the paragraph mark Word moves to the page after the
 			// break, which takes no line there.  The line the break itself ends - on the
 			// page before it, sized by the mark - is the empty *first* half of the
@@ -3956,7 +3998,9 @@ public final class WordLayoutFixups {
 			// break and is not visited here.  Giving this one a line as well cost three
 			// corpus documents a page each, at breaks ending a text paragraph, whose
 			// continuation is this same shape.  @since 17.1.1
-			empty.getParentNode().removeChild(empty);
+			// Only a block with nothing in it at all is dropped: one admitted above for
+			// holding no more than an empty inline keeps its line.  @since 17.1.1
+			if (isEmpty(empty)) empty.getParentNode().removeChild(empty);
 		}
 	}
 
@@ -3973,6 +4017,24 @@ public final class WordLayoutFixups {
 				if (!(n instanceof Element)) continue;
 				if (n != child) return false;
 				break;
+			}
+			if (isFo((Element) parent, "flow")) return true;
+			child = (Element) parent;
+			parent = parent.getParentNode();
+		}
+		return false;
+	}
+
+	/** Whether nothing follows this block anywhere up to its fo:flow, so that it is the
+	 *  last thing its section holds however deeply it is wrapped (a multi-column section
+	 *  puts its trailing material in a span="all" block).  The mirror of
+	 *  {@link #opensFlow(Element)}.  @since 17.1.1 */
+	private static boolean lastInFlow(Element block) {
+		Node parent = block.getParentNode();
+		Element child = block;
+		while (parent instanceof Element) {
+			for (Node n = child.getNextSibling(); n != null; n = n.getNextSibling()) {
+				if (n instanceof Element) return false;
 			}
 			if (isFo((Element) parent, "flow")) return true;
 			child = (Element) parent;

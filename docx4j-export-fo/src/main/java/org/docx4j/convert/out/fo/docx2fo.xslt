@@ -839,7 +839,8 @@
 	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.tabToFO(
 		$conversionContext, $pPrNode, $rPrNode,
 		count(preceding-sibling::w:tab) + count(../preceding-sibling::w:r/w:tab) + count(../preceding-sibling::w:hyperlink//w:tab) + count(../preceding-sibling::w:fldSimple//w:tab),
-		count(preceding-sibling::w:t) + count(../preceding-sibling::w:r/w:t) + count(../preceding-sibling::w:hyperlink//w:t) + count(../preceding-sibling::w:fldSimple//w:t))" />
+		count(preceding-sibling::w:t) + count(../preceding-sibling::w:r/w:t) + count(../preceding-sibling::w:hyperlink//w:t) + count(../preceding-sibling::w:fldSimple//w:t),
+		count(following-sibling::w:tab) + count(../following-sibling::w:r/w:tab) + count(../following-sibling::w:hyperlink//w:tab) + count(../following-sibling::w:fldSimple//w:tab))" />
 
 
 </xsl:template>
@@ -854,6 +855,20 @@
 	       advances to the end of the line; otherwise a stretching leader
 	       (see XsltFOFunctions.ptabToFO). -->
 	  <xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.ptabToFO($conversionContext)" />
+
+</xsl:template>
+
+<!--
+      <w:ptab w:relativeTo="margin" w:alignment="center" w:leader="none"/>
+    </w:r>
+     -->
+<xsl:template match="w:ptab[@w:alignment='center']">
+
+	  <!-- A centre tab stop at the middle of the line.  Until 17.1.1 this matched
+	       nothing and a centre ptab produced no advance at all, so the field it should
+	       have centred ran on from the one before it (CR-001 batch 43, M43). -->
+	  <xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.ptabToFO(
+	  	$conversionContext, 'ptab-center')" />
 
 </xsl:template>
 

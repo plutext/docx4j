@@ -338,7 +338,7 @@ public class ConversionSectionWrapperFactory {
 							if (merged.cols != colsNum(ppr.getSectPr())) {
 								currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 							}
-							usePartMargins(currentSectionWrapper, merged.marginRef);
+							usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
@@ -374,7 +374,7 @@ public class ConversionSectionWrapperFactory {
 		if (merged.cols != colsNum(document.getBody().getSectPr())) {
 			currentSectionWrapper.getPageDimensions().setColsNum(merged.cols);
 		}
-		usePartMargins(currentSectionWrapper, merged.marginRef);
+		usePartMargins(currentSectionWrapper, merged.marginRef, merged.verticalMarginRef);
 		conversionSections.add(currentSectionWrapper);
 		return conversionSections;
 	}
@@ -677,10 +677,23 @@ public class ConversionSectionWrapperFactory {
 	 * {@link #marginReference}); the other parts carry the difference as indents
 	 * (spanColumnParts).
 	 *
-	 * @param part the section whose w:pgMar the masters take; null leaves the wrapper's own
+	 * <p>Only the left and right margins are the reference part's.  The top, bottom,
+	 * header and footer distances are always the <b>first</b> part's, because that is the
+	 * one Word starts the page with and no part can carry a vertical difference as an
+	 * indent - a page master has one before-edge.  Until 17.1.1 the whole w:pgMar came
+	 * from the reference, so where {@link #marginReference} chose a multi-column part the
+	 * page also took that part's vertical margins: measured (CR-001 batch 43, M53), that
+	 * pushed one corpus document's whole first page 14.1pt down the page, away from Word,
+	 * for a horizontal change that moved no line at all.  @since 17.1.1</p>
+	 *
+	 * @param part the section whose left and right w:pgMar the masters take; null leaves
+	 *             the wrapper's own
+	 * @param verticalPart the section whose top, bottom, header and footer distances they
+	 *             take - the first of the merged parts
 	 * @since 17.0.5
 	 */
-	private static void usePartMargins(ConversionSectionWrapper wrapper, SectPr part) {
+	private static void usePartMargins(ConversionSectionWrapper wrapper, SectPr part,
+			SectPr verticalPart) {
 		if (wrapper == null || part == null || part.getPgMar() == null) return;
 		if (marginLeft(part) < 0 || marginRight(part) < 0) return;
 		// on a copy of the wrapper's own (which has the values the last section's
@@ -688,10 +701,12 @@ public class ConversionSectionWrapperFactory {
 		SectPr.PgMar pgMar = XmlUtils.deepCopy(wrapper.getPageDimensions().getPgMar());
 		pgMar.setLeft(part.getPgMar().getLeft());
 		pgMar.setRight(part.getPgMar().getRight());
-		if (part.getPgMar().getTop() != null) pgMar.setTop(part.getPgMar().getTop());
-		if (part.getPgMar().getBottom() != null) pgMar.setBottom(part.getPgMar().getBottom());
-		if (part.getPgMar().getHeader() != null) pgMar.setHeader(part.getPgMar().getHeader());
-		if (part.getPgMar().getFooter() != null) pgMar.setFooter(part.getPgMar().getFooter());
+		SectPr vertical = (verticalPart != null && verticalPart.getPgMar() != null)
+				? verticalPart : part;
+		if (vertical.getPgMar().getTop() != null) pgMar.setTop(vertical.getPgMar().getTop());
+		if (vertical.getPgMar().getBottom() != null) pgMar.setBottom(vertical.getPgMar().getBottom());
+		if (vertical.getPgMar().getHeader() != null) pgMar.setHeader(vertical.getPgMar().getHeader());
+		if (vertical.getPgMar().getFooter() != null) pgMar.setFooter(vertical.getPgMar().getFooter());
 		wrapper.getPageDimensions().setPgMar(pgMar);
 	}
 
@@ -700,28 +715,54 @@ public class ConversionSectionWrapperFactory {
 	private static class Merged {
 		/** the column count the page-sequence must use */
 		final int cols;
-		/** the section whose w:pgMar the page masters take, or null for the wrapper's own */
+		/** the section whose left and right w:pgMar the page masters take, or null for
+		 *  the wrapper's own */
 		final SectPr marginRef;
-		Merged(int cols, SectPr marginRef) {
+		/** the first of the merged parts, whose vertical w:pgMar the masters take.
+		 *  @since 17.1.1 */
+		final SectPr verticalMarginRef;
+		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef) {
 			this.cols = cols;
 			this.marginRef = marginRef;
+			this.verticalMarginRef = verticalMarginRef;
 		}
 	}
 
 	/**
-	 * Which of the merged sections' w:pgMar the page-sequence is built on.
+	 * Which of the merged sections' left and right w:pgMar the page-sequence is built on.
 	 *
 	 * <p>Word starts the page with the <b>first</b> of them, and 17.0.5 used that, the
 	 * other parts carrying the difference as indents - which puts every line where Word
 	 * puts it, because a part's measure is the region body less its own indents whatever
 	 * the region body is.  The region body still bounds one thing the indents cannot
-	 * move: the <b>columns</b>. So where the sequence has a multi-column part whose own
-	 * text column is wider than the first part's, the page masters are built on that
-	 * part instead.  Measured: a certificate whose section 1 has 152/186pt margins and
-	 * one column, and whose continuous section 2 has 51/45pt margins and two columns of
-	 * 157 + 24 + 318pt, needs a 499pt region body for those columns; built on section 1
-	 * it was 257pt and the two columns came out 116.5pt wide, with the blocks' negative
-	 * end-indents letting the text overflow them.</p>
+	 * move: the <b>columns</b>. So where the sequence has a multi-column part, the page
+	 * masters take that part's left and right margins instead.  Measured: a certificate
+	 * whose section 1 has
+	 * 152/186pt margins and one column, and whose continuous section 2 has 51/45pt margins
+	 * and two columns of 157 + 24 + 318pt, needs a 499pt region body for those columns;
+	 * built on section 1 it was 257pt and the two columns came out 116.5pt wide, with the
+	 * blocks' negative end-indents letting the text overflow them.</p>
+	 *
+	 * <p>Until 17.1.1 that only applied where the multi-column part's text column was the
+	 * <em>wider</em> of the two, and a narrower one was just as wrong: measured on a corpus
+	 * document (CR-001 batch 43, M53) whose section 1 is one column at 72pt margins and
+	 * whose continuous section 2 is two columns at 85.05pt, the masters were built on
+	 * section 1's 72pt, so FOP divided a 468pt region into two 216pt columns where Word
+	 * divides its own 441.9pt region into two of <b>202.95</b>.  The indents then take
+	 * their 13.05pt off <em>each column</em> rather than once off the page: column 2
+	 * opened at x=337.1 against Word's 324.1, on a 187.7pt measure, and every line of the
+	 * two-column run re-wrapped.  Built on the two-column part, column 2 opens at
+	 * <b>324.0</b> on a 202.6pt measure and the document gains 19 matched lines.  The
+	 * single-column parts carry a negative indent in that direction, which widens their
+	 * measure back past the region body, and that is what Word draws.</p>
+	 *
+	 * <p>This is the reference for the <b>left and right</b> margins only; see
+	 * {@link #usePartMargins} for the vertical ones, which stay the first part's.  The one
+	 * thing the parts' indents cannot reach is the running header and footer, which are
+	 * regions of the page master: measured on a document whose two-column part has a
+	 * 19.3pt right margin against the first section's 23.8pt, its right-aligned page
+	 * number moved from Word's x=559.0..571.5 to 563.5..576.0 and cost 5 of that
+	 * document's 567 matched lines.</p>
 	 *
 	 * @since 17.1.0
 	 */
@@ -737,9 +778,7 @@ public class ConversionSectionWrapperFactory {
 				widest = sp;
 			}
 		}
-		if (widest == null) return first;
-		return (marginLeft(widest) + marginRight(widest) < marginLeft(first) + marginRight(first))
-				? widest : first;
+		return widest == null ? first : widest;
 	}
 
 	/**
@@ -809,7 +848,7 @@ public class ConversionSectionWrapperFactory {
 				content.clear();
 				content.addAll(parts.get(0));
 			}
-			return new Merged(max, null);
+			return new Merged(max, null, null);
 		}
 
 		SectPr ref = marginReference(sectPrs, cols, max);
@@ -822,7 +861,7 @@ public class ConversionSectionWrapperFactory {
 
 		boolean uniformCols = true;
 		for (int c : cols) if (c != max) uniformCols = false;
-		if (uniformCols && sameMargins && !asTables && !split) return new Merged(max, ref);
+		if (uniformCols && sameMargins && !asTables && !split) return new Merged(max, ref, sectPrs.get(0));
 
 		List<Object> result = new ArrayList<Object>();
 		for (int i = 0; i < parts.size(); i++) {
@@ -830,7 +869,7 @@ public class ConversionSectionWrapperFactory {
 		}
 		content.clear();
 		content.addAll(result);
-		return new Merged(max, ref);
+		return new Merged(max, ref, sectPrs.get(0));
 	}
 
 	private static void addPart(List<Object> result, List<Object> part, SectPr sectPr, int partCols,

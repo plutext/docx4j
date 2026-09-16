@@ -247,15 +247,22 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			if (conversionContext.isInComplexFieldDefinition()) {
 				return null;
 			}
-			if (STPTabAlignment.RIGHT.equals(((R.Ptab)o).getAlignment())) {
-				// a right tab stop at the end of the line; see XsltFOFunctions.ptabToFO
-				org.w3c.dom.DocumentFragment ptab = XsltFOFunctions.ptabToFO(conversionContext);
+			// a tab stop at the end of the line, or at its centre; see
+			// XsltFOFunctions.ptabToFO.  A centre ptab produced nothing at all until
+			// 17.1.1, so the field it should have centred ran on from the one before it
+			// (CR-001 batch 43, M43).
+			STPTabAlignment alignment = ((R.Ptab)o).getAlignment();
+			String kind = STPTabAlignment.RIGHT.equals(alignment) ? XsltFOFunctions.TAB_PTAB_RIGHT
+					: STPTabAlignment.CENTER.equals(alignment) ? XsltFOFunctions.TAB_PTAB_CENTER
+					: null;
+			if (kind != null) {
+				org.w3c.dom.DocumentFragment ptab = XsltFOFunctions.ptabToFO(conversionContext, kind);
 				if (ptab != null) {
 					getCurrentParent().appendChild(document.importNode(ptab, true));
 				}
 				return null;
 			}
-			return super.apply(o); // other alignments: warn, as the XSLT does
+			return super.apply(o); // w:alignment="left": warn, as the XSLT does
 
 		} else if (o instanceof org.docx4j.math.CTOMathPara
 				|| o instanceof org.docx4j.math.CTOMath) {
@@ -731,11 +738,13 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document, org.docx4j.wml.R.Tab tab) throws DOMException {
 		leadingTabOrdinal = XsltCommonFunctions.leadingTabOrdinal(tab);
 		tabOrdinal = XsltCommonFunctions.tabOrdinal(tab);
+		followingTabs = XsltCommonFunctions.followingTabs(tab);
 		try {
 			convertTabToNode(conversionContext, document);
 		} finally {
 			leadingTabOrdinal = -1;
 			tabOrdinal = 0;
+			followingTabs = 0;
 		}
 	}
 
@@ -743,6 +752,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	private int leadingTabOrdinal = -1;
 	/** the tab being converted: how many tabs precede it in its paragraph */
 	private int tabOrdinal = 0;
+	/** the tab being converted: how many tabs follow it in its paragraph.  @since 17.1.1 */
+	private int followingTabs = 0;
 
 	@Override
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document) throws DOMException {
@@ -751,7 +762,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 			// shared with the XSLT pathway's w:tab template
 			org.w3c.dom.DocumentFragment frag = XsltFOFunctions.tabToFO(conversionContext, pPr, rPr,
-					tabOrdinal, leadingTabOrdinal < 0 ? 1 : 0);
+					tabOrdinal, leadingTabOrdinal < 0 ? 1 : 0, followingTabs);
 			if (frag!=null) getCurrentParent().appendChild(document.importNode(frag, true));
 		}
 	}

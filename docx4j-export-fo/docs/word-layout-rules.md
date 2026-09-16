@@ -3788,8 +3788,29 @@ A part's measure is the region body less its own indents, whatever the region bo
 which section's margins the masters carry does not move any line - except for the one thing
 an indent cannot move, the **columns**, which the region body bounds. Where the merged run
 still has a multi-column part (one whose columns are equal, since unequal ones are now a
-table) whose own text column is wider than the first part's, the masters are built on that
-part instead.
+table), the masters take that part's **left and right** margins instead. 17.1.0 did this
+only where that part's text column was the *wider*; a narrower one is just as wrong.
+Measured on a 20-page document whose section 1 is one column at 72pt margins and whose
+continuous section 2 is two columns at 85.05pt: built on section 1's 72pt, FOP divided a
+468pt region into two 216pt columns where Word divides its own 441.9pt region into two of
+202.95, and the parts' 13.05pt indents then came off *each column* rather than once off the
+page - column 2 opened at x=337.1 against Word's 324.1, on a 187.7pt measure against
+202.95, and every line of the two-column run re-wrapped. Built on 85.05pt, column 2 opens
+at **324.0** on a 202.6pt measure, and the document gains 19 matched lines.
+
+Only the left and right margins. The **top, bottom, header and footer** distances stay the
+first part's, because that is the section Word starts the page with and a page master has
+one before-edge: no part can carry a vertical difference as an indent the way it carries a
+horizontal one. Until 17.1.1 the whole `w:pgMar` came from the reference part, which pushed
+one document's first page 14.1pt down the page for a column change that moved no line at
+all, and left two others 7 to 7.65pt low.
+
+What the horizontal half does move, and an indent cannot reach, is the running **header and
+footer**: they are regions of the page master, not blocks of a part's flow. Measured on a
+document whose one two-column part has a 19.3pt right margin against the first section's
+23.8pt, the right-aligned page number moved from Word's x=559.0..571.5 to 563.5..576.0 and
+cost the document 5 of its 567 matched lines. Giving the header and footer the reference
+part's inverse indent would close that; it is not done yet.
 
 A negative `end-indent` given to a table this way used to be inherited by every paragraph in
 every cell, which then ran that far past the cell's edge; `fo:table-body` now resets

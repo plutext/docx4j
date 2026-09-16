@@ -200,6 +200,73 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A run of continuous sections merged into one page-sequence builds its page masters on the
+  multi-column part's left and right margins whichever way round the two are (17.1.0 did it
+  only where that part's text column was the wider), and always on the first part's top,
+  bottom, header and footer distances. Measured on a 20-page document whose section 1 is one
+  column at 72pt margins and whose continuous section 2 is two columns at 85.05pt: column 2
+  opened at x=337.1 against Word's 324.1, on a 187.7pt measure against 202.95, and is now at
+  324.0 on 202.6 (CR-001 batch 43).
+- A centre w:ptab advances to the middle of the line. Only the right one was written, so in
+  the three-field running head Word's header gallery produces - text, centre ptab, text,
+  right ptab, text - the middle field ran straight on from the first, its text touching.
+  Measured on a corpus document: Word sets the middle field at x=253.8..341.7 and docx4j
+  started it at 158.1 where the first ended, on every one of its 35 pages (CR-001 batch 43).
+- An over-wide table is no longer scaled into the text column where it is floating (it
+  carries a w:tblpPr, so it is out of the flow and the column does not bound it), and a
+  w:tblW in pct above 100% now keeps its declared w:tblGrid rather than re-deriving the
+  columns against the container. Measured: a floating table whose grid is 450.85pt on a
+  439.85pt column is painted by Word 21.85pt past its own right margin; and a header table at
+  113.12% had its second cell 0.2pt too narrow, so a 52.2pt string wrapped where Word sets it
+  on one line (CR-001 batch 43).
+- A w:altName chain which ends at an East Asian family this machine does not have carries
+  that family's line box, while the chain goes on to find the face that renders the glyphs.
+  Measured on a corpus document whose table-of-contents entries name a font no machine has,
+  with Meiryo as their alternate: Word draws Meiryo and its pitch is 22.3pt at 10pt, where
+  docx4j drew Carlito with Calibri's box and got 14.0; it is 22.4 now, and the document goes
+  from 62 pages to 81 of Word's 87. Narrow by design - only an East Asian chain end, since a
+  Latin one's line box was measured already right on ten documents. Its harness line parity
+  falls all the same, for a reason recorded in the commit (CR-001 batch 43).
+- The first line-metrics alias registered for a document font wins, where a later pass used
+  to replace it. Two passes register one - the document's own w:altName, and Word's answer
+  for a font it cannot find - and the first is the more specific. No document reaches the
+  case today (scanned over 454: 52 have an altName-pass alias, 65 names, none replaced,
+  because the two passes are disjoint), so this is a contract for the passes to come rather
+  than a fix with a visible effect (CR-001 batch 43).
+- An East Asian font's single line is 1.3 times its usWin box (usWinAscent + usWinDescent),
+  and takes no external leading at all - which is how Word draws it, measured on five faces:
+  MS Gothic and SimSun 12.96pt at 10pt, Yu Gothic 16.80, Malgun Gothic and Microsoft
+  JhengHei 17.28, against Calibri's unfactored 12.24. A font is East Asian by its OS/2
+  ulCodePageRange1 bits 17-21 (JIS, GB2312, Korean Wansung, Big5, Johab), read from the file
+  for a physical font and from a new optional seventh field of word-line-metrics.properties
+  for a document font (CR-001 batch 43).
+- The paragraph that is first on its page gets no space-before, however the page was
+  reached and in every compatibility mode. docx4j read w:suppressSpBfAfterPgBrk here and
+  kept the space below mode 15, which put such a paragraph its whole space-before too low on
+  every page a break opened. Word does not: the four page-top-space-before goldens - modes
+  12, 14 and 15, and mode 15 with the flag stated - are identical to the digit. Measured on
+  a 76-page corpus document, which loses the extra page this cost it and with it the wrong
+  resolved NUMPAGES in its footer on all 76 (CR-001 batch 43).
+- A page break at the end of a section is dropped wherever the empty paragraph carrying it
+  ends its flow, not only where that paragraph is a direct child of it: a multi-column
+  section wraps its trailing material, and the break then made a page Word does not. And a
+  break-only paragraph following a typeless w:sectPr gets the empty page Word gives it even
+  where the break's run carries w:rPr, which used to leave an empty inline behind and hide
+  the paragraph from the rule. Measured on a 56-page corpus document: 5 of its 6 blank pages
+  recovered, 48 pages to 53, page parity 0.02 to 0.34 (CR-001 batch 43).
+- A tab in a table-of-contents entry takes the leader of the tab stop it reaches, not the
+  paragraph's dot leader whichever stop it lands on. An entry for a numbered heading is
+  "number <tab> title <tab> page", and where the style has a hanging indent the first tab
+  reaches the implicit stop that indent makes, which draws no leader: docx4j drew a run of
+  dots between the number and the title and pushed the title onto a second line. Measured
+  on a corpus document whose 280 such entries went from two lines to one, matching Word's
+  x span to 0.08pt, and on a second whose TOC style has no indent, where the first tab does
+  reach the dot stop and Word does draw the dots (CR-001 batch 43).
+- A row's w:tblPrEx now overrides the table's cell margins and borders for that row, per
+  child, as ECMA-376 17.4.39/17.4.61 specify; it used to be dropped whole. 41 of 449 corpus
+  documents carry one. Measured on a 222-page document whose 1839 data rows each cut the
+  table's bottom cell margin from 113 to 28 twips: its row pitch goes from 21.0pt to 16.7
+  against Word's 16.8, and it goes from 19 pages over Word to 2 (CR-001 batch 43).
 - The text inside a WMF or EMF picture is drawn in the font docx4j would draw the document's
   own text in, and the PDF embeds it. A metafile names its fonts by GDI face name - Calibri,
   Times New Roman - which are document font names, and those reached AWT unresolved, so the

@@ -811,20 +811,40 @@ public abstract class Mapper {
     		seen.add(documentFontName.trim().toLowerCase());
     		PhysicalFont pf = null;
     		String resolvedAlt = null;
+    		String eastAsianHop = null;
     		StringBuilder chain = new StringBuilder("w:altName "); // hop by hop, for the decision
     		while (alt!=null && seen.add(alt.trim().toLowerCase())) {
     			if (chain.length()>10) chain.append(" -> ");
     			chain.append(alt);
+    			/* A hop this machine lacks but whose family the line-metrics table flags
+    			 * East Asian: Word had that font and drew it, and its line is 1.3 x its
+    			 * usWin box (WordLineMetrics.EAST_ASIAN_FACTOR), which no substitute this
+    			 * machine can offer comes near.  The chain goes on for the *width*
+    			 * substitution; only the line box is taken here.  East Asian only:
+    			 * CR-001 batch 42 §28.1 measured ten documents whose Word-resolved altName
+    			 * ends at a Latin family and found the line box already within 1.5% of
+    			 * Word in every one, so aliasing those can only break them.  @since 17.1.1 */
+    			if (eastAsianHop==null && WordLineMetrics.isEastAsianFamily(alt)
+    					&& PhysicalFonts.get(alt)==null) {
+    				eastAsianHop = alt;
+    			}
     			pf = PhysicalFonts.get(alt);
     			if (pf==null) pf = PhysicalFonts.get(alt + " Regular");
     			if (pf==null) pf = get(alt);
     			if (pf!=null) { resolvedAlt = alt; break; }
     			alt = altNames.get(alt.trim().toLowerCase());
     		}
+    		/* The line box is registered even where the chain found no face here: the
+    		 * corpus document this is for names Meiryo as its alternate, Meiryo is on no
+    		 * Linux box, nothing else in its chain resolves, and the font goes on to
+    		 * addWordDefaultSubstitutes - but Word had Meiryo and drew it, so the line is
+    		 * Meiryo's whatever renders the glyphs.  @since 17.1.1 */
+    		if (eastAsianHop!=null) registerLineMetricsAlias(documentFontName, eastAsianHop);
+
     		if (pf==null) continue;
 
     		put(documentFontName, pf);
-    		registerLineMetricsAlias(documentFontName, resolvedAlt);
+    		if (eastAsianHop==null) registerLineMetricsAlias(documentFontName, resolvedAlt);
     		decide(documentFontName, FontDecision.Source.ALT_NAME, chain.toString(), null);
     	}
     }
@@ -1062,7 +1082,14 @@ public abstract class Mapper {
     	String value = family.trim();
     	if (key.length()==0 || value.length()==0 || key.equals(value.toLowerCase(java.util.Locale.ROOT))) return;
     	if (WordLineMetrics.hasOwnLineMetrics(documentFont)) return; // it has its own
-    	lineMetricsAliases.put(key, value);
+    	/* The first registration wins, and the pass order is what makes that right: the
+    	 * document's own w:altName ({@link #addAltNameSubstitutes}) says which font Word
+    	 * had, where Word's answer for a font it cannot find
+    	 * ({@link #addWordDefaultSubstitutes}) is a guess of last resort.  They collide
+    	 * only where the altName pass registered a line box for a font it could not map -
+    	 * the East Asian chain hop - and the default pass then mapped it; before 17.1.1
+    	 * the later put silently replaced Meiryo's box with Calibri's.  @since 17.1.1 */
+    	lineMetricsAliases.putIfAbsent(key, value);
     }
 
     /**
