@@ -81,9 +81,9 @@ public class GlyphCheck {
 
 		if (log.isInfoEnabled()
 				&& !exists) {
-			
+
             log.info("Glyph " + (int) c + " (0x"
-                    + Integer.toHexString(c) 
+                    + Integer.toHexString(c)
                     + ") not available in font " + physicalFont.name);
 			
 		}
@@ -115,6 +115,22 @@ public class GlyphCheck {
 		Typeface t = typefaceOrWarn(physicalFont);
 		if (t==null) return false;
 
+		/* A no-break space is a space: the two differ in where a line may break, not in
+		 * what is drawn, and FOP draws U+00A0 with the space glyph.  Several faces map
+		 * only U+0020 - Selawik and Selawik Light have no U+00A0 at all - and taking that
+		 * as "no glyph" sent a paragraph whose only content is a no-break space down the
+		 * no-coverage path, where the FO gets no font-family and FOP draws it in its
+		 * base-14 default: a font not embedded in the PDF (measured on a corpus document,
+		 * CR-017 phase 5; the same reading that TextMeasurer.glyphWidthPt already gives a
+		 * tab).  @since 17.1.1 */
+		if (cp==0x00A0 && !hasRawCodepoint(t, cp, physicalFont.name)) cp = ' ';
+
+		return hasRawCodepoint(t, cp, physicalFont.name);
+	}
+
+	/** Whether the typeface itself maps this code point. */
+	private static boolean hasRawCodepoint(Typeface t, int cp, String fontName) {
+
 		if (t instanceof MultiByteFont) {
 			MultiByteFont mbf = (MultiByteFont)t;
 			return mbf.hasCodePoint(cp);
@@ -129,7 +145,7 @@ public class GlyphCheck {
 			
             log.info("Glyph " + (int) cp + " (0x"
                     + Integer.toHexString(cp) 
-                    + ") not available in font " + physicalFont.name);
+                    + ") not available in font " + fontName);
 			
 		}
 		

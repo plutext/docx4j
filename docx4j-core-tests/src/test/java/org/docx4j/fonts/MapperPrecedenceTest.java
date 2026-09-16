@@ -177,6 +177,40 @@ public class MapperPrecedenceTest {
 	}
 
 	/**
+	 * A document font with no bold face of its own gets the alias even where the
+	 * substitute has no bold sibling to withhold (CR-017 phase 5).  FOP synthesises the
+	 * bold either way - a family with no bold face takes the simulate-style branch of the
+	 * configuration - but without the alias the decision reported the physical font's own
+	 * face as the bold, where nothing of the kind is on the page.  Segoe UI Light drawn
+	 * in Selawik Light is the case that showed it: Selawik Light, unlike Source Sans 3,
+	 * has no bold face at all.
+	 */
+	@Test
+	public void aFamilyWithNoBoldFaceMappedToAFaceWithNoBoldSibling() throws Exception {
+
+		PhysicalFont lonely = null;
+		for (PhysicalFont pf : PhysicalFonts.getPhysicalFonts().values()) {
+			if (pf==null || pf.isNoBoldFace() || pf.getEmbeddedURI()==null) continue;
+			if (PhysicalFonts.getBoldForm(pf)==null) { lonely = pf; break; }
+		}
+		Assume.assumeTrue("no installed face without a bold sibling", lonely != null);
+
+		IdentityPlusMapper m = new IdentityPlusMapper();
+		m.put("Calibri Light", lonely);
+		// as a mapping pass would, so that there is a decision for the alias to show in
+		m.decide("Calibri Light", FontDecision.Source.MEASURED_STAND_IN, null, null);
+		m.addNoBoldFaceAliases(names("Calibri Light"));
+
+		PhysicalFont alias = m.get("Calibri Light");
+		assertTrue("no alias for " + lonely.getName(), alias.isNoBoldFace());
+		assertEquals(lonely.getName() + PhysicalFont.NOBOLD_SUFFIX, alias.getName());
+		assertNull("FOP is to synthesise the bold", m.getBoldForm("Calibri Light", alias));
+		assertSame("the alias is the same file", lonely, PhysicalFonts.get(alias.getName()));
+		assertEquals("the decision says the bold is synthetic", Mapper.SYNTHETIC,
+				m.getDecision("Calibri Light").getBoldFace());
+	}
+
+	/**
 	 * An alias a document registered (its altName, or the Word default it was mapped to)
 	 * must not make that family "known": that would have the Word-default pass skipped and
 	 * the font left unmapped (found by the CR-016 phase 4 gate).  Since 17.1.1 the alias
