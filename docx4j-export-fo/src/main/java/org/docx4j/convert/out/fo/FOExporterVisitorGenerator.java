@@ -731,11 +731,13 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document, org.docx4j.wml.R.Tab tab) throws DOMException {
 		leadingTabOrdinal = XsltCommonFunctions.leadingTabOrdinal(tab);
 		tabOrdinal = XsltCommonFunctions.tabOrdinal(tab);
+		followingTabs = XsltCommonFunctions.followingTabs(tab);
 		try {
 			convertTabToNode(conversionContext, document);
 		} finally {
 			leadingTabOrdinal = -1;
 			tabOrdinal = 0;
+			followingTabs = 0;
 		}
 	}
 
@@ -743,6 +745,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	private int leadingTabOrdinal = -1;
 	/** the tab being converted: how many tabs precede it in its paragraph */
 	private int tabOrdinal = 0;
+	/** the tab being converted: how many tabs follow it in its paragraph.  @since 17.1.1 */
+	private int followingTabs = 0;
 
 	@Override
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document) throws DOMException {
@@ -751,7 +755,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 			// shared with the XSLT pathway's w:tab template
 			org.w3c.dom.DocumentFragment frag = XsltFOFunctions.tabToFO(conversionContext, pPr, rPr,
-					tabOrdinal, leadingTabOrdinal < 0 ? 1 : 0);
+					tabOrdinal, leadingTabOrdinal < 0 ? 1 : 0, followingTabs);
 			if (frag!=null) getCurrentParent().appendChild(document.importNode(frag, true));
 		}
 	}

@@ -200,6 +200,14 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A tab in a table-of-contents entry takes the leader of the tab stop it reaches, not the
+  paragraph's dot leader whichever stop it lands on. An entry for a numbered heading is
+  "number <tab> title <tab> page", and where the style has a hanging indent the first tab
+  reaches the implicit stop that indent makes, which draws no leader: docx4j drew a run of
+  dots between the number and the title and pushed the title onto a second line. Measured
+  on a corpus document whose 280 such entries went from two lines to one, matching Word's
+  x span to 0.08pt, and on a second whose TOC style has no indent, where the first tab does
+  reach the dot stop and Word does draw the dots (CR-001 batch 43).
 - A row's w:tblPrEx now overrides the table's cell margins and borders for that row, per
   child, as ECMA-376 17.4.39/17.4.61 specify; it used to be dropped whole. 41 of 449 corpus
   documents carry one. Measured on a 222-page document whose 1839 data rows each cut the

@@ -2658,6 +2658,51 @@ public class XsltFOFunctions {
 	 */
 	public static DocumentFragment tabToFO(FOConversionContext context, PPr effectivePPr, RPr rPr,
 			int precedingTabs, int precedingText) {
+		return tabToFO(context, effectivePPr, rPr, precedingTabs, precedingText, 0);
+	}
+
+	/**
+	 * As {@link #tabToFO(FOConversionContext, PPr, RPr, int, int)}, knowing how many tabs
+	 * follow this one in its paragraph, which is what decides whether a tab in a
+	 * table-of-contents entry is the one that reaches the entry's right dot-leader stop.
+	 *
+	 * <p>A TOC entry for a numbered heading is {@code number &lt;tab&gt; title
+	 * &lt;tab&gt; page}, and its style declares one stop: the right dot-leader stop at
+	 * the margin. Word sends the <b>first</b> tab to whatever stop lies before that one -
+	 * in the corpus, the implicit stop a hanging indent makes at the left indent - and an
+	 * implicit stop draws no leader; only the second tab reaches the dot stop. docx4j
+	 * gave the stretching dot leader to <i>every</i> tab of such a paragraph, so the
+	 * first one drew a run of dots from the number to the title and pushed the title onto
+	 * a second line: measured on a corpus document (CR-001 batch 43, M21) whose 280
+	 * {@code toc 2} entries are that shape with {@code w:ind w:left="624"
+	 * w:hanging="624"} and {@code &lt;w:tab w:val="right" w:leader="dot" w:pos="9627"/&gt;},
+	 * Word sets the whole entry on one baseline with a pitch of 15.9pt and ours took two
+	 * lines at 34.2 - two pages of that document.
+	 *
+	 * <p>Which stop a tab reaches is not knowable before layout, and the ordinary path
+	 * already defers exactly that: a zero-length {@code docx4j-tab} leader whose pattern
+	 * the line manager keeps, blanks or replaces from the stop the tab actually reaches
+	 * ({@code WordLineLayoutManager}, {@code LBP.setLeaderPattern}), with the width an
+	 * unresolved {@code fo:page-number-citation} loses charged to the tab
+	 * ({@code pageNumberTabs}). So only the paragraph's <b>last</b> tab keeps the
+	 * stretching leader now; every earlier one takes the ordinary path. With the Word
+	 * layout managers off there is nothing to defer to, and the old behaviour stands.
+	 *
+	 * <p>Two corpus documents settle the discriminator between them, and it is the
+	 * <b>hanging indent</b>. In the first, whose {@code toc 2} style carries
+	 * {@code w:ind w:left="624" w:hanging="624"}, the number's tab reaches the implicit
+	 * stop that hanging indent makes at the left indent, and Word paints no dots: its
+	 * entry reads {@code 4.86 Constante} from x=70.82 to 154.14. In the second, whose
+	 * {@code toc 1} style carries no {@code w:ind} at all, there is no stop before the dot
+	 * stop, the number's tab reaches the dot stop itself, and Word <i>does</i> paint the
+	 * dots: its entry reads {@code ................2.4.2 Output...}. So the test is
+	 * whether a stop lies between the line's start and the dot stop, not which tab it is.
+	 *
+	 * @param followingTabs how many tabs follow this one in the paragraph
+	 * @since 17.1.1
+	 */
+	public static DocumentFragment tabToFO(FOConversionContext context, PPr effectivePPr, RPr rPr,
+			int precedingTabs, int precedingText, int followingTabs) {
 
 		Document d;
 		try {
@@ -2675,7 +2720,9 @@ public class XsltFOFunctions {
 		// width we fix now, that leader absorbs the width an unresolved
 		// fo:page-number-citation loses when it resolves ("MMM" while the line is
 		// measured), which is how the page numbers of a TOC line up at all.
-		if (isTocDotLeader(effectivePPr)) {
+		// ... and only for a tab which reaches that stop.  See this method's javadoc.
+		if (isTocDotLeader(effectivePPr)
+				&& (!realTabs() || !tocTabStopsShort(context, effectivePPr, precedingTabs, followingTabs))) {
 			Element foLeader = d.createElementNS(XSL_FO, "fo:leader");
 			foLeader.setAttribute("leader-length.minimum",  "12pt");
 			foLeader.setAttribute("leader-length.maximum",  "100%");
@@ -2732,6 +2779,12 @@ public class XsltFOFunctions {
 	/** XSLT form of the above (the direct pPr, resolved here). @since 17.0.5 */
 	public static DocumentFragment tabToFO(FOConversionContext context, NodeIterator pPrNodeIt,
 			NodeIterator rPrNodeIt, int precedingTabs, int precedingText) {
+		return tabToFO(context, pPrNodeIt, rPrNodeIt, precedingTabs, precedingText, 0);
+	}
+
+	/** XSLT form of the above, with the tabs that follow this one. @since 17.1.1 */
+	public static DocumentFragment tabToFO(FOConversionContext context, NodeIterator pPrNodeIt,
+			NodeIterator rPrNodeIt, int precedingTabs, int precedingText, int followingTabs) {
 
 		PPr pPr = null;
 		RPr rPr = null;
@@ -2744,7 +2797,7 @@ public class XsltFOFunctions {
 		} catch (Exception e) {
 			log.warn("Couldn't resolve pPr for a tab: " + e.getMessage());
 		}
-		return tabToFO(context, pPr, rPr, precedingTabs, precedingText);
+		return tabToFO(context, pPr, rPr, precedingTabs, precedingText, followingTabs);
 	}
 
 	/**
@@ -2778,6 +2831,39 @@ public class XsltFOFunctions {
 	static boolean tocStretchingLeader() {
 		return org.docx4j.Docx4jProperties.getProperty(
 				"docx4j.convert.out.fo.wordLayout.tocStretchingLeader", true);
+	}
+
+	/**
+	 * Whether this tab of a table-of-contents entry stops <em>short</em> of the entry's
+	 * right dot-leader stop, and so must not take its leader.
+	 *
+	 * <p>Two things have to hold. The tab must be followed by another tab in the
+	 * paragraph - the last tab of an entry is the page-number tab and always reaches the
+	 * dot stop. And the stop it reaches, walked from the first line's start with
+	 * {@link #nextTabStop} (which knows the explicit stops, the implicit stop a hanging
+	 * indent makes at the left indent, and the default grid), must lie before the dot
+	 * stop. That walk assumes each tab advances one stop, which is all that can be known
+	 * before layout; the {@code followingTabs} half keeps it from ever taking the leader
+	 * off the tab that carries the page number.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	static boolean tocTabStopsShort(FOConversionContext context, PPr effectivePPr,
+			int precedingTabs, int followingTabs) {
+		if (followingTabs <= 0) return false;
+		CTTabStop dotStop = effectivePPr.getTabs().getTab().get(0);
+		if (dotStop.getPos() == null) return false;
+		DocumentSettingsPart settings = null;
+		try {
+			settings = context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart();
+		} catch (Exception e) {
+			log.debug(e.getMessage());
+		}
+		int stop = firstLineStartTwips(effectivePPr);
+		for (int i = 0; i <= precedingTabs; i++) {
+			stop = nextTabStop(stop, effectivePPr, settings);
+		}
+		return stop < dotStop.getPos().intValue();
 	}
 
 	/** The table-of-contents shape: the paragraph's first tab stop is right-aligned
