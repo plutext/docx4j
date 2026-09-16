@@ -535,7 +535,18 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				}
 				return null;
 			}
-			if (gridIsAuthoritative(table, tblPr, cols, pref, declared)) return null;
+			/* What the grid is a percentage OF, below compatibility mode 15, is the text
+			 * column widened by a cell margin at each end - the grid edge, which is where
+			 * the grid sits there and what autofitGridAllowanceTwips is (TableWriter).
+			 * Measured on a corpus document's landscape 5-column floating table,
+			 * w:tblW w:w="5205" w:type="pct" on a 12960-twip column with 108-twip cell
+			 * margins: 104.1% of the column is 13491 twips and 104.1% of the grid edge's
+			 * 13176 is 13716, which is its w:tblGrid to the twip - and Word's own re-save
+			 * of the document leaves that grid untouched, so that is the layout Word uses.
+			 * @since 17.1.1 */
+			int gridPreferred = container > 0 ? tablePreferred : preferredTableWidthTwips(tblPr,
+					containerWidthTwips(context) + autofitGridAllowanceTwips(context, table, tblPr));
+			if (gridIsAuthoritative(table, tblPr, cols, pref, declared, gridPreferred)) return null;
 			if (available <= 0) return null;
 			int[] widths = org.docx4j.model.table.AutofitLayout.distribute(mi, ma, pref, available);
 			boolean anyDeclared = false;
@@ -595,7 +606,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * @since 17.1.0
 	 */
 	private static boolean gridIsAuthoritative(AbstractTableWriterModel table,
-			org.docx4j.wml.CTTblPrBase tblPr, int cols, int[] pref, boolean[] declared) {
+			org.docx4j.wml.CTTblPrBase tblPr, int cols, int[] pref, boolean[] declared,
+			int tablePreferred) {
 
 		int[] grid = gridWidths(table, cols);
 		if (grid == null) return false;
@@ -606,7 +618,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		}
 		if (everyColumnPreferred) return true;
 
-		/* A table which states an absolute width its grid sums to was written for that
+		/* A table which states a preferred width its grid sums to was written for that
 		 * grid, whether or not any cell repeats it: the cells of such a table are
 		 * commonly all w:tcW auto, and reading "at least one cell declares a width" as a
 		 * precondition sent them to the content pass.  Measured on a corpus document
@@ -614,15 +626,19 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		 * the content pass gave 73.6 / 40.9 / 242.35 / 77.7pt against the grid's 79.2 /
 		 * 47.65 / 222.4 / 85.3, and its "Booked By:" label does not fit a 40.9pt column
 		 * where Word's 47.65pt holds it.  12 documents of the three corpora, 35 tables.
-		 * @since 17.1.1 */
-		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
-		if (tblW != null && tblW.getW() != null && "dxa".equals(tblW.getType())) {
-			long stated = tblW.getW().longValue();
-			if (stated > 0) {
-				long sum = 0;
-				for (int w : grid) sum += w;
-				if (Math.abs(sum - stated) * 100 <= stated) return true;
-			}
+		 *
+		 * <p>In any unit: a percentage width is the same statement, resolved against
+		 * what the grid is a percentage of (the caller measures it - see
+		 * computeAutofitColumnWidths).  Measured on a corpus document whose landscape
+		 * 5-column floating table states w:tblW w:w="5205" w:type="pct" and whose grid
+		 * is 4875/2208/1975/1624/3034 = 13716 twips, exactly 104.1% of the grid edge:
+		 * the content pass gave 4794/1722/1722/2269/2984 - two columns 20 and 13% narrow
+		 * and one 40% wide - and the document ran to 15 pages against Word's 13.  Word's
+		 * own re-save leaves that grid untouched.  @since 17.1.1 */
+		if (tablePreferred > 0) {
+			long sum = 0;
+			for (int w : grid) sum += w;
+			if (Math.abs(sum - tablePreferred) * 100 <= tablePreferred) return true;
 		}
 		return false; // a wholly auto-width table is Word's autofit
 	}
@@ -1193,11 +1209,19 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 */
 	private static int preferredTableWidthTwips(AbstractWmlConversionContext context,
 			org.docx4j.wml.CTTblPrBase tblPr, int container) {
+		return preferredTableWidthTwips(tblPr,
+				container > 0 ? container : containerWidthTwips(context));
+	}
+
+	/** {@link #preferredTableWidthTwips(AbstractWmlConversionContext,
+	 *  org.docx4j.wml.CTTblPrBase, int)} against a stated base: what a percentage width
+	 *  is a percentage <em>of</em>.  @since 17.1.1 */
+	private static int preferredTableWidthTwips(org.docx4j.wml.CTTblPrBase tblPr, int base0) {
 		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
 		if (tblW == null || tblW.getW() == null || tblW.getW().intValue() <= 0) return -1;
 		if ("dxa".equals(tblW.getType())) return tblW.getW().intValue();
 		if ("pct".equals(tblW.getType())) {
-			int base = container > 0 ? container : containerWidthTwips(context);
+			int base = base0;
 			if (base > 0) {
 				int w = (int) ((long) base * tblW.getW().intValue() / 5000);
 				/* A percentage which resolves to less than one pair of Word's default cell

@@ -200,6 +200,15 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A table which states a **percentage** width its w:tblGrid sums to is laid out on that grid,
+  as one stating an absolute width already was. What the percentage is a percentage of, below
+  compatibility mode 15, is the grid edge - the text column widened by one cell margin at each
+  end, which is where the grid sits there. Measured on a landscape five-column floating table
+  stating w:tblW 5205 pct (104.1%) on a 12960-twip column with 108-twip cell margins: 104.1% of
+  the column is 13491 twips and 104.1% of the grid edge's 13176 is 13716, which is its w:tblGrid
+  to the twip. Read against the column the grid missed by 1.7%, the content-autofit pass ran,
+  and it made two columns 22% and 13% too narrow and one 40% too wide (CR-001 batch 44).
+
 - The running header and footer of a run of continuous sections merged into one
   page-sequence are drawn at the first part's margins, as that part's body is, rather than at
   whichever part's margins the page masters were built on for the columns' sake. Word draws
