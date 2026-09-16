@@ -200,6 +200,14 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A justified line's word spaces compress to 0.755 of their nominal width to bring the next
+  word up, where the limit was 0.760. Two probes put Word's own floor in (0.7500, 0.7586]: each
+  of their 32 cases is a two-line justified paragraph whose next word is built so that pulling
+  it up needs every space at exactly one stated fraction, and Word brought it up at 0.8010 down
+  to 0.7586 and left it at 0.7500 and below, the same for 5, 12 and 20 spaces on the line. 0.755
+  is the middle of that band, and at it docx4j makes Word's choice in all 32
+  (CR-001 batch 44).
+
 - A line laid out at the height the exporter measured for it takes the baseline the exporter
   measured with it. The two are written as a pair from the document font, but the line's ascent
   was a share of the pitch read from the *run's* metrics - and where a substitute renders a run
