@@ -200,6 +200,15 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The two-pass page-number filter keeps character data where the document has it.
+  PlaceholderReplacementHandler buffers character data so that a placeholder split over
+  several SAX characters() calls can still be found, and flushed the buffer only at
+  endElement - so text which came *before* a child element was handed on after that child
+  had started, that is, inside it. A table-of-contents entry written as
+  `<inline>text <leader/> <page-number-citation/></inline>` lost both of its spaces that
+  way. Only a document with a page-number citation goes through the filter at all, which
+  is why the same FO rendered correctly without one (CR-001 batch 45).
+
 - The w:suff separator between a numbered paragraph's label and its text is a space character
   in the PDF's text layer, as it is in Word's. Word paints label, separator, text on one line
   and writes the separator - a tab, or a space - as one space glyph whose quad is its advance:
