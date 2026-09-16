@@ -317,9 +317,11 @@ corpus (no FO change), so the gate is the test modules, not the corpora.
   property nulled (the pre-change shape): with it, `mc:Ignorable` is written;
   without it, no `mc:Ignorable`, while `w14:paraId` survives either way. So
   nothing but the model property writes the attribute, and the old output was
-  exactly the gap described. **Outstanding: Word on the VM has not opened the
-  saved file** — the resave harness was not run, since the change only adds an
-  attribute Word writes itself.
+  exactly the gap described. **Closed 2026-09-16:** `loadAndSave.docx` saved
+  through the merged code (`resave-check/loadAndSave-docx4j-saved-CR018.docx`
+  on the share; its `comments.xml` carries `mc:Ignorable` with `w14` declared,
+  its `commentsExtensible.xml` round-trips) opened in Word on the VM without
+  a repair prompt (Jason).
 - **`w15` importing `mce`**: the import must not disturb XJC's episode /
   package bindings for `w15` (`org.docx4j.w15`); `w16cid.xsd` already
   imports it, so the pattern is known to work.
