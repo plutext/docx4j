@@ -200,6 +200,11 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A row's w:tblPrEx now overrides the table's cell margins and borders for that row, per
+  child, as ECMA-376 17.4.39/17.4.61 specify; it used to be dropped whole. 41 of 449 corpus
+  documents carry one. Measured on a 222-page document whose 1839 data rows each cut the
+  table's bottom cell margin from 113 to 28 twips: its row pitch goes from 21.0pt to 16.7
+  against Word's 16.8, and it goes from 19 pages over Word to 2 (CR-001 batch 43).
 - The text inside a WMF or EMF picture is drawn in the font docx4j would draw the document's
   own text in, and the PDF embeds it. A metafile names its fonts by GDI face name - Calibri,
   Times New Roman - which are document font names, and those reached AWT unresolved, so the

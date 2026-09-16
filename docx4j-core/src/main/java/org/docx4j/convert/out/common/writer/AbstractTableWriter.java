@@ -281,6 +281,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			row = createNode(doc, rowContainer, (inHeader ? NODE_TABLE_HEADER_ROW : NODE_TABLE_BODY_ROW));
 			TrPr trPr = rowModel.getRowProperties();
 			CTTblPrEx tblPrEx = rowModel.getRowPropertiesExceptions();
+			// the table borders in force for this row: a w:tblPrEx/w:tblBorders states
+			// them for its own row only.  @since 17.1.1
+			TblBorders rowBorders = rowBorders(tableBorders, tblPrEx);
 
 			// the table style's conditional formatting for this row (firstRow, a band, ...):
 			// below the row's own w:trPr, which is applied after it.  @since 17.1.1
@@ -318,7 +321,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					cellNode = createNode(doc, row, (inHeader ? NODE_TABLE_HEADER_CELL : NODE_TABLE_BODY_CELL));
 					row.appendChild(cellNode);
 					//Apply cell style
-					createCellBorderProperties(cellProperties, tableBorders,
+					createCellBorderProperties(cellProperties, rowBorders,
 							rowIndex, table.getRows().size(), cell, table.getColCount());
 					// the table style's conditional formatting for this cell, in precedence
 					// order, between the table's own borders and the cell's own w:tcPr
@@ -1745,9 +1748,60 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		if (r != null) properties.add(new BorderRight(r));
 	}
 
+	/**
+	 * The row's table property exceptions ({@code w:tblPrEx}), as cell properties.
+	 *
+	 * <p>{@code w:tblPrEx} states table properties which apply to its own {@code w:tr}
+	 * instead of the table's (ECMA-376 17.4.61), and the merge is per child: a
+	 * {@code w:tblCellMar} stating only {@code w:bottom} leaves the table's top, left and
+	 * right in force for that row.  Measured on a corpus document (CR-001 batch 43, M4)
+	 * whose table declares {@code w:tblCellMar} top=28 left=0 bottom=113 right=0 and
+	 * whose 1839 data rows each carry {@code w:tblPrEx/w:tblCellMar/w:bottom w:w="28"}:
+	 * Word's row pitch is 4.25pt (= 113 - 28 twips) shorter than ours on every one of
+	 * them, which is the bottom margin alone - had the exception also reset the top, the
+	 * difference would have been 5.65pt.</p>
+	 *
+	 * <p>This is called between the row's {@code w:trPr} and the cell's own
+	 * {@code w:tcPr}, so a {@code w:tcMar} still wins.  {@code w:tblBorders} in a
+	 * {@code w:tblPrEx} is resolved per cell instead - see
+	 * {@link #rowBorders(TblBorders, CTTblPrEx)} - because the outer definitions belong
+	 * to the table's edges and insideH/insideV to the sides facing another cell.</p>
+	 *
+	 * @since 17.1.1
+	 */
 	protected void createCellProperties(List<Property> properties, CTTblPrEx tblPrEx) {
+		if (tblPrEx == null) return;
+		CTTblCellMar m = tblPrEx.getTblCellMar();
+		if (m == null) return;
+		if (m.getTop() != null)    properties.add(new CellMarginTop(m.getTop()));
+		if (m.getBottom() != null) properties.add(new CellMarginBottom(m.getBottom()));
+		if (m.getLeft() != null)   properties.add(new CellMarginLeft(m.getLeft()));
+		if (m.getRight() != null)  properties.add(new CellMarginRight(m.getRight()));
 	}
-	
+
+	/**
+	 * The table borders in force for one row: where the row carries
+	 * {@code w:tblPrEx/w:tblBorders} those definitions stand in for the table's, child by
+	 * child, for that row alone; the sides the exception does not state are still the
+	 * table's.  Returns the table's own borders unchanged where there is no exception, so
+	 * the common case allocates nothing.
+	 *
+	 * @since 17.1.1
+	 */
+	protected static TblBorders rowBorders(TblBorders tableBorders, CTTblPrEx tblPrEx) {
+		TblBorders ex = (tblPrEx == null) ? null : tblPrEx.getTblBorders();
+		if (ex == null) return tableBorders;
+		if (tableBorders == null) return ex;
+		TblBorders merged = org.docx4j.jaxb.Context.getWmlObjectFactory().createTblBorders();
+		merged.setTop(ex.getTop() != null ? ex.getTop() : tableBorders.getTop());
+		merged.setBottom(ex.getBottom() != null ? ex.getBottom() : tableBorders.getBottom());
+		merged.setLeft(ex.getLeft() != null ? ex.getLeft() : tableBorders.getLeft());
+		merged.setRight(ex.getRight() != null ? ex.getRight() : tableBorders.getRight());
+		merged.setInsideH(ex.getInsideH() != null ? ex.getInsideH() : tableBorders.getInsideH());
+		merged.setInsideV(ex.getInsideV() != null ? ex.getInsideV() : tableBorders.getInsideV());
+		return merged;
+	}
+
 	protected JAXBElement<?> getElement(List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore, String localName) {
 		JAXBElement<?> element = null;
 		if ((cnfStyleOrDivIdOrGridBefore != null) && (!cnfStyleOrDivIdOrGridBefore.isEmpty())) {
