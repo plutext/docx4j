@@ -296,7 +296,7 @@ public class FontFallback {
 		// knows).  "urw gothic" is the whole family name of the Avant Garde clone in the
 		// URW base 35, which Century Gothic substitutes to, so it is not ambiguous.
 		for (String sans : new String[] { "arimo", "carlito", "cantarell", "helvetica", "arial",
-				"urw gothic",
+				"urw gothic", "selawik",
 				"verdana", "tahoma", "segoe", "gadugi", "trebuchet", "calibri", "grotesk",
 				"grotesque", "futura", "frutiger", "myriad", "univers", "avenir", "lato", "roboto",
 				"franklin", "open sans" }) {
@@ -304,8 +304,11 @@ public class FontFallback {
 		}
 		// "p052" and "c059" are the whole family names of the Palatino and Century
 		// Schoolbook clones in the URW base 35 (Georgia, Book Antiqua and Palatino
-		// Linotype substitute to P052), so nothing in their names says "serif".
+		// Linotype substitute to P052), so nothing in their names says "serif"; nor does
+		// "gelasio", Georgia's measured clone (CR-017 phase 5), or "selawik" above,
+		// Segoe UI's.
 		for (String serif : new String[] { "tinos", "caladea", "charter", "times", "georgia",
+				"gelasio",
 				"garamond", "palatino", "p052", "c059", "bookman", "book antiqua", "cambria",
 				"constantia", "century", "baskerville", "caslon", "utopia", "minion", "sylfaen",
 				"roman" }) {
