@@ -200,6 +200,11 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A centre w:ptab advances to the middle of the line. Only the right one was written, so in
+  the three-field running head Word's header gallery produces - text, centre ptab, text,
+  right ptab, text - the middle field ran straight on from the first, its text touching.
+  Measured on a corpus document: Word sets the middle field at x=253.8..341.7 and docx4j
+  started it at 158.1 where the first ended, on every one of its 35 pages (CR-001 batch 43).
 - An over-wide table is no longer scaled into the text column where it is floating (it
   carries a w:tblpPr, so it is out of the flow and the column does not bound it), and a
   w:tblW in pct above 100% now keeps its declared w:tblGrid rather than re-deriving the

@@ -802,6 +802,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 stop = tabLeftMpt + getLineWidth();
                 align = TAB_RIGHT;
                 stopLeader = LBP.LEADER_NONE;
+            } else if (isPtabCenter(leader)) {
+                // a centre w:ptab: a centre tab stop at the middle of the line, whatever
+                // the paragraph's own stops are.  Measured on a corpus document's running
+                // head, the three-field "text <ptab center> text <ptab right> text" shape
+                // Word's header gallery writes: Word centres the middle field on x=297.75,
+                // the exact centre of the page.  @since 17.1.1
+                stop = tabLeftMpt + getLineWidth() / 2;
+                align = TAB_CENTER;
+                stopLeader = LBP.LEADER_NONE;
             } else {
                 stop = nextTabStop(tabLeftMpt + x);      // sets stopAlignment/stopLeader
                 align = stopAlignment;
@@ -1834,6 +1843,12 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *  {@code w:tab} (XsltFOFunctions.ptabToFO).  @since 17.0.5 */
     private boolean isPtabRight(LayoutManager lm) {
         return org.docx4j.convert.out.fo.XsltFOFunctions.TAB_PTAB_RIGHT
+                .equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB));
+    }
+
+    /** whether this tab leader stands in for a centre {@code w:ptab}.  @since 17.1.1 */
+    private boolean isPtabCenter(LayoutManager lm) {
+        return org.docx4j.convert.out.fo.XsltFOFunctions.TAB_PTAB_CENTER
                 .equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB));
     }
 

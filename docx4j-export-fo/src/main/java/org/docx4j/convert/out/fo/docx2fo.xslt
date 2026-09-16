@@ -858,6 +858,20 @@
 
 </xsl:template>
 
+<!--
+      <w:ptab w:relativeTo="margin" w:alignment="center" w:leader="none"/>
+    </w:r>
+     -->
+<xsl:template match="w:ptab[@w:alignment='center']">
+
+	  <!-- A centre tab stop at the middle of the line.  Until 17.1.1 this matched
+	       nothing and a centre ptab produced no advance at all, so the field it should
+	       have centred ran on from the one before it (CR-001 batch 43, M43). -->
+	  <xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.ptabToFO(
+	  	$conversionContext, 'ptab-center')" />
+
+</xsl:template>
+
 
 <xsl:template match="w:smartTag">
     <xsl:apply-templates />

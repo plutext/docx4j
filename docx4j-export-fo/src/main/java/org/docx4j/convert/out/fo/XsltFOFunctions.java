@@ -2591,6 +2591,9 @@ public class XsltFOFunctions {
 	/** {@link #HINT_TAB} value marking the leader of a right {@code w:ptab}. @since 17.0.5 */
 	public static final String TAB_PTAB_RIGHT = "ptab-right";
 
+	/** {@link #HINT_TAB} value marking the leader of a centre {@code w:ptab}. @since 17.1.1 */
+	public static final String TAB_PTAB_CENTER = "ptab-center";
+
 	/**
 	 * The FO for a right {@code w:ptab}, for both pathways.
 	 *
@@ -2607,6 +2610,29 @@ public class XsltFOFunctions {
 	 * @since 17.0.5
 	 */
 	public static DocumentFragment ptabToFO(FOConversionContext context) {
+		return ptabToFO(context, TAB_PTAB_RIGHT);
+	}
+
+	/**
+	 * As {@link #ptabToFO(FOConversionContext)}, for a <b>centre</b> {@code w:ptab} as
+	 * well: {@code kind} is {@link #TAB_PTAB_RIGHT} or {@link #TAB_PTAB_CENTER}.
+	 *
+	 * <p>A centre ptab is a centre tab stop at the middle of the line. Until 17.1.1 only
+	 * the right one was written and a centre one produced nothing at all, so the field it
+	 * should have centred ran straight on from the field before it. Measured on a corpus
+	 * document whose running head is the three-field
+	 * {@code text &lt;ptab center&gt; text &lt;ptab right&gt; text} shape Word's own header
+	 * gallery writes: Word centres the middle field on x=297.75, the exact centre of the
+	 * page, and docx4j started it at x=158.1 where the first field ended - 95.7pt short,
+	 * with the two fields' text touching, on every one of the document's 35 pages. The
+	 * right ptab beside it was already landing to 0.1pt.</p>
+	 *
+	 * <p>Without the Word layout managers both kinds keep the stretching leader they had,
+	 * which centres nothing; there is nothing to defer to there.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static DocumentFragment ptabToFO(FOConversionContext context, String kind) {
 
 		Document d;
 		try {
@@ -2621,7 +2647,7 @@ public class XsltFOFunctions {
 		leader.setAttribute("leader-alignment", "reference-area");
 		if (realTabs()) {
 			leader.setAttribute("leader-length", "0pt");
-			leader.setAttribute(HINT_TAB, TAB_PTAB_RIGHT);
+			leader.setAttribute(HINT_TAB, kind == null ? TAB_PTAB_RIGHT : kind);
 		} else {
 			// legacy (docx4j.convert.out.fo.wordLayout=false): a stretching leader,
 			// with text-align-last="justify" from createBlockForPPr's leader check
