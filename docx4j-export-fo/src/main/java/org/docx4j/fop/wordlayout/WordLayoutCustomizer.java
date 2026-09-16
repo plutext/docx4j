@@ -153,6 +153,43 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	}
 
 	/**
+	 * Whether a line which comes out the box {@code docx4j:line-box} declares takes the
+	 * baseline {@code docx4j:baseline} declares with it, rather than the ascent its runs
+	 * report.
+	 *
+	 * <p>The two are a pair the FO exporter measured together from the document font.  A
+	 * run's ascent is a share of the pitch read from the <em>run's</em> metrics, and where
+	 * the paragraph's box was grown - an East Asian face takes 1.3 times its usWin box
+	 * (CR-001 batch 43) - that share is taken from a winAscent which was not grown with
+	 * it, so the line keeps the declared height and loses the declared baseline.
+	 *
+	 * <p>Measured on a generated reproduction of a corpus document's shape, a bulleted
+	 * item whose Symbol label this machine substitutes with DejaVu Serif and whose 9pt
+	 * body run names Meiryo, which it lacks: the body block declares
+	 * {@code docx4j:line-box="17.55pt" docx4j:baseline="9.541pt"} and its line came out
+	 * {@code ascent=13689 descent=3861} - the box exactly, the baseline 4.148pt low -
+	 * where the label block beside it came out {@code ascent=9540}, its own declared
+	 * baseline.  The bullet therefore sat 4.15pt above its text, which is the offset that
+	 * corpus document shows over 854 of its labels.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.lineBaselineFromBlock=false restores the run's
+	 * ascent.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LINE_BASELINE_FROM_BLOCK
+			= "docx4j.convert.out.fo.wordLayout.lineBaselineFromBlock";
+
+	public static boolean lineBaselineFromBlock() {
+		String v = System.getProperty(LINE_BASELINE_FROM_BLOCK);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LINE_BASELINE_FROM_BLOCK, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
 	 * Whether a word too long for a line of its own is broken inside it, at the last
 	 * character that fits - Word's last resort, and the only way such a word does not
 	 * run off the page.  UAX #14, which FOP follows, offers no break inside a word like

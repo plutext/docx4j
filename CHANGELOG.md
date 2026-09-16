@@ -200,6 +200,16 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A line laid out at the height the exporter measured for it takes the baseline the exporter
+  measured with it. The two are written as a pair from the document font, but the line's ascent
+  was a share of the pitch read from the *run's* metrics - and where a substitute renders a run
+  whose line box was grown, an East Asian face taking 1.3 times its usWin box, that share comes
+  off a winAscent which was not grown with it. The line then kept the right height and lost the
+  right baseline. Measured on a corpus document of bulleted items in an absent Japanese face:
+  its bullets sat 4.15pt above their own text, only 29% of its labels shared their text's
+  baseline against Word's 100%, and it extracted as 3934 lines against Word's 3228; it is now
+  100% and 3083 (CR-001 batch 44).
+
 - A table which states a **percentage** width its w:tblGrid sums to is laid out on that grid,
   as one stating an absolute width already was. What the percentage is a percentage of, below
   compatibility mode 15, is the grid edge - the text column widened by one cell margin at each

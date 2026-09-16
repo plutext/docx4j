@@ -68,6 +68,11 @@ public class WordListItemTest {
 	}
 
 	private static int render(String fo, boolean word) throws Exception {
+		return areaTree(fo, word).getElementsByTagName("pageViewport").getLength();
+	}
+
+	/** FOP's area tree for this FO, so a test can read where a line's baseline landed. */
+	private static Document areaTree(String fo, boolean word) throws Exception {
 		FopFactoryBuilder b = new FopFactoryBuilder(new File(".").toURI());
 		if (word) b.setLayoutManagerMakerOverride(new WordLayoutManagerMaker());
 		FopFactory factory = b.build();
@@ -78,8 +83,7 @@ public class WordListItemTest {
 		t.transform(new StreamSource(new ByteArrayInputStream(fo.getBytes("UTF-8"))), new SAXResult(fop.getDefaultHandler()));
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true);
-		Document doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(out.toByteArray()));
-		return doc.getElementsByTagName("pageViewport").getLength();
+		return dbf.newDocumentBuilder().parse(new ByteArrayInputStream(out.toByteArray()));
 	}
 
 	@Test
@@ -108,7 +112,12 @@ public class WordListItemTest {
 		// ten 14pt boxes with nine 10pt leadings (230) fit the 235pt page; measured
 		// against the span's 7.45pt the label would add 3.55pt to each and need two
 		assertEquals(1, pages(fo(10, WORD, body, span), true));
-		assertEquals(2, pages(fo(10, WORD, body, span), true, false));
+		/* Turning the rule off no longer restores 17.1.0's two pages, and the reason is
+		 * the rule below: the line's ascent IS the block's declared baseline now, so
+		 * measuring the label's excess against the one or the other is the same
+		 * subtraction.  LABEL_ASCENT_AGAINST_BASELINE is kept for a line whose box is
+		 * NOT the declared one, where the two still differ.  (CR-001 batch 44, M10) */
+		assertEquals(1, pages(fo(10, WORD, body, span), true, false));
 	}
 
 	@Test
@@ -120,4 +129,6 @@ public class WordListItemTest {
 		assertEquals(1, pages(fo(9, label, body), true));
 		assertEquals(2, pages(fo(10, label, body), true));
 	}
+
+
 }
