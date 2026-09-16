@@ -200,6 +200,42 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A justified line's word spaces compress to 0.755 of their nominal width to bring the next
+  word up, where the limit was 0.760. Two probes put Word's own floor in (0.7500, 0.7586]: each
+  of their 32 cases is a two-line justified paragraph whose next word is built so that pulling
+  it up needs every space at exactly one stated fraction, and Word brought it up at 0.8010 down
+  to 0.7586 and left it at 0.7500 and below, the same for 5, 12 and 20 spaces on the line. 0.755
+  is the middle of that band, and at it docx4j makes Word's choice in all 32
+  (CR-001 batch 44).
+
+- A line laid out at the height the exporter measured for it takes the baseline the exporter
+  measured with it. The two are written as a pair from the document font, but the line's ascent
+  was a share of the pitch read from the *run's* metrics - and where a substitute renders a run
+  whose line box was grown, an East Asian face taking 1.3 times its usWin box, that share comes
+  off a winAscent which was not grown with it. The line then kept the right height and lost the
+  right baseline. Measured on a corpus document of bulleted items in an absent Japanese face:
+  its bullets sat 4.15pt above their own text, only 29% of its labels shared their text's
+  baseline against Word's 100%, and it extracted as 3934 lines against Word's 3228; it is now
+  100% and 3083 (CR-001 batch 44).
+
+- A table which states a **percentage** width its w:tblGrid sums to is laid out on that grid,
+  as one stating an absolute width already was. What the percentage is a percentage of, below
+  compatibility mode 15, is the grid edge - the text column widened by one cell margin at each
+  end, which is where the grid sits there. Measured on a landscape five-column floating table
+  stating w:tblW 5205 pct (104.1%) on a 12960-twip column with 108-twip cell margins: 104.1% of
+  the column is 13491 twips and 104.1% of the grid edge's 13176 is 13716, which is its w:tblGrid
+  to the twip. Read against the column the grid missed by 1.7%, the content-autofit pass ran,
+  and it made two columns 22% and 13% too narrow and one 40% too wide (CR-001 batch 44).
+
+- The running header and footer of a run of continuous sections merged into one
+  page-sequence are drawn at the first part's margins, as that part's body is, rather than at
+  whichever part's margins the page masters were built on for the columns' sake. Word draws
+  each page's header and footer at the margins of the section which owns the page; a
+  page-sequence has one set of static content, so it takes the first part's - the section Word
+  starts the page with. Measured on an 8-page document of five continuous sections: Word's page
+  number ends at x=571.93 on the five pages the first section owns, and docx4j put it at 576.00
+  on every page (CR-001 batch 44).
+
 - A run of continuous sections merged into one page-sequence builds its page masters on the
   multi-column part's left and right margins whichever way round the two are (17.1.0 did it
   only where that part's text column was the wider), and always on the first part's top,

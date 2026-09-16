@@ -26,6 +26,9 @@ public final class LayoutComparison {
 		public boolean samePage;
 		/** Paired by the windowed pass rather than by the LCS. @see #WINDOW */
 		public boolean windowed;
+		/** Paired by the merging pass: this line is the other side's two or three.
+		 *  @see LayoutComparison#MERGE */
+		public boolean merged;
 	}
 
 	public static final class Result {
@@ -35,6 +38,10 @@ public final class LayoutComparison {
 		public int matched, matchedSamePage;
 		/** Of {@link #matched}, how many the windowed pass recovered. */
 		public int windowed;
+		/** How many pairs the merging pass formed by concatenation.  Counted apart from
+		 *  {@link #windowed} because it is the one pass that can hide a defect rather than
+		 *  only fail to pair: see {@link LayoutComparison#MERGE}. */
+		public int merged;
 		public String firstDivergence = "";
 		public double medianDy, maxDy, medianDx, maxDx;
 		public final List<Pair> pairs = new ArrayList<>();
@@ -188,6 +195,7 @@ public final class LayoutComparison {
 		while (i < n) r.refOnly.add(a.get(i++));
 		while (j < m) r.candOnly.add(b.get(j++));
 
+		merge(r, a, b);
 		window(r);
 
 		java.util.Set<Line> unmatched = Collections.newSetFromMap(new java.util.IdentityHashMap<>());
@@ -215,6 +223,157 @@ public final class LayoutComparison {
 		r.medianDx = median(dxs);
 		r.maxDx = maxAbs(dxs);
 		return r;
+	}
+
+	/**
+	 * EXPERIMENTAL, off by default (CR-001 batch 44 step 1, option (b)).  Whether a
+	 * line one render's extractor read as one is paired with the two or three the
+	 * other's read in the same place.
+	 *
+	 * <p>The two extractors read the same ink; what they can disagree about is where
+	 * one line ends and the next begins, and the disagreement is not always resolvable
+	 * by a rule applied to both sides - a list label painted on its own baseline, a
+	 * fraction of a line above the text it labels, is one line on the side that put it
+	 * on the text's baseline and two on the side that did not, whatever threshold
+	 * either side is read with.  This pass pairs the one with the concatenation of the
+	 * others when they are consecutive, unmatched, on the page the surrounding matches
+	 * say this one landed on, start at the same x, and lie within
+	 * {@link #MERGE_Y_EM} of one another vertically - half an em, where a real line
+	 * pitch is at least 1.15, so two lines of one paragraph can never be merged into
+	 * Word's one.  It runs in both directions.
+	 *
+	 * <p>{@code -Dfidelity.merge=true} turns it on; {@code -Dfidelity.mergeMax=},
+	 * {@code -Dfidelity.mergeYEm=} and {@code -Dfidelity.mergeYPt=} override the
+	 * bounds.
+	 */
+	private static final boolean MERGE =
+			!"false".equalsIgnoreCase(System.getProperty("fidelity.merge", "true"));
+
+	/** How many lines of one side may be paired with one of the other. @see #MERGE */
+	private static final int MERGE_MAX = Integer.getInteger("fidelity.mergeMax", 3);
+
+	/** How far apart the merged pieces' baselines may lie, in ems. @see #MERGE */
+	private static final double MERGE_Y_EM =
+			Double.parseDouble(System.getProperty("fidelity.mergeYEm", "0.5"));
+
+	/** The floor on {@link #MERGE_Y_EM}, in points. @see #MERGE */
+	private static final double MERGE_Y_PT =
+			Double.parseDouble(System.getProperty("fidelity.mergeYPt", "3"));
+
+	/** Prints every pair the merging pass makes, for reading one document. @see #MERGE */
+	private static final boolean MERGE_DUMP =
+			Boolean.parseBoolean(System.getProperty("fidelity.mergeDump", "false"));
+
+	/**
+	 * The merging pass: pairs an unmatched line of one side with the consecutive
+	 * unmatched lines of the other whose text concatenates to its own.
+	 *
+	 * @see #MERGE
+	 */
+	private static void merge(Result r, List<Line> a, List<Line> b) {
+		if (!MERGE || MERGE_MAX < 2) return;
+		int[] expected = pageMap(r);
+		// ref line <- several candidate lines
+		mergeOneWay(r, b, r.candOnly, r.refOnly, expected, false);
+		// candidate line <- several reference lines
+		mergeOneWay(r, a, r.refOnly, r.candOnly, expected, true);
+	}
+
+	/**
+	 * Pairs each line of {@code singles} with a run of consecutive lines of
+	 * {@code pieces}, which are drawn from the full list {@code all}.
+	 *
+	 * @param refIsPieces whether it is the reference side that is being merged, in
+	 *                    which case the run's length is how many reference lines the
+	 *                    pair matches
+	 */
+	private static void mergeOneWay(Result r, List<Line> all, List<Line> pieces, List<Line> singles,
+			int[] expected, boolean refIsPieces) {
+		if (pieces.isEmpty() || singles.isEmpty()) return;
+		java.util.Set<Line> free = Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+		free.addAll(pieces);
+		// every run of 2..MERGE_MAX consecutive unmatched lines, by the text it makes
+		Map<String, List<int[]>> runs = new HashMap<>();
+		for (int i = 0; i < all.size(); i++) {
+			Line first = all.get(i);
+			if (!free.contains(first)) continue;
+			StringBuilder spaced = new StringBuilder(first.key());
+			StringBuilder tight = new StringBuilder(first.key());
+			for (int k = 2; k <= MERGE_MAX && i + k - 1 < all.size(); k++) {
+				Line next = all.get(i + k - 1);
+				if (!free.contains(next) || next.page != first.page) break;
+				double tol = Math.max(MERGE_Y_PT, MERGE_Y_EM * Math.max(next.size, first.size));
+				if (Math.abs(next.y - first.y) > tol) break;
+				spaced.append(' ').append(next.key());
+				tight.append(next.key());
+				runs.computeIfAbsent(spaced.toString(), s -> new ArrayList<>()).add(new int[] { i, k });
+				if (!tight.toString().equals(spaced.toString())) {
+					runs.computeIfAbsent(tight.toString(), s -> new ArrayList<>()).add(new int[] { i, k });
+				}
+			}
+		}
+		if (runs.isEmpty()) return;
+		java.util.Set<Line> taken = Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+		List<Line> kept = new ArrayList<>();
+		for (Line l : singles) {
+			List<int[]> cs = runs.get(l.key());
+			int[] best = null;
+			double bestScore = 0;
+			if (cs != null) {
+				for (int[] c : cs) {
+					Line first = all.get(c[0]);
+					int want = refIsPieces ? l.page : (l.page < expected.length ? expected[l.page] : l.page);
+					int dp = refIsPieces ? Math.abs(expectedOf(expected, first.page) - l.page)
+							: Math.abs(first.page - want);
+					if (dp > WINDOW_PAGES) continue;
+					double dx = Math.abs(first.x0 - l.x0);
+					if (dx > WINDOW_X_PT) continue;
+					boolean clash = false;
+					for (int q = 0; q < c[1]; q++) {
+						if (taken.contains(all.get(c[0] + q))) clash = true;
+					}
+					if (clash) continue;
+					double score = dp * 1e6 + Math.abs(first.y - l.y) * 1e3 + dx;
+					if (best == null || score < bestScore) {
+						best = c;
+						bestScore = score;
+					}
+				}
+			}
+			if (best == null) {
+				kept.add(l);
+				continue;
+			}
+			Line first = all.get(best[0]);
+			for (int q = 0; q < best[1]; q++) taken.add(all.get(best[0] + q));
+			if (MERGE_DUMP) {
+				System.out.println("  merge " + (refIsPieces ? "cand<-ref " : "ref<-cand ") + best[1]
+						+ ": \"" + abbreviate(l.text) + "\"");
+				for (int q = 0; q < best[1]; q++) System.out.println("      " + all.get(best[0] + q));
+			}
+			Pair p = new Pair();
+			p.ref = refIsPieces ? first : l;
+			p.cand = refIsPieces ? l : first;
+			p.merged = true;
+			p.samePage = p.ref.page == p.cand.page;
+			p.dy = p.cand.y - p.ref.y;
+			p.dx = p.cand.x0 - p.ref.x0;
+			r.pairs.add(p);
+			// lineParity counts reference lines, so a reference line split in two is
+			// worth the two it was split into
+			int worth = refIsPieces ? best[1] : 1;
+			r.matched += worth;
+			r.merged++;
+			if (p.samePage) r.matchedSamePage += worth;
+		}
+		singles.clear();
+		singles.addAll(kept);
+		pieces.removeIf(taken::contains);
+	}
+
+	/** Which candidate page a reference page landed on; the identity past the map. */
+	private static int expectedOf(int[] expected, int refPage) {
+		return refPage >= 0 && refPage < expected.length ? expected[refPage] : refPage;
 	}
 
 	/**

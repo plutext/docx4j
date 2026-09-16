@@ -40,17 +40,31 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 
 	/** How far the spaces of a justified line may be compressed to fit one more word,
 	 *  as a fraction of their natural width; docx4j property or system property
-	 *  docx4j.convert.out.fo.wordLayout.maxSpaceShrink (default 0.24: measured against
-	 *  Word 365, the value at which the justified probe breaks 98% of its lines as Word does;
-	 *  0.20 gives 78%, 0.30 gives 74%).
+	 *  docx4j.convert.out.fo.wordLayout.maxSpaceShrink.
 	 *
-	 *  This is the limit for a document Word lays out with its 2013 engine
+	 *  <p>0.245, which is where the two justification-crossover probes put Word's own
+	 *  floor.  Each of their cases is a two-line justified paragraph whose next word is
+	 *  built, with TextMeasurer on Carlito at 11pt, to need every space at exactly one
+	 *  stated fraction of nominal; Word brought the word up at 0.8010, 0.7803, 0.7797,
+	 *  0.7612, 0.7607 and <b>0.7586</b>, and left it at <b>0.7500</b>, 0.7401, 0.7400,
+	 *  0.7398, 0.7214, 0.7201 and below - so its floor is in (0.7500, 0.7586], and 0.245
+	 *  is the middle of that band.  The same crossover for 5, 12 and 20 spaces on the
+	 *  line, so the limit is per space and carries no line-length term; and Word took a
+	 *  5.00 x stretch rather than compress past it, so it is a floor and not a judgement
+	 *  weighing the alternative.
+	 *
+	 *  <p>0.24 - the previous value, measured against the justified probe, at which it
+	 *  broke 98% of its lines as Word does (0.20 gives 78%, 0.30 gives 74%) - is a floor
+	 *  of 0.760, which refuses the 0.7586 Word accepts.  The change is 0.005, well inside
+	 *  that measurement's resolution and now pinned to under 1%.
+	 *
+	 *  <p>This is the limit for a document Word lays out with its 2013 engine
 	 *  (w:compatSetting compatibilityMode 15).  Older documents get 0: docx4j writes
 	 *  docx4j:space-shrink="0" on fo:root for them and the line manager caps this
 	 *  value with it. */
 	public static final String MAX_SPACE_SHRINK = "docx4j.convert.out.fo.wordLayout.maxSpaceShrink";
 
-	public static final double DEFAULT_MAX_SPACE_SHRINK = 0.24;
+	public static final double DEFAULT_MAX_SPACE_SHRINK = 0.245;
 
 	public static double maxSpaceShrink() {
 		Double v = configuredMaxSpaceShrink();
@@ -148,6 +162,43 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		String v = System.getProperty(LABEL_ASCENT_AGAINST_BASELINE);
 		if (v == null) {
 			return Docx4jProperties.getProperty(LABEL_ASCENT_AGAINST_BASELINE, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
+	 * Whether a line which comes out the box {@code docx4j:line-box} declares takes the
+	 * baseline {@code docx4j:baseline} declares with it, rather than the ascent its runs
+	 * report.
+	 *
+	 * <p>The two are a pair the FO exporter measured together from the document font.  A
+	 * run's ascent is a share of the pitch read from the <em>run's</em> metrics, and where
+	 * the paragraph's box was grown - an East Asian face takes 1.3 times its usWin box
+	 * (CR-001 batch 43) - that share is taken from a winAscent which was not grown with
+	 * it, so the line keeps the declared height and loses the declared baseline.
+	 *
+	 * <p>Measured on a generated reproduction of a corpus document's shape, a bulleted
+	 * item whose Symbol label this machine substitutes with DejaVu Serif and whose 9pt
+	 * body run names Meiryo, which it lacks: the body block declares
+	 * {@code docx4j:line-box="17.55pt" docx4j:baseline="9.541pt"} and its line came out
+	 * {@code ascent=13689 descent=3861} - the box exactly, the baseline 4.148pt low -
+	 * where the label block beside it came out {@code ascent=9540}, its own declared
+	 * baseline.  The bullet therefore sat 4.15pt above its text, which is the offset that
+	 * corpus document shows over 854 of its labels.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.lineBaselineFromBlock=false restores the run's
+	 * ascent.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LINE_BASELINE_FROM_BLOCK
+			= "docx4j.convert.out.fo.wordLayout.lineBaselineFromBlock";
+
+	public static boolean lineBaselineFromBlock() {
+		String v = System.getProperty(LINE_BASELINE_FROM_BLOCK);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LINE_BASELINE_FROM_BLOCK, true);
 		}
 		return Boolean.parseBoolean(v.trim());
 	}

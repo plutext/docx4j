@@ -4225,6 +4225,117 @@ public final class Corpus {
 		return d.pkg();
 	}
 
+	// --------------------------- CR-001 batch 44: the justification crossover
+
+	/**
+	 * The justification-crossover cases: id, spaces on the first line, the fraction of a
+	 * nominal word space aimed at, the fraction the case actually comes to, the first
+	 * line's glyph width in points, the first line, and the word after it.
+	 *
+	 * <p>Every number was computed with {@code org.docx4j.fonts.TextMeasurer} on Carlito
+	 * at 11pt, which is the face and the size the reference VM draws itself, so they are
+	 * Word's own advances: nominal space 2.4860pt, measure 468.0pt, and
+	 * {@code fraction = (468 - g1 - next) / ((spaces + 1) x 2.4860)}.  The words which
+	 * are not ordinary English are built letter by letter to a wanted advance, which is
+	 * why they are nonsense; no sequence any font ligates (ff, fi, fl) occurs anywhere.
+	 * For C60, C120 and N the fourth column is the <em>stretch</em> the line takes when
+	 * the next word - 70.048pt, beyond any compression - stays where it is.
+	 */
+	private static final String[][] JUST_CASES = {
+		{ "A5", "12", "0.95", "0.9511", "394.262", "known output engine before margin further width column narrow never printed shorter limem", "limomom" },
+		{ "A10", "12", "0.90", "0.9014", "392.865", "known engine output before margin further width narrow shorter never printed column lilewo", "rilibemum" },
+		{ "A15", "12", "0.85", "0.8497", "391.523", "engine known before output margin further width narrow shorter never printed space lililililile", "rilimemum" },
+		{ "A20", "12", "0.80", "0.8010", "390.104", "engine before known output margin width narrow further never printed shorter space tigomo", "lumumumo" },
+		{ "A25", "12", "0.75", "0.7500", "403.766", "margin output further known narrow engine before shorter printed width handed column lilicum", "lililawem" },
+		{ "A30", "12", "0.70", "0.7010", "402.347", "margin output further engine known narrow before shorter printed width column spacing womo", "limomom" },
+		{ "A35", "12", "0.65", "0.6492", "401.016", "output margin known further engine before narrow shorter width handed printed never gumum", "rilibemum" },
+		{ "A40", "12", "0.60", "0.5999", "399.597", "output margin known engine further before narrow shorter width printed column never sumum", "rilimemum" },
+		{ "A50", "12", "0.50", "0.5015", "399.784", "output margin known engine further before narrow shorter width column printed never lilitamo", "lumumumo" },
+		{ "B5", "5", "0.95", "0.9502", "413.831", "accommodated consideration characteristically typographical internationalization lililililisumom", "lililawem" },
+		{ "B10", "5", "0.90", "0.9000", "411.576", "accommodated consideration characteristically typographical internationalization lilililililibomo", "limomom" },
+		{ "B15", "5", "0.85", "0.8499", "409.321", "accommodated consideration characteristically typographical responsibility lisumumumumum", "rilibemum" },
+		{ "B20", "5", "0.80", "0.8005", "407.044", "accommodated consideration characteristically typographical responsibility wamemumumum", "rilimemum" },
+		{ "B25", "5", "0.75", "0.7496", "404.811", "accommodated consideration characteristically typographical responsibility limemomomomo", "lumumumo" },
+		{ "B30", "5", "0.70", "0.7002", "417.560", "accommodated characteristically consideration typographical internationalization liwumumumu", "lililawem" },
+		{ "B35", "5", "0.65", "0.6493", "415.316", "accommodated characteristically consideration typographical internationalization rililimumumu", "limomom" },
+		{ "B40", "5", "0.60", "0.5999", "413.050", "accommodated consideration characteristically typographical internationalization lililililiremum", "rilibemum" },
+		{ "B50", "5", "0.50", "0.4996", "411.532", "accommodated consideration characteristically typographical internationalization liwemomom", "rilimemum" },
+		{ "C60", "12", "1.60", "1.6012", "420.233", "narrow shorter further printed margin column output handed spacing known amount engine temom", "lililamemumum" },
+		{ "C120", "12", "2.20", "2.2008", "402.347", "margin output further engine known narrow before shorter printed width column spacing womo", "lililamemumum" },
+		{ "N", "12", "1.05", "1.0499", "436.678", "spacing handed column printed amount shorter narrow decided further adjusted before margin lawomo", "lililamemumum" },
+	};
+
+	// ------------------------ CR-001 batch 44 step 4: the list label's baseline (M10)
+
+	/** Enough text that every list-label-baseline item runs to two lines, so the item's
+	 *  first-line pitch and its second's can be read apart. */
+	private static final String LABEL_ITEM_TEXT = longProse(1, 0);
+
+	/** The Symbol face's bullet, which is where Word draws a w:numFmt="bullet" label from
+	 *  unless the level says otherwise: U+F0B7, in the Private Use Area, written as a code
+	 *  point because the character itself does not survive a source file. */
+	private static final String SYMBOL_BULLET = String.valueOf((char) 0xF0B7);
+
+	/** A bullet in a face both machines have, so its box can be compared with Symbol's. */
+	private static final String PLAIN_BULLET = String.valueOf((char) 0x2022);
+
+	/**
+	 * The list-label-baseline cases: the w:abstractNum / w:num id, the level's
+	 * {@code w:numFmt}, its {@code w:lvlText}, the level's own {@code w:rPr} (empty where
+	 * the case is about not having one), the lead-in line, and the case letter.
+	 */
+	private static final String[][] LABEL_CASES = {
+		{ "50", "decimal", "%1.", "",
+			"(A) the label in the very font and size of the text: the level carries no w:rPr, "
+			+ "so the label is Carlito 11pt like the item", "A" },
+		{ "51", "decimal", "%1.",
+			"<w:rPr><w:rFonts w:ascii=\"Liberation Serif\" w:hAnsi=\"Liberation Serif\"/></w:rPr>",
+			"(B) the level's w:rPr names Liberation Serif, the same size: a different ascent, "
+			+ "the same 11pt", "B" },
+		{ "52", "decimal", "%1.", "<w:rPr><w:sz w:val=\"32\"/><w:szCs w:val=\"32\"/></w:rPr>",
+			"(C) the level's own w:rPr w:sz=\"32\": a 16pt label on 11pt text", "C" },
+		{ "53", "decimal", "%1.", "<w:rPr><w:sz w:val=\"16\"/><w:szCs w:val=\"16\"/></w:rPr>",
+			"(D) the level's own w:rPr w:sz=\"16\": an 8pt label on 11pt text", "D" },
+		{ "54", "bullet", SYMBOL_BULLET,
+			"<w:rPr><w:rFonts w:ascii=\"Symbol\" w:hAnsi=\"Symbol\" w:hint=\"default\"/></w:rPr>",
+			"(E) a Symbol bullet, the corpus's own shape: w:numFmt=\"bullet\" and the level's "
+			+ "w:rFonts naming Symbol", "E" },
+		{ "55", "bullet", PLAIN_BULLET,
+			"<w:rPr><w:rFonts w:ascii=\"DejaVu Sans\" w:hAnsi=\"DejaVu Sans\"/></w:rPr>",
+			"(F) the same bullet in DejaVu Sans, which both machines have, so the label's box "
+			+ "can be compared with Symbol's", "F" },
+	};
+
+	/**
+	 * The justification-crossover-2 cases: the same columns as {@link #JUST_CASES}, at a
+	 * 2% grid through the band the first probe left open.
+	 *
+	 * <p>The first probe put Word's floor between 0.8010 (accepted) and 0.7500 (refused)
+	 * and ours in the same band, so the two are not yet separated - and the corpus
+	 * document the item came from shows Word accepting a space of 0.749 x nominal by the
+	 * same ink-gap reading the probe uses, which is inside the band.  P is 12 spaces and
+	 * Q is 5, as before; R is about 20, where the same fraction costs the line 1.6 times
+	 * what it costs 12 spaces, so that "per space" can be tested over a 4:1 range rather
+	 * than 2.4:1.
+	 */
+	private static final String[][] JUST_CASES_2 = {
+		{ "P78x12", "12", "0.78", "0.7803", "399.784", "output margin known engine further before narrow shorter width printed column never lilitamo", "limomom" },
+		{ "P76x12", "12", "0.76", "0.7612", "397.397", "output known margin engine before further narrow width column shorter never spacing ligomo", "rilibemum" },
+		{ "P74x12", "12", "0.74", "0.7398", "395.076", "output known engine margin before further width handed narrow never column shorter wemu", "rilimemum" },
+		{ "P72x12", "12", "0.72", "0.7214", "392.678", "engine known output before margin further width narrow shorter never printed column rilililili", "lumumumo" },
+		{ "Q78x5", "5", "0.78", "0.7806", "416.361", "accommodated characteristically consideration typographical internationalization liliwamomom", "lililawem" },
+		{ "Q76x5", "5", "0.76", "0.7607", "413.655", "accommodated consideration characteristically typographical internationalization lilicumomom", "limomom" },
+		{ "Q74x5", "5", "0.74", "0.7400", "410.960", "accommodated consideration characteristically typographical internationalization lilililililigumo", "rilibemum" },
+		{ "Q72x5", "5", "0.72", "0.7201", "408.243", "accommodated consideration characteristically typographical responsibility litamumumomom", "rilimemum" },
+		{ "R78x20", "20", "0.78", "0.7797", "375.287", "text that two may one and with line right see use each run after but the page set must we lewu", "lumumumo" },
+		{ "R76x20", "20", "0.76", "0.7586", "388.399", "that may text with two one right and each line after use page run see must but word the given lire", "lililawem" },
+		{ "R74x20", "20", "0.74", "0.7401", "386.364", "that may text two with one right and line each use after run page see must but word the set litam", "limomom" },
+	};
+
+	/** What follows the next word, so that every case is two lines and the second is the
+	 *  paragraph's last - which w:jc="both" does not justify. */
+	private static final String JUST_TAIL = "and the rest of this case sits on the second line.";
+
 	static {
 		/*
 		 * Framed-paragraph stacking.  A corpus document's table-of-contents style carries
@@ -4385,6 +4496,205 @@ public final class Corpus {
 				pageTopDesc + ", mode 15, with w:suppressSpBfAfterPgBrk stated - what the flag "
 				+ "itself does, which is what a rule gated on it has to be gated against",
 				() -> pageTopSpaceBefore(15, Boolean.TRUE)));
+
+		/*
+		 * The justification crossover: how far Word will compress a line's word spaces to
+		 * bring the next word up, and whether it will refuse a stretch.
+		 *
+		 * Word compresses where FOP stretches.  The one corpus measurement (document 2331)
+		 * is a single point: Word set 15 words with 14 spaces
+		 * compressed to 2.29pt = 0.749 x nominal rather than push a 37.5pt word over,
+		 * where we set 14 words with 13 spaces at 5.33pt = 1.744 x nominal.  A rule needs
+		 * two numbers only Word can give - the smallest fraction of a nominal space Word
+		 * will accept, and whether the stretch side has a limit of its own - so every case
+		 * here is built to need one stated fraction and nothing else.
+		 *
+		 * Each case is one w:jc="both" paragraph of two lines, Carlito 11pt on a 468pt
+		 * measure (US Letter, 1 inch margins), preceded by an unjustified marker line
+		 * naming it.  Carlito is the face the reference VM draws itself - batch 42's
+		 * calibration - so the advances below are Word's own.  Nominal space = 2.4860pt;
+		 * no sequence any font ligates (ff, fi, fl) appears in any case, and every
+		 * paragraph carries w:suppressAutoHyphens.
+		 *
+		 * A case's first line is S+1 words of glyph width g1, and its next word has an
+		 * advance chosen so that pulling that word up needs each of the S+1 spaces at
+		 * exactly the stated fraction of nominal: fraction = (468 - g1 - next) / ((S+1) x
+		 * 2.4860).  The words that are not in the pool are built letter by letter with
+		 * TextMeasurer on Carlito at 11pt to hit that advance, which is why they are
+		 * nonsense; the fractions below are what they actually come to, computed the same
+		 * way, and every one is within 0.0012 of its target.
+		 *
+		 * A5..A50 have S = 12 spaces, B5..B50 have S = 5, because the per-space shrink is
+		 * what Word is expected to limit: the same fraction costs 12 spaces 4.5 times what
+		 * it costs 5.  What a case gives up if Word does NOT pull the word up is the hole
+		 * that word leaves, spread over the spaces that remain: 2.15 to 2.61 x nominal in
+		 * the A cases and 4.06 to 5.08 x in the B cases, which is inherent - a word which
+		 * nearly fits leaves nearly its own width behind - and is why A and B together say
+		 * whether Word is weighing the shrink against that alternative or applying a floor
+		 * to the shrink alone.  The A series is the discriminating one; if Word compresses
+		 * throughout B it has told us it weighs.
+		 *
+		 * C60 and C120 ask the stretch question: their next word is 70.05pt and cannot be
+		 * brought up at any compression (it would need a negative space), so Word must
+		 * justify the line as it stands, stretching its 12 spaces to 3.98pt (1.60 x
+		 * nominal) and 5.47pt (2.20 x).  If Word ever refuses a stretch - hyphenating, or
+		 * compressing to take the word after all - these are where it shows.  N is the
+		 * control: the same 70.05pt word, but the line needs only 1.05 x nominal, so no
+		 * decision arises.
+		 *
+		 * What to read off Word's PDF, per case: whether the next word is on line 1, and
+		 * the pen advance between the words of line 1 (mutool stext), which is the space
+		 * width Word chose.  The smallest fraction among the cases whose word came up is
+		 * the crossover; the largest stretch Word sets without balking is the stretch
+		 * limit.
+		 */
+		PROBES.add(new Probe("justification-crossover",
+				"how far Word compresses a justified line's word spaces to bring the next "
+				+ "word up, and whether it refuses a stretch: 21 two-line w:jc=\"both\" "
+				+ "paragraphs, Carlito 11pt on a 468pt measure (US Letter, 1in margins), "
+				+ "w:suppressAutoHyphens, nominal space 2.4860pt.  A5..A50 have 12 spaces on "
+				+ "the first line and B5..B50 have 5; in each, the next word's advance is "
+				+ "built so that pulling it up needs every space at 0.95, 0.90, 0.85, 0.80, "
+				+ "0.75, 0.70, 0.65, 0.60 or 0.50 of nominal and nothing else (the fraction "
+				+ "Word was measured accepting on a corpus document is 0.749).  C60 and C120 "
+				+ "put a 70.05pt word beyond any compression so the line must be justified "
+				+ "by stretching its spaces to 1.60 and 2.20 x nominal - does Word ever "
+				+ "refuse a stretch?  N is the control, 1.05 x, no decision to make.  Read "
+				+ "off each case: did the next word come up, and what space width did Word set",
+				() -> {
+			Doc d = Doc.create(15);
+			// US Letter, 1 inch margins: a measure of exactly 468.0pt
+			d.pageGeometry(12240, 15840, false, 1440, 1440, 1440, 1440);
+			for (String[] c : JUST_CASES) {
+				boolean shrink = c[0].charAt(0) == 'A' || c[0].charAt(0) == 'B';
+				d.para("case " + c[0] + ": " + c[1] + " spaces, first line " + c[4] + "pt, "
+						+ (shrink ? "bringing \"" + c[6] + "\" up needs each of " + (Integer.parseInt(c[1]) + 1)
+								+ " spaces at " + c[3] + " x nominal"
+								: "\"" + c[6] + "\" cannot come up; the line stretches its " + c[1]
+										+ " spaces to " + c[3] + " x nominal"))
+						.noLabel().font(SANS, 16).add();
+				d.para(c[5] + " " + c[6] + " " + JUST_TAIL)
+						.noLabel().font(CARLITO, 22).jc(JcEnumeration.BOTH)
+						.suppressAutoHyphens().add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * M10: where a list label's baseline sits against the first line of the item it
+		 * labels, and what the label's own font and size do to it.
+		 *
+		 * Measured over four corpus documents (their goldens and our b67-batch43 renders):
+		 * Word puts the label on the item's first-line baseline in 100%, 98%, 95% and 100%
+		 * of the labels it paints, and where we do not the offset is the label font's own
+		 * ascent showing through - 4.15pt above the text in one document (a bullet
+		 * substituted to DejaVu Serif, and also where label and text are the same face and
+		 * size), 0.90pt below in another (a 10pt label on 9pt text), 1.01pt below in a
+		 * third.  So the rule looks like "one baseline, whatever the label's own font
+		 * says", and batch 40's rule (557730871: a taller label grows the line by what its
+		 * ascent exceeds the text's, without the auto multiple) is about the line's height,
+		 * not about where in it the label sits.
+		 *
+		 * What the corpus cannot separate is the height half from the baseline half: every
+		 * corpus case has a label within a point or two of its text's size, so "the label
+		 * sits on the line's baseline" and "the label sits on its own font's baseline, and
+		 * the two agree because the fonts are alike" both fit.  These cases pull them
+		 * apart, and they also say whether the ITEM'S FIRST LINE moves when the label is
+		 * much taller - which is batch 40's rule seen from the other side.
+		 *
+		 * A is the control: the label in the very font and size of the text, nothing to
+		 * choose.  B changes the face and not the size (Liberation Serif's ascent share is
+		 * larger than Carlito's, so a label on its own metrics sits higher).  C and D
+		 * change the size, up to 16pt and down to 8pt, through the level's own w:rPr w:sz -
+		 * the property ledger4 names.  E is the corpus's own shape, a Symbol bullet, which
+		 * Word draws from a face whose ascent is nothing like the text's; F is the same
+		 * shape in a face both machines have, so the width and the box can be compared.
+		 * Every item runs to two lines, and a plain paragraph of the same size sits between
+		 * the cases, so the item's first-line pitch, its second line's, and the gap to the
+		 * next item can all be read off one page.
+		 */
+		PROBES.add(new Probe("list-label-baseline",
+				"where a list label's baseline sits against the first line of its item, and "
+				+ "what the label's own font and size do to it: six w:numPr lists of two "
+				+ "two-line items each, text Carlito 11pt throughout, label (A) in the very "
+				+ "font and size of the text - no w:rPr on the level; (B) the level's w:rPr "
+				+ "naming Liberation Serif at the same size; (C) the level's own w:rPr "
+				+ "w:sz=\"32\" (16pt label on 11pt text); (D) w:sz=\"16\" (8pt); (E) a "
+				+ "Symbol bullet, w:numFmt=\"bullet\" with the level's w:rFonts naming "
+				+ "Symbol; (F) the same bullet in DejaVu Sans, which both machines have.  "
+				+ "A plain Carlito 11pt paragraph separates the cases.  Read off each: the "
+				+ "label's baseline against the item's first-line baseline, the item's "
+				+ "first-line pitch against its second's, and the gap to the next item",
+				() -> {
+			Doc d = Doc.create(15);
+			StringBuilder nums = new StringBuilder();
+			for (String[] c : LABEL_CASES) {
+				nums.append("<w:abstractNum w:abstractNumId=\"").append(c[0]).append("\">")
+						.append("<w:multiLevelType w:val=\"hybridMultilevel\"/>")
+						.append("<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/>")
+						.append("<w:numFmt w:val=\"").append(c[1]).append("\"/>")
+						.append("<w:lvlText w:val=\"").append(c[2]).append("\"/>")
+						.append("<w:lvlJc w:val=\"left\"/>")
+						.append("<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr>")
+						.append(c[3])
+						.append("</w:lvl></w:abstractNum>")
+						.append(num(Integer.parseInt(c[0]), Integer.parseInt(c[0])));
+			}
+			d.numberingXml(nums.toString());
+			for (String[] c : LABEL_CASES) {
+				d.para(c[4]).noLabel().font(SANS, 16).after(60).add();
+				for (int k = 1; k <= 2; k++) {
+					d.para("Item " + k + " of case " + c[5] + ". " + LABEL_ITEM_TEXT)
+							.noLabel().font(CARLITO, 22).numPr(Integer.parseInt(c[0]), 0).add();
+				}
+				d.para("A plain Carlito 11pt paragraph, no list. " + prose(1, 4))
+						.noLabel().font(CARLITO, 22).before(120).after(120).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * The justification crossover, finer.  justification-crossover put Word's floor
+		 * between 0.8010 and 0.7500 of a nominal word space - it brought the next word up
+		 * at 0.8010 and left it at 0.7500, for 12 spaces and for 5 alike - and docx4j made
+		 * the same choice in all 21 of its cases, so the two floors are known only to lie
+		 * in the same 5% band.  Word took a 5.00 x stretch rather than compress to 0.7496
+		 * (case B25), so it is a floor and not a judgement weighing the alternative.
+		 *
+		 * This one is a 2% grid through that band: 0.78, 0.76, 0.74 and 0.72.  P is 12
+		 * spaces and Q is 5, as before, and R is about 20 - the same fraction costs a
+		 * 20-space line 1.6 times what it costs a 12-space one, so "the floor is per
+		 * space" is tested over a 4:1 range of lines rather than 2.4:1.  Everything else
+		 * is justification-crossover's: Carlito 11pt on a 468pt measure (US Letter, 1in
+		 * margins), w:jc="both", w:suppressAutoHyphens, nominal space 2.4860pt, no
+		 * sequence any font ligates, and every fraction computed with TextMeasurer on
+		 * Carlito at 11pt and stated in the marker line.
+		 */
+		PROBES.add(new Probe("justification-crossover-2",
+				"the justification crossover at a 2 per cent grid through the band the "
+				+ "first probe left open (Word brought the word up at 0.8010 and left it at "
+				+ "0.7500): eleven two-line w:jc=\"both\" paragraphs, Carlito 11pt on a "
+				+ "468pt measure (US Letter, 1in margins), w:suppressAutoHyphens, nominal "
+				+ "space 2.4860pt.  P78x12..P72x12 have 12 spaces on the first line, "
+				+ "Q78x5..Q72x5 have 5 and R78x20..R74x20 have about 20; in each, the next "
+				+ "word's advance is built so that pulling it up needs every space at 0.78, "
+				+ "0.76, 0.74 or 0.72 of nominal and nothing else.  Read off each case: did "
+				+ "the next word come up, and what space width did Word set",
+				() -> {
+			Doc d = Doc.create(15);
+			// US Letter, 1 inch margins: a measure of exactly 468.0pt
+			d.pageGeometry(12240, 15840, false, 1440, 1440, 1440, 1440);
+			for (String[] c : JUST_CASES_2) {
+				d.para("case " + c[0] + ": " + c[1] + " spaces, first line " + c[4] + "pt, "
+						+ "bringing \"" + c[6] + "\" up needs each of "
+						+ (Integer.parseInt(c[1]) + 1) + " spaces at " + c[3] + " x nominal")
+						.noLabel().font(SANS, 16).add();
+				d.para(c[5] + " " + c[6] + " " + JUST_TAIL)
+						.noLabel().font(CARLITO, 22).jc(JcEnumeration.BOTH)
+						.suppressAutoHyphens().add();
+			}
+			return d.pkg();
+		}));
 	}
 
 	public static List<Probe> all() {

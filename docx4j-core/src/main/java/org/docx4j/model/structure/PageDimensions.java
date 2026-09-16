@@ -487,6 +487,47 @@ public class PageDimensions {
 		return pgMar.getGutter().intValue();
 	}
 
+	/**
+	 * How far the running header and footer must be indented, in twips, to sit where
+	 * Word draws them, when the page masters were built on a <em>different</em> part of a
+	 * merged run of continuous sections from the one the page starts with.
+	 *
+	 * <p>Word draws each page's header and footer at the margins of the section which
+	 * owns that page - measured on a corpus document of five continuous sections whose
+	 * right margins are 476, 386 and 1134 twips: its page number's right edge is at
+	 * x=571.93 on the pages the first two sections own (595.3 - 23.8), 576.49 on the two
+	 * the 386-twip section owns (595.3 - 19.3) and 539.05 on the last (595.3 - 56.7).
+	 * A page-sequence has one page master and one set of static content, so only one of
+	 * those can be had; the first part's is the one Word starts the page with and the one
+	 * that owns most of the pages, so the header and footer take the first part's margins
+	 * however the masters were built.  The body needs no such indent: every part already
+	 * carries its own difference on its blocks (ConversionSectionWrapperFactory's
+	 * XSLT_Ind containers), which is what lets the masters be built on whichever part the
+	 * columns need.
+	 *
+	 * <p>Zero wherever the masters are the first part's, which is every document that
+	 * does not merge continuous sections of differing margins.
+	 *
+	 * @since 17.1.1
+	 */
+	public int getHeaderFooterIndentStart() {
+		return headerFooterIndentStart;
+	}
+
+	/** @see #getHeaderFooterIndentStart() @since 17.1.1 */
+	public int getHeaderFooterIndentEnd() {
+		return headerFooterIndentEnd;
+	}
+
+	/** @see #getHeaderFooterIndentStart() @since 17.1.1 */
+	public void setHeaderFooterIndent(int startTwips, int endTwips) {
+		this.headerFooterIndentStart = startTwips;
+		this.headerFooterIndentEnd = endTwips;
+	}
+
+	private int headerFooterIndentStart;
+	private int headerFooterIndentEnd;
+
 	/** Whether this section's page is landscape: w:pgSz/@w:orient, else w &gt; h.
 	 *  @since 17.1.0 */
 	public boolean isLandscape() {

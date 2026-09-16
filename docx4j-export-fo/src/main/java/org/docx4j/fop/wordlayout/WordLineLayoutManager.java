@@ -1292,6 +1292,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // @since 17.1.0
                 descent = 0;
             }
+            if (lineBaselineFromBlock) {
+                int[] fromBlock = declaredBaselineLine(wordLineBox, wordBaseline, ascent, descent);
+                ascent = fromBlock[0];
+                descent = fromBlock[1];
+            }
             /* The list label shares the item's first line: Word adds what its ascent
              * exceeds the text's by, and does not multiply that by the auto factor
              * (a Symbol bullet on Calibri 11pt at 1.15: 16.04 = 15.44 + 0.59, not 16.11).
@@ -1563,6 +1568,52 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *  {@link WordLayoutCustomizer#LABEL_ASCENT_AGAINST_BASELINE}.  @since 17.1.1 */
     private final boolean labelAscentAgainstBaseline
             = WordLayoutCustomizer.labelAscentAgainstBaseline();
+
+    /**
+     * Where a line comes out the box {@code docx4j:line-box} declares, it takes the
+     * baseline {@code docx4j:baseline} declares with it.
+     *
+     * <p>The two are a pair the FO exporter measured together from the document font.  A
+     * line's ascent here is a run-level measurement - {@code round(pitch x share)}, where
+     * the share comes from the <em>run's</em> own metrics - and its descent the rest of
+     * the pitch.  For a face whose line box was grown, an East Asian one taking 1.3 times
+     * its usWin box (CR-001 batch 43), that share is read off a winAscent which was not
+     * grown with it, so the line keeps the declared height and loses the declared
+     * baseline.
+     *
+     * <p>Measured on a generated reproduction of a corpus document's shape - a bulleted
+     * item whose Symbol label this machine substitutes with DejaVu Serif and whose 9pt
+     * body run names Meiryo, which it lacks.  The body block declares
+     * {@code docx4j:line-box="17.55pt" docx4j:baseline="9.541pt"} and its line came out
+     * {@code ascent=13689 descent=3861} - the box exactly, the baseline 4.148pt low -
+     * where the label block beside it, whose run is measurable, came out
+     * {@code ascent=9540}, its own declared baseline.  So the bullet sat 4.15pt ABOVE its
+     * text, which is the offset that corpus document shows over 854 of its labels.
+     *
+     * <p>Only where the line <em>is</em> the declared box: a line of smaller runs is
+     * genuinely shorter than the paragraph and has a baseline of its own, which is the
+     * shape {@link WordLayoutCustomizer#labelAscentAgainstBaseline()} is about.
+     *
+     * @param wordLineBox the block's {@code docx4j:line-box}, millipoints; 0 where none
+     * @param wordBaseline the block's {@code docx4j:baseline}, millipoints; 0 where none
+     * @param ascent the line's ascent as its runs measured it, millipoints
+     * @param descent the line's descent as its runs measured it, millipoints
+     * @return the ascent and descent the line takes, the arguments unchanged where the
+     *         line is not the declared box
+     * @since 17.1.1
+     */
+    static int[] declaredBaselineLine(int wordLineBox, int wordBaseline, int ascent, int descent) {
+        if (wordBaseline > 0 && wordLineBox > 0 && wordBaseline < wordLineBox
+                && Math.abs(ascent + descent - wordLineBox) <= 1 && ascent != wordBaseline) {
+            return new int[] { wordBaseline, wordLineBox - wordBaseline };
+        }
+        return new int[] { ascent, descent };
+    }
+
+    /** whether a line which comes out the box the exporter declared takes the baseline it
+     *  declared with it (CR-001 batch 44, M10) */
+    private final boolean lineBaselineFromBlock
+            = WordLayoutCustomizer.lineBaselineFromBlock();
 
     // ---- Word's tab stops (docx4j:tabs, docx4j:tab-default, docx4j:tab-ind) ------
 
