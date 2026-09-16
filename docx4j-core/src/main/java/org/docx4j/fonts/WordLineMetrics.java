@@ -78,27 +78,74 @@ public final class WordLineMetrics {
 		public final double fopDescent;
 		/** true when the font could not be read and these are guesses. */
 		public final boolean fallback;
+		/** true when the font's OS/2 code-page bits call it East Asian: its line is
+		 *  {@link #EAST_ASIAN_FACTOR} x the usWin box and takes no external leading.
+		 *  @since 17.1.1 */
+		public final boolean eastAsian;
 
 		Metrics(double winAscent, double winDescent, double externalLeading, double fopAscent, double fopDescent, boolean fallback) {
+			this(winAscent, winDescent, externalLeading, fopAscent, fopDescent, fallback, false);
+		}
+
+		/** @since 17.1.1 */
+		Metrics(double winAscent, double winDescent, double externalLeading, double fopAscent,
+				double fopDescent, boolean fallback, boolean eastAsian) {
 			this.winAscent = winAscent;
 			this.winDescent = winDescent;
 			this.externalLeading = externalLeading;
 			this.fopAscent = fopAscent;
 			this.fopDescent = fopDescent;
 			this.fallback = fallback;
+			this.eastAsian = eastAsian;
 		}
 
 		/** Word's single line height as a multiple of the font size. */
 		public double lineHeightFactor() {
+			if (eastAsian) return EAST_ASIAN_FACTOR * (winAscent + winDescent);
 			return winAscent + winDescent + externalLeading;
 		}
 
 		@Override
 		public String toString() {
-			return String.format("winAscent=%.4f winDescent=%.4f externalLeading=%.4f factor=%.4f",
-					winAscent, winDescent, externalLeading, lineHeightFactor());
+			return String.format("winAscent=%.4f winDescent=%.4f externalLeading=%.4f%s factor=%.4f",
+					winAscent, winDescent, externalLeading, eastAsian ? " eastAsian" : "",
+					lineHeightFactor());
 		}
 	}
+
+	/**
+	 * What Word multiplies an East Asian font's usWin box by for a single line: <b>1.3</b>,
+	 * and it takes no external leading at all.
+	 *
+	 * <p>Measured on the {@code fonts-cjk-linebox} golden (CR-001 batch 43), five faces at
+	 * 10pt with {@code w:spacing w:line="240" w:lineRule="auto"}, against the usWin box the
+	 * table holds for each:</p>
+	 *
+	 * <pre>
+	 *   face                 usWin box   x 1.3    Word paints
+	 *   MS Gothic              1.0000    1.3000      13.0
+	 *   SimSun                 1.0000    1.3000      13.0   (its own ext 0.1406 is not applied)
+	 *   Yu Gothic              1.2871    1.6732      16.8
+	 *   Malgun Gothic          1.3301    1.7291      17.3
+	 *   Microsoft JhengHei     1.3301    1.7291      17.3
+	 *   Calibri (the control)  1.2207    -           12.2   (no factor: not East Asian)
+	 * </pre>
+	 *
+	 * <p>The hhea-plus-gap reading does not fit (Yu Gothic's is 1.602 against the 1.68
+	 * measured), and {@code w:line="276"} multiplies this by 1.15 on top of it, as for any
+	 * other font (Yu Gothic 19.2). Two of the eight faces the probe asks for were absent on
+	 * the reference machine, and Word drew the substitute's box rather than the named
+	 * font's - so the factor belongs to the face actually <b>drawn</b>, not to the name the
+	 * document asks for.</p>
+	 *
+	 * <p>The extra 0.3 falls <b>below</b> the text: the baseline stays at usWinAscent, which
+	 * is what {@link #wordBaselinePt} does for any font under "auto" spacing. Word's
+	 * baseline within the taller line was not measured, and this is the choice that moves
+	 * nothing that was already right.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static final double EAST_ASIAN_FACTOR = 1.3;
 
 		private static final Metrics FALLBACK = new Metrics(FALLBACK_FACTOR * 0.8, FALLBACK_FACTOR * 0.2, 0, FALLBACK_FACTOR * 0.8, FALLBACK_FACTOR * 0.2, true);
 
@@ -125,7 +172,12 @@ public final class WordLineMetrics {
 		int winA = t[1], winD = t[2], hheaA = t[3], hheaD = t[4], gap = t[5];
 		// GDI: tmExternalLeading = max(0, hhea ascender - hhea descender + lineGap - (usWinAscent + usWinDescent))
 		int ext = Math.max(0, (hheaA - hheaD + gap) - (winA + winD));
-		return new Metrics(winA / upem, winD / upem, ext / upem, physical.fopAscent, physical.fopDescent, false);
+		// the table's optional seventh field: the OS/2 code-page bits call this family
+		// East Asian, so its line is EAST_ASIAN_FACTOR x the usWin box and takes no
+		// external leading.  @since 17.1.1
+		boolean ea = t.length > 6 && t[6] != 0;
+		return new Metrics(winA / upem, winD / upem, ext / upem, physical.fopAscent, physical.fopDescent,
+				false, ea);
 	}
 
 	/** Whether the table knows this document font - itself, or through a built-in alias
@@ -253,8 +305,10 @@ public final class WordLineMetrics {
 						for (String name : props.stringPropertyNames()) {
 							String[] v = props.getProperty(name).split(";");
 							if (v.length < 6) continue;
-							int[] t = new int[6];
-							for (int i = 0; i < 6; i++) t[i] = Integer.parseInt(v[i].trim());
+							// six fields, plus the optional seventh: the East Asian flag
+							// (etc/GenWordLineMetricsEastAsian).  @since 17.1.1
+							int[] t = new int[Math.min(v.length, 7)];
+							for (int i = 0; i < t.length; i++) t[i] = Integer.parseInt(v[i].trim());
 							m.put(name.trim().toLowerCase(java.util.Locale.ROOT), t);
 						}
 					}
@@ -492,6 +546,7 @@ public final class WordLineMetrics {
 		int upem = 0;
 				int hheaAsc = 0, hheaDesc = 0, hheaGap = 0;
 		int winAsc = -1, winDesc = -1;
+		boolean eastAsian = false;
 		int typoAsc = 0, typoDesc = 0;
 		for (int i = 0; i < numTables; i++) {
 			int rec = offset + 12 + 16 * i;
@@ -510,6 +565,14 @@ public final class WordLineMetrics {
 				typoDesc = s16(data, off + 70);
 				winAsc = u16(data, off + 74);
 				winDesc = u16(data, off + 76);
+				// ulCodePageRange1 (OS/2 version 1 and later, so at least 82 bytes) bits
+				// 17-21: JIS/Japan 932, Chinese Simplified 936, Korean Wansung 949,
+				// Chinese Traditional 950, Korean Johab 1361.  A font they flag takes
+				// EAST_ASIAN_FACTOR x its usWin box for a line.  @since 17.1.1
+				if (len >= 82) {
+					long cp1 = u32(data, off + 78) & 0xffffffffL;
+					eastAsian = (cp1 & (0x1fL << 17)) != 0;
+				}
 			}
 		}
 		if (upem <= 0) throw new IOException("no head table / unitsPerEm");
@@ -532,7 +595,7 @@ public final class WordLineMetrics {
 			fopAsc = hheaAsc; fopDesc = hheaDesc;
 		}
 		return new Metrics((double) winAsc / upem, (double) winDesc / upem, (double) ext / upem,
-				(double) fopAsc / upem, (double) -fopDesc / upem, false);
+				(double) fopAsc / upem, (double) -fopDesc / upem, false, eastAsian);
 	}
 
 	private static String tag(byte[] d, int p) {

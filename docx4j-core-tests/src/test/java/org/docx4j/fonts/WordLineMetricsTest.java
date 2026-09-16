@@ -157,6 +157,59 @@ public class WordLineMetricsTest {
 		assertEquals("12pt", WordLineMetrics.format(12.0));
 	}
 
+	/**
+	 * An East Asian font's single line is 1.3 x its usWin box, and takes no external
+	 * leading at all.
+	 *
+	 * <p>Measured on the fonts-cjk-linebox golden (CR-001 batch 43): the same Latin
+	 * sentence at 10pt with w:spacing w:line="240" w:lineRule="auto", one paragraph per
+	 * face, and Word's baseline pitch read off the PDF. The table's seventh field carries
+	 * the flag, put there from OS/2 ulCodePageRange1 bits 17-21 by
+	 * etc/GenWordLineMetricsEastAsian.</p>
+	 */
+	@Test
+	public void eastAsianLineBox() {
+		// ms gothic=256;220;36;220;-36;0;1 -> usWin box exactly 1.0; Word paints 13.0 at 10pt
+		WordLineMetrics.Metrics msGothic = WordLineMetrics.get("MS Gothic", null);
+		assertTrue("flagged East Asian", msGothic.eastAsian);
+		assertEquals(1.0, msGothic.winAscent + msGothic.winDescent, 1e-9);
+		assertEquals(1.3000, msGothic.lineHeightFactor(), 1e-4);
+		assertEquals(13.00, msGothic.lineHeightFactor() * 10, 0.05);
+
+		// simsun=256;220;36;220;-36;36;1 -> its own external leading (36/256 = 0.1406) is
+		// NOT applied: Word paints 13.0, the same as MS Gothic
+		WordLineMetrics.Metrics simSun = WordLineMetrics.get("SimSun", null);
+		assertEquals(36 / 256.0, simSun.externalLeading, 1e-9);
+		assertEquals(13.00, simSun.lineHeightFactor() * 10, 0.05);
+
+		// yu gothic=2048;2017;619;1802;-455;1024;1 -> usWin 1.2871, x 1.3 = 1.6732;
+		// Word paints 16.8.  The hhea+gap reading (1802+455+1024)/2048 = 1.6021 does not fit
+		WordLineMetrics.Metrics yuGothic = WordLineMetrics.get("Yu Gothic", null);
+		assertEquals(1.2871, yuGothic.winAscent + yuGothic.winDescent, 1e-4);
+		assertEquals(1.6732, yuGothic.lineHeightFactor(), 1e-4);
+		assertEquals(16.8, yuGothic.lineHeightFactor() * 10, 0.13);
+
+		// malgun gothic and microsoft jhenghei both 2048;...;495 -> 1.3301, x 1.3 = 1.7291;
+		// Word paints 17.3 for each
+		for (String face : new String[] { "Malgun Gothic", "Microsoft JhengHei" }) {
+			WordLineMetrics.Metrics m = WordLineMetrics.get(face, null);
+			assertTrue(face + " flagged East Asian", m.eastAsian);
+			assertEquals(face, 1.3301, m.winAscent + m.winDescent, 1e-4);
+			assertEquals(face, 17.3, m.lineHeightFactor() * 10, 0.05);
+		}
+
+		// the control: Calibri is not East Asian and takes no factor - Word paints 12.2
+		WordLineMetrics.Metrics calibri = WordLineMetrics.get("Calibri", null);
+		assertFalse("Calibri is not East Asian", calibri.eastAsian);
+		assertEquals(12.2, calibri.lineHeightFactor() * 10, 0.05);
+
+		// and w:line="276" multiplies the East Asian line like any other: Yu Gothic 19.2
+		PPrBase.Spacing auto276 = new ObjectFactory().createPPrBaseSpacing();
+		auto276.setLine(BigInteger.valueOf(276));
+		auto276.setLineRule(STLineSpacingRule.AUTO);
+		assertEquals(19.2, WordLineMetrics.lineHeightPt("Yu Gothic", null, 10, auto276), 0.15);
+	}
+
 	/** word-line-metrics.properties: Word's vertical metrics of Microsoft fonts, by
 	 *  document font name, for when a substitute renders them (CR-001 §6.10). */
 	@Test

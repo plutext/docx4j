@@ -200,6 +200,13 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- An East Asian font's single line is 1.3 times its usWin box (usWinAscent + usWinDescent),
+  and takes no external leading at all - which is how Word draws it, measured on five faces:
+  MS Gothic and SimSun 12.96pt at 10pt, Yu Gothic 16.80, Malgun Gothic and Microsoft
+  JhengHei 17.28, against Calibri's unfactored 12.24. A font is East Asian by its OS/2
+  ulCodePageRange1 bits 17-21 (JIS, GB2312, Korean Wansung, Big5, Johab), read from the file
+  for a physical font and from a new optional seventh field of word-line-metrics.properties
+  for a document font (CR-001 batch 43).
 - The paragraph that is first on its page gets no space-before, however the page was
   reached and in every compatibility mode. docx4j read w:suppressSpBfAfterPgBrk here and
   kept the space below mode 15, which put such a paragraph its whole space-before too low on
