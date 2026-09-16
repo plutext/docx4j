@@ -35,9 +35,15 @@ public final class Scoreboard {
 	/** a document at or above this line parity counts as matching Word. */
 	public static final double GOOD = 0.98;
 
+	/**
+	 * The CSV's columns.  {@link #readCsv} reads by name, not by position, so a column
+	 * may be added here without making the scoreboards written before it unreadable -
+	 * which matters because every run is diffed against an older one.  A column a file
+	 * does not carry reads as 0 or empty.
+	 */
 	public static final String[] HEADER = { "id", "compatMode", "sizeBytes", "status", "refPages", "candPages",
-			"refLines", "candLines", "lineParity", "pageParity", "matched", "medianDy", "maxDy", "firstDivergence",
-			"error" };
+			"refLines", "candLines", "lineParity", "pageParity", "matched", "merged", "medianDy", "maxDy",
+			"firstDivergence", "error" };
 
 	private Scoreboard() {}
 
@@ -48,6 +54,10 @@ public final class Scoreboard {
 		public long sizeBytes;
 		public String status = "ok";
 		public int refPages, candPages, refLines, candLines, matched;
+		/** Of {@link #matched}, the pairs the merging pass formed by concatenation - one
+		 *  side's line against the other side's two or three.  @see
+		 *  org.docx4j.fidelity.compare.LayoutComparison */
+		public int merged;
 		public double lineParity, pageParity, medianDy, maxDy;
 		public String firstDivergence = "";
 		public String error = "";
@@ -67,6 +77,7 @@ public final class Scoreboard {
 			row.refLines = r.refLines;
 			row.candLines = r.candLines;
 			row.matched = r.matched;
+			row.merged = r.merged;
 			row.lineParity = r.lineParity();
 			row.pageParity = r.pageParity();
 			row.medianDy = r.medianDy;
@@ -105,6 +116,8 @@ public final class Scoreboard {
 	public static final class Aggregate {
 		public int scored, errors, timeouts, noref;
 		public int samePages, atLeastGood;
+		/** The merged pairs of every scored row, summed. */
+		public long mergedPairs;
 		public long linesMatched, linesTotal, linesCand, sizeBytes;
 		public double medianParity, meanParity;
 
@@ -120,6 +133,7 @@ public final class Scoreboard {
 					a.linesMatched += r.matched;
 					a.linesTotal += r.refLines;
 					a.linesCand += r.candLines;
+					a.mergedPairs += r.merged;
 					if (r.samePages()) a.samePages++;
 					if (r.lineParity >= GOOD) a.atLeastGood++;
 					parities.add(r.lineParity);
@@ -156,6 +170,7 @@ public final class Scoreboard {
 			out.add(new String[] { "same page count", count(samePages, scored) });
 			out.add(new String[] { "lines matched",
 					String.format(Locale.ROOT, "%d/%d (%.1f%%)", linesMatched, linesTotal, lineRatio() * 100) });
+			out.add(new String[] { "merged pairs", Long.toString(mergedPairs) });
 			out.add(new String[] { "median line parity", String.format(Locale.ROOT, "%.4f", medianParity) });
 			out.add(new String[] { "mean line parity", String.format(Locale.ROOT, "%.4f", meanParity) });
 			out.add(new String[] { String.format(Locale.ROOT, "line parity >= %.2f", GOOD),
@@ -174,9 +189,10 @@ public final class Scoreboard {
 		public String summary() {
 			return String.format(Locale.ROOT,
 					"scored=%d errors=%d timeouts=%d noref=%d samePages=%d (%.1f%%) linesMatched=%d/%d (%.1f%%) "
-							+ "medianParity=%.4f meanParity=%.4f atLeast%.2f=%d (%.1f%%)",
+							+ "merged=%d medianParity=%.4f meanParity=%.4f atLeast%.2f=%d (%.1f%%)",
 					scored, errors, timeouts, noref, samePages, pct(samePages, scored), linesMatched, linesTotal,
-					lineRatio() * 100, medianParity, meanParity, GOOD, atLeastGood, pct(atLeastGood, scored));
+					lineRatio() * 100, mergedPairs, medianParity, meanParity, GOOD, atLeastGood,
+					pct(atLeastGood, scored));
 		}
 
 		private static String count(int n, int of) {
@@ -220,6 +236,7 @@ public final class Scoreboard {
 		t.refLines = (int) a.linesTotal;
 		t.candLines = (int) a.linesCand;
 		t.matched = (int) a.linesMatched;
+		t.merged = (int) a.mergedPairs;
 		t.lineParity = a.lineRatio();
 		t.pageParity = a.medianParity;
 		t.medianDy = a.meanParity;
@@ -240,6 +257,7 @@ public final class Scoreboard {
 		sb.append(String.format(Locale.ROOT, "%.4f", r.lineParity)).append(',');
 		sb.append(String.format(Locale.ROOT, "%.4f", r.pageParity)).append(',');
 		sb.append(r.matched).append(',');
+		sb.append(r.merged).append(',');
 		sb.append(String.format(Locale.ROOT, "%.2f", r.medianDy)).append(',');
 		sb.append(String.format(Locale.ROOT, "%.2f", r.maxDy)).append(',');
 		sb.append(q(oneLine(r.firstDivergence))).append(',');
@@ -266,32 +284,42 @@ public final class Scoreboard {
 		List<Row> rows = new ArrayList<>();
 		try (BufferedReader r = new BufferedReader(
 				new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
-			String line = r.readLine(); // header
+			/* by name, not by position: a scoreboard written before a column existed is
+			 * still the baseline the next run is diffed against */
+			String line = r.readLine();
+			if (line == null) return rows;
+			List<String> head = splitCsv(line);
 			while ((line = r.readLine()) != null) {
 				if (line.trim().isEmpty()) continue;
 				List<String> f = splitCsv(line);
-				if (f.size() < HEADER.length) continue;
-				if (TOTAL.equals(f.get(0))) continue;
+				if (f.isEmpty() || TOTAL.equals(f.get(0))) continue;
 				Row row = new Row();
-				row.id = f.get(0);
-				row.compatMode = f.get(1);
-				row.sizeBytes = num(f.get(2));
-				row.status = f.get(3);
-				row.refPages = (int) num(f.get(4));
-				row.candPages = (int) num(f.get(5));
-				row.refLines = (int) num(f.get(6));
-				row.candLines = (int) num(f.get(7));
-				row.lineParity = dbl(f.get(8));
-				row.pageParity = dbl(f.get(9));
-				row.matched = (int) num(f.get(10));
-				row.medianDy = dbl(f.get(11));
-				row.maxDy = dbl(f.get(12));
-				row.firstDivergence = f.get(13);
-				row.error = f.get(14);
+				row.id = at(head, f, "id");
+				row.compatMode = at(head, f, "compatMode");
+				row.sizeBytes = num(at(head, f, "sizeBytes"));
+				row.status = at(head, f, "status");
+				row.refPages = (int) num(at(head, f, "refPages"));
+				row.candPages = (int) num(at(head, f, "candPages"));
+				row.refLines = (int) num(at(head, f, "refLines"));
+				row.candLines = (int) num(at(head, f, "candLines"));
+				row.lineParity = dbl(at(head, f, "lineParity"));
+				row.pageParity = dbl(at(head, f, "pageParity"));
+				row.matched = (int) num(at(head, f, "matched"));
+				row.merged = (int) num(at(head, f, "merged"));
+				row.medianDy = dbl(at(head, f, "medianDy"));
+				row.maxDy = dbl(at(head, f, "maxDy"));
+				row.firstDivergence = at(head, f, "firstDivergence");
+				row.error = at(head, f, "error");
 				rows.add(row);
 			}
 		}
 		return rows;
+	}
+
+	/** One field of a row by its column name; empty where the file has no such column. */
+	private static String at(List<String> header, List<String> fields, String name) {
+		int i = header.indexOf(name);
+		return i < 0 || i >= fields.size() ? "" : fields.get(i);
 	}
 
 	private static long num(String s) {

@@ -692,13 +692,35 @@ Columns:
 | `lineParity` | reference lines that have an identical line in the candidate, 0-1 — the headline number |
 | `pageParity` | matched lines that are also on the same page |
 | `matched` | matched line count |
+| `merged` | of `matched`, the pairs the merging pass formed by concatenation |
 | `medianDy` / `maxDy` | candidate minus reference baseline, in points, over lines matched on the same page |
 | `firstDivergence` | the first line- or page-break difference |
 | `error` | first line of the exception, for `error` / `timeout` rows |
 
 The aggregate is: documents scored / errors / timeouts / no-reference; documents
-with the same page count; lines matched over lines total; median and mean line
-parity; and documents at line parity >= 0.98.
+with the same page count; lines matched over lines total; merged pairs; median and
+mean line parity; and documents at line parity >= 0.98.
+
+**Merged pairs** are the one thing in the score that is not a straight text match,
+so the column exists to keep them visible. The two PDFs carry the same ink but
+their extractions need not agree on where one line ends and the next begins - Word
+sets a list bullet on its text's baseline and reads `• Physical access` as one
+line where docx4j sets the bullet 4.15pt above at 9pt and reads it as two, and no
+threshold applied to both sides can settle that, because the disagreement is
+vertical and each side is internally consistent. So after the LCS a reference line
+left unmatched is offered the two or three unmatched candidate lines whose texts
+concatenate to it exactly, and vice versa, provided they are consecutive, on the
+page the surrounding matches say this one landed on, start within 2pt of the same
+x, and lie within half an em of one another vertically (a real line pitch is at
+least 1.15 em, so two lines of one paragraph can never be merged into Word's one).
+The pass can only add pairs, never remove them - measured over the three corpora
+it lifted mean line parity 0.9061 → 0.9130, 0.8818 → 0.8890 and 0.9240 → 0.9317
+with 46, 48 and 36 documents up and **none** down, and no reference-line,
+candidate-line or page count moved. What it hides is the exporter defect
+underneath: a label painted off its text's baseline is no longer counted twice by
+line parity, and only the pair's `dy` still carries it. `merged` is how many pairs
+a document's score rests on; `-Dfidelity.merge=false` restores the pairing without
+it, and `-Dfidelity.mergeDump=true` prints every pair it forms.
 
 `rescore` is `score` without the render:
 
