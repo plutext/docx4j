@@ -3877,7 +3877,16 @@ public final class WordLayoutFixups {
 				org.docx4j.model.CompatibilityOptions.Flag.SUPPRESS_SP_BF_AFTER_PG_BRK);
 		List<Element> empties = new ArrayList<>();
 		for (Element block : elements(doc, "block")) {
-			if ("page".equals(block.getAttribute("break-before")) && isEmpty(block)) {
+			if (!"page".equals(block.getAttribute("break-before"))) continue;
+			// A break-only paragraph whose w:br run carries w:rPr leaves an empty fo:inline
+			// behind when the break moves to the block, and isEmpty - which looks for any
+			// element child - then refused the block.  Where such a block *opens* its flow
+			// it is the empty page a typeless w:sectPr followed by a break-only paragraph
+			// makes, and refusing it lost that page: measured on a corpus document with
+			// five of them, where Word has six blank pages and docx4j emitted one.  Only
+			// there: the collection is otherwise unchanged, so no block that paints
+			// nothing but is not a flow's first is newly moved or dropped.  @since 17.1.1
+			if (isEmpty(block) || (blankBlock(block) && opensFlow(block))) {
 				empties.add(block);
 			}
 		}
@@ -3901,8 +3910,27 @@ public final class WordLayoutFixups {
 				// of the document the page is Word's (the page-blank probe ends in a page
 				// break and Word gives it a ninth page), so the break stays there.
 				// @since 17.1.0
-				if (next == null && empty.getParentNode() instanceof Element
-						&& isFo((Element) empty.getParentNode(), "flow") && sectionFollows(empty)) {
+				// "nothing left in this section" is nothing left in the *flow*, not merely
+				// nothing left beside this block: a multi-column section wraps its
+				// trailing material in a span="all" block, and the test used to ask for
+				// the flow as the immediate parent.  Measured on a corpus document whose
+				// three-column A3 section ends in exactly this shape: its FO's first flow
+				// ended <block span="all">...<fo:block break-before="page"> </fo:block>
+				// </block></flow>, the break was kept, and our page 2 was a second A3 page
+				// carrying nothing but its running head, which Word does not emit.
+				// @since 17.1.1
+				// Only the break goes; the block stays.  Removing the block as well -
+				// it is the empty half PageBreak split off the paragraph the break ended,
+				// and its preserved space still opens a page of its own - was measured on
+				// that document and is NOT done: it takes the page (22/21 -> 22/20) and
+				// the geometry improves a lot (page parity 0.3410 -> 0.7506, max dy
+				// 479.79 -> 63.29), but line parity falls 0.8855 -> 0.8217, because the
+				// document is already a page short of Word - Word emits two wholly blank
+				// pages here which docx4j does not (the section-start blank page, a
+				// LayoutMasterSetBuilder matter), and taking a third page out moves every
+				// page further from its Word counterpart.  The two belong together.
+				// @since 17.1.1
+				if (next == null && lastInFlow(empty) && sectionFollows(empty)) {
 					empty.removeAttribute("break-before");
 				}
 				continue;
@@ -3956,7 +3984,9 @@ public final class WordLayoutFixups {
 			// break and is not visited here.  Giving this one a line as well cost three
 			// corpus documents a page each, at breaks ending a text paragraph, whose
 			// continuation is this same shape.  @since 17.1.1
-			empty.getParentNode().removeChild(empty);
+			// Only a block with nothing in it at all is dropped: one admitted above for
+			// holding no more than an empty inline keeps its line.  @since 17.1.1
+			if (isEmpty(empty)) empty.getParentNode().removeChild(empty);
 		}
 	}
 
@@ -3973,6 +4003,24 @@ public final class WordLayoutFixups {
 				if (!(n instanceof Element)) continue;
 				if (n != child) return false;
 				break;
+			}
+			if (isFo((Element) parent, "flow")) return true;
+			child = (Element) parent;
+			parent = parent.getParentNode();
+		}
+		return false;
+	}
+
+	/** Whether nothing follows this block anywhere up to its fo:flow, so that it is the
+	 *  last thing its section holds however deeply it is wrapped (a multi-column section
+	 *  puts its trailing material in a span="all" block).  The mirror of
+	 *  {@link #opensFlow(Element)}.  @since 17.1.1 */
+	private static boolean lastInFlow(Element block) {
+		Node parent = block.getParentNode();
+		Element child = block;
+		while (parent instanceof Element) {
+			for (Node n = child.getNextSibling(); n != null; n = n.getNextSibling()) {
+				if (n instanceof Element) return false;
 			}
 			if (isFo((Element) parent, "flow")) return true;
 			child = (Element) parent;

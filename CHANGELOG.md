@@ -200,6 +200,13 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A page break at the end of a section is dropped wherever the empty paragraph carrying it
+  ends its flow, not only where that paragraph is a direct child of it: a multi-column
+  section wraps its trailing material, and the break then made a page Word does not. And a
+  break-only paragraph following a typeless w:sectPr gets the empty page Word gives it even
+  where the break's run carries w:rPr, which used to leave an empty inline behind and hide
+  the paragraph from the rule. Measured on a 56-page corpus document: 5 of its 6 blank pages
+  recovered, 48 pages to 53, page parity 0.02 to 0.34 (CR-001 batch 43).
 - A tab in a table-of-contents entry takes the leader of the tab stop it reaches, not the
   paragraph's dot leader whichever stop it lands on. An entry for a numbered heading is
   "number <tab> title <tab> page", and where the style has a hanging indent the first tab
