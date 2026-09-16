@@ -27,6 +27,7 @@ import org.docx4j.wml.Br;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTCompat;
 import org.docx4j.wml.CTCompatSetting;
+import org.docx4j.wml.CTFramePr;
 import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.CTTblLayoutType;
 import org.docx4j.wml.CTVerticalAlignRun;
@@ -49,8 +50,13 @@ import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.STBrType;
+import org.docx4j.wml.STHAnchor;
 import org.docx4j.wml.STLineSpacingRule;
 import org.docx4j.wml.STTblLayoutType;
+import org.docx4j.wml.STVAnchor;
+import org.docx4j.wml.STWrap;
+import org.docx4j.wml.STXAlign;
+import org.docx4j.wml.STYAlign;
 import org.docx4j.wml.STVerticalAlignRun;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
@@ -551,6 +557,53 @@ public final class Doc {
 		org.docx4j.wml.CTLanguage l = F.createCTLanguage();
 		l.setVal(lang);
 		return l;
+	}
+
+	// ----------------------------------------------------------- text frames
+
+	/**
+	 * {@code w:framePr}: the paragraph is a text frame, positioned and wrapped rather
+	 * than laid out in the flow.  {@code hSpace} is in twips, {@code y} in twips (or
+	 * signed twips), and the three enumerated attributes take their schema values
+	 * ("around", "text", "margin", "center", ...).  A null enumerated argument leaves
+	 * the attribute off.
+	 *
+	 * @since 17.1.1
+	 */
+	public static void framePr(PPr ppr, Integer hSpaceTwips, String wrap, String hAnchor,
+			String vAnchor, String xAlign, Integer yTwips) {
+		framePr(ppr, hSpaceTwips, wrap, hAnchor, vAnchor, xAlign, yTwips, null);
+	}
+
+	/** As {@link #framePr(PPr, Integer, String, String, String, String, Integer)}, with
+	 *  {@code w:yAlign} ("inline", "top", "center", ...) as well.  @since 17.1.1 */
+	public static void framePr(PPr ppr, Integer hSpaceTwips, String wrap, String hAnchor,
+			String vAnchor, String xAlign, Integer yTwips, String yAlign) {
+		CTFramePr fp = F.createCTFramePr();
+		if (hSpaceTwips != null) fp.setHSpace(BigInteger.valueOf(hSpaceTwips));
+		if (wrap != null) fp.setWrap(STWrap.fromValue(wrap));
+		if (hAnchor != null) fp.setHAnchor(STHAnchor.fromValue(hAnchor));
+		if (vAnchor != null) fp.setVAnchor(STVAnchor.fromValue(vAnchor));
+		if (xAlign != null) fp.setXAlign(STXAlign.fromValue(xAlign));
+		if (yTwips != null) fp.setY(BigInteger.valueOf(yTwips));
+		if (yAlign != null) fp.setYAlign(STYAlign.fromValue(yAlign));
+		ppr.setFramePr(fp);
+	}
+
+	/** {@code w:suppressOverlap}, written bare as Word writes it (a CT_OnOff with no
+	 *  {@code w:val} is on): this frame may not be overlapped by another.
+	 *  @since 17.1.1 */
+	public static void suppressOverlap(PPr ppr) {
+		ppr.setSuppressOverlap(new BooleanDefaultTrue());
+	}
+
+	/** {@code w:suppressOverlap w:val="true|false"}, written explicitly: a paragraph
+	 *  turning the value off against a style that turns it on is a real corpus shape.
+	 *  @since 17.1.1 */
+	public static void suppressOverlap(PPr ppr, boolean value) {
+		BooleanDefaultTrue b = new BooleanDefaultTrue();
+		b.setVal(Boolean.valueOf(value));
+		ppr.setSuppressOverlap(b);
 	}
 
 	// ---------------------------------------------------------------- styles
@@ -1845,6 +1898,35 @@ public final class Doc {
 			b.setColor("000000");
 			b.setSpace(BigInteger.valueOf(spacePt));
 			return b;
+		}
+
+		/** {@code w:framePr} on the paragraph itself, rather than on its style: see
+		 *  {@link Doc#framePr(PPr, Integer, String, String, String, String, Integer)}.
+		 *  @since 17.1.1 */
+		public Para framePr(Integer hSpaceTwips, String wrap, String hAnchor, String vAnchor,
+				String xAlign, Integer yTwips) {
+			Doc.framePr(ppr, hSpaceTwips, wrap, hAnchor, vAnchor, xAlign, yTwips);
+			return this;
+		}
+
+		/** As {@link #framePr(Integer, String, String, String, String, Integer)}, with
+		 *  {@code w:yAlign} as well.  @since 17.1.1 */
+		public Para framePr(Integer hSpaceTwips, String wrap, String hAnchor, String vAnchor,
+				String xAlign, Integer yTwips, String yAlign) {
+			Doc.framePr(ppr, hSpaceTwips, wrap, hAnchor, vAnchor, xAlign, yTwips, yAlign);
+			return this;
+		}
+
+		/** {@code w:suppressOverlap}.  @since 17.1.1 */
+		public Para suppressOverlap() {
+			Doc.suppressOverlap(ppr);
+			return this;
+		}
+
+		/** {@code w:suppressOverlap w:val="true|false"}, written explicitly.  @since 17.1.1 */
+		public Para suppressOverlap(boolean value) {
+			Doc.suppressOverlap(ppr, value);
+			return this;
 		}
 
 		/** w:suppressAutoHyphens: this paragraph is never hyphenated. */
