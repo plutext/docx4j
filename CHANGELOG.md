@@ -200,6 +200,13 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A run of continuous sections merged into one page-sequence builds its page masters on the
+  multi-column part's left and right margins whichever way round the two are (17.1.0 did it
+  only where that part's text column was the wider), and always on the first part's top,
+  bottom, header and footer distances. Measured on a 20-page document whose section 1 is one
+  column at 72pt margins and whose continuous section 2 is two columns at 85.05pt: column 2
+  opened at x=337.1 against Word's 324.1, on a 187.7pt measure against 202.95, and is now at
+  324.0 on 202.6 (CR-001 batch 43).
 - A centre w:ptab advances to the middle of the line. Only the right one was written, so in
   the three-field running head Word's header gallery produces - text, centre ptab, text,
   right ptab, text - the middle field ran straight on from the first, its text touching.
