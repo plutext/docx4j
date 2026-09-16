@@ -7,7 +7,9 @@ walk, `FontsAnalysis` and its report (a30b52450), 4 the conversion log
 (9cc6e3314), 5 the probes (188bc092b), their Word goldens (cace82727), the
 measurement and the three rows Gelasio / Selawik / Selawik Light (c388fd88f)
 with the no-break-space coverage fix the corpus run found (df577cca8); only
-phase 6 (the docx4j-mcp tool) remains, behind CR-004. Jason read the CR and
+phase 6 (the docx4j-mcp tool) remains; CR-004's placement was decided 2026-09-17
+(the separate `../docx4j-mcp` repository), so phase 6 lands there, in that
+repository's CR, calling `FontsAnalysis` from docx4j-core. Jason read the CR and
 accepted the recommendations the same day ("I am good with your
 recommendations, please implement"); Decisions 1 to 5 below are taken as
 recommended, and Decision 4's outcome is his ("take Selawik, Arimo second").
