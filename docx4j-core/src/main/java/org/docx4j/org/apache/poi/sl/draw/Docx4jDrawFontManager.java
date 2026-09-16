@@ -83,6 +83,29 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
 
     private static volatile Set<String> awtFamilies;
 
+    /**
+     * The document's font mapper, where the caller had one: a metafile names a face the
+     * way the producing application did - "Calibri", "Times New Roman" - and those are
+     * <em>document</em> font names, which only the mapper resolves ({@code PhysicalFonts}
+     * is keyed by the names of the fonts actually installed, so it answers null for every
+     * one of them).  Without it the face reached AWT unchanged, AWT did not know it, and
+     * the family degraded to Dialog - which Batik then wrote into the SVG and FOP could
+     * not resolve, so the metafile's text was drawn in a base-14 font the PDF does not
+     * embed (CR-001, non-embedded fonts).
+     *
+     * @since 17.1.1
+     */
+    private final org.docx4j.fonts.Mapper fontMapper;
+
+    public Docx4jDrawFontManager() {
+        this(null);
+    }
+
+    /** @param fontMapper the document's font mapper, or null.  @since 17.1.1 */
+    public Docx4jDrawFontManager(org.docx4j.fonts.Mapper fontMapper) {
+        this.fontMapper = fontMapper;
+    }
+
     @Override
     public FontInfo getMappedFont(Graphics2D graphics, FontInfo fontInfo) {
         // an explicit FONT_MAP hint wins, as in POI
@@ -95,16 +118,97 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
             return mapped;
         }
 
-        PhysicalFont pf = physicalFont(mapped.getTypeface());
-        if (pf == null || pf.getName() == null || pf.getName().equals(mapped.getTypeface())) {
+        PhysicalFont pf = resolved(mapped.getTypeface(), false, false);
+        if (pf == null || pf.getName() == null) {
             return mapped;
         }
 
-        // only substitute the name if AWT (or our own font file cache) can actually use it
-        if (isKnownToAWT(pf.getName()) || fontFromFile(pf) != null) {
-            return new RetypefacedFontInfo(mapped, pf.getName());
+        /* The name handed on is the one AWT will resolve and Batik will write into the
+         * SVG as font-family, so it is the *family* - "Carlito", not docx4j's face name
+         * "Carlito Regular" - and it is taken from the font AWT actually loaded where
+         * there is one.  FopConfigUtil declares each font under its family name as well,
+         * so FOP resolves what the SVG carries (CR-001, non-embedded fonts).  @since 17.1.1 */
+        register(pf);
+        Font loaded = fontFromFile(pf);
+        String family = (loaded != null) ? loaded.getFamily() : pf.getFamilyName();
+        if (family == null || family.isEmpty() || family.equals(mapped.getTypeface())) {
+            return mapped;
+        }
+        // only substitute the name if AWT can actually use it
+        if (loaded != null || isKnownToAWT(family)) {
+            return new RetypefacedFontInfo(mapped, family);
         }
         return mapped;
+    }
+
+    /**
+     * The physical font for this metafile face, bold and italic as the metafile asks:
+     * through the document's mapper first (the face is a document font name), then
+     * {@link PhysicalFonts} by that name (a face which happens to be installed under
+     * exactly that name, and the path this took before there was a mapper).
+     *
+     * @since 17.1.1
+     */
+    private PhysicalFont resolved(String typeface, boolean bold, boolean italic) {
+        if (typeface == null || typeface.isEmpty()) {
+            return null;
+        }
+        PhysicalFont regular = null;
+        if (fontMapper != null) {
+            try {
+                regular = fontMapper.get(typeface);
+            } catch (Throwable t) {
+                log.debug("mapper lookup failed for '{}': {}", typeface, t.toString());
+            }
+        }
+        if (regular == null) {
+            regular = physicalFont(typeface);
+        }
+        if (regular == null || (!bold && !italic)) {
+            return regular;
+        }
+        // the face the metafile asks for, where the mapper has one; the regular otherwise,
+        // which is what FopConfigUtil.renderedFace says FOP would draw for it anyway
+        try {
+            PhysicalFont face = null;
+            if (bold && italic) {
+                face = (fontMapper != null) ? fontMapper.getBoldItalicForm(typeface, regular)
+                        : PhysicalFonts.getBoldItalicForm(regular);
+            } else if (bold) {
+                face = (fontMapper != null) ? fontMapper.getBoldForm(typeface, regular)
+                        : PhysicalFonts.getBoldForm(regular);
+            } else {
+                face = (fontMapper != null) ? fontMapper.getItalicForm(typeface, regular)
+                        : PhysicalFonts.getItalicForm(regular);
+            }
+            return (face != null) ? face : regular;
+        } catch (Throwable t) {
+            log.debug("bold/italic form lookup failed for '{}': {}", typeface, t.toString());
+            return regular;
+        }
+    }
+
+    /**
+     * Tell the mapper which face this picture drew with, so that FOP is told about it.
+     *
+     * <p>The FOP configuration is built from the fonts the <em>document's runs</em> name,
+     * and a metafile's fonts are not among them: a document whose body is all Times New
+     * Roman can still hold a diagram labelled in Calibri.  That font was then undeclared,
+     * and FOP reported "Font Carlito,normal,400 not found. Substituting with any" - one
+     * of its base-14 fonts, which the PDF names and does not embed.  This is the same
+     * hook RunFontSelector uses for a font it reaches while generating the FO
+     * ({@code Mapper.registerLastResortFallback}, declared late by
+     * {@code FopConfigUtil.declareFallbackFonts}).  @since 17.1.1
+     */
+    private void register(PhysicalFont pf) {
+        if (pf == null || fontMapper == null) {
+            return;
+        }
+        try {
+            fontMapper.registerLastResortFallback(pf);
+        } catch (Throwable t) {
+            log.debug("could not register {}: {}", pf.getName(), t.toString());
+        }
     }
 
     /**
@@ -158,6 +262,23 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
         final String typeface = (fontInfo == null) ? null : fontInfo.getTypeface();
         final int style = (bold ? Font.BOLD : 0) | (italic ? Font.ITALIC : 0);
 
+        /* The face the document's own text would be drawn in, loaded from its file: an
+         * AWT font made that way carries the family the file states, so Batik writes
+         * that family into the SVG and FOP - which docx4j has declared that same font to
+         * - resolves it.  @since 17.1.1 */
+        PhysicalFont resolved = resolved(typeface, bold, italic);
+        register(resolved);
+        Font fromFile = (resolved == null) ? null : fontFromFile(resolved);
+        if (fromFile != null) {
+            // the file is the face already, so only the italic is ever synthesised
+            int synthesise = style & ~(fromFile.isBold() ? Font.BOLD : 0)
+                    & ~(fromFile.isItalic() ? Font.ITALIC : 0);
+            return fromFile.deriveFont(synthesise, (float)fontSize);
+        }
+        if (resolved != null && resolved.getName() != null && isKnownToAWT(resolved.getName())) {
+            return new Font(resolved.getName(), style, 12).deriveFont((float)fontSize);
+        }
+
         if (typeface != null && !isKnownToAWT(typeface)) {
             PhysicalFont pf = physicalFont(typeface);
             Font f = (pf == null) ? null : fontFromFile(pf);
@@ -203,15 +324,34 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
         if (failedFonts.contains(key)) {
             return null;
         }
-        if (!"file".equalsIgnoreCase(uri.getScheme())) {
-            failedFonts.add(key);
-            return null;
-        }
         try {
-            File f = new File(uri);
             // Font.createFont handles TrueType and Type1; it cannot handle .ttc / .otc collections
             int type = key.toLowerCase().endsWith(".pfb") ? Font.TYPE1_FONT : Font.TRUETYPE_FONT;
-            Font font = Font.createFont(type, f);
+            Font font;
+            if ("file".equalsIgnoreCase(uri.getScheme())) {
+                font = Font.createFont(type, new File(uri));
+            } else {
+                /* A font docx4j ships lives in a jar, so its URI is jar:file:...!/x.ttf and
+                 * there is no File for it; read the stream instead.  Cached per URI, as the
+                 * file case is, so each font is read once.  @since 17.1.1 */
+                java.io.InputStream is = uri.toURL().openStream();
+                try {
+                    font = Font.createFont(type, is);
+                } finally {
+                    is.close();
+                }
+            }
+            /* Registered with AWT, so that new Font(family, ..) resolves it: Batik builds
+             * the font it draws with from the attribute map's FAMILY, not from the Font
+             * object, so a font AWT does not know degrades to Dialog there whatever this
+             * manager returns.  A font docx4j ships is in a jar and is never installed,
+             * which is exactly the headless deployment.  @since 17.1.1 */
+            try {
+                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+                awtFamilies = null; // re-enumerate; the new family is known to AWT now
+            } catch (Throwable t) {
+                log.debug("could not register {} with AWT: {}", key, t.toString());
+            }
             createdFonts.put(key, font);
             return font;
         } catch (FontFormatException | IOException | IllegalArgumentException e) {

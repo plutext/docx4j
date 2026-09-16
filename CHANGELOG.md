@@ -200,6 +200,14 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The text inside a WMF or EMF picture is drawn in the font docx4j would draw the document's
+  own text in, and the PDF embeds it. A metafile names its fonts by GDI face name - Calibri,
+  Times New Roman - which are document font names, and those reached AWT unresolved, so the
+  family degraded to Dialog; that is the family Batik wrote into the SVG, FOP could not
+  resolve it, and the picture's text came out in one of its base-14 fonts, named in the PDF
+  and not embedded. 18 of 449 corpus documents were in that state. The face now resolves
+  through the document's mapper, AWT draws it from docx4j's own font file where it must, and
+  the fonts a picture reaches are declared to FOP like any other (CR-001, non-embedded fonts).
 - A symbol-font character with no Unicode replacement is drawn as the missing-symbol box in a
   font which has that box. It had no font-family at all, so it came out as notdef - and in a
   numbering label, which is a block of its own outside the paragraph, that meant one of FOP's

@@ -203,15 +203,29 @@ public class PoiMetafileRenderer implements MetafileRenderer {
 
 	@Override
 	public void draw(byte[] data, Graphics2D target, Rectangle2D bounds) {
-		Object picture = parse(data);
-		if (picture == null || target == null || bounds == null) return;
-		draw(picture, target, bounds);
+		draw(data, target, bounds, null);
 	}
 
-	private static void draw(Object picture, Graphics2D target, Rectangle2D bounds) {
+	/**
+	 * As {@link #draw(byte[], Graphics2D, Rectangle2D)}, resolving the metafile's GDI face
+	 * names through the document's font mapper: they are document font names, which only
+	 * the mapper can answer (CR-001, non-embedded fonts).
+	 *
+	 * @param fontMapper the document's font mapper, or null
+	 * @since 17.1.1
+	 */
+	public void draw(byte[] data, Graphics2D target, Rectangle2D bounds,
+			org.docx4j.fonts.Mapper fontMapper) {
+		Object picture = parse(data);
+		if (picture == null || target == null || bounds == null) return;
+		draw(picture, target, bounds, fontMapper);
+	}
+
+	private static void draw(Object picture, Graphics2D target, Rectangle2D bounds,
+			org.docx4j.fonts.Mapper fontMapper) {
 		if (bounds.getWidth() <= 0 || bounds.getHeight() <= 0) return;
 		try {
-			target.setRenderingHint(Drawable.FONT_HANDLER, new Docx4jDrawFontManager());
+			target.setRenderingHint(Drawable.FONT_HANDLER, new Docx4jDrawFontManager(fontMapper));
 			target.setRenderingHint(Drawable.DEFAULT_CHARSET, DEFAULT_CHARSET);
 			target.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			target.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -266,7 +280,7 @@ public class PoiMetafileRenderer implements MetafileRenderer {
 		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = img.createGraphics();
 		try {
-			draw(picture, g, new Rectangle2D.Double(0, 0, w, h));
+			draw(picture, g, new Rectangle2D.Double(0, 0, w, h), null);
 		} finally {
 			g.dispose();
 		}
