@@ -200,6 +200,15 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Every font the PDF names is embedded in it. FOP's subsetter reads two bytes past the end
+  of the file for a font whose last glyph is empty and whose glyf table ends the file, gives
+  up, and writes the font descriptor with no font file: the PDF then named a font it did not
+  embed, which fails PDF/A and leaves the reader to substitute. Five of the faces docx4j
+  ships are of that shape, their last glyph being U+00A0, so a run with a non-breaking space
+  in Arial or Calibri could lose its font altogether - 4 of 449 corpus documents. docx4j now
+  serves FOP the byte or two it reads, in memory, leaving the font files themselves alone
+  (docx4j.fonts.fop.padEmptyLastGlyph); the fix itself belongs in FOP
+  (CR-001, non-embedded fonts).
 - Calibri Light is drawn at 0.987 of Carlito's advances, the two families' measured
   difference: Carlito is Calibri's clone and ships no Light weight, so every Calibri Light
   line came out 1.3% wide and re-wrapped. Two whole documents in it now take Word's exact

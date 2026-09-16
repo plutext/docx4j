@@ -55,6 +55,7 @@ import org.docx4j.convert.out.fo.PlaceholderReplacementHandler;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
+import org.docx4j.fop.fonts.FontPaddingResourceResolver;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.utils.XmlSerializerUtil;
@@ -449,12 +450,14 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 				defaultBaseURI = new URI(baseUriProperty);
 			}
 
-			FopConfParser fopConfParser = null;
-						if (resourceResolver==null) {
-				fopConfParser = new FopConfParser(is, defaultBaseURI);
-			} else {
-				fopConfParser = new FopConfParser(is, defaultBaseURI, resourceResolver);
-			}
+			/* FOP reads each font from its embed-url itself, through this resolver.  It is
+			 * wrapped so that a TrueType font whose last glyph is empty gets the byte or two
+			 * FOP's subsetter reads past the end of - without which the font is silently not
+			 * embedded at all (FontPaddingResourceResolver says why, and which fonts).  The
+			 * wrapper passes everything else through untouched, and FOP's own default
+			 * resolver is what it wraps when the caller supplied none.  @since 17.1.1 */
+			FopConfParser fopConfParser = new FopConfParser(is, defaultBaseURI,
+					FontPaddingResourceResolver.wrap(resourceResolver));
 			FopFactoryBuilder builder = fopConfParser.getFopFactoryBuilder();
 			/* FOP's font cache (~/.fop/fop-fonts.cache) is a serialized object graph,
 			 * shared by every FOP on the machine and written without locking.  docx4j
