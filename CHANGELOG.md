@@ -200,6 +200,12 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A symbol-font character with no Unicode replacement is drawn as the missing-symbol box in a
+  font which has that box. It had no font-family at all, so it came out as notdef - and in a
+  numbering label, which is a block of its own outside the paragraph, that meant one of FOP's
+  base-14 fonts, named in the PDF and not embedded. Word draws a box here too: measured on its
+  own renderings, Symbol 0x7F and 0xFF are an open square and docx4j's is now the same size
+  (6.04pt against Word's 6.048pt at 10pt) (CR-001, non-embedded fonts).
 - The "Endnotes" heading docx4j writes above a section's endnotes is set in the document's
   default font. It carried a weight and a size and no font-family at all, so FOP drew it in
   the initial value of the property - one of its base-14 fonts, which it does not embed - and
