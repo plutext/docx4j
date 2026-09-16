@@ -1718,6 +1718,59 @@ public class XsltFOFunctions {
 		return frag;
 	}
 
+	/** The text of the heading docx4j writes above a section's endnotes. */
+	public static final String ENDNOTES_HEADING = "Endnotes";
+
+	/**
+	 * The heading docx4j writes above a section's endnotes, in the document's default font.
+	 *
+	 * <p>Word writes no such heading - it has no endnotes story in the page at all, it
+	 * lays the notes out itself - so this is docx4j's own text, and there is nothing in
+	 * the document to take its formatting from beyond the document defaults.</p>
+	 *
+	 * <p>It carried {@code font-weight} and {@code font-size} and no {@code font-family}
+	 * at all, and neither does {@code fo:root}, so FOP drew it in the initial value of the
+	 * property: one of its base-14 fonts, which is not a font FOP embeds. The PDF then
+	 * named a font it did not carry - it fails PDF/A, and a reader without Helvetica
+	 * substitutes - for the sake of one word. Measured over a 449-document corpus, 13
+	 * documents were in this state and nothing else in any of them was wrong
+	 * (CR-001, non-embedded fonts).</p>
+	 *
+	 * <p>Both pathways build the heading here, so the answer is the same in each:
+	 * {@code docx2fo.xslt} copies this fragment, and so does
+	 * {@code FOExporterVisitorDelegate.appendSectionFooter}.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static DocumentFragment endnotesHeading(AbstractWmlConversionContext context) {
+
+		String family = null;
+		try {
+			// the document default run properties: the heading is docx4j's own text
+			RPr rPr = context.getPropertyResolver().getEffectiveRPr(null, null);
+			DocumentFragment styled = XsltCommonFunctions.fontSelectorForGeneratedText(
+					context, (PPr)null, rPr, ENDNOTES_HEADING);
+			// the selector registers whatever font it chose, so FOP is told about it
+			// even where the document itself never names it (declareFallbackFonts)
+			family = findAttribute(styled, "font-family");
+		} catch (Exception e) {
+			log.warn("Endnotes heading font: " + e.getMessage(), e);
+		}
+
+		Document d = XmlUtils.getNewDocumentBuilder().newDocument();
+		DocumentFragment frag = d.createDocumentFragment();
+		Element heading = d.createElementNS(XSL_FO, "block");
+		heading.setAttribute("space-before", "44pt");
+		heading.setAttribute("font-weight", "bold");
+		heading.setAttribute("font-size", "14pt");
+		if (family!=null && family.length()>0) {
+			heading.setAttribute("font-family", family);
+		}
+		heading.setTextContent(ENDNOTES_HEADING);
+		frag.appendChild(heading);
+		return frag;
+	}
+
 	private static final String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 
 	/**

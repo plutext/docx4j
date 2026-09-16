@@ -200,6 +200,12 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The "Endnotes" heading docx4j writes above a section's endnotes is set in the document's
+  default font. It carried a weight and a size and no font-family at all, so FOP drew it in
+  the initial value of the property - one of its base-14 fonts, which it does not embed - and
+  the PDF then named a font it did not carry, for the sake of one word. 13 of 449 corpus
+  documents were in that state. Both pathways build the heading in XsltFOFunctions now
+  (CR-001, non-embedded fonts).
 - Every font the PDF names is embedded in it. FOP's subsetter reads two bytes past the end
   of the file for a font whose last glyph is empty and whose glyf table ends the file, gives
   up, and writes the font descriptor with no font file: the PDF then named a font it did not
