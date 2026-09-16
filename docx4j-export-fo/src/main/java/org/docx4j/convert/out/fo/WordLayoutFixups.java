@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 import javax.xml.transform.OutputKeys;
@@ -186,6 +188,7 @@ public final class WordLayoutFixups {
 		retainSpaceBeforeAtFlowStart(doc);
 		spaceBeforePageNumber(doc);
 		retainSpacingAtStaticContentEnd(doc);
+		headerFooterPartIndent(doc);
 		retainSpaceAfterInAlignedFlow(doc);
 		retainSpacingAtCellEdges(doc, compatibilityMode);
 		cellLineWidth(doc);
@@ -4451,6 +4454,64 @@ public final class WordLayoutFixups {
 			n = prev;
 		}
 		return null;
+	}
+
+	/**
+	 * A running header and footer whose page master was built on another part of a merged
+	 * run of continuous sections takes the first part's margins, which
+	 * {@link org.docx4j.convert.out.fo.LayoutMasterSetBuilder} wrote as
+	 * {@code start-indent} / {@code end-indent} on the {@code fo:region-before} and
+	 * {@code fo:region-after}.
+	 *
+	 * <p>That is where XSL-FO says the indent belongs, and <b>FOP ignores it</b>
+	 * (measured: a region carrying {@code start-indent="10pt" end-indent="10pt"} has the
+	 * same ipd as one carrying none).  So it is moved here onto the static content's own
+	 * top-level blocks, where FOP honours it, and taken off the regions - the same shift
+	 * {@code XsltFOFunctions.shiftIndents} applies to the body parts, which is why the
+	 * body needs nothing here and why both export pathways are served by one pass.
+	 *
+	 * <p>Word draws each page's header and footer at the margins of the section which
+	 * owns that page; a page-sequence has one set of static content, so this is the first
+	 * part's - the section Word starts the page with, and the one that owns most of its
+	 * pages.  Measured on a corpus document of five continuous sections (CR-001 batch 44):
+	 * its page number's right edge is at x=571.93 on the five pages the first section
+	 * owns, and the masters - built on the two-column part, whose right margin is 4.5pt
+	 * narrower - put it at 576.00 on every page.
+	 *
+	 * @since 17.1.1
+	 */
+	static void headerFooterPartIndent(Document doc) {
+		Map<String, double[]> byRegion = new HashMap<String, double[]>();
+		for (Element region : elements(doc, "region-before")) collectRegionIndent(region, byRegion);
+		for (Element region : elements(doc, "region-after")) collectRegionIndent(region, byRegion);
+		if (byRegion.isEmpty()) return;
+		for (Element sc : elements(doc, "static-content")) {
+			double[] indent = byRegion.get(sc.getAttribute("flow-name"));
+			if (indent == null) continue;
+			for (Node n = sc.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (!(n instanceof Element)) continue;
+				shiftIndent((Element) n, "start-indent", indent[0]);
+				shiftIndent((Element) n, "end-indent", indent[1]);
+			}
+		}
+	}
+
+	/** @see #headerFooterPartIndent(Document) */
+	private static void collectRegionIndent(Element region, Map<String, double[]> byRegion) {
+		String start = region.getAttribute("start-indent");
+		String end = region.getAttribute("end-indent");
+		if (start.isEmpty() && end.isEmpty()) return;
+		String name = region.getAttribute("region-name");
+		if (!name.isEmpty()) byRegion.put(name, new double[] { lengthPt(start), lengthPt(end) });
+		region.removeAttribute("start-indent");
+		region.removeAttribute("end-indent");
+	}
+
+	/** @see #headerFooterPartIndent(Document) */
+	private static void shiftIndent(Element block, String name, double deltaPt) {
+		if (deltaPt == 0) return;
+		block.setAttribute(name, org.docx4j.fonts.WordLineMetrics.format(
+				lengthPt(block.getAttribute(name)) + deltaPt));
 	}
 
 	static void retainSpacingAtStaticContentEnd(Document doc) {

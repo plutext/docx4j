@@ -200,6 +200,15 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The running header and footer of a run of continuous sections merged into one
+  page-sequence are drawn at the first part's margins, as that part's body is, rather than at
+  whichever part's margins the page masters were built on for the columns' sake. Word draws
+  each page's header and footer at the margins of the section which owns the page; a
+  page-sequence has one set of static content, so it takes the first part's - the section Word
+  starts the page with. Measured on an 8-page document of five continuous sections: Word's page
+  number ends at x=571.93 on the five pages the first section owns, and docx4j put it at 576.00
+  on every page (CR-001 batch 44).
+
 - A run of continuous sections merged into one page-sequence builds its page masters on the
   multi-column part's left and right margins whichever way round the two are (17.1.0 did it
   only where that part's text column was the wider), and always on the first part's top,

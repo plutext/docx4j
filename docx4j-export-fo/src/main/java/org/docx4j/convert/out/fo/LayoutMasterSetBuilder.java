@@ -566,6 +566,40 @@ public class LayoutMasterSetBuilder {
 	 * @param mirrorMargins w:settings/w:mirrorMargins - together these decide which edge
 	 *        w:pgMar/@w:gutter is added to (@since 17.1.0)
 	 */
+	/**
+	 * The indent a running header and footer need when the page masters were built on a
+	 * part of a merged run of continuous sections other than the one the page starts with
+	 * (CR-001 batch 44, {@link PageDimensions#getHeaderFooterIndentStart()}).
+	 *
+	 * <p>It is written where XSL-FO says it belongs, as {@code start-indent} and
+	 * {@code end-indent} on {@code fo:region-before} / {@code fo:region-after} - a region
+	 * takes the common margin properties, and this is exactly what they mean.  <b>FOP
+	 * ignores them</b>: measured on a page master with {@code start-indent="10pt"
+	 * end-indent="10pt"} on its {@code fo:region-after}, the region's ipd is 525300
+	 * millipoints, the same as the {@code fo:region-before} beside it which carries none.
+	 * So {@code WordLayoutFixups.headerFooterPartIndent} reads them back off the regions
+	 * and puts them on the static content's own blocks, where FOP does honour them, and
+	 * removes them.  An FO processor which honours them needs no such help, which is why
+	 * the FO says it this way.
+	 *
+	 * @since 17.1.1
+	 */
+	private static void headerFooterIndent(PageDimensions page, RegionBefore before, RegionAfter after) {
+		int start = page.getHeaderFooterIndentStart();
+		int end = page.getHeaderFooterIndentEnd();
+		if (start == 0 && end == 0) return;
+		String startPt = UnitsOfMeasurement.twipToBest(start);
+		String endPt = UnitsOfMeasurement.twipToBest(end);
+		if (before != null) {
+			before.setStartIndent(startPt);
+			before.setEndIndent(endPt);
+		}
+		if (after != null) {
+			after.setStartIndent(startPt);
+			after.setEndIndent(endPt);
+		}
+	}
+
 	private static SimplePageMaster createSimplePageMaster( 
 			String masterName, PageDimensions page, String appendRegionName, 
 			boolean needBefore, boolean needAfter,
@@ -702,6 +736,7 @@ public class LayoutMasterSetBuilder {
 			//Header
 			RegionBefore rBefore = getFactory().createRegionBefore();
 			rBefore.setRegionName("xsl-region-before-"+appendRegionName);
+			headerFooterIndent(page, rBefore, null);
 			spm.setRegionBefore(rBefore);
 			
 			// Margin top on SPM is space between the page edge and the start of the header			
@@ -729,6 +764,7 @@ public class LayoutMasterSetBuilder {
 			// Footer
 			RegionAfter rAfter = getFactory().createRegionAfter();
 			rAfter.setRegionName("xsl-region-after-"+appendRegionName);
+			headerFooterIndent(page, null, rAfter);
 			spm.setRegionAfter(rAfter);
 			
 			int marginBottomTwips= page.getFooterMargin();

@@ -708,6 +708,17 @@ public class ConversionSectionWrapperFactory {
 		if (vertical.getPgMar().getHeader() != null) pgMar.setHeader(vertical.getPgMar().getHeader());
 		if (vertical.getPgMar().getFooter() != null) pgMar.setFooter(vertical.getPgMar().getFooter());
 		wrapper.getPageDimensions().setPgMar(pgMar);
+		/* The masters now carry the reference part's left and right margins, and every
+		 * body part carries its own difference on its blocks - but the running header and
+		 * footer are regions of the page master, which no block's indent reaches.  Word
+		 * draws them at the margins of the section that owns the page, and the section
+		 * that owns most of them is the first, which is also the one Word starts the page
+		 * with; so they take the first part's margins wherever the masters did not.
+		 * PageDimensions carries the difference to LayoutMasterSetBuilder.  @since 17.1.1 */
+		if (vertical != part && marginLeft(vertical) >= 0 && marginRight(vertical) >= 0) {
+			wrapper.getPageDimensions().setHeaderFooterIndent(
+					marginLeft(vertical) - marginLeft(part), marginRight(vertical) - marginRight(part));
+		}
 	}
 
 	/** What merging a run of continuous sections into one page-sequence came to.
