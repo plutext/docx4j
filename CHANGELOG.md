@@ -160,6 +160,25 @@ Fonts (CR-017, font decisions with their reasons):
   found" warning, which names no action.  The face it names is the name a user would look for:
   the FO layer's own suffixes (the kerned twin, the no-ligature twin, the no-bold alias) are
   stripped from the report.
+- Three substitutes added, each measured against a Word golden at the nominal size (Word's own
+  Carlito in the same probe calibrates the measurement to 0.03%): Georgia is drawn in Gelasio,
+  metric-compatible on all three faces the probe sets (0.9994 regular, 0.9995 bold, 0.9995
+  italic, where P052 is 0.9838, 1.1119 and 1.1234 - passable in the regular and 11 to 12%
+  narrow in the bold and italic); Segoe UI in Selawik, Microsoft's own open replacement for it
+  (0.9994 regular, 0.9997 bold, against Arimo's 1.0028 and 0.9978; Selawik has no italic face,
+  so an italic is FOP's oblique of the regular at 0.9737 against Arimo Italic's 0.9769); and
+  Segoe UI Light in Selawik Light (0.9995, against Source Sans 3's 0.9938).  Both families are
+  Latin only, so Greek or Cyrillic in such a document goes through the coverage pass; both are
+  OFL 1.1, neither is in a docx4j font jar, and each row falls through to the previous answer
+  (P052, Arimo, Source Sans 3) on a machine without the new face.
+- A no-break space is a space: where a face has no glyph of its own for U+00A0, docx4j now
+  reads U+0020 instead, as it already reads a tab.  Several faces map only the ordinary space
+  (Selawik and Selawik Light among them), and a paragraph whose only content is a no-break
+  space - a spacer line, which real documents have - then found no face at all: the FO carried
+  no font-family for it and FOP drew it in its base-14 default, a font the PDF does not embed
+  (so the page was wrong and PDF/A unreachable).  Also, a document font with no bold face of
+  its own now takes the no-bold alias even where its substitute has no bold sibling to
+  withhold, so the reported bold face is the synthetic one FOP actually draws.
 
 Schema (CR-018, five gaps the content API found, and w16cex):
 

@@ -197,6 +197,16 @@ public class FontsAnalysisTest {
 		assertEquals(FontReport.Grade.NEAR, entry.getGrade());
 		assertTrue(entry.getAction(), entry.getAction().startsWith("install Trebuchet MS"));
 		assertTrue(entry.getAction(), entry.getAction().contains("closest measured"));
+		// not "no open clone exists": what is true is that docx4j's table has no metric
+		// clone of it (Selawik is an open replacement for Segoe UI and still a stand-in,
+		// having no italic face).  The action carries the measurement itself, since it is
+		// a field of its own in the JSON.  @since 17.1.1
+		assertTrue(entry.getAction(), entry.getAction().contains("docx4j knows no metric clone of it"));
+		assertFalse(entry.getAction(), entry.getAction().contains("no open clone of it exists"));
+		String error = entry.getDecision().getWidthError();
+		if (error != null && !Mapper.UNKNOWN_ERROR.equals(error)) {
+			assertTrue(entry.getAction(), entry.getAction().contains(error));
+		}
 	}
 
 	/** A clone which cannot draw a script the document sets in that font is only near,

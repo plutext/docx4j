@@ -985,12 +985,19 @@ public abstract class Mapper {
     }
 
     /**
-     * For each document font which has no bold face of its own but whose mapped physical
-     * font has a real bold sibling, an alias of that font reporting none
-     * ({@link PhysicalFont#noBoldFaceAlias}), so that FOP synthesises the bold at the
-     * regular advances as Word does (probe fonts-light-bold: Calibri Light's w:b is the
-     * Calibri Light font object, +0.3% wide, where Carlito Bold is +2.7%).  Last of the
-     * passes: it re-maps.
+     * For each document font which has no bold face of its own, an alias of its mapped
+     * physical font reporting none ({@link PhysicalFont#noBoldFaceAlias}), so that FOP
+     * synthesises the bold at the regular advances as Word does (probe fonts-light-bold:
+     * Calibri Light's w:b is the Calibri Light font object, +0.3% wide, where Carlito
+     * Bold is +2.7%).  Last of the passes: it re-maps.
+     *
+     * <p><b>Also where the substitute has no bold sibling to withhold</b> (CR-017 phase
+     * 5): the pass used to skip such a font as having "nothing to withhold", which left
+     * two families that are drawn identically reported differently - the decision said
+     * the bold face was the physical font's own where in fact FOP synthesises it (a
+     * family with no bold face reaches {@code createFontEntrySimulateStyles}'s
+     * simulate-style branch either way).  The alias costs nothing - it is the same file -
+     * and it makes what is on the page and what the report says the same thing.</p>
      *
      * @since 17.1.1
      */
@@ -1009,7 +1016,9 @@ public abstract class Mapper {
     		if (wordDefaulted.contains(documentFontName.trim().toLowerCase())) continue;
     		PhysicalFont pf = get(documentFontName);
     		if (pf==null || pf.isNoBoldFace()) continue;
-    		if (PhysicalFonts.getBoldForm(pf)==null && boldForms.get(documentFontName)==null) continue; // nothing to withhold
+    		/* No test for "is there a bold to withhold": a family with none of its own
+    		 * gets the alias too, so that the decision reports the synthetic bold FOP will
+    		 * actually draw (CR-017 phase 5, the javadoc above). */
     		PhysicalFont alias = pf.noBoldFaceAlias();
     		fontMappings.put(documentFontName.toLowerCase(), alias);
     		/* Not a source of its own: the pass re-maps the font to an alias of what an

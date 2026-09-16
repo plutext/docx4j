@@ -584,9 +584,18 @@ public final class FontsAnalysis {
 			sb.append(", or ").append(metric.getFont()).append(" its metric clone");
 			if (metricClone!=null) sb.append(" (").append(where(metricClone)).append(")");
 		} else if (grade==FontReport.Grade.NEAR) {
-			// the measurement is in the line already (Entry.describe names it)
-			sb.append(" for Word's line breaks: no open clone of it exists, and ")
+			/* Not "no open clone exists": Selawik is Microsoft's own open replacement for
+			 * Segoe UI and still only a stand-in here, because it has no italic face.
+			 * What is true of every row that reaches this branch is that docx4j's table
+			 * knows no metric clone of the font.  The error is repeated here (describe()
+			 * names it too) so that the action stands on its own - it is a field of its
+			 * own in the JSON and in the MCP tool's answer.  @since 17.1.1 */
+			sb.append(" for Word's line breaks: docx4j knows no metric clone of it; ")
 					.append(nameOf(decision)).append(" is the closest measured");
+			String measured = decision.getWidthError();
+			if (measured!=null && measured.length()>0 && !Mapper.UNKNOWN_ERROR.equals(measured)) {
+				sb.append(" (").append(measured).append(")");
+			}
 		} else if (decision.getSource()==FontDecision.Source.SYMBOL) {
 			sb.append(": its characters are drawn in ").append(nameOf(decision))
 					.append(", whose symbols are not its own");

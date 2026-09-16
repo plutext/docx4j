@@ -85,9 +85,15 @@ public class FontSubstitutionTableTest {
 		assertEquals(Arrays.asList("Droid Sans", "Arimo Regular", "Liberation Sans"), names("Trebuchet MS"));
 		assertEquals(Arrays.asList("Noto Sans Black", "Noto Sans Display Black", "Arimo Regular",
 				"Liberation Sans"), names("Arial Black"));
-		assertEquals(Arrays.asList("Source Sans 3", "Source Sans Pro", "Arimo Regular",
+		// Selawik is Microsoft's own open Segoe UI, measured against Word's golden
+		// (CR-017 phase 5); Arimo remains for a machine without it
+		assertEquals(Arrays.asList("Selawik", "Arimo Regular", "Liberation Sans"), names("Segoe UI"));
+		assertEquals(Arrays.asList("Selawik Light", "Source Sans 3", "Source Sans Pro", "Arimo Regular",
 				"Liberation Sans"), names("Segoe UI Light"));
-		assertEquals(Arrays.asList("P052", "Tinos Regular", "Liberation Serif"), names("Georgia"));
+		// Gelasio is metric-compatible with Georgia in all four faces, measured; P052 is
+		// 11 to 12% narrow in Georgia's bold and italic and stays as the second choice
+		assertEquals(Arrays.asList("Gelasio Regular", "P052", "Tinos Regular", "Liberation Serif"),
+				names("Georgia"));
 		// only a metric twin will do for a condensed face; otherwise it is left unmapped
 		assertEquals(Arrays.asList("Liberation Sans Narrow", "Nimbus Sans Narrow"), names("Arial Narrow"));
 	}

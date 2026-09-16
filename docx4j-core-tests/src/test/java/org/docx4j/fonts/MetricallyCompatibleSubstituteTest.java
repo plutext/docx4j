@@ -48,7 +48,8 @@ public class MetricallyCompatibleSubstituteTest {
 	public void serifsGetASerifAndSansGetASans() throws Exception {
 		Mapper mapper = mapper();
 		assertSubstitute(mapper, "Times New Roman", "tinos", "liberation serif");
-		assertSubstitute(mapper, "Georgia", "p052", "tinos", "liberation serif");
+		// Gelasio where the machine has it (Georgia's measured clone, CR-017 phase 5)
+		assertSubstitute(mapper, "Georgia", "gelasio", "p052", "tinos", "liberation serif");
 		assertSubstitute(mapper, "Book Antiqua", "p052", "tinos", "liberation serif");
 		assertSubstitute(mapper, "Garamond", "tinos", "liberation serif");
 
@@ -56,7 +57,8 @@ public class MetricallyCompatibleSubstituteTest {
 		assertSubstitute(mapper, "Tahoma", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Verdana", "dejavu sans", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Comic Sans MS", "noto sans", "dejavu sans", "arimo", "liberation sans");
-		assertSubstitute(mapper, "Segoe UI", "arimo", "liberation sans");
+		// Selawik where the machine has it (Microsoft's own open Segoe UI, CR-017 phase 5)
+		assertSubstitute(mapper, "Segoe UI", "selawik", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Helvetica", "arimo", "liberation sans");
 		assertSubstitute(mapper, "Trebuchet MS", "droid sans", "arimo", "liberation sans");
 
@@ -151,6 +153,13 @@ public class MetricallyCompatibleSubstituteTest {
 		if (PhysicalFonts.get("P052") != null) {
 			for (String palatino : new String[] { "Georgia", "Book Antiqua", "Palatino Linotype" }) {
 				if (PhysicalFonts.get(palatino) != null) continue; // installed: identity
+				// Georgia takes Gelasio, its own measured clone, where the machine has it
+				// (CR-017 phase 5); the point of the test is that neither lands on a
+				// Times clone, which is 8 to 19% narrow
+				if ("Georgia".equals(palatino) && PhysicalFonts.get("Gelasio Regular") != null) {
+					assertSubstitute(mapper, palatino, "gelasio");
+					continue;
+				}
 				assertSubstitute(mapper, palatino, "p052");
 			}
 		}
@@ -202,17 +211,21 @@ public class MetricallyCompatibleSubstituteTest {
 	}
 
 	/**
-	 * Segoe UI Light has no metric clone, but Arimo is the wrong shape for it: measured
-	 * against the Segoe UI Light Word embeds, Arimo's advances are systematically 11.8%
-	 * wider on letters, so every line breaks early.  Source Sans has no systematic bias
-	 * (+0.4% mean signed), which is what line breaking cares about; Arimo stays the
-	 * last resort.
+	 * Segoe UI Light: Selawik Light is Microsoft's own, and measured against Word's
+	 * golden it is 0.9995 of Word's advances where Source Sans 3 is 0.9938 (CR-017 phase
+	 * 5).  Where the machine has neither, Arimo is the wrong shape for a Light face:
+	 * measured against the Segoe UI Light Word embeds, Arimo's advances are
+	 * systematically 11.8% wider on letters, so every line breaks early.  Source Sans has
+	 * no systematic bias (+0.4% mean signed), which is what line breaking cares about;
+	 * Arimo stays the last resort.
 	 */
 	@Test
 	public void segoeUiLightPrefersAFaceWithoutAWidthBias() throws Exception {
 		Mapper mapper = mapper();
 		if (PhysicalFonts.get("Segoe UI Light") != null) return; // installed: identity
-		if (PhysicalFonts.get("Source Sans 3") != null) {
+		if (PhysicalFonts.get("Selawik Light") != null) {
+			assertSubstitute(mapper, "Segoe UI Light", "selawik light");
+		} else if (PhysicalFonts.get("Source Sans 3") != null) {
 			assertSubstitute(mapper, "Segoe UI Light", "source sans 3");
 		} else if (PhysicalFonts.get("Source Sans Pro") != null) {
 			assertSubstitute(mapper, "Segoe UI Light", "source sans pro");
