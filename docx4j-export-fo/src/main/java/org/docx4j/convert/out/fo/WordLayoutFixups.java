@@ -50,10 +50,12 @@ import org.xml.sax.InputSource;
  *   (w:br type="page") was emitted as an empty block carrying break-before,
  *   which put an empty line at the top of the new page and kept the next
  *   paragraph's space-before (it was no longer at the start of the page).
- *   Word shows no such line, and in compatibility mode 15 (Word 2013+) drops
- *   the space-before of the paragraph after a hard break; earlier modes keep
- *   it.  The empty block is removed and its break moved to the next block,
- *   with space-before.conditionality="retain" in modes below 15.</li>
+ *   Word shows no such line, and it drops the space-before of the paragraph
+ *   the break moves onto - in every compatibility mode, and whatever
+ *   w:suppressSpBfAfterPgBrk says (CR-001 batch 43; until 17.1.1 the flag was
+ *   read here and the space kept below mode 15).  The empty block is removed
+ *   and its break moved to the next block, whose space-before then falls to
+ *   XSL-FO's own conditionality, discard.</li>
  * <li><b>Top of the first page of a section.</b> Word applies the first
  *   paragraph's space-before there (measured: 36pt before on the first
  *   paragraph of a document is honoured).  XSL FO discards it, so the first
@@ -3865,16 +3867,16 @@ public final class WordLayoutFixups {
 	}
 
 	/**
-	 * @param compat w:compat/w:suppressSpBfAfterPgBrk ("Do Not Use Space Before On First
-	 *        Line After a Page Break", ECMA-376-1 17.15.1) decides whether the paragraph
-	 *        the break moves onto keeps its space-before.  The flag resolves on from
-	 *        compatibility mode 15 and off below it, which is the polarity measured
-	 *        against Word's goldens; a document which states it either way is honoured.
+	 * @param compat kept for the signature's sake: until 17.1.1
+	 *        {@code w:compat/w:suppressSpBfAfterPgBrk} ("Do Not Use Space Before On First
+	 *        Line After a Page Break", ECMA-376-1 17.15.1) was read here to decide whether
+	 *        the paragraph the break moves onto keeps its space-before.  It does not:
+	 *        Word drops it whatever the flag says and whatever the compatibility mode is
+	 *        (CR-001 batch 43, M30 - the four page-top-space-before goldens are identical,
+	 *        and the one which states the flag is byte-for-byte the one which does not).
 	 * @since 17.1.0
 	 */
 	static void mergePageBreakParagraphs(Document doc, org.docx4j.model.CompatibilityOptions compat) {
-		boolean suppressSpaceBefore = compat.is(
-				org.docx4j.model.CompatibilityOptions.Flag.SUPPRESS_SP_BF_AFTER_PG_BRK);
 		List<Element> empties = new ArrayList<>();
 		for (Element block : elements(doc, "block")) {
 			if (!"page".equals(block.getAttribute("break-before"))) continue;
@@ -3973,9 +3975,21 @@ public final class WordLayoutFixups {
 			if (!next.hasAttribute("break-before") || "auto".equals(next.getAttribute("break-before"))) {
 				next.setAttribute("break-before", "page");
 			}
-			if (!suppressSpaceBefore && hasSpace(next, "space-before")) {
-				next.setAttribute("space-before.conditionality", "retain");
-			}
+			// The paragraph the break moves onto is first on its page and loses its
+			// space-before, in every compatibility mode and whatever w:compat says.
+			// Measured on the four page-top-space-before goldens (CR-001 batch 43, M30),
+			// which are IDENTICAL to the digit - modes 12, 14 and 15, and mode 15 with
+			// w:suppressSpBfAfterPgBrk stated, the last byte-for-byte the mode-15 one:
+			// the heading (w:spacing w:before="480" and a 1pt w:pBdr) has its first line
+			// at y=76.77 where an ordinary first line is at 74.61, the 2.16pt between
+			// them being its border and the border's space, and mid-page the same heading
+			// sits a full 24pt lower.  XSL-FO's own conditionality - discard at the start
+			// of a reference area - is that rule, so nothing is retained here now; until
+			// 17.1.1 w:suppressSpBfAfterPgBrk was consulted and the space was retained in
+			// modes 12 and 14, which put the heading 24pt too low on every such page.
+			// (A paragraph whose OWN first run is the break is a different shape and keeps
+			// its space - measured, see listItemPageBreaks - as is the first paragraph of
+			// a section, which retainSpaceBeforeAtFlowStart handles.)  @since 17.1.1
 			// The empty block here is the paragraph mark Word moves to the page after the
 			// break, which takes no line there.  The line the break itself ends - on the
 			// page before it, sized by the mark - is the empty *first* half of the

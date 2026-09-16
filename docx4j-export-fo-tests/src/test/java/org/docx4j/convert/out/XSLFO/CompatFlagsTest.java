@@ -206,21 +206,28 @@ public class CompatFlagsTest extends AbstractXSLFOTest {
 			+ "<w:r><w:t>page two</w:t></w:r></w:p>";
 
 	/**
-	 * "Do Not Use Space Before On First Line After a Page Break": the 24pt space-before of
-	 * the paragraph the break moves onto is dropped where the flag is on and kept where it
-	 * is off.  The flag's default is the compatibility mode's (on from 15), which is what
-	 * the mode-keyed rule did before 17.1.0.
+	 * "Do Not Use Space Before On First Line After a Page Break" makes <b>no difference</b>:
+	 * the 24pt space-before of the paragraph a page break moves onto is dropped whether the
+	 * flag is stated on, stated off, or absent, and in every compatibility mode.
+	 *
+	 * <p>Measured (CR-001 batch 43, M30) on the four page-top-space-before goldens - modes
+	 * 12, 14 and 15, and mode 15 with the flag stated - which are identical to the digit,
+	 * the flag-stated one byte-for-byte the one which does not state it. In all four Word
+	 * puts the heading's first line 2.16pt below an ordinary first line, which is its 1pt
+	 * border and the border's 1pt space; mid-page the same heading sits a full 24pt lower.
+	 * Until 17.1.1 docx4j read the flag here and kept the space below mode 15, which put
+	 * the heading 24pt too low on every page a break opened.</p>
 	 */
 	@Test
-	public void suppressSpBfAfterPgBrkDropsTheSpace() throws Exception {
+	public void suppressSpBfAfterPgBrkChangesNothing() throws Exception {
 		for (int flag : FLAGS) {
-			double kept = spaceBeforeOnLastPage(areaTree(
+			double off = spaceBeforeOnLastPage(areaTree(
 					pkg(SPACE_AFTER_BREAK, "suppressSpBfAfterPgBrk", "0"), flag));
-			double dropped = spaceBeforeOnLastPage(areaTree(
+			double on = spaceBeforeOnLastPage(areaTree(
 					pkg(SPACE_AFTER_BREAK, "suppressSpBfAfterPgBrk", "1"), flag));
-			assertEquals(flagName(flag) + ": the flag off keeps the whole 24pt space-before",
-					24.0, kept, 0.5);
-			assertEquals(flagName(flag) + ": the flag on drops it", 0.0, dropped, 0.5);
+			assertEquals(flagName(flag) + ": the flag off drops the space all the same",
+					0.0, off, 0.5);
+			assertEquals(flagName(flag) + ": and so does the flag on", 0.0, on, 0.5);
 		}
 	}
 

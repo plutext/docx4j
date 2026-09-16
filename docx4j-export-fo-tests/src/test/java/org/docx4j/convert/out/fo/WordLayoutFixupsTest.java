@@ -98,13 +98,27 @@ public class WordLayoutFixupsTest {
 		assertTrue("the line-height was raised: " + out, out.contains("line-height=\"13.428pt\""));
 	}
 
+	/**
+	 * The paragraph a page break moves onto is first on its page and loses its
+	 * space-before, in every compatibility mode.  Until 17.1.1 this asserted the
+	 * opposite below mode 15, on the reading that w:suppressSpBfAfterPgBrk decided it;
+	 * the four page-top-space-before goldens (CR-001 batch 43, M30) are identical across
+	 * modes 12, 14 and 15 and with the flag stated, and Word drops the space in all of
+	 * them - the heading's first line lands 2.16pt below an ordinary one, which is its
+	 * border and the border's space, not 24pt of space-before.
+	 */
 	@Test
-	public void pageBreakParagraphKeepsSpaceBefore_mode14() {
+	public void pageBreakParagraphLosesSpaceBefore_everyMode() {
 		String in = flow("<fo:block>one</fo:block>"
 				+ "<fo:block break-before=\"page\"> </fo:block>"
 				+ "<fo:block space-before=\"36pt\">two</fo:block>");
-		String out = WordLayoutFixups.apply(in, 14);
-		assertTrue(out.contains("space-before.conditionality=\"retain\""));
+		for (int mode : new int[] { 12, 14, 15 }) {
+			String out = WordLayoutFixups.apply(in, mode);
+			assertTrue("mode " + mode + ": the break moved onto the next block: " + out,
+					out.contains("break-before=\"page\"") && out.contains(">two<"));
+			assertEquals("mode " + mode + ": nothing retains space-before after the break: "
+					+ out, 0, count(out, "space-before.conditionality=\"retain\""));
+		}
 	}
 
 	@Test

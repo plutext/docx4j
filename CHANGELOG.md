@@ -200,6 +200,13 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The paragraph that is first on its page gets no space-before, however the page was
+  reached and in every compatibility mode. docx4j read w:suppressSpBfAfterPgBrk here and
+  kept the space below mode 15, which put such a paragraph its whole space-before too low on
+  every page a break opened. Word does not: the four page-top-space-before goldens - modes
+  12, 14 and 15, and mode 15 with the flag stated - are identical to the digit. Measured on
+  a 76-page corpus document, which loses the extra page this cost it and with it the wrong
+  resolved NUMPAGES in its footer on all 76 (CR-001 batch 43).
 - A page break at the end of a section is dropped wherever the empty paragraph carrying it
   ends its flow, not only where that paragraph is a direct child of it: a multi-column
   section wraps its trailing material, and the break then made a page Word does not. And a
