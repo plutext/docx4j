@@ -55,7 +55,14 @@ Release: October 8, 2012 -->
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:complexType name="CT_OnOff">
-    <xsd:attribute name="val" type="ST_OnOff"/>
+    <!-- CR-018 item 5: [MS-DOCX] types val as ST_OnOff (the strings true,
+         false, 0, 1), which is exactly xsd:boolean's lexical space, so this
+         takes the formulation w:BooleanDefaultTrue uses and gives readers a
+         boolean.  The attribute stays in the w14 namespace (this schema is
+         attributeFormDefault="qualified"), which is why the type is changed
+         here rather than the element retyped to w:CT_OnOff.  ST_OnOff above
+         stays; the noSpellErr-style attributes still name it. -->
+    <xsd:attribute name="val" type="xsd:boolean" default="true"/>
   </xsd:complexType>
   
   <xsd:element name="docId" type="CT_LongHexNumber" />

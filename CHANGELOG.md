@@ -161,6 +161,24 @@ Fonts (CR-017, font decisions with their reasons):
   the FO layer's own suffixes (the kerned twin, the no-ligature twin, the no-bold alias) are
   stripped from the report.
 
+Schema (CR-018, five gaps the content API found, and w16cex):
+
+- mc:Ignorable is kept on w:comments, w15:commentsEx and w15:people, which had no such
+  property, so a re-marshalled comments.xml lost Word's mc:Ignorable="w14 w15 ..." and kept
+  the w14:paraId it covers.
+- wp:docPr/@title (ECMA-376 4th edition, and Office JS's InlinePicture.altTextTitle) survives
+  a round trip: CTNonVisualDrawingProps gains getTitle()/setTitle.
+- w15:person/@contact is optional, as Word writes it; it was modelled as required.
+- ds:datastoreItem keeps attributes docx4j does not know, through getOtherAttributes().
+- API change: w14's CT_OnOff val is a boolean, so org.docx4j.w14.CTOnOff.getVal()/
+  setVal(String) become isVal()/setVal(Boolean).  It carries w14:checked (the checkbox
+  content control), w14:conflictMode, w14:cntxtAlts and w14:discardImageEditingData.  The
+  four lexical values w14:ST_OnOff allowed (true, false, 1, 0) are read as before.
+- word/commentsExtensible.xml is a typed part: CommentsExtensiblePart and
+  DocumentPart.getCommentsExtensiblePart(), over new packages org.docx4j.w16cex and
+  org.docx4j.w16, so a comment's durableId and dateUtc - what the comment reactions part
+  anchors on - can be read through the model.  It used to load as a generic XML part.
+
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 - Calibri Light is drawn at 0.987 of Carlito's advances, the two families' measured

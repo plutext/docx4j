@@ -186,6 +186,13 @@
         <xsd:documentation>Alternative Text for Object</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <!-- CR-018 item 2: title is in ECMA-376 4th edition Part 1 20.1.2.2.8
+         (Transitional); Office JS writes it as InlinePicture.altTextTitle. -->
+    <xsd:attribute name="title" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Title</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
     <xsd:attribute name="hidden" type="xsd:boolean" use="optional" default="false">
       <xsd:annotation>
         <xsd:documentation>Hidden</xsd:documentation>

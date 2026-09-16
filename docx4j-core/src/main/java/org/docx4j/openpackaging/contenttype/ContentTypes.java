@@ -139,6 +139,10 @@ public class ContentTypes {
 	public final static String WORDPROCESSINGML_COMMENTS_EXTENDED = "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml";
 
 	public final static String WORDPROCESSINGML_COMMENTS_IDS = "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml";
+
+	// PartName="/word/commentsExtensible.xml"
+	/** @since 17.1.1 */
+	public final static String WORDPROCESSINGML_COMMENTS_EXTENSIBLE = "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml";
 	
 	// PartName="/word/endnotes.xml"
 	public final static String WORDPROCESSINGML_ENDNOTES = "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml";

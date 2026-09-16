@@ -1,0 +1,52 @@
+<!--  The http://schemas.microsoft.com/office/word/2018/wordml schema, from
+      [MS-DOCX] section 5, fetched 2026-09-16 from
+      https://learn.microsoft.com/en-us/openspecs/office_standards/MS-DOCX/6970e332-57ff-4ab5-a9a4-3b8834bbc477
+
+      The two types below are the whole of that schema as [MS-DOCX] publishes it,
+      not an excerpt: the 2018/wordml namespace carries only the extension-list
+      pair, which w16cex.xsd's CT_CommentsExtensible and CT_CommentExtensible
+      reference as w16:CT_ExtensionList.  It is here because those two types are
+      what xsd/ needs; nothing else references this namespace.
+
+      Changed from the source:
+        - schemaLocation "word12.xsd" -> "wml.xsd", this tree's name for that
+          schema.  (The import is in the source and is kept, although neither
+          type here references the w12 namespace.)
+        - the jaxb schemaBindings package annotation, as w16cid.xsd has.
+  -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+ elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all"
+ xmlns="http://schemas.microsoft.com/office/word/2018/wordml"
+ targetNamespace="http://schemas.microsoft.com/office/word/2018/wordml"
+    xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+    jaxb:version="3.0">
+
+   <xsd:import id="w12" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    schemaLocation="wml.xsd"/>
+
+    <xsd:annotation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.w16"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+    </xsd:annotation>
+
+   <xsd:complexType name="CT_Extension">
+     <xsd:sequence>
+       <xsd:any processContents="lax"/>
+     </xsd:sequence>
+     <xsd:attribute name="uri" type="xsd:token"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_ExtensionList">
+     <xsd:sequence>
+       <xsd:element name="ext" type="CT_Extension" minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+ </xsd:schema>

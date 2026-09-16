@@ -4,6 +4,7 @@
 	elementFormDefault="qualified" attributeFormDefault="qualified"
 	blockDefault="#all" xmlns="http://schemas.microsoft.com/office/word/2012/wordml"
 	targetNamespace="http://schemas.microsoft.com/office/word/2012/wordml"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
 	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
     xmlns:annox="urn:jaxb.jvnet.org:annox"
@@ -19,6 +20,9 @@ Release: October 8, 2012 -->
   <xsd:import id="w12" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
   schemaLocation="wml.xsd"/>
   
+  <xsd:import id="mce" namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
+
 	<xsd:annotation>
 		<xsd:appinfo>
 			<xsd:appinfo>
@@ -58,6 +62,7 @@ Release: October 8, 2012 -->
     <xsd:sequence>
       <xsd:element name="commentEx" type="CT_CommentEx" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
+    <xsd:attribute ref="mc:Ignorable" use="optional"/>
   </xsd:complexType>
   
   <xsd:complexType name="CT_CommentEx">
@@ -76,6 +81,7 @@ Release: October 8, 2012 -->
     <xsd:sequence>
       <xsd:element name="person" type="CT_Person" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
+    <xsd:attribute ref="mc:Ignorable" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_PresenceInfo">
     <xsd:attribute name="providerId" type="xsd:string" use="required"/>
@@ -86,7 +92,10 @@ Release: October 8, 2012 -->
       <xsd:element name="presenceInfo" type="CT_PresenceInfo" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="author" type="w:ST_String" use="required"/>
-    <xsd:attribute name="contact" type="w:ST_String" use="required"/>
+    <!-- CR-018 item 3: [MS-DOCX] says required, but Word omits it in every
+         w15:people part seen, so a required property would claim a value
+         which is not there. -->
+    <xsd:attribute name="contact" type="w:ST_String" use="optional"/>
   </xsd:complexType>
   <xsd:element name="people" type="CT_People"/>
   

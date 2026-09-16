@@ -13,6 +13,8 @@
 	<!-- pptx__ROOT.xsd generates a superset of wml.xsd|dml_ROOT -->
 	<xsd:import id="pptx" namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pptx/pptx__ROOT.xsd"/>
 	<xsd:import id="w16cid" namespace="http://schemas.microsoft.com/office/word/2016/wordml/cid" schemaLocation="wml/w16cid.xsd"/>
+	<xsd:import id="w16" namespace="http://schemas.microsoft.com/office/word/2018/wordml" schemaLocation="wml/w16.xsd"/>
+	<xsd:import id="w16cex" namespace="http://schemas.microsoft.com/office/word/2018/wordml/cex" schemaLocation="wml/w16cex.xsd"/>
 	<xsd:import id="w15symex" namespace="http://schemas.microsoft.com/office/word/2015/wordml/symex" schemaLocation="wml/w15symex.xsd"/>
 
 

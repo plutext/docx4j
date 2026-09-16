@@ -585,7 +585,7 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 			if (checkbox.getChecked()==null) {
 				checkbox.setChecked(new org.docx4j.w14.CTOnOff());
 			}
-			checkbox.getChecked().setVal(result.booleanValue() ? "1" : "0");
+			checkbox.getChecked().setVal(result);
 
 			contents.add(BindingTraverserXSLT.checkboxRun(result.booleanValue(),
 					(org.docx4j.wml.RPr)sdtPr.getByClass(org.docx4j.wml.RPr.class)));

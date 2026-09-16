@@ -1,6 +1,11 @@
 # CR-018: Five schema gaps the content API found, and a w16cex schema for `commentsExtensible`
 
-Status: PROPOSED (2026-09-16). Requested from `../docx4j-generated-objects-ts`
+Status: DONE (2026-09-16) — phase 1 (items 1 to 5 in `xsd/`, the two w14 callers,
+the three parts' `mc:Ignorable` marshal, `SchemaGapsTest`; d487076d3, after the
+line-ending preliminary e054b7f17 and its blame-ignore entry 03ab1a229), phase
+2 (`w16cex.xsd`, `w16.xsd`, `CommentsExtensiblePart`, `CommentsExtensiblePartTest`;
+a926b8818) and phase 3 (CHANGELOG and this file). Originally PROPOSED (2026-09-16),
+requested from `../docx4j-generated-objects-ts`
 (2026-09-16): core-ts's content API found five gaps in `xsd/`, docx4j Java has the
 same gaps, and the TypeScript objects package regenerates from `xsd/ROOT.xsd`
 once this lands. Every claim below was re-checked against the current tree
@@ -210,14 +215,25 @@ signature except by adding getters/setters:
 
 ## Plan
 
-1. **Items 1 to 4** in `xsd/`, `docx4j-generated-objects` rebuilt (`mvn clean
+1. **DONE** (d487076d3, with items 1 to 4 **and** item 5 in the one commit; the
+   line-ending preliminary is e054b7f17, its blame-ignore entry 03ab1a229).
+   **Items 1 to 4** in `xsd/`, `docx4j-generated-objects` rebuilt (`mvn clean
    install -pl docx4j-generated-objects -am`; the XJC plugin only checks
    `ROOT.xsd` for staleness, so `clean`), the `mce` import for w15, and a
    round-trip test per item in `docx4j-core-tests` (load `loadAndSave.docx`,
    save, assert `mc:Ignorable` present on `comments.xml`; a `docPr` with a
    `title`; a `w15:person` without `contact`; a `datastoreItem` with a foreign
    attribute). `LoadAndSaveTests` and the whole of `docx4j-core-tests` green.
-2. **w16cex**: the two schemas, the import, the module exports, the context
+   *Done as* `SchemaGapsTest` (11 tests; `loadAndSave.docx` turned out to carry
+   every item-1 vector and a `w15:person` with no `contact`, so items 1 and 3 are
+   tested through a real load and save and only items 2, 4 and 5 are XML strings).
+   `CommentsPart`, `CommentsExtendedPart` and `PeoplePart` did get the
+   `setMceIgnorable`/`getMceIgnorable` pair `MainDocumentPart` has — kept for MOXy
+   on the `CommentsIdsPart` precedent, since a probe showed the RI declares `w14`
+   on the root either way. Gates: `docx4j-generated-objects` clean install with no
+   XJC warning, `docx4j-core` install, `docx4j-core-tests` 1099/0 (1088 + 11), and
+   a whole-reactor compile.
+2. **DONE** (a926b8818). **w16cex**: the two schemas, the import, the module exports, the context
    path, the part class and its content-type case; a test that
    `loadAndSave.docx`'s part loads as `CommentsExtensiblePart` with one
    `commentExtensible` carrying `durableId` 05546856 and the `dateUtc`, and
@@ -225,13 +241,34 @@ signature except by adding getters/setters:
    `docx4j-bundle` and OSGi manifests checked for the new packages
    (`docx4j-generated-objects`'s `Export-Package` if the OSGi profile lists
    packages by name).
-3. **Item 5**: the `xsd:boolean` retype, the two callers, and a test that
+   *Done as* `CommentsExtensiblePartTest` (6 tests: the part is typed, it is
+   reachable through `DocumentPart.getCommentsExtensiblePart()`, `durableId`
+   05546856 and `dateUtc` 2026-05-18T23:21:00Z read through the model,
+   `mc:Ignorable` (with `cr`) unmarshalled, the save keeping all of it, and the
+   saved docx reloading as the typed part). The round trip is asserted on the
+   values rather than byte-equivalence, since JAXB rewrites the namespace
+   declarations. `DocumentPart` gained the field, the relationship-type case and
+   the accessor — beyond this list, but a typed part has to hang off the document
+   part the way `CommentsIdsPart` does. The manifests needed nothing: both
+   `Export-Package` blocks are the wildcard `org.docx4j.*`, `docx4j-bundle` lists
+   no packages, docx4j-core's `module-info` names no generated package, and
+   neither JAXB selector module names `w16cid`. Gates: `docx4j-core-tests`
+   1105/0, and a whole-reactor compile.
+3. **DONE**, folded into phase 1 (d487076d3) rather than run as its own phase,
+   since it is one `xsd/` line and two callers.
+   **Item 5**: the `xsd:boolean` retype, the two callers, and a test that
    the four lexical values (`true`, `false`, `1`, `0`) unmarshal to the right
    boolean on `w14:checked` and that a checkbox bound through
    `BindingTraverserCommonImpl` round-trips.
-4. CHANGELOG (17.1.1: a "Schema" heading), the CR marked DONE with the
-   commit hashes, the registry updated, and a message back to the TypeScript
-   objects repository with the CR number and commits so it regenerates.
+   *Done*: `SchemaGapsTest` has the four values, the default and the namespace on
+   marshal; `TextBindParityTest` is the binder round trip, and asserts
+   `Boolean.TRUE` where it asserted `"1"`. `bind.xslt` still writes `w14:val="1"`,
+   which is a legal `xsd:boolean` literal, so the XSLT binder needed no change.
+4. **DONE** (this commit). CHANGELOG (17.1.1: a "Schema" heading), the CR marked
+   DONE with the commit hashes, the registry updated, and a message back to the
+   TypeScript objects repository with the CR number and commits so it regenerates.
+   *The registry and the message to `../docx4j-generated-objects-ts` are Jason's
+   to make.*
 
 Each phase is its own commit. The generated-objects rebuild is the one
 expensive step and runs once per phase; nothing here touches the fidelity
@@ -248,20 +285,52 @@ corpus (no FO change), so the gate is the test modules, not the corpora.
    than the whole 2018/wordml schema. Recommended: the whole schema brings
    types nothing in `xsd/` references, and the precedent for a minimal
    import exists (`mce`).
+   **Moot (2026-09-16): 2018/wordml *is* the two types.** [MS-DOCX]'s schema for
+   that namespace ([MS-DOCX] section 5, fetched 2026-09-16 from
+   https://learn.microsoft.com/en-us/openspecs/office_standards/MS-DOCX/6970e332-57ff-4ab5-a9a4-3b8834bbc477)
+   publishes `CT_Extension` and `CT_ExtensionList` and nothing else, so
+   `xsd/wml/w16.xsd` is the whole schema, not an excerpt; its header says that
+   rather than claiming to be minimal. Nothing was dropped from the source: even
+   the `w12` import, which neither type uses, is kept, retargeted to `wml.xsd`.
 3. **Package name `org.docx4j.w16cex`**, as requested, matching `w16cid`.
 
-## Risks
+## Risks (as written 2026-09-16; each with its outcome, the same day)
 
 - **Regenerating changes many files' shape** for every consumer of
   `docx4j-generated-objects` (the XJC output is not checked in, so the
   visible change is the xsd diff plus the new part class; the MOXy and RI
   selector modules need no change unless a new package must be listed).
+  *Outcome:* held, and the shape change is small and enumerable. The
+  Java-visible diff against the pre-change XJC output is `CTOnOff`'s
+  `getVal()`/`setVal(String)` -> `isVal()`/`setVal(Boolean)`, three new
+  `getIgnorable()`/`setIgnorable(String)` pairs, `getTitle()`,
+  `getOtherAttributes()`, `CTPerson.contact` losing `required = true`, and the
+  four new classes in `org.docx4j.w16cex`/`org.docx4j.w16`. `CTSdtCheckbox` is
+  unchanged. Neither selector module needed a change; the whole reactor (32
+  modules) compiles.
 - **`mc:Ignorable` on `w:comments` changes bytes Word sees**, in the
   direction of what Word itself writes; the round-trip test on
   `loadAndSave.docx` is the guard, and Word on the VM should open the saved
   file once (the resave harness exists).
+  *Outcome:* the change was measured rather than assumed. A probe saved
+  `loadAndSave.docx` twice, once as loaded and once with the new `ignorable`
+  property nulled (the pre-change shape): with it, `mc:Ignorable` is written;
+  without it, no `mc:Ignorable`, while `w14:paraId` survives either way. So
+  nothing but the model property writes the attribute, and the old output was
+  exactly the gap described. **Outstanding: Word on the VM has not opened the
+  saved file** — the resave harness was not run, since the change only adds an
+  attribute Word writes itself.
 - **`w15` importing `mce`**: the import must not disturb XJC's episode /
   package bindings for `w15` (`org.docx4j.w15`); `w16cid.xsd` already
   imports it, so the pattern is known to work.
+  *Outcome:* it did not. The clean install produced no XJC warning and no name
+  clash, `org.docx4j.w15` kept its package binding, and the three new
+  `ignorable` properties landed on the right classes.
 - **OSGi `Export-Package`** lists may need the two new packages; the
   `docx4j-bundle` build (outside the reactor) is the check.
+  *Outcome:* nothing to do. Both `Export-Package` blocks
+  (`docx4j-generated-objects/pom.xml`, `docx4j-core/pom.xml`) are the wildcard
+  `org.docx4j.*`, `docx4j-bundle/pom.xml` lists no packages by name, and
+  docx4j-core's `module-info` names no generated package. Only
+  `docx4j-generated-objects`'s `module-info` needed the two `exports`/`opens`
+  pairs, and `org.docx4j.jaxb.Context`'s package path the two names.

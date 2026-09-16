@@ -61,6 +61,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 	protected CommentsPart commentsPart; 	
 	protected CommentsExtendedPart commentsExtendedPart; 	
 	protected CommentsIdsPart commentsIdsPart; 	
+	protected CommentsExtensiblePart commentsExtensiblePart; 	
 	protected DocumentSettingsPart documentSettingsPart;	
 	protected EndnotesPart endNotesPart; 	
 	protected FontTablePart fontTablePart; 
@@ -124,6 +125,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 		} else if (relationshipType.equals(Namespaces.COMMENTS_IDS)) {
 			commentsIdsPart = (CommentsIdsPart)part;
 			return true;	
+		} else if (relationshipType.equals(Namespaces.COMMENTS_EXTENSIBLE)) {
+			commentsExtensiblePart = (CommentsExtensiblePart)part;
+			return true;	
 		} else if (relationshipType.equals(Namespaces.ENDNOTES)) {
 			endNotesPart = (EndnotesPart)part;
 			return true;	
@@ -181,6 +185,11 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 	
 	public CommentsIdsPart getCommentsIdsPart() {
 		return commentsIdsPart;
+	}
+
+	/** @since 17.1.1 */
+	public CommentsExtensiblePart getCommentsExtensiblePart() {
+		return commentsExtensiblePart;
 	}
 
 	public DocumentSettingsPart getDocumentSettingsPart() {

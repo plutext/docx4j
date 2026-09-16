@@ -95,6 +95,7 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsExtendedPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.CommentsExtensiblePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsIdsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -405,6 +406,8 @@ public class ContentTypeManager  {
 			return new CommentsExtendedPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS_IDS)) {
 			return new CommentsIdsPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS_EXTENSIBLE)) {
+			return new CommentsExtensiblePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_ENDNOTES)) {
 			return CreateEndnotesPartObject(partName );
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_FONTTABLE)) {
