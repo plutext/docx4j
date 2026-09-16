@@ -94,6 +94,8 @@ module org.docx4j.generated_objects {
     exports org.docx4j.w15;
     exports org.docx4j.w15symex;
     exports org.docx4j.w16cid;
+    exports org.docx4j.w16;
+    exports org.docx4j.w16cex;
     exports org.docx4j.wml;
     exports org.docx4j.xmlPackage;
 
@@ -207,6 +209,8 @@ module org.docx4j.generated_objects {
     opens org.docx4j.w15; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
     opens org.docx4j.w15symex; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
     opens org.docx4j.w16cid; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.docx4j.w16; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.docx4j.w16cex; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
     opens org.docx4j.wml; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
     opens org.docx4j.xmlPackage; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 

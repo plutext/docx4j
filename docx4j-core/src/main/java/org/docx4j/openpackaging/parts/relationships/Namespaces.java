@@ -137,6 +137,10 @@ public class Namespaces {
 	public final static String COMMENTS_IDS = 
 			"http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
 	
+	/** @since 17.1.1 */
+	public final static String COMMENTS_EXTENSIBLE = 
+			"http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
+	
 	public final static String OFFICE_2011_PEOPLE = 
 			"http://schemas.microsoft.com/office/2011/relationships/people";
 	
