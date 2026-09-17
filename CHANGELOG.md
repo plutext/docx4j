@@ -200,6 +200,34 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Every tab leader is drawn as a run of its own character, as Word draws it. XSL FO's
+  leader-pattern offers dots and rule and no other repeating glyph, so w:leader="underscore",
+  "hyphen" and "heavy" asked FOP for a rule: a drawn path of the right length on the right line, but
+  nothing at all in the text layer, so a table-of-contents entry extracted with its leader
+  simply absent. Word writes the characters, 12pt Calibri-BoldItalic underscores at 132.05,
+  138.05, 144.05 ... on the entry's baseline; ours are now the font's own underscore glyphs
+  there, where the rule was a 1.00pt stroke half a point above it. The tab-leader-kinds
+  golden settles every kind: dot a full stop, middleDot U+00B7 on a 2.88pt grid, hyphen a
+  hyphen on 3.36, and BOTH underscore and heavy an underscore on 5.52, all in the paragraph
+  mark's font and size, with no stroked or filled path on the page at all. A leading tab -
+  a tab at the start of a paragraph - now paints its leader too, from the margin as Word's
+  does; it was written as a fixed leader of pattern "space" and painted nothing. And a
+  leader run of any kind now starts on a grid, as only a dot leader did. A w:tab also carries
+  the space glyph Word writes for it: Word's tab is `BT /F2 11.04 Tf 1 0 0 1 136.13 718.99 Tm
+  [( )] TJ ET` in the paragraph mark's font, in its own text object, with the text after it
+  positioned by its own text matrix, and one such space sits at each end of a leader run
+  (154.87 and 564.22 around a corpus entry's underscores). docx4j's stream is continuous, so
+  it writes one of the gap's own width, by a character spacing; the glyph is blank and nothing
+  moves. The new
+  tab-leader-kinds probe goes from 17/31 of its lines matching Word's to 28/31; over the
+  three corpora line parity goes 0.9154 to 0.9154, 0.8920 to 0.8927 and 0.9351 to 0.9351,
+  with three documents improved, none worse, and no page count moved. What is left on that
+  probe is the leader's grid: Word anchors it on the page's left edge with the character's
+  advance rounded to 1/300 inch (a hyphen run at 151.270, 154.630, 157.990) where ours is
+  anchored on the line's start with the raw advance (149.418, 152.784), so the gap the run
+  opens with - and so the space a reader reads there - is ours and not Word's
+  (CR-001 batch 45).
+
 - The two-pass page-number filter keeps character data where the document has it.
   PlaceholderReplacementHandler buffers character data so that a placeholder split over
   several SAX characters() calls can still be found, and flushed the buffer only at

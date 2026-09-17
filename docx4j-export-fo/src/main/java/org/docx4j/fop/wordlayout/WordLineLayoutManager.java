@@ -846,12 +846,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         + " from the margin) -> stop " + stop + " align=" + align + " width=" + width);
             }
             // the FO could not know which stop the tab would reach, so the leader of the
-            // stop it did reach is set on the area now (blanked where that stop has none)
-            LBP.setLeaderPattern(leader, stopLeader);
-            // Word's leader dots sit on a fixed grid, so a dot leader opens with a gap of
-            // less than one dot (see dotLeaderPhase)
-            LBP.setLeaderPhase(leader, stopLeader == LBP.LEADER_DOTS
-                    ? dotLeaderPhase(tabLeftMpt + x, leader, width) : 0, width);
+            // stop it did reach is set on the area now (blanked where that stop has none,
+            // and written as a space character rather than a jump - see tabSpaces)
+            boolean spaces = WordLayoutCustomizer.tabSpaces();
+            LBP.setLeaderPattern(leader, stopLeader, width, spaces);
+            // Word's leader characters sit on a fixed grid, whatever the character, so a
+            // leader opens with a gap of less than one cell (see dotLeaderPhase).  That
+            // gap is what a PDF text extractor reads as the space between the text and the
+            // run, on Word's side and now on ours; Word writes no glyph for it.
+            LBP.setLeaderPhase(leader, LBP.isCharacterLeader(stopLeader)
+                    ? dotLeaderPhase(tabLeftMpt + x, leader, width) : 0, width, spaces);
             // a right/centre/decimal stop measured an unresolved page number as FOP's
             // "MMM" placeholder; the width it loses when it resolves is the tab's, not
             // the line's (see pageNumberTabs)
@@ -1978,8 +1982,25 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return false;
     }
 
-    /** What {@code w:leader} draws: nothing, dots or a rule.  @since 17.1.0 */
+    /**
+     * What {@code w:leader} draws: nothing, or a run of a character.
+     *
+     * <p>Word draws <b>every</b> leader as characters, in the paragraph mark's font and
+     * size, and the {@code tab-leader-kinds} golden says which: {@code dot} a full stop,
+     * {@code middleDot} U+00B7, {@code hyphen} a hyphen, and <b>both</b> {@code underscore}
+     * and {@code heavy} an underscore - its page carries no stroked or filled path at all.
+     * XSL FO offers no repeating glyph but the dot, so ours asked FOP for a
+     * <em>rule</em> for the other three: a drawn path with nothing in the text layer, and
+     * for {@code heavy} that is all it ever was ({@link WordLayoutCustomizer#LEADER_CHARACTERS}).</p>
+     *
+     * @since 17.1.0; the character kinds 17.1.1
+     */
     private static int tabLeaderKind(String v) {
+        if (WordLayoutCustomizer.leaderCharacters()) {
+            if ("middleDot".equals(v)) return LBP.LEADER_MIDDLE_DOT;
+            if ("underscore".equals(v) || "heavy".equals(v)) return LBP.LEADER_UNDERSCORE;
+            if ("hyphen".equals(v)) return LBP.LEADER_HYPHEN;
+        }
         if ("dot".equals(v) || "middleDot".equals(v)) return LBP.LEADER_DOTS;
         if ("hyphen".equals(v) || "underscore".equals(v) || "heavy".equals(v)) return LBP.LEADER_RULE;
         return LBP.LEADER_NONE;   // none, and anything unknown

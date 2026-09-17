@@ -44,8 +44,9 @@ public class TabStopTest {
 	 *  them keeps it (@since 17.1.0) */
 	private static final String DOT_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
 
-	/** what tabToFO writes for a paragraph whose leader is a rule (w:leader hyphen,
-	 *  underscore or heavy) */
+	/** what tabToFO writes for a paragraph whose leader is a rule (w:leader heavy;
+	 *  hyphen and underscore are drawn as their own characters since 17.1.1, see
+	 *  WordLayoutCustomizer.leaderCharacters) */
 	private static final String RULE_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"rule\"/>";
 
 	/** the same as DOT_TAB, with dots of 6pt rather than 7.2pt, so that a tab starting on a
@@ -102,7 +103,7 @@ public class TabStopTest {
 			Element c = (Element) n;
 			String name = c.getLocalName();
 			if ("text".equals(name)) {
-				starts.add(round(x[0]));
+				if (!isTabSpace(c)) starts.add(round(x[0]));
 				x[0] += ipd(c, "ipd");
 			} else if ("space".equals(name) || "leader".equals(name)) {
 				x[0] += ipd(c, "ipd");
@@ -131,12 +132,26 @@ public class TabStopTest {
 			if (!(n instanceof Element)) continue;
 			Element c = (Element) n;
 			String name = c.getLocalName();
-			if ("text".equals(name)) continue;              // words, not leaders
+			if ("text".equals(name)) {
+				// a tab of no pattern is the space character Word writes for it, which
+				// reaches the area tree as a text area (@since 17.1.1)
+				if (isTabSpace(c)) found.add("space");
+				continue;                                   // otherwise words, not leaders
+			}
 			if ("space".equals(name)) found.add("space");
 			else if ("leader".equals(name)) found.add("rule");
 			else if ("inlineparent".equals(name)) found.add("dots");
 			else collectLeaders(c, found);
 		}
+	}
+
+	/** A text area holding nothing but whitespace is a tab's own space and not a word:
+	 *  since 17.1.1 a tab writes the space character Word writes for its advance rather
+	 *  than jumping the pen ({@code WordLayoutCustomizer.tabSpaces}), and the blank at
+	 *  each end of a leader run is written the same way. */
+	private static boolean isTabSpace(Element text) {
+		String t = text.getTextContent();
+		return t != null && t.length() > 0 && t.trim().isEmpty();
 	}
 
 	/** The baseline each dot of each dot leader is drawn on, in points from the line's
@@ -146,7 +161,15 @@ public class TabStopTest {
 		NodeList parents = area(fo).getElementsByTagName("inlineparent");
 		for (int i = 0; i < parents.getLength(); i++) {
 			Element parent = (Element) parents.item(i);
-			double offset = ipd(parent, "offset");
+			// the innermost only: the repeating area sits inside a wrapper carrying the
+			// grid blank and the space at each end of the run, and both are inlineparents.
+			// The offset is then the chain's, not one area's.
+			if (parent.getElementsByTagName("inlineparent").getLength() > 0) continue;
+			double offset = 0;
+			for (Node up = parent; up instanceof Element; up = up.getParentNode()) {
+				if (!"inlineparent".equals(up.getLocalName())) break;
+				offset += ipd((Element) up, "offset");
+			}
 			NodeList texts = parent.getElementsByTagName("text");
 			for (int j = 0; j < texts.getLength(); j++) {
 				Element text = (Element) texts.item(j);
@@ -166,10 +189,15 @@ public class TabStopTest {
 		NodeList parents = area(fo).getElementsByTagName("inlineparent");
 		for (int i = 0; i < parents.getLength(); i++) {
 			List<Element> kids = childElements((Element) parents.item(i));
-			if (kids.size() == 2 && "space".equals(kids.get(0).getLocalName())
-					&& "inlineparent".equals(kids.get(1).getLocalName())) {
-				out.add(round(ipd(kids.get(0), "ipd")));
-			}
+			if (kids.isEmpty()) continue;
+			Element first = kids.get(0);
+			// the blank is a space area, or (17.1.1, tabSpaces) the space character Word
+			// writes there; a blank of no width is Word's grid already met, not a phase
+			boolean blank = "space".equals(first.getLocalName())
+					|| ("text".equals(first.getLocalName()) && isTabSpace(first));
+			if (!blank || kids.size() < 2 || !"inlineparent".equals(kids.get(1).getLocalName())) continue;
+			double phase = round(ipd(first, "ipd"));
+			if (phase > 0) out.add(phase);
 		}
 		return out;
 	}
@@ -187,6 +215,40 @@ public class TabStopTest {
 		List<String> out = new ArrayList<>();
 		for (String n : names) out.add(n);
 		return out;
+	}
+
+	/**
+	 * A rule leader is drawn <b>on its own line</b>, not at the top of it.
+	 *
+	 * <p>{@code w:leader="heavy"} is the one kind Word draws as a line rather than as
+	 * characters (CR-001 batch 45 made underscore and hyphen the characters they are), so
+	 * it is the one kind that still asks FOP for {@code leader-pattern="rule"} and gets a
+	 * drawn path with nothing in the text layer.  Where that path lands is worth a guard:
+	 * FOP hangs the area on the leader's own alignment context, and its centre comes half
+	 * its thickness above the text's baseline.  Measured on this FO: the rule's offset is
+	 * 6.548pt and its thickness 1.000pt against the line's baseline of 7.548pt, so its
+	 * centre is 7.048; in a rendered PDF of the same shape the stroke is at y=158.300 where
+	 * the entry's baseline is 158.800.  A leader hung at the line's top would come out at
+	 * half its thickness instead, seven points away.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void aRuleLeaderIsDrawnOnItsLine() throws Exception {
+		System.setProperty(WordLayoutCustomizer.LEADER_CHARACTERS, "false");
+		Element line;
+		try {
+			line = (Element) area(fo("9000:left:heavy", "0:0:.", null,
+					"abcdefghij" + RULE_TAB + "x")).getElementsByTagName("lineArea").item(0);
+		} finally {
+			System.clearProperty(WordLayoutCustomizer.LEADER_CHARACTERS);
+		}
+		Element rule = (Element) line.getElementsByTagName("leader").item(0);
+		Element text = (Element) line.getElementsByTagName("text").item(0);
+		double centre = ipd(rule, "offset") + ipd(rule, "ruleThickness") / 2;
+		double baseline = ipd(text, "offset") + ipd(text, "baseline");
+		org.junit.Assert.assertTrue("the rule is at " + centre + "pt and the baseline at "
+				+ baseline + "pt", Math.abs(centre - baseline) <= 1.0);
 	}
 
 	private static double ipd(Element el, String attr) {
@@ -317,10 +379,17 @@ public class TabStopTest {
 	@Test
 	public void aLeaderTabAndAnOverfullLineDoNotBreakAtTheTab() throws Exception {
 		// the stop at 450pt is past the 400pt edge, but its leader runs to the edge rather
-		// than taking the text to the next line (a rule leader, so that the leader's own
-		// area is one and wordStarts does not count its dots as words)
-		assertEquals(at(0, 450),
-				wordStarts(fo("9000:left:hyphen", "0:0:.", null, "abcdefghij" + RULE_TAB + "x")));
+		// than taking the text to the next line.  Word draws every leader as characters
+		// (CR-001 batch 45), so this case asks for the rule fallback instead
+		// (leaderCharacters=false), where the leader's own area is one and wordStarts does
+		// not count its glyphs as words
+		System.setProperty(WordLayoutCustomizer.LEADER_CHARACTERS, "false");
+		try {
+			assertEquals(at(0, 450),
+					wordStarts(fo("9000:left:heavy", "0:0:.", null, "abcdefghij" + RULE_TAB + "x")));
+		} finally {
+			System.clearProperty(WordLayoutCustomizer.LEADER_CHARACTERS);
+		}
 		// 60 glyphs are 432pt, past the 400pt line before the tab is even reached: the tab
 		// does not break a line which is over-full already, and runs on to its stop.
 		// (Word's emergency break is off here: a 432pt word on a 400pt line is exactly

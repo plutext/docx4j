@@ -2769,6 +2769,14 @@ public class XsltFOFunctions {
 			foLeader.setAttribute("leader-length.optimum",  "40pt");
 			foLeader.setAttribute("leader-pattern",  "dots");
 			if (fontFamily.length()>0) foLeader.setAttribute("font-family", fontFamily);
+			/* Word writes the partial cell at each end of a leader run as a space glyph -
+			 * measured on a corpus document's entries, its space is at x=139.730 and its
+			 * first dot at 140.450 - and the line manager writes that space for a tab it
+			 * lays out itself (WordLayoutCustomizer.tabSpaces).  A stretching leader does
+			 * NOT get one: two spaces in the FO cost a 222-page corpus report a page
+			 * (223 -> 224) and 119 matched lines, and they buy nothing, because the
+			 * harness's own leader-run normalisation already swallows the whitespace at
+			 * each end of a run (PdfLayout.Line.LEADER_RUN).  Measured, CR-001 batch 45. */
 			df.appendChild(foLeader);
 			return df;
 		}
@@ -2780,6 +2788,16 @@ public class XsltFOFunctions {
 			// text it aligns has to be measured first (see leadingTabNeedsLayout)
 			String leadingLength = leadingTabNeedsLayout(context, effectivePPr, precedingTabs, precedingText)
 					? "" : leadingTabLeaderLength(context, effectivePPr, precedingTabs, precedingText);
+			/* ... unless the paragraph's stops draw a leader.  A fixed leader is written
+			 * leader-pattern="space" and paints nothing, so a paragraph which opens with a
+			 * tab to a stop with a leader had none: measured on the tab-leader-kinds
+			 * golden, Word paints its leading dot, middleDot, hyphen, underscore and heavy
+			 * runs from the margin and ours painted five empty lines.  Such a tab takes the
+			 * layout path instead, where the line manager gives it both its width and the
+			 * leader of the stop it reaches.  @since 17.1.1 */
+			if (leadingLength.length() > 0 && !"space".equals(tabLeaderPattern(effectivePPr))) {
+				leadingLength = "";
+			}
 			Element leader = d.createElementNS(XSL_FO, "fo:leader");
 			if (leadingLength.length()>0) {
 				leader.setAttribute("leader-pattern", "space");

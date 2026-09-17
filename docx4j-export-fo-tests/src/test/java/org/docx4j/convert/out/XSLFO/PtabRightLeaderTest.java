@@ -115,14 +115,19 @@ public class PtabRightLeaderTest extends AbstractXSLFOTest {
 			Element t = (Element) texts.item(i);
 			end = Math.max(end, ipdaOf(t));
 		}
-		// the tab's own glue is not a <text>, so measure the line instead: the sum of
-		// the text ipda plus the tab must fill the line
+		// the tab draws no word of its own, so measure the line instead: the sum of the
+		// words' ipda plus the tab must fill the line.  Since 17.1.1 the tab's advance is
+		// carried by a space character rather than by a jump of the pen
+		// (WordLayoutCustomizer.tabSpaces), so its own text area is the tab and not a word.
 		int lineIpd = Integer.parseInt(((Element) lines.item(0)).getAttribute("ipd"));
 		assertTrue("the line is " + lineIpd + " mpt and its last text is " + end + " wide",
 				end > 0);
 		int total = 0;
 		for (int i = 0; i < texts.getLength(); i++) {
-			total += ipdaOf((Element) texts.item(i));
+			Element t = (Element) texts.item(i);
+			String content = t.getTextContent();
+			if (content != null && content.length() > 0 && content.trim().isEmpty()) continue;
+			total += ipdaOf(t);
 		}
 		int tab = lineIpd - total;
 		assertTrue("the tab advanced only " + tab + " mpt of a " + lineIpd + " mpt line",
