@@ -297,7 +297,7 @@ public abstract class Mapper {
 			bold = pf.isNoBoldFace() ? SYNTHETIC : faceName(getBoldForm(documentFont, pf));
 			italic = faceName(getItalicForm(documentFont, pf));
 			boldItalic = faceName(getBoldItalicForm(documentFont, pf));
-			factor = WidthFactors.factorFor(documentFont, pf.getName());
+			factor = widthFactorFor(documentFont, pf.getName());
 		}
 		decision.complete(pf, bold, italic, boldItalic, lineBox(documentFont), factor);
 	}
@@ -1106,6 +1106,36 @@ public abstract class Mapper {
     	 * the East Asian chain hop - and the default pass then mapped it; before 17.1.1
     	 * the later put silently replaced Meiryo's box with Calibri's.  @since 17.1.1 */
     	lineMetricsAliases.putIfAbsent(key, value);
+    }
+
+    /**
+     * The measured width factor for this document font and the face it resolved to,
+     * following the <b>altName chain</b> where the document font has no row of its own.
+     *
+     * <p>{@link WidthFactors} is keyed on the name the measurement belongs to, which is the
+     * font <em>Word drew</em>.  Where the document names a font Word could not find and its
+     * {@code w:altName} chain says which font Word used instead, that is the name to look
+     * up, not the one in the run: a corpus document whose runs name a corporate face with
+     * {@code w:altName="Meiryo"} is drawn by Word in Meiryo, and a row keyed on the run's
+     * own name would have to be written again for every document which names a different
+     * corporate face over the same alternate.  docx4j already records that hop - it is what
+     * the line box follows ({@link #registerLineMetricsAlias}) - so the width follows it
+     * too.</p>
+     *
+     * <p>The face still has to be the one the factor was measured against
+     * ({@link WidthFactors#factorFor}), so where the machine <em>has</em> the aliased font
+     * and draws it, no factor is applied: it is the substitute which is the wrong width,
+     * not the font.</p>
+     *
+     * @since 17.1.1
+     */
+    public double widthFactorFor(String documentFont, String physicalFontName) {
+
+    	double factor = WidthFactors.factorFor(documentFont, physicalFontName);
+    	if (factor!=1) return factor;
+    	String family = lineMetricsFamily(documentFont);
+    	if (family==null || family.equalsIgnoreCase(documentFont)) return 1;
+    	return WidthFactors.factorFor(family, physicalFontName);
     }
 
     /**

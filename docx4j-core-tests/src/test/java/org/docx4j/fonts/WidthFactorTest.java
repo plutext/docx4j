@@ -98,6 +98,70 @@ public class WidthFactorTest {
 		org.junit.Assert.assertFalse(WidthFactors.hasFactor("Calibri"));
 	}
 
+	// ------------------------------------------------------- the altName chain (Meiryo)
+
+	private static final double MEIRYO = 1.21;
+
+	/**
+	 * Meiryo's Latin is 1.21 of Carlito's, measured on a corpus document Word drew in
+	 * Meiryo (its runs name a corporate face whose {@code w:altName} is Meiryo).  Read out
+	 * of the two PDFs' own /Widths and weighted by the 3785 characters Word set in that
+	 * face, leaving out the 1359 dots of its tab leaders, the ratio is 1.2107; unweighted
+	 * over the 60 letters and digits the two fonts share it is 1.2144; and the one line of
+	 * the document each side draws whole in one face measures 1.2051.
+	 */
+	@Test
+	public void meiryoIsKeyedLikeAnyOtherDocumentFont() {
+		assertEquals(MEIRYO, WidthFactors.factorFor("Meiryo", "Carlito Regular"), 0.0);
+		assertTrue(WidthFactors.hasFactor("Meiryo"));
+		// Meiryo UI is a narrower family of its own, and the vertical form another name
+		assertEquals(1, WidthFactors.factorFor("Meiryo UI", "Carlito Regular"), 0.0);
+		assertEquals(1, WidthFactors.factorFor("@Meiryo UI", "Carlito Regular"), 0.0);
+	}
+
+	/**
+	 * The lookup follows the altName chain: a document font Word could not find, whose
+	 * {@code w:altName} says which font Word used instead, takes that font's factor.  The
+	 * chain is the one the line box already follows, so a row does not have to be written
+	 * again for every corporate face which names the same alternate.
+	 */
+	@Test
+	public void theFactorFollowsTheAltNameChain() throws Exception {
+		Mapper m = new IdentityPlusMapper();
+		assertEquals("no row of its own, and no alias yet",
+				1, m.widthFactorFor("Docx4j Probe Corporate", "Carlito Regular"), 0.0);
+
+		m.registerLineMetricsAlias("Docx4j Probe Corporate", "Meiryo");
+		assertEquals("the altName's factor, through the chain",
+				MEIRYO, m.widthFactorFor("Docx4j Probe Corporate", "Carlito Regular"), 0.0);
+		assertEquals("and with the FO layer's suffixes on the physical name",
+				MEIRYO, m.widthFactorFor("Docx4j Probe Corporate", "Carlito Regular+noliga"), 0.0);
+	}
+
+	/**
+	 * It must not fire where the machine has the font Word drew: then the run is set in
+	 * that font, and it is not the wrong width - it is the right one.  The substitute test
+	 * in {@link WidthFactors#factorFor} is what does this.
+	 */
+	@Test
+	public void noFactorWhereTheAliasedFontIsInstalled() throws Exception {
+		assertEquals("Meiryo itself", 1, WidthFactors.factorFor("Meiryo", "Meiryo"), 0.0);
+		assertEquals("or any face of it", 1, WidthFactors.factorFor("Meiryo", "Meiryo Bold"), 0.0);
+		Mapper m = new IdentityPlusMapper();
+		m.registerLineMetricsAlias("Docx4j Probe Corporate", "Meiryo");
+		assertEquals(1, m.widthFactorFor("Docx4j Probe Corporate", "Meiryo"), 0.0);
+		// nor where the substitute is some other face this machine happened to choose
+		assertEquals(1, m.widthFactorFor("Docx4j Probe Corporate", "Liberation Sans"), 0.0);
+	}
+
+	/** A document font with a row of its own is not sent down the chain. */
+	@Test
+	public void aRowOfItsOwnWins() throws Exception {
+		Mapper m = new IdentityPlusMapper();
+		m.registerLineMetricsAlias("Calibri Light", "Meiryo");
+		assertEquals(CALIBRI_LIGHT, m.widthFactorFor("Calibri Light", "Carlito Regular"), 0.0);
+	}
+
 	// ------------------------------------------------------------------ the selector
 
 	/** The letter space the factor alone asks for, at 11pt over this sentence. */

@@ -298,6 +298,7 @@
        font's name, with the FO layer's suffixes stripped. -->
   <widthFactors>
     <widthFactor font="Calibri Light" substituteFamily="Carlito" factor="0.987"/>
+    <widthFactor font="Meiryo" substituteFamily="Carlito" factor="1.21"/>
   </widthFactors>
 
   <!-- ==== where to get a substitute, and what it carries ==== -->

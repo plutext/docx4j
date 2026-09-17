@@ -996,7 +996,10 @@ public class RunFontSelector {
      *  factor, and take any stale one off where it has not (the glyph-aware pass can
      *  move a span to a different face after setAttribute ran).  @since 17.1.1 */
     private void markWidthFactor(Element el, String documentFontName, String physicalFontName) {
-    	double factor = WidthFactors.factorFor(documentFontName, physicalFontName);
+    	Mapper mapper = wordMLPackage==null ? null : wordMLPackage.getFontMapper();
+    	double factor = mapper==null
+    			? WidthFactors.factorFor(documentFontName, physicalFontName)
+    			: mapper.widthFactorFor(documentFontName, physicalFontName);
     	if (factor==1) {
     		el.removeAttribute(MARK_WIDTH_FACTOR);
     	} else {

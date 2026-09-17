@@ -200,6 +200,22 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A run Word drew in Meiryo is set at Meiryo's width, and the width factor follows the
+  altName chain. Meiryo's Latin advances are 1.21 of Carlito's - read out of the two PDFs'
+  own /Widths and weighted by the 3785 characters Word set in that face on a corpus
+  document, leaving out the 1359 dots of its tab leaders, the ratio is 1.2107; unweighted
+  over the 60 letters and digits the fonts share it is 1.2144; the one line of that
+  document each side draws whole in one face measures 1.2051 - so a document Word drew in
+  Meiryo came out 20% narrow and re-broke on every line. The measured factors are keyed on
+  the font Word drew, and where the document's runs name a font Word could not find, that
+  is the font its w:altName says Word used instead, not the one in the run: the lookup now
+  follows the same hop the line box already follows (Mapper.widthFactorFor), so one row
+  answers for every corporate face which names the same alternate. It cannot fire where the
+  machine has that font and draws it - the substitute has to be the family the factor was
+  measured against. On the document this was measured on, line parity 0.7265 to 0.9008 and
+  81 pages to 85 against Word's 87; the two other corpus documents which name Meiryo name
+  @Meiryo UI, a narrower family of its own, and are untouched (CR-001 batch 45).
+
 - A font whose class can only be guessed from its name gets Word's own substitute rather
   than no face at all. Word's answer for a font it cannot find - Calibri for w:family
   "swiss", Cambria for "roman" (17.1.1, measured on the fonts-unresolvable probe) - was

@@ -140,8 +140,12 @@ public class FontSubstitutionTableTest {
 	 *  Calibri's at all, and gets no factor. */
 	@Test
 	public void theWidthFactorIsTheOneMeasured() {
-		assertEquals(1, FontSubstitutionTable.widthFactors().size());
+		assertEquals(2, FontSubstitutionTable.widthFactors().size());
 		assertEquals(0.987, WidthFactors.factorFor("Calibri Light", "Carlito Regular"), 0.0001);
+		// Meiryo's Latin against Carlito's, measured on a corpus document Word drew in it
+		assertEquals(1.21, WidthFactors.factorFor("Meiryo", "Carlito Regular"), 0.0001);
+		assertEquals("not where the machine has Meiryo itself",
+				1, WidthFactors.factorFor("Meiryo", "Meiryo"), 0.0001);
 		assertEquals(0.987, WidthFactors.factorFor("Calibri Light", "Carlito Regular+kern"), 0.0001);
 		assertEquals(1, WidthFactors.factorFor("Calibri Light", "Liberation Sans"), 0.0001);
 		assertEquals(1, WidthFactors.factorFor("Calibri", "Carlito Regular"), 0.0001);
