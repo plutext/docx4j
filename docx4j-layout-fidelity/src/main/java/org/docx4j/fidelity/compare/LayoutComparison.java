@@ -297,18 +297,22 @@ public final class LayoutComparison {
 		for (int i = 0; i < all.size(); i++) {
 			Line first = all.get(i);
 			if (!free.contains(first)) continue;
-			StringBuilder spaced = new StringBuilder(first.key());
-			StringBuilder tight = new StringBuilder(first.key());
+			StringBuilder spaced = new StringBuilder(Line.mergePiece(first));
+			StringBuilder tight = new StringBuilder(Line.mergePiece(first));
 			for (int k = 2; k <= MERGE_MAX && i + k - 1 < all.size(); k++) {
 				Line next = all.get(i + k - 1);
 				if (!free.contains(next) || next.page != first.page) break;
 				double tol = Math.max(MERGE_Y_PT, MERGE_Y_EM * Math.max(next.size, first.size));
 				if (Math.abs(next.y - first.y) > tol) break;
-				spaced.append(' ').append(next.key());
-				tight.append(next.key());
-				runs.computeIfAbsent(spaced.toString(), s -> new ArrayList<>()).add(new int[] { i, k });
-				if (!tight.toString().equals(spaced.toString())) {
-					runs.computeIfAbsent(tight.toString(), s -> new ArrayList<>()).add(new int[] { i, k });
+				spaced.append(' ').append(Line.mergePiece(next));
+				tight.append(Line.mergePiece(next));
+				// the whole-line normalisations run on the joined run, not on each piece:
+				// the bullet rule reads the head of a line (Line.mergePiece, Line.joinedKey)
+				String spacedKey = Line.joinedKey(spaced.toString());
+				String tightKey = Line.joinedKey(tight.toString());
+				runs.computeIfAbsent(spacedKey, s -> new ArrayList<>()).add(new int[] { i, k });
+				if (!tightKey.equals(spacedKey)) {
+					runs.computeIfAbsent(tightKey, s -> new ArrayList<>()).add(new int[] { i, k });
 				}
 			}
 		}
