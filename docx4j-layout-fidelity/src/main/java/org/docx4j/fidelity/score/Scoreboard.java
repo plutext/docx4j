@@ -55,7 +55,7 @@ public final class Scoreboard {
 		public String status = "ok";
 		public int refPages, candPages, refLines, candLines, matched;
 		/** Of {@link #matched}, the pairs the merging pass formed by concatenation - one
-		 *  side's line against the other side's two or three.  @see
+		 *  side's line against the other side's two or more.  @see
 		 *  org.docx4j.fidelity.compare.LayoutComparison */
 		public int merged;
 		public double lineParity, pageParity, medianDy, maxDy;

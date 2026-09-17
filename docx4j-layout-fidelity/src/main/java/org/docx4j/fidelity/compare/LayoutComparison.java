@@ -26,7 +26,8 @@ public final class LayoutComparison {
 		public boolean samePage;
 		/** Paired by the windowed pass rather than by the LCS. @see #WINDOW */
 		public boolean windowed;
-		/** Paired by the merging pass: this line is the other side's two or three.
+		/** Paired by the merging pass: this line is the other side's two or more, up to
+		 *  {@link LayoutComparison#MERGE_MAX}.
 		 *  @see LayoutComparison#MERGE */
 		public boolean merged;
 	}
@@ -226,9 +227,10 @@ public final class LayoutComparison {
 	}
 
 	/**
-	 * EXPERIMENTAL, off by default (CR-001 batch 44 step 1, option (b)).  Whether a
-	 * line one render's extractor read as one is paired with the two or three the
-	 * other's read in the same place.
+	 * Whether a line one render's extractor read as one is paired with the several the
+	 * other's read in the same place (CR-001 batch 44 step 1, option (b); on by default
+	 * since that batch, and the javadoc's "EXPERIMENTAL, off by default" was left behind
+	 * by it).
 	 *
 	 * <p>The two extractors read the same ink; what they can disagree about is where
 	 * one line ends and the next begins, and the disagreement is not always resolvable
@@ -237,28 +239,122 @@ public final class LayoutComparison {
 	 * on the text's baseline and two on the side that did not, whatever threshold
 	 * either side is read with.  This pass pairs the one with the concatenation of the
 	 * others when they are consecutive, unmatched, on the page the surrounding matches
-	 * say this one landed on, start at the same x, and lie within
-	 * {@link #MERGE_Y_EM} of one another vertically - half an em, where a real line
-	 * pitch is at least 1.15, so two lines of one paragraph can never be merged into
-	 * Word's one.  It runs in both directions.
+	 * say this one landed on, start at the same x ({@link #MERGE_X_PT}), number no more
+	 * than {@link #MERGE_MAX}, and lie within {@link #MERGE_Y_EM} - or
+	 * {@link #MERGE_Y_ROW_EM} where they are a row - of one another vertically.  Both
+	 * bounds are under the 1.15 em a single-spaced line pitch is, so two lines of one
+	 * paragraph can never be merged into Word's one.  It runs in both directions.
 	 *
 	 * <p>{@code -Dfidelity.merge=true} turns it on; {@code -Dfidelity.mergeMax=},
-	 * {@code -Dfidelity.mergeYEm=} and {@code -Dfidelity.mergeYPt=} override the
-	 * bounds.
+	 * {@code -Dfidelity.mergeYEm=}, {@code -Dfidelity.mergeYRowEm=},
+	 * {@code -Dfidelity.mergeYPt=} and {@code -Dfidelity.mergeXPt=} override the
+	 * bounds (CR-001 batch 46 item 6 settled each of the four by measurement).
 	 */
 	private static final boolean MERGE =
 			!"false".equalsIgnoreCase(System.getProperty("fidelity.merge", "true"));
 
-	/** How many lines of one side may be paired with one of the other. @see #MERGE */
-	private static final int MERGE_MAX = Integer.getInteger("fidelity.mergeMax", 3);
+	/**
+	 * How many lines of one side may be paired with one of the other.
+	 *
+	 * <p>Three when the pass shipped (CR-001 batch 44), which is a bullet and its text,
+	 * or a label, its text and a continuation - but not a table row, which has as many
+	 * pieces as the table has columns.  Measured on {@code 14_en-AU_tbl_174}, whose
+	 * page-1 row Word reads as one line at x 86.42..681.13 and our extractor reads as
+	 * <b>five</b> at x 86.25 / 223.90 / 358.20 / 506.45 / 642.05: at three the row
+	 * cannot pair at all.  Rows longer than five exist too, and <b>six</b> is the widest
+	 * on the board: a rating scale beside its question on
+	 * {@code 16_fr-CA_sdt_num_tbl_3640}, six pieces; and a six-cell table heading on one
+	 * baseline at 12pt on {@code 12_en-US_sdt_fields1_num_tbl_4957}.
+	 *
+	 * <p>So six, and the number is a measurement rather than a margin.  Measured at 5, 6,
+	 * 8, 12 and 20 over the three corpora, against {@code b70-batch45}'s own renders:
+	 * five is worth +55 matched lines, <b>six +60</b>, eight +62, twelve exactly what
+	 * eight is, twenty +64.  Everything six buys over five is a row.  Nothing above six
+	 * is: the seven, eight, fifteen and twenty-piece runs are all one document's
+	 * letter-spaced diagram, {@code 15_es-AR_sdt_num_tbl_12301} painting single digits on
+	 * one baseline (4643 of its lines are three characters or fewer), which is a grouping
+	 * disagreement of its own - triage class P1, 1657 lines - and not a row.  It gains
+	 * two such runs at eight and four at twenty; raise this number if that class is what
+	 * is wanted, but it is not what this pass is for.
+	 *
+	 * <p>No document loses a pair at any of the five settings, and no line or page count
+	 * moves - the pass renders nothing.
+	 *
+	 * @see #MERGE
+	 */
+	private static final int MERGE_MAX = Integer.getInteger("fidelity.mergeMax", 6);
 
-	/** How far apart the merged pieces' baselines may lie, in ems. @see #MERGE */
+	/** How far apart the merged pieces' baselines may lie, in ems, where the pieces
+	 *  are stacked - each overlapping the one before it horizontally, as a label above
+	 *  its text does. @see #MERGE_Y_ROW_EM @see #MERGE */
 	private static final double MERGE_Y_EM =
 			Double.parseDouble(System.getProperty("fidelity.mergeYEm", "0.5"));
 
-	/** The floor on {@link #MERGE_Y_EM}, in points. @see #MERGE */
+	/**
+	 * How far apart the merged pieces' baselines may lie, in ems, where each piece
+	 * begins at or after the end of the one before it - a <b>row</b>, the cells of which
+	 * sit side by side and need share no baseline at all.
+	 *
+	 * <p>Half an em (the stacked bound) is too tight for a row: measured over the three
+	 * corpora, 22 rows which one extractor reads as one line and the other as two lie
+	 * <b>0.52 to 0.97 em</b> apart - a two-column contract on {@code 14_en-US_tbl_394}
+	 * at 0.53 em, a table on {@code 15_de-DE_sdt_79} at 0.54 to 0.66, a letterhead cell
+	 * on {@code 14_en-US_tbl_2564} and {@code 14_en-US_tbl_10224} at 0.97 - and none of
+	 * them pairs at 0.5.  At one em all 22 pair, worth +34 matched lines over the three
+	 * corpora and costing none.
+	 *
+	 * <p>The bound is separate from {@link #MERGE_Y_EM} rather than simply raised,
+	 * because what keeps the pass honest is different in the two shapes.  Two lines of
+	 * one paragraph are <em>stacked</em>: they start at the same x and overlap, so no
+	 * row ever looks like one, and the row bound cannot collapse a paragraph however
+	 * wide it is.  Stacked pieces keep the tighter bound, and the measurement says what
+	 * that buys: at one em the stacked bound would also have merged a check-box glyph on
+	 * {@code 14_en-GB_num_tbl_4083} which we paint <b>9.86pt (0.99 em) above</b> the
+	 * label Word paints it beside - one pair gained by hiding a displacement of very
+	 * nearly a whole line, which is the one thing this pass must not do.
+	 *
+	 * @see #MERGE
+	 */
+	private static final double MERGE_Y_ROW_EM =
+			Double.parseDouble(System.getProperty("fidelity.mergeYRowEm", "1.0"));
+
+	/** The floor on {@link #MERGE_Y_EM} and {@link #MERGE_Y_ROW_EM}, in points.
+	 *  @see #MERGE */
 	private static final double MERGE_Y_PT =
 			Double.parseDouble(System.getProperty("fidelity.mergeYPt", "3"));
+
+	/**
+	 * How far apart the run's first piece and the single line may start, in points;
+	 * 0 or less does not constrain them.
+	 *
+	 * <p>Two points, which is {@link #WINDOW_X_PT}'s value and was {@link #WINDOW_X_PT}
+	 * itself until this constant was split out: the merge pass had been borrowing the
+	 * windowed pass's bound, so {@code -Dfidelity.windowXPt=} silently moved it too.
+	 *
+	 * <p>Simply widening it buys nothing: over the six documents whose rows the merge
+	 * pass is at its limit on (174, 13118, 11398, 7046, 5123, 11783) six points and
+	 * twelve points are each worth <b>not one</b> extra pair.  Simply dropping it
+	 * <b>loses</b> a pair on 174 - with no bound at all a run elsewhere on the page can
+	 * score better, the score being dominated by the baseline distance, and take pieces
+	 * the right run needed (962 matched with the bound, 961 without; 975 against 974 at
+	 * {@code mergeMax=5}).
+	 *
+	 * <p>Dropping it is worth a great deal more than the piece count is - over the three
+	 * corpora, +78 matched lines on 27 documents - and what it reaches is measurably the
+	 * same line: on {@code 15_it-IT_num_tbl_11741}, 23 runs of a bold label and its text
+	 * <b>on one baseline</b> (spread 0.00pt) which our extractor splits and Word's does
+	 * not; on {@code 14_en-GB_num_tbl_4083}, a date box Word paints in three pieces on
+	 * one baseline.  It is not taken, and the reason is not the arithmetic: a run whose
+	 * first piece starts elsewhere is a run <b>at another indent</b>, and this bound is
+	 * where the merge pass says so - {@code LayoutComparisonMergeTest}'s
+	 * {@code piecesAtAnotherIndentDoNotMerge} is that statement.  Relaxing it is a
+	 * change to what the metric counts as the same line, not a widening of this pass,
+	 * and belongs to whoever decides that.
+	 *
+	 * @see #MERGE
+	 */
+	private static final double MERGE_X_PT =
+			Double.parseDouble(System.getProperty("fidelity.mergeXPt", "2"));
 
 	/** Prints every pair the merging pass makes, for reading one document. @see #MERGE */
 	private static final boolean MERGE_DUMP =
@@ -299,10 +395,18 @@ public final class LayoutComparison {
 			if (!free.contains(first)) continue;
 			StringBuilder spaced = new StringBuilder(Line.mergePiece(first));
 			StringBuilder tight = new StringBuilder(Line.mergePiece(first));
+			// a run is a row while every piece so far begins at or after the end of the
+			// one before it; one piece that overlaps its predecessor makes it stacked,
+			// and stays stacked, for the rest of the run
+			boolean row = true;
+			double prevX1 = first.x1;
 			for (int k = 2; k <= MERGE_MAX && i + k - 1 < all.size(); k++) {
 				Line next = all.get(i + k - 1);
 				if (!free.contains(next) || next.page != first.page) break;
-				double tol = Math.max(MERGE_Y_PT, MERGE_Y_EM * Math.max(next.size, first.size));
+				row &= next.x0 >= prevX1;
+				prevX1 = next.x1;
+				double em = row ? Math.max(MERGE_Y_EM, MERGE_Y_ROW_EM) : MERGE_Y_EM;
+				double tol = Math.max(MERGE_Y_PT, em * Math.max(next.size, first.size));
 				if (Math.abs(next.y - first.y) > tol) break;
 				spaced.append(' ').append(Line.mergePiece(next));
 				tight.append(Line.mergePiece(next));
@@ -331,7 +435,7 @@ public final class LayoutComparison {
 							: Math.abs(first.page - want);
 					if (dp > WINDOW_PAGES) continue;
 					double dx = Math.abs(first.x0 - l.x0);
-					if (dx > WINDOW_X_PT) continue;
+					if (MERGE_X_PT > 0 && dx > MERGE_X_PT) continue;
 					boolean clash = false;
 					for (int q = 0; q < c[1]; q++) {
 						if (taken.contains(all.get(c[0] + q))) clash = true;
