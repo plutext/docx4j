@@ -200,6 +200,24 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A toggle property - bold, italic, caps, small caps, strike, hidden and the rest of the
+  twelve ECMA-376-1 17.7.3 names - set at two levels of the style hierarchy now cancels as
+  Word does: a table style against a paragraph style, and a paragraph style against a
+  character style. Direct formatting is unchanged, and so is a style's w:basedOn chain,
+  which is one level. In the resolver, so HTML gets it too (CR-001 batch 46).
+- A numbered paragraph's text no longer inherits the paragraph mark's run properties -
+  its bold, italic or colour - through the list item body. Only the size reaches the
+  body, which is what the label and the body need in common to sit on one baseline
+  (CR-001 batch 46).
+- Two top-and-bottom wrapped anchored drawings in one paragraph which do not overlap horizontally
+  share one band, side by side as Word draws them, rather than each reserving its own and
+  stacking (CR-001 batch 46).
+- A table-of-contents entry's stretching dot leader steps on Word's 1/300 inch grid and begins on
+  a whole multiple of that step from the page's edge, as a tab's leader has since 17.1.0
+  (CR-001 batch 46).
+- A width factor is measured per face and per substitute family, not per font: Cambria's bold
+  (1.036), bold italic (1.021) and Greek in P052 (0.985 regular, 1.058 bold), and Tahoma's bold
+  in Arimo (1.06), which its regular does not want (CR-001 batch 46).
 - Caladea is Cambria's substitute by design, not by metric, and carries a width factor of
   1.048. It has Cambria's own advance for n, l, x, X and i, and is 4 to 11 per cent narrower
   on the rest of the lower case (e 441 against 488, o 480 against 531, s 392 against 430);

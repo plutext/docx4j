@@ -706,6 +706,18 @@ public class ParagraphStylesInTableFix {
             }
 			
 			
+
+			/* What the table level resolves to, before the paragraph style goes over it:
+			 * the two are different levels of the style hierarchy, so their toggle
+			 * properties do not override one another (ECMA-376-1 17.7.3, quoted in
+			 * StyleUtil.applyStyleLevel).  The paragraph level's own value is its basedOn
+			 * chain merged root-first, which the loop below walks anyway - so it is
+			 * accumulated on its own there, and the twelve toggles are combined after it.
+			 * @since 17.1.1 */
+			RPr tableLevelRPr = newStyle.getRPr() == null ? null
+					: (RPr)XmlUtils.deepCopy(newStyle.getRPr());
+			RPr paragraphLevelRPr = Context.getWmlObjectFactory().createRPr();
+
 			// Finally, rest of list in reverse
             
 			for (int i = hierarchy.size()-1; i>=0; i--) 
@@ -718,11 +730,20 @@ public class ParagraphStylesInTableFix {
                             "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
                 }
 				StyleUtil.apply(styleToApply, newStyle);
+				StyleUtil.apply(styleToApply.getRPr(), paragraphLevelRPr);
                 if(log.isDebugEnabled()) {
                     log.debug("Result: " +
                             "\n" + XmlUtils.marshaltoString(newStyle, true, true));
                 }
 			}
+
+			/* The table level XOR the paragraph level, for the toggle properties alone
+			 * (ECMA-376-1 17.7.3).  Until 17.1.1 a table style which made its first column
+			 * bold and a paragraph or character style which did the same both applied, and
+			 * the text came out bold where Word draws it regular. */
+			StyleUtil.applyToggles(paragraphLevelRPr, tableLevelRPr,
+					propertyResolver.getDocumentDefaultRPr(), newStyle.getRPr());
+
 			
 		    /*
 		     * w:compatSetting[w:name="overrideTableStyleFontSizeAndJustification"]

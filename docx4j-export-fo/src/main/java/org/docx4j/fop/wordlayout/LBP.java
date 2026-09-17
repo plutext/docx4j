@@ -692,6 +692,93 @@ final class LBP {
 		return (area instanceof PhasedLeaderArea) ? ((PhasedLeaderArea) area).getLeader() : area;
 	}
 
+	/**
+	 * Put a leader area which is <b>already placed on a line</b> on Word's grid: its
+	 * characters step on the advance rounded to 1/300 inch, and the run begins on a whole
+	 * multiple of that step measured from the page's left edge.
+	 *
+	 * <p>The manager variant ({@link #setLeaderPhase}) reaches into the leader's own layout
+	 * manager, which is where a <b>tab</b> is settled.  A table-of-contents entry's
+	 * stretching leader is not laid out by the line manager at all - the justification
+	 * gives it its width - and nothing positional reaches its layout manager either
+	 * (FOP 2.11 hands a leaf manager a {@code LayoutContext} carrying {@code refIPD}, the
+	 * reference area's width, and {@code ipdAdjust}, the stretch factor, and nothing that
+	 * says where on the line it sits).  So it is done here, from the line, where the x is
+	 * known.</p>
+	 *
+	 * <p><b>The line's width does not change.</b>  The blank takes exactly what the dots
+	 * give up: the run is shrunk by the phase and the phase is written in front of it, so
+	 * the wrapper measures what the leader measured.  That matters twice - the line is
+	 * already justified when this runs, and this leader is the thing that absorbed the
+	 * slack.</p>
+	 *
+	 * @param run  the leader's filled area, as FOP built and stretched it
+	 * @param from where the run begins, in millipoints from the <b>page's</b> left edge
+	 * @return the area to put in the leader's place, or null where nothing is to change
+	 * @since 17.1.1
+	 */
+	static org.apache.fop.area.inline.InlineArea gridPlacedLeader(
+			org.apache.fop.area.inline.FilledArea run, int from) {
+		if (!WordLayoutCustomizer.leaderGrid()) return null;
+		int period = gridPlacedStep(run);
+		int width = run.getIPD();
+		if (period <= 0 || width <= period) return null;
+		int phase = gridPhase(from, period);
+		if (phase <= 0 || phase >= width) return null;
+		run.setIPD(width - phase);
+		return new PhasedLeaderArea(phase, run);
+	}
+
+	/**
+	 * Word's step for a leader run which is <b>already on a line</b>, set on it; the step,
+	 * or 0 where there is nothing to change.
+	 *
+	 * <p>{@link #setGridStep} cannot be used on a placed run.  FOP's
+	 * {@code FilledArea.getChildAreas()} does not return the repeating <em>unit</em> - it
+	 * returns the unit repeated {@code getIPD() / unitWidth} times, computed on the call -
+	 * so on a leader whose width is settled it hands back fifty-odd copies and the
+	 * one-child test which identifies the unit fails.  The unit itself is the protected
+	 * {@code InlineParent.inlines}, which is what this reads.</p>
+	 *
+	 * <p>Changing the unit width does not change the run's width: the run keeps the IPD it
+	 * was stretched to and simply holds whole cells of the new step, with the remainder at
+	 * the end - which is what Word draws too.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static int gridPlacedStep(org.apache.fop.area.inline.FilledArea run) {
+		java.util.List<org.apache.fop.area.inline.InlineArea> unit = filledUnit(run);
+		if (unit == null || unit.size() != 1) return run.getUnitWidth();
+		if (!(unit.get(0) instanceof org.apache.fop.area.inline.TextArea)) return run.getUnitWidth();
+		org.apache.fop.area.inline.TextArea c = (org.apache.fop.area.inline.TextArea) unit.get(0);
+		if (run.getUnitWidth() != c.getIPD()) return run.getUnitWidth();   // the FO's own width
+		int step = gridStep(c, c.getIPD());
+		if (step > 0) run.setUnitWidth(step);
+		return run.getUnitWidth();
+	}
+
+	/** {@code InlineParent.inlines} (protected): a FilledArea's repeating unit, which its
+	 *  own {@code getChildAreas} expands. */
+	private static final Field IP_INLINES;
+	static {
+		try {
+			IP_INLINES = org.apache.fop.area.inline.InlineParent.class.getDeclaredField("inlines");
+			IP_INLINES.setAccessible(true);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("FOP's InlineParent has changed; org.docx4j.fop.wordlayout needs updating", e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static java.util.List<org.apache.fop.area.inline.InlineArea> filledUnit(
+			org.apache.fop.area.inline.FilledArea run) {
+		try {
+			return (java.util.List<org.apache.fop.area.inline.InlineArea>) IP_INLINES.get(run);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	/** Replace a leader's area with a plain space of the same height: the tab reached
 	 *  a stop with no leader, but the FO could not know which stop that would be. */
 	static void blankLeaderArea(org.apache.fop.layoutmgr.LayoutManager lm) {

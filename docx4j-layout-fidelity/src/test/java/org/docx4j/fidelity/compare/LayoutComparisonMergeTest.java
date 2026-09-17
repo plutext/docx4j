@@ -90,11 +90,28 @@ public class LayoutComparisonMergeTest {
 		assertEquals(1, r.merged);
 	}
 
-	/** 4.15pt at 9pt is 0.46 em and merges; a whole line pitch does not. */
+	/** 4.15pt at 9pt is 0.46 em and merges; 15.6pt, more than a line pitch, does not. */
 	@Test
-	public void piecesFurtherApartThanHalfAnEmDoNotMerge() {
+	public void piecesMoreThanALinePitchApartDoNotMerge() {
 		LayoutComparison.Result r = compare(refMerged(), candSplit(99.0, 167.3));
 		assertEquals(1, r.matched);
+		assertEquals(0, r.merged);
+	}
+
+	/**
+	 * The bound that keeps the pass from hiding a displacement of nearly a whole line:
+	 * a corpus check-box glyph we paint 9.86pt (0.99 em) above the label Word paints it
+	 * beside is <b>stacked</b> - the label begins to the left of the glyph's own right
+	 * edge - so it takes the half-em bound and does not merge, although a row that far
+	 * apart would.
+	 */
+	@Test
+	public void stackedPiecesTakeTheStackedBoundEvenWhenARowThatFarApartWouldMerge() {
+		PdfLayout.Line[] ref = { anchor(100), line(0, 110.0, 67.71, 156.50, "x 9.00-9.15") };
+		PdfLayout.Line[] cand = { anchor(100), line(0, 110.0, 67.71, 74.38, "x"),
+				line(0, 119.86, 66.75, 156.50, "9.00-9.15") };
+		LayoutComparison.Result r = compare(ref, cand);
+		assertEquals("0.99 em apart and overlapping: stacked, so refused", 1, r.matched);
 		assertEquals(0, r.merged);
 	}
 
@@ -102,6 +119,101 @@ public class LayoutComparisonMergeTest {
 	public void piecesAtAnotherIndentDoNotMerge() {
 		LayoutComparison.Result r = compare(refMerged(), candSplit(110.4, 185.3));
 		assertEquals(1, r.matched);
+		assertEquals(0, r.merged);
+	}
+
+	/** A row of cells, each beginning after the one before it ends. */
+	private static PdfLayout.Line[] rowOf(int n, double[] xs, double[] ys) {
+		PdfLayout.Line[] out = new PdfLayout.Line[n + 1];
+		out[0] = anchor(100);
+		for (int i = 0; i < n; i++) {
+			out[i + 1] = line(0, ys[i], xs[i], xs[i] + 38.5, "9.00-9.15");
+		}
+		return out;
+	}
+
+	private static PdfLayout.Line[] rowAsOneLine(int n) {
+		StringBuilder t = new StringBuilder("9.00-9.15");
+		for (int i = 1; i < n; i++) t.append(" 9.00-9.15");
+		return new PdfLayout.Line[] { anchor(100), line(0, 121.78, 86.42, 681.13, t.toString()) };
+	}
+
+	/**
+	 * The five-cell row of {@code 14_en-AU_tbl_174}'s page 1, which Word reads as one
+	 * line at x 86.42..681.13 and our extractor reads as five: it needs
+	 * {@code MERGE_MAX} of at least five, and its baselines span 2.25pt.
+	 */
+	@Test
+	public void aFiveCellRowMerges() {
+		double[] xs = { 86.25, 223.90, 358.20, 506.45, 642.05 };
+		double[] ys = { 121.78, 123.79, 122.47, 123.79, 121.54 };
+		LayoutComparison.Result r = compare(rowAsOneLine(5), rowOf(5, xs, ys));
+		assertEquals(2, r.refLines);
+		assertEquals(6, r.candLines);
+		assertEquals("both reference lines pair", 2, r.matched);
+		assertEquals(1, r.merged);
+	}
+
+	/** Six, the widest row measured on the corpora - a rating scale on
+	 *  {@code 16_fr-CA_sdt_num_tbl_3640}, a six-cell heading on
+	 *  {@code 12_en-US_sdt_fields1_num_tbl_4957} - merges. */
+	@Test
+	public void aSixCellRowMerges() {
+		LayoutComparison.Result r = compare(rowAsOneLine(6), evenRow(6));
+		assertEquals(2, r.matched);
+		assertEquals(1, r.merged);
+	}
+
+	/** And the pass stops there: seven pieces are more than one line may claim, which is
+	 *  what keeps the per-glyph letter-spaced diagram of
+	 *  {@code 15_es-AR_sdt_num_tbl_12301} - single digits on one baseline, seven to
+	 *  twenty of them - out of a pass meant for a row. */
+	@Test
+	public void aSevenCellRowDoesNotMerge() {
+		LayoutComparison.Result r = compare(rowAsOneLine(7), evenRow(7));
+		assertEquals(1, r.matched);
+		assertEquals(0, r.merged);
+	}
+
+	/** n cells 60pt apart, alternating 2pt in baseline. */
+	private static PdfLayout.Line[] evenRow(int n) {
+		double[] xs = new double[n], ys = new double[n];
+		for (int i = 0; i < n; i++) {
+			xs[i] = 86.25 + i * 60.0;
+			ys[i] = 121.78 + (i % 2) * 2.0;
+		}
+		return rowOf(n, xs, ys);
+	}
+
+	/**
+	 * A row's cells share no baseline: two cells of one row 0.97 em apart - the
+	 * letterhead of {@code 14_en-US_tbl_2564} and {@code 14_en-US_tbl_10224} - merge,
+	 * where the same two stacked would not.
+	 */
+	@Test
+	public void rowCellsNearlyAnEmApartMerge() {
+		double[] xs = { 74.22, 419.34 };
+		double[] ys = { 100.00, 107.29 };
+		PdfLayout.Line[] cand = rowOf(2, xs, ys);
+		cand[1].size = 7.5;
+		cand[2].size = 7.5;
+		PdfLayout.Line[] ref = { anchor(100), line(0, 100.0, 74.22, 510.60, "9.00-9.15 9.00-9.15") };
+		LayoutComparison.Result r = compare(ref, cand);
+		assertEquals("7.29pt at 7.5pt is 0.97 em, and they are a row", 2, r.matched);
+		assertEquals(1, r.merged);
+	}
+
+	/** A full line pitch apart is refused however the cells sit. */
+	@Test
+	public void rowCellsAFullLinePitchApartDoNotMerge() {
+		double[] xs = { 74.22, 419.34 };
+		double[] ys = { 100.00, 109.00 };
+		PdfLayout.Line[] cand = rowOf(2, xs, ys);
+		cand[1].size = 7.5;
+		cand[2].size = 7.5;
+		PdfLayout.Line[] ref = { anchor(100), line(0, 100.0, 74.22, 510.60, "9.00-9.15 9.00-9.15") };
+		LayoutComparison.Result r = compare(ref, cand);
+		assertEquals("9.00pt at 7.5pt is 1.2 em", 1, r.matched);
 		assertEquals(0, r.merged);
 	}
 

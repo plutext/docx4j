@@ -135,12 +135,16 @@ public class FontSubstitutionTableTest {
 		assertFalse(cambriaGreek.matches(null));
 	}
 
-	/** The one measured width factor, and the substitute test that goes with it: a
+	/** The measured width factors, and the substitute test that goes with them: a
 	 *  machine without Carlito puts Calibri Light on a face whose advances are not
-	 *  Calibri's at all, and gets no factor. */
+	 *  Calibri's at all, and gets no factor.  The map is keyed by document font and
+	 *  holds every row for it, so its size counts fonts, not rows. */
 	@Test
 	public void theWidthFactorIsTheOneMeasured() {
-		assertEquals(3, FontSubstitutionTable.widthFactors().size());
+		assertEquals("Calibri Light, Meiryo, Cambria, Tahoma", 4,
+				FontSubstitutionTable.widthFactors().size());
+		assertEquals("Cambria has a row per face and per substitute family", 5,
+				FontSubstitutionTable.widthFactors().get("cambria").size());
 		assertEquals(0.987, WidthFactors.factorFor("Calibri Light", "Carlito Regular"), 0.0001);
 		// Meiryo's Latin against Carlito's, measured on a corpus document Word drew in it
 		assertEquals(1.21, WidthFactors.factorFor("Meiryo", "Carlito Regular"), 0.0001);

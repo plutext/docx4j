@@ -2136,7 +2136,7 @@ public class XsltFOFunctions {
 				} else {
 					
 					createFoAttributes(wmlPackage, rPrParagraphMark, foListItemLabel );	        				
-					createFoAttributes(wmlPackage, rPrParagraphMark, foListItemBody );	
+					createFoAttributes(wmlPackage, alignmentRPr(rPrParagraphMark), foListItemBody );	
 					
 					rfsFrag = (DocumentFragment)runFontSelector.fontSelector(pPr, rPrParagraphMark, triple.getNumString());
 					applyRunFontSelection(rfsFrag, foListItemLabelBody);
@@ -2158,7 +2158,7 @@ public class XsltFOFunctions {
 				 * parity.  @since 17.1.0 */
 				createFoAttributes(wmlPackage, labelRPr(actual, rPrParagraphMark), foListItemLabel );
 				if (rPrParagraphMark!=null) {
-					createFoAttributes(wmlPackage, rPrParagraphMark, foListItemBody );
+					createFoAttributes(wmlPackage, alignmentRPr(rPrParagraphMark), foListItemBody );
 				}
 
 			}
@@ -2769,6 +2769,11 @@ public class XsltFOFunctions {
 			foLeader.setAttribute("leader-length.optimum",  "40pt");
 			foLeader.setAttribute("leader-pattern",  "dots");
 			if (fontFamily.length()>0) foLeader.setAttribute("font-family", fontFamily);
+			/* It is not a tab the line manager lays out - the justification gives it its
+			 * width - but its characters are still Word's leader characters, and Word puts
+			 * those on its 1/300 inch grid anchored on the page edge.  The mark tells the
+			 * line manager's grid pass which leaders are its business.  @since 17.1.1 */
+			foLeader.setAttribute(WordLayoutFixups.HINT_TOC_LEADER, "dot");
 			/* Word writes the partial cell at each end of a leader run as a space glyph -
 			 * measured on a corpus document's entries, its space is at x=139.730 and its
 			 * first dot at 140.450 - and the line manager writes that space for a tab it
@@ -3396,11 +3401,71 @@ public class XsltFOFunctions {
     	
     }
 
+	/**
+	 * What of the paragraph mark's run properties belongs on the {@code fo:list-item-body}:
+	 * the <b>size</b>, and nothing else.
+	 *
+	 * <p>The body is formatted at all for one reason, which
+	 * {@link #createListBlock}'s comment gives: FOP aligns a list item's label and its body
+	 * on their baselines only where the <b>font size</b> is set at the same level on both.
+	 * Everything else the paragraph mark carries was riding along with it, and the body is
+	 * the wrapper the paragraph's <em>text</em> sits in, so the text inherited it.</p>
+	 *
+	 * <p>Measured on a corpus document whose numbered paragraphs carry {@code <w:b/>} on
+	 * the paragraph mark and nothing bold anywhere else - not the document defaults, not
+	 * {@code Normal}, not {@code ListParagraph}, not the runs, and the numbering level's
+	 * own {@code w:rPr} says {@code <w:b w:val="0"/>}: <b>62 of its 175</b>
+	 * {@code fo:list-item-body} elements came out {@code font-weight="bold"} and Word
+	 * draws that text in {@code ArialMT}, not {@code Arial-BoldMT} (CR-001 batch 46 item
+	 * 4). The paragraph mark's properties are the <b>mark's</b>, and through
+	 * {@code w:lvl/w:rPr} the <b>number's</b> (ECMA-376-1 &#xa7;17.9.24); they are not the
+	 * paragraph's text's.</p>
+	 *
+	 * <p>The label keeps the whole of them, which is where they belong and where they were
+	 * already going.</p>
+	 *
+	 * <p>{@code w:lang} is kept beside the size, and it is the one thing here that is not
+	 * about the alignment: it is not a visual property of the mark at all but the language
+	 * the content is in, which FOP's line breaking consults.  Measured over the three
+	 * corpora, keeping it or dropping it makes <b>no</b> difference to any document's
+	 * score; it is kept because leaving the language on the body is the narrower change
+	 * and because the property is not the mark's to begin with.</p>
+	 *
+	 * <p>One measured cost, which belongs to the line box and not here: where the runs of
+	 * such a paragraph are themselves bold, the body's inherited {@code font-weight} was
+	 * also what sized the block's line box.  On a corpus document of 271 numbered
+	 * paragraphs, 11 of which carry {@code <w:b/>} on the mark and hold bold runs, the
+	 * baseline-to-baseline step of those lines goes 10.35pt to 10.15pt at 9pt when the
+	 * weight leaves the body, where Word's is 10.32pt; five such items then pull back onto
+	 * the page before and the document loses 11 matched lines (its page count, its line
+	 * count and every face on it are unchanged).  The line box wants the metrics of the
+	 * font actually on the line, which is a matter for the line layout and not for what
+	 * the mark writes on the body.</p>
+	 *
+	 * @return an rPr carrying only {@code w:sz}, {@code w:szCs} and {@code w:lang}, or
+	 *         null where the mark states none of them (the body then inherits them, as it
+	 *         did)
+	 * @since 17.1.1
+	 */
+	private static RPr alignmentRPr(RPr rPrParagraphMark) {
+		if (rPrParagraphMark == null) return null;
+		if (rPrParagraphMark.getSz() == null && rPrParagraphMark.getSzCs() == null
+				&& rPrParagraphMark.getLang() == null) {
+			return null;
+		}
+		RPr out = Context.getWmlObjectFactory().createRPr();
+		out.setSz(rPrParagraphMark.getSz());
+		out.setSzCs(rPrParagraphMark.getSzCs());
+		out.setLang(rPrParagraphMark.getLang());
+		return out;
+	}
+
 	/** Apply the FO attributes for these run properties.  Public since 17.0.4, so
 	 *  the visitor pathway shares it (previously FOExporterVisitorGenerator had its
 	 *  own copy). */
 	public static void createFoAttributes(OpcPackage opcPackage,
 			RPr rPr, Element foInlineElement){
+		if (rPr == null) return;
 
     	List<Property> properties = PropertyFactory.createProperties(opcPackage, rPr);
 

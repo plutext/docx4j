@@ -470,7 +470,15 @@ public class PropertyResolver {
 		return effectiveRPr;
 	}
 
-	/** The character style's chain (the style it names, if it exists), then the direct formatting. */
+	/**
+	 * The character style's chain (the style it names, if it exists), then the direct
+	 * formatting.
+	 *
+	 * <p>The character style is a <b>level</b> of the style hierarchy over the paragraph's,
+	 * so its toggle properties are XORed with what is beneath rather than overriding it
+	 * (ECMA-376-1 &#xa7;17.7.3, quoted in {@link StyleUtil#applyStyleLevel}).  The direct
+	 * formatting after it is not a level: an explicit value there is used as it stands.</p>
+	 */
 	private void applyCharacterStyleAndDirect(RPr expressRPr, RPr effectiveRPr) throws CyclicStylesException {
 
 		if (expressRPr != null && expressRPr.getRStyle() != null && expressRPr.getRStyle().getVal() != null) {
@@ -478,7 +486,7 @@ public class PropertyResolver {
 			if (getLiveStyle(runStyleId) == null) {
 				logMissing(runStyleId);
 			} else {
-				applyRPr(chainRPr(runStyleId), effectiveRPr);
+				StyleUtil.applyStyleLevel(chainRPr(runStyleId), effectiveRPr, documentDefaultRPr);
 			}
 		}
 		if (hasDirectRPrFormatting(expressRPr) ) {			

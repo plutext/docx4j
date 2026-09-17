@@ -1130,12 +1130,23 @@ public abstract class Mapper {
      * @since 17.1.1
      */
     public double widthFactorFor(String documentFont, String physicalFontName) {
+    	return widthFactorFor(documentFont, physicalFontName, false, false);
+    }
 
-    	double factor = WidthFactors.factorFor(documentFont, physicalFontName);
+    /**
+     * As {@link #widthFactorFor(String, String)}, for the face the run is actually set in:
+     * a family's weights are not one another's width.
+     *
+     * @since 17.1.1
+     */
+    public double widthFactorFor(String documentFont, String physicalFontName,
+    		boolean bold, boolean italic) {
+
+    	double factor = WidthFactors.factorFor(documentFont, physicalFontName, bold, italic);
     	if (factor!=1) return factor;
     	String family = lineMetricsFamily(documentFont);
     	if (family==null || family.equalsIgnoreCase(documentFont)) return 1;
-    	return WidthFactors.factorFor(family, physicalFontName);
+    	return WidthFactors.factorFor(family, physicalFontName, bold, italic);
     }
 
     /**

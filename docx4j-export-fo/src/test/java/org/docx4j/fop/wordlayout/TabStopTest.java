@@ -711,4 +711,145 @@ public class TabStopTest {
 				wordStarts(fo("", "1440:-720:.", "start-indent=\"72pt\" text-indent=\"-36pt\"",
 						"ab" + TAB + "x")));
 	}
+
+	// ---- the stretching leader of a table-of-contents entry (CR-001 batch 46 item 2) ----
+
+	/** What XsltFOFunctions.tabToFO writes for a table-of-contents entry: a leader which
+	 *  stretches to the end of the line rather than one the line manager lays out against
+	 *  a stop, marked docx4j:toc-leader so the grid pass knows whose it is.  Courier 11pt,
+	 *  whose dot advances 6.6pt - 27.5 of the 1/300 inch cells Word counts in, so it is
+	 *  not already on the grid. */
+	private static final String TOC_LEADER_11 =
+			"<fo:leader docx4j:toc-leader=\"dot\" font-size=\"11pt\" leader-pattern=\"dots\""
+			+ " leader-length.minimum=\"12pt\" leader-length.optimum=\"40pt\""
+			+ " leader-length.maximum=\"100%\"/>";
+
+	/** The same leader as a <b>rule</b>, which draws no characters and has no grid. */
+	private static final String TOC_RULE_11 =
+			"<fo:leader docx4j:toc-leader=\"dot\" font-size=\"11pt\" leader-pattern=\"rule\""
+			+ " leader-length.minimum=\"12pt\" leader-length.optimum=\"40pt\""
+			+ " leader-length.maximum=\"100%\"/>";
+
+	/** And an unmarked stretching leader: one the document did not ask for. */
+	private static final String PLAIN_LEADER_11 =
+			"<fo:leader font-size=\"11pt\" leader-pattern=\"dots\""
+			+ " leader-length.minimum=\"12pt\" leader-length.optimum=\"40pt\""
+			+ " leader-length.maximum=\"100%\"/>";
+
+	private static String tocFo(String leader) {
+		return fo("", "0:0:.", "text-align=\"justify\" text-align-last=\"justify\"",
+				"abc" + leader + "9");
+	}
+
+	/**
+	 * A table-of-contents entry's stretching leader goes on Word's grid too: its dots step
+	 * on the advance rounded to 1/300 inch, and the run opens on a whole multiple of that
+	 * step measured from the page's left edge.
+	 *
+	 * <p>Measured on the {@code tab-leader-kinds} golden (batch 45 &#xa7;C.3): Word's
+	 * hyphens sit at 151.270 / 154.630 / 157.990, a step of 3.36 = fourteen cells, where
+	 * ours sat at 149.418 / 152.784 on the raw 3.366 anchored on the line.  The anchor is
+	 * what a reader sees - Word's run opens 3.214pt after the text and ours opened 1.422pt,
+	 * under the 0.25 em a space needs to be read as one.</p>
+	 *
+	 * <p>Here the page has no margin, so the page edge is the region edge and the numbers
+	 * are the test's own: Courier 11pt's dot advances 6.6pt and steps 6.72 (28 cells);
+	 * "abc" at 12pt ends at 21.6pt, inside the fourth step, so the run opens at 26.88 -
+	 * four steps from the page edge - and the blank before it is 5.28.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void aTocLeaderStepsOnWordsGridAndOpensOnIt() throws Exception {
+		assertEquals(at(6.72), dotUnitWidths(tocFo(TOC_LEADER_11)));
+		assertEquals(at(26.88 - 21.6), leaderPhases(tocFo(TOC_LEADER_11)));
+	}
+
+	/**
+	 * And the line is exactly as wide as it was: the dots give up the phase and the blank
+	 * in front of them takes it.  The line is already justified when the pass runs and this
+	 * leader is what absorbed its slack, so anything else would move the page number.
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void gridingATocLeaderDoesNotChangeTheLinesWidth() throws Exception {
+		String fo = tocFo(TOC_LEADER_11);
+		String off = System.getProperty(WordLayoutCustomizer.LEADER_GRID);
+		List<Double> ungridded;
+		try {
+			System.setProperty(WordLayoutCustomizer.LEADER_GRID, "false");
+			ungridded = lineWidths(fo);
+		} finally {
+			if (off == null) System.clearProperty(WordLayoutCustomizer.LEADER_GRID);
+			else System.setProperty(WordLayoutCustomizer.LEADER_GRID, off);
+		}
+		assertEquals("the line fills the 400pt page either way", at(400), ungridded);
+		assertEquals(ungridded, lineWidths(fo));
+		// and the wrapper measures what the leader measured: blank + dots, to the point
+		assertEquals(at(400), phasedLeaderWidths(fo, 400 - 3 * CHAR - CHAR));
+	}
+
+	/**
+	 * The same, with the leader where a real entry puts it: inside the {@code fo:inline}s
+	 * which carry the entry's size and colour and inside the {@code fo:basic-link} of its
+	 * bookmark.  The element the line's sequence holds then names the <b>outermost</b> of
+	 * those managers, so the leader has to be reached through the element's position chain
+	 * - which is what {@code tabLeader} does for a tab, and what this covers: written
+	 * without it, the pass fired on a leader written bare and on no real entry at all.
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void aTocLeaderIsFoundInsideTheEntrysInlines() throws Exception {
+		String nested = fo("", "0:0:.", "text-align=\"justify\" text-align-last=\"justify\"",
+				"<fo:inline font-size=\"12pt\"><fo:basic-link internal-destination=\"t\">"
+				+ "<fo:inline color=\"#0563C1\">abc</fo:inline>"
+				+ "<fo:inline>" + TOC_LEADER_11 + "9</fo:inline>"
+				+ "</fo:basic-link></fo:inline>")
+				.replace("</fo:flow>", "<fo:block break-before=\"page\" id=\"t\">x</fo:block></fo:flow>");
+		assertEquals(at(6.72), dotUnitWidths(nested));
+		assertEquals(at(26.88 - 21.6), leaderPhases(nested));
+	}
+
+	/** A rule leader has no characters and so no grid, and an unmarked leader is not ours:
+	 *  both are left exactly as FOP built them. */
+	@Test
+	public void aRuleLeaderAndAnUnmarkedLeaderAreLeftAlone() throws Exception {
+		assertEquals(at(), leaderPhases(tocFo(TOC_RULE_11)));
+		assertEquals(at(), leaderPhases(tocFo(PLAIN_LEADER_11)));
+		assertEquals("an unmarked dot leader keeps FOP's own step, the raw advance",
+				at(6.6), dotUnitWidths(tocFo(PLAIN_LEADER_11)));
+	}
+
+	/** Each line's ipd, in points. */
+	private static List<Double> lineWidths(String fo) throws Exception {
+		List<Double> out = new ArrayList<>();
+		NodeList las = area(fo).getElementsByTagName("lineArea");
+		for (int i = 0; i < las.getLength(); i++) {
+			out.add(round(ipd((Element) las.item(i), "ipd")));
+		}
+		return out;
+	}
+
+	/** Each line's ipd again, having first checked that the phased leader on it measures
+	 *  {@code leaderWidth}: the blank and the dots together are what the leader was. */
+	private static List<Double> phasedLeaderWidths(String fo, double leaderWidth) throws Exception {
+		Document doc = area(fo);
+		NodeList parents = doc.getElementsByTagName("inlineparent");
+		for (int i = 0; i < parents.getLength(); i++) {
+			List<Element> kids = childElements((Element) parents.item(i));
+			if (kids.size() != 2 || !"space".equals(kids.get(0).getLocalName())) continue;
+			if (!"inlineparent".equals(kids.get(1).getLocalName())) continue;
+			assertEquals("the blank and the dots are the leader's own width",
+					round(leaderWidth),
+					round(ipd(kids.get(0), "ipd") + ipd(kids.get(1), "ipd")), 0.001);
+		}
+		List<Double> out = new ArrayList<>();
+		NodeList las = doc.getElementsByTagName("lineArea");
+		for (int i = 0; i < las.getLength(); i++) {
+			out.add(round(ipd((Element) las.item(i), "ipd")));
+		}
+		return out;
+	}
 }

@@ -1930,6 +1930,126 @@ public class WordLineLayoutManager extends LineLayoutManager {
         }
     }
 
+    /**
+     * Put a table-of-contents entry's <b>stretching</b> leader on Word's grid.
+     *
+     * <p>Word draws a leader run's characters on a step of the character's advance
+     * <b>rounded to 1/300 inch</b>, and begins the run on a whole multiple of that step
+     * measured from the <b>page's left edge</b> - {@link LBP#gridPhase} has the rule and
+     * the readings it was taken from.  Measured on the {@code tab-leader-kinds} golden
+     * (batch 45 &#xa7;C.3): Word's hyphens sit at 151.270, 154.630 and 157.990, a step of
+     * <b>3.36</b> = 14 cells of 240 millipoints, where ours sat at 149.418 and 152.784 on
+     * the raw advance of <b>3.366</b>, anchored on the line rather than the page.  The
+     * anchor is what the reader sees: Word's run opens <b>3.214pt</b> after the text and
+     * ours opened <b>1.422pt</b>, under the 0.25 em a reader needs, so no space was read
+     * there and the entry's text and its leader ran together in the text layer.
+     *
+     * <p>A <em>tab's</em> leader is gridded where the tab is settled
+     * ({@link #dotLeaderPhase}), because that is where its x is known.  A
+     * table-of-contents entry's leader is not a tab this manager lays out - the FO makes
+     * it a stretching {@code fo:leader} and the justification gives it its width
+     * (XsltFOFunctions.tabToFO) - and nothing positional reaches a leaf layout manager
+     * either, so it is done here, once the line's areas exist and the x can be counted
+     * off them.
+     *
+     * <p>Which leaders: those the FO marked {@link WordLayoutElementMapping#TOC_LEADER},
+     * which XsltFOFunctions writes on exactly the stretching leader it makes for a
+     * {@code w:tab} carrying a {@code w:leader}.  A leader the document did not ask for,
+     * and a rule leader, carry no mark and are left alone - the mark is the test, not the
+     * area's shape, because by this point the area is only a {@code FilledArea} and says
+     * nothing about where it came from.
+     *
+     * <p>The line's width is unchanged: the run gives up the phase and the blank in front
+     * of it takes exactly that (see {@link LBP#gridPlacedLeader}), which matters because
+     * the line is already justified and this leader is what absorbed its slack.
+     *
+     * @since 17.1.1
+     */
+    private void gridTocLeaders(KnuthSequence seq, int from, int to, LineArea lineArea) {
+        if (!WordLayoutCustomizer.leaderGrid()) return;
+        for (int i = Math.max(0, from); i <= to && i < seq.size(); i++) {
+            Object o = seq.get(i);
+            if (!(o instanceof KnuthElement)) continue;
+            LayoutManager lm = tocLeader((KnuthElement) o);
+            if (lm == null) continue;
+            InlineArea area = LBP.leafArea(lm);
+            if (!(area instanceof org.apache.fop.area.inline.FilledArea)) continue;
+            int[] x = { 0 };
+            if (!xOf(lineArea.getInlineAreas(), area, x)) continue;
+            InlineArea phased = LBP.gridPlacedLeader((org.apache.fop.area.inline.FilledArea) area,
+                    x[0] + lineArea.getStartIndent() + pageOffsetMpt());
+            if (phased != null) replaceArea(lineArea.getInlineAreas(), area, phased);
+        }
+    }
+
+    /**
+     * This element's layout manager where it is a table-of-contents entry's marked
+     * stretching leader, else null.
+     *
+     * <p>Through the element's <b>position</b> chain, as {@link #tabLeader} does, and not
+     * through {@code KnuthElement.getLayoutManager()}: an entry's leader sits inside the
+     * {@code fo:inline}s that carry the entry's colour, size and hyperlink, and the
+     * element then reports the outermost of those managers.  The leaf position is the one
+     * that names the leader itself.
+     */
+    private LayoutManager tocLeader(KnuthElement element) {
+        Position leaf = element.getPosition();
+        while (leaf != null && !(leaf instanceof LeafPosition)) {
+            leaf = leaf.getPosition();
+        }
+        LayoutManager lm = leaf == null ? null : leaf.getLM();
+        if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) return null;
+        String kind = foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TOC_LEADER);
+        return (kind != null && kind.length() > 0) ? lm : null;
+    }
+
+    /**
+     * How far into the line {@code target} begins, in millipoints, adding up the areas
+     * painted before it; true where it was found.
+     *
+     * <p>Not {@link #flatten}, which is for order and not for width: it lists a nested
+     * inline <b>and</b> its children, so adding those IPDs up counts the nested ones
+     * twice.  Here a parent is either descended into or counted, never both, and a
+     * {@code FilledArea} is counted whole - {@code FilledArea.getChildAreas()} does not
+     * return its children at all but its repeating unit repeated to fill its width,
+     * computed on the call.
+     */
+    private static boolean xOf(List<?> areas, InlineArea target, int[] x) {
+        for (Object o : areas) {
+            if (!(o instanceof InlineArea)) continue;
+            InlineArea a = (InlineArea) o;
+            if (a == target) return true;
+            if (a instanceof org.apache.fop.area.inline.InlineParent
+                    && !(a instanceof org.apache.fop.area.inline.FilledArea)) {
+                if (xOf(((org.apache.fop.area.inline.InlineParent) a).getChildAreas(), target, x)) {
+                    return true;
+                }
+            } else {
+                x[0] += a.getIPD();
+            }
+        }
+        return false;
+    }
+
+    /** Put {@code fresh} where {@code old} sits in this line's areas, at whatever depth. */
+    @SuppressWarnings("unchecked")
+    private static boolean replaceArea(List<?> areas, InlineArea old, InlineArea fresh) {
+        for (int i = 0; i < areas.size(); i++) {
+            Object a = areas.get(i);
+            if (a == old) {
+                ((List<InlineArea>) areas).set(i, fresh);
+                return true;
+            }
+            if (a instanceof org.apache.fop.area.inline.InlineParent
+                    && !(a instanceof org.apache.fop.area.inline.FilledArea)
+                    && replaceArea(((org.apache.fop.area.inline.InlineParent) a).getChildAreas(),
+                            old, fresh)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** This line's inline areas in the order they are painted; a FilledArea (a dot
      *  leader) repeats its children to fill its width, so it is left whole. */
     private static void flatten(List<InlineArea> areas, List<InlineArea> out) {
@@ -4037,6 +4157,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
         if (!pageNumberTabs.isEmpty()) {
             fixPageNumberTabs(seq, startElementIndex, endElementIndex, lineArea);
         }
+
+        // a table-of-contents entry's stretching leader, which no tab settled, goes on
+        // Word's grid here - after the page-number pass, which finds its tabs by identity
+        // (@since 17.1.1)
+        gridTocLeaders(seq, startElementIndex, endElementIndex, lineArea);
 
         // if display-align is distribute, add space after
         if (context.getSpaceAfter() > 0

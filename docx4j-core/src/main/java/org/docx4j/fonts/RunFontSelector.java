@@ -615,6 +615,14 @@ public class RunFontSelector {
     /** whether the current run asks for ligatures (w14:ligatures); Word's default is none */
     private boolean currentLigatures;
 
+    /** The face the current run is set in, from its <b>effective</b> w:b and w:i, so that
+     *  the width factor can be the one measured for that face ({@link WidthFactors}).  The
+     *  FO does not say: the weight is on an ancestor block or inline, never on the span
+     *  this class writes - measured on a corpus document, all 13359 of its P052 inlines
+     *  name the regular family and 357 of them are bold by inheritance - so the run's own
+     *  properties are the only place to read it.  @since 17.1.1 */
+    private boolean currentBold, currentItalic;
+
     /** Word's rule for a run's ligatures: none unless w14:ligatures says otherwise. */
     public static boolean hasLigatures(RPr rPr) {
     	if (rPr==null || rPr.getLigatures()==null || rPr.getLigatures().getVal()==null) return false;
@@ -882,6 +890,8 @@ public class RunFontSelector {
     	currentScalingPct = (rPr!=null && rPr.getW()!=null && rPr.getW().getVal()!=null)
     			? rPr.getW().getVal().intValue() : 100;
     	currentLigatures = hasLigatures(rPr);
+    	currentBold = isOn(rPr==null ? null : rPr.getB());
+    	currentItalic = isOn(rPr==null ? null : rPr.getI());
     	currentSizePt = (rPr!=null && rPr.getSz()!=null && rPr.getSz().getVal()!=null)
     			? rPr.getSz().getVal().doubleValue()/2 : -1;
     	// effective pPr is needed for the style-inherited w:spacing; cache per pPr object
@@ -998,8 +1008,8 @@ public class RunFontSelector {
     private void markWidthFactor(Element el, String documentFontName, String physicalFontName) {
     	Mapper mapper = wordMLPackage==null ? null : wordMLPackage.getFontMapper();
     	double factor = mapper==null
-    			? WidthFactors.factorFor(documentFontName, physicalFontName)
-    			: mapper.widthFactorFor(documentFontName, physicalFontName);
+    			? WidthFactors.factorFor(documentFontName, physicalFontName, currentBold, currentItalic)
+    			: mapper.widthFactorFor(documentFontName, physicalFontName, currentBold, currentItalic);
     	if (factor==1) {
     		el.removeAttribute(MARK_WIDTH_FACTOR);
     	} else {
