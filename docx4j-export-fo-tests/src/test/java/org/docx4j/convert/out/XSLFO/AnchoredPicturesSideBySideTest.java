@@ -23,6 +23,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
@@ -35,20 +37,29 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Two {@code wrapTopAndBottom} anchored pictures which do not overlap horizontally sit
- * <b>side by side</b>, as Word draws them, and reserve the band once.
+ * Two {@code wrapTopAndBottom} anchored pictures in one paragraph sit <b>side by side</b>,
+ * as Word draws them, and reserve the band once - whatever their horizontal offsets.
  *
  * <p>{@code wrapTopAndBottom} says that <em>text</em> does not flow beside the object, so
  * each such picture reserves a band of the flow.  It does not say that another
- * <em>picture</em> cannot sit there.  Measured on a corpus document with seven of them,
- * each about 225pt wide in a 470pt column, from Word's own PDF: its page 3 carries four,
- * two at x=73.85 and x=308.25 on one baseline and two at x=78.75 and x=317.20 on another,
- * and its page 4 carries three.  Ours put each below the last - the second of a pair
- * landed 210.75pt lower - and the document ran to six pages against Word's four.</p>
+ * <em>picture</em> cannot sit there.  The four cases below are the four of the
+ * {@code anchor-side-by-side} probe, read off Word's own PDF: 200 x 100pt pictures at
+ * {@code positionV} 10pt and 12pt in a 451.3pt column.</p>
  *
- * <p>The rule is not that the two share a {@code positionV}: two of that document's pairs
- * sit 0.25pt and 2.00pt apart in Word's own PDF, so each keeps its own offset. What the
- * band does is stop one reserving space against the other.</p>
+ * <ul>
+ * <li>at {@code posOffset} 0 and 240pt Word draws them at x=72.00 and x=312.00, tops
+ *     149.20 and 151.20, and reserves 112pt - max(offset + height) - for the pair;
+ * <li>at 0 and 150pt, <b>overlapping by 50pt</b>, Word bands them just the same: x=72.00
+ *     and x=222.00, tops 314.59 and 316.59, one 112pt band, the two overlapping on the
+ *     page with the later picture painted on top;
+ * <li>at 0 and 200pt, touching exactly, likewise;
+ * <li>anchored in <b>two</b> paragraphs, Word does not band them: 110pt and 112pt, with
+ *     the paragraph between them in between, though their x values are disjoint.
+ * </ul>
+ *
+ * <p>The rule is not that the two share a {@code positionV}: every pair's two tops are
+ * 2.00pt apart in Word's PDF, the offsets the docx asks for, so each keeps its own.  What
+ * the band does is stop one reserving space against the other.</p>
  *
  * @since 17.1.1
  */
@@ -102,7 +113,14 @@ public class AnchoredPicturesSideBySideTest extends AbstractXSLFOTest {
 				+ "</a:graphicData></a:graphic></wp:anchor></w:drawing></w:r>";
 	}
 
+	/** One paragraph holding the given anchored runs, then a paragraph of text. */
 	private org.w3c.dom.Document fo(int flags, String runs) throws Exception {
+		return foBody(flags, "<w:p>" + runs
+				+ "<w:r><w:t>text of the anchor paragraph</w:t></w:r></w:p>");
+	}
+
+	/** The given body paragraphs, then a paragraph of text and the section properties. */
+	private org.w3c.dom.Document foBody(int flags, String body) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage img =
 				org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
@@ -110,8 +128,7 @@ public class AnchoredPicturesSideBySideTest extends AbstractXSLFOTest {
 		String relId = img.getSourceRelationship().getId();
 
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
-				"<w:document " + W + "><w:body><w:p>" + runs.replace("@REL@", relId)
-				+ "<w:r><w:t>text of the anchor paragraph</w:t></w:r></w:p>"
+				"<w:document " + W + "><w:body>" + body.replace("@REL@", relId)
 				+ "<w:p><w:r><w:t>the paragraph after</w:t></w:r></w:p>"
 				+ SECT_PR + "</w:body></w:document>"));
 
@@ -142,78 +159,115 @@ public class AnchoredPicturesSideBySideTest extends AbstractXSLFOTest {
 
 	/** The first container which reserves height in the flow, or null. */
 	private static Element reserving(org.w3c.dom.Document doc) {
-		NodeList list = doc.getElementsByTagNameNS(FO, "block-container");
-		for (int i = 0; i < list.getLength(); i++) {
-			Element c = (Element) list.item(i);
-			if (c.hasAttribute("absolute-position")) continue;
-			String h = c.getAttribute("height");
-			if (h.length() > 0 && !"0pt".equals(h)) return c;
-		}
-		return null;
+		return reservingHeights(doc).isEmpty() ? null : reservingElements(doc).get(0);
 	}
 
-	/** The containers which reserve height in the flow (a band is one of them). */
-	private static int reservingContainers(org.w3c.dom.Document doc) {
-		int n = 0;
+	/** The containers which reserve height in the flow (a band is one of them), in
+	 *  document order. */
+	private static List<Element> reservingElements(org.w3c.dom.Document doc) {
+		List<Element> found = new ArrayList<Element>();
 		NodeList list = doc.getElementsByTagNameNS(FO, "block-container");
 		for (int i = 0; i < list.getLength(); i++) {
 			Element c = (Element) list.item(i);
 			if (c.hasAttribute("absolute-position")) continue;
 			String h = c.getAttribute("height");
-			if (h.length() > 0 && !"0pt".equals(h)) n++;
+			if (h.length() > 0 && !"0pt".equals(h)) found.add(c);
 		}
-		return n;
+		return found;
+	}
+
+	/** Their heights, in document order. */
+	private static List<String> reservingHeights(org.w3c.dom.Document doc) {
+		List<String> heights = new ArrayList<String>();
+		for (Element c : reservingElements(doc)) heights.add(c.getAttribute("height"));
+		return heights;
+	}
+
+	private static int reservingContainers(org.w3c.dom.Document doc) {
+		return reservingElements(doc).size();
+	}
+
+	/** One named attribute of each absolutely positioned container, in document order -
+	 *  which is the order the members of a band are painted in. */
+	private static List<String> positioned(org.w3c.dom.Document doc, String attribute) {
+		List<String> values = new ArrayList<String>();
+		NodeList list = doc.getElementsByTagNameNS(FO, "block-container");
+		for (int i = 0; i < list.getLength(); i++) {
+			Element c = (Element) list.item(i);
+			if (c.hasAttribute("absolute-position")) values.add(c.getAttribute(attribute));
+		}
+		return values;
 	}
 
 	/**
-	 * Two 200pt pictures at x=0 and x=240 in a 451.3pt column, 10pt and 12pt below the
-	 * paragraph's top: one band 112pt tall holding both where the docx puts them, not two
-	 * bands of 110 and 112 one under the other.
+	 * One band holding both pictures where the docx puts them, 112pt tall - the greatest
+	 * of its members' offset plus height - and not two bands of 110 and 112 one under the
+	 * other.  The members come out in document order, which is the order Word paints them
+	 * in, so where they overlap the later anchor is on top.
+	 *
+	 * @param secondX the second picture's {@code posOffset} from the column, in points
 	 */
-	private void sideBySide(int flags) throws Exception {
+	private void bandedPair(int flags, int secondX) throws Exception {
 		org.w3c.dom.Document doc = fo(flags,
-				anchored("@REL@", 200, 100, 0, 10, 1) + anchored("@REL@", 200, 100, 240, 12, 2));
+				anchored("@REL@", 200, 100, 0, 10, 1) + anchored("@REL@", 200, 100, secondX, 12, 2));
 
 		assertEquals("one band, not one container each", 1, reservingContainers(doc));
+		assertNotNull("the pictures are in the FO", graphic(doc, "200pt"));
 
-		Element left = graphic(doc, "200pt");
-		assertNotNull("the pictures are in the FO", left);
-
-		NodeList placed = doc.getElementsByTagNameNS(FO, "block-container");
-		int positioned = 0;
-		String[] lefts = new String[2], tops = new String[2];
-		for (int i = 0; i < placed.getLength(); i++) {
-			Element c = (Element) placed.item(i);
-			if (!c.hasAttribute("absolute-position")) continue;
-			if (positioned < 2) {
-				lefts[positioned] = c.getAttribute("left");
-				tops[positioned] = c.getAttribute("top");
-			}
-			positioned++;
-		}
-		assertEquals("both pictures are placed within the band", 2, positioned);
-		assertEquals("the first at the docx's own x", "0pt", lefts[0]);
-		assertEquals("the second at its own x, not below the first", "240pt", lefts[1]);
-		assertEquals("each keeps its own vertical offset", "10pt", tops[0]);
-		assertEquals("the rule is not that they share a positionV", "12pt", tops[1]);
+		List<String> lefts = positioned(doc, "left");
+		List<String> tops = positioned(doc, "top");
+		assertEquals("both pictures are placed within the band", 2, lefts.size());
+		assertEquals("the first at the docx's own x", "0pt", lefts.get(0));
+		assertEquals("the second at its own x, not below the first", secondX + "pt", lefts.get(1));
+		assertEquals("each keeps its own vertical offset", "10pt", tops.get(0));
+		assertEquals("the rule is not that they share a positionV", "12pt", tops.get(1));
 
 		Element band = reserving(doc);
 		assertNotNull("the band reserves the flow's height once", band);
 		assertEquals("the greatest extent of its members, 12 + 100", "112pt", band.getAttribute("height"));
 	}
 
-	/**
-	 * And two which <b>do</b> overlap horizontally are stacked as before: Word puts the
-	 * second below the first there, and so must we.
-	 */
-	private void overlapping(int flags) throws Exception {
-		org.w3c.dom.Document doc = fo(flags,
-				anchored("@REL@", 200, 100, 0, 10, 1) + anchored("@REL@", 200, 100, 150, 12, 2));
+	/** (a) Two 200pt pictures at x=0 and x=240 in a 451.3pt column: room for both, and
+	 *  Word bands them - x=72.00 and x=312.00, tops 149.20 and 151.20. */
+	private void sideBySide(int flags) throws Exception {
+		bandedPair(flags, 240);
+	}
 
-		assertEquals("a container each, as before", 2, reservingContainers(doc));
-		Element g = graphic(doc, "200pt");
-		assertNotNull(g);
-		assertNull("neither is positioned", ancestor(g, "block-container", "absolute-position"));
+	/** (b) The same pair at x=0 and x=150, <b>overlapping by 50pt</b>: Word bands them
+	 *  just the same - x=72.00 and x=222.00, tops 314.59 and 316.59, one 112pt band, the
+	 *  two overlapping on the page with the later picture painted on top.  Until the
+	 *  golden was read, the overlap stacked them: 222pt reserved for Word's 112, and the
+	 *  pair in reverse order. */
+	private void overlapping(int flags) throws Exception {
+		bandedPair(flags, 150);
+	}
+
+	/** (c) And at x=0 and x=200, touching exactly at the boundary, which is banded as the
+	 *  disjoint pair is. */
+	private void touching(int flags) throws Exception {
+		bandedPair(flags, 200);
+	}
+
+	/**
+	 * (d) The disjoint pair of (a) split over two paragraphs with a paragraph of text
+	 * between them: Word does <b>not</b> band these.  Its first picture takes a 110pt
+	 * band, the text follows, and the second picture then takes its own 112pt band from
+	 * the second anchor paragraph's own top.  A band never crosses a paragraph.
+	 */
+	private void twoParagraphs(int flags) throws Exception {
+		org.w3c.dom.Document doc = foBody(flags,
+				"<w:p>" + anchored("@REL@", 200, 100, 0, 10, 1)
+				+ "<w:r><w:t>the first anchor paragraph</w:t></w:r></w:p>"
+				+ "<w:p><w:r><w:t>one paragraph of text, between the two anchored ones</w:t></w:r></w:p>"
+				+ "<w:p>" + anchored("@REL@", 200, 100, 240, 12, 2)
+				+ "<w:r><w:t>the second anchor paragraph</w:t></w:r></w:p>");
+
+		assertEquals("a band each: a band never crosses a paragraph", 2, reservingContainers(doc));
+		assertEquals("neither is positioned within a band", 0, positioned(doc, "left").size());
+
+		List<String> heights = reservingHeights(doc);
+		assertEquals("the first reserves its own offset plus its height", "110pt", heights.get(0));
+		assertEquals("the second its own", "112pt", heights.get(1));
 	}
 
 	/** One picture alone is written exactly as it was before this rule. */
@@ -247,6 +301,26 @@ public class AnchoredPicturesSideBySideTest extends AbstractXSLFOTest {
 	@Test
 	public void overlappingXslt() throws Exception {
 		overlapping(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	@Test
+	public void touchingVisitor() throws Exception {
+		touching(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void touchingXslt() throws Exception {
+		touching(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	@Test
+	public void twoParagraphsVisitor() throws Exception {
+		twoParagraphs(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void twoParagraphsXslt() throws Exception {
+		twoParagraphs(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	@Test

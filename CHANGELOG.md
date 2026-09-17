@@ -209,9 +209,12 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   its bold, italic or colour - through the list item body. Only the size reaches the
   body, which is what the label and the body need in common to sit on one baseline
   (CR-001 batch 46).
-- Two top-and-bottom wrapped anchored drawings in one paragraph which do not overlap horizontally
-  share one band, side by side as Word draws them, rather than each reserving its own and
-  stacking (CR-001 batch 46).
+- Two top-and-bottom wrapped anchored drawings in one paragraph share one band, side by side as
+  Word draws them - whatever their horizontal offsets, overlapping or not, each keeping its own
+  vertical offset and the later drawing painted on top - rather than each reserving its own and
+  stacking. A band never crosses a paragraph boundary: drawings anchored in two paragraphs each
+  reserve one, as Word does (CR-001 batch 46; the overlapping pair corrected against Word's
+  golden in CR-001 batch 47).
 - A table-of-contents entry's stretching dot leader steps on Word's 1/300 inch grid and begins on
   a whole multiple of that step from the page's edge, as a tab's leader has since 17.1.0
   (CR-001 batch 46).

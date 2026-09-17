@@ -1534,36 +1534,43 @@ public final class WordLayoutFixups {
 	 */
 	/**
 	 * Put this {@code wrapTopAndBottom} drawing <b>beside</b> one already placed in the
-	 * same paragraph rather than below it, where the two do not overlap horizontally;
-	 * true where it was placed.
+	 * same paragraph rather than below it, whatever its horizontal position; true where it
+	 * was placed.
 	 *
 	 * <p>{@code wrapTopAndBottom} says that <em>text</em> does not flow beside the object,
 	 * and each such drawing therefore reserves its own band of the flow.  It does not say
-	 * that another <em>drawing</em> cannot sit there, and Word puts two that do not
-	 * overlap side by side, each at its own {@code positionV}, reserving the band once.
+	 * that another <em>drawing</em> cannot sit there: Word puts two anchored in one
+	 * paragraph side by side, each at its own {@code positionV}, reserving the band once.
 	 *
-	 * <p>Measured on a corpus document with seven such drawings, each about 225pt wide in
-	 * a 470pt column, from Word's own PDF: its page 3 carries four of them, two at
-	 * x=73.85 and x=308.25 on one baseline and two at x=78.75 and x=317.20 on another, and
-	 * its page 4 carries three, two at x=90.75 and x=336.00 and one alone.  Ours had the
-	 * same seven at very nearly the same x - 317.20, 308.25, 95.25, 90.75 and 336.00 are
-	 * Word's numbers exactly, the horizontal {@code posOffset} being already right - but
-	 * one below another: the second of a pair landed 210.75pt lower and the document ran
-	 * to six pages against Word's four.
+	 * <p>Measured on the {@code anchor-side-by-side} probe against Word's own PDF, on a
+	 * 451.3pt column with 200 x 100pt pictures at {@code positionV} 10pt and 12pt:
+	 * <ul>
+	 * <li>at {@code posOffset} 0 and 240pt Word draws them at x=72.00 and x=312.00, tops
+	 *     149.20 and 151.20 - 2.00pt apart, the offsets the docx asks for - and reserves
+	 *     112pt = max(offset + height), the next line's box beginning at the band's bottom;
+	 * <li>at 0 and 150pt, <b>overlapping by 50pt</b>, Word bands them just the same: x=72.00
+	 *     and x=222.00, tops 314.59 and 316.59, one 112pt band, the two overlapping on the
+	 *     page with the later anchor painted on top;
+	 * <li>at 0 and 200pt, touching exactly, likewise;
+	 * <li>anchored in <b>two</b> paragraphs, with a text paragraph between, Word does
+	 *     <b>not</b> band them: each takes its own band (110pt and 112pt) with the
+	 *     intervening text between, even though their x values are disjoint.
+	 * </ul>
 	 *
-	 * <p>Note what the rule is <b>not</b>: it is not that the two share a {@code positionV}.
-	 * Two of that document's pairs sit 0.25pt and 2.00pt apart vertically in Word's own
-	 * PDF, and our offsets differ by the same 2.00pt, so each keeps its own offset and
-	 * lands where Word puts it.  What the band does is stop one reserving space against
-	 * the other.  The band's height is the greatest extent of its members, and its members
-	 * are positioned within it, so a member's own offset is measured from the same origin
-	 * it was before.
+	 * <p>So horizontal overlap is no bar to the band - before 17.1.1's first reading was
+	 * corrected here, an overlapping pair was stacked, which reserved 222pt for Word's 112
+	 * and reversed the pair's order - and the paragraph is.  Note what the rule is
+	 * <b>not</b>: it is not that the two share a {@code positionV}; each member keeps its
+	 * own offset.  What the band does is stop one reserving space against the other.  The
+	 * band's height is the greatest extent of its members and its horizontal extent is
+	 * their union; its members are positioned within it, so a member's own offset is
+	 * measured from the same origin it was before, and they are appended in document
+	 * order, which is the order Word paints them in.
 	 *
 	 * <p>Only drawings anchored in the <b>same paragraph</b> can be banded here: the
 	 * wrappers are siblings at that paragraph's head, and two anchored in different
-	 * paragraphs have no common origin at this point in the FO.  That is a real limit -
-	 * the same document has a third pair, one in each of two paragraphs, which Word also
-	 * draws side by side and this leaves stacked.
+	 * paragraphs have no common origin at this point in the FO.  The probe's fourth case
+	 * shows that limit is Word's own behaviour and needs no lifting.
 	 *
 	 * @since 17.1.1
 	 */
@@ -1572,9 +1579,7 @@ public final class WordLayoutFixups {
 		for (Node n = para.getFirstChild(); n instanceof Element; n = n.getNextSibling()) {
 			Element sibling = (Element) n;
 			if (!isFo(sibling, "block-container") || takesNoSpace(sibling)) continue;
-			double[] extent = bandExtent(sibling);
-			if (extent == null) continue;
-			if (x + w > extent[0] + 0.01 && extent[1] > x + 0.01) continue;   // they overlap
+			if (bandExtent(sibling) == null) continue;   // not a placed topAndBottom wrapper
 			Element band = asBand(doc, sibling);
 			band.appendChild(positioned(doc, holder, x, off, w, h));
 			double reach = off + h + distB;
@@ -1584,8 +1589,10 @@ public final class WordLayoutFixups {
 		return false;
 	}
 
-	/** The horizontal extent [start, end] a placed {@code topAndBottom} wrapper occupies,
-	 *  or null where it is not one: the union of its members'.  @since 17.1.1 */
+	/** The horizontal extent [start, end] a placed {@code topAndBottom} wrapper occupies -
+	 *  the union of its members' - or null where it is not one, which is what
+	 *  {@link #bandWith} uses it for: Word bands whatever the extents are, so the extent
+	 *  itself is not a test, only a wrapper it can read one from is a band.  @since 17.1.1 */
 	private static double[] bandExtent(Element wrapper) {
 		double from = Double.MAX_VALUE, to = -Double.MAX_VALUE;
 		for (Node n = wrapper.getFirstChild(); n != null; n = n.getNextSibling()) {
