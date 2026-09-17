@@ -92,7 +92,9 @@ public class WidthFactorTest {
 	@Test
 	public void nothingElseHasOne() {
 		assertEquals(1, WidthFactors.factorFor("Calibri", "Carlito Regular"), 0.0);
-		assertEquals(1, WidthFactors.factorFor("Cambria", "Caladea Regular"), 0.0);
+		// Cambria has one since 17.1.1 (see cambriaIsWiderThanCaladea); Caladea is its
+		// substitute by design, not by metric
+		assertEquals(1, WidthFactors.factorFor("Cambria Math", "Caladea Regular"), 0.0);
 		assertEquals(1, WidthFactors.factorFor(null, "Carlito Regular"), 0.0);
 		assertEquals(1, WidthFactors.factorFor("Calibri Light", null), 0.0);
 		org.junit.Assert.assertFalse(WidthFactors.hasFactor("Calibri"));
@@ -160,6 +162,35 @@ public class WidthFactorTest {
 		Mapper m = new IdentityPlusMapper();
 		m.registerLineMetricsAlias("Calibri Light", "Meiryo");
 		assertEquals(CALIBRI_LIGHT, m.widthFactorFor("Calibri Light", "Carlito Regular"), 0.0);
+	}
+
+	// ------------------------------------------------------------- Cambria -> Caladea
+
+	private static final double CAMBRIA = 1.048;
+
+	/**
+	 * Caladea is Cambria's substitute by design, not by metric: it carries Cambria's own
+	 * advance for n, l, x, X and i and is eight to eleven per cent narrower on the rest of
+	 * the lower case (e 441 against 488, o 480 against 531, s 392 against 430), and where
+	 * Cambria's digits are tabular - 554 every one - Caladea's are proportional, its 1
+	 * measuring 362.  Over English letter frequencies the pair measures 1.0494, and over
+	 * the 14792 Cambria glyphs of one corpus document 1.0497.
+	 */
+	@Test
+	public void cambriaIsWiderThanCaladea() {
+		assertEquals(CAMBRIA, WidthFactors.factorFor("Cambria", "Caladea Regular"), 0.0);
+		assertEquals(CAMBRIA, WidthFactors.factorFor("Cambria", "Caladea Bold"), 0.0);
+		assertEquals(CAMBRIA, WidthFactors.factorFor("cambria", "caladea regular+noliga"), 0.0);
+		assertTrue(WidthFactors.hasFactor("Cambria"));
+	}
+
+	/** Not where the machine has Cambria itself, and not for another family of the name. */
+	@Test
+	public void noCambriaFactorWhereCambriaIsDrawn() {
+		assertEquals(1, WidthFactors.factorFor("Cambria", "Cambria"), 0.0);
+		assertEquals(1, WidthFactors.factorFor("Cambria", "Liberation Serif"), 0.0);
+		assertEquals("Cambria Math is a family of its own",
+				1, WidthFactors.factorFor("Cambria Math", "Caladea Regular"), 0.0);
 	}
 
 	// ------------------------------------------------------------------ the selector

@@ -200,6 +200,24 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Caladea is Cambria's substitute by design, not by metric, and carries a width factor of
+  1.048. It has Cambria's own advance for n, l, x, X and i, and is 4 to 11 per cent narrower
+  on the rest of the lower case (e 441 against 488, o 480 against 531, s 392 against 430);
+  where Cambria's digits are tabular - 554 every one - Caladea's are proportional, its 1
+  measuring 362. Measured 1.0494 over English letter frequencies (Cambria 6.99 against
+  Caladea 1.001, the file docx4j ships) and 1.0383 to 1.0515 over the Cambria glyphs of four
+  corpus documents, so the quality="metric" claim in font-substitutes.xml was wrong and now
+  reads measured with those numbers. One document goes from 0.4692 to 0.8928 line parity and
+  four others improve; the fonts-unresolvable probe, which measures Word's own answers for a
+  font it cannot find, becomes exact at 1.0000. Against that, a Greek document loses 49 lines
+  and grows two pages: Caladea has no Greek, so its every Greek paragraph is cut into Caladea
+  and P052 stretches - more than half its lines are part Latin and part Greek - and the
+  factor corrects one half of each. Drawing such a run in one face, as Word does, is the fix
+  and is a substitution-policy question of its own. Tahoma keeps no factor: measured, its
+  regular is 0.9941 of Arimo (batch 42's reading confirmed) and only its bold differs, at
+  1.0598, and the FO names the regular family for both weights so no per-weight factor can be
+  carried today (CR-001 batch 45).
+
 - A run Word drew in Meiryo is set at Meiryo's width, and the width factor follows the
   altName chain. Meiryo's Latin advances are 1.21 of Carlito's - read out of the two PDFs'
   own /Widths and weighted by the 3785 characters Word set in that face on a corpus
