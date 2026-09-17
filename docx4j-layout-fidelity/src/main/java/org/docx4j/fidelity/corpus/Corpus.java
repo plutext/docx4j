@@ -4695,6 +4695,72 @@ public final class Corpus {
 			}
 			return d.pkg();
 		}));
+
+		/*
+		 * What each w:leader kind draws, and what a tab leaves in the PDF's text layer
+		 * (CR-001 batch 45).  Word's PDF was measured on corpus documents only: a tab is
+		 * one space glyph of the tab's advance, a leader run has a space at each end, an
+		 * underscore or hyphen leader is a run of that character on the entry's own
+		 * baseline, and a dot leader opens with a gap of less than one dot.  The probe
+		 * puts every kind (none, dot, middleDot, hyphen, underscore, heavy) on a left
+		 * stop mid-line, on a right stop before a number (the contents-entry shape), and
+		 * from the margin (a leading tab); then a form's fill-in lines (a trailing tab to
+		 * an underscore stop, and two on one line); then a tab of almost no advance,
+		 * against a ladder of stops every 20 twips, with and without a leader.  Read
+		 * off the golden: the character each kind writes and where its glyphs sit; the
+		 * width of the space Word writes for the tab, including one under a quarter em;
+		 * and whether a heavy leader is a character or a drawn line.
+		 */
+		PROBES.add(new Probe("tab-leader-kinds",
+				"each w:leader kind on a left stop, a right stop and from the margin; form "
+				+ "fill-in lines; and a tab of almost no advance, with and without a leader",
+				() -> {
+			Doc d = Doc.create(15);
+			d.para("Each leader kind on a left stop at 4500, on a right stop at 9000 before a "
+					+ "number, and from the margin.").after(240).add();
+			org.docx4j.wml.STTabTlc[] kinds = {
+					org.docx4j.wml.STTabTlc.NONE, org.docx4j.wml.STTabTlc.DOT,
+					org.docx4j.wml.STTabTlc.MIDDLE_DOT, org.docx4j.wml.STTabTlc.HYPHEN,
+					org.docx4j.wml.STTabTlc.UNDERSCORE, org.docx4j.wml.STTabTlc.HEAVY };
+			for (org.docx4j.wml.STTabTlc kind : kinds) {
+				String name = kind.value();
+				d.para("left " + name).tabStop(4500, org.docx4j.wml.STTabJc.LEFT, kind)
+						.tab().text("after " + name).after(60).add();
+				d.para("right " + name).tabStop(9000, org.docx4j.wml.STTabJc.RIGHT, kind)
+						.tab().text("12").after(60).add();
+				d.para().noLabel().tabStop(4500, org.docx4j.wml.STTabJc.LEFT, kind)
+						.tab().text("leading " + name).after(180).add();
+			}
+			d.para("A form's fill-in lines: a trailing tab to an underscore stop, and two "
+					+ "on one line.").before(240).after(120).add();
+			d.para("Name:").tabStop(9000, org.docx4j.wml.STTabJc.RIGHT, org.docx4j.wml.STTabTlc.UNDERSCORE)
+					.tab().after(60).add();
+			d.para("Name:").tabStop(4500, org.docx4j.wml.STTabJc.LEFT, org.docx4j.wml.STTabTlc.UNDERSCORE)
+					.tabStop(9000, org.docx4j.wml.STTabJc.RIGHT, org.docx4j.wml.STTabTlc.UNDERSCORE)
+					.tab().text("Date:").tab().after(60).add();
+			d.para("Signed:").tabStop(9000, org.docx4j.wml.STTabJc.RIGHT, org.docx4j.wml.STTabTlc.DOT)
+					.tab().after(180).add();
+			d.para("A tab of almost no advance: left stops every 20 twips from 880 to 1240, "
+					+ "so the tab reaches the first stop past the text, at most 1pt on, whatever "
+					+ "the label's width.").before(240).after(120).add();
+			Doc.Para ladder = d.para("tiny");
+			for (int pos = 880; pos <= 1240; pos += 20) {
+				ladder.tabStop(pos, org.docx4j.wml.STTabJc.LEFT);
+			}
+			ladder.tab().text("after a tab of almost no advance").after(60).add();
+			Doc.Para dotted = d.para("tiny");
+			for (int pos = 880; pos <= 1240; pos += 20) {
+				dotted.tabStop(pos, org.docx4j.wml.STTabJc.LEFT, org.docx4j.wml.STTabTlc.DOT);
+			}
+			dotted.tab().text("after a dot leader of almost no advance").after(60).add();
+			Doc.Para lined = d.para("tiny");
+			for (int pos = 880; pos <= 1240; pos += 20) {
+				lined.tabStop(pos, org.docx4j.wml.STTabJc.LEFT, org.docx4j.wml.STTabTlc.UNDERSCORE);
+			}
+			lined.tab().text("after an underscore leader of almost no advance").after(240).add();
+			d.para("after. " + prose(1)).add();
+			return d.pkg();
+		}));
 	}
 
 	public static List<Probe> all() {
