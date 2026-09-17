@@ -200,6 +200,9 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A width factor is measured per face and per substitute family, not per font: Cambria's bold
+  (1.036), bold italic (1.021) and Greek in P052 (0.985 regular, 1.058 bold), and Tahoma's bold
+  in Arimo (1.06), which its regular does not want (CR-001 batch 46).
 - Caladea is Cambria's substitute by design, not by metric, and carries a width factor of
   1.048. It has Cambria's own advance for n, l, x, X and i, and is 4 to 11 per cent narrower
   on the rest of the lower case (e 441 against 488, o 480 against 531, s 392 against 430);

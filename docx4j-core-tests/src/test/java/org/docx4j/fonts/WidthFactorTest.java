@@ -193,6 +193,61 @@ public class WidthFactorTest {
 				1, WidthFactors.factorFor("Cambria Math", "Caladea Regular"), 0.0);
 	}
 
+	// ------------------------------------------------------------------- per face
+
+	/**
+	 * A family's weights are not one another's width, so the factor is asked for the face
+	 * the <b>run</b> is set in.  Measured as residuals on renders already carrying the
+	 * regular row: Cambria's bold wants 0.989 of it and its bold italic 0.974, so 1.036
+	 * and 1.021 (CR-001 batch 46 item 1).
+	 */
+	@Test
+	public void cambriaBoldIsNotCambriaRegular() {
+		assertEquals(CAMBRIA, WidthFactors.factorFor("Cambria", "Caladea Regular", false, false), 0.0);
+		assertEquals(1.036, WidthFactors.factorFor("Cambria", "Caladea Regular", true, false), 0.0001);
+		assertEquals(1.021, WidthFactors.factorFor("Cambria", "Caladea Regular", true, true), 0.0001);
+		assertEquals("no italic row measured, so the regular's",
+				CAMBRIA, WidthFactors.factorFor("Cambria", "Caladea Regular", false, true), 0.0);
+		assertEquals("the two-argument call is the regular face",
+				CAMBRIA, WidthFactors.factorFor("Cambria", "Caladea Regular"), 0.0);
+	}
+
+	/**
+	 * One document font, two substitutes at once: Caladea has no Greek at all, so a
+	 * Cambria document's Greek is drawn in P052 and the two want corrections in opposite
+	 * directions - the Latin 4.8 per cent wider, the Greek 1.5 per cent narrower.
+	 */
+	@Test
+	public void cambriaGreekTakesItsOwnSubstitutesRow() {
+		assertEquals(0.985, WidthFactors.factorFor("Cambria", "P052 Roman", false, false), 0.0001);
+		assertEquals(1.058, WidthFactors.factorFor("Cambria", "P052 Bold", true, false), 0.0001);
+		assertEquals("the suffixes the FO layer stacks on are stripped first",
+				0.985, WidthFactors.factorFor("Cambria", "P052 Roman+noliga", false, false), 0.0001);
+		assertEquals("a bold italic falls back to the bold row where none is measured",
+				1.058, WidthFactors.factorFor("Cambria", "P052 Bold", true, true), 0.0001);
+	}
+
+	/**
+	 * Where only the bold is out, only the bold gets a row: Word's Tahoma Bold is 6 per
+	 * cent wider than the Arimo Bold which stands in for it (tahomabd.ttf against
+	 * Arimo-Bold 1.0598 over English letter frequencies, and 1.0693 over the 573 paired
+	 * bold lines of one corpus document), where the regular is within 0.6 per cent of
+	 * Arimo's and is left alone.
+	 */
+	@Test
+	public void onlyTahomasBoldHasARow() {
+		assertEquals(1.06, WidthFactors.factorFor("Tahoma", "Arimo Bold", true, false), 0.0001);
+		assertEquals("the regular is inside what this table does not correct",
+				1, WidthFactors.factorFor("Tahoma", "Arimo Regular", false, false), 0.0);
+		assertEquals("and so is an italic, which takes the regular's absent row",
+				1, WidthFactors.factorFor("Tahoma", "Arimo Italic", false, true), 0.0);
+		assertEquals("a bold italic takes the bold row",
+				1.06, WidthFactors.factorFor("Tahoma", "Arimo Bold Italic", true, true), 0.0001);
+		assertEquals("not where the machine has Tahoma itself",
+				1, WidthFactors.factorFor("Tahoma", "Tahoma", true, false), 0.0);
+		assertTrue(WidthFactors.hasFactor("Tahoma"));
+	}
+
 	// ------------------------------------------------------------------ the selector
 
 	/** The letter space the factor alone asks for, at 11pt over this sentence. */

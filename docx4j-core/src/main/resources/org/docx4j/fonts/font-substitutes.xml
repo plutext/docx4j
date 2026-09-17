@@ -305,11 +305,23 @@
   <!-- ==== measured width factors: WidthFactors ====
        What the substitute's advances are multiplied by so that a run measures what the
        document font measures.  substituteFamily is matched as a prefix of the physical
-       font's name, with the FO layer's suffixes stripped. -->
+       font's name, with the FO layer's suffixes stripped.
+
+       face is regular (the default), bold, italic or bolditalic: the face of the RUN the
+       factor was measured on, not of the substitute.  A family's weights are not one
+       another's width, so one font can need several rows; the run's own face wins, else
+       its weight alone, else the regular row.  A font can also be drawn in two
+       substitutes at once - Cambria's Latin in Caladea and its Greek in P052 - so it can
+       have a row per family too. -->
   <widthFactors>
     <widthFactor font="Calibri Light" substituteFamily="Carlito" factor="0.987"/>
     <widthFactor font="Meiryo" substituteFamily="Carlito" factor="1.21"/>
     <widthFactor font="Cambria" substituteFamily="Caladea" factor="1.048"/>
+    <widthFactor font="Cambria" substituteFamily="Caladea" face="bold" factor="1.036"/>
+    <widthFactor font="Cambria" substituteFamily="Caladea" face="bolditalic" factor="1.021"/>
+    <widthFactor font="Cambria" substituteFamily="P052" factor="0.985"/>
+    <widthFactor font="Cambria" substituteFamily="P052" face="bold" factor="1.058"/>
+    <widthFactor font="Tahoma" substituteFamily="Arimo" face="bold" factor="1.06"/>
   </widthFactors>
 
   <!-- ==== where to get a substitute, and what it carries ==== -->

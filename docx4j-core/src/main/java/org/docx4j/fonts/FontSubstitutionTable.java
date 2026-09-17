@@ -259,16 +259,21 @@ public final class FontSubstitutionTable {
 	}
 
 	/** A measured width factor: the document font, the substitute family it was measured
-	 *  against, and the factor.  {@link WidthFactors} applies them. */
+	 *  against, the face of the run it was measured on, and the factor.
+	 *  {@link WidthFactors} applies them. */
 	public static final class WidthFactor {
 
 		private final String documentFont;
 		private final String substituteFamily;
+		private final boolean bold, italic;
 		private final double factor;
 
-		WidthFactor(String documentFont, String substituteFamily, double factor) {
+		WidthFactor(String documentFont, String substituteFamily, boolean bold, boolean italic,
+				double factor) {
 			this.documentFont = documentFont;
 			this.substituteFamily = substituteFamily;
+			this.bold = bold;
+			this.italic = italic;
 			this.factor = factor;
 		}
 
@@ -279,11 +284,38 @@ public final class FontSubstitutionTable {
 		 *  where the substitute really is the family it was measured against. */
 		public String getSubstituteFamily() { return substituteFamily; }
 
+		/** Whether the row was measured on a <b>bold</b> run.  A family's weights are not
+		 *  one another's width: Word's Tahoma Bold is 6 per cent wider than the Arimo Bold
+		 *  which stands in for it where its regular is within 0.6 per cent of Arimo's.
+		 *  @since 17.1.1 */
+		public boolean isBold() { return bold; }
+
+		/** Whether the row was measured on an <b>italic</b> run.  @since 17.1.1 */
+		public boolean isItalic() { return italic; }
+
 		public double getFactor() { return factor; }
+
+		/** {@code regular}, {@code bold}, {@code italic} or {@code bolditalic}: the
+		 *  {@code face} attribute's value.  @since 17.1.1 */
+		public String getFace() {
+			return bold ? (italic ? "bolditalic" : "bold") : (italic ? "italic" : "regular");
+		}
 	}
 
-	/** The measured width factors, keyed by the lower-cased document font. */
-	public static Map<String, WidthFactor> widthFactors() {
+	/**
+	 * The measured width factors, keyed by the lower-cased document font: <b>every</b> row
+	 * for that font, in the order the file lists them, because one document font can want
+	 * more than one.
+	 *
+	 * <p>A font can be drawn in two substitutes at once - Cambria's Latin goes to Caladea
+	 * and its Greek to P052, and the two need opposite corrections - and a substitute's
+	 * weights are not one another's width, so a family needs a row per face as well.  The
+	 * map was one row per font until 17.1.1 (CR-001 batch 46 item 1), which could express
+	 * neither.
+	 *
+	 * @since 17.1.1
+	 */
+	public static Map<String, List<WidthFactor>> widthFactors() {
 		return table().widthFactors;
 	}
 
@@ -295,14 +327,17 @@ public final class FontSubstitutionTable {
 		final Map<String, Row> byDocumentFont;
 		final Map<String, Clone> clones;
 		final List<Clone> cloneList;
-		final Map<String, WidthFactor> widthFactors;
+		final Map<String, List<WidthFactor>> widthFactors;
 		Table(List<Row> substitutes, List<Row> scriptSubstitutes, Map<String, Row> byDocumentFont,
-				Map<String, Clone> clones, List<Clone> cloneList, Map<String, WidthFactor> widthFactors) {
+				Map<String, Clone> clones, List<Clone> cloneList, Map<String, List<WidthFactor>> widthFactors) {
 			this.substitutes = Collections.unmodifiableList(substitutes);
 			this.scriptSubstitutes = Collections.unmodifiableList(scriptSubstitutes);
 			this.byDocumentFont = Collections.unmodifiableMap(byDocumentFont);
 			this.clones = Collections.unmodifiableMap(clones);
 			this.cloneList = Collections.unmodifiableList(cloneList);
+			for (Map.Entry<String, List<WidthFactor>> e : widthFactors.entrySet()) {
+				e.setValue(Collections.unmodifiableList(e.getValue()));
+			}
 			this.widthFactors = Collections.unmodifiableMap(widthFactors);
 		}
 	}
@@ -330,7 +365,7 @@ public final class FontSubstitutionTable {
 		Map<String, Row> byDocumentFont = new LinkedHashMap<String, Row>();
 		Map<String, Clone> clones = new LinkedHashMap<String, Clone>();
 		List<Clone> cloneList = new ArrayList<Clone>();
-		Map<String, WidthFactor> widthFactors = new LinkedHashMap<String, WidthFactor>();
+		Map<String, List<WidthFactor>> widthFactors = new LinkedHashMap<String, List<WidthFactor>>();
 
 		try (InputStream is = FontSubstitutionTable.class.getResourceAsStream(RESOURCE)) {
 			if (is==null) {
@@ -363,9 +398,22 @@ public final class FontSubstitutionTable {
 					String family = attr(wf, "substituteFamily");
 					String factor = attr(wf, "factor");
 					if (font==null || family==null || factor==null) continue;
+					String face = attr(wf, "face");
+					face = face==null ? "regular" : face.trim().toLowerCase(Locale.ENGLISH);
+					boolean bold = face.startsWith("bold");
+					boolean italic = face.endsWith("italic");
+					if (!("regular".equals(face) || "bold".equals(face) || "italic".equals(face)
+							|| "bolditalic".equals(face))) {
+						log.error(RESOURCE + ": " + font + " has width factor face '" + face
+								+ "'; expected regular, bold, italic or bolditalic");
+						continue;
+					}
 					try {
-						widthFactors.put(font.trim().toLowerCase(Locale.ENGLISH),
-								new WidthFactor(font.trim(), family.trim(), Double.parseDouble(factor.trim())));
+						widthFactors
+								.computeIfAbsent(font.trim().toLowerCase(Locale.ENGLISH),
+										k -> new ArrayList<WidthFactor>())
+								.add(new WidthFactor(font.trim(), family.trim(), bold, italic,
+										Double.parseDouble(factor.trim())));
 					} catch (NumberFormatException e) {
 						log.error(RESOURCE + ": " + font + " has width factor '" + factor + "'");
 					}

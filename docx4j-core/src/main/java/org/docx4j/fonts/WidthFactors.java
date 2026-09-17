@@ -95,7 +95,68 @@ public final class WidthFactors {
 	 * Mapper.addNoBoldFaceAliases (probe P7).  A machine without the crosextra
 	 * clones puts Calibri Light on Liberation Sans, whose advances are not
 	 * Calibri's at all, and gets no factor - hence the substitute test in
-	 * {@link #factorFor}. */
+	 * {@link #factorFor}.
+	 *
+	 *
+	 * The per-face rows (CR-001 batch 46 item 1).
+	 *
+	 * A family's weights are not one another's width, and until this batch the
+	 * table could not say so: one row per document font, and the FO naming the
+	 * regular family for both weights (the bold coming from an ancestor's
+	 * font-weight), so a bold run in a factored face could not be corrected at
+	 * all.  Three documents had shown it - a Greek document two pages long after
+	 * the Cambria row, a Tahoma-heavy document whose bold is 6 per cent out where
+	 * its regular is within 0.6, and a Cambria document the single row
+	 * over-corrected.
+	 *
+	 * Measured by batch 42's method, on the lines the two PDFs pair on identical
+	 * text, unjustified, grouped by the face each side drew and by the size Word
+	 * set, taking the median of Word's ink width over ours.  A ratio above 1 means
+	 * our side is narrow and the factor raises it.  n is lines.
+	 *
+	 *   Cambria -> Caladea, as residuals on renders which already carry the 1.048
+	 *   regular row, so the row below is 1.048 x the residual:
+	 *
+	 *     document 6693   regular      1.0011 (n=60, 9pt), 1.0012 (n=46, 11pt)
+	 *                     bold         0.9895 (n=12), 1.0113 (n=23), 0.9912 (n=3)
+	 *                     bold italic  0.9743 (n=10, 11pt)
+	 *     document 3003   regular      1.0004 (n=12, 12pt), 1.0330 (n=7, 11pt)
+	 *                     bold         0.9893 (n=10), 0.9896 (n=6), 0.9849 (n=3)
+	 *
+	 *   so the regular row is confirmed where it was cut and the bold is about
+	 *   0.989 of it: 1.048 x 0.989 = 1.036.  Independently, batch 45 measured that
+	 *   document 7399's Cambria bold wants 1.0363 where the single row gave it
+	 *   1.048, and it was the document that row cost lines.  The bold italic is
+	 *   1.048 x 0.9743 = 1.021, on one document's ten lines.
+	 *
+	 *   Cambria -> P052 (the Greek script substitute; no factor before this batch):
+	 *
+	 *     document 8371   regular      0.9868 (n=59, 12pt), 0.9826 (n=6), 0.9708 (n=6)
+	 *                     bold         1.0585 (n=6), 1.0574 (n=6), 1.0514 (n=11)
+	 *
+	 *   Those lines are part Latin and part Greek - Caladea has no Greek at all, so
+	 *   the coverage pass cuts every Greek paragraph in two and the extractor names
+	 *   a line for its first glyph - which biases each bucket towards 1.  Two
+	 *   earlier readings which are not so biased agree on the direction and read
+	 *   further out: font to font, Word/P052 0.9744 and Word/P052-Bold 1.0656
+	 *   (batch 42 item 2); on that document's wholly Greek lines, 0.9925 and 0.9813
+	 *   regular, 1.0569 and 1.0613 bold (batch 45 item 8b).  0.985 and 1.058 are
+	 *   the centre of the three.
+	 *
+	 *   Tahoma -> Arimo (no factor before this batch):
+	 *
+	 *     document 6380   regular      0.9693 (n=506, 8pt), 0.9815 (n=72, 10pt)
+	 *                     bold         1.0693 (n=573, 8pt), 1.0662 (n=6, 18pt),
+	 *                                  1.0220 (n=19, 11pt)
+	 *     document 14776  regular      0.9820 (n=59, 10pt)
+	 *                     bold         1.0239 (n=11, 10pt)
+	 *
+	 *   and font to font over English letter frequencies, tahoma.ttf against
+	 *   Arimo-Regular 0.9941 and tahomabd.ttf against Arimo-Bold 1.0598 (batch 45
+	 *   item 8).  Only the bold gets a row: the regular's 0.6 per cent font to font
+	 *   is inside what this table does not try to correct, and the documents' 2 to 3
+	 *   per cent is their own letter mix rather than the face.  1.06 is the centre
+	 *   of the bold readings, which the largest sample (573 lines) puts at 1.0693. */
 
 	/**
 	 * The measured factor for this document font given the physical font docx4j mapped
@@ -113,15 +174,62 @@ public final class WidthFactors {
 	 * @since 17.1.1
 	 */
 	public static double factorFor(String documentFontName, String physicalFontName) {
-
-		if (documentFontName == null || physicalFontName == null) return 1;
-		FontSubstitutionTable.WidthFactor f = FontSubstitutionTable.widthFactors().get(key(documentFontName));
-		if (f == null) return 1;
-		String physical = key(PhysicalFonts.stripSuffixes(physicalFontName));
-		return physical.startsWith(key(f.getSubstituteFamily())) ? f.getFactor() : 1;
+		return factorFor(documentFontName, physicalFontName, false, false);
 	}
 
-	/** Whether this document font has an entry at all, whatever it is mapped to.
+	/**
+	 * The measured factor for this document font, the physical font docx4j mapped it to
+	 * <b>and the face the run is set in</b>, or 1 where there is none.
+	 *
+	 * <p>A family's weights are not one another's width, and one document font can be
+	 * drawn in two substitutes at once, so the answer depends on both.  Word's Tahoma
+	 * Bold is 6 per cent wider than the Arimo Bold which stands in for it, where its
+	 * regular is within 0.6 per cent of Arimo's - a single row for the family would
+	 * correct one face by breaking the other.  And Cambria's Latin goes to Caladea while
+	 * its Greek goes to P052, which want corrections in opposite directions.</p>
+	 *
+	 * <p>The rows for the document font are filtered to those whose substitute family the
+	 * physical font really is, and the closest face wins: the run's own weight and style,
+	 * else its weight alone, else the regular row.  So a family which has only a bold row
+	 * measured leaves its regular uncorrected, and a bold italic takes the bold row until
+	 * someone measures the bold italic.</p>
+	 *
+	 * @param bold   whether the run's effective properties make it bold
+	 * @param italic whether they make it italic
+	 * @since 17.1.1
+	 */
+	public static double factorFor(String documentFontName, String physicalFontName,
+			boolean bold, boolean italic) {
+
+		if (documentFontName == null || physicalFontName == null) return 1;
+		java.util.List<FontSubstitutionTable.WidthFactor> rows =
+				FontSubstitutionTable.widthFactors().get(key(documentFontName));
+		if (rows == null || rows.isEmpty()) return 1;
+		String physical = key(PhysicalFonts.stripSuffixes(physicalFontName));
+		FontSubstitutionTable.WidthFactor best = null;
+		int bestRank = -1;
+		for (FontSubstitutionTable.WidthFactor f : rows) {
+			if (!physical.startsWith(key(f.getSubstituteFamily()))) continue;
+			int rank = rank(f, bold, italic);
+			if (rank > bestRank) {
+				best = f;
+				bestRank = rank;
+			}
+		}
+		return best == null ? 1 : best.getFactor();
+	}
+
+	/** How well a row's face fits the run's: the run's own face 2, its weight alone 1,
+	 *  the regular row 0, anything else not at all. */
+	private static int rank(FontSubstitutionTable.WidthFactor f, boolean bold, boolean italic) {
+		if (f.isBold() == bold && f.isItalic() == italic) return 2;
+		if (f.isBold() == bold && !f.isItalic()) return 1;
+		if (!f.isBold() && !f.isItalic()) return 0;
+		return -1;
+	}
+
+	/** Whether this document font has an entry at all, whatever it is mapped to and
+	 *  whatever face the run is in.
 	 *  @since 17.1.1 */
 	public static boolean hasFactor(String documentFontName) {
 		return documentFontName != null
