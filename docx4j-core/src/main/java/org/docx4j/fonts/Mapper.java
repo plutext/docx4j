@@ -966,9 +966,25 @@ public abstract class Mapper {
 
     /**
      * Whether docx4j's tables know this family: MicrosoftFonts.xml, word-line-metrics
-     * (512 Microsoft and Office cloud families), FontSubstitutions.xml, or the class
-     * heuristic on its name.  A known family the machine lacks is substituted for its
-     * widths; an unknown one is what Word could not find either.
+     * (512 Microsoft and Office cloud families) or FontSubstitutions.xml.  A known family
+     * the machine lacks is substituted for its widths; an unknown one is what Word could
+     * not find either.
+     *
+     * <p>"Known" has to mean what the passes before {@link #addWordDefaultSubstitutes}
+     * can act on, which is {@link FontFallback#substitutionClass} - <b>not</b>
+     * {@link FontFallback#classOf}, which will also guess a class from a name which merely
+     * ends in "Sans" or "Serif".  The two disagreed, and a font they disagreed about was
+     * left with no face at all: measured on a corpus document whose Normal style is a
+     * corporate face called "...Sans...", classOf called it SANS so this pass stood back,
+     * while the class pass had nothing for it (selectByClass is null for such a name, a
+     * guess measured to be worth less than the document default), so it fell between the
+     * two and every one of its 9276 glyphs was drawn in the document default's serif.
+     * Word drew that document in Calibri, which is what the {@code w:family="swiss"} rule
+     * here gives.</p>
+     *
+     * <p>A family deliberately left to the document default - a condensed one, or one of
+     * {@code FontFallback}'s measured exceptions - is "known" for this purpose too: the
+     * measurement which put it there was that the document default beat a stand-in.</p>
      *
      * @since 17.1.1
      */
@@ -978,8 +994,8 @@ public abstract class Mapper {
     	if (org.docx4j.fonts.microsoft.MicrosoftFontsRegistry.getMsFonts().containsKey(name)) return true;
     	// the table's own families, not an alias another document registered in this JVM
     	if (WordLineMetrics.isTableFamily(name)) return true;
-    	if (FontFallback.classOf(name)!=FontFallback.FontClass.UNKNOWN) return true;
-    	return false;
+    	if (FontFallback.substitutionClass(name)!=FontFallback.FontClass.UNKNOWN) return true;
+    	return FontFallback.leftToTheDocumentDefault(name);
     }
 
     /**

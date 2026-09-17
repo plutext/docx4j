@@ -258,6 +258,15 @@ public class FontFallback {
 		return POSTSCRIPT_NAME.matcher(n).matches();
 	}
 
+	/** Whether this family is one docx4j deliberately leaves to the document default rather
+	 *  than standing in for it: a condensed face, or one of the measured exceptions above.
+	 *  Such a family is not Word-defaulted either ({@link Mapper#isKnownFamily}), the
+	 *  measurement which put it here being that the document default beat a stand-in.
+	 *  @since 17.1.1 */
+	static boolean leftToTheDocumentDefault(String documentFontName) {
+		return isCondensed(documentFontName) || leaveUnmapped(documentFontName);
+	}
+
 	private static final java.util.regex.Pattern POSTSCRIPT_NAME = java.util.regex.Pattern.compile(
 			".+-(bold|italic|bolditalic|regular|roman|light|medium|semibold|demibold|black|oblique)(mt|ps)?");
 

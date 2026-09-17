@@ -200,6 +200,24 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A font whose class can only be guessed from its name gets Word's own substitute rather
+  than no face at all. Word's answer for a font it cannot find - Calibri for w:family
+  "swiss", Cambria for "roman" (17.1.1, measured on the fonts-unresolvable probe) - was
+  applied only to a family docx4j's tables do not know, and "know" was asked of
+  FontFallback.classOf, which will guess a class from a name that merely has "Sans" or
+  "Serif" in it. The pass that acts on a known class asks substitutionClass, which
+  deliberately does not make that guess (the guess was measured to be worth less than the
+  document default). So a font the two disagreed about fell between them and was left with
+  no face: measured on a corpus document whose Normal style is a corporate sans the machine
+  has not got, all 9276 glyphs of it were drawn in the document default's serif, in the
+  document default's line box, and its 18 pages of text came out as 10. Word's own PDF of
+  it draws that text in Calibri at 10.08pt, which is what the w:family="swiss" rule gives:
+  the guard now asks the same question the pass acts on, and a family docx4j deliberately
+  leaves to the document default (a condensed one, a PostScript name) is still left there.
+  Line parity 0.4475 to 0.5778 on that document and 0.9352 to 0.9630 on another whose
+  unfindable face is Gill Sans, +111 matched lines over three corpora with nothing worse,
+  no page count moved and no probe changed (CR-001 batch 45).
+
 - A CJK character reaches the PDF's text layer as itself. Two defects, both of the text
   layer alone - the glyph on the page was right either way - measured against Word's own
   PDFs of three corpus documents whose East Asian font is not installed here. (1) An
