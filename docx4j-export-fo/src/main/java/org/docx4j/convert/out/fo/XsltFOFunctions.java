@@ -2769,6 +2769,11 @@ public class XsltFOFunctions {
 			foLeader.setAttribute("leader-length.optimum",  "40pt");
 			foLeader.setAttribute("leader-pattern",  "dots");
 			if (fontFamily.length()>0) foLeader.setAttribute("font-family", fontFamily);
+			/* It is not a tab the line manager lays out - the justification gives it its
+			 * width - but its characters are still Word's leader characters, and Word puts
+			 * those on its 1/300 inch grid anchored on the page edge.  The mark tells the
+			 * line manager's grid pass which leaders are its business.  @since 17.1.1 */
+			foLeader.setAttribute(WordLayoutFixups.HINT_TOC_LEADER, "dot");
 			/* Word writes the partial cell at each end of a leader run as a space glyph -
 			 * measured on a corpus document's entries, its space is at x=139.730 and its
 			 * first dot at 140.450 - and the line manager writes that space for a tab it

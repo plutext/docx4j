@@ -448,6 +448,14 @@ public final class WordLayoutFixups {
 	 *  stretching leader ends.  @since 17.1.0 */
 	public static final String HINT_TOC_STOP = "docx4j-toc-stop";
 
+	/** on the <b>stretching</b> fo:leader a table-of-contents entry's tab becomes
+	 *  (XsltFOFunctions.tabToFO): this leader came from a {@code w:tab} carrying a
+	 *  {@code w:leader}, so the line manager puts its characters on Word's grid.  It is
+	 *  deliberately not {@link #HINT_TAB}, which marks a leader the line manager lays out
+	 *  against the stops and gives a width to; this one gets its width from the
+	 *  justification.  Its value is the {@code w:leader} kind.  @since 17.1.1 */
+	public static final String HINT_TOC_LEADER = "docx4j-toc-leader";
+
 	/** on the block a {@code w:br w:type="column"} makes (BrWriter): where the section
 	 *  has columns to go to, it is a column break and not a line break.  @since 17.1.0 */
 	public static final String HINT_COLUMN_BREAK = "docx4j-colbreak";
@@ -708,6 +716,20 @@ public final class WordLayoutFixups {
 				declared = true;
 			}
 			leader.setAttributeNS(ns, "docx4j:tab", kind);
+		}
+		// and the stretching leader of a table-of-contents entry, which the line manager
+		// does not lay out but does put on Word's grid.  @since 17.1.1
+		for (Element leader : elements(doc, "leader")) {
+			String kind = leader.getAttribute(HINT_TOC_LEADER);
+			if (kind.length()==0) continue;
+			leader.removeAttribute(HINT_TOC_LEADER);
+			if (ns == null) continue;
+			if (!declared) {
+				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+			}
+			leader.setAttributeNS(ns,
+					"docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.TOC_LEADER, kind);
 		}
 		// a list item's label block carries the w:suff separator, which the line manager
 		// writes into the text layer as Word's space glyph.  @since 17.1.1

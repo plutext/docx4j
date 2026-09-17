@@ -200,6 +200,9 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A table-of-contents entry's stretching dot leader steps on Word's 1/300 inch grid and begins on
+  a whole multiple of that step from the page's edge, as a tab's leader has since 17.1.0
+  (CR-001 batch 46).
 - A width factor is measured per face and per substitute family, not per font: Cambria's bold
   (1.036), bold italic (1.021) and Greek in P052 (0.985 regular, 1.058 bold), and Tahoma's bold
   in Arimo (1.06), which its regular does not want (CR-001 batch 46).

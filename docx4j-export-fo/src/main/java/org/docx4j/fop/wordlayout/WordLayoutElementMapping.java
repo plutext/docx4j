@@ -103,6 +103,12 @@ public class WordLayoutElementMapping extends ElementMapping {
 	/** on an fo:leader: it stands in for a w:tab, and {@link WordLineLayoutManager}
 	 *  gives it the width from the x it starts at to the tab stop it reaches. */
 	public static final String TAB = "tab";
+	/** on the <b>stretching</b> fo:leader of a table-of-contents entry: it came from a
+	 *  {@code w:tab} with a {@code w:leader}, so {@link WordLineLayoutManager} puts its
+	 *  characters on Word's grid - but it is not laid out against the stops and gets no
+	 *  width from the line manager, which is why it is not {@link #TAB}.  The value is
+	 *  the {@code w:leader} kind.  @since 17.1.1 */
+	public static final String TOC_LEADER = "toc-leader";
 	/** on a paragraph's fo:block: its custom tab stops, "pos:align:leader;..." in
 	 *  twips from the left margin (w:val="clear" stops included: they clear the
 	 *  default stops before them). */
