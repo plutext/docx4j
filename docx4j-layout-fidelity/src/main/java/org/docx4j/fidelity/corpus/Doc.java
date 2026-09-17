@@ -839,8 +839,21 @@ public final class Doc {
 	 * from the paragraph.
 	 */
 	public R anchoredImage(int wPx, int hPx, long cxEmu, long cyEmu, String wrap, String hAlign, long hOffsetEmu, long vOffsetEmu) throws Exception {
+		return anchoredImage(wPx, hPx, cxEmu, cyEmu, wrap, hAlign, hOffsetEmu, vOffsetEmu, "margin", 0);
+	}
+
+	/**
+	 * {@link #anchoredImage(int, int, long, long, String, String, long, long)} with the
+	 * {@code w:positionH relativeFrom} stated ("margin", "column", "page", ...) and a
+	 * numbered picture: {@code number} greater than zero draws that numeral on a fill of
+	 * its own, so two anchors sharing a paragraph can be told apart in the page image as
+	 * well as by their extents.  {@code "margin"} and 0 reproduce the original exactly.
+	 * @since 17.1.1 (CR-001 batch 48, the anchor-side-by-side probe)
+	 */
+	public R anchoredImage(int wPx, int hPx, long cxEmu, long cyEmu, String wrap, String hAlign,
+			long hOffsetEmu, long vOffsetEmu, String hRelativeFrom, int number) throws Exception {
 		imageCounter++;
-		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, mdp, png(wPx, hPx));
+		BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(pkg, mdp, png(wPx, hPx, number));
 		String rId = imagePart.getSourceRelationship().getId();
 		String wrapXml = "square".equals(wrap) ? "<wp:wrapSquare wrapText=\"bothSides\"/>"
 				: "topAndBottom".equals(wrap) ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
@@ -852,7 +865,7 @@ public final class Doc {
 				+ " distT=\"0\" distB=\"0\" distL=\"114300\" distR=\"114300\" simplePos=\"0\" relativeHeight=\"" + (251658240 + imageCounter) + "\""
 				+ " behindDoc=\"" + ("none".equals(wrap) ? 1 : 0) + "\" locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\">"
 				+ "<wp:simplePos x=\"0\" y=\"0\"/>"
-				+ "<wp:positionH relativeFrom=\"margin\">" + posH + "</wp:positionH>"
+				+ "<wp:positionH relativeFrom=\"" + hRelativeFrom + "\">" + posH + "</wp:positionH>"
 				+ "<wp:positionV relativeFrom=\"paragraph\"><wp:posOffset>" + vOffsetEmu + "</wp:posOffset></wp:positionV>"
 				+ "<wp:extent cx=\"" + cxEmu + "\" cy=\"" + cyEmu + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
 				+ wrapXml
@@ -910,16 +923,32 @@ public final class Doc {
 	}
 
 	private static byte[] png(int wPx, int hPx) throws Exception {
+		return png(wPx, hPx, 0);
+	}
+
+	/** {@code number} 0 is the plain blue-gradient picture every existing probe uses, byte
+	 *  for byte; a number greater than zero rotates the gradient's hue by it and draws the
+	 *  numeral in the middle, so two pictures on one page are distinguishable.
+	 *  @since 17.1.1 (CR-001 batch 48, the anchor-side-by-side probe) */
+	private static byte[] png(int wPx, int hPx, int number) throws Exception {
 		BufferedImage img = new BufferedImage(wPx, hPx, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
 		for (int x = 0; x < wPx; x++) {
 			int v = 80 + (x * 150) / Math.max(1, wPx);
-			g.setColor(new Color(v, v, 220));
+			g.setColor(number > 0 ? Color.getHSBColor((number * 0.27f) % 1f, 0.45f, v / 255f)
+					: new Color(v, v, 220));
 			g.drawLine(x, 0, x, hPx);
 		}
 		g.setColor(Color.BLACK);
 		g.drawRect(0, 0, wPx - 1, hPx - 1);
 		g.drawLine(0, 0, wPx - 1, hPx - 1);
+		if (number > 0) {
+			g.setFont(g.getFont().deriveFont(java.awt.Font.BOLD, Math.max(12f, hPx / 2f)));
+			String s = Integer.toString(number);
+			java.awt.geom.Rectangle2D b = g.getFontMetrics().getStringBounds(s, g);
+			g.drawString(s, (float) ((wPx - b.getWidth()) / 2),
+					(float) ((hPx + g.getFontMetrics().getAscent()) / 2));
+		}
 		g.dispose();
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ImageIO.write(img, "png", bos);
@@ -1496,6 +1525,38 @@ public final class Doc {
 			return tc;
 		}
 
+		/** {@code w:tblLook}: which of the table style's conditional formats the table asks
+		 *  for.  Word writes one on every table, and a w:tblStylePr condition is applied
+		 *  only where the look turns it on.
+		 *  @since 17.1.1 (CR-001 batch 48, the toggle-levels probe) */
+		public Table tblLook(boolean firstRow, boolean lastRow, boolean firstColumn, boolean lastColumn) {
+			org.docx4j.wml.CTTblLook look = F.createCTTblLook();
+			look.setFirstRow(onOff(firstRow));
+			look.setLastRow(onOff(lastRow));
+			look.setFirstColumn(onOff(firstColumn));
+			look.setLastColumn(onOff(lastColumn));
+			look.setNoHBand(onOff(false));
+			look.setNoVBand(onOff(false));
+			tblPr.setTblLook(look);
+			return this;
+		}
+
+		private static org.docx4j.sharedtypes.STOnOff onOff(boolean on) {
+			return on ? org.docx4j.sharedtypes.STOnOff.ONE : org.docx4j.sharedtypes.STOnOff.ZERO;
+		}
+
+		/** {@code w:cnfStyle} on a cell: the twelve-bit string naming which of the table
+		 *  style's conditions this cell is in ("001000000000" is firstCol), as Word writes
+		 *  it on every cell of a styled table.  Returns the cell, so it composes with
+		 *  {@link #cell} and {@link #cellOf}.
+		 *  @since 17.1.1 (CR-001 batch 48, the toggle-levels probe) */
+		public static Tc cnfStyle(Tc tc, String val) {
+			org.docx4j.wml.CTCnf cnf = F.createCTCnf();
+			cnf.setVal(val);
+			tc.getTcPr().setCnfStyle(cnf);
+			return tc;
+		}
+
 		public Table indent(int twips) {
 			tblPr.setTblInd(width(twips, "dxa"));
 			return this;
@@ -1813,6 +1874,16 @@ public final class Doc {
 			rpr.setSz(sz);
 			rpr.setSzCs(sz);
 			ppr.setRPr(rpr);
+			return this;
+		}
+
+		/** The paragraph mark's own run properties (w:pPr/w:rPr), created if it has none:
+		 *  what the pilcrow itself is formatted with, which Word counts towards the line
+		 *  box even where no run on the line carries it.
+		 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+		public Para markRPr(Consumer<ParaRPr> customiser) {
+			if (ppr.getRPr() == null) ppr.setRPr(F.createParaRPr());
+			customiser.accept(ppr.getRPr());
 			return this;
 		}
 

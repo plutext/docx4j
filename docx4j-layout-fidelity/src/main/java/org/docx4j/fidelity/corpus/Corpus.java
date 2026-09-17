@@ -47,6 +47,10 @@ public final class Corpus {
 	private static final String HEBREW_SENTENCE = "שלום עולם, זהו משפט קצר לבדיקת הגופן.";
 	private static final String CYRILLIC_GREEK_SENTENCE = "Привет, мир: это короткое предложение. Γειά σου κόσμε, αβγδ εζηθ.";
 	private static final String LATIN1_SENTENCE = "café über façade naïve ñandú Ångström œuvre – ¿qué? ½ × ÷";
+	/** The face 8132 is set in; Tinos is its metric clone on this machine.
+	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	private static final String TIMES_NEW_ROMAN = "Times New Roman";
+
 	/** Arial's and Times New Roman's PANOSE-1, as Word writes them in fontTable.xml. */
 	private static final String PANOSE_ARIAL = "020B0604020202020204";
 	private static final String PANOSE_TIMES = "02020603050405020304";
@@ -3598,6 +3602,22 @@ public final class Corpus {
 		d.mdp().getStyleDefinitionsPart().getJaxbElement().getStyle().add(s);
 	}
 
+	/** A {@code w:tblStylePr} conditional format on an existing table style: the run
+	 *  properties the style applies to the cells of that region only (firstCol, firstRow,
+	 *  ...).  This is the level 14924's spurious weight comes from.
+	 *  @since 17.1.1 (CR-001 batch 48, the toggle-levels probe) */
+	private static void addTableStyleCondition(Doc d, String styleId,
+			org.docx4j.wml.STTblStyleOverrideType type,
+			java.util.function.Consumer<org.docx4j.wml.RPr> rPrCustomiser) {
+		org.docx4j.wml.Style s = d.mdp().getStyleDefinitionsPart().getStyleById(styleId);
+		org.docx4j.wml.CTTblStylePr cond = Doc.F.createCTTblStylePr();
+		cond.setType(type);
+		org.docx4j.wml.RPr rpr = Doc.F.createRPr();
+		rPrCustomiser.accept(rpr);
+		cond.setRPr(rpr);
+		s.getTblStylePr().add(cond);
+	}
+
 	private static void tableStyle(Tbl tbl, String styleId) {
 		org.docx4j.wml.CTTblPrBase.TblStyle ts = Doc.F.createCTTblPrBaseTblStyle();
 		ts.setVal(styleId);
@@ -5342,6 +5362,326 @@ public final class Corpus {
 			}
 			return d.pkg();
 		}));
+		/*
+		 * Two anchored drawings sharing a band (CR-001 batch 46 item 3, section 3.6).  That
+		 * batch built the reserving container which lets two wrapTopAndBottom anchors in one
+		 * paragraph sit side by side instead of stacking, and read Word's own page for the
+		 * pair it was aimed at - but three things it had to guess at are still guesses:
+		 * whether Word aligns the two tops when their positionV offsets differ, what it does
+		 * when the two boxes overlap in x or touch exactly at the boundary of the
+		 * disjointness test, and whether a band can hold anchors from two different
+		 * paragraphs.  One document, four cases, each on a 451.3pt column (A4, 1in margins).
+		 *
+		 *   (a) both fit: 200pt pictures at posOffset 0 and 240pt, positionV 10pt and 12pt -
+		 *       deliberately unequal, which is the case the batch found Word does not align
+		 *   (b) they overlap by 50pt: 200pt at 0 and 200pt at 150pt
+		 *   (c) they touch exactly: 200pt at 0 and 200pt at 200pt
+		 *   (d) the pair of (a) split over two paragraphs, one short text paragraph between
+		 *
+		 * positionH is relativeFrom="column" (not the "margin" the older anchor probes use),
+		 * because a posOffset from the column is what the corpus documents carry.  Each
+		 * picture is numbered in its own fill, so the two members of a pair are told apart
+		 * in the page image as well as by their extents.  Read off the golden: the x and y
+		 * of each picture, whether a pair shares a y or keeps its own offsets, how much
+		 * vertical space the pair takes from the text after it, and for (d) whether Word
+		 * still draws them side by side across the paragraph boundary.
+		 */
+		PROBES.add(new Probe("anchor-side-by-side",
+				"two wp:anchor pictures with wrapTopAndBottom in one paragraph, positionH "
+				+ "relativeFrom column and positionV relativeFrom paragraph, on a 451.3pt "
+				+ "column: (a) 200pt at posOffset 0 and 200pt at 240pt, positionV 10pt and "
+				+ "12pt (both fit, unequal tops); (b) the same at 0 and 150pt (they overlap "
+				+ "by 50pt); (c) at 0 and 200pt (they touch exactly); (d) the pair of (a) "
+				+ "anchored in two paragraphs with a short text paragraph between them - "
+				+ "each picture's x and y, whether a pair shares a y or keeps its own "
+				+ "offsets, what the text after it starts at, and whether a band crosses a "
+				+ "paragraph boundary", () -> {
+			Doc d = Doc.create(15);
+			final long PT = 12700;   // EMU per point
+			d.para("Four cases. Every picture is 200pt wide and 100pt tall, anchored with "
+					+ "wrapTopAndBottom, positionH relativeFrom column and positionV "
+					+ "relativeFrom paragraph, in a 451.3pt column. Each carries its own "
+					+ "number. Read off each picture's x and y, whether the two members of "
+					+ "a pair share a y, and where the text after them starts.")
+					.after(240).add();
+
+			d.para().noLabel()
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							0, 10 * PT, "column", 1))
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							240 * PT, 12 * PT, "column", 2))
+					.text("(a) both fit: picture 1 at posOffset 0pt and picture 2 at 240pt, "
+							+ "positionV 10pt and 12pt.").add();
+			d.para("(a) after: the short text paragraph which follows case (a). " + prose(1, 0))
+					.after(240).add();
+
+			d.para().noLabel()
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							0, 10 * PT, "column", 3))
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							150 * PT, 12 * PT, "column", 4))
+					.text("(b) they overlap by 50pt: picture 3 at posOffset 0pt and picture "
+							+ "4 at 150pt, positionV 10pt and 12pt.").add();
+			d.para("(b) after: the short text paragraph which follows case (b). " + prose(1, 1))
+					.after(240).add();
+
+			d.para().noLabel()
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							0, 10 * PT, "column", 5))
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							200 * PT, 12 * PT, "column", 6))
+					.text("(c) they touch exactly: picture 5 at posOffset 0pt and picture 6 "
+							+ "at 200pt, positionV 10pt and 12pt.").add();
+			d.para("(c) after: the short text paragraph which follows case (c). " + prose(1, 2))
+					.after(240).add();
+
+			d.para().noLabel()
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							0, 10 * PT, "column", 7))
+					.text("(d) first paragraph: picture 7 at posOffset 0pt, positionV 10pt.").add();
+			d.para("(d) between: one short text paragraph, between the two anchored "
+					+ "paragraphs. " + prose(1, 3)).add();
+			d.para().noLabel()
+					.run(d.anchoredImage(200, 100, 200 * PT, 100 * PT, "topAndBottom", null,
+							240 * PT, 12 * PT, "column", 8))
+					.text("(d) second paragraph: picture 8 at posOffset 240pt, positionV 12pt.").add();
+			d.para("(d) after: the short text paragraph which follows case (d). " + prose(1, 4))
+					.after(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * Toggle properties at more than one level of the style hierarchy (ECMA-376-1
+		 * 17.7.3; CR-001 batch 46 item 4, Step B).  StyleUtil.toggle now XORs the twelve,
+		 * with two deliberate narrowings of the letter of the spec - an explicit false is
+		 * applied rather than XORed, and an upper level which is silent about the property
+		 * is no boundary at all, so the document defaults' true is not forced back on.  Both
+		 * narrowings were chosen on argument: nothing in 449 corpus documents tells either
+		 * of them from the letter, and its Javadoc says a probe settles them.  This is the
+		 * probe, and it is two documents because w:docDefaults is a document property.
+		 *
+		 * toggle-levels, document defaults NOT bold:
+		 *   1  a bold paragraph style with a run in a character style <w:b w:val="0"/>
+		 *      (narrowing one: expect regular, which the letter would not give)
+		 *   2  14924's own shape - a table style whose firstCol condition is w:b, a cell
+		 *      with w:cnfStyle firstCol, a run in a character style which is also w:b
+		 *      (two levels true: expect regular)
+		 *   3  the same cell with a plain run (one level true: expect bold)
+		 *   4  a bold paragraph style with a bold character style (two levels true)
+		 *   5  the controls: a plain Normal paragraph, and the bold paragraph style alone
+		 *
+		 * toggle-levels-docdefaults, w:docDefaults rPr w:b:
+		 *   6  a paragraph style <w:b w:val="0"/> with a plain run
+		 *   7  the same with a run in a character style which is silent on the weight (it
+		 *      sets only w:color) - narrowing two: expect the same as 6, where the letter
+		 *      would make it bold
+		 *   8  a bold paragraph style with a plain run (document defaults true, one style
+		 *      level true)
+		 *   9  the control: a Normal paragraph
+		 *
+		 * Every case's line says what it is and is a single run, so a line is wholly one
+		 * weight.  Read off the goldens: which lines Word draws in the bold face.
+		 */
+		PROBES.add(new Probe("toggle-levels",
+				"ECMA-376-1 17.7.3 toggle properties over levels of the style hierarchy, "
+				+ "document defaults NOT bold: (1) a bold paragraph style with a run in a "
+				+ "character style w:b w:val=0; (2) a table style whose firstCol condition "
+				+ "is w:b, a cell with w:cnfStyle firstCol, and a run in a character style "
+				+ "which is w:b (14924's shape); (3) the same cell with a plain run; (4) a "
+				+ "bold paragraph style with a bold character style; (5) a plain Normal "
+				+ "paragraph and the bold paragraph style alone, as controls - which lines "
+				+ "does Word draw in the bold face", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			d.addParagraphStyle("ProbeBold", "Normal", ppr -> { }, Doc::bold);
+			addCharacterStyle(d, "ProbeUnbold", rpr -> rpr.setB(flag(false)));
+			addCharacterStyle(d, "ProbeStrong", Doc::bold);
+			addTableStyle(d, "ProbeTableStyle", null);
+			addTableStyleCondition(d, "ProbeTableStyle",
+					org.docx4j.wml.STTblStyleOverrideType.FIRST_COL, Doc::bold);
+
+			d.para("Document defaults are NOT bold. Every case below is one run, so each "
+					+ "line is wholly one weight; the line says which case it is.")
+					.after(240).add();
+
+			d.para().noLabel().style("ProbeBold").run(bareRun(
+					"case 1: paragraph style ProbeBold is w:b, the run is in character style "
+					+ "ProbeUnbold which is w:b w:val=0 - one level true, one explicitly false",
+					rStyle("ProbeUnbold"))).add();
+
+			P case2 = d.para().noLabel().run(bareRun(
+					"case 2: firstCol table-style condition w:b, run in character style "
+					+ "ProbeStrong which is w:b - two levels true", rStyle("ProbeStrong"))).build();
+			P case3 = d.para().noLabel().run(bareRun(
+					"case 3: the same firstCol cell, a plain run - one level true", null)).build();
+			P note2 = d.para().noLabel().run(bareRun(
+					"case 2 note: this cell is not firstCol, so no condition applies to it", null)).build();
+			P note3 = d.para().noLabel().run(bareRun(
+					"case 3 note: this cell is not firstCol either", null)).build();
+			Doc.Table t = new Doc.Table(4600, 4400).tblLook(false, false, true, false);
+			t.rowOf(null, null,
+					Doc.Table.cnfStyle(t.cellOf(4600, null, case2), "001000000000"),
+					t.cellOf(4400, null, note2));
+			t.rowOf(null, null,
+					Doc.Table.cnfStyle(t.cellOf(4600, null, case3), "001000000000"),
+					t.cellOf(4400, null, note3));
+			Tbl tbl = t.build();
+			tableStyle(tbl, "ProbeTableStyle");
+			d.add(tbl);
+
+			d.para().noLabel().style("ProbeBold").before(240).run(bareRun(
+					"case 4: paragraph style ProbeBold is w:b and the run is in character "
+					+ "style ProbeStrong which is w:b - two levels true", rStyle("ProbeStrong"))).add();
+			d.para().noLabel().run(bareRun(
+					"case 5a: Normal paragraph, plain run, no level states the weight - the "
+					+ "regular control", null)).add();
+			d.para().noLabel().style("ProbeBold").run(bareRun(
+					"case 5b: paragraph style ProbeBold is w:b, plain run - the bold control",
+					null)).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("toggle-levels-docdefaults",
+				"ECMA-376-1 17.7.3 toggle properties with w:docDefaults rPr w:b: (6) a "
+				+ "paragraph style w:b w:val=0 with a plain run; (7) the same with a run in "
+				+ "a character style which is silent on the weight (it sets only w:color); "
+				+ "(8) a bold paragraph style with a plain run - document defaults true and "
+				+ "one style level true; (9) a Normal paragraph, as the control - which "
+				+ "lines does Word draw in the bold face", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			Doc.bold(docDefaultsRPr(d));
+			d.addParagraphStyle("ProbeUnbold", "Normal", ppr -> { }, rpr -> rpr.setB(flag(false)));
+			d.addParagraphStyle("ProbeBold", "Normal", ppr -> { }, Doc::bold);
+			addCharacterStyle(d, "ProbeColour", rpr -> {
+				org.docx4j.wml.Color c = Doc.F.createColor();
+				c.setVal("C00000");
+				rpr.setColor(c);
+			});
+
+			d.para().noLabel().run(bareRun(
+					"The document defaults are bold. Every case below is one run, so each "
+					+ "line is wholly one weight; the line says which case it is.", null)).after(240).add();
+			d.para().noLabel().style("ProbeUnbold").run(bareRun(
+					"case 6: docDefaults bold, paragraph style ProbeUnbold is w:b w:val=0, "
+					+ "plain run", null)).add();
+			d.para().noLabel().style("ProbeUnbold").run(bareRun(
+					"case 7: docDefaults bold, paragraph style ProbeUnbold is w:b w:val=0, "
+					+ "run in character style ProbeColour which sets only w:color",
+					rStyle("ProbeColour"))).add();
+			d.para().noLabel().style("ProbeBold").run(bareRun(
+					"case 8: docDefaults bold, paragraph style ProbeBold is w:b, plain run",
+					null)).add();
+			d.para().noLabel().run(bareRun(
+					"case 9: docDefaults bold, Normal paragraph, plain run - the control",
+					null)).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * What the weight on a line does to its line box (CR-001 batch 46 Step A, section
+		 * 5.4).  Corpus document 8132 is Times New Roman 9pt (Tinos on this machine), and
+		 * its bold lines step 10.32pt baseline to baseline in Word where ours step 10.15pt -
+		 * 0.17pt a line, which is enough to move an item from the bottom of one page to the
+		 * top of the next five times in one document.  The 10.35pt step of its ordinary
+		 * lines is not in dispute.  What is not known is which of the line's parts Word
+		 * measures the box from: every run, the bold runs alone, or the paragraph mark, whose
+		 * own w:b is what docx4j used to put on the body and no longer does.
+		 *
+		 * Five paragraphs at Times New Roman 9pt, then the same five at Calibri 11pt, each
+		 * at least four lines, consecutive, w:line 240 auto with no space before or after,
+		 * so both the step inside a paragraph and the step across its boundary are readable:
+		 *
+		 *   (a) every run regular, the paragraph mark silent on the weight
+		 *   (b) every run bold, the paragraph mark bold
+		 *   (c) runs of three words alternating bold and regular, so every line holds both
+		 *   (d) every run regular, the paragraph mark <w:b/>        (against (a))
+		 *   (e) every run bold, the paragraph mark <w:b w:val="0"/> (against (b))
+		 *
+		 * Every paragraph mark carries the paragraph's own w:rFonts and w:sz, so the only
+		 * thing which varies between (a) and (d), and between (b) and (e), is the mark's
+		 * weight.  Read off the golden: the baseline-to-baseline step within each paragraph
+		 * and across each paragraph boundary, per case, at both sizes.
+		 */
+		PROBES.add(new Probe("line-box-bold",
+				"the baseline-to-baseline step against the weight on the line, at Times New "
+				+ "Roman 9pt and then Calibri 11pt, w:line 240 auto with no spacing: (a) "
+				+ "every run regular; (b) every run bold; (c) three-word runs alternating "
+				+ "bold and regular within every line; (d) regular runs under a bold "
+				+ "paragraph mark; (e) bold runs under a w:b w:val=0 paragraph mark - the "
+				+ "mark carries the paragraph's own font and size in every case, so only "
+				+ "its weight varies (8132 reads Word 10.32pt for bold 9pt lines, ours "
+				+ "10.15pt)", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(TIMES_NEW_ROMAN, 18);
+			d.para("Five paragraphs at Times New Roman 9pt, then the same five at Calibri "
+					+ "11pt. Each is at least four lines, single spaced, with no space "
+					+ "before or after, so the step within a paragraph and the step across "
+					+ "its boundary are both readable.").after(240).add();
+			lineBoxCases(d, "9pt TNR", TIMES_NEW_ROMAN, 18);
+			d.para("The same five cases at Calibri 11pt.").before(240).after(240).add();
+			lineBoxCases(d, "11pt Calibri", "Calibri", 22);
+			return d.pkg();
+		}));
+
+		/*
+		 * A family no machine has, with a bold run in it (CR-001 batch 46 Step C, section
+		 * 4.4b).  Corpus document 9919's theme names a minor Latin family neither Word's
+		 * machine nor ours has; Word substituted Sylfaen and emitted it at FontWeight 400
+		 * for the document's 1006 bold runs, with no bold resource of any kind, while the
+		 * same PDF carries four other bold resources for families Word did have.  Two
+		 * questions were left open there, and neither can be answered from that document:
+		 * whether Word drops the weight for EVERY missing family or only on the last-resort
+		 * path, and whether how the family is named changes it.
+		 *
+		 *   (a) "Plutext Probe Serif", named directly in w:rFonts, w:family roman with Times
+		 *       New Roman's PANOSE-1 in the fontTable
+		 *   (b) "Plutext Probe Sans", the same, w:family swiss with Arial's PANOSE-1
+		 *   (c) "Plutext Probe Ghost", named directly, with NO fontTable entry at all
+		 *   (d) "Plutext Probe Theme", the theme's minor Latin face, named by runs which
+		 *       carry only w:asciiTheme/w:hAnsiTheme minorHAnsi - 9919's own shape.  Its
+		 *       fontTable entry is (b)'s, so the only thing separating (b) from (d) is how
+		 *       the run names the family
+		 *
+		 * Each case is a regular line, a bold line and a Calibri control line holding a
+		 * regular and a bold run, so a case sits beside a family Word has.  Read off the
+		 * golden's font resources: the face Word substitutes for each case, and whether the
+		 * bold run gets a bold face or, as on 9919, weight 400.
+		 */
+		PROBES.add(new Probe("missing-family-weight",
+				"two invented families no machine has, each with a regular and a bold run: "
+				+ "(a) named directly in w:rFonts, w:family roman with Times New Roman's "
+				+ "panose; (b) the same, w:family swiss with Arial's panose; (c) named "
+				+ "directly with no w:fontTable entry at all; (d) the theme's minor Latin "
+				+ "face, named by w:asciiTheme/w:hAnsiTheme minorHAnsi over (b)'s own "
+				+ "fontTable entry (9919's shape); each case beside a Calibri control line "
+				+ "of a regular and a bold run - which face does Word substitute, and does "
+				+ "the bold run get a bold face or weight 400", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 22);
+			fontTable(d,
+					fontEntry("Plutext Probe Serif", "roman", PANOSE_TIMES, null)
+					+ fontEntry("Plutext Probe Sans", "swiss", PANOSE_ARIAL, null)
+					+ fontEntry("Plutext Probe Theme", "swiss", PANOSE_ARIAL, null));
+			themePart(d, "Plutext Probe Theme", "Plutext Probe Theme");
+			d.para("Four cases. Each is a regular line and a bold line in a family which "
+					+ "exists on no machine, then a Calibri control line holding a regular "
+					+ "run and a bold run.").after(240).add();
+			missingFamilyCase(d, "(a)", "Plutext Probe Serif, w:rFonts, family roman",
+					allFour("Plutext Probe Serif"));
+			missingFamilyCase(d, "(b)", "Plutext Probe Sans, w:rFonts, family swiss",
+					allFour("Plutext Probe Sans"));
+			missingFamilyCase(d, "(c)", "Plutext Probe Ghost, w:rFonts, no fontTable entry",
+					allFour("Plutext Probe Ghost"));
+			missingFamilyCase(d, "(d)", "Plutext Probe Theme, minorHAnsi theme reference",
+					rpr -> {
+						org.docx4j.wml.RFonts rf = Doc.F.createRFonts();
+						rf.setAsciiTheme(org.docx4j.wml.STTheme.MINOR_H_ANSI);
+						rf.setHAnsiTheme(org.docx4j.wml.STTheme.MINOR_H_ANSI);
+						rpr.setRFonts(rf);
+					});
+			return d.pkg();
+		}));
 	}
 
 	public static List<Probe> all() {
@@ -5503,6 +5843,83 @@ public final class Corpus {
 						+ (leader == null ? "" : " w:leader=\"" + leader + "\"") + "/></w:tabs>")
 				+ "<w:ind w:left=\"" + leftTwips + "\" w:hanging=\"" + hangingTwips + "\"/>"
 				+ "</w:pPr></w:lvl>";
+	}
+
+
+	// ------------------------------------------ CR-001 batch 48 probe helpers
+
+	/** The paragraph mark's own w:rFonts and w:sz, and its weight when {@code bold} is not
+	 *  null: a mark which does not carry the paragraph's font and size would size the line
+	 *  box from the document defaults, which is not the thing being measured.
+	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	private static java.util.function.Consumer<org.docx4j.wml.ParaRPr> markFont(String font,
+			int halfPts, Boolean bold) {
+		return rpr -> {
+			org.docx4j.wml.RFonts rf = Doc.F.createRFonts();
+			rf.setAscii(font);
+			rf.setHAnsi(font);
+			rf.setCs(font);
+			rf.setEastAsia(font);
+			rpr.setRFonts(rf);
+			org.docx4j.wml.HpsMeasure sz = Doc.F.createHpsMeasure();
+			sz.setVal(BigInteger.valueOf(halfPts));
+			rpr.setSz(sz);
+			rpr.setSzCs(sz);
+			if (bold != null) rpr.setB(flag(bold.booleanValue()));
+		};
+	}
+
+	/** The text split into runs of three words which alternate bold and regular, so that
+	 *  every line of the paragraph holds both weights.
+	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	private static Doc.Para alternatingWeights(Doc.Para p, String text, String font, int halfPts) {
+		java.util.function.Consumer<org.docx4j.wml.RPr> b = Doc::bold;
+		String[] words = text.split(" ");
+		StringBuilder chunk = new StringBuilder();
+		boolean boldChunk = true;
+		for (int i = 0; i < words.length; i++) {
+			chunk.append(words[i]).append(' ');
+			if ((i + 1) % 3 == 0 || i == words.length - 1) {
+				p.run(chunk.toString(), font, halfPts, boldChunk ? b : null);
+				chunk.setLength(0);
+				boldChunk = !boldChunk;
+			}
+		}
+		return p;
+	}
+
+	/** The five line-box cases at one font and size, consecutive and unspaced.
+	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	private static void lineBoxCases(Doc d, String tag, String font, int halfPts) {
+		java.util.function.Consumer<org.docx4j.wml.RPr> b = Doc::bold;
+		d.para().noLabel().font(font, halfPts).markRPr(markFont(font, halfPts, null))
+				.text(tag + " (a) every run regular, mark silent on the weight: " + prose(6, 0)).add();
+		d.para().noLabel().font(font, halfPts).markRPr(markFont(font, halfPts, Boolean.TRUE))
+				.run(tag + " (b) every run bold, mark bold: " + prose(6, 1), font, halfPts, b).add();
+		alternatingWeights(d.para().noLabel().font(font, halfPts)
+				.markRPr(markFont(font, halfPts, null))
+				.text(tag + " (c) three-word runs alternating bold and regular: "),
+				prose(6, 2), font, halfPts).add();
+		d.para().noLabel().font(font, halfPts).markRPr(markFont(font, halfPts, Boolean.TRUE))
+				.text(tag + " (d) every run regular, mark w:b: " + prose(6, 3)).add();
+		d.para().noLabel().font(font, halfPts).markRPr(markFont(font, halfPts, Boolean.FALSE))
+				.run(tag + " (e) every run bold, mark w:b w:val=0: " + prose(6, 4), font, halfPts, b).add();
+	}
+
+	/** One case of missing-family-weight: a regular line and a bold line in the family the
+	 *  customiser names, then a Calibri control line holding a regular and a bold run.
+	 *  @since 17.1.1 (CR-001 batch 48) */
+	private static void missingFamilyCase(Doc d, String label, String what,
+			java.util.function.Consumer<org.docx4j.wml.RPr> fontRef) {
+		d.para().noLabel().inheritSpacing()
+				.run(bareRun(label + " regular, " + what + ": " + FONTS_SENTENCE, fontRef)).add();
+		d.para().noLabel().inheritSpacing()
+				.run(bareRun(label + " bold, " + what + ": " + FONTS_SENTENCE,
+						fontRef.andThen(Doc::bold))).add();
+		d.para().noLabel().inheritSpacing()
+				.run(bareRun(label + " control, Calibri regular: " + FONTS_SENTENCE, allFour("Calibri")))
+				.run(bareRun(" And " + label + " control, Calibri bold.",
+						allFour("Calibri").andThen(Doc::bold))).add();
 	}
 
 	/** Writes every probe as {@code <id>.docx} into dir, plus corpus.txt and corpus-manifest.properties. */
