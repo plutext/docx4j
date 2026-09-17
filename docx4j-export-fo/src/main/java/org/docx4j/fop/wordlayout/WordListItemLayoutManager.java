@@ -122,15 +122,15 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * <p>Word paints a numbered paragraph as label, separator, text on one line, and its
-	 * PDF writes the {@code w:suff} separator - a tab, or a space - as a single space
-	 * character whose quad is the separator's advance.  Here the label and the text are
-	 * two blocks of an {@code fo:list-item} and the separator is the geometry between
-	 * them, so the text layer had no character there at all and a numbered paragraph's
-	 * label fused with the word after it: the {@code styles-numpr-ilvl-only} golden probe
-	 * extracted as {@code 1.1.(b) L, direct w:numPr of w:ilvl 1 only} where Word's golden
-	 * reads {@code 1.1. (b) L, ...}, and 847 lines over the three real-document corpora
-	 * differ from Word's by that one space (CR-001 batch 45).
+	 * <p>Word writes the {@code w:suff} separator as one space glyph, in the paragraph
+	 * mark's font, in a text object of its own ({@code 1 0 0 1 134.45 723.07 Tm [( )] TJ}
+	 * between a corpus heading's number and its text).  Here the label and the text are two
+	 * blocks of an {@code fo:list-item} and nothing was written between them, so a numbered
+	 * paragraph's label fused with the word after it.  The
+	 * {@code styles-numpr-ilvl-only} golden probe extracted as
+	 * {@code 1.1.(b) L, direct w:numPr of w:ilvl 1 only} where Word's golden reads
+	 * {@code 1.1. (b) L, ...}, and 847 lines over the three real-document corpora differ
+	 * from Word's by that one space (CR-001 batch 45).
 	 *
 	 * <p>The space is added to the label's line once both areas exist, with the measured
 	 * gap as its width, so it is the text layer alone that changes: the body block is

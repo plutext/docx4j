@@ -238,13 +238,15 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   is why the same FO rendered correctly without one (CR-001 batch 45).
 
 - The w:suff separator between a numbered paragraph's label and its text is a space character
-  in the PDF's text layer, as it is in Word's. Word paints label, separator, text on one line
-  and writes the separator - a tab, or a space - as one space glyph whose quad is its advance:
-  on one corpus report's first heading Word's label runs 127.49..134.45 with a space quad
-  134.45..138.53 before the text at 138.53, and on another's the label ends at 93.02 with a
-  space quad 93.02..97.01 before the text at 97.01. docx4j sets the label as an
-  fo:list-item-label beside an fo:list-item-body, so the separator was geometry and no
-  character at all, and the label fused with the word after it. The styles-numpr-ilvl-only
+  in the PDF's text layer, as it is in Word's. Word writes it as one space glyph in the
+  paragraph mark's font and size, in a text object of its own, and then positions the text
+  after it with a text matrix of its own: read out of the content streams, one corpus report's
+  first heading is `1 0 0 1 127.49 723.07 Tm [(1)] TJ`, then `/F4 13.92 Tf 1 0 0 1 134.45
+  723.07 Tm [( )] TJ` - a third font, the paragraph mark's - then the text at 138.53; another's
+  is `1 0 0 1 40.824 665.47 Tm [( )] TJ` between `1.1` and `S`. (The glyph draws no ink, so
+  `mutool draw -F trace` does not list it.) docx4j sets the label as an fo:list-item-label
+  beside an fo:list-item-body and wrote nothing between them, so the same headings copied out
+  as `1.1Text` where Word's copy as `1.1 Text`. The styles-numpr-ilvl-only
   golden probe is the case with Word's own answer to hand: its item extracted as
   "1.1.(b) L, direct w:numPr of w:ilvl 1 only" where Word's golden reads "1.1. (b) L, ...",
   and it goes from 50% to 100% line parity. The space is added to the label's line with the

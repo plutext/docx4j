@@ -45,12 +45,12 @@ import org.junit.Test;
  * The {@code w:suff} separator between a list item's number and its text is a character
  * in the PDF's text layer, as it is in Word's.
  *
- * <p>Word paints a numbered paragraph as number, separator, text on one line, and writes
- * the separator - a tab, or a space - as one space glyph whose quad is its advance:
- * measured on one corpus report's first heading, Word's label runs 127.49..134.45 and a
- * space quad 134.45..138.53 precedes the text at 138.53.  docx4j lays the number out as an
- * {@code fo:list-item-label} beside an {@code fo:list-item-body}, so the separator was
- * geometry and no character at all, and the label fused with the word after it: the
+ * <p>Word writes the separator as one space glyph in the paragraph mark's font, in a text
+ * object of its own: {@code 1 0 0 1 127.49 723.07 Tm [(1)] TJ}, then
+ * {@code /F4 13.92 Tf 1 0 0 1 134.45 723.07 Tm [( )] TJ}, then the text at 138.53.  docx4j
+ * lays the number out as an {@code fo:list-item-label} beside an
+ * {@code fo:list-item-body} and wrote nothing between them, so the label fused with the
+ * word after it.  The
  * {@code styles-numpr-ilvl-only} golden probe extracted as
  * {@code 1.1.(b) L, direct w:numPr of w:ilvl 1 only} where Word's golden reads
  * {@code 1.1. (b) L, ...} (50% to 100% line parity), and 847 lines over the three
