@@ -1490,6 +1490,9 @@ public final class WordLayoutFixups {
 			if (distB > 0) holder.setAttribute("padding-bottom", pt(distB));
 			wrapper.appendChild(holder);
 		} else if ("topAndBottom".equals(kind)) {
+			if (bandWith(doc, para, holder, Math.max(0, x), w, Math.max(0, off), h, distB)) {
+				return;   // it joined the drawing beside it; that band reserves the height
+			}
 			wrapper = doc.createElementNS(FO_NS, "fo:block-container");
 			wrapper.setAttribute("height", pt(Math.max(0, off) + h + distB));
 			wrapper.setAttribute("start-indent", "0pt");
@@ -1529,6 +1532,137 @@ public final class WordLayoutFixups {
 	 *
 	 * @since 17.1.0
 	 */
+	/**
+	 * Put this {@code wrapTopAndBottom} drawing <b>beside</b> one already placed in the
+	 * same paragraph rather than below it, where the two do not overlap horizontally;
+	 * true where it was placed.
+	 *
+	 * <p>{@code wrapTopAndBottom} says that <em>text</em> does not flow beside the object,
+	 * and each such drawing therefore reserves its own band of the flow.  It does not say
+	 * that another <em>drawing</em> cannot sit there, and Word puts two that do not
+	 * overlap side by side, each at its own {@code positionV}, reserving the band once.
+	 *
+	 * <p>Measured on a corpus document with seven such drawings, each about 225pt wide in
+	 * a 470pt column, from Word's own PDF: its page 3 carries four of them, two at
+	 * x=73.85 and x=308.25 on one baseline and two at x=78.75 and x=317.20 on another, and
+	 * its page 4 carries three, two at x=90.75 and x=336.00 and one alone.  Ours had the
+	 * same seven at very nearly the same x - 317.20, 308.25, 95.25, 90.75 and 336.00 are
+	 * Word's numbers exactly, the horizontal {@code posOffset} being already right - but
+	 * one below another: the second of a pair landed 210.75pt lower and the document ran
+	 * to six pages against Word's four.
+	 *
+	 * <p>Note what the rule is <b>not</b>: it is not that the two share a {@code positionV}.
+	 * Two of that document's pairs sit 0.25pt and 2.00pt apart vertically in Word's own
+	 * PDF, and our offsets differ by the same 2.00pt, so each keeps its own offset and
+	 * lands where Word puts it.  What the band does is stop one reserving space against
+	 * the other.  The band's height is the greatest extent of its members, and its members
+	 * are positioned within it, so a member's own offset is measured from the same origin
+	 * it was before.
+	 *
+	 * <p>Only drawings anchored in the <b>same paragraph</b> can be banded here: the
+	 * wrappers are siblings at that paragraph's head, and two anchored in different
+	 * paragraphs have no common origin at this point in the FO.  That is a real limit -
+	 * the same document has a third pair, one in each of two paragraphs, which Word also
+	 * draws side by side and this leaves stacked.
+	 *
+	 * @since 17.1.1
+	 */
+	private static boolean bandWith(Document doc, Element para, Element holder,
+			double x, double w, double off, double h, double distB) {
+		for (Node n = para.getFirstChild(); n instanceof Element; n = n.getNextSibling()) {
+			Element sibling = (Element) n;
+			if (!isFo(sibling, "block-container") || takesNoSpace(sibling)) continue;
+			double[] extent = bandExtent(sibling);
+			if (extent == null) continue;
+			if (x + w > extent[0] + 0.01 && extent[1] > x + 0.01) continue;   // they overlap
+			Element band = asBand(doc, sibling);
+			band.appendChild(positioned(doc, holder, x, off, w, h));
+			double reach = off + h + distB;
+			if (reach > lengthPt(band.getAttribute("height"))) band.setAttribute("height", pt(reach));
+			return true;
+		}
+		return false;
+	}
+
+	/** The horizontal extent [start, end] a placed {@code topAndBottom} wrapper occupies,
+	 *  or null where it is not one: the union of its members'.  @since 17.1.1 */
+	private static double[] bandExtent(Element wrapper) {
+		double from = Double.MAX_VALUE, to = -Double.MAX_VALUE;
+		for (Node n = wrapper.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (!(n instanceof Element)) continue;
+			Element child = (Element) n;
+			double x, w;
+			if (isFo(child, "block-container") && child.hasAttribute("absolute-position")) {
+				x = lengthPt(child.getAttribute("left"));
+				w = lengthPt(child.getAttribute("width"));
+			} else if (isFo(child, "block")) {
+				x = lengthPt(child.getAttribute("start-indent"));
+				w = graphicWidthPt(child);
+			} else {
+				return null;
+			}
+			if (w <= 0) return null;
+			from = Math.min(from, x);
+			to = Math.max(to, x + w);
+		}
+		return to > from ? new double[] { from, to } : null;
+	}
+
+	/** The width of the picture a holder block carries, or 0. @since 17.1.1 */
+	private static double graphicWidthPt(Element holder) {
+		for (Node n = holder.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && "external-graphic".equals(((Element) n).getLocalName())) {
+				return lengthPt(((Element) n).getAttribute("content-width"));
+			}
+		}
+		return 0;
+	}
+
+	/** This wrapper with its members positioned rather than stacked, so another drawing
+	 *  can share it.  A wrapper which already holds positioned members is returned as it
+	 *  is.  @since 17.1.1 */
+	private static Element asBand(Document doc, Element wrapper) {
+		wrapper.setAttribute("overflow", "visible");
+		List<Element> holders = new ArrayList<Element>();
+		for (Node n = wrapper.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && isFo((Element) n, "block")) holders.add((Element) n);
+		}
+		for (Element holder : holders) {
+			double x = lengthPt(holder.getAttribute("start-indent"));
+			double off = lengthPt(holder.getAttribute("padding-top"));
+			double w = graphicWidthPt(holder);
+			double h = 0;
+			for (Node c = holder.getFirstChild(); c != null; c = c.getNextSibling()) {
+				if (c instanceof Element && "external-graphic".equals(((Element) c).getLocalName())) {
+					h = lengthPt(((Element) c).getAttribute("content-height"));
+				}
+			}
+			holder.removeAttribute("start-indent");
+			holder.removeAttribute("padding-top");
+			// the holder is put inside the new container, so it has to be replaced in the
+			// wrapper by that container before it is moved into it
+			Element abs = positioned(doc, null, x, off, w, h);
+			wrapper.replaceChild(abs, holder);
+			abs.appendChild(holder);
+		}
+		return wrapper;
+	}
+
+	/** One member of a band: an absolutely positioned container at its own offset and
+	 *  indent, measured from the band's own reference area.  @since 17.1.1 */
+	private static Element positioned(Document doc, Element holder, double x, double off,
+			double w, double h) {
+		Element abs = doc.createElementNS(FO_NS, "fo:block-container");
+		abs.setAttribute("absolute-position", "absolute");
+		abs.setAttribute("top", pt(off));
+		abs.setAttribute("left", pt(x));
+		if (w > 0) abs.setAttribute("width", pt(w));
+		if (h > 0) abs.setAttribute("height", pt(h));
+		abs.setAttribute("overflow", "visible");
+		if (holder != null) abs.appendChild(holder);
+		return abs;
+	}
+
 	private static void insertAnchorWrapper(Element para, Element wrapper) {
 		Node at = para.getFirstChild();
 		if (!takesNoSpace(wrapper)) {
@@ -1892,10 +2026,18 @@ public final class WordLayoutFixups {
 		return true; // it opens the section: the cover page, the letterhead
 	}
 
-	/** A container holding nothing but an absolutely positioned one: a floating table or
-	 *  a picture already taken out of the flow, which the page's own layout ignores. */
+	/** A container of <b>no height</b> holding nothing but absolutely positioned ones: a
+	 *  floating table or a picture already taken out of the flow, which the page's own
+	 *  layout ignores.
+	 *
+	 *  <p>The height is part of the test since 17.1.1, when {@link #bandWith} began
+	 *  positioning the members of a band of side-by-side drawings: that container's
+	 *  children are absolute too and it <em>does</em> reserve its height.  Every wrapper
+	 *  written before then set {@code height="0pt"} whenever it took no space, so the
+	 *  test is unchanged for all of them.</p> */
 	private static boolean takesNoSpace(Element el) {
 		if (!isFo(el, "block-container")) return false;
+		if (lengthPt(el.getAttribute("height")) > 0) return false;
 		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
 			if (!(n instanceof Element)) continue;
 			if (!isFo((Element) n, "block-container")

@@ -200,6 +200,9 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Two top-and-bottom wrapped anchored drawings in one paragraph which do not overlap horizontally
+  share one band, side by side as Word draws them, rather than each reserving its own and
+  stacking (CR-001 batch 46).
 - A table-of-contents entry's stretching dot leader steps on Word's 1/300 inch grid and begins on
   a whole multiple of that step from the page's edge, as a tab's leader has since 17.1.0
   (CR-001 batch 46).
