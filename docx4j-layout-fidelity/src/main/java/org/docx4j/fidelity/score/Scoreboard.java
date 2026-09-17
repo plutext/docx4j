@@ -43,7 +43,7 @@ public final class Scoreboard {
 	 */
 	public static final String[] HEADER = { "id", "compatMode", "sizeBytes", "status", "refPages", "candPages",
 			"refLines", "candLines", "lineParity", "pageParity", "matched", "merged", "medianDy", "maxDy",
-			"firstDivergence", "error" };
+			"refPitch", "candPitch", "firstDivergence", "error" };
 
 	private Scoreboard() {}
 
@@ -59,6 +59,9 @@ public final class Scoreboard {
 		 *  org.docx4j.fidelity.compare.LayoutComparison */
 		public int merged;
 		public double lineParity, pageParity, medianDy, maxDy;
+		/** Each side's own line pitch, over stacked pairs only.
+		 *  @see org.docx4j.fidelity.compare.LayoutComparison#linePitch */
+		public double refPitch, candPitch;
 		public String firstDivergence = "";
 		public String error = "";
 
@@ -82,6 +85,8 @@ public final class Scoreboard {
 			row.pageParity = r.pageParity();
 			row.medianDy = r.medianDy;
 			row.maxDy = r.maxDy;
+			row.refPitch = r.refPitch;
+			row.candPitch = r.candPitch;
 			row.firstDivergence = r.firstDivergence == null ? "" : r.firstDivergence;
 			return row;
 		}
@@ -106,9 +111,10 @@ public final class Scoreboard {
 						error.isEmpty() ? firstDivergence : error);
 			}
 			return String.format(Locale.ROOT,
-					"%-44s pages %d/%d  lines %d/%d  parity %.0f%%/%.0f%%  dy med %.2f max %.2f  %s", id, refPages,
-					candPages, refLines, candLines, lineParity * 100, pageParity * 100, medianDy, maxDy,
-					firstDivergence);
+					"%-44s pages %d/%d  lines %d/%d  parity %.0f%%/%.0f%%  dy med %.2f max %.2f"
+							+ "  pitch %.2f/%.2f  %s",
+					id, refPages, candPages, refLines, candLines, lineParity * 100, pageParity * 100,
+					medianDy, maxDy, refPitch, candPitch, firstDivergence);
 		}
 	}
 
@@ -260,6 +266,8 @@ public final class Scoreboard {
 		sb.append(r.merged).append(',');
 		sb.append(String.format(Locale.ROOT, "%.2f", r.medianDy)).append(',');
 		sb.append(String.format(Locale.ROOT, "%.2f", r.maxDy)).append(',');
+		sb.append(String.format(Locale.ROOT, "%.2f", r.refPitch)).append(',');
+		sb.append(String.format(Locale.ROOT, "%.2f", r.candPitch)).append(',');
 		sb.append(q(oneLine(r.firstDivergence))).append(',');
 		sb.append(q(oneLine(firstLine(r.error))));
 		return sb.toString();
@@ -308,6 +316,8 @@ public final class Scoreboard {
 				row.merged = (int) num(at(head, f, "merged"));
 				row.medianDy = dbl(at(head, f, "medianDy"));
 				row.maxDy = dbl(at(head, f, "maxDy"));
+				row.refPitch = dbl(at(head, f, "refPitch"));
+				row.candPitch = dbl(at(head, f, "candPitch"));
 				row.firstDivergence = at(head, f, "firstDivergence");
 				row.error = at(head, f, "error");
 				rows.add(row);

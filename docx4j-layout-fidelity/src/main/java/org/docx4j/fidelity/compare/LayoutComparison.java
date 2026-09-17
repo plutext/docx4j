@@ -45,6 +45,8 @@ public final class LayoutComparison {
 		public int merged;
 		public String firstDivergence = "";
 		public double medianDy, maxDy, medianDx, maxDx;
+		/** Each side's own line pitch. @see LayoutComparison#linePitch */
+		public double refPitch, candPitch;
 		public final List<Pair> pairs = new ArrayList<>();
 		public final List<Line> refOnly = new ArrayList<>();
 		public final List<Line> candOnly = new ArrayList<>();
@@ -223,8 +225,67 @@ public final class LayoutComparison {
 		r.maxDy = maxAbs(dys);
 		r.medianDx = median(dxs);
 		r.maxDx = maxAbs(dxs);
+		r.refPitch = linePitch(ref);
+		r.candPitch = linePitch(cand);
 		return r;
 	}
+
+	/**
+	 * One extraction's <b>line pitch</b>: the median baseline gap between consecutive
+	 * extracted lines on one page, counting only pairs that are stacked one above the
+	 * other - a pair that sits <b>side by side</b>, the later beginning at or after the
+	 * earlier ends, has no line pitch between it at all.
+	 *
+	 * <p>Without that exclusion the number is not a line pitch on any document with a
+	 * table in it, and the triage ledgers have twice read a defect out of it that was not
+	 * there.  The cells of one row are consecutive extracted lines whose baselines are a
+	 * fraction of a point apart (Word usually writes them at exactly the same baseline),
+	 * so on a table-heavy document they are the <em>majority</em> of the consecutive
+	 * pairs and they drag the median to nothing.  Measured on the b70-batch45 renders,
+	 * ours against Word's:
+	 *
+	 * <table><caption>median baseline gap, Word / ours / the ratio</caption>
+	 * <tr><th>document</th><th>every consecutive pair</th><th>stacked pairs only</th></tr>
+	 * <tr><td>{@code 15_en-AU_sdt_num_tbl_11398}</td><td>0.000 / 0.277 - Word's own
+	 *     median is <b>zero</b></td><td>13.700 / 13.799 = 1.007</td></tr>
+	 * <tr><td>{@code 15_en-AU_sdt_num_tbl_11783}</td><td>7.710 / 3.943 = 0.511</td>
+	 *     <td>12.960 / 12.649 = 0.976</td></tr>
+	 * <tr><td>{@code 14_en-AU_tbl_174}</td><td>6.240 / 4.427 = 0.709</td>
+	 *     <td>9.600 / 9.174 = 0.956</td></tr>
+	 * <tr><td>{@code 14_fr-FR_num_tbl_7235}</td><td>4.560 / 4.349 = 0.954</td>
+	 *     <td>10.320 / 10.349 = 1.003</td></tr>
+	 * <tr><td>{@code 16_en-AU_num_tbl_13118}</td><td>1.920 / 1.835 = 0.956</td>
+	 *     <td>9.150 / 9.199 = 1.005</td></tr>
+	 * <tr><td>{@code 15_en-US_sdt_num_tbl_13743}</td><td>11.040 / 10.986 = 0.995</td>
+	 *     <td>12.000 / 11.736 = 0.978</td></tr>
+	 * <tr><td>{@code 16_hu-HU_sdt_tbl_2065}</td><td>15.600 / 15.442 = 0.990</td>
+	 *     <td>15.600 / 15.442 = 0.990 - a document with no such rows does not move</td></tr>
+	 * </table>
+	 *
+	 * <p>Dropping only the pairs under a point - the correction the ledgers have been
+	 * making by hand - is <b>not enough</b>: it leaves 7235 at 8.400 against 10.349, a
+	 * 23% error read as a line-box defect, because that document's row cells sit more
+	 * than a point apart on Word's side as well.  The test is the geometry, not a
+	 * threshold, and it needs no number.
+	 *
+	 * <p>It is applied to both extractions alike, and it is a reported statistic only: no
+	 * pair is made or lost by it.
+	 *
+	 * @since 17.1.1
+	 */
+	public static double linePitch(PdfLayout l) {
+		List<Double> gaps = new ArrayList<>();
+		for (int i = 1; i < l.lines.size(); i++) {
+			Line a = l.lines.get(i - 1), b = l.lines.get(i);
+			if (a.page != b.page) continue;
+			if (b.x0 >= a.x1 - X_EPSILON_PT) continue;    // side by side: not a line pitch
+			gaps.add(Math.abs(b.y - a.y));
+		}
+		return median(gaps);
+	}
+
+	/** How much two x may differ and still count as the same, in points. */
+	private static final double X_EPSILON_PT = 0.01;
 
 	/**
 	 * Whether a line one render's extractor read as one is paired with the several the

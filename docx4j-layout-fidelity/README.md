@@ -694,6 +694,7 @@ Columns:
 | `matched` | matched line count |
 | `merged` | of `matched`, the pairs the merging pass formed by concatenation |
 | `medianDy` / `maxDy` | candidate minus reference baseline, in points, over lines matched on the same page |
+| `refPitch` / `candPitch` | each side's own line pitch: the median baseline gap between consecutive lines on a page, counting only pairs stacked one above the other. The cells of a table row are consecutive extracted lines too, and the gap between them is no line pitch, so they are left out — see `LayoutComparison.linePitch` |
 | `firstDivergence` | the first line- or page-break difference |
 | `error` | first line of the exception, for `error` / `timeout` rows |
 
