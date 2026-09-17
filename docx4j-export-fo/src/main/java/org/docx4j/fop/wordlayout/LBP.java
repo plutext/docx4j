@@ -300,6 +300,82 @@ final class LBP {
 		return leaderChar(kind) != 0;
 	}
 
+	/** One 1/300 inch, the grid Word's layout works in, in millipoints. */
+	static final int GRID_MPT = 240;
+
+	/** An advance rounded to Word's 1/300 inch grid, which is the step its leader
+	 *  characters take.  @since 17.1.1 */
+	static int roundToGrid(int mpt) {
+		if (mpt <= 0) return mpt;
+		int units = (mpt + GRID_MPT / 2) / GRID_MPT;
+		return units > 0 ? units * GRID_MPT : GRID_MPT;
+	}
+
+	/**
+	 * Put a leader run FOP built on Word's step: its characters repeat on the advance
+	 * rounded to the 1/300 inch grid, and the difference is written as a character spacing.
+	 *
+	 * <p>Read out of the tab-leader-kinds golden's stream, all in Calibri 11.04 - the
+	 * paragraph mark's font.  A full stop and a middle dot advance 2.782pt and are drawn
+	 * {@code 0.0979 Tc} apart, a step of 2.8816 (twelve cells); a hyphen advances 3.380 and
+	 * is drawn {@code -0.0182 Tc} apart, 3.3616 (fourteen - so the advance is rounded, and
+	 * not rounded up); an underscore advances 5.500 and is drawn {@code 0.0221 Tc} apart,
+	 * 5.5222 (twenty-three).  The spacing can be negative, which a spacer cannot be, so it
+	 * goes on the character.</p>
+	 *
+	 * <p>A leader the FO gave a pattern width of its own keeps it: that width is the
+	 * author's, not the font's.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static void setGridStep(Object area) {
+		if (!WordLayoutCustomizer.leaderGrid()) return;
+		if (!(area instanceof org.apache.fop.area.inline.FilledArea)) return;
+		org.apache.fop.area.inline.FilledArea run = (org.apache.fop.area.inline.FilledArea) area;
+		java.util.List<org.apache.fop.area.inline.InlineArea> kids = run.getChildAreas();
+		if (kids == null || kids.size() != 1) return;         // a spacer: the FO's own width
+		if (!(kids.get(0) instanceof org.apache.fop.area.inline.TextArea)) return;
+		org.apache.fop.area.inline.TextArea c = (org.apache.fop.area.inline.TextArea) kids.get(0);
+		if (run.getUnitWidth() != c.getIPD()) return;         // likewise
+		if (gridStep(c, c.getIPD()) > 0) run.setUnitWidth(c.getIPD());
+	}
+
+	/** Step this leader character by {@code advance} rounded to Word's grid, as a character
+	 *  spacing on the character itself; the step, or 0 where it is the advance already. */
+	private static int gridStep(org.apache.fop.area.inline.TextArea c, int advance) {
+		int pitch = roundToGrid(advance);
+		if (pitch <= 0 || pitch == advance) return 0;
+		c.setTextLetterSpaceAdjust(pitch - advance);
+		c.setIPD(pitch);
+		return pitch;
+	}
+
+	/**
+	 * The blank Word leaves before the first character of a leader run whose step is
+	 * {@code period}, where the run begins {@code from} millipoints from the <b>page's</b>
+	 * left edge; 0 where the run begins where it is.
+	 *
+	 * <p>Word puts the run on a whole multiple of its step measured from the page edge, and
+	 * takes the tab's start down to the 1/300 inch grid first.  On the tab-leader-kinds
+	 * golden every run does sit on such a multiple: its hyphen runs open at 22, 46 and 45
+	 * steps of 3.3612, its underscore runs at 14, 23, 26, 27, 30, 32 and 59 steps of 5.522,
+	 * its dot and middle-dot runs at 25, 45, 47, 57 and 60 steps of 2.881.  The floor is
+	 * what puts the P09 run at 46 steps (154.62) rather than 47 (157.98) when the text
+	 * before it ends at 154.776 - a fraction of a cell past the 46th step - so that Word's
+	 * run there opens a touch <em>behind</em> the text and carries no space.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	static int gridPhase(int from, int period) {
+		if (period <= 0 || from <= 0) return 0;
+		int step = (period + GRID_MPT / 2) / GRID_MPT;      // the step, in grid cells
+		if (step <= 0) return 0;
+		int cells = from / GRID_MPT;                         // the tab's start, floored
+		int start = ((cells + step - 1) / step) * step * GRID_MPT;
+		int phase = start - from;
+		return phase > 0 ? phase : 0;
+	}
+
 	/** LeaderLayoutManager.font (private): the font its dots are drawn in. */
 	private static final Field LLM_FONT;
 	static {
@@ -354,12 +430,16 @@ final class LBP {
 		if (!(lm.getFObj() instanceof org.apache.fop.fo.flow.Leader)) return;
 		org.apache.fop.fo.flow.Leader fobj = (org.apache.fop.fo.flow.Leader) lm.getFObj();
 		int pattern = fobj.getLeaderPattern();
-		if ((kind == LEADER_DOTS && pattern == org.apache.fop.fo.Constants.EN_DOTS)
-				|| (kind == LEADER_RULE && pattern == org.apache.fop.fo.Constants.EN_RULE)) {
-			return;   // FOP already built the area this stop wants
-		}
+		boolean asFopBuiltIt = (kind == LEADER_DOTS && pattern == org.apache.fop.fo.Constants.EN_DOTS)
+				|| (kind == LEADER_RULE && pattern == org.apache.fop.fo.Constants.EN_RULE);
 		try {
 			Object area = LNLM_CUR_AREA.get(lm);
+			if (asFopBuiltIt) {
+				// FOP built the area this stop wants, and it is the one that hangs on the
+				// alignment context the FO asked for; all it needs is Word's step
+				if (isCharacterLeader(kind)) setGridStep(area);
+				return;
+			}
 			if (!(area instanceof org.apache.fop.area.inline.InlineArea)) return;
 			org.apache.fop.area.inline.InlineArea old = (org.apache.fop.area.inline.InlineArea) area;
 			int thickness = fobj.getRuleThickness().getValue(lm);
@@ -411,6 +491,7 @@ final class LBP {
 		dot.setBaselineOffset(thickness);
 		org.apache.fop.layoutmgr.TraitSetter.addFontTraits(dot, font);
 		dot.addTrait(org.apache.fop.area.Trait.COLOR, fobj.getColor());
+		if (WordLayoutCustomizer.leaderGrid() && gridStep(dot, width) > 0) width = dot.getIPD();
 		org.apache.fop.area.inline.Space spacer = null;
 		int patternWidth = fobj.getLeaderPatternWidth().getValue(lm);
 		if (patternWidth > width) {

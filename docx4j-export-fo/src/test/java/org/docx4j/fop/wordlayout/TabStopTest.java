@@ -54,6 +54,11 @@ public class TabStopTest {
 	private static final String DOT_TAB_10 =
 			"<fo:leader docx4j:tab=\"1\" font-size=\"10pt\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
 
+	/** the same again with dots of 6.6pt (Courier 11pt), an advance which is <b>not</b> a
+	 *  whole number of the 1/300 inch cells Word counts its leader grid in */
+	private static final String DOT_TAB_11 =
+			"<fo:leader docx4j:tab=\"1\" font-size=\"11pt\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
+
 	/** @param tabs docx4j:tabs, "pos:align:leader;..." in twips; "" for none
 	 *  @param ind  docx4j:tab-ind, "left:firstLine:separator" in twips */
 	private static String fo(String tabs, String ind, String blockAttrs, String content) {
@@ -178,6 +183,26 @@ public class TabStopTest {
 			}
 		}
 		return found;
+	}
+
+	/** The step each dot leader repeats on, in points, once per leader: Word's grid pitch,
+	 *  which is the character's advance rounded to the 1/300 inch its layout works in and
+	 *  carried by the repeating unit itself. */
+	private static List<Double> dotUnitWidths(String fo) throws Exception {
+		List<Double> out = new ArrayList<>();
+		NodeList parents = area(fo).getElementsByTagName("inlineparent");
+		for (int i = 0; i < parents.getLength(); i++) {
+			Element parent = (Element) parents.item(i);
+			if (parent.getElementsByTagName("inlineparent").getLength() > 0) continue;
+			NodeList texts = parent.getElementsByTagName("text");
+			for (int j = 0; j < texts.getLength(); j++) {
+				Element text = (Element) texts.item(j);
+				if (!".".equals(text.getTextContent())) continue;
+				Double w = round(ipd(text, "ipd"));
+				if (!out.contains(w)) out.add(w);
+			}
+		}
+		return out;
 	}
 
 	/** The blank each dot leader opens with, in points: Word's dots sit on a grid fixed to
@@ -569,6 +594,61 @@ public class TabStopTest {
 		// the dots of a leader whose own advance divides the text's need none either
 		assertEquals(at(),
 				leaderPhases(fo("4000:right:dot", "0:0:.", null, "abc" + DOT_TAB + "wxyz")));
+	}
+
+	/**
+	 * A leader character steps by its own advance <b>rounded to 1/300 inch</b>, the grid
+	 * Word's layout works in, and not by the advance itself.
+	 *
+	 * <p>Read out of the {@code tab-leader-kinds} golden's content stream, where every
+	 * leader is drawn in the paragraph mark's font at 11.04pt and the rounding is written
+	 * as a character spacing: a full stop and a middle dot advance 2.782pt and are drawn
+	 * {@code 0.0979 Tc} apart, twelve cells; a hyphen advances 3.380 and is drawn
+	 * {@code -0.0182 Tc} apart, fourteen - the spacing is <em>negative</em>, so the advance
+	 * is rounded and not rounded up; an underscore advances 5.500 and is drawn
+	 * {@code 0.0221 Tc} apart, twenty-three.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void aLeaderCharacterStepsByItsAdvanceRoundedToWordsGrid() throws Exception {
+		assertEquals(2880, LBP.roundToGrid(2782));      // a full stop or a middle dot
+		assertEquals(3360, LBP.roundToGrid(3380));      // a hyphen: down, not up
+		assertEquals(5520, LBP.roundToGrid(5500));      // an underscore
+		// and it reaches the repeating unit: Courier 11pt's dot advances 6.6pt, 27.5
+		// cells, which Word would step 6.72
+		assertEquals(at(6.72),
+				dotUnitWidths(fo("4000:right:dot", "0:0:.", null, "abc" + DOT_TAB_11 + "wxyz")));
+	}
+
+	/**
+	 * A leader run opens on a whole multiple of its own step measured from the <b>page's</b>
+	 * left edge, the tab's start having been taken down to the 1/300 inch cell first.
+	 *
+	 * <p>Every run on the {@code tab-leader-kinds} golden does: its dot and middle-dot runs
+	 * open at 25, 45, 47, 57 and 60 steps of 2.881pt, its hyphen runs at 22, 45 and 46 of
+	 * 3.3612, its underscore runs at 14, 23, 26, 27, 30, 32 and 59 of 5.522.  The cases
+	 * below are that golden's own numbers, in millipoints, each taken from the space Word
+	 * writes at the tab's start.  Taking the start down to the cell first is what puts the
+	 * P09 run one step back, at 46 rather than 47, where the text before it ends a fraction
+	 * of a cell past the 46th: Word opens the run a touch behind the text there and writes
+	 * no space at all, which is why the phase is 0.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	@Test
+	public void aLeaderRunOpensOnAWholeMultipleOfItsStepFromThePageEdge() throws Exception {
+		assertEquals(129600 - 127970, LBP.gridPhase(127970, 2880));   // P04, 45 steps
+		assertEquals(135360 - 134690, LBP.gridPhase(134690, 2880));   // P05, 47
+		assertEquals(151200 - 148150, LBP.gridPhase(148150, 3360));   // P08, 45
+		assertEquals(176640 - 172150, LBP.gridPhase(172150, 5520));   // P11, 32
+		assertEquals(77280 - 72024, LBP.gridPhase(72024, 5520));      // a leading tab, 14
+		assertEquals(0, LBP.gridPhase(154776, 3360));                 // P09, 46 - behind
+		// and it reaches the line: "abc" ends at 21.6pt, inside the fourth step of 6.72,
+		// so the run opens at 26.88 - four steps from the page edge, this page having no
+		// margin - and the blank before it is 5.28
+		assertEquals(at(5.28),
+				leaderPhases(fo("4000:right:dot", "0:0:.", null, "abc" + DOT_TAB_11 + "wxyz")));
 	}
 
 	/**

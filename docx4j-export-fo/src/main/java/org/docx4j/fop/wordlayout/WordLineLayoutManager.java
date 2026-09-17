@@ -1724,9 +1724,57 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private int dotLeaderPhase(int from, LayoutManager leader, int width) {
         int period = LBP.leaderUnitWidth(leader);
         if (period <= 0 || width <= period) return 0;
-        int phase = (period - (from % period)) % period;
+        int phase = WordLayoutCustomizer.leaderGrid()
+                ? LBP.gridPhase(from + pageOffsetMpt(), period)
+                : (period - (from % period)) % period;
         return phase < width ? phase : 0;
     }
+
+    /**
+     * How far the left margin is from the <b>page's own left edge</b>, in millipoints, or
+     * 0 where that cannot be had.
+     *
+     * <p>Word's leader grid is anchored on the page edge, not on the text: measured on the
+     * {@code tab-leader-kinds} golden, whose margin is 72.024pt, every run begins on an
+     * exact multiple of its pitch from x=0 - the hyphen runs at 151.27 and 258.84 are
+     * 45 and 77 pitches of 3.3616, the underscore runs at 165.67 and 176.71 are 30 and 32
+     * of 5.5222, the dot runs at 129.65 and 221.86 are 45 and 77 of 2.8816 - and on a
+     * corpus document whose margin is 50.4pt the same holds.  {@link #tabLeftMpt} is
+     * measured from the margin, so the margin's own offset has to be added before the
+     * grid is taken.</p>
+     *
+     * <p>It is the body region's start edge, which is the margin for ordinary text.  A tab
+     * inside a table cell is still short by the cell's own offset; that is nearer than the
+     * whole margin, which is what it was before.</p>
+     *
+     * <p>A caveat to record: it is read from the page viewport <b>current while the line is
+     * laid out</b> and cached for the manager's life, so a paragraph laid out while page N is
+     * current but placed on page N+1 with a different body start - mirrored margins, or an
+     * odd/even section whose margins differ - is gridded against the wrong edge, by the
+     * difference between the two margins.  No probe has that shape, and no document in the
+     * three corpora moved for it; it is not worth a lookup per line until one does.</p>
+     *
+     * @since 17.1.1
+     */
+    private int pageOffsetMpt() {
+        if (pageOffsetMpt != Integer.MIN_VALUE) return pageOffsetMpt;
+        int off = 0;
+        try {
+            org.apache.fop.area.PageViewport pv = getPSLM() == null ? null : getPSLM().getCurrentPV();
+            org.apache.fop.area.Page page = pv == null ? null : pv.getPage();
+            org.apache.fop.area.RegionViewport rv = page == null ? null
+                    : page.getRegionViewport(org.apache.fop.fo.Constants.FO_REGION_BODY);
+            if (rv != null && rv.getViewArea() != null) {
+                off = (int) Math.round(rv.getViewArea().getX());
+            }
+        } catch (RuntimeException e) {
+            log.debug("no page viewport for the leader grid: " + e.getMessage());
+        }
+        pageOffsetMpt = off;
+        return off;
+    }
+
+    private int pageOffsetMpt = Integer.MIN_VALUE;
 
     /**
      * The paragraph's right indent in millipoints: the distance from the end of a line to

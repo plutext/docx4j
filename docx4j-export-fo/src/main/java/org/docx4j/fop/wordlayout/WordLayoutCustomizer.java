@@ -204,6 +204,42 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	}
 
 	/**
+	 * Whether a tab leader's characters sit on <b>Word's grid</b>: anchored on the page's
+	 * own left edge, stepping the character's advance rounded to the 1/300 inch Word lays
+	 * out in.
+	 *
+	 * <p>Read out of the {@code tab-leader-kinds} golden's content stream, where every run
+	 * is drawn with a character spacing that makes the step exactly that: a full stop and a
+	 * middle dot advance 2.782pt in Calibri 11.04 and Word draws them
+	 * {@code 0.0979 Tc} apart, a pitch of 2.8816 (twelve 1/300 inch units); a hyphen
+	 * advances 3.380 and is drawn {@code -0.0182 Tc} apart, 3.3616 (fourteen - so the
+	 * advance is <em>rounded</em>, not rounded up); an underscore advances 5.500 and is
+	 * drawn {@code 0.0221 Tc} apart, 5.5222 (twenty-three).  And every run begins on an
+	 * exact multiple of its own pitch from x=0: the hyphen runs of that golden at 151.27
+	 * and 258.84 are 45 and 77 pitches, the underscore runs at 165.67 and 176.71 are 30 and
+	 * 32, the dot runs at 129.65 and 221.86 are 45 and 77.
+	 *
+	 * <p>docx4j stepped the raw advance from the line's own start, so the blank a run opens
+	 * with was not Word's - and that blank is what a PDF reader turns into the space
+	 * between the text and the run.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.leaderGrid=false steps the raw advance.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LEADER_GRID
+			= "docx4j.convert.out.fo.wordLayout.leaderGrid";
+
+	public static boolean leaderGrid() {
+		String v = System.getProperty(LEADER_GRID);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LEADER_GRID, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
 	 * Whether a {@code w:tab} carries a space character in the PDF's text layer, as Word's
 	 * does, rather than being a jump of the pen.
 	 *
@@ -224,10 +260,12 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>docx4j's stream is continuous - the pen simply advances - so nothing tells a
 	 * reader a word ended, and a numbered heading copied out of our PDF read
 	 * {@code 1.1Text} where the same heading copied from Word's reads {@code 1.1 Text}.
-	 * This writes the space Word writes.  Its advance is the gap it fills, given by a
-	 * character spacing (a PDF {@code Tc}) rather than by a following text matrix; the
-	 * glyph is blank, so nothing moves.  A space is written only where there is a gap to
-	 * fill.
+	 * This writes the space Word writes.  One difference of form, which reads the same:
+	 * Word's space is its <b>natural</b> width in the paragraph mark's font and the text
+	 * after it is placed by its own text matrix, where ours is given the gap's own width
+	 * by a character spacing (a PDF {@code Tc}) because the pen has to arrive at the right
+	 * place by advancing.  The glyph is blank either way, so nothing moves.  A space is
+	 * written only where there is a gap to fill.
 	 *
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.tabSpaces=false leaves the tab a jump.

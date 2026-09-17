@@ -218,15 +218,17 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   positioned by its own text matrix, and one such space sits at each end of a leader run
   (154.87 and 564.22 around a corpus entry's underscores). docx4j's stream is continuous, so
   it writes one of the gap's own width, by a character spacing; the glyph is blank and nothing
-  moves. The new
-  tab-leader-kinds probe goes from 17/31 of its lines matching Word's to 28/31; over the
-  three corpora line parity goes 0.9154 to 0.9154, 0.8920 to 0.8927 and 0.9351 to 0.9351,
-  with three documents improved, none worse, and no page count moved. What is left on that
-  probe is the leader's grid: Word anchors it on the page's left edge with the character's
-  advance rounded to 1/300 inch (a hyphen run at 151.270, 154.630, 157.990) where ours is
-  anchored on the line's start with the raw advance (149.418, 152.784), so the gap the run
-  opens with - and so the space a reader reads there - is ours and not Word's
-  (CR-001 batch 45).
+  moves. The new tab-leader-kinds probe goes from 17/31 of its lines matching Word's to
+  29/31; over the three corpora line parity goes 0.9154 to 0.9161, 0.8920 to 0.8952 and
+  0.9351 to 0.9352, with 21 documents improved, none worse, and no page count moved.
+  Word's grid follows: a leader steps by its character's advance rounded to the 1/300 inch
+  Word lays out in - the golden writes that rounding as a character spacing, +0.0979 on a
+  2.782pt full stop, -0.0182 on a 3.380pt hyphen (so it is rounded, not rounded up) and
+  +0.0221 on a 5.500pt underscore - and a run opens on a whole multiple of that step
+  measured from the page's own left edge, the tab's start taken down to a cell first. All
+  nineteen of the golden's runs sit on such a multiple and seventeen of ours now sit on the
+  same one, which takes the probe to 30/31 and ends a table of contents' leaders on one
+  column as Word's are, where ours ended anywhere within 1.6pt of it (CR-001 batch 45).
 
 - The two-pass page-number filter keeps character data where the document has it.
   PlaceholderReplacementHandler buffers character data so that a placeholder split over
