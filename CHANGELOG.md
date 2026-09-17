@@ -200,6 +200,10 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbered paragraph's text no longer inherits the paragraph mark's run properties -
+  its bold, italic or colour - through the list item body. Only the size reaches the
+  body, which is what the label and the body need in common to sit on one baseline
+  (CR-001 batch 46).
 - Two top-and-bottom wrapped anchored drawings in one paragraph which do not overlap horizontally
   share one band, side by side as Word draws them, rather than each reserving its own and
   stacking (CR-001 batch 46).
