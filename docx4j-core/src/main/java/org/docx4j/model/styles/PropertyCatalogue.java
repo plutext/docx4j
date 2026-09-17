@@ -19,7 +19,9 @@
 package org.docx4j.model.styles;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -239,6 +241,29 @@ public final class PropertyCatalogue {
 	 */
 	public static final List<Property<Object, ?>> RUN;
 
+	/**
+	 * The names of the <b>toggle properties</b> of {@code w:rPr}, in the order
+	 * ECMA-376-1 &#xa7;17.7.3 lists them: "The following Boolean properties are toggle
+	 * properties: &#xa7;17.3.2.1 (Bold), &#xa7;17.3.2.2 (Complex Script Bold),
+	 * &#xa7;17.3.2.5 (Display All Characters as Capital Letters), &#xa7;17.3.2.13
+	 * (Embossing), &#xa7;17.3.2.16 (Italics), &#xa7;17.3.2.17 (Complex Script Italics),
+	 * &#xa7;17.3.2.18 (Imprinting), &#xa7;17.3.2.23 (Display Character Outline),
+	 * &#xa7;17.3.2.31 (Shadow), &#xa7;17.3.2.33 (Small Caps), &#xa7;17.3.2.37 (Single
+	 * Strikethrough), &#xa7;17.3.2.41 (Hidden Text)."
+	 *
+	 * <p>Twelve, and no more: {@code w:dstrike}, {@code w:noProof}, {@code w:snapToGrid},
+	 * {@code w:webHidden}, {@code w:rtl}, {@code w:cs}, {@code w:specVanish} and
+	 * {@code w:oMath} are Boolean but are not in that list, and take the last value in
+	 * the order of &#xa7;17.7.1 and &#xa7;17.7.2 like any other property.</p>
+	 *
+	 * @see StyleUtil#applyToggles
+	 * @since 17.1.1
+	 */
+	public static final java.util.Set<String> TOGGLE_NAMES;
+
+	/** {@link #TOGGLE_NAMES} as members of {@link #RUN}.  @since 17.1.1 */
+	public static final List<Property<Object, BooleanDefaultTrue>> TOGGLES;
+
 	static {
 		List<Property<Object, ?>> l = new ArrayList<Property<Object, ?>>();
 		l.add(run("rStyle", RStyle.class, false, RPr::getRStyle, RPr::setRStyle, ParaRPr::getRStyle, ParaRPr::setRStyle, StyleUtil::apply, StyleUtil::isEmpty));
@@ -294,6 +319,23 @@ public final class PropertyCatalogue {
 		l.add(run("stylisticSets", org.docx4j.w14.CTStylisticSets.class, true, RPr::getStylisticSets, RPr::setStylisticSets, ParaRPr::getStylisticSets, ParaRPr::setStylisticSets, replace(), isNull()));
 		l.add(run("cntxtAlts", org.docx4j.w14.CTOnOff.class, true, RPr::getCntxtAlts, RPr::setCntxtAlts, ParaRPr::getCntxtAlts, ParaRPr::setCntxtAlts, replace(), isNull()));
 		RUN = Collections.unmodifiableList(l);
+
+		java.util.Set<String> names = new LinkedHashSet<String>(Arrays.asList(
+				"b", "bCs", "caps", "emboss", "i", "iCs", "imprint", "outline",
+				"shadow", "smallCaps", "strike", "vanish"));
+		List<Property<Object, BooleanDefaultTrue>> toggles =
+				new ArrayList<Property<Object, BooleanDefaultTrue>>();
+		for (String name : names) {
+			Property<Object, ?> p = named(RUN, name);
+			if (p == null || p.type() != BooleanDefaultTrue.class) {
+				throw new IllegalStateException("no w:rPr boolean member named " + name);
+			}
+			@SuppressWarnings("unchecked")
+			Property<Object, BooleanDefaultTrue> toggle = (Property<Object, BooleanDefaultTrue>) p;
+			toggles.add(toggle);
+		}
+		TOGGLE_NAMES = Collections.unmodifiableSet(names);
+		TOGGLES = Collections.unmodifiableList(toggles);
 	}
 
 	private static Property<Object, BooleanDefaultTrue> bool(String name,

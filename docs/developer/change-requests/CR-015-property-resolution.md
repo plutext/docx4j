@@ -756,6 +756,91 @@ contract and the thread story; `org.docx4j.model.styles` has a
 `package-info`.  Gate: core-tests and export-fo-tests green (no behaviour
 change).
 
+### Toggle properties (ECMA-376-1 §17.7.3) — added 2026-09-17 (CR-001 batch 46 item 4)
+
+A gap this CR did not see: the resolution order of §17.7.2 is not the whole
+rule.  Twelve of `w:rPr`'s Boolean members are **toggle properties**, and
+§17.7.3 says that where one of them is stated at more than one *level* of the
+style hierarchy its effective value is the XOR of the levels, not the last
+value in the order:
+
+> If the property is not a toggle property, then its values shall be applied in
+> the order described in §17.7.1 and §17.7.2, and only its last value in that
+> order shall be used.  If the property is a toggle property, then its values
+> ... shall be combined as follows: If a toggle property is explicitly set in
+> direct formatting applied to a given piece of content, then its value in the
+> direct formatting shall be used.  Otherwise ... If the value of the toggle
+> property appears at multiple levels of the style hierarchy (§17.7.2), their
+> effective values shall be combined as follows: If the value specified by the
+> document defaults is true, the effective value is true.  Otherwise, the values
+> are combined by a Boolean XOR as follows: value(effective) = val(table) XOR
+> val(paragraph) XOR val(character), i.e., the effective value to be applied to
+> the content shall be true if its effective value is true for an odd number of
+> levels of the style hierarchy.
+
+The twelve are `w:b`, `w:bCs`, `w:caps`, `w:emboss`, `w:i`, `w:iCs`,
+`w:imprint`, `w:outline`, `w:shadow`, `w:smallCaps`, `w:strike` and `w:vanish`.
+`w:dstrike`, `w:noProof`, `w:snapToGrid`, `w:webHidden`, `w:rtl`, `w:cs`,
+`w:specVanish` and `w:oMath` are Boolean but are *not* toggles.
+
+**Where it goes.**  `PropertyCatalogue.TOGGLES` / `TOGGLE_NAMES` name them, so
+the list cannot drift from the catalogue; `StyleUtil.applyStyleLevel(RPr, RPr,
+RPr)` applies one level (the non-toggles by override, the toggles by
+`applyToggles`).  Only three things in the model are level boundaries:
+
+| boundary | where | what applies it |
+|---|---|---|
+| table style → paragraph style | inside the synthetic cell style | `ParagraphStylesInTableFix` |
+| paragraph style → character style | the run's `w:rStyle` | `PropertyResolver.applyCharacterStyleAndDirect` |
+| character style → direct formatting | the run's own `w:rPr` | not a boundary: an explicit value is used as it stands |
+
+A style's own `w:basedOn` chain is **one** level and is *not* XORed: §17.7.3
+says the first value encountered walking that chain is the level's value, which
+is what merging the chain root-first with `StyleUtil.apply` already gives.  So
+`chainRPr` is untouched.
+
+**Two deliberate narrowings, recorded on `StyleUtil.toggle`.**  Both are of the
+same kind: where the spec read to the letter would have a level that is silent
+or explicitly false change what is beneath it, docx4j leaves what is beneath it
+alone.
+
+1. *An explicit false is applied, not XORed.*  Read to the letter the XOR takes
+   each level's *effective* value, so a level stating a toggle `false`
+   contributes false and cannot turn off a lower `true` — a character style
+   saying `<w:b w:val="0"/>` could not unbold a bold paragraph style, and a
+   table style's condition restated as `<w:b w:val="0"/>` by a child style could
+   not either.  The XOR applies only where the upper level states the property
+   **true**.
+2. *A silent upper level is no boundary at all.*  "If the value specified by the
+   document defaults is true, the effective value is true" sits under "if the
+   value of the toggle property appears at multiple levels of the style
+   hierarchy", so a boundary whose upper level says nothing about the property
+   adds no level and the rule does not arise.  Taken the other way the document
+   defaults' true would be forced back on at every boundary: a document whose
+   `w:docDefaults` are bold and whose paragraph style says `<w:b w:val="0"/>`
+   would render regular with no character style and bold as soon as a run named
+   any character style, however silent about the weight.  So `upper == null` is
+   answered first.
+
+All three readings — the letter, and each narrowing — were scored over the three
+corpora and the scoreboards are **byte-identical**, so nothing measured tells
+them apart.  Four of the 454 corpus documents state a toggle true in their
+`w:docDefaults` (three `w:bCs`, one `w:caps`/`w:outline`/`w:vanish`) and none of
+the four moves.  The narrower reading stands until a probe settles it; three
+cases settle both narrowings — a character style `<w:b w:val="0"/>` over a bold
+paragraph style, bold defaults with a paragraph style `<w:b w:val="0"/>` and a
+silent character style, and bold defaults with a bold paragraph style.
+
+**What it was worth.**  One corpus document states `w:b` twice — a table style
+whose `firstCol` condition is bold, and the `Strong` character style on every
+run of those cells — where Word draws the text regular.  Before: 60 bold lines
+against Word's 16, and 7 lines whose text is on both sides came out bold where
+Word's are regular.  After: 14 bold lines and **no** line bold that Word draws
+regular; line parity 0.7810 → 0.8058.  Two more of the 449 corpus documents
+move, both the same defect and both upward: one goes 0.9857 → **1.0000** as its
+bold and regular line counts become Word's exactly (65 and 74, from 75 and 65),
+the other gains two lines.  Nothing regresses and no page moves.
+
 ## Decisions
 
 1. **Live objects stay the contract** (clone before changing); aliasing of

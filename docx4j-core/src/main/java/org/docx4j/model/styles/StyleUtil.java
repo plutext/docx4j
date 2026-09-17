@@ -2001,6 +2001,126 @@ public class StyleUtil {
 		return destination;												
 	}	
 
+	/**
+	 * Apply one <b>level</b> of the style hierarchy over the levels beneath it, combining
+	 * the <b>toggle properties</b> as ECMA-376-1 &#xa7;17.7.3 requires instead of
+	 * overriding them.
+	 *
+	 * <p>&#xa7;17.7.3: "If the property is not a toggle property, then its values shall be
+	 * applied in the order described in &#xa7;17.7.1 and &#xa7;17.7.2, and only its last
+	 * value in that order shall be used.  If the property is a toggle property, then its
+	 * values, which are limited to true and false ... shall be combined as follows: If a
+	 * toggle property is explicitly set in direct formatting applied to a given piece of
+	 * content, then its value in the direct formatting shall be used.  Otherwise ... If
+	 * the value of the toggle property appears at multiple levels of the style hierarchy
+	 * (&#xa7;17.7.2), their effective values shall be combined as follows: If the value
+	 * specified by the document defaults is true, the effective value is true.  Otherwise,
+	 * the values are combined by a Boolean XOR as follows: value(effective) = val(table)
+	 * XOR val(paragraph) XOR val(character), i.e., the effective value to be applied to
+	 * the content shall be true if its effective value is true for an odd number of levels
+	 * of the style hierarchy."</p>
+	 *
+	 * <p>So this is for a level boundary only - the table style's contribution against the
+	 * paragraph style's, and the paragraph's against the character style's.  Within one
+	 * level a style's {@code w:basedOn} chain is <em>not</em> XORed: &#xa7;17.7.3 says the
+	 * first value encountered walking up that chain is the level's value, which is what
+	 * merging the chain root-first with {@link #apply(RPr, RPr)} gives.  Direct formatting
+	 * is not a level either: an explicit value there is used as it stands, so it is applied
+	 * with {@link #apply(RPr, RPr)} too.</p>
+	 *
+	 * <p>{@link #toggle} records the two places where this is narrower than the letter of
+	 * &#xa7;17.7.3: a level which states a toggle <em>false</em> is applied as it stands
+	 * rather than contributing false to the XOR, and a level which says nothing about a
+	 * toggle is no boundary for it, so the document defaults' true is not forced back on
+	 * there.</p>
+	 *
+	 * @param source the level being applied (the more specific)
+	 * @param destination the levels beneath it, written in place
+	 * @param documentDefaults the {@code w:docDefaults} run properties, for the
+	 *        "if the value specified by the document defaults is true" rule; may be null
+	 * @since 17.1.1
+	 */
+	public static void applyStyleLevel(RPr source, RPr destination, RPr documentDefaults) {
+		if (source == null || destination == null) return;
+		PropertyCatalogue.apply(PropertyCatalogue.RUN, source, destination,
+				PropertyCatalogue.TOGGLE_NAMES);
+		applyToggles(source, destination, documentDefaults, destination);
+	}
+
+	/**
+	 * Combine the twelve toggle properties of two levels of the style hierarchy
+	 * (ECMA-376-1 &#xa7;17.7.3, quoted in {@link #applyStyleLevel}) and write the result
+	 * into a third {@code w:rPr}.  Nothing else of either is touched.
+	 *
+	 * @param upper the more specific level's run properties, or null for a level which
+	 *        states nothing
+	 * @param lower what the levels beneath it resolve to, or null
+	 * @param documentDefaults the {@code w:docDefaults} run properties, or null
+	 * @param destination where the twelve results are written (may be {@code lower})
+	 * @since 17.1.1
+	 */
+	public static void applyToggles(RPr upper, RPr lower, RPr documentDefaults, RPr destination) {
+		if (destination == null) return;
+		for (PropertyCatalogue.Property<Object, BooleanDefaultTrue> p : PropertyCatalogue.TOGGLES) {
+			BooleanDefaultTrue value = toggle(
+					upper == null ? null : p.get(upper),
+					lower == null ? null : p.get(lower),
+					documentDefaults == null ? null : p.get(documentDefaults));
+			p.set(destination, value);
+		}
+	}
+
+	/**
+	 * One toggle property at one level boundary: an upper level which says nothing leaves
+	 * the lower value alone, the document defaults win where they say true, and two levels
+	 * which both say true cancel (ECMA-376-1 &#xa7;17.7.3).
+	 *
+	 * <p><b>Two deliberate narrowings</b>, both of the same kind - where the spec read to
+	 * the letter would have a level that is silent or explicitly false change what is
+	 * beneath it, this leaves what is beneath it alone.</p>
+	 *
+	 * <p><b>One: an explicit false is applied, not XORed.</b>  Read to the letter,
+	 * &#xa7;17.7.3's XOR takes each level's effective value, so a level which states the
+	 * property <em>false</em> contributes false and leaves a lower true standing - on that
+	 * reading a character style saying {@code <w:b w:val="0"/>} could not unbold a bold
+	 * paragraph style.  The XOR is applied only where the upper level states the property
+	 * <b>true</b>; an explicit false is applied as it stands, which is how docx4j has
+	 * always treated it and what a table style's condition restated as
+	 * {@code <w:b w:val="0"/>} by a child style relies on.</p>
+	 *
+	 * <p><b>Two: a silent upper level is no boundary at all.</b>  &#xa7;17.7.3's
+	 * "if the value specified by the document defaults is true, the effective value is
+	 * true" sits under "if the value of the toggle property appears at multiple levels of
+	 * the style hierarchy", so a boundary whose upper level says nothing about the property
+	 * adds no level and the rule does not arise.  Taken the other way the document
+	 * defaults' true would be forced back on at every boundary: a document whose
+	 * {@code w:docDefaults} are bold and whose paragraph style says
+	 * {@code <w:b w:val="0"/>} would render regular with no character style and bold as
+	 * soon as a run named any character style, however silent that style was about the
+	 * weight.  So {@code upper == null} is answered first.</p>
+	 *
+	 * <p>Nothing in the three corpora distinguishes either narrowing from the letter: the
+	 * same 449 documents score the same either way, to the byte.  (Four of the 454 state a
+	 * toggle true in their {@code w:docDefaults} - three {@code w:bCs}, one
+	 * {@code w:caps}, {@code w:outline} and {@code w:vanish} together - and none of the
+	 * four moves.)  So the narrower reading stands until a probe settles it.  Three cases
+	 * settle both: a character style {@code <w:b w:val="0"/>} over a bold paragraph style;
+	 * bold document defaults with a paragraph style {@code <w:b w:val="0"/>} and a
+	 * character style silent on the weight; and bold document defaults with a bold
+	 * paragraph style (CR-001 batch 46 item 4).</p>
+	 */
+	static BooleanDefaultTrue toggle(BooleanDefaultTrue upper, BooleanDefaultTrue lower,
+			BooleanDefaultTrue documentDefault) {
+		if (upper == null) return lower;
+		if (documentDefault != null && documentDefault.isVal()) {
+			return apply(documentDefault, lower);
+		}
+		if (!upper.isVal()) return apply(upper, lower);
+		BooleanDefaultTrue out = Context.getWmlObjectFactory().createBooleanDefaultTrue();
+		out.setVal(Boolean.valueOf(!(lower != null && lower.isVal())));
+		return out;
+	}
+
 	public static RPr apply(RPr source, RPr destination) {
 		if (skipRun(source)) return destination;
 		if (destination == null)
