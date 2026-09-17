@@ -63,6 +63,12 @@ public class WordLayoutElementMapping extends ElementMapping {
 	public static final String LINE_RULE = "line-rule";
 	/** on a list item's first block: the label's natural ascent, part of its first line */
 	public static final String LABEL_ASCENT = "label-ascent";
+	/** on a list item's <b>label</b> block: the {@code w:suff} separator the level puts
+	 *  between the number and the text - "tab" or "space".  Absent for "nothing", and
+	 *  absent from a list block docx4j did not write for a numbered paragraph.  Word
+	 *  writes that separator as one space glyph in the PDF's text layer;
+	 *  {@link WordListItemLayoutManager} puts it in ours.  @since 17.1.1 */
+	public static final String LABEL_SUFFIX = "label-suffix";
 	/** on a small-caps span: the fraction of the run's size its glyphs are drawn at.
 	 *  Word scales a small-caps run's glyphs, not its line, so the line is sized from the
 	 *  declared size; without this FOP takes a line's ascent from the 80% inline where

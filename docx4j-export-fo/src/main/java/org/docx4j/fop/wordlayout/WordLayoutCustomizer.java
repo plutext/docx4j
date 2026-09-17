@@ -204,6 +204,166 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	}
 
 	/**
+	 * Whether a tab leader's characters sit on <b>Word's grid</b>: anchored on the page's
+	 * own left edge, stepping the character's advance rounded to the 1/300 inch Word lays
+	 * out in.
+	 *
+	 * <p>Read out of the {@code tab-leader-kinds} golden's content stream, where every run
+	 * is drawn with a character spacing that makes the step exactly that: a full stop and a
+	 * middle dot advance 2.782pt in Calibri 11.04 and Word draws them
+	 * {@code 0.0979 Tc} apart, a pitch of 2.8816 (twelve 1/300 inch units); a hyphen
+	 * advances 3.380 and is drawn {@code -0.0182 Tc} apart, 3.3616 (fourteen - so the
+	 * advance is <em>rounded</em>, not rounded up); an underscore advances 5.500 and is
+	 * drawn {@code 0.0221 Tc} apart, 5.5222 (twenty-three).  And every run begins on an
+	 * exact multiple of its own pitch from x=0: the hyphen runs of that golden at 151.27
+	 * and 258.84 are 45 and 77 pitches, the underscore runs at 165.67 and 176.71 are 30 and
+	 * 32, the dot runs at 129.65 and 221.86 are 45 and 77.
+	 *
+	 * <p>docx4j stepped the raw advance from the line's own start, so the blank a run opens
+	 * with was not Word's - and that blank is what a PDF reader turns into the space
+	 * between the text and the run.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.leaderGrid=false steps the raw advance.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LEADER_GRID
+			= "docx4j.convert.out.fo.wordLayout.leaderGrid";
+
+	public static boolean leaderGrid() {
+		String v = System.getProperty(LEADER_GRID);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LEADER_GRID, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
+	 * Whether a {@code w:tab} carries a space character in the PDF's text layer, as Word's
+	 * does, rather than being a jump of the pen.
+	 *
+	 * <p>Word writes the tab as <b>one space glyph</b>, in the paragraph mark's font and
+	 * size, in a text object of its own, and then positions the text after it with a text
+	 * matrix of its own.  Read out of the content streams: on the {@code tab-leader-kinds}
+	 * golden, {@code P02 left none} is followed by
+	 * {@code BT /F2 11.04 Tf 1 0 0 1 136.13 718.99 Tm [( )] TJ ET} and then by
+	 * {@code BT /F1 12 Tf 1 0 0 1 297.24 718.99 Tm [(after none)] TJ ET}, where F2 11.04 is
+	 * the paragraph mark's font and F1 12 the run's; a corpus heading's numbering suffix is
+	 * {@code 1 0 0 1 40.824 665.47 Tm [( )] TJ} between the number and {@code S}; another's
+	 * is {@code 1 0 0 1 134.45 723.07 Tm [( )] TJ} in a third font again; and a corpus
+	 * table of contents writes one at 154.87 before its leader run and one at 564.22 after
+	 * it.  Because the glyph draws no ink, {@code mutool draw -F trace} does not list it -
+	 * which is how CR-001 batch 45 first came to report that Word writes nothing there, and
+	 * why the claim is spelled out from the operators here.
+	 *
+	 * <p>docx4j's stream is continuous - the pen simply advances - so nothing tells a
+	 * reader a word ended, and a numbered heading copied out of our PDF read
+	 * {@code 1.1Text} where the same heading copied from Word's reads {@code 1.1 Text}.
+	 * This writes the space Word writes.  One difference of form, which reads the same:
+	 * Word's space is its <b>natural</b> width in the paragraph mark's font and the text
+	 * after it is placed by its own text matrix, where ours is given the gap's own width
+	 * by a character spacing (a PDF {@code Tc}) because the pen has to arrive at the right
+	 * place by advancing.  The glyph is blank either way, so nothing moves.  A space is
+	 * written only where there is a gap to fill.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.tabSpaces=false leaves the tab a jump.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String TAB_SPACES
+			= "docx4j.convert.out.fo.wordLayout.tabSpaces";
+
+	public static boolean tabSpaces() {
+		String v = System.getProperty(TAB_SPACES);
+		if (v == null) {
+			return Docx4jProperties.getProperty(TAB_SPACES, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
+	 * Whether an underscore or hyphen tab leader is drawn as a run of that character, as
+	 * Word draws it, rather than as the ruled line XSL FO offers.
+	 *
+	 * <p>XSL FO's {@code leader-pattern} has {@code dots} and {@code rule} and no other
+	 * repeating glyph, so {@code w:leader="underscore"}, {@code "hyphen"} and
+	 * {@code "heavy"} asked FOP for a rule.  The line is the right length and in the right
+	 * place, but a rule is a <em>drawn path</em>: the PDF's text layer has nothing in it,
+	 * where Word's carries the characters.  Measured on a corpus document's table of
+	 * contents, whose stops are {@code 440:left:none;10502:right:underscore}: Word writes
+	 * {@code _} in Calibri-BoldItalic 12 at 132.05, 138.05, 144.05 ... - its own 5.976pt
+	 * advance on the 1/300 inch grid - to the entry's page number, on all 21 entries of
+	 * the page, and our line of the same geometry (50.40..575.50 against Word's
+	 * 50.42..575.82) extracted with the leader simply absent.
+	 *
+	 * <p>The {@code tab-leader-kinds} golden says which character each kind is, and that
+	 * <b>every</b> kind is one: {@code dot} a full stop, {@code middleDot} U+00B7 on a
+	 * 2.88pt grid, {@code hyphen} a hyphen on 3.36, and <b>both</b> {@code underscore} and
+	 * {@code heavy} an underscore on 5.52 - its page carries no stroked or filled path at
+	 * all.  They are drawn in the <b>paragraph mark's</b> font and size (Calibri 11.04
+	 * there, where the runs are Liberation Serif 12).
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.leaderCharacters=false restores the rule.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LEADER_CHARACTERS
+			= "docx4j.convert.out.fo.wordLayout.leaderCharacters";
+
+	public static boolean leaderCharacters() {
+		String v = System.getProperty(LEADER_CHARACTERS);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LEADER_CHARACTERS, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
+	 * Whether the {@code w:suff} separator between a list item's number and its text is
+	 * written into the PDF's text layer as a space glyph, as Word writes it.
+	 *
+	 * <p>Word writes the separator as <b>one space glyph</b>, in the paragraph mark's font
+	 * and size, in a text object of its own, and then positions the text after it with a
+	 * text matrix of its own.  Read out of the content streams: one corpus report's first
+	 * heading is {@code 1 0 0 1 127.49 723.07 Tm [(1)] TJ}, then
+	 * {@code /F4 13.92 Tf 1 0 0 1 134.45 723.07 Tm [( )] TJ} - a third font, the mark's -
+	 * then the text at 138.53; another's is {@code 1 0 0 1 40.824 665.47 Tm [( )] TJ}
+	 * between {@code 1.1} and {@code S}.  Because the glyph draws no ink,
+	 * {@code mutool draw -F trace} does not list it.
+	 *
+	 * <p>docx4j lays the label out as an {@code fo:list-item-label} beside an
+	 * {@code fo:list-item-body} and wrote nothing between them, so the same headings copied
+	 * out as {@code 1.1Text}, run together, where Word's copy as {@code 1.1 Text}.  This
+	 * writes the space Word writes.  The {@code styles-numpr-ilvl-only} golden probe carries Word's own
+	 * answer: its item extracted as {@code 1.1.(b) L, direct w:numPr of w:ilvl 1 only}
+	 * where Word's golden reads {@code 1.1. (b) L, ...}, and it goes from 50% to 100%
+	 * line parity.  847 lines over the three real-document corpora differ from Word's by
+	 * that one space (CR-001 batch 45, ledger5 section 1f).
+	 *
+	 * <p>The space is appended to the label's line area with the gap's own width, so no
+	 * glyph moves: the body block is positioned from {@code body-start()}, not from the
+	 * label's width.
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.labelSuffixSpace=false leaves the gap empty.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String LABEL_SUFFIX_SPACE
+			= "docx4j.convert.out.fo.wordLayout.labelSuffixSpace";
+
+	public static boolean labelSuffixSpace() {
+		String v = System.getProperty(LABEL_SUFFIX_SPACE);
+		if (v == null) {
+			return Docx4jProperties.getProperty(LABEL_SUFFIX_SPACE, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
+	/**
 	 * Whether a word too long for a line of its own is broken inside it, at the last
 	 * character that fits - Word's last resort, and the only way such a word does not
 	 * run off the page.  UAX #14, which FOP follows, offers no break inside a word like

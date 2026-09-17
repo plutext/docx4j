@@ -103,7 +103,32 @@ public class PlaceholderReplacementHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
+		/* Character data is buffered so that a placeholder split over several
+		 * characters() calls can still be found, and was only flushed at endElement -
+		 * so text which came BEFORE a child element was handed on after that child had
+		 * started, i.e. inside it.  A table-of-contents entry written as
+		 * {@code <inline>text <leader/> <page-number-citation/></inline>} lost both of
+		 * its spaces that way: each was flushed as the content of the element that
+		 * followed it, where FO draws nothing for it.  Flushing here puts the text back
+		 * where the document has it; a placeholder cannot span a child element, so
+		 * nothing the lookup needs is split.  @since 17.1.1 (CR-001 batch 45) */
+		flushCharacters();
 		defaultHandler.startElement(uri, localName, qName, attributes);
+	}
+
+	/** Hand on the buffered character data, placeholders resolved. */
+	private void flushCharacters() throws SAXException {
+		if (buffer.length() == 0) return;
+		if (placeholderLookup.hasPlaceholders(buffer)) {
+			placeholderLookup.replaceValues(buffer);
+		}
+		if (buffer.length() == 0) return;
+		if (buffer.length() > tmpCharArray.length) {
+			tmpCharArray = new char[(buffer.length() / 1024 + 1) * 1024];
+		}
+		buffer.getChars(0, buffer.length(), tmpCharArray, 0);
+		defaultHandler.characters(tmpCharArray, 0, buffer.length());
+		buffer.setLength(0);
 	}
 
 	@Override
@@ -113,19 +138,7 @@ public class PlaceholderReplacementHandler extends DefaultHandler {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (buffer.length() > 0) {
-			if (placeholderLookup.hasPlaceholders(buffer)) {
-				placeholderLookup.replaceValues(buffer);
-			}
-			if (buffer.length() > 0) {
-				if (buffer.length() > tmpCharArray.length) {
-					tmpCharArray = new char[(buffer.length() / 1024 + 1) * 1024];
-				}
-				buffer.getChars(0, buffer.length(), tmpCharArray, 0);
-				defaultHandler.characters(tmpCharArray, 0, buffer.length());
-				buffer.setLength(0);
-			}
-		}
+		flushCharacters();
 		defaultHandler.endElement(uri, localName, qName);
 	}
 

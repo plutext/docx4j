@@ -274,8 +274,107 @@ final class LBP {
 
 	// ---- the leader of the stop a tab actually reached -------------------------
 
-	/** {@link #setLeaderPattern} kinds, as {@code w:leader} gives them. */
-	static final int LEADER_NONE = 0, LEADER_DOTS = 1, LEADER_RULE = 2;
+	/** {@link #setLeaderPattern} kinds, as {@code w:leader} gives them.  The three
+	 *  character kinds are drawn as a run of that character, which is what Word's own
+	 *  PDF carries for them; {@link #LEADER_RULE} is the drawn line {@code w:leader="heavy"}
+	 *  asks for.  @since 17.1.1 for the underscore and hyphen kinds */
+	static final int LEADER_NONE = 0, LEADER_DOTS = 1, LEADER_RULE = 2,
+			LEADER_UNDERSCORE = 3, LEADER_HYPHEN = 4, LEADER_MIDDLE_DOT = 5;
+
+	/** The character a leader kind repeats, or 0 for a kind which is not a character.
+	 *  Read off the {@code tab-leader-kinds} golden, where Word draws every kind but
+	 *  {@code none} as characters: {@code .} and {@code ·} on their own advances,
+	 *  {@code -}, and {@code _} for both underscore and heavy.  @since 17.1.1 */
+	static char leaderChar(int kind) {
+		switch (kind) {
+		case LEADER_DOTS: return '.';
+		case LEADER_MIDDLE_DOT: return '·';
+		case LEADER_UNDERSCORE: return '_';
+		case LEADER_HYPHEN: return '-';
+		default: return 0;
+		}
+	}
+
+	/** Whether this kind is drawn as a run of a character rather than as a rule. */
+	static boolean isCharacterLeader(int kind) {
+		return leaderChar(kind) != 0;
+	}
+
+	/** One 1/300 inch, the grid Word's layout works in, in millipoints. */
+	static final int GRID_MPT = 240;
+
+	/** An advance rounded to Word's 1/300 inch grid, which is the step its leader
+	 *  characters take.  @since 17.1.1 */
+	static int roundToGrid(int mpt) {
+		if (mpt <= 0) return mpt;
+		int units = (mpt + GRID_MPT / 2) / GRID_MPT;
+		return units > 0 ? units * GRID_MPT : GRID_MPT;
+	}
+
+	/**
+	 * Put a leader run FOP built on Word's step: its characters repeat on the advance
+	 * rounded to the 1/300 inch grid, and the difference is written as a character spacing.
+	 *
+	 * <p>Read out of the tab-leader-kinds golden's stream, all in Calibri 11.04 - the
+	 * paragraph mark's font.  A full stop and a middle dot advance 2.782pt and are drawn
+	 * {@code 0.0979 Tc} apart, a step of 2.8816 (twelve cells); a hyphen advances 3.380 and
+	 * is drawn {@code -0.0182 Tc} apart, 3.3616 (fourteen - so the advance is rounded, and
+	 * not rounded up); an underscore advances 5.500 and is drawn {@code 0.0221 Tc} apart,
+	 * 5.5222 (twenty-three).  The spacing can be negative, which a spacer cannot be, so it
+	 * goes on the character.</p>
+	 *
+	 * <p>A leader the FO gave a pattern width of its own keeps it: that width is the
+	 * author's, not the font's.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static void setGridStep(Object area) {
+		if (!WordLayoutCustomizer.leaderGrid()) return;
+		if (!(area instanceof org.apache.fop.area.inline.FilledArea)) return;
+		org.apache.fop.area.inline.FilledArea run = (org.apache.fop.area.inline.FilledArea) area;
+		java.util.List<org.apache.fop.area.inline.InlineArea> kids = run.getChildAreas();
+		if (kids == null || kids.size() != 1) return;         // a spacer: the FO's own width
+		if (!(kids.get(0) instanceof org.apache.fop.area.inline.TextArea)) return;
+		org.apache.fop.area.inline.TextArea c = (org.apache.fop.area.inline.TextArea) kids.get(0);
+		if (run.getUnitWidth() != c.getIPD()) return;         // likewise
+		if (gridStep(c, c.getIPD()) > 0) run.setUnitWidth(c.getIPD());
+	}
+
+	/** Step this leader character by {@code advance} rounded to Word's grid, as a character
+	 *  spacing on the character itself; the step, or 0 where it is the advance already. */
+	private static int gridStep(org.apache.fop.area.inline.TextArea c, int advance) {
+		int pitch = roundToGrid(advance);
+		if (pitch <= 0 || pitch == advance) return 0;
+		c.setTextLetterSpaceAdjust(pitch - advance);
+		c.setIPD(pitch);
+		return pitch;
+	}
+
+	/**
+	 * The blank Word leaves before the first character of a leader run whose step is
+	 * {@code period}, where the run begins {@code from} millipoints from the <b>page's</b>
+	 * left edge; 0 where the run begins where it is.
+	 *
+	 * <p>Word puts the run on a whole multiple of its step measured from the page edge, and
+	 * takes the tab's start down to the 1/300 inch grid first.  On the tab-leader-kinds
+	 * golden every run does sit on such a multiple: its hyphen runs open at 22, 46 and 45
+	 * steps of 3.3612, its underscore runs at 14, 23, 26, 27, 30, 32 and 59 steps of 5.522,
+	 * its dot and middle-dot runs at 25, 45, 47, 57 and 60 steps of 2.881.  The floor is
+	 * what puts the P09 run at 46 steps (154.62) rather than 47 (157.98) when the text
+	 * before it ends at 154.776 - a fraction of a cell past the 46th step - so that Word's
+	 * run there opens a touch <em>behind</em> the text and carries no space.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	static int gridPhase(int from, int period) {
+		if (period <= 0 || from <= 0) return 0;
+		int step = (period + GRID_MPT / 2) / GRID_MPT;      // the step, in grid cells
+		if (step <= 0) return 0;
+		int cells = from / GRID_MPT;                         // the tab's start, floored
+		int start = ((cells + step - 1) / step) * step * GRID_MPT;
+		int phase = start - from;
+		return phase > 0 ? phase : 0;
+	}
 
 	/** LeaderLayoutManager.font (private): the font its dots are drawn in. */
 	private static final Field LLM_FONT;
@@ -297,33 +396,57 @@ final class LBP {
 	 * kind - a paragraph mixing dot and rule stops - gets an area built the way
 	 * {@code LeaderLayoutManager.getLeaderInlineArea} builds it.  The replacement is
 	 * hung on the leader's own alignment context, which FOP made for the pattern the
-	 * FO asked for, so the dots of a replaced area sit on the leader's rule thickness
-	 * rather than on their own height.
+	 * FO asked for, so the characters of a replaced area sit on the leader's rule
+	 * thickness rather than on their own height.
 	 *
-	 * @param kind one of {@link #LEADER_NONE}, {@link #LEADER_DOTS}, {@link #LEADER_RULE}
+	 * <p>XSL FO offers {@code dots} and {@code rule} and no other repeating glyph, so an
+	 * underscore or hyphen leader asks FOP for a rule and is replaced here by a run of
+	 * the character itself - which is what Word draws, and the only form of it that
+	 * reaches the PDF's text layer.  {@code w:leader="heavy"} stays a rule.
+	 *
+	 * @param kind one of {@link #LEADER_NONE}, {@link #LEADER_DOTS}, {@link #LEADER_RULE},
+	 *             {@link #LEADER_UNDERSCORE}, {@link #LEADER_HYPHEN}
 	 * @since 17.1.0
 	 */
 	static void setLeaderPattern(org.apache.fop.layoutmgr.LayoutManager lm, int kind) {
+		setLeaderPattern(lm, kind, 0, false);
+	}
+
+	/**
+	 * As above, and where {@code spaces} is set a tab which reaches a stop with no leader
+	 * carries a <b>space character</b> of its whole advance, as Word's PDF does, rather
+	 * than a jump of the same width (CR-001 batch 45).
+	 *
+	 * @param width the tab's advance, in millipoints
+	 * @since 17.1.1
+	 */
+	static void setLeaderPattern(org.apache.fop.layoutmgr.LayoutManager lm, int kind,
+			int width, boolean spaces) {
 		unphase(lm);
 		if (kind == LEADER_NONE) {
-			blankLeaderArea(lm);
+			blankLeaderArea(lm, width, spaces);
 			return;
 		}
 		if (!(lm.getFObj() instanceof org.apache.fop.fo.flow.Leader)) return;
 		org.apache.fop.fo.flow.Leader fobj = (org.apache.fop.fo.flow.Leader) lm.getFObj();
 		int pattern = fobj.getLeaderPattern();
-		if ((kind == LEADER_DOTS && pattern == org.apache.fop.fo.Constants.EN_DOTS)
-				|| (kind == LEADER_RULE && pattern == org.apache.fop.fo.Constants.EN_RULE)) {
-			return;   // FOP already built the area this stop wants
-		}
+		boolean asFopBuiltIt = (kind == LEADER_DOTS && pattern == org.apache.fop.fo.Constants.EN_DOTS)
+				|| (kind == LEADER_RULE && pattern == org.apache.fop.fo.Constants.EN_RULE);
 		try {
 			Object area = LNLM_CUR_AREA.get(lm);
+			if (asFopBuiltIt) {
+				// FOP built the area this stop wants, and it is the one that hangs on the
+				// alignment context the FO asked for; all it needs is Word's step
+				if (isCharacterLeader(kind)) setGridStep(area);
+				return;
+			}
 			if (!(area instanceof org.apache.fop.area.inline.InlineArea)) return;
 			org.apache.fop.area.inline.InlineArea old = (org.apache.fop.area.inline.InlineArea) area;
 			int thickness = fobj.getRuleThickness().getValue(lm);
-			org.apache.fop.area.inline.InlineArea fresh = kind == LEADER_RULE
+			char c = leaderChar(kind);
+			org.apache.fop.area.inline.InlineArea fresh = c == 0
 					? ruleArea(fobj, thickness, old.getBidiLevel())
-					: dotsArea(lm, fobj, thickness, old.getBidiLevel());
+					: charArea(lm, fobj, thickness, old.getBidiLevel(), c);
 			if (fresh == null) return;
 			LNLM_CUR_AREA.set(lm, fresh);
 		} catch (IllegalAccessException e) {
@@ -343,28 +466,32 @@ final class LBP {
 		return rule;
 	}
 
-	private static org.apache.fop.area.inline.InlineArea dotsArea(org.apache.fop.layoutmgr.LayoutManager lm,
-			org.apache.fop.fo.flow.Leader fobj, int thickness, int level) {
+	/** The area a leader of repeated characters is drawn as, built the way
+	 *  {@code LeaderLayoutManager.getLeaderInlineArea} builds its dots.
+	 *  @param c the character the leader repeats ('.', '_' or '-') */
+	private static org.apache.fop.area.inline.InlineArea charArea(org.apache.fop.layoutmgr.LayoutManager lm,
+			org.apache.fop.fo.flow.Leader fobj, int thickness, int level, char c) {
 		org.apache.fop.fonts.Font font;
 		try {
 			font = (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
-		if (font == null) return null;
-		int width = font.getCharWidth('.');
+		if (font == null || !font.hasChar(c)) return null;
+		int width = font.getCharWidth(c);
 		if (width <= 0) return null;
 		org.apache.fop.area.inline.TextArea dot = new org.apache.fop.area.inline.TextArea();
 		int[] levels = (level < 0) ? null : new int[] { level };
-		dot.addWord(".", width, null, levels, null, 0);
+		dot.addWord(String.valueOf(c), width, null, levels, null, 0);
 		dot.setIPD(width);
 		dot.setBPD(width);
-		// FOP would put the dot's baseline at its own height; this area hangs on an
+		// FOP would put the character's baseline at its own height; this area hangs on an
 		// alignment context built for the pattern the FO asked for, whose height is the
 		// leader's rule thickness, so the baseline goes there instead
 		dot.setBaselineOffset(thickness);
 		org.apache.fop.layoutmgr.TraitSetter.addFontTraits(dot, font);
 		dot.addTrait(org.apache.fop.area.Trait.COLOR, fobj.getColor());
+		if (WordLayoutCustomizer.leaderGrid() && gridStep(dot, width) > 0) width = dot.getIPD();
 		org.apache.fop.area.inline.Space spacer = null;
 		int patternWidth = fobj.getLeaderPatternWidth().getValue(lm);
 		if (patternWidth > width) {
@@ -414,6 +541,19 @@ final class LBP {
 			setBPD(leader.getBPD());
 		}
 
+		/** The same, with the blank at each end of the run written as a space character:
+		 *  either end may be null.  @since 17.1.1 */
+		PhasedLeaderArea(org.apache.fop.area.inline.InlineArea lead,
+				org.apache.fop.area.inline.InlineArea leader,
+				org.apache.fop.area.inline.InlineArea tail) {
+			this.leader = leader;
+			if (lead != null) addChildArea(lead);
+			addChildArea(leader);
+			if (tail != null) addChildArea(tail);
+			setBPD(leader.getBPD());
+			if (leader.getBidiLevel() >= 0) setBidiLevel(leader.getBidiLevel());
+		}
+
 		org.apache.fop.area.inline.InlineArea getLeader() {
 			return leader;
 		}
@@ -453,17 +593,97 @@ final class LBP {
 	 * @since 17.1.0
 	 */
 	static void setLeaderPhase(org.apache.fop.layoutmgr.LayoutManager lm, int phase, int width) {
+		setLeaderPhase(lm, phase, width, false);
+	}
+
+	/**
+	 * As above, and with {@code spaces} the blank at <b>each</b> end of the run is written
+	 * as a space character, which is what Word's own PDF carries there.
+	 *
+	 * <p>Word writes one there, in a text object of its own: a corpus table of contents
+	 * whose stop has an underscore leader carries
+	 * {@code 1 0 0 1 154.87 609.79 Tm [( )] TJ} between the entry's text and
+	 * {@code 1 0 0 1 156.07 609.79 Tm [(____...)] TJ}, and another at 564.22 before the
+	 * page number at 569.74.  The run itself opens on Word's grid, a fraction of a cell
+	 * after the text ({@code WordLineLayoutManager.dotLeaderPhase}), and the space fills
+	 * that partial cell.  (The glyph draws no ink, so {@code mutool draw -F trace} does not
+	 * list it; the claim is read out of the operators.)</p>
+	 *
+	 * <p>A space is written only where there <em>is</em> a partial cell.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	static void setLeaderPhase(org.apache.fop.layoutmgr.LayoutManager lm, int phase, int width,
+			boolean spaces) {
 		unphase(lm);
-		if (phase <= 0 || phase >= width) return;
+		if (!spaces && (phase <= 0 || phase >= width)) return;
+		if (phase < 0 || phase >= width) phase = 0;
 		try {
 			Object area = LNLM_CUR_AREA.get(lm);
 			if (!(area instanceof org.apache.fop.area.inline.FilledArea)) return;
-			org.apache.fop.area.inline.InlineArea dots = (org.apache.fop.area.inline.InlineArea) area;
-			dots.setIPD(width - phase);
-			LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(phase, dots));
+			org.apache.fop.area.inline.FilledArea run = (org.apache.fop.area.inline.FilledArea) area;
+			if (!spaces) {
+				run.setIPD(width - phase);
+				LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(phase, run));
+				return;
+			}
+			int period = run.getUnitWidth();
+			if (period <= 0) return;
+			int units = (width - phase) / period;
+			if (units <= 0) return;            // no room for a run: the tab stays as it is
+			int runWidth = units * period;
+			int tail = width - phase - runWidth;
+			org.apache.fop.fonts.Font font = (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
+			java.awt.Color colour = (lm.getFObj() instanceof org.apache.fop.fo.flow.Leader)
+					? ((org.apache.fop.fo.flow.Leader) lm.getFObj()).getColor() : null;
+			int baseline = 0;
+			for (Object child : run.getChildAreas()) {
+				if (child instanceof org.apache.fop.area.inline.AbstractTextArea) {
+					baseline = ((org.apache.fop.area.inline.AbstractTextArea) child).getBaselineOffset();
+					break;
+				}
+			}
+			// only where there is a partial cell to write: Word's space is that cell, and
+			// where its grid is already met it writes nothing there
+			org.apache.fop.area.inline.TextArea lead = phase <= 0 ? null
+					: spaceArea(font, colour, phase, run.getBPD(), baseline, run.getBidiLevel());
+			org.apache.fop.area.inline.TextArea end = tail <= 0 ? null
+					: spaceArea(font, colour, tail, run.getBPD(), baseline, run.getBidiLevel());
+			if (lead == null && end == null) {
+				if (phase <= 0) return;
+				run.setIPD(width - phase);
+				LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(phase, run));
+				return;
+			}
+			run.setIPD(runWidth);
+			LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(lead, run, end));
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	/**
+	 * One space character of exactly this advance, in the leader's own font: the blank
+	 * Word writes where docx4j jumped the pen.  The glyph is blank, so the character
+	 * spacing which gives it its advance (a PDF {@code Tc}) moves nothing; what it changes
+	 * is what the text layer says.
+	 *
+	 * @since 17.1.1
+	 */
+	private static org.apache.fop.area.inline.TextArea spaceArea(org.apache.fop.fonts.Font font,
+			java.awt.Color colour, int advance, int bpd, int baselineOffset, int level) {
+		if (font == null || !font.hasChar(' ') || advance < 0) return null;
+		org.apache.fop.area.inline.TextArea space = new org.apache.fop.area.inline.TextArea();
+		int[] levels = (level < 0) ? null : new int[] { level };
+		space.addWord(" ", advance, null, levels, null, 0);
+		space.setIPD(advance);
+		space.setBPD(bpd);
+		space.setBaselineOffset(baselineOffset);
+		if (level >= 0) space.setBidiLevel(level);
+		space.setTextLetterSpaceAdjust(advance - font.getCharWidth(' '));
+		org.apache.fop.layoutmgr.TraitSetter.addFontTraits(space, font);
+		if (colour != null) space.addTrait(org.apache.fop.area.Trait.COLOR, colour);
+		return space;
 	}
 
 	/** The area a page number's width transfer must reach (WordLineLayoutManager's
@@ -475,11 +695,30 @@ final class LBP {
 	/** Replace a leader's area with a plain space of the same height: the tab reached
 	 *  a stop with no leader, but the FO could not know which stop that would be. */
 	static void blankLeaderArea(org.apache.fop.layoutmgr.LayoutManager lm) {
+		blankLeaderArea(lm, 0, false);
+	}
+
+	/** As above; with {@code spaces} the blank is a space <b>character</b> of the tab's
+	 *  whole advance, which is what Word's PDF writes for a tab.  @since 17.1.1 */
+	static void blankLeaderArea(org.apache.fop.layoutmgr.LayoutManager lm, int width, boolean spaces) {
 		try {
 			Object area = LNLM_CUR_AREA.get(lm);
-			if (!(area instanceof org.apache.fop.area.inline.InlineArea)
-					|| area instanceof org.apache.fop.area.inline.Space) return;
+			if (!(area instanceof org.apache.fop.area.inline.InlineArea)) return;
 			org.apache.fop.area.inline.InlineArea old = (org.apache.fop.area.inline.InlineArea) area;
+			if (spaces && width > 0) {
+				org.apache.fop.fonts.Font font = (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
+				java.awt.Color colour = (lm.getFObj() instanceof org.apache.fop.fo.flow.Leader)
+						? ((org.apache.fop.fo.flow.Leader) lm.getFObj()).getColor() : null;
+				int baseline = (old instanceof org.apache.fop.area.inline.AbstractTextArea)
+						? ((org.apache.fop.area.inline.AbstractTextArea) old).getBaselineOffset() : old.getBPD();
+				org.apache.fop.area.inline.TextArea space
+						= spaceArea(font, colour, width, old.getBPD(), baseline, old.getBidiLevel());
+				if (space != null) {
+					LNLM_CUR_AREA.set(lm, space);
+					return;
+				}
+			}
+			if (area instanceof org.apache.fop.area.inline.Space) return;
 			org.apache.fop.area.inline.Space blank = new org.apache.fop.area.inline.Space();
 			blank.setBPD(old.getBPD());
 			blank.setBidiLevel(old.getBidiLevel());

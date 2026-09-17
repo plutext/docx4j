@@ -51,6 +51,26 @@ public final class PdfLayout {
 		 * side - and the geometry of a paired line is still compared in full, so a
 		 * date we lay out in the wrong place is still counted against us.
 		 * {@code -Dfidelity.dateNormalise=false} restores the raw text.</p>
+		 *
+		 * <p>A <b>leading symbol bullet</b> is collapsed to one token for the third such
+		 * reason: the two renders name the same glyph differently, and neither name means
+		 * anything.  Word's PDF gives a {@code w:sym} bullet the symbol font's own code
+		 * point, in the private-use area; docx4j gives the Unicode character the glyph
+		 * stands for.  Measured over one corpus: {@code U+F02A} against {@code U+2217}
+		 * ASTERISK OPERATOR on three documents (62, 30 and 14 lines), {@code U+F077}
+		 * against {@code U+2B25} on a fourth (61), and {@code U+F072}, {@code U+F0A8},
+		 * {@code U+F06F} and {@code U+F0EA} against their own substitutes elsewhere.
+		 * Ours is the better text layer - Word's copies as noise - and it is the one thing
+		 * that cannot pair with Word's, so the metric stops asking.
+		 * {@code -Dfidelity.bulletNormalise=false} restores the raw character.</p>
+		 *
+		 * <p>It is a function of the <b>text</b> and of nothing else, so it fires on both
+		 * sides alike.  An earlier version asked instead whether the label was drawn in a
+		 * font of its own, which is how a symbol bullet reaches the page - and it cost one
+		 * corpus 314 matched lines, because that is not symmetric: on a document of
+		 * {@code U+25AA} bullets, Word's PDF draws them in a symbol font (so they
+		 * collapsed) and ours in the paragraph's own (so they did not), and 20 lines of a
+		 * document which had been at 1.0000 stopped pairing.</p>
 		 */
 		public String key() {
 			// cached: the LCS asks every reference line for its key against every
@@ -58,7 +78,8 @@ public final class PdfLayout {
 			// times (measured: the biggest corpus document stopped finishing at all)
 			String k = key;
 			if (k == null) {
-				k = NORMALISE_LEADERS ? LEADER_RUN.matcher(text).replaceAll("\u2026") : text;
+				k = NORMALISE_BULLETS ? normaliseBullet(text) : text;
+				if (NORMALISE_LEADERS) k = LEADER_RUN.matcher(k).replaceAll("\u2026");
 				if (NORMALISE_DATES) k = normaliseDates(k);
 				key = k;
 			}
@@ -66,6 +87,90 @@ public final class PdfLayout {
 		}
 
 		private String key;
+
+		/** What a symbol bullet is collapsed to: U+2043 HYPHEN BULLET, which no corpus
+		 *  document uses as text of its own. */
+		static final String SYMBOL_LABEL = "\u2043";
+
+		/**
+		 * What one piece contributes to a run the merge pass joins: its <b>text</b> where
+		 * the bullet rule is on, its key otherwise.
+		 *
+		 * <p>The rule looks at the head of a whole line, so a piece must not be normalised
+		 * before the pieces are joined.  Measured: a corpus table row which Word reads as
+		 * one line, {@code • Ecz... • Thy...}, is two lines on our side, each with its own
+		 * bullet.  Joining the pieces' keys gave {@code U+2043 Ecz... U+2043 Thy...} - each
+		 * piece's own leading bullet already a token - against the single line's
+		 * {@code U+2043 Ecz... • Thy...}, where only the first is; the merge stopped
+		 * pairing and the document lost the line.  Joining the texts and normalising the
+		 * result gives the same key on both sides.</p>
+		 */
+		public static String mergePiece(Line l) {
+			return NORMALISE_BULLETS ? l.text : l.key();
+		}
+
+		/** The key of a run the merge pass joined out of {@link #mergePiece} parts. */
+		public static String joinedKey(String joined) {
+			if (!NORMALISE_BULLETS) return joined;      // the pieces were already keys
+			String k = normaliseBullet(joined);
+			if (NORMALISE_LEADERS) k = LEADER_RUN.matcher(k).replaceAll("\u2026");
+			if (NORMALISE_DATES) k = normaliseDates(k);
+			return k;
+		}
+
+		/**
+		 * A line which opens with one symbol character - a list label - and then with a
+		 * word, with that character replaced by {@link #SYMBOL_LABEL} and the space after
+		 * it dropped.  It is <b>replaced</b> and not dropped, so a line which carries no
+		 * bullet where the other has one still fails: that is a real difference and the
+		 * metric must keep counting it.
+		 */
+		static String normaliseBullet(String s) {
+			if (s.isEmpty()) return s;
+			int n = Character.charCount(s.codePointAt(0));
+			if (!isBulletChar(s.codePointAt(0))) return s;
+			int at = n;
+			while (at < s.length() && s.charAt(at) == ' ') at++;
+			// something must follow, and it must be a word rather than another symbol
+			if (at >= s.length() || !Character.isLetterOrDigit(s.codePointAt(at))) return s;
+			return SYMBOL_LABEL + s.substring(at);
+		}
+
+		/**
+		 * Whether a code point is one a list label is drawn with rather than one a
+		 * sentence is written with: a private-use code point (which is how Word names a
+		 * Symbol or Wingdings glyph), a symbol from U+2000 up (which is what docx4j's
+		 * substitution produces for one - and the floor keeps ASCII arithmetic and the
+		 * currency signs out), or one of the punctuation marks used as bullets.
+		 *
+		 * <p>The <b>specials</b> block U+FFF0..U+FFFF is excluded although two of its
+		 * characters are symbols: U+FFFC is what {@link #normaliseDates} leaves in a key
+		 * for a date, and taking it for a bullet broke the merge pass on a corpus
+		 * document whose table rows are two dates - the joined run read {@code U+2043 d}
+		 * where the single line read {@code U+FFFC d} - costing it 11 matched lines.
+		 * U+FFFD, a decoding failure, is not a bullet either.</p>
+		 */
+		private static boolean isBulletChar(int cp) {
+			if (cp >= 0xE000 && cp <= 0xF8FF) return true;               // private use
+			if (cp >= 0xF0000) return true;                              // private use, planes 15-16
+			switch (cp) {
+			case 0x00A7:   // section sign, a Wingdings square
+			case 0x00B7:   // middle dot
+			case 0x2022:   // bullet
+			case 0x2023:   // triangular bullet
+			case 0x2043:   // hyphen bullet
+				return true;
+			default:
+				break;
+			}
+			if (cp < 0x2000) return false;
+			if (cp >= 0xFFF0 && cp <= 0xFFFF) return false;              // specials
+			int type = Character.getType(cp);
+			return type == Character.OTHER_SYMBOL || type == Character.MATH_SYMBOL;
+		}
+
+		private static final boolean NORMALISE_BULLETS =
+				!"false".equalsIgnoreCase(System.getProperty("fidelity.bulletNormalise", "true"));
 
 		/** Three or more leader glyphs (dot, middle dot, underscore), however spaced,
 		 *  together with the whitespace on either side of the run. */

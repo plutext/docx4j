@@ -846,12 +846,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
                         + " from the margin) -> stop " + stop + " align=" + align + " width=" + width);
             }
             // the FO could not know which stop the tab would reach, so the leader of the
-            // stop it did reach is set on the area now (blanked where that stop has none)
-            LBP.setLeaderPattern(leader, stopLeader);
-            // Word's leader dots sit on a fixed grid, so a dot leader opens with a gap of
-            // less than one dot (see dotLeaderPhase)
-            LBP.setLeaderPhase(leader, stopLeader == LBP.LEADER_DOTS
-                    ? dotLeaderPhase(tabLeftMpt + x, leader, width) : 0, width);
+            // stop it did reach is set on the area now (blanked where that stop has none,
+            // and written as a space character rather than a jump - see tabSpaces)
+            boolean spaces = WordLayoutCustomizer.tabSpaces();
+            LBP.setLeaderPattern(leader, stopLeader, width, spaces);
+            // Word's leader characters sit on a fixed grid, whatever the character, so a
+            // leader opens with a gap of less than one cell (see dotLeaderPhase).  That
+            // gap is what a PDF text extractor reads as the space between the text and the
+            // run, on Word's side and now on ours; Word writes no glyph for it.
+            LBP.setLeaderPhase(leader, LBP.isCharacterLeader(stopLeader)
+                    ? dotLeaderPhase(tabLeftMpt + x, leader, width) : 0, width, spaces);
             // a right/centre/decimal stop measured an unresolved page number as FOP's
             // "MMM" placeholder; the width it loses when it resolves is the tab's, not
             // the line's (see pageNumberTabs)
@@ -1720,9 +1724,57 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private int dotLeaderPhase(int from, LayoutManager leader, int width) {
         int period = LBP.leaderUnitWidth(leader);
         if (period <= 0 || width <= period) return 0;
-        int phase = (period - (from % period)) % period;
+        int phase = WordLayoutCustomizer.leaderGrid()
+                ? LBP.gridPhase(from + pageOffsetMpt(), period)
+                : (period - (from % period)) % period;
         return phase < width ? phase : 0;
     }
+
+    /**
+     * How far the left margin is from the <b>page's own left edge</b>, in millipoints, or
+     * 0 where that cannot be had.
+     *
+     * <p>Word's leader grid is anchored on the page edge, not on the text: measured on the
+     * {@code tab-leader-kinds} golden, whose margin is 72.024pt, every run begins on an
+     * exact multiple of its pitch from x=0 - the hyphen runs at 151.27 and 258.84 are
+     * 45 and 77 pitches of 3.3616, the underscore runs at 165.67 and 176.71 are 30 and 32
+     * of 5.5222, the dot runs at 129.65 and 221.86 are 45 and 77 of 2.8816 - and on a
+     * corpus document whose margin is 50.4pt the same holds.  {@link #tabLeftMpt} is
+     * measured from the margin, so the margin's own offset has to be added before the
+     * grid is taken.</p>
+     *
+     * <p>It is the body region's start edge, which is the margin for ordinary text.  A tab
+     * inside a table cell is still short by the cell's own offset; that is nearer than the
+     * whole margin, which is what it was before.</p>
+     *
+     * <p>A caveat to record: it is read from the page viewport <b>current while the line is
+     * laid out</b> and cached for the manager's life, so a paragraph laid out while page N is
+     * current but placed on page N+1 with a different body start - mirrored margins, or an
+     * odd/even section whose margins differ - is gridded against the wrong edge, by the
+     * difference between the two margins.  No probe has that shape, and no document in the
+     * three corpora moved for it; it is not worth a lookup per line until one does.</p>
+     *
+     * @since 17.1.1
+     */
+    private int pageOffsetMpt() {
+        if (pageOffsetMpt != Integer.MIN_VALUE) return pageOffsetMpt;
+        int off = 0;
+        try {
+            org.apache.fop.area.PageViewport pv = getPSLM() == null ? null : getPSLM().getCurrentPV();
+            org.apache.fop.area.Page page = pv == null ? null : pv.getPage();
+            org.apache.fop.area.RegionViewport rv = page == null ? null
+                    : page.getRegionViewport(org.apache.fop.fo.Constants.FO_REGION_BODY);
+            if (rv != null && rv.getViewArea() != null) {
+                off = (int) Math.round(rv.getViewArea().getX());
+            }
+        } catch (RuntimeException e) {
+            log.debug("no page viewport for the leader grid: " + e.getMessage());
+        }
+        pageOffsetMpt = off;
+        return off;
+    }
+
+    private int pageOffsetMpt = Integer.MIN_VALUE;
 
     /**
      * The paragraph's right indent in millipoints: the distance from the end of a line to
@@ -1978,8 +2030,25 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return false;
     }
 
-    /** What {@code w:leader} draws: nothing, dots or a rule.  @since 17.1.0 */
+    /**
+     * What {@code w:leader} draws: nothing, or a run of a character.
+     *
+     * <p>Word draws <b>every</b> leader as characters, in the paragraph mark's font and
+     * size, and the {@code tab-leader-kinds} golden says which: {@code dot} a full stop,
+     * {@code middleDot} U+00B7, {@code hyphen} a hyphen, and <b>both</b> {@code underscore}
+     * and {@code heavy} an underscore - its page carries no stroked or filled path at all.
+     * XSL FO offers no repeating glyph but the dot, so ours asked FOP for a
+     * <em>rule</em> for the other three: a drawn path with nothing in the text layer, and
+     * for {@code heavy} that is all it ever was ({@link WordLayoutCustomizer#LEADER_CHARACTERS}).</p>
+     *
+     * @since 17.1.0; the character kinds 17.1.1
+     */
     private static int tabLeaderKind(String v) {
+        if (WordLayoutCustomizer.leaderCharacters()) {
+            if ("middleDot".equals(v)) return LBP.LEADER_MIDDLE_DOT;
+            if ("underscore".equals(v) || "heavy".equals(v)) return LBP.LEADER_UNDERSCORE;
+            if ("hyphen".equals(v)) return LBP.LEADER_HYPHEN;
+        }
         if ("dot".equals(v) || "middleDot".equals(v)) return LBP.LEADER_DOTS;
         if ("hyphen".equals(v) || "underscore".equals(v) || "heavy".equals(v)) return LBP.LEADER_RULE;
         return LBP.LEADER_NONE;   // none, and anything unknown
@@ -2007,7 +2076,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private final int wordLineBox;
     private final int wordBaseline;
 
-    private static String foreignAttribute(org.apache.fop.fo.FObj block, String localName) {
+    static String foreignAttribute(org.apache.fop.fo.FObj block, String localName) {
         if (block == null) return null;
         java.util.Map<?, ?> attrs = block.getForeignAttributes();
         if (attrs == null) return null;

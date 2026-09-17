@@ -200,6 +200,146 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Caladea is Cambria's substitute by design, not by metric, and carries a width factor of
+  1.048. It has Cambria's own advance for n, l, x, X and i, and is 4 to 11 per cent narrower
+  on the rest of the lower case (e 441 against 488, o 480 against 531, s 392 against 430);
+  where Cambria's digits are tabular - 554 every one - Caladea's are proportional, its 1
+  measuring 362. Measured 1.0494 over English letter frequencies (Cambria 6.99 against
+  Caladea 1.001, the file docx4j ships) and 1.0383 to 1.0515 over the Cambria glyphs of four
+  corpus documents, so the quality="metric" claim in font-substitutes.xml was wrong and now
+  reads measured with those numbers. One document goes from 0.4692 to 0.8928 line parity and
+  four others improve; the fonts-unresolvable probe, which measures Word's own answers for a
+  font it cannot find, becomes exact at 1.0000. Against that, a Greek document loses 49 lines
+  and grows two pages: Caladea has no Greek, so its every Greek paragraph is cut into Caladea
+  and P052 stretches - more than half its lines are part Latin and part Greek - and the
+  factor corrects one half of each. Drawing such a run in one face, as Word does, is the fix
+  and is a substitution-policy question of its own. Tahoma keeps no factor: measured, its
+  regular is 0.9941 of Arimo (batch 42's reading confirmed) and only its bold differs, at
+  1.0598, and the FO names the regular family for both weights so no per-weight factor can be
+  carried today (CR-001 batch 45).
+
+- A run Word drew in Meiryo is set at Meiryo's width, and the width factor follows the
+  altName chain. Meiryo's Latin advances are 1.21 of Carlito's - read out of the two PDFs'
+  own /Widths and weighted by the 3785 characters Word set in that face on a corpus
+  document, leaving out the 1359 dots of its tab leaders, the ratio is 1.2107; unweighted
+  over the 60 letters and digits the fonts share it is 1.2144; the one line of that
+  document each side draws whole in one face measures 1.2051 - so a document Word drew in
+  Meiryo came out 20% narrow and re-broke on every line. The measured factors are keyed on
+  the font Word drew, and where the document's runs name a font Word could not find, that
+  is the font its w:altName says Word used instead, not the one in the run: the lookup now
+  follows the same hop the line box already follows (Mapper.widthFactorFor), so one row
+  answers for every corporate face which names the same alternate. It cannot fire where the
+  machine has that font and draws it - the substitute has to be the family the factor was
+  measured against. On the document this was measured on, line parity 0.7265 to 0.9008 and
+  81 pages to 85 against Word's 87; the two other corpus documents which name Meiryo name
+  @Meiryo UI, a narrower family of its own, and are untouched (CR-001 batch 45).
+
+- A font whose class can only be guessed from its name gets Word's own substitute rather
+  than no face at all. Word's answer for a font it cannot find - Calibri for w:family
+  "swiss", Cambria for "roman" (17.1.1, measured on the fonts-unresolvable probe) - was
+  applied only to a family docx4j's tables do not know, and "know" was asked of
+  FontFallback.classOf, which will guess a class from a name that merely has "Sans" or
+  "Serif" in it. The pass that acts on a known class asks substitutionClass, which
+  deliberately does not make that guess (the guess was measured to be worth less than the
+  document default). So a font the two disagreed about fell between them and was left with
+  no face: measured on a corpus document whose Normal style is a corporate sans the machine
+  has not got, all 9276 glyphs of it were drawn in the document default's serif, in the
+  document default's line box, and its 18 pages of text came out as 10. Word's own PDF of
+  it draws that text in Calibri at 10.08pt, which is what the w:family="swiss" rule gives:
+  the guard now asks the same question the pass acts on, and a family docx4j deliberately
+  leaves to the document default (a condensed one, a PostScript name) is still left there.
+  Line parity 0.4475 to 0.5778 on that document and 0.9352 to 0.9630 on another whose
+  unfindable face is Gill Sans, +111 matched lines over three corpora with nothing worse,
+  no page count moved and no probe changed (CR-001 batch 45).
+
+- A CJK character reaches the PDF's text layer as itself. Two defects, both of the text
+  layer alone - the glyph on the page was right either way - measured against Word's own
+  PDFs of three corpus documents whose East Asian font is not installed here. (1) An
+  ideograph came out as a Kangxi radical. FOP runs a font's OpenType layout over
+  characters: it maps the characters to glyphs, substitutes, and maps the glyphs back to
+  characters, taking each glyph's character from the first cmap segment which covers it. A
+  CJK font maps a radical and the ideograph it is the radical of to one glyph - in Source
+  Han Sans CN, U+2F63 and U+751F are both glyph 18742 - and the radical is the lower code
+  point, so the round trip replaces the ideograph with it. Nothing in such a font's layout
+  applies to horizontal text of its own region, and turning it off changes no glyph
+  (measured through FOP itself: identical glyph indices, positions and advances with the
+  features on and off, and only the ToUnicode differs), so a font whose reverse lookup can
+  take a radical for an ideograph is now declared with FOP's advanced="false" - and docx4j
+  applies that attribute itself, because FOP drops it wherever a resource resolver is
+  given, which is every PDF run. (2) A fullwidth comma came out as "#", FOP's not-found
+  character, on the page and in the text layer both: an East Asian punctuation mark is
+  Character.UnicodeScript.COMMON, which counted as always covered, so a span holding one
+  alone - a run of its own between two East Asian runs, which is how a document commonly
+  writes it - never reached the glyph-coverage pass and stayed in the Latin substitute its
+  East Asian document font had been given. Such a mark is now looked at like any other
+  character, and where it is uncovered and stands alone it takes the face the document
+  font's own characters are being drawn in, as its neighbours within a span already did.
+  Over three corpora: 163 radicals and 36 hashes on one document, 116 and 26 on a second, 7
+  and 3 on a third are now 0, as Word's are; line parity 0.5795 to 0.8821, 0.2973 to 0.6757
+  and 0.9197 to 0.9416, +79 matched lines with nothing worse and no page count moved; the
+  fonts-space-cjk probe goes from 0.1667 to 1.0000. docx4j.convert.out.fo.cjkAdvancedFeatures=true
+  restores FOP's layout for such a font; the declaration can be dropped when a FOP which
+  keeps the original characters ships (CR-001 batch 45).
+
+- Every tab leader is drawn as a run of its own character, as Word draws it. XSL FO's
+  leader-pattern offers dots and rule and no other repeating glyph, so w:leader="underscore",
+  "hyphen" and "heavy" asked FOP for a rule: a drawn path of the right length on the right line, but
+  nothing at all in the text layer, so a table-of-contents entry extracted with its leader
+  simply absent. Word writes the characters, 12pt Calibri-BoldItalic underscores at 132.05,
+  138.05, 144.05 ... on the entry's baseline; ours are now the font's own underscore glyphs
+  there, where the rule was a 1.00pt stroke half a point above it. The tab-leader-kinds
+  golden settles every kind: dot a full stop, middleDot U+00B7 on a 2.88pt grid, hyphen a
+  hyphen on 3.36, and BOTH underscore and heavy an underscore on 5.52, all in the paragraph
+  mark's font and size, with no stroked or filled path on the page at all. A leading tab -
+  a tab at the start of a paragraph - now paints its leader too, from the margin as Word's
+  does; it was written as a fixed leader of pattern "space" and painted nothing. And a
+  leader run of any kind now starts on a grid, as only a dot leader did. A w:tab also carries
+  the space glyph Word writes for it: Word's tab is `BT /F2 11.04 Tf 1 0 0 1 136.13 718.99 Tm
+  [( )] TJ ET` in the paragraph mark's font, in its own text object, with the text after it
+  positioned by its own text matrix, and one such space sits at each end of a leader run
+  (154.87 and 564.22 around a corpus entry's underscores). docx4j's stream is continuous, so
+  it writes one of the gap's own width, by a character spacing; the glyph is blank and nothing
+  moves. The new tab-leader-kinds probe goes from 17/31 of its lines matching Word's to
+  29/31; over the three corpora line parity goes 0.9154 to 0.9161, 0.8920 to 0.8952 and
+  0.9351 to 0.9352, with 21 documents improved, none worse, and no page count moved.
+  Word's grid follows: a leader steps by its character's advance rounded to the 1/300 inch
+  Word lays out in - the golden writes that rounding as a character spacing, +0.0979 on a
+  2.782pt full stop, -0.0182 on a 3.380pt hyphen (so it is rounded, not rounded up) and
+  +0.0221 on a 5.500pt underscore - and a run opens on a whole multiple of that step
+  measured from the page's own left edge, the tab's start taken down to a cell first. All
+  nineteen of the golden's runs sit on such a multiple and seventeen of ours now sit on the
+  same one, which takes the probe to 30/31 and ends a table of contents' leaders on one
+  column as Word's are, where ours ended anywhere within 1.6pt of it (CR-001 batch 45).
+
+- The two-pass page-number filter keeps character data where the document has it.
+  PlaceholderReplacementHandler buffers character data so that a placeholder split over
+  several SAX characters() calls can still be found, and flushed the buffer only at
+  endElement - so text which came *before* a child element was handed on after that child
+  had started, that is, inside it. A table-of-contents entry written as
+  `<inline>text <leader/> <page-number-citation/></inline>` lost both of its spaces that
+  way. Only a document with a page-number citation goes through the filter at all, which
+  is why the same FO rendered correctly without one (CR-001 batch 45).
+
+- The w:suff separator between a numbered paragraph's label and its text is a space character
+  in the PDF's text layer, as it is in Word's. Word writes it as one space glyph in the
+  paragraph mark's font and size, in a text object of its own, and then positions the text
+  after it with a text matrix of its own: read out of the content streams, one corpus report's
+  first heading is `1 0 0 1 127.49 723.07 Tm [(1)] TJ`, then `/F4 13.92 Tf 1 0 0 1 134.45
+  723.07 Tm [( )] TJ` - a third font, the paragraph mark's - then the text at 138.53; another's
+  is `1 0 0 1 40.824 665.47 Tm [( )] TJ` between `1.1` and `S`. (The glyph draws no ink, so
+  `mutool draw -F trace` does not list it.) docx4j sets the label as an fo:list-item-label
+  beside an fo:list-item-body and wrote nothing between them, so the same headings copied out
+  as `1.1Text` where Word's copy as `1.1 Text`. The styles-numpr-ilvl-only
+  golden probe is the case with Word's own answer to hand: its item extracted as
+  "1.1.(b) L, direct w:numPr of w:ilvl 1 only" where Word's golden reads "1.1. (b) L, ...",
+  and it goes from 50% to 100% line parity. The space is added to the label's line with the
+  gap's own width, so no glyph moves (measured on every document that changed: identical
+  non-space glyph positions, identical page counts, identical pdftotext -bbox-layout boxes).
+  927 lines of the largest corpus carried the defect and 565 remain - most of them labels as
+  wide as their own column, which is a layout defect of its own, and the rest genuine tabs;
+  over the three corpora line parity goes 0.9143 to 0.9154, 0.8901 to 0.8920 and 0.9327 to
+  0.9351, with 13 documents improved and none worse (CR-001 batch 45).
+
 - A justified line's word spaces compress to 0.755 of their nominal width to bring the next
   word up, where the limit was 0.760. Two probes put Word's own floor in (0.7500, 0.7586]: each
   of their 32 cases is a two-line justified paragraph whose next word is built so that pulling

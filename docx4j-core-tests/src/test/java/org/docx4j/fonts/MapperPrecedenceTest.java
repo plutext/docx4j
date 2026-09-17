@@ -148,6 +148,47 @@ public class MapperPrecedenceTest {
 				WordLineMetrics.get(m.lineMetricsFamily("Docx4j Probe A"), null).lineHeightFactor(), 0.0001);
 	}
 
+	/**
+	 * A family whose class can only be <em>guessed</em> from its name - one which merely
+	 * has "Sans" or "Serif" somewhere in it - is Word-defaulted, because the passes before
+	 * that one will not act on such a guess either.
+	 *
+	 * <p>Until 17.1.1 the guard asked {@link FontFallback#classOf}, which does make the
+	 * guess, while the class pass asks {@code substitutionClass}, which does not: a font
+	 * the two disagreed about fell between them and was left with no face at all - drawn
+	 * in the document default's serif, with the document default's line box. Measured on a
+	 * corpus document whose Normal style is such a corporate face: 9276 glyphs of it, and
+	 * Word drew that document in Calibri.</p>
+	 */
+	@Test
+	public void aNameWhoseClassIsOnlyAGuessIsWordDefaulted() throws Exception {
+		assertNull("the class pass has nothing for such a name",
+				FontFallback.selectByClass("Docx4j Probe Sans Light"));
+		assertFalse("so this pass must not stand back from it",
+				Mapper.isKnownFamily("Docx4j Probe Sans Light"));
+
+		Fonts table = fontTable("<w:font w:name=\"Docx4j Probe Sans Light\">"
+				+ "<w:panose1 w:val=\"020B0300040303060204\"/><w:family w:val=\"swiss\"/>"
+				+ "<w:pitch w:val=\"variable\"/></w:font>");
+		Set<String> names = names("Docx4j Probe Sans Light");
+
+		IdentityPlusMapper m = new IdentityPlusMapper();
+		m.getFontMappings().clear();
+		m.put("Calibri", PhysicalFonts.get(SANS));
+		m.addClassBasedSubstitutes(names);
+		assertNull("nothing from the class pass", m.get("Docx4j Probe Sans Light"));
+
+		m.addWordDefaultSubstitutes(names, table);
+		assertSame("w:family swiss is Calibri", PhysicalFonts.get(SANS),
+				m.get("Docx4j Probe Sans Light"));
+		assertEquals("and the line box is Calibri's, as Word's is",
+				"Calibri", m.lineMetricsFamily("Docx4j Probe Sans Light"));
+
+		// the families deliberately left to the document default are still left there
+		assertTrue("a condensed family", Mapper.isKnownFamily("Docx4j Probe Sans Narrow"));
+		assertTrue("a PostScript name", Mapper.isKnownFamily("Docx4jProbeSans-Light"));
+	}
+
 	@Test
 	public void aFamilyWithNoBoldFace() throws Exception {
 		assertTrue(Mapper.hasBoldFace("Calibri"));

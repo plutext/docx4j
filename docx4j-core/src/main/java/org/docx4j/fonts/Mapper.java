@@ -297,7 +297,7 @@ public abstract class Mapper {
 			bold = pf.isNoBoldFace() ? SYNTHETIC : faceName(getBoldForm(documentFont, pf));
 			italic = faceName(getItalicForm(documentFont, pf));
 			boldItalic = faceName(getBoldItalicForm(documentFont, pf));
-			factor = WidthFactors.factorFor(documentFont, pf.getName());
+			factor = widthFactorFor(documentFont, pf.getName());
 		}
 		decision.complete(pf, bold, italic, boldItalic, lineBox(documentFont), factor);
 	}
@@ -966,9 +966,25 @@ public abstract class Mapper {
 
     /**
      * Whether docx4j's tables know this family: MicrosoftFonts.xml, word-line-metrics
-     * (512 Microsoft and Office cloud families), FontSubstitutions.xml, or the class
-     * heuristic on its name.  A known family the machine lacks is substituted for its
-     * widths; an unknown one is what Word could not find either.
+     * (512 Microsoft and Office cloud families) or FontSubstitutions.xml.  A known family
+     * the machine lacks is substituted for its widths; an unknown one is what Word could
+     * not find either.
+     *
+     * <p>"Known" has to mean what the passes before {@link #addWordDefaultSubstitutes}
+     * can act on, which is {@link FontFallback#substitutionClass} - <b>not</b>
+     * {@link FontFallback#classOf}, which will also guess a class from a name which merely
+     * ends in "Sans" or "Serif".  The two disagreed, and a font they disagreed about was
+     * left with no face at all: measured on a corpus document whose Normal style is a
+     * corporate face called "...Sans...", classOf called it SANS so this pass stood back,
+     * while the class pass had nothing for it (selectByClass is null for such a name, a
+     * guess measured to be worth less than the document default), so it fell between the
+     * two and every one of its 9276 glyphs was drawn in the document default's serif.
+     * Word drew that document in Calibri, which is what the {@code w:family="swiss"} rule
+     * here gives.</p>
+     *
+     * <p>A family deliberately left to the document default - a condensed one, or one of
+     * {@code FontFallback}'s measured exceptions - is "known" for this purpose too: the
+     * measurement which put it there was that the document default beat a stand-in.</p>
      *
      * @since 17.1.1
      */
@@ -978,8 +994,8 @@ public abstract class Mapper {
     	if (org.docx4j.fonts.microsoft.MicrosoftFontsRegistry.getMsFonts().containsKey(name)) return true;
     	// the table's own families, not an alias another document registered in this JVM
     	if (WordLineMetrics.isTableFamily(name)) return true;
-    	if (FontFallback.classOf(name)!=FontFallback.FontClass.UNKNOWN) return true;
-    	return false;
+    	if (FontFallback.substitutionClass(name)!=FontFallback.FontClass.UNKNOWN) return true;
+    	return FontFallback.leftToTheDocumentDefault(name);
     }
 
     /**
@@ -1090,6 +1106,36 @@ public abstract class Mapper {
     	 * the East Asian chain hop - and the default pass then mapped it; before 17.1.1
     	 * the later put silently replaced Meiryo's box with Calibri's.  @since 17.1.1 */
     	lineMetricsAliases.putIfAbsent(key, value);
+    }
+
+    /**
+     * The measured width factor for this document font and the face it resolved to,
+     * following the <b>altName chain</b> where the document font has no row of its own.
+     *
+     * <p>{@link WidthFactors} is keyed on the name the measurement belongs to, which is the
+     * font <em>Word drew</em>.  Where the document names a font Word could not find and its
+     * {@code w:altName} chain says which font Word used instead, that is the name to look
+     * up, not the one in the run: a corpus document whose runs name a corporate face with
+     * {@code w:altName="Meiryo"} is drawn by Word in Meiryo, and a row keyed on the run's
+     * own name would have to be written again for every document which names a different
+     * corporate face over the same alternate.  docx4j already records that hop - it is what
+     * the line box follows ({@link #registerLineMetricsAlias}) - so the width follows it
+     * too.</p>
+     *
+     * <p>The face still has to be the one the factor was measured against
+     * ({@link WidthFactors#factorFor}), so where the machine <em>has</em> the aliased font
+     * and draws it, no factor is applied: it is the substitute which is the wrong width,
+     * not the font.</p>
+     *
+     * @since 17.1.1
+     */
+    public double widthFactorFor(String documentFont, String physicalFontName) {
+
+    	double factor = WidthFactors.factorFor(documentFont, physicalFontName);
+    	if (factor!=1) return factor;
+    	String family = lineMetricsFamily(documentFont);
+    	if (family==null || family.equalsIgnoreCase(documentFont)) return 1;
+    	return WidthFactors.factorFor(family, physicalFontName);
     }
 
     /**

@@ -128,6 +128,63 @@ public class GlyphCheck {
 		return hasRawCodepoint(t, cp, physicalFont.name);
 	}
 
+	/**
+	 * Whether a glyph of this font would be reported to a PDF reader as a <b>CJK
+	 * radical</b> rather than as the ideograph the document holds.
+	 *
+	 * <p>FOP takes a glyph's character from the first cmap segment which covers the glyph
+	 * ({@code MultiByteFont.findCharacterFromGlyphIndex}: "if more than one correspondence
+	 * exists, then the first one is returned"), and a CJK font maps a Kangxi radical and
+	 * the ideograph it is the radical of to one glyph - in Source Han Sans CN, U+2F63 and
+	 * U+751F are both glyph 18742.  The radical is the lower code point, so it is the one
+	 * FOP finds.  This reports whether that can happen in this font: whether a glyph of the
+	 * radical blocks (U+2E80-U+2FDF) is also reached from a code point outside them.</p>
+	 *
+	 * @param physicalFont the font
+	 * @return whether its reverse lookup can take a radical for an ideograph
+	 * @throws ExecutionException where loading the typeface failed
+	 * @since 17.1.1
+	 */
+	public static boolean reverseLookupTakesACjkRadical(PhysicalFont physicalFont)
+			throws ExecutionException {
+
+		return reverseLookupTakesACjkRadical(typefaceOrWarn(physicalFont));
+	}
+
+	/** As above, for a typeface already in hand.  @since 17.1.1 */
+	public static boolean reverseLookupTakesACjkRadical(Typeface t) {
+
+		if (!(t instanceof MultiByteFont)) return false;   // no layout tables, no round trip
+		org.docx4j.fonts.fop.fonts.CMapSegment[] cmap = ((MultiByteFont)t).getCMap();
+		if (cmap==null) return false;
+
+		java.util.List<org.docx4j.fonts.fop.fonts.CMapSegment> radicals
+				= new java.util.ArrayList<org.docx4j.fonts.fop.fonts.CMapSegment>();
+		for (org.docx4j.fonts.fop.fonts.CMapSegment seg : cmap) {
+			if (seg.getUnicodeEnd() >= RADICALS_START && seg.getUnicodeStart() <= RADICALS_END) {
+				radicals.add(seg);
+			}
+		}
+		if (radicals.isEmpty()) return false;
+
+		for (org.docx4j.fonts.fop.fonts.CMapSegment seg : cmap) {
+			if (seg.getUnicodeEnd() >= RADICALS_START && seg.getUnicodeStart() <= RADICALS_END) continue;
+			int start = seg.getGlyphStartIndex();
+			int end = start + (seg.getUnicodeEnd() - seg.getUnicodeStart());
+			for (org.docx4j.fonts.fop.fonts.CMapSegment r : radicals) {
+				int rStart = r.getGlyphStartIndex();
+				int rEnd = rStart + (r.getUnicodeEnd() - r.getUnicodeStart());
+				if (start <= rEnd && rStart <= end) return true;
+			}
+		}
+		return false;
+	}
+
+	/** CJK Radicals Supplement and Kangxi Radicals: the forms a CJK font draws with the
+	 *  ideograph's own glyph.  @since 17.1.1 */
+	private static final int RADICALS_START = 0x2E80;
+	private static final int RADICALS_END = 0x2FDF;
+
 	/** Whether the typeface itself maps this code point. */
 	private static boolean hasRawCodepoint(Typeface t, int cp, String fontName) {
 

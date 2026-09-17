@@ -69,8 +69,18 @@
       <substitute font="Carlito Regular" quality="metric" error="0.07% (probe fonts-light-bold)"/>
       <substitute font="Liberation Sans" quality="class"/>
     </font>
+    <!-- Caladea is Cambria's metric-compatible substitute by intent, and on some glyphs
+         it is exactly that - n 558, l 271, x 483, X 571 and i 277 are Cambria's own
+         numbers - but on the rest of the lower case it is not: e 441 against Cambria's
+         488, o 480 against 531, s 392 against 430, c 421 against 441, a 470 against 488,
+         t 325 against 338, m 813 against 832, and where Cambria's digits are tabular
+         (554 every one) Caladea's are proportional, its 1 measuring 362.  Measured on
+         Caladea 1.001 (the file docx4j ships and the one installed here) against the
+         Cambria 6.99 a corpus VM's Word draws.  So the substitution is by design, not by
+         metric, and it carries a width factor.  @since 17.1.1 -->
     <font name="Cambria">
-      <substitute font="Caladea Regular" quality="metric"/>
+      <substitute font="Caladea Regular" quality="measured"
+                  error="Cambria/Caladea 1.0494 over English letter frequencies; 1.0497 over the 14792 Cambria glyphs of one corpus document and 1.0383 over another's 1870; corrected by the width factor below"/>
       <substitute font="Liberation Serif" quality="class"/>
     </font>
     <font name="Calibri Light">
@@ -298,6 +308,8 @@
        font's name, with the FO layer's suffixes stripped. -->
   <widthFactors>
     <widthFactor font="Calibri Light" substituteFamily="Carlito" factor="0.987"/>
+    <widthFactor font="Meiryo" substituteFamily="Carlito" factor="1.21"/>
+    <widthFactor font="Cambria" substituteFamily="Caladea" factor="1.048"/>
   </widthFactors>
 
   <!-- ==== where to get a substitute, and what it carries ==== -->

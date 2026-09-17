@@ -422,6 +422,13 @@ public final class WordLayoutFixups {
 	 *  joins the runs of the first line (WordLineLayoutManager) */
 	public static final String HINT_LABEL_ASCENT = "docx4j-label-ascent";
 
+	/** on a list item's <b>label</b> block (XsltFOFunctions.createListBlock): the
+	 *  {@code w:suff} separator the level puts between the number and the text - "tab"
+	 *  or "space"; not written for "nothing".  Word writes that separator as a space
+	 *  glyph in the PDF's text layer, and the line manager puts it in ours (see
+	 *  {@code WordLayoutCustomizer.LABEL_SUFFIX_SPACE}).  @since 17.1.1 */
+	public static final String HINT_LABEL_SUFFIX = "docx4j-label-suffix";
+
 	/** on an fo:leader standing in for a w:tab (XsltFOFunctions.tabToFO): the line
 	 *  manager gives it its width.  @since 17.0.5 */
 	public static final String HINT_TAB = "docx4j-tab";
@@ -701,6 +708,20 @@ public final class WordLayoutFixups {
 				declared = true;
 			}
 			leader.setAttributeNS(ns, "docx4j:tab", kind);
+		}
+		// a list item's label block carries the w:suff separator, which the line manager
+		// writes into the text layer as Word's space glyph.  @since 17.1.1
+		for (Element block : elements(doc, "block")) {
+			String suffix = block.getAttribute(HINT_LABEL_SUFFIX);
+			if (suffix.length() == 0) continue;
+			block.removeAttribute(HINT_LABEL_SUFFIX);
+			if (ns == null) continue;
+			if (!declared) {
+				doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+				declared = true;
+			}
+			block.setAttributeNS(ns, "docx4j:"
+					+ org.docx4j.fop.wordlayout.WordLayoutElementMapping.LABEL_SUFFIX, suffix);
 		}
 		for (Element block : elements(doc, "block")) {
 			String tabs = block.getAttribute(HINT_TABS);
@@ -2659,6 +2680,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_BASELINE);
 			block.removeAttribute(HINT_LINE_RULE);
 			block.removeAttribute(HINT_LABEL_ASCENT);
+			block.removeAttribute(HINT_LABEL_SUFFIX);
 			block.removeAttribute(HINT_COLUMN_BREAK);
 			block.removeAttribute(HINT_BREAK_RUN);
 			block.removeAttribute(HINT_BREAK_DIRECT);
