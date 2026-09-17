@@ -142,6 +142,8 @@ public class Fonts {
         protected Boolean kerning;
         @XmlAttribute(name = "encoding-mode")
         protected String encodingMode;
+        @XmlAttribute(name = "advanced")
+        protected Boolean advanced;
 
         /**
          * Gets the value of the fontTriplet property.
@@ -265,6 +267,23 @@ public class Fonts {
 
         public void setEncodingMode(String value) {
             this.encodingMode = value;
+        }
+
+        /**
+         * FOP's advanced attribute (its default is true): false loads the font
+         * without its OpenType layout tables, so neither GSUB nor GPOS is applied
+         * to it.  Unlike encoding-mode="single-byte" it leaves the font's type
+         * alone, so it is the one form a CFF-flavoured or CID font can take; see
+         * FopConfigUtil.
+         *
+         * @since 17.1.1
+         */
+        public Boolean isAdvanced() {
+            return advanced;
+        }
+
+        public void setAdvanced(Boolean value) {
+            this.advanced = value;
         }
 
 

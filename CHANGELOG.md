@@ -200,6 +200,35 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A CJK character reaches the PDF's text layer as itself. Two defects, both of the text
+  layer alone - the glyph on the page was right either way - measured against Word's own
+  PDFs of three corpus documents whose East Asian font is not installed here. (1) An
+  ideograph came out as a Kangxi radical. FOP runs a font's OpenType layout over
+  characters: it maps the characters to glyphs, substitutes, and maps the glyphs back to
+  characters, taking each glyph's character from the first cmap segment which covers it. A
+  CJK font maps a radical and the ideograph it is the radical of to one glyph - in Source
+  Han Sans CN, U+2F63 and U+751F are both glyph 18742 - and the radical is the lower code
+  point, so the round trip replaces the ideograph with it. Nothing in such a font's layout
+  applies to horizontal text of its own region, and turning it off changes no glyph
+  (measured through FOP itself: identical glyph indices, positions and advances with the
+  features on and off, and only the ToUnicode differs), so a font whose reverse lookup can
+  take a radical for an ideograph is now declared with FOP's advanced="false" - and docx4j
+  applies that attribute itself, because FOP drops it wherever a resource resolver is
+  given, which is every PDF run. (2) A fullwidth comma came out as "#", FOP's not-found
+  character, on the page and in the text layer both: an East Asian punctuation mark is
+  Character.UnicodeScript.COMMON, which counted as always covered, so a span holding one
+  alone - a run of its own between two East Asian runs, which is how a document commonly
+  writes it - never reached the glyph-coverage pass and stayed in the Latin substitute its
+  East Asian document font had been given. Such a mark is now looked at like any other
+  character, and where it is uncovered and stands alone it takes the face the document
+  font's own characters are being drawn in, as its neighbours within a span already did.
+  Over three corpora: 163 radicals and 36 hashes on one document, 116 and 26 on a second, 7
+  and 3 on a third are now 0, as Word's are; line parity 0.5795 to 0.8821, 0.2973 to 0.6757
+  and 0.9197 to 0.9416, +79 matched lines with nothing worse and no page count moved; the
+  fonts-space-cjk probe goes from 0.1667 to 1.0000. docx4j.convert.out.fo.cjkAdvancedFeatures=true
+  restores FOP's layout for such a font; the declaration can be dropped when a FOP which
+  keeps the original characters ships (CR-001 batch 45).
+
 - Every tab leader is drawn as a run of its own character, as Word draws it. XSL FO's
   leader-pattern offers dots and rule and no other repeating glyph, so w:leader="underscore",
   "hyphen" and "heavy" asked FOP for a rule: a drawn path of the right length on the right line, but

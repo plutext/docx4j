@@ -96,9 +96,38 @@ public class FontFallback {
 		if (codePoints==null) return false;
 		for (int cp : codePoints) {
 			if (isSymbol(cp) || isEmoji(cp)) return true;
+			if (isEastAsianForm(cp)) return true;
 			if (!ALWAYS_COVERED.contains(scriptOf(cp))) return true;
 		}
 		return false;
+	}
+
+	/**
+	 * The East Asian punctuation and form blocks, which are
+	 * {@code Character.UnicodeScript.COMMON} - a fullwidth comma U+FF0C, an ideographic
+	 * comma U+3001, a fullwidth colon U+FF1A - and which a Latin face does not have.
+	 *
+	 * <p>Being COMMON they counted as always covered, so a span holding one of them alone
+	 * - a run of its own, which is how a document commonly writes the punctuation between
+	 * two East Asian runs - never reached the coverage pass at all, and stayed in the
+	 * Latin substitute its East Asian document font had been given.  FOP then painted its
+	 * {@code NOT_FOUND} glyph: measured on a corpus document whose East Asian font is not
+	 * installed here, 25 fullwidth commas came out as <code>#</code> on the page and in
+	 * the text layer both.  This is the same case the symbol blocks were given a group of
+	 * their own for in 17.1.0 (see {@link #isSymbol}).</p>
+	 *
+	 * <p>U+2E80-U+33FF is the radicals, Kangxi, CJK punctuation, kana, bopomofo, Hangul
+	 * compatibility jamo, strokes and the enclosed/compatibility blocks; U+FE10-U+FE4F the
+	 * vertical and compatibility forms; U+FF00-U+FFEF the halfwidth and fullwidth ones.
+	 * The characters of these blocks which a span's own font <em>does</em> cover keep it,
+	 * as every other character does, so this only lets the pass look.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static boolean isEastAsianForm(int cp) {
+		return (cp>=0x2E80 && cp<=0x33FF)
+				|| (cp>=0xFE10 && cp<=0xFE4F)
+				|| (cp>=0xFF00 && cp<=0xFFEF);
 	}
 
 	/** U+1F000-U+1FAFF, the emoji blocks (COMMON, like the symbols, and like them a

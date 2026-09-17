@@ -58,9 +58,18 @@ public class WordWidthsFontCollection implements FontCollection {
 			String internalName = "F" + num;
 			num++;
 
+			/* FOP drops the per-font "advanced" attribute wherever a resource resolver
+			 * is given, which is every PDF run (LazyFont's constructor: "if
+			 * (resourceResolver != null) this.useAdvanced = useComplexScripts"), so a
+			 * font declared with advanced="false" has its OpenType layout read and
+			 * applied all the same.  The flag is passed in here instead, which is where
+			 * FOP reads it from; complex scripts still have to be on for the run's font
+			 * to shape at all.  @since 17.1.1 */
+			boolean advanced = useComplexScripts && configFontInfo.getAdvanced();
+
 			LazyFont font = WordGlyphWidths.isEnabled()
-					? new WordWidthsLazyFont(configFontInfo, uriResolver, useComplexScripts)
-					: new LazyFont(configFontInfo, uriResolver, useComplexScripts);
+					? new WordWidthsLazyFont(configFontInfo, uriResolver, advanced)
+					: new LazyFont(configFontInfo, uriResolver, advanced);
 			fontInfo.addMetrics(internalName, font);
 
 			List<FontTriplet> triplets = configFontInfo.getFontTriplets();

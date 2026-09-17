@@ -235,6 +235,9 @@ public class FopConfigUtil {
 			log.warn("No fonts configured!");
 		} else {
 			for (Font entry : mergeByEmbedUrl(fontEntries) ) {
+				if (mustNotUseOpenTypeLayout(entry)) {
+					entry.setAdvanced(Boolean.FALSE);
+				}
 				rendererFonts.getFont().add(entry);
 				if (!kerning()) {
 					rendererFonts.getFont().add(kernedTwin(entry));
@@ -246,6 +249,85 @@ public class FopConfigUtil {
 			}
 		}
 		return rendererFonts;
+	}
+
+	/**
+	 * Leave FOP to apply the OpenType layout features to a CJK font, as it did before
+	 * 17.1.1 - which costs the text layer the characters below, so this is off by
+	 * default.
+	 *
+	 * @since 17.1.1
+	 */
+	private static boolean cjkAdvancedFeatures() {
+		return Docx4jProperties.getProperty("docx4j.convert.out.fo.cjkAdvancedFeatures", false);
+	}
+
+	/**
+	 * Whether this font must be declared with FOP's OpenType layout turned off, so that
+	 * the PDF's text layer says what the document says.
+	 *
+	 * <p>FOP runs a substituted run through its layout tables as <em>characters</em>: it
+	 * maps the characters to glyphs, substitutes, and maps the glyphs back to characters
+	 * ({@code MultiByteFont.performSubstitution}, whose {@code mapGlyphsToChars} takes
+	 * each glyph's character from the first cmap segment which covers it -
+	 * {@code findCharacterFromGlyphIndex}, "if more than one correspondence exists, then
+	 * the first one is returned").  A CJK font maps a Kangxi radical and the ideograph it
+	 * is the radical of to <b>one glyph</b> - in Source Han Sans CN, U+2F63 and U+751F are
+	 * both glyph 18742 - and the radical is the lower code point, so the round trip
+	 * replaces the ideograph with the radical.  The right glyph is still drawn; what
+	 * changes is the character, and it is the character which reaches the PDF's ToUnicode
+	 * map, so the text cannot be extracted, searched or read out.  Measured on a real
+	 * document: an ideograph which shares its glyph with a radical came out of the PDF as
+	 * that radical, on 110 lines of two documents of one corpus.</p>
+	 *
+	 * <p>Nothing in a CJK font's layout tables applies to horizontal text of the font's
+	 * own region (vert and vrt2 are for vertical writing, and locl selects the region the
+	 * face is already for), so turning them off changes no glyph: measured on the five
+	 * characters above through FOP itself, the glyph indices, their positions and their
+	 * advances are identical with the features on and off, and only the ToUnicode differs.
+	 * This is the same trade {@link #noLigaTwin} makes for a Latin font, and the reason is
+	 * the same one; it is expressed with FOP's per-font "advanced" attribute rather than
+	 * with encoding-mode="single-byte" because a CFF-flavoured or CID font cannot be
+	 * declared single-byte (see that method).</p>
+	 *
+	 * <p>Drop this when a FOP which keeps the original characters ships (Enterprise CR-001
+	 * section 6.6).  {@code docx4j.convert.out.fo.cjkAdvancedFeatures=true} turns it off.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static boolean mustNotUseOpenTypeLayout(Font entry) {
+		if (cjkAdvancedFeatures()) return false;
+		PhysicalFont pf = byEmbedUrl(entry.getEmbedUrl());
+		if (pf==null) return false;
+		try {
+			return org.docx4j.fonts.GlyphCheck.reverseLookupTakesACjkRadical(pf);
+		} catch (Exception e) {
+			log.debug("couldn't read the cmap of " + entry.getEmbedUrl() + ": " + e.getMessage());
+			return false;
+		}
+	}
+
+	/** The physical font declared at this embed-url, or null (an embedded font, which is
+	 *  not in PhysicalFonts).  The bold and italic forms are declared from their own files
+	 *  and are not in the map under a name of their own, so they are asked for by form.
+	 *  @since 17.1.1 */
+	private static PhysicalFont byEmbedUrl(String embedUrl) {
+		if (embedUrl==null) return null;
+		for (PhysicalFont pf : PhysicalFonts.getPhysicalFonts().values()) {
+			if (isAt(pf, embedUrl)) return pf;
+			PhysicalFont form = PhysicalFonts.getBoldForm(pf);
+			if (isAt(form, embedUrl)) return form;
+			form = PhysicalFonts.getItalicForm(pf);
+			if (isAt(form, embedUrl)) return form;
+			form = PhysicalFonts.getBoldItalicForm(pf);
+			if (isAt(form, embedUrl)) return form;
+		}
+		return null;
+	}
+
+	private static boolean isAt(PhysicalFont pf, String embedUrl) {
+		return pf!=null && pf.getEmbeddedURI()!=null
+				&& embedUrl.equals(pf.getEmbeddedURI().toString());
 	}
 
 	/**
@@ -275,6 +357,7 @@ public class FopConfigUtil {
 		twin.setSubFont(font.getSubFont());
 		twin.setSimulateStyle(font.isSimulateStyle());
 		twin.setKerning(true);
+		twin.setAdvanced(font.isAdvanced());
 		for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : font.getFontTriplet()) {
 			twin.getFontTriplet().add(createFontTriplet(t.getName() + RunFontSelector.KERNED_SUFFIX, t.getStyle(), t.getWeight()));
 		}
@@ -637,6 +720,11 @@ public class FopConfigUtil {
 		 * not found. Substituting with any" and used a default font.  Its
 		 * triplets go onto the existing declaration instead. */
 		for (Font entry : mergeByEmbedUrl(fontEntries)) {
+			// the substitutes the coverage pass reaches for are declared here, and the
+			// CJK ones are exactly the fonts whose layout tables cost the text layer
+			if (mustNotUseOpenTypeLayout(entry)) {
+				entry.setAdvanced(Boolean.FALSE);
+			}
 			Font existing = find(renderer.getFonts().getFont(), entry, false);
 			if (existing==null) {
 				renderer.getFonts().getFont().add(entry);
@@ -645,6 +733,9 @@ public class FopConfigUtil {
 				}
 			} else {
 				mergeTriplets(existing, entry);
+				if (Boolean.FALSE.equals(entry.isAdvanced())) {
+					existing.setAdvanced(Boolean.FALSE);   // one file, one answer
+				}
 				if (!kerning()) {
 					Font twin = find(renderer.getFonts().getFont(), entry, true);
 					if (twin==null) {

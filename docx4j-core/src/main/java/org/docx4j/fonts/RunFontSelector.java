@@ -1111,8 +1111,16 @@ public class RunFontSelector {
     			// with its neighbours' substitute, not with whichever installed face covers it
     			// first by name (Noto Sans Mongolian, measured: CR-016 probe fonts-space-cjk (c))
     			pf = previous;
+    		} else if (isShared(group)) {
+    			// the same rule as above for a shared character standing alone in its run,
+    			// where there is no neighbour in the span to follow: the face this document
+    			// font's own characters are being drawn in
+    			pf = substituteAlreadyChosen(documentFont, cps[i]);
+    			if (pf==null) pf = chosen.get(group);
+    			if (pf==null) pf = lastResortFor(documentFont, group, cps[i]);
     		} else {
     			pf = chosen.get(group);
+    			if (pf==null) pf = lastResortFor(documentFont, group, cps[i]);
     		}
     		assigned[i] = pf;
     		if (pf!=null) any = true;
@@ -1162,6 +1170,52 @@ public class RunFontSelector {
     	if (parent==null) return;
     	for (Node c : siblings) parent.insertBefore(c, span);
     	parent.removeChild(span);
+    }
+
+    /**
+     * The face for one character of a group no single face could cover.
+     *
+     * <p>{@link FontFallback#selectCovering} answers for a whole group at once, and
+     * where nothing covers all of it the answer is null - which used to leave every
+     * character of the group in the span's own font, including the ones that font cannot
+     * draw.  FOP then draws its not-found character: measured on a corpus document, a
+     * fullwidth comma (U+FF0C) whose run's font is an East Asian one docx4j substituted
+     * with a Latin face came out of the PDF as <code>#</code>, on the page and in the text
+     * layer both, 25 times in the one document.</p>
+     *
+     * <p>A <b>shared</b> character (a comma, a space, a digit) takes the substitute this
+     * document font's own characters were given where that covers it - the same answer
+     * {@code previous} gives a character standing between two of them, for one standing
+     * alone in its run - and anything else is asked for on its own.</p>
+     *
+     * @since 17.1.1
+     */
+    private PhysicalFont lastResortFor(String documentFont, String group, int cp) {
+
+    	if (isShared(group)) {
+    		PhysicalFont own = substituteAlreadyChosen(documentFont, cp);
+    		if (own!=null) return own;
+    	}
+    	return fallbackFor(documentFont, group + " " + Integer.toHexString(cp),
+    			java.util.Collections.singletonList(Integer.valueOf(cp)));
+    }
+
+    /** The substitute a non-shared group of this document font already resolved to, where
+     *  it covers this character: what the document font's own script is being drawn in.
+     *  @since 17.1.1 */
+    private PhysicalFont substituteAlreadyChosen(String documentFont, int cp) {
+
+    	String prefix = documentFont + " ";
+    	for (java.util.Map.Entry<String, PhysicalFont> e : fallbackByScript.entrySet()) {
+    		if (e.getValue()==null || !e.getKey().startsWith(prefix)) continue;
+    		if (isShared(e.getKey().substring(prefix.length()))) continue;
+    		try {
+    			if (GlyphCheck.hasCodepoint(e.getValue(), cp)) return e.getValue();
+    		} catch (java.util.concurrent.ExecutionException ex) {
+    			// can't read that face; try the next
+    		}
+    	}
+    	return null;
     }
 
     /** Characters a script shares with its neighbours (spaces, digits, punctuation). */
