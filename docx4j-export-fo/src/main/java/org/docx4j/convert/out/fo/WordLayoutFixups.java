@@ -1415,6 +1415,12 @@ public final class WordLayoutFixups {
 		double distL = Double.parseDouble(dist[0]), distR = Double.parseDouble(dist[1]),
 				distB = Double.parseDouble(dist[3]);
 
+		if (whollyOffThePage(g, pageY, off, h)) {
+			log.debug("An anchored picture is wholly off the page; Word paints none of it");
+			g.getParentNode().removeChild(g);
+			return;
+		}
+
 		Element para = enclosingParagraph(g);
 		if (para == null) return; // leave it inline
 
@@ -2430,6 +2436,12 @@ public final class WordLayoutFixups {
 		boolean pageY = y.startsWith("page:");
 		double off = lengthPt(y.substring(y.indexOf(':') + 1));
 
+		if (whollyOffThePage(box, pageY, off, h)) {
+			log.debug("A positioned shape is wholly off the page; Word paints none of it");
+			box.getParentNode().removeChild(box);
+			return;
+		}
+
 		Element para = enclosingBlock(box);
 		if (para == null) {
 			log.warn("No block to place a text box in; it will not be painted");
@@ -2690,6 +2702,83 @@ public final class WordLayoutFixups {
 	 *  it is moving elements about (Xerces invalidates its NodeList cache on every
 	 *  change).  Measured on a 335-page mail merge of 2345 text boxes, the scan turned
 	 *  the export from under 300s into over 600s.</p> */
+	/**
+	 * Whether the whole of a positioned object lies off the paper, where Word paints
+	 * <b>nothing at all</b> - not a clipped edge, not a glyph.
+	 *
+	 * <p>Measured on the {@code footer-offpage-shape} probe, whose footer holds three bare
+	 * {@code w:pict}/{@code v:rect} shapes with
+	 * {@code mso-position-vertical-relative:text} at {@code margin-top} 900pt, 719.35pt
+	 * and -300pt on an A4 page (595.44 x 841.92, 72pt margins).  Read page by page with
+	 * {@code mutool draw -F trace} and {@code pdftotext}, Word's PDF carries <b>not one
+	 * glyph</b> of the 900pt shape (past the paper's whole height) or of the 719.35pt one
+	 * (past the paper's foot), on any of its three pages, while the -300pt shape - the
+	 * same shape, on the page - is drawn on all three at y = 493.6, and the footer's own
+	 * line at 766.52.  So the omission is about position, not about bare VML.  docx4j
+	 * painted all three: the two off-page shapes at 657.1pt and 824.3pt below the page
+	 * bottom, six text lines no page of Word's has.</p>
+	 *
+	 * <p><b>"Off" is the paper's edge</b>, not the margin: the -300pt shape is drawn where
+	 * it overprints the body text, far above the footer it is anchored in, and Word draws
+	 * it whole.  The test is therefore against 0 and the page height.</p>
+	 *
+	 * <p><b>Wholly, as a number.</b> A page-relative object is exact: its top is its own
+	 * offset, so it is off when {@code top >= pageHeight} or {@code top + height <= 0}.  A
+	 * <em>paragraph</em>-relative object (which is what Word writes for a footer shape) has
+	 * no known y before layout - except in a header or footer, where the region bounds it:
+	 * a footer's paragraph begins at or below the body's bottom edge, so the shape's top is
+	 * at least {@code pageHeight - marginBottom + offset} and the shape is off the page when
+	 * {@code offset >= marginBottom}; a header's begins at or above the body's top edge, so
+	 * the shape's bottom is at most {@code marginTop + offset + height} and it is off when
+	 * that is {@code <= 0}.  Both are bounds on the side that makes the answer certain: a
+	 * shape this predicate suppresses cannot be on the page.  In the body, where no bound
+	 * is available, nothing is suppressed.</p>
+	 *
+	 * <p><b>A partly-off shape is left alone</b>, and the golden does not settle what Word
+	 * does with one - none of its three shapes straddles an edge.  Word clips (the reading
+	 * of item 12 is "the fix is a clip, not a reposition"), and so does every PDF viewer:
+	 * content outside the media box is not shown, so painting a straddling shape whole
+	 * gives Word's picture of it.  Only the certainly-invisible are dropped.</p>
+	 *
+	 * @param el the object's own element, still in the tree
+	 * @param pageY whether its offset is measured from the page's top
+	 * @param off that offset in points
+	 * @param h the object's height in points
+	 * @since 17.1.1 (CR-001 batch 47 item 2)
+	 */
+	private static boolean whollyOffThePage(Element el, boolean pageY, double off, double h) {
+		Element rb = regionBody(el);
+		if (rb == null || !(rb.getParentNode() instanceof Element)) return false;
+		double pageH = lengthPt(((Element) rb.getParentNode()).getAttribute("page-height"));
+		if (pageH <= 0) return false;
+		if (pageY) return off >= pageH || off + h <= 0;
+		String flow = staticContentFlowName(el);
+		if (flow == null) return false; // in the body: the paragraph's y is not known here
+		if (flow.startsWith("xsl-region-after")) {
+			double marginBottom = lengthPt(rb.getAttribute("margin-bottom"));
+			return marginBottom > 0 && off >= marginBottom;
+		}
+		if (flow.startsWith("xsl-region-before")) {
+			double marginTop = lengthPt(rb.getAttribute("margin-top"));
+			return marginTop > 0 && marginTop + off + h <= 0;
+		}
+		return false;
+	}
+
+	/** The {@code flow-name} of the {@code fo:static-content} this element is in - a header
+	 *  or footer region - or null where it is in the body.  @since 17.1.1 */
+	private static String staticContentFlowName(Element el) {
+		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
+			Element e = (Element) n;
+			if (isFo(e, "static-content")) {
+				String flow = e.getAttribute("flow-name");
+				return flow.length() == 0 ? null : flow;
+			}
+			if (isFo(e, "flow")) return null;
+		}
+		return null;
+	}
+
 	private static Element regionBody(Element el) {
 		Element sequence = null;
 		for (Node n = el; n instanceof Element; n = n.getParentNode()) {

@@ -200,6 +200,16 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A positioned shape whose whole box lies off the paper is no longer painted, which is what Word
+  does with one. Measured on a probe whose footer holds three VML rectangles with
+  mso-position-vertical-relative:text at margin-top 900pt, 719.35pt and -300pt on an A4 page:
+  Word's PDF carries not one glyph of the first two on any page, and draws the third - the same
+  shape, on the page - on all three. "Off" is the paper's edge, not the margin, and a shape only
+  partly off is painted whole, as Word clips it. A page-positioned shape is judged exactly; a
+  paragraph-positioned one only in a header or footer, whose region bounds the paragraph it is
+  anchored in - in the body the paragraph's own y is not known before layout. Two corpus
+  documents stop painting 138 lines of text no page of Word's carries, one of them 703pt below
+  the page's foot (CR-001 batch 47).
 - A toggle property - bold, italic, caps, small caps, strike, hidden and the rest of the
   twelve ECMA-376-1 17.7.3 names - set at two levels of the style hierarchy now cancels as
   Word does: a table style against a paragraph style, and a paragraph style against a
