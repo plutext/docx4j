@@ -200,6 +200,18 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The tab which follows a numbering label goes to the first of {the level's own tab stops, the
+  paragraph's w:ind left} that lies past the label, and it moves the first line only - the lines
+  after it keep the paragraph's indent. Measured on a probe whose level 0 is w:ind left 720
+  hanging 360 with a 560-twip stop: Word puts the paragraph's first line at 28.11pt from the text
+  origin - the stop - and its second and third lines at 36.03pt, which is w:ind left, in a table
+  cell and in the body alike; a stop past w:ind left (1000 twips there) is ignored, as is a level
+  with no stop. docx4j sent every numbering tab to w:ind left, so such a first line began 7.8pt
+  to the right of Word's and held one word fewer. Only a hanging indent is read this way: a
+  paragraph indented by a w:firstLine has no w:ind left for the tab to stop short of, and its
+  label already goes to the first stop past it. The stop's own w:leader is not yet painted over
+  that tab: Word draws fourteen dots from the label's end to a stop 43.6pt past it, and docx4j
+  draws none (CR-001 batch 47).
 - A positioned shape whose whole box lies off the paper is no longer painted, which is what Word
   does with one. Measured on a probe whose footer holds three VML rectangles with
   mso-position-vertical-relative:text at margin-top 900pt, 719.35pt and -300pt on an A4 page:
