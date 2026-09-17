@@ -105,15 +105,21 @@ public class TogglePropertiesTest {
 		assertTrue(StyleUtil.toggle(on(), twoLevels, null).isVal());
 	}
 
-	/** The one place this is narrower than the letter of 17.7.3, recorded on
-	 *  {@link StyleUtil#toggle}: read strictly, false XOR true would be true, and a level
-	 *  stating a toggle false could not turn off a lower true.  Here it is applied as it
-	 *  stands, as it always has been - nothing in the corpora tells the two apart. */
+	/** An explicit false at a level is a term of the XOR like any other value, which is
+	 *  what Word's {@code toggle-levels} golden says (it draws a run in a character style
+	 *  stating {@code <w:b w:val="0"/>} over a bold paragraph style BOLD).  17.1.1 shipped
+	 *  the other reading - the false applied as it stands - and the golden refuted it
+	 *  (CR-001 batch 47 item 0b). */
 	@Test
-	public void aLevelStatingFalseIsAppliedAsItStands() {
-		assertFalse(StyleUtil.toggle(off(), on(), null).isVal());
-		assertFalse(StyleUtil.toggle(off(), off(), null).isVal());
-		assertFalse(StyleUtil.toggle(off(), null, null).isVal());
+	public void aLevelStatingFalseContributesFalseToTheXor() {
+		assertTrue("false XOR true = true: the lower level stands",
+				StyleUtil.toggle(off(), on(), null).isVal());
+		assertFalse("false XOR false = false", StyleUtil.toggle(off(), off(), null).isVal());
+		// 17.7.3's XOR over a single level is that level's own value, and an absent property
+		// is not the same as a false one: the exporters then write no font-weight at all and
+		// an HTML span inherits its cell's or paragraph's
+		assertFalse("the only level stating it states false, so false stands",
+				StyleUtil.toggle(off(), null, null).isVal());
 	}
 
 	@Test
@@ -131,11 +137,13 @@ public class TogglePropertiesTest {
 		assertFalse(StyleUtil.toggle(on(), on(), off()).isVal());
 	}
 
-	/** The second narrowing on {@link StyleUtil#toggle}: the document defaults' rule sits
-	 *  under "if the value appears at multiple levels", so a boundary whose upper level
-	 *  says nothing about the property is no level and does not raise it.  Otherwise a
-	 *  paragraph style's explicit false under bold defaults would come back bold the
-	 *  moment a run named any character style, however silent. */
+	/** The narrowing on {@link StyleUtil#toggle} which Word's {@code toggle-levels-docdefaults}
+	 *  golden <b>confirms</b>: the document defaults' rule sits under "if the value appears
+	 *  at multiple levels", so a boundary whose upper level says nothing about the property
+	 *  is no level and does not raise it.  Word draws bold defaults with a paragraph style
+	 *  stating {@code <w:b w:val="0"/>} regular, and regular still when the run names a
+	 *  character style which sets only {@code w:color} - where the letter would have made
+	 *  that silent style a level and come out bold. */
 	@Test
 	public void aSilentUpperLevelDoesNotLetTheDocumentDefaultsForceTrueBack() {
 		assertFalse(StyleUtil.toggle(null, off(), on()).isVal());
@@ -229,11 +237,15 @@ public class TogglePropertiesTest {
 				effective(pkg, "BoldChild", "<w:rStyle w:val=\"Strong\"/>").getB().isVal());
 	}
 
+	/** Case 1 of the {@code toggle-levels} golden, and the one reading of 17.1.1's two that
+	 *  Word refutes: a character style stating {@code <w:b w:val="0"/>} over a bold
+	 *  paragraph style is BOLD in Word's PDF ({@code TimesNewRomanPS-BoldMT}), because the
+	 *  false is a term of the XOR and false XOR true = true.  A run that wants the weight
+	 *  off has to say so in direct formatting, which is not a level (below). */
 	@Test
-	public void aCharacterStyleStatingFalseTurnsOffAParagraphStylesBold() throws Exception {
-		// the narrowing of StyleUtil.toggle: an explicit false is applied, not XORed
+	public void aCharacterStyleStatingFalseDoesNotUnboldABoldParagraphStyle() throws Exception {
 		WordprocessingMLPackage pkg = pkg("<w:p/>");
-		assertFalse(effective(pkg, "BoldPara", "<w:rStyle w:val=\"NotStrong\"/>").getB().isVal());
+		assertTrue(effective(pkg, "BoldPara", "<w:rStyle w:val=\"NotStrong\"/>").getB().isVal());
 	}
 
 	@Test

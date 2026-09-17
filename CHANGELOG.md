@@ -203,8 +203,12 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 - A toggle property - bold, italic, caps, small caps, strike, hidden and the rest of the
   twelve ECMA-376-1 17.7.3 names - set at two levels of the style hierarchy now cancels as
   Word does: a table style against a paragraph style, and a paragraph style against a
-  character style. Direct formatting is unchanged, and so is a style's w:basedOn chain,
-  which is one level. In the resolver, so HTML gets it too (CR-001 batch 46).
+  character style. An explicit false at a style level is a term of that XOR like any other
+  value, so it leaves a lower true standing rather than switching the property off: Word
+  draws a run in a character style stating w:b w:val="0" over a bold paragraph style bold.
+  Direct formatting is unchanged and still wins outright, and so is a style's w:basedOn
+  chain, which is one level. In the resolver, so HTML gets it too (CR-001 batch 46; the
+  explicit false corrected against Word's golden in CR-001 batch 47).
 - A numbered paragraph's text no longer inherits the paragraph mark's run properties -
   its bold, italic or colour - through the list item body. Only the size reaches the
   body, which is what the label and the body need in common to sit on one baseline
