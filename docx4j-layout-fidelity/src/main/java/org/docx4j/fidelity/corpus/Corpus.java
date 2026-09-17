@@ -4841,6 +4841,91 @@ public final class Corpus {
 		}));
 
 		/*
+		 * P5a recut (ledger6 section 5 item 8).  The first probe settled nothing.  Its
+		 * variant A declared w:trHeight 800 - 40pt - against 41.76pt of content, so the
+		 * height never bound and A was a copy of B; and w:trHeight, w:cantSplit and a row
+		 * taller than the whole body all paginated identically on both sides, to 0.73pt
+		 * over 548 lines.  What corpus documents 2451 and 13743 do that the first probe
+		 * did not test is a declared row height LARGER than the row's own content, a table
+		 * whose TOTAL height rather than one row's decides, and a table nested one level
+		 * inside another table's cell - a fo:table inside a table-cell being the one
+		 * container FOP will not break.
+		 *
+		 * One document, five variants, each on a page of its own.  Every row carries the
+		 * first probe's own content, unchanged so that its height stays the measured
+		 * 41.76pt (a tag cell, "A r07", and a sentence three lines long), and declares
+		 * w:trHeight 1200 = 60pt, half as tall again as that content, so this time the
+		 * height is what binds:
+		 *
+		 *   A  30 rows, w:trHeight 1200 with NO w:hRule (which is Word's atLeast)
+		 *   B  the same 30 rows with w:hRule="atLeast" stated
+		 *   C  the same 30 rows with w:hRule="exact"
+		 *   D  18 rows - the count the corpus tables carry - started at the PAGE TOP, so
+		 *      that the table's total height, 1080pt against a 697.9pt body, decides
+		 *   E  30 such rows nested in the single cell of a one-cell outer table, which is
+		 *      the shape 2451 and 13743 may have; the outer table declares zero cell
+		 *      margins so the nested table's columns are variant A's exactly
+		 *
+		 * A, B, C and E are each preceded by twenty filler paragraphs of exact 24pt lines
+		 * - 480pt of the 697.9pt body - so each starts a little over two thirds of the way
+		 * down its page with about 218pt left, exactly where the first probe's tables
+		 * started; D follows its page break with nothing at all.  (The page break's own
+		 * empty paragraph takes a line at the top of the new page in Word always, and in
+		 * our render only where a table rather than a paragraph follows it - our exporter
+		 * folds the break onto the next block when it can - which is about 25pt.  It
+		 * changes no row here: every variant puts the same row on the same page with the
+		 * lead-in and without it, the tightest margin being D's 7pt.)  Read off the
+		 * golden: which row each page break falls on, how tall Word makes a row under each
+		 * w:hRule, and whether Word divides the nested table at all.
+		 */
+		PROBES.add(new Probe("table-rowsplit-2",
+				"rows declaring w:trHeight 1200 - half as tall again as their own content "
+				+ "- with no w:hRule, with w:hRule=\"atLeast\" and with w:hRule=\"exact\", "
+				+ "an 18-row table of the same rows started at the page top, and 30 of them "
+				+ "nested in the single cell of a one-cell table", () -> {
+			Doc d = Doc.create(15);
+			d.para("Five tables whose rows all declare w:trHeight 1200 - 60pt - over 41.76pt "
+					+ "of content. Every row's first cell names its variant and row number, "
+					+ "so the row a page break falls on can be read off the text layer.")
+					.after(240).add();
+			String[] names = { "A", "B", "C", "D", "E" };
+			for (int v = 0; v < names.length; v++) {
+				String name = names[v];
+				org.docx4j.wml.STHeightRule rule = "B".equals(name) ? org.docx4j.wml.STHeightRule.AT_LEAST
+						: "C".equals(name) ? org.docx4j.wml.STHeightRule.EXACT : null;
+				int rows = "D".equals(name) ? 18 : 30;
+				d.pageBreak();
+				// D starts at the page top; the others two thirds of the way down it
+				if (!"D".equals(name)) {
+					for (int i = 1; i <= 20; i++) {
+						d.para(name + " filler " + String.format("%02d", i) + " of 20, an exact "
+								+ "24pt line; twenty of them fill 480pt of the 697.9pt body")
+								.line(480, STLineSpacingRule.EXACT).add();
+					}
+				}
+				Doc.Table t = new Doc.Table(1600, 7400).fixedLayout();
+				for (int r = 1; r <= rows; r++) {
+					String tag = name + " r" + String.format("%02d", r);
+					t.rowOf(1200, rule, t.cell(tag, SERIF, 24, 1, 1600),
+							t.cell(tag + ": this cell holds a sentence which is long "
+									+ "enough to take two lines in a column 370 points "
+									+ "wide, so a row which Word divides shows one of "
+									+ "its lines on each page.", SERIF, 24, 1, 7400));
+				}
+				if ("E".equals(name)) {
+					Doc.Table outer = new Doc.Table(9000).fixedLayout().cellMargins(0, 0);
+					outer.rowOf(null, null, outer.cellWith(9000, t.build(),
+							"E after the nested table", SERIF, 24));
+					d.add(outer.build());
+				} else {
+					d.add(t.build());
+				}
+				d.para("after table " + name + ". " + prose(1, v)).before(240).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
 		 * P10 (ledger6 section 5 item 9): which of w:tblGrid and the row's own w:tcW Word
 		 * lays a table out on.  Corpus 4025's description column is 106.7pt against Word's
 		 * 183.7 and starts 40.7pt to the right, and takes 38 lines where Word takes 19;
@@ -5098,6 +5183,74 @@ public final class Corpus {
 		}));
 
 		/*
+		 * The leader question proper (ledger6 section 5 item 11, second half), which the
+		 * first probe could not reach.  Its honoured stop was at 560 twips over a label
+		 * ending at 540, so the tab opened 1.78pt where a Liberation Serif period advances
+		 * 3.0pt: Word painted no dot, we painted no dot, and nothing was learnt about a
+		 * leader of countable length.  What the golden did settle is the stop's own rule -
+		 * the numbering tab goes to the first of {the level's explicit stops, w:ind left}
+		 * past the end of the label - so a stop which is to be used has to fall SHORT of
+		 * w:ind left, and to be readable it has to open several points of advance.
+		 *
+		 * Two levels, each used once inside a table cell and once in the body as its
+		 * control.  Both declare w:ind w:left="2880" w:hanging="2520", so the label "1."
+		 * runs from 360 to 540 twips and the paragraph's own indent is at 2880:
+		 *
+		 *   numId 43  one left stop at 1440 with w:leader="dot" - past the label and 1440
+		 *             twips short of w:ind left, so by the rule above it is the stop the
+		 *             numbering tab uses, and it opens 900 twips = 45pt of advance, which
+		 *             is fifteen periods of the 12pt face
+		 *   numId 44  the same w:ind and no w:tabs at all: the numbering tab then runs to
+		 *             w:ind left, 2340 twips = 117pt of advance, and no leader is due
+		 *
+		 * The cell is 7000 twips rather than the first probe's 4500, because a 2880-twip
+		 * indent inside a 4500-twip cell would leave a wrapped line 70pt of measure and
+		 * the wrap, not the leader, would be what the golden showed.  Read off the golden:
+		 * how many dots Word paints over the 45pt advance, where the first glyph after the
+		 * tab sits at each level, and whether a wide numbering tab with no stop paints
+		 * anything at all.
+		 */
+		PROBES.add(new Probe("tab-leader-in-cell-2",
+				"a w:numPr paragraph whose level declares w:ind left 2880 hanging 2520 and "
+				+ "one w:leader=\"dot\" stop at 1440 twips - used, because it falls short "
+				+ "of w:ind left, and 45pt wide - and the same level with no stop at all, "
+				+ "each once inside a table cell and once in the body", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"43\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ leaderLevel(0, 1440, "dot", 2880, 2520) + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"44\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ leaderLevel(0, 0, null, 2880, 2520) + "</w:abstractNum>"
+					+ "<w:num w:numId=\"43\"><w:abstractNumId w:val=\"43\"/></w:num>"
+					+ "<w:num w:numId=\"44\"><w:abstractNumId w:val=\"44\"/></w:num>");
+			String[] what = {
+				"a dot leader on a stop at 1440 twips, 900 twips - 45 points - past the end "
+						+ "of the label and 1440 twips short of w:ind left",
+				"no tab stop in the level at all, so the numbering tab runs to w:ind left at "
+						+ "2880 twips, 2340 twips of advance past the label" };
+			for (int i = 0; i < what.length; i++) {
+				int numId = 43 + i;
+				d.para("L" + (i + 1) + ": w:numId " + numId + ", w:ind left 2880 hanging "
+						+ "2520, " + what[i] + ". The numbered paragraph is first inside a "
+						+ "table cell and then in the body.").before(i == 0 ? 0 : 240)
+						.after(120).add();
+				Doc.Table t = new Doc.Table(7000, 2000);
+				t.rowOf(null, null,
+						t.cellOf(7000, null, d.para("L" + (i + 1) + " in a cell: this "
+								+ "paragraph is long enough to wrap, so the golden shows "
+								+ "where its second line starts.").numPr(numId, 0).build()),
+						t.cellOf(2000, null, Doc.plainParagraph("L" + (i + 1) + " right cell",
+								SERIF, 24)));
+				d.add(t.build());
+				d.para("L" + (i + 1) + " in the body: this paragraph is long enough to wrap, "
+						+ "so the golden shows where its second line starts.")
+						.numPr(numId, 0).before(120).after(120).add();
+			}
+			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
 		 * 12363's first page (ledger6 section 5 item 12, first half): our body starts
 		 * 25.48pt below Word's on page 1.  Its first-page header holds a picture taller
 		 * than the w:header distance, and page-tall-header measures the same question for a
@@ -5325,10 +5478,20 @@ public final class Corpus {
 	/** Level 0 of a decimal list whose w:suff is a tab and whose own w:pPr carries one
 	 *  left tab stop at {@code stopTwips} with {@code leader} (or no w:tabs at all when
 	 *  stopTwips is 0), over Word's own w:ind left 720 hanging 360 - so the label "1."
-	 *  runs from 360 to 540 and the stop's advance past it is stopTwips - 540.  Element
-	 *  order follows CT_Lvl and CT_PPrGeneral, which JAXB needs.
+	 *  runs from 360 to 540 and the stop's advance past it is stopTwips - 540.
 	 *  @since 17.1.1 (CR-001 batch 47, the tab-leader-in-cell probe) */
 	private static String leaderLevel(int ilvl, int stopTwips, String leader) {
+		return leaderLevel(ilvl, stopTwips, leader, 720, 360);
+	}
+
+	/** {@link #leaderLevel(int, int, String)} over an explicit w:ind: the label runs from
+	 *  {@code leftTwips - hangingTwips} for its own width and the paragraph's indent is at
+	 *  {@code leftTwips}, so a stop between the two is the one the numbering tab uses and
+	 *  the advance it opens is measurable.  Element order follows CT_Lvl and
+	 *  CT_PPrGeneral, which JAXB needs.
+	 *  @since 17.1.1 (CR-001 batch 47, the tab-leader-in-cell-2 probe) */
+	private static String leaderLevel(int ilvl, int stopTwips, String leader, int leftTwips,
+			int hangingTwips) {
 		return "<w:lvl w:ilvl=\"" + ilvl + "\">"
 				+ "<w:start w:val=\"1\"/>"
 				+ "<w:numFmt w:val=\"decimal\"/>"
@@ -5338,7 +5501,7 @@ public final class Corpus {
 				+ "<w:pPr>"
 				+ (stopTwips <= 0 ? "" : "<w:tabs><w:tab w:val=\"left\" w:pos=\"" + stopTwips + "\""
 						+ (leader == null ? "" : " w:leader=\"" + leader + "\"") + "/></w:tabs>")
-				+ "<w:ind w:left=\"720\" w:hanging=\"360\"/>"
+				+ "<w:ind w:left=\"" + leftTwips + "\" w:hanging=\"" + hangingTwips + "\"/>"
 				+ "</w:pPr></w:lvl>";
 	}
 

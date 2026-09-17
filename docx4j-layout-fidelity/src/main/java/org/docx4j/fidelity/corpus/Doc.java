@@ -1478,9 +1478,18 @@ public final class Doc {
 
 		/** A cell holding a nested table (plus the mandatory trailing paragraph). */
 		public Tc cellWith(Tbl nested, String after, String font, int halfPts) {
+			return cellWith(null, nested, after, font, halfPts);
+		}
+
+		/**
+		 * A cell holding a nested table (plus the mandatory trailing paragraph), with an
+		 * explicit width in twips; null is auto.  A nested table's own columns can then
+		 * be stated against a cell of a known width rather than an autofit one.
+		 */
+		public Tc cellWith(Integer widthTwips, Tbl nested, String after, String font, int halfPts) {
 			Tc tc = F.createTc();
 			TcPr tcPr = F.createTcPr();
-			tcPr.setTcW(width(0, "auto"));
+			tcPr.setTcW(widthTwips == null ? width(0, "auto") : width(widthTwips, "dxa"));
 			tc.setTcPr(tcPr);
 			tc.getContent().add(nested);
 			tc.getContent().add(plainParagraph(after, font, halfPts));
