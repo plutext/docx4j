@@ -4761,6 +4761,434 @@ public final class Corpus {
 			d.para("after. " + prose(1)).add();
 			return d.pkg();
 		}));
+		/*
+		 * P5a (ledger6 section 5 item 8): a table our render puts wholly on one page where
+		 * Word breaks it.  Corpus document 2451's page 58 carries 439 lines to y=1750.71 on
+		 * a 792pt page where Word uses three pages, and 13743's page 22 carries 246 to
+		 * y=1701.5.  Neither docx has w:cantSplit and neither has w:tblpPr: the FO is a
+		 * plain fo:table whose table-rows each carry a height= taken from w:trHeight, so
+		 * what has to be settled is which of the four shapes below FOP will not break, and
+		 * what Word does with each of them.
+		 *
+		 * One document, four tables in sequence.  Each is preceded by twenty filler
+		 * paragraphs of exact 24pt lines - 480pt of the 697.9pt body (A4, 1in margins) - so
+		 * every table starts a little over two thirds of the way down its page with about
+		 * 218pt left, and a page break before each filler gives each variant a page of its
+		 * own to start on:
+		 *
+		 *   A  30 rows carrying w:trHeight 800 and NO w:hRule, which is 2451's shape: 40pt
+		 *      rows, taller than their own two lines of content, so the height is what binds
+		 *   B  the same 30 rows with no w:trHeight at all
+		 *   C  ten rows, of which row 6 holds sixty one-line paragraphs - one row whose own
+		 *      content (828pt) is taller than the whole page body
+		 *   D  A again, with w:cantSplit on every row
+		 *
+		 * Every row's first cell names its variant and row number ("A r07"), so the row a
+		 * page break falls on can be read off any extractor, and every other row's second
+		 * cell holds a sentence two lines long, so a row Word divides shows one of its
+		 * lines on each page.  Read off the golden: which row each page break falls on, and
+		 * whether Word ever splits inside a row.
+		 */
+		PROBES.add(new Probe("table-rowsplit",
+				"a 30-row table started two thirds of the way down its page, in four "
+				+ "variants: rows carrying w:trHeight 800 with no w:hRule, the same rows "
+				+ "with no w:trHeight at all, a ten-row table one of whose rows is taller "
+				+ "than the page body, and the first variant with w:cantSplit on every row",
+				() -> {
+			Doc d = Doc.create(15);
+			d.para("Four tables, each started two thirds of the way down a page of its own "
+					+ "by twenty filler paragraphs of exact 24pt lines. Every row's first "
+					+ "cell names its variant and row number, so the row a page break falls "
+					+ "on can be read off the text layer.").after(240).add();
+			String[] names = { "A", "B", "C", "D" };
+			for (int v = 0; v < names.length; v++) {
+				String name = names[v];
+				d.pageBreak();
+				for (int i = 1; i <= 20; i++) {
+					d.para(name + " filler " + String.format("%02d", i) + " of 20, an exact "
+							+ "24pt line; twenty of them fill 480pt of the 697.9pt body")
+							.line(480, STLineSpacingRule.EXACT).add();
+				}
+				Doc.Table t = new Doc.Table(1600, 7400).fixedLayout();
+				int rows = "C".equals(name) ? 10 : 30;
+				Integer height = ("B".equals(name) || "C".equals(name)) ? null : 800;
+				for (int r = 1; r <= rows; r++) {
+					String tag = name + " r" + String.format("%02d", r);
+					if ("C".equals(name) && r == 6) {
+						// the one row taller than the page body: sixty one-line paragraphs,
+						// 828pt of content against a 697.9pt body
+						P[] tall = new P[60];
+						for (int k = 0; k < tall.length; k++) {
+							tall[k] = Doc.plainParagraph(tag + " tall line "
+									+ String.format("%02d", k + 1) + " of 60", SERIF, 24);
+						}
+						t.rowOf(null, null, t.cell(tag, SERIF, 24, 1, 1600),
+								t.cellOf(7400, null, tall));
+					} else {
+						t.rowOf(height, null, t.cell(tag, SERIF, 24, 1, 1600),
+								t.cell(tag + ": this cell holds a sentence which is long "
+										+ "enough to take two lines in a column 370 points "
+										+ "wide, so a row which Word divides shows one of "
+										+ "its lines on each page.", SERIF, 24, 1, 7400));
+					}
+				}
+				Tbl tbl = t.build();
+				if ("D".equals(name)) cantSplitEveryRow(tbl);
+				d.add(tbl);
+				d.para("after table " + name + ". " + prose(1, v)).before(240).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * P10 (ledger6 section 5 item 9): which of w:tblGrid and the row's own w:tcW Word
+		 * lays a table out on.  Corpus 4025's description column is 106.7pt against Word's
+		 * 183.7 and starts 40.7pt to the right, and takes 38 lines where Word takes 19;
+		 * 2564's letterhead cell is 37.75pt too narrow and 37.75pt too far right; 5528's
+		 * left column is 355pt against Word's 255.  gridIsAuthoritative (0a457a177) keys on
+		 * exactly this, and on the compatibility mode, so the four configurations are cut
+		 * at modes 12, 14 and 15 - and since the mode is a document property, that is three
+		 * probe documents (the pattern table-indent-compat14/15 and table-grid-edge-compat*
+		 * already use).
+		 *
+		 * Each document holds four tables, one to a page, over a 9026-twip text column:
+		 *
+		 *   A  w:tblGrid 2000/3000/4000 and every row-1 w:tcW the same
+		 *   B  the same grid, row 1's w:tcW 4000/3000/2000 - the same sum, the opposite
+		 *      proportions, so whichever of the two Word uses is unmistakable
+		 *   C  the same grid, row 1's first cell w:tcW auto and the other two in dxa
+		 *   D  w:tblW auto over a grid of 2800/4400/4444 = 11644 twips, 29% wider than the
+		 *      text column, every row-1 w:tcW the grid's own
+		 *
+		 * Row 2 of every table declares w:tcW auto, so the golden also says whether a later
+		 * row follows the grid or follows row 1.  Each cell's text opens with a label
+		 * naming the table and the column ("B c2"), so each column's left edge is the x of
+		 * a first glyph and its width is the gap to the next one.
+		 */
+		PROBES.add(tableGridVsTcwProbe(12));
+		PROBES.add(tableGridVsTcwProbe(14));
+		PROBES.add(tableGridVsTcwProbe(15));
+
+		/*
+		 * The overlong unbreakable token, both halves (ledger6 section 5 item 10, ledger
+		 * seed 2 and P4).  Word breaks KAP_DUCTLENGTH_FEEDER_KOPA INSIDE the token in a
+		 * 205pt cell - "...KAP_DUCTLE" then "NGTH_FEEDER_KOPA" - where we set the whole of
+		 * it on one 140.4pt line; and on 11657 Word fits a 481.7pt token on one line where
+		 * we break before it.  So the two halves are opposite, and neither may be
+		 * implemented until Word has answered both measures.
+		 *
+		 * The tokens are built out of the font's own advances.  Every digit of Liberation
+		 * Serif, and its underscore, has an advance of exactly 6.0pt at 12pt - 120 twips,
+		 * measured off the installed face with Doc.advancePoints - and the digits are
+		 * tabular, so a token of n digits is exactly 120n twips wide AND its characters can
+		 * be counted in the extracted text, which a run of one repeated letter could not.
+		 * The tokens are therefore cycles of "0123456789"; they are letters-digits-and-
+		 * underscores tokens with no hyphen and no break opportunity in them.
+		 *
+		 * Two measures, each tested in the body and in a fixed-layout cell:
+		 *
+		 *   the body   A4 portrait with 1143-twip left and right margins: 9620 twips =
+		 *              481.0pt exactly, 11657's measure
+		 *   the cell   a one-column table, w:tblLayout fixed, w:tcW 4100 dxa, w:tblCellMar 0
+		 *              and w:tblBorders none, so nothing at all is charged against the
+		 *              measure and it is exactly 4100 twips = 205.0pt
+		 *
+		 * and four cases at each, the token paragraph carrying NO label (a label would move
+		 * the token and is the one thing being measured here), introduced by a labelled
+		 * paragraph of its own:
+		 *
+		 *   A  floor(measure/120) + 8 characters: 48pt longer than the measure
+		 *   B  a measured lead run, then a token 3 characters longer than the space the
+		 *      lead leaves on the line but far shorter than the measure
+		 *   C  floor(measure/120) characters: 4080 twips in the cell and 9600 in the body,
+		 *      20 twips - one point - inside the measure.  The longest token that fits
+		 *   D  one character more: 4200 and 9720 twips, 100 twips - five points - over.
+		 *      The shortest token that does not fit
+		 *
+		 * C and D bracket "exactly the measure" from both sides to within one character's
+		 * advance, which is as close as a token of one alphabet can come: both measures
+		 * happen to sit 20 twips above a multiple of 120, so the bracket is the same 1pt /
+		 * 5pt at 205pt as at 481pt.  E is the corpus's own token, KAP_DUCTLENGTH_FEEDER_KOPA
+		 * (200.67pt in this face at 12pt), in the same 4100-twip cell but with Word's
+		 * default 108-twip cell margins, which leaves a measure of 194.2pt - the
+		 * configuration in which Word broke it mid-token.
+		 *
+		 * Read off the golden: at each measure and in each container, where Word breaks -
+		 * inside the token, before it, or nowhere, letting it overflow.
+		 */
+		PROBES.add(new Probe("break-longword",
+				"a token of digits and underscores (120 twips a character in Liberation "
+				+ "Serif 12pt) longer than the measure, longer than the space left on the "
+				+ "line, one character inside the measure and one character over it, at a "
+				+ "481.0pt body measure and in a 205.0pt fixed-layout cell, plus the corpus "
+				+ "token KAP_DUCTLENGTH_FEEDER_KOPA in a cell whose measure is 194.2pt", () -> {
+			Doc d = Doc.create(15);
+			// A4 portrait, 1143-twip left and right margins: a body measure of exactly
+			// 9620 twips = 481.0pt
+			d.pageGeometry(11906, 16838, false, 1440, 1143, 1440, 1143);
+			final int advTw = Doc.advanceTwipsCeil("0", SERIF, 24);      // 120, checked below
+			if (advTw != 120) throw new IllegalStateException("Liberation Serif's digit advance "
+					+ "is " + advTw + " twips, not the 120 this probe's token lengths are built on");
+			final String lead = "B lead text, then the token: ";
+			final int leadTw = Doc.advanceTwipsCeil(lead, SERIF, 24);
+			final String corpusToken = "KAP_DUCTLENGTH_FEEDER_KOPA";
+
+			d.para("Tokens of digits and underscores, every character of which is exactly "
+					+ "120 twips wide in Liberation Serif at 12pt. The body's measure here "
+					+ "is 9620 twips = 481.0pt exactly; the cells below are 4100 twips = "
+					+ "205.0pt, with no cell margin and no border, so nothing is charged "
+					+ "against their measure. Each token paragraph carries no label, "
+					+ "because a label would move the token.").after(240).add();
+
+			for (int part = 0; part < 2; part++) {
+				final boolean body = part == 0;
+				final int measure = body ? 9620 : 4100;
+				final String where = body ? "BODY" : "CELL";
+				final int fit = measure / advTw;
+				if (!body) d.pageBreak();
+				d.para(where + ": the measure is " + measure + " twips = " + (measure / 20.0)
+						+ "pt, and " + fit + " characters of the token fill "
+						+ (fit * advTw / 20.0) + "pt of it.").before(240).after(120).add();
+
+				int[] lengths = { fit + 8, 0, fit, fit + 1 };
+				String[] tags = { "A", "B", "C", "D" };
+				String[] what = {
+					"a token of " + (fit + 8) + " characters, " + ((fit + 8) * advTw / 20.0)
+						+ "pt, which is " + (8 * advTw / 20.0) + "pt longer than the measure",
+					"", // filled in below, once the lead is measured
+					"a token of " + fit + " characters, " + (fit * advTw / 20.0) + "pt, "
+						+ ((measure - fit * advTw) / 20.0) + "pt inside the measure: the "
+						+ "longest token which fits",
+					"a token of " + (fit + 1) + " characters, " + ((fit + 1) * advTw / 20.0)
+						+ "pt, " + (((fit + 1) * advTw - measure) / 20.0) + "pt over the "
+						+ "measure: the shortest token which does not fit" };
+				int lenB = (measure - leadTw) / advTw + 3;
+				lengths[1] = lenB;
+				what[1] = "a lead run of " + (leadTw / 20.0) + "pt, then a token of " + lenB
+						+ " characters, " + (lenB * advTw / 20.0) + "pt, which is longer "
+						+ "than the " + ((measure - leadTw) / 20.0) + "pt the lead leaves on "
+						+ "the line but shorter than the whole measure";
+				for (int c = 0; c < tags.length; c++) {
+					String token = digitToken(lengths[c]);
+					d.para(where + "-" + tags[c] + ": " + what[c] + ".").after(60).add();
+					Doc.Para tp = d.para().noLabel();
+					if (c == 1) tp.text(lead);
+					tp.text(token).after(180);
+					if (body) {
+						tp.add();
+					} else {
+						d.add(tokenCell(measure, true, tp.build()));
+					}
+				}
+				if (!body) {
+					d.para("CELL-E: the corpus's own token, " + corpusToken + ", which is "
+							+ String.format("%.2f", Doc.advancePoints(corpusToken, SERIF, 24))
+							+ "pt in this face, in the same 4100-twip cell but with Word's "
+							+ "default 108-twip cell margins, so the measure is 194.2pt and "
+							+ "the token does not fit. This is the corpus's own "
+							+ "configuration.").after(60).add();
+					d.add(tokenCell(measure, false, d.para().noLabel().text(corpusToken).build()));
+					d.para("BODY-E: the same token in the body, where it fits with room to "
+							+ "spare (the control).").before(180).after(60).add();
+					d.para().noLabel().text(corpusToken).after(180).add();
+				}
+			}
+			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * 7235's two blank pages (ledger6 section 5 item 11).  Our pages 3 and 8 carry 0
+		 * and 1 lines; the document is a landscape assessment grid whose first section is
+		 * portrait and holds a table far wider than the portrait column, and whose second
+		 * section is landscape and continuous.  page-blank and page-empty carry every other
+		 * shape that has been suspected of costing or losing a page; this is the one they
+		 * do not, and it is cut at compatibility mode 14, which is 7235's.
+		 *
+		 * A continuous break which also changes the page size is the interesting half: Word
+		 * cannot honour "continue on this page" and a new page size at once.  Read off the
+		 * golden: which pages Word emits, whether any of them is blank, and which page the
+		 * landscape section starts on.
+		 */
+		PROBES.add(new Probe("page-blank-landscape",
+				"an A4 portrait section holding a table 14000 twips wide - well over its "
+				+ "9026-twip column - followed by a landscape continuous section, at "
+				+ "compatibilityMode 14", () -> {
+			Doc d = Doc.create(14);
+			d.para("S1. This section is A4 portrait and its text column is 9026 twips. The "
+					+ "table below is 14000 twips wide, so it overhangs. " + prose(2)).after(240).add();
+			Doc.Table t = new Doc.Table(3500, 3500, 3500, 3500).fixedLayout();
+			t.row(SERIF, 20, false, "S1 c1 head", "S1 c2 head", "S1 c3 head", "S1 c4 head");
+			for (int r = 1; r <= 6; r++) {
+				t.row(SERIF, 20, false, "S1 r" + r + " c1", "S1 r" + r + " c2",
+						"S1 r" + r + " c3", "S1 r" + r + " c4");
+			}
+			d.add(t.build());
+			d.para("S1 after the wide table. " + prose(2, 1)).before(240).add();
+			d.endSection("continuous", 0);
+			// the landscape section, opened by a continuous break: A4 landscape, 1in margins
+			d.pageGeometry(16838, 11906, true, 1440, 1440, 1440, 1440);
+			for (int i = 0; i < 20; i++) {
+				d.para("S2 landscape. " + prose(2, i)).after(160).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * The other half of ledger6 section 5 item 11: on 7235 we paint 173 dot-leader runs
+		 * to Word's 42, and our hanging indent inside its cells is 55.86 against Word's
+		 * 50.18.  The runs are numbering tabs - w:suff is a tab, the level's own w:pPr
+		 * carries a tab stop with w:leader="dot" - and they are inside table cells, where
+		 * the label sits so close to the stop that there is barely room for a dot.
+		 *
+		 * Three numbering definitions, each used once inside a cell and once in the body as
+		 * its control.  The label "1." is 180 twips wide and level 0's w:ind is left 720
+		 * hanging 360, so the label runs from 360 to 540:
+		 *
+		 *   numId 40  a left stop at 560 with w:leader="dot" - 20 twips, one point, of
+		 *             advance past the label, which is less than one dot
+		 *   numId 41  the same stop at 1000 - 23pt of advance, enough for a countable run
+		 *             of dots
+		 *   numId 42  no tab stop in the level at all (the control: the numbering tab then
+		 *             runs to the level's own w:ind left)
+		 *
+		 * Read off the golden: whether Word paints a leader at a numbering tab inside a
+		 * cell at all, how many dots it paints at each advance, and where the wrapped line
+		 * of each paragraph starts.
+		 */
+		PROBES.add(new Probe("tab-leader-in-cell",
+				"a w:numPr paragraph inside a table cell whose numbering level has a tab "
+				+ "suffix and a w:leader=\"dot\" stop 20 twips past the label, the same at "
+				+ "a 460-twip advance, and a level with no stop at all, each with the same "
+				+ "paragraph in the body as its control", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"40\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ leaderLevel(0, 560, "dot") + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"41\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ leaderLevel(0, 1000, "dot") + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"42\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ leaderLevel(0, 0, null) + "</w:abstractNum>"
+					+ "<w:num w:numId=\"40\"><w:abstractNumId w:val=\"40\"/></w:num>"
+					+ "<w:num w:numId=\"41\"><w:abstractNumId w:val=\"41\"/></w:num>"
+					+ "<w:num w:numId=\"42\"><w:abstractNumId w:val=\"42\"/></w:num>");
+			String[] what = {
+				"a dot leader on a stop at 560 twips, 20 twips past the end of the label",
+				"a dot leader on a stop at 1000 twips, 460 twips past the end of the label",
+				"no tab stop in the level at all" };
+			for (int i = 0; i < what.length; i++) {
+				int numId = 40 + i;
+				d.para("L" + (i + 1) + ": w:numId " + numId + ", " + what[i] + ". The "
+						+ "numbered paragraph is first inside a table cell and then in the "
+						+ "body.").before(i == 0 ? 0 : 240).after(120).add();
+				Doc.Table t = new Doc.Table(4500, 4500);
+				t.rowOf(null, null,
+						t.cellOf(4500, null, d.para("L" + (i + 1) + " in a cell: this "
+								+ "paragraph is long enough to wrap, so the golden shows "
+								+ "where its second line starts.").numPr(numId, 0).build()),
+						t.cellOf(4500, null, Doc.plainParagraph("L" + (i + 1) + " right cell",
+								SERIF, 24)));
+				d.add(t.build());
+				d.para("L" + (i + 1) + " in the body: this paragraph is long enough to wrap, "
+						+ "so the golden shows where its second line starts.")
+						.numPr(numId, 0).before(120).after(120).add();
+			}
+			d.para("after. " + prose(1)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * 12363's first page (ledger6 section 5 item 12, first half): our body starts
+		 * 25.48pt below Word's on page 1.  Its first-page header holds a picture taller
+		 * than the w:header distance, and page-tall-header measures the same question for a
+		 * header of twelve text lines only - never for a picture, and never on a w:titlePg
+		 * first page, where the header which decides page 1 is not the one which decides
+		 * page 2.
+		 *
+		 * The first-page header here holds a caption line and a picture 288pt tall against
+		 * a w:header distance of 708 twips (35.4pt) and a top margin of 1440 (72pt), so the
+		 * picture alone is four times the top margin.  The default header is one ordinary
+		 * line, and the body runs to three pages, so page 2 is the control.  Read off the
+		 * golden: where Word's body starts on page 1 and where on page 2.
+		 */
+		PROBES.add(new Probe("page-tall-header-image",
+				"a w:titlePg first-page header holding a picture 288pt tall - far more than "
+				+ "the 35.4pt w:header distance and the 72pt top margin - against an "
+				+ "ordinary one-line default header on the pages after it", () -> {
+			Doc d = Doc.create(15);
+			d.addHeader(org.docx4j.wml.HdrFtrRef.FIRST, java.util.Arrays.asList(
+					Doc.plainParagraph("HFIRST: the picture below is 72pt wide and 288pt "
+							+ "tall; w:header is 708 twips and the top margin 1440", SANS, 16),
+					d.pictureParagraph(100, 400, 1440)));
+			d.addHeader(org.docx4j.wml.HdrFtrRef.DEFAULT, SANS, 20,
+					"HDEFAULT: one ordinary header line");
+			d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, SANS, 20, "footer");
+			for (int i = 0; i < 40; i++) {
+				d.para(prose(3, i)).after(160).add();
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * 12363's footer (ledger6 section 5 item 12, second half): 133 of that document's
+		 * unmatched lines come from a VML box in the footer at
+		 * "margin-top:719.35pt; mso-position-vertical-relative:text", which Word puts off
+		 * the page and simply does not draw, and which we paint.  The rule to be confirmed
+		 * is that what falls wholly off the page is not painted at all.
+		 *
+		 * The footer holds three of the same shape: one at margin-top 900pt, which is more
+		 * than the 842pt height of the whole A4 page and so cannot be on it wherever the
+		 * footer's own line sits; one at the corpus's own margin-top 719.35pt, which is
+		 * past the page's foot but not past its height, and which is the value that
+		 * produced 12363's 133 lines; and one at margin-top -300pt, which is 300pt above
+		 * the footer line and so squarely on the page.  The last is the control: it proves
+		 * that Word does draw this shape when it is on the page, so that the absence of
+		 * the other two means something.  All three are bare w:pict / v:rect - no
+		 * mc:AlternateContent, no DrawingML twin - which is 12363's own shape, and each
+		 * holds one line of text whose words appear nowhere else in the document.
+		 *
+		 * The distinction between 900 and 719.35 is not idle: on b70 our own render draws
+		 * the -300pt shape and drops the 900pt one (FOP puts it past the page bottom and
+		 * paints nothing), so the corpus's value is the one which has to be cut as well if
+		 * the probe is to reproduce what 12363 does.  Read off the golden: whether Word's
+		 * PDF carries any glyph of either off-page shape.
+		 */
+		PROBES.add(new Probe("footer-offpage-shape",
+				"a footer holding three VML v:rect shapes with text in them, one at "
+				+ "margin-top 900pt - more than the whole page's 842pt height - one at the "
+				+ "corpus's own margin-top 719.35pt, and one at margin-top -300pt, on the "
+				+ "page, as their control", () -> {
+			Doc d = Doc.create(15);
+			P off = Doc.plainParagraph("", SERIF, 20);
+			off.getContent().clear();
+			off.getContent().add(d.vmlRect(
+					"position:absolute;margin-left:0;margin-top:900pt;width:300pt;height:40pt;"
+					+ "z-index:1;mso-position-vertical-relative:text",
+					"OFFPAGE shape text at margin-top 900pt"));
+			P corpus = Doc.plainParagraph("", SERIF, 20);
+			corpus.getContent().clear();
+			corpus.getContent().add(d.vmlRect(
+					"position:absolute;margin-left:0;margin-top:719.35pt;width:300pt;height:40pt;"
+					+ "z-index:2;mso-position-vertical-relative:text",
+					"CORPUSPAGE shape text at margin-top 719.35pt"));
+			P on = Doc.plainParagraph("", SERIF, 20);
+			on.getContent().clear();
+			on.getContent().add(d.vmlRect(
+					"position:absolute;margin-left:0;margin-top:-300pt;width:300pt;height:40pt;"
+					+ "z-index:3;mso-position-vertical-relative:text",
+					"ONPAGE shape text at margin-top -300pt"));
+			d.addFooter(org.docx4j.wml.HdrFtrRef.DEFAULT, java.util.Arrays.asList(
+					Doc.plainParagraph("FOOTER line", SANS, 20), off, corpus, on));
+			d.para("The footer of every page holds three VML v:rect shapes, each with a line "
+					+ "of text in it: one at margin-top 900pt, which is more than the "
+					+ "page's whole 842pt height, one at the corpus's own margin-top "
+					+ "719.35pt, and one at margin-top -300pt, which is on the page. "
+					+ prose(2)).after(240).add();
+			for (int i = 0; i < 30; i++) {
+				d.para(prose(3, i)).after(160).add();
+			}
+			return d.pkg();
+		}));
 	}
 
 	public static List<Probe> all() {
@@ -4785,6 +5213,133 @@ public final class Corpus {
 		rpr.setSzCs(sz);
 		p.getPPr().setRPr(rpr);
 		return p;
+	}
+
+	/** {@code w:cantSplit} on every row of a table: a row may not be divided across a page
+	 *  boundary.  Written first in each w:trPr, which is where Word writes it.
+	 *  @since 17.1.1 (CR-001 batch 47, the table-rowsplit probe) */
+	private static Tbl cantSplitEveryRow(Tbl tbl) {
+		for (Object o : tbl.getContent()) {
+			if (!(o instanceof org.docx4j.wml.Tr)) continue;
+			org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr) o;
+			if (tr.getTrPr() == null) tr.setTrPr(F.createTrPr());
+			tr.getTrPr().getCnfStyleOrDivIdOrGridBefore().add(0,
+					F.createCTTrPrBaseCantSplit(new org.docx4j.wml.BooleanDefaultTrue()));
+		}
+		return tbl;
+	}
+
+	/** The four grid-against-w:tcW configurations of ledger6's item 9, under one
+	 *  compatibility mode: the mode is a document property, so each mode is its own
+	 *  probe document (as table-indent-compat* and table-grid-edge-compat* already are).
+	 *  @since 17.1.1 (CR-001 batch 47) */
+	private static Probe tableGridVsTcwProbe(int compatMode) {
+		return new Probe("table-grid-vs-tcw-compat" + compatMode,
+				"a three-column table whose w:tblGrid and row-1 w:tcW agree, disagree "
+				+ "(4000/3000/2000 against 2000/3000/4000), have one cell auto and the rest "
+				+ "dxa, and a w:tblW auto table over a grid 29 per cent wider than the text "
+				+ "column; row 2 of each is auto, compatibilityMode " + compatMode, () -> {
+			Doc d = Doc.create(compatMode);
+			int[] grid = { 2000, 3000, 4000 };
+			int[] disagree = { 4000, 3000, 2000 };
+			int[] wide = { 2800, 4400, 4444 };   // 11644 twips = 29% over the 9026 column
+
+			d.para("Four tables, one to a page, at compatibilityMode " + compatMode + ". The "
+					+ "text column is 9026 twips. Each cell's text opens with its table's "
+					+ "letter and its column's number, so each column's left edge is the x "
+					+ "of a first glyph.").after(240).add();
+
+			for (int t = 0; t < 4; t++) {
+				String name = String.valueOf((char) ('A' + t));
+				d.pageBreak();
+				d.para("Table " + name + ": " + gridCaseCaption(t) + ". " + prose(1, t))
+						.after(240).add();
+				Doc.Table tbl = new Doc.Table(t == 3 ? wide : grid);
+				if (t == 3) tbl.autoWidth();
+				switch (t) {
+					case 0:
+						tbl.rowDxa(SERIF, 24, grid, gridCell(name, 1), gridCell(name, 2), gridCell(name, 3));
+						break;
+					case 1:
+						tbl.rowDxa(SERIF, 24, disagree, gridCell(name, 1), gridCell(name, 2), gridCell(name, 3));
+						break;
+					case 2:
+						tbl.rowOf(null, null,
+								tbl.cell(gridCell(name, 1), SERIF, 24, 1, null),   // w:tcW auto
+								tbl.cell(gridCell(name, 2), SERIF, 24, 1, 3000),
+								tbl.cell(gridCell(name, 3), SERIF, 24, 1, 4000));
+						break;
+					default:
+						tbl.rowDxa(SERIF, 24, wide, gridCell(name, 1), gridCell(name, 2), gridCell(name, 3));
+						break;
+				}
+				tbl.row(SERIF, 24, true, name + " r2 c1 auto", name + " r2 c2 auto", name + " r2 c3 auto");
+				d.add(tbl.build());
+				d.para("after table " + name + ". " + prose(1, t + 1)).before(240).add();
+			}
+			return d.pkg();
+		});
+	}
+
+	/** What each table-grid-vs-tcw table declares, for its introducing paragraph. */
+	private static String gridCaseCaption(int t) {
+		switch (t) {
+			case 0: return "w:tblGrid 2000/3000/4000 and every row-1 w:tcW the same";
+			case 1: return "w:tblGrid 2000/3000/4000 with row 1's w:tcW 4000/3000/2000 - the "
+					+ "same sum, the opposite proportions";
+			case 2: return "w:tblGrid 2000/3000/4000 with row 1's first cell w:tcW auto and "
+					+ "the other two 3000 and 4000 dxa";
+			default: return "w:tblW auto over a grid of 2800/4400/4444 = 11644 twips, 29 per "
+					+ "cent wider than the text column, every row-1 w:tcW the grid's own";
+		}
+	}
+
+	/** A table-grid-vs-tcw cell's text: the label first, so the column's left edge is the
+	 *  x of its first glyph, and enough after it to show where the column ends. */
+	private static String gridCell(String table, int col) {
+		return table + " c" + col + " left edge here; this text wraps.";
+	}
+
+	/** A token of {@code n} characters cycling through the ten digits: every digit of
+	 *  Liberation Serif is 120 twips wide at 12pt and they are tabular, so the token's
+	 *  advance is exactly 120n twips and its characters can still be counted in an
+	 *  extracted line.  @since 17.1.1 (CR-001 batch 47, the break-longword probe) */
+	private static String digitToken(int n) {
+		StringBuilder sb = new StringBuilder(n);
+		for (int i = 0; i < n; i++) sb.append((char) ('0' + i % 10));
+		return sb.toString();
+	}
+
+	/** A one-column table holding one prepared paragraph, w:tblLayout fixed and
+	 *  w:tblBorders none: with {@code zeroMargins} its cell's text measure is exactly
+	 *  {@code twips}, and without it Word's default 108-twip cell margins are the only
+	 *  thing charged against the measure.
+	 *  @since 17.1.1 (CR-001 batch 47, the break-longword probe) */
+	private static Tbl tokenCell(int twips, boolean zeroMargins, P content) {
+		Doc.Table t = new Doc.Table(twips).fixedLayout().noBorders();
+		if (zeroMargins) t.cellMargins(0, 0);
+		t.rowOf(null, null, t.cellOf(twips, null, content));
+		return t.build();
+	}
+
+	/** Level 0 of a decimal list whose w:suff is a tab and whose own w:pPr carries one
+	 *  left tab stop at {@code stopTwips} with {@code leader} (or no w:tabs at all when
+	 *  stopTwips is 0), over Word's own w:ind left 720 hanging 360 - so the label "1."
+	 *  runs from 360 to 540 and the stop's advance past it is stopTwips - 540.  Element
+	 *  order follows CT_Lvl and CT_PPrGeneral, which JAXB needs.
+	 *  @since 17.1.1 (CR-001 batch 47, the tab-leader-in-cell probe) */
+	private static String leaderLevel(int ilvl, int stopTwips, String leader) {
+		return "<w:lvl w:ilvl=\"" + ilvl + "\">"
+				+ "<w:start w:val=\"1\"/>"
+				+ "<w:numFmt w:val=\"decimal\"/>"
+				+ "<w:suff w:val=\"tab\"/>"
+				+ "<w:lvlText w:val=\"%" + (ilvl + 1) + ".\"/>"
+				+ "<w:lvlJc w:val=\"left\"/>"
+				+ "<w:pPr>"
+				+ (stopTwips <= 0 ? "" : "<w:tabs><w:tab w:val=\"left\" w:pos=\"" + stopTwips + "\""
+						+ (leader == null ? "" : " w:leader=\"" + leader + "\"") + "/></w:tabs>")
+				+ "<w:ind w:left=\"720\" w:hanging=\"360\"/>"
+				+ "</w:pPr></w:lvl>";
 	}
 
 	/** Writes every probe as {@code <id>.docx} into dir, plus corpus.txt and corpus-manifest.properties. */

@@ -1147,6 +1147,35 @@ public final class Doc {
 		return (R) o;
 	}
 
+	/**
+	 * A run holding a bare {@code w:pict} with one VML {@code v:rect} at the given CSS
+	 * {@code style}, with {@code text} in a {@code v:textbox} inside it.  This is the
+	 * shape Word 2003 and every "legacy" drawing still write - no {@code mc:AlternateContent},
+	 * no DrawingML twin - and the one a corpus footer uses to park a box off the page
+	 * ({@code position:absolute;margin-top:719.35pt;mso-position-vertical-relative:text}).
+	 * The caller writes the whole style string, because the position <i>is</i> the
+	 * question.  @since 17.1.1 (CR-001 batch 47, the footer-offpage-shape probe)
+	 */
+	public R vmlRect(String style, String text) throws Exception {
+		shapeCounter++;
+		int n = shapeCounter;
+		String xml = "<w:r xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
+				+ " xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+				+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\">"
+				+ "<w:pict>"
+				+ "<v:rect id=\"Rectangle " + n + "\" o:spid=\"_x0000_s" + (1025 + n) + "\""
+				+ " style=\"" + style + "\" filled=\"f\" stroked=\"t\" strokeweight=\".5pt\">"
+				+ "<v:textbox inset=\"0,0,0,0\">"
+				+ "<w:txbxContent>" + paragraphsXml(
+						java.util.Collections.singletonList(plainParagraph(text, SERIF_DEFAULT, 20)), "")
+				+ "</w:txbxContent></v:textbox>"
+				+ "</v:rect></w:pict></w:r>";
+		Object o = XmlUtils.unmarshalString(xml, Context.jc, R.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		return (R) o;
+	}
+
 	/** A numbering style ({@code w:style w:type="numbering"}) whose w:pPr/w:numPr names
 	 *  numId - the target of a w:abstractNum's w:styleLink / w:numStyleLink. */
 	public void addNumberingStyle(String styleId, int numId) {
