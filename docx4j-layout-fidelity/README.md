@@ -34,6 +34,11 @@ mvn clean install -DskipTests -Dgpg.skip=true -pl docx4j-export-fo,docx4j-docume
 cd docx4j-layout-fidelity && mvn -Dgpg.skip=true -DskipTests package
 
 CP="target/classes:target/lib/*"
+# The docx4j FO renderer instead of Apache FOP (CR-020): `mvn -Dgpg.skip=true -DskipTests
+# -Pfo-renderer-fork package` copies its jars to target/lib-fork, so both classpaths exist
+# side by side and a batch is scored on each; scoreboard.txt's "renderer" line says which.
+# (docx4j-export-fo need not be rebuilt with the profile: the harness declares the renderer.)
+#   CP="target/classes:target/lib-fork/*"
 java -cp "$CP" org.docx4j.fidelity.Fidelity generate  target/corpus
 java -cp "$CP" org.docx4j.fidelity.Fidelity run       target/corpus /path/to/goldens target/report [dpi]
 # -Dfidelity.only=footnotes,image-anchored restricts render/compare/run to those probes

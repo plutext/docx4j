@@ -51,6 +51,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.fo.AbstractPlaceholderLookup;
+import org.docx4j.convert.out.fo.FopCapabilities;
 import org.docx4j.convert.out.fo.PlaceholderReplacementHandler;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
@@ -427,6 +428,10 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 * @throws FOPException
 	 */
 	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings, ResourceResolver resourceResolver) throws FOPException {
+
+		// Which FOP this is (Apache's, or the docx4j FO renderer with its hooks): probed and
+		// logged once, and the hook-dependent rules read it.  CR-020.  @since 17.1.1
+		FopCapabilities.get();
 
 		org.docx4j.convert.out.fopconf.Fop fopConfig = settings.getFopConfig();
 		String userConfig = XmlUtils.marshaltoString(fopConfig, Context.getFopConfigContext());

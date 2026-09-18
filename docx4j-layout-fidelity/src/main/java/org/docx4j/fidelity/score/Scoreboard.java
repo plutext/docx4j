@@ -45,6 +45,13 @@ public final class Scoreboard {
 			"refLines", "candLines", "lineParity", "pageParity", "matched", "merged", "medianDy", "maxDy",
 			"refPitch", "candPitch", "firstDivergence", "error", "class", "substShare", "basis" };
 
+	/**
+	 * The FO renderer the run scored with, as {@code FopCapabilities} describes it (Apache
+	 * FOP 2.11, or the docx4j FO renderer and its hooks); set by the main before scoring so
+	 * that every scoreboard.txt says which of the two configurations it measured (CR-020).
+	 */
+	public static volatile String renderer;
+
 	/** The class a row carries when the run could not read one (a document that threw, or
 	 *  one with no golden to read the Word side from). */
 	public static final String NO_CLASS = "";
@@ -191,6 +198,7 @@ public final class Scoreboard {
 		/** label / value pairs, in report order. */
 		public List<String[]> entries() {
 			List<String[]> out = new ArrayList<>();
+			out.add(new String[] { "renderer", renderer == null ? "(not recorded)" : renderer });
 			out.add(new String[] { "basis", basis.isEmpty() ? "(not recorded)" : basis });
 			out.add(new String[] { "documents scored", Integer.toString(scored) });
 			out.add(new String[] { "errors", Integer.toString(errors) });

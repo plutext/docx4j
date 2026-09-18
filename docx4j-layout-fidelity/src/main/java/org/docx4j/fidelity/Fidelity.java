@@ -52,6 +52,9 @@ public final class Fidelity {
 		if (hyphenate != null) {
 			org.docx4j.Docx4jProperties.setProperty("docx4j.convert.out.fo.hyphenate", hyphenate.trim());
 		}
+		// which FO renderer this classpath carries (Apache FOP, or the docx4j FO renderer and
+		// its hooks): logged once here, and written into every scoreboard.txt (CR-020)
+		org.docx4j.fidelity.score.Scoreboard.renderer = org.docx4j.convert.out.fo.FopCapabilities.get().describe();
 		// real documents are not zip bombs: a 668KB docx whose EMF images unpack to
 		// 95MB trips docx4j's 50MB default, so the guard is loosened for scoring
 		// (must run before ZipPartStore is loaded, which reads it once)

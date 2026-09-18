@@ -256,6 +256,19 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
   Word bookmark no markdown renderer has, with the tab and the page number.  Lossy, like
   headers and footers; headings are navigable in every renderer.
 
+PDF via XSL FO, the renderer (CR-020, phase 0):
+
+- Two FO renderers are supported: Apache FOP 2.11 (the default dependency, unchanged) and
+  the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of
+  Apache FOP 2.11 carrying the fixes docx4j found in FOP (FOP-3328, FOP-3330, the empty
+  last glyph that left a font unembedded, the CJK radical in extracted text) ahead of
+  their upstream release; a locally installed snapshot until its first release, selected
+  with -Pfo-renderer-fork. FopCapabilities probes which is present, logs one line naming
+  it and its hooks, warns when two copies of FOP share a classpath (they shadow each
+  other; classpath order decided, silently) or the FOP found is of another line than
+  the 2.11 docx4j-export-fo subclasses, and lets each hook-dependent rule fall back on
+  Apache FOP. No hook yet; phase 1 adds them.
+
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 - A numbering tab reaches the first stop past the end of its label and before w:ind left of the
