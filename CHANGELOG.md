@@ -258,6 +258,19 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A VML text box of layout-flow:vertical has its text turned on its side and laid along the box's
+  height, as Word lays it, where docx4j laid it out unrotated and measured it along the box's
+  width. The property is on the v:textbox and not on the shape (the shape's style carries the
+  position and the size), and it was read nowhere at all: measured on a corpus document whose
+  16.5pt-wide legend beside a table has a 7.2pt inset, the measure was 9.3pt - narrower than a
+  character of its 10pt text - so its 17-character label was set one character to a line, where
+  Word lays it along the 93.75pt height in one. The box is now an fo:block-container with
+  reference-orientation -90 (Word's tbRl) or, with mso-layout-flow-alt:bottom-to-top, 90 (btLr,
+  which is what w:textDirection btLr already gives a table cell), and a rotated reference area
+  is given both of its dimensions - the inline-progression-dimension is the box's height and the
+  block-progression-dimension its width - because FOP otherwise lays the text on a line of no
+  measure. Measured on the same document: the label is one rotated run of 17 glyphs
+  (CR-001 batch 48).
 - A left paragraph border stands against the paragraph's leftmost text edge, as Word stands it,
   where docx4j drew it through the first line of a hanging indent. The FO box model measures a
   block's border and padding from its content rectangle, whose start edge is the start-indent: a

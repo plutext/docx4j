@@ -237,7 +237,7 @@ public abstract class FOPictWriterAbstract extends AbstractPictWriter {
 		PageDimensions pageDimensions = context.getSections().getCurrentSection().getPageDimensions();
 
 		Element container = FOTextBoxes.createVmlContainer(doc, props, wrapType,
-				FOTextBoxes.inset(textBox.getInset()), pageDimensions);
+				FOTextBoxes.inset(textBox.getInset()), pageDimensions, textBox.getStyle());
 
 		if (stroked(shape)) {
 			setBorders(container);

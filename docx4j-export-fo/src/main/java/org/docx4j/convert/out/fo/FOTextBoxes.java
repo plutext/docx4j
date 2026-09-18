@@ -167,6 +167,18 @@ public class FOTextBoxes {
 	 */
 	public static Element createVmlContainer(Document doc, Map<String, String> props,
 			String wrapType, double[] inset, PageDimensions pd) {
+		return createVmlContainer(doc, props, wrapType, inset, pd, null);
+	}
+
+	/**
+	 * @param textboxStyle the {@code v:textbox}'s own {@code @style}, which is where Word
+	 *        writes {@code layout-flow:vertical} - on the text box and not on the shape
+	 *        (measured on four corpus documents; the shape's style carries the position and
+	 *        the size).  Null where there is none.
+	 * @since 17.1.1 (CR-001 batch 48 item 4)
+	 */
+	public static Element createVmlContainer(Document doc, Map<String, String> props,
+			String wrapType, double[] inset, PageDimensions pd, String textboxStyle) {
 
 		double w = pts(props.get("width"), 0);
 		double h = pts(props.get("height"), 0);
@@ -231,7 +243,57 @@ public class FOTextBoxes {
 			y = "page:" + fmt(py);
 		}
 
-		return createContainer(doc, kind(wrapType), w, h, x, y, colW, mL, inset);
+		Element container = createContainer(doc, kind(wrapType), w, h, x, y, colW, mL, inset);
+		Map<String, String> flow = parseStyle(textboxStyle);
+		if (!flow.containsKey("layout-flow")) flow = props;
+		applyLayoutFlow(container, flow, w, h, inset==null ? DEFAULT_INSET : inset);
+		return container;
+	}
+
+	/**
+	 * {@code layout-flow:vertical}: a text box whose text Word turns on its side, as it
+	 * turns a table cell's for {@code w:textDirection}.  The line runs down the box's
+	 * <b>height</b>, so that is the measure; {@code mso-layout-flow-alt:bottom-to-top}
+	 * turns it the other way (Word's {@code btLr} against its {@code tbRl}).
+	 *
+	 * <p>Unimplemented before this: the box was laid out unrotated and its text measured
+	 * along the box's <em>width</em>, which on a legend beside a corpus document's table
+	 * is 16.5pt less a 7.2pt indent and a 7.2pt inset - 2.1pt, narrower than a character -
+	 * so a 17-character label was set one character to a line, 15 lines of it, where Word
+	 * lays it along the 93.75pt height in one.</p>
+	 *
+	 * <p>The rotation is an {@code fo:block-container}'s {@code reference-orientation},
+	 * and a rotated reference area has to be given both of its dimensions or FOP lays its
+	 * text on a line of no measure (the same trap as the rotated table cell -
+	 * {@code TableWriter.interposeBlockContainer}).  They are stated in the container's
+	 * own, rotated frame: the inline-progression-dimension is the box's height less the
+	 * insets across it, and the block-progression-dimension its width less the insets
+	 * along it.  {@code width} and {@code height} go, being the unrotated pair, and so do
+	 * the indent and padding the horizontal case uses to place the first character - the
+	 * insets are already taken off both dimensions here.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 4)
+	 */
+	static void applyLayoutFlow(Element container, Map<String, String> props,
+			double w, double h, double[] in) {
+
+		if (container==null || props==null || !"vertical".equals(props.get("layout-flow"))) return;
+
+		container.setAttribute("reference-orientation",
+				"bottom-to-top".equals(props.get("mso-layout-flow-alt")) ? "90" : "-90");
+
+		double ipd = h - in[1] - in[3];
+		double bpd = w - in[0] - in[2];
+		if (ipd > 0) container.setAttribute("inline-progression-dimension", pt(ipd));
+		if (bpd > 0) container.setAttribute("block-progression-dimension", pt(bpd));
+
+		container.removeAttribute("width");
+		container.removeAttribute("height");
+		container.removeAttribute("padding-top");
+		container.removeAttribute("padding-right");
+		container.removeAttribute("padding-bottom");
+		container.setAttribute("start-indent", "0pt");
+		container.setAttribute("end-indent", "0pt");
 	}
 
 	/** Word's wrapping styles, as the fixups know them. */

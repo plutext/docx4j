@@ -6061,6 +6061,72 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// ---------------------------------------------------------------- CR-001 batch 48
+		//                                   item 4: a VML text box whose text Word turns
+		//                                   on its side, and the table cell that does it
+
+		PROBES.add(new Probe("vml-textbox-vertical",
+				"a VML v:rect text box of layout-flow:vertical, one of them with "
+				+ "mso-layout-flow-alt:bottom-to-top, against a horizontal box of the same "
+				+ "shape and a w:textDirection btLr table cell beside them: which way the "
+				+ "text runs, what measure it is laid along, and where the first character "
+				+ "stands", () -> {
+			Doc d = Doc.create(15);
+
+			// 1139's shape: a narrow tall legend beside a table, 16.5pt wide and 93.75pt
+			// high, whose label is 17 characters long
+			final String LABEL = "Vertical legend A";
+			final String BOX = "position:absolute;margin-left:0;margin-top:%s;width:16.5pt;"
+					+ "height:93.75pt;z-index:%d;mso-position-vertical-relative:text%s";
+
+			d.para("Each box below is 16.5pt wide and 93.75pt high, so a horizontal line in "
+					+ "it has 16.5pt of measure and a vertical one 93.75pt. Read which way "
+					+ "the text runs and how many lines it takes.").after(240).add();
+
+			d.para("A: layout-flow:vertical, which Word reads as its tbRl - the text runs "
+					+ "down the box.").after(60).add();
+			P a = Doc.plainParagraph("", SERIF, 20);
+			a.getContent().clear();
+			a.getContent().add(d.vmlRect(String.format(BOX, "0", 1, ""),
+					"layout-flow:vertical", LABEL));
+			d.add(a);
+			d.para("A tail paragraph, so the box has a line to be anchored to.")
+					.before(120).after(240).add();
+
+			d.para("B: layout-flow:vertical with mso-layout-flow-alt:bottom-to-top, Word's "
+					+ "btLr - the text runs up the box.").after(60).add();
+			P b = Doc.plainParagraph("", SERIF, 20);
+			b.getContent().clear();
+			b.getContent().add(d.vmlRect(String.format(BOX, "0", 2, ""),
+					"layout-flow:vertical;mso-layout-flow-alt:bottom-to-top",
+					"Vertical legend B"));
+			d.add(b);
+			d.para("A tail paragraph, so the box has a line to be anchored to.")
+					.before(120).after(240).add();
+
+			d.para("C: the control, no layout-flow at all - the same box laid out across "
+					+ "its 16.5pt width.").after(60).add();
+			P c = Doc.plainParagraph("", SERIF, 20);
+			c.getContent().clear();
+			c.getContent().add(d.vmlRect(String.format(BOX, "0", 3, ""), "Horizontal C"));
+			d.add(c);
+			d.para("A tail paragraph, so the box has a line to be anchored to.")
+					.before(120).after(240).add();
+
+			d.para("D: the same rotation as a table asks for it, w:textDirection btLr in "
+					+ "the first cell of a two-cell row 93.75pt (1875 twips) tall.")
+					.after(60).add();
+			Doc.Table t = new Doc.Table(330, 5000).fixedLayout().borders(4);
+			t.rowOf(1875, org.docx4j.wml.STHeightRule.EXACT,
+					Doc.Table.textDirection(t.cell("Vertical legend D", SERIF, 20, 1, 330), "btLr"),
+					t.cell("The cell beside it, whose text is horizontal. " + Doc.prose(1),
+							SERIF, 20, 1, 5000));
+			d.add(t.build());
+
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {
