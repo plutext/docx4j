@@ -98,6 +98,11 @@ public class HtmlListLabelTest {
 			assertTrue(impl + "no label on the style-numbered item: " + html, Pattern.compile(
 					"<li[^>]*><span class=\"ListLabel\" style=\"[^\"]*min-width: 14\\.1[0-9]*pt;[^\"]*color: #1B365D;[^\"]*\">-</span>(<span[^>]*>)*first item")
 					.matcher(html).find());
+			// text-indent inherits into the inline-block: without a reset the paragraph's
+			// negative indent is applied a second time inside the label (layout-only, so
+			// asserted on the emitted style)
+			assertTrue(impl + "the label must reset text-indent", Pattern.compile(
+					"<span class=\"ListLabel\" style=\"display: inline-block;text-indent: 0;").matcher(html).find());
 			assertTrue(impl + "the item still asks for the browser's marker", html.contains("list-style: none;"));
 			assertFalse(impl + "display: list-item survives", html.contains("display: list-item"));
 			assertTrue(impl + "the style's hanging indent must survive in the class rule",

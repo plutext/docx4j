@@ -682,7 +682,9 @@ public class XsltHTMLFunctions {
      * negative {@code text-indent} put the first line at the number position, so the
      * label is an {@code inline-block} whose {@code min-width} is the hanging indent:
      * the text then begins at the left indent, as in Word, and a label wider than the
-     * indent pushes it on, as Word's tab does.  A {@code w:suff} of {@code space} is
+     * indent pushes it on, as Word's tab does.  The span resets {@code text-indent},
+     * which inherits and would otherwise be applied again inside the label's own
+     * first line box.  A {@code w:suff} of {@code space} is
      * written as a space; {@code nothing} as nothing.</p>
      *
      * <p>The label takes the level's own {@code w:rPr} (font, size, colour, weight)
@@ -745,7 +747,11 @@ public class XsltHTMLFunctions {
     	}
     	Element span = document.createElement("span");
     	span.setAttribute("class", LIST_LABEL_CLASS);
-    	StringBuilder css = new StringBuilder("display: inline-block;");
+    	// text-indent inherits, and an inline-block is a block container with a first
+    	// line of its own, so without this the paragraph's negative text-indent is
+    	// applied a second time inside the label and pushes it out of its box (a NOTE
+    	// label under a 42.5pt hang rendered as "OTE" against the page edge)
+    	StringBuilder css = new StringBuilder("display: inline-block;text-indent: 0;");
     	Ind ind = mergedInd!=null ? mergedInd : triple.getIndent();
     	if (ind!=null && ind.getHanging()!=null && ind.getHanging().intValue() > 0) {
     		css.append("min-width: ").append(UnitsOfMeasurement.twipToBest(ind.getHanging().intValue())).append(';');

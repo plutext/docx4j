@@ -373,7 +373,15 @@ pathways: a style-numbered bullet labelled and unmarked with the class rule's
 indent intact, NOTE / Appendix A / Appendix B, a direct list counting once) and
 the parity test's list assertions.  On the draft: 63 `li` in 47 `ul`/`ol`,
 107 labels, no `display: list-item`, 24 NOTE, 5 EXAMPLE, 5 Appendix labels,
-identical from both flags.
+identical from both flags.  One defect in that fix, found by rendering the
+draft in headless Firefox and fixed the same day: `text-indent` inherits, and
+an `inline-block` is a block container with a first line box of its own, so
+the paragraph's negative `text-indent` was applied a second time inside the
+label and pushed it left out of its box (a NOTE label under a 42.5pt hang
+rendered as "OTE" against the page edge; every label sat one hang to the
+left of Word's).  The span now carries `text-indent: 0`; `HtmlListLabelTest`
+asserts it on the emitted style, since no DOM-level test sees a layout-only
+defect.
 
 ### Defect found after DONE: a hanging indent crosses a left paragraph border (2026-09-18)
 
