@@ -2,153 +2,155 @@ Docx4j - Getting Started
 
 Contents
 
-[What is docx4j?	4](#_Toc14732186)
+[What is docx4j?	4](#_Toc3058685)
 
-[What sorts of things can you do with docx4j?	5](#_Toc14732187)
+[What sorts of things can you do with docx4j?	5](#_Toc3058686)
 
-[Is docx4j for you?	5](#_Toc14732188)
+[Is docx4j for you?	5](#_Toc3058687)
 
-[GraalVM	6](#_Toc14732189)
+[GraalVM	6](#_Toc3058688)
 
-[docx4j.NET	6](#_Toc14732190)
+[docx4j.NET	6](#_Toc3058689)
 
-[What Word documents does it support?	6](#_Toc14732191)
+[What Word documents does it support?	6](#_Toc3058690)
 
-[Handling legacy binary .doc files	7](#_Toc14732192)
+[Handling legacy binary .doc files	7](#_Toc3058691)
 
-[A word about Jaxb	7](#_Toc14732193)
+[A word about Jaxb	7](#_Toc3058692)
 
-[Using docx4j via Maven	8](#_Toc14732194)
+[Using docx4j via Maven	8](#_Toc3058693)
 
-[Using docx4j binaries	8](#_Toc14732195)
+[Using docx4j binaries	8](#_Toc3058694)
 
-[docx4j dependencies	8](#_Toc14732196)
+[docx4j dependencies	8](#_Toc3058695)
 
-[slf4j	8](#_Toc14732197)
+[slf4j	8](#_Toc3058696)
 
-[other dependencies	9](#_Toc14732198)
+[other dependencies	9](#_Toc3058697)
 
-[Docx4j source code	10](#_Toc14732199)
+[Docx4j source code	10](#_Toc3058698)
 
-[Javadoc	10](#_Toc147321100)
+[Javadoc	10](#_Toc3058699)
 
-[Building docx4j from source	10](#_Toc147321101)
+[Building docx4j from source	10](#_Toc30586100)
 
-[Command line -via Maven	10](#_Toc147321102)
+[Command line -via Maven	10](#_Toc30586101)
 
-[Eclipse	10](#_Toc147321103)
+[Eclipse	10](#_Toc30586102)
 
-[Using a different IDE?	11](#_Toc147321104)
+[Using a different IDE?	11](#_Toc30586103)
 
-[Open an existing docx/pptx/xlsx document	11](#_Toc147321105)
+[Open an existing docx/pptx/xlsx document	11](#_Toc30586104)
 
-[OpenXML concepts	12](#_Toc147321106)
+[OpenXML concepts	12](#_Toc30586105)
 
-[Specification versions	12](#_Toc147321107)
+[Specification versions	12](#_Toc30586106)
 
-[Architecture	13](#_Toc147321108)
+[Architecture	13](#_Toc30586107)
 
-[Jaxb: marshalling and unmarshalling	14](#_Toc147321109)
+[Jaxb: marshalling and unmarshalling	14](#_Toc30586108)
 
-[Parts List	15](#_Toc147321110)
+[Parts List	15](#_Toc30586109)
 
-[MainDocumentPart	17](#_Toc147321111)
+[MainDocumentPart	17](#_Toc30586110)
 
-[Samples	19](#_Toc147321112)
+[Samples	19](#_Toc30586111)
 
-[Creating a new docx	21](#_Toc147321113)
+[Creating a new docx	21](#_Toc30586112)
 
-[docx4j.properties	21](#_Toc147321114)
+[docx4j.properties	21](#_Toc30586113)
 
-[Adding a paragraph of text	22](#_Toc147321115)
+[Adding a paragraph of text	22](#_Toc30586114)
 
-[General strategy/approach for creating stuff	23](#_Toc147321116)
+[General strategy/approach for creating stuff	23](#_Toc30586115)
 
-[Formatting Properties	25](#_Toc147321117)
+[Formatting Properties	25](#_Toc30586116)
 
-[Creating and adding a table	25](#_Toc147321118)
+[Creating and adding a table	25](#_Toc30586117)
 
-[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc147321119)
+[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc30586118)
 
-[Traversing a document	26](#_Toc147321120)
+[Traversing a document	26](#_Toc30586119)
 
-[Adding a Part	27](#_Toc147321121)
+[Adding a Part	27](#_Toc30586120)
 
-[Importing XHTML	27](#_Toc147321122)
+[Importing XHTML	27](#_Toc30586121)
 
-[Markdown import and export	28](#_Toc147321123)
+[Markdown import and export	28](#_Toc30586122)
 
-[docx4j for AI agents (MCP)	28](#_Toc147321124)
+[docx4j for AI agents (MCP)	28](#_Toc30586123)
 
-[Using an LLM with docx4j	28](#_Toc147321125)
+[Using an LLM with docx4j	28](#_Toc30586124)
 
-[docx to (X)HTML	29](#_Toc147321126)
+[docx to (X)HTML	29](#_Toc30586125)
 
-[docx to PDF	30](#_Toc147321127)
+[docx to PDF	30](#_Toc30586126)
 
-[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc147321128)
+[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc30586127)
 
-[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc147321129)
+[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc30586128)
 
-[docx to PDF via XSL FO	31](#_Toc147321130)
+[docx to PDF via XSL FO	31](#_Toc30586129)
 
-[Image Handling - DOCX	34](#_Toc147321131)
+[Image Handling - DOCX	34](#_Toc30586130)
 
-[Windows metafiles (WMF, EMF, EMF+)	35](#_Toc147321132)
+[Windows metafiles (WMF, EMF, EMF+)	35](#_Toc30586131)
 
-[Manual Image Manipulation	36](#_Toc147321133)
+[Manual Image Manipulation	36](#_Toc30586132)
 
-[Image Handling – PPTX	37](#_Toc147321134)
+[Image Handling – PPTX	37](#_Toc30586133)
 
-[Adding Headers/Footers	37](#_Toc147321135)
+[Adding Headers/Footers	37](#_Toc30586134)
 
-[Protection Settings	37](#_Toc147321136)
+[Protection Settings	37](#_Toc30586135)
 
-[docx Table of Contents	38](#_Toc147321137)
+[docx Table of Contents	38](#_Toc30586136)
 
-[Introduction	38](#_Toc147321138)
+[Introduction	38](#_Toc30586137)
 
-[Field background	38](#_Toc147321139)
+[Field background	38](#_Toc30586138)
 
-[TOC Content Control	39](#_Toc147321140)
+[TOC Content Control	39](#_Toc30586139)
 
-[TOC Field Syntax	39](#_Toc147321141)
+[TOC Field Syntax	39](#_Toc30586140)
 
-[Inserting/generating a TOC – "pure Java" considerations	41](#_Toc147321142)
+[Inserting/generating a TOC – "pure Java" considerations	41](#_Toc30586141)
 
-[Text extraction	42](#_Toc147321143)
+[Text extraction	42](#_Toc30586142)
 
-[Text substitution/document generation/reporting	42](#_Toc147321144)
+[Text substitution/document generation/reporting	42](#_Toc30586143)
 
-[Text substitution – document surface	42](#_Toc147321145)
+[Text substitution – document surface	42](#_Toc30586144)
 
-[Text substitution via data bound content controls	43](#_Toc147321146)
+[Text substitution via data bound content controls	43](#_Toc30586145)
 
-[Binding extensions for repeats and conditionals	44](#_Toc147321147)
+[Binding extensions for repeats and conditionals	44](#_Toc30586146)
 
-[Binding escaped XHTML (XML + CSS)	45](#_Toc147321148)
+[Binding escaped XHTML (XML + CSS)	44](#_Toc30586147)
 
-[Binding other rich content	45](#_Toc147321149)
+[Binding other rich content	44](#_Toc30586148)
 
-[Authoring	45](#_Toc147321150)
+[Authoring	45](#_Toc30586149)
 
-[Mailmerge	45](#_Toc147321151)
+[Mailmerge	45](#_Toc30586150)
 
-[SmartArt	45](#_Toc147321152)
+[SmartArt	45](#_Toc30586151)
 
-[JAXB stuff	45](#_Toc147321153)
+[JAXB stuff	45](#_Toc30586152)
 
-[Cloning	45](#_Toc147321154)
+[Cloning	45](#_Toc30586153)
 
-[javax.xml.bind.JAXBElement	46](#_Toc147321155)
+[javax.xml.bind.JAXBElement	45](#_Toc30586154)
 
-[@XmlRootElement	46](#_Toc147321156)
+[@XmlRootElement	46](#_Toc30586155)
 
-[Merging Documents and Presentations	47](#_Toc147321157)
+[Merging Documents and Presentations	47](#_Toc30586156)
 
-[Appendix 1 – Font Mapping	48](#_Toc147321158)
+[Appendix 1 – Font Mapping	48](#_Toc30586157)
 
-[Appendix 2 – Office font solutions	51](#_Toc147321159)
+[Appendix 2 – Office font solutions	51](#_Toc30586158)
+
+[Aptos and the 2023 default theme	52](#_Toc30586159)
 
   
 
@@ -248,7 +250,7 @@ Most docx files in the wild use the so called “transitional” namespace [http
 
 The relevant parts of docx4j are generated from the ECMA schemas, with the addition of the key Microsoft proprietary extensions.  For unsupported extensions, docx4j gracefully degrades to the specified 2007 substitutes.
 
-It is not really intended read/write Word 2003 XML documents, although **package** org.docx4j.convert.in.word2003xml is a proof of concept of importing such documents.
+It is not really intended read/write Word 2003 XML documents, although `package``  org.docx4j.convert.in.word2003xml  `is a proof of concept of importing such documents.
 
 For more information, please see ***Specification versions*** below.
 
@@ -292,31 +294,31 @@ As noted in the introduction, current release series are docx4j **11.5.x.** and 
 
 To use docx4j 17.1.0, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
 
-&#9;	\<!-- use the JAXB Reference Implementation --\>
+&#9;	`<!-- use the JAXB Reference Implementation -->`
 
-&#9;	\<dependency\>
+&#9;	`<dependency>`
 
-&#9;		\<groupId\>org.docx4j\</groupId\>
+&#9;		`<groupId>org.docx4j</groupId>`
 
-&#9;		\<artifactId\>**docx4j-JAXB-ReferenceImpl**\</artifactId\>
+&#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		\<version\>17.1.0\</version\>
+&#9;		`<version>``17.1.0``</version>`
 
-&#9;	\</dependency\>
+&#9;	`</dependency>`
 
 &#9;	
 
-&#9;	\<!-- use the MOXy JAXB implementation --\>
+&#9;	`<!-- use the MOXy JAXB implementation -->`
 
-&#9;	\<dependency\>
+&#9;	`<dependency>`
 
-&#9;		\<groupId\>org.docx4j\</groupId\>
+&#9;		`<groupId>org.docx4j</groupId>`
 
-&#9;		\<artifactId\>**docx4j-JAXB-MOXy**\</artifactId\>
+&#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		\<version\>17.1.0\</version\>
+&#9;		`<version>``17.1.0``</version>`
 
-&#9;	\</dependency\>
+&#9;	`</dependency>`
 
 The blog entry [hello-maven-central](http://www.docx4java.org/blog/2011/10/hello-maven-central/)s \[needs to be updated per above\] shows you what to do, starting with a fresh OS (Win 7 is used, but these steps would work equally well on OSX or Linux).
 
@@ -342,31 +344,31 @@ The Simple Logging Facade for Java (SLF4J) serves as a simple facade or abstract
 
 So you need the slf4j api jar on your classpath (which Maven should do for you automatically):
 
-&#32; \<dependency\>
+`  <``dependency``>`
 
-&#32;   \<groupId\>org.slf4j\</groupId\>
+`    <``groupId``>``org.slf4j``</``groupId``>`
 
-&#32;   \<artifactId\>slf4j-api\</artifactId\>
+`    <``artifactId``>``slf4j-api``</``artifactId``>`
 
-&#32; \</dependency\>
+`  </``dependency``>`
 
 For anything to be logged, you need a logging implementation.  Here we assume you will use logback as your implementation:
 
-&#32; \<dependency\>
+`  <``dependency``>`
 
-&#32;   \<groupId\> ch.qos.logback \</groupId\>
+`    <``groupId``>`` ch.qos.logback`` </``groupId``>`
 
-&#32;   \<artifactId\> logback-classic \</artifactId\>
+`    <``artifactId``>`` logback-classic`` </``artifactId``>`
 
-&#32;   \<version\>\${version.logback-classic}\</version\>
+`    <``version``>``${version.logback-classic}``</``version``>`
 
-&#32; \</dependency\>
+`  </``dependency``>`
 
 For docx4j v11.4 on, the version property should be:
 
-&#9;	\<version.logback-classic\>1.5.19\</version.logback-classic\>
+&#9;	`<version.logback-classic>1.``5.19``</version.logback-classic>`
 
-For docx4j 8.3.8, use logback-classic 1.2.10.
+For docx4j 8.3.8, use `logback-classic 1.2.10.`
 
 A logback.xml config file may be found at [https://github.com/plutext/docx4j/blob/VERSION\_11\_5\_7/docx4j-samples-resources/src/main/resources/logback.xml](https://github.com/plutext/docx4j/blob/VERSION_11_5_7/docx4j-samples-resources/src/main/resources/logback.xml).  Put that on your classpath.
 
@@ -457,9 +459,9 @@ After that, you can manipulate its contents.
 
 A similar approach works for pptx files:
 
-&#9;PresentationMLPackage presentationMLPackage = 
+&#9;`PresentationMLPackage presentationMLPackage = `
 
-&#9;	(PresentationMLPackage)OpcPackage.*load*(**new** java.io.File(inputfilepath));
+&#9;	`(PresentationMLPackage)OpcPackage.``load``(``new`` java.io.File(inputfilepath));`
 
 And similarly for xlsx files.
 
@@ -563,25 +565,25 @@ Similarly, if/when you tell docx4j to save these Java objects as a docx, docx4j 
 
 Sometimes you will want to marshal or unmarshal things yourself.  The class `org.docx4j.jaxb.Context` defines all the JAXBContexts used in docx4j.  Here is representative (non-exhaustive) content:
 
-|Jc|org.docx4j.wml  
-org.docx4j.dml  
-org.docx4j.dml.picture  
-org.docx4j.dml.wordprocessingDrawing  
-org.docx4j.vml  
-org.docx4j.vml.officedrawing  
-org.docx4j.math|
+|`Jc`|`org.docx4j.wml`  
+`org.docx4j.dml`  
+`org.docx4j.dml.picture`  
+`org.docx4j.dml.wordprocessingDrawing`  
+`org.docx4j.vml`  
+`org.docx4j.vml.officedrawing`  
+`org.docx4j.math`|
 |---|---|
-|jcThemePart|org.docx4j.dml|
-|jcDocPropsCore|org.docx4j.docProps.core<br>org.docx4j.docProps.core.dc.elements<br>org.docx4j.docProps.core.dc.terms|
-|jcDocPropsCustom|org.docx4j.docProps.custom|
-|jcDocPropsExtended|org.docx4j.docProps.extended|
-|jcXmlPackage|org.docx4j.xmlPackage|
-|jcRelationships|org.docx4j.relationships|
-|jcCustomXmlProperties|org.docx4j.customXmlProperties|
-|jcContentTypes|org.docx4j.openpackaging.contenttype|
-|jcPML|org.docx4j.pml  
-org.docx4j.dml  
-org.docx4j.dml.picture|
+|`jcThemePart`|`org.docx4j.dml`|
+|`jcDocPropsCore`|`org.docx4j.docProps.core`<br>`org.docx4j.docProps.core.dc.elements`<br>`org.docx4j.docProps.core.dc.terms`|
+|`jcDocPropsCustom`|`org.docx4j.docProps.custom`|
+|`jcDocPropsExtended`|`org.docx4j.docProps.extended`|
+|`jcXmlPackage`|`org.docx4j.xmlPackage`|
+|`jcRelationships`|`org.docx4j.relationships`|
+|`jcCustomXmlProperties`|`org.docx4j.customXmlProperties`|
+|`jcContentTypes`|`org.docx4j.openpackaging.contenttype`|
+|`jcPML`|`org.docx4j.pml`  
+`org.docx4j.dml`  
+`org.docx4j.dml.picture`|
 
 You’ll find XmlUtils.marshalToString very useful as you put your code together.  With this, you can easily output the content of a JAXB object, to see what XML it represents.
 
@@ -601,25 +603,25 @@ You can run PartsList locally from a command line:
 
 though I always find it easier to run it from my IDE.   Example output: 
 
-Part /\_rels/.rels \[org.docx4j.openpackaging.parts.relationships.RelationshipsPart\]  
-&#32; containing JaxbElement:org.docx4j.relationships.Relationships
+`Part /_rels/.rels [org.docx4j.openpackaging.parts.relationships.RelationshipsPart]`  
+`  containing JaxbElement:org.docx4j.relationships.Relationships`
 
-Part /docProps/app.xml \[org.docx4j.openpackaging.parts.DocPropsExtendedPart\]    
-&#32; containing JaxbElement:org.docx4j.docProps.extended.Properties
+`Part /docProps/app.xml [org.docx4j.openpackaging.parts.DocPropsExtendedPart]  `  
+`  containing JaxbElement:org.docx4j.docProps.extended.Properties`
 
-Part /docProps/core.xml \[org.docx4j.openpackaging.parts.DocPropsCorePart\]    
-&#32; containing JaxbElement:org.docx4j.docProps.core.CoreProperties
+`Part /docProps/core.xml [org.docx4j.openpackaging.parts.DocPropsCorePart]  `  
+`  containing JaxbElement:org.docx4j.docProps.core.CoreProperties`
 
-Part **/word/document.xml** \[org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart\]    
-&#32; containing JaxbElement:org.docx4j.wml.Document
+`Part ``/word/document.xml``  [org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart]   `  
+`  containing JaxbElement:org.docx4j.wml.Document`
 
-Part /word/settings.xml \[org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart\]    
-&#32; containing JaxbElement:org.docx4j.wml.CTSettings
+`Part /word/settings.xml [``org.docx4j.openpackaging.parts.WordprocessingML``.DocumentSettingsPart]  `  
+`  containing JaxbElement:org.docx4j.wml.CTSettings`
 
-Part /word/styles.xml \[org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart\]    
-&#32; containing JaxbElement:org.docx4j.wml.Styles
+`Part /word/styles.xml [``org.docx4j.openpackaging.parts.WordprocessingML``.StyleDefinitionsPart]  `  
+`  containing JaxbElement:org.docx4j.wml.Styles`
 
-Part /word/media/image1.jpeg \[org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart\] 
+`Part /word/media/image1.jpeg [``org.docx4j.openpackaging.parts.WordprocessingML``.ImageJpegPart] `
 
 docx4j includes convenience methods to make it easy to access commonly used parts. These include,
 
@@ -627,73 +629,73 @@ on the package:
 
 &#9;
 
-&#9;**public** MainDocumentPart getMainDocumentPart() 
+&#9;`public``  MainDocumentPart getMainDocumentPart()  `
 
-&#9;**public** DocPropsCorePart getDocPropsCorePart() 
+&#9;`public``  DocPropsCorePart getDocPropsCorePart()  `
 
-&#9;**public** DocPropsExtendedPart getDocPropsExtendedPart() 
+&#9;`public``  DocPropsExtendedPart getDocPropsExtendedPart()  `
 
-&#9;**public** DocPropsCustomPart getDocPropsCustomPart() 
+&#9;`public``  DocPropsCustomPart getDocPropsCustomPart()  `
 
 on the document part:
 
-&#9;**public** StyleDefinitionsPart getStyleDefinitionsPart()
+&#9;`public`` StyleDefinitionsPart getStyleDefinitionsPart()`
 
-&#9;**public** NumberingDefinitionsPart getNumberingDefinitionsPart()
+&#9;`public`` NumberingDefinitionsPart getNumberingDefinitionsPart()`
 
-&#9;**public** ThemePart getThemePart()
+&#9;`public`` ThemePart getThemePart()`
 
-&#9;**public** FontTablePart getFontTablePart()
+&#9;`public`` FontTablePart getFontTablePart()`
 
-&#9;**public** CommentsPart getCommentsPart()
+&#9;`public`` CommentsPart getCommentsPart()`
 
-&#9;**public** EndnotesPart getEndNotesPart()
+&#9;`public`` EndnotesPart getEndNotesPart()`
 
-&#9;**public** FootnotesPart getFootnotesPart()
+&#9;`public`` FootnotesPart getFootnotesPart()`
 
-&#9;**public** DocumentSettingsPart getDocumentSettingsPart()
+&#9;`public`` DocumentSettingsPart getDocumentSettingsPart()`
 
-&#9;**public** WebSettingsPart getWebSettingsPart()
+&#9;`public`` WebSettingsPart getWebSettingsPart()`
 
 If a part points to any other parts, it will have a relationships part listing these other parts. 
 
-&#9;RelationshipsPart rp = part.getRelationshipsPart();
+&#9;`RelationshipsPart rp = part.getRelationshipsPart();`
 
 You can access those, and from there, get the part you want:
 
-&#9;**for** ( Relationship r : rp.getRelationships().getRelationship() ) {
+&#9;`for`` ( Relationship r : rp.getRelationships().getRelationship() ) {`
 
 &#9;		
 
-&#9;	*log*.info("\\nFor Relationship Id=" + r.getId() 
+&#9;	`log``.info(``"\nFor Relationship Id="``  + r.getId()  `
 
-&#9;			+ " Source is " + rp.getSourceP().getPartName() 
+&#9;			`+ ``" Source is "``  + rp.getSourceP().getPartName()  `
 
-&#9;			+ ", Target is " + r.getTarget() 
+&#9;			`+ ``", Target is "``  + r.getTarget()  `
 
-&#9;			+ " type " + r.getType() + "\\n");
+&#9;			`+ ``" type "``  + r.getType() +  ``"\n"``);`
 
 &#9;	
 
-&#9;	Part part = rp.getPart(r);
+&#9;	`Part part = rp.getPart(r);`
 
-&#9;}
+&#9;`}`
 
 &#9;		
 
 That gives access to just the parts this part points to.  `RelationshipsPart `contains various useful utility methods, for example:
 
-&#9;/\*\* Gets a loaded Part by its id \*/
+&#9;`/** Gets a loaded Part by its id */`
 
-&#9;**public** Part getPart(String id) 
+&#9;`public``  Part  ``getPart``(String id) `
 
-&#9;**public** Part getPart(Relationship r ) {
+&#9;`public`` Part getPart(Relationship r ) {`
 
 The  `RelationshipsPart `is the key player when it comes to adding/removing images and other parts from your document.
 
 There is also a list of **all** parts, in the package object:
 
-&#9;Parts parts = wordMLPackage.getParts();
+&#9;`Parts parts = wordMLPackage.getParts();`
 
 The Parts object encapsulates a map of parts, keyed by PartName, but you generally shouldn’t add/remove things here directly!
 
@@ -705,87 +707,87 @@ The text of the document is to be found in the main document part.
 
 Its XML will look something like:
 
-\<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" \>
+`<``w:document`` ``xmlns:w``=``"``http://schemas.openxmlformats.org/wordprocessingml/2006/main``"`` >`
 
-&#32; \<w:body\>
+`  <``w:body``>`
 
-&#32;   \<w:p \>
+`    <``w:p`` >`
 
-&#32;     \<w:pPr\>
+`      <``w:pPr``>`
 
-&#32;       \<w:pStyle w:val="Heading1"/\>
+`        <``w:pStyle`` ``w:val``=``"``Heading1``"``/>`
 
-&#32;     \</w:pPr\>
+`      </``w:pPr``>`
 
-&#32;     \<w:r\>
+`      <``w:r``>`
 
-&#32;       \<w:t\>Hello World\</w:t\>
+`        <``w:t``>``Hello World``</``w:t``>`
 
-&#32;     \</w:r\>
+`      </``w:r``>`
 
-&#32;   \</w:p\>
+`    </``w:p``>`
 
-&#32;   :
+`    :`
 
-&#32;   \<w:sectPr \>
+`    <``w:sectPr`` >`
 
-&#32;     \<w:pgSz w:w="12240" w:h="15840"/\>
+`      <``w:pgSz`` ``w:w``=``"``12240``"`` ``w:h``=``"``15840``"``/>`
 
-&#32;     \<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/\>
+`      <``w:pgMar`` ``w:top``=``"``1440``"`` ``w:right``=``"``1440``"`` ``w:bottom``=``"``1440``"`` ``w:left``=``"``1440``"`` ``w:header``=``"``708``"`` ``w:footer``=``"``708``"`` ``w:gutter``=``"``0``"``/>`
 
-&#32;   \</w:sectPr\>
+`    </``w:sectPr``>`
 
-&#32; \</w:body\>
+`  </``w:body``>`
 
-\</w:document\>
+`</``w:document``>`
 
 Given:
 
-&#32;   WordprocessingMLPackage wordMLPackage
+`    ``WordprocessingMLPackage wordMLPackage`
 
 you can access:
 
-&#9;MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+&#9;`MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();`
 
 Classically, you'd then do:
 
-&#9;org.docx4j.wml.Document wmlDocumentEl 
+&#9;`org.docx4j.wml.Document wmlDocumentEl `
 
-&#9;	= (org.docx4j.wml.Document) documentPart.getJaxbElement();
+&#9;	`= (org.docx4j.wml.Document) documentPart.getJaxbElement();`
 
-&#9;Body body = wmlDocumentEl.getBody();
+&#9;`Body body = wmlDocumentEl.getBody();`
 
 But you can skip some of that with:
 
-&#32;   /\*\*
+`    ``/**`
 
-&#32;    \* Convenience method to getJaxbElement().getBody().getContent()
+`     * Convenience method to getJaxbElement().getBody().getContent()`
 
-&#32;    \*/
+`     */`
 
-&#32;   **public** List\<Object\> getContent() 
+`    ``public``  List<Object> getContent()  `
 
 A paragraph is org.docx4j.wml.P; a paragraph is basically made up of runs of text.
 
-@XmlRootElement(name = "p")
+`@``XmlRootElement``(name = ``"p"``)`
 
-**public** **class** P **implements** Child, ContentAccessor
+`public`` ``class``  P  ``implements`` Child, ContentAccessor`
 
 The `ContentAccessor` interface is simply:
 
-/\*\*
+`/**`
 
-&#32;\* **@since** 2.7
+`  *  ``@since`` 2.7`
 
-&#32;\*/
+` */`
 
-**public** **interface** ContentAccessor {
+`public`` ``interface`` ``ContentAccessor`` {`
 
-&#32;   **public** List\<Object\> getContent();
+`    ``public`` List<Object> getContent();`
 
 &#9;
 
-}
+`}`
 
 it is implemented by a number of objects, including:
 
@@ -894,13 +896,13 @@ Flat OPC XML
 
 To create a new docx:
 
-&#32;   // Create the package
+`    ``// Create the package`
 
-&#32;   WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+`    ``WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();`
 
-&#32;   // Save it
+`    ``// Save it`
 
-&#32;   wordMLPackage.save(new java.io.File("helloworld.docx") );
+`    ``wordMLPackage.save(new java.io.File("helloworld.docx") );`
 
 That's it.  
 
@@ -911,91 +913,91 @@ There’s a sample you can try locally from a command line:
 
 `createPackage() `is a convenience method, which does:
 
-&#32;   // Create the package
+`    ``// Create the package`
 
-&#32;   WordprocessingMLPackage wordMLPackage = new WordprocessingMLPackage();
+`    ``WordprocessingMLPackage wordMLPackage = new WordprocessingMLPackage();`
 
-&#32;   // Create the main document part (word/document.xml)
+`    ``// Create the main document part (word/document.xml)`
 
-&#32;   MainDocumentPart wordDocumentPart = new MainDocumentPart();
+`    ``MainDocumentPart wordDocumentPart = new MainDocumentPart();`
 
-&#32;   // Create main document part content
+`    ``// Create main document part content`
 
-&#32;   ObjectFactory factory = Context.getWmlObjectFactory();
+`    ``ObjectFactory factory = Context.getWmlObjectFactory();`
 
-&#32;   org.docx4j.wml.Body body = factory .createBody();
+`    ``org.docx4j.wml.Body body = factory .createBody();`
 
-&#32;   org.docx4j.wml.Document wmlDocumentEl = factory .createDocument();
+`    ``org.docx4j.wml.Document wmlDocumentEl = factory .createDocument();`
 
-&#32;   wmlDocumentEl.setBody(body);
+`    ``wmlDocumentEl.setBody(body);`
 
-&#32;   
+`    `
 
-&#32;   // Put the content in the part
+`    ``// Put the content in the part`
 
-&#32;   wordDocumentPart.setJaxbElement(wmlDocumentEl);
+`    ``wordDocumentPart.setJaxbElement(wmlDocumentEl);`
 
-&#32;           
+`            `
 
-&#32;   // Add the main document part to the package relationships
+`    ``// Add the main document part to the package relationships`
 
-&#32;   // (creating it if necessary)
+`    ``// (creating it if necessary)`
 
-&#32;   wmlPack.addTargetPart(wordDocumentPart);
+`    ``wmlPack.addTargetPart(wordDocumentPart);`
 
 # docx4j.properties
 
 Here is a sample short docx4j.properties file (a complete one may be copied from [https://github.com/plutext/docx4j/blob/master/docx4j-samples-resources/src/main/resources/docx4j.properties](https://github.com/plutext/docx4j/blob/master/docx4j-samples-resources/src/main/resources/docx4j.properties)  ):
 
-\# Page size: use a value from org.docx4j.model.structure.PageSizePaper enum
+`# Page size: use a value from org.docx4j.model.structure.PageSizePaper enum`
 
-\# eg A4, LETTER
+`# eg A4, LETTER`
 
-docx4j.PageSize=LETTER
+`docx4j.PageSize=``LETTER`
 
-\# Page size: use a value from org.docx4j.model.structure.MarginsWellKnown enum
+`# Page size: use a value from org.docx4j.model.structure.MarginsWellKnown enum`
 
-docx4j.PageMargins=NORMAL
+`docx4j.PageMargins=``NORMAL`
 
-docx4j.PageOrientationLandscape=false
+`docx4j.PageOrientationLandscape=``false`
 
-\# Page size: use a value from org.pptx4j.model.SlideSizesWellKnown enum
+`# Page size: use a value from org.pptx4j.model.SlideSizesWellKnown enum`
 
-\# eg A4, LETTER
+`# eg A4, LETTER`
 
-pptx4j.PageSize=LETTER
+`pptx4j.PageSize=``LETTER`
 
-pptx4j.PageOrientationLandscape=false
+`pptx4j.PageOrientationLandscape=``false`
 
-\# These will be injected into docProps/app.xml
+`# These will be injected into docProps/app.xml`
 
-\# if App.Write=true
+`# if App.Write=true`
 
-docx4j.App.write=true
+`docx4j.App.write=``true`
 
-docx4j.Application=docx4j
+`docx4j.Application=``docx4j`
 
-docx4j.AppVersion=2.7
+`docx4j.AppVersion=``2.7`
 
-\# of the form XX.YYYY where X and Y represent numerical values
+`# of the form XX.YYYY where X and Y represent numerical values`
 
-\# These will be injected into docProps/core.xml
+`# These will be injected into docProps/core.xml`
 
-docx4j.dc.write=true
+`docx4j.dc.write=``true`
 
-docx4j.dc.creator.value=docx4j
+`docx4j.dc.creator.value=``docx4j`
 
-docx4j.dc.lastModifiedBy.value=docx4j
+`docx4j.dc.lastModifiedBy.value=``docx4j`
 
-\#
+`#`
 
-\#docx4j.McPreprocessor=true
+`#docx4j.McPreprocessor=true`
 
-\# If you haven't configured log4j yourself
+`# If you haven't configured log4j yourself`
 
-\# docx4j will autoconfigure it.  Set this to true to disable that
+`# docx4j will autoconfigure it.  Set this to true to disable that`
 
-docx4j.Log4j.Configurator.disabled=false
+`docx4j.Log4j.Configurator.disabled=``false`
 
 The page size, margin \& orientation values are used when new documents are created; naturally they don't affect an existing document you open with docx4j.
 
@@ -1005,105 +1007,105 @@ If no docx4j.properties file is found on your class path, docx4j has hard coded 
 
 `MainDocumentPart `contains a method:
 
-&#32; **public **org.docx4j.wml.P addStyledParagraphOfText(String styleId, String text)
+`  ``public ``org.docx4j.wml.P addStyledParagraphOfText(String styleId, String text)`
 
 You can use that method to add a paragraph using the specified style.
 
 The XML we are looking to create will be something like:
 
-\<w:p  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"\>  
-    \<w:r\>  
-        \<w:t\>Hello world\</w:t\>  
-    \</w:r\>  
-\</w:p\>
+`<``w:p `` ``xmlns:w``="http://schemas.openxmlformats.org/wordprocessingml/2006/main"``>`  
+`    ``<``w:r``>`  
+`        ``<``w:t``>``Hello world``</``w:t``>`  
+`    ``</``w:r``>`  
+`</``w:p``>`
 
 `addStyledParagraphOfText `builds the object structure “the JAXB way”, and adds it to the document.
 
 It is based on:
 
-&#9;**public** org.docx4j.wml.P createParagraphOfText(String simpleText) {
+&#9;`public`` org.docx4j.wml.P createParagraphOfText(String simpleText) {`
 
 &#9;	
 
-&#9;	org.docx4j.wml.ObjectFactory factory = Context.*getWmlObjectFactory*();
+&#9;	`org.docx4j.wml.ObjectFactory factory = Context.``getWmlObjectFactory``();`
 
-&#9;	org.docx4j.wml.P  para = factory.createP();
+&#9;	`org.docx4j.wml.P  para = factory.createP();`
 
-&#9;	**if** (simpleText!=**null**) {
+&#9;	`if`` (simpleText!=``null``) {`
 
-&#9;		org.docx4j.wml.Text  t = factory.createText();
+&#9;		`org.docx4j.wml.Text  t = factory.createText();`
 
-&#9;		t.setValue(simpleText);
+&#9;		`t.setValue(simpleText);`
 
 &#9;
 
-&#9;		org.docx4j.wml.R  run = factory.createR();
+&#9;		`org.docx4j.wml.R  run = factory.createR();`
 
-&#9;		run.**getContent**().add(t); // ContentAccessor		
+&#9;		`run.``getContent``().add(t); ``// ContentAccessor`		
 
 &#9;		
 
-&#9;		para.**getContent**().add(run); // ContentAccessor
+&#9;		`para.``getContent``().add(run); ``// ContentAccessor`
 
-&#9;	}
+&#9;	`}`
 
 &#9;	
 
-&#9;	**return** para;
+&#9;	`return`` para;`
 
-&#9;}
+&#9;`}`
 
 Notice that the paragraph, the run, and indeed the Body, all implement the `ContentAccessor` interface:
 
-/\*\*
+`/**`
 
-&#32;\* **@since** 2.7
+`  *  ``@since`` 2.7`
 
-&#32;\*/
+` */`
 
-**public** **interface** ContentAccessor {
+`public`` ``interface`` ``ContentAccessor`` {`
 
-&#32;   **public** List\<Object\> getContent();
+`    ``public`` List<Object> getContent();`
 
 &#9;
 
-}
+`}`
 
 The add method adds the content at the end of the document.  If you want to insert it somewhere else, you could use something like:
 
-&#9;**public** org.docx4j.wml.P addParaAtIndex(MainDocumentPart mdp,
+&#9;`public`` org.docx4j.wml.P addParaAtIndex(MainDocumentPart mdp,`
 
-&#9;		String simpleText, **int** index) {
+&#9;		`String simpleText, ``int`` index) {`
 
-&#9;	org.docx4j.wml.ObjectFactory factory = Context.*getWmlObjectFactory*();
+&#9;	`org.docx4j.wml.ObjectFactory factory = Context.``getWmlObjectFactory``();`
 
-&#9;	org.docx4j.wml.P para = factory.createP();
+&#9;	`org.docx4j.wml.P para = factory.createP();`
 
-&#9;	**if** (simpleText != **null**) {
+&#9;	`if``  (simpleText !=  ``null``) {`
 
-&#9;		org.docx4j.wml.Text t = factory.createText();
+&#9;		`org.docx4j.wml.Text t = factory.createText();`
 
-&#9;		t.setValue(simpleText);
+&#9;		`t.setValue(simpleText);`
 
-&#9;		org.docx4j.wml.R run = factory.createR();
+&#9;		`org.docx4j.wml.R run = factory.createR();`
 
-&#9;		run.getContent().add(t);
+&#9;		`run.getContent().add(t);`
 
-&#9;		para.getContent().add(run);
+&#9;		`para.getContent().add(run);`
 
-&#9;	}
+&#9;	`}`
 
-&#9;	mdp.getContent().add(index, para);
+&#9;	`mdp.getContent().add(index, para);`
 
-&#9;	**return** para;
+&#9;	`return`` para;`
 
-&#9;}
+&#9;`}`
 
 Alternatively, you can create the paragraph by marshalling XML:
 
-&#32;   // Assuming String xml contains the XML above
+`    ``// Assuming String xml contains the XML above`
 
-&#32;   org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);
+`    ``org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);`
 
 For this to work, you need to ensure that all namespaces are declared properly in the string.
 
@@ -1129,9 +1131,9 @@ Now you are ready to create this XML using JAXB.  There are 2 basic ways.
 
 The classic JAXB way is to use the ObjectFactory's .createX methods.  For example:
 
-&#32;      ObjectFactory factory = Context.*getWmlObjectFactory*(); 
+`       ObjectFactory factory = Context.``getWmlObjectFactory``(); `
 
-&#32;      P p = factory.createP();	
+`       P p = factory.createP();`	
 
 The challenge with this is to know what object it is you are trying to create.  To find this out, the easiest way by far is to use [the PartsList online webapp](http://webapp.docx4java.org/OnlineDemo/PartsList.html).  Alternatively, you could run `OpenMainDocumentAndTraverse `on your document, or use Eclipse to search the relevant schema (in /xsd) or source code.
 
@@ -1159,17 +1161,17 @@ An easier way to create stuff may be to just unmarshal the  XML (eg a String rep
 
 For example, given:
 
-\<w:p  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"\>  
-    \<w:r\>  
-        \<w:t\>Hello world\</w:t\>  
-    \</w:r\>  
-\</w:p\>
+`<``w:p `` ``xmlns:w``="http://schemas.openxmlformats.org/wordprocessingml/2006/main"``>`  
+`    ``<``w:r``>`  
+`        ``<``w:t``>``Hello world``</``w:t``>`  
+`    ``</``w:r``>`  
+`</``w:p``>`
 
 you can simply:
 
-&#32;   // Assuming String xml contains the XML above
+`    ``// Assuming String xml contains the XML above`
 
-&#32;   org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);
+`    ``org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);`
 
 The [PartsList online webapp](http://webapp.docx4java.org/OnlineDemo/PartsList.html) can generate appropriate code for you, using both of these approaches.  It also links to the Open XML spec documentation for the element.
 
@@ -1177,7 +1179,7 @@ Alternatively, you can install the [Docx4j Helper Word AddIn](http://www.plutext
 
 If you need to be explicit about the type, you can use:
 
-&#32; **public static **Object unmarshalString(String str, JAXBContext jc, Class declaredType)
+`  ``public static ``Object unmarshalString(String str, JAXBContext jc, Class declaredType)`
 
 # Formatting Properties
 
@@ -1213,11 +1215,11 @@ Sometimes, XPath is a succinct way to select the things you need to change.
 
 You can use XPath to select JAXB nodes:
 
-&#9;MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+&#9;`MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();`
 
-&#9;String xpath = "//w:p";		
+&#9;`String xpath = ``"//w:p"``;`		
 
-&#9;List\<Object\> list = documentPart.getJAXBNodesViaXPath(xpath, **false**);
+&#9;`List<Object> list = documentPart.getJAXBNodesViaXPath(xpath, ``false``);`
 
 These JAXB nodes are live, in the sense that if you change them, your document changes.
 
@@ -1246,23 +1248,23 @@ The [org.docx4j.finders](https://github.com/plutext/docx4j/tree/master/src/main/
 
 It is often superior to using XPath (owing to the limitations in the JAXB reference implementation noted above).
 
-Note also, in **package** org.docx4j.utils:
+Note also, in `package`` org.docx4j.utils:`
 
-/\*\* 
+`/** `
 
-&#32;\* Use this if there is only a single object type (eg just P's)
+` * Use this if there is only a single object type (``eg`` just P's)`
 
-&#32;\* you are interested in doing something with.
+` * you are interested in doing something with.`
 
-public class SingleTraversalUtilVisitorCallback 
+`public`` ``class``  SingleTraversalUtilVisitorCallback  `
 
 ImageConvertEmbeddedToLinked sample contains an example of the use of the above.
 
-/\*\* 
+`/** `
 
-&#32;\* Use this if there is more than one object type (eg Tables and Paragraphs)
+` * Use this if there is more than one object type (``eg`` Tables and Paragraphs)`
 
-&#32;\* you are interested in doing something with during the traversal.
+` * you are interested in doing something with during the traversal.`
 
 `public`` ``class``  CompoundTraversalUtilVisitorCallback  `
 
@@ -1270,19 +1272,19 @@ ImageConvertEmbeddedToLinked sample contains an example of the use of the above.
 
 What if you wanted to add a new styles part? Here's how:
 
-&#32;   // Create a styles part
+`    ``// Create a styles part`
 
-&#32;   StyleDefinitionsPart stylesPart = **new **StyleDefinitionsPart();
+`    ``StyleDefinitionsPart stylesPart = ``new ``StyleDefinitionsPart();`
 
-&#32;   // Populate it with default styles
+`    ``// Populate it with default styles`
 
-&#32;   stylesPart.unmarshalDefaultStyles();
+`    ``stylesPart.unmarshalDefaultStyles();`
 
-&#32;     
+`      `
 
-&#32;   // Add the styles part to the main document part relationships
+`    ``// Add the styles part to the main document part relationships`
 
-&#32;   wordDocumentPart.addTargetPart(stylesPart);
+`    ``wordDocumentPart.addTargetPart(stylesPart);`
 
 You'd take the same approach to add a header or footer.
 
@@ -1334,19 +1336,19 @@ In contrast, in docx4j, that logic is implemented in Java.  Because of this, doc
 
 In docx4j, you can create output using XSLT, or by traversing the document in Java.  The façade lets you specify which:
 
-&#9;	//Prefer the exporter, that uses a xsl transformation
+&#9;	`//Prefer the exporter, that uses a ``xsl`` transformation`
 
-&#9;	Docx4J.*toHTML*(htmlSettings, os, Docx4J.*FLAG\_EXPORT\_PREFER\_XSL*);
+&#9;	`Docx4J.``toHTML``(htmlSettings, os, Docx4J.``FLAG_EXPORT_PREFER_XSL``);`
 
-&#9;	//Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
+&#9;	`//Prefer the exporter, that doesn't use a ``xsl`` transformation (= uses a visitor)`
 
-//		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG\_EXPORT\_PREFER\_NONXSL);
+`//`		`Docx4J.toHTML(htmlSettings, ``os``, Docx4J.FLAG_EXPORT_PREFER_NONXSL);`
 
 From 17.0.4, the visitor (non-XSLT) exporter is the default: it reached feature parity with the XSLT exporter in that release, and generates the HTML roughly an order of magnitude faster.  Pass Docx4J.FLAG\_EXPORT\_PREFER\_XSL if you want the XSLT pathway.
 
 See the sample on GitHub at [src/samples/docx4j/org/docx4j/samples/ConvertOutHtml.java](https://github.com/plutext/docx4j/blob/master/src/samples/docx4j/org/docx4j/samples/ConvertOutHtml.java)
 
-If you have output logging enabled, anything which is not implemented will be obvious in the output document.  If debug level logging is not switched on, unsupported elements will be silently dropped.
+If you have output logging enabled, anything which is not implemented will be obvious in the output document.  ***If debug level logging is not switched on, unsupported elements will be silently dropped.***
 
 # docx to PDF
 
@@ -1368,9 +1370,9 @@ Note: For a period to 2019, Plutext offered a commercial PDF Converter.  That pr
 
 The Docx4J facade can be used to convert to PDF:
 
-&#9;**public** **static** **void** toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream) 
+&#9;`public`` ``static`` ``void``  toPDF(WordprocessingMLPackage  ``wmlPackage``, OutputStream ``outputStream``) `
 
-**throws** Docx4JException 
+`throws``  Docx4JException  `
 
 It uses the first implementation it finds, in the following order:
 
@@ -1413,15 +1415,15 @@ These jars are in the zip file, in dir optional/export-fo
 
 FOP hyphenates from TeX pattern files and ships none, and the usual set is not under the Apache licence, so docx4j-export-fo does not depend on it.  To get hyphenated output, add the patterns to your own classpath:
 
-&#9;	\<dependency\>
+`		<dependency>`
 
-&#9;		\<groupId\>net.sf.offo\</groupId\>
+`			<groupId>net.sf.offo</groupId>`
 
-&#9;		\<artifactId\>fop-hyph\</artifactId\>
+`			<artifactId>fop-hyph</artifactId>`
 
-&#9;		\<version\>2.0\</version\>
+`			<version>2.0</version>`
 
-&#9;	\</dependency\>
+`		</dependency>`
 
 Without patterns the document's setting is honoured but nothing can be hyphenated (FOP logs that no pattern was found for the language).  The property docx4j.convert.out.fo.hyphenate overrides the document: true or false forces hyphenation on or off; leave it unset to let each document decide.  Two things to know: Word hyphenates a language only where its proofing tools are installed on the machine that laid the document out, which the docx does not record, so Word's PDF and docx4j's can differ for a language the author did not have installed; and the patterns are TeX's rather than Word's dictionary, so an occasional break point differs.
 
@@ -1439,9 +1441,9 @@ With 11.5.7, you need to ensure your system has the following fonts installed at
 
 |Document Font|Linux|Windows|
 |---|---|---|
-|Webdings, Wingdings 1-3|Noto Sans Symbols 2 Regular,  
+|**Webdings, Wingdings 1-3**|Noto Sans Symbols 2 Regular,  
 Noto Sans Symbols Regular|Segoe UI Symbol|
-|Symbol|DejaVu Serif|Segoe UI Symbol|
+|**Symbol**|DejaVu Serif|Segoe UI Symbol|
 
 **High volume usage. **
 
@@ -1451,9 +1453,9 @@ Docx4j needs to create a font configuration for FOP on a per-document basis, not
 
 Here is how to create a FopFactory for use with docx4j:
 
-&#9;FOSettings foSettings = **new** FOSettings(wordMLPackage);  
-&#9;FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.*getFopFactoryBuilder*(foSettings);  
-&#9;*fopFactory* = fopFactoryBuilder.build();
+&#9;`FOSettings foSettings = ``new`` FOSettings(wordMLPackage);`  
+&#9;`FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.``getFopFactoryBuilder``(foSettings);`  
+&#9;`fopFactory`` = fopFactoryBuilder.build();`
 
 FopFactory creation is cheaper than it otherwise might be, because we specify fonts explicitly and do not let FOP auto-detect fonts (instead, that is done once by docx4j’s PhysicalFonts class).
 
@@ -1465,7 +1467,7 @@ When a FopFactory is reused, docx4j uses a custom PDF document handler, introduc
 
 This custom document handler is enabled by default. You can disable it, for example if you are not reusing a FopFactory, by setting the following docx4j property:
 
-docx4j.convert.out.fo.renderers.**ConfiguredPDFDocumentHandler**=false
+`docx4j.convert.out.fo.renderers.``ConfiguredPDFDocumentHandler``=false`
 
 # Image Handling - DOCX
 
@@ -1477,152 +1479,152 @@ It is also possible to create a “linked” image.  In this case, the image is 
 
 Docx4j's `BinaryPartAbstractImage`` `class contains methods to allow you to create both embedded and linked images (along with appropriate relationships).
 
-&#32; /\*\*
+`  ``/**`
 
-&#32;  \* Create an image part from the provided byte array, attach it to the 
+`   ``* Create an image part from the provided byte array, attach it to the `
 
-&#32;  \* main document part, and return it.\*/
+`   ``* main document part, and return it.*/`
 
-&#32; **public static **BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
+`  ``public static ``BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,`
 
-&#32;     **byte**\[\] bytes) 
+`      ``byte``[] bytes) `
 
-&#32; 
+`  `
 
-&#32; /\*\*
+`  ``/**`
 
-&#32;  \* Create an image part from the provided byte array, attach it to the source part
+`   ``* Create an image part from the provided byte array, attach it to the source part`
 
-&#32;  \* (eg the main document part, a header part etc), and return it.\*/
+`   ``* (eg the main document part, a header part etc), and return it.*/`
 
-&#32; **public static **BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
+`  ``public static ``BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,`
 
-&#32;     Part sourcePart, **byte**\[\] bytes) 
+`      ``Part sourcePart, ``byte``[] bytes) `
 
-&#32; /\*\*
+`  ``/**`
 
-&#32;  \* Create a linked image part, and attach it as a rel of the specified source part
+`   ``* Create a linked image part, and attach it as a rel of the specified source part`
 
-&#32;  \* (eg a header part) \*/
+`   ``* (eg a header part)`` ``*/`
 
-&#32; **public static **BinaryPartAbstractImage createLinkedImagePart(  
-&#32;     WordprocessingMLPackage wordMLPackage, Part sourcePart, String fileurl) 
+`  ``public static ``BinaryPartAbstractImage createLinkedImagePart(`  
+`      ``WordprocessingMLPackage wordMLPackage, Part sourcePart, String fileurl) `
 
 For an image to appear in the document, there also needs to be appropriate XML in the main document part.  This XML can take 2 basic forms:
 
 - the Word 2007 `w:drawing`` `form
 
-&#9;\<w:p\>
+&#9;`<w:p>`
 
-&#9;	\<w:r\>
+&#9;	`<w:r>`
 
-&#9;		\<w:drawing\>
+&#9;		`<w:drawing>`
 
-&#9;			\<wp:inline distT="0" distB="0" distL="0" distR="0"\>
+&#9;			`<wp:inline ``distT``="0" ``distB``="0" ``distL``="0" ``distR``="0"``>`
 
-&#9;				\<wp:extent cx="3238500" cy="2362200" /\>
+&#9;				`<wp:extent ``cx``="3238500" ``cy``="2362200" /``>`
 
-&#9;				\<wp:effectExtent l="19050" t="0" r="0" b="0" /\>
+&#9;				`<wp:effectExtent ``l``="19050" ``t``="0" ``r``="0" ``b``="0" /``>`
 
-&#9;				:
+&#9;				`:`
 
-&#9;				\<a:graphic \>
+&#9;				`<a:graphic >`
 
-&#9;					\<a:graphicData  ..\>
+&#9;					`<a:graphicData `` ..``>`
 
-&#9;						\<pic:pic \>
+&#9;						`<pic:pic >`
 
-&#9;							:
+&#9;							`:`
 
-&#9;							\<pic:blipFill\>
+&#9;							`<pic:blipFill>`
 
-&#9;								\<**a:blip r:embed="rId5"** /\>
+&#9;								`<``a:blip ``r:embed``="rId5"`` /``>`
 
-&#9;								:
+&#9;								`:`
 
-&#9;							\</pic:blipFill\>
+&#9;							`<``/``pic:blipFill>`
 
-&#9;							:
+&#9;							`:`
 
-&#9;						\</pic:pic\>
+&#9;						`<``/``pic:pic>`
 
-&#9;					\</a:graphicData\>
+&#9;					`<``/``a:graphicData>`
 
-&#9;				\</a:graphic\>
+&#9;				`<``/``a:graphic>`
 
-&#9;			\</wp:inline\>
+&#9;			`<``/``wp:inline>`
 
-&#9;		\</w:drawing\>
+&#9;		`<``/``w:drawing>`
 
-&#9;	\</w:r\>
+&#9;	`<``/``w:r>`
 
-&#9;\</w:p\>
+&#9;`<``/``w:p>`
 
 - the Word 2003 VML-based `w:pict` form
 
-&#9;\<w:p\>
+&#9;`<w:p>`
 
-&#9;	\<w:r\>
+&#9;	`<w:r>`
 
-&#9;		\<w:pict\>
+&#9;		`<w:pict>`
 
-&#9;			\<v:shapetype id="\_x0000\_t75" coordsize="21600,21600"  .. \>
+&#9;			`<v:shapetype ``id``="_x0000_t75" ``coordsize``="21600,21600" ``  ..  ``>`
 
-&#9;				\<v:stroke joinstyle="miter" /\>
+&#9;				`<v:stroke ``joinstyle``="miter" /``>`
 
-&#9;				\<v:formulas\>
+&#9;				`<v:formulas>`
 
-&#9;					:
+&#9;					`:`
 
-&#9;				\</v:formulas\>
+&#9;				`<``/``v:formulas>`
 
-&#9;				:
+&#9;				`:`
 
-&#9;			\</v:shapetype\>
+&#9;			`<``/``v:shapetype>`
 
-&#9;			\<v:shape .. style="width:428.25pt;height:321pt"\>
+&#9;			`<v:shape ``..`` ``style``="width:428.25pt;height:321pt"``>`
 
-&#9;				\<**v:imagedata r:id="rId4"** o:title="" /\>
+&#9;				`<``v:imagedata ``r:id``="rId4"`` ``o:title``="" /``>`
 
-&#9;			\</v:shape\>
+&#9;			`<``/``v:shape>`
 
-&#9;		\</w:pict\>
+&#9;		`<``/``w:pict>`
 
-&#9;	\</w:r\>
+&#9;	`<``/``w:r>`
 
-&#9;\</w:p\>
+&#9;`<``/``w:p>`
 
 Docx4j can create the Word 2007 `w:drawing/wp:inline`` `form for you:
 
-&#32; /\*\*
+`  ``/**`
 
-&#32;  \* Create a \<wp:inline\> element suitable for this image,
+`   ``* Create a ``<wp:inline> ``element suitable for this image,`
 
-&#32;  \* which can be linked or embedded in w:p/w:r/w:drawing.
+`   ``* which can be linked or embedded in w:p/w:r/w:drawing.`
 
-&#32;  \* If the image is wider than the page, it will be scaled
+`   ``* If the image is wider than the page, it will be scaled`
 
-&#32;  \* automatically.  See Javadoc for other signatures.
+`   ``* automatically.  See Javadoc for other signatures.`
 
-&#32;  \* @param filenameHint Any text, for example the original filename
+`   ``* ``@param ``filenameHint Any text, for example the original filename`
 
-&#32;  \* @param altText  Like HTML's alt text
+`   ``* ``@param ``altText  Like HTML's alt text`
 
-&#32;  \* @param id1   An id unique in the document
+`   ``* ``@param ``id1   An id unique in the document`
 
-&#32;  \* @param id2   Another id unique in the document
+`   ``* ``@param ``id2   Another id unique in the document`
 
-&#32;  \* @param **link**  true if this is to be **linked not embedded** \*/
+`   ``* ``@param ``link``   true if this is to be  ``linked not embedded`` ``*/`
 
-&#32; **public **Inline createImageInline(String filenameHint, String altText, 
+`  ``public ``Inline createImageInline(String filenameHint, String altText, `
 
-&#32;     **int **id1, **int **id2, **boolean **link) 
+`      ``int ``id1, ``int ``id2, ``boolean ``link) `
 
 which you can then add to a `w:r/w:drawing.`
 
 Finally, with docx4j, you can convert images from formats unsupported by Word (eg PDF), to PNG, which is a supported format.  For this, docx4j uses **ImageMagick**.  So if you want to use this feature, you need to install ImageMagick.  Docx4j invokes ImageMagick using:
 
-&#32;Process p = Runtime.getRuntime().exec("imconvert -density " + density + " -units PixelsPerInch - png:-");  
+` Process p = Runtime.getRuntime().exec(``"imconvert -density " ``+ density + ``" -units PixelsPerInch - png:-"``);`  
 
 
 Note the name **imconvert**, which is used so that we don't have to supply a full path to exec.  You'll need to accommodate that.  
@@ -1655,9 +1657,9 @@ You can manually manipulate the relationship, and you can manually manipulate th
 
 Given an image part, you can get the relationship pointing to it 
 
-&#9;	Relationship rel = copiedImagePart.getSourceRelationship();
+&#9;	`Relationship ``rel = copiedImagePart.getSourceRelationship();`
 
-&#9;	String id = rel.getId();
+&#9;	`String id = rel.getId();`
 
 You can then ensure the reference matches.
 
@@ -1679,23 +1681,23 @@ There is a family of features the Office UI groups under “Protection Settings�
 
 Most protection settings can be manipulated using docx4j 3.3.  It contains a class ProtectionSettings:
 
-/\*\*
+`/**`
 
-&#32;\* The Protection Settings which are common across
+` * The Protection Settings which are common across`
 
-&#32;\* docx, pptx, xlsx, namely mark as final, encrypt with password,
+`  *  ``docx``, ``pptx``, ``xlsx``, namely mark as final, encrypt with password,`
 
-&#32;\* and digital signature.  Subclasses implement the 
+`  * and digital signature.  Subclasses implement the  `
 
-&#32;\* docx and xlsx format specific features.
+`  *  ``docx``  and  ``xlsx`` format specific features.`
 
-&#32;\* 
+`  *  `
 
-&#32;\* **@author** jharrop
+`  *  ``@author`` ``jharrop`
 
-&#32;\* **@since** 3.3.0
+`  *  ``@since`` 3.3.0`
 
-&#32;\*/
+` */`
 
 `public`` ``abstract`` ``class`` ProtectionSettings`
 
@@ -1811,7 +1813,7 @@ Of the switches in the Open XML specification, this TOC helper recognises:
 |**\\n** field-argument|Without field-argument, omits page numbers from the table of contents. Page numbers are omitted from all levels unless a range of entry levels is specified by text in this switch's field-argument. A range is specified as for \\l.|
 |**\\o** field-argument|Uses paragraphs formatted with all or the specified range of built-in heading styles. Headings in a style range are specified by text in this switch's field-argument using the notation specified as for \\l, where each integer corresponds to the style with a style ID of HeadingX (e.g. 1 corresponds to Heading1). If no heading range is specified, all heading levels used in the document are listed.|
 |**\\t** field-argument|Uses paragraphs formatted with styles other than the built-in heading styles. text in this switch's field-argument specifies those styles as a set of comma-separated doublets, with each doublet being a comma-separated set of style name and table of content level. \\t can be combined with \\o.|
-|\\u|Uses the applied paragraph outline level.|
+|**\\u**|Uses the applied paragraph outline level.|
 
 The following switches may also be supported in a future version:
 
@@ -1836,24 +1838,24 @@ There are no plans to support the remaining switches:
 
 You should ensure styles TOC1, TOC2, TOC3 etc are defined in your styles definition part, since these are used to style TOC entries.  ToC Helper will fallback to hard coded defaults for these styles, if they are not defined.  The hard coded defaults come from:
 
-&#9;InputStream is = ResourceUtils.*getResourceViaProperty*(   
-&#9;			"org.docx4j.toc.TocStyles.xml",
+&#9;`InputStream is = ResourceUtils.``getResourceViaProperty``( `  
+&#9;			`"org.docx4j.toc.TocStyles.xml"``,`
 
-&#9;			"org/docx4j/toc/TocStyles.xml");
+&#9;			`"org/docx4j/toc/TocStyles.xml"``);`
 
 You can specify a different resource of your own in docx4j.properties:
 
-\# Defaults to com/plutext/docx/toc/TocStyles.xml
+`# Defaults to ``com``/``plutext``/``docx``/``toc``/TocStyles.xml`
 
-\# It provides default toc style definitions,
+`# It provides default ``toc`` style definitions,`
 
-\# for use if none are defined in the docx itself.
+`# for use if none are defined in the ``docx`` itself.`
 
-org.docx4j.toc.TocStyles.xml=org/docx4j/toc/TocStyles.xml
+`org.docx4j.toc.TocStyles.xml=org/docx4j/toc/TocStyles.xml`
 
 # Text extraction
 
-A quick way to extract the text from a docx, is to use TextUtils‘  
+A quick way to extract the text from a docx, is to use `TextUtils‘  `
 
 `  ``public static void ``extractText(Object o, Writer w)`
 
@@ -1870,8 +1872,8 @@ This table seeks to convey the major difference between these 2 approaches:
 
 ||Variable replacement on the document surface|Content control data binding|
 |---:|:---:|:---:|
-|Suitability to <br>complex documents|Less suited, since the document surface is brittle (especially for nested repeats/conditions)|Well suited|
-|Template setup requirement|Edit in Microsoft Word or other docx editor|Needs an authoring tool (typically a Word AddIn)|
+|**Suitability to **<br>**complex documents**|Less suited, since the document surface is brittle (especially for nested repeats/conditions)|Well suited|
+|**Template setup requirement**|Edit in Microsoft Word or other docx editor|Needs an authoring tool (typically a Word AddIn)|
 
 ## Text substitution – document surface
 
@@ -1892,40 +1894,40 @@ Subject to that, you can do text substitution in a variety of ways, for example:
 
 docx4j‘s XmlUtils also contains:
 
-&#32;    /\*\*
+`     ``/**`
 
-&#32;    \* Give a string of wml containing \${key1}, \${key2}, return a suitable
+`     ``* Give a string of wml containing ${key1}, ${key2}, return a suitable`
 
-&#32;    \* object.\*/
+`     ``* object.*/`
 
-&#32;   **public static **Object unmarshallFromTemplate(String wmlTemplateString, 
+`    ``public static ``Object unmarshallFromTemplate(String wmlTemplateString, `
 
-&#32;       java.util.HashMap\<String, String\> mappings)   
+`        ``java.util.HashMap<String, String> mappings) `  
 
 
 See the UnmarshallFromTemplate example, which operates on a string containing:
 
-&#9;\<w:p\>
+&#9;`<w:p>`
 
-&#9;	\<w:r\>
+&#9;	`<w:r>`
 
-&#9;		\<w:t\>My favourite colour is **\${colour}**.\</w:t\>
+&#9;		`<w:t>``My favourite colour is ``${colour}``.``<``/``w:t>`
 
-&#9;	\</w:r\>
+&#9;	`<``/``w:r>`
 
-&#9;\</w:p\>
+&#9;`<``/``w:p>`
 
-&#9;\<w:p /\>
+&#9;`<w:p ``/``>`
 
-&#9;\<w:p\>
+&#9;`<w:p>`
 
-&#9;	\<w:r\>
+&#9;	`<w:r>`
 
-&#9;		\<w:t\>My favourite ice cream is **\${icecream}**.\</w:t\>
+&#9;		`<w:t>``My favourite ice cream is ``${icecream}``.``<``/``w:t>`
 
-&#9;	\</w:r\>
+&#9;	`<``/``w:r>`
 
-&#9;\</w:p\>
+&#9;`<``/``w:p>`
 
 Beyond this, you can use one of the well-know templating languages.  For example, freemarker, velocity, or Spring EL.
 
@@ -1943,31 +1945,31 @@ Then, when you open the document in Word 2007, Word automatically populates the 
 
 This works using XPath.  A data-bound content control looks something like:
 
-&#32;     \<w:sdt\>
+`      <``w:sdt``>`
 
-&#32;       \<w:sdtPr\>
+`        <``w:sdtPr``>`
 
-&#32;         \<w:dataBinding w:xpath="/root\[1\]/customer\[1\]" w:storeItemID="{428C88D8-C0E3-44F0-B5D7-F65D8B9F7EC9}" /\>
+`          <``w:dataBinding`` ``w:xpath``=``"``/root[1]/customer[1]``"`` ``w:storeItemID``=``"``{428C88D8-C0E3-44F0-B5D7-F65D8B9F7EC9}``"`` />`
 
-&#32;       \</w:sdtPr\>
+`        </``w:sdtPr``>`
 
-&#32;       \<w:sdtContent\>
+`        <``w:sdtContent``>`
 
-&#32;         \<w:r\>
+`          <``w:r``>`
 
-&#32;           \<w:rPr\>
+`            <``w:rPr``>`
 
-&#32;             \<w:rStyle w:val="PlaceholderText" /\>
+`              <``w:rStyle`` ``w:val``=``"``PlaceholderText``"`` />`
 
-&#32;           \</w:rPr\>
+`            </``w:rPr``>`
 
-&#32;           \<w:t\>Click here to enter text.\</w:t\>
+`            <``w:t``>``Click here to enter text.``</``w:t``>`
 
-&#32;         \</w:r\>
+`          </``w:r``>`
 
-&#32;       \</w:sdtContent\>
+`        </``w:sdtContent``>`
 
-&#32;     \</w:sdt\>
+`      </``w:sdt``>`
 
 You XML file is stored as a part in the docx, typically with a path which is something like customXml/item1.xml.   Note: despite the word "customXml" in the path, this functionality is not affected by the 2009 i4i patent saga.
 
@@ -1977,17 +1979,17 @@ This is useful if you don't want to leave it to Word to do that (for example, yo
 
 Your XML is represented using 2 parts:
 
-&#9;	CustomXmlDataStoragePart customXmlDataStoragePart 
+&#9;	`CustomXmlDataStoragePart customXmlDataStoragePart `
 
-&#9;		= wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
+&#9;		`= wordMLPackage.getCustomXmlDataStorageParts().get(itemId);`
 
-&#9;	CustomXmlDataStorage customXmlDataStorage 
+&#9;	`CustomXmlDataStorage customXmlDataStorage `
 
-&#9;		= customXmlDataStoragePart.getData();
+&#9;		`= customXmlDataStoragePart.getData();`
 
 To apply the bindings:
 
-&#9;	customXmlDataStoragePart.*applyBindings*(wordMLPackage.getMainDocumentPart());
+&#9;	`customXmlDataStoragePart.``applyBindings``(wordMLPackage.getMainDocumentPart());`
 
 See further the CustomXmlBinding sample. 
 
@@ -2047,23 +2049,23 @@ The code can be found in:
 
 To clone a JAXB object, use one of the following methods in XmlUtils:
 
-&#32; /\*\* Clone this JAXB object, using default JAXBContext. \*/ 
+`  ``/** Clone this JAXB object, using default JAXBContext. */ `
 
-&#32; **public static **\<T\> T deepCopy(T value) 
+`  ``public static ``<T> T deepCopy(T value) `
 
-&#32; 
+`  `
 
-&#32; /\*\* Clone this JAXB object \*/
+`  ``/** Clone this JAXB object */`
 
-&#32; **public static **\<T\> T deepCopy(T value, JAXBContext jc) 
+`  ``public static ``<T> T deepCopy(T value, JAXBContext jc) `
 
 ## javax.xml.bind.JAXBElement
 
 One annoying thing about JAXB, is that an object – say a table – could be represented as `org.docx4j.wml.Tbl` (as you would expect).  Or it might be wrapped in a `javax.xml.bind.JAXBElement`, in which case to get the real table, you have to do something like:
 
-&#32;    **if **( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) 
+`     ``if ``( ((JAXBElement)o).getDeclaredType().getName().equals(``"org.docx4j.wml.Tbl"``) ) `
 
-&#32;         org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();
+`          ``org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();`
 
 XmlUtils.**unwrap** can do this for you.
 
@@ -2077,45 +2079,45 @@ In some cases, you might find this annotation is missing.
 
 If you can't add the annotation to the jaxb source code, an alternative is to marshall it using code which is explicit about the resulting QName.  For example, XmlUtils contains:
 
-&#32; /\*\* Marshal to a W3C document, for object
+`  ``/** Marshal to a W3C document, for object`
 
-&#32;  \*  missing an @XmlRootElement annotation.  \*/
+`   ``*  missing an @XmlRootElement annotation.  */`
 
-&#32; **public static **org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc,  
-&#32;     String uri, String local, Class declaredType) 
+`  ``public static ``org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc,`  
+`      ``String uri, String local, Class declaredType) `
 
 You could use this like so:
 
-&#32;   CTFootnotes footnotes =   
-&#32;       wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement().getValue();
+`    ``CTFootnotes footnotes = `  
+`        ``wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement().getValue();`
 
-&#32;   CTFtnEdn ftn = footnotes.getFootnote().get(1);
+`    ``CTFtnEdn ftn = footnotes.getFootnote().get(1);`
 
-&#32;   
+`    `
 
-&#32;   // No @XmlRootElement on CTFtnEdn, so .. 
+`    ``// No @XmlRootElement on CTFtnEdn, so .. `
 
-&#32;   Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
+`    ``Document d = XmlUtils.marshaltoW3CDomDocument( ftn,`
 
-&#32;       Context.jc, Namespaces.NS\_WORD12, "footnote",  CTFtnEdn.**class **);
+`        ``Context.jc, Namespaces.NS_WORD12, ``"footnote"``,  CTFtnEdn.``class ``);`
 
 Where the problematic object is something you're adding which isn't at the top of the tree, you should add it wrapped in a JAXBElement.  For example, suppose you wanted to add FldChar fldchar.  You'd create it in the ordinary way:
 
-&#32;   FldChar fldchar = factory.createFldChar();
+`    FldChar fldchar = factory.createFldChar();`
 
 but then what you'd actually add to r.getRunContent() is:	
 
-&#32;   **new** JAXBElement( **new** QName(Namespaces.*NS\_WORD12*, "fldChar"), FldChar.**class**, fldchar); 
+`    ``new``  JAXBElement(  ``new`` QName(Namespaces.``NS_WORD12``, ``"fldChar"``), FldChar.``class``, fldchar);`` `
 
 An easier way to do this is to find the appropriate method in the object factory (ie the method for creating it wrapped as a JAXBElement).  Use that method signature.  In this example:
 
-&#32;   @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "fldChar", scope = R.**class**)
+`    ``@XmlElementDecl``(namespace = ``"http://schemas.openxmlformats.org/wordprocessingml/2006/main"``, name = ``"fldChar"``, scope = R.``class``)`
 
-&#32;   **public** JAXBElement\<FldChar\> createRFldChar(FldChar value) {
+`    ``public`` JAXBElement<FldChar> createRFldChar(FldChar value) {`
 
-&#32;       **return** **new** JAXBElement\<FldChar\>(*\_RFldChar\_QNAME*, FldChar.**class**, R.**class**, value);
+`        ``return`` ``new`` JAXBElement<FldChar>(``_RFldChar_QNAME``, FldChar.``class``, R.``class``, value);`
 
-&#32;   }
+`    }`
 
 The easiest way is to use the [PartsList online webapp](http://webapp.docx4java.org/OnlineDemo/PartsList.html) to generate the relevant code.
 
@@ -2127,7 +2129,7 @@ This programming task is complicated by the need to keep other parts of the docu
 
 Plutext’s Enterprise edition of docx4j includes “MergeDocx” code  which makes merging documents as easy as invoking the method:
 
-&#9;public  WordprocessingMLPackage merge(List\<WordprocessingMLPackage\> wmlPkgs)
+&#9;`public``  ``WordprocessingMLPackage merge(List<WordprocessingMLPackage> wmlPkgs)`
 
 In other words, you pass a list of docx, and get a single new docx back.
 
@@ -2139,7 +2141,7 @@ The MergeDocx extension can also be used to process a **docx** which is embedded
 
 To process the w:altChunk elements in a docx, you invoke:
 
-&#9;public WordprocessingMLPackage process(WordprocessingMLPackage srcPackage)
+&#9;`public`` ``WordprocessingMLPackage process(WordprocessingMLPackage srcPackage)`
 
 You pass in a docx containg altChunks, and get a  new docx back which doesn’t.
 
@@ -2160,6 +2162,7 @@ These fonts come from 3 sources:
   - it will look in /fonts, unless you change this via property `docx4j.fonts.PhysicalFonts.Jars.PathPrefix`  
     you can disable looking here by setting `org.docx4j.fonts.discover``Jar``Fonts.enabled=false`
   - `docx4j-export-fo-fonts-symbol` jar for symbol substitutes (Webdings, Wingdings, Symbol font substitutes)
+  - `docx4j-export-fo-fonts-theme2023` jar  for Aptos and Aptos Display substitutes (Akasia, Intos Display; from 17.1.1)
 - those embedded in the document
 
 Note that Word silently performs ***font substitution***.  When you open an existing document in Word, and select text in a particular font, the actual font you see on the screen won't be the font reported in the ribbon if it is not installed on your computer or embedded in the document.  To see whether Word 2007 is substituting a font, go into Word Options \> Advanced \> Show Document Content and press the "Font Substitution" button.  
@@ -2180,49 +2183,49 @@ On a Linux computer, common Microsoft fonts are typically not available; the sub
 
 A font mapper contains Map\<String, PhysicalFont\>; to add a font mapping, as per the example in the ConvertOutPDF sample:
 
-&#9;// Set up font mapper
+&#9;`// Set up font ``mapper`
 
-&#9;Mapper fontMapper = **new** IdentityPlusMapper();
+&#9;`Mapper fontMapper = ``new`` IdentityPlusMapper();`
 
-&#9;wordMLPackage.setFontMapper(fontMapper);
+&#9;`wordMLPackage.setFontMapper(fontMapper);`
 
 &#9;		
 
-&#9;// Example of mapping missing font Algerian to installed font Comic Sans MS
+&#9;`// Example of mapping missing font Algerian to installed font Comic ``Sans`` MS`
 
-&#9;PhysicalFont font = PhysicalFonts.get("Comic Sans MS");
+&#9;`PhysicalFont font = PhysicalFonts.get(``"Comic Sans MS"``);`
 
-&#9;fontMapper.put("Algerian", font);
+&#9;`fontMapper.put(``"Algerian"``, font);`
 
-You'll see the font names if you configure log4j debug level logging for org.docx4j.fonts.PhysicalFonts
+You'll see the font names if you configure log4j debug level logging for `org.docx4j.fonts.PhysicalFonts`
 
 To conserve resources, you can restrict to a subset of fonts installed on your system:
 
-&#9;// Font regex (optional)
+&#9;`// Font ``regex`` (optional)`
 
-&#9;// Set regex if you want to restrict to some defined subset of fonts
+&#9;`// Set ``regex`` if you want to restrict to some defined subset of fonts`
 
-&#9;// Here we have to do this before calling createContent,
+&#9;`// Here we have to do this before calling createContent,`
 
-&#9;// since that discovers fonts
+&#9;`// since that discovers fonts`
 
-&#9;String regex = **null**;
+&#9;`String regex = ``null``;`
 
-&#9;// Windows:
+&#9;`// Windows:`
 
-&#9;// String
+&#9;`// String`
 
-&#9;// regex=".\*(calibri\|cour\|arial\|times\|comic\|georgia\|impact\|LSANS\|pala\|tahoma\|trebuc\|verdana\|symbol\|webdings\|wingding).\*";
+&#9;`// ``regex``=".*(``calibri``|``cour``|``arial``|times|comic|``georgia``|impact|LSANS|``pala``|``tahoma``|``trebuc``|``verdana``|symbol|``webdings``|``wingding``).*";`
 
-&#9;// Mac
+&#9;`// ``Mac`
 
-&#9;// String
+&#9;`// String`
 
-&#9;// regex=".\*(Courier New\|Arial\|Times New Roman\|Comic Sans\|Georgia\|Impact\|Lucida Console\|Lucida Sans Unicode\|Palatino Linotype\|Tahoma\|Trebuchet\|Verdana\|Symbol\|Webdings\|Wingdings\|MS Sans Serif\|MS Serif).\*";
+&#9;`// ``regex``=".*(Courier New|``Arial``|Times New Roman|Comic ``Sans``|``Georgia``|Impact|``Lucida`` Console|``Lucida`` ``Sans`` ``Unicode``|``Palatino`` ``Linotype``|``Tahoma``|``Trebuchet``|``Verdana``|Symbol|``Webdings``|``Wingdings``|MS ``Sans`` ``Serif``|MS ``Serif``).*";`
 
-&#9;PhysicalFonts.*setRegex*(regex); 
+&#9;`PhysicalFonts.``setRegex``(regex);` 
 
-Troubleshooting
+**Troubleshooting**
 
 You should be able to configure things such that PDF via export-fo uses the same fonts on both Linux and Windows.
 
@@ -2270,7 +2273,7 @@ The following table summarizes the situation:
 substitute|Liberation v2  
 equivalent|
 |---:|:---:|:---:|:---:|
-|Office 95 / 97/ 2000 / XP / 2003|Times New Roman  
+|**Office 95 / 97/ 2000 / XP / 2003**|Times New Roman  
 Arial  
 `Courier New`<br>(inc in Core Fonts for the Web)|Tinos  
 Arimo  
@@ -2279,51 +2282,72 @@ Cousine
 Liberation Sans  
 Liberation Mono  
 |
-|Office 2007|Calibri  
+|**Office 2007 – 2010**  
+**default theme**|Calibri  
 Cambria  
 (ClearType Font Collection)|Carlito  
-Caladea<br>|\[none\]  
-\[none\]<br>|
-|Office 2013||||
-|Office 2016||||
-|Office 2019||||
-|Microsoft 365 (mid-2023)|Aptos|\[nothing available 2025\]|\[none\]|
+Caladea|\[none\]  
+\[none\]|
+|**Office 2013 – 2022**  
+**default theme**|Calibri Light (headings)  
+Calibri (body)|Carlito with a 0.987 width factor (measured, not metric)  
+Carlito|\[none\]  
+\[none\]|
+|**Microsoft 365 from late 2023**  
+**default theme**|Aptos Display (headings)  
+Aptos (body)|Intos Display  
+Akasia|\[none\]  
+\[none\]|
 
-These metrically compatible substitutes are available in the Croscore (Tinos, Arimo, Cousine), Liberation and Crosextra (Carlito, Caladea) font packages.
+These metrically compatible substitutes are available in the Croscore (Tinos, Arimo, Cousine), Liberation and Crosextra (Carlito, Caladea) font packages. For the 2023 theme, Akasia (for Aptos) and Intos Display (for Aptos Display) are metrically compatible and are packaged in docx4j-export-fo-fonts-theme2023 (from docx4j 17.1.1).
 
 So for best results with PDF via export-fo on a Linux system, you should install the Croscore or Liberation fonts, and the Crosextra fonts, then use the following  font mappings:
 
-&#9;// Liberation
+&#9;`// Liberation`
 
-&#9;fontMapper.put("Times New Roman", PhysicalFonts.get("Liberation Sans"));
+&#9;`fontMapper.put("Times New Roman", PhysicalFonts.get("Liberation Sans"));`
 
-&#9;fontMapper.put("Arial", PhysicalFonts.get("Liberation Serif"));
+&#9;`fontMapper.put("Arial", PhysicalFonts.get("Liberation Serif"));`
 
-&#9;fontMapper.put("Courier New", PhysicalFonts.get("Liberation Mono"));
+&#9;`fontMapper.put("Courier New", PhysicalFonts.get("Liberation Mono"));`
 
-&#9;// or:
+&#9;`// or:`
 
-&#9;// Croscore
+&#9;`// Croscore`
 
-&#9;fontMapper.put("Times New Roman", PhysicalFonts.*get*("Tinos Regular"));
+&#9;`fontMapper.put("Times New Roman", PhysicalFonts.``get``("Tinos`` Regular``"));`
 
-&#9;fontMapper.put("Arial", PhysicalFonts.*get*("Arimo Regular"));
+&#9;`fontMapper.put("Arial", PhysicalFonts.``get``("Arimo`` ``Regular"));`
 
-&#9;fontMapper.put("Courier New", PhysicalFonts.*get*("Cousine Regular"));
+&#9;`fontMapper.put("Courier New", PhysicalFonts.``get``("Cousine`` ``Regular"));`
 
-&#9;// Crosextra
+&#9;`// Crosextra`
 
-&#9;fontMapper.put("Calibri", PhysicalFonts.*get*("Carlito Regular"));
+&#9;`fontMapper.put("Calibri", PhysicalFonts.``get``("Carlito Regular"));`
 
-&#9;fontMapper.put("Cambria", PhysicalFonts.*get*("Caladea Regular"));
+&#9;`fontMapper.put("Cambria", PhysicalFonts.``get``("Caladea`` ``Regular"));`
 
 To make the process largely automatic, from docx4j 11.5.9, these fonts are packaged in the following jars:
 
 - docx4j-export-fo-fonts-croscore
 - docx4j-export-fo-fonts-liberation // omit if you added -croscore
 - docx4j-export-fo-fonts-crosextra
+- docx4j-export-fo-fonts-theme2023 // Akasia and Intos Display for Aptos and Aptos Display (from 17.1.1)
 
 If you add these jars to your classpath (which Maven will do automatically), docx4j-export-fo can find them and the mappings will also be .added automatically.
+
+## Aptos and the 2023 default theme
+
+Since late 2023 the default theme of Microsoft 365 sets headings in Aptos Display and body text in Aptos. A document that has no theme part of its own (docx4j-created documents before 17.1.1 had none) is set by Word in the fonts of Word’s current default theme, which for Microsoft 365 means Aptos.
+
+From docx4j 17.1.1 the property docx4j.fonts.defaultTheme says which default theme docx4j assumes: 2023 (the default: Aptos Display / Aptos), 2013 (Calibri Light / Calibri, Office 2013 to 2022) or 2007 (Cambria / Calibri). It decides two things: the theme fonts docx4j resolves for a document with no theme part, and the theme part WordprocessingMLPackage.createPackage adds to a new document, so that a document docx4j creates asks for the same fonts wherever it is opened.
+
+Microsoft’s Aptos fonts are not redistributable, but Microsoft offers them for download (Aptos, Aptos Display, Narrow, Mono and Serif). Our advice:
+
+- install Microsoft’s Aptos where its licence permits – on your own Windows or Mac machine licensed for Office or Windows. Microsoft’s font redistribution FAQ does not permit copying the files to other computers or servers, so a Linux render server or a container image is not that case. An installed font is always preferred: docx4j uses it by name before any substitute;
+- otherwise add docx4j-export-fo-fonts-theme2023 to your classpath or module path. It carries Akasia (for Aptos, all 12 styles) and Intos Display (for Aptos Display), both under the SIL Open Font License, and docx4j maps Aptos and Aptos Display to them automatically as metrically compatible substitutes: the same line breaks and pagination as Word.
+
+With neither, docx4j draws Aptos in a font of the same class (Liberation Sans or Carlito) and says so in the FontsAnalysis log; lines then break differently from Word’s.
 
 [^1]: IBM has their own proprietary JAXB implementation.  By default, WebSphere uses com.ibm.xml.xlxp2.jaxb, which has the concept of fallback/ MarshallerProxy.  The actual implementation it uses is in com.ibm.jaxb.tools.jar.
 
