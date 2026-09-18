@@ -124,7 +124,7 @@ public class PStyle12PtInTableNormalOverrideFalseTest extends PStyleTableAbstrac
 				(Styles)XmlUtils.unmarshalString(styles_no_font_sz) );
 
 		setSetting(wordMLPackage, OVERRIDE); 
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 		// TODO make this change in other AllSilent tests
 
 		
@@ -159,13 +159,13 @@ public class PStyle12PtInTableNormalOverrideFalseTest extends PStyleTableAbstrac
 		
 		setSetting(wordMLPackage, OVERRIDE); 
 
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
 		
 //		// Revert style and save: 
 //		ppr.setPStyle(ps); // doesn't work - wrong ref!
-//		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+//		wordMLPackage.save(outputDocx());
 		
 		Style ours = null;
 		for (Style s : wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart().getContents().getStyle()) {
@@ -200,13 +200,13 @@ public class PStyle12PtInTableNormalOverrideFalseTest extends PStyleTableAbstrac
 		
 		setSetting(wordMLPackage, OVERRIDE); 
 
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
 		
 //		// Revert style and save: 
 //		ppr.setPStyle(ps); // doesn't work - wrong ref!
-//		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+//		wordMLPackage.save(outputDocx());
 		
 		Style ours = null;
 		for (Style s : wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart().getContents().getStyle()) {
@@ -226,7 +226,7 @@ public class PStyle12PtInTableNormalOverrideFalseTest extends PStyleTableAbstrac
 		
 		WordprocessingMLPackage wordMLPackage = test(mdpXml_direct_12pt, styles_no_font_sz, 20); // uses implicit DocDefault, but irrelevant
 		
-		//wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		//wordMLPackage.save(outputDocx());
 		
 		/* In this case, our result correctly preserves the direct rPr formatting
 		 * (so the contents of Normal-TableGrid-BR is irrelevant)

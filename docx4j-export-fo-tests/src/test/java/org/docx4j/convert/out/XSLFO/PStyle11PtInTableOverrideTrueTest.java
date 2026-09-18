@@ -87,7 +87,7 @@ public class PStyle11PtInTableOverrideTrueTest extends PStyleTableAbstract {
 		
 		setSetting(wordMLPackage, OVERRIDE);  // table style should get overridden
 	
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
 		
@@ -125,13 +125,13 @@ public class PStyle11PtInTableOverrideTrueTest extends PStyleTableAbstract {
 		
 		setSetting(wordMLPackage, OVERRIDE);  // table style should get overridden
 	
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
 		
 //		// Revert style and save: 
 //		ppr.setPStyle(ps); // doesn't work - wrong ref!
-//		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+//		wordMLPackage.save(outputDocx());
 		
 		Style ours = null;
 		for (Style s : wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart().getContents().getStyle()) {
@@ -167,13 +167,13 @@ public class PStyle11PtInTableOverrideTrueTest extends PStyleTableAbstract {
 		
 		setSetting(wordMLPackage, OVERRIDE); 
 
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
 		
 //		// Revert style and save: 
 //		ppr.setPStyle(ps); // doesn't work - wrong ref!
-//		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+//		wordMLPackage.save(outputDocx());
 		
 		Style ours = null;
 		for (Style s : wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart().getContents().getStyle()) {
