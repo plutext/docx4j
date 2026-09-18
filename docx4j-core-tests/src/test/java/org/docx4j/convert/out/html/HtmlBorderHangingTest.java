@@ -123,6 +123,42 @@ public class HtmlBorderHangingTest {
 		}
 	}
 
+	/** A derived style with its own left border and an inherited hang: its rule must
+	 *  carry the whole trio from effective values, or its own padding-left = w:space
+	 *  overrides the base rule's shifted one. */
+	@Test
+	public void derivedBorderedStyleInheritingTheHangIsSelfConsistent() throws Exception {
+		for (int flag : FLAGS) {
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+			addStyle(pkg, "<w:style " + W + " w:type=\"paragraph\" w:styleId=\"Requirement\"><w:name w:val=\"Requirement\"/>" + REQ_PPR + "</w:style>");
+			addStyle(pkg, "<w:style " + W + " w:type=\"paragraph\" w:styleId=\"Recommendation\"><w:name w:val=\"Recommendation\"/><w:basedOn w:val=\"Requirement\"/>"
+					+ "<w:pPr><w:pBdr><w:left w:val=\"single\" w:sz=\"18\" w:space=\"8\" w:color=\"0F766E\"/></w:pBdr></w:pPr></w:style>");
+			addP(pkg, "<w:p " + W + "><w:pPr><w:pStyle w:val=\"Recommendation\"/></w:pPr><w:r><w:t>REC-002 A processor SHOULD.</w:t></w:r></w:p>");
+			String html = html(pkg, flag);
+			String impl = (flag == Docx4J.FLAG_EXPORT_PREFER_XSL ? "xslt: " : "visitor: ");
+			String rule = rule(html, "Recommendation");
+			assertTrue(impl + "the derived rule must end with the shifted trio: " + rule,
+					Pattern.compile("margin-left: 0[a-z]*;text-indent: -56\\.7[0-9]*pt;padding-left: 64\\.7[0-9]*pt;\\s*$").matcher(rule).find());
+			assertTrue(impl + "its own colour is kept: " + rule, rule.contains("border-left-color: #0F766E"));
+		}
+	}
+
+	/** A paragraph with its own left border under a hanging style: the inline style is
+	 *  shifted from the effective indent, or its own padding-left undoes the rule. */
+	@Test
+	public void inlineBorderUnderAHangingStyleIsShiftedToo() throws Exception {
+		for (int flag : FLAGS) {
+			WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+			addStyle(pkg, "<w:style " + W + " w:type=\"paragraph\" w:styleId=\"Requirement\"><w:name w:val=\"Requirement\"/>" + REQ_PPR + "</w:style>");
+			addP(pkg, "<w:p " + W + "><w:pPr><w:pStyle w:val=\"Requirement\"/><w:pBdr><w:left w:val=\"single\" w:sz=\"18\" w:space=\"8\" w:color=\"0F766E\"/></w:pBdr></w:pPr><w:r><w:t>own border</w:t></w:r></w:p>");
+			String html = html(pkg, flag);
+			String impl = (flag == Docx4J.FLAG_EXPORT_PREFER_XSL ? "xslt: " : "visitor: ");
+			assertTrue(impl + "inline style not shifted from the effective indent: " + html, Pattern.compile(
+					"<p class=\"Requirement[^\"]*\" style=\"[^\"]*padding-left: 8pt;[^\"]*margin-left: 0[a-z]*;text-indent: -56\\.7[0-9]*pt;padding-left: 64\\.7[0-9]*pt;")
+					.matcher(html).find());
+		}
+	}
+
 	private static String rule(String html, String styleId) {
 		int i = html.indexOf("." + styleId + " {");
 		assertTrue("no class rule for " + styleId, i >= 0);

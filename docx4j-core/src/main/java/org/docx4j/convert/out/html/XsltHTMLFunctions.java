@@ -754,17 +754,23 @@ public class XsltHTMLFunctions {
     	// label under a 42.5pt hang rendered as "OTE" against the page edge)
     	StringBuilder css = new StringBuilder("display: inline-block;text-indent: 0;");
     	Ind ind = mergedInd!=null ? mergedInd : triple.getIndent();
+    	org.docx4j.wml.Lvl lvl = triple.getLvl();
+    	String suff = (lvl!=null && lvl.getSuff()!=null && lvl.getSuff().getVal()!=null) ? lvl.getSuff().getVal() : "tab";
     	if (ind!=null && ind.getHanging()!=null && ind.getHanging().intValue() > 0) {
     		css.append("min-width: ").append(UnitsOfMeasurement.twipToBest(ind.getHanging().intValue())).append(';');
+    		if ("tab".equals(suff)) {
+    			// a label wider than the hang: Word's tab runs on to the next stop, so the
+    			// text never touches the label; border-box keeps a short label at exactly
+    			// the hang, and the padding gives a long one a gap
+    			css.append("box-sizing: border-box;padding-right: 0.5em;");
+    		}
     	}
-    	org.docx4j.wml.Lvl lvl = triple.getLvl();
     	if (lvl!=null && lvl.getRPr()!=null) {
     		HtmlCssHelper.createCss(context.getWmlPackage(), lvl.getRPr(), css);
     	}
     	span.setAttribute("style", css.toString());
     	span.appendChild(document.createTextNode(text));
-    	if (lvl!=null && lvl.getSuff()!=null && lvl.getSuff().getVal()!=null
-    			&& "space".equals(lvl.getSuff().getVal())) {
+    	if ("space".equals(suff)) {
     		span.appendChild(document.createTextNode(" "));
     	}
     	return span;
@@ -849,18 +855,19 @@ public class XsltHTMLFunctions {
 				// the browser's marker, so the hanging indent no longer collides with one
 				// the effective borders, so that a paragraph's own hanging indent under a
 				// bordered style is shifted as the style's class rule is (CR-003)
-				PPrBase.PBdr effectivePBdr = null;
-				if (pPr.getInd()!=null && pPr.getInd().getHanging()!=null && pPr.getPBdr()==null) {
+				PPr effectivePPr = null;
+				boolean ownHang = pPr.getInd()!=null && pPr.getInd().getHanging()!=null;
+				boolean ownBorder = pPr.getPBdr()!=null && pPr.getPBdr().getLeft()!=null;
+				if ((ownHang && pPr.getPBdr()==null) || (ownBorder && pPr.getInd()==null)) {
 					try {
-						PPr effective = context.getWmlPackage().getMainDocumentPart()
+						effectivePPr = context.getWmlPackage().getMainDocumentPart()
 								.getPropertyResolver().getEffectivePPr(pPr);
-						effectivePBdr = effective==null ? null : effective.getPBdr();
 					} catch (Exception e) {
 						context.getLog().warn("effective pPr for the border/hanging shift: " + e.getMessage());
 					}
 				}
 				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders,
-						!LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li"), effectivePBdr);
+						!LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li"), effectivePPr);
 				if (LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li")) {
 					inlineStyle.append("list-style: none;");
 				}

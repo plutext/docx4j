@@ -452,6 +452,28 @@ Requirement rule reads `margin-left: 0; text-indent: -56.7pt; ...
 padding-left: 8pt; ... padding-left: 64.7pt`.  `HtmlCssHelper` was CRLF and is
 now LF.
 
+Two follow-on defects, found by rendering the re-export in headless Firefox
+and fixed the same day.  (1) A derived style with its own left border but an
+inherited hanging indent regressed: Recommendation basedOn Requirement, its
+own pPr a border in another colour and no `w:ind`, emitted `padding-left` =
+w:space from its own pPr, and, later in the stylesheet at equal specificity,
+that padding overrode the base rule's shifted one - the first line at -56.7pt
+with 8pt of padding, the ID clipped off the container's edge.  The trio is
+self-consistent only when all three come from one rule, and
+`createCssForStyles` derives each rule from the style's own pPr.  Now a
+style whose own pPr contributes a left border or a hang ends its rule with
+the trio from its effective pPr (`appendBorderHangTrio`, through
+`PropertyResolver.getEffectivePPr(styleId)`), and the inline path takes the
+effective indent where the paragraph carries its own border and none.
+(2) A list label wider than the hang ran straight into the text (EXAMPLE in
+bold 9pt Carlito under a 42.5pt hang): `min-width` does nothing for it and
+there was no gap.  In Word the level's `w:suff tab` runs on to the next stop;
+the label is now `box-sizing: border-box` with `padding-right: 0.5em`
+alongside its `min-width` for a tab suffix, so a short label still occupies
+exactly the hang and a long one has a gap.  Tests in `HtmlBorderHangingTest`
+(the derived style; a paragraph's own border under a hanging style) and
+`HtmlListLabelTest`.
+
 ## 5. Risks / open questions
 
 - **SdtWriter's handler map is static/global** (shared across exporters and

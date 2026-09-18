@@ -42,6 +42,7 @@ import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.STBorder;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
@@ -167,6 +168,7 @@ public class HtmlCssHelper {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
         		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false, false );
+        		appendBorderHangTrio(opcPackage, s, result);
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -280,20 +282,26 @@ public class HtmlCssHelper {
      * rule's shifted one and undo it), so the caller may hand in the <em>effective</em>
      * {@code w:pBdr}; the pPr's own is used where that is null.</p>
      *
-     * @param effectivePBdr the effective paragraph borders, or null to use the pPr's own
+     * @param effectivePPr the effective paragraph properties, or null to use the pPr's own
      * @since 17.1.1 (CR-003, the hanging-indent-across-a-border defect)
      */
     public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders,
-    		boolean isListItem, PPrBase.PBdr effectivePBdr) {
+    		boolean isListItem, PPr effectivePPr) {
     	if (isListItem) {
     		result.append("display: list-item;");
     	}
 		if (pPr==null) {
 			return;
 		}
+		PPrBase.PBdr effectivePBdr = effectivePPr==null ? null : effectivePPr.getPBdr();
 		CTBorder leftBorder = leftBorder(effectivePBdr!=null ? effectivePBdr : pPr.getPBdr());
-		BigInteger hanging = (pPr.getInd()!=null) ? pPr.getInd().getHanging() : null;
+		// the indent: the pPr's own, else the effective one (a paragraph with its own left
+		// border and an inherited hang must shift too, or its inline padding undoes the rule)
+		Ind shiftInd = pPr.getInd()!=null ? pPr.getInd()
+				: (effectivePPr!=null ? effectivePPr.getInd() : null);
+		BigInteger hanging = (shiftInd!=null) ? shiftInd.getHanging() : null;
 		boolean shiftHang = leftBorder!=null && hanging!=null && hanging.intValue() > 0 && !isListItem;
+		boolean indentEmitted = false;
     	List<Property> properties = PropertyFactory.createProperties(opcPackage, pPr);
     	for( Property p :  properties ) {
 	    	if (shiftHang && p instanceof Indent) {
@@ -307,6 +315,7 @@ public class HtmlCssHelper {
 	    			result.append(Property.composeCss("margin-right", UnitsOfMeasurement.twipToBest(right.intValue())));
 	    		}
 	    		result.append(Property.composeCss("text-indent", "-" + UnitsOfMeasurement.twipToBest(hanging.intValue())));
+	    		indentEmitted = true;
 	    		continue;
 	    	}
 
@@ -335,10 +344,54 @@ public class HtmlCssHelper {
     		appendNonNull(result, p);
     	}
     	if (shiftHang) {
+    		if (!indentEmitted) {
+    			// the indent is inherited: state the shifted margin here too, so that this
+    			// element's padding and its class rule's margin agree
+    			int left = shiftInd.getLeft()!=null ? shiftInd.getLeft().intValue() : 0;
+    			result.append(Property.composeCss("margin-left", UnitsOfMeasurement.twipToBest(left - hanging.intValue())));
+    			result.append(Property.composeCss("text-indent", "-" + UnitsOfMeasurement.twipToBest(hanging.intValue())));
+    		}
     		// after the border's own padding-left (w:space), so that this one wins
     		int space = leftBorder.getSpace()!=null ? leftBorder.getSpace().intValue() : 0;   // points
     		result.append(Property.composeCss("padding-left",
     				UnitsOfMeasurement.twipToBest(space * 20 + hanging.intValue())));
+    	}
+    }
+
+    /**
+     * The margin-left / text-indent / padding-left trio of a bordered, hanging paragraph
+     * style, from the style's <em>effective</em> pPr, appended to the end of its class
+     * rule so that it wins over whatever the rule emitted from the style's own pPr.
+     *
+     * <p>The trio is self-consistent only when all three come from one rule.  A style
+     * whose own pPr carries a left border but inherits its hanging indent (Recommendation
+     * basedOn Requirement, its own border in another colour) emitted the border and
+     * {@code padding-left} = w:space from its own pPr, and, later in the stylesheet at
+     * equal specificity, that padding overrode the base rule's shifted one: the first
+     * line started 56.7pt into the margin with 8pt of padding, and the ID was clipped off
+     * the container's edge.  So a style whose own pPr contributes either a left border
+     * or an indent gets the trio from its effective values, whatever its base emitted.</p>
+     *
+     * @since 17.1.1 (CR-003, the derived bordered style)
+     */
+    static void appendBorderHangTrio(OpcPackage opcPackage, Style s, StringBuilder result) {
+    	PPr own = s.getPPr();
+    	boolean contributes = leftBorder(own.getPBdr())!=null
+    			|| (own.getInd()!=null && own.getInd().getHanging()!=null);
+    	if (!contributes || !(opcPackage instanceof WordprocessingMLPackage)) return;
+    	try {
+    		PPr effective = ((WordprocessingMLPackage) opcPackage).getMainDocumentPart()
+    				.getPropertyResolver().getEffectivePPr(s.getStyleId());
+    		CTBorder border = effective==null ? null : leftBorder(effective.getPBdr());
+    		BigInteger hanging = (effective!=null && effective.getInd()!=null) ? effective.getInd().getHanging() : null;
+    		if (border==null || hanging==null || hanging.intValue() <= 0) return;
+    		int left = effective.getInd().getLeft()!=null ? effective.getInd().getLeft().intValue() : 0;
+    		int space = border.getSpace()!=null ? border.getSpace().intValue() : 0;
+    		result.append(Property.composeCss("margin-left", UnitsOfMeasurement.twipToBest(left - hanging.intValue())));
+    		result.append(Property.composeCss("text-indent", "-" + UnitsOfMeasurement.twipToBest(hanging.intValue())));
+    		result.append(Property.composeCss("padding-left", UnitsOfMeasurement.twipToBest(space * 20 + hanging.intValue())));
+    	} catch (Exception e) {
+    		log.warn("effective pPr for style " + s.getStyleId() + ": " + e.getMessage());
     	}
     }
 

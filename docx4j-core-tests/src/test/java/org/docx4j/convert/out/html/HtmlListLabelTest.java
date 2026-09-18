@@ -103,6 +103,11 @@ public class HtmlListLabelTest {
 			// asserted on the emitted style)
 			assertTrue(impl + "the label must reset text-indent", Pattern.compile(
 					"<span class=\"ListLabel\" style=\"display: inline-block;text-indent: 0;").matcher(html).find());
+			// a tab suffix: a label wider than the hang would otherwise run into the text
+			// (EXAMPLE in bold 9pt under a 42.5pt hang), so the box is border-box with a
+			// padding-right gap; a short label still occupies exactly the hang
+			assertTrue(impl + "a tab-suffixed label needs its gap", Pattern.compile(
+					"<span class=\"ListLabel\" style=\"[^\"]*min-width: 14\\.1[0-9]*pt;box-sizing: border-box;padding-right: 0\\.5em;").matcher(html).find());
 			assertTrue(impl + "the item still asks for the browser's marker", html.contains("list-style: none;"));
 			assertFalse(impl + "display: list-item survives", html.contains("display: list-item"));
 			assertTrue(impl + "the style's hanging indent must survive in the class rule",

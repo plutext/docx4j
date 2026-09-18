@@ -231,7 +231,12 @@ HTML export, lists (CR-003, found on the OpenDoPE Specification v3 draft):
   in the style's class rule and in an inline style alike, so the bar stands where Word stands it -
   left of the first line, every line clear of it by w:space - where it was drawn through the first
   line, between a requirement's ID and its text.  No change without a left border or with a
-  positive firstLine.
+  positive firstLine.  A derived style with its own border and an inherited hang, and a
+  paragraph with its own border under a hanging style, get the trio from their effective
+  values, so a rule is never half-shifted.
+- A numbering label with a tab suffix is border-box with a padding-right gap alongside its
+  min-width, so a label wider than the hang (EXAMPLE in a fallback font under a 42.5pt hang)
+  does not run straight into the text; a short label still occupies exactly the hang.
 - The list handler the default feature set relies on (PP_HTML_COLLECT_LISTS wraps lists in an
   sdt tagged HTML_ELEMENT) is registered by default, so lists come out as ul/ol around their li
   rather than as orphan li; a caller's own registration still replaces it.  The ul/ol is
