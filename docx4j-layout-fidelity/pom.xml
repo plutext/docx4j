@@ -150,6 +150,15 @@
 			<artifactId>fop-hyph</artifactId>
 			<version>2.0</version>
 		</dependency>
+		<!-- Akasia and Intos Display, the metric-compatible substitutes for Word's 2023
+		     theme faces Aptos and Aptos Display: without them a themeless document is
+		     drawn in a class substitute and every line breaks elsewhere than Word's
+		     (CR-001 batch 49 item 6b).  Both classpaths carry it. -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-theme2023</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>

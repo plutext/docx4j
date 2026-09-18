@@ -656,6 +656,19 @@ public abstract class Mapper {
     	 * which word-line-metrics.properties already carries for all four faces.  Light and
     	 * Narrow have no golden and are class substitutes only.  @since 17.1.1
     	 *
+    	 * Since docx4j-export-fo-fonts-theme2023 those two rows open with a real clone and
+    	 * the faces above are only what a classpath without that jar falls back to: Akasia
+    	 * (OFL 1.1, twelve styles, v0.0.2) for Aptos and Intos Display (OFL 1.1, four
+    	 * styles) for Aptos Display.  Measured with fontTools and HarfBuzz against Aptos
+    	 * 2.01: every one of the 138 advances identical and kerned line widths identical to
+    	 * 0.001pt, so these are metric substitutes in the sense Carlito is for Calibri, not
+    	 * measured stand-ins.  Akasia's Light is matched to Aptos Light by the Akasia
+    	 * project's own gated baseline (its compatibility.json pins Aptos-Light.ttf 2.01),
+    	 * which is its measurement and not ours; it has no Narrow, so Aptos Narrow keeps a
+    	 * class substitute.  Where a machine really has Microsoft's Aptos - a licensed
+    	 * Windows or Mac, not a server: they are cloud fonts - the installed face wins by
+    	 * precedence and none of this is consulted.  @since 17.1.1 (CR-001 batch 49 item 6b)
+    	 *
     	 * Tahoma, Segoe UI, Gadugi, Helvetica, Helvetica Neue, Tw Cen MT - fonts with no
     	 * metric-compatible clone, but where a stand-in of the right class is much closer
     	 * than the document's default font, which is what RunFontSelector falls back to (a

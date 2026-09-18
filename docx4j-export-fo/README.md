@@ -37,6 +37,35 @@ classpath**. The probe counts the copies of FOP it can see and warns naming each
 dependency drags them in. It also warns when the FOP found is of another line than the
 2.11 this module's layout managers subclass.
 
+## Font jars
+
+A PDF is laid out in the fonts the machine has. Where it has not got a document's font,
+docx4j substitutes the closest open face it can find, and these optional jars are what it
+finds on a machine with no fonts installed at all - which is what the stock ubuntu, debian,
+fedora and alpine images are. Add the ones your documents need:
+
+| jar | carries | substitutes for |
+| --- | --- | --- |
+| `docx4j-export-fo-fonts-liberation` | Liberation Serif / Sans / Mono | Times New Roman, Arial, Courier New |
+| `docx4j-export-fo-fonts-croscore` | Tinos, Arimo, Cousine | the same three, metric-compatible |
+| `docx4j-export-fo-fonts-crosextra` | Carlito, Caladea | Calibri, Cambria |
+| `docx4j-export-fo-fonts-theme2023` | Akasia, Intos Display | **Aptos, Aptos Display** - the faces of Word's 2023 default theme |
+| `docx4j-export-fo-fonts-symbol` | OpenSymbol | the Symbol and Wingdings bullets |
+
+**Aptos and Aptos Display** are worth a word of their own, because they are what Word 365
+gives every document that carries no theme of its own - and because Microsoft does not ship
+them with Windows: they are cloud fonts, downloaded by an Office installation. So:
+
+* Where your licence permits it - your own Windows or Mac, licensed for Office, and not a
+  server - install Microsoft's Aptos. It is the real thing, and an installed font wins over
+  any substitute by precedence.
+* Otherwise add `docx4j-export-fo-fonts-theme2023`. Akasia and Intos Display are OFL 1.1
+  clones drawn to Aptos's own metrics (all 138 advances identical, kerned line widths
+  identical to 0.001pt against Aptos 2.01), so lines break where Word breaks them.
+* With neither, docx4j falls back to Carlito, which is a few per cent out and can break a
+  line elsewhere - and with no font jar at all FOP draws the text in a base-14 font and
+  does not embed it.
+
 ## Alternatives
 
 * documents4j: since 8.2.0, use Microsoft Word to do the conversion

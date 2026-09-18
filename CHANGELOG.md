@@ -15,6 +15,10 @@ Fonts (CR-016, the font selection and mapping review):
   58.865pt over ten digits at 11pt, which is Aptos, not Calibri's 55.28.
 - Aptos and Aptos Display have substitutes, so a themeless document is no longer drawn
   in FOP's base-14 fallback and left unembedded in the PDF.
+- New optional jar docx4j-export-fo-fonts-theme2023 carries Akasia and Intos Display, OFL
+  clones of Aptos and Aptos Display drawn to their metrics (all 138 advances identical,
+  kerned line widths identical to 0.001pt against Aptos 2.01), so a document set in Word's
+  2023 theme breaks its lines where Word does. Microsoft does not ship Aptos with Windows.
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
   on a headless deployment - the stock ubuntu, debian, fedora and alpine images ship no font

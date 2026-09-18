@@ -1,0 +1,149 @@
+FONTLOG for the Akasia font family
+
+This file should be distributed with the Akasia fonts and any derivative
+works.
+
+About
+
+Akasia is a libre, metric-compatible companion to Microsoft Aptos: a
+sans-serif family whose advance widths, ink-centre seating, committed kerning
+repertoire and vertical metrics match Aptos, so that the tested documents
+re-flow and paginate identically when Akasia is substituted for it. The advance
+delta against Aptos is 0.00%, and the family asserts USE_TYPO_METRICS.
+
+Akasia is a composite of eight OFL-1.1 families. The base outlines are
+Adobe's Source Sans 3, instanced to Aptos's stem weight and re-spaced onto
+Aptos's advances with proportional sidebearings. The close-matching majority
+of the alphabet stays Source Sans. In the uprights, the twenty-eight letters
+whose Source Sans shape diverges most from Aptos are grafted, per letter, from
+the closest-matching OFL donor: Hanken Grotesk (eleven letters), Albert Sans
+(five), Figtree (five), Open Sans (four), Public Sans (two) and Arimo (one).
+The italics independently retain twenty-four of those outliers under a
+six-weight non-regression rule: Figtree (nine), Public Sans (seven), Hanken
+Grotesk (four), Albert Sans (three) and Arimo (one).
+Sixty-eight upright and seventy-six italic precomposed derivatives use the same
+donor as their base letter after independently passing that six-weight threshold
+and non-regression rule; unsupported or unproven derivatives stay Source Sans.
+Sixty-seven per-style core-glyph corrections then use the donors' variable
+weight axes to reduce stroke-colour differences. Each correction is checked in
+the actual final font at three raster sizes and retained only if neither its
+base letter nor its committed canonical derivatives move farther from Aptos.
+The rest of Aptos's repertoire beyond the Latin core -- Greek, Cyrillic,
+currency, symbols, box-drawing -- is covered from Open Sans and Arimo, plus Noto
+Sans Symbols for the circled and dingbat symbols; these glyphs are re-spaced
+onto Aptos's advances like every other. Grafted and covered outlines are
+weight-matched to the target style and stripped of hinting. All eight donors are
+licensed under OFL-1.1. Every outline is from an OFL donor; Akasia copies no
+Aptos outline.
+
+The family ships twelve static styles: Light, Regular, SemiBold, Bold,
+ExtraBold and Black, each with a true italic. Italic styles use their separately
+scored map and graft from the donors' italic variable fonts. The repertoire is
+subset to Aptos's, and
+kerning is replaced with Aptos's pairs while mark and mark-to-mark
+positioning is preserved. Re-spacing moves each GPOS anchor by the exact
+translation applied to its glyph outline.
+
+Legal basis (this is a description, not legal advice): font metrics -- advance
+widths, sidebearings and kerning -- are facts, not copyrightable expression.
+Matching them is the established, long-practised basis of metric-compatible
+fonts (Arial and Helvetica; Liberation and Arimo; Carlito and Caladea). The
+only step that reads the licensed Aptos binary extracts these metric numbers
+into committed data; the Aptos binary is never copied or redistributed.
+"Aptos" is a trademark of Microsoft Corporation; Akasia is not used as, or
+confusable with, that name, and is not affiliated with or endorsed by
+Microsoft or Monotype. Among the donors, only "Source" (Adobe) is a declared
+OFL Reserved Font Name; it is respected and never reused. Akasia declares its
+own Reserved Font Name, "Akasia". Everything ships under OFL-1.1, with the
+combined copyright carried in OFL.txt.
+
+ChangeLog
+
+0.0.2 (2026-07-22)
+- Compatibility is now enforced on the final binaries: every encoded advance
+  and vertical metric is gated against Aptos 2.010, and outlines are seated on
+  its committed ink centres. Default substitutions and the committed kern
+  repertoire have zero shaped-run divergence; the pagination oracle preserves
+  every break across all twelve styles, 400 documents and four feature profiles.
+- Italics are independently stem-matched, use separately selected true-italic
+  donor outlines and have their native slants normalised to the reference angle.
+  Sixty-eight upright and seventy-six italic precomposed derivatives propagate
+  proven donor constructions, with GPOS anchors moving alongside re-seated
+  outlines.
+- Sixty-seven audited per-style glyph weights reduce colour differences between
+  donors. Each accepted correction and its committed derivatives is checked in
+  the actual final TTF at 64, 128 and 256 px without regressing from Aptos.
+- Coverage is gated at 1072 of Aptos's 1086 encoded codepoints; the remaining
+  fourteen have no audited OFL donor. The build writes a compatibility
+  certificate, reproduces byte-for-byte and passes the configured FontBakery
+  universal profile with no failures or errors.
+- Added family specimens, full-document Aptos difference overlays and explicit
+  local audits for kerning, mark attachment, glyph shape and pagination.
+
+0.0.1 (2026-06-22)
+- Initial pre-release: twelve static styles (Light, Regular, SemiBold, Bold,
+  ExtraBold and Black, each with a true italic), the eight-family OFL composite
+  described above. The donor map is committed to data/graft.json.
+- Metric-compatible with Aptos: advances, sidebearings and kerning matched
+  exactly (0.00% advance delta), super/subscripts and floating symbols seated on
+  Aptos's vertical placement, and Aptos's vertical metrics with USE_TYPO_METRICS.
+  The repertoire is subset to Aptos's, covering ~99% of its codepoints. Passes
+  the FontBakery universal profile with no failures or errors.
+- Known limits: the Black weights reach Aptos's stem by extrapolating Source
+  Sans past its axis maximum; Arimo's grafted letter keeps the extrapolated base
+  at Black, and Arimo's currency, maths and box-drawing coverage runs
+  lighter than the base at ExtraBold and Black. Eleven currency signs and three
+  dingbats no audited OFL donor carries are uncovered. The fonts are unhinted.
+
+Acknowledgements
+
+N: The Akasia Project Authors
+E: hello@bloudraad.io
+W: https://codeberg.org/bloudraad/akasia
+D: Engineering of the metric-compatible composite.
+
+N: Source Sans 3
+D: Paul D. Hunt (Adobe). OFL-1.1, Reserved Font Name "Source".
+   The base outlines from which Akasia is built.
+W: https://github.com/adobe-fonts/source-sans
+
+N: Hanken Grotesk
+D: Alfredo Marco Pradil (Hanken Design Co.). OFL-1.1. Donor for eleven upright
+   and four italic grafted letters.
+W: https://github.com/marcologous/hanken-grotesk
+
+N: Albert Sans
+D: Andreas Rasmussen (a.Foundry). OFL-1.1. Donor for five upright and three
+   italic grafted letters.
+W: https://github.com/usted/Albert-Sans
+
+N: Figtree
+D: Erik Kennedy. OFL-1.1. Donor for five upright and nine italic grafted
+   letters.
+W: https://github.com/erikdkennedy/figtree
+
+N: Open Sans
+D: The Open Sans Project Authors; Monotype Design Team. OFL-1.1. Donor for four
+   upright grafted letters and the humanist source for Greek/Cyrillic coverage.
+W: https://github.com/googlefonts/opensans
+
+N: Public Sans
+D: The Public Sans Project Authors (USWDS/GSA), a fork of Libre Franklin by
+   Pablo Impallari and Rodrigo Fuenzalida. OFL-1.1. Donor for two upright and
+   seven italic grafted letters.
+W: https://github.com/uswds/public-sans
+
+N: Arimo
+D: Steve Matteson (Monotype). OFL-1.1. Donor for one upright and one italic
+   grafted letter and the broad-repertoire source for currency, box-drawing and
+   other symbol coverage.
+W: https://github.com/googlefonts/arimo
+
+N: Noto Sans Symbols
+D: The Noto Project Authors. OFL-1.1. Non-letter coverage donor for the
+   circled and dingbat symbols; it has no italic, so its upright forms serve the
+   italic styles too.
+W: https://github.com/notofonts/symbols
+
+Akasia is released under the SIL Open Font License, Version 1.1. Aptos is a
+trademark of Microsoft Corporation; Akasia is independent and unaffiliated.
