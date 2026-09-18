@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6).
+Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6); one defect recorded 2026-09-18 (list items collide with their marker, §4, not implemented).
 The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
@@ -294,6 +294,67 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
   per-table cell CSS, TAG_RPR run containers — TODOs in *both* pathways).
 - The custom-XSLT extension point (users substituting their own stylesheet) is
   inherently XSLT-only; not a parity target.
+
+### Defect found after DONE: list items collide with their marker (2026-09-18)
+
+Found by exporting the OpenDoPE Specification v3 working draft
+(`docs/OpenDoPE Specification v3 WD 2026 09 18.docx`; the `.html` sibling is
+the output): 63 `<li>` elements - every ListBullet, ListNumber, Note and
+Example paragraph - have their first line pulled back onto the browser's
+bullet.  Identical from `FLAG_EXPORT_PREFER_XSL` and `_NONXSL`, so it is
+shared, not a parity gap.  Not implemented; recorded so the mechanism is on
+record.
+
+Symptom.  The element
+
+    <li class="ListBullet Normal DocDefaults " style="display: list-item;">…</li>
+
+under the stylesheet rule
+
+    .ListBullet { display:block;position: relative; margin-left: 28.35pt;text-indent: -14.15pt;margin-bottom: 4pt; }
+
+The browser draws its default outside marker to the left of the content box,
+and the negative `text-indent` pulls the first line back over it.
+
+Mechanism, in `org.docx4j.convert.out.html`:
+
+1. `XsltHTMLFunctions.createBlock` already knows: for an `li` it calls
+   `HtmlCssHelper.createCss(pkg, pPr, sb, ignoreBorders, isListItem=true)`,
+   which skips the `Indent` property ("Avoid indent settings which would
+   overwrite the bullet", `HtmlCssHelper` line 271).  That covers only the
+   INLINE style.
+2. `HtmlCssHelper.createCssForStyles` emits the stylesheet and calls
+   `createCss(opcPackage, s.getPPr(), result, false, false)` for every
+   paragraph style (lines 133 and 163), with no knowledge that the style
+   carries `w:numPr`.  The class rule reintroduces exactly the indent the
+   inline path suppressed.  Any paragraph style with `numPr` in its pPr is
+   affected: List Bullet, List Number, and in this document Note and Example,
+   whose label comes from numbering.
+
+Two gaps in the same path, worth fixing together:
+
+3. No `<ul>`/`<ol>` wrapper and no `list-style-type`: the browser draws a disc
+   for every `<li>`.  Ordered lists lose their numbers; the Note and Example
+   paragraphs (`numFmt="none"`, `lvlText="NOTE"`) get a disc instead of the
+   label.  (The markdown export got the label case in 471f9094b; HTML has
+   not.)
+4. Because the marker is the browser's, `lvlText`, `numFmt` and the level's
+   rPr never reach the output: "Appendix A" (upperLetter with text), the "–"
+   at ilvl 1, the text2 colour on the bullet.
+
+Proposed change: (a) in `createCssForStyles`, treat a style whose pPr has
+`numPr` as a list item (pass `isListItem=true`, or otherwise drop `Indent`
+for it) so the class rule stops fighting the marker; (b) in `createBlock`,
+for a numbered paragraph emit the label from the numbering emulator (the same
+`ResultTriple` the FO exporter uses) as the first inline - e.g.
+`<span class="ListLabel">•</span>` / "1." / "NOTE" with the level's rPr
+applied - keep the paragraph's resolved hanging indent as `margin-left` /
+`text-indent`, and set `list-style: none` (or emit `<p>` rather than `<li>`).
+That makes Word's hanging indent do the job it does in Word, renders labels
+and `numFmt` faithfully, and removes the need for `ul`/`ol` nesting.  It is
+the approach the XSL FO exporter already takes, so the label plumbing exists.
+The published `.html` is re-exported once it lands; the `.md` and the docx
+are unaffected.
 
 ## 5. Risks / open questions
 
