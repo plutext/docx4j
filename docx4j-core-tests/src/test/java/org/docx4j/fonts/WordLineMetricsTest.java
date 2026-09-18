@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.STLineSpacingRule;
+import org.junit.Assume;
 import org.junit.Test;
 
 /**
@@ -274,5 +275,78 @@ public class WordLineMetricsTest {
 		// and nothing else joined them
 		assertFalse(WordLineMetrics.hasTableEntry("Arial-BoldMT"));
 		assertFalse(WordLineMetrics.hasTableEntry("Myriad Pro"));
+	}
+
+	/**
+	 * A font whose OS/2 fsSelection sets USE_TYPO_METRICS is laid out by Word on its typo
+	 * box, not its usWin box.  Aptos, measured from Word's own PDF: 13.45pt at 11pt, its
+	 * typo box (1923 + 577 = 2500 of 2048); the usWin box (2068 + 563) would give 14.13.
+	 * Calibri does not set the flag and keeps the usWin rule.
+	 */
+	@Test
+	public void aUseTypoMetricsFamilyTakesItsTypoBox() {
+		Assume.assumeTrue("no metrics for Aptos", WordLineMetrics.hasTableEntry("Aptos"));
+		WordLineMetrics.Metrics aptos = WordLineMetrics.get("Aptos", null);
+		assertTrue("the table's fields 8-10 flag the family", aptos.typoMetrics);
+		assertEquals(13.43, aptos.lineHeightFactor() * 11, 0.01);       // Word 13.45
+		assertEquals(1923.0 / 2048, aptos.winAscent, 1e-9);
+		assertEquals(577.0 / 2048, aptos.winDescent, 1e-9);
+		assertEquals(0.0, aptos.externalLeading, 1e-9);
+		assertEquals("Aptos Display is a face of the same family", 13.43,
+				WordLineMetrics.get("Aptos Display", null).lineHeightFactor() * 11, 0.01);
+		// Georgia Pro: typo 1549 + 444 = 1993 against usWin 1878 + 449 = 2327, 1.8pt a line
+		if (WordLineMetrics.hasTableEntry("Georgia Pro")) {
+			assertEquals(10.70, WordLineMetrics.get("Georgia Pro", null).lineHeightFactor() * 11, 0.01);
+		}
+		WordLineMetrics.Metrics calibri = WordLineMetrics.get("Calibri", null);
+		assertFalse(calibri.typoMetrics);
+		assertEquals(13.43, calibri.lineHeightFactor() * 11, 0.01);     // usWin 1950 + 550
+	}
+
+	/** The same rule read off a font file: the flag at OS/2 offset 62, bit 7. */
+	@Test
+	public void theReaderHonoursUseTypoMetrics() throws Exception {
+		// unitsPerEm 2048; hhea 1923/-577/0; OS/2 v4 typo 1923/-577/0, usWin 2068/563
+		WordLineMetrics.Metrics flagged = WordLineMetrics.readMetrics(
+				new java.io.ByteArrayInputStream(sfnt(2048, 1923, -577, 0, 1923, -577, 0, 2068, 563, true)));
+		assertTrue(flagged.typoMetrics);
+		assertEquals(2500.0 / 2048, flagged.lineHeightFactor(), 1e-9);
+		WordLineMetrics.Metrics plain = WordLineMetrics.readMetrics(
+				new java.io.ByteArrayInputStream(sfnt(2048, 1923, -577, 0, 1923, -577, 0, 2068, 563, false)));
+		assertFalse(plain.typoMetrics);
+		assertEquals("usWin box, no external leading (hhea is smaller)", 2631.0 / 2048,
+				plain.lineHeightFactor(), 1e-9);
+		// a typo line gap counts, as hhea's does for a usWin font
+		WordLineMetrics.Metrics gap = WordLineMetrics.readMetrics(
+				new java.io.ByteArrayInputStream(sfnt(2048, 1520, -532, 410, 1520, -532, 410, 1802, 539, true)));
+		assertEquals("Bierstadt's shape", 2462.0 / 2048, gap.lineHeightFactor(), 1e-9);
+	}
+
+	/** A minimal sfnt: head, hhea and OS/2 (version 4) tables, nothing else. */
+	private static byte[] sfnt(int upem, int hheaAsc, int hheaDesc, int hheaGap, int typoAsc, int typoDesc,
+			int typoGap, int winAsc, int winDesc, boolean useTypoMetrics) {
+		java.nio.ByteBuffer head = java.nio.ByteBuffer.allocate(54);
+		head.putShort(18, (short) upem);
+		java.nio.ByteBuffer hhea = java.nio.ByteBuffer.allocate(36);
+		hhea.putShort(4, (short) hheaAsc); hhea.putShort(6, (short) hheaDesc); hhea.putShort(8, (short) hheaGap);
+		java.nio.ByteBuffer os2 = java.nio.ByteBuffer.allocate(96);
+		os2.putShort(0, (short) 4);
+		os2.putShort(62, (short) (useTypoMetrics ? 0x80 : 0));
+		os2.putShort(68, (short) typoAsc); os2.putShort(70, (short) typoDesc); os2.putShort(72, (short) typoGap);
+		os2.putShort(74, (short) winAsc); os2.putShort(76, (short) winDesc);
+		byte[][] tables = { head.array(), hhea.array(), os2.array() };
+		String[] tags = { "head", "hhea", "OS/2" };
+		int dir = 12 + 16 * tables.length;
+		int total = dir; for (byte[] t : tables) total += t.length;
+		java.nio.ByteBuffer out = java.nio.ByteBuffer.allocate(total);
+		out.putInt(0x00010000); out.putShort((short) tables.length); out.putShort((short) 0); out.putShort((short) 0); out.putShort((short) 0);
+		int off = dir;
+		for (int i = 0; i < tables.length; i++) {
+			out.put(tags[i].getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
+			out.putInt(0); out.putInt(off); out.putInt(tables[i].length);
+			off += tables[i].length;
+		}
+		for (byte[] t : tables) out.put(t);
+		return out.array();
 	}
 }

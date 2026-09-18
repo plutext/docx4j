@@ -53,8 +53,12 @@ public class SubstituteLineMetricsTest {
 		PhysicalFont arimo = PhysicalFonts.get("Arimo Regular");
 		if (arimo == null) arimo = PhysicalFonts.get("Arimo");
 		Assume.assumeNotNull(arimo);
-		assertTrue("Arimo's own win metrics are much taller; that is the bug this is about",
-				WordLineMetrics.get(arimo).lineHeightFactor() > 1.35);
+		// Arimo's usWin box is much taller (1.4321) - that was the bug this is about - and
+		// since 17.1.1 Arimo, which sets USE_TYPO_METRICS, reads on its typo box, which its
+		// designers made Arial's: the substitute's own metrics now agree with the table's
+		WordLineMetrics.Metrics own = WordLineMetrics.get(arimo);
+		assertTrue("Arimo sets USE_TYPO_METRICS", own.typoMetrics);
+		assertEquals(1.1499, own.lineHeightFactor(), 0.002);
 		assertEquals("the document font decides, not the substitute", 1.1499,
 				WordLineMetrics.get("Helvetica", arimo).lineHeightFactor(), 0.002);
 	}

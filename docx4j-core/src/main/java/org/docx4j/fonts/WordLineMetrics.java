@@ -47,6 +47,20 @@ import org.slf4j.LoggerFactory;
  * (13.80pt at 12pt), Carlito (13.44 at 11), Liberation Sans (11.52 at 10) and
  * DejaVu Sans (11.64 at 10).
  *
+ * <p>A font whose OS/2 {@code fsSelection} sets <b>USE_TYPO_METRICS</b> (bit 7) is
+ * the exception: Word lays it out on the typographic box instead,
+ * <pre>
+ *   single = (sTypoAscender - sTypoDescender + sTypoLineGap) / unitsPerEm * size
+ * </pre>
+ * Measured on Aptos, Microsoft 365's default font, from Word's own PDF of a document
+ * it had the font for: 13.45pt at 11pt, which is its typo box (1923 + 577 = 2500 of
+ * 2048), where its usWin box (2068 + 563 = 2631) would give 14.13 - 0.7pt on every
+ * line, two pages in twenty-seven.  Every Aptos face sets the flag; Calibri, Cambria
+ * and the older Microsoft fonts do not, and 25 of the table's 512 families do and have
+ * a typo box that differs from their usWin box (Georgia Pro by 1.8pt a line at 11pt).
+ * Those carry their typo metrics as the table's fields 8-10, and a physical font's are
+ * read from its file (17.1.1).</p>
+ *
  * The other spacing rules then follow: "auto" multiplies single by line/240;
  * "exact" is line/20 pt regardless of font; "atLeast" is the larger of single
  * and line/20 pt.  {@link #lineHeightPt(PhysicalFont, double, PPrBase.Spacing)}
@@ -82,6 +96,10 @@ public final class WordLineMetrics {
 		 *  {@link #EAST_ASIAN_FACTOR} x the usWin box and takes no external leading.
 		 *  @since 17.1.1 */
 		public final boolean eastAsian;
+		/** The font sets USE_TYPO_METRICS, so {@link #winAscent}, {@link #winDescent} and
+		 *  {@link #externalLeading} hold its typographic ascender, descender and line gap:
+		 *  the box Word lays such a font out on.  @since 17.1.1 */
+		public final boolean typoMetrics;
 
 		Metrics(double winAscent, double winDescent, double externalLeading, double fopAscent, double fopDescent, boolean fallback) {
 			this(winAscent, winDescent, externalLeading, fopAscent, fopDescent, fallback, false);
@@ -90,6 +108,12 @@ public final class WordLineMetrics {
 		/** @since 17.1.1 */
 		Metrics(double winAscent, double winDescent, double externalLeading, double fopAscent,
 				double fopDescent, boolean fallback, boolean eastAsian) {
+			this(winAscent, winDescent, externalLeading, fopAscent, fopDescent, fallback, eastAsian, false);
+		}
+
+		Metrics(double winAscent, double winDescent, double externalLeading, double fopAscent,
+				double fopDescent, boolean fallback, boolean eastAsian, boolean typoMetrics) {
+			this.typoMetrics = typoMetrics;
 			this.winAscent = winAscent;
 			this.winDescent = winDescent;
 			this.externalLeading = externalLeading;
@@ -107,9 +131,9 @@ public final class WordLineMetrics {
 
 		@Override
 		public String toString() {
-			return String.format("winAscent=%.4f winDescent=%.4f externalLeading=%.4f%s factor=%.4f",
+			return String.format("winAscent=%.4f winDescent=%.4f externalLeading=%.4f%s%s factor=%.4f",
 					winAscent, winDescent, externalLeading, eastAsian ? " eastAsian" : "",
-					lineHeightFactor());
+					typoMetrics ? " typoMetrics" : "", lineHeightFactor());
 		}
 	}
 
@@ -176,6 +200,14 @@ public final class WordLineMetrics {
 		// East Asian, so its line is EAST_ASIAN_FACTOR x the usWin box and takes no
 		// external leading.  @since 17.1.1
 		boolean ea = t.length > 6 && t[6] != 0;
+		// the table's optional fields 8-10: the family sets USE_TYPO_METRICS, and Word lays
+		// it out on sTypoAscender / sTypoDescender / sTypoLineGap (see the class comment).
+		// @since 17.1.1
+		if (t.length > 9) {
+			int typoA = t[7], typoD = t[8], typoG = t[9];
+			return new Metrics(typoA / upem, -typoD / upem, Math.max(0, typoG) / upem,
+					physical.fopAscent, physical.fopDescent, false, ea, true);
+		}
 		return new Metrics(winA / upem, winD / upem, ext / upem, physical.fopAscent, physical.fopDescent,
 				false, ea);
 	}
@@ -319,8 +351,9 @@ public final class WordLineMetrics {
 							String[] v = props.getProperty(name).split(";");
 							if (v.length < 6) continue;
 							// six fields, plus the optional seventh: the East Asian flag
-							// (etc/GenWordLineMetricsEastAsian).  @since 17.1.1
-							int[] t = new int[Math.min(v.length, 7)];
+							// (etc/GenWordLineMetricsEastAsian), and the optional eighth to
+							// tenth: the typo metrics of a USE_TYPO_METRICS family.  @since 17.1.1
+							int[] t = new int[Math.min(v.length, 10)];
 							for (int i = 0; i < t.length; i++) t[i] = Integer.parseInt(v[i].trim());
 							m.put(name.trim().toLowerCase(java.util.Locale.ROOT), t);
 						}
@@ -560,7 +593,8 @@ public final class WordLineMetrics {
 				int hheaAsc = 0, hheaDesc = 0, hheaGap = 0;
 		int winAsc = -1, winDesc = -1;
 		boolean eastAsian = false;
-		int typoAsc = 0, typoDesc = 0;
+		int typoAsc = 0, typoDesc = 0, typoGap = 0;
+		boolean useTypoMetrics = false;
 		for (int i = 0; i < numTables; i++) {
 			int rec = offset + 12 + 16 * i;
 			String t = tag(data, rec);
@@ -574,8 +608,12 @@ public final class WordLineMetrics {
 				hheaDesc = s16(data, off + 6);
 				hheaGap = s16(data, off + 8);
 						} else if (t.equals("OS/2") && len >= 78) {
+				// fsSelection bit 7, USE_TYPO_METRICS (OS/2 version 4 and later): Word lays
+				// the font out on its typo box, not its usWin box.  @since 17.1.1
+				useTypoMetrics = u16(data, off) >= 4 && (u16(data, off + 62) & 0x80) != 0;
 				typoAsc = s16(data, off + 68);
 				typoDesc = s16(data, off + 70);
+				typoGap = s16(data, off + 72);
 				winAsc = u16(data, off + 74);
 				winDesc = u16(data, off + 76);
 				// ulCodePageRange1 (OS/2 version 1 and later, so at least 82 bytes) bits
@@ -606,6 +644,11 @@ public final class WordLineMetrics {
 			fopAsc = typoAsc; fopDesc = typoDesc;
 		} else {
 			fopAsc = hheaAsc; fopDesc = hheaDesc;
+		}
+		if (useTypoMetrics && typoAsc > 0) {
+			return new Metrics((double) typoAsc / upem, (double) -typoDesc / upem,
+					(double) Math.max(0, typoGap) / upem,
+					(double) fopAsc / upem, (double) -fopDesc / upem, false, eastAsian, true);
 		}
 		return new Metrics((double) winAsc / upem, (double) winDesc / upem, (double) ext / upem,
 				(double) fopAsc / upem, (double) -fopDesc / upem, false, eastAsian);

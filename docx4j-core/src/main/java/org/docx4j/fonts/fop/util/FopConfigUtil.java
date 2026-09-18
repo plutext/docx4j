@@ -549,6 +549,7 @@ public class FopConfigUtil {
 		if (pf==null || entry==null) return;
 		String family = pf.getFamilyName();
 		if (family==null || family.length()==0) return;
+		if (!familyIsThisFaces(family, pf, PhysicalFonts.getPhysicalFonts().values())) return;
 		for (org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet t : entry.getFontTriplet()) {
 			if (family.equals(t.getName()) && eq(style, t.getStyle()) && eq(weight, t.getWeight())) {
 				return;
@@ -556,6 +557,67 @@ public class FopConfigUtil {
 		}
 		entry.getFontTriplet().add(createFontTriplet(family, style, weight));
 	}
+
+	/**
+	 * Whether this face may answer for its typographic family name in FOP's font
+	 * configuration.
+	 *
+	 * <p>An optical or width variant carries the family's name as its typographic family
+	 * (name table id 16): Aptos Display is "Aptos Display" (id 1) but "Aptos" (id 16),
+	 * as Georgia Pro Light, Trade Gothic Next Cond and Seaford Display are of theirs.
+	 * Declared under the family, its regular face is the triplet {@code Aptos, normal, 400}
+	 * - the same triplet the family's own regular face declares, and FOP keeps whichever
+	 * it was given last.  Measured: with Aptos and Aptos Display both installed, a document
+	 * asking for Aptos had its body text drawn in <b>Aptos Display</b> (the PDF embedded
+	 * AptosDisplay and no Aptos regular), a narrower face which broke every line short of
+	 * Word's.  So a face declares the family only where the family is its own - its name
+	 * without its style words is the family - or where no face of that family exists, so
+	 * that the variant may still stand in for it (a document naming a family of which only
+	 * the Light face is installed).</p>
+	 *
+	 * @param family the face's typographic family name
+	 * @param pf the face
+	 * @param all every physical font known, among which the family's own faces are looked for
+	 * @since 17.1.1
+	 */
+	static boolean familyIsThisFaces(String family, PhysicalFont pf, java.util.Collection<PhysicalFont> all) {
+		String own = styleStripped(PhysicalFonts.stripSuffixes(pf.getName()));
+		if (own.equalsIgnoreCase(family)) return true;
+		if (all==null) return true;
+		for (PhysicalFont other : all) {
+			if (other==pf || other==null || other.getName()==null) continue;
+			if (styleStripped(PhysicalFonts.stripSuffixes(other.getName())).equalsIgnoreCase(family)) {
+				return false;   // the family has a face of its own: this variant does not answer for it
+			}
+		}
+		return true;
+	}
+
+	/** The face name without its trailing style words - "Aptos Bold Italic" to "Aptos",
+	 *  "Carlito Regular" to "Carlito" - so that a weight or slope variant is still its
+	 *  family's own face, where an optical variant ("Aptos Display") is not. */
+	static String styleStripped(String name) {
+		if (name==null) return "";
+		String n = name.trim();
+		boolean stripped = true;
+		while (stripped) {
+			stripped = false;
+			for (String w : STYLE_WORDS) {
+				if (n.length() > w.length() && n.toLowerCase(java.util.Locale.ROOT).endsWith(" " + w)) {
+					n = n.substring(0, n.length() - w.length() - 1).trim();
+					stripped = true;
+				}
+			}
+		}
+		return n;
+	}
+
+	/* Only the words FOP's own triplet generation treats as this face's weight or slope.
+	 * "Light", "Semibold", "Black" and the other named weights are faces in their own
+	 * right whose first triplet is still normal/400 (FontInfoFinder), so "Aptos Light"
+	 * would declare the very triplet Aptos Regular declares: they stay variants. */
+	private static final String[] STYLE_WORDS = { "regular", "bold", "italic", "oblique",
+			"bolditalic", "boldoblique", "book", "roman" };
 
 	private static void addVariations(Mapper fontMapper, List<org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf,

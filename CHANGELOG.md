@@ -123,6 +123,19 @@ Fonts (CR-016, the font selection and mapping review):
   three real-document corpora in six font environments it is ahead of BestMatchingMapper in every
   one.  BestMatchingMapper is kept for compatibility; the samples and the Getting Started guide,
   which recommended it for Linux, now say so.
+- Word lays a font whose OS/2 fsSelection sets USE_TYPO_METRICS out on its typo box, not its
+  usWin box: Aptos, Microsoft 365's default font, is 13.45pt at 11pt in Word's own PDF, its typo
+  box (2500/2048), where docx4j took 14.13 from its usWin box - 0.7pt a line, two pages in
+  twenty-seven.  WordLineMetrics reads the flag off a font file, and word-line-metrics.properties
+  carries the typo metrics (fields 8-10) of the 25 of its 512 families which set the flag and
+  whose typo box differs (Georgia Pro by 1.8pt a line); etc/GenWordLineMetricsTypo regenerates
+  them.
+- A face declares its typographic family name to FOP only where the family is its own.  Aptos
+  Display's name id 16 is "Aptos", so it declared the triplet Aptos/normal/400 that Aptos Regular
+  declares, and FOP kept the later one: with both installed a document asking for Aptos was drawn
+  in Aptos Display, every line broken short of Word's.  Weight and slope faces still declare their
+  family (Liberation Sans Bold is Liberation Sans's); an optical or named-weight variant does so
+  only where the family has no face of its own to stand in for.
 
 Fonts (CR-017, font decisions with their reasons):
 
