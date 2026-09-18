@@ -213,24 +213,40 @@ class WmlToMarkdown {
 			return index;
 		}
 
-		// code block: SourceCode-styled paragraphs, consecutive ones merged
-		if (ImportStyles.SOURCE_CODE.equals(pStyleId)) {
+		// code block: a code-styled paragraph, or one whose paragraph style's own
+		// font is mono; consecutive ones merged into one fence, one line each
+		if (isCodeParagraph(p, directPPr, pStyleId)) {
 			closeLists();
 			closeQuote();
 			StringBuilder literal = new StringBuilder();
 			int last = index;
 			for (int j = index; j < blocks.size(); j++) {
 				Object o = XmlUtils.unwrap(blocks.get(j));
-				if (!(o instanceof P) || !hasPStyle((P) o, ImportStyles.SOURCE_CODE)) {
+				if (!(o instanceof P)) {
 					break;
 				}
-				appendCodeLines((P) o, literal);
+				P q = (P) o;
+				PPr qPPr = q.getPPr();
+				String qStyle = (qPPr != null && qPPr.getPStyle() != null) ? qPPr.getPStyle().getVal() : null;
+				if (!isCodeParagraph(q, qPPr, qStyle)) {
+					break;
+				}
+				appendCodeLines(q, literal);
 				last = j;
 			}
 			FencedCodeBlock code = new FencedCodeBlock();
 			code.setLiteral(literal.toString());
 			container.appendChild(code);
 			return last;
+		}
+
+		// a table-of-contents entry: its field result links to a Word bookmark no
+		// markdown renderer has, with the tab and the page number; headings are
+		// navigable in every renderer, so the entry is dropped (lossy, documented)
+		if (pStyleId != null && TOC_STYLE.matcher(pStyleId).matches()) {
+			closeLists();
+			closeQuote();
+			return index;
 		}
 
 		// heading via effective outlineLvl (0..5 -> #..######); checked BEFORE
@@ -253,6 +269,25 @@ class WmlToMarkdown {
 		if (numId != null && !BigInteger.ZERO.equals(numId)) {
 			closeQuote();
 			int ilvl = (numPr.getIlvl() != null) ? numPr.getIlvl().getVal().intValue() : 0;
+			String label = labelText(numId, ilvl);
+			if (label != null) {
+				// a level with numFmt none, or a lvlText with no %n, is a label ("NOTE",
+				// "EXAMPLE"), not a list: emit it bold at the head of the paragraph
+				closeLists();
+				org.commonmark.node.Paragraph labelled = inlineParagraph(p);
+				if (label.length() > 0) {
+					if (labelled.getFirstChild() != null) {
+						labelled.prependChild(new Text(" "));
+					}
+					StrongEmphasis strong = new StrongEmphasis();
+					strong.appendChild(new Text(label));
+					labelled.prependChild(strong);
+				}
+				if (labelled.getFirstChild() != null) {
+					container.appendChild(labelled);
+				}
+				return index;
+			}
 			listParagraph(p, effPPr, numId, ilvl, container);
 			return index;
 		}
@@ -369,6 +404,55 @@ class WmlToMarkdown {
 	private static boolean hasPStyle(P p, String styleId) {
 		return p.getPPr() != null && p.getPPr().getPStyle() != null
 				&& styleId.equals(p.getPPr().getPStyle().getVal());
+	}
+
+	/** Word's table-of-contents paragraph styles, {@code TOC1}..{@code TOC9}. */
+	private static final java.util.regex.Pattern TOC_STYLE = java.util.regex.Pattern.compile("TOC[1-9]");
+
+	/** Paragraph styles which are code blocks by name, whatever their font. */
+	private static final Set<String> CODE_STYLES = new HashSet<>(Arrays.asList(
+			ImportStyles.SOURCE_CODE, "Code", "HTMLPreformatted", "MacroText"));
+
+	/**
+	 * A code paragraph: styled as one, or in a named paragraph style whose own
+	 * effective font is mono.  Inline code is detected against the paragraph
+	 * style's baseline, so a paragraph whose baseline is already mono would get
+	 * no code marks at all; this is the paragraph-level counterpart.  A mono
+	 * <em>document default</em> does not count - a document set in Courier New
+	 * throughout is prose, not one fence - which is why a named style is
+	 * required.
+	 *
+	 * @since 17.1.1 (CR-005, the export enhancements of 2026-09-18)
+	 */
+	private boolean isCodeParagraph(P p, PPr directPPr, String pStyleId) throws Docx4JException {
+		if (pStyleId == null) {
+			return false;
+		}
+		if (CODE_STYLES.contains(pStyleId)) {
+			return true;
+		}
+		return isMono(baselineFor(directPPr));
+	}
+
+	/**
+	 * The level's text where the level is a label rather than a list: its
+	 * {@code numFmt} is {@code none}, or its {@code lvlText} carries no {@code %n}
+	 * placeholder ("NOTE", "EXAMPLE").  Null for a list level, or where the
+	 * numbering cannot be read.  A bullet level is a list.
+	 *
+	 * @since 17.1.1 (CR-005, the export enhancements of 2026-09-18)
+	 */
+	private String labelText(BigInteger numId, int ilvl) {
+		ListLevel level = listLevel(numId, ilvl);
+		if (level == null || level.isBullet()) {
+			return null;
+		}
+		String text = level.getLevelText() == null ? "" : level.getLevelText();
+		boolean none = level.getNumFmt() == org.docx4j.wml.NumberFormat.NONE;
+		if (!none && text.indexOf('%') >= 0) {
+			return null;
+		}
+		return text.trim();
 	}
 
 	private void appendCodeLines(P p, StringBuilder literal) {

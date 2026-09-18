@@ -1,6 +1,6 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: DONE (2026-09-01); three export enhancements proposed 2026-09-18 (§4, not implemented) — all phases (0-5) implemented and tested (60 tests
+Status: DONE (2026-09-01); three export enhancements added 2026-09-18 (§4) — all phases (0-5) implemented and tested (60 tests
 in the module); only the website mention remains (external, pending).
 Naming/placement DECIDED 2026-09-01 (jharrop): the module is
 **`docx4j-markdown`**, a **reactor module**.
@@ -138,7 +138,7 @@ Reverse mappings, with the important detection choices:
   dropped with a warning; tracked changes → option `ACCEPT` (default) or
   `MARKUP` (`~~del~~` / ins as plain).
 
-### Export enhancements found 2026-09-18 (proposed; no code change yet)
+### Export enhancements found 2026-09-18 (IMPLEMENTED the same day)
 
 Found by exporting the OpenDoPE Specification v3 working draft
 (`docs/OpenDoPE Specification v3 WD 2026 09 18.docx`, whose `.md` sibling is
@@ -181,6 +181,13 @@ needs nothing (bookmarks, cross-reference hyperlinks and TOC links all work).
    anchors - or rewrite the target to the GFM heading slug of the entry's
    text and strip the tab and page number.  Dropping is simpler and idempotent
    under round-trip; document it as lossy like headers/footers.
+
+Implemented 2026-09-18 in `WmlToMarkdown` as proposed: `isCodeParagraph` (the
+code-style allowlist, or a *named* paragraph style whose baseline font is
+mono - a mono document default stays prose, so a document set in Courier New
+throughout is not one fence), `labelText` (numFmt none or no `%n` -> the
+level text bold at the head of the paragraph, no list), and TOC1..TOC9
+paragraphs dropped.  Four tests in `MarkdownExportTest`.
 
 **Fidelity bar and test strategy**: round-trip stability — for documents within
 the CommonMark+GFM subset, md → docx → md must be idempotent after the first

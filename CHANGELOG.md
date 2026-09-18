@@ -216,6 +216,20 @@ Schema (CR-018, five gaps the content API found, and w16cex):
   org.docx4j.w16, so a comment's durableId and dateUtc - what the comment reactions part
   anchors on - can be read through the model.  It used to load as a generic XML part.
 
+Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
+
+- A paragraph in a code style (Code, SourceCode, HTMLPreformatted, Macro Text) or in a named
+  paragraph style whose own font is mono is a fenced code block: consecutive ones merge into
+  one fence, one line each, a w:br is a newline, and nothing inside is escaped.  Inline code
+  is detected against the paragraph style's baseline, so such a paragraph used to come out as
+  escaped prose with &#32; for its indentation.  A mono document default is still prose.
+- A numbering level with numFmt none, or a lvlText with no %n ("NOTE", "EXAMPLE"), is a label
+  and not a list: it leads its paragraph in bold, where it used to open a one-item ordered
+  list and lose the label.
+- Table-of-contents entries (styles TOC1 to TOC9) are dropped: their field result linked to a
+  Word bookmark no markdown renderer has, with the tab and the page number.  Lossy, like
+  headers and footers; headings are navigable in every renderer.
+
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 - The numbering tab now paints the dot leader of the stop it reaches, from the end of the label
