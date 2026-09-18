@@ -258,6 +258,16 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A table of contents' dot leader is as wide as the gap Word leaves it, and prefers no width of
+  its own: its glue was minimum 12pt / optimum 40pt, so an entry with less than 12pt of room for
+  its leader could not be set on one line at all and FOP's line breaker broke it in two. Measured
+  on Word's PDF of a 222-page report, its own leader runs are 7.55pt to 436.82pt wide (282 runs
+  over twelve pages, median 148.13): 35 of them are narrower than the 40pt optimum and four
+  narrower than the 12pt minimum. With the glue at 0 / 0 / 100% our runs narrower than 12, 20,
+  31.25 and 40pt are 4, 15, 31 and 35 against Word's 4, 15, 31 and 35, where before they were 2,
+  3, 8 and 9 - the rest having been broken in two. Over three corpora that is 248 more matched
+  lines, one page mover (a 15-page document we set in 18 pages is now 16) and no loss on any
+  class (CR-001 batch 48).
 - A VML text box of layout-flow:vertical has its text turned on its side and laid along the box's
   height, as Word lays it, where docx4j laid it out unrotated and measured it along the box's
   width. The property is on the v:textbox and not on the shape (the shape's style carries the

@@ -3168,9 +3168,19 @@ public class XsltFOFunctions {
 		if (isTocDotLeader(effectivePPr)
 				&& (!realTabs() || !tocTabStopsShort(context, effectivePPr, precedingTabs, followingTabs))) {
 			Element foLeader = d.createElementNS(XSL_FO, "fo:leader");
-			foLeader.setAttribute("leader-length.minimum",  "12pt");
+			/* The leader is as wide as the gap Word leaves, and no width of its own is
+			 * preferred: measured on Word's PDF of a 222-page corpus report, its TOC
+			 * leader runs are 7.55pt to 436.82pt wide (282 runs over twelve pages,
+			 * median 148.13), of which 35 are narrower than the 40pt this asked for as
+			 * its optimum and four narrower than the 12pt it asked for as a minimum - so
+			 * an entry whose leader had less than 12pt of room could not be set on one
+			 * line at all, and Knuth broke it in two.  A natural width of zero with the
+			 * whole remainder to stretch into is what "fill the gap" means, and the
+			 * justified last line still puts the number at the stop.
+			 * @since 17.1.1 (CR-001 batch 48 item 5) */
+			foLeader.setAttribute("leader-length.minimum",  "0pt");
 			foLeader.setAttribute("leader-length.maximum",  "100%");
-			foLeader.setAttribute("leader-length.optimum",  "40pt");
+			foLeader.setAttribute("leader-length.optimum",  "0pt");
 			foLeader.setAttribute("leader-pattern",  "dots");
 			if (fontFamily.length()>0) foLeader.setAttribute("font-family", fontFamily);
 			/* It is not a tab the line manager lays out - the justification gives it its
