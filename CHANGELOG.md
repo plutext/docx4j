@@ -200,6 +200,28 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A word longer than the measure is now broken in body text as it already was in a table cell:
+  at the last character that fits, with no hyphen. Word's rule is the measure itself, measured on
+  a probe at Liberation Serif 12pt on a 481.0pt measure - a token 48.0pt over is set to 537.14,
+  the measure exactly, with the rest on the next line; one 5.0pt over is broken too; one 1.0pt
+  inside is not; and a token which fits the measure but not the space left on its line moves down
+  whole. docx4j tolerated an inch of overflow in the body, so it painted both of the first two
+  whole, past the margin. A block inside an fo:block-container in a table cell now counts as
+  being in the cell, which it did not before - with both tolerances at a twip that decides
+  nothing by itself, but it decides which of the two properties such a block obeys. The
+  tolerance remains a property
+  (docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance) because a word which does not fit is
+  sometimes a measure docx4j got wrong rather than a word Word breaks (CR-001 batch 47).
+- A table-of-contents entry's line break no longer reserves room for three capital Ms where its
+  page number goes. FOP cannot resolve a page number cited forward, so it measures the citation
+  as the placeholder "MMM" and corrects the width later - too late for the line, which has
+  already been broken: in Times 12pt "MMM" is 32.0pt where "000" is 18.0pt and "23" 12.0pt, so
+  an entry gave up as much as 20pt of its measure and a title which fitted its line could be
+  pushed onto a second one. docx4j now measures an unresolved citation as a page number, keeping
+  FOP's three characters and making them digits, and never takes the wider of the two;
+  docx4j.convert.out.fo.wordLayout.pageNumberPlaceholder sets the text (MMM restores FOP's own
+  behaviour). Measured on the shape, the placeholder cost the entry's token three characters and
+  the digits give two of them back (CR-001 batch 47).
 - A numbering label is measured in its own face and size instead of being estimated at 90 twips
   a character, which decides the label column of a list block, the gap an inline label leaves
   before the text, and whether the numbering tab's stop falls past the end of the label. The

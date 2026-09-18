@@ -420,8 +420,9 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * run before it is broken.  Word breaks a word as soon as it exceeds the cell it is in
 	 * - measured, a 21.55pt column breaks {@code Categorizador/Período} down 15 lines of
 	 * one or two characters - so the default is one twip (0.05pt), Word's own unit of
-	 * layout, rather than the inch body text gets.  The general tolerance caps it: a value
-	 * above {@link #EMERGENCY_BREAK_TOLERANCE} gives cells no special treatment.
+	 * layout, rather than the inch body text gets.  Since 17.1.1 the body's tolerance is
+	 * the same twip (CR-001 batch 47 item 4), so this property differs from
+	 * {@link #EMERGENCY_BREAK_TOLERANCE} only where one of the two is set.
 	 *
 	 * <p>A workaround for FOP, which has no intra-word break at all (docx4j's own line
 	 * manager splits the word, see {@code WordLineLayoutManager.emergencyBreaks}); it
@@ -461,6 +462,39 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	public static double cellEmergencyBreakToleranceRatio(double dflt) {
 		Double v = doubleProperty(CELL_EMERGENCY_BREAK_TOLERANCE_RATIO);
 		return v == null ? dflt : v.doubleValue();
+	}
+
+	/**
+	 * The text FOP measures an {@code fo:page-number-citation} as while the page it cites
+	 * is still unknown - a page number cited <em>forward</em>, which is every entry of a
+	 * table of contents.
+	 *
+	 * <p>FOP's own placeholder is {@code "MMM"}
+	 * ({@code AbstractPageNumberCitationLayoutManager.determineCitationString}), three
+	 * capital Ms, and a page number is digits: measured in Times 12pt, {@code "MMM"} is
+	 * 32.0pt where {@code "23"} is 12.0pt and {@code "133"} 18.0pt.  The difference is
+	 * charged to the line while it is being broken, so a word which fits the measure can
+	 * be pushed onto the next line by a page number that is 20pt narrower than the space
+	 * reserved for it.  The default keeps FOP's three characters and makes them digits.
+	 *
+	 * <p>The width is corrected when the citation resolves
+	 * ({@code UnresolvedPageNumber.resolveIDRef}, and
+	 * {@code WordLineLayoutManager.TabPageNumberWidth} for the tab that aligns it), so
+	 * the placeholder decides only where the line breaks.  Set it to {@code MMM} for
+	 * FOP's own behaviour.
+	 *
+	 * <p>docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.pageNumberPlaceholder sets it.
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String PAGE_NUMBER_PLACEHOLDER
+			= "docx4j.convert.out.fo.wordLayout.pageNumberPlaceholder";
+
+	public static String pageNumberPlaceholder(String dflt) {
+		String v = System.getProperty(PAGE_NUMBER_PLACEHOLDER);
+		if (v == null) v = Docx4jProperties.getProperty(PAGE_NUMBER_PLACEHOLDER);
+		return v == null ? dflt : v.trim();
 	}
 
 	/**

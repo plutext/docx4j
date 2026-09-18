@@ -35,7 +35,9 @@ import org.apache.fop.layoutmgr.LayoutManagerMapping;
  * {@link LayoutManagerMapping} with {@link WordBlockLayoutManager} for
  * {@code fo:block} and {@link WordListItemLayoutManager} for {@code fo:list-item}.
  *
- * It also supplies {@link WordFlowLayoutManager} for the flow.
+ * It also supplies {@link WordFlowLayoutManager} for the flow, and
+ * {@link WordPageNumberCitationLayoutManager} for {@code fo:page-number-citation} (whose
+ * unresolved width decides where a table-of-contents entry breaks).
  *
  * FOP holds the override at factory level and never tells it the
  * {@code FOUserAgent}, which the standard makers need (TextLayoutManager asks
@@ -100,6 +102,13 @@ public class WordLayoutManagerMaker extends LayoutManagerMapping {
 				@Override
 				public void make(FONode node, List lms, FOUserAgent userAgent) {
 					lms.add(new WordListItemLayoutManager((org.apache.fop.fo.flow.ListItem) node));
+				}
+			});
+			registerMaker(org.apache.fop.fo.flow.PageNumberCitation.class, new Maker() {
+				@Override
+				public void make(FONode node, List lms, FOUserAgent userAgent) {
+					lms.add(new WordPageNumberCitationLayoutManager(
+							(org.apache.fop.fo.flow.PageNumberCitation) node));
 				}
 			});
 		}

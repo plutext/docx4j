@@ -156,4 +156,45 @@ public class EmergencyBreakTest {
 		for (String l : got) joined.append(l);
 		assertEquals(sb.toString(), joined.toString());
 	}
+
+	/**
+	 * The measure itself is the rule, in the body as in a cell: a word 1.6pt past a 200pt
+	 * line is broken at the last character that fits.  Word's {@code break-longword} golden
+	 * breaks a token 5.0pt past a 481.0pt measure and leaves one 1.0pt inside it whole, so
+	 * the body's tolerance is a twip - it was an inch until 17.1.1 (CR-001 batch 47 item 4).
+	 */
+	@Test
+	public void aWordJustPastTheMeasureIsBroken() throws Exception {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 28; i++) sb.append('_');   // 201.6pt against the 200pt line
+		List<String> got = lines(fo(sb.toString()), true);
+		assertEquals("two lines, not " + got.size(), 2, got.size());
+		assertEquals(27, got.get(0).length());
+		assertEquals(1, got.get(1).length());
+	}
+
+	/** And a word which fits the measure exactly is not broken. */
+	@Test
+	public void aWordWhichFitsTheMeasureIsNotBroken() throws Exception {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 27; i++) sb.append('_');   // 194.4pt: inside the 200pt line
+		List<String> got = lines(fo(sb.toString()), true);
+		assertEquals(1, got.size());
+		assertEquals(27, got.get(0).length());
+	}
+
+	/** The inch the body used to tolerate is still a property away. */
+	@Test
+	public void theToleranceIsAProperty() throws Exception {
+		System.setProperty(WordLayoutCustomizer.EMERGENCY_BREAK_TOLERANCE, "72");
+		try {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < 28; i++) sb.append('_');
+			// the constant is read once, at class initialisation, so this documents the
+			// property rather than exercising it: the value in force is the twip
+			assertTrue(WordLayoutCustomizer.emergencyBreakTolerance(0.05) == 72);
+		} finally {
+			System.clearProperty(WordLayoutCustomizer.EMERGENCY_BREAK_TOLERANCE);
+		}
+	}
 }
