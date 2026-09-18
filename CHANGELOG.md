@@ -19,6 +19,12 @@ Fonts (CR-016, the font selection and mapping review):
   clones of Aptos and Aptos Display drawn to their metrics (all 138 advances identical,
   kerned line widths identical to 0.001pt against Aptos 2.01), so a document set in Word's
   2023 theme breaks its lines where Word does. Microsoft does not ship Aptos with Windows.
+- docx4j.fonts.metricsOnly.dirs names directories whose fonts docx4j MEASURES and never
+  draws in, so a layout decision which turns on the width of the document's own face - which
+  tab stop a numbering tab reaches, past a Symbol bullet - can be made on that face rather
+  than on the substitute's. Nothing is registered, so no glyph on the page changes. Off by
+  default: Microsoft's fonts stay where their licence puts them, and this only reads a copy
+  you already have.
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
   on a headless deployment - the stock ubuntu, debian, fedora and alpine images ship no font

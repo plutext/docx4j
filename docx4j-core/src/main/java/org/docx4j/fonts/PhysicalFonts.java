@@ -167,6 +167,12 @@ public class PhysicalFonts {
 	}
 
     
+	/** The resolver this class reads font files with, for {@link MetricsOnlyFonts}, which
+	 *  loads faces for their metrics without registering them here.  @since 17.1.1 */
+	static InternalResourceResolver fontResolver() {
+		return fontResolver;
+	}
+
     private static String regex;
 	public static String getRegex() {
 		return regex;

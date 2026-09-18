@@ -52,6 +52,22 @@ public final class Scoreboard {
 	 */
 	public static volatile String renderer;
 
+	/**
+	 * {@code docx4j.fonts.metricsOnly.dirs} as the run had it, or "unset".
+	 *
+	 * <p>It decides what a label is measured in - the document's own face where a directory
+	 * offers it, the substitute otherwise - so two scoreboards taken with different values
+	 * are not comparable and the file has to say which it is. The default is unset, which is
+	 * what a user gets and what a batch's gate is scored with; a run with it set is a
+	 * supplement (CR-001 batch 49 item 2; the harness README's "Fonts read for their metrics
+	 * only").</p>
+	 */
+	public static String metricsOnlyDirs() {
+		String v = org.docx4j.Docx4jProperties.getProperty(
+				org.docx4j.fonts.MetricsOnlyFonts.DIRS, "").trim();
+		return v.isEmpty() ? "unset" : v;
+	}
+
 	/** The class a row carries when the run could not read one (a document that threw, or
 	 *  one with no golden to read the Word side from). */
 	public static final String NO_CLASS = "";
@@ -199,6 +215,7 @@ public final class Scoreboard {
 		public List<String[]> entries() {
 			List<String[]> out = new ArrayList<>();
 			out.add(new String[] { "renderer", renderer == null ? "(not recorded)" : renderer });
+			out.add(new String[] { "metricsOnly fonts", metricsOnlyDirs() });
 			out.add(new String[] { "basis", basis.isEmpty() ? "(not recorded)" : basis });
 			out.add(new String[] { "documents scored", Integer.toString(scored) });
 			out.add(new String[] { "errors", Integer.toString(errors) });
@@ -513,9 +530,12 @@ public final class Scoreboard {
 		out.add("delta vs " + baselineName);
 		out.add(String.format(Locale.ROOT, "%-20s %20s %20s", "", "before", "after"));
 		List<String[]> la = a.entries(), lb = b.entries();
-		/* The renderer is not in the CSV, so the baseline's is unknown here: say so rather
-		 * than repeat this run's (the static is the only source both aggregates have). */
-		for (String[] e : la) if ("renderer".equals(e[0])) e[1] = "(not in csv)";
+		/* Neither the renderer nor the metrics-only setting is in the CSV, so the baseline's
+		 * is unknown here: say so rather than repeat this run's (the statics are the only
+		 * source both aggregates have). */
+		for (String[] e : la) {
+			if ("renderer".equals(e[0]) || "metricsOnly fonts".equals(e[0])) e[1] = "(not in csv)";
+		}
 		for (int i = 0; i < la.size(); i++) {
 			out.add(String.format(Locale.ROOT, "%-20s %20s %20s", la.get(i)[0], la.get(i)[1], lb.get(i)[1]));
 		}

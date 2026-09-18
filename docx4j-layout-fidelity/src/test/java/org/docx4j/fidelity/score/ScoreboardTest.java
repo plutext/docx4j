@@ -180,9 +180,14 @@ public class ScoreboardTest {
 	@Test
 	public void textReportPutsTheWorstDocumentsFirst() {
 		List<String> report = Scoreboard.textReport(scoreboard(), null);
-		// the basis leads the summary, because two runs on different bases are not comparable
-		assertEquals("basis                (not recorded)", report.get(0));
-		assertEquals("documents scored     3", report.get(1));
+		/* What the run was, before what it measured: two scoreboards taken on different
+		 * renderers, with different metrics-only fonts, or on different bases are not
+		 * comparable, so each says so first.  (The renderer line has led since CR-020
+		 * phase 0 and this assertion had not caught up; metricsOnly since batch 49 item 2.) */
+		assertEquals("renderer             (not recorded)", report.get(0));
+		assertEquals("metricsOnly fonts    unset", report.get(1));
+		assertEquals("basis                (not recorded)", report.get(2));
+		assertEquals("documents scored     3", report.get(3));
 		List<String> docLines = new ArrayList<>();
 		for (String l : report) {
 			if (l.contains("_") || l.startsWith("plain")) docLines.add(l);
