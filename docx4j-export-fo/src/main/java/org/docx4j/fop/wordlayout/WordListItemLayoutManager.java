@@ -201,7 +201,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 		if (!WordLayoutCustomizer.leaderGrid() || labelArea == null) return;
 		LineAt label = firstLine(labelArea, 0);
 		if (label == null || label.line.getBidiLevel() > 0) return;
-		int origin = label.x + pageOffsetMpt();
+		int origin = label.x + pageOffsetMpt() + cellOffsetMpt();
 		int[] x = { 0 };
 		InlineArea run = filledArea(label.line.getInlineAreas(), x);
 		if (run == null) return;
@@ -315,6 +315,40 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 
 	/** The x of the region body on the page, in millipoints: the left margin, which is
 	 *  where Word measures a leader's grid from. */
+	/**
+	 * The x of the table cell this list item sits in, where it sits in one; 0 otherwise.
+	 *
+	 * <p>The fifth term of the label leader's origin. {@code label.x} is measured from the
+	 * list item, and {@link #pageOffsetMpt} adds the region body's - but a list item inside a
+	 * table cell is positioned from the <b>cell's</b> content edge, and that distance is in
+	 * neither. Measured on the {@code tab-leader-in-cell-2} golden, whose cell case was the
+	 * one run batch 48 item 7 left open: Word opens its dots at 106.130 and we opened them at
+	 * 105.504, 0.626pt short, where every body run was within 0.05pt.</p>
+	 *
+	 * <p>{@code TableCellLayoutManager} sets its cell block's x offset to
+	 * {@code xoffset + startIndent} when it creates the area, and {@code getParentArea} -
+	 * public on the {@code LayoutManager} interface - hands that area back. By the time a
+	 * list item inside the cell is adding its own areas the cell's block exists, so this is
+	 * a read; were it ever not to exist, that call would create it, which is why it is made
+	 * only for a label which actually carries a leader.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 49 item 3)
+	 */
+	private int cellOffsetMpt() {
+		try {
+			for (org.apache.fop.layoutmgr.LayoutManager lm = getParent(); lm != null; lm = lm.getParent()) {
+				if (lm instanceof org.apache.fop.layoutmgr.table.TableCellLayoutManager) {
+					org.apache.fop.area.Area cell = lm.getParentArea(null);
+					return (cell instanceof org.apache.fop.area.Block)
+							? ((org.apache.fop.area.Block) cell).getXOffset() : 0;
+				}
+			}
+		} catch (RuntimeException e) {
+			log.debug("no table cell for the label leader grid: " + e.getMessage());
+		}
+		return 0;
+	}
+
 	private int pageOffsetMpt() {
 		try {
 			org.apache.fop.area.PageViewport pv = getPSLM() == null ? null : getPSLM().getCurrentPV();

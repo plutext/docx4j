@@ -300,6 +300,10 @@ PDF via XSL FO, the renderer (CR-020, phase 0):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbering label's leader inside a table cell opens where Word opens it. Its origin is
+  measured from the page edge, and a list item in a cell carries the cell's own x as well:
+  on the tab-leader-in-cell-2 golden the run opened 0.626pt early and now opens within
+  0.050pt of Word's 106.130 (CR-001 batch 49).
 - The space Word writes between a numbering label and its leader is in the text layer too.
   A numbered paragraph whose numbering tab reaches a stop with a w:leader copied out of our
   PDF as "1.------ Text" where Word's reads "1. ------ Text"; the space is the blank the
