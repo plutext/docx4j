@@ -109,3 +109,22 @@ substitution for a family that is in the cloud-font cache is the sign that it wa
   metrics table, the clones, the width factors) as the way to approach Word-with-the-font.
 * For documents in families with no clone, supply the faces to the harness or score
   pagination only.
+* Keep the three size groups (`real`, `real2`, `real3`); do not re-split the corpora by
+  class. The class is relative to two machines and it moves - a document is 2 or 3b by what
+  the VM had when its golden was cut, and 3a by what this machine has when it is scored, so
+  turning connected experiences on and re-cutting, or supplying Aptos through
+  `-Dfidelity.fonts`, changes it - where the size groups never change; most documents are
+  not purely one class (one paragraph in a substituted family in a document otherwise set in
+  Calibri); and the groups are what run in parallel, give the 1000-page document its own
+  heap, and keep every baseline since b35 comparable within a group.
+* Instead, at the re-baseline: two scoreboard columns per document, the **class** and the
+  **substituted share** (the fraction of its lines set in substituted faces, on either side),
+  computed at scoring time from the golden manifest and the docx's font table; and the
+  summary reported per class as well as per group. The class 2 mean is then the exporter's
+  own number, 3a shows what the metrics table and the clones are worth, and 3b is reported
+  and never gated on. A batch gate reads "no loss on class 2, class 3a explained, 3b
+  ignored".
+* First, the cheap measurement that says how much this matters: classify the 449 documents
+  as they stand, from the manifests and font tables already on disk. If 3b is a handful, the
+  columns are hygiene; if it is a large share, the whole-corpus means gated on so far say
+  less than they seemed to, and the re-baseline comes first.
