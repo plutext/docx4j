@@ -277,6 +277,11 @@ PDF via XSL FO, the renderer (CR-020, phase 0):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The space Word writes between a numbering label and its leader is in the text layer too.
+  A numbered paragraph whose numbering tab reaches a stop with a w:leader copied out of our
+  PDF as "1.------ Text" where Word's reads "1. ------ Text"; the space is the blank the
+  leader's grid phase already left, in the leader's own face, so no glyph moves
+  (CR-001 batch 49).
 - A numbering tab reaches the first stop past the end of its label and before w:ind left of the
   level's own stops AND the paragraph's, where docx4j read only the level's. Measured on a corpus
   CV whose bulleted paragraphs are w:ind left 993 hanging 567 with their own w:tab w:val="left"

@@ -793,6 +793,42 @@ final class LBP {
 	 */
 	static org.apache.fop.area.inline.InlineArea gridPlacedLeader(
 			org.apache.fop.area.inline.FilledArea run, int from) {
+		return gridPlacedLeader(run, from, null);
+	}
+
+	/**
+	 * As above, and with {@code lead} the blank in front of the run is written as a
+	 * <b>space character</b> of that advance rather than as a jump of the pen.
+	 *
+	 * <p>That is what Word's own PDF carries between a numbering label and its leader
+	 * run.  On the {@code numbering-leader-kinds} golden, every one of its five items
+	 * shows three text objects where ours showed two - the label, then a space in the
+	 * <b>leader's</b> face at the label's size, then the run:</p>
+	 *
+	 * <pre>
+	 * /F1 11.04 Tf 1 0 0 1  90.048 705.55 Tm [(1.)] TJ                 LiberationSerif
+	 * /F3 11.04 Tf 1 0 0 1  98.208 705.55 Tm [( )] TJ                  ArialMT
+	 * /F3 11.04 Tf 1 0 0 1  99.888 705.55 Tm 0.0509 Tc[(..............)] TJ
+	 * </pre>
+	 *
+	 * <p>The space stands at the label's own end and the run opens on Word's grid, so the
+	 * space <em>is</em> the phase; and the glyph draws no ink, so {@code mutool draw -F
+	 * trace} does not list it and the claim is read out of the operators.  It is the same
+	 * construct the paragraph tab's {@link #setLeaderPhase(org.apache.fop.layoutmgr.LayoutManager,
+	 * int, int, boolean)} already writes, and it takes the same switch
+	 * ({@code WordLayoutCustomizer.tabSpaces}).</p>
+	 *
+	 * <p><b>Nothing moves.</b>  {@code InlineParent.addChildArea} adds each child's
+	 * allocated width to the parent's, so a space of the phase's own advance measures
+	 * exactly what the blank measured, and the run keeps the position and the width it
+	 * had.</p>
+	 *
+	 * @param lead builds a space area of the advance it is given, or returns null
+	 * @since 17.1.1 (CR-001 batch 49 item 1)
+	 */
+	static org.apache.fop.area.inline.InlineArea gridPlacedLeader(
+			org.apache.fop.area.inline.FilledArea run, int from,
+			java.util.function.IntFunction<org.apache.fop.area.inline.InlineArea> lead) {
 		if (!WordLayoutCustomizer.leaderGrid()) return null;
 		int period = gridPlacedStep(run);
 		int width = run.getIPD();
@@ -800,7 +836,9 @@ final class LBP {
 		int phase = gridPhase(from, period);
 		if (phase <= 0 || phase >= width) return null;
 		run.setIPD(width - phase);
-		return new PhasedLeaderArea(phase, run);
+		org.apache.fop.area.inline.InlineArea space = (lead == null) ? null : lead.apply(phase);
+		return (space == null) ? new PhasedLeaderArea(phase, run)
+				: new PhasedLeaderArea(space, run, null);
 	}
 
 	/**
