@@ -55,11 +55,16 @@ import org.slf4j.LoggerFactory;
  * Measured on Aptos, Microsoft 365's default font, from Word's own PDF of a document
  * it had the font for: 13.45pt at 11pt, which is its typo box (1923 + 577 = 2500 of
  * 2048), where its usWin box (2068 + 563 = 2631) would give 14.13 - 0.7pt on every
- * line, two pages in twenty-seven.  Every Aptos face sets the flag; Calibri, Cambria
- * and the older Microsoft fonts do not, and 25 of the table's 512 families do and have
- * a typo box that differs from their usWin box (Georgia Pro by 1.8pt a line at 11pt).
- * Those carry their typo metrics as the table's fields 8-10, and a physical font's are
- * read from its file (17.1.1).</p>
+ * line, two pages in twenty-seven.  The typo box and not the hhea box: Bierstadt, whose
+ * typo box is 2462 against an hhea and usWin box of 2341, steps 13.20pt at 11pt in
+ * Word's PDF (the line-box-typo-metrics golden), the typo rule's 13.22 and not the
+ * 12.57 of the other two; and the bit is honoured whatever the OS/2 table's version -
+ * DokChampa sets it in a version 3 table and steps 14.79, its typo box, not the 21.31
+ * of its usWin box.  Every Aptos face sets the flag; Calibri, Cambria and the older
+ * Microsoft fonts do not, and 26 of the table's 512 families do and have a typo box
+ * that differs from their usWin box (Georgia Pro by 1.8pt a line at 11pt).  Those carry
+ * their typo metrics as the table's fields 8-10, and a physical font's are read from
+ * its file (17.1.1).</p>
  *
  * The other spacing rules then follow: "auto" multiplies single by line/240;
  * "exact" is line/20 pt regardless of font; "atLeast" is the larger of single
@@ -608,9 +613,13 @@ public final class WordLineMetrics {
 				hheaDesc = s16(data, off + 6);
 				hheaGap = s16(data, off + 8);
 						} else if (t.equals("OS/2") && len >= 78) {
-				// fsSelection bit 7, USE_TYPO_METRICS (OS/2 version 4 and later): Word lays
-				// the font out on its typo box, not its usWin box.  @since 17.1.1
-				useTypoMetrics = u16(data, off) >= 4 && (u16(data, off + 62) & 0x80) != 0;
+				// fsSelection bit 7, USE_TYPO_METRICS: Word lays the font out on its typo
+				// box, not its usWin box - whatever the OS/2 table's version.  The
+				// specification defines the bit from version 4; DokChampa sets it in a
+				// version 3 table and Word honours it there too (the line-box-typo-metrics
+				// golden: 14.79pt at 11pt, its typo box, not the 21.31 of its usWin box).
+				// @since 17.1.1
+				useTypoMetrics = (u16(data, off + 62) & 0x80) != 0;
 				typoAsc = s16(data, off + 68);
 				typoDesc = s16(data, off + 70);
 				typoGap = s16(data, off + 72);

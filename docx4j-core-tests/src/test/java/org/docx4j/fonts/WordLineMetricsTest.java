@@ -316,6 +316,12 @@ public class WordLineMetricsTest {
 		assertFalse(plain.typoMetrics);
 		assertEquals("usWin box, no external leading (hhea is smaller)", 2631.0 / 2048,
 				plain.lineHeightFactor(), 1e-9);
+		// the bit is honoured in an OS/2 table of version 3 too: DokChampa's shape, which
+		// Word steps at 14.79pt at 11pt (its typo box 2754), not 21.31 (its usWin box 3967)
+		WordLineMetrics.Metrics v3 = WordLineMetrics.readMetrics(
+				new java.io.ByteArrayInputStream(sfnt(3, 2048, 2850, -1117, 0, 1999, -555, 200, 2850, 1117, true)));
+		assertTrue(v3.typoMetrics);
+		assertEquals(2754.0 / 2048, v3.lineHeightFactor(), 1e-9);
 		// a typo line gap counts, as hhea's does for a usWin font
 		WordLineMetrics.Metrics gap = WordLineMetrics.readMetrics(
 				new java.io.ByteArrayInputStream(sfnt(2048, 1520, -532, 410, 1520, -532, 410, 1802, 539, true)));
@@ -325,12 +331,17 @@ public class WordLineMetricsTest {
 	/** A minimal sfnt: head, hhea and OS/2 (version 4) tables, nothing else. */
 	private static byte[] sfnt(int upem, int hheaAsc, int hheaDesc, int hheaGap, int typoAsc, int typoDesc,
 			int typoGap, int winAsc, int winDesc, boolean useTypoMetrics) {
+		return sfnt(4, upem, hheaAsc, hheaDesc, hheaGap, typoAsc, typoDesc, typoGap, winAsc, winDesc, useTypoMetrics);
+	}
+
+	private static byte[] sfnt(int os2Version, int upem, int hheaAsc, int hheaDesc, int hheaGap, int typoAsc,
+			int typoDesc, int typoGap, int winAsc, int winDesc, boolean useTypoMetrics) {
 		java.nio.ByteBuffer head = java.nio.ByteBuffer.allocate(54);
 		head.putShort(18, (short) upem);
 		java.nio.ByteBuffer hhea = java.nio.ByteBuffer.allocate(36);
 		hhea.putShort(4, (short) hheaAsc); hhea.putShort(6, (short) hheaDesc); hhea.putShort(8, (short) hheaGap);
 		java.nio.ByteBuffer os2 = java.nio.ByteBuffer.allocate(96);
-		os2.putShort(0, (short) 4);
+		os2.putShort(0, (short) os2Version);
 		os2.putShort(62, (short) (useTypoMetrics ? 0x80 : 0));
 		os2.putShort(68, (short) typoAsc); os2.putShort(70, (short) typoDesc); os2.putShort(72, (short) typoGap);
 		os2.putShort(74, (short) winAsc); os2.putShort(76, (short) winDesc);

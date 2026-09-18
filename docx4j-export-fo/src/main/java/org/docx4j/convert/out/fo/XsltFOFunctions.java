@@ -3398,7 +3398,13 @@ public class XsltFOFunctions {
     protected static int getDistanceToNextTabStop( int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
 
 		int pdbs = 0; 
-		int defaultTab = 360;
+		/* ECMA-376-1 17.15.1.25: a document with no w:defaultTabStop has stops every 720
+		 * twips, which is what Word writes into every document it saves.  This read 360
+		 * until 17.1.1, and a generated document with no settings entry sent the text
+		 * after a wide label to a half-inch stop no default stop exists at: measured on
+		 * the list-label-width golden, a 22-character label ending at 2374 twips has its
+		 * text at 2880 in Word (216.10pt) where 360 gave 2520 (198.00pt).  @since 17.1.1 */
+		int defaultTab = 720;
 		if (pprTabs!=null
 				&& pprTabs.getTab()!=null
 				&& pprTabs.getTab().size()>0) {
@@ -3439,7 +3445,7 @@ public class XsltFOFunctions {
 			}
 		}
 
-		log.debug("tab stop: assuming default tab 360");
+		log.debug("tab stop: assuming default tab 720");
 		int tabNUmber = (int)Math.floor((pos+numWidth)/defaultTab);
 		int nextTabPos = defaultTab*(tabNUmber+1);
 		return nextTabPos - pos;

@@ -487,11 +487,11 @@ whose typo box differs from its usWin box: Word lays such a font out on the typo
 on Aptos from Word's own PDF: 13.45pt at 11pt, its typo box 2500/2048, where the usWin rule
 gives 14.13 - 0.7pt a line. Twenty-five of the 512 families are of this kind (Aptos, Georgia
 Pro, Bierstadt, Seaford, Montserrat, ...); `WordLineMetrics` applies the same rule when it reads
-a physical font's own file. Aptos' typo and hhea boxes are equal, so whether Word takes the
-typo or the hhea box for such a font is not yet pinned: Bierstadt (typo 2462, hhea 2341) would
-tell them apart in a probe. The flag is read only from an OS/2 table of version 4 or later, where
-the specification defines it (DokChampa sets the bit in a version 3 table and is left on the usWin
-rule).
+a physical font's own file. It is the typo box and not the hhea box: Bierstadt (typo 2462,
+hhea and usWin 2341) steps 13.20pt at 11pt in Word's PDF, the typo rule's 13.22 and not 12.57
+(the `line-box-typo-metrics` golden). And the bit is honoured whatever the OS/2 table's version:
+DokChampa sets it in a version 3 table, where the specification does not define it, and Word
+steps it at 14.79, its typo box, not the 21.31 of its usWin box.
 
 Keys are lower-cased and taken from both the legacy family name documents use in
 `w:rFonts` (name table id 1, e.g. `calibri light`, `aptos display`) and the typographic

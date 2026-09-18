@@ -127,9 +127,14 @@ Fonts (CR-016, the font selection and mapping review):
   usWin box: Aptos, Microsoft 365's default font, is 13.45pt at 11pt in Word's own PDF, its typo
   box (2500/2048), where docx4j took 14.13 from its usWin box - 0.7pt a line, two pages in
   twenty-seven.  WordLineMetrics reads the flag off a font file, and word-line-metrics.properties
-  carries the typo metrics (fields 8-10) of the 25 of its 512 families which set the flag and
+  carries the typo metrics (fields 8-10) of the 26 of its 512 families which set the flag and
   whose typo box differs (Georgia Pro by 1.8pt a line); etc/GenWordLineMetricsTypo regenerates
-  them.
+  them.  Settled by the line-box-typo-metrics golden: it is the typo box, not the hhea box
+  (Bierstadt 13.20pt at 11pt), and the bit counts whatever the OS/2 table's version (DokChampa,
+  version 3, 14.79pt and not 21.31).
+- A document with no w:defaultTabStop has stops every 720 twips, as ECMA-376 says and Word
+  does, not 360: the text after a numbering label wider than its indent went to a half-inch
+  stop that does not exist (list-label-width golden: Word 216.10pt, docx4j 198.00).
 - A face declares its typographic family name to FOP only where the family is its own.  Aptos
   Display's name id 16 is "Aptos", so it declared the triplet Aptos/normal/400 that Aptos Regular
   declares, and FOP kept the later one: with both installed a document asking for Aptos was drawn

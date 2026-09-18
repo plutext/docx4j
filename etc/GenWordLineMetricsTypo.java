@@ -30,8 +30,9 @@ import java.util.TreeSet;
 /**
  * Adds the typo metrics - the optional fields 8 to 10, {@code sTypoAscender;sTypoDescender;
  * sTypoLineGap} - to <code>word-line-metrics.properties</code> for the families whose
- * Regular face sets OS/2 {@code fsSelection} USE_TYPO_METRICS (bit 7) and whose typo box
- * differs from their usWin box, reading them off the font files of a Windows font folder.
+ * Regular face sets OS/2 {@code fsSelection} USE_TYPO_METRICS (bit 7), in a table of any
+ * version, and whose typo box differs from their usWin box, reading them off the font files
+ * of a Windows font folder.
  *
  * <p>Word lays such a font out on its typo box (measured on Aptos: 13.45pt at 11pt, the
  * typo box 2500/2048, where the usWin box would give 14.13).  As
@@ -126,7 +127,9 @@ public class GenWordLineMetricsTypo {
 			if (!tag(data, rec).equals("OS/2")) continue;
 			int off = u32(data, rec + 8), len = u32(data, rec + 12);
 			if (off + len > data.length || len < 78) return null;
-			if (u16(data, off) < 4 || (u16(data, off + 62) & 0x80) == 0) return null;
+			// the bit whatever the table's version: Word honours it in DokChampa's version 3
+			// table (the line-box-typo-metrics golden)
+			if ((u16(data, off + 62) & 0x80) == 0) return null;
 			int typoA = s16(data, off + 68), typoD = s16(data, off + 70), typoG = s16(data, off + 72);
 			int winA = u16(data, off + 74), winD = u16(data, off + 76);
 			if (typoA - typoD + typoG == winA + winD) return null;
