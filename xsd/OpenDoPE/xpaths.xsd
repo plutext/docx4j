@@ -74,6 +74,24 @@ JAXB INSTRUCTIONS
           </xs:complexType>
         </xs:element>
       </xs:sequence>
+      <!-- OpenDoPE Specification v3, section 4: how the template was authored.
+           Optional here so that v2.3 templates still validate; a v3 template MUST
+           carry version and booleanConversion (REQ-009, REQ-031). -->
+      <xs:attribute name="version" type="xs:string" use="optional" />
+      <!-- version of the OpenDoPE Specification the template was authored against, eg 3.0 -->
+      <xs:attribute name="booleanConversion" use="optional">
+        <!-- boolean conversion mode the expressions were written for (spec section 7.2) -->
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="java" />
+            <xs:enumeration value="xpath1" />
+            <xs:enumeration value="xpath2" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="authoringTool" type="xs:string" use="optional" />
+      <xs:attribute name="authoringToolVersion" type="xs:string" use="optional" />
+      <!-- the authoring tool that last saved the template, and its version -->
     </xs:complexType>
   </xs:element>
 </xs:schema>

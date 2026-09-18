@@ -1,5 +1,7 @@
 # OpenDoPE hyperlink handling options
 
+> Implementation notes. The normative behaviour is defined in the [OpenDoPE Specification v3](OpenDoPE%20Specification%20v3%20WD%202026%2009%2018.pdf) (section 6.3, Hyperlinks); this page covers docx4j specifics beyond it.
+
 How to make a hyperlink data-driven — the displayed text (the `w:t` on the
 document surface), the target (normally a relationship, via `@r:id`), or
 both.  Assumes docx4j **17.0.4 or later**: everything below works on all

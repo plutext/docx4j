@@ -1,5 +1,7 @@
 # The OpenDoPE component model
 
+> Implementation notes. The normative behaviour is defined in the [OpenDoPE Specification v3](OpenDoPE%20Specification%20v3%20WD%202026%2009%2018.pdf) (section 10, Components); this page covers docx4j specifics beyond it.
+
 *As implemented in docx4j; code references are to `org.docx4j.model.datastorage`
 unless otherwise noted.  Last reviewed against docx4j 17.0.4 (August 2026).*
 
