@@ -2248,7 +2248,7 @@ public class XsltFOFunctions {
 					/* and Word paints that stop's own w:leader over the advance, from the
 					 * end of the label to the stop (appendNumberingTabLeader) */
 					appendNumberingTabLeader(document, foListItemLabelBody,
-							tabStop, stop - labelEnd);
+							tabStop, stop - labelEnd, wmlPackage);
 				}
 			}
 
@@ -2556,10 +2556,10 @@ public class XsltFOFunctions {
 	 * {@link WordLayoutFixups#HINT_TOC_LEADER}: that mark is what the grid pass looks for,
 	 * and it is not {@code HINT_TAB}, which marks a tab the line manager gives its width).
 	 *
-	 * <p>The characters are drawn in the <b>paragraph's</b> face and size, which is what
-	 * every other tab leader is drawn in, and not the label's; that is settled by
-	 * {@code WordLayoutFixups.numberingTabLeaderFont}, where both blocks are finished, and
-	 * it decides the step and through it the count.
+	 * <p>The characters are drawn in <b>Arial</b> at the <b>label's</b> size, which is
+	 * neither the paragraph's font nor the label's face - see
+	 * {@link #numberingTabLeaderFont}, which carries the readings. That decides the step
+	 * and through the step the count.
 	 *
 	 * <p>The leader goes in the <b>label's</b> block, and its length is fixed, because
 	 * that is where the advance is: the label runs from the level's number position, the
@@ -2573,7 +2573,8 @@ public class XsltFOFunctions {
 	 * @since 17.1.1 (CR-001 batch 47 item 5b)
 	 */
 	private static void appendNumberingTabLeader(Document document, Element labelBody,
-			org.docx4j.wml.CTTabStop stop, int advanceTwips) {
+			org.docx4j.wml.CTTabStop stop, int advanceTwips,
+			WordprocessingMLPackage wmlPackage) {
 
 		if (!WordLayoutFixups.isEnabled() || labelBody == null || stop == null) return;
 		if (advanceTwips <= 0) return;
@@ -2587,8 +2588,76 @@ public class XsltFOFunctions {
 		leader.setAttribute("leader-alignment", "reference-area");
 		leader.setAttribute(WordLayoutFixups.HINT_TOC_LEADER,
 				stop.getLeader() == null ? "dot" : stop.getLeader().value());
+		numberingTabLeaderFont(leader, labelBody, wmlPackage);
 		labelBody.appendChild(leader);
 	}
+
+	/**
+	 * A numbering tab's leader is drawn in <b>Arial</b>, at the <b>label's</b> size.
+	 *
+	 * <p>Measured on the {@code tab-leader-sizes} golden (Word 365, fields off, three
+	 * numbered paragraphs whose level states a {@code w:sz} the paragraph does not):</p>
+	 *
+	 * <table><caption>Word's own leader runs</caption>
+	 * <tr><th>level</th><th>paragraph</th><th>label drawn in</th><th>leader drawn in</th><th>step</th><th>dots</th></tr>
+	 * <tr><td>8pt, no face</td><td>16pt Times New Roman</td><td>LiberationSerif 7.92</td><td><b>ArialMT 7.92</b></td><td>2.16</td><td>21</td></tr>
+	 * <tr><td>16pt, no face</td><td>8pt Times New Roman</td><td>LiberationSerif 16.08</td><td><b>ArialMT 16.08</b></td><td>4.56</td><td>8</td></tr>
+	 * <tr><td>8pt Arial</td><td>16pt Times New Roman</td><td>ArialMT 7.92</td><td><b>ArialMT 7.92</b></td><td>2.16</td><td>22</td></tr>
+	 * </table>
+	 *
+	 * <p>So the size is the <b>label's</b> and not the paragraph's - which is what
+	 * CR-001 batch 47 item 5(b) gave it, and the inverse of Word - and the face is
+	 * <b>Arial</b> whatever the label is set in: in the first two rows Word draws the
+	 * label in Liberation Serif and the dots in Arial in the same run. The same holds on
+	 * the {@code tab-leader-in-cell-2} golden, whose level names neither face nor size:
+	 * the label is Calibri 11.04pt, the dots ArialMT 11.04pt stepping 3.12. And Arial is
+	 * this construct's own: on the {@code tab-leader-kinds} golden, where the leaders
+	 * belong to <em>paragraph</em> tabs, Word draws every one of them in the paragraph's
+	 * own Calibri (dots stepping 2.88, hyphens 3.36, underscores 5.52) - so a paragraph
+	 * tab's leader and a numbering tab's leader are not the same construct.</p>
+	 *
+	 * <p>The step follows from the face and the size and not from this: Word steps a
+	 * leader run on the character's advance rounded to 1/300 inch, which the line manager
+	 * applies ({@code WordLineLayoutManager.gridTocLeaders}). Arial's period advance is
+	 * 569/2048 em, so 8pt gives 2.2226pt = 9.26 cells and Word's 9 = 2.16pt; 16pt gives
+	 * 4.4453 = 18.52 cells and Word's 19 = 4.56pt; 11.04pt gives 3.0672 = 12.78 cells and
+	 * Word's 13 = 3.12pt. (The sizes in Word's PDF are themselves on that grid - 8 becomes
+	 * 7.92, 16 becomes 16.08, 11 becomes 11.04, each an exact multiple of 0.24pt - which
+	 * is a fact about how Word writes a PDF and makes no difference to the step.)</p>
+	 *
+	 * <p>Arial is asked of the {@link org.docx4j.fonts.Mapper}, so an environment without
+	 * it draws the leader in Arial's metric clone and the advance, and so the step, is
+	 * still Word's; the face is registered as a last-resort fallback for the same reason
+	 * {@code RunFontSelector} registers the faces it names - the FOP configuration is
+	 * built from the fonts the FO mentions, and a face nothing else mentions would
+	 * otherwise be reported "not found" and drawn in a default font.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 1; it corrects batch 47 item 5b)
+	 */
+	private static void numberingTabLeaderFont(Element leader, Element labelBody,
+			WordprocessingMLPackage wmlPackage) {
+
+		double sizePt = TableWriter.sizeFor(labelBody);
+		if (sizePt > 0) {
+			// format() already carries the unit
+			leader.setAttribute("font-size", org.docx4j.fonts.WordLineMetrics.format(sizePt));
+		}
+		try {
+			org.docx4j.fonts.Mapper mapper = wmlPackage == null ? null : wmlPackage.getFontMapper();
+			if (mapper == null) return;
+			org.docx4j.fonts.PhysicalFont arial = mapper.get(LEADER_FONT);
+			if (arial == null || arial.getName() == null) return;
+			mapper.registerLastResortFallback(arial);
+			leader.setAttribute("font-family", arial.getName());
+		} catch (RuntimeException e) {
+			log.debug("Numbering tab leader font not resolved (" + e.getMessage()
+					+ "); the label's own face stands");
+		}
+	}
+
+	/** The face Word draws a numbering tab's leader in, whatever the label is set in.
+	 *  @see #numberingTabLeaderFont */
+	private static final String LEADER_FONT = "Arial";
 
 	/**
 	 * The width of a list block's label column: the numbering tab's own stop where the

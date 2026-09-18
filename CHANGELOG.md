@@ -258,6 +258,19 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbering tab's leader is drawn in Arial at the label's size, which is neither the paragraph's
+  font nor the label's face. Measured on a probe whose level states a size the paragraph does not:
+  under a 16pt Times New Roman paragraph an 8pt level gives ArialMT at 7.92pt stepping 2.16pt, 21
+  dots, where Word draws the label itself in Liberation Serif; under an 8pt paragraph a 16pt level
+  gives ArialMT 16.08pt stepping 4.56pt, 8 dots; and an 8pt Arial level under 16pt Times New Roman
+  gives ArialMT 7.92pt again. docx4j gave the leader the paragraph's face and size, so those runs
+  stepped 4.08, 1.92 and 4.08 with 10, 21 and 10 dots; all three steps and counts are now Word's.
+  The step is the character's advance rounded to Word's 1/300 inch grid, so the face and the size
+  decide it: Arial's 569/2048 em period is 9.26 cells at 8pt (Word's 9 = 2.16pt) and 18.52 at 16pt
+  (Word's 19 = 4.56pt). Arial is asked of the font mapper, so an environment without it draws the
+  leader in Arial's metric clone and the step is still Word's. A paragraph tab's leader is
+  unaffected: Word draws those in the paragraph's own face, measured on the same day
+  (CR-001 batch 48).
 - The numbering tab now paints the dot leader of the stop it reaches, from the end of the label
   to that stop, in a table cell and in body text alike. Measured on a probe whose level carries
   w:ind left 2880 hanging 2520 and one w:leader="dot" left stop at 1440 twips: Word sets the label
@@ -265,11 +278,10 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   to 146.690, and the paragraph's first line of text at 149.830, which is the stop; in the body,
   the label at 90.048, the same fourteen dots from 99.888 to 140.448 and the text at 144.070.
   docx4j painted nothing there. The leader is written into the label's own block with the advance
-  as its length and is drawn in the paragraph's face and size, not the label's, because Word's step
-  is the character's advance rounded to 1/300 inch and the paragraph's face is what gives 3.120pt
-  (the label's own 11pt face would give 2.880 and fifteen dots). A stop with no w:leader, and a
-  level with no stop at all, still paint nothing, and neither does an advance shorter than one cell
-  of the grid - over which Word's w:suff separator space is still written (CR-001 batch 47).
+  as its length; the face and size it is drawn in are the next bullet's. A stop with no w:leader,
+  and a level with no stop at all, still paint nothing, and neither does an advance shorter than
+  one cell of the grid - over which Word's w:suff separator space is still written
+  (CR-001 batch 47).
 - A word longer than the measure is now broken in body text as it already was in a table cell:
   at the last character that fits, with no hyphen. Word's rule is the measure itself, measured on
   a probe at Liberation Serif 12pt on a 481.0pt measure - a token 48.0pt over is set to 537.14,
