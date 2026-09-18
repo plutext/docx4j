@@ -27,6 +27,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import javax.xml.transform.TransformerException;
 
+import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.HiddenText;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
@@ -338,7 +339,20 @@ public class XsltHTMLFunctions {
     	
     	
     	// Note that this is invoked for every paragraph with a pPr node.
-    	
+
+    	/* Since 17.1.1 the label is written by createBlock, as a span at the head of the
+    	 * paragraph, for every numbered paragraph - so that a paragraph numbered by its
+    	 * style gets one, so that the label carries the level's lvlText, numFmt and rPr
+    	 * (numFmt none / "NOTE", "Appendix A", a coloured bullet) rather than the
+    	 * browser's marker, and so that the hanging indent does in HTML what it does in
+    	 * Word.  This function, still called by the XSLT and the visitor before
+    	 * createBlock, must not number the paragraph a second time (Emulator.getNumber
+    	 * advances the counter), so it writes nothing.  Kept for the stylesheet's sake.
+    	 * (CR-003, the list-marker defect of 2026-09-18.) */
+    	if (LABEL_IN_BLOCK) {
+    		return null;
+    	}
+
     	context.getLog().debug("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);    	
     	
         try {
@@ -649,6 +663,106 @@ public class XsltHTMLFunctions {
      *   (XSLT pathway) or a DocumentFragment (visitor pathway)
      * @since 17.0.4
      */
+    /** The label is written by createBlock (17.1.1); false restores the pre-17.1.1
+     *  text-node number and the browser's marker.  Not a public switch. */
+    static final boolean LABEL_IN_BLOCK = true;
+
+    /** The class of the label span createBlock writes at the head of a numbered
+     *  paragraph.  @since 17.1.1 */
+    public static final String LIST_LABEL_CLASS = "ListLabel";
+
+    /**
+     * The label of a numbered paragraph - "1.", "(a)", "NOTE", "Appendix A", a bullet -
+     * as an HTML span at the head of the paragraph, or null where the paragraph is not
+     * numbered.
+     *
+     * <p>Word draws the label at the paragraph's number position (the left indent
+     * less the hanging indent) and the text from the left indent, the two joined by
+     * the level's {@code w:suff}.  In HTML the paragraph's own {@code margin-left} and
+     * negative {@code text-indent} put the first line at the number position, so the
+     * label is an {@code inline-block} whose {@code min-width} is the hanging indent:
+     * the text then begins at the left indent, as in Word, and a label wider than the
+     * indent pushes it on, as Word's tab does.  A {@code w:suff} of {@code space} is
+     * written as a space; {@code nothing} as nothing.</p>
+     *
+     * <p>The label takes the level's own {@code w:rPr} (font, size, colour, weight)
+     * through {@link HtmlCssHelper#createCss(OpcPackage, RPr, StringBuilder)}.  A
+     * bullet in a symbol font is mapped to its Unicode replacement as the
+     * {@code ListsToContentControls} preprocess maps it, so that Symbol's and
+     * Wingdings' private-use code points do not reach the browser.</p>
+     *
+     * <p>Until 17.1.1 the number was a bare text node ahead of the content for a
+     * paragraph numbered directly, nothing for one numbered by its style, and the
+     * browser's marker for an {@code li} - which the paragraph style's own hanging
+     * indent then collided with (CR-003).</p>
+     *
+     * @since 17.1.1
+     */
+    protected static Element createListLabel(HTMLConversionContext context, Document document,
+    		PPr pPr, String pStyleVal, Ind mergedInd) {
+    	String numId = "";
+    	String levelId = "";
+    	if (pPr!=null && pPr.getNumPr()!=null) {
+    		if (pPr.getNumPr().getNumId()!=null && pPr.getNumPr().getNumId().getVal()!=null) {
+    			numId = pPr.getNumPr().getNumId().getVal().toString();
+    		}
+    		if (pPr.getNumPr().getIlvl()!=null && pPr.getNumPr().getIlvl().getVal()!=null) {
+    			levelId = pPr.getNumPr().getIlvl().getVal().toString();
+    		}
+    	}
+    	if ("0".equals(numId)) {
+    		return null; // numId 0 removes the style's numbering
+    	}
+    	NumberingResult triple;
+    	try {
+    		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
+    				context.getWmlPackage(), pStyleVal, numId, levelId,
+    				numId != null && !numId.equals(""), context.getNumberingState());
+    	} catch (Exception e) {
+    		context.getLog().error(e.getMessage(), e);
+    		return null;
+    	}
+    	if (triple==null) {
+    		return null;
+    	}
+    	String text;
+    	if (triple.getBullet()!=null) {
+    		text = triple.getBullet();
+    		if (triple.getNumFont()!=null && text.length()>0) {
+    			// a symbol font's private-use code point, to its Unicode replacement
+    			byte[] valBytes = org.docx4j.convert.out.common.writer.SymbolUtils.hexStringToByteArray(
+    					Integer.toHexString(text.codePointAt(0)));
+    			String replacement = SymbolWriter.getReplacement(valBytes, triple.getNumFont());
+    			if (replacement!=null && replacement.length()>0) {
+    				text = replacement;
+    			}
+    		}
+    		if (text.length()==0 || (text.codePointAt(0) >= 0xE000 && text.codePointAt(0) <= 0xF8FF)) {
+    			text = "\u2022";
+    		}
+    	} else {
+    		text = triple.getNumString()==null ? "" : triple.getNumString();
+    	}
+    	Element span = document.createElement("span");
+    	span.setAttribute("class", LIST_LABEL_CLASS);
+    	StringBuilder css = new StringBuilder("display: inline-block;");
+    	Ind ind = mergedInd!=null ? mergedInd : triple.getIndent();
+    	if (ind!=null && ind.getHanging()!=null && ind.getHanging().intValue() > 0) {
+    		css.append("min-width: ").append(UnitsOfMeasurement.twipToBest(ind.getHanging().intValue())).append(';');
+    	}
+    	org.docx4j.wml.Lvl lvl = triple.getLvl();
+    	if (lvl!=null && lvl.getRPr()!=null) {
+    		HtmlCssHelper.createCss(context.getWmlPackage(), lvl.getRPr(), css);
+    	}
+    	span.setAttribute("style", css.toString());
+    	span.appendChild(document.createTextNode(text));
+    	if (lvl!=null && lvl.getSuff()!=null && lvl.getSuff().getVal()!=null
+    			&& "space".equals(lvl.getSuff().getVal())) {
+    		span.appendChild(document.createTextNode(" "));
+    	}
+    	return span;
+    }
+
     protected static DocumentFragment createBlock(
     		HTMLConversionContext context,
     		PPr pPr,
@@ -701,6 +815,7 @@ public class XsltHTMLFunctions {
 			
 			// Does our pPr contain anything else?
 			boolean ignoreBorders = (htmlElementName.equals("p"));
+			Ind mergedInd = (pPr!=null) ? pPr.getInd() : null;
 			if (pPr!=null) {
 				
 				// Is there numbering indentation to honour?
@@ -716,16 +831,30 @@ public class XsltHTMLFunctions {
 	        			(pPr.getNumPr().getIlvl()==null || pPr.getNumPr().getIlvl().getVal()==null)
 	        				? "0" : pPr.getNumPr().getIlvl().getVal().toString() );
 					if (numInd!=null) {
-		        		Indent indent = new Indent(pPr.getInd(), numInd);
-		        		pPr.setInd((Ind)indent.getObject());						
+						Indent indent = new Indent(pPr.getInd(), numInd);
+						pPr.setInd((Ind)indent.getObject());
+						mergedInd = pPr.getInd();
 					}
 				}
-				
+
 				StringBuilder inlineStyle =  new StringBuilder();
+				// the indent is kept for an li as for a p (17.1.1): the label is ours, not
+				// the browser's marker, so the hanging indent no longer collides with one
 				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders,
-						xhtmlBlock.getNodeName().equals("li"));	
+						!LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li"));
+				if (LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li")) {
+					inlineStyle.append("list-style: none;");
+				}
 				if (!inlineStyle.toString().equals("") ) {
 					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
+				}
+			} else if (LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li")) {
+				xhtmlBlock.setAttribute("style", "list-style: none;");
+			}
+			if (LABEL_IN_BLOCK) {
+				Element label = createListLabel(context, document, pPr, pStyleVal, mergedInd);
+				if (label!=null) {
+					xhtmlBlock.appendChild(label);
 				}
 			}
 

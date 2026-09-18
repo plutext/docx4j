@@ -216,6 +216,21 @@ Schema (CR-018, five gaps the content API found, and w16cex):
   org.docx4j.w16, so a comment's durableId and dateUtc - what the comment reactions part
   anchors on - can be read through the model.  It used to load as a generic XML part.
 
+HTML export, lists (CR-003, found on the OpenDoPE Specification v3 draft):
+
+- A numbered paragraph's label is written by docx4j as a span (class ListLabel) at the head of
+  the paragraph - the level's own lvlText and numFmt ("1.", "(a)", "NOTE", "Appendix A", the
+  bullet in its Unicode form) with the level's run formatting - and the browser draws no marker
+  (list-style none).  The paragraph's hanging indent is kept, as an inline-block label whose
+  min-width is the indent, so the text starts where Word starts it.  Until now a directly
+  numbered paragraph got a bare text number, a paragraph numbered by its style got none, and
+  every li asked for the browser's marker while the style's own hanging indent pulled the first
+  line back over it.
+- The list handler the default feature set relies on (PP_HTML_COLLECT_LISTS wraps lists in an
+  sdt tagged HTML_ELEMENT) is registered by default, so lists come out as ul/ol around their li
+  rather than as orphan li; a caller's own registration still replaces it.  The ul/ol is
+  structural (list-style none, no margin or padding of its own).
+
 Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 - A paragraph in a code style (Code, SourceCode, HTMLPreformatted, Macro Text) or in a named

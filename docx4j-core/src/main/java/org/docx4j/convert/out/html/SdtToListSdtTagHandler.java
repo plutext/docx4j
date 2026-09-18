@@ -16,10 +16,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
-public class SdtToListSdtTagHandler extends SdtTagHandler {   
-	
+public class SdtToListSdtTagHandler extends SdtTagHandler {
+
 	private static Logger log = LoggerFactory.getLogger(SdtToListSdtTagHandler.class);
-		
+
+	/** The ul/ol is structure only: its items carry their own label (the span
+	 *  XsltHTMLFunctions.createBlock writes) and their own indent, so the list draws no
+	 *  marker and adds no padding of its own.  @since 17.1.1 */
+	static final String LIST_STYLE = "list-style: none; margin: 0; padding-left: 0;";
+
 	@Override
 	public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 			HashMap<String, String> tagMap,
@@ -34,34 +39,35 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 
 				// don't add a list
 				return attachContents(docfrag, docfrag, childResults);
-				
+
 			} else if (tagMap.get("HTML_ELEMENT").equals("OL")) {
 
 				Element xhtmlDiv = document.createElement("ol");
-				docfrag.appendChild(xhtmlDiv);						
+				xhtmlDiv.setAttribute("style", LIST_STYLE);
+				docfrag.appendChild(xhtmlDiv);
     			return attachContents(docfrag, xhtmlDiv, childResults);
-				
+
 			} else { // if (tagMap.get("HTML_ELEMENT").equals("UL")) {
 
 				Element xhtmlDiv = document.createElement("ul");
-				if (tagMap.get("lvlText")!=null) {
-					xhtmlDiv.setAttribute("style",  "list-style-type: '" + tagMap.get("lvlText") +"'; font-family: " + SymbolUtils.HTML_FONT_FAMILY ); 					
-				}
-				
-				docfrag.appendChild(xhtmlDiv);						
+				// the label is written into each li by XsltHTMLFunctions.createBlock
+				// (17.1.1), so the list carries no marker of its own; lvlText is left in
+				// the tag for a caller's own handler
+				xhtmlDiv.setAttribute("style", LIST_STYLE);
+				docfrag.appendChild(xhtmlDiv);
     			return attachContents(docfrag, xhtmlDiv, childResults);
 			}
 		} catch (Exception e) {
 			throw new TransformerException(e);
 		}
 	}
-	
+
 
 	@Override
 	public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 			HashMap<String, String> tagMap,
 			Node resultSoFar) throws TransformerException {
-		
+
 		try {
 			// Create a DOM builder and parse the fragment
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
@@ -71,21 +77,22 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 
 				// don't add a list
 				return attachContents(docfrag, docfrag, resultSoFar);
-				
+
 			} else if (tagMap.get("HTML_ELEMENT").equals("OL")) {
 
 				Element xhtmlDiv = document.createElement("ol");
-				docfrag.appendChild(xhtmlDiv);						
+				xhtmlDiv.setAttribute("style", LIST_STYLE);
+				docfrag.appendChild(xhtmlDiv);
     			return attachContents(docfrag, xhtmlDiv, resultSoFar);
-				
+
 			} else { // if (tagMap.get("HTML_ELEMENT").equals("UL")) {
 
 				Element xhtmlDiv = document.createElement("ul");
-				if (tagMap.get("lvlText")!=null) {
-					xhtmlDiv.setAttribute("style",  "list-style-type: '" + tagMap.get("lvlText") +"'; font-family: " + SymbolUtils.HTML_FONT_FAMILY ); 					
-				}
-				
-				docfrag.appendChild(xhtmlDiv);						
+				// the label is written into each li by XsltHTMLFunctions.createBlock
+				// (17.1.1), so the list carries no marker of its own; lvlText is left in
+				// the tag for a caller's own handler
+				xhtmlDiv.setAttribute("style", LIST_STYLE);
+				docfrag.appendChild(xhtmlDiv);
     			return attachContents(docfrag, xhtmlDiv, resultSoFar);
 			}
 		} catch (Exception e) {

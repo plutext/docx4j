@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6); one defect recorded 2026-09-18 (list items collide with their marker, §4, not implemented).
+Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6); one defect recorded and fixed 2026-09-18 (list items collide with their marker, §4).
 The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
@@ -295,7 +295,7 @@ these gate the main build.  Structural equivalence is the bar, not byte equality
 - The custom-XSLT extension point (users substituting their own stylesheet) is
   inherently XSLT-only; not a parity target.
 
-### Defect found after DONE: list items collide with their marker (2026-09-18)
+### Defect found after DONE: list items collide with their marker (2026-09-18; FIXED the same day)
 
 Found by exporting the OpenDoPE Specification v3 working draft
 (`docs/OpenDoPE Specification v3 WD 2026 09 18.docx`; the `.html` sibling is
@@ -355,6 +355,25 @@ and `numFmt` faithfully, and removes the need for `ul`/`ol` nesting.  It is
 the approach the XSL FO exporter already takes, so the label plumbing exists.
 The published `.html` is re-exported once it lands; the `.md` and the docx
 are unaffected.
+
+Fixed 2026-09-18, in `org.docx4j.convert.out.html`, along the lines of (b) with
+one further cause found on the way: the default HTML feature set collects
+lists into `HTML_ELEMENT` sdts, but the handler which turns those into
+`ul`/`ol` (`SdtToListSdtTagHandler`) was registered only by the samples, so by
+default the items came out as orphan `li` with no list, and the number text
+was suppressed for them ("the li numbers itself").  Now `SdtWriter` registers
+the handler by default; `XsltHTMLFunctions.createListLabel` writes the label
+span (`class="ListLabel"`, `inline-block`, `min-width` = the hanging indent,
+the level's rPr as CSS, a symbol-font bullet mapped to Unicode, `w:suff space`
+as a space) at the head of every numbered paragraph, `p` or `li`, in both
+pathways; an `li` gets `list-style: none` and keeps its indent (the inline
+`Indent` skip is off); the `ul`/`ol` is structural.  `getNumberXmlNode` is a
+no-op so the counter advances once.  Tests: `HtmlListLabelTest` (both
+pathways: a style-numbered bullet labelled and unmarked with the class rule's
+indent intact, NOTE / Appendix A / Appendix B, a direct list counting once) and
+the parity test's list assertions.  On the draft: 63 `li` in 47 `ul`/`ol`,
+107 labels, no `display: list-item`, 24 NOTE, 5 EXAMPLE, 5 Appendix labels,
+identical from both flags.
 
 ## 5. Risks / open questions
 
