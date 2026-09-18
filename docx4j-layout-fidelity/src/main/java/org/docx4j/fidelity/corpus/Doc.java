@@ -2000,6 +2000,18 @@ public final class Doc {
 			return this;
 		}
 
+		/**
+		 * {@code w:pBdr/w:left} alone: sz in eighths of a point, {@code w:space} in
+		 * points.  A left bar is the shape a hanging indent puts a border against, the
+		 * other three sides standing clear of it.  @since 17.1.1
+		 */
+		public Para leftBorder(int eighthsOfPoint, int spacePt) {
+			PPrBase.PBdr bdr = ppr.getPBdr()==null ? F.createPPrBasePBdr() : ppr.getPBdr();
+			bdr.setLeft(paraBorder(eighthsOfPoint, spacePt));
+			ppr.setPBdr(bdr);
+			return this;
+		}
+
 		private static CTBorder paraBorder(int sz, int spacePt) {
 			CTBorder b = F.createCTBorder();
 			b.setVal(STBorder.SINGLE);

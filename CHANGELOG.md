@@ -258,6 +258,26 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A left paragraph border stands against the paragraph's leftmost text edge, as Word stands it,
+  where docx4j drew it through the first line of a hanging indent. The FO box model measures a
+  block's border and padding from its content rectangle, whose start edge is the start-indent: a
+  hanging indent puts the content edge at w:ind left and runs the first line back to the left of
+  it with a negative text-indent, so the bar was drawn between the first line's start and the
+  rest of its text. Measured on a probe paragraph with w:ind left 1134 hanging 1134, a 2.25pt
+  left border and w:space 8: its lines open at 72.0 and 128.7 and the bar was stroked down
+  x=118.46, between the two. Word, measured on its own PDF of that shape, draws the bar 9.36 to
+  11.52pt to the left of the first line's own x. The correction is the padding alone - the
+  indents are what put the text where Word puts it - and it is the hanging indent, or for a
+  numbered paragraph the label column, that the padding now carries as well as w:space: the bar
+  is stroked down x=61.76, which is 9.12 to 11.36pt left of the first line, and neither text
+  edge moves; against Word's own PDF of the probe, every one of its five cases is within 0.22pt.
+  The bar never stands left of the text area's own start edge, which is Word's clamp: measured
+  on three corpus documents whose hanging indent is wider than their w:ind left - one of them
+  with no w:ind left at all - Word hangs no first line outside the area and sets every line at
+  its edge, the bar against that. Nothing changes
+  without a left border, nor where a w:firstLine indents the first line forward (w:ind left is
+  then the leftmost edge), nor for a right-to-left paragraph, whose start edge is the other one
+  (CR-001 batch 48).
 - Two corrections to where a line may break, both from the same gap between Word and the Unicode
   version Apache FOP's line-break table was generated from. A line now breaks after a hyphen
   followed by digits, where UAX #14's rule LB25 (HY x NU) keeps the two together: FOP's table holds

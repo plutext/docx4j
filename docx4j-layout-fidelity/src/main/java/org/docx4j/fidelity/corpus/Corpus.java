@@ -6009,6 +6009,58 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// ---------------------------------------------------------------- CR-001 batch 48
+		//                                   item 9: where a left paragraph border stands
+		//                                   when the first line is hung out to its left
+
+		PROBES.add(new Probe("border-hanging",
+				"a left paragraph border against a hanging indent, a numbered paragraph "
+				+ "and a w:firstLine control: whether Word stands the bar against the "
+				+ "leftmost text edge or against w:ind left", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml("<w:abstractNum w:abstractNumId=\"70\">"
+					+ "<w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, null, 1134, 1134)
+					+ "</w:abstractNum>"
+					+ "<w:num w:numId=\"70\"><w:abstractNumId w:val=\"70\"/></w:num>");
+
+			// the bordered paragraphs are kept apart by an unbordered one, so that the
+			// exporter's borders container does not merge them into one bar
+			String tail = "This paragraph is long enough to wrap, so the golden shows the "
+					+ "continuation lines' left edge as well as the first line's. "
+					+ Doc.prose(2);
+
+			d.para("Each bordered paragraph below carries a left w:pBdr of w:sz 18 "
+					+ "(2.25pt) and w:space 8, and nothing on the other three sides. Read "
+					+ "the bar's x against the paragraph's two text edges: the first "
+					+ "line's and the continuation lines'.").after(240).add();
+
+			d.para("A: w:ind left 1134 hanging 1134, so the first line starts at the "
+					+ "margin and the lines after it 56.7pt in.").after(60).add();
+			d.para(tail).indent(1134, 0, 1134).leftBorder(18, 8).after(180).add();
+
+			d.para("B: the same indent from a numbering level (w:ind left 1134 hanging "
+					+ "1134 on the level), so the label stands where A's first line "
+					+ "does.").after(60).add();
+			d.para(tail).numPr(70, 0).leftBorder(18, 8).after(180).add();
+
+			d.para("C: w:ind left 1134 firstLine 567, the control: the first line is "
+					+ "indented FORWARD, so w:ind left is the leftmost text edge.")
+					.after(60).add();
+			d.para(tail).indent(1134, 567, 0).leftBorder(18, 8).after(180).add();
+
+			d.para("D: w:ind left 1134 and no first-line indent at all, the second "
+					+ "control.").after(60).add();
+			d.para(tail).indent(1134, 0, 0).leftBorder(18, 8).after(180).add();
+
+			d.para("E: w:ind left 1134 hanging 1134 with w:space 0, so the bar has no "
+					+ "gap to stand off by.").after(60).add();
+			d.para(tail).indent(1134, 0, 1134).leftBorder(18, 0).after(180).add();
+
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {

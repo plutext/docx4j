@@ -102,6 +102,7 @@ public class XsltFOFunctions {
 
     	applySdtContainerMargins(docfrag, tag);
     	resetContainerIndents(docfrag, tag);
+    	borderAgainstHangingIndent(docfrag);
     	wrapInBidiBlockContainer(docfrag);
 
     	return docfrag;
@@ -122,6 +123,7 @@ public class XsltFOFunctions {
 
     	applySdtContainerMargins(docfrag, tag);
     	resetContainerIndents(docfrag, tag);
+    	borderAgainstHangingIndent(docfrag);
     	wrapInBidiBlockContainer(docfrag);
 
     	return docfrag;
@@ -655,6 +657,9 @@ public class XsltFOFunctions {
 
     	Element block = (Element)df.getFirstChild();
 
+    	// the indents are final here, which is what the border rule reads
+    	borderAgainstHangingIndent(df);
+
     	if (foContainsStretchingLeader(block)) {
 			// ptab to leader implementation:
 			// for leader to work as expected in fop, we need text-align-last; see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
@@ -1171,7 +1176,7 @@ public class XsltFOFunctions {
 			if (pPr!=null) {
 				// Ignore paragraph borders once inside the container
 				boolean ignoreBorders = !sdt;
-				createFoAttributes(wmlPackage, pPr, ((Element)foBlockElement), indentHandledByNumbering, ignoreBorders );				
+				createFoAttributes(wmlPackage, pPr, ((Element)foBlockElement), indentHandledByNumbering, ignoreBorders );
 			}
 						// Hints for WordLayoutFixups (removed there, so FOP never sees them): the
 			// paragraph style, and whether w:contextualSpacing applies, which needs the
@@ -3668,6 +3673,143 @@ public class XsltFOFunctions {
     	
 	}
 	
+	/** The attribute a border's {@code w:space} becomes on the block ({@code PBorderLeft}). */
+	private static final String PADDING_LEFT = "padding-left";
+
+	/**
+	 * Word stands a left paragraph border against the paragraph's <b>leftmost</b> text
+	 * edge - min(w:ind left, left - hanging) - less the border's {@code w:space}, and a
+	 * hanging indent's first line is that leftmost edge.
+	 *
+	 * <p>The FO box model measures a block's border and padding from its <em>content</em>
+	 * rectangle, whose start edge is the start-indent: a block with a hanging indent puts
+	 * its content edge at {@code w:ind left} and runs the first line back over the border
+	 * with a negative text-indent, so the bar was drawn between the first line's start and
+	 * the rest of its text instead of to the left of both.  Measured on a plain FOP render
+	 * of the two shapes (start-indent 56.7pt, text-indent -56.7pt, padding-start 8pt,
+	 * 2.25pt border): the lines open at 70.900 and 127.600 and the bar is stroked down
+	 * x=117.350, in the middle of the first line; the same block with the padding carrying
+	 * the hanging indent as well (64.7pt) leaves both lines where they were and strokes the
+	 * bar down x=60.650, which is the leftmost text edge less the 8pt space.  Word's own
+	 * PDF of that paragraph (w:ind left 1134 hanging 1134, w:space 8, w:sz 18) draws its
+	 * first line at 70.82, its later lines at 127.49 and its bar at 59.30..61.46.</p>
+	 *
+	 * <p>So the correction is the padding alone: the start-indent and the text-indent are
+	 * what put the text where Word puts it and they are not touched.  Nothing happens
+	 * without a left border, or where the first line is indented <em>forward</em> by a
+	 * {@code w:firstLine} - then {@code w:ind left} is the leftmost edge and the bar
+	 * already stands against it.  A right-to-left paragraph is left alone: the border FO
+	 * names are the absolute sides, where its start edge is the right one, and what Word
+	 * does there is unmeasured.</p>
+	 *
+	 * <p>Word's own PDF of the {@code border-hanging} probe (2026-09-18): with
+	 * {@code w:ind left 1134 hanging 1134}, {@code w:space} 8 and {@code w:sz} 18 it puts
+	 * the first line at 72.024, the later lines at 128.690 and the bar at 60.504..62.664;
+	 * the same paragraph numbered, the label at 72.024 and the bar in the same place; the
+	 * {@code w:firstLine} and no-first-line controls at 117.170..119.330; and with
+	 * {@code w:space} 0, 68.424..70.584.</p>
+	 *
+	 * <p><b>Never further left than the text area's own start edge</b>, which is Word's
+	 * clamp: measured on three corpus documents whose hanging indent is wider than their
+	 * {@code w:ind left}, so that the first line would hang to the <em>left</em> of the
+	 * area - a cell's text edge in one, the page's left margin in the others - Word hangs
+	 * nothing and sets every line at the area's edge, its bar against that edge less the
+	 * space.  One of them (9 such paragraphs, hanging 709 twips and no {@code w:ind
+	 * left}) has Word's bar at x=32.664 with all of its text at 49.46; unclamped, ours
+	 * went to x=-1.105, off the page, our own first line hanging there - the missing
+	 * clamp on the <em>text</em> being a defect of its own, which this one must not
+	 * follow off the page.</p>
+	 *
+	 * <p>It is read off the <b>finished</b> FO rather than the pPr, because the indents
+	 * are still being rewritten while the block is built: a shading container's are
+	 * zeroed after its attributes are set ({@link #resetContainerIndents}), and a
+	 * container whose padding had been shifted for indents it no longer has drew a second
+	 * bar of its own, measured 18pt to the left of the paragraph's on eight headings of a
+	 * corpus document.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 9)
+	 */
+	static void borderAgainstHangingIndent(DocumentFragment docfrag) {
+
+		if (docfrag==null) return;
+		Node first = docfrag.getFirstChild();
+		if (!(first instanceof Element)) return;
+		Element outer = (Element) first;
+
+		Element block = outer;
+		int raw;
+		int contentEdge;
+		if ("list-block".equals(outer.getLocalName())) {
+			/* A numbered paragraph's label stands at the list block's start-indent and
+			 * its body a label column further on, so that column is the shift and the two
+			 * together are the body block's content edge. */
+			Element body = firstFoDescendant(outer, "list-item-body");
+			block = body==null ? null : firstFoDescendant(body, "block");
+			if (block==null) return;
+			int pdbs = twipsOf(outer.getAttribute("provisional-distance-between-starts"));
+			contentEdge = twipsOf(outer.getAttribute(Indent.FO_NAME)) + pdbs;
+			raw = pdbs;
+		} else {
+			// the hanging indent, as the finished FO states it
+			raw = -twipsOf(outer.getAttribute(Indent.FO_NAME_TEXT_INDENT));
+			contentEdge = twipsOf(outer.getAttribute(Indent.FO_NAME));
+		}
+
+		String style = block.getAttribute("border-left-style");
+		if (style==null || style.length()==0 || "none".equals(style)) return;
+		if (Bidi.FO_WRITING_MODE_RTL.equals(block.getAttribute(Bidi.FO_WRITING_MODE_NAME))
+				|| Bidi.FO_WRITING_MODE_RTL.equals(outer.getAttribute(Bidi.FO_WRITING_MODE_NAME))) {
+			return;
+		}
+
+		int shift = Math.min(raw, Math.max(0, contentEdge));
+		if (shift<=0) return;
+
+		double space = lengthToPoints(block.getAttribute(PADDING_LEFT));
+		block.setAttribute(PADDING_LEFT,
+				UnitsOfMeasurement.format2DP.format(space + shift/20.0) + "pt");
+	}
+
+	/** The first FO descendant of {@code from} with this local name, or null. */
+	private static Element firstFoDescendant(Element from, String localName) {
+		org.w3c.dom.NodeList children = from.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (!(n instanceof Element)) continue;
+			Element e = (Element) n;
+			if (localName.equals(e.getLocalName())) return e;
+			Element deeper = firstFoDescendant(e, localName);
+			if (deeper!=null) return deeper;
+		}
+		return null;
+	}
+
+	/** An FO length in twips.  @since 17.1.1 */
+	private static int twipsOf(String length) {
+		return (int) Math.round(lengthToPoints(length) * 20);
+	}
+
+	/** An FO length as points ({@code UnitsOfMeasurement.twipToBest} writes inches or
+	 *  points); 0 for an absent or unreadable one.  @since 17.1.1 */
+	private static double lengthToPoints(String length) {
+
+		if (length==null) return 0;
+		String v = length.trim();
+		if (v.length()==0) return 0;
+		double factor = 1;
+		if (v.endsWith("pt")) v = v.substring(0, v.length()-2);
+		else if (v.endsWith("in")) { v = v.substring(0, v.length()-2); factor = 72; }
+		else if (v.endsWith("mm")) { v = v.substring(0, v.length()-2); factor = 72/25.4; }
+		else if (v.endsWith("cm")) { v = v.substring(0, v.length()-2); factor = 72/2.54; }
+		else if (v.endsWith("px")) { v = v.substring(0, v.length()-2); factor = 0.75; }
+		try {
+			return Double.parseDouble(v.trim()) * factor;
+		} catch (NumberFormatException e) {
+			log.debug("not a length: " + length);
+			return 0;
+		}
+	}
+
 	/*
 	 *  @since 3.0.0
 	 */
