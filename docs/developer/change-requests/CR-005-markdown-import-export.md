@@ -1,6 +1,6 @@
 # CR: Markdown import/export (markdown→docx and docx→markdown)
 
-Status: DONE (2026-09-01) — all phases (0-5) implemented and tested (60 tests
+Status: DONE (2026-09-01); three export enhancements proposed 2026-09-18 (§4, not implemented) — all phases (0-5) implemented and tested (60 tests
 in the module); only the website mention remains (external, pending).
 Naming/placement DECIDED 2026-09-01 (jharrop): the module is
 **`docx4j-markdown`**, a **reactor module**.
@@ -137,6 +137,50 @@ Reverse mappings, with the important detection choices:
   cached result text; content controls → their content; textboxes/VML →
   dropped with a warning; tracked changes → option `ACCEPT` (default) or
   `MARKUP` (`~~del~~` / ins as plain).
+
+### Export enhancements found 2026-09-18 (proposed; no code change yet)
+
+Found by exporting the OpenDoPE Specification v3 working draft
+(`docs/OpenDoPE Specification v3 WD 2026 09 18.docx`, whose `.md` sibling is
+the actual output) — a docx4j-generated document with a code style, labelled
+notes and examples, and a TOC.  All three are in `WmlToMarkdown`, and each
+follows from a detection choice above; the HTML export of the same document
+needs nothing (bookmarks, cross-reference hyperlinks and TOC links all work).
+
+1. **Code paragraphs come out as escaped prose, not fenced code blocks.**
+   The document's `Code` paragraph style carries `w:rFonts` Consolas, one
+   paragraph per source line, leading spaces kept with `xml:space`.  Inline
+   code detection is *baseline-relative* (the run's effective rPr against the
+   paragraph style's effective rPr), so a paragraph whose baseline is already
+   mono gets no code marks at all, and there is no paragraph-level code-block
+   detection; the output is
+   `\<xpaths xmlns="http://opendope.org/xpaths" booleanConversion="xpath2"\>`
+   with `&#32;` for the indentation (28 of them in the draft).  Proposed: where
+   the paragraph's effective baseline ascii font is mono (the same small
+   allowlist inline code uses) or its style is one of `Code`, `SourceCode`,
+   `HTMLPreformatted` or `Macro Text`, emit a fenced code block; merge
+   consecutive such paragraphs into one fence, one line each; treat a `w:br`
+   inside one as a newline (which is the shape the import side writes: one
+   paragraph per block with `w:br`); and do not markdown-escape the fence's
+   content.
+
+2. **Label-style numbering becomes an ordered list.**  Note and Example
+   paragraphs take their `NOTE` / `EXAMPLE` label from a numbering level with
+   `numFmt="none"` and `lvlText="NOTE"` - no `%n` placeholder.  The list state
+   machine sees a non-bullet level and emits `1. …`, so every note becomes a
+   one-item ordered list and the label is lost (29 such items in the draft).
+   Proposed: a level whose `numFmt` is `none`, or whose `lvlText` contains no
+   `%n`, is a label, not a list - emit the `lvlText` as a leading `**NOTE**`
+   (or a blockquote) and open no list.  Bullet and decimal handling unchanged.
+
+3. **TOC entries link to Word bookmarks.**  TOC paragraphs export as
+   `[1.1	Overview	3](#_Toc1004)` - an anchor no markdown renderer has, plus
+   the tab and the page number (17 in the draft).  Proposed, for TOC-style
+   paragraphs (`TOC1`..`TOC9`, "toc N"): drop the field result entirely -
+   headings are navigable in every renderer and GitHub generates their
+   anchors - or rewrite the target to the GFM heading slug of the entry's
+   text and strip the tab and page number.  Dropping is simpler and idempotent
+   under round-trip; document it as lossy like headers/footers.
 
 **Fidelity bar and test strategy**: round-trip stability — for documents within
 the CommonMark+GFM subset, md → docx → md must be idempotent after the first
