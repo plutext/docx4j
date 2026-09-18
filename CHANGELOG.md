@@ -258,6 +258,25 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbering tab reaches the first stop past the end of its label and before w:ind left of the
+  level's own stops AND the paragraph's, where docx4j read only the level's. Measured on a corpus
+  CV whose bulleted paragraphs are w:ind left 993 hanging 567 with their own w:tab w:val="left"
+  w:pos="709" over a level whose only stop is w:tab w:val="num" w:pos="786": Word sets the text of
+  those lines at 72.74 and 75.86 - the 709 stop, 35.45pt from a 37.28pt text origin - where docx4j
+  set it at 76.50 and 79.56, the level's 786; it is now 72.65 and 75.71. A w:val="num" stop needs
+  no rule of its own. The two that paragraph carries are dropped by the filters that were already
+  there (-996 is behind the label, 1548 is past w:ind left), and where one is reachable Word takes
+  it like any other: measured on a second document whose paragraphs carry w:tab w:val="num"
+  w:pos="720" under w:ind left 870, Word's text is at 72.02 and ours, which was at 79.50, is at
+  72.00. For deciding which stop the tab reaches - and only for that - the label counts as the
+  wider of its measurement and the estimate of 90 twips a character, because a bullet is drawn in
+  a substitute face: measured on a specification whose level is w:ind left 1800 hanging 360 with a
+  Courier New "o" bullet and whose paragraphs carry a left stop at 1560, the estimate ends the
+  label at 1530 and would take that stop, where the glyph is 144 twips wide, ends at 1584, and
+  Word goes on to w:ind left - 12pt to the right of the stop. Where the bullet's own font is not
+  on the machine neither reading is Word's, and a stop inside the difference is still decided
+  wrongly: Word's Symbol arrow is 0.987 em = 218 twips at 11pt and ends past a stop at 1548 that
+  the 0.838 em substitute, ending 11 twips short of it, does not reach (CR-001 batch 48).
 - A table of contents' dot leader is as wide as the gap Word leaves it, and prefers no width of
   its own: its glue was minimum 12pt / optimum 40pt, so an entry with less than 12pt of room for
   its leader could not be set on one line at all and FOP's line breaker broke it in two. Measured

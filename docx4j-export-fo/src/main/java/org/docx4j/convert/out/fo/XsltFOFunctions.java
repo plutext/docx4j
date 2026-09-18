@@ -2214,6 +2214,26 @@ public class XsltFOFunctions {
 					: labelWidthTwips(wmlPackage, foListItemLabelBody,
 							foListItemLabelBody.getTextContent(), 90 * numChars);
 			int numWidth = numChars == 0 ? 0 : measured[0];
+			/* For deciding which tab stop the numbering tab reaches, the label is as wide as
+			 * the WIDER of the estimate and the measurement: a stop behind the label's end is
+			 * one the tab has already passed, and a bullet's estimate can be narrower than
+			 * the glyph.  Measured on a corpus specification whose level 1 is w:ind left 1800
+			 * hanging 360 with a Courier New "o" bullet and whose paragraphs carry their own
+			 * left stop at 1560: the estimate puts the label's end at 1530 and would take
+			 * that stop, where the glyph is 144 twips wide, ends at 1584, and Word goes on to
+			 * w:ind left - its text is 12pt to the right of the stop.
+			 *
+			 * Where the bullet's own font is not on the machine, neither reading is Word's,
+			 * and a stop inside the difference is decided wrongly: measured on a CV whose
+			 * level is w:ind left 1713 hanging 360 with a Symbol arrow bullet and whose
+			 * paragraphs carry a stop at 1548, Word's glyph is 0.987 em = 218 twips at 11pt
+			 * and ends at 1571, past the stop, where the substitute this machine draws is
+			 * 0.838 em = 184 twips and ends at 1537, 11 twips short of it.  A wider bound
+			 * would not be one: Symbol's widest glyph is 1.042 em and Wingdings' 1.443.
+			 * @since 17.1.1 (CR-001 batch 48 item 6) */
+			int stopWidth = numChars == 0 ? 0 : Math.max(numWidth,
+					labelWidthTwips(wmlPackage, foListItemLabelBody,
+							foListItemLabelBody.getTextContent(), 90 * numChars)[0]);
 			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth, measured[1]);
 			// -1 in the hanging case where the label fits, so the hanging indent stands
 			indent.setXslFOListBlock(foListBlock, pdbs);
@@ -2244,8 +2264,9 @@ public class XsltFOFunctions {
 			if (pdbs < 0) {
 				int numberPosition = indent.getNumberPosition();
 				int indLeft = numberPosition + hangingTwips(indent);
-				int labelEnd = numberPosition + numWidth;
-				org.docx4j.wml.CTTabStop tabStop = numberingTabStop(triple, labelEnd, indLeft);
+				int labelEnd = numberPosition + stopWidth;
+				org.docx4j.wml.CTTabStop tabStop = numberingTabStop(triple, labelEnd, indLeft,
+						pPr, pPrDirect);
 				if (tabStop != null) {
 					int stop = tabStop.getPos().intValue();
 					foBlockElement.setAttribute("text-indent",
@@ -2389,7 +2410,7 @@ public class XsltFOFunctions {
 			// the label measured in its own face and size (labelWidthTwips), with §2.8's
 			// 90 twips a character as the fallback
 			int gap = labelGapTwips(wmlPackage, indent, indOut==null ? null : indOut[0],
-					pPrDirect, labelWidthTwips(wmlPackage, label, text, 90 * text.length())[0],
+					pPr, pPrDirect, labelWidthTwips(wmlPackage, label, text, 90 * text.length())[0],
 					triple);
 			if (gap > 0 && WordLayoutFixups.isEnabled()) {
 				Element leader = document.createElementNS(XSL_FO, "fo:leader");
@@ -2415,12 +2436,12 @@ public class XsltFOFunctions {
 	 *  the label's width reaches (as createListBlock computes it for
 	 *  provisional-distance-between-starts). */
 	private static int labelGapTwips(WordprocessingMLPackage wmlPackage, Indent indent,
-			PPrBase.Ind resolved, PPr pPrDirect, int numWidth, NumberingResult triple) {
+			PPrBase.Ind resolved, PPr pPr, PPr pPrDirect, int numWidth, NumberingResult triple) {
 
 		if (indent.isHanging() && resolved!=null && resolved.getHanging()!=null
 				&& resolved.getHanging().intValue() >= numWidth) {
 			int stop = numberingTabStopTwips(triple, indent.getNumberPosition() + numWidth,
-					indent.getNumberPosition() + resolved.getHanging().intValue());
+					indent.getNumberPosition() + resolved.getHanging().intValue(), pPr, pPrDirect);
 			if (stop > 0) return stop - indent.getNumberPosition();
 			return resolved.getHanging().intValue();
 		}
@@ -2513,21 +2534,44 @@ public class XsltFOFunctions {
 		return ind != null && ind.getHanging() != null ? ind.getHanging().intValue() : 0;
 	}
 
-	private static int numberingTabStopTwips(NumberingResult triple, int labelEnd, int indLeft) {
-		org.docx4j.wml.CTTabStop stop = numberingTabStop(triple, labelEnd, indLeft);
+	private static int numberingTabStopTwips(NumberingResult triple, int labelEnd, int indLeft,
+			PPr pPr, PPr pPrDirect) {
+		org.docx4j.wml.CTTabStop stop = numberingTabStop(triple, labelEnd, indLeft, pPr, pPrDirect);
 		return stop == null ? 0 : stop.getPos().intValue();
 	}
 
-	/** The stop {@link #numberingTabStopTwips} picks, or null: the first of the level's own
-	 *  stops past the end of the label and before {@code w:ind} left.  The stop itself,
-	 *  because its {@code w:leader} is painted over the numbering tab
-	 *  ({@link #appendNumberingTabLeader}).  @since 17.1.1 (CR-001 batch 47 item 5b) */
+	/** The stop {@link #numberingTabStopTwips} picks, or null: the first stop past the end
+	 *  of the label and before {@code w:ind} left, of the level's own <b>and the
+	 *  paragraph's</b>.  The stop itself, because its {@code w:leader} is painted over the
+	 *  numbering tab ({@link #appendNumberingTabLeader}).
+	 *
+	 *  <p>The paragraph's stops were not read until 17.1.1: measured on a corpus CV whose
+	 *  bulleted paragraphs are {@code w:ind w:left="993" w:hanging="567"} with their own
+	 *  {@code w:tab w:val="left" w:pos="709"} (and two {@code w:val="num"} stops at -996
+	 *  and 1548) over a level whose only stop is {@code w:tab w:val="num" w:pos="786"},
+	 *  Word puts the text of those lines at x=72.74 - the paragraph's 709 stop, 35.45pt
+	 *  from a 37.28pt text origin - where we put it at 76.50, the level's 786.  The two
+	 *  {@code num} stops need no rule of their own: -996 is behind the label and 1548 is
+	 *  past {@code w:ind} left, so the filters below drop both, and what is left is the
+	 *  first stop either of them declares.  @since 17.1.1 (CR-001 batch 47 item 5b, the
+	 *  paragraph's own stops in batch 48 item 6) */
 	private static org.docx4j.wml.CTTabStop numberingTabStop(NumberingResult triple, int labelEnd,
-			int indLeft) {
-		if (triple == null || triple.getLvl() == null || triple.getLvl().getPPr() == null) return null;
-		org.docx4j.wml.Tabs tabs = triple.getLvl().getPPr().getTabs();
-		if (tabs == null) return null;
+			int indLeft, PPr pPr, PPr pPrDirect) {
 		org.docx4j.wml.CTTabStop best = null;
+		best = firstTabStopBetween(triple == null || triple.getLvl() == null ? null
+				: (triple.getLvl().getPPr() == null ? null : triple.getLvl().getPPr().getTabs()),
+				labelEnd, indLeft, best);
+		org.docx4j.wml.Tabs paragraph = pPr != null && pPr.getTabs() != null ? pPr.getTabs()
+				: (pPrDirect == null ? null : pPrDirect.getTabs());
+		best = firstTabStopBetween(paragraph, labelEnd, indLeft, best);
+		return best;
+	}
+
+	/** The earliest stop of {@code tabs} which lies past {@code labelEnd} and before
+	 *  {@code indLeft}, against a stop already found.  @since 17.1.1 */
+	private static org.docx4j.wml.CTTabStop firstTabStopBetween(org.docx4j.wml.Tabs tabs,
+			int labelEnd, int indLeft, org.docx4j.wml.CTTabStop best) {
+		if (tabs == null) return best;
 		for (org.docx4j.wml.CTTabStop stop : tabs.getTab()) {
 			if (stop == null || stop.getPos() == null) continue;
 			if (stop.getVal() == org.docx4j.wml.STTabJc.CLEAR) continue;
