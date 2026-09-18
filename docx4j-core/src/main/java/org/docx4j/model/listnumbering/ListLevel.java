@@ -523,8 +523,10 @@ public class ListLevel {
     @Deprecated
     public boolean IsBullet() { return isBullet(); }
     
-    /** A level's count in one {@link NumberingState}.  Static since 17.1.1. */
-    protected static class Counter {
+    /** A level's count in one {@link NumberingState}.  Static since 17.1.1; public (with
+     *  read-only accessors) since 17.1.1 for the parity harnesses, through
+     *  {@link NumberingState#counters()}. */
+    public static class Counter {
     	
     	protected boolean encounteredAlready = false;
 
@@ -532,8 +534,14 @@ public class ListLevel {
     	 *  the next use of the level takes that value rather than incrementing. */
     	protected boolean resetPending = false;
     	
-        protected boolean isEncounteredAlready() {
+        /** Whether the level has been used in this story (a counter is created at its start value less one, unused). @since 17.1.1 public */
+        public boolean isEncounteredAlready() {
     		return encounteredAlready;
+    	}
+
+        /** Whether a shallower level reset this counter and the next use takes the start value rather than incrementing. @since 17.1.1 */
+        public boolean isResetPending() {
+    		return resetPending;
     	}
     	
     	

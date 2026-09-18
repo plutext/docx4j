@@ -163,6 +163,44 @@ public class Emulator {
     }
 
     /**
+     * The numbering reference a paragraph resolves to - its numId and ilvl, whether
+     * the numId is the paragraph's own or its style's, or why it is not numbered -
+     * without taking a number and without touching any state.  This is the answer
+     * {@link #getNumber(WordprocessingMLPackage, PPr, NumberingState)} acts on; a
+     * parity harness (docx4j-core-ts, docx4j-python) records it per paragraph.
+     *
+     * @param pPr the paragraph's properties; null resolves as not numbered
+     * @return never null; {@link NumRef#notNumbered} with a {@link NumRef#reason}
+     *         where the package has no numbering part or the paragraph no list
+     * @since 17.1.1
+     */
+    public static NumRef numRefFor(WordprocessingMLPackage wmlPackage, PPr pPr) {
+    	if (pPr == null) return new NumRef("no pPr");
+    	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
+    		wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+    	if (numberingPart == null) return new NumRef("no numbering part");
+    	numberingPart.getEmulator(); // ensures the definitions are read
+    	PropertyResolver propertyResolver;
+    	try {
+    		propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+    	} catch (Docx4JException e) {
+    		return new NumRef("no property resolver: " + e.getMessage());
+    	}
+    	String pStyleVal = pPr.getPStyle() == null ? null : pPr.getPStyle().getVal();
+    	String numIdStr = null, levelIdStr = null;
+    	if (pPr.getNumPr() != null) {
+    		if (pPr.getNumPr().getNumId() != null && pPr.getNumPr().getNumId().getVal() != null) {
+    			numIdStr = pPr.getNumPr().getNumId().getVal().toString();
+    		}
+    		if (pPr.getNumPr().getIlvl() != null && pPr.getNumPr().getIlvl().getVal() != null) {
+    			levelIdStr = pPr.getNumPr().getIlvl().getVal().toString();
+    		}
+    	}
+    	return resolve(numberingPart, propertyResolver, pStyleVal, numIdStr, levelIdStr,
+    			numIdStr != null && !numIdStr.equals(""));
+    }
+
+    /**
      * What {@link #getNumber(WordprocessingMLPackage, PPr, NumberingState)} would
      * return, without taking the number: the given state is left as it was.
      *

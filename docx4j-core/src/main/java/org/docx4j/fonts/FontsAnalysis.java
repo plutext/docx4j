@@ -783,8 +783,10 @@ public final class FontsAnalysis {
 		System.out.println(json ? report.toJson() : report.toText());
 	}
 
-	/** {@link RunFontSelector} needs a visitor; {@code documentFontFor} never calls it. */
-	private static final RunFontSelector.RunFontCharacterVisitor NO_OP_VISITOR
+	/** {@link RunFontSelector} needs a visitor; {@code documentFontFor} never calls it.  Public
+	 *  since 17.1.1 so that any caller of {@code documentFontFor} (the parity harnesses) can
+	 *  build a selector without an eleven-method no-op of its own. */
+	public static final RunFontSelector.RunFontCharacterVisitor NO_OP_VISITOR
 			= new RunFontSelector.RunFontCharacterVisitor() {
 		public void setDocument(org.w3c.dom.Document document) {}
 		public boolean isReusable() { return true; }

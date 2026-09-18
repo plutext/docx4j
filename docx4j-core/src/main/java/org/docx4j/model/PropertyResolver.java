@@ -264,6 +264,20 @@ public class PropertyResolver {
 		return result;
 	}
 
+	/**
+	 * Whether a table's style chain reaches the document's default table style - the flag
+	 * {@link #getEffectiveTableStyle(TblPr)} decides Word's built-in Normal Table by (a
+	 * table naming no style counts as reaching it).  Exposed for the parity harnesses,
+	 * which otherwise infer it from the cell margins.
+	 * @param tblPr the table's own w:tblPr; may be null
+	 * @since 17.1.1
+	 */
+	public boolean reachesDefaultTableStyle(TblPr tblPr) throws CyclicStylesException {
+		String styleId = (tblPr != null && tblPr.getTblStyle() != null) ? tblPr.getTblStyle().getVal() : null;
+		List<Style> chain = styleId == null ? Collections.<Style>emptyList() : ancestry(styleId);
+		return chain.isEmpty() || (defaultTableStyleId != null && containsId(chain, defaultTableStyleId));
+	}
+
 	private static boolean containsId(List<Style> chain, String styleId) {
 		for (Style s : chain) if (styleId.equals(s.getStyleId())) return true;
 		return false;
@@ -311,8 +325,9 @@ public class PropertyResolver {
 	 * deeper than StyleUtil.isCyclic's limit, ends the walk where it is detected (and
 	 * throws if docx4j.openpackaging.exceptions.CyclicStylesException.throw says so).
 	 * One walk serves paragraph, run and table resolution (until 17.1.1 each had its own).
+	 * Public since 17.1.1 for the parity harnesses; the styles are the live ones, read them.
 	 */
-	private List<Style> ancestry(String styleId) throws CyclicStylesException {
+	public List<Style> ancestry(String styleId) throws CyclicStylesException {
 		List<Style> leafFirst = new ArrayList<Style>();
 		List<String> seen = new ArrayList<String>();
 		String id = styleId;

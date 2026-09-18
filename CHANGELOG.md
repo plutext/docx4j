@@ -1156,6 +1156,16 @@ Property resolution (CR-015, phase 5):
   The resolver's class javadoc states the resolution order, the live-object contract and
   the thread story; org.docx4j.model.styles has a package-info.
 
+API, for the ports' parity harnesses (docx4j-core-ts, docx4j-python):
+
+- Emulator.numRefFor(pkg, pPr): the numId and ilvl a paragraph resolves to, whether the
+  numId is its own or its style's, or why it is not numbered - without taking a number.
+- NumberingState.counters() and startOverridesApplied(), read-only views, with public
+  ListLevel.Counter getters (getCurrentValue, isEncounteredAlready, isResetPending).
+- PropertyResolver.reachesDefaultTableStyle(tblPr), the flag getEffectiveTableStyle
+  decides the built-in Normal Table by, and ancestry(styleId) made public.
+- FontsAnalysis.NO_OP_VISITOR public, for callers of RunFontSelector.documentFontFor.
+
 Other:
 
 - StyleUtil: a table style w:basedOn another now inherits its conditional formats per

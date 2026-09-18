@@ -75,6 +75,22 @@ public final class NumberingState {
 	}
 
 	/** Every list starts again, as at the head of a story. */
+	/**
+	 * The counters, keyed {@code abstractNumId/ilvl}, read-only: what each level of each
+	 * abstract list is up to in this story.  For a parity harness recording the state after
+	 * each paragraph; the map and its counters are the live ones, so do not hold the view
+	 * across a later {@link Emulator#getNumber}.
+	 * @since 17.1.1
+	 */
+	public Map<String, ListLevel.Counter> counters() {
+		return java.util.Collections.unmodifiableMap(counters);
+	}
+
+	/** The {@code numId/ilvl} keys whose {@code w:startOverride} has been applied in this story, read-only. @since 17.1.1 */
+	public Set<String> startOverridesApplied() {
+		return java.util.Collections.unmodifiableSet(startOverridesApplied);
+	}
+
 	public void reset() {
 		counters.clear();
 		startOverridesApplied.clear();
