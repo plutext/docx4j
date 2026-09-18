@@ -2239,10 +2239,16 @@ public class XsltFOFunctions {
 			if (pdbs < 0) {
 				int numberPosition = indent.getNumberPosition();
 				int indLeft = numberPosition + hangingTwips(indent);
-				int stop = numberingTabStopTwips(triple, numberPosition + numWidth, indLeft);
-				if (stop > 0) {
+				int labelEnd = numberPosition + numWidth;
+				org.docx4j.wml.CTTabStop tabStop = numberingTabStop(triple, labelEnd, indLeft);
+				if (tabStop != null) {
+					int stop = tabStop.getPos().intValue();
 					foBlockElement.setAttribute("text-indent",
 							"-" + UnitsOfMeasurement.twipToBest(indLeft - stop));
+					/* and Word paints that stop's own w:leader over the advance, from the
+					 * end of the label to the stop (appendNumberingTabLeader) */
+					appendNumberingTabLeader(document, foListItemLabelBody,
+							tabStop, stop - labelEnd);
 				}
 			}
 
@@ -2256,6 +2262,16 @@ public class XsltFOFunctions {
 			String suff = triple.getLvl()!=null && triple.getLvl().getSuff()!=null
 					&& triple.getLvl().getSuff().getVal()!=null
 					? triple.getLvl().getSuff().getVal() : "tab";
+			/* The separator is asked for whether or not the numbering tab's leader was
+			 * written: whether that leader paints a character at all depends on its
+			 * face's step against the advance, which is known when the areas exist and
+			 * not here, and WordListItemLayoutManager drops the space only where the
+			 * leader did paint - Word's text follows the last leader
+			 * character with no space between them (the tab-leader-in-cell-2 golden's
+			 * dots end at 149.76 and its text begins at 149.83), but over the first
+			 * probe's 2pt advance, which is under one cell of the grid, neither side
+			 * paints a dot and Word's space is still there.
+			 * @since 17.1.1 (CR-001 batch 47 item 5b) */
 			if (WordLayoutFixups.isEnabled() && ("tab".equals(suff) || "space".equals(suff))) {
 				foListItemLabelBody.setAttribute(WordLayoutFixups.HINT_LABEL_SUFFIX, suff);
 			}
@@ -2493,19 +2509,85 @@ public class XsltFOFunctions {
 	}
 
 	private static int numberingTabStopTwips(NumberingResult triple, int labelEnd, int indLeft) {
-		if (triple == null || triple.getLvl() == null || triple.getLvl().getPPr() == null) return 0;
+		org.docx4j.wml.CTTabStop stop = numberingTabStop(triple, labelEnd, indLeft);
+		return stop == null ? 0 : stop.getPos().intValue();
+	}
+
+	/** The stop {@link #numberingTabStopTwips} picks, or null: the first of the level's own
+	 *  stops past the end of the label and before {@code w:ind} left.  The stop itself,
+	 *  because its {@code w:leader} is painted over the numbering tab
+	 *  ({@link #appendNumberingTabLeader}).  @since 17.1.1 (CR-001 batch 47 item 5b) */
+	private static org.docx4j.wml.CTTabStop numberingTabStop(NumberingResult triple, int labelEnd,
+			int indLeft) {
+		if (triple == null || triple.getLvl() == null || triple.getLvl().getPPr() == null) return null;
 		org.docx4j.wml.Tabs tabs = triple.getLvl().getPPr().getTabs();
-		if (tabs == null) return 0;
-		int best = 0;
+		if (tabs == null) return null;
+		org.docx4j.wml.CTTabStop best = null;
 		for (org.docx4j.wml.CTTabStop stop : tabs.getTab()) {
 			if (stop == null || stop.getPos() == null) continue;
 			if (stop.getVal() == org.docx4j.wml.STTabJc.CLEAR) continue;
 			int pos = stop.getPos().intValue();
 			if (pos <= labelEnd) continue;      // behind the label: the tab has passed it
 			if (pos >= indLeft) continue;       // w:ind left comes first
-			if (best == 0 || pos < best) best = pos;
+			if (best == null || pos < best.getPos().intValue()) best = stop;
 		}
 		return best;
+	}
+
+	/**
+	 * Paint the numbering tab's leader: the {@code w:leader} of the stop the tab reaches,
+	 * from the end of the label to that stop, inside the label's own block.
+	 *
+	 * <p>Word draws it, cell and body alike.  Measured on the {@code tab-leader-in-cell-2}
+	 * golden, a level of {@code w:ind w:left="2880" w:hanging="2520"} with one
+	 * {@code w:leader="dot"} stop at 1440 twips: in the cell Word sets the label
+	 * {@code 1.} in Calibri 11.04pt from 95.808 to 104.110, then <b>fourteen</b> dots
+	 * stepping <b>3.120pt</b> from 106.130 to 146.690, and the paragraph's first line of
+	 * text at 149.830, which is the stop; in the body, the label at 90.048, the same
+	 * fourteen dots from 99.888 to 140.448 and the text at 144.070.  The same golden's
+	 * control level, which declares no stop at all, gets no dots, and neither side paints
+	 * any over the first probe's 560-twip stop, whose advance past the label is 1.0pt -
+	 * less than one cell of the grid.
+	 *
+	 * <p>The 2.02pt between the label's end and the first dot in the cell is the grid:
+	 * Word steps a leader run on the character's advance rounded to 1/300 inch and starts
+	 * the run on a whole multiple of that step from the page's edge
+	 * ({@code WordLineLayoutManager.gridTocLeaders}, which is why the leader carries
+	 * {@link WordLayoutFixups#HINT_TOC_LEADER}: that mark is what the grid pass looks for,
+	 * and it is not {@code HINT_TAB}, which marks a tab the line manager gives its width).
+	 *
+	 * <p>The characters are drawn in the <b>paragraph's</b> face and size, which is what
+	 * every other tab leader is drawn in, and not the label's; that is settled by
+	 * {@code WordLayoutFixups.numberingTabLeaderFont}, where both blocks are finished, and
+	 * it decides the step and through it the count.
+	 *
+	 * <p>The leader goes in the <b>label's</b> block, and its length is fixed, because
+	 * that is where the advance is: the label runs from the level's number position, the
+	 * stop is inside the label's column by construction ({@link #numberingTabStop} takes
+	 * only a stop before {@code w:ind} left), and the paragraph's first line is pulled
+	 * back to the stop by the body block's own {@code text-indent}. Where the level's stop
+	 * carries no leader nothing is written, and the {@code w:suff} separator's space is
+	 * written as before.
+	 *
+	 * @param advanceTwips the stop less the end of the measured label
+	 * @since 17.1.1 (CR-001 batch 47 item 5b)
+	 */
+	private static void appendNumberingTabLeader(Document document, Element labelBody,
+			org.docx4j.wml.CTTabStop stop, int advanceTwips) {
+
+		if (!WordLayoutFixups.isEnabled() || labelBody == null || stop == null) return;
+		if (advanceTwips <= 0) return;
+		String pattern = leaderPattern(stop.getLeader());
+		if ("space".equals(pattern)) return;            // w:leader="none", or none declared
+		Element leader = document.createElementNS(XSL_FO, "fo:leader");
+		leader.setAttribute("leader-length", UnitsOfMeasurement.twipToBest(advanceTwips));
+		leader.setAttribute("leader-pattern", pattern);
+		// the XSL FO property for Word's own anchoring; FOP 2.11 reads it in its RTF
+		// renderer alone, so the grid is applied by the line manager (see the javadoc)
+		leader.setAttribute("leader-alignment", "reference-area");
+		leader.setAttribute(WordLayoutFixups.HINT_TOC_LEADER,
+				stop.getLeader() == null ? "dot" : stop.getLeader().value());
+		labelBody.appendChild(leader);
 	}
 
 	/**

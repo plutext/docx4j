@@ -160,6 +160,7 @@ public final class WordLayoutFixups {
 		imageOnlyLineBox(doc);
 		inlineLabelGaps(doc);
 		listLabelLines(doc);
+		numberingTabLeaderFont(doc);
 		lineBoxAttributes(doc, compatibilityMode, hyphenation, compat);
 		positionFrames(doc);
 		anchorImages(doc);
@@ -216,6 +217,65 @@ public final class WordLayoutFixups {
 		if (root != null && isFo(root, "root")) {
 			root.setAttribute("line-height-shift-adjustment", "disregard-shifts");
 		}
+	}
+
+	/**
+	 * The numbering tab's leader is drawn in the <b>paragraph's</b> face and size, not the
+	 * label's.
+	 *
+	 * <p>{@code XsltFOFunctions.appendNumberingTabLeader} writes the leader into the
+	 * label's own block, where it inherits the label's font, and the label's font is often
+	 * neither the paragraph's face nor its size.  That decides the leader's <b>step</b>,
+	 * and through the step how many characters the run holds: Word steps a leader run on
+	 * the character's advance rounded to 1/300 inch
+	 * ({@code LBP.gridStep}).
+	 *
+	 * <p>Measured on the {@code tab-leader-in-cell-2} golden, whose label is Calibri
+	 * 11.04pt and whose text is Liberation Serif 12pt. Word steps the run <b>3.120pt</b> -
+	 * 13 cells of the grid, which is Liberation Serif's 3.0pt period rounded up - and
+	 * paints <b>fourteen</b> dots over the 45.7pt advance. From the label's own 11pt
+	 * Carlito the period is 2.879pt, which rounds to 12 cells = 2.880pt, and the run holds
+	 * fifteen. (Word writes the dot glyph itself out of Arial at the label's 11.04pt size,
+	 * advance 3.069pt, which rounds to the same 13 cells; what is matched here is the step
+	 * and the count, not the face the glyph comes from.)
+	 *
+	 * <p>Here rather than in the FO writer because the paragraph's own {@code font-family}
+	 * and {@code font-size} are put on its block after the list block is built.
+	 *
+	 * @since 17.1.1 (CR-001 batch 47 item 5b)
+	 */
+	static void numberingTabLeaderFont(Document doc) {
+		for (Element item : elements(doc, "list-item")) {
+			Element labelEl = firstChildElement(item, "list-item-label");
+			Element bodyEl = firstChildElement(item, "list-item-body");
+			if (labelEl == null || bodyEl == null) continue;
+			Element label = firstChildElement(labelEl, "block");
+			if (label == null) continue;
+			Element leader = null;
+			for (Element l : descendants(label, "leader")) {
+				if (l.getAttribute(HINT_TOC_LEADER).length() > 0) { leader = l; break; }
+			}
+			if (leader == null) continue;
+			Element body = null;
+			for (Element b : descendants(bodyEl, "block")) {
+				if (b.getAttribute(HINT_LINE_BOX).length() > 0) { body = b; break; }
+			}
+			if (body == null) continue;
+			String family = inherited(body, "font-family");
+			String size = inherited(body, "font-size");
+			if (family.length() > 0) leader.setAttribute("font-family", family);
+			if (size.length() > 0) leader.setAttribute("font-size", size);
+		}
+	}
+
+	/** {@code el}'s own value for an inherited property, or the nearest ancestor's, or "". */
+	private static String inherited(Element el, String property) {
+		for (Element e = el; e != null;
+				e = e.getParentNode() instanceof Element ? (Element) e.getParentNode() : null) {
+			String value = e.getAttribute(property);
+			if (value != null && value.length() > 0) return value;
+		}
+		return "";
 	}
 
 	// ------------------------------------------------------------ 0a1. letter-spacing
