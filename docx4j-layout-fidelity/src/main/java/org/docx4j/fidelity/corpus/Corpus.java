@@ -5913,8 +5913,21 @@ public final class Corpus {
 			String[] kinds = { "dot", "hyphen", "underscore", "heavy", "middleDot" };
 			StringBuilder num = new StringBuilder();
 			for (int i = 0; i < kinds.length; i++) {
+				/* The level names the label's own face and size, so the label does not lean
+				 * on the theme default.  It did, and the two machines answer it differently:
+				 * the probe has no theme part, Word 365 gives such a document Aptos and
+				 * docx4j's built-in Office theme gives Calibri, so Word drew the label in
+				 * Aptos 11.04pt and we in Calibri's clone Carlito at 11.00 - 8.349pt wide
+				 * against Word's 9.06.  That is 0.71pt of the leader's advance, and at this
+				 * probe's 3.60pt step it decided whether the run held eleven characters or
+				 * twelve: 43.199pt of room is 11.9997 steps and 43.22 is 12.006.  Aptos has
+				 * no metric clone, so on a machine without it the count could not be Word's
+				 * whatever the exporter did - the probe was measuring the theme default and
+				 * the font substitution, not the leader.  Liberation Serif is on both
+				 * machines.  (CR-001 batch 48 item 7; the golden wants re-cutting) */
 				num.append("<w:abstractNum w:abstractNumId=\"" + (51 + i) + "\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
-						+ leaderLevel(0, 1440, kinds[i], 2880, 2520) + "</w:abstractNum>");
+						+ sizedLeaderLevel(0, 1440, kinds[i], 2880, 2520, 22, "Liberation Serif")
+						+ "</w:abstractNum>");
 			}
 			for (int i = 0; i < kinds.length; i++) {
 				num.append("<w:num w:numId=\"" + (51 + i) + "\"><w:abstractNumId w:val=\"" + (51 + i) + "\"/></w:num>");

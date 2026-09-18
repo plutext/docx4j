@@ -1967,6 +1967,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private void gridTocLeaders(KnuthSequence seq, int from, int to, LineArea lineArea) {
         if (!WordLayoutCustomizer.leaderGrid()) return;
+        /* A numbering label's leader is phased by WordListItemLayoutManager instead: the
+         * origin Word measures from is the page's edge, and a label block's own distance
+         * from it is not known until the list item has placed the label area
+         * (FOP sets its x offset there), which happens after this line exists.  Measured
+         * on numbering-leader-kinds: the true origin is 72000 (the region body) + 771
+         * (the label area's x offset) + 18000 (the label block's start-indent) + the areas
+         * before the leader, and the reconstruction here has only the first and the last of
+         * those, so it was 18.771pt short and every such run opened 0.768pt to the left of
+         * Word's.  (CR-001 batch 48 item 7) */
+        if (inListItemLabel()) return;
         /* A leader whose pattern is use-content generates one element per element of its
          * own content, so the same manager is reported more than once and the phase would
          * be applied twice.  (CR-001 batch 48 item 2) */
@@ -2006,6 +2016,17 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * walk cannot change a {@code dots} leader, whose manager is the leaf already.
      * (CR-001 batch 48 item 2)</p>
      */
+    /** Whether this line's block is the label of an {@code fo:list-item} - a numbering
+     *  label, whose leader {@link WordListItemLayoutManager} phases.
+     *  @since 17.1.1 (CR-001 batch 48 item 7) */
+    private boolean inListItemLabel() {
+        for (org.apache.fop.fo.FONode n = fobj; n != null; n = n.getParent()) {
+            if (n instanceof org.apache.fop.fo.flow.ListItemLabel) return true;
+            if (n instanceof org.apache.fop.fo.flow.ListItemBody) return false;
+        }
+        return false;
+    }
+
     private LayoutManager tocLeader(KnuthElement element) {
         for (Position p = element.getPosition(); p != null; p = p.getPosition()) {
             LayoutManager lm = p.getLM();

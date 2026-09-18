@@ -258,6 +258,18 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbering label's leader now starts where Word starts it. Word begins a leader run on a whole
+  multiple of its step measured from the page's left edge, and the distance to a label's leader has
+  four terms: the region body's x, the label area's own x offset, the label block's start-indent and
+  the label itself. Two of them do not exist while the label's line is being built - FOP places the
+  label area later, in the list item - so the phase was computed from 80.349pt where the run stands
+  at 99.120, and every numbering-tab leader opened 0.768pt (3.2 cells of the grid) to the left of
+  Word's. It is applied where the label area exists now: measured on the leader probes, runs that
+  opened 0.29 to 0.77pt out of place open within 0.05pt of Word's (99.840 against 99.888, 100.800
+  against 100.850, 97.200 against 97.248), and the same correction is worth one leader character
+  where the step is wide enough for the phase to swallow one. A leader inside a table cell is
+  closer, 1.346pt out to 0.626pt, but not right: a list item in a cell carries the cell's own x,
+  which is a fifth term (CR-001 batch 48).
 - Every kind of numbering-tab leader is painted as a run of its own character on Word's 1/300 inch
   grid, where docx4j drew a rule for three of the five and the wrong character for a fourth.
   Measured on a probe with one kind per level, all of Word's runs in ArialMT at the label's size:
