@@ -226,6 +226,12 @@ HTML export, lists (CR-003, found on the OpenDoPE Specification v3 draft):
   numbered paragraph got a bare text number, a paragraph numbered by its style got none, and
   every li asked for the browser's marker while the style's own hanging indent pulled the first
   line back over it.
+- A left paragraph border against a hanging indent: the hang moves from the margin into the
+  padding (margin-left = left - hanging, padding-left = space + hanging, text-indent unchanged),
+  in the style's class rule and in an inline style alike, so the bar stands where Word stands it -
+  left of the first line, every line clear of it by w:space - where it was drawn through the first
+  line, between a requirement's ID and its text.  No change without a left border or with a
+  positive firstLine.
 - The list handler the default feature set relies on (PP_HTML_COLLECT_LISTS wraps lists in an
   sdt tagged HTML_ELEMENT) is registered by default, so lists come out as ul/ol around their li
   rather than as orphan li; a caller's own registration still replaces it.  The ul/ol is

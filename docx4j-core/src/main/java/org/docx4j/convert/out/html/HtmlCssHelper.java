@@ -1,19 +1,19 @@
 /*
-   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
-   
+   Licensed to Plutext Pty Ltd under one or more contributor license agreements.
+
  *  This file is part of docx4j.
 
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
+    docx4j is licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
 
-    You may obtain a copy of the License at 
+    You may obtain a copy of the License at
 
-        http://www.apache.org/licenses/LICENSE-2.0 
+        http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
     limitations under the License.
 
  */
@@ -36,6 +36,12 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
+import java.math.BigInteger;
+import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.PPrBase;
+import org.docx4j.wml.PPrBase.Ind;
+import org.docx4j.wml.STBorder;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
@@ -45,17 +51,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-/** These is an utility class with some common functions for the 
+/** These is an utility class with some common functions for the
  *  HTML-exporters and the SvgExporter.
- * 
+ *
  */
 public class HtmlCssHelper {
 
 	private static Logger log = LoggerFactory.getLogger(HtmlCssHelper.class);
-	
+
 	//Temporary maps that get used in applyAttributes, they are kept here to be able to reuse it
 	private static ThreadLocal<Map<String, Property>> threadLocalTempMap = new ThreadLocal<Map<String, Property>>();
-		
+
     public static void createDefaultCss(boolean hasDefaultHeader, boolean hasDefaultFooter, StringBuilder result) {
     	//TODO: This method needs to be replaced with something similar to the LayoutMasterSetBuilder of fo
 		result.append("/*paged media */ div.header {display: none }");
@@ -66,23 +72,23 @@ public class HtmlCssHelper {
 		if (hasDefaultFooter) {
 			result.append("div.footer {display: block; position: running(footer) }");
 		}
-		
+
 		result.append("@page { size: A4; margin: 10%; @top-center {");
 		result.append("content: element(header) } @bottom-center {");
 		result.append("content: element(footer) } }");
 
 		result.append("/*element styles*/ .del  {text-decoration:line-through;color:red;} ");
 		result.append(".ins {text-decoration:none;background:#c0ffc0;padding:1px;}");
-    	
+
     }
-	
+
     public static void createCssForStyles(OpcPackage opcPackage, StyleTree styleTree, StringBuilder result) {
 
 		// First iteration - table styles
-		result.append("\n /* TABLE STYLES */ \n");    	
-		Tree<AugmentedStyle> tableTree = styleTree.getTableStylesTree();		
+		result.append("\n /* TABLE STYLES */ \n");
+		Tree<AugmentedStyle> tableTree = styleTree.getTableStylesTree();
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : tableTree.toList() ) {
-    		
+
     		if (n.getData()==null) {
     			if (n.equals(tableTree.getRootElement() )) {
     				// that's ok
@@ -91,19 +97,19 @@ public class HtmlCssHelper {
     			}
     			continue;
     		}
-    		
+
     		Style s = n.getData().getStyle();
 
     		result.append( "table."+ s.getStyleId()  + " {display:table;" );
-    		
+
     		// TblPr
     		if (s.getTblPr()==null) {
     		} else {
     			log.debug("Applying tblPr..");
             	createCss(s.getTblPr(), result);
-            	
+
     		}
-    		
+
     		// TblStylePr - STTblStyleOverrideType stuff
     		if (s.getTblStylePr()==null) {
     		} else {
@@ -111,22 +117,22 @@ public class HtmlCssHelper {
     			// Its a list, created automatically
             	createCss(s.getTblStylePr(), result);
     		}
-    		
-    		
+
+
     		// TrPr - eg jc, trHeight, wAfter, tblCellSpacing
     		if (s.getTrPr()==null) {
     		} else {
     			log.debug("Applying trPr.. TODO!");
             	createCss( s.getTrPr(), result);
     		}
-    		
+
     		// TcPr - includes includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
     		if (s.getTcPr()==null) {
     		} else {
     			log.debug("Applying tcPr.. ");
             	createCss( s.getTcPr(), result);
     		}
-    		    		
+
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
@@ -137,14 +143,14 @@ public class HtmlCssHelper {
         	} else {
             	HtmlCssHelper.createCss(opcPackage, s.getRPr(), result);
         	}
-        	result.append( "}\n" );         	
+        	result.append( "}\n" );
     	}
-		
+
 		// Second iteration - paragraph level pPr *and rPr*
-		result.append("\n /* PARAGRAPH STYLES */ \n");    	
-		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
+		result.append("\n /* PARAGRAPH STYLES */ \n");
+		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : pTree.toList() ) {
-    		
+
     		if (n.getData()==null) {
     			if (n.equals(pTree.getRootElement() )) {
     				// shouldn't happen in paragraph case, but still, that's ok
@@ -153,7 +159,7 @@ public class HtmlCssHelper {
     			}
     			continue;
     		}
-    		
+
     		Style s = n.getData().getStyle();
 
     		result.append( "."+ s.getStyleId()  + " {display:block;" );  // not just p, also inherit on ul|ol
@@ -167,16 +173,16 @@ public class HtmlCssHelper {
         	} else {
             	HtmlCssHelper.createCss(opcPackage, s.getRPr(), result);
         	}
-        	result.append( "}\n" );        	
+        	result.append( "}\n" );
     	}
-		    	
+
 	    // Third iteration, character styles
 		result.append("\n /* CHARACTER STYLES */ ");
 		//result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ \n ");
-		
-		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
+
+		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : cTree.toList() ) {
-    		
+
     		if (n.getData()==null) {
     			if (n.equals(cTree.getRootElement() )) {
     				// that's ok
@@ -185,7 +191,7 @@ public class HtmlCssHelper {
     			}
     			continue;
     		}
-    		
+
     		Style s = n.getData().getStyle();
 
     		result.append( "span."+ s.getStyleId()  + " {display:inline;" );
@@ -194,74 +200,116 @@ public class HtmlCssHelper {
         	} else {
             	HtmlCssHelper.createCss(opcPackage, s.getRPr(), result);
         	}
-        	result.append( "}\n" );        	
-    	}	
+        	result.append( "}\n" );
+    	}
     }
-    
+
     protected static void createCss(CTTblPrBase  tblPr, StringBuilder result) {
-    	
+
 		if (tblPr==null) {
 			return;
 		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(tblPr);    	
+
+    	List<Property> properties = PropertyFactory.createProperties(tblPr);
     	for( Property p :  properties ) {
     		appendNonNull(result, p);
-    	}    
+    	}
     }
-    
+
     protected static void createCss(List<CTTblStylePr> tblStylePrList, StringBuilder result) {
     	// STTblStyleOverrideType
-    	
+
 		if (tblStylePrList==null) {
 			return;
 		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(tblStylePrList);    	
+
+    	List<Property> properties = PropertyFactory.createProperties(tblStylePrList);
     	for( Property p :  properties ) {
     		appendNonNull(result, p);
-    	}    
+    	}
     }
-    
+
     protected static void createCss(TrPr trPr, StringBuilder result) {
     	// includes jc, trHeight, wAfter, tblCellSpacing
-    	
+
 		if (trPr==null) {
 			return;
 		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(trPr);    	
+
+    	List<Property> properties = PropertyFactory.createProperties(trPr);
     	for( Property p :  properties ) {
     		appendNonNull(result, p);
-    	}    
+    	}
     }
-    
+
     protected static void createCss(TcPr tcPr, StringBuilder result) {
     	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
-    	
+
 		if (tcPr==null) {
 			return;
 		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(tcPr);    	
+
+    	List<Property> properties = PropertyFactory.createProperties(tcPr);
     	for( Property p :  properties ) {
     		appendNonNull(result, p);
-    	}    
+    	}
     }
-    
+
     public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders, boolean isListItem) {
-    	
+    	createCss(opcPackage, pPr, result, ignoreBorders, isListItem, null);
+    }
+
+    /**
+     * A left paragraph border against a hanging indent: the hang moves from the margin
+     * into the padding, so that the border stands where Word stands it.
+     *
+     * <p>Word draws a left border relative to the <em>leftmost</em> text edge -
+     * min(w:left, w:left - hanging) - less w:space, so with a hanging indent the bar is
+     * left of the first line and every line clears it by w:space.  In the CSS box model
+     * the border sits at the margin edge: with {@code margin-left} = left and
+     * {@code text-indent} = -hanging the first line starts inside the margin, left of
+     * the bar, and the bar is drawn through it (a requirement's "REQ-013" to the left of
+     * the bar and its text to the right).  The Indent and PBorderLeft properties are
+     * independent, so the reconciliation is here, where the paragraph's CSS is
+     * assembled: {@code margin-left} = left - hanging, {@code padding-left} = space +
+     * hanging, {@code text-indent} = -hanging as before.  Nothing changes without a left
+     * border, or with a positive firstLine.</p>
+     *
+     * <p>The border may come from the paragraph style while the indent is the
+     * paragraph's own (an inline {@code margin-left} would then override the class
+     * rule's shifted one and undo it), so the caller may hand in the <em>effective</em>
+     * {@code w:pBdr}; the pPr's own is used where that is null.</p>
+     *
+     * @param effectivePBdr the effective paragraph borders, or null to use the pPr's own
+     * @since 17.1.1 (CR-003, the hanging-indent-across-a-border defect)
+     */
+    public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders,
+    		boolean isListItem, PPrBase.PBdr effectivePBdr) {
     	if (isListItem) {
     		result.append("display: list-item;");
     	}
-    	
 		if (pPr==null) {
 			return;
 		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(opcPackage, pPr);    	
+		CTBorder leftBorder = leftBorder(effectivePBdr!=null ? effectivePBdr : pPr.getPBdr());
+		BigInteger hanging = (pPr.getInd()!=null) ? pPr.getInd().getHanging() : null;
+		boolean shiftHang = leftBorder!=null && hanging!=null && hanging.intValue() > 0 && !isListItem;
+    	List<Property> properties = PropertyFactory.createProperties(opcPackage, pPr);
     	for( Property p :  properties ) {
-    		
+	    	if (shiftHang && p instanceof Indent) {
+	    		// the hang moves from the margin into the padding (see above)
+	    		Ind ind = (Ind) p.getObject();
+	    		int left = ind.getLeft()!=null ? ind.getLeft().intValue() : 0;
+	    		result.append("position: relative; ");
+	    		result.append(Property.composeCss("margin-left", UnitsOfMeasurement.twipToBest(left - hanging.intValue())));
+	    		BigInteger right = ind.getRight()!=null ? ind.getRight() : ind.getEnd();
+	    		if (right!=null) {
+	    			result.append(Property.composeCss("margin-right", UnitsOfMeasurement.twipToBest(right.intValue())));
+	    		}
+	    		result.append(Property.composeCss("text-indent", "-" + UnitsOfMeasurement.twipToBest(hanging.intValue())));
+	    		continue;
+	    	}
+
 			if (ignoreBorders &&
 					((p instanceof PBorderTop)
 							|| (p instanceof PBorderBottom))) {
@@ -270,28 +318,43 @@ public class HtmlCssHelper {
 
 	    	if (isListItem
 	    			&& p instanceof Indent) {
-	    		// Avoid indent settings which would overwrite the bullet 
+	    		// Avoid indent settings which would overwrite the bullet
 	    		// eg "position: relative; margin-left: 0.5in;text-indent: -0.25in;
-				continue;	    		
+				continue;
 	    	}
-			
+
 			if (p instanceof PShading) {
     	    	// To close the gap between divs, we need to avoid
-    	    	// CSS margin collapse.    	    	
-    	    	// To do that, we add a border the same color as 
-    	    	// the background color				
-				String fill = ((CTShd)p.getObject()).getFill();				
+    	    	// CSS margin collapse.
+    	    	// To do that, we add a border the same color as
+    	    	// the background color
+				String fill = ((CTShd)p.getObject()).getFill();
 				result.append("border-color: #" + fill + "; border-style:solid; border-width:1px;");
 			}
-    		
+
     		appendNonNull(result, p);
-    	}    
+    	}
+    	if (shiftHang) {
+    		// after the border's own padding-left (w:space), so that this one wins
+    		int space = leftBorder.getSpace()!=null ? leftBorder.getSpace().intValue() : 0;   // points
+    		result.append(Property.composeCss("padding-left",
+    				UnitsOfMeasurement.twipToBest(space * 20 + hanging.intValue())));
+    	}
     }
-    
+
+    /** The left border of a w:pBdr where it draws one (a value other than nil/none), else null.
+     *  @since 17.1.1 */
+    static CTBorder leftBorder(PPrBase.PBdr pBdr) {
+    	if (pBdr==null || pBdr.getLeft()==null || pBdr.getLeft().getVal()==null) return null;
+    	STBorder val = pBdr.getLeft().getVal();
+    	if (val==STBorder.NIL || val==STBorder.NONE) return null;
+    	return pBdr.getLeft();
+    }
+
     public static void createCss(OpcPackage opcPackage, RPr rPr, StringBuilder result) {
 
     	List<Property> properties = PropertyFactory.createProperties(opcPackage, rPr);
-    	
+
     	for( Property p :  properties ) {
     		appendNonNull(result, p);
     	}
@@ -303,7 +366,7 @@ public class HtmlCssHelper {
 			result.append(prop);
 		}
     }
-    
+
 	public static void applyAttributes(List<Property> properties, Element node) {
 	Map<String, Property> tempAttributeMap = null;
 	StringBuilder buffer = null;
@@ -332,7 +395,7 @@ public class HtmlCssHelper {
 			node.setAttribute("style", newValue);
 		}
 	}
-	
+
 	protected static Map<String, Property> getTempMap() {
 	Map<String, Property> ret = threadLocalTempMap.get();
 		if (ret == null) {

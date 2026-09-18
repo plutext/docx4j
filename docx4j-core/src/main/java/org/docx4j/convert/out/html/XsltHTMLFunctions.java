@@ -48,6 +48,7 @@ import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
@@ -846,8 +847,20 @@ public class XsltHTMLFunctions {
 				StringBuilder inlineStyle =  new StringBuilder();
 				// the indent is kept for an li as for a p (17.1.1): the label is ours, not
 				// the browser's marker, so the hanging indent no longer collides with one
+				// the effective borders, so that a paragraph's own hanging indent under a
+				// bordered style is shifted as the style's class rule is (CR-003)
+				PPrBase.PBdr effectivePBdr = null;
+				if (pPr.getInd()!=null && pPr.getInd().getHanging()!=null && pPr.getPBdr()==null) {
+					try {
+						PPr effective = context.getWmlPackage().getMainDocumentPart()
+								.getPropertyResolver().getEffectivePPr(pPr);
+						effectivePBdr = effective==null ? null : effective.getPBdr();
+					} catch (Exception e) {
+						context.getLog().warn("effective pPr for the border/hanging shift: " + e.getMessage());
+					}
+				}
 				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders,
-						!LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li"));
+						!LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li"), effectivePBdr);
 				if (LABEL_IN_BLOCK && xhtmlBlock.getNodeName().equals("li")) {
 					inlineStyle.append("list-style: none;");
 				}

@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6); one defect recorded and fixed 2026-09-18 (list items collide with their marker, §4); a second recorded (a hanging indent crosses a left border, §4, not implemented; the FO exporter has it too).
+Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6); one defect recorded and fixed 2026-09-18 (list items collide with their marker, §4); a second recorded and fixed for HTML (a hanging indent crosses a left border, §4; the FO exporter's twin is CR-001 batch 48 item 9).
 The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
@@ -383,7 +383,7 @@ left of Word's).  The span now carries `text-indent: 0`; `HtmlListLabelTest`
 asserts it on the emitted style, since no DOM-level test sees a layout-only
 defect.
 
-### Defect found after DONE: a hanging indent crosses a left paragraph border (2026-09-18)
+### Defect found after DONE: a hanging indent crosses a left paragraph border (2026-09-18; HTML FIXED the same day, FO queued)
 
 Found on the same draft, re-exported at ed6380a10 (the list fix holds).  Not
 implemented; recorded with the mechanism.
@@ -437,6 +437,20 @@ back over the border), so the same shift applies: `start-indent` = left -
 hanging, `padding-start` = space + hanging.  Queued for CR-001 batch 48 as a
 class 1 rule (font-independent; the probe: a bordered paragraph with a
 hanging indent, a numbered one, and a `firstLine` control).
+
+HTML fixed 2026-09-18 as proposed, in `HtmlCssHelper.createCss(PPr)` (a new
+overload taking the effective `w:pBdr`): where the paragraph has a left border
+and a hanging indent, the `Indent` property's CSS is replaced by
+`margin-left` = left - hanging and `text-indent` = -hanging, and a
+`padding-left` = space + hanging is appended after the border's own so that it
+wins; both the stylesheet's class rules and the inline path, the latter handed
+the effective borders by `createBlock` so a paragraph's own indent under a
+bordered style is shifted as the style's rule is.  Nothing changes without a
+left border, with a positive `firstLine`, or for an `li` whose indent is
+skipped.  `HtmlBorderHangingTest`, both pathways.  On the draft the
+Requirement rule reads `margin-left: 0; text-indent: -56.7pt; ...
+padding-left: 8pt; ... padding-left: 64.7pt`.  `HtmlCssHelper` was CRLF and is
+now LF.
 
 ## 5. Risks / open questions
 
