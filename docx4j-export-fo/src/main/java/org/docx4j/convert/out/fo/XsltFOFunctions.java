@@ -2194,8 +2194,22 @@ public class XsltFOFunctions {
 			if (indOut!=null && indent.getObject() instanceof PPrBase.Ind) {
 				indOut[0] = (PPrBase.Ind)indent.getObject();
 			}
-			int numWidth = 90 * numChars; // crude .. TODO take font size into account
-			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth);
+			/* The label measured in its own face and size, with §2.8's 90 twips a character
+			 * as the fallback (labelWidthTwips) - for a NUMBER only.  A bullet is drawn in a
+			 * symbol font this machine usually does not have, so what is measured is the
+			 * substitute's glyph and not Word's: measured on three corpus documents whose
+			 * w:lvlText is a Symbol asterisk in a 5.65pt hanging indent, DejaVu Serif's
+			 * glyph is 6.8pt where the estimate is 4.5pt, which flipped the "does the label
+			 * fit its hanging indent" test, sent the label column to the next default tab
+			 * stop (375.65pt) and took two of those documents from 1.0000 of Word's lines to
+			 * 0.5975 and 0.8133, with four pages added to one of them.  Word draws their text
+			 * at the hanging indent, so for a bullet the estimate stands. */
+			int[] measured = triple.getBullet() != null
+					? new int[] { 90 * numChars, 90 }
+					: labelWidthTwips(wmlPackage, foListItemLabelBody,
+							foListItemLabelBody.getTextContent(), 90 * numChars);
+			int numWidth = numChars == 0 ? 0 : measured[0];
+			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth, measured[1]);
 			// -1 in the hanging case where the label fits, so the hanging indent stands
 			indent.setXslFOListBlock(foListBlock, pdbs);
 			indentHandledByNumbering = true;
@@ -2351,8 +2365,11 @@ public class XsltFOFunctions {
 		if ("space".equals(suff)) {
 			foBlockElement.appendChild(document.createTextNode(" "));
 		} else if (!"nothing".equals(suff)) {
+			// the label measured in its own face and size (labelWidthTwips), with §2.8's
+			// 90 twips a character as the fallback
 			int gap = labelGapTwips(wmlPackage, indent, indOut==null ? null : indOut[0],
-					pPrDirect, text.length(), triple);
+					pPrDirect, labelWidthTwips(wmlPackage, label, text, 90 * text.length())[0],
+					triple);
 			if (gap > 0 && WordLayoutFixups.isEnabled()) {
 				Element leader = document.createElementNS(XSL_FO, "fo:leader");
 				leader.setAttribute("leader-pattern", "space");
@@ -2377,9 +2394,8 @@ public class XsltFOFunctions {
 	 *  the label's width reaches (as createListBlock computes it for
 	 *  provisional-distance-between-starts). */
 	private static int labelGapTwips(WordprocessingMLPackage wmlPackage, Indent indent,
-			PPrBase.Ind resolved, PPr pPrDirect, int numChars, NumberingResult triple) {
+			PPrBase.Ind resolved, PPr pPrDirect, int numWidth, NumberingResult triple) {
 
-		int numWidth = 90 * numChars;
 		if (indent.isHanging() && resolved!=null && resolved.getHanging()!=null
 				&& resolved.getHanging().intValue() >= numWidth) {
 			int stop = numberingTabStopTwips(triple, indent.getNumberPosition() + numWidth,
@@ -2422,6 +2438,54 @@ public class XsltFOFunctions {
 	 * @param indLeft the paragraph's {@code w:ind} left, in twips from the left margin
 	 * @since 17.1.1 (CR-001 batch 47 item 3)
 	 */
+	/**
+	 * The width of a numbering label in twips, measured in the very face and size the label
+	 * is set in, with the width of one space in it: {@code {label, space}}.
+	 *
+	 * <p>&#xa7;2.8 estimated a label at <b>90 twips a character</b> - 4.5pt, about a digit of
+	 * an 11pt face - and every use of that estimate is a layout decision: the label column of
+	 * a list block, the gap an inline label leaves before the text, and whether the numbering
+	 * tab's stop falls past the end of the label.  The estimate is wrong in both directions.
+	 * On a level which states {@code lvlText "Appendix %1"} with {@code w:suff space} and no
+	 * hanging indent, in a 20pt bold heading, it gives a 990-twip column (ten characters plus
+	 * a space) where the label itself is nearly twice that, so the label wrapped inside its
+	 * own column as {@code Appendix} / {@code A} and the body was set beside it on three
+	 * lines, where Word draws one line with the text one space after the label.  In the other
+	 * direction, on corpus document {@code 9458} the estimate is <em>wider</em> than the
+	 * label, so a level tab stop just past the real label reads as already passed.
+	 *
+	 * <p>The measurement is the one the table autofit pass already uses -
+	 * {@link org.docx4j.fonts.TextMeasurer} over the physical face
+	 * {@code RunFontSelector} resolved, at the size and weight on the label's own element, so
+	 * the width here is the width the label will have on the page.  Where the face cannot be
+	 * measured the estimate stands.
+	 *
+	 * @param labelEl the label's own FO element, carrying its font-family and font-size
+	 * @param text the label as it will be drawn
+	 * @param fallbackTwips the &#xa7;2.8 estimate, used where nothing can be measured
+	 * @since 17.1.1 (CR-001 batch 47 item 5)
+	 */
+	private static int[] labelWidthTwips(WordprocessingMLPackage wmlPackage, Element labelEl,
+			String text, int fallbackTwips) {
+
+		int[] fallback = new int[] { fallbackTwips, 90 };
+		if (labelEl == null || text == null || text.length() == 0) return fallback;
+		try {
+			org.docx4j.fonts.Mapper mapper = wmlPackage == null ? null : wmlPackage.getFontMapper();
+			org.docx4j.fonts.PhysicalFont pf = TableWriter.fontFor(labelEl, mapper);
+			if (pf == null) return fallback;
+			double sizePt = TableWriter.sizeFor(labelEl);
+			if (sizePt <= 0) return fallback;
+			double label = org.docx4j.fonts.TextMeasurer.widthPt(text, pf, sizePt);
+			double space = org.docx4j.fonts.TextMeasurer.widthPt(" ", pf, sizePt);
+			if (label <= 0) return fallback;
+			return new int[] { (int) Math.ceil(label * 20), (int) Math.ceil(space * 20) };
+		} catch (RuntimeException e) {
+			log.debug("Label not measured (" + e.getMessage() + "); using the estimate");
+			return fallback;
+		}
+	}
+
 	/** The level's (or the paragraph's) hanging indent in twips, 0 where there is none. */
 	private static int hangingTwips(Indent indent) {
 		PPrBase.Ind ind = indent.getObject() instanceof PPrBase.Ind ? (PPrBase.Ind) indent.getObject() : null;
@@ -2462,7 +2526,7 @@ public class XsltFOFunctions {
 	 * @since 17.1.0
 	 */
 	private static int labelColumnTwips(WordprocessingMLPackage wmlPackage, Indent indent,
-			PPr pPrDirect, NumberingResult triple, int numWidth) {
+			PPr pPrDirect, NumberingResult triple, int numWidth, int spaceWidth) {
 
 		PPrBase.Ind ind = indent.getObject() instanceof PPrBase.Ind ? (PPrBase.Ind)indent.getObject() : null;
 		int hanging = (ind!=null && ind.getHanging()!=null) ? ind.getHanging().intValue() : -1;
@@ -2484,7 +2548,8 @@ public class XsltFOFunctions {
 				&& triple.getLvl().getSuff().getVal()!=null
 				? triple.getLvl().getSuff().getVal() : "tab";
 		if ("nothing".equals(suff)) return numWidth;
-		if ("space".equals(suff)) return numWidth + 90;   // one space, on the same crude scale
+		// one space, measured in the label's own face (§2.8 counted 90 twips for it)
+		if ("space".equals(suff)) return numWidth + Math.max(1, spaceWidth);
 		return getDistanceToNextTabStop(indent.getNumberPosition(), numWidth,
 				pPrDirect.getTabs(), wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
 	}

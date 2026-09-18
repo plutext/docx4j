@@ -200,6 +200,18 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbering label is measured in its own face and size instead of being estimated at 90 twips
+  a character, which decides the label column of a list block, the gap an inline label leaves
+  before the text, and whether the numbering tab's stop falls past the end of the label. The
+  estimate was wrong both ways: a level whose lvlText is "Appendix %1" with w:suff space and no
+  hanging indent, in a 20pt bold paragraph, was given a 49.5pt column where the label is 98.45pt,
+  so the label wrapped inside its own column and the body was set beside it; and where the
+  estimate is wider than the label, a tab stop just past the real label read as already passed.
+  Eighteen corpus documents move and every one improves - one goes from 0.9212 to 1.0000 of
+  Word's lines, another from 0.9232 to 0.9783, a 311-page one from 0.9007 to 0.9351 - and one
+  document's page count becomes Word's. A bullet keeps the estimate: its glyph comes from a
+  symbol font this machine may not have, so what a substitute measures is not Word's label
+  (CR-001 batch 47).
 - The tab which follows a numbering label goes to the first of {the level's own tab stops, the
   paragraph's w:ind left} that lies past the label, and it moves the first line only - the lines
   after it keep the paragraph's indent. Measured on a probe whose level 0 is w:ind left 720
