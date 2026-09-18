@@ -5913,8 +5913,21 @@ public final class Corpus {
 			String[] kinds = { "dot", "hyphen", "underscore", "heavy", "middleDot" };
 			StringBuilder num = new StringBuilder();
 			for (int i = 0; i < kinds.length; i++) {
+				/* The level names the label's own face and size, so the label does not lean
+				 * on the theme default.  It did, and the two machines answer it differently:
+				 * the probe has no theme part, Word 365 gives such a document Aptos and
+				 * docx4j's built-in Office theme gives Calibri, so Word drew the label in
+				 * Aptos 11.04pt and we in Calibri's clone Carlito at 11.00 - 8.349pt wide
+				 * against Word's 9.06.  That is 0.71pt of the leader's advance, and at this
+				 * probe's 3.60pt step it decided whether the run held eleven characters or
+				 * twelve: 43.199pt of room is 11.9997 steps and 43.22 is 12.006.  Aptos has
+				 * no metric clone, so on a machine without it the count could not be Word's
+				 * whatever the exporter did - the probe was measuring the theme default and
+				 * the font substitution, not the leader.  Liberation Serif is on both
+				 * machines.  (CR-001 batch 48 item 7; the golden wants re-cutting) */
 				num.append("<w:abstractNum w:abstractNumId=\"" + (51 + i) + "\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
-						+ leaderLevel(0, 1440, kinds[i], 2880, 2520) + "</w:abstractNum>");
+						+ sizedLeaderLevel(0, 1440, kinds[i], 2880, 2520, 22, "Liberation Serif")
+						+ "</w:abstractNum>");
 			}
 			for (int i = 0; i < kinds.length; i++) {
 				num.append("<w:num w:numId=\"" + (51 + i) + "\"><w:abstractNumId w:val=\"" + (51 + i) + "\"/></w:num>");
@@ -5929,6 +5942,188 @@ public final class Corpus {
 						.numPr(51 + i, 0).before(120).after(120).add();
 			}
 			d.para("after. " + prose(1, 5)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * CR-001 batch 48 item 3.  The two break opportunities corpus document 5253
+		 * measures, each with its control, on a narrow measure so that whether the break
+		 * is taken decides the line.  UAX #14 rule LB25 keeps a hyphen with the digits
+		 * after it, and Word breaks there; FOP's pair table, which predates Unicode 8.0's
+		 * LB24, breaks between a letter and a per-cent sign, and Word does not.  Read off
+		 * the golden: for each pair, which of the two lines the token's tail is on.
+		 */
+		PROBES.add(new Probe("break-opportunities",
+				"a hyphen before digits and a per-cent sign after a letter, each against "
+				+ "its control - a hyphen before letters, a per-cent sign after digits, an "
+				+ "en dash and a solidus - straddling a 120.0pt measure: where Word breaks "
+				+ "and where it does not", () -> {
+			Doc d = Doc.create(15);
+			// A4 portrait with 4753-twip side margins: a body measure of 2400 twips = 120.0pt
+			d.pageGeometry(11906, 16838, false, 1440, 4753, 1440, 4753);
+			final int measure = 2400;
+			final int advTw = Doc.advanceTwipsCeil("0", SERIF, 24);   // 120, as break-longword
+			if (advTw != 120) throw new IllegalStateException("Liberation Serif's digit advance "
+					+ "is " + advTw + " twips, not the 120 this probe's padding is built on");
+
+			d.para("Each pair below is a padding run of digits - every one exactly 120 twips "
+					+ "wide in Liberation Serif at 12pt - then a token which straddles the "
+					+ "2400-twip (120.0pt) measure. Read where the token's tail goes: on the "
+					+ "first line, or the second.").after(240).add();
+
+			// token, what it tests, and where the break under test is (0-based, before this
+			// character); the pad is sized so the break under test sits past the measure
+			String[][] cases = {
+				{ "1997-05-12", "A", "a hyphen before digits: LB25 keeps them together and "
+						+ "Word breaks after the hyphen", "5" },
+				{ "alpha-beta", "B", "a hyphen before letters, the control: both break after "
+						+ "the hyphen", "6" },
+				{ "VAT% paid", "C", "a per-cent sign after a letter: FOP's pair table breaks "
+						+ "before the sign and Word does not", "3" },
+				{ "100% paid", "D", "a per-cent sign after digits, the control: neither "
+						+ "breaks before the sign", "3" },
+				{ "alpha–beta", "E", "an en dash, the control: class BA, both break "
+						+ "after it", "6" },
+				{ "alpha/beta", "F", "a solidus, the control: FOP breaks after it and Word "
+						+ "does not (word-layout-rules 4.3)", "6" },
+			};
+			for (String[] c : cases) {
+				String token = c[0];
+				String tag = c[1];
+				int at = Integer.parseInt(c[3]);
+				// the head up to the break under test must fit and the tail must not: pad so
+				// that the head ends 60 twips (half a digit) inside the measure
+				int headTw = Doc.advanceTwipsCeil(token.substring(0, at), SERIF, 24);
+				int spaceTw = Doc.advanceTwipsCeil(" ", SERIF, 24);
+				int padChars = Math.max(1, (measure - headTw - spaceTw - 60) / advTw);
+				String pad = digitToken(padChars);
+				int startTw = padChars * advTw + spaceTw;
+				d.para(tag + ": " + c[2] + ". The padding is " + padChars + " characters = "
+						+ (padChars * advTw / 20.0) + "pt, so the token opens at "
+						+ (startTw / 20.0) + "pt and the character under test would fall at "
+						+ ((startTw + headTw) / 20.0) + "pt of the 120.0pt measure.")
+						.after(60).add();
+				d.para().noLabel().text(pad + " " + token).after(180).add();
+			}
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
+		// ---------------------------------------------------------------- CR-001 batch 48
+		//                                   item 9: where a left paragraph border stands
+		//                                   when the first line is hung out to its left
+
+		PROBES.add(new Probe("border-hanging",
+				"a left paragraph border against a hanging indent, a numbered paragraph "
+				+ "and a w:firstLine control: whether Word stands the bar against the "
+				+ "leftmost text edge or against w:ind left", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml("<w:abstractNum w:abstractNumId=\"70\">"
+					+ "<w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ Doc.decimalLevel(0, null, 1134, 1134)
+					+ "</w:abstractNum>"
+					+ "<w:num w:numId=\"70\"><w:abstractNumId w:val=\"70\"/></w:num>");
+
+			// the bordered paragraphs are kept apart by an unbordered one, so that the
+			// exporter's borders container does not merge them into one bar
+			String tail = "This paragraph is long enough to wrap, so the golden shows the "
+					+ "continuation lines' left edge as well as the first line's. "
+					+ Doc.prose(2);
+
+			d.para("Each bordered paragraph below carries a left w:pBdr of w:sz 18 "
+					+ "(2.25pt) and w:space 8, and nothing on the other three sides. Read "
+					+ "the bar's x against the paragraph's two text edges: the first "
+					+ "line's and the continuation lines'.").after(240).add();
+
+			d.para("A: w:ind left 1134 hanging 1134, so the first line starts at the "
+					+ "margin and the lines after it 56.7pt in.").after(60).add();
+			d.para(tail).indent(1134, 0, 1134).leftBorder(18, 8).after(180).add();
+
+			d.para("B: the same indent from a numbering level (w:ind left 1134 hanging "
+					+ "1134 on the level), so the label stands where A's first line "
+					+ "does.").after(60).add();
+			d.para(tail).numPr(70, 0).leftBorder(18, 8).after(180).add();
+
+			d.para("C: w:ind left 1134 firstLine 567, the control: the first line is "
+					+ "indented FORWARD, so w:ind left is the leftmost text edge.")
+					.after(60).add();
+			d.para(tail).indent(1134, 567, 0).leftBorder(18, 8).after(180).add();
+
+			d.para("D: w:ind left 1134 and no first-line indent at all, the second "
+					+ "control.").after(60).add();
+			d.para(tail).indent(1134, 0, 0).leftBorder(18, 8).after(180).add();
+
+			d.para("E: w:ind left 1134 hanging 1134 with w:space 0, so the bar has no "
+					+ "gap to stand off by.").after(60).add();
+			d.para(tail).indent(1134, 0, 1134).leftBorder(18, 0).after(180).add();
+
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
+		// ---------------------------------------------------------------- CR-001 batch 48
+		//                                   item 4: a VML text box whose text Word turns
+		//                                   on its side, and the table cell that does it
+
+		PROBES.add(new Probe("vml-textbox-vertical",
+				"a VML v:rect text box of layout-flow:vertical, one of them with "
+				+ "mso-layout-flow-alt:bottom-to-top, against a horizontal box of the same "
+				+ "shape and a w:textDirection btLr table cell beside them: which way the "
+				+ "text runs, what measure it is laid along, and where the first character "
+				+ "stands", () -> {
+			Doc d = Doc.create(15);
+
+			// 1139's shape: a narrow tall legend beside a table, 16.5pt wide and 93.75pt
+			// high, whose label is 17 characters long
+			final String LABEL = "Vertical legend A";
+			final String BOX = "position:absolute;margin-left:0;margin-top:%s;width:16.5pt;"
+					+ "height:93.75pt;z-index:%d;mso-position-vertical-relative:text%s";
+
+			d.para("Each box below is 16.5pt wide and 93.75pt high, so a horizontal line in "
+					+ "it has 16.5pt of measure and a vertical one 93.75pt. Read which way "
+					+ "the text runs and how many lines it takes.").after(240).add();
+
+			d.para("A: layout-flow:vertical, which Word reads as its tbRl - the text runs "
+					+ "down the box.").after(60).add();
+			P a = Doc.plainParagraph("", SERIF, 20);
+			a.getContent().clear();
+			a.getContent().add(d.vmlRect(String.format(BOX, "0", 1, ""),
+					"layout-flow:vertical", LABEL));
+			d.add(a);
+			d.para("A tail paragraph, so the box has a line to be anchored to.")
+					.before(120).after(240).add();
+
+			d.para("B: layout-flow:vertical with mso-layout-flow-alt:bottom-to-top, Word's "
+					+ "btLr - the text runs up the box.").after(60).add();
+			P b = Doc.plainParagraph("", SERIF, 20);
+			b.getContent().clear();
+			b.getContent().add(d.vmlRect(String.format(BOX, "0", 2, ""),
+					"layout-flow:vertical;mso-layout-flow-alt:bottom-to-top",
+					"Vertical legend B"));
+			d.add(b);
+			d.para("A tail paragraph, so the box has a line to be anchored to.")
+					.before(120).after(240).add();
+
+			d.para("C: the control, no layout-flow at all - the same box laid out across "
+					+ "its 16.5pt width.").after(60).add();
+			P c = Doc.plainParagraph("", SERIF, 20);
+			c.getContent().clear();
+			c.getContent().add(d.vmlRect(String.format(BOX, "0", 3, ""), "Horizontal C"));
+			d.add(c);
+			d.para("A tail paragraph, so the box has a line to be anchored to.")
+					.before(120).after(240).add();
+
+			d.para("D: the same rotation as a table asks for it, w:textDirection btLr in "
+					+ "the first cell of a two-cell row 93.75pt (1875 twips) tall.")
+					.after(60).add();
+			Doc.Table t = new Doc.Table(330, 5000).fixedLayout().borders(4);
+			t.rowOf(1875, org.docx4j.wml.STHeightRule.EXACT,
+					Doc.Table.textDirection(t.cell("Vertical legend D", SERIF, 20, 1, 330), "btLr"),
+					t.cell("The cell beside it, whose text is horizontal. " + Doc.prose(1),
+							SERIF, 20, 1, 5000));
+			d.add(t.build());
+
+			d.para("after.").before(240).add();
 			return d.pkg();
 		}));
 

@@ -518,6 +518,29 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 		return Boolean.parseBoolean(v.trim());
 	}
 
+	/**
+	 * Whether Word's two corrections to UAX #14's pair table are applied: a break
+	 * <b>after</b> a hyphen followed by digits, which rule LB25 ({@code HY x NU})
+	 * forbids and Word takes, and <b>no</b> break between a letter and a per-cent sign,
+	 * which FOP's pre-Unicode-8 table allows and Word does not
+	 * ({@code WordBreakOpportunities}; word-layout-rules.md &#xa7;4.3).
+	 *
+	 * <p>On by default; docx4j property or system property
+	 * docx4j.convert.out.fo.wordLayout.breakOpportunities=false turns both off.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	public static final String BREAK_OPPORTUNITIES
+			= "docx4j.convert.out.fo.wordLayout.breakOpportunities";
+
+	public static boolean breakOpportunities() {
+		String v = System.getProperty(BREAK_OPPORTUNITIES);
+		if (v == null) {
+			return Docx4jProperties.getProperty(BREAK_OPPORTUNITIES, true);
+		}
+		return Boolean.parseBoolean(v.trim());
+	}
+
 	private static Double doubleProperty(String name) {
 		String v = System.getProperty(name);
 		if (v == null) v = Docx4jProperties.getProperty(name);

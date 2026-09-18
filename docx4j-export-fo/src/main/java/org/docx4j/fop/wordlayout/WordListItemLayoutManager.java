@@ -143,6 +143,12 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 		bodyArea = null;
 		super.addAreas(parentIter, layoutContext);
 		try {
+			gridLabelLeader();
+		} catch (RuntimeException e) {
+			// the leader's phase is not worth failing a render for
+			log.warn("list label leader grid: " + e.getMessage(), e);
+		}
+		try {
 			if (WordLayoutCustomizer.labelSuffixSpace()) addLabelSuffixSpace();
 		} catch (RuntimeException e) {
 			// the text layer is not worth failing a render for
@@ -161,6 +167,101 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 		} else if (bodyArea == null) {
 			bodyArea = (Block) childArea;
 		}
+	}
+
+	/**
+	 * Put the numbering tab's leader on Word's grid, from the <b>page's</b> edge.
+	 *
+	 * <p>Word starts a leader run on a whole multiple of its step measured from the page's
+	 * left edge ({@code LBP.gridPhase}), and {@code WordLineLayoutManager.gridTocLeaders}
+	 * does that for a table-of-contents entry's leader, where the line's own start-indent
+	 * and the region body's x are the whole of the distance. A numbering <b>label</b>'s
+	 * leader is not reachable that way: the label block sits in an {@code fo:list-item-label}
+	 * whose area FOP places here, in {@code ListItemLayoutManager.addAreas}, so until this
+	 * call the label's distance from the page edge does not exist.</p>
+	 *
+	 * <p>Measured on the {@code numbering-leader-kinds} probe, whose level is
+	 * {@code w:ind left="2880" hanging="2520"} with a 1440-twip stop: the run's true origin
+	 * is <b>99120</b> millipoints - the region body's 72000, the label area's own x offset
+	 * of <b>771</b>, the label block's start-indent of <b>18000</b> (the level's 360-twip
+	 * number position) and the <b>8349</b> of label before the leader - where the line
+	 * manager could see only the first and the last and so phased from 80349. Every
+	 * numbering-tab leader therefore opened <b>0.768pt</b> (3.2 cells) to the left of
+	 * Word's: ours at 99.120 against Word's 99.888. It is the residue CR-001 batch 47
+	 * recorded as tier C (h), and at a 3.60pt step it also cost the run one character.</p>
+	 *
+	 * <p>The line's width does not change: the run gives up the phase and the blank in
+	 * front of it takes exactly that ({@code LBP.gridPlacedLeader}), which is what keeps
+	 * the {@code w:suff} gap below the same.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 7)
+	 */
+	private void gridLabelLeader() {
+
+		if (!WordLayoutCustomizer.leaderGrid() || labelArea == null) return;
+		LineAt label = firstLine(labelArea, 0);
+		if (label == null || label.line.getBidiLevel() > 0) return;
+		int origin = label.x + pageOffsetMpt();
+		int[] x = { 0 };
+		InlineArea run = filledArea(label.line.getInlineAreas(), x);
+		if (run == null) return;
+		InlineArea phased = LBP.gridPlacedLeader((org.apache.fop.area.inline.FilledArea) run,
+				origin + x[0]);
+		if (phased != null) replaceArea(label.line.getInlineAreas(), run, phased);
+	}
+
+	/** The first leader run of a label's line, with how far into the line it begins; a
+	 *  label holds at most one.  Counted as {@code WordLineLayoutManager.xOf} counts:
+	 *  a parent is either descended into or counted, never both, and a
+	 *  {@code FilledArea} is counted whole. */
+	private static InlineArea filledArea(List<?> areas, int[] x) {
+		for (Object o : areas) {
+			if (!(o instanceof InlineArea)) continue;
+			InlineArea a = (InlineArea) o;
+			if (a instanceof org.apache.fop.area.inline.FilledArea) return a;
+			if (a instanceof InlineParent) {
+				InlineArea found = filledArea(((InlineParent) a).getChildAreas(), x);
+				if (found != null) return found;
+			} else {
+				x[0] += a.getIPD();
+			}
+		}
+		return null;
+	}
+
+	/** Put {@code fresh} where {@code old} sits in this line's areas, at whatever depth. */
+	@SuppressWarnings("unchecked")
+	private static boolean replaceArea(List<?> areas, InlineArea old, InlineArea fresh) {
+		for (int i = 0; i < areas.size(); i++) {
+			Object a = areas.get(i);
+			if (a == old) {
+				((List<InlineArea>) areas).set(i, fresh);
+				return true;
+			}
+			if (a instanceof InlineParent
+					&& !(a instanceof org.apache.fop.area.inline.FilledArea)
+					&& replaceArea(((InlineParent) a).getChildAreas(), old, fresh)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** The x of the region body on the page, in millipoints: the left margin, which is
+	 *  where Word measures a leader's grid from. */
+	private int pageOffsetMpt() {
+		try {
+			org.apache.fop.area.PageViewport pv = getPSLM() == null ? null : getPSLM().getCurrentPV();
+			org.apache.fop.area.Page page = pv == null ? null : pv.getPage();
+			org.apache.fop.area.RegionViewport rv = page == null ? null
+					: page.getRegionViewport(org.apache.fop.fo.Constants.FO_REGION_BODY);
+			if (rv != null && rv.getViewArea() != null) {
+				return (int) Math.round(rv.getViewArea().getX());
+			}
+		} catch (RuntimeException e) {
+			log.debug("no page viewport for the label leader grid: " + e.getMessage());
+		}
+		return 0;
 	}
 
 	/** The space glyph Word writes for the level's {@code w:suff}, appended to the

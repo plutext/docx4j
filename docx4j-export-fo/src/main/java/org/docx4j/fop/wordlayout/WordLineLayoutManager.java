@@ -1967,11 +1967,25 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private void gridTocLeaders(KnuthSequence seq, int from, int to, LineArea lineArea) {
         if (!WordLayoutCustomizer.leaderGrid()) return;
+        /* A numbering label's leader is phased by WordListItemLayoutManager instead: the
+         * origin Word measures from is the page's edge, and a label block's own distance
+         * from it is not known until the list item has placed the label area
+         * (FOP sets its x offset there), which happens after this line exists.  Measured
+         * on numbering-leader-kinds: the true origin is 72000 (the region body) + 771
+         * (the label area's x offset) + 18000 (the label block's start-indent) + the areas
+         * before the leader, and the reconstruction here has only the first and the last of
+         * those, so it was 18.771pt short and every such run opened 0.768pt to the left of
+         * Word's.  (CR-001 batch 48 item 7) */
+        if (inListItemLabel()) return;
+        /* A leader whose pattern is use-content generates one element per element of its
+         * own content, so the same manager is reported more than once and the phase would
+         * be applied twice.  (CR-001 batch 48 item 2) */
+        java.util.Set<LayoutManager> done = new java.util.HashSet<LayoutManager>();
         for (int i = Math.max(0, from); i <= to && i < seq.size(); i++) {
             Object o = seq.get(i);
             if (!(o instanceof KnuthElement)) continue;
             LayoutManager lm = tocLeader((KnuthElement) o);
-            if (lm == null) continue;
+            if (lm == null || !done.add(lm)) continue;
             InlineArea area = LBP.leafArea(lm);
             if (!(area instanceof org.apache.fop.area.inline.FilledArea)) continue;
             int[] x = { 0 };
@@ -1989,18 +2003,38 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * <p>Through the element's <b>position</b> chain, as {@link #tabLeader} does, and not
      * through {@code KnuthElement.getLayoutManager()}: an entry's leader sits inside the
      * {@code fo:inline}s that carry the entry's colour, size and hyperlink, and the
-     * element then reports the outermost of those managers.  The leaf position is the one
-     * that names the leader itself.
+     * element then reports the outermost of those managers.
+     *
+     * <p>The <b>whole</b> chain is walked, and not only its innermost {@code LeafPosition}.
+     * A leader of {@code leader-pattern="dots"} is a leaf - FOP builds its run itself - but
+     * one of {@code leader-pattern="use-content"} lays its content out with a manager of
+     * its own, so the innermost leaf names the <em>content</em>'s manager and the leader's
+     * sits above it. A numbering tab's hyphen, underscore and middle-dot leaders are written
+     * that way (XsltFOFunctions.numberingLeaderGlyph), and without this they were never
+     * gridded: their characters stepped on the raw advance (3.663pt for a hyphen where Word
+     * steps 3.60) and the run was anchored on the line instead of the page.  Widening the
+     * walk cannot change a {@code dots} leader, whose manager is the leaf already.
+     * (CR-001 batch 48 item 2)</p>
      */
-    private LayoutManager tocLeader(KnuthElement element) {
-        Position leaf = element.getPosition();
-        while (leaf != null && !(leaf instanceof LeafPosition)) {
-            leaf = leaf.getPosition();
+    /** Whether this line's block is the label of an {@code fo:list-item} - a numbering
+     *  label, whose leader {@link WordListItemLayoutManager} phases.
+     *  @since 17.1.1 (CR-001 batch 48 item 7) */
+    private boolean inListItemLabel() {
+        for (org.apache.fop.fo.FONode n = fobj; n != null; n = n.getParent()) {
+            if (n instanceof org.apache.fop.fo.flow.ListItemLabel) return true;
+            if (n instanceof org.apache.fop.fo.flow.ListItemBody) return false;
         }
-        LayoutManager lm = leaf == null ? null : leaf.getLM();
-        if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) return null;
-        String kind = foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TOC_LEADER);
-        return (kind != null && kind.length() > 0) ? lm : null;
+        return false;
+    }
+
+    private LayoutManager tocLeader(KnuthElement element) {
+        for (Position p = element.getPosition(); p != null; p = p.getPosition()) {
+            LayoutManager lm = p.getLM();
+            if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) continue;
+            String kind = foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TOC_LEADER);
+            if (kind != null && kind.length() > 0) return lm;
+        }
+        return null;
     }
 
     /**
@@ -2483,7 +2517,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /**
      * Break opportunities inside a token which UAX #14, as FOP's text managers apply
      * it, offers and Word does not take ({@link WordBreakOpportunities#noBreakBetween})
-     * are made infinite penalties here.  Two so far.  Word does not break a line after
+     * are made infinite penalties here.  Three so far.  Word does not break a line after
      * a solidus: measured on the Getting Started guide (CR-001 §6.10),
      * "http://schemas.openxmlformats.org/..." and "OpenOffice/jodconverter" go whole
      * to the next line where FOP breaks after the "/".  And it does not break between
@@ -2491,7 +2525,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * version before 8.0's LB24, does: measured on a 311-page corpus document, Word sets
      * {@code Quejas\Clientes\Minoristas} whole on a line where ours broke it before each
      * backslash (17.1.1; until then only the solidus was suppressed).  Only the
-     * backslash: Word breaks between a letter and a dollar sign, as FOP does.
+     * backslash: Word breaks between a letter and a dollar sign, as FOP does.  The third
+     * is the same defect in the same table for the other half of LB24's pair: Word does
+     * not break between a letter and a per-cent sign, where FOP holds {@code AL x PO} as
+     * a direct break and sets {@code VAT|%} (17.1.1, CR-001 batch 48 item 3; a per-cent
+     * sign after a <em>digit</em> never broke, {@code NU x PO} being indirect).  The one
+     * correction which goes the other way - Word breaks <b>after</b> a hyphen followed by
+     * digits, where the table's {@code HY x NU} is indirect and so no break inside a word
+     * - cannot be made here, there being no penalty to relax: it is
+     * {@link WordBreakOpportunities#applyWordPairTable}.
      */
     private void suppressWordBreaks(List<KnuthSequence> seqs) {
         if (seqs == null) return;

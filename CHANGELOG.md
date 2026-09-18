@@ -258,6 +258,125 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A numbering tab reaches the first stop past the end of its label and before w:ind left of the
+  level's own stops AND the paragraph's, where docx4j read only the level's. Measured on a corpus
+  CV whose bulleted paragraphs are w:ind left 993 hanging 567 with their own w:tab w:val="left"
+  w:pos="709" over a level whose only stop is w:tab w:val="num" w:pos="786": Word sets the text of
+  those lines at 72.74 and 75.86 - the 709 stop, 35.45pt from a 37.28pt text origin - where docx4j
+  set it at 76.50 and 79.56, the level's 786; it is now 72.65 and 75.71. A w:val="num" stop needs
+  no rule of its own. The two that paragraph carries are dropped by the filters that were already
+  there (-996 is behind the label, 1548 is past w:ind left), and where one is reachable Word takes
+  it like any other: measured on a second document whose paragraphs carry w:tab w:val="num"
+  w:pos="720" under w:ind left 870, Word's text is at 72.02 and ours, which was at 79.50, is at
+  72.00. For deciding which stop the tab reaches - and only for that - the label counts as the
+  wider of its measurement and the estimate of 90 twips a character, because a bullet is drawn in
+  a substitute face: measured on a specification whose level is w:ind left 1800 hanging 360 with a
+  Courier New "o" bullet and whose paragraphs carry a left stop at 1560, the estimate ends the
+  label at 1530 and would take that stop, where the glyph is 144 twips wide, ends at 1584, and
+  Word goes on to w:ind left - 12pt to the right of the stop. Where the bullet's own font is not
+  on the machine neither reading is Word's, and a stop inside the difference is still decided
+  wrongly: Word's Symbol arrow is 0.987 em = 218 twips at 11pt and ends past a stop at 1548 that
+  the 0.838 em substitute, ending 11 twips short of it, does not reach (CR-001 batch 48).
+- A table of contents' dot leader is as wide as the gap Word leaves it, and prefers no width of
+  its own: its glue was minimum 12pt / optimum 40pt, so an entry with less than 12pt of room for
+  its leader could not be set on one line at all and FOP's line breaker broke it in two. Measured
+  on Word's PDF of a 222-page report, its own leader runs are 7.55pt to 436.82pt wide (282 runs
+  over twelve pages, median 148.13): 35 of them are narrower than the 40pt optimum and four
+  narrower than the 12pt minimum. With the glue at 0 / 0 / 100% our runs narrower than 12, 20,
+  31.25 and 40pt are 4, 15, 31 and 35 against Word's 4, 15, 31 and 35, where before they were 2,
+  3, 8 and 9 - the rest having been broken in two. Over three corpora that is 248 more matched
+  lines, one page mover (a 15-page document we set in 18 pages is now 16) and no loss on any
+  class (CR-001 batch 48).
+- A VML text box of layout-flow:vertical has its text turned on its side and laid along the box's
+  height, as Word lays it, where docx4j laid it out unrotated and measured it along the box's
+  width. The property is on the v:textbox and not on the shape (the shape's style carries the
+  position and the size), and it was read nowhere at all: measured on a corpus document whose
+  16.5pt-wide legend beside a table has a 7.2pt inset, the measure was 9.3pt - narrower than a
+  character of its 10pt text - so its 17-character label was set one character to a line, where
+  Word lays it along the 93.75pt height in one. The box is now an fo:block-container with
+  reference-orientation -90 (Word's tbRl) or, with mso-layout-flow-alt:bottom-to-top, 90 (btLr,
+  which is what w:textDirection btLr already gives a table cell), and a rotated reference area
+  is given both of its dimensions - the inline-progression-dimension is the box's height and the
+  block-progression-dimension its width - because FOP otherwise lays the text on a line of no
+  measure. Measured on the same document: the label is one rotated run of 17 glyphs
+  (CR-001 batch 48).
+- A left paragraph border stands against the paragraph's leftmost text edge, as Word stands it,
+  where docx4j drew it through the first line of a hanging indent. The FO box model measures a
+  block's border and padding from its content rectangle, whose start edge is the start-indent: a
+  hanging indent puts the content edge at w:ind left and runs the first line back to the left of
+  it with a negative text-indent, so the bar was drawn between the first line's start and the
+  rest of its text. Measured on a probe paragraph with w:ind left 1134 hanging 1134, a 2.25pt
+  left border and w:space 8: its lines open at 72.0 and 128.7 and the bar was stroked down
+  x=118.46, between the two. Word, measured on its own PDF of that shape, draws the bar 9.36 to
+  11.52pt to the left of the first line's own x. The correction is the padding alone - the
+  indents are what put the text where Word puts it - and it is the hanging indent, or for a
+  numbered paragraph the label column, that the padding now carries as well as w:space: the bar
+  is stroked down x=61.76, which is 9.12 to 11.36pt left of the first line, and neither text
+  edge moves; against Word's own PDF of the probe, every one of its five cases is within 0.22pt.
+  The bar never stands left of the text area's own start edge, which is Word's clamp: measured
+  on three corpus documents whose hanging indent is wider than their w:ind left - one of them
+  with no w:ind left at all - Word hangs no first line outside the area and sets every line at
+  its edge, the bar against that. Nothing changes
+  without a left border, nor where a w:firstLine indents the first line forward (w:ind left is
+  then the leftmost edge), nor for a right-to-left paragraph, whose start edge is the other one
+  (CR-001 batch 48).
+- Two corrections to where a line may break, both from the same gap between Word and the Unicode
+  version Apache FOP's line-break table was generated from. A line now breaks after a hyphen
+  followed by digits, where UAX #14's rule LB25 (HY x NU) keeps the two together: FOP's table holds
+  that pair as an indirect break, which inside a word is no break at all, so a date, a range of
+  years or a part number was one unbreakable token where Word breaks after the hyphen - and the
+  same hyphen before a letter (HY x AL, a direct break) already broke. Measured on a probe at a
+  120.0pt measure: "1997-05-12" is set as "1997-" and "05-12". And a line no longer breaks between
+  a letter and a per-cent sign, where Word does not: the table predates Unicode 8.0's LB24,
+  (AL|HL) x (PR|PO), and held that pair as a direct break, so "VAT%" was set as "VAT" and "%" - a
+  per-cent sign after a digit never broke, NU x PO being indirect. The hyphen rule is applied by
+  flipping FOP's own pair table, because FOP decides a word's break opportunities while it builds
+  the Knuth elements and a break it does not see is a box it does not split; the pair is the one
+  entry changed, and the write is process-wide, so it is done only from the Word layout path and
+  only while docx4j.convert.out.fo.wordLayout.breakOpportunities is on (the default). An en dash
+  and the other dashes are untouched: measured on FOP's table, only U+002D is class HY, and a
+  non-breaking hyphen is GL. The rule also applies where the token is split across two runs
+  (CR-001 batch 48).
+- A numbering label's leader now starts where Word starts it. Word begins a leader run on a whole
+  multiple of its step measured from the page's left edge, and the distance to a label's leader has
+  four terms: the region body's x, the label area's own x offset, the label block's start-indent and
+  the label itself. Two of them do not exist while the label's line is being built - FOP places the
+  label area later, in the list item - so the phase was computed from 80.349pt where the run stands
+  at 99.120, and every numbering-tab leader opened 0.768pt (3.2 cells of the grid) to the left of
+  Word's. It is applied where the label area exists now: measured on the leader probes, runs that
+  opened 0.29 to 0.77pt out of place open within 0.05pt of Word's (99.840 against 99.888, 100.800
+  against 100.850, 97.200 against 97.248), and the same correction is worth one leader character
+  where the step is wide enough for the phase to swallow one. A leader inside a table cell is
+  closer, 1.346pt out to 0.626pt, but not right: a list item in a cell carries the cell's own x,
+  which is a fifth term (CR-001 batch 48).
+- Every kind of numbering-tab leader is painted as a run of its own character on Word's 1/300 inch
+  grid, where docx4j drew a rule for three of the five and the wrong character for a fourth.
+  Measured on a probe with one kind per level, all of Word's runs in ArialMT at the label's size:
+  a dot steps 3.12pt (13 cells of the grid) for 14 characters, a hyphen 3.60 (15) for 12, an
+  underscore 6.24 (26) for 7, w:leader="heavy" the same underscore run glyph for glyph and
+  position for position, and middleDot U+00B7 at the hyphen's 3.60 and not the dot's 3.12. Ours
+  asked FOP for leader-pattern="rule" for hyphen, underscore and heavy - a drawn line with nothing
+  in the PDF's text layer, so the label stood alone and the paragraph's text was extracted as a
+  second line - and for a full stop for middleDot. All five steps are now Word's and the
+  underscore and heavy runs are Word's exactly. The leader's size is also rounded to the same
+  grid, because Word draws at the rounded size and the step follows from it: an 8pt label is
+  written 7.92, an 11pt one 11.04 and a 16pt one 16.08, and at a nominal 11pt Arial's underscore
+  is 25.49 cells and so steps 6.00 where Word's 11.04pt gives 25.58 and so 26 = 6.24. The
+  paragraph-tab path is unchanged: Word draws those leaders in the paragraph's own face
+  (CR-001 batch 48).
+- A numbering tab's leader is drawn in Arial at the label's size, which is neither the paragraph's
+  font nor the label's face. Measured on a probe whose level states a size the paragraph does not:
+  under a 16pt Times New Roman paragraph an 8pt level gives ArialMT at 7.92pt stepping 2.16pt, 21
+  dots, where Word draws the label itself in Liberation Serif; under an 8pt paragraph a 16pt level
+  gives ArialMT 16.08pt stepping 4.56pt, 8 dots; and an 8pt Arial level under 16pt Times New Roman
+  gives ArialMT 7.92pt again. docx4j gave the leader the paragraph's face and size, so those runs
+  stepped 4.08, 1.92 and 4.08 with 10, 21 and 10 dots; all three steps and counts are now Word's.
+  The step is the character's advance rounded to Word's 1/300 inch grid, so the face and the size
+  decide it: Arial's 569/2048 em period is 9.26 cells at 8pt (Word's 9 = 2.16pt) and 18.52 at 16pt
+  (Word's 19 = 4.56pt). Arial is asked of the font mapper, so an environment without it draws the
+  leader in Arial's metric clone and the step is still Word's. A paragraph tab's leader is
+  unaffected: Word draws those in the paragraph's own face, measured on the same day
+  (CR-001 batch 48).
 - The numbering tab now paints the dot leader of the stop it reaches, from the end of the label
   to that stop, in a table cell and in body text alike. Measured on a probe whose level carries
   w:ind left 2880 hanging 2520 and one w:leader="dot" left stop at 1440 twips: Word sets the label
@@ -265,11 +384,10 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
   to 146.690, and the paragraph's first line of text at 149.830, which is the stop; in the body,
   the label at 90.048, the same fourteen dots from 99.888 to 140.448 and the text at 144.070.
   docx4j painted nothing there. The leader is written into the label's own block with the advance
-  as its length and is drawn in the paragraph's face and size, not the label's, because Word's step
-  is the character's advance rounded to 1/300 inch and the paragraph's face is what gives 3.120pt
-  (the label's own 11pt face would give 2.880 and fifteen dots). A stop with no w:leader, and a
-  level with no stop at all, still paint nothing, and neither does an advance shorter than one cell
-  of the grid - over which Word's w:suff separator space is still written (CR-001 batch 47).
+  as its length; the face and size it is drawn in are the next bullet's. A stop with no w:leader,
+  and a level with no stop at all, still paint nothing, and neither does an advance shorter than
+  one cell of the grid - over which Word's w:suff separator space is still written
+  (CR-001 batch 47).
 - A word longer than the measure is now broken in body text as it already was in a table cell:
   at the last character that fits, with no hyphen. Word's rule is the measure itself, measured on
   a probe at Liberation Serif 12pt on a 481.0pt measure - a token 48.0pt over is set to 537.14,

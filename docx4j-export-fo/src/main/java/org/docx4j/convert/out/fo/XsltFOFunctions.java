@@ -102,6 +102,7 @@ public class XsltFOFunctions {
 
     	applySdtContainerMargins(docfrag, tag);
     	resetContainerIndents(docfrag, tag);
+    	borderAgainstHangingIndent(docfrag);
     	wrapInBidiBlockContainer(docfrag);
 
     	return docfrag;
@@ -122,6 +123,7 @@ public class XsltFOFunctions {
 
     	applySdtContainerMargins(docfrag, tag);
     	resetContainerIndents(docfrag, tag);
+    	borderAgainstHangingIndent(docfrag);
     	wrapInBidiBlockContainer(docfrag);
 
     	return docfrag;
@@ -655,6 +657,9 @@ public class XsltFOFunctions {
 
     	Element block = (Element)df.getFirstChild();
 
+    	// the indents are final here, which is what the border rule reads
+    	borderAgainstHangingIndent(df);
+
     	if (foContainsStretchingLeader(block)) {
 			// ptab to leader implementation:
 			// for leader to work as expected in fop, we need text-align-last; see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
@@ -1171,7 +1176,7 @@ public class XsltFOFunctions {
 			if (pPr!=null) {
 				// Ignore paragraph borders once inside the container
 				boolean ignoreBorders = !sdt;
-				createFoAttributes(wmlPackage, pPr, ((Element)foBlockElement), indentHandledByNumbering, ignoreBorders );				
+				createFoAttributes(wmlPackage, pPr, ((Element)foBlockElement), indentHandledByNumbering, ignoreBorders );
 			}
 						// Hints for WordLayoutFixups (removed there, so FOP never sees them): the
 			// paragraph style, and whether w:contextualSpacing applies, which needs the
@@ -2209,6 +2214,26 @@ public class XsltFOFunctions {
 					: labelWidthTwips(wmlPackage, foListItemLabelBody,
 							foListItemLabelBody.getTextContent(), 90 * numChars);
 			int numWidth = numChars == 0 ? 0 : measured[0];
+			/* For deciding which tab stop the numbering tab reaches, the label is as wide as
+			 * the WIDER of the estimate and the measurement: a stop behind the label's end is
+			 * one the tab has already passed, and a bullet's estimate can be narrower than
+			 * the glyph.  Measured on a corpus specification whose level 1 is w:ind left 1800
+			 * hanging 360 with a Courier New "o" bullet and whose paragraphs carry their own
+			 * left stop at 1560: the estimate puts the label's end at 1530 and would take
+			 * that stop, where the glyph is 144 twips wide, ends at 1584, and Word goes on to
+			 * w:ind left - its text is 12pt to the right of the stop.
+			 *
+			 * Where the bullet's own font is not on the machine, neither reading is Word's,
+			 * and a stop inside the difference is decided wrongly: measured on a CV whose
+			 * level is w:ind left 1713 hanging 360 with a Symbol arrow bullet and whose
+			 * paragraphs carry a stop at 1548, Word's glyph is 0.987 em = 218 twips at 11pt
+			 * and ends at 1571, past the stop, where the substitute this machine draws is
+			 * 0.838 em = 184 twips and ends at 1537, 11 twips short of it.  A wider bound
+			 * would not be one: Symbol's widest glyph is 1.042 em and Wingdings' 1.443.
+			 * @since 17.1.1 (CR-001 batch 48 item 6) */
+			int stopWidth = numChars == 0 ? 0 : Math.max(numWidth,
+					labelWidthTwips(wmlPackage, foListItemLabelBody,
+							foListItemLabelBody.getTextContent(), 90 * numChars)[0]);
 			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth, measured[1]);
 			// -1 in the hanging case where the label fits, so the hanging indent stands
 			indent.setXslFOListBlock(foListBlock, pdbs);
@@ -2239,8 +2264,9 @@ public class XsltFOFunctions {
 			if (pdbs < 0) {
 				int numberPosition = indent.getNumberPosition();
 				int indLeft = numberPosition + hangingTwips(indent);
-				int labelEnd = numberPosition + numWidth;
-				org.docx4j.wml.CTTabStop tabStop = numberingTabStop(triple, labelEnd, indLeft);
+				int labelEnd = numberPosition + stopWidth;
+				org.docx4j.wml.CTTabStop tabStop = numberingTabStop(triple, labelEnd, indLeft,
+						pPr, pPrDirect);
 				if (tabStop != null) {
 					int stop = tabStop.getPos().intValue();
 					foBlockElement.setAttribute("text-indent",
@@ -2248,7 +2274,7 @@ public class XsltFOFunctions {
 					/* and Word paints that stop's own w:leader over the advance, from the
 					 * end of the label to the stop (appendNumberingTabLeader) */
 					appendNumberingTabLeader(document, foListItemLabelBody,
-							tabStop, stop - labelEnd);
+							tabStop, stop - labelEnd, wmlPackage);
 				}
 			}
 
@@ -2384,7 +2410,7 @@ public class XsltFOFunctions {
 			// the label measured in its own face and size (labelWidthTwips), with §2.8's
 			// 90 twips a character as the fallback
 			int gap = labelGapTwips(wmlPackage, indent, indOut==null ? null : indOut[0],
-					pPrDirect, labelWidthTwips(wmlPackage, label, text, 90 * text.length())[0],
+					pPr, pPrDirect, labelWidthTwips(wmlPackage, label, text, 90 * text.length())[0],
 					triple);
 			if (gap > 0 && WordLayoutFixups.isEnabled()) {
 				Element leader = document.createElementNS(XSL_FO, "fo:leader");
@@ -2410,12 +2436,12 @@ public class XsltFOFunctions {
 	 *  the label's width reaches (as createListBlock computes it for
 	 *  provisional-distance-between-starts). */
 	private static int labelGapTwips(WordprocessingMLPackage wmlPackage, Indent indent,
-			PPrBase.Ind resolved, PPr pPrDirect, int numWidth, NumberingResult triple) {
+			PPrBase.Ind resolved, PPr pPr, PPr pPrDirect, int numWidth, NumberingResult triple) {
 
 		if (indent.isHanging() && resolved!=null && resolved.getHanging()!=null
 				&& resolved.getHanging().intValue() >= numWidth) {
 			int stop = numberingTabStopTwips(triple, indent.getNumberPosition() + numWidth,
-					indent.getNumberPosition() + resolved.getHanging().intValue());
+					indent.getNumberPosition() + resolved.getHanging().intValue(), pPr, pPrDirect);
 			if (stop > 0) return stop - indent.getNumberPosition();
 			return resolved.getHanging().intValue();
 		}
@@ -2508,21 +2534,44 @@ public class XsltFOFunctions {
 		return ind != null && ind.getHanging() != null ? ind.getHanging().intValue() : 0;
 	}
 
-	private static int numberingTabStopTwips(NumberingResult triple, int labelEnd, int indLeft) {
-		org.docx4j.wml.CTTabStop stop = numberingTabStop(triple, labelEnd, indLeft);
+	private static int numberingTabStopTwips(NumberingResult triple, int labelEnd, int indLeft,
+			PPr pPr, PPr pPrDirect) {
+		org.docx4j.wml.CTTabStop stop = numberingTabStop(triple, labelEnd, indLeft, pPr, pPrDirect);
 		return stop == null ? 0 : stop.getPos().intValue();
 	}
 
-	/** The stop {@link #numberingTabStopTwips} picks, or null: the first of the level's own
-	 *  stops past the end of the label and before {@code w:ind} left.  The stop itself,
-	 *  because its {@code w:leader} is painted over the numbering tab
-	 *  ({@link #appendNumberingTabLeader}).  @since 17.1.1 (CR-001 batch 47 item 5b) */
+	/** The stop {@link #numberingTabStopTwips} picks, or null: the first stop past the end
+	 *  of the label and before {@code w:ind} left, of the level's own <b>and the
+	 *  paragraph's</b>.  The stop itself, because its {@code w:leader} is painted over the
+	 *  numbering tab ({@link #appendNumberingTabLeader}).
+	 *
+	 *  <p>The paragraph's stops were not read until 17.1.1: measured on a corpus CV whose
+	 *  bulleted paragraphs are {@code w:ind w:left="993" w:hanging="567"} with their own
+	 *  {@code w:tab w:val="left" w:pos="709"} (and two {@code w:val="num"} stops at -996
+	 *  and 1548) over a level whose only stop is {@code w:tab w:val="num" w:pos="786"},
+	 *  Word puts the text of those lines at x=72.74 - the paragraph's 709 stop, 35.45pt
+	 *  from a 37.28pt text origin - where we put it at 76.50, the level's 786.  The two
+	 *  {@code num} stops need no rule of their own: -996 is behind the label and 1548 is
+	 *  past {@code w:ind} left, so the filters below drop both, and what is left is the
+	 *  first stop either of them declares.  @since 17.1.1 (CR-001 batch 47 item 5b, the
+	 *  paragraph's own stops in batch 48 item 6) */
 	private static org.docx4j.wml.CTTabStop numberingTabStop(NumberingResult triple, int labelEnd,
-			int indLeft) {
-		if (triple == null || triple.getLvl() == null || triple.getLvl().getPPr() == null) return null;
-		org.docx4j.wml.Tabs tabs = triple.getLvl().getPPr().getTabs();
-		if (tabs == null) return null;
+			int indLeft, PPr pPr, PPr pPrDirect) {
 		org.docx4j.wml.CTTabStop best = null;
+		best = firstTabStopBetween(triple == null || triple.getLvl() == null ? null
+				: (triple.getLvl().getPPr() == null ? null : triple.getLvl().getPPr().getTabs()),
+				labelEnd, indLeft, best);
+		org.docx4j.wml.Tabs paragraph = pPr != null && pPr.getTabs() != null ? pPr.getTabs()
+				: (pPrDirect == null ? null : pPrDirect.getTabs());
+		best = firstTabStopBetween(paragraph, labelEnd, indLeft, best);
+		return best;
+	}
+
+	/** The earliest stop of {@code tabs} which lies past {@code labelEnd} and before
+	 *  {@code indLeft}, against a stop already found.  @since 17.1.1 */
+	private static org.docx4j.wml.CTTabStop firstTabStopBetween(org.docx4j.wml.Tabs tabs,
+			int labelEnd, int indLeft, org.docx4j.wml.CTTabStop best) {
+		if (tabs == null) return best;
 		for (org.docx4j.wml.CTTabStop stop : tabs.getTab()) {
 			if (stop == null || stop.getPos() == null) continue;
 			if (stop.getVal() == org.docx4j.wml.STTabJc.CLEAR) continue;
@@ -2556,10 +2605,10 @@ public class XsltFOFunctions {
 	 * {@link WordLayoutFixups#HINT_TOC_LEADER}: that mark is what the grid pass looks for,
 	 * and it is not {@code HINT_TAB}, which marks a tab the line manager gives its width).
 	 *
-	 * <p>The characters are drawn in the <b>paragraph's</b> face and size, which is what
-	 * every other tab leader is drawn in, and not the label's; that is settled by
-	 * {@code WordLayoutFixups.numberingTabLeaderFont}, where both blocks are finished, and
-	 * it decides the step and through it the count.
+	 * <p>The characters are drawn in <b>Arial</b> at the <b>label's</b> size, which is
+	 * neither the paragraph's font nor the label's face - see
+	 * {@link #numberingTabLeaderFont}, which carries the readings. That decides the step
+	 * and through the step the count.
 	 *
 	 * <p>The leader goes in the <b>label's</b> block, and its length is fixed, because
 	 * that is where the advance is: the label runs from the level's number position, the
@@ -2573,21 +2622,178 @@ public class XsltFOFunctions {
 	 * @since 17.1.1 (CR-001 batch 47 item 5b)
 	 */
 	private static void appendNumberingTabLeader(Document document, Element labelBody,
-			org.docx4j.wml.CTTabStop stop, int advanceTwips) {
+			org.docx4j.wml.CTTabStop stop, int advanceTwips,
+			WordprocessingMLPackage wmlPackage) {
 
 		if (!WordLayoutFixups.isEnabled() || labelBody == null || stop == null) return;
 		if (advanceTwips <= 0) return;
-		String pattern = leaderPattern(stop.getLeader());
-		if ("space".equals(pattern)) return;            // w:leader="none", or none declared
+		String glyph = numberingLeaderGlyph(stop.getLeader());
+		if (glyph == null) return;                      // w:leader="none", or none declared
 		Element leader = document.createElementNS(XSL_FO, "fo:leader");
 		leader.setAttribute("leader-length", UnitsOfMeasurement.twipToBest(advanceTwips));
-		leader.setAttribute("leader-pattern", pattern);
+		/* Every kind is a run of that kind's own character, so the leader carries the
+		 * character and FOP repeats it - not "rule" for the three the paragraph-tab path
+		 * draws as a rule.  See numberingLeaderGlyph. */
+		leader.setAttribute("leader-pattern", "use-content");
+		leader.appendChild(document.createTextNode(glyph));
 		// the XSL FO property for Word's own anchoring; FOP 2.11 reads it in its RTF
 		// renderer alone, so the grid is applied by the line manager (see the javadoc)
 		leader.setAttribute("leader-alignment", "reference-area");
 		leader.setAttribute(WordLayoutFixups.HINT_TOC_LEADER,
 				stop.getLeader() == null ? "dot" : stop.getLeader().value());
+		numberingTabLeaderFont(leader, labelBody, wmlPackage);
 		labelBody.appendChild(leader);
+	}
+
+	/**
+	 * The character Word repeats for a numbering tab's {@code w:leader}, or null where it
+	 * paints nothing.
+	 *
+	 * <p>Every kind is painted as a run of <b>glyphs</b> on Word's 1/300 inch grid, in
+	 * Arial at the label's size ({@link #numberingTabLeaderFont}) - not as a rule.
+	 * Measured on the {@code numbering-leader-kinds} golden (Word 365, fields off; five
+	 * numbered paragraphs, one kind each on the level's 1440-twip stop, the label drawn in
+	 * Aptos 11.04pt and the text in Liberation Serif 12pt):</p>
+	 *
+	 * <table><caption>Word's own leader runs, all ArialMT 11.04pt</caption>
+	 * <tr><th>{@code w:leader}</th><th>character</th><th>step</th><th>cells</th><th>count</th><th>x</th></tr>
+	 * <tr><td>dot</td><td>{@code .}</td><td>3.12</td><td>13</td><td>14</td><td>99.888 .. 140.448</td></tr>
+	 * <tr><td>hyphen</td><td>{@code -}</td><td>3.60</td><td>15</td><td>12</td><td>100.850 .. 140.450</td></tr>
+	 * <tr><td>underscore</td><td>{@code _}</td><td>6.24</td><td>26</td><td>7</td><td>99.888 .. 137.329</td></tr>
+	 * <tr><td>heavy</td><td>{@code _}</td><td>6.24</td><td>26</td><td>7</td><td>99.888 .. 137.329</td></tr>
+	 * <tr><td>middleDot</td><td>U+00B7</td><td>3.60</td><td>15</td><td>12</td><td>100.850 .. 140.450</td></tr>
+	 * </table>
+	 *
+	 * <p>So <b>heavy is an underscore</b>, glyph for glyph and position for position - the
+	 * two rows are identical - and <b>middleDot is a middle dot</b> and not a full stop,
+	 * stepping 3.60 where the dot steps 3.12 because Arial's middle dot advances 3.676pt
+	 * at that size against the period's 3.067.</p>
+	 *
+	 * <p>docx4j mapped hyphen, underscore and heavy to {@code leader-pattern="rule"}, which
+	 * draws a line and no characters - and a rule has no repeating unit, so
+	 * {@code WordListItemLayoutManager.leaderPaints} reported nothing painted and the
+	 * {@code w:suff} separator space was written over it as well; and it mapped middleDot
+	 * to the full stop. Every kind now names its own character and
+	 * {@code leader-pattern="use-content"} repeats it, which is the same
+	 * {@code FilledArea} the dot pattern builds, so the grid pass
+	 * ({@code WordLineLayoutManager.gridTocLeaders}) and {@code leaderPaints} both read it
+	 * as they already read the dots.</p>
+	 *
+	 * <p>The <b>paragraph</b>-tab path ({@link #leaderPattern}) is deliberately left alone:
+	 * it is not the same construct. On the {@code tab-leader-kinds} golden Word draws every
+	 * paragraph-tab leader in the paragraph's own face (Calibri 11.04pt there, dots stepping
+	 * 2.88, hyphens 3.36, underscores 5.52), where a numbering tab's is always Arial's.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 2)
+	 */
+	private static String numberingLeaderGlyph(org.docx4j.wml.STTabTlc leader) {
+		if (leader == null) return null;
+		switch (leader) {
+		case DOT:
+			return ".";
+		case MIDDLE_DOT:
+			// U+00B7 MIDDLE DOT, built from its code point so the source stays ASCII
+			return String.valueOf((char) 0x00B7);
+		case HYPHEN:
+			return "-";
+		case UNDERSCORE:
+		case HEAVY:
+			return "_";
+		default:
+			return null;                                // w:leader="none"
+		}
+	}
+
+	/**
+	 * A numbering tab's leader is drawn in <b>Arial</b>, at the <b>label's</b> size.
+	 *
+	 * <p>Measured on the {@code tab-leader-sizes} golden (Word 365, fields off, three
+	 * numbered paragraphs whose level states a {@code w:sz} the paragraph does not):</p>
+	 *
+	 * <table><caption>Word's own leader runs</caption>
+	 * <tr><th>level</th><th>paragraph</th><th>label drawn in</th><th>leader drawn in</th><th>step</th><th>dots</th></tr>
+	 * <tr><td>8pt, no face</td><td>16pt Times New Roman</td><td>LiberationSerif 7.92</td><td><b>ArialMT 7.92</b></td><td>2.16</td><td>21</td></tr>
+	 * <tr><td>16pt, no face</td><td>8pt Times New Roman</td><td>LiberationSerif 16.08</td><td><b>ArialMT 16.08</b></td><td>4.56</td><td>8</td></tr>
+	 * <tr><td>8pt Arial</td><td>16pt Times New Roman</td><td>ArialMT 7.92</td><td><b>ArialMT 7.92</b></td><td>2.16</td><td>21</td></tr>
+	 * </table>
+	 *
+	 * <p>So the size is the <b>label's</b> and not the paragraph's - which is what
+	 * CR-001 batch 47 item 5(b) gave it, and the inverse of Word - and the face is
+	 * <b>Arial</b> whatever the label is set in: in the first two rows Word draws the
+	 * label in Liberation Serif and the dots in Arial in the same run. The same holds on
+	 * the {@code tab-leader-in-cell-2} golden, whose level names neither face nor size:
+	 * the label is Calibri 11.04pt, the dots ArialMT 11.04pt stepping 3.12. And Arial is
+	 * this construct's own: on the {@code tab-leader-kinds} golden, where the leaders
+	 * belong to <em>paragraph</em> tabs, Word draws every one of them in the paragraph's
+	 * own Calibri (dots stepping 2.88, hyphens 3.36, underscores 5.52) - so a paragraph
+	 * tab's leader and a numbering tab's leader are not the same construct.</p>
+	 *
+	 * <p>The step follows from the face and the size and not from this: Word steps a
+	 * leader run on the character's advance rounded to 1/300 inch, which the line manager
+	 * applies ({@code WordLineLayoutManager.gridTocLeaders}). Arial's period advance is
+	 * 569/2048 em, so 8pt gives 2.2226pt = 9.26 cells and Word's 9 = 2.16pt; 16pt gives
+	 * 4.4453 = 18.52 cells and Word's 19 = 4.56pt; 11.04pt gives 3.0672 = 12.78 cells and
+	 * Word's 13 = 3.12pt. (The sizes in Word's PDF are themselves on that grid - 8 becomes
+	 * 7.92, 16 becomes 16.08, 11 becomes 11.04, each an exact multiple of 0.24pt - which
+	 * is a fact about how Word writes a PDF and makes no difference to the step.)</p>
+	 *
+	 * <p>Arial is asked of the {@link org.docx4j.fonts.Mapper}, so an environment without
+	 * it draws the leader in Arial's metric clone and the advance, and so the step, is
+	 * still Word's; the face is registered as a last-resort fallback for the same reason
+	 * {@code RunFontSelector} registers the faces it names - the FOP configuration is
+	 * built from the fonts the FO mentions, and a face nothing else mentions would
+	 * otherwise be reported "not found" and drawn in a default font.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 1; it corrects batch 47 item 5b)
+	 */
+	private static void numberingTabLeaderFont(Element leader, Element labelBody,
+			WordprocessingMLPackage wmlPackage) {
+
+		double sizePt = gridSizePt(TableWriter.sizeFor(labelBody));
+		if (sizePt > 0) {
+			// format() already carries the unit
+			leader.setAttribute("font-size", org.docx4j.fonts.WordLineMetrics.format(sizePt));
+		}
+		try {
+			org.docx4j.fonts.Mapper mapper = wmlPackage == null ? null : wmlPackage.getFontMapper();
+			if (mapper == null) return;
+			org.docx4j.fonts.PhysicalFont arial = mapper.get(LEADER_FONT);
+			if (arial == null || arial.getName() == null) return;
+			mapper.registerLastResortFallback(arial);
+			leader.setAttribute("font-family", arial.getName());
+		} catch (RuntimeException e) {
+			log.debug("Numbering tab leader font not resolved (" + e.getMessage()
+					+ "); the label's own face stands");
+		}
+	}
+
+	/** The face Word draws a numbering tab's leader in, whatever the label is set in.
+	 *  @see #numberingTabLeaderFont */
+	private static final String LEADER_FONT = "Arial";
+
+	/** One 1/300 inch, in points: the grid Word's layout - and, measured, the font size it
+	 *  writes into a PDF - works in. */
+	private static final double GRID_PT = 0.24;
+
+	/**
+	 * A font size rounded to Word's 1/300 inch grid, which is the size Word draws at.
+	 *
+	 * <p>Measured on the two leader goldens: an 8pt label is written 7.92, an 11pt label
+	 * 11.04, a 12pt one 12.00 and a 16pt one 16.08 - 33, 46, 50 and 67 cells, every one
+	 * exact. It matters because the leader's step is the character's advance rounded to the
+	 * same grid, so a step can turn on the size's own rounding: Arial's underscore is
+	 * 1139/2048 em, which at Word's 11.04pt is 6.140pt = 25.58 cells and so Word's
+	 * <b>26</b> = 6.24pt, where at a nominal 11pt it is 6.118 = 25.49 cells and 25 = 6.00pt.
+	 * On {@code numbering-leader-kinds} that was the whole of the difference between our
+	 * underscore run and Word's. The other kinds round the same either way (the dot 12.78
+	 * or 12.79 cells, the hyphen 15.26 or 15.32).</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 2)
+	 */
+	private static double gridSizePt(double sizePt) {
+		if (sizePt <= 0) return sizePt;
+		long cells = Math.round(sizePt / GRID_PT);
+		return cells > 0 ? cells * GRID_PT : sizePt;
 	}
 
 	/**
@@ -3006,9 +3212,19 @@ public class XsltFOFunctions {
 		if (isTocDotLeader(effectivePPr)
 				&& (!realTabs() || !tocTabStopsShort(context, effectivePPr, precedingTabs, followingTabs))) {
 			Element foLeader = d.createElementNS(XSL_FO, "fo:leader");
-			foLeader.setAttribute("leader-length.minimum",  "12pt");
+			/* The leader is as wide as the gap Word leaves, and no width of its own is
+			 * preferred: measured on Word's PDF of a 222-page corpus report, its TOC
+			 * leader runs are 7.55pt to 436.82pt wide (282 runs over twelve pages,
+			 * median 148.13), of which 35 are narrower than the 40pt this asked for as
+			 * its optimum and four narrower than the 12pt it asked for as a minimum - so
+			 * an entry whose leader had less than 12pt of room could not be set on one
+			 * line at all, and Knuth broke it in two.  A natural width of zero with the
+			 * whole remainder to stretch into is what "fill the gap" means, and the
+			 * justified last line still puts the number at the stop.
+			 * @since 17.1.1 (CR-001 batch 48 item 5) */
+			foLeader.setAttribute("leader-length.minimum",  "0pt");
 			foLeader.setAttribute("leader-length.maximum",  "100%");
-			foLeader.setAttribute("leader-length.optimum",  "40pt");
+			foLeader.setAttribute("leader-length.optimum",  "0pt");
 			foLeader.setAttribute("leader-pattern",  "dots");
 			if (fontFamily.length()>0) foLeader.setAttribute("font-family", fontFamily);
 			/* It is not a tab the line manager lays out - the justification gives it its
@@ -3511,6 +3727,143 @@ public class XsltFOFunctions {
     	
 	}
 	
+	/** The attribute a border's {@code w:space} becomes on the block ({@code PBorderLeft}). */
+	private static final String PADDING_LEFT = "padding-left";
+
+	/**
+	 * Word stands a left paragraph border against the paragraph's <b>leftmost</b> text
+	 * edge - min(w:ind left, left - hanging) - less the border's {@code w:space}, and a
+	 * hanging indent's first line is that leftmost edge.
+	 *
+	 * <p>The FO box model measures a block's border and padding from its <em>content</em>
+	 * rectangle, whose start edge is the start-indent: a block with a hanging indent puts
+	 * its content edge at {@code w:ind left} and runs the first line back over the border
+	 * with a negative text-indent, so the bar was drawn between the first line's start and
+	 * the rest of its text instead of to the left of both.  Measured on a plain FOP render
+	 * of the two shapes (start-indent 56.7pt, text-indent -56.7pt, padding-start 8pt,
+	 * 2.25pt border): the lines open at 70.900 and 127.600 and the bar is stroked down
+	 * x=117.350, in the middle of the first line; the same block with the padding carrying
+	 * the hanging indent as well (64.7pt) leaves both lines where they were and strokes the
+	 * bar down x=60.650, which is the leftmost text edge less the 8pt space.  Word's own
+	 * PDF of that paragraph (w:ind left 1134 hanging 1134, w:space 8, w:sz 18) draws its
+	 * first line at 70.82, its later lines at 127.49 and its bar at 59.30..61.46.</p>
+	 *
+	 * <p>So the correction is the padding alone: the start-indent and the text-indent are
+	 * what put the text where Word puts it and they are not touched.  Nothing happens
+	 * without a left border, or where the first line is indented <em>forward</em> by a
+	 * {@code w:firstLine} - then {@code w:ind left} is the leftmost edge and the bar
+	 * already stands against it.  A right-to-left paragraph is left alone: the border FO
+	 * names are the absolute sides, where its start edge is the right one, and what Word
+	 * does there is unmeasured.</p>
+	 *
+	 * <p>Word's own PDF of the {@code border-hanging} probe (2026-09-18): with
+	 * {@code w:ind left 1134 hanging 1134}, {@code w:space} 8 and {@code w:sz} 18 it puts
+	 * the first line at 72.024, the later lines at 128.690 and the bar at 60.504..62.664;
+	 * the same paragraph numbered, the label at 72.024 and the bar in the same place; the
+	 * {@code w:firstLine} and no-first-line controls at 117.170..119.330; and with
+	 * {@code w:space} 0, 68.424..70.584.</p>
+	 *
+	 * <p><b>Never further left than the text area's own start edge</b>, which is Word's
+	 * clamp: measured on three corpus documents whose hanging indent is wider than their
+	 * {@code w:ind left}, so that the first line would hang to the <em>left</em> of the
+	 * area - a cell's text edge in one, the page's left margin in the others - Word hangs
+	 * nothing and sets every line at the area's edge, its bar against that edge less the
+	 * space.  One of them (9 such paragraphs, hanging 709 twips and no {@code w:ind
+	 * left}) has Word's bar at x=32.664 with all of its text at 49.46; unclamped, ours
+	 * went to x=-1.105, off the page, our own first line hanging there - the missing
+	 * clamp on the <em>text</em> being a defect of its own, which this one must not
+	 * follow off the page.</p>
+	 *
+	 * <p>It is read off the <b>finished</b> FO rather than the pPr, because the indents
+	 * are still being rewritten while the block is built: a shading container's are
+	 * zeroed after its attributes are set ({@link #resetContainerIndents}), and a
+	 * container whose padding had been shifted for indents it no longer has drew a second
+	 * bar of its own, measured 18pt to the left of the paragraph's on eight headings of a
+	 * corpus document.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 9)
+	 */
+	static void borderAgainstHangingIndent(DocumentFragment docfrag) {
+
+		if (docfrag==null) return;
+		Node first = docfrag.getFirstChild();
+		if (!(first instanceof Element)) return;
+		Element outer = (Element) first;
+
+		Element block = outer;
+		int raw;
+		int contentEdge;
+		if ("list-block".equals(outer.getLocalName())) {
+			/* A numbered paragraph's label stands at the list block's start-indent and
+			 * its body a label column further on, so that column is the shift and the two
+			 * together are the body block's content edge. */
+			Element body = firstFoDescendant(outer, "list-item-body");
+			block = body==null ? null : firstFoDescendant(body, "block");
+			if (block==null) return;
+			int pdbs = twipsOf(outer.getAttribute("provisional-distance-between-starts"));
+			contentEdge = twipsOf(outer.getAttribute(Indent.FO_NAME)) + pdbs;
+			raw = pdbs;
+		} else {
+			// the hanging indent, as the finished FO states it
+			raw = -twipsOf(outer.getAttribute(Indent.FO_NAME_TEXT_INDENT));
+			contentEdge = twipsOf(outer.getAttribute(Indent.FO_NAME));
+		}
+
+		String style = block.getAttribute("border-left-style");
+		if (style==null || style.length()==0 || "none".equals(style)) return;
+		if (Bidi.FO_WRITING_MODE_RTL.equals(block.getAttribute(Bidi.FO_WRITING_MODE_NAME))
+				|| Bidi.FO_WRITING_MODE_RTL.equals(outer.getAttribute(Bidi.FO_WRITING_MODE_NAME))) {
+			return;
+		}
+
+		int shift = Math.min(raw, Math.max(0, contentEdge));
+		if (shift<=0) return;
+
+		double space = lengthToPoints(block.getAttribute(PADDING_LEFT));
+		block.setAttribute(PADDING_LEFT,
+				UnitsOfMeasurement.format2DP.format(space + shift/20.0) + "pt");
+	}
+
+	/** The first FO descendant of {@code from} with this local name, or null. */
+	private static Element firstFoDescendant(Element from, String localName) {
+		org.w3c.dom.NodeList children = from.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node n = children.item(i);
+			if (!(n instanceof Element)) continue;
+			Element e = (Element) n;
+			if (localName.equals(e.getLocalName())) return e;
+			Element deeper = firstFoDescendant(e, localName);
+			if (deeper!=null) return deeper;
+		}
+		return null;
+	}
+
+	/** An FO length in twips.  @since 17.1.1 */
+	private static int twipsOf(String length) {
+		return (int) Math.round(lengthToPoints(length) * 20);
+	}
+
+	/** An FO length as points ({@code UnitsOfMeasurement.twipToBest} writes inches or
+	 *  points); 0 for an absent or unreadable one.  @since 17.1.1 */
+	private static double lengthToPoints(String length) {
+
+		if (length==null) return 0;
+		String v = length.trim();
+		if (v.length()==0) return 0;
+		double factor = 1;
+		if (v.endsWith("pt")) v = v.substring(0, v.length()-2);
+		else if (v.endsWith("in")) { v = v.substring(0, v.length()-2); factor = 72; }
+		else if (v.endsWith("mm")) { v = v.substring(0, v.length()-2); factor = 72/25.4; }
+		else if (v.endsWith("cm")) { v = v.substring(0, v.length()-2); factor = 72/2.54; }
+		else if (v.endsWith("px")) { v = v.substring(0, v.length()-2); factor = 0.75; }
+		try {
+			return Double.parseDouble(v.trim()) * factor;
+		} catch (NumberFormatException e) {
+			log.debug("not a length: " + length);
+			return 0;
+		}
+	}
+
 	/*
 	 *  @since 3.0.0
 	 */

@@ -1186,6 +1186,16 @@ public final class Doc {
 	 * question.  @since 17.1.1 (CR-001 batch 47, the footer-offpage-shape probe)
 	 */
 	public R vmlRect(String style, String text) throws Exception {
+		return vmlRect(style, null, text);
+	}
+
+	/**
+	 * As {@link #vmlRect(String, String)}, with a {@code @style} on the
+	 * {@code v:textbox} itself - which is where Word writes {@code layout-flow:vertical}
+	 * and {@code mso-layout-flow-alt} (measured on four corpus documents; the shape's own
+	 * style carries the position and the size).  @since 17.1.1
+	 */
+	public R vmlRect(String style, String textboxStyle, String text) throws Exception {
 		shapeCounter++;
 		int n = shapeCounter;
 		String xml = "<w:r xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
@@ -1195,7 +1205,8 @@ public final class Doc {
 				+ "<w:pict>"
 				+ "<v:rect id=\"Rectangle " + n + "\" o:spid=\"_x0000_s" + (1025 + n) + "\""
 				+ " style=\"" + style + "\" filled=\"f\" stroked=\"t\" strokeweight=\".5pt\">"
-				+ "<v:textbox inset=\"0,0,0,0\">"
+				+ "<v:textbox inset=\"0,0,0,0\""
+				+ (textboxStyle == null ? "" : " style=\"" + textboxStyle + "\"") + ">"
 				+ "<w:txbxContent>" + paragraphsXml(
 						java.util.Collections.singletonList(plainParagraph(text, SERIF_DEFAULT, 20)), "")
 				+ "</w:txbxContent></v:textbox>"
@@ -1677,6 +1688,23 @@ public final class Doc {
 			return tc;
 		}
 
+		/**
+		 * {@code w:tcPr/w:textDirection} ({@code btLr}, {@code tbRl}, ...): the cell whose
+		 * text Word turns on its side, which is the table's version of a VML text box's
+		 * {@code layout-flow:vertical}.  @since 17.1.1
+		 */
+		public static Tc textDirection(Tc tc, String val) {
+			TcPr tcPr = tc.getTcPr();
+			if (tcPr == null) {
+				tcPr = F.createTcPr();
+				tc.setTcPr(tcPr);
+			}
+			org.docx4j.wml.TextDirection td = F.createTextDirection();
+			td.setVal(val);
+			tcPr.setTextDirection(td);
+			return tc;
+		}
+
 		private static CTBorder border(int sz) {
 			CTBorder b = F.createCTBorder();
 			b.setVal(STBorder.SINGLE);
@@ -1996,6 +2024,18 @@ public final class Doc {
 			bdr.setLeft(paraBorder(eighthsOfPoint, spacePt));
 			bdr.setBottom(paraBorder(eighthsOfPoint, spacePt));
 			bdr.setRight(paraBorder(eighthsOfPoint, spacePt));
+			ppr.setPBdr(bdr);
+			return this;
+		}
+
+		/**
+		 * {@code w:pBdr/w:left} alone: sz in eighths of a point, {@code w:space} in
+		 * points.  A left bar is the shape a hanging indent puts a border against, the
+		 * other three sides standing clear of it.  @since 17.1.1
+		 */
+		public Para leftBorder(int eighthsOfPoint, int spacePt) {
+			PPrBase.PBdr bdr = ppr.getPBdr()==null ? F.createPPrBasePBdr() : ppr.getPBdr();
+			bdr.setLeft(paraBorder(eighthsOfPoint, spacePt));
 			ppr.setPBdr(bdr);
 			return this;
 		}
