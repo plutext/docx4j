@@ -53,6 +53,8 @@ public final class Corpus {
 
 	/** Arial's and Times New Roman's PANOSE-1, as Word writes them in fontTable.xml. */
 	private static final String PANOSE_ARIAL = "020B0604020202020204";
+	/** Arial's PANOSE-1 with the weight digit 03 (light) in place of 06.  @since 17.1.1 */
+	private static final String PANOSE_ARIAL_LIGHT = "020B0304020202020204";
 	private static final String PANOSE_TIMES = "02020603050405020304";
 	/** A real sans's w:sig: Liberation Sans's own OS/2 unicode and code-page ranges, read
 	 *  from LiberationSans-Regular.ttf in docx4j-export-fo-fonts-liberation (its PANOSE is
@@ -5748,6 +5750,188 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/*
+		 * 9919's Sylfaen-400 path (CR-001 batch 47 close-out, the probes waiting for a
+		 * golden; ledger6 Amendment D).  missing-family-weight settled that Word substitutes
+		 * an absent family by its fontTable w:family and KEEPS the weight, via w:rFonts or the
+		 * theme alike - so 9919, whose 1006 bold runs Word drew in Sylfaen at weight 400 with
+		 * no bold resource at all, is a different path.  Its fontTable entry differs from the
+		 * probe's case (d) in two things, and its family name is a third candidate:
+		 *
+		 *   (a) "Plutext Probe Alt", w:family swiss with Arial's panose, and a w:altName
+		 *       naming a SECOND absent family, "Plutext Probe Alt Two"
+		 *   (b) "Plutext Probe Thin", w:family swiss with a LIGHT panose - weight digit 03
+		 *       (020B0304020202020204) where Arial's is 06
+		 *   (c) "Plutext Probe Light", w:family swiss with Arial's panose, the family NAMED as
+		 *       a light face
+		 *   (d) all three at once, through the theme's minor Latin face as 9919 names it
+		 *
+		 * Each case is a regular line, a bold line and a Calibri control line.  Read off the
+		 * golden's font resources: the face Word substitutes for each case and the weight
+		 * its bold run gets - 700 with a bold resource, as missing-family-weight found, or
+		 * 400 with none, as 9919's.
+		 */
+		PROBES.add(new Probe("missing-family-weight-2",
+				"four more invented families, each with a regular and a bold run beside a "
+				+ "Calibri control: (a) a fontTable w:altName naming a second absent family; "
+				+ "(b) a light panose (weight digit 03); (c) a family named \"... Light\"; "
+				+ "(d) all three through the theme's minor Latin face, 9919's route - which "
+				+ "face does Word substitute, and does the bold run get a bold face or "
+				+ "weight 400", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 22);
+			fontTable(d,
+					fontEntry("Plutext Probe Alt", "swiss", PANOSE_ARIAL, "Plutext Probe Alt Two")
+					+ fontEntry("Plutext Probe Thin", "swiss", PANOSE_ARIAL_LIGHT, null)
+					+ fontEntry("Plutext Probe Light", "swiss", PANOSE_ARIAL, null)
+					+ fontEntry("Plutext Probe Theme Light", "swiss", PANOSE_ARIAL_LIGHT,
+							"Plutext Probe Theme Light Two"));
+			themePart(d, "Plutext Probe Theme Light", "Plutext Probe Theme Light");
+			d.para("Four cases. Each is a regular line and a bold line in a family which "
+					+ "exists on no machine, then a Calibri control line holding a regular "
+					+ "run and a bold run.").after(240).add();
+			missingFamilyCase(d, "(a)", "Plutext Probe Alt, w:altName to a second absent family",
+					allFour("Plutext Probe Alt"));
+			missingFamilyCase(d, "(b)", "Plutext Probe Thin, light panose 020B03",
+					allFour("Plutext Probe Thin"));
+			missingFamilyCase(d, "(c)", "Plutext Probe Light, a family named Light",
+					allFour("Plutext Probe Light"));
+			missingFamilyCase(d, "(d)", "Plutext Probe Theme Light, minorHAnsi theme reference "
+					+ "with altName and light panose",
+					rpr -> {
+						org.docx4j.wml.RFonts rf = Doc.F.createRFonts();
+						rf.setAsciiTheme(org.docx4j.wml.STTheme.MINOR_H_ANSI);
+						rf.setHAnsiTheme(org.docx4j.wml.STTheme.MINOR_H_ANSI);
+						rpr.setRFonts(rf);
+					});
+			return d.pkg();
+		}));
+
+		/*
+		 * The USE_TYPO_METRICS rule (docx4j eb00c6be2).  Word lays Aptos out on its typo box
+		 * (13.45pt at 11pt, measured), not its usWin box (14.13); Aptos' typo and hhea boxes
+		 * are equal, so that measurement cannot say whether Word takes the TYPO box or the
+		 * HHEA box for a font which sets the flag.  Bierstadt can: its Regular face sets the
+		 * flag with sTypo 1520/-532/410 = 2462 against hhea 1802/-539/0 = 2341 and usWin
+		 * 1802 + 539 = 2341, so at 11pt the typo rule gives 13.22pt a line and the hhea or
+		 * usWin rule 12.57.  DokChampa sets the bit in an OS/2 table of VERSION 3, where the
+		 * flag is not defined (typo 2754, hhea and usWin 3967 - 14.79pt against 21.31): does
+		 * Word read the bit regardless of the version?  Aptos and Calibri are the controls.
+		 *
+		 * Twenty single-spaced lines in each face, w:line 240 auto, no spacing.  Read off
+		 * the golden: the baseline step in each block.
+		 */
+		PROBES.add(new Probe("line-box-typo-metrics",
+				"the baseline-to-baseline step of twenty single-spaced 11pt lines in "
+				+ "Bierstadt (USE_TYPO_METRICS set; typo box 2462 of 2048 against hhea and "
+				+ "usWin 2341: 13.22pt against 12.57), DokChampa (the bit set in an OS/2 "
+				+ "version 3 table: typo 2754 against 3967), and the controls Aptos (typo = "
+				+ "hhea 2500 against usWin 2631) and Calibri (no flag, 2500 either way)",
+				() -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun("Calibri", 22);
+			d.para("Four blocks of twenty single-spaced 11pt lines, one face each, with a "
+					+ "spaced Calibri heading line before each: Bierstadt, DokChampa, Aptos, "
+					+ "Calibri. Read the baseline step within each block.").after(240).add();
+			String[][] faces = {
+				{ "Bierstadt", "T1 Bierstadt 11pt: USE_TYPO_METRICS set, typo 2462 against hhea and usWin 2341" },
+				{ "DokChampa", "T2 DokChampa 11pt: the bit set in an OS/2 version 3 table, typo 2754 against 3967" },
+				{ "Aptos", "T3 Aptos 11pt: the flag set, typo and hhea both 2500 against usWin 2631" },
+				{ "Calibri", "T4 Calibri 11pt: no flag, 2500 every way" } };
+			for (String[] f : faces) {
+				d.para(f[1]).before(240).after(120).add();
+				for (int i = 0; i < 20; i++) {
+					d.para(f[0] + " line " + (i + 1) + ": " + prose(1, i)).font(f[0], 22)
+							.markRPr(markFont(f[0], 22, null)).add();
+				}
+			}
+			return d.pkg();
+		}));
+
+		/*
+		 * The numbering tab's dot leader takes its step from which face and size?  Item 5(b)
+		 * gives the leader the PARAGRAPH's face and size, and tab-leader-in-cell-2 cannot
+		 * separate that from "Arial at the label's size": Arial's period at the label's
+		 * 11.04pt (3.069pt) and Liberation Serif's at the paragraph's 12pt (3.000pt) round
+		 * to the same 13 grid cells, and the step is what decides the dot count.  So here the
+		 * two sizes are far apart in both directions:
+		 *
+		 *   numId 48  the level's own w:rPr at 8pt under a 16pt paragraph
+		 *   numId 49  the level's own w:rPr at 16pt under an 8pt paragraph
+		 *   numId 50  the level's own w:rPr at 8pt, and the level's w:rFonts Arial, under a
+		 *             16pt Times New Roman paragraph - the face and the size both differing
+		 *
+		 * Each once in the body, the stop at 1440 twips under w:ind left 2880 hanging 2520 as
+		 * in tab-leader-in-cell-2.  Read off the golden: the dot count and step of each run.
+		 */
+		PROBES.add(new Probe("tab-leader-sizes",
+				"the numbering tab's dot leader where the label's size differs from the "
+				+ "paragraph's: the level's w:rPr at 8pt under a 16pt paragraph, at 16pt "
+				+ "under an 8pt paragraph, and at 8pt Arial under a 16pt Times New Roman "
+				+ "paragraph, each with a w:leader=\"dot\" stop at 1440 twips under w:ind "
+				+ "left 2880 hanging 2520 - the dot count and step of each run", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"48\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ sizedLeaderLevel(0, 1440, "dot", 2880, 2520, 16, null) + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"49\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ sizedLeaderLevel(0, 1440, "dot", 2880, 2520, 32, null) + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"50\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ sizedLeaderLevel(0, 1440, "dot", 2880, 2520, 16, "Arial") + "</w:abstractNum>"
+					+ "<w:num w:numId=\"48\"><w:abstractNumId w:val=\"48\"/></w:num>"
+					+ "<w:num w:numId=\"49\"><w:abstractNumId w:val=\"49\"/></w:num>"
+					+ "<w:num w:numId=\"50\"><w:abstractNumId w:val=\"50\"/></w:num>");
+			d.para("Three numbered paragraphs whose label size differs from the paragraph's, "
+					+ "each with a dot leader from the label to a stop at 1440 twips. Read the "
+					+ "dot count and the step of each run.").after(240).add();
+			d.para("S1: label 8pt, paragraph 16pt. " + prose(1, 0)).font(SERIF, 32)
+					.numPr(48, 0).markRPr(markFont(SERIF, 32, null)).before(120).after(120).add();
+			d.para("S2: label 16pt, paragraph 8pt. " + prose(1, 1)).font(SERIF, 16)
+					.numPr(49, 0).markRPr(markFont(SERIF, 16, null)).before(120).after(120).add();
+			d.para("S3: label 8pt Arial, paragraph 16pt Times New Roman. " + prose(1, 2))
+					.font(TIMES_NEW_ROMAN, 32).numPr(50, 0)
+					.markRPr(markFont(TIMES_NEW_ROMAN, 32, null)).before(120).after(120).add();
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		}));
+
+		/*
+		 * The numbering tab's leader of a kind other than dot (item 5(b)'s unmeasured
+		 * mapping): w:leader hyphen, underscore, heavy and middleDot on the level's own stop,
+		 * which docx4j maps to leader-pattern="rule" for the first three as the paragraph-tab
+		 * path does, and to dots for middleDot.  A rule leader has no repeating unit, so the
+		 * layout manager reports nothing painted and keeps the w:suff space.  Read off the
+		 * golden: what Word paints for each kind, from where to where, and whether a space
+		 * glyph precedes it.
+		 */
+		PROBES.add(new Probe("numbering-leader-kinds",
+				"the numbering tab's leader of each kind Word has - hyphen, underscore, heavy "
+				+ "and middleDot - on a stop at 1440 twips under w:ind left 2880 hanging "
+				+ "2520, each once in the body, with the dot kind as the control: what Word "
+				+ "paints for each, from where to where", () -> {
+			Doc d = Doc.create(15);
+			String[] kinds = { "dot", "hyphen", "underscore", "heavy", "middleDot" };
+			StringBuilder num = new StringBuilder();
+			for (int i = 0; i < kinds.length; i++) {
+				num.append("<w:abstractNum w:abstractNumId=\"" + (51 + i) + "\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+						+ leaderLevel(0, 1440, kinds[i], 2880, 2520) + "</w:abstractNum>");
+			}
+			for (int i = 0; i < kinds.length; i++) {
+				num.append("<w:num w:numId=\"" + (51 + i) + "\"><w:abstractNumId w:val=\"" + (51 + i) + "\"/></w:num>");
+			}
+			d.numberingXml(num.toString());
+			d.para("Five numbered paragraphs, one leader kind each on the level's stop at "
+					+ "1440 twips: dot as the control, then hyphen, underscore, heavy and "
+					+ "middleDot. Read what is painted between the label and the text.")
+					.after(240).add();
+			for (int i = 0; i < kinds.length; i++) {
+				d.para("K" + (i + 1) + " w:leader " + kinds[i] + ": " + prose(1, i))
+						.numPr(51 + i, 0).before(120).after(120).add();
+			}
+			d.para("after. " + prose(1, 5)).before(240).add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {
@@ -5909,6 +6093,19 @@ public final class Corpus {
 						+ (leader == null ? "" : " w:leader=\"" + leader + "\"") + "/></w:tabs>")
 				+ "<w:ind w:left=\"" + leftTwips + "\" w:hanging=\"" + hangingTwips + "\"/>"
 				+ "</w:pPr></w:lvl>";
+	}
+
+	/** {@link #leaderLevel(int, int, String, int, int)} with the level's own {@code w:rPr}:
+	 *  a size in half-points and, where {@code font} is not null, a {@code w:rFonts} - the
+	 *  label's own face and size, against the paragraph's.
+	 *  @since 17.1.1 (CR-001 batch 47 close-out, the tab-leader-sizes probe) */
+	private static String sizedLeaderLevel(int ilvl, int stopTwips, String leader, int leftTwips,
+			int hangingTwips, int halfPts, String font) {
+		String lvl = leaderLevel(ilvl, stopTwips, leader, leftTwips, hangingTwips);
+		String rpr = "<w:rPr>"
+				+ (font == null ? "" : "<w:rFonts w:ascii=\"" + font + "\" w:hAnsi=\"" + font + "\" w:cs=\"" + font + "\"/>")
+				+ "<w:sz w:val=\"" + halfPts + "\"/><w:szCs w:val=\"" + halfPts + "\"/></w:rPr>";
+		return lvl.replace("</w:pPr></w:lvl>", "</w:pPr>" + rpr + "</w:lvl>");
 	}
 
 
