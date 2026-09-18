@@ -33,14 +33,79 @@ public class WordBreakOpportunitiesTest {
 		return out;
 	}
 
-	/** A URL breaks after its {@code ?} and after a hyphen that a letter follows, and
-	 *  nowhere else: not after a solidus (Word's rule), not at a dot, and not after a
-	 *  hyphen that digits follow (UAX #14 LB25, HY x NU). */
+	/** A URL breaks after its {@code ?} and after <b>every</b> hyphen - Word breaks after
+	 *  one that digits follow too, where UAX #14 LB25 ({@code HY x NU}) does not
+	 *  (CR-001 batch 48 item 3) - and nowhere else: not after a solidus (Word's rule) and
+	 *  not at a dot. */
 	@Test
 	public void aUrlBreaksAfterItsQueryMarkAndHyphens() {
 		assertEquals(
-				Arrays.asList("http://www.example.com/content/getDocument.aspx?", "key=AB-12-", "CD-34-", "EF-56#&doc=1"),
+				Arrays.asList("http://www.example.com/content/getDocument.aspx?", "key=AB-",
+						"12-", "CD-", "34-", "EF-", "56#&doc=1"),
 				units("http://www.example.com/content/getDocument.aspx?key=AB-12-CD-34-EF-56#&doc=1"));
+	}
+
+	/**
+	 * Word breaks after a hyphen followed by a digit, where UAX #14 rule LB25 keeps the
+	 * two together: FOP's pair table holds {@code HY x NU} as an indirect break, which
+	 * inside a word is no break at all, and {@code 1997-05-12} was one unbreakable token.
+	 * Measured on corpus document 5253 (CR-001 batch 48 item 3).
+	 */
+	@Test
+	public void aHyphenBeforeDigitsBreaks() {
+		assertEquals(Arrays.asList("1997-", "05-", "12"), units("1997-05-12"));
+		assertEquals(Arrays.asList("ISO-", "8601"), units("ISO-8601"));
+		assertEquals(Arrays.asList("2013-", "2014"), units("2013-2014"));
+		assertTrue(WordBreakOpportunities.breakBetween('-', '5'));
+		assertFalse("a hyphen before a letter already broke",
+				WordBreakOpportunities.breakBetween('-', 'y'));
+		/* In FOP's table only U+002D is class HY: U+2010 HYPHEN and U+2012 FIGURE DASH and
+		 * U+2013 EN DASH are all BA, which already breaks after itself before a digit, and
+		 * U+2011 NON-BREAKING HYPHEN is GL, which must not break. */
+		assertFalse("U+2010 is class BA in FOP's table, and BA x NU already breaks",
+				WordBreakOpportunities.breakBetween('‐', '5'));
+		assertFalse("an en dash is class BA too",
+				WordBreakOpportunities.breakBetween('–', '5'));
+		assertFalse("a non-breaking hyphen is class GL and must not break",
+				WordBreakOpportunities.breakBetween('‑', '5'));
+	}
+
+	/** And the same opportunity at the seam of two runs, which is decided by the same
+	 *  pair: {@code 1997-} in one {@code fo:inline} and {@code 05} in the next. */
+	@Test
+	public void theSeamAfterAHyphenBreaksBeforeDigitsToo() {
+		assertTrue(WordBreakOpportunities.breakAtSeam('-', '4'));
+		assertTrue(WordBreakOpportunities.breakAtSeam('-', 'a'));
+		assertFalse("a space on either side is FOP's own business",
+				WordBreakOpportunities.breakAtSeam('-', ' '));
+	}
+
+	/**
+	 * Word does not break between a letter and a per-cent sign, where FOP does: its pair
+	 * table predates Unicode 8.0's LB24 ({@code (AL|HL) x (PR|PO)}) and holds
+	 * {@code AL x PO} as a direct break, so {@code VAT%} was set as {@code VAT} / {@code %}.
+	 * {@code NU x PO} was already indirect, so {@code 100%} never broke.
+	 * Measured on corpus document 5253 (CR-001 batch 48 item 3).
+	 */
+	@Test
+	public void aPerCentSignStaysWithTheWordBeforeIt() {
+		assertEquals(Arrays.asList("VAT% ", "of ", "turnover"), units("VAT% of turnover"));
+		assertEquals("the digit control, which never broke",
+				Arrays.asList("100% ", "of ", "turnover"), units("100% of turnover"));
+		assertTrue(WordBreakOpportunities.noBreakBeforePerCent('T', '%'));
+		assertTrue(WordBreakOpportunities.noBreakBetween('T', '%'));
+		assertFalse("a space before it is a break of FOP's own",
+				WordBreakOpportunities.noBreakBeforePerCent(' ', '%'));
+		assertFalse("and the rule is the per-cent sign's, not the whole of class PO",
+				WordBreakOpportunities.noBreakBeforePerCent('T', '°'));
+	}
+
+	/** The two rules the batch-45 and batch-47 measurements settled are unmoved: a
+	 *  backslash keeps its word whole and a dollar sign does not. */
+	@Test
+	public void theBackslashAndDollarRulesAreUnchanged() {
+		assertEquals(Arrays.asList("Quejas\\Clientes\\Minoristas"), units("Quejas\\Clientes\\Minoristas"));
+		assertEquals(Arrays.asList("$table.temps_ligne", "$"), units("$table.temps_ligne$"));
 	}
 
 	@Test

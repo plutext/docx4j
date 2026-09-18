@@ -2517,7 +2517,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /**
      * Break opportunities inside a token which UAX #14, as FOP's text managers apply
      * it, offers and Word does not take ({@link WordBreakOpportunities#noBreakBetween})
-     * are made infinite penalties here.  Two so far.  Word does not break a line after
+     * are made infinite penalties here.  Three so far.  Word does not break a line after
      * a solidus: measured on the Getting Started guide (CR-001 §6.10),
      * "http://schemas.openxmlformats.org/..." and "OpenOffice/jodconverter" go whole
      * to the next line where FOP breaks after the "/".  And it does not break between
@@ -2525,7 +2525,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * version before 8.0's LB24, does: measured on a 311-page corpus document, Word sets
      * {@code Quejas\Clientes\Minoristas} whole on a line where ours broke it before each
      * backslash (17.1.1; until then only the solidus was suppressed).  Only the
-     * backslash: Word breaks between a letter and a dollar sign, as FOP does.
+     * backslash: Word breaks between a letter and a dollar sign, as FOP does.  The third
+     * is the same defect in the same table for the other half of LB24's pair: Word does
+     * not break between a letter and a per-cent sign, where FOP holds {@code AL x PO} as
+     * a direct break and sets {@code VAT|%} (17.1.1, CR-001 batch 48 item 3; a per-cent
+     * sign after a <em>digit</em> never broke, {@code NU x PO} being indirect).  The one
+     * correction which goes the other way - Word breaks <b>after</b> a hyphen followed by
+     * digits, where the table's {@code HY x NU} is indirect and so no break inside a word
+     * - cannot be made here, there being no penalty to relax: it is
+     * {@link WordBreakOpportunities#applyWordPairTable}.
      */
     private void suppressWordBreaks(List<KnuthSequence> seqs) {
         if (seqs == null) return;

@@ -258,6 +258,23 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Two corrections to where a line may break, both from the same gap between Word and the Unicode
+  version Apache FOP's line-break table was generated from. A line now breaks after a hyphen
+  followed by digits, where UAX #14's rule LB25 (HY x NU) keeps the two together: FOP's table holds
+  that pair as an indirect break, which inside a word is no break at all, so a date, a range of
+  years or a part number was one unbreakable token where Word breaks after the hyphen - and the
+  same hyphen before a letter (HY x AL, a direct break) already broke. Measured on a probe at a
+  120.0pt measure: "1997-05-12" is set as "1997-" and "05-12". And a line no longer breaks between
+  a letter and a per-cent sign, where Word does not: the table predates Unicode 8.0's LB24,
+  (AL|HL) x (PR|PO), and held that pair as a direct break, so "VAT%" was set as "VAT" and "%" - a
+  per-cent sign after a digit never broke, NU x PO being indirect. The hyphen rule is applied by
+  flipping FOP's own pair table, because FOP decides a word's break opportunities while it builds
+  the Knuth elements and a break it does not see is a box it does not split; the pair is the one
+  entry changed, and the write is process-wide, so it is done only from the Word layout path and
+  only while docx4j.convert.out.fo.wordLayout.breakOpportunities is on (the default). An en dash
+  and the other dashes are untouched: measured on FOP's table, only U+002D is class HY, and a
+  non-breaking hyphen is GL. The rule also applies where the token is split across two runs
+  (CR-001 batch 48).
 - A numbering label's leader now starts where Word starts it. Word begins a leader run on a whole
   multiple of its step measured from the page's left edge, and the distance to a label's leader has
   four terms: the region body's x, the label area's own x offset, the label block's start-indent and

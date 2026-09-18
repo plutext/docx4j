@@ -5945,6 +5945,70 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		/*
+		 * CR-001 batch 48 item 3.  The two break opportunities corpus document 5253
+		 * measures, each with its control, on a narrow measure so that whether the break
+		 * is taken decides the line.  UAX #14 rule LB25 keeps a hyphen with the digits
+		 * after it, and Word breaks there; FOP's pair table, which predates Unicode 8.0's
+		 * LB24, breaks between a letter and a per-cent sign, and Word does not.  Read off
+		 * the golden: for each pair, which of the two lines the token's tail is on.
+		 */
+		PROBES.add(new Probe("break-opportunities",
+				"a hyphen before digits and a per-cent sign after a letter, each against "
+				+ "its control - a hyphen before letters, a per-cent sign after digits, an "
+				+ "en dash and a solidus - straddling a 120.0pt measure: where Word breaks "
+				+ "and where it does not", () -> {
+			Doc d = Doc.create(15);
+			// A4 portrait with 4753-twip side margins: a body measure of 2400 twips = 120.0pt
+			d.pageGeometry(11906, 16838, false, 1440, 4753, 1440, 4753);
+			final int measure = 2400;
+			final int advTw = Doc.advanceTwipsCeil("0", SERIF, 24);   // 120, as break-longword
+			if (advTw != 120) throw new IllegalStateException("Liberation Serif's digit advance "
+					+ "is " + advTw + " twips, not the 120 this probe's padding is built on");
+
+			d.para("Each pair below is a padding run of digits - every one exactly 120 twips "
+					+ "wide in Liberation Serif at 12pt - then a token which straddles the "
+					+ "2400-twip (120.0pt) measure. Read where the token's tail goes: on the "
+					+ "first line, or the second.").after(240).add();
+
+			// token, what it tests, and where the break under test is (0-based, before this
+			// character); the pad is sized so the break under test sits past the measure
+			String[][] cases = {
+				{ "1997-05-12", "A", "a hyphen before digits: LB25 keeps them together and "
+						+ "Word breaks after the hyphen", "5" },
+				{ "alpha-beta", "B", "a hyphen before letters, the control: both break after "
+						+ "the hyphen", "6" },
+				{ "VAT% paid", "C", "a per-cent sign after a letter: FOP's pair table breaks "
+						+ "before the sign and Word does not", "3" },
+				{ "100% paid", "D", "a per-cent sign after digits, the control: neither "
+						+ "breaks before the sign", "3" },
+				{ "alpha–beta", "E", "an en dash, the control: class BA, both break "
+						+ "after it", "6" },
+				{ "alpha/beta", "F", "a solidus, the control: FOP breaks after it and Word "
+						+ "does not (word-layout-rules 4.3)", "6" },
+			};
+			for (String[] c : cases) {
+				String token = c[0];
+				String tag = c[1];
+				int at = Integer.parseInt(c[3]);
+				// the head up to the break under test must fit and the tail must not: pad so
+				// that the head ends 60 twips (half a digit) inside the measure
+				int headTw = Doc.advanceTwipsCeil(token.substring(0, at), SERIF, 24);
+				int spaceTw = Doc.advanceTwipsCeil(" ", SERIF, 24);
+				int padChars = Math.max(1, (measure - headTw - spaceTw - 60) / advTw);
+				String pad = digitToken(padChars);
+				int startTw = padChars * advTw + spaceTw;
+				d.para(tag + ": " + c[2] + ". The padding is " + padChars + " characters = "
+						+ (padChars * advTw / 20.0) + "pt, so the token opens at "
+						+ (startTw / 20.0) + "pt and the character under test would fall at "
+						+ ((startTw + headTw) / 20.0) + "pt of the 120.0pt measure.")
+						.after(60).add();
+				d.para().noLabel().text(pad + " " + token).after(180).add();
+			}
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {

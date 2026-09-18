@@ -18,9 +18,13 @@
  */
 package org.docx4j.fop.wordlayout;
 
+import java.lang.reflect.Field;
+
 import org.apache.fop.fonts.GlyphMapping;
 import org.apache.fop.text.linebreak.LineBreakStatus;
 import org.apache.fop.text.linebreak.LineBreakUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Where a line may be broken inside a run of text, as {@link WordLineLayoutManager}
@@ -63,6 +67,11 @@ public final class WordBreakOpportunities {
 
 	private WordBreakOpportunities() {}
 
+	/** Whether {@link #applyWordPairTable} has run. */
+	private static boolean pairTableApplied;
+
+	private static final Logger log = LoggerFactory.getLogger(WordBreakOpportunities.class);
+
 	/**
 	 * Word does not break a line after a solidus: a URL, or a pair of words joined by
 	 * a slash, goes whole to the next line (word-layout-rules.md &#xa7;4.3).
@@ -91,7 +100,59 @@ public final class WordBreakOpportunities {
 	 */
 	public static boolean noBreakBetween(char before, int after) {
 		if (noBreakAfter(before)) return true;
-		return after == '\\' && isLetter(before);
+		if (after == '\\' && isLetter(before)) return true;
+		return noBreakBeforePerCent(before, after);
+	}
+
+	/**
+	 * Word does not break between a letter and a <b>per-cent sign</b>, where FOP does.
+	 *
+	 * <p>Same root as the reverse solidus above: FOP's pair table predates Unicode 8.0's
+	 * LB24, which added {@code (AL|HL) x (PR|PO)}, so it holds {@code AL x PO} as a
+	 * <em>direct</em> break and sets {@code VAT|%}. Word keeps the sign with the word.
+	 * {@code NU x PO} is already indirect in the table, so {@code 100%} never broke.</p>
+	 *
+	 * <p>Measured on corpus document {@code 5253} on a 100pt Courier measure, which is
+	 * one of the two break defects that took its page from Word's 14 to 15.</p>
+	 *
+	 * <p>The rule is the per-cent sign's and not the whole of class PO, as the reverse
+	 * solidus rule is the backslash's and not the whole of PR: what a currency sign, a
+	 * degree sign or a prime does after a letter is unmeasured, and the one PR case that
+	 * <em>is</em> measured goes the other way (Word breaks between a letter and a dollar
+	 * sign).</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 3)
+	 */
+	public static boolean noBreakBeforePerCent(char before, int after) {
+		return after == '%' && isLetter(before);
+	}
+
+	/**
+	 * Word breaks <b>after</b> a hyphen followed by a digit, where UAX #14 does not.
+	 *
+	 * <p>Rule LB25 keeps a hyphen with the number after it - FOP's pair table holds
+	 * {@code HY x NU} as an <em>indirect</em> break, which without an intervening space
+	 * is no break at all - so {@code 1997-05-12}, {@code 2013-2014}, {@code ISO-8601}
+	 * and {@code T-1000} are unbreakable tokens, where the same hyphen before a letter
+	 * ({@code HY x AL}, a direct break) breaks: {@code x-|y}. Word breaks after the
+	 * hyphen in both.</p>
+	 *
+	 * <p>Measured on corpus document {@code 5253} on a 100pt Courier measure, the other
+	 * half of the page it lost against Word's 14.</p>
+	 *
+	 * <p>It is the hyphen's rule, not every dash's, and the class decides rather than a
+	 * list of characters: measured on FOP's own table, U+002D HYPHEN-MINUS is the only
+	 * HY, while U+2010 HYPHEN, U+2012 FIGURE DASH and U+2013 EN DASH are all BA - which
+	 * is a direct break before a digit already - and U+2011 NON-BREAKING HYPHEN is GL,
+	 * which must not break at all. So only the hyphen-minus is touched.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 3)
+	 */
+	public static boolean breakBetween(char before, int after) {
+		if (after < 0 || after > Character.MAX_VALUE) return false;
+		return LineBreakUtils.getLineBreakProperty(before) == LineBreakUtils.LINE_BREAK_PROPERTY_HY
+				&& LineBreakUtils.getLineBreakProperty((char) after)
+						== LineBreakUtils.LINE_BREAK_PROPERTY_NU;
 	}
 
 	/**
@@ -160,6 +221,59 @@ public final class WordBreakOpportunities {
 	}
 
 	/**
+	 * Teach FOP's own pair table that a hyphen before a digit breaks, so that its text
+	 * managers split the box there.
+	 *
+	 * <p>{@link #breakBetween} states the rule, and that is enough for anything which
+	 * <em>measures</em> text ({@link #breakBefore}, and through it the autofit sizer and
+	 * {@link #breakAtSeam}). It is not enough for the line itself: FOP decides where a
+	 * word may break while it builds the Knuth elements, in
+	 * {@code TextLayoutManager.getNextKnuthElements}, and a break it does not see is a
+	 * box it does not split - there is no penalty for the line manager to relax
+	 * afterwards, as there is for the seam and the solidus-led word. The one lever that
+	 * does not mean reimplementing that method is the table it reads:
+	 * {@code LineBreakUtils.PAIR_TABLE[HY][NU]} goes from {@code INDIRECT_BREAK} - a
+	 * break only across a space, so none inside {@code 1997-05} - to
+	 * {@code DIRECT_BREAK}, which is what the table already holds for {@code HY x AL}.
+	 *
+	 * <p><b>Its reach.</b> The table is static and package-private in FOP, so this is a
+	 * reflective write and it is process-wide: every FOP layout in the JVM sees it, not
+	 * only docx4j's. That is why it is done from the Word layout path alone and only
+	 * when {@link WordLayoutCustomizer#breakOpportunities()} is on, and why it is worth
+	 * saying out loud - a host doing its own FOP work beside docx4j would inherit it.
+	 * The narrower alternative, splitting the box in the line manager afterwards, means
+	 * building a {@code GlyphMapping} and re-indexing every {@code LeafPosition} of the
+	 * text manager, which is a great deal more to go wrong in the hottest path of the
+	 * exporter.
+	 *
+	 * <p>Idempotent, and a no-op where FOP's table has changed shape (a value other
+	 * than the {@code INDIRECT_BREAK} measured here is left alone and logged).
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 3)
+	 */
+	public static synchronized void applyWordPairTable() {
+		if (pairTableApplied || !WordLayoutCustomizer.breakOpportunities()) return;
+		pairTableApplied = true;
+		try {
+			Field field = LineBreakUtils.class.getDeclaredField("PAIR_TABLE");
+			field.setAccessible(true);
+			byte[][] table = (byte[][]) field.get(null);
+			int hy = LineBreakUtils.LINE_BREAK_PROPERTY_HY - 1;
+			int nu = LineBreakUtils.LINE_BREAK_PROPERTY_NU - 1;
+			if (hy < 0 || nu < 0 || hy >= table.length || nu >= table[hy].length) return;
+			byte was = table[hy][nu];
+			if (was != LineBreakUtils.INDIRECT_BREAK) {
+				log.info("FOP's line-break pair table holds HY x NU as " + was
+						+ ", not the indirect break this was measured against; left alone");
+				return;
+			}
+			table[hy][nu] = LineBreakUtils.DIRECT_BREAK;
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			log.warn("could not apply Word's HY x NU break to FOP's pair table: " + e.getMessage());
+		}
+	}
+
+	/**
 	 * For each character of {@code text}, whether a line may be broken immediately
 	 * before it, as the line manager will decide: UAX #14 as FOP applies it (a
 	 * mandatory break counts), less the breaks of {@link #noBreakBetween}, plus the
@@ -192,6 +306,8 @@ public final class WordBreakOpportunities {
 				if (brk) {
 					if (noBreakBetween(prev, c)) brk = false;
 				} else if (GlyphMapping.isSpace(prev) && startsSolidusLedWord(text, i)) {
+					brk = true;
+				} else if (breakBetween(prev, c)) {
 					brk = true;
 				}
 			}

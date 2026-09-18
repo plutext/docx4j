@@ -107,11 +107,17 @@ public class SeamBreakTest {
 		assertEquals("aaaa bbbb cccc dddd eeee-", got.get(0));
 	}
 
-	/** UAX #14 LB25: no break between a hyphen and a digit, in one text or across a seam. */
+	/**
+	 * A hyphen before a digit breaks at the seam as it does inside one text: UAX #14's
+	 * LB25 keeps the two together and Word breaks after the hyphen either way, so the
+	 * seam follows the same rule ({@code WordBreakOpportunities.breakBetween}, measured
+	 * on corpus document 5253 - CR-001 batch 48 item 3). Until then this seam was no
+	 * opportunity and the line ended at {@code dddd}.
+	 */
 	@Test
-	public void noBreakBeforeADigit() throws Exception {
+	public void aHyphenBeforeADigitBreaksAtTheSeamToo() throws Exception {
 		List<String> got = lines(fo(runs("aaaa bbbb cccc dddd eeee-", "1234 gggg")), true);
-		assertEquals("aaaa bbbb cccc dddd", got.get(0));
+		assertEquals("aaaa bbbb cccc dddd eeee-", got.get(0));
 	}
 
 	/** Word does not break after a solidus (§4.3), so a seam after one is no opportunity. */
