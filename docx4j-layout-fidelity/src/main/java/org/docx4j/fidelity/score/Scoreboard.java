@@ -513,6 +513,9 @@ public final class Scoreboard {
 		out.add("delta vs " + baselineName);
 		out.add(String.format(Locale.ROOT, "%-20s %20s %20s", "", "before", "after"));
 		List<String[]> la = a.entries(), lb = b.entries();
+		/* The renderer is not in the CSV, so the baseline's is unknown here: say so rather
+		 * than repeat this run's (the static is the only source both aggregates have). */
+		for (String[] e : la) if ("renderer".equals(e[0])) e[1] = "(not in csv)";
 		for (int i = 0; i < la.size(); i++) {
 			out.add(String.format(Locale.ROOT, "%-20s %20s %20s", la.get(i)[0], la.get(i)[1], lb.get(i)[1]));
 		}

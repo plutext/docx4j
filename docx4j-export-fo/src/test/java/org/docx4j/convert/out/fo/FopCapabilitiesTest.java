@@ -73,11 +73,19 @@ public class FopCapabilitiesTest {
 	}
 
 	@Test
-	public void noHooksYet() {
-		// phase 0: neither renderer publishes a hook; phase 1 changes this on the fork
-		assertTrue(FopCapabilities.get().getCapabilities().toString(),
-				FopCapabilities.get().getCapabilities().isEmpty());
-		assertFalse(FopCapabilities.Capability.values().length > 0);
+	public void hooksFollowTheRenderer() {
+		FopCapabilities c = FopCapabilities.get();
+		if (c.isDocx4jRenderer()) {
+			// phase 1's four hooks; a later fork may add more, never fewer
+			for (FopCapabilities.Capability cap : FopCapabilities.Capability.values()) {
+				assertTrue(cap.key(), FopCapabilities.has(cap));
+			}
+		} else {
+			assertTrue(c.getCapabilities().toString(), c.getCapabilities().isEmpty());
+			for (FopCapabilities.Capability cap : FopCapabilities.Capability.values()) {
+				assertFalse(cap.key(), FopCapabilities.has(cap));
+			}
+		}
 	}
 
 	@Test

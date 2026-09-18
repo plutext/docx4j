@@ -111,6 +111,12 @@ public class FontPaddingResourceResolver implements ResourceResolver {
 		if (!Docx4jProperties.getProperty(PROPERTY, true)) {
 			return actual;
 		}
+		/* The docx4j FO renderer carries the GlyfTable fix itself (hook glyf-empty-glyph), so
+		 * the padding is not needed there and the bytes go through untouched.  CR-020 phase 1. */
+		if (org.docx4j.convert.out.fo.FopCapabilities.has(
+				org.docx4j.convert.out.fo.FopCapabilities.Capability.GLYF_EMPTY_GLYPH)) {
+			return actual;
+		}
 		return new FontPaddingResourceResolver(actual);
 	}
 

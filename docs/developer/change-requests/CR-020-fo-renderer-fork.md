@@ -1,9 +1,11 @@
 # CR-020: `docx4j-fo-renderer` — an upstream-tracking fork of Apache FOP, with graceful degradation to Apache's own
 
-Status: PROPOSED (2026-09-18). The decision to fork, the naming and the
-degradation contract were taken by Jason Harrop on 2026-09-18 (recorded in §2);
-nothing coded. Drafted with Claude Fable 5.1 at the close of CR-001 batch 48;
-the first release moved out of phase 0 on Jason's direction the same day.
+Status: ACTIVE (accepted by Jason Harrop 2026-09-18). Phases 0 and 1 landed
+the same day (§8); phase 2 (the Metanorma and Chunlin classification) is next;
+the first release waits, as §4 says. The decision to fork, the naming and the
+degradation contract were taken by Jason Harrop on 2026-09-18 (recorded in §2).
+Drafted with Claude Fable 5.1 at the close of CR-001 batch 48; the first
+release moved out of phase 0 on Jason's direction the same day.
 Owner: Jason Harrop.
 
 Scope: a fork of Apache FOP 2.11 maintained at `plutext/xmlgraphics-fop`,
@@ -92,10 +94,11 @@ bug fixes and limited backports; novel functionality does not qualify. And
 third parties should not incorporate an Apache project mark into their own
 product names. So:
 
-- group `org.docx4j`; artifacts **`docx4j-fo-renderer`** (parent),
-  **`docx4j-fo-renderer-core`**, and whichever of FOP's `fop-util` /
-  `fop-events` the core needs, under the same prefix - no "fop" in an artifact
-  id;
+- group `org.docx4j`; artifacts **`docx4j-fo-renderer`** (the all-in-one, what
+  `fop` is: the artifact a consumer depends on), **`docx4j-fo-renderer-core`**,
+  `docx4j-fo-renderer-events`, `docx4j-fo-renderer-util` (both forked, one
+  version line; §5's question, decided in phase 0) and
+  `docx4j-fo-renderer-parent` - no "fop" in an artifact id;
 - description: `docx4j FO renderer, based on Apache FOP 2.11`;
 - version `2.11-docx4j.1`, `.2`, ... (the FOP line first, our release after;
   Maven orders the qualifier before `2.11`, which is harmless across group ids);
@@ -294,3 +297,79 @@ configurations.
   guidelines; Apache License 2.0 §4.
 - `docx4j-layout-fidelity/RULE-CLASSES.md` (the gate the cherry-picks are read
   against).
+
+## 8. Progress
+
+### Phase 0 - DONE 2026-09-18
+
+Fork: `plutext/xmlgraphics-fop` branch `docx4j-2.11` (local only, not pushed;
+Jason's call), from the `2_11` tag: the four fix commits cherry-picked with
+`-x` (FOP-3328 45fcebf1f, FOP-3330 9448a7460, the empty glyph 0ef2f80a9, the
+Kangxi radical d3dbe8ad9), then the coordinates, marker class
+`org.apache.fop.docx4j.Docx4jFop`, change notices in every modified file,
+NOTICE and README.md with the §2.2 notice and the change table, and Apache's CI
+workflow on the branch (ubuntu, JDK 8/11/17/21). Only `fop`, `fop-core`,
+`fop-events` and `fop-util` are built; the sandbox, servlet and transcoders
+stay in the tree unbuilt. Apache's own dependencies (Batik, xmlgraphics-commons)
+had been referenced through `${project.groupId}` and are pinned to
+`org.apache.xmlgraphics`. FOP's suite on the branch: 3544 tests, 0 failures;
+checkstyle and spotbugs clean (a `RegexpHeader` suppression for the
+Plutext-headed files under `org/apache/fop/docx4j`).
+
+docx4j (3fbc6d74a): `FopCapabilities` as §3.2, with the two checks; the
+`fo.renderer.*` properties and the `fo-renderer-fork` profile in
+`docx4j-export-fo` and in the harness, which copies the fork's jars to
+`target/lib-fork` and writes a `renderer` line into every `scoreboard.txt`.
+
+**Gate** (b50-apache and b50-fork against b49-batch48, resaved basis, the
+three corpora and the 144 probes): Apache FOP identical to b49 in every row;
+the fork identical in every row but one, `14_ru-RU_sdt_num_tbl_7320` (real3,
+class 3a) at +2 matched lines (0.9119 to 0.9127), explained: the document
+writes U+202F (narrow no-break space) after a list dash, which shares Tinos's
+glyph with U+2009; Apache FOP's ToUnicode maps the glyph back to U+2009, the
+cherry-picked reverse-mapping fix (§6.6 item 26, written for the Kangxi
+radicals) keeps the character written, and Word's PDF carries U+202F, so the
+line now pairs. The fix is not CJK-specific: any glyph two code points share.
+Same pages, same lines, dy 0.00 between the two renders.
+
+### Phase 1 - DONE 2026-09-18
+
+Fork (9d9e27602): four hooks, each a `Docx4jFop` capability name, public
+accessors and one setter, no behaviour change - `pair-table`
+(`LineBreakUtils.setLineBreakPairProperty`), `leader-placement`
+(`FilledArea.getUnitAreas`, `LeafNodeLayoutManager.getCurrentArea` and
+`setAreaInfoIPD`, `LeaderLayoutManager.getFont`), `inline-access`
+(`TextLayoutManager` getters, `AlignmentContext`'s constructor and
+`getLineHeight` made public, `InlineLayoutManager.getFont`,
+`LeafPosition.setLeafPos`, `LineBreakPosition` public with getters,
+`ListItemLayoutManager.getBodyList`) and `glyf-empty-glyph` (the fix already
+in). Found on the way: `LeafNodeLayoutManager.setCurrentArea` is Apache's own
+public method, so docx4j now uses it on both renderers. `LineBreakUtils` is
+generated from Unicode data by `src/main/codegen`; the override must be
+re-added after a regeneration (noted in the file and the README). Suite 3550
+tests, 0 failures; checkstyle and spotbugs clean.
+
+docx4j: `FopHooks` resolves each accessor to a `MethodHandle` through the
+public lookup when the renderer advertises the hook, and `LBP`,
+`WordListItemLayoutManager` and `WordBreakOpportunities` take that path first,
+the field path (as before) otherwise; `FontPaddingResourceResolver.wrap`
+returns the plain resolver when `glyf-empty-glyph` is present. A member the
+fork advertises but does not have is logged and falls back. The module still
+compiles against Apache FOP: no fork-only member is named in source, which is
+the point - the accessors are a contract, looked up by name. Tests:
+`FopHooksTest` and `FopCapabilitiesTest` on both renderers; the module's 200
+unit tests pass on both.
+
+**Gate** (b51-apache and b51-fork, the same corpora and probes): Apache FOP
+identical to b49 in every row, and the fork identical to b50-fork in every row
+(so still only the one explained mover against b49), with all four hooks
+reported active in the scoreboard's renderer line.
+
+### Not done, carried
+
+- Phase 2 (the classification report), then the first release.
+- The fork branch and its CI are local until pushed.
+- §6.6 items 24 (`span="all"`) and 25 (region indents) have no fork change yet;
+  25 is a layout change in FOP's page-sequence code, to be met when a batch
+  needs it.
+

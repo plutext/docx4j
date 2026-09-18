@@ -267,7 +267,13 @@ PDF via XSL FO, the renderer (CR-020, phase 0):
   it and its hooks, warns when two copies of FOP share a classpath (they shadow each
   other; classpath order decided, silently) or the FOP found is of another line than
   the 2.11 docx4j-export-fo subclasses, and lets each hook-dependent rule fall back on
-  Apache FOP. No hook yet; phase 1 adds them.
+  Apache FOP.
+- Phase 1: the fork carries four hooks (pair-table, leader-placement, inline-access,
+  glyf-empty-glyph), public accessors for what the Word layout managers read of FOP by
+  reflection, and docx4j-export-fo takes them through method handles when the renderer
+  advertises them, the reflective path otherwise - so on the docx4j FO renderer nothing
+  needs setAccessible, and on Apache FOP nothing changed; the font-padding workaround for
+  the empty last glyph is off where the renderer has the fix.
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 

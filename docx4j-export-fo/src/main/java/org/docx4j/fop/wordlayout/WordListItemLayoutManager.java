@@ -64,15 +64,11 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 	private static final org.slf4j.Logger log
 			= org.slf4j.LoggerFactory.getLogger(WordListItemLayoutManager.class);
 
-	private static final Field BODY_LIST;
-	static {
-		try {
-			BODY_LIST = ListItemLayoutManager.class.getDeclaredField("bodyList");
-			BODY_LIST.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's ListItemLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
-		}
-	}
+	/** {@code ListItemLayoutManager.bodyList} (private in Apache FOP; {@code getBodyList()}
+	 *  on the docx4j FO renderer, hook inline-access).  CR-020 phase 1. */
+	private static final java.lang.invoke.MethodHandle H_BODY_LIST = FopHooks.method(FopHooks.INLINE_ACCESS,
+			ListItemLayoutManager.class, "getBodyList");
+	private static final Field BODY_LIST = FopHooks.field(ListItemLayoutManager.class, "bodyList", H_BODY_LIST != null);
 
 	public WordListItemLayoutManager(ListItem node) {
 		super(node);
@@ -91,10 +87,14 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 	private void exposeTrailingLeading(List<ListElement> result) {
 		if (result == null || result.isEmpty()) return;
 		List<ListElement> bodyList;
-		try {
-			bodyList = (List<ListElement>) BODY_LIST.get(this);
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
+		if (H_BODY_LIST != null) {
+			bodyList = (List<ListElement>) FopHooks.call(H_BODY_LIST, this);
+		} else {
+			try {
+				bodyList = (List<ListElement>) BODY_LIST.get(this);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
 		}
 		int leading = trailingLeading(bodyList);
 		if (leading <= 0) return;

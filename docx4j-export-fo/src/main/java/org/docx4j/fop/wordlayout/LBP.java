@@ -34,57 +34,87 @@ import org.apache.fop.layoutmgr.inline.LineLayoutManager.LineBreakPosition;
  */
 final class LBP {
 
-	private static final Constructor<LineBreakPosition> CTOR;
-	private static final Field PAR_INDEX, START_INDEX, AVAILABLE_SHRINK, AVAILABLE_STRETCH, DIFFERENCE,
+	// ---- LineBreakPosition: package-private constructor, private fields.  On the docx4j FO
+	// renderer (hook inline-access) both are public and read through handles; on Apache FOP
+	// by reflection, as before.  CR-020 phase 1.
+
+	private static final java.lang.invoke.MethodHandle H_LBP_CTOR = FopHooks.constructor(FopHooks.INLINE_ACCESS,
+			LineBreakPosition.class, LayoutManager.class, int.class, int.class, int.class, int.class, int.class,
+			int.class, double.class, double.class, int.class, int.class, int.class, int.class, int.class, int.class,
+			int.class);
+	private static final java.lang.invoke.MethodHandle H_PAR_INDEX = lbpGetter("getParIndex"), H_START_INDEX = lbpGetter("getStartIndex"),
+			H_AVAILABLE_SHRINK = lbpGetter("getAvailableShrink"), H_AVAILABLE_STRETCH = lbpGetter("getAvailableStretch"),
+			H_DIFFERENCE = lbpGetter("getDifference"), H_D_ADJUST = lbpGetter("getDAdjust"),
+			H_IPD_ADJUST = lbpGetter("getIpdAdjust"), H_START_INDENT = lbpGetter("getStartIndent"),
+			H_END_INDENT = lbpGetter("getEndIndent"), H_LINE_HEIGHT = lbpGetter("getLineHeight"),
+			H_LINE_WIDTH = lbpGetter("getLineWidth"), H_SPACE_BEFORE = lbpGetter("getSpaceBefore"),
+			H_SPACE_AFTER = lbpGetter("getSpaceAfter"), H_BASELINE = lbpGetter("getBaseline");
+
+	private static java.lang.invoke.MethodHandle lbpGetter(String name) {
+		return FopHooks.method(FopHooks.INLINE_ACCESS, LineBreakPosition.class, name);
+	}
+
+	private static Constructor<LineBreakPosition> CTOR;
+	private static Field PAR_INDEX, START_INDEX, AVAILABLE_SHRINK, AVAILABLE_STRETCH, DIFFERENCE,
 			D_ADJUST, IPD_ADJUST, START_INDENT, END_INDENT, LINE_HEIGHT, LINE_WIDTH, SPACE_BEFORE, SPACE_AFTER, BASELINE;
 
 	static {
-		try {
-			CTOR = LineBreakPosition.class.getDeclaredConstructor(LayoutManager.class, int.class, int.class, int.class,
-					int.class, int.class, int.class, double.class, double.class, int.class, int.class, int.class,
-					int.class, int.class, int.class, int.class);
-			CTOR.setAccessible(true);
-			PAR_INDEX = field("parIndex");
-			START_INDEX = field("startIndex");
-			AVAILABLE_SHRINK = field("availableShrink");
-			AVAILABLE_STRETCH = field("availableStretch");
-			DIFFERENCE = field("difference");
-			D_ADJUST = field("dAdjust");
-			IPD_ADJUST = field("ipdAdjust");
-			START_INDENT = field("startIndent");
-			END_INDENT = field("endIndent");
-			LINE_HEIGHT = field("lineHeight");
-			LINE_WIDTH = field("lineWidth");
-			SPACE_BEFORE = field("spaceBefore");
-			SPACE_AFTER = field("spaceAfter");
-			BASELINE = field("baseline");
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's LineBreakPosition has changed; org.docx4j.fop.wordlayout needs updating", e);
+		if (H_LBP_CTOR == null) {
+			try {
+				CTOR = LineBreakPosition.class.getDeclaredConstructor(LayoutManager.class, int.class, int.class, int.class,
+						int.class, int.class, int.class, double.class, double.class, int.class, int.class, int.class,
+						int.class, int.class, int.class, int.class);
+				CTOR.setAccessible(true);
+			} catch (ReflectiveOperationException e) {
+				throw new IllegalStateException("FOP's LineBreakPosition has changed; org.docx4j.fop.wordlayout needs updating", e);
+			}
 		}
+		PAR_INDEX = field("parIndex", H_PAR_INDEX);
+		START_INDEX = field("startIndex", H_START_INDEX);
+		AVAILABLE_SHRINK = field("availableShrink", H_AVAILABLE_SHRINK);
+		AVAILABLE_STRETCH = field("availableStretch", H_AVAILABLE_STRETCH);
+		DIFFERENCE = field("difference", H_DIFFERENCE);
+		D_ADJUST = field("dAdjust", H_D_ADJUST);
+		IPD_ADJUST = field("ipdAdjust", H_IPD_ADJUST);
+		START_INDENT = field("startIndent", H_START_INDENT);
+		END_INDENT = field("endIndent", H_END_INDENT);
+		LINE_HEIGHT = field("lineHeight", H_LINE_HEIGHT);
+		LINE_WIDTH = field("lineWidth", H_LINE_WIDTH);
+		SPACE_BEFORE = field("spaceBefore", H_SPACE_BEFORE);
+		SPACE_AFTER = field("spaceAfter", H_SPACE_AFTER);
+		BASELINE = field("baseline", H_BASELINE);
 	}
 
-	private static Field field(String name) throws NoSuchFieldException {
-		Field f = LineBreakPosition.class.getDeclaredField(name);
-		f.setAccessible(true);
-		return f;
+	/** The field, or null where the hook's handle stands in for it. */
+	private static Field field(String name, java.lang.invoke.MethodHandle hook) {
+		return hook != null ? null : FopHooks.field(LineBreakPosition.class, name, false);
 	}
 
 	private LBP() {}
 
-	private static final Constructor<org.apache.fop.layoutmgr.inline.AlignmentContext> AC_CTOR;
+	private static final java.lang.invoke.MethodHandle H_AC_CTOR = FopHooks.constructor(FopHooks.INLINE_ACCESS,
+			org.apache.fop.layoutmgr.inline.AlignmentContext.class,
+			org.apache.fop.fonts.Font.class, int.class, org.apache.fop.traits.WritingMode.class);
+	private static Constructor<org.apache.fop.layoutmgr.inline.AlignmentContext> AC_CTOR;
 	static {
-		try {
-			AC_CTOR = org.apache.fop.layoutmgr.inline.AlignmentContext.class.getDeclaredConstructor(
-					org.apache.fop.fonts.Font.class, int.class, org.apache.fop.traits.WritingMode.class);
-			AC_CTOR.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's AlignmentContext has changed; org.docx4j.fop.wordlayout needs updating", e);
+		if (H_AC_CTOR == null) {
+			try {
+				AC_CTOR = org.apache.fop.layoutmgr.inline.AlignmentContext.class.getDeclaredConstructor(
+						org.apache.fop.fonts.Font.class, int.class, org.apache.fop.traits.WritingMode.class);
+				AC_CTOR.setAccessible(true);
+			} catch (ReflectiveOperationException e) {
+				throw new IllegalStateException("FOP's AlignmentContext has changed; org.docx4j.fop.wordlayout needs updating", e);
+			}
 		}
 	}
 
-	/** AlignmentContext(Font, int lineHeight, WritingMode) is package-private. */
+	/** AlignmentContext(Font, int lineHeight, WritingMode) is package-private in Apache FOP
+	 *  (public on the docx4j FO renderer, hook inline-access). */
 	static org.apache.fop.layoutmgr.inline.AlignmentContext newAlignmentContext(org.apache.fop.fonts.Font font, int lineHeight,
 			org.apache.fop.traits.WritingMode writingMode) {
+		if (H_AC_CTOR != null) {
+			return (org.apache.fop.layoutmgr.inline.AlignmentContext) FopHooks.call(H_AC_CTOR, font, lineHeight, writingMode);
+		}
 		try {
 			return AC_CTOR.newInstance(font, lineHeight, writingMode);
 		} catch (ReflectiveOperationException e) {
@@ -95,6 +125,10 @@ final class LBP {
 	static LineBreakPosition create(LayoutManager lm, int index, int startIndex, int breakIndex,
 			int shrink, int stretch, int diff, double ipdA, double adjust, int si,
 			int ei, int lh, int lw, int sb, int sa, int bl) {
+		if (H_LBP_CTOR != null) {
+			return (LineBreakPosition) FopHooks.call(H_LBP_CTOR, lm, index, startIndex, breakIndex, shrink, stretch, diff,
+					ipdA, adjust, si, ei, lh, lw, sb, sa, bl);
+		}
 		try {
 			return CTOR.newInstance(lm, index, startIndex, breakIndex, shrink, stretch, diff, ipdA, adjust, si, ei, lh, lw, sb, sa, bl);
 		} catch (ReflectiveOperationException e) {
@@ -102,7 +136,8 @@ final class LBP {
 		}
 	}
 
-	private static int i(Field f, LineBreakPosition p) {
+	private static int i(java.lang.invoke.MethodHandle h, Field f, LineBreakPosition p) {
+		if (h != null) return (Integer) FopHooks.call(h, p);
 		try {
 			return f.getInt(p);
 		} catch (IllegalAccessException e) {
@@ -110,7 +145,8 @@ final class LBP {
 		}
 	}
 
-	private static double d(Field f, LineBreakPosition p) {
+	private static double d(java.lang.invoke.MethodHandle h, Field f, LineBreakPosition p) {
+		if (h != null) return (Double) FopHooks.call(h, p);
 		try {
 			return f.getDouble(p);
 		} catch (IllegalAccessException e) {
@@ -118,23 +154,22 @@ final class LBP {
 		}
 	}
 
-	// ---- AlignmentContext.lineHeight and InlineLayoutManager.font (both private)
+	// ---- AlignmentContext.lineHeight and InlineLayoutManager.font (both private in Apache
+	// FOP; getLineHeight() and getFont() on the docx4j FO renderer, hook inline-access)
 
-	private static final Field AC_LINE_HEIGHT, ILM_FONT;
-	static {
-		try {
-			AC_LINE_HEIGHT = org.apache.fop.layoutmgr.inline.AlignmentContext.class.getDeclaredField("lineHeight");
-			AC_LINE_HEIGHT.setAccessible(true);
-			ILM_FONT = org.apache.fop.layoutmgr.inline.InlineLayoutManager.class.getDeclaredField("font");
-			ILM_FONT.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's AlignmentContext/InlineLayoutManager have changed; org.docx4j.fop.wordlayout needs updating", e);
-		}
-	}
+	private static final java.lang.invoke.MethodHandle H_AC_LINE_HEIGHT = FopHooks.method(FopHooks.INLINE_ACCESS,
+			org.apache.fop.layoutmgr.inline.AlignmentContext.class, "getLineHeight");
+	private static final java.lang.invoke.MethodHandle H_ILM_FONT = FopHooks.method(FopHooks.INLINE_ACCESS,
+			org.apache.fop.layoutmgr.inline.InlineLayoutManager.class, "getFont");
+	private static final Field AC_LINE_HEIGHT = FopHooks.field(
+			org.apache.fop.layoutmgr.inline.AlignmentContext.class, "lineHeight", H_AC_LINE_HEIGHT != null);
+	private static final Field ILM_FONT = FopHooks.field(
+			org.apache.fop.layoutmgr.inline.InlineLayoutManager.class, "font", H_ILM_FONT != null);
 
 	/** The line-height the inline's alignment context was made with (its fo:inline's
 	 *  line-height property, inherited if not set), in millipoints. */
 	static int lineHeight(org.apache.fop.layoutmgr.inline.AlignmentContext ac) {
+		if (H_AC_LINE_HEIGHT != null) return (Integer) FopHooks.call(H_AC_LINE_HEIGHT, ac);
 		try {
 			return AC_LINE_HEIGHT.getInt(ac);
 		} catch (IllegalAccessException e) {
@@ -145,6 +180,7 @@ final class LBP {
 	/** The font of an fo:inline's layout manager, or null for other managers. */
 	static org.apache.fop.fonts.Font inlineFont(LayoutManager lm) {
 		if (!(lm instanceof org.apache.fop.layoutmgr.inline.InlineLayoutManager)) return null;
+		if (H_ILM_FONT != null) return (org.apache.fop.fonts.Font) FopHooks.call(H_ILM_FONT, lm);
 		try {
 			return (org.apache.fop.fonts.Font) ILM_FONT.get(lm);
 		} catch (IllegalAccessException e) {
@@ -152,26 +188,28 @@ final class LBP {
 		}
 	}
 
-	// ---- TextLayoutManager.mappings / letterSpaceIPD / foText (private)
+	// ---- TextLayoutManager.mappings / letterSpaceIPD / foText / spaceCharIPD (private in
+	// Apache FOP; getters on the docx4j FO renderer, hook inline-access)
 
-	private static final Field TLM_MAPPINGS, TLM_LETTER_SPACE, TLM_FOTEXT, TLM_SPACE_CHAR_IPD;
-	static {
-		try {
-			TLM_MAPPINGS = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("mappings");
-			TLM_MAPPINGS.setAccessible(true);
-			TLM_LETTER_SPACE = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("letterSpaceIPD");
-			TLM_LETTER_SPACE.setAccessible(true);
-			TLM_FOTEXT = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("foText");
-			TLM_FOTEXT.setAccessible(true);
-			TLM_SPACE_CHAR_IPD = org.apache.fop.layoutmgr.inline.TextLayoutManager.class.getDeclaredField("spaceCharIPD");
-			TLM_SPACE_CHAR_IPD.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's TextLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
-		}
+	private static final java.lang.invoke.MethodHandle H_TLM_MAPPINGS = tlmGetter("getMappings"), H_TLM_LETTER_SPACE = tlmGetter("getLetterSpaceIPD"),
+			H_TLM_FOTEXT = tlmGetter("getFOText"), H_TLM_SPACE_CHAR_IPD = tlmGetter("getSpaceCharIPD");
+
+	private static java.lang.invoke.MethodHandle tlmGetter(String name) {
+		return FopHooks.method(FopHooks.INLINE_ACCESS, org.apache.fop.layoutmgr.inline.TextLayoutManager.class, name);
+	}
+
+	private static final Field TLM_MAPPINGS = tlmField("mappings", H_TLM_MAPPINGS),
+			TLM_LETTER_SPACE = tlmField("letterSpaceIPD", H_TLM_LETTER_SPACE),
+			TLM_FOTEXT = tlmField("foText", H_TLM_FOTEXT),
+			TLM_SPACE_CHAR_IPD = tlmField("spaceCharIPD", H_TLM_SPACE_CHAR_IPD);
+
+	private static Field tlmField(String name, java.lang.invoke.MethodHandle hook) {
+		return FopHooks.field(org.apache.fop.layoutmgr.inline.TextLayoutManager.class, name, hook != null);
 	}
 
 	@SuppressWarnings("unchecked")
 	static java.util.List<org.apache.fop.fonts.GlyphMapping> mappings(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		if (H_TLM_MAPPINGS != null) return (java.util.List<org.apache.fop.fonts.GlyphMapping>) FopHooks.call(H_TLM_MAPPINGS, tlm);
 		try {
 			return (java.util.List<org.apache.fop.fonts.GlyphMapping>) TLM_MAPPINGS.get(tlm);
 		} catch (IllegalAccessException e) {
@@ -180,6 +218,7 @@ final class LBP {
 	}
 
 	static org.apache.fop.traits.MinOptMax letterSpaceIPD(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		if (H_TLM_LETTER_SPACE != null) return (org.apache.fop.traits.MinOptMax) FopHooks.call(H_TLM_LETTER_SPACE, tlm);
 		try {
 			return (org.apache.fop.traits.MinOptMax) TLM_LETTER_SPACE.get(tlm);
 		} catch (IllegalAccessException e) {
@@ -189,6 +228,7 @@ final class LBP {
 
 	/** The advance of the space character in the manager's space font, in millipoints. */
 	static int spaceCharIPD(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		if (H_TLM_SPACE_CHAR_IPD != null) return (Integer) FopHooks.call(H_TLM_SPACE_CHAR_IPD, tlm);
 		try {
 			return TLM_SPACE_CHAR_IPD.getInt(tlm);
 		} catch (IllegalAccessException e) {
@@ -197,6 +237,7 @@ final class LBP {
 	}
 
 	static org.apache.fop.fo.FOText foText(org.apache.fop.layoutmgr.inline.TextLayoutManager tlm) {
+		if (H_TLM_FOTEXT != null) return (org.apache.fop.fo.FOText) FopHooks.call(H_TLM_FOTEXT, tlm);
 		try {
 			return (org.apache.fop.fo.FOText) TLM_FOTEXT.get(tlm);
 		} catch (IllegalAccessException e) {
@@ -204,22 +245,22 @@ final class LBP {
 		}
 	}
 
-	// ---- LeafPosition.leafPos (private, and there is no setter)
+	// ---- LeafPosition.leafPos (private, and no setter in Apache FOP; setLeafPos on the
+	// docx4j FO renderer, hook inline-access)
 
-	private static final Field LEAF_POS;
-	static {
-		try {
-			LEAF_POS = org.apache.fop.layoutmgr.LeafPosition.class.getDeclaredField("leafPos");
-			LEAF_POS.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's LeafPosition has changed; org.docx4j.fop.wordlayout needs updating", e);
-		}
-	}
+	private static final java.lang.invoke.MethodHandle H_SET_LEAF_POS = FopHooks.method(FopHooks.INLINE_ACCESS,
+			org.apache.fop.layoutmgr.LeafPosition.class, "setLeafPos", int.class);
+	private static final Field LEAF_POS = FopHooks.field(
+			org.apache.fop.layoutmgr.LeafPosition.class, "leafPos", H_SET_LEAF_POS != null);
 
 	/** Move a position on to a different glyph mapping: splitting one mapping into
 	 *  several shifts every later index, and a position is what carries the index.
 	 *  @since 17.1.0 */
 	static void setLeafPos(org.apache.fop.layoutmgr.LeafPosition p, int value) {
+		if (H_SET_LEAF_POS != null) {
+			FopHooks.call(H_SET_LEAF_POS, p, value);
+			return;
+		}
 		try {
 			LEAF_POS.setInt(p, value);
 		} catch (IllegalAccessException e) {
@@ -227,21 +268,45 @@ final class LBP {
 		}
 	}
 
-	// ---- LeafNodeLayoutManager.areaInfo / curArea and AreaInfo.ipdArea (all protected)
+	// ---- LeafNodeLayoutManager.areaInfo / curArea and AreaInfo.ipdArea (all protected in
+	// Apache FOP; getCurrentArea and setAreaInfoIPD on the docx4j FO renderer, hook
+	// leader-placement; setCurrentArea is Apache's own public method, used on both)
 
-	private static final Field LNLM_AREA_INFO, LNLM_CUR_AREA, AREA_INFO_IPD;
+	private static final java.lang.invoke.MethodHandle H_GET_CURRENT_AREA = FopHooks.method(FopHooks.LEADER_PLACEMENT,
+			org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class, "getCurrentArea");
+	private static final java.lang.invoke.MethodHandle H_SET_AREA_INFO_IPD = FopHooks.method(FopHooks.LEADER_PLACEMENT,
+			org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class, "setAreaInfoIPD", org.apache.fop.traits.MinOptMax.class);
+	private static final Field LNLM_AREA_INFO = FopHooks.field(
+			org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class, "areaInfo", H_SET_AREA_INFO_IPD != null);
+	private static final Field LNLM_CUR_AREA = FopHooks.field(
+			org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class, "curArea", H_GET_CURRENT_AREA != null);
+	private static final Field AREA_INFO_IPD;
 	static {
-		try {
-			LNLM_AREA_INFO = org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class.getDeclaredField("areaInfo");
-			LNLM_AREA_INFO.setAccessible(true);
-			LNLM_CUR_AREA = org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager.class.getDeclaredField("curArea");
-			LNLM_CUR_AREA.setAccessible(true);
-			AREA_INFO_IPD = Class.forName("org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager$AreaInfo")
-					.getDeclaredField("ipdArea");
-			AREA_INFO_IPD.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's LeafNodeLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
+		Field f = null;
+		if (H_SET_AREA_INFO_IPD == null) {
+			try {
+				f = Class.forName("org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager$AreaInfo").getDeclaredField("ipdArea");
+				f.setAccessible(true);
+			} catch (ReflectiveOperationException e) {
+				throw new IllegalStateException("FOP's LeafNodeLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
+			}
 		}
+		AREA_INFO_IPD = f;
+	}
+
+	/** {@code curArea} of a leaf manager: through the hook, or the field.  Declared to throw
+	 *  what the field path throws, so that every caller's handling stays as it was. */
+	private static Object curAreaRaw(org.apache.fop.layoutmgr.LayoutManager lm) throws IllegalAccessException {
+		if (H_GET_CURRENT_AREA != null) {
+			return (lm instanceof org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager) ? FopHooks.call(H_GET_CURRENT_AREA, lm) : null;
+		}
+		return LNLM_CUR_AREA.get(lm);
+	}
+
+	/** {@code curArea} set, through LeafNodeLayoutManager's own public setter (no hook needed). */
+	private static void setCurArea(org.apache.fop.layoutmgr.LayoutManager lm, org.apache.fop.area.inline.InlineArea area)
+			throws IllegalAccessException {
+		((org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager) lm).setCurrentArea(area);
 	}
 
 	/**
@@ -250,6 +315,12 @@ final class LBP {
 	 * at addAreas time, not from the Knuth element, so both have to be set.
 	 */
 	static void setLeafIPD(org.apache.fop.layoutmgr.LayoutManager lm, int ipd) {
+		if (H_SET_AREA_INFO_IPD != null) {
+			if (lm instanceof org.apache.fop.layoutmgr.inline.LeafNodeLayoutManager) {
+				FopHooks.call(H_SET_AREA_INFO_IPD, lm, org.apache.fop.traits.MinOptMax.getInstance(ipd));
+			}
+			return;
+		}
 		try {
 			Object areaInfo = LNLM_AREA_INFO.get(lm);
 			if (areaInfo == null) return;
@@ -264,7 +335,7 @@ final class LBP {
 	 *  @since 17.1.0 */
 	static org.apache.fop.area.inline.InlineArea leafArea(org.apache.fop.layoutmgr.LayoutManager lm) {
 		try {
-			Object area = LNLM_CUR_AREA.get(lm);
+			Object area = curAreaRaw(lm);
 			return (area instanceof org.apache.fop.area.inline.InlineArea)
 					? (org.apache.fop.area.inline.InlineArea) area : null;
 		} catch (IllegalAccessException e) {
@@ -376,15 +447,18 @@ final class LBP {
 		return phase > 0 ? phase : 0;
 	}
 
-	/** LeaderLayoutManager.font (private): the font its dots are drawn in. */
-	private static final Field LLM_FONT;
-	static {
-		try {
-			LLM_FONT = org.apache.fop.layoutmgr.inline.LeaderLayoutManager.class.getDeclaredField("font");
-			LLM_FONT.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's LeaderLayoutManager has changed; org.docx4j.fop.wordlayout needs updating", e);
-		}
+	/** LeaderLayoutManager.font (private in Apache FOP; getFont on the docx4j FO renderer,
+	 *  hook leader-placement): the font its dots are drawn in. */
+	private static final java.lang.invoke.MethodHandle H_LLM_FONT = FopHooks.method(FopHooks.LEADER_PLACEMENT,
+			org.apache.fop.layoutmgr.inline.LeaderLayoutManager.class, "getFont");
+	private static final Field LLM_FONT = FopHooks.field(
+			org.apache.fop.layoutmgr.inline.LeaderLayoutManager.class, "font", H_LLM_FONT != null);
+
+	/** Through the hook, or the field; declared to throw what the field path throws. */
+	private static org.apache.fop.fonts.Font leaderFontRaw(org.apache.fop.layoutmgr.LayoutManager lm)
+			throws IllegalAccessException {
+		if (H_LLM_FONT != null) return (org.apache.fop.fonts.Font) FopHooks.call(H_LLM_FONT, lm);
+		return (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
 	}
 
 	/**
@@ -433,7 +507,7 @@ final class LBP {
 		boolean asFopBuiltIt = (kind == LEADER_DOTS && pattern == org.apache.fop.fo.Constants.EN_DOTS)
 				|| (kind == LEADER_RULE && pattern == org.apache.fop.fo.Constants.EN_RULE);
 		try {
-			Object area = LNLM_CUR_AREA.get(lm);
+			Object area = curAreaRaw(lm);
 			if (asFopBuiltIt) {
 				// FOP built the area this stop wants, and it is the one that hangs on the
 				// alignment context the FO asked for; all it needs is Word's step
@@ -448,7 +522,7 @@ final class LBP {
 					? ruleArea(fobj, thickness, old.getBidiLevel())
 					: charArea(lm, fobj, thickness, old.getBidiLevel(), c);
 			if (fresh == null) return;
-			LNLM_CUR_AREA.set(lm, fresh);
+			setCurArea(lm, fresh);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
@@ -473,7 +547,7 @@ final class LBP {
 			org.apache.fop.fo.flow.Leader fobj, int thickness, int level, char c) {
 		org.apache.fop.fonts.Font font;
 		try {
-			font = (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
+			font = leaderFontRaw(lm);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
@@ -563,9 +637,9 @@ final class LBP {
 	 *  again is not wrapped twice. */
 	private static void unphase(org.apache.fop.layoutmgr.LayoutManager lm) {
 		try {
-			Object area = LNLM_CUR_AREA.get(lm);
+			Object area = curAreaRaw(lm);
 			if (area instanceof PhasedLeaderArea) {
-				LNLM_CUR_AREA.set(lm, ((PhasedLeaderArea) area).getLeader());
+				setCurArea(lm, ((PhasedLeaderArea) area).getLeader());
 			}
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
@@ -576,7 +650,7 @@ final class LBP {
 	 *  this tab's area does not repeat one. */
 	static int leaderUnitWidth(org.apache.fop.layoutmgr.LayoutManager lm) {
 		try {
-			Object area = LNLM_CUR_AREA.get(lm);
+			Object area = curAreaRaw(lm);
 			if (area instanceof PhasedLeaderArea) area = ((PhasedLeaderArea) area).getLeader();
 			return (area instanceof org.apache.fop.area.inline.FilledArea)
 					? ((org.apache.fop.area.inline.FilledArea) area).getUnitWidth() : 0;
@@ -619,12 +693,12 @@ final class LBP {
 		if (!spaces && (phase <= 0 || phase >= width)) return;
 		if (phase < 0 || phase >= width) phase = 0;
 		try {
-			Object area = LNLM_CUR_AREA.get(lm);
+			Object area = curAreaRaw(lm);
 			if (!(area instanceof org.apache.fop.area.inline.FilledArea)) return;
 			org.apache.fop.area.inline.FilledArea run = (org.apache.fop.area.inline.FilledArea) area;
 			if (!spaces) {
 				run.setIPD(width - phase);
-				LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(phase, run));
+				setCurArea(lm, new PhasedLeaderArea(phase, run));
 				return;
 			}
 			int period = run.getUnitWidth();
@@ -633,7 +707,7 @@ final class LBP {
 			if (units <= 0) return;            // no room for a run: the tab stays as it is
 			int runWidth = units * period;
 			int tail = width - phase - runWidth;
-			org.apache.fop.fonts.Font font = (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
+			org.apache.fop.fonts.Font font = leaderFontRaw(lm);
 			java.awt.Color colour = (lm.getFObj() instanceof org.apache.fop.fo.flow.Leader)
 					? ((org.apache.fop.fo.flow.Leader) lm.getFObj()).getColor() : null;
 			int baseline = 0;
@@ -652,11 +726,11 @@ final class LBP {
 			if (lead == null && end == null) {
 				if (phase <= 0) return;
 				run.setIPD(width - phase);
-				LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(phase, run));
+				setCurArea(lm, new PhasedLeaderArea(phase, run));
 				return;
 			}
 			run.setIPD(runWidth);
-			LNLM_CUR_AREA.set(lm, new PhasedLeaderArea(lead, run, end));
+			setCurArea(lm, new PhasedLeaderArea(lead, run, end));
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
@@ -781,20 +855,17 @@ final class LBP {
 	}
 
 	/** {@code InlineParent.inlines} (protected): a FilledArea's repeating unit, which its
-	 *  own {@code getChildAreas} expands. */
-	private static final Field IP_INLINES;
-	static {
-		try {
-			IP_INLINES = org.apache.fop.area.inline.InlineParent.class.getDeclaredField("inlines");
-			IP_INLINES.setAccessible(true);
-		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException("FOP's InlineParent has changed; org.docx4j.fop.wordlayout needs updating", e);
-		}
-	}
+	 *  own {@code getChildAreas} expands; {@code getUnitAreas()} on the docx4j FO renderer
+	 *  (hook leader-placement). */
+	private static final java.lang.invoke.MethodHandle H_UNIT_AREAS = FopHooks.method(FopHooks.LEADER_PLACEMENT,
+			org.apache.fop.area.inline.FilledArea.class, "getUnitAreas");
+	private static final Field IP_INLINES = FopHooks.field(
+			org.apache.fop.area.inline.InlineParent.class, "inlines", H_UNIT_AREAS != null);
 
 	@SuppressWarnings("unchecked")
-	private static java.util.List<org.apache.fop.area.inline.InlineArea> filledUnit(
+	static java.util.List<org.apache.fop.area.inline.InlineArea> filledUnit(
 			org.apache.fop.area.inline.FilledArea run) {
+		if (H_UNIT_AREAS != null) return (java.util.List<org.apache.fop.area.inline.InlineArea>) FopHooks.call(H_UNIT_AREAS, run);
 		try {
 			return (java.util.List<org.apache.fop.area.inline.InlineArea>) IP_INLINES.get(run);
 		} catch (IllegalAccessException e) {
@@ -812,11 +883,11 @@ final class LBP {
 	 *  whole advance, which is what Word's PDF writes for a tab.  @since 17.1.1 */
 	static void blankLeaderArea(org.apache.fop.layoutmgr.LayoutManager lm, int width, boolean spaces) {
 		try {
-			Object area = LNLM_CUR_AREA.get(lm);
+			Object area = curAreaRaw(lm);
 			if (!(area instanceof org.apache.fop.area.inline.InlineArea)) return;
 			org.apache.fop.area.inline.InlineArea old = (org.apache.fop.area.inline.InlineArea) area;
 			if (spaces && width > 0) {
-				org.apache.fop.fonts.Font font = (org.apache.fop.fonts.Font) LLM_FONT.get(lm);
+				org.apache.fop.fonts.Font font = leaderFontRaw(lm);
 				java.awt.Color colour = (lm.getFObj() instanceof org.apache.fop.fo.flow.Leader)
 						? ((org.apache.fop.fo.flow.Leader) lm.getFObj()).getColor() : null;
 				int baseline = (old instanceof org.apache.fop.area.inline.AbstractTextArea)
@@ -824,7 +895,7 @@ final class LBP {
 				org.apache.fop.area.inline.TextArea space
 						= spaceArea(font, colour, width, old.getBPD(), baseline, old.getBidiLevel());
 				if (space != null) {
-					LNLM_CUR_AREA.set(lm, space);
+					setCurArea(lm, space);
 					return;
 				}
 			}
@@ -832,24 +903,24 @@ final class LBP {
 			org.apache.fop.area.inline.Space blank = new org.apache.fop.area.inline.Space();
 			blank.setBPD(old.getBPD());
 			blank.setBidiLevel(old.getBidiLevel());
-			LNLM_CUR_AREA.set(lm, blank);
+			setCurArea(lm, blank);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	static int parIndex(LineBreakPosition p) { return i(PAR_INDEX, p); }
-	static int startIndex(LineBreakPosition p) { return i(START_INDEX, p); }
-	static int availableShrink(LineBreakPosition p) { return i(AVAILABLE_SHRINK, p); }
-	static int availableStretch(LineBreakPosition p) { return i(AVAILABLE_STRETCH, p); }
-	static int difference(LineBreakPosition p) { return i(DIFFERENCE, p); }
-	static double dAdjust(LineBreakPosition p) { return d(D_ADJUST, p); }
-	static double ipdAdjust(LineBreakPosition p) { return d(IPD_ADJUST, p); }
-	static int startIndent(LineBreakPosition p) { return i(START_INDENT, p); }
-	static int endIndent(LineBreakPosition p) { return i(END_INDENT, p); }
-	static int lineHeight(LineBreakPosition p) { return i(LINE_HEIGHT, p); }
-	static int lineWidth(LineBreakPosition p) { return i(LINE_WIDTH, p); }
-	static int spaceBefore(LineBreakPosition p) { return i(SPACE_BEFORE, p); }
-	static int spaceAfter(LineBreakPosition p) { return i(SPACE_AFTER, p); }
-	static int baseline(LineBreakPosition p) { return i(BASELINE, p); }
+	static int parIndex(LineBreakPosition p) { return i(H_PAR_INDEX, PAR_INDEX, p); }
+	static int startIndex(LineBreakPosition p) { return i(H_START_INDEX, START_INDEX, p); }
+	static int availableShrink(LineBreakPosition p) { return i(H_AVAILABLE_SHRINK, AVAILABLE_SHRINK, p); }
+	static int availableStretch(LineBreakPosition p) { return i(H_AVAILABLE_STRETCH, AVAILABLE_STRETCH, p); }
+	static int difference(LineBreakPosition p) { return i(H_DIFFERENCE, DIFFERENCE, p); }
+	static double dAdjust(LineBreakPosition p) { return d(H_D_ADJUST, D_ADJUST, p); }
+	static double ipdAdjust(LineBreakPosition p) { return d(H_IPD_ADJUST, IPD_ADJUST, p); }
+	static int startIndent(LineBreakPosition p) { return i(H_START_INDENT, START_INDENT, p); }
+	static int endIndent(LineBreakPosition p) { return i(H_END_INDENT, END_INDENT, p); }
+	static int lineHeight(LineBreakPosition p) { return i(H_LINE_HEIGHT, LINE_HEIGHT, p); }
+	static int lineWidth(LineBreakPosition p) { return i(H_LINE_WIDTH, LINE_WIDTH, p); }
+	static int spaceBefore(LineBreakPosition p) { return i(H_SPACE_BEFORE, SPACE_BEFORE, p); }
+	static int spaceAfter(LineBreakPosition p) { return i(H_SPACE_AFTER, SPACE_AFTER, p); }
+	static int baseline(LineBreakPosition p) { return i(H_BASELINE, BASELINE, p); }
 }

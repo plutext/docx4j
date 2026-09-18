@@ -66,12 +66,19 @@ public final class FopCapabilities {
 
 	/**
 	 * The hooks a rule can ask for. Each constant names one hook the docx4j FO renderer
-	 * carries, by the string the fork publishes it under; the set grows with CR-020
-	 * phase 1, one constant per hook, and a constant is never removed while the hook
-	 * exists. Empty until the first hook lands.
+	 * carries, by the string the fork publishes it under; one constant per hook, and a
+	 * constant is never removed while the hook exists (CR-020 phase 1).
 	 */
 	public enum Capability {
-		;
+		/** {@code LineBreakUtils.setLineBreakPairProperty}: Word's break after a hyphen before digits without a
+		 *  reflective write to a private static table (Enterprise CR-001 §6.6 item 29). */
+		PAIR_TABLE("pair-table"),
+		/** A placed leader's unit and the leaf manager's area and width, for the leader grid (item 27). */
+		LEADER_PLACEMENT("leader-placement"),
+		/** What the Word line, text and list managers read of FOP's managers and positions. */
+		INLINE_ACCESS("inline-access"),
+		/** The subsetter's empty-last-glyph fix is in the renderer, so the font padding workaround is off (item 23). */
+		GLYF_EMPTY_GLYPH("glyf-empty-glyph");
 
 		private final String key;
 

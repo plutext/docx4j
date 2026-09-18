@@ -254,6 +254,23 @@ public final class WordBreakOpportunities {
 	public static synchronized void applyWordPairTable() {
 		if (pairTableApplied || !WordLayoutCustomizer.breakOpportunities()) return;
 		pairTableApplied = true;
+		int hyProp = LineBreakUtils.LINE_BREAK_PROPERTY_HY;
+		int nuProp = LineBreakUtils.LINE_BREAK_PROPERTY_NU;
+		/* The docx4j FO renderer (hook pair-table) has a public override,
+		 * LineBreakUtils.setLineBreakPairProperty(before, after, value); Apache FOP has only the
+		 * private static table.  CR-020 phase 1. */
+		java.lang.invoke.MethodHandle override = FopHooks.method(FopHooks.PAIR_TABLE, LineBreakUtils.class,
+				"setLineBreakPairProperty", int.class, int.class, byte.class);
+		if (override != null) {
+			byte was = LineBreakUtils.getLineBreakPairProperty(hyProp, nuProp);
+			if (was != LineBreakUtils.INDIRECT_BREAK) {
+				log.info("FOP's line-break pair table holds HY x NU as " + was
+						+ ", not the indirect break this was measured against; left alone");
+				return;
+			}
+			FopHooks.call(override, hyProp, nuProp, LineBreakUtils.DIRECT_BREAK);
+			return;
+		}
 		try {
 			Field field = LineBreakUtils.class.getDeclaredField("PAIR_TABLE");
 			field.setAccessible(true);
