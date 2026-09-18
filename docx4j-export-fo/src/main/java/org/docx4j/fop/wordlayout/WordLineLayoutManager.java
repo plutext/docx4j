@@ -2791,7 +2791,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** How far past the measure {@code available} a word of this block may run before
      *  it is broken, in millipoints.  @since 17.1.1 */
     private int overrunTolerance(int available) {
-        return inCell ? Math.min(OVERRUN_TOLERANCE, cellOverrunTolerance(available)) : OVERRUN_TOLERANCE;
+        /* The cell's own tolerance stands on its own since 17.1.1: the two defaults are the
+         * same twip now (the body's was an inch, and the min kept a raised cell tolerance
+         * from exceeding it), so capping the cell by the general value would only stop that
+         * property being raised.  @since 17.1.1 (CR-001 batch 47 item 4) */
+        return inCell ? cellOverrunTolerance(available) : OVERRUN_TOLERANCE;
     }
 
     /**
@@ -2901,47 +2905,63 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
     /**
      * How far past the measure a word may run before it is broken rather than left to
-     * overflow: one inch (millipoints).
+     * overflow: <b>one twip</b> (millipoints), Word's own unit of layout - the same as a
+     * table cell's, because the golden says the body is no different.
      *
-     * <p>The rule has to be conservative, because a word which does not fit is very often
-     * a measure <em>we</em> got wrong rather than a word Word breaks, and breaking it then
-     * hides the real defect and costs a line.  Measured over the corpus documents which
-     * carry the shape, every word that overflowed by less than an inch was one Word
-     * fitted or let overhang - "BALES" by 2.6pt and "'A'" by 1.4pt in a certificate whose
-     * columns Word autofits a fraction wider than we do (that document scores 1.000
-     * without the rule and 0.826 with it at a 1pt tolerance); "CANTIDAD" by 20pt in a
-     * cell whose text Word turns on its side, where our measure is the unrotated width;
-     * "Telecomunicaciones." by 20pt in a table whose grid we still fit wrongly.  The words
-     * Word does break overflow by 78 to 345pt.  The {@code table-autofit} probe's 23.976pt
-     * column against a 23.988pt word - 0.012pt - is the smallest of them.
+     * <p>Measured on the {@code break-longword} golden, Liberation Serif 12pt on a 481.0pt
+     * body measure with every digit and underscore 6.0pt wide:</p>
+     * <ul>
+     * <li>a token of 88 characters (528.0pt, <b>48.0pt over</b>): Word sets 80 of them to
+     *     x=537.14, the measure exactly, and puts {@code 01234567} on the next line;
+     * <li>a token of 81 characters (486.0pt, <b>5.0pt over</b>): Word sets 80 and puts the
+     *     last one on the next line;
+     * <li>a token of 80 characters (480.0pt, 1.0pt <em>inside</em>): one line, unbroken;
+     * <li>a token which fits the measure but not the space left on its line: Word moves it
+     *     down whole, and does not break it.
+     * </ul>
+     * <p>So Word's rule is the measure itself, in the body as in a cell: 5.0pt over is
+     * broken and 1.0pt inside is not. The golden's same eleven cases in a 205pt cell come
+     * out identically, and docx4j already matched those - because a cell's tolerance was
+     * already a twip.</p>
      *
-     * <p><b>Measured again over all three corpora (b2-batch28), and it is worth a great
-     * deal - but not yet.</b>  At 8pt instead of 72 the mean line parity rises 0.8816 to
-     * 0.8879 on the 191-document corpus, 0.8496 to 0.8532 on the 156 and 0.8810 to
-     * 0.8836 on the 102 long ones, with 1013 more lines matched, the medians up on all
-     * three and the probes byte-identical; the corpus's largest single deficit goes 0.626
-     * to 0.738 and four documents rise by 0.12 to 0.26.  An unbiased quarter of the first
-     * corpus shows it is monotone - 0.8967 at 72pt, 0.9005 at 36, 0.9011 at 18, 0.9051 at
-     * 8, 0.9052 at 1 - with four documents up and none down.
+     * <p><b>What the inch was for, and what it cost.</b> Until 17.1.1 the body's tolerance
+     * was 72pt, on the argument that a word which does not fit is often a measure
+     * <em>we</em> got wrong rather than a word Word breaks - "BALES" by 2.6pt in a
+     * certificate whose columns Word autofits a fraction wider than ours, "CANTIDAD" by
+     * 20pt in a cell whose text Word turns on its side - while the words Word does break
+     * overflow by 78 to 345pt. That argument is refuted for the body by the golden above:
+     * Word breaks at 5.0pt over.
      *
-     * <p>What stops it is three documents whose page count it breaks, and they break
-     * because the measure it is handed is wrong rather than because the word is long.
-     * Instrumented, the worst of them fires <b>166 times</b> into measures of
-     * <b>5.2pt and 23.2pt</b> and gains 529 lines and five pages: a column that narrow
-     * holds one character, so breaking into it shatters the word instead of wrapping it.
-     * The documents this rule is for fire 3 to 21 times into measures of 36 to 268pt.
-     * Neither an absolute threshold (36pt leaves both page counts broken) nor a relative
-     * one (the largest win overflows its measure by 6.7%) separates the two, because the
-     * difference is not in the word at all - it is that we sized those columns wrongly.
-     * That document is the one the triage ledger names for the content-autofit defect
-     * (Word refits the grid rather than scaling it proportionally).  <b>Lower this to 8pt
-     * once that is fixed</b>, and the tolerance is a property so it can be measured
-     * without a build.
+     * <p>What remains true is the risk the inch named, and the corpora show both sides of
+     * it. Over the three (191, 156 and 102 documents), measured together with this batch's
+     * page-number placeholder ({@link WordPageNumberCitationLayoutManager}, which accounts
+     * for the largest single gain), the means rise 0.9258 -&gt; 0.9261, 0.9085 -&gt; 0.9089
+     * and 0.9438 -&gt; 0.9443, with 111 more lines matched and no corpus losing any;
+     * documents of long placeholder tokens in narrow columns gain 7 to 14 lines each and
+     * one reaches 1.0000. Against that, three documents lose 3 to 5 lines apiece
+     * and they are all one shape - <b>a rotated or vertical text box</b>, whose measure is
+     * ours and not Word's: a {@code reference-orientation="90"} container whose
+     * inline-progression-dimension is 15pt for a word of 36pt, and a VML text box of
+     * {@code layout-flow:vertical} which docx4j does not rotate at all, so its measure is
+     * the box's 16.5pt width less indent and padding - 2.1pt - where Word lays the text
+     * along the box's 93.75pt height. A twip in a measure that holds no character shatters
+     * the word one character to a line (measured: 4 overflowing pieces before, 15 lines
+     * after) where the inch let it overhang. Two documents also gain a page, one on
+     * URL break opportunities and one on a substitute face 1.5% wider than the document's
+     * own; neither is this tolerance.
      *
-     * @since 17.1.0
+     * <p>Measured at 8pt as well - the value this Javadoc used to recommend - and it is
+     * worse on every count: it fails the golden's 5.0pt case, and the narrow-measure
+     * documents fall further still.
+     *
+     * <p>The tolerance is a property ({@link WordLayoutCustomizer#EMERGENCY_BREAK_TOLERANCE}),
+     * so the inch can be restored without a build while those documents' measures are
+     * chased.</p>
+     *
+     * @since 17.1.0; the twip 17.1.1 (CR-001 batch 47 item 4)
      */
     private static final int OVERRUN_TOLERANCE
-            = (int) Math.round(1000 * WordLayoutCustomizer.emergencyBreakTolerance(72));
+            = (int) Math.round(1000 * WordLayoutCustomizer.emergencyBreakTolerance(0.05));
 
     /**
      * The tolerance inside a table cell: one twip, Word's own unit of layout (millipoints).
@@ -2966,13 +2986,16 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * last place: the {@code table-autofit} probe's 23.976pt column holds a 23.988pt word
      * Word set on one line.  A twip is below what Word can lay out.
      *
-     * <p>What is deliberately not done: the rule is scoped to a block whose nearest
-     * container is the cell itself ({@link #inTableCell}).  A rotated cell
-     * (w:textDirection, a reference-oriented block-container) has for its measure a row
-     * height we only bound, a positioned frame or text box has its own, and a footnote
-     * the page's; those keep the inch.  Nor is it applied to body text: a long word in a
-     * narrow section column is the same defect, but the inch's reason - a measure we got
-     * wrong hides behind a break - still stands there, and it wants measuring on its own.
+     * <p><b>What the scope is now.</b>  Body text takes the same twip from 17.1.1 (the
+     * golden refuted the inch, see {@link #OVERRUN_TOLERANCE}), so the cell rule differs
+     * from the general one only where one of the two properties is set.  The walk that
+     * finds the cell goes through {@code fo:block-container}s from 17.1.1 as well
+     * ({@link #inTableCell}), so a rotated cell (w:textDirection) and a positioned frame
+     * or text box inside a cell are in the cell; a footnote, a flow and a static content
+     * still end the walk.  What the old inch was protecting against is still real and
+     * still unanswered: a measure <em>we</em> got wrong - a rotated cell's measure is a
+     * row height docx4j only bounds, and a vertical text box's is the box's width - and
+     * the corpora show it as a word shattered one character to a line.
      *
      * <p>All of this is a workaround for FOP, which offers no break inside a word at all
      * (§10 of word-layout-rules.md); when FOP grows an emergency break of its own the
@@ -2991,19 +3014,33 @@ public class WordLineLayoutManager extends LineLayoutManager {
     }
 
     /**
-     * Whether this block is set directly in a table cell: its nearest enclosing
-     * container is an {@code fo:table-cell}, with no {@code fo:block-container},
-     * footnote, flow or static content between.  Such a block's measure is the cell's
-     * content width, which is the measure Word breaks a word against.
+     * Whether this block is set in a table cell: an {@code fo:table-cell} is reached
+     * walking up through blocks and {@code fo:block-container}s, with no footnote, flow or
+     * static content in between.  Such a block's measure is the cell's content width (a
+     * block-container in a cell is written with the cell's own width), which is the measure
+     * Word breaks a word against.
      *
-     * @since 17.1.1
+     * <p>A {@code block-container} used to end the walk, on the reading that its measure
+     * is its own rather than the cell's.  That is not so for the containers docx4j writes
+     * inside a cell - a rotated cell's, a frame's, a text box's wrapper - each of which is
+     * given the cell's content width or a width taken from it, so the block inside is
+     * broken against the same measure as a bare cell block would be, and Word breaks a
+     * word as soon as it exceeds the cell it is in.
+     *
+     * <p>With both tolerances at a twip (17.1.1) the classification decides nothing on its
+     * own: {@link #overrunTolerance} reaches the same number either way.  It decides what
+     * a set {@link WordLayoutCustomizer#EMERGENCY_BREAK_TOLERANCE} or
+     * {@link WordLayoutCustomizer#CELL_EMERGENCY_BREAK_TOLERANCE} applies to, which is why
+     * it is worth having right ({@code CellEmergencyBreakTest}).
+     *
+     * @since 17.1.1; the container walk CR-001 batch 47 item 4c
      */
     static boolean inTableCell(org.apache.fop.fo.FONode block) {
         for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
                 n != null; n = n.getParent()) {
             if (n instanceof org.apache.fop.fo.flow.table.TableCell) return true;
-            if (n instanceof org.apache.fop.fo.flow.BlockContainer
-                    || n instanceof org.apache.fop.fo.flow.Footnote
+            // a BlockContainer was in this list until 17.1.1; see the javadoc
+            if (n instanceof org.apache.fop.fo.flow.Footnote
                     || n instanceof org.apache.fop.fo.flow.FootnoteBody
                     || n instanceof org.apache.fop.fo.pagination.Flow
                     || n instanceof org.apache.fop.fo.pagination.StaticContent) return false;

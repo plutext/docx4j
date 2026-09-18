@@ -160,6 +160,7 @@ public final class WordLayoutFixups {
 		imageOnlyLineBox(doc);
 		inlineLabelGaps(doc);
 		listLabelLines(doc);
+		numberingTabLeaderFont(doc);
 		lineBoxAttributes(doc, compatibilityMode, hyphenation, compat);
 		positionFrames(doc);
 		anchorImages(doc);
@@ -216,6 +217,65 @@ public final class WordLayoutFixups {
 		if (root != null && isFo(root, "root")) {
 			root.setAttribute("line-height-shift-adjustment", "disregard-shifts");
 		}
+	}
+
+	/**
+	 * The numbering tab's leader is drawn in the <b>paragraph's</b> face and size, not the
+	 * label's.
+	 *
+	 * <p>{@code XsltFOFunctions.appendNumberingTabLeader} writes the leader into the
+	 * label's own block, where it inherits the label's font, and the label's font is often
+	 * neither the paragraph's face nor its size.  That decides the leader's <b>step</b>,
+	 * and through the step how many characters the run holds: Word steps a leader run on
+	 * the character's advance rounded to 1/300 inch
+	 * ({@code LBP.gridStep}).
+	 *
+	 * <p>Measured on the {@code tab-leader-in-cell-2} golden, whose label is Calibri
+	 * 11.04pt and whose text is Liberation Serif 12pt. Word steps the run <b>3.120pt</b> -
+	 * 13 cells of the grid, which is Liberation Serif's 3.0pt period rounded up - and
+	 * paints <b>fourteen</b> dots over the 45.7pt advance. From the label's own 11pt
+	 * Carlito the period is 2.879pt, which rounds to 12 cells = 2.880pt, and the run holds
+	 * fifteen. (Word writes the dot glyph itself out of Arial at the label's 11.04pt size,
+	 * advance 3.069pt, which rounds to the same 13 cells; what is matched here is the step
+	 * and the count, not the face the glyph comes from.)
+	 *
+	 * <p>Here rather than in the FO writer because the paragraph's own {@code font-family}
+	 * and {@code font-size} are put on its block after the list block is built.
+	 *
+	 * @since 17.1.1 (CR-001 batch 47 item 5b)
+	 */
+	static void numberingTabLeaderFont(Document doc) {
+		for (Element item : elements(doc, "list-item")) {
+			Element labelEl = firstChildElement(item, "list-item-label");
+			Element bodyEl = firstChildElement(item, "list-item-body");
+			if (labelEl == null || bodyEl == null) continue;
+			Element label = firstChildElement(labelEl, "block");
+			if (label == null) continue;
+			Element leader = null;
+			for (Element l : descendants(label, "leader")) {
+				if (l.getAttribute(HINT_TOC_LEADER).length() > 0) { leader = l; break; }
+			}
+			if (leader == null) continue;
+			Element body = null;
+			for (Element b : descendants(bodyEl, "block")) {
+				if (b.getAttribute(HINT_LINE_BOX).length() > 0) { body = b; break; }
+			}
+			if (body == null) continue;
+			String family = inherited(body, "font-family");
+			String size = inherited(body, "font-size");
+			if (family.length() > 0) leader.setAttribute("font-family", family);
+			if (size.length() > 0) leader.setAttribute("font-size", size);
+		}
+	}
+
+	/** {@code el}'s own value for an inherited property, or the nearest ancestor's, or "". */
+	private static String inherited(Element el, String property) {
+		for (Element e = el; e != null;
+				e = e.getParentNode() instanceof Element ? (Element) e.getParentNode() : null) {
+			String value = e.getAttribute(property);
+			if (value != null && value.length() > 0) return value;
+		}
+		return "";
 	}
 
 	// ------------------------------------------------------------ 0a1. letter-spacing
@@ -1415,6 +1475,12 @@ public final class WordLayoutFixups {
 		double distL = Double.parseDouble(dist[0]), distR = Double.parseDouble(dist[1]),
 				distB = Double.parseDouble(dist[3]);
 
+		if (whollyOffThePage(g, pageY, off, h)) {
+			log.debug("An anchored picture is wholly off the page; Word paints none of it");
+			g.getParentNode().removeChild(g);
+			return;
+		}
+
 		Element para = enclosingParagraph(g);
 		if (para == null) return; // leave it inline
 
@@ -1534,36 +1600,43 @@ public final class WordLayoutFixups {
 	 */
 	/**
 	 * Put this {@code wrapTopAndBottom} drawing <b>beside</b> one already placed in the
-	 * same paragraph rather than below it, where the two do not overlap horizontally;
-	 * true where it was placed.
+	 * same paragraph rather than below it, whatever its horizontal position; true where it
+	 * was placed.
 	 *
 	 * <p>{@code wrapTopAndBottom} says that <em>text</em> does not flow beside the object,
 	 * and each such drawing therefore reserves its own band of the flow.  It does not say
-	 * that another <em>drawing</em> cannot sit there, and Word puts two that do not
-	 * overlap side by side, each at its own {@code positionV}, reserving the band once.
+	 * that another <em>drawing</em> cannot sit there: Word puts two anchored in one
+	 * paragraph side by side, each at its own {@code positionV}, reserving the band once.
 	 *
-	 * <p>Measured on a corpus document with seven such drawings, each about 225pt wide in
-	 * a 470pt column, from Word's own PDF: its page 3 carries four of them, two at
-	 * x=73.85 and x=308.25 on one baseline and two at x=78.75 and x=317.20 on another, and
-	 * its page 4 carries three, two at x=90.75 and x=336.00 and one alone.  Ours had the
-	 * same seven at very nearly the same x - 317.20, 308.25, 95.25, 90.75 and 336.00 are
-	 * Word's numbers exactly, the horizontal {@code posOffset} being already right - but
-	 * one below another: the second of a pair landed 210.75pt lower and the document ran
-	 * to six pages against Word's four.
+	 * <p>Measured on the {@code anchor-side-by-side} probe against Word's own PDF, on a
+	 * 451.3pt column with 200 x 100pt pictures at {@code positionV} 10pt and 12pt:
+	 * <ul>
+	 * <li>at {@code posOffset} 0 and 240pt Word draws them at x=72.00 and x=312.00, tops
+	 *     149.20 and 151.20 - 2.00pt apart, the offsets the docx asks for - and reserves
+	 *     112pt = max(offset + height), the next line's box beginning at the band's bottom;
+	 * <li>at 0 and 150pt, <b>overlapping by 50pt</b>, Word bands them just the same: x=72.00
+	 *     and x=222.00, tops 314.59 and 316.59, one 112pt band, the two overlapping on the
+	 *     page with the later anchor painted on top;
+	 * <li>at 0 and 200pt, touching exactly, likewise;
+	 * <li>anchored in <b>two</b> paragraphs, with a text paragraph between, Word does
+	 *     <b>not</b> band them: each takes its own band (110pt and 112pt) with the
+	 *     intervening text between, even though their x values are disjoint.
+	 * </ul>
 	 *
-	 * <p>Note what the rule is <b>not</b>: it is not that the two share a {@code positionV}.
-	 * Two of that document's pairs sit 0.25pt and 2.00pt apart vertically in Word's own
-	 * PDF, and our offsets differ by the same 2.00pt, so each keeps its own offset and
-	 * lands where Word puts it.  What the band does is stop one reserving space against
-	 * the other.  The band's height is the greatest extent of its members, and its members
-	 * are positioned within it, so a member's own offset is measured from the same origin
-	 * it was before.
+	 * <p>So horizontal overlap is no bar to the band - before 17.1.1's first reading was
+	 * corrected here, an overlapping pair was stacked, which reserved 222pt for Word's 112
+	 * and reversed the pair's order - and the paragraph is.  Note what the rule is
+	 * <b>not</b>: it is not that the two share a {@code positionV}; each member keeps its
+	 * own offset.  What the band does is stop one reserving space against the other.  The
+	 * band's height is the greatest extent of its members and its horizontal extent is
+	 * their union; its members are positioned within it, so a member's own offset is
+	 * measured from the same origin it was before, and they are appended in document
+	 * order, which is the order Word paints them in.
 	 *
 	 * <p>Only drawings anchored in the <b>same paragraph</b> can be banded here: the
 	 * wrappers are siblings at that paragraph's head, and two anchored in different
-	 * paragraphs have no common origin at this point in the FO.  That is a real limit -
-	 * the same document has a third pair, one in each of two paragraphs, which Word also
-	 * draws side by side and this leaves stacked.
+	 * paragraphs have no common origin at this point in the FO.  The probe's fourth case
+	 * shows that limit is Word's own behaviour and needs no lifting.
 	 *
 	 * @since 17.1.1
 	 */
@@ -1572,9 +1645,7 @@ public final class WordLayoutFixups {
 		for (Node n = para.getFirstChild(); n instanceof Element; n = n.getNextSibling()) {
 			Element sibling = (Element) n;
 			if (!isFo(sibling, "block-container") || takesNoSpace(sibling)) continue;
-			double[] extent = bandExtent(sibling);
-			if (extent == null) continue;
-			if (x + w > extent[0] + 0.01 && extent[1] > x + 0.01) continue;   // they overlap
+			if (bandExtent(sibling) == null) continue;   // not a placed topAndBottom wrapper
 			Element band = asBand(doc, sibling);
 			band.appendChild(positioned(doc, holder, x, off, w, h));
 			double reach = off + h + distB;
@@ -1584,8 +1655,10 @@ public final class WordLayoutFixups {
 		return false;
 	}
 
-	/** The horizontal extent [start, end] a placed {@code topAndBottom} wrapper occupies,
-	 *  or null where it is not one: the union of its members'.  @since 17.1.1 */
+	/** The horizontal extent [start, end] a placed {@code topAndBottom} wrapper occupies -
+	 *  the union of its members' - or null where it is not one, which is what
+	 *  {@link #bandWith} uses it for: Word bands whatever the extents are, so the extent
+	 *  itself is not a test, only a wrapper it can read one from is a band.  @since 17.1.1 */
 	private static double[] bandExtent(Element wrapper) {
 		double from = Double.MAX_VALUE, to = -Double.MAX_VALUE;
 		for (Node n = wrapper.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -2423,6 +2496,12 @@ public final class WordLayoutFixups {
 		boolean pageY = y.startsWith("page:");
 		double off = lengthPt(y.substring(y.indexOf(':') + 1));
 
+		if (whollyOffThePage(box, pageY, off, h)) {
+			log.debug("A positioned shape is wholly off the page; Word paints none of it");
+			box.getParentNode().removeChild(box);
+			return;
+		}
+
 		Element para = enclosingBlock(box);
 		if (para == null) {
 			log.warn("No block to place a text box in; it will not be painted");
@@ -2683,6 +2762,83 @@ public final class WordLayoutFixups {
 	 *  it is moving elements about (Xerces invalidates its NodeList cache on every
 	 *  change).  Measured on a 335-page mail merge of 2345 text boxes, the scan turned
 	 *  the export from under 300s into over 600s.</p> */
+	/**
+	 * Whether the whole of a positioned object lies off the paper, where Word paints
+	 * <b>nothing at all</b> - not a clipped edge, not a glyph.
+	 *
+	 * <p>Measured on the {@code footer-offpage-shape} probe, whose footer holds three bare
+	 * {@code w:pict}/{@code v:rect} shapes with
+	 * {@code mso-position-vertical-relative:text} at {@code margin-top} 900pt, 719.35pt
+	 * and -300pt on an A4 page (595.44 x 841.92, 72pt margins).  Read page by page with
+	 * {@code mutool draw -F trace} and {@code pdftotext}, Word's PDF carries <b>not one
+	 * glyph</b> of the 900pt shape (past the paper's whole height) or of the 719.35pt one
+	 * (past the paper's foot), on any of its three pages, while the -300pt shape - the
+	 * same shape, on the page - is drawn on all three at y = 493.6, and the footer's own
+	 * line at 766.52.  So the omission is about position, not about bare VML.  docx4j
+	 * painted all three: the two off-page shapes at 657.1pt and 824.3pt below the page
+	 * bottom, six text lines no page of Word's has.</p>
+	 *
+	 * <p><b>"Off" is the paper's edge</b>, not the margin: the -300pt shape is drawn where
+	 * it overprints the body text, far above the footer it is anchored in, and Word draws
+	 * it whole.  The test is therefore against 0 and the page height.</p>
+	 *
+	 * <p><b>Wholly, as a number.</b> A page-relative object is exact: its top is its own
+	 * offset, so it is off when {@code top >= pageHeight} or {@code top + height <= 0}.  A
+	 * <em>paragraph</em>-relative object (which is what Word writes for a footer shape) has
+	 * no known y before layout - except in a header or footer, where the region bounds it:
+	 * a footer's paragraph begins at or below the body's bottom edge, so the shape's top is
+	 * at least {@code pageHeight - marginBottom + offset} and the shape is off the page when
+	 * {@code offset >= marginBottom}; a header's begins at or above the body's top edge, so
+	 * the shape's bottom is at most {@code marginTop + offset + height} and it is off when
+	 * that is {@code <= 0}.  Both are bounds on the side that makes the answer certain: a
+	 * shape this predicate suppresses cannot be on the page.  In the body, where no bound
+	 * is available, nothing is suppressed.</p>
+	 *
+	 * <p><b>A partly-off shape is left alone</b>, and the golden does not settle what Word
+	 * does with one - none of its three shapes straddles an edge.  Word clips (the reading
+	 * of item 12 is "the fix is a clip, not a reposition"), and so does every PDF viewer:
+	 * content outside the media box is not shown, so painting a straddling shape whole
+	 * gives Word's picture of it.  Only the certainly-invisible are dropped.</p>
+	 *
+	 * @param el the object's own element, still in the tree
+	 * @param pageY whether its offset is measured from the page's top
+	 * @param off that offset in points
+	 * @param h the object's height in points
+	 * @since 17.1.1 (CR-001 batch 47 item 2)
+	 */
+	private static boolean whollyOffThePage(Element el, boolean pageY, double off, double h) {
+		Element rb = regionBody(el);
+		if (rb == null || !(rb.getParentNode() instanceof Element)) return false;
+		double pageH = lengthPt(((Element) rb.getParentNode()).getAttribute("page-height"));
+		if (pageH <= 0) return false;
+		if (pageY) return off >= pageH || off + h <= 0;
+		String flow = staticContentFlowName(el);
+		if (flow == null) return false; // in the body: the paragraph's y is not known here
+		if (flow.startsWith("xsl-region-after")) {
+			double marginBottom = lengthPt(rb.getAttribute("margin-bottom"));
+			return marginBottom > 0 && off >= marginBottom;
+		}
+		if (flow.startsWith("xsl-region-before")) {
+			double marginTop = lengthPt(rb.getAttribute("margin-top"));
+			return marginTop > 0 && marginTop + off + h <= 0;
+		}
+		return false;
+	}
+
+	/** The {@code flow-name} of the {@code fo:static-content} this element is in - a header
+	 *  or footer region - or null where it is in the body.  @since 17.1.1 */
+	private static String staticContentFlowName(Element el) {
+		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
+			Element e = (Element) n;
+			if (isFo(e, "static-content")) {
+				String flow = e.getAttribute("flow-name");
+				return flow.length() == 0 ? null : flow;
+			}
+			if (isFo(e, "flow")) return null;
+		}
+		return null;
+	}
+
 	private static Element regionBody(Element el) {
 		Element sequence = null;
 		for (Node n = el; n instanceof Element; n = n.getParentNode()) {

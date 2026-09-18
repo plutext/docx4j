@@ -831,6 +831,33 @@ cases settle both narrowings — a character style `<w:b w:val="0"/>` over a bol
 paragraph style, bold defaults with a paragraph style `<w:b w:val="0"/>` and a
 silent character style, and bold defaults with a bold paragraph style.
 
+**Settled by Word's golden (2026-09-18, the `toggle-levels` and
+`toggle-levels-docdefaults` probes; CR-001 batch 47 item 0b).**  Those three
+cases were cut, and the two narrowings did not settle the same way:
+
+* **Narrowing 1 is REFUTED and is gone.**  Word draws a run in a character style
+  stating `<w:b w:val="0"/>` over a bold paragraph style **bold**
+  (`TimesNewRomanPS-BoldMT`), so an explicit false at a style level is a term of
+  the XOR like any other value: false XOR lower = lower.  `StyleUtil.toggle`'s
+  false branch now leaves what is beneath it standing, and
+  `ParagraphStylesInTableFixConditionalTest.paragraphStyleAndDirectFormattingWin`
+  — which asserted the refuted reading for a paragraph style under a bold table
+  condition — asserts the golden.  Direct formatting is untouched: it is not a
+  level, and an explicit false there still wins outright.
+* **Narrowing 2 is CONFIRMED.**  Bold defaults with a paragraph style stating
+  `<w:b w:val="0"/>` is regular, and regular still when the run names a character
+  style which sets only `w:color`, where the letter would have made that silent
+  style a level and come out bold.
+* The same golden shows `w:docDefaults` is a **base value, never a term of the
+  XOR** (defaults true + a paragraph style true is bold; defaults true + a
+  paragraph style false is regular), which is what the `documentDefault` branch
+  does and what `PropertyResolver`'s `applyRPr` of the defaults gives.
+* Still open, no case in the golden: bold `w:docDefaults` with an explicit false
+  at a **character** style level.
+
+The corpora are again byte-identical across the change (three corpora,
+449 documents, 0 changed), as CR-001 batch 46 measured for both readings.
+
 **What it was worth.**  One corpus document states `w:b` twice — a table style
 whose `firstCol` condition is bold, and the `Strong` character style on every
 run of those cells — where Word draws the text regular.  Before: 60 bold lines

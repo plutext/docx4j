@@ -2028,11 +2028,12 @@ public class StyleUtil {
 	 * is not a level either: an explicit value there is used as it stands, so it is applied
 	 * with {@link #apply(RPr, RPr)} too.</p>
 	 *
-	 * <p>{@link #toggle} records the two places where this is narrower than the letter of
-	 * &#xa7;17.7.3: a level which states a toggle <em>false</em> is applied as it stands
-	 * rather than contributing false to the XOR, and a level which says nothing about a
-	 * toggle is no boundary for it, so the document defaults' true is not forced back on
-	 * there.</p>
+	 * <p>{@link #toggle} records the one place where this is narrower than the letter of
+	 * &#xa7;17.7.3 - a level which says nothing about a toggle is no boundary for it, so
+	 * the document defaults' true is not forced back on there - and the reading Word's
+	 * {@code toggle-levels} golden refuted: a level which states a toggle <em>false</em>
+	 * contributes false to the XOR like any other value and leaves a lower true standing,
+	 * rather than being applied as it stands.</p>
 	 *
 	 * @param source the level being applied (the more specific)
 	 * @param destination the levels beneath it, written in place
@@ -2075,39 +2076,51 @@ public class StyleUtil {
 	 * the lower value alone, the document defaults win where they say true, and two levels
 	 * which both say true cancel (ECMA-376-1 &#xa7;17.7.3).
 	 *
-	 * <p><b>Two deliberate narrowings</b>, both of the same kind - where the spec read to
-	 * the letter would have a level that is silent or explicitly false change what is
-	 * beneath it, this leaves what is beneath it alone.</p>
+	 * <p>17.1.1 shipped this with <b>two deliberate narrowings</b> of the letter of
+	 * &#xa7;17.7.3, to be settled by a probe.  The {@code toggle-levels} golden - Word's own
+	 * PDF of nine cases over two documents - settled them, and they did not settle the same
+	 * way: <b>the first is refuted and is gone</b>, the second is confirmed and stands.</p>
 	 *
-	 * <p><b>One: an explicit false is applied, not XORed.</b>  Read to the letter,
-	 * &#xa7;17.7.3's XOR takes each level's effective value, so a level which states the
-	 * property <em>false</em> contributes false and leaves a lower true standing - on that
-	 * reading a character style saying {@code <w:b w:val="0"/>} could not unbold a bold
-	 * paragraph style.  The XOR is applied only where the upper level states the property
-	 * <b>true</b>; an explicit false is applied as it stands, which is how docx4j has
-	 * always treated it and what a table style's condition restated as
-	 * {@code <w:b w:val="0"/>} by a child style relies on.</p>
+	 * <p><b>One, refuted: an explicit false at a level XORs like any other value.</b>  The
+	 * narrowing read that a level stating the property <em>false</em> is applied as it
+	 * stands rather than contributing false to the XOR, on the argument that a character
+	 * style saying {@code <w:b w:val="0"/>} must be able to unbold a bold paragraph style.
+	 * Word does not do that: over a paragraph style which states {@code <w:b/>}, a run in a
+	 * character style which states {@code <w:b w:val="0"/>} is drawn in
+	 * {@code TimesNewRomanPS-BoldMT} - <b>bold</b>.  So false XOR lower = lower: the upper
+	 * level's false leaves what is beneath it standing, and only a stated <em>true</em>
+	 * inverts it.  Where no level beneath it states the property at all, that one level's
+	 * value <em>is</em> the effective value (&#xa7;17.7.3's "true for an odd number of
+	 * levels" over a single false level), so the false stands rather than the property
+	 * going absent - an absent property is not the same thing downstream, since the
+	 * exporters then write no {@code font-weight} and an HTML span inherits whatever its
+	 * cell or paragraph carries.  (Direct formatting is untouched by this and still wins outright, by
+	 * &#xa7;17.7.3's first sentence - it goes through {@link #apply(RPr, RPr)}, not through
+	 * here - and so does a style's own {@code w:basedOn} chain, which is one level.)</p>
 	 *
-	 * <p><b>Two: a silent upper level is no boundary at all.</b>  &#xa7;17.7.3's
+	 * <p><b>Two, confirmed: a silent upper level is no boundary at all.</b>  &#xa7;17.7.3's
 	 * "if the value specified by the document defaults is true, the effective value is
 	 * true" sits under "if the value of the toggle property appears at multiple levels of
 	 * the style hierarchy", so a boundary whose upper level says nothing about the property
-	 * adds no level and the rule does not arise.  Taken the other way the document
-	 * defaults' true would be forced back on at every boundary: a document whose
-	 * {@code w:docDefaults} are bold and whose paragraph style says
-	 * {@code <w:b w:val="0"/>} would render regular with no character style and bold as
-	 * soon as a run named any character style, however silent that style was about the
-	 * weight.  So {@code upper == null} is answered first.</p>
+	 * adds no level and the rule does not arise.  The golden's pair of cases says the same:
+	 * with bold {@code w:docDefaults} and a paragraph style stating
+	 * {@code <w:b w:val="0"/>}, Word draws the run regular, and it draws it regular still
+	 * when the run names a character style which sets only {@code w:color} - where the
+	 * letter would have made that silent style a level, fired the document-defaults rule
+	 * and come out bold.  So {@code upper == null} is answered first.</p>
 	 *
-	 * <p>Nothing in the three corpora distinguishes either narrowing from the letter: the
-	 * same 449 documents score the same either way, to the byte.  (Four of the 454 state a
-	 * toggle true in their {@code w:docDefaults} - three {@code w:bCs}, one
-	 * {@code w:caps}, {@code w:outline} and {@code w:vanish} together - and none of the
-	 * four moves.)  So the narrower reading stands until a probe settles it.  Three cases
-	 * settle both: a character style {@code <w:b w:val="0"/>} over a bold paragraph style;
-	 * bold document defaults with a paragraph style {@code <w:b w:val="0"/>} and a
-	 * character style silent on the weight; and bold document defaults with a bold
-	 * paragraph style (CR-001 batch 46 item 4).</p>
+	 * <p>The same golden also shows that {@code w:docDefaults} is a <b>base value and never
+	 * a term of the XOR</b>: defaults true with a paragraph style which also states true is
+	 * bold (a literal XOR would give regular), and defaults true with a paragraph style
+	 * stating false is regular (a literal XOR would give bold).  That is what the
+	 * {@code documentDefault} branch here does at a boundary whose upper level states the
+	 * property, and docx4j does not treat the defaults-to-paragraph-style transition as a
+	 * boundary at all ({@link org.docx4j.model.PropertyResolver} applies the defaults with
+	 * {@code applyRPr}), so those three cases come out right.</p>
+	 *
+	 * <p>Still open, because no case in the golden puts one under the other: bold
+	 * {@code w:docDefaults} with an explicit false at a <b>character</b> style level, where
+	 * the {@code documentDefault} branch below returns true (CR-001 batch 47 item 0b).</p>
 	 */
 	static BooleanDefaultTrue toggle(BooleanDefaultTrue upper, BooleanDefaultTrue lower,
 			BooleanDefaultTrue documentDefault) {
@@ -2115,7 +2128,8 @@ public class StyleUtil {
 		if (documentDefault != null && documentDefault.isVal()) {
 			return apply(documentDefault, lower);
 		}
-		if (!upper.isVal()) return apply(upper, lower);
+		// false XOR lower = lower; with no level beneath it, the level's own false stands
+		if (!upper.isVal()) return lower != null ? lower : upper;
 		BooleanDefaultTrue out = Context.getWmlObjectFactory().createBooleanDefaultTrue();
 		out.setVal(Boolean.valueOf(!(lower != null && lower.isVal())));
 		return out;

@@ -80,11 +80,34 @@ public class SolidusBreakTest {
 	// cannot share the first line, and cannot be split at a solidus
 	private static final String URL = "Most docx files use http://schemas.example.org/main namespace";
 
+	/** 25 characters, 180pt: it fits the 200pt line, so the only break that could fall
+	 *  after its solidus is an ordinary one - which is what this rule suppresses. */
+	private static final String SHORT_URL = "Most docx files use http://schemas.org/a namespace";
+
 	@Test
 	public void noBreakAfterSolidus() throws Exception {
+		List<String> got = lines(fo(SHORT_URL), true);
+		assertEquals("Most docx files use", got.get(0));
+		assertEquals("http://schemas.org/a", got.get(1));
+		for (String l : got) assertFalse(l, l.endsWith("/"));
+	}
+
+	/**
+	 * A URL longer than the whole measure is a different rule: the emergency break splits
+	 * it at the last character that fits, which may be the solidus itself.  Word's
+	 * {@code break-longword} golden breaks a token 5.0pt past its measure, so from 17.1.1
+	 * the body's tolerance is a twip and a 223.2pt URL on a 200pt line is broken rather
+	 * than painted whole (CR-001 batch 47 item 4). The break still does not fall after the
+	 * solidus: twenty-seven Courier characters fit the line and the twenty-seventh is the
+	 * solidus, and the split takes twenty-six - the suppression this class is about holds
+	 * inside the emergency break as well.
+	 */
+	@Test
+	public void aUrlLongerThanTheMeasureIsBrokenWhereTheMeasureFalls() throws Exception {
 		List<String> got = lines(fo(URL), true);
 		assertEquals("Most docx files use", got.get(0));
-		assertEquals("http://schemas.example.org/main", got.get(1));
+		assertEquals("http://schemas.example.org", got.get(1));
+		assertEquals("/main namespace", got.get(2));
 		for (String l : got) assertFalse(l, l.endsWith("/"));
 	}
 

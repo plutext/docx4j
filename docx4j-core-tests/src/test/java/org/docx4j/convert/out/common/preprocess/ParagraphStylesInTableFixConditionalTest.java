@@ -236,12 +236,25 @@ public class ParagraphStylesInTableFixConditionalTest {
 	public void paragraphStyleAndDirectFormattingWin() throws Exception {
 		WordprocessingMLPackage pkg = pkg();
 
-		// the paragraph's own style sits above the condition: NoBold's b=0 over firstRow's b
+		/* The paragraph's own style sits above the condition for everything but a toggle
+		 * property: NoBold's b=0 over firstRow's b is a boundary between two LEVELS of the
+		 * style hierarchy, and 17.7.3 combines the twelve toggles there by XOR - so the
+		 * false contributes false and the table condition's bold stands.  That is Word's
+		 * answer: the toggle-levels golden draws a run in a character style stating
+		 * <w:b w:val="0"/> over a bold paragraph style BOLD, and the same rule holds a
+		 * level down (CR-001 batch 47 item 0b; 67ab3b831 asserted the refuted reading
+		 * here).  A paragraph that wants the weight off under a bold condition has to say
+		 * so in direct formatting, which is not a level - below. */
 		P p = para(pkg, "t3 r0 c1");
 		assertEquals("NoBold-Base-firstRow-BR", pStyle(p));
 		RPr rPr = style(pkg, "NoBold-Base-firstRow-BR").getRPr();
-		assertFalse(rPr.getB().isVal());
+		assertTrue("false XOR the condition's true = true", rPr.getB().isVal());
 		assertEquals("FF0000", rPr.getColor().getVal()); // what the style does not restate survives
+		// and direct formatting on the run does turn it off, as 17.7.3's first sentence says
+		PropertyResolver direct0 = pkg.getMainDocumentPart().getPropertyResolver();
+		RPr off = (RPr) XmlUtils.unmarshalString("<w:rPr " + W + "><w:b w:val=\"0\"/></w:rPr>",
+				org.docx4j.jaxb.Context.jc, RPr.class);
+		assertFalse(direct0.getEffectiveRPr(off, p.getPPr()).getB().isVal());
 
 		// direct formatting sits above everything: the run's u=none over band1Horz's u=single
 		PropertyResolver resolver = pkg.getMainDocumentPart().getPropertyResolver();

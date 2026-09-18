@@ -27,8 +27,10 @@ import org.w3c.dom.NodeList;
 
 /**
  * Word's emergency break inside a table cell: a word wider than the cell is broken as
- * soon as it exceeds the cell, at whatever character reaches the edge, where in body
- * text ({@link EmergencyBreakTest}) it is left to overflow until it is an inch over.
+ * soon as it exceeds the cell, at whatever character reaches the edge.  Body text
+ * ({@link EmergencyBreakTest}) tolerated an inch of overflow until 17.1.1 and now takes
+ * the same twip, so what the cell's own tolerance decides is what a caller who sets one
+ * of the two properties gets.
  *
  * <p>Measured on a corpus document whose table grid Word wrote and kept: a 21.55pt
  * column breaks {@code Categorizador/Período} down 15 lines of one or two characters.
@@ -67,6 +69,23 @@ public class CellEmergencyBreakTest {
 				+ "<fo:region-body/></fo:simple-page-master></fo:layout-master-set>"
 				+ "<fo:page-sequence master-reference=\"m\"><fo:flow flow-name=\"xsl-region-body\">"
 				+ "<fo:block font-family=\"Courier\" font-size=\"12pt\" line-height=\"14pt\">" + text + "</fo:block>"
+				+ "</fo:flow></fo:page-sequence></fo:root>";
+	}
+
+	/** A 100pt cell whose text is set in a plain block-container of the cell's own
+	 *  width - the shape a positioned frame, a text box or a rotated cell's wrapper
+	 *  makes. */
+	private static String containerCellFo(String text) {
+		return "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">"
+				+ "<fo:layout-master-set><fo:simple-page-master master-name=\"m\" page-width=\"300pt\" page-height=\"400pt\" margin=\"0pt\">"
+				+ "<fo:region-body/></fo:simple-page-master></fo:layout-master-set>"
+				+ "<fo:page-sequence master-reference=\"m\"><fo:flow flow-name=\"xsl-region-body\">"
+				+ "<fo:table table-layout=\"fixed\" width=\"100pt\"><fo:table-column column-width=\"100pt\"/>"
+				+ "<fo:table-body><fo:table-row><fo:table-cell padding=\"0pt\">"
+				+ "<fo:block-container inline-progression-dimension=\"100pt\">"
+				+ "<fo:block font-family=\"Courier\" font-size=\"12pt\" line-height=\"14pt\">" + text + "</fo:block>"
+				+ "</fo:block-container>"
+				+ "</fo:table-cell></fo:table-row></fo:table-body></fo:table>"
 				+ "</fo:flow></fo:page-sequence></fo:root>";
 	}
 
@@ -121,8 +140,7 @@ public class CellEmergencyBreakTest {
 		}
 	}
 
-	/** 20 characters, 144pt: 44pt wider than the cell, well inside the inch body text
-	 *  tolerates. */
+	/** 20 characters, 144pt: 44pt wider than the cell. */
 	private static final String WIDE = "Categorizador_Period";
 
 	/** 13 characters, 93.6pt: fits the cell. */
@@ -176,21 +194,61 @@ public class CellEmergencyBreakTest {
 		assertEquals(WIDE.substring(13), got.get(2));
 	}
 
-	/** The same word on the same measure in body text keeps the inch: 44pt over is left
-	 *  to overflow, as in 17.1.0. */
+	/** The same word on the same measure in body text is broken there too: the inch body
+	 *  text tolerated until 17.1.1 is gone. */
 	@Test
-	public void bodyTextKeepsTheGeneralTolerance() throws Exception {
+	public void bodyTextBreaksAtTheMeasureToo() throws Exception {
+		/* Until 17.1.1 body text tolerated an inch of overflow, and this word - a few
+		 * points past its measure - was painted whole.  Word's break-longword golden
+		 * refutes that: it breaks a token 5.0pt past a 481.0pt body measure at the last
+		 * character that fits, and leaves one 1.0pt inside it alone, so the body's
+		 * tolerance is a twip like a cell's (CR-001 batch 47 item 4). */
 		List<String> got = lines(bodyFo(WIDE));
-		assertEquals(1, got.size());
-		assertEquals(WIDE, got.get(0));
+		assertEquals(2, got.size());
+		assertEquals(WIDE, got.get(0) + got.get(1));
 	}
 
-	/** A rotated cell's measure is a row height docx4j only bounds, so it keeps the inch. */
+	/** A block inside a block-container inside a cell is still in the cell: the walk up to
+	 *  the fo:table-cell goes through block-containers from 17.1.1, so this word - 44pt past
+	 *  the 100pt measure - is broken on the cell's own tolerance, as one in a bare cell
+	 *  block is (CR-001 batch 47 item 4c). */
 	@Test
-	public void aRotatedCellKeepsTheGeneralTolerance() throws Exception {
+	public void aBlockContainerInACellIsStillInTheCell() throws Exception {
+		List<String> got = lines(containerCellFo(WIDE));
+		assertEquals(got.toString(), 2, got.size());
+		assertEquals(WIDE.substring(0, 13), got.get(0));
+		assertEquals(WIDE.substring(13), got.get(1));
+	}
+
+	/** And so is a rotated cell's (w:textDirection: a reference-oriented
+	 *  block-container), whose measure is the row height docx4j bounds rather than a
+	 *  width Word wrote - the case the twip is riskiest for. */
+	@Test
+	public void aRotatedCellIsStillInTheCell() throws Exception {
 		List<String> got = lines(rotatedCellFo(WIDE));
-		assertEquals(1, got.size());
-		assertEquals(WIDE, got.get(0));
+		assertEquals(got.toString(), 2, got.size());
+		assertEquals(WIDE, got.get(0) + got.get(1));
+	}
+
+	/**
+	 * And it is the <b>cell's</b> tolerance it takes, not body text's: raised to the inch,
+	 * the same word in the same container is painted whole.  Before 17.1.1 the walk up
+	 * stopped at the block-container and such a block took the general tolerance; the two
+	 * are the same twip after item 4, so only a raised cell tolerance tells them apart.
+	 *
+	 * <p>With both tolerances at a twip the classification decides nothing by itself; what
+	 * it decides is which of the two properties a block in such a container obeys.
+	 */
+	@Test
+	public void aBlockContainerInACellTakesTheCellsTolerance() throws Exception {
+		System.setProperty(WordLayoutCustomizer.CELL_EMERGENCY_BREAK_TOLERANCE, "72");
+		try {
+			List<String> got = lines(containerCellFo(WIDE));
+			assertEquals(got.toString(), 1, got.size());
+			assertEquals(WIDE, got.get(0));
+		} finally {
+			System.clearProperty(WordLayoutCustomizer.CELL_EMERGENCY_BREAK_TOLERANCE);
+		}
 	}
 
 	/** The tolerance is a twip, not zero: the column sizer and FOP measure the same word

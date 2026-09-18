@@ -175,6 +175,14 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 		if (label == null || body == null) return;
 		// right to left is Word's own arrangement and is not measured here
 		if (label.line.getBidiLevel() > 0 || body.line.getBidiLevel() > 0) return;
+		/* Word writes no space where the numbering tab's leader filled the gap: the
+		 * tab-leader-in-cell-2 golden's dots end at 149.76 and its text begins at 149.83.
+		 * The test is whether the leader painted a character, not whether the FO asked for
+		 * one: over the first probe's 2pt advance - under one cell of Word's grid - neither
+		 * side paints a dot and Word's separator space is still there (measured, that probe
+		 * falls 1.0000 -> 0.9231 without this distinction, its label fusing with the word
+		 * after it as it did before batch 45).  @since 17.1.1 (CR-001 batch 47 item 5b) */
+		if (leaderPaints(label.line)) return;
 
 		int content = 0;
 		TextArea model = null;
@@ -192,6 +200,31 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 
 		TextArea space = space(model, gap);
 		if (space != null) label.line.addChildArea(space);
+	}
+
+	/** Whether a leader on this line paints at least one character: an
+	 *  {@code fo:leader} narrower than its own repeating unit draws nothing, which is
+	 *  what Word does over an advance shorter than one cell of its grid.
+	 *  @since 17.1.1 (CR-001 batch 47 item 5b) */
+	private static boolean leaderPaints(LineArea line) {
+		for (Object o : line.getInlineAreas()) {
+			if (o instanceof InlineArea && leaderPaints((InlineArea) o)) return true;
+		}
+		return false;
+	}
+
+	private static boolean leaderPaints(InlineArea area) {
+		InlineArea a = LBP.phasedLeader(area);
+		if (a instanceof org.apache.fop.area.inline.FilledArea) {
+			org.apache.fop.area.inline.FilledArea run = (org.apache.fop.area.inline.FilledArea) a;
+			return run.getUnitWidth() > 0 && run.getIPD() >= run.getUnitWidth();
+		}
+		if (a instanceof InlineParent) {
+			for (Object child : ((InlineParent) a).getChildAreas()) {
+				if (child instanceof InlineArea && leaderPaints((InlineArea) child)) return true;
+			}
+		}
+		return false;
 	}
 
 	/** The {@code w:suff} the level asks for, from the label block's

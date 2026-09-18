@@ -213,18 +213,93 @@ Schema (CR-018, five gaps the content API found, and w16cex):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- The numbering tab now paints the dot leader of the stop it reaches, from the end of the label
+  to that stop, in a table cell and in body text alike. Measured on a probe whose level carries
+  w:ind left 2880 hanging 2520 and one w:leader="dot" left stop at 1440 twips: Word sets the label
+  "1." in Calibri 11.04pt from 95.808 to 104.110, then fourteen dots stepping 3.120pt from 106.130
+  to 146.690, and the paragraph's first line of text at 149.830, which is the stop; in the body,
+  the label at 90.048, the same fourteen dots from 99.888 to 140.448 and the text at 144.070.
+  docx4j painted nothing there. The leader is written into the label's own block with the advance
+  as its length and is drawn in the paragraph's face and size, not the label's, because Word's step
+  is the character's advance rounded to 1/300 inch and the paragraph's face is what gives 3.120pt
+  (the label's own 11pt face would give 2.880 and fifteen dots). A stop with no w:leader, and a
+  level with no stop at all, still paint nothing, and neither does an advance shorter than one cell
+  of the grid - over which Word's w:suff separator space is still written (CR-001 batch 47).
+- A word longer than the measure is now broken in body text as it already was in a table cell:
+  at the last character that fits, with no hyphen. Word's rule is the measure itself, measured on
+  a probe at Liberation Serif 12pt on a 481.0pt measure - a token 48.0pt over is set to 537.14,
+  the measure exactly, with the rest on the next line; one 5.0pt over is broken too; one 1.0pt
+  inside is not; and a token which fits the measure but not the space left on its line moves down
+  whole. docx4j tolerated an inch of overflow in the body, so it painted both of the first two
+  whole, past the margin. A block inside an fo:block-container in a table cell now counts as
+  being in the cell, which it did not before - with both tolerances at a twip that decides
+  nothing by itself, but it decides which of the two properties such a block obeys. The
+  tolerance remains a property
+  (docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance) because a word which does not fit is
+  sometimes a measure docx4j got wrong rather than a word Word breaks (CR-001 batch 47).
+- A table-of-contents entry's line break no longer reserves room for three capital Ms where its
+  page number goes. FOP cannot resolve a page number cited forward, so it measures the citation
+  as the placeholder "MMM" and corrects the width later - too late for the line, which has
+  already been broken: in Times 12pt "MMM" is 32.0pt where "000" is 18.0pt and "23" 12.0pt, so
+  an entry gave up as much as 20pt of its measure and a title which fitted its line could be
+  pushed onto a second one. docx4j now measures an unresolved citation as a page number, keeping
+  FOP's three characters and making them digits, and never takes the wider of the two;
+  docx4j.convert.out.fo.wordLayout.pageNumberPlaceholder sets the text (MMM restores FOP's own
+  behaviour). Measured on the shape, the placeholder cost the entry's token three characters and
+  the digits give two of them back (CR-001 batch 47).
+- A numbering label is measured in its own face and size instead of being estimated at 90 twips
+  a character, which decides the label column of a list block, the gap an inline label leaves
+  before the text, and whether the numbering tab's stop falls past the end of the label. The
+  estimate was wrong both ways: a level whose lvlText is "Appendix %1" with w:suff space and no
+  hanging indent, in a 20pt bold paragraph, was given a 49.5pt column where the label is 98.45pt,
+  so the label wrapped inside its own column and the body was set beside it; and where the
+  estimate is wider than the label, a tab stop just past the real label read as already passed.
+  Eighteen corpus documents move and every one improves - one goes from 0.9212 to 1.0000 of
+  Word's lines, another from 0.9232 to 0.9783, a 311-page one from 0.9007 to 0.9351 - and one
+  document's page count becomes Word's. A bullet keeps the estimate: its glyph comes from a
+  symbol font this machine may not have, so what a substitute measures is not Word's label
+  (CR-001 batch 47).
+- The tab which follows a numbering label goes to the first of {the level's own tab stops, the
+  paragraph's w:ind left} that lies past the label, and it moves the first line only - the lines
+  after it keep the paragraph's indent. Measured on a probe whose level 0 is w:ind left 720
+  hanging 360 with a 560-twip stop: Word puts the paragraph's first line at 28.11pt from the text
+  origin - the stop - and its second and third lines at 36.03pt, which is w:ind left, in a table
+  cell and in the body alike; a stop past w:ind left (1000 twips there) is ignored, as is a level
+  with no stop. docx4j sent every numbering tab to w:ind left, so such a first line began 7.8pt
+  to the right of Word's and held one word fewer. Only a hanging indent is read this way: a
+  paragraph indented by a w:firstLine has no w:ind left for the tab to stop short of, and its
+  label already goes to the first stop past it. The stop's own w:leader is not yet painted over
+  that tab: Word draws fourteen dots from the label's end to a stop 43.6pt past it, and docx4j
+  draws none (CR-001 batch 47).
+- A positioned shape whose whole box lies off the paper is no longer painted, which is what Word
+  does with one. Measured on a probe whose footer holds three VML rectangles with
+  mso-position-vertical-relative:text at margin-top 900pt, 719.35pt and -300pt on an A4 page:
+  Word's PDF carries not one glyph of the first two on any page, and draws the third - the same
+  shape, on the page - on all three. "Off" is the paper's edge, not the margin, and a shape only
+  partly off is painted whole, as Word clips it. A page-positioned shape is judged exactly; a
+  paragraph-positioned one only in a header or footer, whose region bounds the paragraph it is
+  anchored in - in the body the paragraph's own y is not known before layout. Two corpus
+  documents stop painting 138 lines of text no page of Word's carries, one of them 703pt below
+  the page's foot (CR-001 batch 47).
 - A toggle property - bold, italic, caps, small caps, strike, hidden and the rest of the
   twelve ECMA-376-1 17.7.3 names - set at two levels of the style hierarchy now cancels as
   Word does: a table style against a paragraph style, and a paragraph style against a
-  character style. Direct formatting is unchanged, and so is a style's w:basedOn chain,
-  which is one level. In the resolver, so HTML gets it too (CR-001 batch 46).
+  character style. An explicit false at a style level is a term of that XOR like any other
+  value, so it leaves a lower true standing rather than switching the property off: Word
+  draws a run in a character style stating w:b w:val="0" over a bold paragraph style bold.
+  Direct formatting is unchanged and still wins outright, and so is a style's w:basedOn
+  chain, which is one level. In the resolver, so HTML gets it too (CR-001 batch 46; the
+  explicit false corrected against Word's golden in CR-001 batch 47).
 - A numbered paragraph's text no longer inherits the paragraph mark's run properties -
   its bold, italic or colour - through the list item body. Only the size reaches the
   body, which is what the label and the body need in common to sit on one baseline
   (CR-001 batch 46).
-- Two top-and-bottom wrapped anchored drawings in one paragraph which do not overlap horizontally
-  share one band, side by side as Word draws them, rather than each reserving its own and
-  stacking (CR-001 batch 46).
+- Two top-and-bottom wrapped anchored drawings in one paragraph share one band, side by side as
+  Word draws them - whatever their horizontal offsets, overlapping or not, each keeping its own
+  vertical offset and the later drawing painted on top - rather than each reserving its own and
+  stacking. A band never crosses a paragraph boundary: drawings anchored in two paragraphs each
+  reserve one, as Word does (CR-001 batch 46; the overlapping pair corrected against Word's
+  golden in CR-001 batch 47).
 - A table-of-contents entry's stretching dot leader steps on Word's 1/300 inch grid and begins on
   a whole multiple of that step from the page's edge, as a tab's leader has since 17.1.0
   (CR-001 batch 46).

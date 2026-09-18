@@ -2194,11 +2194,63 @@ public class XsltFOFunctions {
 			if (indOut!=null && indent.getObject() instanceof PPrBase.Ind) {
 				indOut[0] = (PPrBase.Ind)indent.getObject();
 			}
-			int numWidth = 90 * numChars; // crude .. TODO take font size into account
-			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth);
+			/* The label measured in its own face and size, with §2.8's 90 twips a character
+			 * as the fallback (labelWidthTwips) - for a NUMBER only.  A bullet is drawn in a
+			 * symbol font this machine usually does not have, so what is measured is the
+			 * substitute's glyph and not Word's: measured on three corpus documents whose
+			 * w:lvlText is a Symbol asterisk in a 5.65pt hanging indent, DejaVu Serif's
+			 * glyph is 6.8pt where the estimate is 4.5pt, which flipped the "does the label
+			 * fit its hanging indent" test, sent the label column to the next default tab
+			 * stop (375.65pt) and took two of those documents from 1.0000 of Word's lines to
+			 * 0.5975 and 0.8133, with four pages added to one of them.  Word draws their text
+			 * at the hanging indent, so for a bullet the estimate stands. */
+			int[] measured = triple.getBullet() != null
+					? new int[] { 90 * numChars, 90 }
+					: labelWidthTwips(wmlPackage, foListItemLabelBody,
+							foListItemLabelBody.getTextContent(), 90 * numChars);
+			int numWidth = numChars == 0 ? 0 : measured[0];
+			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth, measured[1]);
 			// -1 in the hanging case where the label fits, so the hanging indent stands
 			indent.setXslFOListBlock(foListBlock, pdbs);
 			indentHandledByNumbering = true;
+
+			/* The numbering tab's own stop, where the level declares one which comes before
+			 * w:ind left: it moves the FIRST line's text to the stop and leaves the lines
+			 * after it at the paragraph's indent, which is how Word draws it.  Measured on
+			 * the tab-leader-in-cell golden, level 0 being w:ind left 720 hanging 360 with a
+			 * 560-twip stop: Word puts the cell paragraph's first line at x=105.89 - the stop,
+			 * 28.11pt from the cell's text origin - and its second and third lines at 113.81,
+			 * which is w:ind left (36.03pt); in the body, 100.13 then 108.05, the same two
+			 * numbers from the margin.  A stop past w:ind left (the golden's 1000-twip case)
+			 * is ignored, and a level with no stop puts the first line at w:ind left too.
+			 *
+			 * As the body block's own text-indent, because that is the line the tab is on:
+			 * the list block's provisional-distance-between-starts still puts the label in
+			 * its column and the body at w:ind left, and this pulls the first line back into
+			 * the label's column as far as the stop.
+			 *
+			 * Only where the label sits in a hanging indent (pdbs < 0, the label fits it):
+			 * a paragraph indented by a w:firstLine has no w:ind left for the tab to stop
+			 * short of, and labelColumnTwips already sends its label to the first stop past
+			 * it (the §2.8 path).  Measured: reading the rule there as well moved a corpus
+			 * document's w:ind left="0" firstLine="851" numbered paragraph 17.35pt left and
+			 * re-wrapped it, where Word's own break is the one we had.
+			 * @since 17.1.1 (CR-001 batch 47 item 3) */
+			if (pdbs < 0) {
+				int numberPosition = indent.getNumberPosition();
+				int indLeft = numberPosition + hangingTwips(indent);
+				int labelEnd = numberPosition + numWidth;
+				org.docx4j.wml.CTTabStop tabStop = numberingTabStop(triple, labelEnd, indLeft);
+				if (tabStop != null) {
+					int stop = tabStop.getPos().intValue();
+					foBlockElement.setAttribute("text-indent",
+							"-" + UnitsOfMeasurement.twipToBest(indLeft - stop));
+					/* and Word paints that stop's own w:leader over the advance, from the
+					 * end of the label to the stop (appendNumberingTabLeader) */
+					appendNumberingTabLeader(document, foListItemLabelBody,
+							tabStop, stop - labelEnd);
+				}
+			}
 
 			/* The w:suff separator (ECMA-376 17.9.29) between the number and the text.
 			 * Here the label and the body are separate blocks, so the separator is the
@@ -2210,6 +2262,16 @@ public class XsltFOFunctions {
 			String suff = triple.getLvl()!=null && triple.getLvl().getSuff()!=null
 					&& triple.getLvl().getSuff().getVal()!=null
 					? triple.getLvl().getSuff().getVal() : "tab";
+			/* The separator is asked for whether or not the numbering tab's leader was
+			 * written: whether that leader paints a character at all depends on its
+			 * face's step against the advance, which is known when the areas exist and
+			 * not here, and WordListItemLayoutManager drops the space only where the
+			 * leader did paint - Word's text follows the last leader
+			 * character with no space between them (the tab-leader-in-cell-2 golden's
+			 * dots end at 149.76 and its text begins at 149.83), but over the first
+			 * probe's 2pt advance, which is under one cell of the grid, neither side
+			 * paints a dot and Word's space is still there.
+			 * @since 17.1.1 (CR-001 batch 47 item 5b) */
 			if (WordLayoutFixups.isEnabled() && ("tab".equals(suff) || "space".equals(suff))) {
 				foListItemLabelBody.setAttribute(WordLayoutFixups.HINT_LABEL_SUFFIX, suff);
 			}
@@ -2319,8 +2381,11 @@ public class XsltFOFunctions {
 		if ("space".equals(suff)) {
 			foBlockElement.appendChild(document.createTextNode(" "));
 		} else if (!"nothing".equals(suff)) {
+			// the label measured in its own face and size (labelWidthTwips), with §2.8's
+			// 90 twips a character as the fallback
 			int gap = labelGapTwips(wmlPackage, indent, indOut==null ? null : indOut[0],
-					pPrDirect, text.length());
+					pPrDirect, labelWidthTwips(wmlPackage, label, text, 90 * text.length())[0],
+					triple);
 			if (gap > 0 && WordLayoutFixups.isEnabled()) {
 				Element leader = document.createElementNS(XSL_FO, "fo:leader");
 				leader.setAttribute("leader-pattern", "space");
@@ -2339,15 +2404,19 @@ public class XsltFOFunctions {
 		return true;
 	}
 
-	/** From the number's position to the text's: the level's hanging indent, or where the
-	 *  level has none, the distance to the tab stop the label's width reaches (as
-	 *  createListBlock computes it for provisional-distance-between-starts). */
+	/** From the number's position to the text's: the numbering tab's own stop where the
+	 *  level declares one before {@code w:ind} left ({@link #numberingTabStopTwips}), else
+	 *  the level's hanging indent, or where the level has none, the distance to the tab stop
+	 *  the label's width reaches (as createListBlock computes it for
+	 *  provisional-distance-between-starts). */
 	private static int labelGapTwips(WordprocessingMLPackage wmlPackage, Indent indent,
-			PPrBase.Ind resolved, PPr pPrDirect, int numChars) {
+			PPrBase.Ind resolved, PPr pPrDirect, int numWidth, NumberingResult triple) {
 
-		int numWidth = 90 * numChars;
 		if (indent.isHanging() && resolved!=null && resolved.getHanging()!=null
 				&& resolved.getHanging().intValue() >= numWidth) {
+			int stop = numberingTabStopTwips(triple, indent.getNumberPosition() + numWidth,
+					indent.getNumberPosition() + resolved.getHanging().intValue());
+			if (stop > 0) return stop - indent.getNumberPosition();
 			return resolved.getHanging().intValue();
 		}
 		if (wmlPackage==null) return 0;
@@ -2356,10 +2425,178 @@ public class XsltFOFunctions {
 	}
 
 	/**
-	 * The width of a list block's label column: the level's hanging indent where the label
-	 * fits inside it (-1, which {@link Indent#setXslFOListBlock} reads as "the hanging
-	 * indent"), and otherwise what {@code w:suff} says - the next tab stop past the
-	 * label, the label plus one space, or the label itself.
+	 * Where the tab which follows a numbering label lands, in twips from the left margin:
+	 * the <b>first</b> of {the level's own explicit tab stops, the paragraph's {@code w:ind}
+	 * left} which lies past the end of the label - i.e. {@code w:ind} left behaves as an
+	 * implicit stop and an explicit stop only counts if it comes before it.  0 where
+	 * {@code w:ind} left is the answer, which is the common case.
+	 *
+	 * <p>Measured on the {@code tab-leader-in-cell} golden, whose level 0 is {@code w:ind
+	 * w:left="720" w:hanging="360"} with {@code w:suff w:val="tab"}, so the label
+	 * {@code 1.} runs from 360 to 540 twips and the paragraph's text indent is at 720.  The
+	 * x of the first glyph after the label, in a table cell and in the body:</p>
+	 * <ul>
+	 * <li>a level stop at 560 twips: Word 105.89 in the cell (28.11pt = 562tw from the cell's
+	 *     text origin) and 100.13 in the body (28.11pt from the margin) - <b>the stop</b>;
+	 * <li>a level stop at 1000 twips, past {@code w:ind} left: Word 113.81 and 108.05 -
+	 *     36.03pt = 720tw, <b>{@code w:ind} left</b>, and the stop is ignored;
+	 * <li>no {@code w:tabs} at all: the same 720tw.
+	 * </ul>
+	 * <p>The cell and the body behave identically.  docx4j sent all three to {@code w:ind}
+	 * left, so its first-case text began 7.77pt (cell) and 7.87pt (body) to the right of
+	 * Word's, and the cell's first line held one word fewer than Word's.</p>
+	 *
+	 * <p>Only the <b>level's</b> stops are read, which is what the golden measures; the
+	 * paragraph's own {@code w:tabs} are left to the tab machinery proper.  A
+	 * {@code w:val="clear"} stop is not a stop.</p>
+	 *
+	 * @param labelEnd the end of the label, in twips from the left margin
+	 * @param indLeft the paragraph's {@code w:ind} left, in twips from the left margin
+	 * @since 17.1.1 (CR-001 batch 47 item 3)
+	 */
+	/**
+	 * The width of a numbering label in twips, measured in the very face and size the label
+	 * is set in, with the width of one space in it: {@code {label, space}}.
+	 *
+	 * <p>&#xa7;2.8 estimated a label at <b>90 twips a character</b> - 4.5pt, about a digit of
+	 * an 11pt face - and every use of that estimate is a layout decision: the label column of
+	 * a list block, the gap an inline label leaves before the text, and whether the numbering
+	 * tab's stop falls past the end of the label.  The estimate is wrong in both directions.
+	 * On a level which states {@code lvlText "Appendix %1"} with {@code w:suff space} and no
+	 * hanging indent, in a 20pt bold heading, it gives a 990-twip column (ten characters plus
+	 * a space) where the label itself is nearly twice that, so the label wrapped inside its
+	 * own column as {@code Appendix} / {@code A} and the body was set beside it on three
+	 * lines, where Word draws one line with the text one space after the label.  In the other
+	 * direction, on corpus document {@code 9458} the estimate is <em>wider</em> than the
+	 * label, so a level tab stop just past the real label reads as already passed.
+	 *
+	 * <p>The measurement is the one the table autofit pass already uses -
+	 * {@link org.docx4j.fonts.TextMeasurer} over the physical face
+	 * {@code RunFontSelector} resolved, at the size and weight on the label's own element, so
+	 * the width here is the width the label will have on the page.  Where the face cannot be
+	 * measured the estimate stands.
+	 *
+	 * @param labelEl the label's own FO element, carrying its font-family and font-size
+	 * @param text the label as it will be drawn
+	 * @param fallbackTwips the &#xa7;2.8 estimate, used where nothing can be measured
+	 * @since 17.1.1 (CR-001 batch 47 item 5)
+	 */
+	private static int[] labelWidthTwips(WordprocessingMLPackage wmlPackage, Element labelEl,
+			String text, int fallbackTwips) {
+
+		int[] fallback = new int[] { fallbackTwips, 90 };
+		if (labelEl == null || text == null || text.length() == 0) return fallback;
+		try {
+			org.docx4j.fonts.Mapper mapper = wmlPackage == null ? null : wmlPackage.getFontMapper();
+			org.docx4j.fonts.PhysicalFont pf = TableWriter.fontFor(labelEl, mapper);
+			if (pf == null) return fallback;
+			double sizePt = TableWriter.sizeFor(labelEl);
+			if (sizePt <= 0) return fallback;
+			double label = org.docx4j.fonts.TextMeasurer.widthPt(text, pf, sizePt);
+			double space = org.docx4j.fonts.TextMeasurer.widthPt(" ", pf, sizePt);
+			if (label <= 0) return fallback;
+			return new int[] { (int) Math.ceil(label * 20), (int) Math.ceil(space * 20) };
+		} catch (RuntimeException e) {
+			log.debug("Label not measured (" + e.getMessage() + "); using the estimate");
+			return fallback;
+		}
+	}
+
+	/** The level's (or the paragraph's) hanging indent in twips, 0 where there is none. */
+	private static int hangingTwips(Indent indent) {
+		PPrBase.Ind ind = indent.getObject() instanceof PPrBase.Ind ? (PPrBase.Ind) indent.getObject() : null;
+		return ind != null && ind.getHanging() != null ? ind.getHanging().intValue() : 0;
+	}
+
+	private static int numberingTabStopTwips(NumberingResult triple, int labelEnd, int indLeft) {
+		org.docx4j.wml.CTTabStop stop = numberingTabStop(triple, labelEnd, indLeft);
+		return stop == null ? 0 : stop.getPos().intValue();
+	}
+
+	/** The stop {@link #numberingTabStopTwips} picks, or null: the first of the level's own
+	 *  stops past the end of the label and before {@code w:ind} left.  The stop itself,
+	 *  because its {@code w:leader} is painted over the numbering tab
+	 *  ({@link #appendNumberingTabLeader}).  @since 17.1.1 (CR-001 batch 47 item 5b) */
+	private static org.docx4j.wml.CTTabStop numberingTabStop(NumberingResult triple, int labelEnd,
+			int indLeft) {
+		if (triple == null || triple.getLvl() == null || triple.getLvl().getPPr() == null) return null;
+		org.docx4j.wml.Tabs tabs = triple.getLvl().getPPr().getTabs();
+		if (tabs == null) return null;
+		org.docx4j.wml.CTTabStop best = null;
+		for (org.docx4j.wml.CTTabStop stop : tabs.getTab()) {
+			if (stop == null || stop.getPos() == null) continue;
+			if (stop.getVal() == org.docx4j.wml.STTabJc.CLEAR) continue;
+			int pos = stop.getPos().intValue();
+			if (pos <= labelEnd) continue;      // behind the label: the tab has passed it
+			if (pos >= indLeft) continue;       // w:ind left comes first
+			if (best == null || pos < best.getPos().intValue()) best = stop;
+		}
+		return best;
+	}
+
+	/**
+	 * Paint the numbering tab's leader: the {@code w:leader} of the stop the tab reaches,
+	 * from the end of the label to that stop, inside the label's own block.
+	 *
+	 * <p>Word draws it, cell and body alike.  Measured on the {@code tab-leader-in-cell-2}
+	 * golden, a level of {@code w:ind w:left="2880" w:hanging="2520"} with one
+	 * {@code w:leader="dot"} stop at 1440 twips: in the cell Word sets the label
+	 * {@code 1.} in Calibri 11.04pt from 95.808 to 104.110, then <b>fourteen</b> dots
+	 * stepping <b>3.120pt</b> from 106.130 to 146.690, and the paragraph's first line of
+	 * text at 149.830, which is the stop; in the body, the label at 90.048, the same
+	 * fourteen dots from 99.888 to 140.448 and the text at 144.070.  The same golden's
+	 * control level, which declares no stop at all, gets no dots, and neither side paints
+	 * any over the first probe's 560-twip stop, whose advance past the label is 1.0pt -
+	 * less than one cell of the grid.
+	 *
+	 * <p>The 2.02pt between the label's end and the first dot in the cell is the grid:
+	 * Word steps a leader run on the character's advance rounded to 1/300 inch and starts
+	 * the run on a whole multiple of that step from the page's edge
+	 * ({@code WordLineLayoutManager.gridTocLeaders}, which is why the leader carries
+	 * {@link WordLayoutFixups#HINT_TOC_LEADER}: that mark is what the grid pass looks for,
+	 * and it is not {@code HINT_TAB}, which marks a tab the line manager gives its width).
+	 *
+	 * <p>The characters are drawn in the <b>paragraph's</b> face and size, which is what
+	 * every other tab leader is drawn in, and not the label's; that is settled by
+	 * {@code WordLayoutFixups.numberingTabLeaderFont}, where both blocks are finished, and
+	 * it decides the step and through it the count.
+	 *
+	 * <p>The leader goes in the <b>label's</b> block, and its length is fixed, because
+	 * that is where the advance is: the label runs from the level's number position, the
+	 * stop is inside the label's column by construction ({@link #numberingTabStop} takes
+	 * only a stop before {@code w:ind} left), and the paragraph's first line is pulled
+	 * back to the stop by the body block's own {@code text-indent}. Where the level's stop
+	 * carries no leader nothing is written, and the {@code w:suff} separator's space is
+	 * written as before.
+	 *
+	 * @param advanceTwips the stop less the end of the measured label
+	 * @since 17.1.1 (CR-001 batch 47 item 5b)
+	 */
+	private static void appendNumberingTabLeader(Document document, Element labelBody,
+			org.docx4j.wml.CTTabStop stop, int advanceTwips) {
+
+		if (!WordLayoutFixups.isEnabled() || labelBody == null || stop == null) return;
+		if (advanceTwips <= 0) return;
+		String pattern = leaderPattern(stop.getLeader());
+		if ("space".equals(pattern)) return;            // w:leader="none", or none declared
+		Element leader = document.createElementNS(XSL_FO, "fo:leader");
+		leader.setAttribute("leader-length", UnitsOfMeasurement.twipToBest(advanceTwips));
+		leader.setAttribute("leader-pattern", pattern);
+		// the XSL FO property for Word's own anchoring; FOP 2.11 reads it in its RTF
+		// renderer alone, so the grid is applied by the line manager (see the javadoc)
+		leader.setAttribute("leader-alignment", "reference-area");
+		leader.setAttribute(WordLayoutFixups.HINT_TOC_LEADER,
+				stop.getLeader() == null ? "dot" : stop.getLeader().value());
+		labelBody.appendChild(leader);
+	}
+
+	/**
+	 * The width of a list block's label column: the numbering tab's own stop where the
+	 * level declares one before {@code w:ind} left ({@link #numberingTabStopTwips}), the
+	 * level's hanging indent where the label fits inside it (-1, which
+	 * {@link Indent#setXslFOListBlock} reads as "the hanging indent"), and otherwise what
+	 * {@code w:suff} says - the next tab stop past the label, the label plus one space, or
+	 * the label itself.
 	 *
 	 * <p>&#xa7;2.8 took the tab-stop path only where the level has no hanging indent at all;
 	 * a hanging indent narrower than the label was not covered, and the label overprinted
@@ -2371,7 +2608,7 @@ public class XsltFOFunctions {
 	 * @since 17.1.0
 	 */
 	private static int labelColumnTwips(WordprocessingMLPackage wmlPackage, Indent indent,
-			PPr pPrDirect, NumberingResult triple, int numWidth) {
+			PPr pPrDirect, NumberingResult triple, int numWidth, int spaceWidth) {
 
 		PPrBase.Ind ind = indent.getObject() instanceof PPrBase.Ind ? (PPrBase.Ind)indent.getObject() : null;
 		int hanging = (ind!=null && ind.getHanging()!=null) ? ind.getHanging().intValue() : -1;
@@ -2383,13 +2620,18 @@ public class XsltFOFunctions {
 		 * losses 0.922 -> 0.778 and 0.855 -> 0.702 of Word's lines - so Word's own PDFs of
 		 * documents that state the flag show the hanging indent standing anyway.  See
 		 * word-layout-settings.md §4(d).  @since 17.1.0 */
-		if (hanging >= numWidth) return -1;   // the label fits: the hanging indent stands
+		/* The label fits the hanging indent: the label column is the hanging indent, and a
+		 * level tab stop which comes before w:ind left moves the FIRST line's text only
+		 * (createListBlock writes that as the body block's own text-indent - Word keeps the
+		 * paragraph's indent for the lines after it; see numberingTabStopTwips). */
+		if (hanging >= numWidth) return -1;
 
 		String suff = triple!=null && triple.getLvl()!=null && triple.getLvl().getSuff()!=null
 				&& triple.getLvl().getSuff().getVal()!=null
 				? triple.getLvl().getSuff().getVal() : "tab";
 		if ("nothing".equals(suff)) return numWidth;
-		if ("space".equals(suff)) return numWidth + 90;   // one space, on the same crude scale
+		// one space, measured in the label's own face (§2.8 counted 90 twips for it)
+		if ("space".equals(suff)) return numWidth + Math.max(1, spaceWidth);
 		return getDistanceToNextTabStop(indent.getNumberPosition(), numWidth,
 				pPrDirect.getTabs(), wmlPackage.getMainDocumentPart().getDocumentSettingsPart());
 	}

@@ -5682,6 +5682,72 @@ public final class Corpus {
 					});
 			return d.pkg();
 		}));
+
+		/*
+		 * The numbering label's own width (CR-001 batch 47 item 5).  Until 17.1.1 docx4j
+		 * estimated a label at 90 twips a character - 4.5pt, about a digit of an 11pt face -
+		 * and that estimate decides the label column of a list block, the gap an inline label
+		 * leaves before the text, and whether the numbering tab's stop falls past the end of
+		 * the label.  It is wrong in both directions, so the three cases here are the two
+		 * directions and a control:
+		 *
+		 *   numId 45  lvlText "Appendix %1" with w:suff space and w:ind left 0 hanging 0, in
+		 *             a 20pt bold paragraph: the estimate gives ten characters plus a space,
+		 *             990 twips, where the label is nearly twice that.  With the estimate the
+		 *             label wrapped inside its own column ("Appendix" / "A") and the body was
+		 *             set beside it
+		 *   numId 46  lvlText "Section %1 of the Annex" at 11pt with w:ind left 720
+		 *             hanging 360: the label is far wider than the hanging indent, so what follows it is decided
+		 *             by w:suff (a tab here) rather than by the indent
+		 *   numId 47  the control: "%1." at 11pt with the same left 720 hanging 360, where
+		 *             the label fits the hanging indent comfortably
+		 *
+		 * Read off the golden: the x of the first glyph of the label and of the text after
+		 * it, on each of the three paragraphs, and whether Word ever wraps a label inside its
+		 * own column.
+		 */
+		PROBES.add(new Probe("list-label-width",
+				"three numbered paragraphs whose labels are wide, wider than their hanging "
+				+ "indent, and narrow: lvlText \"Appendix %1\" with w:suff space and no "
+				+ "hanging indent in a 20pt bold paragraph, \"Section %1 of the Annex\" at "
+				+ "11pt with w:ind left 720 hanging 360 - far wider than that indent - and "
+				+ "\"%1.\" at 11pt as the control - the x of each label and of the text after "
+				+ "it", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(
+					"<w:abstractNum w:abstractNumId=\"45\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ labelLevel(0, "Appendix %1", "space", 0, 0, 40) + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"46\"><w:multiLevelType w:val=\"multilevel\"/>"
+					+ labelLevel(0, "Section %1 of the Annex", "tab", 720, 360, 22) + "</w:abstractNum>"
+					+ "<w:abstractNum w:abstractNumId=\"47\"><w:multiLevelType w:val=\"hybridMultilevel\"/>"
+					+ labelLevel(0, "%1.", "tab", 720, 360, 22) + "</w:abstractNum>"
+					+ "<w:num w:numId=\"45\"><w:abstractNumId w:val=\"45\"/></w:num>"
+					+ "<w:num w:numId=\"46\"><w:abstractNumId w:val=\"46\"/></w:num>"
+					+ "<w:num w:numId=\"47\"><w:abstractNumId w:val=\"47\"/></w:num>");
+
+			d.para("Three numbered paragraphs, each with a label of a different width against "
+					+ "its own indent. Read the x of each label and of the first glyph of the "
+					+ "text after it.").after(240).add();
+
+			d.para("L1: the label is \"Appendix A\" in 20pt bold with w:suff space and no "
+					+ "hanging indent, so what follows the label is one space after it. "
+					+ prose(1, 0))
+					.font(SERIF, 40).numPr(45, 0).markSize(40)
+					.markRPr(pr -> pr.setB(new org.docx4j.wml.BooleanDefaultTrue()))
+					.before(120).after(120).add();
+
+			d.para("L2: the label is \"Section 1 of the Annex\" at 11pt, far wider than the "
+					+ "360-twip hanging indent, so w:suff decides what follows it. " + prose(1, 1))
+					.numPr(46, 0).before(120).after(120).add();
+
+			d.para("L3 control: the label is \"1.\" at 11pt, narrower than the 360-twip "
+					+ "hanging indent. " + prose(1, 2))
+					.numPr(47, 0).before(120).after(120).add();
+
+			d.para("after. " + prose(1, 3)).before(240).add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {
@@ -5920,6 +5986,25 @@ public final class Corpus {
 				.run(bareRun(label + " control, Calibri regular: " + FONTS_SENTENCE, allFour("Calibri")))
 				.run(bareRun(" And " + label + " control, Calibri bold.",
 						allFour("Calibri").andThen(Doc::bold))).add();
+	}
+
+	/** A numbering level with an explicit {@code w:lvlText}, {@code w:suff} and indent, and a
+	 *  size (half-points) on the level's own {@code w:rPr} - the label's own face, which is
+	 *  what its width is measured in.  Element order follows CT_Lvl and CT_PPrGeneral.
+	 *  @since 17.1.1 (CR-001 batch 47, the list-label-width probe) */
+	private static String labelLevel(int ilvl, String lvlText, String suff, int leftTwips,
+			int hangingTwips, int halfPts) {
+		return "<w:lvl w:ilvl=\"" + ilvl + "\">"
+				+ "<w:start w:val=\"1\"/>"
+				+ "<w:numFmt w:val=\"decimal\"/>"
+				+ "<w:suff w:val=\"" + suff + "\"/>"
+				+ "<w:lvlText w:val=\"" + lvlText + "\"/>"
+				+ "<w:lvlJc w:val=\"left\"/>"
+				+ "<w:pPr><w:ind w:left=\"" + leftTwips + "\""
+				+ (hangingTwips > 0 ? " w:hanging=\"" + hangingTwips + "\"" : "") + "/></w:pPr>"
+				+ "<w:rPr><w:sz w:val=\"" + halfPts + "\"/>"
+				+ (halfPts >= 40 ? "<w:b/>" : "") + "</w:rPr>"
+				+ "</w:lvl>";
 	}
 
 	/** Writes every probe as {@code <id>.docx} into dir, plus corpus.txt and corpus-manifest.properties. */

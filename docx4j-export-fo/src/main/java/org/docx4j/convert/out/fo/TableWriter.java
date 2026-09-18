@@ -783,7 +783,8 @@ public class TableWriter extends AbstractTableWriter {
 	 * neighbour whose text then stayed on one line where Word wraps it.  A family
 	 * without the face is measured, as it is drawn, in the regular one.
 	 */
-	private static org.docx4j.fonts.PhysicalFont fontFor(Element el, org.docx4j.fonts.Mapper mapper) {
+	/** Package-private since 17.1.1: XsltFOFunctions measures a numbering label with it. */
+	static org.docx4j.fonts.PhysicalFont fontFor(Element el, org.docx4j.fonts.Mapper mapper) {
 		org.docx4j.fonts.PhysicalFont regular = null;
 		boolean familySeen = false, weightSeen = false, styleSeen = false;
 		boolean bold = false, italic = false;
@@ -818,7 +819,7 @@ public class TableWriter extends AbstractTableWriter {
 
 	/** "bold", "bolder", or a number FOP resolves to the bold face (it tries 700 and up before
 	 *  400 for anything over 500). */
-	private static boolean isBoldWeight(String w) {
+	static boolean isBoldWeight(String w) {
 		w = w.trim();
 		if ("bold".equalsIgnoreCase(w) || "bolder".equalsIgnoreCase(w)) return true;
 		try {
@@ -828,7 +829,7 @@ public class TableWriter extends AbstractTableWriter {
 		}
 	}
 
-	private static double sizeFor(Element el) {
+	static double sizeFor(Element el) {
 		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
 			String f = ((Element) n).getAttribute("font-size");
 			if (f != null && f.length() > 0) return org.docx4j.convert.out.fo.WordLayoutFixups.lengthPt(f);
