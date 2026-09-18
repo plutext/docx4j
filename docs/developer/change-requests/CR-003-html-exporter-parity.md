@@ -1,6 +1,6 @@
 # CR: HTML exporter feature parity (HTMLExporterVisitor vs HTMLExporterXslt)
 
-Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6); one defect recorded and fixed 2026-09-18 (list items collide with their marker, §4).
+Status: DONE (2026-09-01) — all 6 phases shipped (execution order 1, 4, 2, 3, 5, 6); one defect recorded and fixed 2026-09-18 (list items collide with their marker, §4); a second recorded (a hanging indent crosses a left border, §4, not implemented; the FO exporter has it too).
 The default flag decision (XSLT remains the default) is recorded under Out of scope.
 Scope: `org.docx4j.convert.out.html` plus the shared visitor base
 `org.docx4j.convert.out.common.AbstractVisitorExporterGenerator` (both in docx4j-core)
@@ -374,6 +374,61 @@ indent intact, NOTE / Appendix A / Appendix B, a direct list counting once) and
 the parity test's list assertions.  On the draft: 63 `li` in 47 `ul`/`ol`,
 107 labels, no `display: list-item`, 24 NOTE, 5 EXAMPLE, 5 Appendix labels,
 identical from both flags.
+
+### Defect found after DONE: a hanging indent crosses a left paragraph border (2026-09-18)
+
+Found on the same draft, re-exported at ed6380a10 (the list fix holds).  Not
+implemented; recorded with the mechanism.
+
+Symptom.  In
+
+    <p class="Requirement Normal DocDefaults "><a name="REQ_013"><span class="RequirementID">REQ-013</span>&nbsp;&nbsp;&nbsp;<span>Each </span>…
+
+under
+
+    .Requirement {display:block;page-break-inside: avoid;position: relative; margin-left: 56.7pt;text-indent: -56.7pt;border-left-style: solid;border-left-width: 0.79mm;border-left-color: #2B6CB0;padding-left: 8pt;margin-top: 4pt;margin-bottom: 8pt;}
+
+the first line has no gap between the vertical bar and the text, while the
+continuation lines are 8pt clear of it.  The style is
+`<w:pBdr><w:left w:val="single" w:sz="18" w:space="8"/></w:pBdr>` with
+`<w:ind w:left="1134" w:hanging="1134"/>`.  The same for the Example style
+(left 1134, hanging 850, a sz 6 border) and for any numbered paragraph with a
+left border, since the new `ListLabel` sits in the hang.
+
+Mechanism.  `Indent.getCssProperty` emits `margin-left` = `w:left` and
+`text-indent` = -hanging (`Indent.java` 178-195); `AbstractPBorder`
+independently emits the border and `padding-left` = `w:space` (line 131);
+nothing reconciles them.  In the CSS box model the border sits at the margin
+edge, so the first line starts `hanging` to the left of the content edge - at
+about 10pt, left of the bar at 56.7pt - and the bar is drawn through the
+first line, right after the ID and its tab.  Word positions a left border
+relative to the leftmost text edge, min(`w:left`, `w:left` - hanging), less
+`w:space`: in Word the bar stands left of the ID with an 8pt gap and every line
+clears it.
+
+Proposed change.  Where a paragraph (style or direct) has a left border and a
+hanging indent, move the hang from margin into padding: `margin-left` = left
+- hanging; `padding-left` = space + hanging; `text-indent` = -hanging as
+before.  For the Requirement style: margin-left 0, padding-left 64.7pt,
+text-indent -56.7pt - the first line 8.79pt from the bar, continuation lines
+at 64.7pt, Word's geometry.  No change without a left border, or with a
+positive `firstLine`.  `Indent` and `PBorderLeft` are separate `Property`
+objects, so the reconciliation belongs where the paragraph CSS is assembled
+(`HtmlCssHelper.createCss` for a `PPr`, stylesheet and inline paths alike), or
+`Indent` is handed the effective `pBdr`.
+
+**The XSL-FO exporter has the same defect, measured on the same document
+(2026-09-18).**  Its text is at Word's x - the ID at 70.90 against Word's
+70.82, the continuation line at 127.60 against 127.49 - but the bar is
+not: FOP strokes the paragraph's left border at the block's `start-indent`
+edge less its padding, page x = 118.48, where Word's bar stands at
+59.30..61.46, so ours cuts through the first line between the ID and the
+text on every requirement.  The FO box model is the CSS one (`start-indent` is
+the content edge, border and padding inside it, a negative `text-indent` runs
+back over the border), so the same shift applies: `start-indent` = left -
+hanging, `padding-start` = space + hanging.  Queued for CR-001 batch 48 as a
+class 1 rule (font-independent; the probe: a bordered paragraph with a
+hanging indent, a numbered one, and a `firstLine` control).
 
 ## 5. Risks / open questions
 
