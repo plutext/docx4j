@@ -324,7 +324,26 @@ Either way the run prints the mode and the script path at startup and writes the
 fieldUpdate=off
 markup=off
 wordConvertScript=X:\fidelity\real2\goldens-nofields\word_convert-nofields.vbs
+connectedExperiences=on (HKCU\Software\Microsoft\Office\16.0\Common\Privacy\DisconnectedState=0)
+proofingLanguages=lcid 1033,3081 (HKLM\SOFTWARE\Microsoft\Shared Tools\Proofing Tools\1.0\Override)
 ```
+
+The last two are the machine's own state, and they decide a golden as much as the script
+does (`MachineState`). **Connected experiences** decide whether Office's cloud fonts
+counted as installed: measured on one document, with the setting off Word set Aptos in
+Calibri and produced a 27-page PDF, and with it on Word set the body in Aptos and
+produced a different 27-page PDF whose every line broke elsewhere — both are Word's
+output and only the second is Word's layout of the document's fonts. **The proofing
+languages** decide hyphenation, which is why the corpora are scored with
+`-Dfidelity.hyphenate=false`. Both are read from the Windows registry; an operator can
+state either instead, with `-Dfidelity.connectedExperiences=on|off|unknown` and
+`-Dfidelity.proofingLanguages=<list>`, and an explicit property wins. Neither reading
+ever fails a run: what cannot be read is recorded as `unknown`, with the reason.
+
+The faces each PDF embeds go in as `<id>.fonts=` whether this run cut the PDF or found it
+already there, so that a set always says what its reference was drawn with. The corpus
+goldens of 2026-09-05 predate that line, which is why the `class` column reads the PDFs
+itself.
 
 and, when a third directory is given, into a `resaved-manifest.properties` beside the re-saved
 documents - which travel separately, and to which the mode matters for the same reason. **A
@@ -697,6 +716,51 @@ Columns:
 | `refPitch` / `candPitch` | each side's own line pitch: the median baseline gap between consecutive lines on a page, counting only pairs stacked one above the other. The cells of a table row are consecutive extracted lines too, and the gap between them is no line pitch, so they are left out — see `LayoutComparison.linePitch` |
 | `firstDivergence` | the first line- or page-break difference |
 | `error` | first line of the exception, for `error` / `timeout` rows |
+| `class` | which class of layout rule this document can be evidence for — `2`, `2n`, `3a` or `3b`, empty on an unscored row. See "The class and the substituted share" below and `RULE-CLASSES.md` |
+| `substShare` | the fraction of the document's text runs set in a substituted family, on whichever side is worse |
+| `basis` | which docx was scored: `corpus` (the third-party file) or `resaved` (Word's own save of it). The two are not comparable |
+
+### The class and the substituted share
+
+A golden does not always measure the same thing. Where both machines had the document's
+fonts it measures Word's layout of those fonts and a residue is docx4j's defect; where
+docx4j lacks one it measures what the metrics table and the metric-compatible clones are
+worth; and where **Word** lacked one the golden measures Word's own substitution, and is
+no evidence about layout at all. `RULE-CLASSES.md` sets that out; the `class` column says
+which case each document is, so that a rule is never gated on a mean taken over all of
+them at once:
+
+- **`2`** — Word embedded a face of its own for every family the document sets text in,
+  and docx4j substituted none of them. This is the exporter's own number.
+- **`2n`** — Word had them all; docx4j drew one or more in a near-metric clone or a
+  measured stand-in (`Grade.NEAR`).
+- **`3a`** — docx4j drew a family the document uses in a face of the same class, or in
+  nothing (`Grade.CLASS` or `Grade.NONE`).
+- **`3b`** — Word itself embedded another face for a family the document uses. It wins
+  over `3a`: whatever docx4j did, the reference is already not the target. Reported,
+  never gated on.
+
+Both sides are read at scoring time, per document. The Word side is the faces the golden
+PDF embeds (`PdfFonts.faces`, subset tags stripped) against the families the document's
+runs resolve to; the docx4j side is the grades `FontsAnalysis` reports for the render
+that was just scored, so they are that render's own decisions and not a fresh guess. The
+families come from docx4j's own use walk — `RunFontSelector.documentFontFor` per
+character over the body, the headers and footers, the notes and the comments, with each
+run's effective properties resolved by `PropertyResolver` — not from a reading of
+`w:rFonts`. A face name in a PDF is the face's PostScript name with the style welded on
+(`TimesNewRomanPS-BoldMT`), so the two are compared with letters and digits only and
+either allowed to be a prefix of the other; a legacy code-page suffix
+(`Times New Roman CYR`) is dropped first.
+
+`scoreboard.txt` and the delta report the aggregate **per class** as well as per corpus,
+which is what a batch gate reads: no loss on class 2, every class 3a mover explained, 3b
+ignored. `classes.txt` beside them names, per document, the families Word did not embed
+and the families docx4j substituted with their grades — which is where a re-cut list
+comes from.
+
+Both columns are additions: `readCsv` reads by name, so a scoreboard written before they
+existed is still a valid baseline and reads with an empty class. `rescore` leaves them
+empty, because it does not render and so has no mapper to ask.
 
 The aggregate is: documents scored / errors / timeouts / no-reference; documents
 with the same page count; lines matched over lines total; merged pairs; median and

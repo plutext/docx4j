@@ -57,6 +57,14 @@ import org.docx4j.wml.CTCompatSetting;
  * on what the machine was last left showing - which is what put balloon text into one corpus's
  * commented documents. {@code -Dfidelity.showMarkup=true} leaves the display alone; the
  * manifest records it as {@code markup=off|on}.</p>
+ *
+ * <p><b>And the machine's own state is recorded with them</b>: whether Office's connected
+ * experiences were on - which decides whether the cloud fonts counted as installed, and
+ * so which fonts Word laid the document out in - and which proofing languages were
+ * installed, which decide hyphenation. See {@link MachineState}. Neither was recorded for
+ * the corpus goldens of 2026-09-05, and both change a golden. The faces each PDF embeds
+ * go in as {@code <id>.fonts=} whether the PDF was cut by this run or was already there,
+ * so that a set always says what fonts its reference was drawn with.</p>
  */
 public final class WordGoldenRunner {
 
@@ -146,6 +154,14 @@ public final class WordGoldenRunner {
 			m.println("fieldUpdate=" + ConversionScript.mode());
 			m.println("markup=" + ConversionScript.markup());
 			m.println("wordConvertScript=" + ConversionScript.path());
+			/* The machine's own state, which decides a golden as much as the script does:
+			 * whether the cloud fonts counted, and which languages could hyphenate.  The
+			 * corpus goldens of 2026-09-05 record neither, and it took a measurement on a
+			 * single document to find out how much the first is worth. */
+			for (String line : MachineState.manifestLines()) {
+				m.println(line);
+				System.out.println(line);
+			}
 			if (resavedDir != null) writeResavedManifest(resavedDir);
 			int n = 0;
 			for (File docx : files) {
@@ -159,6 +175,22 @@ public final class WordGoldenRunner {
 				 * PDF. */
 				if (pdf.length() > 0 && !force) {
 					skipped++;
+					/* A set whose PDFs are already cut carries no font list unless one is
+					 * written for them - which is the corpora's own position: cut
+					 * 2026-09-05, before PdfFonts existed, so the class column has to read
+					 * the PDFs itself.  Recording the faces of a skipped golden costs one
+					 * PDFBox read and fills the gap without re-cutting anything; a set
+					 * which already has the line is left alone. */
+					if (!previousFonts.containsKey(id)) {
+						String fonts = PdfFonts.record(pdf);
+						m.println(id + ".fonts=" + fonts);
+						if (!fonts.startsWith("unreadable")) {
+							for (String f : fonts.split(",")) {
+								if (f.length() > 0) runFonts.add(f);
+							}
+						}
+						m.flush();
+					}
 				} else {
 					progress("converting", id, n, files.length, docx);
 					try {
@@ -305,6 +337,7 @@ public final class WordGoldenRunner {
 			r.println("fieldUpdate=" + ConversionScript.mode());
 			r.println("markup=" + ConversionScript.markup());
 			r.println("wordConvertScript=" + ConversionScript.path());
+			for (String line : MachineState.manifestLines()) r.println(line);
 		} catch (Exception e) {
 			// a manifest is a record, not the work; never let it cost a run
 			System.out.println("  could not write resaved-manifest.properties: " + e);

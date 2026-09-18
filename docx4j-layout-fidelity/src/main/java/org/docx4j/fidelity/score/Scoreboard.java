@@ -43,7 +43,11 @@ public final class Scoreboard {
 	 */
 	public static final String[] HEADER = { "id", "compatMode", "sizeBytes", "status", "refPages", "candPages",
 			"refLines", "candLines", "lineParity", "pageParity", "matched", "merged", "medianDy", "maxDy",
-			"refPitch", "candPitch", "firstDivergence", "error" };
+			"refPitch", "candPitch", "firstDivergence", "error", "class", "substShare", "basis" };
+
+	/** The class a row carries when the run could not read one (a document that threw, or
+	 *  one with no golden to read the Word side from). */
+	public static final String NO_CLASS = "";
 
 	private Scoreboard() {}
 
@@ -64,6 +68,17 @@ public final class Scoreboard {
 		public double refPitch, candPitch;
 		public String firstDivergence = "";
 		public String error = "";
+		/** Which class of rule this document is evidence for: {@code 2}, {@code 2n},
+		 *  {@code 3a}, {@code 3b}, or empty where the run could not read one.
+		 *  @see DocumentClass */
+		public String docClass = NO_CLASS;
+		/** The fraction of the document's text runs in a substituted family, worse side.
+		 *  @see DocumentClass */
+		public double substShare;
+		/** Which docx the run scored: {@code corpus} (the third-party file) or
+		 *  {@code resaved} (Word's own save of it).  The two are not comparable; the
+		 *  harness README, "What to score", says why the second is the basis. */
+		public String basis = "";
 
 		public Row() {}
 
@@ -112,9 +127,10 @@ public final class Scoreboard {
 			}
 			return String.format(Locale.ROOT,
 					"%-44s pages %d/%d  lines %d/%d  parity %.0f%%/%.0f%%  dy med %.2f max %.2f"
-							+ "  pitch %.2f/%.2f  %s",
+							+ "  pitch %.2f/%.2f  class %-2s %.2f  %s",
 					id, refPages, candPages, refLines, candLines, lineParity * 100, pageParity * 100,
-					medianDy, maxDy, refPitch, candPitch, firstDivergence);
+					medianDy, maxDy, refPitch, candPitch,
+					docClass.isEmpty() ? "?" : docClass, substShare, firstDivergence);
 		}
 	}
 
@@ -126,6 +142,11 @@ public final class Scoreboard {
 		public long mergedPairs;
 		public long linesMatched, linesTotal, linesCand, sizeBytes;
 		public double medianParity, meanParity;
+		/** Which docx the run scored - {@code corpus} or {@code resaved} - taken from the
+		 *  rows, which all carry the same value.  Empty for a scoreboard written before
+		 *  the column existed; two runs on different bases are not comparable, which is
+		 *  why this is in the summary and in the delta. */
+		public String basis = "";
 
 		public static Aggregate of(List<Row> rows) {
 			Aggregate a = new Aggregate();
@@ -133,6 +154,7 @@ public final class Scoreboard {
 			for (Row r : rows) {
 				if (TOTAL.equals(r.id)) continue;
 				a.sizeBytes += r.sizeBytes;
+				if (a.basis.isEmpty() && r.basis != null && !r.basis.isEmpty()) a.basis = r.basis;
 				switch (r.status) {
 				case "ok":
 					a.scored++;
@@ -169,6 +191,7 @@ public final class Scoreboard {
 		/** label / value pairs, in report order. */
 		public List<String[]> entries() {
 			List<String[]> out = new ArrayList<>();
+			out.add(new String[] { "basis", basis.isEmpty() ? "(not recorded)" : basis });
 			out.add(new String[] { "documents scored", Integer.toString(scored) });
 			out.add(new String[] { "errors", Integer.toString(errors) });
 			out.add(new String[] { "timeouts", Integer.toString(timeouts) });
@@ -247,6 +270,7 @@ public final class Scoreboard {
 		t.pageParity = a.medianParity;
 		t.medianDy = a.meanParity;
 		t.firstDivergence = a.summary();
+		t.basis = a.basis;
 		return t;
 	}
 
@@ -269,7 +293,10 @@ public final class Scoreboard {
 		sb.append(String.format(Locale.ROOT, "%.2f", r.refPitch)).append(',');
 		sb.append(String.format(Locale.ROOT, "%.2f", r.candPitch)).append(',');
 		sb.append(q(oneLine(r.firstDivergence))).append(',');
-		sb.append(q(oneLine(firstLine(r.error))));
+		sb.append(q(oneLine(firstLine(r.error)))).append(',');
+		sb.append(q(r.docClass)).append(',');
+		sb.append(String.format(Locale.ROOT, "%.4f", r.substShare)).append(',');
+		sb.append(q(r.basis));
 		return sb.toString();
 	}
 
@@ -320,6 +347,9 @@ public final class Scoreboard {
 				row.candPitch = dbl(at(head, f, "candPitch"));
 				row.firstDivergence = at(head, f, "firstDivergence");
 				row.error = at(head, f, "error");
+				row.docClass = at(head, f, "class");
+				row.substShare = dbl(at(head, f, "substShare"));
+				row.basis = at(head, f, "basis");
 				rows.add(row);
 			}
 		}
@@ -380,9 +410,60 @@ public final class Scoreboard {
 
 	// ---------------------------------------------------------------- text report
 
-	/** aggregate block, then one line per document, worst line parity first. */
+	/**
+	 * The summary per class of rule, which is what a batch gate reads: "no loss on class
+	 * 2, class 3a explained, 3b ignored" (RULE-CLASSES.md section 5).  A class 2 mean is
+	 * the exporter's own number; 3a says what the metrics table and the clones are worth;
+	 * 3b is Word's own substitution and is reported, never gated on.
+	 *
+	 * <p>Rows the run could not class - an error, a timeout, a document with no golden -
+	 * are grouped under {@code ?} so that nothing is silently dropped.</p>
+	 */
+	public static List<String> byClass(List<Row> rows) {
+		List<String> out = new ArrayList<>();
+		out.add(String.format(Locale.ROOT, "%-5s %5s %8s %8s %18s %13s %8s %7s",
+				"class", "docs", "mean", "median", "matched/reference", "same pages",
+				String.format(Locale.ROOT, ">=%.2f", GOOD), "share"));
+		List<String> classes = new ArrayList<>();
+		for (String c : DocumentClass.CLASSES) classes.add(c);
+		classes.add("?"); // errors, timeouts, and anything the reader did not recognise
+		for (String c : classes) {
+			List<Row> of = new ArrayList<>();
+			for (Row r : rows) {
+				if (TOTAL.equals(r.id)) continue;
+				String rc = r.docClass == null || r.docClass.isEmpty() ? "?" : r.docClass;
+				if (!known(rc)) rc = "?";
+				if (rc.equals(c)) of.add(r);
+			}
+			if (of.isEmpty()) continue;
+			Aggregate a = Aggregate.of(of);
+			double shareSum = 0;
+			int shareN = 0;
+			for (Row r : of) {
+				if (!r.scored()) continue;
+				shareSum += r.substShare;
+				shareN++;
+			}
+			out.add(String.format(Locale.ROOT, "%-5s %5d %8.4f %8.4f %8d /%8d %6d (%3.0f%%) %8d %7.3f",
+					c, of.size(), a.meanParity, a.medianParity, a.linesMatched, a.linesTotal, a.samePages,
+					a.scored == 0 ? 0 : 100.0 * a.samePages / a.scored, a.atLeastGood,
+					shareN == 0 ? 0 : shareSum / shareN));
+		}
+		return out;
+	}
+
+	private static boolean known(String c) {
+		for (String k : DocumentClass.CLASSES) {
+			if (k.equals(c)) return true;
+		}
+		return false;
+	}
+
+	/** aggregate block, the per-class block, then one line per document, worst line parity first. */
 	public static List<String> textReport(List<Row> rows, List<String> deltaLines) {
 		List<String> out = new ArrayList<>(Aggregate.of(rows).lines());
+		out.add("");
+		out.addAll(byClass(rows));
 		if (deltaLines != null && !deltaLines.isEmpty()) {
 			out.add("");
 			out.addAll(deltaLines);
@@ -427,6 +508,16 @@ public final class Scoreboard {
 		for (int i = 0; i < la.size(); i++) {
 			out.add(String.format(Locale.ROOT, "%-20s %20s %20s", la.get(i)[0], la.get(i)[1], lb.get(i)[1]));
 		}
+
+		/* The gate is per class, not per corpus: a class 2 loss stops a batch where a 3b
+		 * move is never gated on, so the two sides are put side by side here rather than
+		 * left to be worked out from two scoreboards. */
+		out.add("");
+		out.add("per class, before then after");
+		List<String> beforeClasses = byClass(before), afterClasses = byClass(after);
+		out.add("  " + beforeClasses.get(0));
+		for (int i = 1; i < beforeClasses.size(); i++) out.add("  B " + beforeClasses.get(i));
+		for (int i = 1; i < afterClasses.size(); i++) out.add("  A " + afterClasses.get(i));
 
 		Map<String, Row> baseById = new LinkedHashMap<>();
 		for (Row r : before) baseById.put(r.id, r);
@@ -491,9 +582,10 @@ public final class Scoreboard {
 
 	static String changeLine(Row before, Row after) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format(Locale.ROOT, "  %-11s %-44s %.4f -> %.4f  pages %d/%d -> %d/%d",
+		sb.append(String.format(Locale.ROOT, "  %-11s %-44s %.4f -> %.4f  pages %d/%d -> %d/%d  class %-2s",
 				isRegression(before, after) ? "REGRESSION" : "improved", after.id, before.lineParity, after.lineParity,
-				before.refPages, before.candPages, after.refPages, after.candPages));
+				before.refPages, before.candPages, after.refPages, after.candPages,
+				after.docClass == null || after.docClass.isEmpty() ? "?" : after.docClass));
 		if (!before.status.equals(after.status)) sb.append("  [").append(before.status).append(" -> ")
 				.append(after.status).append("]");
 		return sb.toString();
