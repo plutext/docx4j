@@ -48,11 +48,23 @@ public class JarFontDiscoveryTest {
 
 		ClassLoader cl = PhysicalFonts.class.getClassLoader();
 		URL jarFont = cl.getResource("fonts/LiberationSans-Regular.ttf");
-		if (jarFont == null) {
+		if (jarFont == null || !"jar".equals(jarFont.getProtocol())) {
 			// the jar lays its fonts out under a subfolder; find any ttf under fonts/
 			jarFont = firstTtfUnder(cl, "fonts");
 		}
-		Assume.assumeTrue("no font jar on the test classpath", jarFont != null);
+		/*
+		 * The last assertion below is that a jar: root was walked, so the font module has
+		 * to be on the classpath as a jar.  It is when the modules are installed and this
+		 * one is tested on its own - which is how a release is built - and it is NOT under
+		 * `mvn test -pl docx4j-core-tests -am`, the recipe CLAUDE.md gives: the reactor
+		 * puts the font module's own target/classes *directory* on the classpath instead,
+		 * so every discovered face has a file: URI and the test can only fail.  That is a
+		 * fact about the build, not about getFontUrls, so it is assumed rather than
+		 * asserted.  (CR-001 batch 48)
+		 */
+		Assume.assumeTrue("no font jar on the test classpath: the font module is here as a directory,"
+				+ " which happens under `mvn test -am`; install the modules and run this one alone",
+				jarFont != null && "jar".equals(jarFont.getProtocol()));
 
 		// a second classpath root with the same folder: the test-classes directory
 		URL testClasses = cl.getResource("docx4j.properties");
