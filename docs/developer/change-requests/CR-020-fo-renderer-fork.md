@@ -1,9 +1,10 @@
 # CR-020: `docx4j-fo-renderer` — an upstream-tracking fork of Apache FOP, with graceful degradation to Apache's own
 
 Status: ACTIVE (accepted by Jason Harrop 2026-09-18). Phases 0 and 1 landed
-the same day (§8); phase 2 (the Metanorma and Chunlin classification) is next;
-the first release waits, as §4 says. The decision to fork, the naming and the
-degradation contract were taken by Jason Harrop on 2026-09-18 (recorded in §2).
+the same day; phase 2's classification report landed 2026-09-19 (§8, tables in
+§9) and its cherry-picks are queued as batch items; the first release waits,
+as §4 says. The decision to fork, the naming and the degradation contract were
+taken by Jason Harrop on 2026-09-18 (recorded in §2).
 Drafted with Claude Fable 5.1 at the close of CR-001 batch 48; the first
 release moved out of phase 0 on Jason's direction the same day.
 Owner: Jason Harrop.
@@ -227,7 +228,10 @@ as §3.1.
    `normAutofit` with a font scale); Metanorma's PDF/UA tagging (our
    accessibility documentation), attachments, Japanese glyph handling. Each
    cherry-pick is a batch item: probe first where one exists, corpora per class,
-   no class 2 loss.
+   no class 2 loss. (Report: §8 phase 2 and §9. Two of the visible candidates
+   did not survive it: ruby is an FO authoring pattern in Chunlin's example,
+   not a renderer feature, and shrink-to-fit is better served from Word's
+   stored font scale on the docx4j side.)
 3. **The structural items** (Enterprise CR-001.6, PROPOSED): the column model
    and unequal columns, GDI rounding, text on both sides of an anchor and wrap
    around a page-positioned object (§6.6 items 8, 10, 11, 12), hyphenation as
@@ -365,11 +369,350 @@ identical to b49 in every row, and the fork identical to b50-fork in every row
 (so still only the one explained mover against b49), with all four hooks
 reported active in the scoreboard's renderer line.
 
+### Phase 2 - classification report DONE 2026-09-19; cherry-picks queued
+
+The three forks were fetched into `../xmlgraphics-fop-plutext` as remotes
+(`upstream` = apache, `metanorma`, `chunlin`) and measured against each other
+(§9.1). The unit of classification is the feature, not the commit: Metanorma's
+142 non-merge commits net to sixteen features (§9.2), because about sixty of
+them are build, CI, version-bump and "code reverted back to pass tests" churn
+around a single upstream merge in May 2026. Every commit is nevertheless
+tabled (§9.5) with its feature and verdict, as §4 asks, and the 69 merges are
+listed with their range. Chunlin's seven commits are §9.3; the upstream
+commits since the 2.11 tag, which the fork will meet at its first merge of
+`main`, are §9.4 - they matter here because they supersede three of
+Metanorma's fixes and because four of them touch CR-001 ground directly.
+
+**What survived, in the order to take it** (each a batch item: a fork commit
+cherry-picked with `-x`, its change notice and README row, the docx4j-side
+change where one is named, and the class gate of `RULE-CLASSES.md` on both
+renderers):
+
+- **P2-1 Surrogate pairs** (M10d): a word is no longer split between a high
+  and its low surrogate at a bidi-level change or a per-character font
+  selection, and `CharUtilities` no longer throws "isolated high surrogate"
+  one character early. Emoji and Extension-B ideographs in docx4j documents
+  hit exactly this. Gate: corpora identical; an emoji probe. Upstream first.
+- **P2-2 Foreign-XML attribute namespaces** (M12): `XMLObj` resolves a
+  prefixed attribute (`xlink:href` on our SVG, MathML) whose declaration sits
+  on an ancestor. Gate: an SVG probe declaring `xlink` on `fo:root`. Upstream
+  first.
+- **P2-3 Unresolved references reported per page** (M11, 04e4e40ad): a
+  render-time event naming the page and the id. A harness diagnostic; gate
+  identical. Upstream first.
+- **P2-4 Arabic letter mark and zero-width space** (M10b, M10c): U+061C
+  falls back to U+200B when the font lacks it; U+200B is not turned into a
+  word space in accessibility mode. Gate identical unless a corpus text
+  carries U+061C (check at cherry-pick). Upstream first.
+- **P2-5 Accessibility set**, with the math-in-PDF CR and a PAC run over a
+  docx4j document: `fox:actual-text` (M4) and `fox:placement` (M5) on
+  graphics, `/ID` on Note and `Scope` on TH (M8a, after diffing against
+  upstream FOP-3165 and FOP-3283, which cover the same ground), one GoTo
+  action per link (M8c, JIRA FOP-3305), invisible text for an alpha-zero
+  colour (M15, the searchable layer over SVG math). Link `/Contents` is NOT
+  in this set: upstream FOP-3258 and FOP-3322 take `fox:alt-text` on the
+  `fo:basic-link`, so docx4j's part is to emit it (the tooltip or the link
+  text) with no renderer change.
+- **P2-6 Japanese numerals** (M3), together with docx4j mapping the East
+  Asian `w:pgNumType` formats it does not name today. Upstream first.
+- **P2-7 Attachments** (M9), rewritten: `AFRelationship`, `/UF`, a
+  `FileAttachment` annotation, so an embedded OLE package can travel with the
+  PDF (PDF/A-3). Metanorma's version string-matches `/FileAttachment` inside
+  `PDFDocument.encode` to switch the encoding; not as is.
+- **P2-8 Ligatures** (docx4j's own, found on the way): FOP's default GSUB
+  feature list applies `liga`; Word applies standard ligatures only when
+  `w14:ligatures` asks. A `gsub-features` hook (§3.2 style) and a probe to
+  measure it; Metanorma's language gate (M10e) is not the way.
+
+**Withheld:** vertical writing (M2) until a `tbRlV` CJK probe exists and the
+signature, gating and renderer issues in §9.2 are reworked - it is a
+simulation on FOP's horizontal line model, and its public-signature changes
+would break every consumer compiled against Apache FOP; shrink-to-fit (M1),
+because Word stores the scale it computed (`a:normAutofit/@fontScale`,
+`@lnSpcReduction`) and docx4j can emit the scaled sizes directly, with no
+renderer change and no relayout loop. Skipped outright: §9.2 says why, item
+by item; the Metanorma-only structure-tree heuristics and the tag-type change
+that mutates static singletons are the ones to be wary of if they are ever
+reconsidered.
+
+**Superseded:** Metanorma's FOP-2529 patch (M10a) is our §6.6 item 26 fix
+under another name - the JIRA exists, so the item-26 upstream PR goes there
+rather than to a new issue; Chunlin's letter-space guard (C3) by docx4j's own
+`fixLetterSpaces` and by upstream FOP-2722; the link `/Contents` work (M8b)
+by FOP-3258 and FOP-3322.
+
+**Corrections to §4:** ruby is not a renderer feature in Chunlin's fork (his
+example stacks `fo:inline-container`s; docx4j can render `w:ruby` that way on
+Apache FOP today); Chunlin's five commits are seven, two of them README.
+
+**The upstream backlog** (§9.4) is the other output: 89 commits since the
+2.11 tag, of which FOP-3181 (page duplication when the IPD changes - our
+sections), FOP-2722 (letter spaces counted in the complex-script path, which
+collides with `fixLetterSpaces`), FOP-2880 (soft hyphens, item 22), FOP-3273
+(tagging stopping after the first page-sequence - docx4j emits one per
+section), the three leader fixes and the five memory fixes behind issue 687
+each deserve their own gate. Recommendation: the first release stays on the
+2.11 base as §4 says; the merge of `main` is phase 4's first act, its own
+gated item, straight after.
+
 ### Not done, carried
 
-- Phase 2 (the classification report), then the first release.
-- The fork branch and its CI are local until pushed.
+- Phase 2 cherry-picks P2-1 to P2-8 (above), one batch item each; then the
+  first release, or the upstream merge first - Jason's call.
+- The fork branch and its CI are pushed (origin/docx4j-2.11); the
+  `metanorma` and `chunlin` remotes exist only in the local checkout.
 - §6.6 items 24 (`span="all"`) and 25 (region indents) have no fork change yet;
   25 is a layout change in FOP's page-sequence code, to be met when a batch
   needs it.
 
+## 9. Phase 2 classification (2026-09-19)
+
+### 9.1 Method and numbers
+
+Remotes in `../xmlgraphics-fop-plutext`: `upstream` (apache/xmlgraphics-fop
+`main` at 2a8efc165, 2026-07-08), `metanorma` (metanorma/xmlgraphics-fop
+`main` at 8662a90c8, tags v2.11.1-v2.11.5), `chunlin` (chunlinyao/fop
+`yao-2_11` at a06151041, 2026-09-08). Ranges read with `git rev-list` and
+`git diff`; issue titles from the GitHub API; every hunk of both net diffs
+read (Metanorma's 8373 lines, Chunlin's 4204), not the commit subjects alone.
+
+| Fork | Base | Commits over base | Net delta | Notes |
+|---|---|---|---|---|
+| Metanorma `main` | upstream `main` at 32c8c7176 (2026-05-22), i.e. 75 upstream commits past the 2.11 tag merged, 14 not yet | 211 = 142 non-merge + 69 merges | 132 files, +5482 / -262 (2241 lines are the Unicode `Vertical_Orientation` table) | 16 features (§9.2); ~60 commits of build, CI, version-bump and revert churn |
+| Chunlin `yao-2_11` | the `2_11` tag exactly | 7 (no merges) | 39 files, +2887 / -105 (README, four images and a sample PDF among them) | 3 features (§9.3); the origin of Metanorma's vertical writing and shrink-to-fit |
+| Our `docx4j-2.11` | the `2_11` tag exactly | 7 (4 cherry-picks, set-up, groups, hooks) | - | 89 upstream commits behind `main` (§9.4) |
+
+Verdicts: **TAKE** (a queued batch item, §8 P2-n), **LATER** (a candidate
+once docx4j emits the construct, or once a probe exists), **UPSTREAM** (a
+general fix to send to Apache; taken here meanwhile only where it moves a
+docx4j document), **SUPERSEDED** (by our own fix or by an upstream commit
+since 2.11), **SKIP** (Metanorma-specific, checker-specific, churn, or unsafe
+as written). "Construct" names the docx4j input the change would serve.
+
+### 9.2 Metanorma by feature
+
+| Id | Feature | Commits (issue) | Size | Construct served | Risk / reading | Verdict |
+|---|---|---|---|---|---|---|
+| M1 | `fox:shrink-to-fit` on `fo:block-container`: bisection over a font scale (0.2..1, step 0.05, up to five relayouts) that rewrites `CommonFont` and `line-height` on every child `Block`, `InlineLevel` and `FOText` and recreates the child LMs | 9e2999537 (#3; Chunlin f25730a72, 231e5bfa2), style in 3a5b98da1 | 12 files, +327 | `wps:bodyPr/a:normAutofit` (Word's "shrink text on overflow") | `LengthRangeProperty.scale` mutates the property in place, and properties are cached and shared; the loop costs up to five layouts per box; hidden coupling of `fo.properties` to a layout manager class | LATER as a fallback only. Word stores the scale it last computed (`@fontScale`, `@lnSpcReduction`); docx4j emits the scaled font-size and line-height itself, no renderer change - the batch item is docx4j-side |
+| M2 | Vertical writing: when the `LayoutContext` writing mode is vertical, words split at upright characters (a 2241-line `Vertical_Orientation` table), GSUB adds `vert`, each upright `WordArea` is rotated -90 degrees in `IFRenderer`; writing mode propagated through `offspringOf`, block stacking, tables, footnotes, static content, inline containers; page numbers and citations rotated per character | 7d3c1094b (#1; Chunlin 6437317f9), 51f5c065b, b26c29dbb (#37), 1958ca013 (#10), 19feafc01, c4b6b8322, 0a2ea2906, faaf0b905; examples 1d9040676, 35c9266e2, 238f30130 | 35 files, ~2700 lines | `w:textDirection tbRlV` (upright CJK in a rotated line) in cells, text boxes and frames; `tbRl` docx4j already renders with `reference-orientation` | HIGH. (a) Changes the signatures of `Substitutable`, `Positionable`, `Font`, `LazyFont`, `MultiByteFont`, `GlyphMapping.doGlyphMapping` and both `GlyphMapping` constructors with no Apache overload kept: any consumer compiled against Apache breaks (docx4j-export-fo reads `GlyphMapping` through the `inline-access` hook and would still compile, `WordWidthsLazyFont` overrides none of these). (b) The `IFRenderer` word-start and `letterSpacesIPD` change applies to every letter-spaced word, vertical or not (CR-001 §6.6 item 16 ground). (c) It is a simulation on the horizontal line model: horizontal advances stand in for vertical ("TODO Vertical text use vertical width"), no `vmtx`, no breaking in the BPD; open Metanorma issue #36 (regions before/after misplaced). (d) Rides on the language gate M10e | LATER: a `tbRlV` CJK probe first; then a rework that keeps the Apache signatures, confines the renderer change to upright words and drops the language gate. Not upstreamable as is |
+| M3 | Japanese numerals: `format="&#x4E00;"` on page numbers via a `JapaneseNumeralsFormatter` (ichi, juu, hyaku, sen, man, oku, chou) | f7c5e66da (#7), df18aa260, 18da9635a, test e3d6bd5ad | 2 files, +179 | `w:pgNumType/@fmt="japaneseCounting"` (page fields); list labels are docx4j's own formatter | Low, additive; the formatter is a third-party class (SuuKotoba, MIT) with no licence header | TAKE later (P2-6) with docx4j's page-format mapping; UPSTREAM |
+| M4 | `fox:actual-text` on `fo:instream-foreign-object` and `fo:external-graphic`, written as `/ActualText` on the Figure | 61c2bfe6f (#11), test 127fc1db2 | 6 files, +32 | OMML math as SVG (CR math-in-PDF): the linearised expression as the figure's actual text | Low, additive | TAKE (P2-5); UPSTREAM |
+| M5 | `fox:placement` on graphics, written as `/Placement` on the Figure | 1ebe06166 (#102), test bb99ae5e3 | 6 files, +54 | `wp:inline` vs `wp:anchor` (Block / Inline placement for PDF/UA-2 checkers) | Low, additive | TAKE (P2-5); UPSTREAM |
+| M6 | `fox:title` on `fo:block`, written as `/T` on a Sect | 0aa5d96ac (#67), test in PDFTagsTestCase | 7 files, +188 (156 test) | none: docx4j emits no Sect structure | - | SKIP |
+| M7 | `role="Name/Type"`: a standard structure type with a custom tag name, via `StructureType.setTagType` | 5196a6352 (#73), test 7d9f02e06 | 4 files, +31 | none | Unsafe: `StandardStructureTypes` are static singletons, so the last role seen sets the tag type process-wide | SKIP |
+| M8a | PDF/UA structure tree: `/ID` on Note, `Scope` on TH and table-tag checking, a Div inside P dropped, `role="SKIP"` on blocks and block-containers (`CommonAccessibility` added to `BlockContainer`), `isPDFA1Safe` no longer forcing Div for table parts under PDF/UA | 8197eb520 (#27), f28e8a4d8 (#28), 2e903f5ac (#32), efd43b7f4 (#33), ab162c363 (#96), ab8e6b9a3, dbe8a41f9, 576aea674 | ~6 files, ~90 | Footnotes (Note) and `w:tblHeader` rows (TH) in accessible output | Note `/ID` from `java.util.Random` (non-reproducible PDFs); the ancestor walk is heuristic and swallows exceptions with `System.out.println("")`; upstream FOP-3165 and FOP-3283 have since changed the same table code | Note `/ID` and TH `Scope`: UPSTREAM after diffing against FOP-3165/3283 (P2-5); the heuristics: SKIP |
+| M8b | Link annotations: `/Contents` from the URI (`mailto:` becomes "Email ...") or from the GoTo target's `Alt`; `NoZoom`/`NoRotate` flags dropped under PDF/A | 4f6fb14f6 (#25), eda8ce786, 0cc51a9bb, 1c367304b, 019b5324c, 49a084a9e, a16c8acfd (#72), test 57801b39f | ~5 files, ~90 | Hyperlinks in accessible output | Upstream FOP-3258 and FOP-3322 (2026-05) write `fox:alt-text` on the `fo:basic-link` to `/Contents`, encrypted when needed - a cleaner contract | SUPERSEDED: docx4j emits `fox:alt-text` on links (tooltip or text); flags: SKIP pending a checker report |
+| M8c | Navigation: a new `GoToXYAction` per link instead of one per target (FOP-3305; repeated links to one destination each get their own struct elem), named-destination page index, bookmarks without an action serialised, IF encoding setter, `Root/Names/Dests/Limits` removed | a92039606 (#75), 504135708 (#74), f98aab1d4 (#76), a877dbff4 (#30), e74f0a06b (#100), c2871ec43 (part), tests 230d6ae32, df3aaa224, 55c88aa4a, c8ddcbc68 | ~5 files, ~60 | Cross-references and TOC entries to the same bookmark; docx4j's bookmark tree | Per-link actions cost memory on long TOCs; the others are IF-only or checker-specific | Per-link action: UPSTREAM (FOP-3305 is open), TAKE if PAC flags docx4j output (P2-5); the rest SKIP |
+| M9 | Attachments: `pdf:embedded-file` gains `afrelationship`, `volatile`, `link-as-file-annotation`; a `/FileAttachment` annotation (paperclip) in place of the JavaScript launch; `/UF`; `/Contents` in UTF-16BE | 7911d245b (#24), d2aeff3b0, 002a4550f (#71), tests 7393e4ff8, adbea6eae, 27b3c1d93 | 8 files, +281 | Embedded OLE and package parts (`w:object`, `word/embeddings/*`) carried in the PDF, PDF/A-3 style | The UTF-16BE switch string-matches `/FileAttachment` inside `PDFDocument.encode`; the description is not escaped; `PDFFileSpec` carries a String flag | TAKE later, rewritten (P2-7); `AFRelationship` UPSTREAM |
+| M10a | Shared-glyph reverse mapping: `findCharacterFromGlyphIndex` prefers the original character when a glyph serves several code points (the FOP-2529 patch) | d6ddded83 (#22) | 1 file, +8 | Kangxi radicals, U+202F vs U+2009 - our §6.6 item 26 | Same bug as our phase 0 cherry-pick d3dbe8ad9, fixed differently | SUPERSEDED by ours; the item-26 upstream PR goes on JIRA FOP-2529 |
+| M10b | U+061C (Arabic letter mark) falls back to U+200B when the font has no glyph | 4643411e1 (#34) | 1 file, +7 | Arabic documents (Word writes ALM) | Tiny | TAKE (P2-4); UPSTREAM |
+| M10c | U+200B is not turned into a word space in accessibility mode (`GlyphMapping.isZeroWidthSpace`) | baec92a9d (#20) | 2 files, +24 | Zero-width spaces pasted from the web, in accessible output | Accessibility mode only | TAKE (P2-4); UPSTREAM |
+| M10d | Surrogate pairs: no word split between a high and its low surrogate at a bidi-level change or a per-character font selection; `CharUtilities.isSurrogatePair` bound off by one | 70a1e75d5, ba2ec2ea4 (#39) | 2 files, +5 | Emoji, Extension-B ideographs ("isolated high surrogate" failures) | Tiny, correct | TAKE (P2-1); UPSTREAM |
+| M10e | Language gate: `xml:lang="ar"` mapped to `dflt` before lookup matching; GSUB substitution only when the language is `ar` or `dflt` (Metanorma wanted no Latin ligatures) | d5e38ea91 (#19), 618f396f3 (#14), c9e2487f2 (#8), f64cff9c7 (#98) | 2 files, ~6 | none today: docx4j emits no `language`, so FOP's language is already `dflt` | Wrong in general: a BCP-47 tag is not an OpenType language-system tag, and the gate would silence GSUB for any tagged language the day docx4j emits `language` (the deferred idea in `docs/PDF_FOP_Accessibility.md`); FOP's own fallback is `(DFLT, dflt)`, which loses script-specific lookups | SKIP; the ligature question is P2-8, done as a feature-list hook |
+| M11 | Messages: default page size INFO commented out; "coverage set class table" WARN commented out; a line-overflow event skipped for `__internal_layout__` ids and a table-overflow message key (its formatter reverted in 241925314); unresolved id references reported per page at render time; every missing glyph logged with its character sequence (the cap of 8 removed); a String-property warning special-cased for `fox:alt-text`; a static `currentPage` in `EventProducingFilter`; font-replacement info (#70) added then restored | 159ea69c4, bafb8efb2 (#12), 7211794f7, 4276335f4 (#15, #16), 241925314, 04e4e40ad (#13), 0da70aa3b, a8cdbcca6 (#21), f9a1eab2b (#23), b0c71631b (#17), ecc6c78eb, 16d92b649, 5f7beb390, 62772d12b (#70) | ~8 files | Harness diagnostics; docx4j's own font reporting (CR-016, CR-017) covers the glyph side | The static is process-wide state in a library; the uncapped glyph log can flood on a document with many missing glyphs | 04e4e40ad: TAKE (P2-3), UPSTREAM; b0c71631b: UPSTREAM as a parser bug (docx4j escapes); the rest SKIP |
+| M12 | `XMLObj`: a prefixed attribute on foreign XML whose namespace declaration sits on an ancestor keeps its namespace (was set with a null URI) | d4a2d295b (#18) | 1 file, +5 | `xlink:href` on our SVG (CR-011 metafiles, math), MathML | Tiny | TAKE (P2-2); UPSTREAM |
+| M13 | `VersionController`: setting a PDF version lower than or equal to a fixed one no longer throws (only raising it does) | fe2bea219 (#29), tests 9fee3a949, 611177343, c2871ec43 (part) | 1 file, +2 | A user setting a PDF version with a PDF/A mode on | Behavioural | UPSTREAM; SKIP until a docx4j report |
+| M14 | `/ProcSet` no longer written to page resources | 7ee55ef2e (#26), test ed6454023, c2871ec43 (part) | 1 file | none (deprecated in PDF 2.0, harmless either way) | - | SKIP |
+| M15 | Invisible text: an alpha-zero text colour renders with text mode `3 Tr` (searchable, not painted) | bd8d75bdb, 4b7a41192 (#31) | 1 file, +20 | The text layer over SVG math (CR math-in-PDF) | Low, self-contained | TAKE (P2-5); UPSTREAM |
+| M16 | Build and release: `org.metanorma` coordinates, xmlgraphics-commons pin, GitHub Actions and release workflow, checkstyle skips, version bumps, "trigger" commits, "code reverted back to pass tests" (the May 2026 merge fix-ups), checkstyle and spotbugs passes | ~60 commits (listed in §9.5) | pom.xml x9, .github | none | - | SKIP (the style passes 3a5b98da1 and 6d14c68f7 ride with whichever feature is taken) |
+
+### 9.3 Chunlin (`yao-2_11`, seven commits over the 2.11 tag)
+
+| Commit | Date | Subject | Feature | Verdict |
+|---|---|---|---|---|
+| f25730a72 | 2017-07-12 | Add a quick implementation for shrink text to fit block-container | M1 (origin) | LATER, see M1 |
+| 231e5bfa2 | 2017-08-02 | fox:shrink-to-fit support list-block | M1 | LATER, see M1 |
+| 4c8e99edb | 2017-08-07 | FOP-2722 don't suppress space when no space left (`suppressibleLetterSpace && letterSpaceCount > 0`, so a word with no letter spaces is not given -1 of them) | letter spacing | SUPERSEDED: docx4j's `fixLetterSpaces` (WordLineLayoutManager) sets Word's count on both FOP paths; upstream FOP-2722 (2a8efc165, 2026-07-08) makes the complex-script path count letter spaces itself - both must be re-verified against the spacing probes at the upstream merge |
+| 6437317f9 | 2020-01-07 | vertical writing mode for japanese | M2 (origin); also the `IFRenderer` word-start and `letterSpacesIPD` change that applies to all letter-spaced text | LATER, see M2 |
+| 9b2fb2a8c | 2020-01-07 | add readme (Japanese; four images, sample PDF) | docs | SKIP |
+| 621e2db8c | 2026-09-08 | Document yao-2_11 port and verification | docs (says FOP-3146/3148/3150 are in the 2.11 base; suite validated on JDK 8) | SKIP |
+| a06151041 | 2026-09-08 | Test shrink-to-fit with list blocks | M1 test | with M1 |
+
+Ruby: no renderer code. The `vertical_writing.fo` example builds ruby from
+`fo:inline-container`s, which Apache FOP 2.11 renders; `w:ruby` is a docx4j
+emission question, not a fork one.
+
+### 9.4 The upstream backlog: `main` since the 2.11 tag (89 commits)
+
+The 2.11 tag sits on a release branch two commits off `main` (64c46d1). Of
+the 89 commits on `main` since, Metanorma has merged 75 (to 32c8c7176,
+2026-05-22) and lacks 14. Grouped for docx4j; the JIRA number is the key.
+
+| Group | Commits | Bearing on docx4j |
+|---|---|---|
+| Layout, CR-001 ground | FOP-3181 (page duplication when the IPD changes), FOP-3253 and FOP-3256 (rest page when the last page cannot fit), FOP-2880 (soft hyphen for hyphenation), GI-9484 (leader in a column too small), FOP-3306 x2 (dotted leader not rendered on PDF; rule leader as Artifact), FOP-3325 (spacing in a pattern rule leader), FOP-3327 (square leader style), FOP-3307 (image scaled to the cell IPD), FOP-3252 (table-and-caption), FOP-3279 (force-page-count doubly-odd/even), FOP-2763 (table markers), FOP-3282 and FOP-3316 (static-region-per-page) | Each of the first five can move a corpus document (sections, last pages, item 22, leaders); each needs its own gate when merged |
+| Fonts and text | FOP-2722 (letter spaces counted in the complex-script path: collides with docx4j's `fixLetterSpaces`, see C3), FOP-3261 (GID remap on font merge), FOP-3292 (character max index), FOP-3277 (PDFTranscoder font substitution), FOP-3270 (country-specific hyphenation file), FOP-3332 x2 (classes verified when reading a HyphenationTree) | FOP-2722 on the spacing probes; FOP-3332 is a deserialisation hardening we want |
+| Memory | FOP-3269 (structure tree collectable), FOP-3272 (accessibility memory), FOP-3280 x2 (MinOptMax, no-kerning fonts), FOP-3333 x2 (traits deduplicated), FOP-3288 (AFP font cache), FOP-3291 and FOP-3293 (image caching) | Issue 687 (OOM) territory; measure with the retention test from FOP-3330 |
+| Accessibility | FOP-3165 (table structure under PDF/UA), FOP-3283 (header spanning rows), FOP-3273 (tagging stopped after the first page-sequence - docx4j emits one per section), FOP-3264 (footnote reference type), FOP-3245 (structure tree merging into external documents), FOP-3258 and FOP-3322 (alt text to `/Contents`, encrypted), FOP-3122 (bookmarks copied) | FOP-3273 alone justifies the merge for accessible output; FOP-3165/3283 overlap M8a; FOP-3258/3322 supersede M8b |
+| Security and dependencies | FOP-3298 (no DTD from an SVG font), FOP-3302 (servlet secure processing), FOP-3284 x2 (temp file rights), FOP-3299 (signing digest), FOP-3308/bouncycastle 1.81, 1.84, 1.85, FOP-3281 x3 (checkstyle), branch-protection and CI commits | Take as they come |
+| Other output formats and API | FOP-3290 (basic links may use URIs), FOP-3304 (custom schemas), FOP-3309 (first metadata only), FOP-3323 (fo:title NPE), FOP-3321, FOP-3311, FOP-3326, FOP-3278 (PostScript), FOP-3268, FOP-3287 (AFP), FOP-2872 (SVG em units), FOP-2758 (custom URI schemes), FOP-3251 (MD5 for names), FOP-3257 (NPE), commons-io in the transcoder, spotbugs and static-class tidying | No bearing; they come with the merge |
+
+Recommendation (§8): the first release stays on the 2.11 base; the merge of
+`main` is phase 4's first act, gated like a batch (corpora identical or every
+mover explained, the spacing probes for FOP-2722, a sectioned document for
+FOP-3181, a PAC run for FOP-3273), straight after the release - or before it
+if Jason prefers one gate to two.
+
+### 9.5 Metanorma commit by commit (142 non-merge, oldest first)
+
+Feature ids are §9.2's; the verdict is the feature's unless the row says
+otherwise. Tests and examples carry their feature's verdict.
+
+| Commit | Date | Subject | Feature | Verdict |
+|---|---|---|---|---|
+| 9e2999537 | 2024-11-12 | extension fox:shrink-to-fit from chunlinyao/fop added, #3 | M1 | LATER (docx4j-side first) |
+| 7d3c1094b | 2024-11-12 | vertical layout feature from chunlinyao/fop added, #1 | M2 | LATER |
+| 1d9040676 | 2024-11-12 | example vertical_writing.fo updated, #2 | M2 example | LATER |
+| f7c5e66da | 2024-11-12 | page numbers in Japanese feature added, #7 | M3 | TAKE P2-6 |
+| 35c9266e2 | 2024-11-13 | example vertical_writing.fo updated for page numbers, #2 | M2 example | LATER |
+| 61c2bfe6f | 2024-11-16 | extension fox:actual-text migrated, #11 | M4 | TAKE P2-5 |
+| 159ea69c4 | 2024-11-16 | omit message about default page width height, #12 | M11 | SKIP |
+| bafb8efb2 | 2024-11-16 | omit message coverage set class table not yet supported, #12 | M11 | SKIP |
+| 7211794f7 | 2024-11-16 | fix warning about overflowing table, #12, #15 | M11 | SKIP |
+| 04e4e40ad | 2024-11-16 | restore message Page NN: Unresolved ID reference, #13 | M11 | TAKE P2-3, UPSTREAM |
+| b0c71631b | 2024-11-17 | fixing issue with quotes, #17 | M11 | UPSTREAM (parser bug); not taken |
+| a8cdbcca6 | 2024-11-17 | determine page and text position for glyph warning, #21 | M11 | SKIP |
+| f9a1eab2b | 2024-11-17 | glyph count restriction removed in log, #23 | M11 | SKIP |
+| 4276335f4 | 2024-11-17 | localize place of overflowing, #16, #15 | M11 | SKIP (reverted in 241925314) |
+| d4a2d295b | 2024-11-17 | jEuclid namespace processing fixed, #18 | M12 | TAKE P2-2, UPSTREAM |
+| fe2bea219 | 2024-11-17 | updated for PDF version changing, #29 | M13 | UPSTREAM; not taken |
+| 7ee55ef2e | 2024-11-17 | ProcSet array resources generation commented, #26 | M14 | SKIP |
+| 618f396f3 | 2024-11-17 | ligatures ignoring, #14 | M10e | SKIP |
+| d5e38ea91 | 2024-11-17 | fixing issue with Arabic glyphs, #19 | M10e | SKIP |
+| baec92a9d | 2024-11-17 | removing space instead of zero width space, #20 | M10c | TAKE P2-4, UPSTREAM |
+| d6ddded83 | 2024-11-17 | patch from FOP-2529 applied, #22 | M10a | SUPERSEDED (item 26; JIRA FOP-2529) |
+| a877dbff4 | 2024-11-17 | changed IF writing for surrogate pairs, #30 | M8c | SKIP (IF output only) |
+| bd8d75bdb | 2024-11-17 | set transparent mode 3 Tr for invisible text, #31 | M15 | TAKE P2-5, UPSTREAM |
+| 4643411e1 | 2024-11-17 | fixing Arabic text marker, #34 | M10b | TAKE P2-4, UPSTREAM |
+| 7911d245b | 2024-11-18 | PDF attachment annotation added, #24 | M9 | LATER P2-7 (rewritten) |
+| 4f6fb14f6 | 2024-11-18 | Contents key added, #25 | M8b | SUPERSEDED (FOP-3258, FOP-3322) |
+| 8197eb520 | 2024-11-18 | ID entry added for Note tag, #27 | M8a | UPSTREAM, P2-5 |
+| f28e8a4d8 | 2024-11-18 | updated for Table tags structure, #28 | M8a | UPSTREAM, P2-5 (after FOP-3165/3283) |
+| 2e903f5ac | 2024-11-18 | updated for table tags checking, #32 | M8a | SKIP |
+| efd43b7f4 | 2024-11-18 | PDF structure tags updated, #33 | M8a | SKIP (heuristics) |
+| 51f5c065b | 2024-12-05 | context inherits writing mode from parent | M2 | LATER |
+| 238f30130 | 2025-01-16 | vertical_writing.fo sample updated for #37 | M2 example | LATER |
+| b26c29dbb | 2025-01-17 | FootnoteBodyLayoutManager updated for writing mode, #37 | M2 | LATER |
+| 70a1e75d5 | 2025-01-20 | fixing issue with surrogate pairs, #39 | M10d | TAKE P2-1, UPSTREAM |
+| 0a2ea2906 | 2025-01-20 | fixing issue with surrogate pairs, #39 | M2 table | LATER |
+| 1958ca013 | 2025-01-31 | rotated japanese page numbers | M2 | LATER |
+| 19feafc01 | 2025-06-05 | added a rotate-japanese-text test | M2 test | LATER |
+| c4b6b8322 | 2025-06-06 | Character.isWhitespace() instead of expression | M2 test | LATER |
+| 35073d814 | 2026-04-18 | updated for test pass, #47 | M16 | SKIP (test churn) |
+| bd312b882 | 2026-04-18 | maven.yml updated for skip checkstyle, #47 | M16 | SKIP |
+| e3d6bd5ad | 2026-04-19 | added test for page numbers in Japanese, #47 | M3 test | TAKE P2-6 |
+| 0eea5c22a | 2026-04-19 | maven.yml updated for skip checkstyle, #47 | M16 | SKIP |
+| df18aa260 | 2026-04-19 | JapaneseToNumbers.java updated to pass spotbugs test, #47 | M3 | TAKE P2-6 |
+| 05c6d29f8 | 2026-04-19 | updated for test pass, #47 | M16 | SKIP |
+| 18da9635a | 2026-04-19 | exclusions.xml updated for class JapaneseNumeralsFormatter. #47 | M3 | TAKE P2-6 |
+| fcbd58c07 | 2026-04-19 | updated for test pass, #47 | M16 | SKIP |
+| 127fc1db2 | 2026-04-21 | added test for actual-text extension, #47 | M4 test | TAKE P2-5 |
+| 6f9ce3897 | 2026-04-21 | updated for test pass, #47 | M16 | SKIP |
+| 0da70aa3b | 2026-04-22 | EventProcessing tests updated for unresolvedIDReferenceOnPage, #47 | M11 test | TAKE P2-3 |
+| ff4974e1f | 2026-04-23 | updated for test pass, #47 | M16 | SKIP |
+| e0d262a64 | 2026-04-23 | pom.xml for fop-events updated, #47 | M16 | SKIP |
+| 241925314 | 2026-04-23 | EventFormatter.java restored to original, #47 | M11 | SKIP (revert of 4276335f4) |
+| ed6454023 | 2026-04-24 | Test added for omit ProcSet, #47, #26 | M14 test | SKIP |
+| 9fee3a949 | 2026-04-24 | Test updated for set PDF version, #47, #29 | M13 test | not taken |
+| 611177343 | 2026-04-24 | Test updated for set PDF version, #47, #29 | M13 test | not taken |
+| 4b7a41192 | 2026-04-26 | PDF painter updated for math hidden text, #47, #31 | M15 | TAKE P2-5 |
+| 2e2d7b1d6 | 2026-04-26 | updated for test pass, #47 | M16 | SKIP |
+| eda8ce786 | 2026-05-10 | updated | M8b | SUPERSEDED |
+| 7393e4ff8 | 2026-05-10 | Test added for FileAttachment annotation, #47, #24 | M9 test | LATER P2-7 |
+| b7cd8b04f | 2026-05-10 | maven.yml updated for skip checkstyle, #47 | M16 | SKIP |
+| 0cc51a9bb | 2026-05-10 | PDFLink updated to fix conflict, #47 | M8b | SUPERSEDED |
+| 728ab1848 | 2026-05-10 | pom.xml updated, #47 | M16 | SKIP |
+| dbe0d8bcb | 2026-05-13 | trigger | M16 | SKIP (empty) |
+| 4c6ed58e0 | 2026-05-13 | trigger | M16 | SKIP (empty) |
+| 0aa5d96ac | 2026-05-14 | added /T for Sect, #67, #47 | M6 | SKIP |
+| 16d92b649 | 2026-05-14 | FontInfo updated for #70 | M11 | SKIP (restored in 62772d12b) |
+| 5f7beb390 | 2026-05-14 | FontInfo updated for font replacement info, #70 | M11 | SKIP (restored in 62772d12b) |
+| ba2ec2ea4 | 2026-05-14 | TextLayoutManager updated for surrogate pairs issue fix, #39 | M10d | TAKE P2-1, UPSTREAM |
+| d2aeff3b0 | 2026-05-14 | PDFDocument updated for /Contents in UTF-16BE, #71 | M9 | LATER P2-7 (not as written) |
+| a16c8acfd | 2026-05-14 | PDFLink updated for flags, #72 | M8b | SKIP (flags) |
+| 5196a6352 | 2026-05-14 | Added tag type, #73 | M7 | SKIP (static singletons mutated) |
+| 504135708 | 2026-05-14 | DocumentNavigationHandler updated to fix wrong named destination, #74 | M8c | SKIP |
+| ecc6c78eb | 2026-05-14 | EventProducingFilter updated for #70 | M11 | SKIP (process-wide static) |
+| a92039606 | 2026-05-14 | IFRenderer updated for #75 | M8c | UPSTREAM (FOP-3305), P2-5 if PAC flags it |
+| f98aab1d4 | 2026-05-14 | IFSerializer updated to fix #76 | M8c | SKIP |
+| 002a4550f | 2026-05-17 | PDFDocument updated for /Contents in UTF-16BE, #71 | M9 | LATER P2-7 (not as written) |
+| adbea6eae | 2026-05-17 | PDFAttachmentTestCase updated for /Contents in UTF-16BE, #71 | M9 test | LATER P2-7 |
+| 57801b39f | 2026-05-18 | Test added for Annotation flags (Ff) for Link, #47, #72 | M8b test | SKIP |
+| 7d9f02e06 | 2026-05-18 | Test added for Tag type, #47, #73 | M7 test | SKIP |
+| 230d6ae32 | 2026-05-18 | Test added for named destination, #47, #74 | M8c test | SKIP |
+| df3aaa224 | 2026-05-19 | Test added for repeated internal-destination links tags, #47, #75 | M8c test | with a92039606 |
+| 55c88aa4a | 2026-05-20 | Test added for empty bookmarks in IF, #47, #76 | M8c test | SKIP |
+| c8ddcbc68 | 2026-05-20 | Test updated for named destination, #47, #74 | M8c test | SKIP |
+| e633bce76 | 2026-05-20 | pom.xml updated, #47 | M16 | SKIP |
+| e290103fa | 2026-05-20 | pom.xml updated, #47 | M16 | SKIP |
+| ab49a1254 | 2026-05-20 | code reverted back to pass tests, #47 | M16 | SKIP |
+| a7eb9d819 | 2026-05-20 | maven.yml updated for skip checkstyle, #47 | M16 | SKIP |
+| 41b482807 | 2026-05-20 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 502ea8466 | 2026-05-20 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 06f17e5ac | 2026-05-20 | code reverted back to pass tests, #47 | M16 | SKIP |
+| a4e8acfec | 2026-05-20 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 79bd209e9 | 2026-05-20 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 27b3c1d93 | 2026-05-20 | PDFAttachmentTestCase updated for /Contents in UTF-16BE, #71 | M9 test | LATER P2-7 |
+| d419c0ea8 | 2026-05-21 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 576aea674 | 2026-05-21 | PDFTagsTestCase code clean , #47 | M8a test | with M8a |
+| bf05b39b6 | 2026-05-21 | maven.yml updated for skip checkstyle, #47 | M16 | SKIP |
+| b6da95374 | 2026-05-21 | code reverted back to pass tests, #47 | M16 | SKIP |
+| e92d30365 | 2026-05-21 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 61c581866 | 2026-05-21 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 62772d12b | 2026-05-21 | FontInfo restored to the original, #70 | M11 | SKIP (restore) |
+| 0ab4f63d0 | 2026-05-21 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 1d7506f35 | 2026-05-21 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 16ec75d7c | 2026-05-21 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 790dd4419 | 2026-05-22 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 14375f4ea | 2026-05-22 | code reverted back to pass tests, #47 | M16 | SKIP |
+| eb9d2f071 | 2026-05-22 | maven.yml updated for skip checkstyle, #47 | M16 | SKIP |
+| 6e4df4b66 | 2026-05-22 | code reverted back to pass tests, #47 | M16 | SKIP |
+| e8e6a7753 | 2026-05-22 | GlyphSubstitutionTable and GlyphMapping updated after merge for test pass, #47 | M2 (merge fix-up) | LATER |
+| c2871ec43 | 2026-05-22 | updated for #29, #47 | M12, M13, M14, M8c re-applied after the merge | per feature |
+| 0a2967f1f | 2026-05-22 | code reverted back to pass tests, #47 | M16 | SKIP |
+| 55e08f401 | 2026-05-22 | code correction, #47 | M8b, M1 correction | per feature |
+| c9e2487f2 | 2026-05-22 | GlyphSubstitutionTable updated for PDFVertTestCase pass, #8 | M10e | SKIP |
+| c45f74544 | 2026-05-23 | code restored to the latest version, #47 | M16 | SKIP |
+| 8038176e0 | 2026-05-24 | code restored to the latest version, #47 | M16 | SKIP |
+| 208d3b3bf | 2026-05-24 | set xmlgraphics-common version to 2.11, #4 | M16 | SKIP (we pin 2.11 already) |
+| ab8e6b9a3 | 2026-05-25 | code fixing after merge, #45 | M8a (merge fix-up) | with M8a |
+| dbe8a41f9 | 2026-05-25 | PDFTagsTestCase fix, #45, #28 | M8a test | with M8a |
+| fd20afbcc | 2026-05-25 | PDFObjectStreamTestCase updated, #45 | M16 test | SKIP |
+| 1c367304b | 2026-05-26 | PDFLink and tests updated, #45, #25 | M8b | SUPERSEDED |
+| 019b5324c | 2026-05-26 | PDFLink and tests updated, #45, #25 | M8b test | SUPERSEDED |
+| c6f2b1fd9 | 2026-05-26 | publish-snapshot disabled, #45 | M16 | SKIP |
+| 16d008d1c | 2026-05-26 | trigger | M16 | SKIP (empty) |
+| f933ec782 | 2026-05-26 | trigger | M16 | SKIP (empty) |
+| 3a5b98da1 | 2026-05-27 | updated for checkstyle approvement, #45 | M16 style pass over all features | with whichever feature is taken |
+| 6d14c68f7 | 2026-05-27 | updated for spotbugs approvement, #45 | M16 spotbugs pass | with whichever feature is taken |
+| 606b28f3b | 2026-05-28 | maven.yml updated, #94 | M16 | SKIP |
+| 8cd8b12c3 | 2026-06-03 | pom.xml updated for groupid org.metanorma, #94 | M16 | SKIP |
+| e5f3d73dd | 2026-06-03 | pom.xml updated for dist url, #94 | M16 | SKIP |
+| 983fbd5f1 | 2026-06-03 | release.yml added, #94 | M16 | SKIP |
+| a02265f49 | 2026-06-03 | Potential fix for pull request finding 'CodeQL / Workflow does not contain permissions' | M16 | SKIP |
+| 0c651d182 | 2026-06-03 | release.yml fixed, #94 | M16 | SKIP |
+| ab162c363 | 2026-06-09 | BlockContainer updated for role SKIP support, #96 | M8a | SKIP (role SKIP) |
+| 6dc19738a | 2026-06-09 | bump version, #96 | M16 | SKIP |
+| f64cff9c7 | 2026-06-10 | GlyphSubstitutionTable updated for #98 | M10e | SKIP |
+| faaf0b905 | 2026-06-10 | PDFVertTestCase updated for #98 | M2 test | LATER |
+| e74f0a06b | 2026-07-31 | Root/Names/Dests/Limits removed, #100, metanorma/metanorma-pdfa#70 | M8c | SKIP (checker-specific) |
+| 90e4e11b1 | 2026-07-31 | version bump, #100, metanorma/metanorma-pdfa#70 | M16 | SKIP |
+| 1ebe06166 | 2026-08-10 | added /Placement for Figure, #102 | M5 | TAKE P2-5, UPSTREAM |
+| 0cd3621f0 | 2026-08-10 | version bump, #102 | M16 | SKIP |
+| bb99ae5e3 | 2026-08-10 | tests added, #102 | M5 test | TAKE P2-5 |
+| 49a084a9e | 2026-08-24 | PDFLink updated for linked text, metanorma/metanorma-pdfa#71 | M8b | SUPERSEDED |
+| 1f379f975 | 2026-08-24 | version bump, metanorma/metanorma-pdfa#71 | M16 | SKIP |
+
+The 69 merge commits (2024-11-12 to 2026-08-25) merge upstream `main` or
+Metanorma's own feature branches (PRs #48-#93 above); nothing to cherry-pick,
+since phase 4 takes upstream directly: 8662a90c8 67b0b4e01 e2505b840 5c2e40b3b
+725611713 1394ba995 03cc51213 c19bc9382 f59f90dea f0c9be070 a419ce1be
+460de64cb c9b745163 4499d2887 ccb2c408e 06a32c7cb 3dc073f7c beb918498
+27970ad0b 4e6973b44 d4e02ab18 96a02fdcf cc02dacb6 834acc15b 6e7812e04
+6dfa2724b 7b2377f4a ece7a0bc4 c00f26bf3 3f3b7e214 611c88583 5aacf10ab
+235eec388 b75c9b6f0 946aad2f4 a31031bdd cddbdcb6e 91c1690bc 4093873cd
+ba6b87aea a74661683 47d01bf57 5e9a1f105 241500e39 10fc50d36 29012637f
+fa813698d c29bcfc2a eadd6758e bbd77fddd 2301b674c 48437f8a9 5c43e54fe
+37a0c7e4c d45328268 5bd4f95ea 712562678 373c8a6b0 641d451b2 31bb22a8b
+c8d107fc8 b764f5ca7 f7a3450d5 916177fc3 9784c43ac 0c65db9b3 4d5fc6703
+345fa3c62 a156468d3.
