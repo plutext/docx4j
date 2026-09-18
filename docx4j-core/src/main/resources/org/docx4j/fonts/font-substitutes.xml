@@ -88,6 +88,45 @@
       <substitute font="Liberation Sans" quality="class"/>
     </font>
 
+    <!-- Aptos, Word 365's Office theme faces, and the reason docx4j needs a row for them:
+         a document with no theme part resolves its theme fonts to Aptos / Aptos Display
+         (docx4j.fonts.defaultTheme, @since 17.1.1), and Microsoft ships neither with
+         Windows - they are cloud fonts, and a server has no licence for them.  Until
+         17.1.1 the pass found nothing here, FOP drew the text in its base-14 fallback,
+         and the PDF named Times-Roman without embedding it.
+
+         No open clone of either is on this classpath, so these are the closest faces
+         docx4j ships.  Word's own advances, from the theme-fonts-no-theme-part golden
+         (CR-001 batch 49): at 11pt Aptos sets the ten digits in 58.865pt and a-z in
+         137.923pt, Aptos Display 57.40 and 129.16.  Carlito is first for both - for
+         Aptos Display because it is also the closest on the mean advance, and for Aptos
+         although it is not, because the probe set says the mean advance is not what
+         decides a line.  Neither is a clone; lines can still re-break.  @since 17.1.1 -->
+    <font name="Aptos">
+      <substitute font="Carlito Regular" quality="measured"
+                  error="-5.3% on digits and -5.5% on a-z against Word's own Aptos (55.752/130.394 against 58.865/137.923 at 11pt), where Arimo is +3.9% and +1.5% - but in Carlito every line of styles-linerule, fonts-missing-slots and tab-leader-kinds breaks where Word's Aptos breaks, and in Arimo none of styles-linerule's fifteen does"/>
+      <substitute font="Arimo Regular" quality="measured"
+                  error="+3.9% / +1.5%: closer on the mean advance, further on the line breaks"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Aptos Display">
+      <substitute font="Carlito Regular" quality="measured"
+                  error="-2.9% on digits and +1.0% on a-z against Word's own Aptos Display (55.752/130.394 against 57.40/129.16 at 11pt); Arimo is +6.6% and +8.4%"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <!-- The other two Aptos faces Word's cloud-font folder carries (word-line-metrics
+         .properties has their line boxes).  No golden measures either, so these are
+         class substitutes and say so: neither is light nor narrow.  Aptos Mono is not
+         among the faces that folder had, so it has no row.  @since 17.1.1 -->
+    <font name="Aptos Light">
+      <substitute font="Carlito Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Aptos Narrow">
+      <substitute font="Arimo Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
     <!-- URW base 35 (ghostscript fonts).  Century Gothic was drawn to ITC Avant Garde
          Gothic's widths and URW Gothic is the Avant Garde clone.  @since 17.0.5 -->
     <font name="Century Gothic">

@@ -73,6 +73,14 @@ public class TabLeaderTextLayerTest {
 	private static final String BEFORE = "before";
 	private static final String AFTER = "after";
 
+	/** An explicit face, so that the widths this test's leader is phased against do not
+	 *  move with {@code docx4j.fonts.defaultTheme}: the runs carried no w:rFonts and took
+	 *  the document default, which was Calibri until 17.1.1 made it Aptos.  In Arimo (the
+	 *  Aptos substitute) "before" is wide enough that the leader opens exactly on Word's
+	 *  grid, the phase is 0, and the lead space this test is about is correctly not
+	 *  written - a true answer to a question the test did not mean to ask. */
+	private static final String FONT = "<w:rPr><w:rFonts w:ascii=\"Calibri\" w:hAnsi=\"Calibri\"/></w:rPr>";
+
 	/** one paragraph: text, a tab to a stop with this leader, text.  The stop is
 	 *  left-aligned, so that a dot leader is laid out against it by the line manager
 	 *  rather than taking the stretching leader a table-of-contents entry takes
@@ -81,8 +89,8 @@ public class TabLeaderTextLayerTest {
 		return "<w:p><w:pPr><w:tabs><w:tab w:val=\"left\""
 				+ (leader == null ? "" : " w:leader=\"" + leader + "\"")
 				+ " w:pos=\"9000\"/></w:tabs></w:pPr>"
-				+ "<w:r><w:t>" + BEFORE + "</w:t></w:r>"
-				+ "<w:r><w:tab/><w:t>" + AFTER + "</w:t></w:r></w:p>";
+				+ "<w:r>" + FONT + "<w:t>" + BEFORE + "</w:t></w:r>"
+				+ "<w:r>" + FONT + "<w:tab/><w:t>" + AFTER + "</w:t></w:r></w:p>";
 	}
 
 	@After

@@ -59,7 +59,7 @@ public class FontsInUseTest {
 				+ "<w:r><w:sym w:font=\"Wingdings\" w:char=\"F0FC\"/></w:r></w:p>"
 				// a theme reference beside an explicit name: the theme's face is what the
 				// selector uses (CR-016 probe fonts-missing-slots (b)), the explicit name never
-				+ "<w:p><w:r><w:rPr><w:rFonts w:ascii=\"Aptos\" w:asciiTheme=\"minorHAnsi\" w:cs=\"\"/></w:rPr><w:t>z</w:t></w:r></w:p>";
+				+ "<w:p><w:r><w:rPr><w:rFonts w:ascii=\"Decoy Font\" w:asciiTheme=\"minorHAnsi\" w:cs=\"\"/></w:rPr><w:t>z</w:t></w:r></w:p>";
 		WordprocessingMLPackage pkg = FontsTestSupport.packageWith(FontsTestSupport.styles(docDefaults, styles), null, fontScheme, body);
 		MainDocumentPart mdp = pkg.getMainDocumentPart();
 
@@ -94,17 +94,20 @@ public class FontsInUseTest {
 			assertTrue(expected + " missing from " + fonts, fonts.contains(expected));
 		}
 		assertFalse("a style the document never uses: " + fonts, fonts.contains("Unused Font"));
-		assertFalse("the explicit name beside a theme reference: " + fonts, fonts.contains("Aptos"));
+		assertFalse("the explicit name beside a theme reference: " + fonts, fonts.contains("Decoy Font"));
 		assertFalse("the CJK name itself: " + fonts, fonts.contains("宋体"));
 		assertFalse("a blank name: " + fonts, fonts.contains(""));
 	}
 
-	/** No theme part: a theme reference is the Office theme's face (Word supplies it). */
+	/** No theme part: a theme reference is the Office theme's face (Word supplies it),
+	 *  which since 17.1.1 is Word 365's Aptos rather than Office 2007's Calibri -
+	 *  docx4j.fonts.defaultTheme. */
 	@Test
 	public void noThemePartGivesTheOfficeFaces() throws Exception {
 		WordprocessingMLPackage pkg = pkg(null);
 		Set<String> fonts = pkg.getMainDocumentPart().fontsInUse();
-		assertTrue(fonts.toString(), fonts.contains("Calibri"));
-		assertFalse(fonts.toString(), fonts.contains("Aptos"));
+		assertTrue(fonts.toString(), fonts.contains("Aptos"));
+		assertFalse("the Office 2007 face is no longer the default: " + fonts,
+				fonts.contains("Calibri"));
 	}
 }

@@ -6142,7 +6142,10 @@ public final class Corpus {
 				+ "of lower-case letters at 11pt, against controls in an explicit Calibri "
 				+ "and an explicit Cambria: WHICH FACE Word draws each line in, and what the "
 				+ "line advances to", () -> {
-			Doc d = Doc.create(15);
+			// createPackage puts a theme part in since 17.1.1; this probe's whole subject
+			// is a package that has none, and its docx must stay the one Word's golden was
+			// cut from
+			Doc d = Doc.create(15).noThemePart();
 
 			// the same two strings in every case, so the advances compare directly; the
 			// paragraph label (P01, P02, ...) keeps each extracted line distinct

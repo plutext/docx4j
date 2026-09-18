@@ -9,6 +9,12 @@ Changes in Version 17.1.1
 
 Fonts (CR-016, the font selection and mapping review):
 
+- The Office theme docx4j supplies to a document with no theme part is now Word 365's
+  Aptos Display / Aptos, not Office 2007's Cambria / Calibri; docx4j.fonts.defaultTheme
+  takes 2023 (the default), 2013 or 2007. Measured on Word 365: the body slot advances
+  58.865pt over ten digits at 11pt, which is Aptos, not Calibri's 55.28.
+- Aptos and Aptos Display have substitutes, so a themeless document is no longer drawn
+  in FOP's base-14 fallback and left unembedded in the PDF.
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
   on a headless deployment - the stock ubuntu, debian, fedora and alpine images ship no font
@@ -255,6 +261,13 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 - Table-of-contents entries (styles TOC1 to TOC9) are dropped: their field result linked to a
   Word bookmark no markdown renderer has, with the tab and the page number.  Lossy, like
   headers and footers; headings are navigable in every renderer.
+
+Packaging:
+
+- WordprocessingMLPackage.createPackage adds a theme part, as Word does for every
+  document it creates: its own document defaults reference the theme fonts, and until
+  now there was nothing for them to resolve against. Which theme is
+  docx4j.fonts.defaultTheme's to say.
 
 PDF via XSL FO, the renderer (CR-020, phase 0):
 

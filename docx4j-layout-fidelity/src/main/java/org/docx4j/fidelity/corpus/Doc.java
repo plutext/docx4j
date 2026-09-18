@@ -125,6 +125,20 @@ public final class Doc {
 		return pkg;
 	}
 
+	/**
+	 * Take the theme part out again, for a probe whose subject is what a package with
+	 * <b>no</b> theme part resolves its theme font references to.
+	 *
+	 * <p>Since 17.1.1 {@code WordprocessingMLPackage.createPackage} puts one in, as Word
+	 * does; a probe that wants none has to say so, and its docx on the share must stay the
+	 * one its golden was cut from.</p>
+	 */
+	public Doc noThemePart() throws Exception {
+		mdp.getRelationshipsPart().removePart(
+				new org.docx4j.openpackaging.parts.PartName("/word/theme/theme1.xml"));
+		return this;
+	}
+
 	/** w:pgMar header and footer distances (twips) for the current section. */
 	public void headerFooterDistance(int headerTwips, int footerTwips) {
 		SectPr.PgMar m = sectPr().getPgMar();
