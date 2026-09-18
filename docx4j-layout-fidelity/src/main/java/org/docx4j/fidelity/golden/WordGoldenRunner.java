@@ -304,6 +304,10 @@ public final class WordGoldenRunner {
 			}
 		}
 		System.out.printf("done %d, skipped (already present) %d, failed %d%n", done, skipped, failed);
+		int replaced = pruneSupersededLines(manifest);
+		if (replaced > 0) {
+			System.out.println("manifest: " + replaced + " superseded line(s) of re-cut documents removed");
+		}
 		System.out.println("fonts embedded across the PDFs cut this run: " + PdfFonts.join(runFonts));
 		try (PrintWriter m = new PrintWriter(new FileWriter(manifest, true))) {
 			/* Run-level, after the per-document lines, so two manifests diff at a glance. */
@@ -319,6 +323,94 @@ public final class WordGoldenRunner {
 		}
 		// documents4j keeps worker threads; do not wait for them
 		System.exit(failed == 0 ? 0 : 1);
+	}
+
+	/**
+	 * A re-cut document's manifest lines <b>replace</b> its previous ones, rather than
+	 * standing beside them.
+	 *
+	 * <p>The manifest is written as the run goes, in append mode, so that a run which dies
+	 * half way through still records what it cut.  A document cut a second time therefore
+	 * gained a second set of lines, and the file said two contradictory things about it -
+	 * a golden re-cut on 2026-09-18 carried both its 12:46 and its 17:46
+	 * {@code generated}, {@code fonts} and {@code compatibilityMode}.  A
+	 * {@code Properties} reader takes the last, so nothing read the wrong value; a person
+	 * diffing two manifests, or reading one, had no way to tell which cut was current.</p>
+	 *
+	 * <p>So once the run is over, for each {@code <id>.<property>} key which appears more
+	 * than once, only the <b>last</b> occurrence is kept - that being this run's, since it
+	 * appended - and a {@code generated} or {@code fonts} line older than a later
+	 * {@code FAILED} for the same id goes too, the PDF it described having been deleted.
+	 * Lines for a document this run did not touch keep their place and their order: the
+	 * {@code resaved} line of a document whose re-save was skipped is untouched, as is
+	 * every run header.</p>
+	 *
+	 * @return how many lines were removed
+	 * @since 17.1.1 (CR-001 batch 48)
+	 */
+	static int pruneSupersededLines(File manifest) {
+
+		if (manifest == null || !manifest.isFile()) return 0;
+		try {
+			java.util.List<String> lines = java.nio.file.Files.readAllLines(
+					manifest.toPath(), java.nio.charset.StandardCharsets.UTF_8);
+			/* the last line index for each per-document key, and the last FAILED per id */
+			java.util.Map<String, Integer> last = new java.util.HashMap<String, Integer>();
+			java.util.Map<String, Integer> failedAt = new java.util.HashMap<String, Integer>();
+			for (int i = 0; i < lines.size(); i++) {
+				String key = perDocumentKey(lines.get(i));
+				if (key == null) continue;
+				last.put(key, i);
+				if (key.endsWith(".FAILED")) {
+					failedAt.put(key.substring(0, key.length() - ".FAILED".length()), i);
+				}
+			}
+			java.util.List<String> kept = new java.util.ArrayList<String>(lines.size());
+			int removed = 0;
+			for (int i = 0; i < lines.size(); i++) {
+				String line = lines.get(i);
+				String key = perDocumentKey(line);
+				boolean drop = false;
+				if (key != null) {
+					drop = last.get(key) != i;
+					if (!drop && (key.endsWith(".generated") || key.endsWith(".fonts"))) {
+						Integer f = failedAt.get(key.substring(0, key.lastIndexOf('.')));
+						drop = f != null && f > i;
+					}
+				}
+				if (drop) removed++;
+				else kept.add(line);
+			}
+			if (removed > 0) {
+				java.nio.file.Files.write(manifest.toPath(), kept,
+						java.nio.charset.StandardCharsets.UTF_8);
+			}
+			return removed;
+		} catch (Exception e) {
+			// a manifest is a record, not the work; never let it cost a run
+			System.out.println("  could not prune golden-manifest.properties: " + e);
+			return 0;
+		}
+	}
+
+	/** The properties this class writes per document; the run-level ones ({@code fonts},
+	 *  {@code os}, {@code connectedExperiences} and the rest) are never pruned. */
+	private static final java.util.Set<String> PER_DOCUMENT = new java.util.HashSet<String>(
+			java.util.Arrays.asList("compatibilityMode", "generated", "fonts", "resaved",
+					"FAILED", "RESAVE_FAILED"));
+
+	/** The {@code <id>.<property>} key of a per-document manifest line, else null (a run
+	 *  header, a blank, a comment, or a run-level key like {@code fonts=}). */
+	private static String perDocumentKey(String line) {
+
+		if (line == null || line.length() == 0 || line.charAt(0) == '#') return null;
+		int eq = line.indexOf('=');
+		if (eq <= 0) return null;
+		String key = line.substring(0, eq);
+		int dot = key.lastIndexOf('.');
+		if (dot <= 0 || dot == key.length() - 1) return null;
+		if (!PER_DOCUMENT.contains(key.substring(dot + 1))) return null;
+		return key;
 	}
 
 	/**
