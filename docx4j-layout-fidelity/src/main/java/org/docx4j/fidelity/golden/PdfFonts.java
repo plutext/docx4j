@@ -34,7 +34,7 @@ import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
  * manifests diff at a glance and {@link ResaveInvariance} can say "the fonts moved" instead of
  * leaving it to be worked out from line counts.</p>
  */
-final class PdfFonts {
+public final class PdfFonts {
 
 	/**
 	 * The distinct base font names the PDF's pages use, sorted, with the subset prefix
@@ -42,7 +42,7 @@ final class PdfFonts {
 	 * reached through form XObjects are included (Word draws nothing that way, but FOP
 	 * does); annotations are not.
 	 */
-	static SortedSet<String> faces(File pdf) throws IOException {
+	public static SortedSet<String> faces(File pdf) throws IOException {
 		SortedSet<String> faces = new TreeSet<String>();
 		try (PDDocument doc = Loader.loadPDF(pdf)) {
 			for (PDPage page : doc.getPages()) {
@@ -88,7 +88,7 @@ final class PdfFonts {
 	}
 
 	/** The faces the PDF embeds as a manifest value, or {@code unreadable: ...} where PDFBox cannot open it - a record, never a failure. */
-	static String record(File pdf) {
+	public static String record(File pdf) {
 		try {
 			return join(faces(pdf));
 		} catch (Exception e) {

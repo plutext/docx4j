@@ -22,6 +22,7 @@ import org.docx4j.fidelity.corpus.Corpus;
 import org.docx4j.fidelity.extract.PdfLayout;
 import org.docx4j.fidelity.extract.PdfLayoutExtractor;
 import org.docx4j.fidelity.report.HtmlReport;
+import org.docx4j.fidelity.score.DocumentClass;
 import org.docx4j.fidelity.score.Scoreboard;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -165,8 +166,16 @@ public final class Fidelity {
 		}
 	}
 
-	/** docx4j+FOP: writes pdfDir/id.fo and pdfDir/id.pdf. */
-	static void renderOne(File docx, File pdfDir, String id) throws Exception {
+	/**
+	 * docx4j+FOP: writes pdfDir/id.fo and pdfDir/id.pdf.
+	 *
+	 * @return the package the PDF was rendered from, <em>after</em> the export, so that
+	 *         its {@link org.docx4j.fonts.Mapper} holds the decisions this render made
+	 *         and {@link org.docx4j.fonts.FontsAnalysis} can be asked which families it
+	 *         substituted.  Asking a freshly loaded package instead would be asking a
+	 *         mapper no conversion had populated.
+	 */
+	static WordprocessingMLPackage renderOne(File docx, File pdfDir, String id) throws Exception {
 		WordprocessingMLPackage pkg = Docx4J.load(docx);
 		applyFontMapper(pkg);
 		FOSettings fo = Docx4J.createFOSettings();
@@ -184,6 +193,7 @@ public final class Fidelity {
 		try (FileOutputStream os = new FileOutputStream(new File(pdfDir, id + ".pdf"))) {
 			Docx4J.toFO(pdf, os, Docx4J.FLAG_NONE);
 		}
+		return pkg;
 	}
 
 	public static List<LayoutComparison.Result> compare(File refDir, File candDir, File reportDir, int dpi) throws Exception {
@@ -237,7 +247,9 @@ public final class Fidelity {
 		File[] docs = docxFiles(corpusDir);
 		Arrays.sort(docs, Comparator.comparingLong(File::length).thenComparing(File::getName));
 
+		String basis = basis(corpusDir);
 		List<Scoreboard.Row> rows = new ArrayList<>();
+		List<String> classLines = new ArrayList<>();
 		int n = 0;
 		for (File docx : docs) {
 			n++;
@@ -246,18 +258,35 @@ public final class Fidelity {
 			if (!ref.exists()) {
 				Scoreboard.Row row = new Scoreboard.Row(id, docx.length(), "noref");
 				row.compatMode = compatMode(docx);
+				row.basis = basis;
 				row.error = "no reference PDF " + ref.getName();
 				rows.add(row);
 				System.out.printf(Locale.ROOT, "[%d/%d] %-44s noref%n", n, docs.length, id);
 				continue;
 			}
-			Scoreboard.Row scored = scoreOne(docx, ref, fopDir, id, timeoutSeconds, n, docs.length);
+			Scoreboard.Row scored = scoreOne(docx, ref, fopDir, id, timeoutSeconds, n, docs.length, classLines);
 			scored.compatMode = compatMode(docx);
+			scored.basis = basis;
 			rows.add(scored);
 		}
 
+		Scoreboard.writeLines(new File(outDir, "classes.txt"), classLines);
 		writeScoreboard(outDir, rows, baselineCsv);
 		return rows;
+	}
+
+	/**
+	 * Which docx a run scored, from the corpus directory's own name: {@code corpus} (the
+	 * third-party file) or {@code resaved} (Word's own save of it).  The two bases are not
+	 * comparable - the README's "What to score" says why the second is the one to use, and
+	 * every baseline from b71 was in fact cut on the first - so every scoreboard states it.
+	 * {@code -Dfidelity.basis=} overrides it for a directory named something else.
+	 */
+	static String basis(File corpusDir) {
+		String override = System.getProperty("fidelity.basis");
+		if (override != null && !override.trim().isEmpty()) return override.trim();
+		String name = corpusDir.getName();
+		return name.isEmpty() ? corpusDir.getPath() : name;
 	}
 
 	/**
@@ -297,6 +326,10 @@ public final class Fidelity {
 				}
 			}
 			row.compatMode = compatMode(docx);
+			row.basis = basis(corpusDir);
+			/* The class column stays empty here: rescore does not render, so there is no
+			 * mapper to ask what this machine substituted, and half a class - Word's side
+			 * without ours - would be worse than none. */
 			rows.add(row);
 			if (row.scored()) {
 				System.out.printf(Locale.ROOT, "[%d/%d] %-44s ok       parity %.0f%%  pages %d/%d%n", n, docs.length,
@@ -324,6 +357,8 @@ public final class Fidelity {
 
 		System.out.println();
 		for (String l : Scoreboard.Aggregate.of(rows).lines()) System.out.println(l);
+		System.out.println();
+		for (String l : Scoreboard.byClass(rows)) System.out.println(l);
 		if (deltaLines != null) {
 			System.out.println();
 			for (String l : deltaLines) System.out.println(l);
@@ -375,16 +410,21 @@ public final class Fidelity {
 	 * because the alternative is losing the whole scoring run to one bad document.
 	 */
 	private static Scoreboard.Row scoreOne(File docx, File ref, File fopDir, String id, int timeoutSeconds, int n,
-			int total) {
+			int total, List<String> classLines) {
 		ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
 			Thread t = new Thread(r, "fidelity-score-" + id);
 			t.setDaemon(true); // so an abandoned conversion cannot keep the JVM alive
 			return t;
 		});
+		/* The package the render used, handed back so the class column can be read off
+		 * its mapper.  Read after the future has returned, so that reading it can never
+		 * turn an ok row into a timeout - the timed work is exactly what it always was. */
+		java.util.concurrent.atomic.AtomicReference<WordprocessingMLPackage> rendered =
+				new java.util.concurrent.atomic.AtomicReference<>();
 		Scoreboard.Row row;
 		try {
 			Future<LayoutComparison.Result> f = exec.submit(() -> {
-				renderOne(docx, fopDir, id);
+				rendered.set(renderOne(docx, fopDir, id));
 				PdfLayout a = PdfLayoutExtractor.extract(ref);
 				PdfLayout b = PdfLayoutExtractor.extract(new File(fopDir, id + ".pdf"));
 				return LayoutComparison.compare(id, a, b);
@@ -407,12 +447,39 @@ public final class Fidelity {
 			exec.shutdownNow();
 		}
 		if (row.scored()) {
-			System.out.printf(Locale.ROOT, "[%d/%d] %-44s ok       parity %.0f%%  pages %d/%d%n", n, total, id,
-					row.lineParity * 100, row.refPages, row.candPages);
+			readClass(row, rendered.getAndSet(null), ref, classLines);
+			System.out.printf(Locale.ROOT, "[%d/%d] %-44s ok       parity %.0f%%  pages %d/%d  class %s %.2f%n", n,
+					total, id, row.lineParity * 100, row.refPages, row.candPages,
+					row.docClass.isEmpty() ? "?" : row.docClass, row.substShare);
 		} else {
 			System.out.printf(Locale.ROOT, "[%d/%d] %-44s %-8s %s%n", n, total, id, row.status, row.error);
 		}
 		return row;
+	}
+
+	/**
+	 * The class and substituted-share columns of one scored row: the Word side from the
+	 * faces the golden PDF embeds, the docx4j side from the grades
+	 * {@link org.docx4j.fonts.FontsAnalysis} reports for the render that was just scored.
+	 * See {@link org.docx4j.fidelity.score.DocumentClass}.
+	 *
+	 * <p>A record, never the work: if either side cannot be read the row keeps an empty
+	 * class and the run carries on, because a scoreboard without a class column is still
+	 * a scoreboard.</p>
+	 */
+	private static void readClass(Scoreboard.Row row, WordprocessingMLPackage pkg, File ref,
+			List<String> classLines) {
+		if (pkg == null) return;
+		try {
+			org.docx4j.fonts.FontReport report = org.docx4j.fonts.FontsAnalysis.analyse(pkg);
+			DocumentClass.Reading reading = DocumentClass.of(report,
+					org.docx4j.fidelity.golden.PdfFonts.faces(ref));
+			row.docClass = reading.getDocClass();
+			row.substShare = reading.getShare();
+			if (classLines != null) classLines.add(reading.line(row.id));
+		} catch (Throwable t) {
+			System.out.println("  class " + row.id + ": " + t.getClass().getSimpleName() + ": " + t.getMessage());
+		}
 	}
 
 	private static Scoreboard.Row errorRow(String id, long size, Throwable t) {

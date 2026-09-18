@@ -180,7 +180,9 @@ public class ScoreboardTest {
 	@Test
 	public void textReportPutsTheWorstDocumentsFirst() {
 		List<String> report = Scoreboard.textReport(scoreboard(), null);
-		assertEquals("documents scored     3", report.get(0));
+		// the basis leads the summary, because two runs on different bases are not comparable
+		assertEquals("basis                (not recorded)", report.get(0));
+		assertEquals("documents scored     3", report.get(1));
 		List<String> docLines = new ArrayList<>();
 		for (String l : report) {
 			if (l.contains("_") || l.startsWith("plain")) docLines.add(l);
@@ -189,5 +191,115 @@ public class ScoreboardTest {
 		assertTrue(docLines.get(0).startsWith("14_de-DE_sdt_4")); // failures first
 		assertTrue(docLines.get(2).startsWith("plain_3")); // then 0.50
 		assertTrue(docLines.get(4).startsWith("12_en-AU_tbl_1")); // best last
+	}
+
+	// ---------------------------------------------------------------- class, share, basis
+
+	/** The three columns CR-001 batch 48 adds: they survive a write and a read back. */
+	@Test
+	public void theClassShareAndBasisRoundTripThroughTheCsv() throws Exception {
+		File csv = new File("target/fidelity/score-test/classes.csv");
+		List<Row> written = new ArrayList<>();
+		Row a = Row.of(result("12_en-AU_tbl_1", 2, 2, 100, 100), 1000);
+		a.docClass = DocumentClass.CLASS_2;
+		a.basis = "resaved";
+		written.add(a);
+		Row b = Row.of(result("15_en-US_num_2", 3, 3, 100, 90), 2000);
+		b.docClass = DocumentClass.CLASS_3B;
+		b.substShare = 0.4375;
+		b.basis = "resaved";
+		written.add(b);
+		Scoreboard.writeCsv(csv, written);
+
+		List<Row> back = Scoreboard.readCsv(csv);
+		assertEquals(2, back.size());
+		assertEquals(DocumentClass.CLASS_2, back.get(0).docClass);
+		assertEquals(0.0, back.get(0).substShare, 1e-9);
+		assertEquals("resaved", back.get(0).basis);
+		assertEquals(DocumentClass.CLASS_3B, back.get(1).docClass);
+		assertEquals(0.4375, back.get(1).substShare, 1e-9);
+		assertEquals("resaved", Aggregate.of(back).basis);
+	}
+
+	/**
+	 * The columns are additions: a scoreboard written before they existed is still the
+	 * baseline the next run is diffed against, and reads with an empty class.
+	 */
+	@Test
+	public void aScoreboardWithoutTheColumnsStillReads() throws Exception {
+		File csv = new File("target/fidelity/score-test/old-shape.csv");
+		Scoreboard.writeLines(csv, java.util.Arrays.asList(
+				"id,compatMode,sizeBytes,status,refPages,candPages,refLines,candLines,lineParity,pageParity,"
+						+ "matched,merged,medianDy,maxDy,refPitch,candPitch,firstDivergence,error",
+				"\"12_en-AU_tbl_1\",\"12\",1000,\"ok\",2,2,100,100,1.0000,1.0000,100,0,0.50,2.25,14.00,14.00,\"\",\"\""));
+		List<Row> back = Scoreboard.readCsv(csv);
+		assertEquals(1, back.size());
+		assertEquals(Scoreboard.NO_CLASS, back.get(0).docClass);
+		assertEquals("", back.get(0).basis);
+		assertEquals(1.0, back.get(0).lineParity, 1e-9);
+	}
+
+	/** One summary line per class, in class order, with the classes nothing is in left out. */
+	@Test
+	public void theSummaryIsBrokenOutPerClass() {
+		List<Row> rows = new ArrayList<>();
+		Row a = Row.of(result("a_1", 2, 2, 100, 100), 1000); // parity 1.00
+		a.docClass = DocumentClass.CLASS_2;
+		rows.add(a);
+		Row b = Row.of(result("b_2", 2, 3, 100, 50), 1000); // parity 0.50, pages differ
+		b.docClass = DocumentClass.CLASS_2;
+		rows.add(b);
+		Row c = Row.of(result("c_3", 2, 2, 100, 80), 1000); // parity 0.80
+		c.docClass = DocumentClass.CLASS_3B;
+		c.substShare = 0.5;
+		rows.add(c);
+		Row d = new Row("d_4", 1000, "error"); // no class at all
+		rows.add(d);
+
+		List<String> lines = Scoreboard.byClass(rows);
+		assertEquals(4, lines.size()); // header, class 2, class 3b, "?"
+		assertTrue(lines.get(0), lines.get(0).startsWith("class"));
+		assertTrue(lines.get(1), lines.get(1).startsWith("2 "));
+		assertTrue("class 2 mean is its own", lines.get(1).contains("0.7500"));
+		assertTrue("class 2 matched over reference", lines.get(1).contains("150 /     200"));
+		assertTrue(lines.get(2), lines.get(2).startsWith("3b"));
+		assertTrue("3b mean share", lines.get(2).contains("0.500"));
+		assertTrue(lines.get(3), lines.get(3).startsWith("? "));
+		assertFalse("no class 2n row when nothing is 2n", String.join("\n", lines).contains("\n2n"));
+	}
+
+	/** The gate is per class, so the delta puts the two sides' class tables side by side. */
+	@Test
+	public void theDeltaCarriesThePerClassTableOnBothSides() {
+		List<Row> before = new ArrayList<>();
+		Row b1 = Row.of(result("a_1", 2, 2, 100, 90), 1000);
+		b1.docClass = DocumentClass.CLASS_2;
+		before.add(b1);
+		List<Row> after = new ArrayList<>();
+		Row a1 = Row.of(result("a_1", 2, 2, 100, 95), 1000);
+		a1.docClass = DocumentClass.CLASS_2;
+		after.add(a1);
+
+		String text = String.join("\n", Scoreboard.delta("prev.csv", before, after));
+		assertTrue(text.contains("per class, before then after"));
+		assertTrue(text.contains("  B 2 "));
+		assertTrue(text.contains("  A 2 "));
+		assertTrue("the mover's class is named", text.contains("class 2"));
+	}
+
+	/** A basis change is in the summary, so nobody compares a corpus run with a resaved one. */
+	@Test
+	public void aBasisChangeShowsInTheDelta() {
+		List<Row> before = new ArrayList<>();
+		Row b1 = Row.of(result("a_1", 2, 2, 100, 90), 1000);
+		b1.basis = "corpus";
+		before.add(b1);
+		List<Row> after = new ArrayList<>();
+		Row a1 = Row.of(result("a_1", 2, 2, 100, 90), 1000);
+		a1.basis = "resaved";
+		after.add(a1);
+
+		String text = String.join("\n", Scoreboard.delta("prev.csv", before, after));
+		assertTrue(text, text.contains("basis") && text.contains("corpus") && text.contains("resaved"));
 	}
 }
