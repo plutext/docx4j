@@ -114,6 +114,10 @@ public class NumberingTabLeaderTest extends AbstractXSLFOTest {
 			+ level(3, 0, null)
 			+ level(4, 560, "dot")
 			+ level(5, 1440, "dot", "<w:rPr><w:sz w:val=\"16\"/><w:szCs w:val=\"16\"/></w:rPr>")
+			+ level(6, 1440, "hyphen")
+			+ level(7, 1440, "underscore")
+			+ level(8, 1440, "heavy")
+			+ level(9, 1440, "middleDot")
 			+ "</w:numbering>";
 
 	private static String item(String numId) {
@@ -167,13 +171,16 @@ public class NumberingTabLeaderTest extends AbstractXSLFOTest {
 
 	private void check(int flags) throws Exception {
 
-		org.w3c.dom.Document doc = fo(item("1") + item("2") + item("3") + item("4") + item("5"),
-				flags);
+		org.w3c.dom.Document doc = fo(item("1") + item("2") + item("3") + item("4") + item("5")
+				+ item("6") + item("7") + item("8") + item("9"), flags);
 
 		// (a) the golden's level: a dot leader from the end of the label to the stop
 		Element leader = leader(doc, 0);
 		assertNotNull("no leader on the numbering tab's stop", leader);
-		assertEquals("dots", leader.getAttribute("leader-pattern"));
+		/* Every kind is a run of its own character, so the leader carries the character and
+		 * FOP repeats it (batch 48 item 2) - not the dot pattern, and not a rule. */
+		assertEquals("use-content", leader.getAttribute("leader-pattern"));
+		assertEquals(".", leader.getTextContent());
 		assertEquals("dot", leader.getAttributeNS(DOCX4J_FO, "toc-leader"));
 		assertEquals("reference-area", leader.getAttribute("leader-alignment"));
 		// the stop at 1440tw less the end of the label, which is measured: the level's
@@ -223,11 +230,36 @@ public class NumberingTabLeaderTest extends AbstractXSLFOTest {
 		Element eight = leader(doc, 4);
 		assertNotNull("no leader on the 8pt level's stop", eight);
 		assertEquals("the label's own size", 8.0, pt(sizeOf(label(doc, 4))), 0.01);
-		assertEquals("the leader takes the label's 8pt, not the paragraph's 12pt",
-				8.0, pt(eight.getAttribute("font-size")), 0.01);
+		/* The label's 8pt on Word's 1/300 inch grid, which is the size Word draws at and
+		 * what its step is computed from: 8 / 0.24 = 33.33 cells, so 33 = 7.92pt.  The
+		 * first item's 12pt is 50 cells exactly and does not move. */
+		assertEquals("the leader takes the label's 8pt on the grid, not the paragraph's 12pt",
+				7.92, pt(eight.getAttribute("font-size")), 0.01);
 		assertEquals("the paragraph's own size, for contrast",
 				12.0, pt(sizeOf(body(doc, 4))), 0.01);
 		assertEquals("and still Arial", arial.getName(), eight.getAttribute("font-family"));
+
+		/* (f) every leader kind is a run of its own character, on the numbering-leader-kinds
+		 * golden's reading: Word draws hyphen as a hyphen stepping 3.60, underscore AND
+		 * heavy as an underscore stepping 6.24 - the two runs are identical, glyph for
+		 * glyph and position for position - and middleDot as U+00B7 stepping 3.60, all in
+		 * ArialMT at the label's size.  docx4j asked FOP for a rule for the first three,
+		 * which paints a line and nothing in the text layer, and for a full stop for
+		 * middleDot. */
+		String[] expected = { "-", "_", "_", String.valueOf((char) 0x00B7) };
+		String[] kindName = { "hyphen", "underscore", "heavy", "middleDot" };
+		for (int k = 0; k < expected.length; k++) {
+			Element kind = leader(doc, 5 + k);
+			assertNotNull("no leader for w:leader=" + kindName[k], kind);
+			assertEquals(kindName[k] + " is not a character run",
+					"use-content", kind.getAttribute("leader-pattern"));
+			assertEquals(kindName[k] + " repeats the wrong character",
+					expected[k], kind.getTextContent());
+			assertEquals(kindName[k] + " is not in Arial",
+					arial.getName(), kind.getAttribute("font-family"));
+			assertEquals(kindName[k] + " does not carry the kind",
+					kindName[k], kind.getAttributeNS(DOCX4J_FO, "toc-leader"));
+		}
 	}
 
 	/** The font-size in force on {@code el}: its own, or the nearest ancestor's. */

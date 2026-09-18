@@ -2578,11 +2578,15 @@ public class XsltFOFunctions {
 
 		if (!WordLayoutFixups.isEnabled() || labelBody == null || stop == null) return;
 		if (advanceTwips <= 0) return;
-		String pattern = leaderPattern(stop.getLeader());
-		if ("space".equals(pattern)) return;            // w:leader="none", or none declared
+		String glyph = numberingLeaderGlyph(stop.getLeader());
+		if (glyph == null) return;                      // w:leader="none", or none declared
 		Element leader = document.createElementNS(XSL_FO, "fo:leader");
 		leader.setAttribute("leader-length", UnitsOfMeasurement.twipToBest(advanceTwips));
-		leader.setAttribute("leader-pattern", pattern);
+		/* Every kind is a run of that kind's own character, so the leader carries the
+		 * character and FOP repeats it - not "rule" for the three the paragraph-tab path
+		 * draws as a rule.  See numberingLeaderGlyph. */
+		leader.setAttribute("leader-pattern", "use-content");
+		leader.appendChild(document.createTextNode(glyph));
 		// the XSL FO property for Word's own anchoring; FOP 2.11 reads it in its RTF
 		// renderer alone, so the grid is applied by the line manager (see the javadoc)
 		leader.setAttribute("leader-alignment", "reference-area");
@@ -2590,6 +2594,65 @@ public class XsltFOFunctions {
 				stop.getLeader() == null ? "dot" : stop.getLeader().value());
 		numberingTabLeaderFont(leader, labelBody, wmlPackage);
 		labelBody.appendChild(leader);
+	}
+
+	/**
+	 * The character Word repeats for a numbering tab's {@code w:leader}, or null where it
+	 * paints nothing.
+	 *
+	 * <p>Every kind is painted as a run of <b>glyphs</b> on Word's 1/300 inch grid, in
+	 * Arial at the label's size ({@link #numberingTabLeaderFont}) - not as a rule.
+	 * Measured on the {@code numbering-leader-kinds} golden (Word 365, fields off; five
+	 * numbered paragraphs, one kind each on the level's 1440-twip stop, the label drawn in
+	 * Aptos 11.04pt and the text in Liberation Serif 12pt):</p>
+	 *
+	 * <table><caption>Word's own leader runs, all ArialMT 11.04pt</caption>
+	 * <tr><th>{@code w:leader}</th><th>character</th><th>step</th><th>cells</th><th>count</th><th>x</th></tr>
+	 * <tr><td>dot</td><td>{@code .}</td><td>3.12</td><td>13</td><td>14</td><td>99.888 .. 140.448</td></tr>
+	 * <tr><td>hyphen</td><td>{@code -}</td><td>3.60</td><td>15</td><td>12</td><td>100.850 .. 140.450</td></tr>
+	 * <tr><td>underscore</td><td>{@code _}</td><td>6.24</td><td>26</td><td>7</td><td>99.888 .. 137.329</td></tr>
+	 * <tr><td>heavy</td><td>{@code _}</td><td>6.24</td><td>26</td><td>7</td><td>99.888 .. 137.329</td></tr>
+	 * <tr><td>middleDot</td><td>U+00B7</td><td>3.60</td><td>15</td><td>12</td><td>100.850 .. 140.450</td></tr>
+	 * </table>
+	 *
+	 * <p>So <b>heavy is an underscore</b>, glyph for glyph and position for position - the
+	 * two rows are identical - and <b>middleDot is a middle dot</b> and not a full stop,
+	 * stepping 3.60 where the dot steps 3.12 because Arial's middle dot advances 3.676pt
+	 * at that size against the period's 3.067.</p>
+	 *
+	 * <p>docx4j mapped hyphen, underscore and heavy to {@code leader-pattern="rule"}, which
+	 * draws a line and no characters - and a rule has no repeating unit, so
+	 * {@code WordListItemLayoutManager.leaderPaints} reported nothing painted and the
+	 * {@code w:suff} separator space was written over it as well; and it mapped middleDot
+	 * to the full stop. Every kind now names its own character and
+	 * {@code leader-pattern="use-content"} repeats it, which is the same
+	 * {@code FilledArea} the dot pattern builds, so the grid pass
+	 * ({@code WordLineLayoutManager.gridTocLeaders}) and {@code leaderPaints} both read it
+	 * as they already read the dots.</p>
+	 *
+	 * <p>The <b>paragraph</b>-tab path ({@link #leaderPattern}) is deliberately left alone:
+	 * it is not the same construct. On the {@code tab-leader-kinds} golden Word draws every
+	 * paragraph-tab leader in the paragraph's own face (Calibri 11.04pt there, dots stepping
+	 * 2.88, hyphens 3.36, underscores 5.52), where a numbering tab's is always Arial's.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 2)
+	 */
+	private static String numberingLeaderGlyph(org.docx4j.wml.STTabTlc leader) {
+		if (leader == null) return null;
+		switch (leader) {
+		case DOT:
+			return ".";
+		case MIDDLE_DOT:
+			// U+00B7 MIDDLE DOT, built from its code point so the source stays ASCII
+			return String.valueOf((char) 0x00B7);
+		case HYPHEN:
+			return "-";
+		case UNDERSCORE:
+		case HEAVY:
+			return "_";
+		default:
+			return null;                                // w:leader="none"
+		}
 	}
 
 	/**
@@ -2602,7 +2665,7 @@ public class XsltFOFunctions {
 	 * <tr><th>level</th><th>paragraph</th><th>label drawn in</th><th>leader drawn in</th><th>step</th><th>dots</th></tr>
 	 * <tr><td>8pt, no face</td><td>16pt Times New Roman</td><td>LiberationSerif 7.92</td><td><b>ArialMT 7.92</b></td><td>2.16</td><td>21</td></tr>
 	 * <tr><td>16pt, no face</td><td>8pt Times New Roman</td><td>LiberationSerif 16.08</td><td><b>ArialMT 16.08</b></td><td>4.56</td><td>8</td></tr>
-	 * <tr><td>8pt Arial</td><td>16pt Times New Roman</td><td>ArialMT 7.92</td><td><b>ArialMT 7.92</b></td><td>2.16</td><td>22</td></tr>
+	 * <tr><td>8pt Arial</td><td>16pt Times New Roman</td><td>ArialMT 7.92</td><td><b>ArialMT 7.92</b></td><td>2.16</td><td>21</td></tr>
 	 * </table>
 	 *
 	 * <p>So the size is the <b>label's</b> and not the paragraph's - which is what
@@ -2637,7 +2700,7 @@ public class XsltFOFunctions {
 	private static void numberingTabLeaderFont(Element leader, Element labelBody,
 			WordprocessingMLPackage wmlPackage) {
 
-		double sizePt = TableWriter.sizeFor(labelBody);
+		double sizePt = gridSizePt(TableWriter.sizeFor(labelBody));
 		if (sizePt > 0) {
 			// format() already carries the unit
 			leader.setAttribute("font-size", org.docx4j.fonts.WordLineMetrics.format(sizePt));
@@ -2658,6 +2721,31 @@ public class XsltFOFunctions {
 	/** The face Word draws a numbering tab's leader in, whatever the label is set in.
 	 *  @see #numberingTabLeaderFont */
 	private static final String LEADER_FONT = "Arial";
+
+	/** One 1/300 inch, in points: the grid Word's layout - and, measured, the font size it
+	 *  writes into a PDF - works in. */
+	private static final double GRID_PT = 0.24;
+
+	/**
+	 * A font size rounded to Word's 1/300 inch grid, which is the size Word draws at.
+	 *
+	 * <p>Measured on the two leader goldens: an 8pt label is written 7.92, an 11pt label
+	 * 11.04, a 12pt one 12.00 and a 16pt one 16.08 - 33, 46, 50 and 67 cells, every one
+	 * exact. It matters because the leader's step is the character's advance rounded to the
+	 * same grid, so a step can turn on the size's own rounding: Arial's underscore is
+	 * 1139/2048 em, which at Word's 11.04pt is 6.140pt = 25.58 cells and so Word's
+	 * <b>26</b> = 6.24pt, where at a nominal 11pt it is 6.118 = 25.49 cells and 25 = 6.00pt.
+	 * On {@code numbering-leader-kinds} that was the whole of the difference between our
+	 * underscore run and Word's. The other kinds round the same either way (the dot 12.78
+	 * or 12.79 cells, the hyphen 15.26 or 15.32).</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 48 item 2)
+	 */
+	private static double gridSizePt(double sizePt) {
+		if (sizePt <= 0) return sizePt;
+		long cells = Math.round(sizePt / GRID_PT);
+		return cells > 0 ? cells * GRID_PT : sizePt;
+	}
 
 	/**
 	 * The width of a list block's label column: the numbering tab's own stop where the

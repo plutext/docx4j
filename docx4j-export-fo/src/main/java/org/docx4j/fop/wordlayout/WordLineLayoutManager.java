@@ -1967,11 +1967,15 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     private void gridTocLeaders(KnuthSequence seq, int from, int to, LineArea lineArea) {
         if (!WordLayoutCustomizer.leaderGrid()) return;
+        /* A leader whose pattern is use-content generates one element per element of its
+         * own content, so the same manager is reported more than once and the phase would
+         * be applied twice.  (CR-001 batch 48 item 2) */
+        java.util.Set<LayoutManager> done = new java.util.HashSet<LayoutManager>();
         for (int i = Math.max(0, from); i <= to && i < seq.size(); i++) {
             Object o = seq.get(i);
             if (!(o instanceof KnuthElement)) continue;
             LayoutManager lm = tocLeader((KnuthElement) o);
-            if (lm == null) continue;
+            if (lm == null || !done.add(lm)) continue;
             InlineArea area = LBP.leafArea(lm);
             if (!(area instanceof org.apache.fop.area.inline.FilledArea)) continue;
             int[] x = { 0 };
@@ -1989,18 +1993,27 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * <p>Through the element's <b>position</b> chain, as {@link #tabLeader} does, and not
      * through {@code KnuthElement.getLayoutManager()}: an entry's leader sits inside the
      * {@code fo:inline}s that carry the entry's colour, size and hyperlink, and the
-     * element then reports the outermost of those managers.  The leaf position is the one
-     * that names the leader itself.
+     * element then reports the outermost of those managers.
+     *
+     * <p>The <b>whole</b> chain is walked, and not only its innermost {@code LeafPosition}.
+     * A leader of {@code leader-pattern="dots"} is a leaf - FOP builds its run itself - but
+     * one of {@code leader-pattern="use-content"} lays its content out with a manager of
+     * its own, so the innermost leaf names the <em>content</em>'s manager and the leader's
+     * sits above it. A numbering tab's hyphen, underscore and middle-dot leaders are written
+     * that way (XsltFOFunctions.numberingLeaderGlyph), and without this they were never
+     * gridded: their characters stepped on the raw advance (3.663pt for a hyphen where Word
+     * steps 3.60) and the run was anchored on the line instead of the page.  Widening the
+     * walk cannot change a {@code dots} leader, whose manager is the leaf already.
+     * (CR-001 batch 48 item 2)</p>
      */
     private LayoutManager tocLeader(KnuthElement element) {
-        Position leaf = element.getPosition();
-        while (leaf != null && !(leaf instanceof LeafPosition)) {
-            leaf = leaf.getPosition();
+        for (Position p = element.getPosition(); p != null; p = p.getPosition()) {
+            LayoutManager lm = p.getLM();
+            if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) continue;
+            String kind = foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TOC_LEADER);
+            if (kind != null && kind.length() > 0) return lm;
         }
-        LayoutManager lm = leaf == null ? null : leaf.getLM();
-        if (!(lm instanceof org.apache.fop.layoutmgr.inline.LeaderLayoutManager)) return null;
-        String kind = foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TOC_LEADER);
-        return (kind != null && kind.length() > 0) ? lm : null;
+        return null;
     }
 
     /**

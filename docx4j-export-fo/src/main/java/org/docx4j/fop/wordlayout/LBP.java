@@ -749,11 +749,34 @@ final class LBP {
 	private static int gridPlacedStep(org.apache.fop.area.inline.FilledArea run) {
 		java.util.List<org.apache.fop.area.inline.InlineArea> unit = filledUnit(run);
 		if (unit == null || unit.size() != 1) return run.getUnitWidth();
-		if (!(unit.get(0) instanceof org.apache.fop.area.inline.TextArea)) return run.getUnitWidth();
-		org.apache.fop.area.inline.TextArea c = (org.apache.fop.area.inline.TextArea) unit.get(0);
+		/* The unit is the character itself for a leader FOP built from its dot pattern,
+		 * and the inline its content was laid out by for one of leader-pattern
+		 * use-content - which is how a numbering tab's hyphen, underscore and middle-dot
+		 * leaders are written (XsltFOFunctions.numberingLeaderGlyph).  Every wrapper's own
+		 * width has to move with the character's, or the unit and the run's unit width
+		 * disagree and FOP paints the characters on the old step.  (CR-001 batch 48 item 2) */
+		java.util.List<org.apache.fop.area.inline.InlineParent> wrappers =
+				new java.util.ArrayList<org.apache.fop.area.inline.InlineParent>();
+		org.apache.fop.area.inline.InlineArea inner = unit.get(0);
+		/* TextArea is itself an InlineParent - its own children are the WordAreas - so the
+		 * descent stops at it and not at the word inside it. */
+		while (inner instanceof org.apache.fop.area.inline.InlineParent
+				&& !(inner instanceof org.apache.fop.area.inline.FilledArea)
+				&& !(inner instanceof org.apache.fop.area.inline.TextArea)) {
+			org.apache.fop.area.inline.InlineParent wrapper = (org.apache.fop.area.inline.InlineParent) inner;
+			java.util.List<org.apache.fop.area.inline.InlineArea> kids = wrapper.getChildAreas();
+			if (kids == null || kids.size() != 1) return run.getUnitWidth();
+			wrappers.add(wrapper);
+			inner = kids.get(0);
+		}
+		if (!(inner instanceof org.apache.fop.area.inline.TextArea)) return run.getUnitWidth();
+		org.apache.fop.area.inline.TextArea c = (org.apache.fop.area.inline.TextArea) inner;
 		if (run.getUnitWidth() != c.getIPD()) return run.getUnitWidth();   // the FO's own width
 		int step = gridStep(c, c.getIPD());
-		if (step > 0) run.setUnitWidth(step);
+		if (step > 0) {
+			for (org.apache.fop.area.inline.InlineParent wrapper : wrappers) wrapper.setIPD(step);
+			run.setUnitWidth(step);
+		}
 		return run.getUnitWidth();
 	}
 

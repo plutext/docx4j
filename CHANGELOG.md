@@ -258,6 +258,21 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- Every kind of numbering-tab leader is painted as a run of its own character on Word's 1/300 inch
+  grid, where docx4j drew a rule for three of the five and the wrong character for a fourth.
+  Measured on a probe with one kind per level, all of Word's runs in ArialMT at the label's size:
+  a dot steps 3.12pt (13 cells of the grid) for 14 characters, a hyphen 3.60 (15) for 12, an
+  underscore 6.24 (26) for 7, w:leader="heavy" the same underscore run glyph for glyph and
+  position for position, and middleDot U+00B7 at the hyphen's 3.60 and not the dot's 3.12. Ours
+  asked FOP for leader-pattern="rule" for hyphen, underscore and heavy - a drawn line with nothing
+  in the PDF's text layer, so the label stood alone and the paragraph's text was extracted as a
+  second line - and for a full stop for middleDot. All five steps are now Word's and the
+  underscore and heavy runs are Word's exactly. The leader's size is also rounded to the same
+  grid, because Word draws at the rounded size and the step follows from it: an 8pt label is
+  written 7.92, an 11pt one 11.04 and a 16pt one 16.08, and at a nominal 11pt Arial's underscore
+  is 25.49 cells and so steps 6.00 where Word's 11.04pt gives 25.58 and so 26 = 6.24. The
+  paragraph-tab path is unchanged: Word draws those leaders in the paragraph's own face
+  (CR-001 batch 48).
 - A numbering tab's leader is drawn in Arial at the label's size, which is neither the paragraph's
   font nor the label's face. Measured on a probe whose level states a size the paragraph does not:
   under a 16pt Times New Roman paragraph an 8pt level gives ArialMT at 7.92pt stepping 2.16pt, 21
