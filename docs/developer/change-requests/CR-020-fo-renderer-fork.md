@@ -2,11 +2,13 @@
 
 Status: PROPOSED (2026-09-18). The decision to fork, the naming and the
 degradation contract were taken by Jason Harrop on 2026-09-18 (recorded in §2);
-nothing coded. Drafted with Claude Fable 5.1 at the close of CR-001 batch 48.
+nothing coded. Drafted with Claude Fable 5.1 at the close of CR-001 batch 48;
+the first release moved out of phase 0 on Jason's direction the same day.
 Owner: Jason Harrop.
 
 Scope: a fork of Apache FOP 2.11 maintained at `plutext/xmlgraphics-fop`,
-published to Maven Central as `org.docx4j:docx4j-fo-renderer-*`; the switch of
+published to Maven Central as `org.docx4j:docx4j-fo-renderer-*` once it has
+earned a release (not before phase 2 is done, §4); the switch of
 `docx4j-export-fo` to it with a start-up capability probe that keeps Apache FOP
 2.11 working; the hooks that replace today's reflection; the classified
 cherry-picks from the Metanorma and Chunlin forks; and, last, the structural
@@ -137,7 +139,11 @@ now; the hooks are the only thing lost.
   upstream fix we sent lands.
 - Build: FOP's own Maven build with the coordinates of §2.2; FOP's test suite
   runs in CI (GitHub Actions) on every push; release to Maven Central through
-  the existing `org.docx4j` credentials, signed, with sources and javadoc.
+  the existing `org.docx4j` credentials, signed, with sources and javadoc -
+  but not in phase 0. Until the first release the fork is consumed as a
+  locally installed `2.11-docx4j.1-SNAPSHOT` (`mvn install` in the fork's
+  checkout), which is enough for the harness and for development on this
+  machine.
 - Every fork-only change carries a JIRA reference where one exists and is
   listed in the fork's README under "Changes from Apache FOP 2.11" with its
   §6.6 item number; a change without a JIRA is sent upstream first unless it
@@ -148,6 +154,11 @@ now; the hooks are the only thing lost.
 - The dependency becomes `org.docx4j:docx4j-fo-renderer-core` (the Apache
   `fop` artifact today at `docx4j-export-fo/pom.xml` line 259, with its
   exclusions carried over). Batik and xmlgraphics-commons stay as they are.
+  Until the fork is on Central the swap lives behind a Maven profile
+  (`fo-renderer-fork`, off by default): the default build keeps Apache FOP
+  2.11 so that anyone building docx4j from source is unaffected, and the
+  profile points at the local snapshot. The profile is removed and the fork
+  becomes the default dependency at the first release.
 - **`FopCapabilities`**, a start-up probe in `org.docx4j.convert.out.fo`, run
   once per JVM: looks for the fork's marker class
   (`org.apache.fop.docx4j.Docx4jFop`, carrying the fork version and a set of
@@ -187,12 +198,13 @@ as §3.1.
 
 ## 4. Phases
 
-0. **Fork set-up and first release.** The `docx4j-2.11` branch, coordinates,
-   NOTICE/README/change notices, CI; cherry-pick the existing branches
-   (FOP-3328, FOP-3330, empty-glyph-not-composite, cjk-radical-tounicode,
-   packed-glyph-bboxes) with their upstream status recorded; release
-   `2.11-docx4j.1`. `docx4j-export-fo` switched, `FopCapabilities` in place
-   with no hooks yet, the harness switch in. **Gate**: the corpora and probes
+0. **Fork set-up.** The `docx4j-2.11` branch, coordinates, NOTICE/README/
+   change notices, CI; cherry-pick the existing branches (FOP-3328, FOP-3330,
+   empty-glyph-not-composite, cjk-radical-tounicode, packed-glyph-bboxes) with
+   their upstream status recorded; installed locally as
+   `2.11-docx4j.1-SNAPSHOT`, no release. `docx4j-export-fo` switched behind
+   the `fo-renderer-fork` profile (§3.2), `FopCapabilities` in place with no
+   hooks yet, the harness switch in. **Gate**: the corpora and probes
    on the fork reproduce b49-batch48 exactly except where a cherry-picked fix
    is expected to move a document (each such mover named and explained); the
    same run on Apache FOP 2.11 still reproduces b49.
@@ -223,6 +235,15 @@ as §3.1.
    JIRA text drafted for Jason to file (the FOP-3328 pattern); the fork's
    README lists what is still fork-only and why.
 
+**The first release** (`2.11-docx4j.1` to Maven Central, the profile of §3.2
+dropped, the fork the default dependency) is a milestone rather than a phase,
+and it is not part of phase 0: it comes after phase 2 at the earliest, or
+after part or all of phase 3 - Jason's call when phase 2 closes, on whether
+the hooks and the cherry-picks alone are worth shipping or the first
+structural item should be in. Until then the fork exists only as a local
+snapshot and nothing published depends on it, so the fork can be reshaped
+freely (the `fop-util`/`fop-events` question of §5 included).
+
 ## 5. Risks / open questions
 
 - **Two FOPs on one classpath** is the real hazard of same-package forks; §3.2
@@ -240,21 +261,24 @@ as §3.1.
 - **The branding line** (§2.2) is the conservative reading of ASF policy; the
   application of trademark rules to a Maven artifact id is not spelled out,
   so the name simply avoids the question.
-- **Maintenance** is a release every few weeks while phases 1-3 run, then at
-  each Apache release: Metanorma's cadence, and less than today's reflection
-  costs in batch time.
+- **Maintenance** is, after the first release, a release when a batch needs
+  one and at each Apache release: Metanorma's cadence, and less than today's
+  reflection costs in batch time. Before the first release there is nothing
+  to maintain but the local snapshot.
 - **Open**: whether `fop-util` and `fop-events` are forked or consumed from
   Apache (they are unmodified; consuming them is simpler, forking keeps one
   version line) - decide in phase 0 from the build.
 
 ## 6. Suggested sequencing and effort (rough)
 
-Phase 0 two to three days (the CI and the Central release are most of it);
+Phase 0 one to two days (the CI and the profile are most of it; no release);
 phase 1 about a week across the three hooks with their gates; phase 2 one day
 for the classification report, then variable, one batch item per cherry-pick;
-phase 3 large and open-ended, planned item by item; phase 4 ongoing. Phase 0
-should start after CR-001 batch 48's follow-ups are queued and before batch 49,
-so that batch 49 is the first batch gated on both configurations.
+the first release after phase 2 or into phase 3 (§4), a day for the Central
+mechanics when it comes; phase 3 large and open-ended, planned item by item;
+phase 4 ongoing. Phase 0 should start after CR-001 batch 48's follow-ups are
+queued and before batch 49, so that batch 49 is the first batch gated on both
+configurations.
 
 ## 7. References
 
