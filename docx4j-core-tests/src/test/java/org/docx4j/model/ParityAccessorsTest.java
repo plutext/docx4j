@@ -156,6 +156,18 @@ public class ParityAccessorsTest {
 	}
 
 	@Test
+	public void missingLevelIsNotNumberedAndSaysWhy() throws Exception {
+		// the w:num exists, its definition has no w:lvl for the paragraph's ilvl
+		WordprocessingMLPackage pkg = packageWithNumberedNormal();
+		PPr pPr = F.createPPr();
+		pPr.setNumPr(numPr(1, 42));
+		Emulator.NumRef ref = Emulator.numRefFor(pkg, pPr);
+		assertTrue(ref.notNumbered);
+		assertTrue(ref.reason, ref.reason.contains("no w:lvl 42 in w:num 1"));
+		assertNull(Emulator.getNumber(pkg, pPr));
+	}
+
+	@Test
 	public void countersAreReadableAndReadOnly() throws Exception {
 		WordprocessingMLPackage pkg = packageWithNumberedNormal();
 		NumberingState state = new NumberingState();

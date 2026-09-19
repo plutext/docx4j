@@ -544,6 +544,12 @@ public class Emulator {
     		log.warn("No level id?! Default to 0.");
     		levelId = "0";
     	}
+    	if (!numberingPart.getInstanceListDefinitions().get(numId).levelExists(levelId)) {
+    		// The w:num exists but its definition has no w:lvl for this ilvl: not numbered,
+    		// with the reason here rather than an empty result from getNumber.  @since 17.1.1
+    		return new NumRef("no w:lvl " + levelId + " in w:num " + numId
+    				+ (directNumPr ? " (the paragraph's own)" : " (from style '" + styleId + "')"));
+    	}
 
     	if (!directNumPr && styleLinkedElsewhere(numberingPart, propertyResolver, numId, levelId, styleId)) {
     		return new NumRef("level " + levelId + " of numId " + numId + " is linked to a paragraph style other than '"

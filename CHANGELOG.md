@@ -1224,7 +1224,8 @@ API, for the ports' parity harnesses (docx4j-core-ts, docx4j-python):
   returns null for such a paragraph where it used to return an empty result.
 - A w:numId that names no w:num (Word's own re-save leaves one in an untouched
   mc:Fallback after renumbering, CR-021) is not numbered either: numRefFor says
-  "no w:num for numId N" and getNumber returns null, instead of an empty result.
+  "no w:num for numId N" and getNumber returns null, instead of an empty result; so is
+  a w:num whose definition has no w:lvl for the paragraph's ilvl ("no w:lvl L in w:num N").
 
 Other:
 
