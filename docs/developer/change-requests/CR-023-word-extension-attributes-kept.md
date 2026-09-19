@@ -138,10 +138,10 @@ tree, and so that a later element in one of those namespaces lands in a
 named package; they change nothing in the build.
 
 `w16du:dateUtc` is `xsd:dateTime`, which XJC binds as
-`XMLGregorianCalendar` (ISO's `w:date` is `ST_DateTime`, a string in
-docx4j's binding). Kept as XJC gives it, with the accessor documented; a
-`jaxb:javaType` to `String` would match `w:date` but departs from the
-page's text - **Jason to choose** (§13). Default: `XMLGregorianCalendar`.
+`XMLGregorianCalendar` - the same type docx4j already gives ISO's `w:date`
+on every tracked change (`CTTrackChange.getDate()`) and w16cex's `dateUtc`
+on a comment, so `getDateUtc()` matches its neighbours. Kept as XJC gives
+it (decided with Jason, 2026-09-20: no issue with the type in the tree).
 
 ## 4 to 6. Regeneration, module-info, contexts (recipe steps 4 to 6)
 
@@ -218,8 +218,8 @@ show docx4j keeping what the port drops.
   attribute group), not the hex `ST_LongHexNumber` global attribute
   (2.8.2.1) the `commentsIds` part uses: the reference is to the group, so
   the accessor is a `BigInteger`, not a `String`.
-- **`dateUtc` as `XMLGregorianCalendar`** (§3), unless Jason prefers a
-  `String` like `w:date`.
+- **`dateUtc` as `XMLGregorianCalendar`** (§3): consistent with `w:date`;
+  decided.
 - **API growth only**: seven new accessors on existing classes, one new
   content-list member type (`CTSymEx` in `R.getContent()`); nothing
   removed or renamed. A caller walking a run's content with an exhaustive
