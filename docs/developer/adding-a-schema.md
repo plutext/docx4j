@@ -21,6 +21,34 @@ as a test resource in `docx4j-core-tests/src/test/resources/` (not a document
 from the layout-fidelity corpora, which are not redistributable). Where the
 element sits in that file - which part, which parent - decides steps 2 and 3.
 
+### Obtaining the schema
+
+For an ECMA-376 schema, the xsd files ship with the standard (Part 1's
+annexes and Part 4's transitional set); this tree already carries them.
+
+For a Microsoft extension, the schema is an appendix of the open
+specification ("Full XML Schema", one numbered subsection per namespace). Three
+sources, in order of preference:
+
+1. **The HTML section page** on learn.microsoft.com: each subsection of the
+   appendix is its own page, with the XSD in a code block - exact whitespace,
+   one namespace per page, and a URL that names the section to cite in the
+   xsd's header comment. This is what `xsd/wml/w16cex.xsd` was taken from (its
+   header quotes the page). Not every specification's appendix is rendered
+   that way; check for the section page first.
+2. **The docx download** from the specification's landing page (the "Published
+   Version" table offers PDF and DOCX per revision, the DOCX named with its
+   date, `[MS-XLSX]-260519.docx` for revision 29.1 of 2026-05-19): the schema
+   sits in code-styled paragraphs with its line structure intact, and each
+   namespace's subsection is a heading, so docx4j itself can split the appendix
+   into one file per namespace by heading. Cite the revision.
+3. **The PDF**, last: its text layer cuts every page with the running header,
+   footer and page number, and extraction can merge wrapped lines, so a long
+   schema needs stitching by hand.
+
+Whichever the source, record it, the revision or the fetch date, and every
+change made to the text (step 3) at the top of the xsd, as `w16cex.xsd` does.
+
 ## 2. Find where it belongs in the schema tree
 
 `xsd/ROOT.xsd` imports the roots of each format's tree; a schema joins the tree
