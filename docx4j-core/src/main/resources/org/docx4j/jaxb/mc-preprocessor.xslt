@@ -306,37 +306,30 @@
 		
   	<xsl:choose>
   	
-	    <xsl:when test="parent::w:r">
-				<!--  v3.3.8 is OK with mc:AlternateContent in a run; the exporters choose
-				      the branch (AbstractVisitorExporterGenerator, docx2fo.xslt)  -->
+	    <xsl:when test="parent::w:r or parent::w:p or parent::w:numPicBullet">
+				<!-- The schema admits mc:AlternateContent here (w:r since 3.3.8; w:p and
+				     w:numPicBullet since 17.1.1, CR-021 phase 2), so JAXB keeps both branches
+				     and the consumers choose one through org.docx4j.jaxb.McSelection.  This
+				     stylesheet is only reached when JAXB rejected an mc:AlternateContent
+				     SOMEWHERE in the part, so an element here is passed through whole. -->
 			<xsl:variable name="dummyRetain" 
-				select="java:org.docx4j.utils.XSLTUtils.logWarn('mc:AlternateContent present in run; retaining')" />
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), '; retaining'))" />
 		    <xsl:copy>
 		      <xsl:apply-templates select="@*|node()"/>
 		    </xsl:copy>
 		</xsl:when>
 
-			<!-- See comment in SlidePart as to why we don't do this!
-  	
-  		<xsl:when test="mc:Choice[@Requires='v']">
-  		
-  			<xsl:variable name="message" 
-  				select="string('Selecting mc:Choice[@Requires=v]')" />  			
-			<xsl:variable name="logging" 
-				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
-				
-  			<xsl:copy-of select="mc:Choice[@Requires='v']/*"/>
-
-  		</xsl:when>   -->
-
-		<!-- Word draws the first mc:Choice whose @Requires names a namespace it
-		     understands (ECMA-376 Part 3 10.2.1), and reaches the mc:Fallback only when
-		     it understands none of them.  Which prefixes we claim - wps by default,
-		     whose wps:txbx/w:txbxContent both exporters do draw - is
-		     docx4j.jaxb.mc.preferChoice; see XSLTUtils.mcPreferredChoiceRequires for the
-		     measurement.  Empty restores the pre-17.1.0 fallback-always behaviour.
-		     @since 17.1.0 -->
-  		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
+		<!-- Any other parent is one the survey of CR-021 phase 0 (835 documents) never
+		     saw.  The element cannot be kept - the schema does not admit it there and the
+		     part would fail to unmarshal - so it is resolved to the one branch docx4j draws
+		     (org.docx4j.jaxb.McSelection's rule, through XSLTUtils.mcPrefersChoice: the
+		     first Choice whose Requires prefixes are all in docx4j.jaxb.mc.preferChoice,
+		     else the Fallback), with a warning naming the parent so that the schema can
+		     be extended to it.  A VML-first branch that lived here from 2012 never ran and
+		     is gone. -->
+		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
+			<xsl:variable name="dummyParent"
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not admitted by the schema; resolving it (CR-021)'))" />
 
   			<xsl:variable name="chosen"
   				select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
@@ -350,7 +343,7 @@
   		<xsl:when test="mc:Fallback">
   		
   			<xsl:variable name="message" 
-  				select="concat('Selecting ', name(mc:Fallback/*[1]) )" />  			
+  				select="concat('mc:AlternateContent in ', name(..), ' is not admitted by the schema; selecting its Fallback ', name(mc:Fallback/*[1]), ' (CR-021)')" />  			
 			<xsl:variable name="logging" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
 				

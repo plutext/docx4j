@@ -21,9 +21,12 @@ import org.junit.Test;
  *
  *   w:numPicBullet / mc:AlternateContent / (mc:Choice Requires="v" w:pict | mc:Fallback w:drawing)
  *
- * The mc preprocessor keeps the mc:Fallback, so w:drawing is what reaches JAXB.
- * Before NumPicBullet gained a drawing property, that was dropped and the document
- * saved with an empty w:numPicBullet, which Word refuses to open.
+ * Until 17.1.1 the mc preprocessor kept the mc:Fallback, so w:drawing was what reached
+ * JAXB; before NumPicBullet gained a drawing property, that was dropped and the document
+ * saved with an empty w:numPicBullet, which Word refuses to open.  Since 17.1.1 (CR-021
+ * phase 2) the schema admits mc:AlternateContent in w:numPicBullet, so the whole element
+ * is kept, both branches, and written back (see AlternateContentKeptTest); this test
+ * keeps the original concern - the bullet is never saved empty.
  *
  * Fixtures are the reporter's minimal reproduction documents (four one-letter list
  * items with a stock-image bullet; no author metadata).
@@ -38,19 +41,21 @@ public class NumPicBulletTest {
 
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.load(ResourceUtils.getResource(WORD365));
 		Numbering.NumPicBullet bullet = onlyBullet(pkg);
-		assertNotNull("mc:Fallback w:drawing should be unmarshalled", bullet.getDrawing());
-		assertNull("the mc:Choice w:pict is not selected", bullet.getPict());
+		assertNotNull("Word 365's mc:AlternateContent is kept whole (CR-021 phase 2)", bullet.getAlternateContent());
+		assertNull("neither branch is unwrapped into the bullet", bullet.getDrawing());
+		assertNull(bullet.getPict());
 
-		// save, reload, and the drawing must still be there
+		// save, reload, and both branches must still be there
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		pkg.save(baos);
 		WordprocessingMLPackage reloaded = WordprocessingMLPackage.load(new ByteArrayInputStream(baos.toByteArray()));
 		Numbering.NumPicBullet again = onlyBullet(reloaded);
-		assertNotNull("w:drawing lost on round trip", again.getDrawing());
+		assertNotNull("mc:AlternateContent lost on round trip", again.getAlternateContent());
 
 		// and the marshalled element is not the empty <w:numPicBullet/> that corrupted the docx
 		String xml = XmlUtils.marshaltoString(again, true, true);
 		assertTrue(xml, xml.contains("<w:drawing"));
+		assertTrue(xml, xml.contains("<w:pict"));
 		assertFalse(xml, xml.contains("<w:numPicBullet w:numPicBulletId=\"0\"/>"));
 	}
 

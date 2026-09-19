@@ -289,6 +289,13 @@ Markup compatibility (CR-021, one policy for mc:AlternateContent):
 - The default preference stays the Fallback: with wps preferred the FO exporter does not
   yet draw an inline wps text box, and the HTML exporter loses a VML fallback text
   box's content either way (both recorded in CR-021 §8.6 for the next phase).
+- Load keeps mc:AlternateContent wherever Word writes it. The schema (wml.xsd) now admits it
+  as a child of w:p (a drawing group Word writes as paragraph content) and of w:numPicBullet
+  (Word 365's picture bullet), as it has in w:r since 3.3.8, so both branches survive a load
+  and a save instead of being resolved to one at load and discarded. Numbering.NumPicBullet
+  gains getAlternateContent(); its getPict()/getDrawing() are null for such a bullet, and a
+  reader takes one branch through McSelection. The load-time preprocessor now resolves the
+  element only for a parent the schema does not admit, with a warning naming the parent.
 
 Packaging:
 

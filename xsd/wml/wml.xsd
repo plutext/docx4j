@@ -33,6 +33,7 @@ REVISION HISTORY
 20130709 - [MS-DOCX] w14, w15 - most bits, but not rPr extensions, conflict extensions, or calendar type extensions
 
 20180526 - Add mc:AlternateContent to w:r
+20260919 - Add mc:AlternateContent to w:p (EG_PContent) and w:numPicBullet (CR-021 phase 2)
            Add w14 text effects to rPr 
            
 20181124   Add w14 EG_RPrOpenType to rPr. (since docx4j 6.1.0)   
@@ -9286,6 +9287,12 @@ PRINCIPLES:
 		<xsd:choice>
 			<xsd:group ref="EG_ContentRunContent" minOccurs="0"
 				maxOccurs="unbounded"/>
+			<!-- docx4j 17.1.1 (CR-021 phase 2): Word writes mc:AlternateContent as a child
+			     of w:p (a wpg drawing group, its Choice holding a w:r/w:drawing) and keeps it
+			     there on re-save; admitted so that load keeps both branches, as in w:r.
+			     The exporters, TraversalUtil (McMode.READ) and TextUtils take one branch
+			     through org.docx4j.jaxb.McSelection. -->
+			<xsd:element ref="mc:AlternateContent" minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="fldSimple" type="CT_SimpleField" minOccurs="0"
 				maxOccurs="unbounded">
 				<xsd:annotation>
@@ -14514,8 +14521,11 @@ PRINCIPLES:
 								<annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="numPicBullet")</annox:annotate>
 							</xsd:appinfo>
 						</xsd:annotation>
-						<!-- 2025 recent versions of Word use mc:AlternateContent here,
-						     but since numPicBullet is so little used, this will suffice -->
+						<!-- Word 365 writes mc:AlternateContent here (a Choice Requires="v" holding
+						     w:pict, a Fallback holding w:drawing - the reverse of a text box);
+						     admitted in docx4j 17.1.1 (CR-021 phase 2) so that load keeps both
+						     branches; until then the preprocessor kept the Fallback's w:drawing.
+						     A reader takes one branch through org.docx4j.jaxb.McSelection. -->
 						<xsd:choice minOccurs="1" maxOccurs="1">
 							<xsd:element name="pict" type="CT_Picture">
 								<xsd:annotation>
@@ -14524,6 +14534,7 @@ PRINCIPLES:
 								</xsd:annotation>
 							</xsd:element>
 							<xsd:element name="drawing" type="CT_Drawing" /> <!-- added in 2025 04 -->
+							<xsd:element ref="mc:AlternateContent" />
 						</xsd:choice>
 						<xsd:attribute name="numPicBulletId"
 							type="ST_DecimalNumber" use="required">

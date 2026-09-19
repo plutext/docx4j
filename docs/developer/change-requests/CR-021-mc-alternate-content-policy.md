@@ -1,9 +1,9 @@
 # CR-021: one policy for `mc:AlternateContent` - kept wherever it occurs, one selection rule, and a traversal that knows whether it reads or writes
 
-Status: IN PROGRESS - phases 0 and 1 DONE 2026-09-19 (phase 1: McSelection,
-TraversalUtil READ default and ALL mode, the audit applied; gate passed on
-both renderers, §8.7); phase 2 (the schema admits the element where Word
-writes it) awaits Jason's go.
+Status: IN PROGRESS - phases 0, 1 and 2 DONE 2026-09-19 (phase 2: the
+schema admits the element in w:p and w:numPicBullet, load keeps it; gate
+passed on both renderers, Word opens the re-saves; §8.8); phase 3
+(PresentationML) and phase 4 (follow-through) await Jason's go.
 Proposed 2026-09-19 (written at Jason Harrop's direction after the
 docx4j-core-ts parity harness found a text box's paragraphs visited twice;
 "we're going to need to be consistent about how we handle mc content").
@@ -575,3 +575,72 @@ b53-batch49 remains the baseline for the next batch.
 **Hand-off:** the docx4j-core-ts peer told the commit range; its parity
 goldens regenerate with a text box's paragraphs visited once. The Python
 port follows.
+
+### 8.8 Phase 2 (2026-09-19, at Jason's go, after the phase 1 push)
+
+Coded:
+
+- `xsd/wml/wml.xsd`: `<xsd:element ref="mc:AlternateContent"/>` in
+  `EG_PContent` (so a paragraph's content list may hold the element, as a
+  run's may since 3.3.8) and in `CT_NumPicBullet`'s choice beside `pict` and
+  `drawing`; the header's change log line. Regenerated: `P.getContent()`
+  admits `AlternateContent` through an `@XmlElementRef`;
+  `Numbering.NumPicBullet` gains `getAlternateContent()`.
+- `mc-preprocessor.xslt`: the retain branch now covers every parent the
+  schema admits (`w:r`, `w:p`, `w:numPicBullet`), logging the parent. For
+  any other parent - none in the 835 documents of the survey - the element
+  is still resolved to the one branch docx4j draws (McSelection's rule via
+  `XSLTUtils.mcPrefersChoice`, else the Fallback), now with a warning that
+  names the parent so the schema can be extended to it. §3.1 said "a
+  pass-through"; a pass-through for an unadmitted parent would fail the
+  part's unmarshal, so the resolution stays as the last resort. The
+  never-live VML-first branch is deleted.
+- `JaxbValidationEventHandler` unchanged: its trigger is simply no longer
+  reached for these parents.
+- Tests: `AlternateContentKeptTest` (a paragraph-level `wpg` element in
+  the shape of Word's re-save is kept with both branches and marshals with
+  both; the Word 365 numPicBullet document keeps the element, neither
+  branch is unwrapped into the bullet, and it round-trips);
+  `NumPicBulletTest` updated to the kept element (its concern, the bullet
+  never saved empty, kept).
+- CHANGELOG under "Markup compatibility (CR-021)", the loading entry.
+
+**Round trip** (the 26 corpus documents with the element, 4069 among them,
+plus the 11 repository documents: 37 in all): every document loads with
+every WordprocessingML part unmarshalled, not one preprocessor warning
+(so every element was admitted by the schema), and saves. Comparing every
+`mc:AlternateContent` in the input with its twin in the output, part by
+part: the same count everywhere, the same parent and `Requires`, no
+element lost or gained in any branch. Three elements (4069's paragraph-level
+groups) have their `wps:wsp` children re-ordered to schema order, as Word's
+own re-save does. The attribute differences are VML's pre-existing JAXB
+round-trip losses, the same a run-level element always had: `w14:anchorId`
+on `v:shape`/`v:shapetype` (41), `o:gfxdata` on `v:oval`/`v:rect` (6) and
+re-encoded on `v:shape` (61), `o:spt` written as a float (34) - none of
+them this phase's doing; recorded as a VML round-trip gap for the anonymiser
+and diff work to know about. The saved parts declare the namespaces the
+kept branches use (`xmlns:v` on numbering.xml, `xmlns:wpg` on 4069's
+document.xml) and keep their `mc:Ignorable`.
+
+**Word-open check** (Jason, 2026-09-19): the two re-saves on the share
+(`cr021-phase2-check`: 4069 and the numPicBullet document) open in Word
+without a repair prompt; 4069 shows its one visible group, the
+"Photograph / PP size" box, as Word's golden of the original does (the
+other two groups are 10 by 7 point rectangles in table cells).
+
+**Gate (passed 2026-09-19 13:10):**
+
+| step | result |
+|---|---|
+| docx4j-generated-objects regenerated, docx4j-core rebuilt | clean |
+| docx4j-core-tests, the whole suite | 1193 tests, 0 failures, 11 skipped |
+| docx4j-export-fo-tests, the whole suite | 669 tests, 0 failures, 8 skipped |
+| the 146 probes, Apache FOP and the fork renderer | every row identical to b53-batch49 on both |
+| the three corpora, Apache FOP and the fork | every row identical to b53-batch49 on both (4069, whose three paragraph-level groups are now kept and drawn from their Fallback, among them) |
+
+The b55 score directories were identical to the baseline and were deleted;
+b53-batch49 remains the baseline.
+
+**Hand-off:** objects-ts told the commit (the two `wml.xsd` admissions and
+the regeneration they need); core-ts told (its typed model gains the
+element in `P.getContent()` and `NumPicBullet`).
