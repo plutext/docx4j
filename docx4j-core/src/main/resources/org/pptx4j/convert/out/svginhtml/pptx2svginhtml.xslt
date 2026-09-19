@@ -11,6 +11,7 @@
     xmlns:w10="urn:schemas-microsoft-com:office:word"
 	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"		    
 	xmlns:java="http://xml.apache.org/xalan/java" 
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
@@ -90,6 +91,25 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 <xsl:template match="p:spTree">
 	<xsl:apply-templates/>
+</xsl:template>
+
+<!-- One branch of an mc:AlternateContent - the one org.docx4j.jaxb.McSelection selects
+     (CR-021 phase 3): the first mc:Choice whose @Requires prefixes are all named in
+     docx4j.jaxb.mc.preferChoice, else the mc:Fallback.  Without this template the
+     built-in rule would apply templates to every branch and draw the shape once per
+     branch.  PowerPoint's usual case is a Choice Requires="a14" holding the shape with
+     its text (an equation, ink) and a Fallback holding a picture of it. -->
+<xsl:template match="mc:AlternateContent">
+	<xsl:variable name="preferred"
+		select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
+	<xsl:choose>
+		<xsl:when test="$preferred">
+			<xsl:apply-templates select="$preferred/*"/>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:apply-templates select="mc:Fallback/*"/>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="p:nvGrpSpPr"/>

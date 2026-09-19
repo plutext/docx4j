@@ -198,7 +198,10 @@ public class ResolvedLayout implements Cloneable {
 					Context.jcPML );
 		
 		// Now handle the placeholders
-    	List<Object> possiblyShapes = effectiveShapeTree.getSpOrGrpSpOrGraphicFrame();    	
+    	// CR-021: a placeholder inside an mc:AlternateContent is seen through the branch
+    	// docx4j draws; the copy's own list keeps the element whole for the save
+    	List<Object> possiblyShapes = org.docx4j.jaxb.McSelection.selectedContent(
+    			effectiveShapeTree.getSpOrGrpSpOrGraphicFrame());
     	for (Object o : possiblyShapes) {
     		
     		if (o instanceof Shape) {

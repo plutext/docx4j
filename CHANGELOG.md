@@ -300,7 +300,13 @@ Markup compatibility (CR-021, one policy for mc:AlternateContent):
   Fallback) survives a load whose workbook part went through the preprocessor for another
   reason (an xr:revisionPtr, say); it was dropped. sml.xsd's admission of the element is
   now minOccurs="0", as it always was in fact optional. Charts' and drawings' elements are
-  still resolved to one branch at load; PresentationML follows in CR-021 phase 3.
+  still resolved to one branch at load.
+- PresentationML: a slide's, layout's or master's mc:AlternateContent in a shape tree or
+  control list is kept at load with both branches (the schema admitted it; the preprocessor
+  resolved it), and read through the same rule: the placeholder walks and the SVG export
+  take one branch, where the SVG export used to draw every branch. PowerPoint's usual case
+  is an equation or ink shape in a Choice Requires="a14" with a picture Fallback:
+  docx4j.jaxb.mc.preferChoice=a14 draws the shape, the default draws the picture.
 
 Packaging:
 

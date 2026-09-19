@@ -151,8 +151,11 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		
 		indexedPlaceHolders = new HashMap<String, ShapeWrapper>();
 		
-    	List<Object> possiblyShapes = getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame();
-    	    	
+    	// CR-021: a shape inside an mc:AlternateContent is seen through the branch docx4j draws
+		
+    	List<Object> possiblyShapes = org.docx4j.jaxb.McSelection.selectedContent(
+		
+    			getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame());
     	for (Object o : possiblyShapes) {
     		
     		if (o instanceof Shape) {

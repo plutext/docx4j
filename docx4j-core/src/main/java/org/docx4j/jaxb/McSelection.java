@@ -52,10 +52,13 @@ import org.slf4j.LoggerFactory;
  * that case.</p>
  *
  * <p>Callers: {@link org.docx4j.TraversalUtil} in its {@link McMode#READ} mode, the
- * visitor exporters (FO, HTML), {@code docx2fo.xslt} through
- * {@link org.docx4j.utils.XSLTUtils#mcPrefersChoice}, {@link org.docx4j.TextUtils},
- * the markdown exporter.  The load-time preprocessor's own resolution of the
- * element outside runs goes in CR-021 phase 2.</p>
+ * visitor exporters (FO, HTML), {@code docx2fo.xslt} and {@code docx2xhtml-core.xslt}
+ * through {@link org.docx4j.utils.XSLTUtils#mcPrefersChoice}, {@link org.docx4j.TextUtils},
+ * the markdown exporter; for PresentationML the placeholder walks of the slide, layout
+ * and master parts ({@link #selectedContent}) and {@code pptx2svginhtml.xslt}.  The
+ * property is the one switch for every format: a PowerPoint slide's
+ * {@code Requires="a14"} Choice (an equation, ink) is drawn with
+ * {@code docx4j.jaxb.mc.preferChoice=a14}, its picture Fallback otherwise.</p>
  *
  * @since 17.1.1 (CR-021 phase 1)
  */
@@ -117,6 +120,30 @@ public final class McSelection {
 		if (branch instanceof AlternateContent.Choice) return ((AlternateContent.Choice) branch).getAny();
 		if (branch instanceof AlternateContent.Fallback) return ((AlternateContent.Fallback) branch).getAny();
 		return Collections.emptyList();
+	}
+
+	/**
+	 * A content list with each {@code mc:AlternateContent} in it replaced by the content
+	 * of the branch docx4j draws ({@link #select}), recursively - so a caller iterating a
+	 * shape tree or a paragraph's runs by {@code instanceof} sees the chosen branch's
+	 * objects in place of the element, and never both branches.  Other entries are
+	 * passed through as they are (wrapped or not).  Never null.
+	 *
+	 * @since 17.1.1 (CR-021 phase 3)
+	 */
+	public static List<Object> selectedContent(List<Object> content) {
+		if (content == null) return new ArrayList<Object>();
+		List<Object> result = new ArrayList<Object>(content.size());
+		for (Object o : content) {
+			Object u = o;
+			if (u instanceof jakarta.xml.bind.JAXBElement) u = ((jakarta.xml.bind.JAXBElement<?>) u).getValue();
+			if (u instanceof AlternateContent) {
+				result.addAll(selectedContent(select((AlternateContent) u)));
+			} else {
+				result.add(o);
+			}
+		}
+		return result;
 	}
 
 	/**

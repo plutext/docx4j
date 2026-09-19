@@ -173,9 +173,9 @@ public final class SlideLayoutPart extends JaxbPmlPart<SldLayout> {
 		
 		
 		// The placeholders are resolved against the master.
-		List<Object> possiblyShapes = getResolvedLayout().getShapeTree().getSpOrGrpSpOrGraphicFrame();
-		
-    	
+		// CR-021: a shape inside an mc:AlternateContent is seen through the branch docx4j draws
+		List<Object> possiblyShapes = org.docx4j.jaxb.McSelection.selectedContent(
+				getResolvedLayout().getShapeTree().getSpOrGrpSpOrGraphicFrame());
     	for (Object o : possiblyShapes) {
     		
     		if (o instanceof Shape) {

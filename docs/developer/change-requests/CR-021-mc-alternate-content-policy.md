@@ -1,9 +1,9 @@
 # CR-021: one policy for `mc:AlternateContent` - kept wherever it occurs, one selection rule, and a traversal that knows whether it reads or writes
 
-Status: IN PROGRESS - phases 0, 1 and 2 DONE 2026-09-19 (phase 2: the
-schema admits the element in w:p and w:numPicBullet, load keeps it; gate
-passed on both renderers, Word opens the re-saves; §8.8); phase 3
-(PresentationML) and phase 4 (follow-through) await Jason's go.
+Status: IN PROGRESS - phases 0, 1 and 2 DONE 2026-09-19 (§8.7, §8.8, with
+a SpreadsheetML follow-up); phase 3 (PresentationML by the same rule) DONE
+2026-09-19 (§8.9; the staged re-save's PowerPoint-open check pending);
+phase 4 (the Getting Started note) awaits Jason's go.
 Proposed 2026-09-19 (written at Jason Harrop's direction after the
 docx4j-core-ts parity harness found a text box's paragraphs visited twice;
 "we're going to need to be consistent about how we handle mc content").
@@ -673,3 +673,65 @@ longer claim "not admitted by the schema" (untrue for PML); they say what
 is kept. Also seen, unrelated: `xl/drawings/vmlDrawing1.vml` in
 `loadAndSave.xlsx` fails to unmarshal (an unexpected `xml` element) - a
 pre-existing xlsx4j VML part issue, noted for the xlsx4j backlog.
+
+### 8.9 Phase 3: PresentationML (2026-09-19, at Jason's go)
+
+What PowerPoint writes, measured on the repository's five pptx: one
+`mc:AlternateContent` in a slide's `p:spTree` (`loadAndSave.pptx`, slide 2:
+a Choice `Requires="a14"` holding the shape that carries the slide's text,
+an equation among it, and a Fallback holding a picture of that shape with a
+single nbsp), and the chart parts' `c14` style elements. `pml.xsd` has
+admitted the element in `CT_GroupShape` (`p:spTree`, `p:grpSp`) and
+`CT_ControlList` (`p:controls`) all along, so a slide that unmarshals
+cleanly kept it; that slide does not - an `a14:m` the schema lacks sends the
+part through the shared preprocessor, which resolved the element to its
+Fallback and lost the equation's shape. `pptx2svginhtml.xslt` had no
+template for the element, so a kept one was drawn once per branch by the
+built-in rule; the placeholder walks (`SlideMasterPart`, `SlideLayoutPart`,
+`ResolvedLayout`) iterate the shape tree by `instanceof Shape` and passed
+the element by, so a placeholder inside one was invisible to layout
+resolution.
+
+Coded:
+
+- `mc-preprocessor.xslt`: `p:spTree`, `p:grpSp` and `p:controls` join the
+  retain list (with `w:r`, `w:p`, `w:numPicBullet`, `x:workbook`); the
+  warnings name the full list.
+- `McSelection.selectedContent(List)`: a content list with each element
+  replaced by its selected branch's content, recursively - the one-branch
+  view for a caller that iterates by `instanceof`. The three placeholder
+  walks use it; the slide's own list keeps the element whole for the save.
+- `pptx2svginhtml.xslt`: an `mc:AlternateContent` template on the one rule
+  (`XSLTUtils.mcPrefersChoice`), as `docx2fo.xslt` and
+  `docx2xhtml-core.xslt` have.
+- On save, the Choice's `Requires` prefix is declared on the slide root by
+  the existing bookkeeping (`Docx4jUnmarshallerListener` records every
+  Choice's `Requires`; `JaxbXmlPart` declares them through
+  `NamespacePrefixMappings`, which knows `a14`), which is what PowerPoint
+  2010 needs (`SlidePart`'s history); `SlidePart.setMceIgnorable`'s
+  unconditional `v` stays.
+- `docx4j.jaxb.mc.preferChoice` documented as the one switch for every
+  format and reader (`McSelection`'s javadoc, the sample
+  `docx4j.properties`): a PowerPoint equation or ink shape is drawn with
+  `a14` in the list, its picture Fallback otherwise - the same default as
+  Word's text boxes, and the same reason (draw what the producer wrote for
+  a reader that understands nothing extra, unless told otherwise).
+- `SlideAlternateContentKeptTest`: the element kept in the shape tree with
+  both branches, `selectedContent`'s one-branch view, both branches written
+  back with `xmlns:a14` on the root, a load-save-load round trip; the SVG
+  export drawing the Fallback by default (the shapes beside it present, the
+  Choice's "Equation" absent) and the Choice once with `a14` preferred.
+- CHANGELOG under "Markup compatibility (CR-021)".
+
+The chart parts' elements (`c:chartSpace`, DrawingML) are still resolved at
+load, in every format; `dml-chart.xsd` does not admit the element and no
+chart consumer reads it. Not in this CR.
+
+**Gate (passed 2026-09-19):** the targeted suites (the new slide test,
+LoadAndSaveTests, the mc tests) 18/0; docx4j-core-tests, the whole suite,
+1196 tests, 0 failures, on jars verified as this tree's. No WordprocessingML
+rendering path changed, so the corpora were not re-scored. The docx4j
+re-save of `loadAndSave.pptx` is on the share (`cr021-phase2-check/
+loadAndSave-phase3-resave.pptx`, slide root declaring `xmlns:a14`) for a
+PowerPoint-open check: no repair prompt and slide 2 showing its text and
+equation = pass.
