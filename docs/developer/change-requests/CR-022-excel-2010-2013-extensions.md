@@ -60,14 +60,19 @@ download. Excel-saved files exist for everything but slicers and timelines:
 | `Sparklines.xlsx` | LibreOffice `sc/qa/unit/data/xlsx`, MPL-2.0 | Excel 16 | three `x14:sparklineGroups`, `x14ac` attributes, the `xr*` prefixes, `xcalcf` |
 | `complex_icon_set.xlsx` | LibreOffice | Excel 15 | two `x14:conditionalFormattings` (icon sets) |
 | `condformat_databar.xlsx` | LibreOffice | Excel 15 | `x14:conditionalFormattings` (a data bar) and `x14:id` on the base rule |
-| `data_validation_test.xlsx`, `invalid_ext_data_validation.xlsx` | LibreOffice | Excel 15 | `x14:dataValidations`; the second an `externalLink` root with `mc:Ignorable="x14"` |
+| `data_validation_test.xlsx` | LibreOffice | Excel 15 | four `x14:dataValidations` of type list |
 | `checkbox-form-control.xlsx` | LibreOffice | Excel 16 | a control-properties part (`xl/ctrlProps/ctrlProp1.xml`), and three `mc:AlternateContent` parents new to the survey: `worksheet` (Choice `x14` holding `controls`), `controls` (Choice `x14` holding `control`), and the drawing's `wsDr` (Choice `a14` holding `twoCellAnchor`) |
 | `tdf167689_x15_namespace.xlsx` (174 KB) | LibreOffice | Excel 16 | a data model part (`xl/model/item.data`), `x15:dataModel`, two `x15:connection`, `xr16` on connections and query tables |
-| `ConditionalFormattingSamples.xlsx` (655 KB) | Apache POI `test-data/spreadsheet`, Apache-2.0 | Excel 16 | eighteen worksheets of conditional formats (`x14ac` on every one; its extended rules to be listed in phase 0) |
 
 Every one of these is Excel-saved (the `Application` of `docProps/app.xml`);
 LibreOffice's own `databar.xlsx` was not (LibreOffice 4.1) and is not staged.
-Licensing: POI's file is Apache-2.0 like docx4j; LibreOffice's are MPL-2.0,
+Two candidates were retired on 2026-09-20 once the slicer workbook existed:
+POI's `ConditionalFormattingSamples.xlsx` (655 KB; measured, its eighteen
+sheets hold only 2006-style conditional formats, no `x14` rule) and
+LibreOffice's `invalid_ext_data_validation.xlsx` (a subset of
+`data_validation_test.xlsx`). `Sparklines.xlsx` stays: its groups are column
+and stacked with negative points and markers, where the slicer workbook's one
+group is a default line. Licensing: LibreOffice's files are MPL-2.0,
 redistributable as test resources with their notice - **Jason's call which to
 commit**, and the CR records each file's origin in the test class.
 
