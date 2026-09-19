@@ -98,6 +98,12 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 		return (Element) nl.item(0);
 	}
 
+	/** What a w:sz 4 border is in the FO: 0.5pt laid on Word's 1/300 inch grid and
+	 *  truncated to 2 cells, which is what Word inks (UnitsOfMeasurement.eighthsToGridPt,
+	 *  CR-001 batch 49 item 5).  The allowance these tests check gives back the width the
+	 *  FO carries, so it is this and not the 0.5pt the docx names. */
+	private static final double BORDER_PT = 0.48;
+
 	/** An FO length in points. */
 	private static double pt(String v) {
 		v = v.trim();
@@ -117,10 +123,10 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 			// Word's default cell margin, 108 twips
 			assertEquals(flagName(flags) + ": the start padding places the text and must not move",
 					5.4, start, 0.05);
-			// half of each 0.5pt collapsed border is charged to this cell
+			// half of each collapsed border is charged to this cell
 			// (the FO carries two decimal places)
 			assertEquals(flagName(flags) + ": the end padding gives the borders back",
-					start - 0.5, end, 0.01);
+					start - BORDER_PT, end, 0.01);
 			assertEquals(flagName(flags) + ": the hint must not reach FOP", "",
 					((Element) doc.getElementsByTagNameNS(FO, "table").item(0))
 							.getAttribute("docx4j-content-sized"));
@@ -145,8 +151,8 @@ public class CellLineWidthTest extends AbstractXSLFOTest {
 			double end = pt(cell.getAttribute("padding-right"));
 			assertEquals(flagName(flags) + ": the start padding places the text and must not move",
 					5.4, start, 0.05);
-			assertEquals(flagName(flags) + ": one whole 0.5pt border back",
-					start - 0.5, end, 0.01);
+			assertEquals(flagName(flags) + ": one whole border back",
+					start - BORDER_PT, end, 0.01);
 		}
 	}
 

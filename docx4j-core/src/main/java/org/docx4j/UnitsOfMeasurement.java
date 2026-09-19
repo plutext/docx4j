@@ -206,4 +206,41 @@ public class UnitsOfMeasurement {
 //		System.out.println(twipToBest(2235) );
 //	}
 	
+	/** Word's 1/300 inch grid, in points: 0.24pt a cell, the unit its layout works in. */
+	private static final double BORDER_GRID_PT = 72.0 / 300.0;
+
+	/**
+	 * The width Word inks a {@code w:sz} border: the eighths of a point it names, laid on
+	 * Word's 1/300-inch grid and <b>truncated</b> to whole cells.
+	 *
+	 * <p>Measured on four Word goldens, five distinct widths, every one the floor:</p>
+	 *
+	 * <pre>
+	 *   w:sz   named      cells    Word inks    golden
+	 *      4   0.50pt      2.083     0.480pt    table-cell-measure, table-first-row-border
+	 *      8   1.00pt      4.167     0.960pt    page-top-space-before, table-first-row-border
+	 *     12   1.50pt      6.250     1.440pt    table-cell-measure
+	 *     18   2.25pt      9.375     2.160pt    border-hanging
+	 *     24   3.00pt     12.500     2.880pt    table-cell-measure
+	 * </pre>
+	 *
+	 * <p>{@code w:sz} 24 is the one that settles the rounding: 3.00pt is <b>exactly</b> 12.5
+	 * cells and Word inks 12, not 13, so it truncates rather than rounding half up.  (Half to
+	 * even would agree on all five; truncation is the simpler statement of the same readings.)</p>
+	 *
+	 * <p>Used by the XSL FO paths only.  The paragraph border wrote millimetres to two
+	 * decimals until 17.1.1 - {@code w:sz} 18 came out as 0.79mm = 2.2394pt against Word's
+	 * 2.160 - and the table border wrote the named points, 0.50 where Word inks 0.480; both
+	 * were part of the residue measured on every bar of the {@code border-hanging} golden
+	 * (CR-001 batch 48 item 9 §2, batch 49 item 5).  The CSS paths still write millimetres:
+	 * a browser has no 1/300-inch grid to honour.</p>
+	 *
+	 * @param eighths the {@code w:sz}, in eighths of a point
+	 * @since 17.1.1 (CR-001 batch 49 item 5)
+	 */
+	public static double eighthsToGridPt(int eighths) {
+		if (eighths <= 0) return 0;
+		return Math.floor((eighths / 8.0) / BORDER_GRID_PT) * BORDER_GRID_PT;
+	}
+
 }

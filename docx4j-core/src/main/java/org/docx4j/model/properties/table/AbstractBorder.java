@@ -159,10 +159,9 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		} 
 
 		if (border.getSz()!=null) {
-			 // eights of a point
-			float pt = border.getSz().intValue() / 8f; // eights of a point
-			foElement.setAttribute(CSS_NAME__WIDTH, 
-					UnitsOfMeasurement.format2DP.format(pt) + "pt" );
+			// the eighths of a point Word names, laid on its own 1/300 inch grid
+			foElement.setAttribute(CSS_NAME__WIDTH, UnitsOfMeasurement.format2DP.format(
+					UnitsOfMeasurement.eighthsToGridPt(border.getSz().intValue())) + "pt" );
 		} 
 
 		if (border.getColor()!=null) {

@@ -300,6 +300,11 @@ PDF via XSL FO, the renderer (CR-020, phase 0):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A paragraph or table border is inked at the width Word inks it: the eighths of a point
+  w:sz names, laid on Word's 1/300 inch grid and truncated to whole cells, so w:sz 4, 8,
+  12, 18 and 24 are 0.48, 0.96, 1.44, 2.16 and 2.88pt. The paragraph border had been
+  written as millimetres to two decimals (2.2394pt for w:sz 18) and the table border as
+  the named points (0.50 where Word inks 0.480) (CR-001 batch 49).
 - A numbering label's leader inside a table cell opens where Word opens it. Its origin is
   measured from the page edge, and a list item in a cell carries the cell's own x as well:
   on the tab-leader-in-cell-2 golden the run opened 0.626pt early and now opens within
