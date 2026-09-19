@@ -619,5 +619,6 @@ the gate's last row is "no repair prompt; slicers and timeline working
 | docx4j-core clean install | BUILD SUCCESS; installed jar md5 = target jar's |
 | `ExcelExtensionPartsTest` + `ExcelExtensionsTest`, with the LibreOffice samples | 14 tests, 0 failures |
 | docx4j-core-tests, the whole suite (with `-Dcr022.samples`) | 1212 tests, 0 failures, 11 skipped (2026-09-20) |
-| Excel 365 opens the three re-saves, slicers and timeline working | Jason |
+| Excel 365 opens the three re-saves, slicers and timeline working | passed (Jason, 2026-09-20): "open in Excel as expected" |
 
+Gate of phase 2 met (2026-09-20). Next: phase 2b (docx4j's own sample workbooks, replacing the LibreOffice files) and phase 3 (follow-through).
