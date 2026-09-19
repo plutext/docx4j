@@ -549,7 +549,7 @@ and not this phase's).
 | `ExcelExtensionsTest`, with the LibreOffice samples | 10 tests, 0 failures |
 | docx4j-core-tests, the whole suite (with `-Dcr022.samples`) | 1208 tests, 0 failures, 11 skipped (2026-09-20) |
 | docx4j-export-fo-tests | not run: no docx change, Jason waived it for this phase ("no need for export-fo-tests") |
-| Excel 365 opens the four re-saves | Jason |
+| Excel 365 opens the four re-saves | passed (Jason, 2026-09-20): no repair prompt, checkbox, slicers and timeline intact |
 
 **Hand-offs (2026-09-20, after the commit):** objects-ts regenerated from
 16844ff03 (its commit 141f6bd: six new modules, 102 in total; the
@@ -561,3 +561,5 @@ the U+00A0 gotcha for its CR-001 phase D (not scheduled; lands with its
 schema re-copy). core-ts told what the oracle now keeps (its Excel
 acceptance run is the consumer); objects-ts notes phase 2's parts are
 core-ts's, not its own.
+
+Gate of phase 1 met (2026-09-20); phase 2 (the parts) may proceed at Jason's go.
