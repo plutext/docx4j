@@ -99,6 +99,24 @@ this is how to make it (Excel 365, Windows; ten minutes):
    rows only, and *File > Info > Check for Issues > Inspect Document* to
    remove document properties if you like.
 
+**Done, 2026-09-20**: `cr022-slicers-timelines.xlsx` (Excel 365, 16.0300;
+its table sheet was built with docx4j and opened in Excel without repair, a
+creation check in passing) is staged beside them. Measured: a table slicer
+and a pivot slicer (two `slicerCache` parts, two `slicers` parts), a timeline
+(`timelineCache` and `timelines` parts), a pivot table with its cache, and a
+sparkline group; `extLst` content `x14:slicerCaches`, `x15:slicerCaches`,
+`x15:timelineCacheRefs`, `x14:workbookPr` (workbook), `x14:slicerList`,
+`x15:timelineRefs`, `x14:sparklineGroups` (sheets), `x15:tableSlicerCache`
+(the table's slicer cache), `x14:pivotTableDefinition`, `x15:pivotFilter`,
+`xpdl:pivotTableDefinition16` (pivot tables), `x14:pivotCacheDefinition`;
+`mc:Ignorable` on every slicer, timeline and cache root is `"x xr10"` (the
+main SpreadsheetML namespace itself declared ignorable - a curiosity, and a
+reason those roots need the attribute); and in the two drawings three
+`mc:AlternateContent` on `twoCellAnchor` with Choices requiring `a14`,
+`tsle` and `sle15` (the slicer and timeline shapes; `sle15` is a
+drawing/2012/slicer namespace not in [MS-XLSX]'s appendix - [MS-ODRAWXML]'s),
+which confirms leaving the drawing shapes to a DrawingML CR.
+
 Phase 0 measures the staged files and that one (parents, `ext` uris,
 `mc:Ignorable` roots, `mc:AlternateContent` parents) before phase 1 admits
 anything. The checkbox file's three `mc:AlternateContent` parents already
@@ -213,13 +231,22 @@ constants in `ContentTypes` and `Namespaces` and its `else if` low in
 |---|---|---|---|---|
 | SlicerCachePart | `application/vnd.ms-excel.slicerCache+xml` | `.../office/2007/relationships/slicerCache` | `x14:slicerCacheDefinition` | workbook |
 | SlicersPart | `application/vnd.ms-excel.slicer+xml` | `.../office/2007/relationships/slicer` | `x14:slicers` | worksheet |
-| TimelineCachePart | `application/vnd.ms-excel.TimelineCache+xml` | `.../office/2010/relationships/TimelineCache` | `x15:timelineCacheDefinition` | workbook |
-| TimelinesPart | `application/vnd.ms-excel.Timeline+xml` | `.../office/2010/relationships/Timeline` | `x15:timelines` | worksheet |
+| TimelineCachePart | `application/vnd.ms-excel.timelineCache+xml` | `.../office/2011/relationships/timelineCache` | `x15:timelineCacheDefinition` | workbook |
+| TimelinesPart | `application/vnd.ms-excel.timeline+xml` | `.../office/2011/relationships/timeline` | `x15:timelines` | worksheet |
 | ControlPropertiesPart | `application/vnd.ms-excel.controlproperties+xml` | `.../officeDocument/2006/relationships/ctrlProp` | `x14:formControlPr` | a worksheet's control |
 | CustomDataPropertiesPart | `application/vnd.openxmlformats-officedocument.customDataProperties+xml` | `.../officeDocument/2006/relationships/customDataProps` | `x14:datastoreItem` | workbook |
 | CustomDataPart (binary) | `application/binary` | `.../officeDocument/2006/relationships/customData` | add-in data | custom data properties |
 | SurveyPart | `application/vnd.ms-excel.Survey+xml` | `.../office/2010/relationships/Survey` | `x15:survey` | workbook |
 | DataModelPart (binary) | `application/vnd.openxmlformats-officedocument.model+data` | [MS-XLDM]'s | binary ([MS-XLDM]) | workbook |
+
+**Excel's strings, not the specification's pages, for the timeline
+parts**: [MS-XLSX] §2.1.7 and §2.1.8 print `application
+/vnd.ms-excel.TimelineCache+xml`, `.../office/2010/relationships/TimelineCache`
+and `Timeline`; Excel 365 writes `timelineCache+xml`, `timeline+xml` and
+`.../office/2011/relationships/timelineCache`, `.../timeline` (measured on
+`cr022-slicers-timelines.xlsx`, 2026-09-20). The constants take Excel's
+form; matching content types case-insensitively is not something
+`ContentTypeManager` does, so the spec's form is not registered.
 
 Today each of these loads as a `DefaultXmlPart` (or a binary part) and
 round-trips as bytes; the change is that they become typed. The two binary
