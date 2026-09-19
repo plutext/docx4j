@@ -1,11 +1,13 @@
 # CR-022: Excel 2010 and 2013 extensions - the x14 and x15 schemas and their mc namespaces, bound in xlsx4j
 
-Status: IN PROGRESS - proposed 2026-09-20 (Jason Harrop: "add support for
-Excel 2010 and 2013 extensions", after the [MS-XLSX] inventory of
-`docs/developer/ms-xlsx-schema-inventory.md`), accepted by Jason the same day
-(package convention confirmed, "let's commence"); phase 0 DONE 2026-09-20
-(§16); phase 1 in progress. Written by `docs/developer/adding-a-schema.md`
-step 0. Drafted with Claude Fable 5.1. Owner: Jason Harrop.
+Status: DONE 2026-09-20 - phases 0 to 3 (§16 to §20) landed the same day
+on VERSION_17_1_1: proposed by `docs/developer/adding-a-schema.md` step 0
+after the [MS-XLSX] inventory, accepted by Jason (package convention
+confirmed, "let's commence"); phase 0 the measurement, phase 1 the ten
+schemas and host admissions, phase 2 the nine parts, phase 2b docx4j's own
+sample workbooks re-saved by Excel 365 as the fixtures, phase 3 the
+follow-through. Written and implemented with Claude Fable 5.1. Owner: Jason
+Harrop.
 
 Scope: bind the five namespaces every Excel-saved workbook carries and docx4j
 knows only by prefix - [MS-XLSX] §5.4 `x14`, §5.3 `x15`, §5.5 `x14ac`, §5.9
@@ -749,4 +751,39 @@ Committed as `cr022-data-model.xlsx`; the two data-model tests read it;
 CR-022 fixture is now docx4j-generated or docx4j-sourced and Excel-saved:
 the creation half of the gate (§1) holds for everything but the data
 model's binary, which Excel alone writes.
+
+## 20. Phase 3: follow-through (2026-09-20, at Jason's go)
+
+- **CHANGELOG**: the "Schema (CR-022 ...)" block of 17.1.1 (phases 1, 2 and
+  2b's entries, written as each landed).
+- **The inventory** (`docs/developer/ms-xlsx-schema-inventory.md`): the
+  "what docx4j binds" section rewritten for the ten packages, the nine parts
+  and the attribute-only schemas; the table's status column for 5.1, 5.3,
+  5.4, 5.5, 5.6, 5.9, 5.10, 5.12, 5.14, 5.15, 5.16 (bound, CR-022) and 5.2,
+  5.7 (the drawing shapes, seen in the fixtures; a DrawingML CR's); "what
+  this suggests": the first group implemented via CR-022, the second partly
+  (the remaining revision attributes `xr3`, `xr9`, plus `xcalcf` and
+  `workbookCompatibilityVersion`, one small CR), and the drawing shapes
+  added as a group.
+- **The recipe** (`docs/developer/adding-a-schema.md`): the two lessons of
+  phase 1 (the section pages' non-breaking spaces; attribute-only schemas
+  generate no package) were added then.
+- **Hand-offs**: objects-ts regenerated from phase 1 (its 141f6bd) and is
+  told of phase 2b's schema change (`CT_ObjectAnchor`'s `from`/`to`); the
+  Python port recorded the file list for its phase D and is told the same;
+  core-ts told of phases 1 and 2 (the parts are its territory).
+- **Registry**: `docx4j/CR-022` and its phases done.
+
+**Left for other CRs** (each named where it arose): the slicer and timeline
+drawing shapes (§16, §19; DrawingML); `CT_OleObjects`' per-object
+`mc:AlternateContent` (§17); `CT_DataValidation`'s `x12ac:list` Choice (§16,
+no file); the remaining revision attributes and `xcalcf` (the inventory's
+second group); a decoder for the data model's binary ([MS-XLDM]: Xpress9 and
+the tabular metadata - large, and nothing open-source reads it); the
+xlsx4j VML gap (`vmlDrawing` parts fail to unmarshal; `xlsx4j-backlog`).
+
+**Commits** (VERSION_17_1_1, one per phase plus the notes): a49e254ab (phase
+0), 16844ff03 (phase 1), 2979449c2 (phase 2), ec5fccf7b + 05c5798a3 +
+2b1b380b6 + e2e18abd3 (phase 2b: the generator and xm prefix, the anchor fix,
+the four fixtures, the data-model fixture), and this phase's.
 
