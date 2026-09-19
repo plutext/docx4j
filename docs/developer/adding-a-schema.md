@@ -197,7 +197,13 @@ For a part whose JAXB context is not the Word one, override `getJAXBContext()`
 `docx4j-core/src/main/java/org/docx4j/openpackaging/contenttype/ContentTypeManager.java`,
 `newPartForContentType`: an `else if` on the new content-type constant returning
 the new part, so that a package being loaded gets the typed part rather than a
-generic one. If the part is reached from a particular parent by relationship
+generic one. The chain is walked in order for every part of every package
+loaded, so its order is by frequency: the common parts (the main document,
+styles, the workbook, slides) stay at the top, and a more obscure namespace
+goes further down, beside the parts most like it (a Word 2018 comments
+extension next to the other comments parts, a spreadsheet revision part next to
+the other SpreadsheetML extras) - not appended at the end and not put first.
+If the part is reached from a particular parent by relationship
 type (comments from the main document part, say), a typed getter on that parent
 part is the convenience `DocumentPart.getCommentsExtensiblePart` gives.
 
