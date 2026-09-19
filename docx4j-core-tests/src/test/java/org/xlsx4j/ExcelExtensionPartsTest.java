@@ -58,8 +58,9 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTTi
  * and relationships kept on save.  They loaded as DefaultXmlPart (or a nameless
  * BinaryPart) before.
  *
- * On cr022-slicers-timelines.xlsx (committed) and, when -Dcr022.samples names the
- * directory of the temporary LibreOffice workbooks, the checkbox and data-model ones.
+ * On cr022-slicers-timelines.xlsx and cr022-checkbox.xlsx (committed, Excel-saved) and,
+ * when -Dcr022.samples names a directory holding lo-tdf167689_x15_namespace.xlsx (a
+ * LibreOffice test file with a data model, which docx4j cannot write), the data model.
  */
 public class ExcelExtensionPartsTest {
 
@@ -149,7 +150,7 @@ public class ExcelExtensionPartsTest {
 
 	@Test
 	public void controlPropertiesPartTyped() throws Exception {
-		SpreadsheetMLPackage pkg = sample("lo-checkbox-form-control.xlsx");
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("cr022-checkbox.xlsx"));
 		RelationshipsPart wsRels = pkg.getWorkbookPart().getWorksheet(0).getRelationshipsPart();
 		Part p = wsRels.getPart(wsRels.getRelationshipByType(Namespaces.SPREADSHEETML_CONTROL_PROPERTIES));
 		assertTrue(p.getClass().getName(), p instanceof ControlPropertiesPart);

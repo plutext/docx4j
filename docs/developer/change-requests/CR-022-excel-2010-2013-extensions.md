@@ -686,6 +686,19 @@ from `-Dcr022.samples` to them, and the LibreOffice files are discarded
 |---|---|
 | docx4j-samples-xlsx4j compiles; the generator writes the four files | done 2026-09-20 |
 | the four files pass the CR-022 tests as the LibreOffice files did | 14 tests, 0 failures |
-| Excel 365 opens each and shows the feature; re-saved on the share | Jason |
-| the re-saves committed as test resources; tests switched; LibreOffice files discarded | after Jason's re-save |
+| Excel 365 opens each and shows the feature; re-saved on the share | passed (Jason, 2026-09-20; the check box after the anchor fix) |
+| the re-saves committed as test resources; tests switched; LibreOffice files discarded | done 2026-09-20 (below) |
+
+**Second half (2026-09-20)**: the four Excel re-saves (`Application`
+Microsoft Excel 16.0300; every x14 element kept, Excel adding its `xr:uid`s
+and, for the check box, the a14 drawing shape) are committed as
+`cr022-sparklines.xlsx`, `cr022-conditional-formatting.xlsx`,
+`cr022-data-validation.xlsx`, `cr022-checkbox.xlsx` in
+docx4j-core-tests' resources; `ExcelExtensionsTest` and
+`ExcelExtensionPartsTest` read them as resources (the conditional-format
+test now also checks the icon set), 13 of their 15 tests need no property;
+only the two data-model tests keep `-Dcr022.samples`. On the share the
+superseded LibreOffice files, the phase re-saves and the un-re-saved
+generated files were discarded; `lo-tdf167689_x15_namespace.xlsx` stays
+(with a README) pending the data-model decision. Gate of phase 2b met.
 

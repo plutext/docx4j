@@ -75,10 +75,12 @@ import org.xlsx4j.sml.Worksheet;
  *  - connections and queryTable parts, whose roots had no XmlRootElement, marshal.
  *
  * cr022-slicers-timelines.xlsx is Jason's Excel 365 workbook (a table, two slicers,
- * a timeline, two pivot tables, sparklines).  The remaining tests run on
- * LibreOffice-made workbooks that are not committed (temporary, until phase 2b's
- * docx4j-generated samples replace them): they are read from the directory named
- * by the system property {@code cr022.samples} and are skipped when it is not set.
+ * a timeline, two pivot tables, sparklines).  cr022-sparklines, -conditional-formatting,
+ * -data-validation and -checkbox.xlsx were written by docx4j
+ * (org.xlsx4j.samples.Excel2010ExtensionsSamples) and re-saved by Excel 365 (phase 2b).
+ * The data model cannot be written by docx4j, so that test runs on a workbook read from
+ * the directory named by the system property {@code cr022.samples} and is skipped when
+ * it is not set.
  */
 public class ExcelExtensionsTest {
 
@@ -233,11 +235,11 @@ public class ExcelExtensionsTest {
 		assertFalse(xml, xml.contains("xdr:from"));
 	}
 
-	// ---- the temporary LibreOffice-made workbooks (skipped unless -Dcr022.samples=<dir>)
+	// ---- docx4j's own sample workbooks (Excel2010ExtensionsSamples, each re-saved by Excel 365)
 
 	@Test
 	public void sparklinesTyped() throws Exception {
-		SpreadsheetMLPackage pkg = sample("lo-Sparklines.xlsx");
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("cr022-sparklines.xlsx"));
 		Worksheet sheet = pkg.getWorkbookPart().getWorksheet(0).getContents();
 		int groups = ext(sheet.getExtLst(), CTSparklineGroups.class).getSparklineGroup().size();
 		assertTrue(groups >= 1);
@@ -248,10 +250,12 @@ public class ExcelExtensionsTest {
 
 	@Test
 	public void conditionalFormattingsTyped() throws Exception {
-		SpreadsheetMLPackage pkg = sample("lo-condformat_databar.xlsx");
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("cr022-conditional-formatting.xlsx"));
 		Worksheet sheet = pkg.getWorkbookPart().getWorksheet(0).getContents();
 		CTConditionalFormattings cf = ext(sheet.getExtLst(), CTConditionalFormattings.class);
-		assertTrue(cf.getConditionalFormatting().size() >= 1);
+		assertEquals("the data bar's x14 twin and the icon set", 2, cf.getConditionalFormatting().size());
+		assertNotNull(cf.getConditionalFormatting().get(0).getCfRule().get(0).getDataBar());
+		assertEquals("3Triangles", cf.getConditionalFormatting().get(1).getCfRule().get(0).getIconSet().getIconSet());
 		// and the x14:id the main-schema cfRule carries in its own extLst
 		String id = ext(sheet.getConditionalFormatting().get(0).getCfRule().get(0).getExtLst(), String.class);
 		assertTrue(id, id.startsWith("{"));
@@ -259,7 +263,7 @@ public class ExcelExtensionsTest {
 
 	@Test
 	public void dataValidationsTyped() throws Exception {
-		SpreadsheetMLPackage pkg = sample("lo-data_validation_test.xlsx");
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("cr022-data-validation.xlsx"));
 		Worksheet sheet = pkg.getWorkbookPart().getWorksheet(0).getContents();
 		CTDataValidations dv = ext(sheet.getExtLst(), CTDataValidations.class);
 		assertTrue(dv.getDataValidation().size() >= 1);
@@ -268,7 +272,7 @@ public class ExcelExtensionsTest {
 
 	@Test
 	public void formControlAlternateContentKept() throws Exception {
-		SpreadsheetMLPackage pkg = sample("lo-checkbox-form-control.xlsx");
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("cr022-checkbox.xlsx"));
 		Worksheet sheet = pkg.getWorkbookPart().getWorksheet(0).getContents();
 		assertEquals("the controls' mc:AlternateContent was dropped before CR-022 (no Fallback)",
 				1, sheet.getAlternateContent().size());
