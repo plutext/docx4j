@@ -5,7 +5,28 @@ yet know, so that its content is typed in the JAXB model, survives a load and a
 save, and - where it is a part of its own - is a Part. Jason Harrop set the steps
 down on 2026-09-20; each is checked against the commit that added the
 `w16cex` schema (CR-018, `33e9cb411`, 2026-09-16), which is the worked example
-to read alongside this. Everything lands in a single git commit (step 12).
+to read alongside this. A change request comes first (step 0), and is reviewed
+and committed before any code changes; the implementation then lands in a
+single git commit (step 12).
+
+## 0. A change request first
+
+Before any code is changed, write a CR under `docs/developer/change-requests/`
+(the README there gives the convention and the next number) that follows this
+recipe step by step for the schema in hand: the schema and its source (step 1),
+the Office file exercising it, where it joins the tree and every dependency it
+brings (step 2), the package names, the parents to admit, the Part and its
+content and relationship types if it is one, the tests and the Office-open
+check, and the hand-offs. **Any proposed departure from the recipe is named as
+such**, with its reason - a lax wildcard where an element reference would
+cross a context boundary, a schema patched from its source, a dependency
+deliberately left unbound, a part left generic. Add the CR to the portfolio
+registry (`../docx4j-portfolio/tasks.yaml`, per CLAUDE.md), commit the CR on
+its own, and have it reviewed - Jason decides - before implementation starts.
+The CR is then updated as the work lands: decisions inline with who made them
+and when, the commit hash of step 12 against the phase, and anything the
+implementation taught that the plan did not know. CR-018 is the worked example
+of one.
 
 ## 1. Identify the schema, and an Office file exercising it
 
@@ -262,9 +283,8 @@ JAXB context problems show as failures in unrelated classes), and
 - CHANGELOG under a "Schema" heading of the coming release: what is admitted
   or bound, and what a user sees (a part that used to be generic is typed; a
   value that was dropped survives).
-- The CR that asked for it (or a new one under
-  `docs/developer/change-requests/` if the work is non-trivial) records the
-  commit hash against the phase.
+- The CR of step 0 records the commit hash against the phase, and any
+  departure the implementation made from the plan, with its reason.
 - The ports regenerate from this repository's xsd, each its own way; message
   each with the CR number and the commit hash, and what follows. The portfolio
   registry (`../docx4j-portfolio/tasks.yaml`) carries the dependency, and the
@@ -318,10 +338,11 @@ JAXB context problems show as failures in unrelated classes), and
 
 ## 12. One commit
 
-All of the above in a single git commit - the xsd, the regeneration is not
-committed (generated sources are not checked in), the module-info, the two
-Context lists, the prefix table, the part, its registration, the tests, the
-CHANGELOG and the CR - so that a checkout at that commit builds and the
-TypeScript side has one hash to regenerate from. The commit message names the
+All of the above (steps 3 to 11) in a single git commit - the xsd, the
+module-info, the Context lists, the prefix table, the part, its registration,
+the tests, the CHANGELOG and the CR's update - so that a checkout at that
+commit builds and the ports have one hash to regenerate from. The
+regeneration itself is not committed (generated sources are not checked in),
+and the CR was committed on its own before (step 0). The commit message names the
 schema, its source, the parents admitted and the Office file that exercises it.
 Line endings: LF (normalise a CRLF file you edit, and say so in the message).
