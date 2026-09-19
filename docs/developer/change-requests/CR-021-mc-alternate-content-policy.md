@@ -1,9 +1,8 @@
 # CR-021: one policy for `mc:AlternateContent` - kept wherever it occurs, one selection rule, and a traversal that knows whether it reads or writes
 
-Status: IN PROGRESS - phases 0, 1 and 2 DONE 2026-09-19 (§8.7, §8.8, with
-a SpreadsheetML follow-up); phase 3 (PresentationML by the same rule) DONE
-2026-09-19 (§8.9; PowerPoint opens the re-save with its equation, Jason's
-second check); phase 4 (the Getting Started note) awaits Jason's go.
+Status: DONE 2026-09-19 - all four phases (§8.7 to §8.10), with a
+SpreadsheetML follow-up (§8.8) and the a14:m schema fix Jason's PowerPoint
+check found (§8.9). Open items for other CRs are listed in §8.6.
 Proposed 2026-09-19 (written at Jason Harrop's direction after the
 docx4j-core-ts parity harness found a text box's paragraphs visited twice;
 "we're going to need to be consistent about how we handle mc content").
@@ -770,3 +769,29 @@ regenerated; `SlideAlternateContentKeptTest` asserts the equation survives;
 objects-ts told (two more xsd changes). The general lesson is recorded in
 §8.6 as item 10. **Second pass (Jason, 2026-09-19 14:3x): PASSED - "the
 equation is visible now".**
+
+### 8.10 Phase 4: follow-through (2026-09-19, at Jason's go)
+
+- The Getting Started guide (`docs/Docx4j_GettingStarted.docx`, canonical;
+  the derived `.md`, `.html` and `.pdf` regenerated with
+  `etc/GenGettingStartedDocs.java`): the "Specification versions"
+  paragraph that said a saved docx loses Word 2010 content ("effectively a
+  Word 2007 docx") rewritten, with a "Markup compatibility
+  (mc:AlternateContent)" paragraph after it - what Word writes twice, that
+  docx4j keeps both branches and draws one, the property and its default;
+  a "mc:AlternateContent in a traversal" paragraph closing "Traversing a
+  document" (READ by default, ALL for a callback that edits); one sentence
+  in "Text extraction". The regenerated Markdown also shows the markdown
+  exporter's own recent changes (TOC entries dropped, code fenced) reaching
+  this document for the first time.
+- CHANGELOG: the "Markup compatibility (CR-021)" block carries the API
+  (TraversalUtil, McMode, McSelection), the loading change, SpreadsheetML,
+  PresentationML and the schema follow-ups; the numbering follow-ups sit
+  beside the numId-0 entry.
+- Registry: `docx4j/CR-021` and its four phases done.
+
+What this CR leaves for others (§8.6): the HTML exporter's VML text box
+(item 1), the FO exporter's inline wps box and the `preferChoice` default
+(item 2, §5), the anonymiser's shape analyzer (item 8), the VML JAXB
+round-trip losses (§8.8), and the check of every kept branch's content in
+the producing application (item 10).

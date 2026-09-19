@@ -2,156 +2,6 @@ Docx4j - Getting Started
 
 Contents
 
-[What is docx4j?	4](#_Toc3058685)
-
-[What sorts of things can you do with docx4j?	5](#_Toc3058686)
-
-[Is docx4j for you?	5](#_Toc3058687)
-
-[GraalVM	6](#_Toc3058688)
-
-[docx4j.NET	6](#_Toc3058689)
-
-[What Word documents does it support?	6](#_Toc3058690)
-
-[Handling legacy binary .doc files	7](#_Toc3058691)
-
-[A word about Jaxb	7](#_Toc3058692)
-
-[Using docx4j via Maven	8](#_Toc3058693)
-
-[Using docx4j binaries	8](#_Toc3058694)
-
-[docx4j dependencies	8](#_Toc3058695)
-
-[slf4j	8](#_Toc3058696)
-
-[other dependencies	9](#_Toc3058697)
-
-[Docx4j source code	10](#_Toc3058698)
-
-[Javadoc	10](#_Toc3058699)
-
-[Building docx4j from source	10](#_Toc30586100)
-
-[Command line -via Maven	10](#_Toc30586101)
-
-[Eclipse	10](#_Toc30586102)
-
-[Using a different IDE?	11](#_Toc30586103)
-
-[Open an existing docx/pptx/xlsx document	11](#_Toc30586104)
-
-[OpenXML concepts	12](#_Toc30586105)
-
-[Specification versions	12](#_Toc30586106)
-
-[Architecture	13](#_Toc30586107)
-
-[Jaxb: marshalling and unmarshalling	14](#_Toc30586108)
-
-[Parts List	15](#_Toc30586109)
-
-[MainDocumentPart	17](#_Toc30586110)
-
-[Samples	19](#_Toc30586111)
-
-[Creating a new docx	21](#_Toc30586112)
-
-[docx4j.properties	21](#_Toc30586113)
-
-[Adding a paragraph of text	22](#_Toc30586114)
-
-[General strategy/approach for creating stuff	23](#_Toc30586115)
-
-[Formatting Properties	25](#_Toc30586116)
-
-[Creating and adding a table	25](#_Toc30586117)
-
-[Selecting your insertion/editing point; accessing JAXB nodes via XPath	26](#_Toc30586118)
-
-[Traversing a document	26](#_Toc30586119)
-
-[Adding a Part	27](#_Toc30586120)
-
-[Importing XHTML	27](#_Toc30586121)
-
-[Markdown import and export	28](#_Toc30586122)
-
-[docx4j for AI agents (MCP)	28](#_Toc30586123)
-
-[Using an LLM with docx4j	28](#_Toc30586124)
-
-[docx to (X)HTML	29](#_Toc30586125)
-
-[docx to PDF	30](#_Toc30586126)
-
-[docx/pptx/xlsx to PDF via Documents4j (using Word)	31](#_Toc30586127)
-
-[docx/pptx/xlsx to PDF via Microsoft Graph	31](#_Toc30586128)
-
-[docx to PDF via XSL FO	31](#_Toc30586129)
-
-[Image Handling - DOCX	34](#_Toc30586130)
-
-[Windows metafiles (WMF, EMF, EMF+)	35](#_Toc30586131)
-
-[Manual Image Manipulation	36](#_Toc30586132)
-
-[Image Handling – PPTX	37](#_Toc30586133)
-
-[Adding Headers/Footers	37](#_Toc30586134)
-
-[Protection Settings	37](#_Toc30586135)
-
-[docx Table of Contents	38](#_Toc30586136)
-
-[Introduction	38](#_Toc30586137)
-
-[Field background	38](#_Toc30586138)
-
-[TOC Content Control	39](#_Toc30586139)
-
-[TOC Field Syntax	39](#_Toc30586140)
-
-[Inserting/generating a TOC – "pure Java" considerations	41](#_Toc30586141)
-
-[Text extraction	42](#_Toc30586142)
-
-[Text substitution/document generation/reporting	42](#_Toc30586143)
-
-[Text substitution – document surface	42](#_Toc30586144)
-
-[Text substitution via data bound content controls	43](#_Toc30586145)
-
-[Binding extensions for repeats and conditionals	44](#_Toc30586146)
-
-[Binding escaped XHTML (XML + CSS)	44](#_Toc30586147)
-
-[Binding other rich content	44](#_Toc30586148)
-
-[Authoring	45](#_Toc30586149)
-
-[Mailmerge	45](#_Toc30586150)
-
-[SmartArt	45](#_Toc30586151)
-
-[JAXB stuff	45](#_Toc30586152)
-
-[Cloning	45](#_Toc30586153)
-
-[javax.xml.bind.JAXBElement	45](#_Toc30586154)
-
-[@XmlRootElement	46](#_Toc30586155)
-
-[Merging Documents and Presentations	47](#_Toc30586156)
-
-[Appendix 1 – Font Mapping	48](#_Toc30586157)
-
-[Appendix 2 – Office font solutions	51](#_Toc30586158)
-
-[Aptos and the 2023 default theme	52](#_Toc30586159)
-
   
 
 
@@ -406,8 +256,10 @@ docx4j builds on Linux, macOS and Windows (from 17.0.5).
 
 ## Command line -via Maven
 
-export MAVEN\_OPTS=-Xmx512m  
+```
+export MAVEN_OPTS=-Xmx512m
 mvn install  -Dgpg.skip=true
+```
 
 ## Eclipse
 
@@ -439,13 +291,17 @@ Please post setup instructions in the forum, or as a wiki page on GitHub.  Thank
 
 To load a document or “Flat OPC” XML file, all you have to do is:
 
-&#9;WordprocessingMLPackage wordMLPackage =   
-&#9;	WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+```
+WordprocessingMLPackage wordMLPackage = 
+WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+```
 
 You can use the façade:
 
-&#9;WordprocessingMLPackage wordMLPackage =   
-&#9;	**Docx4J**.load(new java.io.File(inputfilepath));
+```
+WordprocessingMLPackage wordMLPackage = 
+Docx4J.load(new java.io.File(inputfilepath));
+```
 
 which does the same thing under the covers.
 
@@ -453,7 +309,9 @@ There are similar signatures to load from an input stream.
 
 You can then get the main document part (word/document.xml):
 
-[MainDocumentPart](http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/parts/WordprocessingML/MainDocumentPart.java) documentPart = wordMLPackage.getMainDocumentPart();
+```
+ documentPart = wordMLPackage.getMainDocumentPart();
+```
 
 After that, you can manipulate its contents. 
 
@@ -505,7 +363,9 @@ ISO/IEC 29500 (ECMA-376 2nd Edition) has *Strict* and *Transitional *conforma
 
 docx4j started with ECMA-376 1st Edition.  Where appropriate later versions of the schemas are used.  docx4j 3.0 uses MathML 2ed, PresentationML 2ed, and SpreadsheemML 4ed transitional.
 
-Docx4j can open documents which contain Word 2010, 2013 specific content.  The key extensions are supported.  For other stuff, for example,  \<w14:glow w14:rad="101600"\>  it will look for and try to use mc:AlternateContent contained in the document.  If you use docx4j to save the document, the w14:glow won’t be there any more (ie the docx will effectively be a Word 2007 docx).
+docx4j can open documents which contain Word 2010 and later content.  The key extensions are bound (the w14, w15 and w16 namespaces, wps and wpg shapes, a14 drawing), and what it does not bind is preserved wherever the schema admits it.
+
+**Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  A text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  Since docx4j 17.1.1 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the docx4j.jaxb.mc.preferChoice property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.
 
 # Architecture
 
@@ -1268,6 +1128,8 @@ ImageConvertEmbeddedToLinked sample contains an example of the use of the above.
 
 `public`` ``class``  CompoundTraversalUtilVisitorCallback  `
 
+**mc:AlternateContent in a traversal.  **Since docx4j 17.1.1 a TraversalUtil walk visits one branch of each mc:AlternateContent by default, the branch docx4j draws (McMode.READ), so a text box's paragraphs are visited once, not once as the wps shape and again as its VML fallback.  A callback which edits the document (find and replace, field update, anything whose result must reach every reader) should ask for every branch with McMode.ALL, through the TraversalUtil constructor or visit overload which takes a mode, or CallbackImpl.setMcMode; docx4j's own binding, field, merge and TOC code does so.  Before 17.1.1 every walk saw every branch.
+
 # Adding a Part
 
 What if you wanted to add a new styles part? Here's how:
@@ -1860,6 +1722,8 @@ A quick way to extract the text from a docx, is to use `TextUtils‘  `
 `  ``public static void ``extractText(Object o, Writer w)`
 
 which marshals the object it is passed via a SAX ContentHandler, in order to output the text to the Writer.
+
+Since docx4j 17.1.1 the text of one branch of each mc:AlternateContent is written, the branch docx4j draws, so a text box's text appears once; before that, both branches' text was written.
 
 # Text substitution/document generation/reporting
 
