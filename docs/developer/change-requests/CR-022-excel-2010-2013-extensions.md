@@ -49,16 +49,62 @@ copies.
 font tables; `x14:workbookPr`, `x15:workbookPr`, `x14:slicerStyles`,
 `x15:timelineStyles` and `x14:table` as `extLst` content; every workbook
 declares all five prefixes. None of the sample workbooks has a slicer,
-timeline, sparkline, extended conditional format or form control, so **the
-file this CR needs does not exist in the repository**: Jason to save one from
-Excel 365 with a sparkline group, a table with a slicer, a pivot table with a
-slicer and a timeline, a data validation with a list, a 2010-style conditional
-format (a data bar with a negative-value colour, an icon set), a form control
-(a checkbox, so a control-properties part), and, if Power Pivot is available,
-a data model - no personal data, small, committable to
-`docx4j-core-tests/src/test/resources/`. Phase 0 measures that file (parents,
-`ext` uris, `mc:Ignorable` roots, `mc:AlternateContent` parents) before phase
-1 admits anything.
+timeline, sparkline, extended conditional format or form control, so the
+files this CR needs were looked for on the web (2026-09-20, the open-source
+test corpora: Apache POI, LibreOffice, ClosedXML, openxlsx2, excelize,
+Open-XML-SDK, Open-Xml-PowerTools; SheetJS's is disabled) and measured after
+download. Excel-saved files exist for everything but slicers and timelines:
+
+| file (staged on the share, `fidelity/cr022/`) | source, licence | saved by | carries |
+|---|---|---|---|
+| `Sparklines.xlsx` | LibreOffice `sc/qa/unit/data/xlsx`, MPL-2.0 | Excel 16 | three `x14:sparklineGroups`, `x14ac` attributes, the `xr*` prefixes, `xcalcf` |
+| `complex_icon_set.xlsx` | LibreOffice | Excel 15 | two `x14:conditionalFormattings` (icon sets) |
+| `condformat_databar.xlsx` | LibreOffice | Excel 15 | `x14:conditionalFormattings` (a data bar) and `x14:id` on the base rule |
+| `data_validation_test.xlsx`, `invalid_ext_data_validation.xlsx` | LibreOffice | Excel 15 | `x14:dataValidations`; the second an `externalLink` root with `mc:Ignorable="x14"` |
+| `checkbox-form-control.xlsx` | LibreOffice | Excel 16 | a control-properties part (`xl/ctrlProps/ctrlProp1.xml`), and three `mc:AlternateContent` parents new to the survey: `worksheet` (Choice `x14` holding `controls`), `controls` (Choice `x14` holding `control`), and the drawing's `wsDr` (Choice `a14` holding `twoCellAnchor`) |
+| `tdf167689_x15_namespace.xlsx` (174 KB) | LibreOffice | Excel 16 | a data model part (`xl/model/item.data`), `x15:dataModel`, two `x15:connection`, `xr16` on connections and query tables |
+| `ConditionalFormattingSamples.xlsx` (655 KB) | Apache POI `test-data/spreadsheet`, Apache-2.0 | Excel 16 | eighteen worksheets of conditional formats (`x14ac` on every one; its extended rules to be listed in phase 0) |
+
+Every one of these is Excel-saved (the `Application` of `docProps/app.xml`);
+LibreOffice's own `databar.xlsx` was not (LibreOffice 4.1) and is not staged.
+Licensing: POI's file is Apache-2.0 like docx4j; LibreOffice's are MPL-2.0,
+redistributable as test resources with their notice - **Jason's call which to
+commit**, and the CR records each file's origin in the test class.
+
+**Slicers and timelines were not found** in any open corpus (LibreOffice and
+POI do not support them, so their test files have none; the libraries that do
+read them keep no fixture). One workbook from Excel 365 is still needed, and
+this is how to make it (Excel 365, Windows; ten minutes):
+
+1. **Data**: on `Sheet1`, type a header row `Date, Region, Product, Sales`
+   and a dozen rows of made-up data with dates across several months and
+   two or three regions and products. Select it and *Insert > Table* (tick
+   "My table has headers").
+2. **Table slicer**: with a cell of the table selected, *Table Design >
+   Insert Slicer*, tick `Region`, OK. (A `slicerCache` part for the table
+   and a `slicers` part for the sheet: x14 with x15's `tableSlicerCache`.)
+3. **Pivot table**: *Insert > PivotTable > From Table/Range*, new worksheet,
+   OK; drag `Product` to Rows, `Sales` to Values, `Date` to Columns (Excel
+   groups it by month).
+4. **Pivot slicer**: with the pivot selected, *PivotTable Analyze > Insert
+   Slicer*, tick `Region`, OK. (A second `slicerCache`, pivot-sourced.)
+5. **Timeline**: *PivotTable Analyze > Insert Timeline*, tick `Date`, OK;
+   drag a range of months in it. (A `timelineCache` part for the workbook and
+   a `timelines` part for the sheet: x15.)
+6. **Sparkline** (optional, covered above): back on `Sheet1`, select an
+   empty cell beside a row, *Insert > Sparklines > Line*, data range that
+   row's numbers.
+7. *File > Save As*, `.xlsx`, a name like `cr022-slicers-timelines.xlsx`,
+   to the share's `fidelity/cr022/` folder. No personal data: the made-up
+   rows only, and *File > Info > Check for Issues > Inspect Document* to
+   remove document properties if you like.
+
+Phase 0 measures the staged files and that one (parents, `ext` uris,
+`mc:Ignorable` roots, `mc:AlternateContent` parents) before phase 1 admits
+anything. The checkbox file's three `mc:AlternateContent` parents already
+extend §2's host list: `CT_Worksheet` (a `controls` Choice), the `controls`
+element itself, and the spreadsheet drawing's `wsDr` (a DrawingML CR's, not
+this one's, unless the phase 0 survey shows it is common).
 
 ## 2. Where they join the tree, and their dependencies (recipe step 2)
 
