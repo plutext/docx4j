@@ -1,7 +1,7 @@
 # CR-021: one policy for `mc:AlternateContent` - kept wherever it occurs, one selection rule, and a traversal that knows whether it reads or writes
 
-Status: IN PROGRESS - phase 0 (survey, load test, walker audit) done
-2026-09-19; its two probes are on the share awaiting Word goldens (§8).
+Status: IN PROGRESS - phase 0 DONE 2026-09-19 (survey, load test, walker
+audit, two probes with Word goldens read; §8); phase 1 awaits Jason's go.
 Proposed 2026-09-19 (written at Jason Harrop's direction after the
 docx4j-core-ts parity harness found a text box's paragraphs visited twice;
 "we're going to need to be consistent about how we handle mc content").
@@ -404,9 +404,9 @@ get the field through `AbstractTraversalUtilVisitorCallback`.
 
 Cut in `docx4j-layout-fidelity` (`Corpus.java`; `Doc.textBox` gained a form
 whose two branches are given separately), generated, on the share
-(`corpus.txt` 148, manifest `probes=148`), awaiting Jason's Word run. Both
-branches DIFFER in each box, so the drawn branch is read from the golden's
-text.
+(`corpus.txt` 148, manifest `probes=148`); goldens cut by Jason 2026-09-19
+and read below. Both branches DIFFER in each box, so the drawn branch is
+read from the golden's text.
 
 - `mc-textbox-branches-numbered`: three body items of list A (`w:num` 80);
   a text box whose wps Choice holds two items of A and one of a list B
@@ -425,6 +425,41 @@ text.
   whose branches say CHOICE TEXT and FALLBACK TEXT. Measures which branch
   Word draws, whether it refreshes bound text from the part, and (in the
   re-save on the share) what Word writes into the branch it did not draw.
+
+**Word's answers** (goldens `mc-textbox-branches-numbered.pdf`,
+`mc-textbox-branches-bound-sdt.pdf`, and the re-saves on the share):
+
+- Word 365 draws the wps Choice in every box: the numbered box shows the
+  Choice's items, the bound box FRESH BOX under the Choice's label, the
+  control box CHOICE TEXT. The Fallback's text appears nowhere.
+- Numbering: the box's list A is numbered 1, 2 and its list B 1; the body
+  continues 4, 5, 6 after the box and its list B item is 1. A text box is
+  its own story (as `numbering-stories` said) and the undrawn branch counts
+  for nothing - so a READ walker that takes the drawn branch, and a
+  story-aware emulator, reproduce Word; a walker that counts both branches
+  cannot.
+- Binding: Word refreshed every bound control it drew from the part (FRESH
+  NAME in the body, FRESH BOX in the box).
+- **What Word writes into the branch it did not draw** (the re-save):
+  - the bound box, which Word touched (the refresh changed its text): the
+    Fallback was REGENERATED from the Choice - it now holds the Choice's
+    paragraph, label P03 and all, with the same bound control saying FRESH
+    BOX; the authored Fallback paragraph (P04, STALE FALLBACK) is gone;
+  - the control box and the numbered box, which Word did not touch: the
+    Fallback is VERBATIM, byte for byte the authored one - the control box
+    still says FALLBACK TEXT, the numbered box's Fallback still holds its
+    five items;
+  - and verbatim means stale: Word renumbered the lists on save (`w:num`
+    80 and 81 became 1 and 2 in the numbering part and in every paragraph
+    it processed, the Choice's included), but the untouched Fallback still
+    names 80 and 81, which no longer exist. Word treats an undrawn branch
+    as opaque bytes, references and all.
+
+  So Word's rule is: the drawn branch is authoritative; a shape it edits
+  gets its fallback regenerated; a shape it does not edit keeps its
+  fallback untouched even when that leaves the fallback dangling. For
+  docx4j this settles 8.6 item 4 and adds two consequences, 8.6 items 6
+  and 7.
 
 docx4j today, measured on the two:
 
@@ -449,8 +484,22 @@ docx4j today, measured on the two:
 3. **`WmlToMarkdown` and `TextUtils`** have no `mc` handling of their own
    (8.3); both become `McSelection` callers in phase 1.
 4. **`UpdateXmlFromDocumentSurface`** under ALL sees two bound controls for
-   one XPath when a text box carries a binding; the bound-sdt probe's
-   re-save says what Word keeps in the undrawn branch, which decides whether
-   "last wins" is right or the drawn branch should be authoritative.
+   one XPath when a text box carries a binding. Word's re-save (8.5) makes
+   the drawn branch authoritative and regenerates the fallback from it, so
+   "last wins" is wrong in general: the surface reader should take the
+   value from the branch `McSelection` selects (READ), and only fall back
+   to the other branch when the selected one has no control. Phase 1
+   classifies it READ-with-fallback rather than ALL.
 5. The preprocessor's stale "wps by default" comment goes with the template
    in phase 2.
+6. **A Word-saved document's Fallback can be stale** (8.5): its numbering
+   ids, and by the same token its bookmark and comment ids, may name things
+   the drawn branch's renumbering removed. Readers of the Fallback (the
+   default `preferChoice`, so every docx4j render) must tolerate a `w:numId`
+   with no `w:num` (the numId-0 change of 01d661547 already returns null
+   there) and a dangling bookmark or comment reference; the ports' READ
+   walkers need the same tolerance when they select the Fallback.
+7. **Mutators under ALL do better than Word**, not merely as well: renumbering
+   both branches keeps the Fallback consistent where Word leaves it
+   dangling. That is the right outcome and costs nothing; it is recorded so
+   that a future "match Word exactly" reading does not undo it.
