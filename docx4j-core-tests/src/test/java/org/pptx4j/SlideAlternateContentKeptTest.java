@@ -97,6 +97,9 @@ public class SlideAlternateContentKeptTest {
 
 		String xml = slide.getXML();
 		assertTrue("both branches written back", xml.contains("<mc:Choice Requires=\"a14\">") && xml.contains("<mc:Fallback>"));
+		assertTrue("the Choice's equation (a14:m holding m:oMath in a text paragraph) survives - Jason's "
+				+ "PowerPoint check found it dropped when the type was empty and unadmitted",
+				xml.contains("<a14:m>") && xml.contains("<m:oMath"));
 		assertTrue("the Choice's Requires prefix is declared on the slide root, or PowerPoint 2010 calls the file corrupt",
 				xml.substring(0, xml.indexOf("<p:cSld")).contains("xmlns:a14=\"http://schemas.microsoft.com/office/drawing/2010/main\""));
 

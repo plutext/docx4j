@@ -521,6 +521,16 @@ docx4j today, measured on the two:
    mentions one); it recurses over content itself and so sees the
    `AlternateContent` object as an opaque child. It groups block-level
    content, which is not inside a run, so nothing is lost today.
+10. **A kept branch is lossless only if the schema binds its whole content**
+   (found by Jason's PowerPoint check in phase 3, §8.9): resolving to a
+   Fallback that is a picture loses nothing a picture can show, while
+   keeping a Choice whose content the unmarshaller partly drops loses that
+   part silently. Every parent admitted by this CR therefore needs its
+   branch content checked against the corpus - the equation case is fixed;
+   ink (`a14`/`a16` content parts), `w14`/`w15` extensions inside kept
+   `wps` shapes and chart `c14` styles are the next candidates, and the
+   preprocessor's warning for an unexpected element inside a kept branch is
+   the signal to watch in the logs.
 
 ### 8.7 Phase 1 (2026-09-19, at Jason's go)
 
@@ -735,3 +745,27 @@ re-save of `loadAndSave.pptx` is on the share (`cr021-phase2-check/
 loadAndSave-phase3-resave.pptx`, slide root declaring `xmlns:a14`) for a
 PowerPoint-open check: no repair prompt and slide 2 showing its text and
 equation = pass.
+
+**PowerPoint-open check, first pass (Jason, 2026-09-19): FAILED - no equation
+on slide 2.** The re-save had lost it: the Choice's shape carries the
+equation as `a14:m` (holding `m:oMath`) inside a DrawingML text paragraph,
+and `dml-textParagraph.xsd`'s `EG_TextRun` did not admit `a14:m` - nor did
+`oart14docprop.xsd`'s `CT_TextMath` hold anything (an empty type) - so the
+unmarshaller dropped it as an unexpected element and the slide was saved
+with the text but no equation. Before phase 3 the element was resolved to
+its Fallback, a picture of the shape, which still showed the equation. So
+keeping a branch is only lossless when the schema binds everything the
+branch holds; this is the phase 0 rule ("admit what Word writes") applied
+one level down, and the reason a kept Choice must be checked in the
+producing application, not only round-tripped. Fixed: `EG_TextRun` admits
+`a14:m`, and `CT_TextMath` holds its equation (MS-ODRAWXML 2.3.1: an
+`m:oMathPara` or `m:oMath`) as a lax wildcard over the math namespace
+rather than element references - the OMML types reach into WordprocessingML
+(`m:r` holds `w:rPr`), and referencing them made the PresentationML and
+SpreadsheetML JAXB contexts, whose package lists do not carry those classes,
+fail to initialise at all (`IllegalAnnotationsException` on `w15:appearance`,
+measured). With the wildcard the equation is kept as DOM in those contexts
+and written back as it came, and typed in the WordprocessingML context;
+regenerated; `SlideAlternateContentKeptTest` asserts the equation survives;
+objects-ts told (two more xsd changes). The general lesson is recorded in
+§8.6 as item 10.

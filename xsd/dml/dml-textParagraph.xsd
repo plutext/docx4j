@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+  xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+  <!-- docx4j 17.1.1 (CR-021 phase 3): a text paragraph may hold an a14:m equation (PowerPoint) -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="../odrawxml/oart14docprop.xsd"/>
   <xsd:include schemaLocation="dml-baseTypes.xsd" />
   <xsd:include schemaLocation="dml-shapeGeometry.xsd" />
   <xsd:include schemaLocation="dml-textBullet.xsd" />
@@ -339,6 +342,9 @@
           <xsd:documentation>Text Field</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
+      <!-- docx4j 17.1.1 (CR-021 phase 3): PowerPoint writes an equation in a text paragraph as
+           a14:m, usually inside an mc:AlternateContent Choice Requires="a14" -->
+      <xsd:element ref="a14:m"/>
     </xsd:choice>
   </xsd:group>
 </xsd:schema>

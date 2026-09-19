@@ -307,6 +307,10 @@ Markup compatibility (CR-021, one policy for mc:AlternateContent):
   take one branch, where the SVG export used to draw every branch. PowerPoint's usual case
   is an equation or ink shape in a Choice Requires="a14" with a picture Fallback:
   docx4j.jaxb.mc.preferChoice=a14 draws the shape, the default draws the picture.
+- Schema: a DrawingML text paragraph admits a14:m, and a14:m holds its m:oMathPara or m:oMath
+  (it was an empty type), so a PowerPoint equation in a text body survives a load and a save.
+  Found by opening the re-save above in PowerPoint: the kept Choice had lost its equation,
+  where the picture Fallback it used to be resolved to still showed one.
 
 Packaging:
 
