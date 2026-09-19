@@ -232,6 +232,21 @@ Schema (CR-018, five gaps the content API found, and w16cex):
   org.docx4j.w16, so a comment's durableId and dateUtc - what the comment reactions part
   anchors on - can be read through the model.  It used to load as a generic XML part.
 
+Schema (CR-023, Word's extension attributes kept on a round trip):
+
+- A document loaded and saved through docx4j keeps what Word 365 writes on ISO elements and
+  docx4j's schema did not admit (the packages existed; the attributes were dropped silently):
+  w16du:dateUtc on every tracked change and comment (CTTrackChange.getDateUtc(), an
+  XMLGregorianCalendar like getDate()), w15:restartNumberingAfterBreak on w:abstractNum,
+  w16cid:durableId on w:num (a BigInteger, the decimal form), w14:noSpellErr on w:p,
+  w16sdtdh:storeItemChecksum on w:dataBinding, w16sdtfl:formattingAllowed on w:sdtPr, and
+  w16se:symEx (a symbol beyond the BMP) in a run's content.
+- [MS-DOCX] 5.7 to 5.10 are in the tree (xsd/wml/w16sdtdh.xsd, w16du.xsd, w16sdtfl.xsd, cei.xsd);
+  the new 2026 namespace cei (commentEntityInfo, an extLst child of a comment's extensible
+  record) is bound as org.docx4j.cei and its prefix known, so that content unmarshals typed
+  where CTExtension.getAny() held a DOM Element.  Every namespace of [MS-DOCX]'s appendix is
+  now bound and admitted.
+
 Schema (CR-022, the Excel 2010 and 2013 extensions of [MS-XLSX]):
 
 - Bound in xlsx4j: x14 (spreadsheetml/2009/9/main - sparklines, slicers and slicer caches,

@@ -168,6 +168,11 @@ PRINCIPLES:
 	targetNamespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"	
 	xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"	
+	xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex"
+	xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"
+	xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash"
+	xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
+	xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
 	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
 	xmlns:ci="http://jaxb.dev.java.net/plugin/code-injector"
@@ -219,6 +224,18 @@ PRINCIPLES:
 		schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
 	<xsd:import id="w15" namespace="http://schemas.microsoft.com/office/word/2012/wordml"
 		schemaLocation="w15_word_2012_wordml.xsd"/>
+
+	<!-- since docx4j 17.1.1 (CR-023): the extensions Word writes on ISO elements, [MS-DOCX] 2.2 -->
+	<xsd:import id="w16se" namespace="http://schemas.microsoft.com/office/word/2015/wordml/symex"
+		schemaLocation="w15symex.xsd"/>
+	<xsd:import id="w16cid" namespace="http://schemas.microsoft.com/office/word/2016/wordml/cid"
+		schemaLocation="w16cid.xsd"/>
+	<xsd:import id="w16sdtdh" namespace="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash"
+		schemaLocation="w16sdtdh.xsd"/>
+	<xsd:import id="w16du" namespace="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
+		schemaLocation="w16du.xsd"/>
+	<xsd:import id="w16sdtfl" namespace="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock"
+		schemaLocation="w16sdtfl.xsd"/>
 		
   	<xsd:import id="offmacro" namespace="http://schemas.microsoft.com/office/word/2006/wordml"
 		schemaLocation="../offmacro/office-word-2006-wordml.xsd"/>	
@@ -3356,6 +3373,8 @@ PRINCIPLES:
 						<xsd:documentation>Annotation Date</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<!-- docx4j 17.1.1 (CR-023): Word 365 writes the UTC date on every tracked change ([MS-DOCX] 2.12.2.1) -->
+				<xsd:attribute ref="w16du:dateUtc" use="optional"/>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -6720,6 +6739,8 @@ PRINCIPLES:
 				</xsd:complexType>
 				
 			</xsd:element>
+			<!-- docx4j 17.1.1 (CR-023): a symbol beyond the BMP, [MS-DOCX] 2.2.11 -->
+			<xsd:element ref="w16se:symEx" minOccurs="0"/>
 			<xsd:element name="pgNum" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Page Number Block</xsd:documentation>
@@ -8151,6 +8172,8 @@ PRINCIPLES:
 				<xsd:documentation>Custom XML Data Storage ID</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.2.12 (w15:dataBinding shares this type) -->
+		<xsd:attribute ref="w16sdtdh:storeItemChecksum" use="optional"/>
 	</xsd:complexType>
 	
 	<xsd:element name="id">
@@ -8597,6 +8620,8 @@ PRINCIPLES:
 			<xsd:element ref="w15:webExtensionCreated"  minOccurs="0"/>
 			<xsd:element ref="w15:webExtensionLinked"  minOccurs="0"/>
 		</xsd:choice>
+		<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.13 (with contentLocked / sdtContentLocked) -->
+		<xsd:attribute ref="w16sdtfl:formattingAllowed" use="optional"/>
 	</xsd:complexType>
 	<xsd:complexType name="CT_SdtEndPr">
 		<xsd:choice maxOccurs="unbounded">
@@ -9441,6 +9466,8 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attributeGroup ref="w14:AG_Parids"  />
+			<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.2.4 -->
+			<xsd:attribute ref="w14:noSpellErr" use="optional"/>
 			
 		</xsd:complexType>
 	</xsd:element>
@@ -14675,6 +14702,8 @@ PRINCIPLES:
 									ID</xsd:documentation>
 							</xsd:annotation>
 						</xsd:attribute>
+						<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.2.10 -->
+						<xsd:attribute ref="w15:restartNumberingAfterBreak" use="optional"/>
 					</xsd:complexType>
 					
 				</xsd:element>
@@ -14764,6 +14793,8 @@ PRINCIPLES:
 									ID</xsd:documentation>
 							</xsd:annotation>
 						</xsd:attribute>
+						<!-- docx4j 17.1.1 (CR-023): Word 365 writes w16cid:durableId (the decimal form, [MS-DOCX] 2.8.2.2) on w:num -->
+						<xsd:attributeGroup ref="w16cid:decimaldurableId"/>
 					</xsd:complexType>
 					
 				</xsd:element>

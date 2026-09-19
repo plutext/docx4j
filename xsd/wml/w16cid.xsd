@@ -29,6 +29,12 @@
         </xsd:appinfo>
     </xsd:annotation>
     
+   <!-- [MS-DOCX] 23.0 section 5.4 (2026-09-20, CR-023): the durableId Word writes on w:num is the decimal form of
+        this attribute group (2.8.2.2); the hex global attribute is 2.8.2.1 -->
+   <xsd:attributeGroup name="decimaldurableId">
+     <xsd:attribute name="durableId" type="w12:ST_DecimalNumber" use="optional"/>
+   </xsd:attributeGroup>
+   <xsd:attribute name="durableId" type="w12:ST_LongHexNumber"/>
    <xsd:complexType name="CT_CommentsIds">
        <xsd:annotation>
            <xsd:appinfo>

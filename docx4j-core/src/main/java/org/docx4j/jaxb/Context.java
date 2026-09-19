@@ -178,7 +178,7 @@ public class Context {
 				"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas:" +
 				"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup:" +
 				"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing:" +
-				"org.docx4j.w15symex:org.docx4j.w16cid:org.docx4j.w16:org.docx4j.w16cex:" +
+				"org.docx4j.w15symex:org.docx4j.w16cid:org.docx4j.w16:org.docx4j.w16cex:org.docx4j.cei:" +
 				"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
 				"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11";
       

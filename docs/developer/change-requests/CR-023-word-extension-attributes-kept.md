@@ -280,3 +280,66 @@ and marshal them, not by a fixture; the three measured ones by the
 round-trip probe on the existing fixtures. The file is not committed (it
 exercises nothing the repository's documents do not) and stays on the share
 as this phase's record. Phase 1 may proceed at Jason's go.
+
+## 17. Phase 1: the schemas, references, regeneration, context, prefix, tests (2026-09-20, at Jason's go)
+
+Coded:
+
+- `xsd/wml/w16sdtdh.xsd`, `w16du.xsd`, `w16sdtfl.xsd`, `cei.xsd`, each from
+  its [MS-DOCX] 23.0 section page (headers cite the page; the pages'
+  non-breaking spaces replaced; packages `org.docx4j.w16sdtdh`, `.w16du`,
+  `.w16sdtfl`, `.cei`). `xsd/ROOT.xsd` imports the four.
+- **Two older copies were behind the current revision** (found by the
+  regeneration, "Cannot resolve the name"): `w15_word_2012_wordml.xsd` (from
+  the 2012 text) lacked `restartNumberingAfterBreak`, and `w16cid.xsd` lacked
+  the `decimaldurableId` attribute group and the global `durableId`
+  attribute. Both added from the 23.0 pages, recorded in each file. The
+  inventory's "bound" for 5.2 and 5.4 was true of the packages, not of every
+  declaration.
+- `wml.xsd`: imports of `w16se`, `w16cid`, `w16sdtdh`, `w16du`, `w16sdtfl`
+  (the first two had been imported only by `ROOT.xsd`), and the seven
+  references of §2: `w16du:dateUtc` on `CT_TrackChange` (so on its sixteen
+  extensions - every `ins`, `del`, `*PrChange`, `comment`, the math run
+  changes of CR-010 included), `w15:restartNumberingAfterBreak` on
+  `abstractNum`'s type, `w16cid:decimaldurableId` on `num`'s,
+  `w14:noSpellErr` on `CT_P`, `w16sdtdh:storeItemChecksum` on
+  `CT_DataBinding`, `w16sdtfl:formattingAllowed` on `CT_SdtPr`,
+  `w16se:symEx` in `EG_RunInnerContent` after `sym`.
+- Generated: `CTTrackChange.getDateUtc()` (`XMLGregorianCalendar`),
+  `Numbering.AbstractNum.getRestartNumberingAfterBreak()` (`String`, as
+  docx4j binds `ST_OnOff`), `Numbering.Num.getDurableId()` (`BigInteger`),
+  `P.getNoSpellErr()`, `CTDataBinding.getStoreItemChecksum()`,
+  `SdtPr.getFormattingAllowed()`, `org.docx4j.w15symex.CTSymEx` as a member
+  of `R.getContent()` (and of the math run track change's), and package
+  `org.docx4j.cei` (`CTCommentEntityInfo`, `ObjectFactory`). The three
+  attribute-only packages generate nothing, as §3 said.
+- `module-info.java`: `org.docx4j.cei` exported and opened; `Context.jc`:
+  `org.docx4j.cei` appended; `NamespacePrefixMappings`: `cei` both ways.
+- `org.docx4j.wml.WordExtensionAttributesTest` (4 tests): the round trip
+  (every part forced to unmarshal) keeping `dateUtc` 39 → 39 and `durableId`
+  1 → 1 on `tracked-changes-equations.docx` with every `mc:Ignorable` prefix
+  of `document.xml` and `numbering.xml` declared on the re-save, and
+  `restartNumberingAfterBreak` 1 → 1 on `numPicBullet-word2019-pict.docx`;
+  the typed accessors on those files (39 changes each with a `dateUtc`
+  ending in `Z`, the numbering flag "0", a positive durable id); and the
+  four extensions admitted on the specification's word (§16) built,
+  marshalled with Word's prefixes and, for `symEx` and `commentEntityInfo`,
+  unmarshalled back into the typed classes.
+- CHANGELOG under "Schema (CR-023 ...)".
+
+**Re-saves for the Word check** (share, `fidelity/cr023/`):
+`tracked-changes-equations-cr023-resave.docx` (the 39 UTC dates now kept)
+and `cr023-word-extensions-cr023-resave.docx` (Jason's phase 0 file through
+docx4j). Jason: open both in Word 365; the gate's last row is "no repair
+prompt, the tracked changes and comments intact".
+
+**Gate:**
+
+| step | result |
+|---|---|
+| docx4j-generated-objects + docx4j-core clean install | BUILD SUCCESS; installed jar md5 = target jar's |
+| `WordExtensionAttributesTest` | 4 tests, 0 failures |
+| docx4j-core-tests, the whole suite | 1218 tests, 0 failures, 11 skipped (2026-09-20) |
+| docx4j-export-fo-tests, the whole suite (`CT_P` and `CT_TrackChange` are on every exporter's path; export-fo clean-installed against the new core first) | 669 tests, 0 failures, 8 skipped (2026-09-20) |
+| Word 365 opens the two re-saves | Jason |
+

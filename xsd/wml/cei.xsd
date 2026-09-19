@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.microsoft.com/office/word/2026/wordml/cei"
+	targetNamespace="http://schemas.microsoft.com/office/word/2026/wordml/cei"
+	elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all"
+	xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	jaxb:version="3.0">
+
+<!--
+	[MS-DOCX] revision 23.0 (2026-08-18), section 5.10 "http://schemas.microsoft.com/office/word/2026/wordml/cei Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/4c5c0c9a-50e6-4d50-a387-9e5aceecd2f9
+	Taken from the HTML section page on 2026-09-20 (CR-023 phase 1; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). The body below is the page's text apart from: the import schemaLocation mapped
+	to this tree, the page's non-breaking spaces replaced, and the JAXB package annotation.
+	commentEntityInfo is an ext child of w16cex:commentExtensible/extLst (section 2.14): no host reference is
+	needed, the lax wildcard unmarshals it typed once this package is in the Word context.
+-->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.cei"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+
+	<xsd:import id="w16" namespace="http://schemas.microsoft.com/office/word/2018/wordml" schemaLocation="w16.xsd"/>
+
+	<xsd:complexType name="CT_CommentEntityInfo">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="w16:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="entityType" type="xsd:unsignedInt" use="optional" default="0"/>
+	</xsd:complexType>
+	<xsd:element name="commentEntityInfo" type="CT_CommentEntityInfo"/>
+
+</xsd:schema>

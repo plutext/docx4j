@@ -124,5 +124,9 @@ Release: October 8, 2012 -->
   <xsd:element name="footnoteColumns" type="w:CT_DecimalNumber"/>
   <xsd:element name="webExtensionLinked" type="w:BooleanDefaultTrue"/>
   <xsd:element name="webExtensionCreated" type="w:BooleanDefaultTrue"/>
+
+  <!-- [MS-DOCX] 23.0 section 5.2 (2026-09-20, CR-023): the attribute Word writes on w:abstractNum (2.2.10);
+       the 2012 text this file was taken from did not have it -->
+  <xsd:attribute name="restartNumberingAfterBreak" type="w:ST_OnOff"/>
 </xsd:schema>      
       

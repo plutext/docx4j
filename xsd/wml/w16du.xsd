@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
+	targetNamespace="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
+	elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	jaxb:version="3.0">
+
+<!--
+	[MS-DOCX] revision 23.0 (2026-08-18), section 5.8 "http://schemas.microsoft.com/office/word/2023/wordml/word16du Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/e5d0aa0c-4ecc-40d9-a0e0-aac8655a8316
+	Taken from the HTML section page on 2026-09-20 (CR-023 phase 1; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). The body below is the page's text apart from: the import schemaLocation mapped
+	to this tree, the page's non-breaking spaces replaced, and the JAXB package annotation.
+	An attribute-only schema: XJC generates no package for it; the attribute is a property of
+	CT_TrackChange in org.docx4j.wml (wml.xsd references it), an XMLGregorianCalendar like w:date.
+-->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.w16du"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+
+	<xsd:attribute name="dateUtc" type="xsd:dateTime"/>
+
+</xsd:schema>

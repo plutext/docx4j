@@ -6,7 +6,8 @@ contents on learn.microsoft.com,
 https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/b839fe1f-e1ca-4fa6-8c26-5954d0abbccd)
 against what docx4j binds, admits in the main schema, or knows by prefix,
 measured on VERSION_17_1_1 on 2026-09-20 (Jason asked, after the [MS-XLSX]
-inventory, "identify any schema used within it which we don't yet support").
+inventory, "identify any schema used within it which we don't yet support"),
+and **updated the same day after CR-023** closed the gaps it found.
 Purposes are from the appendix's own XSD text (small enough to read whole for
 eight of the ten) and from section 2.2's "Extensions" pages, which say which
 ISO element each extension hangs on.
@@ -34,12 +35,18 @@ extensions of w14 and w15, the settings elements, `w15:footnoteColumns`,
 
 Two states short of "bound", and one worse:
 
-- **prefix known**: in `NamespacePrefixMappings` both ways, so a part's
+**After CR-023 (2026-09-20) none of these states has a member**: 5.7, 5.8
+and 5.9 are admitted as typed properties of their hosts (attribute-only
+schemas generate no package), 5.10 `cei` is bound (`org.docx4j.cei`), and
+the seven references below are in `wml.xsd`. The measurement that found
+them is kept as the record:
+
+- **prefix known** (was): in `NamespacePrefixMappings` both ways, so a part's
   `mc:Ignorable` naming it is declared on save (no repair prompt), but the
   namespace's content is neither typed nor admitted: 5.7 `w16sdtdh`, 5.8
   `w16du`, 5.9 `w16sdtfl`. Each declares a single attribute.
-- **absent**: 5.10 `cei` (new in this revision).
-- **bound but not admitted** - the state [MS-XLSX] did not have: the
+- **absent** (was): 5.10 `cei` (new in this revision).
+- **bound but not admitted** (was) - the state [MS-XLSX] did not have: the
   package exists, yet the main schema has no reference for the attribute or
   element where Word writes it, so it is **dropped on a load-and-save**
   (JAXB keeps no unknown attribute; `wml.xsd` has no `anyAttribute`).
@@ -97,16 +104,16 @@ so a load-and-save keeps it.
 
 | § | prefix | namespace (`http://schemas.microsoft.com/office/word/` + ...) | purpose | status |
 |---|---|---|---|---|
-| 5.1 | w14 | 2010/wordml | Word 2010: run text effects (glow, shadow, reflection, 3-D, gradient and pattern fills, outlines) and OpenType features (ligatures, number forms, stylistic sets), the `checkbox` and `entityPicker` content controls, conflict tracking (co-authoring), `paraId`/`textId` on paragraphs and rows, `docId`, image settings (`defaultImageDpi`, `discardImageEditingData`), `noSpellErr` | bound; admitted except `noSpellErr` on `w:p` |
-| 5.2 | w15 | 2012/wordml | Word 2013: the `commentsEx` part (`paraIdParent`, `done`), the `people` part with presence info, `repeatingSection`/`repeatingSectionItem`, `appearance` and `color` of a content control, `dataBinding` (the w15 form, for repeating sections), `docId`, `footnoteColumns`, `chartTrackingRefBased`, `collapsed` headings, web-extension flags, `restartNumberingAfterBreak` on `abstractNum` | bound; admitted except `restartNumberingAfterBreak` |
-| 5.3 | w16se | 2015/wordml/symex | `symEx` in a run: a symbol with a font and a Unicode code point beyond the `w:sym` range (supplementary planes) | bound; not admitted in `w:r` |
-| 5.4 | w16cid | 2016/wordml/cid | the `commentsIds` part (`paraId` to `durableId`) and `durableId` where Word writes it on `w:num` | bound (part); not admitted on `w:num` |
+| 5.1 | w14 | 2010/wordml | Word 2010: run text effects (glow, shadow, reflection, 3-D, gradient and pattern fills, outlines) and OpenType features (ligatures, number forms, stylistic sets), the `checkbox` and `entityPicker` content controls, conflict tracking (co-authoring), `paraId`/`textId` on paragraphs and rows, `docId`, image settings (`defaultImageDpi`, `discardImageEditingData`), `noSpellErr` | bound; admitted (`noSpellErr` since CR-023) |
+| 5.2 | w15 | 2012/wordml | Word 2013: the `commentsEx` part (`paraIdParent`, `done`), the `people` part with presence info, `repeatingSection`/`repeatingSectionItem`, `appearance` and `color` of a content control, `dataBinding` (the w15 form, for repeating sections), `docId`, `footnoteColumns`, `chartTrackingRefBased`, `collapsed` headings, web-extension flags, `restartNumberingAfterBreak` on `abstractNum` | bound; admitted (`restartNumberingAfterBreak` since CR-023, which also added it to docx4j's 2012 copy of the schema) |
+| 5.3 | w16se | 2015/wordml/symex | `symEx` in a run: a symbol with a font and a Unicode code point beyond the `w:sym` range (supplementary planes) | bound; admitted in `w:r` (CR-023) |
+| 5.4 | w16cid | 2016/wordml/cid | the `commentsIds` part (`paraId` to `durableId`) and `durableId` where Word writes it on `w:num` | bound (part); admitted on `w:num` (CR-023, the decimal attribute group added to docx4j's copy) |
 | 5.5 | w16 | 2018/wordml | `CT_Extension`/`CT_ExtensionList`: the `ext`/`extLst` mechanism the newer Word namespaces hang content on | bound |
 | 5.6 | w16cex | 2018/wordml/cex | the `commentsExtensible` part: `durableId`, `dateUtc`, `intelligentPlaceholder` per comment, with an `extLst` (reactions, entity info) | bound (part, CR-018) |
-| 5.7 | w16sdtdh | 2020/wordml/sdtdatahash | one attribute, `storeItemChecksum` on `w:dataBinding` (a hash of the custom XML store item a content control binds to) | prefix |
-| 5.8 | w16du | 2023/wordml/word16du | one attribute, `dateUtc`: the UTC form of a revision's or comment's date, beside ISO's local `w:date` | prefix; dropped on `w:ins`/`w:del` (measured) |
-| 5.9 | w16sdtfl | 2024/wordml/sdtformatlock | one attribute, `formattingAllowed` on a content control's properties (whether formatting may be changed inside a locked control) | prefix |
-| 5.10 | cei | 2026/wordml/cei | `commentEntityInfo` (`entityType`), an `ext` child in `commentsExtensible`: what kind of entity authored the comment - new in revision 23.0 (2026-08) | absent |
+| 5.7 | w16sdtdh | 2020/wordml/sdtdatahash | one attribute, `storeItemChecksum` on `w:dataBinding` (a hash of the custom XML store item a content control binds to) | **admitted (CR-023)** |
+| 5.8 | w16du | 2023/wordml/word16du | one attribute, `dateUtc`: the UTC form of a revision's or comment's date, beside ISO's local `w:date` | **admitted (CR-023)**: `CTTrackChange.getDateUtc()` |
+| 5.9 | w16sdtfl | 2024/wordml/sdtformatlock | one attribute, `formattingAllowed` on a content control's properties (whether formatting may be changed inside a locked control) | **admitted (CR-023)** |
+| 5.10 | cei | 2026/wordml/cei | `commentEntityInfo` (`entityType`), an `ext` child in `commentsExtensible`: what kind of entity authored the comment - new in revision 23.0 (2026-08) | **bound (CR-023)**: `org.docx4j.cei` |
 
 ## The five parts (section 2.1)
 
@@ -128,7 +135,7 @@ Section 2.3's `compatSetting` names (`compatibilityMode`,
 
 ## What this suggests, for a CR to decide
 
-- **First, and small**: the "bound but not admitted" attributes - a CR of
+- **First, and small** - **implemented via CR-023 (17.1.1, 2026-09-20)**: the "bound but not admitted" attributes - a CR of
   six attribute references in `wml.xsd` (`w15:restartNumberingAfterBreak`
   on `CT_AbstractNum`, `w16cid:durableId` on `CT_Num`, `w16du:dateUtc` on
   `CT_TrackChange` and `CT_Markup`'s kin, `w14:noSpellErr` on `CT_P`,
@@ -143,7 +150,7 @@ Section 2.3's `compatSetting` names (`compatibilityMode`,
   is silent because Word rebuilds them. The [MS-XLSX] recipe applies
   (`docs/developer/adding-a-schema.md`), and the round-trip probe of this
   inventory (force every part to unmarshal, then count) is the test.
-- **Second**: `cei` (5.10) - one element inside `commentsExtensible`'s
+- **Second** - **implemented via CR-023**: `cei` (5.10) - one element inside `commentsExtensible`'s
   `extLst`, kept as DOM by the lax wildcard today; binding it types it, as
   CR-022 did for `extLst` content in workbooks. Small; with the first, or
   when a file shows it used.
