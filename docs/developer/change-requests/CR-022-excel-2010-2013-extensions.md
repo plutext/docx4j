@@ -730,3 +730,23 @@ sourced from the model (`x15:pivotCacheDefinition`'s extension). It then
 replaces `lo-tdf167689_x15_namespace.xlsx` for the two data-model tests,
 which become resource-based, and `-Dcr022.samples` retires.
 
+**Done (Jason, 2026-09-20)** - by the Power Query road, since *Data > From
+Table/Range* opens the Power Query Editor: *Close & Load To... > Only Create
+Connection + Add this data to the Data Model* for Sales and for Regions,
+then *Insert > PivotTable > From Data Model*, and the relationship from the
+Fields pane's "Relationships between tables may be needed" bar. The save
+(Excel 365 16.0300, 245 KB) carries `xl/model/item.data`, `x15:dataModel`
+with four `modelTable`s (the two query loads, the worksheet connection the
+pivot made, the related Regions) and one `modelRelationship`
+(Sales.Region to Regions.Region), `xl/connections.xml` with four
+connections each carrying `x15:connection` (`ThisWorkbookDataModel` with
+`model="1"`), two model-sourced pivot caches, and Power Query's
+`customXml/item1.xml` (the DataMashup). No query-table part (the loads were
+connection-only), so `CT_QueryTable`'s root annotation is guarded by a
+marshal test (`connectionsAndQueryTableRootsMarshal`) instead of a fixture.
+Committed as `cr022-data-model.xlsx`; the two data-model tests read it;
+`-Dcr022.samples` is retired; the LibreOffice file is discarded. Every
+CR-022 fixture is now docx4j-generated or docx4j-sourced and Excel-saved:
+the creation half of the gate (§1) holds for everything but the data
+model's binary, which Excel alone writes.
+

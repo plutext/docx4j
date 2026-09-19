@@ -24,11 +24,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
@@ -78,14 +76,13 @@ import org.xlsx4j.sml.Worksheet;
  * a timeline, two pivot tables, sparklines).  cr022-sparklines, -conditional-formatting,
  * -data-validation and -checkbox.xlsx were written by docx4j
  * (org.xlsx4j.samples.Excel2010ExtensionsSamples) and re-saved by Excel 365 (phase 2b).
- * The data model cannot be written by docx4j, so that test runs on a workbook read from
- * the directory named by the system property {@code cr022.samples} and is skipped when
- * it is not set.
+ * cr022-data-model.xlsx is Jason's Excel 365 workbook over a docx4j-built source (a data
+ * model, which docx4j cannot write: two Power Query tables and a worksheet table, one
+ * relationship, a pivot over the model).
  */
 public class ExcelExtensionsTest {
 
 	private static final String SLICERS = "cr022-slicers-timelines.xlsx";
-	private static final String SAMPLES_PROPERTY = "cr022.samples";
 
 	// ---- the committed workbook
 
@@ -289,17 +286,49 @@ public class ExcelExtensionsTest {
 	}
 
 	@Test
-	public void dataModelWorkbookSavesItsConnectionsAndQueryTables() throws Exception {
-		SpreadsheetMLPackage pkg = sample("lo-tdf167689_x15_namespace.xlsx");
+	public void dataModelWorkbookTypedAndSavesItsConnections() throws Exception {
+		// Jason's Excel 365 workbook: two Power Query tables and a worksheet table in the data model,
+		// related Sales.Region -> Regions.Region, and a pivot over the model
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("cr022-data-model.xlsx"));
 		Workbook wb = pkg.getWorkbookPart().getContents();
-		assertNotNull(ext(wb.getExtLst(), CTDataModel.class).getModelTables());
+		CTDataModel model = ext(wb.getExtLst(), CTDataModel.class);
+		// the two Power Query loads, the worksheet connection the pivot made, and the related Regions
+		assertTrue(model.getModelTables().getModelTable().size() >= 3);
+		boolean sales = false;
+		for (org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTModelTable t : model.getModelTables().getModelTable()) {
+			if ("Sales".equals(t.getName())) sales = true;
+		}
+		assertTrue("a model table named Sales", sales);
+		assertEquals(1, model.getModelRelationships().getModelRelationship().size());
+		assertEquals("Region", model.getModelRelationships().getModelRelationship().get(0).getFromColumn());
 
-		byte[] saved = save(pkg);  // CT_Connections and CT_QueryTable had no XmlRootElement: the save failed
+		byte[] saved = save(pkg);  // CT_Connections had no XmlRootElement: the save failed
 		String connections = entry(saved, "xl/connections.xml");
 		assertTrue(connections, connections.contains("<x15:connection"));
+		assertTrue(connections, connections.contains("name=\"ThisWorkbookDataModel\""));
 		assertDeclares(saved, "xl/connections.xml", "xr16");
-		assertDeclares(saved, "xl/queryTables/queryTable1.xml", "xr16");
-		assertDeclares(saved, "xl/queryTables/queryTable2.xml", "xr16");
+		assertNotNull(ext(SpreadsheetMLPackage.load(new ByteArrayInputStream(saved)).getWorkbookPart().getContents().getExtLst(),
+				CTDataModel.class).getModelRelationships());
+	}
+
+	@Test
+	public void connectionsAndQueryTableRootsMarshal() throws Exception {
+		// CT_Connections and CT_QueryTable had no root-element annotation, so ConnectionsPart and
+		// QueryTablePart could load but not save (no fixture carries a query table any more)
+		org.xlsx4j.sml.ObjectFactory f = Context.getsmlObjectFactory();
+		org.xlsx4j.sml.CTConnections connections = f.createCTConnections();
+		org.xlsx4j.sml.CTConnection c = f.createCTConnection();
+		c.setId(1L);
+		c.setName("Query - Sales");
+		connections.getConnection().add(c);
+		connections.setIgnorable("xr16");
+		String xml = XmlUtils.marshaltoString(connections, true, false, Context.jcSML);
+		assertTrue(xml, xml.contains("<connections ") && xml.contains("mc:Ignorable=\"xr16\""));
+		org.xlsx4j.sml.CTQueryTable qt = f.createCTQueryTable();
+		qt.setName("Sales");
+		qt.setConnectionId(1L);
+		xml = XmlUtils.marshaltoString(qt, true, false, Context.jcSML);
+		assertTrue(xml, xml.contains("<queryTable "));
 	}
 
 	// ---- helpers
@@ -317,14 +346,6 @@ public class ExcelExtensionsTest {
 		}
 		fail("no " + type.getSimpleName() + " in extLst; found " + found);
 		return null;
-	}
-
-	private static SpreadsheetMLPackage sample(String name) throws Exception {
-		String dir = System.getProperty(SAMPLES_PROPERTY);
-		assumeTrue("set -D" + SAMPLES_PROPERTY + "=<dir> to run on the temporary sample workbooks", dir != null);
-		File f = new File(dir, name);
-		assumeTrue(f.getPath() + " not present", f.exists());
-		return SpreadsheetMLPackage.load(f);
 	}
 
 	private static byte[] save(SpreadsheetMLPackage pkg) throws Exception {

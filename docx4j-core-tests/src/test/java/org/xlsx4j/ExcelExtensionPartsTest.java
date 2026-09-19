@@ -22,11 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
@@ -58,14 +56,12 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTTi
  * and relationships kept on save.  They loaded as DefaultXmlPart (or a nameless
  * BinaryPart) before.
  *
- * On cr022-slicers-timelines.xlsx and cr022-checkbox.xlsx (committed, Excel-saved) and,
- * when -Dcr022.samples names a directory holding lo-tdf167689_x15_namespace.xlsx (a
- * LibreOffice test file with a data model, which docx4j cannot write), the data model.
+ * On cr022-slicers-timelines.xlsx, cr022-checkbox.xlsx and cr022-data-model.xlsx (all
+ * committed, Excel 365-saved).
  */
 public class ExcelExtensionPartsTest {
 
 	private static final String SLICERS = "cr022-slicers-timelines.xlsx";
-	private static final String SAMPLES_PROPERTY = "cr022.samples";
 
 	@Test
 	public void slicerAndTimelinePartsTyped() throws Exception {
@@ -165,7 +161,7 @@ public class ExcelExtensionPartsTest {
 
 	@Test
 	public void dataModelPartTyped() throws Exception {
-		SpreadsheetMLPackage pkg = sample("lo-tdf167689_x15_namespace.xlsx");
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("cr022-data-model.xlsx"));
 		RelationshipsPart wbRels = pkg.getWorkbookPart().getRelationshipsPart();
 		Part p = wbRels.getPart(wbRels.getRelationshipByType(Namespaces.SPREADSHEETML_DATA_MODEL));
 		assertTrue(p.getClass().getName(), p instanceof DataModelPart);
@@ -179,14 +175,6 @@ public class ExcelExtensionPartsTest {
 	}
 
 	// ---- helpers (as ExcelExtensionsTest)
-
-	private static SpreadsheetMLPackage sample(String name) throws Exception {
-		String dir = System.getProperty(SAMPLES_PROPERTY);
-		assumeTrue("set -D" + SAMPLES_PROPERTY + "=<dir> to run on the temporary sample workbooks", dir != null);
-		File f = new File(dir, name);
-		assumeTrue(f.getPath() + " not present", f.exists());
-		return SpreadsheetMLPackage.load(f);
-	}
 
 	private static byte[] save(SpreadsheetMLPackage pkg) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
