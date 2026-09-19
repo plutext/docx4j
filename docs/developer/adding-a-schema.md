@@ -203,14 +203,56 @@ JAXB context problems show as failures in unrelated classes), and
 - The CR that asked for it (or a new one under
   `docs/developer/change-requests/` if the work is non-trivial) records the
   commit hash against the phase.
-- The TypeScript objects package (`../docx4j-generated-objects-ts`) regenerates
-  from `xsd/ROOT.xsd`: message it the CR number and the commit, listing every
-  xsd touched, the packages and their effect on the model, and any prefix-table
-  entry; it regenerates once from the commit that carries everything (CR-018 and
-  CR-021 are the precedents). The core-ts and Python ports, which treat this
-  repository as their behavioural oracle, are told when the change is one their
-  behaviour follows; the portfolio registry (`../docx4j-portfolio/tasks.yaml`)
-  carries the dependency.
+- The ports regenerate from this repository's xsd, each its own way; message
+  each with the CR number and the commit hash, and what follows. The portfolio
+  registry (`../docx4j-portfolio/tasks.yaml`) carries the dependency, and the
+  core-ts port, which treats this repository as its behavioural oracle, is told
+  when the change is one its behaviour follows.
+
+  - **TypeScript objects** (`../docx4j-generated-objects-ts`): regenerates its
+    modules from `xsd/ROOT.xsd` at the commit, in one JAXB-like context over all
+    modules (so a lax wildcard comes back typed there where docx4j keeps DOM - a
+    recorded divergence, not a mismatch). Tell it every xsd touched, the packages
+    and their effect on the model (a new property, a new admission), and any
+    prefix-table entry: it keeps a copy of `NamespacePrefixMappings` (level at
+    124 entries on 2026-09-19). It regenerates once from the commit that carries
+    everything (CR-018, CR-021 §8.8 to §8.12 are the precedents).
+
+  - **Python** (`../docx4j-python`; facts from its session, 2026-09-20; its
+    design is that repository's CR-001 and the "How regeneration works" section
+    of its CLAUDE.md): it does not read `xsd/ROOT.xsd`. It generates from a
+    **copy** of this tree under `schemas/` - the 91-file transitive closure of
+    `wml/wml.xsd` plus `relationships.xsd` and `docProps/`, collected by its own
+    entry point `schemas/docx4j_python__ROOT.xsd` - taken by hand from a named
+    docx4j commit (6b8048aab as of 2026-09-20) with five patches of its own,
+    each marked in the xsd by a comment beginning `docx4j-python` and listed in
+    `schemas/PATCHES.md`; a patch docx4j later makes itself is retired at the
+    next copy. PML, SML and VML are not generated yet (its CR-001 phase D), so a
+    schema outside WML's closure does not reach it until then. Its generator is
+    a fork of xsdata (`../docx4j-xsdata`, branch `docx4j`), run as
+    `codegen/generate.sh` (`--check` proves the output reproducible); it needs
+    only the xsd files - a docx4j build is needed only for
+    `codegen/derive_names.py`, which derives the Java class names from this
+    repository's XJC output (`docx4j-generated-objects/target/generated-sources/xjc`)
+    into `codegen/names/*.json`, so a **new namespace** needs that output (at
+    least its `ObjectFactory`), an include in its ROOT, a namespace-to-module
+    line in `.xsdata.phase-b.xml`, and a prefix entry in
+    `docx4j_py/namespaces.py` (transcribed from `NamespacePrefixMappings`). A
+    **new part** needs its class, a content type
+    (`openpackaging/content_types.py`), a relationship type
+    (`openpackaging/parts/namespaces.py`) and a `parts/registry.py` entry, all
+    transcribed from docx4j's. So the hand-off to Python is: the commit hash,
+    the list of xsd files touched (it has no re-copy script; the copy is
+    re-taken by hand), whether a new namespace should be generated at all, the
+    XJC output for anything new, and the prefix, content-type and
+    relationship-type entries. Its gate afterwards: `generate.sh --check`, its
+    corpus round trip canonically identical with an empty skipped-content
+    report, the parity goldens (consumed from core-ts, never copied), and a
+    Word check of its acceptance artefacts by Jason. It also keeps docx4j's
+    default `styles`, `numbering`, `fontTable` and `KnownStyles` resources,
+    the three theme parts, and font tables generated from docx4j's font data
+    and jars - a change to any of those is a hand-off too, though not a schema
+    one.
 
 ## 12. One commit
 
