@@ -550,3 +550,14 @@ and not this phase's).
 | docx4j-core-tests, the whole suite (with `-Dcr022.samples`) | 1208 tests, 0 failures, 11 skipped (2026-09-20) |
 | docx4j-export-fo-tests | not run: no docx change, Jason waived it for this phase ("no need for export-fo-tests") |
 | Excel 365 opens the four re-saves | Jason |
+
+**Hand-offs (2026-09-20, after the commit):** objects-ts regenerated from
+16844ff03 (its commit 141f6bd: six new modules, 102 in total; the
+attribute-only schemas generate no module there either; x14ac properties,
+`ignorable` on the nine roots and `Workbook.revisionPtr` verified in its
+declarations; x12ac, x16, xr16 in its prefix table, 127 entries level with
+docx4j's). The Python port recorded the file list, packages, prefixes and
+the U+00A0 gotcha for its CR-001 phase D (not scheduled; lands with its
+schema re-copy). core-ts told what the oracle now keeps (its Excel
+acceptance run is the consumer); objects-ts notes phase 2's parts are
+core-ts's, not its own.
