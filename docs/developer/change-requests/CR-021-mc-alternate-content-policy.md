@@ -2,8 +2,8 @@
 
 Status: IN PROGRESS - phases 0, 1 and 2 DONE 2026-09-19 (§8.7, §8.8, with
 a SpreadsheetML follow-up); phase 3 (PresentationML by the same rule) DONE
-2026-09-19 (§8.9; the staged re-save's PowerPoint-open check pending);
-phase 4 (the Getting Started note) awaits Jason's go.
+2026-09-19 (§8.9; PowerPoint opens the re-save with its equation, Jason's
+second check); phase 4 (the Getting Started note) awaits Jason's go.
 Proposed 2026-09-19 (written at Jason Harrop's direction after the
 docx4j-core-ts parity harness found a text box's paragraphs visited twice;
 "we're going to need to be consistent about how we handle mc content").
@@ -768,4 +768,5 @@ measured). With the wildcard the equation is kept as DOM in those contexts
 and written back as it came, and typed in the WordprocessingML context;
 regenerated; `SlideAlternateContentKeptTest` asserts the equation survives;
 objects-ts told (two more xsd changes). The general lesson is recorded in
-§8.6 as item 10.
+§8.6 as item 10. **Second pass (Jason, 2026-09-19 14:3x): PASSED - "the
+equation is visible now".**
