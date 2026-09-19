@@ -160,7 +160,11 @@ list its content is unmarshalled under is an "unexpected element" at load.
 
 `docx4j-core/src/main/java/org/docx4j/jaxb/NamespacePrefixMappings.java`, in
 both directions: `getPreferredPrefixStatic` (namespace URI to prefix) and
-`getNamespaceURIStatic` (prefix to URI). The prefix must be the one Office
+`getNamespaceURIStatic` (prefix to URI). Both are chains of string comparisons
+walked from the top for every prefix resolved, so, as in step 9, the common
+namespaces stay at the top and a more obscure one goes further down beside its
+kin (a new SpreadsheetML revision namespace with the `xr*` entries, a new
+Word 2018 extension with the `w16*` ones), in both chains. The prefix must be the one Office
 writes (`w16cex`, `xr2`, `cx1`, ...): `mc:Ignorable` and `mc:Choice/@Requires`
 name prefixes, and on save docx4j declares every prefix a part's `mc:Ignorable`
 names from this table (`NamespacePrefixMapperUtils.declareNamespaces`, which
