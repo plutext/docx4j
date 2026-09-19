@@ -653,6 +653,20 @@ schema page's own default; corrected to Excel's `xm`). The marshalled
 namespace as default, where Excel writes the x14 namespace as default -
 equivalent XML.
 
+**Excel's first verdict (Jason, 2026-09-20)**: sparklines, conditional
+formatting and data validation fine; `cr022-checkbox.xlsx` "a problem with
+some content", repaired at `sheet1.xml` line 33 (HRESULT 0x8000ffff) - the
+close of the control's `anchor`. Cause: ECMA-376's `CT_ObjectAnchor` is
+`ref="xdr:from"`/`ref="xdr:to"`, so docx4j marshalled `<xdr:from>`; Excel
+writes `<from>`/`<to>` in the SpreadsheetML namespace (with `xdr:col` and
+its siblings inside) and refuses the xdr form. The LibreOffice file's
+round trip never showed it because the Choice's `controls` is kept as DOM.
+Fixed in the main schema (local `from`/`to` of type `xdr:CT_Marker`, a
+recorded departure from ECMA-376 in favour of what Excel reads; the JAXB
+accessors are unchanged), a regression test
+(`ExcelExtensionsTest.controlAnchorMarshalsAsExcelWritesIt`), the file
+regenerated and restaged for a second look.
+
 **Check before the Excel round**: the four generated files load through the
 CR-022 tests with the same assertions as the LibreOffice files (aliased to
 their names for the run): 14 tests, 0 failures; every part well formed

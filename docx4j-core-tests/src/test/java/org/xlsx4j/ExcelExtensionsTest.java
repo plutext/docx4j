@@ -19,6 +19,7 @@
 package org.xlsx4j;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -213,6 +214,23 @@ public class ExcelExtensionsTest {
 				true, false, Context.jcSML);
 		assertTrue(groupings, groupings.contains("<x16:modelTimeGroupings"));
 		assertTrue(groupings, groupings.contains("xmlns:x16=\"http://schemas.microsoft.com/office/spreadsheetml/2014/11/main\""));
+	}
+
+	@Test
+	public void controlAnchorMarshalsAsExcelWritesIt() throws Exception {
+		// ECMA-376 says xdr:from / xdr:to; Excel writes from / to in the main namespace and repairs a
+		// worksheet with the xdr form (found on the generated check box, CR-022 phase 2b)
+		org.xlsx4j.sml.CTObjectAnchor anchor = Context.getsmlObjectFactory().createCTObjectAnchor();
+		org.docx4j.dml.spreadsheetdrawing.CTMarker from = new org.docx4j.dml.spreadsheetdrawing.CTMarker();
+		from.setCol(1); from.setColOff(0); from.setRow(3); from.setRowOff(0);
+		anchor.setFrom(from);
+		anchor.setTo(from);
+		String xml = XmlUtils.marshaltoString(new jakarta.xml.bind.JAXBElement<org.xlsx4j.sml.CTObjectAnchor>(
+				new javax.xml.namespace.QName("http://schemas.openxmlformats.org/spreadsheetml/2006/main", "anchor"),
+				org.xlsx4j.sml.CTObjectAnchor.class, anchor), true, false, Context.jcSML);
+		assertTrue(xml, xml.contains("<from><xdr:col>"));
+		assertTrue(xml, xml.contains("<to><xdr:col>"));
+		assertFalse(xml, xml.contains("xdr:from"));
 	}
 
 	// ---- the temporary LibreOffice-made workbooks (skipped unless -Dcr022.samples=<dir>)

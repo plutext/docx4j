@@ -296,8 +296,12 @@
   </xsd:complexType>
   <xsd:complexType name="CT_ObjectAnchor">
     <xsd:sequence>
-      <xsd:element ref="xdr:from" minOccurs="1" maxOccurs="1"/>
-      <xsd:element ref="xdr:to" minOccurs="1" maxOccurs="1"/>
+      <!-- ECMA-376 has ref="xdr:from" / ref="xdr:to"; Excel writes <from> and <to> in the SpreadsheetML
+           namespace (their xdr:col etc. children in the drawing's) and repairs a worksheet that has
+           xdr:from ("problem with some content", 2026-09-20, CR-022 phase 2b). Local elements of the
+           same type, so docx4j writes what Excel reads. -->
+      <xsd:element name="from" type="xdr:CT_Marker" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="to" type="xdr:CT_Marker" minOccurs="1" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="moveWithCells" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="sizeWithCells" type="xsd:boolean" use="optional" default="false"/>
