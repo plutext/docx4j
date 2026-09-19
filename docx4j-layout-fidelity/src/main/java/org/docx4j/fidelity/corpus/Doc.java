@@ -1154,10 +1154,30 @@ public final class Doc {
 	 * Returns the run to put in a paragraph.
 	 */
 	public R textBox(int wTwips, int hTwips, List<P> paragraphs) throws Exception {
+		String inner = paragraphsXml(paragraphs, "");
+		return textBox(wTwips, hTwips, inner, inner);
+	}
+
+	/** The paragraphs as WordprocessingML, for a caller assembling a text box branch by hand.
+	 *  @since 17.1.1 (CR-021 phase 0) */
+	public static String paragraphsXml(List<P> paragraphs) {
+		return paragraphsXml(paragraphs, "");
+	}
+
+	/**
+	 * As {@link #textBox(int, int, List)}, with the content of each branch's
+	 * {@code w:txbxContent} given as WordprocessingML (the paragraphs, without the
+	 * wrapper) - the wps Choice and the VML Fallback need not agree, which is what
+	 * CR-021's probes measure: which branch Word draws, and what it does to the other.
+	 * @since 17.1.1 (CR-021 phase 0)
+	 */
+	public R textBox(int wTwips, int hTwips, String choiceParagraphsXml, String fallbackParagraphsXml)
+			throws Exception {
 		shapeCounter++;
 		int n = shapeCounter;
 		long cx = wTwips * 635L, cy = hTwips * 635L;
-		String inner = "<w:txbxContent>" + paragraphsXml(paragraphs, "") + "</w:txbxContent>";
+		String choiceInner = "<w:txbxContent>" + choiceParagraphsXml + "</w:txbxContent>";
+		String fallbackInner = "<w:txbxContent>" + fallbackParagraphsXml + "</w:txbxContent>";
 		String xml = "<w:r xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
 				+ " xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\""
 				+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
@@ -1177,14 +1197,14 @@ public final class Doc {
 				+ "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
 				+ "<a:solidFill><a:srgbClr val=\"FFFFFF\"/></a:solidFill>"
 				+ "<a:ln w=\"6350\"><a:solidFill><a:srgbClr val=\"000000\"/></a:solidFill></a:ln></wps:spPr>"
-				+ "<wps:txbx>" + inner + "</wps:txbx>"
+				+ "<wps:txbx>" + choiceInner + "</wps:txbx>"
 				+ "<wps:bodyPr rot=\"0\" vert=\"horz\" wrap=\"square\" lIns=\"91440\" tIns=\"45720\" rIns=\"91440\" bIns=\"45720\" anchor=\"t\" anchorCtr=\"0\"><a:noAutofit/></wps:bodyPr>"
 				+ "</wps:wsp></a:graphicData></a:graphic></wp:inline></w:drawing></mc:Choice>"
 				+ "<mc:Fallback><w:pict>"
 				+ "<v:shape id=\"Text Box " + n + "\" o:spid=\"_x0000_s" + (1025 + n) + "\" type=\"#_x0000_t202\""
 				+ " style=\"width:" + (wTwips / 20.0) + "pt;height:" + (hTwips / 20.0) + "pt;mso-position-horizontal-relative:char;mso-position-vertical-relative:line\""
 				+ " filled=\"t\" stroked=\"t\">"
-				+ "<v:textbox>" + inner + "</v:textbox><w10:anchorlock/></v:shape>"
+				+ "<v:textbox>" + fallbackInner + "</v:textbox><w10:anchorlock/></v:shape>"
 				+ "</w:pict></mc:Fallback></mc:AlternateContent></w:r>";
 		Object o = XmlUtils.unmarshalString(xml, Context.jc, R.class);
 		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();

@@ -6194,6 +6194,80 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+
+		// ---------------------------------------------------------------- CR-021 phase 0
+		//                                   mc:AlternateContent: which branch Word draws, and
+		//                                   what a list and a bound content control inside a
+		//                                   text box do - measured with branches that DIFFER,
+		//                                   so the drawn branch is read from the text itself
+
+		PROBES.add(new Probe("mc-textbox-branches-numbered",
+				"a text box written as mc:AlternateContent whose two branches DIFFER: the wps "
+				+ "Choice holds two items of the body's list A (w:num 80) and one of a list B "
+				+ "(w:num 81) seen nowhere else before it; the VML Fallback holds three of A and "
+				+ "two of B; three body items of A before the box and three after, then one body "
+				+ "item of B - which branch Word draws, what its items are numbered, and whether "
+				+ "the body's count after the box is advanced by the box's paragraphs at all, "
+				+ "once or twice (TraversalUtil visits both branches; numbering-stories says a "
+				+ "text box is its own story)", () -> {
+			Doc d = Doc.create(15);
+			d.numberingXml(abstractDecimal(80) + num(80, 80) + abstractDecimal(81) + num(81, 81));
+			d.para("Every numbered paragraph here is list A (w:num 80) unless it says list B "
+					+ "(w:num 81). The text box's two branches differ, so the branch drawn is "
+					+ "read from its text, and the body's count after the box from its labels.")
+					.after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("body item of list A").numPr(80, 0).add();
+			List<P> choice = new ArrayList<>();
+			for (int k = 1; k <= 2; k++) choice.add(d.para("wps Choice item of list A").numPr(80, 0).build());
+			choice.add(d.para("wps Choice item of list B").numPr(81, 0).build());
+			List<P> fallback = new ArrayList<>();
+			for (int k = 1; k <= 3; k++) fallback.add(d.para("VML Fallback item of list A").numPr(80, 0).build());
+			for (int k = 1; k <= 2; k++) fallback.add(d.para("VML Fallback item of list B").numPr(81, 0).build());
+			d.para("A text box whose branches differ: ")
+					.run(d.textBox(5000, 2400, Doc.paragraphsXml(choice), Doc.paragraphsXml(fallback)))
+					.before(120).after(120).add();
+			for (int k = 1; k <= 3; k++) d.para("body item of list A after the box").numPr(80, 0).add();
+			d.para("body item of list B after the box").numPr(81, 0).add();
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("mc-textbox-branches-bound-sdt",
+				"a custom XML part (root/name = FRESH NAME, root/box = FRESH BOX) and three "
+				+ "plain-text content controls bound to it whose document text is STALE: one in "
+				+ "the body, and one in each branch of a text box written as mc:AlternateContent "
+				+ "(the wps Choice says STALE CHOICE, the VML Fallback STALE FALLBACK); then a "
+				+ "control box with no binding whose branches say CHOICE TEXT and FALLBACK TEXT - "
+				+ "which branch Word draws, whether it refreshes the bound text from the part, "
+				+ "and (in Word's re-save) what it writes into the branch it did not draw", () -> {
+			Doc d = Doc.create(15);
+			String storeItemId = addCustomXml(d,
+					"<root><name>FRESH NAME</name><box>FRESH BOX</box></root>");
+			d.para("The custom XML part says FRESH; every bound control below says STALE in "
+					+ "the document. Read which text Word shows, and in each text box which "
+					+ "branch.").after(120).add();
+			d.add(withInlineSdt(d.para("Body control, bound to root/name: ").build(),
+					boundSdtXml("STALE NAME", "/root[1]/name[1]", storeItemId, 21001)));
+			List<P> choice = new ArrayList<>();
+			choice.add(withInlineSdt(d.para("wps Choice control, bound to root/box: ").build(),
+					boundSdtXml("STALE CHOICE", "/root[1]/box[1]", storeItemId, 21002)));
+			List<P> fallback = new ArrayList<>();
+			fallback.add(withInlineSdt(d.para("VML Fallback control, bound to root/box: ").build(),
+					boundSdtXml("STALE FALLBACK", "/root[1]/box[1]", storeItemId, 21003)));
+			d.para("A text box whose branches each hold a bound control: ")
+					.run(d.textBox(5000, 1200, Doc.paragraphsXml(choice), Doc.paragraphsXml(fallback)))
+					.before(120).after(120).add();
+			List<P> choice2 = new ArrayList<>();
+			choice2.add(d.para("CHOICE TEXT, the wps branch, no binding").build());
+			List<P> fallback2 = new ArrayList<>();
+			fallback2.add(d.para("FALLBACK TEXT, the VML branch, no binding").build());
+			d.para("The control box, no binding: ")
+					.run(d.textBox(5000, 1200, Doc.paragraphsXml(choice2), Doc.paragraphsXml(fallback2)))
+					.after(120).add();
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {
@@ -6464,6 +6538,54 @@ public final class Corpus {
 				+ "<w:rPr><w:sz w:val=\"" + halfPts + "\"/>"
 				+ (halfPts >= 40 ? "<w:b/>" : "") + "</w:rPr>"
 				+ "</w:lvl>";
+	}
+
+	// ---------------------------------------------------------------- CR-021 phase 0 helpers
+
+	/** A custom XML data storage part holding this XML, with its itemProps part; returns the
+	 *  store item id (fixed, so the probe's docx is reproducible).  @since 17.1.1 (CR-021 phase 0) */
+	private static String addCustomXml(Doc d, String xml) throws Exception {
+		org.docx4j.openpackaging.parts.CustomXmlDataStoragePart part =
+				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart();
+		org.docx4j.model.datastorage.CustomXmlDataStorage data =
+				new org.docx4j.model.datastorage.CustomXmlDataStorageImpl();
+		data.setDocument(org.docx4j.XmlUtils.getNewDocumentBuilder().parse(
+				new org.xml.sax.InputSource(new java.io.StringReader(xml))));
+		part.setData(data);
+		d.mdp().addTargetPart(part,
+				org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+		org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart props =
+				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart();
+		org.docx4j.customXmlProperties.DatastoreItem dsi =
+				new org.docx4j.customXmlProperties.ObjectFactory().createDatastoreItem();
+		String storeItemId = "{7C021000-0000-4000-8000-0000000C0021}";
+		dsi.setItemID(storeItemId);
+		props.setJaxbElement(dsi);
+		part.addTargetPart(props);
+		return storeItemId;
+	}
+
+	/** An inline plain-text content control (w:sdt with w:text) bound by w:dataBinding to
+	 *  xpath in the custom XML part storeItemId, showing text.  @since 17.1.1 (CR-021 phase 0) */
+	private static String boundSdtXml(String text, String xpath, String storeItemId, int id) {
+		return "<w:sdt><w:sdtPr><w:id w:val=\"" + id + "\"/>"
+				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + storeItemId + "\"/>"
+				+ "<w:text/></w:sdtPr>"
+				+ "<w:sdtContent><w:r><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:sdtContent></w:sdt>";
+	}
+
+	/** The paragraph with this inline w:sdt appended to its content.  @since 17.1.1 (CR-021 phase 0) */
+	private static P withInlineSdt(P p, String sdtXml) throws Exception {
+		String xml = org.docx4j.XmlUtils.marshaltoString(p, true, false, org.docx4j.jaxb.Context.jc);
+		if (!xml.contains("xmlns:w=")) {
+			xml = xml.replaceFirst("<w:p(?=[ >])",
+					"<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"");
+		}
+		int at = xml.lastIndexOf("</w:p>");
+		xml = xml.substring(0, at) + sdtXml + xml.substring(at);
+		Object o = org.docx4j.XmlUtils.unmarshalString(xml, org.docx4j.jaxb.Context.jc, P.class);
+		if (o instanceof jakarta.xml.bind.JAXBElement) o = ((jakarta.xml.bind.JAXBElement<?>) o).getValue();
+		return (P) o;
 	}
 
 	/** Writes every probe as {@code <id>.docx} into dir, plus corpus.txt and corpus-manifest.properties. */
