@@ -809,3 +809,17 @@ when a Fallback or a preferred later Choice is taken; nested elements
 inside a held-back Choice are captured with it. So every docx4j reader
 applies one rule, and the ports' textOf no longer differs from
 `TextUtils` on rule 3. `McSelectionTest` covers it.
+
+### 8.12 Follow-up: the mce wildcards are lax (2026-09-19)
+
+Proposed by docx4j-generated-objects-ts from its regeneration, measured
+there: `xsd/mce/markup-compatibility-2006-MINIMAL.xsd` declared the
+`mc:Choice` and `mc:Fallback` wildcards `processContents="strict"`, which a
+compiler that follows the word turns into typed-only content, so a kept
+branch holding anything the model cannot type (a `w:tbl`, a local element
+in that model; any untyped namespace) refused to unmarshal at all. XJC had
+bound "strict" as `@XmlAnyElement(lax = true)` all along, so the Java model
+already kept what it knows typed and the rest as DOM; the word is now
+`lax`, which is what ECMA-376 Part 3 means and what JAXB did. The
+regenerated Java sources differ only in javadoc and an unused import; the
+mc tests are green. objects-ts regenerates from this commit.

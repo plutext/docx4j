@@ -58,8 +58,13 @@ elements. -->
 				<xsd:element name="Choice" minOccurs="0" maxOccurs="unbounded">
 					<xsd:complexType>
 						<xsd:sequence>
+							<!-- docx4j 17.1.1 (CR-021): lax, as ECMA-376 Part 3 means it - a consumer
+							     binds what it understands and keeps the rest.  XJC bound "strict" as
+							     @XmlAnyElement(lax = true) anyway, so the Java model is unchanged; a
+							     compiler that follows the word (docx4j-generated-objects-ts) refused a
+							     kept branch holding anything it could not type. -->
 							<xsd:any minOccurs="0" maxOccurs="unbounded"
-								processContents="strict">
+								processContents="lax">
 							</xsd:any>
 						</xsd:sequence>
 						<xsd:attribute name="Requires" type="xsd:string" use="required" />
@@ -71,8 +76,13 @@ elements. -->
 				<xsd:element name="Fallback" minOccurs="0" maxOccurs="1">
 					<xsd:complexType>
 						<xsd:sequence>
+							<!-- docx4j 17.1.1 (CR-021): lax, as ECMA-376 Part 3 means it - a consumer
+							     binds what it understands and keeps the rest.  XJC bound "strict" as
+							     @XmlAnyElement(lax = true) anyway, so the Java model is unchanged; a
+							     compiler that follows the word (docx4j-generated-objects-ts) refused a
+							     kept branch holding anything it could not type. -->
 							<xsd:any minOccurs="0" maxOccurs="unbounded"
-								processContents="strict">
+								processContents="lax">
 							</xsd:any>
 						</xsd:sequence>
 						<xsd:attribute ref="mc:Ignorable" use="optional" />
