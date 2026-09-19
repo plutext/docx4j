@@ -59,6 +59,30 @@ is a part's own namespace, from ROOT.xsd directly. Word schemas hang off
 under `xsd/dml/` and `xsd/odrawxml/`; the markup-compatibility schema is
 `xsd/mce/markup-compatibility-2006-MINIMAL.xsd`.
 
+**Its dependencies.** A schema's `xsd:import` and `xsd:include` lines name
+the other schemas it needs, and some of those may be ones this tree does not
+carry yet. Read the imports first and sort them:
+
+- a namespace this tree already binds: point the `schemaLocation` at this
+  tree's file for it (the source's names differ - `w16cex.xsd` had
+  `word12.xsd` and `word16.xsd` rewritten to `wml.xsd` and `w16.xsd` - and the
+  header comment records each rewrite);
+- a namespace this tree does not carry: it is a schema addition of its own,
+  by this same recipe (its own file, package annotation, module-info lines,
+  context and prefix entries), in the same commit; `w16.xsd` came in with
+  `w16cex.xsd` that way, since `w16cex` uses its extension-list type. Keep
+  going until every import resolves; a dependency may itself have
+  dependencies;
+- a namespace referenced only through a wildcard, or one whose types would
+  cross a JAXB context boundary (the second caution below): a
+  `xsd:any processContents="lax"` over that namespace in place of the
+  element reference, and no import.
+
+An `xsd:include` (same namespace, split across files) is taken whole, with
+the same treatment of its own imports. The regeneration of step 4 is the
+check: XJC fails on an unresolved import, and a namespace missing from a
+context list (step 6) fails at load as "unexpected element".
+
 Two cautions from the schema work of September 2026 (CR-018, CR-021):
 
 - **Admit what Office writes, not what the standard allows.** Measure the
