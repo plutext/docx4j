@@ -130,6 +130,18 @@ public class ParityAccessorsTest {
 	}
 
 	@Test
+	public void numIdZeroTurnsNumberingOff() throws Exception {
+		// ECMA-376 17.9.18: w:numId 0 designates the removal of numbering, never a definition
+		WordprocessingMLPackage pkg = packageWithNumberedNormal();
+		PPr pPr = F.createPPr();
+		pPr.setNumPr(numPr(0, null));
+		Emulator.NumRef ref = Emulator.numRefFor(pkg, pPr);
+		assertTrue(ref.notNumbered);
+		assertTrue(ref.reason, ref.reason.contains("numId 0"));
+		assertNull("Normal is numbered, but the paragraph's numId 0 switches it off", Emulator.getNumber(pkg, pPr));
+	}
+
+	@Test
 	public void countersAreReadableAndReadOnly() throws Exception {
 		WordprocessingMLPackage pkg = packageWithNumberedNormal();
 		NumberingState state = new NumberingState();

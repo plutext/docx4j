@@ -1202,6 +1202,8 @@ API, for the ports' parity harnesses (docx4j-core-ts, docx4j-python):
 - PropertyResolver.reachesDefaultTableStyle(tblPr), the flag getEffectiveTableStyle
   decides the built-in Normal Table by, and ancestry(styleId) made public.
 - FontsAnalysis.NO_OP_VISITOR public, for callers of RunFontSelector.documentFontFor.
+- A w:numId of 0 turns numbering off (ECMA-376 17.9.18): numRefFor says so, and getNumber
+  returns null for such a paragraph where it used to return an empty result.
 
 Other:
 

@@ -524,6 +524,13 @@ public class Emulator {
     			}
     		}
     	}
+    	if ("0".equals(numId)) {
+    		// ECMA-376 17.9.18: a w:numId of 0 never references a definition; it designates the
+    		// removal of numbering at this level (a paragraph or style switching an inherited
+    		// list off).  Until 17.1.1 it fell through to a lookup of list 0, an empty result.
+    		return new NumRef((directNumPr ? "the paragraph's" : "style '" + styleId + "'s")
+    				+ " w:numId 0 turns numbering off");
+    	}
     	if (log.isDebugEnabled()) log.debug("Using numId: " + numId);
 
     	if (levelId == null || levelId.equals("")) {
