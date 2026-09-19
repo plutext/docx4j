@@ -644,3 +644,32 @@ b53-batch49 remains the baseline.
 **Hand-off:** objects-ts told the commit (the two `wml.xsd` admissions and
 the regeneration they need); core-ts told (its typed model gains the
 element in `P.getContent()` and `NumPicBullet`).
+
+**SpreadsheetML, asked by Jason after the gate** ("does SpreadsheetML not
+use mc:AlternateContent?"). It does: the repository's 7 xlsx carry it in
+`xl/workbook.xml` (Excel's `x15` absPath, a Choice with no Fallback; 4
+workbooks), in chart parts (`c14` style, 3) and once in a spreadsheet
+drawing (`xdr:oneCellAnchor`, `a14`). What docx4j did with them, measured:
+`sml.xsd` has admitted the element in `CT_Workbook` since 8.1.1, so a
+workbook that unmarshals cleanly keeps it - but a workbook that reaches the
+preprocessor for any other reason (the two non-strict test workbooks do,
+for an `xr:revisionPtr` the schema lacks) had it dropped ("Missing
+mc:Fallback! Dropping"), because the retain branch knew only `w:r`. The
+retry path in `JaxbXmlPartXPathAware` applies the WordprocessingML
+stylesheet to every package format, so that stylesheet is the shared
+resolver and its retain list must name every admitted parent. Fixed in the
+same commit series: `parent::x:workbook` retained; the `sml.xsd` admission
+made `minOccurs="0"` (it was `required` in the generated `Workbook`, which
+no docx4j-built workbook satisfies and which a typed port would have to
+carry); `WorkbookAlternateContentKeptTest`. Chart parts (`c:chartSpace`,
+DrawingML, not admitted by `dml-chart.xsd`) and the spreadsheet drawing's
+anchor are still resolved to one branch at load. PresentationML: `pml.xsd`
+admits the element in `CT_GroupShape` (`p:spTree`, `p:grpSp`) and
+`CT_ControlList`, and `loadAndSave.pptx`'s slide carries one in `p:spTree`
+(`a14`), resolved today because the slide part reaches the preprocessor
+for an `a14:m` the schema lacks - phase 3 adds those parents to the retain
+list together with the pptx4j consumers. The preprocessor's warnings no
+longer claim "not admitted by the schema" (untrue for PML); they say what
+is kept. Also seen, unrelated: `xl/drawings/vmlDrawing1.vml` in
+`loadAndSave.xlsx` fails to unmarshal (an unexpected `xml` element) - a
+pre-existing xlsx4j VML part issue, noted for the xlsx4j backlog.

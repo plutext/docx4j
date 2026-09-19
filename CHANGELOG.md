@@ -295,7 +295,12 @@ Markup compatibility (CR-021, one policy for mc:AlternateContent):
   and a save instead of being resolved to one at load and discarded. Numbering.NumPicBullet
   gains getAlternateContent(); its getPict()/getDrawing() are null for such a bullet, and a
   reader takes one branch through McSelection. The load-time preprocessor now resolves the
-  element only for a parent the schema does not admit, with a warning naming the parent.
+  element only for a parent it does not keep, with a warning naming the parent.
+- SpreadsheetML: the workbook's mc:AlternateContent (Excel's x15 absPath, written with no
+  Fallback) survives a load whose workbook part went through the preprocessor for another
+  reason (an xr:revisionPtr, say); it was dropped. sml.xsd's admission of the element is
+  now minOccurs="0", as it always was in fact optional. Charts' and drawings' elements are
+  still resolved to one branch at load; PresentationML follows in CR-021 phase 3.
 
 Packaging:
 

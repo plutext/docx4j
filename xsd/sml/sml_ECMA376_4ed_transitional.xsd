@@ -4315,7 +4315,8 @@
        -->
        
 		<!--  added docx4j 8.1.1 -->
-		<xsd:element ref="mc:AlternateContent" />
+		<!-- docx4j 17.1.1 (CR-021): optional - Excel writes it (x15 absPath) but most producers do not -->
+		<xsd:element ref="mc:AlternateContent" minOccurs="0" />
        
       
       <xsd:element name="workbookProtection" type="CT_WorkbookProtection" minOccurs="0"

@@ -7,6 +7,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	
 	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
 	
  	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
@@ -306,12 +307,17 @@
 		
   	<xsl:choose>
   	
-	    <xsl:when test="parent::w:r or parent::w:p or parent::w:numPicBullet">
+	    <xsl:when test="parent::w:r or parent::w:p or parent::w:numPicBullet or parent::x:workbook">
 				<!-- The schema admits mc:AlternateContent here (w:r since 3.3.8; w:p and
-				     w:numPicBullet since 17.1.1, CR-021 phase 2), so JAXB keeps both branches
-				     and the consumers choose one through org.docx4j.jaxb.McSelection.  This
-				     stylesheet is only reached when JAXB rejected an mc:AlternateContent
-				     SOMEWHERE in the part, so an element here is passed through whole. -->
+				     w:numPicBullet since 17.1.1, CR-021 phase 2; x:workbook, Excel's x15
+				     absPath, in sml.xsd all along), so JAXB keeps both branches and the
+				     consumers choose one through org.docx4j.jaxb.McSelection.  This
+				     stylesheet is reached for every package format whenever JAXB rejected
+				     an element SOMEWHERE in the part - not only an mc:AlternateContent, so
+				     a workbook with an xr:revisionPtr comes through here too - and an
+				     element under one of these parents is passed through whole.
+				     PresentationML's admitted parents (p:spTree, p:grpSp, p:controls) join
+				     this list in CR-021 phase 3, with the pptx4j consumers. -->
 			<xsl:variable name="dummyRetain" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), '; retaining'))" />
 		    <xsl:copy>
@@ -319,17 +325,19 @@
 		    </xsl:copy>
 		</xsl:when>
 
-		<!-- Any other parent is one the survey of CR-021 phase 0 (835 documents) never
-		     saw.  The element cannot be kept - the schema does not admit it there and the
-		     part would fail to unmarshal - so it is resolved to the one branch docx4j draws
-		     (org.docx4j.jaxb.McSelection's rule, through XSLTUtils.mcPrefersChoice: the
-		     first Choice whose Requires prefixes are all in docx4j.jaxb.mc.preferChoice,
-		     else the Fallback), with a warning naming the parent so that the schema can
-		     be extended to it.  A VML-first branch that lived here from 2012 never ran and
-		     is gone. -->
+		<!-- Any other parent: in WordprocessingML one the survey of CR-021 phase 0
+		     (835 documents) never saw; in the other formats a parent the schema may
+		     admit but whose consumers have not yet been made branch-aware (PresentationML
+		     is CR-021 phase 3), or one it does not (a chart's c:chartSpace, a
+		     spreadsheet drawing's xdr:oneCellAnchor).  The element is resolved to the one
+		     branch docx4j draws (org.docx4j.jaxb.McSelection's rule, through
+		     XSLTUtils.mcPrefersChoice: the first Choice whose Requires prefixes are all in
+		     docx4j.jaxb.mc.preferChoice, else the Fallback, else dropped), with a warning
+		     naming the parent.  A VML-first branch that lived here from 2012 never ran
+		     and is gone. -->
 		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
 			<xsl:variable name="dummyParent"
-				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not admitted by the schema; resolving it (CR-021)'))" />
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook); resolving it'))" />
 
   			<xsl:variable name="chosen"
   				select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
@@ -343,7 +351,7 @@
   		<xsl:when test="mc:Fallback">
   		
   			<xsl:variable name="message" 
-  				select="concat('mc:AlternateContent in ', name(..), ' is not admitted by the schema; selecting its Fallback ', name(mc:Fallback/*[1]), ' (CR-021)')" />  			
+  				select="concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook); selecting its Fallback ', name(mc:Fallback/*[1]))" />  			
 			<xsl:variable name="logging" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
 				
