@@ -232,4 +232,18 @@ public class McSelectionTest {
 		TextUtils.extractText(r, sw);
 		assertEquals("choice para", sw.toString());
 	}
+
+	@Test
+	public void extractTextAppliesTheLastResortToAnElementWithNoFallback() throws Exception {
+		// Choices but no Fallback: McSelection takes the first Choice; the stream holds its
+		// text back until the element ends and then writes it
+		R r = run(RUN_NO_FALLBACK);
+		StringWriter sw = new StringWriter();
+		TextUtils.extractText(r, sw);
+		assertEquals("choice para", sw.toString());
+		// and with a Fallback present the held-back Choice is discarded, not written twice
+		sw = new StringWriter();
+		TextUtils.extractText(run(RUN), sw);
+		assertEquals("fallback para onefallback para two", sw.toString());
+	}
 }

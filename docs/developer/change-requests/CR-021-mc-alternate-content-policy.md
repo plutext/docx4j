@@ -553,9 +553,9 @@ Coded:
 - Callers of the one rule: `AbstractVisitorExporterGenerator` (through
   `selectedBranch`), `XSLTUtils` (delegating), `docx2xhtml-core.xslt` (now the
   same template as `docx2fo.xslt`; it always took the Fallback before),
-  `TextUtils.TextExtractor` (a SAX stream: skips the branches not selected,
-  with the one limitation its javadoc states), `WmlToMarkdown` (draws a
-  `w:drawing` from the selected branch).
+  `TextUtils.TextExtractor` (a SAX stream: skips the branches not selected;
+  since the follow-up below it applies the last resort too), `WmlToMarkdown`
+  (draws a `w:drawing` from the selected branch).
 - `McSelectionTest` (docx4j-core-tests): the property rule, the branch
   selection, `branches` by mode, the traversal default and ALL, the visit
   overloads and `setMcMode`, one-branch text extraction.
@@ -795,3 +795,17 @@ What this CR leaves for others (§8.6): the HTML exporter's VML text box
 (item 2, §5), the anonymiser's shape analyzer (item 8), the VML JAXB
 round-trip losses (§8.8), and the check of every kept branch's content in
 the producing application (item 10).
+
+### 8.11 Follow-up: the stream extractor applies the whole rule (2026-09-19)
+
+Jason asked whether McSelection's rule is a problem for the SAX-based
+`TextUtils`. It was not for any Word document, but the stream could not
+apply the last resort - Choices and no Fallback take the first Choice -
+because it cannot know a Fallback is absent until the element ends, and
+such an element (Excel's absPath is the one seen) contributed nothing.
+`TextExtractor` now holds back the first unpreferred Choice's text and
+writes it when the element ends if nothing else was taken, discarding it
+when a Fallback or a preferred later Choice is taken; nested elements
+inside a held-back Choice are captured with it. So every docx4j reader
+applies one rule, and the ports' textOf no longer differs from
+`TextUtils` on rule 3. `McSelectionTest` covers it.

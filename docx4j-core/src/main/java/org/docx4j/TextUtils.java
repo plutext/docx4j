@@ -140,9 +140,11 @@ public class TextUtils {
 	 * 
 	 * <p>mc:AlternateContent (since 17.1.1, CR-021): the text of ONE branch - the one
 	 * {@link org.docx4j.jaxb.McSelection} draws - is written; the other branches are
-	 * skipped, so a text box's text appears once.  Being a stream, this cannot apply
-	 * McSelection's last resort (an element with Choices but no Fallback takes its
-	 * first Choice): such an element, which Word never writes, contributes nothing.</p>
+	 * skipped, so a text box's text appears once.  The rule is McSelection's exactly:
+	 * the first Choice whose Requires prefixes are all preferred, else the Fallback,
+	 * else (Choices but no Fallback) the first Choice.  Being a stream, this cannot
+	 * know a Fallback is absent until the element ends, so the first unpreferred
+	 * Choice's text is held back and written only then, if nothing else was taken.</p>
 	 */
 	public static class TextExtractor extends DefaultHandler {
 
@@ -150,41 +152,71 @@ public class TextUtils {
 
 		private Writer out;
 
-		/** One entry per open mc:AlternateContent: whether a branch has been taken. */
-		private final java.util.ArrayDeque<boolean[]> alternates = new java.util.ArrayDeque<boolean[]>();
+		/** One open mc:AlternateContent. */
+		private static final class Alternate {
+			boolean taken;
+			StringBuilder firstChoice;   // held-back text of the first unpreferred Choice
+			int firstChoiceDepth;        // the depth of that Choice element
+		}
+
+		private final java.util.ArrayDeque<Alternate> alternates = new java.util.ArrayDeque<Alternate>();
+		/** Where characters go: the innermost held-back Choice's buffer, else the writer. */
+		private final java.util.ArrayDeque<StringBuilder> captures = new java.util.ArrayDeque<StringBuilder>();
 		/** Depth inside a skipped branch; 0 when writing. */
 		private int skipping = 0;
+		private int depth = 0;
 
 		public TextExtractor(Writer out) {
 			this.out = out;
 		}
 
+		private void emit(CharSequence text) throws SAXException {
+			if (captures.isEmpty()) {
+				try {
+					out.write(text.toString());
+				} catch (IOException e) {
+					throw new SAXException(e);
+				}
+			} else {
+				captures.peek().append(text);
+			}
+		}
+
 		@Override
 		public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts)
 				throws SAXException {
+			depth++;
 			if (skipping > 0) {
 				skipping++;
 				return;
 			}
-			if (MC_NS.equals(uri)) {
-				if ("AlternateContent".equals(localName)) {
-					alternates.push(new boolean[] { false });
-				} else if ("Choice".equals(localName)) {
-					boolean[] taken = alternates.peek();
-					String requires = atts.getValue("Requires");
-					if (requires == null) requires = atts.getValue("", "Requires");
-					if (taken != null && !taken[0] && org.docx4j.jaxb.McSelection.prefersChoice(requires)) {
-						taken[0] = true;
-					} else {
-						skipping = 1;
-					}
-				} else if ("Fallback".equals(localName)) {
-					boolean[] taken = alternates.peek();
-					if (taken != null && !taken[0]) {
-						taken[0] = true;
-					} else {
-						skipping = 1;
-					}
+			if (!MC_NS.equals(uri)) return;
+			if ("AlternateContent".equals(localName)) {
+				alternates.push(new Alternate());
+			} else if ("Choice".equals(localName)) {
+				Alternate alt = alternates.peek();
+				String requires = atts.getValue("Requires");
+				if (requires == null) requires = atts.getValue("", "Requires");
+				if (alt == null) return; // a stray Choice: written through
+				if (!alt.taken && org.docx4j.jaxb.McSelection.prefersChoice(requires)) {
+					alt.taken = true;
+					alt.firstChoice = null;
+				} else if (!alt.taken && alt.firstChoice == null) {
+					// the last resort, held back until the element ends
+					alt.firstChoice = new StringBuilder();
+					alt.firstChoiceDepth = depth;
+					captures.push(alt.firstChoice);
+				} else {
+					skipping = 1;
+				}
+			} else if ("Fallback".equals(localName)) {
+				Alternate alt = alternates.peek();
+				if (alt == null) return;
+				if (!alt.taken) {
+					alt.taken = true;
+					alt.firstChoice = null; // the held-back Choice is not needed
+				} else {
+					skipping = 1;
 				}
 			}
 		}
@@ -193,20 +225,29 @@ public class TextUtils {
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			if (skipping > 0) {
 				skipping--;
+				depth--;
 				return;
 			}
-			if (MC_NS.equals(uri) && "AlternateContent".equals(localName) && !alternates.isEmpty()) {
-				alternates.pop();
+			if (MC_NS.equals(uri)) {
+				if ("Choice".equals(localName)) {
+					Alternate alt = alternates.peek();
+					if (alt != null && alt.firstChoiceDepth == depth && !captures.isEmpty()
+							&& (alt.firstChoice == null || captures.peek() == alt.firstChoice)) {
+						captures.pop();
+					}
+				} else if ("AlternateContent".equals(localName) && !alternates.isEmpty()) {
+					Alternate alt = alternates.pop();
+					if (!alt.taken && alt.firstChoice != null) {
+						emit(alt.firstChoice);
+					}
+				}
 			}
+			depth--;
 		}
 
 		public void characters(char[] text, int start, int length) throws SAXException {
 			if (skipping > 0) return;
-			try {
-				out.write(text, start, length);
-			} catch (IOException e) {
-				throw new SAXException(e);
-			}
+			emit(new String(text, start, length));
 		}
 	} // end TextExtractor
 	

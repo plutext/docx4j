@@ -284,8 +284,10 @@ Markup compatibility (CR-021, one policy for mc:AlternateContent):
   edits must opt in.
 - The selection rule lives in one place, org.docx4j.jaxb.McSelection: the first
   Choice whose Requires prefixes are all named in docx4j.jaxb.mc.preferChoice, else the
-  Fallback. The FO and HTML visitor exporters, docx2fo.xslt, TextUtils.extractText
-  (which used to emit both branches' text) and the markdown exporter all use it.
+  Fallback, else (no Fallback) the first Choice. The FO and HTML visitor exporters,
+  docx2fo.xslt, TextUtils.extractText (which used to emit both branches' text; being a
+  stream it holds the first Choice's text back until it knows there is no Fallback) and
+  the markdown exporter all use it.
 - The default preference stays the Fallback: with wps preferred the FO exporter does not
   yet draw an inline wps text box, and the HTML exporter loses a VML fallback text
   box's content either way (both recorded in CR-021 §8.6 for the next phase).
