@@ -88,6 +88,57 @@
       <substitute font="Liberation Sans" quality="class"/>
     </font>
 
+    <!-- Aptos, Word 365's Office theme faces.  A document with no theme part resolves
+         its theme fonts to Aptos / Aptos Display (docx4j.fonts.defaultTheme, @since
+         17.1.1), and Microsoft ships neither with Windows: they are cloud fonts, and a
+         server has no licence for them.  Until 17.1.1 the pass found nothing here, FOP
+         drew the text in its base-14 fallback, and the PDF named Times-Roman without
+         embedding it.
+
+         docx4j-export-fo-fonts-theme2023 carries libre clones of both, so this is a
+         metric row and not a guess: Akasia (OFL 1.1, 12 styles, v0.0.2) for Aptos and
+         Intos Display (OFL 1.1, 4 styles) for Aptos Display.  Measured with fontTools
+         and HarfBuzz against Aptos 2.01: every one of the 138 advances identical, and
+         kerned line widths identical to 0.001pt (CR-001 batch 49 item 6b).
+
+         The class substitutes of item 6 stay behind them, for a classpath without the
+         jar; they are much worse and say so.  Where a machine really has Microsoft's
+         Aptos - a licensed Windows or Mac, not a server - the installed face wins by
+         precedence and none of this is consulted.  @since 17.1.1 -->
+    <font name="Aptos">
+      <substitute font="Akasia Regular" quality="metric"
+                  error="0.00%: all 138 advances identical to Aptos 2.01 and kerned line widths identical to 0.001pt (fontTools + HarfBuzz, CR-001 batch 49 item 6b); the other eleven styles ship in the same jar"/>
+      <substitute font="Carlito Regular" quality="measured"
+                  error="-5.3% on digits and -5.5% on a-z against Word's own Aptos (55.752/130.394 against 58.865/137.923 at 11pt), where Arimo is +3.9% and +1.5% - but the probe set says the mean advance is not what decides a line: in Carlito every line of styles-linerule, fonts-missing-slots and tab-leader-kinds breaks where Word's Aptos breaks and in Arimo none of styles-linerule's fifteen does"/>
+      <substitute font="Arimo Regular" quality="measured"
+                  error="+3.9% / +1.5%: closer on the mean advance, further on the line breaks"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Aptos Display">
+      <substitute font="Intos Display Regular" quality="metric"
+                  error="0.00%: all 138 advances identical to Aptos Display 2.01 and kerned line widths identical to 0.001pt (fontTools + HarfBuzz, CR-001 batch 49 item 6b); italic, bold and bold italic ship in the same jar"/>
+      <substitute font="Carlito Regular" quality="measured"
+                  error="-2.9% on digits and +1.0% on a-z against Word's own Aptos Display (55.752/130.394 against 57.40/129.16 at 11pt); Arimo is +6.6% and +8.4%"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <!-- The other two Aptos faces Word's cloud-font folder carries (word-line-metrics
+         .properties has their line boxes).  Akasia carries a Light of its own, matched
+         to Aptos Light's stem and metrics by the project's own gated corpus (its
+         compatibility.json pins Aptos-Light.ttf 2.01 as the baseline) - which is the
+         project's measurement, not ours, so it is recorded as such.  Akasia has no
+         Narrow, so Aptos Narrow keeps a class substitute and will be wide.  Aptos Mono
+         is not among the faces that folder had, so it has no row.  @since 17.1.1 -->
+    <font name="Aptos Light">
+      <substitute font="Akasia Light" quality="metric"
+                  error="Akasia's own per-style baseline against Aptos-Light.ttf 2.01 (compatibility.json, verified); not measured here as Aptos and Aptos Display were"/>
+      <substitute font="Carlito Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+    <font name="Aptos Narrow">
+      <substitute font="Arimo Regular" quality="class"/>
+      <substitute font="Liberation Sans" quality="class"/>
+    </font>
+
     <!-- URW base 35 (ghostscript fonts).  Century Gothic was drawn to ITC Avant Garde
          Gothic's widths and URW Gothic is the Avant Garde clone.  @since 17.0.5 -->
     <font name="Century Gothic">
@@ -348,6 +399,21 @@
            jar="docx4j-export-fo-fonts-crosextra"
            packages="fonts-crosextra-caladea (Debian); ttf-caladea (Arch)"
            scripts="Latin"/>
+    <!-- Aptos and Aptos Display are cloud fonts: Microsoft does not ship them with Windows,
+         and no distribution packages them.  The jar is the only supply docx4j controls.
+         @since 17.1.1 -->
+    <clone name="Akasia" alsoKnownAs="Akasia Regular" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-theme2023"
+           packages="none: upstream is https://codeberg.org/bloudraad/akasia (v0.0.2)"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Intos Display" alsoKnownAs="Intos Display Regular" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-theme2023"
+           packages="none: upstream is https://github.com/muglug/intos"
+           scripts="Latin, Greek, Cyrillic"/>
+    <clone name="Akasia Light" licence="OFL-1.1"
+           jar="docx4j-export-fo-fonts-theme2023"
+           packages="none: upstream is https://codeberg.org/bloudraad/akasia (v0.0.2)"
+           scripts="Latin, Greek, Cyrillic"/>
 
     <clone name="Liberation Serif" licence="OFL-1.1"
            jar="docx4j-export-fo-fonts-liberation"

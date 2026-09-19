@@ -132,11 +132,12 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 		return val + sz + color + padding; 
 	}
 
-	public float eighthsToMM(int eighths ) {		
+	public float eighthsToMM(int eighths ) {
 		// 72 points per inch
 		float inches = eighths/(8*72.00f);
 		return inches/0.0394f;
 	}
+
 		
 
 	@Override
@@ -171,11 +172,10 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 		} 
 
 		if (border.getSz()!=null) {
-			 // eights of a point
-			float mm = eighthsToMM(border.getSz().intValue()); // eights of a point
-			foElement.setAttribute(CSS_NAME__WIDTH, 
-					UnitsOfMeasurement.format2DP.format(mm) + "mm" );
-		} 
+			foElement.setAttribute(CSS_NAME__WIDTH,
+					UnitsOfMeasurement.format2DP.format(
+					UnitsOfMeasurement.eighthsToGridPt(border.getSz().intValue())) + "pt");
+		}
 
 		if (border.getColor()!=null) {
 			if (border.getColor().equals("auto")) {

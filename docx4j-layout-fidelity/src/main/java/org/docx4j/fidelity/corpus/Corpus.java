@@ -6127,6 +6127,73 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// ---------------------------------------------------------------- CR-001 batch 49
+		//                                   item 0b: the theme faces of a package that has
+		//                                   no theme part at all.  docx4j's built-in Office
+		//                                   theme is the pre-2024 one (Calibri / Cambria);
+		//                                   Word 365's is Aptos / Aptos Display.  Which one
+		//                                   Word actually draws here is what the golden says.
+
+		PROBES.add(new Probe("theme-fonts-no-theme-part",
+				"a package with NO theme part whose runs reference the theme faces - "
+				+ "w:asciiTheme minorHAnsi (the body slot), majorHAnsi (the heading slot), "
+				+ "and a run with no w:rFonts at all, so what resolves is the document "
+				+ "defaults' own minorHAnsi reference - each as a line of digits and a line "
+				+ "of lower-case letters at 11pt, against controls in an explicit Calibri "
+				+ "and an explicit Cambria: WHICH FACE Word draws each line in, and what the "
+				+ "line advances to", () -> {
+			// createPackage puts a theme part in since 17.1.1; this probe's whole subject
+			// is a package that has none, and its docx must stay the one Word's golden was
+			// cut from
+			Doc d = Doc.create(15).noThemePart();
+
+			// the same two strings in every case, so the advances compare directly; the
+			// paragraph label (P01, P02, ...) keeps each extracted line distinct
+			final String DIGITS = "0123456789 0123456789 0123456789";
+			final String LOWER = "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz";
+
+			d.para("This package has no theme part. Each pair of lines below is one way of "
+					+ "asking for a theme face, at 11pt: read the FACE the glyphs are drawn "
+					+ "in and the advance of the whole line, against the two explicit "
+					+ "controls at the end.").after(240).add();
+
+			d.para("A: w:rFonts w:asciiTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\", "
+					+ "the body slot, with no explicit face.").after(60).add();
+			d.para().font(SERIF, 22)
+					.run(Doc.themeRun(DIGITS, org.docx4j.wml.STTheme.MINOR_H_ANSI, 22)).add();
+			d.para().font(SERIF, 22)
+					.run(Doc.themeRun(LOWER, org.docx4j.wml.STTheme.MINOR_H_ANSI, 22))
+					.after(180).add();
+
+			d.para("B: w:rFonts w:asciiTheme=\"majorHAnsi\" w:hAnsiTheme=\"majorHAnsi\", "
+					+ "the heading slot.").after(60).add();
+			d.para().font(SERIF, 22)
+					.run(Doc.themeRun(DIGITS, org.docx4j.wml.STTheme.MAJOR_H_ANSI, 22)).add();
+			d.para().font(SERIF, 22)
+					.run(Doc.themeRun(LOWER, org.docx4j.wml.STTheme.MAJOR_H_ANSI, 22))
+					.after(180).add();
+
+			d.para("C: a run with no w:rPr at all, so its face and size come from the "
+					+ "document defaults, whose w:rFonts is itself minorHAnsi and whose "
+					+ "w:sz is 22.").after(60).add();
+			d.para().font(SERIF, 22).bareText(DIGITS).add();
+			d.para().font(SERIF, 22).bareText(LOWER).after(180).add();
+
+			d.para("D: the control, an explicit w:ascii=\"Calibri\" at 11pt - what docx4j "
+					+ "answers for the minorHAnsi slot of its built-in theme.")
+					.after(60).add();
+			d.para().font(SERIF, 22).run(DIGITS, "Calibri", 22, null).add();
+			d.para().font(SERIF, 22).run(LOWER, "Calibri", 22, null).after(180).add();
+
+			d.para("E: the second control, an explicit w:ascii=\"Cambria\" at 11pt - what "
+					+ "docx4j answers for the majorHAnsi slot.").after(60).add();
+			d.para().font(SERIF, 22).run(DIGITS, "Cambria", 22, null).add();
+			d.para().font(SERIF, 22).run(LOWER, "Cambria", 22, null).after(180).add();
+
+			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {

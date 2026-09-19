@@ -55,11 +55,13 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.CTSettings;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.SectPr;
@@ -541,10 +543,50 @@ public class WordprocessingMLPackage extends OpcPackage {
     	wmlPack.getMainDocumentPart().addTargetPart(dsp);
     	dsp.setJaxbElement(new CTSettings());
     	dsp.setOverrideTableStyleFontSizeAndJustification(true);
-				
+
+		// Theme part (/word/theme/theme1.xml), as Word puts one in every document it
+		// creates.  Since 17.1.1: without it, this package's docDefaults - which reference
+		// the theme fonts (w:rFonts w:asciiTheme="minorHAnsi" ...) - had nothing to resolve
+		// against, and every consumer had to guess the Office theme's faces for itself.
+		addDefaultThemePart(wmlPack, wordDocumentPart);
+
 		// Return the new package
 		return wmlPack;
-		
+
+	}
+
+	/**
+	 * Add the Office theme {@code docx4j.fonts.defaultTheme} names to this main document
+	 * part: Aptos Display / Aptos by default, which is Word 365's, or Office 2013's
+	 * Calibri Light / Calibri or Office 2007's Cambria / Calibri.
+	 *
+	 * <p>The three theme parts are bundled with docx4j.  The 2023 one is Word 365's own,
+	 * taken from its save of a package that had none; the 2013 one is the stock Office
+	 * 2013 to 2022 theme; the 2007 one is that with the major Latin face changed to
+	 * Cambria, which is the only difference between the two schemes' Latin slots.</p>
+	 *
+	 * <p>A failure here is logged and not thrown: a package without a theme part is still
+	 * a valid package, and {@code RunFontSelector} answers its theme references from the
+	 * same property.</p>
+	 *
+	 * @since 17.1.1
+	 */
+	private static void addDefaultThemePart(WordprocessingMLPackage wmlPack,
+			MainDocumentPart wordDocumentPart) {
+
+		Docx4jProperties.DefaultTheme theme = Docx4jProperties.getDefaultTheme();
+		try {
+			ThemePart themePart = new ThemePart();
+			// as the styles part above: the package first, so unmarshalling has one
+			themePart.setPackage(wmlPack);
+			try (java.io.InputStream is = ResourceUtils.getResourceViaProperty(
+					"docx4j.openpackaging.parts.ThemePart.DefaultTheme", theme.resource())) {
+				themePart.unmarshal(is);
+			}
+			wordDocumentPart.addTargetPart(themePart);
+		} catch (Exception e) {
+			log.warn("Couldn't add the " + theme.value() + " theme part: " + e.getMessage(), e);
+		}
 	}
 	
 	/**

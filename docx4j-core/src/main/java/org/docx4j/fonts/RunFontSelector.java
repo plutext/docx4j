@@ -196,10 +196,14 @@ public class RunFontSelector {
      * The font a theme reference names: the theme part's answer for the document's
      * themeFontLang; or, where the document has no theme part, the Office theme's own
      * Latin faces - Word supplies that theme to such a document (measured, CR-016 probe
-     * fonts-missing-slots (b): Calibri for minorHAnsi, the explicit w:ascii beside the
-     * reference unused; Cambria is its major face).  Its East Asian and complex-script
-     * faces are empty, so those references resolve to nothing here and the explicit
-     * attribute, if any, stands.  Null where neither the theme nor the default says.
+     * fonts-missing-slots (b): the explicit w:ascii beside the reference is unused).  Its
+     * East Asian and complex-script faces are empty, so those references resolve to
+     * nothing here and the explicit attribute, if any, stands.  Null where neither the
+     * theme nor the default says.
+     *
+     * <p>Which Latin faces the Office theme names depends on the version of Word, and
+     * {@code docx4j.fonts.defaultTheme} says which to answer for - see
+     * {@link org.docx4j.Docx4jProperties#DEFAULT_THEME}.</p>
      *
      * @since 17.1.1
      */
@@ -215,18 +219,38 @@ public class RunFontSelector {
     	}
     }
 
-    /** {@link #themeFont(org.docx4j.wml.STTheme)} for any caller: the theme part's answer
-     *  for this themeFontLang, the Office theme's Latin faces where there is no theme part.
-     *  @since 17.1.1 */
+    /**
+     * {@link #themeFont(org.docx4j.wml.STTheme)} for any caller: the theme part's answer
+     * for this themeFontLang, the Office theme's Latin faces where there is no theme part.
+     *
+     * <p>Which faces those are is the version of Word the themeless document is read as
+     * having come from, and {@code docx4j.fonts.defaultTheme} says which: Aptos Display /
+     * Aptos for Word 365 (the default), Calibri Light / Calibri for Office 2013 to 2022,
+     * Cambria / Calibri for Office 2007 to 2010 - which is what docx4j answered up to
+     * 17.1.0, and was right for the Word the CR-016 probe was rendered on.  Measured on a
+     * Word 365 rendering of a package with no theme part at all (probe
+     * {@code theme-fonts-no-theme-part}, CR-001 batch 49): at 11pt the ten digits advance
+     * 58.865pt and a-z 137.923pt in the minor slot, which is Aptos, against 55.28 / 130.32
+     * for an explicit Calibri control on the same page; the major slot is 57.40 / 129.16,
+     * Aptos Display, against 61.00 / 139.55 for an explicit Cambria.</p>
+     *
+     * <p>Only the two Latin slots are answered.  The Office theme's East Asian and
+     * complex-script entries are empty, so those references resolve to nothing and the
+     * explicit attribute, if any, stands - and where a package does have a theme part it
+     * is that part which answers, script fonts included.</p>
+     *
+     * @since 17.1.1
+     */
     static String themeFont(ThemePart themePart, org.docx4j.wml.STTheme type, CTLanguage themeFontLang)
     		throws Docx4JException {
     	if (type==null) return null;
     	if (themePart!=null) {
     		return themePart.getFont(type, themeFontLang);
     	}
+    	org.docx4j.Docx4jProperties.DefaultTheme theme = org.docx4j.Docx4jProperties.getDefaultTheme();
     	switch (type) {
-    		case MINOR_ASCII: case MINOR_H_ANSI: return "Calibri";
-    		case MAJOR_ASCII: case MAJOR_H_ANSI: return "Cambria";
+    		case MINOR_ASCII: case MINOR_H_ANSI: return theme.minorLatin();
+    		case MAJOR_ASCII: case MAJOR_H_ANSI: return theme.majorLatin();
     		default: return null;
     	}
     }

@@ -638,6 +638,37 @@ public abstract class Mapper {
     	 * class-based fallback reached a Helvetica clone, 3.1% wider, which is enough to
     	 * break a full line differently.  @since 17.0.5
     	 *
+    	 * Aptos, Aptos Display, Aptos Light, Aptos Narrow - Word 365's Office theme faces.
+    	 * A document with no theme part resolves its theme fonts to them since 17.1.1
+    	 * (Docx4jProperties.DEFAULT_THEME), and Microsoft ships neither Aptos nor Aptos
+    	 * Display with Windows - they are cloud fonts - so without a row the pass found
+    	 * nothing, FOP drew the text in its base-14 fallback and the PDF named Times-Roman
+    	 * without embedding it.  Word's own advances, from the theme-fonts-no-theme-part
+    	 * golden (CR-001 batch 49): at 11pt Aptos sets the ten digits in 58.865pt and a-z
+    	 * in 137.923pt, Aptos Display 57.40 and 129.16.  Of the faces docx4j ships, Arimo
+    	 * is closest to Aptos on the mean advance (61.177 / 140.008 = +3.9% / +1.5%,
+    	 * against Carlito's -5.3% / -5.5%) and Carlito closest to Aptos Display (55.752 /
+    	 * 130.394 = -2.9% / +1.0%, against Arimo's +6.6% / +8.4%).  Carlito is nevertheless
+    	 * first for BOTH, because the mean advance is not what decides a line: measured on
+    	 * the probe set, in Carlito every line of styles-linerule, fonts-missing-slots and
+    	 * tab-leader-kinds breaks where Word's Aptos breaks, and in Arimo none of
+    	 * styles-linerule's fifteen does.  Neither is a clone; the line box is Aptos's own,
+    	 * which word-line-metrics.properties already carries for all four faces.  Light and
+    	 * Narrow have no golden and are class substitutes only.  @since 17.1.1
+    	 *
+    	 * Since docx4j-export-fo-fonts-theme2023 those two rows open with a real clone and
+    	 * the faces above are only what a classpath without that jar falls back to: Akasia
+    	 * (OFL 1.1, twelve styles, v0.0.2) for Aptos and Intos Display (OFL 1.1, four
+    	 * styles) for Aptos Display.  Measured with fontTools and HarfBuzz against Aptos
+    	 * 2.01: every one of the 138 advances identical and kerned line widths identical to
+    	 * 0.001pt, so these are metric substitutes in the sense Carlito is for Calibri, not
+    	 * measured stand-ins.  Akasia's Light is matched to Aptos Light by the Akasia
+    	 * project's own gated baseline (its compatibility.json pins Aptos-Light.ttf 2.01),
+    	 * which is its measurement and not ours; it has no Narrow, so Aptos Narrow keeps a
+    	 * class substitute.  Where a machine really has Microsoft's Aptos - a licensed
+    	 * Windows or Mac, not a server: they are cloud fonts - the installed face wins by
+    	 * precedence and none of this is consulted.  @since 17.1.1 (CR-001 batch 49 item 6b)
+    	 *
     	 * Tahoma, Segoe UI, Gadugi, Helvetica, Helvetica Neue, Tw Cen MT - fonts with no
     	 * metric-compatible clone, but where a stand-in of the right class is much closer
     	 * than the document's default font, which is what RunFontSelector falls back to (a

@@ -672,6 +672,38 @@ Leaving `fidelity.updateFields` unset changes nothing about the machine's config
 prints what that resolves to - which is itself worth running once, since **whether the goldens
 were cut with a field-updating script has never been checked**, only assumed.
 
+## Fonts read for their metrics only
+
+Some layout decisions turn on the width of the document's own face rather than the
+substitute's - which tab stop a numbering tab reaches being the case this was built for.
+`docx4j.fonts.metricsOnly.dirs` names directories whose fonts docx4j **measures** and never
+draws in; they are not discovered as physical fonts, so nothing on the page changes colour,
+shape or class because of them.
+
+```bash
+java -Ddocx4j.fonts.metricsOnly.dirs="$S/../Fonts" -cp "$CP" org.docx4j.fidelity.Fidelity score ...
+```
+
+`$S/../Fonts` is the reference VM's own Windows font folder, which is the set Word laid the
+goldens out in - so this is "measure the label the way the machine that cut the golden would
+have". Only faces this machine has **not** got are consulted, so pointing it at a whole font
+folder is safe: where docx4j has the face it draws in it and the measurement is already the
+document's own.
+
+Measured on a corpus CV (CR-001 batch 49 item 2): its level declares a Symbol
+`arrowdblright` bullet, Word's glyph is 0.987 em = 218 twips at 11pt and ends past the
+paragraph's 1548-twip stop, and the substitute this machine draws is 0.838 em = 184 twips and
+ends 11 twips short of it, so the tab took a stop Word passes. 278 of the 451 corpus
+documents declare Symbol or Wingdings on a numbering level, so this is not a one-document
+rule; **the corpora must be scored with the same setting on both sides of a comparison**, or
+the difference measures the property and not the change. Every `scoreboard.txt` therefore
+carries a `metricsOnly fonts` line beside its `renderer` line, naming the directories or
+`unset`, so a scoreboard says which measurement it is.
+
+**A batch's gate is scored with it unset** - the shipped default, reproducible on any machine,
+and what a user gets. A run with it set is a *supplement*, reported alongside for an item whose
+rule measures a label or a face, and named as such.
+
 ## Scoring a real-document corpus
 
 `run` is for the hand-built probes: it renders everything, stops at the first

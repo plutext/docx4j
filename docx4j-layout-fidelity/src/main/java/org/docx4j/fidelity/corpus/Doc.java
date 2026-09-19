@@ -53,6 +53,7 @@ import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STHAnchor;
 import org.docx4j.wml.STLineSpacingRule;
 import org.docx4j.wml.STTblLayoutType;
+import org.docx4j.wml.STTheme;
 import org.docx4j.wml.STVAnchor;
 import org.docx4j.wml.STWrap;
 import org.docx4j.wml.STXAlign;
@@ -122,6 +123,20 @@ public final class Doc {
 
 	public WordprocessingMLPackage pkg() {
 		return pkg;
+	}
+
+	/**
+	 * Take the theme part out again, for a probe whose subject is what a package with
+	 * <b>no</b> theme part resolves its theme font references to.
+	 *
+	 * <p>Since 17.1.1 {@code WordprocessingMLPackage.createPackage} puts one in, as Word
+	 * does; a probe that wants none has to say so, and its docx on the share must stay the
+	 * one its golden was cut from.</p>
+	 */
+	public Doc noThemePart() throws Exception {
+		mdp.getRelationshipsPart().removePart(
+				new org.docx4j.openpackaging.parts.PartName("/word/theme/theme1.xml"));
+		return this;
 	}
 
 	/** w:pgMar header and footer distances (twips) for the current section. */
@@ -1301,6 +1316,29 @@ public final class Doc {
 		rpr.setSz(sz);
 		rpr.setSzCs(sz);
 		if (customiser != null) customiser.accept(rpr);
+		r.setRPr(rpr);
+		Text t = F.createText();
+		t.setValue(text);
+		t.setSpace("preserve");
+		r.getContent().add(t);
+		return r;
+	}
+
+	/** A run whose w:rFonts names a <b>theme</b> slot (w:asciiTheme and w:hAnsiTheme) and no
+	 *  explicit face, which is how Word writes a run that follows the theme.  The face is
+	 *  whatever the package's theme part supplies for that slot - or, where the package has
+	 *  no theme part at all, whatever the consumer's own built-in default theme supplies. */
+	public static R themeRun(String text, STTheme theme, int halfPts) {
+		R r = F.createR();
+		RPr rpr = F.createRPr();
+		RFonts rf = F.createRFonts();
+		rf.setAsciiTheme(theme);
+		rf.setHAnsiTheme(theme);
+		rpr.setRFonts(rf);
+		HpsMeasure sz = F.createHpsMeasure();
+		sz.setVal(BigInteger.valueOf(halfPts));
+		rpr.setSz(sz);
+		rpr.setSzCs(sz);
 		r.setRPr(rpr);
 		Text t = F.createText();
 		t.setValue(text);

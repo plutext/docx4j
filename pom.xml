@@ -46,6 +46,7 @@
         <module>docx4j-export-fo-fonts-croscore</module>  
         <module>docx4j-export-fo-fonts-crosextra</module>   
         <module>docx4j-export-fo-fonts-liberation</module>
+        <module>docx4j-export-fo-fonts-theme2023</module>
 
         <module>docx4j-export-fo</module>
 

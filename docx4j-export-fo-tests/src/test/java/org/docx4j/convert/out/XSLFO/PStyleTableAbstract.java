@@ -53,9 +53,22 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class PStyleTableAbstract {
 	
-	protected static Logger log = LoggerFactory.getLogger(PStyleTableAbstract.class);	
-	
-	
+	protected static Logger log = LoggerFactory.getLogger(PStyleTableAbstract.class);
+
+	/**
+	 * Where these tests write the intermediate docx they save so it can be opened
+	 * in Word: the module's build directory, or the JVM temp directory if there is
+	 * none. It used to be the module root (user.dir), which left OUT_PStyleInTableTest.docx
+	 * behind as an untracked file after every run.
+	 */
+	protected static File outputDocx() {
+		File dir = new File(System.getProperty("user.dir"), "target");
+		if (!dir.isDirectory() && !dir.mkdirs()) {
+			dir = new File(System.getProperty("java.io.tmpdir"));
+		}
+		return new File(dir, "OUT_PStyleInTableTest.docx");
+	}
+
 	protected static boolean OVERRIDE;
 	protected static int EXPECTED_RESULT;
 	
@@ -108,7 +121,7 @@ public abstract class PStyleTableAbstract {
 		 * TODO 2016 01 18 revisit this, since createVirtualStylesForDocDefaults has gone now
 		 * (its only in StyleTree)
 		 */
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 //		this.saveDocx(wordMLPackage, null);
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
@@ -199,7 +212,7 @@ public abstract class PStyleTableAbstract {
 		List<Object> xpathResults = wordMLPackage.getMainDocumentPart().getJAXBNodesViaXPath("//w:p", true);
 		((P)xpathResults.get(0)).getPPr().setPStyle(ps);
 		
-		wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_PStyleInTableTest.docx"));
+		wordMLPackage.save(outputDocx());
 		
 	}
 	

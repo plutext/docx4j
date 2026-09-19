@@ -201,13 +201,79 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 		if (!WordLayoutCustomizer.leaderGrid() || labelArea == null) return;
 		LineAt label = firstLine(labelArea, 0);
 		if (label == null || label.line.getBidiLevel() > 0) return;
-		int origin = label.x + pageOffsetMpt();
+		int origin = label.x + pageOffsetMpt() + cellOffsetMpt();
 		int[] x = { 0 };
 		InlineArea run = filledArea(label.line.getInlineAreas(), x);
 		if (run == null) return;
-		InlineArea phased = LBP.gridPlacedLeader((org.apache.fop.area.inline.FilledArea) run,
-				origin + x[0]);
+		final org.apache.fop.area.inline.FilledArea filled =
+				(org.apache.fop.area.inline.FilledArea) run;
+		/* Word writes the blank between the label and the first leader character as a
+		 * space of its own, in the leader's face at the label's size (LBP.gridPlacedLeader);
+		 * the same switch as the paragraph tab's. */
+		InlineArea phased = LBP.gridPlacedLeader(filled, origin + x[0],
+				WordLayoutCustomizer.tabSpaces()
+						? new java.util.function.IntFunction<InlineArea>() {
+							@Override
+							public InlineArea apply(int advance) {
+								return leaderLeadSpace(filled, advance);
+							}
+						}
+						: null);
 		if (phased != null) replaceArea(label.line.getInlineAreas(), run, phased);
+	}
+
+	/**
+	 * One space character of {@code advance}, in the face and at the size the leader's own
+	 * characters are drawn in, for the blank Word's grid leaves between a numbering label
+	 * and the first character of its leader run.
+	 *
+	 * <p>The model is the leader's repeating character, not the label's last glyph: Word's
+	 * space is in the <b>leader's</b> face - ArialMT where the label is Liberation Serif on
+	 * the {@code numbering-leader-kinds} golden - because the space belongs to the tab, not
+	 * to the number.  It draws no ink either way; what it decides is the font resource the
+	 * one token is written with.</p>
+	 *
+	 * @return the space, or null where the run has no text area to take a font from
+	 * @since 17.1.1 (CR-001 batch 49 item 1)
+	 */
+	private TextArea leaderLeadSpace(org.apache.fop.area.inline.FilledArea run, int advance) {
+		if (advance <= 0) return null;
+		int[] offset = { 0 };
+		TextArea model = firstTextArea(run, offset);
+		if (model == null) return null;
+		TextArea s = space(model, advance);
+		if (s == null) return null;
+		/* The model sits INSIDE the filled area, under however many inline parents the
+		 * leader's content was laid out in, and a renderer draws a text area at the sum of
+		 * its chain's block-progression offsets plus its own baseline offset
+		 * (AbstractRenderer.renderInlineParent, PDFRenderer.renderText).  The space is a
+		 * SIBLING of the run, so it has to carry that whole sum, not the model's own
+		 * offset: left at the model's, its baseline came 3.20pt below the leader's on
+		 * numbering-leader-kinds. */
+		s.setBPD(run.getBPD());
+		s.setBlockProgressionOffset(offset[0]);
+		return s;
+	}
+
+	/** The first text area under {@code area}, with {@code offset} increased by every
+	 *  block-progression offset on the chain down to it, its own included. */
+	private static TextArea firstTextArea(InlineArea area, int[] offset) {
+		int here = offset[0] + area.getBlockProgressionOffset();
+		if (area instanceof TextArea) {
+			offset[0] = here;
+			return (TextArea) area;
+		}
+		if (!(area instanceof InlineParent)) return null;
+		for (Object child : ((InlineParent) area).getChildAreas()) {
+			if (!(child instanceof InlineArea)) continue;
+			int[] down = { here };
+			TextArea found = firstTextArea((InlineArea) child, down);
+			if (found != null) {
+				offset[0] = down[0];
+				return found;
+			}
+		}
+		return null;
 	}
 
 	/** The first leader run of a label's line, with how far into the line it begins; a
@@ -249,6 +315,40 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 
 	/** The x of the region body on the page, in millipoints: the left margin, which is
 	 *  where Word measures a leader's grid from. */
+	/**
+	 * The x of the table cell this list item sits in, where it sits in one; 0 otherwise.
+	 *
+	 * <p>The fifth term of the label leader's origin. {@code label.x} is measured from the
+	 * list item, and {@link #pageOffsetMpt} adds the region body's - but a list item inside a
+	 * table cell is positioned from the <b>cell's</b> content edge, and that distance is in
+	 * neither. Measured on the {@code tab-leader-in-cell-2} golden, whose cell case was the
+	 * one run batch 48 item 7 left open: Word opens its dots at 106.130 and we opened them at
+	 * 105.504, 0.626pt short, where every body run was within 0.05pt.</p>
+	 *
+	 * <p>{@code TableCellLayoutManager} sets its cell block's x offset to
+	 * {@code xoffset + startIndent} when it creates the area, and {@code getParentArea} -
+	 * public on the {@code LayoutManager} interface - hands that area back. By the time a
+	 * list item inside the cell is adding its own areas the cell's block exists, so this is
+	 * a read; were it ever not to exist, that call would create it, which is why it is made
+	 * only for a label which actually carries a leader.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 49 item 3)
+	 */
+	private int cellOffsetMpt() {
+		try {
+			for (org.apache.fop.layoutmgr.LayoutManager lm = getParent(); lm != null; lm = lm.getParent()) {
+				if (lm instanceof org.apache.fop.layoutmgr.table.TableCellLayoutManager) {
+					org.apache.fop.area.Area cell = lm.getParentArea(null);
+					return (cell instanceof org.apache.fop.area.Block)
+							? ((org.apache.fop.area.Block) cell).getXOffset() : 0;
+				}
+			}
+		} catch (RuntimeException e) {
+			log.debug("no table cell for the label leader grid: " + e.getMessage());
+		}
+		return 0;
+	}
+
 	private int pageOffsetMpt() {
 		try {
 			org.apache.fop.area.PageViewport pv = getPSLM() == null ? null : getPSLM().getCurrentPV();

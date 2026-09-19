@@ -2234,6 +2234,18 @@ public class XsltFOFunctions {
 			int stopWidth = numChars == 0 ? 0 : Math.max(numWidth,
 					labelWidthTwips(wmlPackage, foListItemLabelBody,
 							foListItemLabelBody.getTextContent(), 90 * numChars)[0]);
+			/* Unless the document's OWN face can be measured.  Where
+			 * docx4j.fonts.metricsOnly.dirs offers the symbol font the level declares, the
+			 * label's width is read from that file - Word's own number, not the substitute's
+			 * - and nothing else changes: the face is never registered, so every Symbol run
+			 * still draws in whatever it drew in before and no document's class moves.  It
+			 * replaces the pair above rather than joining the max(): the point is to stop
+			 * guessing, and the estimate and the substitute are both guesses at it.
+			 * @since 17.1.1 (CR-001 batch 49 item 2) */
+			int declared = numChars == 0 ? 0
+					: declaredFaceWidthTwips(triple, foListItemLabelBody,
+							foListItemLabelBody.getTextContent());
+			if (declared > 0) stopWidth = declared;
 			int pdbs = labelColumnTwips(wmlPackage, indent, pPrDirect, triple, numWidth, measured[1]);
 			// -1 in the hanging case where the label fits, so the hanging indent stands
 			indent.setXslFOListBlock(foListBlock, pdbs);
@@ -2526,6 +2538,78 @@ public class XsltFOFunctions {
 			log.debug("Label not measured (" + e.getMessage() + "); using the estimate");
 			return fallback;
 		}
+	}
+
+	/**
+	 * The label's width in twips measured in the face the <b>document</b> declares for it,
+	 * where {@code docx4j.fonts.metricsOnly.dirs} offers that face; 0 otherwise.
+	 *
+	 * <p>This exists for the symbol fonts a bullet is set in. Word's Symbol
+	 * {@code arrowdblright} is 0.987 em, 218 twips at 11pt; the substitute this machine
+	 * draws is 0.838 em, 184 twips, and a level tab stop 11 twips inside that difference is
+	 * taken when Word passes it (CR-001 batch 48 item 6 §6). Reading the advance out of the
+	 * font file settles it without drawing in the font: see
+	 * {@link org.docx4j.fonts.MetricsOnlyFonts}, which deliberately keeps these faces out of
+	 * {@code PhysicalFonts}.</p>
+	 *
+	 * <p>The face is the one the <b>level</b> declares ({@code w:lvl/w:rPr/w:rFonts}), which
+	 * is where a bullet's symbol font is named; the size is the label's own, as
+	 * {@link #labelWidthTwips} takes it.</p>
+	 *
+	 * @since 17.1.1 (CR-001 batch 49 item 2)
+	 */
+	private static int declaredFaceWidthTwips(NumberingResult triple, Element labelEl, String text) {
+
+		if (triple == null || labelEl == null || text == null || text.length() == 0) return 0;
+		try {
+			String face = declaredLabelFace(triple);
+			if (face == null) return 0;
+			/* Only where this machine has NOT got the face. Where it has, docx4j draws the
+			 * label in it and the measurement above is already Word's own width; reading the
+			 * same metrics twice would be noise. So a directory may hold the whole of an
+			 * authoring machine's font folder and only the absent faces are consulted. */
+			if (org.docx4j.fonts.PhysicalFonts.get(face) != null) return 0;
+			double sizePt = TableWriter.sizeFor(labelEl);
+			if (sizePt <= 0) return 0;
+			/* In the DOCUMENT's own characters, not the FO's.  A symbol bullet is written as
+			 * the code point of the symbol font's own encoding - Word's Symbol arrow is
+			 * U+F0DE in the private use area - and docx4j maps it to the Unicode character
+			 * the glyph stands for (U+21D2) so that a substitute can draw something. Symbol
+			 * has no U+21D2, so measuring the FO's text gives the half-em a font gives a
+			 * character it lacks: measured on symbol.ttf, U+F0DE is 0.987 em (217 twips at
+			 * 11pt, Word's own 218) where U+21D2 is 0.500 em (110). */
+			String raw = rawLabelText(triple, text);
+			double w = org.docx4j.fonts.MetricsOnlyFonts.widthPt(raw, face, sizePt);
+			if (w <= 0) return 0;
+			return (int) Math.ceil(w * 20);
+		} catch (RuntimeException e) {
+			log.debug("Label not measured in its declared face (" + e.getMessage() + ")");
+			return 0;
+		}
+	}
+
+	/** The label as the <b>document</b> writes it: the level's own {@code w:lvlText} where
+	 *  that names no placeholder (a bullet, whose character is the symbol font's own code
+	 *  point), else the FO's text, which for a number is the same characters.
+	 *  @since 17.1.1 */
+	private static String rawLabelText(NumberingResult triple, String foText) {
+		if (triple.getLvl() == null || triple.getLvl().getLvlText() == null) return foText;
+		String lvlText = triple.getLvl().getLvlText().getVal();
+		if (lvlText == null || lvlText.length() == 0) return foText;
+		return lvlText.indexOf('%') >= 0 ? foText : lvlText;
+	}
+
+	/** The face the level declares for its label, or null: {@code w:lvl/w:rPr/w:rFonts},
+	 *  {@code w:ascii} for a Latin label and {@code w:hAnsi} for a symbol one (Word writes
+	 *  a bullet's font in both).  @since 17.1.1 */
+	private static String declaredLabelFace(NumberingResult triple) {
+		if (triple.getLvl() == null || triple.getLvl().getRPr() == null) return null;
+		org.docx4j.wml.RFonts rFonts = triple.getLvl().getRPr().getRFonts();
+		if (rFonts == null) return null;
+		String name = rFonts.getAscii();
+		if (name == null || name.trim().length() == 0) name = rFonts.getHAnsi();
+		if (name == null || name.trim().length() == 0) name = rFonts.getCs();
+		return name == null || name.trim().length() == 0 ? null : name.trim();
 	}
 
 	/** The level's (or the paragraph's) hanging indent in twips, 0 where there is none. */

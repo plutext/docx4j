@@ -60,6 +60,7 @@ public class FontSubstitutionTableTest {
 		List<String> expected = Arrays.asList(
 				"Times New Roman", "Arial", "Courier New",
 				"Calibri", "Cambria", "Calibri Light",
+				"Aptos", "Aptos Display", "Aptos Light", "Aptos Narrow",
 				"Century Gothic",
 				"Tahoma", "Segoe UI", "Gadugi", "Helvetica", "Helvetica Neue", "Tw Cen MT",
 				"Trebuchet MS", "Arial Black", "Verdana", "Comic Sans MS", "Segoe UI Light",

@@ -9,6 +9,22 @@ Changes in Version 17.1.1
 
 Fonts (CR-016, the font selection and mapping review):
 
+- The Office theme docx4j supplies to a document with no theme part is now Word 365's
+  Aptos Display / Aptos, not Office 2007's Cambria / Calibri; docx4j.fonts.defaultTheme
+  takes 2023 (the default), 2013 or 2007. Measured on Word 365: the body slot advances
+  58.865pt over ten digits at 11pt, which is Aptos, not Calibri's 55.28.
+- Aptos and Aptos Display have substitutes, so a themeless document is no longer drawn
+  in FOP's base-14 fallback and left unembedded in the PDF.
+- New optional jar docx4j-export-fo-fonts-theme2023 carries Akasia and Intos Display, OFL
+  clones of Aptos and Aptos Display drawn to their metrics (all 138 advances identical,
+  kerned line widths identical to 0.001pt against Aptos 2.01), so a document set in Word's
+  2023 theme breaks its lines where Word does. Microsoft does not ship Aptos with Windows.
+- docx4j.fonts.metricsOnly.dirs names directories whose fonts docx4j MEASURES and never
+  draws in, so a layout decision which turns on the width of the document's own face - which
+  tab stop a numbering tab reaches, past a Symbol bullet - can be made on that face rather
+  than on the substitute's. Nothing is registered, so no glyph on the page changes. Off by
+  default: Microsoft's fonts stay where their licence puts them, and this only reads a copy
+  you already have.
 - Every jar on the classpath with a fonts/ folder is discovered, not only the first: with
   docx4j-export-fo-fonts-croscore and -crosextra both present, one of them was invisible, and
   on a headless deployment - the stock ubuntu, debian, fedora and alpine images ship no font
@@ -256,6 +272,13 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
   Word bookmark no markdown renderer has, with the tab and the page number.  Lossy, like
   headers and footers; headings are navigable in every renderer.
 
+Packaging:
+
+- WordprocessingMLPackage.createPackage adds a theme part, as Word does for every
+  document it creates: its own document defaults reference the theme fonts, and until
+  now there was nothing for them to resolve against. Which theme is
+  docx4j.fonts.defaultTheme's to say.
+
 PDF via XSL FO, the renderer (CR-020, phase 0):
 
 - Two FO renderers are supported: Apache FOP 2.11 (the default dependency, unchanged) and
@@ -277,6 +300,20 @@ PDF via XSL FO, the renderer (CR-020, phase 0):
 
 PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
+- A paragraph or table border is inked at the width Word inks it: the eighths of a point
+  w:sz names, laid on Word's 1/300 inch grid and truncated to whole cells, so w:sz 4, 8,
+  12, 18 and 24 are 0.48, 0.96, 1.44, 2.16 and 2.88pt. The paragraph border had been
+  written as millimetres to two decimals (2.2394pt for w:sz 18) and the table border as
+  the named points (0.50 where Word inks 0.480) (CR-001 batch 49).
+- A numbering label's leader inside a table cell opens where Word opens it. Its origin is
+  measured from the page edge, and a list item in a cell carries the cell's own x as well:
+  on the tab-leader-in-cell-2 golden the run opened 0.626pt early and now opens within
+  0.050pt of Word's 106.130 (CR-001 batch 49).
+- The space Word writes between a numbering label and its leader is in the text layer too.
+  A numbered paragraph whose numbering tab reaches a stop with a w:leader copied out of our
+  PDF as "1.------ Text" where Word's reads "1. ------ Text"; the space is the blank the
+  leader's grid phase already left, in the leader's own face, so no glyph moves
+  (CR-001 batch 49).
 - A numbering tab reaches the first stop past the end of its label and before w:ind left of the
   level's own stops AND the paragraph's, where docx4j read only the level's. Measured on a corpus
   CV whose bulleted paragraphs are w:ind left 993 hanging 567 with their own w:tab w:val="left"
