@@ -1,10 +1,11 @@
 # CR-022: Excel 2010 and 2013 extensions - the x14 and x15 schemas and their mc namespaces, bound in xlsx4j
 
-Status: PROPOSED 2026-09-20 (Jason Harrop: "add support for Excel 2010 and
-2013 extensions", after the [MS-XLSX] inventory of
-`docs/developer/ms-xlsx-schema-inventory.md`). Written by
-`docs/developer/adding-a-schema.md` step 0: to be reviewed and committed
-before any code. Drafted with Claude Fable 5.1. Owner: Jason Harrop.
+Status: IN PROGRESS - proposed 2026-09-20 (Jason Harrop: "add support for
+Excel 2010 and 2013 extensions", after the [MS-XLSX] inventory of
+`docs/developer/ms-xlsx-schema-inventory.md`), accepted by Jason the same day
+(package convention confirmed, "let's commence"); phase 0 DONE 2026-09-20
+(§16); phase 1 in progress. Written by `docs/developer/adding-a-schema.md`
+step 0. Drafted with Claude Fable 5.1. Owner: Jason Harrop.
 
 Scope: bind the five namespaces every Excel-saved workbook carries and docx4j
 knows only by prefix - [MS-XLSX] §5.4 `x14`, §5.3 `x15`, §5.5 `x14ac`, §5.9
@@ -353,3 +354,95 @@ the regeneration round dominate); phase 2 a day; phase 3 hours.
 - `xsd/xlsx/` (the 2013 copies), `xsd/sml/sml_root.xsd`,
   `org.xlsx4j.jaxb.Context`, `NamespacePrefixMappings`,
   `openpackaging/parts/SpreadsheetML/JaxbSmlPart`.
+
+## 16. Phase 0: the measurement (2026-09-20)
+
+The seven staged workbooks (Jason's `cr022-slicers-timelines.xlsx` and the
+six LibreOffice ones of §1), every `xl/` part parsed. What the schemas must
+admit, confirmed against files rather than the specification's prose:
+
+**`mc:Ignorable` roots** (part, value): `workbook` "x15 xr xr6 xr10 xr2" or
+"x15"; `worksheet` "x14ac xr xr2 xr3" or "x14ac"; `styleSheet` "x14ac x16r2
+xr" or "x14ac"; `table` "xr xr3"; `pivotTableDefinition`,
+`pivotCacheDefinition`, `pivotCacheRecords` "xr"; `connections`,
+`queryTable` "xr16"; `x14:slicers`, `x14:slicerCacheDefinition`,
+`x15:timelines` "x xr10"; `x15:timelineCacheDefinition` "xr10". Only
+`CT_Workbook` has the attribute today; the other eleven types get it. `xr16`
+(spreadsheetml/2017/revision16) is not in the appendix and is added to the
+prefix table only, so the declaration survives a save.
+
+**Extension attributes** (host, attribute, count): `x:row` `x14ac:dyDescent`
+114; `x:sheetFormatPr` `x14ac:dyDescent` 13 (not in §2's list - added);
+`x:fonts` `x14ac:knownFonts` 7; the `xr*:uid` attributes on `worksheet`,
+`table`, `tableColumn`, `autoFilter`, `workbookView`, `connection`,
+`queryTable`, `pivotTableDefinition`, `pivotCacheDefinition`,
+`x14:sparklineGroup`, `x14:slicer`, `x14:slicerCacheDefinition`,
+`x15:timeline`, `x15:timelineCacheDefinition` (the x14/x15 schemas declare
+their own; the main schema's `xr:uid` references exist for worksheet, table,
+and the rest are the revision CR's); `xr:revisionPtr` with `xr6:coauthVersionLast`,
+`xr6:coauthVersionMax`, `xr10:uidLastSave` (4 workbooks).
+
+**`mc:AlternateContent`** (part: parent, Requires, Choice child): `workbook`:
+`x:workbook` x15 `x15ac:absPath` (5, kept since CR-021); `sheet`:
+`x:worksheet` x14 `x:controls` (1) and `x:controls` x14 `x:control` (1), both
+**with no Fallback** - the checkbox's control, which the preprocessor drops
+today ("Missing mc:Fallback! Dropping"), so `CT_Worksheet` and `CT_Controls`
+admit the element and `x:worksheet`, `x:controls` join the retain list;
+`drawing`: `xdr:wsDr` a14 and `xdr:twoCellAnchor` a14/tsle/sle15 (the slicer
+and timeline shapes, a DrawingML CR's). **No `x12ac`** element in any file
+(list validations came as `x14:dataValidations` in `extLst`), so
+`CT_DataValidation` is not touched and x12ac is bound for its prefix and
+schema only.
+
+**`extLst` content** (host, child): `x:workbook` > `x14:workbookPr`,
+`x15:workbookPr`, `x14:slicerCaches`, `x15:slicerCaches`,
+`x15:timelineCacheRefs`, `x15:dataModel`, `xcalcf:calcFeatures`;
+`x:worksheet` > `x14:sparklineGroups`, `x14:conditionalFormattings`,
+`x14:dataValidations`, `x14:slicerList`, `x15:timelineRefs`; `x:cfRule` >
+`x14:id`; `x:styleSheet` > `x14:slicerStyles`, `x15:timelineStyles`;
+`x:pivotTableDefinition` > `x14:pivotTableDefinition`,
+`xpdl:pivotTableDefinition16`; `x:filter` > `x15:pivotFilter`;
+`x:pivotCacheDefinition` > `x14:pivotCacheDefinition`; `x:connection` >
+`x15:connection`; `x14:slicerCacheDefinition` > `x15:tableSlicerCache`. All
+through `CT_Extension`'s lax wildcard: typed once the elements exist.
+
+**Parts** (content type, relationship type, target): as §8's table, with
+Excel's strings for the timeline parts; and the data model's relationship
+type, not in [MS-XLSX]'s part page, is
+`http://schemas.openxmlformats.org/officeDocument/2006/relationships/powerPivotData`,
+target `model/item.data`.
+
+**What docx4j does with the seven today**: loads all but three parts;
+`revisionPtr` rejected in four workbooks (dropped); the checkbox's controls
+`mc:AlternateContent` dropped; the slicer file's drawing elements resolved to
+their Fallbacks; `xl/drawings/vmlDrawing1.vml` fails to unmarshal (the
+xlsx4j VML gap of `xlsx4j-backlog`); and in the data-model workbook
+`xl/connections.xml` and both `xl/queryTables/` parts **fail to marshal** -
+`CT_Connections` and `CT_QueryTable` have no `@XmlRootElement`, so
+`ConnectionsPart` and `QueryTablePart` cannot save what they loaded. A
+pre-existing xlsx4j defect; fixed in phase 1 (two annox annotations) since
+the workbook exercising the data model needs it.
+
+**The schemas' own dependencies, from their current text** (the recipe's
+step 2): x14 imports x15, xr, xr2, xr10, xm (`xm:f`, `xm:sqref`) and the main
+schema; x15 imports x14, x16, xr10, xm (`xm:f`) and the main schema; xr
+imports xr6 and xr10; so the set is x14, x15, x14ac, x15ac, x12ac, x16, xr
+(refreshed: it now declares `revisionPtr`, `CT_RevisionPtr` and `uid`), xr2,
+xr6, xr10 - ten files - plus the 2006 `xm` namespace, whose docx4j copy
+(`xsd/offmacro/office-excel-2006-main.xsd`, the macro-sheet schema) lacks the
+`f`, `ref` and `sqref` declarations [MS-XLSX] §5.1 gives that namespace;
+those are **merged into the existing file** (same namespace, same package) -
+a departure from "re-take the file", since the macro-sheet declarations
+docx4j has are not in §5.1.
+
+**Scope additions decided by the measurement** (each a departure from §1's
+list, recorded here): the refreshed xr schema binds `revisionPtr`, and
+`CT_Workbook` admits it after the `mc:AlternateContent` (Excel's order:
+`fileVersion`, `workbookPr`, `mc:AlternateContent`, `revisionPtr`,
+`bookViews`, ...), so the workbook round-trip loss of the inventory's
+second group closes here; xr6 comes for the pointer's attributes;
+`CT_SheetFormatPr` takes `dyDescent`; `CT_Worksheet` and `CT_Controls` admit
+`mc:AlternateContent`; the two root annotations; `xr16` in the prefix table.
+
+Gate of phase 0 met: the host list of §2 is confirmed and extended by the
+above; phase 1 proceeds on it.
