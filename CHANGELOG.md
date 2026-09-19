@@ -1222,6 +1222,9 @@ API, for the ports' parity harnesses (docx4j-core-ts, docx4j-python):
 - FontsAnalysis.NO_OP_VISITOR public, for callers of RunFontSelector.documentFontFor.
 - A w:numId of 0 turns numbering off (ECMA-376 17.9.18): numRefFor says so, and getNumber
   returns null for such a paragraph where it used to return an empty result.
+- A w:numId that names no w:num (Word's own re-save leaves one in an untouched
+  mc:Fallback after renumbering, CR-021) is not numbered either: numRefFor says
+  "no w:num for numId N" and getNumber returns null, instead of an empty result.
 
 Other:
 

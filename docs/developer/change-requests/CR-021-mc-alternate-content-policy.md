@@ -501,9 +501,12 @@ docx4j today, measured on the two:
    ids, and by the same token its bookmark and comment ids, may name things
    the drawn branch's renumbering removed. Readers of the Fallback (the
    default `preferChoice`, so every docx4j render) must tolerate a `w:numId`
-   with no `w:num` (the numId-0 change of 01d661547 already returns null
-   there) and a dangling bookmark or comment reference; the ports' READ
-   walkers need the same tolerance when they select the Fallback.
+   with no `w:num` (since the phase 1 follow-up of 2026-09-19,
+   `Emulator.numRefFor` answers "no w:num for numId N" and `getNumber`
+   returns null, as for numId 0; before, an empty result) and a dangling
+   bookmark or comment reference; the ports' READ walkers need the same
+   tolerance when they select the Fallback (core-ts answers the same
+   reason).
 7. **Mutators under ALL do better than Word**, not merely as well: renumbering
    both branches keeps the Fallback consistent where Word leaves it
    dangling. That is the right outcome and costs nothing; it is recorded so

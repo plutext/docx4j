@@ -142,6 +142,20 @@ public class ParityAccessorsTest {
 	}
 
 	@Test
+	public void danglingNumIdIsNotNumberedAndSaysWhy() throws Exception {
+		// a w:numId naming no w:num: Word's re-save leaves one in an untouched mc:Fallback
+		// after renumbering (CR-021 §8.5); the accessor's contract is a reason, not an
+		// empty result
+		WordprocessingMLPackage pkg = packageWithNumberedNormal();
+		PPr pPr = F.createPPr();
+		pPr.setNumPr(numPr(99, null));
+		Emulator.NumRef ref = Emulator.numRefFor(pkg, pPr);
+		assertTrue(ref.notNumbered);
+		assertTrue(ref.reason, ref.reason.contains("no w:num for numId 99"));
+		assertNull(Emulator.getNumber(pkg, pPr));
+	}
+
+	@Test
 	public void countersAreReadableAndReadOnly() throws Exception {
 		WordprocessingMLPackage pkg = packageWithNumberedNormal();
 		NumberingState state = new NumberingState();

@@ -531,6 +531,13 @@ public class Emulator {
     		return new NumRef((directNumPr ? "the paragraph's" : "style '" + styleId + "'s")
     				+ " w:numId 0 turns numbering off");
     	}
+    	if (!numberingPart.getInstanceListDefinitions().containsKey(numId)) {
+    		// A w:numId naming no w:num - Word's own re-save leaves one behind in an
+    		// untouched mc:Fallback after renumbering (CR-021 §8.5) - is not numbered,
+    		// and says so here rather than as an empty result from getNumber.  @since 17.1.1
+    		return new NumRef("no w:num for numId " + numId
+    				+ (directNumPr ? " (the paragraph's own)" : " (from style '" + styleId + "')"));
+    	}
     	if (log.isDebugEnabled()) log.debug("Using numId: " + numId);
 
     	if (levelId == null || levelId.equals("")) {
