@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -123,6 +124,8 @@ public class ProtectDocument extends ProtectionSettings {
 			visitors.add(new VisitorRemoveTableFormatting(sdp, allowedStyleNames));
 			
 			CompoundTraversalUtilVisitorCallback compound = new CompoundTraversalUtilVisitorCallback(visitors);
+			// CR-021: ALL - formatting is stripped from every branch
+			compound.setMcMode(McMode.ALL);
 			
 			for( Part p : getPkg().getParts().getParts().values()) {
 				

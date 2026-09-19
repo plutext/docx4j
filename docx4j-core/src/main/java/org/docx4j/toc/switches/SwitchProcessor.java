@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -366,7 +367,8 @@ public class SwitchProcessor implements SwitchProcessorInterface {
 		int highestId = 0;
 		
 		RangeFinder rt = new RangeFinder();
-		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+		// CR-021: ALL - bookmarks the TOC cites may sit in any branch
+		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt, McMode.ALL);
 		
 		for (CTBookmark bm : rt.getStarts()) {
 			

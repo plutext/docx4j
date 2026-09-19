@@ -20,6 +20,7 @@
 package org.docx4j.model.datastorage.migration;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
@@ -78,7 +79,8 @@ public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
 		
 		// find fields
 		ComplexFieldLocator fl = new ComplexFieldLocator();
-		new TraversalUtil(pkgOut.getMainDocumentPart().getContent(), fl);
+		// CR-021: ALL - the migration edits fields in every branch
+		new TraversalUtil(pkgOut.getMainDocumentPart().getContent(), fl, McMode.ALL);
 		log.info("Found " + fl.getStarts().size() + " fields ");
 		
 		

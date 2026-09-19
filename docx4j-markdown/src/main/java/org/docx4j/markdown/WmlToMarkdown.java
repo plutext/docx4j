@@ -960,6 +960,16 @@ class WmlToMarkdown {
 				}
 			} else if (u instanceof Drawing) {
 				drawing((Drawing) u, sink);
+			} else if (u instanceof org.docx4j.mce.AlternateContent) {
+				// CR-021: one branch, the one docx4j draws; a w:drawing there is drawn,
+				// a VML w:pict (the usual fallback) is not - a text box's own text is
+				// not exported to markdown from either branch
+				for (Object b : org.docx4j.jaxb.McSelection.select((org.docx4j.mce.AlternateContent) u)) {
+					Object bu = XmlUtils.unwrap(b);
+					if (bu instanceof Drawing) {
+						drawing((Drawing) bu, sink);
+					}
+				}
 			}
 			// instrText and other run content dropped
 		}

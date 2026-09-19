@@ -51,7 +51,8 @@ public class XSLTUtils {
 	 * @since 17.1.0
 	 */
 	public static String mcPreferredChoiceRequires() {
-		return org.docx4j.Docx4jProperties.getProperty("docx4j.jaxb.mc.preferChoice", "");
+		// CR-021: the rule lives in McSelection; this is the XSLT-reachable hook
+		return org.docx4j.jaxb.McSelection.preferredChoiceRequires();
 	}
 
 	/**
@@ -61,16 +62,7 @@ public class XSLTUtils {
 	 * @since 17.1.0
 	 */
 	public static boolean mcPrefersChoice(String requires) {
-		if (requires == null || requires.length() == 0) return false;
-		String preferred = mcPreferredChoiceRequires();
-		if (preferred == null || preferred.trim().length() == 0) return false;
-		java.util.Set<String> ok = new java.util.HashSet<String>(
-				java.util.Arrays.asList(preferred.trim().split("\\s+")));
-		// @Requires may name several namespace prefixes, all of which must be understood
-		for (String needed : requires.trim().split("\\s+")) {
-			if (!ok.contains(needed)) return false;
-		}
-		return true;
+		return org.docx4j.jaxb.McSelection.prefersChoice(requires);
 	}
 
 }

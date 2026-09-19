@@ -10,6 +10,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
@@ -305,7 +306,8 @@ public abstract class BindingTraverserCommonImpl implements BindingTraverserInte
 					}
 				}
 			} else {
-				List<Object> children = TraversalUtil.getChildrenImpl(o);
+				// CR-021: ALL - the picture's blip may sit in either branch
+				List<Object> children = TraversalUtil.getChildrenImpl(o, McMode.ALL);
 				if (children!=null) {
 					org.docx4j.dml.CTBlip blip = findBlip(children);
 					if (blip!=null) return blip;

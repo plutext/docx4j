@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.ComplexFieldLocator;
@@ -115,7 +116,8 @@ public class FieldUpdaterSEQ {
 		
 		// find fields
 		SimpleFieldLocator fl = new SimpleFieldLocator();
-		new TraversalUtil(contentList, fl);
+		// CR-021: ALL - field results are written in every branch
+		new TraversalUtil(contentList, fl, McMode.ALL);
 		
 		report.append("\n\nSimple Fields in " + part.getPartName() + "\n");
 		report.append("============= \n");
@@ -188,7 +190,8 @@ public class FieldUpdaterSEQ {
 		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)part.getPackage();
 		
 		ComplexFieldLocator fl = new ComplexFieldLocator();
-		new TraversalUtil(contentList, fl);
+		// CR-021: ALL - field results are written in every branch
+		new TraversalUtil(contentList, fl, McMode.ALL);
 		
 		report.append("\n Complex Fields in "+ part.getPartName() + "\n");
 		report.append("============== \n");

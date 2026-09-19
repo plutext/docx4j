@@ -29,6 +29,7 @@ import jakarta.xml.bind.JAXBElement;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.Callback;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTTextBody;
@@ -174,7 +175,8 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 					@Override
 					public List<Object> getChildren(Object o) {
-						return TraversalUtil.getChildrenImpl(o);
+						// CR-021: ALL - model ids are rewritten wherever they are (a Callback implemented directly)
+						return TraversalUtil.getChildrenImpl(o, McMode.ALL);
 					}
 
 				}
@@ -324,7 +326,8 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 					@Override
 					public List<Object> getChildren(Object o) {
-						return TraversalUtil.getChildrenImpl(o);
+						// CR-021: ALL - model ids are rewritten wherever they are (a Callback implemented directly)
+						return TraversalUtil.getChildrenImpl(o, McMode.ALL);
 					}
 
 				}

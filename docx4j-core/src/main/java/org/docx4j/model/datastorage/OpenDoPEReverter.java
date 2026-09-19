@@ -28,6 +28,7 @@ import java.util.Map;
 import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -187,7 +188,8 @@ public class OpenDoPEReverter {
 	private void findSdtsInTemplatePart(ContentAccessor content, TopLevelSdtTemplateFinder sdtPrFinder, boolean instanceCountOnly) throws Docx4JException {
 				
 		sdtPrFinder.setInstanceCountOnly(instanceCountOnly);
-		new TraversalUtil(content, sdtPrFinder);
+		// CR-021: ALL - the revert edits controls in every branch
+		new TraversalUtil(content, sdtPrFinder, McMode.ALL);
 	}	
 	
 	private static class TopLevelSdtTemplateFinder extends CallbackImpl {
@@ -295,7 +297,8 @@ public class OpenDoPEReverter {
 	private void handleSdtsInInstancePart(ContentAccessor content ) throws Docx4JException {
 		
 		instanceSdtPrFinder = new TopLevelSdtInstanceFinder();		
-		new TraversalUtil(content.getContent(), instanceSdtPrFinder);
+		// CR-021: ALL - the revert edits controls in every branch
+		new TraversalUtil(content.getContent(), instanceSdtPrFinder, McMode.ALL);
 		
 		// Handle the condition sdt's we've found
 		replaceConditions();

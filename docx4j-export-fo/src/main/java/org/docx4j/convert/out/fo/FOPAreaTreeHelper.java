@@ -24,6 +24,7 @@ import org.apache.fop.apps.MimeConstants;
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
@@ -216,7 +217,9 @@ public class FOPAreaTreeHelper {
     		 * everywhere cost 0.043 and a page on a 27-page document and 0.022 on
     		 * another, where restricting it to the header's own paragraphs keeps both
     		 * page-count fixes and loses neither. */
+    		// CR-021: ALL - rewrites the exporter's copy, so floats are removed from every branch
     		FloatingDrawingRemover remover = new FloatingDrawingRemover();
+    		remover.setMcMode(McMode.ALL);
     		try {
 	    		for (Object child : ((org.docx4j.wml.ContentAccessor)hdrFtr).getContent()) {
 	    			remover.apply(XmlUtils.unwrap(child));
@@ -274,7 +277,7 @@ public class FOPAreaTreeHelper {
 			}
 			List<Object> children;
 			try {
-				children = TraversalUtil.getChildrenImpl(o);
+				children = TraversalUtil.getChildrenImpl(o, McMode.ALL); // CR-021: ALL - rewrites the exporter's copy
 			} catch (RuntimeException e) {
 				return true;
 			}
@@ -290,7 +293,7 @@ public class FOPAreaTreeHelper {
 		private boolean removeFrom(Object parent, Object drawing) {
 			List<Object> children;
 			try {
-				children = TraversalUtil.getChildrenImpl(parent);
+				children = TraversalUtil.getChildrenImpl(parent, McMode.ALL); // CR-021: ALL - rewrites the exporter's copy
 			} catch (RuntimeException e) {
 				return false;
 			}

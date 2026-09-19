@@ -12,6 +12,7 @@ import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
@@ -86,7 +87,8 @@ public class BookmarkRenumber {
 			log.debug( " MDP already unmarshalled.");
 
 			RangeFinder rt = new RangeFinder();
-			new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+			// CR-021: ALL - a bookmark in any branch is renumbered
+			new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt, McMode.ALL);
 			
 			for (CTBookmark bm : rt.getStarts()) {
 				
@@ -119,7 +121,8 @@ public class BookmarkRenumber {
 				
 		RangeTraverser rt = new RangeTraverser(startElement, endElement,
 				refElement);
-		new TraversalUtil(paragraphs, rt);
+		// CR-021: ALL - a bookmark in any branch is renumbered
+		new TraversalUtil(paragraphs, rt, McMode.ALL);
 
 		Method startIdMethod = null;
 		Method endIdMethod = null;

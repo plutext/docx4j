@@ -135,27 +135,80 @@ public class TextUtils {
 	 * From http://www.cafeconleche.org/books/xmljava/chapters/ch06s03.html
 	 *
 	 */
+	/**
+	 * Writes the character content it is handed.
+	 * 
+	 * <p>mc:AlternateContent (since 17.1.1, CR-021): the text of ONE branch - the one
+	 * {@link org.docx4j.jaxb.McSelection} draws - is written; the other branches are
+	 * skipped, so a text box's text appears once.  Being a stream, this cannot apply
+	 * McSelection's last resort (an element with Choices but no Fallback takes its
+	 * first Choice): such an element, which Word never writes, contributes nothing.</p>
+	 */
 	public static class TextExtractor extends DefaultHandler {
 
-		  private Writer out;
-		  
-		  public TextExtractor(Writer out) {
-		    this.out = out;   
-		  }
-		    
-		  public void characters(char[] text, int start, int length)
-		   throws SAXException {
-		     
-		    try {
-		      out.write(text, start, length); 
-		    }
-		    catch (IOException e) {
-		      throw new SAXException(e);   
-		    }
-		    
-		  }  
-		    
-		} // end TextExtractor	
+		private static final String MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+
+		private Writer out;
+
+		/** One entry per open mc:AlternateContent: whether a branch has been taken. */
+		private final java.util.ArrayDeque<boolean[]> alternates = new java.util.ArrayDeque<boolean[]>();
+		/** Depth inside a skipped branch; 0 when writing. */
+		private int skipping = 0;
+
+		public TextExtractor(Writer out) {
+			this.out = out;
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts)
+				throws SAXException {
+			if (skipping > 0) {
+				skipping++;
+				return;
+			}
+			if (MC_NS.equals(uri)) {
+				if ("AlternateContent".equals(localName)) {
+					alternates.push(new boolean[] { false });
+				} else if ("Choice".equals(localName)) {
+					boolean[] taken = alternates.peek();
+					String requires = atts.getValue("Requires");
+					if (requires == null) requires = atts.getValue("", "Requires");
+					if (taken != null && !taken[0] && org.docx4j.jaxb.McSelection.prefersChoice(requires)) {
+						taken[0] = true;
+					} else {
+						skipping = 1;
+					}
+				} else if ("Fallback".equals(localName)) {
+					boolean[] taken = alternates.peek();
+					if (taken != null && !taken[0]) {
+						taken[0] = true;
+					} else {
+						skipping = 1;
+					}
+				}
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			if (skipping > 0) {
+				skipping--;
+				return;
+			}
+			if (MC_NS.equals(uri) && "AlternateContent".equals(localName) && !alternates.isEmpty()) {
+				alternates.pop();
+			}
+		}
+
+		public void characters(char[] text, int start, int length) throws SAXException {
+			if (skipping > 0) return;
+			try {
+				out.write(text, start, length);
+			} catch (IOException e) {
+				throw new SAXException(e);
+			}
+		}
+	} // end TextExtractor
 	
 	public static void main(String[] args) throws Exception {
 

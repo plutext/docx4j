@@ -31,6 +31,7 @@ import java.util.Set;
 import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.CJKToEnglish;
@@ -279,6 +280,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	// the styles they use
 		Set<String> stylesInUse = new java.util.HashSet<String>();
 		FontAndStyleFinder finder = new FontAndStyleFinder(names, stylesInUse);
+		// CR-021: ALL - fonts and styles used only in a fallback are still used, and still saved
+		finder.setMcMode(McMode.ALL);
 		if (sdp!=null) {
 			finder.defaultCharacterStyle = sdp.getDefaultCharacterStyle();
 			finder.defaultParagraphStyle = sdp.getDefaultParagraphStyle();	
@@ -342,7 +345,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
-		new TraversalUtil(body.getContent(), finder);
+		new TraversalUtil(body.getContent(), finder, McMode.ALL);
 		
 		RelationshipsPart rp = this.getRelationshipsPart();
 		if (rp!=null) {
@@ -426,13 +429,15 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		Set<String> stylesInUse = new HashSet<String>();
 		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
+		// CR-021: ALL - fonts and styles used only in a fallback are still used, and still saved
+		finder.setMcMode(McMode.ALL);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		finder.defaultTableStyle = this.getStyleDefinitionsPart().getDefaultTableStyle();
 		
 		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
 		
-		new TraversalUtil(bodyChildren, finder);
+		new TraversalUtil(bodyChildren, finder, McMode.ALL);
 		
 		// Styles in headers, footers?
 		RelationshipsPart rp = this.getRelationshipsPart();
@@ -788,6 +793,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
         }
 		
 		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
+		// CR-021: ALL - fonts and styles used only in a fallback are still used, and still saved
+		finder.setMcMode(McMode.ALL);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();		

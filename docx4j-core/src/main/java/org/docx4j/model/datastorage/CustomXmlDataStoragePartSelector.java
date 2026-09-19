@@ -21,6 +21,7 @@
 package org.docx4j.model.datastorage;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -69,6 +70,8 @@ public class CustomXmlDataStoragePartSelector {
 			visitor.customXmlParts = wordMLPackage.getCustomXmlDataStorageParts();
 			SingleTraversalUtilVisitorCallback ccFinder 
 			= new SingleTraversalUtilVisitorCallback(visitor);
+			// CR-021: ALL - a bound control in any branch identifies the part
+			ccFinder.setMcMode(McMode.ALL);
 			ccFinder.walkJAXBElements(
 				wordMLPackage.getMainDocumentPart().getJaxbElement().getBody());
 			if (visitor.customXmlDataStoragePart==null) {

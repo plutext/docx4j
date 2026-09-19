@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.customXmlProperties.DatastoreItem;
@@ -73,7 +74,8 @@ public class FromVariableReplacement extends AbstractMigratorUsingAnswersFormat 
 		
 		// Operate at the p level
 		PFinder pFinder = new PFinder();
-        new TraversalUtil(pkgOut.getMainDocumentPart().getContent(), pFinder);
+        // CR-021: ALL - the migration edits paragraphs in every branch
+        new TraversalUtil(pkgOut.getMainDocumentPart().getContent(), pFinder, McMode.ALL);
 
         for ( P p : pFinder.pList) { 
         	

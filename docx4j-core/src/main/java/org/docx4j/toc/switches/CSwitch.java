@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.InstrTextFinder;
 import org.docx4j.model.fields.FieldRef;
@@ -118,7 +119,8 @@ public class CSwitch extends SelectorSwitch {
     	
     	// Simple fields
 		SimpleFieldLocator fl = new SimpleFieldLocator();
-		new TraversalUtil(p, fl);
+		// CR-021: ALL - the TOC is rebuilt from fields in every branch
+		new TraversalUtil(p, fl, McMode.ALL);
 		
 		for( CTSimpleField simpleField : fl.simpleFields ) {
 			
@@ -153,7 +155,8 @@ public class CSwitch extends SelectorSwitch {
     	
     	// Complex fields
 		InstrTextFinder complexFinder = new InstrTextFinder(); 
-		new TraversalUtil(p, complexFinder);
+		// CR-021: ALL - the TOC is rebuilt from fields in every branch
+		new TraversalUtil(p, complexFinder, McMode.ALL);
 		for (Object o : complexFinder.results) {
 			Text t = (Text)XmlUtils.unwrap(o);
 			String key = t.getValue();

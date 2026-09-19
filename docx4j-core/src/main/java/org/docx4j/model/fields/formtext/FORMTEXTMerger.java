@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.AbstractMerger;
@@ -80,7 +81,8 @@ public class FORMTEXTMerger extends AbstractMerger {
 		
 		// find fields
 		ComplexFieldLocator fl = new ComplexFieldLocator();
-		new TraversalUtil(shellClone, fl);
+		// CR-021: ALL - merged text is written in every branch
+		new TraversalUtil(shellClone, fl, McMode.ALL);
 		log.info("Found " + fl.getStarts().size() + " fields ");		
 		
 		// canonicalise and setup fieldRefs 

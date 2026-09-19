@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.CTSdtDocPart;
@@ -234,7 +235,8 @@ public class TocFinder  extends CallbackImpl {
 	}
 
 	public List<Object> getChildren(Object o) {
-		return TraversalUtil.getChildrenImpl(o);
+		// CR-021: ALL - the TOC is replaced wherever it is
+		return TraversalUtil.getChildrenImpl(o, McMode.ALL);
 	}
 
 

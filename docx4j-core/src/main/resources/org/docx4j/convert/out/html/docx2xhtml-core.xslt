@@ -733,16 +733,37 @@
   <!--  +++++++++++++++++++  alternate content     ++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
+	<!-- The one selection rule (CR-021, org.docx4j.jaxb.McSelection): the first
+	     mc:Choice whose @Requires prefixes are all named in docx4j.jaxb.mc.preferChoice,
+	     else the mc:Fallback - as docx2fo.xslt and the visitor exporters do.  Until
+	     17.1.1 this stylesheet always took the Fallback. -->
 	<xsl:template match="mc:AlternateContent" >
-		<xsl:variable name="info" 
-			select="concat('mc:AlternateContent selecting Fallback ie ignoring mc:Choice Requires ', 
-					mc:Choice/@Requires, 
-					' containing ', 
-					local-name(mc:Choice/*[1]))"/>
-		<xsl:variable name="dummy"
-			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, 
-			$info)" />
-		<xsl:apply-templates select="mc:Fallback/*" />
+		<xsl:variable name="preferred"
+			select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
+		<xsl:choose>
+			<xsl:when test="$preferred">
+				<xsl:variable name="info"
+					select="concat('mc:AlternateContent selecting Choice Requires ',
+							$preferred/@Requires,
+							' containing ',
+							local-name($preferred/*[1]))"/>
+				<xsl:variable name="dummy"
+					select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext,
+					$info)" />
+				<xsl:apply-templates select="$preferred/*" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:variable name="info" 
+					select="concat('mc:AlternateContent selecting Fallback ie ignoring mc:Choice Requires ', 
+							mc:Choice/@Requires, 
+							' containing ', 
+							local-name(mc:Choice/*[1]))"/>
+				<xsl:variable name="dummy"
+					select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, 
+					$info)" />
+				<xsl:apply-templates select="mc:Fallback/*" />
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->

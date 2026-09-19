@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -66,7 +67,8 @@ public class FieldsCombiner {
 		// before combining: the operands of a resultless IF are themselves fields, and
 		// combining them first would turn them into live fldSimples we then paint
 		removeResultlessIfFields(wmlPackage);
-		TraversalUtil.visit(wmlPackage, false, COMBINE_VISITOR);
+		// CR-021: ALL - rewrites the exporter's copy, so fields combine in every branch
+		TraversalUtil.visit(wmlPackage, false, COMBINE_VISITOR, McMode.ALL);
 		
 		if (log.isDebugEnabled()) {
 			log.debug(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), 
@@ -120,7 +122,8 @@ public class FieldsCombiner {
 		if (!org.docx4j.Docx4jProperties.getProperty(
 				"docx4j.convert.out.fields.formFieldResults", true)) return;
 		try {
-			TraversalUtil.visit(wmlPackage, false, new FormFieldVisitor());
+			// CR-021: ALL - rewrites the exporter's copy
+			TraversalUtil.visit(wmlPackage, false, new FormFieldVisitor(), McMode.ALL);
 		} catch (RuntimeException e) {
 			log.warn("Couldn't expand a form field result: " + e.getMessage(), e);
 		}
@@ -292,7 +295,8 @@ public class FieldsCombiner {
 		if (!org.docx4j.Docx4jProperties.getProperty(
 				"docx4j.convert.out.fields.dropResultlessIf", true)) return;
 		BlockListCollector collector = new BlockListCollector();
-		TraversalUtil.visit(wmlPackage, false, collector);
+		// CR-021: ALL - rewrites the exporter's copy
+		TraversalUtil.visit(wmlPackage, false, collector, McMode.ALL);
 		for (List<Object> blocks : collector.lists) {
 			try {
 				removeResultlessIfFields(blocks);

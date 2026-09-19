@@ -21,6 +21,7 @@ package org.docx4j.model.datastorage;
 
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTPositiveSize2D;
@@ -93,7 +94,8 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 		processRptPosCons(clone);
 
 		BindingTraversor bt = new BindingTraversor();
-		new TraversalUtil(clone, bt);
+		// CR-021: ALL - binding results must land in every branch
+		new TraversalUtil(clone, bt, McMode.ALL);
 
 		return clone;
 	}
@@ -119,7 +121,8 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 		processRptPosCons(jaxbObject);
 
 		BindingTraversor bt = new BindingTraversor();
-		new TraversalUtil(jaxbObject, bt);
+		// CR-021: ALL - binding results must land in every branch
+		new TraversalUtil(jaxbObject, bt, McMode.ALL);
 
 	}
 
@@ -169,7 +172,8 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 
 	private void walkForRptPosCon(Object node, Deque<int[]> rptdStack) {
 
-		List<Object> children = TraversalUtil.getChildrenImpl(node);
+		// CR-021: ALL - binding results must land in every branch
+		List<Object> children = TraversalUtil.getChildrenImpl(node, McMode.ALL);
 		if (children==null || children.isEmpty()) return;
 
 		List<Object> removals = null;
@@ -440,7 +444,8 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 //			<wp:inline distT="0" distB="0" distL="0" distR="0">
 //				<wp:extent cx="3238500" cy="2362200" />		
 			ExtentFinder ef = new ExtentFinder();
-			new TraversalUtil(sdt.getSdtContent().getContent(), ef);
+			// CR-021: ALL - the control's extent spans every branch
+			new TraversalUtil(sdt.getSdtContent().getContent(), ef, McMode.ALL);
 			
 			sdtParent = XmlUtils.unwrap(sdtParent);
 			//System.out.println("sdt's parent: " + sdtParent.getClass().getName() );

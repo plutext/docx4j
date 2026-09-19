@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.finders.SdtFinder;
@@ -128,7 +129,8 @@ public class ListsToContentControls {
 		// First, contents of existing content controls
 		// .. find the content controls
 		SdtFinder sdtFinder = new SdtFinder();
-		new TraversalUtil(mainDocument.getContent(), sdtFinder);
+		// CR-021: ALL - rewrites the exporter's copy, so lists are wrapped in every branch
+		new TraversalUtil(mainDocument.getContent(), sdtFinder, McMode.ALL);
 		
 		// .. loop through them
 		for (SdtElement sdtEl : sdtFinder.getSdtList()) {
@@ -147,7 +149,8 @@ public class ListsToContentControls {
 		// Second, contents of table cells
 		TcFinder tcFinder = new TcFinder();
 		tcFinder.setTraverseTables(true);
-		new TraversalUtil(mainDocument.getContent(), tcFinder);
+		// CR-021: ALL - rewrites the exporter's copy
+		new TraversalUtil(mainDocument.getContent(), tcFinder, McMode.ALL);
 		for (Tc tc : tcFinder.tcList) {
 			
 			content = tc.getContent();

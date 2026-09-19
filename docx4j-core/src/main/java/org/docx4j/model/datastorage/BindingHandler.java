@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -225,7 +226,8 @@ public class BindingHandler {
 			log.debug( " MDP not using StAX.");
 		
 			RangeFinder rt = new RangeFinder();
-			new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+			// CR-021: ALL - binding results must land in every branch
+			new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt, McMode.ALL);
 			
 			for (CTBookmark bm : rt.getStarts()) {
 				

@@ -21,6 +21,7 @@ package org.docx4j.convert.out.common.preprocess;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -206,7 +207,8 @@ public class ParagraphStylesInTableFix {
 	        // (Until 17.1.1 creating it wrote into the styles part - the w:sz 20 document
 	        //  default - so it had to be done before the styles were read here.)
 	        styleRenamer.setStyles(styles);
-			new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer);
+			// CR-021: ALL - rewrites the exporter's copy, so styles are renamed in every branch
+			new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer, McMode.ALL);
 
 			/* Headers and footers too.  A table in a header is styled by its w:tblStyle
 			 * exactly as one in the body is, and letterhead tables are common: measured
@@ -227,7 +229,8 @@ public class ParagraphStylesInTableFix {
 						content = ((FooterPart)relPart.getPart(rs)).getJaxbElement().getContent();
 					}
 					if (content!=null) {
-						new TraversalUtil(content, styleRenamer);
+						// CR-021: ALL - rewrites the exporter's copy
+						new TraversalUtil(content, styleRenamer, McMode.ALL);
 					}
 				}
 			}
@@ -332,7 +335,8 @@ public class ParagraphStylesInTableFix {
 	    		// rows and their cells, as TableModel counts them: nested tables excluded,
 	    		// a cell's column its w:gridBefore plus the spans before it
 	    		TableModel.TrFinder trFinder = new TableModel.TrFinder();
-	    		new TraversalUtil(tbl, trFinder);
+	    		// CR-021: ALL - rewrites the exporter's copy
+	    		new TraversalUtil(tbl, trFinder, McMode.ALL);
 	    		List<Tr> rows = trFinder.getTrList();
 	    		int cols = 0;
 	    		for (int r = 0; r < rows.size(); r++) {
@@ -340,7 +344,8 @@ public class ParagraphStylesInTableFix {
 	    			rowIndex.put(tr, Integer.valueOf(r));
 	    			int c = gridBeforeOrAfter(tr, "gridBefore");
 	    			TcFinder tcFinder = new TcFinder();
-	    			new TraversalUtil(tr, tcFinder);
+	    			// CR-021: ALL - rewrites the exporter's copy
+	    			new TraversalUtil(tr, tcFinder, McMode.ALL);
 	    			for (Tc tc : tcFinder.tcList) {
 	    				int span = 1;
 	    				if (tc.getTcPr() != null && tc.getTcPr().getGridSpan() != null

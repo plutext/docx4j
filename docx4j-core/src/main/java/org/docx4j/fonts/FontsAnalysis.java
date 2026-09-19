@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -106,8 +107,10 @@ public final class FontsAnalysis {
 
 	private static void walk(WordprocessingMLPackage pkg, FontUsage usage, Object content) {
 		UsageWalk walk = new UsageWalk(pkg, usage);
+		// CR-021: ALL - a face used only in a fallback is still used, and still embedded
+		walk.setMcMode(McMode.ALL);
 		if (content instanceof List) {
-			new TraversalUtil((List<?>)content, walk);
+			new TraversalUtil((List<?>)content, walk, McMode.ALL);
 		} else if (content!=null) {
 			walk.walkJAXBElements(content);
 		}

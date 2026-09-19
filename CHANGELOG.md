@@ -272,6 +272,24 @@ Markdown export (CR-005, found on the OpenDoPE Specification v3 draft):
   Word bookmark no markdown renderer has, with the tab and the page number.  Lossy, like
   headers and footers; headings are navigable in every renderer.
 
+Markup compatibility (CR-021, one policy for mc:AlternateContent):
+
+- TraversalUtil visits ONE branch of each mc:AlternateContent by default - the branch
+  docx4j draws - so a Word 2010+ text box's paragraphs are visited once, not once as
+  the wps shape and again as its VML fallback. A walk that edits the tree asks for
+  every branch with the new McMode.ALL (a constructor and visit overload, or
+  CallbackImpl.setMcMode), which docx4j's own mutators now do: data binding, field
+  update, mail merge, TOC, altChunk, the anonymiser, the exporters' preprocessing.
+  This is the one behaviour change a user's own callback can notice; a callback that
+  edits must opt in.
+- The selection rule lives in one place, org.docx4j.jaxb.McSelection: the first
+  Choice whose Requires prefixes are all named in docx4j.jaxb.mc.preferChoice, else the
+  Fallback. The FO and HTML visitor exporters, docx2fo.xslt, TextUtils.extractText
+  (which used to emit both branches' text) and the markdown exporter all use it.
+- The default preference stays the Fallback: with wps preferred the FO exporter does not
+  yet draw an inline wps text box, and the HTML exporter loses a VML fallback text
+  box's content either way (both recorded in CR-021 §8.6 for the next phase).
+
 Packaging:
 
 - WordprocessingMLPackage.createPackage adds a theme part, as Word does for every

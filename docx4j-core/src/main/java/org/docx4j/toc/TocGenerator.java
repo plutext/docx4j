@@ -38,6 +38,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
@@ -217,7 +218,8 @@ public class TocGenerator {
         Body body =  wmlDocumentEl.getBody();
 
     	TocFinder finder = new TocFinder();
-		new TraversalUtil(body.getContent(), finder);
+		// CR-021: ALL - the TOC is replaced wherever it is
+		new TraversalUtil(body.getContent(), finder, McMode.ALL);
         SdtBlock sdt = finder.tocSDT;  
         if(sdt != null){
         	// OK
@@ -227,7 +229,8 @@ public class TocGenerator {
         // Set sectPr, looking for it from index onwards
         List<Object> sublist = body.getContent().subList(index, body.getContent().size()); // end is exclusive       
     	SectPrFindFirst sf = new SectPrFindFirst();
-		new TraversalUtil(sublist, sf);
+		// CR-021: ALL - the TOC is replaced wherever it is
+		new TraversalUtil(sublist, sf, McMode.ALL);
         sectPr = sf.firstSectPr;
         
         sdt = TocSdtUtils.createSdt();
@@ -517,7 +520,8 @@ public class TocGenerator {
         Body body =  wmlDocumentEl.getBody();
 
     	TocFinder finder = new TocFinder();
-		new TraversalUtil(body.getContent(), finder);
+		// CR-021: ALL - the TOC is replaced wherever it is
+		new TraversalUtil(body.getContent(), finder, McMode.ALL);
         
         SdtBlock sdt = finder.tocSDT;
         sectPr = finder.sectPr;

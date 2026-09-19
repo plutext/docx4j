@@ -31,6 +31,7 @@ import javax.xml.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -58,7 +59,8 @@ public class BookmarkMover {
 	 * 
 	 */
 	public static void process(WordprocessingMLPackage wmlPackage) {
-		TraversalUtil.visit(wmlPackage, false, new BookmarkMoverVisitor());
+		// CR-021: ALL - rewrites the exporter's copy, so bookmarks move in every branch
+		TraversalUtil.visit(wmlPackage, false, new BookmarkMoverVisitor(), McMode.ALL);
 	}
 	
 	protected static class BookmarkMoverVisitor extends AbstractTraversalUtilVisitorCallback {

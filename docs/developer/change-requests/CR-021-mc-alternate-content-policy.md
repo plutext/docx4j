@@ -1,7 +1,9 @@
 # CR-021: one policy for `mc:AlternateContent` - kept wherever it occurs, one selection rule, and a traversal that knows whether it reads or writes
 
-Status: IN PROGRESS - phase 0 DONE 2026-09-19 (survey, load test, walker
-audit, two probes with Word goldens read; §8); phase 1 awaits Jason's go.
+Status: IN PROGRESS - phases 0 and 1 DONE 2026-09-19 (phase 1: McSelection,
+TraversalUtil READ default and ALL mode, the audit applied; gate passed on
+both renderers, §8.7); phase 2 (the schema admits the element where Word
+writes it) awaits Jason's go.
 Proposed 2026-09-19 (written at Jason Harrop's direction after the
 docx4j-core-ts parity harness found a text box's paragraphs visited twice;
 "we're going to need to be consistent about how we handle mc content").
@@ -74,7 +76,9 @@ two named traversal modes, and every caller saying which it is.
 1. **Keep the element wherever it occurs.** Load stops resolving
    `mc:AlternateContent` anywhere in WordprocessingML; the JAXB tree holds it,
    as it already holds it in runs. Consumers choose at use.
-2. **One selection function**, `org.docx4j.mce.McSelection.select(AlternateContent)`,
+2. **One selection function**, `org.docx4j.jaxb.McSelection.select(AlternateContent)`
+   (not `org.docx4j.mce`: that package is the generated one in
+   docx4j-generated-objects, and a second module cannot share it under JPMS),
    returning the content of the branch docx4j draws: the first Choice whose
    `Requires` names only namespaces in `docx4j.jaxb.mc.preferChoice`, else
    the Fallback's content, else (no Fallback) the first Choice's, with the
@@ -128,8 +132,9 @@ once the schema admits the element everywhere the survey found it; the
 `McSelection.select` is the one place the rule lives; `XSLTUtils.mcPrefersChoice`
 (the XSLT hook) delegates to it. Callers: `TraversalUtil.getChildren` (the
 default mode), `AbstractVisitorExporterGenerator.walkJAXBElements`,
-`docx2fo.xslt`, the HTML exporter's XSLT if it has its own template, the
-markdown exporter, `TextUtils.extractText`. The unmarshaller listener's
+`docx2fo.xslt`, `docx2xhtml-core.xslt` (which until 17.1.1 always took the
+Fallback, ignoring the property), the markdown exporter,
+`TextUtils.extractText`. The unmarshaller listener's
 namespace bookkeeping (`Docx4jUnmarshallerListener.afterUnmarshal`, which
 records every Choice's `Requires` so the part can declare `mc:Ignorable` on
 save) is unaffected and must stay all-branches: it runs at unmarshal, before
@@ -503,3 +508,67 @@ docx4j today, measured on the two:
    both branches keeps the Fallback consistent where Word leaves it
    dangling. That is the right outcome and costs nothing; it is recorded so
    that a future "match Word exactly" reading does not undo it.
+8. **The anonymiser's `DmlVmlAnalyzer`** (found applying the audit) overrides
+   `getChildren` with its own list of types and has no `AlternateContent`
+   case, so the pictures inside a Word 2010+ text box's branches may never
+   reach its shape inspection; `ScrambleText`, which inherits the standard
+   walk, does reach them in ALL. One for CR-019 (the anonymiser
+   guarantees), not this CR.
+9. **`Containerization`** has no `TraversalUtil` walk at all (its comment
+   mentions one); it recurses over content itself and so sees the
+   `AlternateContent` object as an opaque child. It groups block-level
+   content, which is not inside a run, so nothing is lost today.
+
+### 8.7 Phase 1 (2026-09-19, at Jason's go)
+
+Coded:
+
+- `org.docx4j.jaxb.McMode` (READ, ALL) and `org.docx4j.jaxb.McSelection`
+  (`PROPERTY`, `preferredChoiceRequires`, `prefersChoice`, `selectedBranch`,
+  `select`, `branches`), with the 17.1.0 measurement and §8.5's inline-box
+  finding in its javadoc.
+- `TraversalUtil`: `getChildrenImpl(Object)` is READ; `getChildrenImpl(Object,
+  McMode)`; `CallbackImpl` carries the mode (`getMcMode`/`setMcMode`, default
+  READ) and its `getChildren` passes it; a constructor and five `visit`
+  overloads take a mode. The class javadoc names the behaviour change.
+- The audit applied (§8.3): every ALL site carries a `// CR-021: ALL - why`
+  line (46 sites in core, 3 in export-fo's `FOPAreaTreeHelper`, 2 in the
+  anonymiser); the four classes implementing `Callback` directly
+  (`OpenDoPEHandler.ShallowTraversor`, the anonymous callbacks of
+  `DiagramDataPart` and `DiagramDrawingPart`) pass ALL in their own
+  `getChildren`; `UpdateXmlFromDocumentSurface` stays READ with the reason
+  from §8.5 in a comment.
+- Callers of the one rule: `AbstractVisitorExporterGenerator` (through
+  `selectedBranch`), `XSLTUtils` (delegating), `docx2xhtml-core.xslt` (now the
+  same template as `docx2fo.xslt`; it always took the Fallback before),
+  `TextUtils.TextExtractor` (a SAX stream: skips the branches not selected,
+  with the one limitation its javadoc states), `WmlToMarkdown` (draws a
+  `w:drawing` from the selected branch).
+- `McSelectionTest` (docx4j-core-tests): the property rule, the branch
+  selection, `branches` by mode, the traversal default and ALL, the visit
+  overloads and `setMcMode`, one-branch text extraction.
+- CHANGELOG under "Markup compatibility (CR-021)".
+
+**Gate (passed 2026-09-19 12:29):**
+
+| step | result |
+|---|---|
+| docx4j-core, docx4j-docx-anon, docx4j-markdown, docx4j-export-fo | clean-install, no warnings of note |
+| targeted suites (McSelectionTest, AlternateContentPreprocessorTest, NumPicBulletTest, every `model.datastorage` test, numbering, TOC, pagination, fields, bookmarks) | 222 tests, 0 failures |
+| docx4j-core-tests, the whole suite | 1189 tests, 0 failures, 11 skipped |
+| docx4j-export-fo-tests, the whole suite | 669 tests, 0 failures, 8 skipped |
+| the 146 probes, Apache FOP and the fork renderer | every row identical to b53-batch49 on both |
+| the three corpora (192, 158, 104 rows incl. totals), Apache FOP and the fork | every row identical to b53-batch49 on both; means 0.9309 / 0.9127 / 0.9394 unchanged |
+
+So rendering was one-branch already, as §1 said, and the change is confined
+to the walkers. The two new probes score 0.73 (numbered) and 0.40
+(bound-sdt) against Word by design: docx4j draws the Fallback where Word
+drew the Choice, and does not refresh a bound control at render where Word
+did. They measure the `preferChoice` default and binding refresh (§5, §8.6
+items 1 and 2), not this phase, and are class 3 until those are decided.
+The b54 score directories were identical to the baseline and were deleted;
+b53-batch49 remains the baseline for the next batch.
+
+**Hand-off:** the docx4j-core-ts peer told the commit range; its parity
+goldens regenerate with a text box's paragraphs visited once. The Python
+port follows.

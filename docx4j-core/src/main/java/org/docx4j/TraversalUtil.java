@@ -30,6 +30,8 @@ import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McMode;
+import org.docx4j.jaxb.McSelection;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
@@ -74,6 +76,14 @@ import org.slf4j.LoggerFactory;
  * 
  * See also org.docx4j.utils.SingleTraversalUtilVisitorCallback
  * and CompoundTraversalUtilVisitorCallback
+ * 
+ * <p><b>mc:AlternateContent</b> (since 17.1.1, CR-021): a walk visits ONE branch of
+ * each mc:AlternateContent by default - the branch docx4j draws, see
+ * {@link McSelection} - which is {@link McMode#READ}.  A walk that edits the tree
+ * (binding, field update, merge, anonymisation, find and replace) must ask for
+ * {@link McMode#ALL} through the constructor or visit overload that takes a mode,
+ * or by {@link CallbackImpl#setMcMode}, so its edit reaches every branch.  Before
+ * 17.1.1 every walk saw every branch, and a text box's paragraphs twice.</p>
  * 
  * @author jharrop, alberto
  *
@@ -228,8 +238,22 @@ public class TraversalUtil {
 			}
 		}
 
+		private McMode mcMode = McMode.READ;
+
+		/** How this walk treats mc:AlternateContent; {@link McMode#READ} unless set.
+		 *  @since 17.1.1 */
+		public McMode getMcMode() {
+			return mcMode;
+		}
+
+		/** A walk that edits the tree sets {@link McMode#ALL} before walking, so its
+		 *  edit lands in every branch of each mc:AlternateContent.  @since 17.1.1 */
+		public void setMcMode(McMode mcMode) {
+			this.mcMode = mcMode == null ? McMode.READ : mcMode;
+		}
+
 		public List<Object> getChildren(Object o) {
-			return TraversalUtil.getChildrenImpl(o);
+			return TraversalUtil.getChildrenImpl(o, mcMode);
 		}
 
 		/**
@@ -268,6 +292,25 @@ public class TraversalUtil {
 	public TraversalUtil(Object parent, Callback cb) {
 
 		this.cb = cb;
+		cb.walkJAXBElements(parent);
+	}
+
+	/**
+	 * As {@link #TraversalUtil(Object, Callback)}, with the walk's treatment of
+	 * mc:AlternateContent: {@link McMode#ALL} for a callback that edits the tree.
+	 * The mode is set on a {@link CallbackImpl}; a callback implementing
+	 * {@link Callback} directly applies it in its own getChildren, by calling
+	 * {@link #getChildrenImpl(Object, McMode)}.
+	 * 
+	 * @since 17.1.1 (CR-021)
+	 */
+	public TraversalUtil(Object parent, Callback cb, McMode mcMode) {
+		this.cb = cb;
+		if (cb instanceof CallbackImpl) {
+			((CallbackImpl) cb).setMcMode(mcMode);
+		} else if (mcMode == McMode.ALL) {
+			log.debug(cb.getClass().getName() + " does not extend CallbackImpl; it applies McMode.ALL itself or not at all");
+		}
 		cb.walkJAXBElements(parent);
 	}
 	
@@ -332,6 +375,18 @@ public class TraversalUtil {
 	 * @return
 	 */
 	public static List<Object> getChildrenImpl(Object o) {
+		return getChildrenImpl(o, McMode.READ);
+	}
+
+	/**
+	 * As {@link #getChildrenImpl(Object)}, with the treatment of mc:AlternateContent:
+	 * in {@link McMode#READ} its children are the one branch docx4j draws
+	 * ({@link McSelection#selectedBranch}); in {@link McMode#ALL} every Choice and the
+	 * Fallback.  Everything else is the same in both modes.
+	 * 
+	 * @since 17.1.1 (CR-021)
+	 */
+	public static List<Object> getChildrenImpl(Object o, McMode mcMode) {
 		
 		if (o==null) {
 			log.warn("null passed to getChildrenImpl");
@@ -539,12 +594,8 @@ public class TraversalUtil {
 			}
 			return artificialList;
 		} else if (o instanceof org.docx4j.mce.AlternateContent) {
-			// we also want to traverse the fallback
-			AlternateContent ac = (AlternateContent)o;
-			List<Object> artificialList = new ArrayList<Object>();
-			artificialList.addAll(ac.getChoice());
-			artificialList.add(ac.getFallback());
-			return artificialList;
+			// CR-021: one branch (the one docx4j draws) unless the walk asked for ALL
+			return McSelection.branches((AlternateContent)o, mcMode);
 		} else if (o instanceof org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape) {
 			org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape sp = (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape)o;
 			if (sp!=null
@@ -749,6 +800,44 @@ public class TraversalUtil {
 		
 		if ((parent != null) && (callback != null)) {
 			callback.walkJAXBElements(parent);
+		}
+	}
+
+	/** As {@link #visit(Object, Callback)}, in this {@link McMode} (see
+	 *  {@link #TraversalUtil(Object, Callback, McMode)}).  @since 17.1.1 */
+	public static void visit(Object parent, Callback callback, McMode mcMode) {
+		if (callback instanceof CallbackImpl) ((CallbackImpl) callback).setMcMode(mcMode);
+		visit(parent, callback);
+	}
+
+	/** As {@link #visit(Object, TraversalUtilVisitor)}, in this {@link McMode}.  @since 17.1.1 */
+	public static void visit(Object parent, TraversalUtilVisitor visitor, McMode mcMode) {
+		if (visitor != null) {
+			visit(parent, new SingleTraversalUtilVisitorCallback(visitor), mcMode);
+		}
+	}
+
+	/** As {@link #visit(WordprocessingMLPackage, boolean, Callback)}, in this {@link McMode}.  @since 17.1.1 */
+	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, Callback callback, McMode mcMode) {
+		if (callback instanceof CallbackImpl) ((CallbackImpl) callback).setMcMode(mcMode);
+		visit(wmlPackage, bodyOnly, callback);
+	}
+
+	/** As {@link #visit(WordprocessingMLPackage, boolean, TraversalUtilVisitor)}, in this {@link McMode}.  @since 17.1.1 */
+	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, TraversalUtilVisitor visitor, McMode mcMode) {
+		if (visitor != null) {
+			visit(wmlPackage, bodyOnly, new SingleTraversalUtilVisitorCallback(visitor), mcMode);
+		}
+	}
+
+	/** As {@link #visit(WordprocessingMLPackage, boolean, List)}, in this {@link McMode}.  @since 17.1.1 */
+	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, List<TraversalUtilVisitor> visitorList, McMode mcMode) {
+		if ((visitorList != null) && (!visitorList.isEmpty())) {
+			if (visitorList.size() > 1) {
+				visit(wmlPackage, bodyOnly, new CompoundTraversalUtilVisitorCallback(visitorList), mcMode);
+			} else {
+				visit(wmlPackage, bodyOnly, visitorList.get(0), mcMode);
+			}
 		}
 	}
 

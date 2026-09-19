@@ -37,6 +37,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
@@ -268,6 +269,7 @@ public final class Paginate {
 	public static int removeLastRenderedPageBreaks(MainDocumentPart mdp) {
 
 		final int[] removed = { 0 };
+		// CR-021: ALL - marks are removed from every branch
 		new TraversalUtil(mdp.getContent(), new TraversalUtil.CallbackImpl() {
 			@Override
 			public List<Object> apply(Object o) {
@@ -282,7 +284,7 @@ public final class Paginate {
 				}
 				return null;
 			}
-		});
+		}, McMode.ALL);
 		return removed[0];
 	}
 
@@ -303,13 +305,14 @@ public final class Paginate {
 
 		// ids in use anywhere in the part (text box paragraphs included), not to be reused
 		final Set<String> inUse = new HashSet<String>();
+		// CR-021: ALL - an id in any branch is taken
 		new TraversalUtil(mdp.getContent(), new TraversalUtil.CallbackImpl() {
 			@Override
 			public List<Object> apply(Object o) {
 				if (o instanceof P && ((P) o).getParaId() != null) inUse.add(((P) o).getParaId());
 				return null;
 			}
-		});
+		}, McMode.ALL);
 
 		int assigned = 0;
 		Set<String> seen = new HashSet<String>();

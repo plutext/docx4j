@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -153,7 +154,8 @@ public class BookmarksIntegrity {
 		List<Object> faulty = new ArrayList<Object>(); 
 
 		RangeFinder rt = new RangeFinder();
-		new TraversalUtil(paragraphs, rt);
+		// CR-021: ALL - bookmark pairs are checked and repaired wherever they are
+		new TraversalUtil(paragraphs, rt, McMode.ALL);
 
 		write("Checking starts " );
 		

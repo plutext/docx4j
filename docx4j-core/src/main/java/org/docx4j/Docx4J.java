@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.docx4j.convert.out.Documents4jConversionSettings;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.FopReflective;
 import org.docx4j.convert.out.HTMLSettings;
@@ -637,7 +638,8 @@ public class Docx4J {
 			(!wmlPackage.getCustomXmlDataStorageParts().isEmpty())) {
 			try {
 				visitor = new FindContentControlsVisitor(wmlPackage.getCustomXmlDataStorageParts().keySet());
-				TraversalUtil.visit(wmlPackage, false, visitor);
+				// CR-021: ALL - the first bound control decides the store item, whichever branch holds it
+				TraversalUtil.visit(wmlPackage, false, visitor, McMode.ALL);
 			}
 			catch (FindContentControlsVisitor.BreakException be) {//noop
 			}

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.Callback;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDataModel;
@@ -156,7 +157,8 @@ public final class DiagramDrawingPart extends JaxbDmlPart<CTDataModel> {
 
 				@Override
 				public List<Object> getChildren(Object o) {
-					return TraversalUtil.getChildrenImpl(o);
+					// CR-021: ALL - model ids are rewritten wherever they are (a Callback implemented directly)
+					return TraversalUtil.getChildrenImpl(o, McMode.ALL);
 				}
 
 			}

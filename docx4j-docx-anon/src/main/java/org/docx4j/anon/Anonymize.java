@@ -251,7 +251,8 @@ public class Anonymize {
 		
 		dmlVmlAnalyzer.reinit();
 		dmlVmlAnalyzer.setPart(p);
-		new TraversalUtil(p.getJaxbElement(), dmlVmlAnalyzer);
+		// CR-021: ALL - a shape in any branch must be inspected
+		new TraversalUtil(p.getJaxbElement(), dmlVmlAnalyzer, org.docx4j.jaxb.McMode.ALL);
 		
 		result.unsafeObjectsByPart.put(p, dmlVmlAnalyzer.unsafeObjects);
 		if (dmlVmlAnalyzer.unsafeObjects.size()>0){
@@ -334,7 +335,8 @@ public class Anonymize {
 		
 		log.info("\n\n Scrambling " + p.getPartName().getName());
 		
-		new TraversalUtil(p.getJaxbElement(), latinizer);
+		// CR-021: ALL - the scramble must reach every branch, or an older reader sees the original
+		new TraversalUtil(p.getJaxbElement(), latinizer, org.docx4j.jaxb.McMode.ALL);
 		
 		
 	}

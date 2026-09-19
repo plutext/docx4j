@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -205,7 +206,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		List<Object> contentList = ((ContentAccessor)this).getContent();
 		
 	    AltChunkFinder bf = new AltChunkFinder();
-		new TraversalUtil(contentList, bf);
+		// CR-021: ALL - an altChunk in any branch is converted in place
+		new TraversalUtil(contentList, bf, McMode.ALL);
 
 		CTAltChunk altChunk;
 		boolean encounteredDocxAltChunk = false;

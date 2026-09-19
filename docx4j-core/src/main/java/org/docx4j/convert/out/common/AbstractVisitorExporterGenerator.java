@@ -238,26 +238,13 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	public void walkJAXBElements(Object o) {
 
 		if (o instanceof org.docx4j.mce.AlternateContent) {
-			// For export, process one branch only, as the XSLT pathway does.
-			// (TraversalUtil's generic getChildren returns the Choices AND the
-			// Fallback, which would render the content twice, or worse.)
-			/* Word draws the first mc:Choice whose @Requires names a namespace it
-			 * understands, and reaches the mc:Fallback only when it understands none of
-			 * them; docx4j always took the fallback.  See
-			 * XSLTUtils.mcPreferredChoiceRequires (property docx4j.jaxb.mc.preferChoice)
-			 * for what we claim to understand and what it measured.  @since 17.1.0 */
-			for (org.docx4j.mce.AlternateContent.Choice choice
-					: ((org.docx4j.mce.AlternateContent)o).getChoice()) {
-				if (org.docx4j.utils.XSLTUtils.mcPrefersChoice(choice.getRequires())) {
-					log.info("mc:AlternateContent: selecting Choice Requires=" + choice.getRequires());
-					super.walkJAXBElements(choice);
-					return;
-				}
-			}
-			org.docx4j.mce.AlternateContent.Fallback fallback =
-					((org.docx4j.mce.AlternateContent)o).getFallback();
-			if (fallback!=null) {
-				super.walkJAXBElements(fallback);
+			// For export, process one branch only, as the XSLT pathway does: the branch
+			// McSelection chooses (CR-021; the rule and its measurement are documented
+			// there).  This walk is McMode.READ, so getChildren would give the same
+			// branch; walking it here keeps the exporter explicit about it.
+			Object branch = org.docx4j.jaxb.McSelection.selectedBranch((org.docx4j.mce.AlternateContent)o);
+			if (branch != null) {
+				super.walkJAXBElements(branch);
 			}
 			return;
 		}

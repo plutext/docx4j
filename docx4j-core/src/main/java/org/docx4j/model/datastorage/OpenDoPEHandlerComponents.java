@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -195,8 +196,12 @@ public class OpenDoPEHandlerComponents {
 			// (docx4j 6.1.0 doesn't know how to replace children there,
 			//  which it needs to do if the component is a child of w:body)
 			Body b = ((MainDocumentPart)part).getJaxbElement().getBody();
+			// CR-021: ALL - components are replaced in every branch
+			t.setMcMode(McMode.ALL);
 			t.walkJAXBElements(b);
 		} else {
+			// CR-021: ALL - components are replaced in every branch
+			t.setMcMode(McMode.ALL);
 			t.walkJAXBElements(part.getContent());			
 		}
 

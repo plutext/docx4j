@@ -437,6 +437,7 @@ public class UpdateXmlFromDocumentSurface {
 
 	private void findSdtsInPart(ContentAccessor content, SdtFinder sdtFinder) throws Docx4JException {
 		
+		// CR-021: READ - Word reads the drawn branch only (CR-021 §8.5); a control in the undrawn branch is not the document's value
 		new TraversalUtil(content.getContent(), sdtFinder);
 	}	
 	

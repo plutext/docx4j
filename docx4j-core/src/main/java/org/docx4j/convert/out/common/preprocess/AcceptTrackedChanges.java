@@ -24,6 +24,7 @@ import java.util.List;
 import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.ContentAccessor;
@@ -140,7 +141,8 @@ public class AcceptTrackedChanges {
 			}
 		} else if (v != null && !(v instanceof String)) {
 			// a run's drawing, say: down to the text boxes in it
-			List<Object> children = TraversalUtil.getChildrenImpl(v);
+			// CR-021: ALL - rewrites the exporter's copy, so every branch is accepted
+			List<Object> children = TraversalUtil.getChildrenImpl(v, McMode.ALL);
 			if (children == null) return;
 			for (Object child : children) descend(XmlUtils.unwrap(child));
 		}

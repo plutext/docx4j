@@ -32,6 +32,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTPositiveSize2D;
@@ -364,7 +365,8 @@ public class BindingTraverserStAX extends BindingTraverserCommonImpl {
 //			<wp:inline distT="0" distB="0" distL="0" distR="0">
 //				<wp:extent cx="3238500" cy="2362200" />		
 			ExtentFinder ef = new ExtentFinder();
-			new TraversalUtil(sdt.getSdtContent().getContent(), ef);
+			// CR-021: ALL - the control's extent spans every branch
+			new TraversalUtil(sdt.getSdtContent().getContent(), ef, McMode.ALL);
 			
 			//System.out.println("sdt's parent: " + sdtParent.getClass().getName() );
 			

@@ -22,6 +22,7 @@ package org.docx4j.model.datastorage.migration;
 
 
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
@@ -126,6 +127,8 @@ public class VariablePrepare {
 		SingleTraversalUtilVisitorCallback paragraphVisitor 
 			= new SingleTraversalUtilVisitorCallback(
 					new TraversalUtilParagraphVisitor());
+		// CR-021: ALL - variables are prepared in every branch
+		paragraphVisitor.setMcMode(McMode.ALL);
 		paragraphVisitor.walkJAXBElements(body);
 
         if(log.isDebugEnabled()) {

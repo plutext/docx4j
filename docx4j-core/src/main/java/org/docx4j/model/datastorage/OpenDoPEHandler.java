@@ -37,6 +37,7 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
+import org.docx4j.jaxb.McMode;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -406,7 +407,8 @@ public class OpenDoPEHandler {
 				if ( ((JaxbXmlPart)part).isUnmarshalled())  {
 						
 					log.debug( ((JaxbXmlPart)part).getPartName().getName() + " already unmarshalled.");
-					new TraversalUtil(part, shallowTraversor);
+					// CR-021: ALL - conditions and repeats are processed in every branch (ShallowTraversor applies it in its own getChildren)
+					new TraversalUtil(part, shallowTraversor, McMode.ALL);
 
 				} else {
 					
@@ -415,7 +417,8 @@ public class OpenDoPEHandler {
 					if ( /* don't want to use StAX */ !Docx4jProperties.getProperty("docx4j.model.datastorage.BindingHandler.Implementation", "BindingTraverserXSLT").equals("BindingTraverserStAX"))  {
 
 						log.debug( "Property setting forcing unmarshalling.");
-						new TraversalUtil(part, shallowTraversor);
+						// CR-021: ALL - conditions and repeats are processed in every branch (ShallowTraversor applies it in its own getChildren)
+					new TraversalUtil(part, shallowTraversor, McMode.ALL);
 						
 					} else {
 					
@@ -545,7 +548,8 @@ public class OpenDoPEHandler {
 			// are written straight to the output stream, so recurse now, or eg a
 			// condition inside an expanded repeat would never be evaluated.
 			for (Object result : results) {
-				new TraversalUtil(result, shallowTraversor);
+				// CR-021: ALL - conditions and repeats are processed in every branch
+				new TraversalUtil(result, shallowTraversor, McMode.ALL);
 			}
 
 			return results;
@@ -605,7 +609,8 @@ public class OpenDoPEHandler {
 
 		@Override
 		public List<Object> getChildren(Object o) {
-			return TraversalUtil.getChildrenImpl(o);
+			// CR-021: ALL - ShallowTraversor implements Callback directly, so the mode is applied here
+			return TraversalUtil.getChildrenImpl(o, McMode.ALL);
 		}
 
 		@Override
@@ -832,7 +837,8 @@ public class OpenDoPEHandler {
         
         
         TableObjectFinder tableObjectFinder = new TableObjectFinder();
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder);
+		// CR-021: ALL - a table in any branch of the control is handled
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder, McMode.ALL);
         
 		if (/* not in table */ tableObjectFinder.result==null) {
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
@@ -1181,7 +1187,8 @@ public class OpenDoPEHandler {
 			log.info("\n Traversing clone " + i);
 
 			dt.setIndex(i);
-			new TraversalUtil(repeated.get(i), (DeepTraversor)dt);
+			// CR-021: ALL - the repeat's copies are rewritten in every branch
+			new TraversalUtil(repeated.get(i), (DeepTraversor)dt, McMode.ALL);
 		}
 		log.info(".. deep traversals done \n\n");
 		
@@ -1266,7 +1273,8 @@ public class OpenDoPEHandler {
         // where it needs to insert a tc, it has no way of adding original tcPr, so
         // we handle this here
         TableObjectFinder tableObjectFinder = new TableObjectFinder();
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder);
+		// CR-021: ALL - a table in any branch of the control is handled
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder, McMode.ALL);
         
 		if (/* not in table */ tableObjectFinder.result==null) {
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
