@@ -248,3 +248,35 @@ phase 2 an hour.
   `docs/developer/adding-a-schema.md` (the recipe), CR-018 (w16cex, the
   precedent in this tree), CR-022 (the attribute-only finding, the
   probe pattern).
+
+## 16. Phase 0: Jason's file and its measurement (2026-09-20)
+
+`cr023-word-extensions.docx` (share, `fidelity/cr023/`; Word 365, `AppVersion`
+16.0000; 22 parts including `commentsExtended`, `commentsIds`,
+`commentsExtensible`, `people` and a glossary), made by §1's steps, every
+part surveyed for the seven extensions. **Word wrote none of the five
+unmeasured ones**, each for a reason the file shows:
+
+| extension | what Word did instead |
+|---|---|
+| `w16se:symEx` | the two supplementary-plane characters went into the run as text (`<w:t>🀀🐼</w:t>`, surrogate pairs), not as `w:sym` or `symEx`; *Insert > Symbol* of an astral character is plain text in this build |
+| `w16sdtdh:storeItemChecksum` | the Title control's `w:dataBinding` (to the core-properties store item) carries `xpath` and `storeItemID` only; the checksum is evidently for user custom XML parts, not the package's own core properties |
+| `w16sdtfl:formattingAllowed` | the locked control has `w:lock w:val="contentLocked"` and nothing else; the Properties dialog offered no formatting choice ("there was no allow-formatting choice", Jason's note in the document) |
+| `w14:noSpellErr` | the checked paragraph has no attribute; this build does not persist the spelling state per paragraph |
+| `cei:commentEntityInfo` | the comment's `commentExtensible` has `durableId` and `dateUtc` and no `extLst`; and this build does not even declare `xmlns:cei` (the repository's five 2026 documents that declare it came from another build) |
+
+Every `mc:Ignorable` in the file is `w14 w15 w16se w16cid w16 w16cex
+w16sdtdh w16sdtfl w16du wp14` (`commentsExtensible.xml` adds `cr`), so all
+three attribute-only prefixes are declared on every part even though
+nothing uses them - which is why the prefix table already had them. No
+tracked change and no numbering in the file, so `dateUtc`,
+`restartNumberingAfterBreak` and `durableId` are exercised by the
+repository's own documents, as §1 measured.
+
+**Gate of phase 0 met, with the fallback**: the host list of §2 stands as
+written; the five unmeasured extensions are admitted **on the specification's
+word** (§13), their accessors covered by unit tests that build the objects
+and marshal them, not by a fixture; the three measured ones by the
+round-trip probe on the existing fixtures. The file is not committed (it
+exercises nothing the repository's documents do not) and stays on the share
+as this phase's record. Phase 1 may proceed at Jason's go.
