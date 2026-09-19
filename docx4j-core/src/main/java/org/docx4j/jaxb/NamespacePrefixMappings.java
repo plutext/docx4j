@@ -498,6 +498,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "p166";
 		}    	
 
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/excel/2006/main")) {
+			return "xm";  // xm:f, xm:sqref inside x14 and x15 content (CR-022)
+		}
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2009/9/main")) {
 			return "x14";
 		}   
@@ -893,6 +896,8 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (prefix.equals("p166"))
 			return "http://schemas.microsoft.com/office/powerpoint/2016/6/main";
 
+		if (prefix.equals("xm"))
+			return "http://schemas.microsoft.com/office/excel/2006/main";
 		if (prefix.equals("x14"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main";
 		

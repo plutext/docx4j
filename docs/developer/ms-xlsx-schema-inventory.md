@@ -51,7 +51,7 @@ repository's workbooks.
 
 | § | prefix | namespace (`http://schemas.microsoft.com/office/` + ...) | purpose | status | seen |
 |---|---|---|---|---|---|
-| 5.1 | x | excel/2006/main | Excel 2007 macro sheets (`macrosheet` and its children) | bound | |
+| 5.1 | xm | excel/2006/main | Excel 2007 macro sheets (`macrosheet` and its children) | bound | |
 | 5.2 | sle | drawing/2010/slicer | the slicer shape in a drawing part (Excel 2010) | absent (empty file in `xsd/xlsx`) | |
 | 5.3 | x15 | spreadsheetml/2010/11/main | Excel 2013: the data model and its connections, timelines and their caches, table slicer caches, pivot filter and calculated-member extensions, workbook and worksheet `extLst` content | prefix; unwired xsd | yes |
 | 5.4 | x14 | spreadsheetml/2009/9/main | Excel 2010: sparklines, slicers and slicer caches, conditional-formatting and data-validation extensions (extended formulas, icon sets, data bars), protected ranges, pivot and table extensions | prefix; unwired xsd | yes |

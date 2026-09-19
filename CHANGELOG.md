@@ -260,6 +260,10 @@ Schema (CR-022, the Excel 2010 and 2013 extensions of [MS-XLSX]):
   types in ContentTypes and Namespaces (Excel 365's strings for the timeline parts, which differ
   from the specification's pages).  They loaded as DefaultXmlPart, or as a nameless binary part
   with an error logged, and are reachable by relationship type now.
+- The xm prefix (excel/2006/main: xm:f and xm:sqref inside x14 and x15 content) is in the
+  prefix table, so marshalled sparklines, conditional formats and validations read as Excel's.
+- docx4j-samples-xlsx4j: Excel2010ExtensionsSamples writes sparklines, an x14 data bar and icon
+  set, a cross-sheet list validation and a check box control through the new classes.
 
 HTML export, lists (CR-003, found on the OpenDoPE Specification v3 draft):
 

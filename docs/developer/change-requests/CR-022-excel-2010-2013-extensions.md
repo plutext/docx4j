@@ -622,3 +622,56 @@ the gate's last row is "no repair prompt; slicers and timeline working
 | Excel 365 opens the three re-saves, slicers and timeline working | passed (Jason, 2026-09-20): "open in Excel as expected" |
 
 Gate of phase 2 met (2026-09-20). Next: phase 2b (docx4j's own sample workbooks, replacing the LibreOffice files) and phase 3 (follow-through).
+
+## 19. Phase 2b: docx4j's own samples (2026-09-20, at Jason's go)
+
+**The generator**: `org.xlsx4j.samples.Excel2010ExtensionsSamples`
+(docx4j-samples-xlsx4j; `main(outputDir)`), the worked example of the API,
+writes four workbooks through the phase 1 classes and phase 2 parts:
+
+| file | what it writes, and how |
+|---|---|
+| `cr022-sparklines.xlsx` | three rows of twelve numbers (the second with negatives, the third win/loss); `x14:sparklineGroups` in the worksheet's `extLst` (ext uri `{05C60535-...}`) with a line group with markers, a column group and a stacked group, each one `x14:sparkline` (`xm:f`, `xm:sqref`) |
+| `cr022-conditional-formatting.xlsx` | A1:A10 a data bar written as Excel writes it - the 2006 `cfRule` with its `x14:id` ext (`{B025F937-...}`) and the x14 twin (`autoMin`/`autoMax`, negative fill, axis colour) - and C1:C10 an icon set Excel 2010 added (`3Triangles`, x14 only); both in `x14:conditionalFormattings` (`{78C0D931-...}`) |
+| `cr022-data-validation.xlsx` | Sheet2 holds two lists; Sheet1's A1 and B1 take list validations whose source is on Sheet2, which Excel writes only in the x14 form (`{CCE6A557-...}`, `x14:formula1/xm:f`, `xm:sqref`) |
+| `cr022-checkbox.xlsx` | a check box: a `ControlPropertiesPart` (`x14:formControlPr` CheckBox), the worksheet's `controls`/`control` each inside an `mc:AlternateContent` Choice requiring x14 (built with `org.docx4j.mce.AlternateContent` and a `JAXBElement` for the local `controls`/`control` elements), `controlPr` with the anchor, and the legacy VML shape (`legacyDrawing`, a `BinaryPart` of content type vmlDrawing - xlsx4j binds no VML) |
+
+Not generated: **the data model** (`xl/model/item.data` is [MS-XLDM]'s
+binary store, which docx4j does not write) - so
+`lo-tdf167689_x15_namespace.xlsx` has no docx4j-made replacement, and
+`ExcelExtensionsTest.dataModelWorkbookSavesItsConnectionsAndQueryTables` and
+`ExcelExtensionPartsTest.dataModelPartTyped` stay on the `-Dcr022.samples`
+directory (skipped otherwise) unless Jason makes a data-model workbook in
+Excel 365 (Data > Get Data, "Add this data to the Data Model") or commits
+the LibreOffice one (MPL-2.0). **Decision for Jason.**
+
+**Found on the way**: the `xm` namespace (excel/2006/main) had no prefix in
+`NamespacePrefixMappings`, so marshalled `xm:f`/`xm:sqref` came out as
+`ns12:f`; added both ways (the inventory's row for §5.1 said `x`, the
+schema page's own default; corrected to Excel's `xm`). The marshalled
+`formControlPr` root comes out as `x14:formControlPr` with the main
+namespace as default, where Excel writes the x14 namespace as default -
+equivalent XML.
+
+**Check before the Excel round**: the four generated files load through the
+CR-022 tests with the same assertions as the LibreOffice files (aliased to
+their names for the run): 14 tests, 0 failures; every part well formed
+(xmllint). Staged on the share, `fidelity/cr022/cr022-*.xlsx`.
+
+**Jason**: open each of the four in Excel 365 - the sparklines drawn, the
+data bar and the triangles shown, the drop-downs offering Sheet2's lists,
+the check box present and clickable - then *Save As* over the same name
+with `-excel` appended (`cr022-sparklines-excel.xlsx` and so on) on the
+share. Those re-saves become the committed test resources, the tests move
+from `-Dcr022.samples` to them, and the LibreOffice files are discarded
+(except as decided above for the data model).
+
+**Gate (so far)**:
+
+| step | result |
+|---|---|
+| docx4j-samples-xlsx4j compiles; the generator writes the four files | done 2026-09-20 |
+| the four files pass the CR-022 tests as the LibreOffice files did | 14 tests, 0 failures |
+| Excel 365 opens each and shows the feature; re-saved on the share | Jason |
+| the re-saves committed as test resources; tests switched; LibreOffice files discarded | after Jason's re-save |
+
