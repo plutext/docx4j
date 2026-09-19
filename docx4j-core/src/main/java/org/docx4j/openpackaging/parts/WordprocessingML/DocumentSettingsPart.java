@@ -321,6 +321,39 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 				);
     }		
 
+	/**
+	 * Set the w:compatSetting compatibilityMode (see {@link #getCompatibilityMode()}):
+	 * 15 is Word 2013 and later, which a document created by Word 365 carries, and what
+	 * {@link org.docx4j.openpackaging.packages.WordprocessingMLPackage#createPackage()}
+	 * writes since 17.1.1.
+	 *
+	 * @since 17.1.1
+	 */
+	public void setCompatibilityMode(int mode) {
+		setWordCompatSetting("compatibilityMode", Integer.toString(mode));
+	}
+
+	/**
+	 * The compat settings Word 365 writes for a new document, in its order:
+	 * compatibilityMode 15, overrideTableStyleFontSizeAndJustification 1,
+	 * enableOpenTypeFeatures 1, doNotFlipMirrorIndents 1,
+	 * differentiateMultirowTableHeaders 1, useWord2013TrackBottomHyphenation 1 (measured on
+	 * Word 365's save of a docx4j-created package, 2026-09-19).  A document without
+	 * compatibilityMode is a Word 2007 document to Word (mode 12) and opens in
+	 * compatibility mode, which is what a docx4j-created package did until 17.1.1.
+	 * Locale-dependent settings (w:themeFontLang) are not written.
+	 *
+	 * @since 17.1.1
+	 */
+	public void setCompatSettingsAsWord365() {
+		setCompatibilityMode(15);
+		setOverrideTableStyleFontSizeAndJustification(true);
+		setWordCompatSetting("enableOpenTypeFeatures", "1");
+		setWordCompatSetting("doNotFlipMirrorIndents", "1");
+		setWordCompatSetting("differentiateMultirowTableHeaders", "1");
+		setWordCompatSetting("useWord2013TrackBottomHyphenation", "1");
+	}
+
 	public void setOverrideTableStyleFontSizeAndJustification(boolean val) {
 				
 		if (val) {

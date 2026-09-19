@@ -73,6 +73,10 @@ public class TablePositionTest {
 		if (compatMode != null) {
 			pkg.getMainDocumentPart().getDocumentSettingsPart()
 					.setWordCompatSetting("compatibilityMode", compatMode.toString());
+		} else {
+			// createPackage writes mode 15 since 17.1.1; null here means no setting at all
+			pkg.getMainDocumentPart().getDocumentSettingsPart().getContents().getCompat()
+					.getCompatSetting().removeIf(cs -> "compatibilityMode".equals(cs.getName()));
 		}
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));

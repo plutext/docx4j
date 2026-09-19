@@ -542,7 +542,12 @@ public class WordprocessingMLPackage extends OpcPackage {
     	DocumentSettingsPart dsp = new DocumentSettingsPart();
     	wmlPack.getMainDocumentPart().addTargetPart(dsp);
     	dsp.setJaxbElement(new CTSettings());
-    	dsp.setOverrideTableStyleFontSizeAndJustification(true);
+    	// The compat settings Word 365 writes for a new document, compatibilityMode 15
+    	// first: without a mode Word opens the package in compatibility mode (as a Word
+    	// 2007 document), which is what a docx4j-created package did until 17.1.1.  The
+    	// mode is the layout rules; the theme part below is the fonts; any theme year is
+    	// consistent with mode 15 (Word 2013-2022 wrote mode 15 with the 2013 theme).
+    	dsp.setCompatSettingsAsWord365();
 
 		// Theme part (/word/theme/theme1.xml), as Word puts one in every document it
 		// creates.  Since 17.1.1: without it, this package's docDefaults - which reference

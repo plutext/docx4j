@@ -316,6 +316,15 @@ Markup compatibility (CR-021, one policy for mc:AlternateContent):
 
 Packaging:
 
+- A package docx4j creates is a Word 365 document to Word: its settings part carries
+  compatibilityMode 15 and the five other compat settings Word 365 writes for a new
+  document (overrideTableStyleFontSizeAndJustification, enableOpenTypeFeatures,
+  doNotFlipMirrorIndents, differentiateMultirowTableHeaders,
+  useWord2013TrackBottomHyphenation), in Word's order. Until now only the first of those
+  was written and no mode, so Word opened the document in compatibility mode as a Word
+  2007 document, with that mode's layout rules. Any theme year is consistent with mode 15.
+  DocumentSettingsPart.setCompatibilityMode and setCompatSettingsAsWord365 are public.
+
 - WordprocessingMLPackage.createPackage adds a theme part, as Word does for every
   document it creates: its own document defaults reference the theme fonts, and until
   now there was nothing for them to resolve against. Which theme is

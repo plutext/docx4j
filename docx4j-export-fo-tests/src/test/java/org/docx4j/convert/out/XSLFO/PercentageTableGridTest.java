@@ -89,6 +89,9 @@ public class PercentageTableGridTest extends AbstractXSLFOTest {
 
 	private static WordprocessingMLPackage pkg(String tblW) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		// the rule above is the below-mode-15 one (the grid edge as the percentage's base);
+		// createPackage writes mode 15 since 17.1.1, so pin the mode the corpus document had
+		pkg.getMainDocumentPart().getDocumentSettingsPart().setCompatibilityMode(14);
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>" + table(tblW) + SECT_PR + "</w:body></w:document>"));
 		return pkg;

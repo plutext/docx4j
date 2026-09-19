@@ -73,11 +73,14 @@ public class ParagraphSpacingPropertiesTest {
 	}
 
 	@Test
-	public void compatibilityModeDefaultsTo12() throws Exception {
+	public void compatibilityModeOfACreatedPackageIs15AndAbsentMeans12() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
-		assertEquals(12, DocumentSettingsPart.getCompatibilityMode(pkg));
-		pkg.getMainDocumentPart().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", "15");
-		assertEquals(15, DocumentSettingsPart.getCompatibilityMode(pkg));
+		assertEquals("Word 365's mode, since 17.1.1", 15, DocumentSettingsPart.getCompatibilityMode(pkg));
+		pkg.getMainDocumentPart().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", "14");
+		assertEquals(14, DocumentSettingsPart.getCompatibilityMode(pkg));
+		pkg.getMainDocumentPart().getDocumentSettingsPart().getContents().getCompat().getCompatSetting()
+				.removeIf(cs -> "compatibilityMode".equals(cs.getName()));
+		assertEquals("no setting at all is Word 2007", 12, DocumentSettingsPart.getCompatibilityMode(pkg));
 	}
 
 	@Test

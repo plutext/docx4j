@@ -52,7 +52,15 @@ public class CentredTableIndentTest {
 			+ "</w:sectPr></w:pPr></w:p>";
 
 	private static Element firstTable(String jc, int flags) throws Exception {
+		return firstTable(jc, flags, null);
+	}
+
+	/** compatMode null = as createPackage makes it (mode 15 since 17.1.1). */
+	private static Element firstTable(String jc, int flags, Integer compatMode) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		if (compatMode != null) {
+			pkg.getMainDocumentPart().getDocumentSettingsPart().setCompatibilityMode(compatMode);
+		}
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>" + table(jc) + SECT + "</w:body></w:document>"));
 		FOSettings foSettings = Docx4J.createFOSettings();
@@ -76,13 +84,16 @@ public class CentredTableIndentTest {
 		}
 	}
 
-	/** Without w:jc the table starts at the margin (less the mode-below-15 grid shift). */
+	/** Without w:jc the table starts at the margin: at mode 15 (a created package) exactly
+	 *  there, below mode 15 less the grid shift of one cell margin. */
 	@Test
 	public void anUncentredTableIsNotMoved() throws Exception {
 		for (int flag : FLAGS) {
 			Element table = firstTable("", flag);
 			assertNotNull(flagName(flag) + ": no fo:table", table);
-			assertEquals(flagName(flag), "-5.4pt", table.getAttribute("start-indent"));
+			assertEquals(flagName(flag) + " at mode 15", "0in", table.getAttribute("start-indent"));
+			table = firstTable("", flag, 12);
+			assertEquals(flagName(flag) + " at mode 12", "-5.4pt", table.getAttribute("start-indent"));
 		}
 	}
 }

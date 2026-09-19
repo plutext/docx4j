@@ -45,7 +45,12 @@ public class CompatibilityOptionsTest {
 	private static WordprocessingMLPackage pkg(int mode) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		DocumentSettingsPart dsp = pkg.getMainDocumentPart().getDocumentSettingsPart(true);
-		if (mode > 0) dsp.setWordCompatSetting("compatibilityMode", Integer.toString(mode));
+		if (mode > 0) {
+			dsp.setWordCompatSetting("compatibilityMode", Integer.toString(mode));
+		} else {
+			// createPackage writes mode 15 since 17.1.1; this test wants no setting at all
+			dsp.getContents().getCompat().getCompatSetting().removeIf(cs -> "compatibilityMode".equals(cs.getName()));
+		}
 		return pkg;
 	}
 
