@@ -72,9 +72,17 @@ sheets hold only 2006-style conditional formats, no `x14` rule) and
 LibreOffice's `invalid_ext_data_validation.xlsx` (a subset of
 `data_validation_test.xlsx`). `Sparklines.xlsx` stays: its groups are column
 and stacked with negative points and markers, where the slicer workbook's one
-group is a default line. Licensing: LibreOffice's files are MPL-2.0,
-redistributable as test resources with their notice - **Jason's call which to
-commit**, and the CR records each file's origin in the test class.
+group is a default line. **Decision (Jason, 2026-09-20): the LibreOffice
+files are used temporarily** - from the share, during phases 0 to 2, as the
+Excel-saved evidence the measurements and the development tests run against -
+**and are not committed**. Once the new code exists, docx4j generates its own
+sample workbooks through it (a sparkline group of each kind, an icon-set and
+a data-bar rule, a list validation, a checkbox control, a data model where
+docx4j can write one), each opened and re-saved by Excel 365 on the share to
+become the committed, Excel-saved test resource; the LibreOffice files are
+then discarded. `cr022-slicers-timelines.xlsx` is committed as it is (Jason's
+own, Excel-saved). Generating those samples is the creation half of the gate:
+a feature docx4j can only read is not "supported".
 
 **Slicers and timelines were not found** in any open corpus (LibreOffice and
 POI do not support them, so their test files have none; the libraries that do
@@ -260,7 +268,10 @@ type is taken from [MS-XLDM] in phase 0.
 
 ## 10. Tests (recipe step 10)
 
-In `docx4j-core-tests`, on the phase 0 file: every part above typed and
+In `docx4j-core-tests`, on `cr022-slicers-timelines.xlsx` and on the
+docx4j-generated samples of §1 (the LibreOffice files serve the same tests
+during development, from the share, until the generated samples replace
+them): every part above typed and
 reachable by relationship type; the worksheet's `x14:sparklineGroups`,
 `x14:conditionalFormattings`, `x14:dataValidations` and the workbook's
 `x15:timelineCacheRefs` typed inside `extLst`; `x14ac:dyDescent` read from a
@@ -298,6 +309,13 @@ acceptance run is where the x14ac and Ignorable losses were seen.
 2. **The parts**: the nine part classes, constants and registrations, with
    the typed-part tests. Gate: the parts typed and reachable, Excel opens the
    re-save with slicers and timelines working.
+2b. **docx4j's own samples**: a generator (a sample program under
+   `docx4j-samples-xlsx4j`, kept as the worked example of the API) writes
+   the workbooks of §1 through the new code; Jason opens and re-saves each in
+   Excel 365; the re-saves replace the LibreOffice files as test resources
+   and the tests of §10 run on them. Gate: Excel opens every generated
+   workbook without repair and shows the feature; the LibreOffice files
+   discarded from the share.
 3. **Follow-through**: CHANGELOG, this CR closed, the three hand-offs. Phases
    1 and 2 are one commit each (recipe step 12; phase 0 commits only the
    test file and this CR's update).
