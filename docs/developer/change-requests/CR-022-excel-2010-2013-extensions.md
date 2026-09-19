@@ -563,3 +563,61 @@ acceptance run is the consumer); objects-ts notes phase 2's parts are
 core-ts's, not its own.
 
 Gate of phase 1 met (2026-09-20); phase 2 (the parts) may proceed at Jason's go.
+
+## 18. Phase 2: the parts (2026-09-20, at Jason's go)
+
+Coded, as §8 planned:
+
+- Nine part classes in `openpackaging/parts/SpreadsheetML/`: `SlicerCachePart`
+  (`CTSlicerCacheDefinition`), `SlicersPart` (`CTSlicers`),
+  `TimelineCachePart` (`CTTimelineCacheDefinition`), `TimelinesPart`
+  (`CTTimelines`), `ControlPropertiesPart` (`CTFormControlPr`),
+  `CustomDataPropertiesPart` (`CTDatastoreItem`), `SurveyPart` (`CTSurvey`),
+  each a `JaxbSmlPart`; `CustomDataPart` and `DataModelPart` extend
+  `BinaryPart`.
+- Nine content types (`ContentTypes.SPREADSHEETML_SLICER_CACHE` and so on)
+  and nine relationship types (`Namespaces.SPREADSHEETML_SLICER_CACHE` and so
+  on), Excel 365's strings for the timeline pair (§8) and [MS-XLDM]'s
+  `powerPivotData` relationship for the data model (§16).
+- Registration: the seven XML parts in `JaxbSmlPart.newPartForContentType`,
+  reached because `ContentTypeManager`'s SpreadsheetML branch now also
+  matches their content types (they are `application/vnd.ms-excel.*` and
+  `...customDataProperties+xml`, not `...spreadsheetml.*`); the data model
+  by its content type; the custom data by `application/binary` **and** its
+  relationship type, since that content type is generic. All sit in the
+  chain where the pivot cache parts are, as §9 asked.
+- `org.xlsx4j.ExcelExtensionPartsTest` (4 tests): on
+  `cr022-slicers-timelines.xlsx`, the two slicer caches and the timeline
+  cache reached from the workbook's relationships as typed parts (names,
+  source names, `mc:Ignorable` "x xr10" / "xr10"), the slicers and the
+  timeline from sheet 2's, and by part name; a save keeping every part
+  typed, its content-type override and its relationship, with each root
+  declaring the prefixes its `mc:Ignorable` names (`x`, the main namespace,
+  included); on the LibreOffice workbooks, the checkbox's
+  `ControlPropertiesPart` (`objectType` CheckBox) and the data-model
+  workbook's `DataModelPart` (its bytes kept through a save). No
+  "DefaultPart used" warning is logged for the seven workbooks any more.
+- CHANGELOG: a bullet under the CR-022 "Schema" block.
+
+Not exercised by any sample: `CustomDataPropertiesPart`, `CustomDataPart`
+and `SurveyPart` (no workbook of §1 has an add-in's custom data or a
+survey); they are wired by the same pattern and typed by the schemas of
+phase 1, and a sample is a phase 2b candidate if one can be made.
+
+**Re-saves for the Excel check** (on the share, `fidelity/cr022/`):
+`cr022-slicers-timelines-phase2-resave.xlsx`,
+`lo-checkbox-form-control-phase2-resave.xlsx`,
+`lo-tdf167689_x15_namespace-phase2-resave.xlsx` - written by the typed
+parts this time (the phase 1 re-saves copied those parts as bytes). Jason:
+the gate's last row is "no repair prompt; slicers and timeline working
+(they now come from re-marshalled parts); the checkbox a checkbox".
+
+**Gate:**
+
+| step | result |
+|---|---|
+| docx4j-core clean install | BUILD SUCCESS; installed jar md5 = target jar's |
+| `ExcelExtensionPartsTest` + `ExcelExtensionsTest`, with the LibreOffice samples | 14 tests, 0 failures |
+| docx4j-core-tests, the whole suite (with `-Dcr022.samples`) | 1212 tests, 0 failures, 11 skipped (2026-09-20) |
+| Excel 365 opens the three re-saves, slicers and timeline working | Jason |
+

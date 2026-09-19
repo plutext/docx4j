@@ -51,6 +51,21 @@ public abstract class JaxbSmlPart<E>  extends JaxbXmlPartXPathAware<E>  {
 			return new ExternalLinkPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_CHARTSHEET)) {
 			return new ChartsheetPart(new PartName(partName));
+		// the Excel 2010 and 2013 extension parts (CR-022)
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_SLICER_CACHE)) {
+			return new SlicerCachePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_SLICERS)) {
+			return new SlicersPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_TIMELINE_CACHE)) {
+			return new TimelineCachePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_TIMELINES)) {
+			return new TimelinesPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_CONTROL_PROPERTIES)) {
+			return new ControlPropertiesPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_CUSTOM_DATA_PROPERTIES)) {
+			return new CustomDataPropertiesPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_SURVEY)) {
+			return new SurveyPart(new PartName(partName));
 		} else {
 			throw new PartUnrecognisedException("No subclass found for "
 					+ partName + " (content type '" + contentType + "')");

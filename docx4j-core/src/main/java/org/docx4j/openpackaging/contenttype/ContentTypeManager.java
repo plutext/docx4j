@@ -488,12 +488,29 @@ public class ContentTypeManager  {
 				return new BinaryPart( new PartName(partName));				
 			}
 			
-		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
+		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")
+				// the Excel 2010 and 2013 extension parts (CR-022): slicers, timelines and their caches,
+				// control properties, custom data properties, surveys
+				|| contentType.equals(ContentTypes.SPREADSHEETML_SLICER_CACHE)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_SLICERS)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_TIMELINE_CACHE)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_TIMELINES)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_CONTROL_PROPERTIES)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_CUSTOM_DATA_PROPERTIES)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_SURVEY)) {
 			try {
 				return JaxbSmlPart.newPartForContentType(contentType, partName);
 			} catch (Exception e) {
 				return new BinaryPart( new PartName(partName));				
 			}
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_DATA_MODEL)) {
+			// the Excel data model, [MS-XLDM] (CR-022); bytes
+			return new org.docx4j.openpackaging.parts.SpreadsheetML.DataModelPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_CUSTOM_DATA)
+				&& rel!=null && rel.getType().equals(Namespaces.SPREADSHEETML_CUSTOM_DATA)) {
+			// an add-in's custom data, [MS-XLSX] 2.1.2 (CR-022); bytes. application/binary is generic, so the
+			// relationship type decides
+			return new org.docx4j.openpackaging.parts.SpreadsheetML.CustomDataPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME_OVERRIDE)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));	
 			

@@ -254,6 +254,12 @@ Schema (CR-022, the Excel 2010 and 2013 extensions of [MS-XLSX]):
   Fallback) is kept whole, per CR-021; it was dropped, and a form control lost its controlPr.
 - xl/connections.xml and xl/queryTables/*.xml save: CT_Connections and CT_QueryTable had
   no root-element annotation, so a workbook with a data model loaded but could not be saved.
+- Typed parts for what those namespaces define: SlicerCachePart, SlicersPart, TimelineCachePart,
+  TimelinesPart, ControlPropertiesPart, CustomDataPropertiesPart, SurveyPart (each a JaxbSmlPart)
+  and the binary CustomDataPart and DataModelPart, with their content types and relationship
+  types in ContentTypes and Namespaces (Excel 365's strings for the timeline parts, which differ
+  from the specification's pages).  They loaded as DefaultXmlPart, or as a nameless binary part
+  with an error logged, and are reachable by relationship type now.
 
 HTML export, lists (CR-003, found on the OpenDoPE Specification v3 draft):
 

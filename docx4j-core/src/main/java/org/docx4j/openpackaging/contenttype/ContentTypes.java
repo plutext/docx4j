@@ -346,6 +346,36 @@ public class ContentTypes {
 	///xl/externalLinks/externalLink1.xml
 	public final static String SPREADSHEETML_EXTERNAL_LINK =
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
+
+	// The Excel 2010 and 2013 extension parts, [MS-XLSX] 2.1 (docx4j 17.1.1, CR-022).
+	// The timeline strings are Excel 365's (lowercase), not the specification pages' "TimelineCache+xml".
+	// /xl/slicerCaches/slicerCache1.xml
+	public final static String SPREADSHEETML_SLICER_CACHE =
+			"application/vnd.ms-excel.slicerCache+xml";
+	// /xl/slicers/slicer1.xml
+	public final static String SPREADSHEETML_SLICERS =
+			"application/vnd.ms-excel.slicer+xml";
+	// /xl/timelineCaches/timelineCache1.xml
+	public final static String SPREADSHEETML_TIMELINE_CACHE =
+			"application/vnd.ms-excel.timelineCache+xml";
+	// /xl/timelines/timeline1.xml
+	public final static String SPREADSHEETML_TIMELINES =
+			"application/vnd.ms-excel.timeline+xml";
+	// /xl/ctrlProps/ctrlProp1.xml
+	public final static String SPREADSHEETML_CONTROL_PROPERTIES =
+			"application/vnd.ms-excel.controlproperties+xml";
+	// /xl/customDataProps/customDataProps1.xml
+	public final static String SPREADSHEETML_CUSTOM_DATA_PROPERTIES =
+			"application/vnd.openxmlformats-officedocument.customDataProperties+xml";
+	// /xl/customData/customData1.dat
+	public final static String SPREADSHEETML_CUSTOM_DATA =
+			"application/binary";
+	// /xl/surveys/survey1.xml
+	public final static String SPREADSHEETML_SURVEY =
+			"application/vnd.ms-excel.Survey+xml";
+	// /xl/model/item.data ([MS-XLDM], the Excel data model)
+	public final static String SPREADSHEETML_DATA_MODEL =
+			"application/vnd.openxmlformats-officedocument.model+data";
 	
 	// /xl/charts/chart1.xml
 	public final static String DRAWINGML_CHART =

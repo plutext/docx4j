@@ -349,6 +349,36 @@ public class Namespaces {
 	///xl/externalLinks/externalLink1.xml
 	public final static String SPREADSHEETML_EXTERNAL_LINK =
 			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink";
+
+	// The Excel 2010 and 2013 extension parts, [MS-XLSX] 2.1 (docx4j 17.1.1, CR-022).
+	// The timeline types are Excel 365's (2011, lowercase), not the specification pages' 2010 "TimelineCache".
+	///xl/slicerCaches/slicerCache1.xml (from the workbook)
+	public final static String SPREADSHEETML_SLICER_CACHE =
+			"http://schemas.microsoft.com/office/2007/relationships/slicerCache";
+	///xl/slicers/slicer1.xml (from a worksheet)
+	public final static String SPREADSHEETML_SLICERS =
+			"http://schemas.microsoft.com/office/2007/relationships/slicer";
+	///xl/timelineCaches/timelineCache1.xml (from the workbook)
+	public final static String SPREADSHEETML_TIMELINE_CACHE =
+			"http://schemas.microsoft.com/office/2011/relationships/timelineCache";
+	///xl/timelines/timeline1.xml (from a worksheet)
+	public final static String SPREADSHEETML_TIMELINES =
+			"http://schemas.microsoft.com/office/2011/relationships/timeline";
+	///xl/ctrlProps/ctrlProp1.xml (from a worksheet, for one of its controls)
+	public final static String SPREADSHEETML_CONTROL_PROPERTIES =
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/ctrlProp";
+	///xl/customDataProps/customDataProps1.xml (from the workbook)
+	public final static String SPREADSHEETML_CUSTOM_DATA_PROPERTIES =
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/customDataProps";
+	///xl/customData/customData1.dat (from its properties part)
+	public final static String SPREADSHEETML_CUSTOM_DATA =
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/customData";
+	///xl/surveys/survey1.xml (from the workbook)
+	public final static String SPREADSHEETML_SURVEY =
+			"http://schemas.microsoft.com/office/2010/relationships/Survey";
+	///xl/model/item.data (from the workbook; [MS-XLDM])
+	public final static String SPREADSHEETML_DATA_MODEL =
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/powerPivotData";
             
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 
