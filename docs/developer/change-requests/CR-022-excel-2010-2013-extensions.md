@@ -702,3 +702,31 @@ superseded LibreOffice files, the phase re-saves and the un-re-saved
 generated files were discarded; `lo-tdf167689_x15_namespace.xlsx` stays
 (with a README) pending the data-model decision. Gate of phase 2b met.
 
+**The data-model workbook (decided 2026-09-20: Excel-made).** docx4j built
+the source, `cr022-data-model-source.xlsx` on the share: `Sheet1` the
+`Sales` table of §1 (Date, Region, Product, Sales; twelve rows) and a
+`Regions` sheet with a `Regions` table (Region, Manager) to relate it to.
+Jason, in Excel 365:
+
+1. Open `cr022-data-model-source.xlsx`; click a cell of the Sales table.
+2. *Insert > PivotTable > From Table/Range*; tick **"Add this data to the
+   Data Model"**; New Worksheet; OK. (This is what creates
+   `xl/model/item.data`, the `x15:dataModel` extension in the workbook, and
+   the `ThisWorkbookDataModel` connection in `xl/connections.xml`.)
+3. In the PivotTable Fields pane, drag `Region` to Rows and `Sales` to
+   Values.
+4. *Data > Relationships > New*: Table `Sales`, column `Region`; Related
+   table `Regions`, related column `Region`; OK. (The Regions table joins
+   the model with a relationship; if Excel asks to add Regions to the data
+   model, say yes.) Then, in the Fields pane's *All* tab, drag
+   `Regions > Manager` to Rows above Region, so the pivot uses the
+   relationship.
+5. *File > Save As*, `cr022-data-model.xlsx`, on the share.
+
+Expected in the save: `xl/model/item.data`, `x15:dataModel` (with
+`modelTables` and a `modelRelationships`) in the workbook's `extLst`,
+`xl/connections.xml` with an `x15:connection` extension, a pivot cache
+sourced from the model (`x15:pivotCacheDefinition`'s extension). It then
+replaces `lo-tdf167689_x15_namespace.xlsx` for the two data-model tests,
+which become resource-based, and `-Dcr022.samples` retires.
+
