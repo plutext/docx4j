@@ -61,7 +61,15 @@ public class Context {
 			jcSML = JAXBContext.newInstance("org.xlsx4j.sml:" +
 					"org.xlsx4j.schemas.microsoft.com.office.excel.x2010.spreadsheetDrawing:" +	
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2006.main:" +
-					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main",classLoader, ProviderProperties.getProviderProperties() );
+					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main:" +
+					// Excel 2010/2013 extensions (CR-022): x14, x15, x15ac, x12ac, x16, xr (revisionPtr).
+					// x14ac, xr2, xr6 and xr10 declare attributes only, so XJC generates no package for them.
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main:" +
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main:" +
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.ac:" +
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2011.x1.ac:" +
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.x11.main:" +
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision",classLoader, ProviderProperties.getProviderProperties() );
 				
 			
 			

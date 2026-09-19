@@ -1,38 +1,40 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac"
 	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac"
-	elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac"	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
-	
-   
-  <!-- From [MS-XLSX] — v20130726
-Excel (.xlsx) Extensions to the Office Open XML SpreadsheetML File Format
-Copyright © 2013 Microsoft Corporation.
-Release: July 30, 2013 -->
+	elementFormDefault="qualified"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	jaxb:version="3.0">
 
-	<xsd:annotation>
-		<xsd:appinfo>
-			<xsd:appinfo>
-				<jaxb:globalBindings>
-				</jaxb:globalBindings>
-			</xsd:appinfo>
-			<jaxb:schemaBindings>
-				<jaxb:package name="org.xlsx4j.spreadsheetml.ac201011"/>
-			</jaxb:schemaBindings>
-		</xsd:appinfo>
-	</xsd:annotation>	  
+<!--
+	[MS-XLSX] revision 29.1 (2026-05-19), section 5.9 "http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/ce659475-d580-4104-895f-b72947105f24
+	Taken from the HTML section page on 2026-09-20 (CR-022 phase 1; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). Re-take it from the same page; the body below is the page's text apart from:
+	  - import schemaLocations mapped to this tree
+	  - x:ST_Xstring and x:ST_Guid written s:ST_Xstring and s:ST_Guid (the main schema takes them from the shared types)
+	  - the JAXB package annotation
+-->
 
-	
-	<xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-		schemaLocation="xlbasictypes.xsd" />
-	<xsd:import
-		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-		schemaLocation="orel.xsd" />
-	<xsd:complexType name="CT_AbsolutePath">
-		<xsd:attribute name="url" use="required" type="x:ST_Xstring" />
-	</xsd:complexType>
-	<xsd:element name="absPath" type="CT_AbsolutePath" />
+  <xsd:annotation>
+    <xsd:appinfo>
+      <xsd:appinfo>
+        <jaxb:globalBindings>
+        </jaxb:globalBindings>
+      </xsd:appinfo>
+      <jaxb:schemaBindings>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.ac"/>
+      </jaxb:schemaBindings>
+    </xsd:appinfo>
+  </xsd:annotation>
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+
+  <xsd:complexType name="CT_AbsolutePath">
+    <xsd:attribute name="url" use="required" type="s:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:element name="absPath" type="CT_AbsolutePath"/>
+
 </xsd:schema>

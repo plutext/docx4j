@@ -70,6 +70,8 @@ or better, you can use ppp 1.2,
 	
 REVISION HISTORY
 
+2026 09 20 - Excel 2010/2013 extensions (x14, x15, x14ac, x15ac, x12ac, x16, xr2, xr6, xr10; CR-022)
+
 2019 06 24 - added mce to workbook
 2013 01 20 - moved to ECMA 376 4ed; add parent pointer
 2013 01 20 - added @xml:space in shared strings
@@ -83,6 +85,17 @@ REVISION HISTORY
   <!--  DML stuff required by SML -->
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml__ROOT.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" schemaLocation="sml_2014_revision.xsd" />
+
+  <!-- Excel 2010 and 2013 extensions, [MS-XLSX] (docx4j 17.1.1, CR-022) -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" schemaLocation="../xlsx/office_spreadsheetml_2009_9_main.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" schemaLocation="../xlsx/office_spreadsheetml_2009_9_ac.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main" schemaLocation="../xlsx/office_spreadsheetml_2010_11_main.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac" schemaLocation="../xlsx/office_spreadsheetml_2010_11_ac.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac" schemaLocation="../xlsx/office_spreadsheetml_2011_1_ac.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2014/11/main" schemaLocation="../xlsx/office_spreadsheetml_2014_11_main.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2" schemaLocation="../xlsx/office_spreadsheetml_2015_revision2.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision6" schemaLocation="../xlsx/office_spreadsheetml_2016_revision6.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10" schemaLocation="../xlsx/office_spreadsheetml_2016_revision10.xsd" />
 
   <xsd:include schemaLocation="sml_ECMA376_4ed_transitional.xsd" />
   

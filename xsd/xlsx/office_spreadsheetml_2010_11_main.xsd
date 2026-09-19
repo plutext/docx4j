@@ -1,41 +1,53 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
-	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"
 	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"
 	elementFormDefault="qualified"
+	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
-	
-   
-  <!-- From [MS-XLSX] — v20130726
-Excel (.xlsx) Extensions to the Office Open XML SpreadsheetML File Format
-Copyright © 2013 Microsoft Corporation.
-Release: July 30, 2013 -->
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"
+	xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
+	xmlns:xr10="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 
-	<xsd:annotation>
-		<xsd:appinfo>
-			<xsd:appinfo>
-				<jaxb:globalBindings>
-				</jaxb:globalBindings>
-			</xsd:appinfo>
-			<jaxb:schemaBindings>
-				<jaxb:package name="org.xlsx4j.spreadsheetml.main201011"/>
-			</jaxb:schemaBindings>
-		</xsd:appinfo>
-	</xsd:annotation>	  
+<!--
+	[MS-XLSX] revision 29.1 (2026-05-19), section 5.3 "http://schemas.microsoft.com/office/spreadsheetml/2010/11/main Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/e42bbfd7-2a3d-4308-a4f3-30313fc506b9
+	Taken from the HTML section page on 2026-09-20 (CR-022 phase 1; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). Re-take it from the same page; the body below is the page's text apart from:
+	  - import schemaLocations mapped to this tree
+	  - x:ST_Xstring and x:ST_Guid written s:ST_Xstring and s:ST_Guid (the main schema takes them from the shared types)
+	  - the JAXB package annotation
+	  - root-element annotations on the part roots (timelineCacheDefinition, timelines, survey)
+	  - mc:Ignorable on the roots Excel writes it on (timelineCacheDefinition, timelines)
+-->
 
-	
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlbasictypes.xsd"/>
-  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" schemaLocation="xlslicercache.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlworkbook.xsd"/>
-  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" schemaLocation="xlmbasictypes.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlsheet.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlpivot.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlextconns.xsd"/>
+  <xsd:annotation>
+    <xsd:appinfo>
+      <xsd:appinfo>
+        <jaxb:globalBindings>
+        </jaxb:globalBindings>
+      </xsd:appinfo>
+      <jaxb:schemaBindings>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main"/>
+      </jaxb:schemaBindings>
+    </xsd:appinfo>
+  </xsd:annotation>
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="../sml/sml_ECMA376_4ed_transitional.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="../shared/shared-relationshipReference.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/markup-compatibility/2006" schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" schemaLocation="../offmacro/office-excel-2006-main.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" schemaLocation="office_spreadsheetml_2009_9_main.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10" schemaLocation="office_spreadsheetml_2016_revision10.xsd"/>
+
   <xsd:element name="slicerCaches" type="x14:CT_SlicerCaches"/>
   <xsd:element name="tableSlicerCache" type="CT_TableSlicerCache"/>
   <xsd:complexType name="CT_TableSlicerCache">
@@ -56,7 +68,7 @@ Release: July 30, 2013 -->
     <xsd:attribute name="count" type="xsd:unsignedInt" use="optional" default="0"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SlicerCacheOlapLevelName">
-    <xsd:attribute name="uniqueName" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="uniqueName" type="s:ST_Xstring" use="required"/>
     <xsd:attribute name="count" type="xsd:unsignedInt" use="required"/>
   </xsd:complexType>
   <xsd:element name="slicerCachePivotTables" type="x14:CT_SlicerCachePivotTables"/>
@@ -86,7 +98,7 @@ Release: July 30, 2013 -->
     <xsd:sequence>
       <xsd:element ref="xm:f" minOccurs="1" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="appRef" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="appRef" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:element name="timelineCacheRefs" type="CT_TimelineCacheRefs"/>
   <xsd:complexType name="CT_TimelineCacheRefs">
@@ -150,10 +162,10 @@ Release: July 30, 2013 -->
     <xsd:attribute name="headers" type="xsd:boolean" default="false" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_RangePr">
-    <xsd:attribute name="sourceName" use="required" type="x:ST_Xstring"/>
+    <xsd:attribute name="sourceName" use="required" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:complexType name="CT_DbTable">
-    <xsd:attribute name="name" use="required" type="x:ST_Xstring"/>
+    <xsd:attribute name="name" use="required" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:complexType name="CT_DbTables">
     <xsd:sequence>
@@ -161,20 +173,20 @@ Release: July 30, 2013 -->
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_DbCommand">
-    <xsd:attribute name="text" use="required" type="x:ST_Xstring"/>
+    <xsd:attribute name="text" use="required" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:complexType name="CT_OledbPr">
     <xsd:choice minOccurs="1" maxOccurs="1">
       <xsd:element name="dbTables" type="CT_DbTables"/>
       <xsd:element name="dbCommand" type="CT_DbCommand"/>
     </xsd:choice>
-    <xsd:attribute name="connection" use="optional" type="x:ST_Xstring"/>
+    <xsd:attribute name="connection" use="optional" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:complexType name="CT_DataFeedPr">
     <xsd:sequence>
       <xsd:element name="dbTables" type="CT_DbTables" minOccurs="1" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="connection" use="required" type="x:ST_Xstring"/>
+    <xsd:attribute name="connection" use="required" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:complexType name="CT_Connection">
     <xsd:sequence>
@@ -184,7 +196,7 @@ Release: July 30, 2013 -->
       <xsd:element name="oledbPr" minOccurs="0" maxOccurs="1" type="CT_OledbPr"/>
       <xsd:element name="dataFeedPr" minOccurs="0" maxOccurs="1" type="CT_DataFeedPr"/>
     </xsd:sequence>
-    <xsd:attribute name="id" use="required" type="x:ST_Xstring"/>
+    <xsd:attribute name="id" use="required" type="s:ST_Xstring"/>
     <xsd:attribute name="model" type="xsd:boolean" default="false" use="optional"/>
     <xsd:attribute name="excludeFromRefreshAll" type="xsd:boolean" default="false" use="optional"/>
     <xsd:attribute name="autoDelete" type="xsd:boolean" default="false" use="optional"/>
@@ -204,7 +216,7 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:element name="calculatedMember" type="CT_CalculatedMember"/>
   <xsd:complexType name="CT_CalculatedMember">
-    <xsd:attribute name="measureGroup" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="measureGroup" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="numberFormat" type="ST_CalcMemNumberFormat" use="optional" default="default"/>
     <xsd:attribute name="measure" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
@@ -233,7 +245,7 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:complexType name="CT_CachedUniqueName">
     <xsd:attribute name="index" use="required" type="xsd:unsignedInt"/>
-    <xsd:attribute name="name" use="required" type="x:ST_Xstring"/>
+    <xsd:attribute name="name" use="required" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:complexType name="CT_CacheHierarchy">
     <xsd:attribute name="aggregatedColumn" use="required" type="xsd:int"/>
@@ -249,9 +261,9 @@ Release: July 30, 2013 -->
     <xsd:attribute name="cacheIdCreatedVersion" type="xsd:unsignedByte" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_ModelTable">
-    <xsd:attribute name="id" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="connection" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="id" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="connection" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_ModelTables">
     <xsd:sequence>
@@ -259,10 +271,10 @@ Release: July 30, 2013 -->
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_ModelRelationship">
-    <xsd:attribute name="fromTable" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="fromColumn" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="toTable" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="toColumn" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="fromTable" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="fromColumn" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="toTable" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="toColumn" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_ModelRelationships">
     <xsd:sequence>
@@ -296,7 +308,7 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:complexType name="CT_PivotValueCell">
     <xsd:sequence>
-      <xsd:element name="v" type="x:ST_Xstring" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="v" type="s:ST_Xstring" minOccurs="1" maxOccurs="1"/>
       <xsd:element name="x" type="CT_PivotValueCellExtra" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="i" type="xsd:unsignedInt" use="optional"/>
@@ -327,16 +339,17 @@ Release: July 30, 2013 -->
     </xsd:sequence>
     <xsd:attribute name="count" use="required" type="xsd:unsignedInt"/>
   </xsd:complexType>
-  <xsd:element name="pivotCacheDecoupled" type="CT_PivotCacheDecoupled"/>
-  <xsd:complexType name="CT_PivotCacheDecoupled">
-    <xsd:attribute name="decoupled" type="xsd:boolean" use="optional" default="false"/>
-  </xsd:complexType>
   <xsd:element name="dataField" type="CT_DataField"/>
   <xsd:complexType name="CT_DataField">
     <xsd:attribute name="isCountDistinct" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
   <xsd:element name="survey" type="CT_Survey"/>
   <xsd:complexType name="CT_Survey">
+     <xsd:annotation>
+       <xsd:appinfo>
+         <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="survey")</annox:annotate>
+       </xsd:appinfo>
+     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="surveyPr" type="CT_SurveyElementPr" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="titlePr" type="CT_SurveyElementPr" minOccurs="0" maxOccurs="1"/>
@@ -345,9 +358,9 @@ Release: July 30, 2013 -->
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:unsignedInt" use="required"/>
-    <xsd:attribute name="guid" type="x:ST_Guid" use="required"/>
-    <xsd:attribute name="title" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="description" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="guid" type="s:ST_Guid" use="required"/>
+    <xsd:attribute name="title" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="description" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SurveyQuestions">
     <xsd:sequence>
@@ -361,20 +374,20 @@ Release: July 30, 2013 -->
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="binding" type="xsd:unsignedInt" use="required"/>
-    <xsd:attribute name="text" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="text" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="type" type="ST_QuestionType" use="optional"/>
     <xsd:attribute name="format" type="ST_QuestionFormat" use="optional"/>
-    <xsd:attribute name="helpText" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="helpText" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="required" type="xsd:boolean" use="optional" default="false"/>
-    <xsd:attribute name="defaultValue" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="defaultValue" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="decimalPlaces" type="xsd:unsignedInt" use="optional"/>
-    <xsd:attribute name="rowSource" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="rowSource" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SurveyElementPr">
     <xsd:sequence>
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="cssClass" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="cssClass" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="bottom" type="xsd:int" use="optional"/>
     <xsd:attribute name="top" type="xsd:int" use="optional"/>
     <xsd:attribute name="left" type="xsd:int" use="optional"/>
@@ -419,17 +432,24 @@ Release: July 30, 2013 -->
   </xsd:simpleType>
   <xsd:element name="timelines" type="CT_Timelines"/>
   <xsd:complexType name="CT_Timelines">
+     <xsd:annotation>
+       <xsd:appinfo>
+         <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="timelines")</annox:annotate>
+       </xsd:appinfo>
+     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="timeline" type="CT_Timeline" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
-  </xsd:complexType>
+       <xsd:attribute ref="mc:Ignorable" use="optional"/> <!-- Excel writes it (CR-022 phase 0) -->
+   </xsd:complexType>
   <xsd:complexType name="CT_Timeline">
     <xsd:sequence>
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="cache" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="caption" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute ref="xr10:uid" use="optional"/>
+    <xsd:attribute name="cache" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="caption" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="showHeader" type="xsd:boolean" use="optional" default="true"/>
     <xsd:attribute name="showSelectionLabel" type="xsd:boolean" use="optional" default="true"/>
     <xsd:attribute name="showTimeLevel" type="xsd:boolean" use="optional" default="true"/>
@@ -437,19 +457,26 @@ Release: July 30, 2013 -->
     <xsd:attribute name="level" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="selectionLevel" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="scrollPosition" type="xsd:dateTime" use="optional"/>
-    <xsd:attribute name="style" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="style" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:element name="timelineCacheDefinition" type="CT_TimelineCacheDefinition"/>
   <xsd:complexType name="CT_TimelineCacheDefinition">
+     <xsd:annotation>
+       <xsd:appinfo>
+         <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="timelineCacheDefinition")</annox:annotate>
+       </xsd:appinfo>
+     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="pivotTables" type="CT_TimelineCachePivotTables" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="state" type="CT_TimelineState" minOccurs="1" maxOccurs="1"/>
       <xsd:element name="timelinePivotFilter" minOccurs="0" maxOccurs="1" type="CT_TimelinePivotFilter"/>
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="sourceName" type="x:ST_Xstring" use="required"/>
-  </xsd:complexType>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute ref="xr10:uid" use="optional"/>
+    <xsd:attribute name="sourceName" type="s:ST_Xstring" use="required"/>
+       <xsd:attribute ref="mc:Ignorable" use="optional"/> <!-- Excel writes it (CR-022 phase 0) -->
+   </xsd:complexType>
   <xsd:complexType name="CT_TimelineCachePivotTables">
     <xsd:sequence>
       <xsd:element name="pivotTable" type="CT_TimelineCachePivotTable" minOccurs="1" maxOccurs="unbounded"/>
@@ -457,7 +484,7 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:complexType name="CT_TimelineCachePivotTable">
     <xsd:attribute name="tabId" type="xsd:unsignedInt" use="required"/>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_TimelineRange">
     <xsd:attribute name="startDate" type="xsd:dateTime" use="required"/>
@@ -482,7 +509,8 @@ Release: July 30, 2013 -->
     <xsd:attribute name="useWholeDay" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="fld" use="required" type="xsd:unsignedInt"/>
     <xsd:attribute name="id" use="required" type="xsd:unsignedInt"/>
-    <xsd:attribute name="name" use="optional" type="x:ST_Xstring"/>
-    <xsd:attribute name="description" use="optional" type="x:ST_Xstring"/>
+    <xsd:attribute name="name" use="optional" type="s:ST_Xstring"/>
+    <xsd:attribute name="description" use="optional" type="s:ST_Xstring"/>
   </xsd:complexType>
+
 </xsd:schema>

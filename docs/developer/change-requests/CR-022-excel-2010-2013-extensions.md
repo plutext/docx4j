@@ -446,3 +446,107 @@ second group closes here; xr6 comes for the pointer's attributes;
 
 Gate of phase 0 met: the host list of §2 is confirmed and extended by the
 above; phase 1 proceeds on it.
+
+## 17. Phase 1: the schemas, host admissions, regeneration, contexts, prefixes (2026-09-20)
+
+Coded, on the phase 0 measurement:
+
+- **The ten schemas**, each taken from its [MS-XLSX] 29.1 HTML section page
+  on 2026-09-20 and cited in its header with the changes made to the page's
+  text (import locations mapped to the tree; `x:ST_Xstring` and `x:ST_Guid`
+  written `s:`, as the main schema has them; the package; root annotations;
+  `mc:Ignorable`): `xsd/xlsx/office_spreadsheetml_2009_9_main.xsd` (x14),
+  `..._2009_9_ac.xsd`, `..._2010_11_main.xsd` (x15), `..._2010_11_ac.xsd`,
+  `..._2011_1_ac.xsd` (x12ac, default namespace patched), `..._2014_11_main.xsd`
+  (x16), `..._2015_revision2.xsd`, `..._2016_revision6.xsd`,
+  `..._2016_revision10.xsd`, and `xsd/sml/sml_2014_revision.xsd` refreshed
+  (xr: `revisionPtr`, `CT_RevisionPtr`, `uid`). Packages as §3. Root-element
+  annotations on `slicerCacheDefinition`, `slicers`, `formControlPr`,
+  `datastoreItem`, `timelineCacheDefinition`, `timelines`, `survey`;
+  `mc:Ignorable` on the four of them phase 0 saw it on.
+- **xm**: `f`, `ref`, `sqref` with `ST_Ref`, `CT_Ref`, `ST_Sqref`, `CT_Sqref`
+  merged into `xsd/offmacro/office-excel-2006-main.xsd` (§16); the stale,
+  unwired 2013 copy `xsd/xlsx/office_excel_2006_main.xsd` of the same
+  namespace removed.
+- **The main schema** (`sml_ECMA376_4ed_transitional.xsd`): `mc:Ignorable` on
+  `CT_Worksheet`, `CT_Stylesheet`, `CT_Table`, `CT_Comments`,
+  `CT_pivotTableDefinition`, `CT_PivotCacheDefinition`, `CT_PivotCacheRecords`,
+  `CT_Connections`, `CT_QueryTable`; `x14ac:dyDescent` on `CT_Row` and
+  `CT_SheetFormatPr`, `x14ac:knownFonts` on `CT_Fonts` (the schema imports
+  x14ac); `xr:revisionPtr` in `CT_Workbook` after the `mc:AlternateContent`;
+  `mc:AlternateContent` (unbounded) in `CT_Worksheet` after `controls` - the
+  position Excel wraps `oleObjects` and `controls` at - and in `CT_Controls`
+  beside `control` (whose `minOccurs` becomes 0, since Excel writes every
+  control wrapped); root annotations on `CT_Connections` and `CT_QueryTable`.
+  `sml_root.xsd` imports the nine `xsd/xlsx/` files.
+- `mc-preprocessor.xslt` retains `x:worksheet` and `x:controls`.
+- `module-info.java`, `org.xlsx4j.jaxb.Context.jcSML`: six packages (x14,
+  x15, x15ac, x12ac, x16, xr). **Departure from §4**: x14ac, xr2, xr6 and
+  xr10 declare attributes only, and XJC generates no package for an
+  attribute-only schema (the xr package did not exist before this phase
+  either), so there are six, not eight or ten. The attributes are typed
+  properties of their hosts in `org.xlsx4j.sml`.
+- `NamespacePrefixMappings`: `x12ac`, `x16`, `xr16`, both ways, beside their
+  kin.
+- `docx4j-core-tests`: `org.xlsx4j.ExcelExtensionsTest` (10 tests) and the
+  workbook `cr022-slicers-timelines.xlsx` as a test resource. On it: the
+  workbook's `mc:Ignorable`, `revisionPtr` (with the xr6 and xr10
+  attributes), both `slicerCaches`, `timelineCacheRefs` and `x14:workbookPr`
+  typed; the worksheet's `dyDescent` (row and `sheetFormatPr`), `slicerList`,
+  `timelineRefs`, `sparklineGroups`; the style sheet's `knownFonts`,
+  `slicerStyles`, `timelineStyles`; the table's `mc:Ignorable`; a save and a
+  reload keeping them all, with every prefix each of seven roots' `mc:Ignorable`
+  names declared on that root; `x12ac:list` and `x16:modelTimeGroupings`
+  marshalled with Excel's prefixes. On the LibreOffice workbooks (from a
+  directory named by `-Dcr022.samples`, skipped otherwise; not committed):
+  `sparklineGroups`, `conditionalFormattings` with the `cfRule`'s `x14:id`,
+  `dataValidations` typed; the checkbox's controls `mc:AlternateContent`
+  kept whole and written back (two nested, no Fallback); the data-model
+  workbook saved with its `connections.xml` (typed `x15:connection` inside)
+  and both query tables, each declaring `xr16`.
+- CHANGELOG under "Schema (CR-022 ...)".
+
+Found on the way:
+
+- The section pages indent with non-breaking spaces (U+00A0); the schema
+  parser rejects them ("Non-whitespace characters are not allowed in schema
+  elements"). Replaced with spaces - recorded here for the recipe's
+  "obtaining the schema" section (a departure to note when re-taking a page).
+- x14's text imports x15 (`xl15.xsd`, `xlslicercache15.xsd`) but references
+  no x15 type; only x15 references x14, so the pair is not circular, and
+  the x14 file imports x15 no more.
+- `x15:slicerCaches` is of x14's `CT_SlicerCaches` type, so both `slicerCaches`
+  extensions of a workbook unwrap to the x14 class; tell them apart by the
+  `ext` uri.
+- `CT_OleObjects` also gets, in Excel's output, each `oleObject` in its own
+  `mc:AlternateContent` (Choice Requires="x14" with `objectPr`, Fallback
+  without). No phase 0 file has an OLE object, so by CR-021's rule it is not
+  admitted here; the preprocessor resolves it to the Fallback, dropping the
+  `objectPr`, until a file shows it. Follow-up for the xlsx4j backlog.
+- The slicer, slicer cache, timeline and timeline cache parts load as
+  `DefaultPart` (ContentTypeManager warns): phase 2.
+- Nothing in docx4j-core read `CTExtension.getAny()` as a DOM `Element`
+  (§13's risk re-checked by grep: no caller in `org.xlsx4j` or the
+  SpreadsheetML parts), so the typed content changes no docx4j behaviour;
+  the CHANGELOG records it for callers.
+
+**Re-saves for the Excel check** (on the share, `fidelity/cr022/`):
+`cr022-slicers-timelines-phase1-resave.xlsx`,
+`lo-checkbox-form-control-phase1-resave.xlsx`, `lo-Sparklines-phase1-resave.xlsx`,
+`lo-tdf167689_x15_namespace-phase1-resave.xlsx` - every XML part well formed
+with its prefixes declared (xmllint), the slicer workbook's 31 entries all
+present. Jason: open each in Excel 365; the gate's last row is "no repair
+prompt; the checkbox still a checkbox; slicers and timeline present" (the
+slicer and timeline drawings resolve to their Fallback shapes until the
+DrawingML CR, so the drawings may render as plain shapes - that is expected
+and not this phase's).
+
+**Gate:**
+
+| step | result |
+|---|---|
+| docx4j-generated-objects + docx4j-core clean install | BUILD SUCCESS; installed jars' md5 = target jars' |
+| `ExcelExtensionsTest`, with the LibreOffice samples | 10 tests, 0 failures |
+| docx4j-core-tests, the whole suite (with `-Dcr022.samples`) | 1208 tests, 0 failures, 11 skipped (2026-09-20) |
+| docx4j-export-fo-tests | not run: no docx change, Jason waived it for this phase ("no need for export-fo-tests") |
+| Excel 365 opens the four re-saves | Jason |

@@ -120,6 +120,13 @@ module org.docx4j.generated_objects {
     exports org.xlsx4j.schemas.microsoft.com.office.excel_2006.main;
     exports org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main;
     exports org.xlsx4j.schemas.microsoft.com.office.excel.x2010.spreadsheetDrawing;
+    // Excel 2010/2013 extensions (CR-022); the attribute-only schemas (x14ac, xr2, xr6, xr10) generate no package
+    exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main;
+    exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main;
+    exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.ac;
+    exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2011.x1.ac;
+    exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.x11.main;
+    exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision;
 
     opens org.docx4j.bibliography; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 
@@ -235,4 +242,11 @@ module org.docx4j.generated_objects {
     opens org.xlsx4j.schemas.microsoft.com.office.excel_2006.main;
     opens org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main;
     opens org.xlsx4j.schemas.microsoft.com.office.excel.x2010.spreadsheetDrawing;
+    // Excel 2010/2013 extensions (CR-022); the attribute-only schemas (x14ac, xr2, xr6, xr10) generate no package
+    opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main;
+    opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main;
+    opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.ac;
+    opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2011.x1.ac;
+    opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.x11.main;
+    opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision;
 }

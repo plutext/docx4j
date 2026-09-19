@@ -1,29 +1,54 @@
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
-elementFormDefault="qualified"
-xmlns="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
-xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
+	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
+	elementFormDefault="qualified"
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:xr6="http://schemas.microsoft.com/office/spreadsheetml/2016/revision6"
+	xmlns:xr10="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	jaxb:version="3.0">
+
+<!--
+	[MS-XLSX] revision 29.1 (2026-05-19), section 5.15 "http://schemas.microsoft.com/office/spreadsheetml/2014/revision Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/5ba37a83-255b-4e2d-ae7b-b4d14d44ad3a
+	Taken from the HTML section page on 2026-09-20 (CR-022 phase 1; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). Re-take it from the same page; the body below is the page's text apart from:
+	  - import schemaLocations mapped to this tree
+	  - x:ST_Xstring and x:ST_Guid written s:ST_Xstring and s:ST_Guid (the main schema takes them from the shared types)
+	  - the JAXB package annotation
+	(Earlier docx4j 8.2.4 declared only the uid attribute; the revision pointer and its CT_RevisionPtr
+	are from the same page.)
+-->
 
   <xsd:annotation>
-    <xsd:documentation xml:lang="en">
-    </xsd:documentation>
-		<xsd:appinfo>
-			<xsd:appinfo>
-				<jaxb:globalBindings>
-				</jaxb:globalBindings>
-			</xsd:appinfo>
-			<jaxb:schemaBindings>
-				<jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision"/>
-			</jaxb:schemaBindings>
-		</xsd:appinfo>
+    <xsd:appinfo>
+      <xsd:appinfo>
+        <jaxb:globalBindings>
+        </jaxb:globalBindings>
+      </xsd:appinfo>
+      <jaxb:schemaBindings>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision"/>
+      </jaxb:schemaBindings>
+    </xsd:appinfo>
   </xsd:annotation>
 
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision6" schemaLocation="../xlsx/office_spreadsheetml_2016_revision6.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10" schemaLocation="../xlsx/office_spreadsheetml_2016_revision10.xsd"/>
 
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
-    schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+  <xsd:simpleType name="ST_Xrevid">
+    <xsd:restriction base="xsd:unsignedLong"/>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_RevisionPtr">
+    <xsd:attribute name="revIDLastSave" type="ST_Xrevid" use="required"/>
+    <xsd:attribute name="documentId" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute ref="xr6:coauthVersionLast" use="optional" default="0"/>
+    <xsd:attribute ref="xr6:coauthVersionMax" use="optional" default="0"/>
+    <xsd:attribute ref="xr10:uidLastSave" use="optional"/>
+  </xsd:complexType>
+  <xsd:attribute name="uid" type="s:ST_Guid"/>
+  <xsd:element name="revisionPtr" type="CT_RevisionPtr"/>
 
- <xsd:attribute name="uid" type="s:ST_Guid"/>
- 
- </xsd:schema>
+</xsd:schema>

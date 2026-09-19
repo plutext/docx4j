@@ -6,6 +6,7 @@
 	xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 	xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" 
+	xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"
 	targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	elementFormDefault="qualified"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
@@ -49,6 +50,9 @@
 		
 	<!-- since docx4j 8.2.4 -->
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" schemaLocation="sml_2014_revision.xsd" />
+
+	<!-- since docx4j 17.1.1 (CR-022): x14ac:dyDescent on rows and sheetFormatPr, x14ac:knownFonts on the font table -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" schemaLocation="../xlsx/office_spreadsheetml_2009_9_ac.xsd" />
 		
     
 	<xsd:complexType name="CT_Xstring_Whitespace">
@@ -341,6 +345,7 @@
       <xsd:element name="commentList" type="CT_CommentList" minOccurs="1" maxOccurs="1"/>
       <xsd:element name="extLst" minOccurs="0" type="CT_ExtensionList"/>
     </xsd:sequence>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_Authors">
     <xsd:sequence>
@@ -440,9 +445,15 @@
   </xsd:complexType>
   <xsd:element name="connections" type="CT_Connections"/>
   <xsd:complexType name="CT_Connections">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="connections")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="connection" minOccurs="1" maxOccurs="unbounded" type="CT_Connection"/>
     </xsd:sequence>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_Connection">
     <xsd:sequence>
@@ -667,6 +678,7 @@
     </xsd:attribute>
     <xsd:attribute name="supportSubquery" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="supportAdvancedDrill" type="xsd:boolean" use="optional" default="false"/>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_CacheFields">
     <xsd:sequence>
@@ -930,6 +942,7 @@
       <xsd:element name="extLst" minOccurs="0" type="CT_ExtensionList"/>
     </xsd:sequence>
     <xsd:attribute name="count" type="xsd:unsignedInt"/>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_Record">
     <xsd:choice maxOccurs="unbounded">
@@ -1262,6 +1275,7 @@
     <xsd:attribute name="fieldListSortAscending" type="xsd:boolean" default="false"/>
     <xsd:attribute name="mdxSubqueries" type="xsd:boolean" default="false"/>
     <xsd:attribute name="customListSort" type="xsd:boolean" use="optional" default="true"/>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_Location">
     <xsd:attribute name="ref" use="required" type="ST_Ref"/>
@@ -1813,6 +1827,11 @@
   </xsd:simpleType>
   <xsd:element name="queryTable" type="CT_QueryTable"/>
   <xsd:complexType name="CT_QueryTable">
+    <xsd:annotation>
+      <xsd:appinfo>
+        <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="queryTable")</annox:annotate>
+      </xsd:appinfo>
+    </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="queryTableRefresh" type="CT_QueryTableRefresh" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
@@ -1834,6 +1853,7 @@
     <xsd:attribute name="intermediate" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="connectionId" type="xsd:unsignedInt" use="required"/>
     <xsd:attributeGroup ref="AG_AutoFormat"/>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_QueryTableRefresh">
     <xsd:sequence>
@@ -2335,12 +2355,16 @@
       <xsd:element name="picture" type="CT_SheetBackgroundPicture" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="oleObjects" type="CT_OleObjects" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="controls" type="CT_Controls" minOccurs="0" maxOccurs="1"/>
+      <!-- docx4j 17.1.1 (CR-022): Excel writes oleObjects and controls inside mc:AlternateContent (Choice Requires="x14",
+           no Fallback for controls) at this position; kept whole (CR-021) -->
+      <xsd:element ref="mc:AlternateContent" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="webPublishItems" type="CT_WebPublishItems" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="tableParts" type="CT_TableParts" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
 	<xsd:attribute ref="xr:uid" use="optional" />
     
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_SheetData">
 		<xsd:annotation>
@@ -2371,6 +2395,7 @@
     <xsd:attribute name="thickBottom" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="outlineLevelRow" type="xsd:unsignedByte" use="optional" default="0"/>
     <xsd:attribute name="outlineLevelCol" type="xsd:unsignedByte" use="optional" default="0"/>
+    <xsd:attribute ref="x14ac:dyDescent" use="optional"/> <!-- docx4j 17.1.1 (CR-022): Excel 2010+ writes it -->
   </xsd:complexType>
   <xsd:complexType name="CT_Cols">
 		<xsd:annotation>
@@ -2430,6 +2455,7 @@
     <xsd:attribute name="thickTop" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="thickBot" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="ph" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute ref="x14ac:dyDescent" use="optional"/> <!-- docx4j 17.1.1 (CR-022): Excel 2010+ writes it -->
   </xsd:complexType>
   <xsd:complexType name="CT_Cell">
 		<xsd:annotation>
@@ -3296,7 +3322,9 @@
   </xsd:complexType>
   <xsd:complexType name="CT_Controls">
     <xsd:sequence>
-      <xsd:element name="control" type="CT_Control" minOccurs="1" maxOccurs="unbounded"/>
+      <xsd:element name="control" type="CT_Control" minOccurs="0" maxOccurs="unbounded"/>
+      <!-- docx4j 17.1.1 (CR-022): Excel writes each control inside mc:AlternateContent (Choice Requires="x14", no Fallback) -->
+      <xsd:element ref="mc:AlternateContent" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_Control">
@@ -3591,6 +3619,7 @@
       <xsd:element name="colors" type="CT_Colors" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:complexType name="CT_CellAlignment">
     <xsd:attribute name="horizontal" type="ST_HorizontalAlignment" use="optional"/>
@@ -3658,6 +3687,7 @@
       <xsd:element name="font" type="CT_Font" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
     <xsd:attribute name="count" type="xsd:unsignedInt" use="optional"/>
+    <xsd:attribute ref="x14ac:knownFonts" use="optional"/> <!-- docx4j 17.1.1 (CR-022): Excel 2010+ writes it -->
   </xsd:complexType>
   <xsd:complexType name="CT_Fills">
     <xsd:sequence>
@@ -4162,6 +4192,7 @@
     <xsd:attribute name="dataCellStyle" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="totalsRowCellStyle" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="connectionId" type="xsd:unsignedInt" use="optional"/>
+	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.1.1 (CR-022): Excel writes it on this root -->
   </xsd:complexType>
   <xsd:simpleType name="ST_TableType">
     <xsd:restriction base="xsd:string">
@@ -4317,6 +4348,8 @@
 		<!--  added docx4j 8.1.1 -->
 		<!-- docx4j 17.1.1 (CR-021): optional - Excel writes it (x15 absPath) but most producers do not -->
 		<xsd:element ref="mc:AlternateContent" minOccurs="0" />
+		<!-- docx4j 17.1.1 (CR-022): Excel 2016+ writes the revision pointer here -->
+		<xsd:element ref="xr:revisionPtr" minOccurs="0" />
        
       
       <xsd:element name="workbookProtection" type="CT_WorkbookProtection" minOccurs="0"

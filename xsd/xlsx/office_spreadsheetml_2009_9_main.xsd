@@ -1,52 +1,72 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
-	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
 	elementFormDefault="qualified"
-	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
-	
-   
-  <!-- From [MS-XLSX] — v20130726
-Excel (.xlsx) Extensions to the Office Open XML SpreadsheetML File Format
-Copyright © 2013 Microsoft Corporation.
-Release: July 30, 2013 -->
+	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"
+	xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
+	xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"
+	xmlns:xr10="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	xmlns:annox="urn:jaxb.jvnet.org:annox"
+	jaxb:extensionBindingPrefixes="annox"
+	jaxb:version="3.0">
 
-	<xsd:annotation>
-		<xsd:appinfo>
-			<xsd:appinfo>
-				<jaxb:globalBindings>
-				</jaxb:globalBindings>
-			</xsd:appinfo>
-			<jaxb:schemaBindings>
-				<jaxb:package name="org.xlsx4j.spreadsheetml.main200909"/>
-			</jaxb:schemaBindings>
-		</xsd:appinfo>
-	</xsd:annotation>	  
+<!--
+	[MS-XLSX] revision 29.1 (2026-05-19), section 5.4 "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/0a377581-c743-4ace-bfcd-22f359e70165
+	Taken from the HTML section page on 2026-09-20 (CR-022 phase 1; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). Re-take it from the same page; the body below is the page's text apart from:
+	  - import schemaLocations mapped to this tree
+	  - x:ST_Xstring and x:ST_Guid written s:ST_Xstring and s:ST_Guid (the main schema takes them from the shared types)
+	  - the JAXB package annotation
+	  - root-element annotations on the part roots (slicerCacheDefinition, slicers, formControlPr, datastoreItem)
+	  - mc:Ignorable on the roots Excel writes it on (slicerCacheDefinition, slicers)
+-->
 
-	
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlbasictypes.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlsheet.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
-  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main" schemaLocation="xl15.xsd"/>
-  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main" schemaLocation="xlslicercache15.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlpivot.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlworkbook.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlsupbook.xsd"/>
-  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" schemaLocation="xlmbasictypes.xsd"/>
-  <xsd:import schemaLocation="xlsst.xsd" namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"/>
+  <xsd:annotation>
+    <xsd:appinfo>
+      <xsd:appinfo>
+        <jaxb:globalBindings>
+        </jaxb:globalBindings>
+      </xsd:appinfo>
+      <jaxb:schemaBindings>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main"/>
+      </jaxb:schemaBindings>
+    </xsd:appinfo>
+  </xsd:annotation>
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="../sml/sml_ECMA376_4ed_transitional.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="../shared/shared-relationshipReference.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/markup-compatibility/2006" schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" schemaLocation="../offmacro/office-excel-2006-main.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" schemaLocation="../sml/sml_2014_revision.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2" schemaLocation="office_spreadsheetml_2015_revision2.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10" schemaLocation="office_spreadsheetml_2016_revision10.xsd"/>
+
   <xsd:element name="slicerCacheDefinition" type="CT_SlicerCacheDefinition"/>
   <xsd:complexType name="CT_SlicerCacheDefinition">
+     <xsd:annotation>
+       <xsd:appinfo>
+         <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="slicerCacheDefinition")</annox:annotate>
+       </xsd:appinfo>
+     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="pivotTables" type="CT_SlicerCachePivotTables" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="data" type="CT_SlicerCacheData" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="extLst" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="sourceName" type="x:ST_Xstring" use="required"/>
-  </xsd:complexType>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute ref="xr10:uid" use="optional"/>
+    <xsd:attribute name="sourceName" type="s:ST_Xstring" use="required"/>
+       <xsd:attribute ref="mc:Ignorable" use="optional"/> <!-- Excel writes it (CR-022 phase 0) -->
+   </xsd:complexType>
   <xsd:simpleType name="ST_OlapSlicerCacheSortOrder">
     <xsd:restriction base="xsd:string">
       <xsd:enumeration value="natural"/>
@@ -80,18 +100,18 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:complexType name="CT_SlicerCachePivotTable">
     <xsd:attribute name="tabId" type="xsd:unsignedInt" use="required"/>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_OlapSlicerCacheItem">
     <xsd:sequence>
       <xsd:element name="p" type="CT_OlapSlicerCacheItemParent" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
-    <xsd:attribute name="n" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="c" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="n" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="c" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="nd" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
   <xsd:complexType name="CT_OlapSlicerCacheItemParent">
-    <xsd:attribute name="n" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="n" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_OlapSlicerCacheRange">
     <xsd:sequence>
@@ -108,8 +128,8 @@ Release: July 30, 2013 -->
     <xsd:sequence>
       <xsd:element name="ranges" type="CT_OlapSlicerCacheRanges" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="uniqueName" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="sourceCaption" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="uniqueName" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="sourceCaption" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="count" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="sortOrder" type="ST_OlapSlicerCacheSortOrder" use="optional" default="natural"/>
     <xsd:attribute name="crossFilter" type="ST_SlicerCacheCrossFilter" use="optional" default="showItemsWithDataAtTop"/>
@@ -138,11 +158,11 @@ Release: July 30, 2013 -->
     <xsd:sequence>
       <xsd:element name="p" type="CT_OlapSlicerCacheItemParent" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
-    <xsd:attribute name="n" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="n" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_TabularSlicerCache">
     <xsd:sequence>
-      <xsd:element name="items" type="CT_TabularSlicerCacheItems" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="items" type="CT_TabularSlicerCacheItems" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="pivotCacheId" type="xsd:unsignedInt" use="required"/>
@@ -209,10 +229,11 @@ Release: July 30, 2013 -->
     <xsd:attribute name="showDropDown" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="showInputMessage" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="showErrorMessage" type="xsd:boolean" use="optional" default="false"/>
-    <xsd:attribute name="errorTitle" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="error" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="promptTitle" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="prompt" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="errorTitle" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="error" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="promptTitle" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="prompt" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute ref="xr:uid"/>
   </xsd:complexType>
   <xsd:simpleType name="ST_DispBlanksAs">
     <xsd:restriction base="xsd:string">
@@ -263,6 +284,7 @@ Release: July 30, 2013 -->
     <xsd:attribute name="minAxisType" type="ST_SparklineAxisMinMax" use="optional" default="individual"/>
     <xsd:attribute name="maxAxisType" type="ST_SparklineAxisMinMax" use="optional" default="individual"/>
     <xsd:attribute name="rightToLeft" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute ref="xr2:uid"/>
   </xsd:complexType>
   <xsd:simpleType name="ST_SparklineType">
     <xsd:restriction base="xsd:string">
@@ -311,11 +333,11 @@ Release: July 30, 2013 -->
     <xsd:sequence>
       <xsd:element name="tupleSet" minOccurs="0" maxOccurs="1" type="CT_TupleSet"/>
     </xsd:sequence>
-    <xsd:attribute name="displayFolder" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="displayFolder" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="flattenHierarchies" type="xsd:boolean" use="optional" default="true"/>
     <xsd:attribute name="dynamicSet" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="hierarchizeDistinct" type="xsd:boolean" use="optional" default="true"/>
-    <xsd:attribute name="mdxLong" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="mdxLong" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_TupleSet">
     <xsd:sequence>
@@ -331,8 +353,8 @@ Release: July 30, 2013 -->
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_TupleSetHeader">
-    <xsd:attribute name="uniqueName" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="hierarchyName" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="uniqueName" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="hierarchyName" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_TupleSetRows">
     <xsd:sequence>
@@ -345,8 +367,8 @@ Release: July 30, 2013 -->
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_TupleSetRowItem">
-    <xsd:attribute name="u" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="d" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="u" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="d" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:element name="cacheHierarchy" type="CT_CacheHierarchy"/>
   <xsd:complexType name="CT_SetLevels">
@@ -371,7 +393,7 @@ Release: July 30, 2013 -->
   <xsd:complexType name="CT_DataField">
     <xsd:attribute name="pivotShowAs" type="ST_PivotShowAs" use="optional"/>
     <xsd:attribute name="sourceField" type="xsd:unsignedInt" use="optional"/>
-    <xsd:attribute name="uniqueName" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="uniqueName" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:simpleType name="ST_PivotShowAs">
     <xsd:restriction base="xsd:string">
@@ -439,7 +461,7 @@ Release: July 30, 2013 -->
     <xsd:attribute name="stdDev" type="xsd:int" use="optional"/>
     <xsd:attribute name="equalAverage" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="activePresent" type="xsd:boolean" use="optional" default="false"/>
-    <xsd:attribute name="id" type="x:ST_Guid" use="optional"/>
+    <xsd:attribute name="id" type="s:ST_Guid" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_IconSet">
     <xsd:sequence>
@@ -492,12 +514,12 @@ Release: July 30, 2013 -->
     <xsd:attribute name="fillDownLabelsDefault" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="visualTotalsForSets" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="calculatedMembersInFilters" type="xsd:boolean" use="optional" default="false"/>
-    <xsd:attribute name="altText" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="altTextSummary" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="altText" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="altTextSummary" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="enableEdit" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="autoApply" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="allocationMethod" type="ST_AllocationMethod" use="optional" default="equalAllocation"/>
-    <xsd:attribute name="weightExpression" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="weightExpression" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="hideValuesRow" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
   <xsd:element name="pivotCacheDefinition" type="CT_PivotCacheDefinition"/>
@@ -513,13 +535,13 @@ Release: July 30, 2013 -->
     <xsd:sequence>
       <xsd:element name="calculatedMembers" type="x:CT_CalculatedMembers" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="culture" use="optional" type="x:ST_Xstring"/>
-    <xsd:attribute name="embeddedDataId" use="optional" type="x:ST_Xstring"/>
+    <xsd:attribute name="culture" use="optional" type="s:ST_Xstring"/>
+    <xsd:attribute name="embeddedDataId" use="optional" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:element name="table" type="CT_Table"/>
   <xsd:complexType name="CT_Table">
-    <xsd:attribute name="altText" type="x:ST_Xstring" use="optional"/>
-    <xsd:attribute name="altTextSummary" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="altText" type="s:ST_Xstring" use="optional"/>
+    <xsd:attribute name="altTextSummary" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_CfIcon">
     <xsd:attribute name="iconSet" type="ST_IconSetType" use="required"/>
@@ -575,7 +597,7 @@ Release: July 30, 2013 -->
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="allocationMethod" type="ST_AllocationMethod" default="equalAllocation"/>
-    <xsd:attribute name="weightExpression" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="weightExpression" type="s:ST_Xstring" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_PivotUserEdit">
     <xsd:choice minOccurs="1" maxOccurs="1">
@@ -585,7 +607,7 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:complexType name="CT_PivotEditValue">
     <xsd:simpleContent>
-      <xsd:extension base="x:ST_Xstring">
+      <xsd:extension base="s:ST_Xstring">
         <xsd:attribute name="valueType" use="required" type="ST_PivotEditValueType"/>
       </xsd:extension>
     </xsd:simpleContent>
@@ -601,7 +623,7 @@ Release: July 30, 2013 -->
   </xsd:simpleType>
   <xsd:complexType name="CT_TupleItems">
     <xsd:sequence>
-      <xsd:element name="tupleItem" type="x:ST_Xstring" minOccurs="1" maxOccurs="unbounded"/>
+      <xsd:element name="tupleItem" type="s:ST_Xstring" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:simpleType name="ST_AllocationMethod">
@@ -640,7 +662,7 @@ Release: July 30, 2013 -->
     <xsd:sequence>
       <xsd:element name="values" type="x:CT_DdeValues" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
     <xsd:attribute name="icon" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="advise" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="preferPic" type="xsd:boolean" use="optional" default="false"/>
@@ -668,7 +690,7 @@ Release: July 30, 2013 -->
     <xsd:attribute name="scope" type="x:ST_Scope" default="selection" use="optional"/>
     <xsd:attribute name="type" type="x:ST_Type" default="none" use="optional"/>
     <xsd:attribute name="priority" use="optional" type="xsd:unsignedInt"/>
-    <xsd:attribute name="id" type="x:ST_Guid" use="required"/>
+    <xsd:attribute name="id" type="s:ST_Guid" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SlicerStyles">
     <xsd:sequence>
@@ -681,7 +703,7 @@ Release: July 30, 2013 -->
       <xsd:element name="slicerStyleElement" type="CT_SlicerStyleElement" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
-  <xsd:element name="id" type="x:ST_Guid"/>
+  <xsd:element name="id" type="s:ST_Guid"/>
   <xsd:complexType name="CT_IgnoredErrors">
     <xsd:sequence>
       <xsd:element name="ignoredError" type="CT_IgnoredError" minOccurs="0" maxOccurs="unbounded"/>
@@ -712,11 +734,11 @@ Release: July 30, 2013 -->
       <xsd:element ref="xm:sqref" minOccurs="1" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="password" type="x:ST_UnsignedShortHex" use="optional"/>
-    <xsd:attribute name="algorithmName" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="algorithmName" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="hashValue" type="xsd:base64Binary" use="optional"/>
     <xsd:attribute name="saltValue" type="xsd:base64Binary" use="optional"/>
     <xsd:attribute name="spinCount" type="xsd:unsignedInt" use="optional"/>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
     <xsd:attribute name="securityDescriptor" type="xsd:string" use="optional"/>
   </xsd:complexType>
   <xsd:element name="iconFilter" type="CT_IconFilter"/>
@@ -726,7 +748,7 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:element name="filter" type="CT_Filter"/>
   <xsd:complexType name="CT_Filter">
-    <xsd:attribute name="val" type="x:ST_Xstring"/>
+    <xsd:attribute name="val" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:element name="customFilters" type="CT_CustomFilters"/>
   <xsd:complexType name="CT_CustomFilters">
@@ -737,13 +759,13 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:complexType name="CT_CustomFilter">
     <xsd:attribute name="operator" type="x:ST_FilterOperator" default="equal" use="optional"/>
-    <xsd:attribute name="val" type="x:ST_Xstring"/>
+    <xsd:attribute name="val" type="s:ST_Xstring"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SortCondition">
     <xsd:attribute name="descending" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="sortBy" type="x:ST_SortBy" use="optional" default="value"/>
     <xsd:attribute name="ref" type="x:ST_Ref" use="required"/>
-    <xsd:attribute name="customList" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="customList" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="dxfId" type="x:ST_DxfId" use="optional"/>
     <xsd:attribute name="iconSet" type="ST_IconSetType" use="optional" default="3Arrows"/>
     <xsd:attribute name="iconId" type="xsd:unsignedInt" use="optional"/>
@@ -756,14 +778,19 @@ Release: July 30, 2013 -->
   </xsd:complexType>
   <xsd:element name="sourceConnection" type="CT_SourceConnection"/>
   <xsd:complexType name="CT_SourceConnection">
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:element name="datastoreItem" type="CT_DatastoreItem"/>
   <xsd:complexType name="CT_DatastoreItem">
+     <xsd:annotation>
+       <xsd:appinfo>
+         <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="datastoreItem")</annox:annotate>
+       </xsd:appinfo>
+     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="id" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="id" type="s:ST_Xstring" use="required"/>
   </xsd:complexType>
   <xsd:element name="formControlPr" type="CT_FormControlPr"/>
   <xsd:complexType name="CT_ListItem">
@@ -776,6 +803,11 @@ Release: July 30, 2013 -->
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_FormControlPr">
+     <xsd:annotation>
+       <xsd:appinfo>
+         <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="formControlPr")</annox:annotate>
+       </xsd:appinfo>
+     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="itemLst" type="CT_ListItems" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
@@ -877,23 +909,31 @@ Release: July 30, 2013 -->
   </xsd:simpleType>
   <xsd:element name="slicers" type="CT_Slicers"/>
   <xsd:complexType name="CT_Slicers">
+     <xsd:annotation>
+       <xsd:appinfo>
+         <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(name="slicers")</annox:annotate>
+       </xsd:appinfo>
+     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="slicer" type="CT_Slicer" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
-  </xsd:complexType>
+       <xsd:attribute ref="mc:Ignorable" use="optional"/> <!-- Excel writes it (CR-022 phase 0) -->
+   </xsd:complexType>
   <xsd:complexType name="CT_Slicer">
     <xsd:sequence>
       <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="cache" type="x:ST_Xstring" use="required"/>
-    <xsd:attribute name="caption" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute ref="xr10:uid" use="optional"/>
+    <xsd:attribute name="cache" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="caption" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="startItem" type="xsd:unsignedInt" use="optional" default="0"/>
     <xsd:attribute name="columnCount" type="xsd:unsignedInt" use="optional" default="1"/>
     <xsd:attribute name="showCaption" type="xsd:boolean" use="optional" default="true"/>
     <xsd:attribute name="level" type="xsd:unsignedInt" use="optional" default="0"/>
-    <xsd:attribute name="style" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="style" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="lockedPosition" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="rowHeight" type="xsd:unsignedInt" use="required"/>
   </xsd:complexType>
+
 </xsd:schema>

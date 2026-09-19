@@ -308,7 +308,7 @@
 		
   	<xsl:choose>
   	
-	    <xsl:when test="parent::w:r or parent::w:p or parent::w:numPicBullet or parent::x:workbook
+	    <xsl:when test="parent::w:r or parent::w:p or parent::w:numPicBullet or parent::x:workbook or parent::x:worksheet or parent::x:controls
 	    		or parent::p:spTree or parent::p:grpSp or parent::p:controls">
 				<!-- The schema admits mc:AlternateContent here (w:r since 3.3.8; w:p and
 				     w:numPicBullet since 17.1.1, CR-021 phase 2; x:workbook, Excel's x15
@@ -340,7 +340,7 @@
 		     and is gone. -->
 		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
 			<xsl:variable name="dummyParent"
-				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook, p:spTree, p:grpSp, p:controls); resolving it'))" />
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls); resolving it'))" />
 
   			<xsl:variable name="chosen"
   				select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
@@ -354,7 +354,7 @@
   		<xsl:when test="mc:Fallback">
   		
   			<xsl:variable name="message" 
-  				select="concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook, p:spTree, p:grpSp, p:controls); selecting its Fallback ', name(mc:Fallback/*[1]))" />  			
+  				select="concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls); selecting its Fallback ', name(mc:Fallback/*[1]))" />  			
 			<xsl:variable name="logging" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
 				

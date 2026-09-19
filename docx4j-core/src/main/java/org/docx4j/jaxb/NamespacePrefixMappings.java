@@ -513,6 +513,12 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac")) {
 			return "x15ac";
 		}   
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac")) {
+			return "x12ac";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2014/11/main")) {
+			return "x16";
+		}
 		
 		// XLSX (2020 additions)
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2014/revision"))
@@ -529,6 +535,8 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"))
 			return "xr10";	
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2017/revision16"))
+			return "xr16";	
 		
 		
 		
@@ -780,6 +788,8 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 
 		if (prefix.equals("xr10"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision10";	
+		if (prefix.equals("xr16"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2017/revision16";	
 		
 		// OpenDoPE
 		if (prefix.equals("odx"))
@@ -894,6 +904,10 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 
 		if (prefix.equals("x15ac"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac";
+		if (prefix.equals("x12ac"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac";
+		if (prefix.equals("x16"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2014/11/main";
 		
 		
 		if (prefix.equals("cx1"))

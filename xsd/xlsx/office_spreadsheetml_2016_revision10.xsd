@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac"
-	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac"
+	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"
+	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"
 	elementFormDefault="qualified"
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
@@ -9,14 +9,13 @@
 	jaxb:version="3.0">
 
 <!--
-	[MS-XLSX] revision 29.1 (2026-05-19), section 5.6 "http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac Schema",
-	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/aa12452a-467d-4192-8ebf-0a90d86dd64b
+	[MS-XLSX] revision 29.1 (2026-05-19), section 5.12 "http://schemas.microsoft.com/office/spreadsheetml/2016/revision10 Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/8a818a7f-92d0-4390-9855-1a484d8f9347
 	Taken from the HTML section page on 2026-09-20 (CR-022 phase 1; docs/developer/adding-a-schema.md,
 	"obtaining the schema"). Re-take it from the same page; the body below is the page's text apart from:
 	  - import schemaLocations mapped to this tree
 	  - x:ST_Xstring and x:ST_Guid written s:ST_Xstring and s:ST_Guid (the main schema takes them from the shared types)
 	  - the JAXB package annotation
-	  - the default namespace, "xl12AcSchemaUri" in the source (a placeholder), is the target namespace
 -->
 
   <xsd:annotation>
@@ -26,13 +25,14 @@
         </jaxb:globalBindings>
       </xsd:appinfo>
       <jaxb:schemaBindings>
-        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2011.x1.ac"/>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2016.revision10"/>
       </jaxb:schemaBindings>
     </xsd:appinfo>
   </xsd:annotation>
 
   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
 
-  <xsd:element name="list" type="s:ST_Xstring"/>
+  <xsd:attribute name="uid" type="s:ST_Guid"/>
+  <xsd:attribute name="uidLastSave" type="s:ST_Guid"/>
 
 </xsd:schema>

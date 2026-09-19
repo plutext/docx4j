@@ -56,7 +56,11 @@ sources, in order of preference:
    one namespace per page, and a URL that names the section to cite in the
    xsd's header comment. This is what `xsd/wml/w16cex.xsd` was taken from (its
    header quotes the page). Not every specification's appendix is rendered
-   that way; check for the section page first.
+   that way; check for the section page first. The page's code block indents
+   with non-breaking spaces (U+00A0), which the schema parser rejects
+   ("Non-whitespace characters are not allowed in schema elements"): replace
+   them with spaces, and say so in the header (CR-022 found this on every
+   [MS-XLSX] page).
 2. **The docx download** from the specification's landing page (the "Published
    Version" table offers PDF and DOCX per revision, the DOCX named with its
    date, `[MS-XLSX]-260519.docx` for revision 29.1 of 2026-05-19): the schema
@@ -179,6 +183,12 @@ minutes; the deep-copy (`docx4j-xjc-copy`) and parent-pointer plugins run by
 themselves. Check the generated package under
 `docx4j-generated-objects/target/generated-sources/xjc/` for the classes and
 accessors you expect before going on.
+
+A schema that declares only attributes (the `xr2`, `xr6`, `xr10` and `x14ac`
+namespaces of [MS-XLSX], for instance) generates no package at all: its
+attributes become properties of the host types that reference them. Such a
+namespace has nothing to export, open or put on a context path (steps 5 and
+6); it still needs its prefix (step 7).
 
 ## 5. Export and open the package in the module system
 

@@ -232,6 +232,29 @@ Schema (CR-018, five gaps the content API found, and w16cex):
   org.docx4j.w16, so a comment's durableId and dateUtc - what the comment reactions part
   anchors on - can be read through the model.  It used to load as a generic XML part.
 
+Schema (CR-022, the Excel 2010 and 2013 extensions of [MS-XLSX]):
+
+- Bound in xlsx4j: x14 (spreadsheetml/2009/9/main - sparklines, slicers and slicer caches,
+  the extended conditional formats and data validations, pivot and table extensions,
+  form-control properties), x15 (2010/11/main - timelines and their caches, the data model
+  and its connections, table slicer caches, surveys), x14ac, x15ac, x12ac, x16, and the
+  revision namespaces xr (now with xr:revisionPtr), xr2, xr6 and xr10; packages
+  org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main and so on.
+- Behaviour change: extLst content in those namespaces (x14:sparklineGroups,
+  x14:conditionalFormattings, x14:dataValidations, x14:slicerList, x15:timelineRefs, the
+  workbook's x14/x15 workbookPr, slicerCaches, timelineCacheRefs and dataModel, the style
+  sheet's slicerStyles and timelineStyles, ...) unmarshals typed, in a JAXBElement, where
+  CTExtension.getAny() used to hold a DOM Element.
+- x14ac:dyDescent (Row, CTSheetFormatPr) and x14ac:knownFonts (CTFonts) are properties;
+  xr:revisionPtr is kept in the workbook (it was rejected and dropped on load).
+- mc:Ignorable is a property of every root Excel writes it on (worksheet, styleSheet, table,
+  comments, the pivot parts, connections, queryTable and the x14/x15 part roots), so the
+  prefixes it names are declared again on save; x12ac, x16 and xr16 join the prefix table.
+- The mc:AlternateContent Excel wraps a worksheet's controls in (Choice Requires="x14", no
+  Fallback) is kept whole, per CR-021; it was dropped, and a form control lost its controlPr.
+- xl/connections.xml and xl/queryTables/*.xml save: CT_Connections and CT_QueryTable had
+  no root-element annotation, so a workbook with a data model loaded but could not be saved.
+
 HTML export, lists (CR-003, found on the OpenDoPE Specification v3 draft):
 
 - A numbered paragraph's label is written by docx4j as a span (class ListLabel) at the head of

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2014/11/main"
+	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2014/11/main"
+	elementFormDefault="qualified"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	jaxb:version="3.0">
+
+<!--
+	[MS-XLSX] revision 29.1 (2026-05-19), section 5.10 "http://schemas.microsoft.com/office/spreadsheetml/2014/11/main Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/4fe24a21-6f69-4680-882f-f86b16a69119
+	Taken from the HTML section page on 2026-09-20 (CR-022 phase 1; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). Re-take it from the same page; the body below is the page's text apart from:
+	  - import schemaLocations mapped to this tree
+	  - x:ST_Xstring and x:ST_Guid written s:ST_Xstring and s:ST_Guid (the main schema takes them from the shared types)
+	  - the JAXB package annotation
+-->
+
+  <xsd:annotation>
+    <xsd:appinfo>
+      <xsd:appinfo>
+        <jaxb:globalBindings>
+        </jaxb:globalBindings>
+      </xsd:appinfo>
+      <jaxb:schemaBindings>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.x11.main"/>
+      </jaxb:schemaBindings>
+    </xsd:appinfo>
+  </xsd:annotation>
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+
+  <xsd:complexType name="CT_ModelTimeGroupings">
+    <xsd:sequence>
+      <xsd:element name="modelTimeGrouping" minOccurs="1" maxOccurs="unbounded" type="CT_ModelTimeGrouping"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="modelTimeGroupings" type="CT_ModelTimeGroupings"/>
+  <xsd:complexType name="CT_ModelTimeGrouping">
+    <xsd:sequence>
+      <xsd:element name="calculatedTimeColumn" minOccurs="1" maxOccurs="unbounded" type="CT_CalculatedTimeColumn"/>
+    </xsd:sequence>
+    <xsd:attribute name="tableName" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="columnName" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="columnId" type="s:ST_Xstring" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CalculatedTimeColumn">
+    <xsd:attribute name="columnName" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="columnId" type="s:ST_Xstring" use="required"/>
+    <xsd:attribute name="contentType" type="ST_ModelTimeGroupingContentType" use="required"/>
+    <xsd:attribute name="isSelected" type="xsd:boolean" use="required"/>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_ModelTimeGroupingContentType">
+    <xsd:restriction base="s:ST_Xstring">
+      <xsd:enumeration value="years"/>
+      <xsd:enumeration value="quarters"/>
+      <xsd:enumeration value="monthsindex"/>
+      <xsd:enumeration value="months"/>
+      <xsd:enumeration value="daysindex"/>
+      <xsd:enumeration value="days"/>
+      <xsd:enumeration value="hours"/>
+      <xsd:enumeration value="minutes"/>
+      <xsd:enumeration value="seconds"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+</xsd:schema>
