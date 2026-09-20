@@ -69,7 +69,12 @@ public class JaxbGraphWalker {
 		 * remove it from its parent: from the list it sits in, or by invoking the
 		 * setter matching the getter it came from with null; its children are not visited
 		 */
-		REMOVE
+		REMOVE,
+		/**
+		 * replace it in the list it sits in with {@link Visitor#replacement()} (when it
+		 * came from a getter, it is set to null instead); its children are not visited
+		 */
+		REPLACE
 	}
 
 	public interface Visitor {
@@ -79,6 +84,11 @@ public class JaxbGraphWalker {
 		 *                w:instrText from w:t (both are wml Text)
 		 */
 		Action visit(Object o, JAXBElement<?> wrapper);
+
+		/** The object to put in place of the one just answered with {@link Action#REPLACE}. */
+		default Object replacement() {
+			return null;
+		}
 	}
 
 	private final Visitor visitor;
@@ -101,8 +111,8 @@ public class JaxbGraphWalker {
 		Action a = visitUnseen(unwrapped, wrapper);
 		if (a == Action.CONTINUE) {
 			walkChildren(unwrapped);
-		} else if (a == Action.REMOVE) {
-			log.warn("REMOVE of a root object is ignored: " + unwrapped.getClass().getName());
+		} else if (a == Action.REMOVE || a == Action.REPLACE) {
+			log.warn(a + " of a root object is ignored: " + unwrapped.getClass().getName());
 		}
 	}
 
@@ -152,7 +162,7 @@ public class JaxbGraphWalker {
 				Action a = visitUnseen(unwrapped, wrapper);
 				if (a == Action.CONTINUE) {
 					walkChildren(unwrapped);
-				} else if (a == Action.REMOVE) {
+				} else if (a == Action.REMOVE || a == Action.REPLACE) {
 					setNull(parent, getter);
 				}
 			}
@@ -175,6 +185,24 @@ public class JaxbGraphWalker {
 			walkChildren(unwrapped);
 		} else if (a == Action.REMOVE) {
 			removeByIdentity(list, child);
+		} else if (a == Action.REPLACE) {
+			Object replacement = visitor.replacement();
+			if (replacement == null) {
+				removeByIdentity(list, child);
+			} else {
+				replaceByIdentity(list, child, replacement);
+				seen.add(replacement instanceof JAXBElement ? ((JAXBElement<?>) replacement).getValue() : replacement);
+			}
+		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static void replaceByIdentity(List list, Object child, Object replacement) {
+		for (int i = 0; i < list.size(); i++) {
+			if (list.get(i) == child) {
+				list.set(i, replacement);
+				return;
+			}
 		}
 	}
 

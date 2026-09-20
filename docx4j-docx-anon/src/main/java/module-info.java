@@ -6,6 +6,7 @@ module org.docx4j.docx_anon {
     requires lorem;
 	requires jakarta.xml.bind;
 	requires java.xml;
+	requires java.desktop; // the labelled placeholder image
 
 	exports org.docx4j.anon;
 	

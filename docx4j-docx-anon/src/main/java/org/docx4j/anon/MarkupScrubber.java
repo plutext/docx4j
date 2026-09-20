@@ -18,11 +18,15 @@
  */
 package org.docx4j.anon;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.JAXBElement;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.anon.JaxbGraphWalker.Action;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.w15.CTPerson;
 import org.docx4j.w15.CTPresenceInfo;
 import org.docx4j.w16cex.CTCommentExtensible;
@@ -36,6 +40,8 @@ import org.docx4j.wml.CTFFData;
 import org.docx4j.wml.CTFFName;
 import org.docx4j.wml.CTMailMerge;
 import org.docx4j.wml.CTMoveBookmark;
+import org.docx4j.wml.CTObject;
+import org.docx4j.wml.CTPictureBase;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.CTSimpleField;
@@ -49,6 +55,7 @@ import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPrBase;
+import org.docx4j.wml.Pict;
 import org.docx4j.wml.RStyle;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tag;
@@ -84,6 +91,25 @@ public class MarkupScrubber implements JaxbGraphWalker.Visitor {
 	private final boolean strict;
 	private final Consumer<String> notes;
 	private String lastPersonAuthor;
+	private String currentPartName = "";
+	private Object replacement;
+
+	/**
+	 * "partName#relId" of every picture which stood in for a removed OLE object or
+	 * ActiveX control: {@link MediaReplacer} gives those the labelled placeholder
+	 * rather than the plain pixels.
+	 */
+	final Set<String> objectPreviews = new HashSet<String>();
+
+	/** The part being walked: relationship ids are per part. */
+	public void setCurrentPart(Part part) {
+		currentPartName = part == null ? "" : part.getPartName().getName();
+	}
+
+	@Override
+	public Object replacement() {
+		return replacement;
+	}
 
 	/**
 	 * @param names  the shared renamings
@@ -294,12 +320,38 @@ public class MarkupScrubber implements JaxbGraphWalker.Visitor {
 
 		// ---- embedded objects
 		if (strict) {
+			if (o instanceof CTPictureBase) {
+				// w:object / w:pict: if it holds an OLE object or a control, its VML picture
+				// is the object's footprint and gets the labelled placeholder
+				CTPictureBase pict = (CTPictureBase) o;
+				boolean holdsObject = (o instanceof CTObject && ((CTObject) o).getControl() != null)
+						|| (o instanceof Pict && ((Pict) o).getControl() != null);
+				for (Object child : pict.getAnyAndAny()) {
+					if (XmlUtils.unwrap(child) instanceof org.docx4j.vml.officedrawing.CTOLEObject) holdsObject = true;
+				}
+				if (holdsObject) {
+					for (Object child : pict.getAnyAndAny()) {
+						Object shape = XmlUtils.unwrap(child);
+						if (shape instanceof org.docx4j.vml.CTShape) {
+							for (JAXBElement<?> el : ((org.docx4j.vml.CTShape) shape).getPathOrFormulasOrHandles()) {
+								if (el.getValue() instanceof org.docx4j.vml.CTImageData) {
+									org.docx4j.vml.CTImageData data = (org.docx4j.vml.CTImageData) el.getValue();
+									String relId = data.getId() != null ? data.getId() : data.getRelid();
+									if (relId != null) objectPreviews.add(currentPartName + "#" + relId);
+								}
+							}
+						}
+					}
+				}
+				return Action.CONTINUE;
+			}
 			if (o instanceof CTAltChunk) {
-				notes.accept("w:altChunk removed");
-				return Action.REMOVE;
+				notes.accept("w:altChunk replaced by a marker paragraph");
+				replacement = Placeholders.altChunkRemoved();
+				return Action.REPLACE;
 			}
 			if (o instanceof org.docx4j.vml.officedrawing.CTOLEObject) {
-				notes.accept("o:OLEObject removed (the picture stays)");
+				notes.accept("o:OLEObject removed (its picture stays, as the labelled placeholder)");
 				return Action.REMOVE;
 			}
 			if (o instanceof CTControl) {

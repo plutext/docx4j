@@ -206,7 +206,8 @@ public class AnonymizeCorpusTest {
 		String body = pkg.getMainDocumentPart().getXML();
 		assertFalse(body, body.contains("OLEObject"));
 		assertTrue("the v:shape picture remains", body.contains("imagedata"));
-		assertNotNull(part(pkg, MediaReplacer.PLACEHOLDER_PART_NAME));
+		assertNotNull("as the labelled placeholder", part(pkg, MediaReplacer.OBJECT_PLACEHOLDER_PART_NAME));
+		assertNull("the EMF preview is gone", part(pkg, "/word/media/image1.emf"));
 		reload(pkg);
 	}
 

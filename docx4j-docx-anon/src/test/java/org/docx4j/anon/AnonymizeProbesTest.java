@@ -539,28 +539,35 @@ public class AnonymizeProbesTest {
 				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
 		mdp.getContent().add(XmlUtils.unmarshalString(drawing));
 
-		// an OLE object (an embedded "workbook") with the EMF as its picture
+		// an OLE object (a real embedded Word 97-2003 document, docx4j's own, from
+		// ole-inserted-doc.docx: junk bytes would stop Word opening the probe itself)
+		// with the EMF as its picture
 		OleObjectBinaryPart ole = new OleObjectBinaryPart();
-		ole.setBinaryData("AcmeSecretWorkbookBytes".getBytes(StandardCharsets.US_ASCII));
+		ole.setBinaryData(realOleBytes());
 		Relationship oleRel = mdp.addTargetPart(ole);
+		MetafileEmfPart preview = new MetafileEmfPart(new PartName("/word/media/image2.emf"));
+		preview.setBinaryData(resource("probe.emf"));
+		Relationship previewRel = mdp.addTargetPart(preview);
 		String object = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
 				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\""
 				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-				+ "<w:r><w:object w:dxaOrig=\"1440\" w:dyaOrig=\"1440\">"
-				+ "<v:shape id=\"_x0000_i1025\" type=\"#_x0000_t75\" style=\"width:72pt;height:72pt\" o:ole=\"\" alt=\"Acme figures\">"
-				+ "<v:imagedata r:id=\"" + emfRel.getId() + "\" o:title=\"AcmeFigures\"/></v:shape>"
-				+ "<o:OLEObject Type=\"Embed\" ProgID=\"Excel.Sheet.12\" ShapeID=\"_x0000_i1025\" DrawAspect=\"Content\" ObjectID=\"_1\" r:id=\"" + oleRel.getId() + "\"/>"
+				+ "<w:r><w:object w:dxaOrig=\"1512\" w:dyaOrig=\"994\">"
+				+ "<v:shapetype id=\"_x0000_t75\" coordsize=\"21600,21600\" o:spt=\"75\" o:preferrelative=\"t\""
+				+ " path=\"m@4@5l@4@11@9@11@9@5xe\" filled=\"f\" stroked=\"f\"><v:stroke joinstyle=\"miter\"/>"
+				+ "<v:formulas><v:f eqn=\"if lineDrawn pixelLineWidth 0\"/><v:f eqn=\"sum @0 1 0\"/><v:f eqn=\"sum 0 0 @1\"/>"
+				+ "<v:f eqn=\"prod @2 1 2\"/><v:f eqn=\"prod @3 21600 pixelWidth\"/><v:f eqn=\"prod @3 21600 pixelHeight\"/>"
+				+ "<v:f eqn=\"sum @0 0 1\"/><v:f eqn=\"prod @6 1 2\"/><v:f eqn=\"prod @7 21600 pixelWidth\"/>"
+				+ "<v:f eqn=\"sum @8 21600 0\"/><v:f eqn=\"prod @7 21600 pixelHeight\"/><v:f eqn=\"sum @10 21600 0\"/></v:formulas>"
+				+ "<v:path o:extrusionok=\"f\" gradientshapeok=\"t\" o:connecttype=\"rect\"/><o:lock v:ext=\"edit\" aspectratio=\"t\"/></v:shapetype>"
+				+ "<v:shape id=\"_x0000_i1025\" type=\"#_x0000_t75\" style=\"width:75.6pt;height:49.8pt\" o:ole=\"\" alt=\"Acme figures\">"
+				+ "<v:imagedata r:id=\"" + previewRel.getId() + "\" o:title=\"AcmeFigures\"/></v:shape>"
+				+ "<o:OLEObject Type=\"Embed\" ProgID=\"Word.Document.8\" ShapeID=\"_x0000_i1025\" DrawAspect=\"Icon\" ObjectID=\"_1833807432\" r:id=\"" + oleRel.getId() + "\"/>"
 				+ "</w:object></w:r></w:p>";
 		mdp.getContent().add(XmlUtils.unmarshalString(object));
 
 		// an altChunk of HTML
 		mdp.addAltChunk(AltChunkType.Html,
 				"<html><body><p>SecretHtml paragraph from the Acme intranet</p></body></html>".getBytes(StandardCharsets.UTF_8));
-
-		// a VBA project
-		VbaProjectBinaryPart vba = new VbaProjectBinaryPart();
-		vba.setBinaryData("AcmeMacroBytes".getBytes(StandardCharsets.US_ASCII));
-		mdp.addTargetPart(vba);
 
 		// a thumbnail
 		ImageJpegPart thumb = new ImageJpegPart(new PartName("/docProps/thumbnail.jpeg"));
@@ -569,6 +576,45 @@ public class AnonymizeProbesTest {
 
 		mdp.getContent().add(paragraph("Body text about Acme."));
 		return pkg;
+	}
+
+	/** the embedded Word 97-2003 document inside docx4j's own ole-inserted-doc.docx */
+	static byte[] realOleBytes() throws Exception {
+		WordprocessingMLPackage source = AnonymizeCorpusTest.load("ole-inserted-doc.docx");
+		for (Part p : source.getParts().getParts().values()) {
+			if (p.getPartName().getName().startsWith("/word/embeddings/")) {
+				return ((org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) p).getBytes();
+			}
+		}
+		throw new AssertionError("no embedding in ole-inserted-doc.docx");
+	}
+
+	/** a VBA project, on its own: its bytes are junk, so this document is never sent to Word */
+	private WordprocessingMLPackage vbaProbe() throws Exception {
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		VbaProjectBinaryPart vba = new VbaProjectBinaryPart();
+		vba.setBinaryData("AcmeMacroBytes".getBytes(StandardCharsets.US_ASCII));
+		pkg.getMainDocumentPart().addTargetPart(vba);
+		pkg.getMainDocumentPart().getContent().add(paragraph("A macro-enabled document."));
+		return pkg;
+	}
+
+	@Test
+	public void vbaStrictAndKeep() throws Exception {
+		WordprocessingMLPackage pkg = vbaProbe();
+		AnonymizeResult r = new Anonymize(pkg).go();
+		assertClean(r);
+		assertNull(pkg.getParts().get(new PartName("/word/vbaProject.bin")));
+		for (Part p : pkg.getParts().getParts().values()) {
+			assertFalse(p.getPartName().getName(), p instanceof VbaProjectBinaryPart);
+		}
+		AnonymizeCorpusTest.reload(pkg);
+
+		pkg = vbaProbe();
+		r = new Anonymize(pkg, Anonymize.Mode.KEEP).go();
+		assertFalse(r.isClean());
+		assertNotNull(pkg.getParts().get(new PartName("/word/vbaProject.bin")));
+		assertEquals(1, r.getKeptUnsafe().size());
 	}
 
 	@Test
@@ -582,22 +628,35 @@ public class AnonymizeProbesTest {
 		AnonymizeCorpusTest.reload(pkg);
 
 		String all = allXml(pkg);
-		assertGone(all, "Acme", "jane", "OrgChart", "SecretHtml", "altChunk", "OLEObject", "Figures");
+		assertGone(all, "Acme", "jane", "OrgChart", "SecretHtml", "<w:altChunk", "OLEObject", "Figures");
 
 		assertNull(pkg.getParts().get(new PartName("/word/media/image1.emf")));
-		assertNotNull(pkg.getParts().get(new PartName(MediaReplacer.PLACEHOLDER_PART_NAME)));
+		assertNull(pkg.getParts().get(new PartName("/word/media/image2.emf")));
 		assertNull(pkg.getParts().get(new PartName("/docProps/thumbnail.jpeg")));
 		for (Part p : pkg.getParts().getParts().values()) {
 			assertFalse(p.getPartName().getName(), p instanceof OleObjectBinaryPart);
-			assertFalse(p.getPartName().getName(), p instanceof VbaProjectBinaryPart);
 			assertFalse(p.getPartName().getName(), p.getPartName().getName().startsWith("/word/afchunk"));
 		}
-		// the drawing and the VML picture now point at the placeholder
-		assertTrue(all, all.contains("r:embed=\"" + "rId"));
 		assertEquals(Action.REPLACED, action(r, "/word/media/image1.emf").action);
-		assertTrue(r.getNotes().toString(), r.getNotes().contains("o:OLEObject removed (the picture stays)"));
-		assertTrue(r.getNotes().toString(), r.getNotes().contains("w:altChunk removed"));
-		assertTrue(all.contains("v:imagedata") || all.contains("imagedata"));
+		assertTrue(r.getNotes().toString(), r.getNotes().contains("o:OLEObject removed (its picture stays, as the labelled placeholder)"));
+		assertTrue(r.getNotes().toString(), r.getNotes().contains("w:altChunk replaced by a marker paragraph"));
+
+		// the footprints: the drawing shows the plain placeholder, the object's picture the
+		// labelled one, the altChunk is a marker paragraph
+		assertNotNull(pkg.getParts().get(new PartName(MediaReplacer.PLACEHOLDER_PART_NAME)));
+		assertNotNull(pkg.getParts().get(new PartName(MediaReplacer.OBJECT_PLACEHOLDER_PART_NAME)));
+		String rels = mdp(pkg).getRelationshipsPart().getXML();
+		assertTrue(rels, rels.contains("media/anon-object-removed.png"));
+		assertTrue(rels, rels.contains("media/anon-placeholder.png"));
+		assertTrue(all.contains("imagedata"));
+		assertTrue(all, all.contains(Placeholders.ALTCHUNK_REMOVED));
+		byte[] label = ((org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart)
+				pkg.getParts().get(new PartName(MediaReplacer.OBJECT_PLACEHOLDER_PART_NAME))).getBytes();
+		assertTrue("a drawn image, not the 2x2 pixels", label.length > 1000);
+	}
+
+	private static MainDocumentPart mdp(WordprocessingMLPackage pkg) {
+		return pkg.getMainDocumentPart();
 	}
 
 	@Test
@@ -606,8 +665,7 @@ public class AnonymizeProbesTest {
 		AnonymizeResult r = new Anonymize(pkg, Anonymize.Mode.KEEP).go();
 		assertFalse(r.isClean());
 		List<PartAction> kept = r.getKeptUnsafe();
-		assertTrue(kept.toString(), kept.size() >= 3); // OLE, altChunk, VBA
-		assertNotNull(pkg.getParts().get(new PartName("/word/vbaProject.bin")));
+		assertTrue(kept.toString(), kept.size() >= 2); // OLE, altChunk
 		String all = allXml(pkg);
 		assertTrue("KEEP leaves the object markup", all.contains("OLEObject"));
 		assertTrue(all.contains("altChunk"));

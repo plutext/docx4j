@@ -257,7 +257,8 @@ tree (`src/test`, 31 tests) and a `Main-Class` manifest entry.
 | `Anonymize` | the orchestrator; `Mode.STRICT` (default) / `Mode.KEEP`; `setVerify(boolean)` (on by default); `go()` returns the result |
 | `AnonymizeResult` | `isClean()`, `getActions()` (per part: SCRUBBED / CLEARED / REPLACED / REMOVED / KEPT / KEPT_UNSAFE with a reason), `getNotes()` (element-level removals), `getLeaks()`, `getVerified()`, `toJson()`, `summary()`; `isOK()` deprecated to `isClean()` |
 | `PartsAnalyzer` | the table: `classify(Part)` → SAFE / SCRUB / METADATA / REPLACE_IMAGE / REMOVE / UNSCRUBBABLE; `identifyUnsafeParts` deprecated, kept |
-| `JaxbGraphWalker` | a reflective walk over every object a JAXB part holds (lists, wrappers, every generated class; DOM nodes handed to the visitor), pre-order, each object once, with REMOVE by list or setter — see "departures" |
+| `JaxbGraphWalker` | a reflective walk over every object a JAXB part holds (lists, wrappers, every generated class; DOM nodes handed to the visitor), pre-order, each object once, with REMOVE and REPLACE by list or setter — see "departures" |
+| `Placeholders` | the labelled "OLE object removed" image (java.awt, 480x240, scaled by Word to the object's extent) and the altChunk marker paragraph |
 | `ScrambleText` | now a walker visitor: w:t, w:delText, instructions (via `FieldInstructions`), m:t, a:t and a:fld, VML text paths and shape alt/title/href, chart string and number caches and formulas (c: and cx:), chart headers/footers, pivot source names, content-control aliases/list items/placeholders, form-field defaults/entries/help/status text, smart-tag and customXml attributes, drawing names/descriptions/titles, custom style names and aliases, level text, theme/colour/font/format scheme names, diagram placeholder text, DOM t/v/f text and name-like attributes |
 | `MarkupScrubber` | the second visitor: every `CTTrackChange` (author → `Author n`, date → fixed, dateUtc dropped), move bookmarks, comment initials, people (author, presence provider "None", userId → the person's name, contact dropped), commentsExtensible dates; bookmark and form-field names → `bm<hash>`; hyperlink tooltip/docLocation cleared and anchors mapped; sdt tag and data binding removed, date-picker values fixed; fldData removed; custom style ids → `s<hash>` at the definition and every reference (pStyle, rStyle, tblStyle, basedOn, next, link, numbering pStyle/styleLink/numStyleLink); settings: mailMerge, docVars, every `CTRel` (attached template, printer settings, data sources) removed, protection hashes/salts/crypt attributes cleared with the protection kept, w14/w15 docIds reset; STRICT only: w:altChunk, o:OLEObject, w:control, chart externalData and geography caches, font-table embed elements removed |
 | `MetadataScrubber` | docProps core (everything descriptive, lastModifiedBy, lastPrinted, version; created/modified → the fixed date; revision → 1) and app (company, manager, template, heading pairs, titles of parts, hyperlink base and list, digital signature, total time), cover-page props; every `TargetMode="External"` relationship → `http://example.invalid/<n>` |
@@ -313,8 +314,18 @@ are what they say.
 - **Non-raster images are retargeted, not overwritten in place**: a PNG under
   an `.emf` name relies on Word sniffing bytes through the metafile path,
   which nothing proves; a shared placeholder PNG part is what every raster
-  path already reads. The OLE object's `v:shape` picture therefore survives
-  as a picture of the placeholder.
+  path already reads.
+- **A removed object leaves a footprint that says what it was** (Jason,
+  Word check round 1, 2026-09-21: "replace with text saying [OLE object
+  removed]?"). Page flow is what the anonymised document is for, so an OLE
+  object or ActiveX control keeps its picture at its own size, but that
+  picture becomes a generated image labelled "OLE object removed by
+  docx4j-docx-anon" (`Placeholders`, `/word/media/anon-object-removed.png`;
+  `MarkupScrubber` records which picture relationships stood for an object,
+  `MediaReplacer` gives those the labelled image instead of the 2x2 pixels).
+  An altChunk has no footprint of its own and becomes the marker paragraph
+  "[altChunk removed by docx4j-docx-anon]" (the walker gained a REPLACE
+  action for it). The markers' words are in `Verify`'s vocabulary.
 - **Also removed, not in the plan's list**: sensitivity labels
   (`/docMetadata/`), digital signatures (`/_xmlsignatures/`), the
   bibliography part (names and titles), printer settings, ink, web
@@ -359,11 +370,11 @@ name kept: taken.
 | step | result |
 |---|---|
 | `docx4j-docx-anon` compiles (JPMS module, `requires java.xml` added) | BUILD SUCCESS against the installed 17.2.0-SNAPSHOT core |
-| module suite | 31 tests, 0 failures (`AnonymizeProbesTest` 10, `AnonymizeCorpusTest` 8, `FieldInstructionsTest` 10, `AnonymizeCliTest` 3) |
+| module suite | 32 tests, 0 failures (`AnonymizeProbesTest` 11, `AnonymizeCorpusTest` 8, `FieldInstructionsTest` 10, `AnonymizeCliTest` 3) |
 | every corpus document, STRICT | clean, verified, reloads with docx4j |
 | LibreOffice renders every STRICT output | 9 of 9 to PDF (structural sanity only) |
 | the two findings fixed (7892cb501): docx4j-core-tests | 1239 tests, 0 failures, 11 skipped (2026-09-21) |
-| Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | **pending — Jason** |
+| Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | round 1 (2026-09-21): the corpus outputs opened; `probe-media-original` and `-keep` did not ("The operation is cancelled") — the probe's OLE bytes were junk, Word refuses the document itself. Round 2 staged: the probe embeds a real Word 97-2003 document (from ole-inserted-doc.docx), VBA moved to its own never-shipped probe, the labelled footprints in; **pending — Jason** |
 
 ### CHANGELOG entry (for Jason to place)
 

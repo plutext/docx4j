@@ -75,7 +75,8 @@ import com.thedeanda.lorem.LoremIpsum;
  * <li>a word of a built-in style name (KnownStyles.xml and the document's own
  * latent-style list), which Word identifies built-in styles by;</li>
  * <li>the fixed words the tool writes: Author, Sheet, example, invalid,
- * http, None, General, true, false, and app.xml's "Microsoft Office Word".</li>
+ * http, None, General, true, false, app.xml's "Microsoft Office Word", and
+ * the altChunk marker's "altChunk removed by docx4j-docx-anon".</li>
  * </ul>
  * Digits are not tokens: they are randomised, and a 4-digit run would collide
  * by chance often enough to make the check useless.
@@ -131,7 +132,9 @@ public class Verify {
 
 	private static final Set<String> FIXED_WORDS = new HashSet<String>(Arrays.asList(
 			"author", "sheet", "example", "invalid", "http", "none", "general", "true", "false",
-			"microsoft", "office", "word"));
+			"microsoft", "office", "word",
+			// the altChunk marker paragraph (Placeholders.ALTCHUNK_REMOVED)
+			"altchunk", "removed", "docx", "anon"));
 
 	private static String loremJoined;
 

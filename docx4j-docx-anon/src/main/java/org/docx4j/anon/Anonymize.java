@@ -196,8 +196,13 @@ public class Anonymize {
 				JaxbGraphWalker.Action a = latinizer.visit(o, wrapper);
 				JaxbGraphWalker.Action b = markupScrubber.visit(o, wrapper);
 				if (a == JaxbGraphWalker.Action.REMOVE || b == JaxbGraphWalker.Action.REMOVE) return JaxbGraphWalker.Action.REMOVE;
+				if (a == JaxbGraphWalker.Action.REPLACE || b == JaxbGraphWalker.Action.REPLACE) return JaxbGraphWalker.Action.REPLACE;
 				if (a == JaxbGraphWalker.Action.SKIP_CHILDREN || b == JaxbGraphWalker.Action.SKIP_CHILDREN) return JaxbGraphWalker.Action.SKIP_CHILDREN;
 				return JaxbGraphWalker.Action.CONTINUE;
+			}
+			@Override
+			public Object replacement() {
+				return markupScrubber.replacement();
 			}
 		};
 
@@ -230,6 +235,7 @@ public class Anonymize {
 			}
 			log.debug("Scrubbing " + p.getPartName().getName());
 			latinizer.latinText = null;
+			markupScrubber.setCurrentPart(p);
 			new JaxbGraphWalker(composite).walk(contents);
 			if (t == Treatment.SCRUB) {
 				result.record(p, Action.SCRUBBED, null);
@@ -242,7 +248,7 @@ public class Anonymize {
 	}
 
 	private void replaceMedia(Map<Part, Treatment> treatments) throws Docx4JException {
-		MediaReplacer media = new MediaReplacer(pkg);
+		MediaReplacer media = new MediaReplacer(pkg, markupScrubber.objectPreviews);
 		for (Entry<Part, Treatment> e : treatments.entrySet()) {
 			Part p = e.getKey();
 			if (e.getValue() != Treatment.REPLACE_IMAGE) continue;
