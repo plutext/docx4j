@@ -43,9 +43,11 @@ Three states short of "bound":
 - **xsd present, unwired**: `xsd/xlsx/` still holds the 2013-07-26 copies
   of 5.7 (`office_drawing_2012_timeslicer.xsd`) and 5.8's drawing schema, and
   an empty `office_drawing_2010_slicer .xsd` (5.2); the slicer and timeline
-  shapes sit in a drawing's `graphicData` wildcard and round-trip as DOM (the
-  `a14`/`tsle`/`sle15` `mc:AlternateContent` in drawings resolves to its
-  Fallback) - a DrawingML CR's.
+  shapes sit in a drawing's `graphicData` wildcard and round-trip as DOM; since
+  CR-024 (2026-09-20) the `a14`/`tsle`/`sle15` `mc:AlternateContent` in a
+  drawing is kept whole, both branches (it resolved to its Fallback before),
+  and `sle`, `sle15`, `tsle` are in the prefix table. Binding the schemas
+  themselves is a CR when a caller wants the shapes typed (CR-024 §6).
 - **absent**: everything else.
 
 ## Occurrence
@@ -66,16 +68,16 @@ repository's workbooks.
 | § | prefix | namespace (`http://schemas.microsoft.com/office/` + ...) | purpose | status | seen |
 |---|---|---|---|---|---|
 | 5.1 | xm | excel/2006/main | Excel 2007 macro sheets (`macrosheet` and its children); `f`, `ref`, `sqref` used by x14 and x15 content | bound (f/ref/sqref: CR-022) | |
-| 5.2 | sle | drawing/2010/slicer | the slicer shape in a drawing part (Excel 2010) | absent (empty file in `xsd/xlsx`; DrawingML CR) | yes (CR-022 fixture) |
+| 5.2 | sle | drawing/2010/slicer | the slicer shape in a drawing part (Excel 2010) | absent (empty file in `xsd/xlsx`); the shape's `mc:AlternateContent` kept whole and the prefix known since CR-024 | yes (CR-022 fixture) |
 | 5.3 | x15 | spreadsheetml/2010/11/main | Excel 2013: the data model and its connections, timelines and their caches, table slicer caches, pivot filter and calculated-member extensions, workbook and worksheet `extLst` content | **bound (CR-022)**: typed extLst content; `TimelineCachePart`, `TimelinesPart`, `SurveyPart` | yes |
 | 5.4 | x14 | spreadsheetml/2009/9/main | Excel 2010: sparklines, slicers and slicer caches, conditional-formatting and data-validation extensions (extended formulas, icon sets, data bars), protected ranges, pivot and table extensions, form-control properties | **bound (CR-022)**: typed extLst content; `SlicerCachePart`, `SlicersPart`, `ControlPropertiesPart`, `CustomDataPropertiesPart` | yes |
 | 5.5 | x14ac | spreadsheetml/2009/9/ac | Excel 2010 attributes carried through `mc:Ignorable`: `dyDescent` on rows and `sheetFormatPr`, `knownFonts` on the font table | **bound (CR-022)**: typed properties of `Row`, `CTSheetFormatPr`, `CTFonts` | yes |
 | 5.6 | x12ac | spreadsheetml/2011/1/ac | Excel 2010 SP1: the `list` element of a data validation's `mc:AlternateContent` Choice | **bound (CR-022)**: the element and prefix; `CT_DataValidation` admits no `mc:AlternateContent` yet (no file shows one) | |
-| 5.7 | tsle | drawing/2012/timeslicer | the timeline slicer shape in a drawing part (Excel 2013) | unwired xsd (DrawingML CR) | yes (CR-022 fixture) |
+| 5.7 | tsle | drawing/2012/timeslicer | the timeline slicer shape in a drawing part (Excel 2013) | unwired xsd; the shape's `mc:AlternateContent` kept whole and the prefix known since CR-024 | yes (CR-022 fixture) |
 | 5.8 | xdr14 | excel/2010/spreadsheetDrawing | Excel 2010 drawing content parts (ink) | bound | |
 | 5.9 | x15ac | spreadsheetml/2010/11/ac | Excel 2013 attributes through `mc:Ignorable`: `absPath` on the workbook | **bound (CR-022)** | yes |
 | 5.10 | x16 | spreadsheetml/2014/11/main | time grouping of data-model pivot fields (`modelTimeGroupings`) | **bound (CR-022)** | |
-| 5.11 | x16r2 | spreadsheetml/2015/02/main | one attribute, `formatCode16`, an extended number-format code on a number format | absent | yes |
+| 5.11 | x16r2 | spreadsheetml/2015/02/main | one attribute, `formatCode16`, an extended number-format code on a number format | absent; the prefix known since CR-024 (Excel names it in `styles.xml`'s `mc:Ignorable`) | yes |
 | 5.12 | xr10 | spreadsheetml/2016/revision10 | `uid`, `uidLastSave`, revision tracking | **bound (CR-022)**: attributes of `CTRevisionPtr` and the x14/x15 roots | yes |
 | 5.13 | xr9 | spreadsheetml/2016/revision9 | one `uid` attribute, revision tracking | absent | yes |
 | 5.14 | xr6 | spreadsheetml/2016/revision6 | `coauthVersionLast`/`coauthVersionMax`, co-authoring | **bound (CR-022)**: attributes of `CTRevisionPtr` | yes |

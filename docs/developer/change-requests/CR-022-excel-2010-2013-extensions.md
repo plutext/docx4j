@@ -787,7 +787,11 @@ from its bytes. The CR: admit `mc:AlternateContent` in `CT_Drawing`
 `xdr:twoCellAnchor` in the preprocessor, bind the a14/sle/tsle/sle15 shape
 schemas as far as needed, and add `x16r2` (spreadsheetml/2015/02/main) and
 `oel` (office/2019/extlst) to the prefix table (objects-ts found both
-missing; Excel names `x16r2` in `styles.xml`'s `mc:Ignorable`); `CT_OleObjects`' per-object
+missing; Excel names `x16r2` in `styles.xml`'s `mc:Ignorable`) - **taken up by
+CR-024 and done 2026-09-20** (the admissions, the retain list, the prefixes;
+the shape schemas stay unbound, CR-024 §6; and the Excel check found every
+SpreadsheetML root but the workbook naming Ignorable prefixes it did not
+declare, fixed there in `JaxbXmlPart`); `CT_OleObjects`' per-object
 `mc:AlternateContent` (§17); `CT_DataValidation`'s `x12ac:list` Choice (§16,
 no file); the remaining revision attributes and `xcalcf` (the inventory's
 second group); a decoder for the data model's binary ([MS-XLDM]: Xpress9 and

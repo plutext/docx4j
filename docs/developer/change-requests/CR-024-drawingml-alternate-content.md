@@ -1,12 +1,13 @@
 # CR-024: mc:AlternateContent in DrawingML hosts - spreadsheet drawings and charts kept whole, as CR-021 keeps WordprocessingML, SpreadsheetML and PresentationML
 
-Status: ACTIVE - phase 1 LANDED 2026-09-20 in two commits (the admissions, the
+Status: DONE 2026-09-20 - both phases (§10; the follow-through in §9). Phase 1
+landed 2026-09-20 in two commits (the admissions, the
 retain list, six prefixes, `DrawingAlternateContentKeptTest`; the three losses of
 §1 closed under the forced round trip; then the Excel check's finding fixed - every
 root's `mc:Ignorable` prefixes declared, `IgnorablePrefixesDeclaredTest`; core and
 export-fo suites green). Gate PASSED 2026-09-20: Word and PowerPoint opened their
 chart re-saves; the three Excel re-saves were repaired at first (the Ignorable
-finding, §10), re-cut after the fix, and opened clean. Phase 2 next. Proposed
+finding, §10), re-cut after the fix, and opened clean. Proposed
 2026-09-20 (Jason Harrop: "draft a DrawingML AlternateContent CR", after the
 objects-ts session's round-trip probe found `cr022-checkbox.xlsx`'s drawing part
 emptied by a load-and-save, and the loss was confirmed here).
@@ -228,6 +229,35 @@ CHANGELOG under "Markup compatibility (CR-024)"; this CR per phase; CR-021
 three schema references and two prefixes (it regenerates once; its probe
 is where this came from); the Python port told; core-ts told what the
 oracle now keeps in drawings and charts.
+
+### Phase 2 record (2026-09-20)
+
+- **CHANGELOG**: "Markup compatibility (CR-024 ...)" of 17.1.1: the hosts kept,
+  the six prefixes, the Ignorable rule.
+- **CR-021 §8.6** item 10 (chart `c14` styles the next candidate) and **CR-022
+  §20**'s first leftover (the drawing shapes, `x16r2`, `oel`) marked taken up.
+- **The inventory** (`ms-xlsx-schema-inventory.md`): 5.2 and 5.7's status
+  (the shape's `mc:AlternateContent` kept whole, the prefix known; the
+  schema still unbound) and the "xsd present, unwired" note.
+- **Hand-offs** (messages to the sessions, 2026-09-20): objects-ts told the
+  four schema references (`EG_Anchor`, `EG_ObjectChoices`, `CT_GroupShape`'s
+  choice, `CT_ChartSpace`), the two imports, the six prefixes, and the
+  Ignorable rule its probe can now check on every root; the Python port the
+  same for its copy-based generation; core-ts told what the oracle keeps in
+  drawings and charts, `McSelection`'s default, and the two save-path
+  faults its own writer can have (a `Requires` prefix declared only through
+  use; an Ignorable prefix bound to the default namespace).
+- **Registry**: `docx4j/CR-024` and both phases done.
+
+**Left for other CRs**: typing the branches (§5: `twoCellAnchor` and the
+rest as global elements, with `a14:legacySpreadsheetColorIndex` and
+`mc:Ignorable` on `CT_SRgbColor`); binding `sle`, `tsle`, `sle15` (§6);
+`CT_OleObjects`' per-object `mc:AlternateContent` (CR-022 §20); running the
+MOXy mapper's `getPreDeclaredNamespaceUris2` (written, not run here); the
+xlsx4j VML gap (the forced re-saves skip `vmlDrawing` parts).
+
+**Commits** (VERSION_17_1_1): d4d81eab2 (proposed, phase 0), bcb4c7f57
+(phase 1), 85f37d05e (phase 1, the Excel check's fix), and this phase's.
 
 ## 10. Phases and gates
 

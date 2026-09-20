@@ -529,7 +529,9 @@ docx4j today, measured on the two:
    ink (`a14`/`a16` content parts), `w14`/`w15` extensions inside kept
    `wps` shapes and chart `c14` styles are the next candidates, and the
    preprocessor's warning for an unexpected element inside a kept branch is
-   the signal to watch in the logs.
+   the signal to watch in the logs. (Chart `c14` styles, and the spreadsheet
+   drawing hosts this CR did not reach: taken up by CR-024, done 2026-09-20 -
+   kept whole, `c14:style` typed, the anchors DOM.)
 
 ### 8.7 Phase 1 (2026-09-19, at Jason's go)
 

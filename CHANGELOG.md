@@ -232,6 +232,28 @@ Schema (CR-018, five gaps the content API found, and w16cex):
   org.docx4j.w16, so a comment's durableId and dateUtc - what the comment reactions part
   anchors on - can be read through the model.  It used to load as a generic XML part.
 
+Markup compatibility (CR-024, mc:AlternateContent in DrawingML hosts):
+
+- A spreadsheet drawing (xdr:wsDr and its anchors - twoCellAnchor, oneCellAnchor, absoluteAnchor,
+  grpSp) and a chart (c:chartSpace) keep the mc:AlternateContent Excel writes there, both branches,
+  as CR-021 keeps it in the WordprocessingML, SpreadsheetML and PresentationML hosts.  Before, each
+  was resolved to its Fallback as soon as anything unmarshalled the part: a form control's check box
+  drawing became a bare xdr:wsDr (Excel's Fallback there is empty), a slicer's or timeline's shape
+  became a "works in Excel 2010 or higher" box with the slicer orphaned, and the c14 style of every
+  Word, PowerPoint and Excel chart became style 2.  McSelection chooses the branch a reader sees
+  (the Fallback by default; docx4j.jaxb.mc.preferChoice names a14, c14, tsle or sle15 for the modern
+  one).  The kept anchors and c:style are DOM (local elements); c14:style is typed.
+- The prefix table knows x16r2 (spreadsheetml/2015/02/main, named in styles.xml's mc:Ignorable), oel
+  (office/2019/extlst), sle, sle15 and tsle (the slicer and timeline shapes' Requires - without them a
+  re-saved timeline's Requires="tsle" named a prefix declared as ns#) and x (Excel's prefix for the
+  SpreadsheetML main namespace on its slicer and timeline parts).
+- Every part declares the prefixes its mc:Ignorable names (JaxbXmlPart reads the root's
+  getIgnorable() itself).  A SpreadsheetML part other than the workbook - styles, a worksheet, a
+  table, a slicer, slicer cache or timeline part - declared a prefix only if its content happened to
+  use the namespace, so Excel repaired a docx4j save that re-marshalled one (x16r2 on styles, xr3 on
+  worksheets, x on the slicer parts).  An Ignorable prefix bound to the default namespace (x) is
+  declared beside it.
+
 Schema (CR-023, Word's extension attributes kept on a round trip):
 
 - A document loaded and saved through docx4j keeps what Word 365 writes on ISO elements and
