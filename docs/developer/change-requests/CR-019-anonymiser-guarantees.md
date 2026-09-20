@@ -245,7 +245,7 @@ fidelity corpora are not involved.
    if at all.
 
 
-## Phase 1 record (2026-09-21)
+## Phase 1 record (2026-09-21, commit 27515ece3)
 
 ### What shipped
 
