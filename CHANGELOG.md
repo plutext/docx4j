@@ -254,6 +254,17 @@ Markup compatibility (CR-024, mc:AlternateContent in DrawingML hosts):
   worksheets, x on the slicer parts).  An Ignorable prefix bound to the default namespace (x) is
   declared beside it.
 
+Schema (CR-025, OMML inside DrawingML text):
+
+- An equation in a PowerPoint or Excel text body (a14:m holding m:oMath, MS-ODRAWXML 2.3.1)
+  carries a:rPr on its m:r and m:ctrlPr - there is no w:rPr in a slide - and the OMML types
+  now admit it: CTR's content holds the a:rPr as a JAXBElement<CTTextCharacterProperties>
+  (ObjectFactory.createCTRRPrDml), CTCtrlPr has getRPrDml().  Such an equation unmarshalled
+  through the WordprocessingML context failed ("unexpected element a:rPr"); it is typed now
+  and written back as PowerPoint wrote it.  In the PresentationML and SpreadsheetML contexts
+  the equation stays DOM, as before (CR-021).  Found as a regression in the TypeScript
+  objects package, whose one JAXB-like context types every equation.
+
 Schema (CR-023, Word's extension attributes kept on a round trip):
 
 - A document loaded and saved through docx4j keeps what Word 365 writes on ISO elements and

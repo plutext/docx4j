@@ -1,6 +1,7 @@
 # CR-025: OMML inside DrawingML text - m:r and m:ctrlPr admit a:rPr
 
-Status: PROPOSED 2026-09-20 (Jason Harrop: "let's do option 2 (as CR-025)",
+Status: DONE 2026-09-20 (phase 1, §7; proposed the same day, commit aef770476).
+Proposed 2026-09-20 (Jason Harrop: "let's do option 2 (as CR-025)",
 choosing the truthful schema over a `processContents="skip"` wildcard, after
 the docx4j-generated-objects-ts session reported the 0.1.5 regression below).
 Written by `docs/developer/adding-a-schema.md` step 0 (no new namespace; §4
@@ -177,4 +178,28 @@ nothing - `a` and `m` are known.
 
 ## 7. Phase record
 
-Phase 1 (the schema, regeneration, tests, hand-offs): not started.
+Phase 1 (the schema, regeneration, tests, hand-offs), 2026-09-20, commit
+COMMIT_HASH. What the implementation taught that the plan did not know:
+
+- The `jaxb:property` on the group's element was accepted inside `CT_R`'s
+  collapsed content list (risk 1 did not arise), but the scoped
+  `@XmlElementDecl` it generates collided with the one for `w:rPr` in the
+  `ObjectFactory` ("Two declarations cause a collision"): a
+  `jaxb:factoryMethod name="CTRRPrDml"` on the same element settles it, and
+  the method is `createCTRRPrDml`, on the `createCTRRPr` / `createCTRRPrMath`
+  pattern.
+- The typed re-serialisation is equal to PowerPoint's fragment in every
+  element, attribute and text but one lexical form: `i="1"` comes back as
+  `i="true"` - xsd:boolean's two forms, the same for every typed DrawingML
+  boolean docx4j writes into a slide today (PowerPoint accepts it; every
+  slide re-save has it). `OmmlInDrawingMLTextTest` compares booleans by
+  value.
+- Generated shape as planned: `CTR.content` gains the `a:rPr` element
+  (`JAXBElement<CTTextCharacterProperties>`, first in a run's content as
+  PowerPoint orders it), `CTCtrlPr.getRPrDml()`; no other generated class
+  changed its API. `OmmlToMathML` produces the same MathML with or without
+  the `a:rPr` (asserted).
+- Gate: `OmmlInDrawingMLTextTest` 3/0; docx4j-core-tests 1228 tests, 0 failures (11 skipped);
+  docx4j-markdown 143/0; jars verified as this tree's (target = ~/.m2).
+- Hand-offs: objects-ts messaged with the commit (regenerate, 0.1.6);
+  core-ts and python messaged for the record.

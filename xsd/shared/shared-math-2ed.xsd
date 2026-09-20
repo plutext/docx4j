@@ -4,6 +4,7 @@
 	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
 	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
 	elementFormDefault="qualified" attributeFormDefault="qualified"
 	blockDefault="#all"
 	targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/math"
@@ -13,6 +14,8 @@
 	<xsd:import id="w"
 		namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 		schemaLocation="../wml/wml.xsd" />
+	<!-- docx4j 17.2.0 (CR-025): a:rPr in m:r and m:ctrlPr, for an equation in DrawingML text -->
+	<xsd:import id="a" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-textCharacter.xsd" />
 	<xsd:import id="s"
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 		schemaLocation="shared-commonSimpleTypes.xsd" />
@@ -458,6 +461,8 @@
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:group ref="w:EG_RPr" minOccurs="0"/>
+			<!-- docx4j 17.2.0 (CR-025): in DrawingML text (a14:m) the run properties are a:rPr -->
+			<xsd:group ref="a:EG_TextRunPropertiesInMath" minOccurs="0"/>
 			<xsd:choice minOccurs="0" maxOccurs="unbounded">
 				<xsd:group ref="w:EG_RunInnerContent"/>
 				<xsd:element name="t" type="CT_Text" minOccurs="0">
@@ -501,9 +506,11 @@
 		</xsd:sequence>
 	</xsd:group>
 	<xsd:complexType name="CT_CtrlPr">
-		<xsd:sequence>
-			<xsd:group ref="w:EG_RPrMath" minOccurs="0"/>
-		</xsd:sequence>
+		<!-- docx4j 17.2.0 (CR-025): in DrawingML text (a14:m) the control properties are a:rPr -->
+		<xsd:choice minOccurs="0">
+			<xsd:group ref="w:EG_RPrMath"/>
+			<xsd:group ref="a:EG_TextRunPropertiesInMath"/>
+		</xsd:choice>
 	</xsd:complexType>
 	<xsd:complexType name="CT_AccPr">
 		<xsd:sequence>

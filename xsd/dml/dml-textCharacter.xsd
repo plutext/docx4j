@@ -535,4 +535,23 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
+	<!-- docx4j 17.2.0 (CR-025): an equation in a DrawingML text body (a14:m, MS-ODRAWXML 2.3.1)
+	     has a:rPr on its m:r and m:ctrlPr, there being no w:rPr in a slide or a spreadsheet
+	     drawing.  A model group rather than a global element: every rPr in DrawingML is local,
+	     and a group's local elements take this namespace, so shared-math-2ed.xsd can reference
+	     it as a:rPr.  The property name avoids CT_CtrlPr's existing rPr (WordprocessingML's), and the
+	     factory-method name the scoped w:rPr declaration in CT_R's content (ObjectFactory collision). -->
+	<xsd:group name="EG_TextRunPropertiesInMath">
+		<xsd:sequence>
+			<xsd:element name="rPr" type="CT_TextCharacterProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Text Run Properties, of an OMML run or control in DrawingML text</xsd:documentation>
+					<xsd:appinfo>
+						<jaxb:property name="rPrDml"/>
+						<jaxb:factoryMethod name="CTRRPrDml"/>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
 </xsd:schema>
