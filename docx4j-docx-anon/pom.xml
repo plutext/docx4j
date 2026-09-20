@@ -13,13 +13,30 @@
 	<name>docx4j-docx-anon</name>
 	
 	<description>
-		anonymization of docx files
+		anonymization of docx files: text scrambled per Unicode range, identities,
+		references and metadata scrubbed, media replaced, embedded objects removed;
+		a verified, fail-closed result and a CLI (CR-019)
 	</description>
 
 	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->        
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${version.maven-jar-plugin}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<!-- CR-019: java -jar docx4j-docx-anon.jar in.docx out.docx (dependencies on the classpath) -->
+							<mainClass>org.docx4j.anon.AnonymizeCli</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 	
 	
@@ -42,6 +59,13 @@
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${version.logback-classic}</version>
 			<scope>test</scope>
 		</dependency>
 

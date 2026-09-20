@@ -1,85 +1,120 @@
 package org.docx4j.anon;
 
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Map.Entry;
 
 import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TextUtils;
-import org.docx4j.XmlUtils;
-import org.docx4j.TraversalUtil.CallbackImpl;
+import org.docx4j.anon.JaxbGraphWalker.Action;
 import org.docx4j.dml.CTRegularTextRun;
+import org.docx4j.dml.CTTextField;
 import org.docx4j.fonts.GlyphCheck;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.vml.CTTextPath;
-import org.docx4j.wml.CTBookmark;
-import org.docx4j.wml.CTFFData;
-import org.docx4j.wml.CTFFName;
-import org.docx4j.wml.CTLanguage;
+import org.docx4j.wml.CTAttr;
+import org.docx4j.wml.CTCustomXmlPr;
+import org.docx4j.wml.CTFFDDList;
+import org.docx4j.wml.CTFFHelpText;
+import org.docx4j.wml.CTFFStatusText;
+import org.docx4j.wml.CTFFTextInput;
+import org.docx4j.wml.CTPlaceholder;
+import org.docx4j.wml.CTSdtListItem;
+import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.DelText;
-import org.docx4j.wml.FldChar;
+import org.docx4j.wml.Lvl;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.STFldCharType;
-import org.docx4j.wml.SdtBlock;
-import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
+import org.docx4j.wml.Style;
 import org.docx4j.wml.Text;
-import org.jvnet.jaxb.lang.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
 
 /**
- * This will replace Latin (eg English) text with lorem ipsum stuff;
- * non Latin text will be randomised. 
- * 
- * @author jharrop
+ * Replaces the text of a document: Latin letters with lorem ipsum (positionally,
+ * so a word split across runs stays one word), digits with other digits, every
+ * other script with random characters from the same Unicode range (checked, when
+ * a font mapper is set on the package, against the glyphs of the run's font, so
+ * the output exercises the same fonts as the input).
+ * <p>
+ * Since 17.2.0 (CR-019) this is a {@link JaxbGraphWalker.Visitor}, so it is
+ * shown every object in a part, and it handles everything that carries text a
+ * reader would see or a tool would extract: w:t, w:delText, math m:t, DrawingML
+ * a:t and a:fld (charts, diagrams, shapes), VML text paths, chart string and
+ * number caches and their formulas, content-control aliases, list items and
+ * placeholders, form-field defaults and help text, smart-tag attributes, drawing
+ * names and descriptions, custom style names, numbering level text, field
+ * instructions (through {@link FieldInstructions}), and the text nodes of
+ * untyped (DOM) extension content. Identities, references and embedded objects
+ * are {@link MarkupScrubber}'s.
  *
+ * @author jharrop
  */
-public class ScrambleText extends CallbackImpl {
-	
+public class ScrambleText implements JaxbGraphWalker.Visitor {
+
 	private static Logger log = LoggerFactory.getLogger(ScrambleText.class);
-	
-	private ScrambleText() {}
-	
+
+	/** what a chart or chartex formula becomes: keeps the element schema-valid, names nothing */
+	static final String FORMULA_PLACEHOLDER = "Sheet1!$A$1";
+
 	public ScrambleText(WordprocessingMLPackage pkg) {
+		this(pkg, new Names(pkg));
+	}
+
+	ScrambleText(WordprocessingMLPackage pkg, Names names) {
 		this.pkg = pkg;
+		this.names = names;
 		vis = new RunFontCharVisitorMinimal();
 		// for documentFontFor only: it selects nothing and emits nothing, so the mode and
 		// the visitor are immaterial (until 17.2.0 this ran fontSelector in the DISCOVERY
 		// mode over one character and read the font from a visitor - a different one
 		// from the selector's own, so it never learnt it)
-		rfs = new RunFontSelector(pkg, new /* dummy */ RunFontCharVisitorMinimal(), RunFontActionType.XHTML);
-//		langStats = new HashMap<String, Integer>();
+		try {
+			rfs = new RunFontSelector(pkg, new /* dummy */ RunFontCharVisitorMinimal(), RunFontActionType.XHTML);
+		} catch (Exception e) {
+			// a styles part docx4j cannot read: scramble without the glyph check
+			log.warn("no font selection (" + e + "); replacement characters are not checked against the fonts' glyphs");
+			rfs = null;
+		}
+		fieldInstructions = new FieldInstructions(
+				this::scrambleLetters,
+				Names::identifier,
+				names::isBuiltInStyleName);
 	}
-	
+
 	private static Lorem lorem = LoremIpsum.getInstance();
-	
+
 	private WordprocessingMLPackage pkg;
-	
-	private RunFontSelector rfs = null;  
+	private final Names names;
+	private final FieldInstructions fieldInstructions;
+
+	private RunFontSelector rfs = null;
 	private RunFontCharVisitorMinimal vis;
-	
+
 	String latinText = null;
 	int beginIndex;
-	
+
 	Random random = new Random();
-	
+
 	PPr ppr = null;
 	RPr rpr = null;
-	
+
+	/** digits are randomised in text, kept in instructions and names */
+	private boolean scrambleDigits = true;
+
 	boolean hasGreek = false;
 	boolean hasCyrillic = false;
 	boolean hasHebrew = false;
@@ -87,271 +122,381 @@ public class ScrambleText extends CallbackImpl {
 	boolean hasHiragana = false;
 	boolean hasKatakana = false;
 	boolean hasCJK = false;
-	
-	int field_begin_counter = 0;
-	int bookmark_start_counter = 0;
+
+	// ---- the two entry points other scrubbers use
+
+	/** Scrambles a free-standing string (fresh lorem; digits randomised). */
+	public String scramble(String text) {
+		if (text == null || text.isEmpty()) return text;
+		boolean saved = scrambleDigits;
+		scrambleDigits = true;
+		try {
+			return unicodeRangeToFont(text, generateReplacement(text.length()));
+		} finally {
+			scrambleDigits = saved;
+		}
+	}
+
+	/** Scrambles the letters of a string; digits and punctuation keep their places (paths, pictures, level text). */
+	public String scrambleLetters(String text) {
+		if (text == null || text.isEmpty()) return text;
+		boolean saved = scrambleDigits;
+		scrambleDigits = false;
+		try {
+			return unicodeRangeToFont(text, generateReplacement(text.length()));
+		} finally {
+			scrambleDigits = saved;
+		}
+	}
+
+	// ---- the visitor
 
 	@Override
-	public void walkJAXBElements(Object parent) {
-		
-		List children = getChildren(parent);
-		if (children != null) {
+	public Action visit(Object o, JAXBElement<?> wrapper) {
 
-			for (Object o2 : children) {
-				
-				Object o = XmlUtils.unwrap(o2);
-				
-				// Need this, for proper SDT processing
-				if (o instanceof Child) {
-					if (parent instanceof SdtBlock) {
-						((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
-					} else if (parent instanceof List){
-						// Do nothing
-						if (log.isDebugEnabled()) {
-							log.debug("Unknown parent for " + o.getClass().getName());
-						}
-					} else {
-						((Child)o).setParent(parent);
-					}
-				}
-				
-				// Process the wrapped object								
-				this.apply(o2);
-
-				if (this.shouldTraverse(o)) {
-					walkJAXBElements(o);
-				}
-
-			}
-		}
-	}	
-	
-	@Override
-	public List<Object> apply(Object o) {
-		
-		if (o instanceof JAXBElement
-				&& ((JAXBElement)o).getName().getLocalPart().equals("instrText")) {
-				
-			Text t = (Text)XmlUtils.unwrap(o);	
-			String instr = t.getValue(); 
-			log.debug(instr);
-			
-			if ( instr.contains("MERGEFIELD") ) {
-
-				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
-				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
-
-				// we'll preseve the MERGEFIELD tag, but change the rest
-				
-				
-				int start = instr.indexOf("MERGEFIELD") + 10;
-				beginIndex += start;					
-				
-				String toProcess = instr.substring(start);
-				
-				System.out.println(toProcess);
-				int tLen = toProcess.length();
-							
-				t.setValue( instr.substring(0, start) +
-						unicodeRangeToFont(
-								toProcess, 
-								latinText.substring(beginIndex, beginIndex+tLen)));
-				
-				beginIndex += tLen;					
-				
-				return null;
-				
-			} else if (instr.contains("FORMCHECKBOX")
-					|| instr.contains("FORMTEXT")
-					|| instr.contains("PAGE")) {
-				
-				// leave as is
-				return null;			
-				
-			} else {
-				System.out.println("TO don't scramble: " + instr);
-			}
-			// TODO others eg REF (bookmark .. maintain integrity?)
-			
-		}
-
-
-		o = XmlUtils.unwrap(o);	
-		
-		if (o instanceof org.docx4j.wml.FldChar) {
-			FldChar fldChar = (FldChar)o;
-			if (fldChar.getFldCharType().equals(STFldCharType.BEGIN) ) {
-				field_begin_counter++;
-				if (fldChar.getFfData()!=null) {
-					CTFFData ffData = fldChar.getFfData();
-					for (JAXBElement<?> el :  ffData.getNameOrEnabledOrCalcOnExit() ) {
-						Object jObj = el.getValue();
-						if (jObj instanceof CTFFName) {
-							
-							String name = ((CTFFName)jObj).getVal();
-							//System.out.println("BEGIN " + name);
-
-//							int tLen = name.length();							
-//							// We didn't count these characters initially, so make more text
-//							latinText += generateReplacement(tLen);
-//							
-//							((CTFFName)jObj).setVal(unicodeRangeToFont(
-//									name, 
-//									latinText.substring(tLen)));
-//							
-//							beginIndex += tLen;
-//							// Hmmm, do we need to worry about duplicate random field names?
-//							// Word 2010 is happy with spaces in the name
-							
-							((CTFFName)jObj).setVal("fieldname" + field_begin_counter);
-							
-						}
-					}
-				}
-			}
-			return null;
-		}
-		
-		if (o instanceof CTBookmark) {
-			CTBookmark bookmarkStart = (CTBookmark)o;
-			bookmark_start_counter++;
-			if (bookmarkStart.getName()!=null) {
-				bookmarkStart.setName("bm" + bookmark_start_counter);
-				
-//				String name = bookmarkStart.getName().trim();
-//				int tLen = name.length();							
-//				
-//				if (tLen>0) {
-//					
-//					// We didn't count these characters initially, so make more text
-//					latinText += generateReplacement(tLen);
-//					
-//					bookmarkStart.setName(unicodeRangeToFont(
-//							name, 
-//							latinText.substring(tLen)));
-//					
-//					beginIndex += tLen;
-//					//Word will convert spaces to underscore, and remove duplicates
-//				}
-			}
-			return null;
-		}
-		
-		
-//		System.out.println(o.getClass().getName());
-		
-		if (o instanceof SdtElement) {
-			// Remove databinding, tag, if any
-			SdtPr sdtPr = ((SdtElement)o).getSdtPr();
-			sdtPr.setDataBinding(null);
-			sdtPr.setTag(null);
-			return null;			
-		}
-		
+		// context for the font-aware scramble
 		if (o instanceof P) {
-			
-			P p = (P)o;
+			P p = (P) o;
 			ppr = p.getPPr();
-			
 			StringWriter out = new StringWriter();
 			try {
 				TextUtils.extractText(p, out);
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.debug(e.getMessage(), e);
 			}
-
 			latinText = generateReplacement(out.toString().length());
 			beginIndex = 0;
-
-			log.debug("latinText:" + latinText);
-			
-			return null;
+			return Action.CONTINUE;
 		}
-		
+		if (o instanceof R) {
+			rpr = ((R) o).getRPr();
+			return Action.CONTINUE;
+		}
+
+		// WML text
 		if (o instanceof Text) {
-						
-			Text t = (Text)o;
-			log.debug(t.getValue());
-			int tLen = t.getValue().length();
-			
-			
-			if (true) {
-				t.setValue(
-						unicodeRangeToFont(
-								t.getValue(), 
-								latinSubstring(tLen)));
-						
-			} 
-//			else /* debug */ {
-//				
-//				String result = unicodeRangeToFont(
-//						t.getValue(), 
-//						latinText.substring(beginIndex, beginIndex+tLen));
-//
-//				System.out.println(t.getValue() + " --> " + result); 
-//						
-//				t.setValue(result);
-//			}
-			
-			beginIndex += tLen;
-			
-		} else if ( o instanceof org.docx4j.wml.DelText) {
-
-			DelText t = (DelText)o;
-			int tLen = t.getValue().length();
-			t.setValue(
-					unicodeRangeToFont(t.getValue(), 
-							latinSubstring(tLen)));
-			beginIndex += tLen;
-			
-		} // org.docx4j.wml.RunIns is handled OK
-		
-		else if (o instanceof org.docx4j.dml.CTRegularTextRun
-				&& ((CTRegularTextRun)o).getT()!=null) {
-			
-			CTRegularTextRun t = (CTRegularTextRun)o;
-			int tLen = t.getT().length();
-			t.setT(
-					unicodeRangeToFont(t.getT(), 
-							latinSubstring(tLen)));
-			beginIndex += tLen;			
-
-		} else if ( o instanceof org.docx4j.vml.CTTextPath) {
-			
-			CTTextPath t = (CTTextPath)o;
-			
-			if (t.getString()!=null) {
-				
-				int tLen = t.getString().length();
-				String tmpLatin = generateReplacement(tLen);
-				t.setString(
-						unicodeRangeToFont(t.getString(), tmpLatin));				
+			Text t = (Text) o;
+			if (wrapper != null
+					&& (wrapper.getName().getLocalPart().equals("instrText")
+							|| wrapper.getName().getLocalPart().equals("delInstrText"))) {
+				t.setValue(fieldInstructions.scrub(t.getValue()));
+			} else {
+				t.setValue(inParagraph(t.getValue()));
 			}
-			
-			
-		} else {
-//			System.out.println(o.getClass().getName());
+			return Action.SKIP_CHILDREN;
 		}
-		
-		return null;
+		if (o instanceof DelText) {
+			DelText t = (DelText) o;
+			t.setValue(inParagraph(t.getValue()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof CTSimpleField) {
+			CTSimpleField f = (CTSimpleField) o;
+			f.setInstr(fieldInstructions.scrub(f.getInstr()));
+			return Action.CONTINUE;
+		}
+
+		// math
+		if (o instanceof org.docx4j.math.CTText) {
+			org.docx4j.math.CTText t = (org.docx4j.math.CTText) o;
+			t.setValue(inParagraph(t.getValue()));
+			return Action.SKIP_CHILDREN;
+		}
+
+		// DrawingML text (shapes, text boxes, charts, diagrams)
+		if (o instanceof CTRegularTextRun) {
+			CTRegularTextRun t = (CTRegularTextRun) o;
+			t.setT(inParagraph(t.getT()));
+			return Action.CONTINUE; // its rPr may hold a hyperlink
+		}
+		if (o instanceof CTTextField) {
+			CTTextField t = (CTTextField) o;
+			t.setT(inParagraph(t.getT()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.CTHyperlink) {
+			((org.docx4j.dml.CTHyperlink) o).setTooltip(null);
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.CTNonVisualDrawingProps) {
+			org.docx4j.dml.CTNonVisualDrawingProps props = (org.docx4j.dml.CTNonVisualDrawingProps) o;
+			props.setName(scrambleLetters(props.getName()));
+			props.setDescr(scramble(props.getDescr()));
+			props.setTitle(scramble(props.getTitle()));
+			return Action.CONTINUE;
+		}
+
+		// VML
+		if (o instanceof CTTextPath) {
+			CTTextPath t = (CTTextPath) o;
+			t.setString(scramble(t.getString()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.vml.CTShape) {
+			org.docx4j.vml.CTShape s = (org.docx4j.vml.CTShape) o;
+			s.setAlt(scramble(s.getAlt()));
+			s.setTitle(scramble(s.getTitle()));
+			s.setHref(null);
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.vml.CTImageData) {
+			org.docx4j.vml.CTImageData d = (org.docx4j.vml.CTImageData) o;
+			d.setTitle(null);
+			d.setHref(null);
+			d.setOhref(null);
+			d.setAlthref(null);
+			d.setSrc(null);
+			return Action.CONTINUE;
+		}
+
+		// charts: the caches are the data
+		if (o instanceof org.docx4j.dml.chart.CTStrVal) {
+			org.docx4j.dml.chart.CTStrVal v = (org.docx4j.dml.chart.CTStrVal) o;
+			v.setV(scramble(v.getV()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof org.docx4j.dml.chart.CTNumVal) {
+			org.docx4j.dml.chart.CTNumVal v = (org.docx4j.dml.chart.CTNumVal) o;
+			v.setV(Long.toString(v.getIdx() + 1));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof org.docx4j.dml.chart.CTSerTx) {
+			org.docx4j.dml.chart.CTSerTx tx = (org.docx4j.dml.chart.CTSerTx) o;
+			tx.setV(scramble(tx.getV()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.chart.CTStrRef) {
+			((org.docx4j.dml.chart.CTStrRef) o).setF(FORMULA_PLACEHOLDER);
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.chart.CTNumRef) {
+			((org.docx4j.dml.chart.CTNumRef) o).setF(FORMULA_PLACEHOLDER);
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.chart.CTMultiLvlStrRef) {
+			((org.docx4j.dml.chart.CTMultiLvlStrRef) o).setF(FORMULA_PLACEHOLDER);
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.chart.CTPivotSource) {
+			org.docx4j.dml.chart.CTPivotSource ps = (org.docx4j.dml.chart.CTPivotSource) o;
+			ps.setName(scramble(ps.getName()));
+			return Action.CONTINUE;
+		}
+		// chartex (cx:) - the 2014 chart types: same data, other classes
+		if (o instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTStringValue) {
+			org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTStringValue v =
+					(org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTStringValue) o;
+			v.setValue(scramble(v.getValue()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTNumericValue) {
+			org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTNumericValue v =
+					(org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTNumericValue) o;
+			v.setValue(v.getIdx() + 1);
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTFormula) {
+			((org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTFormula) o).setValue(FORMULA_PLACEHOLDER);
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTStringLevel) {
+			org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTStringLevel l =
+					(org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTStringLevel) o;
+			l.setName(scramble(l.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTNumericLevel) {
+			org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTNumericLevel l =
+					(org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTNumericLevel) o;
+			l.setName(scramble(l.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof String && wrapper != null) {
+			// cx:v / cx:f inside cx:txData, and any other JAXBElement<String>
+			@SuppressWarnings("unchecked")
+			JAXBElement<Object> w = (JAXBElement<Object>) wrapper;
+			if (wrapper.getName().getLocalPart().equals("f")) {
+				w.setValue(FORMULA_PLACEHOLDER);
+			} else {
+				w.setValue(scramble((String) o));
+			}
+			return Action.SKIP_CHILDREN;
+		}
+
+		// theme names (a corporate theme is usually named after the company)
+		if (o instanceof org.docx4j.dml.Theme) {
+			org.docx4j.dml.Theme t = (org.docx4j.dml.Theme) o;
+			t.setName(scrambleLetters(t.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.CTColorScheme) {
+			org.docx4j.dml.CTColorScheme t = (org.docx4j.dml.CTColorScheme) o;
+			t.setName(scrambleLetters(t.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.BaseStyles.FontScheme) {
+			org.docx4j.dml.BaseStyles.FontScheme t = (org.docx4j.dml.BaseStyles.FontScheme) o;
+			t.setName(scrambleLetters(t.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.CTStyleMatrix) {
+			org.docx4j.dml.CTStyleMatrix t = (org.docx4j.dml.CTStyleMatrix) o;
+			t.setName(scrambleLetters(t.getName()));
+			return Action.CONTINUE;
+		}
+		// chart headers and footers (c:oddHeader ...)
+		if (o instanceof org.docx4j.dml.chart.CTHeaderFooter) {
+			org.docx4j.dml.chart.CTHeaderFooter hf = (org.docx4j.dml.chart.CTHeaderFooter) o;
+			hf.setOddHeader(scramble(hf.getOddHeader()));
+			hf.setOddFooter(scramble(hf.getOddFooter()));
+			hf.setEvenHeader(scramble(hf.getEvenHeader()));
+			hf.setEvenFooter(scramble(hf.getEvenFooter()));
+			hf.setFirstHeader(scramble(hf.getFirstHeader()));
+			hf.setFirstFooter(scramble(hf.getFirstFooter()));
+			return Action.SKIP_CHILDREN;
+		}
+
+		// diagrams (SmartArt): placeholder text; the a:t is handled above
+		if (o instanceof org.docx4j.dml.diagram.CTElemPropSet) {
+			org.docx4j.dml.diagram.CTElemPropSet ps = (org.docx4j.dml.diagram.CTElemPropSet) o;
+			ps.setPhldrT(scramble(ps.getPhldrT()));
+			return Action.CONTINUE;
+		}
+
+		// content controls
+		if (o instanceof SdtPr.Alias) {
+			SdtPr.Alias a = (SdtPr.Alias) o;
+			a.setVal(scramble(a.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof CTSdtListItem) {
+			CTSdtListItem li = (CTSdtListItem) o;
+			li.setDisplayText(scramble(li.getDisplayText()));
+			li.setValue(scramble(li.getValue()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof CTPlaceholder.DocPart) {
+			CTPlaceholder.DocPart dp = (CTPlaceholder.DocPart) o;
+			dp.setVal(scrambleLetters(dp.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+
+		// legacy form fields
+		if (o instanceof CTFFTextInput.Default) {
+			CTFFTextInput.Default d = (CTFFTextInput.Default) o;
+			d.setVal(scramble(d.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof CTFFDDList.ListEntry) {
+			CTFFDDList.ListEntry e = (CTFFDDList.ListEntry) o;
+			e.setVal(scramble(e.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof CTFFHelpText) {
+			CTFFHelpText h = (CTFFHelpText) o;
+			h.setVal(scramble(h.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof CTFFStatusText) {
+			CTFFStatusText s = (CTFFStatusText) o;
+			s.setVal(scramble(s.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+
+		// smart tags and custom XML markup
+		if (o instanceof CTAttr) {
+			CTAttr a = (CTAttr) o;
+			a.setVal(scramble(a.getVal()));
+			a.setName(scrambleLetters(a.getName()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof CTCustomXmlPr.Placeholder) {
+			CTCustomXmlPr.Placeholder p = (CTCustomXmlPr.Placeholder) o;
+			p.setVal(scramble(p.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+
+		// styles and numbering
+		if (o instanceof Style) {
+			Style s = (Style) o;
+			if (s.getName() != null && !names.isBuiltInStyleName(s.getName().getVal())) {
+				s.getName().setVal(scramble(s.getName().getVal()));
+			}
+			if (s.getAliases() != null) {
+				s.getAliases().setVal(scramble(s.getAliases().getVal()));
+			}
+			return Action.CONTINUE;
+		}
+		if (o instanceof Lvl.LvlText) {
+			Lvl.LvlText lt = (Lvl.LvlText) o;
+			lt.setVal(scrambleLetters(lt.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+
+		// untyped extension content
+		if (o instanceof Node) {
+			scrambleDom((Node) o);
+			return Action.SKIP_CHILDREN;
+		}
+
+		return Action.CONTINUE;
 	}
-	
+
+	/**
+	 * DOM content (xs:any the model does not type, e.g. c15 data-label caches):
+	 * the text of elements named t or v is scrambled, an f is replaced, and the
+	 * attributes which carry names or descriptions are scrambled. Anything else
+	 * is left for {@link Verify} to find.
+	 */
+	private void scrambleDom(Node n) {
+		if (n.getNodeType() == Node.ELEMENT_NODE) {
+			NamedNodeMap attrs = n.getAttributes();
+			for (int i = 0; attrs != null && i < attrs.getLength(); i++) {
+				Attr a = (Attr) attrs.item(i);
+				String ln = a.getLocalName() == null ? a.getName() : a.getLocalName();
+				if (ln.equals("descr") || ln.equals("title") || ln.equals("tooltip") || ln.equals("alt")
+						|| ln.equals("author") || ln.equals("initials") || ln.equals("name")) {
+					a.setValue(scramble(a.getValue()));
+				}
+			}
+		}
+		NodeList children = n.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node c = children.item(i);
+			if (c.getNodeType() == Node.TEXT_NODE || c.getNodeType() == Node.CDATA_SECTION_NODE) {
+				String parent = n.getLocalName() == null ? n.getNodeName() : n.getLocalName();
+				if (parent.equals("t") || parent.equals("v")) {
+					c.setNodeValue(scramble(c.getNodeValue()));
+				} else if (parent.equals("f")) {
+					c.setNodeValue(FORMULA_PLACEHOLDER);
+				}
+			} else {
+				scrambleDom(c);
+			}
+		}
+	}
+
+	/** Text inside the current paragraph: consumes the paragraph's lorem so split words stay whole. */
+	private String inParagraph(String value) {
+		if (value == null) return null;
+		int tLen = value.length();
+		String result = unicodeRangeToFont(value, latinSubstring(tLen));
+		beginIndex += tLen;
+		return result;
+	}
+
 	private String latinSubstring(int tLen) {
 
-		// Sanity check
-		if ((beginIndex+tLen) > latinText.length() ) {
-
-			System.out.println("Not enough characters!");
-			//System.out.println(t.getValue());
-			
-			// Not much point trying to fix latinText itself?
+		if (latinText == null || (beginIndex + tLen) > latinText.length()) {
+			// text outside any paragraph, or a nested paragraph (text box) consumed the
+			// outer paragraph's lorem: take fresh lorem
 			return generateReplacement(tLen);
-		} 
-		
-		return latinText.substring(beginIndex, beginIndex+tLen);
+		}
+
+		return latinText.substring(beginIndex, beginIndex + tLen);
 	}
-	
-	
+
+
 	private String generateReplacement(int slenRqd) {
 		
 		StringBuffer replacement = new StringBuffer();
@@ -388,20 +533,20 @@ public class ScrambleText extends CallbackImpl {
 			
 			result = (char)(rangeLower + random.nextInt((int)rangeUpper-(int)rangeLower));
 			
-			if (font!=null) {
+			if (font!=null && pkg.getFontMapper()!=null) {
     			try {
     				// the document font through the package's mapper: an embedded font, or a
     				// substitute of another name, is not in PhysicalFonts by this name
     				org.docx4j.fonts.PhysicalFont pf = pkg.getFontMapper().get(font);
 					glyphOK = pf!=null && GlyphCheck.hasCodepoint(pf, result);
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.debug(e.getMessage(), e);
 				}
 				
 			}
 			
 			tries++;
-		} while (font!=null && !glyphOK && tries<MAX_GLYPH_RETRIES);
+		} while (font!=null && pkg.getFontMapper()!=null && !glyphOK && tries<MAX_GLYPH_RETRIES);
 		
 //		if (!glyphOK) {
 //			// This will usually be because there is no physical font present
@@ -478,8 +623,12 @@ public class ScrambleText extends CallbackImpl {
     	    	// To do this, we need to know which font.  For that, we basically 
     	    	// just test 1 char.
 //    	    	try {
-	    	    	if (font==null) {
-	        	    	font = rfs.documentFontFor(ppr, rpr, c);
+	    	    	if (font==null && rfs!=null) {
+	    	    		try {
+	    	    			font = rfs.documentFontFor(ppr, rpr, c);
+	    	    		} catch (Exception e) {
+	    	    			log.debug("no document font: " + e.getMessage());
+	    	    		}
 	        	    }
 //    	    	} catch (Exception e) {
 //    	    		e.printStackTrace();
@@ -496,9 +645,10 @@ public class ScrambleText extends CallbackImpl {
         	    if (c>='\u0041' && c<='\u005A') // A-Z 
         	    {
         	    	try {
-        	    		vis.addCharacterToCurrent( latinText.substring(i, i+1).charAt(0));
+        	    		// the case survives (a capitalised word stays capitalised; widths and look)
+        	    		vis.addCharacterToCurrent( Character.toUpperCase(latinText.charAt(i)));
         	    	} catch (java.lang.StringIndexOutOfBoundsException e) {
-        	    		System.out.println(latinText +  "( len " + latinText.length() + ") is too short ");
+        	    		log.error(latinText +  "( len " + latinText.length() + ") is too short ");
         	    		throw e;
         	    	}
         	    	
@@ -507,9 +657,14 @@ public class ScrambleText extends CallbackImpl {
         	    	try {
         	    		vis.addCharacterToCurrent( latinText.substring(i, i+1).charAt(0));        	    			
         	    	} catch (java.lang.StringIndexOutOfBoundsException e) {
-        	    		System.out.println(latinText +  "( len " + latinText.length() + ") is too short ");
+        	    		log.error(latinText +  "( len " + latinText.length() + ") is too short ");
         	    		throw e;
         	    	}            	    	
+        	    } else if (scrambleDigits && c>='0' && c<='9') {
+        	    	// CR-019: a digit becomes another digit (account numbers, amounts, dates);
+        	    	// the width class survives
+        	    	vis.addCharacterToCurrent( (char)('0' + random.nextInt(10)) );
+
         	    } else if (c>='\u0000' && c<='\u007F') 
             	    {
             	    	vis.addCharacterToCurrent( c );
@@ -517,8 +672,14 @@ public class ScrambleText extends CallbackImpl {
         	    } else 
         	    	
 	           if (c >= '\u0080' && c <= '\u00FF') {
-					// Latin-1 Supplement
-					//c = getRandom('\u0080', '\u00FF');
+					// Latin-1 Supplement: a letter becomes another letter of the same case
+					// (CR-019; until 17.2.0 these were kept, so the accented letters of a
+					// French or German word stayed in place); punctuation and symbols stay
+					if (c >= '\u00C0' && c <= '\u00DE' && c != '\u00D7') {
+						do { c = getRandom('\u00C0', '\u00DF'); } while (c == '\u00D7');
+					} else if (c >= '\u00DF' && c <= '\u00FF' && c != '\u00F7') {
+						do { c = getRandom('\u00DF', '\u0100'); } while (c == '\u00F7');
+					}
 					vis.addCharacterToCurrent(c);
 				} else if (c >= '\u0100' && c <= '\u017F') {
 					// Latin Extended-A

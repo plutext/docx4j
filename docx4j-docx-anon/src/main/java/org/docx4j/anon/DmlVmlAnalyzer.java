@@ -76,8 +76,9 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 	public boolean shouldTraverse(Object o) {
 		
 		if (o instanceof org.docx4j.math.CTOMathPara) {
-			// No effort is made to alter formula
-			unsafeObjects.add(o);
+			// since 17.2.0 (CR-019) the m:t text is scrambled like any other, so math is
+			// inventory, not unsafe
+			inventoryObjects.add(o);
 			return false;
 		}
 		
@@ -97,8 +98,6 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 				
 				Text instr = (Text)XmlUtils.unwrap(o2);				
 				fieldsPresent.add(instr.getValue());
-				
-				System.out.println(instr.getValue());
 			}
 		}
 
@@ -125,10 +124,6 @@ public class DmlVmlAnalyzer extends CallbackImpl {
             		// Unsafe, but noted elsewhere
             	}
 			}
-		} else if (o instanceof org.docx4j.math.CTOMathPara) {
-			
-			unsafeObjects.add(o.getClass().getName());
-			
 		} 
 		
 		return null;
@@ -466,8 +461,9 @@ public class DmlVmlAnalyzer extends CallbackImpl {
         	return null;
         } else {
         	
-        	// Unsafe; Charts and other stuff is in here
-        	addUnsafe(graphicData, "http://schemas.openxmlformats.org/drawingml/2006/main", "graphicData", org.docx4j.dml.GraphicData.class);
+        	// Charts, shapes, diagrams: since 17.2.0 (CR-019) the anonymiser's walk reaches
+        	// their text and caches, so this is inventory, not unsafe
+        	inventoryObjects.add(graphicData);
         	
             return graphicData.getAny();
         }

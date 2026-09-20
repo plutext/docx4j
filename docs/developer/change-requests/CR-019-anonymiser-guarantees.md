@@ -1,12 +1,15 @@
 # CR-019: What `docx4j-docx-anon` can guarantee — the docx gaps, then pptx, then xlsx
 
-Status: PROPOSED (2026-09-16). Requested by the portfolio session working on the
-Docx4j Enterprise price list (`Plutext-Enterprise-Java-11/pricing/`, not yet in
-git), whose confidentiality clause and two support-tier rows depend on what the
-anonymiser actually does; docx4j-mcp's CR-004 lists an `anonymize` tool in its
-phase 4. Nothing coded. The module's own reading below was re-checked against
-`docx4j-docx-anon` on VERSION_17_2_0 (b5c2f417f and later) on 2026-09-16.
-Owner: Jason Harrop. Drafted with Claude Fable 5.1.
+Status: IN PROGRESS — phase 1 (docx) DONE 2026-09-21 on VERSION_17_2_0
+(implementation record in §"Phase 1 record" below; the Word-open check is
+Jason's, files on the share `fidelity/cr019/`); phases 2 (pptx) and 3 (xlsx)
+proposed. Requested by the portfolio session working on the Docx4j Enterprise
+price list (`Plutext-Enterprise-Java-11/pricing/`, not yet in git), whose
+confidentiality clause and two support-tier rows depend on what the anonymiser
+actually does; docx4j-mcp's CR-004 lists an `anonymize` tool in its phase 4.
+The module's own reading below was re-checked against `docx4j-docx-anon` on
+VERSION_17_2_0 (b5c2f417f and later) on 2026-09-16. Owner: Jason Harrop.
+Drafted with Claude Fable 5.1; phase 1 implemented with Claude Opus 5.
 
 Scope: `docx4j-docx-anon` (`org.docx4j.anon`: `Anonymize`, `ScrambleText`,
 `DmlVmlAnalyzer`, `PartsAnalyzer`, `AnonymizeResult`), a CLI, a test corpus, and
@@ -240,6 +243,148 @@ fidelity corpora are not involved.
    two packages, or is renamed `docx4j-anon`; recommended: keep the name for
    17.2.0 (artifact ids are what users depend on), rename at the next minor
    if at all.
+
+
+## Phase 1 record (2026-09-21)
+
+### What shipped
+
+All in `docx4j-docx-anon`, package `org.docx4j.anon`; the module gained a test
+tree (`src/test`, 31 tests) and a `Main-Class` manifest entry.
+
+| class | role |
+|---|---|
+| `Anonymize` | the orchestrator; `Mode.STRICT` (default) / `Mode.KEEP`; `setVerify(boolean)` (on by default); `go()` returns the result |
+| `AnonymizeResult` | `isClean()`, `getActions()` (per part: SCRUBBED / CLEARED / REPLACED / REMOVED / KEPT / KEPT_UNSAFE with a reason), `getNotes()` (element-level removals), `getLeaks()`, `getVerified()`, `toJson()`, `summary()`; `isOK()` deprecated to `isClean()` |
+| `PartsAnalyzer` | the table: `classify(Part)` → SAFE / SCRUB / METADATA / REPLACE_IMAGE / REMOVE / UNSCRUBBABLE; `identifyUnsafeParts` deprecated, kept |
+| `JaxbGraphWalker` | a reflective walk over every object a JAXB part holds (lists, wrappers, every generated class; DOM nodes handed to the visitor), pre-order, each object once, with REMOVE by list or setter — see "departures" |
+| `ScrambleText` | now a walker visitor: w:t, w:delText, instructions (via `FieldInstructions`), m:t, a:t and a:fld, VML text paths and shape alt/title/href, chart string and number caches and formulas (c: and cx:), chart headers/footers, pivot source names, content-control aliases/list items/placeholders, form-field defaults/entries/help/status text, smart-tag and customXml attributes, drawing names/descriptions/titles, custom style names and aliases, level text, theme/colour/font/format scheme names, diagram placeholder text, DOM t/v/f text and name-like attributes |
+| `MarkupScrubber` | the second visitor: every `CTTrackChange` (author → `Author n`, date → fixed, dateUtc dropped), move bookmarks, comment initials, people (author, presence provider "None", userId → the person's name, contact dropped), commentsExtensible dates; bookmark and form-field names → `bm<hash>`; hyperlink tooltip/docLocation cleared and anchors mapped; sdt tag and data binding removed, date-picker values fixed; fldData removed; custom style ids → `s<hash>` at the definition and every reference (pStyle, rStyle, tblStyle, basedOn, next, link, numbering pStyle/styleLink/numStyleLink); settings: mailMerge, docVars, every `CTRel` (attached template, printer settings, data sources) removed, protection hashes/salts/crypt attributes cleared with the protection kept, w14/w15 docIds reset; STRICT only: w:altChunk, o:OLEObject, w:control, chart externalData and geography caches, font-table embed elements removed |
+| `MetadataScrubber` | docProps core (everything descriptive, lastModifiedBy, lastPrinted, version; created/modified → the fixed date; revision → 1) and app (company, manager, template, heading pairs, titles of parts, hyperlink base and list, digital signature, total time), cover-page props; every `TargetMode="External"` relationship → `http://example.invalid/<n>` |
+| `MediaReplacer` | raster images → 2x2 PNG in place (as before); EMF/WMF/EPS/JPEG XR/WebP/broken images → the part removed and every relationship retargeted to one shared placeholder PNG (`/word/media/anon-placeholder.png`); SVG → a blank 2x2 SVG; `removePart(pkg, part)` removes a part with every relationship to it, its own targets, and its content-type override |
+| `FieldInstructions` | keyword and switches kept, format-switch pictures kept, bookmark arguments (REF/PAGEREF/NOTEREF/ASK/SET/SEQ, HYPERLINK `\l`, TOC `\b` `\c`) mapped, STYLEREF built-in names kept, formulas keep functions and cell references and map plain identifiers, form-field instructions untouched, every other argument scrambled (letters only, so paths and switch values keep their shape) |
+| `Names` | the shared renamings: authors/initials in order of first appearance, `bm`/`s` + hash (stable across parts, no pre-pass), built-in style names from KnownStyles.xml plus the document's own latent-style list, `FIXED_DATE` = 2000-01-01T00:00:00Z |
+| `Verify` | before/after token extraction (every text node, the attribute pairs in `Verify.ATTRIBUTES`, every external target) and the comparison less the tool's own vocabulary (lorem fragments, field keywords, date/number pictures, built-in style words where style names appear, a dozen fixed words) |
+| `AnonymizeCli` | `in.docx out.docx [--keep] [--json report.json] [--no-verify] [--no-fonts]`; exit 0 only when clean, 1 not clean, 2 usage, 3 failure; sets an `IdentityPlusMapper` unless `--no-fonts` |
+| `DmlVmlAnalyzer` | unchanged in role (the inventory: fields present, VML, objects of interest); math and non-picture graphic data are inventory now, not unsafe, since the walk reaches their text |
+
+Test corpus: `src/test/resources` holds nine docx4j-owned documents (README
+there says what each exercises: chart with embedded workbook, comments with
+people/commentsExtensible/Ids/Extended, an SVG, a sensitivity label, tracked
+changes with UTC dates and OMML, an OLE object with its EMF preview, legacy
+form fields, a VML text box, an embedded font, MERGEFIELDs) and one EMF;
+`AnonymizeProbesTest` builds one document per gap (identity; external targets
+and instructions; settings and content controls; media and objects, STRICT and
+KEEP; diagram data; custom styles, numbering, digits and Cyrillic) and checks
+the planted words against every XML and relationships part of the output;
+`AnonymizeCorpusTest` runs STRICT over the corpus (clean, verified, reloads)
+plus the per-document specifics; `FieldInstructionsTest` and `AnonymizeCliTest`
+are what they say.
+
+### Departures from the plan, and why
+
+- **A reflective walk instead of TraversalUtil.** TraversalUtil's children
+  rules are written for the content tree; they do not reach paragraph and run
+  properties (w:rPrChange and w:pPrChange carry authors), settings, chart
+  caches, diagram data, or DrawingML `handleGraphicData` does not list. The
+  guarantee needs every object, so `JaxbGraphWalker` walks every public getter
+  (lists first, so a convenience getter such as `SdtPr.getTag()` cannot hide a
+  list member from a removal). `ScrambleText` no longer extends
+  `TraversalUtil.CallbackImpl` (API change, noted for the CHANGELOG).
+- **Digits are randomised** (each digit becomes another digit). The plan said
+  "scrambled per Unicode range, as today", and today kept ASCII digits, which
+  is where account numbers, amounts and dates live. Width class survives.
+- **Latin-1 Supplement letters are randomised within their case block**
+  (until now kept, so the accented letters of a French or German word stayed
+  in place). Upper-case ASCII letters now stay upper-case.
+- **Verification is built into `go()`**: the tokens are extracted before any
+  change and again at the end, so the caller need not keep the original;
+  `setVerify(false)` skips it. The lorem-fragment rule (an output Latin word
+  is always a fragment of one lorem word, so such fragments cannot be told
+  from a leak) is the check's stated blind spot; the tokens in it carry
+  nothing.
+- **Bookmark, form-field and sequence names hash** (`bm<hash>`) rather than
+  count, so a REF in a header matches a bookmark in the body with no pre-pass,
+  and the mapping is the same in every part.
+- **Custom style ids are renamed too** (`s<hash>`), not only the names: an id
+  like `AcmeBodyText` is text. Built-in styles keep name and id (Word
+  identifies them by name); built-in = KnownStyles.xml ∪ the document's own
+  `w:lsdException` names.
+- **Non-raster images are retargeted, not overwritten in place**: a PNG under
+  an `.emf` name relies on Word sniffing bytes through the metafile path,
+  which nothing proves; a shared placeholder PNG part is what every raster
+  path already reads. The OLE object's `v:shape` picture therefore survives
+  as a picture of the placeholder.
+- **Also removed, not in the plan's list**: sensitivity labels
+  (`/docMetadata/`), digital signatures (`/_xmlsignatures/`), the
+  bibliography part (names and titles), printer settings, ink, web
+  extensions, chart geography caches; theme/colour/font scheme names and the
+  w14/w15 document ids are scrambled/reset; the docProps `TitlesOfParts`
+  (the document's headings) and `HLinks` are cleared.
+- **Dates become one fixed instant** rather than being shifted: the ordering
+  of revisions is lost; simpler, and the report says so.
+
+### Decisions taken (from the list above)
+
+1 fail-closed default: taken (STRICT). 2 `Author <n>`: taken (initials `A<n>`;
+people.xml user ids become the person's name). 3 (xlsx numbers): phase 3.
+4 corpus of generated probes plus docx4j's own files only: taken. 5 module
+name kept: taken.
+
+### Findings on the way
+
+- `strict-smartart.docx` (docx4j-samples-docx4j/sample-docs/strict) cannot be
+  used: its styles part fails docx4j's strict→transitional preprocessing
+  (`NumberFormatException: "12.95pt"`), a docx4j bug independent of this CR.
+  The anonymiser handles an unreadable part as it should (STRICT removes it
+  and records why; KEEP keeps it unsafe), and its font selection degrades to
+  no glyph check when the styles part is missing.
+- `FontTablePart.processEmbeddings` (run when a font mapper is first asked
+  for) logs an NPE if the embedded font relationships are gone, so the
+  visitors (and with them the font selector) are created before any part is
+  removed.
+- On a box without Windows fonts, `IdentityPlusMapper` maps none of Aptos,
+  Arial or Times New Roman, so the non-Latin glyph check is a no-op there; the
+  scramble still stays in the character's Unicode block.
+
+### Gate
+
+| step | result |
+|---|---|
+| `docx4j-docx-anon` compiles (JPMS module, `requires java.xml` added) | BUILD SUCCESS against the installed 17.2.0-SNAPSHOT core |
+| module suite | 31 tests, 0 failures (`AnonymizeProbesTest` 10, `AnonymizeCorpusTest` 8, `FieldInstructionsTest` 10, `AnonymizeCliTest` 3) |
+| every corpus document, STRICT | clean, verified, reloads with docx4j |
+| LibreOffice renders every STRICT output | 9 of 9 to PDF (structural sanity only) |
+| Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | **pending — Jason** |
+
+### CHANGELOG entry (for Jason to place)
+
+    docx4j-docx-anon (CR-019 phase 1): a verified, fail-closed anonymiser.
+    Anonymize is STRICT by default (parts it cannot make clean are removed;
+    Mode.KEEP keeps and reports them); result.isClean() is the one answer;
+    identities (comment and revision authors, people.xml, docProps), external
+    targets, field-instruction arguments, settings (mail merge, docVars,
+    attached template, protection hashes), content-control aliases/tags/
+    bindings, charts (caches scrambled, workbook removed), diagrams, EMF/WMF/
+    EPS/SVG, OLE, altChunk, VBA, embedded fonts, thumbnails and custom XML are
+    covered; digits randomised; a before/after Verify; a JSON report; a CLI
+    (org.docx4j.anon.AnonymizeCli, the jar's Main-Class). API: ScrambleText is
+    a JaxbGraphWalker.Visitor now, not a TraversalUtil callback;
+    AnonymizeResult.isOK() is deprecated to isClean().
+
+### Left for later
+
+- Phases 2 and 3 as planned; the walker and both visitors are format-neutral
+  (they dispatch on JAXB classes), so pptx and xlsx are mostly a part table
+  and a package type each.
+- The lorem-fragment blind spot of `Verify`; a formula field whose bookmark
+  is inside an expression token (`(Price+Tax)*1.1`) keeps the name (Verify
+  flags it, so the result is not clean rather than wrong).
+- Strings in mixed content and DOM extension text outside `t`/`v`/`f` are not
+  scrambled (Verify sees the text nodes and flags them).
+- docx4j-mcp's `anonymize` tool (CR-004 phase 4) can now call
+  `AnonymizeCli.run` or `Anonymize` directly.
+- The strict-styles preprocessing bug above wants its own issue.
 
 ## Risks
 

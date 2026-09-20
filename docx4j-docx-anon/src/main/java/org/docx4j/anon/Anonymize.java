@@ -1,348 +1,313 @@
 package org.docx4j.anon;
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
+import org.docx4j.anon.AnonymizeResult.Action;
+import org.docx4j.anon.JaxbGraphWalker.Visitor;
+import org.docx4j.anon.PartsAnalyzer.Treatment;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImageBmpPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImageGifPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImageTiffPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTLanguage;
-import org.docx4j.wml.RPr;
-import org.docx4j.wml.Styles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Anonymises a docx in place: the text is scrambled, identities, references and
+ * metadata scrubbed, media replaced, and whatever cannot be made clean removed
+ * (STRICT, the default) or kept and reported (KEEP).
+ * <p>
+ * The guarantee (CR-019): a document this returns with {@code result.isClean()}
+ * contains no text from the original in any text-bearing part (scrambled per
+ * Unicode range); no author, initials, user id or presence information; no
+ * external target or field-instruction argument; no metadata beyond what the
+ * package needs to open; no media but placeholder pixels; no embedded object,
+ * chart data, diagram text, macro, custom XML or altChunk. What it keeps, by
+ * design, is the document's structure - paragraphs, runs, tables, sections,
+ * styles, numbering, fonts, sizes, the shape of fields and content controls -
+ * because that is what a layout, a corruption or a converter bug lives in.
+ * <p>
+ * Usage:
+ * <pre>
+ * WordprocessingMLPackage pkg = WordprocessingMLPackage.load(in);
+ * AnonymizeResult result = new Anonymize(pkg).go();
+ * if (result.isClean()) pkg.save(out);
+ * System.out.println(result.toJson());
+ * </pre>
+ * Set a font mapper on the package first if the non-Latin replacement characters
+ * should be chosen from the glyphs the document's fonts have (the CLI does).
+ */
 public class Anonymize {
-	
+
 	private static Logger log = LoggerFactory.getLogger(Anonymize.class);
-	
-	
+
+	/** What to do with a part the tool cannot make clean. */
+	public enum Mode {
+		/** remove it (with its relationships and the markup that pointed at it); the default */
+		STRICT,
+		/** keep it, report it, and never call the result clean */
+		KEEP
+	}
+
+	private final WordprocessingMLPackage pkg;
+	private final Mode mode;
+	private boolean verify = true;
+
+	ScrambleText latinizer = null;
+	MarkupScrubber markupScrubber = null;
+	DmlVmlAnalyzer dmlVmlAnalyzer = null;
+	Names names = null;
+
+	AnonymizeResult result;
+
 	public Anonymize(WordprocessingMLPackage wordMLPackage) {
-		
+		this(wordMLPackage, Mode.STRICT);
+	}
+
+	/**
+	 * @since 17.2.0
+	 */
+	public Anonymize(WordprocessingMLPackage wordMLPackage, Mode mode) {
 		this.pkg = wordMLPackage;
-		
+		this.mode = mode;
 		result = new AnonymizeResult();
 	}
-	
-	private WordprocessingMLPackage pkg;
-	
-	ScrambleText latinizer = null;   
-	DmlVmlAnalyzer dmlVmlAnalyzer = null;
-	
-	AnonymizeResult result;
-		
-	// We'll replace images with 2x2 pixels	
-    private static byte[] PNG_IMAGE_DATA;
-    private static byte[] GIF_IMAGE_DATA;
-    private static byte[] JPEG_IMAGE_DATA;
-    private static byte[] BMP_IMAGE_DATA;
-    private static byte[] TIF_IMAGE_DATA;
-    
-    static {
-    	
-    	PNG_IMAGE_DATA = Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAgMAAAAP2OW3AAAADFBMVEUDAP//AAAA/wb//AAD4Tw1AAAACXBIWXMAAAsTAAALEwEAmpwYAAAADElEQVQI12NwYNgAAAF0APHJnpmVAAAAAElFTkSuQmCC");
-    	GIF_IMAGE_DATA = Base64.getDecoder().decode("R0lGODdhAgACAKEEAAMA//8AAAD/Bv/8ACwAAAAAAgACAAACAww0BQA7");
-        JPEG_IMAGE_DATA = Base64.getDecoder().decode(
-        						"/9j/4AAQSkZJRgABAQEASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABwEaAAUAAAABAAAAYgEbAAUA"
-        						+"AAABAAAAagEoAAMAAAABAAIAAAExAAIAAAASAAAAclEQAAEAAAABAQAAAFERAAQAAAABAAALE1ES"
-								+"AAQAAAABAAALEwAAAAAAARlIAAAD6AABGUgAAAPoUGFpbnQuTkVUIHYzLjUuMTAA/9sAQwACAQEC"
-								+"AQECAgICAgICAgMFAwMDAwMGBAQDBQcGBwcHBgcHCAkLCQgICggHBwoNCgoLDAwMDAcJDg8NDA4L"
-								+"DAwM/9sAQwECAgIDAwMGAwMGDAgHCAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM"
-								+"DAwMDAwMDAwMDAwMDAwM/8AAEQgAAgACAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAAB"
-								+"AgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNC"
-								+"scEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0"
-								+"dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY"
-								+"2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//E"
-								+"ALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoW"
-								+"JDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWG"
-								+"h4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp"
-								+"6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A/QL4W/sD/ArXfhl4dvr74K/CW8vbzS7ae4uJ/CGnySzy"
-								+"NErM7sYiWYkkknkk0UUV5+U/7jR/wR/JHRP4mf/Z");
-        BMP_IMAGE_DATA = Base64.getDecoder().decode("Qk1GAAAAAAAAADYAAAAoAAAAAgAAAAIAAAABABgAAAAAAAAAAAATCwAAEwsAAAAAAAAAAAAABv8AAPz///8AAP//AAMD/w==");
-        TIF_IMAGE_DATA = Base64.getDecoder().decode("");
-    }
 
-	
-    
-	/*
-	 * 
-	 * TODO: Info leakage via external parts eg hyperlinks
-	 * 
+	/**
+	 * Whether {@link #go()} extracts the tokens of the document before and after
+	 * and checks that none survived ({@link Verify}). On by default; it costs a
+	 * marshal of every part twice.
+	 *
+	 * @since 17.2.0
 	 */
+	public void setVerify(boolean verify) {
+		this.verify = verify;
+	}
+
 	public AnonymizeResult go() throws Docx4JException {
-		
-		
-		filterMDPRels();
-		
-		handleMetadata();
-		
-		result.unsafeParts = PartsAnalyzer.identifyUnsafeParts(pkg.getParts().getParts().entrySet());
 
-		detectDmlVmlContent();  // doing this before scramble lets us analyze field types
-		
-		/* content stories:
-		 * 
-		 * - MDP
-		 * - Header/Footer
-		 * - Footnotes/Endnotes
-		 * - Comments
-		 * 
-		 * replace with latin text */
-		applyScrambleCallbackToParts();
-		
-		// Next, images
-		handleImages();
-		
-		
+		result.mode = mode;
+
+		Verify.Extraction before = verify ? Verify.extract(pkg) : null;
+
+		names = new Names(pkg);
+
+		// the visitors first: the text scrambler's font selection reads the font table and
+		// its embedded fonts, which STRICT is about to remove
+		latinizer = new ScrambleText(pkg, names);
+		markupScrubber = new MarkupScrubber(names, mode == Mode.STRICT, result.notes::add);
+
+		// the inventory (fields present, VML, objects of interest), read before the scramble
+		detectDmlVmlContent();
+
+		// what each part is
+		Map<Part, Treatment> treatments = new LinkedHashMap<Part, Treatment>();
+		for (Entry<PartName, Part> entry : pkg.getParts().getParts().entrySet()) {
+			treatments.put(entry.getValue(), PartsAnalyzer.classify(entry.getValue()));
+		}
+
+		// remove what goes: always-removed parts, and in STRICT mode what cannot be made clean
+		removeParts(treatments);
+
+		// metadata
+		MetadataScrubber metadata = new MetadataScrubber(pkg);
+		metadata.scrubDocProps();
+		for (Entry<Part, Treatment> e : treatments.entrySet()) {
+			if (e.getValue() == Treatment.METADATA && pkg.getParts().get(e.getKey().getPartName()) != null) {
+				result.record(e.getKey(), Action.CLEARED, "descriptive properties, identities and dates cleared");
+			}
+		}
+
+		// text, identities, references, embedded-object markup: one walk over every JAXB part
+		walkParts(treatments);
+
+		// relationships to outside the package
+		result.externalTargetsReplaced = metadata.scrubExternalTargets();
+
+		// media
+		replaceMedia(treatments);
+
+		result.authorsRenamed = names.authorCount();
+		result.hasGreek = latinizer.hasGreek;
+		result.hasCyrillic = latinizer.hasCyrillic;
+		result.hasHebrew = latinizer.hasHebrew;
+		result.hasArabic = latinizer.hasArabic;
+		result.hasHiragana = latinizer.hasHiragana;
+		result.hasKatakana = latinizer.hasKatakana;
+		result.hasCJK = latinizer.hasCJK;
+
+		if (before != null) {
+			Verify.Extraction after = Verify.extract(pkg);
+			result.leaks.addAll(Verify.compare(before, after));
+			result.verified = result.leaks.isEmpty();
+		}
+
 		return result;
-		
 	}
-	
-	/**
-	 * Remove customXml, glossaryDocument, and stylesWithEffects
-	 */
-	private void filterMDPRels() {
-		
-		if (pkg.getMainDocumentPart().getRelationshipsPart()==null) return;
-		
-		if (log.isDebugEnabled()) {
-			for (Relationship r  : pkg.getMainDocumentPart().getRelationshipsPart().getRelationships().getRelationship()) {
-				System.out.println(r.getType());
+
+	private void removeParts(Map<Part, Treatment> treatments) {
+
+		for (Entry<Part, Treatment> e : treatments.entrySet()) {
+			Part p = e.getKey();
+			if (pkg.getParts().get(p.getPartName()) == null) continue; // went with an earlier removal
+
+			if (e.getValue() == Treatment.REMOVE) {
+				List<PartName> removed = MediaReplacer.removePart(pkg, p);
+				result.record(p, Action.REMOVED, "always removed: " + p.getClass().getSimpleName());
+				recordCascade(removed, p);
+
+			} else if (e.getValue() == Treatment.UNSCRUBBABLE) {
+				result.unsafeParts.add(p);
+				if (mode == Mode.STRICT) {
+					List<PartName> removed = MediaReplacer.removePart(pkg, p);
+					result.record(p, Action.REMOVED, "cannot be made clean: " + p.getClass().getSimpleName());
+					recordCascade(removed, p);
+				} else {
+					result.record(p, Action.KEPT_UNSAFE, "cannot be made clean: " + p.getClass().getSimpleName());
+				}
 			}
 		}
-		
-		pkg.getMainDocumentPart().getRelationshipsPart().removeRelationshipsByType(
-				"http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml"); 
-
-		pkg.getMainDocumentPart().getRelationshipsPart().removeRelationshipsByType(
-				"http://schemas.openxmlformats.org/officeDocument/2006/relationships/glossaryDocument"); 
-
-		pkg.getMainDocumentPart().getRelationshipsPart().removeRelationshipsByType(
-				"http://schemas.microsoft.com/office/2007/relationships/stylesWithEffects"); 
-		
 	}
 
-	/**
-	 * @throws Docx4JException
-	 */
-	protected void handleMetadata() throws Docx4JException {
-				
-		// docProps/app.xml (Extended Properties) 
-		if (pkg.getDocPropsExtendedPart()!=null
-				&& pkg.getDocPropsExtendedPart().getContents()!=null) {
-			
-			pkg.getDocPropsExtendedPart().getContents().setCompany(null);
-			pkg.getDocPropsExtendedPart().getContents().setManager(null);
-			pkg.getDocPropsExtendedPart().getContents().setHeadingPairs(null);
+	private void recordCascade(List<PartName> removed, Part p) {
+		for (PartName name : removed) {
+			if (!name.equals(p.getPartName())) {
+				result.record(name.getName(), "", Action.REMOVED, "target of " + p.getPartName().getName());
+			}
 		}
-		
-		if (pkg.getDocPropsCorePart()!=null
-				&& pkg.getDocPropsCorePart().getContents()!=null) {
-			
-			pkg.getDocPropsCorePart().getContents().setCategory(null);
-			pkg.getDocPropsCorePart().getContents().setCreator(null);
-			pkg.getDocPropsCorePart().getContents().setDescription(null);
-			pkg.getDocPropsCorePart().getContents().setIdentifier(null);
-			pkg.getDocPropsCorePart().getContents().setKeywords(null);
-			pkg.getDocPropsCorePart().getContents().setSubject(null);
-			pkg.getDocPropsCorePart().getContents().setTitle(null);
-		}
-
-		if (pkg.getDocPropsCustomPart()!=null) {
-			// Remove this
-			pkg.getRelationshipsPart().removePart(pkg.getDocPropsCustomPart().getPartName());
-		}
-		
-		// /docProps/thumbnail.emf, always delete this!
-		pkg.getRelationshipsPart().removePart(new PartName("/docProps/thumbnail.emf"));
-
 	}
-	
-    /**
-     * This method replaces images with 2x2 pixels (which Word scales appropriately)
-     * 
-     * @throws InvalidFormatException
-     */
-    private void handleImages() 
-    		throws InvalidFormatException {
-        
-	    // Apply map to headers/footers
-		for (Entry<PartName, Part> entry : pkg.getParts().getParts().entrySet()) {
 
-			Part p = entry.getValue(); 
+	private void walkParts(Map<Part, Treatment> treatments) throws Docx4JException {
 
-			if (p instanceof ImagePngPart
-					|| p instanceof ImageGifPart
-					|| p instanceof ImageJpegPart
-					|| p instanceof ImageBmpPart
-					|| p instanceof ImageTiffPart	
-					// Others treated as unsafe
-					) {
-				
-				((BinaryPart)p).setBinaryData(PNG_IMAGE_DATA);
-				
-			} 
-			
+		final Visitor composite = new Visitor() {
+			@Override
+			public JaxbGraphWalker.Action visit(Object o, JAXBElement<?> wrapper) {
+				JaxbGraphWalker.Action a = latinizer.visit(o, wrapper);
+				JaxbGraphWalker.Action b = markupScrubber.visit(o, wrapper);
+				if (a == JaxbGraphWalker.Action.REMOVE || b == JaxbGraphWalker.Action.REMOVE) return JaxbGraphWalker.Action.REMOVE;
+				if (a == JaxbGraphWalker.Action.SKIP_CHILDREN || b == JaxbGraphWalker.Action.SKIP_CHILDREN) return JaxbGraphWalker.Action.SKIP_CHILDREN;
+				return JaxbGraphWalker.Action.CONTINUE;
+			}
+		};
+
+		for (Entry<Part, Treatment> e : treatments.entrySet()) {
+			Part p = e.getKey();
+			Treatment t = e.getValue();
+			if (pkg.getParts().get(p.getPartName()) == null) continue; // removed
+			if (t == Treatment.METADATA || t == Treatment.REPLACE_IMAGE) continue;
+			if (!(p instanceof JaxbXmlPart)) {
+				if (t == Treatment.SAFE) result.record(p, Action.KEPT, "structure");
+				continue;
+			}
+			JaxbXmlPart<?> jp = (JaxbXmlPart<?>) p;
+			Object contents;
+			try {
+				contents = jp.getContents();
+			} catch (Exception ex) {
+				log.warn(p.getPartName().getName() + " could not be read: " + ex);
+				contents = null;
+			}
+			if (contents == null) {
+				result.unsafeParts.add(p);
+				if (mode == Mode.STRICT) {
+					MediaReplacer.removePart(pkg, p);
+					result.record(p, Action.REMOVED, "could not be read, so could not be scrubbed");
+				} else {
+					result.record(p, Action.KEPT_UNSAFE, "could not be read, so could not be scrubbed");
+				}
+				continue;
+			}
+			log.debug("Scrubbing " + p.getPartName().getName());
+			latinizer.latinText = null;
+			new JaxbGraphWalker(composite).walk(contents);
+			if (t == Treatment.SCRUB) {
+				result.record(p, Action.SCRUBBED, null);
+			} else if (t == Treatment.SAFE) {
+				result.record(p, Action.KEPT, "structure (walked)");
+			}
+			// an UNSCRUBBABLE JAXB part kept in KEEP mode was recorded as KEPT_UNSAFE already;
+			// the walk scrubbed what it recognised in it, but it is not vouched for
 		}
-    }	
-    
-    private void detectDmlVmlContent() 
-    		throws InvalidFormatException {
+	}
 
-    	dmlVmlAnalyzer = new DmlVmlAnalyzer();
-    	
-	    // Apply map to MDP                
-    	detectDmlVml( pkg.getMainDocumentPart() );        							
-        
-	    // Apply map to headers/footers
-		for (Entry<PartName, Part> entry : pkg.getParts().getParts().entrySet()) {
+	private void replaceMedia(Map<Part, Treatment> treatments) throws Docx4JException {
+		MediaReplacer media = new MediaReplacer(pkg);
+		for (Entry<Part, Treatment> e : treatments.entrySet()) {
+			Part p = e.getKey();
+			if (e.getValue() != Treatment.REPLACE_IMAGE) continue;
+			if (pkg.getParts().get(p.getPartName()) == null) continue; // went with a removed part
+			result.record(p, Action.REPLACED, media.replace(p));
+		}
+	}
 
-			Part p = entry.getValue(); 
+	// ---- the inventory walk (pre-17.2.0), kept for its report
 
+	private void detectDmlVmlContent() throws InvalidFormatException {
+
+		dmlVmlAnalyzer = new DmlVmlAnalyzer();
+
+		detectDmlVml(pkg.getMainDocumentPart());
+
+		for (Entry<PartName, Part> entry : new ArrayList<Entry<PartName, Part>>(pkg.getParts().getParts().entrySet())) {
+			Part p = entry.getValue();
 			if (p instanceof HeaderPart) {
-				detectDmlVml( (HeaderPart)p );        							
+				detectDmlVml((HeaderPart) p);
 			}
-
 			if (p instanceof FooterPart) {
-				detectDmlVml( (FooterPart)p );        							
+				detectDmlVml((FooterPart) p);
 			}
-			
 		}
-        
-	    // endnotes/footnotes
-		if (pkg.getMainDocumentPart().getFootnotesPart()!=null) {
-			detectDmlVml( pkg.getMainDocumentPart().getFootnotesPart() );
-		}
-		if (pkg.getMainDocumentPart().getEndNotesPart()!=null) {
-			detectDmlVml( pkg.getMainDocumentPart().getEndNotesPart() );
-		}
-		
-		
-        // Comments
-		if (pkg.getMainDocumentPart().getCommentsPart()!=null) {
-			detectDmlVml( pkg.getMainDocumentPart().getCommentsPart() );
-		}
-   		
-		return;
 
-    }  	
-    
+		if (pkg.getMainDocumentPart().getFootnotesPart() != null) {
+			detectDmlVml(pkg.getMainDocumentPart().getFootnotesPart());
+		}
+		if (pkg.getMainDocumentPart().getEndNotesPart() != null) {
+			detectDmlVml(pkg.getMainDocumentPart().getEndNotesPart());
+		}
+		if (pkg.getMainDocumentPart().getCommentsPart() != null) {
+			detectDmlVml(pkg.getMainDocumentPart().getCommentsPart());
+		}
+	}
+
 	public void detectDmlVml(JaxbXmlPart p) {
-		
-		log.info("\n\n Inspecting " + p.getPartName().getName());
-		
+
+		log.debug("Inspecting " + p.getPartName().getName());
+
+		Object contents;
+		try {
+			contents = p.getContents();
+		} catch (Docx4JException e) {
+			log.warn(p.getPartName().getName() + " could not be read: " + e);
+			return;
+		}
+
 		dmlVmlAnalyzer.reinit();
 		dmlVmlAnalyzer.setPart(p);
 		// CR-021: ALL - a shape in any branch must be inspected
-		new TraversalUtil(p.getJaxbElement(), dmlVmlAnalyzer, org.docx4j.jaxb.McMode.ALL);
-		
+		new TraversalUtil(contents, dmlVmlAnalyzer, org.docx4j.jaxb.McMode.ALL);
+
 		result.unsafeObjectsByPart.put(p, dmlVmlAnalyzer.unsafeObjects);
-		if (dmlVmlAnalyzer.unsafeObjects.size()>0){
+		if (dmlVmlAnalyzer.unsafeObjects.size() > 0) {
 			result.anyUnsafeObjects = true;
 		}
 		result.inventoryObjectsByPart.put(p, dmlVmlAnalyzer.inventoryObjects);
-		
+
 		if (!result.containsVML) {
 			result.containsVML = dmlVmlAnalyzer.containsVML;
 		}
-		
-		result.fieldsPresent = this.dmlVmlAnalyzer.fieldsPresent;
-		
+
+		result.fieldsPresent.addAll(dmlVmlAnalyzer.fieldsPresent);
 	}
-    
-    
-	
-    private void applyScrambleCallbackToParts() 
-    		throws InvalidFormatException {
-    	
-    	try {
 
-			latinizer = new ScrambleText(pkg);
-	    	
-	    	
-		    // Apply map to MDP                
-			scramble( pkg.getMainDocumentPart() );        							
-	        
-		    // Apply map to headers/footers
-			for (Entry<PartName, Part> entry : pkg.getParts().getParts().entrySet()) {
-	
-				Part p = entry.getValue(); 
-	
-				if (p instanceof HeaderPart) {
-		    		scramble( (HeaderPart)p );        							
-				}
-	
-				if (p instanceof FooterPart) {
-		    		scramble( (FooterPart)p );        							
-				}
-				
-			}
-	        
-		    // endnotes/footnotes
-			if (pkg.getMainDocumentPart().getFootnotesPart()!=null) {
-				scramble( pkg.getMainDocumentPart().getFootnotesPart() );
-			}
-			if (pkg.getMainDocumentPart().getEndNotesPart()!=null) {
-				scramble( pkg.getMainDocumentPart().getEndNotesPart() );
-			}
-			
-			
-	        // Comments
-			if (pkg.getMainDocumentPart().getCommentsPart()!=null) {
-				scramble( pkg.getMainDocumentPart().getCommentsPart() );
-			}
-	
-			// collected at the package level
-//			result.mostPopularLang = latinizer.langFromLangStats();
-			
-			result.hasGreek = latinizer.hasGreek;
-			result.hasCyrillic = latinizer.hasCyrillic;
-			result.hasHebrew = latinizer.hasHebrew;
-			result.hasArabic = latinizer.hasArabic;
-			result.hasHiragana = latinizer.hasHiragana;
-			result.hasKatakana = latinizer.hasKatakana;
-			result.hasCJK = latinizer.hasCJK;
-
-			
-			return;
-		
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		throw new InvalidFormatException(e.getMessage(), e);
-    	}
-
-    }  	
-
-	public void scramble(JaxbXmlPart p) {
-		
-		log.info("\n\n Scrambling " + p.getPartName().getName());
-		
-		// CR-021: ALL - the scramble must reach every branch, or an older reader sees the original
-		new TraversalUtil(p.getJaxbElement(), latinizer, org.docx4j.jaxb.McMode.ALL);
-		
-		
-	}
-    
-	
-	
-
-	
 }
