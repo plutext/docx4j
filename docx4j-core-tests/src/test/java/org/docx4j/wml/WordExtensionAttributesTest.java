@@ -75,6 +75,26 @@ public class WordExtensionAttributesTest {
 	}
 
 	@Test
+	public void roundTripKeepsEveryRootsIgnorableList() throws Exception {
+		// Word writes the same mc:Ignorable on settings, fontTable, webSettings (and a glossary's) as on the
+		// document; docx4j used to rewrite the settings' to "w14 w15" (or " w15", an empty prefix, when
+		// no w14 content was present) and to drop the others' - found on CR-023's Word check
+		byte[] in = bytes(ResourceUtils.getResource(TRACKED));
+		byte[] out = loadTouchEverythingAndSave(in);
+		for (String part : new String[] { "word/document.xml", "word/settings.xml", "word/fontTable.xml", "word/webSettings.xml" }) {
+			assertEquals(part, ignorable(in, part), ignorable(out, part));
+			assertDeclares(out, part);
+		}
+		// and a prefix Word names that docx4j binds nothing for (cr, the comment reactions of
+		// [MS-OREACTXML]) is still declared, else Word repairs the document (found on CR-023's second check)
+		in = bytes(ResourceUtils.getResource("loadAndSave.docx"));
+		out = loadTouchEverythingAndSave(in);
+		assertTrue(ignorable(in, "word/commentsExtensible.xml").contains("cr"));
+		assertEquals(ignorable(in, "word/commentsExtensible.xml"), ignorable(out, "word/commentsExtensible.xml"));
+		assertDeclares(out, "word/commentsExtensible.xml");
+	}
+
+	@Test
 	public void roundTripKeepsRestartNumberingAfterBreak() throws Exception {
 		byte[] in = bytes(ResourceUtils.getResource(NUMBERED));
 		byte[] out = loadTouchEverythingAndSave(in);
@@ -183,6 +203,20 @@ public class WordExtensionAttributesTest {
 			}
 		}
 		return n;
+	}
+
+	private static String ignorable(byte[] zip, String partName) throws Exception {
+		try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zip))) {
+			ZipEntry e;
+			while ((e = zis.getNextEntry()) != null) {
+				if (e.getName().equals(partName)) {
+					Matcher m = Pattern.compile("mc:Ignorable=\"([^\"]*)\"").matcher(new String(bytes(zis), StandardCharsets.UTF_8));
+					return m.find() ? m.group(1) : null;
+				}
+			}
+		}
+		fail("no " + partName);
+		return null;
 	}
 
 	private static void assertDeclares(byte[] zip, String partName) throws Exception {

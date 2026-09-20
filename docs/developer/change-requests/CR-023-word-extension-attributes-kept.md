@@ -339,7 +339,58 @@ prompt, the tracked changes and comments intact".
 |---|---|
 | docx4j-generated-objects + docx4j-core clean install | BUILD SUCCESS; installed jar md5 = target jar's |
 | `WordExtensionAttributesTest` | 4 tests, 0 failures |
-| docx4j-core-tests, the whole suite | 1218 tests, 0 failures, 11 skipped (2026-09-20) |
-| docx4j-export-fo-tests, the whole suite (`CT_P` and `CT_TrackChange` are on every exporter's path; export-fo clean-installed against the new core first) | 669 tests, 0 failures, 8 skipped (2026-09-20) |
-| Word 365 opens the two re-saves | Jason |
+| docx4j-core-tests, the whole suite | 1218 tests, 0 failures, 11 skipped (2026-09-20); 1219/0 after the Ignorable fixes; 1219/0 after the `cr` prefix |
+| docx4j-export-fo-tests, the whole suite (`CT_P` and `CT_TrackChange` are on every exporter's path; export-fo clean-installed against the new core first) | 669 tests, 0 failures, 8 skipped (2026-09-20); 669/0 again after the Ignorable fixes |
+| Word 365 opens the two re-saves | passed on the third round (Jason, 2026-09-20): `tracked-changes-equations` fine from the first; `cr023-word-extensions` repaired on rounds one and two, opens properly as `-resave3` once `cr` is declared - see below |
+
+**The repair prompt, and what it found (2026-09-20).** A part-by-part
+canonical comparison of Jason's file with its re-save showed the content
+identical (only docx4j's usual `true`/`false` for `1`/`0` in styles and the
+theme) and one thing wrong: the glossary's `settings.xml` came out with
+`mc:Ignorable=" w15"` - a leading space, an empty prefix, which Word treats
+as an undeclared one. `DocumentSettingsPart.setMceIgnorable` rebuilt the
+list from scratch at every marshal - `"w14"` if w14 content, `+ " w15"` if
+w15 content - overwriting the list Word wrote (`w14 w15 w16se w16cid w16
+w16cex w16sdtdh w16sdtfl w16du`) and, with w15 content but no w14, leaving
+the space. The main `settings.xml` got `"w14 w15"`, no repair but a loss.
+And three roots Word writes `mc:Ignorable` on had no such attribute in the
+schema, so theirs was dropped: `fontTable`, `webSettings`,
+`glossaryDocument`. Fixed in this phase (it is this CR's subject, Word's
+extensions kept on a round trip):
+
+- `DocumentSettingsPart` keeps the loaded list and adds `w14`/`w15` only if
+  their content is present and the list lacks them; no leading space, no
+  empty list attribute.
+- `wml.xsd`: `mc:Ignorable` on `fonts`, `webSettings` and
+  `glossaryDocument` (CR-021's policy: on every root Office writes it on).
+- `WordExtensionAttributesTest.roundTripKeepsEveryRootsIgnorableList`:
+  document, settings, fontTable and webSettings keep Word's list through a
+  round trip, every prefix declared.
+
+The re-saves were regenerated (`-resave2`); the bisect variants prepared
+for the case the cause was elsewhere were withdrawn once the fix was in.
+
+**Second round (Jason, 2026-09-20): still a repair prompt**, and Jason
+saved Word's repaired copy for comparison. Every part of the re-save and
+the repaired copy is the same apart from Word's own additions (`sdtEndPr`,
+rsids, the Title control's value written to `dc:title`), so the repair
+changed nothing of substance - which pointed at something Word could
+parse but not accept. A check that every prefix each part's `mc:Ignorable`
+names is declared on that part (the `xmllint` well-formedness check does
+not catch this: an `Ignorable` value is only text) found it:
+`commentsExtensible.xml`'s list is `... w16sdtfl cr w16du wp14`, and
+**`cr`** (`http://schemas.microsoft.com/office/comments/2020/reactions`,
+[MS-OREACTXML]'s comment reactions, which the inventory noted as `extLst`
+content) **was not declared** on the re-save - docx4j declares a part's
+ignorable prefixes from `NamespacePrefixMappings`, and `cr` was not in it.
+An ignorable prefix that is not declared is the one thing the
+markup-compatibility rules cannot forgive. `loadAndSave.docx` has the same
+list and had been round-tripping through the suite with the same undeclared
+`cr` all along; nothing opened it in Word after a docx4j save. Fixed: `cr`
+in the prefix table both ways (as `xr16` was in CR-022 - "prefix only, so
+the declaration survives a save"), and the round-trip test covers
+`loadAndSave.docx`'s `commentsExtensible.xml` declaring every prefix it
+names. The glossary fix above stands on its own merit (`" w15"` was wrong)
+but was not the repair's cause. **Third re-save (`-resave3`): opens properly
+in Word (Jason, 2026-09-20). Gate of phase 1 met.**
 

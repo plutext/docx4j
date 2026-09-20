@@ -246,6 +246,12 @@ Schema (CR-023, Word's extension attributes kept on a round trip):
   record) is bound as org.docx4j.cei and its prefix known, so that content unmarshals typed
   where CTExtension.getAny() held a DOM Element.  Every namespace of [MS-DOCX]'s appendix is
   now bound and admitted.
+- Every root keeps the mc:Ignorable list Word wrote: fontTable, webSettings and glossaryDocument
+  had no such property (dropped); settings was rewritten to "w14 w15" - or " w15", a leading space
+  and an empty prefix, when no w14 content was present, which Word repairs (found on a glossary's
+  settings).  The comment reactions prefix cr ([MS-OREACTXML]), which Word names in
+  commentsExtensible's mc:Ignorable, is in the prefix table, so a docx4j save declares it; it was
+  not, and Word repaired a docx4j save of any document whose comments named it.
 
 Schema (CR-022, the Excel 2010 and 2013 extensions of [MS-XLSX]):
 

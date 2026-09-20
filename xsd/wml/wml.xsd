@@ -12785,7 +12785,9 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
-	</xsd:complexType>
+			<!-- docx4j 17.1.1 (CR-023): Word writes mc:Ignorable on this root; kept -->
+		<xsd:attribute ref="mc:Ignorable" use="optional"/>
+</xsd:complexType>
 	<xsd:simpleType name="ST_FrameScrollbar">
 		<xsd:annotation>
 			<xsd:documentation>Frame Scrollbar Visibility</xsd:documentation>
@@ -14527,7 +14529,9 @@ PRINCIPLES:
 					
 				</xsd:element>
 			</xsd:sequence>
-		</xsd:complexType>
+				<!-- docx4j 17.1.1 (CR-023): Word writes mc:Ignorable on this root; kept -->
+		<xsd:attribute ref="mc:Ignorable" use="optional"/>
+</xsd:complexType>
 		
 	</xsd:element>
 	<xsd:element name="numbering">
@@ -15441,7 +15445,9 @@ PRINCIPLES:
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:sequence>
-		</xsd:complexType>
+				<!-- docx4j 17.1.1 (CR-023): Word writes mc:Ignorable on this root; kept -->
+		<xsd:attribute ref="mc:Ignorable" use="optional"/>
+</xsd:complexType>
 	</xsd:element>
 	
 	<!-- 

@@ -264,6 +264,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2026/wordml/cei")) {
     		return "cei";  // CR-023
     	}
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/comments/2020/reactions")) {
+    		return "cr";  // [MS-OREACTXML]: Word names it in commentsExtensible's mc:Ignorable (CR-023)
+    	}
 
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2010/main")) {
     		return "p14";
@@ -723,6 +726,8 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock";		
 		if (prefix.equals("cei"))
 			return "http://schemas.microsoft.com/office/word/2026/wordml/cei";
+		if (prefix.equals("cr"))
+			return "http://schemas.microsoft.com/office/comments/2020/reactions";
 		
 		if (prefix.equals("p14"))
 			return "http://schemas.microsoft.com/office/powerpoint/2010/main";

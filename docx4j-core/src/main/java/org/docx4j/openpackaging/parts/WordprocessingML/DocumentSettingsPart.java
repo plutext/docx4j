@@ -116,19 +116,25 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 			needW15 = true;
 		}
 		
-		String mceIgnorableVal = "";
-		if (needW14) {
-			mceIgnorableVal = "w14";
+		// CR-023 (17.1.1): keep what the part declared when it was loaded (Word writes
+		// "w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du"), and add w14 / w15
+		// if their content is present and the list lacks them.  Until 17.1.1 the loaded
+		// list was overwritten with just the two, and a settings part with w15 content
+		// and no w14 content got " w15" - a leading space, an empty prefix.
+		java.util.LinkedHashSet<String> prefixes = new java.util.LinkedHashSet<String>();
+		if (this.jaxbElement.getIgnorable()!=null) {
+			for (String prefix : this.jaxbElement.getIgnorable().trim().split("\\s+")) {
+				if (prefix.length()>0) prefixes.add(prefix);
+			}
 		}
-		
-		if (needW15) {
-			mceIgnorableVal += " w15";
-		} 
+		if (needW14) prefixes.add("w14");
+		if (needW15) prefixes.add("w15");
+		String mceIgnorableVal = String.join(" ", prefixes);
 		log.debug(mceIgnorableVal);
 		
 		namespacePrefixMapper.setMcIgnorable(mceIgnorableVal );
 		
-		this.jaxbElement.setIgnorable(mceIgnorableVal);
+		this.jaxbElement.setIgnorable(mceIgnorableVal.length()==0 ? null : mceIgnorableVal);
 				
     }
 	
