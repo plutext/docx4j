@@ -333,16 +333,23 @@ name kept: taken.
 
 ### Findings on the way
 
-- `strict-smartart.docx` (docx4j-samples-docx4j/sample-docs/strict) cannot be
-  used: its styles part fails docx4j's strict→transitional preprocessing
-  (`NumberFormatException: "12.95pt"`), a docx4j bug independent of this CR.
-  The anonymiser handles an unreadable part as it should (STRICT removes it
-  and records why; KEEP keeps it unsafe), and its font selection degrades to
-  no glyph check when the styles part is missing.
+- `strict-smartart.docx` (docx4j-samples-docx4j/sample-docs/strict) would not
+  load: its styles part failed docx4j's strict→transitional preprocessing
+  (`NumberFormatException: "12.95pt"`) — and so did every strict document
+  Word saves, since the value is Word's docDefaults. **Fixed in 7892cb501**
+  (mc-preprocessor.xslt converts every WordprocessingML point value; new
+  `StrictLoadTest` in docx4j-core-tests over the four strict samples), and
+  the document is back in the anonymiser's corpus (5b97306e8). The
+  anonymiser still handles an unreadable part as it should (STRICT removes
+  it and records why; KEEP keeps it unsafe), and its font selection degrades
+  to no glyph check when the styles part is missing.
 - `FontTablePart.processEmbeddings` (run when a font mapper is first asked
-  for) logs an NPE if the embedded font relationships are gone, so the
-  visitors (and with them the font selector) are created before any part is
-  removed.
+  for) logged an NPE if an embedded font relationship was gone
+  (`RelationshipsPart.getPart(String)` dereferenced a missing relationship
+  in a debug line), and the NPE aborted the registration of every later
+  embedded font. **Fixed in 7892cb501** (null returned with a warning; the
+  font is treated as not embedded); the visitors (and with them the font
+  selector) are still created before any part is removed.
 - On a box without Windows fonts, `IdentityPlusMapper` maps none of Aptos,
   Arial or Times New Roman, so the non-Latin glyph check is a no-op there; the
   scramble still stays in the character's Unicode block.
@@ -355,6 +362,7 @@ name kept: taken.
 | module suite | 31 tests, 0 failures (`AnonymizeProbesTest` 10, `AnonymizeCorpusTest` 8, `FieldInstructionsTest` 10, `AnonymizeCliTest` 3) |
 | every corpus document, STRICT | clean, verified, reloads with docx4j |
 | LibreOffice renders every STRICT output | 9 of 9 to PDF (structural sanity only) |
+| the two findings fixed (7892cb501): docx4j-core-tests | 1239 tests, 0 failures, 11 skipped (2026-09-21) |
 | Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | **pending — Jason** |
 
 ### CHANGELOG entry (for Jason to place)
@@ -384,7 +392,6 @@ name kept: taken.
   scrambled (Verify sees the text nodes and flags them).
 - docx4j-mcp's `anonymize` tool (CR-004 phase 4) can now call
   `AnonymizeCli.run` or `Anonymize` directly.
-- The strict-styles preprocessing bug above wants its own issue.
 
 ## Risks
 
