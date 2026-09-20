@@ -353,7 +353,10 @@ name kept: taken.
   the document is back in the anonymiser's corpus (5b97306e8). The
   anonymiser still handles an unreadable part as it should (STRICT removes
   it and records why; KEEP keeps it unsafe), and its font selection degrades
-  to no glyph check when the styles part is missing.
+  to no glyph check when the styles part is missing. Word check round 2 then
+  found the same converter's second gap — strict text boxes (`wp:wsp` and its
+  children) left in the transitional `wp` namespace, which Word refuses —
+  **also fixed** (the preprocessor maps them to `wps:`/`wpg:`/`wpc:`).
 - `FontTablePart.processEmbeddings` (run when a font mapper is first asked
   for) logged an NPE if an embedded font relationship was gone
   (`RelationshipsPart.getPart(String)` dereferenced a missing relationship
@@ -374,7 +377,8 @@ name kept: taken.
 | every corpus document, STRICT | clean, verified, reloads with docx4j |
 | LibreOffice renders every STRICT output | 9 of 9 to PDF (structural sanity only) |
 | the two findings fixed (7892cb501): docx4j-core-tests | 1239 tests, 0 failures, 11 skipped (2026-09-21) |
-| Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | round 1 (2026-09-21): the corpus outputs opened; `probe-media-original` and `-keep` did not ("The operation is cancelled") — the probe's OLE bytes were junk, Word refuses the document itself. Round 2 staged: the probe embeds a real Word 97-2003 document (from ole-inserted-doc.docx), VBA moved to its own never-shipped probe, the labelled footprints in; **pending — Jason** |
+| Word check round 2: `strict-smartart-anon` would not open — a third converter defect, not the anonymiser: strict keeps the 2010 shape elements in the wordprocessingDrawing namespace (`wp:wsp`) and the preprocessor mapped them to transitional `wp:`, where they do not exist; fixed (mapped to `wps:`/`wpg:`/`wpc:` by root name or nearest ancestor; `StrictLoadTest.textBoxesBecomeWordprocessingShape`) | docx4j-core-tests re-run: see below |
+| Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | round 1 (2026-09-21): the corpus outputs opened; `probe-media-original` and `-keep` did not ("The operation is cancelled") — the probe's OLE bytes were junk, Word refuses the document itself. Round 2: the probe embeds a real Word 97-2003 document, the labelled footprints in; the probe files opened (`-keep` showed the kept altChunk text, trimmed to "SecretHtml paragraph" at Jason's ask); `strict-smartart-anon` did not open — the converter's `wp:wsp` defect, fixed. Round 3 (Jason, 2026-09-21): the SmartArt documents open fine. **Passed.** |
 
 ### CHANGELOG entry (for Jason to place)
 
