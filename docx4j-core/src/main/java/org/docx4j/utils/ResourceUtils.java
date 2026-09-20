@@ -60,6 +60,21 @@ public class ResourceUtils {
     }
     
     /**
+     * The named resource if the classloaders {@link #getResource(String)} tries have it,
+     * else null - no warning, for a resource that is optional (docx4j-fo.properties).
+     *
+     * @since 17.2.0
+     */
+    public static java.io.InputStream getResourceIfPresent(String filename) throws java.io.IOException
+    {
+        java.net.URL url = ResourceUtils.class.getClassLoader().getResource(filename);
+        if (url == null) {
+            url = Thread.currentThread().getContextClassLoader().getResource(filename);
+        }
+        return url == null ? null : url.openConnection().getInputStream();
+    }
+
+    /**
      * Use ClassLoader.getResource to get the named resource
      * @param filename
      * @return

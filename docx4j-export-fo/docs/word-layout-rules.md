@@ -146,6 +146,12 @@ no `w:compat` flag at all, so the mode is their only key.
 
 ### 1.5 Properties
 
+Every property below is read through `Docx4jProperties` and has its default in the code.
+Since 17.2.0 the reference configuration keeps them in `docx4j-fo.properties` (in
+`docx4j-samples-resources`, beside `docx4j.properties`): an optional second file, read from the
+classpath after `docx4j.properties` and consulted only for the keys that file does not set - so a
+key in `docx4j.properties` still wins, and a deployment without either file gets the defaults.
+
 | Property | Default | Effect |
 | --- | --- | --- |
 | `docx4j.convert.out.fo.wordLayout` | `true` | Word's layout managers: greedy line breaking, Word's line box and leading placement, tab-stop resolution, justified-space compression. `false` restores plain FOP layout, and the `docx4j:` foreign attributes are then not written either. |

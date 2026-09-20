@@ -7,22 +7,106 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.utils.ResourceUtils;
 
+/**
+ * docx4j's configuration: {@code docx4j.properties}, loaded once from the classpath, plus
+ * whatever a caller {@link #setProperty(String, String) sets}.
+ *
+ * <p>Since 17.2.0 a second, optional file, {@code docx4j-fo.properties}, supplies
+ * <b>fallback</b> values: it is loaded from the classpath after {@code docx4j.properties}
+ * and only its keys that {@code docx4j.properties} does not set are taken.  It is where
+ * the PDF-via-XSL-FO properties ({@code docx4j.convert.out.fo.*} - the Word layout rules'
+ * opt-outs and tunings, which a deployment rarely changes) live in the reference
+ * configuration ({@code docx4j-samples-resources}), so that {@code docx4j.properties}
+ * stays short.  A key set in {@code docx4j.properties} wins over the same key in
+ * {@code docx4j-fo.properties}; a key set programmatically wins over both.  Any key may
+ * appear in either file; a key in {@code docx4j-fo.properties} outside
+ * {@code docx4j.convert.out.fo} is honoured but logged, since it is probably in the wrong
+ * file.  Absent, the file is not missed (a deployment without docx4j-export-fo has no
+ * use for it); an absent {@code docx4j.properties} is still warned about.</p>
+ */
 public class Docx4jProperties {
 	
 	protected static Logger log = LoggerFactory.getLogger(Docx4jProperties.class);
+
+	/** The optional second file; see the class comment.  @since 17.2.0 */
+	public static final String FO_PROPERTIES = "docx4j-fo.properties";
+
+	/** Keys expected in {@link #FO_PROPERTIES}; others there are honoured but logged.  @since 17.2.0 */
+	public static final String FO_PREFIX = "docx4j.convert.out.fo";
 	
 	private static Properties properties;
 
 	private static void init() {
 
-		properties = new Properties();
 		defaultTheme = null;
-		try (
-				InputStream is = ResourceUtils.getResource("docx4j.properties");
-			) {
-			properties.load(is);
+		InputStream main = null;
+		try {
+			main = ResourceUtils.getResource("docx4j.properties");
 		} catch (Exception e) {
 			log.warn("Couldn't find/read docx4j.properties; " + e.getMessage());
+		}
+		InputStream fo = null;
+		try {
+			fo = ResourceUtils.getResourceIfPresent(FO_PROPERTIES);
+		} catch (Exception e) {
+			log.warn("Couldn't read " + FO_PROPERTIES + "; " + e.getMessage());
+		}
+		try {
+			properties = load(main, fo);
+		} finally {
+			close(main);
+			close(fo);
+		}
+	}
+
+	/**
+	 * The table {@link #init()} builds: {@code docx4j.properties}' entries, then those of
+	 * {@code docx4j-fo.properties} the first did not set.  Either stream may be null (the
+	 * file is absent); neither is closed here.
+	 *
+	 * @since 17.2.0
+	 */
+	public static Properties load(InputStream docx4jProperties, InputStream foProperties) {
+		Properties p = new Properties();
+		if (docx4jProperties != null) {
+			try {
+				p.load(docx4jProperties);
+			} catch (Exception e) {
+				log.warn("Couldn't read docx4j.properties; " + e.getMessage());
+			}
+		}
+		if (foProperties != null) {
+			Properties fo = new Properties();
+			try {
+				fo.load(foProperties);
+			} catch (Exception e) {
+				log.warn("Couldn't read " + FO_PROPERTIES + "; " + e.getMessage());
+			}
+			int taken = 0;
+			for (String key : fo.stringPropertyNames()) {
+				if (!key.startsWith(FO_PREFIX)) {
+					log.info(FO_PROPERTIES + " sets " + key + ", which is not a " + FO_PREFIX
+							+ " property; honoured, but docx4j.properties is its usual place");
+				}
+				if (p.containsKey(key)) {
+					log.debug(key + ": docx4j.properties' value kept over " + FO_PROPERTIES + "'s");
+				} else {
+					p.setProperty(key, fo.getProperty(key));
+					taken++;
+				}
+			}
+			log.debug(FO_PROPERTIES + ": " + taken + " of " + fo.size() + " properties taken");
+		}
+		return p;
+	}
+
+	private static void close(InputStream is) {
+		if (is != null) {
+			try {
+				is.close();
+			} catch (Exception e) {
+				log.debug("closing: " + e.getMessage());
+			}
 		}
 	}
 

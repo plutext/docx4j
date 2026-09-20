@@ -254,6 +254,17 @@ Markup compatibility (CR-024, mc:AlternateContent in DrawingML hosts):
   worksheets, x on the slicer parts).  An Ignorable prefix bound to the default namespace (x) is
   declared beside it.
 
+Configuration:
+
+- docx4j-fo.properties: an optional second properties file for PDF output via XSL FO, read
+  from the classpath after docx4j.properties and consulted only for the keys that file does
+  not set (a key in docx4j.properties wins; a key set programmatically wins over both).  The
+  reference docx4j.properties in docx4j-samples-resources is 280 lines shorter: the renderer
+  settings and the Word layout rules' opt-outs and tunings (docx4j.convert.out.fo.*, and the
+  fop base URI) now live in docx4j-fo.properties beside it.  Absent, the file is not missed
+  (no warning); Docx4jProperties.load(InputStream, InputStream) is the loader, public for
+  tests; ResourceUtils.getResourceIfPresent for an optional resource.
+
 Schema (CR-025, OMML inside DrawingML text):
 
 - An equation in a PowerPoint or Excel text body (a14:m holding m:oMath, MS-ODRAWXML 2.3.1)
