@@ -1,10 +1,11 @@
 # CR-023: Word's extension attributes kept on a round trip - `dateUtc`, `restartNumberingAfterBreak`, `durableId`, `noSpellErr`, `storeItemChecksum`, `formattingAllowed`, `symEx`, and `cei` bound
 
-Status: PROPOSED 2026-09-20 (Jason Harrop: "please write the CR", after the
-[MS-DOCX] inventory of `docs/developer/ms-docx-schema-inventory.md` measured
-three of these attributes dropped on a load-and-save). Written by
-`docs/developer/adding-a-schema.md` step 0: the recipe followed, departures
-named in §13. Drafted with Claude Fable 5.1. Owner: Jason Harrop.
+Status: DONE 2026-09-20 - proposed, accepted and landed the same day
+(phases 0 to 2, §16 to §18): the seven references and four schemas of phase
+1 (cdb44df87), the Word check's two findings (0b1dd27a4: every root keeps
+Word's `mc:Ignorable` list; the `cr` prefix declared), the follow-through.
+Written by `docs/developer/adding-a-schema.md` step 0. Drafted and
+implemented with Claude Fable 5.1. Owner: Jason Harrop.
 
 Scope: every [MS-DOCX] 23.0 extension that docx4j's Word schema does not
 admit where Word writes it, so that a document loaded and saved through
@@ -393,4 +394,36 @@ the declaration survives a save"), and the round-trip test covers
 names. The glossary fix above stands on its own merit (`" w15"` was wrong)
 but was not the repair's cause. **Third re-save (`-resave3`): opens properly
 in Word (Jason, 2026-09-20). Gate of phase 1 met.**
+
+## 18. Phase 2: follow-through (2026-09-20)
+
+- **CHANGELOG**: "Schema (CR-023 ...)" of 17.1.1, with the Ignorable and
+  `cr` fixes added in phase 1's second commit.
+- **The inventory** (`docs/developer/ms-docx-schema-inventory.md`): updated
+  in phase 1's first commit (every state emptied, statuses "admitted
+  (CR-023)", "what this suggests" first and second items implemented).
+- **Hand-offs**: objects-ts told the schema changes to regenerate from
+  (four new files, `w15` and `w16cid` refreshed, `wml.xsd`'s seven
+  references and three `mc:Ignorable` admissions, `org.docx4j.cei`, the
+  `cei` and `cr` prefixes); the Python port the same for its phase D;
+  core-ts told what the oracle now keeps and the two Word-check findings
+  (an undeclared ignorable prefix is a repair; a settings part's list is
+  kept, not rebuilt), since its own save path can have the same faults.
+- **Registry**: `docx4j/CR-023` and its phases done.
+
+**Left for other CRs**: a typed comment reactions part ([MS-OREACTXML],
+`cr`) if wanted; a fixture for the four extensions Word did not write on
+demand (`symEx`, `storeItemChecksum`, `formattingAllowed`,
+`commentEntityInfo`), should a Word build that writes them turn up; the
+inventory's `stylesWithEffects` note (no gain in a typed part).
+
+**Lesson for the recipe** (added to `adding-a-schema.md`'s test step): the
+Office-open check must be on a document that carries every prefix Office
+names in an `mc:Ignorable`, and the round-trip test must assert that each
+such prefix is declared on the part - well-formedness does not check it,
+and neither does a suite that never opens its output in Office.
+
+**Commits**: 25d5c4e18 (proposed), a59b75806 (`dateUtc` decided),
+a5ff7c9db (phase 0), cdb44df87 (phase 1), 0b1dd27a4 (phase 1's Word
+check), and this.
 

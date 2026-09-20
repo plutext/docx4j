@@ -288,6 +288,14 @@ Run the whole `docx4j-core-tests` suite (surefire forks one JVM per class, so
 JAXB context problems show as failures in unrelated classes), and
 `docx4j-export-fo-tests` when the schema touches anything the exporters read.
 
+The Office-open check (the last row of every gate) must be on a document
+that carries every prefix Office names in an `mc:Ignorable`, and a
+round-trip test must assert that each prefix an `mc:Ignorable` names is
+declared on that part: an ignorable prefix Office wrote and docx4j did
+not declare (because it was not in the prefix table) is a repair prompt,
+and neither `xmllint` nor a suite that never opens its output in Office
+catches it (CR-023 found `cr`, the comment reactions prefix, that way).
+
 ## 11. CHANGELOG, CR and the hand-off
 
 - CHANGELOG under a "Schema" heading of the coming release: what is admitted
