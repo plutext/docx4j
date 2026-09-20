@@ -147,7 +147,11 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	String relId = fontRel.getId();    	
     	String fontKey = fontRel.getFontKey();
     	    	 
-    	Part p = this.getRelationshipsPart().getPart(relId);
+    	Part p = this.getRelationshipsPart()==null ? null : this.getRelationshipsPart().getPart(relId);
+    	if (p == null) {
+    		log.warn("Font " + fontNameAsInFontTablePart + ": embedded font relationship " + relId + " has no part; treated as not embedded");
+    		return null;
+    	}
     	
     	if (p instanceof ObfuscatedFontPart) {
     	

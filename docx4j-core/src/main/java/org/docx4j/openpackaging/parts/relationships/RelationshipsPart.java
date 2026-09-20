@@ -250,12 +250,18 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		return (sourceP instanceof OpcPackage);
 	}
 
-	/** Gets a loaded Part by its id */
+	/** Gets a loaded Part by its id, or null if no relationship has that id */
 	public Part getPart(String id) {
 
 		log.debug("looking for: " + id);
 		
 		Relationship r = getRelationshipByID(id);
+		if (r == null) {
+			// a dangling r:id (a hand-built or repaired document): the caller decides;
+			// until 17.2.0 this threw NullPointerException from the debug line below
+			log.warn(getPartName() + " has no relationship with id " + id);
+			return null;
+		}
     	log.debug(id + " points to " + r.getTarget());
 		
 		return getPart(r);		

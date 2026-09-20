@@ -188,12 +188,39 @@
 						</xsl:when>
 						
 					
-						<!-- points to twips-->						
+						<!-- WordprocessingML points to half-points: the attributes typed ST_HpsMeasure
+						     (w:sz is above; szCs, kern, position, and the ruby hps* here). 2026-09-21 -->
+						<xsl:when test="namespace-uri(..) = 'http://purl.oclc.org/ooxml/wordprocessingml/main'
+						                and (local-name(..)='szCs' or local-name(..)='kern' or local-name(..)='position'
+						                     or local-name(..)='hps' or local-name(..)='hpsRaise' or local-name(..)='hpsBaseText')
+						                and substring(., string-length(.) - 1) = 'pt'">
+
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+
+							<xsl:value-of select="round(substring-before(., 'pt') * 2)" />
+
+						</xsl:when>
+
+						<!-- WordprocessingML points to twips: everything else Word writes in points in a
+						     strict document (w:spacing before/after/line, w:ind, table widths, borders ...),
+						     bound as integers on the transitional side. Until 2026-09-21 this branch passed
+						     the value through, so every strict document Word saves failed to load on its
+						     styles part (docDefaults w:spacing w:line="12.95pt" = 259). w:line under
+						     lineRule="auto" is right at x20 too: Word writes the 240ths as points. -->
+						<xsl:when test="namespace-uri(..) = 'http://purl.oclc.org/ooxml/wordprocessingml/main'
+						                and substring(., string-length(.) - 1) = 'pt'">
+
+							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
+
+							<xsl:value-of select="round(substring-before(., 'pt') * 20)"/>
+
+						</xsl:when>
+
+						<!-- points in another strict namespace: passed through, as before -->
 						<xsl:when test="substring(., string-length(.) - 1) = 'pt'">	
 													
 							<xsl:variable name="dummy2" select="java:org.docx4j.jaxb.JaxbValidationEventHandler.logXml(..)" />
 								
-							<!--xsl:value-of select="round(substring-before(., 'pt') * 20)"/-->
 							<xsl:value-of select="." />
 							
 						</xsl:when>
