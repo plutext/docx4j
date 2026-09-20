@@ -265,6 +265,14 @@ Schema (CR-025, OMML inside DrawingML text):
   the equation stays DOM, as before (CR-021).  Found as a regression in the TypeScript
   objects package, whose one JAXB-like context types every equation.
 
+Schema (charts):
+
+- The Office 2016+ chart option c16r3:dispNaAsBlank (treat #N/A as blank) keeps its value on a
+  typed round trip: Office writes val unqualified, and docx4j's schema for that namespace
+  bound it qualified as [MS-ODRAWXML] 5.31's schema text says, so val was never read and
+  the element was written back bare - the option flipped to false.  The prefix is Office's
+  c16r3 (docx4j wrote a made-up c173).  Found by the docx4j-python session's schema refresh.
+
 Schema (CR-023, Word's extension attributes kept on a round trip):
 
 - A document loaded and saved through docx4j keeps what Word 365 writes on ISO elements and

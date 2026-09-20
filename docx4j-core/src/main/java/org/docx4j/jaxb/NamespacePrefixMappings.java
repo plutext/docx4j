@@ -448,7 +448,7 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "a16svg"; // made up
 		}
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2017/03/chart")) {
-			return "c173"; // made up
+			return "c16r3"; // Office's prefix ([MS-ODRAWXML] 2.33); was the made-up "c173" until 17.2.0
 		}
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2017/decorative")) {
 			return "adec"; // made up
@@ -895,7 +895,7 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "http://schemas.microsoft.com/office/drawing/2016/ink";
 		if (prefix.equals("a16svg"))
 			return "http://schemas.microsoft.com/office/drawing/2016/SVG/main";
-		if (prefix.equals("c173"))
+		if (prefix.equals("c16r3") || prefix.equals("c173"))
 			return "http://schemas.microsoft.com/office/drawing/2017/03/chart";
 		if (prefix.equals("adec"))
 			return "http://schemas.microsoft.com/office/drawing/2017/decorative";
