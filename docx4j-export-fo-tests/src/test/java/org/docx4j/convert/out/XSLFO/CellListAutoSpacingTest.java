@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * at 1.2pt.  A corpus document of about a hundred such rows was 13.3pt a row short of
  * Word and a page short of its five.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class CellListAutoSpacingTest extends AbstractXSLFOTest {
 

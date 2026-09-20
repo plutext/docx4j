@@ -952,7 +952,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
      * but not declared makes Word and Excel repair the file (CR-023, CR-024).  Empty when
      * the root has no such attribute, or the part is not yet unmarshalled.
      *
-     * @since 17.1.1 (CR-024): the general rule; before, only the parts overriding this
+     * @since 17.2.0 (CR-024): the general rule; before, only the parts overriding this
      * method declared their Ignorable prefixes, and a SpreadsheetML part other than the
      * workbook declared a prefix only if its content happened to use the namespace.
      */

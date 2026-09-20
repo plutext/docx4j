@@ -48,7 +48,7 @@ public class CompatibilityOptionsTest {
 		if (mode > 0) {
 			dsp.setWordCompatSetting("compatibilityMode", Integer.toString(mode));
 		} else {
-			// createPackage writes mode 15 since 17.1.1; this test wants no setting at all
+			// createPackage writes mode 15 since 17.2.0; this test wants no setting at all
 			dsp.getContents().getCompat().getCompatSetting().removeIf(cs -> "compatibilityMode".equals(cs.getName()));
 		}
 		return pkg;

@@ -212,7 +212,7 @@ public class PoiMetafileRenderer implements MetafileRenderer {
 	 * the mapper can answer (CR-001, non-embedded fonts).
 	 *
 	 * @param fontMapper the document's font mapper, or null
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public void draw(byte[] data, Graphics2D target, Rectangle2D bounds,
 			org.docx4j.fonts.Mapper fontMapper) {

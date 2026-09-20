@@ -24,7 +24,7 @@ import org.junit.Test;
  * the Word measurement behind the property, are in docx4j-export-fo-tests'
  * {@code StoredFieldResultTest}.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class StoredFieldResultHtmlTest {
 

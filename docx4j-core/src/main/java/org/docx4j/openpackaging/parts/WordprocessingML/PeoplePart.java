@@ -67,7 +67,7 @@ public final class PeoplePart extends JaxbXmlPart<org.docx4j.w15.CTPeople> {
 	 *
 	 * NB it is up to you to jaxbElement.setIgnorable.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Override
     protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
@@ -77,7 +77,7 @@ public final class PeoplePart extends JaxbXmlPart<org.docx4j.w15.CTPeople> {
 	}
 
 	/**
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Override
 	public String getMceIgnorable() {

@@ -54,7 +54,7 @@ public class SubstituteLineMetricsTest {
 		if (arimo == null) arimo = PhysicalFonts.get("Arimo");
 		Assume.assumeNotNull(arimo);
 		// Arimo's usWin box is much taller (1.4321) - that was the bug this is about - and
-		// since 17.1.1 Arimo, which sets USE_TYPO_METRICS, reads on its typo box, which its
+		// since 17.2.0 Arimo, which sets USE_TYPO_METRICS, reads on its typo box, which its
 		// designers made Arial's: the substitute's own metrics now agree with the table's
 		WordLineMetrics.Metrics own = WordLineMetrics.get(arimo);
 		assertTrue("Arimo sets USE_TYPO_METRICS", own.typoMetrics);

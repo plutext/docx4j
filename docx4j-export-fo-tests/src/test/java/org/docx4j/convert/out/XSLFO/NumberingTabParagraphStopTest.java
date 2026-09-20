@@ -49,7 +49,7 @@ import org.w3c.dom.Element;
  * behind the label and the other past {@code w:ind} left, and both filters already
  * existed.</p>
  *
- * @since 17.1.1 (CR-001 batch 48 item 6)
+ * @since 17.2.0 (CR-001 batch 48 item 6)
  */
 public class NumberingTabParagraphStopTest extends AbstractXSLFOTest {
 

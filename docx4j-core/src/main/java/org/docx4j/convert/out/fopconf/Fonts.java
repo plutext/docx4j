@@ -276,7 +276,7 @@ public class Fonts {
          * alone, so it is the one form a CFF-flavoured or CID font can take; see
          * FopConfigUtil.
          *
-         * @since 17.1.1
+         * @since 17.2.0
          */
         public Boolean isAdvanced() {
             return advanced;

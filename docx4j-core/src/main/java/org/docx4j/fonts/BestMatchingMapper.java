@@ -44,7 +44,7 @@ import org.docx4j.wml.Fonts;
  * which is a closest fit for the font used in the
  * document.
  *
- * Since 17.1.1 that guess is not its first answer but its last but two: it takes the
+ * Since 17.2.0 that guess is not its first answer but its last but two: it takes the
  * shared order of precedence in {@link Mapper} (the font itself, the document's
  * embedded form, then the measured passes - the metric clones, w:altName, a face of
  * the same class), and its own panose match and FontSubstitutions.xml are consulted
@@ -205,12 +205,12 @@ public class BestMatchingMapper extends Mapper {
 	 * installed face FontSubstitutions.xml lists for the name - for what is still
 	 * unmapped after the installed font, the embedded forms, the metric clones,
 	 * w:altName and a face of the same class (the shared order, Mapper), and before
-	 * Word's default.  Until 17.1.1 the panose match came first of all, and a legacy
+	 * Word's default.  Until 17.2.0 the panose match came first of all, and a legacy
 	 * Indic face carrying Arial's panose took Myriad and CorpoS; the Calibri-to-Carlito
 	 * workaround that guarded against the same thing for Calibri is the metric table's
 	 * job now.
 	 *
-	 * @since 17.1.1 as this method; the same lookups were populateFontMappings' before
+	 * @since 17.2.0 as this method; the same lookups were populateFontMappings' before
 	 */
 	@Override
 	public void addMapperSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {

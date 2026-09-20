@@ -34,7 +34,7 @@ import org.junit.Test;
 /**
  * The same package numbered from several threads at once, each traversal with a
  * state of its own, gets the same labels every time: counters are no longer
- * per package (CR-014 gap 1).  Before 17.1.1 the increments interleaved.
+ * per package (CR-014 gap 1).  Before 17.2.0 the increments interleaved.
  */
 public class NumberingConcurrencyTest {
 

@@ -346,7 +346,7 @@ public final class WordGoldenRunner {
 	 * every run header.</p>
 	 *
 	 * @return how many lines were removed
-	 * @since 17.1.1 (CR-001 batch 48)
+	 * @since 17.2.0 (CR-001 batch 48)
 	 */
 	static int pruneSupersededLines(File manifest) {
 

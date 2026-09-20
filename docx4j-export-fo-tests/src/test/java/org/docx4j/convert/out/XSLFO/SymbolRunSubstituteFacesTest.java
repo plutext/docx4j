@@ -40,7 +40,7 @@ import org.w3c.dom.NodeList;
 /**
  * A run in Wingdings whose characters need both substitute faces (Noto Sans Symbols 2
  * for most of the range, Noto Sans Symbols for the rest; PhysicalFonts.getWDingsFont
- * and getWDingsFont2): one fo:inline per face, every character rendered.  Until 17.1.1
+ * and getWDingsFont2): one fo:inline per face, every character rendered.  Until 17.2.0
  * the second inline was appended to the selector's scratch Document beside the first,
  * which a Document does not allow (HIERARCHY_REQUEST_ERR), so such a run failed
  * (CR-016 phase 4).

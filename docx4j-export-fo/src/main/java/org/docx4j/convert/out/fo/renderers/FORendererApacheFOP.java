@@ -430,7 +430,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings, ResourceResolver resourceResolver) throws FOPException {
 
 		// Which FOP this is (Apache's, or the docx4j FO renderer with its hooks): probed and
-		// logged once, and the hook-dependent rules read it.  CR-020.  @since 17.1.1
+		// logged once, and the hook-dependent rules read it.  CR-020.  @since 17.2.0
 		FopCapabilities.get();
 
 		org.docx4j.convert.out.fopconf.Fop fopConfig = settings.getFopConfig();
@@ -460,7 +460,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			 * FOP's subsetter reads past the end of - without which the font is silently not
 			 * embedded at all (FontPaddingResourceResolver says why, and which fonts).  The
 			 * wrapper passes everything else through untouched, and FOP's own default
-			 * resolver is what it wraps when the caller supplied none.  @since 17.1.1 */
+			 * resolver is what it wraps when the caller supplied none.  @since 17.2.0 */
 			FopConfParser fopConfParser = new FopConfParser(is, defaultBaseURI,
 					FontPaddingResourceResolver.wrap(resourceResolver));
 			FopFactoryBuilder builder = fopConfParser.getFopFactoryBuilder();

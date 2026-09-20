@@ -38,7 +38,7 @@ import org.w3c.dom.NodeList;
  * child at all - refused it. Measured on a corpus document with five of them, where Word
  * has six blank pages and docx4j emitted one.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class SectionEndPageBreakTest extends AbstractXSLFOTest {
 

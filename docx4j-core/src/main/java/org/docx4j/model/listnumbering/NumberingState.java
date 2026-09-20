@@ -28,7 +28,7 @@ import java.util.Set;
  * The counters of one story of one traversal: what number each list level is up
  * to, and which {@code w:num} start overrides have been applied.  Definitions
  * ({@link ListNumberingDefinition}, {@link ListLevel}) hold none of this since
- * 17.1.1; a traversal owns its states (see {@link NumberingStates}) and passes
+ * 17.2.0; a traversal owns its states (see {@link NumberingStates}) and passes
  * the right one to {@link Emulator#getNumber(org.docx4j.openpackaging.packages.WordprocessingMLPackage, org.docx4j.wml.PPr, NumberingState)},
  * so two exports of one package at once do not interleave, a footer's list
  * starts at its own start whenever the footer is converted, and
@@ -46,7 +46,7 @@ import java.util.Set;
  * {@link org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart#getNumberingState()}
  * holds is what the no-state overloads use, as they always have.
  *
- * @since 17.1.1 (CR-014 phase 4)
+ * @since 17.2.0 (CR-014 phase 4)
  */
 public final class NumberingState {
 
@@ -80,13 +80,13 @@ public final class NumberingState {
 	 * abstract list is up to in this story.  For a parity harness recording the state after
 	 * each paragraph; the map and its counters are the live ones, so do not hold the view
 	 * across a later {@link Emulator#getNumber}.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public Map<String, ListLevel.Counter> counters() {
 		return java.util.Collections.unmodifiableMap(counters);
 	}
 
-	/** The {@code numId/ilvl} keys whose {@code w:startOverride} has been applied in this story, read-only. @since 17.1.1 */
+	/** The {@code numId/ilvl} keys whose {@code w:startOverride} has been applied in this story, read-only. @since 17.2.0 */
 	public Set<String> startOverridesApplied() {
 		return java.util.Collections.unmodifiableSet(startOverridesApplied);
 	}

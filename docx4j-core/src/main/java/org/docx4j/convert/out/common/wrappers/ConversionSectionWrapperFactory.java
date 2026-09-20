@@ -187,7 +187,7 @@ public class ConversionSectionWrapperFactory {
 
 	/** @param startsPage whether the section this sectPr ends is a continuous one which
 	 *  begins a page of its own ({@link #startsPage}), so that its own headers and footers
-	 *  apply to it.  @since 17.1.1 */
+	 *  apply to it.  @since 17.2.0 */
 	protected static ConversionSectionWrapper createSectionWrapper(
 			SectPr sectPr, HeaderFooterPolicy headerFooterPolicy, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, 
 			int conversionSectionIndex, List<Object> content,
@@ -479,7 +479,7 @@ public class ConversionSectionWrapperFactory {
 	 * w:cols across.
 	 *
 	 * <p>Where several parts have that count they may still differ in their gap, which
-	 * the page master can carry only once: since 17.1.1 the <b>gap with the most text
+	 * the page master can carry only once: since 17.2.0 the <b>gap with the most text
 	 * across the parts sharing it</b> supplies it, since that is where most of the lines
 	 * are laid out.  It used to be the sequence's own section if it had the count, else
 	 * the first part that did.  Measured on a mode-15 document whose two-column
@@ -537,7 +537,7 @@ public class ConversionSectionWrapperFactory {
 	/** The text length of each merged part, the sequence's own part last: the weight
 	 *  {@link #useWinningPartCols} settles a column-gap tie by.  Taken before
 	 *  spanColumnParts wraps the parts, whose ends index the unwrapped content.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	private static int[] partWeights(List<Object> content, List<MergedPart> columnParts) {
 		int[] weights = new int[columnParts.size() + 1];
 		int start = 0;
@@ -576,7 +576,7 @@ public class ConversionSectionWrapperFactory {
 	 * parts to declare them; the wrapper's own, which is the last, still supplies
 	 * whatever no earlier part did.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void usePartPageNumbering(ConversionSectionWrapper wrapper, List<MergedPart> columnParts) {
 		if (wrapper == null || columnParts.isEmpty() || wrapper.getPageNumberInformation() == null) return;
@@ -616,7 +616,7 @@ public class ConversionSectionWrapperFactory {
 	 * mergePageBreakParagraphs), so merging is what reproduces that.</p>
 	 *
 	 * @param next the body's block after the paragraph carrying the section break, or null
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static boolean startsPage(WordprocessingMLPackage wmlPackage, Object next) {
 		org.docx4j.model.PropertyResolver propertyResolver = null;
@@ -680,11 +680,11 @@ public class ConversionSectionWrapperFactory {
 	 * <p>Only the left and right margins are the reference part's.  The top, bottom,
 	 * header and footer distances are always the <b>first</b> part's, because that is the
 	 * one Word starts the page with and no part can carry a vertical difference as an
-	 * indent - a page master has one before-edge.  Until 17.1.1 the whole w:pgMar came
+	 * indent - a page master has one before-edge.  Until 17.2.0 the whole w:pgMar came
 	 * from the reference, so where {@link #marginReference} chose a multi-column part the
 	 * page also took that part's vertical margins: measured (CR-001 batch 43, M53), that
 	 * pushed one corpus document's whole first page 14.1pt down the page, away from Word,
-	 * for a horizontal change that moved no line at all.  @since 17.1.1</p>
+	 * for a horizontal change that moved no line at all.  @since 17.2.0</p>
 	 *
 	 * @param part the section whose left and right w:pgMar the masters take; null leaves
 	 *             the wrapper's own
@@ -714,7 +714,7 @@ public class ConversionSectionWrapperFactory {
 		 * draws them at the margins of the section that owns the page, and the section
 		 * that owns most of them is the first, which is also the one Word starts the page
 		 * with; so they take the first part's margins wherever the masters did not.
-		 * PageDimensions carries the difference to LayoutMasterSetBuilder.  @since 17.1.1 */
+		 * PageDimensions carries the difference to LayoutMasterSetBuilder.  @since 17.2.0 */
 		if (vertical != part && marginLeft(vertical) >= 0 && marginRight(vertical) >= 0) {
 			wrapper.getPageDimensions().setHeaderFooterIndent(
 					marginLeft(vertical) - marginLeft(part), marginRight(vertical) - marginRight(part));
@@ -730,7 +730,7 @@ public class ConversionSectionWrapperFactory {
 		 *  the wrapper's own */
 		final SectPr marginRef;
 		/** the first of the merged parts, whose vertical w:pgMar the masters take.
-		 *  @since 17.1.1 */
+		 *  @since 17.2.0 */
 		final SectPr verticalMarginRef;
 		Merged(int cols, SectPr marginRef, SectPr verticalMarginRef) {
 			this.cols = cols;
@@ -754,7 +754,7 @@ public class ConversionSectionWrapperFactory {
 	 * built on section 1 it was 257pt and the two columns came out 116.5pt wide, with the
 	 * blocks' negative end-indents letting the text overflow them.</p>
 	 *
-	 * <p>Until 17.1.1 that only applied where the multi-column part's text column was the
+	 * <p>Until 17.2.0 that only applied where the multi-column part's text column was the
 	 * <em>wider</em> of the two, and a narrower one was just as wrong: measured on a corpus
 	 * document (CR-001 batch 43, M53) whose section 1 is one column at 72pt margins and
 	 * whose continuous section 2 is two columns at 85.05pt, the masters were built on
@@ -932,7 +932,7 @@ public class ConversionSectionWrapperFactory {
 	 */
 	/*
 	 * A continuous break which changes only the margins or the header/footer distance is
-	 * NOT promoted.  The section-continuous-geometry probe (17.1.1) seemed to show Word
+	 * NOT promoted.  The section-continuous-geometry probe (17.2.0) seemed to show Word
 	 * starting a page for a top-margin, bottom-margin and footer-distance change in mode
 	 * 15, but its first section's page size differs from the rest by a twip (the
 	 * page-size rule above), and its 3-line paragraphs let widow/orphan control account

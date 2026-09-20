@@ -249,7 +249,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			}
 			// a tab stop at the end of the line, or at its centre; see
 			// XsltFOFunctions.ptabToFO.  A centre ptab produced nothing at all until
-			// 17.1.1, so the field it should have centred ran on from the one before it
+			// 17.2.0, so the field it should have centred ran on from the one before it
 			// (CR-001 batch 43, M43).
 			STPTabAlignment alignment = ((R.Ptab)o).getAlignment();
 			String kind = STPTabAlignment.RIGHT.equals(alignment) ? XsltFOFunctions.TAB_PTAB_RIGHT
@@ -752,7 +752,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	private int leadingTabOrdinal = -1;
 	/** the tab being converted: how many tabs precede it in its paragraph */
 	private int tabOrdinal = 0;
-	/** the tab being converted: how many tabs follow it in its paragraph.  @since 17.1.1 */
+	/** the tab being converted: how many tabs follow it in its paragraph.  @since 17.2.0 */
 	private int followingTabs = 0;
 
 	@Override
@@ -785,7 +785,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
     /**
      * The run's effective properties as attributes of its fo:inline: the document
      * defaults, the paragraph style's run properties, the run's character style and its
-     * direct formatting.  Called for every run since 17.1.1, rPr or not, so each inline
+     * direct formatting.  Called for every run since 17.2.0, rPr or not, so each inline
      * carries its own size and font instead of inheriting the block's.
      *
      * @param pPrDirect the paragraph's own w:pPr, or null

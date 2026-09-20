@@ -49,7 +49,7 @@ import org.junit.Test;
  * descriptor with no font file - the PDF then names a font it does not embed. This is
  * the defect at the level it happens, over the real font files, without needing a PDF.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class FontPaddingResourceResolverTest {
 

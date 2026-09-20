@@ -59,7 +59,7 @@ public final class CommentsPart extends JaxbXmlPartXPathAware<Comments> {
 	 *
 	 * NB it is up to you to jaxbElement.setIgnorable.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Override
     protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
@@ -69,7 +69,7 @@ public final class CommentsPart extends JaxbXmlPartXPathAware<Comments> {
 	}
 
 	/**
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Override
 	public String getMceIgnorable() {

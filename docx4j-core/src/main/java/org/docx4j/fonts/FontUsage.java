@@ -39,7 +39,7 @@ import java.util.TreeMap;
  * <p>Built by {@link FontsAnalysis#usage}, which asks
  * {@link RunFontSelector#documentFontFor} for every character.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class FontUsage {
 

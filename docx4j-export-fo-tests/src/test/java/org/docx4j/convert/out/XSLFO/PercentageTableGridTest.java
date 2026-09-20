@@ -48,7 +48,7 @@ import org.w3c.dom.NodeList;
  * 4794/1722/1722/2269/2984 - two columns 20% and 13% narrow and one 40% wide - which cost the
  * document two of Word's thirteen pages.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PercentageTableGridTest extends AbstractXSLFOTest {
 
@@ -90,7 +90,7 @@ public class PercentageTableGridTest extends AbstractXSLFOTest {
 	private static WordprocessingMLPackage pkg(String tblW) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		// the rule above is the below-mode-15 one (the grid edge as the percentage's base);
-		// createPackage writes mode 15 since 17.1.1, so pin the mode the corpus document had
+		// createPackage writes mode 15 since 17.2.0, so pin the mode the corpus document had
 		pkg.getMainDocumentPart().getDocumentSettingsPart().setCompatibilityMode(14);
 		pkg.getMainDocumentPart().setJaxbElement((Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>" + table(tblW) + SECT_PR + "</w:body></w:document>"));

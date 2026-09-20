@@ -904,7 +904,7 @@ public class XsltFOFunctions {
 
 				// rPr in pPr direct formatting only applies to paragraph mark,
 				// and by virtue of that, to list item label, so it is not passed here.
-				// (Since 17.1.1 getEffectiveRPr never applies it in any case; the mark
+				// (Since 17.2.0 getEffectiveRPr never applies it in any case; the mark
 				//  itself is getEffectiveParagraphMarkRPr, used for rPrParagraphMark below.)
 				// 2018 05 .. 17.0.4: the paragraph mark's sz was applied to the block too,
         		// on the theory that a 12pt mark on 11pt runs gives more line spacing.
@@ -1078,7 +1078,7 @@ public class XsltFOFunctions {
 	 * effective w:lang (org.docx4j.model.properties.run.Lang), so nothing is done
 	 * about them here.  Two limitations follow: Word chooses its patterns per run,
 	 * while FOP reads the hyphenation properties from the block, so a paragraph
-	 * mixing languages is hyphenated in the paragraph's own.  (Until 17.1.1 a w:lang
+	 * mixing languages is hyphenated in the paragraph's own.  (Until 17.2.0 a w:lang
 	 * carried only by the paragraph mark did not reach the effective rPr at all,
 	 * because StyleUtil.isEmpty(RPr) did not count w:lang; CR-015 phase 1.)
 	 *
@@ -1117,7 +1117,7 @@ public class XsltFOFunctions {
 	}
 
 	/** @param state the conversion's numbering state for the story being converted
-	 *  (null: the numbering part's shared default).  @since 17.1.1 */
+	 *  (null: the numbering part's shared default).  @since 17.2.0 */
 	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, Node childResults,
 			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
@@ -1201,7 +1201,7 @@ public class XsltFOFunctions {
 				// a w:pageBreakBefore the paragraph states itself, as against one its style
 				// gives it: a w:br w:type="page" at the head of the paragraph reaches here in
 				// that form (the PageBreak preprocess), and listItemPageBreaks tells the two
-				// apart by it (§3.3).  @since 17.1.1
+				// apart by it (§3.3).  @since 17.2.0
 				if (pPrDirect!=null && pPrDirect.getPageBreakBefore()!=null
 						&& pPrDirect.getPageBreakBefore().isVal()) {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_BREAK_DIRECT, "1");
@@ -1562,7 +1562,7 @@ public class XsltFOFunctions {
 	 * Word and were 45 x 5.42 = 244.1pt for us, which wrapped the heading, made the
 	 * header two lines on every page and 8 Word pages 10 of ours.
 	 *
-	 * <p>The visitor pathway no longer depends on this: since 17.1.1 it resolves every
+	 * <p>The visitor pathway no longer depends on this: since 17.2.0 it resolves every
 	 * run, {@code w:rPr} or not, so its inlines carry their own size (CR-015 phase 2b,
 	 * evaluated on the corpora).  The pin stays for the XSLT pathway; see the call.</p>
 	 *
@@ -1745,7 +1745,7 @@ public class XsltFOFunctions {
 	 * {@code docx2fo.xslt} copies this fragment, and so does
 	 * {@code FOExporterVisitorDelegate.appendSectionFooter}.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static DocumentFragment endnotesHeading(AbstractWmlConversionContext context) {
 
@@ -1904,7 +1904,7 @@ public class XsltFOFunctions {
 	 * @param state the conversion's counters for the story being converted
 	 *        ({@link FOConversionContext#getNumberingState()}); null for the
 	 *        numbering part's shared default
-	 * @since 17.1.1 (CR-014 phase 4)
+	 * @since 17.2.0 (CR-014 phase 4)
 	 */
 	protected static NumberingResult numberFor(WordprocessingMLPackage wmlPackage, String pStyleVal,
 			PPr pPrDirect, PPr pPr, org.docx4j.model.listnumbering.NumberingState state) {
@@ -2009,7 +2009,7 @@ public class XsltFOFunctions {
 	/**
 	 * What the number is drawn with: the paragraph mark's rPr with the level's applied
 	 * over it (the level wins where both state a property, as Word draws it - CR-014
-	 * probe P3; before 17.1.1 the mark won, the font excepted: it comes
+	 * probe P3; before 17.2.0 the mark won, the font excepted: it comes
 	 * from the numbering, since anything else would change the bullet, and is taken from
 	 * the level before this).  The level's rPr formats the <b>number</b> alone (ECMA-376
 	 * 17.9.24), so what this returns never reaches the paragraph's text.
@@ -2023,10 +2023,10 @@ public class XsltFOFunctions {
 	protected static RPr labelRPr(RPr level, RPr rPrParagraphMark) {
 
 		if (level==null) return rPrParagraphMark;
-		/* The level's rPr over the paragraph mark's, since 17.1.1: measured on CR-014
+		/* The level's rPr over the paragraph mark's, since 17.2.0: measured on CR-014
 		 * probe P3 (2026-09-12), an override level stating w:b and w:sz 36 gives Word an
 		 * 18pt bold label beside a 12pt paragraph mark, where the mark applied over the
-		 * level (the merge before 17.1.1) kept the label at the mark's 12pt. */
+		 * level (the merge before 17.2.0) kept the label at the mark's 12pt. */
 		RPr merged = rPrParagraphMark==null ? XmlUtils.deepCopy(level) : XmlUtils.deepCopy(rPrParagraphMark);
 		if (rPrParagraphMark!=null) StyleUtil.apply(level, merged);
 		return merged;
@@ -2050,7 +2050,7 @@ public class XsltFOFunctions {
 	}
 
 	/** @param state the conversion's numbering state for the story being converted;
-	 *  null for the numbering part's shared default.  @since 17.1.1 */
+	 *  null for the numbering part's shared default.  @since 17.2.0 */
 	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
 			Element foBlockElement, Element foListBlock, PPrBase.Ind[] indOut,
@@ -2230,7 +2230,7 @@ public class XsltFOFunctions {
 			 * and ends at 1571, past the stop, where the substitute this machine draws is
 			 * 0.838 em = 184 twips and ends at 1537, 11 twips short of it.  A wider bound
 			 * would not be one: Symbol's widest glyph is 1.042 em and Wingdings' 1.443.
-			 * @since 17.1.1 (CR-001 batch 48 item 6) */
+			 * @since 17.2.0 (CR-001 batch 48 item 6) */
 			int stopWidth = numChars == 0 ? 0 : Math.max(numWidth,
 					labelWidthTwips(wmlPackage, foListItemLabelBody,
 							foListItemLabelBody.getTextContent(), 90 * numChars)[0]);
@@ -2241,7 +2241,7 @@ public class XsltFOFunctions {
 			 * still draws in whatever it drew in before and no document's class moves.  It
 			 * replaces the pair above rather than joining the max(): the point is to stop
 			 * guessing, and the estimate and the substitute are both guesses at it.
-			 * @since 17.1.1 (CR-001 batch 49 item 2) */
+			 * @since 17.2.0 (CR-001 batch 49 item 2) */
 			int declared = numChars == 0 ? 0
 					: declaredFaceWidthTwips(triple, foListItemLabelBody,
 							foListItemLabelBody.getTextContent());
@@ -2272,7 +2272,7 @@ public class XsltFOFunctions {
 			 * it (the §2.8 path).  Measured: reading the rule there as well moved a corpus
 			 * document's w:ind left="0" firstLine="851" numbered paragraph 17.35pt left and
 			 * re-wrapped it, where Word's own break is the one we had.
-			 * @since 17.1.1 (CR-001 batch 47 item 3) */
+			 * @since 17.2.0 (CR-001 batch 47 item 3) */
 			if (pdbs < 0) {
 				int numberPosition = indent.getNumberPosition();
 				int indLeft = numberPosition + hangingTwips(indent);
@@ -2296,7 +2296,7 @@ public class XsltFOFunctions {
 			 * space glyph.  The label block records which separator the level asks for
 			 * and WordListItemLayoutManager writes the space, of exactly the gap's
 			 * width, into the label's line.  "nothing" is not recorded: Word writes no
-			 * character for it.  @since 17.1.1 */
+			 * character for it.  @since 17.2.0 */
 			String suff = triple.getLvl()!=null && triple.getLvl().getSuff()!=null
 					&& triple.getLvl().getSuff().getVal()!=null
 					? triple.getLvl().getSuff().getVal() : "tab";
@@ -2309,7 +2309,7 @@ public class XsltFOFunctions {
 			 * dots end at 149.76 and its text begins at 149.83), but over the first
 			 * probe's 2pt advance, which is under one cell of the grid, neither side
 			 * paints a dot and Word's space is still there.
-			 * @since 17.1.1 (CR-001 batch 47 item 5b) */
+			 * @since 17.2.0 (CR-001 batch 47 item 5b) */
 			if (WordLayoutFixups.isEnabled() && ("tab".equals(suff) || "space".equals(suff))) {
 				foListItemLabelBody.setAttribute(WordLayoutFixups.HINT_LABEL_SUFFIX, suff);
 			}
@@ -2378,7 +2378,7 @@ public class XsltFOFunctions {
 	}
 
 	/** @param state the conversion's numbering state for the story being converted;
-	 *  null for the numbering part's shared default.  @since 17.1.1 */
+	 *  null for the numbering part's shared default.  @since 17.2.0 */
 	protected static boolean createInlineLabel(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
 			Document document, Element foBlockElement, PPrBase.Ind[] indOut,
@@ -2490,7 +2490,7 @@ public class XsltFOFunctions {
 	 *
 	 * @param labelEnd the end of the label, in twips from the left margin
 	 * @param indLeft the paragraph's {@code w:ind} left, in twips from the left margin
-	 * @since 17.1.1 (CR-001 batch 47 item 3)
+	 * @since 17.2.0 (CR-001 batch 47 item 3)
 	 */
 	/**
 	 * The width of a numbering label in twips, measured in the very face and size the label
@@ -2517,7 +2517,7 @@ public class XsltFOFunctions {
 	 * @param labelEl the label's own FO element, carrying its font-family and font-size
 	 * @param text the label as it will be drawn
 	 * @param fallbackTwips the &#xa7;2.8 estimate, used where nothing can be measured
-	 * @since 17.1.1 (CR-001 batch 47 item 5)
+	 * @since 17.2.0 (CR-001 batch 47 item 5)
 	 */
 	private static int[] labelWidthTwips(WordprocessingMLPackage wmlPackage, Element labelEl,
 			String text, int fallbackTwips) {
@@ -2556,7 +2556,7 @@ public class XsltFOFunctions {
 	 * is where a bullet's symbol font is named; the size is the label's own, as
 	 * {@link #labelWidthTwips} takes it.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 49 item 2)
+	 * @since 17.2.0 (CR-001 batch 49 item 2)
 	 */
 	private static int declaredFaceWidthTwips(NumberingResult triple, Element labelEl, String text) {
 
@@ -2591,7 +2591,7 @@ public class XsltFOFunctions {
 	/** The label as the <b>document</b> writes it: the level's own {@code w:lvlText} where
 	 *  that names no placeholder (a bullet, whose character is the symbol font's own code
 	 *  point), else the FO's text, which for a number is the same characters.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	private static String rawLabelText(NumberingResult triple, String foText) {
 		if (triple.getLvl() == null || triple.getLvl().getLvlText() == null) return foText;
 		String lvlText = triple.getLvl().getLvlText().getVal();
@@ -2601,7 +2601,7 @@ public class XsltFOFunctions {
 
 	/** The face the level declares for its label, or null: {@code w:lvl/w:rPr/w:rFonts},
 	 *  {@code w:ascii} for a Latin label and {@code w:hAnsi} for a symbol one (Word writes
-	 *  a bullet's font in both).  @since 17.1.1 */
+	 *  a bullet's font in both).  @since 17.2.0 */
 	private static String declaredLabelFace(NumberingResult triple) {
 		if (triple.getLvl() == null || triple.getLvl().getRPr() == null) return null;
 		org.docx4j.wml.RFonts rFonts = triple.getLvl().getRPr().getRFonts();
@@ -2629,7 +2629,7 @@ public class XsltFOFunctions {
 	 *  paragraph's</b>.  The stop itself, because its {@code w:leader} is painted over the
 	 *  numbering tab ({@link #appendNumberingTabLeader}).
 	 *
-	 *  <p>The paragraph's stops were not read until 17.1.1: measured on a corpus CV whose
+	 *  <p>The paragraph's stops were not read until 17.2.0: measured on a corpus CV whose
 	 *  bulleted paragraphs are {@code w:ind w:left="993" w:hanging="567"} with their own
 	 *  {@code w:tab w:val="left" w:pos="709"} (and two {@code w:val="num"} stops at -996
 	 *  and 1548) over a level whose only stop is {@code w:tab w:val="num" w:pos="786"},
@@ -2637,7 +2637,7 @@ public class XsltFOFunctions {
 	 *  from a 37.28pt text origin - where we put it at 76.50, the level's 786.  The two
 	 *  {@code num} stops need no rule of their own: -996 is behind the label and 1548 is
 	 *  past {@code w:ind} left, so the filters below drop both, and what is left is the
-	 *  first stop either of them declares.  @since 17.1.1 (CR-001 batch 47 item 5b, the
+	 *  first stop either of them declares.  @since 17.2.0 (CR-001 batch 47 item 5b, the
 	 *  paragraph's own stops in batch 48 item 6) */
 	private static org.docx4j.wml.CTTabStop numberingTabStop(NumberingResult triple, int labelEnd,
 			int indLeft, PPr pPr, PPr pPrDirect) {
@@ -2652,7 +2652,7 @@ public class XsltFOFunctions {
 	}
 
 	/** The earliest stop of {@code tabs} which lies past {@code labelEnd} and before
-	 *  {@code indLeft}, against a stop already found.  @since 17.1.1 */
+	 *  {@code indLeft}, against a stop already found.  @since 17.2.0 */
 	private static org.docx4j.wml.CTTabStop firstTabStopBetween(org.docx4j.wml.Tabs tabs,
 			int labelEnd, int indLeft, org.docx4j.wml.CTTabStop best) {
 		if (tabs == null) return best;
@@ -2703,7 +2703,7 @@ public class XsltFOFunctions {
 	 * written as before.
 	 *
 	 * @param advanceTwips the stop less the end of the measured label
-	 * @since 17.1.1 (CR-001 batch 47 item 5b)
+	 * @since 17.2.0 (CR-001 batch 47 item 5b)
 	 */
 	private static void appendNumberingTabLeader(Document document, Element labelBody,
 			org.docx4j.wml.CTTabStop stop, int advanceTwips,
@@ -2768,7 +2768,7 @@ public class XsltFOFunctions {
 	 * paragraph-tab leader in the paragraph's own face (Calibri 11.04pt there, dots stepping
 	 * 2.88, hyphens 3.36, underscores 5.52), where a numbering tab's is always Arial's.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 2)
+	 * @since 17.2.0 (CR-001 batch 48 item 2)
 	 */
 	private static String numberingLeaderGlyph(org.docx4j.wml.STTabTlc leader) {
 		if (leader == null) return null;
@@ -2828,7 +2828,7 @@ public class XsltFOFunctions {
 	 * built from the fonts the FO mentions, and a face nothing else mentions would
 	 * otherwise be reported "not found" and drawn in a default font.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 1; it corrects batch 47 item 5b)
+	 * @since 17.2.0 (CR-001 batch 48 item 1; it corrects batch 47 item 5b)
 	 */
 	private static void numberingTabLeaderFont(Element leader, Element labelBody,
 			WordprocessingMLPackage wmlPackage) {
@@ -2872,7 +2872,7 @@ public class XsltFOFunctions {
 	 * underscore run and Word's. The other kinds round the same either way (the dot 12.78
 	 * or 12.79 cells, the hyphen 15.26 or 15.32).</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 2)
+	 * @since 17.2.0 (CR-001 batch 48 item 2)
 	 */
 	private static double gridSizePt(double sizePt) {
 		if (sizePt <= 0) return sizePt;
@@ -3137,7 +3137,7 @@ public class XsltFOFunctions {
 	/** {@link #HINT_TAB} value marking the leader of a right {@code w:ptab}. @since 17.0.5 */
 	public static final String TAB_PTAB_RIGHT = "ptab-right";
 
-	/** {@link #HINT_TAB} value marking the leader of a centre {@code w:ptab}. @since 17.1.1 */
+	/** {@link #HINT_TAB} value marking the leader of a centre {@code w:ptab}. @since 17.2.0 */
 	public static final String TAB_PTAB_CENTER = "ptab-center";
 
 	/**
@@ -3163,7 +3163,7 @@ public class XsltFOFunctions {
 	 * As {@link #ptabToFO(FOConversionContext)}, for a <b>centre</b> {@code w:ptab} as
 	 * well: {@code kind} is {@link #TAB_PTAB_RIGHT} or {@link #TAB_PTAB_CENTER}.
 	 *
-	 * <p>A centre ptab is a centre tab stop at the middle of the line. Until 17.1.1 only
+	 * <p>A centre ptab is a centre tab stop at the middle of the line. Until 17.2.0 only
 	 * the right one was written and a centre one produced nothing at all, so the field it
 	 * should have centred ran straight on from the field before it. Measured on a corpus
 	 * document whose running head is the three-field
@@ -3176,7 +3176,7 @@ public class XsltFOFunctions {
 	 * <p>Without the Word layout managers both kinds keep the stretching leader they had,
 	 * which centres nothing; there is nothing to defer to there.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static DocumentFragment ptabToFO(FOConversionContext context, String kind) {
 
@@ -3271,7 +3271,7 @@ public class XsltFOFunctions {
 	 * whether a stop lies between the line's start and the dot stop, not which tab it is.
 	 *
 	 * @param followingTabs how many tabs follow this one in the paragraph
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static DocumentFragment tabToFO(FOConversionContext context, PPr effectivePPr, RPr rPr,
 			int precedingTabs, int precedingText, int followingTabs) {
@@ -3305,7 +3305,7 @@ public class XsltFOFunctions {
 			 * line at all, and Knuth broke it in two.  A natural width of zero with the
 			 * whole remainder to stretch into is what "fill the gap" means, and the
 			 * justified last line still puts the number at the stop.
-			 * @since 17.1.1 (CR-001 batch 48 item 5) */
+			 * @since 17.2.0 (CR-001 batch 48 item 5) */
 			foLeader.setAttribute("leader-length.minimum",  "0pt");
 			foLeader.setAttribute("leader-length.maximum",  "100%");
 			foLeader.setAttribute("leader-length.optimum",  "0pt");
@@ -3314,7 +3314,7 @@ public class XsltFOFunctions {
 			/* It is not a tab the line manager lays out - the justification gives it its
 			 * width - but its characters are still Word's leader characters, and Word puts
 			 * those on its 1/300 inch grid anchored on the page edge.  The mark tells the
-			 * line manager's grid pass which leaders are its business.  @since 17.1.1 */
+			 * line manager's grid pass which leaders are its business.  @since 17.2.0 */
 			foLeader.setAttribute(WordLayoutFixups.HINT_TOC_LEADER, "dot");
 			/* Word writes the partial cell at each end of a leader run as a space glyph -
 			 * measured on a corpus document's entries, its space is at x=139.730 and its
@@ -3341,7 +3341,7 @@ public class XsltFOFunctions {
 			 * golden, Word paints its leading dot, middleDot, hyphen, underscore and heavy
 			 * runs from the margin and ours painted five empty lines.  Such a tab takes the
 			 * layout path instead, where the line manager gives it both its width and the
-			 * leader of the stop it reaches.  @since 17.1.1 */
+			 * leader of the stop it reaches.  @since 17.2.0 */
 			if (leadingLength.length() > 0 && !"space".equals(tabLeaderPattern(effectivePPr))) {
 				leadingLength = "";
 			}
@@ -3387,7 +3387,7 @@ public class XsltFOFunctions {
 		return tabToFO(context, pPrNodeIt, rPrNodeIt, precedingTabs, precedingText, 0);
 	}
 
-	/** XSLT form of the above, with the tabs that follow this one. @since 17.1.1 */
+	/** XSLT form of the above, with the tabs that follow this one. @since 17.2.0 */
 	public static DocumentFragment tabToFO(FOConversionContext context, NodeIterator pPrNodeIt,
 			NodeIterator rPrNodeIt, int precedingTabs, int precedingText, int followingTabs) {
 
@@ -3451,7 +3451,7 @@ public class XsltFOFunctions {
 	 * before layout; the {@code followingTabs} half keeps it from ever taking the leader
 	 * off the tab that carries the page number.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static boolean tocTabStopsShort(FOConversionContext context, PPr effectivePPr,
 			int precedingTabs, int followingTabs) {
@@ -3700,10 +3700,10 @@ public class XsltFOFunctions {
 		int pdbs = 0; 
 		/* ECMA-376-1 17.15.1.25: a document with no w:defaultTabStop has stops every 720
 		 * twips, which is what Word writes into every document it saves.  This read 360
-		 * until 17.1.1, and a generated document with no settings entry sent the text
+		 * until 17.2.0, and a generated document with no settings entry sent the text
 		 * after a wide label to a half-inch stop no default stop exists at: measured on
 		 * the list-label-width golden, a 22-character label ending at 2374 twips has its
-		 * text at 2880 in Word (216.10pt) where 360 gave 2520 (198.00pt).  @since 17.1.1 */
+		 * text at 2880 in Word (216.10pt) where 360 gave 2520 (198.00pt).  @since 17.2.0 */
 		int defaultTab = 720;
 		if (pprTabs!=null
 				&& pprTabs.getTab()!=null
@@ -3865,7 +3865,7 @@ public class XsltFOFunctions {
 	 * bar of its own, measured 18pt to the left of the paragraph's on eight headings of a
 	 * corpus document.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 9)
+	 * @since 17.2.0 (CR-001 batch 48 item 9)
 	 */
 	static void borderAgainstHangingIndent(DocumentFragment docfrag) {
 
@@ -3922,13 +3922,13 @@ public class XsltFOFunctions {
 		return null;
 	}
 
-	/** An FO length in twips.  @since 17.1.1 */
+	/** An FO length in twips.  @since 17.2.0 */
 	private static int twipsOf(String length) {
 		return (int) Math.round(lengthToPoints(length) * 20);
 	}
 
 	/** An FO length as points ({@code UnitsOfMeasurement.twipToBest} writes inches or
-	 *  points); 0 for an absent or unreadable one.  @since 17.1.1 */
+	 *  points); 0 for an absent or unreadable one.  @since 17.2.0 */
 	private static double lengthToPoints(String length) {
 
 		if (length==null) return 0;
@@ -4130,7 +4130,7 @@ public class XsltFOFunctions {
 	 * @return an rPr carrying only {@code w:sz}, {@code w:szCs} and {@code w:lang}, or
 	 *         null where the mark states none of them (the body then inherits them, as it
 	 *         did)
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static RPr alignmentRPr(RPr rPrParagraphMark) {
 		if (rPrParagraphMark == null) return null;

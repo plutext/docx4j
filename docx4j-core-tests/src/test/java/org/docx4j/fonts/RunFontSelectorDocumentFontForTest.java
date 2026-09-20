@@ -28,7 +28,7 @@ import org.junit.Test;
 /**
  * {@link RunFontSelector#documentFontFor}: the document font the selector picks for one
  * character, answered without a visitor (CR-016 phase 4; for docx4j-docx-anon, which
- * until 17.1.1 ran the selector in the DISCOVERY mode for this).
+ * until 17.2.0 ran the selector in the DISCOVERY mode for this).
  */
 public class RunFontSelectorDocumentFontForTest {
 

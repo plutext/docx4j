@@ -38,7 +38,7 @@ import org.w3c.dom.Node;
  * at 0.987 of Carlito's advances, and {@link RunFontSelector} carries that the way it
  * carries Word's own character scaling, as a letter space over the run's characters.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class WidthFactorTest {
 
@@ -92,7 +92,7 @@ public class WidthFactorTest {
 	@Test
 	public void nothingElseHasOne() {
 		assertEquals(1, WidthFactors.factorFor("Calibri", "Carlito Regular"), 0.0);
-		// Cambria has one since 17.1.1 (see cambriaIsWiderThanCaladea); Caladea is its
+		// Cambria has one since 17.2.0 (see cambriaIsWiderThanCaladea); Caladea is its
 		// substitute by design, not by metric
 		assertEquals(1, WidthFactors.factorFor("Cambria Math", "Caladea Regular"), 0.0);
 		assertEquals(1, WidthFactors.factorFor(null, "Carlito Regular"), 0.0);

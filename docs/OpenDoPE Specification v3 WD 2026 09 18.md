@@ -6,7 +6,7 @@ Version 3.0  ·  Working Draft 2  ·  18 September 2026
 
 OpenDoPE (Open Document Processing Ecosystem) is a specification for generating Word documents from XML data. It builds on content control data binding as defined in ISO/IEC 29500. It adds what that standard leaves out: conditional inclusion of content, repetition of content for each item in a list, inclusion of other documents, and binding of rich content such as XHTML, images and Word fragments.
 
-The instructions live in content control tags and in small custom XML parts. The user’s own XML is left untouched and can follow any schema. This version revises the OpenDoPE conventions v2.3 to describe the behaviour of the reference implementation in docx4j 17.1.1, including the features added since v2.3.
+The instructions live in content control tags and in small custom XML parts. The user’s own XML is left untouched and can follow any schema. This version revises the OpenDoPE conventions v2.3 to describe the behaviour of the reference implementation in docx4j 17.2.0, including the features added since v2.3.
 
 # Status
 
@@ -122,9 +122,9 @@ A WordprocessingML package containing OpenDoPE-tagged content controls and the O
 
 ## Informative References
 
-**\[DOCX4J\]**	Plutext Pty Ltd, “docx4j”, version 17.1.1, https://github.com/plutext/docx4j.
+**\[DOCX4J\]**	Plutext Pty Ltd, “docx4j”, version 17.2.0, https://github.com/plutext/docx4j.
 
-**\[IMPORTXHTML\]**	Plutext Pty Ltd, “docx4j-ImportXHTML”, version 17.1.1, https://github.com/plutext/docx4j-ImportXHTML.
+**\[IMPORTXHTML\]**	Plutext Pty Ltd, “docx4j-ImportXHTML”, version 17.2.0, https://github.com/plutext/docx4j-ImportXHTML.
 
 **\[OPENDOPE23\]**	Harrop, J., “OpenDoPE: Sdt Content Control conventions for repeats \& conditionals”, version 2.3, https://opendope.org/opendope\_conventions\_v2.3.html.
 
@@ -420,7 +420,7 @@ A template that predates this version has no declaration. For such a template th
 
 `REC-005`	New templates **SHOULD** be written for the XPath 2.0 mode, using expressions that are already boolean, such as `/invoice/total > 1000` or `count(/invoice/items/item) > 0`.
 
-**NOTE** In docx4j the property `opendope.conditions.Xpathref.XPathBoolean` selects the mode for a template that declares none: `false` for Java, `true` or `cast1` for XPath 1.0, and `cast2` for XPath 2.0, which requires Saxon. docx4j 17.1.1 does not read the attribute; the property applies to every template.
+**NOTE** In docx4j the property `opendope.conditions.Xpathref.XPathBoolean` selects the mode for a template that declares none: `false` for Java, `true` or `cast1` for XPath 1.0, and `cast2` for XPath 2.0, which requires Saxon. docx4j 17.2.0 does not read the attribute; the property applies to every template.
 
 ## Effect of a Condition
 
@@ -846,5 +846,5 @@ Table 14 – Revision history
 |1|2010|Initial conventions, implemented in docx4j 2.5.0.|
 |2.2|2010-11-16|Short IDs in tags, boolean conditions, interactive processing, components.|
 |2.3||Published at opendope.org. Repeat XPaths point to the repeated element.|
-|3.0|2026-09-14|Working Draft 1 describing docx4j 17.1.1.|
+|3.0|2026-09-14|Working Draft 1 describing docx4j 17.2.0.|
 |3.0|2026-09-18|Working Draft 2. Specification version, boolean conversion mode and authoring tool declared in the XPaths part. Authoring tool added as a conformance target.|

@@ -45,7 +45,7 @@ public class TabStopTest {
 	private static final String DOT_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"dots\"/>";
 
 	/** what tabToFO writes for a paragraph whose leader is a rule (w:leader heavy;
-	 *  hyphen and underscore are drawn as their own characters since 17.1.1, see
+	 *  hyphen and underscore are drawn as their own characters since 17.2.0, see
 	 *  WordLayoutCustomizer.leaderCharacters) */
 	private static final String RULE_TAB = "<fo:leader docx4j:tab=\"1\" leader-length=\"0pt\" leader-pattern=\"rule\"/>";
 
@@ -139,7 +139,7 @@ public class TabStopTest {
 			String name = c.getLocalName();
 			if ("text".equals(name)) {
 				// a tab of no pattern is the space character Word writes for it, which
-				// reaches the area tree as a text area (@since 17.1.1)
+				// reaches the area tree as a text area (@since 17.2.0)
 				if (isTabSpace(c)) found.add("space");
 				continue;                                   // otherwise words, not leaders
 			}
@@ -151,7 +151,7 @@ public class TabStopTest {
 	}
 
 	/** A text area holding nothing but whitespace is a tab's own space and not a word:
-	 *  since 17.1.1 a tab writes the space character Word writes for its advance rather
+	 *  since 17.2.0 a tab writes the space character Word writes for its advance rather
 	 *  than jumping the pen ({@code WordLayoutCustomizer.tabSpaces}), and the blank at
 	 *  each end of a leader run is written the same way. */
 	private static boolean isTabSpace(Element text) {
@@ -216,7 +216,7 @@ public class TabStopTest {
 			List<Element> kids = childElements((Element) parents.item(i));
 			if (kids.isEmpty()) continue;
 			Element first = kids.get(0);
-			// the blank is a space area, or (17.1.1, tabSpaces) the space character Word
+			// the blank is a space area, or (17.2.0, tabSpaces) the space character Word
 			// writes there; a blank of no width is Word's grid already met, not a phase
 			boolean blank = "space".equals(first.getLocalName())
 					|| ("text".equals(first.getLocalName()) && isTabSpace(first));
@@ -256,7 +256,7 @@ public class TabStopTest {
 	 * the entry's baseline is 158.800.  A leader hung at the line's top would come out at
 	 * half its thickness instead, seven points away.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void aRuleLeaderIsDrawnOnItsLine() throws Exception {
@@ -432,7 +432,7 @@ public class TabStopTest {
 		// and a trailing tab in a header has nothing to move: it stays on the line it is
 		// on (one line); in the flow it takes a line of its own (two) - the
 		// tab-trailing-cell probe, whose rows with the tab are two lines tall in Word
-		// where the next default stop is past the cell, and one without it.  @since 17.1.1
+		// where the next default stop is past the cell, and one without it.  @since 17.2.0
 		assertEquals(1, lineCount(foStatic("9000:left:none", "0:0:.", "abc" + TAB)));
 		assertEquals(2, lineCount(fo("9000:left:none", "0:0:.", null, "abc" + TAB)));
 		assertEquals(1, lineCount(fo("9000:left:none", "0:0:.", null, "abc")));
@@ -608,7 +608,7 @@ public class TabStopTest {
 	 * is rounded and not rounded up; an underscore advances 5.500 and is drawn
 	 * {@code 0.0221 Tc} apart, twenty-three.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void aLeaderCharacterStepsByItsAdvanceRoundedToWordsGrid() throws Exception {
@@ -634,7 +634,7 @@ public class TabStopTest {
 	 * of a cell past the 46th: Word opens the run a touch behind the text there and writes
 	 * no space at all, which is why the phase is 0.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void aLeaderRunOpensOnAWholeMultipleOfItsStepFromThePageEdge() throws Exception {
@@ -757,7 +757,7 @@ public class TabStopTest {
 	 * "abc" at 12pt ends at 21.6pt, inside the fourth step, so the run opens at 26.88 -
 	 * four steps from the page edge - and the blank before it is 5.28.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void aTocLeaderStepsOnWordsGridAndOpensOnIt() throws Exception {
@@ -770,7 +770,7 @@ public class TabStopTest {
 	 * in front of them takes it.  The line is already justified when the pass runs and this
 	 * leader is what absorbed its slack, so anything else would move the page number.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void gridingATocLeaderDoesNotChangeTheLinesWidth() throws Exception {
@@ -798,7 +798,7 @@ public class TabStopTest {
 	 * - which is what {@code tabLeader} does for a tab, and what this covers: written
 	 * without it, the pass fired on a leader written bare and on no real entry at all.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void aTocLeaderIsFoundInsideTheEntrysInlines() throws Exception {

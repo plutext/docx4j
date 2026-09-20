@@ -30,7 +30,7 @@ import org.junit.Test;
  * w:cs and w:rtl are values (ST_OnOff), not flags: a false one is off.  Word (CR-016
  * probe fonts-cs-off): Latin text with w:cs, or with w:rtl alone, is set in the
  * complex-script font; with w:cs w:val="0" - directly, or over a character style that
- * says w:cs - or with w:rtl w:val="0", in the ascii font.  Until 17.1.1 the elements'
+ * says w:cs - or with w:rtl w:val="0", in the ascii font.  Until 17.2.0 the elements'
  * presence was tested, so every one of these took the cs font.
  */
 public class RunFontSelectorCsValueTest {

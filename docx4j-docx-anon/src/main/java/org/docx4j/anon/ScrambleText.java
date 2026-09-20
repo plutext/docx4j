@@ -58,7 +58,7 @@ public class ScrambleText extends CallbackImpl {
 		this.pkg = pkg;
 		vis = new RunFontCharVisitorMinimal();
 		// for documentFontFor only: it selects nothing and emits nothing, so the mode and
-		// the visitor are immaterial (until 17.1.1 this ran fontSelector in the DISCOVERY
+		// the visitor are immaterial (until 17.2.0 this ran fontSelector in the DISCOVERY
 		// mode over one character and read the font from a visitor - a different one
 		// from the selector's own, so it never learnt it)
 		rfs = new RunFontSelector(pkg, new /* dummy */ RunFontCharVisitorMinimal(), RunFontActionType.XHTML);

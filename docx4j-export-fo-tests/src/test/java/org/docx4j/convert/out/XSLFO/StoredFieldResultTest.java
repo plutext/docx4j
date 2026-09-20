@@ -30,7 +30,7 @@ import org.junit.Test;
  * 4, 5, 5, ... with the update off, which is why PAGEREF is not covered: painting its
  * stored result cost a TOC probe 0.98 -> 0.93 of line parity against Word.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class StoredFieldResultTest {
 

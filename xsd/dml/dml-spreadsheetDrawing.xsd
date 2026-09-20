@@ -26,7 +26,7 @@
   <xsd:import schemaLocation="dml-documentProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
   <xsd:import schemaLocation="dml-graphicalObject.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
   <xsd:import schemaLocation="dml-text.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
-  <!-- docx4j 17.1.1 (CR-024): Excel writes mc:AlternateContent in xdr:wsDr (a check box's
+  <!-- docx4j 17.2.0 (CR-024): Excel writes mc:AlternateContent in xdr:wsDr (a check box's
        a14 shape, with an empty Fallback) and in an anchor's object position (a slicer or
        timeline graphicFrame, Fallback a "works in Excel 2010 or higher" sp). -->
   <xsd:import id="mce" namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -268,7 +268,7 @@
             <xsd:documentation>Picture</xsd:documentation>
           </xsd:annotation>
         </xsd:element>
-        <!-- docx4j 17.1.1 (CR-024): a group's own choice (not EG_ObjectChoices), so the
+        <!-- docx4j 17.2.0 (CR-024): a group's own choice (not EG_ObjectChoices), so the
              element is admitted here too, as p:grpSp has it beside p:spTree -->
         <xsd:element ref="mc:AlternateContent" />
       </xsd:choice>
@@ -298,7 +298,7 @@
           </xsd:annotation>
         </xsd:element>
         <xsd:element name="pic" type="CT_Picture" />
-        <!-- docx4j 17.1.1 (CR-024): in the object's place, for twoCellAnchor, oneCellAnchor,
+        <!-- docx4j 17.2.0 (CR-024): in the object's place, for twoCellAnchor, oneCellAnchor,
              absoluteAnchor and grpSp alike (measured on the first two) -->
         <xsd:element ref="mc:AlternateContent" />
       </xsd:choice>
@@ -432,7 +432,7 @@
           <xsd:documentation>Absolute Anchor Shape Size</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <!-- docx4j 17.1.1 (CR-024): beside the anchors (a check box's shape is a twoCellAnchor
+      <!-- docx4j 17.2.0 (CR-024): beside the anchors (a check box's shape is a twoCellAnchor
            in an a14 Choice; the Fallback is empty) -->
       <xsd:element ref="mc:AlternateContent" />
     </xsd:choice>

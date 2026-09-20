@@ -31,7 +31,7 @@ import org.junit.Test;
  * (INTERNAL_FO_MIME) they cannot: what the caller was handed points at them by
  * {@code file:} URL, so they wait for JVM exit instead.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TemporaryImageCleanupPdfTest {
 

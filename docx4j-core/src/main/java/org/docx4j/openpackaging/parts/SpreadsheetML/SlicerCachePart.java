@@ -29,7 +29,7 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main.CTSli
  * A slicer cache ([MS-XLSX] 2.1.4, x14:slicerCacheDefinition): the pivot or table field a slicer filters, and its items.
  * Related from the workbook; the slicers that show it are in a SlicersPart.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class SlicerCachePart extends JaxbSmlPart<CTSlicerCacheDefinition> {
 

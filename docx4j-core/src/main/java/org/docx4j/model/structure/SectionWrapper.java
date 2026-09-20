@@ -35,7 +35,7 @@ public class SectionWrapper {
 	}
 
 	/** @param startsPage see {@link HeaderFooterPolicy#HeaderFooterPolicy(SectPr, HeaderFooterPolicy, RelationshipsPart, BooleanDefaultTrue, boolean)}
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	protected SectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean startsPage) {
 		// This should work even if sectPr is null
 		this.sectPr = sectPr;

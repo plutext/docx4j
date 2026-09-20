@@ -34,7 +34,7 @@ import org.junit.Test;
  * and both were measured on two corpus documents whose East Asian font is not installed
  * here, against Word's own PDFs of them (CR-001 batch 45, P19).</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class CjkTextLayerTest {
 
@@ -83,7 +83,7 @@ public class CjkTextLayerTest {
 	 * An East Asian punctuation mark is {@code Character.UnicodeScript.COMMON}, and a
 	 * Latin face has none of them, so the coverage pass has to look at a span which holds
 	 * one - which is how such a mark is commonly written, a run of its own between two
-	 * East Asian runs.  Until 17.1.1 a COMMON character counted as always covered, the
+	 * East Asian runs.  Until 17.2.0 a COMMON character counted as always covered, the
 	 * pass returned without looking, and FOP painted its not-found character for it.
 	 */
 	@Test

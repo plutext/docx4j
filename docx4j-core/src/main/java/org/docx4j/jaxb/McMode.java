@@ -33,16 +33,16 @@ package org.docx4j.jaxb;
  * branch and the saved document says the same thing to every reader whichever
  * branch that reader understands.</p>
  *
- * <p>The default of {@link org.docx4j.TraversalUtil} is READ since 17.1.1
+ * <p>The default of {@link org.docx4j.TraversalUtil} is READ since 17.2.0
  * (before it, every walk saw every branch: CR-021).</p>
  *
- * @since 17.1.1 (CR-021 phase 1)
+ * @since 17.2.0 (CR-021 phase 1)
  */
 public enum McMode {
 
 	/** One branch: the one {@link McSelection} selects. */
 	READ,
 
-	/** Every {@code mc:Choice}, then the {@code mc:Fallback}: the walk of docx4j before 17.1.1. */
+	/** Every {@code mc:Choice}, then the {@code mc:Fallback}: the walk of docx4j before 17.2.0. */
 	ALL
 }

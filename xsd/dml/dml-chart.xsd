@@ -27,7 +27,7 @@
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-text.xsd" />
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-stylesheet.xsd" />
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" schemaLocation="dml-chartDrawing.xsd" />
-  <!-- docx4j 17.1.1 (CR-024): Excel writes the chart style as mc:AlternateContent in
+  <!-- docx4j 17.2.0 (CR-024): Excel writes the chart style as mc:AlternateContent in
        c:style's position (Choice c14:style, Fallback c:style) -->
   <xsd:import id="mce" namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
       schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
@@ -3822,7 +3822,7 @@
           <xsd:documentation>Style</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <!-- docx4j 17.1.1 (CR-024): Word, PowerPoint and Excel all write the style this way
+      <!-- docx4j 17.2.0 (CR-024): Word, PowerPoint and Excel all write the style this way
            (mc:Choice Requires="c14" c14:style val="102" / mc:Fallback c:style val="2");
            the reader's branch is org.docx4j.jaxb.McSelection's -->
       <xsd:element ref="mc:AlternateContent" minOccurs="0" maxOccurs="1"/>

@@ -74,7 +74,7 @@ public class TablePositionTest {
 			pkg.getMainDocumentPart().getDocumentSettingsPart()
 					.setWordCompatSetting("compatibilityMode", compatMode.toString());
 		} else {
-			// createPackage writes mode 15 since 17.1.1; null here means no setting at all
+			// createPackage writes mode 15 since 17.2.0; null here means no setting at all
 			pkg.getMainDocumentPart().getDocumentSettingsPart().getContents().getCompat()
 					.getCompatSetting().removeIf(cs -> "compatibilityMode".equals(cs.getName()));
 		}

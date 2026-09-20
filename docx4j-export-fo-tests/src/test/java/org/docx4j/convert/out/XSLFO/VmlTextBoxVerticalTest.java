@@ -42,12 +42,12 @@ import org.w3c.dom.NodeList;
  * way (Word's {@code btLr} against its {@code tbRl}).
  *
  * <p>The property is on the {@code v:textbox}, not on the shape - measured on four corpus
- * documents, whose shape style carries only the position and the size.  Before 17.1.1 it
+ * documents, whose shape style carries only the position and the size.  Before 17.2.0 it
  * was read nowhere at all and the box was laid out unrotated: one of those documents has
  * a 16.5pt-wide legend beside a table whose 17-character label was set one character to a
  * line where Word lays it along the 93.75pt height in one.</p>
  *
- * @since 17.1.1 (CR-001 batch 48 item 4)
+ * @since 17.2.0 (CR-001 batch 48 item 4)
  */
 public class VmlTextBoxVerticalTest extends AbstractXSLFOTest {
 

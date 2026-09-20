@@ -1,7 +1,7 @@
 # CR-022: Excel 2010 and 2013 extensions - the x14 and x15 schemas and their mc namespaces, bound in xlsx4j
 
 Status: DONE 2026-09-20 - phases 0 to 3 (§16 to §20) landed the same day
-on VERSION_17_1_1: proposed by `docs/developer/adding-a-schema.md` step 0
+on VERSION_17_2_0: proposed by `docs/developer/adding-a-schema.md` step 0
 after the [MS-XLSX] inventory, accepted by Jason (package convention
 confirmed, "let's commence"); phase 0 the measurement, phase 1 the ten
 schemas and host admissions, phase 2 the nine parts, phase 2b docx4j's own
@@ -288,7 +288,7 @@ once as the MOXy/RI context check.
 
 ## 11. Follow-through and hand-offs (recipe step 11)
 
-CHANGELOG under "Schema" (17.1.1 or the next release Jason names); this CR
+CHANGELOG under "Schema" (17.2.0 or the next release Jason names); this CR
 updated per phase; objects-ts told the xsd files, packages and the two prefix
 entries (it regenerates once from the final commit); the Python port told
 (its phase D, PML/SML generation, is when it takes them; the file list and
@@ -754,7 +754,7 @@ model's binary, which Excel alone writes.
 
 ## 20. Phase 3: follow-through (2026-09-20, at Jason's go)
 
-- **CHANGELOG**: the "Schema (CR-022 ...)" block of 17.1.1 (phases 1, 2 and
+- **CHANGELOG**: the "Schema (CR-022 ...)" block of 17.2.0 (phases 1, 2 and
   2b's entries, written as each landed).
 - **The inventory** (`docs/developer/ms-xlsx-schema-inventory.md`): the
   "what docx4j binds" section rewritten for the ten packages, the nine parts
@@ -798,7 +798,7 @@ second group); a decoder for the data model's binary ([MS-XLDM]: Xpress9 and
 the tabular metadata - large, and nothing open-source reads it); the
 xlsx4j VML gap (`vmlDrawing` parts fail to unmarshal; `xlsx4j-backlog`).
 
-**Commits** (VERSION_17_1_1, one per phase plus the notes): a49e254ab (phase
+**Commits** (VERSION_17_2_0, one per phase plus the notes): a49e254ab (phase
 0), 16844ff03 (phase 1), 2979449c2 (phase 2), ec5fccf7b + 05c5798a3 +
 2b1b380b6 + e2e18abd3 (phase 2b: the generator and xm prefix, the anchor fix,
 the four fixtures, the data-model fixture), and this phase's.

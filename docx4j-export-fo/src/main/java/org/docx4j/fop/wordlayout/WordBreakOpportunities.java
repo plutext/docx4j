@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  * input to it - fed back into the sizer it would make every minimum one character,
  * which is not what Word does when it sizes a column.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class WordBreakOpportunities {
 
@@ -121,7 +121,7 @@ public final class WordBreakOpportunities {
 	 * <em>is</em> measured goes the other way (Word breaks between a letter and a dollar
 	 * sign).</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 3)
+	 * @since 17.2.0 (CR-001 batch 48 item 3)
 	 */
 	public static boolean noBreakBeforePerCent(char before, int after) {
 		return after == '%' && isLetter(before);
@@ -146,7 +146,7 @@ public final class WordBreakOpportunities {
 	 * is a direct break before a digit already - and U+2011 NON-BREAKING HYPHEN is GL,
 	 * which must not break at all. So only the hyphen-minus is touched.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 3)
+	 * @since 17.2.0 (CR-001 batch 48 item 3)
 	 */
 	public static boolean breakBetween(char before, int after) {
 		if (after < 0 || after > Character.MAX_VALUE) return false;
@@ -175,7 +175,7 @@ public final class WordBreakOpportunities {
 	 * and 0.9570 -> 0.9355 of Word's lines), so a seam at any other character is left
 	 * as FOP has it.  A space on either side is FOP's own business and is not a seam.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static boolean breakAtSeam(char before, char after) {
 		if (!isHyphenOrDash(before) || GlyphMapping.isSpace(after)) return false;
@@ -249,7 +249,7 @@ public final class WordBreakOpportunities {
 	 * <p>Idempotent, and a no-op where FOP's table has changed shape (a value other
 	 * than the {@code INDIRECT_BREAK} measured here is left alone and logged).
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 3)
+	 * @since 17.2.0 (CR-001 batch 48 item 3)
 	 */
 	public static synchronized void applyWordPairTable() {
 		if (pairTableApplied || !WordLayoutCustomizer.breakOpportunities()) return;

@@ -341,7 +341,7 @@ public class XsltHTMLFunctions {
     	
     	// Note that this is invoked for every paragraph with a pPr node.
 
-    	/* Since 17.1.1 the label is written by createBlock, as a span at the head of the
+    	/* Since 17.2.0 the label is written by createBlock, as a span at the head of the
     	 * paragraph, for every numbered paragraph - so that a paragraph numbered by its
     	 * style gets one, so that the label carries the level's lvlText, numFmt and rPr
     	 * (numFmt none / "NOTE", "Appendix A", a coloured bullet) rather than the
@@ -359,7 +359,7 @@ public class XsltHTMLFunctions {
         try {
         	        	
         	// counted in this conversion's state for the part (or text box) being
-        	// converted, not the package's shared counters (@since 17.1.1, CR-014)
+        	// converted, not the package's shared counters (@since 17.2.0, CR-014)
         	NumberingResult triple = org.docx4j.model.listnumbering.Emulator.getNumber(
         			context.getWmlPackage(), pStyleVal, numId, levelId,
         			numId != null && !numId.equals(""), context.getNumberingState());   
@@ -664,12 +664,12 @@ public class XsltHTMLFunctions {
      *   (XSLT pathway) or a DocumentFragment (visitor pathway)
      * @since 17.0.4
      */
-    /** The label is written by createBlock (17.1.1); false restores the pre-17.1.1
+    /** The label is written by createBlock (17.2.0); false restores the pre-17.2.0
      *  text-node number and the browser's marker.  Not a public switch. */
     static final boolean LABEL_IN_BLOCK = true;
 
     /** The class of the label span createBlock writes at the head of a numbered
-     *  paragraph.  @since 17.1.1 */
+     *  paragraph.  @since 17.2.0 */
     public static final String LIST_LABEL_CLASS = "ListLabel";
 
     /**
@@ -694,12 +694,12 @@ public class XsltHTMLFunctions {
      * {@code ListsToContentControls} preprocess maps it, so that Symbol's and
      * Wingdings' private-use code points do not reach the browser.</p>
      *
-     * <p>Until 17.1.1 the number was a bare text node ahead of the content for a
+     * <p>Until 17.2.0 the number was a bare text node ahead of the content for a
      * paragraph numbered directly, nothing for one numbered by its style, and the
      * browser's marker for an {@code li} - which the paragraph style's own hanging
      * indent then collided with (CR-003).</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     protected static Element createListLabel(HTMLConversionContext context, Document document,
     		PPr pPr, String pStyleVal, Ind mergedInd) {
@@ -851,7 +851,7 @@ public class XsltHTMLFunctions {
 				}
 
 				StringBuilder inlineStyle =  new StringBuilder();
-				// the indent is kept for an li as for a p (17.1.1): the label is ours, not
+				// the indent is kept for an li as for a p (17.2.0): the label is ours, not
 				// the browser's marker, so the hanging indent no longer collides with one
 				// the effective borders, so that a paragraph's own hanging indent under a
 				// bordered style is shifted as the style's class rule is (CR-003)

@@ -11,7 +11,7 @@ import org.junit.Test;
  * <code>w:altName</code>, and {@link Mapper#addWordDefaultSubstitutes}, from Word's answer
  * for a font it cannot find. The altName pass runs first and is the more specific answer -
  * the document is telling us which font its author had - where the default pass is a guess
- * of last resort. Until 17.1.1 the register did an unconditional put, so a later pass
+ * of last resort. Until 17.2.0 the register did an unconditional put, so a later pass
  * silently replaced an earlier family's line box with Cambria's or Calibri's.</p>
  *
  * <p><b>No document of the three reference corpora reaches that today</b>, and the ordering
@@ -21,7 +21,7 @@ import org.junit.Test;
  * a font whose alias the altName pass registered is one it mapped. The guard matters for any
  * future pass that registers a box for a font it does not itself map (CR-001 batch 43).</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class LineMetricsAliasOrderTest {
 

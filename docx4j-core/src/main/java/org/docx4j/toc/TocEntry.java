@@ -556,7 +556,7 @@ public class TocEntry {
 		String runStyleId;
 		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();			
-			resolvedRPr = propertyResolver.getChainRPr(runStyleId); // the style's chain, no document defaults (17.1.1)
+			resolvedRPr = propertyResolver.getChainRPr(runStyleId); // the style's chain, no document defaults (17.2.0)
 			StyleUtil.apply(resolvedRPr, effectiveRPr);
 		}
 				

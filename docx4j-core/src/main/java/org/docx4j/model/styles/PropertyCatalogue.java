@@ -82,7 +82,7 @@ import org.docx4j.wml.U;
  * {@code w:tabs}, {@code w:framePr}, {@code w:spacing}) and "the source's value if it
  * has one" otherwise.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class PropertyCatalogue {
 
@@ -257,11 +257,11 @@ public final class PropertyCatalogue {
 	 * the order of &#xa7;17.7.1 and &#xa7;17.7.2 like any other property.</p>
 	 *
 	 * @see StyleUtil#applyToggles
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final java.util.Set<String> TOGGLE_NAMES;
 
-	/** {@link #TOGGLE_NAMES} as members of {@link #RUN}.  @since 17.1.1 */
+	/** {@link #TOGGLE_NAMES} as members of {@link #RUN}.  @since 17.2.0 */
 	public static final List<Property<Object, BooleanDefaultTrue>> TOGGLES;
 
 	static {

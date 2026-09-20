@@ -76,7 +76,7 @@ import org.xlsx4j.sml.Worksheet;
 
 /**
  * Writes four workbooks that exercise the Excel 2010 extensions docx4j binds since
- * 17.1.1 (CR-022): sparklines, x14 conditional formatting (a data bar and an icon
+ * 17.2.0 (CR-022): sparklines, x14 conditional formatting (a data bar and an icon
  * set), a list data validation whose source is on another sheet (which Excel writes
  * only in its x14 form), and a check box form control (a control-properties part,
  * the worksheet's controls inside the mc:AlternateContent Excel wraps them in, and

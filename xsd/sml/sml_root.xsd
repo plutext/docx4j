@@ -86,7 +86,7 @@ REVISION HISTORY
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml__ROOT.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" schemaLocation="sml_2014_revision.xsd" />
 
-  <!-- Excel 2010 and 2013 extensions, [MS-XLSX] (docx4j 17.1.1, CR-022) -->
+  <!-- Excel 2010 and 2013 extensions, [MS-XLSX] (docx4j 17.2.0, CR-022) -->
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" schemaLocation="../xlsx/office_spreadsheetml_2009_9_main.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" schemaLocation="../xlsx/office_spreadsheetml_2009_9_ac.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main" schemaLocation="../xlsx/office_spreadsheetml_2010_11_main.xsd" />

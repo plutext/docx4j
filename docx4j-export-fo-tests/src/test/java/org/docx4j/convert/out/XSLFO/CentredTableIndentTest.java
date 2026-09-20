@@ -55,7 +55,7 @@ public class CentredTableIndentTest {
 		return firstTable(jc, flags, null);
 	}
 
-	/** compatMode null = as createPackage makes it (mode 15 since 17.1.1). */
+	/** compatMode null = as createPackage makes it (mode 15 since 17.2.0). */
 	private static Element firstTable(String jc, int flags, Integer compatMode) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		if (compatMode != null) {

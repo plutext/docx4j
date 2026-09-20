@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
  * once that has shipped this class can go. Set
  * {@value #PROPERTY} to false to turn it off.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class FontPaddingResourceResolver implements ResourceResolver {
 

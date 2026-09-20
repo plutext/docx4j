@@ -283,7 +283,7 @@ public class HtmlCssHelper {
      * {@code w:pBdr}; the pPr's own is used where that is null.</p>
      *
      * @param effectivePPr the effective paragraph properties, or null to use the pPr's own
-     * @since 17.1.1 (CR-003, the hanging-indent-across-a-border defect)
+     * @since 17.2.0 (CR-003, the hanging-indent-across-a-border defect)
      */
     public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders,
     		boolean isListItem, PPr effectivePPr) {
@@ -372,7 +372,7 @@ public class HtmlCssHelper {
      * the container's edge.  So a style whose own pPr contributes either a left border
      * or an indent gets the trio from its effective values, whatever its base emitted.</p>
      *
-     * @since 17.1.1 (CR-003, the derived bordered style)
+     * @since 17.2.0 (CR-003, the derived bordered style)
      */
     static void appendBorderHangTrio(OpcPackage opcPackage, Style s, StringBuilder result) {
     	PPr own = s.getPPr();
@@ -396,7 +396,7 @@ public class HtmlCssHelper {
     }
 
     /** The left border of a w:pBdr where it draws one (a value other than nil/none), else null.
-     *  @since 17.1.1 */
+     *  @since 17.2.0 */
     static CTBorder leftBorder(PPrBase.PBdr pBdr) {
     	if (pBdr==null || pBdr.getLeft()==null || pBdr.getLeft().getVal()==null) return null;
     	STBorder val = pBdr.getLeft().getVal();

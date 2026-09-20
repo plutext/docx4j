@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
  * earlier one takes the ordinary zero-length <code>docx4j-tab</code> leader, whose pattern
  * the line manager keeps, blanks or replaces from the stop the tab actually reaches.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TocEntryFirstTabTest extends AbstractXSLFOTest {
 

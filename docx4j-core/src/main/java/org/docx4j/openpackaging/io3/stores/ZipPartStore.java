@@ -188,7 +188,7 @@ public class ZipPartStore implements PartStore {
 	 * <p>Only a diagnostic - nothing is thrown, and a file which cannot be inspected is
 	 * passed over in silence, since by this point the package has already opened.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void warnIfBytesAfterCentralDirectory(File f) {
 

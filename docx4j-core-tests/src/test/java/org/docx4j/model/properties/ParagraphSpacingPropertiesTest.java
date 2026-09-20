@@ -75,7 +75,7 @@ public class ParagraphSpacingPropertiesTest {
 	@Test
 	public void compatibilityModeOfACreatedPackageIs15AndAbsentMeans12() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
-		assertEquals("Word 365's mode, since 17.1.1", 15, DocumentSettingsPart.getCompatibilityMode(pkg));
+		assertEquals("Word 365's mode, since 17.2.0", 15, DocumentSettingsPart.getCompatibilityMode(pkg));
 		pkg.getMainDocumentPart().getDocumentSettingsPart().setWordCompatSetting("compatibilityMode", "14");
 		assertEquals(14, DocumentSettingsPart.getCompatibilityMode(pkg));
 		pkg.getMainDocumentPart().getDocumentSettingsPart().getContents().getCompat().getCompatSetting()

@@ -82,7 +82,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	protected RPr rPr = null;
 	/** The current run's effective properties, where the format's handleRPr resolved them
 	 *  (the FO one does); null otherwise.  Handed to RunFontSelector so that a run is
-	 *  resolved once (CR-016 phase 1).  @since 17.1.1 */
+	 *  resolved once (CR-016 phase 1).  @since 17.2.0 */
 	protected RPr effectiveRPr = null;
 	
 	// E20 image
@@ -583,7 +583,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	 * generator counts the paragraph's text off with it, so that FOP's area tree can
 	 * report where in the paragraph a page boundary fell (CR-012).
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected String runFoId(R r) {
 		return null;
@@ -703,10 +703,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
     
     /**
      * Put on the element representing a run the properties which apply to it.  Called
-     * for every run since 17.1.1, whether or not it has a w:rPr of its own: what applies
+     * for every run since 17.2.0, whether or not it has a w:rPr of its own: what applies
      * is resolved from the document defaults, the paragraph's style, and the run's own
      * character style and direct formatting, so the element can carry them itself rather
-     * than inherit them from the block.  (Until 17.1.1 a run without a w:rPr was not
+     * than inherit them from the block.  (Until 17.2.0 a run without a w:rPr was not
      * resolved at all, and took the block's.)
      *
      * @param rPrDirect the run's own w:rPr, or null

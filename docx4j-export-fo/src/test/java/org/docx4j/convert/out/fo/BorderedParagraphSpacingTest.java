@@ -24,7 +24,7 @@ import org.junit.Test;
  * wrapper carries them, the paragraph's block inside the border does not.  See
  * {@link WordLayoutFixups#spacingOutsideBorders} and word-layout-rules.md §3.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class BorderedParagraphSpacingTest {
 

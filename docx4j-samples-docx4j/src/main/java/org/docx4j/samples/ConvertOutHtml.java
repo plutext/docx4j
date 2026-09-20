@@ -149,7 +149,7 @@ public class ConvertOutHtml extends AbstractSample {
 		
 		// Set up font mapper (optional: the package creates an IdentityPlusMapper when none is set)
 		// The CSS names the document font first, then the physical font it maps to here,
-		// then the generic class (since 17.1.1), so the reader's browser gets a stack.
+		// then the generic class (since 17.2.0), so the reader's browser gets a stack.
 		Mapper fontMapper = new IdentityPlusMapper();  // the default, and the one to use everywhere: measured ahead of BestMatchingMapper in every font environment, Windows or not (CR-016)
 		wordMLPackage.setFontMapper(fontMapper);
 		

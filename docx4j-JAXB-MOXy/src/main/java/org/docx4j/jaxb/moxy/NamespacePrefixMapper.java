@@ -162,7 +162,7 @@ extends org.eclipse.persistence.oxm.NamespacePrefixMapper implements NamespacePr
     	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris2(mcIgnorable.get());
     }
 
-    /*  Until 17.1.1 this method was unused, after (Java 1.6.0_27, with every prefix returned)
+    /*  Until 17.2.0 this method was unused, after (Java 1.6.0_27, with every prefix returned)
      * 
 		Attribute "xmlns:w14" was already specified for element "w:document".
 		org.xml.sax.SAXParseException: Attribute "xmlns:w14" was already specified for element "w:document".

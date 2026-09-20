@@ -29,7 +29,7 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTTi
  * The timelines of a worksheet ([MS-XLSX] 2.1.8, x15:timelines), each naming its TimelineCachePart.
  * Related from the worksheet.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class TimelinesPart extends JaxbSmlPart<CTTimelines> {
 

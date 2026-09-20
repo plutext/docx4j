@@ -25,7 +25,7 @@ import org.junit.Test;
  * 89.1 in DejaVu Sans Bold, and the columns of a table with bold headings came out some
  * 11-13% narrow.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class RenderedFaceTest {
 

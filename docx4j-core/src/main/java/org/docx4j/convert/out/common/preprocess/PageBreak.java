@@ -98,7 +98,7 @@ public class PageBreak {
 	 *        is a line: the empty second half - the mark Word moves to the page after the
 	 *        break - takes none, which the FO exporter's WordLayoutFixups keeps to.  The
 	 *        PDF exporter's ConversionFeatures.PP_PDF_PAGEBREAK_PARAGRAPH_LINE turns this
-	 *        on; HTML output keeps the plain conversion.  @since 17.1.1
+	 *        on; HTML output keeps the plain conversion.  @since 17.2.0
 	 */
 	public static void process(WordprocessingMLPackage wmlPackage, boolean keepBreakLine) {
 	Body body = wmlPackage.getMainDocumentPart().getJaxbElement().getBody();
@@ -170,7 +170,7 @@ public class PageBreak {
 		updateParagraph(paragraph, siblings, index, splitAtBreaks, false);
 	}
 
-	/** @param keepBreakLine see {@link #process(WordprocessingMLPackage, boolean)}.  @since 17.1.1 */
+	/** @param keepBreakLine see {@link #process(WordprocessingMLPackage, boolean)}.  @since 17.2.0 */
 	static void updateParagraph(P paragraph, List<Object> siblings, int index, boolean splitAtBreaks,
 			boolean keepBreakLine) {
 
@@ -192,7 +192,7 @@ public class PageBreak {
 			// the break either - a paragraph which opens with a break and goes on with
 			// text keeps its label and indent on that text, so it stays a
 			// w:pageBreakBefore (splitting it moved the numbering label onto an empty
-			// first half and cost a corpus document 0.27 of line parity).  @since 17.1.1
+			// first half and cost a corpus document 0.27 of line parity).  @since 17.2.0
 			if (siblings!=null && splitAtBreaks
 					&& (contentPrecedes(content, at) || breaksBefore(paragraph)
 							|| (keepBreakLine && !contentFollows(content, at)))) {
@@ -223,7 +223,7 @@ public class PageBreak {
 	 *
 	 * @param breaksBefore the paragraph's own w:pageBreakBefore
 	 * @param splitAtBreaks the resolved w:splitPgBreakAndParaMark (see process)
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static List<int[]> splitPositions(List<Object> content, boolean breaksBefore,
 			boolean splitAtBreaks, boolean keepBreakLine) {
@@ -323,7 +323,7 @@ public class PageBreak {
 	}
 
 	/** Whether anything which draws precedes the break. */
-	/** Whether anything which draws follows the break at {@code at}.  @since 17.1.1 */
+	/** Whether anything which draws follows the break at {@code at}.  @since 17.2.0 */
 	private static boolean contentFollows(List<Object> content, int[] at) {
 		if (at.length>1) {
 			List<Object> rc = ((R)content.get(at[0])).getContent();

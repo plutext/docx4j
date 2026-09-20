@@ -43,13 +43,13 @@ import org.junit.Test;
 
 /**
  * Resolution reads the styles part and writes nothing into it, and the objects it
- * returns share no leaf with the style definitions (CR-015 phase 3).  Until 17.1.1
+ * returns share no leaf with the style definitions (CR-015 phase 3).  Until 17.2.0
  * constructing the resolver wrote w:sz 20 into an rPrDefault that had none, resolving a
  * heading rewrote its w:outlineLvl, resolving a style whose w:numPr lacked a w:numId
  * wrote the inherited id into it, and an effective rPr's w:b was the style's own w:b
  * object.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PropertyResolverNoMutationTest {
 

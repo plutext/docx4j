@@ -1,7 +1,7 @@
 # CR-017: Font decisions with their reasons — `FontsAnalysis`, the conversion log, and the actions a user can take
 
 Status: IN PROGRESS (2026-09-16) - phases 0 to 5 DONE and merged to
-VERSION_17_1_1 (333cdb595, then 0e8397fc5): 0 the substitution table
+VERSION_17_2_0 (333cdb595, then 0e8397fc5): 0 the substitution table
 (bcd610d0b), 1 `FontDecision` in every pass (b3892457f), 2 and 3 the use
 walk, `FontsAnalysis` and its report (a30b52450), 4 the conversion log
 (9cc6e3314), 5 the probes (188bc092b), their Word goldens (cace82727), the

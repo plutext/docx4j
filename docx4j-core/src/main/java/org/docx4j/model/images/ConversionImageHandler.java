@@ -80,7 +80,7 @@ public interface ConversionImageHandler {
 	 * @param deferToJvmExit whether the output still references the files, so
 	 * that deletion must wait until the JVM exits
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	default void cleanupTemporaryImages(boolean deferToJvmExit) {
 		// nothing to do

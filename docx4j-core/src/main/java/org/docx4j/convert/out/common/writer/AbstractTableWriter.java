@@ -282,11 +282,11 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			TrPr trPr = rowModel.getRowProperties();
 			CTTblPrEx tblPrEx = rowModel.getRowPropertiesExceptions();
 			// the table borders in force for this row: a w:tblPrEx/w:tblBorders states
-			// them for its own row only.  @since 17.1.1
+			// them for its own row only.  @since 17.2.0
 			TblBorders rowBorders = rowBorders(tableBorders, tblPrEx);
 
 			// the table style's conditional formatting for this row (firstRow, a band, ...):
-			// below the row's own w:trPr, which is applied after it.  @since 17.1.1
+			// below the row's own w:trPr, which is applied after it.  @since 17.2.0
 			TrPr conditionalTrPr = org.docx4j.model.table.TableStyleConditions.conditionalTrPr(
 					table.applicable(table.rowConditions(rowIndex, trPr)));
 			
@@ -447,7 +447,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * whose other seven are better content-sized (0.989 -> 0.940, and a page over
 			 * Word's count) - but it also gives back two of the five documents it wins on
 			 * that corpus, which is a wash, and it would treat pct more strictly than dxa
-			 * for no reason the documents support.  @since 17.1.1 */
+			 * for no reason the documents support.  @since 17.2.0 */
 			double[] min = new double[cols], max = new double[cols];
 			// the incompressible part of each column: its cell margins and the widest
 			// picture it holds (see AutofitLayout.squeeze); a column no single cell describes
@@ -543,7 +543,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * margins: 104.1% of the column is 13491 twips and 104.1% of the grid edge's
 			 * 13176 is 13716, which is its w:tblGrid to the twip - and Word's own re-save
 			 * of the document leaves that grid untouched, so that is the layout Word uses.
-			 * @since 17.1.1 */
+			 * @since 17.2.0 */
 			int gridPreferred = container > 0 ? tablePreferred : preferredTableWidthTwips(tblPr,
 					containerWidthTwips(context) + autofitGridAllowanceTwips(context, table, tblPr));
 			if (gridIsAuthoritative(table, tblPr, cols, pref, declared, gridPreferred)) return null;
@@ -634,7 +634,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		 * is 4875/2208/1975/1624/3034 = 13716 twips, exactly 104.1% of the grid edge:
 		 * the content pass gave 4794/1722/1722/2269/2984 - two columns 20 and 13% narrow
 		 * and one 40% wide - and the document ran to 15 pages against Word's 13.  Word's
-		 * own re-save leaves that grid untouched.  @since 17.1.1 */
+		 * own re-save leaves that grid untouched.  @since 17.2.0 */
 		if (tablePreferred > 0) {
 			long sum = 0;
 			for (int w : grid) sum += w;
@@ -647,7 +647,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 *  cell of which states a {@code w:tcW}, whose {@code w:tblGrid} cannot be a layout of
 	 *  those widths ({@link #gridContradictsPreferences}) is laid out on the widths, as Word
 	 *  lays it out, rather than on the grid.  {@code false} keeps the grid, as 17.1.0 did.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static final String REFIT_STALE_GRID = "docx4j.convert.out.fo.tables.refitStaleGrid";
 
 	private static boolean refitStaleGrid() {
@@ -685,7 +685,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * @param pref per-column preferred width in twips, -1 where a column has none
 	 * @param min per-column content minimum in twips (cell margins included)
 	 * @param available the width the table has
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static boolean gridContradictsPreferences(int[] grid, int[] pref, int[] min, int available) {
 		if (grid == null || pref == null || min == null) return false;
@@ -717,7 +717,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * the widths it chose, and {@code final} the widths the table was given after the page
 	 * fit - the {@code fo:table-column} widths, in twips.  Arrays are space-separated.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String DUMP_AUTOFIT = "docx4j.convert.out.fo.wordLayout.dumpAutofit";
 
@@ -827,7 +827,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	/** docx4j.convert.out.fo.tables.scaleContentAutofit: whether the columns the
 	 *  content-autofit pass computed are scaled down to the page when they overflow it.
-	 *  See {@link #fitToAvailableWidth}.  @since 17.1.1 */
+	 *  See {@link #fitToAvailableWidth}.  @since 17.2.0 */
 	public static final String SCALE_CONTENT_AUTOFIT = "docx4j.convert.out.fo.tables.scaleContentAutofit";
 
 	private static boolean scaleContentAutofitToPage() {
@@ -838,7 +838,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 *  do not fit the width the table has, the shortfall is shared in proportion to each
 	 *  column's <em>text</em> minimum, its cell margins and any picture kept whole
 	 *  ({@link org.docx4j.model.table.AutofitLayout#squeeze}).  {@code false} scales every
-	 *  column in proportion, as 17.1.0 did.  @since 17.1.1 */
+	 *  column in proportion, as 17.1.0 did.  @since 17.2.0 */
 	public static final String SHORTFALL_BY_TEXT = "docx4j.convert.out.fo.tables.shortfallByText";
 
 	private static boolean shortfallByText() {
@@ -849,7 +849,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 *  w:tblGrid is wider than {@link #GRID_OVERHANG_LIMIT} allows, and whose measured content
 	 *  minima do not fit the column either, is laid out on those minima squeezed into the
 	 *  column - as Word, which re-runs its autofit on open, lays it out - rather than on its
-	 *  grid scaled in proportion.  {@code false} scales the grid, as 17.1.0 did.  @since 17.1.1 */
+	 *  grid scaled in proportion.  {@code false} scales the grid, as 17.1.0 did.  @since 17.2.0 */
 	public static final String REFIT_GRID_BY_CONTENT = "docx4j.convert.out.fo.tables.refitGridByContent";
 
 	private static boolean refitGridByContent() {
@@ -886,7 +886,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * every column by 0.9756 and Word paints the frame out to x=543.85, 21.85pt
 			 * past its own right margin (its widest table line 417.8..533.0 against our
 			 * 415.6..528.8).  Recommended in ledger3 and again in ledger4.
-			 * @since 17.1.1 */
+			 * @since 17.2.0 */
 			if (tblPr != null && tblPr.getTblpPr() != null) return null;
 			/* w:compat/w:growAutofit, "Allow Tables to AutoFit Into Page Margins"
 			 * (ECMA-376-1 17.15.1), would let an autofit table grow past the text column
@@ -907,7 +907,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * the page again and gave back the whole of that document's gain, 0.8462 ->
 			 * 0.7953; over the three corpora it moved the same-page-count figure +1, +1, 0
 			 * and lines matched +32, -14, -838 against scaling.  The property stays so the
-			 * measurement can be repeated without a build.  @since 17.1.1 */
+			 * measurement can be repeated without a build.  @since 17.2.0 */
 			if (!ownGrid && table.isContentSizedColumns() && !scaleContentAutofit) return null;
 			if (ownGrid) {
 				// The document's own grid.  Word keeps an over-wide one only where the
@@ -941,7 +941,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * equal, where the scaled grid gave 113 / 69 / 96 / 70 / 105pt), and the
 			 * fourth is a URL our measurement cannot break.  And a shortfall is shared by
 			 * the text, the cell margins being a fixed cost (AutofitLayout.squeeze).  Both
-			 * are properties so the measurement can be repeated.  @since 17.1.1 */
+			 * are properties so the measurement can be repeated.  @since 17.2.0 */
 			AbstractTableWriterModel.AutofitInputs in = table.getAutofitInputs();
 			boolean byContent = false;
 			if (ownGrid && refitGridByContent() && in != null && in.min.length == widths.length) {
@@ -1027,7 +1027,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * Word refits a percentage table's grid there because the grid is the
 			 * harness's, so Word has no cached layout of its own to keep and falls back to
 			 * the w:tblW.  A grid Word wrote is a layout it keeps.  Nothing in the file
-			 * distinguishes the two, so this follows the documents.  @since 17.1.1 */
+			 * distinguishes the two, so this follows the documents.  @since 17.2.0 */
 			if (tblPr != null && tblPr.getTblLayout() != null
 					&& tblPr.getTblLayout().getType() == org.docx4j.wml.STTblLayoutType.FIXED) {
 				return null;
@@ -1051,7 +1051,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			 * (the table-grid-pct probe measures it at 50%).  The probe's 120% twin says
 			 * otherwise, and the documents are followed here for the reason the fixed-layout
 			 * note above gives: the probe's grid is the harness's, so Word has no cached
-			 * layout to keep and falls back to the w:tblW.  @since 17.1.1 */
+			 * layout to keep and falls back to the w:tblW.  @since 17.2.0 */
 			int base = container > 0 ? container : containerWidthTwips(context);
 			if (base > 0 && target > base && total > base) return null;
 			int[] out = new int[grid.length];
@@ -1119,7 +1119,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	/**
 	 * Left + right cell margins in twips for one cell: the cell's own
 	 * {@code w:tcMar} where it declares them, else the table's {@code w:tblCellMar}
-	 * (which since 17.1.1 carries Word's built-in Normal Table margins wherever they
+	 * (which since 17.2.0 carries Word's built-in Normal Table margins wherever they
 	 * apply), else none.
 	 *
 	 * <p>Measured against Word 365 on a table whose {@code w:tblCellMar} is 0 left and
@@ -1160,7 +1160,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	}
 
 	/** Left + right cell margins in twips, from the effective tblPr (which carries Word's
-	 *  built-in Normal Table margins where they apply, since 17.1.1); none otherwise. */
+	 *  built-in Normal Table margins where they apply, since 17.2.0); none otherwise. */
 	private static int cellMarginsTwips(org.docx4j.wml.CTTblPrBase tblPr) {
 		int left = 0, right = 0;
 		if (tblPr != null && tblPr.getTblCellMar() != null) {
@@ -1215,7 +1215,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	/** {@link #preferredTableWidthTwips(AbstractWmlConversionContext,
 	 *  org.docx4j.wml.CTTblPrBase, int)} against a stated base: what a percentage width
-	 *  is a percentage <em>of</em>.  @since 17.1.1 */
+	 *  is a percentage <em>of</em>.  @since 17.2.0 */
 	private static int preferredTableWidthTwips(org.docx4j.wml.CTTblPrBase tblPr, int base0) {
 		org.docx4j.wml.TblWidth tblW = tblPr == null ? null : tblPr.getTblW();
 		if (tblW == null || tblW.getW() == null || tblW.getW().intValue() <= 0) return -1;
@@ -1235,7 +1235,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				 * widths in the three corpora the next-smallest is in the 30-39% band, so
 				 * a floor of 216 twips (10.8pt, below 3% of any text column) fires on
 				 * that one alone.  It is Word's default margins rather than the table's
-				 * own because that table's are zero.  @since 17.1.1 */
+				 * own because that table's are zero.  @since 17.2.0 */
 				if (w < 2 * WORD_DEFAULT_CELL_MARGIN_TWIPS) return -1;
 				return w;
 			}
@@ -1270,7 +1270,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * the {@code w:tbl} was unmarshalled from the DOM on its own, has no parent, and
 	 * keeps the page-based behaviour (as does a table this cannot place).</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected static int containingCellWidthTwips(AbstractTableWriterModel table,
 			org.docx4j.wml.CTTblPrBase tblPr) {
@@ -1626,7 +1626,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		// (PropertyResolver.getEffectiveTableStyle, CR-015 phase 4).  A table whose chain
 		// does not reach it has no cell margin in Word (measured, probe
 		// styles-table-default: its first cell's text starts at the border), so nothing
-		// is added here any more; until 17.1.1 108 was put on every table lacking one.
+		// is added here any more; until 17.2.0 108 was put on every table lacking one.
 		// Measured earlier (CR-001 harness, table-fixed): cell text starts at the border
 		// centre + half the border width + 5.4pt, which the built-in still gives.
 		if (tblCellMargin == null || tblCellMargin.getLeft() == null) {
@@ -1698,7 +1698,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * a right rule.  Shading, margins, vertical alignment and text direction are the
 	 * cell's own.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected void createConditionalCellProperties(List<Property> properties, AbstractTableWriterModel table,
 			int rowIndex, TableModelCell cell, List<CTTblStylePr> applicable) {
@@ -1815,7 +1815,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * {@link #rowBorders(TblBorders, CTTblPrEx)} - because the outer definitions belong
 	 * to the table's edges and insideH/insideV to the sides facing another cell.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected void createCellProperties(List<Property> properties, CTTblPrEx tblPrEx) {
 		if (tblPrEx == null) return;
@@ -1834,7 +1834,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	 * table's.  Returns the table's own borders unchanged where there is no exception, so
 	 * the common case allocates nothing.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected static TblBorders rowBorders(TblBorders tableBorders, CTTblPrEx tblPrEx) {
 		TblBorders ex = (tblPrEx == null) ? null : tblPrEx.getTblBorders();

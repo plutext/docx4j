@@ -95,9 +95,9 @@ public class PhysicalFonts {
 	 * carry one or more of the suffixes for a twin FopConfigUtil declares from the same
 	 * file - the kerned twin (per-run kerning), the twin with no OpenType features
 	 * (per-run ligatures, 17.0.5), the alias for a document font with no bold face
-	 * (17.1.1) - and they stack ("+nobold+noliga"), so every one of them is stripped.
+	 * (17.2.0) - and they stack ("+nobold+noliga"), so every one of them is stripped.
 	 *
-	 * @since 17.1.1 (the stripping itself since 17.0.5; here so that the Mapper's
+	 * @since 17.2.0 (the stripping itself since 17.0.5; here so that the Mapper's
 	 *        lookup by physical name strips the same way)
 	 */
 	public static String stripSuffixes(String key) {
@@ -168,7 +168,7 @@ public class PhysicalFonts {
 
     
 	/** The resolver this class reads font files with, for {@link MetricsOnlyFonts}, which
-	 *  loads faces for their metrics without registering them here.  @since 17.1.1 */
+	 *  loads faces for their metrics without registering them here.  @since 17.2.0 */
 	static InternalResourceResolver fontResolver() {
 		return fontResolver;
 	}
@@ -674,7 +674,7 @@ public class PhysicalFonts {
 	}
 
 	public static PhysicalFont getBoldForm( PhysicalFont pf) {
-		if (pf.isNoBoldFace()) return null; // FOP synthesises it at the regular advances (17.1.1)
+		if (pf.isNoBoldFace()) return null; // FOP synthesises it at the regular advances (17.2.0)
 
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
@@ -708,7 +708,7 @@ public class PhysicalFonts {
 	}
 	
 	public static PhysicalFont getBoldItalicForm( PhysicalFont pf) {
-		if (pf.isNoBoldFace()) return null; // as getBoldForm (17.1.1)
+		if (pf.isNoBoldFace()) return null; // as getBoldForm (17.2.0)
 		
 		// look up the font in MicrosoftFontsRegistry
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
@@ -773,7 +773,7 @@ public class PhysicalFonts {
 		
 	}
 	
-	/** @deprecated since 17.1.1: no caller; the package's {@link Mapper#get} answers it. */
+	/** @deprecated since 17.2.0: no caller; the package's {@link Mapper#get} answers it. */
 	@Deprecated
 	public static String getPhysicalFont(OpcPackage wmlPackage, String fontName) {
 		
@@ -971,7 +971,7 @@ public class PhysicalFonts {
             return Collections.emptyList();
 		}
 
-		/* Every classpath root which has the folder, not the first one.  Until 17.1.1
+		/* Every classpath root which has the folder, not the first one.  Until 17.2.0
 		 * this used getResource(pathPrefix), which answers with ONE root - so of
 		 * docx4j-export-fo-fonts-croscore and -crosextra, both of which put their fonts
 		 * under fonts/, only whichever jar came first on the classpath was walked, and

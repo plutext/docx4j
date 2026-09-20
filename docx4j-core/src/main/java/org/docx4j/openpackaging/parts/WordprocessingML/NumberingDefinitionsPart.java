@@ -331,12 +331,12 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	private Emulator em;
 
 	/** The counters the no-state overloads of {@link Emulator#getNumber} use: one
-	 *  set per part, as before 17.1.1.  A traversal that wants its own (per story,
-	 *  or side-effect free) passes a {@link NumberingState} instead.  @since 17.1.1 */
+	 *  set per part, as before 17.2.0.  A traversal that wants its own (per story,
+	 *  or side-effect free) passes a {@link NumberingState} instead.  @since 17.2.0 */
 	private NumberingState numberingState = new NumberingState();
 
 	/** The part's default numbering state; {@link #getEmulator(boolean)} with
-	 *  {@code true} replaces it with a fresh one.  @since 17.1.1 */
+	 *  {@code true} replaces it with a fresh one.  @since 17.2.0 */
 	public NumberingState getNumberingState() {
 		return numberingState;
 	}
@@ -360,7 +360,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     			|| reset) { 
     		initialiseMaps();
     		em = new Emulator();
-    		numberingState = new NumberingState(); // reset: every list starts again (@since 17.1.1)
+    		numberingState = new NumberingState(); // reset: every list starts again (@since 17.2.0)
     	}
 		
 		return em;
@@ -468,7 +468,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		}
 
 		// Otherwise, if there is a style reference in the instance, as a sibling of
-		// pPr, use any w:ind in it, or in the styles it is based on (@since 17.1.1:
+		// pPr, use any w:ind in it, or in the styles it is based on (@since 17.2.0:
 		// the w:basedOn chain is followed, as it is for every other property the
 		// style contributes)
 		if (lvl.getPStyle()!=null) {

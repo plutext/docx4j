@@ -81,7 +81,7 @@ final class FontsTestSupport {
 			tp.setJaxbElement((org.docx4j.dml.Theme) XmlUtils.unwrap(XmlUtils.unmarshalString(themeXml(fontSchemeXml))));
 			pkg.getMainDocumentPart().addTargetPart(tp);
 		} else {
-			// since 17.1.1 createPackage adds the Office theme part, so "no theme part"
+			// since 17.2.0 createPackage adds the Office theme part, so "no theme part"
 			// has to be made rather than assumed
 			pkg.getMainDocumentPart().getRelationshipsPart()
 					.removePart(new org.docx4j.openpackaging.parts.PartName("/word/theme/theme1.xml"));

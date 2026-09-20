@@ -65,9 +65,9 @@
  *
  * <p>The C#-style method names of the original translation ({@code IncrementCounter},
  * {@code GetCurrentNumberString}, ...) and {@code Emulator.ResultTriple} are deprecated
- * since 17.1.1 in favour of Java-style names and {@code NumberingResult}; removal no
+ * since 17.2.0 in favour of Java-style names and {@code NumberingResult}; removal no
  * earlier than 17.2.
  *
- * @since 17.1.1 (this description; the package itself dates from 2.x)
+ * @since 17.2.0 (this description; the package itself dates from 2.x)
  */
 package org.docx4j.model.listnumbering;

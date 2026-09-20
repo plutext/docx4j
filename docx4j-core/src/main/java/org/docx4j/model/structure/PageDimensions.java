@@ -508,18 +508,18 @@ public class PageDimensions {
 	 * <p>Zero wherever the masters are the first part's, which is every document that
 	 * does not merge continuous sections of differing margins.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public int getHeaderFooterIndentStart() {
 		return headerFooterIndentStart;
 	}
 
-	/** @see #getHeaderFooterIndentStart() @since 17.1.1 */
+	/** @see #getHeaderFooterIndentStart() @since 17.2.0 */
 	public int getHeaderFooterIndentEnd() {
 		return headerFooterIndentEnd;
 	}
 
-	/** @see #getHeaderFooterIndentStart() @since 17.1.1 */
+	/** @see #getHeaderFooterIndentStart() @since 17.2.0 */
 	public void setHeaderFooterIndent(int startTwips, int endTwips) {
 		this.headerFooterIndentStart = startTwips;
 		this.headerFooterIndentEnd = endTwips;

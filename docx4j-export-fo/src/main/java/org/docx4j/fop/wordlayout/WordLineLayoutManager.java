@@ -684,7 +684,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // no stop from the start of the line either: the tab has that line to
                 // itself and what follows begins the next one.  (A trailing tab's line is
                 // the paragraph's last: closing it here gave the paragraph an empty line
-                // after it.  @since 17.1.1)
+                // after it.  @since 17.2.0)
                 commitAt(leaderLastIndex(position, tab));
             }
         }
@@ -734,7 +734,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
             // 12pt serif) in cells 149 and 169pt wide, whose next default stop is past
             // the cell, is two lines tall in Word and one without the tab; in a 189pt
             // cell, where the stop fits, one line.  A 311-page corpus report has that
-            // row 128 times (word-layout-rules.md §4.4).  @since 17.1.1
+            // row 128 times (word-layout-rules.md §4.4).  @since 17.2.0
             if (!hasFollowingContent(position) && inStaticContent) return false;
             // the reference area's end edge, from the line's start: the available width
             // plus the paragraph's right indent
@@ -807,7 +807,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 // the paragraph's own stops are.  Measured on a corpus document's running
                 // head, the three-field "text <ptab center> text <ptab right> text" shape
                 // Word's header gallery writes: Word centres the middle field on x=297.75,
-                // the exact centre of the page.  @since 17.1.1
+                // the exact centre of the page.  @since 17.2.0
                 stop = tabLeftMpt + getLineWidth() / 2;
                 align = TAB_CENTER;
                 stopLeader = LBP.LEADER_NONE;
@@ -1314,7 +1314,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
              * very font of the text then looked 1pt taller than its line.  Only where the
              * line is the paragraph's own size: a line of smaller runs is genuinely
              * shorter than the paragraph's ascent, and the label does raise it.
-             * @since 17.1.1 */
+             * @since 17.2.0 */
             int labelExtra = 0;
             boolean fullSizeLine = wordLineBox > 0 && Math.abs(ascent + descent - wordLineBox) <= 1;
             int labelAgainst = labelAscentAgainstBaseline && fullSizeLine && wordBaseline > 0
@@ -1569,7 +1569,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
     /** whether the label's excess ascent is measured against the paragraph's own ascent
      *  (docx4j:baseline) rather than the line's runtime ascent;
-     *  {@link WordLayoutCustomizer#LABEL_ASCENT_AGAINST_BASELINE}.  @since 17.1.1 */
+     *  {@link WordLayoutCustomizer#LABEL_ASCENT_AGAINST_BASELINE}.  @since 17.2.0 */
     private final boolean labelAscentAgainstBaseline
             = WordLayoutCustomizer.labelAscentAgainstBaseline();
 
@@ -1604,7 +1604,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * @param descent the line's descent as its runs measured it, millipoints
      * @return the ascent and descent the line takes, the arguments unchanged where the
      *         line is not the declared box
-     * @since 17.1.1
+     * @since 17.2.0
      */
     static int[] declaredBaselineLine(int wordLineBox, int wordBaseline, int ascent, int descent) {
         if (wordBaseline > 0 && wordLineBox > 0 && wordBaseline < wordLineBox
@@ -1754,7 +1754,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * difference between the two margins.  No probe has that shape, and no document in the
      * three corpora moved for it; it is not worth a lookup per line until one does.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private int pageOffsetMpt() {
         if (pageOffsetMpt != Integer.MIN_VALUE) return pageOffsetMpt;
@@ -1963,7 +1963,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * of it takes exactly that (see {@link LBP#gridPlacedLeader}), which matters because
      * the line is already justified and this leader is what absorbed its slack.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private void gridTocLeaders(KnuthSequence seq, int from, int to, LineArea lineArea) {
         if (!WordLayoutCustomizer.leaderGrid()) return;
@@ -2018,7 +2018,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     /** Whether this line's block is the label of an {@code fo:list-item} - a numbering
      *  label, whose leader {@link WordListItemLayoutManager} phases.
-     *  @since 17.1.1 (CR-001 batch 48 item 7) */
+     *  @since 17.2.0 (CR-001 batch 48 item 7) */
     private boolean inListItemLabel() {
         for (org.apache.fop.fo.FONode n = fobj; n != null; n = n.getParent()) {
             if (n instanceof org.apache.fop.fo.flow.ListItemLabel) return true;
@@ -2103,7 +2103,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 .equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB));
     }
 
-    /** whether this tab leader stands in for a centre {@code w:ptab}.  @since 17.1.1 */
+    /** whether this tab leader stands in for a centre {@code w:ptab}.  @since 17.2.0 */
     private boolean isPtabCenter(LayoutManager lm) {
         return org.docx4j.convert.out.fo.XsltFOFunctions.TAB_PTAB_CENTER
                 .equals(foreignAttribute(lm.getFObj(), WordLayoutElementMapping.TAB));
@@ -2195,7 +2195,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * <em>rule</em> for the other three: a drawn path with nothing in the text layer, and
      * for {@code heavy} that is all it ever was ({@link WordLayoutCustomizer#LEADER_CHARACTERS}).</p>
      *
-     * @since 17.1.0; the character kinds 17.1.1
+     * @since 17.1.0; the character kinds 17.2.0
      */
     private static int tabLeaderKind(String v) {
         if (WordLayoutCustomizer.leaderCharacters()) {
@@ -2524,11 +2524,11 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * a letter and a backslash, where FOP's pair table, generated from a Unicode
      * version before 8.0's LB24, does: measured on a 311-page corpus document, Word sets
      * {@code Quejas\Clientes\Minoristas} whole on a line where ours broke it before each
-     * backslash (17.1.1; until then only the solidus was suppressed).  Only the
+     * backslash (17.2.0; until then only the solidus was suppressed).  Only the
      * backslash: Word breaks between a letter and a dollar sign, as FOP does.  The third
      * is the same defect in the same table for the other half of LB24's pair: Word does
      * not break between a letter and a per-cent sign, where FOP holds {@code AL x PO} as
-     * a direct break and sets {@code VAT|%} (17.1.1, CR-001 batch 48 item 3; a per-cent
+     * a direct break and sets {@code VAT|%} (17.2.0, CR-001 batch 48 item 3; a per-cent
      * sign after a <em>digit</em> never broke, {@code NU x PO} being indirect).  The one
      * correction which goes the other way - Word breaks <b>after</b> a hyphen followed by
      * digits, where the table's {@code HY x NU} is indirect and so no break inside a word
@@ -2652,7 +2652,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 if (tlm == null) continue;
                 org.apache.fop.fo.FOText foText = LBP.foText(tlm);
                 // the same predicate the autofit sizer measures with (WordBreakOpportunities):
-                // until 17.1.1 this read the character after the mapping, so "/123" - a
+                // until 17.2.0 this read the character after the mapping, so "/123" - a
                 // solidus UAX #14 keeps with the digits after it - was not a solidus-led word
                 if (!WordBreakOpportunities.startsSolidusLedWord(foText, next.startIndex)) continue;
                 if (o instanceof KnuthGlue) {
@@ -2709,7 +2709,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * Runs before {@link #emergencyBreaks}, which would otherwise read the two halves as
      * one over-long word.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private void seamBreaks(Paragraph par) {
         if (!seamBreakEnabled || par == null) return;
@@ -2802,7 +2802,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      */
     /** The penalties {@link #suppressWordBreaks} made infinite: break opportunities inside
      *  a word that Word does not take, which {@link #emergencyBreaks} must read as part of
-     *  the word rather than its end.  @since 17.1.1 */
+     *  the word rather than its end.  @since 17.2.0 */
     private final java.util.IdentityHashMap<Object, Object> suppressedBreaks
             = new java.util.IdentityHashMap<Object, Object>();
 
@@ -2824,19 +2824,19 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
     /** Whether this block is set directly in a table cell ({@link #inTableCell}), where
      *  the overrun tolerance is {@link #cellOverrunTolerance(int)} rather than
-     *  {@link #OVERRUN_TOLERANCE}.  @since 17.1.1 */
+     *  {@link #OVERRUN_TOLERANCE}.  @since 17.2.0 */
     private final boolean inCell;
     /** Whether this block is set in a header or footer (an fo:static-content), where a
-     *  trailing tab which reaches no stop takes no line.  @since 17.1.1 */
+     *  trailing tab which reaches no stop takes no line.  @since 17.2.0 */
     private final boolean inStaticContent;
 
     /** How far past the measure {@code available} a word of this block may run before
-     *  it is broken, in millipoints.  @since 17.1.1 */
+     *  it is broken, in millipoints.  @since 17.2.0 */
     private int overrunTolerance(int available) {
-        /* The cell's own tolerance stands on its own since 17.1.1: the two defaults are the
+        /* The cell's own tolerance stands on its own since 17.2.0: the two defaults are the
          * same twip now (the body's was an inch, and the min kept a raised cell tolerance
          * from exceeding it), so capping the cell by the general value would only stop that
-         * property being raised.  @since 17.1.1 (CR-001 batch 47 item 4) */
+         * property being raised.  @since 17.2.0 (CR-001 batch 47 item 4) */
         return inCell ? cellOverrunTolerance(available) : OVERRUN_TOLERANCE;
     }
 
@@ -2901,7 +2901,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
                     // "box, penalty(INF), glue, penalty, glue, box" - whose penalty
                     // suppressWordBreaks has made infinite: neither glue is a break
                     // (Knuth: a glue breaks only after a box), so the word goes on past
-                    // it.  Until 17.1.1 the word ended at the first glue, and the two
+                    // it.  Until 17.2.0 the word ended at the first glue, and the two
                     // halves were split as two words whose emergency breaks blocked each
                     // other (emergencyUsable): a 20pt cell set "s\Chicos" on one line,
                     // overflowing, where every other line held two characters.  Only
@@ -2966,7 +2966,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * out identically, and docx4j already matched those - because a cell's tolerance was
      * already a twip.</p>
      *
-     * <p><b>What the inch was for, and what it cost.</b> Until 17.1.1 the body's tolerance
+     * <p><b>What the inch was for, and what it cost.</b> Until 17.2.0 the body's tolerance
      * was 72pt, on the argument that a word which does not fit is often a measure
      * <em>we</em> got wrong rather than a word Word breaks - "BALES" by 2.6pt in a
      * certificate whose columns Word autofits a fraction wider than ours, "CANTIDAD" by
@@ -3000,7 +3000,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * so the inch can be restored without a build while those documents' measures are
      * chased.</p>
      *
-     * @since 17.1.0; the twip 17.1.1 (CR-001 batch 47 item 4)
+     * @since 17.1.0; the twip 17.2.0 (CR-001 batch 47 item 4)
      */
     private static final int OVERRUN_TOLERANCE
             = (int) Math.round(1000 * WordLayoutCustomizer.emergencyBreakTolerance(0.05));
@@ -3028,10 +3028,10 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * last place: the {@code table-autofit} probe's 23.976pt column holds a 23.988pt word
      * Word set on one line.  A twip is below what Word can lay out.
      *
-     * <p><b>What the scope is now.</b>  Body text takes the same twip from 17.1.1 (the
+     * <p><b>What the scope is now.</b>  Body text takes the same twip from 17.2.0 (the
      * golden refuted the inch, see {@link #OVERRUN_TOLERANCE}), so the cell rule differs
      * from the general one only where one of the two properties is set.  The walk that
-     * finds the cell goes through {@code fo:block-container}s from 17.1.1 as well
+     * finds the cell goes through {@code fo:block-container}s from 17.2.0 as well
      * ({@link #inTableCell}), so a rotated cell (w:textDirection) and a positioned frame
      * or text box inside a cell are in the cell; a footnote, a flow and a static content
      * still end the walk.  What the old inch was protecting against is still real and
@@ -3047,7 +3047,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * cleared within one JVM (as {@link #emergencyBreakEnabled} is).
      *
      * @param available the cell's measure, in millipoints
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private static int cellOverrunTolerance(int available) {
         int absolute = (int) Math.round(1000 * WordLayoutCustomizer.cellEmergencyBreakTolerance(0.05));
@@ -3069,19 +3069,19 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * broken against the same measure as a bare cell block would be, and Word breaks a
      * word as soon as it exceeds the cell it is in.
      *
-     * <p>With both tolerances at a twip (17.1.1) the classification decides nothing on its
+     * <p>With both tolerances at a twip (17.2.0) the classification decides nothing on its
      * own: {@link #overrunTolerance} reaches the same number either way.  It decides what
      * a set {@link WordLayoutCustomizer#EMERGENCY_BREAK_TOLERANCE} or
      * {@link WordLayoutCustomizer#CELL_EMERGENCY_BREAK_TOLERANCE} applies to, which is why
      * it is worth having right ({@code CellEmergencyBreakTest}).
      *
-     * @since 17.1.1; the container walk CR-001 batch 47 item 4c
+     * @since 17.2.0; the container walk CR-001 batch 47 item 4c
      */
     static boolean inTableCell(org.apache.fop.fo.FONode block) {
         for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
                 n != null; n = n.getParent()) {
             if (n instanceof org.apache.fop.fo.flow.table.TableCell) return true;
-            // a BlockContainer was in this list until 17.1.1; see the javadoc
+            // a BlockContainer was in this list until 17.2.0; see the javadoc
             if (n instanceof org.apache.fop.fo.flow.Footnote
                     || n instanceof org.apache.fop.fo.flow.FootnoteBody
                     || n instanceof org.apache.fop.fo.pagination.Flow
@@ -4239,7 +4239,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
 
         // a table-of-contents entry's stretching leader, which no tab settled, goes on
         // Word's grid here - after the page-number pass, which finds its tabs by identity
-        // (@since 17.1.1)
+        // (@since 17.2.0)
         gridTocLeaders(seq, startElementIndex, endElementIndex, lineArea);
 
         // if display-align is distribute, add space after

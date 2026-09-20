@@ -38,7 +38,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * without page-number citations never went through this filter at all, which is why the
  * same FO rendered correctly there.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PlaceholderCharacterOrderTest {
 

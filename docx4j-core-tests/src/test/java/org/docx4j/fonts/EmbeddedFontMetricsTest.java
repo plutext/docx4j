@@ -50,7 +50,7 @@ import org.w3c.dom.Node;
 
 /**
  * A run in a font embedded in the document gets its line height from the embedded
- * file's own metrics (CR-016 gap 7).  Until 17.1.1 the line-height pass looked the
+ * file's own metrics (CR-016 gap 7).  Until 17.2.0 the line-height pass looked the
  * physical font up by name in PhysicalFonts, where an embedded font never is, so a
  * corporate font embedded in a document - exactly the case the Microsoft table cannot
  * know - got the 1.2 fallback; likewise the no-ligature twin.

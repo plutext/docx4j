@@ -55,7 +55,7 @@ public class WordLayoutManagerMaker extends LayoutManagerMapping {
 		/* Word's own corrections to UAX #14's pair table, which FOP's text managers read
 		 * while they build the Knuth elements - so they have to be in place before any
 		 * layout runs, and this is the first thing the Word layout path constructs.
-		 * @since 17.1.1 (CR-001 batch 48 item 3) */
+		 * @since 17.2.0 (CR-001 batch 48 item 3) */
 		WordBreakOpportunities.applyWordPairTable();
 	}
 

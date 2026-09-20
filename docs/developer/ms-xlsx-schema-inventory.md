@@ -3,7 +3,7 @@
 An inventory of the 45 namespaces in the "Full XML Schema" appendix of
 [MS-XLSX] revision 29.1 (2026-05-19, from the specification's table of contents
 on learn.microsoft.com) against what docx4j binds, knows by prefix, or carries
-unwired, measured on VERSION_17_1_1 on 2026-09-20 (Jason asked "identify any
+unwired, measured on VERSION_17_2_0 on 2026-09-20 (Jason asked "identify any
 schema used within it which we don't yet support"), and **updated the same day
 after CR-022** (phases 1 to 2b) bound the Excel 2010 and 2013 extensions.
 Purposes are from the appendix's own XSD text where it is short, else from
@@ -17,7 +17,7 @@ packages: `org.xlsx4j.sml` (ECMA-376 4th edition transitional SpreadsheetML),
 and, since CR-022, `xm:f`, `xm:ref`, `xm:sqref`), `...excel_2008_2.main`
 (`http://schemas.microsoft.com/office/excel/2008/2/main`, an older revision's
 macro-sheet schema no longer in the appendix), `...excel.x2010.spreadsheetDrawing`
-(5.8), and, **since CR-022 (17.1.1)**, `org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main`
+(5.8), and, **since CR-022 (17.2.0)**, `org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main`
 (5.4, x14), `...x2010.x11.main` (5.3, x15), `...x2010.x11.ac` (5.9, x15ac),
 `...x2011.x1.ac` (5.6, x12ac), `...x2014.x11.main` (5.10, x16) and
 `...x2014.revision` (5.15, xr, with `revisionPtr`). The attribute-only schemas
@@ -115,7 +115,7 @@ repository's workbooks.
 
 ## What this suggests, for a CR to decide
 
-- **First** - **implemented via CR-022 (17.1.1, 2026-09-20)**: the Excel 2010
+- **First** - **implemented via CR-022 (17.2.0, 2026-09-20)**: the Excel 2010
   and 2013 schemas every Excel-saved workbook carries (5.3, 5.4, 5.5, 5.9, 5.6,
   with 5.10 and the revision schemas they import), re-taken from the current
   revision's section pages; sparklines, slicers, timelines, the data model's

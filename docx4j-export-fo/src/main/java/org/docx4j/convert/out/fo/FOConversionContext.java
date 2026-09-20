@@ -271,7 +271,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	 * taken from.  Pair with {@link #endParagraph()}.  Nested paragraphs (a note's, a
 	 * text box's) keep their own count.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public String beginParagraph(String paraId) {
 		String foId = paragraphFoId(paraId);
@@ -292,7 +292,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	 * get {@code .<n>} appended, which keeps the ids unique in the FO document; the area
 	 * tree reader ignores the suffix.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public String runFoId(org.docx4j.wml.R r) {
 		ParagraphFrame frame = paragraphFrames.peek();
@@ -331,7 +331,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	 * gets a counter on its later ids, since ids must be unique in the FO document.
 	 *
 	 * @see PaginationAreaTreeHandler#foId(String, int)
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public String paragraphFoId(String paraId) {
 

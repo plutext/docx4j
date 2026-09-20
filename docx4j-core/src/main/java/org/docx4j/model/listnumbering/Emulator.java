@@ -130,13 +130,13 @@ public class Emulator {
      *
      * @param state the counters to increment; null for the numbering part's
      *        default state, which is what the no-state overloads use
-     * @since 17.1.1 (CR-014 phase 4)
+     * @since 17.2.0 (CR-014 phase 4)
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr, NumberingState state) {
     	
 		if (pPr==null) return null;
 		// a paragraph naming no style is resolved against the default paragraph
-		// style, which may be numbered (CR-014 P6, measured; before 17.1.1 it was
+		// style, which may be numbered (CR-014 P6, measured; before 17.2.0 it was
 		// assumed not to be)
 
 		String pStyleVal = null;
@@ -172,7 +172,7 @@ public class Emulator {
      * @param pPr the paragraph's properties; null resolves as not numbered
      * @return never null; {@link NumRef#notNumbered} with a {@link NumRef#reason}
      *         where the package has no numbering part or the paragraph no list
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public static NumRef numRefFor(WordprocessingMLPackage wmlPackage, PPr pPr) {
     	if (pPr == null) return new NumRef("no pPr");
@@ -205,7 +205,7 @@ public class Emulator {
      * return, without taking the number: the given state is left as it was.
      *
      * @param state the traversal's state; null for the numbering part's default
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public static ResultTriple peek(WordprocessingMLPackage wmlPackage, PPr pPr, NumberingState state) {
     	if (state == null) {
@@ -244,7 +244,7 @@ public class Emulator {
     /**
      * @param state the counters to increment (a traversal's own; see
      *        {@link NumberingStates}); null for the numbering part's default state
-     * @since 17.1.1 (CR-014 phase 4)
+     * @since 17.2.0 (CR-014 phase 4)
      */
     public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal,
     		String numId, String levelId, boolean directNumPr, NumberingState state) {
@@ -310,7 +310,7 @@ public class Emulator {
 			 * width of 453.6pt, running the text off the page and turning Word's two
 			 * pages into four.  Where the override states no indent the abstract
 			 * level's stands, as NumberingDefinitionsPart.getInd resolves it.
-			 * @since 17.1.0 (the override's rPr followed in 17.1.1: labelRPr below) */
+			 * @since 17.1.0 (the override's rPr followed in 17.2.0: labelRPr below) */
 			ListLevel listLevel = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId);
 			triple.lvl = listLevel.getJaxbAbstractLvl();
 
@@ -324,7 +324,7 @@ public class Emulator {
 			 * not a merge - measured on CR-014 probe P3 (2026-09-12): abstract w:i under
 			 * an override w:b + w:sz 36 gives Word a bold 18pt label with no italic
 			 * anywhere.  getRPr() above stays the abstract level's, as it always was.
-			 * @since 17.1.1 */
+			 * @since 17.2.0 */
 			Lvl overrideLvl = listLevel.getJaxbOverrideLvl();
 			triple.labelRPr = (overrideLvl != null && overrideLvl.getRPr() != null)
 					? overrideLvl.getRPr() : triple.rPr;
@@ -393,7 +393,7 @@ public class Emulator {
      * {@code w:basedOn}.  Null where the paragraph is not numbered or the level states
      * none.  Used in HTML output (XsltHTMLFunctions).
      *
-     * <p>Before 17.1.1 this had its own copy of the resolution, which read the raw
+     * <p>Before 17.2.0 this had its own copy of the resolution, which read the raw
      * style's {@code w:pPr} and followed {@code w:basedOn} only when the style carried
      * a {@code w:numPr} without a {@code w:numId}, so a style numbered purely through
      * its base got a number and no indent; and it read only the level's own
@@ -432,7 +432,7 @@ public class Emulator {
      * at all.  {@link #getNumber} and {@link #getInd} share one resolution,
      * {@link Emulator#resolve}.
      *
-     * @since 17.1.1 (CR-014 phase 3)
+     * @since 17.2.0 (CR-014 phase 3)
      */
     public static final class NumRef {
     	/** The list, or null when not numbered. */
@@ -475,7 +475,7 @@ public class Emulator {
      * @param numId the paragraph's numId, or null/empty to read the style
      * @param levelId the paragraph's ilvl, or null/empty for the style's, else "0"
      * @param directNumPr whether a numId given here is the paragraph's own
-     * @since 17.1.1
+     * @since 17.2.0
      */
     static NumRef resolve(
     		org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart,
@@ -527,14 +527,14 @@ public class Emulator {
     	if ("0".equals(numId)) {
     		// ECMA-376 17.9.18: a w:numId of 0 never references a definition; it designates the
     		// removal of numbering at this level (a paragraph or style switching an inherited
-    		// list off).  Until 17.1.1 it fell through to a lookup of list 0, an empty result.
+    		// list off).  Until 17.2.0 it fell through to a lookup of list 0, an empty result.
     		return new NumRef((directNumPr ? "the paragraph's" : "style '" + styleId + "'s")
     				+ " w:numId 0 turns numbering off");
     	}
     	if (!numberingPart.getInstanceListDefinitions().containsKey(numId)) {
     		// A w:numId naming no w:num - Word's own re-save leaves one behind in an
     		// untouched mc:Fallback after renumbering (CR-021 §8.5) - is not numbered,
-    		// and says so here rather than as an empty result from getNumber.  @since 17.1.1
+    		// and says so here rather than as an empty result from getNumber.  @since 17.2.0
     		return new NumRef("no w:num for numId " + numId
     				+ (directNumPr ? " (the paragraph's own)" : " (from style '" + styleId + "')"));
     	}
@@ -546,7 +546,7 @@ public class Emulator {
     	}
     	if (!numberingPart.getInstanceListDefinitions().get(numId).levelExists(levelId)) {
     		// The w:num exists but its definition has no w:lvl for this ilvl: not numbered,
-    		// with the reason here rather than an empty result from getNumber.  @since 17.1.1
+    		// with the reason here rather than an empty result from getNumber.  @since 17.2.0
     		return new NumRef("no w:lvl " + levelId + " in w:num " + numId
     				+ (directNumPr ? " (the paragraph's own)" : " (from style '" + styleId + "')"));
     	}
@@ -573,7 +573,7 @@ public class Emulator {
      * {@code getNumber} overloads return its deprecated subclass {@link ResultTriple}
      * until 17.2, so assign to either.
      *
-     * @since 17.1.1 (CR-014 phase 5; the class was {@code ResultTriple}, a name that had
+     * @since 17.2.0 (CR-014 phase 5; the class was {@code ResultTriple}, a name that had
      *        become a misnomer)
      */
     public static class NumberingResult {
@@ -627,7 +627,7 @@ public class Emulator {
 	     * level's - one or the other, as Word applies them (CR-014 probe P3).  It
 	     * formats the number alone, never the paragraph's text (ECMA-376 17.9.24).
 	     *
-	     * @since 17.1.1
+	     * @since 17.2.0
 	     */
 	    public RPr getLabelRPr() {
 			return labelRPr;
@@ -646,10 +646,10 @@ public class Emulator {
 
     /**
      * The old name of {@link NumberingResult}, kept as an empty subclass so that
-     * {@code Emulator.ResultTriple} still compiles.  Static since 17.1.1 (it was an
+     * {@code Emulator.ResultTriple} still compiles.  Static since 17.2.0 (it was an
      * inner class); the {@code getNumber} overloads keep returning it for one release.
      *
-     * @deprecated since 17.1.1, use {@link NumberingResult}.  Removal no earlier than 17.2.
+     * @deprecated since 17.2.0, use {@link NumberingResult}.  Removal no earlier than 17.2.
      */
     @Deprecated
     public static class ResultTriple extends NumberingResult {

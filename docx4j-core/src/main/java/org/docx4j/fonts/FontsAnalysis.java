@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * ({@link FontSubstitutionTable}).  Put together they are a report a user (or an agent,
  * before converting) can act on, and the one the conversion logs.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class FontsAnalysis {
 
@@ -76,7 +76,7 @@ public final class FontsAnalysis {
 	 * run's effective properties resolved once per run rather than once per character,
 	 * and each run's answers memoised by code point.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static FontUsage usage(WordprocessingMLPackage pkg) {
 
@@ -255,7 +255,7 @@ public final class FontsAnalysis {
 	 *
 	 * @param environment the fonts of the deployment being asked about -
 	 *        {@link FontEnvironment#machine()} or {@link FontEnvironment#jarsOnly()}
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static FontReport analyse(WordprocessingMLPackage pkg, FontEnvironment environment) {
 
@@ -445,7 +445,7 @@ public final class FontsAnalysis {
 	 * carrying them says that machine had the font and a name-only entry says it did not
 	 * (CR-017, "This matters because the target is what Word drew for the author").  The
 	 * worked cases are corpus documents 9919 - a name-only entry whose {@code w:altName}
-	 * Word resolved - and the EnBW document of the 17.1.1 CHANGELOG.
+	 * Word resolved - and the EnBW document of the 17.2.0 CHANGELOG.
 	 */
 	static FontReport.AuthorHad authorHad(String documentFont, org.docx4j.wml.Fonts.Font entry,
 			Mapper mapper, StringBuilder evidence) {
@@ -592,7 +592,7 @@ public final class FontsAnalysis {
 			 * What is true of every row that reaches this branch is that docx4j's table
 			 * knows no metric clone of the font.  The error is repeated here (describe()
 			 * names it too) so that the action stands on its own - it is a field of its
-			 * own in the JSON and in the MCP tool's answer.  @since 17.1.1 */
+			 * own in the JSON and in the MCP tool's answer.  @since 17.2.0 */
 			sb.append(" for Word's line breaks: docx4j knows no metric clone of it; ")
 					.append(nameOf(decision)).append(" is the closest measured");
 			String measured = decision.getWidthError();
@@ -718,7 +718,7 @@ public final class FontsAnalysis {
 	// ------------------------------------------------------------------ the conversion log
 
 	/** {@code docx4j.fonts.report.log} = {@code summary} (the default: one line per
-	 *  document font), {@code full} (the whole report) or {@code off}.  @since 17.1.1 */
+	 *  document font), {@code full} (the whole report) or {@code off}.  @since 17.2.0 */
 	public static final String LOG_PROPERTY = "docx4j.fonts.report.log";
 
 	/**
@@ -728,11 +728,11 @@ public final class FontsAnalysis {
 	 *
 	 * <p>Called by {@code Docx4J.toFO} (and so by {@code toPDF} through it) after the
 	 * export, so the per-script choices the selector made during it are in the report.
-	 * Until 17.1.1 a conversion said nothing about its fonts except a DEBUG line per
+	 * Until 17.2.0 a conversion said nothing about its fonts except a DEBUG line per
 	 * mapping and FOP's own "font not found" warning, which names no action (CR-017
 	 * gaps 2 and 3).</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static void logReport(Object pkg) {
 
@@ -787,7 +787,7 @@ public final class FontsAnalysis {
 	}
 
 	/** {@link RunFontSelector} needs a visitor; {@code documentFontFor} never calls it.  Public
-	 *  since 17.1.1 so that any caller of {@code documentFontFor} (the parity harnesses) can
+	 *  since 17.2.0 so that any caller of {@code documentFontFor} (the parity harnesses) can
 	 *  build a selector without an eleven-method no-op of its own. */
 	public static final RunFontSelector.RunFontCharacterVisitor NO_OP_VISITOR
 			= new RunFontSelector.RunFontCharacterVisitor() {

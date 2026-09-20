@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
  * bottom margin alone, and not 5.65pt, is what says the merge is per child rather than a
  * wholesale replacement.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TablePrExRowTest extends AbstractXSLFOTest {
 

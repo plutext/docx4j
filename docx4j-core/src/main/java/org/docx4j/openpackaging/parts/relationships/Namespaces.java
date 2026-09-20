@@ -137,7 +137,7 @@ public class Namespaces {
 	public final static String COMMENTS_IDS = 
 			"http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
 	
-	/** @since 17.1.1 */
+	/** @since 17.2.0 */
 	public final static String COMMENTS_EXTENSIBLE = 
 			"http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
 	
@@ -350,7 +350,7 @@ public class Namespaces {
 	public final static String SPREADSHEETML_EXTERNAL_LINK =
 			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink";
 
-	// The Excel 2010 and 2013 extension parts, [MS-XLSX] 2.1 (docx4j 17.1.1, CR-022).
+	// The Excel 2010 and 2013 extension parts, [MS-XLSX] 2.1 (docx4j 17.2.0, CR-022).
 	// The timeline types are Excel 365's (2011, lowercase), not the specification pages' 2010 "TimelineCache".
 	///xl/slicerCaches/slicerCache1.xml (from the workbook)
 	public final static String SPREADSHEETML_SLICER_CACHE =

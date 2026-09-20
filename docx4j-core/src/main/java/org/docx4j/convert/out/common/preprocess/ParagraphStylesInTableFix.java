@@ -90,7 +90,7 @@ import java.util.Set;
  * than table style.  This created style has no w:basedOn setting.
  * This preprocessor is required if paragraphs in tables are being styled incorrectly.
  *
- * <p>Since 17.1.1 the synthetic style also carries the table style's <em>conditional</em>
+ * <p>Since 17.2.0 the synthetic style also carries the table style's <em>conditional</em>
  * formatting ({@code w:tblStylePr}: the bold of a header row or first column, the
  * properties of a band) - one synthetic style per combination of the conditions a paragraph
  * is under, resolved by {@link TableStyleConditions} from the table's {@code w:tblLook},
@@ -204,7 +204,7 @@ public class ParagraphStylesInTableFix {
 		try {
 	        styleRenamer.propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
 	        // the resolver the walk below resolves paragraph and table styles through.
-	        // (Until 17.1.1 creating it wrote into the styles part - the w:sz 20 document
+	        // (Until 17.2.0 creating it wrote into the styles part - the w:sz 20 document
 	        //  default - so it had to be done before the styles were read here.)
 	        styleRenamer.setStyles(styles);
 			// CR-021: ALL - rewrites the exporter's copy, so styles are renamed in every branch
@@ -292,7 +292,7 @@ public class ParagraphStylesInTableFix {
 	     * (the w:basedOn chain merged), the conditional formats its w:tblLook asks for, its
 	     * band sizes, and where each row and cell sits, so that a paragraph's conditions
 	     * can be worked out (TableStyleConditions.resolve) as the walk reaches it.
-	     * @since 17.1.1
+	     * @since 17.2.0
 	     */
 	    private class TableContext {
 
@@ -569,7 +569,7 @@ public class ParagraphStylesInTableFix {
 		 * paragraph style, with DocDefaults given lower priority 
 		 * than table style.  This created style has no w:basedOn setting.
 		 *
-		 * Since 17.1.1 the table style's contribution includes the conditional formats
+		 * Since 17.2.0 the table style's contribution includes the conditional formats
 		 * (w:tblStylePr) the paragraph is under, so there is one such style per
 		 * (paragraph style, table style, applicable conditions).
 		 *
@@ -616,7 +616,7 @@ public class ParagraphStylesInTableFix {
 			/* The conditional formats this paragraph is under, restricted to the ones the
 			 * table style actually gives a w:pPr or w:rPr - in precedence order, so that
 			 * the same set always names the same style.  A paragraph under none of them
-			 * keeps the pre-17.1.1 style id, so nothing changes for a table style without
+			 * keeps the pre-17.2.0 style id, so nothing changes for a table style without
 			 * conditional formatting. */
 			List<CTTblStylePr> applicable = new ArrayList<CTTblStylePr>();
 			EnumSet<STTblStyleOverrideType> named = EnumSet.noneOf(STTblStyleOverrideType.class);
@@ -718,7 +718,7 @@ public class ParagraphStylesInTableFix {
 			 * StyleUtil.applyStyleLevel).  The paragraph level's own value is its basedOn
 			 * chain merged root-first, which the loop below walks anyway - so it is
 			 * accumulated on its own there, and the twelve toggles are combined after it.
-			 * @since 17.1.1 */
+			 * @since 17.2.0 */
 			RPr tableLevelRPr = newStyle.getRPr() == null ? null
 					: (RPr)XmlUtils.deepCopy(newStyle.getRPr());
 			RPr paragraphLevelRPr = Context.getWmlObjectFactory().createRPr();
@@ -743,7 +743,7 @@ public class ParagraphStylesInTableFix {
 			}
 
 			/* The table level XOR the paragraph level, for the toggle properties alone
-			 * (ECMA-376-1 17.7.3).  Until 17.1.1 a table style which made its first column
+			 * (ECMA-376-1 17.7.3).  Until 17.2.0 a table style which made its first column
 			 * bold and a paragraph or character style which did the same both applied, and
 			 * the text came out bold where Word draws it regular. */
 			StyleUtil.applyToggles(paragraphLevelRPr, tableLevelRPr,
@@ -896,8 +896,8 @@ public class ParagraphStylesInTableFix {
 				if (p.getPPr().getPStyle()==null) {
 										
 						/* A paragraph naming no style is the default paragraph style's: that is how
-						 * Word writes it, and since 17.1.1 (CR-015 phase 2) PropertyResolver resolves
-						 * it so for the paragraph AND its runs.  Until 17.1.1 this preprocess wrote the
+						 * Word writes it, and since 17.2.0 (CR-015 phase 2) PropertyResolver resolves
+						 * it so for the paragraph AND its runs.  Until 17.2.0 this preprocess wrote the
 						 * default style's id onto every such paragraph, in a table or not, which
 						 * shielded the exporters from the resolver's run-properties gap - and hid it
 						 * from the corpus.  Outside a table the paragraph is now left as written

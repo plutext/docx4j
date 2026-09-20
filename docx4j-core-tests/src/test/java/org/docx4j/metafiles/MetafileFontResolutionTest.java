@@ -46,7 +46,7 @@ import org.junit.Test;
  * which Batik wrote into the SVG as the {@code font-family} and FOP could not resolve, so
  * the picture's text was drawn in a base-14 font the PDF does not embed.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class MetafileFontResolutionTest {
 

@@ -24,7 +24,7 @@ import org.junit.Test;
  * to the percentage and drew four 0.05pt columns.  Of the corpora's 1,855 pct table
  * widths the next-smallest is in the 30-39% band.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class DegeneratePctTableWidthTest {
 

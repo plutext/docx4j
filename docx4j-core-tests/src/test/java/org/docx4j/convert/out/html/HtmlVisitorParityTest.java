@@ -308,7 +308,7 @@ public class HtmlVisitorParityTest {
 			// numbered paragraphs (direct and style-based) both become li
 			// (via the HTML_ELEMENT sdts the ListsToContentControls preprocess adds)
 			// ... each carrying its label as a span, its own indent, and no browser marker
-			// (list-style none), since 17.1.1 (CR-003, the list-marker defect)
+			// (list-style none), since 17.2.0 (CR-003, the list-marker defect)
 			assertTrue(impl + "direct-numbered paragraph is not a labelled li", Pattern.compile(
 					"<li[^>]*style=\"[^\"]*list-style: none;[^\"]*\"[^>]*><span class=\"ListLabel\"[^>]*>1\\.</span>(<span[^>]*>)*item text").matcher(html).find());
 			assertTrue(impl + "style-numbered paragraph is not a labelled li", Pattern.compile(
@@ -391,7 +391,7 @@ public class HtmlVisitorParityTest {
 					shadedDiv.contains("shaded one") && shadedDiv.contains("shaded two"));
 
 			// SdtToListSdtTagHandler: a real ol around the li items
-			// since 17.1.1 the ol is structural, styled list-style none (CR-003)
+			// since 17.2.0 the ol is structural, styled list-style none (CR-003)
 			String ol = block(html, "<ol style=\"list-style: none; margin: 0; padding-left: 0;\">", "</ol>");
 			assertTrue(impl + "ol/li list lost",
 					ol.contains("<li") && ol.contains("item one") && ol.contains("item two"));

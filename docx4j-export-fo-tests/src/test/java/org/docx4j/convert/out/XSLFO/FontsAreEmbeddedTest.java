@@ -57,7 +57,7 @@ import org.junit.Test;
  * is what sends it to FOP as a CID font - the font docx4j declares for a run that kerns -
  * and so through the subsetter.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class FontsAreEmbeddedTest {
 

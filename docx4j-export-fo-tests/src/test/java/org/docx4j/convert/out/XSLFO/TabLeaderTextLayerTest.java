@@ -61,7 +61,7 @@ import org.junit.Test;
  * <p>The test renders the same document with the rules off and on and asserts both halves:
  * the text layer gains the characters, and <b>no ink glyph of the text moves</b>.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TabLeaderTextLayerTest {
 
@@ -75,7 +75,7 @@ public class TabLeaderTextLayerTest {
 
 	/** An explicit face, so that the widths this test's leader is phased against do not
 	 *  move with {@code docx4j.fonts.defaultTheme}: the runs carried no w:rFonts and took
-	 *  the document default, which was Calibri until 17.1.1 made it Aptos.  In Arimo (the
+	 *  the document default, which was Calibri until 17.2.0 made it Aptos.  In Arimo (the
 	 *  Aptos substitute) "before" is wide enough that the leader opens exactly on Word's
 	 *  grid, the phase is 0, and the lead space this test is about is correctly not
 	 *  written - a true answer to a question the test did not mean to ask. */

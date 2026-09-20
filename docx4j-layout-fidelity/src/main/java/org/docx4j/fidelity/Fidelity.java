@@ -132,7 +132,7 @@ public final class Fidelity {
 	static void fontEnvironment(String fontSet) throws Exception {
 		new org.docx4j.fonts.IdentityPlusMapper(); // triggers discovery (jars, and the system unless disabled)
 		if (!fontSet.equals("all") && !fontSet.equals("jars")) {
-			// the walk is docx4j-core's since 17.1.1, so the harness and FontsAnalysis
+			// the walk is docx4j-core's since 17.2.0, so the harness and FontsAnalysis
 			// build a font environment the same way (CR-017 phase 3)
 			File dir = new File(fontSet);
 			if (!dir.isDirectory()) throw new IllegalArgumentException("-Dfidelity.fonts: not a directory: " + dir);

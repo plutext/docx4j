@@ -47,7 +47,7 @@ import org.junit.Test;
  * <p>Measured on a corpus document which does exactly that: Word draws 216 regular lines
  * and 16 bold ones, and before this rule we drew 174 and 60 (CR-001 batch 46 item 4).</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TogglePropertiesTest {
 
@@ -107,7 +107,7 @@ public class TogglePropertiesTest {
 
 	/** An explicit false at a level is a term of the XOR like any other value, which is
 	 *  what Word's {@code toggle-levels} golden says (it draws a run in a character style
-	 *  stating {@code <w:b w:val="0"/>} over a bold paragraph style BOLD).  17.1.1 shipped
+	 *  stating {@code <w:b w:val="0"/>} over a bold paragraph style BOLD).  17.2.0 shipped
 	 *  the other reading - the false applied as it stands - and the golden refuted it
 	 *  (CR-001 batch 47 item 0b). */
 	@Test
@@ -237,7 +237,7 @@ public class TogglePropertiesTest {
 				effective(pkg, "BoldChild", "<w:rStyle w:val=\"Strong\"/>").getB().isVal());
 	}
 
-	/** Case 1 of the {@code toggle-levels} golden, and the one reading of 17.1.1's two that
+	/** Case 1 of the {@code toggle-levels} golden, and the one reading of 17.2.0's two that
 	 *  Word refutes: a character style stating {@code <w:b w:val="0"/>} over a bold
 	 *  paragraph style is BOLD in Word's PDF ({@code TimesNewRomanPS-BoldMT}), because the
 	 *  false is a term of the XOR and false XOR true = true.  A run that wants the weight

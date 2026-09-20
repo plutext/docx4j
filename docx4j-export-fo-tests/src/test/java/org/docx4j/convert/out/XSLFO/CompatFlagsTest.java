@@ -215,7 +215,7 @@ public class CompatFlagsTest extends AbstractXSLFOTest {
 	 * the flag-stated one byte-for-byte the one which does not state it. In all four Word
 	 * puts the heading's first line 2.16pt below an ordinary first line, which is its 1pt
 	 * border and the border's 1pt space; mid-page the same heading sits a full 24pt lower.
-	 * Until 17.1.1 docx4j read the flag here and kept the space below mode 15, which put
+	 * Until 17.2.0 docx4j read the flag here and kept the space below mode 15, which put
 	 * the heading 24pt too low on every page a break opened.</p>
 	 */
 	@Test

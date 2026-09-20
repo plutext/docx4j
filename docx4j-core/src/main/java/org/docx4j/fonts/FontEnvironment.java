@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * {@code docx4j.fonts.discoverPhysicalFonts.enabled} property, set before the first
  * Mapper is constructed).  What this offers afterwards is a view.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class FontEnvironment {
 
@@ -105,7 +105,7 @@ public final class FontEnvironment {
 	 * use them, and returned as an environment.  Walked recursively; {@code .ttf},
 	 * {@code .otf} and {@code .ttc} files.
 	 *
-	 * @since 17.1.1 (the walk was docx4j-layout-fidelity's, CR-016 phase 0c)
+	 * @since 17.2.0 (the walk was docx4j-layout-fidelity's, CR-016 phase 0c)
 	 */
 	public static FontEnvironment ofDirectory(File dir) throws Exception {
 

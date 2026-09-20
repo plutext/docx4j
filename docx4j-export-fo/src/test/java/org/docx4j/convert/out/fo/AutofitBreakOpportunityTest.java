@@ -25,7 +25,7 @@ import org.junit.Test;
  * gave its column 286pt where Word gives 216, and the column beside it 44pt where
  * Word gives 77, which broke a word there a letter to a line.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class AutofitBreakOpportunityTest {
 

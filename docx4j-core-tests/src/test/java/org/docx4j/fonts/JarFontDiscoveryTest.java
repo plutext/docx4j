@@ -31,7 +31,7 @@ import org.junit.Test;
 
 /**
  * Font jars are discovered from every classpath root that has a {@code fonts/} folder,
- * not only the first.  Until 17.1.1 {@code PhysicalFonts.getFontUrls} used
+ * not only the first.  Until 17.2.0 {@code PhysicalFonts.getFontUrls} used
  * {@code ClassLoader.getResource}, which answers with one root, so of two font jars
  * sharing the prefix (croscore and crosextra both use {@code fonts/}) only one was ever
  * walked - and on a headless box, where the jars are the whole font supply, Times New

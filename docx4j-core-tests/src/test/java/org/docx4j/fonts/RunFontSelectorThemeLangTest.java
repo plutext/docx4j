@@ -29,9 +29,9 @@ import org.junit.Test;
 /**
  * The theme language.  An Estonian document (w:themeFontLang w:val="et-EE") whose
  * defaults name the theme's minor font gets that font's Latin face - Word: CR-016 probe
- * fonts-theme-lang, Carlito - not the theme's Ethiopic face (until 17.1.1 "et" matched
+ * fonts-theme-lang, Carlito - not the theme's Ethiopic face (until 17.2.0 "et" matched
  * inside "eth"); and the document default font, which is such a theme reference in
- * most documents, is resolved with the theme language known (until 17.1.1 it was
+ * most documents, is resolved with the theme language known (until 17.2.0 it was
  * computed before the language was read, and cached).
  */
 public class RunFontSelectorThemeLangTest {

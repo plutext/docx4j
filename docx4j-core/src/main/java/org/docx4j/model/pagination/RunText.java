@@ -58,7 +58,7 @@ import org.docx4j.wml.Text;
  *     note and comment references, and {@code w:lastRenderedPageBreak} itself.</li>
  * </ul>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class RunText {
 

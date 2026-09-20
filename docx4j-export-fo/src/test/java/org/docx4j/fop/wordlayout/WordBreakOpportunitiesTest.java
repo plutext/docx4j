@@ -14,7 +14,7 @@ import org.junit.Test;
  * Where the autofit sizer's units end: the break opportunities the line manager will
  * take, from FOP's own UAX #14 table plus Word's solidus and backslash rules.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class WordBreakOpportunitiesTest {
 

@@ -24,7 +24,7 @@ package org.docx4j.model.listnumbering;
  * יו), כ (20), ק (100) ... ת (400), and ת repeated above that.
  * No geresh or gershayim, as in Word's labels.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatHebrew1 extends LabelFormatter {
 

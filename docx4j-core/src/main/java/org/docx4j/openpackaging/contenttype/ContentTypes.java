@@ -141,7 +141,7 @@ public class ContentTypes {
 	public final static String WORDPROCESSINGML_COMMENTS_IDS = "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml";
 
 	// PartName="/word/commentsExtensible.xml"
-	/** @since 17.1.1 */
+	/** @since 17.2.0 */
 	public final static String WORDPROCESSINGML_COMMENTS_EXTENSIBLE = "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml";
 	
 	// PartName="/word/endnotes.xml"
@@ -347,7 +347,7 @@ public class ContentTypes {
 	public final static String SPREADSHEETML_EXTERNAL_LINK =
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
 
-	// The Excel 2010 and 2013 extension parts, [MS-XLSX] 2.1 (docx4j 17.1.1, CR-022).
+	// The Excel 2010 and 2013 extension parts, [MS-XLSX] 2.1 (docx4j 17.2.0, CR-022).
 	// The timeline strings are Excel 365's (lowercase), not the specification pages' "TimelineCache+xml".
 	// /xl/slicerCaches/slicerCache1.xml
 	public final static String SPREADSHEETML_SLICER_CACHE =

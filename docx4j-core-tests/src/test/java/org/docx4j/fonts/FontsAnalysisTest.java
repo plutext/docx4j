@@ -200,7 +200,7 @@ public class FontsAnalysisTest {
 		// not "no open clone exists": what is true is that docx4j's table has no metric
 		// clone of it (Selawik is an open replacement for Segoe UI and still a stand-in,
 		// having no italic face).  The action carries the measurement itself, since it is
-		// a field of its own in the JSON.  @since 17.1.1
+		// a field of its own in the JSON.  @since 17.2.0
 		assertTrue(entry.getAction(), entry.getAction().contains("docx4j knows no metric clone of it"));
 		assertFalse(entry.getAction(), entry.getAction().contains("no open clone of it exists"));
 		String error = entry.getDecision().getWidthError();
@@ -262,7 +262,7 @@ public class FontsAnalysisTest {
 	/** The fontTable evidence, each answer with the entry that gives it.  The worked
 	 *  cases are corpus documents 9919 (whose "Nokia Pure Text" entry carries w:panose1
 	 *  and w:sig, and whose "Wingdings-Regular" entry is w:notTrueType with an all-zero
-	 *  panose) and 278, the EnBW document of the 17.1.1 CHANGELOG (w:panose1 and w:sig). */
+	 *  panose) and 278, the EnBW document of the 17.2.0 CHANGELOG (w:panose1 and w:sig). */
 	@Test
 	public void theFontTableSaysWhatTheAuthorsMachineHad() throws Exception {
 

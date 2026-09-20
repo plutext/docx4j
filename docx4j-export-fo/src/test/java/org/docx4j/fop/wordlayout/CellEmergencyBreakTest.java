@@ -28,7 +28,7 @@ import org.w3c.dom.NodeList;
 /**
  * Word's emergency break inside a table cell: a word wider than the cell is broken as
  * soon as it exceeds the cell, at whatever character reaches the edge.  Body text
- * ({@link EmergencyBreakTest}) tolerated an inch of overflow until 17.1.1 and now takes
+ * ({@link EmergencyBreakTest}) tolerated an inch of overflow until 17.2.0 and now takes
  * the same twip, so what the cell's own tolerance decides is what a caller who sets one
  * of the two properties gets.
  *
@@ -41,7 +41,7 @@ import org.w3c.dom.NodeList;
  *
  * <p>Courier 12pt is 7.2pt a character, so a 100pt cell holds 13.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class CellEmergencyBreakTest {
 
@@ -167,7 +167,7 @@ public class CellEmergencyBreakTest {
 	 * solidus, or before a backslash (WordBreakOpportunities) - is one word to the
 	 * emergency break, and is broken at the cell's edge through the join.  FOP builds
 	 * "box, penalty(INF), glue, penalty, glue" around such an opportunity, and until
-	 * 17.1.1 the glue ended the word: the two halves were split as two words whose
+	 * 17.2.0 the glue ended the word: the two halves were split as two words whose
 	 * emergency breaks blocked each other, and a 21pt corpus column set "s\Chicos" on
 	 * one line, overflowing, where every other line held two characters.
 	 */
@@ -195,10 +195,10 @@ public class CellEmergencyBreakTest {
 	}
 
 	/** The same word on the same measure in body text is broken there too: the inch body
-	 *  text tolerated until 17.1.1 is gone. */
+	 *  text tolerated until 17.2.0 is gone. */
 	@Test
 	public void bodyTextBreaksAtTheMeasureToo() throws Exception {
-		/* Until 17.1.1 body text tolerated an inch of overflow, and this word - a few
+		/* Until 17.2.0 body text tolerated an inch of overflow, and this word - a few
 		 * points past its measure - was painted whole.  Word's break-longword golden
 		 * refutes that: it breaks a token 5.0pt past a 481.0pt body measure at the last
 		 * character that fits, and leaves one 1.0pt inside it alone, so the body's
@@ -209,7 +209,7 @@ public class CellEmergencyBreakTest {
 	}
 
 	/** A block inside a block-container inside a cell is still in the cell: the walk up to
-	 *  the fo:table-cell goes through block-containers from 17.1.1, so this word - 44pt past
+	 *  the fo:table-cell goes through block-containers from 17.2.0, so this word - 44pt past
 	 *  the 100pt measure - is broken on the cell's own tolerance, as one in a bare cell
 	 *  block is (CR-001 batch 47 item 4c). */
 	@Test
@@ -232,7 +232,7 @@ public class CellEmergencyBreakTest {
 
 	/**
 	 * And it is the <b>cell's</b> tolerance it takes, not body text's: raised to the inch,
-	 * the same word in the same container is painted whole.  Before 17.1.1 the walk up
+	 * the same word in the same container is painted whole.  Before 17.2.0 the walk up
 	 * stopped at the block-container and such a block took the general tolerance; the two
 	 * are the same twip after item 4, so only a raised cell tolerance tells them apart.
 	 *

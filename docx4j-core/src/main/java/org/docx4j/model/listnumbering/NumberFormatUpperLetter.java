@@ -21,7 +21,7 @@ package org.docx4j.model.listnumbering;
 /**
  * {@code w:numFmt upperLetter}: A, B, ... Z, then AA, BB, CC.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatUpperLetter extends NumberFormatAlphabet {
 

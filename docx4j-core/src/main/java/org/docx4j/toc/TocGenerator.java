@@ -444,7 +444,7 @@ public class TocGenerator {
     	}
 
     	// counted in a state of this generator's own, so the numbering part's default
-    	// state is neither reset nor advanced by generating a TOC (@since 17.1.1)
+    	// state is neither reset nor advanced by generating a TOC (@since 17.2.0)
     	org.docx4j.model.listnumbering.NumberingState state = new org.docx4j.model.listnumbering.NumberingState();
     	
     	//PropertyResolver propertyResolver =  wordMLPackage.getMainDocumentPart().getPropertyResolver();   
@@ -764,7 +764,7 @@ public class TocGenerator {
     
     
     /**
-     * Invoke FOP to calculate page numbers: since 17.1.1 (CR-012 phase 3) through
+     * Invoke FOP to calculate page numbers: since 17.2.0 (CR-012 phase 3) through
      * {@link Paginate#compute}, the general pagination query, of which the page a
      * bookmark's paragraph starts on is the part a TOC needs; the map is keyed by the
      * bookmark name, as before.  The layout is of the accepted view of tracked changes

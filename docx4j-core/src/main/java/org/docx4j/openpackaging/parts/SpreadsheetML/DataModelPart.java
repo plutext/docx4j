@@ -29,7 +29,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * The Excel data model ([MS-XLDM]; content type application/vnd.openxmlformats-officedocument.model+data),
  * the binary store behind x15:dataModel in the workbook's extLst. Related from the workbook. Kept as bytes.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class DataModelPart extends BinaryPart {
 

@@ -38,7 +38,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * word/commentsExtensible.xml, which before 17.1.1 had no schema in {@code xsd/}
+ * word/commentsExtensible.xml, which before 17.2.0 had no schema in {@code xsd/}
  * and so loaded as a generic XML part: its bytes were preserved, but nothing
  * could read a comment's {@code durableId} or {@code dateUtc} through the model,
  * and the comment reactions part ([MS-OREACTXML]) anchors on those.
@@ -46,7 +46,7 @@ import org.junit.Test;
  * <p>{@code loadAndSave.docx} (Word 365, 2026) carries the part, with one
  * {@code commentExtensible}.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class CommentsExtensiblePartTest {
 

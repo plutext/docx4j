@@ -34,7 +34,7 @@ import org.junit.Test;
  * headers, the machine state, the run-level font summary, and the documents this run did
  * not touch - keeps its place.
  *
- * @since 17.1.1 (CR-001 batch 48)
+ * @since 17.2.0 (CR-001 batch 48)
  */
 public class GoldenManifestPruneTest {
 

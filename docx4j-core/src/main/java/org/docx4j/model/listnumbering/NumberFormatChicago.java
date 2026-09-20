@@ -23,7 +23,7 @@ package org.docx4j.model.listnumbering;
  * (** †† ...), then tripled (ECMA-376 17.18.59: "one or more occurrences of a
  * single character" from that set).
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatChicago extends LabelFormatter {
 

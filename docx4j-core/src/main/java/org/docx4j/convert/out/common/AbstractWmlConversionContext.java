@@ -199,13 +199,13 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	/** How many text boxes the content being converted is nested in (CR-012). */
 	private int textBoxDepth = 0;
 
-	/** The generator is about to convert a text box's content (VML or DrawingML). @since 17.1.1 */
+	/** The generator is about to convert a text box's content (VML or DrawingML). @since 17.2.0 */
 	public void enterTextBox() {
 		textBoxDepth++;
 		enterStory(getNumberingStates().newStory()); // a text box numbers on its own (CR-014 P7)
 	}
 
-	/** ... and has finished with it. @since 17.1.1 */
+	/** ... and has finished with it. @since 17.2.0 */
 	public void exitTextBox() {
 		exitStory();
 		textBoxDepth--;
@@ -221,7 +221,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	 * not interleave) and a header, footer, footnote, endnote or text box numbers
 	 * from its own start (CR-014 phase 4).
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public org.docx4j.model.listnumbering.NumberingStates getNumberingStates() {
 		if (numberingStates == null) numberingStates = new org.docx4j.model.listnumbering.NumberingStates();
@@ -233,25 +233,25 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	 * entered with {@link #enterStory} (a text box's), else the one for
 	 * {@link #getCurrentPart()}.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public org.docx4j.model.listnumbering.NumberingState getNumberingState() {
 		return storyStack.isEmpty() ? getNumberingStates().forPart(getCurrentPart()) : storyStack.peek();
 	}
 
 	/** Number what follows in the given story, until {@link #exitStory()}: a text box,
-	 *  or a footnote's content converted in place.  @since 17.1.1 */
+	 *  or a footnote's content converted in place.  @since 17.2.0 */
 	public void enterStory(org.docx4j.model.listnumbering.NumberingState story) {
 		storyStack.push(story);
 	}
 
-	/** @since 17.1.1 */
+	/** @since 17.2.0 */
 	public void exitStory() {
 		if (!storyStack.isEmpty()) storyStack.pop();
 	}
 
 	/** Whether the content being converted is inside a text box, whose paragraphs are laid
-	 *  out where the box is anchored, not in the flow. @since 17.1.1 */
+	 *  out where the box is anchored, not in the flow. @since 17.2.0 */
 	public boolean isInTextBox() {
 		return textBoxDepth > 0;
 	}

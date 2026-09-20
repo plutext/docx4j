@@ -116,7 +116,7 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 	 *
 	 * <p>Runs whether the export succeeded or threw, and never itself throws.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected void cleanupTemporaryImages(CS conversionSettings, CC conversionContext) {
 
@@ -140,7 +140,7 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 	 * exporter answers false where FOP rendered the document (to PDF, say) in
 	 * process, which puts the images in the output and finishes with the files.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected boolean outputReferencesImageFiles(CS conversionSettings) {
 		return true;

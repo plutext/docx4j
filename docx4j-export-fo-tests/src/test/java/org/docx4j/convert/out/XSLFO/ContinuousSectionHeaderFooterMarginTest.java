@@ -60,7 +60,7 @@ import org.w3c.dom.NodeList;
  * on every page; with the header and footer taking the first part's margins it is 571.50,
  * and the document's five first-section pages are Word's.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class ContinuousSectionHeaderFooterMarginTest extends AbstractXSLFOTest {
 

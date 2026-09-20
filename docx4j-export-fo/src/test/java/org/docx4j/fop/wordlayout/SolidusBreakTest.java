@@ -95,7 +95,7 @@ public class SolidusBreakTest {
 	/**
 	 * A URL longer than the whole measure is a different rule: the emergency break splits
 	 * it at the last character that fits, which may be the solidus itself.  Word's
-	 * {@code break-longword} golden breaks a token 5.0pt past its measure, so from 17.1.1
+	 * {@code break-longword} golden breaks a token 5.0pt past its measure, so from 17.2.0
 	 * the body's tolerance is a twip and a 223.2pt URL on a 200pt line is broken rather
 	 * than painted whole (CR-001 batch 47 item 4). The break still does not fall after the
 	 * solidus: twenty-seven Courier characters fit the line and the twenty-seventh is the
@@ -148,7 +148,7 @@ public class SolidusBreakTest {
 	 * sign): FOP's UAX #14 pair table predates Unicode 8.0's LB24, so it does.
 	 * Measured on a 311-page corpus document whose category column holds
 	 * {@code Quejas\Clientes\Minoristas}: Word's line holds it whole, ours broke it
-	 * before each backslash (17.1.1).
+	 * before each backslash (17.2.0).
 	 */
 	@Test
 	public void noBreakBeforeABackslash() throws Exception {

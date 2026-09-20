@@ -26,7 +26,7 @@ import org.junit.Test;
  * row).  See {@link TableWriter#applyTableRowCustomAttributes} and word-layout-rules.md
  * §3.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TableRowKeepWithNextTest {
 

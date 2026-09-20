@@ -122,7 +122,7 @@ public class FontFallback {
 	 * The characters of these blocks which a span's own font <em>does</em> cover keep it,
 	 * as every other character does, so this only lets the pass look.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static boolean isEastAsianForm(int cp) {
 		return (cp>=0x2E80 && cp<=0x33FF)
@@ -131,7 +131,7 @@ public class FontFallback {
 	}
 
 	/** U+1F000-U+1FAFF, the emoji blocks (COMMON, like the symbols, and like them a
-	 *  group of their own so the text beside one keeps its font).  @since 17.1.1 */
+	 *  group of their own so the text beside one keeps its font).  @since 17.2.0 */
 	public static boolean isEmoji(int cp) {
 		return cp>=0x1F000 && cp<=0x1FAFF;
 	}
@@ -165,7 +165,7 @@ public class FontFallback {
 	}
 
 	public static final String SYMBOL_GROUP = "SYMBOL";
-	/** @since 17.1.1 */
+	/** @since 17.2.0 */
 	public static final String EMOJI_GROUP = "EMOJI";
 
 	public static Character.UnicodeScript scriptOf(int cp) {
@@ -262,7 +262,7 @@ public class FontFallback {
 	 *  than standing in for it: a condensed face, or one of the measured exceptions above.
 	 *  Such a family is not Word-defaulted either ({@link Mapper#isKnownFamily}), the
 	 *  measurement which put it here being that the document default beat a stand-in.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	static boolean leftToTheDocumentDefault(String documentFontName) {
 		return isCondensed(documentFontName) || leaveUnmapped(documentFontName);
 	}
@@ -295,7 +295,7 @@ public class FontFallback {
 	}
 
 	/** The class to stand in for: the table's word, else what the name says for certain.
-	 *  Package-private since 17.1.1 so a CLASS decision can name it (CR-017 phase 1). */
+	 *  Package-private since 17.2.0 so a CLASS decision can name it (CR-017 phase 1). */
 	static FontClass substitutionClass(String documentFontName) {
 
 		FontClass fromTable = classFromSubstitutionsTable(documentFontName);
@@ -405,7 +405,7 @@ public class FontFallback {
 	 *  {@code font-substitutes.xml}: the class defaults and the wide-coverage faces.
 	 *  {@code FontSubstitutionTableTest} checks that the table's catalogue says where to
 	 *  get each of them, so a report can act on any answer the package gives.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	static List<String> namedSubstitutes() {
 		List<String> names = new ArrayList<String>();
 		for (FontClass fontClass : new FontClass[] { FontClass.SANS, FontClass.SERIF, FontClass.MONO }) {
@@ -559,9 +559,9 @@ public class FontFallback {
 	 * <p><b>The emoji blocks</b>: Word's face (CR-016 probe fonts-symbol-and-emoji (c)),
 	 * then the monochrome faces a Linux box may have; Noto Color Emoji is bitmap-only
 	 * (CBDT) and FOP cannot load it, so it never reaches {@link PhysicalFonts}.
-	 * (@since 17.1.1)</p>
+	 * (@since 17.2.0)</p>
 	 *
-	 * <p>The rows themselves are {@code font-substitutes.xml}'s since 17.1.1
+	 * <p>The rows themselves are {@code font-substitutes.xml}'s since 17.2.0
 	 * ({@link FontSubstitutionTable}, CR-017 phase 0), so a report can cite them; this
 	 * javadoc stays as the measurement record.</p>
 	 *
@@ -569,7 +569,7 @@ public class FontFallback {
 	 */
 	private static List<String> measuredForScript(String documentFontName, int[] codePoints) {
 
-		/* The rows are font-substitutes.xml's since 17.1.1 (FontSubstitutionTable, CR-017
+		/* The rows are font-substitutes.xml's since 17.2.0 (FontSubstitutionTable, CR-017
 		 * phase 0); the measurements which chose them stay in the javadoc above.  A row
 		 * applies where the text has a code point of its coverage group and the row is
 		 * for this document font (or for every font, name="*"), and the rows are tried in

@@ -89,7 +89,7 @@ public class PhysicalFont {
 	 * PostScript name); the physical name is the full name.  Where the font has no
 	 * family triplet of its own, the physical name without a twin suffix.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public String getFamilyName() {
 		String plain = PhysicalFonts.stripSuffixes(name);
@@ -124,7 +124,7 @@ public class PhysicalFont {
 	 * Light font object, 378.55pt for a sentence its regular sets in 377.50, where
 	 * docx4j's Carlito Bold set it in 388.70.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private boolean noBoldFace = false;
 
@@ -133,13 +133,13 @@ public class PhysicalFont {
 	}
 
 	/** Suffix of an alias's name; {@link PhysicalFonts#get} strips it, so the alias
-	 *  resolves to its file's own entry wherever a name is looked up.  @since 17.1.1 */
+	 *  resolves to its file's own entry wherever a name is looked up.  @since 17.2.0 */
 	public static final String NOBOLD_SUFFIX = "+nobold";
 
 	/**
 	 * This font again under {@code name + NOBOLD_SUFFIX}, reporting no bold face.  Not
 	 * registered in {@link PhysicalFonts} (it stands for one document's font, like an
-	 * embedded font); the Mapper holds it.  @since 17.1.1
+	 * embedded font); the Mapper holds it.  @since 17.2.0
 	 */
 	public PhysicalFont noBoldFaceAlias() {
 		PhysicalFont alias = new PhysicalFont(name + NOBOLD_SUFFIX, embedFontInfo, fontResolver);

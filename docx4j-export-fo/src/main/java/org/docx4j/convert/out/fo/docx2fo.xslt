@@ -864,7 +864,7 @@
      -->
 <xsl:template match="w:ptab[@w:alignment='center']">
 
-	  <!-- A centre tab stop at the middle of the line.  Until 17.1.1 this matched
+	  <!-- A centre tab stop at the middle of the line.  Until 17.2.0 this matched
 	       nothing and a centre ptab produced no advance at all, so the field it should
 	       have centred ran on from the one before it (CR-001 batch 43, M43). -->
 	  <xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.ptabToFO(

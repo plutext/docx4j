@@ -522,7 +522,7 @@ public class FieldsCombiner {
 		 * <em>stays</em> empty - an {@code XE} index entry, a bookmark-only field - and
 		 * those are untouched.
 		 *
-		 * @since 17.1.1
+		 * @since 17.2.0
 		 */
 		private static final java.util.Set<String> COMPUTED_WITHOUT_RESULT =
 				java.util.Collections.unmodifiableSet(new java.util.HashSet<String>(

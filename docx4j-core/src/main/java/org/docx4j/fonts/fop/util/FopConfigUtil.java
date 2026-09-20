@@ -253,10 +253,10 @@ public class FopConfigUtil {
 
 	/**
 	 * Leave FOP to apply the OpenType layout features to a CJK font, as it did before
-	 * 17.1.1 - which costs the text layer the characters below, so this is off by
+	 * 17.2.0 - which costs the text layer the characters below, so this is off by
 	 * default.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static boolean cjkAdvancedFeatures() {
 		return Docx4jProperties.getProperty("docx4j.convert.out.fo.cjkAdvancedFeatures", false);
@@ -293,7 +293,7 @@ public class FopConfigUtil {
 	 * <p>Drop this when a FOP which keeps the original characters ships (Enterprise CR-001
 	 * section 6.6).  {@code docx4j.convert.out.fo.cjkAdvancedFeatures=true} turns it off.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static boolean mustNotUseOpenTypeLayout(Font entry) {
 		if (cjkAdvancedFeatures()) return false;
@@ -310,7 +310,7 @@ public class FopConfigUtil {
 	/** The physical font declared at this embed-url, or null (an embedded font, which is
 	 *  not in PhysicalFonts).  The bold and italic forms are declared from their own files
 	 *  and are not in the map under a name of their own, so they are asked for by form.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	private static PhysicalFont byEmbedUrl(String embedUrl) {
 		if (embedUrl==null) return null;
 		for (PhysicalFont pf : PhysicalFonts.getPhysicalFonts().values()) {
@@ -542,7 +542,7 @@ public class FopConfigUtil {
 	 * any" - one of its base-14 fonts, which the PDF names and does not embed
 	 * (CR-001, non-embedded fonts; CR-011's pathway).</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void addFamilyTriplet(org.docx4j.convert.out.fopconf.Fonts.Font entry,
 			PhysicalFont pf, String style, String weight) {
@@ -578,7 +578,7 @@ public class FopConfigUtil {
 	 * @param family the face's typographic family name
 	 * @param pf the face
 	 * @param all every physical font known, among which the family's own faces are looked for
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static boolean familyIsThisFaces(String family, PhysicalFont pf, java.util.Collection<PhysicalFont> all) {
 		String own = styleStripped(PhysicalFonts.stripSuffixes(pf.getName()));
@@ -710,7 +710,7 @@ public class FopConfigUtil {
 	 * <p>Never null when {@code regular} is not - a family without the face is drawn in
 	 * the regular file, and that is what is returned.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static PhysicalFont renderedFace(Mapper fontMapper, PhysicalFont regular, boolean bold, boolean italic) {
 
@@ -831,7 +831,7 @@ public class FopConfigUtil {
 	 * None of those is a font FOP has been told about, so it drew them in one of its
 	 * base-14 fonts - which the PDF names and does not embed.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static final String[][] SVG_LOGICAL_FAMILIES = {
 		{ "Dialog", "Arial" },
@@ -845,7 +845,7 @@ public class FopConfigUtil {
 	 * embeds.  Belt and braces: the pathway resolves the face through the mapper first
 	 * (Docx4jDrawFontManager), and this is for what it could not.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void declareSvgLogicalFamilies(Renderer renderer, Mapper fontMapper) {
 

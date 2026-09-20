@@ -60,7 +60,7 @@ import org.w3c.dom.NodeList;
  * </pre>
  *
  * <p>docx4j wrote the label and the run and nothing between them, so a PDF text extractor
- * read {@code 1.------------} where Word's reads {@code 1. ------------}.  Since 17.1.1 the
+ * read {@code 1.------------} where Word's reads {@code 1. ------------}.  Since 17.2.0 the
  * phase is written as the space Word writes ({@code WordLayoutCustomizer.tabSpaces}, the
  * same switch the paragraph tab's blank takes).</p>
  *
@@ -69,7 +69,7 @@ import org.w3c.dom.NodeList;
  * start-indent and ends at 32.4pt; the next multiple of 7.2 is 36.0; so the phase - and the
  * space - is <b>3.6pt</b>.</p>
  *
- * @since 17.1.1 (CR-001 batch 49 item 1)
+ * @since 17.2.0 (CR-001 batch 49 item 1)
  */
 public class NumberingLabelLeaderSpaceTest {
 
@@ -197,7 +197,7 @@ public class NumberingLabelLeaderSpaceTest {
 		return 0;
 	}
 
-	/** Off: the phase is the plain blank it was before 17.1.1, and nothing is in the text
+	/** Off: the phase is the plain blank it was before 17.2.0, and nothing is in the text
 	 *  layer between the label and the run. */
 	@Test
 	public void theSwitchRestoresThePlainBlank() throws Exception {

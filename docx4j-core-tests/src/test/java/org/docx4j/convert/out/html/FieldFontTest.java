@@ -34,7 +34,7 @@ import org.junit.Test;
  */
 public class FieldFontTest {
 
-	/** The font the test document asks for.  Any name will do: since 17.1.1 the html span
+	/** The font the test document asks for.  Any name will do: since 17.2.0 the html span
 	 *  names the document font first (CR-016 Decisions 1), whatever this machine has, so
 	 *  the test no longer depends on the machine's fonts. */
 	private static final String FONT = "Courier New";

@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see BindingHandler#setXHTMLImporterCustomizer(XHTMLImporterCustomizer) for anything
  *      beyond these three settings
- * @since 17.1.1 (CR-013)
+ * @since 17.2.0 (CR-013)
  */
 public final class XHTMLImporterFormatting {
 

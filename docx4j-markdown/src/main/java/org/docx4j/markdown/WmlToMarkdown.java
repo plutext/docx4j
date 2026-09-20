@@ -422,7 +422,7 @@ class WmlToMarkdown {
 	 * throughout is prose, not one fence - which is why a named style is
 	 * required.
 	 *
-	 * @since 17.1.1 (CR-005, the export enhancements of 2026-09-18)
+	 * @since 17.2.0 (CR-005, the export enhancements of 2026-09-18)
 	 */
 	private boolean isCodeParagraph(P p, PPr directPPr, String pStyleId) throws Docx4JException {
 		if (pStyleId == null) {
@@ -440,7 +440,7 @@ class WmlToMarkdown {
 	 * placeholder ("NOTE", "EXAMPLE").  Null for a list level, or where the
 	 * numbering cannot be read.  A bullet level is a list.
 	 *
-	 * @since 17.1.1 (CR-005, the export enhancements of 2026-09-18)
+	 * @since 17.2.0 (CR-005, the export enhancements of 2026-09-18)
 	 */
 	private String labelText(BigInteger numId, int ilvl) {
 		ListLevel level = listLevel(numId, ilvl);

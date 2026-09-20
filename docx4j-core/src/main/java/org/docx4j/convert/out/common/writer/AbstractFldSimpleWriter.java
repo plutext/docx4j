@@ -78,14 +78,14 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 * it updates, has its own property ({@code docPropertyCachedResult}).  A field with
 	 * no stored result at all is still evaluated.  PDF and HTML.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String PROPERTY_DATE_CACHED_RESULT = "docx4j.convert.out.fields.dateCachedResult";
 
 	/**
 	 * The field types {@link #PROPERTY_DATE_CACHED_RESULT} governs.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected static final java.util.Set<String> DATE_FIELDS =
 			java.util.Collections.unmodifiableSet(new java.util.HashSet<String>(
@@ -96,7 +96,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 	 * {@link #PROPERTY_DATE_CACHED_RESULT} is on, the field is one of {@link #DATE_FIELDS},
 	 * and it has a stored result to paint.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected static boolean paintStoredResult(FldSimpleModel model) {
 		if (model == null || !DATE_FIELDS.contains(model.getFldName())) return false;

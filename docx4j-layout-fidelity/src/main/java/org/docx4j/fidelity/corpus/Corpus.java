@@ -48,12 +48,12 @@ public final class Corpus {
 	private static final String CYRILLIC_GREEK_SENTENCE = "Привет, мир: это короткое предложение. Γειά σου κόσμε, αβγδ εζηθ.";
 	private static final String LATIN1_SENTENCE = "café über façade naïve ñandú Ångström œuvre – ¿qué? ½ × ÷";
 	/** The face 8132 is set in; Tinos is its metric clone on this machine.
-	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	 *  @since 17.2.0 (CR-001 batch 48, the line-box-bold probe) */
 	private static final String TIMES_NEW_ROMAN = "Times New Roman";
 
 	/** Arial's and Times New Roman's PANOSE-1, as Word writes them in fontTable.xml. */
 	private static final String PANOSE_ARIAL = "020B0604020202020204";
-	/** Arial's PANOSE-1 with the weight digit 03 (light) in place of 06.  @since 17.1.1 */
+	/** Arial's PANOSE-1 with the weight digit 03 (light) in place of 06.  @since 17.2.0 */
 	private static final String PANOSE_ARIAL_LIGHT = "020B0304020202020204";
 	private static final String PANOSE_TIMES = "02020603050405020304";
 	/** A real sans's w:sig: Liberation Sans's own OS/2 unicode and code-page ranges, read
@@ -995,7 +995,7 @@ public final class Corpus {
 
 		/*
 		 * The all-auto twin of table-grid-overwide: the same grids, but every w:tcW auto
-		 * and a w:tblW in dxa which is the grid's own sum, which since 17.1.1 makes the
+		 * and a w:tblW in dxa which is the grid's own sum, which since 17.2.0 makes the
 		 * grid authoritative (§6.3, "a grid the table's own w:tblW sums to wins").  A
 		 * 7 Sep unit test (TablePositionTest.fitToPage) had such a table - 12000 twips
 		 * of grid on a 9026-twip column - clamped to the column, and the grid rule now
@@ -3607,7 +3607,7 @@ public final class Corpus {
 	/** A {@code w:tblStylePr} conditional format on an existing table style: the run
 	 *  properties the style applies to the cells of that region only (firstCol, firstRow,
 	 *  ...).  This is the level 14924's spurious weight comes from.
-	 *  @since 17.1.1 (CR-001 batch 48, the toggle-levels probe) */
+	 *  @since 17.2.0 (CR-001 batch 48, the toggle-levels probe) */
 	private static void addTableStyleCondition(Doc d, String styleId,
 			org.docx4j.wml.STTblStyleOverrideType type,
 			java.util.function.Consumer<org.docx4j.wml.RPr> rPrCustomiser) {
@@ -5686,7 +5686,7 @@ public final class Corpus {
 		}));
 
 		/*
-		 * The numbering label's own width (CR-001 batch 47 item 5).  Until 17.1.1 docx4j
+		 * The numbering label's own width (CR-001 batch 47 item 5).  Until 17.2.0 docx4j
 		 * estimated a label at 90 twips a character - 4.5pt, about a digit of an 11pt face -
 		 * and that estimate decides the label column of a list block, the gap an inline label
 		 * leaves before the text, and whether the numbering tab's stop falls past the end of
@@ -6142,7 +6142,7 @@ public final class Corpus {
 				+ "of lower-case letters at 11pt, against controls in an explicit Calibri "
 				+ "and an explicit Cambria: WHICH FACE Word draws each line in, and what the "
 				+ "line advances to", () -> {
-			// createPackage puts a theme part in since 17.1.1; this probe's whole subject
+			// createPackage puts a theme part in since 17.2.0; this probe's whole subject
 			// is a package that has none, and its docx must stay the one Word's golden was
 			// cut from
 			Doc d = Doc.create(15).noThemePart();
@@ -6282,7 +6282,7 @@ public final class Corpus {
 	}
 
 	/** Gives the paragraph mark (w:pPr/w:rPr) the given size in half-points; an empty
-	 *  paragraph's line is sized by it.  @since 17.1.1 */
+	 *  paragraph's line is sized by it.  @since 17.2.0 */
 	private static P markSize(P p, int halfPts) {
 		if (p.getPPr() == null) p.setPPr(F.createPPr());
 		org.docx4j.wml.ParaRPr rpr = p.getPPr().getRPr() == null ? F.createParaRPr() : p.getPPr().getRPr();
@@ -6296,7 +6296,7 @@ public final class Corpus {
 
 	/** {@code w:cantSplit} on every row of a table: a row may not be divided across a page
 	 *  boundary.  Written first in each w:trPr, which is where Word writes it.
-	 *  @since 17.1.1 (CR-001 batch 47, the table-rowsplit probe) */
+	 *  @since 17.2.0 (CR-001 batch 47, the table-rowsplit probe) */
 	private static Tbl cantSplitEveryRow(Tbl tbl) {
 		for (Object o : tbl.getContent()) {
 			if (!(o instanceof org.docx4j.wml.Tr)) continue;
@@ -6311,7 +6311,7 @@ public final class Corpus {
 	/** The four grid-against-w:tcW configurations of ledger6's item 9, under one
 	 *  compatibility mode: the mode is a document property, so each mode is its own
 	 *  probe document (as table-indent-compat* and table-grid-edge-compat* already are).
-	 *  @since 17.1.1 (CR-001 batch 47) */
+	 *  @since 17.2.0 (CR-001 batch 47) */
 	private static Probe tableGridVsTcwProbe(int compatMode) {
 		return new Probe("table-grid-vs-tcw-compat" + compatMode,
 				"a three-column table whose w:tblGrid and row-1 w:tcW agree, disagree "
@@ -6382,7 +6382,7 @@ public final class Corpus {
 	/** A token of {@code n} characters cycling through the ten digits: every digit of
 	 *  Liberation Serif is 120 twips wide at 12pt and they are tabular, so the token's
 	 *  advance is exactly 120n twips and its characters can still be counted in an
-	 *  extracted line.  @since 17.1.1 (CR-001 batch 47, the break-longword probe) */
+	 *  extracted line.  @since 17.2.0 (CR-001 batch 47, the break-longword probe) */
 	private static String digitToken(int n) {
 		StringBuilder sb = new StringBuilder(n);
 		for (int i = 0; i < n; i++) sb.append((char) ('0' + i % 10));
@@ -6393,7 +6393,7 @@ public final class Corpus {
 	 *  w:tblBorders none: with {@code zeroMargins} its cell's text measure is exactly
 	 *  {@code twips}, and without it Word's default 108-twip cell margins are the only
 	 *  thing charged against the measure.
-	 *  @since 17.1.1 (CR-001 batch 47, the break-longword probe) */
+	 *  @since 17.2.0 (CR-001 batch 47, the break-longword probe) */
 	private static Tbl tokenCell(int twips, boolean zeroMargins, P content) {
 		Doc.Table t = new Doc.Table(twips).fixedLayout().noBorders();
 		if (zeroMargins) t.cellMargins(0, 0);
@@ -6405,7 +6405,7 @@ public final class Corpus {
 	 *  left tab stop at {@code stopTwips} with {@code leader} (or no w:tabs at all when
 	 *  stopTwips is 0), over Word's own w:ind left 720 hanging 360 - so the label "1."
 	 *  runs from 360 to 540 and the stop's advance past it is stopTwips - 540.
-	 *  @since 17.1.1 (CR-001 batch 47, the tab-leader-in-cell probe) */
+	 *  @since 17.2.0 (CR-001 batch 47, the tab-leader-in-cell probe) */
 	private static String leaderLevel(int ilvl, int stopTwips, String leader) {
 		return leaderLevel(ilvl, stopTwips, leader, 720, 360);
 	}
@@ -6415,7 +6415,7 @@ public final class Corpus {
 	 *  {@code leftTwips}, so a stop between the two is the one the numbering tab uses and
 	 *  the advance it opens is measurable.  Element order follows CT_Lvl and
 	 *  CT_PPrGeneral, which JAXB needs.
-	 *  @since 17.1.1 (CR-001 batch 47, the tab-leader-in-cell-2 probe) */
+	 *  @since 17.2.0 (CR-001 batch 47, the tab-leader-in-cell-2 probe) */
 	private static String leaderLevel(int ilvl, int stopTwips, String leader, int leftTwips,
 			int hangingTwips) {
 		return "<w:lvl w:ilvl=\"" + ilvl + "\">"
@@ -6434,7 +6434,7 @@ public final class Corpus {
 	/** {@link #leaderLevel(int, int, String, int, int)} with the level's own {@code w:rPr}:
 	 *  a size in half-points and, where {@code font} is not null, a {@code w:rFonts} - the
 	 *  label's own face and size, against the paragraph's.
-	 *  @since 17.1.1 (CR-001 batch 47 close-out, the tab-leader-sizes probe) */
+	 *  @since 17.2.0 (CR-001 batch 47 close-out, the tab-leader-sizes probe) */
 	private static String sizedLeaderLevel(int ilvl, int stopTwips, String leader, int leftTwips,
 			int hangingTwips, int halfPts, String font) {
 		String lvl = leaderLevel(ilvl, stopTwips, leader, leftTwips, hangingTwips);
@@ -6450,7 +6450,7 @@ public final class Corpus {
 	/** The paragraph mark's own w:rFonts and w:sz, and its weight when {@code bold} is not
 	 *  null: a mark which does not carry the paragraph's font and size would size the line
 	 *  box from the document defaults, which is not the thing being measured.
-	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	 *  @since 17.2.0 (CR-001 batch 48, the line-box-bold probe) */
 	private static java.util.function.Consumer<org.docx4j.wml.ParaRPr> markFont(String font,
 			int halfPts, Boolean bold) {
 		return rpr -> {
@@ -6470,7 +6470,7 @@ public final class Corpus {
 
 	/** The text split into runs of three words which alternate bold and regular, so that
 	 *  every line of the paragraph holds both weights.
-	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	 *  @since 17.2.0 (CR-001 batch 48, the line-box-bold probe) */
 	private static Doc.Para alternatingWeights(Doc.Para p, String text, String font, int halfPts) {
 		java.util.function.Consumer<org.docx4j.wml.RPr> b = Doc::bold;
 		String[] words = text.split(" ");
@@ -6488,7 +6488,7 @@ public final class Corpus {
 	}
 
 	/** The five line-box cases at one font and size, consecutive and unspaced.
-	 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+	 *  @since 17.2.0 (CR-001 batch 48, the line-box-bold probe) */
 	private static void lineBoxCases(Doc d, String tag, String font, int halfPts) {
 		java.util.function.Consumer<org.docx4j.wml.RPr> b = Doc::bold;
 		d.para().noLabel().font(font, halfPts).markRPr(markFont(font, halfPts, null))
@@ -6507,7 +6507,7 @@ public final class Corpus {
 
 	/** One case of missing-family-weight: a regular line and a bold line in the family the
 	 *  customiser names, then a Calibri control line holding a regular and a bold run.
-	 *  @since 17.1.1 (CR-001 batch 48) */
+	 *  @since 17.2.0 (CR-001 batch 48) */
 	private static void missingFamilyCase(Doc d, String label, String what,
 			java.util.function.Consumer<org.docx4j.wml.RPr> fontRef) {
 		d.para().noLabel().inheritSpacing()
@@ -6524,7 +6524,7 @@ public final class Corpus {
 	/** A numbering level with an explicit {@code w:lvlText}, {@code w:suff} and indent, and a
 	 *  size (half-points) on the level's own {@code w:rPr} - the label's own face, which is
 	 *  what its width is measured in.  Element order follows CT_Lvl and CT_PPrGeneral.
-	 *  @since 17.1.1 (CR-001 batch 47, the list-label-width probe) */
+	 *  @since 17.2.0 (CR-001 batch 47, the list-label-width probe) */
 	private static String labelLevel(int ilvl, String lvlText, String suff, int leftTwips,
 			int hangingTwips, int halfPts) {
 		return "<w:lvl w:ilvl=\"" + ilvl + "\">"
@@ -6543,7 +6543,7 @@ public final class Corpus {
 	// ---------------------------------------------------------------- CR-021 phase 0 helpers
 
 	/** A custom XML data storage part holding this XML, with its itemProps part; returns the
-	 *  store item id (fixed, so the probe's docx is reproducible).  @since 17.1.1 (CR-021 phase 0) */
+	 *  store item id (fixed, so the probe's docx is reproducible).  @since 17.2.0 (CR-021 phase 0) */
 	private static String addCustomXml(Doc d, String xml) throws Exception {
 		org.docx4j.openpackaging.parts.CustomXmlDataStoragePart part =
 				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart();
@@ -6566,7 +6566,7 @@ public final class Corpus {
 	}
 
 	/** An inline plain-text content control (w:sdt with w:text) bound by w:dataBinding to
-	 *  xpath in the custom XML part storeItemId, showing text.  @since 17.1.1 (CR-021 phase 0) */
+	 *  xpath in the custom XML part storeItemId, showing text.  @since 17.2.0 (CR-021 phase 0) */
 	private static String boundSdtXml(String text, String xpath, String storeItemId, int id) {
 		return "<w:sdt><w:sdtPr><w:id w:val=\"" + id + "\"/>"
 				+ "<w:dataBinding w:xpath=\"" + xpath + "\" w:storeItemID=\"" + storeItemId + "\"/>"
@@ -6574,7 +6574,7 @@ public final class Corpus {
 				+ "<w:sdtContent><w:r><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:sdtContent></w:sdt>";
 	}
 
-	/** The paragraph with this inline w:sdt appended to its content.  @since 17.1.1 (CR-021 phase 0) */
+	/** The paragraph with this inline w:sdt appended to its content.  @since 17.2.0 (CR-021 phase 0) */
 	private static P withInlineSdt(P p, String sdtXml) throws Exception {
 		String xml = org.docx4j.XmlUtils.marshaltoString(p, true, false, org.docx4j.jaxb.Context.jc);
 		if (!xml.contains("xmlns:w=")) {

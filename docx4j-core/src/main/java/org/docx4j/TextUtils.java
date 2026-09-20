@@ -138,7 +138,7 @@ public class TextUtils {
 	/**
 	 * Writes the character content it is handed.
 	 * 
-	 * <p>mc:AlternateContent (since 17.1.1, CR-021): the text of ONE branch - the one
+	 * <p>mc:AlternateContent (since 17.2.0, CR-021): the text of ONE branch - the one
 	 * {@link org.docx4j.jaxb.McSelection} draws - is written; the other branches are
 	 * skipped, so a text box's text appears once.  The rule is McSelection's exactly:
 	 * the first Choice whose Requires prefixes are all preferred, else the Fallback,

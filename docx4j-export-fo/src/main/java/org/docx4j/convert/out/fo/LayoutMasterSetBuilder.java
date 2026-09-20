@@ -582,7 +582,7 @@ public class LayoutMasterSetBuilder {
 	 * removes them.  An FO processor which honours them needs no such help, which is why
 	 * the FO says it this way.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void headerFooterIndent(PageDimensions page, RegionBefore before, RegionAfter after) {
 		int start = page.getHeaderFooterIndentStart();

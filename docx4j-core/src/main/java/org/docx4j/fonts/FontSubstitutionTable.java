@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
  * a user can do about it: {@code font-substitutes.xml}, beside
  * {@code word-line-metrics.properties}.
  *
- * <p>Until 17.1.1 this knowledge was in the comments and the code of
+ * <p>Until 17.2.0 this knowledge was in the comments and the code of
  * {@link Mapper#addMetricallyCompatibleSubstitutes()},
  * {@link FontFallback} and {@link WidthFactors}, where nothing could read it: a report
  * could not cite it, and the TypeScript and Python ports, which treat this repository as
@@ -67,7 +67,7 @@ import org.w3c.dom.NodeList;
  * <p>The file is parsed once, lazily, with a plain DOM parser: no JAXB context and no
  * generated classes, since nothing marshals it.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class FontSubstitutionTable {
 
@@ -142,7 +142,7 @@ public final class FontSubstitutionTable {
 		/** This row's entry for that physical font, or null where the row does not name
 		 *  it.  Matched on the name the table writes, with the FO layer's suffixes
 		 *  stripped, and case-insensitively, since a face may be keyed under either its
-		 *  full name or its family.  @since 17.1.1 */
+		 *  full name or its family.  @since 17.2.0 */
 		public Substitute substituteNamed(String physicalFontName) {
 			if (physicalFontName==null) return null;
 			String name = PhysicalFonts.stripSuffixes(physicalFontName).trim();
@@ -233,7 +233,7 @@ public final class FontSubstitutionTable {
 	 * that script, or null where it records nothing: the entry of the first script row
 	 * which is for the font and the script and names the face.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static Substitute scriptSubstitute(String documentFont, String script, String physicalFontName) {
 		if (script==null) return null;
@@ -287,16 +287,16 @@ public final class FontSubstitutionTable {
 		/** Whether the row was measured on a <b>bold</b> run.  A family's weights are not
 		 *  one another's width: Word's Tahoma Bold is 6 per cent wider than the Arimo Bold
 		 *  which stands in for it where its regular is within 0.6 per cent of Arimo's.
-		 *  @since 17.1.1 */
+		 *  @since 17.2.0 */
 		public boolean isBold() { return bold; }
 
-		/** Whether the row was measured on an <b>italic</b> run.  @since 17.1.1 */
+		/** Whether the row was measured on an <b>italic</b> run.  @since 17.2.0 */
 		public boolean isItalic() { return italic; }
 
 		public double getFactor() { return factor; }
 
 		/** {@code regular}, {@code bold}, {@code italic} or {@code bolditalic}: the
-		 *  {@code face} attribute's value.  @since 17.1.1 */
+		 *  {@code face} attribute's value.  @since 17.2.0 */
 		public String getFace() {
 			return bold ? (italic ? "bolditalic" : "bold") : (italic ? "italic" : "regular");
 		}
@@ -310,10 +310,10 @@ public final class FontSubstitutionTable {
 	 * <p>A font can be drawn in two substitutes at once - Cambria's Latin goes to Caladea
 	 * and its Greek to P052, and the two need opposite corrections - and a substitute's
 	 * weights are not one another's width, so a family needs a row per face as well.  The
-	 * map was one row per font until 17.1.1 (CR-001 batch 46 item 1), which could express
+	 * map was one row per font until 17.2.0 (CR-001 batch 46 item 1), which could express
 	 * neither.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static Map<String, List<WidthFactor>> widthFactors() {
 		return table().widthFactors;

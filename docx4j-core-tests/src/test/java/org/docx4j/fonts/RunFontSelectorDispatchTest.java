@@ -65,7 +65,7 @@ public class RunFontSelectorDispatchTest {
 	@Test
 	public void hebrewAndArabicTakeAscii() throws Exception {
 		RunFontSelector rfs = selector();
-		// probe fonts-hebrew-no-cs: the ascii font, not Times New Roman (until 17.1.1)
+		// probe fonts-hebrew-no-cs: the ascii font, not Times New Roman (until 17.2.0)
 		assertEquals("ascii", rfs.fontFor(0x05E9, null, null, "ea", "ascii", "hAnsi", "cs"));
 		assertEquals("ascii", rfs.fontFor(0x0645, null, null, "ea", "ascii", "hAnsi", "cs"));
 		// the Indic ranges: cs (issues 622, 666), hAnsi where the run names none
@@ -98,7 +98,7 @@ public class RunFontSelectorDispatchTest {
 	@Test
 	public void asciiLettersReturnToAsciiAfterLatin1() throws Exception {
 		// probe fonts-missing-slots (c): "caf" ascii, "é" hAnsi, "ber" ascii again; until
-		// 17.1.1 the Latin-1 branch reset the range to ASCII and "ber" stayed in hAnsi
+		// 17.2.0 the Latin-1 branch reset the range to ASCII and "ber" stayed in hAnsi
 		WordprocessingMLPackage pkg = pkg(p(null, "café über"));
 		assertEquals(Arrays.asList(SANS, SERIF, SANS, SERIF, SANS), families(pkg, 0));
 	}

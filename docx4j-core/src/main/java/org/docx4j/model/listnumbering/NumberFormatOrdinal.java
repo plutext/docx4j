@@ -21,7 +21,7 @@ package org.docx4j.model.listnumbering;
 /**
  * {@code w:numFmt ordinal}: 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st, 101st, 111th.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatOrdinal extends LabelFormatter {
 

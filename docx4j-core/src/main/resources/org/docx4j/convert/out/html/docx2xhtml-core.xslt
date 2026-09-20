@@ -736,7 +736,7 @@
 	<!-- The one selection rule (CR-021, org.docx4j.jaxb.McSelection): the first
 	     mc:Choice whose @Requires prefixes are all named in docx4j.jaxb.mc.preferChoice,
 	     else the mc:Fallback - as docx2fo.xslt and the visitor exporters do.  Until
-	     17.1.1 this stylesheet always took the Fallback. -->
+	     17.2.0 this stylesheet always took the Fallback. -->
 	<xsl:template match="mc:AlternateContent" >
 		<xsl:variable name="preferred"
 			select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>

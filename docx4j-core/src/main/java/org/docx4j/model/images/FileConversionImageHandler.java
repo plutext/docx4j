@@ -48,15 +48,15 @@ public class FileConversionImageHandler extends AbstractConversionImageHandler {
 	 * <p>Files written to a directory the caller named are the caller's, and are
 	 * never deleted whatever this says.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String DELETE_TEMPORARY_PROPERTY = "docx4j.convert.out.images.deleteTemporary";
 
 	/** True where docx4j chose the directory (java.io.tmpdir), so the files in it
-	 *  are docx4j's to delete.  @since 17.1.1 */
+	 *  are docx4j's to delete.  @since 17.2.0 */
 	protected final boolean temporaryImageDir;
 
-	/** The files written, where they are ours to delete.  @since 17.1.1 */
+	/** The files written, where they are ours to delete.  @since 17.2.0 */
 	private final List<File> temporaryImages = Collections.synchronizedList(new ArrayList<File>());
 
 	/** Creates a DefaultConversionImageHandler.
@@ -137,7 +137,7 @@ public class FileConversionImageHandler extends AbstractConversionImageHandler {
 	/** Remember a file we wrote, so that {@link #cleanupTemporaryImages(boolean)}
 	 *  can delete it - but only where docx4j chose the directory it went into.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected void trackTemporaryImage(File imageFile) {
 		if (temporaryImageDir) {
@@ -147,7 +147,7 @@ public class FileConversionImageHandler extends AbstractConversionImageHandler {
 
 	/** {@inheritDoc}
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Override
 	public void cleanupTemporaryImages(boolean deferToJvmExit) {

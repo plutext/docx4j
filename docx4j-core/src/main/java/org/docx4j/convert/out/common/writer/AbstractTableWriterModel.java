@@ -105,11 +105,11 @@ public class AbstractTableWriterModel extends TableModel {
 	 * pathway; in the XSLT pathway the {@code w:tbl} was unmarshalled on its own from the
 	 * DOM and has none.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private Tbl tbl;
 
-	/** @since 17.1.1 */
+	/** @since 17.2.0 */
 	public Tbl getTbl() {
 		return tbl;
 	}
@@ -145,7 +145,7 @@ public class AbstractTableWriterModel extends TableModel {
 	 * rather than by proportion ({@code AbstractTableWriter.fitToAvailableWidth}) and so
 	 * that the diagnostic dump can record them.  All arrays are one entry per column.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final class AutofitInputs {
 		/** Widest unbreakable content plus cell margins, per column. */
@@ -171,7 +171,7 @@ public class AbstractTableWriterModel extends TableModel {
 
 	/** Null where the content pass did not measure the table (a fixed layout, or content this
 	 *  output format cannot measure).  Set whether or not the pass went on to size the columns:
-	 *  {@link #isContentSizedColumns()} says whether it did.  @since 17.1.1 */
+	 *  {@link #isContentSizedColumns()} says whether it did.  @since 17.2.0 */
 	private AutofitInputs autofitInputs;
 
 	public AutofitInputs getAutofitInputs() {
@@ -184,7 +184,7 @@ public class AbstractTableWriterModel extends TableModel {
 
 	/* The table style's conditional formatting (w:tblStylePr), resolved for this table:
 	 * the look its w:tblLook asks for, its band sizes, and where each w:tr sits, so that a
-	 * row's or cell's conditions can be worked out (TableStyleConditions).  @since 17.1.1 */
+	 * row's or cell's conditions can be worked out (TableStyleConditions).  @since 17.2.0 */
 	private Look look = Look.DEFAULT;
 	private int rowBandSize = 1;
 	private int colBandSize = 1;
@@ -193,7 +193,7 @@ public class AbstractTableWriterModel extends TableModel {
 	/** whether the header rows come from a conditional w:tblHeader rather than the rows' own */
 	private boolean headerFromStyle;
 
-	/** The conditional formats the table's w:tblLook asks for.  @since 17.1.1 */
+	/** The conditional formats the table's w:tblLook asks for.  @since 17.2.0 */
 	public Look getLook() {
 		return look;
 	}
@@ -207,7 +207,7 @@ public class AbstractTableWriterModel extends TableModel {
 	/**
 	 * The conditions the row at this index is under (first row, last row, a band), for its
 	 * row properties.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public java.util.EnumSet<STTblStyleOverrideType> rowConditions(int rowIndex, TrPr trPr) {
 		return TableStyleConditions.rowConditions(look, rowBandSize, rowIndex, rows.size(),
@@ -217,7 +217,7 @@ public class AbstractTableWriterModel extends TableModel {
 	/**
 	 * The conditions the cell is under, from the row's and the cell's w:cnfStyle caches
 	 * where they have them and from the position where they do not.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public java.util.EnumSet<STTblStyleOverrideType> cellConditions(int rowIndex, TableModelCell cell, TrPr trPr) {
 		CTCnf cellCnf = cell.getTcPr() == null ? null : cell.getTcPr().getCnfStyle();
@@ -229,7 +229,7 @@ public class AbstractTableWriterModel extends TableModel {
 	/**
 	 * The effective table style's w:tblStylePr entries which apply under these conditions,
 	 * in the order they are to be applied; empty where the style has none.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public List<CTTblStylePr> applicable(java.util.Set<STTblStyleOverrideType> conditions) {
 		if (!hasConditionalFormatting()) return new ArrayList<CTTblStylePr>();
@@ -239,7 +239,7 @@ public class AbstractTableWriterModel extends TableModel {
 	/**
 	 * The rows of the horizontal band containing the row, or null; the columns of the
 	 * vertical band containing the column, or null (TableStyleConditions).
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public int[] bandRows(int rowIndex) {
 		return TableStyleConditions.hBandRows(look, rowBandSize, rowIndex, rows.size());
@@ -250,7 +250,7 @@ public class AbstractTableWriterModel extends TableModel {
 	}
 
 	/**
-	 * A row is a header row if its own w:trPr says w:tblHeader, or - since 17.1.1 - if the
+	 * A row is a header row if its own w:trPr says w:tblHeader, or - since 17.2.0 - if the
 	 * table style's conditional formatting for its position does: Word's built-in styles
 	 * give the first row {@code <w:trPr><w:tblHeader/></w:trPr>} under {@code firstRow}, so
 	 * the header of every table using them repeats across pages, where docx4j repeated

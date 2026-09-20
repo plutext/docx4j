@@ -50,7 +50,7 @@ import org.junit.Test;
  * {@link ListLevel.Counter} getters, {@link PropertyResolver#reachesDefaultTableStyle} with
  * a public {@link PropertyResolver#ancestry}, and {@link FontsAnalysis#NO_OP_VISITOR}.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class ParityAccessorsTest {
 

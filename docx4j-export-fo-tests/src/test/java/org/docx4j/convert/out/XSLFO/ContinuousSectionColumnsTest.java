@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
  * then came off each column rather than once off the page - a 189.9pt measure, column 2 at
  * 337.05 against Word's 324.1, and every line of the two-column run re-wrapped.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class ContinuousSectionColumnsTest extends AbstractXSLFOTest {
 
@@ -143,7 +143,7 @@ public class ContinuousSectionColumnsTest extends AbstractXSLFOTest {
 	 * header and footer distances are the <b>first</b> part's, because that is the one
 	 * Word starts the page with and a page master has one before-edge: nothing can carry
 	 * a vertical difference as an indent the way the horizontal difference is carried.
-	 * Until 17.1.1 the whole w:pgMar came from the reference part, which pushed one
+	 * Until 17.2.0 the whole w:pgMar came from the reference part, which pushed one
 	 * corpus document's first page 14.1pt down the page for a horizontal change that
 	 * moved no line at all.
 	 *

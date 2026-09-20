@@ -30,11 +30,11 @@ package org.docx4j.model.listnumbering;
  * Word does, logging once per format.  Formatters themselves are not fail-soft,
  * so a caller which wants to know that a value is out of range still can.
  *
- * <p>Before 17.1.1 this class was {@code NumberFormat}, which clashed with
+ * <p>Before 17.2.0 this class was {@code NumberFormat}, which clashed with
  * {@link org.docx4j.wml.NumberFormat}, the enumeration of {@code w:numFmt}
  * values; that name remains as a deprecated empty subclass for one release.
  *
- * @since 17.1.1 (CR-014 phase 1)
+ * @since 17.2.0 (CR-014 phase 1)
  */
 public abstract class LabelFormatter {
 

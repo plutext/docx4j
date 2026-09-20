@@ -232,7 +232,7 @@ oracle now keeps in drawings and charts.
 
 ### Phase 2 record (2026-09-20)
 
-- **CHANGELOG**: "Markup compatibility (CR-024 ...)" of 17.1.1: the hosts kept,
+- **CHANGELOG**: "Markup compatibility (CR-024 ...)" of 17.2.0: the hosts kept,
   the six prefixes, the Ignorable rule.
 - **CR-021 §8.6** item 10 (chart `c14` styles the next candidate) and **CR-022
   §20**'s first leftover (the drawing shapes, `x16r2`, `oel`) marked taken up.
@@ -256,7 +256,7 @@ rest as global elements, with `a14:legacySpreadsheetColorIndex` and
 MOXy mapper's `getPreDeclaredNamespaceUris2` (written, not run here); the
 xlsx4j VML gap (the forced re-saves skip `vmlDrawing` parts).
 
-**Commits** (VERSION_17_1_1): d4d81eab2 (proposed, phase 0), bcb4c7f57
+**Commits** (VERSION_17_2_0): d4d81eab2 (proposed, phase 0), bcb4c7f57
 (phase 1), 85f37d05e (phase 1, the Excel check's fix), and this phase's.
 
 ## 10. Phases and gates

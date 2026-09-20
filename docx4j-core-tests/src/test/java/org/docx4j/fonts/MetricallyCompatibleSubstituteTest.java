@@ -244,7 +244,7 @@ public class MetricallyCompatibleSubstituteTest {
 	 * 0.9133 / 1.0382, further from Trebuchet than Arimo on two of the three documents).
 	 * Where Droid Sans is not installed the chain falls through to what it was, Arimo.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void trebuchetPrefersDroidSansAndFallsBackToArimo() throws Exception {

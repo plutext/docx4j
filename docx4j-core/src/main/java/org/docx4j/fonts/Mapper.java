@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * to include a mapping for the
  * new font.
  * 
- * There are 2 implementations, which since 17.1.1 share one order of precedence (see
+ * There are 2 implementations, which since 17.2.0 share one order of precedence (see
  * {@link #populateFontMappings} and the passes WordprocessingMLPackage.setFontMapper
  * runs after it) and differ only in {@link #resolveDocumentFont} and
  * {@link #addMapperSubstitutes}:
@@ -102,7 +102,7 @@ public abstract class Mapper {
 	 * @return the physical font it is mapped to, or null
 	 */
 	public PhysicalFont get(String key) {
-		if (key==null) return null; // a slot nothing names (17.1.1; was a NullPointerException)
+		if (key==null) return null; // a slot nothing names (17.2.0; was a NullPointerException)
 		return fontMappings.get(key.toLowerCase());
 	}
 	/**
@@ -141,13 +141,13 @@ public abstract class Mapper {
 	 * deliberately not added to PhysicalFonts, which every document shares; see
 	 * ObfuscatedFontPart.extract), so a post-process holding only the name it wrote must
 	 * look through this document's mappings - what the runs mapped to, the embedded faces,
-	 * the last-resort fallbacks - before the installed fonts.  Until 17.1.1 the line-height,
+	 * the last-resort fallbacks - before the installed fonts.  Until 17.2.0 the line-height,
 	 * space-kerning, character-scaling and ligature passes looked the name up in
 	 * PhysicalFonts alone, and so never saw an embedded font (CR-016 gap 7).</p>
 	 *
 	 * @return the font, or null where nothing this document knows or the machine has
 	 *         carries that name
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public PhysicalFont physicalFontNamed(String physicalFontName) {
 		if (physicalFontName==null) return null;
@@ -168,7 +168,7 @@ public abstract class Mapper {
 		return null;
 	}
 	
-	// ---- the decisions: what each pass did, and why.  @since 17.1.1 (CR-017 phase 1)
+	// ---- the decisions: what each pass did, and why.  @since 17.2.0 (CR-017 phase 1)
 
 	/** Keyed by the lower-cased document font, as {@link #fontMappings} is. */
 	private final ConcurrentHashMap<String, FontDecision> decisions = new ConcurrentHashMap<String, FontDecision>();
@@ -183,7 +183,7 @@ public abstract class Mapper {
 	 * @param via how it got there - the {@code w:altName} chain, the class, Word's
 	 *        default family - or null where the source says it all
 	 * @param widthError what is known of the substitute's width error, or null
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected FontDecision decide(String documentFont, FontDecision.Source source, String via, String widthError) {
 
@@ -203,7 +203,7 @@ public abstract class Mapper {
 	 *
 	 * @param face the face the script was drawn in, or null where nothing installed
 	 *        covers it
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public void recordScriptChoice(String documentFont, String coverageGroup, PhysicalFont face) {
 
@@ -227,7 +227,7 @@ public abstract class Mapper {
 	 * picks for the glyphs, whatever this mapper made of the name, since a {@code w:sym}
 	 * character is a code point in that face and not in the font the run asks for.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public void recordSymbolFace(String documentFont, PhysicalFont face) {
 
@@ -250,7 +250,7 @@ public abstract class Mapper {
 	 * <p>The physical font, its faces and the line box are read off this mapper now, not
 	 * when the pass recorded its decision, so they are what the conversion will use.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public java.util.List<FontDecision> getDecisions() {
 
@@ -266,7 +266,7 @@ public abstract class Mapper {
 
 	/** What was decided for this document font, recording one where no pass met it (a
 	 *  font the selector reached directly): {@link FontsAnalysis} asks this, so that
-	 *  every font a report is about has a decision.  @since 17.1.1 */
+	 *  every font a report is about has a decision.  @since 17.2.0 */
 	FontDecision decisionFor(String documentFont) {
 		FontDecision decision = getDecision(documentFont);
 		if (decision==null) {
@@ -278,7 +278,7 @@ public abstract class Mapper {
 	}
 
 	/** What was decided for this document font, or null where no pass met it.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public FontDecision getDecision(String documentFont) {
 		if (documentFont==null) return null;
 		FontDecision decision = decisions.get(documentFont.trim().toLowerCase(java.util.Locale.ROOT));
@@ -325,7 +325,7 @@ public abstract class Mapper {
 	/**
 	 * Populate the fontMappings object: an entry for each of the documentFontNames.
 	 *
-	 * <p>One order of precedence for every mapper (CR-016 phase 3; until 17.1.1 the two
+	 * <p>One order of precedence for every mapper (CR-016 phase 3; until 17.2.0 the two
 	 * mappers disagreed, one preferring an installed font to the document's embedded one
 	 * and the other the reverse):</p>
 	 * <ol>
@@ -398,7 +398,7 @@ public abstract class Mapper {
 	 *
 	 * @param documentFontName the name as the document writes it
 	 * @param fontTableEntry the document's w:font entry for it, or null
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	protected PhysicalFont resolveDocumentFont(String documentFontName, org.docx4j.wml.Fonts.Font fontTableEntry) {
 		return null;
@@ -406,7 +406,7 @@ public abstract class Mapper {
 
 	/** How the mapper's own answer was reached - a variant of the name, a panose match,
 	 *  a FontSubstitutions.xml entry - for the decision the caller records; a subclass
-	 *  sets it as it answers, and it is read straight afterwards.  @since 17.1.1 */
+	 *  sets it as it answers, and it is read straight afterwards.  @since 17.2.0 */
 	protected String resolvedVia;
 
 	/**
@@ -414,11 +414,11 @@ public abstract class Mapper {
 	 * that follow measured tables (the metric clones, w:altName, a face of the same class)
 	 * and before Word's default: {@link BestMatchingMapper}'s panose match and
 	 * FontSubstitutions.xml.  A guess from panose is worth less than a measured clone,
-	 * so it comes after them (until 17.1.1 it came first, and a legacy Indic face with
+	 * so it comes after them (until 17.2.0 it came first, and a legacy Indic face with
 	 * Arial's panose took Myriad and CorpoS away from Arimo and Carlito).  Nothing here
 	 * by default.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public void addMapperSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {
 	}
@@ -435,7 +435,7 @@ public abstract class Mapper {
 	
 	
 	// For Xalan
-	/** @deprecated since 17.1.1: no pathway calls it; the HTML font-family is
+	/** @deprecated since 17.2.0: no pathway calls it; the HTML font-family is
 	 *  RunFontSelector's (the document font, the physical family, the generic class). */
 	@Deprecated
 	public static String getSubstituteFontXsltExtension(Mapper s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
@@ -443,7 +443,7 @@ public abstract class Mapper {
 		return s.getSubstituteFontXsltExtension(documentStyleId, bolditalic, fontFamilyStack);
 	}
 	
-	/** @deprecated since 17.1.1: see the static form. */
+	/** @deprecated since 17.2.0: see the static form. */
 	@Deprecated
 	public String getSubstituteFontXsltExtension(String documentStyleId, 
 			String bolditalic, boolean fontFamilyStack) {
@@ -589,7 +589,7 @@ public abstract class Mapper {
      * Auto-add mappings for Calibri, Cambria etc where possible and useful: for each
      * document font the table knows, the first of its open substitutes this machine has.
      *
-     * <p>The table itself is {@code font-substitutes.xml} since 17.1.1
+     * <p>The table itself is {@code font-substitutes.xml} since 17.2.0
      * ({@link FontSubstitutionTable}, CR-017 phase 0), so that a report - and a port -
      * can read the same rows this pass takes; it carries the same document fonts, in the
      * same order, with the same substitutes.  <b>The measurements which chose each
@@ -639,7 +639,7 @@ public abstract class Mapper {
     	 * break a full line differently.  @since 17.0.5
     	 *
     	 * Aptos, Aptos Display, Aptos Light, Aptos Narrow - Word 365's Office theme faces.
-    	 * A document with no theme part resolves its theme fonts to them since 17.1.1
+    	 * A document with no theme part resolves its theme fonts to them since 17.2.0
     	 * (Docx4jProperties.DEFAULT_THEME), and Microsoft ships neither Aptos nor Aptos
     	 * Display with Windows - they are cloud fonts - so without a row the pass found
     	 * nothing, FOP drew the text in its base-14 fallback and the PDF named Times-Roman
@@ -654,7 +654,7 @@ public abstract class Mapper {
     	 * tab-leader-kinds breaks where Word's Aptos breaks, and in Arimo none of
     	 * styles-linerule's fifteen does.  Neither is a clone; the line box is Aptos's own,
     	 * which word-line-metrics.properties already carries for all four faces.  Light and
-    	 * Narrow have no golden and are class substitutes only.  @since 17.1.1
+    	 * Narrow have no golden and are class substitutes only.  @since 17.2.0
     	 *
     	 * Since docx4j-export-fo-fonts-theme2023 those two rows open with a real clone and
     	 * the faces above are only what a classpath without that jar falls back to: Akasia
@@ -667,7 +667,7 @@ public abstract class Mapper {
     	 * which is its measurement and not ours; it has no Narrow, so Aptos Narrow keeps a
     	 * class substitute.  Where a machine really has Microsoft's Aptos - a licensed
     	 * Windows or Mac, not a server: they are cloud fonts - the installed face wins by
-    	 * precedence and none of this is consulted.  @since 17.1.1 (CR-001 batch 49 item 6b)
+    	 * precedence and none of this is consulted.  @since 17.2.0 (CR-001 batch 49 item 6b)
     	 *
     	 * Tahoma, Segoe UI, Gadugi, Helvetica, Helvetica Neue, Tw Cen MT - fonts with no
     	 * metric-compatible clone, but where a stand-in of the right class is much closer
@@ -698,7 +698,7 @@ public abstract class Mapper {
     	 * italic face, so FOP obliques the regular, whose advances are the ones measured
     	 * above; the line box stays Trebuchet's own (WordLineMetrics has it).  Arimo
     	 * remains the last resort, which is what a machine without Droid Sans keeps.
-    	 * @since 17.1.1
+    	 * @since 17.2.0
     	 *
     	 * Arial Black is far heavier and wider than Arial: measured against Word's own
     	 * PDF of a corpus document, its centred title is 281.2pt against our Arimo's
@@ -770,10 +770,10 @@ public abstract class Mapper {
     
     /** What the report says where nothing was measured: a face chosen on class alone is
      *  chosen because nothing closer exists, and no number describes how far off it is.
-     *  @since 17.1.1 */
+     *  @since 17.2.0 */
     public static final String UNKNOWN_ERROR = "unknown";
 
-    /** The source a table row's quality word says.  @since 17.1.1 */
+    /** The source a table row's quality word says.  @since 17.2.0 */
     private static FontDecision.Source sourceOf(FontSubstitutionTable.Substitute substitute) {
     	if (substitute==null) return FontDecision.Source.CLASS;
     	if ("metric".equals(substitute.getQuality())) return FontDecision.Source.METRIC_CLONE;
@@ -782,7 +782,7 @@ public abstract class Mapper {
     }
 
     /** Whether {@link #addClassBasedSubstitutes} applies to this mapper.  True for both
-     *  since 17.1.1 (CR-016 phase 3): BestMatchingMapper's own step runs first, and what
+     *  since 17.2.0 (CR-016 phase 3): BestMatchingMapper's own step runs first, and what
      *  it leaves unmapped goes through the same passes as IdentityPlusMapper's.
      *  @since 17.0.5 */
     public boolean wantsClassBasedSubstitutes() {
@@ -854,7 +854,7 @@ public abstract class Mapper {
     			 * substitution; only the line box is taken here.  East Asian only:
     			 * CR-001 batch 42 §28.1 measured ten documents whose Word-resolved altName
     			 * ends at a Latin family and found the line box already within 1.5% of
-    			 * Word in every one, so aliasing those can only break them.  @since 17.1.1 */
+    			 * Word in every one, so aliasing those can only break them.  @since 17.2.0 */
     			if (eastAsianHop==null && WordLineMetrics.isEastAsianFamily(alt)
     					&& PhysicalFonts.get(alt)==null) {
     				eastAsianHop = alt;
@@ -869,7 +869,7 @@ public abstract class Mapper {
     		 * corpus document this is for names Meiryo as its alternate, Meiryo is on no
     		 * Linux box, nothing else in its chain resolves, and the font goes on to
     		 * addWordDefaultSubstitutes - but Word had Meiryo and drew it, so the line is
-    		 * Meiryo's whatever renders the glyphs.  @since 17.1.1 */
+    		 * Meiryo's whatever renders the glyphs.  @since 17.2.0 */
     		if (eastAsianHop!=null) registerLineMetricsAlias(documentFontName, eastAsianHop);
 
     		if (pf==null) continue;
@@ -893,7 +893,7 @@ public abstract class Mapper {
      *
      * <p>The classes and the candidate lists come from FontSubstitutions.xml, which
      * {@link BestMatchingMapper} already consults.  Both mappers take this pass since
-     * 17.1.1 (CR-016 phase 3; it was IdentityPlusMapper's alone when it was added in
+     * 17.2.0 (CR-016 phase 3; it was IdentityPlusMapper's alone when it was added in
      * 17.0.5), BestMatchingMapper's own panose step having moved behind it - see
      * {@link #wantsClassBasedSubstitutes}.</p>
      *
@@ -942,7 +942,7 @@ public abstract class Mapper {
      * installed), and {@link WordLineMetrics} is told the alias, so the line box is
      * Cambria's or Calibri's, as Word's is.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public void addWordDefaultSubstitutes(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts) {
 
@@ -971,7 +971,7 @@ public abstract class Mapper {
 
     /** The document fonts {@link #addWordDefaultSubstitutes} mapped, lower-cased: Word
      *  substitutes such a font whole, bold face included, so {@link #addNoBoldFaceAliases}
-     *  leaves them alone.  @since 17.1.1 */
+     *  leaves them alone.  @since 17.2.0 */
     private final java.util.Set<String> wordDefaulted = ConcurrentHashMap.newKeySet();
 
     /** The font Word draws an unknown font in, by its fontTable entry (see
@@ -1017,7 +1017,7 @@ public abstract class Mapper {
      * {@code FontFallback}'s measured exceptions - is "known" for this purpose too: the
      * measurement which put it there was that the document default beat a stand-in.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public static boolean isKnownFamily(String documentFontName) {
     	if (documentFontName==null) return false;
@@ -1035,7 +1035,7 @@ public abstract class Mapper {
      * ends in a weight word (Calibri Light, Segoe UI Semibold, Arial Black) is a single
      * weight in Windows' font model and has none; any other family is taken to have one.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public static boolean hasBoldFace(String documentFontName) {
     	if (documentFontName==null) return true;
@@ -1066,7 +1066,7 @@ public abstract class Mapper {
      * simulate-style branch either way).  The alias costs nothing - it is the same file -
      * and it makes what is on the page and what the report says the same thing.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public void addNoBoldFaceAliases(Set<String> documentFontNames) {
 
@@ -1090,7 +1090,7 @@ public abstract class Mapper {
     		fontMappings.put(documentFontName.toLowerCase(), alias);
     		/* Not a source of its own: the pass re-maps the font to an alias of what an
     		 * earlier pass chose, and the decision says so by reporting a synthetic bold
-    		 * face (FontDecision.getBoldFace).  @since 17.1.1 */
+    		 * face (FontDecision.getBoldFace).  @since 17.2.0 */
     	}
     }
 
@@ -1102,7 +1102,7 @@ public abstract class Mapper {
      * its vertical metrics are the other family's (&#xa7;2.7).
      *
      * <p><b>Per conversion, and deliberately so.</b>  This lived in {@code WordLineMetrics}
-     * as a static map until 17.1.1, where it was JVM-wide and never cleared, so one
+     * as a static map until 17.2.0, where it was JVM-wide and never cleared, so one
      * document's {@code w:altName} answered for every later document in the same process
      * which named the same font: measured over the three real-document corpora, <b>93 of
      * 449 documents register at least one</b> (137 registrations, 116 distinct names), and
@@ -1112,7 +1112,7 @@ public abstract class Mapper {
      * package ({@code WordprocessingMLPackage.setFontMapper}), and both passes that
      * register are this class's, so the map belongs here.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private final Map<String, String> lineMetricsAliases = new ConcurrentHashMap<String, String>();
 
@@ -1121,7 +1121,7 @@ public abstract class Mapper {
      * Ignored where the document font has metrics of its own - then they are the ones
      * Word uses.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public void registerLineMetricsAlias(String documentFont, String family) {
     	if (documentFont==null || family==null) return;
@@ -1134,8 +1134,8 @@ public abstract class Mapper {
     	 * had, where Word's answer for a font it cannot find
     	 * ({@link #addWordDefaultSubstitutes}) is a guess of last resort.  They collide
     	 * only where the altName pass registered a line box for a font it could not map -
-    	 * the East Asian chain hop - and the default pass then mapped it; before 17.1.1
-    	 * the later put silently replaced Meiryo's box with Calibri's.  @since 17.1.1 */
+    	 * the East Asian chain hop - and the default pass then mapped it; before 17.2.0
+    	 * the later put silently replaced Meiryo's box with Calibri's.  @since 17.2.0 */
     	lineMetricsAliases.putIfAbsent(key, value);
     }
 
@@ -1158,7 +1158,7 @@ public abstract class Mapper {
      * and draws it, no factor is applied: it is the substitute which is the wrong width,
      * not the font.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public double widthFactorFor(String documentFont, String physicalFontName) {
     	return widthFactorFor(documentFont, physicalFontName, false, false);
@@ -1168,7 +1168,7 @@ public abstract class Mapper {
      * As {@link #widthFactorFor(String, String)}, for the face the run is actually set in:
      * a family's weights are not one another's width.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public double widthFactorFor(String documentFont, String physicalFontName,
     		boolean bold, boolean italic) {
@@ -1185,7 +1185,7 @@ public abstract class Mapper {
      * registered, else the name itself.  Never null for a non-null argument, so the caller
      * can hand the answer straight to {@link WordLineMetrics}.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public String lineMetricsFamily(String documentFont) {
     	if (documentFont==null) return null;

@@ -28,7 +28,7 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTSu
 /**
  * An Excel survey ([MS-XLSX] 2.1.9, x15:survey). Related from the workbook.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class SurveyPart extends JaxbSmlPart<CTSurvey> {
 

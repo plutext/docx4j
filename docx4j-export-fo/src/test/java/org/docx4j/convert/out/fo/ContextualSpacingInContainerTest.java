@@ -21,7 +21,7 @@ import org.junit.Test;
  * inside the container and the seam from its last paragraph to the paragraph after it.
  * See {@code WordLayoutFixups.paragraphBlocks} and word-layout-rules.md §3.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class ContextualSpacingInContainerTest {
 

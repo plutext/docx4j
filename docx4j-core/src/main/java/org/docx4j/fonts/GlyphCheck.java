@@ -122,7 +122,7 @@ public class GlyphCheck {
 		 * no-coverage path, where the FO gets no font-family and FOP draws it in its
 		 * base-14 default: a font not embedded in the PDF (measured on a corpus document,
 		 * CR-017 phase 5; the same reading that TextMeasurer.glyphWidthPt already gives a
-		 * tab).  @since 17.1.1 */
+		 * tab).  @since 17.2.0 */
 		if (cp==0x00A0 && !hasRawCodepoint(t, cp, physicalFont.name)) cp = ' ';
 
 		return hasRawCodepoint(t, cp, physicalFont.name);
@@ -143,7 +143,7 @@ public class GlyphCheck {
 	 * @param physicalFont the font
 	 * @return whether its reverse lookup can take a radical for an ideograph
 	 * @throws ExecutionException where loading the typeface failed
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static boolean reverseLookupTakesACjkRadical(PhysicalFont physicalFont)
 			throws ExecutionException {
@@ -151,7 +151,7 @@ public class GlyphCheck {
 		return reverseLookupTakesACjkRadical(typefaceOrWarn(physicalFont));
 	}
 
-	/** As above, for a typeface already in hand.  @since 17.1.1 */
+	/** As above, for a typeface already in hand.  @since 17.2.0 */
 	public static boolean reverseLookupTakesACjkRadical(Typeface t) {
 
 		if (!(t instanceof MultiByteFont)) return false;   // no layout tables, no round trip
@@ -181,7 +181,7 @@ public class GlyphCheck {
 	}
 
 	/** CJK Radicals Supplement and Kangxi Radicals: the forms a CJK font draws with the
-	 *  ideograph's own glyph.  @since 17.1.1 */
+	 *  ideograph's own glyph.  @since 17.2.0 */
 	private static final int RADICALS_START = 0x2E80;
 	private static final int RADICALS_END = 0x2FDF;
 
@@ -213,7 +213,7 @@ public class GlyphCheck {
 	private static Set<String> warnedAlready = ConcurrentHashMap.newKeySet();
 
 	/**
-	 * @deprecated since 17.1.1: this looks the name up in {@link PhysicalFonts}, where a
+	 * @deprecated since 17.2.0: this looks the name up in {@link PhysicalFonts}, where a
 	 *             font embedded in the document, or a document font mapped to a
 	 *             substitute of another name, is not.  Resolve the document font through
 	 *             the package's {@link Mapper#get} and ask {@link #hasCodepoint(PhysicalFont, int)}.

@@ -39,7 +39,7 @@ import org.junit.Test;
  * two things which matter can be asserted separately: that a width comes back from the copy,
  * and that {@link PhysicalFonts} is not touched by the reading.</p>
  *
- * @since 17.1.1 (CR-001 batch 49 item 2)
+ * @since 17.2.0 (CR-001 batch 49 item 2)
  */
 public class MetricsOnlyFontsTest {
 

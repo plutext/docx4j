@@ -34,7 +34,7 @@ import org.junit.Test;
  * elsewhere.  Neither name is worth defending - Word's copies as noise - so the metric
  * stops asking, on both sides alike.</p>
  *
- * @since 17.1.1 (CR-001 batch 45, P18)
+ * @since 17.2.0 (CR-001 batch 45, P18)
  */
 public class BulletNormaliseTest {
 

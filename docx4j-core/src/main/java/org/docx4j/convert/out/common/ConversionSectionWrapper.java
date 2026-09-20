@@ -38,7 +38,7 @@ public class ConversionSectionWrapper extends SectionWrapper {
 	}
 
 	/** @param startsPage whether a continuous section begins a page of its own, so that
-	 *  the headers and footers it declares apply (HeaderFooterPolicy).  @since 17.1.1 */
+	 *  the headers and footers it declares apply (HeaderFooterPolicy).  @since 17.2.0 */
 	public ConversionSectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, String id, List<Object> content, boolean startsPage) {
 		super(sectPr, previousHF, rels, evenAndOddHeaders, startsPage);
 		this.id = id;

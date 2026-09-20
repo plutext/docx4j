@@ -107,7 +107,7 @@ public class PercentageTableWidthTest extends AbstractXSLFOTest {
 	/**
 	 * A fixed-layout table whose dxa cells repeat its grid keeps that grid, whether the
 	 * grid is 2.2 per cent over the percentage width or 33 per cent under it
-	 * (&#xa7;6.5, "where table-grid-pct and the real documents part company", 17.1.1).
+	 * (&#xa7;6.5, "where table-grid-pct and the real documents part company", 17.2.0).
 	 * The probe's P7 and P8 show Word scaling such grids to the percentage, but those
 	 * grids are the harness's own, so Word has no cached layout to keep and falls back
 	 * to the w:tblW; a grid Word wrote is a layout Word keeps, and nothing in the file
@@ -116,7 +116,7 @@ public class PercentageTableWidthTest extends AbstractXSLFOTest {
 	 * narrower, and a landscape document whose three tables state 98 per cent against a
 	 * 6693-twip grid their cells repeat went from 0.6928 to 0.8807 of Word's lines when
 	 * docx4j stopped scaling them.  The two tests this replaces asserted the probe's
-	 * reading (451.3pt in both cases) and were retired on 2026-09-11.  @since 17.1.1
+	 * reading (451.3pt in both cases) and were retired on 2026-09-11.  @since 17.2.0
 	 */
 	@Test
 	public void aFixedGridItsCellsRepeatStandsAtItsOwnWidth() throws Exception {

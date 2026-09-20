@@ -53,7 +53,7 @@ import org.junit.Test;
  * styles-* probe that settled it (docx4j-layout-fidelity/goldens/word) or the spec,
  * through StyleUtil.apply and through PropertyResolver.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class StyleUtilMergeRulesTest {
 

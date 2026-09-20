@@ -16,7 +16,7 @@
 	<xsd:import id="w16" namespace="http://schemas.microsoft.com/office/word/2018/wordml" schemaLocation="wml/w16.xsd"/>
 	<xsd:import id="w16cex" namespace="http://schemas.microsoft.com/office/word/2018/wordml/cex" schemaLocation="wml/w16cex.xsd"/>
 	<xsd:import id="w15symex" namespace="http://schemas.microsoft.com/office/word/2015/wordml/symex" schemaLocation="wml/w15symex.xsd"/>
-	<!-- CR-023 (docx4j 17.1.1): [MS-DOCX] 5.7 to 5.10; the first three declare attributes only (no package generated) -->
+	<!-- CR-023 (docx4j 17.2.0): [MS-DOCX] 5.7 to 5.10; the first three declare attributes only (no package generated) -->
 	<xsd:import id="w16sdtdh" namespace="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" schemaLocation="wml/w16sdtdh.xsd"/>
 	<xsd:import id="w16du" namespace="http://schemas.microsoft.com/office/word/2023/wordml/word16du" schemaLocation="wml/w16du.xsd"/>
 	<xsd:import id="w16sdtfl" namespace="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" schemaLocation="wml/w16sdtfl.xsd"/>

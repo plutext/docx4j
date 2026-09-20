@@ -43,7 +43,7 @@ import org.docx4j.wml.SdtPr;
  *   });
  * </pre>
  *
- * @since 17.1.1 (CR-013)
+ * @since 17.2.0 (CR-013)
  */
 public interface XHTMLImporterCustomizer {
 

@@ -54,7 +54,7 @@ import org.xml.sax.InputSource;
  *   paragraph's space-before (it was no longer at the start of the page).
  *   Word shows no such line, and it drops the space-before of the paragraph
  *   the break moves onto - in every compatibility mode, and whatever
- *   w:suppressSpBfAfterPgBrk says (CR-001 batch 43; until 17.1.1 the flag was
+ *   w:suppressSpBfAfterPgBrk says (CR-001 batch 43; until 17.2.0 the flag was
  *   read here and the space kept below mode 15).  The empty block is removed
  *   and its break moved to the next block, whose space-before then falls to
  *   XSL-FO's own conditionality, discard.</li>
@@ -434,7 +434,7 @@ public final class WordLayoutFixups {
 	 *  {@code w:suff} separator the level puts between the number and the text - "tab"
 	 *  or "space"; not written for "nothing".  Word writes that separator as a space
 	 *  glyph in the PDF's text layer, and the line manager puts it in ours (see
-	 *  {@code WordLayoutCustomizer.LABEL_SUFFIX_SPACE}).  @since 17.1.1 */
+	 *  {@code WordLayoutCustomizer.LABEL_SUFFIX_SPACE}).  @since 17.2.0 */
 	public static final String HINT_LABEL_SUFFIX = "docx4j-label-suffix";
 
 	/** on an fo:leader standing in for a w:tab (XsltFOFunctions.tabToFO): the line
@@ -461,7 +461,7 @@ public final class WordLayoutFixups {
 	 *  {@code w:leader}, so the line manager puts its characters on Word's grid.  It is
 	 *  deliberately not {@link #HINT_TAB}, which marks a leader the line manager lays out
 	 *  against the stops and gives a width to; this one gets its width from the
-	 *  justification.  Its value is the {@code w:leader} kind.  @since 17.1.1 */
+	 *  justification.  Its value is the {@code w:leader} kind.  @since 17.2.0 */
 	public static final String HINT_TOC_LEADER = "docx4j-toc-leader";
 
 	/** on the block a {@code w:br w:type="column"} makes (BrWriter): where the section
@@ -726,7 +726,7 @@ public final class WordLayoutFixups {
 			leader.setAttributeNS(ns, "docx4j:tab", kind);
 		}
 		// and the stretching leader of a table-of-contents entry, which the line manager
-		// does not lay out but does put on Word's grid.  @since 17.1.1
+		// does not lay out but does put on Word's grid.  @since 17.2.0
 		for (Element leader : elements(doc, "leader")) {
 			String kind = leader.getAttribute(HINT_TOC_LEADER);
 			if (kind.length()==0) continue;
@@ -740,7 +740,7 @@ public final class WordLayoutFixups {
 					"docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.TOC_LEADER, kind);
 		}
 		// a list item's label block carries the w:suff separator, which the line manager
-		// writes into the text layer as Word's space glyph.  @since 17.1.1
+		// writes into the text layer as Word's space glyph.  @since 17.2.0
 		for (Element block : elements(doc, "block")) {
 			String suffix = block.getAttribute(HINT_LABEL_SUFFIX);
 			if (suffix.length() == 0) continue;
@@ -1571,7 +1571,7 @@ public final class WordLayoutFixups {
 	 *     intervening text between, even though their x values are disjoint.
 	 * </ul>
 	 *
-	 * <p>So horizontal overlap is no bar to the band - before 17.1.1's first reading was
+	 * <p>So horizontal overlap is no bar to the band - before 17.2.0's first reading was
 	 * corrected here, an overlapping pair was stacked, which reserved 222pt for Word's 112
 	 * and reversed the pair's order - and the paragraph is.  Note what the rule is
 	 * <b>not</b>: it is not that the two share a {@code positionV}; each member keeps its
@@ -1586,7 +1586,7 @@ public final class WordLayoutFixups {
 	 * paragraphs have no common origin at this point in the FO.  The probe's fourth case
 	 * shows that limit is Word's own behaviour and needs no lifting.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static boolean bandWith(Document doc, Element para, Element holder,
 			double x, double w, double off, double h, double distB) {
@@ -1606,7 +1606,7 @@ public final class WordLayoutFixups {
 	/** The horizontal extent [start, end] a placed {@code topAndBottom} wrapper occupies -
 	 *  the union of its members' - or null where it is not one, which is what
 	 *  {@link #bandWith} uses it for: Word bands whatever the extents are, so the extent
-	 *  itself is not a test, only a wrapper it can read one from is a band.  @since 17.1.1 */
+	 *  itself is not a test, only a wrapper it can read one from is a band.  @since 17.2.0 */
 	private static double[] bandExtent(Element wrapper) {
 		double from = Double.MAX_VALUE, to = -Double.MAX_VALUE;
 		for (Node n = wrapper.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -1629,7 +1629,7 @@ public final class WordLayoutFixups {
 		return to > from ? new double[] { from, to } : null;
 	}
 
-	/** The width of the picture a holder block carries, or 0. @since 17.1.1 */
+	/** The width of the picture a holder block carries, or 0. @since 17.2.0 */
 	private static double graphicWidthPt(Element holder) {
 		for (Node n = holder.getFirstChild(); n != null; n = n.getNextSibling()) {
 			if (n instanceof Element && "external-graphic".equals(((Element) n).getLocalName())) {
@@ -1641,7 +1641,7 @@ public final class WordLayoutFixups {
 
 	/** This wrapper with its members positioned rather than stacked, so another drawing
 	 *  can share it.  A wrapper which already holds positioned members is returned as it
-	 *  is.  @since 17.1.1 */
+	 *  is.  @since 17.2.0 */
 	private static Element asBand(Document doc, Element wrapper) {
 		wrapper.setAttribute("overflow", "visible");
 		List<Element> holders = new ArrayList<Element>();
@@ -1670,7 +1670,7 @@ public final class WordLayoutFixups {
 	}
 
 	/** One member of a band: an absolutely positioned container at its own offset and
-	 *  indent, measured from the band's own reference area.  @since 17.1.1 */
+	 *  indent, measured from the band's own reference area.  @since 17.2.0 */
 	private static Element positioned(Document doc, Element holder, double x, double off,
 			double w, double h) {
 		Element abs = doc.createElementNS(FO_NS, "fo:block-container");
@@ -2051,7 +2051,7 @@ public final class WordLayoutFixups {
 	 *  floating table or a picture already taken out of the flow, which the page's own
 	 *  layout ignores.
 	 *
-	 *  <p>The height is part of the test since 17.1.1, when {@link #bandWith} began
+	 *  <p>The height is part of the test since 17.2.0, when {@link #bandWith} began
 	 *  positioning the members of a band of side-by-side drawings: that container's
 	 *  children are absolute too and it <em>does</em> reserve its height.  Every wrapper
 	 *  written before then set {@code height="0pt"} whenever it took no space, so the
@@ -2752,7 +2752,7 @@ public final class WordLayoutFixups {
 	 * @param pageY whether its offset is measured from the page's top
 	 * @param off that offset in points
 	 * @param h the object's height in points
-	 * @since 17.1.1 (CR-001 batch 47 item 2)
+	 * @since 17.2.0 (CR-001 batch 47 item 2)
 	 */
 	private static boolean whollyOffThePage(Element el, boolean pageY, double off, double h) {
 		Element rb = regionBody(el);
@@ -2774,7 +2774,7 @@ public final class WordLayoutFixups {
 	}
 
 	/** The {@code flow-name} of the {@code fo:static-content} this element is in - a header
-	 *  or footer region - or null where it is in the body.  @since 17.1.1 */
+	 *  or footer region - or null where it is in the body.  @since 17.2.0 */
 	private static String staticContentFlowName(Element el) {
 		for (Node n = el; n instanceof Element; n = n.getParentNode()) {
 			Element e = (Element) n;
@@ -2987,7 +2987,7 @@ public final class WordLayoutFixups {
 	 * cell sit 14.3pt apart, and the row after each list-item row begins 14.6-14.8pt
 	 * below the item's last line, where a plain auto-spaced paragraph's row is followed
 	 * at 1.2pt.  A corpus document of about a hundred such rows was 13.3pt a row short
-	 * ([§3.5](word-layout-rules.md)).  @since 17.1.1</p>
+	 * ([§3.5](word-layout-rules.md)).  @since 17.2.0</p>
 	 */
 	static void applyAutoSpacingBetweenListItems(Document doc) {
 		for (Element flow : elements(doc, "flow")) autoSpacingAmong(flow);
@@ -3098,7 +3098,7 @@ public final class WordLayoutFixups {
 			 * seams; 8 corpus documents hold 465 shaded or bordered contextual paragraphs.
 			 * The container's paragraphs are read in order, nested containers too, and
 			 * syncContainerSpacing (which runs after this) then keeps the container's own
-			 * copies in step with its first and last.  @since 17.1.1 */
+			 * copies in step with its first and last.  @since 17.2.0 */
 			if (isFo(el, "block") && !el.hasAttribute(HINT_PSTYLE) && !"all".equals(el.getAttribute("span"))) {
 				List<Element> inner = paragraphBlocks(el);
 				if (!inner.isEmpty()) { paras.addAll(inner); continue; }
@@ -3257,7 +3257,7 @@ public final class WordLayoutFixups {
 	 * box keeps the spacing between them.  Property
 	 * {@code docx4j.convert.out.fo.wordLayout.spacingOutsideBorders}.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static void spacingOutsideBorders(Document doc) {
 		if (!org.docx4j.Docx4jProperties.getProperty(
@@ -3521,7 +3521,7 @@ public final class WordLayoutFixups {
 	 * known until layout, so its widow control across the breaks is still open (§10).
 	 * Property {@code docx4j.convert.out.fo.wordLayout.keepBreakOnlyParagraph}.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static void keepBreakOnlyParagraphsTogether(Document doc) {
 		if (!org.docx4j.Docx4jProperties.getProperty(
@@ -4053,7 +4053,7 @@ public final class WordLayoutFixups {
 	 *  break once the FO is built ({@link #listItemPageBreaks}).  A {@code w:pageBreakBefore}
 	 *  a user applied to the paragraph directly looks the same, and is read as a hard
 	 *  break too - the one shape this cannot tell apart.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static final String HINT_BREAK_DIRECT = "docx4j-break-direct";
 
 	/** The nearest writing-mode in force on this element, or null. */
@@ -4160,7 +4160,7 @@ public final class WordLayoutFixups {
 	}
 
 	/**
-	 * @param compat kept for the signature's sake: until 17.1.1
+	 * @param compat kept for the signature's sake: until 17.2.0
 	 *        {@code w:compat/w:suppressSpBfAfterPgBrk} ("Do Not Use Space Before On First
 	 *        Line After a Page Break", ECMA-376-1 17.15.1) was read here to decide whether
 	 *        the paragraph the break moves onto keeps its space-before.  It does not:
@@ -4180,7 +4180,7 @@ public final class WordLayoutFixups {
 			// makes, and refusing it lost that page: measured on a corpus document with
 			// five of them, where Word has six blank pages and docx4j emitted one.  Only
 			// there: the collection is otherwise unchanged, so no block that paints
-			// nothing but is not a flow's first is newly moved or dropped.  @since 17.1.1
+			// nothing but is not a flow's first is newly moved or dropped.  @since 17.2.0
 			if (isEmpty(block) || (blankBlock(block) && opensFlow(block))) {
 				empties.add(block);
 			}
@@ -4213,7 +4213,7 @@ public final class WordLayoutFixups {
 				// ended <block span="all">...<fo:block break-before="page"> </fo:block>
 				// </block></flow>, the break was kept, and our page 2 was a second A3 page
 				// carrying nothing but its running head, which Word does not emit.
-				// @since 17.1.1
+				// @since 17.2.0
 				// Only the break goes; the block stays.  Removing the block as well -
 				// it is the empty half PageBreak split off the paragraph the break ended,
 				// and its preserved space still opens a page of its own - was measured on
@@ -4224,7 +4224,7 @@ public final class WordLayoutFixups {
 				// pages here which docx4j does not (the section-start blank page, a
 				// LayoutMasterSetBuilder matter), and taking a third page out moves every
 				// page further from its Word counterpart.  The two belong together.
-				// @since 17.1.1
+				// @since 17.2.0
 				if (next == null && lastInFlow(empty) && sectionFollows(empty)) {
 					empty.removeAttribute("break-before");
 				}
@@ -4278,11 +4278,11 @@ public final class WordLayoutFixups {
 			// them being its border and the border's space, and mid-page the same heading
 			// sits a full 24pt lower.  XSL-FO's own conditionality - discard at the start
 			// of a reference area - is that rule, so nothing is retained here now; until
-			// 17.1.1 w:suppressSpBfAfterPgBrk was consulted and the space was retained in
+			// 17.2.0 w:suppressSpBfAfterPgBrk was consulted and the space was retained in
 			// modes 12 and 14, which put the heading 24pt too low on every such page.
 			// (A paragraph whose OWN first run is the break is a different shape and keeps
 			// its space - measured, see listItemPageBreaks - as is the first paragraph of
-			// a section, which retainSpaceBeforeAtFlowStart handles.)  @since 17.1.1
+			// a section, which retainSpaceBeforeAtFlowStart handles.)  @since 17.2.0
 			// The empty block here is the paragraph mark Word moves to the page after the
 			// break, which takes no line there.  The line the break itself ends - on the
 			// page before it, sized by the mark - is the empty *first* half of the
@@ -4290,9 +4290,9 @@ public final class WordLayoutFixups {
 			// precedes the break (PP_PDF_PAGEBREAK_PARAGRAPH_LINE); that block carries no
 			// break and is not visited here.  Giving this one a line as well cost three
 			// corpus documents a page each, at breaks ending a text paragraph, whose
-			// continuation is this same shape.  @since 17.1.1
+			// continuation is this same shape.  @since 17.2.0
 			// Only a block with nothing in it at all is dropped: one admitted above for
-			// holding no more than an empty inline keeps its line.  @since 17.1.1
+			// holding no more than an empty inline keeps its line.  @since 17.2.0
 			if (isEmpty(empty)) empty.getParentNode().removeChild(empty);
 		}
 	}
@@ -4321,7 +4321,7 @@ public final class WordLayoutFixups {
 	/** Whether nothing follows this block anywhere up to its fo:flow, so that it is the
 	 *  last thing its section holds however deeply it is wrapped (a multi-column section
 	 *  puts its trailing material in a span="all" block).  The mirror of
-	 *  {@link #opensFlow(Element)}.  @since 17.1.1 */
+	 *  {@link #opensFlow(Element)}.  @since 17.2.0 */
 	private static boolean lastInFlow(Element block) {
 		Node parent = block.getParentNode();
 		Element child = block;
@@ -4675,7 +4675,7 @@ public final class WordLayoutFixups {
 	 * there.  (A break on the first block of a <em>flow</em> is ignored by FO either way,
 	 * and moving it onto a wrapper which opens the flow changes nothing.)</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static void spanWrapperBreaks(Document doc) {
 		for (Element wrapper : spanAllBlocks(doc)) {
@@ -4712,7 +4712,7 @@ public final class WordLayoutFixups {
 	 */
 	static void spaceBeforePageNumber(Document doc) {
 		// and before a STYLEREF's fo:retrieve-marker (StyleRefMarkers), for the same
-		// reason: measured, "Extarct Tool - HLD 1.1" came out "HLD1.1".  @since 17.1.1
+		// reason: measured, "Extarct Tool - HLD 1.1" came out "HLD1.1".  @since 17.2.0
 		for (String name : new String[] { "page-number", "page-number-citation",
 				"page-number-citation-last", "retrieve-marker" }) {
 			for (Element pn : elements(doc, name)) {
@@ -4768,7 +4768,7 @@ public final class WordLayoutFixups {
 	 * owns, and the masters - built on the two-column part, whose right margin is 4.5pt
 	 * narrower - put it at 576.00 on every page.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static void headerFooterPartIndent(Document doc) {
 		Map<String, double[]> byRegion = new HashMap<String, double[]>();
@@ -4857,7 +4857,7 @@ public final class WordLayoutFixups {
 			// paragraph's auto space-after is kept at the cell's foot (the
 			// spacing-autospacing-cell-list probe: the next row begins 14.6-14.8pt below
 			// the item's last line), and fixLists carries the conditionality up to the
-			// list-block with the value.  @since 17.1.1
+			// list-block with the value.  @since 17.2.0
 			Element lastChild = null;
 			for (Node n = cell.getLastChild(); n != null; n = n.getPreviousSibling()) {
 				if (n instanceof Element) { lastChild = (Element) n; break; }
@@ -4892,7 +4892,7 @@ public final class WordLayoutFixups {
 				// after a cell ending in an auto-spaced list item begins 14.6-14.8pt
 				// below its last line (a plain auto-spaced paragraph's: 1.2pt).  The
 				// value is the 14pt PropertyFactory wrote; only the conditionality is
-				// needed, so that FOP keeps it at the end of the cell.  @since 17.1.1
+				// needed, so that FOP keeps it at the end of the cell.  @since 17.2.0
 				// Word keeps a cell's last paragraph's space-after below mode 15 too:
 				// measured on a mode-14 document whose cell paragraphs carry
 				// w:spacing w:before="60" w:after="60" (3pt each), Word's row pitch is

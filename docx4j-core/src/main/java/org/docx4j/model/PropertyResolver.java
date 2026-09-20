@@ -152,7 +152,7 @@ public class PropertyResolver {
 	String defaultParagraphStyleId;  // "Normal" in English, but ...
 
 	/** The styleId of the {@code w:default="1"} paragraph style, or null if the
-	 *  styles part declares none.  @since 17.1.1 */
+	 *  styles part declares none.  @since 17.2.0 */
 	public String getDefaultParagraphStyleId() {
 		return defaultParagraphStyleId;
 	}
@@ -184,7 +184,7 @@ public class PropertyResolver {
         }
 
 		// private copies: the resolver's defaults are its own, so nothing below writes into
-		// the styles part (until 17.1.1 the w:sz 20 default went into the part, and a docx
+		// the styles part (until 17.2.0 the w:sz 20 default went into the part, and a docx
 		// saved after an export carried it)
 		documentDefaultPPr = new PPr();
 		documentDefaultRPr = new RPr();        	
@@ -235,7 +235,7 @@ public class PropertyResolver {
 	 * started the first cell's text 108 twips in for both, and a table style whose chain
 	 * does not reach the default style got no cell margin at all.  So the default style's
 	 * own layer is skipped in favour of the built-in, and a chain not reaching it starts
-	 * from nothing.  Until 17.1.1 a style-less table got an empty w:tblPr and the table
+	 * from nothing.  Until 17.2.0 a style-less table got an empty w:tblPr and the table
 	 * writers put 108 on every table.</p>
 	 *
 	 * @param tblPr the table's own w:tblPr; may be null
@@ -270,7 +270,7 @@ public class PropertyResolver {
 	 * table naming no style counts as reaching it).  Exposed for the parity harnesses,
 	 * which otherwise infer it from the cell margins.
 	 * @param tblPr the table's own w:tblPr; may be null
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public boolean reachesDefaultTableStyle(TblPr tblPr) throws CyclicStylesException {
 		String styleId = (tblPr != null && tblPr.getTblStyle() != null) ? tblPr.getTblStyle().getVal() : null;
@@ -302,7 +302,7 @@ public class PropertyResolver {
 		return s;
 	}
 
-	/** 108 twips (0.08in): the left and right cell margin of Word's built-in Normal Table. @since 17.1.1 */
+	/** 108 twips (0.08in): the left and right cell margin of Word's built-in Normal Table. @since 17.2.0 */
 	public static final int WORD_DEFAULT_CELL_MARGIN_TWIPS = 108;
 
 	private static org.docx4j.wml.TblWidth twips(int w) {
@@ -324,8 +324,8 @@ public class PropertyResolver {
 	 * 0, the style itself last); empty for a null or missing styleId.  A cycle, or a chain
 	 * deeper than StyleUtil.isCyclic's limit, ends the walk where it is detected (and
 	 * throws if docx4j.openpackaging.exceptions.CyclicStylesException.throw says so).
-	 * One walk serves paragraph, run and table resolution (until 17.1.1 each had its own).
-	 * Public since 17.1.1 for the parity harnesses; the styles are the live ones, read them.
+	 * One walk serves paragraph, run and table resolution (until 17.2.0 each had its own).
+	 * Public since 17.2.0 for the parity harnesses; the styles are the live ones, read them.
 	 */
 	public List<Style> ancestry(String styleId) throws CyclicStylesException {
 		List<Style> leafFirst = new ArrayList<Style>();
@@ -401,7 +401,7 @@ public class PropertyResolver {
 	 * given this paragraph style (document defaults included).
 	 * 
 	 * A styleId naming no style resolves as the default paragraph style does
-	 * (since 17.1.1; used to return null).
+	 * (since 17.2.0; used to return null).
 	 * 
 	 * What is returned is a live object.  If you
 	 * want to change it, you should clone it first!
@@ -428,7 +428,7 @@ public class PropertyResolver {
 	 * paragraph it is in: document defaults, the paragraph style's run properties, the
 	 * run's character style, then its direct formatting.  The paragraph mark's rPr
 	 * (pPr/rPr) is never applied to a run; for the mark itself see
-	 * {@link #getEffectiveParagraphMarkRPr(PPr)}.  (Until 17.1.1 a run with no rPr in a
+	 * {@link #getEffectiveParagraphMarkRPr(PPr)}.  (Until 17.2.0 a run with no rPr in a
 	 * paragraph naming no style got the mark's formatting, and a paragraph naming no
 	 * style - which is how Word writes the default style - got no paragraph-style run
 	 * properties at all.)
@@ -451,7 +451,7 @@ public class PropertyResolver {
 	 * run properties, then the pPr's own rPr.  What sizes an empty paragraph, and what a
 	 * list label starts from.
 	 * 
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public RPr getEffectiveParagraphMarkRPr(PPr pPr) throws CyclicStylesException {
 
@@ -472,7 +472,7 @@ public class PropertyResolver {
 	 * @param rPrFromPStyle should be rPr from the paragraph style (as opposed to rPr in the direct pPr, which is only relevant to the paragraph mark)
 	 * @return
 	 * @throws CyclicStylesException 
-	 * @deprecated since 17.1.1: {@link #getEffectiveRPr(RPr, PPr)} composes the paragraph style itself
+	 * @deprecated since 17.2.0: {@link #getEffectiveRPr(RPr, PPr)} composes the paragraph style itself
 	 */
 	@Deprecated
 	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr rPrFromPStyle) throws CyclicStylesException {
@@ -560,7 +560,7 @@ public class PropertyResolver {
 	 * @return
 	 * @throws CyclicStylesException 
 	 * @since 8.2.4
-	 * @deprecated since 17.1.1: the flags existed to keep the document defaults from
+	 * @deprecated since 17.2.0: the flags existed to keep the document defaults from
 	 * overriding the paragraph style's when a character style was applied over it, which
 	 * {@link #getEffectiveRPr(RPr, PPr)} now composes correctly; and the result used to be
 	 * cached under the styleId alone, so it depended on which caller came first.
@@ -621,7 +621,7 @@ public class PropertyResolver {
 	 * A paragraph style's w:basedOn chain merged root-first, WITHOUT the document
 	 * defaults: what the style contributes on its own.  An empty pPr for null or a
 	 * missing style.  A live, cached object: clone before changing.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public PPr getChainPPr(String styleId) throws CyclicStylesException {
 		return chainPPr(styleId);
@@ -631,7 +631,7 @@ public class PropertyResolver {
 	 * A style's w:basedOn chain merged root-first, WITHOUT the document defaults: for a
 	 * character style, what it contributes over the paragraph's run properties.  An empty
 	 * rPr for null or a missing style.  A live, cached object: clone before changing.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public RPr getChainRPr(String styleId) throws CyclicStylesException {
 		return chainRPr(styleId);
@@ -669,7 +669,7 @@ public class PropertyResolver {
 	 * Whether the paragraph states any formatting of its own: {@link StyleUtil#hasDirectFormatting(org.docx4j.wml.PPrBase)}
 	 * over every member of {@link org.docx4j.model.styles.PropertyCatalogue#PARAGRAPH}.
 	 * Any rPr is intentionally ignored, since pPr/rPr is not applicable to anything
-	 * except the paragraph mark.  (Until 17.1.1 this was a hand-kept list of 17 of the
+	 * except the paragraph mark.  (Until 17.2.0 this was a hand-kept list of 17 of the
 	 * 34 members, to which each fidelity batch added one more: w:framePr, w:contextualSpacing,
 	 * w:suppressAutoHyphens; a paragraph whose only direct formatting was w:mirrorIndents
 	 * or w:textDirection resolved as having none.)
@@ -708,11 +708,11 @@ public class PropertyResolver {
 	/**
 	 * Whether the run states any formatting of its own: {@link StyleUtil#hasDirectFormatting(RPr)}
 	 * over every member of {@link org.docx4j.model.styles.PropertyCatalogue#RUN} but the
-	 * style reference.  (Until 17.1.1 this was a hand-kept list of 19 of the 40 members -
+	 * style reference.  (Until 17.2.0 this was a hand-kept list of 19 of the 40 members -
 	 * "taken directly from RPr, and so is comprehensive", it said - so a run whose only
 	 * direct formatting was w:rtl, w:position, w:szCs, w:w, w:kern or w:cs resolved as
 	 * having none.)
-	 * @deprecated since 17.1.1: {@link StyleUtil#hasDirectFormatting(RPr)}
+	 * @deprecated since 17.2.0: {@link StyleUtil#hasDirectFormatting(RPr)}
 	 */
 	@Deprecated
 	public boolean hasDirectRPrFormatting(RPr rPrToApply) {
@@ -731,7 +731,7 @@ public class PropertyResolver {
      * The outline level (1-9) of a built-in heading style, from its w:name ("heading 1"
      * ... "heading 9"), or -1.  Word identifies built-in styles by name, so this holds in
      * every locale; {@link #getLvlFromHeadingStyle(String)} keys on the English styleId.
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public static int headingLevelByName(Style style) {
     	if (style == null || style.getName() == null || style.getName().getVal() == null) return -1;
@@ -761,7 +761,7 @@ public class PropertyResolver {
 	 * ... "heading 9", the same in every locale; the styleId is localised:
 	 * "berschrift1", "Titre1"), whatever w:outlineLvl the style declares: where they
 	 * differ the layer is a copy with the level from the name, and the styles part is not
-	 * touched (until 17.1.1 this keyed on the id prefix "Heading" and wrote the level into
+	 * touched (until 17.2.0 this keyed on the id prefix "Heading" and wrote the level into
 	 * the style).
 	 */
 	private PPr headingLayer(Style style) {
@@ -806,7 +806,7 @@ public class PropertyResolver {
      * MainDocumentPart.getPropertyResolver), so without the rescan a style added to the
      * styles part afterwards would be invisible to style resolution.  The rescan is on
      * the miss path only, and only when the styles list's size has changed since it was
-     * last scanned (since 17.1.1; a style which is genuinely absent used to cost one pass
+     * last scanned (since 17.2.0; a style which is genuinely absent used to cost one pass
      * over the styles list per lookup).
      *
      * Note that this handles styles *added* since construction, not styles modified or

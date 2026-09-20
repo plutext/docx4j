@@ -353,7 +353,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		/* 1.  The names the document uses: every slot of every w:rFonts it could ask
 		 * for (runs, paragraph marks, the styles in use, headers, footers, notes,
 		 * comments, numbering, w:sym, the defaults), theme references resolved.  A walk
-		 * for names since 17.1.1 (CR-016 phase 4): until then this ran RunFontSelector
+		 * for names since 17.2.0 (CR-016 phase 4): until then this ran RunFontSelector
 		 * in a discovery mode over every run, deciding by glyph checks it could not yet
 		 * answer, since the mapper is populated from this list.  The fonts the
 		 * conversion actually reaches are declared to FOP late, whatever this list
@@ -408,16 +408,16 @@ public class WordprocessingMLPackage extends OpcPackage {
 			}
 
 			/* Then the mapper's own guesses (BestMatchingMapper's panose match and
-			 * FontSubstitutions.xml) for what the measured passes left.  @since 17.1.1 */
+			 * FontSubstitutions.xml) for what the measured passes left.  @since 17.2.0 */
 			fontMapper.addMapperSubstitutes(fontsInUse, fonts);
 
 			/* Then a family none of docx4j's tables know, which is what Word itself could
 			 * not find: Cambria or Calibri by its fontTable family, as Word does (CR-016
-			 * probe fonts-unresolvable).  @since 17.1.1 */
+			 * probe fonts-unresolvable).  @since 17.2.0 */
 			fontMapper.addWordDefaultSubstitutes(fontsInUse, fonts);
 
 			/* Last, since it re-maps: a document font with no bold face of its own (Calibri
-			 * Light) keeps its mapped file's advances when bold, as Word does.  @since 17.1.1 */
+			 * Light) keeps its mapped file's advances when bold, as Word does.  @since 17.2.0 */
 			fontMapper.addNoBoldFaceAliases(fontsInUse);
 		}
     }
@@ -544,13 +544,13 @@ public class WordprocessingMLPackage extends OpcPackage {
     	dsp.setJaxbElement(new CTSettings());
     	// The compat settings Word 365 writes for a new document, compatibilityMode 15
     	// first: without a mode Word opens the package in compatibility mode (as a Word
-    	// 2007 document), which is what a docx4j-created package did until 17.1.1.  The
+    	// 2007 document), which is what a docx4j-created package did until 17.2.0.  The
     	// mode is the layout rules; the theme part below is the fonts; any theme year is
     	// consistent with mode 15 (Word 2013-2022 wrote mode 15 with the 2013 theme).
     	dsp.setCompatSettingsAsWord365();
 
 		// Theme part (/word/theme/theme1.xml), as Word puts one in every document it
-		// creates.  Since 17.1.1: without it, this package's docDefaults - which reference
+		// creates.  Since 17.2.0: without it, this package's docDefaults - which reference
 		// the theme fonts (w:rFonts w:asciiTheme="minorHAnsi" ...) - had nothing to resolve
 		// against, and every consumer had to guess the Office theme's faces for itself.
 		addDefaultThemePart(wmlPack, wordDocumentPart);
@@ -574,7 +574,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 	 * a valid package, and {@code RunFontSelector} answers its theme references from the
 	 * same property.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void addDefaultThemePart(WordprocessingMLPackage wmlPack,
 			MainDocumentPart wordDocumentPart) {

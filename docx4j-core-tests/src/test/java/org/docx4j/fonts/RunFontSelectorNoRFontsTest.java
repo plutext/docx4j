@@ -31,7 +31,7 @@ import org.junit.Test;
 /**
  * No w:rFonts anywhere: Times New Roman, Word's built-in default (CR-016 probe
  * fonts-missing-slots (a)), and the text still goes through the range dispatch (so a
- * non-Latin stretch gets its own span and the coverage pass), where until 17.1.1 the
+ * non-Latin stretch gets its own span and the coverage pass), where until 17.2.0 the
  * whole text was set in the default font with no dispatch at all.
  */
 public class RunFontSelectorNoRFontsTest {

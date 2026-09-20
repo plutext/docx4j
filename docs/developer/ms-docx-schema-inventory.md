@@ -5,7 +5,7 @@ An inventory of the ten namespaces in the "Full XML Schemas" appendix of
 contents on learn.microsoft.com,
 https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/b839fe1f-e1ca-4fa6-8c26-5954d0abbccd)
 against what docx4j binds, admits in the main schema, or knows by prefix,
-measured on VERSION_17_1_1 on 2026-09-20 (Jason asked, after the [MS-XLSX]
+measured on VERSION_17_2_0 on 2026-09-20 (Jason asked, after the [MS-XLSX]
 inventory, "identify any schema used within it which we don't yet support"),
 and **updated the same day after CR-023** closed the gaps it found.
 Purposes are from the appendix's own XSD text (small enough to read whole for
@@ -131,11 +131,11 @@ Section 2.3's `compatSetting` names (`compatibilityMode`,
 `useWord2013TrackBottomHyphenation`, `allowTextAfterFloatingTableBreak`,
 `allowHyphenationAtTrackBottom`, `usePre2018iOSMacLayout`) are values of ISO's
 `w:compatSetting`, not a schema; docx4j reads them through
-`DocumentSettingsPart` and writes the first six on `createPackage` (17.1.1).
+`DocumentSettingsPart` and writes the first six on `createPackage` (17.2.0).
 
 ## What this suggests, for a CR to decide
 
-- **First, and small** - **implemented via CR-023 (17.1.1, 2026-09-20)**: the "bound but not admitted" attributes - a CR of
+- **First, and small** - **implemented via CR-023 (17.2.0, 2026-09-20)**: the "bound but not admitted" attributes - a CR of
   six attribute references in `wml.xsd` (`w15:restartNumberingAfterBreak`
   on `CT_AbstractNum`, `w16cid:durableId` on `CT_Num`, `w16du:dateUtc` on
   `CT_TrackChange` and `CT_Markup`'s kin, `w14:noSpellErr` on `CT_P`,

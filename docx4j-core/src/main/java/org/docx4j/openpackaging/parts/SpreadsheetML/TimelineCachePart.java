@@ -29,7 +29,7 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTTi
  * A timeline cache ([MS-XLSX] 2.1.7, x15:timelineCacheDefinition): the date field a timeline filters, and its state.
  * Related from the workbook (Excel 365 writes the 2011 relationship type and the lowercase content type).
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class TimelineCachePart extends JaxbSmlPart<CTTimelineCacheDefinition> {
 

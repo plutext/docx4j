@@ -924,7 +924,7 @@ style carries it and which overrides it on 20 paragraphs, 17 came out 14pt low -
 first divergence at y=171.4, docx4j's at 186.2, and the next gap 30.7pt against 58.9.
 
 <a id="s35autospacecell"></a>**A list item in a cell keeps its auto spacing after, and
-between items (17.1.1).** The rule above drops auto spacing at the top and bottom of a table
+between items (17.2.0).** The rule above drops auto spacing at the top and bottom of a table
 cell, which is measured for a plain paragraph. One corpus document disagreed: its `Data
 Updated` cells hold bulleted paragraphs carrying
 `<w:spacing w:before="100" w:beforeAutospacing="1" w:after="100" w:afterAutospacing="1"/>`
@@ -1319,7 +1319,7 @@ Number" was painted "Roll" and then a 93.5pt "Number /Registration" running 6pt 
 table, where Word sets "Roll Number " and "/Registration ". FOP's elements for it are
 `box("Number") box(" ") box("/")` - the space is a non-breaking box - so the line manager
 puts a zero penalty after it (and relaxes the infinite penalty in the justified form).
-<a id="s43prefix"></a>**Nor between a letter and a backslash** (17.1.1). FOP's pair table
+<a id="s43prefix"></a>**Nor between a letter and a backslash** (17.2.0). FOP's pair table
 (`LineBreakUtils`) is generated from a Unicode version before 8.0, whose LB24 added
 `(AL|HL) × (PR|PO)` - no break between a letter and a prefix or postfix character - so FOP
 breaks `Quejas|\Clientes`, `US|$100` and `a|+b`. Measured on a 311-page corpus document whose
@@ -1377,7 +1377,7 @@ Three limits:
 - A word may be **several boxes** - a punctuation-led token like `«${(entries.…`, or a URL,
   which FOP maps to a run of boxes joined by infinite penalties - and every splittable box
   in the run is broken, all of them marked as one word so that "only once the word has a
-  line to itself" still means the whole word (17.1.1). Before that the rule required a
+  line to itself" still means the whole word (17.2.0). Before that the rule required a
   word to be a single box and such tokens were never seen as over-long at all: one ran to
   x=623.0 on a 595.3pt page. A box whose mapping cannot be split is left whole but still
   counted as part of the word, so it does not block a break in its neighbours.
@@ -1421,14 +1421,14 @@ the triage ledger names for the content-autofit defect. **Lower the tolerance to
 that is fixed**; `docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance` sets it in
 points, so it can be re-measured without a build.
 
-**Inside a table cell the tolerance is one twip** (17.1.1, [§6.11](#s611)). A column that
+**Inside a table cell the tolerance is one twip** (17.2.0, [§6.11](#s611)). A column that
 narrow is not always one we sized wrongly: read against the `w:tblGrid` Word kept on
 re-save, one corpus table's first column is 21.55pt in Word too, and Word shatters its word
 down fifteen lines. The inch stays for body text, where a wrong measure still hides behind a
 break; `docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance` sets the cell's, and
 the general tolerance caps it.
 
-<a id="s43join"></a>**A suppressed break inside a word is not the end of the word** (17.1.1).
+<a id="s43join"></a>**A suppressed break inside a word is not the end of the word** (17.2.0).
 Around a break opportunity inside a word - after a solidus, before a backslash - FOP builds
 `box, penalty(INF), glue, penalty, glue, box`, and where the line manager has made that
 penalty infinite ([above](#s43prefix)) the glue behind it is no break either (Knuth: a glue
@@ -2418,7 +2418,7 @@ went from 0.534 to 0.795 of Word's lines, and two more of that corpus from 0.914
 and from 0.758 to 0.864.
 
 The second clause used to require that **at least one cell declare a width**, and that was
-wrong (17.1.1): the cells of a table written for its grid are commonly all `w:tcW auto`,
+wrong (17.2.0): the cells of a table written for its grid are commonly all `w:tcW auto`,
 and the precondition sent exactly those tables to the content pass. Measured on a corpus
 document whose `w:tblW` is `8691 dxa` - 434.55pt, which is the grid exactly - with every
 cell auto: the content pass gave 73.6 / 40.9 / 242.35 / 77.7pt against the grid's 79.2 /
@@ -2431,7 +2431,7 @@ no document down. A table which states no width of its own and has all-auto cell
 untouched, so the content-based pass and §6.4's widening still apply to it.
 
 <a id="s63pctcells"></a>**A `w:tcW` in `pct` is a preferred width, exactly as a `dxa` one
-is** (17.1.1). Reading only `dxa` left a `pct` table with *no* column preferences at all: it
+is** (17.2.0). Reading only `dxa` left a `pct` table with *no* column preferences at all: it
 failed the "every column has a preferred width" test above, fell through to the content pass,
 and was laid out on its content rather than on the grid Word cached. `w:tblW pct` with
 `w:tcW pct` is **61 documents and 661 tables** of the three corpora. A percentage is of the
@@ -2447,7 +2447,7 @@ corpus, which is a wash, and would treat `pct` more strictly than `dxa` for no r
 documents support.
 
 **The `table-cell-pct` probe, and why a generated probe cannot answer this.** The probe
-(17.1.1) was built to ask which wins when the grid and the cells disagree. Each table is
+(17.2.0) was built to ask which wins when the grid and the cells disagree. Each table is
 `w:tblW 5000 pct` = 451.3pt and states its proportions twice; column 1's width by each reading,
 against Word:
 
@@ -2563,7 +2563,7 @@ The FO table writer stamps `docx4j-content-sized` on the `fo:table` for the fixu
 
 <a id="s63face"></a>**Bold and italic cell text is measured in the face it is set in.**
 `RunFontSelector` writes the regular face's name as `font-family` for all four faces of a
-family, and `font-weight` / `font-style` say which one; until 17.1.1 the sizer read only
+family, and `font-weight` / `font-style` say which one; until 17.2.0 the sizer read only
 the family, so every bold cell was measured in the regular face. `FopConfigUtil` declares
 the family's bold, italic and bold-italic files to FOP under that one name, so the face
 FOP draws is a settled question, and `FopConfigUtil.renderedFace` answers it the way the
@@ -2583,7 +2583,7 @@ the real-document corpora is small: the bold most of their tables carry comes fr
 bold on the span for the sizer to see until that lands.
 
 <a id="s63breaks"></a>**A column's minimum is measured at the line manager's break
-opportunities, not at white space** (17.1.1). The measurement must agree with the engine
+opportunities, not at white space** (17.2.0). The measurement must agree with the engine
 that will lay the text out - the principle [the face rule above](#s63face) rests on - and
 the sizer took a column's minimum to be its widest white-space-delimited token, where the
 line manager breaks inside a token wherever UAX #14 lets it and Word's solidus rules (§4.3)
@@ -2644,7 +2644,7 @@ is reported below is the backslash-only build. One place the layout and Word sti
 split across two runs at a break opportunity - `foo-` in one `fo:inline`, `bar` in the next -
 cannot break at the seam in FOP, while Word breaks after the hyphen. And the solidus-led
 predicate is now the text's rather than the mapping's, so `/123` after a space is a
-solidus-led word for the line manager too, where until 17.1.1 it read the character after
+solidus-led word for the line manager too, where until 17.2.0 it read the character after
 the mapping and, UAX #14 keeping the solidus with the digits, did not break there.
 
 **Measured**, against the shortfall build, probes and corpora, sequentially - the sizer at
@@ -2708,7 +2708,7 @@ empty paragraphs keep their lines, only the mark is hidden. Property
 `docx4j.convert.out.fo.tables.hideMark`.
 
 <a id="s63stalegrid"></a>**A grid the cells' preferences contradict, and how Word lays a
-table out on its `w:tcW`** (17.1.1). The certificate §6.11 names - the one document the
+table out on its `w:tcW`** (17.2.0). The certificate §6.11 names - the one document the
 break-opportunity measurement above cost - is a seven-column autofit table (`w:tblW auto`)
 every cell of which states a `dxa` width, 2116 / 1125 / 1126 / 2236 / 1951 / 948 / 948
 twips, on a `w:tblGrid` of 1603 / 1863 / 721 / 1702 / 423 / 1773 / 925. docx4j drew the grid,
@@ -2821,7 +2821,7 @@ pass sizing columns to a `w:tblW` wider than the column could run a table off th
 (117pt past the edge on one document, where Word kept it inside).
 
 <a id="s65squeeze"></a>**Word squeezes a content-autofit table below its minima too** (measured
-17.1.1, against the hypothesis that it keeps such columns at their minima and lets the table
+17.2.0, against the hypothesis that it keeps such columns at their minima and lets the table
 overhang, which would have made the scaling ours alone). A 36-column corpus table whose
 content minima sum to 26,129 twips has a `w:tblGrid` Word wrote and kept on re-save summing
 to **9,356** - the 9,360-twip text column - so Word squeezes it into the column exactly as
@@ -2838,7 +2838,7 @@ prose gained six pages under the cell break because its token columns were squee
 as its prose ones.
 
 <a id="s65shortfall"></a>**How Word shares a shortfall: the cell margins are a fixed cost, and
-only the text is squeezed** (17.1.1). Derived from Word's re-saved grids rather than guessed
+only the text is squeezed** (17.2.0). Derived from Word's re-saved grids rather than guessed
 at: `docx4j.convert.out.fo.wordLayout.dumpAutofit` has the column sizer write what it measured
 for every table - the per-column content minima, maxima, preferred widths and floors - and the
 harness's `ShortfallFit` joins those records to the `w:tblGrid` Word wrote for the same table and
@@ -2909,7 +2909,7 @@ measurement):
   the grid population above is its answer - rather than on the grid scaled: the template's
   five equal token columns, which the scaled grid gave 113 / 69 / 96 / 70 / 105pt, come back
   equal. `false` scales the grid, as 17.1.0 did. A grid whose minima *do* fit is still scaled;
-  content-sizing those was measured and rejected (candidate F, 17.1.1: too wide far more often
+  content-sizing those was measured and rejected (candidate F, 17.2.0: too wide far more often
   than not).
 
 **Squeezing a `pct` table into its percentage was measured and set aside.** The page fit
@@ -2969,7 +2969,7 @@ on eight documents.
   ours), so only the total is the percentage's.
 
 <a id="s65degenerate"></a>**A percentage which resolves to less than one pair of Word's default
-cell margins is not a width** (17.1.1). One corpus document states `w:tblW w:w="1"
+cell margins is not a width** (17.2.0). One corpus document states `w:tblW w:w="1"
 w:type="pct"` - 0.02% of the text column, 1.9 twips - on a five-row table with a
 `w:tblCellMar` of 0. Word draws the table full width, its `Personal Protective Equipment`
 on one line; docx4j scaled the grid to the percentage and drew four 0.05pt columns, painting
@@ -3333,7 +3333,7 @@ and 0.813 -> 0.807, on rows whose final height Word decides differently from eit
 ### 6.10 Table styles: conditional formatting (`w:tblStylePr`)
 
 A table style carries much of its appearance in its *conditions* - the bold of a header
-row or first column, the shading of a band, the borders of the last row - and until 17.1.1
+row or first column, the shading of a band, the borders of the last row - and until 17.2.0
 docx4j applied none of it (issue #546): `ParagraphStylesInTableFix` folded only the style's
 own `w:pPr`/`w:rPr` into the paragraphs of a table, the writers took only its table-wide
 `w:tblPr`/`w:trPr`/`w:tcPr`, and `PropertyFactory` warned "TODO" at the list. Word's
@@ -3392,7 +3392,7 @@ It now keeps a per-table context (the look, the band sizes, the grid column of e
 and emits one synthetic style per *(paragraph style, table style, applicable conditions)* -
 `Normal-PlainTable1-firstCol-firstRow-nwCell-BR` - with the conditions applied in
 precedence order between the table style's own properties and the paragraph style's chain.
-A paragraph under no condition the style defines keeps the pre-17.1.1 style id, so a table
+A paragraph under no condition the style defines keeps the pre-17.2.0 style id, so a table
 style without conditional formatting is untouched. Nothing else applies these properties,
 so there is nothing for it to double up with, and `PropertyFactory`'s list method is now
 deliberately empty.
@@ -3458,7 +3458,7 @@ printed past the right margin - and the narrow columns' text across their neighb
 pages, and 2,059 of the document's 3,571 unmatched reference lines were those one-character
 lines.
 
-FOP offers no break inside a word at all (§10), and until 17.1.1 docx4j's own emergency
+FOP offers no break inside a word at all (§10), and until 17.2.0 docx4j's own emergency
 break (§4.3) waited for an inch of overrun before splitting one - the inch that keeps a
 measure *we* got wrong from hiding behind a break, and which here kept a 31pt overrun
 whole. **A block set directly in a table cell now has a tolerance of one twip** - Word's own
@@ -3626,7 +3626,7 @@ whose page size agrees are merged as before. `ConversionSectionWrapperFactory.in
 (which already detected the change, and inserted a `w:pageBreakBefore` on the wrong
 paragraph - the last of the section rather than the first of the next - which did nothing on
 a shared master). **A change of the margins or the header/footer distance alone is not
-promoted (re-measured 17.1.1).** The `section-continuous-geometry` probe seemed to show Word
+promoted (re-measured 17.2.0).** The `section-continuous-geometry` probe seemed to show Word
 starting a page for a 2in top margin, a bottom-margin-and-footer change and a
 footer-distance change in mode 15, but its first section's page size differs from the rest
 by a twip (this rule), and its 3-line paragraphs let widow/orphan control account for the
@@ -3813,7 +3813,7 @@ at **324.0** on a 202.6pt measure, and the document gains 19 matched lines.
 Only the left and right margins. The **top, bottom, header and footer** distances stay the
 first part's, because that is the section Word starts the page with and a page master has
 one before-edge: no part can carry a vertical difference as an indent the way it carries a
-horizontal one. Until 17.1.1 the whole `w:pgMar` came from the reference part, which pushed
+horizontal one. Until 17.2.0 the whole `w:pgMar` came from the reference part, which pushed
 one document's first page 14.1pt down the page for a column change that moved no line at
 all, and left two others 7 to 7.65pt low.
 
@@ -3962,7 +3962,7 @@ three footer parts are each a single empty `w:p`, with `w:pgMar w:bottom="274"` 
 `w:footer="720"` (36pt), Word's body ends at y=792.5 - the distance plus the empty footer's
 own 13.43pt line - and puts the next, 12pt, block on the following page, where the bottom
 margin alone (a body bottom of 828.25) kept it; our page 1 held content Word puts on two.
-**Both the distance and the line are reserved (17.1.1)**: 17.1.0 had reserved the
+**Both the distance and the line are reserved (17.2.0)**: 17.1.0 had reserved the
 distance alone, which that measurement does not support (805.95 would have kept the 12pt
 block on page 1 too), and a landscape corpus document showed the difference - 612pt high,
 `w:bottom="561"` (28pt), `w:footer="720"` (36pt), one empty Footer-style `w:p` in the part,
@@ -3974,7 +3974,7 @@ the document it was measured on states `w:footer="5811"` (290.55pt, a third of a
 page) and Word ignores it entirely, its last baselines 756.2 and 767.0 against a 70.9pt
 bottom margin. So a footer distance past **a quarter of the page** is not honoured, and
 otherwise an empty footer part holds the body off at `w:footer`. **That clamp is in
-question (17.1.1)**: re-read page by page, the document it was measured on is a 4-page letter
+question (17.2.0)**: re-read page by page, the document it was measured on is a 4-page letter
 of two *continuous* sections - a letterhead section saying `w:footer="5811"` and, from a
 few lines down page 1, a second saying 709 - and Word ends its pages 1 and 2 at y=531 and
 529, which is 841.95 - 290.55 - the empty footer's line, and only page 3 at 762. The 5811
@@ -4208,7 +4208,7 @@ cut from that file, and which makes a conversion reproducible. A field with no s
 at all is still evaluated. One thing no switch can reach, for the record: a `FILENAME` in a
 footer, which Word paints as the name of the temporary file it converted (a different one on
 every cut, 8 documents). A `STYLEREF` in a header or footer, which Word evaluates per page,
-is evaluated per page too since 17.1.1 (below); one in the body is painted stored.
+is evaluated per page too since 17.2.0 (below); one in the body is painted stored.
 
 <a id="s7styleref"></a>**`STYLEREF` in a running header or footer is evaluated page by
 page.** Word paints the text of the first paragraph of the named style on the page, or of
@@ -4797,7 +4797,7 @@ Worked around here, and worth knowing about:
   `Categorizador/Período` down 15 lines in a 21.55pt column where we set it on one line
   running to x=559 on a text column that ends at 540. Worked around by splitting such a
   word into per-character glyph mappings in the line manager - an inch past the measure in
-  body text, one twip in a table cell ([§6.11](#s611), 17.1.1). The costs, so they are on
+  body text, one twip in a table cell ([§6.11](#s611), 17.2.0). The costs, so they are on
   the record: the split loses the word's kerning and glyph positioning; a measure we got
   wrong is hidden behind a break instead of showing as an overrun, which is why body text
   keeps the inch and why nine corpus documents whose columns we size narrow lost line
@@ -4840,7 +4840,7 @@ Worked around here, and worth knowing about:
   cost is small: over the FO docx4j emits for the three corpora, 608 such seams in 128
   documents, at 107 of which Word's PDF breaks the line (31 documents), and at 45 of those
   ours did not - 17 documents, one to nine lines each, about 0.015% of the corpora's
-  reference lines. **Worked around** in the line manager (17.1.1,
+  reference lines. **Worked around** in the line manager (17.2.0,
   `WordLineLayoutManager.seamBreaks`, `docx4j.convert.out.fo.wordLayout.seamBreak=false`
   turns it off): where two word boxes from different text managers meet with nothing between
   them but what FOP puts inside a word, `WordBreakOpportunities.breakAtSeam` decides the

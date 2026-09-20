@@ -1,6 +1,6 @@
 # CR-015: Property resolution (`PropertyResolver`, `StyleUtil.apply`) — line endings, one property catalogue, the default paragraph style, cache correctness, no mutation, thread safety
 
-Status: DONE (2026-09-12) — all phases shipped in 17.1.1, the same day the
+Status: DONE (2026-09-12) — all phases shipped in 17.2.0, the same day the
 review was written: 0 (LF, 6f4763d70 + 21890c36e), 0b (five `styles-*`
 probes and their goldens, 66be92850 + 83c6865b8), 1 (the property catalogue
 and the merge rules, 505977b63), 2 (the resolution order, 489ce29f4 +
@@ -36,7 +36,7 @@ and lookup cost, dead code; 5. API hygiene behind deprecation.
 Related: CR-014 (list numbering; its `Emulator` resolves numbering through
 `getEffectivePPr(styleId)` and its concurrency test deliberately avoided the
 style path); CR-001 (Word layout fidelity, Enterprise repo) drove the 17.0.5
-to 17.1.1 changes to `StyleUtil.apply` (tabs, indents, frames, autospacing,
+to 17.2.0 changes to `StyleUtil.apply` (tabs, indents, frames, autospacing,
 numId 0, conditional table formatting) — all kept; #546 phase 1 (67ab3b831)
 decided where table styles are applied; the fonts review that follows this
 one consumes the effective rPr this CR makes correct.
@@ -275,7 +275,7 @@ Design notes in the two classes that bind this CR, with what the code does:
 - **The 17.1.0 measured merges** — `apply(Tabs)` (cumulative, `clear`
   removes), `apply(Ind)` (`firstLine`/`hanging` are one property),
   `apply(CTFramePr)` (per attribute), `apply(Spacing)` (autospacing survives),
-  `apply(PPrBase, ..., ndp)` (`w:numId 0` drops the level's indent), and 17.1.1
+  `apply(PPrBase, ..., ndp)` (`w:numId 0` drops the level's indent), and 17.2.0
   `apply(List<CTTblStylePr>)` (per condition) and `apply(TrPr)` — each cites
   its document or golden and has a test.  All kept; the catalogue of phase 1
   wraps them, it does not rewrite them.
@@ -318,7 +318,7 @@ Design notes in the two classes that bind this CR, with what the code does:
 | 10 | `w:lineRule` "defaults to auto" (`apply(STLineSpacingRule)`) | a direct `w:after="0"` turns an inherited `exact` into `auto`: docx4j renders P3 (b) at 26.85pt pitch | golden P3: (a) 24.00pt pitch, (b) direct `w:after 0` only **24.00pt** (the exact rule is inherited), (c) direct `w:line 240` only 13.44pt (auto) | WRONG (golden; phase 1) |
 | 11 | rFonts: theme trumps explicit within one element; a source with only `w:hint` still applies (`apply(RFonts)`) | as documented | `RunFontSelectorChinese2Test`; the fonts review | CODE CONFIRMED, unchanged |
 | 12 | Tabs cumulative, `clear` removes (17.1.0) | as documented | two corpus documents in the javadoc; `StyleUtilTabsMergeTest` | CONFIRMED (golden), unchanged |
-| 13 | `w:ind` firstLine/hanging one property; `w:framePr` per attribute; autospacing survives; `w:numId 0` drops the level indent; `w:tblStylePr` per condition (17.1.0-17.1.1) | as documented | measured on corpus documents; `IndFirstLineHangingTest`, `PropertyResolverFramePrTest`, `AutospacingOverrideTest`, `ParagraphStylesInTableFixConditionalTest` | CONFIRMED, unchanged |
+| 13 | `w:ind` firstLine/hanging one property; `w:framePr` per attribute; autospacing survives; `w:numId 0` drops the level indent; `w:tblStylePr` per condition (17.1.0-17.2.0) | as documented | measured on corpus documents; `IndFirstLineHangingTest`, `PropertyResolverFramePrTest`, `AutospacingOverrideTest`, `ParagraphStylesInTableFixConditionalTest` | CONFIRMED, unchanged |
 | 14 | "TODO - if the paragraph is in a table?" | not here; `ParagraphStylesInTableFix` (67ab3b831) | measured there (9,245 bold lines) | SETTLED by that decision; TODOs close |
 | 15 | "TODO, jump up to add default table style"; "Generated empty tblPr" | a style-less table gets nothing from `TableNormal`; the writer's constant 108 stands in, for every table | golden P5, with the document's Table Normal saying `w:left 300`: (a) no `w:tblStyle` and (c) Grid2 based on Table Normal both start the first cell's text 5.76pt in (108 twips + the border; docx4j 5.64), **not** 15pt; (b) Custom, a table style with no `w:basedOn`, starts it 0.48pt in - no cell margin at all (docx4j 5.64) | SETTLED (golden), differently from the TODO: the 108 is Word's built-in Table Normal, applied whatever the document's definition says, to tables whose chain reaches the default table style or that name no style; a chain that does not reach it gets no margin. Phase 4 keeps the constant and withholds it from that case |
 | 16 | `apply(SectPr)` "implementation is incomplete" | WARN per direct pPr with a `w:sectPr`; merged sectPr unread | n/a | CODE CONFIRMED; dropped from the merge (phase 4) |
@@ -440,7 +440,7 @@ API keeps its signatures:
   caller is the class itself).
 
 `ParagraphStylesInTableFix`'s writing of the default `w:pStyle` onto every
-paragraph stays in 17.1.1 (it also carries the table conditions); it becomes
+paragraph stays in 17.2.0 (it also carries the table conditions); it becomes
 removable outside tables once the resolver falls back itself — decision 2.
 
 Test: `PropertyResolverOrderTest` — the scratch run's S1 (a-d), S5 in both
@@ -874,7 +874,7 @@ the other gains two lines.  Nothing regresses and no page moves.
    style leaves is removed instead of copying on every call.  DONE as
    recommended (phase 3).
 2. ~~**`ParagraphStylesInTableFix` keeps writing the default `w:pStyle` onto
-   every paragraph in 17.1.1**~~ — superseded 2026-09-12 by phase 2b (Jason:
+   every paragraph in 17.2.0**~~ — superseded 2026-09-12 by phase 2b (Jason:
    the resolver gets it right, the shield comes out, in this CR).
 3. **Probe set**: the five above; P2 (paragraph mark) omitted as already
    measured.  DONE (Jason ran them 2026-09-12).

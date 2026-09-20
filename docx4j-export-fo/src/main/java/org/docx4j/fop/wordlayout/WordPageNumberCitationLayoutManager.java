@@ -62,7 +62,7 @@ import org.apache.fop.traits.MinOptMax;
  * <p>A workaround for FOP, which offers no way to hint the width of an unresolved
  * citation; it goes if FOP grows one.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class WordPageNumberCitationLayoutManager extends PageNumberCitationLayoutManager {
 

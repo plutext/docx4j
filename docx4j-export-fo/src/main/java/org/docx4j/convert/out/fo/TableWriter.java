@@ -518,7 +518,7 @@ public class TableWriter extends AbstractTableWriter {
 	/**
 	 * The left cell margin the grid edge is measured from, in twips: the <em>first
 	 * cell's</em> own w:tcMar/w:left where it has one, else w:tblPr/w:tblCellMar/w:left
-	 * (the table style's is already merged into the effective tblPr, and since 17.1.1
+	 * (the table style's is already merged into the effective tblPr, and since 17.2.0
 	 * that includes the built-in Normal Table's 108 wherever it applies), else none.
 	 *
 	 * <p>The first cell wins because it is that cell's text the shift puts on
@@ -559,7 +559,7 @@ public class TableWriter extends AbstractTableWriter {
 				return left.getW().intValue();
 			}
 		}
-		// the built-in Normal Table's 108 is in the effective tblPr where it applies (17.1.1); none otherwise
+		// the built-in Normal Table's 108 is in the effective tblPr where it applies (17.2.0); none otherwise
 		return 0;
 	}
 
@@ -577,7 +577,7 @@ public class TableWriter extends AbstractTableWriter {
 	 *  manager's break opportunities ({@link org.docx4j.fop.wordlayout.WordBreakOpportunities})
 	 *  - a URL measured to its {@code ?} and its hyphens, where it will be broken - or,
 	 *  {@code false}, its widest white-space-delimited token, as 17.1.0 measured.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static final String MINIMUM_AT_BREAK_OPPORTUNITIES = "docx4j.convert.out.fo.tables.minimumAtBreakOpportunities";
 
 	private static boolean minimumAtBreakOpportunities() {
@@ -590,7 +590,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * widths are FOP's own.  The minimum is the widest run between the line manager's
 	 * break opportunities - UAX #14 as FOP applies it, with Word's solidus rules
 	 * ({@link org.docx4j.fop.wordlayout.WordBreakOpportunities}), so that the
-	 * measurement agrees with the engine that lays the text out.  Until 17.1.1 it was
+	 * measurement agrees with the engine that lays the text out.  Until 17.2.0 it was
 	 * the widest white-space-delimited token: a 117-character URL which Word and the
 	 * line manager both break after its {@code ?} and its hyphens was measured whole,
 	 * its column sized to it (286pt where Word gives 216) and the column beside it
@@ -619,7 +619,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * One paragraph's measurement in progress: the widest unit so far, the whole
 	 * content on one line, the unit being built, the ordinary spaces after it (dropped
 	 * if a break comes next), and the widest picture, which cannot be squeezed.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static final class LineMeasure {
 		double maxUnit, total, unit, pendingSpace, widestPicture;
@@ -776,14 +776,14 @@ public class TableWriter extends AbstractTableWriter {
 	 * The face FOP will set this element's text in: the nearest {@code font-family}
 	 * names the family (RunFontSelector writes the regular face's name for all four
 	 * faces), and the nearest {@code font-weight} and {@code font-style} pick the
-	 * face, resolved as FOP's own configuration resolves them.  Until 17.1.1 only the
+	 * face, resolved as FOP's own configuration resolves them.  Until 17.2.0 only the
 	 * family was consulted, so every bold cell was measured in the regular face -
 	 * 79.6pt for a heading FOP then drew at 89.1 - and the columns of a table with bold
 	 * headings were split some 11-13% narrow, with the difference handed to a
 	 * neighbour whose text then stayed on one line where Word wraps it.  A family
 	 * without the face is measured, as it is drawn, in the regular one.
 	 */
-	/** Package-private since 17.1.1: XsltFOFunctions measures a numbering label with it. */
+	/** Package-private since 17.2.0: XsltFOFunctions measures a numbering label with it. */
 	static org.docx4j.fonts.PhysicalFont fontFor(Element el, org.docx4j.fonts.Mapper mapper) {
 		org.docx4j.fonts.PhysicalFont regular = null;
 		boolean familySeen = false, weightSeen = false, styleSeen = false;
@@ -905,7 +905,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * {@code docx4j.convert.out.fo.tables.hideMark} (default {@code true}): a cell with
 	 * {@code w:hideMark} whose last paragraph paints nothing takes no line for it, as
 	 * Word sizes the row.  {@code false} gives the mark its line, as 17.1.0 did.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String HIDE_MARK = "docx4j.convert.out.fo.tables.hideMark";
 
@@ -929,7 +929,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * from {@code WordLayoutFixups.blockForEmptyCell}).  Earlier empty paragraphs of the
 	 * cell keep their lines: only the mark is hidden.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void hideMark(TableModelCell tableCell) {
 		if (tableCell.isDummy() || tableCell.getTcPr() == null) return;
@@ -999,7 +999,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * the last such row keeps the table with the paragraph after it, as Word does.
 	 * {@code false} restores 17.1.0, where the keep lived only on the cells' blocks and
 	 * FOP dropped it at the table's last row.  See {@link #applyTableRowCustomAttributes}.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String ROW_KEEP_WITH_NEXT = "docx4j.convert.out.fo.tables.rowKeepWithNext";
 
@@ -1045,7 +1045,7 @@ public class TableWriter extends AbstractTableWriter {
 	 * with the row after it by construction.  The keep on the row is what FOP propagates
 	 * out of the table.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
   	@Override
   	protected void applyTableRowCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table,

@@ -23,7 +23,7 @@ package org.docx4j.model.listnumbering;
  * One Hundred One, One Thousand.  Each word capitalised, no "and", the way Word
  * labels a list (its CARDTEXT field switch lower-cases the same words).
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatCardinalText extends LabelFormatter {
 

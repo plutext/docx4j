@@ -59,7 +59,7 @@
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:attribute name="legacySpreadsheetColorIndex" type="ST_LegacySpreadsheetColorIndex"/>
-  <!-- docx4j 17.1.1 (CR-021 phase 3): a14:m holds the equation itself - m:oMathPara or
+  <!-- docx4j 17.2.0 (CR-021 phase 3): a14:m holds the equation itself - m:oMathPara or
        m:oMath (MS-ODRAWXML 2.3.1); it was an empty type, which dropped the equation of a
        PowerPoint text paragraph on unmarshal.  A lax wildcard rather than element refs:
        the OMML types reach into WordprocessingML (m:r holds w:rPr), and the PresentationML

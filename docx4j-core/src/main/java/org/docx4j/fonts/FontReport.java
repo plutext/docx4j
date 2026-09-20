@@ -31,7 +31,7 @@ import java.util.Map;
  * <p>One entry per font the document sets text in (plus any the conversion met and could
  * not map), ordered by how much text it carries.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class FontReport {
 

@@ -66,7 +66,7 @@ import org.w3c.dom.NodeList;
  * leaders belong to <em>paragraph</em> tabs, Word draws every one in the paragraph's own
  * Calibri, so the two are not the same construct.
  *
- * @since 17.1.1 (CR-001 batch 47 item 5b; the leader's font corrected by its own golden in
+ * @since 17.2.0 (CR-001 batch 47 item 5b; the leader's font corrected by its own golden in
  *         batch 48 item 1)
  */
 public class NumberingTabLeaderTest extends AbstractXSLFOTest {

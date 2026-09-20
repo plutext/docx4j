@@ -225,7 +225,7 @@ PRINCIPLES:
 	<xsd:import id="w15" namespace="http://schemas.microsoft.com/office/word/2012/wordml"
 		schemaLocation="w15_word_2012_wordml.xsd"/>
 
-	<!-- since docx4j 17.1.1 (CR-023): the extensions Word writes on ISO elements, [MS-DOCX] 2.2 -->
+	<!-- since docx4j 17.2.0 (CR-023): the extensions Word writes on ISO elements, [MS-DOCX] 2.2 -->
 	<xsd:import id="w16se" namespace="http://schemas.microsoft.com/office/word/2015/wordml/symex"
 		schemaLocation="w15symex.xsd"/>
 	<xsd:import id="w16cid" namespace="http://schemas.microsoft.com/office/word/2016/wordml/cid"
@@ -3373,7 +3373,7 @@ PRINCIPLES:
 						<xsd:documentation>Annotation Date</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<!-- docx4j 17.1.1 (CR-023): Word 365 writes the UTC date on every tracked change ([MS-DOCX] 2.12.2.1) -->
+				<!-- docx4j 17.2.0 (CR-023): Word 365 writes the UTC date on every tracked change ([MS-DOCX] 2.12.2.1) -->
 				<xsd:attribute ref="w16du:dateUtc" use="optional"/>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -6739,7 +6739,7 @@ PRINCIPLES:
 				</xsd:complexType>
 				
 			</xsd:element>
-			<!-- docx4j 17.1.1 (CR-023): a symbol beyond the BMP, [MS-DOCX] 2.2.11 -->
+			<!-- docx4j 17.2.0 (CR-023): a symbol beyond the BMP, [MS-DOCX] 2.2.11 -->
 			<xsd:element ref="w16se:symEx" minOccurs="0"/>
 			<xsd:element name="pgNum" minOccurs="0">
 				<xsd:annotation>
@@ -8172,7 +8172,7 @@ PRINCIPLES:
 				<xsd:documentation>Custom XML Data Storage ID</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.2.12 (w15:dataBinding shares this type) -->
+		<!-- docx4j 17.2.0 (CR-023): [MS-DOCX] 2.2.12 (w15:dataBinding shares this type) -->
 		<xsd:attribute ref="w16sdtdh:storeItemChecksum" use="optional"/>
 	</xsd:complexType>
 	
@@ -8620,7 +8620,7 @@ PRINCIPLES:
 			<xsd:element ref="w15:webExtensionCreated"  minOccurs="0"/>
 			<xsd:element ref="w15:webExtensionLinked"  minOccurs="0"/>
 		</xsd:choice>
-		<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.13 (with contentLocked / sdtContentLocked) -->
+		<!-- docx4j 17.2.0 (CR-023): [MS-DOCX] 2.13 (with contentLocked / sdtContentLocked) -->
 		<xsd:attribute ref="w16sdtfl:formattingAllowed" use="optional"/>
 	</xsd:complexType>
 	<xsd:complexType name="CT_SdtEndPr">
@@ -9312,7 +9312,7 @@ PRINCIPLES:
 		<xsd:choice>
 			<xsd:group ref="EG_ContentRunContent" minOccurs="0"
 				maxOccurs="unbounded"/>
-			<!-- docx4j 17.1.1 (CR-021 phase 2): Word writes mc:AlternateContent as a child
+			<!-- docx4j 17.2.0 (CR-021 phase 2): Word writes mc:AlternateContent as a child
 			     of w:p (a wpg drawing group, its Choice holding a w:r/w:drawing) and keeps it
 			     there on re-save; admitted so that load keeps both branches, as in w:r.
 			     The exporters, TraversalUtil (McMode.READ) and TextUtils take one branch
@@ -9466,7 +9466,7 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attributeGroup ref="w14:AG_Parids"  />
-			<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.2.4 -->
+			<!-- docx4j 17.2.0 (CR-023): [MS-DOCX] 2.2.4 -->
 			<xsd:attribute ref="w14:noSpellErr" use="optional"/>
 			
 		</xsd:complexType>
@@ -12785,7 +12785,7 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
-			<!-- docx4j 17.1.1 (CR-023): Word writes mc:Ignorable on this root; kept -->
+			<!-- docx4j 17.2.0 (CR-023): Word writes mc:Ignorable on this root; kept -->
 		<xsd:attribute ref="mc:Ignorable" use="optional"/>
 </xsd:complexType>
 	<xsd:simpleType name="ST_FrameScrollbar">
@@ -14529,7 +14529,7 @@ PRINCIPLES:
 					
 				</xsd:element>
 			</xsd:sequence>
-				<!-- docx4j 17.1.1 (CR-023): Word writes mc:Ignorable on this root; kept -->
+				<!-- docx4j 17.2.0 (CR-023): Word writes mc:Ignorable on this root; kept -->
 		<xsd:attribute ref="mc:Ignorable" use="optional"/>
 </xsd:complexType>
 		
@@ -14554,7 +14554,7 @@ PRINCIPLES:
 						</xsd:annotation>
 						<!-- Word 365 writes mc:AlternateContent here (a Choice Requires="v" holding
 						     w:pict, a Fallback holding w:drawing - the reverse of a text box);
-						     admitted in docx4j 17.1.1 (CR-021 phase 2) so that load keeps both
+						     admitted in docx4j 17.2.0 (CR-021 phase 2) so that load keeps both
 						     branches; until then the preprocessor kept the Fallback's w:drawing.
 						     A reader takes one branch through org.docx4j.jaxb.McSelection. -->
 						<xsd:choice minOccurs="1" maxOccurs="1">
@@ -14706,7 +14706,7 @@ PRINCIPLES:
 									ID</xsd:documentation>
 							</xsd:annotation>
 						</xsd:attribute>
-						<!-- docx4j 17.1.1 (CR-023): [MS-DOCX] 2.2.10 -->
+						<!-- docx4j 17.2.0 (CR-023): [MS-DOCX] 2.2.10 -->
 						<xsd:attribute ref="w15:restartNumberingAfterBreak" use="optional"/>
 					</xsd:complexType>
 					
@@ -14797,7 +14797,7 @@ PRINCIPLES:
 									ID</xsd:documentation>
 							</xsd:annotation>
 						</xsd:attribute>
-						<!-- docx4j 17.1.1 (CR-023): Word 365 writes w16cid:durableId (the decimal form, [MS-DOCX] 2.8.2.2) on w:num -->
+						<!-- docx4j 17.2.0 (CR-023): Word 365 writes w16cid:durableId (the decimal form, [MS-DOCX] 2.8.2.2) on w:num -->
 						<xsd:attributeGroup ref="w16cid:decimaldurableId"/>
 					</xsd:complexType>
 					
@@ -15445,7 +15445,7 @@ PRINCIPLES:
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:sequence>
-				<!-- docx4j 17.1.1 (CR-023): Word writes mc:Ignorable on this root; kept -->
+				<!-- docx4j 17.2.0 (CR-023): Word writes mc:Ignorable on this root; kept -->
 		<xsd:attribute ref="mc:Ignorable" use="optional"/>
 </xsd:complexType>
 	</xsd:element>

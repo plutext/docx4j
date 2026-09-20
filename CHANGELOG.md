@@ -1,10 +1,10 @@
 CHANGELOG
 =========
 
-Version 17.1.1
+Version 17.2.0
 ===============
 
-Changes in Version 17.1.1
+Changes in Version 17.2.0
 --------------------------
 
 Fonts (CR-016, the font selection and mapping review):
@@ -707,7 +707,7 @@ PDF via XSL FO (Word layout fidelity, Enterprise CR-001):
 
 - A font whose class can only be guessed from its name gets Word's own substitute rather
   than no face at all. Word's answer for a font it cannot find - Calibri for w:family
-  "swiss", Cambria for "roman" (17.1.1, measured on the fonts-unresolvable probe) - was
+  "swiss", Cambria for "roman" (17.2.0, measured on the fonts-unresolvable probe) - was
   applied only to a family docx4j's tables do not know, and "know" was asked of
   FontFallback.classOf, which will guess a class from a name that merely has "Sans" or
   "Serif" in it. The pass that acts on a known class asks substitutionClass, which
@@ -1192,7 +1192,7 @@ OpenDoPE XHTML binding (CR-013):
   docx4j.properties (docx4j.model.datastorage.BindingTraverser.XHTML.RunFormatting,
   .ParagraphFormatting, .TableFormatting); binding previously always ran with the
   importer's default.  Under CLASS_TO_STYLE_ONLY the CSS wrapper derived from the content
-  control's rPr/pPr is no longer generated.  Fonts need docx4j-ImportXHTML 17.1.1+.
+  control's rPr/pPr is no longer generated.  Fonts need docx4j-ImportXHTML 17.2.0+.
 - BindingHandler.setXHTMLImporterCustomizer: a hook invoked on each XHTMLImporterImpl
   immediately before convert, for any other importer setting, per content control.
 

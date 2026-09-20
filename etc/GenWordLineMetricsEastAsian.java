@@ -60,7 +60,7 @@ import java.util.TreeSet;
  *        "/path/to/Fonts" "/path/to/Fonts/CloudFonts"
  * </pre>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class GenWordLineMetricsEastAsian {
 

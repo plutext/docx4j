@@ -365,7 +365,7 @@ docx4j started with ECMA-376 1st Edition.  Where appropriate later versions of t
 
 docx4j can open documents which contain Word 2010 and later content.  The key extensions are bound (the w14, w15 and w16 namespaces, wps and wpg shapes, a14 drawing), and what it does not bind is preserved wherever the schema admits it.
 
-**Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  A text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  Since docx4j 17.1.1 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the docx4j.jaxb.mc.preferChoice property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.
+**Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  A text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  Since docx4j 17.2.0 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the docx4j.jaxb.mc.preferChoice property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.
 
 # Architecture
 
@@ -1128,7 +1128,7 @@ ImageConvertEmbeddedToLinked sample contains an example of the use of the above.
 
 `public`` ``class``  CompoundTraversalUtilVisitorCallback  `
 
-**mc:AlternateContent in a traversal.  **Since docx4j 17.1.1 a TraversalUtil walk visits one branch of each mc:AlternateContent by default, the branch docx4j draws (McMode.READ), so a text box's paragraphs are visited once, not once as the wps shape and again as its VML fallback.  A callback which edits the document (find and replace, field update, anything whose result must reach every reader) should ask for every branch with McMode.ALL, through the TraversalUtil constructor or visit overload which takes a mode, or CallbackImpl.setMcMode; docx4j's own binding, field, merge and TOC code does so.  Before 17.1.1 every walk saw every branch.
+**mc:AlternateContent in a traversal.  **Since docx4j 17.2.0 a TraversalUtil walk visits one branch of each mc:AlternateContent by default, the branch docx4j draws (McMode.READ), so a text box's paragraphs are visited once, not once as the wps shape and again as its VML fallback.  A callback which edits the document (find and replace, field update, anything whose result must reach every reader) should ask for every branch with McMode.ALL, through the TraversalUtil constructor or visit overload which takes a mode, or CallbackImpl.setMcMode; docx4j's own binding, field, merge and TOC code does so.  Before 17.2.0 every walk saw every branch.
 
 # Adding a Part
 
@@ -1723,7 +1723,7 @@ A quick way to extract the text from a docx, is to use `TextUtils‘  `
 
 which marshals the object it is passed via a SAX ContentHandler, in order to output the text to the Writer.
 
-Since docx4j 17.1.1 the text of one branch of each mc:AlternateContent is written, the branch docx4j draws, so a text box's text appears once; before that, both branches' text was written.
+Since docx4j 17.2.0 the text of one branch of each mc:AlternateContent is written, the branch docx4j draws, so a text box's text appears once; before that, both branches' text was written.
 
 # Text substitution/document generation/reporting
 
@@ -2026,7 +2026,7 @@ These fonts come from 3 sources:
   - it will look in /fonts, unless you change this via property `docx4j.fonts.PhysicalFonts.Jars.PathPrefix`  
     you can disable looking here by setting `org.docx4j.fonts.discover``Jar``Fonts.enabled=false`
   - `docx4j-export-fo-fonts-symbol` jar for symbol substitutes (Webdings, Wingdings, Symbol font substitutes)
-  - `docx4j-export-fo-fonts-theme2023` jar  for Aptos and Aptos Display substitutes (Akasia, Intos Display; from 17.1.1)
+  - `docx4j-export-fo-fonts-theme2023` jar  for Aptos and Aptos Display substitutes (Akasia, Intos Display; from 17.2.0)
 - those embedded in the document
 
 Note that Word silently performs ***font substitution***.  When you open an existing document in Word, and select text in a particular font, the actual font you see on the screen won't be the font reported in the ribbon if it is not installed on your computer or embedded in the document.  To see whether Word 2007 is substituting a font, go into Word Options \> Advanced \> Show Document Content and press the "Font Substitution" button.  
@@ -2163,7 +2163,7 @@ Aptos (body)|Intos Display
 Akasia|\[none\]  
 \[none\]|
 
-These metrically compatible substitutes are available in the Croscore (Tinos, Arimo, Cousine), Liberation and Crosextra (Carlito, Caladea) font packages. For the 2023 theme, Akasia (for Aptos) and Intos Display (for Aptos Display) are metrically compatible and are packaged in docx4j-export-fo-fonts-theme2023 (from docx4j 17.1.1).
+These metrically compatible substitutes are available in the Croscore (Tinos, Arimo, Cousine), Liberation and Crosextra (Carlito, Caladea) font packages. For the 2023 theme, Akasia (for Aptos) and Intos Display (for Aptos Display) are metrically compatible and are packaged in docx4j-export-fo-fonts-theme2023 (from docx4j 17.2.0).
 
 So for best results with PDF via export-fo on a Linux system, you should install the Croscore or Liberation fonts, and the Crosextra fonts, then use the following  font mappings:
 
@@ -2196,15 +2196,15 @@ To make the process largely automatic, from docx4j 11.5.9, these fonts are packa
 - docx4j-export-fo-fonts-croscore
 - docx4j-export-fo-fonts-liberation // omit if you added -croscore
 - docx4j-export-fo-fonts-crosextra
-- docx4j-export-fo-fonts-theme2023 // Akasia and Intos Display for Aptos and Aptos Display (from 17.1.1)
+- docx4j-export-fo-fonts-theme2023 // Akasia and Intos Display for Aptos and Aptos Display (from 17.2.0)
 
 If you add these jars to your classpath (which Maven will do automatically), docx4j-export-fo can find them and the mappings will also be .added automatically.
 
 ## Aptos and the 2023 default theme
 
-Since late 2023 the default theme of Microsoft 365 sets headings in Aptos Display and body text in Aptos. A document that has no theme part of its own (docx4j-created documents before 17.1.1 had none) is set by Word in the fonts of Word’s current default theme, which for Microsoft 365 means Aptos.
+Since late 2023 the default theme of Microsoft 365 sets headings in Aptos Display and body text in Aptos. A document that has no theme part of its own (docx4j-created documents before 17.2.0 had none) is set by Word in the fonts of Word’s current default theme, which for Microsoft 365 means Aptos.
 
-From docx4j 17.1.1 the property docx4j.fonts.defaultTheme says which default theme docx4j assumes: 2023 (the default: Aptos Display / Aptos), 2013 (Calibri Light / Calibri, Office 2013 to 2022) or 2007 (Cambria / Calibri). It decides two things: the theme fonts docx4j resolves for a document with no theme part, and the theme part WordprocessingMLPackage.createPackage adds to a new document, so that a document docx4j creates asks for the same fonts wherever it is opened.
+From docx4j 17.2.0 the property docx4j.fonts.defaultTheme says which default theme docx4j assumes: 2023 (the default: Aptos Display / Aptos), 2013 (Calibri Light / Calibri, Office 2013 to 2022) or 2007 (Cambria / Calibri). It decides two things: the theme fonts docx4j resolves for a document with no theme part, and the theme part WordprocessingMLPackage.createPackage adds to a new document, so that a document docx4j creates asks for the same fonts wherever it is opened.
 
 Microsoft’s Aptos fonts are not redistributable, but Microsoft offers them for download (Aptos, Aptos Display, Narrow, Mono and Serif). Our advice:
 

@@ -116,9 +116,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 			needW15 = true;
 		}
 		
-		// CR-023 (17.1.1): keep what the part declared when it was loaded (Word writes
+		// CR-023 (17.2.0): keep what the part declared when it was loaded (Word writes
 		// "w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du"), and add w14 / w15
-		// if their content is present and the list lacks them.  Until 17.1.1 the loaded
+		// if their content is present and the list lacks them.  Until 17.2.0 the loaded
 		// list was overwritten with just the two, and a settings part with w15 content
 		// and no w14 content got " w15" - a leading space, an empty prefix.
 		java.util.LinkedHashSet<String> prefixes = new java.util.LinkedHashSet<String>();
@@ -331,9 +331,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * Set the w:compatSetting compatibilityMode (see {@link #getCompatibilityMode()}):
 	 * 15 is Word 2013 and later, which a document created by Word 365 carries, and what
 	 * {@link org.docx4j.openpackaging.packages.WordprocessingMLPackage#createPackage()}
-	 * writes since 17.1.1.
+	 * writes since 17.2.0.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public void setCompatibilityMode(int mode) {
 		setWordCompatSetting("compatibilityMode", Integer.toString(mode));
@@ -346,10 +346,10 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * differentiateMultirowTableHeaders 1, useWord2013TrackBottomHyphenation 1 (measured on
 	 * Word 365's save of a docx4j-created package, 2026-09-19).  A document without
 	 * compatibilityMode is a Word 2007 document to Word (mode 12) and opens in
-	 * compatibility mode, which is what a docx4j-created package did until 17.1.1.
+	 * compatibility mode, which is what a docx4j-created package did until 17.2.0.
 	 * Locale-dependent settings (w:themeFontLang) are not written.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public void setCompatSettingsAsWord365() {
 		setCompatibilityMode(15);

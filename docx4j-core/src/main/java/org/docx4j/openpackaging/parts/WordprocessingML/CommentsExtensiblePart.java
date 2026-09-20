@@ -28,13 +28,13 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 /**
  * word/commentsExtensible.xml: Word 2018's durable id and UTC date per comment,
- * which the comment reactions part ([MS-OREACTXML]) anchors on.  Before 17.1.1
+ * which the comment reactions part ([MS-OREACTXML]) anchors on.  Before 17.2.0
  * there was no schema for the w16cex namespace, so this part loaded as a
  * generic XML part - its bytes preserved, but nothing able to read a comment's
  * durableId or dateUtc through the model.
  *
  * @author jharrop
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class CommentsExtensiblePart extends JaxbXmlPart<org.docx4j.w16cex.CTCommentsExtensible> {
 

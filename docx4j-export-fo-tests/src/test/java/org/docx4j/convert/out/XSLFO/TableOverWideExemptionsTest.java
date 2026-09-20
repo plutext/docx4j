@@ -34,7 +34,7 @@ import org.w3c.dom.NodeList;
  * column with a grid of 9161+1303: Word gives its second cell 65.15pt and the 52.2pt string
  * fits, where docx4j scaled by 0.9757, left a 52.0pt measure, and the string wrapped.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TableOverWideExemptionsTest extends AbstractXSLFOTest {
 

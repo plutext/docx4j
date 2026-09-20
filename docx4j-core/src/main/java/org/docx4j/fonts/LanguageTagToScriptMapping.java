@@ -53,7 +53,7 @@ public class LanguageTagToScriptMapping {
 	
 
 	/** The script a primary language subtag selects in a theme's font list (the
-	 *  {@code script} attribute of {@code a:font}), by exact subtag.  Until 17.1.1 this
+	 *  {@code script} attribute of {@code a:font}), by exact subtag.  Until 17.2.0 this
 	 *  was a substring test over comma-separated lists, so Estonian ({@code et}) matched
 	 *  inside {@code eth} and took the Ethiopic face (Nyala), Mongolian ({@code mn})
 	 *  inside {@code mni} the Bengali one, Wolof ({@code wo}) inside {@code bwo};

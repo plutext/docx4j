@@ -50,7 +50,7 @@ public class SdtWriter {
 
 	static {
 		/* The default HTML feature set (ConversionFeatures.PP_HTML_COLLECT_LISTS) wraps
-		 * every list in an sdt tagged HTML_ELEMENT=UL|OL, and until 17.1.1 the handler
+		 * every list in an sdt tagged HTML_ELEMENT=UL|OL, and until 17.2.0 the handler
 		 * which turns that sdt into a ul or ol was registered only by the samples: by
 		 * default the items came out as li elements with no list around them.
 		 * Registered here, so the default output is what the preprocess intends; a

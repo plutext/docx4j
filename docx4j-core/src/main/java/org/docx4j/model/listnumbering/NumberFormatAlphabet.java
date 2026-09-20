@@ -27,7 +27,7 @@ package org.docx4j.model.listnumbering;
  * letters of each script (Russian has no ё, й, ъ, ы, ь;
  * Thai omits the two obsolete consonants ฃ and ฅ).
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatAlphabet extends LabelFormatter {
 

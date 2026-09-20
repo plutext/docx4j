@@ -129,7 +129,7 @@ public final class AutofitLayout {
 	 *        is then its minimum)
 	 * @param available width the table may occupy
 	 * @return column widths
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static int[] distributePreferredAsMaximum(int[] min, int[] preferred, int available) {
 		int n = min.length;
@@ -185,7 +185,7 @@ public final class AutofitLayout {
 	 *        widest picture it holds - or null for none
 	 * @param available the width the table has
 	 * @return column widths summing to {@code available} (or the widths, where they fit)
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static int[] squeeze(int[] widths, int[] floor, int available) {
 		int n = widths.length;

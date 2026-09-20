@@ -38,6 +38,6 @@
  * <p>The resolution order that consumes these is {@link org.docx4j.model.PropertyResolver};
  * see {@code docs/developer/change-requests/CR-015-property-resolution.md}.</p>
  *
- * @since 17.1.1 (package-info)
+ * @since 17.2.0 (package-info)
  */
 package org.docx4j.model.styles;

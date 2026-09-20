@@ -29,7 +29,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * An add-in's custom data ([MS-XLSX] 2.1.2), opaque bytes (content type application/binary),
  * related from its CustomDataPropertiesPart.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class CustomDataPart extends BinaryPart {
 

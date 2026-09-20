@@ -194,7 +194,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 	 * front of it takes exactly that ({@code LBP.gridPlacedLeader}), which is what keeps
 	 * the {@code w:suff} gap below the same.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 7)
+	 * @since 17.2.0 (CR-001 batch 48 item 7)
 	 */
 	private void gridLabelLeader() {
 
@@ -234,7 +234,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 	 * one token is written with.</p>
 	 *
 	 * @return the space, or null where the run has no text area to take a font from
-	 * @since 17.1.1 (CR-001 batch 49 item 1)
+	 * @since 17.2.0 (CR-001 batch 49 item 1)
 	 */
 	private TextArea leaderLeadSpace(org.apache.fop.area.inline.FilledArea run, int advance) {
 		if (advance <= 0) return null;
@@ -332,7 +332,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 	 * a read; were it ever not to exist, that call would create it, which is why it is made
 	 * only for a label which actually carries a leader.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 49 item 3)
+	 * @since 17.2.0 (CR-001 batch 49 item 3)
 	 */
 	private int cellOffsetMpt() {
 		try {
@@ -382,7 +382,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 		 * one: over the first probe's 2pt advance - under one cell of Word's grid - neither
 		 * side paints a dot and Word's separator space is still there (measured, that probe
 		 * falls 1.0000 -> 0.9231 without this distinction, its label fusing with the word
-		 * after it as it did before batch 45).  @since 17.1.1 (CR-001 batch 47 item 5b) */
+		 * after it as it did before batch 45).  @since 17.2.0 (CR-001 batch 47 item 5b) */
 		if (leaderPaints(label.line)) return;
 
 		int content = 0;
@@ -406,7 +406,7 @@ public class WordListItemLayoutManager extends ListItemLayoutManager {
 	/** Whether a leader on this line paints at least one character: an
 	 *  {@code fo:leader} narrower than its own repeating unit draws nothing, which is
 	 *  what Word does over an advance shorter than one cell of its grid.
-	 *  @since 17.1.1 (CR-001 batch 47 item 5b) */
+	 *  @since 17.2.0 (CR-001 batch 47 item 5b) */
 	private static boolean leaderPaints(LineArea line) {
 		for (Object o : line.getInlineAreas()) {
 			if (o instanceof InlineArea && leaderPaints((InlineArea) o)) return true;

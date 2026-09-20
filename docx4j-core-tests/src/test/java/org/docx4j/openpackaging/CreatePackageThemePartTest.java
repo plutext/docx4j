@@ -39,7 +39,7 @@ import org.junit.Test;
 /**
  * A package docx4j creates carries a theme part, as one Word creates does.
  *
- * <p>Until 17.1.1 it did not, while its own docDefaults reference the theme fonts
+ * <p>Until 17.2.0 it did not, while its own docDefaults reference the theme fonts
  * (w:rFonts w:asciiTheme="minorHAnsi" ...), so every consumer - docx4j's own exporters
  * included - had to guess which faces the Office theme names.  Word's answer has changed
  * twice, so which theme is added is {@code docx4j.fonts.defaultTheme}'s to say.

@@ -30,7 +30,7 @@ import org.junit.Test;
  * page more often than it gives the page Word has, and the one measurement behind it is
  * that 28pt mark; the {@code page-break-line} probe is with Word.  These tests turn it on.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PageBreakParagraphLineTest extends AbstractXSLFOTest {
 

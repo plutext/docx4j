@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
  * {@code Requires="a14"} Choice (an equation, ink) is drawn with
  * {@code docx4j.jaxb.mc.preferChoice=a14}, its picture Fallback otherwise.</p>
  *
- * @since 17.1.1 (CR-021 phase 1)
+ * @since 17.2.0 (CR-021 phase 1)
  */
 public final class McSelection {
 
@@ -129,7 +129,7 @@ public final class McSelection {
 	 * objects in place of the element, and never both branches.  Other entries are
 	 * passed through as they are (wrapped or not).  Never null.
 	 *
-	 * @since 17.1.1 (CR-021 phase 3)
+	 * @since 17.2.0 (CR-021 phase 3)
 	 */
 	public static List<Object> selectedContent(List<Object> content) {
 		if (content == null) return new ArrayList<Object>();

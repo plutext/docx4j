@@ -187,7 +187,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 		return commentsIdsPart;
 	}
 
-	/** @since 17.1.1 */
+	/** @since 17.2.0 */
 	public CommentsExtensiblePart getCommentsExtensiblePart() {
 		return commentsExtensiblePart;
 	}

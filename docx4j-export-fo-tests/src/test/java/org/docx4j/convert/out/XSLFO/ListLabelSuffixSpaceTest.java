@@ -61,7 +61,7 @@ import org.junit.Test;
  * {@link WordLayoutCustomizer#LABEL_SUFFIX_SPACE} off and on and asserts both halves:
  * the text gains the space, and <b>no glyph moves</b>.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class ListLabelSuffixSpaceTest {
 

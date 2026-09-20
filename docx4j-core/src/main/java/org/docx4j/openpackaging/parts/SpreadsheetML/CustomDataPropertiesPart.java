@@ -29,7 +29,7 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main.CTDat
  * The properties of an add-in's custom data ([MS-XLSX] 2.1.3, x14:datastoreItem), which relate to the binary CustomDataPart.
  * Related from the workbook.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class CustomDataPropertiesPart extends JaxbSmlPart<CTDatastoreItem> {
 

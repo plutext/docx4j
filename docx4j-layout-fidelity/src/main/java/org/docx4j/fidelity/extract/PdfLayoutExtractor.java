@@ -479,7 +479,7 @@ public final class PdfLayoutExtractor {
 		 * changes nothing except where the nominal size is not the drawn one.  Both sides
 		 * of the comparison go through it.
 		 *
-		 * @since 17.1.1
+		 * @since 17.2.0
 		 */
 		private static float em(TextPosition tp) {
 			return Math.max(tp.getFontSizeInPt(), tp.getXScale());

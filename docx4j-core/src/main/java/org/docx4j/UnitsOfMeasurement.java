@@ -229,14 +229,14 @@ public class UnitsOfMeasurement {
 	 * even would agree on all five; truncation is the simpler statement of the same readings.)</p>
 	 *
 	 * <p>Used by the XSL FO paths only.  The paragraph border wrote millimetres to two
-	 * decimals until 17.1.1 - {@code w:sz} 18 came out as 0.79mm = 2.2394pt against Word's
+	 * decimals until 17.2.0 - {@code w:sz} 18 came out as 0.79mm = 2.2394pt against Word's
 	 * 2.160 - and the table border wrote the named points, 0.50 where Word inks 0.480; both
 	 * were part of the residue measured on every bar of the {@code border-hanging} golden
 	 * (CR-001 batch 48 item 9 §2, batch 49 item 5).  The CSS paths still write millimetres:
 	 * a browser has no 1/300-inch grid to honour.</p>
 	 *
 	 * @param eighths the {@code w:sz}, in eighths of a point
-	 * @since 17.1.1 (CR-001 batch 49 item 5)
+	 * @since 17.2.0 (CR-001 batch 49 item 5)
 	 */
 	public static double eighthsToGridPt(int eighths) {
 		if (eighths <= 0) return 0;

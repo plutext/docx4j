@@ -52,7 +52,7 @@ import org.w3c.dom.NodeList;
  * the space.  The correction is therefore the padding alone
  * ({@code XsltFOFunctions.borderAgainstHangingIndent}).</p>
  *
- * @since 17.1.1 (CR-001 batch 48 item 9)
+ * @since 17.2.0 (CR-001 batch 48 item 9)
  */
 public class BorderAgainstHangingIndentTest extends AbstractXSLFOTest {
 

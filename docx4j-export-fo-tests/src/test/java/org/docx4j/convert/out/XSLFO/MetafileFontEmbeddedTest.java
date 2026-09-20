@@ -57,7 +57,7 @@ import org.junit.Test;
  *
  * <p>Both pathways, since the two serialize the SVG differently.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class MetafileFontEmbeddedTest extends AbstractXSLFOTest {
 

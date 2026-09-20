@@ -67,7 +67,7 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  between the number and the text - "tab" or "space".  Absent for "nothing", and
 	 *  absent from a list block docx4j did not write for a numbered paragraph.  Word
 	 *  writes that separator as one space glyph in the PDF's text layer;
-	 *  {@link WordListItemLayoutManager} puts it in ours.  @since 17.1.1 */
+	 *  {@link WordListItemLayoutManager} puts it in ours.  @since 17.2.0 */
 	public static final String LABEL_SUFFIX = "label-suffix";
 	/** on a small-caps span: the fraction of the run's size its glyphs are drawn at.
 	 *  Word scales a small-caps run's glyphs, not its line, so the line is sized from the
@@ -107,7 +107,7 @@ public class WordLayoutElementMapping extends ElementMapping {
 	 *  {@code w:tab} with a {@code w:leader}, so {@link WordLineLayoutManager} puts its
 	 *  characters on Word's grid - but it is not laid out against the stops and gets no
 	 *  width from the line manager, which is why it is not {@link #TAB}.  The value is
-	 *  the {@code w:leader} kind.  @since 17.1.1 */
+	 *  the {@code w:leader} kind.  @since 17.2.0 */
 	public static final String TOC_LEADER = "toc-leader";
 	/** on a paragraph's fo:block: its custom tab stops, "pos:align:leader;..." in
 	 *  twips from the left margin (w:val="clear" stops included: they clear the

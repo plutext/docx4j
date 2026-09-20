@@ -315,7 +315,7 @@
 	    		or parent::xdr:wsDr or parent::xdr:twoCellAnchor or parent::xdr:oneCellAnchor or parent::xdr:absoluteAnchor or parent::xdr:grpSp
 	    		or parent::c:chartSpace">
 				<!-- The schema admits mc:AlternateContent here (w:r since 3.3.8; w:p and
-				     w:numPicBullet since 17.1.1, CR-021 phase 2; x:workbook, Excel's x15
+				     w:numPicBullet since 17.2.0, CR-021 phase 2; x:workbook, Excel's x15
 				     absPath, in sml.xsd all along), so JAXB keeps both branches and the
 				     consumers choose one through org.docx4j.jaxb.McSelection.  This
 				     stylesheet is reached for every package format whenever JAXB rejected
@@ -497,7 +497,7 @@
 	     lines that way, and 10 documents of three corpora hold the shape.  Word renders
 	     them, so the content is hoisted into the legal position around it.
 
-	     A nested *paragraph* is written as a paragraph of its own since 17.1.1 - see the
+	     A nested *paragraph* is written as a paragraph of its own since 17.2.0 - see the
 	     w:p template further down; the hoisting here is the fallback for the shapes it
 	     does not reach.
 
@@ -552,7 +552,7 @@
 	     carrying the outer w:pPr.  A segment with nothing but its containers in it is not
 	     written, so a nested paragraph that ends its hyperlink adds no empty line.  Only
 	     the shallow shapes are matched (a w:p one or two levels down, in a w:hyperlink or a
-	     w:r): a w:p deeper inside a run is a text box's, and legal.  @since 17.1.1 -->
+	     w:r): a w:p deeper inside a run is a text box's, and legal.  @since 17.2.0 -->
 
 	<xsl:template match="w:p[w:hyperlink/w:p or w:r/w:p or w:hyperlink/w:r/w:p or w:r/w:r/w:p]">
 		<xsl:variable name="logging"

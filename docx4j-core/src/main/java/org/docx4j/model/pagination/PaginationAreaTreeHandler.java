@@ -68,7 +68,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * {@code word} and {@code space}.  A page viewport without a number is treated as a
  * foreign format and fails the parse, rather than quietly producing an empty map.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PaginationAreaTreeHandler extends DefaultHandler {
 

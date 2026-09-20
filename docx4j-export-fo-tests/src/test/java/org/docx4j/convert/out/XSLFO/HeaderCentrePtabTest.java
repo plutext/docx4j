@@ -32,7 +32,7 @@ import org.w3c.dom.NodeList;
  * ~158 - 95.7pt short - on every one of its 35 pages, while the right ptab beside it landed
  * to 0.1pt.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class HeaderCentrePtabTest extends AbstractXSLFOTest {
 

@@ -33,7 +33,7 @@ import org.junit.Test;
  * A theme reference in a document with no theme part resolves to the Office theme's face,
  * at the run level as for the document default: Word supplies that theme to such a
  * document (CR-016 probe fonts-missing-slots (b), where the explicit w:ascii beside the
- * reference is unused).  Until 17.1.1 the run fell to the document default font.
+ * reference is unused).  Until 17.2.0 the run fell to the document default font.
  *
  * <p>Which faces the Office theme names depends on the version of Word, and
  * {@code docx4j.fonts.defaultTheme} says which docx4j answers for.  Measured on a Word 365

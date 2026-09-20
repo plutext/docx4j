@@ -50,7 +50,7 @@ import org.junit.Test;
  * added to the part underneath them (CR-015 phase 3: the caches are concurrent and
  * resolution writes nothing into the styles part).
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PropertyResolverConcurrencyTest {
 

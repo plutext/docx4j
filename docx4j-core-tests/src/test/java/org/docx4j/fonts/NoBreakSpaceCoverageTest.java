@@ -42,7 +42,7 @@ import org.junit.Test;
  * Found on a corpus document set in Segoe UI Light, whose render gained an unembedded
  * Helvetica when Segoe UI Light moved from Source Sans 3 to Selawik Light.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NoBreakSpaceCoverageTest {
 

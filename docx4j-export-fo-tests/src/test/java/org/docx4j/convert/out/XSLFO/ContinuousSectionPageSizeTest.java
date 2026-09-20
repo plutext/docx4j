@@ -92,7 +92,7 @@ public class ContinuousSectionPageSizeTest extends AbstractXSLFOTest {
 	}
 
 	/** Two sections of the same page size: the first continuous with margins
-	 *  {@code marFirst}, the body's with margins {@code marSecond}.  @since 17.1.1 */
+	 *  {@code marFirst}, the body's with margins {@code marSecond}.  @since 17.2.0 */
 	private static String bodyMar(String marFirst, String marSecond) {
 		return "<w:document " + W + "><w:body>"
 				+ "<w:p><w:r><w:t>one</w:t></w:r></w:p>"
@@ -180,7 +180,7 @@ public class ContinuousSectionPageSizeTest extends AbstractXSLFOTest {
 	 * merged, in every mode: the probe which seemed to show Word starting a page for it
 	 * changed the page size by a twip as well, and four mode-15 corpus documents whose
 	 * continuous sections vary their vertical margins on one page went to many when it
-	 * was tried.  @since 17.1.1
+	 * was tried.  @since 17.2.0
 	 */
 	@Test
 	public void marginOrFooterDistanceChangeStillMerges() throws Exception {

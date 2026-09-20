@@ -111,7 +111,7 @@ public class PlaceholderReplacementHandler extends DefaultHandler {
 		 * its spaces that way: each was flushed as the content of the element that
 		 * followed it, where FO draws nothing for it.  Flushing here puts the text back
 		 * where the document has it; a placeholder cannot span a child element, so
-		 * nothing the lookup needs is split.  @since 17.1.1 (CR-001 batch 45) */
+		 * nothing the lookup needs is split.  @since 17.2.0 (CR-001 batch 45) */
 		flushCharacters();
 		defaultHandler.startElement(uri, localName, qName, attributes);
 	}

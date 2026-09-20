@@ -81,7 +81,7 @@ public class AltNameSubstituteTest {
 	 * And Word takes the vertical metrics of the font it actually uses, so the alias is
 	 * registered for the line box too (&#xa7;2.7): line heights follow Arial's 1.150 em
 	 * rather than the physical substitute's own (Arimo's is 1.432).  The alias is the
-	 * Mapper's since 17.1.1, so it is asked for through it; RunFontSelector resolves it
+	 * Mapper's since 17.2.0, so it is asked for through it; RunFontSelector resolves it
 	 * before any name reaches WordLineMetrics.
 	 */
 	@Test

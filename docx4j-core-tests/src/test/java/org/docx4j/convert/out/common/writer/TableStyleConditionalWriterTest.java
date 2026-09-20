@@ -24,7 +24,7 @@ import org.junit.Test;
  * and the FO exporter build through the same {@link AbstractTableWriter}; both HTML
  * pathways are run.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TableStyleConditionalWriterTest {
 

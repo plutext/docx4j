@@ -65,7 +65,7 @@ public interface MetafileSvgProvider {
 	 * resolve (CR-001, non-embedded fonts).</p>
 	 *
 	 * @param fontMapper the document's font mapper, or null
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	default Document toSvgDocument(byte[] data, double widthPt, double heightPt,
 			org.docx4j.fonts.Mapper fontMapper) {
@@ -140,7 +140,7 @@ public interface MetafileSvgProvider {
 		return toSvg(data, widthPt, heightPt, null);
 	}
 
-	/** @param fontMapper the document's font mapper, or null.  @since 17.1.1 */
+	/** @param fontMapper the document's font mapper, or null.  @since 17.2.0 */
 	static Document toSvg(byte[] data, double widthPt, double heightPt,
 			org.docx4j.fonts.Mapper fontMapper) {
 		MetafileSvgProvider p = getProvider();

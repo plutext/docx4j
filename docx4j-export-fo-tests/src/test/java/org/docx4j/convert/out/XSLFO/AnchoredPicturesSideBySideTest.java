@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
  * 2.00pt apart in Word's PDF, the offsets the docx asks for, so each keeps its own.  What
  * the band does is stop one reserving space against the other.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class AnchoredPicturesSideBySideTest extends AbstractXSLFOTest {
 

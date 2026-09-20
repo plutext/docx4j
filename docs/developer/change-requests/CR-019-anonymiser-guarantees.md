@@ -5,7 +5,7 @@ Docx4j Enterprise price list (`Plutext-Enterprise-Java-11/pricing/`, not yet in
 git), whose confidentiality clause and two support-tier rows depend on what the
 anonymiser actually does; docx4j-mcp's CR-004 lists an `anonymize` tool in its
 phase 4. Nothing coded. The module's own reading below was re-checked against
-`docx4j-docx-anon` on VERSION_17_1_1 (b5c2f417f and later) on 2026-09-16.
+`docx4j-docx-anon` on VERSION_17_2_0 (b5c2f417f and later) on 2026-09-16.
 Owner: Jason Harrop. Drafted with Claude Fable 5.1.
 
 Scope: `docx4j-docx-anon` (`org.docx4j.anon`: `Anonymize`, `ScrambleText`,
@@ -238,7 +238,7 @@ fidelity corpora are not involved.
    carry the coverage.
 5. **Where the module lives**: `docx4j-docx-anon` keeps its name and gains the
    two packages, or is renamed `docx4j-anon`; recommended: keep the name for
-   17.1.1 (artifact ids are what users depend on), rename at the next minor
+   17.2.0 (artifact ids are what users depend on), rename at the next minor
    if at all.
 
 ## Risks

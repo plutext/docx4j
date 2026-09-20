@@ -21,9 +21,9 @@ import org.junit.Test;
  *
  *   w:numPicBullet / mc:AlternateContent / (mc:Choice Requires="v" w:pict | mc:Fallback w:drawing)
  *
- * Until 17.1.1 the mc preprocessor kept the mc:Fallback, so w:drawing was what reached
+ * Until 17.2.0 the mc preprocessor kept the mc:Fallback, so w:drawing was what reached
  * JAXB; before NumPicBullet gained a drawing property, that was dropped and the document
- * saved with an empty w:numPicBullet, which Word refuses to open.  Since 17.1.1 (CR-021
+ * saved with an empty w:numPicBullet, which Word refuses to open.  Since 17.2.0 (CR-021
  * phase 2) the schema admits mc:AlternateContent in w:numPicBullet, so the whole element
  * is kept, both branches, and written back (see AlternateContentKeptTest); this test
  * keeps the original concern - the bullet is never saved empty.

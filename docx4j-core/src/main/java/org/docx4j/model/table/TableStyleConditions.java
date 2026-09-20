@@ -72,7 +72,7 @@ import org.slf4j.LoggerFactory;
  * The lot sits below the paragraph's own style and below direct formatting, which is
  * where {@code ParagraphStylesInTableFix} and the table writers put it.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class TableStyleConditions {
 

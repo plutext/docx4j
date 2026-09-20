@@ -104,13 +104,13 @@ public class IdentityPlusMapper extends Mapper {
 	/**
 	 * A variant of the name: "Noto Sans Symbols" is registered as "Noto Sans Symbols
 	 * Regular"; a family with no plain face is asked for in the order regular, bold,
-	 * italic, bold italic (until 17.1.1 italic came before bold, so "Franklin Gothic Demi"
+	 * italic, bold italic (until 17.2.0 italic came before bold, so "Franklin Gothic Demi"
 	 * with its regular absent was set upright in Franklin Gothic Demi Italic; Brush
 	 * Script MT, Lucida Calligraphy, Vivaldi and Magneto, which have only the one face,
 	 * are found either way).  Everything else - the metric clones, w:altName, a face of
 	 * the same class, Word's default - is the shared passes' (see Mapper).
 	 *
-	 * @since 17.1.1 as this method; the same lookups were populateFontMappings' before
+	 * @since 17.2.0 as this method; the same lookups were populateFontMappings' before
 	 */
 	@Override
 	protected PhysicalFont resolveDocumentFont(String documentFontName, org.docx4j.wml.Fonts.Font fontTableEntry) {

@@ -22,7 +22,7 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 
 	/** The ul/ol is structure only: its items carry their own label (the span
 	 *  XsltHTMLFunctions.createBlock writes) and their own indent, so the list draws no
-	 *  marker and adds no padding of its own.  @since 17.1.1 */
+	 *  marker and adds no padding of its own.  @since 17.2.0 */
 	static final String LIST_STYLE = "list-style: none; margin: 0; padding-left: 0;";
 
 	@Override
@@ -51,7 +51,7 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 
 				Element xhtmlDiv = document.createElement("ul");
 				// the label is written into each li by XsltHTMLFunctions.createBlock
-				// (17.1.1), so the list carries no marker of its own; lvlText is left in
+				// (17.2.0), so the list carries no marker of its own; lvlText is left in
 				// the tag for a caller's own handler
 				xhtmlDiv.setAttribute("style", LIST_STYLE);
 				docfrag.appendChild(xhtmlDiv);
@@ -89,7 +89,7 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 
 				Element xhtmlDiv = document.createElement("ul");
 				// the label is written into each li by XsltHTMLFunctions.createBlock
-				// (17.1.1), so the list carries no marker of its own; lvlText is left in
+				// (17.2.0), so the list carries no marker of its own; lvlText is left in
 				// the tag for a caller's own handler
 				xhtmlDiv.setAttribute("style", LIST_STYLE);
 				docfrag.appendChild(xhtmlDiv);

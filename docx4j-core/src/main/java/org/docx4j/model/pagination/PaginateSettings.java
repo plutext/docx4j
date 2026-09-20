@@ -25,7 +25,7 @@ import org.docx4j.convert.out.FOSettings;
  * paragraphs lacking a {@code w14:paraId} are given one, and whether markers go inside
  * paragraphs.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PaginateSettings {
 
@@ -69,7 +69,7 @@ public class PaginateSettings {
 	 * (splitting the run at the boundary, as Word does), or at paragraph boundaries only.
 	 * Null (the default) means on.
 	 *
-	 * @since 17.1.1 (CR-012 phase 2)
+	 * @since 17.2.0 (CR-012 phase 2)
 	 */
 	public Boolean getLineBreaks() {
 		return lineBreaks;

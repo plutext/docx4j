@@ -53,7 +53,7 @@ import org.junit.Test;
  * The styles part: docDefaults Calibri 11pt lang en-US; Normal (default) 14pt Serif;
  * H based on Normal, Arial 20pt; character style S (w:b) and DefaultParagraphFont.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PropertyResolverOrderTest {
 

@@ -19,7 +19,7 @@ import org.junit.Test;
  * w:hideMark: a cell whose last paragraph paints nothing takes no line for it, as Word
  * sizes the row.  See {@link TableWriter#HIDE_MARK} and word-layout-rules.md §6.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class HideMarkTest {
 

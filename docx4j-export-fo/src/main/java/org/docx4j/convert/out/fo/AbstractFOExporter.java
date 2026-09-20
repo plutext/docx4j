@@ -191,7 +191,7 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 	 * the caller: it is those files' only reader, and we can't know when it is
 	 * finished with them, so they wait for JVM exit instead.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Override
 	protected boolean outputReferencesImageFiles(FOSettings conversionSettings) {

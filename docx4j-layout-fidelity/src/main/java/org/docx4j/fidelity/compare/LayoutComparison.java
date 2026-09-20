@@ -120,7 +120,7 @@ public final class LayoutComparison {
 	 * {@code -Dfidelity.windowPages=}, {@code -Dfidelity.windowXPt=} and
 	 * {@code -Dfidelity.windowYPt=} override the tolerances.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static final boolean WINDOW =
 			!"false".equalsIgnoreCase(System.getProperty("fidelity.window", "true"));
@@ -271,7 +271,7 @@ public final class LayoutComparison {
 	 * <p>It is applied to both extractions alike, and it is a reported statistic only: no
 	 * pair is made or lost by it.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static double linePitch(PdfLayout l) {
 		List<Double> gaps = new ArrayList<>();

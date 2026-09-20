@@ -92,7 +92,7 @@ import org.slf4j.LoggerFactory;
  * <p>Needs docx4j-export-fo on the classpath (found reflectively, as the TOC generator
  * finds it); the XSL-FO is produced by the non-XSLT exporter.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class Paginate {
 
@@ -184,7 +184,7 @@ public final class Paginate {
 	 * taken to end on the page before the one the map places it on, so the paragraph
 	 * after it gets the marker, where Word puts it.</p>
 	 *
-	 * @since 17.1.1 (CR-012 phase 2)
+	 * @since 17.2.0 (CR-012 phase 2)
 	 */
 	public static int applyLastRenderedPageBreaks(WordprocessingMLPackage pkg, PaginationMap map,
 			boolean writeParaIds, boolean lineBreaks) {
@@ -375,7 +375,7 @@ public final class Paginate {
 	 * last paragraph, are left out.  For the TOC generator, whose entries point at
 	 * bookmarks and need their pages (CR-012 phase 3).
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static Map<String, String> bookmarkKeys(MainDocumentPart mdp) {
 

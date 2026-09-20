@@ -129,7 +129,7 @@ public final class Doc {
 	 * Take the theme part out again, for a probe whose subject is what a package with
 	 * <b>no</b> theme part resolves its theme font references to.
 	 *
-	 * <p>Since 17.1.1 {@code WordprocessingMLPackage.createPackage} puts one in, as Word
+	 * <p>Since 17.2.0 {@code WordprocessingMLPackage.createPackage} puts one in, as Word
 	 * does; a probe that wants none has to say so, and its docx on the share must stay the
 	 * one its golden was cut from.</p>
 	 */
@@ -583,7 +583,7 @@ public final class Doc {
 	 * ("around", "text", "margin", "center", ...).  A null enumerated argument leaves
 	 * the attribute off.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static void framePr(PPr ppr, Integer hSpaceTwips, String wrap, String hAnchor,
 			String vAnchor, String xAlign, Integer yTwips) {
@@ -591,7 +591,7 @@ public final class Doc {
 	}
 
 	/** As {@link #framePr(PPr, Integer, String, String, String, String, Integer)}, with
-	 *  {@code w:yAlign} ("inline", "top", "center", ...) as well.  @since 17.1.1 */
+	 *  {@code w:yAlign} ("inline", "top", "center", ...) as well.  @since 17.2.0 */
 	public static void framePr(PPr ppr, Integer hSpaceTwips, String wrap, String hAnchor,
 			String vAnchor, String xAlign, Integer yTwips, String yAlign) {
 		CTFramePr fp = F.createCTFramePr();
@@ -607,14 +607,14 @@ public final class Doc {
 
 	/** {@code w:suppressOverlap}, written bare as Word writes it (a CT_OnOff with no
 	 *  {@code w:val} is on): this frame may not be overlapped by another.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static void suppressOverlap(PPr ppr) {
 		ppr.setSuppressOverlap(new BooleanDefaultTrue());
 	}
 
 	/** {@code w:suppressOverlap w:val="true|false"}, written explicitly: a paragraph
 	 *  turning the value off against a style that turns it on is a real corpus shape.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static void suppressOverlap(PPr ppr, boolean value) {
 		BooleanDefaultTrue b = new BooleanDefaultTrue();
 		b.setVal(Boolean.valueOf(value));
@@ -863,7 +863,7 @@ public final class Doc {
 	 * numbered picture: {@code number} greater than zero draws that numeral on a fill of
 	 * its own, so two anchors sharing a paragraph can be told apart in the page image as
 	 * well as by their extents.  {@code "margin"} and 0 reproduce the original exactly.
-	 * @since 17.1.1 (CR-001 batch 48, the anchor-side-by-side probe)
+	 * @since 17.2.0 (CR-001 batch 48, the anchor-side-by-side probe)
 	 */
 	public R anchoredImage(int wPx, int hPx, long cxEmu, long cyEmu, String wrap, String hAlign,
 			long hOffsetEmu, long vOffsetEmu, String hRelativeFrom, int number) throws Exception {
@@ -944,7 +944,7 @@ public final class Doc {
 	/** {@code number} 0 is the plain blue-gradient picture every existing probe uses, byte
 	 *  for byte; a number greater than zero rotates the gradient's hue by it and draws the
 	 *  numeral in the middle, so two pictures on one page are distinguishable.
-	 *  @since 17.1.1 (CR-001 batch 48, the anchor-side-by-side probe) */
+	 *  @since 17.2.0 (CR-001 batch 48, the anchor-side-by-side probe) */
 	private static byte[] png(int wPx, int hPx, int number) throws Exception {
 		BufferedImage img = new BufferedImage(wPx, hPx, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
@@ -1020,7 +1020,7 @@ public final class Doc {
 	// The String-built footnoteRef above writes a note of plain text.  CR-014's story
 	// probe (numbering-stories) needs NUMBERED paragraphs in every story - footnote,
 	// endnote, comment, text box - so these take the paragraphs themselves, built with
-	// para(...).build(), and marshal them into the part.  @since 17.1.1
+	// para(...).build(), and marshal them into the part.  @since 17.2.0
 
 	private static final String SUPERSCRIPT_RPR = "<w:rPr><w:vertAlign w:val=\"superscript\"/></w:rPr>";
 
@@ -1159,7 +1159,7 @@ public final class Doc {
 	}
 
 	/** The paragraphs as WordprocessingML, for a caller assembling a text box branch by hand.
-	 *  @since 17.1.1 (CR-021 phase 0) */
+	 *  @since 17.2.0 (CR-021 phase 0) */
 	public static String paragraphsXml(List<P> paragraphs) {
 		return paragraphsXml(paragraphs, "");
 	}
@@ -1169,7 +1169,7 @@ public final class Doc {
 	 * {@code w:txbxContent} given as WordprocessingML (the paragraphs, without the
 	 * wrapper) - the wps Choice and the VML Fallback need not agree, which is what
 	 * CR-021's probes measure: which branch Word draws, and what it does to the other.
-	 * @since 17.1.1 (CR-021 phase 0)
+	 * @since 17.2.0 (CR-021 phase 0)
 	 */
 	public R textBox(int wTwips, int hTwips, String choiceParagraphsXml, String fallbackParagraphsXml)
 			throws Exception {
@@ -1218,7 +1218,7 @@ public final class Doc {
 	 * no DrawingML twin - and the one a corpus footer uses to park a box off the page
 	 * ({@code position:absolute;margin-top:719.35pt;mso-position-vertical-relative:text}).
 	 * The caller writes the whole style string, because the position <i>is</i> the
-	 * question.  @since 17.1.1 (CR-001 batch 47, the footer-offpage-shape probe)
+	 * question.  @since 17.2.0 (CR-001 batch 47, the footer-offpage-shape probe)
 	 */
 	public R vmlRect(String style, String text) throws Exception {
 		return vmlRect(style, null, text);
@@ -1228,7 +1228,7 @@ public final class Doc {
 	 * As {@link #vmlRect(String, String)}, with a {@code @style} on the
 	 * {@code v:textbox} itself - which is where Word writes {@code layout-flow:vertical}
 	 * and {@code mso-layout-flow-alt} (measured on four corpus documents; the shape's own
-	 * style carries the position and the size).  @since 17.1.1
+	 * style carries the position and the size).  @since 17.2.0
 	 */
 	public R vmlRect(String style, String textboxStyle, String text) throws Exception {
 		shapeCounter++;
@@ -1275,7 +1275,7 @@ public final class Doc {
 	}
 
 	/** A footer part holding exactly these paragraphs - an empty {@code w:p} for the
-	 *  empty-part shape.  @since 17.1.1 */
+	 *  empty-part shape.  @since 17.2.0 */
 	public void addFooter(HdrFtrRef type, List<P> paragraphs) throws Exception {
 		if (type == HdrFtrRef.FIRST) sectPr().setTitlePg(new BooleanDefaultTrue());
 		if (type == HdrFtrRef.EVEN) evenAndOddHeaders();
@@ -1597,7 +1597,7 @@ public final class Doc {
 		/** {@code w:tblLook}: which of the table style's conditional formats the table asks
 		 *  for.  Word writes one on every table, and a w:tblStylePr condition is applied
 		 *  only where the look turns it on.
-		 *  @since 17.1.1 (CR-001 batch 48, the toggle-levels probe) */
+		 *  @since 17.2.0 (CR-001 batch 48, the toggle-levels probe) */
 		public Table tblLook(boolean firstRow, boolean lastRow, boolean firstColumn, boolean lastColumn) {
 			org.docx4j.wml.CTTblLook look = F.createCTTblLook();
 			look.setFirstRow(onOff(firstRow));
@@ -1618,7 +1618,7 @@ public final class Doc {
 		 *  style's conditions this cell is in ("001000000000" is firstCol), as Word writes
 		 *  it on every cell of a styled table.  Returns the cell, so it composes with
 		 *  {@link #cell} and {@link #cellOf}.
-		 *  @since 17.1.1 (CR-001 batch 48, the toggle-levels probe) */
+		 *  @since 17.2.0 (CR-001 batch 48, the toggle-levels probe) */
 		public static Tc cnfStyle(Tc tc, String val) {
 			org.docx4j.wml.CTCnf cnf = F.createCTCnf();
 			cnf.setVal(val);
@@ -1749,7 +1749,7 @@ public final class Doc {
 		/**
 		 * {@code w:tcPr/w:textDirection} ({@code btLr}, {@code tbRl}, ...): the cell whose
 		 * text Word turns on its side, which is the table's version of a VML text box's
-		 * {@code layout-flow:vertical}.  @since 17.1.1
+		 * {@code layout-flow:vertical}.  @since 17.2.0
 		 */
 		public static Tc textDirection(Tc tc, String val) {
 			TcPr tcPr = tc.getTcPr();
@@ -1966,7 +1966,7 @@ public final class Doc {
 		/** The paragraph mark's own run properties (w:pPr/w:rPr), created if it has none:
 		 *  what the pilcrow itself is formatted with, which Word counts towards the line
 		 *  box even where no run on the line carries it.
-		 *  @since 17.1.1 (CR-001 batch 48, the line-box-bold probe) */
+		 *  @since 17.2.0 (CR-001 batch 48, the line-box-bold probe) */
 		public Para markRPr(Consumer<ParaRPr> customiser) {
 			if (ppr.getRPr() == null) ppr.setRPr(F.createParaRPr());
 			customiser.accept(ppr.getRPr());
@@ -2089,7 +2089,7 @@ public final class Doc {
 		/**
 		 * {@code w:pBdr/w:left} alone: sz in eighths of a point, {@code w:space} in
 		 * points.  A left bar is the shape a hanging indent puts a border against, the
-		 * other three sides standing clear of it.  @since 17.1.1
+		 * other three sides standing clear of it.  @since 17.2.0
 		 */
 		public Para leftBorder(int eighthsOfPoint, int spacePt) {
 			PPrBase.PBdr bdr = ppr.getPBdr()==null ? F.createPPrBasePBdr() : ppr.getPBdr();
@@ -2109,7 +2109,7 @@ public final class Doc {
 
 		/** {@code w:framePr} on the paragraph itself, rather than on its style: see
 		 *  {@link Doc#framePr(PPr, Integer, String, String, String, String, Integer)}.
-		 *  @since 17.1.1 */
+		 *  @since 17.2.0 */
 		public Para framePr(Integer hSpaceTwips, String wrap, String hAnchor, String vAnchor,
 				String xAlign, Integer yTwips) {
 			Doc.framePr(ppr, hSpaceTwips, wrap, hAnchor, vAnchor, xAlign, yTwips);
@@ -2117,20 +2117,20 @@ public final class Doc {
 		}
 
 		/** As {@link #framePr(Integer, String, String, String, String, Integer)}, with
-		 *  {@code w:yAlign} as well.  @since 17.1.1 */
+		 *  {@code w:yAlign} as well.  @since 17.2.0 */
 		public Para framePr(Integer hSpaceTwips, String wrap, String hAnchor, String vAnchor,
 				String xAlign, Integer yTwips, String yAlign) {
 			Doc.framePr(ppr, hSpaceTwips, wrap, hAnchor, vAnchor, xAlign, yTwips, yAlign);
 			return this;
 		}
 
-		/** {@code w:suppressOverlap}.  @since 17.1.1 */
+		/** {@code w:suppressOverlap}.  @since 17.2.0 */
 		public Para suppressOverlap() {
 			Doc.suppressOverlap(ppr);
 			return this;
 		}
 
-		/** {@code w:suppressOverlap w:val="true|false"}, written explicitly.  @since 17.1.1 */
+		/** {@code w:suppressOverlap w:val="true|false"}, written explicitly.  @since 17.2.0 */
 		public Para suppressOverlap(boolean value) {
 			Doc.suppressOverlap(ppr, value);
 			return this;

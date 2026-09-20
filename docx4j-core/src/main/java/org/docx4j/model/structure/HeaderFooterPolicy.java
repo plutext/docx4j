@@ -113,7 +113,7 @@ public class HeaderFooterPolicy {
 	 *        continuous section's references unconditionally cost six corpus documents
 	 *        up to 0.20 of line parity, every one a section beginning mid-page or an
 	 *        empty tail.
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public HeaderFooterPolicy(SectPr sectPr, HeaderFooterPolicy previousHF, 
 			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean startsPage) 

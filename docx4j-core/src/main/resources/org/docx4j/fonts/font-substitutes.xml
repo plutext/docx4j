@@ -77,7 +77,7 @@
          (554 every one) Caladea's are proportional, its 1 measuring 362.  Measured on
          Caladea 1.001 (the file docx4j ships and the one installed here) against the
          Cambria 6.99 a corpus VM's Word draws.  So the substitution is by design, not by
-         metric, and it carries a width factor.  @since 17.1.1 -->
+         metric, and it carries a width factor.  @since 17.2.0 -->
     <font name="Cambria">
       <substitute font="Caladea Regular" quality="measured"
                   error="Cambria/Caladea 1.0494 over English letter frequencies; 1.0497 over the 14792 Cambria glyphs of one corpus document and 1.0383 over another's 1870; corrected by the width factor below"/>
@@ -90,8 +90,8 @@
 
     <!-- Aptos, Word 365's Office theme faces.  A document with no theme part resolves
          its theme fonts to Aptos / Aptos Display (docx4j.fonts.defaultTheme, @since
-         17.1.1), and Microsoft ships neither with Windows: they are cloud fonts, and a
-         server has no licence for them.  Until 17.1.1 the pass found nothing here, FOP
+         17.2.0), and Microsoft ships neither with Windows: they are cloud fonts, and a
+         server has no licence for them.  Until 17.2.0 the pass found nothing here, FOP
          drew the text in its base-14 fallback, and the PDF named Times-Roman without
          embedding it.
 
@@ -104,7 +104,7 @@
          The class substitutes of item 6 stay behind them, for a classpath without the
          jar; they are much worse and say so.  Where a machine really has Microsoft's
          Aptos - a licensed Windows or Mac, not a server - the installed face wins by
-         precedence and none of this is consulted.  @since 17.1.1 -->
+         precedence and none of this is consulted.  @since 17.2.0 -->
     <font name="Aptos">
       <substitute font="Akasia Regular" quality="metric"
                   error="0.00%: all 138 advances identical to Aptos 2.01 and kerned line widths identical to 0.001pt (fontTools + HarfBuzz, CR-001 batch 49 item 6b); the other eleven styles ship in the same jar"/>
@@ -127,7 +127,7 @@
          compatibility.json pins Aptos-Light.ttf 2.01 as the baseline) - which is the
          project's measurement, not ours, so it is recorded as such.  Akasia has no
          Narrow, so Aptos Narrow keeps a class substitute and will be wide.  Aptos Mono
-         is not among the faces that folder had, so it has no row.  @since 17.1.1 -->
+         is not among the faces that folder had, so it has no row.  @since 17.2.0 -->
     <font name="Aptos Light">
       <substitute font="Akasia Light" quality="metric"
                   error="Akasia's own per-style baseline against Aptos-Light.ttf 2.01 (compatibility.json, verified); not measured here as Aptos and Aptos Display were"/>
@@ -163,7 +163,7 @@
          worse on the one face, accepted (Jason, 2026-09-16) because the regular and the
          bold carry the text.  Selawik is Latin only, so Greek and Cyrillic in a Segoe UI
          document go through the coverage pass, as Cambria's Greek does.
-         @since 17.1.1 -->
+         @since 17.2.0 -->
     <font name="Segoe UI">
       <substitute font="Selawik" quality="measured"
                   error="regular 0.9994, bold 0.9997 (Arimo 1.0028 / 0.9978); no italic face, so italic is the oblique of the regular at 0.9737 (Arimo Italic 0.9769)"/>
@@ -197,7 +197,7 @@
     </font>
 
     <!-- Trebuchet MS is not an Arial shape: its lower case is wider than Arial's and its
-         capitals much narrower, so no single width factor repairs Arimo.  @since 17.1.1 -->
+         capitals much narrower, so no single width factor repairs Arimo.  @since 17.2.0 -->
     <font name="Trebuchet MS">
       <substitute font="Droid Sans" quality="measured" error="1.0096 body, 0.9449 bold capitals, 1.0246 italic"/>
       <substitute font="Arimo Regular" quality="measured" error="1.0273 body, 0.9061 bold capitals, 1.0504 italic"/>
@@ -229,9 +229,9 @@
     <!-- Segoe UI Light: Selawik Light is Microsoft's own, and the CR-017 phase 5 golden
          measures it at 0.9995 where Source Sans 3 is 0.9938 - and per character 1.4%
          (the measurement's floor) against Source Sans 3's 12.0%.  Latin only, as the
-         rest of Selawik.  Below it the pre-17.1.1 answers, in their order: Arimo is the
+         rest of Selawik.  Below it the pre-17.2.0 answers, in their order: Arimo is the
          wrong shape for a Light face, and is here only as a last resort.
-         @since 17.0.5, Selawik Light @since 17.1.1 -->
+         @since 17.0.5, Selawik Light @since 17.2.0 -->
     <font name="Segoe UI Light">
       <substitute font="Selawik Light" quality="measured"
                   error="0.9995 (Source Sans 3 0.9938); 1.4% per character, at the measurement's floor, against 12.0%"/>
@@ -262,7 +262,7 @@
          where headings are.  It stays as the second choice, since Gelasio is in no distro
          of its own.  Gelasio is Latin (plus Vietnamese), so Georgia's Greek and Cyrillic
          go through the coverage pass.  Book Antiqua and Palatino Linotype are Palatino
-         and keep P052, which is Palatino's own clone.  @since 17.1.1 -->
+         and keep P052, which is Palatino's own clone.  @since 17.2.0 -->
     <font name="Georgia">
       <substitute font="Gelasio Regular" quality="metric"
                   error="0.06% on regular, bold and italic (0.9994 / 0.9995 / 0.9995; P052 is 0.9838 / 1.1119 / 1.1234)"/>
@@ -313,7 +313,7 @@
     <!-- The emoji blocks (U+1F000-U+1FAFF): Word's own face first (CR-016 probe
          fonts-symbol-and-emoji (c)), then the monochrome faces a Linux box may have.
          Noto Color Emoji is bitmap-only (CBDT) and FOP cannot load it, so it never
-         reaches PhysicalFonts.  @since 17.1.1 -->
+         reaches PhysicalFonts.  @since 17.2.0 -->
     <font name="*" script="EMOJI">
       <substitute font="Segoe UI Emoji" quality="class"/>
       <substitute font="Noto Emoji" quality="class"/>
@@ -401,7 +401,7 @@
            scripts="Latin"/>
     <!-- Aptos and Aptos Display are cloud fonts: Microsoft does not ship them with Windows,
          and no distribution packages them.  The jar is the only supply docx4j controls.
-         @since 17.1.1 -->
+         @since 17.2.0 -->
     <clone name="Akasia" alsoKnownAs="Akasia Regular" licence="OFL-1.1"
            jar="docx4j-export-fo-fonts-theme2023"
            packages="none: upstream is https://codeberg.org/bloudraad/akasia (v0.0.2)"
@@ -479,7 +479,7 @@
          where it has a face (CR-017 phase 5): no italic, and Latin only.  docx4j ships
          no jar for it, and no distribution here packages it: checked with pacman on the
          measuring machine (nothing), and Debian is unknown (no apt there to ask).
-         @since 17.1.1 -->
+         @since 17.2.0 -->
     <clone name="Selawik" alsoKnownAs="Selawik Regular" licence="OFL-1.1"
            packages="for example github.com/microsoft/Selawik/releases; no Debian or Arch package known"
            scripts="Latin"/>
@@ -487,7 +487,7 @@
            packages="for example github.com/microsoft/Selawik/releases; no Debian or Arch package known"
            scripts="Latin"/>
     <!-- Metric-compatible with Georgia in all four faces, measured (CR-017 phase 5).
-         @since 17.1.1 -->
+         @since 17.2.0 -->
     <clone name="Gelasio" alsoKnownAs="Gelasio Regular" licence="OFL-1.1"
            packages="for example Google Fonts (fonts.google.com/specimen/Gelasio) or github.com/SorkinType/Gelasio; TeX Live carries it in fontsextra"
            scripts="Latin, Vietnamese"/>

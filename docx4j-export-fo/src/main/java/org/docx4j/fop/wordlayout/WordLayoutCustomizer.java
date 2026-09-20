@@ -153,7 +153,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * docx4j.convert.out.fo.wordLayout.labelAscentAgainstBaseline=false restores
 	 * 17.1.0's behaviour.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String LABEL_ASCENT_AGAINST_BASELINE
 			= "docx4j.convert.out.fo.wordLayout.labelAscentAgainstBaseline";
@@ -190,7 +190,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * docx4j.convert.out.fo.wordLayout.lineBaselineFromBlock=false restores the run's
 	 * ascent.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String LINE_BASELINE_FROM_BLOCK
 			= "docx4j.convert.out.fo.wordLayout.lineBaselineFromBlock";
@@ -226,7 +226,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.leaderGrid=false steps the raw advance.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String LEADER_GRID
 			= "docx4j.convert.out.fo.wordLayout.leaderGrid";
@@ -270,7 +270,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.tabSpaces=false leaves the tab a jump.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String TAB_SPACES
 			= "docx4j.convert.out.fo.wordLayout.tabSpaces";
@@ -308,7 +308,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.leaderCharacters=false restores the rule.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String LEADER_CHARACTERS
 			= "docx4j.convert.out.fo.wordLayout.leaderCharacters";
@@ -350,7 +350,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.labelSuffixSpace=false leaves the gap empty.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String LABEL_SUFFIX_SPACE
 			= "docx4j.convert.out.fo.wordLayout.labelSuffixSpace";
@@ -405,7 +405,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance sets it.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String EMERGENCY_BREAK_TOLERANCE
 			= "docx4j.convert.out.fo.wordLayout.emergencyBreakTolerance";
@@ -420,7 +420,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * run before it is broken.  Word breaks a word as soon as it exceeds the cell it is in
 	 * - measured, a 21.55pt column breaks {@code Categorizador/Período} down 15 lines of
 	 * one or two characters - so the default is one twip (0.05pt), Word's own unit of
-	 * layout, rather than the inch body text gets.  Since 17.1.1 the body's tolerance is
+	 * layout, rather than the inch body text gets.  Since 17.2.0 the body's tolerance is
 	 * the same twip (CR-001 batch 47 item 4), so this property differs from
 	 * {@link #EMERGENCY_BREAK_TOLERANCE} only where one of the two is set.
 	 *
@@ -432,7 +432,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance sets it.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String CELL_EMERGENCY_BREAK_TOLERANCE
 			= "docx4j.convert.out.fo.wordLayout.cellEmergencyBreakTolerance";
@@ -454,7 +454,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.cellEmergencyBreakToleranceRatio sets it.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String CELL_EMERGENCY_BREAK_TOLERANCE_RATIO
 			= "docx4j.convert.out.fo.wordLayout.cellEmergencyBreakToleranceRatio";
@@ -486,7 +486,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.pageNumberPlaceholder sets it.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String PAGE_NUMBER_PLACEHOLDER
 			= "docx4j.convert.out.fo.wordLayout.pageNumberPlaceholder";
@@ -506,7 +506,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.seamBreak=false turns it off.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String SEAM_BREAK = "docx4j.convert.out.fo.wordLayout.seamBreak";
 
@@ -528,7 +528,7 @@ public class WordLayoutCustomizer implements FopFactoryCustomizer {
 	 * <p>On by default; docx4j property or system property
 	 * docx4j.convert.out.fo.wordLayout.breakOpportunities=false turns both off.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String BREAK_OPPORTUNITIES
 			= "docx4j.convert.out.fo.wordLayout.breakOpportunities";

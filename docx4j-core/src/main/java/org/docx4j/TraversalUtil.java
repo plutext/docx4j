@@ -77,13 +77,13 @@ import org.slf4j.LoggerFactory;
  * See also org.docx4j.utils.SingleTraversalUtilVisitorCallback
  * and CompoundTraversalUtilVisitorCallback
  * 
- * <p><b>mc:AlternateContent</b> (since 17.1.1, CR-021): a walk visits ONE branch of
+ * <p><b>mc:AlternateContent</b> (since 17.2.0, CR-021): a walk visits ONE branch of
  * each mc:AlternateContent by default - the branch docx4j draws, see
  * {@link McSelection} - which is {@link McMode#READ}.  A walk that edits the tree
  * (binding, field update, merge, anonymisation, find and replace) must ask for
  * {@link McMode#ALL} through the constructor or visit overload that takes a mode,
  * or by {@link CallbackImpl#setMcMode}, so its edit reaches every branch.  Before
- * 17.1.1 every walk saw every branch, and a text box's paragraphs twice.</p>
+ * 17.2.0 every walk saw every branch, and a text box's paragraphs twice.</p>
  * 
  * @author jharrop, alberto
  *
@@ -241,13 +241,13 @@ public class TraversalUtil {
 		private McMode mcMode = McMode.READ;
 
 		/** How this walk treats mc:AlternateContent; {@link McMode#READ} unless set.
-		 *  @since 17.1.1 */
+		 *  @since 17.2.0 */
 		public McMode getMcMode() {
 			return mcMode;
 		}
 
 		/** A walk that edits the tree sets {@link McMode#ALL} before walking, so its
-		 *  edit lands in every branch of each mc:AlternateContent.  @since 17.1.1 */
+		 *  edit lands in every branch of each mc:AlternateContent.  @since 17.2.0 */
 		public void setMcMode(McMode mcMode) {
 			this.mcMode = mcMode == null ? McMode.READ : mcMode;
 		}
@@ -302,7 +302,7 @@ public class TraversalUtil {
 	 * {@link Callback} directly applies it in its own getChildren, by calling
 	 * {@link #getChildrenImpl(Object, McMode)}.
 	 * 
-	 * @since 17.1.1 (CR-021)
+	 * @since 17.2.0 (CR-021)
 	 */
 	public TraversalUtil(Object parent, Callback cb, McMode mcMode) {
 		this.cb = cb;
@@ -384,7 +384,7 @@ public class TraversalUtil {
 	 * ({@link McSelection#selectedBranch}); in {@link McMode#ALL} every Choice and the
 	 * Fallback.  Everything else is the same in both modes.
 	 * 
-	 * @since 17.1.1 (CR-021)
+	 * @since 17.2.0 (CR-021)
 	 */
 	public static List<Object> getChildrenImpl(Object o, McMode mcMode) {
 		
@@ -804,33 +804,33 @@ public class TraversalUtil {
 	}
 
 	/** As {@link #visit(Object, Callback)}, in this {@link McMode} (see
-	 *  {@link #TraversalUtil(Object, Callback, McMode)}).  @since 17.1.1 */
+	 *  {@link #TraversalUtil(Object, Callback, McMode)}).  @since 17.2.0 */
 	public static void visit(Object parent, Callback callback, McMode mcMode) {
 		if (callback instanceof CallbackImpl) ((CallbackImpl) callback).setMcMode(mcMode);
 		visit(parent, callback);
 	}
 
-	/** As {@link #visit(Object, TraversalUtilVisitor)}, in this {@link McMode}.  @since 17.1.1 */
+	/** As {@link #visit(Object, TraversalUtilVisitor)}, in this {@link McMode}.  @since 17.2.0 */
 	public static void visit(Object parent, TraversalUtilVisitor visitor, McMode mcMode) {
 		if (visitor != null) {
 			visit(parent, new SingleTraversalUtilVisitorCallback(visitor), mcMode);
 		}
 	}
 
-	/** As {@link #visit(WordprocessingMLPackage, boolean, Callback)}, in this {@link McMode}.  @since 17.1.1 */
+	/** As {@link #visit(WordprocessingMLPackage, boolean, Callback)}, in this {@link McMode}.  @since 17.2.0 */
 	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, Callback callback, McMode mcMode) {
 		if (callback instanceof CallbackImpl) ((CallbackImpl) callback).setMcMode(mcMode);
 		visit(wmlPackage, bodyOnly, callback);
 	}
 
-	/** As {@link #visit(WordprocessingMLPackage, boolean, TraversalUtilVisitor)}, in this {@link McMode}.  @since 17.1.1 */
+	/** As {@link #visit(WordprocessingMLPackage, boolean, TraversalUtilVisitor)}, in this {@link McMode}.  @since 17.2.0 */
 	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, TraversalUtilVisitor visitor, McMode mcMode) {
 		if (visitor != null) {
 			visit(wmlPackage, bodyOnly, new SingleTraversalUtilVisitorCallback(visitor), mcMode);
 		}
 	}
 
-	/** As {@link #visit(WordprocessingMLPackage, boolean, List)}, in this {@link McMode}.  @since 17.1.1 */
+	/** As {@link #visit(WordprocessingMLPackage, boolean, List)}, in this {@link McMode}.  @since 17.2.0 */
 	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, List<TraversalUtilVisitor> visitorList, McMode mcMode) {
 		if ((visitorList != null) && (!visitorList.isEmpty())) {
 			if (visitorList.size() > 1) {

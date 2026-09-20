@@ -132,7 +132,7 @@ public class MalformedNestingTest {
 
 	/**
 	 * A paragraph nested in a hyperlink is a paragraph of its own, with its own w:pPr
-	 * (since 17.1.1).  Hoisting its runs into the paragraph around it kept the text but
+	 * (since 17.2.0).  Hoisting its runs into the paragraph around it kept the text but
 	 * lost the style: a corpus document's 76 article summaries, each a w:p inside the
 	 * w:hyperlink of the paragraph before it, in a style whose w:i is their only italic,
 	 * came out roman where Word draws 45 italic lines.

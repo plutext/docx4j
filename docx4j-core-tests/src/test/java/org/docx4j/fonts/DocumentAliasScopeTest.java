@@ -37,7 +37,7 @@ import org.junit.Test;
  * resolved, or Word's answer for a font it cannot find - belongs to <b>that conversion</b>,
  * and must not answer for the next document in the same JVM.
  *
- * <p>It was a static map in {@code WordLineMetrics} until 17.1.1, never cleared, so it did:
+ * <p>It was a static map in {@code WordLineMetrics} until 17.2.0, never cleared, so it did:
  * measured over the three real-document corpora, 93 of 449 documents register at least one
  * alias (137 registrations, 116 distinct font names), and replaying the corpora in the
  * order the harness converts them found four documents reading an alias that another
@@ -45,7 +45,7 @@ import org.junit.Test;
  * converting document after document is the case that breaks, and because the effect
  * depends on what ran before, it is hard to see.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class DocumentAliasScopeTest {
 

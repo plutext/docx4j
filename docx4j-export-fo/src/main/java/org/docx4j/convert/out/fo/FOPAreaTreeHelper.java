@@ -119,7 +119,7 @@ public class FOPAreaTreeHelper {
 		 * document does not, its masters were named differently, and the real masters
 		 * were left with the half-page defaults: measured, a 179-page document came
 		 * out as 1,429 pages.  So a section which opens with a page break in the
-		 * document opens with one here too.  @since 17.1.1 */
+		 * document opens with one here too.  @since 17.2.0 */
 		java.util.Set<SectPr> followedByPageStart = java.util.Collections.newSetFromMap(
 				new java.util.IdentityHashMap<SectPr, Boolean>());
 		List<Object> flat = new ArrayList<Object>();
@@ -320,7 +320,7 @@ public class FOPAreaTreeHelper {
     }
 
     /** The block-level content, with block-level content controls unwrapped (the
-     *  section factory removes them before it looks at the body).  @since 17.1.1 */
+     *  section factory removes them before it looks at the body).  @since 17.2.0 */
     private static void flatten(List<Object> content, List<Object> out) {
     	for (Object o : content) {
     		Object u = XmlUtils.unwrap(o);
@@ -334,7 +334,7 @@ public class FOPAreaTreeHelper {
     }
 
     /** A filler which opens a page, standing in for a paragraph whose
-     *  w:pageBreakBefore keeps its continuous section its own page-sequence.  @since 17.1.1 */
+     *  w:pageBreakBefore keeps its continuous section its own page-sequence.  @since 17.2.0 */
     private static P createBreakingFillerP() {
     	P p = createFillerP();
     	p.getPPr().setPageBreakBefore(Context.getWmlObjectFactory().createBooleanDefaultTrue());
@@ -906,7 +906,7 @@ public class FOPAreaTreeHelper {
 		    			 * followed by eight empty paragraphs of 12.65pt: Word puts them on a
 		    			 * second page, which only a body bottom of 562 (612 - 36 - 13.8)
 		    			 * explains - 576 (the distance alone) holds all eight.
-		    			 * @since 17.1.1 */
+		    			 * @since 17.2.0 */
 		    			float footerReserve = footerIsDummy ? 0f : fBpdaPts;
 		    			float footerFloor = footerReserve > 0 ? footerMarginPts + footerReserve
 		    					: (footerIsDummy && !footerIsAbsent

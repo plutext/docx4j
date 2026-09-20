@@ -175,7 +175,7 @@ public class XsltCommonFunctions {
     	if ((fontName==null) || (fontName.length()==0)) return true;  // no font was set anyway
 
     	PhysicalFont pf = null;
-    	// html names a stack since 17.1.1 ('Calibri','Carlito',sans-serif): the physical font
+    	// html names a stack since 17.2.0 ('Calibri','Carlito',sans-serif): the physical font
     	// is whichever entry this machine has; fo names the physical font alone
     	for (String candidate : fontName.split(",")) {
     		pf = physicalFontFor(fontMapper, candidate.trim().replace("'", "").replace("\"", ""));
@@ -218,7 +218,7 @@ public class XsltCommonFunctions {
 
     /** The font-family RunFontSelector put on this element: @font-family for fo (the
      *  physical font), or the font-family declaration in @style for html (a stack, since
-     *  17.1.1: the document font, the physical family, the generic class). */
+     *  17.2.0: the document font, the physical family, the generic class). */
     private static String physicalFontNameOf(Element styled) {
 
     	String fontFamily = styled.getAttribute("font-family");  // fo
@@ -335,7 +335,7 @@ public class XsltCommonFunctions {
      * an earlier one reaches whatever stop lies before it and paints no leader of its own
      * (CR-001 batch 43, M21).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public static int followingTabs(R.Tab tab) {
     	P p = paragraphOf(tab);
@@ -389,7 +389,7 @@ public class XsltCommonFunctions {
     	 * row, two 11.15pt lines and the heading's 10pt before (53.8pt); with the line
     	 * before the break missing, ours was one line short (42.9).  A break which ends
     	 * a paragraph after text is not this case (something visible precedes it).
-    	 * @since 17.1.1 */
+    	 * @since 17.2.0 */
     	return seen;
     }
 

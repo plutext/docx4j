@@ -191,7 +191,7 @@ public class FontDecisionTest {
 	}
 
 	/** Nothing mapped it: the decision says so, rather than the font being absent from
-	 *  the record altogether (which is how it looked before 17.1.1). */
+	 *  the record altogether (which is how it looked before 17.2.0). */
 	@Test
 	public void unmapped() throws Exception {
 		String font = "Docx4j Decision Nonesuch";

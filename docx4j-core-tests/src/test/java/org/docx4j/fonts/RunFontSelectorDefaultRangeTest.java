@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  * out as one span per letter, which also stopped FOP kerning and letter-spacing
  * across the letters.  Consecutive characters of such a script share a span.
  *
- * <p>Since 17.1.1 (CR-016 phase 2) a span is cut where the chosen font changes or
+ * <p>Since 17.2.0 (CR-016 phase 2) a span is cut where the chosen font changes or
  * where the script changes between two non-shared characters, not where a character's
  * range does: the Cyrillic beside a Georgian word is its own span though both are
  * hAnsi's, a run whose ascii and hAnsi fonts differ is cut between its Latin and its

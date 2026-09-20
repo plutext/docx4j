@@ -131,7 +131,7 @@ once the schema admits the element everywhere the survey found it; the
 `McSelection.select` is the one place the rule lives; `XSLTUtils.mcPrefersChoice`
 (the XSLT hook) delegates to it. Callers: `TraversalUtil.getChildren` (the
 default mode), `AbstractVisitorExporterGenerator.walkJAXBElements`,
-`docx2fo.xslt`, `docx2xhtml-core.xslt` (which until 17.1.1 always took the
+`docx2fo.xslt`, `docx2xhtml-core.xslt` (which until 17.2.0 always took the
 Fallback, ignoring the property), the markdown exporter,
 `TextUtils.extractText`. The unmarshaller listener's
 namespace bookkeeping (`Docx4jUnmarshallerListener.afterUnmarshal`, which

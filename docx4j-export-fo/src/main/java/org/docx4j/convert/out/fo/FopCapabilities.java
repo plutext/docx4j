@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * <p>Design: docx4j CR-020. The fork's marker is {@code org.apache.fop.docx4j.Docx4jFop},
  * read reflectively so that this module compiles against Apache FOP.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class FopCapabilities {
 

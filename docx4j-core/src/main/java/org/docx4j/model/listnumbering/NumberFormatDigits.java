@@ -23,7 +23,7 @@ package org.docx4j.model.listnumbering;
  * (１２), {@code thaiNumbers} (๑๒), {@code hindiNumbers}
  * (१२).  Ten digit characters, 0 to 9, replace the ASCII ones.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatDigits extends LabelFormatter {
 

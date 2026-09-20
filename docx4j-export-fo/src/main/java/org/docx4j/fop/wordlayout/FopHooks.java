@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * A hook the renderer advertises but whose member is missing is a broken contract: it
  * is logged once, and the field path is used.</p>
  *
- * <p>CR-020 phase 1. @since 17.1.1</p>
+ * <p>CR-020 phase 1. @since 17.2.0</p>
  */
 final class FopHooks {
 

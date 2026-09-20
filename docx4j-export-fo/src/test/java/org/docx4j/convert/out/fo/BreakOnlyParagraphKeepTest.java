@@ -21,7 +21,7 @@ import org.junit.Test;
  * the nested blocks the breaks are written as.  See
  * {@link WordLayoutFixups#keepBreakOnlyParagraphsTogether} and word-layout-rules.md §3.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class BreakOnlyParagraphKeepTest {
 

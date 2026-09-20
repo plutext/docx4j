@@ -43,7 +43,7 @@ import org.junit.Test;
  * Table (108 left and right), not the document's definition; a style whose chain does not
  * reach it gets no cell margin at all.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PropertyResolverTableStyleTest {
 

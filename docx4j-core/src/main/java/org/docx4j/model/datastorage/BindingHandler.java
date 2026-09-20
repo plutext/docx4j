@@ -162,7 +162,7 @@ public class BindingHandler {
 
 	/**
 	 * @return the hook applied to each XHTML importer before convert; null (the default) for none
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static XHTMLImporterCustomizer getXHTMLImporterCustomizer() {
 		return xhtmlImporterCustomizer;
@@ -176,7 +176,7 @@ public class BindingHandler {
 	 * Static, like the other hooks here: applies to all subsequent binds.
 	 *
 	 * @param customizer the hook, or null to remove it
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static void setXHTMLImporterCustomizer(XHTMLImporterCustomizer customizer) {
 		BindingHandler.xhtmlImporterCustomizer = customizer;

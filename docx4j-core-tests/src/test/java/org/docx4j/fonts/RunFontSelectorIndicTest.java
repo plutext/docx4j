@@ -59,7 +59,7 @@ public class RunFontSelectorIndicTest {
 			/* Every stretch of Indic characters is one span in the cs font (FOP needs the
 			 * conjuncts and vowel signs together); the spaces between the words are ASCII
 			 * and take the ascii font, in a span of their own, as [MS-OI29500] 17.3.2.26
-			 * says and Word does (CR-016 phase 2; until 17.1.1 a space joined the span
+			 * says and Word does (CR-016 phase 2; until 17.2.0 a space joined the span
 			 * before it, so the whole text was one span). */
 			String text = ((Text)XmlUtils.unwrap(((R)p.getContent().get(0)).getContent().get(0))).getValue();
 			int words = text.trim().split("\\s+").length;

@@ -51,7 +51,7 @@ import org.junit.Test;
  * {@code mc:Ignorable} parts and for a {@code w15:person} without
  * {@code contact}; the rest are expressed as XML strings.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class SchemaGapsTest {
 

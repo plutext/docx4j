@@ -241,7 +241,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      * The fonts the document uses, by name: what the font mapper is populated with and
      * the FOP configuration is built from.
      *
-     * <p>A walk for names, since 17.1.1: the four slots of every {@code w:rFonts} on the
+     * <p>A walk for names, since 17.2.0: the four slots of every {@code w:rFonts} on the
      * runs, the paragraph marks and the styles in use (with what they are based on), in
      * the body, headers, footers, footnotes, endnotes and comments; {@code w:sym} fonts;
      * the numbering levels' fonts; the document defaults; the default font.  Each theme
@@ -249,7 +249,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      * the selector resolves it ({@link RunFontSelector#documentFontsOf}); a CJK font name
      * is collected by its English name ({@link CJKToEnglish}).</p>
      *
-     * <p>Until 17.1.1 this ran a {@link RunFontSelector} in its DISCOVERY mode over every
+     * <p>Until 17.2.0 this ran a {@link RunFontSelector} in its DISCOVERY mode over every
      * run, which decided among the run's fonts by glyph checks it could not yet answer
      * (the mapper is populated from this list, so nothing was mapped), took
      * {@code w:ascii} alone from the numbering levels, and cost a selection per run
@@ -380,7 +380,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     /**
      * Collects the document font names a walk finds: each w:rFonts' four slots with the
      * theme references resolved ({@link RunFontSelector#documentFontsOf}), a CJK name by
-     * its English name ({@link CJKToEnglish}, as the discovery visitor did until 17.1.1),
+     * its English name ({@link CJKToEnglish}, as the discovery visitor did until 17.2.0),
      * blanks skipped.
      */
     private static class FontNames {

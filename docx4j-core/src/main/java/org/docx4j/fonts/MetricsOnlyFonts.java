@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * platform's path separator, each scanned (not recursively) for {@code .ttf}, {@code .otf}
  * and {@code .ttc} files. Off where the property is absent, which is the default.</p>
  *
- * @since 17.1.1 (CR-001 batch 49 item 2)
+ * @since 17.2.0 (CR-001 batch 49 item 2)
  */
 public final class MetricsOnlyFonts {
 
@@ -159,7 +159,7 @@ public final class MetricsOnlyFonts {
 		return out;
 	}
 
-	/** Forget the scan, so a test can change the property.  @since 17.1.1 */
+	/** Forget the scan, so a test can change the property.  @since 17.2.0 */
 	public static synchronized void reset() {
 		byFamily = null;
 		scanned = null;

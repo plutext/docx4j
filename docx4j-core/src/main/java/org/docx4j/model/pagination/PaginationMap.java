@@ -46,7 +46,7 @@ import java.util.Map;
  * preprocessing folded into its neighbour, or one joined to the paragraph before it
  * because that one's mark is deleted) has no page; the getters return null for it.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class PaginationMap {
 

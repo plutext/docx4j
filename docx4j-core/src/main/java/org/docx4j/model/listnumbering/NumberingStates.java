@@ -40,7 +40,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
  * <p>Only one section was probed, so headers and footers of every section are
  * folded into one story here until a document says otherwise.
  *
- * @since 17.1.1 (CR-014 phase 4)
+ * @since 17.2.0 (CR-014 phase 4)
  */
 public final class NumberingStates {
 

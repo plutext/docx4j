@@ -235,7 +235,7 @@ public class NamespacePrefixMapperUtils {
      * unused was Java 6's, with every prefix returned).  Pairs are returned only for
      * these prefixes, so nothing is declared twice.
      *
-     * @since 17.1.1 (CR-024)
+     * @since 17.2.0 (CR-024)
      */
     public static String[] getPreDeclaredNamespaceUris2(String mcIgnorable) {
 

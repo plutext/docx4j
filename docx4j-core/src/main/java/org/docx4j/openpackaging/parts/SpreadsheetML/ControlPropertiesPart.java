@@ -29,7 +29,7 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main.CTFor
  * The properties of one form control ([MS-XLSX] 2.1.1, x14:formControlPr): a check box, drop-down, spinner and so on.
  * Related from the worksheet, whose x:control (inside the mc:AlternateContent Excel wraps it in) carries the relationship id.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class ControlPropertiesPart extends JaxbSmlPart<CTFormControlPr> {
 

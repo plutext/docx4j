@@ -161,7 +161,7 @@ public class EmergencyBreakTest {
 	 * The measure itself is the rule, in the body as in a cell: a word 1.6pt past a 200pt
 	 * line is broken at the last character that fits.  Word's {@code break-longword} golden
 	 * breaks a token 5.0pt past a 481.0pt measure and leaves one 1.0pt inside it whole, so
-	 * the body's tolerance is a twip - it was an inch until 17.1.1 (CR-001 batch 47 item 4).
+	 * the body's tolerance is a twip - it was an inch until 17.2.0 (CR-001 batch 47 item 4).
 	 */
 	@Test
 	public void aWordJustPastTheMeasureIsBroken() throws Exception {

@@ -114,7 +114,7 @@ public class ListLevel {
 	}
 	
 	/*
-	 * Since 17.1.1 a level holds no counter: the counters live in a NumberingState,
+	 * Since 17.2.0 a level holds no counter: the counters live in a NumberingState,
 	 * keyed by the referencing abstract list and the level (the sharing every instance
 	 * of one abstract level had through the single Counter they used to reference),
 	 * and a traversal passes its state in.  The no-state overloads use the numbering
@@ -128,7 +128,7 @@ public class ListLevel {
 		this.abstractNumId = abstractNumId;
 	}
 
-	/** The id of the referencing {@code w:abstractNum} this level was read for.  @since 17.1.1 */
+	/** The id of the referencing {@code w:abstractNum} this level was read for.  @since 17.2.0 */
 	public String getAbstractNumId() {
 		return abstractNumId;
 	}
@@ -164,7 +164,7 @@ public class ListLevel {
 	}
 
 	/** This level's counter in the default state.
-	 *  @deprecated since 17.1.1: counters belong to a {@link NumberingState}; use {@link #counter}. */
+	 *  @deprecated since 17.2.0: counters belong to a {@link NumberingState}; use {@link #counter}. */
 	@Deprecated
 	protected Counter getCounter() {
 		return counter(defaultState());
@@ -337,19 +337,19 @@ public class ListLevel {
      * The current number, formatted using numFmt; {@code where} (the numId this
      * level is being formatted for) is named in the one-time warning if the
      * format cannot express the value and the decimal label is used instead.
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public String getCurrentValueFormatted(String where)
     {
     	return getCurrentValueFormatted(defaultState(), where);
     }
-    /** The current number in the given state, formatted using numFmt.  @since 17.1.1 */
+    /** The current number in the given state, formatted using numFmt.  @since 17.2.0 */
     public String getCurrentValueFormatted(NumberingState state)
     {
     	return getCurrentValueFormatted(state, null);
     }
     /** The current number in the given state, formatted using numFmt; {@code where}
-     *  as for {@link #getCurrentValueFormatted(String)}.  @since 17.1.1 */
+     *  as for {@link #getCurrentValueFormatted(String)}.  @since 17.2.0 */
     public String getCurrentValueFormatted(NumberingState state, String where)
     {
     	return NumberFormatter.getCurrentValueFormatted(numFmt, counter(state).getCurrentValue().intValue(),
@@ -360,7 +360,7 @@ public class ListLevel {
     {        	
         return getCurrentValueUnformatted(defaultState());
     }    
-    /** The current number in the given state, as a decimal.  @since 17.1.1 */
+    /** The current number in the given state, as a decimal.  @since 17.2.0 */
     public String getCurrentValueUnformatted(NumberingState state)
     {
         return counter(state).getCurrentValue().toString();
@@ -381,7 +381,7 @@ public class ListLevel {
      * there when the {@code w:num} overrides the start (deferred until then, since
      * otherwise earlier numbering over the same abstract list would use it).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public void incrementCounter(NumberingState state)
     {
@@ -403,7 +403,7 @@ public class ListLevel {
         counter.increment();
     }
     
-	/** @deprecated since 17.1.1: unused; whether a start override has been applied is
+	/** @deprecated since 17.2.0: unused; whether a start override has been applied is
 	 *  per {@link NumberingState}. */
 	@Deprecated
 	protected boolean startAtUsed = true;
@@ -414,7 +414,7 @@ public class ListLevel {
      * start value from now until it is next used, and that first use does not
      * increment it.
      *
-     * <p>Before 17.1.1 the counter went to start-1 and a deeper label printed it so:
+     * <p>Before 17.2.0 the counter went to start-1 and a deeper label printed it so:
      * a level-2 item straight after a level-0 one read "2.0.1" where Word reads
      * "2.1.1" (CR-014 probe P8, measured).</p>
      */
@@ -423,7 +423,7 @@ public class ListLevel {
         resetCounter(defaultState());
     }
 
-    /** {@link #resetCounter()}, in the given state.  @since 17.1.1 */
+    /** {@link #resetCounter()}, in the given state.  @since 17.2.0 */
     public void resetCounter(NumberingState state)
     {
     	Counter counter = counter(state);
@@ -438,7 +438,7 @@ public class ListLevel {
      * states none: the 1-based number of the shallowest level whose use restarts
      * this one; 0 means it never restarts.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public Integer getLvlRestart() {
     	return lvlRestart;
@@ -453,7 +453,7 @@ public class ListLevel {
      * level-1 item leaves it counting (1.2.3) and a level-0 item restarts it
      * (2.1.1); with {@code w:val="0"} neither does (1.2.3, 2.1.4).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public boolean restartsAfter(int shallowerIlvl) {
     	if (lvlRestart == null) return true;
@@ -501,30 +501,30 @@ public class ListLevel {
             return this.isBullet;
     }
 
-    // ---- the names before 17.1.1 (from the C# original this was translated from);
+    // ---- the names before 17.2.0 (from the C# original this was translated from);
     //      removal no earlier than 17.2 (CR-014 phase 5)
 
-    /** @deprecated since 17.1.1, use {@link #setOverrides(Lvl)} */
+    /** @deprecated since 17.2.0, use {@link #setOverrides(Lvl)} */
     @Deprecated
     public void SetOverrides(Lvl levelNode) { setOverrides(levelNode); }
-    /** @deprecated since 17.1.1, use {@link #incrementCounter()} */
+    /** @deprecated since 17.2.0, use {@link #incrementCounter()} */
     @Deprecated
     public void IncrementCounter() { incrementCounter(); }
-    /** @deprecated since 17.1.1, use {@link #incrementCounter(NumberingState)} */
+    /** @deprecated since 17.2.0, use {@link #incrementCounter(NumberingState)} */
     @Deprecated
     public void IncrementCounter(NumberingState state) { incrementCounter(state); }
-    /** @deprecated since 17.1.1, use {@link #resetCounter()} */
+    /** @deprecated since 17.2.0, use {@link #resetCounter()} */
     @Deprecated
     public void ResetCounter() { resetCounter(); }
-    /** @deprecated since 17.1.1, use {@link #resetCounter(NumberingState)} */
+    /** @deprecated since 17.2.0, use {@link #resetCounter(NumberingState)} */
     @Deprecated
     public void ResetCounter(NumberingState state) { resetCounter(state); }
-    /** @deprecated since 17.1.1, use {@link #isBullet()} */
+    /** @deprecated since 17.2.0, use {@link #isBullet()} */
     @Deprecated
     public boolean IsBullet() { return isBullet(); }
     
-    /** A level's count in one {@link NumberingState}.  Static since 17.1.1; public (with
-     *  read-only accessors) since 17.1.1 for the parity harnesses, through
+    /** A level's count in one {@link NumberingState}.  Static since 17.2.0; public (with
+     *  read-only accessors) since 17.2.0 for the parity harnesses, through
      *  {@link NumberingState#counters()}. */
     public static class Counter {
     	
@@ -534,12 +534,12 @@ public class ListLevel {
     	 *  the next use of the level takes that value rather than incrementing. */
     	protected boolean resetPending = false;
     	
-        /** Whether the level has been used in this story (a counter is created at its start value less one, unused). @since 17.1.1 public */
+        /** Whether the level has been used in this story (a counter is created at its start value less one, unused). @since 17.2.0 public */
         public boolean isEncounteredAlready() {
     		return encounteredAlready;
     	}
 
-        /** Whether a shallower level reset this counter and the next use takes the start value rather than incrementing. @since 17.1.1 */
+        /** Whether a shallower level reset this counter and the next use takes the start value rather than incrementing. @since 17.2.0 */
         public boolean isResetPending() {
     		return resetPending;
     	}
@@ -581,7 +581,7 @@ public class ListLevel {
             if (log.isDebugEnabled()) log.debug("counter now: " + currentValue.intValue() );
         }
 
-        /** @deprecated since 17.1.1, use {@link #increment()} */
+        /** @deprecated since 17.2.0, use {@link #increment()} */
         @Deprecated
         public void IncrementCounter() { increment(); }
     	

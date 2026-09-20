@@ -1138,7 +1138,7 @@ public class StyleUtil {
 
 	/**
 	 * isEmpty returns true if rPr is null, or each of its properties is in turn empty.
-	 * Every member of {@link PropertyCatalogue#RUN} counts (until 17.1.1 {@code w:lang} and
+	 * Every member of {@link PropertyCatalogue#RUN} counts (until 17.2.0 {@code w:lang} and
 	 * the w14 members did not, so a style stating only a language was never applied).
 	 *
 	 * @param rPr
@@ -1156,16 +1156,16 @@ public class StyleUtil {
 	 * Whether a run's {@code w:rPr} states any formatting of its own - any member of
 	 * {@link PropertyCatalogue#RUN} other than the style reference is present (an element
 	 * with no attributes counts: it was stated).  The test PropertyResolver used until
-	 * 17.1.1 listed 19 of the 40 members, so a run whose only direct formatting was
+	 * 17.2.0 listed 19 of the 40 members, so a run whose only direct formatting was
 	 * {@code w:rtl} or {@code w:position} resolved as having none.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static boolean hasDirectFormatting(RPr rPr) {
 		return PropertyCatalogue.hasDirectFormatting(PropertyCatalogue.RUN, rPr);
 	}
 
-	/** The paragraph mark's {@code w:rPr}: as {@link #hasDirectFormatting(RPr)}.  @since 17.1.1 */
+	/** The paragraph mark's {@code w:rPr}: as {@link #hasDirectFormatting(RPr)}.  @since 17.2.0 */
 	public static boolean hasDirectFormatting(ParaRPr rPr) {
 		return PropertyCatalogue.hasDirectFormatting(PropertyCatalogue.RUN, rPr);
 	}
@@ -1176,7 +1176,7 @@ public class StyleUtil {
 	 * {@code w:cnfStyle} and {@code w14:collapsed} is present.  The paragraph mark's
 	 * {@code w:rPr} and a {@code w:sectPr} are not formatting of the paragraph.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static boolean hasDirectFormatting(PPrBase pPr) {
 		return PropertyCatalogue.hasDirectFormatting(PropertyCatalogue.PARAGRAPH, pPr);
@@ -1291,7 +1291,7 @@ public class StyleUtil {
 				 isEmpty(spacing.getBeforeLines()) &&
 				 isEmpty(spacing.getLine()) &&
 				 (spacing.getLineRule() == null) &&
-				 // an explicit w:beforeAutospacing/w:afterAutospacing (either value) is a statement too (@since 17.1.1)
+				 // an explicit w:beforeAutospacing/w:afterAutospacing (either value) is a statement too (@since 17.2.0)
 				 org.docx4j.wml.AutospacingAccess.getBeforeAutospacing(spacing) == null &&
 				 org.docx4j.wml.AutospacingAccess.getAfterAutospacing(spacing) == null
 				 )
@@ -1361,7 +1361,7 @@ public class StyleUtil {
 	 * A {@code w:numPr} is empty only when it states neither {@code w:numId} nor
 	 * {@code w:ilvl}: each inherits on its own (ECMA-376 17.9.3, 17.9.18; measured, CR-015
 	 * probe styles-numpr-ilvl-only: a direct {@code w:numPr} of {@code w:ilvl 1} alone puts
-	 * the paragraph at level 1 of its style's list).  Until 17.1.1 only the id was checked,
+	 * the paragraph at level 1 of its style's list).  Until 17.2.0 only the id was checked,
 	 * so an {@code ilvl}-only {@code w:numPr} was dropped.
 	 */
 	public static boolean isEmpty(NumPr numPr) {
@@ -1459,7 +1459,7 @@ public class StyleUtil {
 		return (highlight == null) || isEmpty(highlight.getVal());
 	}
 
-	/** @since 17.1.1 */
+	/** @since 17.2.0 */
 	public static boolean isEmpty(CTLanguage lang) {
 		return (lang == null) ||
 				(isEmpty(lang.getVal()) && isEmpty(lang.getEastAsia()) && isEmpty(lang.getBidi()));
@@ -1654,8 +1654,8 @@ public class StyleUtil {
 //
 // A more specific value over an inherited one: per member, and per attribute where
 // Word does so.  Which members an element has, and how each merges, is
-// PropertyCatalogue (@since 17.1.1); the methods here are the leaves it calls.
-// (ImmutablePropertyResolver keeps its own copy of the rPr/pPr lists; deprecated 17.1.1.)
+// PropertyCatalogue (@since 17.2.0); the methods here are the leaves it calls.
+// (ImmutablePropertyResolver keeps its own copy of the rPr/pPr lists; deprecated 17.2.0.)
 /////////////////////////////////////////////
 
 	
@@ -1759,7 +1759,7 @@ public class StyleUtil {
 			else if (TABLE_STYLE.equals(source.getType())) {
 				
 				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
-				destination.setTrPr(apply(source.getTrPr(), destination.getTrPr())); // @since 17.1.1: was never carried
+				destination.setTrPr(apply(source.getTrPr(), destination.getTrPr())); // @since 17.2.0: was never carried
 				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
 				
 				apply(source.getTblStylePr(), destination.getTblStylePr());
@@ -1772,7 +1772,7 @@ public class StyleUtil {
 				log.warn("source style type is currently unknown or null");
 				
 				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
-				destination.setTrPr(apply(source.getTrPr(), destination.getTrPr())); // @since 17.1.1: was never carried
+				destination.setTrPr(apply(source.getTrPr(), destination.getTrPr())); // @since 17.2.0: was never carried
 				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
 				
 				apply(source.getTblStylePr(), destination.getTblStylePr());
@@ -1790,7 +1790,7 @@ public class StyleUtil {
 				destination = Context.getWmlObjectFactory().createPPr();
 			apply((PPrBase)source, (PPrBase)destination);
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
-			// w:sectPr is not a paragraph property and is not merged (since 17.1.1; it was
+			// w:sectPr is not a paragraph property and is not merged (since 17.2.0; it was
 			// half-copied, with a WARN per section, and read by nothing)
 		}
 		return destination;
@@ -1899,7 +1899,7 @@ public class StyleUtil {
 				inheritedNumPr.setIlvl(destination.getNumPr().getIlvl());
 			}
 
-			// every member but w:ind, which goes last, after the numbering level's (@since 17.1.1 catalogue-driven)
+			// every member but w:ind, which goes last, after the numbering level's (@since 17.2.0 catalogue-driven)
 			PropertyCatalogue.apply(PropertyCatalogue.PARAGRAPH, source, destination,
 					java.util.Collections.singleton(PropertyCatalogue.IND));
 
@@ -1938,7 +1938,7 @@ public class StyleUtil {
 			// Apply indent from the numbering this layer brings in: the level of the MERGED
 			// w:numPr, since a layer may state only w:ilvl (the list from the style) or only
 			// w:numId (the level from the style) - measured, CR-015 probe styles-numpr-ilvl-only:
-			// a direct w:ilvl 1 alone sits at level 1's indent.  Until 17.1.1 the source's own
+			// a direct w:ilvl 1 alone sits at level 1's indent.  Until 17.2.0 the source's own
 			// w:numPr was looked up, which without a w:numId gave no indent at all.
 			if (numberingDefinitionsPart !=null
 					&& source.getNumPr()!=null
@@ -1959,7 +1959,7 @@ public class StyleUtil {
 	 * @param destination
 	 * @return
 	 * @since 3.2
-	 * @deprecated since 17.1.1: incomplete (seven of the section properties), and no longer
+	 * @deprecated since 17.2.0: incomplete (seven of the section properties), and no longer
 	 * called by the pPr merge - a w:sectPr is not a paragraph property
 	 */
 	@Deprecated
@@ -2039,7 +2039,7 @@ public class StyleUtil {
 	 * @param destination the levels beneath it, written in place
 	 * @param documentDefaults the {@code w:docDefaults} run properties, for the
 	 *        "if the value specified by the document defaults is true" rule; may be null
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static void applyStyleLevel(RPr source, RPr destination, RPr documentDefaults) {
 		if (source == null || destination == null) return;
@@ -2058,7 +2058,7 @@ public class StyleUtil {
 	 * @param lower what the levels beneath it resolve to, or null
 	 * @param documentDefaults the {@code w:docDefaults} run properties, or null
 	 * @param destination where the twelve results are written (may be {@code lower})
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static void applyToggles(RPr upper, RPr lower, RPr documentDefaults, RPr destination) {
 		if (destination == null) return;
@@ -2076,7 +2076,7 @@ public class StyleUtil {
 	 * the lower value alone, the document defaults win where they say true, and two levels
 	 * which both say true cancel (ECMA-376-1 &#xa7;17.7.3).
 	 *
-	 * <p>17.1.1 shipped this with <b>two deliberate narrowings</b> of the letter of
+	 * <p>17.2.0 shipped this with <b>two deliberate narrowings</b> of the letter of
 	 * &#xa7;17.7.3, to be settled by a probe.  The {@code toggle-levels} golden - Word's own
 	 * PDF of nine cases over two documents - settled them, and they did not settle the same
 	 * way: <b>the first is refuted and is gone</b>, the second is confirmed and stands.</p>
@@ -2179,7 +2179,7 @@ public class StyleUtil {
 
 	/**
 	 * {@code w:val}, {@code w:eastAsia} and {@code w:bidi} each inherit on their own
-	 * (ECMA-376 17.3.2.20: each names the language of one script range).  Until 17.1.1 the
+	 * (ECMA-376 17.3.2.20: each names the language of one script range).  Until 17.2.0 the
 	 * element was replaced whole, so a style stating only {@code w:bidi} wiped an inherited
 	 * {@code w:val}.
 	 */
@@ -2247,11 +2247,11 @@ public class StyleUtil {
 	 * another inherits the conditions it does not restate, and restating a condition
 	 * overrides only the properties it names - which is how Word resolves it (one corpus
 	 * style based on PlainTable1 restates {@code firstRow} as {@code <w:b w:val="0"/>} and
-	 * keeps its parent's {@code w:tblHeader}).  Until 17.1.1 a source with any entries
+	 * keeps its parent's {@code w:tblHeader}).  Until 17.2.0 a source with any entries
 	 * replaced the destination's list wholesale, so a child style that restated one
 	 * condition lost every other one its parent defined.
 	 *
-	 * @since 17.1.1 merges per type
+	 * @since 17.2.0 merges per type
 	 */
 	public static void apply(List<CTTblStylePr> source, List<CTTblStylePr> destination) {
 		if (isEmpty(source) || destination == null) return;
@@ -2430,7 +2430,7 @@ public class StyleUtil {
 			/* w:lineRule qualifies w:line: ECMA-376 17.3.1.33 makes auto its default only
 			 * "if a line attribute value is present".  So a source stating w:line states a
 			 * rule too (auto when it names none), and a source stating no w:line leaves
-			 * both inherited.  Until 17.1.1 a missing rule became auto whatever the source
+			 * both inherited.  Until 17.2.0 a missing rule became auto whatever the source
 			 * said, so a style's <w:spacing w:line="480" w:lineRule="exact"/> under a direct
 			 * <w:spacing w:after="0"/> came out double-spaced (measured, CR-015 probe
 			 * styles-linerule: Word keeps the 24pt pitch). */
@@ -2444,7 +2444,7 @@ public class StyleUtil {
 		return destination;
 	}
 
-	/** The source's rule where it states one, else the inherited.  (Until 17.1.1 a null
+	/** The source's rule where it states one, else the inherited.  (Until 17.2.0 a null
 	 *  source meant auto, which is only right beside a w:line the source states; see
 	 *  {@link #apply(Spacing, Spacing)}.) */
 	public static STLineSpacingRule apply(STLineSpacingRule source, STLineSpacingRule destination) {
@@ -2525,7 +2525,7 @@ public class StyleUtil {
 			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
 			destination.setThemeFillTint(apply(source.getThemeFillTint(), destination.getThemeFillTint()));
 			destination.setThemeFillShade(apply(source.getThemeFillShade(), destination.getThemeFillShade()));
-			// enums only when the source states them (until 17.1.1 a null source value cleared the inherited one)
+			// enums only when the source states them (until 17.2.0 a null source value cleared the inherited one)
 			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor()));
 			destination.setThemeFill(apply(source.getThemeFill(), destination.getThemeFill()));
 		}
@@ -2555,7 +2555,7 @@ public class StyleUtil {
 			destination.setColor(apply(source.getColor(), destination.getColor()));
 			destination.setSpace(apply(source.getSpace(), destination.getSpace())); 
 			destination.setSz(apply(source.getSz(), destination.getSz())); 
-			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor())); // when stated (17.1.1)
+			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor())); // when stated (17.2.0)
 			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade())); 
 			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
 			destination.setVal(apply(source.getVal(), destination.getVal()));
@@ -2631,7 +2631,7 @@ public class StyleUtil {
 
 	public static RFonts apply(RFonts source, RFonts destination) {
 
-		// nothing at all to apply leaves the destination as it is (until 17.1.1 it was given
+		// nothing at all to apply leaves the destination as it is (until 17.2.0 it was given
 		// an empty w:rFonts, so every merged w:rPr carried one and read as directly formatted)
 		if (source == null) return destination;
 
@@ -2734,7 +2734,7 @@ public class StyleUtil {
 		return destination;
 	}
 
-	/** {@code w:val} and the colour attributes each inherit on their own (17.1.1; was the value alone, replaced whole). */
+	/** {@code w:val} and the colour attributes each inherit on their own (17.2.0; was the value alone, replaced whole). */
 	public static U apply(U source, U destination) {
 		if (!isEmpty(source)) {
 			if (destination == null)
@@ -2893,7 +2893,7 @@ public class StyleUtil {
 			destination.setTopFromText(apply(source.getTopFromText(), destination.getTopFromText()));
 			destination.setBottomFromText(apply(source.getBottomFromText(), destination.getBottomFromText()));
 			// the anchors and specs only when the source states them: a w:tblpPr stating only
-			// w:tblpX kept its inherited anchors in Word (until 17.1.1 they were nulled; the
+			// w:tblpX kept its inherited anchors in Word (until 17.2.0 they were nulled; the
 			// 17.0.5 fix d5f067249 repaired isEmpty(CTTblPPr), not this)
 			if (source.getVertAnchor() != null) destination.setVertAnchor(source.getVertAnchor());
 			if (source.getHorzAnchor() != null) destination.setHorzAnchor(source.getHorzAnchor());
@@ -2991,7 +2991,7 @@ public class StyleUtil {
 	JAXBElement<?> defsSourceElement = null;
 		if (isEmpty(source))
 			return destination;
-		/* Until 17.1.1 a null or empty destination was returned untouched, so nothing was
+		/* Until 17.2.0 a null or empty destination was returned untouched, so nothing was
 		 * ever applied into a fresh TrPr - and a table style's w:trPr (its own, or a
 		 * w:tblStylePr's, with the w:tblHeader that makes a first row repeat) never reached
 		 * the effective style.  A copy is made into a new one as the other apply methods do. */
@@ -3101,7 +3101,7 @@ public class StyleUtil {
 		return (source == null  ? destination : source);
 	}
 	
-	/** A copy of the source where it states one, else the inherited (17.1.1: was the source
+	/** A copy of the source where it states one, else the inherited (17.2.0: was the source
 	 *  object itself, so an effective rPr's w:b WAS the style's w:b, and a caller editing
 	 *  the effective object edited the styles part). */
 	public static BooleanDefaultTrue apply(BooleanDefaultTrue source, BooleanDefaultTrue destination) {

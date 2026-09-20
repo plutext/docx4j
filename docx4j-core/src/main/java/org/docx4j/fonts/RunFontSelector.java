@@ -104,7 +104,7 @@ public class RunFontSelector {
 		XSL_FO,
 		XHTML,
 		/**
-		 * @deprecated since 17.1.1: font discovery is a walk for the document's font
+		 * @deprecated since 17.2.0: font discovery is a walk for the document's font
 		 *             names ({@link org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart#fontsInUse()}),
 		 *             which needs no selection; a caller wanting the document font the
 		 *             selector picks for a character uses {@link RunFontSelector#documentFontFor}.
@@ -125,7 +125,7 @@ public class RunFontSelector {
 		vis.setRunFontSelector(this);
 
 		// the theme language first: the default font is a theme reference in most
-		// documents, and its resolution depends on it (until 17.1.1 it was read after
+		// documents, and its resolution depends on it (until 17.2.0 it was read after
 		// the default font had been computed and cached, so the default font ignored it)
 		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
 			try {
@@ -205,14 +205,14 @@ public class RunFontSelector {
      * {@code docx4j.fonts.defaultTheme} says which to answer for - see
      * {@link org.docx4j.Docx4jProperties#DEFAULT_THEME}.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private String themeFont(org.docx4j.wml.STTheme type) {
     	try {
     		return themeFont(getThemePart(), type, themeFontLang);
     	} catch (Docx4JException e) {
     		if (warnedOnce.add("theme")) {
-    			// once per selector; until 17.1.1 every run logged the stack trace
+    			// once per selector; until 17.2.0 every run logged the stack trace
     			log.warn("Theme part unreadable; theme font references unresolved: " + e.getMessage());
     		}
     		return null;
@@ -239,7 +239,7 @@ public class RunFontSelector {
      * explicit attribute, if any, stands - and where a package does have a theme part it
      * is that part which answers, script fonts included.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     static String themeFont(ThemePart themePart, org.docx4j.wml.STTheme type, CTLanguage themeFontLang)
     		throws Docx4JException {
@@ -263,7 +263,7 @@ public class RunFontSelector {
      * left out.  This is what font discovery collects
      * ({@link org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart#fontsInUse()}).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public static java.util.List<String> documentFontsOf(RFonts rFonts, ThemePart themePart, CTLanguage themeFontLang) {
     	java.util.List<String> names = new java.util.ArrayList<String>(4);
@@ -307,7 +307,7 @@ public class RunFontSelector {
 	}
 
 	/** {@link #getDefaultFont()} for any caller, from the document defaults' rFonts
-	 *  (null where the defaults name none).  @since 17.1.1 */
+	 *  (null where the defaults name none).  @since 17.2.0 */
 	public static String defaultFontOf(RFonts docDefaultsRFonts, ThemePart themePart, CTLanguage themeFontLang) {
 		RFonts rFonts = docDefaultsRFonts;
 		String f = null;
@@ -340,10 +340,10 @@ public class RunFontSelector {
      * The scratch Document, for the visitor to create a run's elements in.  One per
      * selector: the fragment a run yields is detached from it and imported into the
      * caller's output document, so nothing of one run is left for the next (any element
-     * left on the Document itself is dropped here).  Until 17.1.1 every run created a
+     * left on the Document itself is dropped here).  Until 17.2.0 every run created a
      * Document of its own (measured at 8 microseconds against 23 for the selection).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private Document scratchDocument() {
     	if (scratch==null) {
@@ -475,7 +475,7 @@ public class RunFontSelector {
     			// glyphFallback needs the font the document asked for; it removes this
     			el.setAttribute(MARK_DOCUMENT_FONT, fontName);
     			// and the measured width factor for this pair, where there is one;
-    			// characterScaling spreads it and removes it.  @since 17.1.1
+    			// characterScaling spreads it and removes it.  @since 17.2.0
     			markWidthFactor(el, fontName, val==null ? fallbackFont : val);
     		}
 
@@ -491,7 +491,7 @@ public class RunFontSelector {
     	// We only pass the actual text here, so that we can do GlyphCheck
     	// to ensure the correct font in the PDF case.  The first code point decides the
     	// face for the whole of this span, which is why symbolRun cuts the run wherever
-    	// the substitute face changes (symbolSegments, since 17.1.1)
+    	// the substitute face changes (symbolSegments, since 17.2.0)
 
 		if (outputType== RunFontActionType.DISCOVERY) {
 			return;
@@ -531,7 +531,7 @@ public class RunFontSelector {
     			 * The document's own font, then, and glyphFallback replaces that where it
     			 * cannot draw the box - measured, Arimo and Carlito have U+25A1 and Droid
     			 * Sans does not - which is why the document font is marked for it here, as
-    			 * setAttribute marks it for an ordinary run.  @since 17.1.1
+    			 * setAttribute marks it for an ordinary run.  @since 17.2.0
     			 */
     			el.setAttribute("font-family", fallbackFont);
     			registerUsedFont(fallbackFont, fallbackPhysicalFont);
@@ -644,7 +644,7 @@ public class RunFontSelector {
      *  FO does not say: the weight is on an ancestor block or inline, never on the span
      *  this class writes - measured on a corpus document, all 13359 of its P052 inlines
      *  name the regular family and 357 of them are bold by inheritance - so the run's own
-     *  properties are the only place to read it.  @since 17.1.1 */
+     *  properties are the only place to read it.  @since 17.2.0 */
     private boolean currentBold, currentItalic;
 
     /** Word's rule for a run's ligatures: none unless w14:ligatures says otherwise. */
@@ -758,7 +758,7 @@ public class RunFontSelector {
      * years of professional leather cleaning &amp; restoration..." is 447.8pt in Word and
      * was 424.8pt here.</p>
      *
-     * <p>Since 17.1.1 the same pass also carries the measured width factors
+     * <p>Since 17.2.0 the same pass also carries the measured width factors
      * ({@link WidthFactors}), which say what a substitute's advances have to be
      * multiplied by to be the document font's.  The two are independent - Word's scaling
      * is the author's instruction, the factor is docx4j's correction for the face it had
@@ -788,7 +788,7 @@ public class RunFontSelector {
      * second is there because ours are not, so the two compose.  The mark is taken off
      * whatever is decided, so that none of it reaches the FO.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private double scaleOf(Element span) {
     	double scale = currentScalingPct/100.0;
@@ -938,7 +938,7 @@ public class RunFontSelector {
     }
 
     /** Hint on the FO span naming the font whose Word metrics size the line - the one the
-     *  docx asks for, or (since 17.1.1) the family this document aliased it to - so the
+     *  docx asks for, or (since 17.2.0) the family this document aliased it to - so the
      *  block's line box and the line manager can size the line from its metrics when a
      *  substitute renders it; removed by WordLayoutFixups.  @since 17.0.5 */
     public static final String HINT_FONT = "docx4j-font";
@@ -954,10 +954,10 @@ public class RunFontSelector {
      * line-box pass, {@code WordLayoutFixups} and the FOP fork's line layout manager all
      * read the document font out of the {@link #HINT_FONT} attribute and none of them can
      * reach a Mapper.  Writing the resolved family into the hint is what let the alias map
-     * stop being a JVM-wide static in 17.1.1, where one document's alternate font had been
+     * stop being a JVM-wide static in 17.2.0, where one document's alternate font had been
      * answering for every later document in the same process.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public String lineMetricsFamily(String documentFontName) {
     	if (documentFontName==null) return null;
@@ -967,7 +967,7 @@ public class RunFontSelector {
 
     /** The family whose Word line metrics this run's ASCII text takes: {@link #asciiFontName}
      *  resolved through {@link #lineMetricsFamily}.  For generated text and paragraph marks,
-     *  whose document font the exporter names itself.  @since 17.1.1 */
+     *  whose document font the exporter names itself.  @since 17.2.0 */
     public String lineMetricsFontName(RPr rPr) {
     	return lineMetricsFamily(asciiFontName(rPr));
     }
@@ -985,7 +985,7 @@ public class RunFontSelector {
      *
      *  <p>The line box is Word's for the document font where the table knows it, else the
      *  physical font's own - the PhysicalFont the caller resolved, which for an embedded
-     *  font is the document's file (until 17.1.1 the name was looked up in PhysicalFonts,
+     *  font is the document's file (until 17.2.0 the name was looked up in PhysicalFonts,
      *  where an embedded font never is, so an embedded font's line height was the 1.2
      *  fallback; CR-016 gap 7).</p> */
     private void applyLineHeight(Element el, String documentFontName, PhysicalFont pf) {
@@ -994,7 +994,7 @@ public class RunFontSelector {
     			// document aliased it to (w:altName, or Word's answer for a font it cannot
     			// find).  Resolved here, where the mapper is still in hand, and written out
     			// resolved, so that nothing downstream needs the alias - see
-    			// lineMetricsFamily.  @since 17.1.1
+    			// lineMetricsFamily.  @since 17.2.0
     			String metricsFont = lineMetricsFamily(documentFontName);
     	    	el.setAttribute("line-height", WordLineMetrics.lineHeightPtString(metricsFont, pf, currentSizePt, currentSpacing));
     	    	if (metricsFont!=null && WordLineMetrics.hasTableEntry(metricsFont)
@@ -1022,13 +1022,13 @@ public class RunFontSelector {
      * {@link #characterScaling} can spread it over the span's characters as Word's own
      * <code>w:w</code> is spread; always removed there.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private static final String MARK_WIDTH_FACTOR = "docx4j-width-factor";
 
     /** Leave {@link #MARK_WIDTH_FACTOR} on this span where the pair has a measured
      *  factor, and take any stale one off where it has not (the glyph-aware pass can
-     *  move a span to a different face after setAttribute ran).  @since 17.1.1 */
+     *  move a span to a different face after setAttribute ran).  @since 17.2.0 */
     private void markWidthFactor(Element el, String documentFontName, String physicalFontName) {
     	Mapper mapper = wordMLPackage==null ? null : wordMLPackage.getFontMapper();
     	double factor = mapper==null
@@ -1186,7 +1186,7 @@ public class RunFontSelector {
     	/* Mixed: one span per stretch, each a sibling cloned from the original (its
     	 * line-height, hint and the rest), the substituted ones renamed - the structure the
     	 * range cut used to produce for such text, and the one the block-font choice and
-    	 * FOP's line stacking were measured on.  Until 17.1.1 the stretches were nested
+    	 * FOP's line stacking were measured on.  Until 17.2.0 the stretches were nested
     	 * inside the original span; measured on the corpus's Greek document once the
     	 * dispatch joined Latin, Greek and leaders in one span, the nesting cost a page. */
     	java.util.List<Node> siblings = new java.util.ArrayList<Node>();
@@ -1225,7 +1225,7 @@ public class RunFontSelector {
      * {@code previous} gives a character standing between two of them, for one standing
      * alone in its run - and anything else is asked for on its own.</p>
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private PhysicalFont lastResortFor(String documentFont, String group, int cp) {
 
@@ -1239,7 +1239,7 @@ public class RunFontSelector {
 
     /** The substitute a non-shared group of this document font already resolved to, where
      *  it covers this character: what the document font's own script is being drawn in.
-     *  @since 17.1.1 */
+     *  @since 17.2.0 */
     private PhysicalFont substituteAlreadyChosen(String documentFont, int cp) {
 
     	String prefix = documentFont + " ";
@@ -1276,7 +1276,7 @@ public class RunFontSelector {
     	el.setAttribute("font-family", kerned && perRunKerning() ? pf.getName() + KERNED_SUFFIX : pf.getName());
     	applyLineHeight(el, documentFont.length()==0 ? null : documentFont, pf);
     	// the face has changed, so the factor setAttribute left (if any) was measured
-    	// against a different one; re-ask for this pair.  @since 17.1.1
+    	// against a different one; re-ask for this pair.  @since 17.2.0
     	markWidthFactor(el, documentFont, pf.getName());
     	if (wordMLPackage!=null && wordMLPackage.getFontMapper()!=null) {
     		// so that the FOP configuration declares it; see FopConfigUtil
@@ -1508,7 +1508,7 @@ public class RunFontSelector {
      * exporters resolve every run for its other properties and pass the answer, so a run
      * is resolved once (CR-016 phase 1).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public Object fontSelector(PPr pPr, RPr rPr, Text wmlText, boolean rPrIsEffective) {
 
@@ -1594,7 +1594,7 @@ public class RunFontSelector {
     /**
      * @param spacePreserve whether the text's white space is to be preserved (the
      *        {@code w:t}'s {@code xml:space}); an HTML span then gets
-     *        {@code white-space:pre-wrap}.  A parameter since 17.1.1: it was a field
+     *        {@code white-space:pre-wrap}.  A parameter since 17.2.0: it was a field
      *        the {@code Text} overload set and the {@code String} overload left as it
      *        was, so generated text inherited the last {@code w:t}'s setting.
      */
@@ -1652,7 +1652,7 @@ public class RunFontSelector {
     	 * "Has" means the property is on: both are ST_OnOff values, and w:cs w:val="0"
     	 * is how a run turns an inherited complex-script flag off.  Measured (CR-016
     	 * probe fonts-cs-off): a false w:cs or w:rtl leaves Latin text in the ascii
-    	 * font; w:rtl alone on Latin text does take the cs font.  Until 17.1.1 the
+    	 * font; w:rtl alone on Latin text does take the cs font.  Until 17.2.0 the
     	 * elements' presence was tested, so a false value took the cs font too.
     	 */
 		String csFont = complexScriptFont(rPr, rFonts);
@@ -1707,14 +1707,14 @@ public class RunFontSelector {
      * table gives the code point ({@link #fontFor}).  The theme references are resolved
      * through the theme part and the document's themeFontLang.  For a caller which needs the
      * name only, such as docx4j-docx-anon's text scrambler, which checks the replacement it
-     * scrambles in has a glyph in that font; until 17.1.1 it ran the selector in the
+     * scrambles in has a glyph in that font; until 17.2.0 it ran the selector in the
      * DISCOVERY mode over one character for this.
      *
      * @param pPr the paragraph's properties, or null
      * @param rPr the run's properties (direct formatting), or null
      * @param codePoint the character
      * @return the document font's name; never null (the document default at least)
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public String documentFontFor(PPr pPr, RPr rPr, int codePoint) {
     	return documentFontFor(pPr, rPr, codePoint, false);
@@ -1726,7 +1726,7 @@ public class RunFontSelector {
      * boolean)} takes them.  A walk asking per character (FontsAnalysis.usage) would
      * otherwise resolve the same run's properties once per character.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public String documentFontFor(PPr pPr, RPr rPr, int codePoint, boolean rPrIsEffective) {
 
@@ -1764,7 +1764,7 @@ public class RunFontSelector {
      * <p>One resolution: the document defaults, the paragraph style's run properties
      * (the default paragraph style where the pPr names none, or names a missing
      * one), the run's character style, its direct formatting - the resolver's
-     * order (CR-015).  Until 17.1.1 this walked the paragraph style itself and
+     * order (CR-015).  Until 17.2.0 this walked the paragraph style itself and
      * composed through getEffectiveRPrUsingPStyleRPr; a caller holding the
      * effective rPr already passes it with rPrIsEffective (CR-016 phase 1).  The
      * theme references survive the merge (StyleUtil.apply(RFonts) keeps them), which
@@ -1793,7 +1793,7 @@ public class RunFontSelector {
      * and hAnsi slots, the East Asian and complex-script slots left unnamed as for any
      * run that never named them, and then the range dispatch as for any other run, so
      * that East Asian or Georgian text still gets its own span and the glyph-coverage
-     * pass.  (Until 17.1.1 the whole text was set in the default font with no
+     * pass.  (Until 17.2.0 the whole text was set in the default font with no
      * dispatch.  An rFonts which is present but empty - a w:hint alone - was always
      * dispatched; RunFontSelectorChinese2Test covers that.  Not the eastAsia slot: a
      * Times New Roman there would fire the table's preamble rule and set the whole run
@@ -1862,7 +1862,7 @@ public class RunFontSelector {
 
     /**
      * The whole text in one font, through the visitor as the range dispatch would emit a
-     * single span: the cs-font and preamble-rule cases.  Until 17.1.1 these built their
+     * single span: the cs-font and preamble-rule cases.  Until 17.2.0 these built their
      * span directly and told the visitor only in the DISCOVERY mode; through the visitor
      * every mode's visitor learns the font, and a DISCOVERY visitor (deprecated) records
      * it as it did.
@@ -1889,7 +1889,7 @@ public class RunFontSelector {
      * from the general approach outlined in the class comment above, and map each
      * character to a known Unicode replacement; then one span per stretch the same
      * substitute face can draw: the Wingdings ranges are split across two substitutes
-     * (PhysicalFonts.getWDingsFont and getWDingsFont2), and until 17.1.1 the first code
+     * (PhysicalFonts.getWDingsFont and getWDingsFont2), and until 17.2.0 the first code
      * point chose the face for the whole run (and a run needing both faces failed, the
      * second span being appended to the scratch Document beside the first).
      */
@@ -2037,7 +2037,7 @@ public class RunFontSelector {
 	 *  alphanumerics and ideographs, Miscellaneous Symbols and Pictographs, Emoticons,
 	 *  Transport and Map, the supplemental and extended symbol blocks (U+1F000-U+1FAFF).
 	 *  Word sets them in Segoe UI Emoji (CR-016 probe fonts-symbol-and-emoji (c)).
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	static boolean isEmoji(int cp) {
 		return cp>=0x1F000 && cp<=0x1FAFF;
 	}
@@ -2047,7 +2047,7 @@ public class RunFontSelector {
      * one span per stretch of characters that share a font: a character joins the span
      * being built when it is assigned the same font, whatever its range.
      *
-     * <p>Until 17.1.1 spans were cut by <em>range</em> (a character joined the span while
+     * <p>Until 17.2.0 spans were cut by <em>range</em> (a character joined the span while
      * it fell in the range the previous one had been dispatched by), which cut a Latin
      * run at every exception character, sent a space to the East Asian font of the word
      * before it, and - the Latin-1 branch having reset the range to ASCII - kept the
@@ -2136,7 +2136,7 @@ public class RunFontSelector {
      * the rest of U+0590-U+07BF in a run with no w:cs take the ascii font, and where
      * that font lacks the script the coverage pass substitutes within its class, as
      * Word does (Arial for Liberation Sans, Times New Roman for Liberation Serif) - until
-     * 17.1.1 this range tried Times New Roman for the glyph and set nothing where it
+     * 17.2.0 this range tried Times New Roman for the glyph and set nothing where it
      * lacked it; the preamble rule (eastAsia is Times New Roman and ascii equals hAnsi:
      * use ascii) is applied by the caller before the walk.  The table's other condition
      * for U+0100-U+02AF and U+1E00-U+1EFF under hint=eastAsia, "or the character set of
@@ -2144,7 +2144,7 @@ public class RunFontSelector {
      * is not implemented.
      *
      * @return a document font name; null only where the run names no hAnsi font either
-     * @since 17.1.1 (the table as one function; it was the body of the walk)
+     * @since 17.2.0 (the table as one function; it was the body of the walk)
      */
     String fontFor(int cp, STHint hint, String langEastAsia,
     		String eastAsia, String ascii, String hAnsi, String cs) {
@@ -2275,7 +2275,7 @@ public class RunFontSelector {
      * {@link #registerUsedFont}, as any font the conversion reaches).
      *
      * @return the mapped font, or null where the machine has no such font
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private PhysicalFont ownFont(String name) {
     	if (name==null) return null;
@@ -2295,7 +2295,7 @@ public class RunFontSelector {
 
     /** The PhysicalFont behind a font-family this selector wrote (with any twin suffix),
      *  through the document's Mapper, which knows the embedded fonts PhysicalFonts does
-     *  not ({@link Mapper#physicalFontNamed}).  @since 17.1.1 */
+     *  not ({@link Mapper#physicalFontNamed}).  @since 17.2.0 */
     private PhysicalFont physicalFontNamed(String family) {
     	Mapper fontMapper = wordMLPackage==null ? null : wordMLPackage.getFontMapper();
     	return fontMapper==null ? PhysicalFonts.get(family) : fontMapper.physicalFontNamed(family);
@@ -2304,7 +2304,7 @@ public class RunFontSelector {
     /** Whether the font this document font name maps to has a glyph for this code point;
      *  false if there is no such font, so that the caller falls back as it would have done.
      *
-     * @since 17.0.3; by code point since 17.1.1 (a char could not ask about an emoji)
+     * @since 17.0.3; by code point since 17.2.0 (a char could not ask about an emoji)
      */
     private boolean hasGlyph(String documentFontName, int cp) throws ExecutionException {
 
@@ -2318,7 +2318,7 @@ public class RunFontSelector {
 
 
 	/** {@code docx4j.convert.out.html.fontFamily}: {@code document} (the default since
-	 *  17.1.1) or {@code physical} (the output before it).  @since 17.1.1 */
+	 *  17.2.0) or {@code physical} (the output before it).  @since 17.2.0 */
 	public static final String HTML_FONT_FAMILY_PROPERTY = "docx4j.convert.out.html.fontFamily";
 
 	private static boolean htmlPhysicalOnly() {
@@ -2333,7 +2333,7 @@ public class RunFontSelector {
 	 * never empty: the reader's browser is not on the server, and has Calibri and not
 	 * Carlito as often as the reverse.  (CR-016 Decisions 1.)
 	 *
-	 * <p>Until 17.1.1 it named the physical font alone ({@code 'Carlito Regular'}), or
+	 * <p>Until 17.2.0 it named the physical font alone ({@code 'Carlito Regular'}), or
 	 * nothing where the document font mapped to none; {@code docx4j.convert.out.html.fontFamily=physical}
 	 * restores that, for HTML rendered on the server itself.</p>
 	 */
@@ -2428,7 +2428,7 @@ public class RunFontSelector {
 		}		
 	}	
 	
-	/** Once per font per selector (until 17.1.1, once per run). */
+	/** Once per font per selector (until 17.2.0, once per run). */
 	private void warnUnmapped(String fontName, String qualifier) {
 		if (!warnedOnce.add("unmapped " + fontName)) return;
 		if (wordMLPackage.getFontMapper().size()>0) {
@@ -2524,7 +2524,7 @@ public class RunFontSelector {
 
     	 */
     	if (themeFontLang!=null && isArabicScriptLanguage(themeFontLang.getBidi())) {
-    		// Do stuff in this method (until 17.1.1 for "ar-SA" alone; Word's rule is its
+    		// Do stuff in this method (until 17.2.0 for "ar-SA" alone; Word's rule is its
     		// Numeral option, which applies to every Arabic-script language)
     	} else {
     		// Do nothing if those conditions don't apply

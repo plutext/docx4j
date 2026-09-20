@@ -42,7 +42,7 @@ import org.junit.Test;
  * (TemporaryImageCleanupPdfTest); this module doesn't have that module on its
  * classpath.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TemporaryImageCleanupTest {
 

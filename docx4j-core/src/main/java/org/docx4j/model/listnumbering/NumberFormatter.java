@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Formats a list counter as the label text of its {@code w:numFmt}.
  *
- * <p>Since 17.1.1 (CR-014 phase 1) this is a registry of one stateless
+ * <p>Since 17.2.0 (CR-014 phase 1) this is a registry of one stateless
  * {@link LabelFormatter} per {@link NumberFormat}, and it is fail-soft: a format
  * this class has no formatter for, or a value the formatter cannot express
  * (Roman above 3999, a circled digit above 20), gives the decimal label instead
@@ -80,12 +80,12 @@ public class NumberFormatter {
 		register(NumberFormat.DECIMAL_ENCLOSED_CIRCLE_CHINESE, new NumberFormatDecimalEnclosedCircle());
 	}
 
-	/** Adds or replaces the formatter for a {@code w:numFmt}.  @since 17.1.1 */
+	/** Adds or replaces the formatter for a {@code w:numFmt}.  @since 17.2.0 */
 	public static void register(NumberFormat numFmt, LabelFormatter formatter) {
 		REGISTRY.put(numFmt, formatter);
 	}
 
-	/** The formatter registered for a {@code w:numFmt}, or null.  @since 17.1.1 */
+	/** The formatter registered for a {@code w:numFmt}, or null.  @since 17.2.0 */
 	public static LabelFormatter get(NumberFormat numFmt) {
 		return REGISTRY.get(numFmt);
 	}
@@ -116,7 +116,7 @@ public class NumberFormatter {
 	 * say) is named in the one-time warning when the format is unsupported or
 	 * the value is out of its range and the decimal label is used instead.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static String getCurrentValueFormatted(NumberFormat numFmt, int current, String where) {
 		if (numFmt == null) {

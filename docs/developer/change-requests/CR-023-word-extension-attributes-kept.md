@@ -188,7 +188,7 @@ In `docx4j-core-tests`, `org.docx4j.wml.WordExtensionAttributesTest`:
 
 ## 11. Follow-through and hand-offs (recipe step 11)
 
-CHANGELOG under "Schema (CR-023 ...)" for 17.1.1 (or the release Jason
+CHANGELOG under "Schema (CR-023 ...)" for 17.2.0 (or the release Jason
 names); this CR per phase; `docs/developer/ms-docx-schema-inventory.md`
 updated (the "bound but not admitted" state emptied, `cei` bound, "what
 this suggests" first item implemented); objects-ts told the four xsd files,
@@ -397,7 +397,7 @@ in Word (Jason, 2026-09-20). Gate of phase 1 met.**
 
 ## 18. Phase 2: follow-through (2026-09-20)
 
-- **CHANGELOG**: "Schema (CR-023 ...)" of 17.1.1, with the Ignorable and
+- **CHANGELOG**: "Schema (CR-023 ...)" of 17.2.0, with the Ignorable and
   `cr` fixes added in phase 1's second commit.
 - **The inventory** (`docs/developer/ms-docx-schema-inventory.md`): updated
   in phase 1's first commit (every state emptied, statuses "admitted

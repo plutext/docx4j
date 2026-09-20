@@ -29,7 +29,7 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2009.x9.main.CTSli
  * The slicers of a worksheet ([MS-XLSX] 2.1.5, x14:slicers), each naming its SlicerCachePart.
  * Related from the worksheet; the slicer's shape is in the worksheet's drawing.
  *
- * @since 17.1.1 (CR-022)
+ * @since 17.2.0 (CR-022)
  */
 public class SlicersPart extends JaxbSmlPart<CTSlicers> {
 

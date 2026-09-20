@@ -65,7 +65,7 @@ import org.w3c.dom.NodeList;
  * no such paragraphs.  Body-level {@code STYLEREF}, which Word resolves once, is still
  * painted from its stored result.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class StyleRefMarkers {
 

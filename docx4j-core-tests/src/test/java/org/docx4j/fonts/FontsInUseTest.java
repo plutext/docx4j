@@ -100,7 +100,7 @@ public class FontsInUseTest {
 	}
 
 	/** No theme part: a theme reference is the Office theme's face (Word supplies it),
-	 *  which since 17.1.1 is Word 365's Aptos rather than Office 2007's Calibri -
+	 *  which since 17.2.0 is Word 365's Aptos rather than Office 2007's Calibri -
 	 *  docx4j.fonts.defaultTheme. */
 	@Test
 	public void noThemePartGivesTheOfficeFaces() throws Exception {

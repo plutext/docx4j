@@ -264,7 +264,7 @@ signature except by adding getters/setters:
    marshal; `TextBindParityTest` is the binder round trip, and asserts
    `Boolean.TRUE` where it asserted `"1"`. `bind.xslt` still writes `w14:val="1"`,
    which is a legal `xsd:boolean` literal, so the XSLT binder needed no change.
-4. **DONE** (this commit). CHANGELOG (17.1.1: a "Schema" heading), the CR marked
+4. **DONE** (this commit). CHANGELOG (17.2.0: a "Schema" heading), the CR marked
    DONE with the commit hashes, the registry updated, and a message back to the
    TypeScript objects repository with the CR number and commits so it regenerates.
    *The registry and the message to `../docx4j-generated-objects-ts` are Jason's
@@ -280,7 +280,7 @@ corpus (no FO change), so the gate is the test modules, not the corpora.
    boolean convenience; **Jason decided 2026-09-16: change it.** Done as in
    the Design: `val` becomes `xsd:boolean` on w14's own `CT_OnOff`, the class
    name stays, `getVal()`/`setVal(String)` become `isVal()`/`setVal(Boolean)`.
-   An API change for 17.1.1, named in the CHANGELOG.
+   An API change for 17.2.0, named in the CHANGELOG.
 2. **The minimal `w16.xsd`** (only `CT_ExtensionList`/`CT_Extension`) rather
    than the whole 2018/wordml schema. Recommended: the whole schema brings
    types nothing in `xsd/` references, and the precedent for a minimal

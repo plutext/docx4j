@@ -36,7 +36,7 @@ import org.junit.Test;
 
 /**
  * The default paragraph style carries a w:numPr (CR-014 probe P6: Word numbers
- * paragraphs naming no style 1 2 3 through it).  Before 17.1.1
+ * paragraphs naming no style 1 2 3 through it).  Before 17.2.0
  * Emulator.getNumber(pkg, pPr) assumed the default style unnumbered.
  */
 public class DefaultStyleNumberedTest {

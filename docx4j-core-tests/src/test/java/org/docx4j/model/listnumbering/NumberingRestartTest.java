@@ -34,7 +34,7 @@ import org.junit.Test;
  * (restarts after level 1 only, which is ilvl 0), and nothing (any shallower
  * level restarts it).  The last label of each list also says what a level that
  * was reset but not yet used shows in a deeper label: its start value (2.1.x),
- * where docx4j printed 2.0.x before 17.1.1.
+ * where docx4j printed 2.0.x before 17.2.0.
  */
 public class NumberingRestartTest {
 

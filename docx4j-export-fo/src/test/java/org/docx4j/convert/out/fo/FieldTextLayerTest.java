@@ -37,7 +37,7 @@ import org.junit.Test;
  *
  * <p>CR-001 batch 41, causes M60 and M44.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class FieldTextLayerTest {
 

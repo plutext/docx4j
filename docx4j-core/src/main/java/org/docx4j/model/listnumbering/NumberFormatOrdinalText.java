@@ -23,7 +23,7 @@ package org.docx4j.model.listnumbering;
  * Twenty-First, One Hundredth, One Hundred First, One Thousandth.  The cardinal
  * words with the last word made ordinal.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatOrdinalText extends LabelFormatter {
 

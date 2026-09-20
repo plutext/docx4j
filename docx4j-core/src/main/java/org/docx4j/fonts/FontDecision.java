@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * What docx4j decided to draw one document font in, and why.
  *
- * <p>Until 17.1.1 the {@link Mapper} held only the <em>result</em> - the physical font,
+ * <p>Until 17.2.0 the {@link Mapper} held only the <em>result</em> - the physical font,
  * its faces, the set of Word-defaulted names - and the passes said what they had done at
  * DEBUG.  So neither a user nor the layout triage could learn from the API why a font had
  * been drawn in what it was drawn in: CR-001 batch 42's first hours went on
@@ -41,7 +41,7 @@ import java.util.List;
  * pass may re-map the font ({@link Mapper#addNoBoldFaceAliases}) or register the family
  * whose line metrics it takes.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class FontDecision {
 

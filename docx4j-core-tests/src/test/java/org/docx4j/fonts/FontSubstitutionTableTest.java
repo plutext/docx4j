@@ -35,7 +35,7 @@ import org.junit.Test;
 /**
  * The knowledge table, {@code font-substitutes.xml} (CR-017 phase 0): the substitutes
  * {@link Mapper#addMetricallyCompatibleSubstitutes()}, {@link FontFallback} and
- * {@link WidthFactors} had in their code until 17.1.1, now in one resource a report - and
+ * {@link WidthFactors} had in their code until 17.2.0, now in one resource a report - and
  * a port - can read.
  *
  * <p>What this checks is that nothing was lost or invented in the move: the same document
@@ -53,7 +53,7 @@ public class FontSubstitutionTableTest {
 	}
 
 	/** The document fonts the table covers, in the order the pass takes them - the order
-	 *  Mapper.addMetricallyCompatibleSubstitutes had them in until 17.1.1. */
+	 *  Mapper.addMetricallyCompatibleSubstitutes had them in until 17.2.0. */
 	@Test
 	public void theTableCoversTheDocumentFontsTheCodeDid() {
 

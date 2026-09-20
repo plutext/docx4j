@@ -55,7 +55,7 @@ Related: CR-015 (its Layering section assigns this CR its first phase:
 selection only"; its `getEffectiveRPr(RPr, PPr)` is the one call this CR
 needs, and `getEffectiveRPrUsingPStyleRPr`, which the selector still calls,
 is deprecated by it); CR-001 (Word layout fidelity, Enterprise repo) drove
-the 17.0.5 to 17.1.1 additions to this package — `FontFallback`, the
+the 17.0.5 to 17.2.0 additions to this package — `FontFallback`, the
 metric-compatible and class-based substitutes, `WordLineMetrics`, the
 kerned and no-ligature twins, `w:w` scaling, small caps, the glyph-aware
 last resort — all kept; its corpus-3 triage (ledger4, 2026-09-12) puts
@@ -336,7 +336,7 @@ javadoc cites), ECMA-376, or one of the probes below.
 14. **The fidelity work has only ever measured one of the two mappers.**
     The harness renders through `Docx4J.load` and `Docx4J.toFO` without
     `setFontMapper`, so every corpus score, every ledger entry and every
-    "measured against Word's PDF" substitute of 17.0.5-17.1.1 is an
+    "measured against Word's PDF" substitute of 17.0.5-17.2.0 is an
     `IdentityPlusMapper` number (the default, `WordprocessingMLPackage`
     453); the export-fo tests are the same (bar `PdfMultipleThreads`).  The
     fidelity commits placed their logic accordingly: the metric-compatible
@@ -1004,7 +1004,7 @@ the two Wingdings substitutes change (`symbolSegments`), and `arabicNumbering`
 gates on any Arabic-script `bidi` language.  In the coverage pass, two rule
 changes forced by the merge and by the goldens: a character the span's font
 covers keeps it - a space included (P2: the space between two substituted
-CJK words is the Latin font's; until 17.1.1 a covered shared character went
+CJK words is the Latin font's; until 17.2.0 a covered shared character went
 with the substitute before it) - and the whole-span shortcut applies only
 where the font drew nothing, since a span now holds Latin beside CJK when
 both share a document font; an uncovered shared character goes with its
@@ -1248,7 +1248,7 @@ recommended").
   the family: serif, sans-serif, monospace; none where the class is unknown)
   - `font-family: 'Calibri','Carlito',sans-serif;`.  Never empty: an unmapped
   font of unknown class is still named.  `docx4j.convert.out.html.fontFamily`
-  = `document` (default) | `physical` (the output until 17.1.1, including its
+  = `document` (default) | `physical` (the output until 17.2.0, including its
   `CSS_NULL`); documented in the properties reference.
   `XsltCommonFunctions.fontCanRender` reads the physical font out of the stack
   (whichever entry this machine has), so the generated-text glyph check still
@@ -1447,4 +1447,4 @@ The review is complete: seventeen gaps, all closed or decided.
   not `Carlito Regular`), from FOP's family triplet.  A font whose triplets
   carry no family entry falls back to its full name minus the twin suffix;
   a browser will not match "Carlito Regular" as a family, which is the
-  pre-17.1.1 behaviour for that font, no worse.
+  pre-17.2.0 behaviour for that font, no worse.

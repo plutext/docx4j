@@ -264,7 +264,7 @@ public class ListNumberingDefinition {
 		return levels == null ? null : levels.get(ilvl);
 	}
 
-	/** The level with this ilvl, or null.  @since 17.1.1 */
+	/** The level with this ilvl, or null.  @since 17.2.0 */
 	public ListLevel getLevel(int ilvl) {
 		return levels == null ? null : levels.get(Integer.toString(ilvl));
 	}
@@ -277,7 +277,7 @@ public class ListNumberingDefinition {
 	 * part installs its own.  Internal; a caller with a state of its own passes it to
 	 * the state-taking overloads instead.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public void setDefaultStateSupplier(java.util.function.Supplier<NumberingState> supplier) {
 		this.defaultStateSupplier = supplier;
@@ -309,7 +309,7 @@ public class ListNumberingDefinition {
      * Increments the count at the given level in the given state, and resets the
      * deeper levels that restart after it.
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     public void incrementCounter(String level, NumberingState state)
     {
@@ -332,7 +332,7 @@ public class ListNumberingDefinition {
 
         // Now set the deeper levels back to their start - each unless its
         // w:lvlRestart says this level does not restart it (ECMA-376 17.9.11;
-        // @since 17.1.1, CR-014 phase 2: unread before, so every deeper level
+        // @since 17.2.0, CR-014 phase 2: unread before, so every deeper level
         // restarted)
         for (int deeperIlvl = levelInt + 1; ; deeperIlvl++) {
         	ListLevel deeper = getLevel(deeperIlvl);
@@ -363,7 +363,7 @@ public class ListNumberingDefinition {
     	return getCurrentNumberString(level, defaultState());
     }
 
-    /** The label of the given level from the counters of the given state.  @since 17.1.1 */
+    /** The label of the given level from the counters of the given state.  @since 17.2.0 */
     public String getCurrentNumberString(String level, NumberingState state)
     {
         ListLevel controllingLvl = this.levels.get( level ); 
@@ -526,33 +526,33 @@ public class ListNumberingDefinition {
     }
 
 
-    /** Whether the level with this ilvl exists.  @since 17.1.1 */
+    /** Whether the level with this ilvl exists.  @since 17.2.0 */
     public boolean levelExists(int ilvl) {
     	return levelExists(Integer.toString(ilvl));
     }
 
-    // ---- the names before 17.1.1 (from the C# original this was translated from);
+    // ---- the names before 17.2.0 (from the C# original this was translated from);
     //      removal no earlier than 17.2 (CR-014 phase 5)
 
-    /** @deprecated since 17.1.1, use {@link #incrementCounter(String)} */
+    /** @deprecated since 17.2.0, use {@link #incrementCounter(String)} */
     @Deprecated
     public void IncrementCounter(String level) { incrementCounter(level); }
-    /** @deprecated since 17.1.1, use {@link #incrementCounter(String, NumberingState)} */
+    /** @deprecated since 17.2.0, use {@link #incrementCounter(String, NumberingState)} */
     @Deprecated
     public void IncrementCounter(String level, NumberingState state) { incrementCounter(level, state); }
-    /** @deprecated since 17.1.1, use {@link #getCurrentNumberString(String)} */
+    /** @deprecated since 17.2.0, use {@link #getCurrentNumberString(String)} */
     @Deprecated
     public String GetCurrentNumberString(String level) { return getCurrentNumberString(level); }
-    /** @deprecated since 17.1.1, use {@link #getCurrentNumberString(String, NumberingState)} */
+    /** @deprecated since 17.2.0, use {@link #getCurrentNumberString(String, NumberingState)} */
     @Deprecated
     public String GetCurrentNumberString(String level, NumberingState state) { return getCurrentNumberString(level, state); }
-    /** @deprecated since 17.1.1, use {@link #getFont(String)} */
+    /** @deprecated since 17.2.0, use {@link #getFont(String)} */
     @Deprecated
     public String GetFont(String level) { return getFont(level); }
-    /** @deprecated since 17.1.1, use {@link #isBullet(String)} */
+    /** @deprecated since 17.2.0, use {@link #isBullet(String)} */
     @Deprecated
     public boolean IsBullet(String level) { return isBullet(level); }
-    /** @deprecated since 17.1.1, use {@link #levelExists(String)} */
+    /** @deprecated since 17.2.0, use {@link #levelExists(String)} */
     @Deprecated
     public boolean LevelExists(String level) { return levelExists(level); }
 }

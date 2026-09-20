@@ -81,7 +81,7 @@ import org.junit.Test;
  * catalogue is what the four hand-kept lists this replaces used to miss.
  *
  * CR-015 phase 1.
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PropertyCatalogueTest {
 

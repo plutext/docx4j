@@ -27,7 +27,7 @@ import org.junit.Test;
  * conditions a cell is under, from {@code w:tblLook}, {@code w:cnfStyle} and position, and
  * the order the matching {@code w:tblStylePr} entries are applied in.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class TableStyleConditionsTest {
 

@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * through their runs; headers, footers and notes are not touched.  Meant for the working
  * copy the preprocessing makes ({@code PP_COMMON_DEEP_COPY}).
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class AcceptTrackedChanges {
 

@@ -48,7 +48,7 @@ import org.w3c.dom.NodeList;
  * {@code font-weight="bold"}, where Word draws that text in {@code ArialMT}. Line parity
  * 0.7677 -&gt; 0.92 with this (CR-001 batch 46 item 4).</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class ListItemBodyMarkPropertiesTest extends AbstractXSLFOTest {
 

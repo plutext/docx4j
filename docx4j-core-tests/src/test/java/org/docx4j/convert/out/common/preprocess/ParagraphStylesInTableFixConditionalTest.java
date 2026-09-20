@@ -31,7 +31,7 @@ import org.junit.Test;
  * gated by {@code w:tblLook}, in the precedence order of ECMA-376-1 17.7.6, below the
  * paragraph's own style and below direct formatting.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class ParagraphStylesInTableFixConditionalTest {
 
@@ -150,7 +150,7 @@ public class ParagraphStylesInTableFixConditionalTest {
 		WordprocessingMLPackage pkg = pkg();
 
 		// outside a table a paragraph naming no style is left as written: the resolver
-		// answers for it (CR-015 phase 2b; until 17.1.1 the default style's id was written on)
+		// answers for it (CR-015 phase 2b; until 17.2.0 the default style's id was written on)
 		assertEquals(null, pStyle(para(pkg, "outside")));
 		// the top-left cell is under firstCol, firstRow and nwCell, named in precedence order
 		assertEquals("Normal-Child-firstCol-firstRow-nwCell-BR", pStyle(para(pkg, "t1 r0 c0")));

@@ -169,7 +169,7 @@ public class PropertyFactory {
 	 * property (or a CSS class on the table).  It is resolved per row, cell and paragraph
 	 * instead - see {@link org.docx4j.model.table.TableStyleConditions}, applied by
 	 * {@code ParagraphStylesInTableFix} (the {@code w:pPr}/{@code w:rPr}) and by the table
-	 * writers (the {@code w:trPr}/{@code w:tcPr}).  Deliberately empty (since 17.1.1; it
+	 * writers (the {@code w:trPr}/{@code w:tcPr}).  Deliberately empty (since 17.2.0; it
 	 * used to warn "TODO").
 	 */
 	public static List<Property> createProperties(List<CTTblStylePr> tblStylePrList) {

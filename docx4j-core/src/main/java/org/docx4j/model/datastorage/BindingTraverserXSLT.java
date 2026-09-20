@@ -788,7 +788,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.error("setMaxWidth method not found. ");				
 		} 
 		
-		// since 17.1.1 (CR-013): docx4j.properties may set the importer's FormattingOptions
+		// since 17.2.0 (CR-013): docx4j.properties may set the importer's FormattingOptions
 		XHTMLImporterFormatting.apply(xHTMLImporter, xhtmlImporterClass);
 		
 		// If we are in a table cell, ensure oversized images are scaled
@@ -897,7 +897,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 						log.warn("Attempting to insert <span> in " + sdtParent + "/w:sdt. Incompatible.");					
 				}
 				
-				// since 17.1.1 (CR-013): under CLASS_TO_STYLE_ONLY the importer ignores @style
+				// since 17.2.0 (CR-013): under CLASS_TO_STYLE_ONLY the importer ignores @style
 				// at that level, so don't generate CSS it would only discard
 				boolean paragraphCssWanted = !XHTMLImporterFormatting.isClassToStyleOnly(XHTMLImporterFormatting.PARAGRAPH);
 				boolean runCssWanted = !XHTMLImporterFormatting.isClassToStyleOnly(XHTMLImporterFormatting.RUN);
@@ -1028,7 +1028,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	        setHyperlinkStyleMethod.invoke(xHTMLImporter, 
 	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
 			
-			// since 17.1.1 (CR-013): user hook; last, so whatever it sets wins
+			// since 17.2.0 (CR-013): user hook; last, so whatever it sets wins
 			XHTMLImporterCustomizer customizer = BindingHandler.getXHTMLImporterCustomizer();
 			if (customizer!=null) {
 				try {

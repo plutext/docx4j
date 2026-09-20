@@ -82,7 +82,7 @@ public class MapperPrecedenceTest {
 
 	@Test
 	public void identityFaceOrderIsRegularBoldItalic() throws Exception {
-		// a family with no plain face: bold before italic (until 17.1.1 italic won, and
+		// a family with no plain face: bold before italic (until 17.2.0 italic won, and
 		// upright text came out italic)
 		PhysicalFonts.put("Docx4j Faceorder bold", PhysicalFonts.get(SANS));
 		PhysicalFonts.put("Docx4j Faceorder italic", PhysicalFonts.get(SERIF));
@@ -141,7 +141,7 @@ public class MapperPrecedenceTest {
 		assertSame(PhysicalFonts.get(SANS), m.get("Docx4j Probe E"));
 		assertNull("a known family is not Word-defaulted", m.get("Arial Narrow"));
 		// and the line box is the face Word uses.  The alias is this mapper's since
-		// 17.1.1, so it is asked for through it; RunFontSelector resolves it before any
+		// 17.2.0, so it is asked for through it; RunFontSelector resolves it before any
 		// name reaches WordLineMetrics (see DocumentAliasScopeTest).
 		assertEquals("Cambria", m.lineMetricsFamily("Docx4j Probe A"));
 		assertEquals(WordLineMetrics.get("Cambria", null).lineHeightFactor(),
@@ -153,7 +153,7 @@ public class MapperPrecedenceTest {
 	 * has "Sans" or "Serif" somewhere in it - is Word-defaulted, because the passes before
 	 * that one will not act on such a guess either.
 	 *
-	 * <p>Until 17.1.1 the guard asked {@link FontFallback#classOf}, which does make the
+	 * <p>Until 17.2.0 the guard asked {@link FontFallback#classOf}, which does make the
 	 * guess, while the class pass asks {@code substitutionClass}, which does not: a font
 	 * the two disagreed about fell between them and was left with no face at all - drawn
 	 * in the document default's serif, with the document default's line box. Measured on a
@@ -254,7 +254,7 @@ public class MapperPrecedenceTest {
 	/**
 	 * An alias a document registered (its altName, or the Word default it was mapped to)
 	 * must not make that family "known": that would have the Word-default pass skipped and
-	 * the font left unmapped (found by the CR-016 phase 4 gate).  Since 17.1.1 the alias
+	 * the font left unmapped (found by the CR-016 phase 4 gate).  Since 17.2.0 the alias
 	 * is the Mapper's, so it cannot reach another document at all; the assertion that it
 	 * does not make the family known stands for this one.
 	 */

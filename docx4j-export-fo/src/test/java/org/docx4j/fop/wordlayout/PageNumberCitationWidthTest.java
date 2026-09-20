@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
  * third is the 6pt by which {@code "000"} is wider than a two-digit number); in the
  * corpus document it was one line and, from there on, every page one out.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class PageNumberCitationWidthTest {
 

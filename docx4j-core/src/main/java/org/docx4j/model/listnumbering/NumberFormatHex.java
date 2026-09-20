@@ -21,7 +21,7 @@ package org.docx4j.model.listnumbering;
 /**
  * {@code w:numFmt hex}: 1, 2, ... 9, A, B, ... F, 10, 11.
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class NumberFormatHex extends LabelFormatter {
 

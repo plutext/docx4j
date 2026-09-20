@@ -93,7 +93,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
      * not resolve, so the metafile's text was drawn in a base-14 font the PDF does not
      * embed (CR-001, non-embedded fonts).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private final org.docx4j.fonts.Mapper fontMapper;
 
@@ -101,7 +101,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
         this(null);
     }
 
-    /** @param fontMapper the document's font mapper, or null.  @since 17.1.1 */
+    /** @param fontMapper the document's font mapper, or null.  @since 17.2.0 */
     public Docx4jDrawFontManager(org.docx4j.fonts.Mapper fontMapper) {
         this.fontMapper = fontMapper;
     }
@@ -127,7 +127,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
          * SVG as font-family, so it is the *family* - "Carlito", not docx4j's face name
          * "Carlito Regular" - and it is taken from the font AWT actually loaded where
          * there is one.  FopConfigUtil declares each font under its family name as well,
-         * so FOP resolves what the SVG carries (CR-001, non-embedded fonts).  @since 17.1.1 */
+         * so FOP resolves what the SVG carries (CR-001, non-embedded fonts).  @since 17.2.0 */
         register(pf);
         Font loaded = fontFromFile(pf);
         String family = (loaded != null) ? loaded.getFamily() : pf.getFamilyName();
@@ -147,7 +147,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
      * {@link PhysicalFonts} by that name (a face which happens to be installed under
      * exactly that name, and the path this took before there was a mapper).
      *
-     * @since 17.1.1
+     * @since 17.2.0
      */
     private PhysicalFont resolved(String typeface, boolean bold, boolean italic) {
         if (typeface == null || typeface.isEmpty()) {
@@ -198,7 +198,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
      * of its base-14 fonts, which the PDF names and does not embed.  This is the same
      * hook RunFontSelector uses for a font it reaches while generating the FO
      * ({@code Mapper.registerLastResortFallback}, declared late by
-     * {@code FopConfigUtil.declareFallbackFonts}).  @since 17.1.1
+     * {@code FopConfigUtil.declareFallbackFonts}).  @since 17.2.0
      */
     private void register(PhysicalFont pf) {
         if (pf == null || fontMapper == null) {
@@ -265,7 +265,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
         /* The face the document's own text would be drawn in, loaded from its file: an
          * AWT font made that way carries the family the file states, so Batik writes
          * that family into the SVG and FOP - which docx4j has declared that same font to
-         * - resolves it.  @since 17.1.1 */
+         * - resolves it.  @since 17.2.0 */
         PhysicalFont resolved = resolved(typeface, bold, italic);
         register(resolved);
         Font fromFile = (resolved == null) ? null : fontFromFile(resolved);
@@ -333,7 +333,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
             } else {
                 /* A font docx4j ships lives in a jar, so its URI is jar:file:...!/x.ttf and
                  * there is no File for it; read the stream instead.  Cached per URI, as the
-                 * file case is, so each font is read once.  @since 17.1.1 */
+                 * file case is, so each font is read once.  @since 17.2.0 */
                 java.io.InputStream is = uri.toURL().openStream();
                 try {
                     font = Font.createFont(type, is);
@@ -345,7 +345,7 @@ public class Docx4jDrawFontManager extends DrawFontManagerDefault {
              * the font it draws with from the attribute map's FAMILY, not from the Font
              * object, so a font AWT does not know degrades to Dialog there whatever this
              * manager returns.  A font docx4j ships is in a jar and is never installed,
-             * which is exactly the headless deployment.  @since 17.1.1 */
+             * which is exactly the headless deployment.  @since 17.2.0 */
             try {
                 GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
                 awtFamilies = null; // re-enumerate; the new family is known to AWT now

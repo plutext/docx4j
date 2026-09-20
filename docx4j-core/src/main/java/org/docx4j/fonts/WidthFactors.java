@@ -44,13 +44,13 @@ import java.util.Locale;
  * <p>Only the XSL FO pathway applies it; HTML names the document font itself and leaves
  * the width to the reader's machine.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public final class WidthFactors {
 
 	private WidthFactors() {}
 
-	/* The factors themselves are font-substitutes.xml's since 17.1.1
+	/* The factors themselves are font-substitutes.xml's since 17.2.0
 	 * (FontSubstitutionTable, CR-017 phase 0), so that a report can cite them and the
 	 * ports can read them.  The one row there is
 	 *
@@ -171,7 +171,7 @@ public final class WidthFactors {
 	 * @param documentFontName the font the docx asks for
 	 * @param physicalFontName the name of the PhysicalFont it resolved to, with or
 	 *        without those suffixes
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static double factorFor(String documentFontName, String physicalFontName) {
 		return factorFor(documentFontName, physicalFontName, false, false);
@@ -196,7 +196,7 @@ public final class WidthFactors {
 	 *
 	 * @param bold   whether the run's effective properties make it bold
 	 * @param italic whether they make it italic
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static double factorFor(String documentFontName, String physicalFontName,
 			boolean bold, boolean italic) {
@@ -230,7 +230,7 @@ public final class WidthFactors {
 
 	/** Whether this document font has an entry at all, whatever it is mapped to and
 	 *  whatever face the run is in.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static boolean hasFactor(String documentFontName) {
 		return documentFontName != null
 				&& FontSubstitutionTable.widthFactors().containsKey(key(documentFontName));

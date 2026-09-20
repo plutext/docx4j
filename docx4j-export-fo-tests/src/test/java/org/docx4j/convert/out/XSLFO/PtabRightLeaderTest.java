@@ -116,7 +116,7 @@ public class PtabRightLeaderTest extends AbstractXSLFOTest {
 			end = Math.max(end, ipdaOf(t));
 		}
 		// the tab draws no word of its own, so measure the line instead: the sum of the
-		// words' ipda plus the tab must fill the line.  Since 17.1.1 the tab's advance is
+		// words' ipda plus the tab must fill the line.  Since 17.2.0 the tab's advance is
 		// carried by a space character rather than by a jump of the pen
 		// (WordLayoutCustomizer.tabSpaces), so its own text area is the tab and not a word.
 		int lineIpd = Integer.parseInt(((Element) lines.item(0)).getAttribute("ipd"));

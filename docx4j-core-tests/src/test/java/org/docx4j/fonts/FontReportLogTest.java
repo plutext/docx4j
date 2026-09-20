@@ -45,7 +45,7 @@ import ch.qos.logback.core.AppenderBase;
  * action where a user could do something, behind
  * {@code docx4j.fonts.report.log=summary|full|off}.
  *
- * <p>Until 17.1.1 a conversion said nothing but a DEBUG line per mapping and FOP's own
+ * <p>Until 17.2.0 a conversion said nothing but a DEBUG line per mapping and FOP's own
  * "font not found" warning, which names no action.</p>
  */
 public class FontReportLogTest {

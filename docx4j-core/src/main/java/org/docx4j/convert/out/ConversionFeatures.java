@@ -130,7 +130,7 @@ public abstract class ConversionFeatures {
 	 * default, since over the corpora the line tips a page whose content is already a
 	 * few points fuller than Word's into an empty page more often than it gives the one
 	 * Word has (measured on one document with a 28pt mark; a probe is with Word).
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String PP_PDF_PAGEBREAK_PARAGRAPH_LINE = "pp.pdf.pagebreakparagraphline";
 	
@@ -156,7 +156,7 @@ public abstract class ConversionFeatures {
 	 *  unique in the FO document, and the attribute is one more per paragraph.  Read by
 	 *  {@code org.docx4j.model.pagination.Paginate} (CR-012); the non-XSLT (visitor)
 	 *  pathway honours it.
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static final String PP_FO_PARAGRAPH_IDS = "pp.fo.paragraphids";
 
 	/** Lay out the accepted view of the main document part's tracked changes: deleted
@@ -164,7 +164,7 @@ public abstract class ConversionFeatures {
 	 *  paragraphs whose mark is deleted, deleted rows gone (AcceptTrackedChanges).  Off
 	 *  by default: the exporters show deletions struck through.  Used by
 	 *  {@code org.docx4j.model.pagination.Paginate} (CR-012).
-	 *  @since 17.1.1 */
+	 *  @since 17.2.0 */
 	public static final String PP_COMMON_ACCEPT_TRACKED_CHANGES = "pp.common.accepttrackedchanges";
 
 	

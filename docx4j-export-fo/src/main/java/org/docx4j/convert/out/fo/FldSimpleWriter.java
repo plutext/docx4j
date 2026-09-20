@@ -68,7 +68,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	 * FOP resolves page by page as Word does ({@link StyleRefMarkers}); every other field
 	 * takes the handlers' route.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Override
 	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, Node content,

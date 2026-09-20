@@ -250,11 +250,11 @@ public class WordLineMetricsTest {
 	 * and Helvetica Neue have been here since 17.1.0; Helv, ArialMT and TimesNewRomanPSMT
 	 * are the PostScript and legacy names of the same families, which documents pick up
 	 * wherever a PDF or a PostScript driver has been round the text.  They were answering
-	 * only by accident until 17.1.1 - through the per-JVM alias map, i.e. only when some
+	 * only by accident until 17.2.0 - through the per-JVM alias map, i.e. only when some
 	 * other document in the same process had registered them - and two corpus documents at
 	 * 1.0000 line parity and page-exact were measuring Helv on Arial's line box that way.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	@Test
 	public void builtInAliases() {

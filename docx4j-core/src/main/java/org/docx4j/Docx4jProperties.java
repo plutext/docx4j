@@ -42,7 +42,7 @@ public class Docx4jProperties {
 	 * <p>Values: {@code 2023} (the default), {@code 2013}, {@code 2007};
 	 * see {@link DefaultTheme}.  Anything else logs a warning and falls back to the default.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final String DEFAULT_THEME = "docx4j.fonts.defaultTheme";
 
@@ -50,7 +50,7 @@ public class Docx4jProperties {
 	 * The three answers {@link Docx4jProperties#DEFAULT_THEME} takes, each with the Latin
 	 * faces its font scheme names and the theme part docx4j bundles for it.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public enum DefaultTheme {
 
@@ -111,7 +111,7 @@ public class Docx4jProperties {
 	 * <p>Read once and remembered, because it is asked for per run of a themeless document.
 	 * {@code setProperty} clears it, so a unit test can change it.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static DefaultTheme getDefaultTheme() {
 

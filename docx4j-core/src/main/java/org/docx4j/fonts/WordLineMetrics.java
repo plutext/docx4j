@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * Microsoft fonts do not, and 26 of the table's 512 families do and have a typo box
  * that differs from their usWin box (Georgia Pro by 1.8pt a line at 11pt).  Those carry
  * their typo metrics as the table's fields 8-10, and a physical font's are read from
- * its file (17.1.1).</p>
+ * its file (17.2.0).</p>
  *
  * The other spacing rules then follow: "auto" multiplies single by line/240;
  * "exact" is line/20 pt regardless of font; "atLeast" is the larger of single
@@ -99,18 +99,18 @@ public final class WordLineMetrics {
 		public final boolean fallback;
 		/** true when the font's OS/2 code-page bits call it East Asian: its line is
 		 *  {@link #EAST_ASIAN_FACTOR} x the usWin box and takes no external leading.
-		 *  @since 17.1.1 */
+		 *  @since 17.2.0 */
 		public final boolean eastAsian;
 		/** The font sets USE_TYPO_METRICS, so {@link #winAscent}, {@link #winDescent} and
 		 *  {@link #externalLeading} hold its typographic ascender, descender and line gap:
-		 *  the box Word lays such a font out on.  @since 17.1.1 */
+		 *  the box Word lays such a font out on.  @since 17.2.0 */
 		public final boolean typoMetrics;
 
 		Metrics(double winAscent, double winDescent, double externalLeading, double fopAscent, double fopDescent, boolean fallback) {
 			this(winAscent, winDescent, externalLeading, fopAscent, fopDescent, fallback, false);
 		}
 
-		/** @since 17.1.1 */
+		/** @since 17.2.0 */
 		Metrics(double winAscent, double winDescent, double externalLeading, double fopAscent,
 				double fopDescent, boolean fallback, boolean eastAsian) {
 			this(winAscent, winDescent, externalLeading, fopAscent, fopDescent, fallback, eastAsian, false);
@@ -172,7 +172,7 @@ public final class WordLineMetrics {
 	 * baseline within the taller line was not measured, and this is the choice that moves
 	 * nothing that was already right.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static final double EAST_ASIAN_FACTOR = 1.3;
 
@@ -203,11 +203,11 @@ public final class WordLineMetrics {
 		int ext = Math.max(0, (hheaA - hheaD + gap) - (winA + winD));
 		// the table's optional seventh field: the OS/2 code-page bits call this family
 		// East Asian, so its line is EAST_ASIAN_FACTOR x the usWin box and takes no
-		// external leading.  @since 17.1.1
+		// external leading.  @since 17.2.0
 		boolean ea = t.length > 6 && t[6] != 0;
 		// the table's optional fields 8-10: the family sets USE_TYPO_METRICS, and Word lays
 		// it out on sTypoAscender / sTypoDescender / sTypoLineGap (see the class comment).
-		// @since 17.1.1
+		// @since 17.2.0
 		if (t.length > 9) {
 			int typoA = t[7], typoD = t[8], typoG = t[9];
 			return new Metrics(typoA / upem, -typoD / upem, Math.max(0, typoG) / upem,
@@ -228,14 +228,14 @@ public final class WordLineMetrics {
 	 * Whether this document font is a family the table lists (itself or a built-in alias):
 	 * {@link Mapper#isKnownFamily} asks this.  It is the same question as
 	 * {@link #hasTableEntry} now that a document's own aliases are per conversion
-	 * (17.1.1); while they were a static map it was not, and asking hasTableEntry here
+	 * (17.2.0); while they were a static map it was not, and asking hasTableEntry here
 	 * made the family a document's altName had aliased to Calibri a "known" family for
 	 * every later document in the JVM, which then skipped the Word-default pass and left
 	 * the font unmapped (found by the CR-016 phase 4 gate: the same document mapped Vrinda
 	 * to Carlito in a fresh JVM and to nothing after another document).  Kept as its own
 	 * method because the two mean different things to a reader.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	/**
 	 * Whether the table flags this family East Asian, so that its line is
@@ -243,7 +243,7 @@ public final class WordLineMetrics {
 	 * know, which is the answer a caller wants: the question is only ever asked to decide
 	 * whether to take <em>this</em> family's line box.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	public static boolean isEastAsianFamily(String documentFont) {
 		int[] t = documentFont == null ? null : lookup(documentFont);
@@ -271,7 +271,7 @@ public final class WordLineMetrics {
 	 * alias to a family in the table.  A font which has them takes them, so
 	 * {@link Mapper#registerLineMetricsAlias} declines to alias it.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static boolean hasOwnLineMetrics(String documentFont) {
 		if (documentFont == null) return false;
@@ -280,7 +280,7 @@ public final class WordLineMetrics {
 	}
 
 	/**
-	 * @deprecated since 17.1.1 this does nothing: a document's own alias is the
+	 * @deprecated since 17.2.0 this does nothing: a document's own alias is the
 	 *             conversion's, not the JVM's - call
 	 *             {@link Mapper#registerLineMetricsAlias} on the package's mapper.
 	 *             The static map it wrote to was never cleared, so one document's
@@ -289,7 +289,7 @@ public final class WordLineMetrics {
 	@Deprecated
 	public static void registerAlias(String documentFont, String substituteFont) {
 		if (WARNED_REGISTER_ALIAS.compareAndSet(false, true)) {
-			log.warn("WordLineMetrics.registerAlias does nothing since 17.1.1 (it was a JVM-wide map);"
+			log.warn("WordLineMetrics.registerAlias does nothing since 17.2.0 (it was a JVM-wide map);"
 					+ " call Mapper.registerLineMetricsAlias on the package's font mapper instead");
 		}
 	}
@@ -301,7 +301,7 @@ public final class WordLineMetrics {
 	 * An alias a *document* declares for itself, in w:altName (ECMA-376 17.8.3.1) or
 	 * through Word's answer for a font it cannot find, used to be registered above, in a
 	 * static map (registerAlias / DOCUMENT_ALIASES, 17.1.0).  It is per conversion since
-	 * 17.1.1 - Mapper.registerLineMetricsAlias and Mapper.lineMetricsFamily.  Nothing
+	 * 17.2.0 - Mapper.registerLineMetricsAlias and Mapper.lineMetricsFamily.  Nothing
 	 * downstream needs it: RunFontSelector resolves the alias while it still has the
 	 * package, and writes the *resolved* family into its docx4j-font hint, so the FO
 	 * exporter, WordLayoutFixups and the FOP fork's line layout manager - none of which
@@ -331,12 +331,12 @@ public final class WordLineMetrics {
 		/* The PostScript and legacy names of the same three families, which documents
 		 * carry wherever a PDF or a PostScript printer driver has been round the text:
 		 * Word treats them as the family and gives them its line box.  They were reaching
-		 * that answer only by accident until 17.1.1 - through the per-JVM alias map, i.e.
+		 * that answer only by accident until 17.2.0 - through the per-JVM alias map, i.e.
 		 * only when some other document in the same process happened to have registered
 		 * them - and two corpus documents at 1.0000 line parity and page-exact measured
 		 * Helv on Arial's line box that way.  With the alias map now scoped to the
 		 * conversion (Mapper.registerLineMetricsAlias) they have to be here to keep it.
-		 * @since 17.1.1 */
+		 * @since 17.2.0 */
 		m.put("helv", "arial");
 		m.put("arialmt", "arial");
 		m.put("timesnewromanpsmt", "times new roman");
@@ -357,7 +357,7 @@ public final class WordLineMetrics {
 							if (v.length < 6) continue;
 							// six fields, plus the optional seventh: the East Asian flag
 							// (etc/GenWordLineMetricsEastAsian), and the optional eighth to
-							// tenth: the typo metrics of a USE_TYPO_METRICS family.  @since 17.1.1
+							// tenth: the typo metrics of a USE_TYPO_METRICS family.  @since 17.2.0
 							int[] t = new int[Math.min(v.length, 10)];
 							for (int i = 0; i < t.length; i++) t[i] = Integer.parseInt(v[i].trim());
 							m.put(name.trim().toLowerCase(java.util.Locale.ROOT), t);
@@ -618,7 +618,7 @@ public final class WordLineMetrics {
 				// specification defines the bit from version 4; DokChampa sets it in a
 				// version 3 table and Word honours it there too (the line-box-typo-metrics
 				// golden: 14.79pt at 11pt, its typo box, not the 21.31 of its usWin box).
-				// @since 17.1.1
+				// @since 17.2.0
 				useTypoMetrics = (u16(data, off + 62) & 0x80) != 0;
 				typoAsc = s16(data, off + 68);
 				typoDesc = s16(data, off + 70);
@@ -628,7 +628,7 @@ public final class WordLineMetrics {
 				// ulCodePageRange1 (OS/2 version 1 and later, so at least 82 bytes) bits
 				// 17-21: JIS/Japan 932, Chinese Simplified 936, Korean Wansung 949,
 				// Chinese Traditional 950, Korean Johab 1361.  A font they flag takes
-				// EAST_ASIAN_FACTOR x its usWin box for a line.  @since 17.1.1
+				// EAST_ASIAN_FACTOR x its usWin box for a line.  @since 17.2.0
 				if (len >= 82) {
 					long cp1 = u32(data, off + 78) & 0xffffffffL;
 					eastAsian = (cp1 & (0x1fL << 17)) != 0;

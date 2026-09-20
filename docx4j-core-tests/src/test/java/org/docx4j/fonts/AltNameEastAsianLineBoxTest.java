@@ -33,7 +33,7 @@ import org.junit.Test;
  * within 1.5% - two of them at 1.0000 line parity and page-exact - so taking the chain
  * end's box for a Latin family can only break them.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class AltNameEastAsianLineBoxTest {
 
@@ -90,7 +90,7 @@ public class AltNameEastAsianLineBoxTest {
 
 	/**
 	 * A Latin chain end is left where it was: the alias is the family the chain
-	 * <em>resolved</em> at, which is what 17.1.1 already did, and batch 42 &#xa7;28.1's ten
+	 * <em>resolved</em> at, which is what 17.2.0 already did, and batch 42 &#xa7;28.1's ten
 	 * documents say that is right.
 	 */
 	@Test

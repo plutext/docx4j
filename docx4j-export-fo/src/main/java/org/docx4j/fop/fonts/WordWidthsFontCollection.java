@@ -64,7 +64,7 @@ public class WordWidthsFontCollection implements FontCollection {
 			 * font declared with advanced="false" has its OpenType layout read and
 			 * applied all the same.  The flag is passed in here instead, which is where
 			 * FOP reads it from; complex scripts still have to be on for the run's font
-			 * to shape at all.  @since 17.1.1 */
+			 * to shape at all.  @since 17.2.0 */
 			boolean advanced = useComplexScripts && configFontInfo.getAdvanced();
 
 			LazyFont font = WordGlyphWidths.isEnabled()

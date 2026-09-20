@@ -57,7 +57,7 @@ import org.w3c.dom.Node;
  * has no glyph for, Word draws as nothing at all - so a bullet would have been wrong for
  * all three.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class RunFontSelectorMissingSymbolTest {
 

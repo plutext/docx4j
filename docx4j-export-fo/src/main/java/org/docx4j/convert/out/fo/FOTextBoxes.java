@@ -175,7 +175,7 @@ public class FOTextBoxes {
 	 *        writes {@code layout-flow:vertical} - on the text box and not on the shape
 	 *        (measured on four corpus documents; the shape's style carries the position and
 	 *        the size).  Null where there is none.
-	 * @since 17.1.1 (CR-001 batch 48 item 4)
+	 * @since 17.2.0 (CR-001 batch 48 item 4)
 	 */
 	public static Element createVmlContainer(Document doc, Map<String, String> props,
 			String wrapType, double[] inset, PageDimensions pd, String textboxStyle) {
@@ -272,7 +272,7 @@ public class FOTextBoxes {
 	 * the indent and padding the horizontal case uses to place the first character - the
 	 * insets are already taken off both dimensions here.</p>
 	 *
-	 * @since 17.1.1 (CR-001 batch 48 item 4)
+	 * @since 17.2.0 (CR-001 batch 48 item 4)
 	 */
 	static void applyLayoutFlow(Element container, Map<String, String> props,
 			double w, double h, double[] in) {

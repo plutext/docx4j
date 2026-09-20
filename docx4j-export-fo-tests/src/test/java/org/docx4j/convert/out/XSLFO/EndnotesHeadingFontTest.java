@@ -60,7 +60,7 @@ import org.w3c.dom.NodeList;
  * word. Measured over a 449-document corpus, 13 documents were in that state, and in 12
  * of them this heading was the only thing wrong.</p>
  *
- * @since 17.1.1
+ * @since 17.2.0
  */
 public class EndnotesHeadingFontTest extends AbstractXSLFOTest {
 

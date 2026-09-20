@@ -348,14 +348,14 @@ final class LBP {
 	/** {@link #setLeaderPattern} kinds, as {@code w:leader} gives them.  The three
 	 *  character kinds are drawn as a run of that character, which is what Word's own
 	 *  PDF carries for them; {@link #LEADER_RULE} is the drawn line {@code w:leader="heavy"}
-	 *  asks for.  @since 17.1.1 for the underscore and hyphen kinds */
+	 *  asks for.  @since 17.2.0 for the underscore and hyphen kinds */
 	static final int LEADER_NONE = 0, LEADER_DOTS = 1, LEADER_RULE = 2,
 			LEADER_UNDERSCORE = 3, LEADER_HYPHEN = 4, LEADER_MIDDLE_DOT = 5;
 
 	/** The character a leader kind repeats, or 0 for a kind which is not a character.
 	 *  Read off the {@code tab-leader-kinds} golden, where Word draws every kind but
 	 *  {@code none} as characters: {@code .} and {@code ·} on their own advances,
-	 *  {@code -}, and {@code _} for both underscore and heavy.  @since 17.1.1 */
+	 *  {@code -}, and {@code _} for both underscore and heavy.  @since 17.2.0 */
 	static char leaderChar(int kind) {
 		switch (kind) {
 		case LEADER_DOTS: return '.';
@@ -375,7 +375,7 @@ final class LBP {
 	static final int GRID_MPT = 240;
 
 	/** An advance rounded to Word's 1/300 inch grid, which is the step its leader
-	 *  characters take.  @since 17.1.1 */
+	 *  characters take.  @since 17.2.0 */
 	static int roundToGrid(int mpt) {
 		if (mpt <= 0) return mpt;
 		int units = (mpt + GRID_MPT / 2) / GRID_MPT;
@@ -397,7 +397,7 @@ final class LBP {
 	 * <p>A leader the FO gave a pattern width of its own keeps it: that width is the
 	 * author's, not the font's.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static void setGridStep(Object area) {
 		if (!WordLayoutCustomizer.leaderGrid()) return;
@@ -435,7 +435,7 @@ final class LBP {
 	 * before it ends at 154.776 - a fraction of a cell past the 46th step - so that Word's
 	 * run there opens a touch <em>behind</em> the text and carries no space.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static int gridPhase(int from, int period) {
 		if (period <= 0 || from <= 0) return 0;
@@ -492,7 +492,7 @@ final class LBP {
 	 * than a jump of the same width (CR-001 batch 45).
 	 *
 	 * @param width the tab's advance, in millipoints
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static void setLeaderPattern(org.apache.fop.layoutmgr.LayoutManager lm, int kind,
 			int width, boolean spaces) {
@@ -616,7 +616,7 @@ final class LBP {
 		}
 
 		/** The same, with the blank at each end of the run written as a space character:
-		 *  either end may be null.  @since 17.1.1 */
+		 *  either end may be null.  @since 17.2.0 */
 		PhasedLeaderArea(org.apache.fop.area.inline.InlineArea lead,
 				org.apache.fop.area.inline.InlineArea leader,
 				org.apache.fop.area.inline.InlineArea tail) {
@@ -685,7 +685,7 @@ final class LBP {
 	 *
 	 * <p>A space is written only where there <em>is</em> a partial cell.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static void setLeaderPhase(org.apache.fop.layoutmgr.LayoutManager lm, int phase, int width,
 			boolean spaces) {
@@ -742,7 +742,7 @@ final class LBP {
 	 * spacing which gives it its advance (a PDF {@code Tc}) moves nothing; what it changes
 	 * is what the text layer says.
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static org.apache.fop.area.inline.TextArea spaceArea(org.apache.fop.fonts.Font font,
 			java.awt.Color colour, int advance, int bpd, int baselineOffset, int level) {
@@ -789,7 +789,7 @@ final class LBP {
 	 * @param run  the leader's filled area, as FOP built and stretched it
 	 * @param from where the run begins, in millipoints from the <b>page's</b> left edge
 	 * @return the area to put in the leader's place, or null where nothing is to change
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	static org.apache.fop.area.inline.InlineArea gridPlacedLeader(
 			org.apache.fop.area.inline.FilledArea run, int from) {
@@ -824,7 +824,7 @@ final class LBP {
 	 * had.</p>
 	 *
 	 * @param lead builds a space area of the advance it is given, or returns null
-	 * @since 17.1.1 (CR-001 batch 49 item 1)
+	 * @since 17.2.0 (CR-001 batch 49 item 1)
 	 */
 	static org.apache.fop.area.inline.InlineArea gridPlacedLeader(
 			org.apache.fop.area.inline.FilledArea run, int from,
@@ -856,7 +856,7 @@ final class LBP {
 	 * was stretched to and simply holds whole cells of the new step, with the remainder at
 	 * the end - which is what Word draws too.</p>
 	 *
-	 * @since 17.1.1
+	 * @since 17.2.0
 	 */
 	private static int gridPlacedStep(org.apache.fop.area.inline.FilledArea run) {
 		java.util.List<org.apache.fop.area.inline.InlineArea> unit = filledUnit(run);
@@ -918,7 +918,7 @@ final class LBP {
 	}
 
 	/** As above; with {@code spaces} the blank is a space <b>character</b> of the tab's
-	 *  whole advance, which is what Word's PDF writes for a tab.  @since 17.1.1 */
+	 *  whole advance, which is what Word's PDF writes for a tab.  @since 17.2.0 */
 	static void blankLeaderArea(org.apache.fop.layoutmgr.LayoutManager lm, int width, boolean spaces) {
 		try {
 			Object area = curAreaRaw(lm);

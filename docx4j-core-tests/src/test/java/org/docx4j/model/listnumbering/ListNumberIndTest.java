@@ -55,7 +55,7 @@ public class ListNumberIndTest {
 	 * draws such a bullet on the level's indent.  Where the level states none - the second
 	 * document here - the linked style's is still the fallback.  A paragraph which does use
 	 * the style gets the style's w:ind over the level's from the style chain anyway. */
-	/* @since 17.1.1 (CR-014 phase 3) the last two: a level with no w:ind of its own takes
+	/* @since 17.2.0 (CR-014 phase 3) the last two: a level with no w:ind of its own takes
 	 * the linked style's (11), and follows w:basedOn to find one (31) - the style chain
 	 * is followed here as it is for every other property a style contributes. */
 	final static String[] expected = { 
