@@ -567,7 +567,7 @@ public class AnonymizeProbesTest {
 
 		// an altChunk of HTML
 		mdp.addAltChunk(AltChunkType.Html,
-				"<html><body><p>SecretHtml paragraph from the Acme intranet</p></body></html>".getBytes(StandardCharsets.UTF_8));
+				"<html><body><p>SecretHtml paragraph</p></body></html>".getBytes(StandardCharsets.UTF_8));
 
 		// a thumbnail
 		ImageJpegPart thumb = new ImageJpegPart(new PartName("/docProps/thumbnail.jpeg"));
