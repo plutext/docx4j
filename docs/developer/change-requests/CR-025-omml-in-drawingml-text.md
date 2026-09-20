@@ -179,7 +179,7 @@ nothing - `a` and `m` are known.
 ## 7. Phase record
 
 Phase 1 (the schema, regeneration, tests, hand-offs), 2026-09-20, commit
-COMMIT_HASH. What the implementation taught that the plan did not know:
+34948f8e9. What the implementation taught that the plan did not know:
 
 - The `jaxb:property` on the group's element was accepted inside `CT_R`'s
   collapsed content list (risk 1 did not arise), but the scoped
