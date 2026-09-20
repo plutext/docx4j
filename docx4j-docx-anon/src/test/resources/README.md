@@ -14,6 +14,7 @@ the coverage of each gap.
 | LegacyForms.docx | docx4j-core-tests | legacy form fields (names, defaults, help text) |
 | vml-textbox.docx | docx4j-core-tests (vml/textbox.docx) | VML text box |
 | chart.docx | docx4j-samples-docx4j/sample-docs | chart |
+| strict-smartart.docx | docx4j-samples-docx4j/sample-docs/strict | SmartArt (diagram data, drawing, layout) in a strict (ISO 29500 strict) document |
 | embedded-fonts.docx | docx4j-samples-docx-export-fo (embedded fonts/embedded.docx) | an embedded (obfuscated) font and the fontTable embed elements |
 | MERGEFIELD.docx | docx4j-core-tests | MERGEFIELD instructions |
 | probe.emf | docx4j-core-tests (metafiles/61294.emf) | a metafile the media probe embeds |

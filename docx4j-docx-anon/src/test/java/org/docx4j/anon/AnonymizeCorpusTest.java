@@ -55,6 +55,7 @@ public class AnonymizeCorpusTest {
 			"LegacyForms.docx",
 			"vml-textbox.docx",
 			"chart.docx",
+			"strict-smartart.docx",
 			"embedded-fonts.docx",
 			"MERGEFIELD.docx" };
 
