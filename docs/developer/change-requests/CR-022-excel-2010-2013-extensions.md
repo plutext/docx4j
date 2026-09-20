@@ -775,7 +775,19 @@ model's binary, which Excel alone writes.
 - **Registry**: `docx4j/CR-022` and its phases done.
 
 **Left for other CRs** (each named where it arose): the slicer and timeline
-drawing shapes (§16, §19; DrawingML); `CT_OleObjects`' per-object
+drawing shapes (§16, §19; DrawingML) - **measured 2026-09-20, after the
+close**, on objects-ts's prompting from its round-trip probe: with every
+part forced to unmarshal, `cr022-checkbox.xlsx`'s `xl/drawings/drawing1.xml`
+round-trips to a bare `xdr:wsDr` (Excel writes the a14 shape in a Choice
+with an **empty** Fallback, which the preprocessor selects), and the slicer
+workbook's two drawings resolve to their Fallback `xdr:sp`; silent, and
+hidden in the ordinary path only because an untouched part is written back
+from its bytes. The CR: admit `mc:AlternateContent` in `CT_Drawing`
+(`xdr:wsDr`) and in the anchor types, retain `xdr:wsDr` and
+`xdr:twoCellAnchor` in the preprocessor, bind the a14/sle/tsle/sle15 shape
+schemas as far as needed, and add `x16r2` (spreadsheetml/2015/02/main) and
+`oel` (office/2019/extlst) to the prefix table (objects-ts found both
+missing; Excel names `x16r2` in `styles.xml`'s `mc:Ignorable`); `CT_OleObjects`' per-object
 `mc:AlternateContent` (§17); `CT_DataValidation`'s `x12ac:list` Choice (§16,
 no file); the remaining revision attributes and `xcalcf` (the inventory's
 second group); a decoder for the data model's binary ([MS-XLDM]: Xpress9 and
