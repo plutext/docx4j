@@ -546,6 +546,18 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "xr10";	
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2017/revision16"))
 			return "xr16";	
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2015/02/main"))
+			return "x16r2";  // [MS-XLSX] 5.11 formatCode16; Excel names it in styles.xml's mc:Ignorable (CR-024)
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/2019/extlst"))
+			return "oel";  // an extLst namespace Office 365 declares on many parts (CR-024)
+		// the slicer and timeline shapes' Requires prefixes (kept whole in a spreadsheet drawing's
+		// mc:AlternateContent since CR-024; the schemas themselves are not bound)
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2010/slicer"))
+			return "sle";
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2012/slicer"))
+			return "sle15";
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2012/timeslicer"))
+			return "tsle";
 		
 		
 		
@@ -803,6 +815,16 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision10";	
 		if (prefix.equals("xr16"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2017/revision16";	
+		if (prefix.equals("x16r2"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2015/02/main";
+		if (prefix.equals("oel"))
+			return "http://schemas.microsoft.com/office/2019/extlst";
+		if (prefix.equals("sle"))
+			return "http://schemas.microsoft.com/office/drawing/2010/slicer";
+		if (prefix.equals("sle15"))
+			return "http://schemas.microsoft.com/office/drawing/2012/slicer";
+		if (prefix.equals("tsle"))
+			return "http://schemas.microsoft.com/office/drawing/2012/timeslicer";
 		
 		// OpenDoPE
 		if (prefix.equals("odx"))

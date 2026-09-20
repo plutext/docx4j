@@ -1,8 +1,12 @@
 # CR-024: mc:AlternateContent in DrawingML hosts - spreadsheet drawings and charts kept whole, as CR-021 keeps WordprocessingML, SpreadsheetML and PresentationML
 
-Status: PROPOSED 2026-09-20 (Jason Harrop: "draft a DrawingML AlternateContent
-CR", after the objects-ts session's round-trip probe found `cr022-checkbox.xlsx`'s
-drawing part emptied by a load-and-save, and the loss was confirmed here).
+Status: ACTIVE - phase 1 LANDED 2026-09-20 (the admissions, the retain list, five
+prefixes, `DrawingAlternateContentKeptTest`; the three losses of §1 closed under the
+forced round trip; core and export-fo suites green), awaiting Jason's four
+application checks of the re-saves in `~/cr024-resaves/` (§10). Proposed
+2026-09-20 (Jason Harrop: "draft a DrawingML AlternateContent CR", after the
+objects-ts session's round-trip probe found `cr022-checkbox.xlsx`'s drawing part
+emptied by a load-and-save, and the loss was confirmed here).
 Written by `docs/developer/adding-a-schema.md` step 0 where it applies (no
 new namespace is bound in phase 1; §7 names the departures). Drafted with
 Claude Fable 5.1. Owner: Jason Harrop.
@@ -30,7 +34,7 @@ fidelity corpus's 342 real documents, by parent (the survey script
 |---|---|---|---|---|---|
 | `xl/drawings/` | `xdr:wsDr` | a14 | `xdr:twoCellAnchor` (a check box's shape) | **empty** | `cr022-checkbox.xlsx` |
 | `xl/drawings/` | `xdr:twoCellAnchor` | a14 / tsle / sle15 | `xdr:graphicFrame` (a slicer or timeline) | `xdr:sp` (a "works in Excel 2010 or higher" box) | `cr022-slicers-timelines.xlsx` (3) |
-| `xl/drawings/` | `xdr:oneCellAnchor` | a14 | `xdr:sp` | `xdr:sp` | `cr022-slicers-timelines.xlsx` |
+| `xl/drawings/` | `xdr:oneCellAnchor` | a14 | `xdr:sp` | `xdr:sp` | `loadAndSave.xlsx` (phase 1 correction: the table first attributed it to the slicers fixture) |
 | `*/charts/` | `c:chartSpace` | c14 | `c14:style` (`val="102"`) | `c:style` (`val="2"`) | `loadAndSave.docx`, `.pptx`, `.xlsx` (one chart each) |
 | `ppt/slides/` | `p:spTree` | a14 | `p:sp` | `p:sp` | `loadAndSave.pptx` - **kept since CR-021 phase 3** |
 
@@ -61,14 +65,15 @@ The three DrawingML schemas gain the `mce` import (as `wml.xsd`, `sml` and
 | schema | host | change | why there |
 |---|---|---|---|
 | `xsd/dml/dml-spreadsheetDrawing.xsd` | `EG_Anchor` (the choice `CT_Drawing` repeats) | `<xsd:element ref="mc:AlternateContent"/>` as a fourth choice member | Excel writes it beside the anchors, as a sibling of `twoCellAnchor` (measured: `xdr:wsDr` > AC) |
-| same | `EG_ObjectChoices` (the choice `CT_TwoCellAnchor`, `CT_OneCellAnchor`, `CT_AbsoluteAnchor` and `CT_GroupShape` share for `sp`/`grpSp`/`graphicFrame`/`cxnSp`/`pic`/`contentPart`) | `<xsd:element ref="mc:AlternateContent"/>` as a choice member | Excel writes it in the object's place (measured on `twoCellAnchor` and `oneCellAnchor`; `absoluteAnchor` and `grpSp` share the group, so admitted by construction, as CR-021 admitted `p:grpSp` beside `p:spTree`) |
+| same | `EG_ObjectChoices` (the choice `CT_TwoCellAnchor`, `CT_OneCellAnchor` and `CT_AbsoluteAnchor` share for `sp`/`grpSp`/`graphicFrame`/`cxnSp`/`pic`) | `<xsd:element ref="mc:AlternateContent"/>` as a choice member | Excel writes it in the object's place (measured on `twoCellAnchor` and `oneCellAnchor`; `absoluteAnchor` shares the group, so admitted by construction) |
+| same | `CT_GroupShape` (its own repeated choice of the same five - phase 1 found it does **not** use `EG_ObjectChoices`, as this table first said) | `<xsd:element ref="mc:AlternateContent"/>` as a choice member | as CR-021 admitted `p:grpSp` beside `p:spTree` |
 | `xsd/dml/dml-chart.xsd` | `CT_ChartSpace` | `<xsd:element ref="mc:AlternateContent" minOccurs="0"/>` beside `style` | Excel writes the c14 style choice in `style`'s position (measured in all three chart parts) |
 
 The JAXB shape: `CTDrawing.getEGAnchor()` is a `List<Object>` already (a
-repeated choice), so an `AlternateContent` member joins the anchors;
-`CTTwoCellAnchor` and its siblings gain an `alternateContent` property
-beside `sp`/`graphicFrame`; `CTChartSpace` gains `alternateContent`. No
-existing accessor changes.
+repeated choice), so an `AlternateContent` member joins the anchors, as it
+joins `CTGroupShape.getSpOrGrpSpOrGraphicFrame()`; `CTTwoCellAnchor` and its
+siblings gain an `alternateContent` property beside `sp`/`graphicFrame`;
+`CTChartSpace` gains `alternateContent`. No existing accessor changes.
 
 **`CT_ChartSpace` in the three contexts**: `org.docx4j.dml.chart` and
 `org.docx4j.dml.spreadsheetdrawing` are shared by `jc`, `jcPML` and
@@ -102,6 +107,19 @@ which the kept branches carry as declarations (they are on the Choice
 elements in Excel's output, so a kept-whole DOM keeps them; the table entry
 matters if anything re-marshals them typed). `a14` and `c14` are present.
 
+**Phase 1 finding - the entries matter on every re-save, not only a typed one.**
+`mc:Choice` is a typed object (`AlternateContent.Choice`), so the
+`xmlns:tsle` Excel declares *on the Choice* is not kept there; what keeps the
+namespace in scope is its use inside the kept DOM (`tsle:timeslicer` in the
+`graphicData`), which the marshaller hoists to the part's root under the
+prefix the table gives the URI. With no table entry that prefix is `ns#`, and
+`Requires="tsle"` names an undeclared prefix - CR-023's repair prompt, on
+every re-save of a timeline. `sle`, `sle15` and `tsle` are therefore
+required entries, not tidiness; the test asserts every `Requires` prefix is
+declared in the saved part. (A Choice whose `Requires` prefix its content
+never uses would still be undeclared unless the prefix is pre-declared, as
+`a14` and `c14` are on every root; none such was measured.)
+
 ## 5. Kept as DOM, and the reader's view
 
 `mce`'s minimal schema is a lax wildcard (CR-021 §8.12), so a kept Choice
@@ -109,10 +127,13 @@ or Fallback unmarshals its children typed only if they are **global**
 elements of a bound schema. `xdr:twoCellAnchor`, `xdr:sp`,
 `xdr:graphicFrame` and `c:style` are local elements (the spreadsheet
 drawing schema declares only `from`, `to` and `wsDr` globally), so they
-come back as DOM `Element`s - lossless, byte-for-byte on re-marshal, which
-is the round-trip guarantee this CR is for. `c14:style` is global in
-`org.docx4j.dml.chart.x2007` and comes back typed. This is the same state
-CR-021 left `w:drawing`/`w:pict` in (`w:r`'s are local elements too).
+come back as DOM `Element`s - lossless on re-marshal (the element re-declares
+the namespaces that were in scope at Excel's root, `xmlns:c16r2` on `c:style`;
+not byte-for-byte, but nothing lost), which is the round-trip guarantee this CR
+is for. `c14:style` is global in `org.docx4j.dml.chart.x2007` with a named
+type, so it comes back typed inside a `JAXBElement` (`XmlUtils.unwrap`). This
+is the same state CR-021 left `w:drawing`/`w:pict` in (`w:r`'s are local
+elements too).
 
 A **reader** (an exporter, a walker in READ mode) sees one branch, chosen by
 `McSelection`: with `docx4j.jaxb.mc.preferChoice` empty (the default) the
@@ -212,6 +233,39 @@ oracle now keeps in drawings and charts.
    box re-saves with the shapes drawn; Word, PowerPoint and Excel open the
    chart re-saves with the style intact.
 2. **Follow-through**: CHANGELOG, this CR closed, the hand-offs.
+
+### Phase 1 record (2026-09-20)
+
+One commit. `dml-spreadsheetDrawing.xsd`: the `mce` import; the reference in
+`EG_Anchor`, in `EG_ObjectChoices`, and in `CT_GroupShape`'s own choice (the
+group does not use `EG_ObjectChoices` - §2 corrected). `dml-chart.xsd`: the
+import; the reference beside `style`. `mc-preprocessor.xslt`: the six parents
+and the `xdr`/`c` declarations. `NamespacePrefixMappings`: `x16r2`, `oel`,
+`sle`, `sle15`, `tsle` both ways (the three shape prefixes were absent; §4's
+finding says why they are needed). No context list changed: `org.docx4j.mce`
+reaches every context through the element references, as it does for `w:r`.
+No walker changed: nothing in docx4j-core walks an anchor list or a
+`CTChartSpace` beyond the two part classes.
+
+`org.docx4j.dml.DrawingAlternateContentKeptTest`, five tests: the check box
+(one `AlternateContent` in `getEGAnchor()`, a14 Choice holding the
+`twoCellAnchor`, empty Fallback kept as `<mc:Fallback/>`; `McSelection`
+selects nothing by default and the shape with `preferChoice=a14`), the
+slicers and timeline (three `twoCellAnchor`s with Requires a14/tsle/sle15,
+`graphicFrame` Choice, `sp` Fallback, `xmlns:tsle` and `xmlns:sle15` declared
+in the saved parts), the `oneCellAnchor` (§1 corrected: it is in
+`loadAndSave.xlsx`), the chart style in all three formats (`c14:style` typed,
+`c:style` DOM, the Fallback selected by default, the Choice with `c14`), and
+the five prefixes both ways. The forced round trip skips the legacy VML
+drawing of a form control, which docx4j cannot unmarshal (the xlsx4j backlog
+item), as the ordinary path does.
+
+Gate: the three losses of §1 closed under the forced round trip (the test);
+`docx4j-core-tests` and `docx4j-export-fo-tests` green. Outstanding - Jason's
+four opens of `~/cr024-resaves/`: `cr022-checkbox-resaved.xlsx` (the check
+box drawn), `cr022-slicers-timelines-resaved.xlsx` (two slicers and a
+timeline drawn as such, not as boxes), `loadAndSave-resaved.docx`/`.pptx`/
+`.xlsx` (the chart's style intact, no repair prompt).
 
 ## 11. Effort (rough)
 

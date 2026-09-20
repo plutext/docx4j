@@ -12,6 +12,8 @@
 	xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
 	
  	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+ 	xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
+ 	xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"
  		
 	xmlns:wordml201011="http://schemas.microsoft.com/office/word/2010/11/wordml"
 	xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
@@ -309,7 +311,9 @@
   	<xsl:choose>
   	
 	    <xsl:when test="parent::w:r or parent::w:p or parent::w:numPicBullet or parent::x:workbook or parent::x:worksheet or parent::x:controls
-	    		or parent::p:spTree or parent::p:grpSp or parent::p:controls">
+	    		or parent::p:spTree or parent::p:grpSp or parent::p:controls
+	    		or parent::xdr:wsDr or parent::xdr:twoCellAnchor or parent::xdr:oneCellAnchor or parent::xdr:absoluteAnchor or parent::xdr:grpSp
+	    		or parent::c:chartSpace">
 				<!-- The schema admits mc:AlternateContent here (w:r since 3.3.8; w:p and
 				     w:numPicBullet since 17.1.1, CR-021 phase 2; x:workbook, Excel's x15
 				     absPath, in sml.xsd all along), so JAXB keeps both branches and the
@@ -321,7 +325,12 @@
 				     PresentationML's admitted parents (p:spTree and p:grpSp, CT_GroupShape;
 				     p:controls, CT_ControlList) joined in CR-021 phase 3, with the pptx4j
 				     consumers (the placeholder walks, pptx2svginhtml.xslt) reading one
-				     branch through McSelection. -->
+				     branch through McSelection.  The DrawingML hosts (a spreadsheet
+				     drawing's root and its anchors, dml-spreadsheetDrawing.xsd; a chart's
+				     c:chartSpace, dml-chart.xsd) joined in CR-024: a check box's a14 shape
+				     with an EMPTY Fallback, a slicer's or timeline's graphicFrame, and the
+				     c14 chart style were all resolved to Office 2007's view - for the
+				     check box, a bare xdr:wsDr - by the branch below. -->
 			<xsl:variable name="dummyRetain" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), '; retaining'))" />
 		    <xsl:copy>
@@ -331,8 +340,9 @@
 
 		<!-- Any other parent: in WordprocessingML one the survey of CR-021 phase 0
 		     (835 documents) never saw; in the other formats a parent the schema does
-		     not admit (a chart's c:chartSpace, a spreadsheet drawing's
-		     xdr:oneCellAnchor).  The element is resolved to the one
+		     does not admit (since CR-024 none is known: the survey of the
+		     repository's Office files and the corpus found only the hosts
+		     above).  The element is resolved to the one
 		     branch docx4j draws (org.docx4j.jaxb.McSelection's rule, through
 		     XSLTUtils.mcPrefersChoice: the first Choice whose Requires prefixes are all in
 		     docx4j.jaxb.mc.preferChoice, else the Fallback, else dropped), with a warning
@@ -340,7 +350,7 @@
 		     and is gone. -->
 		<xsl:when test="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))]">
 			<xsl:variable name="dummyParent"
-				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls); resolving it'))" />
+				select="java:org.docx4j.utils.XSLTUtils.logWarn(concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021/CR-024: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls, xdr:wsDr, the xdr anchors, xdr:grpSp, c:chartSpace); resolving it'))" />
 
   			<xsl:variable name="chosen"
   				select="mc:Choice[java:org.docx4j.utils.XSLTUtils.mcPrefersChoice(string(@Requires))][1]"/>
@@ -354,7 +364,7 @@
   		<xsl:when test="mc:Fallback">
   		
   			<xsl:variable name="message" 
-  				select="concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls); selecting its Fallback ', name(mc:Fallback/*[1]))" />  			
+  				select="concat('mc:AlternateContent in ', name(..), ' is not kept by the preprocessor (CR-021/CR-024: kept in w:r, w:p, w:numPicBullet, x:workbook, x:worksheet, x:controls, p:spTree, p:grpSp, p:controls, xdr:wsDr, the xdr anchors, xdr:grpSp, c:chartSpace); selecting its Fallback ', name(mc:Fallback/*[1]))" />  			
 			<xsl:variable name="logging" 
 				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
 				
