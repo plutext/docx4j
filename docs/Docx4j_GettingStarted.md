@@ -365,7 +365,7 @@ docx4j started with ECMA-376 1st Edition.  Where appropriate later versions of t
 
 docx4j can open documents which contain Word 2010 and later content.  The key extensions are bound (the w14, w15 and w16 namespaces, wps and wpg shapes, a14 drawing), and what it does not bind is preserved wherever the schema admits it.
 
-**Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  A text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  Since docx4j 17.2.0 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the docx4j.jaxb.mc.preferChoice property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.
+**Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  A text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  Since docx4j 17.2.0 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the docx4j.jaxb.mc.preferChoice property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.  Where a producer has written the element somewhere the schema does not admit it (Word's own output has not been seen to), the load-time preprocessor resolves that one element to the branch docx4j draws, and logs a warning naming the parent.
 
 # Architecture
 
@@ -1273,6 +1273,8 @@ See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_1
 
 These jars are in the zip file, in dir optional/export-fo  
 
+**Two FO renderers.  **From 17.2.0 docx4j-export-fo supports two: Apache FOP 2.11, its default dependency (unchanged), and the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules (not yet released).  Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards that went undetected before: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.
+
 **Hyphenation.  **From 17.1.0, hyphenation in PDF output is driven by the document, as in Word: docx4j reads w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit and w:doNotHyphenateCaps from settings.xml (and w:suppressAutoHyphens on a paragraph), and hyphenates only where the document asks for it.  Nothing needs configuring per document.
 
 FOP hyphenates from TeX pattern files and ships none, and the usual set is not under the Apache licence, so docx4j-export-fo does not depend on it.  To get hyphenated output, add the patterns to your own classpath:
@@ -1715,6 +1717,18 @@ You can specify a different resource of your own in docx4j.properties:
 
 `org.docx4j.toc.TocStyles.xml=org/docx4j/toc/TocStyles.xml`
 
+# Pagination: which page is a paragraph on?
+
+From 17.2.0, org.docx4j.model.pagination.Paginate lays the document out with FOP and reports which page each paragraph of the main document part starts on, keyed by its w14:paraId.  It needs docx4j-export-fo on the classpath (found reflectively, as the TOC generator finds it); the XSL FO comes from the same exporter as PDF output, so the pages are the pages that PDF would have.
+
+&#9;`PaginationMap map = Paginate.compute(wordMLPackage, null);`
+
+&#9;`Integer page = map.getPageIndex(paraId);   // 1-based, in rendering order; getPage() gives the number the page displays`
+
+Paginate.paginate(wordMLPackage, settings) does that and also rewrites the document's w:lastRenderedPageBreak markers, as Word records the pagination of its last rendering: every existing marker is removed, one is written at the start of each paragraph that begins a new page, and, inside a paragraph that spans pages, one at the character where the new page begins (the run is split there, as Word does).  A paragraph without a w14:paraId is given one, so a document paginated once keys stably from then on.  PaginateSettings.setLineBreaks(false) turns the mid-paragraph markers off; setWriteParaIds(false) leaves the ids alone.
+
+The layout is of the document as if its tracked changes were accepted, and the pages are FOP's, with the fonts the package's font mapper resolves (Appendix 1): where those metrics differ from Word's, the page a paragraph lands on can differ too, so the markers are advisory, as Word's own are.  Docx4J.updateToc uses the same layout for the page numbers of a table of contents.
+
 # Text extraction
 
 A quick way to extract the text from a docx, is to use `TextUtils‘  `
@@ -1874,6 +1888,8 @@ See also the docx4j sample ContentControlBindingExtensions.
 ### Binding escaped XHTML (XML + CSS)
 
 docx4j can also take encoded XHTML and convert this to docx content. See further OpenDoPE\_XHTML.docx in the docx4j docs directory.
+
+The OpenDoPE specification, version 3 (working draft of 18 September 2026), documents the binding conventions, escaped XHTML among them; it is in the docs directory of the docx4j repository: [github.com/plutext/docx4j/tree/VERSION\_17\_2\_0/docs](https://github.com/plutext/docx4j/tree/VERSION_17_2_0/docs) (OpenDoPE Specification v3 WD 2026 09 18, as docx, markdown and PDF).
 
 ### Binding other rich content
 
@@ -2045,6 +2061,8 @@ Use IdentityPlusMapper, which the package creates for you when you set none: it 
 
 On a Linux computer, common Microsoft fonts are typically not available; the substitutes docx4j ships stand in for them.   See appendix 2 for background and solutions.
 
+**Headless deployment.  **A stock container image - ubuntu, debian, fedora, alpine - ships no font files at all, so on such a machine the jars are the whole supply: docx4j-export-fo-fonts-croscore (or -liberation), -crosextra, -symbol and, for documents in Microsoft 365's default theme, -theme2023.  With them every Office default theme since 2007 has a metrically compatible substitute; a document font outside that set is drawn in a font of the same class, and FontsAnalysis (below) says which and what to do about it.  Widening the jars-only supply (condensed sans faces, DejaVu Sans) is docx4j issue #695.
+
 A font mapper contains Map\<String, PhysicalFont\>; to add a font mapping, as per the example in the ConvertOutPDF sample:
 
 &#9;`// Set up font ``mapper`
@@ -2111,7 +2129,7 @@ Notes about mapping:
 
 You can use [https://github.com/plutext/docx4j/blob/VERSION\_11\_5\_8/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/FontsUsed.java](https://github.com/plutext/docx4j/blob/VERSION_11_5_8/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/FontsUsed.java) to get an understanding of what fonts are present in your docx, and how they are mapped.
 
-Note:  for characters outside the ASCII range, font selection is a complex topic.  For simplicity, the FontsUsed sample does not cover those cases.  
+Note:  for characters outside the ASCII range, font selection is a complex topic.  For simplicity, the FontsUsed sample does not cover those cases.    From 17.2.0 FontsAnalysis (next) covers them, and says what docx4j will draw each font with.
 
 For more insight into what is happening, you can set the following loggers:
 
@@ -2124,6 +2142,20 @@ In case of problems (for example, a font has previously failed to load), you can
 
   
 
+
+## FontsAnalysis: what a document uses, and what docx4j draws it with
+
+From 17.2.0, org.docx4j.fonts.FontsAnalysis answers the two questions behind most font problems.
+
+FontsAnalysis.usage(pkg) says what a document uses each font for: characters and runs, by script and by face, over the body, headers, footers, notes and comments - by asking the run font selector which font each character goes to, so it sees what the exporters see (a Cyrillic character in a run whose ASCII font is Calibri counts for the font the selector picks for it, not for Calibri).
+
+FontsAnalysis.analyse(pkg) reports, per font the document uses and in the order of the text it carries: what the font is used for; what docx4j draws it with and why; a grade - EXACT (the font itself, or its embedded form), NEAR (a metrically compatible clone), CLASS (a font of the same class: lines may break differently) or NONE; what the font table says about the machine that saved the document (embedded; w:panose1 and w:sig, which Word reads off the font file and so mean it had the font; a name-only or w:notTrueType entry, which says it did not; or no entry at all); and what to do about it - which font to install, or which clone and which docx4j font jar or distribution package carries it.  As text or as JSON, and from a command line:
+
+&#9;`java -cp ... org.docx4j.fonts.FontsAnalysis in.docx [--jars-only] [--json]`
+
+FontEnvironment asks the same question of another deployment's fonts rather than this machine's: FontEnvironment.jarsOnly() (the docx4j font jars alone, as on a headless server - issue #695), FontEnvironment.ofDirectory(dir), or FontEnvironment.of(name, physicalFontNames); pass it as the second argument of analyse.
+
+A conversion via XSL FO says what it made of the document's fonts, once per document: one line per document font naming what it is drawn in, how close that is, and what to do about it - INFO where the font itself, its embedded form or a metric clone draws it, WARN otherwise, with the action in the line.  The property docx4j.fonts.report.log selects summary (the default), full (the whole report) or off.
 
 # Appendix 2 – Office font solutions
 
