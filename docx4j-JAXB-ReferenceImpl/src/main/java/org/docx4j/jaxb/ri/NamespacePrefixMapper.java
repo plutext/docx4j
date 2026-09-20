@@ -152,11 +152,13 @@ public class NamespacePrefixMapper extends org.glassfish.jaxb.runtime.marshaller
      * @since
      *      JAXB RI 2.0 beta
      */
-//    public String[] getPreDeclaredNamespaceUris2() {    	
-//      return EMPTY_STRING;    	
-//    }
-    
-    /*  WARNING: don't use getPreDeclaredNamespaceUris2; it is buggy, at least in Java 1.6.0_27
+    public String[] getPreDeclaredNamespaceUris2() {
+    	// Only the Ignorable prefixes getPreDeclaredNamespaceUris cannot produce (CR-024):
+    	// see NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris2.
+    	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris2(mcIgnorable.get());
+    }
+
+    /*  Until 17.1.1 this method was unused, after (Java 1.6.0_27, with every prefix returned)
      * 
 		Attribute "xmlns:w14" was already specified for element "w:document".
 		org.xml.sax.SAXParseException: Attribute "xmlns:w14" was already specified for element "w:document".

@@ -221,6 +221,44 @@ public class NamespacePrefixMapperUtils {
     	
     }
 
+    /**
+     * The (prefix, namespace URI) pairs to declare on the root for the prefixes an
+     * mc:Ignorable names which {@link #getPreDeclaredNamespaceUris} cannot produce: a
+     * prefix whose namespace the table binds to a different prefix, or to the default
+     * namespace.  Excel's slicer, slicer cache and timeline parts are the measured case:
+     * their roots say {@code mc:Ignorable="x xr10"} with {@code xmlns:x} the SpreadsheetML
+     * main namespace, which docx4j writes as the default namespace - so nothing declared
+     * {@code x}, and Excel 365 repaired the file (CR-024 phase 1's Excel check).  The
+     * runtime declares the pair beside the default binding, {@code xmlns="..."} and
+     * {@code xmlns:x="..."} on one element, without a duplicate (measured on
+     * jaxb-runtime 4, 2026-09-20; the duplicate-attribute failure that kept this method
+     * unused was Java 6's, with every prefix returned).  Pairs are returned only for
+     * these prefixes, so nothing is declared twice.
+     *
+     * @since 17.1.1 (CR-024)
+     */
+    public static String[] getPreDeclaredNamespaceUris2(String mcIgnorable) {
+
+    	if (mcIgnorable==null) {
+    		return EMPTY_STRING;
+    	}
+    	java.util.List<String> pairs = new java.util.ArrayList<String>();
+		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
+		while (st.hasMoreTokens()) {
+			String prefix = st.nextToken();
+			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
+			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
+				continue;  // warned about in getPreDeclaredNamespaceUris
+			}
+			String preferred = NamespacePrefixMappings.getPreferredPrefixStatic(uri, prefix, false);
+			if (!prefix.equals(preferred)) {
+				pairs.add(prefix);
+				pairs.add(uri);
+			}
+		}
+		return pairs.toArray(new String[pairs.size()]);
+    }
+
     public static Map<String, String> getPreDeclaredNamespaceMap(String mcIgnorable) {
     
     	Map<String, String> entries = new HashMap<String, String>();

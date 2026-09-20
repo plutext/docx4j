@@ -1,9 +1,12 @@
 # CR-024: mc:AlternateContent in DrawingML hosts - spreadsheet drawings and charts kept whole, as CR-021 keeps WordprocessingML, SpreadsheetML and PresentationML
 
-Status: ACTIVE - phase 1 LANDED 2026-09-20 (the admissions, the retain list, five
-prefixes, `DrawingAlternateContentKeptTest`; the three losses of §1 closed under the
-forced round trip; core and export-fo suites green), awaiting Jason's four
-application checks of the re-saves in `~/cr024-resaves/` (§10). Proposed
+Status: ACTIVE - phase 1 LANDED 2026-09-20 in two commits (the admissions, the
+retain list, six prefixes, `DrawingAlternateContentKeptTest`; the three losses of
+§1 closed under the forced round trip; then the Excel check's finding fixed - every
+root's `mc:Ignorable` prefixes declared, `IgnorablePrefixesDeclaredTest`; core and
+export-fo suites green). Gate PASSED 2026-09-20: Word and PowerPoint opened their
+chart re-saves; the three Excel re-saves were repaired at first (the Ignorable
+finding, §10), re-cut after the fix, and opened clean. Phase 2 next. Proposed
 2026-09-20 (Jason Harrop: "draft a DrawingML AlternateContent CR", after the
 objects-ts session's round-trip probe found `cr022-checkbox.xlsx`'s drawing part
 emptied by a load-and-save, and the loss was confirmed here).
@@ -116,7 +119,9 @@ prefix the table gives the URI. With no table entry that prefix is `ns#`, and
 `Requires="tsle"` names an undeclared prefix - CR-023's repair prompt, on
 every re-save of a timeline. `sle`, `sle15` and `tsle` are therefore
 required entries, not tidiness; the test asserts every `Requires` prefix is
-declared in the saved part. (A Choice whose `Requires` prefix its content
+declared in the saved part. (`x16r2`'s entry alone did not make `styles.xml`
+declare it: the part also had to hand its Ignorable list to the declarator -
+the Excel check's finding, §10.) (A Choice whose `Requires` prefix its content
 never uses would still be undeclared unless the prefix is pre-declared, as
 `a14` and `c14` are on every root; none such was measured.)
 
@@ -261,11 +266,39 @@ drawing of a form control, which docx4j cannot unmarshal (the xlsx4j backlog
 item), as the ordinary path does.
 
 Gate: the three losses of §1 closed under the forced round trip (the test);
-`docx4j-core-tests` and `docx4j-export-fo-tests` green. Outstanding - Jason's
-four opens of `~/cr024-resaves/`: `cr022-checkbox-resaved.xlsx` (the check
-box drawn), `cr022-slicers-timelines-resaved.xlsx` (two slicers and a
-timeline drawn as such, not as boxes), `loadAndSave-resaved.docx`/`.pptx`/
-`.xlsx` (the chart's style intact, no repair prompt).
+`docx4j-core-tests` and `docx4j-export-fo-tests` green. Jason's opens
+(`vbShares/Office 2016/fidelity/cr024-resaves/`): `loadAndSave-resaved.docx`
+and `.pptx` opened with the chart's style intact; **the three `.xlsx` were
+repaired** - not for the drawings, which Excel accepted, but for `styles.xml`
+(`x16r2`), every worksheet and table (`xr3`), and the slicer, slicer cache and
+timeline parts (`x`): their roots named a prefix in `mc:Ignorable` that nothing
+declared (the CR-023 repair, on SpreadsheetML). Cause: only a part overriding
+`JaxbXmlPart.setMceIgnorable` (every WordprocessingML root since CR-023; the
+workbook) handed its Ignorable list to the prefix declarator, so any other
+SpreadsheetML root declared a prefix only when its content happened to use
+the namespace - which CR-022's fixtures did, so its `assertDeclares` passed.
+The ordinary path never showed it (an untouched part is written from its
+bytes); the forced re-save marshals every part.
+
+Fix (the second commit): (1) `JaxbXmlPart.getMceIgnorable`/`setMceIgnorable`
+read the root object's `getIgnorable()` when its class has one (reflection,
+cached per class) - the general rule, so a root that gains `mc:Ignorable` in
+the schema is covered without a part override; (2) the prefix `x`, which Excel
+binds to the SpreadsheetML main namespace on its x14/x15 slicer and timeline
+parts, is in the table's reverse direction (the forward direction keeps the
+default namespace); (3) both runtime mappers implement
+`getPreDeclaredNamespaceUris2` for the Ignorable prefixes the preferred-prefix
+path cannot produce (`x`, whose namespace docx4j writes as the default) -
+measured on jaxb-runtime 4: `xmlns="..."` and `xmlns:x="..."` on one root, no
+duplicate attribute (the Java 6 failure that had kept the method unused arose
+with every prefix returned). `IgnorablePrefixesDeclaredTest` re-saves eight
+fixtures with every part unmarshalled and checks, on every root that carries
+`mc:Ignorable`, that each prefix resolves. MOXy: the override is written the
+same way but not run here (core-tests run on the RI).
+
+Jason's second look (2026-09-20): the three re-cut `.xlsx`
+(`cr022-checkbox-resaved.xlsx`, `cr022-slicers-timelines-resaved.xlsx`,
+`loadAndSave-resaved.xlsx`) open properly in Excel. Gate passed.
 
 ## 11. Effort (rough)
 

@@ -608,6 +608,12 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 	
 	protected static String getNamespaceURIStatic(String prefix) {
 
+		// Excel binds "x" to the SpreadsheetML main namespace on its slicer, slicer cache and
+		// timeline parts (whose roots are x14/x15) and names it in mc:Ignorable="x xr10";
+		// docx4j writes that namespace as the default, so the prefix is declared beside it
+		// through NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris2 (CR-024).
+		if (prefix.equals("x"))
+			return "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 		// Pre-defined prefixes
 		if (prefix.equals("w"))
 			return Namespaces.NS_WORD12;

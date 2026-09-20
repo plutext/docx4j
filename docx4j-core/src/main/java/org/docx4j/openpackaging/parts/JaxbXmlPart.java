@@ -943,8 +943,57 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		}
 	}
     
+    /**
+     * The mc:Ignorable value of this part's root element, read from the JAXB object when
+     * its class declares {@code getIgnorable()} (every root Office writes the attribute on:
+     * the WordprocessingML roots, and since CR-022 the SpreadsheetML worksheet, styles,
+     * table, pivot, slicer and timeline roots).  The prefixes it names are then declared
+     * on the root when the part is marshalled ({@link #setMceIgnorable}); a prefix named
+     * but not declared makes Word and Excel repair the file (CR-023, CR-024).  Empty when
+     * the root has no such attribute, or the part is not yet unmarshalled.
+     *
+     * @since 17.1.1 (CR-024): the general rule; before, only the parts overriding this
+     * method declared their Ignorable prefixes, and a SpreadsheetML part other than the
+     * workbook declared a prefix only if its content happened to use the namespace.
+     */
     public String getMceIgnorable() {
-    	return "";
+    	String ignorable = ignorableOf(jaxbElement);
+    	return ignorable == null ? "" : ignorable;
+    }
+
+    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, java.lang.reflect.Method> IGNORABLE_GETTERS
+    		= new java.util.concurrent.ConcurrentHashMap<Class<?>, java.lang.reflect.Method>();
+    private static final java.lang.reflect.Method NO_GETTER;
+    static {
+    	try {
+    		NO_GETTER = Object.class.getMethod("hashCode");
+    	} catch (NoSuchMethodException e) {
+    		throw new IllegalStateException(e);
+    	}
+    }
+
+    /** The root object's mc:Ignorable value, via its {@code getIgnorable()} if it has one; null otherwise. */
+    protected static String ignorableOf(Object root) {
+    	root = XmlUtils.unwrap(root);
+    	if (root == null) return null;
+    	Class<?> c = root.getClass();
+    	java.lang.reflect.Method m = IGNORABLE_GETTERS.get(c);
+    	if (m == null) {
+    		try {
+    			m = c.getMethod("getIgnorable");
+    			if (m.getReturnType() != String.class) m = NO_GETTER;
+    		} catch (NoSuchMethodException e) {
+    			m = NO_GETTER;
+    		}
+    		IGNORABLE_GETTERS.put(c, m);
+    	}
+    	if (m == NO_GETTER) return null;
+    	try {
+    		return (String) m.invoke(root);
+    	} catch (Exception e) {
+    		log.warn("getIgnorable() on " + c.getName() + ": " + e);
+    		return null;
+    	}
     }
     
     /**
@@ -989,6 +1038,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	Either approach is OK. In the Document Settings part, we use the first approach.  In the Main 
     	Document Part, we use a hybrid approach.
     */	    	
+    	// The general rule (CR-024): the prefixes the root's mc:Ignorable names are declared.
+    	String ignorable = ignorableOf(jaxbElement);
+    	if (ignorable != null && !ignorable.isEmpty()) {
+    		namespacePrefixMapper.setMcIgnorable(ignorable);
+    	}
 	}
 
 	/**
