@@ -88,6 +88,26 @@ public class StrictLoadTest {
 		assertEquals(BigInteger.valueOf(259), spacing.getLine());
 	}
 
+	/**
+	 * Strict keeps the 2010 shape elements in the wordprocessingDrawing namespace
+	 * (wp:wsp); transitional wants wps:wsp, wps:spPr, wps:txbx ... A wp:wsp left in
+	 * the transitional wp namespace is an unknown element there, and Word refuses
+	 * the document.
+	 */
+	@Test
+	public void textBoxesBecomeWordprocessingShape() throws Exception {
+		WordprocessingMLPackage pkg = load("strict/strict-smartart.docx");
+		String document = pkg.getMainDocumentPart().getXML();
+		String wps = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape";
+		assertTrue(document, document.contains("wsp") && document.contains(wps));
+		// every wsp-family element is in the wps namespace: the marshalled prefix is wps
+		for (String local : new String[] { "wsp", "cNvSpPr", "spPr", "txbx", "bodyPr" }) {
+			assertTrue(local, document.contains("<wps:" + local));
+			assertTrue(local + " must not be left in wp", !document.contains("<wp:" + local));
+		}
+		assertTrue(document, document.contains("<w:txbxContent"));
+	}
+
 	/** no point value survives into the transitional parts (spacing, indents, table widths, tabs, settings) */
 	@Test
 	public void noPointsSurvive() throws Exception {

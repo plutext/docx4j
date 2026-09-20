@@ -20,11 +20,12 @@
 
 	xmlns:purlw="http://purl.oclc.org/ooxml/wordprocessingml/main"
  	xmlns:purla="http://purl.oclc.org/ooxml/drawingml/main"
+ 	xmlns:purlwp="http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing"
  
 	xmlns:purlcp="http://purl.oclc.org/ooxml/officeDocument/customProperties"
 	xmlns:purlep="http://purl.oclc.org/ooxml/officeDocument/extendedProperties"
 		
-	version="1.0" exclude-result-prefixes="java purlw purlep purla purlcp xalan">	
+	version="1.0" exclude-result-prefixes="java purlw purlep purla purlcp purlwp xalan">	
         
 <!--  This preprocessor does 3 things:
 
@@ -112,6 +113,37 @@
 
 		</xsl:choose>
 
+	</xsl:template>
+
+	<!-- Strict puts the 2010 shape, group and canvas elements (transitional wps:, wpg:,
+	     wpc:) in the wordprocessingDrawing namespace: wp:wsp, wp:wgp, wp:wpc and their
+	     children. Mapped by name for the three roots, and by the nearest such ancestor
+	     for what is inside them (a wsp inside a wgp is wps; a grpSp or graphicFrame
+	     inside a wgp is wpg). Until 2026-09-21 these became wp:wsp etc., unknown in the
+	     transitional wp namespace, and Word refused the document. -->
+	<xsl:template match="purlwp:*[local-name()='wsp' or local-name()='wgp' or local-name()='wpc'
+	                              or ancestor::purlwp:*[local-name()='wsp' or local-name()='wgp' or local-name()='wpc']]"
+	              priority="2">
+		<xsl:variable name="owner">
+			<xsl:choose>
+				<xsl:when test="local-name()='wsp' or local-name()='wgp' or local-name()='wpc'">
+					<xsl:value-of select="local-name()"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="local-name(ancestor::purlwp:*[local-name()='wsp' or local-name()='wgp' or local-name()='wpc'][1])"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:variable name="new-namespace">
+			<xsl:choose>
+				<xsl:when test="$owner='wsp'">http://schemas.microsoft.com/office/word/2010/wordprocessingShape</xsl:when>
+				<xsl:when test="$owner='wgp'">http://schemas.microsoft.com/office/word/2010/wordprocessingGroup</xsl:when>
+				<xsl:otherwise>http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:element name="{local-name()}" namespace="{$new-namespace}">
+			<xsl:apply-templates select="@*|node()"/>
+		</xsl:element>
 	</xsl:template>
 
 	<!-- special case, because customProperties becomes custom-properties!	-->
