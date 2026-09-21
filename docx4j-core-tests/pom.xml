@@ -87,6 +87,20 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- the metric clones the font tests measure against (Tinos, Carlito ...), so a box
+		     with no system fonts (EC2, containers) runs them rather than skipping them -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-croscore</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-crosextra</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	
 		<!-- required, as specified in docx4j.properties -->
 		<dependency>
