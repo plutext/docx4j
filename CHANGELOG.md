@@ -69,8 +69,9 @@ Pagination (CR-012):
 
 List numbering: refactored and extended
 
-OpenDoPE XHTML binding (CR-013):
+OpenDoPE XHTML binding:
 
+- Spec working draft published; see https://github.com/plutext/docx4j/tree/VERSION_17_1_1/docs
 - The XHTML importer's FormattingOption for runs, paragraphs and tables can be set in
   docx4j.properties (docx4j.model.datastorage.BindingTraverser.XHTML.RunFormatting,
   .ParagraphFormatting, .TableFormatting); binding previously always ran with the
