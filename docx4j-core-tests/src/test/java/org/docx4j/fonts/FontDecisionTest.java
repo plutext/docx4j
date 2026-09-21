@@ -116,7 +116,16 @@ public class FontDecisionTest {
 		FontDecision d = m.getDecision("Times New Roman");
 		assertNotNull(d);
 		assertEquals(FontDecision.Source.METRIC_CLONE, d.getSource());
-		assertNotNull("the row's measurement", d.getWidthError());
+		if (PhysicalFonts.get("Tinos Regular") != null) {
+			// the row's first substitute, the one measured: its error is quoted
+			assertNotNull("the row's measurement", d.getWidthError());
+			assertTrue(d.getWidthError(), d.getWidthError().contains("0.05%"));
+		} else {
+			// a box with the Liberation jar only (EC2, 2026-09-21): Liberation Serif is the
+			// same metrics but the row carries no measurement for it, so none is quoted
+			assertNotNull(PhysicalFonts.get("Liberation Serif"));
+			assertEquals("no measurement for the second substitute", null, d.getWidthError());
+		}
 		assertEquals("its own line box", "documentFont", d.getLineBox());
 	}
 

@@ -93,7 +93,11 @@ final class FontsTestSupport {
 				PhysicalFonts.get(SANS) != null && PhysicalFonts.get(SERIF) != null);
 		mapper.getFontMappings().clear();
 		for (int i = 0; i + 1 < mappings.length; i += 2) {
-			mapper.put(mappings[i], PhysicalFonts.get(mappings[i + 1]));
+			// a substitute this machine lacks (Carlito on a box with only the Liberation
+			// jar, 2026-09-21 on EC2) is a skipped test, not a NullPointerException
+			PhysicalFont substitute = PhysicalFonts.get(mappings[i + 1]);
+			Assume.assumeNotNull(mappings[i + 1] + " is not on this machine", substitute);
+			mapper.put(mappings[i], substitute);
 		}
 		return pkg;
 	}
