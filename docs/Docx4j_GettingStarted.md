@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.1.0 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.2.0 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -142,7 +142,7 @@ docx4j is in Maven Central.  For Maven users, this makes it really easy to get g
 
 As noted in the introduction, current release series are docx4j **11.5.x.** and **17.x**
 
-To use docx4j 17.1.0, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
+To use docx4j 17.2.0, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
 
 &#9;	`<!-- use the JAXB Reference Implementation -->`
 
@@ -152,7 +152,7 @@ To use docx4j 17.1.0, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		`<version>``17.1.0``</version>`
+&#9;		`<version>``17.``2``.``0``</version>`
 
 &#9;	`</dependency>`
 
@@ -166,7 +166,7 @@ To use docx4j 17.1.0, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		`<version>``17.1.0``</version>`
+&#9;		`<version>``17.``2``.``0``</version>`
 
 &#9;	`</dependency>`
 
@@ -365,7 +365,13 @@ docx4j started with ECMA-376 1st Edition.  Where appropriate later versions of t
 
 docx4j can open documents which contain Word 2010 and later content.  The key extensions are bound (the w14, w15 and w16 namespaces, wps and wpg shapes, a14 drawing), and what it does not bind is preserved wherever the schema admits it.
 
-**Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  A text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  Since docx4j 17.2.0 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the docx4j.jaxb.mc.preferChoice property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.  Where a producer has written the element somewhere the schema does not admit it (Word's own output has not been seen to), the load-time preprocessor resolves that one element to the branch docx4j draws, and logs a warning naming the parent.
+**Markup compatibility (mc:AlternateContent).  **Word writes some content twice: an mc:Choice for a reader which understands the newer namespace, and an mc:Fallback for one which does not.  For example, a text box is a wps shape with a VML fallback; an equation on a PowerPoint slide is an a14 shape with a picture fallback.  
+
+Since docx4j 17.2.0 the whole element is kept at load wherever Word writes it, and written back with both branches, so a document you save says the same thing to every reader.  
+
+When docx4j draws, walks or extracts text, it takes one branch: the first mc:Choice whose Requires prefixes are all named in the **docx4j.jaxb.mc.preferChoice** property, otherwise the mc:Fallback.  The property is empty by default, so docx4j draws the fallback (what the producer wrote for a reader which understands nothing extra); set it, for example to wps, or to a14 for PowerPoint equations, to draw the choice instead.  The rule lives in org.docx4j.jaxb.McSelection.  
+
+Where a producer has written the element somewhere the schema does not admit it (Word's own output has not been seen to), the load-time preprocessor resolves that one element to the branch docx4j draws, and logs a warning naming the parent.
 
 # Architecture
 
@@ -1128,7 +1134,9 @@ ImageConvertEmbeddedToLinked sample contains an example of the use of the above.
 
 `public`` ``class``  CompoundTraversalUtilVisitorCallback  `
 
-**mc:AlternateContent in a traversal.  **Since docx4j 17.2.0 a TraversalUtil walk visits one branch of each mc:AlternateContent by default, the branch docx4j draws (McMode.READ), so a text box's paragraphs are visited once, not once as the wps shape and again as its VML fallback.  A callback which edits the document (find and replace, field update, anything whose result must reach every reader) should ask for every branch with McMode.ALL, through the TraversalUtil constructor or visit overload which takes a mode, or CallbackImpl.setMcMode; docx4j's own binding, field, merge and TOC code does so.  Before 17.2.0 every walk saw every branch.
+**mc:AlternateContent in a traversal.  **Since docx4j 17.2.0 a TraversalUtil walk visits one branch of each mc:AlternateContent by default, the branch docx4j draws (McMode.READ), so a text box's paragraphs are visited once, not once as the wps shape and again as its VML fallback.  
+
+A callback which edits the document (find and replace, field update, anything whose result must reach every reader) should ask for every branch with McMode.ALL, through the TraversalUtil constructor or visit overload which takes a mode, or CallbackImpl.setMcMode.  Before 17.2.0 every walk saw every branch.
 
 # Adding a Part
 
@@ -1267,27 +1275,32 @@ If Word is not available, you can generate PDF output via XSL FO using FOP.  If 
 
 From 17.0.4, the visitor (non-XSLT) FO exporter is likewise the default (pass Docx4J.FLAG\_EXPORT\_PREFER\_XSL for the XSLT pathway), and equations in the docx are rendered in the PDF, via the JEuclid FOP plugin which docx4j-export-fo now includes.
 
-PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
+PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 and17.2.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
 
 See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
 These jars are in the zip file, in dir optional/export-fo  
 
-**Two FO renderers.  **From 17.2.0 docx4j-export-fo supports two: Apache FOP 2.11, its default dependency (unchanged), and the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules (not yet released).  Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards that went undetected before: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.
+**Two FO renderers.  **From 17.2.0 docx4j-export-fo supports two: 
+
+- Apache FOP 2.11, its default dependency (unchanged), and 
+- the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules (not yet released).  
+
+Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.
 
 **Hyphenation.  **From 17.1.0, hyphenation in PDF output is driven by the document, as in Word: docx4j reads w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit and w:doNotHyphenateCaps from settings.xml (and w:suppressAutoHyphens on a paragraph), and hyphenates only where the document asks for it.  Nothing needs configuring per document.
 
 FOP hyphenates from TeX pattern files and ships none, and the usual set is not under the Apache licence, so docx4j-export-fo does not depend on it.  To get hyphenated output, add the patterns to your own classpath:
 
-`		<dependency>`
+&#9;	`<dependency>`
 
-`			<groupId>net.sf.offo</groupId>`
+&#9;		`<groupId>net.sf.offo</groupId>`
 
-`			<artifactId>fop-hyph</artifactId>`
+&#9;		`<artifactId>fop-hyph</artifactId>`
 
-`			<version>2.0</version>`
+&#9;		`<version>2.0</version>`
 
-`		</dependency>`
+&#9;	`</dependency>`
 
 Without patterns the document's setting is honoured but nothing can be hyphenated (FOP logs that no pattern was found for the language).  The property docx4j.convert.out.fo.hyphenate overrides the document: true or false forces hyphenation on or off; leave it unset to let each document decide.  Two things to know: Word hyphenates a language only where its proofing tools are installed on the machine that laid the document out, which the docx does not record, so Word's PDF and docx4j's can differ for a language the author did not have installed; and the patterns are TeX's rather than Word's dictionary, so an occasional break point differs.
 
@@ -1881,15 +1894,15 @@ A content control is *conditional* if it (and its contents) are included/exclude
 
 A content control is a *repeat* if it designates that its contents are to be included more than once.  For example, a row of a table for each invoice/order item, or person.
 
-docx4j contains a mechanism for processing conditional content controls and repeats.  See [http://www.opendope.org/opendope\_conventions\_v2.3.html](http://www.opendope.org/opendope_conventions_v2.3.html) for an explanation.
+docx4j contains a mechanism for processing conditional content controls and repeats.  
+
+The OpenDoPE specification, version 3 (working draft of 18 September 2026), documents the binding conventions, escaped XHTML among them; it is in the docs directory of the docx4j repository: [github.com/plutext/docx4j/tree/VERSION\_17\_2\_0/docs](https://github.com/plutext/docx4j/tree/VERSION_17_2_0/docs) (OpenDoPE Specification v3 WD 2026 09 18, as docx, markdown and PDF).
 
 See also the docx4j sample ContentControlBindingExtensions.
 
 ### Binding escaped XHTML (XML + CSS)
 
 docx4j can also take encoded XHTML and convert this to docx content. See further OpenDoPE\_XHTML.docx in the docx4j docs directory.
-
-The OpenDoPE specification, version 3 (working draft of 18 September 2026), documents the binding conventions, escaped XHTML among them; it is in the docs directory of the docx4j repository: [github.com/plutext/docx4j/tree/VERSION\_17\_2\_0/docs](https://github.com/plutext/docx4j/tree/VERSION_17_2_0/docs) (OpenDoPE Specification v3 WD 2026 09 18, as docx, markdown and PDF).
 
 ### Binding other rich content
 
