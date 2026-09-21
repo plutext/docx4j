@@ -49,7 +49,13 @@ import org.xml.sax.InputSource;
  *
  * Notes on determinism: w:id values come from the static counter
  * Differencer.nextId, which is reset before each diff below.  The w:date
- * attribute is fixed by passing a fixed Calendar.  The preProcess=true
+ * attribute is fixed by passing a fixed Calendar.  Namespace declarations
+ * are stripped before the comparison (and from the files as written): the
+ * marshaller declares every namespace the JAXB context knows on the root,
+ * so the list grows with each schema docx4j binds and the auto-assigned
+ * nsNN prefixes shift with it (2026-09-21: six new prefixes from CR-018 and
+ * CR-023 and the c173 to c16r3 rename failed both paragraph tests).  The
+ * diff's meaning is in the elements and attributes.  The preProcess=true
  * variant of Differencer.diff is NOT captured: it word-splits
  * P.toString() which (P not overriding toString) contains an object
  * hashcode, so its run restructuring is not reproducible across JVM runs.
@@ -166,9 +172,16 @@ public class GoldenOutputTest {
 				new InputSource(new StringReader(xml)));
 	}
 
+	/** xmlns:prefix="uri" and xmlns="uri" declarations, which are not the diff's meaning */
+	private static final java.util.regex.Pattern XMLNS = java.util.regex.Pattern.compile(" xmlns(:[A-Za-z0-9_.-]+)?=\"[^\"]*\"");
+
+	static String normalize(String xml) {
+		return XMLNS.matcher(xml.replace("\r\n", "\n")).replaceAll("");
+	}
+
 	private static void check(String relPath, String actual) throws Exception {
 
-		String normalized = actual.replace("\r\n", "\n");
+		String normalized = normalize(actual);
 		File golden = new File(GOLDEN_DIR + relPath);
 
 		if (REGENERATE) {
@@ -182,8 +195,9 @@ public class GoldenOutputTest {
 				+ " - generate it with -Dgolden.regenerate=true",
 				golden.exists());
 
-		String expected = new String(Files.readAllBytes(golden.toPath()),
-				StandardCharsets.UTF_8);
+		// normalised too, so a golden written before 2026-09-21 (with the declarations) still compares
+		String expected = normalize(new String(Files.readAllBytes(golden.toPath()),
+				StandardCharsets.UTF_8));
 		assertEquals("Diff output changed for " + relPath, expected, normalized);
 	}
 
