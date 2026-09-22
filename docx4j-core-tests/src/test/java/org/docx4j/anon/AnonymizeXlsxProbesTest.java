@@ -147,6 +147,13 @@ public class AnonymizeXlsxProbesTest {
 		return rel;
 	}
 
+	/** a real VMLPart (since CR-026 the binding reads a vmlDrawing's namespace-less &lt;xml&gt; root) */
+	static org.docx4j.openpackaging.parts.VMLPart vmlPart(String name, String xml) throws Exception {
+		org.docx4j.openpackaging.parts.VMLPart p = new org.docx4j.openpackaging.parts.VMLPart(new PartName(name));
+		p.setJaxbElement((org.docx4j.vml.root.Xml) XmlUtils.unwrap(XmlUtils.unmarshalString(xml, org.docx4j.jaxb.Context.jc, org.docx4j.vml.root.Xml.class)));
+		return p;
+	}
+
 	static DefaultXmlPart xmlPart(String name, String contentType, String relType, String xml) throws Exception {
 		DefaultXmlPart p = new DefaultXmlPart(new PartName(name));
 		p.setContentType(new ContentType(contentType));
@@ -352,8 +359,8 @@ public class AnonymizeXlsxProbesTest {
 				+ "<comment ref=\"B1\" authorId=\"1\"><text><t>Bob says: Grendlewick</t></text></comment></commentList></comments>", CTComments.class));
 		s1.addTargetPart(comments);
 
-		// the comment shapes, as a VML drawing already in DOM form (the corpus covers the swap)
-		DefaultXmlPart vml = xmlPart("/xl/drawings/vmlDrawing1.vml", ContentTypes.VML_DRAWING, Namespaces.VML,
+		// the comment shapes, in the legacy VML drawing part
+		org.docx4j.openpackaging.parts.VMLPart vml = vmlPart("/xl/drawings/vmlDrawing1.vml",
 				"<xml xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\">"
 				+ "<o:shapelayout v:ext=\"edit\"><o:idmap v:ext=\"edit\" data=\"1\"/></o:shapelayout>"
 				+ "<v:shapetype id=\"_x0000_t202\" coordsize=\"21600,21600\" o:spt=\"202\" path=\"m,l,21600r21600,l21600,xe\"><v:stroke joinstyle=\"miter\"/><v:path gradientshapeok=\"t\" o:connecttype=\"rect\"/></v:shapetype>"
@@ -383,6 +390,9 @@ public class AnonymizeXlsxProbesTest {
 		assertGone(all, "Zorbling", "Quibblex", "Grendlewick", "Jane", "Reviewer", "Bob", "Editor", "zorbling.example", "2026-05");
 		assertEquals(Action.SCRUBBED, action(r, "/xl/comments1.xml").action);
 		assertEquals(Action.SCRUBBED, action(r, "/xl/drawings/vmlDrawing1.vml").action);
+		String vmlXml = vml.getXML();
+		assertTrue("the shape's text box was scrambled, not dropped", vmlXml.contains("<div"));
+		assertTrue("its anchor is structure", vmlXml.contains("1, 15, 0, 2, 3, 15, 4, 2"));
 		assertEquals(Action.SCRUBBED, action(r, "/xl/persons/person.xml").action);
 		assertEquals(Action.SCRUBBED, action(r, "/xl/threadedComments/threadedComment1.xml").action);
 		List<String> authors = comments.getContents().getAuthors().getAuthor();
@@ -390,8 +400,6 @@ public class AnonymizeXlsxProbesTest {
 		String personsXml = XmlUtils.w3CDomNodeToString(persons.getDocument());
 		assertTrue(personsXml, personsXml.contains("providerId=\"None\""));
 		assertTrue(personsXml, personsXml.matches("(?s).*userId=\"Author [12]\".*"));
-		String vmlXml = XmlUtils.w3CDomNodeToString(vml.getDocument());
-		assertTrue("the anchor is structure", vmlXml.contains("<x:Anchor>1, 15, 0, 2, 3, 15, 4, 2</x:Anchor>"));
 		assertTrue(vmlXml, vmlXml.contains("ObjectType=\"Note\""));
 		assertEquals(2, r.getAuthorsRenamed());
 		reload(pkg);
@@ -469,16 +477,17 @@ public class AnonymizeXlsxProbesTest {
 		Relationship previewRel = s1.addTargetPart(preview);
 
 		// the VML shape of the object, whose picture is the preview
-		DefaultXmlPart vml = xmlPart("/xl/drawings/vmlDrawing1.vml", ContentTypes.VML_DRAWING, Namespaces.VML,
+		org.docx4j.openpackaging.parts.VMLPart vml =
+				new org.docx4j.openpackaging.parts.VMLPart(new PartName("/xl/drawings/vmlDrawing1.vml"));
+		Relationship vmlRel = s1.addTargetPart(vml);
+		Relationship vmlImage = vml.addTargetPart(preview); // the image relationship belongs to the drawing
+		vml.setJaxbElement((org.docx4j.vml.root.Xml) XmlUtils.unwrap(XmlUtils.unmarshalString(
 				"<xml xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\">"
 				+ "<v:shapetype id=\"_x0000_t75\" coordsize=\"21600,21600\" o:spt=\"75\" o:preferrelative=\"t\" path=\"m@4@5l@4@11@9@11@9@5xe\" filled=\"f\" stroked=\"f\"/>"
 				+ "<v:shape id=\"_x0000_s1025\" type=\"#_x0000_t75\" style=\"position:absolute;margin-left:100pt;margin-top:10pt;width:200pt;height:100pt;z-index:1\">"
-				+ "<v:imagedata o:relid=\"" + previewRel.getId() + "\" o:title=\"Zorbling contract\"/>"
-				+ "<x:ClientData ObjectType=\"Pict\"><x:SizeWithCells/><x:Anchor>1, 10, 0, 5, 5, 10, 8, 5</x:Anchor><x:CF>Pict</x:CF><x:AutoPict/></x:ClientData></v:shape></xml>");
-		Relationship vmlRel = s1.addTargetPart(vml);
-		Relationship vmlImage = vml.addTargetPart(preview); // the image relationship belongs to the drawing
-		((org.w3c.dom.Element) vml.getDocument().getElementsByTagNameNS("urn:schemas-microsoft-com:vml", "imagedata").item(0))
-				.setAttributeNS("urn:schemas-microsoft-com:office:office", "o:relid", vmlImage.getId());
+				+ "<v:imagedata o:relid=\"" + vmlImage.getId() + "\" o:title=\"Zorbling contract\"/>"
+				+ "<x:ClientData ObjectType=\"Pict\"><x:SizeWithCells/><x:Anchor>1, 10, 0, 5, 5, 10, 8, 5</x:Anchor><x:CF>Pict</x:CF><x:AutoPict/></x:ClientData></v:shape></xml>",
+				org.docx4j.jaxb.Context.jc, org.docx4j.vml.root.Xml.class)));
 		s1.getContents().setLegacyDrawing((org.xlsx4j.sml.CTLegacyDrawing) sml("<legacyDrawing " + NS + " r:id=\"" + vmlRel.getId() + "\"/>", org.xlsx4j.sml.CTLegacyDrawing.class));
 		s1.getContents().setOleObjects((org.xlsx4j.sml.CTOleObjects) sml("<oleObjects " + NS + "><oleObject progId=\"Word.Document.12\" shapeId=\"1025\" r:id=\"" + docxRel.getId() + "\">"
 				+ "<objectPr defaultSize=\"0\" altText=\"Zorbling contract\" r:id=\"" + previewRel.getId() + "\"><anchor moveWithCells=\"1\"><from><xdr:col xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\">1</xdr:col><xdr:colOff xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\">0</xdr:colOff><xdr:row xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\">0</xdr:row><xdr:rowOff xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\">0</xdr:rowOff></from>"

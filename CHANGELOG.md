@@ -39,6 +39,16 @@ Packaging and load:
 - ActiveXControlXmlPart(PartName) sets its content and relationship types, so a part
   built with that constructor can be added to a package.
 
+Packaging (CR-026):
+
+- A vmlDrawing part - the legacy drawing a comment, a form control or an OLE
+  object's picture lives in - binds, in a docx, xlsx or pptx. Its root element
+  is <xml> in no namespace, and docx4j's schema had declared that element in a
+  namespace of its own, so every such part failed to unmarshal: its shapes were
+  unreachable, and a strict package holding one could not be saved at all.
+  VMLPart.getContents() now returns the shapes; a strict workbook with a comment
+  saves. Inline VML (w:pict) is unaffected. Schema change: the ports regenerate.
+
 SpreadsheetML:
 
 - The namespace prefixes xr5 and xr9 are known. Excel names xr9 in styles.xml's

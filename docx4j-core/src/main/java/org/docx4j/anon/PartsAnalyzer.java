@@ -82,10 +82,6 @@ public class PartsAnalyzer {
 		if (p instanceof DefaultXmlPart && isModernComments(p)) {
 			return Treatment.SCRUB;
 		}
-		// a VML drawing swapped for a DOM part (Anonymize does that when the binding cannot read it)
-		if (p instanceof DefaultXmlPart && isVml(p)) {
-			return Treatment.SCRUB;
-		}
 
 		// ---- SpreadsheetML (CR-019 phase 3): removed whatever the mode - a pivot cache is a copy
 		// of its source data, and a pivot table, slicer or timeline without its cache is a
@@ -210,17 +206,6 @@ public class PartsAnalyzer {
 		} catch (Exception e) {
 			return false;
 		}
-	}
-
-	/** a VML drawing part (by content type or extension), whether loaded as JAXB or as DOM */
-	static boolean isVml(Part p) {
-		try {
-			String ct = p.getContentType();
-			if (ct != null && ct.equals(ContentTypes.VML_DRAWING)) return true;
-		} catch (Exception e) {
-			// fall through
-		}
-		return p.getPartName().getName().toLowerCase().endsWith(".vml");
 	}
 
 	static boolean isSvg(Part p) {

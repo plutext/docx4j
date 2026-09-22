@@ -20,8 +20,14 @@ because this generates classes in org.docx4j.customxml|dml|math|vml|wml, but its
 	 		
 -->
 	
+<!--
+	No targetNamespace: the root element of a vmlDrawing part is <xml> in NO namespace
+	(Office's XML island), and a global element declaration takes its schema's target
+	namespace.  Until 17.2.1 this schema declared one of its own, urn:docx4j:vml:root,
+	so JAXB looked for {urn:docx4j:vml:root}xml and every vmlDrawing part failed to
+	unmarshal - see CR-026.
+-->
 <xsd:schema  
-targetNamespace="urn:docx4j:vml:root"
 xmlns:p="urn:schemas-microsoft-com:office:powerpoint" 
 xmlns:o="urn:schemas-microsoft-com:office:office" 
 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
@@ -69,7 +75,9 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
 	<xsd:element name="xml">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:any namespace="urn:schemas-microsoft-com:vml" minOccurs="1" maxOccurs="unbounded" processContents="strict"/>
+				<!-- ##any, not the vml namespace alone: Office writes o:shapelayout, x:ClientData and
+				     w10: children here too (the generated accessor is lax either way) -->
+				<xsd:any namespace="##any" minOccurs="1" maxOccurs="unbounded" processContents="strict"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

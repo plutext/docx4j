@@ -29,7 +29,9 @@
     <xsd:import id="sd" namespace="http://schemas.microsoft.com/office/excel/2010/spreadsheetDrawing" schemaLocation="odrawxml/spreadsheetDrawing2010.xsd"/>
     <xsd:import id="idb" namespace="http://schemas.microsoft.com/office/excel/2008/2/main" schemaLocation="offmacro/office-excel-2008-2-main.xsd"/>
     
-    <xsd:import id="vml" namespace="urn:docx4j:vml:root" schemaLocation="vml/vml__ROOT.xsd"/>
+    <!-- include, not import: vml__ROOT.xsd declares <xml> in no namespace, as the part has it, and
+         this schema has no targetNamespace either, so there is nothing to import from (CR-026) -->
+    <xsd:include schemaLocation="vml/vml__ROOT.xsd"/>
     
     <xsd:import id="wx" namespace="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11" schemaLocation="webextensions/taskpanes_2010_11.xsd"/>
     

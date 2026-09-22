@@ -1,6 +1,6 @@
 # CR-026: A vmlDrawing part binds — the `<xml>` root's namespace
 
-Status: PROPOSED 2026-09-23, for Jason. Found by CR-019 phase 3 (the
+Status: DONE 2026-09-23 (option A, Jason's choice; §10 is the record). Found by CR-019 phase 3 (the
 anonymiser on xlsx), whose "left for later" names it; the anonymiser works
 around it by reading the part as DOM. Drafted with Claude Opus 5, with the
 measurements of §1 to §3. Owner: Jason Harrop. One phase.
@@ -284,3 +284,52 @@ not a new namespace, and it *removes* one:
   what Office writes (`o:`, `x:` and `w10:` children are normal). It binds
   anyway, because the generated accessor is lax; worth widening to
   `##any` in the same edit for honesty, at no runtime cost.
+
+## 10. Record (2026-09-23)
+
+Option A, as recommended. What shipped:
+
+| | |
+|---|---|
+| `xsd/vml/vml__ROOT.xsd` | the invented `targetNamespace="urn:docx4j:vml:root"` removed, with a comment saying why there is none; the wildcard widened from the VML namespace to `##any` (Office writes `o:`, `x:` and `w10:` children there) |
+| `xsd/ROOT.xsd` | `<xsd:import id="vml" namespace="…">` becomes `<xsd:include schemaLocation="vml/vml__ROOT.xsd"/>` — an import with no namespace attribute is illegal from a schema which has no target namespace of its own (`src-import.1.2`), and include is the construct for a no-namespace schema; neither schema has a target namespace, so nothing is absorbed |
+| regenerated | `org.docx4j.vml.root.Xml` is `@XmlRootElement(name = "xml")` with no namespace, and its `package-info.java` is gone (there is no `@XmlSchema` namespace to declare). The class, its package and its `ObjectFactory` are otherwise unchanged; `module-info` and `Context.jc`'s package list needed nothing |
+| `VMLPart` | nothing: load, save, `getXML()` and the XPath paths are the ordinary ones now |
+
+Measured on the two fixtures: `anon/comments.xlsx`'s part unmarshals to
+`CTShapeLayout`, `CTShapetype`, `CTShape`, and `strict/strict-comments.xlsx`
+now loads **and saves** (14,039 bytes where it used to die at 5,825), the
+output transitional and its VML in the ordinary VML namespaces.
+`VmlDrawingPartTest` pins all three.
+
+**The anonymiser's workaround is retired** (step 4 of §6): `Anonymize.vmlAsDom`
+and `readable`, the `DefaultXmlPart`-VML branch of `PartsAnalyzer` and
+`PartsAnalyzer.isVml`, and `VmlDomScrubber` are gone; a vmlDrawing part is
+walked as JAXB like any other. Two things moved into `ScrambleText` for that:
+
+- the HTML of a VML text box (`v:textbox` holds a `div` of `font` and `span`
+  elements — the text of a comment or a check box) is scrambled by the DOM
+  path, which until now scrambled only `t` and `v` elements. This was measured,
+  not assumed: with the typed path and without it, `cr022-checkbox.xlsx` leaked
+  "Check Box 1" and `Verify` caught it.
+- `x:ClientData`'s children are `JAXBElement<String>`, so the generic
+  string case would have scrambled the anchor's digits and the alignment
+  words; the `Fmla*` ones go through the formula scrubber and the rest are
+  left alone, as the DOM scrubber did by element name.
+
+### Gate
+
+| step | result |
+|---|---|
+| regeneration and the whole reactor | BUILD SUCCESS |
+| `VmlDrawingPartTest` (3: the shapes are reachable, a transitional package round trips, a strict package with a comment saves) | pass |
+| the anonymiser's suites with the workaround gone | 51 tests, 0 failures (the xlsx corpus includes `strict/strict-comments.xlsx` now) |
+| `docx4j-core-tests`, full | 1308 tests, 0 failures, 11 skipped |
+| Office check | **Jason**: the saved `strict-comments.xlsx` and a transitional workbook whose VML docx4j has rewritten (the part is marshalled now, not copied, whenever anything reads it) |
+
+### Hand-offs
+
+As §8: the TypeScript objects regenerate from `xsd/ROOT.xsd` at this commit —
+the `urn:docx4j:vml:root` namespace is gone, the root element is `{}xml`, the
+wildcard is `##any`, and `ROOT.xsd` includes rather than imports that schema.
+Python does not generate VML yet, so it is told for when it does.

@@ -441,6 +441,18 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			s.setHref(null);
 			return Action.CONTINUE;
 		}
+		if (o instanceof org.docx4j.vml.spreadsheetDrawing.CTClientData) {
+			// a comment's or control's x:ClientData: its Fmla* children are formulas, everything
+			// else (the anchor, the row and column, the alignment words) is structure
+			for (JAXBElement<?> el : ((org.docx4j.vml.spreadsheetDrawing.CTClientData) o).getMoveWithCellsOrSizeWithCellsOrAnchor()) {
+				if (el.getName().getLocalPart().startsWith("Fmla") && el.getValue() instanceof String) {
+					@SuppressWarnings("unchecked")
+					JAXBElement<Object> w = (JAXBElement<Object>) el;
+					w.setValue(formula((String) el.getValue()));
+				}
+			}
+			return Action.SKIP_CHILDREN;
+		}
 		if (o instanceof org.docx4j.vml.CTImageData) {
 			org.docx4j.vml.CTImageData d = (org.docx4j.vml.CTImageData) o;
 			d.setTitle(null);
@@ -649,11 +661,16 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 		return Action.CONTINUE;
 	}
 
+	/** the HTML of a VML text box (v:textbox holds a div of font and span elements) */
+	private static final java.util.Set<String> HTML_TEXT = new java.util.HashSet<String>(java.util.Arrays.asList(
+			"div", "font", "span", "p", "b", "i", "u", "strong", "em", "a", "br", "li", "ul", "ol", "table", "tr", "td"));
+
 	/**
-	 * DOM content (xs:any the model does not type, e.g. c15 data-label caches):
-	 * the text of elements named t or v is scrambled, an f is replaced, and the
-	 * attributes which carry names or descriptions are scrambled. Anything else
-	 * is left for {@link Verify} to find.
+	 * DOM content (xs:any the model does not type, e.g. c15 data-label caches, the
+	 * HTML inside a VML text box): the text of elements named t or v, and of the
+	 * HTML elements, is scrambled, an f is replaced, and the attributes which carry
+	 * names or descriptions are scrambled. Anything else is left for {@link Verify}
+	 * to find.
 	 */
 	private void scrambleDom(Node n) {
 		if (n.getNodeType() == Node.ELEMENT_NODE) {
@@ -672,7 +689,7 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			Node c = children.item(i);
 			if (c.getNodeType() == Node.TEXT_NODE || c.getNodeType() == Node.CDATA_SECTION_NODE) {
 				String parent = n.getLocalName() == null ? n.getNodeName() : n.getLocalName();
-				if (parent.equals("t") || parent.equals("v")) {
+				if (parent.equals("t") || parent.equals("v") || HTML_TEXT.contains(parent)) {
 					c.setNodeValue(scramble(c.getNodeValue()));
 				} else if (parent.equals("f") || parent.startsWith("Fmla")) {
 					// c:f in a data-label cache; x:FmlaLink, x:FmlaRange, x:FmlaMacro of a VML control

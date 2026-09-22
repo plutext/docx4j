@@ -190,14 +190,6 @@ public class Anonymize {
 					+ "so this output is a transitional package");
 		}
 
-		// a workbook's vmlDrawing parts have an <xml> root the VML binding does not know: swap
-		// each for a DOM part before anything reads it (once, or every reader logs the failure)
-		for (Part p : new ArrayList<Part>(pkg.getParts().getParts().values())) {
-			if (p instanceof org.docx4j.openpackaging.parts.VMLPart && !readable((JaxbXmlPart<?>) p)) {
-				vmlAsDom(p);
-			}
-		}
-
 		Verify.Extraction before = verify ? Verify.extract(pkg) : null;
 
 		names = new Names(pkg);
@@ -388,53 +380,8 @@ public class Anonymize {
 			return;
 		}
 		log.debug("Scrubbing (DOM) " + p.getPartName().getName());
-		if (PartsAnalyzer.isVml(p)) {
-			new VmlDomScrubber(latinizer).scrub(doc.getDocumentElement());
-			result.record(p, Action.SCRUBBED, "VML drawing (as DOM): shape text, names and links scrambled, control formulas rewritten");
-		} else {
-			new ModernCommentsScrubber(names, latinizer).scrub(doc.getDocumentElement());
-			result.record(p, Action.SCRUBBED, "2018 comments: authors and persons renamed, dates fixed, text scrambled");
-		}
-	}
-
-	private static boolean readable(JaxbXmlPart<?> p) {
-		try {
-			return p.getContents() != null;
-		} catch (Exception e) {
-			log.warn(p.getPartName().getName() + " could not be read as JAXB: " + e);
-			return false;
-		}
-	}
-
-	/**
-	 * The part's bytes from the package's source store, as a DOM part in the JAXB
-	 * part's place (same name, content type, relationships); null if the bytes
-	 * cannot be had.
-	 */
-	private XmlPart vmlAsDom(Part p) {
-		try {
-			if (pkg.getSourcePartStore() == null) return null;
-			byte[] bytes;
-			try (java.io.InputStream is = pkg.getSourcePartStore().loadPart(p.getPartName().getName().substring(1))) {
-				if (is == null) return null;
-				bytes = is.readAllBytes();
-			}
-			org.docx4j.openpackaging.parts.DefaultXmlPart dom = new org.docx4j.openpackaging.parts.DefaultXmlPart(p.getPartName());
-			dom.setContentType(new org.docx4j.openpackaging.contenttype.ContentType(p.getContentType()));
-			dom.setRelationshipType(p.getRelationshipType());
-			dom.setDocument(new java.io.ByteArrayInputStream(bytes));
-			dom.setPackage(pkg);
-			if (p.getRelationshipsPart() != null) {
-				dom.setRelationships(p.getRelationshipsPart());
-				p.getRelationshipsPart().setSourceP(dom);
-			}
-			pkg.getParts().remove(p.getPartName());
-			pkg.getParts().put(dom);
-			return dom;
-		} catch (Exception e) {
-			log.warn(p.getPartName().getName() + " could not be read as DOM either: " + e);
-			return null;
-		}
+		new ModernCommentsScrubber(names, latinizer).scrub(doc.getDocumentElement());
+		result.record(p, Action.SCRUBBED, "2018 comments: authors and persons renamed, dates fixed, text scrambled");
 	}
 
 	private void replaceMedia(Map<Part, Treatment> treatments) throws Docx4JException {

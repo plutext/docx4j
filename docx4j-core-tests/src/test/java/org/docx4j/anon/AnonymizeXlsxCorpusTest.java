@@ -53,6 +53,7 @@ public class AnonymizeXlsxCorpusTest {
 
 	static final String[] CORPUS = {
 			"loadAndSave.xlsx",
+			"strict/strict-comments.xlsx", // a strict workbook with a comment: its VML (CR-026)
 			"cr022-checkbox.xlsx",
 			"cr022-conditional-formatting.xlsx",
 			"cr022-data-model.xlsx",
@@ -134,10 +135,12 @@ public class AnonymizeXlsxCorpusTest {
 		assertFalse(persons, persons.contains("@"));
 		assertEquals(Action.SCRUBBED, action(r, "/xl/threadedComments/threadedComment1.xml").action);
 		assertEquals(Action.SCRUBBED, action(r, "/xl/comments1.xml").action);
-		PartAction vml = action(r, "/xl/drawings/vmlDrawing1.vml");
-		assertEquals(Action.SCRUBBED, vml.action);
-		assertTrue(vml.reason, vml.reason.contains("DOM"));
-		assertTrue("the VML part is still there", part(pkg, "/xl/drawings/vmlDrawing1.vml") instanceof XmlPart);
+		assertEquals(Action.SCRUBBED, action(r, "/xl/drawings/vmlDrawing1.vml").action);
+		org.docx4j.openpackaging.parts.VMLPart vml =
+				(org.docx4j.openpackaging.parts.VMLPart) part(pkg, "/xl/drawings/vmlDrawing1.vml");
+		assertFalse("the comment shape is still there", vml.getContents().getAny().isEmpty());
+		String vmlXml = vml.getXML();
+		assertTrue(vmlXml, vmlXml.contains("ClientData") && vmlXml.contains("Anchor"));
 
 		// the table's columns equal its header cells
 		TablePart table = (TablePart) part(pkg, "/xl/tables/table1.xml");
