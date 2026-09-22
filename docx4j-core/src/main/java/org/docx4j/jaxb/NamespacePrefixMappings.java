@@ -546,6 +546,10 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "xr10";	
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2017/revision16"))
 			return "xr16";	
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision5"))
+			return "xr5";  // [MS-XLSX] revision5; Excel names it in mc:Ignorable (CR-019 phase 3 finding)
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision9"))
+			return "xr9";  // [MS-XLSX] revision9; Excel names it in styles.xml's mc:Ignorable (CR-019 phase 3 finding)
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2015/02/main"))
 			return "x16r2";  // [MS-XLSX] 5.11 formatCode16; Excel names it in styles.xml's mc:Ignorable (CR-024)
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/2019/extlst"))
@@ -821,6 +825,10 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision10";	
 		if (prefix.equals("xr16"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2017/revision16";	
+		if (prefix.equals("xr5"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision5";
+		if (prefix.equals("xr9"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision9";
 		if (prefix.equals("x16r2"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2015/02/main";
 		if (prefix.equals("oel"))

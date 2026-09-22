@@ -56,7 +56,9 @@ public class IgnorablePrefixesDeclaredTest {
 	public void everyIgnorablePrefixIsDeclaredOnTheRoot() throws Exception {
 		for (String file : new String[] { "cr022-checkbox.xlsx", "cr022-slicers-timelines.xlsx",
 				"cr022-conditional-formatting.xlsx", "cr022-data-validation.xlsx", "cr022-sparklines.xlsx",
-				"loadAndSave.xlsx", "loadAndSave.docx", "loadAndSave.pptx" }) {
+				"loadAndSave.xlsx", "loadAndSave.docx", "loadAndSave.pptx",
+				// strict workbooks through the preprocessor: styles.xml names xr9 (CR-019 phase 3 finding)
+				"anon/strict-invoice.xlsx", "anon/strict-chart.xlsx", "anon/strict-simple.xlsx" }) {
 			byte[] saved = forcedResave(OpcPackage.load(ResourceUtils.getResource(file)));
 			List<String> problems = new ArrayList<String>();
 			int checked = 0;
