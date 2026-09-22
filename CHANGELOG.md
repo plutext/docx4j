@@ -1,6 +1,54 @@
 CHANGELOG
 =========
 
+Version 17.2.1
+===============
+
+Changes in Version 17.2.1
+--------------------------
+
+Anonymiser (org.docx4j.anon, CR-019):
+
+- The anonymiser is now part of docx4j-core, with no dependency of its own (docx4j's
+  own word list replaces com.thedeanda:lorem). The package name is unchanged;
+  docx4j-docx-anon is a relocation POM for this release and goes at the next minor.
+  The CLI is java -cp ... org.docx4j.anon.AnonymizeCli.
+
+- pptx is supported. Anonymize takes an OpcPackage and the CLI loads by package, so the
+  extension does not matter. Slides, layouts, masters, notes, comments (2007 and 2018)
+  and their authors, tags, section and custom-show names and table styles are scrubbed;
+  the password-to-modify hash, embedded fonts, media, OLE, ActiveX and ink go in STRICT.
+
+- xlsx is supported. Strings are scrambled consistently, so a table's columns still match
+  its header cells; numbers keep their shape with other digits (--keep-numbers, or
+  setKeepNumbers, keeps the values); formulas still compute - sheets become Sheet<n>,
+  defined names n_<hash>, and structured and external-book references follow. Comments
+  (legacy and threaded), headers and footers, hyperlinks, validations, conditional
+  formats, sparklines, form controls, connections and external links are scrubbed;
+  pivot tables, slicers, timelines, their caches and the data model are removed, leaving
+  their cells as values; passwords, hashes and salts are cleared.
+
+Packaging and load:
+
+- The 17.2.0 warning "N byte(s) after the zip end of central directory record" fired on
+  every package larger than 64K, because the count was wrong. Diagnostic only: no
+  package was altered either way.
+
+- A .ppsx slideshow's presentation.xml loads as MainPresentationPart, not a BinaryPart.
+
+- ActiveXControlXmlPart(PartName) sets its content and relationship types, so a part
+  built with that constructor can be added to a package.
+
+SpreadsheetML:
+
+- The namespace prefixes xr5 and xr9 are known. Excel names xr9 in styles.xml's
+  mc:Ignorable, and a prefix named there but not declared is an XML error to Excel,
+  which dropped the styles part of any workbook docx4j had round-tripped.
+
+- A strict workbook's date cell (t="d" with an ISO 8601 value) becomes the 1900-system
+  serial number on load, as Excel writes it in a transitional workbook; until now the
+  cell type was dropped and Excel repaired the cell.
+
 Version 17.2.0
 ===============
 

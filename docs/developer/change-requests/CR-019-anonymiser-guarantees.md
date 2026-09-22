@@ -442,7 +442,7 @@ name kept: taken.
 | Word check round 2: `strict-smartart-anon` would not open — a third converter defect, not the anonymiser: strict keeps the 2010 shape elements in the wordprocessingDrawing namespace (`wp:wsp`) and the preprocessor mapped them to transitional `wp:`, where they do not exist; fixed (mapped to `wps:`/`wpg:`/`wpc:` by root name or nearest ancestor; `StrictLoadTest.textBoxesBecomeWordprocessingShape`) | docx4j-core-tests re-run: see below |
 | Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | round 1 (2026-09-21): the corpus outputs opened; `probe-media-original` and `-keep` did not ("The operation is cancelled") — the probe's OLE bytes were junk, Word refuses the document itself. Round 2: the probe embeds a real Word 97-2003 document, the labelled footprints in; the probe files opened (`-keep` showed the kept altChunk text, trimmed to "SecretHtml paragraph" at Jason's ask); `strict-smartart-anon` did not open — the converter's `wp:wsp` defect, fixed. Round 3 (Jason, 2026-09-21): the SmartArt documents open fine. **Passed.** |
 
-### CHANGELOG entry for 17.2.1 (for Jason to place)
+### CHANGELOG entry for 17.2.1 (PLACED 2026-09-23, condensed to the terse house style)
 
     The anonymiser (org.docx4j.anon, CR-019) is in docx4j-core: its one
     dependency, com.thedeanda:lorem, is replaced by docx4j's own word list
@@ -585,7 +585,7 @@ KEEP) with a README for the PowerPoint check.
 | docx4j-core-tests, full | 1285 tests, 0 failures, 11 skipped (2026-09-22) |
 | PowerPoint 365 opens the outputs on the share (`fidelity/cr019-pptx/`, README there) | round 1 (Jason, 2026-09-22): `probe-comments-original` and `-anon` did not open — the probe's 2018 comment lacked the required anchor and had `replyLst` after `txBody` ([MS-PPTX] CT_Comment); `probe-media-original` and `-anon-keep` did not open — junk OLE/mp4/wav bytes. Both are the probes', not the anonymiser's: the comment fixed, the media probe now embeds a real workbook, mp4 and wav (fixtures `anon/probe.mp4`, `probe.wav`), and the parts with no real bytes (ActiveX, font data) sit in a separate `probe-junk-anon` whose STRICT output alone must open. Round 2 (Jason, 2026-09-22): the probes open. **Passed.** |
 
-### CHANGELOG entry for 17.2.1 (for Jason to place, after the 17.2.1 anonymiser-in-core entry)
+### CHANGELOG entry for 17.2.1 (PLACED 2026-09-23, condensed to the terse house style)
 
     The anonymiser handles pptx (CR-019 phase 2): Anonymize takes an OpcPackage
     (docx or pptx; the CLI loads by package, so the extension does not matter);
@@ -741,7 +741,7 @@ references survive).
 | docx4j-core-tests, full | 1300 tests, 0 failures, 11 skipped (2026-09-22) |
 | Excel 365 opens the outputs on the share (`fidelity/cr019-xlsx/`, README there) | round 1 (Jason, 2026-09-22): two recovery logs. `cr022-data-model-anon`: "External connections removed" — the connections into the removed data model and Power Query mashup had been kept, scrubbed; now every model (`x15:connection model="1"`), Power Query (type 100) and worksheet-to-model (type 102) connection goes with them, and a connections part left empty goes too. `strict-invoice-anon`: "styles.xml XML error" was docx4j's own round trip — `mc:Ignorable` named `xr9` and the prefix table had no 2016/revision9 (xr5 and xr9 added, `IgnorablePrefixesDeclaredTest` extended to the strict samples); its table "removed/repaired" was the anonymiser's — the table's `displayName` scrambled to a string with a space (lorem's), which Excel refuses: table and query-table names now scramble to identifiers (`ScrambleText.consistentIdentifier`, the structured references through the same). Round 2 (Jason): one log left, `strict-invoice-anon` "Repaired Records: Cell information" — G4, a strict-edition date cell (`t="d"`, ISO date): docx4j's `ST_CellType` lacked `d` (ECMA-376 4th ed. transitional; ISO 29500 and Excel's strict output have it), so the round trip dropped the `t` and Excel read the date as a number — and the anonymiser had randomised the digits. Jason's call: not a schema change but the preprocessor's job — `xlsx-preprocessor.xslt` now turns the cell into what Excel writes in a transitional workbook, the 1900-system serial with no `t` (`StrictCellDates.serial`, 2025-12-11 → 46002), and the anonymiser treats it as any number. Round 3 (Jason, 2026-09-23): every workbook opens with no repair prompt. **Passed.** |
 
-### CHANGELOG entry for 17.2.1 (for Jason to place, after the phase 2 entry)
+### CHANGELOG entry for 17.2.1 (PLACED 2026-09-23, condensed to the terse house style)
 
     The anonymiser handles xlsx (CR-019 phase 3): strings scrambled (a table's
     columns still match its header cells), numbers' digits randomised
