@@ -335,6 +335,20 @@ the `urn:docx4j:vml:root` namespace is gone, the root element is `{}xml`, the
 wildcard is `##any`, and `ROOT.xsd` includes rather than imports that schema.
 Python does not generate VML yet, so it is told for when it does.
 
+**Sent to `docx4j-generated-objects-ts` 2026-09-23**, to be done before its
+next release: the two xsd files and what changed in each, that `b4ca0d98a` is
+the only commit touching `xsd/` since `409aade38` (so it is the whole delta
+since 17.2.0), that the prefix table is unaffected (the namespace is removed,
+not renamed, and was never in it), that the generated root class is
+`@XmlRootElement(name = "xml")` with no namespace and its `package-info` gone,
+that `git show -w` is the diff to read (`ROOT.xsd` was also normalised from
+CRLF), and that the same defect is latent in what it has generated so far. The
+one thing asked back: whether its generator handles `xsd:include` in
+`ROOT.xsd` — the include is forced (`src-import.1.2`: an import with no
+namespace attribute is illegal from a schema with no target namespace), so if
+it cannot, the arrangement has to change here. Also flagged: the commit is not
+pushed yet.
+
 ## 11. Where Excel reads a form control's cell link (measured 2026-09-23)
 
 No fixture had a *linked* control, so one was made by hand and bisected in
