@@ -43,7 +43,8 @@ ActiveX control, an embedded font, a .ppsx main part.
 | file | exercises |
 |---|---|
 | ../loadAndSave.xlsx | a threaded comment with its person (email user id), a legacy comment with its VML shape (an `<xml>` root the binding cannot read: scrubbed as DOM), a table, a chart, an SVG, a sensitivity label, headers and footers |
-| ../cr022-checkbox.xlsx | a form control: VML shape and ctrlProps (linked-cell formula) |
+| ../cr022-checkbox.xlsx | a form control: VML shape and ctrlProps (this one has no cell link) |
+| ../cr022-checkbox-linked.xlsx | the same with a cell link, in both places Excel keeps it: fmlaLink on the ctrlProps part (the one Excel reads) and x:FmlaLink in the VML ClientData. Hand-made but Excel-validated: Excel 365 opens it and the box drives D4 (2026-09-23, CR-026's Office check) |
 | ../cr022-conditional-formatting.xlsx, ../cr022-data-validation.xlsx, ../cr022-sparklines.xlsx | rules, validations and sparklines whose formulas must still point at their cells |
 | ../cr022-data-model.xlsx | pivot tables on the data model, connections, customXml: the pivots and model go, the connections stay with `Provider=None` |
 | ../cr022-slicers-timelines.xlsx | pivot tables with slicers and timelines and their caches: all removed, with every reference from the workbook, sheets and drawings |

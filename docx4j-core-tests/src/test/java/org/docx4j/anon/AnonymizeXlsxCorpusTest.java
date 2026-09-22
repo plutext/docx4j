@@ -55,6 +55,7 @@ public class AnonymizeXlsxCorpusTest {
 			"loadAndSave.xlsx",
 			"strict/strict-comments.xlsx", // a strict workbook with a comment: its VML (CR-026)
 			"cr022-checkbox.xlsx",
+			"cr022-checkbox-linked.xlsx",
 			"cr022-conditional-formatting.xlsx",
 			"cr022-data-model.xlsx",
 			"cr022-data-validation.xlsx",
@@ -259,6 +260,23 @@ public class AnonymizeXlsxCorpusTest {
 		// a transitional input says nothing of the kind
 		AnonymizeResult t = new Anonymize(load("anon/comments.xlsx")).go();
 		assertFalse(t.getNotes().toString(), t.getNotes().toString().contains("Strict"));
+	}
+
+	@Test
+	public void aLinkedFormControlStillPointsAtItsCell() throws Exception {
+		// cr022-checkbox-linked.xlsx is cr022-checkbox.xlsx with the link Excel keeps in two
+		// places - fmlaLink on the ctrlProps part (which is the one Excel reads: a VML-only
+		// link is ignored, measured 2026-09-23) and x:FmlaLink in the VML ClientData. Both are
+		// formulas: they are rewritten to the anonymised workbook, not scrambled as text.
+		SpreadsheetMLPackage pkg = load("cr022-checkbox-linked.xlsx");
+		AnonymizeResult r = new Anonymize(pkg).go();
+		assertTrue(r.summary(), r.isClean());
+		String ctrlProps = ((org.docx4j.openpackaging.parts.SpreadsheetML.ControlPropertiesPart)
+				part(pkg, "/xl/ctrlProps/ctrlProp1.xml")).getXML();
+		assertTrue(ctrlProps, ctrlProps.contains("fmlaLink=\"$D$4\""));
+		String vml = ((org.docx4j.openpackaging.parts.VMLPart) part(pkg, "/xl/drawings/vmlDrawing1.vml")).getXML();
+		assertTrue(vml, vml.contains(">$D$4<"));
+		reload(pkg);
 	}
 
 	@Test

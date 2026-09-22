@@ -325,7 +325,8 @@ walked as JAXB like any other. Two things moved into `ScrambleText` for that:
 | `VmlDrawingPartTest` (3: the shapes are reachable, a transitional package round trips, a strict package with a comment saves) | pass |
 | the anonymiser's suites with the workaround gone | 51 tests, 0 failures (the xlsx corpus includes `strict/strict-comments.xlsx` now) |
 | `docx4j-core-tests`, full | 1308 tests, 0 failures, 11 skipped |
-| Office check | **Jason**: the saved `strict-comments.xlsx` and a transitional workbook whose VML docx4j has rewritten (the part is marshalled now, not copied, whenever anything reads it) |
+| Office check (Excel 365, Jason, 2026-09-23; the share's `fidelity/cr026-vml/`) | **passed**. `strict-comments-saved.xlsx` — the workbook that could not be saved at all before — opens with its comment; `comments-saved.xlsx` and `checkbox-saved.xlsx` open with their comment and check box in place. Two false alarms in the README were mine, not the code's: `comments.xlsx` has one comment (three sheets), and `cr022-checkbox.xlsx`'s check box was never linked to a cell — in both files the parts that carry them are byte-identical to the originals' |
+| the linked-control path, which no fixture covered | checked separately, by bisect (below): a check box linked to `$D$4` survives docx4j's round trip and still drives the cell in Excel |
 
 ### Hand-offs
 
@@ -333,3 +334,33 @@ As §8: the TypeScript objects regenerate from `xsd/ROOT.xsd` at this commit —
 the `urn:docx4j:vml:root` namespace is gone, the root element is `{}xml`, the
 wildcard is `##any`, and `ROOT.xsd` includes rather than imports that schema.
 Python does not generate VML yet, so it is told for when it does.
+
+## 11. Where Excel reads a form control's cell link (measured 2026-09-23)
+
+No fixture had a *linked* control, so one was made by hand and bisected in
+Excel 365 (Jason). Each variant is `cr022-checkbox.xlsx` plus exactly one
+thing; `-saved` is that file through docx4j:
+
+| variant | Excel opens | the box drives D4 | docx4j's `-saved` |
+|---|---|---|---|
+| A: `fmlaLink="$D$4"` on the ctrlProps part | yes | **yes** | opens, still linked |
+| B: `<x:FmlaLink>$D$4</x:FmlaLink>` in the VML `x:ClientData` | yes | **no** | not worth opening |
+| C: both | yes | **yes** | opens, still linked |
+
+So for a modern (x14) form control the link Excel honours is the one in the
+**ctrlProps part**; the VML `ClientData`'s copy is the legacy fallback and is
+ignored while the x14 branch is there. docx4j preserves both, and the
+anonymiser rewrites both as formulas (`CTFormControlPr`'s `fmlaLink` through
+`SmlFormulas`, the VML's through `ScrambleText`'s `CTClientData` case) rather
+than scrambling them as text.
+
+Variant C is committed as
+`docx4j-core-tests/src/test/resources/cr022-checkbox-linked.xlsx` — hand-made
+but Excel-validated — and `AnonymizeXlsxCorpusTest.aLinkedFormControlStillPointsAtItsCell`
+holds both halves of the link to `$D$4` through an anonymisation.
+
+An earlier attempt at the same fixture added a checked state as well as the
+link (`checked="Unchecked"` on ctrlProps, `<x:Checked>0</x:Checked>` in the
+VML) and Excel dropped the check box; since A, B and C all open, one of those
+two is what it objected to. Not chased: it is a fact about hand-edited XML,
+not about docx4j, and Excel writes `checked` itself when the box is ticked.
