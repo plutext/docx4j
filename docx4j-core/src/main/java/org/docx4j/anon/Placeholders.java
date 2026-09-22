@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * page flow is what the anonymised document is for, but the footprint says
  * what it was: an OLE object or ActiveX control leaves its picture, and the
  * picture is a generated image labelled "OLE object removed by
- * docx4j-docx-anon"; an altChunk, which has no footprint of its own, leaves a
+ * docx4j anon"; an altChunk, which has no footprint of its own, leaves a
  * marker paragraph. The words of the markers are in {@link Verify}'s allowed
  * vocabulary.
  *
@@ -52,8 +52,8 @@ class Placeholders {
 	private static final Logger log = LoggerFactory.getLogger(Placeholders.class);
 
 	static final String OBJECT_REMOVED = "OLE object removed";
-	static final String ALTCHUNK_REMOVED = "[altChunk removed by docx4j-docx-anon]";
-	static final String BY = "by docx4j-docx-anon";
+	static final String ALTCHUNK_REMOVED = "[altChunk removed by docx4j anon]";
+	static final String BY = "by docx4j anon";
 
 	private static byte[] objectRemovedPng;
 

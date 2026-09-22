@@ -1,8 +1,0 @@
-<configuration>
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder><pattern>%-5level %logger{0} - %msg%n</pattern></encoder>
-  </appender>
-  <logger name="org.docx4j" level="WARN"/>
-  <logger name="org.docx4j.anon" level="INFO"/>
-  <root level="WARN"><appender-ref ref="STDOUT"/></root>
-</configuration>

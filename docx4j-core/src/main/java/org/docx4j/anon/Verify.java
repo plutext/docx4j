@@ -18,10 +18,6 @@
  */
 package org.docx4j.anon;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,8 +48,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.thedeanda.lorem.LoremIpsum;
-
 /**
  * Proves the guarantee on one document: no token of the original survives in
  * the anonymised output.
@@ -76,7 +70,7 @@ import com.thedeanda.lorem.LoremIpsum;
  * latent-style list), which Word identifies built-in styles by;</li>
  * <li>the fixed words the tool writes: Author, Sheet, example, invalid,
  * http, None, General, true, false, app.xml's "Microsoft Office Word", and
- * the altChunk marker's "altChunk removed by docx4j-docx-anon".</li>
+ * the altChunk marker's "altChunk removed by docx4j anon".</li>
  * </ul>
  * Digits are not tokens: they are randomised, and a 4-digit run would collide
  * by chance often enough to make the check useless.
@@ -135,8 +129,6 @@ public class Verify {
 			"microsoft", "office", "word",
 			// the altChunk marker paragraph (Placeholders.ALTCHUNK_REMOVED)
 			"altchunk", "removed", "docx", "anon"));
-
-	private static String loremJoined;
 
 	/** The tokens of one package: per part, token to the first place it was seen. */
 	public static class Extraction {
@@ -205,24 +197,9 @@ public class Verify {
 		return isLoremFragment(token);
 	}
 
-	/** true if the token is a substring of a lorem ipsum word */
-	static synchronized boolean isLoremFragment(String token) {
-		if (loremJoined == null) {
-			StringBuilder sb = new StringBuilder(" ");
-			try (InputStream is = LoremIpsum.class.getResourceAsStream("lorem.txt")) {
-				if (is != null) {
-					BufferedReader r = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-					String line;
-					while ((line = r.readLine()) != null) {
-						sb.append(line.trim().toLowerCase(Locale.ROOT)).append(' ');
-					}
-				}
-			} catch (Exception e) {
-				log.warn("lorem word list not readable: " + e);
-			}
-			loremJoined = sb.toString();
-		}
-		return loremJoined.contains(token);
+	/** true if the token is a substring of a word of {@link Lorem#WORDS} */
+	static boolean isLoremFragment(String token) {
+		return Lorem.isFragment(token);
 	}
 
 	private static Set<String> knownStyleWords;

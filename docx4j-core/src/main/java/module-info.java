@@ -41,6 +41,7 @@ module org.docx4j.core {
     requires org.jvnet.jaxb.plugins.runtime;
     
     exports org.docx4j;
+    exports org.docx4j.anon; // the anonymiser (CR-019), in core since 17.2.1
     exports org.docx4j.convert.in;
     exports org.docx4j.convert.in.word2003xml;
     exports org.docx4j.convert.out;

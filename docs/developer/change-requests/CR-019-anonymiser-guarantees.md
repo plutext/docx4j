@@ -266,7 +266,7 @@ tree (`src/test`, 31 tests) and a `Main-Class` manifest entry.
 | `FieldInstructions` | keyword and switches kept, format-switch pictures kept, bookmark arguments (REF/PAGEREF/NOTEREF/ASK/SET/SEQ, HYPERLINK `\l`, TOC `\b` `\c`) mapped, STYLEREF built-in names kept, formulas keep functions and cell references and map plain identifiers, form-field instructions untouched, every other argument scrambled (letters only, so paths and switch values keep their shape) |
 | `Names` | the shared renamings: authors/initials in order of first appearance, `bm`/`s` + hash (stable across parts, no pre-pass), built-in style names from KnownStyles.xml plus the document's own latent-style list, `FIXED_DATE` = 2000-01-01T00:00:00Z |
 | `Verify` | before/after token extraction (every text node, the attribute pairs in `Verify.ATTRIBUTES`, every external target) and the comparison less the tool's own vocabulary (lorem fragments, field keywords, date/number pictures, built-in style words where style names appear, a dozen fixed words) |
-| `AnonymizeCli` | `in.docx out.docx [--keep] [--json report.json] [--no-verify] [--no-fonts]`; exit 0 only when clean, 1 not clean, 2 usage, 3 failure; sets an `IdentityPlusMapper` unless `--no-fonts` |
+| `AnonymizeCli` | `in.docx out.docx [--keep] [--json report.json] [--no-verify] [--no-fonts]`; exit 0 only when clean, 1 not clean, 2 usage, 3 failure; sets an `IdentityPlusMapper` unless `--no-fonts` (run as `java -cp ... org.docx4j.anon.AnonymizeCli` since the move into core) |
 | `DmlVmlAnalyzer` | unchanged in role (the inventory: fields present, VML, objects of interest); math and non-picture graphic data are inventory now, not unsafe, since the walk reaches their text |
 
 Test corpus: `src/test/resources` holds nine docx4j-owned documents (README
@@ -380,7 +380,17 @@ name kept: taken.
 | Word check round 2: `strict-smartart-anon` would not open — a third converter defect, not the anonymiser: strict keeps the 2010 shape elements in the wordprocessingDrawing namespace (`wp:wsp`) and the preprocessor mapped them to transitional `wp:`, where they do not exist; fixed (mapped to `wps:`/`wpg:`/`wpc:` by root name or nearest ancestor; `StrictLoadTest.textBoxesBecomeWordprocessingShape`) | docx4j-core-tests re-run: see below |
 | Word 365 opens the outputs on the share (`fidelity/cr019/`, README there) | round 1 (2026-09-21): the corpus outputs opened; `probe-media-original` and `-keep` did not ("The operation is cancelled") — the probe's OLE bytes were junk, Word refuses the document itself. Round 2: the probe embeds a real Word 97-2003 document, the labelled footprints in; the probe files opened (`-keep` showed the kept altChunk text, trimmed to "SecretHtml paragraph" at Jason's ask); `strict-smartart-anon` did not open — the converter's `wp:wsp` defect, fixed. Round 3 (Jason, 2026-09-21): the SmartArt documents open fine. **Passed.** |
 
-### CHANGELOG entry (for Jason to place)
+### CHANGELOG entry for 17.2.1 (for Jason to place)
+
+    The anonymiser (org.docx4j.anon, CR-019) is in docx4j-core: its one
+    dependency, com.thedeanda:lorem, is replaced by docx4j's own word list
+    (org.docx4j.anon.Lorem, the classic passage), so nothing extra comes
+    with it. The package name is unchanged; docx4j-docx-anon is a relocation
+    POM for this release (a build naming it is redirected to docx4j-core) and
+    goes at the next minor. The CLI is java -cp ... org.docx4j.anon.AnonymizeCli.
+    The samples AnonSingle and AnonCorpus are unchanged.
+
+### CHANGELOG entry (17.2.0, placed)
 
     docx4j-docx-anon (CR-019 phase 1): a verified, fail-closed anonymiser.
     Anonymize is STRICT by default (parts it cannot make clean are removed;
@@ -395,6 +405,29 @@ name kept: taken.
     a JaxbGraphWalker.Visitor now, not a TraversalUtil callback;
     AnonymizeResult.isOK() is deprecated to isClean().
 
+### Moved into docx4j-core (17.2.1, 2026-09-22)
+
+Jason's call, before phases 2 and 3: the module `docx4j-docx-anon` existed only
+so that users who did not need the anonymiser did not pull in
+`com.thedeanda:lorem` — and the anonymiser used exactly one call of it
+(`getWords(n, n)`) plus its word list, which `Verify` read back out of the jar.
+Both are now `org.docx4j.anon.Lorem`: the distinct words of the classic passage
+and its Cicero source (public domain), one array serving the scrambler and the
+check, so the vocabulary cannot drift from the allow-list. That also removes a
+filename-based automatic module (`requires lorem;`) that Maven warned about on
+every build.
+
+The package name is unchanged; the code lives in `docx4j-core`
+(`exports org.docx4j.anon`), the tests in `docx4j-core-tests`
+(`org.docx4j.anon`, corpus files under `src/test/resources/anon/` where they
+were not already core-tests' own). `docx4j-docx-anon` remains for one release
+as a relocation POM (`<distributionManagement><relocation>` to docx4j-core, kept
+by the flatten plugin's ossrh mode), so a build still naming it is redirected
+with a message rather than broken; to be removed at the next minor. The two
+samples (`AnonSingle`, `AnonCorpus` in docx4j-samples-docx4j) compile unchanged
+against core. The CLI is `java -cp ... org.docx4j.anon.AnonymizeCli` (core's
+jar carries no Main-Class). Decision 5 above is thereby superseded.
+
 ### Left for later
 
 - Phases 2 and 3 as planned; the walker and both visitors are format-neutral
@@ -406,7 +439,7 @@ name kept: taken.
 - Strings in mixed content and DOM extension text outside `t`/`v`/`f` are not
   scrambled (Verify sees the text nodes and flags them).
 - docx4j-mcp's `anonymize` tool (CR-004 phase 4) can now call
-  `AnonymizeCli.run` or `Anonymize` directly.
+  `AnonymizeCli.run` or `Anonymize` directly - from docx4j-core alone since 17.2.1.
 
 ## Risks
 

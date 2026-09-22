@@ -30,11 +30,11 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 /**
  * The command line:
  * <pre>
- * java -cp "docx4j-docx-anon.jar:lib/*" org.docx4j.anon.AnonymizeCli in.docx out.docx [--keep] [--json report.json] [--no-verify] [--no-fonts]
+ * java -cp "docx4j-core.jar:lib/*" org.docx4j.anon.AnonymizeCli in.docx out.docx [--keep] [--json report.json] [--no-verify] [--no-fonts]
  * </pre>
- * (the jar's manifest names this class, so {@code java -jar} works when the
- * dependencies - docx4j-core, a JAXB runtime such as docx4j-JAXB-ReferenceImpl,
- * lorem - are on the classpath).
+ * (docx4j-core and a JAXB runtime such as docx4j-JAXB-ReferenceImpl on the
+ * classpath; the class was the docx4j-docx-anon jar's Main-Class until the
+ * anonymiser moved into core in 17.2.1).
  * <ul>
  * <li>{@code --keep}: KEEP mode - parts the tool cannot make clean stay, and are
  * reported; the default is STRICT, which removes them.</li>
@@ -104,7 +104,7 @@ public class AnonymizeCli {
 			}
 			System.out.println(report);
 		} catch (Exception e) {
-			System.err.println("docx4j-docx-anon: " + e);
+			System.err.println("docx4j anon: " + e);
 			e.printStackTrace(System.err);
 			return 3;
 		}

@@ -332,7 +332,10 @@ public class AnonymizeProbesTest {
 		assertEquals("A1", c.getInitials());
 		assertEquals(Names.FIXED_DATE.toXMLFormat(), ce.getDateUtc().toXMLFormat());
 		assertEquals(Names.FIXED_DATE.toXMLFormat(), del.getDate().toXMLFormat());
-		assertNull(pkg.getDocPropsCorePart().getContents().getLastModifiedBy());
+		// the anonymiser cleared it; the reload's save may then have stamped docx4j's own
+		// name (docx4j.dc.write=true in core-tests' docx4j.properties), which names no one
+		String lastModifiedBy = pkg.getDocPropsCorePart().getContents().getLastModifiedBy();
+		assertTrue(String.valueOf(lastModifiedBy), lastModifiedBy == null || lastModifiedBy.startsWith("docx4j "));
 		// the comment still has text, and the deletion still has deleted text
 		assertTrue(c.getContent().size() == 1);
 		assertFalse(dt.getValue().isEmpty());
@@ -522,7 +525,7 @@ public class AnonymizeProbesTest {
 
 		// an EMF, shown by a drawing (with a descr naming the original file)
 		MetafileEmfPart emf = new MetafileEmfPart(new PartName("/word/media/image1.emf"));
-		emf.setBinaryData(resource("probe.emf"));
+		emf.setBinaryData(resource("anon/probe.emf"));
 		Relationship emfRel = mdp.addTargetPart(emf);
 		String drawing = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
 				+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
@@ -546,7 +549,7 @@ public class AnonymizeProbesTest {
 		ole.setBinaryData(realOleBytes());
 		Relationship oleRel = mdp.addTargetPart(ole);
 		MetafileEmfPart preview = new MetafileEmfPart(new PartName("/word/media/image2.emf"));
-		preview.setBinaryData(resource("probe.emf"));
+		preview.setBinaryData(resource("anon/probe.emf"));
 		Relationship previewRel = mdp.addTargetPart(preview);
 		String object = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
 				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\""
@@ -580,13 +583,13 @@ public class AnonymizeProbesTest {
 
 	/** the embedded Word 97-2003 document inside docx4j's own ole-inserted-doc.docx */
 	static byte[] realOleBytes() throws Exception {
-		WordprocessingMLPackage source = AnonymizeCorpusTest.load("ole-inserted-doc.docx");
+		WordprocessingMLPackage source = AnonymizeCorpusTest.load("OLE/inserted doc.docx");
 		for (Part p : source.getParts().getParts().values()) {
 			if (p.getPartName().getName().startsWith("/word/embeddings/")) {
 				return ((org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) p).getBytes();
 			}
 		}
-		throw new AssertionError("no embedding in ole-inserted-doc.docx");
+		throw new AssertionError("no embedding in OLE/inserted doc.docx");
 	}
 
 	/** a VBA project, on its own: its bytes are junk, so this document is never sent to Word */

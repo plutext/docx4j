@@ -42,21 +42,22 @@ import org.docx4j.wml.Comments;
 import org.junit.Test;
 
 /**
- * The anonymiser on docx4j's own documents (see src/test/resources/README.md):
+ * The anonymiser on docx4j's own documents (see src/test/resources/anon/README.md):
  * STRICT leaves every one clean and verified, the output reloads, and the
  * things each document is here for are gone.
  */
 public class AnonymizeCorpusTest {
 
+	/** docx4j-core-tests' own documents where they already live, plus anon/ for the rest */
 	static final String[] CORPUS = {
 			"loadAndSave.docx",
 			"tracked-changes-equations.docx",
-			"ole-inserted-doc.docx",
+			"OLE/inserted doc.docx",
 			"LegacyForms.docx",
-			"vml-textbox.docx",
-			"chart.docx",
-			"strict-smartart.docx",
-			"embedded-fonts.docx",
+			"vml/textbox.docx",
+			"anon/chart.docx",
+			"strict/strict-smartart.docx",
+			"anon/embedded-fonts.docx",
 			"MERGEFIELD.docx" };
 
 	static WordprocessingMLPackage load(String name) throws Exception {
@@ -112,7 +113,7 @@ public class AnonymizeCorpusTest {
 	@Test
 	public void keepModeIsNeverCleanWhenSomethingIsKept() throws Exception {
 		// an OLE object cannot be made clean: KEEP keeps it and says so
-		WordprocessingMLPackage pkg = load("ole-inserted-doc.docx");
+		WordprocessingMLPackage pkg = load("OLE/inserted doc.docx");
 		AnonymizeResult r = new Anonymize(pkg, Anonymize.Mode.KEEP).go();
 		assertFalse(r.isClean());
 		assertFalse(r.getKeptUnsafe().isEmpty());
@@ -188,7 +189,7 @@ public class AnonymizeCorpusTest {
 
 	@Test
 	public void embeddedFontsGoWithTheirReferences() throws Exception {
-		WordprocessingMLPackage pkg = load("embedded-fonts.docx");
+		WordprocessingMLPackage pkg = load("anon/embedded-fonts.docx");
 		assertNotNull(part(pkg, "/word/fonts/font1.odttf"));
 		AnonymizeResult r = new Anonymize(pkg).go();
 		assertTrue(r.summary(), r.isClean());
@@ -200,7 +201,7 @@ public class AnonymizeCorpusTest {
 
 	@Test
 	public void oleObjectGoesAndItsPictureStays() throws Exception {
-		WordprocessingMLPackage pkg = load("ole-inserted-doc.docx");
+		WordprocessingMLPackage pkg = load("OLE/inserted doc.docx");
 		AnonymizeResult r = new Anonymize(pkg).go();
 		assertTrue(r.summary(), r.isClean());
 		String body = pkg.getMainDocumentPart().getXML();
@@ -213,7 +214,7 @@ public class AnonymizeCorpusTest {
 
 	@Test
 	public void jsonReportParses() throws Exception {
-		WordprocessingMLPackage pkg = load("chart.docx");
+		WordprocessingMLPackage pkg = load("anon/chart.docx");
 		AnonymizeResult r = new Anonymize(pkg).go();
 		String json = r.toJson();
 		assertTrue(json, json.startsWith("{"));

@@ -51,7 +51,7 @@ Each release lives on its own `VERSION_x_y_z` branch (e.g. `VERSION_17_0_1` is c
 - **docx4j-JAXB-ReferenceImpl** / **docx4j-JAXB-MOXy** — pick-one runtime selector modules. Consumers add exactly one as a dependency; selection is by classpath (META-INF/services), not a property. `docx4j-JAXB-Internal` on disk is retired (no pom.xml, not in the reactor).
 - **docx4j-core-tests** — the test suite (runs against docx4j-JAXB-ReferenceImpl). `docx4j-diffx-tests` and `docx4j-export-fo-tests` exist on disk but are not in the reactor `<modules>` list, as is `docx4j-bundle` (fat jar, commented out).
 - **docx4j-export-fo** (+ four `-fonts-*` modules) — docx→PDF via XSL-FO/Apache FOP. Other PDF strategies: **docx4j-documents4j-local/-remote** (drive MS Word via documents4j) and **docx4j-conversion-via-microsoft-graph**.
-- **docx4j-diffx** — docx differencing; **docx4j-docx-anon** — document anonymization.
+- **docx4j-diffx** — docx differencing. Document anonymisation is `org.docx4j.anon` *inside docx4j-core* since 17.2.1 (`docx4j-docx-anon` on disk is only a relocation POM, to be dropped at the next minor).
 - **docx4j-samples-\*** — runnable examples per capability; **docx4j-samples-resources** holds shared sample files.
 
 ## Core architecture (docx4j-core)

@@ -40,8 +40,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.thedeanda.lorem.Lorem;
-import com.thedeanda.lorem.LoremIpsum;
 
 /**
  * Replaces the text of a document: Latin letters with lorem ipsum (positionally,
@@ -94,8 +92,6 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 				Names::identifier,
 				names::isBuiltInStyleName);
 	}
-
-	private static Lorem lorem = LoremIpsum.getInstance();
 
 	private WordprocessingMLPackage pkg;
 	private final Names names;
@@ -507,7 +503,7 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			// A bit of effort to get enough text
 			
 			int wordsNeeded = Math.round((slenRqd-len)/8) + 1; // always at least one word!
-			String latin = lorem.getWords(wordsNeeded,wordsNeeded);
+			String latin = Lorem.words(wordsNeeded, random);
 			len += latin.length();
 			replacement.append(latin);
 			

@@ -40,14 +40,14 @@ public class AnonymizeCliTest {
 	public TemporaryFolder tmp = new TemporaryFolder();
 
 	private File copy(String resource) throws Exception {
-		File f = tmp.newFile(resource);
+		File f = tmp.newFile(resource.substring(resource.lastIndexOf('/') + 1));
 		Files.write(f.toPath(), AnonymizeProbesTest.resource(resource));
 		return f;
 	}
 
 	@Test
 	public void strictCleanExitsZero() throws Exception {
-		File in = copy("chart.docx");
+		File in = copy("anon/chart.docx");
 		File out = new File(tmp.getRoot(), "out.docx");
 		File json = new File(tmp.getRoot(), "report.json");
 		int exit = AnonymizeCli.run(new String[] { in.getPath(), out.getPath(), "--json", json.getPath(), "--no-fonts" });
@@ -61,7 +61,7 @@ public class AnonymizeCliTest {
 
 	@Test
 	public void keepWithAnEmbeddingExitsOne() throws Exception {
-		File in = copy("ole-inserted-doc.docx");
+		File in = copy("OLE/inserted doc.docx");
 		File out = new File(tmp.getRoot(), "out.docx");
 		int exit = AnonymizeCli.run(new String[] { in.getPath(), out.getPath(), "--keep", "--no-fonts" });
 		assertEquals(1, exit);

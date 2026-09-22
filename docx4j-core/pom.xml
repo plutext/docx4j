@@ -133,8 +133,7 @@
                             org.xml.sax.ext,
                             org.xml.sax.helpers,
                             antlr,
-                            antlr.*,
-                            com.thedeanda.lorem
+                            antlr.*
                         </Import-Package>
                         <Export-Package>
                             net.engio.mbassy.bus,

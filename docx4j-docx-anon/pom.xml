@@ -2,89 +2,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-	<groupId>org.docx4j</groupId>
-	<artifactId>docx4j-parent</artifactId>
-	<version>${revision}</version>
-  </parent>
-  
+	<parent>
+		<groupId>org.docx4j</groupId>
+		<artifactId>docx4j-parent</artifactId>
+		<version>${revision}</version>
+	</parent>
+
 	<artifactId>docx4j-docx-anon</artifactId>
-	<packaging>jar</packaging>
-	<name>docx4j-docx-anon</name>
-	
+	<packaging>pom</packaging>
+	<name>docx4j-docx-anon (relocated to docx4j-core)</name>
+
 	<description>
-		anonymization of docx files: text scrambled per Unicode range, identities,
-		references and metadata scrubbed, media replaced, embedded objects removed;
-		a verified, fail-closed result and a CLI (CR-019)
+		The anonymiser (org.docx4j.anon) moved into docx4j-core in 17.2.1, once its one
+		dependency (com.thedeanda:lorem) was replaced by docx4j's own word list. This POM
+		is the relocation: a build that still depends on docx4j-docx-anon is told to
+		depend on docx4j-core instead. The package name is unchanged. To be removed at
+		the next minor release.
 	</description>
 
-	
-	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->        
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>${version.maven-jar-plugin}</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<!-- CR-019: java -jar docx4j-docx-anon.jar in.docx out.docx (dependencies on the classpath) -->
-							<mainClass>org.docx4j.anon.AnonymizeCli</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	
-	
-	<dependencies>
-
-		<dependency>
-            <groupId>org.docx4j</groupId>
-            <artifactId>docx4j-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-		<!--  for anon functionality; since 3.3.1 -->
-		<dependency>
-		    <groupId>com.thedeanda</groupId>
-		    <artifactId>lorem</artifactId>
-		    <version>2.1</version>
-		</dependency>		
-
-		<dependency>
+	<distributionManagement>
+		<relocation>
 			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
+			<artifactId>docx4j-core</artifactId>
+			<message>org.docx4j.anon is in docx4j-core since 17.2.1; depend on docx4j-core.</message>
+		</relocation>
+	</distributionManagement>
 
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${version.logback-classic}</version>
-			<scope>test</scope>
-		</dependency>
-
-<!-- 	
-		<dependency>
-		  <groupId>ch.qos.logback</groupId>
-		  <artifactId>logback-classic</artifactId>
-		  <version>1.3.0-alpha4</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-            <groupId>org.docx4j</groupId>
-            <artifactId>docx4j-samples-resources</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-	 -->
-        
-	</dependencies>
-	
 </project>
