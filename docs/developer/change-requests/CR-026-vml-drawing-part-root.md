@@ -364,11 +364,44 @@ the cause of the failure this CR fixed: **docx4j converts on save**. For a
 package that was strict, `ZipPartStore` forces `getContents()` on every part
 nobody read, so that the output is uniformly transitional (§1) — the price
 being that one part which can never be read takes the whole save down. The
-byte-copy shortcut is only for transitional packages. A port which copies
-untouched parts verbatim regardless would, for a strict input, write strict
-bytes into a package whose other parts are transitional; asked of core-ts
-(2026-09-23) whether it converts strict at all and what it does with the parts
-nobody read.
+byte-copy shortcut is only for transitional packages.
+
+The worry that follows — that a port copying untouched parts verbatim would,
+for a strict input, mix purl bytes into a transitional package — **core-ts
+answered, and the answer is no** (2026-09-23, measured on
+`strict/strict-comments.xlsx`: loaded, nothing touched, saved). It does not
+convert at all, so a strict package round-trips as strict: every markup part
+comes out byte-identical, and only the OPC-level parts are regenerated
+(`[Content_Types].xml` and the three `.rels`), whose namespaces are the same in
+both conformance classes — the purl relationship *types* included. Mixing is
+impossible there rather than merely unobserved: its objects context has no
+purl modules, so `getContents()` throws for every strict part and those parts
+stay as source bytes; forcing a read of all of them leaves ten as bytes and
+re-marshals only `docProps/core.xml`, whose namespaces are class-independent.
+
+So neither implementation can produce a mixed package, by opposite means:
+
+| | docx4j | core-ts |
+|---|---|---|
+| strict on read | each part converted to transitional, lazily | not converted; a strict part cannot unmarshal at all |
+| parts nobody read, on save | forced through `getContents()`, so converted | copied from the source part store as bytes |
+| a strict package saves as | transitional, uniformly | strict, uniformly (markup parts byte-identical) |
+| the cost | one unreadable part kills the save (this CR) | a strict package is read-only in practice: the packaging layer works, nothing above it |
+
+Recorded there in core-ts CR-001 §17.6 and §17.7. Its note back, worth keeping
+for whoever writes its strict-conversion CR: the two pull in opposite
+directions, and converting eagerly at load — giving up the byte-for-byte
+round trip — is effectively what docx4j does.
+
+### Left for later (from this CR)
+
+- **A clearer failure when a strict package holds a part docx4j cannot read.**
+  This CR removed the only known one, but the class of failure remains for any
+  part the binding cannot take: the save dies with `Failed to add parts from
+  relationships of /` and three nested causes, where what it means is "this
+  part cannot be converted, so the package cannot be saved as transitional".
+  Worth a caught-and-rethrown message naming the part and saying that; not
+  done here, since nothing in the corpus now provokes it.
 
 **Sent to `docx4j-generated-objects-ts` 2026-09-23**, to be done before its
 next release: the two xsd files and what changed in each, that `b4ca0d98a` is
