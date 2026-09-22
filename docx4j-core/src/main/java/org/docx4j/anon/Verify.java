@@ -76,7 +76,10 @@ import org.w3c.dom.NodeList;
  * </ul>
  * Digits are not tokens: they are randomised, and a 4-digit run would collide
  * by chance often enough to make the check useless. GUIDs (table style ids,
- * creation ids) are skipped: their hex runs are not words.
+ * creation ids) are skipped: their hex runs are not words. In a formula (a
+ * cell's f, a defined name, a chart's c:f, ...) only the string literals and the
+ * names are tokens ({@link #formulaTokens}): function names, references and
+ * error literals are the language; a header or footer's &amp; codes likewise.
  *
  * @since 17.2.0
  */
@@ -128,13 +131,48 @@ public class Verify {
 			"cmAuthor/name", "author/name", "tag/name", "section/name", "custShow/name", "cSld/name",
 			"snd/name", "oleObj/name", "control/name", "tblStyle/styleName",
 			"hlinkClick/invalidUrl", "hlinkHover/invalidUrl",
+			// SpreadsheetML (CR-019 phase 3): defined names, tables and columns, sheet names, hyperlink
+			// text, validation messages, connections and query tables, filters, links, persons
+			"definedName/name", "definedName/comment", "definedName/description", "definedName/help",
+			"definedName/statusBar", "definedName/customMenu", "externalDefinedName/name",
+			"table/name", "table/displayName", "table/comment",
+			"tableColumn/name", "tableColumn/totalsRowLabel", "tableColumn/uniqueName",
+			"tableStyleInfo/name", "tableStyle/name", "cellStyle/name",
+			"sheet/name", "sheetName/val", "dataRef/sheet", "dataRef/name",
+			"hyperlink/display",
+			"dataValidation/prompt", "dataValidation/promptTitle", "dataValidation/error", "dataValidation/errorTitle",
+			"cfRule/text", "customFilter/val", "filter/val", "listItem/val",
+			"connection/name", "connection/description", "connection/sourceFile", "connection/odcFile",
+			"dbPr/connection", "dbPr/command", "dbPr/serverCommand", "webPr/url", "webPr/post", "textPr/sourceFile",
+			"oledbPr/connection", "dataFeedPr/connection", "dbTable/name", "olapPr/localConnection",
+			"parameter/name", "parameter/prompt", "parameter/string",
+			"queryTable/name", "queryTableField/name",
+			"fileSharing/userName", "ddeLink/ddeService", "ddeLink/ddeTopic", "ddeItem/name", "oleItem/name",
+			"person/displayName", "cellSmartTagPr/key", "cellSmartTagPr/val", "smartTagType/name", "smartTagType/url",
+			"webPublishItem/title", "webPublishItem/destinationFile", "customWorkbookView/name", "functionGroup/name",
+			"map/name", "map/rootElement", "map/schemaID",
 			"Relationship/Target"));
+
+	/** attributes whose value is a formula: only its literals and names are tokens */
+	static final Set<String> FORMULA_ATTRIBUTES = new HashSet<String>(Arrays.asList(
+			"externalDefinedName/refersTo", "hyperlink/location", "parameter/cell",
+			"formControlPr/fmlaLink", "formControlPr/fmlaRange", "formControlPr/fmlaTxbx", "formControlPr/fmlaGroup"));
+
+	/** elements whose text is a formula */
+	static final Set<String> FORMULA_ELEMENTS = new HashSet<String>(Arrays.asList(
+			"f", "formula", "formula1", "formula2", "definedName", "calculatedColumnFormula", "totalsRowFormula",
+			"FmlaLink", "FmlaRange", "FmlaTxbx", "FmlaGroup", "FmlaMacro"));
+
+	/** elements whose text is a spreadsheet header or footer, with &amp; codes */
+	static final Set<String> HEADER_FOOTER_ELEMENTS = new HashSet<String>(Arrays.asList(
+			"oddHeader", "oddFooter", "evenHeader", "evenFooter", "firstHeader", "firstFooter"));
 
 	private static final Pattern PICTURE = Pattern.compile("^(d+|m+|y+|h+|s+)$");
 
 	private static final Set<String> FIXED_WORDS = new HashSet<String>(Arrays.asList(
 			"author", "sheet", "example", "invalid", "http", "none", "general", "true", "false",
-			"microsoft", "office", "word", "powerpoint", "macintosh", // app.xml Application
+			"microsoft", "office", "word", "powerpoint", "excel", "macintosh", // app.xml Application
+			"provider", // the connection string a data connection becomes (Provider=None)
 			// the altChunk marker paragraph (Placeholders.ALTCHUNK_REMOVED)
 			"altchunk", "removed", "docx", "anon",
 			// the picture a removed OLE graphic frame becomes in a pptx ("Object n")
@@ -283,25 +321,90 @@ public class Verify {
 					x.styleWords.addAll(tokens(a.getValue()));
 					continue;
 				}
-				if (ATTRIBUTES.contains(eln + "/" + an) || ATTRIBUTES.contains("*/" + an)) {
+				if (an.equals("name") && a.getValue() != null && BUILT_IN_TABLE_STYLE.matcher(a.getValue()).matches()) {
+					continue; // TableStyleMedium2: Excel's, kept
+				}
+				if (eln.equals("cellStyle") && el.hasAttribute("builtinId")) {
+					continue; // Normal, Currency, Percent: Excel's, kept
+				}
+				if (eln.equals("name") && an.equals("val") && n.getParentNode() != null && local(n.getParentNode()).equals("font")) {
+					continue; // a font's name in a workbook's styles: structure, like w:rFonts
+				}
+				if (FORMULA_ATTRIBUTES.contains(eln + "/" + an)) {
+					for (String t : formulaTokens(a.getValue())) {
+						x.add(partName, t, eln + "/@" + an);
+					}
+				} else if (ATTRIBUTES.contains(eln + "/" + an) || ATTRIBUTES.contains("*/" + an)) {
+					if (a.getValue() != null && a.getValue().startsWith("_xlnm.")) continue; // a built-in defined name
 					for (String t : tokens(a.getValue())) {
 						x.add(partName, t, eln + "/@" + an);
 					}
 				}
+			}
+			// a cell (or an external link's cell) holding an error or a boolean: nothing to hide
+			if ((eln.equals("c") || eln.equals("cell")) && ("e".equals(el.getAttribute("t")) || "b".equals(el.getAttribute("t")))) {
+				return;
+			}
+			// a VML control's or comment's x:ClientData: its values (Center, Note, Checkbox) are the
+			// schema's words; only its formulas can carry the document's
+			if ("urn:schemas-microsoft-com:office:excel".equals(el.getNamespaceURI()) && !eln.startsWith("Fmla")
+					&& !eln.equals("ClientData")) {
+				return;
 			}
 		}
 		NodeList children = n.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			Node c = children.item(i);
 			if (c.getNodeType() == Node.TEXT_NODE || c.getNodeType() == Node.CDATA_SECTION_NODE) {
-				String where = local(n) + "/text()";
-				for (String t : tokens(c.getNodeValue())) {
+				String eln = local(n);
+				String where = eln + "/text()";
+				List<String> found = FORMULA_ELEMENTS.contains(eln) ? formulaTokens(c.getNodeValue())
+						: HEADER_FOOTER_ELEMENTS.contains(eln) ? headerFooterTokens(c.getNodeValue())
+						: tokens(c.getNodeValue());
+				for (String t : found) {
 					x.add(partName, t, where);
 				}
 			} else if (c.getNodeType() == Node.ELEMENT_NODE) {
 				extract(partName, c, x);
 			}
 		}
+	}
+
+	private static final Pattern BUILT_IN_TABLE_STYLE = Pattern.compile("^(TableStyle|PivotStyle)(Light|Medium|Dark)[0-9]+$");
+	private static final Pattern STRING_LITERAL = Pattern.compile("\"((?:[^\"]|\"\")*)\"");
+	private static final Pattern HF_CODE = Pattern.compile("&(\"[^\"]*\"|K[0-9A-Fa-f]{6}|[0-9]+|&|[A-Za-z])");
+
+	/**
+	 * The tokens of a formula which could carry the document's words: its string
+	 * literals, and its names (sheets, defined names, tables and columns). Function
+	 * names, cell and range references, error literals and the structured-reference
+	 * keywords are the formula language, not the document.
+	 */
+	public static List<String> formulaTokens(String f) {
+		List<String> result = new ArrayList<String>();
+		if (f == null) return result;
+		java.util.regex.Matcher m = STRING_LITERAL.matcher(f);
+		StringBuffer rest = new StringBuffer();
+		while (m.find()) {
+			result.addAll(tokens(m.group(1)));
+			m.appendReplacement(rest, " ");
+		}
+		m.appendTail(rest);
+		String r = rest.toString()
+				.replaceAll("\\[#[^\\]]*\\]", " ")                                   // [#This Row], [#Headers]
+				.replaceAll("#[A-Za-z0-9/_!?]+", " ")                                   // #N/A, #DIV/0!, #REF!
+				.replaceAll("\\b[A-Za-z_][A-Za-z0-9_.]*\\s*\\(", " ")                  // a function call
+				.replaceAll("\\$?[A-Za-z]{1,3}\\$?[0-9]+", " ")                         // a cell reference
+				.replaceAll("\\$?[A-Za-z]{1,3}:\\$?[A-Za-z]{1,3}", " ")                 // a column range
+				.replaceAll("\\b[Rr](\\[-?[0-9]+\\]|[0-9]+)?[Cc](\\[-?[0-9]+\\]|[0-9]+)?\\b", " "); // R1C1
+		result.addAll(tokens(r));
+		return result;
+	}
+
+	/** the tokens of a header or footer: its text, not its &amp;"Arial,Bold" and &amp;K colour codes */
+	static List<String> headerFooterTokens(String text) {
+		if (text == null) return new ArrayList<String>();
+		return tokens(HF_CODE.matcher(text).replaceAll(" "));
 	}
 
 	private static String local(Node n) {

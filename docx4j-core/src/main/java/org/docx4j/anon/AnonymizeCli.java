@@ -31,14 +31,16 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 /**
  * The command line:
  * <pre>
- * java -cp "docx4j-core.jar:lib/*" org.docx4j.anon.AnonymizeCli in.docx out.docx [--keep] [--json report.json] [--no-verify] [--no-fonts]
+ * java -cp "docx4j-core.jar:lib/*" org.docx4j.anon.AnonymizeCli in.docx out.docx [--keep] [--keep-numbers] [--json report.json] [--no-verify] [--no-fonts]
  * </pre>
  * (docx4j-core and a JAXB runtime such as docx4j-JAXB-ReferenceImpl on the
  * classpath; the class was the docx4j-docx-anon jar's Main-Class until the
  * anonymiser moved into core in 17.2.1). The input may be a docx or, since
- * 17.2.1, a pptx (the package decides, not the extension: docm, dotx, pptm,
- * ppsx and potx are the same).
+ * 17.2.1, a pptx or xlsx (the package decides, not the extension: docm, dotx,
+ * pptm, ppsx, potx, xlsm and xltx are the same).
  * <ul>
+ * <li>{@code --keep-numbers}: a workbook's numbers keep their digits (by default
+ * they are randomised; CR-019 decision 3).</li>
  * <li>{@code --keep}: KEEP mode - parts the tool cannot make clean stay, and are
  * reported; the default is STRICT, which removes them.</li>
  * <li>{@code --json file}: write the report there (it is always printed).</li>
@@ -63,12 +65,14 @@ public class AnonymizeCli {
 
 		String in = null, out = null, json = null;
 		Anonymize.Mode mode = Anonymize.Mode.STRICT;
-		boolean verify = true, fonts = true;
+		boolean verify = true, fonts = true, keepNumbers = false;
 
 		for (int i = 0; i < args.length; i++) {
 			String a = args[i];
 			if (a.equals("--keep")) {
 				mode = Anonymize.Mode.KEEP;
+			} else if (a.equals("--keep-numbers")) {
+				keepNumbers = true;
 			} else if (a.equals("--json")) {
 				if (i + 1 >= args.length) return usage("--json needs a file");
 				json = args[++i];
@@ -96,6 +100,7 @@ public class AnonymizeCli {
 			}
 			Anonymize anon = new Anonymize(pkg, mode);
 			anon.setVerify(verify);
+			anon.setKeepNumbers(keepNumbers);
 			result = anon.go();
 
 			try (OutputStream os = new FileOutputStream(out)) {
@@ -118,7 +123,7 @@ public class AnonymizeCli {
 
 	private static int usage(String problem) {
 		if (problem != null) System.err.println(problem);
-		System.err.println("usage: AnonymizeCli in.docx|in.pptx out.docx|out.pptx [--keep] [--json report.json] [--no-verify] [--no-fonts]");
+		System.err.println("usage: AnonymizeCli in.docx|in.pptx|in.xlsx out [--keep] [--keep-numbers] [--json report.json] [--no-verify] [--no-fonts]");
 		return 2;
 	}
 

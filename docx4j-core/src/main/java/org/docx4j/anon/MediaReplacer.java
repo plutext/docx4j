@@ -83,10 +83,11 @@ public class MediaReplacer {
 	/** the labelled placeholder's part name in a docx */
 	public static final String OBJECT_PLACEHOLDER_PART_NAME = "/word/media/" + OBJECT_PLACEHOLDER_FILE;
 
-	/** /word/media/ for a docx, /ppt/media/ for a pptx */
+	/** /word/media/ for a docx, /ppt/media/ for a pptx, /xl/media/ for an xlsx */
 	static String mediaFolder(OpcPackage pkg) {
 		if (pkg instanceof PresentationMLPackage) return "/ppt/media/";
 		if (pkg instanceof WordprocessingMLPackage) return "/word/media/";
+		if (pkg instanceof org.docx4j.openpackaging.packages.SpreadsheetMLPackage) return "/xl/media/";
 		return "/media/";
 	}
 
@@ -227,8 +228,8 @@ public class MediaReplacer {
 			// registers the part, its content type and a relationship from the main document part
 			((WordprocessingMLPackage) pkg).getMainDocumentPart().addTargetPart(part, AddPartBehaviour.REUSE_EXISTING);
 		} else {
-			// a pptx: the retargeted relationships (from the slides) are the ones which reach
-			// it; the presentation part does not carry image relationships
+			// a pptx or xlsx: the retargeted relationships (from the slides or drawings) are the
+			// ones which reach it; the presentation and workbook parts carry no image relationships
 			part.setPackage(pkg);
 			pkg.getParts().put(part);
 			pkg.getContentTypeManager().addDefaultContentType("png", ContentTypes.IMAGE_PNG);

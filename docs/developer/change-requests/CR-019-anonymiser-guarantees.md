@@ -4,13 +4,14 @@ Status: IN PROGRESS — phase 1 (docx) DONE 2026-09-21 on VERSION_17_2_0
 (implementation record in §"Phase 1 record" below; Word check passed); phase 2
 (pptx) DONE 2026-09-22 on VERSION_17_2_1 (§"Phase 2 record" below; PowerPoint
 check passed in two rounds, files on the share `fidelity/cr019-pptx/`);
-phase 3 (xlsx) proposed. Requested by the portfolio session working on the Docx4j Enterprise
+phase 3 (xlsx) DONE 2026-09-22 on VERSION_17_2_1 (§"Phase 3 record" below;
+the Excel-open check is Jason's, files on the share `fidelity/cr019-xlsx/`). Requested by the portfolio session working on the Docx4j Enterprise
 price list (`Plutext-Enterprise-Java-11/pricing/`, not yet in git), whose
 confidentiality clause and two support-tier rows depend on what the anonymiser
 actually does; docx4j-mcp's CR-004 lists an `anonymize` tool in its phase 4.
 The module's own reading below was re-checked against `docx4j-docx-anon` on
 VERSION_17_2_0 (b5c2f417f and later) on 2026-09-16. Owner: Jason Harrop.
-Drafted with Claude Fable 5.1; phases 1 and 2 implemented with Claude Opus 5.
+Drafted with Claude Fable 5.1; phases 1, 2 and 3 implemented with Claude Opus 5.
 
 Scope: `docx4j-docx-anon` (`org.docx4j.anon`: `Anonymize`, `ScrambleText`,
 `DmlVmlAnalyzer`, `PartsAnalyzer`, `AnonymizeResult`), a CLI, a test corpus, and
@@ -598,9 +599,7 @@ KEEP) with a README for the PowerPoint check.
 
 ### Left for later (after phase 2)
 
-- Phase 3 (xlsx) as planned; the walker and both visitors are format-neutral
-  (they dispatch on JAXB classes), so xlsx is mostly a part table and a package
-  type — plus the numbers decision (Decisions 3) and the pivot/connection parts.
+- Phase 3 (xlsx): done below.
 - A `p:graphicFrame` holding an OLE object inside a spTree-level
   `mc:AlternateContent` whose Choice content is DOM (a non-global element) would
   keep its `r:id` to a removed part; docx4j binds the PML Choice content it has
@@ -617,6 +616,117 @@ KEEP) with a README for the PowerPoint check.
   scrambled (Verify sees the text nodes and flags them).
 - docx4j-mcp's `anonymize` tool (CR-004 phase 4) can now call
   `AnonymizeCli.run` or `Anonymize` directly - from docx4j-core alone since 17.2.1.
+
+## Phase 3 record (2026-09-22)
+
+### What shipped
+
+`Anonymize` accepts a `SpreadsheetMLPackage` (so the CLI does too, by
+package); a third visitor, `SpreadsheetScrubber`, handles everything
+SpreadsheetML-typed, and `SmlFormulas` rewrites formulas so they still compute
+over the result. The plan's list, item by item:
+
+| plan | shipped |
+|---|---|
+| shared and inline strings scrambled | `CTRst` (shared strings, inline strings, comment text) scrambled as one string and dealt back to its rich-text runs; **consistently** — the same input always gives the same output (`ScrambleText.consistent`), because a table column's name must equal its header cell and a structured reference names the column again; formula string results (`t="str"`) likewise |
+| numbers replaced by default, kept by option (decision 3) | `ScrambleText.number`: the digits of the mantissa are randomised, the sign, decimal point and exponent kept, a zero stays a zero — so number formats and column widths survive (the plan said "a fixed value per cell type"; digit-for-digit keeps widths better and matches phase 1's digits rule); booleans and errors stay; `Anonymize.setKeepNumbers(true)` / CLI `--keep-numbers` keeps them. Applied to cell values, formula constants, input cells, external-link cells |
+| formula literals scrambled, cached values as cells | `SmlFormulas`: string literals scrambled, numeric constants randomised (row ranges like `1:1` are references and stay), sheet names mapped, defined names mapped, structured references (`Sales[[#This Row],[Amount]]`) keep their keywords and map table and column names through the same memo as the parts, external-book sheets (`'[1]Budget'!A1`) map as the external link part's `sheetName` list does; function names (with `_xlfn.` prefixes), A1 and R1C1 references, `TRUE`/`FALSE`, error literals stay. Applied to cell `f`, defined names, tables' calculated and totals formulas, validations (sml and x14), conditional formats (sml and x14 `xm:f`), sparklines, form controls (`fmlaLink`...), `hyperlink/@location`, data-consolidation refs, and — through `ScrambleText`'s formula delegate — chart `c:f`, chartex and the DOM `x:Fmla*` of VML controls (in a docx or pptx the delegate is still the `Sheet1!$A$1` placeholder) |
+| defined names renamed, references kept | `n_<hash>` (an underscore keeps it from reading as a cell reference; `_xlnm.` built-ins keep their names) at the definition, in every formula and in external links; **sheets** become `Sheet<n>` in workbook order, read up front by `Names` so every part maps the same way |
+| comments and threaded comments | legacy: `CTAuthors` through `Names.author`, text through `CTRst`; threaded comments and persons ([MS-XLSX], not bound) by `ModernCommentsScrubber` as DOM: `person/@displayName` → `Author n`, user id → the name, provider → None, `dT` fixed, `text` scrambled. The comment shapes' **VML drawing** has an `<xml>` root docx4j's VML binding does not know: `Anonymize` swaps each unreadable `VMLPart` for a DOM part (same name, content type and relationships, bytes from the source part store) before anything reads it, and `VmlDomScrubber` scrambles the shape's alt/title/text-box HTML, clears its links and rewrites its `x:Fmla*` formulas; the `x:ClientData` anchors and words are the schema's and stay |
+| pivot caches and records removed | **and the pivot tables, slicers, timelines and their caches** (a pivot table without its cache, a slicer without its pivot, is a repair prompt): the parts go whatever the mode, the workbook's `pivotCaches`, x14 `slicerCaches`, x15 `timelineCacheRefs` and `dataModel` extensions and the sheets' `slicerList`/`timelineRefs` go with them, the drawing anchors holding a slicer or timeline frame are removed, a pivot chart loses its `c:pivotSource` and becomes a plain chart over its caches; the pivot's cells stay as values |
+| query tables, connections, external links removed | **kept and scrubbed** instead (a connection or link bug is diagnosable only with the structure): connection names/descriptions scrambled, connection strings → `Provider=None`, commands scrambled, source/ODC files and single-sign-on ids cleared, web URLs → the placeholder, parameters scrambled; x15 OLEDB/data-feed connections likewise; query table and field names scrambled (fields consistently with the table columns); external links keep their `sheetNames` (scrambled consistently with the formulas' `[1]` references), defined names (mapped) and cached cells (as cells), and their `externalLinkPath` target becomes the placeholder; DDE service/topic/item and OLE item names scrambled |
+| table parts' names scrambled | `name`, `displayName`, `comment`, column names, totals labels, unique names — consistently (above); built-in `TableStyleMedium2` names kept, custom table and cell style names scrambled |
+| headers and footers | scrambled with their `&` codes kept (`&L`, `&P`, `&"Arial,Bold"`, `&KFF0000`, `&12`) |
+| charts | as before (caches scrambled, `c:f` rewritten to the renamed sheet) |
+| docProps, external relationships | as before; `app:TitlesOfParts` (the sheet names) was already cleared |
+| also | sheet, workbook and file-sharing passwords, hashes and salts cleared (flags kept), the file-sharing user name → `Author n`; hyperlink display text and tooltips; validation prompts and errors; conditional-format `text`; filter values; defined-name comments; DDE/OLE/web-publish items; STRICT: `oleObjects` (their preview picture becomes the labelled placeholder), `controls` (ActiveX), and a cell's `cm`/`vm` rich-value indexes (the metadata and richData parts are unknown to docx4j and go as unscrubbable) |
+
+Part table (`PartsAnalyzer`): SCRUB = workbook, worksheets, chartsheets, shared
+strings, styles, tables, comments, connections, query tables, external links,
+control properties, VML drawings (JAXB or DOM), threaded comments and persons
+(DOM); SAFE = calcChain; REMOVE = pivot tables, pivot caches and records,
+slicers and slicer caches, timelines and timeline caches, the data model,
+custom data and its properties, surveys; the rest as for a docx (printer
+settings, embeddings, ActiveX unscrubbable). Two new content types:
+`ContentTypes.SPREADSHEETML_THREADED_COMMENTS`, `_PERSONS`.
+
+`Verify` learnt the formula language: for a formula element or attribute
+(`f`, `formula`, `formula1/2`, `definedName`, the table formulas, `x:Fmla*`,
+`hyperlink/@location`...) only the string literals and the names are tokens
+(`Verify.formulaTokens`); function calls, cell and column references, R1C1,
+error literals and structured-reference keywords are the language. Headers
+and footers lose their `&` codes before tokenising; `c`/`cell` elements of
+type `e` or `b` are skipped; a font's `name/@val`, a `cellStyle` with a
+`builtinId`, built-in table style names and the VML `x:ClientData` words are
+structure. Fixed words: Excel, Provider. Attribute pairs for every name the
+scrubber writes.
+
+Tests (docx4j-core-tests): `AnonymizeXlsxProbesTest` (8: text, numbers,
+formulas, names, table-header consistency, hyperlinks, validations, header
+codes, protection; numbers kept; legacy and threaded comments with a DOM VML
+part; connections, query tables and external links; OLE in STRICT and KEEP;
+the formula scrubber; Verify's formula tokens), `AnonymizeXlsxCorpusTest` (6,
+over the 12 workbooks: loadAndSave.xlsx, the six cr022-* fixtures, and
+pivot.xlsm, comments.xlsx and the three strict samples copied to
+`src/test/resources/anon/`), an xlsx `--keep-numbers` case in
+`AnonymizeCliTest`. All 58 anonymiser tests pass. The share
+`fidelity/cr019-xlsx/` holds the 12 corpus outputs and the two probe workbooks
+(original, STRICT, `--keep-numbers`, KEEP) with a README for the Excel check;
+LibreOffice renders every output (formats, header codes, the chart's cell
+references survive).
+
+### Departures from the plan, and why
+
+- Numbers: digits randomised rather than a fixed value per type (widths and
+  formats survive; a zero stays a zero). Decision 3's default/option split is
+  as decided.
+- Pivot tables, slicers and timelines go with their caches (dangling
+  references otherwise); connections, query tables and external links stay,
+  scrubbed (the plan removed them: "connection strings can carry credentials"
+  — they do, and are now `Provider=None`; the parts' structure is what a
+  refresh bug lives in).
+- Sheets are renamed `Sheet<n>`, which the plan did not say; a sheet name is
+  text ("Payroll 2024"), and every reference to it (formulas, defined names,
+  charts, hyperlinks, data consolidation) is rewritten.
+- The VML drawing swap: docx4j cannot load a workbook's `vmlDrawing` parts at
+  all (`<xml>` root, [xlsx4j backlog]); the anonymiser reads the bytes and
+  works on DOM rather than removing every comment's and control's shape.
+
+### Left for later
+
+- The VML root defect belongs to docx4j proper (a binding for `<xml>` in the
+  VML context), not to the anonymiser.
+- Rich values (`xl/metadata.xml`, `xl/richData/`: data types, images in cells)
+  are unbound and go in STRICT; the cells lose their `vm`/`cm` and show their
+  plain value (`#VALUE!` for an image cell).
+- `t="d"` (ISO date cells of the strict edition) is not in docx4j's binding.
+- Uniqueness of scrambled shared strings is not enforced (two distinct
+  originals could scramble alike); Excel tolerates duplicate `si` entries.
+
+### Gate
+
+| step | result |
+|---|---|
+| docx4j-core compiles and installs (offline, 17.2.1-SNAPSHOT chain) | BUILD SUCCESS |
+| the anonymiser suites in docx4j-core-tests | 58 tests, 0 failures (docx 34, pptx 10, xlsx 14) |
+| every corpus workbook, STRICT | clean, verified, reloads with docx4j, keeps its sheets |
+| LibreOffice renders every STRICT output and probe | 12 of 12 corpus, 6 of 6 probes |
+| docx4j-core-tests, full | 1300 tests, 0 failures, 11 skipped (2026-09-22) |
+| Excel 365 opens the outputs on the share (`fidelity/cr019-xlsx/`, README there) | **Jason** — the gate's last row |
+
+### CHANGELOG entry for 17.2.1 (for Jason to place, after the phase 2 entry)
+
+    The anonymiser handles xlsx (CR-019 phase 3): strings scrambled (a table's
+    columns still match its header cells), numbers' digits randomised
+    (--keep-numbers / setKeepNumbers keeps them), formulas rewritten to compute
+    over the result (sheets become Sheet<n>, defined names n_<hash>, structured
+    references and external-book references follow), legacy and threaded
+    comments, headers and footers, hyperlinks, validations, conditional
+    formats, sparklines, form controls, connections and external links
+    scrubbed; pivot tables, slicers, timelines and their caches and the data
+    model removed (their cells stay as values); passwords, hashes and salts
+    cleared. A workbook's vmlDrawing parts, which the VML binding cannot read,
+    are scrubbed as DOM.
 
 ## Risks
 

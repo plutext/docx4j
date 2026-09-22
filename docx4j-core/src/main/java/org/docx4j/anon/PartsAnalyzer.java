@@ -77,10 +77,32 @@ public class PartsAnalyzer {
 			return Treatment.REPLACE_IMAGE;
 		}
 
-		// ---- the 2018 PowerPoint comments and their authors: not bound, so a DefaultXmlPart,
-		// scrubbed as DOM (ModernCommentsScrubber)
+		// ---- the 2018 PowerPoint comments and their authors, and Excel's threaded comments and
+		// persons: not bound, so a DefaultXmlPart, scrubbed as DOM (ModernCommentsScrubber)
 		if (p instanceof DefaultXmlPart && isModernComments(p)) {
 			return Treatment.SCRUB;
+		}
+		// a VML drawing swapped for a DOM part (Anonymize does that when the binding cannot read it)
+		if (p instanceof DefaultXmlPart && isVml(p)) {
+			return Treatment.SCRUB;
+		}
+
+		// ---- SpreadsheetML (CR-019 phase 3): removed whatever the mode - a pivot cache is a copy
+		// of its source data, and a pivot table, slicer or timeline without its cache is a
+		// repair prompt, so they go together (the pivot's cells stay as values); the data
+		// model is data; an add-in's custom data and a survey are text
+		if (p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.PivotCacheDefinition
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.PivotCacheRecords
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.PivotTable
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.SlicerCachePart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.SlicersPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.TimelineCachePart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.TimelinesPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.DataModelPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.CustomDataPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.CustomDataPropertiesPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.SurveyPart) {
+			return Treatment.REMOVE;
 		}
 
 		// ---- structure
@@ -144,21 +166,61 @@ public class PartsAnalyzer {
 			return Treatment.SAFE;
 		}
 
+		// ---- SpreadsheetML: the workbook (sheet and defined names, protection, file sharing),
+		// the sheets (cells, formulas, headers, validations, filters), shared strings, styles
+		// (custom style names), tables, comments and their authors, connections and query
+		// tables (connection strings, commands, URLs), external links (cached values, sheet
+		// names), form-control properties (linked-cell formulas, list items); VML (comment
+		// and control shapes)
+		if (p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.ChartsheetPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.SharedStrings
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.Styles
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.TablePart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.CommentsPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.ConnectionsPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.QueryTablePart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.ExternalLinkPart
+				|| p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.ControlPropertiesPart
+				|| p instanceof org.docx4j.openpackaging.parts.VMLPart) {
+			return Treatment.SCRUB;
+		}
+		if (p instanceof org.docx4j.openpackaging.parts.SpreadsheetML.CalcChain) {
+			return Treatment.SAFE; // cell references only
+		}
+
 		// ---- everything else: OLE and embedded packages, altChunk, VBA, embedded fonts
-		// (FontDataPart included), printer settings, ActiveX, ink, web extensions, VML parts,
-		// audio and video, unknown XML and binaries, and any SpreadsheetML part
+		// (FontDataPart included), printer settings, ActiveX, ink, web extensions, audio and
+		// video, unknown XML and binaries (a workbook's metadata and rich-value parts among them)
 		return Treatment.UNSCRUBBABLE;
 	}
 
-	/** the 2018 comments part (p188:cmLst) or its authors part (p188:authorLst), by content type */
+	/**
+	 * The 2018 comments part (p188:cmLst) or its authors part (p188:authorLst), or Excel's
+	 * threaded comments or persons part, by content type
+	 */
 	static boolean isModernComments(Part p) {
 		try {
 			String ct = p.getContentType();
 			return ContentTypes.PRESENTATIONML_MODERN_COMMENTS.equals(ct)
-					|| ContentTypes.PRESENTATIONML_MODERN_COMMENT_AUTHORS.equals(ct);
+					|| ContentTypes.PRESENTATIONML_MODERN_COMMENT_AUTHORS.equals(ct)
+					|| ContentTypes.SPREADSHEETML_THREADED_COMMENTS.equals(ct)
+					|| ContentTypes.SPREADSHEETML_PERSONS.equals(ct);
 		} catch (Exception e) {
 			return false;
 		}
+	}
+
+	/** a VML drawing part (by content type or extension), whether loaded as JAXB or as DOM */
+	static boolean isVml(Part p) {
+		try {
+			String ct = p.getContentType();
+			if (ct != null && ct.equals(ContentTypes.VML_DRAWING)) return true;
+		} catch (Exception e) {
+			// fall through
+		}
+		return p.getPartName().getName().toLowerCase().endsWith(".vml");
 	}
 
 	static boolean isSvg(Part p) {

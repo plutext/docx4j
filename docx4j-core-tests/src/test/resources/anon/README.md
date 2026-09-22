@@ -38,5 +38,25 @@ names, custom shows, the modify verifier, table style names, an OLE object with
 its preview, a video with its poster and p14:media, a transition sound, an
 ActiveX control, an embedded font, a .ppsx main part.
 
+`AnonymizeXlsxCorpusTest` (CR-019 phase 3) does the same for workbooks:
+
+| file | exercises |
+|---|---|
+| ../loadAndSave.xlsx | a threaded comment with its person (email user id), a legacy comment with its VML shape (an `<xml>` root the binding cannot read: scrubbed as DOM), a table, a chart, an SVG, a sensitivity label, headers and footers |
+| ../cr022-checkbox.xlsx | a form control: VML shape and ctrlProps (linked-cell formula) |
+| ../cr022-conditional-formatting.xlsx, ../cr022-data-validation.xlsx, ../cr022-sparklines.xlsx | rules, validations and sparklines whose formulas must still point at their cells |
+| ../cr022-data-model.xlsx | pivot tables on the data model, connections, customXml: the pivots and model go, the connections stay with `Provider=None` |
+| ../cr022-slicers-timelines.xlsx | pivot tables with slicers and timelines and their caches: all removed, with every reference from the workbook, sheets and drawings |
+| pivot.xlsm (from docx4j-samples-xlsx4j/sample-docs) | a pivot table with a pivot chart: the chart becomes a plain chart |
+| comments.xlsx (from docx4j-samples-xlsx4j/sample-docs) | legacy comments and their VML shapes |
+| strict-chart.xlsx, strict-invoice.xlsx, strict-simple.xlsx (from docx4j-samples-xlsx4j/sample-docs/strict) | ISO 29500 strict workbooks (the preprocessor's SML mapping); the invoice has a table, an SVG, printer settings, customXml |
+
+The xlsx probes (`AnonymizeXlsxProbesTest`) are generated: two sheets, a table
+with a calculated column, formulas with literals, a defined name, cross-sheet
+references, numbers of every shape, hyperlinks, a validation, a conditional
+format, header codes, protection and file sharing; legacy and threaded
+comments with a VML part; connections, a query table and an external link; an
+OLE object with an EMF preview.
+
 The module docx4j-docx-anon held this code and corpus until 17.2.1 (its
 history is on the moved files).

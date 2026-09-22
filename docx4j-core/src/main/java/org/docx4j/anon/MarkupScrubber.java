@@ -409,6 +409,12 @@ public class MarkupScrubber implements JaxbGraphWalker.Visitor {
 				notes.accept("chart geography cache removed");
 				return Action.REMOVE;
 			}
+			if (simple.equals("CTPivotSource") || simple.equals("CTPivotFmts")) {
+				// a pivot chart's pivot table is gone (removed in a workbook, in another file for a
+				// docx or pptx): the chart keeps its caches and cell references as a plain chart
+				notes.accept("chart pivotSource removed");
+				return Action.REMOVE;
+			}
 
 			// ---- PresentationML
 			if (o instanceof org.pptx4j.pml.CTEmbeddedFontList) {

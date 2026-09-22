@@ -382,6 +382,14 @@ public class ContentTypes {
 	public final static String SPREADSHEETML_SURVEY =
 			"application/vnd.ms-excel.Survey+xml";
 	// /xl/model/item.data ([MS-XLDM], the Excel data model)
+	/** the 2018 threaded comments (tc:ThreadedComments, [MS-XLSX] 2.6.x), /xl/threadedComments/threadedComment*.xml; not bound, a DefaultXmlPart. @since 17.2.1 */
+	public final static String SPREADSHEETML_THREADED_COMMENTS =
+			"application/vnd.ms-excel.threadedcomments+xml";
+
+	/** the persons of the 2018 threaded comments (tc:personList), /xl/persons/person.xml; not bound, a DefaultXmlPart. @since 17.2.1 */
+	public final static String SPREADSHEETML_PERSONS =
+			"application/vnd.ms-excel.person+xml";
+
 	public final static String SPREADSHEETML_DATA_MODEL =
 			"application/vnd.openxmlformats-officedocument.model+data";
 	

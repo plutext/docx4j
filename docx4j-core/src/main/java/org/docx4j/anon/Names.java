@@ -29,6 +29,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.Style;
@@ -47,7 +48,11 @@ import org.docx4j.wml.Styles;
  * <li>a custom style id becomes {@code s} plus a hash; built-in styles (a name
  * Word knows: KnownStyles.xml plus the document's own latent-style list) keep
  * their names and ids, because Word identifies them by name;</li>
- * <li>every date becomes {@link #FIXED_DATE}.</li>
+ * <li>every date becomes {@link #FIXED_DATE};</li>
+ * <li>in a workbook (CR-019 phase 3), sheets become {@code Sheet1}, {@code Sheet2}...
+ * in workbook order (read up front, so a formula in any part maps the same way)
+ * and a defined name becomes {@code n_} plus a hash - an underscore keeps it from
+ * ever reading as a cell reference; the {@code _xlnm.} built-ins keep their names.</li>
  * </ul>
  *
  * @since 17.2.0
@@ -72,6 +77,8 @@ public class Names {
 	private final Map<String, String> initials = new LinkedHashMap<String, String>();
 	private final Set<String> builtInStyleNames = new HashSet<String>();
 	private final Set<String> builtInStyleIds = new HashSet<String>();
+	/** sheet name (lower-cased: Excel matches them case-insensitively) to Sheet<n> */
+	private final Map<String, String> sheets = new LinkedHashMap<String, String>();
 
 	/**
 	 * @param pkg a docx (its own latent-style names join the built-in list) or, since
@@ -103,6 +110,38 @@ public class Names {
 				// no styles part contents: only KnownStyles then
 			}
 		}
+		if (pkg instanceof SpreadsheetMLPackage && ((SpreadsheetMLPackage) pkg).getWorkbookPart() != null) {
+			try {
+				org.xlsx4j.sml.Workbook wb = ((SpreadsheetMLPackage) pkg).getWorkbookPart().getContents();
+				if (wb != null && wb.getSheets() != null) {
+					int n = 0;
+					for (org.xlsx4j.sml.Sheet sheet : wb.getSheets().getSheet()) {
+						n++;
+						if (sheet.getName() != null) sheets.put(key(sheet.getName()), "Sheet" + n);
+					}
+				}
+			} catch (Exception e) {
+				// no workbook contents: sheet names are then scrambled like any other text
+			}
+		}
+	}
+
+	/** Sheet<n> for a sheet of the workbook (by name, case-insensitively); null for an unknown name. */
+	public String sheet(String name) {
+		if (name == null) return null;
+		return sheets.get(key(name));
+	}
+
+	/** true if the workbook has a sheet of this name */
+	public boolean isSheet(String name) {
+		return name != null && sheets.containsKey(key(name));
+	}
+
+	/** The anonymised defined name: the _xlnm. built-ins as they are, else n_ + hash. */
+	public static String definedName(String name) {
+		if (name == null) return null;
+		if (name.startsWith("_xlnm.") || name.startsWith("_xlfn.")) return name;
+		return "n_" + hash(name);
 	}
 
 	private static String key(String name) {

@@ -16,6 +16,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -27,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Anonymises a docx (or, since 17.2.1, a pptx) in place: the text is scrambled,
+ * Anonymises a docx (or, since 17.2.1, a pptx or xlsx) in place: the text is scrambled,
  * identities, references and metadata scrubbed, media replaced, and whatever
  * cannot be made clean removed (STRICT, the default) or kept and reported (KEEP).
  * <p>
@@ -58,6 +59,17 @@ import org.slf4j.LoggerFactory;
  * ink, embedded fonts, VBA and the thumbnail go as in a docx. A pptx has no
  * styles part and no font mapper, so non-Latin replacement characters stay in the
  * character's Unicode block with no glyph check.
+ * <p>
+ * For an xlsx (CR-019 phase 3) a third visitor, {@link SpreadsheetScrubber},
+ * covers the workbook, sheets, shared strings, styles, tables, comments (legacy
+ * and threaded), connections, query tables and external links: strings are
+ * scrambled consistently (a table column still matches its header), numbers have
+ * their digits randomised ({@link #setKeepNumbers(boolean)} keeps them, decision
+ * 3), formulas are rewritten to compute over the result ({@link SmlFormulas}),
+ * sheets become {@code Sheet<n>} and defined names {@code n_<hash>}; pivot tables
+ * and caches, slicers, timelines and the data model are removed (their cells stay
+ * as values) whatever the mode; OLE, ActiveX, printer settings and the rich-value
+ * parts go in STRICT.
  */
 public class Anonymize {
 
@@ -74,9 +86,11 @@ public class Anonymize {
 	private final OpcPackage pkg;
 	private final Mode mode;
 	private boolean verify = true;
+	private boolean keepNumbers = false;
 
 	ScrambleText latinizer = null;
 	MarkupScrubber markupScrubber = null;
+	SpreadsheetScrubber spreadsheetScrubber = null;
 	DmlVmlAnalyzer dmlVmlAnalyzer = null;
 	Names names = null;
 
@@ -101,15 +115,22 @@ public class Anonymize {
 	}
 
 	/**
-	 * A docx or a pptx (as {@link OpcPackage#load(java.io.File)} returns it); a
-	 * SpreadsheetMLPackage is not supported yet (CR-019 phase 3).
+	 * @since 17.2.1
+	 */
+	public Anonymize(SpreadsheetMLPackage smlPackage, Mode mode) {
+		this((OpcPackage) smlPackage, mode);
+	}
+
+	/**
+	 * A docx, pptx or xlsx (as {@link OpcPackage#load(java.io.File)} returns it).
 	 *
 	 * @throws IllegalArgumentException for a package of another kind
 	 * @since 17.2.1
 	 */
 	public Anonymize(OpcPackage pkg, Mode mode) {
-		if (!(pkg instanceof WordprocessingMLPackage) && !(pkg instanceof PresentationMLPackage)) {
-			throw new IllegalArgumentException("only docx and pptx are supported (xlsx is CR-019 phase 3): "
+		if (!(pkg instanceof WordprocessingMLPackage) && !(pkg instanceof PresentationMLPackage)
+				&& !(pkg instanceof SpreadsheetMLPackage)) {
+			throw new IllegalArgumentException("only docx, pptx and xlsx are supported: "
 					+ (pkg == null ? "null" : pkg.getClass().getSimpleName()));
 		}
 		this.pkg = pkg;
@@ -137,9 +158,30 @@ public class Anonymize {
 		this.verify = verify;
 	}
 
+	/**
+	 * Whether a workbook's numbers (cell values, formula constants, filter and
+	 * input-cell values) keep their digits. Off by default: numbers are usually
+	 * the confidential part of a spreadsheet, and a layout or corruption bug rarely
+	 * depends on their values (CR-019 decision 3); on for the bug that does (a
+	 * number format, a formula result). No effect on a docx or pptx.
+	 *
+	 * @since 17.2.1
+	 */
+	public void setKeepNumbers(boolean keepNumbers) {
+		this.keepNumbers = keepNumbers;
+	}
+
 	public AnonymizeResult go() throws Docx4JException {
 
 		result.mode = mode;
+
+		// a workbook's vmlDrawing parts have an <xml> root the VML binding does not know: swap
+		// each for a DOM part before anything reads it (once, or every reader logs the failure)
+		for (Part p : new ArrayList<Part>(pkg.getParts().getParts().values())) {
+			if (p instanceof org.docx4j.openpackaging.parts.VMLPart && !readable((JaxbXmlPart<?>) p)) {
+				vmlAsDom(p);
+			}
+		}
 
 		Verify.Extraction before = verify ? Verify.extract(pkg) : null;
 
@@ -149,6 +191,13 @@ public class Anonymize {
 		// its embedded fonts, which STRICT is about to remove
 		latinizer = new ScrambleText(pkg, names);
 		markupScrubber = new MarkupScrubber(names, mode == Mode.STRICT, result.notes::add);
+		if (pkg instanceof SpreadsheetMLPackage) {
+			latinizer.setKeepNumbers(keepNumbers);
+			spreadsheetScrubber = new SpreadsheetScrubber(latinizer, names, mode == Mode.STRICT, result.notes::add,
+					markupScrubber.objectPreviews);
+			// a chart's c:f in a workbook keeps pointing at its (scrambled) cells
+			latinizer.setFormulas(spreadsheetScrubber.formulas()::scrub);
+		}
 
 		// the inventory (fields present, VML, objects of interest), read before the scramble;
 		// it walks the WordprocessingML story parts, so a pptx has none
@@ -240,9 +289,10 @@ public class Anonymize {
 			public JaxbGraphWalker.Action visit(Object o, JAXBElement<?> wrapper) {
 				JaxbGraphWalker.Action a = latinizer.visit(o, wrapper);
 				JaxbGraphWalker.Action b = markupScrubber.visit(o, wrapper);
-				if (a == JaxbGraphWalker.Action.REMOVE || b == JaxbGraphWalker.Action.REMOVE) return JaxbGraphWalker.Action.REMOVE;
+				JaxbGraphWalker.Action c = spreadsheetScrubber == null ? JaxbGraphWalker.Action.CONTINUE : spreadsheetScrubber.visit(o, wrapper);
+				if (a == JaxbGraphWalker.Action.REMOVE || b == JaxbGraphWalker.Action.REMOVE || c == JaxbGraphWalker.Action.REMOVE) return JaxbGraphWalker.Action.REMOVE;
 				if (a == JaxbGraphWalker.Action.REPLACE || b == JaxbGraphWalker.Action.REPLACE) return JaxbGraphWalker.Action.REPLACE;
-				if (a == JaxbGraphWalker.Action.SKIP_CHILDREN || b == JaxbGraphWalker.Action.SKIP_CHILDREN) return JaxbGraphWalker.Action.SKIP_CHILDREN;
+				if (a == JaxbGraphWalker.Action.SKIP_CHILDREN || b == JaxbGraphWalker.Action.SKIP_CHILDREN || c == JaxbGraphWalker.Action.SKIP_CHILDREN) return JaxbGraphWalker.Action.SKIP_CHILDREN;
 				return JaxbGraphWalker.Action.CONTINUE;
 			}
 			@Override
@@ -286,6 +336,7 @@ public class Anonymize {
 			log.debug("Scrubbing " + p.getPartName().getName());
 			latinizer.latinText = null;
 			markupScrubber.setCurrentPart(p);
+			if (spreadsheetScrubber != null) spreadsheetScrubber.setCurrentPart(p);
 			new JaxbGraphWalker(composite).walk(contents);
 			if (t == Treatment.SCRUB) {
 				result.record(p, Action.SCRUBBED, null);
@@ -316,8 +367,53 @@ public class Anonymize {
 			return;
 		}
 		log.debug("Scrubbing (DOM) " + p.getPartName().getName());
-		new ModernCommentsScrubber(names, latinizer).scrub(doc.getDocumentElement());
-		result.record(p, Action.SCRUBBED, "2018 comments: authors renamed, dates fixed, text scrambled");
+		if (PartsAnalyzer.isVml(p)) {
+			new VmlDomScrubber(latinizer).scrub(doc.getDocumentElement());
+			result.record(p, Action.SCRUBBED, "VML drawing (as DOM): shape text, names and links scrambled, control formulas rewritten");
+		} else {
+			new ModernCommentsScrubber(names, latinizer).scrub(doc.getDocumentElement());
+			result.record(p, Action.SCRUBBED, "2018 comments: authors and persons renamed, dates fixed, text scrambled");
+		}
+	}
+
+	private static boolean readable(JaxbXmlPart<?> p) {
+		try {
+			return p.getContents() != null;
+		} catch (Exception e) {
+			log.warn(p.getPartName().getName() + " could not be read as JAXB: " + e);
+			return false;
+		}
+	}
+
+	/**
+	 * The part's bytes from the package's source store, as a DOM part in the JAXB
+	 * part's place (same name, content type, relationships); null if the bytes
+	 * cannot be had.
+	 */
+	private XmlPart vmlAsDom(Part p) {
+		try {
+			if (pkg.getSourcePartStore() == null) return null;
+			byte[] bytes;
+			try (java.io.InputStream is = pkg.getSourcePartStore().loadPart(p.getPartName().getName().substring(1))) {
+				if (is == null) return null;
+				bytes = is.readAllBytes();
+			}
+			org.docx4j.openpackaging.parts.DefaultXmlPart dom = new org.docx4j.openpackaging.parts.DefaultXmlPart(p.getPartName());
+			dom.setContentType(new org.docx4j.openpackaging.contenttype.ContentType(p.getContentType()));
+			dom.setRelationshipType(p.getRelationshipType());
+			dom.setDocument(new java.io.ByteArrayInputStream(bytes));
+			dom.setPackage(pkg);
+			if (p.getRelationshipsPart() != null) {
+				dom.setRelationships(p.getRelationshipsPart());
+				p.getRelationshipsPart().setSourceP(dom);
+			}
+			pkg.getParts().remove(p.getPartName());
+			pkg.getParts().put(dom);
+			return dom;
+		} catch (Exception e) {
+			log.warn(p.getPartName().getName() + " could not be read as DOM either: " + e);
+			return null;
+		}
 	}
 
 	private void replaceMedia(Map<Part, Treatment> treatments) throws Docx4JException {

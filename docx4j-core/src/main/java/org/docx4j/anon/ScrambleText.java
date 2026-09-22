@@ -119,6 +119,36 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 	/** digits are randomised in text, kept in instructions and names */
 	private boolean scrambleDigits = true;
 
+	/**
+	 * What a chart, chartex or xm:f formula becomes: {@link #FORMULA_PLACEHOLDER} in a
+	 * docx or pptx (the workbook it named is removed); in a workbook (CR-019 phase 3)
+	 * {@link Anonymize} sets {@link SmlFormulas#scrub}, so the chart still reads its
+	 * (scrambled) cells.
+	 */
+	private java.util.function.UnaryOperator<String> formulas = f -> FORMULA_PLACEHOLDER;
+
+	/** the same input string always scrambles to the same output ({@link #consistent(String)}) */
+	private final java.util.Map<String, String> memo = new java.util.HashMap<String, String>();
+
+	/** numbers (cell values, formula constants) keep their digits when set; CR-019 decision 3 */
+	private boolean keepNumbers = false;
+
+	public void setFormulas(java.util.function.UnaryOperator<String> formulas) {
+		this.formulas = formulas;
+	}
+
+	public String formula(String f) {
+		return f == null ? null : formulas.apply(f);
+	}
+
+	public void setKeepNumbers(boolean keepNumbers) {
+		this.keepNumbers = keepNumbers;
+	}
+
+	public boolean isKeepNumbers() {
+		return keepNumbers;
+	}
+
 	boolean hasGreek = false;
 	boolean hasCyrillic = false;
 	boolean hasHebrew = false;
@@ -151,6 +181,83 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 		} finally {
 			scrambleDigits = saved;
 		}
+	}
+
+	/**
+	 * Scrambles a string the same way every time it is seen (a table column's name
+	 * must equal its header cell's text; a structured reference names the column
+	 * again; an external sheet name is quoted in formulas). Digits are randomised,
+	 * once.
+	 */
+	public String consistent(String text) {
+		if (text == null || text.isEmpty()) return text;
+		String out = memo.get(text);
+		if (out == null) {
+			out = scramble(text);
+			memo.put(text, out);
+		}
+		return out;
+	}
+
+	/**
+	 * A number as a cell value or formula constant: the sign, the decimal point and
+	 * the exponent stay, the digits of the mantissa are randomised (the first one
+	 * non-zero where it led; a zero stays a zero), so the number format and the
+	 * column width survive;
+	 * unchanged when {@link #setKeepNumbers(boolean)}; anything that is not a number
+	 * is scrambled as text.
+	 */
+	public String number(String value) {
+		if (value == null || value.isEmpty() || keepNumbers) return value;
+		String trimmed = value.trim();
+		try {
+			if (Double.parseDouble(trimmed) == 0) return value; // a zero (or a blank) reveals nothing
+		} catch (NumberFormatException e) {
+			return scramble(value);
+		}
+		int exp = Math.max(trimmed.indexOf('e'), trimmed.indexOf('E'));
+		String mantissa = exp < 0 ? trimmed : trimmed.substring(0, exp);
+		String exponent = exp < 0 ? "" : trimmed.substring(exp);
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		int digits = 0;
+		for (char c : mantissa.toCharArray()) if (c >= '0' && c <= '9') digits++;
+		for (char c : mantissa.toCharArray()) {
+			if (c >= '0' && c <= '9') {
+				if (first && digits > 1 && c != '0') {
+					sb.append((char) ('1' + random.nextInt(9)));
+				} else {
+					sb.append((char) ('0' + random.nextInt(10)));
+				}
+				first = false;
+			} else {
+				sb.append(c);
+				if (c == '.') first = false;
+			}
+		}
+		return sb.append(exponent).toString();
+	}
+
+	/** the &amp; codes of a spreadsheet header or footer: &amp;L &amp;P &amp;"Arial,Bold" &amp;12 &amp;KFF0000 ... */
+	private static final java.util.regex.Pattern HF_CODE = java.util.regex.Pattern.compile(
+			"&(\"[^\"]*\"|K[0-9A-Fa-f]{6}|[0-9]+|&|[A-Za-z])");
+
+	/**
+	 * A spreadsheet header or footer: the text is scrambled, the &amp; codes (section,
+	 * page number, date, font, size, colour) are kept.
+	 */
+	public String headerFooter(String text) {
+		if (text == null || text.isEmpty()) return text;
+		StringBuilder sb = new StringBuilder();
+		java.util.regex.Matcher m = HF_CODE.matcher(text);
+		int at = 0;
+		while (m.find()) {
+			sb.append(scramble(text.substring(at, m.start())));
+			sb.append(m.group());
+			at = m.end();
+		}
+		sb.append(scramble(text.substring(at)));
+		return sb.toString();
 	}
 
 	// ---- the visitor
@@ -342,15 +449,18 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			return Action.CONTINUE;
 		}
 		if (o instanceof org.docx4j.dml.chart.CTStrRef) {
-			((org.docx4j.dml.chart.CTStrRef) o).setF(FORMULA_PLACEHOLDER);
+			org.docx4j.dml.chart.CTStrRef ref = (org.docx4j.dml.chart.CTStrRef) o;
+			ref.setF(formula(ref.getF()));
 			return Action.CONTINUE;
 		}
 		if (o instanceof org.docx4j.dml.chart.CTNumRef) {
-			((org.docx4j.dml.chart.CTNumRef) o).setF(FORMULA_PLACEHOLDER);
+			org.docx4j.dml.chart.CTNumRef ref = (org.docx4j.dml.chart.CTNumRef) o;
+			ref.setF(formula(ref.getF()));
 			return Action.CONTINUE;
 		}
 		if (o instanceof org.docx4j.dml.chart.CTMultiLvlStrRef) {
-			((org.docx4j.dml.chart.CTMultiLvlStrRef) o).setF(FORMULA_PLACEHOLDER);
+			org.docx4j.dml.chart.CTMultiLvlStrRef ref = (org.docx4j.dml.chart.CTMultiLvlStrRef) o;
+			ref.setF(formula(ref.getF()));
 			return Action.CONTINUE;
 		}
 		if (o instanceof org.docx4j.dml.chart.CTPivotSource) {
@@ -372,7 +482,9 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			return Action.SKIP_CHILDREN;
 		}
 		if (o instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTFormula) {
-			((org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTFormula) o).setValue(FORMULA_PLACEHOLDER);
+			org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTFormula f =
+					(org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTFormula) o;
+			f.setValue(formula(f.getValue()));
 			return Action.SKIP_CHILDREN;
 		}
 		if (o instanceof org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex.CTStringLevel) {
@@ -392,7 +504,7 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			@SuppressWarnings("unchecked")
 			JAXBElement<Object> w = (JAXBElement<Object>) wrapper;
 			if (wrapper.getName().getLocalPart().equals("f")) {
-				w.setValue(FORMULA_PLACEHOLDER);
+				w.setValue(formula((String) o));
 			} else {
 				w.setValue(scramble((String) o));
 			}
@@ -543,8 +655,9 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 				String parent = n.getLocalName() == null ? n.getNodeName() : n.getLocalName();
 				if (parent.equals("t") || parent.equals("v")) {
 					c.setNodeValue(scramble(c.getNodeValue()));
-				} else if (parent.equals("f")) {
-					c.setNodeValue(FORMULA_PLACEHOLDER);
+				} else if (parent.equals("f") || parent.startsWith("Fmla")) {
+					// c:f in a data-label cache; x:FmlaLink, x:FmlaRange, x:FmlaMacro of a VML control
+					c.setNodeValue(formula(c.getNodeValue()));
 				}
 			} else {
 				scrambleDom(c);

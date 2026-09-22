@@ -83,6 +83,19 @@ public class AnonymizeCliTest {
 	}
 
 	@Test
+	public void xlsxWithNumbersKept() throws Exception {
+		File in = copy("cr022-sparklines.xlsx");
+		File out = new File(tmp.getRoot(), "out.xlsx");
+		File json = new File(tmp.getRoot(), "report.json");
+		int exit = AnonymizeCli.run(new String[] { in.getPath(), out.getPath(), "--keep-numbers", "--json", json.getPath() });
+		assertEquals(0, exit);
+		String report = new String(Files.readAllBytes(json.toPath()), StandardCharsets.UTF_8);
+		assertTrue(report, report.contains("\"clean\": true"));
+		assertTrue(report, report.contains("/xl/worksheets/sheet1.xml"));
+		assertTrue(org.docx4j.openpackaging.packages.OpcPackage.load(out) instanceof org.docx4j.openpackaging.packages.SpreadsheetMLPackage);
+	}
+
+	@Test
 	public void usage() {
 		assertEquals(2, AnonymizeCli.run(new String[] {}));
 		assertEquals(2, AnonymizeCli.run(new String[] { "a.docx" }));

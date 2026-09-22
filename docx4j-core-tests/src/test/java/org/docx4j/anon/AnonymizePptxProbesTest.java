@@ -555,14 +555,15 @@ public class AnonymizePptxProbesTest {
 	// ---- the package kinds
 
 	@Test
-	public void onlyDocxAndPptx() throws Exception {
-		org.docx4j.openpackaging.packages.SpreadsheetMLPackage xlsx = org.docx4j.openpackaging.packages.SpreadsheetMLPackage.createPackage();
+	public void onlyTheThreePackageKinds() throws Exception {
+		// docx, pptx and xlsx (since phase 3); anything else is refused
 		try {
-			new Anonymize(xlsx, Anonymize.Mode.STRICT);
+			new Anonymize((OpcPackage) null, Anonymize.Mode.STRICT);
 			assertTrue("expected IllegalArgumentException", false);
 		} catch (IllegalArgumentException expected) {
-			assertTrue(expected.getMessage(), expected.getMessage().contains("phase 3"));
+			assertTrue(expected.getMessage(), expected.getMessage().contains("docx, pptx and xlsx"));
 		}
+		assertNotNull(new Anonymize(org.docx4j.openpackaging.packages.SpreadsheetMLPackage.createPackage()));
 	}
 
 	@Test
