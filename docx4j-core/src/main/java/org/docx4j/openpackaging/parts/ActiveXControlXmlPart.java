@@ -42,6 +42,7 @@ public class ActiveXControlXmlPart extends XmlPart {
 	
 	public ActiveXControlXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init(); // until 17.2.1 only the no-arg constructor set the content and relationship types
 	}
 
 	/* Note, you also need

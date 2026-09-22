@@ -191,11 +191,33 @@ public class ZipPartStore implements PartStore {
 	 * @since 17.2.0
 	 */
 	private static void warnIfBytesAfterCentralDirectory(File f) {
+		long trailing = bytesAfterCentralDirectory(f);
+		if (trailing > 0) {
+			log.warn(f.getName() + " has " + trailing + " byte(s) after the zip "
+					+ "end of central directory record. docx4j ignores them, but "
+					+ "Word will refuse to open this file (\"Word found unreadable "
+					+ "content\"). Truncating the file to remove them repairs it "
+					+ "without altering any part.");
+		}
+	}
+
+	/**
+	 * How many bytes follow the ZIP end of central directory record (and its
+	 * comment): 0 for a well-formed file, -1 if the record was not found or the
+	 * file could not be inspected.
+	 * <p>
+	 * Until 17.2.1 the count was wrong for a file longer than the 64K tail this
+	 * reads: the tail's offset in the file was added to the answer, so every
+	 * such package - most real documents - was reported as having trailing bytes.
+	 *
+	 * @since 17.2.1
+	 */
+	static long bytesAfterCentralDirectory(File f) {
 
 		final byte[] EOCD = { 0x50, 0x4b, 0x05, 0x06 };  // "PK\005\006"
 		try {
 			long length = f.length();
-			if (length < 22) return;
+			if (length < 22) return -1;
 			// the record is 22 bytes plus a comment of at most 64K, so it is in the tail
 			int tail = (int) Math.min(length, 22 + 0xFFFF);
 			byte[] buf = new byte[tail];
@@ -207,19 +229,14 @@ public class ZipPartStore implements PartStore {
 				if (buf[i] != EOCD[0] || buf[i + 1] != EOCD[1]
 						|| buf[i + 2] != EOCD[2] || buf[i + 3] != EOCD[3]) continue;
 				int commentLength = (buf[i + 20] & 0xFF) | ((buf[i + 21] & 0xFF) << 8);
-				long trailing = (length - tail) + buf.length - ((long) i + 22 + commentLength);
-				if (trailing > 0) {
-					log.warn(f.getName() + " has " + trailing + " byte(s) after the zip "
-							+ "end of central directory record. docx4j ignores them, but "
-							+ "Word will refuse to open this file (\"Word found unreadable "
-							+ "content\"). Truncating the file to remove them repairs it "
-							+ "without altering any part.");
-				}
-				return;
+				// i is an offset within the tail, so the bytes after the record are those of
+				// the tail beyond it
+				return buf.length - ((long) i + 22 + commentLength);
 			}
 		} catch (Exception e) {
 			log.debug("Could not check " + f.getName() + " for trailing bytes: " + e.getMessage());
 		}
+		return -1;
 	}
 
 	private void policePartSize(File f, long length, String entryName) throws PartTooLargeException {

@@ -90,6 +90,7 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
 				|| contentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
 				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) // .ppsx: until 17.2.1 this fell through to a BinaryPart
 				) {
 			return new MainPresentationPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE)) {
