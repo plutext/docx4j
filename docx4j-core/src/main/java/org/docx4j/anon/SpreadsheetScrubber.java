@@ -617,9 +617,9 @@ public class SpreadsheetScrubber implements JaxbGraphWalker.Visitor {
 		} else if (type == STCellType.STR) {
 			set.accept(scrambler.consistent(v));
 		}
-		// S: an index into the shared strings; B and E: nothing to hide; INLINE_STR: the is child
-		// (t="d", the ISO date cell of the strict edition, is not in docx4j's binding: it would be
-		// unmarshalled as a number and its digits randomised)
+		// S: an index into the shared strings; B and E: nothing to hide; INLINE_STR: the is child;
+		// a strict workbook's t="d" date cell is a serial number by the time it is loaded
+		// (xlsx-preprocessor.xslt, StrictCellDates)
 	}
 
 	/**

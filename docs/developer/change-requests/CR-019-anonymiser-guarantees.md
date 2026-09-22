@@ -609,7 +609,8 @@ KEEP) with a README for the PowerPoint check.
   embedded font's `p:font/@typeface` goes with the list in STRICT.
 - Slide-level `p:custDataLst` / `p:tags` and `p:custShow` structure are kept
   (scrambled); the `p:smartTags` part is removed with its reference.
-- The lorem-fragment blind spot of `Verify`; a formula field whose bookmark
+- The lorem-fragment blind spot of `Verify` (the rule itself, not the
+  17.2.1 chunk-join defect below it); a formula field whose bookmark
   is inside an expression token (`(Price+Tax)*1.1`) keeps the name (Verify
   flags it, so the result is not clean rather than wrong).
 - Strings in mixed content and DOM extension text outside `t`/`v`/`f` are not
@@ -700,6 +701,23 @@ references survive).
   namespace, which Excel treats as an XML error and repairs by dropping the
   styles part (the CR-023/024 lesson again). Found by the strict invoice
   sample; added, with the strict samples in `IgnorablePrefixesDeclaredTest`.
+- A strict workbook's date cell (`t="d"` with an ISO 8601 `v`, ISO/IEC
+  29500-1 18.18.11; docx4j's transitional binding has no `d`) lost its `t` on
+  load and Excel repaired the cell. Rather than grow the enum (a schema change
+  the ports would have to follow), the strict→transitional preprocessor
+  converts the cell to the transitional idiom — the 1900-system serial, no
+  `t` (`org.xlsx4j.jaxb.StrictCellDates`, called from
+  `xlsx-preprocessor.xslt`; `StrictCellDatesTest`). The 1904 date system is
+  not seen by a per-sheet transform and is not applied. The same strict
+  invoice found it, in the Excel check's round 2.
+- `ScrambleText.generateReplacement` joined its chunks of lorem without a
+  space when one chunk was not long enough, so the letter run across the join
+  was a substring of no lorem word — and `Verify`'s lorem-fragment rule rests
+  on exactly that invariant, so such a run was reported as a leak whenever it
+  happened to be a word of the original (`auto`, `item`, `name`: three false
+  leaks in 60 runs over the strict invoice). A space between the chunks;
+  `AnonymizeProbesTest.everyScrambledWordIsALoremFragment` pins the
+  invariant, and 180 further runs over two workbooks reported none.
 
 ### Left for later
 
@@ -708,7 +726,6 @@ references survive).
 - Rich values (`xl/metadata.xml`, `xl/richData/`: data types, images in cells)
   are unbound and go in STRICT; the cells lose their `vm`/`cm` and show their
   plain value (`#VALUE!` for an image cell).
-- `t="d"` (ISO date cells of the strict edition) is not in docx4j's binding.
 - Uniqueness of scrambled shared strings is not enforced (two distinct
   originals could scramble alike); Excel tolerates duplicate `si` entries.
 
@@ -721,7 +738,7 @@ references survive).
 | every corpus workbook, STRICT | clean, verified, reloads with docx4j, keeps its sheets |
 | LibreOffice renders every STRICT output and probe | 12 of 12 corpus, 6 of 6 probes |
 | docx4j-core-tests, full | 1300 tests, 0 failures, 11 skipped (2026-09-22) |
-| Excel 365 opens the outputs on the share (`fidelity/cr019-xlsx/`, README there) | round 1 (Jason, 2026-09-22): two recovery logs. `cr022-data-model-anon`: "External connections removed" — the connections into the removed data model and Power Query mashup had been kept, scrubbed; now every model (`x15:connection model="1"`), Power Query (type 100) and worksheet-to-model (type 102) connection goes with them, and a connections part left empty goes too. `strict-invoice-anon`: "styles.xml XML error" was docx4j's own round trip — `mc:Ignorable` named `xr9` and the prefix table had no 2016/revision9 (xr5 and xr9 added, `IgnorablePrefixesDeclaredTest` extended to the strict samples); its table "removed/repaired" was the anonymiser's — the table's `displayName` scrambled to a string with a space (lorem's), which Excel refuses: table and query-table names now scramble to identifiers (`ScrambleText.consistentIdentifier`, the structured references through the same). Round 2: **pending** |
+| Excel 365 opens the outputs on the share (`fidelity/cr019-xlsx/`, README there) | round 1 (Jason, 2026-09-22): two recovery logs. `cr022-data-model-anon`: "External connections removed" — the connections into the removed data model and Power Query mashup had been kept, scrubbed; now every model (`x15:connection model="1"`), Power Query (type 100) and worksheet-to-model (type 102) connection goes with them, and a connections part left empty goes too. `strict-invoice-anon`: "styles.xml XML error" was docx4j's own round trip — `mc:Ignorable` named `xr9` and the prefix table had no 2016/revision9 (xr5 and xr9 added, `IgnorablePrefixesDeclaredTest` extended to the strict samples); its table "removed/repaired" was the anonymiser's — the table's `displayName` scrambled to a string with a space (lorem's), which Excel refuses: table and query-table names now scramble to identifiers (`ScrambleText.consistentIdentifier`, the structured references through the same). Round 2 (Jason): one log left, `strict-invoice-anon` "Repaired Records: Cell information" — G4, a strict-edition date cell (`t="d"`, ISO date): docx4j's `ST_CellType` lacked `d` (ECMA-376 4th ed. transitional; ISO 29500 and Excel's strict output have it), so the round trip dropped the `t` and Excel read the date as a number — and the anonymiser had randomised the digits. Jason's call: not a schema change but the preprocessor's job — `xlsx-preprocessor.xslt` now turns the cell into what Excel writes in a transitional workbook, the 1900-system serial with no `t` (`StrictCellDates.serial`, 2025-12-11 → 46002), and the anonymiser treats it as any number. Round 3: **pending** |
 
 ### CHANGELOG entry for 17.2.1 (for Jason to place, after the phase 2 entry)
 
@@ -735,7 +752,11 @@ references survive).
     scrubbed; pivot tables, slicers, timelines and their caches and the data
     model removed (their cells stay as values); passwords, hashes and salts
     cleared. A workbook's vmlDrawing parts, which the VML binding cannot read,
-    are scrubbed as DOM.
+    are scrubbed as DOM. Also: the namespace prefixes xr5 and xr9 (Excel names
+    xr9 in styles.xml's mc:Ignorable, and an undeclared prefix is an XML error
+    to Excel) are bound, and the strict edition's date cell (t="d") is
+    converted to a serial number on load - both had made Excel repair a
+    workbook docx4j merely round-tripped.
 
 ## Risks
 

@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -806,6 +807,25 @@ public class AnonymizeProbesTest {
 		assertEquals("zorbling", leaks.get(0).token);
 		assertEquals("/word/document.xml", leaks.get(0).partName);
 		assertEquals("t/text()", leaks.get(0).where);
+	}
+
+	@Test
+	public void everyScrambledWordIsALoremFragment() throws Exception {
+		// Verify's lorem-fragment rule rests on this: a Latin word of the output is always a
+		// substring of one lorem word. Until 17.2.1 a scramble long enough to need more than one
+		// chunk of lorem joined them without a space, and the run across the join was a substring
+		// of no lorem word - a leak report whenever it happened to be a word of the original
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		ScrambleText scrambler = new ScrambleText(pkg);
+		StringBuilder input = new StringBuilder();
+		for (int i = 0; i < 400; i++) input.append("The total amount is automatically calculated in this cell. ");
+		List<String> offenders = new ArrayList<String>();
+		for (int run = 0; run < 20; run++) {
+			for (String token : Verify.tokens(scrambler.scramble(input.toString()))) {
+				if (!Verify.isLoremFragment(token)) offenders.add(token);
+			}
+		}
+		assertTrue(offenders.toString(), offenders.isEmpty());
 	}
 
 	@Test

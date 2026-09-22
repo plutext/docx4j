@@ -228,6 +228,22 @@ public class AnonymizeXlsxCorpusTest {
 	}
 
 	@Test
+	public void strictDateCellIsANumberByTheTimeItIsAnonymised() throws Exception {
+		// strict-invoice.xlsx G4: t="d" with an ISO date; the preprocessor makes it the 1900-system
+		// serial (46002), and the anonymiser then randomises the digits
+		SpreadsheetMLPackage pkg = load("anon/strict-invoice.xlsx");
+		WorksheetPart sheet = (WorksheetPart) part(pkg, "/xl/worksheets/sheet1.xml");
+		Cell g4 = null;
+		for (Row row : sheet.getContents().getSheetData().getRow()) for (Cell c : row.getC()) if ("G4".equals(c.getR())) g4 = c;
+		assertNotNull(g4);
+		assertEquals(org.xlsx4j.sml.STCellType.N, g4.getT());
+		assertEquals("46002", g4.getV());
+		AnonymizeResult r = new Anonymize(pkg).go();
+		assertTrue(r.summary(), r.isClean());
+		assertTrue(g4.getV(), g4.getV().matches("[1-9][0-9]{4}"));
+	}
+
+	@Test
 	public void numbersKeptOnRequest() throws Exception {
 		SpreadsheetMLPackage pkg = load("cr022-sparklines.xlsx");
 		WorksheetPart sheet = (WorksheetPart) part(pkg, "/xl/worksheets/sheet1.xml");

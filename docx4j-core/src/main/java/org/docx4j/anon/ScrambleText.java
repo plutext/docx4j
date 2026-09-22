@@ -714,6 +714,15 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 		{
 			// A bit of effort to get enough text
 			
+			// a space between the chunks: without it the last word of one ran into the first of
+			// the next, and the letter run across the join was a substring of no lorem word - which
+			// is the invariant Verify's lorem-fragment rule rests on, so such a run was reported as
+			// a leak whenever it happened to be a word of the original (17.2.1)
+			if (len > 0) {
+				replacement.append(' ');
+				len++;
+			}
+			
 			int wordsNeeded = Math.round((slenRqd-len)/8) + 1; // always at least one word!
 			String latin = Lorem.words(wordsNeeded, random);
 			len += latin.length();
