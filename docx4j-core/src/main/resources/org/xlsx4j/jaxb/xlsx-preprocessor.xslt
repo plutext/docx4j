@@ -118,6 +118,22 @@
 
 	<xsl:template match="purls:workbook/@*" />
 
+	<!-- a strict date cell, t="d" with an ISO 8601 v (ISO/IEC 29500-1 18.18.11), becomes what
+	     Excel writes in a transitional workbook: the 1900-system serial number, no t
+	     (docx4j's binding has no d cell type: without this the t was dropped and Excel
+	     repaired the cell; 17.2.1, CR-019 phase 3) -->
+	<xsl:template match="purls:c[@t='d']">
+		<xsl:element name="c" namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+			<xsl:apply-templates select="@*[local-name() != 't']"/>
+			<xsl:apply-templates select="node()"/>
+		</xsl:element>
+	</xsl:template>
+	<xsl:template match="purls:c[@t='d']/purls:v">
+		<xsl:element name="v" namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+			<xsl:value-of select="java:org.xlsx4j.jaxb.StrictCellDates.serial(string(.))"/>
+		</xsl:element>
+	</xsl:template>
+
 	<xsl:template match="@*">
 		<xsl:param name="old-uri" select="namespace-uri()"/>	
 		<xsl:choose>
