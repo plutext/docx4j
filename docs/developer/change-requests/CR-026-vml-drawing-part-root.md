@@ -52,20 +52,36 @@ purl-namespaced XML inside a transitional package. So it forces
 `getContents()` — and the one part whose `getContents()` can never succeed
 takes the save down with it.
 
-**Open question (for Jason, who has Excel).** The measurement above used a
-synthetic fixture: a transitional `vmlDrawing` injected into
-`strict-simple.xlsx`, because no strict sample in the repository has one. Two
-things want confirming from a real file — save a workbook with a comment (or a
-form control) as *Strict Open XML Spreadsheet*:
+**Answered by a real file (Jason, 2026-09-23).** The first measurement used a
+synthetic fixture (a transitional `vmlDrawing` injected into
+`strict-simple.xlsx`), so Jason saved a workbook with a comment as *Strict Open
+XML Spreadsheet* — docx4j's own `comments.xlsx`, anonymised, re-saved by Excel
+365; it is committed as `docx4j-core-tests/src/test/resources/strict/strict-comments.xlsx`.
+What it settles:
 
-1. whether Excel writes a `vmlDrawing` part at all in strict (VML is not part
-   of ISO 29500 strict; it may still appear, as the legacy drawing is a part of
-   its own, or comments may be written some other way);
-2. if it does, which namespaces it uses inside — in particular whether the
-   relationship attributes (`r:id`, `o:relid`) are the strict
-   `http://purl.oclc.org/ooxml/officeDocument/relationships`. If they are, the
-   fix of §6 needs the preprocessor to map them for this part too, and that
-   file belongs in the test corpus.
+1. **Excel does write a `vmlDrawing` part in a strict workbook**
+   (`xl/drawings/vmlDrawing1.vml`, beside `xl/comments1.xml`). The package is
+   strict in every other respect: `workbook.xml` carries
+   `conformance="strict"`, the part roots and the package relationship types
+   are `purl.oclc.org`.
+2. **The VML part itself is not strict-namespaced**: its content is the usual
+   `urn:schemas-microsoft-com:vml` / `…office:office` / `…office:excel`, with
+   no purl anywhere in it and — in this specimen, a comment shape — no
+   relationship attribute at all. VML is not in ISO 29500, so it has no strict
+   dialect; even the *relationship type* pointing at the part stays
+   transitional (`…openxmlformats.org/officeDocument/2006/relationships/vmlDrawing`)
+   in a rels part whose other entries are purl. So the fix of §6 needs no
+   preprocessor rule for this part, and the same `<xml>` root is what both
+   conformance classes present.
+3. The failure of §1 reproduces exactly on the real file: `pkg.save()` ends in
+   `Docx4JException: Failed to add parts from relationships of /` → `… of
+   /xl/workbook.xml` → `… of /xl/worksheets/sheet1.xml` → `Problem with part
+   /xl/drawings/vmlDrawing1.vml`, leaving a 5,825-byte fragment of what should
+   be a 12,645-byte workbook.
+
+So **a strict workbook with a comment cannot be saved by docx4j at all** — not
+a theoretical case: a comment is the ordinary way to get a `vmlDrawing`, and
+Excel offers Strict in its Save-as list.
 
 ## 2. Why
 
@@ -224,9 +240,8 @@ Either way the strict-save failure of §1 goes: the part unmarshals, so the
 ## 7. Tests
 
 - `VMLPart` round trip, transitional and strict, over `comments.xlsx`,
-  `loadAndSave.xlsx` (both have one) and a strict workbook with a vmlDrawing
-  (the §1 fixture: `strict-simple.xlsx` plus `loadAndSave.xlsx`'s part — to be
-  committed as a fixture, since no strict sample has one).
+  `loadAndSave.xlsx` (both have one) and `strict/strict-comments.xlsx` (§1),
+  which is a save-and-reload regression test on its own: today it throws.
 - The shapes are reachable and typed: `CTShapeLayout`, `CTShapetype`,
   `CTShape`, and the `x:ClientData` inside a shape.
 - Inline VML is untouched: `vml/textbox.docx` still binds `CTShape`,
@@ -265,13 +280,6 @@ not a new namespace, and it *removes* one:
   it is what the Office-open check in §7 is for. If it proves troublesome, the
   part can keep its bytes when nothing asked for its contents (`isUnmarshalled()`
   already governs exactly that).
-- **A real strict workbook's VML is unmeasured** (§1's open question). If
-  Excel writes one with purl-namespaced relationship attributes, the fix is
-  incomplete without a preprocessor rule for them; if Excel writes no
-  `vmlDrawing` in strict at all, the strict-save failure is theoretical and
-  the case for this CR rests on the transitional half (the part is opaque,
-  `getContents()` throws, and every caller must work around it as the
-  anonymiser does).
 - **`<xsd:any namespace="urn:schemas-microsoft-com:vml">`** does not describe
   what Office writes (`o:`, `x:` and `w10:` children are normal). It binds
   anyway, because the generated accessor is lax; worth widening to
