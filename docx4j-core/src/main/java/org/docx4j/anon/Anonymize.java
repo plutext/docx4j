@@ -338,6 +338,12 @@ public class Anonymize {
 			markupScrubber.setCurrentPart(p);
 			if (spreadsheetScrubber != null) spreadsheetScrubber.setCurrentPart(p);
 			new JaxbGraphWalker(composite).walk(contents);
+			if (contents instanceof org.xlsx4j.sml.CTConnections && ((org.xlsx4j.sml.CTConnections) contents).getConnection().isEmpty()) {
+				// every connection was a data-model or Power Query one: an empty part is no use
+				MediaReplacer.removePart(pkg, p);
+				result.record(p, Action.REMOVED, "no connection left after the data-model and Power Query ones");
+				continue;
+			}
 			if (t == Treatment.SCRUB) {
 				result.record(p, Action.SCRUBBED, null);
 			} else if (t == Treatment.SAFE) {

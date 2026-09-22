@@ -200,6 +200,25 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 	}
 
 	/**
+	 * A name Excel parses as an identifier (a table's name and display name, a
+	 * query table's): scrambled consistently, then every letter position which the
+	 * lorem mapping turned into a space or punctuation becomes a letter again, so
+	 * the result is still one identifier (Excel drops a table whose display name
+	 * has a space).
+	 */
+	public String consistentIdentifier(String name) {
+		if (name == null || name.isEmpty()) return name;
+		String out = consistent(name);
+		StringBuilder sb = new StringBuilder(out.length());
+		for (int i = 0; i < out.length(); i++) {
+			char in = i < name.length() ? name.charAt(i) : 'x';
+			char c = out.charAt(i);
+			sb.append(Character.isLetter(in) && !Character.isLetter(c) ? (Character.isUpperCase(in) ? 'X' : 'x') : c);
+		}
+		return sb.toString();
+	}
+
+	/**
 	 * A number as a cell value or formula constant: the sign, the decimal point and
 	 * the exponent stay, the digits of the mantissa are randomised (the first one
 	 * non-zero where it led; a zero stays a zero), so the number format and the

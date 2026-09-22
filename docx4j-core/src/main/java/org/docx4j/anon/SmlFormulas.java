@@ -160,7 +160,7 @@ public class SmlFormulas {
 		if (next == '(') return ident; // a function
 		if (R1C1.matcher(ident).matches()) return ident; // R1C1: R[-1]C, RC[1], R2C3 (Excel reserves R and C, so never a name)
 		if (next == '!') return previous == ']' ? scrambler.consistent(ident) : sheetName(ident); // [1]Sheet1! is an external book's sheet
-		if (next == '[') return scrambler.consistent(ident); // a table's display name
+		if (next == '[') return scrambler.consistentIdentifier(ident); // a table's display name, as the table part maps it
 		if (CELL_REF.matcher(ident).matches()) return ident;
 		if (COLUMN_REF.matcher(ident).matches() && (next == ':' || previous == ':')) return ident;
 		String upper = ident.toUpperCase(java.util.Locale.ROOT);

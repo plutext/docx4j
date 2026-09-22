@@ -692,6 +692,15 @@ references survive).
   all (`<xml>` root, [xlsx4j backlog]); the anonymiser reads the bytes and
   works on DOM rather than removing every comment's and control's shape.
 
+### Findings on the way (fixed, outside the anonymiser)
+
+- The namespace prefix table lacked `xr9` (`spreadsheetml/2016/revision9`,
+  which Excel names in `styles.xml`'s `mc:Ignorable`) and `xr5`: a workbook
+  round-tripped through docx4j declared the Ignorable prefix without its
+  namespace, which Excel treats as an XML error and repairs by dropping the
+  styles part (the CR-023/024 lesson again). Found by the strict invoice
+  sample; added, with the strict samples in `IgnorablePrefixesDeclaredTest`.
+
 ### Left for later
 
 - The VML root defect belongs to docx4j proper (a binding for `<xml>` in the
@@ -712,7 +721,7 @@ references survive).
 | every corpus workbook, STRICT | clean, verified, reloads with docx4j, keeps its sheets |
 | LibreOffice renders every STRICT output and probe | 12 of 12 corpus, 6 of 6 probes |
 | docx4j-core-tests, full | 1300 tests, 0 failures, 11 skipped (2026-09-22) |
-| Excel 365 opens the outputs on the share (`fidelity/cr019-xlsx/`, README there) | **Jason** — the gate's last row |
+| Excel 365 opens the outputs on the share (`fidelity/cr019-xlsx/`, README there) | round 1 (Jason, 2026-09-22): two recovery logs. `cr022-data-model-anon`: "External connections removed" — the connections into the removed data model and Power Query mashup had been kept, scrubbed; now every model (`x15:connection model="1"`), Power Query (type 100) and worksheet-to-model (type 102) connection goes with them, and a connections part left empty goes too. `strict-invoice-anon`: "styles.xml XML error" was docx4j's own round trip — `mc:Ignorable` named `xr9` and the prefix table had no 2016/revision9 (xr5 and xr9 added, `IgnorablePrefixesDeclaredTest` extended to the strict samples); its table "removed/repaired" was the anonymiser's — the table's `displayName` scrambled to a string with a space (lorem's), which Excel refuses: table and query-table names now scramble to identifiers (`ScrambleText.consistentIdentifier`, the structured references through the same). Round 2: **pending** |
 
 ### CHANGELOG entry for 17.2.1 (for Jason to place, after the phase 2 entry)
 

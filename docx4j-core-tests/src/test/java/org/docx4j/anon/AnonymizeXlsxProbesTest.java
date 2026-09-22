@@ -288,6 +288,7 @@ public class AnonymizeXlsxProbesTest {
 		for (int i = 0; i < 3; i++) assertEquals(headers.get(i), t.getTableColumns().getTableColumn().get(i).getName());
 		String d3 = cell(s1, "D3").getF().getValue();
 		assertEquals("SUM(" + t.getDisplayName() + "[" + headers.get(1) + "])", d3);
+		assertFalse(t.getDisplayName(), t.getDisplayName().contains(" "));
 		String calc = t.getTableColumns().getTableColumn().get(3).getCalculatedColumnFormula().getValue();
 		assertTrue(calc, calc.startsWith("IF([" + headers.get(1) + "]>"));
 		assertEquals("TableStyleMedium2", t.getTableStyleInfo().getName());
@@ -549,8 +550,9 @@ public class AnonymizeXlsxProbesTest {
 		assertTrue(d, d.startsWith("n_") && d.endsWith("*A1"));
 		assertEquals(Names.definedName("Tax_Rate") + "*A1", d);
 		String t = f.scrub("SUM(Sales[[#This Row],[Amount]])");
-		assertTrue(t, t.startsWith("SUM(" + scrambler.consistent("Sales") + "[[#This Row],[" + scrambler.consistent("Amount") + "]])"));
-		assertEquals("SUM(" + scrambler.consistent("Sales") + "[#Headers])", f.scrub("SUM(Sales[#Headers])"));
+		assertTrue(t, t.startsWith("SUM(" + scrambler.consistentIdentifier("Sales") + "[[#This Row],[" + scrambler.consistent("Amount") + "]])"));
+		assertEquals("SUM(" + scrambler.consistentIdentifier("Sales") + "[#Headers])", f.scrub("SUM(Sales[#Headers])"));
+		assertFalse(scrambler.consistentIdentifier("SimpleInvoiceTable"), scrambler.consistentIdentifier("SimpleInvoiceTable").contains(" "));
 		assertEquals("[1]" + scrambler.consistent("Budget") + "!A1", f.scrub("[1]Budget!A1"));
 
 		scrambler.setKeepNumbers(true);

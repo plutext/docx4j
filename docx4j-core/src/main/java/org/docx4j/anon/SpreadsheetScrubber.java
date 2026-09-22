@@ -281,8 +281,8 @@ public class SpreadsheetScrubber implements JaxbGraphWalker.Visitor {
 		}
 		if (o instanceof CTTable) {
 			CTTable t = (CTTable) o;
-			t.setName(scrambler.consistent(t.getName()));
-			t.setDisplayName(scrambler.consistent(t.getDisplayName())); // as structured references map it
+			t.setName(scrambler.consistentIdentifier(t.getName()));
+			t.setDisplayName(scrambler.consistentIdentifier(t.getDisplayName())); // as structured references map it; no spaces
 			t.setComment(scrambler.scramble(t.getComment()));
 			return Action.CONTINUE;
 		}
@@ -314,7 +314,7 @@ public class SpreadsheetScrubber implements JaxbGraphWalker.Visitor {
 		}
 		if (o instanceof CTQueryTable) {
 			CTQueryTable qt = (CTQueryTable) o;
-			qt.setName(scrambler.scrambleLetters(qt.getName()));
+			qt.setName(scrambler.consistentIdentifier(qt.getName()));
 			return Action.CONTINUE;
 		}
 		if (o instanceof CTQueryTableField) {
@@ -400,6 +400,12 @@ public class SpreadsheetScrubber implements JaxbGraphWalker.Visitor {
 		// ---- connections and links
 		if (o instanceof CTConnection) {
 			CTConnection c = (CTConnection) o;
+			if (isModelOrQueryConnection(c)) {
+				// the data model (xl/model/item.data) and the Power Query mashup (customXml) are
+				// removed whatever the mode; a connection to either would be a repair prompt
+				notes.accept("connection removed (data model or Power Query): " + c.getName());
+				return Action.REMOVE;
+			}
 			c.setName(scrambler.scrambleLetters(c.getName()));
 			c.setDescription(scrambler.scramble(c.getDescription()));
 			c.setSourceFile(null);
@@ -544,6 +550,26 @@ public class SpreadsheetScrubber implements JaxbGraphWalker.Visitor {
 		}
 
 		return Action.CONTINUE;
+	}
+
+	/**
+	 * A connection into the data model (x15:connection model="1", or type 102: a worksheet
+	 * range fed to the model) or a Power Query connection (type 100, whose mashup lives in
+	 * the customXml the tool removes): removed with them. Classic ODBC, OLEDB, web and text
+	 * connections stay, scrubbed.
+	 */
+	private static boolean isModelOrQueryConnection(CTConnection c) {
+		if (c.getType() != null && (c.getType() == 100 || c.getType() == 102)) return true;
+		if (c.getExtLst() != null) {
+			for (org.xlsx4j.sml.CTExtension ext : c.getExtLst().getExt()) {
+				Object any = XmlUtils.unwrap(ext.getAny());
+				if (any instanceof org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTConnection
+						&& Boolean.TRUE.equals(((org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTConnection) any).isModel())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/** the x14/x15 workbook and sheet extensions which point at removed parts: pivot caches, slicers, timelines, the data model */

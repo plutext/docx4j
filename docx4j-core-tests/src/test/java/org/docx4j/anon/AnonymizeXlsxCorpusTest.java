@@ -209,16 +209,21 @@ public class AnonymizeXlsxCorpusTest {
 
 	@Test
 	public void connectionsAndTheDataModel() throws Exception {
+		// every connection here is a Power Query (type 100), the data model (model="1") or a
+		// worksheet range fed to the model (type 102): all go with the model and the mashup,
+		// and so does the part they left empty (Excel repaired a kept one: "External
+		// connections removed", 2026-09-22)
 		SpreadsheetMLPackage pkg = load("cr022-data-model.xlsx");
-		String original = ((org.docx4j.openpackaging.parts.SpreadsheetML.ConnectionsPart) part(pkg, "/xl/connections.xml")).getXML();
+		assertNotNull(part(pkg, "/xl/connections.xml"));
 		AnonymizeResult r = new Anonymize(pkg).go();
 		assertTrue(r.summary(), r.isClean());
 		assertNull(part(pkg, "/xl/model/item.data"));
-		String connections = ((org.docx4j.openpackaging.parts.SpreadsheetML.ConnectionsPart) part(pkg, "/xl/connections.xml")).getXML();
-		assertFalse(connections.equals(original));
-		assertTrue(connections, connections.contains("connection=\"Provider=None\"") || !original.contains("Provider="));
+		assertNull(part(pkg, "/xl/connections.xml"));
+		String rels = pkg.getWorkbookPart().getRelationshipsPart().getXML();
+		assertFalse(rels, rels.contains("connections"));
 		String workbook = pkg.getWorkbookPart().getXML();
 		assertFalse(workbook, workbook.contains("dataModel"));
+		assertTrue(r.getNotes().toString(), r.getNotes().toString().contains("connection removed"));
 		reload(pkg);
 	}
 
