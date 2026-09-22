@@ -13,6 +13,7 @@ import org.docx4j.dml.CTTextField;
 import org.docx4j.fonts.GlyphCheck;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.vml.CTTextPath;
 import org.docx4j.wml.CTAttr;
@@ -68,11 +69,16 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 	/** what a chart or chartex formula becomes: keeps the element schema-valid, names nothing */
 	static final String FORMULA_PLACEHOLDER = "Sheet1!$A$1";
 
-	public ScrambleText(WordprocessingMLPackage pkg) {
+	/**
+	 * @param pkg a docx, or since 17.2.1 a pptx (which has no styles part and no font
+	 *            mapper, so the non-Latin replacement characters stay within the
+	 *            character's Unicode block with no glyph check)
+	 */
+	public ScrambleText(OpcPackage pkg) {
 		this(pkg, new Names(pkg));
 	}
 
-	ScrambleText(WordprocessingMLPackage pkg, Names names) {
+	ScrambleText(OpcPackage pkg, Names names) {
 		this.pkg = pkg;
 		this.names = names;
 		vis = new RunFontCharVisitorMinimal();
@@ -80,12 +86,14 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 		// the visitor are immaterial (until 17.2.0 this ran fontSelector in the DISCOVERY
 		// mode over one character and read the font from a visitor - a different one
 		// from the selector's own, so it never learnt it)
-		try {
-			rfs = new RunFontSelector(pkg, new /* dummy */ RunFontCharVisitorMinimal(), RunFontActionType.XHTML);
-		} catch (Exception e) {
-			// a styles part docx4j cannot read: scramble without the glyph check
-			log.warn("no font selection (" + e + "); replacement characters are not checked against the fonts' glyphs");
-			rfs = null;
+		if (pkg instanceof WordprocessingMLPackage) {
+			try {
+				rfs = new RunFontSelector((WordprocessingMLPackage) pkg, new /* dummy */ RunFontCharVisitorMinimal(), RunFontActionType.XHTML);
+			} catch (Exception e) {
+				// a styles part docx4j cannot read: scramble without the glyph check
+				log.warn("no font selection (" + e + "); replacement characters are not checked against the fonts' glyphs");
+				rfs = null;
+			}
 		}
 		fieldInstructions = new FieldInstructions(
 				this::scrambleLetters,
@@ -93,7 +101,7 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 				names::isBuiltInStyleName);
 	}
 
-	private WordprocessingMLPackage pkg;
+	private OpcPackage pkg;
 	private final Names names;
 	private final FieldInstructions fieldInstructions;
 
@@ -200,6 +208,20 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 		}
 
 		// DrawingML text (shapes, text boxes, charts, diagrams)
+		if (o instanceof org.docx4j.dml.CTTextParagraph) {
+			// one lorem string per a:p, as for w:p, so a word split across runs stays one word
+			int length = 0;
+			for (Object run : ((org.docx4j.dml.CTTextParagraph) o).getEGTextRun()) {
+				if (run instanceof CTRegularTextRun && ((CTRegularTextRun) run).getT() != null) {
+					length += ((CTRegularTextRun) run).getT().length();
+				} else if (run instanceof CTTextField && ((CTTextField) run).getT() != null) {
+					length += ((CTTextField) run).getT().length();
+				}
+			}
+			latinText = generateReplacement(length);
+			beginIndex = 0;
+			return Action.CONTINUE;
+		}
 		if (o instanceof CTRegularTextRun) {
 			CTRegularTextRun t = (CTRegularTextRun) o;
 			t.setT(inParagraph(t.getT()));
@@ -211,7 +233,65 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			return Action.CONTINUE;
 		}
 		if (o instanceof org.docx4j.dml.CTHyperlink) {
-			((org.docx4j.dml.CTHyperlink) o).setTooltip(null);
+			org.docx4j.dml.CTHyperlink h = (org.docx4j.dml.CTHyperlink) o;
+			h.setTooltip(null);
+			h.setInvalidUrl(null); // PowerPoint keeps the typed URL here when it could not resolve it
+			return Action.CONTINUE; // its a:snd is MarkupScrubber's
+		}
+		if (o instanceof org.docx4j.dml.CTEmbeddedWAVAudioFile) {
+			// a:snd name="applause.wav": the file name (STRICT removes the element itself)
+			org.docx4j.dml.CTEmbeddedWAVAudioFile snd = (org.docx4j.dml.CTEmbeddedWAVAudioFile) o;
+			snd.setName(scrambleLetters(snd.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.docx4j.dml.CTTableStyle) {
+			// a PowerPoint table style is identified by its GUID; the name is display only
+			org.docx4j.dml.CTTableStyle ts = (org.docx4j.dml.CTTableStyle) o;
+			ts.setStyleName(scrambleLetters(ts.getStyleName()));
+			return Action.CONTINUE;
+		}
+
+		// PresentationML (CR-019 phase 2)
+		if (o instanceof org.pptx4j.pml.CTComment) {
+			// a legacy (pre-2018) comment: p:text; its author id and date are MarkupScrubber's
+			org.pptx4j.pml.CTComment c = (org.pptx4j.pml.CTComment) o;
+			c.setText(scramble(c.getText()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.pptx4j.pml.CTStringTag) {
+			// p:tag name="..." val="...": an add-in's data
+			org.pptx4j.pml.CTStringTag tag = (org.pptx4j.pml.CTStringTag) o;
+			tag.setName(scrambleLetters(tag.getName()));
+			tag.setVal(scramble(tag.getVal()));
+			return Action.SKIP_CHILDREN;
+		}
+		if (o instanceof org.pptx4j.pml.CTCustomShow) {
+			org.pptx4j.pml.CTCustomShow show = (org.pptx4j.pml.CTCustomShow) o;
+			show.setName(scramble(show.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.pptx4j.pml.CommonSlideData) {
+			// p:cSld name: a layout's or master's name ("Title Slide"), which the user can retype
+			org.pptx4j.pml.CommonSlideData csld = (org.pptx4j.pml.CommonSlideData) o;
+			csld.setName(scrambleLetters(csld.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSection) {
+			// p14:section name: the section names of the slide sorter
+			org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSection section =
+					(org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSection) o;
+			section.setName(scramble(section.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.pptx4j.pml.CTOleObject) {
+			// p:oleObj name="Worksheet" (STRICT replaces the whole frame; this is for KEEP)
+			org.pptx4j.pml.CTOleObject ole = (org.pptx4j.pml.CTOleObject) o;
+			ole.setName(scrambleLetters(ole.getName()));
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.pptx4j.pml.CTControl) {
+			org.pptx4j.pml.CTControl control = (org.pptx4j.pml.CTControl) o;
+			control.setName(scrambleLetters(control.getName()));
 			return Action.CONTINUE;
 		}
 		if (o instanceof org.docx4j.dml.CTNonVisualDrawingProps) {
@@ -529,11 +609,11 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			
 			result = (char)(rangeLower + random.nextInt((int)rangeUpper-(int)rangeLower));
 			
-			if (font!=null && pkg.getFontMapper()!=null) {
+			if (font!=null && fontMapper()!=null) {
     			try {
     				// the document font through the package's mapper: an embedded font, or a
     				// substitute of another name, is not in PhysicalFonts by this name
-    				org.docx4j.fonts.PhysicalFont pf = pkg.getFontMapper().get(font);
+    				org.docx4j.fonts.PhysicalFont pf = fontMapper().get(font);
 					glyphOK = pf!=null && GlyphCheck.hasCodepoint(pf, result);
 				} catch (Exception e) {
 					log.debug(e.getMessage(), e);
@@ -542,7 +622,7 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 			}
 			
 			tries++;
-		} while (font!=null && pkg.getFontMapper()!=null && !glyphOK && tries<MAX_GLYPH_RETRIES);
+		} while (font!=null && fontMapper()!=null && !glyphOK && tries<MAX_GLYPH_RETRIES);
 		
 //		if (!glyphOK) {
 //			// This will usually be because there is no physical font present
@@ -554,6 +634,11 @@ public class ScrambleText implements JaxbGraphWalker.Visitor {
 	}
 
 	String font = null;  // TODO add fontCache
+
+	/** the package's font mapper: a docx has one (set by the caller, or docx4j's default); a pptx has none */
+	private org.docx4j.fonts.Mapper fontMapper() {
+		return pkg instanceof WordprocessingMLPackage ? ((WordprocessingMLPackage) pkg).getFontMapper() : null;
+	}
 	
     private String unicodeRangeToFont(String text, String latinText)  {
     	

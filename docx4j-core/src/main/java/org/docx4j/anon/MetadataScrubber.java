@@ -88,6 +88,7 @@ public class MetadataScrubber {
 			app.setHLinks(null);
 			app.setDigSig(null);
 			app.setTotalTime(null);
+			app.setPresentationFormat(null); // pptx: "Widescreen", "On-screen Show (4:3)" - words which would survive the check
 		}
 
 		for (Part p : new ArrayList<Part>(pkg.getParts().getParts().values())) {

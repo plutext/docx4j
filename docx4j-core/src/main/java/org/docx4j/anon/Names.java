@@ -28,6 +28,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.Style;
@@ -72,15 +73,20 @@ public class Names {
 	private final Set<String> builtInStyleNames = new HashSet<String>();
 	private final Set<String> builtInStyleIds = new HashSet<String>();
 
-	public Names(WordprocessingMLPackage pkg) {
+	/**
+	 * @param pkg a docx (its own latent-style names join the built-in list) or, since
+	 *            17.2.1, a pptx (no styles part: KnownStyles.xml alone)
+	 */
+	public Names(OpcPackage pkg) {
 		for (Style s : StyleDefinitionsPart.getKnownStyles().values()) {
 			if (s.getName() != null) builtInStyleNames.add(key(s.getName().getVal()));
 			builtInStyleIds.add(s.getStyleId());
 		}
-		if (pkg != null && pkg.getMainDocumentPart() != null
-				&& pkg.getMainDocumentPart().getStyleDefinitionsPart() != null) {
+		if (pkg instanceof WordprocessingMLPackage
+				&& ((WordprocessingMLPackage) pkg).getMainDocumentPart() != null
+				&& ((WordprocessingMLPackage) pkg).getMainDocumentPart().getStyleDefinitionsPart() != null) {
 			try {
-				Styles styles = pkg.getMainDocumentPart().getStyleDefinitionsPart().getContents();
+				Styles styles = ((WordprocessingMLPackage) pkg).getMainDocumentPart().getStyleDefinitionsPart().getContents();
 				if (styles != null && styles.getLatentStyles() != null) {
 					for (Styles.LatentStyles.LsdException e : styles.getLatentStyles().getLsdException()) {
 						builtInStyleNames.add(key(e.getName()));

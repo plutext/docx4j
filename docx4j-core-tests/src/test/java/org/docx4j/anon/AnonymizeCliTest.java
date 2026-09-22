@@ -69,6 +69,20 @@ public class AnonymizeCliTest {
 	}
 
 	@Test
+	public void pptxByPackageKind() throws Exception {
+		// the package decides the format, not the extension
+		File in = copy("anon/table.pptx");
+		File out = new File(tmp.getRoot(), "out.pptx");
+		File json = new File(tmp.getRoot(), "report.json");
+		int exit = AnonymizeCli.run(new String[] { in.getPath(), out.getPath(), "--json", json.getPath() });
+		assertEquals(0, exit);
+		String report = new String(Files.readAllBytes(json.toPath()), StandardCharsets.UTF_8);
+		assertTrue(report, report.contains("\"clean\": true"));
+		assertTrue(report, report.contains("/ppt/slides/slide1.xml"));
+		assertTrue(org.docx4j.openpackaging.packages.OpcPackage.load(out) instanceof org.docx4j.openpackaging.packages.PresentationMLPackage);
+	}
+
+	@Test
 	public void usage() {
 		assertEquals(2, AnonymizeCli.run(new String[] {}));
 		assertEquals(2, AnonymizeCli.run(new String[] { "a.docx" }));

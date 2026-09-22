@@ -1,15 +1,16 @@
 # CR-019: What `docx4j-docx-anon` can guarantee — the docx gaps, then pptx, then xlsx
 
 Status: IN PROGRESS — phase 1 (docx) DONE 2026-09-21 on VERSION_17_2_0
-(implementation record in §"Phase 1 record" below; the Word-open check is
-Jason's, files on the share `fidelity/cr019/`); phases 2 (pptx) and 3 (xlsx)
-proposed. Requested by the portfolio session working on the Docx4j Enterprise
+(implementation record in §"Phase 1 record" below; Word check passed); phase 2
+(pptx) DONE 2026-09-22 on VERSION_17_2_1 (§"Phase 2 record" below; the
+PowerPoint-open check is Jason's, files on the share `fidelity/cr019-pptx/`);
+phase 3 (xlsx) proposed. Requested by the portfolio session working on the Docx4j Enterprise
 price list (`Plutext-Enterprise-Java-11/pricing/`, not yet in git), whose
 confidentiality clause and two support-tier rows depend on what the anonymiser
 actually does; docx4j-mcp's CR-004 lists an `anonymize` tool in its phase 4.
 The module's own reading below was re-checked against `docx4j-docx-anon` on
 VERSION_17_2_0 (b5c2f417f and later) on 2026-09-16. Owner: Jason Harrop.
-Drafted with Claude Fable 5.1; phase 1 implemented with Claude Opus 5.
+Drafted with Claude Fable 5.1; phases 1 and 2 implemented with Claude Opus 5.
 
 Scope: `docx4j-docx-anon` (`org.docx4j.anon`: `Anonymize`, `ScrambleText`,
 `DmlVmlAnalyzer`, `PartsAnalyzer`, `AnonymizeResult`), a CLI, a test corpus, and
@@ -487,11 +488,128 @@ samples (`AnonSingle`, `AnonCorpus` in docx4j-samples-docx4j) compile unchanged
 against core. The CLI is `java -cp ... org.docx4j.anon.AnonymizeCli` (core's
 jar carries no Main-Class). Decision 5 above is thereby superseded.
 
-### Left for later
+## Phase 2 record (2026-09-22)
 
-- Phases 2 and 3 as planned; the walker and both visitors are format-neutral
-  (they dispatch on JAXB classes), so pptx and xlsx are mostly a part table
-  and a package type each.
+### What shipped
+
+`Anonymize` takes an `OpcPackage` (a docx or a pptx; a SpreadsheetMLPackage is
+refused with a message naming phase 3), so the CLI loads by `OpcPackage.load`
+and the package decides the format (docm, dotx, pptm, ppsx, potx alike). The
+five WML-typed seams of the plan opened as it said:
+
+| seam | now |
+|---|---|
+| `Anonymize` | `Anonymize(OpcPackage[, Mode])` and `Anonymize(PresentationMLPackage, Mode)`; the inventory walk (`detectDmlVmlContent`) runs for a docx only; a DOM part the table marks SCRUB goes to `ModernCommentsScrubber` |
+| `Names(OpcPackage)` | the latent-style names are read when the package is a docx; KnownStyles.xml alone otherwise |
+| `ScrambleText(OpcPackage)` | `RunFontSelector` and the font mapper only for a docx; a pptx scrambles non-Latin text within the character's block with no glyph check. New: one lorem string per `a:p` (as per `w:p`), so a word split across DrawingML runs stays one word |
+| `MediaReplacer(OpcPackage)` | `placeholderPartName(pkg)` / `objectPlaceholderPartName(pkg)`: `/ppt/media/anon-placeholder.png` and `/ppt/media/anon-object-removed.png` for a pptx, registered with the parts and content types but with no relationship from the presentation part (the retargeted slide relationships reach them); `removePart` and `stillReferencedElsewhere` take `OpcPackage` |
+| `PartsAnalyzer` | the pptx table: SCRUB = the main presentation, slides, layouts, masters, notes slides and masters, handout master, legacy comments and comment authors, tags, table styles, and the 2018 comments and authors (DefaultXmlParts, by the two new content types `ContentTypes.PRESENTATIONML_MODERN_COMMENTS` / `_MODERN_COMMENT_AUTHORS`); SAFE (walked) = presProps, viewProps; everything else as for a docx (FontDataPart, printer settings, audio and video, embeddings, ActiveX and ink are UNSCRUBBABLE) |
+
+New handling in the visitors (PML-specific; the DrawingML text, charts,
+diagrams, drawing names and hyperlink tooltips were already covered):
+
+- `ScrambleText`: legacy comment text (`p:text`), `p:tag` name and value,
+  custom-show names, `p:cSld/@name` (layout and master names), `p14:section`
+  names, `a:tblStyle/@styleName`, `p:oleObj/@name`, `p:control/@name`,
+  `a:snd/@name`; `a:hlinkClick/@invalidUrl` cleared (PowerPoint keeps the typed
+  URL there when it could not resolve it).
+- `MarkupScrubber`: legacy comment dates fixed; `p:cmAuthor` name and initials
+  through `Names` (the same `Author n` as everywhere) and its `p15:presenceInfo`
+  (user id → the name, provider → None); `p:modifyVerifier` removed (the hash
+  and salt of the password to modify are all it holds). STRICT: the
+  embedded-font list, smart tags, ink `p:contentPart`, every media reference
+  (`a:videoFile`, `a:audioFile`, `a:quickTimeFile`, `a:audioCd`, `a:snd` /
+  `a:wavAudioFile`, `p14:media` with its `p:ext`, the audio and video timing
+  nodes, transition sounds), the `p:controls` list, and OLE objects — a
+  `p:graphicFrame` whose graphic data is a `p:oleObj` (in any mc branch) is
+  replaced by the object's preview picture (the `p:pic` PowerPoint writes in the
+  `mc:Fallback`), given the frame's id ("Object n") and position, and that
+  picture's relationship is recorded so `MediaReplacer` labels it "OLE object
+  removed"; a frame with no preview is removed.
+- `ModernCommentsScrubber` (new): the 2018 comments ([MS-PPTX] p188, not
+  bound) scrubbed as DOM in place — author name and initials through `Names`,
+  user id → the name, provider → None, `created`/`startDate`/`dueDate` fixed,
+  every `a:t` scrambled; ids, positions and anchors kept. The decision: the
+  plan said "if bound — check before assuming"; they are not, and dropping
+  every comment thread of a modern deck (the diagnosable thing) was the
+  alternative.
+- `MetadataScrubber`: `app:PresentationFormat` cleared ("On-screen Show (4:3)"
+  is words).
+- `Verify`: attribute pairs for the new names (`cmAuthor/name`, `author/name`,
+  `tag/name`, `section/name`, `custShow/name`, `cSld/name`, `snd/name`,
+  `oleObj/name`, `control/name`, `tblStyle/styleName`, `hlinkClick/invalidUrl`);
+  fixed words PowerPoint, Macintosh (app.xml's Application), Object (the
+  replaced frame's name) and the eight colour names a number format code
+  carries (`[Red]-#,##0` in a chart's `c:formatCode` was the corpus's first
+  false leak); GUIDs skipped in `tokens()` (a table style id's hex runs were the
+  second).
+
+Tests (docx4j-core-tests, `org.docx4j.anon`): `AnonymizePptxProbesTest` (6:
+comments and authors legacy + 2018; text, notes, hyperlink, Cyrillic, tags,
+sections, custom show, modify verifier, table style; media, OLE, ActiveX, font,
+transition sound in STRICT and in KEEP; the package kinds; a .ppsx main part),
+`AnonymizePptxCorpusTest` (4, over `loadAndSave.pptx` and the four
+samples-pptx4j decks, copied to `src/test/resources/anon/`), a pptx case in
+`AnonymizeCliTest`. The share `fidelity/cr019-pptx/` holds the five corpus
+outputs and the three probe decks (original and STRICT, plus the media probe's
+KEEP) with a README for the PowerPoint check.
+
+### Findings on the way (fixed, outside the anonymiser)
+
+- `ZipPartStore.warnIfBytesAfterCentralDirectory` (17.2.0) reported trailing
+  bytes on **every package longer than 64K**: the tail's offset in the file was
+  added to the count. AutoShapes.pptx (234K, immaculate) warned on load and its
+  anonymised output warned again. Fixed: the count is now
+  `bytesAfterCentralDirectory(File)`, package-visible, with
+  `ZipPartStoreTrailingBytesTest` over a short and a long fixture, clean and
+  with "Upload"/"Subir" appended.
+- A `.ppsx` (slideshow) main part loaded as a `BinaryPart`:
+  `JaxbPmlPart.newPartForContentType` did not list
+  `PRESENTATIONML_SLIDESHOW`, though `ContentTypeManager` recognises the
+  package. Fixed (one line); the anonymiser would otherwise have removed the
+  presentation part as unscrubbable.
+- `ActiveXControlXmlPart(PartName)` did not call `init()`, so a part built by
+  that constructor had no content type or relationship type and
+  `addTargetPart` threw. Fixed.
+
+### Gate
+
+| step | result |
+|---|---|
+| docx4j-core compiles and installs (offline, against the 17.2.1-SNAPSHOT chain) | BUILD SUCCESS |
+| the anonymiser suites in docx4j-core-tests | AnonymizePptxProbesTest 6/0, AnonymizePptxCorpusTest 4/0, AnonymizeProbesTest 11/0, AnonymizeCorpusTest 8/0, AnonymizeCliTest 4/0, FieldInstructionsTest 10/0, ZipPartStoreTrailingBytesTest 2/0 |
+| every corpus deck, STRICT | clean, verified, reloads with docx4j, keeps its slides |
+| LibreOffice renders every STRICT output | 5 of 5 corpus decks and the 3 probe decks to PDF (structural sanity: the chart draws from its caches, the OLE frame shows the labelled placeholder at its size) |
+| docx4j-core-tests, full | 1285 tests, 0 failures, 11 skipped (2026-09-22) |
+| PowerPoint 365 opens the outputs on the share (`fidelity/cr019-pptx/`, README there) | **Jason** — the gate's last row |
+
+### CHANGELOG entry for 17.2.1 (for Jason to place, after the 17.2.1 anonymiser-in-core entry)
+
+    The anonymiser handles pptx (CR-019 phase 2): Anonymize takes an OpcPackage
+    (docx or pptx; the CLI loads by package, so the extension does not matter);
+    slides, layouts, masters, notes, legacy and 2018 comments with their authors,
+    tags, section and custom-show names, table styles, charts and diagrams are
+    scrubbed; the modify verifier, embedded fonts, media, OLE objects (the
+    frame becomes its labelled preview picture), ActiveX and ink go in STRICT.
+    Also: the 17.2.0 "bytes after the zip end of central directory" warning
+    fired on every package over 64K (the count was wrong); a .ppsx main part
+    now loads as a MainPresentationPart; ActiveXControlXmlPart(PartName) sets
+    its content and relationship types.
+
+### Left for later (after phase 2)
+
+- Phase 3 (xlsx) as planned; the walker and both visitors are format-neutral
+  (they dispatch on JAXB classes), so xlsx is mostly a part table and a package
+  type — plus the numbers decision (Decisions 3) and the pivot/connection parts.
+- A `p:graphicFrame` holding an OLE object inside a spTree-level
+  `mc:AlternateContent` whose Choice content is DOM (a non-global element) would
+  keep its `r:id` to a removed part; docx4j binds the PML Choice content it has
+  seen, so none is known, and `Verify` cannot see an r:id. Watch the PowerPoint
+  check for it.
+- Font names (`a:latin/@typeface`, `w:rFonts`) stay by design, as in phase 1; an
+  embedded font's `p:font/@typeface` goes with the list in STRICT.
+- Slide-level `p:custDataLst` / `p:tags` and `p:custShow` structure are kept
+  (scrambled); the `p:smartTags` part is removed with its reference.
 - The lorem-fragment blind spot of `Verify`; a formula field whose bookmark
   is inside an expression token (`(Price+Tax)*1.1`) keeps the name (Verify
   flags it, so the result is not clean rather than wrong).

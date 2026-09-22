@@ -69,11 +69,14 @@ import org.w3c.dom.NodeList;
  * <li>a word of a built-in style name (KnownStyles.xml and the document's own
  * latent-style list), which Word identifies built-in styles by;</li>
  * <li>the fixed words the tool writes: Author, Sheet, example, invalid,
- * http, None, General, true, false, app.xml's "Microsoft Office Word", and
- * the altChunk marker's "altChunk removed by docx4j anon".</li>
+ * http, None, General, true, false, app.xml's "Microsoft Office Word" (or
+ * PowerPoint), the altChunk marker's "altChunk removed by docx4j anon", the
+ * "Object n" name of the picture a removed OLE frame becomes, and the colour
+ * names a number format code can carry ({@code [Red]}).</li>
  * </ul>
  * Digits are not tokens: they are randomised, and a 4-digit run would collide
- * by chance often enough to make the check useless.
+ * by chance often enough to make the check useless. GUIDs (table style ids,
+ * creation ids) are skipped: their hex runs are not words.
  *
  * @since 17.2.0
  */
@@ -120,15 +123,28 @@ public class Verify {
 			"connectString/val", "query/val", "mailSubject/val", "addressFieldName/val",
 			"theme/name", "clrScheme/name", "fontScheme/name", "fmtScheme/name",
 			"pivotSource/name", "strDim/name", "numDim/name", "lvl/name",
+			// PresentationML (CR-019 phase 2): comment authors (legacy and 2018), tags, section and
+			// custom-show names, layout names, sound file names, object names, table style names
+			"cmAuthor/name", "author/name", "tag/name", "section/name", "custShow/name", "cSld/name",
+			"snd/name", "oleObj/name", "control/name", "tblStyle/styleName",
+			"hlinkClick/invalidUrl", "hlinkHover/invalidUrl",
 			"Relationship/Target"));
 
 	private static final Pattern PICTURE = Pattern.compile("^(d+|m+|y+|h+|s+)$");
 
 	private static final Set<String> FIXED_WORDS = new HashSet<String>(Arrays.asList(
 			"author", "sheet", "example", "invalid", "http", "none", "general", "true", "false",
-			"microsoft", "office", "word",
+			"microsoft", "office", "word", "powerpoint", "macintosh", // app.xml Application
 			// the altChunk marker paragraph (Placeholders.ALTCHUNK_REMOVED)
-			"altchunk", "removed", "docx", "anon"));
+			"altchunk", "removed", "docx", "anon",
+			// the picture a removed OLE graphic frame becomes in a pptx ("Object n")
+			"object",
+			// the colour names of a number format code ([Red]-#,##0), chart and cell formats
+			"black", "blue", "cyan", "green", "magenta", "red", "white", "yellow"));
+
+	/** a GUID, braced or not: structure (table style ids, creation ids), never text */
+	private static final Pattern GUID = Pattern.compile(
+			"\\{?[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\}?");
 
 	/** The tokens of one package: per part, token to the first place it was seen. */
 	public static class Extraction {
@@ -292,10 +308,11 @@ public class Verify {
 		return n.getLocalName() == null ? n.getNodeName() : n.getLocalName();
 	}
 
-	/** Runs of three or more letters, lower-cased. */
+	/** Runs of three or more letters, lower-cased; GUIDs are skipped (their hex runs are not words). */
 	public static List<String> tokens(String s) {
 		List<String> result = new ArrayList<String>();
 		if (s == null) return result;
+		if (s.indexOf('-') >= 0) s = GUID.matcher(s).replaceAll(" ");
 		int i = 0, n = s.length();
 		while (i < n) {
 			int cp = s.codePointAt(i);

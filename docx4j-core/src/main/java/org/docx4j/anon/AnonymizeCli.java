@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.docx4j.fonts.IdentityPlusMapper;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -34,7 +35,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * </pre>
  * (docx4j-core and a JAXB runtime such as docx4j-JAXB-ReferenceImpl on the
  * classpath; the class was the docx4j-docx-anon jar's Main-Class until the
- * anonymiser moved into core in 17.2.1).
+ * anonymiser moved into core in 17.2.1). The input may be a docx or, since
+ * 17.2.1, a pptx (the package decides, not the extension: docm, dotx, pptm,
+ * ppsx and potx are the same).
  * <ul>
  * <li>{@code --keep}: KEEP mode - parts the tool cannot make clean stay, and are
  * reported; the default is STRICT, which removes them.</li>
@@ -42,7 +45,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * <li>{@code --no-verify}: skip the before/after token check.</li>
  * <li>{@code --no-fonts}: do not discover the system's fonts (faster; the
  * non-Latin replacement characters are then not checked against the document's
- * fonts' glyphs).</li>
+ * fonts' glyphs). A pptx has no font mapper, so this makes no difference there.</li>
  * </ul>
  * The output is written whether or not the result is clean (in KEEP mode it
  * never is); the exit code is 0 only when {@code result.isClean()}, 1 when not,
@@ -87,9 +90,9 @@ public class AnonymizeCli {
 
 		AnonymizeResult result;
 		try {
-			WordprocessingMLPackage pkg = WordprocessingMLPackage.load(new File(in));
-			if (fonts) {
-				pkg.setFontMapper(new IdentityPlusMapper());
+			OpcPackage pkg = OpcPackage.load(new File(in));
+			if (fonts && pkg instanceof WordprocessingMLPackage) {
+				((WordprocessingMLPackage) pkg).setFontMapper(new IdentityPlusMapper());
 			}
 			Anonymize anon = new Anonymize(pkg, mode);
 			anon.setVerify(verify);
@@ -115,7 +118,7 @@ public class AnonymizeCli {
 
 	private static int usage(String problem) {
 		if (problem != null) System.err.println(problem);
-		System.err.println("usage: AnonymizeCli in.docx out.docx [--keep] [--json report.json] [--no-verify] [--no-fonts]");
+		System.err.println("usage: AnonymizeCli in.docx|in.pptx out.docx|out.pptx [--keep] [--json report.json] [--no-verify] [--no-fonts]");
 		return 2;
 	}
 

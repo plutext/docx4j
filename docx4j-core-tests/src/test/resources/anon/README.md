@@ -21,5 +21,21 @@ metafile the media probe embeds.
 | ../MERGEFIELD.docx | MERGEFIELD instructions |
 | probe.emf (docx4j-core-tests metafiles/61294.emf) | the metafile the media probe embeds |
 
+`AnonymizePptxCorpusTest` (CR-019 phase 2) does the same for presentations:
+
+| file | exercises |
+|---|---|
+| ../loadAndSave.pptx | 2018 ("modern") comments and their authors part (name, initials, email user id), a chart with an embedded workbook, an SVG, a sensitivity label, a thumbnail, a hyperlink, an a14:m equation in an mc:AlternateContent |
+| AutoShapes.pptx (from docx4j-samples-pptx4j/sample-docs) | 187 slides of preset shapes with text: the DrawingML walk at volume |
+| pptx-chart.pptx (from docx4j-samples-pptx4j/sample-docs) | a chart with its embedded workbook, printer settings |
+| table.pptx (from docx4j-samples-pptx4j/sample-docs) | a DrawingML table with a table style id |
+| strict.pptx (from docx4j-samples-pptx4j/sample-docs/strict) | an ISO 29500 strict presentation (the preprocessor's PML mapping) |
+
+The pptx probes (`AnonymizePptxProbesTest`) are generated: legacy and 2018
+comments with authors and presence info, notes, hyperlinks, tags, section
+names, custom shows, the modify verifier, table style names, an OLE object with
+its preview, a video with its poster and p14:media, a transition sound, an
+ActiveX control, an embedded font, a .ppsx main part.
+
 The module docx4j-docx-anon held this code and corpus until 17.2.1 (its
 history is on the moved files).

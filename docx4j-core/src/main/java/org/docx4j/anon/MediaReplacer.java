@@ -32,6 +32,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -70,24 +73,48 @@ public class MediaReplacer {
 
 	static final String BLANK_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"2\" height=\"2\" viewBox=\"0 0 2 2\"/>";
 
-	public static final String PLACEHOLDER_PART_NAME = "/word/media/anon-placeholder.png";
+	/** the shared placeholder's file name, under the package's media folder ({@link #placeholderPartName(OpcPackage)}) */
+	public static final String PLACEHOLDER_FILE = "anon-placeholder.png";
 	/** the labelled image a removed OLE object's or control's picture becomes */
-	public static final String OBJECT_PLACEHOLDER_PART_NAME = "/word/media/anon-object-removed.png";
+	public static final String OBJECT_PLACEHOLDER_FILE = "anon-object-removed.png";
 
-	private final WordprocessingMLPackage pkg;
+	/** the placeholder's part name in a docx */
+	public static final String PLACEHOLDER_PART_NAME = "/word/media/" + PLACEHOLDER_FILE;
+	/** the labelled placeholder's part name in a docx */
+	public static final String OBJECT_PLACEHOLDER_PART_NAME = "/word/media/" + OBJECT_PLACEHOLDER_FILE;
+
+	/** /word/media/ for a docx, /ppt/media/ for a pptx */
+	static String mediaFolder(OpcPackage pkg) {
+		if (pkg instanceof PresentationMLPackage) return "/ppt/media/";
+		if (pkg instanceof WordprocessingMLPackage) return "/word/media/";
+		return "/media/";
+	}
+
+	/** @since 17.2.1 */
+	public static String placeholderPartName(OpcPackage pkg) {
+		return mediaFolder(pkg) + PLACEHOLDER_FILE;
+	}
+
+	/** @since 17.2.1 */
+	public static String objectPlaceholderPartName(OpcPackage pkg) {
+		return mediaFolder(pkg) + OBJECT_PLACEHOLDER_FILE;
+	}
+
+	private final OpcPackage pkg;
 	private final Set<String> objectPreviews;
 	private ImagePngPart placeholder;
 	private ImagePngPart objectPlaceholder;
 
-	public MediaReplacer(WordprocessingMLPackage pkg) {
+	public MediaReplacer(OpcPackage pkg) {
 		this(pkg, Collections.<String>emptySet());
 	}
 
 	/**
+	 * @param pkg            a docx or, since 17.2.1, a pptx
 	 * @param objectPreviews "partName#relId" of the pictures which stood in for a
 	 *                       removed OLE object or control: these get the labelled placeholder
 	 */
-	public MediaReplacer(WordprocessingMLPackage pkg, Set<String> objectPreviews) {
+	public MediaReplacer(OpcPackage pkg, Set<String> objectPreviews) {
 		this.pkg = pkg;
 		this.objectPreviews = objectPreviews;
 	}
@@ -149,7 +176,7 @@ public class MediaReplacer {
 		// point every relationship at the shared placeholder png (the labelled one where
 		// the picture stood for a removed object) and drop the part
 		boolean object = retargetToPlaceholder(p);
-		return "relationships retargeted to " + (object ? OBJECT_PLACEHOLDER_PART_NAME : PLACEHOLDER_PART_NAME) + "; part removed";
+		return "relationships retargeted to " + (object ? objectPlaceholderPartName(pkg) : placeholderPartName(pkg)) + "; part removed";
 	}
 
 	/** @return true if any relationship went to the labelled object placeholder */
@@ -182,12 +209,12 @@ public class MediaReplacer {
 	}
 
 	private ImagePngPart placeholder() throws Docx4JException {
-		if (placeholder == null) placeholder = placeholderPart(PLACEHOLDER_PART_NAME, PNG_IMAGE_DATA);
+		if (placeholder == null) placeholder = placeholderPart(placeholderPartName(pkg), PNG_IMAGE_DATA);
 		return placeholder;
 	}
 
 	private ImagePngPart objectPlaceholder() throws Docx4JException {
-		if (objectPlaceholder == null) objectPlaceholder = placeholderPart(OBJECT_PLACEHOLDER_PART_NAME, Placeholders.objectRemovedPng());
+		if (objectPlaceholder == null) objectPlaceholder = placeholderPart(objectPlaceholderPartName(pkg), Placeholders.objectRemovedPng());
 		return objectPlaceholder;
 	}
 
@@ -196,8 +223,16 @@ public class MediaReplacer {
 		if (existing instanceof ImagePngPart) return (ImagePngPart) existing;
 		ImagePngPart part = new ImagePngPart(new PartName(name));
 		part.setBinaryData(bytes);
-		// registers the part, its content type and a relationship from the main document part
-		pkg.getMainDocumentPart().addTargetPart(part, AddPartBehaviour.REUSE_EXISTING);
+		if (pkg instanceof WordprocessingMLPackage) {
+			// registers the part, its content type and a relationship from the main document part
+			((WordprocessingMLPackage) pkg).getMainDocumentPart().addTargetPart(part, AddPartBehaviour.REUSE_EXISTING);
+		} else {
+			// a pptx: the retargeted relationships (from the slides) are the ones which reach
+			// it; the presentation part does not carry image relationships
+			part.setPackage(pkg);
+			pkg.getParts().put(part);
+			pkg.getContentTypeManager().addDefaultContentType("png", ContentTypes.IMAGE_PNG);
+		}
 		return part;
 	}
 
@@ -216,7 +251,7 @@ public class MediaReplacer {
 	 *
 	 * @return the names of the parts removed (the part and, recursively, its targets)
 	 */
-	static List<PartName> removePart(WordprocessingMLPackage pkg, Part p) {
+	static List<PartName> removePart(OpcPackage pkg, Part p) {
 
 		List<PartName> removed = new ArrayList<PartName>();
 		PartName name = p.getPartName();
@@ -259,7 +294,7 @@ public class MediaReplacer {
 	}
 
 	/** true if some part other than {@code except} (or the package) has a relationship to {@code target} */
-	private static boolean stillReferencedElsewhere(WordprocessingMLPackage pkg, Part target, Part except) {
+	private static boolean stillReferencedElsewhere(OpcPackage pkg, Part target, Part except) {
 		List<Base> sources = new ArrayList<Base>();
 		sources.add(pkg);
 		sources.addAll(pkg.getParts().getParts().values());

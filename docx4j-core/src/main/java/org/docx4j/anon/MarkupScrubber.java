@@ -18,7 +18,9 @@
  */
 package org.docx4j.anon;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -81,6 +83,14 @@ import org.docx4j.wml.Tag;
  * c:externalData, cx:externalData and the font-table embed elements are removed
  * with the parts they point at ({@link Anonymize} removes the parts); in KEEP
  * mode they stay, and the part is reported as kept unsafe.</li>
+ * <li>PresentationML (CR-019 phase 2): legacy comment dates fixed and comment
+ * authors renamed (with their p15 presence info); the modify-verifier (password
+ * hash) removed; in STRICT mode the embedded-font list, smart tags, ink content
+ * parts, every media reference (a:videoFile, a:audioFile, a:quickTimeFile,
+ * a:audioCd, a:wavAudioFile / a:snd, p14:media, the audio and video timing
+ * nodes, transition sounds), ActiveX controls (p:control) and OLE objects are
+ * removed - an OLE graphic frame becomes its own preview picture, which
+ * {@link MediaReplacer} then labels "OLE object removed".</li>
  * </ul>
  *
  * @since 17.2.0
@@ -163,6 +173,27 @@ public class MarkupScrubber implements JaxbGraphWalker.Visitor {
 			CTCommentExtensible ce = (CTCommentExtensible) o;
 			if (ce.getDateUtc() != null) ce.setDateUtc(Names.fixedDate());
 			return Action.CONTINUE;
+		}
+		if (o instanceof org.pptx4j.pml.CTComment) {
+			// a legacy PowerPoint comment: the author is an id into the authors part (kept); the
+			// date goes; the text is ScrambleText's
+			org.pptx4j.pml.CTComment c = (org.pptx4j.pml.CTComment) o;
+			if (c.getDt() != null) c.setDt(Names.fixedDate());
+			return Action.CONTINUE;
+		}
+		if (o instanceof org.pptx4j.pml.CTCommentAuthor) {
+			org.pptx4j.pml.CTCommentAuthor a = (org.pptx4j.pml.CTCommentAuthor) o;
+			a.setName(names.author(a.getName()));
+			a.setInitials(names.initials(a.getInitials()));
+			lastPersonAuthor = a.getName();
+			return Action.CONTINUE; // its extLst may hold p15:presenceInfo
+		}
+		if (o instanceof org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main.CTPresenceInfo) {
+			org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main.CTPresenceInfo pi =
+					(org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main.CTPresenceInfo) o;
+			pi.setProviderId("None");
+			if (pi.getUserId() != null) pi.setUserId(lastPersonAuthor != null ? lastPersonAuthor : "Author");
+			return Action.SKIP_CHILDREN;
 		}
 
 		// ---- references
@@ -301,6 +332,13 @@ public class MarkupScrubber implements JaxbGraphWalker.Visitor {
 			p.setCryptProviderTypeExtSource(null);
 			return Action.SKIP_CHILDREN;
 		}
+		if (o instanceof org.pptx4j.pml.CTModifyVerifier) {
+			// p:modifyVerifier: the hash and salt of the password to modify; nothing else in
+			// it is structure, so the element goes (unlike w:documentProtection, whose
+			// enforcement flags describe the document)
+			notes.accept("p:modifyVerifier removed (password hash and salt)");
+			return Action.REMOVE;
+		}
 		if (o instanceof CTWriteProtection) {
 			CTWriteProtection p = (CTWriteProtection) o;
 			p.setHash(null);
@@ -371,9 +409,135 @@ public class MarkupScrubber implements JaxbGraphWalker.Visitor {
 				notes.accept("chart geography cache removed");
 				return Action.REMOVE;
 			}
+
+			// ---- PresentationML
+			if (o instanceof org.pptx4j.pml.CTEmbeddedFontList) {
+				notes.accept("p:embeddedFontLst removed (the font data parts go with it)");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTSmartTags) {
+				notes.accept("p:smartTags removed");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTRel) {
+				// p:contentPart: ink, in a part the tool cannot read (its mc:Fallback picture stays)
+				notes.accept("p:contentPart removed (ink)");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTControlList) {
+				// p:controls holds nothing but ActiveX controls (and mc branches of them)
+				notes.accept("p:controls removed (ActiveX)");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTControl) {
+				notes.accept("p:control removed (ActiveX)");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.docx4j.dml.CTVideoFile
+					|| o instanceof org.docx4j.dml.CTAudioFile
+					|| o instanceof org.docx4j.dml.CTQuickTimeFile
+					|| o instanceof org.docx4j.dml.CTAudioCD
+					|| o instanceof org.docx4j.dml.CTEmbeddedWAVAudioFile) {
+				// the media file (embedded: a part the tool cannot read; linked: an external
+				// target) is gone; the picture the reference sat on stays as a picture
+				notes.accept("media reference removed (" + o.getClass().getSimpleName().substring(2) + ")");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTTransitionSoundAction) {
+				notes.accept("p:transition sound removed");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTTLMediaNodeAudio || o instanceof org.pptx4j.pml.CTTLMediaNodeVideo) {
+				notes.accept("timing media node removed");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTExtension
+					&& holdsMedia(((org.pptx4j.pml.CTExtension) o).getAny())) {
+				// p:extLst/p:ext holding p14:media: the whole ext goes (an empty p:ext is not valid)
+				notes.accept("p14:media removed");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.docx4j.dml.CTOfficeArtExtension
+					&& holdsMedia(((org.docx4j.dml.CTOfficeArtExtension) o).getAny())) {
+				notes.accept("p14:media removed");
+				return Action.REMOVE;
+			}
+			if (o instanceof org.pptx4j.pml.CTGraphicalObjectFrame) {
+				return oleFrame((org.pptx4j.pml.CTGraphicalObjectFrame) o);
+			}
 		}
 
 		return Action.CONTINUE;
+	}
+
+	private static boolean holdsMedia(Object any) {
+		return XmlUtils.unwrap(any) instanceof org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTMedia;
+	}
+
+	/**
+	 * A p:graphicFrame whose graphic data is a p:oleObj (in any mc branch): the
+	 * embedding part goes, so the frame is replaced by the object's preview picture
+	 * (the p:pic PowerPoint writes inside the mc:Fallback's p:oleObj), given the
+	 * frame's id and position, and the picture's relationship is recorded so
+	 * {@link MediaReplacer} labels it. A frame with no preview is removed.
+	 */
+	private Action oleFrame(org.pptx4j.pml.CTGraphicalObjectFrame frame) {
+
+		List<org.pptx4j.pml.CTOleObject> oles = new ArrayList<org.pptx4j.pml.CTOleObject>();
+		if (frame.getGraphic() != null && frame.getGraphic().getGraphicData() != null) {
+			collectOleObjects(frame.getGraphic().getGraphicData().getAny(), oles);
+		}
+		if (oles.isEmpty()) return Action.CONTINUE;
+
+		org.pptx4j.pml.Pic pic = null;
+		for (org.pptx4j.pml.CTOleObject ole : oles) {
+			if (ole.getPic() != null) pic = ole.getPic(); // the last one: PowerPoint's is in the mc:Fallback
+		}
+		if (pic == null) {
+			notes.accept("p:oleObj removed with its frame (it had no preview picture)");
+			return Action.REMOVE;
+		}
+
+		org.docx4j.dml.CTNonVisualDrawingProps frameProps =
+				frame.getNvGraphicFramePr() == null ? null : frame.getNvGraphicFramePr().getCNvPr();
+		org.docx4j.dml.CTNonVisualDrawingProps props = new org.docx4j.dml.CTNonVisualDrawingProps();
+		props.setId(frameProps == null ? 0 : frameProps.getId());
+		props.setName("Object " + props.getId());
+		if (pic.getNvPicPr() == null) pic.setNvPicPr(new org.pptx4j.pml.Pic.NvPicPr());
+		pic.getNvPicPr().setCNvPr(props);
+		if (pic.getNvPicPr().getCNvPicPr() == null) pic.getNvPicPr().setCNvPicPr(new org.docx4j.dml.CTNonVisualPictureProperties());
+		if (pic.getNvPicPr().getNvPr() == null) pic.getNvPicPr().setNvPr(new org.pptx4j.pml.NvPr());
+		if (pic.getSpPr() == null) pic.setSpPr(new org.docx4j.dml.CTShapeProperties());
+		if (pic.getSpPr().getXfrm() == null) pic.getSpPr().setXfrm(frame.getXfrm());
+		if (pic.getSpPr().getPrstGeom() == null && pic.getSpPr().getCustGeom() == null) {
+			org.docx4j.dml.CTPresetGeometry2D rect = new org.docx4j.dml.CTPresetGeometry2D();
+			rect.setPrst(org.docx4j.dml.STShapeType.RECT);
+			rect.setAvLst(new org.docx4j.dml.CTGeomGuideList());
+			pic.getSpPr().setPrstGeom(rect);
+		}
+		if (pic.getBlipFill() != null && pic.getBlipFill().getBlip() != null
+				&& pic.getBlipFill().getBlip().getEmbed() != null) {
+			objectPreviews.add(currentPartName + "#" + pic.getBlipFill().getBlip().getEmbed());
+		}
+		for (org.pptx4j.pml.CTOleObject ole : oles) {
+			ole.setPic(null); // the picture now stands on its own
+		}
+		notes.accept("p:oleObj removed; its frame is now its preview picture, as the labelled placeholder");
+		replacement = pic;
+		return Action.REPLACE;
+	}
+
+	private static void collectOleObjects(List<Object> any, List<org.pptx4j.pml.CTOleObject> into) {
+		for (Object o : any) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof org.pptx4j.pml.CTOleObject) {
+				into.add((org.pptx4j.pml.CTOleObject) u);
+			} else if (u instanceof org.docx4j.mce.AlternateContent) {
+				org.docx4j.mce.AlternateContent ac = (org.docx4j.mce.AlternateContent) u;
+				for (org.docx4j.mce.AlternateContent.Choice c : ac.getChoice()) collectOleObjects(c.getAny(), into);
+				if (ac.getFallback() != null) collectOleObjects(ac.getFallback().getAny(), into);
+			}
+		}
 	}
 
 }

@@ -33,7 +33,7 @@ public class PartsAnalyzer {
 		REPLACE_IMAGE,
 		/** removed in either mode: custom XML, glossary, custom properties, thumbnails, signatures, labels */
 		REMOVE,
-		/** cannot be made clean (OLE, altChunk, VBA, embedded fonts, unknown parts): removed in STRICT, kept and reported in KEEP */
+		/** cannot be made clean (OLE, altChunk, VBA, embedded fonts, audio and video, unknown parts): removed in STRICT, kept and reported in KEEP */
 		UNSCRUBBABLE
 	}
 
@@ -77,6 +77,12 @@ public class PartsAnalyzer {
 			return Treatment.REPLACE_IMAGE;
 		}
 
+		// ---- the 2018 PowerPoint comments and their authors: not bound, so a DefaultXmlPart,
+		// scrubbed as DOM (ModernCommentsScrubber)
+		if (p instanceof DefaultXmlPart && isModernComments(p)) {
+			return Treatment.SCRUB;
+		}
+
 		// ---- structure
 		if (p instanceof org.docx4j.openpackaging.parts.DrawingML.ChartStylePart
 				|| p instanceof org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart
@@ -115,10 +121,44 @@ public class PartsAnalyzer {
 			return Treatment.SCRUB;
 		}
 
-		// ---- everything else: OLE and embedded packages, altChunk, VBA, embedded fonts,
-		// printer settings, ActiveX, ink, web extensions, VML parts, unknown XML and binaries,
-		// and any PresentationML or SpreadsheetML part in a docx
+		// ---- PresentationML (CR-019 phase 2): the slides and their masters, layouts and
+		// notes (a:t in every a:p), the presentation (section names, custom shows, the
+		// modify verifier, the embedded-font list), legacy comments and their authors, tags,
+		// table styles (names)
+		if (p instanceof org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.SlidePart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.NotesSlidePart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.NotesMasterPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.HandoutMasterPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.CommentsPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.CommentAuthorsPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.TagsPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.TableStylesPart) {
+			return Treatment.SCRUB;
+		}
+		// structure, but walked (presProps carries the HTML publish target and the show's custom-show id)
+		if (p instanceof org.docx4j.openpackaging.parts.PresentationML.PresentationPropertiesPart
+				|| p instanceof org.docx4j.openpackaging.parts.PresentationML.ViewPropertiesPart) {
+			return Treatment.SAFE;
+		}
+
+		// ---- everything else: OLE and embedded packages, altChunk, VBA, embedded fonts
+		// (FontDataPart included), printer settings, ActiveX, ink, web extensions, VML parts,
+		// audio and video, unknown XML and binaries, and any SpreadsheetML part
 		return Treatment.UNSCRUBBABLE;
+	}
+
+	/** the 2018 comments part (p188:cmLst) or its authors part (p188:authorLst), by content type */
+	static boolean isModernComments(Part p) {
+		try {
+			String ct = p.getContentType();
+			return ContentTypes.PRESENTATIONML_MODERN_COMMENTS.equals(ct)
+					|| ContentTypes.PRESENTATIONML_MODERN_COMMENT_AUTHORS.equals(ct);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	static boolean isSvg(Part p) {

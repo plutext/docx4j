@@ -217,6 +217,14 @@ public class ContentTypes {
 	
 	public final static String PRESENTATIONML_COMMENT_AUTHORS = 
 			"application/vnd.openxmlformats-officedocument.presentationml.commentAuthors+xml";
+
+	/** the 2018 "modern" comments (p188:cmLst, [MS-PPTX] 2.3), /ppt/comments/modernComment_*.xml; not bound, a DefaultXmlPart. @since 17.2.1 */
+	public final static String PRESENTATIONML_MODERN_COMMENTS = 
+			"application/vnd.ms-powerpoint.comments+xml";
+
+	/** the authors of the 2018 comments (p188:authorLst), /ppt/authors.xml; not bound, a DefaultXmlPart. @since 17.2.1 */
+	public final static String PRESENTATIONML_MODERN_COMMENT_AUTHORS = 
+			"application/vnd.ms-powerpoint.authors+xml";
 	
     // /ppt/presentation.xml
 	public final static String PRESENTATIONML_MAIN = 

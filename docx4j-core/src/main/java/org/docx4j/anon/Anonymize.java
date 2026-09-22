@@ -14,19 +14,22 @@ import org.docx4j.anon.JaxbGraphWalker.Visitor;
 import org.docx4j.anon.PartsAnalyzer.Treatment;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Anonymises a docx in place: the text is scrambled, identities, references and
- * metadata scrubbed, media replaced, and whatever cannot be made clean removed
- * (STRICT, the default) or kept and reported (KEEP).
+ * Anonymises a docx (or, since 17.2.1, a pptx) in place: the text is scrambled,
+ * identities, references and metadata scrubbed, media replaced, and whatever
+ * cannot be made clean removed (STRICT, the default) or kept and reported (KEEP).
  * <p>
  * The guarantee (CR-019): a document this returns with {@code result.isClean()}
  * contains no text from the original in any text-bearing part (scrambled per
@@ -47,6 +50,14 @@ import org.slf4j.LoggerFactory;
  * </pre>
  * Set a font mapper on the package first if the non-Latin replacement characters
  * should be chosen from the glyphs the document's fonts have (the CLI does).
+ * <p>
+ * For a pptx (CR-019 phase 2) the same walk covers the slides, layouts, masters,
+ * notes and handout master, the presentation (section names, custom shows, the
+ * modify verifier, the embedded-font list), legacy and 2018 comments with their
+ * authors, tags, table styles, charts and diagrams; media, OLE objects, ActiveX,
+ * ink, embedded fonts, VBA and the thumbnail go as in a docx. A pptx has no
+ * styles part and no font mapper, so non-Latin replacement characters stay in the
+ * character's Unicode block with no glyph check.
  */
 public class Anonymize {
 
@@ -60,7 +71,7 @@ public class Anonymize {
 		KEEP
 	}
 
-	private final WordprocessingMLPackage pkg;
+	private final OpcPackage pkg;
 	private final Mode mode;
 	private boolean verify = true;
 
@@ -72,16 +83,47 @@ public class Anonymize {
 	AnonymizeResult result;
 
 	public Anonymize(WordprocessingMLPackage wordMLPackage) {
-		this(wordMLPackage, Mode.STRICT);
+		this((OpcPackage) wordMLPackage, Mode.STRICT);
 	}
 
 	/**
 	 * @since 17.2.0
 	 */
 	public Anonymize(WordprocessingMLPackage wordMLPackage, Mode mode) {
-		this.pkg = wordMLPackage;
+		this((OpcPackage) wordMLPackage, mode);
+	}
+
+	/**
+	 * @since 17.2.1
+	 */
+	public Anonymize(PresentationMLPackage pmlPackage, Mode mode) {
+		this((OpcPackage) pmlPackage, mode);
+	}
+
+	/**
+	 * A docx or a pptx (as {@link OpcPackage#load(java.io.File)} returns it); a
+	 * SpreadsheetMLPackage is not supported yet (CR-019 phase 3).
+	 *
+	 * @throws IllegalArgumentException for a package of another kind
+	 * @since 17.2.1
+	 */
+	public Anonymize(OpcPackage pkg, Mode mode) {
+		if (!(pkg instanceof WordprocessingMLPackage) && !(pkg instanceof PresentationMLPackage)) {
+			throw new IllegalArgumentException("only docx and pptx are supported (xlsx is CR-019 phase 3): "
+					+ (pkg == null ? "null" : pkg.getClass().getSimpleName()));
+		}
+		this.pkg = pkg;
 		this.mode = mode;
 		result = new AnonymizeResult();
+	}
+
+	/**
+	 * STRICT.
+	 *
+	 * @since 17.2.1
+	 */
+	public Anonymize(OpcPackage pkg) {
+		this(pkg, Mode.STRICT);
 	}
 
 	/**
@@ -108,8 +150,11 @@ public class Anonymize {
 		latinizer = new ScrambleText(pkg, names);
 		markupScrubber = new MarkupScrubber(names, mode == Mode.STRICT, result.notes::add);
 
-		// the inventory (fields present, VML, objects of interest), read before the scramble
-		detectDmlVmlContent();
+		// the inventory (fields present, VML, objects of interest), read before the scramble;
+		// it walks the WordprocessingML story parts, so a pptx has none
+		if (pkg instanceof WordprocessingMLPackage) {
+			detectDmlVmlContent();
+		}
 
 		// what each part is
 		Map<Part, Treatment> treatments = new LinkedHashMap<Part, Treatment>();
@@ -212,7 +257,12 @@ public class Anonymize {
 			if (pkg.getParts().get(p.getPartName()) == null) continue; // removed
 			if (t == Treatment.METADATA || t == Treatment.REPLACE_IMAGE) continue;
 			if (!(p instanceof JaxbXmlPart)) {
-				if (t == Treatment.SAFE) result.record(p, Action.KEPT, "structure");
+				if (t == Treatment.SCRUB && p instanceof XmlPart) {
+					// a DOM part the table names: the 2018 PowerPoint comments and authors
+					scrubDom((XmlPart) p);
+				} else if (t == Treatment.SAFE) {
+					result.record(p, Action.KEPT, "structure");
+				}
 				continue;
 			}
 			JaxbXmlPart<?> jp = (JaxbXmlPart<?>) p;
@@ -247,6 +297,29 @@ public class Anonymize {
 		}
 	}
 
+	private void scrubDom(XmlPart p) {
+		org.w3c.dom.Document doc;
+		try {
+			doc = p.getDocument();
+		} catch (Exception ex) {
+			log.warn(p.getPartName().getName() + " could not be read: " + ex);
+			doc = null;
+		}
+		if (doc == null) {
+			result.unsafeParts.add(p);
+			if (mode == Mode.STRICT) {
+				MediaReplacer.removePart(pkg, p);
+				result.record(p, Action.REMOVED, "could not be read, so could not be scrubbed");
+			} else {
+				result.record(p, Action.KEPT_UNSAFE, "could not be read, so could not be scrubbed");
+			}
+			return;
+		}
+		log.debug("Scrubbing (DOM) " + p.getPartName().getName());
+		new ModernCommentsScrubber(names, latinizer).scrub(doc.getDocumentElement());
+		result.record(p, Action.SCRUBBED, "2018 comments: authors renamed, dates fixed, text scrambled");
+	}
+
 	private void replaceMedia(Map<Part, Treatment> treatments) throws Docx4JException {
 		MediaReplacer media = new MediaReplacer(pkg, markupScrubber.objectPreviews);
 		for (Entry<Part, Treatment> e : treatments.entrySet()) {
@@ -263,6 +336,7 @@ public class Anonymize {
 
 		dmlVmlAnalyzer = new DmlVmlAnalyzer();
 
+		WordprocessingMLPackage pkg = (WordprocessingMLPackage) this.pkg;
 		detectDmlVml(pkg.getMainDocumentPart());
 
 		for (Entry<PartName, Part> entry : new ArrayList<Entry<PartName, Part>>(pkg.getParts().getParts().entrySet())) {
