@@ -205,6 +205,65 @@ and embedded-workbook parts as in phase 1.5; media and OLE as in 1.4;
 speaker notes; `presProps`/`viewProps` (harmless, kept). Same result, same
 verification, same CLI by extension.
 
+#### Phase 2 approach, refined after phase 1 (2026-09-22)
+
+What phase 1 built is format-neutral where it matters and WML-typed at five
+seams; phase 2 is mostly those seams plus a part table.
+
+- **Already generic**: `JaxbGraphWalker`; `MarkupScrubber` and `ScrambleText`
+  dispatch on JAXB classes (DrawingML text `a:t`/`a:fld`, `CTNonVisualDrawingProps`
+  name/descr/title, `a:hlinkClick` tooltip, chart and chartex caches, the theme
+  names — all already handled, and slides are DrawingML); `Verify` takes an
+  `OpcPackage`; `MetadataScrubber` takes an `OpcPackage` (docProps core/app are
+  the same parts); `AnonymizeResult`, `PartsAnalyzer.Treatment`, `Placeholders`,
+  `FieldInstructions`, `Lorem`.
+- **WML-typed seams to open** (make each take `OpcPackage` plus what it needs):
+  `Anonymize` (constructor and `detectDmlVmlContent`, which walks WML story
+  parts through `DmlVmlAnalyzer` — skip for pptx); `Names(WordprocessingMLPackage)`
+  (reads the styles part for built-in names — pptx has no styles part; the
+  author/initials/identifier maps are the reusable half); `ScrambleText`
+  (creates a `RunFontSelector`, WML-only — for pptx `rfs = null`, so the
+  non-Latin scramble stays in-block with no glyph check, as it already does
+  when the styles part is unreadable); `MediaReplacer` (placeholder parts at
+  `/word/media/...` added through `getMainDocumentPart()` — parameterise the
+  media folder and the source part: `/ppt/media/`, the main presentation part);
+  `removePart`/`stillReferencedElsewhere` (only need `OpcPackage`).
+- **The pptx part table** (`PartsAnalyzer.classify`): SCRUB = `SlidePart`,
+  `SlideLayoutPart`, `SlideMasterPart`, `NotesSlidePart`, `NotesMasterPart`,
+  `HandoutMasterPart`, `MainPresentationPart` (its `p:sldIdLst` is ids; the
+  `p:extLst` may carry `p14:sectionLst` with section *names* — scramble
+  `CTSectionList`/section `name`), `CommentsPart` (PML: `p:cm` text and
+  `authorId`), `CommentAuthorsPart` (`p:cmAuthor` name, initials → the same
+  `Names.author`/`initials` maps; `clrIdx` and `id` kept), the 2018 modern
+  comments (`p188:cm`, if bound — check `docx4j-core`'s PML classes before
+  assuming), `TagsPart` (`p:tag` name/val — scramble both), `TableStylesPart`
+  and `ViewPropertiesPart`/`PresentationPropertiesPart` (SAFE, walked),
+  `ThemePart`; charts and diagrams as in docx; `FontDataPart` (embedded fonts,
+  `p:embeddedFont` in presentation.xml) → UNSCRUBBABLE like `ObfuscatedFontPart`,
+  and the `p:embeddedFontLst` element removed in STRICT; media → REPLACE_IMAGE;
+  `docProps/thumbnail.jpeg` → REMOVE (every pptx has one); OLE, ActiveX, VBA
+  (`.pptm`), customXml → as docx.
+- **PML-specific identities and references**: slide `p:cNvPr` names ("Title 1")
+  are fine to scramble as docPr names are; speaker notes are `NotesSlidePart`
+  text; `a:hlinkClick r:id` with `action="ppaction://hlinksldjump"` points at a
+  slide (internal, keep) versus an external URL (placeholder — `TargetMode`
+  decides, as in docx); `p:transition` sounds (`a:snd` embedded wav) →
+  UNSCRUBBABLE media; `p:custDataLst`/`p:tagLst` → tags part.
+- **CLI**: by extension (`.pptx`/`.pptm` → `PresentationMLPackage.load`);
+  `Anonymize` gains `Anonymize(PresentationMLPackage, Mode)` (or one
+  `Anonymize(OpcPackage, Mode)` that switches on the package class).
+- **Corpus** (docx4j's own): `docx4j-core-tests/src/test/resources/loadAndSave.pptx`;
+  `docx4j-samples-pptx4j/sample-docs/{AutoShapes,pptx-chart,table}.pptx` and
+  `strict/strict.pptx` (strict: the preprocessor's PML mapping is untested —
+  expect a finding). Probes as in phase 1: a generated deck with comments and
+  authors, notes, a hyperlink, a chart, a tag, a section name.
+- **Word check**: PowerPoint 365 on the share (`fidelity/cr019-pptx/`), the same
+  README pattern; `AnonymizeCorpusTest`'s reload and LibreOffice render first.
+- **Gotchas from phase 1**: create the visitors before removing parts; a
+  changed `static final String` in core needs `mvn clean test` in core-tests;
+  build with `-o` against the installed 17.2.1-SNAPSHOT chain
+  (`docx4j-xjc-copy` must be named in `-pl` on a cold `~/.m2`).
+
 ### Phase 3 — xlsx
 
 `Anonymize(SpreadsheetMLPackage)`: shared strings and inline strings
