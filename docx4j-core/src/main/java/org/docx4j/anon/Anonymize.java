@@ -182,6 +182,14 @@ public class Anonymize {
 
 		result.mode = mode;
 
+		if (pkg.isWasStrict()) {
+			// docx4j reads a strict package by converting each part to the transitional
+			// namespaces, and never writes strict; the report says so, because a bug which is
+			// the strict dialect's own will not reproduce from the anonymised copy
+			result.notes.add("the input was ISO/IEC 29500 Strict; docx4j converts on read and writes transitional, "
+					+ "so this output is a transitional package");
+		}
+
 		// a workbook's vmlDrawing parts have an <xml> root the VML binding does not know: swap
 		// each for a DOM part before anything reads it (once, or every reader logs the failure)
 		for (Part p : new ArrayList<Part>(pkg.getParts().getParts().values())) {

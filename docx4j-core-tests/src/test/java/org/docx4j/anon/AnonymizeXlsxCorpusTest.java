@@ -244,6 +244,21 @@ public class AnonymizeXlsxCorpusTest {
 	}
 
 	@Test
+	public void theReportSaysAStrictInputComesBackTransitional() throws Exception {
+		SpreadsheetMLPackage strict = load("anon/strict-simple.xlsx");
+		AnonymizeResult r = new Anonymize(strict).go();
+		assertTrue(r.getNotes().toString(), r.getNotes().toString().contains("Strict"));
+		assertTrue(r.toJson(), r.toJson().contains("transitional package"));
+		String sheet = ((WorksheetPart) part(strict, "/xl/worksheets/sheet1.xml")).getXML();
+		assertTrue("and it is true", sheet.contains("http://schemas.openxmlformats.org/spreadsheetml/2006/main"));
+		assertFalse(sheet, sheet.contains("purl.oclc.org"));
+
+		// a transitional input says nothing of the kind
+		AnonymizeResult t = new Anonymize(load("anon/comments.xlsx")).go();
+		assertFalse(t.getNotes().toString(), t.getNotes().toString().contains("Strict"));
+	}
+
+	@Test
 	public void numbersKeptOnRequest() throws Exception {
 		SpreadsheetMLPackage pkg = load("cr022-sparklines.xlsx");
 		WorksheetPart sheet = (WorksheetPart) part(pkg, "/xl/worksheets/sheet1.xml");

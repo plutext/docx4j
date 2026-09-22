@@ -92,7 +92,11 @@ public class AnonymizeResult {
 		return actions;
 	}
 
-	/** Element-level removals (w:altChunk, o:OLEObject, w:mailMerge ...), one line each. */
+	/**
+	 * Element-level removals (w:altChunk, o:OLEObject, w:mailMerge ...), one line
+	 * each, and anything else the report should say about the whole document - the
+	 * conversion of a strict package, for one.
+	 */
 	public List<String> getNotes() {
 		return notes;
 	}
