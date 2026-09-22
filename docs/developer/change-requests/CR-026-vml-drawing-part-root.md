@@ -38,6 +38,35 @@ is how both are drawn — makes the workbook unsaveable by docx4j; in a
 transitional one the part is opaque (no API reaches its shapes) but is
 preserved. A caller who asks for the contents gets an exception either way.
 
+**Why the strict case differs.** A strict package is not converted whole on
+open: `Load3` detects it from the package relationships and sets
+`OpcPackage.setWasStrict(true)`, and each part is converted **lazily**, the
+first time its contents are asked for (`JaxbXmlPartXPathAware`:
+`transformFirst = isWasStrict() || …`, then `xlsx-preprocessor.xslt`). Saving
+such a package writes a **transitional** one — verified: the output's
+`[Content_Types].xml` and every part root are the
+`schemas.openxmlformats.org` namespaces, not `purl.oclc.org`. That is exactly
+why `ZipPartStore` cannot take its usual shortcut for a part nobody touched:
+those bytes are still strict, and copying them verbatim would put
+purl-namespaced XML inside a transitional package. So it forces
+`getContents()` — and the one part whose `getContents()` can never succeed
+takes the save down with it.
+
+**Open question (for Jason, who has Excel).** The measurement above used a
+synthetic fixture: a transitional `vmlDrawing` injected into
+`strict-simple.xlsx`, because no strict sample in the repository has one. Two
+things want confirming from a real file — save a workbook with a comment (or a
+form control) as *Strict Open XML Spreadsheet*:
+
+1. whether Excel writes a `vmlDrawing` part at all in strict (VML is not part
+   of ISO 29500 strict; it may still appear, as the legacy drawing is a part of
+   its own, or comments may be written some other way);
+2. if it does, which namespaces it uses inside — in particular whether the
+   relationship attributes (`r:id`, `o:relid`) are the strict
+   `http://purl.oclc.org/ooxml/officeDocument/relationships`. If they are, the
+   fix of §6 needs the preprocessor to map them for this part too, and that
+   file belongs in the test corpus.
+
 ## 2. Why
 
 VML is Office's old "XML island": the part's root element is literally `<xml>`
@@ -236,6 +265,13 @@ not a new namespace, and it *removes* one:
   it is what the Office-open check in §7 is for. If it proves troublesome, the
   part can keep its bytes when nothing asked for its contents (`isUnmarshalled()`
   already governs exactly that).
+- **A real strict workbook's VML is unmeasured** (§1's open question). If
+  Excel writes one with purl-namespaced relationship attributes, the fix is
+  incomplete without a preprocessor rule for them; if Excel writes no
+  `vmlDrawing` in strict at all, the strict-save failure is theoretical and
+  the case for this CR rests on the transitional half (the part is opaque,
+  `getContents()` throws, and every caller must work around it as the
+  anonymiser does).
 - **`<xsd:any namespace="urn:schemas-microsoft-com:vml">`** does not describe
   what Office writes (`o:`, `x:` and `w10:` children are normal). It binds
   anyway, because the generated accessor is lax; worth widening to
