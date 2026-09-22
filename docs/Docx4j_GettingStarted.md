@@ -96,7 +96,7 @@ See [https://www.nuget.org/packages/docx4j.NET/](https://www.nuget.org/packages/
 
 Docx4j can read/write docx documents created by or for Word 2007 or later, plus earlier versions which have the compatibility pack installed. (Same goes for xlsx spreadsheets and pptx presentations).
 
-Most docx files in the wild use the so called “transitional” namespace [http://schemas.openxmlformats.org/officeDocument/2006](http://schemas.openxmlformats.org/officeDocument/2006).  Office 2013 introduced the option of using the “strict” namespace [http://purl.oclc.org/ooxml/officeDocument](http://purl.oclc.org/ooxml/officeDocument); docx4j (from 11.5.9) can import these. 
+Most docx files in the wild use the so called “transitional” namespace [http://schemas.openxmlformats.org/officeDocument/2006](http://schemas.openxmlformats.org/officeDocument/2006).  Office 2013 introduced the option of using the “strict” namespace [http://purl.oclc.org/ooxml/officeDocument](http://purl.oclc.org/ooxml/officeDocument); docx4j (from 11.5.9) can import these.  A strict package is converted as docx4j reads it, so what docx4j writes is always transitional: strict in, transitional out.
 
 The relevant parts of docx4j are generated from the ECMA schemas, with the addition of the key Microsoft proprietary extensions.  For unsupported extensions, docx4j gracefully degrades to the specified 2007 substitutes.
 
@@ -359,7 +359,7 @@ The Ecma-376.htm link also contains the 2nd edition documents (of Dec 2008), whi
 
 Office 2007 SP2 implements ECMA-376 1st Edition[^3]; this is what docx4j started with
 
-ISO/IEC 29500 (ECMA-376 2nd Edition) has *Strict* and *Transitional *conformance classes.  Office 2010 supports[^4] transitional, and also has read only support for strict.
+ISO/IEC 29500 (ECMA-376 2nd Edition) has *Strict* and *Transitional *conformance classes.  Office 2010 supports[^4] transitional, and also has read only support for strict.  docx4j imports strict (since 11.5.9): each part is converted to the transitional namespaces the first time it is read, and every part is converted before the package is saved, so a package docx4j saves is a transitional one - strict in, transitional out.  A strict document you anonymise, convert or merely load and save therefore comes back transitional.
 
 docx4j started with ECMA-376 1st Edition.  Where appropriate later versions of the schemas are used.  docx4j 3.0 uses MathML 2ed, PresentationML 2ed, and SpreadsheemML 4ed transitional.
 
