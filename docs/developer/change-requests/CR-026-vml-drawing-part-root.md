@@ -1,0 +1,242 @@
+# CR-026: A vmlDrawing part binds — the `<xml>` root's namespace
+
+Status: PROPOSED 2026-09-23, for Jason. Found by CR-019 phase 3 (the
+anonymiser on xlsx), whose "left for later" names it; the anonymiser works
+around it by reading the part as DOM. Drafted with Claude Opus 5, with the
+measurements of §1 to §3. Owner: Jason Harrop. One phase.
+
+Scope: `org.docx4j.openpackaging.parts.VMLPart` and the schema behind it,
+`xsd/vml/vml__ROOT.xsd`, so that a `vmlDrawing` part unmarshals to its typed
+objects instead of failing. Not in scope: VML inside `w:pict` or `p:pic`,
+which binds today and is unaffected (§3); the content of the VML schemas
+themselves; `VMLBinaryPart`, which is a different (binary) reading of the
+same part name and is left alone.
+
+## 1. What happens today
+
+A `vmlDrawing` part — `/xl/drawings/vmlDrawing1.vml`, `/word/drawings/…`,
+`/ppt/drawings/…` — is created by `ContentTypeManager` as a `VMLPart`, which
+is a `JaxbXmlPartXPathAware<org.docx4j.vml.root.Xml>`. Every one of them fails
+to unmarshal:
+
+```
+ERROR JaxbXmlPartXPathAware - unexpected element (uri:"", local:"xml").
+      Expected elements are <…>,<{urn:schemas-microsoft-com:office:excel}ClientData>,<…>
+WARN  Anonymize - /xl/drawings/vmlDrawing1.vml could not be read as JAXB
+```
+
+Measured consequences (2026-09-23):
+
+| | |
+|---|---|
+| `getContents()` on the part | throws `Docx4JException: Problem with part …` — always, for every package kind |
+| a **transitional** package containing one, loaded and saved | **survives**: the part was never unmarshalled, so `ZipPartStore.saveRawXmlPart` copies the source bytes; verified byte-identical for `comments.xlsx` |
+| a **strict** package containing one, loaded and saved | **fails**: `isWasStrict()` makes the save force `getContents()` on every part, which throws, and `pkg.save()` ends in `Docx4JException: Failed to add parts from relationships of /` with a truncated file left behind (measured on `strict-simple.xlsx` with `loadAndSave.xlsx`'s vmlDrawing injected — no strict sample in the repository has one) |
+
+So: a comment or a form control in a **strict** workbook — a `vmlDrawing` part
+is how both are drawn — makes the workbook unsaveable by docx4j; in a
+transitional one the part is opaque (no API reaches its shapes) but is
+preserved. A caller who asks for the contents gets an exception either way.
+
+## 2. Why
+
+VML is Office's old "XML island": the part's root element is literally `<xml>`
+**in no namespace** — the file declares only the prefixes it uses.
+
+```xml
+<xml xmlns:v="urn:schemas-microsoft-com:vml"
+     xmlns:o="urn:schemas-microsoft-com:office:office"
+     xmlns:x="urn:schemas-microsoft-com:office:excel">
+  <o:shapelayout v:ext="edit">…</o:shapelayout>
+  <v:shapetype id="_x0000_t202" …>…</v:shapetype>
+  <v:shape …>…<x:ClientData ObjectType="Note">…</x:ClientData></v:shape>
+</xml>
+```
+
+docx4j binds that root from `xsd/vml/vml__ROOT.xsd`, whose own header says why
+it exists: *"This XSD exists because you need one schema document per
+namespace"*. To give the namespace-less element a home it invents one:
+
+```xml
+<xsd:schema targetNamespace="urn:docx4j:vml:root" … elementFormDefault="unqualified">
+  <xsd:element name="xml">
+    <xsd:complexType><xsd:sequence>
+      <xsd:any namespace="urn:schemas-microsoft-com:vml" minOccurs="1" maxOccurs="unbounded" processContents="strict"/>
+    </xsd:sequence></xsd:complexType>
+  </xsd:element>
+</xsd:schema>
+```
+
+A **global** element declaration always takes the schema's `targetNamespace`
+(`elementFormDefault` governs *local* elements only), so XJC generates
+`@XmlRootElement(name = "xml")` in a package annotated
+`@XmlSchema(namespace = "urn:docx4j:vml:root")`: JAXB has a global element
+`{urn:docx4j:vml:root}xml` and the document presents `{}xml`. Nothing matches,
+and the unmarshaller lists every other global element it knows.
+
+**Evidence that this is the only obstacle.** The same bytes, with
+`xmlns="urn:docx4j:vml:root"` spliced onto the root and nothing else changed,
+unmarshal cleanly through `Context.jc` into `org.docx4j.vml.root.Xml` with its
+three children. The `<xsd:any namespace="urn:schemas-microsoft-com:vml">`
+restriction does not bite at runtime: XJC generates `@XmlAnyElement(lax = true)`,
+which does not enforce the wildcard's namespace, so the office-namespace
+`o:shapelayout` and the excel-namespace `x:ClientData` bind as happily as the
+VML ones.
+
+The invented namespace is referenced nowhere else: not in
+`NamespacePrefixMappings`, not in `Uris2`, not in any test or resource — only
+in `ROOT.xsd`'s import of this schema, `Context.jc`'s package list (which names
+the *package*, `org.docx4j.vml.root`) and `module-info`.
+
+## 3. Inline VML in `w:pict` is a different binding, and is not affected
+
+The shapes inside a `w:pict` (or a `p:pic`, or `xdr:` drawing) are **not**
+wrapped in `<xml>`: they are elements of the real VML namespace, children of
+`CTPictureBase.getAnyAndAny()`. Measured on `vml/textbox.docx`, walking the
+main document part:
+
+```
+inline VML in w:pict binds as:
+   org.docx4j.vml.CTShape
+   org.docx4j.vml.CTShapetype
+   org.docx4j.vml.CTTextbox
+```
+
+Those classes come from `xsd/vml/vml-main.xsd`, package `org.docx4j.vml`,
+`@XmlSchema(namespace = "urn:schemas-microsoft-com:vml", elementFormDefault =
+QUALIFIED)`, with `@XmlElementDecl(namespace = "urn:schemas-microsoft-com:vml",
+name = "shape")` and friends in its `ObjectFactory` — a different namespace,
+package and schema from the `<xml>` wrapper, which is one class
+(`org.docx4j.vml.root.Xml`) holding a lax `any` list.
+
+So whichever option below is taken, inline VML binds exactly as it does now,
+to the same classes: the change is confined to the name of one wrapper
+element. The same `org.docx4j.vml.*` objects are what a fixed `VMLPart` would
+hand back — the shapes of a comment or a control become reachable by the same
+API as the shapes in a text box.
+
+## 4. Options
+
+**A. The schema tells the truth: no target namespace.** Remove
+`targetNamespace="urn:docx4j:vml:root"` from `vml__ROOT.xsd` (and the
+`namespace` attribute from `ROOT.xsd`'s import of it, which is legal because
+`ROOT.xsd` itself has no target namespace), so the global element is `{}xml`
+and XJC generates the root class with `@XmlRootElement(name = "xml")` in a
+package with no `@XmlSchema` namespace. The class keeps its name and package.
+
+- For: the binding then says what the format says; load and save are the
+  ordinary JaxbXmlPart paths; no special case anywhere.
+- Against: it is a regeneration of `docx4j-generated-objects`, so the
+  TypeScript and Python ports regenerate too (§8) — a hand-off for a one-line
+  schema edit. `Context.jc` must still list the package (it will). No schema in
+  the tree declares a global element in no namespace today (`ROOT.xsd`,
+  `wml/wml__ROOT.xsd` and `sections.xsd` have no target namespace, but they
+  declare no elements), so what XJC makes of one — the `@XmlRootElement`
+  namespace, and whether the `ObjectFactory` keeps an element factory method —
+  is to be confirmed by the regeneration, not assumed.
+
+**B. The part does the mapping.** Leave the schema and the generated classes
+alone; have `VMLPart` unmarshal **by declared type**
+(`unmarshaller.unmarshal(source, Xml.class)`, which ignores the root element's
+name entirely) and marshal a `JAXBElement<Xml>` with `new QName("", "xml")`.
+
+- Measured: both halves work today, with the classes exactly as they are. The
+  declared-type unmarshal of `loadAndSave.xlsx`'s and `comments.xlsx`'s parts
+  gives `CTShapeLayout`, `CTShapetype`, `CTShape`; the QName-overridden
+  marshal writes `<xml …>` with no namespace on the root.
+- For: no schema change, no regeneration, no port hand-off, and it can ship in
+  a patch release.
+- Against: two overrides in `VMLPart` (and `JaxbXmlPartXPathAware`'s binder and
+  XPath paths would need the same treatment, or to be declared unsupported for
+  this part); the binding still claims a namespace the format does not have,
+  so the next reader of the schema meets the same puzzle.
+
+**C. Do nothing; read it as DOM where needed.** What CR-019 phase 3 does
+(`Anonymize` swaps the unreadable `VMLPart` for a `DefaultXmlPart` from the
+source part store and `VmlDomScrubber` works on the DOM).
+
+- For: nothing to regenerate; already written.
+- Against: leaves the strict-save failure of §1 in place, leaves every caller
+  to invent the same workaround, and leaves `VMLPart`'s type parameter a
+  promise the class cannot keep.
+
+## 5. Recommendation
+
+**A**, with **B** as the fallback if the regeneration is unwelcome this close
+to a release. The defect is in the schema, the fix there is one line and one
+import attribute, and it makes every path — load, save, XPath, the binder —
+ordinary. B is a genuine alternative rather than a hack (declared-type
+unmarshalling is JAXB's own answer to "the root element is not what the
+context expects"), but it leaves the schema wrong, and the ports read the
+schema.
+
+Either way the strict-save failure of §1 goes: the part unmarshals, so the
+`isWasStrict()` branch has something to marshal.
+
+## 6. Plan (one phase)
+
+1. `xsd/vml/vml__ROOT.xsd`: drop the target namespace; `xsd/ROOT.xsd`: drop the
+   `namespace` attribute from its import. Regenerate; confirm
+   `org.docx4j.vml.root.Xml` is `@XmlRootElement(name = "xml")` with no
+   namespace and that its `ObjectFactory` is unchanged in shape.
+2. `module-info` and `Context.jc`'s package list: unchanged (the package name
+   does not move) — confirm.
+3. `VMLPart`: nothing, if step 1 is enough. Check `getXML()`, the binder and
+   the XPath paths on a part that now has contents.
+4. Retire the anonymiser's workaround: `Anonymize.vmlAsDom` and the
+   `DefaultXmlPart` branch of `PartsAnalyzer` go, and `VmlDomScrubber` is
+   replaced by handling the typed objects in `ScrambleText`/`MarkupScrubber`
+   (`CTShape.getAlt`/`getTitle`/`getHref` and `CTTextbox` are handled there
+   already for inline VML, so this is mostly deletion). Keep a DOM fallback
+   only if step 3 finds a part docx4j still cannot read.
+5. CHANGELOG under "SpreadsheetML" (or "Packaging"): a vmlDrawing part's
+   contents are available, and a strict package containing one saves.
+
+## 7. Tests
+
+- `VMLPart` round trip, transitional and strict, over `comments.xlsx`,
+  `loadAndSave.xlsx` (both have one) and a strict workbook with a vmlDrawing
+  (the §1 fixture: `strict-simple.xlsx` plus `loadAndSave.xlsx`'s part — to be
+  committed as a fixture, since no strict sample has one).
+- The shapes are reachable and typed: `CTShapeLayout`, `CTShapetype`,
+  `CTShape`, and the `x:ClientData` inside a shape.
+- Inline VML is untouched: `vml/textbox.docx` still binds `CTShape`,
+  `CTShapetype`, `CTTextbox` (§3), and the HTML and FO exporters' VML tests
+  still pass.
+- The anonymiser's xlsx corpus stays clean and verified with the workaround
+  removed (`AnonymizeXlsxCorpusTest`, `AnonymizeXlsxProbesTest`).
+- `docx4j-core-tests` in full.
+
+## 8. Hand-offs, if A is taken
+
+Per `docs/developer/adding-a-schema.md` §11 — it is a schema change, though
+not a new namespace, and it *removes* one:
+
+- **TypeScript objects** (`../docx4j-generated-objects-ts`): regenerates from
+  `xsd/ROOT.xsd` at the commit. Tell it the xsd files touched
+  (`vml/vml__ROOT.xsd`, `ROOT.xsd`), that the `urn:docx4j:vml:root` namespace
+  is gone and the root element is now `{}xml`, and that nothing else in the
+  model changes.
+- **Python** (`../docx4j-python`): VML is not generated yet (its CR-001 phase
+  D), so this reaches it only when it is; tell it anyway, so its copy of the
+  tree is re-taken after this commit rather than before.
+- Both ports have the same defect latent in the same place if they generated
+  from the old schema.
+
+## 9. Risks
+
+- **A regeneration for a one-line change.** Mitigated by the ports being told,
+  and by the change being subtractive (a namespace disappears; no class moves,
+  no property changes).
+- **A part docx4j now unmarshals is a part docx4j now rewrites.** Today a
+  transitional package's vmlDrawing is copied byte-for-byte; afterwards it is
+  marshalled from the objects, so Office sees docx4j's serialisation of it
+  (attribute order, prefixes, the `style` attribute's whitespace). This is the
+  same exposure every other part already has, but it is new for this one, and
+  it is what the Office-open check in §7 is for. If it proves troublesome, the
+  part can keep its bytes when nothing asked for its contents (`isUnmarshalled()`
+  already governs exactly that).
+- **`<xsd:any namespace="urn:schemas-microsoft-com:vml">`** does not describe
+  what Office writes (`o:`, `x:` and `w10:` children are normal). It binds
+  anyway, because the generated accessor is lax; worth widening to
+  `##any` in the same edit for honesty, at no runtime cost.
