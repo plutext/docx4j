@@ -51,6 +51,10 @@ ActiveX control, an embedded font, a .ppsx main part.
 | comments.xlsx (from docx4j-samples-xlsx4j/sample-docs) | legacy comments and their VML shapes |
 | strict-chart.xlsx, strict-invoice.xlsx, strict-simple.xlsx (from docx4j-samples-xlsx4j/sample-docs/strict) | ISO 29500 strict workbooks (the preprocessor's SML mapping); the invoice has a table, an SVG, printer settings, customXml |
 
+A strict workbook in this corpus comes back **transitional**: docx4j converts
+each part as it reads it and never writes strict, so that is what the
+anonymiser saves — as for any docx4j round trip.
+
 The xlsx probes (`AnonymizeXlsxProbesTest`) are generated: two sheets, a table
 with a calculated column, formulas with literals, a defined name, cross-sheet
 references, numbers of every shape, hyperlinks, a validation, a conditional

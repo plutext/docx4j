@@ -42,6 +42,13 @@ import org.slf4j.LoggerFactory;
  * styles, numbering, fonts, sizes, the shape of fields and content controls -
  * because that is what a layout, a corruption or a converter bug lives in.
  * <p>
+ * One thing the structure does not keep is the conformance class: docx4j reads a
+ * strict (ISO/IEC 29500 Strict) package by converting each part to the
+ * transitional namespaces, and never writes strict, so an anonymised strict
+ * document is a transitional one. Nothing else about it changes, but a bug which
+ * is the strict dialect's own will not reproduce from the anonymised copy - ask
+ * for the original in that case.
+ * <p>
  * Usage:
  * <pre>
  * WordprocessingMLPackage pkg = WordprocessingMLPackage.load(in);

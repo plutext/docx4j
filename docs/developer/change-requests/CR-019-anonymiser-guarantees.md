@@ -124,6 +124,14 @@ that is what a layout, a corruption or a converter bug lives in. Where the
 tool cannot make a part clean it removes the part and records it, or (in
 `keep` mode) keeps it and refuses to call the result clean.
 
+One thing the structure does not keep is the **conformance class**: docx4j
+reads a strict (ISO/IEC 29500 Strict) package by converting each part to the
+transitional namespaces, and never writes strict, so an anonymised strict
+document is a transitional one. Recorded (2026-09-23) in `Anonymize`'s
+javadoc, the CLI's, the corpus README and the Getting Started guide, because a
+bug which is the strict dialect's own will not reproduce from the anonymised
+copy — that is a case for asking the customer for the original.
+
 **Fail-closed by default.** `Anonymize.go()` returns an `AnonymizeResult`
 whose `isClean()` is the single answer; `Anonymize.Mode.STRICT` (default for
 the CLI and for docx4j-mcp) removes every part it cannot scrub, `Mode.KEEP`

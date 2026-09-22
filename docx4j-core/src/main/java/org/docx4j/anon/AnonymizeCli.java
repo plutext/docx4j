@@ -49,6 +49,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * non-Latin replacement characters are then not checked against the document's
  * fonts' glyphs). A pptx has no font mapper, so this makes no difference there.</li>
  * </ul>
+ * A strict (ISO/IEC 29500 Strict) input is written out transitional, because that
+ * is how docx4j reads one; see {@link Anonymize}.
+ * <p>
  * The output is written whether or not the result is clean (in KEEP mode it
  * never is); the exit code is 0 only when {@code result.isClean()}, 1 when not,
  * 2 for a usage error, 3 when the document could not be processed.
