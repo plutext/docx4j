@@ -335,6 +335,41 @@ the `urn:docx4j:vml:root` namespace is gone, the root element is `{}xml`, the
 wildcard is `##any`, and `ROOT.xsd` includes rather than imports that schema.
 Python does not generate VML yet, so it is told for when it does.
 
+### What the ports made of it (2026-09-23)
+
+`docx4j-generated-objects-ts` generated from `b4ca0d98a` and reported back:
+`xsd:include` in `ROOT.xsd` is no trouble for its compiler (so the arrangement
+here stands), 103 modules as before, and exactly three files differ — all
+`org_docx4j_vml_root`, which loses its `defaultElementNamespaceURI` and keeps
+`elementName: { localPart: 'xml' }`, the Jsonix mirror of
+`@XmlRootElement(name = "xml")` with no `package-info`. It reproduced the
+defect and the fix on a real part. One difference worth keeping: its runtime's
+wildcard is **strict with `allowDom` false**, so the `##any` widening is what
+makes `o:shapelayout` and `x:ClientData` typed rather than lost — here, where
+XJC generates a lax accessor either way, the widening only made the schema
+honest. Its regeneration is `f9996c3`, confirmed by core-ts (480/480, no
+golden moves), shipping in 0.1.7.
+
+**core-ts has no analogue of the unsaveable strict package**, and says it is by
+contract rather than luck: its save re-marshals only the relationships parts,
+`[Content_Types].xml` and the XML parts something actually read or set, and
+copies every other part from the source part store as bytes — "untouched parts
+round-trip byte for byte" is an asserted test there. It also never met this
+defect, because its `VMLPart` extends its `DefaultXmlPart` (DOM, never through
+Jsonix) and `unmarshalAll()` skips it. So what CR-026 buys core-ts is the
+option of typing that part, which it has noted and not taken.
+
+That is a real divergence from docx4j and worth stating plainly, because it is
+the cause of the failure this CR fixed: **docx4j converts on save**. For a
+package that was strict, `ZipPartStore` forces `getContents()` on every part
+nobody read, so that the output is uniformly transitional (§1) — the price
+being that one part which can never be read takes the whole save down. The
+byte-copy shortcut is only for transitional packages. A port which copies
+untouched parts verbatim regardless would, for a strict input, write strict
+bytes into a package whose other parts are transitional; asked of core-ts
+(2026-09-23) whether it converts strict at all and what it does with the parts
+nobody read.
+
 **Sent to `docx4j-generated-objects-ts` 2026-09-23**, to be done before its
 next release: the two xsd files and what changed in each, that `b4ca0d98a` is
 the only commit touching `xsd/` since `409aade38` (so it is the whole delta
