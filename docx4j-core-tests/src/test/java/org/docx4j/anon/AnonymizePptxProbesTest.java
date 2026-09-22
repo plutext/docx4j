@@ -223,14 +223,19 @@ public class AnonymizePptxProbesTest {
 				"<p188:authorLst xmlns:p188=\"" + p188 + "\"><p188:author id=\"{D66C2D0B-8267-47C3-1395-767C976A08A1}\""
 				+ " name=\"Bob Editor\" initials=\"BE\" userId=\"S::bob.editor@zorbling.example::e3c6b3cb\" providerId=\"AD\"/></p188:authorLst>");
 		pp.addTargetPart(modernAuthors);
+		// [MS-PPTX] CT_Comment: the anchor is required and comes first, then pos, then the
+		// replies, then the comment's own text (PowerPoint refuses the other order)
+		long sldId = pp.getContents().getSldIdLst().getSldId().get(0).getId();
 		DefaultXmlPart modernComments = xmlPart("/ppt/comments/modernComment_1.xml", ContentTypes.PRESENTATIONML_MODERN_COMMENTS,
 				"http://schemas.microsoft.com/office/2018/10/relationships/comments",
 				"<p188:cmLst xmlns:p188=\"" + p188 + "\" xmlns:a=\"" + A + "\"><p188:cm id=\"{8F3CEB8C-E68C-084F-8002-53BA267FBCD2}\""
 				+ " authorId=\"{D66C2D0B-8267-47C3-1395-767C976A08A1}\" created=\"2026-05-18T23:01:55.033\">"
-				+ "<p188:pos x=\"1\" y=\"1\"/><p188:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang=\"en-US\"/>"
-				+ "<a:t>Modern comment about Quibblex</a:t></a:r></a:p></p188:txBody>"
+				+ "<pc:sldMkLst xmlns:pc=\"http://schemas.microsoft.com/office/powerpoint/2013/main/command\"><pc:docMk/><pc:sldMk cId=\"0\" sldId=\"" + sldId + "\"/></pc:sldMkLst>"
+				+ "<p188:pos x=\"1\" y=\"1\"/>"
 				+ "<p188:replyLst><p188:reply id=\"{1F3CEB8C-E68C-084F-8002-53BA267FBCD3}\" authorId=\"{D66C2D0B-8267-47C3-1395-767C976A08A1}\""
 				+ " created=\"2026-05-19T08:00:00.000\"><p188:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>Reply on Zorbling</a:t></a:r></a:p></p188:txBody></p188:reply></p188:replyLst>"
+				+ "<p188:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang=\"en-US\"/>"
+				+ "<a:t>Modern comment about Quibblex</a:t></a:r></a:p></p188:txBody>"
 				+ "</p188:cm></p188:cmLst>");
 		slide.addTargetPart(modernComments);
 		return pkg;
@@ -365,7 +370,30 @@ public class AnonymizePptxProbesTest {
 
 	// ---- gap 4: media, objects, fonts - STRICT removes with a footprint, KEEP keeps and reports
 
+	/** an entry of a zip resource (the embedded workbook of loadAndSave.pptx) */
+	static byte[] zipEntry(String resource, String entry) throws Exception {
+		try (java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(
+				new ByteArrayInputStream(AnonymizeProbesTest.resource(resource)))) {
+			java.util.zip.ZipEntry e;
+			while ((e = zis.getNextEntry()) != null) {
+				if (e.getName().equals(entry)) return zis.readAllBytes();
+			}
+		}
+		throw new AssertionError(entry + " not in " + resource);
+	}
+
+	/** the media deck with everything, including the parts no real bytes exist for (the tests) */
 	static PresentationMLPackage mediaDeck() throws Exception {
+		return mediaDeck(true);
+	}
+
+	/**
+	 * A deck with an OLE object (a real embedded workbook, EMF preview), a video (a real
+	 * mp4, poster picture, p14:media), a transition sound (a real wav) and, if asked, an
+	 * ActiveX control and an embedded font whose bytes are junk (docx4j never reads them;
+	 * PowerPoint would, so the deck for the PowerPoint check leaves them out).
+	 */
+	static PresentationMLPackage mediaDeck(boolean withUnreadable) throws Exception {
 		PresentationMLPackage pkg = deck();
 		MainPresentationPart pp = pkg.getMainPresentationPart();
 		SlidePart slide = slide(pkg);
@@ -374,7 +402,7 @@ public class AnonymizePptxProbesTest {
 		// an OLE object: the embedding (a package the tool cannot read) and its preview picture
 		EmbeddedPackagePart xlsx = new EmbeddedPackagePart(new PartName("/ppt/embeddings/Microsoft_Excel_Worksheet1.xlsx"));
 		xlsx.setContentType(new ContentType(ContentTypes.SPREADSHEETML_WORKBOOK));
-		xlsx.setBinaryData(AnonymizeProbesTest.resource("anon/chart.docx")); // any bytes: the tool never reads them
+		xlsx.setBinaryData(zipEntry("loadAndSave.pptx", "ppt/embeddings/Microsoft_Excel_Worksheet.xlsx"));
 		Relationship xlsxRel = slide.addTargetPart(xlsx);
 		// the preview is an EMF, as PowerPoint writes it
 		org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart preview =
@@ -398,7 +426,7 @@ public class AnonymizePptxProbesTest {
 
 		// a video: the media part, its poster picture, a:videoFile and p14:media
 		BinaryPart mp4 = binaryPart("/ppt/media/media1.mp4", "video/mp4",
-				"http://schemas.openxmlformats.org/officeDocument/2006/relationships/video", "not really an mp4".getBytes(StandardCharsets.UTF_8));
+				"http://schemas.openxmlformats.org/officeDocument/2006/relationships/video", AnonymizeProbesTest.resource("anon/probe.mp4"));
 		Relationship videoRel = slide.addTargetPart(mp4);
 		Relationship mediaRel = rel("http://schemas.microsoft.com/office/2007/relationships/media", "../media/media1.mp4");
 		slide.getRelationshipsPart().addRelationship(mediaRel);
@@ -416,11 +444,13 @@ public class AnonymizePptxProbesTest {
 
 		// a transition sound
 		BinaryPart wav = binaryPart("/ppt/media/audio1.wav", "audio/x-wav",
-				"http://schemas.openxmlformats.org/officeDocument/2006/relationships/audio", "not really a wav".getBytes(StandardCharsets.UTF_8));
+				"http://schemas.openxmlformats.org/officeDocument/2006/relationships/audio", AnonymizeProbesTest.resource("anon/probe.wav"));
 		Relationship wavRel = slide.addTargetPart(wav);
 		slide.getContents().setTransition((org.pptx4j.pml.CTSlideTransition) XmlUtils.unmarshalString(
 				"<p:transition " + NS + "><p:fade/><p:sndAc><p:stSnd><p:snd r:embed=\"" + wavRel.getId() + "\" name=\"zorbling-jingle.wav\"/></p:stSnd></p:sndAc></p:transition>",
 				Context.jcPML, org.pptx4j.pml.CTSlideTransition.class));
+
+		if (!withUnreadable) return pkg;
 
 		// an ActiveX control
 		ActiveXControlXmlPart activeX = new ActiveXControlXmlPart(new PartName("/ppt/activeX/activeX1.xml"));

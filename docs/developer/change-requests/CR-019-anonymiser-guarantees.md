@@ -581,7 +581,7 @@ KEEP) with a README for the PowerPoint check.
 | every corpus deck, STRICT | clean, verified, reloads with docx4j, keeps its slides |
 | LibreOffice renders every STRICT output | 5 of 5 corpus decks and the 3 probe decks to PDF (structural sanity: the chart draws from its caches, the OLE frame shows the labelled placeholder at its size) |
 | docx4j-core-tests, full | 1285 tests, 0 failures, 11 skipped (2026-09-22) |
-| PowerPoint 365 opens the outputs on the share (`fidelity/cr019-pptx/`, README there) | **Jason** — the gate's last row |
+| PowerPoint 365 opens the outputs on the share (`fidelity/cr019-pptx/`, README there) | round 1 (Jason, 2026-09-22): `probe-comments-original` and `-anon` did not open — the probe's 2018 comment lacked the required anchor and had `replyLst` after `txBody` ([MS-PPTX] CT_Comment); `probe-media-original` and `-anon-keep` did not open — junk OLE/mp4/wav bytes. Both are the probes', not the anonymiser's: the comment fixed, the media probe now embeds a real workbook, mp4 and wav (fixtures `anon/probe.mp4`, `probe.wav`), and the parts with no real bytes (ActiveX, font data) sit in a separate `probe-junk-anon` whose STRICT output alone must open. Round 2: **pending** |
 
 ### CHANGELOG entry for 17.2.1 (for Jason to place, after the 17.2.1 anonymiser-in-core entry)
 

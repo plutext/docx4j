@@ -30,6 +30,7 @@ metafile the media probe embeds.
 | pptx-chart.pptx (from docx4j-samples-pptx4j/sample-docs) | a chart with its embedded workbook, printer settings |
 | table.pptx (from docx4j-samples-pptx4j/sample-docs) | a DrawingML table with a table style id |
 | strict.pptx (from docx4j-samples-pptx4j/sample-docs/strict) | an ISO 29500 strict presentation (the preprocessor's PML mapping) |
+| probe.mp4, probe.wav (ffmpeg: one second of blue, 0.2 s of silence) | the media the pptx media probe embeds, real so the probe deck itself opens in PowerPoint |
 
 The pptx probes (`AnonymizePptxProbesTest`) are generated: legacy and 2018
 comments with authors and presence info, notes, hyperlinks, tags, section
