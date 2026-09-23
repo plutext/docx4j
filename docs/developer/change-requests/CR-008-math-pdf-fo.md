@@ -74,24 +74,43 @@ with Word on pathological equations in v1.
 
 ## 3. Design
 
-### Route A — the jeuclid-fop plugin (recommended; proven with FOP 2.11)
+*(Corrected 2026-09-23 to what shipped. Route A shipped in phase 1; Route B, its
+renderer SPI, the SVG sizing and the Route B placement below are the deferred
+escalation, kept as written. The one design decision that changed between the
+draft and the code is the dependency: `jeuclid-fop` is a **regular** dependency
+of docx4j-export-fo, not an optional one — §6 has the reasoning.)*
+
+### Route A — the jeuclid-fop plugin (shipped 2026-09-02; proven with FOP 2.11)
 
 Emit the MathML straight into the FO and let FOP render it via the plugin's
 `ElementMapping`. Our exporter never touches SVG or baselines — the plugin does
 MathML→layout (internally via JEuclid) and sets `alignment-adjust` for the
 baseline itself. Concretely:
 
-- Add optional deps `de.rototor.jeuclid:jeuclid-fop:3.1.14` (+ `jeuclid-core`,
-  both Apache-2.0), **excluding** the plugin's transitive `org.apache.xmlgraphics:fop`
-  so our FOP 2.11 wins.
-- When the plugin is on the classpath, call
-  `JEuclidFopFactoryConfigurator.configure(fopFactory)` after
-  `FORendererApacheFOP` builds the `FopFactory` (reflectively, so docx4j-export-fo
-  does not hard-depend on it).
+- `de.rototor.jeuclid:jeuclid-fop:3.1.14` is a regular (compile-scope)
+  dependency of docx4j-export-fo; it brings `jeuclid-core` (both Apache-2.0,
+  ~540 KB together). The plugin's stale transitive `fop`, `fop-core`,
+  `xmlgraphics-commons`, `batik-all`, `commons-logging` and `xml-apis` are
+  **excluded** so the module's newer copies win. (The draft said "optional
+  deps"; §6 rejected `<optional>` because it would deny out-of-the-box math for
+  a 540 KB saving.)
+- `FORendererApacheFOP.getFOUserAgent` calls
+  `JEuclidFopFactoryConfigurator.configure(fopFactory)` reflectively - the one
+  chokepoint every build path funnels through - so `module-info` needs no
+  `requires` on jeuclid, and a consumer who excludes the jars gets the fallback
+  below rather than `NoClassDefFoundError`. `isMathMLRendererAvailable()` probes
+  the class once per JVM; when absent it logs once at INFO ("No MathML renderer
+  (jeuclid-fop) on the classpath; equations in PDF will be rendered as text").
 - Both FO pathways emit, for each `m:oMath`/`m:oMathPara`,
-  `<fo:instream-foreign-object>` wrapping the MathML DOM from `OmmlToMathML`. If
-  the plugin is absent, fall back to the equation's text (emitting bare MathML
-  without the plugin would make FOP error on the unknown foreign namespace).
+  `<fo:instream-foreign-object>` wrapping the MathML DOM from `OmmlToMathML`
+  (`XsltFOFunctions.mathToFO`). If the plugin is absent, or `OmmlToMathML`
+  throws, the equation's text is emitted instead (emitting bare MathML without
+  the plugin would make FOP error on the unknown foreign namespace).
+- JPMS: the jeuclid jars carry no module descriptor and derive as the automatic
+  modules `jeuclid.fop` / `jeuclid.core`. On the classpath, or on the module
+  path with them resolved (for instance `--add-modules ALL-MODULE-PATH`), the reflective
+  registration works; on the module path unresolved, the probe fails and the
+  text fallback applies. Measured on JDK 21.
 
 This is by far the least code: no SVG conversion, no baseline maths, no viewport
 normalisation in docx4j. The spike (see status) confirmed it renders correctly on
@@ -137,14 +156,16 @@ Renderer discovery: reflective/optional (docx4j's pattern for optional
 exporters). If no renderer is on the classpath, log once and fall back to the
 equation's text (the FO exporter must never fail because math can't render).
 
-### Renderer 1 — JEuclid (JVM-native, first)
+### Renderer 1 — JEuclid (JVM-native, first) — Route B only
 
-`de.rototor.jeuclid:jeuclid-core:3.1.14` — a JDK-11/Batik-1.x fork of JEuclid,
-**Apache-2.0**, on Maven Central. Use `jeuclid-core`'s converter (MathML DOM →
-SVG DOM) — NOT `jeuclid-fop` (which pins FOP 2.3-era extension APIs; we feed FOP
-plain SVG instead, so FOP's version is irrelevant). JEuclid already computes the
-baseline; we normalise its SVG viewport to points and fill in `MathGraphic`.
-Optional dependency, isolated (see Placement).
+Under Route B the exporter would use `jeuclid-core`'s converter (MathML DOM →
+SVG DOM) directly, not `jeuclid-fop`, since it would feed FOP plain SVG and
+FOP's extension API version would no longer matter. JEuclid already computes
+the baseline; we would normalise its SVG viewport to points and fill in
+`MathGraphic`. (Route A, as shipped, uses `jeuclid-fop` and lets the plugin do
+all of this inside FOP; the "NOT jeuclid-fop" of the draft applied to Route B
+alone. The spike's worry that jeuclid-fop "pins FOP 2.3-era extension APIs" did
+not materialise: it works on FOP 2.11 unmodified.)
 
 ### Renderer 2 — MathJax (higher fidelity, later)
 
@@ -177,19 +198,25 @@ alignment-adjust = -(depth / height) * 100 %
 
 ### Placement
 
-- SPI (`MathMLRenderer`, `MathGraphic`) in `docx4j-core`
-  (`org.docx4j.convert.out.mathml`), beside `OmmlToMathML` — no new deps.
-- The JEuclid implementation + the FO emitter helper in `docx4j-export-fo`
-  (which already owns FOP/Batik), with `jeuclid-core` as an **optional**
-  dependency loaded reflectively. (Alternative: a `docx4j-export-fo-math`
-  satellite module. Decide in phase 1 — reflective-optional keeps module count
-  down and matches the documents4j/microsoft-graph precedent.)
+As shipped (Route A): everything in `docx4j-export-fo`, which already owns
+FOP/Batik - the dependency, the reflective registration in
+`FORendererApacheFOP`, and the emitter helper `XsltFOFunctions.mathToFO`.
+`docx4j-core` gained nothing but the export of `org.docx4j.convert.out.mathml`
+from its module-info, so the exporter can reach `OmmlToMathML`. No satellite
+module: one module for one dependency was not worth it, and the reflective
+registration gives the same graceful degradation the documents4j and
+microsoft-graph modules get.
+
+If Route B ships: the SPI (`MathMLRenderer`, `MathGraphic`) in `docx4j-core`
+(`org.docx4j.convert.out.mathml`), beside `OmmlToMathML` - no new deps - and
+the JEuclid implementation in `docx4j-export-fo`.
 
 ### Wiring (both FO pathways, once)
 
-- `XsltFOFunctions.mathToFO(context, node, fontSizePt)` — the shared helper:
-  unmarshal `m:oMath`/`m:oMathPara` → `OmmlToMathML` → `MathMLRenderer` →
-  `fo:instream-foreign-object`. Returns a `DocumentFragment`.
+- `XsltFOFunctions.mathToFO` — the shared helper: unmarshal
+  `m:oMath`/`m:oMathPara` → `OmmlToMathML` → `fo:instream-foreign-object`
+  (Route B would insert `MathMLRenderer` before the last step). Returns a
+  `DocumentFragment`.
 - XSLT pathway: `docx2fo.xslt` gets `m:oMath` / `m:oMathPara` templates that
   `xsl:copy-of` the helper's result (exactly like the HTML `convertMathML`).
 - Visitor pathway: `FOExporterVisitorGenerator` gets the `m:oMath` /
