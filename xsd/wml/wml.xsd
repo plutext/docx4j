@@ -12655,7 +12655,8 @@ PRINCIPLES:
 				
 			</xsd:element>
 			
-	        <xsd:element ref="w15:chartTrackingRefBased" minOccurs="0" maxOccurs="1"/>
+	        <!-- Word writes w14:docId, w15:chartTrackingRefBased, w15:docId (in that order; measured
+	             on Word 365 output, 17.2.1). Word Online writes w15:chartTrackingRefBased first. -->
 	        <xsd:element ref="w14:docId" minOccurs="0" maxOccurs="1">
 		       <xsd:annotation>
 		          <xsd:appinfo>
@@ -12663,6 +12664,7 @@ PRINCIPLES:
 		          </xsd:appinfo>
 		       </xsd:annotation>
 		   </xsd:element>
+	        <xsd:element ref="w15:chartTrackingRefBased" minOccurs="0" maxOccurs="1"/>
    	        
 	        <xsd:element ref="w15:docId" minOccurs="0" maxOccurs="1">
 		       <xsd:annotation>

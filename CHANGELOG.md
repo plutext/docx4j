@@ -49,6 +49,12 @@ Packaging (CR-026):
   VMLPart.getContents() now returns the shapes; a strict workbook with a comment
   saves. Inline VML (w:pict) is unaffected. Schema change: the ports regenerate.
 
+WordprocessingML:
+
+- The settings part's w14:docId, w15:chartTrackingRefBased and w15:docId are
+  written in Word's order (the schema had w15:chartTrackingRefBased first, so a
+  save reordered them). Schema change: the ports regenerate.
+
 Strict (ISO/IEC 29500) packages:
 
 - Saving a package which was Strict now converts every part, whichever part
