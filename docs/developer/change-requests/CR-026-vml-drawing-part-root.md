@@ -393,15 +393,27 @@ for whoever writes its strict-conversion CR: the two pull in opposite
 directions, and converting eagerly at load — giving up the byte-for-byte
 round trip — is effectively what docx4j does.
 
-### Left for later (from this CR)
+### Done after this CR, from the same thread (2026-09-23)
 
-- **A clearer failure when a strict package holds a part docx4j cannot read.**
-  This CR removed the only known one, but the class of failure remains for any
-  part the binding cannot take: the save dies with `Failed to add parts from
-  relationships of /` and three nested causes, where what it means is "this
-  part cannot be converted, so the package cannot be saved as transitional".
-  Worth a caught-and-rethrown message naming the part and saying that; not
-  done here, since nothing in the corpus now provokes it.
+- **The failure names the part.** A part of a strict package which cannot be
+  read is fatal to the save, because every part has to be converted; the save
+  used to die with `Failed to add parts from relationships of /` and three
+  nested causes. `PartStore.readSoTheSaveIsTransitional` now says what it means
+  and names the part (Jason: "the part name is very useful diagnostic data").
+- **`UnzippedPartStore` had no strict branch at all**, found while looking for
+  where to put that message: it copied every untouched part verbatim, so an
+  unzipped save of a strict package after reading any part wrote that part
+  transitional and the rest strict — one package carrying both dialects, which
+  is the very failure mode I had gone looking for in a *port*. It now converts
+  as `ZipPartStore` does.
+- `StrictSaveTest` holds both stores and the message; it also pins a cosmetic
+  residue worth knowing about, since it costs time to chase: a converted part
+  can still *mention* `purl.oclc.org` in unused namespace declarations carried
+  by a DOM-kept extension element (`xcalcf:calcFeatures` in `xl/workbook.xml`),
+  with nothing actually in that namespace.
+- Recorded across the ports in `../docx4j-portfolio/docs/strict_ooxml_across_ports.md`
+  §8, with core-ts's measurement that it cannot produce a mixed package either,
+  by the opposite means.
 
 **Sent to `docx4j-generated-objects-ts` 2026-09-23**, to be done before its
 next release: the two xsd files and what changed in each, that `b4ca0d98a` is

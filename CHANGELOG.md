@@ -49,6 +49,19 @@ Packaging (CR-026):
   VMLPart.getContents() now returns the shapes; a strict workbook with a comment
   saves. Inline VML (w:pict) is unaffected. Schema change: the ports regenerate.
 
+Strict (ISO/IEC 29500) packages:
+
+- Saving a package which was Strict now converts every part, whichever part
+  store is used. UnzippedPartStore had no such branch, so saving a strict
+  package to a directory after reading any part wrote that part in the
+  transitional namespaces and the rest still in purl.oclc.org's - one package
+  carrying both dialects. Saving to a zip was already correct.
+
+- When a part of a strict package cannot be read, the exception says so and
+  names the part, rather than reporting three nested "failed to add parts from
+  relationships". Such a part is fatal to the save, because every part has to
+  be converted.
+
 SpreadsheetML:
 
 - The namespace prefixes xr5 and xr9 are known. Excel names xr9 in styles.xml's

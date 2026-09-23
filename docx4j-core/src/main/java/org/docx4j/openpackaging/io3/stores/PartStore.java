@@ -112,6 +112,32 @@ public interface PartStore {
 
 	public void saveJaxbXmlPart(JaxbXmlPart part) throws Docx4JException;
 
+	/**
+	 * Reads a part of a package which was ISO/IEC 29500 Strict, so that the part
+	 * store writes it transitional.
+	 * <p>
+	 * docx4j converts a strict package part by part, the first time each part is
+	 * read, and never writes strict; so on save every part which nobody read has to
+	 * be read now, or the output would carry the two dialects at once - the parts
+	 * something touched in the transitional namespaces and the rest still in
+	 * purl.oclc.org's. A part docx4j cannot read is therefore fatal to the save,
+	 * and this says so, naming the part: the underlying exception is three or four
+	 * causes down by the time a caller sees it, and the part name is the diagnostic
+	 * that matters.
+	 *
+	 * @since 17.2.1
+	 */
+	static void readSoTheSaveIsTransitional(JaxbXmlPart<?> part) throws Docx4JException {
+		try {
+			part.getContents();
+		} catch (Exception e) {
+			throw new Docx4JException("Can't save this package: it was ISO/IEC 29500 Strict, so docx4j must convert "
+					+ "every part to transitional as it saves, and the part " + part.getPartName().getName()
+					+ " could not be read (" + e.getMessage() + "). Until that part can be read, this package can only "
+					+ "be saved by a docx4j which does not need to convert it.", e);
+		}
+	}
+
 	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part) throws Docx4JException;
 
 	public void saveXmlPart(XmlPart part) throws Docx4JException;

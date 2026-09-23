@@ -424,10 +424,11 @@ public class ZipPartStore implements PartStore {
 	        	part.marshal( zos );	        	
 	        } else if (part.getPackage() != null 
 	        		&& part.getPackage().isWasStrict() ) {
-	        	// import strict, save as transitional
-	        	// we need to unmarshall to import.
+	        	// import strict, save as transitional: a part nobody read is still strict,
+	        	// so it has to be read now rather than copied, or the output would mix the
+	        	// two dialects. A part which cannot be read names itself in the exception.
 	        	log.debug("unmarshalling " + part.getPartName() );
-	        	part.getContents();
+	        	PartStore.readSoTheSaveIsTransitional(part);
 	        	log.debug("marshalling " + part.getPartName() );
 	        	part.marshal( zos );
 	        } else {

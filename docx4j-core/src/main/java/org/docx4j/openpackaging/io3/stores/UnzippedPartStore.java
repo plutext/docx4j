@@ -209,6 +209,21 @@ public class UnzippedPartStore implements PartStore {
 	        	part.marshal( fos );
 		        fos.close();
 
+	        } else if (part.getPackage() != null
+	        		&& part.getPackage().isWasStrict() ) {
+
+	        	// as ZipPartStore: a package which was strict is saved transitional, so the
+	        	// parts nobody read are converted now rather than copied. Until 17.2.1 this
+	        	// branch was missing here, so an unzipped save of a strict package wrote the
+	        	// parts something had read in the transitional namespaces and the rest still
+	        	// in purl.oclc.org's - one package carrying both dialects.
+	        	log.debug("unmarshalling " + part.getPartName() );
+	        	PartStore.readSoTheSaveIsTransitional(part);
+				FileOutputStream fos = new FileOutputStream(file);
+	        	log.debug("marshalling " + part.getPartName() );
+	        	part.marshal( fos );
+		        fos.close();
+
 	        } else {
 
 	        	if (!file.exists()
