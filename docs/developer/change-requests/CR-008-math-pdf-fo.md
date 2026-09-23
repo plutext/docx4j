@@ -1,8 +1,11 @@
 # CR: Math in PDF output (OMML → MathML → SVG → XSL-FO → FOP)
 
-Status: **IN PROGRESS.** Phase 1 (plugin wiring) DONE 2026-09-02 (6e45920c7; XSLT pathway
-2c894ff1a, 2026-09-04); phase 2 largely satisfied; phase 3 (Route B) deferred; phase 4 (docs +
-CHANGELOG) open — see §5.  (Status corrected 2026-09-15; it had read PROPOSED, no code yet.)
+Status: **DONE 2026-09-23.** Phase 1 (plugin wiring) DONE 2026-09-02 (6e45920c7; XSLT pathway
+2c894ff1a, 2026-09-04); phase 2 satisfied by the real-world validation; phase 3 (Route B)
+deferred, not rejected; phase 4 DONE 2026-09-23 — the Getting Started guide's "docx to PDF via
+XSL FO" section has an "Equations" paragraph (what happens, no configuration, the no-wrap
+limitation, a link to docs/Maths_from_Markdown.md); the CHANGELOG entry had been in the 17.0.4
+section since phase 1 shipped.  (Status corrected 2026-09-15; it had read PROPOSED, no code yet.)
 Proposed 2026-09-02 as a follow-on to CR-007-math-omml-mathml
 (which gave us native OMML⇄MathML with no Microsoft XSLT).
 
@@ -229,8 +232,13 @@ spike reversed that — it is now Route A, the recommended approach.)
    `MathGraphic` SPI + point-normalised SVG, a `JEuclidMathMLRenderer` and/or a
    `MathJaxMathMLRenderer` (GraalJS first), and switch the emitter to embed SVG
    instead of MathML.
-4. **Docs + CHANGELOG.** How to enable (add the jeuclid deps), the fallback
-   behaviour, and — if Route B ships — the renderer SPI for MathJax/other.
+4. **Docs + CHANGELOG. DONE 2026-09-23.** As shipped there is nothing to enable:
+   jeuclid-fop is a regular dependency of docx4j-export-fo (§6), not the optional
+   dependency this item and §3 had assumed. The Getting Started guide says what
+   happens and the no-wrap limitation, and points at docs/Maths_from_Markdown.md
+   for the pipeline; the CHANGELOG (17.0.4 section) records the dependency and the
+   text fallback. The renderer SPI stays undocumented because Route B has not
+   shipped.
 
 ### Real-world validation (2026-09-02)
 

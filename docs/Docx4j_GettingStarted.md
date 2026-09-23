@@ -1273,13 +1273,17 @@ See generally [https://github.com/plutext/java-docx-to-pdf-using-Microsoft-Graph
 
 If Word is not available, you can generate PDF output via XSL FO using FOP.  If you want to use the existing XSL FO + Apache FOP PDF Conversion, just add docx4j-export-fo (+ deps) to your classpath.  If docx4j detects that they are present, it will revert to this FO based conversion.
 
-From 17.0.4, the visitor (non-XSLT) FO exporter is likewise the default (pass Docx4J.FLAG\_EXPORT\_PREFER\_XSL for the XSLT pathway), and equations in the docx are rendered in the PDF, via the JEuclid FOP plugin which docx4j-export-fo now includes.
+From 17.0.4, the visitor (non-XSLT) FO exporter is likewise the default (pass Docx4J.FLAG\_EXPORT\_PREFER\_XSL for the XSLT pathway).
 
 PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 and17.2.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
 
 See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
 These jars are in the zip file, in dir optional/export-fo  
+
+**Equations.  **From 17.0.4, equations in the docx are rendered in the PDF.  Both FO pathways emit the equation as MathML inside fo:instream-foreign-object, and the JEuclid FOP plugin lays it out and draws it as vector paths, so no maths font has to be present and nothing needs configuring per document.
+
+One limitation: an equation is a single graphic, so a very long display equation overflows the margin instead of wrapping (Word cannot break inside an equation either).  Everything within the page width renders correctly.  For the whole maths pipeline - Markdown, docx, HTML and PDF - see docs/Maths\_from\_Markdown.md.
 
 **Two FO renderers.  **From 17.2.0 docx4j-export-fo supports two: 
 
