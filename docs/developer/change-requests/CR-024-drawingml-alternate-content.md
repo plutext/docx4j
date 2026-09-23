@@ -330,6 +330,30 @@ Jason's second look (2026-09-20): the three re-cut `.xlsx`
 (`cr022-checkbox-resaved.xlsx`, `cr022-slicers-timelines-resaved.xlsx`,
 `loadAndSave-resaved.xlsx`) open properly in Excel. Gate passed.
 
+### Follow-up: the graphicData and vmlDrawing wildcards are lax (2026-09-24)
+
+Raised by docx4j-core-ts from its CR-004 phase A and confirmed, measured, by
+docx4j-generated-objects-ts. `xsd/dml/dml-graphicalObject.xsd` declared the
+`a:graphicData` wildcard `processContents="strict"`, and `xsd/vml/vml__ROOT.xsd`
+(CR-026) the vmlDrawing root's `##any` wildcard likewise. A generator which
+follows the word makes the content typed-only, so a graphic the model does not
+bind was fatal to the part: docx4j's own `cr022-slicers-timelines.xlsx`,
+`xl/drawings/drawing1.xml`, whose kept `a14` branch frames a 2010 slicer, failed
+to unmarshal in that package with only `a14` understood (which every consumer
+understands), and a vmlDrawing part with a single unbound child appended threw
+and lost the whole part - a vmlDrawing part being where Office parks the legacy
+content nobody models. XJC had bound both wildcards `@XmlAnyElement(lax = true)`
+all along, so docx4j keeps what it types and the rest as DOM and never saw
+either; the word is now `lax` in both, which is what the Java model did and what
+both consumers want (CR-021 §8.12 is the precedent, for the mce wildcards).
+
+Measured here: the regenerated sources differ in `GraphicData` and
+`vml.root.Xml` only, by the javadoc's schema fragment and an `org.w3c.dom.Element`
+import; the same shipped classes, byte for byte in behaviour. No wildcard in
+`xsd/` says `strict` any more. CHANGELOG 17.2.1 has a "Schemas" line; objects-ts
+holds `drawing1.xml` as a fidelity fixture with the failure recorded against
+docx4j, which its next regeneration from this commit forces out.
+
 ## 11. Effort (rough)
 
 Phase 1 half a day (the schema edits are small; the regeneration and two

@@ -49,6 +49,12 @@ Packaging (CR-026):
   VMLPart.getContents() now returns the shapes; a strict workbook with a comment
   saves. Inline VML (w:pict) is unaffected. Schema change: the ports regenerate.
 
+Schemas (for the ports which generate from them; docx4j's own binding is unchanged):
+
+- The wildcards in a:graphicData and in a vmlDrawing part's root are processContents="lax",
+  not "strict": a generator which follows the word made a graphic or a legacy-drawing child
+  the model does not bind fatal to the part, where docx4j keeps it as DOM.
+
 WordprocessingML:
 
 - The settings part's w14:docId, w15:chartTrackingRefBased and w15:docId are

@@ -51,8 +51,13 @@
 			</xsd:appinfo>
 		</xsd:annotation>		
 		<xsd:sequence>
+			<!-- lax, not strict: a graphic the model does not bind (a slicer, a chart
+			     extension, whatever Office adds next) stays as DOM instead of failing
+			     the part. XJC bound "strict" as @XmlAnyElement(lax = true) anyway, so
+			     the Java model is unchanged; the word matters to generators which
+			     follow it (CR-024 §10, as CR-021 §8.12 did for the mce wildcards). -->
 			<xsd:any minOccurs="0" maxOccurs="unbounded"
-				processContents="strict">
+				processContents="lax">
 			</xsd:any>
 			<!-- 
 			At one point, replaced this with 			
