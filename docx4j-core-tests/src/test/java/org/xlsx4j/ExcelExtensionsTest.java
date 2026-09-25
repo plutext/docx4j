@@ -50,6 +50,8 @@ import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTTi
 import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTTimelineRefs;
 import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.main.CTTimelineStyles;
 import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision.CTRevisionPtr;
+import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures.CTCalcFeature;
+import org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures.CTCalcFeatures;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.CTExtension;
 import org.xlsx4j.sml.CTExtensionList;
@@ -165,6 +167,27 @@ public class ExcelExtensionsTest {
 		}
 		assertNotNull(table);
 		assertEquals("xr xr3", table.getContents().getIgnorable());
+	}
+
+	/**
+	 * CR-027 phase 2: xcalcf:calcFeatures, which Excel writes in every workbook's extLst
+	 * (ext uri {B58B0392-4F1F-4190-BB64-5DF3571DCE5F}), is typed rather than DOM, and a
+	 * save writes it with Excel's prefix.
+	 */
+	@Test
+	public void calcFeaturesTyped() throws Exception {
+		SpreadsheetMLPackage pkg = SpreadsheetMLPackage.load(ResourceUtils.getResource("loadAndSave.xlsx"));
+		CTCalcFeatures features = ext(pkg.getWorkbookPart().getContents().getExtLst(), CTCalcFeatures.class);
+		assertTrue(features.getFeature().size() >= 3);
+		boolean rd = false;
+		for (CTCalcFeature f : features.getFeature()) {
+			if ("microsoft.com:RD".equals(f.getName())) rd = true;
+		}
+		assertTrue("microsoft.com:RD among the features", rd);
+
+		String workbook = entry(save(pkg), "xl/workbook.xml");
+		assertTrue(workbook, workbook.contains("<xcalcf:calcFeatures>"));
+		assertTrue(workbook, workbook.contains("<xcalcf:feature name=\"microsoft.com:RD\"/>"));
 	}
 
 	@Test

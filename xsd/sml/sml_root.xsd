@@ -100,6 +100,8 @@ REVISION HISTORY
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3" schemaLocation="../xlsx/office_spreadsheetml_2016_revision3.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision9" schemaLocation="../xlsx/office_spreadsheetml_2016_revision9.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2017/revision16" schemaLocation="../xlsx/office_spreadsheetml_2017_revision16.xsd" />
+  <!-- calcFeatures in the workbook's extLst (docx4j 17.2.1, CR-027 phase 2): a global element, typed through CT_Extension's wildcard -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures" schemaLocation="../xlsx/office_spreadsheetml_2018_calcfeatures.xsd" />
 
   <xsd:include schemaLocation="sml_ECMA376_4ed_transitional.xsd" />
   

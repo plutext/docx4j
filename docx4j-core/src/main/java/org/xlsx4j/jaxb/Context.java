@@ -69,7 +69,9 @@ public class Context {
 					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2010.x11.ac:" +
 					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2011.x1.ac:" +
 					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.x11.main:" +
-					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision",classLoader, ProviderProperties.getProviderProperties() );
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision:" +
+					// xcalcf:calcFeatures in the workbook's extLst (CR-027 phase 2). xr2, xr3, xr9 and xr16 are attribute-only.
+					"org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures",classLoader, ProviderProperties.getProviderProperties() );
 				
 			
 			

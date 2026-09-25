@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures"
+	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures"
+	elementFormDefault="qualified"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	jaxb:version="3.0">
+
+<!--
+	[MS-XLSX] revision 29.1 (2026-05-19), section 5.22 "http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures Schema",
+	https://learn.microsoft.com/en-us/openspecs/office_standards/ms-xlsx/6c4054c8-05a9-49dc-baa9-13e5a6282989
+	Taken from the HTML section page on 2026-09-25 (CR-027 phase 2; docs/developer/adding-a-schema.md,
+	"obtaining the schema"). Re-take it from the same page; the body below is the page's text apart from:
+	  - the page's import of the main schema (xlbasictypes.xsd) dropped: nothing here references it
+	  - the JAXB package annotation
+	Excel writes calcFeatures in the workbook's extLst (ext uri="{B58B0392-4F1F-4190-BB64-5DF3571DCE5F}"),
+	reached through CT_Extension's lax wildcard; the global element below is what types it.
+-->
+
+  <xsd:annotation>
+    <xsd:appinfo>
+      <xsd:appinfo>
+        <jaxb:globalBindings>
+        </jaxb:globalBindings>
+      </xsd:appinfo>
+      <jaxb:schemaBindings>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures"/>
+      </jaxb:schemaBindings>
+    </xsd:appinfo>
+  </xsd:annotation>
+
+  <xsd:element name="calcFeatures" type="CT_CalcFeatures"/>
+  <xsd:complexType name="CT_CalcFeatures">
+    <xsd:sequence>
+      <xsd:element name="feature" minOccurs="1" maxOccurs="unbounded" type="CT_CalcFeature"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CalcFeature">
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+</xsd:schema>

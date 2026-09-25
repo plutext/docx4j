@@ -554,6 +554,8 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "x16r2";  // [MS-XLSX] 5.11 formatCode16; Excel names it in styles.xml's mc:Ignorable (CR-024)
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/2019/extlst"))
 			return "oel";  // an extLst namespace Office 365 declares on many parts (CR-024)
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures"))
+			return "xcalcf";  // [MS-XLSX] 5.22 calcFeatures in the workbook's extLst, typed since CR-027
 		// the slicer and timeline shapes' Requires prefixes (kept whole in a spreadsheet drawing's
 		// mc:AlternateContent since CR-024; the schemas themselves are not bound)
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2010/slicer"))
@@ -833,6 +835,8 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "http://schemas.microsoft.com/office/spreadsheetml/2015/02/main";
 		if (prefix.equals("oel"))
 			return "http://schemas.microsoft.com/office/2019/extlst";
+		if (prefix.equals("xcalcf"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2018/calcfeatures";
 		if (prefix.equals("sle"))
 			return "http://schemas.microsoft.com/office/drawing/2010/slicer";
 		if (prefix.equals("sle15"))

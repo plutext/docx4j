@@ -61,6 +61,10 @@ Schemas:
 - b:Sources keeps Word's Version attribute (not in ECMA-376; every bibliography part Word
   saves has it, and the typed part lost it).
 
+- xcalcf:calcFeatures, which Excel writes in every workbook's extLst, is typed
+  (org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures) rather than DOM,
+  and is written with Excel's prefix (CR-027 phase 2).
+
 - For the ports which generate from the schemas (docx4j's own binding is unchanged): the
   wildcards in a:graphicData and in a vmlDrawing part's root are processContents="lax",
   not "strict"; a generator which follows the word made a graphic or a legacy-drawing child

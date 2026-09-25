@@ -84,7 +84,7 @@ public class StrictSaveTest {
 	 * DOM-kept extension element (an unbound extLst child) carries the
 	 * declarations which were in scope where it was parsed, so a converted part
 	 * can have a stray xmlns="purl..." on such a node with nothing in it - see
-	 * {@link #theOnlyStrictLeftIsAnUnusedDeclaration()}.
+	 * {@link #noStrictDeclarationLeftEither()}.
 	 */
 	static List<String> partsWithStrictElements(byte[] saved) throws Exception {
 		List<String> strict = new ArrayList<String>();
@@ -203,16 +203,18 @@ public class StrictSaveTest {
 	}
 
 	@Test
-	public void theOnlyStrictLeftIsAnUnusedDeclaration() throws Exception {
-		// pinned because it is confusing to meet: workbook.xml of the saved package still
-		// mentions purl.oclc.org, on the DOM-kept xcalcf:calcFeatures extension element,
-		// which carries the namespace declarations which were in scope where it was parsed.
-		// Every element in that subtree is in the xcalcf namespace, so the declarations are
-		// unused - the part is transitional - but a text search for "purl" finds them.
+	public void noStrictDeclarationLeftEither() throws Exception {
+		// Until CR-027 phase 2 this pinned a confusing artefact: workbook.xml of the saved
+		// package still mentioned purl.oclc.org, on the DOM-kept xcalcf:calcFeatures
+		// extension element, which carried the namespace declarations in scope where it
+		// was parsed (unused - every element in that subtree is xcalcf's - so the part was
+		// transitional, but a text search for "purl" found them). calcFeatures is typed now,
+		// so the saved workbook carries no strict namespace at all, declared or used.
 		OpcPackage pkg = OpcPackage.load(new ByteArrayInputStream(resource(STRICT)));
 		byte[] workbook = xmlParts(save(pkg)).get("xl/workbook.xml");
-		assertTrue("the declaration is there", new String(workbook, StandardCharsets.UTF_8).contains(PURL));
-		assertFalse("but nothing is in that namespace", hasStrictElement(parse(workbook).getDocumentElement()));
+		assertFalse("no purl.oclc.org declaration", new String(workbook, StandardCharsets.UTF_8).contains(PURL));
+		assertFalse("nothing in a strict namespace", hasStrictElement(parse(workbook).getDocumentElement()));
+		assertTrue("the extension is there, typed", new String(workbook, StandardCharsets.UTF_8).contains("<xcalcf:calcFeatures>"));
 	}
 
 	/** the same package with one part's bytes replaced */

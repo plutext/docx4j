@@ -128,6 +128,7 @@ module org.docx4j.generated_objects {
     exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2011.x1.ac;
     exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.x11.main;
     exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision;
+    exports org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures;
 
     opens org.docx4j.bibliography; //  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 
@@ -251,4 +252,5 @@ module org.docx4j.generated_objects {
     opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2011.x1.ac;
     opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.x11.main;
     opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision;
+    opens org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures;
 }

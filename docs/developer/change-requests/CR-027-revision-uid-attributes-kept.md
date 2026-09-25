@@ -1,6 +1,6 @@
 # CR-027: Excel's revision `uid` attributes and Word's bibliography `Version` kept on a round trip - `xr3`, `xr9`, `xr16` bound, `xcalcf` typed
 
-Status: IN PROGRESS - phase 1 (the attributes) landed 2026-09-25 (§10 record; the Excel and Word check on the share `fidelity/cr027-uid/` awaits Jason); phase 2 (`xcalcf`) next. Proposed 2026-09-25, written by `docs/developer/adding-a-schema.md`
+Status: DONE 2026-09-25, both phases (§10 records; phase 1 b1fa34947); the Excel and Word check on the share `fidelity/cr027-uid/` awaits Jason's verdict, recorded in §10 when it comes. Proposed 2026-09-25, written by `docs/developer/adding-a-schema.md`
 step 0; the item CR-022 §20 left for "one small CR" (the remaining revision
 attributes and `xcalcf`). Found by docx4j-generated-objects-ts's CR-004 phase
 B (237 parts of twelve docx4j test documents through its package) and
@@ -256,6 +256,35 @@ for the tree's shape.
 | `RevisionUidAttributesTest`, `BibliographyPartTest`, `ExcelExtensionsTest`, `IgnorablePrefixesDeclaredTest` | 17 tests, 0 failures |
 | `docx4j-core-tests`, full | 1328 tests, 0 failures, 11 skipped |
 | Office check (Excel 365 and Word, Jason; the share's `fidelity/cr027-uid/`, README there) | **awaiting Jason**: `cr022-data-model-saved.xlsx`, `strict-invoice-saved.xlsx`, `loadAndSave-saved.xlsx`, `loadAndSave-saved.docx`, each every part unmarshalled then saved |
+
+### Phase 2 record (2026-09-25)
+
+| | |
+|---|---|
+| `xsd/xlsx/office_spreadsheetml_2018_calcfeatures.xsd` | from the [MS-XLSX] page of §3; the page's import of the main schema dropped (nothing referenced), the package annotation added |
+| `xsd/sml/sml_root.xsd` | the import |
+| `module-info.java` | `exports` and `opens` for `org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures` |
+| `org.xlsx4j.jaxb.Context` | the package on `jcSML` |
+| `NamespacePrefixMappings` | `xcalcf` both ways, beside `oel` |
+| regenerated | `CTCalcFeatures`, `CTCalcFeature`, `ObjectFactory`, `package-info`; nothing else moves |
+| `ExcelExtensionsTest.calcFeaturesTyped` | `loadAndSave.xlsx`'s workbook `extLst` yields a typed `CTCalcFeatures` with `microsoft.com:RD` among its features; the save writes `<xcalcf:calcFeatures>` and `<xcalcf:feature name="microsoft.com:RD"/>` |
+| CHANGELOG | one line under "Schemas" |
+
+### Gate (phase 2)
+
+| step | result |
+|---|---|
+| regeneration and `docx4j-core` install | BUILD SUCCESS |
+| `ExcelExtensionsTest` (13), `RevisionUidAttributesTest`, `IgnorablePrefixesDeclaredTest` | 17 tests, 0 failures |
+| `docx4j-core-tests`, full, first run | 1329 tests, **1 failure**: `StrictSaveTest.theOnlyStrictLeftIsAnUnusedDeclaration`, which had pinned a confusing artefact of the strict conversion - the DOM-kept `xcalcf:calcFeatures` carried an unused `purl.oclc.org` declaration in the saved workbook. Typing the element removed the declaration, so the pin turned false for the right reason; the test is now `noStrictDeclarationLeftEither` and asserts the stronger thing (no strict namespace declared or used, and the typed extension present) |
+| `docx4j-core-tests`, full, re-run | 1329 tests, 0 failures, 11 skipped |
+| Office check | folded into phase 1's on the share: `loadAndSave-saved.xlsx` re-cut with the typed extension |
+
+### Hand-offs (2026-09-25)
+
+objects-ts, python and core-ts messaged with the two commit hashes, the files, and
+what changes in the model; objects-ts's two `KNOWN_MISSING_ATTRIBUTES` records are
+the check that the fix landed. Registry: `docx4j/CR-027`, `.1`, `.2` done.
 
 ## 11. Effort (rough)
 
