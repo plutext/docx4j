@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
@@ -6265,6 +6266,35 @@ public final class Corpus {
 					.run(d.textBox(5000, 1200, Doc.paragraphsXml(choice2), Doc.paragraphsXml(fallback2)))
 					.after(120).add();
 			d.para("after.").before(240).add();
+			return d.pkg();
+		}));
+
+		// ---------------------------------------------------------- astral characters (CR-020 P2-1)
+		PROBES.add(new Probe("surrogate-pairs",
+				"characters outside the BMP - an emoji (U+1F600) and a CJK Extension B ideograph"
+				+ " (U+20000), each a surrogate pair in Java - at the end of a run, at the end of a"
+				+ " paragraph, inside a right-to-left run beside Arabic, and where the pair falls on a"
+				+ " font change: FOP's word scanner split a pair across word fragments when a bidi"
+				+ " level or a per-character font change ended the word, and its surrogate test"
+				+ " threw on a high surrogate in the last position (fork P2-1; Metanorma #39)", () -> {
+			Doc d = Doc.create(15);
+			String emoji = new String(Character.toChars(0x1F600));
+			String extB = new String(Character.toChars(0x20000));
+			// the pair in the last position of a run and of a paragraph
+			d.para("An emoji ends this run " + emoji).after(120).add();
+			d.para("An Extension B ideograph ends this paragraph " + extB).after(120).add();
+			// a pair on each side of a font change, so per-character font selection ends a word there
+			d.para("Font change on the pair: ").run(emoji + " and " + extB, SANS, 24, null)
+					.text(" then serif " + emoji + " again").after(120).add();
+			// inside a right-to-left run: the bidi level changes at the pair
+			d.para("Right to left: ")
+					.run("\u0645\u0631\u062D\u0628\u0627 " + emoji + " \u0628\u0643", SANS, 24, r -> {
+						r.setRtl(new BooleanDefaultTrue());
+					}).text(" and back to left to right " + emoji).after(120).add();
+			// a run of pairs, so consecutive words are all astral
+			d.para("Only pairs: ").run(emoji + emoji + " " + extB + extB + " " + emoji, SANS, 24, null)
+					.after(120).add();
+			d.para("after.").add();
 			return d.pkg();
 		}));
 
