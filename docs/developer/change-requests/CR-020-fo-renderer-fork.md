@@ -388,11 +388,36 @@ cherry-picked with `-x`, its change notice and README row, the docx4j-side
 change where one is named, and the class gate of `RULE-CLASSES.md` on both
 renderers):
 
-- **P2-1 Surrogate pairs** (M10d): a word is no longer split between a high
-  and its low surrogate at a bidi-level change or a per-character font
-  selection, and `CharUtilities` no longer throws "isolated high surrogate"
-  one character early. Emoji and Extension-B ideographs in docx4j documents
-  hit exactly this. Gate: corpora identical; an emoji probe. Upstream first.
+- **P2-1 Surrogate pairs** (M10d) - DONE, merged to `docx4j-2.11` 2026-09-25
+  (fork tip 4074e0330; the gate as run and the merge are in the P2-1 record
+  below). Under `font-selection-strategy="character-by-character"`,
+  `TextLayoutManager` ended the word wherever per-character font selection
+  changed font, so a word could be cut between a high surrogate and its low
+  surrogate; `MultiByteFont.mapCharsToGlyphs` then rejected the fragment with
+  "ill-formed UTF-16 sequence, contains isolated high surrogate at end of
+  sequence" and no PDF was produced. `MultiByteFont`'s own guard is correct;
+  the word splitting was the defect. Separately, on a path not reached in that
+  failure, `CharUtilities.containsSurrogatePairAt` guarded its end-of-sequence
+  case with `(index + 1) > length`, never true at the last index, so callers got
+  `StringIndexOutOfBoundsException` where the javadoc promises
+  `IllegalArgumentException`; corrected to `>=`. **An earlier version of this
+  bullet attributed the render failure to `CharUtilities`, and said emoji and
+  Extension-B ideographs in docx4j documents hit exactly this. Both were
+  wrong**: the stack above is the measured one, and **docx4j documents do not
+  hit this** (measured 2026-09-25) - docx4j never emits
+  `font-selection-strategy` and splits runs at every font change itself, so a
+  pair never straddles a font change inside one `TextLayoutManager`; a
+  purpose-built astral-character document rendered identically on both jar
+  sets, with no exception on the baseline. The fork carries it because it is a
+  real FOP bug worth sending upstream, and as defence should docx4j's own run
+  splitting ever change, not as a fidelity fix. The bidi-level-change guard is
+  undemonstrated: no case was found in which the two halves of a pair take
+  different levels, so that half is defensive. Coverage:
+  `PDFEncodingTestCase.testPDFEncodingWithNonBMPFontCharacterByCharacter` in
+  the fork's own suite, which fails on the baseline with the exception above;
+  the docx4j-side `surrogate-pairs` probe remains as an astral-character
+  regression but cannot fail on the baseline. Upstream: JIRA drafted, not yet
+  filed.
 - **P2-2 Foreign-XML attribute namespaces** (M12): `XMLObj` resolves a
   prefixed attribute (`xlink:href` on our SVG, MathML) whose declaration sits
   on an ancestor. Gate: an SVG probe declaring `xlink` on `fo:root`. Upstream
