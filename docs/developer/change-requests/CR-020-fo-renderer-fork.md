@@ -552,7 +552,33 @@ would not apply; P2-2 is inert while docx4j's two CR-011 `xmlns:xlink`
 workarounds stand, so it wants a capability signal so they can be dropped;
 P2-6 and P2-7 are two-sided (docx4j emits neither a `japaneseCounting` page
 format nor `pdf:embedded-file`); P2-5's accessibility half is inert unless
-the consumer sets it. The reordering is Jason's call. A first scoring of mine on the raw corpus directory showed 11
+the consumer sets it. The reordering is Jason's call.
+
+**P2-8 design review (2026-09-25; the fork's `fop/CR-001`, 59db34636, §7 is
+the docx4j half).** The premise "docx4j-export-fo has no `w14:ligatures`
+handling" is wrong by module: `RunFontSelector.noLigatures` and
+`FopConfigUtil.noLigaTwin` (docx4j-core, since 17.0.5) already send Latin-only
+spans of runs asking for neither ligatures nor kerning to a `+noliga` twin
+declared `encoding-mode="single-byte"` - the exact design the fork CR's §4
+rejects - so on the common path (TrueType font, Latin text, no kerning) Word's
+"no ligatures" is honoured today, on Apache FOP. The measurement that
+motivated it is in `noLigaTwin`'s javadoc: FOP maps a minted ligature glyph to
+U+E000 in ToUnicode, so a third of a French document's lines extracted with
+"ti" as U+E000 - which also inverts the fork CR's §8 claim that extraction
+cannot see a ligature (it can; a ToUnicode fix upstream is an item in its own
+right). Where the twin does not reach, and so where P2-8 has value: CFF
+substitutes (no twin; FOP would misdescribe the file), runs asking for kerning
+but not ligatures (the `+kern` twin keeps GSUB), mixed-script spans, and the
+positive features - Word 365's Normal template sets `standardContextual` in
+`docDefaults` (measured on the fixtures), asking for `clig`, which FOP's
+default list (`ccmp liga locl`) lacks and the twin cannot add. Mapping
+corrections sent: every value without "standard" subtracts `liga`
+(`contextual` = `-liga +clig`, not `+clig`); `all` = `+clig +hlig +dlig`;
+`cntxtAlts` (`calt`) and `stylisticSets` are the same shape. The docx4j side
+is therefore a replacement of the twin by the hook on the fork, the twin kept
+as the Apache FOP fallback, the delta on the span's `fo:inline` the selector
+already owns (per span, not per block), and the gate adds: TrueType/Latin/
+no-kern runs byte-identical between twin and hook. A first scoring of mine on the raw corpus directory showed 11
 changed documents; the baseline was cut on the re-saved basis, and the re-run
 above is the valid one.
 
