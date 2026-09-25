@@ -12,12 +12,29 @@ Two renderers are supported (docx4j CR-020):
 
 * **Apache FOP 2.11** (`org.apache.xmlgraphics:fop`), the default dependency of this
   module today.
-* **The docx4j FO renderer** (`org.docx4j:docx4j-fo-renderer`, recommended once released):
-  an upstream-tracking fork of Apache FOP 2.11 maintained at
+* **The docx4j FO renderer** (`org.docx4j:docx4j-fo-renderer`, `2.11-docx4j.1` on Maven
+  Central since 2026-09-25): an upstream-tracking fork of Apache FOP 2.11 maintained at
   https://github.com/plutext/xmlgraphics-fop (branch `docx4j-2.11`), carrying the fixes
   docx4j found in FOP ahead of their upstream release and, from CR-020 phase 1, hooks for
-  the Word layout rules that reflection cannot reach. Until its first release it is a
-  locally installed snapshot; `-Pfo-renderer-fork` builds this module against it.
+  the Word layout rules that reflection cannot reach. `-Pfo-renderer-fork` builds this
+  module against it; the default dependency stays Apache FOP until a minor release
+  (17.3.0 at the earliest), because the switch replaces a transitive dependency for every
+  consumer.
+
+  **To switch**, replace `org.apache.xmlgraphics:fop` with
+  `org.docx4j:docx4j-fo-renderer-core:2.11-docx4j.1` in your own dependencies and
+  exclude Apache's `fop` and `fop-core` from `docx4j-export-fo` (the fork keeps Apache's
+  packages, so the two must never share a classpath; `FopCapabilities` warns when they
+  do). **What you get today, measured** (CR-020 §8): the same layout - the batch 49
+  baselines on the two renderers agree on every document of a 449-document corpus and
+  146 probes, because every hook-dependent rule has a reflective fallback on Apache FOP;
+  a correct text layer for CJK ideographs that share a glyph with a Kangxi radical (no
+  workaround exists for that on Apache FOP); and a renderer whose internals the Word
+  layout managers are built against, so an Apache point release cannot break them. The
+  fixes that change what a PDF *says* - ligatures published to ToUnicode as their letters
+  rather than U+E000, and Word's ligature setting honoured per run - are the next fork
+  release (`fop/CR-002`, `fop/CR-001`), and the point at which switching is worth
+  recommending.
 
   > This is a modified distribution derived from Apache FOP 2.11. It is maintained by
   > Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a

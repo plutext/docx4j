@@ -19,8 +19,8 @@
 	<properties>
 		<!-- The FO renderer (CR-020).  Apache FOP 2.11 by default; -Pfo-renderer-fork swaps in
 		     org.docx4j:docx4j-fo-renderer, the docx4j FO renderer (an upstream-tracking fork of
-		     Apache FOP 2.11 with hooks for the Word layout rules; consumed as a locally installed
-		     snapshot until its first release).  Both are supported at runtime: FopCapabilities
+		     Apache FOP 2.11 with hooks for the Word layout rules; 2.11-docx4j.1 on Maven Central
+		     since 2026-09-25).  Both are supported at runtime: FopCapabilities
 		     probes which one is present and the hook-dependent rules fall back on Apache FOP. -->
 		<fo.renderer.groupId>org.apache.xmlgraphics</fo.renderer.groupId>
 		<fo.renderer.artifactId>fop</fo.renderer.artifactId>
@@ -355,16 +355,19 @@
 	</dependencies>
 
 	<profiles>
-		<!-- The docx4j FO renderer in place of Apache FOP (CR-020).  Off by default until the
-		     fork's first release, so that a source build of docx4j needs nothing that is not on
-		     Maven Central. -->
+		<!-- The docx4j FO renderer in place of Apache FOP (CR-020).  Released (2.11-docx4j.1,
+		     2026-09-25) but still off by default: the switch of the default dependency is for a
+		     minor release (17.3.0 at the earliest), since it swaps a transitive dependency for
+		     every consumer of this module.  A consumer switches by depending on
+		     org.docx4j:docx4j-fo-renderer-core in place of org.apache.xmlgraphics:fop
+		     (the README has the recipe). -->
 		<profile>
 			<id>fo-renderer-fork</id>
 			<properties>
 				<fo.renderer.groupId>org.docx4j</fo.renderer.groupId>
 				<fo.renderer.artifactId>docx4j-fo-renderer</fo.renderer.artifactId>
 				<fo.renderer.events.artifactId>docx4j-fo-renderer-events</fo.renderer.events.artifactId>
-				<fo.renderer.version>2.11-docx4j.1-SNAPSHOT</fo.renderer.version>
+				<fo.renderer.version>2.11-docx4j.1</fo.renderer.version>
 			</properties>
 		</profile>
 	</profiles>
