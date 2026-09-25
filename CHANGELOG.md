@@ -49,10 +49,21 @@ Packaging (CR-026):
   VMLPart.getContents() now returns the shapes; a strict workbook with a comment
   saves. Inline VML (w:pict) is unaffected. Schema change: the ports regenerate.
 
-Schemas (for the ports which generate from them; docx4j's own binding is unchanged):
+Schemas:
 
-- The wildcards in a:graphicData and in a vmlDrawing part's root are processContents="lax",
-  not "strict": a generator which follows the word made a graphic or a legacy-drawing child
+- Excel's revision uid attributes survive a round trip (CR-027). They were declared on the
+  worksheet only, so xr:uid on an autoFilter, hyperlink, table, pivot definition, comment,
+  cell style or data validation, xr2:uid on a workbook view, xr3:uid on a table column,
+  xr9:uid on a table style and xr16:uid on a connection were dropped when the part was
+  unmarshalled and saved (loadAndSave.xlsx: nine in, one out). The 2016/revision3,
+  2016/revision9 and 2017/revision16 schemas are bound; uid is a property of each host.
+
+- b:Sources keeps Word's Version attribute (not in ECMA-376; every bibliography part Word
+  saves has it, and the typed part lost it).
+
+- For the ports which generate from the schemas (docx4j's own binding is unchanged): the
+  wildcards in a:graphicData and in a vmlDrawing part's root are processContents="lax",
+  not "strict"; a generator which follows the word made a graphic or a legacy-drawing child
   the model does not bind fatal to the part, where docx4j keeps it as DOM.
 
 WordprocessingML:

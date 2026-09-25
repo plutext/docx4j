@@ -6,6 +6,10 @@
 	xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 	xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" 
+	xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"
+	xmlns:xr3="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3"
+	xmlns:xr9="http://schemas.microsoft.com/office/spreadsheetml/2016/revision9"
+	xmlns:xr16="http://schemas.microsoft.com/office/spreadsheetml/2017/revision16"
 	xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"
 	targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	elementFormDefault="qualified"
@@ -50,6 +54,10 @@
 		
 	<!-- since docx4j 8.2.4 -->
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" schemaLocation="sml_2014_revision.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2" schemaLocation="../xlsx/office_spreadsheetml_2015_revision2.xsd" /> <!-- docx4j 17.2.1 (CR-027): uid on CT_BookView -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3" schemaLocation="../xlsx/office_spreadsheetml_2016_revision3.xsd" /> <!-- docx4j 17.2.1 (CR-027): uid on CT_TableColumn -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision9" schemaLocation="../xlsx/office_spreadsheetml_2016_revision9.xsd" /> <!-- docx4j 17.2.1 (CR-027): uid on CT_TableStyle -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2017/revision16" schemaLocation="../xlsx/office_spreadsheetml_2017_revision16.xsd" /> <!-- docx4j 17.2.1 (CR-027): uid on CT_Connection -->
 
 	<!-- since docx4j 17.2.0 (CR-022): x14ac:dyDescent on rows and sheetFormatPr, x14ac:knownFonts on the font table -->
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" schemaLocation="../xlsx/office_spreadsheetml_2009_9_ac.xsd" />
@@ -79,6 +87,7 @@
       <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="ref" type="ST_Ref"/>
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_FilterColumn">
     <xsd:choice minOccurs="0" maxOccurs="1">
@@ -370,6 +379,7 @@
     <xsd:attribute name="authorId" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="guid" type="s:ST_Guid" use="optional"/>
     <xsd:attribute name="shapeId" type="xsd:unsignedInt" use="optional"/>
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_CommentPr">
     <xsd:sequence>
@@ -488,6 +498,7 @@
     <xsd:attribute name="saveData" use="optional" type="xsd:boolean" default="false"/>
     <xsd:attribute name="credentials" use="optional" type="ST_CredMethod" default="integrated"/>
     <xsd:attribute name="singleSignOnId" use="optional" type="s:ST_Xstring"/>
+	<xsd:attribute ref="xr16:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:simpleType name="ST_CredMethod">
     <xsd:restriction base="xsd:string">
@@ -683,6 +694,7 @@
     <xsd:attribute name="supportSubquery" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="supportAdvancedDrill" type="xsd:boolean" use="optional" default="false"/>
 	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.2.0 (CR-022): Excel writes it on this root -->
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_CacheFields">
     <xsd:sequence>
@@ -1280,6 +1292,7 @@
     <xsd:attribute name="mdxSubqueries" type="xsd:boolean" default="false"/>
     <xsd:attribute name="customListSort" type="xsd:boolean" use="optional" default="true"/>
 	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.2.0 (CR-022): Excel writes it on this root -->
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_Location">
     <xsd:attribute name="ref" use="required" type="ST_Ref"/>
@@ -2804,6 +2817,7 @@
     <xsd:attribute name="promptTitle" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="prompt" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="sqref" type="ST_Sqref" use="required"/>
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:simpleType name="ST_DataValidationType">
     <xsd:restriction base="xsd:string">
@@ -2954,6 +2968,7 @@
     <xsd:attribute name="location" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="tooltip" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="display" type="s:ST_Xstring" use="optional"/>
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_CellFormula">
     <xsd:simpleContent>
@@ -3844,6 +3859,7 @@
     <xsd:attribute name="iLevel" type="xsd:unsignedInt" use="optional"/>
     <xsd:attribute name="hidden" type="xsd:boolean" use="optional"/>
     <xsd:attribute name="customBuiltin" type="xsd:boolean" use="optional"/>
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_Dxfs">
     <xsd:sequence>
@@ -3916,6 +3932,7 @@
     <xsd:attribute name="pivot" type="xsd:boolean" use="optional" default="true"/>
     <xsd:attribute name="table" type="xsd:boolean" use="optional" default="true"/>
     <xsd:attribute name="count" type="xsd:unsignedInt" use="optional"/>
+	<xsd:attribute ref="xr9:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_TableStyleElement">
     <xsd:attribute name="type" type="ST_TableStyleType" use="required"/>
@@ -4197,6 +4214,7 @@
     <xsd:attribute name="totalsRowCellStyle" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="connectionId" type="xsd:unsignedInt" use="optional"/>
 	<xsd:attribute ref="mc:Ignorable" use="optional" /> <!-- docx4j 17.2.0 (CR-022): Excel writes it on this root -->
+	<xsd:attribute ref="xr:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:simpleType name="ST_TableType">
     <xsd:restriction base="xsd:string">
@@ -4238,6 +4256,7 @@
     <xsd:attribute name="headerRowCellStyle" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="dataCellStyle" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="totalsRowCellStyle" type="s:ST_Xstring" use="optional"/>
+	<xsd:attribute ref="xr3:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:complexType name="CT_TableFormula">
     <xsd:simpleContent>
@@ -4419,6 +4438,7 @@
     <xsd:attribute name="firstSheet" type="xsd:unsignedInt" use="optional" default="0"/>
     <xsd:attribute name="activeTab" type="xsd:unsignedInt" use="optional" default="0"/>
     <xsd:attribute name="autoFilterDateGrouping" type="xsd:boolean" use="optional" default="true"/>
+	<xsd:attribute ref="xr2:uid" use="optional" /> <!-- docx4j 17.2.1 (CR-027): Excel writes it here -->
   </xsd:complexType>
   <xsd:simpleType name="ST_Visibility">
     <xsd:restriction base="xsd:string">

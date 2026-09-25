@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2017/revision16"
+	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2017/revision16"
+	elementFormDefault="qualified"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
+	jaxb:version="3.0">
+
+<!--
+	http://schemas.microsoft.com/office/spreadsheetml/2017/revision16 has NO section in [MS-XLSX] 29.1's appendix
+	(checked against the specification's table of contents on 2026-09-25; CR-022 §10 found the same on 2026-09-20 and
+	added the prefix only). Written from measurement (CR-027 phase 1, a departure from adding-a-schema.md step 1
+	recorded in the CR's §3): Excel writes xr16:uid on connection (CT_Connection) as a GUID in braces, the shape of
+	every other xr*:uid, so the one attribute is declared as the revision2 and revision3 schemas declare theirs.
+	Re-take it from the specification if a page appears.
+	Attribute-only: XJC generates no package for it; uid becomes a property of CT_Connection.
+-->
+
+  <xsd:annotation>
+    <xsd:appinfo>
+      <xsd:appinfo>
+        <jaxb:globalBindings>
+        </jaxb:globalBindings>
+      </xsd:appinfo>
+      <jaxb:schemaBindings>
+        <jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2017.revision16"/>
+      </jaxb:schemaBindings>
+    </xsd:appinfo>
+  </xsd:annotation>
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+
+  <xsd:attribute name="uid" type="s:ST_Guid"/>
+
+</xsd:schema>

@@ -1,6 +1,6 @@
 # CR-027: Excel's revision `uid` attributes and Word's bibliography `Version` kept on a round trip - `xr3`, `xr9`, `xr16` bound, `xcalcf` typed
 
-Status: PROPOSED 2026-09-25. Written by `docs/developer/adding-a-schema.md`
+Status: IN PROGRESS - phase 1 (the attributes) landed 2026-09-25 (§10 record; the Excel and Word check on the share `fidelity/cr027-uid/` awaits Jason); phase 2 (`xcalcf`) next. Proposed 2026-09-25, written by `docs/developer/adding-a-schema.md`
 step 0; the item CR-022 §20 left for "one small CR" (the remaining revision
 attributes and `xcalcf`). Found by docx4j-generated-objects-ts's CR-004 phase
 B (237 parts of twelve docx4j test documents through its package) and
@@ -224,6 +224,38 @@ both runtimes' selectors); the round trip of `loadAndSave.xlsx` writes the
 `xcalcf` prefix; folded into the same Excel-open check.
 
 Both are for 17.2.1, so the ports regenerate once for the release.
+
+### Phase 1 record (2026-09-25)
+
+What shipped, as §3 and §4 planned, with one thing the plan did not know:
+the main SpreadsheetML schema is `xsd:include`d by `sml_root.xsd`, so an
+`xsd:import` in the root is not visible from it - each namespace whose
+attribute it references needs its own `xsd:import` line in
+`sml_ECMA376_4ed_transitional.xsd` (XJC: "components from this namespace are
+not referenceable from schema document"). `xr` had one already; `xr2`,
+`xr3`, `xr9` and `xr16` got theirs, beside it, and the root's imports stay
+for the tree's shape.
+
+| | |
+|---|---|
+| `xsd/xlsx/office_spreadsheetml_2016_revision3.xsd`, `..._2016_revision9.xsd` | from the [MS-XLSX] pages of §3, one `uid` each |
+| `xsd/xlsx/office_spreadsheetml_2017_revision16.xsd` | from measurement (§3's departure; the header says so) |
+| `xsd/sml/sml_ECMA376_4ed_transitional.xsd` | four prefixes declared, four imports, twelve `xsd:attribute ref` lines, each commented `docx4j 17.2.1 (CR-027)` |
+| `xsd/sml/sml_root.xsd` | the three imports |
+| `xsd/shared/shared-bibliography.xsd` | `CT_Sources/@Version`, optional string, commented as Word's |
+| regenerated | twelve host classes gain `uid` (`@XmlAttribute` in the right namespace on each, checked); `CTSources.getVersion()`; no new package (attribute-only) - 29 generated files differ, no other |
+| `RevisionUidAttributesTest` (3) | the two workbooks' `uid` attributes counted by host element before and after a forced round trip, equal; typed accessors read |
+| `BibliographyPartTest` (1) | `loadAndSave.docx`'s `Version` read as "6" and kept through a save and reload |
+| CHANGELOG | two lines under "Schemas" |
+
+### Gate
+
+| step | result |
+|---|---|
+| regeneration and `docx4j-core` install | BUILD SUCCESS |
+| `RevisionUidAttributesTest`, `BibliographyPartTest`, `ExcelExtensionsTest`, `IgnorablePrefixesDeclaredTest` | 17 tests, 0 failures |
+| `docx4j-core-tests`, full | 1328 tests, 0 failures, 11 skipped |
+| Office check (Excel 365 and Word, Jason; the share's `fidelity/cr027-uid/`, README there) | **awaiting Jason**: `cr022-data-model-saved.xlsx`, `strict-invoice-saved.xlsx`, `loadAndSave-saved.xlsx`, `loadAndSave-saved.docx`, each every part unmarshalled then saved |
 
 ## 11. Effort (rough)
 

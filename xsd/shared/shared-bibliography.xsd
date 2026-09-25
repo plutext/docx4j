@@ -544,5 +544,12 @@
 				<xsd:documentation>Uniform Resource Identifier</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<!-- Not in ECMA-376 or [MS-DOCX]: Word writes Version="6" on every b:Sources it saves (measured on the
+		     fixtures, docx4j 17.2.1, CR-027 §3), and the part lost it on a round trip. -->
+		<xsd:attribute name="Version" type="s:ST_String" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Bibliography version, as Word writes it (not in the standard)</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 </xsd:schema>

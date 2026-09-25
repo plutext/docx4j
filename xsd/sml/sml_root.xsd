@@ -96,6 +96,10 @@ REVISION HISTORY
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2" schemaLocation="../xlsx/office_spreadsheetml_2015_revision2.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision6" schemaLocation="../xlsx/office_spreadsheetml_2016_revision6.xsd" />
   <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10" schemaLocation="../xlsx/office_spreadsheetml_2016_revision10.xsd" />
+  <!-- The remaining revision uid namespaces (docx4j 17.2.1, CR-027): attribute-only, referenced from the main schema's host types -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3" schemaLocation="../xlsx/office_spreadsheetml_2016_revision3.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision9" schemaLocation="../xlsx/office_spreadsheetml_2016_revision9.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2017/revision16" schemaLocation="../xlsx/office_spreadsheetml_2017_revision16.xsd" />
 
   <xsd:include schemaLocation="sml_ECMA376_4ed_transitional.xsd" />
   
