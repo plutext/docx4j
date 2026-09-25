@@ -518,7 +518,26 @@ PDF structure by design, so "no movers" is the wrong gate - what a pass means
 (structure tags present, text layer and line parity unchanged) is to be
 written down before the cherry-pick. **P2-8** (the GSUB features hook) does
 nothing until docx4j asks for it, so the docx4j side gates the rule that uses
-it, with the harness on both renderers, as `RULE-CLASSES.md` requires. A first scoring of mine on the raw corpus directory showed 11
+it, with the harness on both renderers, as `RULE-CLASSES.md` requires.
+
+Reachability, measured 2026-09-25 for the fork session's pass over P2-2 to
+P2-8 (every `word/*.xml` part of the three corpora on both bases, and the
+probes; literal characters and numeric references): **U+061C** (the Arabic
+letter mark, P2-4's first half) occurs nowhere; **U+200B** (the zero-width
+space, its second half) occurs 4 times in 2 real3 documents
+(`12_en-US_sdt_fields1_num_11231`, `12_hr-HR_sdt_fields1_num_tbl_2451`) and
+nowhere else; characters outside the BMP occur in no corpus document and
+only in the probe `fonts-symbol-and-emoji`. So P2-4's letter-mark half is
+inert on this corpus and its zero-width-space half has two documents to gate
+on. The fork session's other findings from that pass, as it reported them:
+P2-8 (ligatures) is the one live fidelity defect - FOP applies `liga`
+unconditionally and docx4j-export-fo has no `w14:ligatures` handling (grep
+confirms), so Latin text in a font with a `liga` table gets ligatures Word
+would not apply; P2-2 is inert while docx4j's two CR-011 `xmlns:xlink`
+workarounds stand, so it wants a capability signal so they can be dropped;
+P2-6 and P2-7 are two-sided (docx4j emits neither a `japaneseCounting` page
+format nor `pdf:embedded-file`); P2-5's accessibility half is inert unless
+the consumer sets it. The reordering is Jason's call. A first scoring of mine on the raw corpus directory showed 11
 changed documents; the baseline was cut on the re-saved basis, and the re-run
 above is the valid one.
 
