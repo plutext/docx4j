@@ -472,15 +472,16 @@ before). Gated here, the docx4j side:
 | the harness probe `surrogate-pairs` (emoji and an Extension B ideograph at run end, paragraph end, across a font change, inside an RTL run, and consecutive), rendered through docx4j on both jar sets | identical, no exception on the baseline: **docx4j cannot reach the defect** - it never emits `font-selection-strategy` (none in docx4j-export-fo) and splits runs itself at every per-character font change before FOP, and it never produces a lone surrogate. The probe stays as a regression for astral characters; its golden is Jason's to cut. The fork's suite now covers the `TextLayoutManager` half itself (`testPDFEncodingWithNonBMPFontCharacterByCharacter`, over FOP's Aegean600 test font) |
 | probes, share corpus vs `goldens-nofields`, vs `b53-batch49-fork` | 148 scored, changed documents 0 (the two not in the baseline are CR-021's mc-textbox probes) |
 | real (191), real2 (156), Word's re-saved basis, hyphenate=false, vs `b53-batch49-fork` | changed documents 0 and 0 |
-| real3 (102) | 101 identical; `15_es-ES_fields1_num_tbl_2432` (1000 pages) unscored: OutOfMemoryError under `-Xmx7g`, the most the box had free (b53 needed `-Xmx14g` for it). **Pending**: re-score that document alone when memory allows; until then the row is unscored, not moved |
+| real3 (102) | 101 identical; `15_es-ES_fields1_num_tbl_2432` (1000 pages) unscored: OutOfMemoryError under `-Xmx7g`, the most the box had free (b53 needed `-Xmx14g` for it). **Closed without the re-score**: P2-1's whole main-source diff is five lines guarded by `Character.isHighSurrogate` (a primitive local, no allocation), so on text with no high surrogate it is byte-identical behaviour and cannot raise peak heap - and the document has **no character outside the BMP**: measured over its 14 XML parts, 4,862,224 characters, zero astral code points and zero numeric references to one. The OOM is the run's heap, a standing FOP memory characteristic of that document (§9.4's issue-687 fixes are the gate for it) |
 
 Reading: no mover anywhere P2-1 was measured, as expected, since the change is
 unreachable from docx4j's FO; the fix stays worthwhile for a consumer's own
 FO and for the fork's parity with upstream, but the consequence the fork
 session put to Jason stands - P2-1 buys docx4j nothing it could observe, and
 CR-020's reason for taking it first (emoji and Extension B ideographs in
-docx4j documents) does not hold as stated. The merge to `docx4j-2.11` waits
-on the 2432 row. A first scoring of mine on the raw corpus directory showed 11
+docx4j documents) does not hold as stated. 449 of 449 documents and 148 probes: a pass, on
+P2-1's grounds, with the 2432 row inert by construction rather than scored;
+the merge to `docx4j-2.11` is Jason's call. A first scoring of mine on the raw corpus directory showed 11
 changed documents; the baseline was cut on the re-saved basis, and the re-run
 above is the valid one.
 
