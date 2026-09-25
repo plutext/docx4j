@@ -578,7 +578,20 @@ corrections sent: every value without "standard" subtracts `liga`
 is therefore a replacement of the twin by the hook on the fork, the twin kept
 as the Apache FOP fallback, the delta on the span's `fo:inline` the selector
 already owns (per span, not per block), and the gate adds: TrueType/Latin/
-no-kern runs byte-identical between twin and hook. A first scoring of mine on the raw corpus directory showed 11
+no-kern runs byte-identical between twin and hook. The fork session accepted
+the review in full (`fop/CR-001` rewritten, 8d1250cb7: the correction leads,
+the case rests on the four gaps, the mapping table verbatim, the twin-aware
+partition, per span) and verified the ToUnicode point from FOP's code:
+`mapGlyphsToChars` falls through to `createPrivateUseMapping` for a
+substituted glyph, `nextPrivateUse` starts at 0xE000, and `CIDSubset.getChars`
+is what `PDFToUnicodeCMap` is built from - so a ligature's published meaning
+is U+E000 upward. That is now **`fop/CR-002`**: let a multi-character
+`CharAssociation` reach the CMap and emit a `bfchar` with a string
+destination, the private-use mint kept as the fallback for glyphs with no
+character. It affects every FOP user on the default configuration, breaks
+search, copy-paste and screen readers, and is cleanly upstream-bound; the
+fork session has put to Jason that it outranks P2-8. Enterprise CR-001 §6.6
+gets the item (the twin is the docx4j-side workaround). A first scoring of mine on the raw corpus directory showed 11
 changed documents; the baseline was cut on the re-saved basis, and the re-run
 above is the valid one.
 
