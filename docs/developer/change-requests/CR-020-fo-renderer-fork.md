@@ -528,8 +528,23 @@ space, its second half) occurs 4 times in 2 real3 documents
 (`12_en-US_sdt_fields1_num_11231`, `12_hr-HR_sdt_fields1_num_tbl_2451`) and
 nowhere else; characters outside the BMP occur in no corpus document and
 only in the probe `fonts-symbol-and-emoji`. So P2-4's letter-mark half is
-inert on this corpus and its zero-width-space half has two documents to gate
-on. The fork session's other findings from that pass, as it reported them:
+inert on this corpus, and (the fork session's correction, the same day) its
+zero-width-space half is inert on the default path too: the change is one
+conjunct inside `TextLayoutManager.isWordSpace`, which opens with
+`userAgent.isAccessibilityEnabled()`, and docx4j never sets accessibility
+itself. Containing the character is necessary, not sufficient: a corpus run
+cannot gate P2-4 at all (it returns no movers whether the change works or
+not). Recommendation to Jason: split it - drop the letter-mark half on the
+scan; keep the zero-width-space half as a low-priority item for consumers
+who enable accessibility, gated by rendering those two documents with
+accessibility on, on both jar sets, and checking the extracted text (copy
+and paste output is the point), not pixels. The same scan confirms P2-1's
+result across the whole corpus, not just the one document. A shape note for
+`inline-access`: the zero-width-space commit widens `GlyphMapping`'s public
+eleven-argument constructor to twelve; docx4j-export-fo only reads
+`GlyphMapping`, so it compiles either way, but it is an API break for anyone
+built against Apache FOP 2.11 - the fork keeps the old signature delegating
+with `false`. The fork session's other findings from that pass, as it reported them:
 P2-8 (ligatures) is the one live fidelity defect - FOP applies `liga`
 unconditionally and docx4j-export-fo has no `w14:ligatures` handling (grep
 confirms), so Latin text in a font with a `liga` table gets ligatures Word
