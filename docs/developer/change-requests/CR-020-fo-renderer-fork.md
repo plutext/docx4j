@@ -595,6 +595,29 @@ gets the item (the twin is the docx4j-side workaround). A first scoring of mine 
 changed documents; the baseline was cut on the re-saved basis, and the re-run
 above is the valid one.
 
+### First release - `2.11-docx4j.1` on Maven Central (2026-09-25)
+
+Released by the fork session: `org.docx4j:docx4j-fo-renderer`, `-core`,
+`-events`, `-util` and `-parent`, each jar with sources, javadoc and a detached
+signature; the poms fetched back from Central carry literal versions and no
+dangling parent. Verified from here the same day: all four artifacts resolve
+from Central with `dependency:get`; the core jar's manifest says
+`Implementation-Version: 2.11-docx4j.1`, which is what `Docx4jFop.version()`
+reads (the `2.11-docx4j.development` string in the class is its fallback for
+classes not loaded from a built jar); the marker's capabilities are the four
+phase 1 hooks. Contents: the font fixes of phase 1 and before, the four hooks,
+and P2-1. Nothing from `fop/CR-001` or `fop/CR-002`. The local snapshot
+`2.11-docx4j.1-SNAPSHOT` was left in place, so the harness gate keeps working
+until docx4j switches.
+
+**Not yet done in docx4j**: the switch of §3.2 (the profile dropped, the fork
+the default dependency of `docx4j-export-fo`) - a patch-release decision for
+Jason, since it swaps a transitive dependency for every consumer of the module
+(the two-FOPs hazard for a consumer who also depends on Apache FOP directly);
+the alternative is to keep the fork profile-only in 17.2.1 and switch at the
+next minor. Either way the Getting Started paragraph's "(not yet released)"
+goes, and the CHANGELOG gets a "PDF via XSL FO" section.
+
 ### Not done, carried
 
 - Phase 2 cherry-picks P2-1 to P2-8 (above), one batch item each; then the
