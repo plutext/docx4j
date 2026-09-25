@@ -481,7 +481,19 @@ session put to Jason stands - P2-1 buys docx4j nothing it could observe, and
 CR-020's reason for taking it first (emoji and Extension B ideographs in
 docx4j documents) does not hold as stated. 449 of 449 documents and 148 probes: a pass, on
 P2-1's grounds, with the 2432 row inert by construction rather than scored;
-the merge to `docx4j-2.11` is Jason's call. A first scoring of mine on the raw corpus directory showed 11
+**merged to `docx4j-2.11`
+2026-09-25** by the fork session, fast-forward, tip 4074e0330 (six commits
+over 0b61748ed, unpushed; the two cherry-picks keep Alexander Dyuzhev's
+authorship and their `-x` provenance lines). With Jason: the push, and filing
+the JIRA so the upstream twin `FOP-surrogate-pair-word-split` becomes a PR.
+
+For the next items, agreed with the fork session before it starts: P2-2 to
+P2-8 are not all inert as P2-1 was. **P2-5** (the accessibility set) changes
+PDF structure by design, so "no movers" is the wrong gate - what a pass means
+(structure tags present, text layer and line parity unchanged) is to be
+written down before the cherry-pick. **P2-8** (the GSUB features hook) does
+nothing until docx4j asks for it, so the docx4j side gates the rule that uses
+it, with the harness on both renderers, as `RULE-CLASSES.md` requires. A first scoring of mine on the raw corpus directory showed 11
 changed documents; the baseline was cut on the re-saved basis, and the re-run
 above is the valid one.
 
