@@ -98,11 +98,15 @@ The element schema, phase 2:
   round trip today as DOM through `CT_Extension`'s lax wildcard, with its own
   `xmlns:xcalcf` on the `ext`; binding it is typing, not a loss closed.
 
-Left out, with the reason: **2024/workbookCompatibilityVersion** (§5.42,
+Left out: **2024/workbookCompatibilityVersion** (§5.42,
 `version/@setVersion`, `@warnBelowVersion`; the inventory's fourth item of
-this group). No fixture or sample here carries it, and the recipe requires an
-Office file exercising a schema before it is bound; it also survives as DOM.
-Take it when a workbook that has it arrives.
+this group). The CR first said no fixture carried it; that was a faulty grep
+(corrected 2026-09-25, objects-ts having found it the same minute):
+`loadAndSave.xlsx`'s workbook `extLst` has it, `ext
+uri="{D14903EA-33C4-47F7-8F05-3474C54BE107}"`, prefix `xlwcv`,
+`<xlwcv:version setVersion="2"/>`. It survives a round trip as DOM, as
+`calcFeatures` did, so binding it is typing only; left as this CR's leftover,
+with the fixture named, for whenever a consumer wants the value typed.
 
 For `b:Sources/@Version`: not in ECMA-376 (any edition) or [MS-DOCX];
 Word writes it (`Version="6"` on every bibliography part in the fixtures).
@@ -258,6 +262,12 @@ for the tree's shape.
 | Office check (Excel 365 and Word, Jason; the share's `fidelity/cr027-uid/`, README there) | **awaiting Jason**: `cr022-data-model-saved.xlsx`, `strict-invoice-saved.xlsx`, `loadAndSave-saved.xlsx`, `loadAndSave-saved.docx`, each every part unmarshalled then saved |
 
 ### Phase 2 record (2026-09-25)
+
+This phase closed no loss: `calcFeatures` round-tripped as DOM through
+`CT_Extension`'s lax wildcard before it (§3 says so; objects-ts measured the
+same). It is typing, so a consumer reads Excel's feature list as objects and
+the saved part carries Excel's prefix from the table rather than a declaration
+copied from the input.
 
 | | |
 |---|---|
