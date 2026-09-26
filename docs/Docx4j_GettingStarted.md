@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.2.0 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.2.1 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -152,7 +152,7 @@ To use docx4j 17.2.0, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		`<version>``17.``2``.``0``</version>`
+&#9;		`<version>``17.``2``.0``</version>`
 
 &#9;	`</dependency>`
 
@@ -166,7 +166,7 @@ To use docx4j 17.2.0, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		`<version>``17.``2``.``0``</version>`
+&#9;		`<version>``17.``2``.0``</version>`
 
 &#9;	`</dependency>`
 
@@ -1288,9 +1288,9 @@ One limitation: an equation is a single graphic, so a very long display equation
 **Two FO renderers.  **From 17.2.0 docx4j-export-fo supports two: 
 
 - Apache FOP 2.11, its default dependency (unchanged), and 
-- the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules; 2.11-docx4j.1 on Maven Central since 25 September 2026.  To use it, depend on org.docx4j:docx4j-fo-renderer-core in place of org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe); Apache FOP stays the default until a minor release.  
+- the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules; 2.11-docx4j.1 on Maven Central since 25 September 2026.  To use it, depend on org.docx4j:docx4j-fo-renderer-core in place of org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe); Apache FOP stays the default for now.  
 
-Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.  Measured on the layout-fidelity corpora, the two renderers produce the same layout today; the fork's text layer is correct for CJK ideographs that share a glyph with a radical, and it cannot be broken by an Apache point release.  The ligature fixes of its next release are the point at which switching is recommended.
+Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.  Measured on the layout-fidelity corpora, the two renderers produce the same layout today; the ligature fixes of its next release are the point at which switching is recommended.
 
 **Hyphenation.  **From 17.1.0, hyphenation in PDF output is driven by the document, as in Word: docx4j reads w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit and w:doNotHyphenateCaps from settings.xml (and w:suppressAutoHyphens on a paragraph), and hyphenates only where the document asks for it.  Nothing needs configuring per document.
 
