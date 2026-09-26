@@ -19,6 +19,7 @@ It uses JAXB to create the Java representation.
 - Produce/consume Word 2007's xmlPackage (pkg) format
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
+- Anonymize/sanitize a docx/pptx/xlsx 
 
 
 Choosing a library
