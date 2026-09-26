@@ -20,6 +20,25 @@
 		the next minor release.
 	</description>
 
+	<build>
+		<plugins>
+			<!-- A pom-packaged module is not flattened by default (flatten-maven-plugin's
+			     updatePomFile is false for packaging pom), so the deployed pom kept ${revision}
+			     and Central rejected it (17.2.1 staging). Flatten it like the jar modules, and
+			     keep the relocation, which the ossrh mode would otherwise strip. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>ossrh</flattenMode>
+					<pomElements>
+						<distributionManagement>keep</distributionManagement>
+					</pomElements>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 	<distributionManagement>
 		<relocation>
 			<groupId>org.docx4j</groupId>
