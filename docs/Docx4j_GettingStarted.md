@@ -142,7 +142,7 @@ docx4j is in Maven Central.  For Maven users, this makes it really easy to get g
 
 As noted in the introduction, current release series are docx4j **11.5.x.** and **17.x**
 
-To use docx4j 17.2.0, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
+To use docx4j 17.2.1, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
 
 &#9;	`<!-- use the JAXB Reference Implementation -->`
 
@@ -152,7 +152,7 @@ To use docx4j 17.2.0, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		`<version>``17.``2``.0``</version>`
+&#9;		`<version>``17.``2``.1``</version>`
 
 &#9;	`</dependency>`
 
@@ -166,7 +166,7 @@ To use docx4j 17.2.0, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		`<version>``17.``2``.0``</version>`
+&#9;		`<version>``17.``2``.1``</version>`
 
 &#9;	`</dependency>`
 
