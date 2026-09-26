@@ -25,7 +25,7 @@ docx4j is a library for working with docx, pptx and xlsx files in Java.  In esse
 
 docx4j is usually deployed as part of a web application (eg on Tomcat, JBOSS, WebSphere etc – see the deployment forums).
 
-docx4j is similar in concept to Microsoft's  OpenXML SDK, which is for .NET.  docx4j.NET is available for the NET platform; see further below.
+docx4j is similar in concept to Microsoft's OpenXML SDK, which is for .NET.  docx4j.NET is available for the NET platform; see further below.
 
 A distinctive strength of docx4j is that its in-memory representation uses **JAXB**, the JCP standard for Java - XML binding.  Docx4j is the only library for working with OpenXML files which uses/supports JAXB (each of the Sun/Oracle, MOXy and IBM[^1] implementations).  In contrast, Apache POI uses XML Beans.  (Aspose in contrast, does not provide low-level access to the underlying XML or a corresponding object model, so "you can't do it" unless Aspose provides support for it).  
 
@@ -76,7 +76,7 @@ Programs based on docx4j can be converted to a Graal native image, and run "serv
 
 # docx4j.NET
 
-If you want to process docx/pptx/xslsx on the .NET platform, you should consider Microsoft's OpenXML SDK.  That said, docx4j can be used in a .NET environment via IKVM, and there are several reasons you might wish to do this:
+If you want to process docx/pptx/xlsx on the .NET platform, you should consider Microsoft's OpenXML SDK.  That said, docx4j can be used in a .NET environment via IKVM, and there are several reasons you might wish to do this:
 
 - Where you need docx4j’s capabilities, for example:
   - XHTML import/export/roundtrip
@@ -1275,7 +1275,7 @@ If Word is not available, you can generate PDF output via XSL FO using FOP.  If 
 
 From 17.0.4, the visitor (non-XSLT) FO exporter is likewise the default (pass Docx4J.FLAG\_EXPORT\_PREFER\_XSL for the XSLT pathway).
 
-PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 and17.2.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
+PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 and 17.2.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
 
 See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
@@ -1288,9 +1288,9 @@ One limitation: an equation is a single graphic, so a very long display equation
 **Two FO renderers.  **From 17.2.0 docx4j-export-fo supports two: 
 
 - Apache FOP 2.11, its default dependency (unchanged), and 
-- the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules (not yet released).  
+- the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules; 2.11-docx4j.1 on Maven Central since 25 September 2026.  To use it, depend on org.docx4j:docx4j-fo-renderer-core in place of org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe); Apache FOP stays the default until a minor release.  
 
-Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.
+Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.  Measured on the layout-fidelity corpora, the two renderers produce the same layout today; the fork's text layer is correct for CJK ideographs that share a glyph with a radical, and it cannot be broken by an Apache point release.  The ligature fixes of its next release are the point at which switching is recommended.
 
 **Hyphenation.  **From 17.1.0, hyphenation in PDF output is driven by the document, as in Word: docx4j reads w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit and w:doNotHyphenateCaps from settings.xml (and w:suppressAutoHyphens on a paragraph), and hyphenates only where the document asks for it.  Nothing needs configuring per document.
 

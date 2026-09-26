@@ -4,8 +4,35 @@ CHANGELOG
 Version 17.2.1
 ===============
 
+Release date
+------------
+
+26 September 2026
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Fable 5.1, with Opus 5 on the Getting Started assessment.
+
+
 Changes in Version 17.2.1
 --------------------------
+
+PDF via XSL FO:
+
+- The docx4j FO renderer, org.docx4j:docx4j-fo-renderer (an upstream-tracking fork of
+  Apache FOP 2.11 with the fixes docx4j has found in FOP and the hooks for the Word layout
+  rules), is released: 2.11-docx4j.1 on Maven Central. Apache FOP 2.11 stays the default
+  dependency of docx4j-export-fo; the switch is for a minor release. To use the fork now,
+  depend on org.docx4j:docx4j-fo-renderer-core:2.11-docx4j.1 in place of
+  org.apache.xmlgraphics:fop and exclude Apache's fop from docx4j-export-fo (the two must
+  never share a classpath; FopCapabilities warns when they do). Measured on the layout
+  corpora, the two renderers produce the same layout today; the fork's text layer is
+  correct for CJK ideographs that share a glyph with a radical, and it will not break
+  when Apache ships a point release. docx4j-export-fo/README.md has the recipe.
+
 
 Anonymiser (org.docx4j.anon, CR-019):
 
