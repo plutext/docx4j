@@ -24,7 +24,7 @@ Changes in Version 17.2.1
 Anonymiser (org.docx4j.anon, CR-019):
 
 - The anonymiser is now part of docx4j-core; com.thedeanda:lorem is gone. 
-  docx4j-docx-anon is a relocation POM for this release and goes at the next minor.
+  docx4j-docx-anon is no longer released (17.2.0 is its last version); depend on docx4j-core instead.
   The CLI is java -cp ... org.docx4j.anon.AnonymizeCli.
 
 - pptx and xlsx are supported. 
