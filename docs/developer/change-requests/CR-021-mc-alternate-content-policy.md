@@ -812,6 +812,22 @@ inside a held-back Choice are captured with it. So every docx4j reader
 applies one rule, and the ports' textOf no longer differs from
 `TextUtils` on rule 3. `McSelectionTest` covers it.
 
+### 8.13 Measured: the x14 controls wrapper is not required by Excel (2026-09-26)
+
+docx4j-core-ts resolves `mc:AlternateContent` on load, where this CR keeps it;
+the one place a counterexample was feared was the worksheet's `controls`
+(Choice `Requires="x14"`, no Fallback, CR-022). Jason's Excel 365 check on
+`cr022-checkbox-linked.xlsx` (the check box known to toggle and drive D4;
+CR-026 §11) with the two wrappers removed, and on core-ts's full save of it:
+both open with no repair and the box works. So the wrapper is Excel's
+forward-compatibility markup, not a requirement, and keeping it (this CR) and
+resolving it (core-ts) are both accepted. Two lessons from the bisect that
+got there (CR-022 §20): a `Requires` value is a prefix reference, so a
+wrapper written back must declare its prefix (an undeclared one is an XML
+error to Excel, as with `mc:Ignorable`); and a "does X still work after the
+save" check needs a fixture whose X works before the save - the first two
+rounds ran on a docx4j-generated check box that had never toggled.
+
 ### 8.12 Follow-up: the mce wildcards are lax (2026-09-19)
 
 Proposed by docx4j-generated-objects-ts from its regeneration, measured

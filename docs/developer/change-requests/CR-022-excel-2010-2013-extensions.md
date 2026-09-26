@@ -805,8 +805,15 @@ name a fixture whose X is known to work BEFORE the save. **Round 3** asks the
 question on the check box Excel has been seen to toggle, `cr022-checkbox-linked.xlsx`
 (§11 of CR-026; the box drives D4): `cr022-checkbox-linked-BARE-controls.xlsx`
 is that fixture with exactly the two wrappers removed, and
-`cr022-checkbox-linked-coretsSaved.xlsx` is core-ts's full save of it. Verdict
-to follow here. (3) Found by core-ts in the same diff, shared and cosmetic: Excel writes
+`cr022-checkbox-linked-coretsSaved.xlsx` is core-ts's full save of it.
+**Verdict (Jason, Excel 365, 2026-09-26): both work** - the box toggles and
+drives D4 in each. So Excel accepts a worksheet's `controls` without the
+`mc:AlternateContent` wrapper it writes itself, with the `x14` declaration
+gone, the booleans as `true`/`false` and the `ctrlProp` root prefixed; the
+wrapper is Excel's own forward-compatibility markup, not a requirement.
+core-ts's resolve-on-load stands with no counterexample; docx4j keeps the
+wrapper (CR-021's policy is to keep what Office writes), which is also fine.
+Closed. (3) Found by core-ts in the same diff, shared and cosmetic: Excel writes
 `a14:legacySpreadsheetColorIndex` (with an attribute-level `mc:Ignorable="a14"`)
 on the `a:srgbClr` of a control shape's hidden fill and line, and
 `CT_SRgbColor` (`xsd/dml/dml-baseTypes.xsd`) has no `xsd:anyAttribute`, so
