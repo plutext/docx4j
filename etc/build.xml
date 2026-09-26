@@ -14,7 +14,7 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="17.2.0"/>
+	<property name="version" value="17.2.1"/>
 	<property name="importxhtml-version" value="17.0.4"/>
 	<property name="importxhtml-dir" value="/home/${user.name}/git/docx4j-ImportXHTML"/>
 
@@ -247,11 +247,6 @@
 		<!-- diffx -->
 		<mkdir dir="${release.dir}/optional/diffx"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-diffx/${version}/docx4j-diffx-${version}.jar" todir="${release.dir}/optional/diffx"/>
-
-		<!-- anon -->
-		<mkdir dir="${release.dir}/optional/docx-anon"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-docx-anon/${version}/docx4j-docx-anon-${version}.jar" todir="${release.dir}/optional/docx-anon"/>
-		<copy file="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar" todir="${release.dir}/optional/docx-anon"/>
 				
 		<!-- resources -->
 		<mkdir dir="${release.dir}/resources"/>

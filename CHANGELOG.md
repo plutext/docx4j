@@ -1,6 +1,7 @@
 CHANGELOG
 =========
 
+
 Version 17.2.1
 ===============
 
@@ -20,111 +21,37 @@ Claude Fable 5.1, with Opus 5 on the Getting Started assessment.
 Changes in Version 17.2.1
 --------------------------
 
+Anonymiser (org.docx4j.anon, CR-019):
+
+- The anonymiser is now part of docx4j-core; com.thedeanda:lorem is gone. 
+  docx4j-docx-anon is a relocation POM for this release and goes at the next minor.
+  The CLI is java -cp ... org.docx4j.anon.AnonymizeCli.
+
+- pptx and xlsx are supported. 
+
 PDF via XSL FO:
 
 - The docx4j FO renderer, org.docx4j:docx4j-fo-renderer (an upstream-tracking fork of
   Apache FOP 2.11 with the fixes docx4j has found in FOP and the hooks for the Word layout
-  rules), is released: 2.11-docx4j.1 on Maven Central. Apache FOP 2.11 stays the default
-  dependency of docx4j-export-fo; the switch is for a minor release. To use the fork now,
+  rules), is released: 2.11-docx4j.1 on Maven Central. 
+  
+  No compelling reason to switch yet though; Apache FOP 2.11 stays the default
+  dependency of docx4j-export-fo; the switch is planned for 17.3.0. 
+  
+  To use the fork now,
   depend on org.docx4j:docx4j-fo-renderer-core:2.11-docx4j.1 in place of
   org.apache.xmlgraphics:fop and exclude Apache's fop from docx4j-export-fo (the two must
-  never share a classpath; FopCapabilities warns when they do). Measured on the layout
-  corpora, the two renderers produce the same layout today; the fork's text layer is
-  correct for CJK ideographs that share a glyph with a radical, and it will not break
-  when Apache ships a point release. docx4j-export-fo/README.md has the recipe.
+  never share a classpath; FopCapabilities warns when they do). docx4j-export-fo/README.md has the recipe.
 
 
-Anonymiser (org.docx4j.anon, CR-019):
-
-- The anonymiser is now part of docx4j-core, with no dependency of its own (docx4j's
-  own word list replaces com.thedeanda:lorem). The package name is unchanged;
-  docx4j-docx-anon is a relocation POM for this release and goes at the next minor.
-  The CLI is java -cp ... org.docx4j.anon.AnonymizeCli.
-
-- pptx is supported. Anonymize takes an OpcPackage and the CLI loads by package, so the
-  extension does not matter. Slides, layouts, masters, notes, comments (2007 and 2018)
-  and their authors, tags, section and custom-show names and table styles are scrubbed;
-  the password-to-modify hash, embedded fonts, media, OLE, ActiveX and ink go in STRICT.
-
-- xlsx is supported. Strings are scrambled consistently, so a table's columns still match
-  its header cells; numbers keep their shape with other digits (--keep-numbers, or
-  setKeepNumbers, keeps the values); formulas still compute - sheets become Sheet<n>,
-  defined names n_<hash>, and structured and external-book references follow. Comments
-  (legacy and threaded), headers and footers, hyperlinks, validations, conditional
-  formats, sparklines, form controls, connections and external links are scrubbed;
-  pivot tables, slicers, timelines, their caches and the data model are removed, leaving
-  their cells as values; passwords, hashes and salts are cleared.
-
-Packaging and load:
-
-- The 17.2.0 warning "N byte(s) after the zip end of central directory record" fired on
+The 17.2.0 warning "N byte(s) after the zip end of central directory record" fired on
   every package larger than 64K, because the count was wrong. Diagnostic only: no
   package was altered either way.
 
-- A .ppsx slideshow's presentation.xml loads as MainPresentationPart, not a BinaryPart.
+  
+Various other improvements and fixes; for details, see https://github.com/plutext/docx4j/blob/1779e60d2b46723179b84141d71b0c8166194055/CHANGELOG.md
 
-- ActiveXControlXmlPart(PartName) sets its content and relationship types, so a part
-  built with that constructor can be added to a package.
 
-Packaging (CR-026):
-
-- A vmlDrawing part - the legacy drawing a comment, a form control or an OLE
-  object's picture lives in - binds, in a docx, xlsx or pptx. Its root element
-  is <xml> in no namespace, and docx4j's schema had declared that element in a
-  namespace of its own, so every such part failed to unmarshal: its shapes were
-  unreachable, and a strict package holding one could not be saved at all.
-  VMLPart.getContents() now returns the shapes; a strict workbook with a comment
-  saves. Inline VML (w:pict) is unaffected. Schema change: the ports regenerate.
-
-Schemas:
-
-- Excel's revision uid attributes survive a round trip (CR-027). They were declared on the
-  worksheet only, so xr:uid on an autoFilter, hyperlink, table, pivot definition, comment,
-  cell style or data validation, xr2:uid on a workbook view, xr3:uid on a table column,
-  xr9:uid on a table style and xr16:uid on a connection were dropped when the part was
-  unmarshalled and saved (loadAndSave.xlsx: nine in, one out). The 2016/revision3,
-  2016/revision9 and 2017/revision16 schemas are bound; uid is a property of each host.
-
-- b:Sources keeps Word's Version attribute (not in ECMA-376; every bibliography part Word
-  saves has it, and the typed part lost it).
-
-- xcalcf:calcFeatures, which Excel writes in every workbook's extLst, is typed
-  (org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2018.calcfeatures) rather than DOM,
-  and is written with Excel's prefix (CR-027 phase 2).
-
-- For the ports which generate from the schemas (docx4j's own binding is unchanged): the
-  wildcards in a:graphicData and in a vmlDrawing part's root are processContents="lax",
-  not "strict"; a generator which follows the word made a graphic or a legacy-drawing child
-  the model does not bind fatal to the part, where docx4j keeps it as DOM.
-
-WordprocessingML:
-
-- The settings part's w14:docId, w15:chartTrackingRefBased and w15:docId are
-  written in Word's order (the schema had w15:chartTrackingRefBased first, so a
-  save reordered them). Schema change: the ports regenerate.
-
-Strict (ISO/IEC 29500) packages:
-
-- Saving a package which was Strict now converts every part, whichever part
-  store is used. UnzippedPartStore had no such branch, so saving a strict
-  package to a directory after reading any part wrote that part in the
-  transitional namespaces and the rest still in purl.oclc.org's - one package
-  carrying both dialects. Saving to a zip was already correct.
-
-- When a part of a strict package cannot be read, the exception says so and
-  names the part, rather than reporting three nested "failed to add parts from
-  relationships". Such a part is fatal to the save, because every part has to
-  be converted.
-
-SpreadsheetML:
-
-- The namespace prefixes xr5 and xr9 are known. Excel names xr9 in styles.xml's
-  mc:Ignorable, and a prefix named there but not declared is an XML error to Excel,
-  which dropped the styles part of any workbook docx4j had round-tripped.
-
-- A strict workbook's date cell (t="d" with an ISO 8601 value) becomes the 1900-system
-  serial number on load, as Excel writes it in a transitional workbook; until now the
-  cell type was dropped and Excel repaired the cell.
 
 Version 17.2.0
 ===============
