@@ -1194,6 +1194,33 @@ Contributions – including AI-assisted ones – are welcome.  Please do submit 
 
 And when you want to discuss something with a human: use GitHub discussions (https://github.com/plutext/docx4j/discussions) for questions and ideas, GitHub issues for bugs, or the docx4j forum at http://www.docx4java.org/forums/
 
+# Anonymising a document before you share it
+
+The quickest way to get help with a problem – a layout difference, a document that won’t open, a conversion that fails – is to share the document which shows it.  If that document is confidential, anonymise it first.  docx4j’s anonymiser (package `org.docx4j.anon`, part of docx4j-core since 17.2.1) makes a copy you can give to an LLM, attach to a GitHub issue or forum post, or send to Plutext for technical support, without giving away what the document says or who wrote it.
+
+It works on docx, pptx and xlsx (and their macro-enabled and template variants).  The text is scrambled: Latin letters become lorem ipsum, digits other digits, and every other script random characters from the same Unicode range, so the result still exercises the same fonts.  Authors, user ids, hyperlink targets, field arguments and document properties are scrubbed; images become placeholder pixels; and what cannot be made safe – embedded objects, macros, custom XML, chart data and the like – is removed.  In a workbook, strings are scrambled consistently (a table column still matches its header), numbers get random digits, formulas are rewritten to compute over the result, and sheets are renamed Sheet1, Sheet2, and so on.
+
+What it keeps, by design, is the document’s structure – paragraphs, runs, tables, sections, styles, numbering, fonts and sizes, fields and content controls – because that is where a layout problem, a corruption or a converter bug lives.  (One exception: a Strict document comes back Transitional, since that is how docx4j reads it.)
+
+From the command line, with docx4j-core, a JAXB runtime such as docx4j-JAXB-ReferenceImpl, and their dependencies on the classpath:
+
+```
+java -cp "lib/*" org.docx4j.anon.AnonymizeCli in.docx out.docx
+```
+
+The input can be a docx, pptx or xlsx; the package decides, not the extension.  A report (JSON) is printed, and the exit code is 0 only when the result is clean.  Options: `--keep` keeps, and reports, parts the tool cannot make clean (by default they are removed, and a result with any such part kept is never called clean); `--keep-numbers` leaves a workbook’s numbers alone; `--json report.json` saves the report; `--no-verify` skips the check that no word of the original survives; `--no-fonts` skips font discovery (faster).
+
+Or from Java:
+
+```
+OpcPackage pkg = OpcPackage.load(new java.io.File("in.docx"));
+AnonymizeResult result = new Anonymize(pkg).go();
+if (result.isClean()) pkg.save(new java.io.File("out.docx"));
+System.out.println(result.toJson());
+```
+
+See also AnonSingle and AnonCorpus in docx4j-samples-docx4j.  Whichever way you run it, open the copy and look through it before you send it: the checks are automated, but you are the one who knows what in your document is sensitive.
+
 # docx to (X)HTML
 
 docx4j can convert a docx to HTML or XHTML.  You will find the generated HTML is clean (in comparison to the HTML Word produces).
