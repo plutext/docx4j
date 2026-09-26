@@ -789,8 +789,24 @@ boolean as `true`/`false` (Excel and docx4j's fixture write `1`/`0`) and the
 `ctrlProp` root as `x14:formControlPr`; two one-change variants (wrapper
 restored; booleans `1`/`0`) are on the share for the bisect, together with the
 question whether docx4j's own re-save (wrapper kept, booleans `true`/`false`
-from JAXB) toggles - if not, the defect is docx4j's too. Verdict to follow
-here. (3) Found by core-ts in the same diff, shared and cosmetic: Excel writes
+from JAXB) toggles - if not, the defect is docx4j's too. **Rounds 1 and 2
+(Jason, 2026-09-26)**: the wrapper-restored variant errored on open - my
+construction: core-ts had dropped `xmlns:x14` from the worksheet root, and a
+`Requires="x14"` naming an undeclared prefix is an XML error to Excel, the
+CR-023 `mc:Ignorable` rule one attribute over (a parser does not catch it;
+`Requires` is attribute content). The booleans-`1`/`0` variant: inert.
+docx4j's own re-save: inert. And the **untouched original: inert** - the
+fixture is docx4j-generated, unlinked, with no checked state, only ever
+re-saved by Excel, and nobody had clicked it before. So every "inert" verdict
+was the fixture's; there is no save defect on that base, on either side.
+Lesson, now in core-ts's acceptance README and recorded here for the same
+trap over docx4j's fixtures: a "does X still work after the save" check must
+name a fixture whose X is known to work BEFORE the save. **Round 3** asks the
+question on the check box Excel has been seen to toggle, `cr022-checkbox-linked.xlsx`
+(§11 of CR-026; the box drives D4): `cr022-checkbox-linked-BARE-controls.xlsx`
+is that fixture with exactly the two wrappers removed, and
+`cr022-checkbox-linked-coretsSaved.xlsx` is core-ts's full save of it. Verdict
+to follow here. (3) Found by core-ts in the same diff, shared and cosmetic: Excel writes
 `a14:legacySpreadsheetColorIndex` (with an attribute-level `mc:Ignorable="a14"`)
 on the `a:srgbClr` of a control shape's hidden fill and line, and
 `CT_SRgbColor` (`xsd/dml/dml-baseTypes.xsd`) has no `xsd:anyAttribute`, so
