@@ -800,8 +800,6 @@
 	        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/3.0.2/txw2-3.0.2.jar"/>
 	        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/4.0.1/istack-commons-runtime-4.0.1.jar"/>
 			
-			<pathelement location="${m2Repository}/org/docx4j/docx4j-docx-anon/${version}/docx4j-docx-anon-${version}.jar"/>
-			<pathelement location="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar"/>
 		
 		</path>
 

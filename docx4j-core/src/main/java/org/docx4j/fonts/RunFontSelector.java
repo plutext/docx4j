@@ -1706,7 +1706,7 @@ public class RunFontSelector {
      * names one, the ascii font under the preamble rule, else the font the character-range
      * table gives the code point ({@link #fontFor}).  The theme references are resolved
      * through the theme part and the document's themeFontLang.  For a caller which needs the
-     * name only, such as docx4j-docx-anon's text scrambler, which checks the replacement it
+     * name only, such as the anonymiser's text scrambler (org.docx4j.anon), which checks the replacement it
      * scrambles in has a glyph in that font; until 17.2.0 it ran the selector in the
      * DISCOVERY mode over one character for this.
      *

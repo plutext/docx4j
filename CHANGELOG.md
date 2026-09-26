@@ -2,6 +2,16 @@ CHANGELOG
 =========
 
 
+Version 17.3.0
+===============
+
+Changes in Version 17.3.0
+--------------------------
+
+- The docx4j-docx-anon module is deleted (its last release was 17.2.0); the anonymiser is
+  org.docx4j.anon in docx4j-core.
+
+
 Version 17.2.1
 ===============
 
