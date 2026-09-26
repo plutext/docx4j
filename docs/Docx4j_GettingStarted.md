@@ -220,7 +220,7 @@ For docx4j v11.4 on, the version property should be:
 
 For docx4j 8.3.8, use `logback-classic 1.2.10.`
 
-A logback.xml config file may be found at [https://github.com/plutext/docx4j/blob/VERSION\_11\_5\_7/docx4j-samples-resources/src/main/resources/logback.xml](https://github.com/plutext/docx4j/blob/VERSION_11_5_7/docx4j-samples-resources/src/main/resources/logback.xml).  Put that on your classpath.
+A logback.xml config file may be found at [https://github.com/plutext/docx4j/blob/VERSION\_17\_2\_1/docx4j-samples-resources/src/main/resources/logback.xml](https://github.com/plutext/docx4j/blob/VERSION_17_2_1/docx4j-samples-resources/src/main/resources/logback.xml).  Put that on your classpath.
 
 See for example [https://github.com/plutext/docx4j/blob/master/docx4j-samples-docx4j/pom.xml#L67](https://github.com/plutext/docx4j/blob/master/docx4j-samples-docx4j/pom.xml)
 
@@ -1277,7 +1277,7 @@ From 17.0.4, the visitor (non-XSLT) FO exporter is likewise the default (pass Do
 
 PDF output via XSL FO is substantially improved in 17.0.5 and again in 17.1.0 and 17.2.0: line breaking, line height and placement, tab stops, paragraph spacing, list labels, tables, columns, footnotes and kerning now follow the rules Word applies, measured against Word 365. This is achieved in part by the introduction of docx4j's own FOP layout managers (in docx4j-export-fo, and on by default). The rules and the switches are documented in docx4j-export-fo/docs/word-layout-rules.md.
 
-See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
+See the sample code at [https://github.com/plutext/docx4j/tree/VERSION\_17\_2\_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples](https://github.com/plutext/docx4j/tree/VERSION_17_2_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples) 
 
 These jars are in the zip file, in dir optional/export-fo  
 
@@ -1342,7 +1342,7 @@ FopFactory creation is cheaper than it otherwise might be, because we specify fo
 
 In typical docx4j usage, the performance difference between reusing a FopFactory and creating a new one (using FOSettings) for each export is usually modest. 
 
-Reusing the FopFactory is slightly more efficient and is also consistent with the Apache FOP project’s recommendation. From docx4j 11.5.14, this is therefore the recommended approach. You should create a FopFactory as shown above when preparing to render the first document only, then re-use it.  See [https://github.com/plutext/docx4j/blob/VERSION\_11\_5\_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples/ManyThreads.java](https://github.com/plutext/docx4j/blob/VERSION_11_5_14/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples/ManyThreads.java) 
+Reusing the FopFactory is slightly more efficient and is also consistent with the Apache FOP project’s recommendation. From docx4j 11.5.14, this is therefore the recommended approach. You should create a FopFactory as shown above when preparing to render the first document only, then re-use it.  See [https://github.com/plutext/docx4j/blob/VERSION\_17\_2\_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples/ManyThreads.java](https://github.com/plutext/docx4j/blob/VERSION_17_2_1/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples/ManyThreads.java) 
 
 When a FopFactory is reused, docx4j uses a custom PDF document handler, introduced in docx4j 11.5.14, to configure FOP fonts on a per-document basis. This avoids relying on FOP’s cached renderer configuration for font setup, while still allowing the FopFactory itself to be reused.
 
@@ -1900,7 +1900,7 @@ A content control is a *repeat* if it designates that its contents are to be inc
 
 docx4j contains a mechanism for processing conditional content controls and repeats.  
 
-The OpenDoPE specification, version 3 (working draft of 18 September 2026), documents the binding conventions, escaped XHTML among them; it is in the docs directory of the docx4j repository: [github.com/plutext/docx4j/tree/VERSION\_17\_2\_0/docs](https://github.com/plutext/docx4j/tree/VERSION_17_2_0/docs) (OpenDoPE Specification v3 WD 2026 09 18, as docx, markdown and PDF).
+The OpenDoPE specification, version 3 (working draft of 18 September 2026), documents the binding conventions, escaped XHTML among them; it is in the docs directory of the docx4j repository: [github.com/plutext/docx4j/tree/VERSION\_17\_2\_1/docs](https://github.com/plutext/docx4j/tree/VERSION_17_2_1/docs) (OpenDoPE Specification v3 WD 2026 09 18, as docx, markdown and PDF).
 
 See also the docx4j sample ContentControlBindingExtensions.
 
@@ -2142,9 +2142,9 @@ To do this, you will need to:
 Notes about mapping:
 
 - mapping is not case sensitive (lowercase is used).
-- Typically you map the base name, for example “Liberation Sans”, not “Liberation Sans Regular” or “Bold”.  [https://github.com/plutext/docx4j/blob/VERSION\_11\_5\_8/docx4j-core/src/main/resources/org/docx4j/fonts/microsoft/MicrosoftFonts.xml](https://github.com/plutext/docx4j/blob/VERSION_11_5_8/docx4j-core/src/main/resources/org/docx4j/fonts/microsoft/MicrosoftFonts.xml)  specifies the corresponding bold, italic and bolditalic forms.
+- Typically you map the base name, for example “Liberation Sans”, not “Liberation Sans Regular” or “Bold”.  [https://github.com/plutext/docx4j/blob/VERSION\_17\_2\_1/docx4j-core/src/main/resources/org/docx4j/fonts/microsoft/MicrosoftFonts.xml](https://github.com/plutext/docx4j/blob/VERSION_17_2_1/docx4j-core/src/main/resources/org/docx4j/fonts/microsoft/MicrosoftFonts.xml)  specifies the corresponding bold, italic and bolditalic forms.
 
-You can use [https://github.com/plutext/docx4j/blob/VERSION\_11\_5\_8/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/FontsUsed.java](https://github.com/plutext/docx4j/blob/VERSION_11_5_8/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/FontsUsed.java) to get an understanding of what fonts are present in your docx, and how they are mapped.
+You can use [https://github.com/plutext/docx4j/blob/VERSION\_17\_2\_1/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/FontsUsed.java](https://github.com/plutext/docx4j/blob/VERSION_17_2_1/docx4j-samples-docx4j/src/main/java/org/docx4j/samples/FontsUsed.java) to get an understanding of what fonts are present in your docx, and how they are mapped.
 
 Note:  for characters outside the ASCII range, font selection is a complex topic.  For simplicity, the FontsUsed sample does not cover those cases.    From 17.2.0 FontsAnalysis (next) covers them, and says what docx4j will draw each font with.
 
