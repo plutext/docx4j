@@ -774,6 +774,24 @@ model's binary, which Excel alone writes.
   core-ts told of phases 1 and 2 (the parts are its territory).
 - **Registry**: `docx4j/CR-022` and its phases done.
 
+**Two notes after the close (2026-09-26).** (1) A documentation slip found by
+docx4j-core-ts's CR-004 phase A: `x14:datastoreItem`'s attribute is `id`
+(`office_spreadsheetml_2009_9_main.xsd` line 794), not `itemID` as a note of
+that port's had it; nothing in this CR said `itemID`, so nothing to change
+here - recorded so the correction is findable. (2) The bare `<controls>`
+question: core-ts resolves markup compatibility on load, so its save of
+`cr022-checkbox.xlsx` writes the worksheet's `controls` without the
+`mc:AlternateContent` wrapper Excel and docx4j write (Choice `Requires="x14"`,
+no Fallback). Jason's Excel check of that file (share
+`fidelity/cr004b-core-ts-controls/`): opens with no repair prompt, the check
+box is drawn, but clicking it does nothing. That file also writes every
+boolean as `true`/`false` (Excel and docx4j's fixture write `1`/`0`) and the
+`ctrlProp` root as `x14:formControlPr`; two one-change variants (wrapper
+restored; booleans `1`/`0`) are on the share for the bisect, together with the
+question whether docx4j's own re-save (wrapper kept, booleans `true`/`false`
+from JAXB) toggles - if not, the defect is docx4j's too. Verdict to follow
+here.
+
 **Left for other CRs** (each named where it arose): the slicer and timeline
 drawing shapes (§16, §19; DrawingML) - **measured 2026-09-20, after the
 close**, on objects-ts's prompting from its round-trip probe: with every

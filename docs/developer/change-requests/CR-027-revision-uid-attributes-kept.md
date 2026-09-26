@@ -1,6 +1,6 @@
 # CR-027: Excel's revision `uid` attributes and Word's bibliography `Version` kept on a round trip - `xr3`, `xr9`, `xr16` bound, `xcalcf` typed
 
-Status: DONE 2026-09-25, both phases (§10 records; phase 1 b1fa34947); the Excel and Word check on the share `fidelity/cr027-uid/` awaits Jason's verdict, recorded in §10 when it comes. Proposed 2026-09-25, written by `docs/developer/adding-a-schema.md`
+Status: DONE 2026-09-25, both phases (§10 records; phase 1 b1fa34947, phase 2 bde2feb3d); the Excel and Word check passed 2026-09-26 (§10). Proposed 2026-09-25, written by `docs/developer/adding-a-schema.md`
 step 0; the item CR-022 §20 left for "one small CR" (the remaining revision
 attributes and `xcalcf`). Found by docx4j-generated-objects-ts's CR-004 phase
 B (237 parts of twelve docx4j test documents through its package) and
@@ -259,7 +259,7 @@ for the tree's shape.
 | regeneration and `docx4j-core` install | BUILD SUCCESS |
 | `RevisionUidAttributesTest`, `BibliographyPartTest`, `ExcelExtensionsTest`, `IgnorablePrefixesDeclaredTest` | 17 tests, 0 failures |
 | `docx4j-core-tests`, full | 1328 tests, 0 failures, 11 skipped |
-| Office check (Excel 365 and Word, Jason; the share's `fidelity/cr027-uid/`, README there) | **awaiting Jason**: `cr022-data-model-saved.xlsx`, `strict-invoice-saved.xlsx`, `loadAndSave-saved.xlsx`, `loadAndSave-saved.docx`, each every part unmarshalled then saved |
+| Office check (Excel 365 and Word, Jason, 2026-09-26; the share's `fidelity/cr027-uid/`, README there) | **passed**: `cr022-data-model-saved.xlsx`, `strict-invoice-saved.xlsx`, `loadAndSave-saved.xlsx` and `loadAndSave-saved.docx` (each every part unmarshalled then saved) all open with no repair prompt. Jason noted the docx's Manage Sources master list is empty: the master list is Word's machine-wide `Sources.xml`, not the document's, and the document's own `b:Sources` has no `b:Source` at all (measured: zero children; the part is a style choice and a `Version`), so both lists empty is what the fixture holds. The README's "shows the sources" line was mine and wrong |
 
 ### Phase 2 record (2026-09-25)
 
