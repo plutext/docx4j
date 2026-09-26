@@ -790,7 +790,13 @@ boolean as `true`/`false` (Excel and docx4j's fixture write `1`/`0`) and the
 restored; booleans `1`/`0`) are on the share for the bisect, together with the
 question whether docx4j's own re-save (wrapper kept, booleans `true`/`false`
 from JAXB) toggles - if not, the defect is docx4j's too. Verdict to follow
-here.
+here. (3) Found by core-ts in the same diff, shared and cosmetic: Excel writes
+`a14:legacySpreadsheetColorIndex` (with an attribute-level `mc:Ignorable="a14"`)
+on the `a:srgbClr` of a control shape's hidden fill and line, and
+`CT_SRgbColor` (`xsd/dml/dml-baseTypes.xsd`) has no `xsd:anyAttribute`, so
+docx4j drops it too. Excel draws the control from the VML, so nothing visible
+is lost; an attribute admission of the CR-023/CR-027 shape when a DrawingML
+attribute pass is next done.
 
 **Left for other CRs** (each named where it arose): the slicer and timeline
 drawing shapes (§16, §19; DrawingML) - **measured 2026-09-20, after the
