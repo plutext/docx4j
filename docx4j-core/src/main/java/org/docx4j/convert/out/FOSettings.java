@@ -53,6 +53,42 @@ public class FOSettings extends AbstractConversionSettings {
 	public static final String APACHEFOP_MIME = "apacheFopMime";
 	public static final String CUSTOM_FO_RENDERER = "customFoRenderer";
 	private static final String FO_DUMP_FILE = "foDumpFile";
+	private static final String IMAGE_RESOLUTION = "imageResolution";
+	private static final String IMAGE_CROP = "imageCrop";
+
+	/**
+	 * The resolution pictures are drawn at in this conversion's PDF, overriding
+	 * {@code docx4j.convert.out.fo.images.resolution} (CR-029): {@code "word"} (as Word's PDF
+	 * export: above 300 pixels per inch at the size shown, resampled to 200, and JPEGs
+	 * re-encoded at quality 75 where that saves a tenth), {@code "document"}
+	 * (as Word's Compress Pictures with the document's settings), {@code "high-fidelity"}
+	 * (the original bitmaps), or a number of pixels per inch. Null: the property decides.
+	 *
+	 * @since 17.3.0
+	 */
+	public void setImageResolution(String resolution) {
+		settings.put(IMAGE_RESOLUTION, resolution);
+	}
+
+	/** @see #setImageResolution  @since 17.3.0 */
+	public String getImageResolution() {
+		return (String)settings.get(IMAGE_RESOLUTION);
+	}
+
+	/**
+	 * Whether this conversion applies pictures' crops (a:srcRect), overriding
+	 * {@code docx4j.convert.out.fo.images.crop} (CR-029). Null: the property decides.
+	 *
+	 * @since 17.3.0
+	 */
+	public void setImageCrop(Boolean crop) {
+		settings.put(IMAGE_CROP, crop);
+	}
+
+	/** @see #setImageCrop  @since 17.3.0 */
+	public Boolean getImageCrop() {
+		return (Boolean)settings.get(IMAGE_CROP);
+	}
 
 	private Fop fopConfig;
 	/**

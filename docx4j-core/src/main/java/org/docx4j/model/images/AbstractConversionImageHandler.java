@@ -53,6 +53,17 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	public String handleImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) throws Docx4JException {
 	String key = createKey(relationship, part);
 	String uri = null;
+		String variant = compressedVariant(picture, relationship, part);
+		if (variant != null) {
+			String variantKey = key + "#" + variant;
+			if (handledImagesMap.containsKey(variantKey)) return handledImagesMap.get(variantKey);
+			uri = handleCompressed(picture, relationship, part, variant);
+			if (uri != null) {
+				handledImagesMap.put(variantKey, uri);
+				return uri;
+			}
+			// nothing to change: the picture as stored, shared with every other use of it
+		}
 		if (handledImagesMap.containsKey(key)) {
 			uri = handledImagesMap.get(key);
 		}
@@ -60,7 +71,86 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 			uri = doHandleImage(picture, relationship, part);
 			handledImagesMap.put(key, uri);
 		}
+		if (variant != null) handledImagesMap.put(key + "#" + variant, uri);
 		return uri;
+	}
+
+	/** This handler's resolution (a value of {@link PictureCompression#RESOLUTION_PROPERTY}),
+	 *  or null for the property.  @since 17.3.0 */
+	protected String pictureResolution;
+
+	/** Whether this handler applies crops, or null for the property.  @since 17.3.0 */
+	protected Boolean pictureCrop;
+
+	/** Set by the FO conversion from {@code FOSettings.setImageResolution}.  @since 17.3.0 */
+	public void setPictureResolution(String resolution) {
+		this.pictureResolution = resolution;
+	}
+
+	/** Set by the FO conversion from {@code FOSettings.setImageCrop}.  @since 17.3.0 */
+	public void setPictureCrop(Boolean crop) {
+		this.pictureCrop = crop;
+	}
+
+	private boolean cropping() {
+		return pictureCrop != null ? pictureCrop.booleanValue() : PictureCompression.cropEnabled();
+	}
+
+	/** Whether this handler applies pictures' crops in XSL-FO output (CR-029).  @since 17.3.0 */
+	public boolean cropsPictures() {
+		return cropping();
+	}
+
+	/**
+	 * For a picture in XSL-FO (PDF) output, the picture as Word's Compress Pictures would
+	 * leave it (CR-029): the crop applied, and resampled to the document's resolution for
+	 * the size it is shown at ({@link PictureCompression}). Identifies the variant, or
+	 * null where there is nothing to consider (another output, an external picture, no
+	 * crop and no resolution).
+	 *
+	 * @since 17.3.0
+	 */
+	protected String compressedVariant(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part)
+			throws Docx4JException {
+		if (picture == null || !picture.isForXslFo() || part == null
+				|| !isInternalImage(picture, relationship, part)) {
+			return null;
+		}
+		PictureCrop crop = cropping() ? picture.getCrop() : PictureCrop.NONE;
+		PictureCompression.Resolution resolution = PictureCompression.resolution(picture.getWmlPackage(), pictureResolution);
+		if (crop.isNone() && resolution.isHighFidelity()) return null;
+		return crop.signature() + "@" + resolution + ":" + Math.round(picture.getWidthInPoints() * 100)
+				+ "x" + Math.round(picture.getHeightInPoints() * 100);
+	}
+
+	/** The compressed picture stored through this handler as a part of its own (so a
+	 *  second crop of the same bitmap does not overwrite the first), or null where
+	 *  nothing changes.  @since 17.3.0 */
+	private String handleCompressed(AbstractWordXmlPicture picture, Relationship relationship,
+			BinaryPart part, String variant) throws Docx4JException {
+		PictureCrop crop = cropping() ? picture.getCrop() : PictureCrop.NONE;
+		PictureCompression.Result r = PictureCompression.compress(part.getBytes(), crop,
+				picture.getWidthInPoints(), picture.getHeightInPoints(),
+				PictureCompression.resolution(picture.getWmlPackage(), pictureResolution));
+		if (r == null) return null;
+		try {
+			String name = part.getPartName() == null ? "/word/media/picture" : part.getPartName().getName();
+			int dot = name.lastIndexOf('.');
+			if (dot > name.lastIndexOf('/')) name = name.substring(0, dot);
+			name = name + "-" + Integer.toHexString(variant.hashCode()) + "." + r.extension;
+			BinaryPart derived = new BinaryPart(new org.docx4j.openpackaging.parts.PartName(name));
+			derived.setContentType(new org.docx4j.openpackaging.contenttype.ContentType(r.contentType));
+			derived.setBinaryData(r.bytes);
+			if (log.isDebugEnabled()) {
+				log.debug(relationship.getTarget() + ": " + (crop.isNone() ? "" : crop + ", ")
+						+ r.width + "x" + r.height + " " + r.extension + ", " + r.bytes.length + " bytes (was "
+						+ part.getBytes().length + ")");
+			}
+			return doHandleImage(picture, relationship, derived);
+		} catch (org.docx4j.openpackaging.exceptions.InvalidFormatException e) {
+			log.warn("Couldn't store the compressed picture: " + e.getMessage());
+			return null;
+		}
 	}
 
 	protected String createKey(Relationship relationship, BinaryPart part) {

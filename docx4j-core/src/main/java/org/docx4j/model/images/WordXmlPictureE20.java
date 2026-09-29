@@ -270,6 +270,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	}
     	
     	CTBlip blip = pic.getBlipFill().getBlip();
+    	converter.crop = PictureCrop.of(pic.getBlipFill().getSrcRect()); // CR-029
     	
     	String imgRelId = blip.getEmbed();
     	if ((imgRelId == null) || (imgRelId.length() == 0)) {

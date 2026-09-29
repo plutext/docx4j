@@ -1,8 +1,11 @@
 # CR-029: pictures in PDF output as Word compresses them - resolution, and cropped areas deleted
 
-Status: ACTIVE. Proposed 2026-09-29 (Jason asked for the draft, "reflecting Word", with Word's
-Compress Pictures dialog as the reference); accepted by Jason Harrop the same day ("commit CR-029
-then implement", with the crop drawing defect of §1 to be fixed). Drafted with Claude Opus 5.5.
+Status: DONE 2026-09-29, all phases (§9). Proposed 2026-09-29 (Jason asked for the draft,
+"reflecting Word", with Word's Compress Pictures dialog as the reference); accepted by Jason
+Harrop the same day ("commit CR-029 then implement", with the crop drawing defect of §1 to be
+fixed). Drafted and implemented with Claude Opus 5.5. Where the implementation departs from §3,
+§9 says so and why (chiefly: the default follows Word's PDF export, which phase 0 found differs
+from its Compress Pictures).
 Owner: Jason Harrop.
 
 Scope: `docx4j-export-fo` (PDF via XSL-FO). The picture docx4j hands FOP becomes the picture Word
@@ -40,7 +43,7 @@ Word's Compress Pictures dialog (Picture Format > Compress Pictures) offers:
 The document-wide defaults are under File > Options > Advanced > Image Size and Quality, stored
 in `word/settings.xml` and already bound in docx4j:
 
-| setting | element | meaning (to be confirmed in phase 0) |
+| setting | element | meaning (see §9.1: Word's PDF export ignores all three) |
 |---|---|---|
 | Do not compress images in file | `w:doNotAutoCompressPictures` | Word leaves pictures as inserted |
 | Default resolution | `w14:defaultImageDpi w14:val=` | the ppi Word compresses to; 220 when absent (Word's shipped default) |
@@ -146,3 +149,97 @@ Phase 0: a day, with Word goldens. Phase 1: two days. Phase 2: two days. Phase 3
 - `xsd/wml/wml.xsd` (`w:doNotAutoCompressPictures`), `xsd/wml/w14_word_2010_wordml.xsd`
   (`w14:defaultImageDpi`, `w14:discardImageEditingData`).
 - Word: Picture Format > Compress Pictures; File > Options > Advanced > Image Size and Quality.
+
+## 9. Record
+
+### 9.1 Phase 0: what Word does (measured 2026-09-29)
+
+Measured on Word's own PDFs of docx4j's corpora (the goldens, cut by WordGoldenRunner), rather
+than on new probes: `pdfimages -list` for each picture's pixel size, encoding and bytes, paired
+with the stored bitmaps. The 29 real documents with a crop (`a:srcRect` or a VML crop) were read
+closely; the rule was then checked across the corpora.
+
+- **Word's PDF export resamples to 200 ppi, and only above 300 ppi**, at the size shown. Of 124
+  pictures paired with their stored bitmaps, every one Word resampled came out at 200 ppi (from
+  398 ppi and up), and every one it kept was 300 ppi or less.
+- **It rounds down**: a frame 402.5 px wide at 200 ppi is 402 px, and 902.97 is 902. `floor`
+  matched 15 of 28 resampled pictures, and round-to-nearest matched 1; the misses are 1 px under.
+- **It ignores the document's compression settings.** Documents with
+  `w:doNotAutoCompressPictures` still have their pictures at 200 ppi in Word's PDF. Those settings
+  govern Compress Pictures when Word saves, not the PDF export. In the corpora `w14:defaultImageDpi`
+  occurs as 0 and as 32767 (both read here as High fidelity) and as 300.
+- **JPEG quality 75**: the quantisation tables of Word's PDF JPEGs say quality 75, cropped ones
+  included. **It re-encodes JPEGs it does not resample**: for 402 JPEGs at the same pixel size in
+  Word's PDFs and docx4j's, Word's came to 15.1 MB and the stored originals to 22.6 MB.
+- **PNGs mostly stay lossless.** Of about 360 kept pictures, 25 changed format (PNG to JPEG),
+  nearly all one repeated picture in one document, so no general rule to follow.
+
+### 9.2 What was built, and the departures from §3
+
+- **Crops** (`PictureCrop`, read from `a:srcRect` in `WordXmlPictureE20` and from `v:imagedata`'s
+  crop attributes in `WordXmlPictureE10`). The image handler cuts the bitmap by the edges which
+  move in. An edge which moves out (a negative value: the picture inset in its frame) is not in
+  the bitmap, so it becomes padding on the `fo:external-graphic`, with the content box reduced
+  to keep the frame's size; `WordLayoutFixups` and `TableWriter` add the padding back where they
+  read a picture's size. Word draws it that way (checked by eye on the corpus document with
+  l -2.5%, t -33.1%: the picture sits below an empty band, as in Word).
+- **Resolution** (`PictureCompression`): `docx4j.convert.out.fo.images.resolution`, **default
+  `word`** (Word's PDF export: above 300 ppi to 200, rounded down, and a JPEG left at its size
+  re-encoded at quality 75 where that saves a tenth of its bytes, which leaves one already at or
+  below that quality alone). `document` is the §3.1 design (Compress Pictures with the document's
+  settings: none for "do not compress", else `w14:defaultImageDpi`, else 220); `high-fidelity` the
+  original bitmaps; a number, that resolution. **Departure**: §3.1 proposed `document` as the
+  default; phase 0 showed that is not what Word's PDF has.
+- **The crop switch** is `docx4j.convert.out.fo.images.crop` (default true), not
+  `deleteCroppedAreas`. **Departure**: false restores the pre-17.3.0 drawing (the whole bitmap
+  stretched into the frame) rather than cropping with an FO clip; a clip would keep the bytes and
+  fix the drawing, but no reader of the output asked for that, and one switch back to exactly the
+  old output is the safer escape hatch.
+- **JPEG quality** `docx4j.convert.out.fo.images.jpegQuality`, default 0.75.
+- **FOSettings.setImageResolution / setImageCrop** override the properties per conversion
+  (through `FOConversionContext` onto the image handler).
+- **Where**: in `AbstractConversionImageHandler` (docx4j-core) rather than `FOConversionImageHandler`,
+  for pictures built for XSL-FO only, so HTML output is unchanged. The cropped or resampled
+  bitmap is stored as a derived part of its own, keyed by part, crop, resolution and frame size,
+  so two crops of one bitmap are two files and a repeated one is still stored once.
+- **`CompressPictures`** (phase 3): Word's Compress Pictures on a package. DrawingML pictures in
+  the document, headers, footers, footnotes, endnotes and comments; JPEG and PNG parts only
+  (their format is kept); a bitmap which pictures crop differently keeps its crops and is
+  resampled for the largest share any of them shows; what remains of a crop (edges which move
+  out) is rewritten relative to the cut bitmap. Resolution default `document`.
+- Documentation: `docx4j-fo.properties` (the three properties), Getting Started ("Pictures." in
+  the PDF via XSL FO section; md, html and pdf regenerated), CHANGELOG.
+
+### 9.3 Gate
+
+Tests: `PictureCompressionTest` (export-fo, 19) and `CompressPicturesTest` (core-tests, 6); export-fo
+227/227, core-tests 1335/0 (11 skipped, as before).
+
+Corpora, the harness on Apache FOP, baseline `cr029-base` (crop off, high-fidelity: the
+pre-17.3.0 output) against the candidate with the defaults, probes against `goldens-nofields`,
+real/real2/real3 with `hyphenate=false`:
+
+| check | result |
+|---|---|
+| layout (word positions, `pdftotext -bbox`) | 596 of 598 identical; the other 2 differ only in a clock field (TIME/PRINTDATE) that ticked between runs |
+| scoreboards | 0 changed documents in every corpus |
+| picture bytes in the PDFs | real 0.9 -> 0.7 MB (Word 0.7); real2 13.0 -> 7.6 (Word 6.7); real3 140.3 -> 64.7 (Word 48.5) |
+| pictures matching Word's pixel size | real 122 -> 131 of 157; real2 507 -> 574; real3 3293 -> 3641 |
+| the 29 crop documents | 295 -> 357 of Word's 563 pictures; drawn as Word draws them (checked by eye on two) |
+
+The line score cannot see a picture's content, only where the text is, so the drawing fix shows
+in the pixel sizes and by eye rather than on the scoreboards.
+
+### 9.4 Left for later
+
+- **Fonts, not pictures, are now most of the size gap.** Whole PDFs: real2 200.7 MB against Word's
+  50.9, of which pictures are 7.6 against 6.7. docx4j's `+noliga` font copies are declared
+  single-byte, and FOP embeds a single-byte font whole, not as a subset (one document: 982 KB;
+  183 KB with no twin; Word 264 KB). With the fork's gsub-features hook (CR-020) the twin could
+  give way to `-liga` on the CID declaration, which is subset. That belongs to CR-020's switch.
+- A metafile picture's crop is not applied (it is drawn as SVG, whole).
+- Word draws a picture's outline (`a:ln`); docx4j does not (older than this CR).
+- VML pictures in `CompressPictures`.
+- One corpus document draws, beside each of 75 pictures, a second small one Word does not
+  (older than this CR; not investigated).
+

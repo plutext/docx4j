@@ -382,7 +382,7 @@ public final class WordLayoutFixups {
 				 * gap.  Where the anchored picture is the only one, the height stays 0
 				 * and the rule still does nothing.  @since 17.1.0 */
 				if (child.hasAttribute(HINT_ANCHOR)) continue;
-				double h = lengthPt(child.getAttribute("content-height"));
+				double h = lengthPt(child.getAttribute("content-height")) <= 0 ? 0 : pictureHeightPt(child);
 				if (h <= 0) { // unsized
 					state[1] = 1;
 					return;
@@ -1633,7 +1633,7 @@ public final class WordLayoutFixups {
 	private static double graphicWidthPt(Element holder) {
 		for (Node n = holder.getFirstChild(); n != null; n = n.getNextSibling()) {
 			if (n instanceof Element && "external-graphic".equals(((Element) n).getLocalName())) {
-				return lengthPt(((Element) n).getAttribute("content-width"));
+				return pictureWidthPt((Element) n);
 			}
 		}
 		return 0;
@@ -1655,7 +1655,7 @@ public final class WordLayoutFixups {
 			double h = 0;
 			for (Node c = holder.getFirstChild(); c != null; c = c.getNextSibling()) {
 				if (c instanceof Element && "external-graphic".equals(((Element) c).getLocalName())) {
-					h = lengthPt(((Element) c).getAttribute("content-height"));
+					h = pictureHeightPt((Element) c);
 				}
 			}
 			holder.removeAttribute("start-indent");
@@ -2206,7 +2206,7 @@ public final class WordLayoutFixups {
 	private static double widest(Element el, String name) {
 		double w = 0;
 		if (isFo(el, name)) {
-			w = "table".equals(name) ? tableWidthPt(el) : lengthPt(el.getAttribute("content-width"));
+			w = "table".equals(name) ? tableWidthPt(el) : pictureWidthPt(el);
 		}
 		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
 			if (n instanceof Element) w = Math.max(w, widest((Element) n, name));
@@ -4482,6 +4482,20 @@ public final class WordLayoutFixups {
 	}
 
 	/** An FO length in points; 0 if unparseable. */
+	/** A picture's width in the line: its content box plus any padding, which is how a
+	 *  picture whose crop moves an edge out is drawn inset in its frame (CR-029).
+	 *  @since 17.3.0 */
+	static double pictureWidthPt(Element g) {
+		return lengthPt(g.getAttribute("content-width")) + lengthPt(g.getAttribute("padding-left"))
+				+ lengthPt(g.getAttribute("padding-right"));
+	}
+
+	/** A picture's height in the line: content box plus padding.  @since 17.3.0 */
+	static double pictureHeightPt(Element g) {
+		return lengthPt(g.getAttribute("content-height")) + lengthPt(g.getAttribute("padding-top"))
+				+ lengthPt(g.getAttribute("padding-bottom"));
+	}
+
 	static double lengthPt(String v) {
 		if (v == null) return 0;
 		v = v.trim();

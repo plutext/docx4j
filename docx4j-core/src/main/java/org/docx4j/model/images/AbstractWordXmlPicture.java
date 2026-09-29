@@ -39,6 +39,43 @@ public abstract class AbstractWordXmlPicture {
 
 	protected final static String IMAGE_URL = "http://docxwave.appspot.com/image?";
 
+	/** What of the bitmap Word draws in the frame ({@code a:srcRect}, or a VML
+	 *  {@code v:imagedata}'s crop attributes).  @since 17.3.0 (CR-029) */
+	protected PictureCrop crop = PictureCrop.NONE;
+
+	/** Whether the image handler crops the bitmap (so the frame's inset, for an edge
+	 *  which moves out, is drawn too); false for a handler which does not.  @since 17.3.0 */
+	private boolean cropApplied;
+
+	/** @return the picture's crop; {@link PictureCrop#NONE} for the whole bitmap
+	 *  @since 17.3.0 */
+	public PictureCrop getCrop() {
+		return crop;
+	}
+
+	/** @return whether this picture is being converted for XSL-FO (PDF) output
+	 *  @since 17.3.0 */
+	public boolean isForXslFo() {
+		return forXslFo;
+	}
+
+	/** @return the width of the frame the document gives the picture, in points; 0 where
+	 *  it states none  @since 17.3.0 */
+	public double getWidthInPoints() {
+		return dimensions == null ? 0 : lengthInPoints(dimensions.width, dimensions.widthUnit);
+	}
+
+	/** @return the height of the frame, in points; 0 where the document states none
+	 *  @since 17.3.0 */
+	public double getHeightInPoints() {
+		return dimensions == null ? 0 : lengthInPoints(dimensions.height, dimensions.heightUnit);
+	}
+
+	/** @return the package the picture is in (null where not known)  @since 17.3.0 */
+	public WordprocessingMLPackage getWmlPackage() {
+		return wmlPackage;
+	}
+
     public static DocumentFragment getHtmlDocumentFragment(AbstractWordXmlPicture picture) {
 
     	DocumentFragment docfrag=null;
@@ -266,10 +303,32 @@ public abstract class AbstractWordXmlPicture {
             	 * in Word and 346pt here, and two such pictures then needed a page each.
             	 * 651 of 1737 pictures across 50 documents of a long-document corpus
             	 * declare an extent whose aspect differs from the bitmap's by over 2%.
-            	 * The crop itself is not reproduced (§9.1): the picture is stretched into
-            	 * the frame rather than cropped to it, which is the same geometry.
+            	 * Until 17.3.0 the crop itself was not reproduced: the whole bitmap was
+            	 * stretched into the frame, the right frame but the wrong picture.  Now the
+            	 * image handler crops the bitmap (CR-029, AbstractConversionImageHandler),
+            	 * and what remains is stretched into the frame, as Word does.
             	 */
             	imageElement.setAttribute("scaling", "non-uniform");
+            }
+
+            if (cropApplied && metaFileSvg == null && crop.pads()
+            		&& dimensions.width > 0 && dimensions.height > 0) {
+            	/* An edge of a:srcRect which moves out (a negative value) is not in the
+            	 * bitmap: Word draws the picture inset in its frame, the rest of the frame
+            	 * empty.  So the content box shrinks by that share of the frame and padding
+            	 * makes up the difference, keeping the frame's size, which is what the line
+            	 * and table sizing read (WordLayoutFixups.pictureWidthPt/HeightPt add the
+            	 * padding back).  @since 17.3.0 (CR-029) */
+            	double w = lengthInPoints(dimensions.width, dimensions.widthUnit);
+            	double h = lengthInPoints(dimensions.height, dimensions.heightUnit);
+            	double[] pad = crop.framePadding();
+            	imageElement.setAttribute("content-width", length(w * (1 - pad[0] - pad[2])) + "pt");
+            	imageElement.setAttribute("content-height", length(h * (1 - pad[1] - pad[3])) + "pt");
+            	String[] side = { "padding-left", "padding-top", "padding-right", "padding-bottom" };
+            	for (int i = 0; i < 4; i++) {
+            		double pt = (i % 2 == 0 ? w : h) * pad[i];
+            		if (pt > 0) imageElement.setAttribute(side[i], length(pt) + "pt");
+            	}
             }
     }
 
@@ -291,6 +350,9 @@ public abstract class AbstractWordXmlPicture {
 			ignoreImage = true;
 		}
 		if (!ignoreImage) {
+			cropApplied = forXslFo && crop != null && !crop.isNone()
+					&& imageHandler instanceof AbstractConversionImageHandler
+					&& ((AbstractConversionImageHandler) imageHandler).cropsPictures();
 			if (renderMetafile(imageHandler, rel, (BinaryPart)part)) {
 				return; // drawn as SVG, or rasterised through the image handler
 			}

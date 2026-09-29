@@ -723,12 +723,16 @@ public class TableWriter extends AbstractTableWriter {
 			// AbstractWordXmlPicture writes the picture's size in points but labels the
 			// unit px, and FOP's default source resolution is 72dpi, so here a px is a point
 			try {
-				return Double.parseDouble(w.substring(0, w.length() - 2));
+				return Double.parseDouble(w.substring(0, w.length() - 2))
+						+ WordLayoutFixups.lengthPt(g.getAttribute("padding-left"))
+						+ WordLayoutFixups.lengthPt(g.getAttribute("padding-right"));
 			} catch (NumberFormatException e) {
 				return 0;
 			}
 		}
-		return WordLayoutFixups.lengthPt(w);
+		// a picture drawn inset in its frame carries the rest as padding (CR-029)
+		return WordLayoutFixups.lengthPt(w) + WordLayoutFixups.lengthPt(g.getAttribute("padding-left"))
+				+ WordLayoutFixups.lengthPt(g.getAttribute("padding-right"));
 	}
 
 	/**

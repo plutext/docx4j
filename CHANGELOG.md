@@ -11,6 +11,18 @@ Changes in Version 17.3.0
 - The docx4j-docx-anon module is deleted (its last release was 17.2.0); the anonymiser is
   org.docx4j.anon in docx4j-core.
 
+PDF via XSL FO:
+
+- Cropped pictures are drawn cropped, as Word draws them (a:srcRect, v:imagedata's crop);
+  until now the whole bitmap was squeezed into the picture's frame. CR-029.
+
+- Pictures are resampled as Word's PDF export resamples them (above 300 ppi at the size shown,
+  to 200 ppi; JPEGs re-encoded at quality 75), so a PDF with large pictures is much smaller.
+  docx4j.convert.out.fo.images.resolution (word, document, high-fidelity, or a ppi) or
+  FOSettings.setImageResolution changes it. CR-029.
+
+- New org.docx4j.model.images.CompressPictures: Word's Compress Pictures on a package. CR-029.
+
 
 Version 17.2.1
 ===============

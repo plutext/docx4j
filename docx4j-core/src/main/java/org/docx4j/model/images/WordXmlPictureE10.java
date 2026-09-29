@@ -207,6 +207,9 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 //        String imgRelId = converter.imageData.getOtherAttributes().get(
 //        		new QName("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));   
     	
+    	converter.crop = PictureCrop.ofVml(converter.imageData.getCropleft(), converter.imageData.getCroptop(),
+    			converter.imageData.getCropright(), converter.imageData.getCropbottom()); // CR-029
+
     	String imgRelId = converter.imageData.getId();
         if (imgRelId!=null && !imgRelId.equals("")) {
         	log.debug("Handling " + imgRelId);

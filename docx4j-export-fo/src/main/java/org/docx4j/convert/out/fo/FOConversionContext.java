@@ -247,6 +247,13 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 					new FOConversionImageHandler(settings.getImageDirPath(), true) : 
 					new FOConversionImageHandler());
 		}
+		// the picture settings of this conversion (CR-029), where FOSettings gives them
+		if (settings instanceof FOSettings && handler instanceof org.docx4j.model.images.AbstractConversionImageHandler) {
+			FOSettings fo = (FOSettings) settings;
+			org.docx4j.model.images.AbstractConversionImageHandler h = (org.docx4j.model.images.AbstractConversionImageHandler) handler;
+			if (fo.getImageResolution() != null) h.setPictureResolution(fo.getImageResolution());
+			if (fo.getImageCrop() != null) h.setPictureCrop(fo.getImageCrop());
+		}
 		return handler;
 	}
 	
