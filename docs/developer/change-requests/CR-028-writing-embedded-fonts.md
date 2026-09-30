@@ -9,7 +9,17 @@ part, a `w:fontTable` entry Word will act on, the settings flag, and a licence c
 round trip proved by docx4j's existing read path and by Word. Later phases: subsetting, and
 pptx. Not in scope: xlsx (Excel has no font embedding), the anonymiser (it removes embedded
 fonts, correctly), and any change to how docx4j *uses* an embedded font for PDF output
-(`FontTablePart.processEmbeddings`, which works). No schema change: `w:fontTable`, `w:font` and
+(`FontTablePart.processEmbeddings`, which works: the font is read from the docx and registered).
+"Works" does not mean "embeds in the PDF as Word does": docx4j writes more font data than Word,
+because its `+noliga` twin is declared single-byte and FOP copies a single-byte TrueType font
+whole (fop-core `PDFFactory.makeFontFile`, TrueType branch; no embedding-mode attribute reaches
+it), where Word subsets to the glyphs used. Measured in CR-029 §9.4 (real2 200.7 MB against
+Word's 50.9, fonts most of it; one document 982 KB of fonts, 183 KB with no twin, Word 264 KB)
+and re-measured 2026-09-30 by the fork session ("Hello world" in Arimo: 8,451 bytes subset on
+the CID declaration, 191,915 whole on the single-byte one). A font embedded by this CR goes
+through the same twin, so it too is written whole whenever a Latin span takes it. The remedy is
+CR-020's switch (the twin gives way to `-liga` on the CID declaration, which is subset, now that
+the gsub-features gate has passed), not this CR. No schema change: `w:fontTable`, `w:font` and
 `w:embedRegular` are bound already.
 
 ## 1. What docx4j does today
