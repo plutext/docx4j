@@ -997,8 +997,10 @@ the rest under 60) and no scoreboard at all; every one is a one-character paragr
 had been sized by hash order.
 
 Carried: the twin declarations (still in every FOP config, unused on the fork); the format
-characters in the text layer (fork); the Cambria-Greek fallback and the kernSpaces GPOS
-pairs (above).
+characters in the text layer (fork `fop/CR-007`, gated here 2026-10-01: geometry identical,
+the U+206A Word keeps restored, but Word writes no bidi marks to its text layer, so the
+branch narrows before it merges; Enterprise §6.6 item 34 has the reading); the
+Cambria-Greek fallback and the kernSpaces GPOS pairs (above).
 
 ### Not done, carried
 
