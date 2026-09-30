@@ -32,8 +32,8 @@ import org.junit.Test;
 
 /**
  * The hook path and the reflective path give the same answers (CR-020 phase 1): on
- * Apache FOP every handle is null and the fields are read; on the docx4j FO renderer
- * (-Pfo-renderer-fork) the fork's public accessors are used and no field is touched.
+ * Apache FOP (-Papache-fop) every handle is null and the fields are read; on the docx4j FO
+ * renderer (the default) the fork's public accessors are used and no field is touched.
  */
 public class FopHooksTest {
 

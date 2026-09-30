@@ -13,6 +13,10 @@ Changes in Version 17.3.0
 
 PDF via XSL FO:
 
+- docx4j-export-fo now depends on the docx4j FO renderer (org.docx4j:docx4j-fo-renderer)
+  in place of Apache FOP 2.11, which stays supported: exclude the renderer and add
+  Apache's fop to go back (docx4j-export-fo/README.md has the recipe).
+
 - Cropped pictures are drawn cropped, as Word draws them (a:srcRect, v:imagedata's crop);
   until now the whole bitmap was squeezed into the picture's frame. CR-029.
 
