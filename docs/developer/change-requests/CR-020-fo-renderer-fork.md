@@ -948,7 +948,57 @@ depends on 2.11-docx4j.2).
 
 **Not in this step.** Dropping the twin declarations altogether (a later tidy-up, once no
 supported renderer needs them); the `+kern` twin (a CID declaration already, subset); the
-CFF faces (never twinned). Result below when measured.
+CFF faces (never twinned).
+
+**Result (2026-09-30): done, gate passed.** `RunFontSelector.noLigatures` takes no twin where
+the hook is on; `docx4j.convert.out.fo.noligaTwin=true` asks it back with the hook still on
+for the spans it never reached (`gsubFeatures=false` switches the hook off altogether, which
+is a different state: it also drops the delta from the CFF faces and the kerned runs, so a
+"twin" baseline rendered that way moved 26 scoreboards for reasons that are not the twin's).
+Sizes, whole PDFs: real 181.5 MB to 11.8, real2 200.7 to 19.3, real3 208.6 to 75.0, against
+Word's 39.1 / 50.9 / 99.7; every face in the PDF is now a CID subset (13872: the same six
+faces, all subset, 79 KB either way, since its runs were all kerned and never took the twin).
+
+The gate, `twin2-base` (hook on, twin forced, same build) against `notwin2-cand`, 598
+documents, read glyph by glyph with `glyphcmp.py` (mutool trace, (unicode, x, y) per glyph;
+the word-box reader was misled here, because a CID font's PDF descriptor carries the bounding
+box's ascent where the single-byte one carries the lower-case ascent, which moves every
+pdftotext yMin without moving a baseline):
+- 400 documents glyph-identical (the 10 with no twin span, and 390 of the 587 with one).
+- 49 moved, all by 1/1000 em on glyphs outside WinAnsi (İ, ı, ł, ś, ć, ą...): the twin's
+  widths for those came from FOP's additional 8-bit encodings, which `WordGlyphWidths` never
+  corrected, so they were the truncated advance; the CID path has Word's rounding for every
+  glyph. Two Turkish documents re-break a line on it (248: 1.000 to 0.962; 4571: 0.9996 to
+  0.9981), with Word's own widths; accepted.
+- 136 text-layer changes, nearly all improvements: 7,726 spaces that were extracted as
+  U+0020 are U+00A0 now (the non-breaking spaces they are); symbol and emoji glyphs extract
+  as themselves rather than "#" (fonts-symbol-and-emoji: "🗹"); Vietnamese letters the
+  chained encodings mis-mapped (đ as "¶", Đ as "W") extract right; ";" for the Greek
+  question mark and "∙" for the bullet operator are the glyphs' own code points. One loss,
+  recorded as a fork item: the CID path drops Unicode format characters from the text layer
+  (`MultiByteFont.performSubstitution` strips controls): 66 right-to-left marks, 19 U+206A
+  and 1 left-to-right mark across four documents (12013: 1.000 to 0.863 on the scoreboard,
+  which counts the U+206A Word keeps as words; the ink is the same, Tinos's glyph for it is
+  zero-width either way, where Word draws Times New Roman's 0.75 em glyph, an older gap).
+- 12 count changes: the format characters above, and a trailing space at a re-broken line.
+- Scoreboards: 9 improved (+0.0967), 6 worse (-0.1826), each read above (12013 and 2600
+  the format characters, 248 and 4571 the widths, 5041 -0.0004 and 7235 -0.0011 the same).
+- Probes: 146 identical, fonts-symbol-and-emoji and spacing-empty-before text-layer only.
+
+**Found on the way, fixed first: the dominant-run tie.** The first candidate moved
+16_en-US_fields1_num_tbl_3115 by 4pt from an empty paragraph: two one-space runs, 11pt Arial
+and 14pt Cambria, weigh the same in `XsltFOFunctions.applyBlockLineHeight`, and the winner
+fell to `HashMap` order of a key holding the family name, which the retired suffix changed.
+Word takes the first run (golden: 37.3pt from the previous line's top to the next heading's,
+as the 11pt line gives). Now `LinkedHashMap`, so document order breaks a tie, and text
+outweighs an empty inline (`DominantRunTieTest`). On its own, against the 27th's twin
+render, the tie-break moves 9 documents' lines (8371 4,738 glyphs, 2065 2,511, 7412 161,
+the rest under 60) and no scoreboard at all; every one is a one-character paragraph that
+had been sized by hash order.
+
+Carried: the twin declarations (still in every FOP config, unused on the fork); the format
+characters in the text layer (fork); the Cambria-Greek fallback and the kernSpaces GPOS
+pairs (above).
 
 ### Not done, carried
 

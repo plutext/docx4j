@@ -39,9 +39,11 @@ import org.w3c.dom.NodeList;
 
 /**
  * Word's ligature setting written as {@code fox:gsub-features} (fork CR-001 §8), where
- * the renderer has the hook: a "-liga" on every span the +noliga twin cannot reach, and
- * the twin kept where it can.  The property docx4j.convert.out.fo.gsubFeatures=true
- * writes it whatever the renderer, which is how these run on Apache FOP too.
+ * the renderer has the hook: a "-liga" on every span of a run asking for no standard
+ * ligatures, on the font's own declaration; the +noliga twin is never taken (since
+ * 17.3.0, so that the PDF's fonts are subset).  The property
+ * docx4j.convert.out.fo.gsubFeatures=true writes it whatever the renderer, which is how
+ * these run on Apache FOP too.
  *
  * @since 17.3.0
  */
@@ -55,6 +57,20 @@ public class GsubFeaturesTest {
 	public void restore() {
 		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "");
 		Docx4jProperties.setProperty("docx4j.convert.out.fo.ligatures", "false");
+		Docx4jProperties.setProperty("docx4j.convert.out.fo.noligaTwin", "false");
+	}
+
+	@Test
+	public void theTwinCanBeAskedBackWithTheHookOn() throws Exception {
+		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "true");
+		Docx4jProperties.setProperty("docx4j.convert.out.fo.noligaTwin", "true");
+		org.w3c.dom.Document doc = fo(run("", "plain office") + run("<w:kern w:val=\"2\"/><w:sz w:val=\"24\"/>", "kerned office"));
+		Element plain = span(doc, "plain office");
+		// the 17.2.x declaration where it works, the delta where it never reached
+		if (twinned(plain)) assertNull(delta(plain)); else assertEquals("-liga", delta(plain));
+		Element kerned = span(doc, "kerned office");
+		assertTrue(!twinned(kerned));
+		assertEquals("-liga", delta(kerned));
 	}
 
 	private static String run(String rPr, String text) {
@@ -117,16 +133,25 @@ public class GsubFeaturesTest {
 	}
 
 	@Test
-	public void theTwinIsKeptWhereItWorks() throws Exception {
+	public void theTwinIsNeverTakenWithTheHook() throws Exception {
 		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "true");
 		Element el = span(fo(run("", "plain office")), "plain office");
-		// a Latin run in a TrueType font with no ligatures asked: the twin when the font is
-		// found (then no delta, so nothing it renders moves), else the delta; never neither
-		if (twinned(el)) {
-			assertNull(delta(el));
-		} else {
-			assertEquals("-liga", delta(el));
-		}
+		// a Latin run in a TrueType font with no ligatures asked, the twin's own case
+		// until 17.3.0: the delta on the font's own declaration, which FOP subsets
+		assertTrue(el.getAttribute("font-family"), !twinned(el));
+		assertEquals("-liga", delta(el));
+	}
+
+	@Test
+	public void theTwinWithoutTheHook() throws Exception {
+		Docx4jProperties.setProperty("docx4j.convert.out.fo.gsubFeatures", "false");
+		Element el = span(fo(run("", "plain office")), "plain office");
+		// Apache FOP's path: the twin where the font is TrueType-flavoured, no delta
+		assertNull(delta(el));
+		assertTrue(el.getAttribute("font-family"), twinned(el)
+				|| !org.docx4j.fonts.fop.util.FopConfigUtil.isTrueTypeFlavoured(
+						String.valueOf(org.docx4j.fonts.PhysicalFonts.get(el.getAttribute("font-family")) == null ? null
+								: org.docx4j.fonts.PhysicalFonts.get(el.getAttribute("font-family")).getEmbeddedURI())));
 	}
 
 	@Test

@@ -376,11 +376,20 @@ public class RunFontSelector {
      * anyway.  Only a TrueType-flavoured font has such a twin at all
      * (FopConfigUtil), so the font-family is left alone for the rest.</p>
      *
-     * <p>Where the renderer has the gsub-features hook ({@link #setGsubFeatures}), a
-     * span the twin cannot reach gets {@code fox:gsub-features} instead: a font which
-     * is not TrueType-flavoured, a kerned run, a non-Latin span, and a run whose
-     * w14:ligatures asks for ligatures but not the standard ones.  The twin is kept
-     * where it works, so what it already renders does not move.</p>
+     * <p>Where the renderer has the gsub-features hook ({@link #setGsubFeatures}), the
+     * twin is not used at all: every span of a run that asks for no standard ligatures
+     * gets {@code fox:gsub-features="-liga"} on the font's own (CID) declaration, Latin
+     * text included, and so does what the twin never reached - a font which is not
+     * TrueType-flavoured, a kerned run, a non-Latin span, and a run whose
+     * w14:ligatures asks for ligatures but not the standard ones.  Until 17.3.0 the
+     * twin was kept where it worked; it went because FOP embeds a single-byte font
+     * whole where the CID declaration is subset, which made docx4j's PDFs about four
+     * times Word's size (CR-020 §8, CR-029 §9.4).  The CID path also applies ccmp,
+     * locl, mark and mkmk, as Word does; kerning stays off on it because the base
+     * declaration is kerning="false" and the fork honours that for GPOS
+     * (fork CR-003).  {@code docx4j.convert.out.fo.noligaTwin=true} is the way back to
+     * the twin with the hook still on for the spans it never reached;
+     * {@code docx4j.convert.out.fo.gsubFeatures=false} switches the hook off altogether.</p>
      *
      * @since 17.0.5
      */
@@ -389,7 +398,7 @@ public class RunFontSelector {
     			|| ligatures()) {
     		return fragment;
     	}
-    	boolean twin = !currentLigatures && !(currentKerned && perRunKerning());
+    	boolean twin = (!gsubFeatures || noligaTwin()) && !currentLigatures && !(currentKerned && perRunKerning());
     	String delta = gsubFeatures ? ligatureDelta(currentLigaturesVal) : null;
     	if (!twin && delta==null) return fragment;
     	for (Node n = ((DocumentFragment)fragment).getFirstChild(); n!=null; n = n.getNextSibling()) {
@@ -479,9 +488,21 @@ public class RunFontSelector {
     private boolean gsubFeatures;
 
     /**
+     * Keep sending Latin spans to the {@link #NOLIGA_SUFFIX} twin although the renderer
+     * has the gsub-features hook (docx4j.convert.out.fo.noligaTwin=true): the 17.2.x
+     * declaration, whose font FOP embeds whole rather than subset.  Off by default.
+     *
+     * @since 17.3.0
+     */
+    private static boolean noligaTwin() {
+    	return Docx4jProperties.getProperty("docx4j.convert.out.fo.noligaTwin", false);
+    }
+
+    /**
      * Tell this selector the FO renderer has the gsub-features hook (the docx4j FO
      * renderer from 2.11-docx4j.2), so that Word's ligature setting is written as
-     * {@code fox:gsub-features} where the {@link #NOLIGA_SUFFIX} twin cannot carry it.
+     * {@code fox:gsub-features} on the font's own declaration and the
+     * {@link #NOLIGA_SUFFIX} twin is not used.
      * docx4j-export-fo sets it from its capability probe; off by default, since Apache
      * FOP does not know the property.
      *

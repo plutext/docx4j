@@ -237,6 +237,9 @@ in the pixel sizes and by eye rather than on the scoreboards.
   single-byte, and FOP embeds a single-byte font whole, not as a subset (one document: 982 KB;
   183 KB with no twin; Word 264 KB). With the fork's gsub-features hook (CR-020) the twin could
   give way to `-liga` on the CID declaration, which is subset. That belongs to CR-020's switch.
+  Done there 2026-09-30 ("The twin gives way"): real 181.5 MB to 11.8, real2 200.7 to 19.3,
+  real3 208.6 to 75.0, against Word's 39.1 / 50.9 / 99.7; docx4j's PDFs are now smaller than
+  Word's on every corpus.
 - A metafile picture's crop is not applied (it is drawn as SVG, whole).
 - Word draws a picture's outline (`a:ln`); docx4j does not (older than this CR).
 - VML pictures in `CompressPictures`.

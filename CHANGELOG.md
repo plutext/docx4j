@@ -17,6 +17,13 @@ PDF via XSL FO:
   in place of Apache FOP 2.11, which stays supported: exclude the renderer and add
   Apache's fop to go back (docx4j-export-fo/README.md has the recipe).
 
+- PDFs are a fraction of their 17.2.x size on the docx4j FO renderer: every font is now
+  subset. Word's "no ligatures" setting reaches FOP as fox:gsub-features="-liga" on the
+  font's own declaration, so the single-byte "+noliga" copy of each TrueType font, which
+  FOP embedded whole, is no longer used (three corpora: 590 MB to 106 MB, Word 190 MB).
+  docx4j.convert.out.fo.noligaTwin=true brings the copy back. On Apache FOP nothing
+  changes. CR-020.
+
 - Cropped pictures are drawn cropped, as Word draws them (a:srcRect, v:imagedata's crop);
   until now the whole bitmap was squeezed into the picture's frame. CR-029.
 

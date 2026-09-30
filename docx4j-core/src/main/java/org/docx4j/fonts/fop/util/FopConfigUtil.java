@@ -394,6 +394,14 @@ public class FopConfigUtil {
 	 * a CFF-flavoured substitute (URW's Nimbus Sans Narrow for Arial Narrow, Source Sans
 	 * 3 for Segoe UI Light) still gets FOP's ligatures; the fix belongs upstream.</p>
 	 *
+	 * <p>Since 17.3.0 the twin is the Apache FOP path only: where the renderer has the
+	 * gsub-features hook (the docx4j FO renderer from 2.11-docx4j.2), RunFontSelector
+	 * writes {@code fox:gsub-features="-liga"} on the font's own declaration instead,
+	 * because FOP embeds a single-byte font whole where the CID declaration is subset
+	 * (CR-020 §8, measured: three corpora 590 MB to 106 MB).  The twin stays declared
+	 * (a declaration costs nothing until a span uses it) for that path and for
+	 * docx4j.convert.out.fo.noligaTwin=true.</p>
+	 *
 	 * @return null where the font must not be declared this way
 	 * @since 17.0.5
 	 */

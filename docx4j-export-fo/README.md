@@ -18,8 +18,11 @@ Two renderers are supported (docx4j CR-020):
   two renderers agree on every document of a 449-document corpus and 146 probes, because
   every hook-dependent rule has a reflective fallback); what the fork adds is a correct
   text layer for CJK ideographs that share a glyph with a Kangxi radical (no workaround
-  exists for that on Apache FOP), and a renderer whose internals the Word layout managers
-  are built against, so an Apache point release cannot break them.
+  exists for that on Apache FOP), a renderer whose internals the Word layout managers
+  are built against, so an Apache point release cannot break them, and, from 2.11-docx4j.2,
+  PDFs with every font subset: Word's ligature setting reaches the renderer as
+  `fox:gsub-features`, so the single-byte `+noliga` font copies (which FOP embeds whole)
+  are not used, and a corpus that rendered to 590 MB renders to 106 MB (Word: 190 MB).
 
   > This is a modified distribution derived from Apache FOP 2.11. It is maintained by
   > Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a
