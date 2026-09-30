@@ -1445,7 +1445,11 @@ public class XsltFOFunctions {
 	 */
 	/** @return whether a run font was found to size the block's lines from */
 	protected static boolean applyBlockLineHeight(Element foBlockElement, PPr pPr) {
-		java.util.Map<String, long[]> weights = new java.util.HashMap<>(); // key -> {chars}
+		// insertion order, so that a tie is broken by document order and not by the hash
+		// of the family name (measured 2026-09-30: a paragraph holding one space, whose
+		// paragraph mark is a larger font, took the run's line or the mark's according to
+		// whether the run's family carried a "+noliga" suffix; Word takes the run's)
+		java.util.Map<String, long[]> weights = new java.util.LinkedHashMap<>(); // key -> {chars}
 		java.util.Map<String, String[]> attrs = new java.util.HashMap<>();
 		collectRunFonts(foBlockElement, weights, attrs);
 		String best = null;
@@ -1618,8 +1622,10 @@ public class XsltFOFunctions {
 				// getTextContent() credited the span's font with the Greek its P052 inlines
 				// draw and the block took the wrong face (measured: the corpus's Greek
 				// document, 68 pages -> 69).
+				// text outweighs an empty inline (the paragraph mark's, a bookmark's): a run
+				// of one character and the mark's empty inline must not tie
 				long chars = ownTextLength(el);
-				weights.computeIfAbsent(key, k -> new long[1])[0] += Math.max(1, chars);
+				weights.computeIfAbsent(key, k -> new long[1])[0] += chars > 0 ? 1 + chars : 1;
 				attrs.putIfAbsent(key, new String[] { family, size, lh, docFont.length()==0 ? null : docFont });
 			}
 			collectRunFonts(el, weights, attrs);
