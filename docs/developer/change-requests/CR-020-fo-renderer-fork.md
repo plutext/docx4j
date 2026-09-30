@@ -845,8 +845,53 @@ Not merged; the fork session is investigating. The pass statements stand.
 CR-003 stands as coded. What remains is docx4j's line-manager fix, then a re-gate of both
 together.
 
+**Re-read 2026-09-30: there is no line-manager defect.** Both remaining regressions were
+traced glyph by glyph (mutool trace on the released .1 and on the CR-003 snapshot, the
+Word layout on and off; scratch renders rebuilt from the same corpus and classpath):
+- 12_en-US_tbl_13872 is a FOP painting defect that CR-003 exposes, Enterprise §6.6 item
+  33: a word with GPOS adjustments is painted without its letter-space adjustments
+  (IFRenderer.renderWord takes the DP alone). The line is bold Arimo with Word character
+  spacing on every run; before CR-003 Arimo got no lookup under "en", so the letterAdjust
+  path painted; with a kern it does not, the word overdraws its box by 6 x 0.417pt and
+  swallows the space. The overdraw is there with the Word layout off too; off, the space
+  happened to survive, which is what the "only with the Word layout on" reading saw. Fix
+  asked of the fork (its own branch, gated with CR-003).
+- 14_en-GB_sdt_num_8371 is kern-lost on a fallback font, and correct by Word's rule. The
+  document is Cambria; docx4j maps Cambria to Caladea, which has no Greek, so 13,042 Greek
+  spans fall back to P052 (CFF, GPOS kern under DFLT). No run has w:kern, so no +kern twin;
+  before CR-003 FOP kerned P052 regardless of kerning="false" (A/nu -0.833pt at 24.5pt, and
+  positive pairs too), CR-003 stops it. The words widen or narrow by their pair values, the
+  Word rules re-break 144 lines and the document goes 70 -> 71 pages (69 with the Word
+  layout off either way, Word 68). Page-independent line-text match against the golden
+  falls 1210 -> 1074 of 1640: kerned P052 happened to sit closer to Cambria's Greek advances
+  than unkerned P052 does. Not a CR-003 defect and not a docx4j one: the fidelity item is
+  the fallback (a Greek-capable Cambria-metric face, or per-script fallback metrics),
+  recorded below under "Not done, carried". The gate accepts this document as a mover
+  whose movement is right and whose score is a font-substitution artefact.
+- Also on .1, the trace shows the letter-spacing of a kerned P052 word painted as one lump
+  after its last glyph (+5.138pt = 7 x 0.734 on "Ανοικτό"): item 33 again, on Apache-era
+  behaviour, so the defect predates the fork and belongs upstream.
+
+So the re-gate waits on the fork's item-33 fix only. Expected: 13872 back to its .1 text
+layer and geometry within the kern; every letter-spaced span in a positioning font is a
+new mover class (paint only, geometry of the boxes unchanged) - the partition's still set
+must be re-read for it before the run, since a "still" document whose letter-spaced words
+were painted lumped will now move in mutool's glyph positions without moving in layout.
+
+Two docx4j items surfaced, neither for this gate: Cambria's Greek falls to P052 (Caladea
+has no Greek; Word's golden is Cambria throughout); and kernSpaces (item 15) reads the
+legacy kern table only, so Arimo's GPOS space pairs (A␠ -55, ␠A -55, T␠ Y␠ -18, measured
+by the fork session) are applied by nobody.
+
 ### Not done, carried
 
+- Cambria's Greek: docx4j maps Cambria to Caladea, which covers Latin only, so Greek runs
+  fall back to P052 with Palatino metrics against Word's Cambria (real3 8371: 13,042 spans).
+  Needs a Greek-capable face with Cambria's metrics, or a per-script fallback that keeps the
+  document font's advances. Found 2026-09-30 on the fop/CR-003 gate.
+- kernSpaces (Enterprise §6.6 item 15) takes a space pair from the legacy kern table only;
+  Arimo has GPOS pairs with the space and no kern table, so they are applied by nobody.
+  Found 2026-09-30 by the fork session.
 - Phase 2 cherry-picks P2-1 to P2-8 (above), one batch item each; then the
   first release, or the upstream merge first - Jason's call.
 - The fork branch and its CI are pushed (origin/docx4j-2.11); the
