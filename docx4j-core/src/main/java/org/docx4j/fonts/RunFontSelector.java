@@ -376,34 +376,119 @@ public class RunFontSelector {
      * anyway.  Only a TrueType-flavoured font has such a twin at all
      * (FopConfigUtil), so the font-family is left alone for the rest.</p>
      *
+     * <p>Where the renderer has the gsub-features hook ({@link #setGsubFeatures}), a
+     * span the twin cannot reach gets {@code fox:gsub-features} instead: a font which
+     * is not TrueType-flavoured, a kerned run, a non-Latin span, and a run whose
+     * w14:ligatures asks for ligatures but not the standard ones.  The twin is kept
+     * where it works, so what it already renders does not move.</p>
+     *
      * @since 17.0.5
      */
     private Object noLigatures(Object fragment) {
     	if (outputType!=RunFontActionType.XSL_FO || !(fragment instanceof DocumentFragment)
-    			|| currentLigatures || (currentKerned && perRunKerning()) || ligatures()) {
+    			|| ligatures()) {
     		return fragment;
     	}
+    	boolean twin = !currentLigatures && !(currentKerned && perRunKerning());
+    	String delta = gsubFeatures ? ligatureDelta(currentLigaturesVal) : null;
+    	if (!twin && delta==null) return fragment;
     	for (Node n = ((DocumentFragment)fragment).getFirstChild(); n!=null; n = n.getNextSibling()) {
-    		if (n instanceof Element) noLigatures((Element)n);
+    		if (n instanceof Element) noLigatures((Element)n, twin, delta);
     	}
     	return fragment;
     }
 
-    private void noLigatures(Element el) {
+    private void noLigatures(Element el, boolean twin, String delta) {
     	String family = el.getAttribute("font-family");
-    	if (family.length()>0 && !family.endsWith(KERNED_SUFFIX) && !family.endsWith(NOLIGA_SUFFIX)) {
+    	if (family.length()>0 && !family.endsWith(NOLIGA_SUFFIX)) {
     		String text = el.getTextContent();
-    		if (text!=null && text.length()>0 && latinOnly(text.codePoints().toArray())) {
-    			PhysicalFont pf = physicalFontNamed(family);
-    			if (pf!=null && pf.getEmbeddedURI()!=null
-    					&& org.docx4j.fonts.fop.util.FopConfigUtil.isTrueTypeFlavoured(pf.getEmbeddedURI().toString())) {
-    				el.setAttribute("font-family", family + NOLIGA_SUFFIX);
+    		if (text!=null && text.length()>0) {
+    			int[] cps = text.codePoints().toArray();
+    			boolean twinned = false;
+    			if (twin && !family.endsWith(KERNED_SUFFIX) && latinOnly(cps)) {
+    				PhysicalFont pf = physicalFontNamed(family);
+    				if (pf!=null && pf.getEmbeddedURI()!=null
+    						&& org.docx4j.fonts.fop.util.FopConfigUtil.isTrueTypeFlavoured(pf.getEmbeddedURI().toString())) {
+    					el.setAttribute("font-family", family + NOLIGA_SUFFIX);
+    					twinned = true;
+    				}
+    			}
+    			if (!twinned && delta!=null && gsubFeaturesScripts(cps)) {
+    				el.setAttributeNS(FOX_NS, "fox:" + GSUB_FEATURES, delta);
     			}
     		}
     	}
     	for (Node c = el.getFirstChild(); c!=null; c = c.getNextSibling()) {
-    		if (c instanceof Element) noLigatures((Element)c);
+    		if (c instanceof Element) noLigatures((Element)c, twin, delta);
     	}
+    }
+
+    /** FOP's extension namespace, which the fork's {@code fox:gsub-features} is in.  @since 17.3.0 */
+    public static final String FOX_NS = "http://xmlgraphics.apache.org/fop/extensions";
+
+    /** The fork's inherited property (fork CR-001): a space-separated delta over the GSUB
+     *  features FOP's script processor applies, e.g. "-liga".  @since 17.3.0 */
+    public static final String GSUB_FEATURES = "gsub-features";
+
+    /**
+     * The delta for a run's effective w14:ligatures (null or absent after resolution
+     * meaning none, Word's default).  FOP applies "liga" by default, so any value
+     * without the standard ligatures in it subtracts it.
+     *
+     * <p>Subtractions only, for now.  Contextual, historical and discretionary
+     * ligatures (+clig, +hlig, +dlig) mostly have no Unicode presentation form, so
+     * FOP maps the glyph to a private-use code point in the PDF's ToUnicode; adding
+     * them waits for the renderer's fix for that (fork CR-002).</p>
+     *
+     * @return "-liga", or null when FOP's own list is already right
+     * @since 17.3.0
+     */
+    public static String ligatureDelta(org.docx4j.w14.STLigatures val) {
+    	if (val==null || val==org.docx4j.w14.STLigatures.NONE) return "-liga";
+    	String v = val.value();
+    	return (v.startsWith("standard") || val==org.docx4j.w14.STLigatures.ALL) ? null : "-liga";
+    }
+
+    /**
+     * The scripts the "-liga" subtraction is written for: those whose standard
+     * ligatures Word leaves off unless the run asks.  Not Arabic: measured in Word 365
+     * (probe ligatures-arabic, 2026-09-27, Calibri 6.23, whose Arabic liga forms the
+     * Allah ligature U+FDF2), Word applies the standard Arabic ligatures under every
+     * w14:ligatures value, none and absent included; only the discretionary ones follow
+     * the setting (27 glyphs to 15 under discretional and all).  The other scripts which
+     * need shaping (Hebrew, Indic, Khmer and the rest) are left to FOP's own list too,
+     * unmeasured.  An addition, when there is one, is not limited this way.
+     *
+     * @since 17.3.0
+     */
+    private static boolean gsubFeaturesScripts(int[] cps) {
+    	for (int cp : cps) {
+    		switch (FontFallback.scriptOf(cp)) {
+    		case LATIN: case GREEK: case CYRILLIC: case ARMENIAN: case GEORGIAN:
+    		case HAN: case HIRAGANA: case KATAKANA: case HANGUL: case BOPOMOFO:
+    		case COMMON: case INHERITED:
+    			break;
+    		default:
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+
+    /** whether the renderer has the gsub-features hook; see {@link #setGsubFeatures} */
+    private boolean gsubFeatures;
+
+    /**
+     * Tell this selector the FO renderer has the gsub-features hook (the docx4j FO
+     * renderer from 2.11-docx4j.2), so that Word's ligature setting is written as
+     * {@code fox:gsub-features} where the {@link #NOLIGA_SUFFIX} twin cannot carry it.
+     * docx4j-export-fo sets it from its capability probe; off by default, since Apache
+     * FOP does not know the property.
+     *
+     * @since 17.3.0
+     */
+    public void setGsubFeatures(boolean gsubFeatures) {
+    	this.gsubFeatures = gsubFeatures;
     }
 
     /** whether every code point is Latin (or script-neutral: punctuation, digits, marks) */
@@ -638,6 +723,9 @@ public class RunFontSelector {
 
     /** whether the current run asks for ligatures (w14:ligatures); Word's default is none */
     private boolean currentLigatures;
+
+    /** the current run's effective w14:ligatures value, null for none.  @since 17.3.0 */
+    private org.docx4j.w14.STLigatures currentLigaturesVal;
 
     /** The face the current run is set in, from its <b>effective</b> w:b and w:i, so that
      *  the width factor can be the one measured for that face ({@link WidthFactors}).  The
@@ -914,6 +1002,7 @@ public class RunFontSelector {
     	currentScalingPct = (rPr!=null && rPr.getW()!=null && rPr.getW().getVal()!=null)
     			? rPr.getW().getVal().intValue() : 100;
     	currentLigatures = hasLigatures(rPr);
+    	currentLigaturesVal = (rPr==null || rPr.getLigatures()==null) ? null : rPr.getLigatures().getVal();
     	currentBold = isOn(rPr==null ? null : rPr.getB());
     	currentItalic = isOn(rPr==null ? null : rPr.getI());
     	currentSizePt = (rPr!=null && rPr.getSz()!=null && rPr.getSz().getVal()!=null)

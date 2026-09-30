@@ -27,7 +27,7 @@ import org.junit.Test;
 
 /**
  * The FO renderer probe (CR-020 phase 0), on whichever renderer the build put on the
- * classpath: Apache FOP 2.11 by default, the docx4j FO renderer under -Pfo-renderer-fork.
+ * classpath: the docx4j FO renderer by default (from 17.3.0), Apache FOP 2.11 under -Papache-fop.
  * The assertions hold on both; the ones that depend on which it is check that the probe
  * agrees with the classpath.
  */
@@ -76,9 +76,14 @@ public class FopCapabilitiesTest {
 	public void hooksFollowTheRenderer() {
 		FopCapabilities c = FopCapabilities.get();
 		if (c.isDocx4jRenderer()) {
-			// phase 1's four hooks; a later fork may add more, never fewer
+			// phase 1's four hooks are in every release; a later one (gsub-features, from
+			// 2.11-docx4j.2) is there exactly when the renderer declares it
 			for (FopCapabilities.Capability cap : FopCapabilities.Capability.values()) {
-				assertTrue(cap.key(), FopCapabilities.has(cap));
+				if (cap == FopCapabilities.Capability.GSUB_FEATURES) {
+					assertEquals(cap.key(), c.getCapabilities().contains(cap.key()), FopCapabilities.has(cap));
+				} else {
+					assertTrue(cap.key(), FopCapabilities.has(cap));
+				}
 			}
 		} else {
 			assertTrue(c.getCapabilities().toString(), c.getCapabilities().isEmpty());

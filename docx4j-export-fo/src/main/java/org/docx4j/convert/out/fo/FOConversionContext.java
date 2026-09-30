@@ -125,7 +125,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	
 	protected static RunFontSelector createRunFontSelector(WordprocessingMLPackage wmlPackage) {
 		
-		return new RunFontSelector(wmlPackage, 
+		RunFontSelector runFontSelector = new RunFontSelector(wmlPackage, 
 				
 			new RunFontCharacterVisitor() {
 			
@@ -219,7 +219,22 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 
 				
 			}, RunFontActionType.XSL_FO);
+		runFontSelector.setGsubFeatures(gsubFeatures());
+		return runFontSelector;
+	}
 
+	/**
+	 * Whether to write Word's ligature setting as {@code fox:gsub-features} (fork CR-001): when
+	 * the FO renderer has the hook, unless docx4j.convert.out.fo.gsubFeatures says otherwise
+	 * (true writes it whatever the renderer, for inspecting the FO; false never).
+	 *
+	 * @since 17.3.0
+	 */
+	static boolean gsubFeatures() {
+		String p = org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.gsubFeatures");
+		if ("true".equalsIgnoreCase(p)) return true;
+		if ("false".equalsIgnoreCase(p)) return false;
+		return FopCapabilities.has(FopCapabilities.Capability.GSUB_FEATURES);
 	}
 	
 	

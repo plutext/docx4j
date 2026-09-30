@@ -78,7 +78,11 @@ public final class FopCapabilities {
 		/** What the Word line, text and list managers read of FOP's managers and positions. */
 		INLINE_ACCESS("inline-access"),
 		/** The subsetter's empty-last-glyph fix is in the renderer, so the font padding workaround is off (item 23). */
-		GLYF_EMPTY_GLYPH("glyf-empty-glyph");
+		GLYF_EMPTY_GLYPH("glyf-empty-glyph"),
+		/** {@code fox:gsub-features}, an inherited delta over the GSUB features FOP's script processor
+		 *  applies (fork CR-001), so Word's w14:ligatures reaches every font and script rather than
+		 *  only the Latin text of a TrueType font with the +noliga twin.  @since 17.3.0 */
+		GSUB_FEATURES("gsub-features");
 
 		private final String key;
 

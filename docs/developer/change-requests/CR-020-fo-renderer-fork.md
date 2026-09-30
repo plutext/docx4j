@@ -2,8 +2,9 @@
 
 Status: ACTIVE (accepted by Jason Harrop 2026-09-18). Phases 0 and 1 landed
 the same day; phase 2's classification report landed 2026-09-19 (§8, tables in
-§9) and its cherry-picks are queued as batch items; the first release waits,
-as §4 says. The decision to fork, the naming and the degradation contract were
+§9) and its cherry-picks are queued as batch items; the first release,
+2.11-docx4j.1, shipped 2026-09-25; the switch of docx4j-export-fo's default to
+it is in progress for 17.3.0 (§8, "The switch"). The decision to fork, the naming and the degradation contract were
 taken by Jason Harrop on 2026-09-18 (recorded in §2).
 Drafted with Claude Fable 5.1 at the close of CR-001 batch 48; the first
 release moved out of phase 0 on Jason's direction the same day.
@@ -617,6 +618,232 @@ Jason, since it swaps a transitive dependency for every consumer of the module
 the alternative is to keep the fork profile-only in 17.2.1 and switch at the
 next minor. Either way the Getting Started paragraph's "(not yet released)"
 goes, and the CHANGELOG gets a "PDF via XSL FO" section.
+
+### The switch - docx4j-export-fo's default, for 17.3.0 (started 2026-09-27)
+
+Registry `docx4j/CR-020.switch`. Step 1, the dependency, done 2026-09-27 on
+`VERSION_17_3_0`: `docx4j-export-fo` depends on `org.docx4j:docx4j-fo-renderer`
+`2.11-docx4j.1` by default, and the old profile is inverted to `apache-fop`,
+which builds against Apache FOP 2.11. The README's recipe for a consumer who
+wants Apache FOP excludes all four fork artifacts, because the flattened pom
+lists `-core`, `-events` and `-util` as direct dependencies too; excluding
+`docx4j-fo-renderer` alone would leave the fork on the classpath beside Apache's.
+The fidelity harness keeps Apache in `target/lib` and the fork in `lib-fork`,
+and now excludes the fork artifacts from `docx4j-export-fo` as well.
+
+Checked the same day against the installed 17.3.0-SNAPSHOT:
+- export-fo's 202 tests pass on both renderers (the probe test's surefire
+  classpath shows `docx4j-fo-renderer-core` by default, `fop-core` under
+  `-Papache-fop`);
+- the flattened pom depends on the four fork artifacts and on no Apache FOP;
+- a default consumer gets `FO renderer: docx4j-fo-renderer 2.11-docx4j.1, hooks:
+  pair-table, leader-placement, inline-access, glyf-empty-glyph`, and one following
+  the README recipe gets `Apache FOP 2.11, hooks: none`, neither with a warning.
+  Getting Started renders to 57 pages on each with `-ea`, and the extracted
+  text is identical.
+
+Still to come:
+- The fork's `fop/CR-001` (the `fox:gsub-features` hook, capability
+  `Docx4jFop.GSUB_FEATURES`) and a `2.11-docx4j.2` release, which becomes the
+  version 17.3.0 depends on. The fork session waits for Jason's go-ahead on the
+  hook, and on whether the fork carries `fop/CR-002` (the ligature ToUnicode fix)
+  rather than waiting for Apache.
+- Its docx4j half (fork CR-001 §8), in two parts, as the fork session measured
+  2026-09-27. The subtractions (`-liga`) improve the text layer (no ligature
+  glyph is formed), so they ship with `2.11-docx4j.2`. The additions (`+clig`,
+  `+hlig`, `+dlig`) draw ligatures that have no Unicode presentation form,
+  whose ToUnicode entry is a private-use code point, so they wait for
+  `fop/CR-002`. Non-Latin spans: Jason's decision 2026-09-27 is that the hook reaches
+  them, as measured. The measurement is the Word 365 probe `ligatures-arabic` (share
+  `corpus/`, golden cut with WordGoldenRunner 2026-09-27; made by
+  `~/fidelity-arabic-ligatures/make_probe.py`). Word kept Calibri 6.23's glyph ids in
+  its subset, and Calibri's Arabic `liga` forms the Allah ligature U+FDF2. That
+  ligature, and the lillah ligatures, are in every row, absent and `none` included; only
+  `discretional` and `all` change the row (27 glyphs to 15, the `dlig` lookups). So
+  Word applies the standard Arabic ligatures whatever `w14:ligatures` says, and the
+  setting only adds. The Latin control in the same probe does follow it (Calibri
+  "office fi fl ..." 146.6pt under none, 144.4pt under standard). Consequence: the
+  `-liga` subtraction is written for Latin, Greek, Cyrillic, Armenian, Georgian and
+  CJK spans, never for Arabic. Other shaping scripts are also excluded, unmeasured.
+  The additions, when they come, apply to Arabic too. Side finding for an embedded-font
+  CR: Word 365 ignored the embedded, obfuscated Noto Naskh Arabic (it drew those rows
+  in Times New Roman and dropped the embedding on re-save), and it drew the
+  Traditional Arabic and Arabic Typesetting rows in Calibri, although both fonts are
+  installed on the VM (its re-save embedded them).
+- The §9 partition, computed on the docx4j side 2026-09-27 (`~/fidelity-gsub-partition/`,
+  not redistributable; the tools are in it). The FO is built exactly as the harness builds
+  it, with the delta forced on. A document is a mover only if a delta span holds a
+  sequence its font's type-4 `liga` ligates. Result: 36 movers, 426 still-nodelta, 141
+  still-inert, of 603.
+
+**Gate, 2026-09-27** (the fork's 2.11-docx4j.2-SNAPSHOT at 007ee2592, installed by the fork
+session with Jason's clearance; the probe line lists `gsub-features`). One classpath (the
+harness's lib-fork, stale jars filtered out), each corpus scored twice: the baseline with
+`-Ddocx4j.convert.out.fo.gsubFeatures=false` (the twin as today), then the candidate with
+the hook, against the baseline's scoreboard. Probes vs `goldens-nofields`;
+real/real2/real3 with `hyphenate=false` as P2-1's gate. Read per document by comparing the
+two PDFs' words and positions (`pdftotext -bbox`) against the partition.
+
+| tier | documents | result |
+|---|---|---|
+| still-nodelta | 426 | 422 identical; 2 differ only in a TIME field that ticked between the runs; 2 unscored (no golden, `noref`, on both sides) |
+| still-inert | 141 | 138 identical; 3 unscored (`noref`) |
+| mover | 36 | 1 moved, improved: 15_de-DE_tbl_1660, Source Sans 3's "ft" no longer ligated, 0.5250 -> 0.5875; 35 unchanged |
+| scoreboards | all four corpora | 0 regressions; changed documents 0, 1 (the improvement), 0, 0 |
+
+**A pass.** The 35 predicted movers that did not move are explained, not failed. FOP never
+ligated them on the baseline either:
+- The CFF substitutes (Nimbus Sans Narrow, URW Gothic, P052, Nimbus Sans) are embedded as
+  single-byte Type 1C, so no GSUB runs at all. The fork CR's first gap does not arise with
+  docx4j's font configuration; Source Sans 3 is the exception, which is why it moved.
+- Carlito's "ti"/"tt" (a type-4 `liga` in `latn` dflt) is not formed in docx4j's pipeline
+  on either renderer. Measured on a minimal document: 22 glyphs for "notification station"
+  on Apache FOP 2.11 and on the fork, even with `w14:ligatures` standard.
+
+The hook itself is confirmed on a minimal document in DejaVu Serif, whose ligatures have
+code points: the baseline draws ﬀ/ﬁ/ﬂ in the kerned and `contextual` runs; the candidate
+draws the letters (15 glyphs to 18), keeps them in the `standard` run, and Apache FOP is
+unchanged.
+
+Open, found by the gate, and docx4j-side: **through docx4j, Carlito gets no GSUB at all.** A
+minimal document in Calibri (so Carlito) with "office fine ti tt" draws 19 glyphs in every
+run, on Apache FOP 2.11 and on the fork. That includes the plain `Carlito Regular` declaration
+(not the twin) under `w14:ligatures` standard, and fi/ffi as well as ti/tt, so it is not about
+code points. My first reading, that ligatures without a code point were being dropped, was
+wrong; the fork session corrected it the same day. At font level (the fork's own loader,
+`performSubstitution`), Carlito ligates ti -> U+E000, tt -> U+E001, fi -> U+FB01 and
+ffi -> U+FB03, exactly as 17.0.5 measured, so the `+noliga` twin's premise stands and
+fop/CR-002 matters more (Carlito is the corpus's commonest font). DejaVu Serif, a system
+font, does ligate through docx4j. **Cause, found by the fork session the same day:** Carlito's GSUB has no `DFLT` script entry
+(`cyrl`, `grek`, `latn` only); DejaVu's has one. docx4j writes no `script` on its FO, so FOP
+works from its default script. `GlyphTable.matchLookups` falls back to `DFLT/dflt` when a
+match is empty, so a font without `DFLT` gets no substitution at all, with no warning; a font
+with one is rescued. Measured at font level on both Carlito copies (jar and system; they are
+different files, both 1.104, and ligate identically): a script of `latn` or `*` ligates, and
+`DFLT`, `zyyy` or `auto` does not. For DejaVu, all five ligate. Ruled out on the way: the jar
+URL (FOP fixes `useAdvanced` in LazyFont's constructor, whatever the URI), the twin,
+letter-spacing, `WordGlyphWidths`, the CJK switch, and the Calibri mapping.
+
+Consequences: docx4j's Calibri documents get no ligatures on any renderer. That matches
+Word's default by accident, but a run asking for standard ligatures gets none, and the gate's
+10 Carlito movers were inert for this reason, not through a predictor fault. Not changed now: making Carlito shape
+(for example by writing `script` on Latin spans) turns its ligatures on wherever the twin does
+not reach, and until fop/CR-002 they reach the PDF as U+E000/E001. So the order is CR-002,
+then the script, gated as this switch was. **Kerning, the same defect wider** (measured by the fork session the same
+day): Carlito has no legacy `kern` table and its GPOS has no `DFLT` either (DejaVu has both).
+So under a default script the `+kern` twin (`kerning="true"`) kerns nothing: "AV" is kerned
+under `latn` or `*`, null under `DFLT`. docx4j's per-run kerning has been a no-op for Carlito.
+The runs it reaches are ones Word kerns: `RunFontSelector.isKerned` is Word's rule (`w:kern`
+present, non-zero, no larger than `w:sz`). So FOP has been dropping kerning Word applies,
+and the script fix is expected to be a fidelity gain for kerning. It is also a change across
+most kerned Calibri text, not a ligature change, so it wants its own CR, partition and gate,
+with a large mover set. The FOP behaviour itself (a font without `DFLT` silently gets no substitution under
+a default script) is a candidate upstream report; the fork session offers to draft it.
+
+**The language face of it** (fork session, 2026-09-27, `docs/upstream/no-default-script-table.txt`
+in the fork): with `script="latn"` and `language="en"`, a font with no `ENG` language system
+falls back to `(DFLT, dflt)`, not to `latn`'s default language system. So the result depends on
+whatever that font's `DFLT/dflt` carries. The system DejaVu Serif has `liga` there and ligates
+under `language="en"`; the system DejaVu Sans's `DFLT/dflt` has `case`, `ccmp`, `dlig`, `kern` and
+no `liga` (its `latn` default has `liga`), and does not: two faces of one family differ. docx4j writes
+`language` on every FO (all 191 real-corpus FO files; from `w:lang`/docDefaults), and cannot
+drop it, because FOP's hyphenation takes its patterns from it (docx4j hyphenates by the
+document's language since 17.1.0). So docx4j's script fix needs FOP's fallback order changed
+to `(script, lang) -> (script, dflt) -> (DFLT, dflt)`, as OpenType engines do: in the fork, with
+a capability so docx4j can tell, and as the upstream report's proposed fix. Then docx4j only
+writes `script`. The fork session agrees on the shape. It changes shaping and kerning for every
+run that carries a language today, so it wants its own branch and gate, not a ride on
+fop/CR-002. Not started; it waits on Jason.
+The predictor should also learn a font's embedding mode (CFF single-byte).
+- Getting Started's "Two FO renderers" paragraph, rewritten once, when
+  `2.11-docx4j.2` is in.
+
+### fop/CR-002 gate - the ToUnicode fix (2026-09-27)
+
+The fork session's `fop/CR-002` (branch `CR-002-ligature-tounicode`, off 2.11-docx4j.2, carrying
+the gsub-features hook). The pass statements were agreed beforehand: geometry unchanged
+everywhere; the per-document private-use count falls; line parity improves or holds.
+Candidate against the ligature gate's candidate `gsub-cand` (same hook, no CR-002), all four
+corpora, same settings. Geometry is compared glyph by glyph (glyph ids and positions from
+`mutool trace`, Unicode ignored), text by counting in `pdftotext` output.
+
+**First run (de8ca1cf9, `cr002-cand`): passed on its face, but it was not right.** Geometry was
+598/598, with two score improvements, and six real documents went from 0 private-use
+characters to 1..21 (U+F0A7, F0A8, F0B7, F0E0, each replacing a "#"). I read that as a
+correction. It was a defect in the commit, found by the fork session. Those "#" are what FOP
+**draws** (`Typeface.NOT_FOUND`) when the declared font has no glyph, and the first commit
+recorded the missing character as the "#" glyph's meaning, so the CMap published it for every
+"#" in the subset, real ones included. The improvements were the text layer matching Word's
+golden while the page still showed "#". Fixed in 7289e1726: the stand-in glyph records no
+meaning, pinned by `testStandInForMissingCharacterRecordsNothing`. The lesson for reading
+these gates: a text-layer change without a geometry change needs checking against what is
+drawn, not only against the golden's text.
+
+**Re-check (7289e1726, installed 19:16, `cr002b-cand`): a pass.**
+
+| check | result |
+|---|---|
+| geometry | 598 of 598 documents identical, glyph for glyph |
+| scoreboards | 0 changed documents in every corpus |
+| presentation forms in the text layer | 480 -> 18 |
+| private-use characters | 129 -> 81, all in two probes: ligatures-arabic 105 -> 63, fonts-hebrew-no-cs 24 -> 18 (the followers of one-character clusters, as designed) |
+
+Latin ligatures show no text-layer change, because through docx4j Carlito gets no GSUB (the
+`DFLT` finding above). The fork session merges to 2.11-docx4j.2 and updates §6.6 item 30.
+
+Found on the way, docx4j's: 12_en-US_num_tbl_3236 (and five others) put a symbol-font code point
+(U+F0A7 etc.) in a plain Times New Roman run, with no `w:sym`. Word draws a bullet; docx4j sets
+Tinos, which has no glyph, so FOP draws "#". The glyph fallback does not handle U+F000-F0FF in a
+non-symbol font as Word does. A layout-fidelity item, not CR-020's.
+
+### fop/CR-003 gate - lookup fallback and the kerning flag (2026-09-27): FAIL, first run
+
+The fork's `fop/CR-003` (branch `CR-003-script-fallback`, ca8cf0115, installed 20:18): FOP maps
+the FO language to its OpenType tag and falls back `(script, lang) -> (script, dflt) ->
+(DFLT, dflt)`; with it, a font declared `kerning="false"` loses `kern` from GPOS (measured
+first: the flag had gated only the legacy table, so CR-003 alone would have kerned every plain
+Carlito run). Capabilities `lookup-fallback` and `kerning-flag`. It corrects §8 above: FOP
+derives `latn` itself, and the untranslated language was the cause, so docx4j does not need to
+write `script`. docx4j's pipeline honours `advanced="false"` (via `WordWidthsFontCollection`):
+on Apache FOP a CJK document has 0 Kangxi radicals by default and 156 when forced on.
+
+The partition (`~/fidelity-gsub-partition/cr003/`) models before (DFLT/dflt; GPOS kern whatever
+the flag) and after, per span. It excludes +noliga, fonts not CID-embedded in the baseline PDF
+(by PostScript family), CJK `advanced=false`, and DejaVu's kern (§6.6 item 32: FOP applies none).
+It was corrected twice during the reading (bold faces; Common-script spans resolve to `latn`):
+447 still, 151 movers.
+
+Candidate `cr003-cand` against `cr002b-cand`:
+- text layer unchanged;
+- 49 documents' geometry moved;
+- scoreboards: 11 improvements (e.g. 15_de-DE_2299 0.7174 -> 0.8913, 14_es-MX_tbl_14140
+  0.8788 -> 0.9848) and **5 regressions**. Four are `+kern` runs in Arimo or Tinos. In
+  12_en-US_tbl_13872 the FO is identical, yet "repair, if" extracts as "repair,if", because the
+  space after a comma or full stop is closed up: an interaction with docx4j's item-15 kernSpaces
+  word-spacing, or a double adjustment, still to be found. The fifth is a Carlito Greek document
+  (70 -> 71 pages, Word 68), possibly `cpsp`;
+- 4 predicted-still documents moved, with small shifts of a space or full stop in single-byte
+  Carlito after a bold span.
+
+Not merged; the fork session is investigating. The pass statements stand.
+
+**Reading, the same evening.** Split with docx4j's Word layout on and off, on the released
+2.11-docx4j.1 and on CR-003:
+- The "repair, if" collapse and the Greek extra page happen only with CR-003 **and** the Word
+  layout on. Off, the Greek document is 69 pages either way, and its kerning (1,354 glyphs)
+  moves as it should. Both are docx4j's: `WordLineLayoutManager` double-counts something CR-003
+  now supplies. Not yet found; `fixLetterSpaces`, `emergencyBreaks` and the leader spacing in
+  `LBP` are ruled out.
+- The four still-but-moved documents were the **partition's error**. A CFF font (Nimbus Sans
+  Narrow, P052, URW Gothic) loads as a MultiByteFont with GSUB and GPOS whatever its PDF
+  embedding, so "not CID in the PDF, therefore never shaped" was wrong. Nimbus's `DFLT` carries
+  `kern`, so its plain runs were kerned before, which Word never does, and the kerning flag now
+  stops it (fork CR-003 §11.1; 6541 improves). With the exclusion made by declaration only
+  (+noliga twins, CJK `advanced=false`): 408 still, all 408 identical glyph for glyph; all 49
+  documents that moved are predicted movers (kern-lost 68, kern-gained 45, ccmp-led 72, script 5).
+
+CR-003 stands as coded. What remains is docx4j's line-manager fix, then a re-gate of both
+together.
 
 ### Not done, carried
 
