@@ -872,7 +872,31 @@ Word layout on and off; scratch renders rebuilt from the same corpus and classpa
   after its last glyph (+5.138pt = 7 x 0.734 on "Ανοικτό"): item 33 again, on Apache-era
   behaviour, so the defect predates the fork and belongs upstream.
 
-So the re-gate waits on the fork's item-33 fix only. Expected: 13872 back to its .1 text
+**Re-gate 2026-09-30, CR-003 + CR-005 (fork tip 4a3e36b7c, installed by Jason): PASS.** Runs
+`cr003b-cand` against `cr002b-cand`, read with `~/fidelity-gsub-partition/cr003/gatecmp.py`
+(word boxes from pdftotext -bbox: identical / paint-only / text-only / moved, crossed with the
+partition and with `paintclass.py`, which names the 40 documents holding a letter-spaced span in
+a font FOP positions). First a control: today's docx4j build on the CR-003-only jars against the
+27th's `cr003-cand`, 557 of 570 word-box identical and 13 DATE fields printing the render day, so
+the 27th's baseline stands.
+- Still set (408 of 598, 148 probes included): 396 identical, 10 date-field text-only, 2 paint
+  (real2 1137, real3 12222): letter-spaced Caladea +kern titles that FOP's legacy kern table sent
+  down the DP path; before, the letter-spacing was not painted and every following word on the
+  text area was drawn short of its area origin, now each glyph is advance + spacing + kern and the
+  words sit where the layout put them (parity and pages identical; both predicted by paintclass).
+- Movers (190): 79 moved, 5 paint-only, 1 date-only, 104 did not move (recorded, not failed;
+  most are ccmp/cpsp-only predictions on plain text). Scoreboards on the real corpora: 22
+  improved (+0.8112 line parity in all), 4 worse (-0.1002): 8371 -0.0785 (the Cambria-to-P052
+  fallback, read above), 11559 -0.0127 (Tinos, ccmp under latn/SRB), 3229 -0.0070 and 7235
+  -0.0020 (Nimbus Sans Narrow, kern-lost with no w:kern: right by Word's rule, Arial Narrow's
+  metrics not Nimbus's). The 27th's four Arimo/Tinos regressions (475, 9832, 13872, 14776) are
+  gone; 13872's text layer and geometry are back to the baseline's within its kern. Probes: 146
+  identical, fonts-georgia and fonts-segoe-ui kern-lost as predicted, parity unchanged.
+- Verdict: the still set holds, every movement is the one predicted, and each score drop is
+  explained by a fallback font's metrics rather than a wrong lookup. The fork merges CR-003 (with
+  CR-005) into 2.11-docx4j.2; fork CR-004 (DejaVu Sans's shared default language system) gates
+  next, on its own partition, in the order Jason sets.
+ Expected: 13872 back to its .1 text
 layer and geometry within the kern; every letter-spaced span in a positioning font is a
 new mover class (paint only, geometry of the boxes unchanged) - the partition's still set
 must be re-read for it before the run, since a "still" document whose letter-spaced words
