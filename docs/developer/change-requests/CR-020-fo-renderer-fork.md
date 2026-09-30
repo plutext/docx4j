@@ -907,6 +907,49 @@ has no Greek; Word's golden is Cambria throughout); and kernSpaces (item 15) rea
 legacy kern table only, so Arimo's GPOS space pairs (A␠ -55, ␠A -55, T␠ Y␠ -18, measured
 by the fork session) are applied by nobody.
 
+### The twin gives way: fonts subset under the fork (planned 2026-09-30)
+
+**Why.** docx4j's PDFs are about four times Word's, and fonts are most of it (CR-029 §9.4;
+re-measured today: real 181.5 MB against Word's 39.1, real2 200.7 against 50.9, real3 208.6
+against 99.7). The `+noliga` twin, declared `encoding-mode="single-byte"` so that FOP applies
+no GSUB to a run Word would not ligate, is embedded whole: FOP's PDF writer copies a
+single-byte TrueType file as it is (`PDFFactory.makeFontFile`, TrueType branch; only the
+Type 0, Type 1 and CFF branches consult the embedding mode), where the CID declaration is
+subset to the glyphs used. Jason's question of 2026-09-30, relayed by the fork session, which
+re-measured it (one line of Arimo: 8,451 bytes subset, 191,915 whole).
+
+**What changes.** Where the renderer declares `gsub-features` (the fork from 2.11-docx4j.2),
+`RunFontSelector.noLigatures` sends no span to the twin: every run that asks for no standard
+ligatures gets `fox:gsub-features="-liga"` on the CID declaration, Latin text included. The
+twin stays declared (`FopConfigUtil`; a declaration costs nothing until used) and stays the
+path on Apache FOP, which has no hook. `docx4j.convert.out.fo.gsubFeatures=false` is the way
+back to the twin on the fork. Prerequisites, both now in the merged 2.11-docx4j.2: fop/CR-003
+(the kerning flag: the base declaration is `kerning="false"`, so a plain run on the CID path
+gets no GPOS kern, which is what the twin's "no GPOS" gave) and fop/CR-005 (letter-spaced
+words on the position-adjustments path).
+
+**What the CID path applies that the twin did not.** GSUB `ccmp` and `locl`, GPOS `mark` and
+`mkmk` (FOP's GPOS list is kern, mark, mkmk; no `cpsp`, measured on the CR-003 gate). Word
+applies all four, so on the affected text the CID path is nearer Word: combining marks are
+positioned, localised forms (Romanian comma-below, Turkish, Dutch IJ) are used. Plain ASCII
+Latin text, which is most of the twin's traffic, has no such glyph and must not move.
+Kerning: none on either path for a plain run; `+kern` runs never took the twin.
+
+**Gate.** Candidate `notwin-cand` against `cr003b-cand` (same docx4j build, the merged fork
+jars), read with `gatecmp.py`: documents with no `+noliga` span in the baseline FO are the
+still set (word-box identical); those with one are the predicted movers, expected identical
+unless their twin text holds a combining mark or a locl-sensitive language, in which case
+the movement is read glyph by glyph; scoreboards no worse; text layer identical (the word
+text of the box compare). Then the size: whole-PDF bytes per corpus against Word, and one
+document's `pdffonts` before and after (every twin gone, every face subset). export-fo's
+tests on both renderers; `GsubFeaturesTest` says the twin is never taken with the hook, and
+`EmbeddedFontMetricsTest` accepts either declaration (it will see the delta once export-fo
+depends on 2.11-docx4j.2).
+
+**Not in this step.** Dropping the twin declarations altogether (a later tidy-up, once no
+supported renderer needs them); the `+kern` twin (a CID declaration already, subset); the
+CFF faces (never twinned). Result below when measured.
+
 ### Not done, carried
 
 - Cambria's Greek: docx4j maps Cambria to Caladea, which covers Latin only, so Greek runs
