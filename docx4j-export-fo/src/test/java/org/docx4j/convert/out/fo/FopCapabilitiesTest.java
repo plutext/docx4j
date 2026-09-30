@@ -76,13 +76,17 @@ public class FopCapabilitiesTest {
 	public void hooksFollowTheRenderer() {
 		FopCapabilities c = FopCapabilities.get();
 		if (c.isDocx4jRenderer()) {
-			// phase 1's four hooks are in every release; a later one (gsub-features, from
-			// 2.11-docx4j.2) is there exactly when the renderer declares it
+			// phase 1's four hooks are in every release; a later one (gsub-features,
+			// lookup-fallback, kerning-flag and shared-glyph-tounicode, all from 2.11-docx4j.2)
+			// is there exactly when the renderer declares it
+			java.util.EnumSet<FopCapabilities.Capability> phase1 = java.util.EnumSet.of(
+					FopCapabilities.Capability.PAIR_TABLE, FopCapabilities.Capability.LEADER_PLACEMENT,
+					FopCapabilities.Capability.INLINE_ACCESS, FopCapabilities.Capability.GLYF_EMPTY_GLYPH);
 			for (FopCapabilities.Capability cap : FopCapabilities.Capability.values()) {
-				if (cap == FopCapabilities.Capability.GSUB_FEATURES) {
-					assertEquals(cap.key(), c.getCapabilities().contains(cap.key()), FopCapabilities.has(cap));
-				} else {
+				if (phase1.contains(cap)) {
 					assertTrue(cap.key(), FopCapabilities.has(cap));
+				} else {
+					assertEquals(cap.key(), c.getCapabilities().contains(cap.key()), FopCapabilities.has(cap));
 				}
 			}
 		} else {

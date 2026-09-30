@@ -82,7 +82,18 @@ public final class FopCapabilities {
 		/** {@code fox:gsub-features}, an inherited delta over the GSUB features FOP's script processor
 		 *  applies (fork CR-001), so Word's w14:ligatures reaches every font and script rather than
 		 *  only the Latin text of a TrueType font with the +noliga twin.  @since 17.3.0 */
-		GSUB_FEATURES("gsub-features");
+		GSUB_FEATURES("gsub-features"),
+		/** The lookup fallback (script, language) to (script, dflt) to (DFLT, dflt), with the FO's
+		 *  language mapped to its OpenType tag, so a font's own script table is reached whenever a
+		 *  language is set (fork CR-003; 2.11-docx4j.2).  @since 17.3.0 */
+		LOOKUP_FALLBACK("lookup-fallback"),
+		/** A declaration's {@code kerning="false"} drops {@code kern} from GPOS as well as the legacy
+		 *  table, so a plain run on the CID declaration is unkerned as Word's is (fork CR-003).  @since 17.3.0 */
+		KERNING_FLAG("kerning-flag"),
+		/** A glyph two code points share (a Kangxi radical and its ideograph) publishes to ToUnicode the
+		 *  character the document wrote (fork CR-006), so cjkAdvancedFeatures may default on and
+		 *  mustNotUseOpenTypeLayout go, once that flip is gated (CR-020).  @since 17.3.0 */
+		SHARED_GLYPH_TOUNICODE("shared-glyph-tounicode");
 
 		private final String key;
 
