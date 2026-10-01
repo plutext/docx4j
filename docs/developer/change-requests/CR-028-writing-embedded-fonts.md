@@ -132,7 +132,7 @@ It does the following:
    8-digit hex), and the `w:embedRegular` (or Bold/Italic/BoldItalic) with its key. An existing
    embedding of the same style is replaced, and its part removed.
 5. **The flag**: `w:embedTrueTypeFonts` in the settings part. `w:saveSubsetFonts` only with
-   phase 2.
+   phase 2, where the policy (§5 phase 2) decides it.
 
 A second entry point fills in the fields of step 4 for fonts that are *not* embedded:
 `FontTable.describe(wordMLPackage, fontName, file)`. That applies only if phase 0 shows Word
@@ -170,6 +170,24 @@ substituting installed fonts for want of a `w:sig` (§3).
    docx4j's `TTFSubSetFile`. Word's own subsets keep the glyph count and ids (seen in its PDF
    subsets, 2026-09-27); whether its *embedded* subsets do is for phase 0 to say, and the
    subsetter follows. Refused where `fsType` bit 8 says no subsetting.
+
+   **Word's rule, and the policy (decided 2026-10-02).** Word subsets only when the document's
+   `w:saveSubsetFonts` is set (its option "Embed only the characters used in the document"),
+   and then only a font of which fewer than 32 characters are used: at 32 or more it embeds
+   the whole font (Microsoft, `Document.SaveSubsetFonts`, §9). With the setting off it always
+   embeds the whole font. docx4j replicates that as the default, because the document is the
+   oracle: a docx this CR writes is one Word would have written, and Word's first re-save
+   applies the same rule, so the Office check can compare like with like. It is configurable,
+   because docx4j's callers are not Word users and decide per call what Word decides per
+   machine: an `EmbedPolicy` on `FontEmbedder` with three values, `AS_WORD` (the document's
+   `w:saveSubsetFonts` plus the 32-character threshold; the default), `WHOLE` (always the
+   whole font: a document someone will go on editing, since a subset cannot gain characters),
+   and `SUBSET` (always the characters used: a document for distribution). Two constraints sit
+   under all three: a subset keeps the glyph count and ids (unused outlines emptied, nothing
+   renumbered, as Word's subsets do and as the obfuscated part's cmap requires), and the
+   `fsType` check comes first, so a font whose bit 8 forbids subsetting is embedded whole or
+   not at all whatever the policy asked. `AS_WORD` writes `w:saveSubsetFonts` as it found it;
+   `SUBSET` sets it, `WHOLE` clears it, so the settings part says what the parts hold.
 3. **pptx** `p:embeddedFontLst` (`FontDataPart`), if there is demand: PowerPoint's `.fntdata`
    format is to be measured first.
 
@@ -201,5 +219,10 @@ two days. Phase 3 is not estimated.
 
 - ECMA-376 Part 1 §17.8 (fonts, `w:font`, `w:sig`), Part 4 §2.8.1 (font obfuscation).
 - OpenType `OS/2` table: `fsType`, `ulUnicodeRange1-4`, `ulCodePageRange1-2`, `panose`.
+- Microsoft, `Document.SaveSubsetFonts` property (Word 2010 object model): "If fewer than 32
+  characters of a TrueType font are used in a document, Word embeds the subset ... If more
+  than 32 characters are used, Word embeds the entire font."
+  https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/ff844828(v=office.14)
+  (the interop twin ms262516 says the same).
 - CR-020 §8, "The switch": the Arabic ligature probe that found this.
 - `~/fidelity-arabic-ligatures/`: the probe, its generator, and the Word golden's analysis.
