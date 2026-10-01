@@ -435,6 +435,177 @@ writer. The docx4j-mcp session gets the API when phase 1 lands.
 Phase 0 is a day (probes plus reading Word's output). Phase 1 is two or three days. Phase 2 is
 two days. Phase 3 is not estimated.
 
+## 10. Phase 3 design: pptx (PowerPoint's embedded fonts)
+
+Status: DESIGN 2026-10-02 (Jason asked for it after phase 2). Not started; phase 3.0 is the
+go/no-go.
+
+### 10.1 What PowerPoint's embedding is
+
+The markup is bound and read already; docx4j writes none of it.
+
+- **The list.** `p:presentation/p:embeddedFontLst/p:embeddedFont`, one per family, each
+  holding `p:font` (a DrawingML `a:CT_TextFont`: `typeface`, `panose` as 20 hex digits,
+  `pitchFamily` as one byte, `charset` as one byte) and up to four of `p:regular`,
+  `p:bold`, `p:italic`, `p:boldItalic`, each an `r:id` to a part. docx4j:
+  `org.pptx4j.pml.CTEmbeddedFontList`, `CTEmbeddedFontListEntry`,
+  `CTEmbeddedFontDataId`, `org.docx4j.dml.TextFont`; the list sits in `Presentation`
+  between `p:notesSz` and `p:custShowLst`. `p:presentation` carries the two attributes
+  Word keeps in settings, `embedTrueTypeFonts` and `saveSubsetFonts` (both default false).
+- **The part.** `/ppt/fonts/fontN.fntdata`, content type `application/x-fontdata`
+  (`ContentTypes.PRESENTATIONML_FONT_DATA`), relationship type `.../font`
+  (`Namespaces.PRESENTATIONML_FONT_DATA`), from the presentation part. docx4j:
+  `FontDataPart`, a `BinaryPart` with no reading of the bytes; the anonymiser removes
+  the list and the parts (`MarkupScrubber`, `PartsAnalyzer`); `AnonymizePptxProbesTest`
+  builds one with junk bytes.
+- **The format.** `.fntdata` is **Embedded OpenType (EOT)**, Microsoft's web-font
+  container (W3C submission 2008): a little-endian header, then the font data. Two
+  witnesses: POI's XSLF reads PowerPoint's font parts with
+  `org.apache.poi.common.usermodel.fonts.FontHeader`, which docx4j already carries
+  repackaged (`org.docx4j.org.apache.poi...fonts.FontHeader`: versions `0x00010000`,
+  `0x00020001`, `0x00020002`, magic `0x504C`, the flags `SUBSET`, `TTCOMPRESSED`,
+  `FAILIFVARIATIONSIMULATED`, `EMBEDEUDC`, `VALIDATIONTESTS`, `WEBOBJECT`,
+  `XORENCRYPTDATA`, panose, charset, italic, weight, the four names); and LibreOffice,
+  which reads pptx embedded fonts through libeot. There is no `fontKey` GUID: EOT has
+  its own two protections, an optional XOR of the font data with `0x50`
+  (`XORENCRYPTDATA`) and optional MicroType Express compression (`TTCOMPRESSED`).
+  **Which of these PowerPoint writes, and which it requires, is unmeasured**, and is the
+  whole of phase 3.0. If PowerPoint will not read an uncompressed EOT, phase 3 needs an
+  MTX compressor (LZCOMP; libeot has only the decompressor, and it is 1,500 lines of C),
+  and the phase is re-costed or dropped.
+
+The EOT header, version 2.2 (what phase 3.1 writes; every field is from the font's own
+tables, which `OpenFont` now exposes):
+
+| field | from |
+|---|---|
+| EOTSize, FontDataSize | the sizes |
+| Version `0x00020002` | fixed |
+| Flags | 0, or `XORENCRYPTDATA` (`0x10000000`) if PowerPoint needs it (3.0); `SUBSET` (`0x01`) on a subset |
+| FontPANOSE[10], Charset, Italic, Weight | OS/2 panose; charset by the phase 1 rule; `fsSelection` bit 0 (or `head.macStyle` bit 1); `usWeightClass` |
+| fsType | OS/2, whole |
+| MagicNumber `0x504C` | fixed |
+| UnicodeRange1-4, CodePageRange1-2 | OS/2 (the raw fields; EOT is not Word's table) |
+| CheckSumAdjustment | `head` |
+| Reserved1-4, Padding | zero |
+| FamilyName, StyleName, VersionName, FullName | name IDs 1, 2, 5, 4, each a UTF-16LE string with a 2-byte size |
+| RootString (v2), RootStringCheckSum, EUDCCodePage, Padding3, SignatureSize, Signature, EUDCFlags, EUDCFontSize | empty / zero: no root-string binding, no EUDC |
+| FontData | the TrueType file, whole or `TrueTypeSubsetter`'s subset, XORed if the flag says so |
+
+A phase 1 reading carries over: `OTTO`, variable fonts and collections are refused
+(EOT can carry CFF, but PowerPoint's acceptance is unmeasured and Word's refusal is the
+precedent); fsType is enforced the same way.
+
+### 10.2 Phase 3.0: measure PowerPoint (the go/no-go)
+
+PowerPoint 365 on the VM, the office-check lesson first (a fixture PowerPoint itself wrote):
+
+1. **PowerPoint's own embedding, read.** Noto Naskh Arabic installed on the VM;
+   PowerPoint, a slide with the phase 0 rows (a Latin row and an Arabic row in Noto, a
+   Calibri control); File > Options > Save > "Embed fonts in the file", once with "Embed
+   only the characters used" and once with "Embed all characters"; Save As two pptx; the
+   font uninstalled. Read here: the `p:embeddedFont` entry (which of `panose`,
+   `pitchFamily`, `charset` PowerPoint writes, and their values against the OS/2 rule),
+   the `p:presentation` attributes, and the `.fntdata` header through POI's `FontHeader`
+   plus a byte-level look: version, flags (**compressed or not** - the question), XOR,
+   `SUBSET`, the four names, whether the payload after the header is a plain sfnt, and
+   for the subset what shape it has (glyph count and ids, as Word's; or renumbered).
+2. **PowerPoint's rendering of its own file after the uninstall**: the positive control,
+   as w0 was for Word. The runner: a `PowerPointGoldenRunner` (or a `--pptx` mode of
+   `WordGoldenRunner`) over documents4j's PowerPoint bridge, which the Word runner
+   switches off because PowerPoint runs in the foreground and its first-run dialogs look
+   like hangs; `-Dpptx4j.documents4j.MicrosoftPowerpointBridge.enabled=true`, PDF plus a
+   re-save. The PDF read with `rows_fonts.py` as before (PowerPoint's name for a private
+   embedded font in its PDF is one more thing to learn).
+3. **Probes docx4j writes**, one variable each, using phase 3.1's writer on a prototype
+   flag: an uncompressed EOT 2.2 with flags 0; the same XORed; the same with the
+   `SUBSET` flag and a `TrueTypeSubsetter` subset; an entry without `panose`,
+   `pitchFamily` or `charset`; an entry with them; a version `0x00020001` header; and,
+   if 1 shows PowerPoint writing compressed data, an uncompressed one is the decisive
+   probe. Gate: the minimal header and entry with which PowerPoint draws both rows from
+   the embedding, recorded here as §5 phase 0's was.
+4. **LibreOffice as a second consumer**, a note not a gate: `soffice --headless
+   --convert-to pdf` of each probe, `pdffonts` on the result. (LibreOffice's headless
+   pptx export did not embed fonts from a flat ODP with `EmbedFonts` set, tried
+   2026-10-02, so it is a reader here, not a producer.)
+
+Effort: one day of Jason's PowerPoint time and one of reading, like phase 0.
+
+### 10.3 Phase 3.1: the writer
+
+`FontEmbedder` gains the `PresentationMLPackage` overloads of the same shape as the docx
+ones (`embed(pkg, file[, name][, style][, policy])`), sharing `describe`, the licence
+check, the refusals and `TrueTypeSubsetter`; the pptx-specific parts:
+
+- **`EotWriter`** (new, `org.docx4j.fonts`, package-private or public static
+  `write(byte[] ttf, FontInfo info, boolean subset, boolean xor)`): the header of §10.1
+  and the payload. `FontInfo` gains what the header needs beyond phase 1's fields:
+  weight, italic, the four names, `head.checkSumAdjustment`; `OpenFont` already has the
+  weight and the names, `isItalic` and the adjustment are two more accessors.
+- **The part**: `FontDataPart` at the next free `/ppt/fonts/fontN.fntdata`, related from
+  `MainPresentationPart`; an existing embedding of the same face replaced, part and all,
+  as the docx path does.
+- **The entry**: `CTEmbeddedFontListEntry` for the family, created or updated;
+  `TextFont.typeface` = the family name, `panose` = the 20 hex digits, `charset` = the
+  phase 1 charset as a signed byte, `pitchFamily` = family nibble (1 roman, 2 swiss, 3
+  modern, 4 script, 5 decorative, from the phase 1 family rule) in the high four bits and
+  pitch (1 fixed, 2 variable) in the low four (so swiss variable is `0x22`, 34, which is
+  what the probe fixture has); whichever of the three PowerPoint's own entries carry
+  (3.0 decides, as Word's decided `w:panose1`). `Presentation.embedTrueTypeFonts` true;
+  `saveSubsetFonts` by the policy as in phase 2.
+- **The characters used**, for the policy: a `PresentationFontUsage` walking every
+  `SlidePart`, `SlideLayoutPart`, `SlideMasterPart`, `NotesSlidePart`,
+  `NotesMasterPart` and `HandoutMasterPart` for `a:r` runs, resolving each run's font
+  per script from `a:rPr`'s `a:latin`, `a:ea`, `a:cs` (and `a:sym` for symbol runs),
+  the theme's `+mn-lt`/`+mj-lt` references through the theme part, and the master's
+  text styles when the run has none; face from `b` and `i`. Distinct code points per
+  typeface and face, the same `SortedSet<Integer>` the docx side uses. PowerPoint's own
+  subsetting threshold is unknown (Word's 32 is documented for Word only): 3.0's "embed
+  only the characters used" file says whether PowerPoint subsets at all below some
+  count, and `AS_WORD` is renamed or joined by `AS_POWERPOINT` only if the rule differs.
+- **Tests** (`FontEmbedderPptxTest`): the written header read back by POI's
+  `FontHeader` (version, flags, panose, charset, weight, italic, names) and by a small
+  reader of the fields POI skips (ranges, fsType, checksum); the payload byte-identical
+  to the file (or to the subset); the entry's fields against PowerPoint's own from 3.0;
+  save, load, the part and entry back; the anonymiser removes it; the refusals shared
+  with the docx tests. Fixture: the same Noto file.
+- **Office check**: 3.0's winning probe regenerated by docx4j, PowerPoint draws both rows
+  from the embedding, no repair, and its re-save keeps or re-cuts the part; LibreOffice's
+  PDF as the note.
+
+Effort: two days.
+
+### 10.4 Phase 3.2: the reader (optional)
+
+`FontDataPart.extract(...)` to a temp file as `ObfuscatedFontPart.extract` does: parse
+the EOT header (POI's `FontHeader` for the fields, the byte offsets for the payload),
+undo the XOR if flagged, and if `TTCOMPRESSED` is clear hand back the sfnt; if set, log
+that MicroType Express is not decompressed and return null (libeot is the reference if
+that is ever wanted). Registers nothing with a mapper, since docx4j renders no pptx of
+its own; what it enables is `FontsAnalysis` on a pptx (the "embedded" `FontDecision`) and
+a round-trip test of the writer through a reader that is not the writer's own. One day.
+
+### 10.5 Risks, open questions
+
+- **MTX compression** is the one that can stop the phase: if PowerPoint writes and
+  demands it, writing it is a port of LZCOMP (no Java implementation known) and the cost
+  is out of proportion to the demand; 3.0 answers before any writer code.
+- **XOR and the names**: cheap either way; measured, not assumed.
+- **PowerPoint for Mac** reads EOT embedding since 2019 (Microsoft's support note); not
+  on the VM, not a gate.
+- **The PowerPoint bridge** needs PowerPoint in the foreground on the VM and its
+  first-run dialogs dismissed once (the Word runner's comment); the first run is with
+  Jason watching.
+- **Theme fonts** in the usage walk: a run in `+mn-lt` resolves through the theme, and
+  a theme font that is itself embedded is the common case (a corporate theme), so the
+  walk must resolve, not skip, theme references.
+
+### 10.6 Hand-offs
+
+As §7: no schema change; the python and core-ts ports get the note when 3.1 lands (they
+read `p:embeddedFontLst` and write none); the MCP session gets the pptx overload with
+the docx one.
+
 ## 9. References
 
 - ECMA-376 Part 1 §17.8 (fonts, `w:font`, `w:sig`), Part 4 §2.8.1 (font obfuscation).
