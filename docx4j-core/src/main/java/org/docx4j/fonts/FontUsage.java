@@ -55,6 +55,8 @@ public final class FontUsage {
 		private final Map<String, long[]> byScript = new TreeMap<String, long[]>();
 		private final Map<Face, long[]> byFace = new LinkedHashMap<Face, long[]>();
 		private final Map<String, Integer> sampleCodePoints = new TreeMap<String, Integer>();
+		/** Every code point the document sets in this font, per face (CR-028 phase 2: what a subset keeps). */
+		private final Map<Face, java.util.SortedSet<Integer>> codePointsByFace = new LinkedHashMap<Face, java.util.SortedSet<Integer>>();
 
 		Use(String documentFont) {
 			this.documentFont = documentFont;
@@ -94,6 +96,30 @@ public final class FontUsage {
 			count(byScript, script, characters);
 			count(byFace, face, characters);
 			if (!sampleCodePoints.containsKey(script)) sampleCodePoints.put(script, codePoint);
+			java.util.SortedSet<Integer> cps = codePointsByFace.get(face);
+			if (cps == null) {
+				cps = new java.util.TreeSet<Integer>();
+				codePointsByFace.put(face, cps);
+			}
+			cps.add(codePoint);
+		}
+
+		/**
+		 * The distinct code points the document sets in this font in that face, in order;
+		 * empty if none.  What {@link FontEmbedder} subsets the face's file to (CR-028
+		 * phase 2), and what Word's 32-character rule counts.
+		 * @since 17.3.0
+		 */
+		public java.util.SortedSet<Integer> getCodePoints(Face face) {
+			java.util.SortedSet<Integer> cps = codePointsByFace.get(face);
+			return cps == null ? new java.util.TreeSet<Integer>() : Collections.unmodifiableSortedSet(cps);
+		}
+
+		/** The distinct code points the document sets in this font, all faces together.  @since 17.3.0 */
+		public java.util.SortedSet<Integer> getCodePoints() {
+			java.util.SortedSet<Integer> all = new java.util.TreeSet<Integer>();
+			for (java.util.SortedSet<Integer> cps : codePointsByFace.values()) all.addAll(cps);
+			return all;
 		}
 
 		private static <K> void count(Map<K, long[]> map, K key, int characters) {

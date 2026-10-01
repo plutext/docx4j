@@ -14,7 +14,14 @@ Changes in Version 17.3.0
 - New org.docx4j.fonts.FontEmbedder embeds a TrueType font file in a docx as Word does
   (obfuscated part, the w:font entry with the w:sig Word needs before it draws in an
   embedded font, w:embedTrueTypeFonts); refuses what the font's fsType refuses, CFF
-  outlines, variable fonts and collections. CR-028 phase 1; subsetting is phase 2.
+  outlines, variable fonts and collections. CR-028 phase 1.
+
+- FontEmbedder subsets as Word does (CR-028 phase 2): EmbedPolicy AS_WORD (the default:
+  a subset when w:saveSubsetFonts is set and fewer than 32 distinct characters of the face
+  are used, else the whole font), WHOLE and SUBSET. The subset keeps the glyph count and
+  ids (TrueTypeSubsetter: GSUB closure, cmap pruned, w:subsetted on the embed), so it
+  shapes as the whole font did; fsType bit 8 forbids it. FontUsage now carries the code
+  points set in each font per face.
 
 PDF via XSL FO:
 

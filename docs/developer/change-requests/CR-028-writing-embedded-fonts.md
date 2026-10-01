@@ -1,6 +1,6 @@
 # CR-028: writing embedded fonts - a docx carries the fonts it needs, and Word uses them
 
-Status: IN PROGRESS. Phases 0 and 1 DONE 2026-10-02 (§5); phase 2 (subsetting) next. Proposed 2026-09-27 (Jason asked for the draft). Drafted with Claude Opus 5.5 while
+Status: Phases 0, 1 and 2 DONE 2026-10-02 (§5); phase 3 (pptx) only if there is demand. Proposed 2026-09-27 (Jason asked for the draft). Drafted with Claude Opus 5.5 while
 measuring, for CR-020, what Word does with `w14:ligatures` on Arabic. That probe had to embed a
 font by hand, and Word 365 then ignored it. Owner: Jason Harrop.
 
@@ -370,6 +370,44 @@ substituting installed fonts for want of a `w:sig` (§3).
    of it is read for what Word keeps; phase 0's e5 (a subset of about 50 characters) drew, and
    e11 gives the shape Word's own subsets have. `AS_WORD` writes `w:saveSubsetFonts` as it found it;
    `SUBSET` sets it, `WHOLE` clears it, so the settings part says what the parts hold.
+
+   **Progress (2026-10-02, code landed, Office check pending).** `FontEmbedder.EmbedPolicy`
+   (`AS_WORD` default, `WHOLE`, `SUBSET`) on new `embed(..., policy)` overloads;
+   `codePointsUsed(pkg, name, style)` is the count Word's rule uses, from
+   `FontsAnalysis.usage`, whose `FontUsage.Use` now keeps the distinct code points per
+   face (`getCodePoints(Face)`). The 32 is `WORD_SUBSET_THRESHOLD`, counted as distinct
+   characters (an assumption the Office check's `p2-asword-repeat` tests against Word's
+   own re-save). `TrueTypeSubsetter` (new, `org.docx4j.fonts`) cuts the subset in Word's
+   shape rather than FOP's `TTFSubSetFile`, which renumbers glyphs and drops the layout
+   tables: glyph count and ids kept, unused outlines emptied, a `GSUB` closure that applies
+   every lookup (types 1-6 and 8, extension unwrapped; contextual lookups' nested lookups
+   applied whenever their input coverage meets the set, a superset of what a shaper would
+   reach) and the composite closure, `cmap` rebuilt for the used characters ((0,3)+(3,1)
+   format 4, plus (0,4)+(3,10) format 12 beyond the BMP), `post` to format 3, `DSIG`
+   dropped, every other table byte-identical, checksums and `checkSumAdjustment` rewritten.
+   The embed element gets `w:subsetted` (marshalled `"true"` by the plain Boolean binding
+   where Word writes `"1"`, both ST_OnOff; `FontRel.isSubsetted()` answers true for the
+   absent attribute, the binding's default, so readers look at the XML). `SUBSET` with no
+   text in the font embeds whole with a warning; fsType bit 8 embeds whole under any
+   policy. `FontSubsetTest` (11): the subset's shape against Word's (count, ids, hmtx and
+   layout tables untouched, outlines a superset of fontTools' closure for the same text,
+   cmap pruned, post 3, checksums, docx4j's own loader reads it); the GSUB closure reaches
+   the Arabic forms of a lone beh; each policy's choice and flag; the round trip. On the
+   share: `p2-subset-under32` (the under-32 check: shaping from a docx4j subset),
+   `p2-asword-repeat` (distinct against repeated characters, read from Word's re-save),
+   `p2-asword-over32` (whole at 40 distinct).
+
+   **Office check PASSED (2026-10-02, Jason's run).** All three draw from the embedding
+   (`___WRD_EMBED_SUB_46`), no repair. `p2-subset-under32`: the Arabic row's glyph ids from
+   the docx4j subset are identical to p1's from the whole font (75 18 25 29 70 8 3 79 76 ...,
+   U+FDF2 formed), so the subset shapes and ligates as the whole font does; the digits
+   row too. Word's re-save kept both subsets, marked `w:subsetted="1"` (it accepted and
+   rewrote docx4j's `"true"`), and **re-cut each to exactly docx4j's glyph set and cmap**:
+   96 outlines and 23 characters for `p2-subset-under32`, 60 and 14 for
+   `p2-asword-repeat`, not one glyph more or fewer either way, so the GSUB closure is
+   Word's own. `p2-asword-repeat` (14 distinct characters, 210 occurrences) Word subsetted:
+   **the 32 counts distinct characters**, as docx4j counts them. `p2-asword-over32` Word
+   re-embedded whole, as docx4j had. **Phase 2 DONE.**
 3. **pptx** `p:embeddedFontLst` (`FontDataPart`), if there is demand: PowerPoint's `.fntdata`
    format is to be measured first.
 

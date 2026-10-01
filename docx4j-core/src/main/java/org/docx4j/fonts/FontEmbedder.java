@@ -92,8 +92,20 @@ import org.slf4j.LoggerFactory;
  * same name to the embedded one, so a name clash on the opening machine shows that machine's
  * font.</p>
  *
- * <p>The whole font is embedded.  Subsetting to the characters used (Word's
- * {@code w:saveSubsetFonts}) is CR-028 phase 2.</p>
+ * <p><b>Whole font or subset</b> is the {@link EmbedPolicy} (CR-028 phase 2). The default,
+ * {@link EmbedPolicy#AS_WORD}, does what Word does on save: the whole font unless the
+ * document's {@code w:saveSubsetFonts} is set, and then a subset only when fewer than 32
+ * distinct characters of the face are used, the whole font otherwise (Microsoft,
+ * {@code Document.SaveSubsetFonts}). {@link EmbedPolicy#WHOLE} always embeds the whole
+ * font, for a document someone will go on editing (a subset cannot gain characters);
+ * {@link EmbedPolicy#SUBSET} always the characters used, for a document for distribution.
+ * A subset is cut by {@link TrueTypeSubsetter} in the shape of Word's own (glyph count and
+ * ids kept, GSUB closure, cmap pruned) and marked {@code w:subsetted="1"}; the characters
+ * are those the document sets in the font in that face, per {@link FontsAnalysis#usage},
+ * so embed after the text is in place. A font whose fsType bit 8 forbids subsetting is
+ * embedded whole whatever the policy. {@code SUBSET} sets {@code w:saveSubsetFonts},
+ * {@code WHOLE} clears it, {@code AS_WORD} leaves it, so the settings part says what the
+ * parts hold.</p>
  *
  * @since 17.3.0
  */
@@ -105,6 +117,20 @@ public final class FontEmbedder {
 
 	/** Which of the four faces of a family the file is. */
 	public enum Style { REGULAR, BOLD, ITALIC, BOLD_ITALIC }
+
+	/** Whole font or subset (CR-028 phase 2); see the class comment. */
+	public enum EmbedPolicy {
+		/** Word's rule: a subset when the document's {@code w:saveSubsetFonts} is set and fewer than
+		 *  32 distinct characters of the face are used, else the whole font.  The default. */
+		AS_WORD,
+		/** Always the whole font; clears {@code w:saveSubsetFonts}. */
+		WHOLE,
+		/** Always the characters used; sets {@code w:saveSubsetFonts}. */
+		SUBSET
+	}
+
+	/** Word's threshold: fewer characters than this, under {@code w:saveSubsetFonts}, and it subsets. */
+	public static final int WORD_SUBSET_THRESHOLD = 32;
 
 	/** Why a font was not embedded. */
 	public enum Reason {
@@ -171,18 +197,31 @@ public final class FontEmbedder {
 	 */
 	public static Fonts.Font embed(WordprocessingMLPackage pkg, File fontFile, String fontName, Style style)
 			throws Docx4JException, IOException {
+		return embed(pkg, fontFile, fontName, style, EmbedPolicy.AS_WORD);
+	}
+
+	/** Embed the file as the given face of the named family, whole or subset per the policy. */
+	public static Fonts.Font embed(WordprocessingMLPackage pkg, File fontFile, String fontName, Style style, EmbedPolicy policy)
+			throws Docx4JException, IOException {
 		byte[] data = Files.readAllBytes(fontFile.toPath());
-		return embed(pkg, data, fontName, style, fontFile.getName());
+		return embed(pkg, data, fontName, style, policy, fontFile.getName());
 	}
 
 	/** Embed font data already in memory. */
 	public static Fonts.Font embed(WordprocessingMLPackage pkg, byte[] fontData, String fontName, Style style)
 			throws Docx4JException, IOException {
-		return embed(pkg, fontData, fontName, style, null);
+		return embed(pkg, fontData, fontName, style, EmbedPolicy.AS_WORD, null);
 	}
 
-	private static Fonts.Font embed(WordprocessingMLPackage pkg, byte[] fontData, String fontName, Style style, String sourceName)
+	/** Embed font data already in memory, whole or subset per the policy. */
+	public static Fonts.Font embed(WordprocessingMLPackage pkg, byte[] fontData, String fontName, Style style, EmbedPolicy policy)
 			throws Docx4JException, IOException {
+		return embed(pkg, fontData, fontName, style, policy, null);
+	}
+
+	private static Fonts.Font embed(WordprocessingMLPackage pkg, byte[] fontData, String fontName, Style style,
+			EmbedPolicy policy, String sourceName) throws Docx4JException, IOException {
+		if (policy == null) policy = EmbedPolicy.AS_WORD;
 		if (pkg == null) throw new IllegalArgumentException("package is null");
 		if (fontData == null || fontData.length < 12) throw new RefusedException(Reason.NOT_A_FONT, sourceName, "not a font file: " + sourceName);
 		if (style == null) style = Style.REGULAR;
@@ -205,6 +244,36 @@ public final class FontEmbedder {
 		}
 		if (settings.getEmbedTrueTypeFonts() == null) {
 			settings.setEmbedTrueTypeFonts(new BooleanDefaultTrue());
+		}
+		if (policy == EmbedPolicy.SUBSET && !isSet(settings.getSaveSubsetFonts())) {
+			settings.setSaveSubsetFonts(new BooleanDefaultTrue());
+		} else if (policy == EmbedPolicy.WHOLE) {
+			settings.setSaveSubsetFonts(null);
+		}
+		boolean saveSubsetFonts = isSet(settings.getSaveSubsetFonts());
+
+		// whole or subset
+		byte[] toEmbed = fontData;
+		boolean subsetted = false;
+		if (policy != EmbedPolicy.WHOLE) {
+			if (info.isSubsettingForbidden()) {
+				log.info(name + ": fsType 0x" + Integer.toHexString(info.getFsType()) + " forbids subsetting; embedded whole");
+			} else {
+				java.util.SortedSet<Integer> used = codePointsUsed(pkg, name, style);
+				boolean subset = policy == EmbedPolicy.SUBSET
+						? !used.isEmpty()
+						: saveSubsetFonts && !used.isEmpty() && used.size() < WORD_SUBSET_THRESHOLD;
+				if (policy == EmbedPolicy.SUBSET && used.isEmpty()) {
+					log.warn(name + " (" + style + "): the document sets no text in it, nothing to subset to; embedded whole");
+				}
+				if (subset) {
+					TrueTypeSubsetter.Subset sub = TrueTypeSubsetter.subset(fontData, used);
+					toEmbed = sub.getBytes();
+					subsetted = true;
+					log.info(name + " (" + style + "): subset to " + used.size() + " characters, " + sub.getGlyphsKept()
+							+ " of " + sub.getNumGlyphs() + " glyphs kept, " + toEmbed.length + " of " + fontData.length + " bytes");
+				}
+			}
 		}
 
 		// the font table part, created if the package has none
@@ -252,7 +321,7 @@ public final class FontEmbedder {
 
 		// the part: a fresh key, the obfuscation, the next free name
 		String fontKey = "{" + UUID.randomUUID().toString().toUpperCase(Locale.ROOT) + "}";
-		byte[] obfuscated = AbstractFontPart.obfuscate(fontKey, fontData);
+		byte[] obfuscated = AbstractFontPart.obfuscate(fontKey, toEmbed);
 		ObfuscatedFontPart part = new ObfuscatedFontPart(nextPartName(pkg));
 		part.setBinaryData(obfuscated);
 		Relationship rel = ftp.addTargetPart(part);
@@ -260,13 +329,37 @@ public final class FontEmbedder {
 		FontRel fontRel = new FontRel();
 		fontRel.setId(rel.getId());
 		fontRel.setFontKey(fontKey);
+		// w:subsetted="1" on a subset, absent on a whole font, as Word writes it.  (FontRel.isSubsetted()
+		// answers true for the absent attribute, the binding's ST_OnOff default; read the XML, not the getter.)
+		if (subsetted) fontRel.setSubsetted(Boolean.TRUE);
 		setEmbed(font, style, fontRel);
 
 		info.describe(font);
 
-		log.info("Embedded " + name + " (" + style + ", " + fontData.length + " bytes, fsType 0x"
+		log.info("Embedded " + name + " (" + style + ", " + toEmbed.length + " bytes" + (subsetted ? ", subset" : "") + ", fsType 0x"
 				+ Integer.toHexString(info.getFsType()) + ") as " + part.getPartName().getName());
 		return font;
+	}
+
+	private static boolean isSet(BooleanDefaultTrue b) {
+		return b != null && b.isVal();
+	}
+
+	/**
+	 * The distinct code points the document sets in this font in that face: what a subset
+	 * keeps and what Word's 32-character rule counts.
+	 */
+	public static java.util.SortedSet<Integer> codePointsUsed(WordprocessingMLPackage pkg, String fontName, Style style) {
+		FontUsage.Use use = FontsAnalysis.usage(pkg).get(fontName);
+		if (use == null) return new java.util.TreeSet<Integer>();
+		FontUsage.Face face;
+		switch (style == null ? Style.REGULAR : style) {
+			case BOLD: face = FontUsage.Face.BOLD; break;
+			case ITALIC: face = FontUsage.Face.ITALIC; break;
+			case BOLD_ITALIC: face = FontUsage.Face.BOLD_ITALIC; break;
+			default: face = FontUsage.Face.REGULAR;
+		}
+		return use.getCodePoints(face);
 	}
 
 	private static PartName nextPartName(WordprocessingMLPackage pkg) throws InvalidFormatException {
