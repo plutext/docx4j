@@ -95,6 +95,11 @@ public class TTFFile extends OpenFont {
                     }
                     break;
                 case 1: //Font Family Name
+                    if (legacyFamilyName.length() == 0 || (platformID == 3 && languageID == 1033)) {
+                        legacyFamilyName = txt;
+                    }
+                    familyNames.add(txt);
+                    break;
                 case 16: //Preferred Family
                     familyNames.add(txt);
                     break;

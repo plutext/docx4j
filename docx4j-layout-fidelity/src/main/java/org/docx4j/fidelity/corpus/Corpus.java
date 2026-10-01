@@ -6196,6 +6196,86 @@ public final class Corpus {
 		}));
 
 
+		// ---------------------------------------------------------------- CR-028 phase 1
+		//                                   the Arabic ligature probe (CR-020 §8), generated:
+		//                                   its font is EMBEDDED with FontEmbedder, where the
+		//                                   hand-made original (make_probe.py, 2026-09-27)
+		//                                   wrote an entry Word ignored (no w:sig).  Only
+		//                                   registered when the font file is on this machine.
+
+		File notoNaskh = new File(System.getProperty("fidelity.font.notoNaskhArabic",
+				"/usr/share/fonts/noto/NotoNaskhArabic-Regular.ttf"));
+		if (notoNaskh.isFile()) {
+			PROBES.add(new Probe("ligatures-arabic",
+					"w14:ligatures on Arabic w:cs runs: vowelled Allah (Noto liga), lillah (Noto dlig), bare "
+					+ "Allah and a phrase, under absent/none/standard/contextual/discretional/standardContextual/all, "
+					+ "in EMBEDDED Noto Naskh Arabic (FontEmbedder: obfuscated part, w:sig, w:embedTrueTypeFonts), "
+					+ "Arial, Traditional Arabic and Arabic Typesetting, with a Calibri Latin control; the Latin "
+					+ "rows say whether Word honours the setting at all, the Noto rows whether it applies it to "
+					+ "Arabic, and the F0 rows draw in the embedded font only if the entry is one Word acts on", () -> {
+				Doc d = Doc.create(15);
+				d.documentDefaultRun("Calibri", 22);
+				final String NOTO = "Noto Naskh Arabic";
+				final String[] FONTS = { NOTO, "Arial", "Traditional Arabic", "Arabic Typesetting" };
+				final org.docx4j.w14.STLigatures[] SETTINGS = { null, org.docx4j.w14.STLigatures.NONE,
+						org.docx4j.w14.STLigatures.STANDARD, org.docx4j.w14.STLigatures.CONTEXTUAL,
+						org.docx4j.w14.STLigatures.DISCRETIONAL, org.docx4j.w14.STLigatures.STANDARD_CONTEXTUAL,
+						org.docx4j.w14.STLigatures.ALL };
+				final String A = "\u0627\u0644\u0644\u0651\u0670\u0647";   // Allah, vowelled: Noto liga -> U+FDF2
+				final String B = "\u0644\u0644\u0647";                       // lillah: Noto dlig
+				final String C = "\u0627\u0644\u0644\u0647";                 // Allah, bare
+				final String PHRASE = "\u0628\u0633\u0645 \u0627\u0644\u0644\u0647 \u0627\u0644\u0631\u062D\u0645\u0646 \u0627\u0644\u0631\u062D\u064A\u0645";
+				final String LATIN = "office fi fl ffi ffl stick";
+
+				org.docx4j.fonts.FontEmbedder.embed(d.pkg(), notoNaskh, NOTO, org.docx4j.fonts.FontEmbedder.Style.REGULAR);
+				org.docx4j.wml.Fonts fonts = d.mdp().getFontTablePart().getContents();
+				for (String f : new String[] { "Calibri", "Arial", "Traditional Arabic", "Arabic Typesetting" }) {
+					org.docx4j.wml.Fonts.Font bare = new org.docx4j.wml.Fonts.Font();
+					bare.setName(f);
+					fonts.getFont().add(bare);
+				}
+
+				java.util.function.Function<org.docx4j.w14.STLigatures, java.util.function.Consumer<org.docx4j.wml.RPr>> lig = setting -> rpr -> {
+					if (setting != null) {
+						org.docx4j.w14.CTLigatures l = new org.docx4j.w14.CTLigatures();
+						l.setVal(setting);
+						rpr.setLigatures(l);
+					}
+				};
+				d.para().noLabel().before(120).after(0).run("w14:ligatures Arabic probe. Each row: label \"F<font> S<setting>\", "
+						+ "then the run. Texts: A=vowelled Allah (Noto liga), B=lillah (Noto dlig), C=bare Allah, then a phrase.",
+						"Calibri", 16, null).add();
+				for (int si = 0; si < SETTINGS.length; si++) {
+					d.para().noLabel().before(120).after(0).run("L S" + si + " " + (SETTINGS[si] == null ? "absent" : SETTINGS[si].value())
+							+ " Calibri", "Calibri", 16, null).add();
+					d.para().noLabel().after(0).run(LATIN, "Calibri", 36, lig.apply(SETTINGS[si])).add();
+				}
+				for (int fi = 0; fi < FONTS.length; fi++) {
+					for (int si = 0; si < SETTINGS.length; si++) {
+						final org.docx4j.w14.STLigatures setting = SETTINGS[si];
+						d.para().noLabel().before(120).after(0).run("F" + fi + " S" + si + " " + FONTS[fi] + " / "
+								+ (setting == null ? "absent" : setting.value()), "Calibri", 16, null).add();
+						P p = d.para().noLabel().after(0).run(A + " " + B + " " + C + " " + PHRASE, FONTS[fi], 36, rpr -> {
+							rpr.setRtl(new BooleanDefaultTrue());
+							org.docx4j.wml.HpsMeasure szCs = Doc.F.createHpsMeasure();
+							szCs.setVal(BigInteger.valueOf(36));
+							rpr.setSzCs(szCs);
+							org.docx4j.wml.CTLanguage lang = Doc.F.createCTLanguage();
+							lang.setBidi("ar-SA");
+							rpr.setLang(lang);
+							lig.apply(setting).accept(rpr);
+						}).add();
+						if (p.getPPr() == null) p.setPPr(Doc.F.createPPr());
+						p.getPPr().setBidi(new BooleanDefaultTrue());
+					}
+				}
+				return d.pkg();
+			}));
+		} else {
+			System.err.println("ligatures-arabic not generated: no font at " + notoNaskh
+					+ " (-Dfidelity.font.notoNaskhArabic=<path to NotoNaskhArabic-Regular.ttf>)");
+		}
+
 		// ---------------------------------------------------------------- CR-021 phase 0
 		//                                   mc:AlternateContent: which branch Word draws, and
 		//                                   what a list and a bound content control inside a

@@ -166,6 +166,16 @@ public abstract class OpenFont {
 
     protected boolean useKerning;
     private boolean isEmbeddable = true;
+    /** OS/2 fsType, whole (CR-028): the vendor's embedding permissions, bit by bit.  -1 if the font has no OS/2 table. */
+    private int fsType = -1;
+    /** OS/2 sFamilyClass (CR-028); 0 if unset or no OS/2 table. */
+    private int sFamilyClass;
+    /** OS/2 ulUnicodeRange1-4 (CR-028), what w:sig's usb0-3 carry; zeros if no OS/2 table. */
+    private final long[] unicodeRanges = new long[4];
+    /** OS/2 ulCodePageRange1-2 (CR-028), what w:sig's csb0-1 carry; zeros if the table is version 0 or absent. */
+    private final long[] codePageRanges = new long[2];
+    /** name ID 1, the legacy (GDI) family name, which is the name Word writes as w:font/@w:name (CR-028). */
+    protected String legacyFamilyName = "";
     private boolean hasSerifs = true;
     /**
      * Table directory
@@ -1266,6 +1276,51 @@ public abstract class OpenFont {
     }
 
     /**
+     * The OS/2 table's fsType, whole: the embedding permissions the font's vendor set,
+     * read bit by bit by {@link org.docx4j.fonts.FontEmbedder} (CR-028).  {@link #isEmbeddable()}
+     * answers only for the value 2 (restricted), as FOP always has.
+     * @return fsType, or -1 if the font has no OS/2 table
+     * @since 17.3.0
+     */
+    public int getFsType() {
+        return fsType;
+    }
+
+    /** The OS/2 table's sFamilyClass (IBM font class, high byte, and subclass), 0 if unset.  @since 17.3.0 */
+    public int getFamilyClass() {
+        return sFamilyClass;
+    }
+
+    /** The OS/2 table's ulUnicodeRange1-4, in that order (a copy).  @since 17.3.0 */
+    public long[] getUnicodeRanges() {
+        return unicodeRanges.clone();
+    }
+
+    /** The OS/2 table's ulCodePageRange1-2, in that order (a copy); zeros for a version 0 table.  @since 17.3.0 */
+    public long[] getCodePageRanges() {
+        return codePageRanges.clone();
+    }
+
+    /** post.isFixedPitch, as a boolean.  @since 17.3.0 */
+    public boolean isFixedPitchFont() {
+        return isFixedPitch != 0;
+    }
+
+    /** name ID 1, the legacy family name GDI and Word use; empty if the font has none.  @since 17.3.0 */
+    public String getLegacyFamilyName() {
+        return legacyFamilyName;
+    }
+
+    /**
+     * Whether the font's table directory has a table of this tag ({@code "fvar"} for a
+     * variable font, {@code "CFF "} for CFF outlines, ...).  Valid after the font is read.
+     * @since 17.3.0
+     */
+    public boolean hasTable(String tag) {
+        return dirTabs != null && dirTabs.containsKey(OFTableName.getValue(tag));
+    }
+
+    /**
      * Indicates whether or not the font is an OpenType
      * CFF font (rather than a TrueType font).
      * @return true if the font is in OpenType CFF format.
@@ -1559,6 +1614,7 @@ public abstract class OpenFont {
             fontFile.skip(2);
 
             int fsType = fontFile.readTTFUShort();
+            this.fsType = fsType;
             if (fsType == 2) {
                 isEmbeddable = false;
             } else {
@@ -1567,7 +1623,7 @@ public abstract class OpenFont {
             fontFile.skip(8 * 2);
             strikeoutThickness = fontFile.readTTFShort();
             strikeoutPosition = fontFile.readTTFShort();
-            fontFile.skip(2);
+            this.sFamilyClass = fontFile.readTTFShort();
             
             //in.skip(10); //panose array            
             final byte[] panoseArray = new byte[10];
@@ -1581,8 +1637,10 @@ public abstract class OpenFont {
 				log.info(p.getMessage(), p);
 			}
 			
-			fontFile.skip(4 * 4); //unicode ranges
-            fontFile.skip(4);
+            for (int i = 0; i < 4; i++) {
+                unicodeRanges[i] = fontFile.readTTFULong();
+            }
+            fontFile.skip(4); //achVendID
             fontFile.skip(3 * 2);
             int v;
             os2Ascender = fontFile.readTTFShort(); //sTypoAscender
@@ -1608,7 +1666,8 @@ public abstract class OpenFont {
 
             //version 1 OS/2 table might end here
             if (os2Entry.getLength() >= 78 + (2 * 4) + (2 * 2)) {
-                fontFile.skip(2 * 4);
+                codePageRanges[0] = fontFile.readTTFULong(); //ulCodePageRange1
+                codePageRanges[1] = fontFile.readTTFULong(); //ulCodePageRange2
                 this.os2xHeight = fontFile.readTTFShort(); //sxHeight
                 this.os2CapHeight = fontFile.readTTFShort(); //sCapHeight
                 if (log.isDebugEnabled()) {

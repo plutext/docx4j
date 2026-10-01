@@ -11,6 +11,11 @@ Changes in Version 17.3.0
 - The docx4j-docx-anon module is deleted (its last release was 17.2.0); the anonymiser is
   org.docx4j.anon in docx4j-core.
 
+- New org.docx4j.fonts.FontEmbedder embeds a TrueType font file in a docx as Word does
+  (obfuscated part, the w:font entry with the w:sig Word needs before it draws in an
+  embedded font, w:embedTrueTypeFonts); refuses what the font's fsType refuses, CFF
+  outlines, variable fonts and collections. CR-028 phase 1; subsetting is phase 2.
+
 PDF via XSL FO:
 
 - docx4j-export-fo now depends on the docx4j FO renderer (org.docx4j:docx4j-fo-renderer)

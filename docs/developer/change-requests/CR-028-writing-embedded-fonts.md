@@ -1,6 +1,6 @@
 # CR-028: writing embedded fonts - a docx carries the fonts it needs, and Word uses them
 
-Status: PROPOSED 2026-09-27 (Jason asked for the draft). Drafted with Claude Opus 5.5 while
+Status: IN PROGRESS. Phases 0 and 1 DONE 2026-10-02 (§5); phase 2 (subsetting) next. Proposed 2026-09-27 (Jason asked for the draft). Drafted with Claude Opus 5.5 while
 measuring, for CR-020, what Word does with `w14:ligatures` on Arabic. That probe had to embed a
 font by hand, and Word 365 then ignored it. Owner: Jason Harrop.
 
@@ -155,6 +155,148 @@ substituting installed fonts for want of a `w:sig` (§3).
    The PDF says which font drew each row; the re-save says whether Word kept the embedding, and
    gives Word's own entry for each font as the oracle. **Gate**: the minimal entry with which
    Word draws both rows in the embedded font, recorded in this CR.
+
+   **Progress (2026-10-02, probes written, awaiting the Word run).** Eleven probes are on the
+   share at `fidelity/cr028-fonts/corpus` (generator `~/fidelity-cr028-fonts/make_probes.py`;
+   the README there is Jason's list): `e0-minimal` (the failing entry), `e1-sig-panose`,
+   `e2-charset-b2`, `e3-all`, `e4-word-shape` (e3 plus `w:family` swiss, the entry as
+   `FontEmbedder` would compute it), `e5-subset` (e4 with the font subset to the characters
+   used, glyph count and ids kept), `e6-save-subset` (e4 plus `w:saveSubsetFonts`, so Word's
+   re-save shows the shape of its own subsets), `i1-installed-nosig` / `i2-installed-sig`
+   (Traditional Arabic, installed, not embedded), `l1-latin-control` (Hack, Latin-only
+   TrueType) and `c1-cff` (Source Sans 3, `OTTO`). The README asks first for a positive
+   control Word writes itself (`w0`: Noto installed, embedded by Word, then uninstalled), per
+   the office-check lesson, and Word's own entry for Noto in it is the field oracle.
+   Settled before the run:
+   - **Cause 3 is excluded by inspection.** The probe's part name pattern (`word/fonts/
+     fontN.odttf`), content type (`...obfuscatedFont`) and relationship type (`.../font`) are
+     identical to those in Word's own 2026-09-27 re-save.
+   - **The obfuscation is Word's.** Word's five `.odttf` parts in that re-save decode with the
+     probe's XOR to valid sfnt files; docx4j de-obfuscates every probe on load
+     (`processEmbeddings`), and its re-save, which is what the runner shows Word, keeps each
+     `w:font` entry, both settings flags and the font bytes exactly.
+   - **Word embedded whole fonts** in that re-save (`w:saveSubsetFonts` absent): Calibri
+     6,954 glyphs in 1.6 MB, Traditional Arabic 1,094, Arabic Typesetting 2,980, Aptos and
+     Aptos Display 1,287 each, `fsType` kept as the installed font's (0x0008, editable).
+   - Noto Naskh Arabic's OS/2 fields, which the probes carry: panose `020B0502040504020204`,
+     `usb0-3` = `80002003 82002042 00000008 00000000`, `csb0-1` = `00000040 00080000` (code
+     page 1256 only; no Latin-1 bit, unlike Traditional Arabic's `00000041`), `fsType` 0.
+   - fontTools' `--retain-gids` truncates the glyph order after the last kept glyph (805 of
+     1,415); `subset_keep_count.py` pads it back, so e5's part has the full count with the
+     unused outlines empty.
+
+   **Run 1 read (2026-10-02; goldens cut by Jason, fields off; `rows_fonts.py` on each PDF,
+   Word's re-saves and his own `w0-word-embeds-noto.docx` read as above).**
+
+   | probe | Latin row drawn in | Arabic row drawn in |
+   |---|---|---|
+   | e0-minimal (no sig) | Times New Roman | Times New Roman |
+   | e1-sig-panose (charset 00) | Times New Roman | **embedded Noto** |
+   | e2-charset-b2 (no sig) | Times New Roman | Times New Roman |
+   | e3-all, e4-word-shape | Times New Roman | **embedded Noto** |
+   | e5-subset (ids kept), e6-save-subset | Times New Roman | **embedded Noto** |
+   | w0, Word's own embedding, font uninstalled | Times New Roman | **embedded Noto** |
+   | i1, i2 Traditional Arabic installed, not embedded | Traditional Arabic | Traditional Arabic |
+   | l1 Hack embedded | **embedded Hack** | Courier New |
+   | c1 Source Sans 3 (CFF) embedded | Calibri | Arial |
+
+   - **`w:sig` is the switch** (e1 against e0 and e2): with it Word draws from the embedded
+     part, without it Word ignores the part. `w:charset` alone does nothing. Whether panose
+     is also needed, and which half of the signature, is run 2 (e8, e9, e10).
+   - **Word's own entry for Noto** (the oracle, written when the font was installed):
+     `<w:charset w:val="B2"/><w:family w:val="swiss"/><w:pitch w:val="variable"/><w:sig
+     w:usb0="80002003" w:usb1="82002042" w:usb2="00000008" w:usb3="00000000"
+     w:csb0="00000040" w:csb1="00000000"/>` plus `w:embedRegular`. No `w:panose1` (Word
+     writes one for Calibri, Aptos, Traditional Arabic; not for this font; the rule is
+     unknown and e4 shows that writing it does no harm). `csb1` is zero where the OS/2 table
+     says `00080000` (OEM Arabic 864): Word's signature is GDI's, not the raw field. The
+     embedded part is the installed file byte for byte (247,336 bytes), whole.
+   - **The Latin row is Word's own limit, not docx4j's.** Even Word's own embedding draws
+     the Latin row in Times New Roman: the font's code page range claims only 1256, so Word
+     will not use it for Latin text. e7 (run 2) asks whether declaring the 1252 bit changes
+     that; if it does, `FontEmbedder` may derive `csb` from the cmap rather than copy OS/2.
+   - **A subset works** (e5), and Word's PDF uses the same glyph ids from the subset as from
+     the whole font (75 18 25 29 70 8 ...), so a subset that keeps ids is drawn identically.
+     Under `w:saveSubsetFonts` (e6) Word embedded Calibri whole (more than 32 characters
+     used) and did not embed Aptos at all (no characters used); run 2's e11 makes Word write
+     a real subset to read its shape.
+   - **CFF outlines are ignored** (c1): drawn in Calibri and Arial, embedding dropped on
+     re-save, the entry kept. `FontEmbedder` refuses `OTTO`, as designed.
+   - **Installed fonts draw with or without a sig** (i1, i2 both in Traditional Arabic),
+     so the 27 September Calibri substitution came from that probe's *empty* entry
+     (`<w:font w:name="Traditional Arabic"/>`, no charset/family/pitch); i0 in run 2
+     reproduces it. If confirmed, the rule for every docx4j-written font table is: an
+     entry needs at least `w:charset`, `w:family` and `w:pitch`.
+   - **Word's re-save (documents4j `SaveAs`) drops the embedding of every font it does not
+     have installed**, including the ones it had just drawn from (e1-e6, w0). It re-embeds
+     installed fonts whole (Calibri 1.6 MB in every re-save, hence their size). A docx4j
+     embedding therefore survives Word's PDF export but, on this evidence, not its save.
+     Run 2 adds a manual interactive Save As of e4 to separate Word from documents4j.
+   - **Word names the private font** it loads from an embedded part `___WRD_EMBED_SUB_n`
+     in its PDF (`BCDGEE+___WRD_EMBED_SUB_46`), so the manifest's `.fonts=` line shows at a
+     glance whether an embedding was used.
+   - Word's substitution record: the re-save of w0 (Noto never embedded, not installed)
+     gained `<w:altName w:val="Cambria"/>` and drew the Latin row in Cambria.
+
+   **Run 2 read (2026-10-02; e7-e11, i0, and a manual Save As).**
+
+   | probe | Latin row | Arabic row |
+   |---|---|---|
+   | e7 e4 + csb0 bit 0 (cp1252) | digits **embedded Noto**, letters Calibri | **embedded Noto** |
+   | e8 sig only (no panose, charset 00) | Times New Roman | **embedded Noto** |
+   | e9 usb half only, e10 csb half only | Times New Roman | **embedded Noto** |
+   | i0 Traditional Arabic, bare entry | Traditional Arabic | Traditional Arabic |
+
+   - **The gate entry.** `w:sig` present, with `w:charset`, `w:family` and `w:pitch`, is
+     enough (e8); `w:panose1` is not needed and does no harm (e1, e4); either half of the
+     signature suffices (e9, e10), so Word tests the element's presence, or at least needs
+     no particular bit, before it will load the part. `FontEmbedder` writes what Word writes:
+     charset, family, pitch, the full signature from OS/2, and panose (Word omits it for
+     this font; keeping it costs nothing and matches Word's entries for the others).
+   - **The Latin row, re-read.** Noto Naskh Arabic's cmap has no Latin letters, only digits
+     and punctuation. So the Latin row could never draw in it; what the probes measure is
+     *whether Word tries*: with csb0 claiming only code page 1256 (e1-e6, Word's own w0)
+     Word leaves the whole Latin-script run to a substitute; with bit 0 added (e7) Word uses
+     the embedded font for what it has (the digits) and falls back per character for the
+     rest. So the code page bits decide which scripts Word will use the font for, and OS/2
+     is what Word copies. `FontEmbedder` copies OS/2 too (AS_WORD); a font whose OS/2
+     under-declares its coverage is the font vendor's defect, and docx4j does not second-guess
+     it (no `FontTable.describe`, no cmap-derived signature).
+   - **The 27 September Calibri substitution is not reproduced** by the bare entry (i0 draws
+     in Traditional Arabic, as i1 and i2 do). It stays unexplained; nothing in the design
+     depends on it, so the second entry point of §4 (`FontTable.describe`) is dropped.
+   - **Word keeps a docx4j embedding on an interactive Save As** (`manual/e4-saveas.docx`):
+     the part is re-written with only the `name` table changed (1,508 to 1,394 bytes), every
+     other table byte-identical, glyph order kept, the entry unchanged. The runner's
+     automated `SaveAs` kept the part for e7 and dropped it for e4, e8, e9, e10 and w0: the
+     one structural difference is csb0 bit 0, so the automated path may re-embed only fonts
+     it counts as used for the document's Latin text. Not pursued: the user-facing path is
+     the interactive one, and it keeps the font.
+   - **Word's own embedded subset** (e11, Traditional Arabic, 10 characters used, from
+     the re-save): `<w:embedRegular r:id=".." w:subsetted="1" w:fontKey=".."/>`; the part is
+     95,612 bytes against 274,672 whole; `numGlyphs` kept at 1,094 with every id in place
+     (`hmtx` has all 1,094 entries); 60 glyphs keep outlines (the used characters, their
+     GSUB forms, and a handful Word adds such as `M`, `d` and `quotedbl`); `cmap` pruned to
+     28 entries; `post` format 3 (names dropped); `GSUB`, `GPOS`, `GDEF`, hinting tables
+     (`cvt`, `fpgm`, `prep`, `hdmx`, `LTSH`, `VDMX`) and `meta` all kept; `fsType` as
+     installed. Phase 2's subsetter follows this shape, and writes `w:subsetted="1"`.
+   - **Under `w:saveSubsetFonts` Word also skipped Aptos** (unused) and embedded Calibri
+     whole (more than 32 characters), as its documentation says.
+
+   **Run 3 read (2026-10-02, the two optional probes).** e13 (sig only plus the cp1252
+   bit): Arabic row from the embedding, Latin row Times New Roman digits included, and the
+   automated re-save dropped the part, so e7's kept embedding is not explained by that bit
+   alone (e7 also had charset B2, panose and family swiss); harness-only, closed. x0, the
+   27 September probe cut again unchanged: Word now draws its Traditional Arabic and Arabic
+   Typesetting rows in those fonts, so the "second observation" of §3 was the machine's state
+   that day, not the document; closed.
+
+   **Phase 0 result.** Gate met: the entry Word needs is `w:charset` + `w:family` +
+   `w:pitch` + `w:sig` (e8), and the full entry e4 (panose and family from the font) is what
+   `FontEmbedder` writes. Word draws the embedded font for every script its code page bits
+   claim, from the whole font or a subset that keeps glyph ids, and keeps the embedding on its
+   own Save As. CFF is refused. Phase 1 can start; its Office check is e4 regenerated by
+   docx4j, expected to draw as e4 did.
 1. **`FontEmbedder`**, the `OpenFont` additions (`fsType` whole, the two range fields), and
    tests:
    - embed, save, load, `processEmbeddings`: the font comes back byte for byte;
@@ -166,6 +308,42 @@ substituting installed fonts for want of a `w:sig` (§3).
    `Corpus.java` gains the Arabic probe, generated. **Gate**: core-tests green; the Word
    check (phase 0's winning probe regenerated by docx4j) draws in the embedded font; Word
    opens with no repair prompt.
+
+   **Progress (2026-10-02, code landed, Office check pending).** `org.docx4j.fonts.FontEmbedder`
+   (`embed(pkg, file[, name][, style])`, `describe(file)` for the fields alone,
+   `RefusedException` with a `Reason`), on `OpenFont`'s new accessors (`getFsType`,
+   `getFamilyClass`, `getUnicodeRanges`, `getCodePageRanges`, `isFixedPitchFont`,
+   `getLegacyFamilyName`, `hasTable`; `TTFFile` keeps name ID 1). The entry's rules are
+   Word's as phase 0 read them: csb0 without bit 29, csb1 zero, family from fixed pitch,
+   then sFamilyClass, then PANOSE, charset from the code page bits (double-byte first, then
+   1252, then the single-byte pages). `FontEmbedderTest` (13 tests): the Noto entry equals
+   Word's own; the rules against Calibri, Aptos, Traditional Arabic, Arabic Typesetting, Yu
+   Gothic and a fixed-pitch font; embed, save, load, `processEmbeddings` gives the file back
+   byte for byte; a re-embed of the same face replaces the part; the anonymiser removes
+   what was added; each refusing `fsType` refuses, preview-and-print embeds, bit 8 is read;
+   CFF, a collection, a variable font and junk refuse. The fixture is Noto Naskh Arabic
+   Regular (OFL 1.1, licence beside it). `Corpus.java` generates `ligatures-arabic` with the
+   font embedded (registered when the font file is on the machine, property
+   `fidelity.font.notoNaskhArabic`). Sample `EmbedFont`. The content type is written as an
+   Override where Word writes a Default for `.odttf`; both are valid OPC, and Word's
+   acceptance is part of the check. On the share for the Office check: `p1-docx4j-e4.docx`
+   and `ligatures-arabic-docx4j.docx`.
+
+   **Office check PASSED (2026-10-02, Jason's run; `rows_fonts.py` on the goldens, the
+   re-saves read).** `p1-docx4j-e4`: the Arabic row in the embedded Noto
+   (`___WRD_EMBED_SUB_46`), the Latin row's digits in it too and its letters in Calibri
+   (Noto has no Latin letters; in phase 0's hand-built e4 the whole Latin row went to Times
+   New Roman, so Word treats a docx4j-created package at least as well), no repair, no
+   dialog. `ligatures-arabic-docx4j`: all seven F0 rows in the embedded Noto, where the hand
+   probe's drew Times New Roman; Arial, Traditional Arabic and Arabic Typesetting rows in
+   their own fonts. Word's re-save of both **kept the embedding** (the first automated
+   re-saves of docx4j-written fonts to do so; the phase 0 hand-built probes lost theirs),
+   re-embedding the whole font and rewriting the entry as its own (panose dropped, as in
+   w0; the Override content type accepted). The Noto rows also answer CR-020 §8's question
+   for a font whose lookups are known: Word forms Noto's `liga` ligature (U+FDF2, vowelled
+   Allah) under every `w14:ligatures` value, absent and none included, and its `dlig`
+   (lam-alef forms, 37 glyphs to 30) under discretional and all only, exactly as it treated
+   Calibri on 27 September. **Phase 1 DONE.**
 2. **Subsetting** (`w:saveSubsetFonts`), from the characters the document uses, with
    docx4j's `TTFSubSetFile`. Word's own subsets keep the glyph count and ids (seen in its PDF
    subsets, 2026-09-27); whether its *embedded* subsets do is for phase 0 to say, and the
@@ -186,7 +364,11 @@ substituting installed fonts for want of a `w:sig` (§3).
    under all three: a subset keeps the glyph count and ids (unused outlines emptied, nothing
    renumbered, as Word's subsets do and as the obfuscated part's cmap requires), and the
    `fsType` check comes first, so a font whose bit 8 forbids subsetting is embedded whole or
-   not at all whatever the policy asked. `AS_WORD` writes `w:saveSubsetFonts` as it found it;
+   not at all whatever the policy asked. **Office check for this phase (Jason, 2026-10-02):** a docx
+   whose embedded font is a docx4j subset for fewer than 32 characters (Word's own subsetting
+   case) must open in Word with no repair prompt and draw from the subset, and Word's re-save
+   of it is read for what Word keeps; phase 0's e5 (a subset of about 50 characters) drew, and
+   e11 gives the shape Word's own subsets have. `AS_WORD` writes `w:saveSubsetFonts` as it found it;
    `SUBSET` sets it, `WHOLE` clears it, so the settings part says what the parts hold.
 3. **pptx** `p:embeddedFontLst` (`FontDataPart`), if there is demand: PowerPoint's `.fntdata`
    format is to be measured first.
