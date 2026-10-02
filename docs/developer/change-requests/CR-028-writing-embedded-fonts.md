@@ -1,6 +1,6 @@
 # CR-028: writing embedded fonts - a docx carries the fonts it needs, and Word uses them
 
-Status: Phases 0, 1 and 2 DONE 2026-10-02 (§5); phase 3 (pptx) only if there is demand. Proposed 2026-09-27 (Jason asked for the draft). Drafted with Claude Opus 5.5 while
+Status: Phases 0, 1 and 2 SHIPPED in docx4j 17.3.0 (2026-10-02; §5); phase 3 (pptx) only if there is demand (§10). Proposed 2026-09-27 (Jason asked for the draft). Drafted with Claude Opus 5.5 while
 measuring, for CR-020, what Word does with `w14:ligatures` on Arabic. That probe had to embed a
 font by hand, and Word 365 then ignored it. Owner: Jason Harrop.
 

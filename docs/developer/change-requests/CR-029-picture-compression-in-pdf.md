@@ -1,6 +1,6 @@
 # CR-029: pictures in PDF output as Word compresses them - resolution, and cropped areas deleted
 
-Status: DONE 2026-09-29, all phases (§9). Proposed 2026-09-29 (Jason asked for the draft,
+Status: SHIPPED in docx4j 17.3.0 (2026-10-02); DONE 2026-09-29, all phases (§9). Proposed 2026-09-29 (Jason asked for the draft,
 "reflecting Word", with Word's Compress Pictures dialog as the reference); accepted by Jason
 Harrop the same day ("commit CR-029 then implement", with the crop drawing defect of §1 to be
 fixed). Drafted and implemented with Claude Opus 5.5. Where the implementation departs from §3,

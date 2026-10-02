@@ -1,6 +1,6 @@
 # CR-020: `docx4j-fo-renderer` — an upstream-tracking fork of Apache FOP, with graceful degradation to Apache's own
 
-Status: ACTIVE (accepted by Jason Harrop 2026-09-18). Phases 0 and 1 landed
+Status: ACTIVE; the switch SHIPPED in docx4j 17.3.0 (Maven Central, 2026-10-02) on docx4j-fo-renderer 2.11-docx4j.2. Accepted by Jason Harrop 2026-09-18. Phases 0 and 1 landed
 the same day; phase 2's classification report landed 2026-09-19 (§8, tables in
 §9) and its cherry-picks are queued as batch items; the first release,
 2.11-docx4j.1, shipped 2026-09-25; the switch of docx4j-export-fo's default to
