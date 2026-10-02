@@ -5,6 +5,15 @@ CHANGELOG
 Version 17.3.0
 ===============
 
+Release date
+------------
+(not yet released)
+
+Contributors to this release
+----------------------------
+Jason Harrop
+Claude Fable 5.1, with Opus 5.5 on the CR-028 draft.
+
 Changes in Version 17.3.0
 --------------------------
 
@@ -36,6 +45,10 @@ PDF via XSL FO:
   FOP embedded whole, is no longer used (three corpora: 590 MB to 106 MB, Word 190 MB).
   docx4j.convert.out.fo.noligaTwin=true brings the copy back. On Apache FOP nothing
   changes. CR-020.
+
+- A paragraph's line height is sized from the run holding most of its text; a tie between
+  runs (two one-space runs in different fonts) is now broken by document order, as Word
+  does, where a hash of the family name decided it. Nine corpus documents' lines.
 
 - A CJK font keeps its OpenType layout tables on the docx4j FO renderer (its
   shared-glyph-tounicode fix keeps the text layer's ideographs), so Latin text in a CJK

@@ -5,7 +5,7 @@ Contents
   
 
 
-**This guide is for docx4j 17.2.1 (Java 11 and later); most of it applies to 11.5.x as well.   **
+**This guide is for docx4j 17.3.0 (Java 11 and later); most of it applies to 11.5.x as well.   **
 
 Version numbering jumped from 11.5.14 to 17.0.0 in part because of the following API changes:
 
@@ -140,9 +140,7 @@ This table shows which docx4j versions align with JAXB spec versions:
 
 docx4j is in Maven Central.  For Maven users, this makes it really easy to get going with docx4j.  
 
-As noted in the introduction, current release series are docx4j **11.5.x.** and **17.x**
-
-To use docx4j 17.2.1, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
+To use docx4j 11.4 or later, ensure any code references **jakarta.xml.bind** (not javax.xml.bind), and add **one and only one** of the following to your project:
 
 &#9;	`<!-- use the JAXB Reference Implementation -->`
 
@@ -152,7 +150,7 @@ To use docx4j 17.2.1, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``ReferenceImpl``</artifactId>`
 
-&#9;		`<version>``17.``2``.1``</version>`
+&#9;		`<version>``17.3.0``</version>`
 
 &#9;	`</dependency>`
 
@@ -166,7 +164,7 @@ To use docx4j 17.2.1, ensure any code references **jakarta.xml.bind** (not javax
 
 &#9;		`<artifactId>``docx4j-JAXB-``MOXy``</artifactId>`
 
-&#9;		`<version>``17.``2``.1``</version>`
+&#9;		`<version>``17.3.0``</version>`
 
 &#9;	`</dependency>`
 
@@ -1312,14 +1310,24 @@ These jars are in the zip file, in dir optional/export-fo
 
 One limitation: an equation is a single graphic, so a very long display equation overflows the margin instead of wrapping (Word cannot break inside an equation either).  Everything within the page width renders correctly.  For the whole maths pipeline - Markdown, docx, HTML and PDF - see docs/Maths\_from\_Markdown.md.
 
-**Two FO renderers.  **From 17.2.0 docx4j-export-fo supports two: 
+**The FO renderer.  **From 17.3.0 docx4j-export-fo depends on the docx4j FO renderer, org.docx4j:docx4j-fo-renderer (2.11-docx4j.2 on Maven Central since 2 October 2026): an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules.  Apache FOP 2.11 stays supported: exclude org.docx4j:docx4j-fo-renderer (and its -core, -events and -util artifacts) from docx4j-export-fo and add org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe).  The docx4j renderer brings:
 
-- Apache FOP 2.11, its default dependency (unchanged), and 
-- the docx4j FO renderer, org.docx4j:docx4j-fo-renderer, an upstream-tracking fork of Apache FOP 2.11 which carries the fixes docx4j has found in FOP and hooks for the Word layout rules; 2.11-docx4j.1 on Maven Central since 25 September 2026.  To use it, depend on org.docx4j:docx4j-fo-renderer-core in place of org.apache.xmlgraphics:fop (docx4j-export-fo/README.md has the recipe); Apache FOP stays the default for now.  
+- PDFs a fraction of their 17.2.x size: Word’s “no ligatures” setting reaches the renderer per font, so every font is embedded as a subset where a whole copy of each TrueType font used to go in.
+- Kerning and shaping that follow the run’s language, a run without w:kern left unkerned as Word leaves it, and letter-spaced text painted where the layout put it.
+- A text layer that says what the document says: a ligature extracts as its letters, a CJK ideograph as itself rather than as a Kangxi radical, a non-breaking space and a symbol glyph as what they are; and a CJK font keeps its layout tables, so its Latin text kerns.
 
-Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.  Measured on the layout-fidelity corpora, the two renderers produce the same layout today; the ligature fixes of its next release are the point at which switching is recommended.
+Whichever is on the classpath is used: FopCapabilities probes once per JVM and logs one INFO line naming the renderer, its version and the hooks it carries, so a support question can start from it; a rule which needs a hook falls back on Apache FOP, which therefore behaves as it did before the fork.  The probe also warns of two hazards: two copies of FOP on the classpath (the fork keeps Apache's package names, so classpath order decides which wins), and a FOP of another line than 2.11, whose internals the layout managers subclass.
 
-**Pictures.  **From 17.3.0, pictures are drawn as Word draws them in its own PDFs: a cropped picture shows only its cropped area (before 17.3.0 the whole bitmap was squeezed into the frame), and a picture stored at more than 300 pixels per inch for the size it is shown at is resampled to 200, and a high-quality JPEG is re-encoded at quality 75, as Word’s PDF export does, so the pictures in a PDF come out near the size of Word’s.  docx4j.convert.out.fo.images.resolution (or FOSettings.setImageResolution) changes this: high-fidelity keeps the original bitmaps, document follows the document’s own Compress Pictures settings, and a number sets the resolution.  To make the docx itself smaller, CompressPictures.compress(wordMLPackage, "220", true) does what Word’s Compress Pictures does.
+**Pictures.  **From 17.3.0, pictures are drawn as Word draws them in its own PDFs: a picture stored at more than 300 pixels per inch for the size it is shown at is resampled to 200, and a high-quality JPEG is re-encoded at quality 75, as Word’s PDF export does, so the pictures in a PDF come out near the size of Word’s.  
+
+docx4j.convert.out.fo.images.resolution (or FOSettings.setImageResolution) changes this: 
+
+- word, the default, draws as Word’s PDF export does 
+- high-fidelity keeps the original bitmaps, 
+- document follows the document’s own Compress Pictures settings, 
+- and a number sets the resolution (Word offers 330, 220, 150 and 96).  
+
+To make the docx itself smaller, CompressPictures.compress(wordMLPackage, "220", true) does what Word’s Compress Pictures does.
 
 **Hyphenation.  **From 17.1.0, hyphenation in PDF output is driven by the document, as in Word: docx4j reads w:autoHyphenation, w:hyphenationZone, w:consecutiveHyphenLimit and w:doNotHyphenateCaps from settings.xml (and w:suppressAutoHyphens on a paragraph), and hyphenates only where the document asks for it.  Nothing needs configuring per document.
 
@@ -2202,6 +2210,16 @@ FontsAnalysis.analyse(pkg) reports, per font the document uses and in the order 
 FontEnvironment asks the same question of another deployment's fonts rather than this machine's: FontEnvironment.jarsOnly() (the docx4j font jars alone, as on a headless server - issue #695), FontEnvironment.ofDirectory(dir), or FontEnvironment.of(name, physicalFontNames); pass it as the second argument of analyse.
 
 A conversion via XSL FO says what it made of the document's fonts, once per document: one line per document font naming what it is drawn in, how close that is, and what to do about it - INFO where the font itself, its embedded form or a metric clone draws it, WARN otherwise, with the action in the line.  The property docx4j.fonts.report.log selects summary (the default), full (the whole report) or off.
+
+**Embedding a font in a document.  **From 17.3.0, org.docx4j.fonts.FontEmbedder embeds a TrueType font file in a docx as Word does, so that Word on a machine without the font draws the document in it: FontEmbedder.embed(wordMLPackage, new File("NotoNaskhArabic-Regular.ttf")) adds the obfuscated font part, the font table entry Word needs before it will use an embedded font (its signature above all), and the w:embedTrueTypeFonts setting; embed returns the Fonts.Font entry it wrote or updated, and its getName() is the w:font/@w:name, which is the family name string you use in run’s w:rFonts.
+
+The whole font is embedded unless the **EmbedPolicy** says otherwise: 
+
+- AS\_WORD, the default, subsets to the characters used only when the document’s w:saveSubsetFonts is set and fewer than 32 distinct characters of the face are used, as Word does; 
+- SUBSET always subsets, for a document for distribution; 
+- WHOLE never does, for one that will go on being edited.  
+
+A subset keeps its glyph ids and layout tables, so it shapes as the whole font does.  A font whose OS/2 fsType forbids embedding is refused, as are CFF-flavoured OpenType, variable fonts and collections; the flag is not the licence, which stays yours to check.  The EmbedFont sample is the command-line form.
 
 # Appendix 2 – Office font solutions
 
