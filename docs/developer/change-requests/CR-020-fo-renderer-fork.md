@@ -757,6 +757,57 @@ fop/CR-002. Not started; it waits on Jason.
 The predictor should also learn a font's embedding mode (CFF single-byte).
 - Getting Started's "Two FO renderers" paragraph, rewritten once, when
   `2.11-docx4j.2` is in.
+- **Bump DONE 2026-10-02.** `2.11-docx4j.2` is on Maven Central (fork tag `v2.11-docx4j.2`
+  at ae4d4bc59; fop/CR-001 to CR-007; eight capabilities). docx4j-export-fo's
+  `fo.renderer.version` is `2.11-docx4j.2`, resolved from Central (a stale negative cache of
+  the util jar from before the sync had to be cleared); 231 export-fo tests pass against it.
+  The fidelity harness's `-Pfo-renderer-fork` snapshot is `2.11-docx4j.3-SNAPSHOT`. The
+  Getting Started rewrite above is still to do. The CJK default (`cjkAdvancedFeatures` on
+  behind `shared-glyph-tounicode`, fork CR-006 §4) is gated after Jason's yes, per CR-006 §5.
+
+### fop/CR-006 gate - the CJK default on the release (2026-10-02): PASS
+
+Jason's yes given 2026-10-02. On `2.11-docx4j.2` from Maven Central (the harness's
+`lib-fork` rebuilt clean against it), two questions, both answered:
+
+**The release reproduces the last snapshot gate.** Baseline `cjk-base` (property unset, the
+17.2.0 default: `advanced="false"` on every font whose cmap aliases a radical onto an
+ideograph) scored against `cr007-cand` (the 09-30 snapshot): real 0 changed, real2 0, real3 0,
+probes 0 (goldens-nofields). Nothing moved between the snapshot and the release.
+
+**The candidate, `cjkAdvancedFeatures=true`, changes what CR-006 §4 said it would and nothing
+else.** The flag reaches FOP only through `mustNotUseOpenTypeLayout`, so only the fonts
+`GlyphCheck.reverseLookupTakesACjkRadical` names can move: measured here, Source Han Sans CN,
+JP and KR (true) and not Droid Sans Fallback (false; it is a TrueType with its own radical
+glyphs). The documents whose FO names such a face: three in the whole corpus
+(`12____tbl_6108`, `14_bs-Latn-BA_tbl_12851` in real/real2 and `12_en-US_num_tbl_11334` in
+real3, all Source Han Sans CN; "URW Gothic" matches a CJK name pattern but is Latin) and two
+probes (`fonts-space-cjk`, `fonts-cjk-linebox`). Scored as a mini-corpus and in the probes:
+0 changed; the three documents' PDFs are the same size, `mutool trace` gives identical glyph
+sequences and positions (1,677 / 7,135 / 8,864 glyphs), `pdftotext` identical, and the
+Kangxi count is 0 on both sides (the capability's promise; 988 / 49 / 1,257 ideographs
+intact). Why nothing moved: none of the three sets a single Latin letter in Source Han Sans
+(0 of 1,270 / 49 / 1,219 characters), and a CJK font's tables do nothing to horizontal text
+of its own region, as the 17.2.0 javadoc measured.
+
+**That the flag is in force was proved, not assumed.** A kerning probe (`AVATAR To Ye WAVE
+Type LTV.` at 24pt in Source Han Sans CN, once with `w:kern` and once without, plus a
+Chinese line ending in AVATAR; `~/.../scratchpad/cjk/kern`): with the tables off every line
+is unkerned; with them on, the `w:kern` line's AV, TA and other pairs close up (26 of 27 glyph
+positions move, first `V` 14.93 -> 14.52pt), the line without `w:kern` does not move, and the
+Chinese line's ideographs do not move while its AVATAR does. The text layer is the same
+characters either way. That is exactly §4's predicted mover class, Latin text in a CJK font
+on a `+kern` run, which the corpora do not contain.
+
+**Landed:** `FopConfigUtil.cjkAdvancedFeatures()` now answers the property when it is set,
+else whether the renderer on the classpath declares `shared-glyph-tounicode` (a one-question
+reflection probe of `org.apache.fop.docx4j.Docx4jFop`, since the font configuration is built
+in docx4j-core before export-fo's `FopCapabilities` is touched); `keepsCjkLayoutTables()`
+exposes the answer; `CjkLayoutDefaultTest` (export-fo) holds that it agrees with
+`FopCapabilities` and that the property overrides either way. On Apache FOP nothing changes.
+CHANGELOG 17.3.0; Enterprise §6.6 item 26 says the workaround is lifted by default on the
+docx4j renderer. The fork's §5 "two commits" are the capability constant there (in
+2.11-docx4j.2) and this default here.
 
 ### fop/CR-002 gate - the ToUnicode fix (2026-09-27)
 

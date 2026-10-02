@@ -253,13 +253,70 @@ public class FopConfigUtil {
 
 	/**
 	 * Leave FOP to apply the OpenType layout features to a CJK font, as it did before
-	 * 17.2.0 - which costs the text layer the characters below, so this is off by
-	 * default.
+	 * 17.2.0 - which, on a renderer without the fix below, costs the text layer the
+	 * characters described there.
+	 *
+	 * <p>The default follows the renderer (CR-020, gated 2026-10-02): on the docx4j FO
+	 * renderer, which declares the capability {@code shared-glyph-tounicode} (fork CR-006:
+	 * a glyph two code points share is written to ToUnicode as the character the document
+	 * wrote), the tables stay on, so a CJK font kerns its Latin text and applies
+	 * {@code ccmp}; on Apache FOP, which has no such fix, they are turned off for the fonts
+	 * {@link #mustNotUseOpenTypeLayout} names. {@code docx4j.convert.out.fo.cjkAdvancedFeatures}
+	 * set to {@code true} or {@code false} overrides the renderer's answer either way.</p>
 	 *
 	 * @since 17.2.0
 	 */
 	private static boolean cjkAdvancedFeatures() {
-		return Docx4jProperties.getProperty("docx4j.convert.out.fo.cjkAdvancedFeatures", false);
+		String p = Docx4jProperties.getProperty("docx4j.convert.out.fo.cjkAdvancedFeatures");
+		if (p != null && p.trim().length() > 0) return Boolean.parseBoolean(p.trim());
+		return rendererKeepsSharedGlyphCharacters();
+	}
+
+	/**
+	 * Whether a CJK font's OpenType layout tables are left on for the renderer in use:
+	 * {@code docx4j.convert.out.fo.cjkAdvancedFeatures} when it is set, else whether the FO
+	 * renderer on the classpath declares {@code shared-glyph-tounicode}.
+	 * @since 17.3.0
+	 */
+	public static boolean keepsCjkLayoutTables() {
+		return cjkAdvancedFeatures();
+	}
+
+	/** The docx4j FO renderer's marker class and the capability that makes the per-font workaround unnecessary. */
+	private static final String FORK_MARKER_CLASS = "org.apache.fop.docx4j.Docx4jFop";
+	private static final String SHARED_GLYPH_TOUNICODE = "shared-glyph-tounicode";
+	private static volatile Boolean sharedGlyphCharactersKept;
+
+	/**
+	 * Whether the FO renderer on the classpath keeps the document's character for a glyph
+	 * that several code points share (the docx4j FO renderer's {@code shared-glyph-tounicode}
+	 * capability; export-fo's {@code FopCapabilities} is the full probe, this one asks the
+	 * same marker class the one question docx4j-core needs, since the font configuration is
+	 * built here, before export-fo's classes are touched). Probed once; false on Apache FOP.
+	 * @since 17.3.0
+	 */
+	static boolean rendererKeepsSharedGlyphCharacters() {
+		Boolean kept = sharedGlyphCharactersKept;
+		if (kept == null) {
+			boolean found = false;
+			try {
+				Class<?> marker = Class.forName(FORK_MARKER_CLASS, true, FopConfigUtil.class.getClassLoader());
+				Object caps = marker.getMethod("capabilities").invoke(null);
+				if (caps instanceof Iterable) {
+					for (Object o : (Iterable<?>) caps) {
+						if (SHARED_GLYPH_TOUNICODE.equals(String.valueOf(o))) found = true;
+					}
+				}
+			} catch (ClassNotFoundException e) {
+				// Apache FOP, or no renderer at all
+			} catch (Throwable t) {
+				log.debug("probing the FO renderer's capabilities: " + t);
+			}
+			kept = found;
+			sharedGlyphCharactersKept = kept;
+			log.debug("CJK fonts keep their OpenType layout tables: " + kept + " (shared-glyph-tounicode " + (found ? "declared" : "absent") + ")");
+		}
+		return kept;
 	}
 
 	/**
@@ -290,8 +347,12 @@ public class FopConfigUtil {
 	 * with encoding-mode="single-byte" because a CFF-flavoured or CID font cannot be
 	 * declared single-byte (see that method).</p>
 	 *
-	 * <p>Drop this when a FOP which keeps the original characters ships (Enterprise CR-001
-	 * section 6.6).  {@code docx4j.convert.out.fo.cjkAdvancedFeatures=true} turns it off.</p>
+	 * <p>A FOP which keeps the original characters has shipped: the docx4j FO renderer from
+	 * 2.11-docx4j.1 (Enterprise CR-001 section 6.6 item 26; capability
+	 * {@code shared-glyph-tounicode} since 2.11-docx4j.2), and on it this answers false by
+	 * default ({@link #keepsCjkLayoutTables}). On Apache FOP the workaround stands.
+	 * {@code docx4j.convert.out.fo.cjkAdvancedFeatures=true} turns it off anywhere,
+	 * {@code false} keeps it anywhere.</p>
 	 *
 	 * @since 17.2.0
 	 */
