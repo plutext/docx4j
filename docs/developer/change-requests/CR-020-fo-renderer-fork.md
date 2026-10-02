@@ -411,14 +411,26 @@ renderers):
   purpose-built astral-character document rendered identically on both jar
   sets, with no exception on the baseline. The fork carries it because it is a
   real FOP bug worth sending upstream, and as defence should docx4j's own run
-  splitting ever change, not as a fidelity fix. The bidi-level-change guard is
-  undemonstrated: no case was found in which the two halves of a pair take
-  different levels, so that half is defensive. Coverage:
+  splitting ever change, not as a fidelity fix. The bidi-level-change guard was
+  recorded here as undemonstrated (no case found in which the two halves of a
+  pair take different levels). **Corrected 2026-10-03** (fork session, fop/CR-008
+  §4): U+10826, Cypriot and class R, is such a case. On 2.11-docx4j.2's code,
+  `ab𐠦cd` fails under `-ea` with AssertionError "heterogeneous inlines not yet
+  supported!!" in `InlineRun.split`, and without assertions is drawn as
+  `dc#ba`. The probe's emoji and Extension B ideograph are class L or ON to FOP,
+  so they could not show it. The root is `UnicodeBidiAlgorithm`'s low-surrogate
+  placeholder, never resolved; fop/CR-008 fixes it on 2.11-docx4j.3. docx4j
+  documents do reach this half, from plain runs: the CR-008 gate's baseline
+  (2026-10-03, probe `surrogate-pairs-bidi`) aborts under `-ea` with that
+  AssertionError through `WordLineLayoutManager.addInlineArea`, and draws a
+  Cypriot letter inside Hebrew out of order without it. No corpus document holds
+  such text (scan of 2026-10-03, Enterprise CR-001 §6.6 item 35). Coverage:
   `PDFEncodingTestCase.testPDFEncodingWithNonBMPFontCharacterByCharacter` in
   the fork's own suite, which fails on the baseline with the exception above;
   the docx4j-side `surrogate-pairs` probe remains as an astral-character
-  regression but cannot fail on the baseline. Upstream: JIRA drafted, not yet
-  filed.
+  regression but cannot fail on the baseline. Upstream: a duplicate of
+  FOP-2918 (open since 2020), so a comment there and apache/xmlgraphics-fop#115
+  (2026-10-03), which also carries 2918's layout test and the bidi-level fix.
 - **P2-2 Foreign-XML attribute namespaces** (M12): `XMLObj` resolves a
   prefixed attribute (`xlink:href` on our SVG, MathML) whose declaration sits
   on an ancestor. Gate: an SVG probe declaring `xlink` on `fo:root`. Upstream
@@ -1052,6 +1064,21 @@ characters in the text layer (fork `fop/CR-007`, gated here 2026-10-01: geometry
 the U+206A Word keeps restored, but Word writes no bidi marks to its text layer, so the
 branch narrows before it merges; Enterprise §6.6 item 34 has the reading); the
 Cambria-Greek fallback and the kernSpaces GPOS pairs (above).
+
+**fop/CR-008 gated here 2026-10-03: PASS.** The fork's fix for both units of a surrogate pair
+taking one bidi level (FOP-2918, apache/xmlgraphics-fop#115, plus the placeholder's class),
+on 2.11-docx4j.3-SNAPSHOT (Jason's install of 9fab0a7c9) against the released 2.11-docx4j.2.
+Probes `surrogate-pairs`, `fonts-symbol-and-emoji` and a new `surrogate-pairs-bidi` (a Cypriot
+letter between Latin and inside Hebrew; 👍, ☺ and 😀 between two Hebrew words; the 👍 line again
+in a `w:bidi` paragraph), read as visual order from mutool's character positions. Baseline:
+under `-ea` the new probe aborts (`InlineRun.split` through `WordLineLayoutManager.addInlineArea`),
+and without assertions the Cypriot line is scrambled and the 👍 line keeps its Hebrew words in
+logical order. Candidate, under `-ea`: no exception; those two lines become one right-to-left
+run, the ☺ reference's shape; every other line of the three probes identical to the glyph
+position. Corpora identical by construction: no corpus document holds a character outside
+the BMP (scan of 2026-10-03), and only a low surrogate's placeholder changed class. The 😀
+control is unchanged, as it should be: FOP's table classes it L (Enterprise §6.6 item 35).
+Record and tools: `~/fidelity-cr008/GATE.txt`.
 
 ### Not done, carried
 

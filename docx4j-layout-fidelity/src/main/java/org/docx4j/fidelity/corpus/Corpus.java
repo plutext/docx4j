@@ -6378,6 +6378,38 @@ public final class Corpus {
 			return d.pkg();
 		}));
 
+		// ------------------------------------- astral characters in bidi text (fop/CR-008, FOP-2918)
+		PROBES.add(new Probe("surrogate-pairs-bidi",
+				"characters outside the BMP where FOP resolves bidi levels: a right-to-left letter"
+				+ " outside the BMP (Cypriot U+10826, class R) between Latin and inside Hebrew, whose"
+				+ " low surrogate's level was never resolved (an InlineRun.split assertion under -ea,"
+				+ " a reversed word without); an emoji FOP classes ON (U+1F44D) between two Hebrew"
+				+ " words, where the unresolved placeholder cut the run of neutrals; U+263A, a BMP"
+				+ " neutral, as the reference order; U+1F600, which FOP's table classes L (Enterprise"
+				+ " CR-001 item 35), as the control; and the emoji case again in a right-to-left"
+				+ " paragraph (fork fop/CR-008)", () -> {
+			Doc d = Doc.create(15);
+			String cypriot = new String(Character.toChars(0x10826));
+			String thumbs = new String(Character.toChars(0x1F44D));
+			String grin = new String(Character.toChars(0x1F600));
+			String shalom = "\u05E9\u05DC\u05D5\u05DD", olam = "\u05E2\u05D5\u05DC\u05DD";
+			// 1: an R letter outside the BMP, between Latin letters in one run, then inside Hebrew
+			d.para("ab" + cypriot + "cd").after(120).add();
+			d.para(shalom + " " + cypriot + " " + olam).after(120).add();
+			// 2: an ON emoji outside the BMP between two Hebrew words (the placeholder's class)
+			d.para(shalom + thumbs + " " + olam).after(120).add();
+			// 3: the reference, a BMP neutral in the same place
+			d.para(shalom + "\u263A " + olam).after(120).add();
+			// 4: the control, an emoji FOP's table reads as L (unchanged by fop/CR-008)
+			d.para(shalom + grin + " " + olam).after(120).add();
+			// 5: case 2 again, in a right-to-left paragraph
+			P rtl = d.para(shalom + thumbs + " " + olam).after(120).add();
+			if (rtl.getPPr() == null) rtl.setPPr(Doc.F.createPPr());
+			rtl.getPPr().setBidi(new BooleanDefaultTrue());
+			d.para("after.").add();
+			return d.pkg();
+		}));
+
 	}
 
 	public static List<Probe> all() {
