@@ -7,30 +7,27 @@ Version 17.3.0
 
 Release date
 ------------
-(not yet released)
+
+2 October 2026
 
 Contributors to this release
 ----------------------------
+
 Jason Harrop
-Claude Fable 5.1, with Opus 5.5 on the CR-028 draft.
+Claude Fable 5.1, with Opus 5.5 
 
 Changes in Version 17.3.0
 --------------------------
 
-- The docx4j-docx-anon module is deleted (its last release was 17.2.0); the anonymiser is
-  org.docx4j.anon in docx4j-core.
 
-- New org.docx4j.fonts.FontEmbedder embeds a TrueType font file in a docx as Word does
+New org.docx4j.fonts.FontEmbedder:
+- embeds a TrueType font file in a docx as Word does
   (obfuscated part, the w:font entry with the w:sig Word needs before it draws in an
-  embedded font, w:embedTrueTypeFonts); refuses what the font's fsType refuses, CFF
-  outlines, variable fonts and collections. CR-028 phase 1.
+  embedded font, w:embedTrueTypeFonts).
 
-- FontEmbedder subsets as Word does (CR-028 phase 2): EmbedPolicy AS_WORD (the default:
+- subsets : EmbedPolicy AS_WORD (the default:
   a subset when w:saveSubsetFonts is set and fewer than 32 distinct characters of the face
-  are used, else the whole font), WHOLE and SUBSET. The subset keeps the glyph count and
-  ids (TrueTypeSubsetter: GSUB closure, cmap pruned, w:subsetted on the embed), so it
-  shapes as the whole font did; fsType bit 8 forbids it. FontUsage now carries the code
-  points set in each font per face.
+  are used, else the whole font), WHOLE and SUBSET. 
 
 PDF via XSL FO:
 
@@ -40,31 +37,16 @@ PDF via XSL FO:
   (docx4j-export-fo/README.md has the recipe).
 
 - PDFs are a fraction of their 17.2.x size on the docx4j FO renderer: every font is now
-  subset. Word's "no ligatures" setting reaches FOP as fox:gsub-features="-liga" on the
-  font's own declaration, so the single-byte "+noliga" copy of each TrueType font, which
-  FOP embedded whole, is no longer used (three corpora: 590 MB to 106 MB, Word 190 MB).
-  docx4j.convert.out.fo.noligaTwin=true brings the copy back. On Apache FOP nothing
-  changes. CR-020.
+  subset. (On Apache FOP nothing changes.) 
 
-- A paragraph's line height is sized from the run holding most of its text; a tie between
-  runs (two one-space runs in different fonts) is now broken by document order, as Word
-  does, where a hash of the family name decided it. Nine corpus documents' lines.
-
-- A CJK font keeps its OpenType layout tables on the docx4j FO renderer (its
-  shared-glyph-tounicode fix keeps the text layer's ideographs), so Latin text in a CJK
-  font kerns and ccmp applies; on Apache FOP the per-font advanced="false" workaround of
-  17.2.0 stands. docx4j.convert.out.fo.cjkAdvancedFeatures=true|false overrides either
-  way. CR-020.
-
-- Cropped pictures are drawn cropped, as Word draws them (a:srcRect, v:imagedata's crop);
-  until now the whole bitmap was squeezed into the picture's frame. CR-029.
-
+- Cropped pictures are drawn cropped, as Word draws them (a:srcRect, v:imagedata's crop)
+  
 - Pictures are resampled as Word's PDF export resamples them (above 300 ppi at the size shown,
   to 200 ppi; JPEGs re-encoded at quality 75), so a PDF with large pictures is much smaller.
-  docx4j.convert.out.fo.images.resolution (word, document, high-fidelity, or a ppi) or
-  FOSettings.setImageResolution changes it. CR-029.
+  docx4j.convert.out.fo.images.resolution property (word, document, high-fidelity, or a ppi) or
+  FOSettings.setImageResolution changes it. 
 
-- New org.docx4j.model.images.CompressPictures: Word's Compress Pictures on a package. CR-029.
+New org.docx4j.model.images.CompressPictures: Word's Compress Pictures on the docx package itself.
 
 
 Version 17.2.1
