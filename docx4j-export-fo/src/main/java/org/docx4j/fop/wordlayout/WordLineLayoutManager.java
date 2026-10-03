@@ -3538,13 +3538,17 @@ public class WordLineLayoutManager extends LineLayoutManager {
      * LineLayoutManager the same way, but this copy needs it too.  On a first pass nothing
      * in the chain belongs to this manager, so nothing changes.
      *
+     * <p>The walk follows NonLeafPositions only, which is all the wrapping is made of: a
+     * TableContentPosition (a table inside an inline) returns itself from getPosition(),
+     * so a walk to the end of the chain never ended there.</p>
+     *
      * @param pos the element's position
      * @return the position inside this manager's wrapping, or pos if there is none
      * @since 17.3.1
      */
     private Position unwrapEarlierPass(Position pos) {
-        for (Position p = pos; p != null; p = p.getPosition()) {
-            if (p instanceof NonLeafPosition && p.getLM() == this) {
+        for (Position p = pos; p instanceof NonLeafPosition; p = p.getPosition()) {
+            if (p.getLM() == this) {
                 return p.getPosition();
             }
         }
