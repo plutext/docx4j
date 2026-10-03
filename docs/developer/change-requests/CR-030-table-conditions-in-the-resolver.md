@@ -1,7 +1,7 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS, phase 0: the follow-up probes T6 to T8 are on the share and their Word
-goldens are awaited. One decision is outstanding: decision 2's release question. Proposed
+Status: IN PROGRESS, phase 1 started 2026-10-03. Phase 0 is done: T1 to T8 were cut and read
+(§5.1, §5.3), and no decision is outstanding. Proposed
 2026-10-03; phase 0 started the same
 day (Jason: "start phase 0"). Word's goldens for the six probes were cut and read the same day
 (§5.1):
@@ -28,13 +28,20 @@ Second review 2026-10-03 (the same reviewer) folded in:
 
 Decisions (Jason, 2026-10-03: "I will go with the recommendations"):
 - decisions 1, 3, 4, 6 and 7 are accepted as recommended;
-- decision 2 is reworded after the reviewer's last note and accepted, but its release
-  question is still open: does 17.3.1 ship before phase 2?
+- decision 2 is reworded after the reviewer's last note and accepted. Its release question
+  is settled too: phase 2 lands before 17.3.1 ships (Jason, 2026-10-03), so no stopgap is
+  needed.
 
 The follow-up probes T6 to T8 were added the same day: six documents, on the share, Word
 goldens awaited (§5.2). docx4j's renderings of T8 found D10, a footnote that takes the
 formatting of the paragraph it is referenced from. That is an FO-layer defect outside this
-CR's resolver scope, so it is recorded but not planned here.
+CR's resolver scope, so it is recorded but not planned here. The six goldens were cut and
+read the same day (§5.3):
+- T6: the exception lives below mode 15 and not in it;
+- T7: a renamed default table style applies as written, with nothing beneath it;
+- T8: Word keeps every note plain.
+
+Phase 1 started on Jason's word.
 Carried forward from CR-015 ("Layering", Jason 2026-09-12: "we should be getting it right in
 the resolver so we are not layering fix upon fix"). Drafted with Claude Opus 5.5.
 Owner: Jason Harrop.
@@ -153,11 +160,11 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   documents whose Normal Table carries run properties (Times New Roman 10pt) are rendered
   right already: Word ignores those properties too (T1).
 
-  Not measured: what lies under a default style *not* named "Normal Table". T2's My Default
-  is the template's TableNormal renamed, so it states 108 itself, and the golden cannot tell
-  "applies as written" from "the built-in underneath". Today `getEffectiveTableStyle` gives a
-  table naming no style the built-in alone and skips the default style's own layer. §5.2's T7
-  settles it.
+  The second half, measured by T7 (§5.3): a default style *not* named "Normal Table" applies
+  as written, with nothing beneath it. Stating margins of 300, its tables start their text
+  300 twips in; stating none, they start at 0. T2's golden could not tell this from "the
+  built-in underneath", because its My Default stated 108 itself. `getEffectiveTableStyle`
+  gives 108 in both of T7's variants, so it is wrong there as well as for T2's table (a).
 - **D5 (a gap, not a defect).**  Footnotes, endnotes and comments are not walked, so a table in
   a note gets no table style. The corpus has none. It follows once the context comes from the
   walk that renders the note, but that walk is also where a new leak can arise: the FO visitor
@@ -174,17 +181,21 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
     right-aligned too.
   - docx4j also takes an *absent* setting as 0 (the preprocess's `defaultSetting`), so a
     mode-15 document with no setting, as a producer other than Word may write it, gets the
-    exception too. By T5 Word would not apply it there; that case is not measured directly.
+    exception too. Measured by T6 (§5.3): Word does not apply it there, as with the stated 0.
   - No corpus document is affected: all 171 mode-15 documents, and 125 others, state 1.
     (296 counts all 454 files. §3's 288 counts the 446 whose main part is at
     `word/document.xml`; the other 8 all state 1, so both counts are right. Reconciled
     2026-10-03.)
   - The five corpus documents where the exception can fire are Word 2007 documents (no
-    `compatibilityMode`) with the setting absent. Whether Word 365 applies the exception to
-    them is §5.2's follow-up.
+    `compatibilityMode`) with the setting absent. T6 (§5.3) shows Word 365 applies the
+    exception to them, and to a mode-14 document, exactly as docx4j does: its output
+    matches docx4j's to the point. So D6 is the mode-15 case only, stated 0 or absent, and
+    the rule is: the exception applies below mode 15 where the setting is not on, and never
+    in mode 15.
   - The `PStyle12PtInTable*OverrideFalse` tests pin the exception as Word 2010 measured it,
     but since 2026-09-19 `createPackage()` gives them mode-15 documents. They now assert the
-    exception in exactly the case where Word 365 does not apply it.
+    exception in exactly the case where Word 365 does not apply it. Pinned to mode 14, they
+    are right again (T6).
 - **D7. The synthetic id reaches other code that reads a paragraph's style id.**  Found in
   review from the code. The STYLEREF case was then measured (2026-10-03, scratch probe,
   `FLAG_NONE` and `FLAG_EXPORT_PREFER_XSL` alike):
@@ -245,7 +256,8 @@ preprocess, `Docx4J.toHTML` and `Docx4J.toFO` (PDF), on 17.3.1-SNAPSHOT.
   itself into it. Size and font do not leak, because the probe's note states both. It is
   not the resolver's, so this CR's phase 3 story-boundary reset does not touch it. It needs
   its own fix in the FO writer: the footnote body resets the inheritable properties, or the
-  note's blocks state them. Word's T8 golden shows the expected reading. No corpus count has
+  note's blocks state them. Word's T8 golden confirms it: all three notes upright and
+  regular (§5.3). No corpus count has
   been taken yet.
 
 ## 3. Corpus facts (the three real-document corpora, 446 documents; scanned 2026-10-03)
@@ -282,9 +294,8 @@ first and largest case.
     `w:default` table style, whatever its name. Walking the chain, a style *named* "Normal
     Table" contributes Word's built-in (108 twips left and right, nothing to text) in place of
     its own definition, and the walk ends there. Every other style applies as written,
-    the default style included. That last clause is measured for text only: whether the
-    built-in underlies a default style not named "Normal Table" waits on T7 (§5.2), and the
-    rule is written into the code only once T7 is read;
+    the default style included, with nothing beneath it: measured for text by T2 and for
+    cell margins by T7 (§5.3);
   - the look (the table's `w:tblLook`, else the style's, else Word's default 04A0);
   - the band sizes;
   - each row's index and each cell's first grid column and span. This is one implementation
@@ -331,8 +342,9 @@ New overloads; a null context means outside a table, which is exactly today's be
 The composition is the preprocess's, moved, not reinvented. The compat rule applies only below
 compatibility mode 15, and there only where the setting is off or absent. In mode 15 Word
 ignores a stated 0 and re-saves it as 1 (T5, D6). `CompatibilityOptions` already resolves a
-document's mode, and the preprocess stops writing `1` into the exporter's settings. Whether
-Word 365 applies the exception below mode 15 at all is §5.2's question. Caches are
+document's mode, and the preprocess stops writing `1` into the exporter's settings. Below
+mode 15 Word 365 does apply the exception (T6, §5.3), including in a document with no
+`compatibilityMode` at all, which is mode 12. Caches are
 keyed by §4.2's tuple, which is the same cardinality as the synthetic styles today:
 `ConcurrentHashMap`s holding immutable values, under CR-015's live-object contract.
 
@@ -504,7 +516,7 @@ taken relative to a 12pt line in the same PDF.
 | T5 `tables-compat-size-jc` (setting 0, mode 15) | (a) 12pt, (b) 10pt, (c) 16pt in both rows, all left. The re-save writes the setting as 1 | (a) 14pt centred / 9pt right; (b), (c) centred / right | D6: Word ignores the setting in mode 15 |
 | T5 `tables-compat-size-jc-on` (setting 1, mode 15) | identical to the setting-0 document | as Word | ECMA-376's order |
 
-### 5.2 Follow-up probes (added 2026-10-03, on the share; goldens awaited)
+### 5.2 Follow-up probes (added 2026-10-03; goldens cut and read the same day, §5.3)
 
 Three probes in six documents, for one Word run, and **before phase 1**. T6 decides whether
 the compat rule is moved into the resolver at all; T7 what `getEffectiveTableStyle`'s rule
@@ -553,25 +565,42 @@ shows as italic or bold rather than as size.
   current pathway to get this wrong; this leak is D10, from FO inheritance rather than from
   the resolver.
 
+### 5.3 Word's readings of the follow-up probes (goldens cut 2026-10-03)
+
+Sizes are from glyph widths, as in §5.1; positions are each cell's first-line x, with the
+table's left edge at 72pt.
+
+| probe | Word | docx4j today | so |
+|---|---|---|---|
+| T6 `tables-compat-size-jc-mode12` (no `w:compatSetting`) | the exception applied: (a) 14pt centred / 9pt right; (b) 10pt centred / right; (c) 16pt centred / right. Each cell's x is within 0.3pt of docx4j's | the same | the exception lives in Word 2007 documents, and docx4j renders them right |
+| T6 `tables-compat-size-jc-mode14` (setting absent) | the same as mode 12 | the same | and in mode 14 |
+| T6 `tables-compat-size-jc-absent` (mode 15) | ECMA-376's order: (a) 12pt, (b) 10pt, (c) 16pt, all left | the exception applied | D6's absent case: not in mode 15, absent or stated 0 |
+| T7 `tables-renamed-default-margins` (My Default states 300) | (a) and (b) 15pt in (x 87.3), (c) 0 | (a), (b) 108 (x 77.7) | the default applies as written (D4) |
+| T7 `tables-renamed-default-nomargins` (My Default states none) | (a), (b), (c) all 0 (x 72.5) | (a), (b) 108 | nothing beneath a renamed default (D4) |
+| T8 `tables-footnote-in-cell` | the cells' text 16pt, (a) bold italic and (b) italic, and the reference marks with them; all three notes upright and regular, 10pt | notes (a) bold italic, (b) italic | D10 confirmed; the table style stops at the note, as §4.6's story boundary has it |
+
+So the compat rule as phase 1 writes it is: the exception applies below compatibility mode 15
+(a document with no `compatibilityMode` is mode 12) where the setting is not on, and never in
+mode 15. And `getEffectiveTableStyle`'s rule is §4.2's, now fully measured.
+
 ## 6. Phases
 
 **Phase 0 - probes.**  T1 to T5 in `Corpus.java`, then goldens from Word. No library change.
-Goldens cut and read 2026-10-03 (§5.1), and committed with their manifest lines. Open: the
-follow-up probes of §5.2 (T6, T7, T8), added 2026-10-03 and on the share. Their goldens are
-read before phase 1 starts.
+Goldens cut and read 2026-10-03 (§5.1), and committed with their manifest lines. The
+follow-up probes T6 to T8 (§5.2) were cut and read the same day (§5.3). DONE 2026-10-03.
 
 **Phase 1 - the resolver takes the context (additive; no exporter change).**
 `TableContext`, `CellContext`, `TableContextTracker`, `cellContextOf`; the three overloads;
 the compat rule read from settings; the composition moved from `getCellPStyle`. That method
 goes in phase 2, taking D3 and D9 with it.
-- The compat rule goes in in its final form, as T5 and T6 measure it: not applied in mode 15,
-  and below mode 15 only if T6 finds it there (if T6 does not, it is not moved at all). The
+- The compat rule goes in in its final form, as T5 and T6 measure it: applied below mode 15
+  where the setting is not on, never in mode 15 (§5.3). The
   preprocess is untouched in this phase and keeps its ungated rule until phase 2. So the
   resolver and the preprocess are *meant* to differ for a mode-15 document with the setting
   off or absent; no corpus document is one.
 - Tests: a resolver-level twin of `ParagraphStylesInTableFixConditionalTest` with the same
   expected values; T5's outcomes in mode 15; the `PStyle12PtInTable*` expectations at
-  resolver level *in the mode T6 finds the exception in*, if any (not on `createPackage()`'s
+  resolver level in mode 14, where T6 finds the exception (not on `createPackage()`'s
   mode-15 documents, where they would contradict T5).
 - Gate: core-tests and export-fo-tests green.
 - Gate: an **equivalence harness** over the three corpora. For every paragraph, run and
@@ -598,7 +627,7 @@ and FO XSLT pathways, starting from D7's list, each moved to `sourceStyleOf` or 
 need it, with a STYLEREF-to-a-heading-in-a-cell test; the text-box reset (D2); the rule in
 `getEffectiveTableStyle` as T2 and T7 measure it (D4); the compat rule gated in the
 preprocess as it already is in the resolver (D6), with the `PStyle12PtInTable*OverrideFalse`
-tests pinned below mode 15 if T6 says the exception lives there, or removed with it; the
+tests pinned to mode 14, where T6 finds the exception; the
 `FOPAreaTreeHelper` stack-trace test in `process` (§4.6).
 - Gate: the corpora scored against the current baseline. Expected: the three
   numbered-in-cell documents (11 paragraphs, and their lists' later items) and the ten
@@ -641,7 +670,8 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
      for the rest of the document, so they are worth more than D1 as a stopgap.
    - **If phase 2 lands first:** none of the three needs a stopgap.
 
-   Accepted (Jason, 2026-10-03). **Outstanding: does 17.3.1 ship before phase 2?**
+   Accepted (Jason, 2026-10-03). Settled the same day: phase 2 lands before 17.3.1 ships, so
+   no stopgap.
 3. **`cellContextOf(P)` through parent pointers**, or explicit contexts only?  Recommended:
    include it, documented as null where the chain is broken, and as costing a walk of the
    table per call (§4.4). It is what docx4j-mcp and user code can use. Accepted (Jason,
@@ -654,7 +684,7 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
    before phase 1. T6 decides whether the exception code stays at all; T7 decides the rule
    phase 2 writes into `getEffectiveTableStyle`, half of which is so far inferred; T8 pins
    the story boundary before phase 3 can get it wrong. Accepted (Jason, 2026-10-03): the
-   probes are added and on the share.
+   probes were added, cut and read the same day (§5.3).
 7. **Which is the authority for a synthetic name (§4.5)**: the resolver's record, resolving
    the id as (source style, context), or the real style in the styles part, resolved the
    plain way?  Recommended: the real style, with the record kept for `sourceStyleOf` and
@@ -716,7 +746,7 @@ table-conditions section; CHANGELOG; the hand-offs of §9.
 
 Revised after the second review (phase 0 gained three probes; phase 2 the id sweep and the
 round-trip gate):
-- Phase 0: done for T1 to T5. T6 to T8 take half a day, plus one Word run.
+- Phase 0: done (T1 to T8).
 - Phase 1: a day and a half: the overloads and contexts, then the equivalence harness and
   the explanation of its difference classes.
 - Phase 2: two to three days: unique names, the style-id sweep with its tests, D1, D2, D4
