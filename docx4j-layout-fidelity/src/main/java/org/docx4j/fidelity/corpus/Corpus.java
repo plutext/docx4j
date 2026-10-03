@@ -2270,6 +2270,145 @@ public final class Corpus {
 
 
 		/*
+		 * CR-030's probe set (docs/developer/change-requests/CR-030-table-conditions-in-the-resolver.md,
+		 * section 5).  What a table style gives the paragraphs of its table: the runs in the
+		 * cells carry no w:rPr and the paragraphs no direct w:spacing, so a cell's text shows what
+		 * the styles give it and nothing else; the case letters are in the text.  Every table has
+		 * direct single borders and w:tblLook 0620 (first row on, everything else off), so the
+		 * first row is the only region a condition can name.
+		 */
+		PROBES.add(new Probe("tables-normal-table-text",
+				"the w:default=1 table style, named Normal Table, given w:rPr Liberation Sans 20pt and "
+				+ "w:pPr w:spacing w:after 600 (30pt); docDefaults Liberation Serif 12pt.  Three tables, "
+				+ "two paragraphs per cell: (a) no w:tblStyle; (b) w:tblStyle Grid2, based on the default "
+				+ "table style; (c) w:tblStyle Custom, no w:basedOn - is any cell's text 20pt Sans, and "
+				+ "are its paragraphs 30pt apart (does Word apply the document's Normal Table text "
+				+ "properties)?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			org.docx4j.wml.Style tn = d.mdp().getStyleDefinitionsPart().getDefaultTableStyle();
+			styleName(tn, "Normal Table");
+			Doc.font(SANS, 40).accept(rPrOf(tn));
+			pPrOf(tn).setSpacing(spacingAfter(600));
+			addTableStyle(d, "Grid2", tn.getStyleId());
+			addTableStyle(d, "Custom", null);
+			String[] cases = { "(a) no w:tblStyle", "(b) w:tblStyle Grid2, based on " + tn.getStyleId(),
+					"(c) w:tblStyle Custom, no w:basedOn" };
+			String[] styles = { null, "Grid2", "Custom" };
+			for (int k = 0; k < 3; k++) {
+				d.para(cases[k]).before(k == 0 ? 0 : 240).after(120).add();
+				Tbl t = tablesProbeTable(styles[k], 1, 4500, 4500);
+				String letter = cases[k].substring(0, 3);
+				cellAdd(t, 0, 0, tablesPara(d, null, letter + " first paragraph"),
+						tablesPara(d, null, letter + " second paragraph"));
+				cellAdd(t, 0, 1, tablesPara(d, null, letter + " other cell"));
+				d.add(t);
+			}
+			stylesPara(d, null, "(d) a body paragraph after the tables, the 12pt Serif control");
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("tables-named-normal-table",
+				"which table style Word ignores, by name or by being the default: the w:default=1 table "
+				+ "style renamed My Default, and a second table style OtherNormal (not the default) named "
+				+ "Normal Table; both give w:rPr Liberation Sans 20pt; docDefaults Liberation Serif 12pt.  "
+				+ "Tables: (a) w:tblStyle OtherNormal; (b) no w:tblStyle; (c) w:tblStyle Grid2, based on "
+				+ "the default - which cells are 20pt Sans?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			org.docx4j.wml.Style tn = d.mdp().getStyleDefinitionsPart().getDefaultTableStyle();
+			styleName(tn, "My Default");
+			Doc.font(SANS, 40).accept(rPrOf(tn));
+			addTableStyle(d, "OtherNormal", null);
+			org.docx4j.wml.Style other = d.mdp().getStyleDefinitionsPart().getStyleById("OtherNormal");
+			styleName(other, "Normal Table");
+			Doc.font(SANS, 40).accept(rPrOf(other));
+			addTableStyle(d, "Grid2", tn.getStyleId());
+			String[] cases = { "(a) w:tblStyle OtherNormal, named Normal Table, not the default",
+					"(b) no w:tblStyle: the default table style, named My Default",
+					"(c) w:tblStyle Grid2, based on the default table style" };
+			String[] styles = { "OtherNormal", null, "Grid2" };
+			for (int k = 0; k < 3; k++) {
+				d.para(cases[k]).before(k == 0 ? 0 : 240).after(120).add();
+				Tbl t = tablesProbeTable(styles[k], 1, 4500, 4500);
+				String letter = cases[k].substring(0, 3);
+				cellAdd(t, 0, 0, tablesPara(d, null, letter + " cell text"));
+				cellAdd(t, 0, 1, tablesPara(d, null, letter + " other cell"));
+				d.add(t);
+			}
+			stylesPara(d, null, "(d) a body paragraph after the tables, the 12pt Serif control");
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("tables-textbox-in-cell",
+				"a table style giving the whole table w:sz 32 (16pt) and its firstRow condition w:b; "
+				+ "docDefaults Liberation Serif 12pt.  Header row: (a) cell text, (b) a text box anchored "
+				+ "in the cell (mc:AlternateContent, wps and VML alike); body row: (c) cell text, (d) a "
+				+ "text box; after the table (e) a text box, the control - is the text inside (b) and (d) "
+				+ "16pt, bold, or 12pt regular like (e)?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			addTableStyle(d, "ProbeBox", null);
+			org.docx4j.wml.Style box = d.mdp().getStyleDefinitionsPart().getStyleById("ProbeBox");
+			Doc.font(SERIF, 32).accept(rPrOf(box));
+			addTableStyleCondition(d, "ProbeBox", org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW, Doc::bold);
+			Tbl t = tablesProbeTable("ProbeBox", 2, 9000);
+			cellAdd(t, 0, 0, tablesPara(d, null, "(a) header row cell text"),
+					boxPara(d, "(b) the box anchored here: ", "(b) text in a box in the header row"));
+			cellAdd(t, 1, 0, tablesPara(d, null, "(c) body row cell text"),
+					boxPara(d, "(d) the box anchored here: ", "(d) text in a box in a body row"));
+			d.add(t);
+			d.add(boxPara(d, "(e) the box anchored here, outside the table: ", "(e) text in a box outside any table"));
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("tables-numbered-in-cell",
+				"paragraph style ProbeListNumber numbers through its own w:numPr (w:num 95, no w:ilvl), "
+				+ "and level 0 of w:num 95 names it back with w:pStyle, as Word's built-in List Number "
+				+ "does.  (a), (b) in the body; (c) header row and (d) body row of a table whose style "
+				+ "makes the first row bold; (e), (f) in the body; (g) in a table naming no style; (h) in "
+				+ "the body - are (c) and (d) numbered, and is (h) 8. (docx4j 17.3.0: (c) and (d) "
+				+ "unnumbered, (h) 6.)?", () -> {
+			Doc d = Doc.create(15);
+			d.documentDefaultRun(SERIF, 24);
+			d.numberingXml("<w:abstractNum w:abstractNumId=\"95\"><w:multiLevelType w:val=\"singleLevel\"/>"
+					+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/>"
+					+ "<w:pStyle w:val=\"ProbeListNumber\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/>"
+					+ "<w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl></w:abstractNum>"
+					+ num(95, 95));
+			d.addParagraphStyle("ProbeListNumber", "Normal", ppr -> ppr.setNumPr(numPrOf(95, null)));
+			addTableStyle(d, "ProbeHeader", null);
+			addTableStyleCondition(d, "ProbeHeader", org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW, Doc::bold);
+			stylesPara(d, "ProbeListNumber", "(a) body item");
+			stylesPara(d, "ProbeListNumber", "(b) body item");
+			Tbl t = tablesProbeTable("ProbeHeader", 2, 9000);
+			cellAdd(t, 0, 0, tablesPara(d, "ProbeListNumber", "(c) item in the header row"));
+			cellAdd(t, 1, 0, tablesPara(d, "ProbeListNumber", "(d) item in a body row"));
+			d.add(t);
+			stylesPara(d, "ProbeListNumber", "(e) body item after the table");
+			stylesPara(d, "ProbeListNumber", "(f) body item");
+			Tbl plain = tablesProbeTable(null, 1, 9000);
+			cellAdd(plain, 0, 0, tablesPara(d, "ProbeListNumber", "(g) item in a table naming no style"));
+			d.add(plain);
+			stylesPara(d, "ProbeListNumber", "(h) body item, the last");
+			return d.pkg();
+		}));
+
+		PROBES.add(new Probe("tables-compat-size-jc",
+				"[MS-DOCX] overrideTableStyleFontSizeAndJustification OFF; Normal states Liberation Serif "
+				+ "12pt and w:jc left.  Table style ProbeCompat: whole table w:sz 18 (9pt) w:jc right; "
+				+ "firstRow condition w:sz 28 (14pt) w:jc center.  Header and body row, three columns: "
+				+ "(a) Normal; (b) ProbeA, based on ProbeB (w:sz 20, 10pt) based on Normal, stating no "
+				+ "size; (c) ProbeC, based on Normal, stating w:sz 32 (16pt) - what size and alignment "
+				+ "does each cell's text take (does the 12pt-and-left exception cover the condition, and "
+				+ "the inherited (b))?", () -> compatSizeJcProbe(false)));
+
+		PROBES.add(new Probe("tables-compat-size-jc-on",
+				"the same as tables-compat-size-jc with overrideTableStyleFontSizeAndJustification ON "
+				+ "(ECMA-376's own order): expected (a) 12pt left, (b) 10pt left, (c) 16pt left in both "
+				+ "rows", () -> compatSizeJcProbe(true)));
+
+		/*
 		 * CR-016's probe set (docs/developer/change-requests/CR-016-font-selection-and-mapping.md,
 		 * "Are the comments accurate?").  Font selection and mapping: which of a run's four
 		 * fonts (w:ascii, w:hAnsi, w:eastAsia, w:cs) formats each character, and what Word
@@ -3691,6 +3830,121 @@ public final class Corpus {
 		return np;
 	}
 
+
+	// ---------------------------------------------------------------- CR-030 tables-* helpers
+
+	/** A table of rows x widths.length empty cells (cellAdd fills them), naming styleId (none
+	 *  when null), with direct single borders and w:tblLook 0620: first row on, the last row,
+	 *  both columns and both bandings off.  Written as XML so that nothing in it formats text. */
+	private static Tbl tablesProbeTable(String styleId, int rows, int... widths) throws Exception {
+		StringBuilder x = new StringBuilder("<w:tbl xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:tblPr>");
+		if (styleId != null) x.append("<w:tblStyle w:val=\"").append(styleId).append("\"/>");
+		x.append("<w:tblW w:w=\"0\" w:type=\"auto\"/><w:tblBorders>");
+		for (String side : new String[] { "top", "left", "bottom", "right", "insideH", "insideV" }) {
+			x.append("<w:").append(side).append(" w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"auto\"/>");
+		}
+		x.append("</w:tblBorders><w:tblLook w:val=\"0620\" w:firstRow=\"1\" w:lastRow=\"0\" w:firstColumn=\"0\" "
+				+ "w:lastColumn=\"0\" w:noHBand=\"1\" w:noVBand=\"1\"/></w:tblPr><w:tblGrid>");
+		for (int w : widths) x.append("<w:gridCol w:w=\"").append(w).append("\"/>");
+		x.append("</w:tblGrid>");
+		for (int r = 0; r < rows; r++) {
+			x.append("<w:tr>");
+			for (int w : widths) {
+				x.append("<w:tc><w:tcPr><w:tcW w:w=\"").append(w).append("\" w:type=\"dxa\"/></w:tcPr></w:tc>");
+			}
+			x.append("</w:tr>");
+		}
+		x.append("</w:tbl>");
+		return (Tbl) org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshalString(x.toString()));
+	}
+
+	/** Appends the paragraphs to the cell at row r, column c. */
+	private static void cellAdd(Tbl tbl, int r, int c, P... ps) {
+		org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr) org.docx4j.XmlUtils.unwrap(tbl.getContent().get(r));
+		org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc) org.docx4j.XmlUtils.unwrap(tr.getContent().get(c));
+		for (P p : ps) tc.getContent().add(p);
+	}
+
+	/** stylesPara's paragraph, built but not added to the body. */
+	private static P tablesPara(Doc d, String pStyle, String text) {
+		Doc.Para para = d.para().noLabel().inheritSpacing().bareText(text);
+		if (pStyle != null) para.style(pStyle);
+		return para.build();
+	}
+
+	/** A paragraph of text with a text box anchored after it, the box holding one plain paragraph. */
+	private static P boxPara(Doc d, String text, String boxText) throws Exception {
+		List<P> inside = new ArrayList<>();
+		inside.add(tablesPara(d, null, boxText));
+		String xml = Doc.paragraphsXml(inside);
+		return d.para().noLabel().inheritSpacing().bareText(text).run(d.textBox(4500, 900, xml, xml)).build();
+	}
+
+	private static org.docx4j.wml.RPr rPrOf(org.docx4j.wml.Style s) {
+		if (s.getRPr() == null) s.setRPr(Doc.F.createRPr());
+		return s.getRPr();
+	}
+
+	private static org.docx4j.wml.PPr pPrOf(org.docx4j.wml.Style s) {
+		if (s.getPPr() == null) s.setPPr(Doc.F.createPPr());
+		return s.getPPr();
+	}
+
+	private static void styleName(org.docx4j.wml.Style s, String name) {
+		org.docx4j.wml.Style.Name n = Doc.F.createStyleName();
+		n.setVal(name);
+		s.setName(n);
+	}
+
+	private static PPrBase.Spacing spacingAfter(int twips) {
+		PPrBase.Spacing sp = Doc.F.createPPrBaseSpacing();
+		sp.setAfter(BigInteger.valueOf(twips));
+		return sp;
+	}
+
+	private static org.docx4j.wml.Jc jc(org.docx4j.wml.JcEnumeration val) {
+		org.docx4j.wml.Jc jc = Doc.F.createJc();
+		jc.setVal(val);
+		return jc;
+	}
+
+	/** tables-compat-size-jc and its -on twin: the same document but for the compatibility setting. */
+	private static WordprocessingMLPackage compatSizeJcProbe(boolean settingOn) throws Exception {
+		Doc d = Doc.create(15);
+		d.documentDefaultRun(SERIF, 24);
+		d.mdp().getDocumentSettingsPart().setWordCompatSetting(
+				"overrideTableStyleFontSizeAndJustification", settingOn ? "1" : "0");
+		org.docx4j.wml.Style normal = d.mdp().getStyleDefinitionsPart().getStyleById("Normal");
+		Doc.font(SERIF, 24).accept(rPrOf(normal));
+		pPrOf(normal).setJc(jc(org.docx4j.wml.JcEnumeration.LEFT));
+		d.addParagraphStyle("ProbeB", "Normal", ppr -> { }, Doc.font(SERIF, 20));
+		d.addParagraphStyle("ProbeA", "ProbeB", ppr -> { });
+		d.addParagraphStyle("ProbeC", "Normal", ppr -> { }, Doc.font(SERIF, 32));
+		addTableStyle(d, "ProbeCompat", null);
+		org.docx4j.wml.Style ts = d.mdp().getStyleDefinitionsPart().getStyleById("ProbeCompat");
+		Doc.font(SERIF, 18).accept(rPrOf(ts));
+		pPrOf(ts).setJc(jc(org.docx4j.wml.JcEnumeration.RIGHT));
+		addTableStyleCondition(d, "ProbeCompat", org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW, Doc.font(SERIF, 28));
+		for (org.docx4j.wml.CTTblStylePr cond : ts.getTblStylePr()) {
+			if (cond.getType() == org.docx4j.wml.STTblStyleOverrideType.FIRST_ROW) {
+				org.docx4j.wml.PPr ppr = Doc.F.createPPr();
+				ppr.setJc(jc(org.docx4j.wml.JcEnumeration.CENTER));
+				cond.setPPr(ppr);
+			}
+		}
+		d.para("overrideTableStyleFontSizeAndJustification " + (settingOn ? "ON" : "OFF")
+				+ "; the first row is the header").after(120).add();
+		Tbl t = tablesProbeTable("ProbeCompat", 2, 3000, 3000, 3000);
+		String[] row = { "header", "body" };
+		for (int r = 0; r < 2; r++) {
+			cellAdd(t, r, 0, tablesPara(d, null, "(a) " + row[r]));
+			cellAdd(t, r, 1, tablesPara(d, "ProbeA", "(b) " + row[r]));
+			cellAdd(t, r, 2, tablesPara(d, "ProbeC", "(c) " + row[r]));
+		}
+		d.add(t);
+		stylesPara(d, null, "(d) a body paragraph, the 12pt control");
+		return d.pkg();
+	}
 
 	// ---------------------------------------------------------------- CR-016 fonts-* helpers
 

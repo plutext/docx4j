@@ -1,6 +1,8 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: PROPOSED (2026-10-03). No code change yet; Jason reads and adjusts before phase 0.
+Status: IN PROGRESS. Proposed 2026-10-03; phase 0 started the same day (Jason: "start phase 0"):
+the six probes are in `Corpus.java` and on the share, and their Word goldens are awaited. The
+decisions of §7 are still open.
 Carried forward from CR-015 ("Layering", Jason 2026-09-12: "we should be getting it right in
 the resolver so we are not layering fix upon fix"). Drafted with Claude Opus 5.5.
 Owner: Jason Harrop.
@@ -224,33 +226,68 @@ guard.
 
 ## 5. Word probes (phase 0)
 
-Added to `docx4j-layout-fidelity`'s `Corpus.java` after the `styles-*` set; Jason runs Word;
-goldens go to `goldens/word/` as before.
+In `docx4j-layout-fidelity`'s `Corpus.java` after the `styles-*` set. On the share since
+2026-10-03, so the README's fields-off `WordGoldenRunner` command cuts these six and nothing
+else; Jason runs Word, and the goldens go to `goldens/word/` as before.
 
-- **T1 `tables-normal-table-text`**: the document's default table style, named "Normal
-  Table", is given `w:rPr` Times New Roman `w:sz 40` and `w:pPr` `w:spacing w:after 600`.
-  Three tables: (a) naming no style, (b) `TableGrid` based on it, (c) `Custom` with no
-  `w:basedOn`. Read: cell text size and font, paragraph pitch. Expected, by analogy with P5:
-  not applied in any of the three. Settles D4 for the six corpus documents.
-- **T2 `tables-named-normal-table`**: (a) a *non-default* table style named "Normal Table",
-  with `w:sz 40`, used by a table; (b) a default table style named "My Default", with
-  `w:sz 40`, and a table naming no style. Settles the name-against-id rule. The corpus has
-  neither case, so the probe is the only evidence.
-- **T3 `tables-textbox-in-cell`**: a DrawingML text box and a VML one, anchored in the first
-  row of a table whose style gives the whole table `w:sz 32` and `firstRow` bold. Expected:
-  the box's text is neither. Settles D2.
-- **T4 `tables-numbered-in-cell`**: the scratch probe document of §2. Expected: 1 to 4.
-  Settles D1 beyond doubt.
-- **T5 `tables-compat-size-jc`**: the setting off, Normal 12pt left; a table style with whole
-  table `w:sz 18` and `firstRow` `w:sz 28 w:jc center`. Paragraphs: (a) Normal, in the
-  header and the body; (b) style A based on B (`w:sz 20`) based on Normal, A stating no size:
-  the open TODO at `ParagraphStylesInTableFix` line 802; (c) the same with the setting on.
-  Settles whether the 12pt exception covers conditional formats, and the inherited case. The
-  existing `PStyle12PtInTable*Test` pin the whole-table cases.
+Common to all six:
+- the cell runs carry no `w:rPr` and the paragraphs no direct `w:spacing`, so a cell's text
+  shows what the styles give it and nothing else;
+- docDefaults are Liberation Serif 12pt;
+- every table has direct single borders and `w:tblLook` 0620 (first row on, the rest off).
+
+Each case below gives the expected Word reading first (a guess until the golden is in), then
+docx4j 17.3.1-SNAPSHOT today (PDF, `FLAG_NONE`, read with PDFBox on 2026-10-03).
+
+**T1 `tables-normal-table-text`.**  The default table style, named "Normal Table", is given
+Liberation Sans 20pt and `w:spacing w:after 600`. Three tables, two paragraphs per cell:
+(a) no `w:tblStyle`; (b) Grid2, based on it; (c) Custom, no `w:basedOn`.
+- Expected (by analogy with P5): none applied.
+- docx4j today: none applied (12pt Serif, no 30pt gap).
+- Settles D4 for the six corpus documents.
+
+**T2 `tables-named-normal-table`.**  The default table style is renamed My Default, and a
+non-default style OtherNormal is named "Normal Table"; both are given Sans 20pt. Tables:
+(a) OtherNormal; (b) no style; (c) Grid2, based on the default.
+- Expected: unknown, which is the question.
+- docx4j today: (a) 12pt Serif, ignored by *name*, and gets no cell margin (its chain does not
+  reach the default by *id*); (b) and (c) 20pt Sans. D4 in one document.
+
+**T3 `tables-textbox-in-cell`.**  A table style gives the whole table `w:sz 32` (16pt), and
+its `firstRow` condition makes text bold. Header row: (a) cell text, (b) a text box anchored in
+the cell; body row: (c) cell text, (d) a text box; (e) a text box after the table. Each box is
+`mc:AlternateContent`, the wps and VML branches alike.
+- Expected: (a) 16pt bold; (c) 16pt; the box text of (b), (d) and (e) all 12pt regular.
+- docx4j today: (b)'s box text 16pt bold, (d)'s 16pt, (e)'s 12pt, so D2 is visible. docx4j
+  also draws the box text over its anchor paragraph's line, a separate matter.
+
+**T4 `tables-numbered-in-cell`.**  ProbeListNumber numbers through its own `w:numPr`
+(`w:num` 95), and level 0 names it back. (a), (b) are in the body; (c) is in the header row and
+(d) in a body row of a table whose style makes the first row bold; (e), (f) are in the body;
+(g) is in a table naming no style; (h) is in the body.
+- Expected: 1 to 8.
+- docx4j today: (c) and (d) unnumbered, then 3, 4, 5 and (h) 6. (g) is numbered because a
+  table naming no style gets no synthetic style. D1.
+
+**T5 `tables-compat-size-jc` and `tables-compat-size-jc-on`.**  Two documents, because the
+setting is a document setting: `overrideTableStyleFontSizeAndJustification` is off in the
+first and on in the second. Normal states 12pt and `w:jc left`. Table style ProbeCompat: whole
+table 9pt `w:jc right`; `firstRow` 14pt `w:jc center`. Header and body row, three columns:
+(a) Normal; (b) ProbeA, based on ProbeB (10pt), based on Normal, stating no size; (c) ProbeC,
+stating 16pt.
+- Setting on, expected (ECMA-376's own order): 12, 10 and 16pt, all left.
+  docx4j today: the same.
+- Setting off, expected: unknown, which is the question.
+  docx4j today, header: (a) 14pt centred, (b) 10pt centred, (c) 16pt centred.
+  docx4j today, body: (a) 9pt right, (b) 10pt right, (c) 16pt right.
+  So the size exception reaches (a) only, and the justification exception every column, since
+  none of the three styles states `w:jc`.
 
 ## 6. Phases
 
 **Phase 0 - probes.**  T1 to T5 in `Corpus.java`, then goldens from Word. No library change.
+IN PROGRESS: the six probes of §5 are written (2026-10-03) and on the share; the goldens are
+awaited. Then each probe's Word reading goes into §5 and settles the question it asks.
 
 **Phase 1 - the resolver takes the context (additive; no exporter change).**
 `TableContext`, `CellContext`, `TableContextTracker`, `cellContextOf`; the three overloads;
