@@ -288,7 +288,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			// the table style's conditional formatting for this row (firstRow, a band, ...):
 			// below the row's own w:trPr, which is applied after it.  @since 17.2.0
 			TrPr conditionalTrPr = org.docx4j.model.table.TableStyleConditions.conditionalTrPr(
-					table.applicable(table.rowConditions(rowIndex, trPr)));
+					table.applicable(table.rowConditions(rowIndex)));
 			
 			createRowProperties(rowProperties, conditionalTrPr, false);
 			createRowProperties(rowProperties, trPr, false);
@@ -326,7 +326,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					// the table style's conditional formatting for this cell, in precedence
 					// order, between the table's own borders and the cell's own w:tcPr
 					createConditionalCellProperties(cellProperties, table, rowIndex, cell,
-							table.applicable(table.cellConditions(rowIndex, cell, trPr)));
+							table.applicable(table.cellConditions(rowIndex, cell)));
 					createCellProperties(cellProperties, cell.getTcPr());
 					processAttributes(context, cellProperties, cellNode);
 					applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, false);

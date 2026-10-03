@@ -22,7 +22,9 @@ package org.docx4j.convert.out.common.writer;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.xml.bind.JAXBElement;
 import javax.xml.transform.TransformerException;
@@ -34,6 +36,7 @@ import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.table.TableContext;
 import org.docx4j.model.table.TableModelCell;
 import org.docx4j.model.table.TableModelRow;
 import org.docx4j.model.table.TableStyleConditions;
@@ -42,7 +45,6 @@ import org.docx4j.openpackaging.exceptions.CyclicStylesException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.CTCnf;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.STTblStyleOverrideType;
@@ -183,70 +185,103 @@ public class AbstractTableWriterModel extends TableModel {
 	}
 
 	/* The table style's conditional formatting (w:tblStylePr), resolved for this table:
-	 * the look its w:tblLook asks for, its band sizes, and where each w:tr sits, so that a
-	 * row's or cell's conditions can be worked out (TableStyleConditions).  @since 17.2.0 */
-	private Look look = Look.DEFAULT;
-	private int rowBandSize = 1;
-	private int colBandSize = 1;
-	private java.util.IdentityHashMap<Tr, Integer> trIndex;
-	private int trCount;
+	 * which style applies, the look its w:tblLook asks for, its band sizes, and where each
+	 * w:tr and w:tc sits.  Read through the resolver's TableContext, which is what the
+	 * paragraphs in the table are resolved with too, so a cell's borders and shading and its
+	 * text are under the same conditions (CR-030 phase 4; until 17.3.1 the writers computed
+	 * their own).  The table's w:tblPr-level properties (borders, margins, widths) still come
+	 * from getEffectiveTableStyle(), which merges the table's w:tblPr over the style's. */
+	private TableContext tableContext;
 	/** whether the header rows come from a conditional w:tblHeader rather than the rows' own */
 	private boolean headerFromStyle;
 
-	/** The conditional formats the table's w:tblLook asks for.  @since 17.2.0 */
-	public Look getLook() {
-		return look;
+	/** The context the table's conditional formatting is read from: the resolver's reading
+	 *  of the table, as its paragraphs get it.  Null until {@link #build}.  @since 17.3.1 */
+	public TableContext getTableContext() {
+		return tableContext;
 	}
 
-	/** Whether the effective table style has any conditional formatting at all. */
+	/** The conditional formats the table's w:tblLook asks for.  @since 17.2.0 */
+	public Look getLook() {
+		return tableContext == null ? Look.DEFAULT : tableContext.getLook();
+	}
+
+	/** Whether the table style has any conditional formatting at all. */
 	private boolean hasConditionalFormatting() {
-		return effectiveTableStyle != null && effectiveTableStyle.getTblStylePr() != null
-				&& !effectiveTableStyle.getTblStylePr().isEmpty();
+		Style tableStyle = tableContext == null ? null : tableContext.getTableStyle();
+		return tableStyle != null && tableStyle.getTblStylePr() != null
+				&& !tableStyle.getTblStylePr().isEmpty();
 	}
 
 	/**
 	 * The conditions the row at this index is under (first row, last row, a band), for its
-	 * row properties.
-	 * @since 17.2.0
+	 * row properties: {@link TableContext#rowConditions} for its w:tr, which goes by the
+	 * row's place among the table's w:tr (a row the model drops still counts, as it does for
+	 * the paragraphs).
+	 * @param rowIndex the row's index in this model
+	 * @since 17.3.1
 	 */
-	public java.util.EnumSet<STTblStyleOverrideType> rowConditions(int rowIndex, TrPr trPr) {
-		return TableStyleConditions.rowConditions(look, rowBandSize, rowIndex, rows.size(),
-				TableStyleConditions.rowCnf(trPr));
+	public EnumSet<STTblStyleOverrideType> rowConditions(int rowIndex) {
+		if (tableContext == null) return EnumSet.noneOf(STTblStyleOverrideType.class);
+		return tableContext.rowConditions(rows.get(rowIndex).getTr());
+	}
+
+	/** @deprecated since 17.3.1: the row's w:cnfStyle is read from its w:tr; use
+	 *  {@link #rowConditions(int)}.  @since 17.2.0 */
+	@Deprecated
+	public EnumSet<STTblStyleOverrideType> rowConditions(int rowIndex, TrPr trPr) {
+		return rowConditions(rowIndex);
 	}
 
 	/**
 	 * The conditions the cell is under, from the row's and the cell's w:cnfStyle caches
-	 * where they have them and from the position where they do not.
-	 * @since 17.2.0
+	 * where they have them and from the position where they do not:
+	 * {@link TableContext#forCell}'s.  A placeholder cell is under none.
+	 * @param rowIndex the cell's row's index in this model
+	 * @since 17.3.1
 	 */
-	public java.util.EnumSet<STTblStyleOverrideType> cellConditions(int rowIndex, TableModelCell cell, TrPr trPr) {
-		CTCnf cellCnf = cell.getTcPr() == null ? null : cell.getTcPr().getCnfStyle();
-		return TableStyleConditions.resolve(look, rowBandSize, colBandSize,
-				rowIndex, rows.size(), cell.getColumn(), Math.max(1, cell.getColspan()), getColCount(),
-				TableStyleConditions.rowCnf(trPr), cellCnf, null);
+	public EnumSet<STTblStyleOverrideType> cellConditions(int rowIndex, TableModelCell cell) {
+		EnumSet<STTblStyleOverrideType> out = EnumSet.noneOf(STTblStyleOverrideType.class);
+		if (tableContext != null && cell.getTc() != null) {
+			out.addAll(tableContext.forCell(rows.get(rowIndex).getTr(), cell.getTc()).getConditions());
+		}
+		return out;
+	}
+
+	/** @deprecated since 17.3.1: the row's w:cnfStyle is read from its w:tr; use
+	 *  {@link #cellConditions(int, TableModelCell)}.  @since 17.2.0 */
+	@Deprecated
+	public EnumSet<STTblStyleOverrideType> cellConditions(int rowIndex, TableModelCell cell, TrPr trPr) {
+		return cellConditions(rowIndex, cell);
 	}
 
 	/**
-	 * The effective table style's w:tblStylePr entries which apply under these conditions,
-	 * in the order they are to be applied; empty where the style has none.
+	 * The table style's w:tblStylePr entries which apply under these conditions, in the
+	 * order they are to be applied; empty where the style has none.
 	 * @since 17.2.0
 	 */
-	public List<CTTblStylePr> applicable(java.util.Set<STTblStyleOverrideType> conditions) {
+	public List<CTTblStylePr> applicable(Set<STTblStyleOverrideType> conditions) {
 		if (!hasConditionalFormatting()) return new ArrayList<CTTblStylePr>();
-		return TableStyleConditions.applicable(effectiveTableStyle, conditions);
+		return tableContext.applicable(conditions);
 	}
 
 	/**
 	 * The rows of the horizontal band containing the row, or null; the columns of the
-	 * vertical band containing the column, or null (TableStyleConditions).
+	 * vertical band containing the column, or null (TableStyleConditions).  The look and band
+	 * sizes are the table context's; the extent is in this model's rows and columns, the
+	 * table as written, since it decides which of a band's borders a written cell gets.
 	 * @since 17.2.0
 	 */
 	public int[] bandRows(int rowIndex) {
-		return TableStyleConditions.hBandRows(look, rowBandSize, rowIndex, rows.size());
+		if (tableContext == null) return null;
+		return TableStyleConditions.hBandRows(tableContext.getLook(), tableContext.getRowBandSize(),
+				rowIndex, rows.size());
 	}
 
 	public int[] bandCols(int col) {
-		return TableStyleConditions.vBandCols(look, colBandSize, col, getColCount());
+		if (tableContext == null) return null;
+		return TableStyleConditions.vBandCols(tableContext.getLook(), tableContext.getColBandSize(),
+				col, getColCount());
 	}
 
 	/**
@@ -260,13 +295,11 @@ public class AbstractTableWriterModel extends TableModel {
 	@Override
 	protected boolean isHeaderRow(Tr tr) {
 		if (super.isHeaderRow(tr)) return true;
-		if (trIndex == null || !hasConditionalFormatting()) return false;
-		Integer r = trIndex.get(tr);
-		if (r == null || r.intValue() >= trCount - 1) return false;
-		java.util.EnumSet<STTblStyleOverrideType> conditions = TableStyleConditions.rowConditions(
-				look, rowBandSize, r.intValue(), trCount, TableStyleConditions.rowCnf(tr.getTrPr()));
+		if (tableContext == null || !hasConditionalFormatting()) return false;
+		int r = tableContext.rowIndexOf(tr);
+		if (r < 0 || r >= tableContext.getRowCount() - 1) return false;
 		TrPr conditional = TableStyleConditions.conditionalTrPr(
-				TableStyleConditions.applicable(effectiveTableStyle, conditions));
+				tableContext.applicable(tableContext.rowConditions(tr)));
 		if (TableStyleConditions.hasTblHeader(conditional)) {
 			headerFromStyle = true;
 			return true;
@@ -369,6 +402,9 @@ public class AbstractTableWriterModel extends TableModel {
 		try {
 			pr = conversionContext.getPropertyResolver();
 			effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
+			// the conditional formatting's reading of the table: before the rows are
+			// added, since isHeaderRow asks it
+			tableContext = pr.tableContext(tbl);
 		} catch (Docx4JException e) {
 			throw new TransformerException(e);
 		}
@@ -403,18 +439,6 @@ public class AbstractTableWriterModel extends TableModel {
 		TrFinder trFinder = new TrFinder();
 		new TraversalUtil(tbl, trFinder);
 
-		// the table's w:tblLook and band sizes (the effective tblPr has the table's own
-		// merged over the style's), and where each row sits, for the conditional formatting
-		CTTblPrBase effectiveTblPr = effectiveTableStyle.getTblPr();
-		look = TableStyleConditions.look(effectiveTblPr);
-		rowBandSize = TableStyleConditions.rowBandSize(effectiveTblPr);
-		colBandSize = TableStyleConditions.colBandSize(effectiveTblPr);
-		trIndex = new java.util.IdentityHashMap<Tr, Integer>();
-		trCount = trFinder.getTrList().size();
-		for (int i = 0; i < trCount; i++) {
-			trIndex.put(trFinder.getTrList().get(i), Integer.valueOf(i));
-		}
-		
 		ensureFoTableBody(trFinder.getTrList()); // this is currently applied to HTML etc as well
 		
 		int r = 0;      // index of the w:tr in the converted content

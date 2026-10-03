@@ -5,15 +5,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.table.CellContext;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Document;
+import org.docx4j.wml.P;
+import org.docx4j.wml.STTblStyleOverrideType;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.Tr;
 import org.junit.Test;
 
 /**
@@ -85,14 +93,29 @@ public class TableStyleConditionalWriterTest {
 					"<w:tr>" + cell("<w:vMerge w:val=\"restart\"/>", "T3 r0c0") + cell("T3 r0c1") + cell("T3 r0c2") + "</w:tr>"
 					+ "<w:tr>" + cell("<w:vMerge/>", "") + cell("T3 r1c1") + cell("T3 r1c2") + "</w:tr>"
 					+ "<w:tr>" + cell("T3 r2c0") + cell("T3 r2c1") + cell("T3 r2c2") + "</w:tr>")
+			// T4: a row every cell of which continues a merge, which the writers drop (it has
+			// nothing to write); it is still a row of the table, so the bands after it are
+			// counted with it, as the paragraphs' are (CR-030 phase 4)
+			+ table("T4", "<w:tblLook w:val=\"04A0\"/>",
+					"<w:tr>" + cell("T4 r0c0") + cell("T4 r0c1") + cell("T4 r0c2") + "</w:tr>"
+					+ "<w:tr>" + cell("<w:vMerge w:val=\"restart\"/>", "T4 r1c0") + cell("<w:vMerge w:val=\"restart\"/>", "T4 r1c1")
+							+ cell("<w:vMerge w:val=\"restart\"/>", "T4 r1c2") + "</w:tr>"
+					+ "<w:tr>" + cell("<w:vMerge/>", "") + cell("<w:vMerge/>", "") + cell("<w:vMerge/>", "") + "</w:tr>"
+					+ "<w:tr>" + cell("T4 r3c0") + cell("T4 r3c1") + cell("T4 r3c2") + "</w:tr>"
+					+ "<w:tr>" + cell("T4 r4c0") + cell("T4 r4c1") + cell("T4 r4c2") + "</w:tr>")
 			+ "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr>"
 			+ "</w:body></w:document>";
 
-	private static String html(int flag) throws Exception {
+	private static WordprocessingMLPackage pkg() throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().setContents((Document) XmlUtils.unmarshalString(DOC));
 		pkg.getMainDocumentPart().getStyleDefinitionsPart()
 				.setContents((Styles) XmlUtils.unmarshalString(STYLES));
+		return pkg;
+	}
+
+	private static String html(int flag) throws Exception {
+		WordprocessingMLPackage pkg = pkg();
 		HTMLSettings settings = Docx4J.createHTMLSettings();
 		settings.setOpcPackage(pkg);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -194,6 +217,40 @@ public class TableStyleConditionalWriterTest {
 			assertTrue(cellTag(t3, "T3 r0c1").startsWith("<td"));
 			// its formatting is still the header's
 			assertTrue(has(cellTag(t3, "T3 r0c1"), "background-color:\\s*#?4f81bd"));
+		}
+	}
+
+	private static P firstParagraph(Tbl tbl, int row, int col) {
+		Tr tr = (Tr) XmlUtils.unwrap(tbl.getContent().get(row));
+		Tc tc = (Tc) XmlUtils.unwrap(tr.getContent().get(col));
+		return (P) tc.getContent().get(0);
+	}
+
+	/**
+	 * The writers take their rows' and cells' conditions from the table context the
+	 * paragraphs are resolved with (CR-030 phase 4).  Until 17.3.1 they counted the rows of
+	 * the table as written: a row dropped for having nothing to write (every cell continuing
+	 * a merge) moved the bands after it by one, so a cell's shading and its text's formatting
+	 * came from different bands.
+	 */
+	@Test
+	public void bandsCountARowTheWritersDrop() throws Exception {
+		// the paragraphs: row 3 is the first band again (rows 1, 2, 3, 4 = band 1, 2, 1, 2)
+		WordprocessingMLPackage pkg = pkg();
+		PropertyResolver resolver = pkg.getMainDocumentPart().getPropertyResolver();
+		List<Object> tbls = pkg.getMainDocumentPart().getJAXBNodesViaXPath("//w:tbl", false);
+		Tbl t4 = (Tbl) XmlUtils.unwrap(tbls.get(3));
+		CellContext r3 = resolver.cellContextOf(firstParagraph(t4, 3, 1));
+		CellContext r4 = resolver.cellContextOf(firstParagraph(t4, 4, 1));
+		assertTrue(r3.getConditions().contains(STTblStyleOverrideType.BAND_1_HORZ));
+		assertTrue(r4.getConditions().contains(STTblStyleOverrideType.BAND_2_HORZ));
+		// the cells agree: row 3 shaded, row 4 not
+		for (int flag : FLAGS) {
+			String html = html(flag);
+			String t = tableOf(html, "T4");
+			assertTrue("r1 band1 " + flag, has(cellTag(t, "T4 r1c1"), "background-color:\\s*#?f2f2f2"));
+			assertTrue("r3 band1 " + flag, has(cellTag(t, "T4 r3c1"), "background-color:\\s*#?f2f2f2"));
+			assertFalse("r4 band2 " + flag, has(cellTag(t, "T4 r4c1"), "f2f2f2"));
 		}
 	}
 }

@@ -1,8 +1,10 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS. Phase 3 done 2026-10-03 (§6): the FO visitor resolves table paragraphs
-in context with no preprocess, and scores identical to phase 2 on every document. Phases 4
-and 5 remain. Phase 2 done the same day, so 17.3.1 can ship. D1, D2, D3, D4, D6, D7, D8 and
+Status: IN PROGRESS. Phase 4 done 2026-10-04 (§6): the table writers take their rows' and
+cells' conditions from the `TableContext`, and every corpus document's FO and HTML is
+unchanged. Phase 5 remains. Phase 3 done 2026-10-03: the FO visitor resolves table paragraphs
+in context with no preprocess, and scores identical to phase 2 on every document. Phase 2
+done the same day, so 17.3.1 can ship. D1, D2, D3, D4, D6, D7, D8 and
 D9 are fixed; the round trip finds no difference on the corpus; the three D1 documents
 improve, and nothing regresses. Phase 1 done the same day.
 Along the way, before phase 2:
@@ -802,6 +804,67 @@ DONE 2026-10-03.
 
 **Phase 4 - the writers share `TableContext`.**
 - Gate: zero-delta; `TableStyleConditionalWriterTest`, `TableStyleConditionsTest`.
+
+DONE 2026-10-04.
+- Built:
+  - `AbstractTableWriterModel` builds its table's `TableContext` (`resolver.tableContext(tbl)`)
+    and takes from it:
+    - its rows' conditions, from `TableContext.rowConditions(Tr)` (new);
+    - its cells' conditions, from `forCell`;
+    - the applicable `w:tblStylePr`, from `TableContext.applicable` (new). This is all of
+      them, where `CellContext.getTextConditions` keeps only those which format text;
+    - the look, the band sizes and the conditional header row.
+
+    Its own look, band sizes and row index are gone. `getTableContext()` exposes the context.
+  - `TableModelRow.getTr()` and `TableModelCell.getTc()`: the model keeps the `w:tr` and
+    `w:tc` it was built from, and a written row or cell finds its place in the context
+    through them. A placeholder cell (`w:gridBefore`, `w:gridAfter`, a span's further
+    columns) has none, and is under no condition.
+  - `rowConditions(int, TrPr)` and `cellConditions(int, TableModelCell, TrPr)` are deprecated
+    in favour of `rowConditions(int)` and `cellConditions(int, TableModelCell)`, since the
+    row's `w:cnfStyle` is read from its `w:tr`.
+  - Kept in the writer, as §4.7 has it:
+    - the region borders (`regionOf`; `bandRows` and `bandCols` measure a band's extent in
+      the rows and columns written, with the context's look and band sizes);
+    - header rows and the spanning-header guard;
+    - the table's `w:tblPr`-level properties, which stay on `getEffectiveTableStyle`: it
+      merges the table's `w:tblPr` over the style's, and the context does not.
+  - The writer builds its own `TableContext` and does not take the FO visitor's. The visitor
+    has left the table by the time the writer runs (`convertToNode`), the XSLT pathways have
+    no tracker, and a context costs one walk of the rows.
+- Two readings of the table changed. In both, the writer now reads the table as the
+  paragraphs have read it since 17.2.0. Neither occurs in the corpora (the output gate below):
+  - **Rows are the table's `w:tr`.**  The writer used to count the rows it writes. The model
+    drops a row whose every cell continues a vertical merge, since it has nothing to write
+    (`dropFullySpannedRows`). The writer's bands after such a row then moved by one, and a
+    cell's shading came from one band while its text's formatting came from the other.
+    Word keeps the row, which has a height, so counting it is assumed but not measured.
+    A probe would settle it (tables-banding-merged-row, not added).
+  - **The look is the table's `w:tblLook` whole, else its style's.**  The writer used to merge
+    the two attribute by attribute. The readings differ only where a table style states a
+    `w:tblLook` and the table states some of the attributes, or the bitmask alone. No
+    corpus document's styles part has a `w:tblLook` (0 of 454).
+- Tests: `TableStyleConditionalWriterTest` +1, `bandsCountARowTheWritersDrop`. It covers a
+  dropped row's bands on both HTML pathways, and checks that the paragraphs' context agrees.
+  It fails on 8c387f484 (row 3 unshaded) and passes here.
+- Gate, tests (reactor): core-tests 1,382/0, export-fo 240/0, export-fo-tests 676/0.
+- Gate, output: each document's FO and HTML, through both the visitor and the XSLT pathway,
+  written by 8c387f484 and by this phase and compared byte for byte. Image file names, which
+  carry a random UUID, are normalised.
+  - Coverage: 617 documents (real 194, real2 157, real3 103, the probes 163), 2,468
+    outputs.
+  - **No difference.**  So the corpora were not scored again: identical FO renders to
+    identical PDF.
+  - The comparison sees what scoring would miss: borders, shading and header rows move few
+    lines.
+- **Found by the output gate, outside this CR, not fixed.**  17 HTML exports fail, the same
+  on both sides:
+  - `ListsToContentControls.groupContent` throws a NullPointerException on a `w:numPr` with
+    no `w:numId`. This is 5 documents, on both HTML pathways.
+  - The HTML visitor throws a NullPointerException on a `w:sdt` around cells
+    (`w:tr/w:sdt/w:tc`): `handleSdt` converts the sdt's content in a new generator, whose
+    row stack is empty (`AbstractVisitorExporterGenerator.walkJAXBElements`, since
+    71f2d849b). This is 7 documents.
 
 **Phase 5 - consumers, docs and hand-offs.**  Markdown (decision 4); the
 `PropertyResolver` class javadoc; `docx4j-export-fo/docs/word-layout-rules.md`'s

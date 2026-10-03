@@ -108,6 +108,15 @@ public class TableModelCell {
 		return tcPr;
 	}
 
+	private Tc tc;
+
+	/** The w:tc this cell was built from (a vertical merge's continuation included), for its
+	 *  place in the table ({@link TableContext#forCell}); null for a placeholder standing for
+	 *  w:gridBefore, w:gridAfter or a w:gridSpan's further columns.  @since 17.3.1 */
+	public Tc getTc() {
+		return tc;
+	}
+
 	/**
 	 * Create a dummy cell without content
 	 */
@@ -123,6 +132,7 @@ public class TableModelCell {
 		this(table, row, col);
 		dummy = false;
 		
+		this.tc = tc;
 		tcPr = tc.getTcPr();
 
 	      if(tcPr !=null && logger.isDebugEnabled()) {

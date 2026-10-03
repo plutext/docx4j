@@ -22,12 +22,14 @@ import java.math.BigInteger;
 import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.table.TableStyleConditions.Look;
 import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.CTTrPrBase;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.STTblStyleOverrideType;
@@ -42,7 +44,9 @@ import jakarta.xml.bind.JAXBElement;
  * What a table's paragraphs need to know about it to be formatted: the table style it resolves
  * to (its w:basedOn chain merged), the conditional formats its {@code w:tblLook} asks for, its
  * band sizes, and where each row and cell sits.  {@link #forParagraph} then gives the
- * {@link CellContext} of a paragraph in one of its cells.
+ * {@link CellContext} of a paragraph in one of its cells; the table writers take their rows'
+ * and cells' conditions from it too ({@link #rowConditions}, {@link #forCell}), so a cell's
+ * borders and shading come from the same reading as its text.
  *
  * <p>A reading of the table's <em>content</em> (rows, spans, look), so it is built fresh for
  * each table by {@link PropertyResolver#tableContext(Tbl)} and held by the caller while it is
@@ -155,6 +159,37 @@ public final class TableContext {
 	 *  without a paragraph's own w:cnfStyle. */
 	public CellContext forCell(Tr tr, Tc tc) {
 		return forParagraph(tr, tc, null);
+	}
+
+	/**
+	 * The row-axis conditions a row is under (first row, last row, a horizontal band), for
+	 * its own properties ({@code w:trPr}): its {@code w:cnfStyle} where it has one, else its
+	 * position, gated by the look ({@link TableStyleConditions#rowConditions}).  A row this
+	 * table does not hold is under none.
+	 */
+	public EnumSet<STTblStyleOverrideType> rowConditions(Tr tr) {
+		Integer r = tr == null ? null : rowIndex.get(tr);
+		if (r == null) {
+			return EnumSet.noneOf(STTblStyleOverrideType.class);
+		}
+		return TableStyleConditions.rowConditions(look, rowBandSize, r.intValue(), rowCount,
+				TableStyleConditions.rowCnf(tr.getTrPr()));
+	}
+
+	/**
+	 * The table style's {@code w:tblStylePr} entries which apply under these conditions, in
+	 * the order they are applied: all of them, where {@link CellContext#getTextConditions()}
+	 * keeps those which format text.  For the table writers, which apply their row, cell and
+	 * table properties.
+	 */
+	public List<CTTblStylePr> applicable(Set<STTblStyleOverrideType> conditions) {
+		return TableStyleConditions.applicable(tableStyle, conditions);
+	}
+
+	/** The row's index in the table, nested tables excluded, or -1 for a row it does not hold. */
+	public int rowIndexOf(Tr tr) {
+		Integer r = tr == null ? null : rowIndex.get(tr);
+		return r == null ? -1 : r.intValue();
 	}
 
 	private EnumSet<STTblStyleOverrideType> conditions(Tr tr, Tc tc, PPr pPr) {

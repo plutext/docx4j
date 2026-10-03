@@ -18,8 +18,17 @@ public class TableModelRow {
 	
 	public TableModelRow(Tr tr) {
 		
+		this.tr = tr;
 		trPr = tr.getTrPr();
 		tblPrEx = tr.getTblPrEx();
+	}
+
+	private Tr tr;
+
+	/** The w:tr this row was built from, for its place in the table
+	 *  ({@link TableContext#rowConditions}).  @since 17.3.1 */
+	public Tr getTr() {
+		return tr;
 	}
 	
 	private List<TableModelCell> rowContents = new Vector<TableModelCell>();	

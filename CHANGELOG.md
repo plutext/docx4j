@@ -36,6 +36,10 @@ PDF and HTML output, tables (CR-030):
 - A paragraph in a table naming a missing style no longer leaves the rest of the document
   without its table styling; nor does DEBUG logging.
 
+- A row whose every cell continues a vertical merge no longer moves the band shading and
+  borders of the rows after it by one: the table writers take their rows' and cells'
+  conditions from the paragraphs' table context.
+
 PDF via XSL FO:
 
 - PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO
