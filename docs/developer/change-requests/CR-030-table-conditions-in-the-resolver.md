@@ -1,10 +1,12 @@
 # CR-030: table styles behind the resolver - a paragraph's table context handed to `PropertyResolver`, the synthetic styles reduced to names
 
-Status: IN PROGRESS. Phase 1 done 2026-10-03 (§6): core-tests are green, and the corpus
-equivalence harness finds only D2's 21 text-box paragraphs. export-fo-tests are unchanged by it,
-with 279 failures that predate it, reported separately. Phase 2 is next, and lands before
-17.3.1 ships. Phase 0 is done: T1 to T8 were cut and read (§5.1, §5.3), and no decision is
-outstanding. Proposed
+Status: IN PROGRESS. Phase 2 done 2026-10-03 (§6), so 17.3.1 can ship. D1, D2, D3, D4, D6,
+D7, D8 and D9 are fixed; the round trip finds no difference on the corpus; the three D1
+documents improve, and nothing regresses. Phases 3 to 5 remain. Phase 1 done the same day.
+Along the way, before phase 2:
+- 17.3.0's broken XSLT-pathway PDF export was fixed (3a81e4485);
+- export-fo-tests went back into the reactor, with its five stale tests updated (83009bfcc).
+Phase 0 is done: T1 to T8 were cut and read (§5.1, §5.3), and no decision is outstanding. Proposed
 2026-10-03; phase 0 started the same
 day (Jason: "start phase 0"). Word's goldens for the six probes were cut and read the same day
 (§5.1):
@@ -691,6 +693,51 @@ tests pinned to mode 14, where T6 finds the exception; the
   paragraph, run and paragraph mark that uses it. Each difference is fixed in the flattening
   (carrying `w:outlineLvl`, for one) until the round trip passes. If one cannot be fixed,
   decision 7 falls to the record, everywhere.
+
+DONE 2026-10-03.
+- Built, on `PropertyResolver`:
+  - `styleIdFor`: named as since 17.2.0, unique (a numeric suffix where the name is taken),
+    the record kept across `refresh()`;
+  - `syntheticStyle`: the style built from the in-context composition, so the flattening is
+    the resolver's;
+  - `sourceStyleOf`;
+  - `getEffectiveTableStyle` and `reachesDefaultTableStyle` by name, over the cached chain,
+    copied (D4).
+- `ParagraphStylesInTableFix` is a `TableContextTracker` which names and composes nothing.
+  - It renames exactly the paragraphs 17.2.0 renamed: in a table which names a style, or
+    which takes a default not named "Normal Table".
+  - It no longer rewrites the settings part.
+  - The `FOPAreaTreeHelper` guard is kept: a second run is harmless now (the same ids come
+    back), and the guard saves the walk.
+- `Emulator.resolve` goes through `sourceStyleOf` (D1), and so does the FO block's
+  `HINT_PSTYLE` (D7, for STYLEREF and contextual spacing).
+- The sweep found no other reader needing `sourceStyleOf`:
+  - numbering, HTML's included, goes through `Emulator`;
+  - HTML's class name is representation (the synthetic id is the CSS class);
+  - `ListsToContentControls` and `Containerization` run before the rename.
+- `PStyle12PtInTable*` are pinned to mode 14 in `setSetting`.
+- Tests:
+  - `SyntheticTableStylesTest` (7): D1, D2, D9, D8; a second run and the settings left
+    alone; D6 in modes 15 and 14; a table taking Normal Table not renamed.
+  - `PropertyResolverTableStyleTest`, two more: T2 (a), and T7 in both variants.
+  - `StyleRefHeaderTest`, two more: a heading in a table cell, on both pathways.
+- Gate, tests (reactor): core-tests 1,381/0, export-fo 240/0, export-fo-tests 671/0.
+- Gate, the **round trip** (decision 7):
+  - 452 documents, 254,652 paragraphs: plain resolution of every synthetic style equals the
+    in-context answer. **No difference.**
+  - D2's 21 paragraphs are gone, the preprocess now leaving text boxes alone.
+  - So the real style stays the authority; no part of the flattening needed fixing.
+- Gate, scored against 83009bfcc, the released fork 2.11-docx4j.2 on both sides:
+  - real and real3: identical.
+  - real2: the three D1 documents and no other, 9 lines in all.
+    `12_ru-RU_sdt_num_tbl_2422` 0.9502 -> 0.9564, `14_en-US_fields4_num_tbl_9623`
+    0.9924 -> 0.9956, `12_fr-FR_fields54_num_tbl_8695` 0.7700 -> 0.7706.
+  - No regression anywhere.
+  - The ten text-box documents do not move: their boxes' lines matched before, and D2 changes
+    only their formatting.
+  - Probes: `tables-numbered-in-cell` 0.25 -> 1.0, `tables-compat-size-jc` 0.875 -> 1.0,
+    `tables-compat-size-jc-absent` 0.889 -> 1.0. `tables-textbox-in-cell` has one candidate
+    line fewer (the box text now at 12pt), with parity unchanged. The rest are identical.
 
 **Phase 3 - the FO visitor resolves in context.**  The preprocess comes off `FLAG_NONE` FO
 output. First the list of resolver call sites (§4.6), each marked as taking the context or

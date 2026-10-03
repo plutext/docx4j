@@ -85,6 +85,17 @@ import org.w3c.dom.traversal.NodeIterator;
 public class XsltFOFunctions {
 	
 	private static Logger log = LoggerFactory.getLogger(XsltFOFunctions.class);
+
+    /** The paragraph style a (synthetic) style id stands for; the id itself if the package
+     *  has no resolver.  @since 17.3.1 */
+    private static String sourceStyleOf(WordprocessingMLPackage wmlPackage, String styleId) {
+    	if (styleId == null || wmlPackage == null) return styleId;
+    	try {
+    		return wmlPackage.getMainDocumentPart().getPropertyResolver().sourceStyleOf(styleId);
+    	} catch (Docx4JException e) {
+    		return styleId;
+    	}
+    }
 	
 
 	public static DocumentFragment getLayoutMasterSetFragment(AbstractWmlConversionContext context) {
@@ -1186,7 +1197,11 @@ public class XsltFOFunctions {
 			// a hint on the wrapper would make it look like a paragraph of the default
 			// style next to its neighbours)
 			if (WordLayoutFixups.isEnabled() && !sdt) {
-				foBlockElement.setAttribute(WordLayoutFixups.HINT_PSTYLE, pStyleVal==null ? "" : pStyleVal);
+				// the document's own style, where a table paragraph carries a synthetic one
+				// (HTML and the XSLT pathway): STYLEREF and contextual spacing compare it
+				// (until 17.3.1 a heading in a table cell was invisible to STYLEREF: CR-030 D7)
+				String hintStyle = sourceStyleOf(wmlPackage, pStyleVal);
+				foBlockElement.setAttribute(WordLayoutFixups.HINT_PSTYLE, hintStyle==null ? "" : hintStyle);
 				if (pPr!=null && pPr.getContextualSpacing()!=null && pPr.getContextualSpacing().isVal()) {
 					foBlockElement.setAttribute(WordLayoutFixups.HINT_CONTEXTUAL, "1");
 				}

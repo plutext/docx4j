@@ -44,8 +44,8 @@ import org.slf4j.LoggerFactory;
  *   effectivePPr(direct)       = docDefaults.pPr + chainPPr(styleOf(direct)) + direct
  *   effectiveRPr(direct, pPr)  = docDefaults.rPr + chainRPr(styleOf(pPr)) + chainRPr(direct.rStyle) + direct
  *   paragraphMarkRPr(pPr)      = docDefaults.rPr + chainRPr(styleOf(pPr)) + pPr.rPr
- *   tableStyle(tblPr)          = built-in Normal Table (where its chain reaches the default table style,
- *                                or it names none) + the chain + tblPr
+ *   tableStyle(tblPr)          = built-in Normal Table (where its chain reaches a style named "Normal Table",
+ *                                or there is none) + the chain above that + tblPr
  *
  *   in a table cell, given its CellContext (since 17.3.1):
  *   effectivePPr(direct, ctx)  = docDefaults.pPr + table(ctx).pPr + chainPPr(styleOf(direct)) [+ jc exception] + direct
@@ -66,9 +66,10 @@ import org.slf4j.LoggerFactory;
  * in per layer through the numbering part.  A table style reaches a paragraph where the
  * caller hands the resolver the paragraph's {@link CellContext} (since 17.3.1; from a
  * {@link org.docx4j.model.table.TableContextTracker} during a walk, or
- * {@link #cellContextOf(P)}): the overloads which take none know nothing of tables, and
- * {@code ParagraphStylesInTableFix} still carries table styles for the exporters
- * (CR-030 phases 2 and 3 move them onto these overloads).
+ * {@link #cellContextOf(P)}): the overloads which take none know nothing of tables.  For
+ * the outputs which name styles, {@code ParagraphStylesInTableFix} gives each table
+ * paragraph a synthetic style named and built here ({@link #styleIdFor},
+ * {@link #syntheticStyle}, {@link #sourceStyleOf}; CR-030).
  *
  * <p><b>Live objects.</b>  What the style overloads and {@link #getEffectivePPr(PPr)}
  * return is cached and shared: clone it before changing it.  The cached objects share no
@@ -252,33 +253,34 @@ public class PropertyResolver {
 	 * The table style which applies, merged root-first down its w:basedOn chain, then the
 	 * table's own w:tblPr over it.
 	 *
-	 * <p>Word's built-in "Normal Table" (w:tblInd 0; cell margins 108 twips left and
-	 * right, 0 top and bottom) underlies a table naming no style and a table whose chain
-	 * reaches the document's default table style - and it is the built-in that applies,
-	 * not the document's definition of that style: measured (CR-015 probe
-	 * styles-table-default) with the document's Table Normal stating w:left 300, Word
-	 * started the first cell's text 108 twips in for both, and a table style whose chain
-	 * does not reach the default style got no cell margin at all.  So the default style's
-	 * own layer is skipped in favour of the built-in, and a chain not reaching it starts
-	 * from nothing.  Until 17.2.0 a style-less table got an empty w:tblPr and the table
-	 * writers put 108 on every table.</p>
+	 * <p>Word goes by the style's <em>name</em> (measured, CR-030 probes T1, T2 and T7).  A
+	 * style named "Normal Table" is Word's built-in Normal Table (w:tblInd 0; cell margins 108
+	 * twips left and right, 0 top and bottom), whatever its own definition says and whether
+	 * or not it is the document's default: the built-in stands in for it, and the walk up
+	 * the chain ends there.  Every other style applies as written, with nothing beneath it:
+	 * a chain which reaches no style so named starts from nothing, so a table style with no
+	 * w:basedOn has no cell margin at all (CR-015 probe styles-table-default), and the
+	 * document's default table style, where it is named otherwise, applies as written to a
+	 * table naming no style (T7: its margins of 300, or none).  The built-in also stands in
+	 * for a style which is missing, and where the document has no default table style.
+	 * (Until 17.3.1 the built-in was decided by the default table style's <em>id</em>; until
+	 * 17.2.0 a style-less table got an empty w:tblPr and the table writers put 108 on every
+	 * table.)</p>
+	 *
+	 * <p>The chain is {@link #getTableStyleChain(String)}'s, copied: its cache is shared.</p>
 	 *
 	 * @param tblPr the table's own w:tblPr; may be null
 	 * @return a new Style each call, with a non-null w:tblPr
 	 */
 	public Style getEffectiveTableStyle(TblPr tblPr) throws CyclicStylesException {
 
-		String styleId = (tblPr != null && tblPr.getTblStyle() != null) ? tblPr.getTblStyle().getVal() : null;
-		List<Style> chain = styleId == null ? Collections.<Style>emptyList() : ancestry(styleId);
-		boolean builtIn = chain.isEmpty() || (defaultTableStyleId != null && containsId(chain, defaultTableStyleId));
+		String styleId = getTableStyleIdOf(tblPr);
 		log.debug(styleId == null ? "No table style specified" : "Table style: " + styleId);
 
-		Style result = builtIn ? builtInTableNormal() : emptyTableStyle();
-		for (Style layer : chain) {
-			if (defaultTableStyleId != null && defaultTableStyleId.equals(layer.getStyleId())) {
-				continue; // the built-in stands in for the document's definition of it
-			}
-			StyleUtil.apply(layer, result);
+		Style result = builtInTableNormalUnderlies(styleId) ? builtInTableNormal() : emptyTableStyle();
+		Style chain = getTableStyleChain(styleId);
+		if (chain != NO_TABLE_STYLE) {
+			StyleUtil.apply((Style)XmlUtils.deepCopy(chain), result);
 		}
 		if (tblPr != null) {
 			result.setTblPr(StyleUtil.apply(tblPr, result.getTblPr()));
@@ -290,21 +292,26 @@ public class PropertyResolver {
 	}
 
 	/**
-	 * Whether a table's style chain reaches the document's default table style - the flag
-	 * {@link #getEffectiveTableStyle(TblPr)} decides Word's built-in Normal Table by (a
-	 * table naming no style counts as reaching it).  Exposed for the parity harnesses,
-	 * which otherwise infer it from the cell margins.
+	 * Whether Word's built-in Normal Table underlies a table - the flag
+	 * {@link #getEffectiveTableStyle(TblPr)} decides by: the table's style chain (its own
+	 * w:tblStyle, else the default table style) reaches a style <em>named</em> "Normal
+	 * Table", or the style is missing, or there is none.  Exposed for the parity harnesses,
+	 * which otherwise infer it from the cell margins.  Since 17.3.1 decided by name (CR-030
+	 * T2, T7); the method keeps its name from when it was decided by the default style's id.
 	 * @param tblPr the table's own w:tblPr; may be null
 	 * @since 17.2.0
 	 */
 	public boolean reachesDefaultTableStyle(TblPr tblPr) throws CyclicStylesException {
-		String styleId = (tblPr != null && tblPr.getTblStyle() != null) ? tblPr.getTblStyle().getVal() : null;
-		List<Style> chain = styleId == null ? Collections.<Style>emptyList() : ancestry(styleId);
-		return chain.isEmpty() || (defaultTableStyleId != null && containsId(chain, defaultTableStyleId));
+		return builtInTableNormalUnderlies(getTableStyleIdOf(tblPr));
 	}
 
-	private static boolean containsId(List<Style> chain, String styleId) {
-		for (Style s : chain) if (styleId.equals(s.getStyleId())) return true;
+	private boolean builtInTableNormalUnderlies(String styleId) throws CyclicStylesException {
+		if (styleId == null) return true;
+		List<Style> chain = ancestry(styleId);
+		if (chain.isEmpty()) return true;
+		for (Style s : chain) {
+			if (isNamedNormalTable(s)) return true;
+		}
 		return false;
 	}
 
@@ -671,6 +678,104 @@ public class PropertyResolver {
 	 */
 	public boolean appliesTableStyleSizeJcException() {
 		return tableStyleSizeJcException;
+	}
+
+	// ------------------------------------------------ synthetic style names (CR-030 phase 2)
+
+	/**
+	 * What a synthetic paragraph style stands for: a paragraph style composed over a table
+	 * level.  Kept across {@link #refresh()}: the ids are written into the document.
+	 */
+	private static final class Synthetic {
+		final String sourceStyleId;
+		final CellContext context;
+		Synthetic(String sourceStyleId, CellContext context) {
+			this.sourceStyleId = sourceStyleId;
+			this.context = context;
+		}
+	}
+
+	private final java.util.Map<String, Synthetic> synthetics = new java.util.concurrent.ConcurrentHashMap<String, Synthetic>();
+	private final java.util.Map<Composition, String> syntheticIds = new java.util.concurrent.ConcurrentHashMap<Composition, String>();
+
+	/**
+	 * The id of the synthetic paragraph style which stands for a paragraph style in a table
+	 * cell's context: named as ParagraphStylesInTableFix has named them since 17.2.0
+	 * ({@code <paragraph style>-<table style>[-<conditions>]-BR}), and distinct where that
+	 * name is taken by another (paragraph style, table level), or by a style of the
+	 * document: style ids may contain the hyphens the name is joined with, so a name alone
+	 * is ambiguous (CR-030 D8).  The same pair always gets the same id.
+	 *
+	 * <p>For the outputs which name styles (HTML's CSS classes; the FO XSLT pathway, which
+	 * resolves a paragraph by its w:pStyle alone).  {@link #syntheticStyle(String)} gives the
+	 * style itself and {@link #sourceStyleOf(String)} the paragraph style it stands for.</p>
+	 *
+	 * @param paragraphStyleId the paragraph's w:pStyle (or null for none); a missing style is
+	 *        the default paragraph style, as everywhere in resolution, and a synthetic id
+	 *        stands for its source
+	 * @param cellContext the paragraph's context; it must name a table style
+	 * @since 17.3.1
+	 */
+	public synchronized String styleIdFor(String paragraphStyleId, CellContext cellContext) {
+		String source = existingParagraphStyle(sourceStyleOf(paragraphStyleId));
+		Composition key = new Composition(source, cellContext.getKey());
+		String id = syntheticIds.get(key);
+		if (id != null) return id;
+
+		String tableStyle = cellContext.getTableStyleId();
+		String conditions = org.docx4j.model.table.TableStyleConditions.key(cellContext.getKey().getConditions());
+		String name = source + "-" + tableStyle + (conditions.length() > 0 ? "-" + conditions : "");
+		if (!(tableStyle != null && tableStyle.endsWith("-BR") && conditions.length() == 0)) {
+			name = name + "-BR";
+		}
+		id = name;
+		for (int n = 2; synthetics.containsKey(id) || getLiveStyle(id) != null; n++) {
+			id = name + "-" + n;
+		}
+		synthetics.put(id, new Synthetic(source, cellContext));
+		syntheticIds.put(key, id);
+		return id;
+	}
+
+	/**
+	 * The synthetic paragraph style an id from {@link #styleIdFor} names: a paragraph style
+	 * with no w:basedOn whose w:pPr and w:rPr are what the resolver composes for its
+	 * (paragraph style, table level), document defaults included, so that resolving it the
+	 * plain way gives the in-context answer (CR-030 decision 7).  A new object each call; null
+	 * for an id which is not one.
+	 * @since 17.3.1
+	 */
+	public Style syntheticStyle(String id) throws CyclicStylesException {
+		Synthetic synthetic = synthetics.get(id);
+		if (synthetic == null) return null;
+		Style style = Context.getWmlObjectFactory().createStyle();
+		style.setType("paragraph");
+		style.setStyleId(id);
+		Style.Name name = Context.getWmlObjectFactory().createStyleName();
+		name.setVal(id);
+		style.setName(name);
+		if (synthetic.context.formatsText()) {
+			style.setPPr((PPr)XmlUtils.deepCopy(composedPPr(synthetic.sourceStyleId, synthetic.context)));
+			style.setRPr((RPr)XmlUtils.deepCopy(composedRPr(synthetic.sourceStyleId, synthetic.context)));
+		} else {
+			style.setPPr((PPr)XmlUtils.deepCopy(getEffectivePPr(synthetic.sourceStyleId)));
+			RPr rPr = synthetic.sourceStyleId == null ? null : getEffectiveRPr(synthetic.sourceStyleId);
+			style.setRPr(rPr == null ? (RPr)XmlUtils.deepCopy(documentDefaultRPr) : (RPr)XmlUtils.deepCopy(rPr));
+		}
+		return style;
+	}
+
+	/**
+	 * The paragraph style a synthetic style id from {@link #styleIdFor} stands for; any
+	 * other id unchanged.  For code which reads a paragraph's w:pStyle and needs the
+	 * document's own style: numbering (a level linked to a style), STYLEREF, contextual
+	 * spacing (CR-030 D1, D7).
+	 * @since 17.3.1
+	 */
+	public String sourceStyleOf(String styleId) {
+		if (styleId == null) return null;
+		Synthetic synthetic = synthetics.get(styleId);
+		return synthetic == null ? styleId : synthetic.sourceStyleId;
 	}
 
 	/**

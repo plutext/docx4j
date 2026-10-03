@@ -189,6 +189,12 @@ public abstract class PStyleTableAbstract {
 			} else {
 				dsp.setWordCompatSetting("overrideTableStyleFontSizeAndJustification", "0");				
 			}
+			/* Compatibility mode 14 (Word 2010), where these expectations were measured: Word
+			 * 365 applies [MS-DOCX]'s exception below mode 15 only, and createPackage() writes
+			 * mode 15 since 17.2.0, where a stated 0 is ignored (CR-030 probes T5 and T6).
+			 * @since 17.3.1 */
+			dsp.setWordCompatSetting("compatibilityMode", "14");
+			wmlPackage.getMainDocumentPart().getPropertyResolver().refresh();
 	}
 	
 	protected Style getStyle(WordprocessingMLPackage wordMLPackage, String stylename) throws Docx4JException {

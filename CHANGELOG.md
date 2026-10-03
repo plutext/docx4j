@@ -14,6 +14,25 @@ Property resolution:
   paragraphs and runs in a table when handed the paragraph's CellContext (TableContextTracker
   for a walk, cellContextOf for one paragraph); the overloads without one are unchanged (CR-030).
 
+- Which table style applies follows Word's rule, the style's name: a style named "Normal Table"
+  is Word's built-in, and a default table style named otherwise applies as written, cell
+  margins included (CR-030).
+
+PDF and HTML output, tables (CR-030):
+
+- A paragraph numbered through its style keeps its number in a table cell, and the list's count
+  no longer skips it.
+
+- A text box anchored in a table cell no longer takes the table style's formatting.
+
+- STYLEREF finds a heading in a table cell.
+
+- [MS-DOCX]'s overrideTableStyleFontSizeAndJustification exception is applied below
+  compatibility mode 15 only, as Word 365 applies it.
+
+- A paragraph in a table naming a missing style no longer leaves the rest of the document
+  without its table styling; nor does DEBUG logging.
+
 PDF via XSL FO:
 
 - PDF output through the XSLT pathway (FLAG_EXPORT_PREFER_XSL) works again on the docx4j FO

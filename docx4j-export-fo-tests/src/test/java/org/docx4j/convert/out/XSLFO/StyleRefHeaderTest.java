@@ -33,13 +33,20 @@ public class StyleRefHeaderTest extends AbstractXSLFOTest {
 	private static final String FO = "http://www.w3.org/1999/XSL/Format";
 	private static final ObjectFactory factory = Context.getWmlObjectFactory();
 
+	private static final String TERMS = "<w:p><w:pPr><w:pStyle w:val=\"Heading1\"/></w:pPr><w:r><w:t>Terms</w:t></w:r></w:p>";
+
 	private static WordprocessingMLPackage pkg(String instr, String header) throws Exception {
+		return pkg(instr, header, TERMS);
+	}
+
+	/** The second heading, Terms, as given: a paragraph, or one in a table cell. */
+	private static WordprocessingMLPackage pkg(String instr, String header, String terms) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().setJaxbElement((org.docx4j.wml.Document) XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>"
 				+ "<w:p><w:pPr><w:pStyle w:val=\"Heading1\"/></w:pPr><w:r><w:t>Scope</w:t></w:r></w:p>"
 				+ "<w:p><w:r><w:t>body</w:t></w:r></w:p>"
-				+ "<w:p><w:pPr><w:pStyle w:val=\"Heading1\"/></w:pPr><w:r><w:t>Terms</w:t></w:r></w:p>"
+				+ terms
 				+ "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/>"
 				+ "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"709\" w:footer=\"709\"/></w:sectPr>"
 				+ "</w:body></w:document>"));
@@ -99,6 +106,35 @@ public class StyleRefHeaderTest extends AbstractXSLFOTest {
 	@Test
 	public void xsltPathway() throws Exception {
 		check(Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
+	/**
+	 * A heading in a table cell is a heading of its style like any other.  On the paths
+	 * which give a cell's paragraph a synthetic style (the preprocess), the block's style
+	 * hint is the document's own style, so the marker is there: until 17.3.1 the hint was the
+	 * synthetic id, and a STYLEREF could not find the heading (CR-030 D7).
+	 * @since 17.3.1
+	 */
+	private void headingInACell(int flags) throws Exception {
+		WordprocessingMLPackage pkg = pkg(" STYLEREF &quot;Heading 1&quot; ", "Introduction",
+				"<w:tbl><w:tblPr><w:tblStyle w:val=\"TableGrid\"/><w:tblW w:w=\"0\" w:type=\"auto\"/></w:tblPr>"
+				+ "<w:tblGrid><w:gridCol w:w=\"9000\"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:w=\"9000\" w:type=\"dxa\"/></w:tcPr>"
+				+ TERMS + "</w:tc></w:tr></w:tbl><w:p><w:r><w:t>after</w:t></w:r></w:p>");
+		pkg.getMainDocumentPart().getPropertyResolver().activateStyle("TableGrid");
+		org.w3c.dom.Document fo = fo(pkg, flags);
+		NodeList markers = fo.getElementsByTagNameNS(FO, "marker");
+		assertEquals("a marker on each Heading 1 paragraph, the one in the cell too", 2, markers.getLength());
+		assertEquals("Terms", markers.item(1).getTextContent());
+	}
+
+	@Test
+	public void aHeadingInATableCellVisitor() throws Exception {
+		headingInACell(Docx4J.FLAG_NONE);
+	}
+
+	@Test
+	public void aHeadingInATableCellXslt() throws Exception {
+		headingInACell(Docx4J.FLAG_EXPORT_PREFER_XSL);
 	}
 
 	/** A style the document does not have leaves the stored result alone. */

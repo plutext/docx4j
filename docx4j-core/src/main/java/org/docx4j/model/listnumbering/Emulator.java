@@ -483,6 +483,14 @@ public class Emulator {
     		boolean directNumPr) {
 
     	String styleId = (pStyleVal == null || pStyleVal.equals("")) ? null : pStyleVal;
+    	// A paragraph in a table may carry a synthetic style standing for its own (HTML and
+    	// the FO XSLT pathway; ParagraphStylesInTableFix).  The numbering is its own style's:
+    	// a level linked to that style, by w:lvl/w:pStyle, must find it in the paragraph's
+    	// chain, and the synthetic style has no w:basedOn (until 17.3.1 such a paragraph lost
+    	// its number, and the list's count skipped it: CR-030 D1).
+    	if (styleId != null && propertyResolver != null) {
+    		styleId = propertyResolver.sourceStyleOf(styleId);
+    	}
 
     	if (numId == null || numId.equals("")) {
     		// no explicit numId: is it provided by the style (ie does this style, or

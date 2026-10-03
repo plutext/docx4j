@@ -133,7 +133,17 @@ public final class CellContext {
 
 		Key(String tableStyleId, Set<STTblStyleOverrideType> conditions) {
 			this.tableStyleId = tableStyleId;
-			this.conditions = conditions;
+			this.conditions = Collections.unmodifiableSet(conditions);
+		}
+
+		public String getTableStyleId() {
+			return tableStyleId;
+		}
+
+		/** The conditional formats which give the paragraph text formatting (w:pPr or w:rPr),
+		 *  wholeTable included where the style has one. */
+		public Set<STTblStyleOverrideType> getConditions() {
+			return conditions;
 		}
 
 		@Override

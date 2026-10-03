@@ -59,6 +59,7 @@ import jakarta.xml.bind.JAXBElement;
 public final class TableContext {
 
 	private final String tableStyleId;
+	private final boolean namesStyle;
 	private final Style tableStyle;
 	private final Look look;
 	private final int rowBandSize;
@@ -78,6 +79,7 @@ public final class TableContext {
 	public TableContext(Tbl tbl, PropertyResolver resolver) {
 
 		this.tableStyleId = resolver.getTableStyleIdOf(tbl.getTblPr());
+		this.namesStyle = tbl.getTblPr() != null && tbl.getTblPr().getTblStyle() != null;
 		this.tableStyle = resolver.getTableStyleChain(tableStyleId);
 
 		// the table's own tblPr decides the look and band sizes; the style's is the fallback
@@ -171,6 +173,11 @@ public final class TableContext {
 	/** The id of the table style the table resolves to, or null. */
 	public String getTableStyleId() {
 		return tableStyleId;
+	}
+
+	/** Whether the table states its own w:tblStyle (rather than taking the default table style). */
+	public boolean namesStyle() {
+		return namesStyle;
 	}
 
 	/** The table style's chain merged; shared, read it only. */

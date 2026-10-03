@@ -43,6 +43,10 @@ import org.junit.Test;
  * Table (108 left and right), not the document's definition; a style whose chain does not
  * reach it gets no cell margin at all.
  *
+ * <p>Since 17.3.1 by the style's <em>name</em> (CR-030 probes T2 and T7): a style named
+ * "Normal Table" is the built-in whether or not it is the default, and a default table style
+ * named otherwise applies as written, with nothing beneath it.</p>
+ *
  * @since 17.2.0
  */
 public class PropertyResolverTableStyleTest {
@@ -104,6 +108,38 @@ public class PropertyResolverTableStyleTest {
 		assertEquals(50, left(effective));
 		assertEquals("the right margin still the built-in's", 108, right(effective));
 		assertEquals("the document's Table Normal untouched", 300, tableNormal.getTblPr().getTblCellMar().getLeft().getW().intValue());
+	}
+
+	/** CR-030 T2 (a): a non-default style named Normal Table is Word's built-in all the same. */
+	@Test
+	public void aNonDefaultStyleNamedNormalTableIsTheBuiltIn() throws Exception {
+		tableStyle("OtherNormal", null, false);
+		Style other = pkg.getMainDocumentPart().getStyleDefinitionsPart().getStyleById("OtherNormal");
+		other.getName().setVal("Normal Table");
+		CTTblCellMar mar = F.createCTTblCellMar();
+		mar.setLeft(twips(300));
+		other.getTblPr().setTblCellMar(mar);
+		PropertyResolver resolver = new PropertyResolver(pkg);
+		assertEquals("108, not its own 300 (golden T2 (a))", 108, left(resolver.getEffectiveTableStyle(tblPr("OtherNormal"))));
+		org.junit.Assert.assertTrue(resolver.reachesDefaultTableStyle(tblPr("OtherNormal")));
+	}
+
+	/** CR-030 T7: the default table style named otherwise applies as written, nothing beneath. */
+	@Test
+	public void aRenamedDefaultAppliesAsWritten() throws Exception {
+		tableNormal.getName().setVal("My Default");
+		tableNormal.getTblPr().getTblCellMar().getRight().setW(BigInteger.valueOf(300));
+		PropertyResolver resolver = new PropertyResolver(pkg);
+		assertEquals("its own 300 (golden T7 (a))", 300, left(resolver.getEffectiveTableStyle(F.createTblPr())));
+		assertEquals(300, right(resolver.getEffectiveTableStyle(F.createTblPr())));
+		assertEquals("through a style based on it (T7 (b))", 300, left(resolver.getEffectiveTableStyle(tblPr("Grid2"))));
+		org.junit.Assert.assertFalse(resolver.reachesDefaultTableStyle(F.createTblPr()));
+
+		// and stating no margins, it has none (T7's second variant)
+		tableNormal.getTblPr().setTblCellMar(null);
+		resolver = new PropertyResolver(pkg);
+		assertNull(resolver.getEffectiveTableStyle(F.createTblPr()).getTblPr().getTblCellMar());
+		assertNull(resolver.getEffectiveTableStyle(tblPr("Grid2")).getTblPr().getTblCellMar());
 	}
 
 	// ---------------------------------------------------------------- helpers
